@@ -79,7 +79,7 @@ public class LancamentoUsoFeature implements Feature {
 
 			ps.setLong(1, Long.parseLong(codUsuario));
 			ps.setLong(2, Long.parseLong(codEquipamento));
-			ps.setTimestamp(4, dtHora);
+			ps.setTimestamp(3, dtHora);
 		}
 		
 		// cria o elemento de saída

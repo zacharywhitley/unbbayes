@@ -22,7 +22,7 @@
 	  usuario.setText(codUsuario);
 	  equipamento.setText(codEquipamento);
       in.getChildren().add(usuario);
-      in.getChildren().add(equipamento);      
+      in.getChildren().add(equipamento);
    } else {
       mensagem = "Fechamento do lançamento de uso de máquina concluído com sucesso!";
 	  String codLancamento = request.getAttribute("cod-lancamento-uso").toString();
@@ -30,7 +30,7 @@
       Element descricao = new Element("desc-tipo-situacao");
       lancamento.setText(codLancamento);
       descricao.setText(TipoSituacao.DISPONIVEL);
-      in.getChildren().add(lancamento);   
+      in.getChildren().add(lancamento);
    }
    
    Feature  lancamentoF = new LancamentoUsoFeature();

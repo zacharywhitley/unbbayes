@@ -8,7 +8,7 @@
 <%@include file =  "/design/cabecalho.jsp"%>
 
 <% 
-   String destino = path + "/controle/equipamento/lancar-equipamento-exec.jsp";
+   String destino = path + "/gerencia/equipamento/lancar-equipamento-exec.jsp";
 
 %>
 
