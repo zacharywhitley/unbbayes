@@ -45,7 +45,7 @@
 </head>
 
 <body onLoad="javascript:document.form1.submit()">
-  <form name="form1" method="post" action="<%=request.getContextPath()%>/design/sucesso-lancamento.jsp">
+  <form name="form1" method="post" action="<%=request.getContextPath()%>/design/sucesso.jsp">
     <input type="hidden" name="menssagem" value="<%=menssagem%>">
   </form>
 </body>
