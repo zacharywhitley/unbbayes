@@ -243,7 +243,7 @@ public class EvaluationMain extends JInternalFrame
   private void openModel()
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
       String[] s2 = {"NET"};
-      //String[] s1 = {"ID3"};
+      String[] s1 = {"ID3"};
       /**/String[] s3 = {"CNM"};
       fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setDialogTitle("Open model");
@@ -251,8 +251,7 @@ public class EvaluationMain extends JInternalFrame
       //adicionar FileView no FileChooser para desenhar ícones de arquivos
       fileChooser.setFileView(new FileIcon(EvaluationMain.this));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "Networks (*.net)"));
-      //fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ID3 Models (*.id3)"));
-
+      fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ID3 Models (*.id3)"));
       /**/fileChooser.addChoosableFileFilter(new SimpleFileFilter(s3, "CNM Models (*.cnm)"));
 
       int returnVal = fileChooser.showOpenDialog(this);

@@ -352,6 +352,14 @@ public class Attribute implements Serializable
   	public void setAttributeType(int attributeType)
 	{	this.attributeType = attributeType;
 	}
-
+	
+	/**
+    * Returns the attribute's values.
+    *
+    * @returns the attribute's values.
+    */
+    public ArrayList getAttributeValues()
+    {	return (ArrayList)attributeValues.clone();
+    }
 }
 

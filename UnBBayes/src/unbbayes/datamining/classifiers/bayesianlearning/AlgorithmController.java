@@ -23,6 +23,21 @@ public class AlgorithmController {
   {
     System.out.println("cheguei");
 
+    //testes
+    ParametricLearning x = new ParametricLearning(instanceSet);
+    int[] pai = new int[2];
+    pai[0]=1;
+    pai[1]=2;
+    int [][] xibungo = x.computeNijk(0,pai);
+
+    for (int i=0;i<xibungo.length;i++)
+    {
+    	for (int j=0;j<xibungo[i].length;j++)
+    		System.out.println("teste "+xibungo[i][j]);
+    	System.out.println("fim teste ");
+    }
+    
+    
     ProbabilisticNetwork net = new ProbabilisticNetwork("mario1213");
     ProbabilisticNode node = new ProbabilisticNode();
     node.setName("mario");
