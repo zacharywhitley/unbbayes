@@ -24,7 +24,7 @@ public class LancamentoUsoFeature implements Feature {
 	 *    (<cod-usuario>1</cod-usuario>
 	 *     <desc-tipo-situacao>Disponível</desc-tipo-situacao>)
 	 * 
-	 * </in>   
+	 * </in>
 	 * 
 	 * <out>
 	 * 	  </ok>
