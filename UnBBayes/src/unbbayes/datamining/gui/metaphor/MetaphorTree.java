@@ -2,6 +2,7 @@ package unbbayes.datamining.gui.metaphor;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.text.NumberFormat;
 import java.util.*;
 
 import javax.swing.*;
@@ -74,8 +75,9 @@ public class MetaphorTree extends JTree
 	private ProbabilisticNetwork net = null;
         private boolean showProbability = false;
         private ArrayMap objectsMap = new ArrayMap();
+        private NumberFormat nf;
 
-	public MetaphorTree()
+	protected MetaphorTree()
         {   super(new DefaultMutableTreeNode());
             root = (DefaultMutableTreeNode)getModel().getRoot();
             setShowsRootHandles(true);
@@ -88,21 +90,19 @@ public class MetaphorTree extends JTree
                 {   methaphorTreeMouseClicked(evt);
                 }
             });
-	}
 
-	public MetaphorTree(boolean showProbability)
-        {	this();
-		this.showProbability = showProbability;
+            nf = NumberFormat.getInstance(Locale.US);
+            nf.setMaximumFractionDigits(4);
 	}
 
 	public MetaphorTree(ProbabilisticNetwork net)
-        {	this();
-                setProbabilisticNetwork(net);
+        {	this(net,false);
 	}
 
 	public MetaphorTree(ProbabilisticNetwork net, boolean showProbability)
-        {	this(net);
+        {	this();
 		this.showProbability = showProbability;
+                setProbabilisticNetwork(net);
 	}
 
 	public void setProbabilisticNetwork(ProbabilisticNetwork net)
@@ -117,8 +117,9 @@ public class MetaphorTree extends JTree
                                 {   Node node = (Node) nos.get(i);
 		                    DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(node.getDescription());
 		                    objectsMap.put(treeNode, node);
-		                    for (int j = 0; j < node.getStatesSize(); j++)
-                                    {   DefaultMutableTreeNode stateNode = new DefaultMutableTreeNode(node.getStateAt(j) + (showProbability ? " " + ((TreeVariable)node).getMarginalAt(j) * 100.0 + "%" : ""));
+                                    int statesSize = node.getStatesSize();
+		                    for (int j = 0; j < statesSize; j++)
+                                    {   DefaultMutableTreeNode stateNode = new DefaultMutableTreeNode(node.getStateAt(j) + (showProbability ? " " + nf.format(((TreeVariable)node).getMarginalAt(j) * 100.0) + "%" : ""));
 		                        treeNode.add(stateNode);
 		            	        objectsMap.put(stateNode,new StateObject(j, CHECK_EMPTY));
 		                    }
@@ -268,5 +269,13 @@ public class MetaphorTree extends JTree
         }
     }
 
+    /**
+     * Modifica o formato de números
+     *
+     * @param local localidade do formato de números.
+     */
+    public void setNumberFormat(Locale local)
+    {   nf = NumberFormat.getInstance(local);
+    }
 
 }

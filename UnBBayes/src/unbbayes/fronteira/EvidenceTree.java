@@ -16,7 +16,7 @@ import unbbayes.util.*;
 public class EvidenceTree extends JTree
 {   private ProbabilisticNetwork net;
     private NumberFormat nf;
-    private boolean[] situacaoArvore;
+    private boolean[] expandedNodes;
 
     public EvidenceTree()
     {   nf = NumberFormat.getInstance(Locale.US);
@@ -61,8 +61,8 @@ public class EvidenceTree extends JTree
         {   collapseRow(i);
         }
 
-        for (int i = 0; i < situacaoArvore.length; i++)
-        {   situacaoArvore[i] = false;
+        for (int i = 0; i < expandedNodes.length; i++)
+        {   expandedNodes[i] = false;
         }
     }
 
@@ -79,8 +79,8 @@ public class EvidenceTree extends JTree
         {   expandRow(i);
         }
 
-        for (int i = 0; i < situacaoArvore.length; i++)
-        {   situacaoArvore[i] = true;
+        for (int i = 0; i < expandedNodes.length; i++)
+        {   expandedNodes[i] = true;
         }
     }
 
@@ -121,8 +121,8 @@ public class EvidenceTree extends JTree
 
         ((DefaultTreeModel) getModel()).reload(root);
         j = 0;
-        for (i = 0; i < situacaoArvore.length; i++)
-        {   if (situacaoArvore[i])
+        for (i = 0; i < expandedNodes.length; i++)
+        {   if (expandedNodes[i])
             {   expandRow(j);
                 Node node = (Node) nodes.get(i);
                 j += node.getStatesSize();
@@ -143,14 +143,14 @@ public class EvidenceTree extends JTree
 
     public void setProbabilisticNetwork(ProbabilisticNetwork net)
     {   this.net = net;
-        situacaoArvore = new boolean[net.getNos().size()];
-        for (int i = 0; i < situacaoArvore.length; i++) {
-            situacaoArvore[i] = false;
+        expandedNodes = new boolean[net.getNos().size()];
+        for (int i = 0; i < expandedNodes.length; i++) {
+            expandedNodes[i] = false;
         }
         updateTree();
     }
 
-    public boolean[] getSituacaoArvore()
-    {   return situacaoArvore;
+    public boolean[] getExpandedNodes()
+    {   return expandedNodes;
     }
 }

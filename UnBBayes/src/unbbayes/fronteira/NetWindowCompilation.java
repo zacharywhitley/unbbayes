@@ -188,7 +188,7 @@ public class NetWindowCompilation extends JPanel {
                     } else if (e.getClickCount() == 2) {
                         DefaultMutableTreeNode root = (DefaultMutableTreeNode) evidenceTree.getModel().getRoot();
                         int index = root.getIndex(node);
-                        evidenceTree.getSituacaoArvore()[index] = ! evidenceTree.getSituacaoArvore()[index];
+                        evidenceTree.getExpandedNodes()[index] = ! evidenceTree.getExpandedNodes()[index];
                     }
                 }
            }

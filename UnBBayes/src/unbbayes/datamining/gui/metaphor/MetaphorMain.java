@@ -136,7 +136,8 @@ public class MetaphorMain extends JPanel
   private void openNetFile(File selectedFile)
   {   try
       {   net = new NetIO().load(selectedFile);
-          metaphorTree = new MetaphorTree(net);
+          net.compile();
+          metaphorTree = new MetaphorTree(net,false);
           metaphorTree.expandTree();
           jPanel3.removeAll();
           jPanel3.add(metaphorTree,  BorderLayout.CENTER);
