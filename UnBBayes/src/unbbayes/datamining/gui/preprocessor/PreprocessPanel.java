@@ -279,24 +279,25 @@ public class PreprocessPanel extends JPanel
   {   if (as == null)
       {   jTable1.setModel(new ValuesTableModel());
       }
-      else if (as.getNominalCounts() != null)
+	else if (as.getNumericStats() != null)
+	{   Object [] colNames = {resource.getString("statistic"),resource.getString("value")};
+		Object [][] data = new Object [4][2];
+		Stats stats = as.getNumericStats();
+		data[0][0] = resource.getString("minimum"); data[0][1] = new Float((float)stats.getMin());
+		data[1][0] = resource.getString("maximum"); data[1][1] = new Float((float)stats.getMax());
+		data[2][0] = resource.getString("mean");    data[2][1] = new Float((float)stats.getMean());
+		data[3][0] = resource.getString("stdDev");  data[3][1] = new Float((float)stats.getStdDev());
+		jTable1.setModel(new ValuesTableModel(data, colNames));
+		return;
+	}
+      else if (as.getNominalCountsWeighted() != null)
       {   Attribute att = instances.getAttribute(index);
           Object [] colNames = {resource.getString("label"),resource.getString("count")};
       	  Object [][] data = new Object [as.getNominalCounts().length][2];
-      	  for (int i = 0; i < as.getNominalCounts().length; i++)
+      	  for (int i = 0; i < as.getNominalCountsWeighted().length; i++)
           {   data[i][0] = att.value(i);
-              data[i][1] = new Integer(as.getNominalCounts()[i]);
+              data[i][1] = new Integer(as.getNominalCountsWeighted()[i]);
       	  }
-      	  jTable1.setModel(new ValuesTableModel(data, colNames));
-      }
-      else if (as.getNumericStats() != null)
-      {   Object [] colNames = {resource.getString("statistic"),resource.getString("value")};
-      	  Object [][] data = new Object [4][2];
-          Stats stats = as.getNumericStats();
-      	  data[0][0] = resource.getString("minimum"); data[0][1] = new Float((float)stats.getMin());
-      	  data[1][0] = resource.getString("maximum"); data[1][1] = new Float((float)stats.getMax());
-      	  data[2][0] = resource.getString("mean");    data[2][1] = new Float((float)stats.getMean());
-      	  data[3][0] = resource.getString("stdDev");  data[3][1] = new Float((float)stats.getStdDev());
       	  jTable1.setModel(new ValuesTableModel(data, colNames));
       }
       else
@@ -395,8 +396,8 @@ public class PreprocessPanel extends JPanel
                       }
                       jLabel10.setText(att.getAttributeName());
                       AttributeStats attStats = attributeStats[selectedAttribute];
-                      long percent = Math.round(100.0 * attStats.getMissingCount() / attStats.getTotalCount());
-                      jLabel13.setText("" + attStats.getMissingCount() + " (" + percent + "%)");
+                      long percent = Math.round(100.0 * attStats.getMissingCountWeighted() / instances.numWeightedInstances());
+                      jLabel13.setText("" + attStats.getMissingCountWeighted() + " (" + percent + "%)");
                       jLabel15.setText("" + attStats.getDistinctCount());
                       setTable(attStats, selectedAttribute);
                   }

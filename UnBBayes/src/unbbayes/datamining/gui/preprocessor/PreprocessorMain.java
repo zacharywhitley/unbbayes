@@ -179,8 +179,8 @@ public class PreprocessorMain extends JInternalFrame
         {
           String fileName = selectedFile.getName();
           jTabbedPane1.setSelectedIndex(0);
-          jPanel1.setBaseInstances(inst);
-          statusBar.setText(resource.getString("fileOpened"));
+		  jPanel1.setBaseInstances(inst);
+		  statusBar.setText(resource.getString("fileOpened"));
           this.setTitle(resource.getString("preprocessorTitle")+selectedFile.getName());
         }
         else

@@ -427,7 +427,7 @@ public class InstanceSet
 				}
 				else
 				{	
-					attributeStats[i] = new AttributeStats(AttributeStats.NUMERIC,0);
+					attributeStats[i] = new AttributeStats(AttributeStats.NUMERIC,getAttribute(i).numValues());
 				}
 			}
 		}
@@ -463,22 +463,20 @@ public class InstanceSet
 			for (int i=0;i<numAttributes;i++)
 			{
 				attributeStats[i].setMissingCount(countResults[i][((countResults[i]).length)-1]);
-				//attributeStats[i].setMissingCountWeighted(countWeightResults[i][((countWeightResults[i]).length)-1]);
+				attributeStats[i].setMissingCountWeighted(countWeightResults[i][((countWeightResults[i]).length)-1]);
 				Attribute tempAtt = getAttribute(i);
 				if (tempAtt.isNominal())
 				{
 					for (int j = 0; j < tempAtt.numValues(); j++)
 					{
-						//attributeStats[i].addDistinct(j,countResults[i][j],countWeightResults[i][j]);
-						attributeStats[i].addDistinct(j,countResults[i][j]);
+						attributeStats[i].addDistinct(j,countResults[i][j],countWeightResults[i][j]);
 					}
 				}
 				else
 				{	
 					for (int j = 0; j < tempAtt.numValues(); j++)
 					{
-						//attributeStats[i].addDistinct(Float.parseFloat(tempAtt.value(j)),j,countResults[i][j],countWeightResults[i][j]);
-						attributeStats[i].addDistinct(Float.parseFloat(tempAtt.value(j)),countResults[i][j]);
+						attributeStats[i].addDistinct(Float.parseFloat(tempAtt.value(j)),j,countResults[i][j],countWeightResults[i][j]);
 					}
 				}		
 			}

@@ -8,26 +8,20 @@ package unbbayes.datamining.datamanipulation;
  *  @version $1.0 $ (16/02/2002)
  */
 public class AttributeStats 
-{ /** The number of int-like values */
-  private int intCount = 0;
-  
-  /** The number of real-like values (i.e. have a fractional part) */
-  private int realCount = 0;
-  
+{   
   /** The number of missing values */
   private int missingCount = 0;
+  private int missingCountWeighted = 0;
   
   /** The number of distinct values */
   private int distinctCount = 0;
-  
-  /** The number of instances */
-  private int totalCount = 0;
   
   /** Stats on numeric value distributions */
   private Stats numericStats;
   
   /** Counts of each nominal value */
   private int[] nominalCounts;
+  private int[] nominalCountsWeighted;
   
   /** Constant set for numeric attributes. */
   public final static int NUMERIC = 0;
@@ -42,26 +36,12 @@ public class AttributeStats
 	@param numValues Number of values associated with an Attribute
 	*/
   public AttributeStats(int attributeType,int numValues)
-  {	if (attributeType == NOMINAL)
-  	{	nominalCounts = new int [numValues];
-	}
-	else if (attributeType == NUMERIC)
+  {	
+  	nominalCounts = new int [numValues];
+	nominalCountsWeighted = new int [numValues];
+	if (attributeType == NUMERIC)
 	{	numericStats = new Stats();
 	}
-  }
-  
-  /** Set number of instances
-  	@param totalCount Number of instances
-	*/
-  public void setTotalCount(int totalCount)
-  {	this.totalCount = totalCount;
-  }
-  
-  /** Get number of instances
-  	@return Number of instances
-	*/
-  public int getTotalCount()
-  {	return totalCount;
   }
   
   /** Set the number of distinct values 
@@ -92,12 +72,34 @@ public class AttributeStats
   {	return missingCount;
   }
   
+  /** Set the number of missing values 
+	@param missingCount Number of missing values
+	*/
+  public void setMissingCountWeighted(int missingCountWeighted)
+  { this.missingCountWeighted = missingCountWeighted;
+  }
+  
+  /** Get the number of missing values 
+	@return Number of missing values
+	*/
+  public int getMissingCountWeighted()
+  {	return missingCountWeighted;
+  }
+  
   /** Return the number of counts for each nominal value. If Attribute is numeric returns
   	null
 	@return Counts for each nominal value
 	*/
   public int[] getNominalCounts()
   {	return nominalCounts;
+  }
+  
+  /** Return the number of counts for each nominal value. If Attribute is numeric returns
+	null
+	@return Counts for each nominal value
+	*/
+  public int[] getNominalCountsWeighted()
+  {	return nominalCountsWeighted;
   }
   
   /** Return a Stats object with some simple statics for a numeric Attribute. If attribute
@@ -114,23 +116,29 @@ public class AttributeStats
    * @param value the value that has just been seen
    * @param count the number of times the value appeared
    */
-  protected void addDistinct(double value, int count) 
+  protected void addDistinct(int value, int count, int countWeighted) 
   {	if (count > 0) 
-  	{	if (Utils.eq(value, (double)((int)value))) 
-  		{	intCount += count;
-    	} 
-		else 
-		{	realCount += count;
-    	}
-    	if (nominalCounts != null) 
-		{	nominalCounts[(int)value] = count;
-    	}
-    	else if (numericStats != null) 
+  	{	
+  		nominalCounts[value] = count;
+		nominalCountsWeighted[value] = countWeighted;
+    	if (numericStats != null) 
 		{	numericStats.add(value, count);
 	  		numericStats.calculateDerived();
     	}
-    }
-	distinctCount++;	
+		distinctCount++;
+    }		
+  }
+  protected void addDistinct(float value, int internalValue,int count, int countWeighted) 
+  {	if (count > 0) 
+	{	
+		nominalCounts[internalValue] = count;
+		nominalCountsWeighted[internalValue] = countWeighted;
+		if (numericStats != null) 
+		{	numericStats.add(value, count);
+			numericStats.calculateDerived();
+		}
+		distinctCount++;
+	}		
   }
   
   /**
@@ -139,12 +147,24 @@ public class AttributeStats
    * @return The summary string
    */
   public String toString() 
-  {	return
-      "Int Count " + intCount + '\n'
-      + "Real Count " + realCount + '\n'
-      + "Missing Count " + missingCount + '\n'
-      + "Distinct Count " + distinctCount + '\n'
-      + "Total Count " + totalCount + '\n';
+  {	
+  	StringBuffer result = new StringBuffer();
+    result.append("Missing Count " + missingCount + '\n');
+	result.append("Missing Count Weighted " + missingCountWeighted + '\n');
+	result.append("Distinct Count " + distinctCount + '\n');
+	result.append("Counts ");
+	for (int i=0;i<nominalCounts.length;i++)
+	{
+		result.append(nominalCounts[i]+" ");
+	}
+	result.append("\n");
+	result.append("Counts Weighted");
+	for (int i=0;i<nominalCountsWeighted.length;i++)
+	{
+		result.append(nominalCountsWeighted[i]+" ");
+	}
+	result.append("\n");
+    return result.toString();
   }
 
 }

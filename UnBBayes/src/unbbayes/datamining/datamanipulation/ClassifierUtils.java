@@ -27,11 +27,6 @@ public class ClassifierUtils
 	public ClassifierUtils(InstanceSet inst)
 	{
 		logmap = new HashMap();
-                Double zeroDouble = new Double(0);
-                if(logmap.containsKey(zeroDouble))
-                  logmap.put(zeroDouble,zeroDouble);
-                if(logmap.containsKey(zeroDouble))
-                  logmap.put(new Double(-0),zeroDouble);
 		resource = ResourceBundle.getBundle("unbbayes.datamining.classifiers.resources.ClassifiersResource");
 
 
@@ -197,7 +192,13 @@ public class ClassifierUtils
 
 	public double xlog2(double a)
 	{
+		if(a==0)
+		{
+			return 0;
+		}
+		
 		Double aDouble = new Double(a);
+		
 		if(logmap.containsKey(aDouble))
 		{
 			return ((Double)(logmap.get(aDouble))).doubleValue();
