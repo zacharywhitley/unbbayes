@@ -31,9 +31,9 @@ public class ListarComputadorDisponivelFeature implements Feature {
 		
 		StringBuffer sql = new StringBuffer();
 		sql.append("SELECT ");
-		sql.append("  S.nome_sala, C.cod_computador, C.desc_computador ");
+		sql.append("  DISTINCT C.cod_computador, S.nome_sala, C.desc_computador ");
 		sql.append("FROM ");
-		sql.append("  Computador AS C, Sala S, Tipo_Situacao AS TS ");
+		sql.append("  Computador C, Sala S, Tipo_Situacao TS ");
 		sql.append("WHERE ");
 		sql.append("  C.cod_sala = S.cod_sala AND ");
 		sql.append("  C.cod_tipo_situacao = TS.cod_tipo_situacao AND ");

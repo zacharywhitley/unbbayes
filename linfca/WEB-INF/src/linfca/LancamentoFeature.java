@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+
 import org.jdom.Element;
 
 public class LancamentoFeature implements Feature {
@@ -14,9 +15,9 @@ public class LancamentoFeature implements Feature {
 	 * <pre>
 	 * <in>
 	 *    <cod-lancamento>1</cod-lancamento>
+	 *    <cod-computador>7</cod-computador>
 	 *       |
 	 *    (<cod-usuario>1</cod-usuario>
-	 *     <cod-computador>7</cod-computador>
 	 * 
 	 *     </manutencao>
 	 *        |
@@ -41,9 +42,14 @@ public class LancamentoFeature implements Feature {
 		PreparedStatement ps = null;		
 		Timestamp dtHora = new Timestamp(System.currentTimeMillis());
 		
+		String descSituacao = Computador.USO;
+		String codComputador = in.getChildTextTrim("cod-computador");
+		
 		if ( in.getChild("cod-lancamento") != null ) {			
 			String codLancamento = in.getChild("cod-lancamento").getTextTrim();			
 			System.out.println("codlancamento = " + codLancamento);
+			
+			descSituacao = Computador.DISPONIVEL;
 			
 			StringBuffer sql = new StringBuffer();
 			sql.append("UPDATE ");
@@ -59,8 +65,7 @@ public class LancamentoFeature implements Feature {
 			ps.setInt(2, Integer.parseInt(codLancamento));
 			
 		} else {			
-			String codUsuario = in.getChildTextTrim("cod-usuario");
-			String codComputador = in.getChildTextTrim("cod-computador");
+			String codUsuario = in.getChildTextTrim("cod-usuario");			
 
 			System.out.println("codusuario = " + codUsuario);
 			System.out.println("codcomputador = " + codComputador);
@@ -101,7 +106,11 @@ public class LancamentoFeature implements Feature {
 		} else {
 			throw new RuntimeException("Não foi possível processar o lançamento!");
 		}	
+						
 		ps.close();		
+		
+		atualizarSituacaoComputador(codComputador, descSituacao, con);
+		
 		con.close();
 		
 		// retorna o elemento de saída
@@ -132,9 +141,50 @@ public class LancamentoFeature implements Feature {
 			System.out.println("deu");	
 		} else {
 			System.out.println("nao deu");
-		}				
+		}
 		
 		return rs.getInt("cod_tipo_lancamento");
+		
+	}
+	
+	private void atualizarSituacaoComputador(String codComputador, 
+				String descSituacao, Connection con) throws SQLException {
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		
+		StringBuffer sql = new StringBuffer();
+		sql.append("SELECT ");
+		sql.append("  cod_tipo_situacao ");
+		sql.append("FROM ");
+		sql.append("  Tipo_Situacao ");
+		sql.append("WHERE ");
+		sql.append(" desc_tipo_situacao = ? ");
+		
+		System.out.println("111111");
+		ps = con.prepareStatement(sql.toString());
+		System.out.println("asdf");
+		
+		ps.setString(1, descSituacao);
+		
+		rs = ps.executeQuery();
+		
+		rs.next();
+		
+		sql.delete(0, sql.length());
+		sql.append("UPDATE ");
+		sql.append("  Computador ");
+		sql.append("SET ");
+		sql.append("  cod_tipo_situacao = ? ");
+		sql.append("WHERE ");
+		sql.append(" cod_computador = ? ");
+		
+		ps = con.prepareStatement(sql.toString());
+		
+		ps.setInt(1, rs.getInt("cod_tipo_situacao"));
+		ps.setInt(2, Integer.parseInt(codComputador));
+		
+		ps.executeUpdate();
 		
 	}
 
