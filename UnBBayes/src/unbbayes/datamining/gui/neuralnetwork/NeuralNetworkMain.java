@@ -75,7 +75,7 @@ public class NeuralNetworkMain extends JInternalFrame {
   private void jbInit() throws Exception {
     resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource");
     openIcon = iconController.getOpenIcon();
-	openModelIcon = iconController.getOpenModelIcon();
+    openModelIcon = iconController.getOpenModelIcon();
     compileIcon = iconController.getCompileIcon();
     helpIcon = iconController.getHelpIcon();
     saveIcon = iconController.getSaveIcon();
@@ -298,6 +298,7 @@ public class NeuralNetworkMain extends JInternalFrame {
         saveButton.setEnabled(false);
         saveModelMenu.setEnabled(false);
         statusBar.setText(resource.getString("openFileSuccess"));
+        chartPanel.clear();
       }
     }catch (NullPointerException npe){
       statusBar.setText(resource.getString("errorDB") + " " + npe.getMessage());
@@ -339,6 +340,7 @@ public class NeuralNetworkMain extends JInternalFrame {
         saveModelMenu.setEnabled(false);
         statusBar.setText(resource.getString("modelOpenSuccess"));
         jTabbedPane1.setSelectedIndex(2);
+		chartPanel.clear();
       }
     } catch (IOException ioe) {
       statusBar.setText(resource.getString("errorWritingFileException") + " " + ioe.getMessage());
