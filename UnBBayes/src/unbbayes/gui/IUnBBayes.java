@@ -108,6 +108,7 @@ public class IUnBBayes extends JFrame {
 	private ActionListener alHelp;
 	private ActionListener alAbout;
 	private ActionListener alMonteCarlo;
+	private ActionListener alGibbs;
 	
         private JFileChooser chooser;
         private FileController fileController;
@@ -324,6 +325,11 @@ public class IUnBBayes extends JFrame {
 				ControladorPrincipal cp = new ControladorPrincipal();				
 			}
 		};
+		
+		alGibbs = new ActionListener(){
+			public void actionPerformed(ActionEvent ae){				
+			}			
+		};
 
 		// create an ActionListener for showing the File Tool Bar
 		alTbFile = new ActionListener() {
@@ -537,6 +543,8 @@ public class IUnBBayes extends JFrame {
 				resource.getString("learningItem"),iconController.getCompileIcon());
 		JMenuItem monteCarloItem = 
 			new JMenuItem("Monte Carlo");
+		JMenuItem gibbsItem = 
+					new JMenuItem("Gibbs");
 		JMenuItem cascadeItem =
 			new JMenuItem(
 				resource.getString("cascadeItem"),iconController.getCascadeIcon());
@@ -593,6 +601,7 @@ public class IUnBBayes extends JFrame {
 		tileItem.addActionListener(alTile);
 		helpItem.addActionListener(alHelp);
 		monteCarloItem.addActionListener(alMonteCarlo);
+		gibbsItem.addActionListener(alGibbs);
 		// aboutItem.addActionListener(alAbout);
 
 		// add menu items to their respective menu
@@ -616,6 +625,7 @@ public class IUnBBayes extends JFrame {
 		viewMenu.add(lafMenu);
 		toolsMenu.add(learningItem);
 		toolsMenu.add(monteCarloItem);
+		toolsMenu.add(gibbsItem);
 		windowMenu.add(cascadeItem);
 		windowMenu.add(tileItem);
 		helpMenu.add(helpItem);
