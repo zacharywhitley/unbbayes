@@ -3,16 +3,7 @@ package unbbayes.datamining.classifiers.cnmentities;
 import java.io.*;
 
 /**
- * <p>Title: </p>
- * <p>Description: </p>
- * <p>Copyright: Copyright (c) 2002</p>
- * <p>Company: </p>
- * @author not attributable
- * @version 1.0
- */
-
-/**
- *  Class that implements the arcs tha compound the
+ *  Class that implements the output neurons that compound the
  *  Combinatorial Neural Model (CNM).
  *
  *  @author Rafael Moraes Noivo
@@ -20,33 +11,28 @@ import java.io.*;
  */
 public class OutputNeuron implements Serializable{
 
-  /**Value of the arc accumulator*/
+  /**Value of the accumulator*/
   protected int accumulator;
 
   /**Value of the final weight*/
   protected int netWeight;
 
-  /**Value of the confidence of the arc*/
+  /**Value of the confidence*/
   protected float confidence;
 
-  /**Value of the support of the arc*/
+  /**Value of the support*/
   protected float support;
 
   /**
-   * Constructs a new arc.
-   *
-   * @param combinationNeuron the neuron that represents the combination
-   *                          connected by this arc.
+   * Constructs a new output neuron.
    */
   public OutputNeuron(){
     this.accumulator = 1;
   }
 
   /**
-   * Constructs a new arc setting the accumulator value.
+   * Constructs a new output neuron setting the accumulator value.
    *
-   * @param combinationNeuron the neuron that represents the combination
-   *                          connected by this arc.
    * @param accumulator the value of the arc accumulator
    */
   public OutputNeuron(int accumulator){
@@ -116,10 +102,18 @@ public class OutputNeuron implements Serializable{
     this.confidence = confidence;
   }
 
+  /**
+   * Increases the accumulator value by 1.
+   */
   public void increaseAccumulator(){
     accumulator++;
   }
 
+  /**
+   * Increases the accumulator value by the weight parameter.
+   *
+   * @param weight the value to increase the accumulator.
+   */
   public void increaseAccumulator(int weight){
     accumulator = accumulator + weight;
   }

@@ -146,7 +146,20 @@ public class InferencePanel extends JPanel {
 
   private void printResults(Combination[] results, Instance instance){
     float[] distributionNormalized = new float[results.length];
-    Attribute[] attArray = combinatorialNetwork.getAttributeVector();
+    Attribute[] attributeArray = combinatorialNetwork.getAttributeVector();
+    Attribute classAtt;
+    String[] initString;
+    String[] initStyles;
+    int maxValue;
+    Document docResults;
+    Attribute att;
+    ArrayList inputList;
+    String rule;
+    Integer numberOfCases;
+    OutputNeuron[] outputArray;
+    OutputNeuron tempOutput;
+    DecimalFormat numFormat = new DecimalFormat("##0.0");
+
 
     for(int i=0; i<results.length; i++){
       if(results[i] != null){
@@ -157,9 +170,9 @@ public class InferencePanel extends JPanel {
     }
     Utils.normalize(distributionNormalized);
 
-    Attribute classAtt = (combinatorialNetwork.getAttributeVector())[combinatorialNetwork.getClassIndex()];
+    classAtt = (combinatorialNetwork.getAttributeVector())[combinatorialNetwork.getClassIndex()];
 
-    String[] initString = new String[results.length + 1];
+    initString = new String[results.length + 1];
     initString[0] = resource.getString("class") + ": " + classAtt.getAttributeName() + "\n";
     for(int i=0; i<results.length; i++){
       if(results[i] != null){
@@ -173,9 +186,9 @@ public class InferencePanel extends JPanel {
       }
     }
 
-    String[] initStyles = new String[initString.length];
+    initStyles = new String[initString.length];
     initStyles[0] = "largeBold";
-    int maxValue = Utils.maxIndex(distributionNormalized);
+    maxValue = Utils.maxIndex(distributionNormalized);
     for(int i=0; i<results.length; i++){
       if(i == maxValue){
         initStyles[i+1] = "bold";
@@ -185,7 +198,7 @@ public class InferencePanel extends JPanel {
     }
 
     initStylesForTextPane(textPaneResults);
-    Document docResults = textPaneResults.getDocument();
+    docResults = textPaneResults.getDocument();
     try {
       docResults.remove(0, docResults.getLength());
       for (int i=0; i<initString.length; i++) {
@@ -194,26 +207,77 @@ public class InferencePanel extends JPanel {
     } catch (BadLocationException ble) {
       System.out.println("InferencePanel - Couldn't insert initial text.");
     }
+
+
+
+
+      Combination combination = results[maxValue];
+      outputArray = combination.getOutputArray();
+      inputList = extractInputs(combination);
+
+      for (int i = 0; i < outputArray.length; i++) {
+        tempOutput = outputArray[i];
+
+        //constroi a string da entrada "SE"
+        rule = resource.getString("rule") + ": " + resource.getString("if") + " ";
+        for (int j = 0; j < inputList.size(); j++) {
+          int[] input = (int[]) inputList.get(j);
+          att = attributeArray[input[0]];
+          rule = rule + att.getAttributeName() + " = " +
+              att.value(input[1]) + " ";
+          if (j < (inputList.size() - 1)) {
+            rule = rule + " " + resource.getString("and") + " ";
+          }
+        }
+
+        //constroi a string de saida "ENTAO"
+        rule = rule + resource.getString("then") + " "; //new String("ENTÃO ");
+        att = attributeArray[maxValue];
+
+        rule = rule + att.getAttributeName() + " = " +
+            att.value(i);
+
+        // constroi o valor da confiança
+        rule = "\n" + resource.getString("confidence") + ": " + numFormat.format(tempOutput.getConfidence()) + "%";
+
+        // constroi o valor do suporte
+        rule = "\n" + resource.getString("support") + ": " + numFormat.format(tempOutput.getSupport() + "%");
+
+
+        textAreaResults.setText( rule);
+      }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
     //codigo para escrever a regra utilizada
-
-    String key = results[maxValue].;
-    int[] input;
-    ArrayList inputArray = new ArrayList();
-
-    for (int i = 0; i < key.length(); i++) {
-      input = new int[2];
-      input[0] = Integer.parseInt(String.valueOf(key.charAt(i)));
-      i++;
-      input[1] = Integer.parseInt(String.valueOf(key.charAt(i)));
-      inputArray.add(input);
-    }
-
-
-
-
-
-
 
     InputNeuron[] inputList;
     Attribute att;
@@ -262,6 +326,23 @@ public class InferencePanel extends JPanel {
     rule = rule + numFormat.format(results[maxValue].getSupport()) + "%";
     textAreaResults.setText(title + "\n" + rule);
 */
+  }
+
+  private ArrayList extractInputs(Combination combination) {
+    String key = combination.getKey();
+    StringTokenizer strTokenizer = new StringTokenizer(key, " ");
+    int[] input;
+    int numOfTokens = strTokenizer.countTokens();
+    ArrayList inputArray = new ArrayList();
+
+    for (int i = 0; i < numOfTokens; i++) {
+      input = new int[2];
+      input[0] = Integer.parseInt(strTokenizer.nextToken());
+      i++;
+      input[1] = Integer.parseInt(strTokenizer.nextToken());
+      inputArray.add(input);
+    }
+    return inputArray;
   }
 
   private void initStylesForTextPane(JTextPane textPane) {

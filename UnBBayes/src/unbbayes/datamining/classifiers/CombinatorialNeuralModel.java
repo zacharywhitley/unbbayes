@@ -1,9 +1,9 @@
 package unbbayes.datamining.classifiers;
 
-import java.util.*;
 import java.io.*;
-import unbbayes.datamining.datamanipulation.*;
+import java.util.*;
 import unbbayes.datamining.classifiers.cnmentities.*;
+import unbbayes.datamining.datamanipulation.*;
 
 /**
  *  Class that implements the Combinatorial Neural Model (CNM).
@@ -80,7 +80,7 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
 	  }
 	  System.out.println(out);
 	}
-////*//////////////////////////////////////////
+    ////*//////////////////////////////////////////
   }
 
   /**
@@ -184,20 +184,20 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
 	int combArraySize, tempSize;
 
 	for(int inputNum=0; inputNum<inputKeysNum; inputNum++){  //para todos os neuronios de entrada
-	  combArraySize = combinations.size();                   //pega o tamanho do array de combinações
-	  for(int j=0; j<combArraySize; j++){                    //para todas as combinações já existentes
-		tempArray = (String[])combinations.get(j);
-		tempSize = tempArray.length;                         //pega o tamanho da combinação
+          combArraySize = combinations.size();                   //pega o tamanho do array de combinações
+          for (int j = 0; j < combArraySize; j++) {              //para todas as combinações já existentes
+            tempArray = (String[]) combinations.get(j);
+            tempSize = tempArray.length;                         //pega o tamanho da combinação
 
-		if(tempSize < maxOrder){                             //se tamanho da combinação < ordem máxima
-		  keysArray = new String[tempSize + 1];              //cria nova combinação
-		  keysArray[tempSize] = inputKeys[inputNum];         //adiciona o neuronio de entrada atual
-		  System.arraycopy(tempArray, 0, keysArray, 0, tempSize); //copia o resto da combinação atual
-		  combinations.add(keysArray);                       //adiciona nova combinação no array de combinacoes
-		}
-	  }
-	  keysArray = new String[1];                             //cria nova combinação de um elemento
-	  keysArray[0] = inputKeys[inputNum];                    //coloca o neuronio de entrada atual nesta combinação
+            if (tempSize < maxOrder) {                           //se tamanho da combinação < ordem máxima
+              keysArray = new String[tempSize + 1];              //cria nova combinação
+              keysArray[tempSize] = inputKeys[inputNum];         //adiciona o neuronio de entrada atual
+              System.arraycopy(tempArray, 0, keysArray, 0, tempSize); //copia o resto da combinação atual
+              combinations.add(keysArray);                       //adiciona nova combinação no array de combinacoes
+            }
+          }
+          keysArray = new String[1];                             //cria nova combinação de um elemento
+          keysArray[0] = inputKeys[inputNum];                    //coloca o neuronio de entrada atual nesta combinação
 	  combinations.add(keysArray);                           //adiciona nova combinação no array de combinacoes
 	}
 
@@ -389,6 +389,12 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
 	return support;
   }
 
+  /**
+   * Retuns an iterator conataining the objects that represents
+   * the combinatorial neural model, that is, the combinations.
+   *
+   * @return an iterator of combinations.
+   */
   public Iterator getModel(){
 	return model.values().iterator();
   }
