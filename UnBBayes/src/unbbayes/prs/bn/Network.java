@@ -855,11 +855,18 @@ public class Network implements java.io.Serializable {
 				for (int i = 0; i < nosClique.size() - 1; i++) {
 					Node node1 = nosClique.get(i);
 					Node node2 = nosClique.get(i + 1);
+					if (node1.getName().compareToIgnoreCase(node2.getName()) > 0 ) {
+						nosClique.set(i + 1, node1);
+						nosClique.set(i, node2);
+						haTroca = true;
+					}
+					/*
 					if (oe.indexOf(node1) > oe.indexOf(node2)) {
 						nosClique.set(i + 1, node1);
 						nosClique.set(i, node2);
 						haTroca = true;
 					}
+					*/
 				}
 			}
 		}
@@ -873,11 +880,18 @@ public class Network implements java.io.Serializable {
 				for (int i = 0; i < nosSeparator.size() - 1; i++) {
 					Node node1 = nosSeparator.get(i);
 					Node node2 = nosSeparator.get(i + 1);
+					if (node1.getName().compareToIgnoreCase(node2.getName()) > 0 ) {
+						nosSeparator.set(i + 1, node1);
+						nosSeparator.set(i, node2);
+						haTroca = true;
+					}
+					/*
 					if (oe.indexOf(node1) > oe.indexOf(node2)) {
 						nosSeparator.set(i + 1, node1);
 						nosSeparator.set(i, node2);
 						haTroca = true;
 					}
+					*/
 				}
 			}
 		}

@@ -47,7 +47,7 @@ public class Linkage {
 		
 		assignV1();
 		
-		initTables();		
+		initTables();
 		
 		
 		// DEBUG-------------------
