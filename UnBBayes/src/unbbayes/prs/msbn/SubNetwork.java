@@ -100,7 +100,7 @@ public class SubNetwork extends Network {
 		return inseriu;
 	}
 	
-	//----------------------------
+	//---------------------------- DEBUG
 	public void teste() {
 		for (int i = 0; i < nos.size(); i++) {
 			Node a = nos.get(i);
@@ -112,7 +112,7 @@ public class SubNetwork extends Network {
 			}			
 		}		
 	}	
-	//---------------------------- 
+	//---------------------------- DEBUG
 	
 	protected void elimineProfundidade(SubNetwork caller) {
 		System.out.println("Elimine profundidade");
@@ -166,7 +166,6 @@ public class SubNetwork extends Network {
 	}
 	
 	private void updateArcs(SubNetwork net) {
-		teste();
 		System.out.println("updateArcs");
 		updateArcs(this, net);
 		updateArcs(net, this);		

@@ -45,6 +45,7 @@ public class Link {
 			for (int i = tree.size()-1; i>=0; i--) {
 				Clique c = (Clique) tree.get(i);
 				if (c.getChildrenSize() == 0) {
+					// tree leaf
 					NodeList inter = SetToolkit.intersection(c.getNos(), nodes);
 					if (inter.size() == 0) {						 	
 						tree.remove(i);
@@ -58,14 +59,14 @@ public class Link {
 								break;								
 							}
 						}						
-					}			
+					}
 				}
 			}
 		}
 		
 		for (int i = tree.size()-1; i >=0; i--) {
 			Clique c = (Clique) tree.get(i);
-			c.getNos().removeAll(nodes);
+			c.getNos().retainAll(nodes);
 			for (int j = tree.size()-1; j>=0; j--) {
 				if (i != j) {
 					Clique c2 = (Clique) tree.get(j);
@@ -75,6 +76,18 @@ public class Link {
 				}				
 			}
 		}
+		
+		
+		// DEBUG-------------------
+		for (int i = tree.size()-1; i >=0; i--) {
+			Clique c = (Clique) tree.get(i);
+			for (int j = c.getNos().size()-1; j>=0;j--) {
+				System.out.print(c.getNos().get(j) + " ");				
+			}
+			System.out.println();
+		}
+		System.out.println();
+		// DEBUG-------------------
 	}
 	
 	

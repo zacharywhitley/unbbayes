@@ -49,6 +49,11 @@ public class MSNetwork {
 			SubNetwork net = (SubNetwork) nets.get(i);
 			net.compilaAJ();
 		}
+		
+		for (int i = links.size()-1; i>=0; i--) {
+			Link link = (Link) links.get(i);
+			link.makeLinkageTree();			
+		}
 	}
 	
 	private void distributedMoralization() {
@@ -112,10 +117,12 @@ public class MSNetwork {
 					kMax = k;
 					max = inters[iMax][kMax].size();
 				}
-			}				
+			}		
 		}
 		
-		assert (max != 0) : "Não forma Hiperárvore";
+		if (max == 0) {
+			throw new Exception("Não forma Hiperárvore");			
+		}
 		
 	 	for (int j = 0; j < netsSize; j++) {
 			if (naArvore[j] && ! isDSepSet(j, kMax, inters[j][kMax])) {
