@@ -77,16 +77,18 @@ public class NetIO implements BaseIO {
 			arq.println("{");
 			arq.println(
 				"     node_size = ("
-					+ (int) net.getRadius()
+					+ (int) (net.getRadius() * 2)
 					+ " "
-					+ (int) net.getRadius()
+					+ (int) (net.getRadius() * 2)
 					+ ");");
 			arq.println("     name = \"" + net.getName() + "\";");
 			String tree = saveHierarchicTree(net.getHierarchicTree());
 			if (tree != null)
 				arq.println("     tree = \"" + tree + "\";");
-			arq.println("     HR_Color_Utility = \"" + 10 + "\";");
-			arq.println("     HR_Color_Decision = \"" + 30 + "\";");
+            arq.println("     UnBBayes_Color_Probabilistic_Description = \"" + ProbabilisticNode.getDescriptionColor().getRGB() + "\";");
+            arq.println("     UnBBayes_Color_Probabilistic_Explanation = \"" + ProbabilisticNode.getExplanationColor().getRGB() + "\";");
+			arq.println("     UnBBayes_Color_Utility = \"" + UtilityNode.getColor().getRGB() + "\";");
+			arq.println("     UnBBayes_Color_Decision = \"" + DecisionNode.getColor().getRGB() + "\";");
 			arq.println("}");
 			arq.println();
 
@@ -284,13 +286,19 @@ public class NetIO implements BaseIO {
 							new HierarchicTree(model);
 
 						net.setHierarchicTree(hierarchicTree);
-					} else if (st.sval.equals("HR_Color_Utility")) {
+					} else if (st.sval.equals("UnBBayes_Color_Utility")) {
 						proximo(st);
 						UtilityNode.setColor(Integer.parseInt(st.sval));
-					} else if (st.sval.equals("HR_Color_Decision")) {
+					} else if (st.sval.equals("UnBBayes_Color_Decision")) {
 						proximo(st);
 						DecisionNode.setColor(Integer.parseInt(st.sval));
-					}
+					} else if (st.sval.equals("UnBBayes_Color_Probabilistic_Description")) {
+                        proximo(st);
+                        ProbabilisticNode.setDescriptionColor(Integer.parseInt(st.sval));
+                    } else if (st.sval.equals("UnBBayes_Color_Probabilistic_Explanation")) {
+                        proximo(st);
+                        ProbabilisticNode.setExplanationColor(Integer.parseInt(st.sval));
+                    }
 					proximo(st);
 				}
 			}

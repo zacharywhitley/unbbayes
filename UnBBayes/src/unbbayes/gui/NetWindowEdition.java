@@ -1,14 +1,32 @@
 package unbbayes.gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import javax.swing.*;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.JToolBar;
 
-import unbbayes.controller.*;
-import unbbayes.prs.*;
-import unbbayes.prs.bn.*;
+import unbbayes.controller.WindowController;
+import unbbayes.prs.Node;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 
 /**
  * <p>Title: UnBBayes</p>
@@ -58,6 +76,9 @@ public class NetWindowEdition extends JPanel {
     private final JButton saveTableImage;
     private final JButton globalOption;
     private final JButton hierarchy;
+    private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
+    private final Pattern decimalPattern = Pattern.compile("[0-9]*[.|,][0-9]*");
+    private Matcher matcher;
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
@@ -206,29 +227,54 @@ public class NetWindowEdition extends JPanel {
                 netWindow.getIGraph().setbSelect(true);
             }
         });
-
+        /*
+        // listener responsável pela entrada de 
+        table.addKeyListener(new KeyAdapter() {
+          public void keyPressed(KeyEvent e) {
+            
+              if ((e.getKeyCode() == e.VK_ENTER) && (txtSigla.getText().length()>1)) {
+                try {
+                    String name = txtSigla.getText(0,txtSigla.getText().length());
+                    matcher = wordPattern.matcher(name);
+                    if (matcher.matches()) {
+                      nodeAux.setName(name);
+                      repaint();
+                    }  else {
+                        JOptionPane.showMessageDialog(netWindow, resource.getString("siglaError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+                        txtSigla.selectAll();
+                    }
+                }
+                catch (javax.swing.text.BadLocationException ble) {
+                    System.out.println(ble.getMessage());
+                }
+              }     
+          
+          }
+        });
+*/
 
         // listener responsável pela atualização do texo da sigla do nó
         txtSigla.addKeyListener(new KeyAdapter() {
           public void keyPressed(KeyEvent e) {
             Object selected = netWindow.getIGraph().getSelected();
-            if (selected instanceof Node)
-            {
+            if (selected instanceof Node) {
               Node nodeAux = (Node)selected;
-              if ((e.getKeyCode() == e.VK_BACK_SPACE) && (txtSigla.getText().length()>1))
-              {
+              if ((e.getKeyCode() == e.VK_ENTER) && (txtSigla.getText().length()>1)) {
                 try {
-                  nodeAux.setName(txtSigla.getText(0,txtSigla.getText().length()-1));
+                    String name = txtSigla.getText(0,txtSigla.getText().length());
+                    matcher = wordPattern.matcher(name);
+                    if (matcher.matches()) {
+                      nodeAux.setName(name);
+                      repaint();
+                    }  else {
+                        JOptionPane.showMessageDialog(netWindow, resource.getString("siglaError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+                        txtSigla.selectAll();
+                    }
                 }
                 catch (javax.swing.text.BadLocationException ble) {
-                  System.out.println(ble.getMessage());
+                    System.out.println(ble.getMessage());
                 }
               }
-              else
-              {
-                nodeAux.setName(txtSigla.getText() + e.getKeyChar());
-              }
-              repaint();
             }
           }
         });
@@ -241,20 +287,22 @@ public class NetWindowEdition extends JPanel {
             if (selected instanceof Node)
             {
               Node nodeAux = (Node)selected;
-              if ((e.getKeyCode() == e.VK_BACK_SPACE) && (txtDescription.getText().length()>1))
-              {
+              if ((e.getKeyCode() == e.VK_ENTER) && (txtDescription.getText().length()>1)) {
                 try {
-                  nodeAux.setDescription(txtDescription.getText(0,txtDescription.getText().length()-1));
+                    String name = txtDescription.getText(0,txtDescription.getText().length());
+                    matcher = wordPattern.matcher(name);
+                    if (matcher.matches()) {
+                      nodeAux.setDescription(name);
+                      repaint();
+                    } else {
+                        JOptionPane.showMessageDialog(netWindow, resource.getString("descriptionError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+                        txtDescription.selectAll();
+                    }
                 }
                 catch (javax.swing.text.BadLocationException ble) {
-                  System.out.println(ble.getMessage());
+                    System.out.println(ble.getMessage());
                 }
               }
-              else
-              {
-                nodeAux.setDescription(txtDescription.getText() + e.getKeyChar());
-              }
-              repaint();
             }
           }
         });

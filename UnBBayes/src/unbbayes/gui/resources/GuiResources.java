@@ -167,6 +167,9 @@ public class GuiResources extends ListResourceBundle {
         {"tileItemMn","T"},
         {"helpItemMn","H"},
         {"aboutItemMn","A"},
-        {"properties","Properties..."}
+        {"properties","Properties..."},
+        {"nameException","Name Error"},
+        {"siglaError","The sigla must have only letters and numbers."},
+        {"descriptionError","The description must have only letters and numbers."}
 	};
 }
