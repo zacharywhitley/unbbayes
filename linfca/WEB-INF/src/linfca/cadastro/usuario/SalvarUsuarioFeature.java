@@ -63,9 +63,7 @@ public class SalvarUsuarioFeature implements Feature {
 		String dia             = in.getChildTextTrim("dia");
 		String mes             = in.getChildTextTrim("mes");
 		String ano             = in.getChildTextTrim("ano");
-		System.out.println(ano + '-' + mes + '-' + dia);
 		Date dataNascimento    = Date.valueOf(ano + '-' + mes + '-' + dia);
-		System.out.println("Data salvar: " + dataNascimento.toString());
 		
 		MessageDigest md = MessageDigest.getInstance("MD5");
 		byte [] senhaEncode = md.digest(senha.getBytes());
