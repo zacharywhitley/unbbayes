@@ -421,59 +421,6 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
     return arcVector;
   }
 
-//////////////////////////////////////////////////////
-/**
- * Make inference of an instance on the model.
- *
- * @param instance the instance to make the inference
- * @return an array that contains the arc with greater weight of each
- *         output neuron.
- */
-  public Arc[] inference2(Instance instance){
-    Enumeration inputEnum, combEnum, outputEnum;
-    InputNeuron tempInput;
-    CombinatorialNeuron tempComb;
-    OutputNeuron tempOutput;
-    short value;
-    String key;
-    int numAtt = attributeVector.length;
-    Arc[] arcVector = new Arc[outputLayer.size()];    //vetor que contem os arcos de maior peso de cada neuronio
-
-    inputEnum = inputLayer.elements();
-    while(inputEnum.hasMoreElements()){                  //deixa todos os neuronios de entrada igual a false
-      tempInput = (InputNeuron)inputEnum.nextElement();
-      tempInput.setEnabled(false);
-    }
-
-    for(int att=0; att<numAtt; att++){
-      if(att != classIndex && !instance.isMissing(att)){
-        value = instance.getValue(att);
-        key = generateInputKey(att, value);             //cria a chave atributo-valor da entrada
-
-        if(inputLayer.containsKey(key)){                //inicializa o neuronio de acordo com a instancia
-          ((InputNeuron)inputLayer.get(key)).setEnabled(true);
-        }
-      }
-    }
-
-    combEnum = combinatorialLayer.elements();
-    while(combEnum.hasMoreElements()){
-      tempComb = (CombinatorialNeuron)combEnum.nextElement();
-      tempComb.setSignal();
-    }
-
-    outputEnum = outputLayer.elements();
-    Arc tempArc;
-    while(outputEnum.hasMoreElements()){
-      tempOutput = (OutputNeuron)outputEnum.nextElement();
-      tempArc = tempOutput.classify();
-      arcVector[tempOutput.getValue()] = tempArc;
-    }
-    return arcVector;
-  }
-
-//////////////////////////////////////////////////////
-
   /**
    * Make inference of an instance on the model.
    *
@@ -483,10 +430,7 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
    */
   public float[] distributionForInstance(Instance instance) throws Exception{
     float[] distribution;
-
-    // MODIFICACÃO    INFERENCE PARA INFERENCE2
-
-    Arc[] arcVector = inference2(instance);
+    Arc[] arcVector = inference(instance);
     distribution = new float[arcVector.length];
     for(int i=0; i<distribution.length; i++){
       distribution[i] = arcVector[i].getNetWeight();
