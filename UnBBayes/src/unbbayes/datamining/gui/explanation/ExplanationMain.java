@@ -37,7 +37,7 @@ public class ExplanationMain extends JInternalFrame
     private JButton saveButton = new JButton();
     private JButton helpButton = new JButton();
     private JPanel statusPanel = new JPanel();
-    private JLabel statusLabel = new JLabel();
+    private JLabel statusBar = new JLabel();
     private ProbabilisticNetwork net = new ProbabilisticNetwork();
     private ImageIcon abrirIcon;
     private ImageIcon salvarIcon;
@@ -169,8 +169,8 @@ public class ExplanationMain extends JInternalFrame
         statusPanel.setLayout(new java.awt.BorderLayout());
 
         statusPanel.setBorder(new javax.swing.border.TitledBorder("Status"));
-        statusLabel.setText("Welcome");
-        statusPanel.add(statusLabel, java.awt.BorderLayout.CENTER);
+        statusBar.setText("Welcome");
+        statusPanel.add(statusBar, java.awt.BorderLayout.CENTER);
     this.getContentPane().add(jTabbedPane1, BorderLayout.CENTER);
 
         getContentPane().add(statusPanel, java.awt.BorderLayout.SOUTH);
@@ -192,7 +192,7 @@ public class ExplanationMain extends JInternalFrame
         {   FileController.getInstance().openHelp(this);
         }
         catch (Exception e)
-        {   statusLabel.setText("Error= "+e.getMessage()+" "+this.getClass().getName());
+        {   statusBar.setText("Error= "+e.getMessage()+" "+this.getClass().getName());
         }
     }
 
@@ -226,10 +226,10 @@ public class ExplanationMain extends JInternalFrame
                 }
                 BaseIO io = new NetIO();
                 io.save(selectedFile,net);
-                statusLabel.setText("Arquivo salvo com sucesso.");
+                statusBar.setText("Arquivo salvo com sucesso.");
             }
             catch (Exception ioe)
-            {   statusLabel.setText("Erro ao salvar arquivo "+selectedFile.getName()+" "+ioe.getMessage());
+            {   statusBar.setText("Erro ao salvar arquivo "+selectedFile.getName()+" "+ioe.getMessage());
             }
             FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
         }
@@ -266,7 +266,7 @@ public class ExplanationMain extends JInternalFrame
             networkPanel.setLayout(new BorderLayout());
             networkPanel.add(netWindow,BorderLayout.CENTER);
 
-            statusLabel.setText("File opened successfully");
+            statusBar.setText("File opened successfully");
 
             jTabbedPane1.setSelectedIndex(0);
             jTabbedPane1.setEnabledAt(1,false);
@@ -274,13 +274,13 @@ public class ExplanationMain extends JInternalFrame
         catch (Exception e)
         {   net = null;
             System.err.print(e.getMessage());
-            statusLabel.setText(e.getMessage());
+            statusBar.setText(e.getMessage());
         }
     }
 
     private void saveNetFile(File selectedFile) {
         (new NetIO()).save(selectedFile, net);
-        statusLabel.setText("File saved successfully");
+        statusBar.setText("File saved successfully");
     }
 
   void treeButton_actionPerformed(ActionEvent e)

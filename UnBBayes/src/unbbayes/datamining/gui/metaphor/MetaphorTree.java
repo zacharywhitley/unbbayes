@@ -15,7 +15,7 @@ public class MetaphorTree extends JTree {
 	private class StateObject {
 	    private int stateIndex = -1;
 	    private int check = CHECK_EMPTY;
-	
+
 	    public StateObject(int stateIndex, int check) {
 	        this.stateIndex = stateIndex;
 	        this.check = check;
@@ -24,15 +24,15 @@ public class MetaphorTree extends JTree {
 	    public int getStateIndex() {
 	        return stateIndex;
 	    }
-	    
+
 	    public void setStateIndex(int stateIndex) {
 	        this.stateIndex = stateIndex;
 	    }
-	    
+
 	    public int getCheck() {
 	        return check;
 	    }
-	    
+
 	    public void setCheck(int check) {
 	        this.check = check;
 	    }
@@ -42,11 +42,11 @@ public class MetaphorTree extends JTree {
 	    ImageIcon yesIcon = new ImageIcon(getClass().getResource("/icones/yesState.gif"));
 	    ImageIcon noIcon = new ImageIcon(getClass().getResource("/icones/noState.gif"));
 	    ImageIcon emptyIcon = new ImageIcon(getClass().getResource("/icones/emptyState.gif"));
-	
+
 	    public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 	                            boolean sel, boolean expanded, boolean leaf,
 	                            int row, boolean hasFocus) {
-	
+
 	        super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 	        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)value;
 	        if (leaf) {
@@ -134,7 +134,7 @@ public class MetaphorTree extends JTree {
 	public ProbabilisticNetwork getProbabilisticNetwork() {
 		return net;
 	}
-	
+
 	public void setShowProbability(boolean showProbability) {
 		if (showProbability != this.showProbability) {
 			this.showProbability = showProbability;
@@ -143,7 +143,7 @@ public class MetaphorTree extends JTree {
 			setProbabilisticNetwork(temp);
 		}
 	}
-	
+
 	public boolean getShowProbability() {
 		return showProbability;
 	}

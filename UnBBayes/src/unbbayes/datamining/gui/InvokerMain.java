@@ -12,6 +12,7 @@ import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.gui.decisiontree.*;
 import unbbayes.datamining.gui.evaluation.*;
 import unbbayes.datamining.gui.explanation.*;
+import unbbayes.datamining.gui.metaphor.*;
 import unbbayes.datamining.gui.naivebayes.*;
 import unbbayes.datamining.gui.preprocessor.*;
 import unbbayes.fronteira.*;
@@ -55,6 +56,7 @@ public class InvokerMain extends JFrame
   /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
   private JMenuItem jMenuItem6 = new JMenuItem();
+  private JMenuItem jMenuItem13 = new JMenuItem();
 
 
   //Construct the frame
@@ -222,6 +224,14 @@ public class InvokerMain extends JFrame
         jMenuItem6_actionPerformed(e);
       }
     });
+    jMenuItem13.setText("Metaphor");
+    jMenuItem13.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jMenuItem13_actionPerformed(e);
+      }
+    });
     contentPane.add(new JScrollPane(desktop), BorderLayout.CENTER);
     this.setJMenuBar(jMenuBar1);
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -247,6 +257,7 @@ public class InvokerMain extends JFrame
     jMenu1.add(jMenuItem3);
     jMenu1.add(jMenuItem4);
     jMenu1.add(jMenuItem6);
+    jMenu1.add(jMenuItem13);
     jMenu2.add(jRadioButtonMenuItem3);
     jMenu2.add(jRadioButtonMenuItem4);
     jMenu5.add(jMenuItem7);
@@ -443,5 +454,12 @@ public class InvokerMain extends JFrame
   void jMenuItem6_actionPerformed(ActionEvent e)
   {   ExplanationMain explanation = new ExplanationMain();
       desktop.add(explanation);
+  }
+
+  void jMenuItem13_actionPerformed(ActionEvent e)
+  {   MetaphorMain metaphor = new MetaphorMain();
+      JInternalFrame jif = new JInternalFrame("Metáfora Médica", true, true, true, true);
+      jif.getContentPane().add(metaphor);
+      desktop.add(jif);
   }
 }
