@@ -151,25 +151,36 @@ public class MSNetwork {
     }
 	
 	
-	private void cooperativeTriangulation() {
+	protected void cooperativeTriangulation() {
+		initTriangulation();			
 		coTriag();
 		
-		List arcos = new ArrayList();
+		boolean inseriu = false;
 		for (int i = nets.size()-1; i>=0; i--) {
 			SubNetwork net = (SubNetwork) nets.get(i);
 			for (int j = net.getAdjacentsSize()-1; j>=0; j--) {
-				arcos.addAll(net.elimine(j));		
+				SubNetwork net2 = (SubNetwork) net.adjacents.get(j);
+				if (net.elimine(net2)) {
+					inseriu = true;					
+				}
 			}
 		}
 		
-		if (arcos.size() > 0) {
-			coTriag();						
+		if (inseriu) {
+			coTriag();					
 		}
 	}
 	
 	private void coTriag() {
 		SubNetwork a1 = (SubNetwork) nets.get(0);
-		a1.elimineProfundidade();
+		a1.elimineProfundidade(null);
 		a1.distributeArcs();
+	}
+	
+	private void initTriangulation() {
+		for (int i = nets.size()-1; i>=0; i--) {
+			SubNetwork net = (SubNetwork) nets.get(i);
+			net.initTriangulation();
+		}		
 	}
 }

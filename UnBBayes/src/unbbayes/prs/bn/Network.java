@@ -1074,6 +1074,170 @@ public class Network implements java.io.Serializable {
 		}
 	
 		return ndx;
-	}		
+	}
+
+	/**
+	 *  Sub-rotina do método triangula.
+	 *  Elimina os nós do grafo utilizando a heurística do peso mínimo.
+	 *  Primeiramente elimina os nós cujos adjacentes estão ligados dois a dois.
+	 *  Depois se ainda houver nós no grafo, elimina-os aplicando a heurística
+	 *  do peso mínimo.
+	 *
+	 * @param  auxNos  Vetor de nós.
+	 */
+	protected boolean pesoMinimo(NodeList auxNos) {
+		boolean algum;
+		Node auxNo;
+		Node v;
+	
+		algum = true;
+		while (algum) {
+			algum = false;
+	
+			int sizeNos = auxNos.size();
+			for (int i = 0; i < sizeNos; i++) {
+				auxNo = auxNos.get(i);
+	
+				if (cordas(auxNo)) {
+					//Não tem cordas necessárias:teste próximo.
+					continue;
+				}
+	
+				int sizeAdjacentes = auxNo.getAdjacents().size();
+				for (int j = 0; j < sizeAdjacentes; j++) {
+					v = auxNo.getAdjacents().get(j);
+					v.getAdjacents().remove(auxNo);
+				}
+				auxNos.remove(auxNo);
+				algum = true;
+				oe.add(auxNo);
+				if (createLog) {
+					logManager.append(
+						"\t" + oe.size() + " " + auxNo.getName() + "\n");
+				}
+				break;
+			}
+		}
+	
+		if (auxNos.size() > 0) {
+			auxNo = peso(auxNos); //auxNo: clique de peso mínimo.
+			oe.add(auxNo);
+			if (createLog) {
+				logManager.append(
+					"\t" + oe.size() + " " + auxNo.getName() + "\n");
+			}
+			elimine(auxNo, auxNos); //Elimine no e reduza grafo.
+			return true;
+		}
+		
+		return false;
+	}
+
+	/**
+	 *  SUB-FUNÇÃO do procedimento triangula que elimina nó e reduz o grafo. Inclui
+	 *  cordas necessárias para eliminar nó. Retira-o e aos adjacentes.
+	 *
+	 *@param  no      nó a ser eliminado
+	 *@param  auxNos  lista de nós
+	 */
+	private void elimine(Node no, NodeList auxNos) {
+		Node auxNo1;
+		Node auxNo2;
+		Edge auxArco;
+	
+		int sizeAdjacentes = no.getAdjacents().size();
+	
+		for (int i = 0; i < sizeAdjacentes - 1; i++) {
+			auxNo1 = no.getAdjacents().get(i);
+	
+			for (int j = i + 1; j < sizeAdjacentes; j++) {
+				auxNo2 = no.getAdjacents().get(j);
+				if (!auxNo2.getAdjacents().contains(auxNo1)) {
+					auxArco = new Edge(auxNo1, auxNo2);
+					if (createLog) {
+						logManager.append(
+							auxNo1.getName()
+								+ resource.getString("linkedName")
+								+ auxNo2.getName()
+								+ "\n");
+					}
+					arcosMarkov.add(auxArco);
+					auxNo1.getAdjacents().add(auxNo2);
+					auxNo2.getAdjacents().add(auxNo1);
+				}
+			}
+		}
+	
+		int sizeAdjacentes1 = no.getAdjacents().size();
+		for (int i = 0; i < sizeAdjacentes1; i++) {
+			auxNo1 = no.getAdjacents().get(i);
+			auxNo1.getAdjacents().remove(no);
+		}
+		auxNos.remove(no);
+	}
+
+	/**
+	 *  SUB-FUNÇÃO do método pesoMinimo que utiliza a herística do peso mínimo.
+	 *
+	 * @param  auxNos  nós.
+	 * @return         nó cujo conjunto formado por adjacentes possui peso mínimo.
+	 */
+	private Node peso(NodeList auxNos) {
+		Node v;
+		Node auxNo;
+		double p;
+	
+		Node noMin = auxNos.get(0);
+		double pmin = Math.log(noMin.getStatesSize());
+	
+		int sizeAdjacentes = noMin.getAdjacents().size();
+		for (int i = 0; i < sizeAdjacentes; i++) {
+			v = noMin.getAdjacents().get(i);
+			pmin += Math.log(v.getStatesSize());
+		}
+	
+		int sizeNos = auxNos.size();
+		for (int i = 1; i < sizeNos; i++) {
+			auxNo = auxNos.get(i);
+			p = Math.log(auxNo.getStatesSize());
+	
+			int sizeAdjacentes1 = auxNo.getAdjacents().size();
+			for (int j = 0; j < sizeAdjacentes1; j++) {
+				v = auxNo.getAdjacents().get(j);
+				p += Math.log(v.getStatesSize());
+			}
+			if (p < pmin) {
+				pmin = p;
+				noMin = auxNo;
+			}
+		}
+		return noMin;
+	}
+
+	/**
+	 *  SUB-FUNÇÃO do método triangula.
+	 *
+	 *@param  no  nó.
+	 *@return     true - caso haja necessidade de inserir corda para poder eliminar
+	 *      o nó. false - caso contrário.
+	 */
+	private boolean cordas(Node no) {
+		if (no.getAdjacents().size() < 2) {
+			return false;
+		}
+	
+		int sizeAdjacentes = no.getAdjacents().size();
+		for (int i = 0; i < sizeAdjacentes - 1; i++) {
+			Node auxNo1 = no.getAdjacents().get(i);
+	
+			for (int j = i + 1; j < sizeAdjacentes; j++) {
+				Node auxNo2 = no.getAdjacents().get(j);
+				if (!auxNo2.getAdjacents().contains(auxNo1)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }
 

@@ -22,7 +22,8 @@ public class SubNetwork extends Network {
 	
 	private char[] visited;
 	
-	protected List adjacents;	
+	protected List adjacents;
+	
 	protected SubNetwork parent;
 	
 	
@@ -48,23 +49,57 @@ public class SubNetwork extends Network {
 	}
 	
 	protected void compilaAJ() throws Exception {
-		super.compilaAJ();		
+		super.compilaAJ();
 	}
 	
 	protected JunctionTree getJunctionTree() {
-		return junctionTree;		
+		return junctionTree;
 	}
 	
-	protected List elimine(int adj) {
-		//triangulacao com peso minimo
-		return null;		
+	
+	protected void initTriangulation() {
+		copiaNos = SetToolkit.clone(nos);
+		oe = new NodeList(copiaNos.size());
 	}
 	
-	protected void elimineProfundidade() {		
+	/**
+	 * 
+	 * Triangulacao com peso minimo primeiro só os não d-sepnodes e depois só os d-sep-nodes;	 * 
+	 *
+	 * @param adj		  Rede adjacente a esta para basear a ordem de eliminação. 		 
+	 * @return boolean   true se inseriu algum arco, false caso contrário.
+	 */	
+	protected boolean elimine(SubNetwork adj) {
+		oe.clear();
+		NodeList inter = SetToolkit.intersection(nos, adj.nos);				
+		NodeList auxNos = SetToolkit.clone(nos);		
+		auxNos.removeAll(inter);
+		boolean inseriu = false;		
+		while (pesoMinimo(auxNos)) {
+			inseriu = true;			
+		}
 		
+		while (pesoMinimo(inter)) {
+			inseriu = true;			
+		}
+		
+		return inseriu;
+	}
+	
+	protected void elimineProfundidade(SubNetwork caller) {
 		for (int i = adjacents.size()-1; i >= 0; i--) {
-			elimine(i);			
-		}		
+			SubNetwork ai = (SubNetwork) adjacents.get(i);			
+			if (elimine(ai)) {
+				updateArcs(ai);
+			}
+			ai.elimineProfundidade(this);
+		}
+		
+		if (caller != null) {
+			if (elimine(caller)) {
+				updateArcs(caller);
+			}						
+		}
 	}
 	
 	protected void distributeArcs() {
@@ -77,7 +112,7 @@ public class SubNetwork extends Network {
 	
 	
 	private void updateArcs(SubNetwork net) {
-		NodeList dsepset = SetToolkit.intersection(nos, net.getNos());
+		NodeList dsepset = SetToolkit.intersection(nos, net.nos);
 		for (int i = arcosMarkov.size()-1; i>=0; i--) {
 			Edge e = (Edge) arcosMarkov.get(i);
 			if (dsepset.contains(e.getOriginNode()) 
@@ -90,13 +125,15 @@ public class SubNetwork extends Network {
 						a = net.getNodeAt(j);
 					} else if (net.getNodeAt(j).equals(e.getDestinationNode())) {
 						b = net.getNodeAt(j);
-					}							
+					}			
 				}
-				assert(a != null && b != null);				
-				a.getAdjacents().add(b);
-				b.getAdjacents().add(a);
-				net.arcosMarkov.add(new Edge(a,b));	
-			}		
+				assert(a != null && b != null);
+				if (! a.getAdjacents().contains(b) && ! b.getAdjacents().contains(a)) {				
+					a.getAdjacents().add(b);
+					b.getAdjacents().add(a);
+					net.arcosMarkov.add(new Edge(a,b));
+				}					
+			}
 		}
 		
 		for (int i = net.arcosMarkov.size()-1; i>=0; i--) {
@@ -113,10 +150,13 @@ public class SubNetwork extends Network {
 						b = net.getNodeAt(j);
 					}							
 				}
-				assert(a != null && b != null);				
-				a.getAdjacents().add(b);
-				b.getAdjacents().add(a);
-				arcosMarkov.add(new Edge(a,b));					
+				assert(a != null && b != null);
+				
+				if (! a.getAdjacents().contains(b) && ! b.getAdjacents().contains(a)) {				
+					a.getAdjacents().add(b);
+					b.getAdjacents().add(a);
+					arcosMarkov.add(new Edge(a,b));
+				}
 			}
 		}
 	}
@@ -164,6 +204,5 @@ public class SubNetwork extends Network {
     	}
     	
     	visited[nodeIndex] = 2;
-    }   
-    
+    }
 }
