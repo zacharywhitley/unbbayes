@@ -44,5 +44,7 @@ public class DataManipulationResource_pt extends ListResourceBundle
 		{"setClassIndexException","Índice da classe inválido: "},
 		{"outOfRange","Parâmetro first e/ou toCopy não definidos"},
 		{"setValueException","Valor não pode ser inserido. Não consegue traduzir String para float."},
+                {"emptyInstanceSet","O instanceSet não contém instancias."},
+                {"nominalAttribute","O atributo para se calcular o desvio padrão deve ser numérico."},
 	};
 }

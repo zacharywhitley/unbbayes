@@ -1,14 +1,12 @@
 package unbbayes.datamining.gui.neuralnetwork;
 
-import java.awt.*;
-import java.awt.event.*;
 import java.text.*;
 import java.util.*;
-
+import java.awt.*;
+import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.text.*;
-
-import unbbayes.controller.IconController;
+import unbbayes.controller.*;
 import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.gui.*;
@@ -54,7 +52,7 @@ public class InferencePanel extends JPanel implements IInferencePanel{
 
   public InferencePanel() {
     try {
-      resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralmodel.resources.NeuralModelResource");
+      resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource");
       jbInit();
     }
     catch(Exception ex) {
@@ -145,11 +143,7 @@ public class InferencePanel extends JPanel implements IInferencePanel{
     String[] initString, initStyles;
     int maxValue;
     Document docResults;
-//    ArrayList inputList;
-//    String rule;
-//    OutputNeuron selectedOutput;
     DecimalFormat numFormat = new DecimalFormat("##0.000");
-//    Combination selectedCombination;
 
     for(int i=0; i<results.length; i++){
       distributionNormalized[i] = results[i];

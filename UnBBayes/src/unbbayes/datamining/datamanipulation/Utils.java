@@ -753,5 +753,112 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
 
 		return newArray;
 	}
+
+
+        /**
+         * Calculates the standard deviation of a specific attribute of an instance set.
+         *
+         * @param instanceSet The instanceSet that contains the attribute witch the standard deviation is to be calculated
+         * @param attribute The attributo to calculate the standard deviation
+         * @return The specified attribute standard deviation
+         * @throws Exception
+         */
+        public static double standardDeviation(InstanceSet instanceSet, int attribute) throws Exception{
+          Enumeration instancesEnum = instanceSet.enumerateInstances();
+          Instance instance;
+          Attribute att = instanceSet.getAttribute(attribute);
+          double sigma = 0;
+          double mean = 0;
+          double sqrSum = 0;
+          double sum = 0;
+          double temp;
+          int numOfInstances = instanceSet.numInstances();
+
+          if(numOfInstances == 0){
+            throw new Exception(resource.getString("emptyInstanceSet"));
+          }
+          if(att.isNominal()){
+            throw new Exception(resource.getString("nominalAttribute"));
+          }
+
+          while(instancesEnum.hasMoreElements()){
+            instance = (Instance)instancesEnum.nextElement();
+            temp = Double.parseDouble(att.value(instance.getValue(attribute)));
+            sum = sum + temp;
+            sqrSum = sqrSum + (temp * temp);
+          }
+
+          mean = sum / numOfInstances;
+          sigma = Math.sqrt( ((numOfInstances * sqrSum) - (sum * sum)) / (numOfInstances * (numOfInstances - 1)) );
+
+          return sigma;
+        }
+
+        /**
+         * Calculates the standard deviation of a specific attribute of an instance set given the attribute mean.
+         *
+         * @param instanceSet The instanceSet that contains the attribute witch the standard deviation is to be calculated
+         * @param attribute The attribute to calculate the standard deviation
+         * @param mean The mean of the desired standard deviation attribute
+         * @return the standard deviation of the desired attribute
+         * @throws Exception
+         */
+        public static double standardDeviation(InstanceSet instanceSet, int attribute, double mean) throws Exception{
+          Enumeration instancesEnum = instanceSet.enumerateInstances();
+          Instance instance;
+          Attribute att = instanceSet.getAttribute(attribute);
+          double sigma = 0;
+          double sqrSum = 0;
+          double temp;
+          int numOfInstances = instanceSet.numInstances();
+
+          if(numOfInstances==0){
+            throw new Exception(resource.getString("emptyInstanceSet"));
+          }
+          if(att.isNominal()){
+            throw new Exception(resource.getString("nominalAttribute"));
+          }
+
+          while(instancesEnum.hasMoreElements()){
+            instance = (Instance)instancesEnum.nextElement();
+            temp = Double.parseDouble(att.value(instance.getValue(attribute)));
+            temp = temp-mean;
+            sqrSum = sqrSum+(temp*temp);
+          }
+
+          sigma = Math.sqrt(sqrSum/(numOfInstances-1));
+
+          return sigma;
+        }
+
+        /**
+         * Calculate the mean of an specified attribute of an instanceSet
+         *
+         * @param instanceSet The instanceSet that contains the attribute to calculate the mean
+         * @param attribute The attribute to calculate mean
+         * @return The mean of the specified attribute
+         * @throws Exception
+         */
+        public static double mean(InstanceSet instanceSet, int attribute) throws Exception{
+          Enumeration instancesEnum = instanceSet.enumerateInstances();
+          Instance instance;
+          Attribute att = instanceSet.getAttribute(attribute);
+          double sum = 0;
+          int numOfInstances = instanceSet.numInstances();
+
+          if(numOfInstances == 0){
+            throw new Exception(resource.getString("emptyInstanceSet"));
+          }
+          if(att.isNominal()){
+            throw new Exception(resource.getString("nominalAttribute"));
+          }
+
+          while(instancesEnum.hasMoreElements()){
+            instance = (Instance)instancesEnum.nextElement();
+            sum = sum + Double.parseDouble(att.value(instance.getValue(attribute)));
+          }
+
+          return sum / numOfInstances;
+        }
 }
 

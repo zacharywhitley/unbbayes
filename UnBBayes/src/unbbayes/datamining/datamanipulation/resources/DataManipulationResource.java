@@ -44,5 +44,7 @@ public class DataManipulationResource extends ListResourceBundle
 		{"setClassIndexException","Invalid class index: "},
 		{"outOfRange","Parameters first and/or toCopy out of range"},
 		{"setValueException","Value can't be inserted. Can't parse string to float."},
+                {"emptyInstanceSet","The instance set contains no instances."},
+                {"nominalAttribute","The attribute to calculate the standard deviation must be numerical"},
 	};
 }

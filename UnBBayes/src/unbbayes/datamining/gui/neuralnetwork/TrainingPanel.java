@@ -1,30 +1,32 @@
 package unbbayes.datamining.gui.neuralnetwork;
 
+import java.util.*;
 import java.awt.*;
-import javax.swing.*;
-import ptolemy.plot.*;
 import java.awt.event.*;
 import java.awt.print.*;
+import javax.swing.*;
+import ptolemy.plot.*;
+import unbbayes.controller.*;
 import unbbayes.datamining.classifiers.neuralnetwork.*;
-import unbbayes.controller.IconController;
 
 public class TrainingPanel extends JPanel implements QuadraticAverageError{
+  private ResourceBundle resource;
   private ImageIcon fillIcon;
   private ImageIcon resetSizeIcon;
   private ImageIcon gridIcon;
   private ImageIcon printIcon;
   private IconController iconController = IconController.getInstance();
-  BorderLayout borderLayout1 = new BorderLayout();
-  JPanel trainingPanel = new JPanel();
-  BorderLayout borderLayout2 = new BorderLayout();
-  Plot chart = new Plot();
-  boolean first = true;
-  JToolBar jToolBar1 = new JToolBar();
-  JButton buttonFill = new JButton();
-  JButton buttonPrint = new JButton();
-  JButton buttonGrid = new JButton();
-  JButton buttonReset = new JButton();
-  JLabel spaceLabel = new JLabel();
+  private BorderLayout borderLayout1 = new BorderLayout();
+  private JPanel trainingPanel = new JPanel();
+  private BorderLayout borderLayout2 = new BorderLayout();
+  private Plot chart = new Plot();
+  private boolean firstPoint = true;
+  private JToolBar jToolBar1 = new JToolBar();
+  private JButton buttonFill = new JButton();
+  private JButton buttonPrint = new JButton();
+  private JButton buttonGrid = new JButton();
+  private JButton buttonReset = new JButton();
+  private JLabel spaceLabel = new JLabel();
 
   public TrainingPanel() {
     try {
@@ -35,13 +37,14 @@ public class TrainingPanel extends JPanel implements QuadraticAverageError{
     }
   }
   void jbInit() throws Exception {
+    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource");
     fillIcon = iconController.getFillIcon();
     resetSizeIcon = iconController.getResetSizeIcon();
     gridIcon = iconController.getGridIcon();
     printIcon = iconController.getPrintIcon();
     this.setLayout(borderLayout1);
     trainingPanel.setLayout(borderLayout2);
-    buttonFill.setToolTipText("Fill");
+    buttonFill.setToolTipText(resource.getString("fillToolTip"));
     buttonFill.setIcon(fillIcon);
     buttonFill.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -50,21 +53,21 @@ public class TrainingPanel extends JPanel implements QuadraticAverageError{
     });
     jToolBar1.setBorder(BorderFactory.createEtchedBorder());
     jToolBar1.setFloatable(false);
-    buttonPrint.setToolTipText("Print");
+    buttonPrint.setToolTipText(resource.getString("printToolTip"));
     buttonPrint.setIcon(printIcon);
     buttonPrint.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
         buttonPrint_actionPerformed(e);
       }
     });
-    buttonGrid.setToolTipText("Add and Remove the grid");
+    buttonGrid.setToolTipText(resource.getString("gridToolTip"));
     buttonGrid.setIcon(gridIcon);
     buttonGrid.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
         buttonGrid_actionPerformed(e);
       }
     });
-    buttonReset.setToolTipText("Reset to default size");
+    buttonReset.setToolTipText(resource.getString("resetButtonToolTip"));
     buttonReset.setIcon(resetSizeIcon);
     buttonReset.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -82,11 +85,11 @@ public class TrainingPanel extends JPanel implements QuadraticAverageError{
     trainingPanel.add(jToolBar1, BorderLayout.NORTH);
 
     chart.setSize(400,300);
-    chart.setTitle("Erro quadrado médio X Época");
+    chart.setTitle(resource.getString("chartTitle"));
     chart.setYRange(0, 0.5);
     chart.setXRange(0, 1000);
-    chart.setYLabel("Erro Quadrado Médio");
-    chart.setXLabel("Épocas");
+    chart.setYLabel(resource.getString("YAxisTitle"));
+    chart.setXLabel(resource.getString("XAxisTitle"));
   }
 
   public void setQuadraticAverageError(int epoch, double error){
@@ -94,9 +97,9 @@ public class TrainingPanel extends JPanel implements QuadraticAverageError{
   }
 
   public void addPoint(double x, double y){
-    if(first){
+    if(firstPoint){
       chart.addPoint(0, x, y, false);
-      first = false;
+      firstPoint = false;
     } else {
       chart.addPoint(0, x, y, true);
     }
@@ -104,7 +107,7 @@ public class TrainingPanel extends JPanel implements QuadraticAverageError{
 
   public void clear(){
     chart.clear(true);
-    first = true;
+    firstPoint = true;
   }
 
   void buttonFill_actionPerformed(ActionEvent e) {
@@ -123,13 +126,13 @@ public class TrainingPanel extends JPanel implements QuadraticAverageError{
   void buttonPrint_actionPerformed(ActionEvent e) {
     PrinterJob job = PrinterJob.getPrinterJob();
     PageFormat format = job.pageDialog(job.defaultPage());
-    job.setPrintable(/*PlotBox.this*/chart, format);
+    job.setPrintable(chart, format);
     if (job.printDialog()) {
       try {
         job.print();
       } catch (Exception ex) {
         Component ancestor = getTopLevelAncestor();
-        JOptionPane.showMessageDialog(ancestor, "Printing failed:\n" + ex.toString(), "Print Error", JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(ancestor, resource.getString("printingFailed") + "\n" + ex.toString(), "Print Error", JOptionPane.WARNING_MESSAGE);
       }
     }
   }

@@ -1,28 +1,29 @@
 package unbbayes.datamining.gui.neuralnetwork;
 
+import java.util.*;
 import java.awt.*;
 import javax.swing.*;
-
 import unbbayes.datamining.classifiers.*;
 
 public class OptionsPanel extends JPanel {
-  BorderLayout borderLayout1 = new BorderLayout();
-  JLabel labelMomentum = new JLabel();
-  JComboBox comboActivationFunction = new JComboBox();
-  JLabel labelActivationFunction = new JLabel();
-  JPanel panelOptions = new JPanel();
-  JLabel labelLearningRate = new JLabel();
-  JPanel panelActivationFunction = new JPanel();
-  SpinnerNumberModel learningRateSpinnerModel = new SpinnerNumberModel(0.1, 0.01, 1.0, 0.01);
-  SpinnerNumberModel momentumSpinnerModel = new SpinnerNumberModel(0.5, 0.0, 1.0, 0.1);
-  JSpinner spinnerLearningRate = new JSpinner();
-  JSpinner spinnerMomentum = new JSpinner();
-  JPanel panelLearningRate = new JPanel();
-  BorderLayout borderLayout2 = new BorderLayout();
-  JPanel panelMomentum = new JPanel();
-  BorderLayout borderLayout3 = new BorderLayout();
-  BorderLayout borderLayout4 = new BorderLayout();
-  GridBagLayout gridBagLayout1 = new GridBagLayout();
+  private ResourceBundle resource;
+  private BorderLayout borderLayout1 = new BorderLayout();
+  private JLabel labelMomentum = new JLabel();
+  private JComboBox comboActivationFunction = new JComboBox();
+  private JLabel labelActivationFunction = new JLabel();
+  private JPanel panelOptions = new JPanel();
+  private JLabel labelLearningRate = new JLabel();
+  private JPanel panelActivationFunction = new JPanel();
+  private SpinnerNumberModel learningRateSpinnerModel = new SpinnerNumberModel(0.3, 0.01, 1.0, 0.01);
+  private SpinnerNumberModel momentumSpinnerModel = new SpinnerNumberModel(0.2, 0.0, 1.0, 0.01);
+  private JSpinner spinnerLearningRate = new JSpinner();
+  private JSpinner spinnerMomentum = new JSpinner();
+  private JPanel panelLearningRate = new JPanel();
+  private BorderLayout borderLayout2 = new BorderLayout();
+  private JPanel panelMomentum = new JPanel();
+  private BorderLayout borderLayout3 = new BorderLayout();
+  private BorderLayout borderLayout4 = new BorderLayout();
+  private GridBagLayout gridBagLayout1 = new GridBagLayout();
 
   public OptionsPanel() {
     try {
@@ -33,15 +34,16 @@ public class OptionsPanel extends JPanel {
     }
   }
   void jbInit() throws Exception {
+    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource");
     panelOptions.setBorder(BorderFactory.createEtchedBorder());
     panelOptions.setLayout(gridBagLayout1);
-    labelActivationFunction.setText("Activation Function:");
+    labelActivationFunction.setText(resource.getString("activationFunctionLabel") + ":");
     labelActivationFunction.setVerticalAlignment(SwingConstants.BOTTOM);
-    labelMomentum.setText("Momentum:");
+    labelMomentum.setText(resource.getString("momentumLabel") + ":");
     labelMomentum.setVerticalAlignment(SwingConstants.BOTTOM);
     this.setLayout(borderLayout1);
     labelLearningRate.setVerifyInputWhenFocusTarget(true);
-    labelLearningRate.setText("Learning Rate:");
+    labelLearningRate.setText(resource.getString("learningRateLabel") + ":");
     labelLearningRate.setVerticalAlignment(SwingConstants.BOTTOM);
     borderLayout1.setHgap(3);
     borderLayout1.setVgap(0);
@@ -67,8 +69,8 @@ public class OptionsPanel extends JPanel {
             ,GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 42, 0));
     panelMomentum.add(labelMomentum, BorderLayout.NORTH);
     panelMomentum.add(spinnerMomentum, BorderLayout.CENTER);
-    comboActivationFunction.insertItemAt("Sigmoid", NeuralNetwork.SIGMOID);
-    comboActivationFunction.insertItemAt("Tanh", NeuralNetwork.TANH);
+    comboActivationFunction.insertItemAt(resource.getString("sigmoid"), NeuralNetwork.SIGMOID);
+    comboActivationFunction.insertItemAt(resource.getString("tanh"), NeuralNetwork.TANH);
     this.setEnabled(false);
     comboActivationFunction.setSelectedIndex(0);
   }

@@ -3,6 +3,7 @@ package unbbayes.datamining.gui.neuralnetwork;
 import java.io.*;
 import java.awt.*;
 import javax.swing.*;
+import java.util.*;
 import unbbayes.controller.*;
 import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
@@ -11,7 +12,7 @@ import unbbayes.gui.*;
 public class NeuralNetworkController {
 
   private NeuralNetwork bpn = null;
-//  private ResourceBundle resource;
+  private ResourceBundle resource;
   private NeuralNetworkMain mainScreen;
   private JFileChooser fileChooser;
   private InstanceSet instanceSet;
@@ -19,7 +20,7 @@ public class NeuralNetworkController {
   private int hiddenLayerSize;
 
   public NeuralNetworkController() {
-//    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralmodel.resources.NeuralModelResource");
+    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource");
     mainScreen = new NeuralNetworkMain();
     mainScreen.setController(this);
   }
@@ -75,11 +76,11 @@ public class NeuralNetworkController {
     String[] txt = {"TXT"};
     boolean fileOpenSuccess = false;
     fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
-    fileChooser.setDialogTitle(/*resource.getString*/("openFile2"));
+    fileChooser.setDialogTitle(resource.getString("openFile2"));
     fileChooser.setMultiSelectionEnabled(false);
     fileChooser.setFileView(new FileIcon(mainScreen));
-    fileChooser.addChoosableFileFilter(new SimpleFileFilter(txt, "TxtFiles (*.txt)"));
-    fileChooser.addChoosableFileFilter(new SimpleFileFilter(arff, "ArffFiles (*.arff)"));
+    fileChooser.addChoosableFileFilter(new SimpleFileFilter(txt, resource.getString("txtFiles") + " (*.txt)"));
+    fileChooser.addChoosableFileFilter(new SimpleFileFilter(arff, resource.getString("arffFiles") + " (*.arff)"));
     int returnValue = fileChooser.showOpenDialog(mainScreen);
     if (returnValue == JFileChooser.APPROVE_OPTION) {
       File selectedFile = fileChooser.getSelectedFile();
@@ -94,12 +95,6 @@ public class NeuralNetworkController {
 
   private void openSelectedFile(File selectedFile) throws Exception{
     instanceSet = FileController.getInstance().getInstanceSet(selectedFile, mainScreen);
-
-//    boolean numericAttributes = instanceSet.checkNumericAttributes();
-//    if (numericAttributes == true){
-//      throw new Exception(/*resource.getString*/("numericAttributesException"));
-//    }
-
     mainScreen.setTitle("Backpropagation Neural Network - " + selectedFile.getName());
     mainScreen.attributePanel.setInstances(instanceSet);
     mainScreen.attributePanel.enableComboBox(true);
@@ -118,7 +113,7 @@ public class NeuralNetworkController {
     String[] bpnString = {"bpn"};   //backpropagation neural network
     boolean success = false;
     fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
-//    fileChooser.setDialogTitle(resource.getString("saveModel2"));
+    fileChooser.setDialogTitle(resource.getString("saveModel2"));
     fileChooser.setMultiSelectionEnabled(false);
     fileChooser.setFileView(new FileIcon(mainScreen));
     fileChooser.addChoosableFileFilter(new SimpleFileFilter(bpnString, "Neural Network (*.bpn)"));
@@ -143,7 +138,7 @@ public class NeuralNetworkController {
     String[] neuralNetworkString = {"bpn"};
     boolean success = false;
     fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
-//    fileChooser.setDialogTitle(resource.getString("openModel2"));
+    fileChooser.setDialogTitle(resource.getString("openModel2"));
     fileChooser.setMultiSelectionEnabled(false);
     fileChooser.setFileView(new FileIcon(mainScreen));
     fileChooser.addChoosableFileFilter(new SimpleFileFilter(neuralNetworkString, "Neural Network (*.bpn)"));
@@ -154,7 +149,7 @@ public class NeuralNetworkController {
       bpn = null;
       bpn = (NeuralNetwork)in.readObject();
       mainScreen.inferencePanel.setNetwork(bpn);
-      mainScreen.setTitle("Backpropagation Neural Network - " + /*resource.getString*/("model") + " " + selectedFile.getName());
+      mainScreen.setTitle("Backpropagation Neural Network - " + resource.getString("model") + " " + selectedFile.getName());
       FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       file = selectedFile;
       success = true;

@@ -1,6 +1,7 @@
 package unbbayes.datamining.gui.neuralnetwork;
 
 import java.io.*;
+import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -9,6 +10,7 @@ import unbbayes.controller.*;
 import unbbayes.datamining.gui.*;
 
 public class NeuralNetworkMain extends JInternalFrame {
+  private ResourceBundle resource;
   private JToolBar toolBar = new JToolBar();
   private JLabel label1 = new JLabel();
   private JLabel label2 = new JLabel();
@@ -64,6 +66,7 @@ public class NeuralNetworkMain extends JInternalFrame {
     }
   }
   private void jbInit() throws Exception {
+    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource");
     openIcon = iconController.getOpenIcon();
     compileIcon = iconController.getCompileIcon();
     helpIcon = iconController.getHelpIcon();
@@ -80,56 +83,55 @@ public class NeuralNetworkMain extends JInternalFrame {
     label1.setText("   ");
     label2.setText("   ");
     label3.setText("   ");
-//    openButton.setToolTipText(resource.getString("openFileToolTip"));
+    openButton.setToolTipText(resource.getString("openFileToolTip"));
     openButton.addActionListener(new java.awt.event.ActionListener(){
       public void actionPerformed(ActionEvent e){
         open_actionPerformed(e);
       }
     });
     saveButton.setEnabled(false);
-//    saveButton.setToolTipText(resource.getString("saveModelToolTip"));
+    saveButton.setToolTipText(resource.getString("saveModelToolTip"));
     saveButton.addActionListener(new java.awt.event.ActionListener(){
       public void actionPerformed(ActionEvent e){
         saveModel_actionPerformed(e);
       }
     });
-//    openModelButton.setToolTipText(resource.getString("openModelToolTip"));
+    openModelButton.setToolTipText(resource.getString("openModelToolTip"));
     openModelButton.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
         openModel_actionPerformed(e);
       }
     });
-//    helpButton.setToolTipText(resource.getString("helpFileTooltip"));
+    helpButton.setToolTipText(resource.getString("helpFileTooltip"));
     helpButton.addActionListener(new java.awt.event.ActionListener(){
       public void actionPerformed(ActionEvent e){
         help_actionPerformed(e);
       }
     });
     learnButton.setEnabled(false);
-//    learnButton.setToolTipText(resource.getString("learnDataTooltip"));
+    learnButton.setToolTipText(resource.getString("learnDataTooltip"));
     learnButton.addActionListener(new java.awt.event.ActionListener(){
       public void actionPerformed(ActionEvent e){
         learn_actionPerformed(e);
       }
     });
-//    statusBar.setText(resource.getString("welcome"));
+    statusBar.setText(resource.getString("welcome"));
     statusPanel.setLayout(borderLayout5);
     statusPanel.setBorder(titledBorder1);
-    statusBar.setText("");
     jPanel1.setLayout(borderLayout1);
     settingsPanel.setLayout(borderLayout2);
     borderLayout2.setHgap(4);
     attributePanel.setBorder(BorderFactory.createEtchedBorder());
-    fileMenu.setText("Arquivo");
+    fileMenu.setText(resource.getString("fileMenu"));
     openMenu.setIcon(openIcon);
-    openMenu.setText("Abrir...");
+    openMenu.setText(resource.getString("openMenu"));
     openMenu.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
         open_actionPerformed(e);
       }
     });
     openModelMenu.setIcon(openIcon);
-    openModelMenu.setText("Abrir Modelo...");
+    openModelMenu.setText(resource.getString("openModelMenu"));
     openModelMenu.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
         openModel_actionPerformed(e);
@@ -137,13 +139,13 @@ public class NeuralNetworkMain extends JInternalFrame {
     });
     saveModelMenu.setEnabled(false);
     saveModelMenu.setIcon(saveIcon);
-    saveModelMenu.setText("Salvar Modelo...");
+    saveModelMenu.setText(resource.getString("saveModelMenu"));
     saveModelMenu.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
         saveModel_actionPerformed(e);
       }
     });
-    exitMenu.setText("Sair");
+    exitMenu.setText(resource.getString("exitMenu"));
     exitMenu.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
         exitMenu_actionPerformed(e);
@@ -151,17 +153,17 @@ public class NeuralNetworkMain extends JInternalFrame {
     });
     optionsMenu.setEnabled(false);
     optionsMenu.setIcon(null);
-    optionsMenu.setText("Opções");
+    optionsMenu.setText(resource.getString("optionsMenu"));
     trainingMenu.setIcon(compileIcon);
-    trainingMenu.setText("Treinar Rede Neural");
+    trainingMenu.setText(resource.getString("learnMenu"));
     trainingMenu.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
         learn_actionPerformed(e);
       }
     });
-    helpMenu.setText("Ajuda");
+    helpMenu.setText(resource.getString("helpMenu"));
     helpTopicsMenu.setIcon(helpIcon);
-    helpTopicsMenu.setText("Tópicos de Ajuda");
+    helpTopicsMenu.setText(resource.getString("helpTopicsMenu"));
     helpTopicsMenu.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
         help_actionPerformed(e);
@@ -169,6 +171,7 @@ public class NeuralNetworkMain extends JInternalFrame {
     });
 
     advancedOptionsButton.setEnabled(false);
+    advancedOptionsButton.setToolTipText(resource.getString("advancedOptionsToolTip"));
     advancedOptionsButton.setIcon(advancedOptionsIcon);
     advancedOptionsButton.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -177,7 +180,7 @@ public class NeuralNetworkMain extends JInternalFrame {
     });
     advancedOptionsMenu.setEnabled(true);
     advancedOptionsMenu.setIcon(advancedOptionsIcon);
-    advancedOptionsMenu.setText("Opções Avançadas");
+    advancedOptionsMenu.setText(resource.getString("advancedOptionsMenu"));
     advancedOptionsMenu.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
         advancedOptions_actionPerformed(e);
@@ -196,13 +199,13 @@ public class NeuralNetworkMain extends JInternalFrame {
     this.getContentPane().add(toolBar, BorderLayout.NORTH);
     this.getContentPane().add(jPanel1, BorderLayout.CENTER);
     jPanel1.add(jTabbedPane1,  BorderLayout.CENTER);
-    jTabbedPane1.add(settingsPanel,   "Settings");
+    jTabbedPane1.add(settingsPanel, resource.getString("settingsPanel"));
     this.getContentPane().add(statusPanel,  BorderLayout.SOUTH);
     statusPanel.add(statusBar, BorderLayout.CENTER);
     settingsPanel.add(optionsPanel, BorderLayout.WEST);
     settingsPanel.add(attributePanel,  BorderLayout.CENTER);
-    jTabbedPane1.add(chartPanel,   "Chart");
-    jTabbedPane1.add(inferencePanel,   "Inference");
+    jTabbedPane1.add(chartPanel, resource.getString("chartPanel"));
+    jTabbedPane1.add(inferencePanel, resource.getString("inferencePanel"));
     jMenuBar1.add(fileMenu);
     jMenuBar1.add(optionsMenu);
     jMenuBar1.add(helpMenu);
@@ -253,10 +256,10 @@ public class NeuralNetworkMain extends JInternalFrame {
       controller.learn();
     } catch (Exception ex){
 
-      ex.printStackTrace();
+      ex.printStackTrace();  //retirar isso
       //////////////////
 
-      statusBar.setText(/*resource.getString*/("exception") + " " + ex.getMessage());
+      statusBar.setText(resource.getString("exception") + " " + ex.getMessage());
       jTabbedPane1.setEnabledAt(0,true);
       jTabbedPane1.setEnabledAt(1,false);
       jTabbedPane1.setSelectedIndex(0);
@@ -285,19 +288,17 @@ public class NeuralNetworkMain extends JInternalFrame {
         optionsMenu.setEnabled(true);
         saveButton.setEnabled(false);
         saveModelMenu.setEnabled(false);
-        inferencePanel = new InferencePanel();
-        chartPanel = new TrainingPanel();
-        statusBar.setText(/*resource.getString*/("openFile"));
+        statusBar.setText(resource.getString("openFileSuccess"));
       }
- //   }catch (NullPointerException npe){
- //     statusBar.setText(/*resource.getString*/("errorDB") + " " + npe.getMessage());
- //   }catch (FileNotFoundException fnfe){
- //     statusBar.setText(/*resource.getString*/("fileNotFound") + " " + fnfe.getMessage());
- //   }catch (IOException ioe){
- //     statusBar.setText(/*resource.getString*/("errorOpen") + " " + ioe.getMessage());
+    }catch (NullPointerException npe){
+      statusBar.setText(resource.getString("errorDB") + " " + npe.getMessage());
+    }catch (FileNotFoundException fnfe){
+      statusBar.setText(resource.getString("fileNotFound") + " " + fnfe.getMessage());
+    }catch (IOException ioe){
+      statusBar.setText(resource.getString("errorOpen") + " " + ioe.getMessage());
     }catch (Exception ex){
       ex.printStackTrace();
-      statusBar.setText(/*resource.getString*/("error") + ex.getMessage());
+      statusBar.setText(resource.getString("error") + ex.getMessage());
     }
   }
 
@@ -306,10 +307,10 @@ public class NeuralNetworkMain extends JInternalFrame {
     try{
       success = controller.saveModel();
       if(success){
-        statusBar.setText(/*resource.getString*/("saveModel"));
+        statusBar.setText(resource.getString("saveModelSuccess"));
       }
     } catch (Exception ioe) {
-      statusBar.setText(/*resource.getString*/("errorWritingFileException") + " " + ioe.getMessage());
+      statusBar.setText(resource.getString("errorWritingFileException") + " " + ioe.getMessage());
     }
   }
 
@@ -327,13 +328,11 @@ public class NeuralNetworkMain extends JInternalFrame {
         optionsMenu.setEnabled(false);
         saveButton.setEnabled(false);
         saveModelMenu.setEnabled(false);
-        statusBar.setText(/*resource.getString*/("modelOpenedSuccessfully"));
+        statusBar.setText(resource.getString("modelOpenSuccess"));
         jTabbedPane1.setSelectedIndex(2);
-        inferencePanel = new InferencePanel();
-        chartPanel = new TrainingPanel();
       }
     } catch (IOException ioe) {
-      statusBar.setText(/*resource.getString*/("errorWritingFileException") + " " + ioe.getMessage());
+      statusBar.setText(resource.getString("errorWritingFileException") + " " + ioe.getMessage());
     } catch (ClassNotFoundException cnfe) {
       statusBar.setText(cnfe.getMessage());
     } catch (Exception ex){
@@ -348,7 +347,7 @@ public class NeuralNetworkMain extends JInternalFrame {
   void advancedOptions_actionPerformed(ActionEvent e) {
     advancedOptionsPanel.sethiddenLayerSize(controller.getHiddenLayerSize());
     this.hide();
-    int options = JOptionPane.showInternalOptionDialog(this, advancedOptionsPanel, "Advanced Options", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+    int options = JOptionPane.showInternalOptionDialog(this, advancedOptionsPanel, resource.getString("advancedOptionsTitle"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
     if(options == JOptionPane.OK_OPTION){
       advancedOptionsPanel.updateValues();
     }

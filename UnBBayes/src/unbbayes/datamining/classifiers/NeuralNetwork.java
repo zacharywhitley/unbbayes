@@ -23,28 +23,22 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   private transient float momentum;
   private transient int hiddenLayerSize;
   private transient ActivationFunction activationFunction = null;
-  private int activationFunctionType;
-  private int numOfAttributes;
   private transient int trainingTime;
   private transient float minimumErrorVariation;
   private transient boolean learningRateDecay = false;
+  private transient QuadraticAverageError quadraticAverageError;
+  private transient InstanceSet instanceSet;
+  private int activationFunctionType;
+  private int numOfAttributes;
   private int numericalInputNormalization = NO_NORMALIZATION;
   private boolean numericOutput;
   private float[] highestValue;
   private float[] lowestValue;
-
-  private transient QuadraticAverageError quadraticAverageError;
-
   private int[] attNumOfValues;
-
-  /**Vector that contains the attributes of the training set.*/
   private Attribute[] attributeVector;
-
-  /**Index of the class attribute.*/
   private int classIndex;
-
-  /**The set of instances of the training set*/
-  private transient InstanceSet instanceSet;
+  private float[] attributeMean;
+  private float[] attributeStandardDeviation;
 
   public NeuralNetwork(float learningRate,
                        boolean learningRateDecay,
@@ -109,10 +103,21 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     attributeVector = instanceSet.getAttributes();      //cria um array com os atributos para serialização
     this.classIndex = instanceSet.getClassIndex();      //guarda o indice da classe para serialização
 
-    //seta os maiores e menores valores dos atributos do instanceSet
     highestValue = new float[numOfAttributes];
     lowestValue = new float[numOfAttributes];
-    if(numericalInputNormalization != NO_NORMALIZATION){
+    //Se normaliza por media 0 e desvio padrao 1 então calcula estes valores antes
+    if(numericalInputNormalization == MEAN_0_STANDARD_DEVIATION_1_NORMALIZATION){
+      attributeMean = new float[numOfAttributes];
+      attributeStandardDeviation = new float[numOfAttributes];
+
+      for(int i=0; i<numOfAttributes; i++){
+        Attribute att = instanceSet.getAttribute(i);
+        if(att.isNumeric() && i!=classIndex){
+          attributeMean[i] = (float)Utils.mean(instanceSet, i);
+          attributeStandardDeviation[i] = (float)Utils.standardDeviation(instanceSet, i, attributeMean[i]);
+        }
+      }
+    } else if(numericalInputNormalization == LINEAR_NORMALIZATION){ //seta os maiores e menores valores dos atributos do instanceSet
       for(int i=0; i<numOfAttributes; i++){
         if(i!=classIndex && instanceSet.getAttribute(i).isNumeric()){
           highestValue[i] = Float.MIN_VALUE;
@@ -224,8 +229,6 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     float totalErrorEnergy = 0;
     float[] expectedOutput;
 
-    Arrays.fill(inputLayer, 0);  //zera o vetor de entradas
-
     inputLayerSetUp(instance);
 
     ///////////calcula as saidas da hiddem
@@ -263,7 +266,9 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   }
 
   private void inputLayerSetUp(Instance instance){
-    int counter = 0; //inicializa o vetor de entradas
+    int counter = 0; //inicializa o contador de entradas
+    Arrays.fill(inputLayer, -1);  //zera o vetor de entradas
+
     for (int i = 0; i < numOfAttributes; i++) {
       if (i != classIndex) {
         if (!instance.isMissing(i)) {
@@ -278,17 +283,8 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
             if(numericalInputNormalization == LINEAR_NORMALIZATION){
               inputLayer[index] = Utils.normalize(Float.parseFloat(att.getAttributeValues()[value]), highestValue[i], lowestValue[i], 1, -1);
             } else if(numericalInputNormalization == MEAN_0_STANDARD_DEVIATION_1_NORMALIZATION) {
-              ////////////////////////////normalização
-              /////////////////////////////falta
-              ///////////////////////////
-              ////////////////////////////
-              ////////////////////////////
-              ////////////////////////////
-              //////////////////////////////
-              ////////////////////////////////
-              ////////////////////////////
-              
-            } else {
+              inputLayer[index] = (Float.parseFloat(att.getAttributeValues()[value]) - attributeMean[i]) / attributeStandardDeviation[i];
+            } else {  //numericalInputNormalization == NO_NORMALIZATION
               inputLayer[index] = Float.parseFloat(att.getAttributeValues()[value]);
             }
           } else {

@@ -1,12 +1,14 @@
 package unbbayes.datamining.gui.neuralnetwork;
 
 import java.awt.*;
+import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.event.*;
 import unbbayes.datamining.classifiers.NeuralNetwork;
 
 public class AdvancedOptionsPanel extends JPanel {
+  private ResourceBundle resource;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JPanel advancedOptions = new JPanel();
   private JPanel learningRatePanel = new JPanel();
@@ -89,34 +91,35 @@ public class AdvancedOptionsPanel extends JPanel {
     }
   }
   void jbInit() throws Exception {
+    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource");
     fuctionSteepSpinner.setModel(activationFunctionSteepSpinnerModel);
     errorVariationSpinner.setModel(minimumErrorVariationSpinnerModel);
     trainningTimeSpinner.setModel(trainningTimeSpinnerModel);
     hiddenSizeSpinner.setModel(hiddenLayerSizeSpinnerModel);
     border1 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
-    titledBorder1 = new TitledBorder(border1,"Learning Rate:");
+    titledBorder1 = new TitledBorder(border1,resource.getString("learningRateLabel"));
     titledBorder1.setTitleFont(new java.awt.Font("Dialog", 0, 12));
     border2 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
-    titledBorder2 = new TitledBorder(border2,"Hidden Layer Size:");
+    titledBorder2 = new TitledBorder(border2,resource.getString("hiddenLayerSize"));
     titledBorder2.setTitleFont(new java.awt.Font("Dialog", 0, 12));
     border3 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
-    titledBorder3 = new TitledBorder(border3,"Activation Function Steep:");
+    titledBorder3 = new TitledBorder(border3,resource.getString("activationFunctionSteep"));
     titledBorder3.setTitleFont(new java.awt.Font("Dialog", 0, 12));
     border4 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
-    titledBorder4 = new TitledBorder(border4,"Learning Stop Condition:");
+    titledBorder4 = new TitledBorder(border4,resource.getString("learningStopCondition"));
     titledBorder4.setTitleFont(new java.awt.Font("Dialog", 0, 12));
     border5 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
-    titledBorder5 = new TitledBorder(border5,"Numeric Input:");
+    titledBorder5 = new TitledBorder(border5,resource.getString("numericInput"));
     titledBorder5.setTitleFont(new java.awt.Font("Dialog", 0, 12));
     border6 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
-    titledBorder6 = new TitledBorder(border6,"Normalization Algorithm:");
+    titledBorder6 = new TitledBorder(border6,resource.getString("normalizationAlgorithm"));
     titledBorder6.setTitleFont(new java.awt.Font("Dialog", 0, 12));
     this.setLayout(borderLayout1);
     advancedOptions.setLayout(gridBagLayout1);
     learningRatePanel.setLayout(borderLayout2);
     learningRatePanel.setBorder(titledBorder1);
     learningRateCheckBox.setFont(new java.awt.Font("Dialog", 0, 12));
-    learningRateCheckBox.setText("Learning Rate Decay");
+    learningRateCheckBox.setText(resource.getString("learningRateDecay"));
     hiddenLayerPanel.setLayout(borderLayout3);
     hiddenLayerPanel.setBorder(titledBorder2);
     jPanel1.setLayout(gridLayout2);
@@ -125,7 +128,7 @@ public class AdvancedOptionsPanel extends JPanel {
     jPanel2.setLayout(borderLayout4);
     jPanel3.setLayout(borderLayout5);
     hiddenLayerCheckBox.setFont(new java.awt.Font("Dialog", 0, 12));
-    hiddenLayerCheckBox.setText("Auto");
+    hiddenLayerCheckBox.setText(resource.getString("auto"));
     hiddenLayerCheckBox.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
         hiddenLayerCheckBox_actionPerformed(e);
@@ -137,7 +140,7 @@ public class AdvancedOptionsPanel extends JPanel {
     jPanel4.setLayout(gridLayout3);
     gridLayout3.setRows(4);
     labelTimeLimit.setFont(new java.awt.Font("Dialog", 0, 12));
-    labelTimeLimit.setText("Limit of Epochs:");
+    labelTimeLimit.setText(resource.getString("limitOfEpochs") + ":");
     activationFunctionSteepPanel.setBorder(titledBorder3);
     activationFunctionSteepPanel.setLayout(borderLayout7);
     trainningTimePanel.setBorder(titledBorder4);
@@ -147,7 +150,7 @@ public class AdvancedOptionsPanel extends JPanel {
     errorVariationSpinner.setEnabled(false);
     fuctionSteepSpinner.setBorder(null);
     errorVariationCheckBox.setFont(new java.awt.Font("Dialog", 0, 12));
-    errorVariationCheckBox.setText("Relative Error of the Mean Square Error (%)");
+    errorVariationCheckBox.setText(resource.getString("relativeError"));
     errorVariationCheckBox.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
         errorVariationCheckBox_actionPerformed(e);
@@ -156,7 +159,7 @@ public class AdvancedOptionsPanel extends JPanel {
     inputNormalizationPanel.setLayout(borderLayout8);
     inputNormalizationPanel.setBorder(titledBorder5);
     normalizationCheckBox.setFont(new java.awt.Font("Dialog", 0, 12));
-    normalizationCheckBox.setText("Normalize Numeric Input");
+    normalizationCheckBox.setText(resource.getString("normalizeNumericInput"));
     normalizationCheckBox.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
         normalizationCheckBox_actionPerformed(e);
@@ -169,10 +172,10 @@ public class AdvancedOptionsPanel extends JPanel {
     radioLinearNormalization.setEnabled(false);
     radioLinearNormalization.setFont(new java.awt.Font("Dialog", 0, 12));
     radioLinearNormalization.setSelectedIcon(null);
-    radioLinearNormalization.setText("Linear Normalization");
+    radioLinearNormalization.setText(resource.getString("linearNormalization"));
     radioMean0SD1.setEnabled(false);
     radioMean0SD1.setFont(new java.awt.Font("Dialog", 0, 12));
-    radioMean0SD1.setText("Mean 0 and Standard Deviation 1");
+    radioMean0SD1.setText(resource.getString("mean0StandardDeviation1"));
     jPanel1.add(jPanel2, null);
     jPanel2.add(hiddenLayerCheckBox, BorderLayout.CENTER);
     jPanel1.add(jPanel3, null);
