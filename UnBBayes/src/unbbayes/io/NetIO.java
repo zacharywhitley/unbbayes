@@ -346,34 +346,22 @@ public class NetIO implements BaseIO {
 					arq.println(
 						"     states = (" + auxString.toString() + ");");
 				}
-				if ((!auxNo1.getExplanationDescription().equals(""))
-					&& (auxNo1.getInformationType() == Node.EXPLANATION_TYPE)) {
-					String explanationDescription =
-						formatString(auxNo1.getExplanationDescription());
-					arq.println(
-						"     %descricao \"" + explanationDescription + "\"");
+				if (auxNo1.getInformationType() == Node.EXPLANATION_TYPE)
+                                {
+                                  String explanationDescription = formatString(auxNo1.getExplanationDescription());
+                                  arq.println("     %descricao \"" + explanationDescription + "\"");
+                                  ArrayMap arrayMap = auxNo1.getPhrasesMap();
+                                  int size = arrayMap.size();
+                                  ArrayList keys = arrayMap.getKeys();
+                                  for (int i = 0; i < size; i++)
+                                  {
+                                    Object key = keys.get(i);
+                                    ExplanationPhrase explanationPhrase = (ExplanationPhrase) arrayMap.get(key);
+                                    arq.println("     %frase \""+ explanationPhrase.getNode()+ "\" "+ "\""
+                                        + explanationPhrase.getEvidenceType()+ "\" "+ "\""
+                                        + formatString(explanationPhrase.getPhrase())+ "\"");
+                                  }
 				}
-				if (auxNo1.getInformationType() == Node.EXPLANATION_TYPE) {
-					ArrayMap arrayMap = auxNo1.getPhrasesMap();
-					int size = arrayMap.size();
-					ArrayList keys = arrayMap.getKeys();
-					for (int i = 0; i < size; i++) {
-						Object key = keys.get(i);
-						ExplanationPhrase explanationPhrase =
-							(ExplanationPhrase) arrayMap.get(key);
-						arq.println(
-							"     %frase \""
-								+ explanationPhrase.getNode()
-								+ "\" "
-								+ "\""
-								+ explanationPhrase.getEvidenceType()
-								+ "\" "
-								+ "\""
-								+ formatString(explanationPhrase.getPhrase())
-								+ "\"");
-					}
-				}
-
 				arq.println("}");
 				arq.println();
 			}
@@ -384,7 +372,7 @@ public class NetIO implements BaseIO {
 			for (int c1 = 0; c1 < net.noVariaveis(); c1++) {
 				auxNo1 = (Node) net.getNodeAt(c1);
 
-				NodeList auxListVa = auxNo1.getParents();				
+				NodeList auxListVa = auxNo1.getParents();
 
 				arq.print("potential (" + auxNo1.getName());
 
@@ -400,9 +388,9 @@ public class NetIO implements BaseIO {
 				arq.println("{");
 				if (auxNo1 instanceof ITabledVariable) {
 					PotentialTable auxTabPot =
-						((ITabledVariable) auxNo1).getPotentialTable();										
-					int sizeVa1 = auxTabPot.variableCount();					
-						
+						((ITabledVariable) auxNo1).getPotentialTable();
+					int sizeVa1 = auxTabPot.variableCount();
+
 					arq.print(" data = ");
 					int[] coord;
 					boolean[] paren = new boolean[sizeVa1];
@@ -410,7 +398,7 @@ public class NetIO implements BaseIO {
 					int sizeDados = auxTabPot.tableSize();
 					for (int c2 = 0; c2 < sizeDados; c2++) {
 						coord = auxTabPot.voltaCoord(c2);
-						
+
 						for (int c3 = 0; c3 < sizeVa1; c3++) {
 							if ((coord[c3] == 0) && (!paren[c3])) {
 								arq.print("(");
