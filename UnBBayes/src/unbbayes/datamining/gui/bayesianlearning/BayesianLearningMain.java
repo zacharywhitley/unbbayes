@@ -1,5 +1,5 @@
 package unbbayes.datamining.gui.bayesianlearning;
-
+ 
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -9,6 +9,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 import unbbayes.controller.*;
+import unbbayes.datamining.classifiers.bayesianlearning.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.gui.*;
 import unbbayes.gui.*;
@@ -79,9 +80,14 @@ public class BayesianLearningMain extends JInternalFrame
   private JLabel jLabel1 = new JLabel();
   private JLabel jLabel2 = new JLabel();
   private JLabel jLabel3 = new JLabel();
-  private JComboBox jComboBox1 = new JComboBox();
-  private JComboBox jComboBox2 = new JComboBox();
-  private JComboBox jComboBox3 = new JComboBox();
+  private String[] metrics = {/*"MDL",*/"GH"/*, "GHS"*/};
+  private String[] paradigms = {"Ponctuation"/*,"IC"*/};
+  private String[] ponctuationAlgorithms = {"K2"/*,"B"*/};
+  //private String[] icAlgorithms = {"CBL-A","CBL-B"};
+  private JComboBox jComboBox1 = new JComboBox(paradigms);
+  private JComboBox jComboBox2 = new JComboBox(ponctuationAlgorithms);
+  private JComboBox jComboBox3 = new JComboBox(metrics);
+
 
   /**Construct the frame*/
   public BayesianLearningMain()
@@ -266,7 +272,7 @@ public class BayesianLearningMain extends JInternalFrame
     jPanel6.add(jPanel7, null);
     jPanel6.add(jPanel8, null);
     jTabbedPane1.add(jScrollPane1,   "Inference");
-    jScrollPane1.add(jPanel1, null);
+    jScrollPane1.getViewport().add(jPanel1, null);
     contentPane.add(jPanel2,  BorderLayout.SOUTH);
     jPanel2.add(statusBar,  BorderLayout.CENTER);
     jTabbedPane1.setEnabledAt(1,false);
@@ -279,6 +285,7 @@ public class BayesianLearningMain extends JInternalFrame
     jMenu1.add(jMenuItem2);
     jMenu2.add(jMenuItem3);
     jMenu3.add(jMenuItem4);
+
   }
 
   void jMenuItem3_actionPerformed(ActionEvent e)
@@ -324,6 +331,15 @@ public class BayesianLearningMain extends JInternalFrame
           {   statusBar.setText(resource.getString("exception")+ex.getMessage());
           }
       }*/
+      AlgorithmController algorithmController = new AlgorithmController(inst,""+jComboBox2.getSelectedItem(),""+jComboBox3.getSelectedItem());
+      // mostra a nova tela
+
+      jPanel1.removeAll();
+      jPanel1.setLayout(new BorderLayout());
+      jPanel1.add(algorithmController.getNetWindow().getContentPane(),BorderLayout.CENTER);
+      statusBar.setText("Estrutura Aprendida");
+      jTabbedPane1.setEnabledAt(1,true);
+      jTabbedPane1.setSelectedIndex(1);
   }
 
   void jMenuItem2_actionPerformed(ActionEvent e)
@@ -350,23 +366,20 @@ public class BayesianLearningMain extends JInternalFrame
   }
 
   private void openFile(File selectedFile)
-  {   try
-      {   inst = FileController.getInstance().setBaseInstancesFromFile(selectedFile,this);
-          boolean bool = inst.checkNumericAttributes();
-          if (bool == true)
-              throw new Exception(resource.getString("numericAttributesException"));
-          jTabbedPane1.setEnabledAt(0,false);
-          setTitle("Bayesian Learnning - "+selectedFile.getName());
-          jTabbedPane1.setEnabledAt(0,true);
-          jTabbedPane1.setSelectedIndex(0);
-          jTabbedPane1.setEnabledAt(1,false);
-          jMenuItem4.setEnabled(true);
-          learnButton.setEnabled(true);
-          jMenuItem5.setEnabled(false);
-          saveButton.setEnabled(false);
-          statusBar.setText(resource.getString("openFile"));
+  {
+    try
+    {
+      jTabbedPane1.setEnabledAt(0,false);
+      inst = FileController.getInstance().setBaseInstancesFromFile(selectedFile,this);
+      boolean bool = inst.checkNumericAttributes();
+      if (bool == true)
+      {
+        throw new Exception(resource.getString("numericAttributesException"));
       }
-      catch (NullPointerException npe)
+      setTitle("Bayesian Learnning - "+selectedFile.getName());
+      enableScreen();
+    }
+    catch (NullPointerException npe)
       {   statusBar.setText(resource.getString("errorDB")+selectedFile.getName()+" "+npe.getMessage());
       }
       catch (FileNotFoundException fnfe)
@@ -378,6 +391,21 @@ public class BayesianLearningMain extends JInternalFrame
       catch (Exception ex)
       {   statusBar.setText(resource.getString("error")+ex.getMessage());
       }
+  }
+
+  private void enableScreen()
+  {
+    jTabbedPane1.setEnabledAt(0,true);
+    jTabbedPane1.setSelectedIndex(0);
+    jTabbedPane1.setEnabledAt(1,false);
+    jMenuItem4.setEnabled(true);
+    learnButton.setEnabled(true);
+    jMenuItem5.setEnabled(false);
+    saveButton.setEnabled(false);
+    jComboBox1.setEnabled(true);
+    jComboBox2.setEnabled(true);
+    jComboBox3.setEnabled(true);
+    statusBar.setText(resource.getString("openFile"));
   }
 
   void jMenuItem5_actionPerformed(ActionEvent e)

@@ -50,6 +50,7 @@ public class NetWindow extends JInternalFrame {
 	private NetWindowEdition netEdition;
 	private NetWindowCompilation netCompilation;
     private HierarchicDefinitionPanel hierarchyPanel;
+    private EditNet editNet;
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
@@ -99,10 +100,12 @@ public class NetWindow extends JInternalFrame {
         jspGraph.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
 		netEdition = new NetWindowEdition(this, controller);
+                editNet = new EditNet(this, controller);
 		netCompilation = new NetWindowCompilation(this, controller);
 		hierarchyPanel = new HierarchicDefinitionPanel(net, this);
 
 		contentPane.add(netEdition, "netEdition");
+                contentPane.add(editNet,"editNet");
 		contentPane.add(netCompilation, "netCompilation");
 		contentPane.add(hierarchyPanel,"hierarchy");
 
@@ -270,7 +273,7 @@ public class NetWindow extends JInternalFrame {
 		netCompilation.getEvidenceTree().expandRow(0);
 		netCompilation.getEvidenceTree().setRootVisible(false);
 
-		bCompiled = true;		
+		bCompiled = true;
 
 		controller.getRede().setFirstInitialization(true);
 
@@ -307,6 +310,10 @@ public class NetWindow extends JInternalFrame {
 
         }
 
+        public void changeToEditNet() {
+          carta.show(getContentPane(),"editNet");
+        }
+
 	/**
 	 * Retorna se a janela que esta aparecendo esta em modo de edicao(false)
 	 * ou se ela esta em modo de compilação(true).
@@ -337,8 +344,16 @@ public class NetWindow extends JInternalFrame {
 		return this.netCompilation;
 	}
 
+	public HierarchicDefinitionPanel getHierarchicDefinitionPanel() {
+		return this.hierarchyPanel;
+	}
+
 	public WindowController getWindowController(){
 		return controller;
 	}
+
+        public EditNet getEditNet(){
+          return editNet;
+        }
 
 }
