@@ -7,7 +7,7 @@ import java.io.*;
 
 public class TestProbabilisticNetwork extends TestCase {
 
-    public static File ASIA_FILE = new File("exemplos/asia.net");
+    public static File ASIA_FILE = new File("examples/asia.net");
     public static double DELTA = 0.0001;
 
     private ProbabilisticNetwork net;

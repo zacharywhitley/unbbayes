@@ -23,10 +23,12 @@ public class UtilityTable extends PotentialTable implements java.io.Serializable
      *@param  variavel  Variavel a ser retirada da tabela.
      */
     public void removeVariable(Node variavel) {
+    	calcularFatores();
         int index = variaveis.indexOf(variavel);
         if (variavel.getType() == Node.PROBABILISTIC_NODE_TYPE) {
-            sum(variaveis.size()-1, index, new int[variaveis.size()]);
-        } else {
+//            sum(variaveis.size()-1, index, new int[variaveis.size()]);
+			sum(variaveis.size()-1, index, 0, 0);			
+        } else {        	
             DecisionNode decision = (DecisionNode) variavel;
             if (decision.hasEvidence()) {
                 finding(variaveis.size()-1, index, new int[variaveis.size()], decision.getEvidence());
@@ -42,8 +44,8 @@ public class UtilityTable extends PotentialTable implements java.io.Serializable
         if (control == -1) {
             int linearCoordToKill = getLinearCoord(coord);
             int linearCoordDestination = linearCoordToKill - coord[index]*fatores[index];
-            double value = Math.max(dados.get(linearCoordDestination), dados.get(linearCoordToKill));
-            dados.set(linearCoordDestination, value);
+            double value = Math.max(dados.data[linearCoordDestination], dados.data[linearCoordToKill]);
+            dados.data[linearCoordDestination] = value;
             dados.remove(linearCoordToKill);
             return;
         }

@@ -20,6 +20,7 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
      *@param  variavel  Variavel a ser retirada da tabela.
      */
     public void removeVariable(Node variavel) {
+    	calcularFatores();
         int index = variaveis.indexOf(variavel);
         if (variavel.getType() == Node.DECISION_NODE_TYPE) {
             DecisionNode decision = (DecisionNode) variavel;
@@ -27,13 +28,15 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
             if (decision.hasEvidence()) {
                 finding(variaveis.size()-1, index, new int[variaveis.size()], decision.getEvidence());
             } else {
-                sum(variaveis.size()-1, index, new int[variaveis.size()]);
-                for (int i = dados.size()-1; i >= 0; i--) {
-                    dados.set(i, dados.get(i) / statesSize);
+//                sum(variaveis.size()-1, index, new int[variaveis.size()]);				
+                sum(variaveis.size()-1, index, 0, 0);
+                for (int i = dados.size-1; i >= 0; i--) {
+                    dados.data[i] = dados.data[i] / statesSize;
                 }
             }
         } else {
-            sum(variaveis.size()-1, index, new int[variaveis.size()]);
+//            sum(variaveis.size()-1, index, new int[variaveis.size()]);
+            sum(variaveis.size()-1, index, 0, 0);
         }
         variableModified();
         variaveis.remove(index);
@@ -60,7 +63,7 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
         for (int j = 0; j < noCol; j++) {
             soma = 0.0;
             for (int i = 0; i < noLin; i++) {
-                soma += getValue(j * noLin + i) * 100.0;
+                soma += dados.data[j * noLin + i] * 100.0;
             }
 
             if (Math.abs(soma - 100.0) > 0.01) {

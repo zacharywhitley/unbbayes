@@ -82,16 +82,16 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
     }
     
     public void copyData() {
-    	int dataSize = dados.size();
+    	int dataSize = dados.size;
     	for (int i = 0; i < dataSize; i++) {
-    		dataCopy.add(dados.get(i));
+    		dataCopy.add(dados.data[i]);
     	}
     }
     
     public void restoreData() {
-    	int dataSize = dados.size();
+    	int dataSize = dados.size;
     	for (int i = 0; i < dataSize; i++) {
-    		dados.set(i, dataCopy.get(i));
+    		dados.data[i] = dataCopy.data[i];
     	}
     }
 
@@ -111,11 +111,11 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
         return SetToolkit.clone(variaveis);
     }
 
-    public int indexOfVariable(Node node) {
+    public final int indexOfVariable(Node node) {
         return variaveis.indexOf(node);
     }
 
-    public int variableCount() {
+    public final int variableCount() {
         return variaveis.size();
     }
 
@@ -124,7 +124,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
         variaveis.set(index, node);
     }
 
-    public Node getVariableAt(int index) {
+    public final Node getVariableAt(int index) {
         return variaveis.get(index);
     }
 
@@ -132,16 +132,16 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
         dados.add(index, value);
     }
     
-    public void setValueAt(int index, double value) {
-    	dados.set(index, value);    	
+    public final void setValueAt(int index, double value) {
+    	dados.data[index] = value;
     }
 
-    public void removeValueAt(int index) {
+    public final void removeValueAt(int index) {
         dados.remove(index);
     }
 
     public int tableSize() {
-       return dados.size();
+       return dados.size;
     }
 
 
@@ -153,9 +153,9 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
     public Object clone() {
         PotentialTable auxTab = newInstance();
         auxTab.variaveis = SetToolkit.clone(variaveis);
-        int sizeDados = dados.size();
+        int sizeDados = dados.size;
         for (int c = 0; c < sizeDados; c++) {
-            auxTab.dados.add(dados.get(c));
+            auxTab.dados.add(dados.data[c]);
         }
         return auxTab;
     }
@@ -168,7 +168,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      *@param  valor Valor a ser colocado na coordenada especificada
      */
     public void setValue(int[] coordenadas, double valor) {
-        dados.set(getLinearCoord(coordenadas), valor);
+        dados.data[getLinearCoord(coordenadas)] = valor;
     }
 
 
@@ -178,8 +178,8 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      *@param  index  posicao linear onde o valor entrará
      *@param  valor  valor a ser colocado na posicao especificada.
      */
-    public void setValue(int index, double valor) {
-        dados.set(index, valor);
+    public final void setValue(int index, double valor) {
+        dados.data[index] = valor;
     }
 
 
@@ -189,8 +189,8 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      *@param  index  índice linear do valor na tabela a ser retornado.
      *@return        valor na tabela correspondente ao indice linear especificado.
      */
-    public double getValue(int index) {
-        return dados.get(index);
+    public final double getValue(int index) {
+        return dados.data[index];
     }
 
 
@@ -200,8 +200,8 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      *@param  coordenadas  coordenadas do valor a ser pego.
      *@return              valor na tabela especificada pelas coordenadas.
      */
-    public double getValue(int[] coordenadas) {
-        return getValue(getLinearCoord(coordenadas));
+    public final double getValue(int[] coordenadas) {
+        return dados.data[getLinearCoord(coordenadas)];
     }
 
 
@@ -214,7 +214,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
         /** @todo Reimplementar este método de forma correta. */
         variableModified();
         int noEstados = variavel.getStatesSize();
-        int noCelBasica = this.dados.size();
+        int noCelBasica = this.dados.size;
         if (variaveis.size() == 0) {
             for (int i = 0; i < noEstados; i++) {
                 dados.add(0.0);
@@ -224,7 +224,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
             while (noEstados > 1) {
                 noEstados--;
                 for (int i = 0; i < noCelBasica; i++) {
-                    dados.add(dados.get(i));
+                    dados.add(dados.data[i]);
                 }
             }
         }
@@ -245,12 +245,35 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      */
     public abstract PotentialTable newInstance();
 
+
+    protected void sum(int control, int index, int coord, int base) {
+        if (control == -1) {            
+            int linearCoordDestination = coord - base;
+            double value = dados.data[linearCoordDestination] + dados.data[coord];
+            dados.data[linearCoordDestination] = value;
+            dados.remove(coord);
+            return;
+        }
+		
+		Node node = variaveis.get(control);
+		if (control == index) {	
+	        for (int i = node.getStatesSize()-1; i >= 1; i--) {
+	            sum(control-1, index, coord + i*fatores[control], i*fatores[index]);
+	        }	
+		} else {
+	        for (int i = node.getStatesSize()-1; i >= 0; i--) {
+	            sum(control-1, index, coord + i*fatores[control], base);
+	        }
+		}
+    }
+
+/*
     protected void sum(int control, int index, int coord[]) {
         if (control == -1) {
             int linearCoordToKill = getLinearCoord(coord);
             int linearCoordDestination = linearCoordToKill - coord[index]*fatores[index];
-            double value = dados.get(linearCoordDestination) + dados.get(linearCoordToKill);
-            dados.set(linearCoordDestination, value);
+            double value = dados.data[linearCoordDestination] + dados.data[linearCoordToKill];
+            dados.data[linearCoordDestination] = value;
             dados.remove(linearCoordToKill);
             return;
         }
@@ -262,6 +285,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
             sum(control-1, index, coord);
         }
     }
+*/
 
 
     protected void finding(int control, int index, int coord[], int state) {
@@ -269,8 +293,8 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
             int linearCoordToKill = getLinearCoord(coord);
             if (coord[index] == state) {
                 int linearCoordDestination = linearCoordToKill - coord[index]*fatores[index];
-                double value = dados.get(linearCoordToKill);
-                dados.set(linearCoordDestination, value);
+                double value = dados.data[linearCoordToKill];
+                dados.data[linearCoordDestination] = value;
             }
             dados.remove(linearCoordToKill);
             return;
@@ -291,7 +315,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      * @param coord coordenada multidimensional.
      * @return coordenada linear correspondente.
      */
-    public int getLinearCoord(int coord[]) {
+    public final int getLinearCoord(int coord[]) {
         calcularFatores();
         int coordLinear = 0;
         int sizeVariaveis = variaveis.size();
@@ -306,7 +330,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      * Calcula os fatores necessários para transformar as coordenadas
      * lineares em multidimensionais.
      */
-    private void calcularFatores() {
+    protected void calcularFatores() {
         if (! modified) {
             return;
         }
@@ -331,7 +355,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      *@param  index  índice linear na tabela.
      *@return        array das coordenadas respectivo ao indice linear especificado.
      */
-    public int[] voltaCoord(int index) {
+    public final int[] voltaCoord(int index) {
         calcularFatores();
         int fatorI;
         int sizeVariaveis = variaveis.size();
@@ -356,9 +380,9 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
         }
 
         for (int k = tableSize()-1; k >= 0; k--) {
-            double b = tab.getValue(k);
-            double a = getValue(k);
-            setValue(k, operate(a, b, operator));
+            double b = tab.dados.data[k];
+            double a = dados.data[k];
+            dados.data[k] = operate(a, b, operator);
         }
     }
 
@@ -383,7 +407,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
     
     private void fastOpTab(int c, int linearA, int linearB, int index[], PotentialTable tab, int operator) {
     	if (c >= variaveis.size()) {
-    		setValue(linearA, operate(getValue(linearA), tab.getValue(linearB),operator));
+    		dados.data[linearA] = operate(dados.data[linearA], tab.dados.data[linearB],operator);
     		return;    		    		
     	}
     	if (index[c] == -1) {
@@ -451,7 +475,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
         nEstados = no.getStatesSize();
         for (int i = 1, k = 0; i < tabela.getColumnCount(); i++, k += nEstados) {
             for (int j = noVariaveis - 1, l = 0; j < tabela.getRowCount(); j++, l++) {
-                tabela.setValueAt("" + getValue(k + l), j, i);
+                tabela.setValueAt("" + dados.data[k + l], j, i);
             }
         }
 
