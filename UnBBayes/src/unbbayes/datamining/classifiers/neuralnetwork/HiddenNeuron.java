@@ -1,30 +1,31 @@
 package unbbayes.datamining.classifiers.neuralnetwork;
 
+import java.util.*;
+
 public class HiddenNeuron extends Neuron{
 
   private float outputValue;
-//  private float net;   ///??????????////verificar se precisa desta variavel
   private float errorTerm;   //sigma
 
   public HiddenNeuron(ActivationFunction activationFunction, int numberOfInputs){
     this.activationFunction = activationFunction;
     weights = new float[numberOfInputs + 1];
+    deltaW = new float[numberOfInputs + 1];
     startWeights();
+    Arrays.fill(deltaW, 0);   //inicializa delta w com 0
   }
 
   public float outputValue(){
     return outputValue;
   }
 
-  public void updateWeights(float learningRate, int[] inputLayer) {
-    float deltaW;
-//    deltaW[0]
-
-    weights[0] = weights[0] + (learningRate * errorTerm); //bias
+  public void updateWeights(float learningRate, float momentum, int[] inputLayer) {
+    deltaW[0] = (momentum * deltaW[0]) + (learningRate * errorTerm);
+    weights[0] = weights[0] + deltaW[0]; //bias
 
     for (int i=1; i<weights.length; i++) {
-      deltaW = learningRate * errorTerm * inputLayer[i-1];
-      weights[i] = weights[i] + deltaW;
+      deltaW[i] = (momentum * deltaW[i]) + (learningRate * errorTerm * inputLayer[i-1]);
+      weights[i] = weights[i] + deltaW[i];
     }
   }
 

@@ -129,8 +129,6 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
  /*//////////////////////////////////////////
 
 
-
-
       }
       quadraticAverageError = quadraticAverageError/instanceSet.numWeightedInstances();
 
@@ -195,7 +193,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 
     ///////// UPDATE  dos pesos dos neuronios de saida
     for(int i=0; i<outputLayer.length; i++){
-      outputLayer[i].updateWeights(learningRate, hiddenLayer);
+      outputLayer[i].updateWeights(learningRate, momentum, hiddenLayer);
     }
 
     //////////calcula error terms  (SIGMA) da camada oculta, da saída já está calculado
@@ -205,7 +203,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 
     /////////UPDATE dos pesos dos neuronios ocultos
     for(int i=0; i<hiddenLayer.length; i++){
-      hiddenLayer[i].updateWeights(learningRate, inputLayer);
+      hiddenLayer[i].updateWeights(learningRate, momentum, inputLayer);
     }
 
     return (totalErrorEnergy / 2);
