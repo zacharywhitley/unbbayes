@@ -4,7 +4,7 @@
         java.sql.*, 
         org.jdom.Element, 
         java.util.Iterator" 
-        errorPage="" %> 
+        errorPage="/design/erro.jsp" %> 
         
 <%
 

@@ -1,21 +1,21 @@
-<%@page isErrorPage="true" %>
+<%@page import="java.io.*"
+		isErrorPage="true"  %>
 <%@include file="/util.jsp" %> 
 <%@include file =  "/design/cabecalho.jsp"%>
         <tr>
-          <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_sucesso.gif" width="174" border="0" hspace="20" alt="Log In / Log Out"></td>
+          <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_erro.gif" width="174" border="0" hspace="20" alt="Erro"></td>
           <td>
 		  <BR>
-            <FORM name="login" action="<%=path%>/index.jsp" method="post">
+            <FORM name="login" action="javascript:history.back()" method="post">
             <table width="100%" border="0" cellspacing="5" cellpadding="0" align="center">
               <tr>
                 <td colspan=2>
-                  <P class="header">O seguinte erro foi encontrado:</P><br>
+                  <P class="header"><%= exception.getMessage() %></P><br>
 				</td>
 			  </tr>
 			  <tr>
                 <td colspan=2>
-                  <b><%= exception %></b>
-                  <% exception.printStackTrace(out); %><br>
+                  <% exception.printStackTrace(new PrintWriter(out)); %><br>
 				</td>
 			  </tr>
               <tr>

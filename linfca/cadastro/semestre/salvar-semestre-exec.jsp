@@ -6,7 +6,7 @@
 		java.util.Enumeration,
         java.sql.*, 
         org.jdom.Element" 
-        errorPage="" %> 
+        errorPage="/design/erro.jsp" %> 
         
 <%
 

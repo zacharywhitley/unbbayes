@@ -3,7 +3,7 @@
 	linfca.*,
 	linfca.cadastro.curso.*,
 	org.jdom.Element"
-	errorPage="" %>
+	errorPage="/design/erro.jsp" %>
 	
 <%@include file="/util.jsp" %> 
 <%@include file =  "/design/cabecalho.jsp"%>

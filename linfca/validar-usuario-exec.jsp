@@ -3,7 +3,7 @@
 		linfca.gerencia.lancamento.*,
 		javax.servlet.RequestDispatcher,
         org.jdom.Element" 
-        errorPage="" %> 
+        errorPage="/design/erro.jsp" %> 
 <html>
 <head>
 </head>

@@ -4,7 +4,7 @@
 		linfca.cadastro.equipamento.*, 
 		org.jdom.Element, 
 		java.util.Iterator" 
-		errorPage="" %>
+		errorPage="/design/erro.jsp" %>
 		<%@include file="/util.jsp" %> 
 
 <%

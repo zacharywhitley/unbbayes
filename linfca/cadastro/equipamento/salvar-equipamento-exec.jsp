@@ -2,7 +2,7 @@
 		linfca.cadastro.*,  
 		java.util.Enumeration,
         org.jdom.Element" 
-        errorPage="" %> 
+        errorPage="/design/erro.jsp" %> 
       
 <%
 

@@ -3,7 +3,7 @@
         java.sql.*, 
         org.jdom.Element, 
         java.util.Iterator" 
-        errorPage="" %> 
+        errorPage="/design/erro.jsp" %> 
 <%@include file="/util.jsp" %> 
 <%@include file =  "/design/cabecalho.jsp"%>
 
