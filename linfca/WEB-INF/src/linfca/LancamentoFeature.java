@@ -48,9 +48,9 @@ public class LancamentoFeature implements Feature {
 			
 			StringBuffer sql = new StringBuffer();
 			sql.append("UPDATE ");
-			sql.append("  Lancamento AS L ");
+			sql.append("  Lancamento L ");
 			sql.append("SET ");
-			sql.append("  (dt_hora_fim_lancamento) ");
+			sql.append("  (L.dt_hora_fim_lancamento) ");
 			sql.append("VALUES ");
 			sql.append("  (?) ");			
 			sql.append("WHERE ");
@@ -80,8 +80,8 @@ public class LancamentoFeature implements Feature {
 			
 			StringBuffer sql = new StringBuffer();
 			sql.append("INSERT INTO ");
-			sql.append("  Lancamento AS L ");
-			sql.append("  (cod_usuario, cod_computador, cod_tipo_lacamento, ");
+			sql.append("  Lancamento L ");
+			sql.append("  (cod_usuario, cod_computador, cod_tipo_lancamento, ");
 			sql.append("   dt_hora_inicio_lancamento) ");
 			sql.append("VALUES ");
 			sql.append("  (?, ?, ?, ?) ");
@@ -123,9 +123,9 @@ public class LancamentoFeature implements Feature {
 		sql.append("SELECT ");
 		sql.append("  cod_tipo_lancamento ");
 		sql.append("FROM ");
-		sql.append("  Lancamento AS L ");
+		sql.append("  Lancamento ");
 		sql.append("WHERE ");
-		sql.append("  L.desc_tipo_lancamento = ? ");
+		sql.append(" desc_tipo_lancamento = ? ");
 		
 		ps = con.prepareStatement(sql.toString());
 		
