@@ -79,6 +79,10 @@ public class RulesPanel extends JPanel {
     longValues[5] = new String("100,0%");
   }
 
+  public void setRulesPanel(CombinatorialNeuralModel combinatorialNetwork){
+    setRulesPanel(combinatorialNetwork, 60, 7);    //valores default de confiança e suporte
+  }
+
   public void setRulesPanel(CombinatorialNeuralModel combinatorialNetwork, int confidence, int support){
     this.combinatorialNetwork = combinatorialNetwork;
 
@@ -88,12 +92,12 @@ public class RulesPanel extends JPanel {
     attributeVector = combinatorialNetwork.getAttributeVector();
     classIndex = combinatorialNetwork.getClassIndex();
 
-    createTableLines(support, confidence);    //valor zero é passado por default
+    createTableLines(support, confidence);
 
-      rulesTableModel = new RulesTableModel();
+    rulesTableModel = new RulesTableModel();
       //    TableSorter sorter = new TableSorter(rulesTableModel);   //adicionada
 
-      tableRules = new JTable(rulesTableModel);
+    tableRules = new JTable(rulesTableModel);
 
 //    tableRules = new JTable(sorter);    //adicionada
 //    sorter.addMouseListenerToHeaderInTable(tableRules);   //adicionada

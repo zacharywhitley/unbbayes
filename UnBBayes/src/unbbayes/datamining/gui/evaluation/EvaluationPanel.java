@@ -312,7 +312,7 @@ public class EvaluationPanel extends JPanel
           thread = new Thread()
           {   public void run()
               {   //Classifier classifier;
-                  int numAttributes = numAttributes = instances.numAttributes();
+                  int numAttributes = /*numAttributes = */instances.numAttributes();
                   if (classifier instanceof BayesianLearning)
                   {   if (jRadioButton1.isSelected())
                       {   ((BayesianLearning)classifier).setNormalClassification();
@@ -393,7 +393,6 @@ public class EvaluationPanel extends JPanel
                       }
                       outBuff.append("ClassAttribute:   " + instances.getClassAttribute().getAttributeName()+'\n');
                       outBuff.append("Test mode:    ");
-
                       /*switch (testMode)
                       {   case 0:
                                     // Test on training
@@ -515,11 +514,14 @@ public class EvaluationPanel extends JPanel
    *  */
   public void setModel(Classifier classifier,InstanceSet inst)
   {   jTextArea2.setText("");
-      if (classifier instanceof BayesianLearning)
+      if (classifier instanceof BayesianLearning && !(classifier instanceof CombinatorialNeuralModel))
       {   jLabel2.setText("Model - Bayesian Network");
       }
       else if (classifier instanceof DecisionTreeLearning)
       {   jLabel2.setText("Model - Decision Tree");
+      }
+      else if (classifier instanceof CombinatorialNeuralModel)
+      {   jLabel2.setText("Model - Combinatorial Neural Model");
       }
       this.classifier = classifier;
       this.instances = inst;
@@ -533,7 +535,7 @@ public class EvaluationPanel extends JPanel
               jComboBox2.setSelectedItem(instances.getAttribute(i).getAttributeName());
       }
       instances.setClassIndex(jComboBox2.getSelectedIndex());
-      if (classifier instanceof BayesianLearning)
+      if (classifier instanceof BayesianLearning && !(classifier instanceof CombinatorialNeuralModel))
       {   jRadioButton1.setEnabled(true);
           jRadioButton2.setEnabled(true);
           jRadioButton3.setEnabled(true);
@@ -552,7 +554,7 @@ public class EvaluationPanel extends JPanel
           {   reference.setStatusBar(ex.getMessage());
           }
       }
-      else if (classifier instanceof DecisionTreeLearning)
+      else if (classifier instanceof DecisionTreeLearning || classifier instanceof CombinatorialNeuralModel)
       {   jRadioButton1.setEnabled(true);
           jRadioButton2.setEnabled(false);
           jRadioButton3.setEnabled(false);

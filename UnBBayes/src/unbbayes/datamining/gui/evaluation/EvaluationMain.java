@@ -217,18 +217,21 @@ public class EvaluationMain extends JInternalFrame
   }
 
   void jMenuItem2_actionPerformed(ActionEvent evt)
-  {   openModel();
+  {   classifier = null;
+      openModel();
       if (instOK)
       {   openTest();
       }
       if (instOK)
-      {   try
-          {   BayesianNetwork bayesianNetwork = new BayesianNetwork(net,inst);
-              classifier = bayesianNetwork;
-          }
-          catch (Exception e)
-          {   statusBar.setText(e.getMessage());
-              instOK = false;
+      {   if(classifier == null)
+          {   try
+              {   BayesianNetwork bayesianNetwork = new BayesianNetwork(net,inst);
+                  classifier = bayesianNetwork;
+              }
+              catch (Exception e)
+              {   statusBar.setText(e.getMessage());
+                  instOK = false;
+              }
           }
       }
       if (instOK)
@@ -241,6 +244,7 @@ public class EvaluationMain extends JInternalFrame
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
       String[] s2 = {"NET"};
       //String[] s1 = {"ID3"};
+      /**/String[] s3 = {"CNM"};
       fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setDialogTitle("Open model");
       fileChooser.setMultiSelectionEnabled(false);
@@ -248,6 +252,9 @@ public class EvaluationMain extends JInternalFrame
       fileChooser.setFileView(new FileIcon(EvaluationMain.this));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "Networks (*.net)"));
       //fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ID3 Models (*.id3)"));
+
+      /**/fileChooser.addChoosableFileFilter(new SimpleFileFilter(s3, "CNM Models (*.cnm)"));
+
       int returnVal = fileChooser.showOpenDialog(this);
       if (returnVal == JFileChooser.APPROVE_OPTION)
       {   selectedFile = fileChooser.getSelectedFile();
@@ -266,6 +273,7 @@ public class EvaluationMain extends JInternalFrame
   private void setModelFromFile(File f)
   {   try
       {   String fileName = f.getName();
+          fileName.toLowerCase();
           if (fileName.regionMatches(true,fileName.length() - 4,".id3",0,4))
           {   ObjectInputStream in = new ObjectInputStream(new FileInputStream(f));
               classifier = (Id3)in.readObject();
@@ -274,6 +282,12 @@ public class EvaluationMain extends JInternalFrame
           {   BaseIO io = new NetIO();
               net = io.load(f);
           }
+/////////
+          else if (fileName.regionMatches(true,fileName.length() - 4,".cnm",0,4))
+          {   ObjectInputStream in = new ObjectInputStream(new FileInputStream(f));
+              classifier = (CombinatorialNeuralModel)in.readObject();
+          }
+///////////
           else
           {   throw new IOException(resource.getString("fileExtensionNotKnown"));
           }
@@ -292,7 +306,5 @@ public class EvaluationMain extends JInternalFrame
           e.printStackTrace();
       }
   }
-
-
 
 }

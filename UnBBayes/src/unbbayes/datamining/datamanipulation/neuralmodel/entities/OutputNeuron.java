@@ -105,13 +105,16 @@ public class OutputNeuron extends Neuron implements Serializable{
     Arc tempArc, returnArc = null;
     Enumeration combEnum = combinationsList.elements();
     boolean signal;
-    int result = 0;
+    int result = -1;
 
     while(combEnum.hasMoreElements()){
       tempArc = (Arc)combEnum.nextElement();
       signal = tempArc.getCombinationNeuron().getSignal();
-      if(signal && tempArc.getNetWeigth() > result){                           //implementacao do OR, max(weight*sinal)
+      if(signal && tempArc.getNetWeigth() >= result){                           //implementacao do OR, max(weight*sinal)
         result = tempArc.getNetWeigth();
+        returnArc = tempArc;
+      } else if(!signal && result < 0){
+        result = 0;
         returnArc = tempArc;
       }
     }

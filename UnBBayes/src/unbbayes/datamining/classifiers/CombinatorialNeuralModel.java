@@ -9,10 +9,10 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
   private Hashtable inputLayer = new Hashtable();
   private Hashtable combinatorialLayer = new Hashtable();
   private Hashtable outputLayer = new Hashtable();
-  private transient InstanceSet instanceSet;
   private Attribute[] attributeVector;
-  private transient int maxOrder;
   private int classIndex;
+  private transient int maxOrder;
+  private transient InstanceSet instanceSet;
 
   public CombinatorialNeuralModel(int maxOrder) {
     this.maxOrder = maxOrder;
@@ -286,7 +286,6 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
     int numAtt = attributeVector.length;
     short value;
     String key;
-//    float[] distribution = new float[outputLayer.size()];
     Arc[] arcVector = new Arc[outputLayer.size()];      //vetor que contem os arcos de maior peso de cada neuronio
 
     inputEnum = inputLayer.elements();

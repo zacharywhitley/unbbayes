@@ -107,6 +107,9 @@ public class InferencePanel extends JPanel {
     jPanel3.removeAll();
     jPanel3.add(treeScrollPane,  BorderLayout.CENTER);
     jPanel3.updateUI();
+
+    textPaneResults.setText("");
+    textAreaResults.setText("");
   }
 /*
   private void printResults(float[] results, Instance instance){

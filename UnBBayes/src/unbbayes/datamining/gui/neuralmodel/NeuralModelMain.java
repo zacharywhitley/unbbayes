@@ -156,10 +156,9 @@ public class NeuralModelMain extends JInternalFrame{
     jPanel2.add(statusBar,  BorderLayout.CENTER);
     panelOptions.add(optionsPanel,  BorderLayout.CENTER);
     tabbedPaneAttributes.add(panelOptions,  BorderLayout.SOUTH);
-    jTabbedPane1.setEnabledAt(1,false);
     jTabbedPane1.setEnabledAt(0,false);
-
-//    inferencePanel.setMainController(this);
+    jTabbedPane1.setEnabledAt(1,false);
+    jTabbedPane1.setEnabledAt(2,false);
   }
 
   void helpButton_actionPerformed(ActionEvent e){
@@ -175,6 +174,8 @@ public class NeuralModelMain extends JInternalFrame{
     int confidence;
     int support;
 
+    setCursor(new Cursor(Cursor.WAIT_CURSOR));
+
     if(instanceSet != null){
       maxOrder = optionsPanel.getMaxOrder();
       confidence = optionsPanel.getConfidence();
@@ -188,6 +189,7 @@ public class NeuralModelMain extends JInternalFrame{
         inferencePanel.setNetwork(combinatorialNetwork);
 
         jTabbedPane1.setEnabledAt(1,true);
+        jTabbedPane1.setEnabledAt(2,true);
         jTabbedPane1.setSelectedIndex(1);
 
         saveButton.setEnabled(true);
@@ -215,6 +217,7 @@ public class NeuralModelMain extends JInternalFrame{
         statusBar.setText(/*resource.getString("exception ") +*/ ex.getMessage());
       }
     }
+    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
   void openButton_actionPerformed(ActionEvent e){
@@ -247,9 +250,11 @@ public class NeuralModelMain extends JInternalFrame{
       setTitle("CNM - " + selectedFile.getName());
       attributePanel.setInstances(instanceSet);
       attributePanel.enableComboBox(true);
+      optionsPanel.enableCombos(true);
       jTabbedPane1.setEnabledAt(0,true);
       jTabbedPane1.setSelectedIndex(0);
       jTabbedPane1.setEnabledAt(1,false);
+      jTabbedPane1.setEnabledAt(2,false);
       learnButton.setEnabled(true);
       saveButton.setEnabled(false);
       statusBar.setText(/*resource.getString("openFile")*/"Arquivo aberto.");
@@ -266,12 +271,12 @@ public class NeuralModelMain extends JInternalFrame{
 
   void saveButton_actionPerformed(ActionEvent e){
     setCursor(new Cursor(Cursor.WAIT_CURSOR));
-    String[] s2 = {"cnm"};
+    String[] cnm = {"cnm"};
     fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
     fileChooser.setMultiSelectionEnabled(false);
     //adicionar FileView no FileChooser para desenhar ícones de arquivos
     fileChooser.setFileView(new FileIcon(NeuralModelMain.this));
-    fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "Modelo Neural Combinatório (*.cnm)"));
+    fileChooser.addChoosableFileFilter(new SimpleFileFilter(cnm, "Modelo Neural Combinatório (*.cnm)"));
     int returnVal = fileChooser.showSaveDialog(this);
     if (returnVal == JFileChooser.APPROVE_OPTION){
       File selectedFile = fileChooser.getSelectedFile();
@@ -295,26 +300,31 @@ public class NeuralModelMain extends JInternalFrame{
 
   void openModelButton_actionPerformed(ActionEvent e) {
     setCursor(new Cursor(Cursor.WAIT_CURSOR));
-    String[] s1 = {"cnm"};
+    String[] cnm = {"cnm"};
     fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
     fileChooser.setDialogTitle(/*resource.getString("openModel2")*/"Abrir modelo");
     fileChooser.setMultiSelectionEnabled(false);
     //adicionar FileView no FileChooser para desenhar ícones de arquivos
     fileChooser.setFileView(new FileIcon(this));
-    fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "Modelo Neural Combinatóri (*.cnm)"));
+    fileChooser.addChoosableFileFilter(new SimpleFileFilter(cnm, "Modelo Neural Combinatóri (*.cnm)"));
     int returnVal = fileChooser.showOpenDialog(this);
     if (returnVal == JFileChooser.APPROVE_OPTION){
       File selectedFile = fileChooser.getSelectedFile();
       try{
         ObjectInputStream in = new ObjectInputStream(new FileInputStream(selectedFile));
+        combinatorialNetwork = null;
         combinatorialNetwork = (CombinatorialNeuralModel)in.readObject();
 
-        rulesPanel.setRulesPanel(combinatorialNetwork, /*confidence, support*/ 60,7);
-
+        tabbedPaneRules.removeAll();
+        rulesPanel = new RulesPanel();
+        rulesPanel.setRulesPanel(combinatorialNetwork);
+        tabbedPaneRules.add(rulesPanel, BorderLayout.CENTER);
+        inferencePanel.setNetwork(combinatorialNetwork);
+        jTabbedPane1.setEnabledAt(0,false);
         jTabbedPane1.setEnabledAt(1,true);
         jTabbedPane1.setEnabledAt(2,true);
-        jTabbedPane1.setEnabledAt(0,false);
         learnButton.setEnabled(false);
+        saveButton.setEnabled(false);
 //        jMenuFileBuild.setEnabled(false);
         this.setTitle("CNM - Model "+selectedFile.getName());
         statusBar.setText(/*resource.getString("modelOpenedSuccessfully")*/"Modelo carregado com sucesso.");

@@ -71,6 +71,16 @@ public class OptionsPanel extends JPanel{
     jComboBoxMaxOrder.setSelectedIndex(5);
     jComboBoxSupport.setSelectedIndex(7);
     jComboBoxConfidence.setSelectedIndex(60);
+
+    jComboBoxMaxOrder.setEnabled(false);
+    jComboBoxSupport.setEnabled(false);
+    jComboBoxConfidence.setEnabled(false);
+  }
+
+  public void enableCombos(boolean enable){
+    jComboBoxMaxOrder.setEnabled(enable);
+    jComboBoxSupport.setEnabled(enable);
+    jComboBoxConfidence.setEnabled(enable);
   }
 
   public int getMaxOrder(){
