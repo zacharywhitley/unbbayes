@@ -53,7 +53,7 @@ import unbbayes.jprs.jbn.ProbabilisticNode;
 public class GraphicMode {
 	
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.fronteira.resources.FronteiraResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.exemplo.resources.ExemploResources");
 	
     public static void main(String[] args) {
         JFrame frame = new JFrame(resource.getString("exampleTitle"));

@@ -21,6 +21,8 @@
 
 package unbbayes.util;
 
+import java.util.ResourceBundle;
+
 /**
  * Classe que representa um array dinâmico do tipo <code>double</code>.
  *
@@ -32,10 +34,13 @@ public class DoubleCollection {
 
     private double data[];
     private int size;
+    
+    /** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.util.resources.UtilResources");
 
     public DoubleCollection(int initialCapacity) {
         if (initialCapacity < 0)
-            throw new IllegalArgumentException("Illegal Capacity: "+
+            throw new IllegalArgumentException(resource.getString("IllegalCapacityException") +
                                                initialCapacity);
         this.data = new double[initialCapacity];
     }

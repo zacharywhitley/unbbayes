@@ -42,7 +42,7 @@ public class LogManager {
     private StringBuffer log;
     
     /** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.fronteira.resources.FronteiraResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.io.resources.IoResources");
 
     public LogManager(int bufferSize) {
         log = new StringBuffer(bufferSize);

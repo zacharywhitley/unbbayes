@@ -31,6 +31,9 @@ import java.util.*;
  *@author     Michael e Rommel
  */
 public class SetToolkit {
+	
+	/** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.util.resources.UtilResources");
 
     /**
      *  Realiza a união entre dois conjuntos.
@@ -105,9 +108,9 @@ public class SetToolkit {
             result.addAll(conjunto);
             return result;
         } catch (IllegalAccessException e) {
-            throw new RuntimeException("erro na rotina clone. sem acesso");
+            throw new RuntimeException(resource.getString("IllegalAccessException"));
         } catch (InstantiationException e) {
-            throw new RuntimeException("erro na rotina clone. instanciacao");
+            throw new RuntimeException(resource.getString("InstantiationException"));
         }
     }
     

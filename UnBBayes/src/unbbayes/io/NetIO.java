@@ -37,7 +37,7 @@ import java.util.ResourceBundle;
 public class NetIO implements BaseIO {
 	
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.fronteira.resources.FronteiraResources");
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.io.resources.IoResources");
 
     private static final String ERROR_NET = resource.getString("errorNet");
 

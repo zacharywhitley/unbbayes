@@ -22,6 +22,7 @@
 package unbbayes.util;
 
 import unbbayes.jprs.jbn.Node;
+import java.util.ResourceBundle;
 
 /**
  * Classe que representa um array dinâmico do tipo <code>Node</code>.
@@ -34,10 +35,13 @@ public class NodeList {
 
     private Node data[];
     private int size;
+    
+    /** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.util.resources.UtilResources");
 
     public NodeList(int initialCapacity) {
         if (initialCapacity < 0)
-            throw new IllegalArgumentException("Illegal Capacity: "+
+            throw new IllegalArgumentException(resource.getString("IllegalCapacityException") +
                                                initialCapacity);
         this.data = new Node[initialCapacity];
     }
