@@ -13,6 +13,7 @@ public class DecisiontreeResource extends ListResourceBundle {
 	// Decision Tree Main
 	{"open","Open ..."},
 	{"build","Learn Decision Tree"},
+	{"preferences","Preferences"},
 	{"file","File"},
 	{"help","Help"},
 	{"about","About ..."},
@@ -67,5 +68,8 @@ public class DecisiontreeResource extends ListResourceBundle {
 	{"back","Back"},
 	{"backMnemonic",new Character('B')},
 	{"return","\nUser returns a level in the tree\nLast option was "},
+//	Decision Tree Options
+	{"cancel","Cancel"},
+	{"gainRatio","Use gain ratio in learning"},
 	};
 }

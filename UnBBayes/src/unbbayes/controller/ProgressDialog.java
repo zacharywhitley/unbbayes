@@ -3,6 +3,7 @@ package unbbayes.controller;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ResourceBundle;
 
 /** This class shows a screen that initializes a loading and shows
  *  it's status for the FileController instance
@@ -15,7 +16,9 @@ public class ProgressDialog extends JDialog
 	/** Create an instance of this class  */
 	public ProgressDialog(String message, IProgress progress)
 	{
-		setTitle("Loading...");
+		resource = ResourceBundle.getBundle("unbbayes.controller.resources.ControllerResources");
+		
+		setTitle(resource.getString("loading"));
 		setSize(280,130);
 		setModal(true);
 		setResizable(false);
@@ -40,7 +43,7 @@ public class ProgressDialog extends JDialog
 		contentPane.add(panelLabel, "North");
 		if (message != null)
 		{
-			JLabel label = new JLabel("Carregando "+message);		
+			JLabel label = new JLabel(resource.getString("loading")+message);		
 			panelLabel.add(label);
 		}
 		
@@ -59,7 +62,7 @@ public class ProgressDialog extends JDialog
 		//button
 		JPanel panelButton = new JPanel();
 		contentPane.add(panelButton, "South");
-		JButton cancelButton = new JButton("Cancel");
+		JButton cancelButton = new JButton(resource.getString("cancel"));
 		panelButton.add(cancelButton);
 		cancelButton.addActionListener(
 			new ActionListener()
@@ -85,7 +88,7 @@ public class ProgressDialog extends JDialog
 					int current = activity.getCurrent();
 					progressBar.setValue(current);
 					progressBar.setStringPainted(true);
-					progressBar.setString(current+" de "+max);
+					progressBar.setString(current+resource.getString("of")+max);
 					if(current==activity.getTarget())
 					{	
 						activityMonitor.stop();
@@ -123,4 +126,5 @@ public class ProgressDialog extends JDialog
 	private JProgressBar progressBar;
 	private int min;
 	private int max;
+	private ResourceBundle resource;
 }

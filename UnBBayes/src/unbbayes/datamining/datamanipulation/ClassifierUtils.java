@@ -227,37 +227,40 @@ public class ClassifierUtils
 
   	//--------------------------------------------------------------------//
 
-  	/*public double computeGainRatio(InstanceSet data, Attribute att) throws Exception
-  	{	// Compute split info
-  		int numInstances = data.numWeightedInstances();
-  		double splitInfo = 0;
-		if (att.isNominal())
-		{
-			splitInfo = xlog2(numInstances);
-			InstanceSet[] splitData = splitData(data, att);
-    		int numValues = att.numValues();
-			for (int j = 0; j < numValues; j++)
-  			{	int numInstancesSplit = splitData[j].numWeightedInstances();
-				if (numInstancesSplit > 0)
-  				{
-  					splitInfo -= xlog2(numInstancesSplit);
-				}
-    		}
-    		splitInfo /= numInstances;
-		}
-
-		// Compute gain ratio
-		double gainRatio;
+	/**
+	* Computes split information to be used in gain ratio 
+	*
+	* @param att attribute used to split information
+	* @return split information, 1 if split information is 0
+	*/
+  	public double computeSplitInformation(Attribute att) throws Exception
+  	{	
+  		int numInstances = instances.numWeightedInstances();
+  		double splitInfo = xlog2(numInstances);
+		InstanceSet[] splitData = splitData(instances, att);
+    	int numValues = att.numValues();
+		int numInstancesSplit;
+    	
+    	//for each value...
+		for (int i = 0; i < numValues; i++)
+  		{	
+  			numInstancesSplit = splitData[i].numWeightedInstances();
+			if (numInstancesSplit > 0)
+  			{
+  				splitInfo -= xlog2(numInstancesSplit);
+			}
+    	}
+    	splitInfo /= numInstances;
+		
 		if (splitInfo != 0)
 		{
-			gainRatio = computeInfoGain(data,att)/splitInfo;
+			return splitInfo;
 		}
 		else
 		{
-			gainRatio = computeInfoGain(data,att);
+			return 1;
 		}
-		return gainRatio;
-  	}*/
+  	}
 
   	//--------------------------------------------------------------------//
 

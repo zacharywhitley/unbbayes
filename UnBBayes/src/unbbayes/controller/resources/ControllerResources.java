@@ -61,6 +61,9 @@ public class ControllerResources extends ListResourceBundle {
 		{"printingPage","Printing page "},
 		{"previewButtonLabel","Preview"},
 		{"nextButtonLabel","Next"},
-		{"fitToPageButtonLabel","Fit to Page"}
+		{"fitToPageButtonLabel","Fit to Page"},
+		{"loading","Loading "},
+		{"cancel","Cancel"},
+		{"of"," of "}
 	};
 }

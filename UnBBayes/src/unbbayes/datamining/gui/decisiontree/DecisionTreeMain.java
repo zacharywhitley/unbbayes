@@ -24,10 +24,12 @@ public class DecisionTreeMain extends JInternalFrame
   private JToolBar jToolBar = new JToolBar();
   private JButton openFileButton = new JButton();
   private JButton learnButton = new JButton();
+  private JButton preferencesButton = new JButton();
   private BorderLayout borderLayout1 = new BorderLayout();
   private JMenuItem jMenuFileOpen = new JMenuItem();
   private JMenuItem jMenuFileExit = new JMenuItem();
   private JMenuItem jMenuFileBuild = new JMenuItem();
+  private JMenuItem jMenuFilePreferences = new JMenuItem();
   private InstanceSet inst;
   private ResourceBundle resource;
   private JTree id3tree;
@@ -35,6 +37,7 @@ public class DecisionTreeMain extends JInternalFrame
   private ImageIcon compilaIcon;
   private ImageIcon helpIcon;
   private ImageIcon salvarIcon;
+  private ImageIcon opcaoglobalIcon;
   private JMenuItem jMenuItem2 = new JMenuItem();
   private JMenu jMenu1 = new JMenu();
   private JMenuItem jMenuItem1 = new JMenuItem();
@@ -76,6 +79,7 @@ public class DecisionTreeMain extends JInternalFrame
     compilaIcon = iconController.getCompileIcon();
     helpIcon = iconController.getHelpIcon();
     salvarIcon = iconController.getSaveIcon();
+	opcaoglobalIcon = iconController.getGlobalOptionIcon();
     contentPane = (JPanel) this.getContentPane();
     titledBorder1 = new TitledBorder(border1,"Status");
     inductionFrame = new InductionPanel();
@@ -114,6 +118,17 @@ public class DecisionTreeMain extends JInternalFrame
     learnButton.setEnabled(false);
     learnButton.setToolTipText(resource.getString("buildTooltip"));
     learnButton.setIcon(compilaIcon);
+	
+	preferencesButton.addActionListener(new java.awt.event.ActionListener()
+		{
+		  	public void actionPerformed(ActionEvent e)
+		  	{
+				jMenuFilePreferences_actionPerformed(e);
+		  	}
+		});
+	preferencesButton.setToolTipText(resource.getString("preferences"));
+	preferencesButton.setIcon(opcaoglobalIcon);
+	
     jMenuFileOpen.setText(resource.getString("open"));
     jMenuFileOpen.setIcon(abrirIcon);
     jMenuFileOpen.setMnemonic(((Character)resource.getObject("openMnemonic")).charValue());
@@ -134,16 +149,26 @@ public class DecisionTreeMain extends JInternalFrame
       }
     });
     jMenuFileBuild.setText(resource.getString("build"));
+    jMenuFilePreferences.setText(resource.getString("preferences"));
+    jMenuFilePreferences.setIcon(opcaoglobalIcon);
     jMenuFileBuild.setEnabled(false);
     jMenuFileBuild.setIcon(compilaIcon);
     jMenuFileBuild.setMnemonic(((Character)resource.getObject("buildMnemonic")).charValue());
     jMenuFileBuild.addActionListener(new java.awt.event.ActionListener()
     {
-      public void actionPerformed(ActionEvent e)
-      {
-        jMenuFileBuild_actionPerformed(e);
-      }
+      	public void actionPerformed(ActionEvent e)
+      	{
+        	jMenuFileBuild_actionPerformed(e);
+      	}
     });
+	jMenuFilePreferences.addActionListener(new java.awt.event.ActionListener()
+	{
+		public void actionPerformed(ActionEvent e)
+		{
+			jMenuFilePreferences_actionPerformed(e);
+	  	}
+	});
+    
     jToolBar.setFloatable(false);
     jMenuItem2.setEnabled(false);
     jMenuItem2.setIcon(salvarIcon);
@@ -200,12 +225,18 @@ public class DecisionTreeMain extends JInternalFrame
     statusBar.setText(resource.getString("welcome"));
     jPanel1.setLayout(borderLayout2);
     jPanel2.setLayout(borderLayout3);
+    
+    Dimension separador = new Dimension(5,0);
     jToolBar.add(openFileButton);
     jToolBar.add(learnButton);
-    jToolBar.add(helpButton, null);
-    jToolBar.addSeparator();
-    jToolBar.add(openModelButton, null);
-    jToolBar.add(saveModelButton, null);
+	jToolBar.addSeparator(separador);
+	jToolBar.add(preferencesButton);
+	jToolBar.addSeparator(separador);
+    jToolBar.add(openModelButton);
+    jToolBar.add(saveModelButton);
+	jToolBar.addSeparator(separador);
+	jToolBar.add(helpButton);
+	
     jMenuFile.add(jMenuFileOpen);
     jMenuFile.addSeparator();
     jMenuFile.add(jMenuItem1);
@@ -229,6 +260,7 @@ public class DecisionTreeMain extends JInternalFrame
     jTabbedPane.add(attributeFrame, resource.getString("attributes"));
     jTabbedPane.add(inductionFrame, resource.getString("inference"));
     jMenu1.add(jMenuFileBuild);
+	jMenu1.add(jMenuFilePreferences);
     for(int i=0; i<2; i++)
         jTabbedPane.setEnabledAt(i,false);
   }
@@ -332,6 +364,12 @@ public class DecisionTreeMain extends JInternalFrame
   void jMenuFileBuild_actionPerformed(ActionEvent e)
   {   learnButton_actionPerformed(e);
   }
+  
+  void jMenuFilePreferences_actionPerformed(ActionEvent e)
+	{   
+		DecisionTreeOptions id3optionsFrame = new DecisionTreeOptions();
+		id3optionsFrame.show();
+	}
 
   void jMenuItem1_actionPerformed(ActionEvent e)
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));

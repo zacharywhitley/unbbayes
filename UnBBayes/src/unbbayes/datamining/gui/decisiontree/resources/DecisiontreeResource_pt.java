@@ -13,6 +13,7 @@ public class DecisiontreeResource_pt extends ListResourceBundle {
 	// Decision Tree Main
 	{"open","Abrir ..."},
 	{"build","Construir Árvore de Decisão"},
+	{"preferences","Preferências"},	
 	{"file","Arquivo"},
 	{"help","Ajuda"},
 	{"about","Sobre ..."},
@@ -67,5 +68,8 @@ public class DecisiontreeResource_pt extends ListResourceBundle {
 	{"back","Voltar"},
 	{"backMnemonic",new Character('V')},
 	{"return","\nUsuário retorna um nível na árvore\nÚltima opção foi "},
+	//Decision Tree Options
+	{"cancel","Cancelar"},
+	{"gainRatio","Usar taxa de ganho no aprendizado"},
 	};
 }

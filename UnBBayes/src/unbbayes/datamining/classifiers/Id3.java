@@ -16,6 +16,7 @@ import unbbayes.datamining.datamanipulation.*;
  * trees</i>. Machine Learning. Vol.1, No.1, pp. 81-106.<p>
  *
  * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  * @version $1.0 $ (24/12/2001)
  */
 
@@ -125,18 +126,24 @@ public class Id3 extends DecisionTreeLearning implements Serializable
           		// compute array with the gain of each attribute.
           		infoGains = utils.computeInfoGain();
 
-          		// Compute the information gain mean
-			    /* double meanInfoGains = Utils.sum(infoGains)/(double)(infoGains.length);
-
-          		for (int i=0; i<data.numAttributes(); i++)
+          		//applies gain ratio if user chooses it
+          		if(Options.getInstance().getIfUsingGainRatio())
           		{
-            		if (infoGains[i] > meanInfoGains)
-            		{
-              			Attribute att = (Attribute) data.getAttribute(i);
-              			infoGains[att.getIndex()] = utils.computeGainRatio(data, att);
-
-            		}
-          		}*/
+					//applies gain ratio to attribute if its gain is greater than mean
+					Attribute att;
+          		    double meanInfoGains = Utils.sum(infoGains)/(double)(infoGains.length);
+					for (int i=0; i<infoGains.length; i++)
+          			{
+            			if (infoGains[i] > meanInfoGains)
+            			{
+              				att = (Attribute) data.getAttribute(i);
+              				if(att.isNominal())
+              				{
+              					infoGains[i] /= utils.computeSplitInformation(att);
+              				}
+            			}
+          			}
+          		}
 
           		//gets attribute with maximum gain
           		attributeIndex = Utils.maxIndex(infoGains);

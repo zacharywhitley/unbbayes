@@ -61,6 +61,9 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"printingPage","Imprimindo página "},
 		{"previewButtonLabel","Anterior"},
 		{"nextButtonLabel","Próxima"},
-		{"fitToPageButtonLabel","Ajustar para Página"}
+		{"fitToPageButtonLabel","Ajustar para Página"},
+		{"loading","Carregando "},
+		{"cancel","Cancelar"},
+		{"of"," de "}
 	};
 }
