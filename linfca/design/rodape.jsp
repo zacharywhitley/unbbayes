@@ -17,7 +17,7 @@
 	  <a href="http://rommel.myip.org:8080/linfca">linfca</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; 
       <a href="#">nossa equipe</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; 
       <a href="#">eventos</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;       
-      <a href="#">downloads</a>
+      <a href="<%=path%>/downloads.jsp">downloads</a>
 	  </span>
 	</td>
   </tr>

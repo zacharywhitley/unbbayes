@@ -88,7 +88,7 @@ function MM_swapImage() { //v3.0
           <td align="center"><a href="http://rommel.myip.org:8080/linfca" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('LinfCA','','<%=path%>/design/imagens/nome_linfcaON.gif',1)"><img name="LinfCA" border="0" src="<%=path%>/design/imagens/nome_linfca.gif" width="68" height="16"></a></td>
           <td align="center"><a href="#" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Nossa Equipe','','<%=path%>/design/imagens/nome_nossa_equipeON.gif',1)"><img name="Nossa Equipe" border="0" src="<%=path%>/design/imagens/nome_nossa_equipe.gif" width="133" height="21"></a></td>
           <td align="center"><a href="#" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Eventos','','<%=path%>/design/imagens/nome_eventosON.gif',1)"><img name="Eventos" border="0" src="<%=path%>/design/imagens/nome_eventos.gif" width="75" height="15"></a></td>
-          <td align="center"><a href="#" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Downloads','','<%=path%>/design/imagens/nome_downloadsON.gif',1)"><img name="Downloads" border="0" src="<%=path%>/design/imagens/nome_downloads.gif" width="105" height="16"></a></td>
+          <td align="center"><a href="<%=path%>/downloads.jsp" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Downloads','','<%=path%>/design/imagens/nome_downloadsON.gif',1)"><img name="Downloads" border="0" src="<%=path%>/design/imagens/nome_downloads.gif" width="105" height="16"></a></td>
 		</tr>
 	  </table>
 	</td>

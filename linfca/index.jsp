@@ -22,7 +22,7 @@
               <tr>
                 <td>
                   <P>Senha</P></td>
-                <td></td></tr>
+                <td></td></tr> 
               <tr>
                 <td width="30%"><INPUT type=password maxLength=35 name="senha"></td>
                 <td width="70%"><P>Para se cadastrar no sistema, dirija-se à portaria.</P></td></tr>
