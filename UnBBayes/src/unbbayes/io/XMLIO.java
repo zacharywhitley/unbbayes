@@ -120,17 +120,10 @@ public class XMLIO implements BaseIO {
 			fillTable(table, dpis);
 		}
 	}
-
-	/* (non-Javadoc)
-	 * @see unbbayes.io.BaseIO#load(java.io.File)
-	 */
-	public ProbabilisticNetwork load(File input) throws LoadException, IOException {
-		ProbabilisticNetwork net = null;
-		org.w3c.dom.Node elNode = null;
-		try {			
-			InputSource is = new InputSource(new BufferedReader(new FileReader(input)));
-			Document doc = XMLUtil.getDocument(is);						
-			elNode = XPathAPI.selectSingleNode(doc, NET_NAME);
+	
+	public ProbabilisticNetwork load(Document doc) throws Exception {
+			ProbabilisticNetwork net = null;
+			org.w3c.dom.Node elNode = XPathAPI.selectSingleNode(doc, NET_NAME);
 			net = new ProbabilisticNetwork(XMLUtil.getValue(elNode));
 			
 			NodeIterator nodeIterator = XPathAPI.selectNodeIterator(doc, VARIABLES);
@@ -145,11 +138,22 @@ public class XMLIO implements BaseIO {
 			
 			nodeIterator = XPathAPI.selectNodeIterator(doc, POTENTIALS);
 			assignPotentials(net, nodeIterator);
+			return net;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.io.BaseIO#load(java.io.File)
+	 */
+	public ProbabilisticNetwork load(File input) throws LoadException, IOException {
+		try {			
+			InputSource is = new InputSource(new BufferedReader(new FileReader(input)));
+			Document doc = XMLUtil.getDocument(is);
+			return load(doc);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new LoadException("Load Error");			
 		}
-		return net;
 	}
 
 	/* (non-Javadoc)
