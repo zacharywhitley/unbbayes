@@ -30,8 +30,7 @@ public class FronteiraResources_pt extends ListResourceBundle {
 	 */
 	static final Object[][] contents =
 	{	{"fileDirectoryType","Diretório"},
-		{"fileJPGType","Imagem JPG"},
-		{"fileGIFType","Imagem GIF"},
+		{"fileARFFType","Arquivo Arff"},
 		{"fileTXTType","Arquivo Texto TXT"},
 		{"fileNETType","Arquivo de Rede Bayesiana NET"},
 		{"fileGenericType","Arquivo Genérico"},
@@ -46,7 +45,7 @@ public class FronteiraResources_pt extends ListResourceBundle {
 		{"tileToolTip","Organizar as janelas em bloco"},
 		{"cascadeToolTip","Organizar as janelas em cascata"},
 		{"netFileFilter","Net (.net)"},
-		{"textFileFilter","Text (.txt)"},		
+		{"textFileFilter","Text (.txt)"},
 		{"fileUntitled","SemNome.txt"},
 		{"globalOptionTitle","Opções Globais"},
 		{"usaName","EUA"},

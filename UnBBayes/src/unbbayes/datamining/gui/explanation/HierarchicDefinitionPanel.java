@@ -54,12 +54,12 @@ public class HierarchicDefinitionPanel extends JPanel
     }
   }
   private void jbInit() throws Exception
-  { greenBallIcon = new ImageIcon(getClass().getResource("/icones/green-ball.gif"));
-    expandIcon = new ImageIcon(getClass().getResource("/icones/expandir.gif"));
-    collapseIcon = new ImageIcon(getClass().getResource("/icones/contrair.gif"));
-    addFolderIcon = new ImageIcon(getClass().getResource("/icones/addFolder.gif"));
-    deleteFolderIcon = new ImageIcon(getClass().getResource("/icones/deleteFolder.gif"));
-    renameFolderIcon = new ImageIcon(getClass().getResource("/icones/renameFolder.gif"));
+  { greenBallIcon = new ImageIcon(getClass().getResource("/icons/green-ball.gif"));
+    expandIcon = new ImageIcon(getClass().getResource("/icons/expand-nodes.gif"));
+    collapseIcon = new ImageIcon(getClass().getResource("/icons/contract-nodes.gif"));
+    addFolderIcon = new ImageIcon(getClass().getResource("/icons/add-folder.gif"));
+    deleteFolderIcon = new ImageIcon(getClass().getResource("/icons/delete-folder.gif"));
+    renameFolderIcon = new ImageIcon(getClass().getResource("/icons/rename-folder.gif"));
     this.setLayout(borderLayout1);
     jPanel2.setLayout(borderLayout2);
     jPanel1.setLayout(borderLayout3);
@@ -144,9 +144,9 @@ public class HierarchicDefinitionPanel extends JPanel
 
   }
 
-  void applyButton_actionPerformed(ActionEvent e)
+  /*void applyButton_actionPerformed(ActionEvent e)
   {   net.setHierarchicTree(hierarchicTree);
-  }
+  }*/
 
   public void setHierarchicTree(ProbabilisticNetwork net)
   {   this.net = net;

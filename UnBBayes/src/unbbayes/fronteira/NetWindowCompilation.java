@@ -66,15 +66,15 @@ public class NetWindowCompilation extends JPanel {
         status         = new JLabel(resource.getString("statusReadyLabel"));
 
         //criar botões que serão usados nos toolbars
-        propagate         = new JButton(new ImageIcon(getClass().getResource("/icones/propagar.gif")));
-        expand            = new JButton(new ImageIcon(getClass().getResource("/icones/expandir.gif")));
-        collapse          = new JButton(new ImageIcon(getClass().getResource("/icones/contrair.gif")));
-        editMode          = new JButton(new ImageIcon(getClass().getResource("/icones/editar.gif")));
-        log               = new JButton(new ImageIcon(getClass().getResource("/icones/informacao.gif")));
-        reset             = new JButton(new ImageIcon(getClass().getResource("/icones/initialize.gif")));
-        printNet          = new JButton(new ImageIcon(getClass().getResource("/icones/imprimirrede.gif")));
-        previewNet        = new JButton(new ImageIcon(getClass().getResource("/icones/previewimpressao.gif")));
-        saveNetImage      = new JButton(new ImageIcon(getClass().getResource("/icones/salvargrafo.gif")));
+        propagate         = new JButton(new ImageIcon(getClass().getResource("/icons/propagate.gif")));
+        expand            = new JButton(new ImageIcon(getClass().getResource("/icons/expand-nodes.gif")));
+        collapse          = new JButton(new ImageIcon(getClass().getResource("/icons/contract-nodes.gif")));
+        editMode          = new JButton(new ImageIcon(getClass().getResource("/icons/edit.gif")));
+        log               = new JButton(new ImageIcon(getClass().getResource("/icons/information.gif")));
+        reset             = new JButton(new ImageIcon(getClass().getResource("/icons/initialize.gif")));
+        printNet          = new JButton(new ImageIcon(getClass().getResource("/icons/print-net.gif")));
+        previewNet        = new JButton(new ImageIcon(getClass().getResource("/icons/preview-print.gif")));
+        saveNetImage      = new JButton(new ImageIcon(getClass().getResource("/icons/save-net.gif")));
 
 
         //setar tooltip para esses botões

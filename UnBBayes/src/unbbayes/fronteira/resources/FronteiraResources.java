@@ -30,8 +30,7 @@ public class FronteiraResources extends ListResourceBundle {
 	 */
 	static final Object[][] contents =
 	{	{"fileDirectoryType","Directory"},
-		{"fileJPGType","Image JPG"},
-		{"fileGIFType","Image GIF"},
+		{"fileARFFType","Arquivo Arff"},
 		{"fileTXTType","Text File TXT"},
 		{"fileNETType","Baysian Netwotk File NET"},
 		{"fileGenericType","Generic File"},

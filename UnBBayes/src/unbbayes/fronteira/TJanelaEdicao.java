@@ -66,8 +66,8 @@ public class TJanelaEdicao extends JDialog {
         setSize(550, 470);
         setResizable(true);
 
-        insereArco = new JButton(new ImageIcon("icones/ferraarco.gif"));
-        reaprende  = new JButton(new ImageIcon("icones/aprende.gif"));
+        insereArco = new JButton(new ImageIcon(getClass().getResource("/icons/arc.gif")));
+        reaprende  = new JButton(new ImageIcon(getClass().getResource("/icons/learn.gif")));
         view       = new JViewport();
         jtb        = new JToolBar();
         rede       = new TEditaRede(this, net);
@@ -86,7 +86,7 @@ public class TJanelaEdicao extends JDialog {
 
         //ao clicar no botão reaprende, mostra-se o menu para escolha do arquivo para o aprendizado.
         reaprende.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {            	
+            public void actionPerformed(ActionEvent ae) {
             	List edgeList = net.getArcos();
             	Edge edge;
             	boolean close = true;
@@ -98,7 +98,7 @@ public class TJanelaEdicao extends JDialog {
 
                     }
                	}
-               	if(close){               		
+               	if(close){
                     setVisible(false);
                     dispose();
                	}
@@ -140,8 +140,8 @@ public class TJanelaEdicao extends JDialog {
     public JViewport getView() {
         return this.view;
     }
-    
+
     WindowAdapter closeFunction = new WindowAdapter(){
-        public void windowClosing(WindowEvent we){}   	    	
+        public void windowClosing(WindowEvent we){}
     };
 }

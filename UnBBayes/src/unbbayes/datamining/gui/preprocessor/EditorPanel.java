@@ -45,7 +45,7 @@ public class EditorPanel extends JPanel
     }
   }
   private void jbInit() throws Exception
-  { image1 = new ImageIcon(getClass().getResource("/icones/salvar.gif"));
+  { image1 = new ImageIcon(getClass().getResource("/icons/save.gif"));
     this.setLayout(borderLayout1);
     jTextArea1.addInputMethodListener(new java.awt.event.InputMethodListener()
     {

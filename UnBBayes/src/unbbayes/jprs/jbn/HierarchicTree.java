@@ -30,8 +30,8 @@ public class HierarchicTree extends JTree
   }
 
   public class HierarchicTreeCellRenderer extends DefaultTreeCellRenderer
-  {   private ImageIcon folderSmallIcon = new ImageIcon(getClass().getResource("/icones/folderSmall.gif"));
-      private ImageIcon yellowBallIcon = new ImageIcon(getClass().getResource("/icones/yellow-ball.gif"));
+  {   private ImageIcon folderSmallIcon = new ImageIcon(getClass().getResource("/icons/folder-small.gif"));
+      private ImageIcon yellowBallIcon = new ImageIcon(getClass().getResource("/icons/yellow-ball.gif"));
 
       public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus)
       {   super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);

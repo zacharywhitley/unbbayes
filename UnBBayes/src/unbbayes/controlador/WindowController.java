@@ -300,13 +300,13 @@ public class WindowController implements KeyListener {
      * Inicia as crenças da árvore de junção.
      */
     public void initialize() {
-    	/*try {
+    	try {
 	        rede.initialize();
        		evidenceTree.updateTree();
     	} catch (Exception e) {
     		e.printStackTrace();
-    	}*/
-        try {
+    	}
+        /*try {
 	        long start = System.currentTimeMillis();
                 for (int i=0;i<250;i++)
                 {   rede.initialize();
@@ -322,7 +322,7 @@ public class WindowController implements KeyListener {
                 System.out.println(end-start);
     	} catch (Exception e) {
     		e.printStackTrace();
-    	}
+    	}*/
     }
 
 
@@ -417,9 +417,9 @@ public class WindowController implements KeyListener {
         jspTexto.setPreferredSize(new Dimension(450, 400));
 
         JPanel panel = new JPanel(new BorderLayout());
-        JButton botaoImprimir = new JButton(new ImageIcon(getClass().getResource("/icones/IMPRIMIR.gif")));
+        JButton botaoImprimir = new JButton(new ImageIcon(getClass().getResource("/icons/print.gif")));
         botaoImprimir.setToolTipText(resource.getString("printLogToolTip"));
-        JButton botaoVisualizar = new JButton(new ImageIcon(getClass().getResource("/icones/VISUALIZAR.gif")));
+        JButton botaoVisualizar = new JButton(new ImageIcon(getClass().getResource("/icons/visualize.gif")));
         botaoVisualizar.setToolTipText(resource.getString("previewLogToolTip"));
         botaoImprimir.addActionListener(
             new ActionListener() {
@@ -1070,10 +1070,10 @@ public class WindowController implements KeyListener {
         NodeList nos;
         List vetorAux = tela.getIGraph().getSelectedGroup();
 
-        if (vetorAux.size() == 0) {        	
+        if (vetorAux.size() == 0) {
             nos = new NodeList();
             for (int i = 0; i < rede.getNodeCount(); i++) {
-            	nos.add(i, rede.getNodeAt(i));            	
+            	nos.add(i, rede.getNodeAt(i));
             }
         } else {
             nos = new NodeList();

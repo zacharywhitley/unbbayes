@@ -153,7 +153,7 @@ public class InductionPanel extends JPanel
       if (buttonName.equals(resource.getString("back")))
       {   jRadioButton.setMnemonic(((Character)resource.getObject("backMnemonic")).charValue());
           try
-          {   jRadioButton.setIcon(new ImageIcon(getClass().getResource("/icones/RETORNAR.GIF")));
+          {   jRadioButton.setIcon(new ImageIcon(getClass().getResource("/icons/return.gif")));
           }
           catch (Exception e)
           {}

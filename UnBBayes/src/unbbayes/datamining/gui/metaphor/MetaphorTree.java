@@ -50,11 +50,11 @@ public class MetaphorTree extends JTree
         }
 
 	private class MetaphorTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer
-        {   ImageIcon yesIcon = new ImageIcon(getClass().getResource("/icones/yesState.gif"));
-	    ImageIcon noIcon = new ImageIcon(getClass().getResource("/icones/noState.gif"));
-	    ImageIcon emptyIcon = new ImageIcon(getClass().getResource("/icones/emptyState.gif"));
-            ImageIcon evidenciasIcon = new ImageIcon(getClass().getResource("/icones/evidencias.gif"));
-            ImageIcon folderSmallIcon = new ImageIcon(getClass().getResource("/icones/folderSmall.gif"));
+        {   ImageIcon yesIcon = new ImageIcon(getClass().getResource("/icons/yes-state.gif"));
+	    ImageIcon noIcon = new ImageIcon(getClass().getResource("/icons/no-state.gif"));
+	    ImageIcon emptyIcon = new ImageIcon(getClass().getResource("/icons/empty-state.gif"));
+            ImageIcon evidenciasIcon = new ImageIcon(getClass().getResource("/icons/more.gif"));
+            ImageIcon folderSmallIcon = new ImageIcon(getClass().getResource("/icons/folder-small.gif"));
 
 	    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus)
             {   super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);

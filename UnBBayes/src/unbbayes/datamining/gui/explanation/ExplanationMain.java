@@ -61,11 +61,11 @@ public class ExplanationMain extends JPanel
     }
 
     private void jbInit() throws Exception
-    {   abrirIcon = new ImageIcon(getClass().getResource("/icones/abrir.gif"));
-        salvarIcon = new ImageIcon(getClass().getResource("/icones/salvar.gif"));
-        helpIcon = new ImageIcon(getClass().getResource("/icones/help.gif"));
-        expandirIcon = new ImageIcon(getClass().getResource("/icones/hierarquia.gif"));
-        compilaIcon = new ImageIcon(getClass().getResource("/icones/compila.gif"));
+    {   abrirIcon = new ImageIcon(getClass().getResource("/icons/open.gif"));
+        salvarIcon = new ImageIcon(getClass().getResource("/icons/save.gif"));
+        helpIcon = new ImageIcon(getClass().getResource("/icons/help.gif"));
+        expandirIcon = new ImageIcon(getClass().getResource("/icons/hierarchy.gif"));
+        compilaIcon = new ImageIcon(getClass().getResource("/icons/compile.gif"));
 
     treeButton.setToolTipText("");
     treeButton.setIcon(expandirIcon);

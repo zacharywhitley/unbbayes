@@ -61,8 +61,8 @@ public class PreprocessorMain extends JInternalFrame
   }
   /**Component initialization*/
   private void jbInit() throws Exception
-  { abrirIcon = new ImageIcon(getClass().getResource("/icones/abrir.gif"));
-    helpIcon = new ImageIcon(getClass().getResource("/icones/help.gif"));
+  { abrirIcon = new ImageIcon(getClass().getResource("/icons/open.gif"));
+    helpIcon = new ImageIcon(getClass().getResource("/icons/help.gif"));
     jPanel2 = new EditorPanel(this);
     contentPane = (JPanel) this.getContentPane();
     titledBorder5 = new TitledBorder(border5,resource.getString("selectProgram"));
