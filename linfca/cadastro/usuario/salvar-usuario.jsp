@@ -30,8 +30,7 @@
 			fos.write(buffer);
 			fos.close();
 			foto.deleteOnExit();
-		}
-		
+		}		
 	}
 
 %>
@@ -128,7 +127,7 @@
 		  	            Element tipo = (Element) tipos.next();
 		          %>
                      <input type="radio" name="int_cod_tipo_sexo" value="<%= ((Element)tipo.getChild("cod-tipo-sexo")).getText() %>"
-                      <% if ( (usuarioXML != null) && ((Element)tipo.getChild("cod-tipo-sexo")).getTextTrim().equals(usuarioXML.getChildTextTrim("cod-tipo-sexo")) ) { %> checked <% } %> >
+                      <% if ( (usuarioXML != null) && tipo.getChildTextTrim("cod-tipo-sexo").equals(usuarioXML.getChildTextTrim("cod-tipo-sexo")) ) { %> checked <% } %> >
                      <%= ((Element)tipo.getChild("descricao-tipo-sexo")).getText() %> 
                   <% }	%>                
                 </td>
@@ -165,6 +164,26 @@
                 <td colspan=2>
                   <INPUT type=text maxLength=60 name="string_endereco" size=50
                    value="<% if (usuarioXML != null) { %><%=usuarioXML.getChildTextTrim("endereco")%><% } %>">
+                </td>
+              </tr>
+			  <tr>
+                <td><P>Semestre</P></td>
+              </tr> 
+			  <tr>                
+                <td>
+                  <select name="int_cod_semestre">
+                  <% 
+		             listarTipos = new ListarSemestreFeature();
+			         tiposXML = listarTipos.process(null);
+			         tipos = tiposXML.getChildren().iterator();
+			         while (tipos.hasNext()) {
+		  	            Element tipo = (Element) tipos.next();
+		                %>
+                     <option value="<%= tipo.getChildTextTrim("cod-semestre") %>" 
+                      <% if ( (usuarioXML != null) && (tipo.getChildTextTrim("cod-semestre").equals(usuarioXML.getChildTextTrim("cod-semestre")))) { %> selected <% } %> > 
+                     <%= ((Element)tipo.getChild("descricao-semestre")).getText() %> </option>
+                  <% }	%>
+                  </select>
                 </td>
               </tr>
               <% if (usuarioXML != null) { %>

@@ -59,8 +59,8 @@ public class LancamentoFeature implements Feature {
 			ps.setInt(2, Integer.parseInt(codLancamento));
 			
 		} else {			
-			String codUsuario = in.getChild("cod-usuario").getTextTrim();
-			String codComputador = in.getChild("cod-computador").getTextTrim();
+			String codUsuario = in.getChildTextTrim("cod-usuario");
+			String codComputador = in.getChildTextTrim("cod-computador");
 
 			System.out.println("codusuario = " + codUsuario);
 			System.out.println("codcomputador = " + codComputador);
@@ -75,7 +75,7 @@ public class LancamentoFeature implements Feature {
 			} else if ( in.getChild("deposito") != null ) {
 				codTipoLancamento = 
 				retornarCodTipoLancamento(Lancamento.DEPOSITO, con);
-			}			
+			}	
 			
 			StringBuffer sql = new StringBuffer();
 			sql.append("INSERT INTO ");

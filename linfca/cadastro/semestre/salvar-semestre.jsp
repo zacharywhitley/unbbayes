@@ -34,7 +34,8 @@
             <table width="100%" border="0" cellspacing="5" cellpadding="0" align="center">              
               <tr>
                 <td colspan=2>
-                  <P class="header">Entre com a descrição do semestre a ser salvado:</P><br>
+                  <P class="header">Entre com a descrição do semestre a ser salvo:</P>
+<br>
 				</td>
 			  </tr>
               <tr>

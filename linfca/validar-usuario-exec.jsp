@@ -1,15 +1,14 @@
 <%@page import="linfca.*, 
 		java.sql.*,
+		javax.servlet.RequestDispatcher,
         org.jdom.Element" 
         errorPage="" %> 
 <html>
 <head>
 </head>
-<body onLoad="javascript:document.form1.submit()">
+<body>
 
-<%
-		String redirect = null;
-		
+<%		
 		Element in = new Element("in");
 		Element identificacao = new Element("identificacao");
 		String idStr = request.getParameter("identificacao");
@@ -37,17 +36,16 @@
 			if (outXML.getChild("entrar") != null) {
 				request.setAttribute("nome-usuario", rs.getString("nome"));
 				request.setAttribute("cod-usuario", "" + rs.getLong("cod_usuario"));
-				redirect = request.getContextPath() + "/controle/computador/selecionar-computador.jsp";
+				RequestDispatcher dispatcher = request.getRequestDispatcher("/controle/computador/selecionar-computador.jsp");					
+				dispatcher.forward(request, response);
 			} else {
 				Element sair = outXML.getChild("sair");
 				String codLancamento = ((Element)sair.getChild("cod-lancamento")).getTextTrim();
 				request.setAttribute("cod-lancamento", codLancamento);
-				redirect = request.getContextPath() + "/controle/computador/lancar-computador-exec.jsp";
+				RequestDispatcher dispatcher = request.getRequestDispatcher("/controle/computador/lancar-computador-exec.jsp");
+				dispatcher.forward(request, response);
 			}
 		}
 %>
-
-  <form name="form1" method="post" action="<%=redirect%>">
-  </form>
 </body>
 </html>

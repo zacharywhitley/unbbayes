@@ -6,12 +6,15 @@
 <%@include file="/util.jsp" %> 
 <%@include file =  "/design/cabecalho.jsp"%>
 
+<% 
+   String destino = path + "/controle/computador/lancar-computador-exec.jsp";
+
+%>
+
         <tr>
           <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_computador.gif" width="174" border="0" hspace="20" alt="Seleção de Computador"></td>
           <td>
 		  <BR>
-            <FORM name="selecionar" action="<%=path%>/controle/computador/lancar-computador-exec.jsp" method="post">
-            
             <table width="100%" border="0" cellspacing="5" cellpadding="0" align="center">
             
               <tr>
@@ -41,32 +44,27 @@
 					 %>
                     Nenhum computador disponível 
                     <% } else {  %>
-                    <select name="cod-computador" id="cod-computador" size="25">
+					<table>
+					   <tr>
+					      <td>Sala</td>
+						  <td>Computador</td>
+					   </tr>
                       <%
-			         while (tipos.hasNext()) {
-		  	            Element tipo = (Element) tipos.next();
-		          %>
-                      <option value="<%= ((Element)tipo.getChild("cod-computador")).getText() %>"> 
-                      <%= ((Element)tipo.getChild("nome-sala")).getText() + " - " + 
-                      ((Element)tipo.getChild("descricao-computador")).getText() %> </option>
+				         while (tipos.hasNext()) {
+			  	            Element tipo = (Element) tipos.next();
+			          %>
+					   <tr>
+					      <td><%= tipo.getChildTextTrim("nome-sala") %></td>
+					      <td><a href="<%= destino %>?cod-usuario=<%=request.getAttribute("cod-usuario")%>&cod-computador=<%= tipo.getChildTextTrim("cod-computador") %>"><%= tipo.getChildTextTrim("descricao-computador") %></a></td>
+					   </tr>						
                       <% }	%>
-                    </select>
-                    <% } %>
-                  </h3></td>
-                  
+					</table>
+                     <% } %>
+                  </h3>
+				  </td>                  
                 <td width="70%"><img src="<%=path%>/design/imagens/mapa_linf.gif" border="0" hspace="20" alt="Mapa do Linf"></td>
                 
               </tr>
-              
-              <input type="hidden" name="cod-usuario" value="<%=request.getAttribute("cod-usuario")%>">
-                
-              <tr>
-                <td colspan=2>
-                  <P><INPUT type="submit" value="Processar">
-                  </P><br><br>				  
-				</td>
-				</form>
-			  </tr>
 			</table>
 		  </td>
 		</tr>
