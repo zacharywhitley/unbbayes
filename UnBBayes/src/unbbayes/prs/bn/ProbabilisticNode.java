@@ -23,6 +23,7 @@ package unbbayes.prs.bn;
 import java.util.*;
 import java.awt.Color;
 
+import unbbayes.prs.Node;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
@@ -176,15 +177,21 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
 		NodeList clones[] = new NodeList[getChildren().size()];
 		int indexes[] = new int[getChildren().size()];
         for (int i = 0; i < getChildren().size(); i++) {
-        	PotentialTable auxTab = ((ProbabilisticNode)getChildren().get(i)).getPotentialTable();           
+        	if (getChildren().get(i).getType() == Node.DECISION_NODE_TYPE) {
+        		continue;
+        	}
+       		PotentialTable auxTab = ((ITabledVariable) getChildren().get(i)).getPotentialTable();
             clones[i] = auxTab.cloneVariables();
             indexes[i] = auxTab.indexOfVariable(this);     
         }
         
-        for (int c = 0; c < getChildren().size(); c++) {
-            PotentialTable auxTab = ((ProbabilisticNode)getChildren().get(c)).getPotentialTable();
-            int l = indexes[c];
-            NodeList auxList = clones[c];            
+        for (int i = 0; i < getChildren().size(); i++) {
+        	if (getChildren().get(i).getType() == Node.DECISION_NODE_TYPE) {
+        		continue;
+        	}
+            PotentialTable auxTab = ((ITabledVariable) getChildren().get(i)).getPotentialTable();
+            int l = indexes[i];
+            NodeList auxList = clones[i];            
             for (int k = auxList.size() - 1; k >= l; k--) {
                 auxTab.removeVariable(auxList.get(k));
             }
@@ -197,10 +204,13 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
         }
        
         
-        for (int c = 0; c < getChildren().size(); c++) {
-            PotentialTable auxTab = ((ProbabilisticNode)getChildren().get(c)).getPotentialTable();
-            int l = indexes[c];
-            NodeList auxList = clones[c];         
+        for (int i = 0; i < getChildren().size(); i++) {
+        	if (getChildren().get(i).getType() == Node.DECISION_NODE_TYPE) {
+        		continue;
+        	}
+            PotentialTable auxTab = ((ITabledVariable) getChildren().get(i)).getPotentialTable();
+            int l = indexes[i];
+            NodeList auxList = clones[i];         
             for (int k = l; k < auxList.size(); k++) {
                 auxTab.addVariable(auxList.get(k));
             }
