@@ -4,9 +4,11 @@ package linfca.cadastro.equipamento;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.jdom.Element;
+import java.sql.Timestamp;
+
 import linfca.Controller;
 import linfca.Feature;
+import org.jdom.Element;
 
 /**
  * Lista os equipamentos agrupados por sala.
@@ -36,11 +38,13 @@ public class ListarEquipamentoFeature implements Feature {
 		String descTipoEquipamento = in.getChildTextTrim("desc-tipo-equipamento");
 		String descTipoSituacao    = in.getChildTextTrim("desc-tipo-situacao");
 		
+		Timestamp dtHora = new Timestamp(System.currentTimeMillis());
+		
 		StringBuffer sql = new StringBuffer();
 		sql.append("SELECT ");
 		sql.append("  DISTINCT E.cod_equipamento, S.nome_sala, E.nome_equipamento ");
 		sql.append("FROM ");
-		sql.append("  Equipamento E, Sala S ");
+		sql.append("  Equipamento E, Sala S, Reserva R ");
 		
 		if (descTipoSituacao != null) {
 			sql.append("  , Tipo_Situacao TS ");
@@ -51,7 +55,10 @@ public class ListarEquipamentoFeature implements Feature {
 		}
 				
 		sql.append("WHERE ");
-		sql.append("  E.cod_sala = S.cod_sala ");
+		sql.append("  E.cod_sala = S.cod_sala AND ");
+		sql.append("  R.cod_sala = S.cod_sala AND ");
+		sql.append("  (R.dt_hora_inicio > ? OR ");
+		sql.append("  R.dt_hora_fim < ?) ");
 				
 		if (descTipoSituacao != null) {
 			sql.append("  AND E.cod_tipo_situacao = TS.cod_tipo_situacao ");
@@ -69,6 +76,9 @@ public class ListarEquipamentoFeature implements Feature {
 		PreparedStatement ps = con.prepareStatement(sql.toString());
 		
 		int index = 1;
+		
+		ps.setTimestamp(index++, dtHora);
+		ps.setTimestamp(index++, dtHora);
 		
 		if (descTipoSituacao != null) {
 			ps.setString(index++, descTipoSituacao);
