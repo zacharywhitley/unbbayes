@@ -5,6 +5,12 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
+/**
+ *  Class that implements a panel with configuration options of the CNM.
+ *
+ *  @author Rafael Moraes Noivo
+ *  @version $1.0 $ (02/16/2003)
+ */
 public class OptionsPanel extends JPanel{
   private ResourceBundle resource;
   private JLabel labelMaxOrder = new JLabel();
@@ -74,20 +80,42 @@ public class OptionsPanel extends JPanel{
     jComboBoxConfidence.setEnabled(false);
   }
 
+  /**
+   * Used to enable or disable the combo boxes.
+   *
+   * @param enable <code>true</code> to enable the combo box;
+   *               <code>false</code> otherwise.
+   * @see {@link jComboBox}
+   */
   public void enableCombos(boolean enable){
     jComboBoxMaxOrder.setEnabled(enable);
     jComboBoxSupport.setEnabled(enable);
     jComboBoxConfidence.setEnabled(enable);
   }
 
+  /**
+   * Return the maximum order of combinations entered by the user.
+   *
+   * @return the maximum order of combinations.
+   */
   public int getMaxOrder(){
     return ((Integer)jComboBoxMaxOrder.getSelectedItem()).intValue();
   }
 
+  /**
+   * Return the minimum confidence entered by the user.
+   *
+   * @return the minimum confidence
+   */
   public int getConfidence(){
     return jComboBoxConfidence.getSelectedIndex();
   }
 
+  /**
+   * Return the minimum support entered by the user.
+   *
+   * @return the minimum support
+   */
   public int getSupport(){
     return jComboBoxSupport.getSelectedIndex();
   }

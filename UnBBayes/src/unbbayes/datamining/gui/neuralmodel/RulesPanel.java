@@ -13,6 +13,12 @@ import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
 //import unbbayes.datamining.datamanipulation.neuralmodel.util.*;
 
+/**
+ *  Class that implements a panel that shows the rules extracted from the model.
+ *
+ *  @author Rafael Moraes Noivo
+ *  @version $1.0 $ (02/16/2003)
+ */
 public class RulesPanel extends JPanel {
   private ImageIcon printIcon;
   private ImageIcon printPreviewIcon;
@@ -40,6 +46,11 @@ public class RulesPanel extends JPanel {
   private GridLayout gridLayout2 = new GridLayout();
   private NeuralModelController controller;
 
+  /**
+   * Builds a new panel.
+   *
+   * @param NeuralModelController the main controller.
+   */
   public RulesPanel(NeuralModelController controller){
     this();
     setController(controller);
@@ -116,14 +127,31 @@ public class RulesPanel extends JPanel {
     longValues[5] = new String("100,0%");
   }
 
+  /**
+   * Used to set the controller of this class.
+   *
+   * @param inferencePanel the controller.
+   */
   public void setController(NeuralModelController controller){
     this.controller = controller;
   }
 
+  /**
+   * Used to start the rules panel, showing the rules extracted from the generated model.
+   *
+   * @param combinatorialNetwork the generated model.
+   */
   public void setRulesPanel(CombinatorialNeuralModel combinatorialNetwork){
     setRulesPanel(combinatorialNetwork, 60, 7);    //valores default de confiança e suporte
   }
 
+  /**
+   * Used to start the rules panel, showing the rules extracted from the generated model.
+   *
+   * @param combinatorialNetwork the generated model.
+   * @param confidence the minimum confidence entered by the user.
+   * @param support the minimum support entered by the user.
+   */
   public void setRulesPanel(CombinatorialNeuralModel combinatorialNetwork, int confidence, int support){
     this.combinatorialNetwork = combinatorialNetwork;
 
@@ -261,10 +289,20 @@ public class RulesPanel extends JPanel {
     setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
+  /**
+   * Return the minimum support entered by the user.
+   *
+   * @return the minimum support
+   */
   public int getSupport(){
     return comboMinSupport.getSelectedIndex();
   }
 
+  /**
+   * Return the minimum confidence entered by the user.
+   *
+   * @return the minimum confidence
+   */
   public int getConfidence(){
     return comboMinConfidence.getSelectedIndex();
   }

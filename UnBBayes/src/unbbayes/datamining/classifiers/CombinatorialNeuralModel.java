@@ -5,20 +5,50 @@ import java.io.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
 
+/**
+ *  Class that implements the Combinatorial Neural Model (CNM).
+ *
+ *  @author Rafael Moraes Noivo
+ *  @version $1.0 $ (02/16/2003)
+ */
 public class CombinatorialNeuralModel extends BayesianLearning implements Serializable{
+  /**The model's input layer.*/
   private Hashtable inputLayer = new Hashtable();
+
+  /**The model's combinatorial layer.*/
   private Hashtable combinatorialLayer = new Hashtable();
+
+  /**The model's output layer.*/
   private Hashtable outputLayer = new Hashtable();
+
+  /**Vector that contains the attributes of the training set.*/
   private Attribute[] attributeVector;
+
+  /**Index of the class attribute.*/
   private int classIndex;
-  private int support, confidence;
+
+  /**Value of the minimum support after prunning.*/
+  private int support;
+
+  /**Value of the minimum confidence after prunning.*/
+  private int confidence;
+
+  /**Value of the maximum order of combinations allowed.*/
   private transient int maxOrder;
+
+  /**The set of instances of the training set*/
   private transient InstanceSet instanceSet;
 
   public CombinatorialNeuralModel(int maxOrder) {
     this.maxOrder = maxOrder;
   }
 
+  /**
+   * Builds the Combinatorial Neural Model classifier (CNM).
+   *
+   * @param data The training data
+   * @exception Exception if classifier can't be built successfully
+   */
   public void buildClassifier(InstanceSet instanceSet) throws Exception{
     this.instanceSet = instanceSet;
     Instance instance;
@@ -49,6 +79,9 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
     }
   }
 
+  /**
+   * Creates the vector that contains the attributes of the training set.
+   */
   private void createAttributeVector(){
     int numAttributes = instanceSet.numAttributes();
     attributeVector = new Attribute[numAttributes];
@@ -58,6 +91,13 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
     }
   }
 
+  /**
+   * Creates the input neurons that composes the model.
+   *
+   * @param instance the instance to be processed
+   * @param attributeNum the number of attributes of the instance
+   * @param classIndex the index of the class attribute of the instance
+   */
   private void createInputNeurons(Instance instance, int attributeNum, int classIndex){
     short value;
     String key;
@@ -73,6 +113,12 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
     }
   }
 
+  /**
+   * Creates the output neurons that composes the model.
+   *
+   * @param instance the instance to be processed
+   * @param classIndex the index of the class attribute of the instance
+   */
   private void createOutputNeuron(Instance instance, int classIndex){
     short value = instance.classValue();
     String key = generateOutputKey(classIndex, value);
@@ -81,6 +127,14 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
     }
   }
 
+  /**
+   * Creates the combinatorial neurons that composes the model.
+   *
+   * @param instance the instance to be processed
+   * @param attributeNum the number of attributes of the instance
+   * @param classIndex the index of the class attribute of the instance
+   * @param maxOrder the maximum order of combinations of attributes allowed
+   */
   private void createCombinatorialNeurons(Instance instance, int attributeNum, int classIndex, int maxOrder){
     short value;
     int combinationsSize;
@@ -138,6 +192,14 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
     }
   }
 
+  /**
+   * Creates a unique key for a combinatorial neuron based on the combination
+   * that the combinatorial neuron implements.
+   *
+   * @param inputList the list of input neurons that represents the combination
+   *        implemented by combinatorial neuron
+   * @return the generated key
+   */
   private String generateCombKey(InputNeuron[] inputList){
     int inputListSize = inputList.length;
     String stringKey = new String("c");
@@ -147,14 +209,38 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
     return stringKey;
   }
 
+  /**
+   * Creates a unique key for an input neuron based on it's attribute
+   * and value.
+   *
+   * @param attribute the index of the attribute in the training set
+   * @param value the value of the attribute
+   * @return the generated key
+   */
   private String generateInputKey(int attribute, short value){
     return new String("i" + attribute + value);
   }
 
+  /**
+   * Creates a unique key for an output neuron based on it's attribute
+   * and value.
+   *
+   * @param attribute the index of the attribute in the training set
+   * @param value the value of the attribute
+   * @return the generated key
+   */
   private String generateOutputKey(int attribute, short value){
     return new String("o" + attribute + value);
   }
 
+  /**
+   * Creates all possible combinations of input neurons with order limited
+   * by the maxOrder parameter.
+   *
+   * @param inputArray the array with the input neurons to be combined
+   * @param maxOrder the maximum order of combinations allowed
+   * @return the generated combinations of input neurons
+   */
   private ArrayList makeCombinations(InputNeuron[] inputArray, int maxOrder){
     InputNeuron[] tempInputArray, temp;
     ArrayList combinations = new ArrayList();
@@ -182,6 +268,10 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
     return combinations;
   }
 
+  /**
+   * Punishes the model after the training phase, calculating the final weight
+   * of the arcs.
+   */
   private void punishment(){
     Arc arc;
     String tempKey;
@@ -213,6 +303,13 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
     }
   }
 
+  /**
+   * Makes the pruning of the model after the punishment phase based on a
+   * determined threshold.
+   *
+   * @param threshold the minimum weight value that the arcs
+   *                  must be prunned
+   */
   public void prunning(int threshold){
     Enumeration outputEnum;
     Enumeration combEnum;
@@ -244,6 +341,14 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
     }
   }
 
+  /**
+   * Makes the pruning of the model after the punishment phase based on the
+   * minimum support and the minimum confidence of the arcs.
+   *
+   * @param minSupport the minimum support that the arcs must be prunned
+   * @param minConfidence the minimum confidence that the arcs
+   *                      must be prunned
+   */
   public void prunning(int minSupport, int minConfidence){
     Enumeration outputEnum;
     Enumeration combEnum;
@@ -315,6 +420,13 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
   }
 */
 
+  /**
+   * Make an inference of an instance on the model.
+   *
+   * @param instance the instance to make the inference
+   * @return an array that contains the arc with greater weight of each
+   *         output neuron.
+   */
   public Arc[] inference(Instance instance){
     Enumeration inputEnum, outputEnum;
     InputNeuron tempInput;
@@ -352,41 +464,82 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
     return arcVector;
   }
 
+  /**
+   * Make an inference of an instance on the model.
+   *
+   * @param instance the instance to make the inference
+   * @return an array of floats with the distribution of values for the given instance.
+   * @throws Exception if classifier can't carry through the inference successfully
+   */
   public float[] distributionForInstance(Instance instance) throws Exception{
     float[] distribution;
     Arc[] arcVector = inference(instance);
     distribution = new float[arcVector.length];
     for(int i=0; i<distribution.length; i++){
-      distribution[i] = arcVector[i].getNetWeigth();
+      distribution[i] = arcVector[i].getNetWeight();
     }
     return distribution;
   }
 
-
+  /**
+   * Outputs the model's input layer.
+   *
+   * @return the model's input layer.
+   */
   public Hashtable getInputLayer(){
     return inputLayer;
   }
 
+  /**
+   * Outputs the model's output layer.
+   *
+   * @return the model's output layer.
+   */
   public Hashtable getOutputLayer(){
     return outputLayer;
   }
 
+  /**
+   * Outputs the model's combinatorial layer.
+   *
+   * @return the model's combinatorial layer.
+   */
   public Hashtable getCombinatorialLayer(){
     return combinatorialLayer;
   }
 
+  /**
+   * Outputs an array of attributes with the attributes of the training set.
+   *
+   * @return an attribute array.
+   */
   public Attribute[] getAttributeVector(){
     return attributeVector;
   }
 
+  /**
+   * Outputs the index of the class attribute of the training set.
+   *
+   * @return the index of the class attribute
+   */
   public int getClassIndex(){
     return classIndex;
   }
 
+  /**
+   * Outputs the minimum confidence of the model after the prunning phase.
+   *
+   * @return the minimum confidence.
+   */
   public int getConfidence(){
     return confidence;
   }
 
+  /**
+   * Outputs the minimum support of the model after the prunning phase.
+   *
+   * @return the minimum support.
+   */
   public int getSupport(){
     return support;
   }

@@ -11,6 +11,12 @@ import unbbayes.util.*;
 import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
 
+/**
+ *  Class that implements a tree used to insert a new instance for classification.
+ *
+ *  @author Rafael Moraes Noivo
+ *  @version $1.0 $ (02/16/2003)
+ */
 public class InferenceTree extends JTree{
   public static final int CHECK_YES = 1;
   public static final int CHECK_NO = -1;
@@ -34,15 +40,32 @@ public class InferenceTree extends JTree{
     });
   }
 
+  /**
+   * Builds a new inference tree.
+   *
+   * @param attributeVector an array with all the attributes of the trainning set.
+   * @param classIndex the index of the class attribute.
+   */
   public InferenceTree(Attribute[] attributeVector, int classIndex){
     this();
     setAttributes(attributeVector, classIndex);
   }
 
+  /**
+   * Used to set the controller of this class.
+   *
+   * @param inferencePanel the controller.
+   */
   public void setController(InferencePanel inferencePanel){
     this.inferencePanel = inferencePanel;
   }
 
+  /**
+   * Used to set the attributes of the trainning set.
+   *
+   * @param attributeVector an array with all the attributes of the trainning set.
+   * @param classIndex the index of the class attribute.
+   */
   public void setAttributes(Attribute[] attributeVector, int classIndex){
     DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
     if (attributeVector != null){
@@ -81,6 +104,11 @@ public class InferenceTree extends JTree{
     }
   }
 
+  /**
+   * Returns the instance inserted on the tree by the user.
+   *
+   * @return the instance inserted on the tree by the user.
+   */
   public Instance getInstance(){
     ArrayList keys = objectsMap.getKeys();
     int keysSize = keys.size();
@@ -169,9 +197,9 @@ public class InferenceTree extends JTree{
   }
 
   /**
-   *  Expande todos os nós da árvore.
+   * Expand the tree nodes.
    *
-   * @see            JTree
+   * @see JTree
    */
   public void expandTree(){
     for (int i = 0; i < getRowCount(); i++){
@@ -180,9 +208,9 @@ public class InferenceTree extends JTree{
   }
 
   /**
-   *  Retrai todos os nós da árvore.
+   * Collapse the tree nodes.
    *
-   * @see            JTree
+   * @see JTree
    */
   public void collapseTree(){
     for (int i = 0; i < getRowCount(); i++){

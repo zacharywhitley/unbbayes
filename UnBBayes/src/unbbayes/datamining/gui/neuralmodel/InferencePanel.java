@@ -12,6 +12,12 @@ import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
 
+/**
+ *  Class that implements the the panel used to make inferences on the model.
+ *
+ *  @author Rafael Moraes Noivo
+ *  @version $1.0 $ (02/16/2003)
+ */
 public class InferencePanel extends JPanel {
   private ResourceBundle resource;
   private BorderLayout borderLayout1 = new BorderLayout();
@@ -112,6 +118,11 @@ public class InferencePanel extends JPanel {
     splitPane1.setDividerLocation(20);
   }
 
+  /**
+   * Methdo used to set model that will be used to make the inferences.
+   *
+   * @param combinatorialNetwork the model that will be used to make the inferences.
+   */
   public void setNetwork(CombinatorialNeuralModel combinatorialNetwork){
     this.combinatorialNetwork = combinatorialNetwork;
     inferenceTree = new InferenceTree();
@@ -136,7 +147,7 @@ public class InferencePanel extends JPanel {
     Attribute[] attArray = combinatorialNetwork.getAttributeVector();
 
     for(int i=0; i<results.length; i++){
-      distributionNormalized[i] = results[i].getNetWeigth();
+      distributionNormalized[i] = results[i].getNetWeight();
     }
     Utils.normalize(distributionNormalized);
 
@@ -146,7 +157,7 @@ public class InferencePanel extends JPanel {
     initString[0] = resource.getString("class") + ": " + classAtt.getAttributeName() + "\n";
     for(int i=0; i<results.length; i++){
       initString[i+1] = "- " + classAtt.value(i) +
-                        ":  " + numFormat.format(results[i].getNetWeigth()) +
+                        ":  " + numFormat.format(results[i].getNetWeight()) +
                         "    " + numFormat.format(distributionNormalized[i] * 100) + "%\n";
     }
 
@@ -242,6 +253,11 @@ public class InferencePanel extends JPanel {
       StyleConstants.setBold(s, true);
   }
 
+  /**
+   * Method used to print the rule that classified the instance.
+   *
+   * @param tree the tree used to insert a new instance for classification.
+   */
   public void printRule(InferenceTree tree){
     if(tree.equals(inferenceTree)){
       Instance instance = inferenceTree.getInstance();
@@ -269,7 +285,7 @@ public class InferencePanel extends JPanel {
     }
   }
 
-  void classifyButton_actionPerformed(ActionEvent e) {
+  private void classifyButton_actionPerformed(ActionEvent e) {
     Arc[] arcArray;
     try{
       Instance instance = inferenceTree.getInstance();
@@ -280,12 +296,12 @@ public class InferencePanel extends JPanel {
     }
   }
 
-  void expandButton_actionPerformed(ActionEvent e) {
+  private void expandButton_actionPerformed(ActionEvent e) {
     inferenceTree.expandTree();
     repaint();
   }
 
-  void colapseButton_actionPerformed(ActionEvent e) {
+  private void colapseButton_actionPerformed(ActionEvent e) {
     inferenceTree.collapseTree();
   }
 }

@@ -8,6 +8,12 @@ import javax.swing.*;
 import javax.swing.border.*;
 import unbbayes.datamining.gui.*;
 
+/**
+ *  Class that implements the CNM framework start screen.
+ *
+ *  @author Rafael Moraes Noivo
+ *  @version $1.0 $ (02/16/2003)
+ */
 public class NeuralModelMain extends JInternalFrame{
   private JPanel contentPane;
   private BorderLayout borderLayout1 = new BorderLayout();
@@ -48,7 +54,11 @@ public class NeuralModelMain extends JInternalFrame{
   protected RulesPanel rulesPanel;
   protected InferencePanel inferencePanel = new InferencePanel();
 
-  /**Construct the frame*/
+  /**
+   * Construct the frame.
+   *
+   * @param controller the behaviour controller of the framework.
+   */
   public NeuralModelMain(NeuralModelController controller){
     super("Combinatorial Neural Model",true,true,true,true);
     this.controller = controller;
@@ -61,9 +71,6 @@ public class NeuralModelMain extends JInternalFrame{
     }
   }
 
-  /**Component initialization
-   * @throws Exception
-   * */
   private void jbInit() throws Exception{
     openIcon = new ImageIcon(getClass().getResource("/icons/open.gif"));
     compileIcon = new ImageIcon(getClass().getResource("/icons/learn.gif"));
@@ -146,6 +153,11 @@ public class NeuralModelMain extends JInternalFrame{
     jTabbedPane1.setEnabledAt(2,false);
   }
 
+  /**
+   * Used to set the controller of this class.
+   *
+   * @param controllercontroller the controller.
+   */
   public void setController(NeuralModelController controller){
     this.controller = controller;
   }

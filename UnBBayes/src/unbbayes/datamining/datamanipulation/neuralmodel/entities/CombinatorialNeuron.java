@@ -4,24 +4,38 @@ import java.util.*;
 import java.io.*;
 
 /**
- * <p>Title: </p>
- * <p>Description: </p>
- * <p>Copyright: Copyright (c) 2002</p>
- * <p>Company: </p>
- * @author unascribed
- * @version 1.0
+ *  Class that defines how a combinatorial neuron must be and behave.
+ *
+ *  @author Rafael Moraes Noivo
+ *  @version $1.0 $ (02/16/2003)
  */
-
 public class CombinatorialNeuron extends Neuron implements Serializable{
+  /**Array of input neurons that represent this neuron combination*/
   private InputNeuron[] inputList;
+
+  /**List of output neurons that are connected to this combination neuron*/
   private Hashtable outputList = new Hashtable();
 
+  /**
+   * Constructs a new combinatorial neuron.
+   *
+   * @param inputList the list of input neurons that is the representation
+   *                  of this neuron's combination.
+   * @param outputNeuron the output neuron this combinatorial neuron is
+   *                     connected to.
+   * @param key the key that identifies this neuron solely.
+   */
   public CombinatorialNeuron(InputNeuron[] inputList, OutputNeuron outputNeuron, String key) {
     this.inputList = inputList;
     outputList.put(outputNeuron.getKey(), outputNeuron);
     this.key = key;
   }
 
+  /**
+   * Adds a new connection to a different output neuron.
+   *
+   * @param outputNeuron the new output neuron.
+   */
   public void addOutputNeuron(OutputNeuron outputNeuron){
     String outputKey = outputNeuron.getKey();
 
@@ -30,10 +44,23 @@ public class CombinatorialNeuron extends Neuron implements Serializable{
     }
   }
 
+  /**
+   * Method used to prunne the network.
+   *
+   * @param outputKey the key of the output neuron to be removd from this
+   *                  neuron output list.
+   */
   public void prunning(String outputKey){
     removeOutputNeuron(outputKey);
   }
 
+  /**
+   * Method used to remove an output neuron from this neuron output list,
+   * verifying the size of the list and taking the necessary attitudes.
+   *
+   * @param outputKey the key of the output neuron to be removd from this
+   *                  neuron output list.
+   */
   public void removeOutputNeuron(String outputKey){
     outputList.remove(outputKey);                     //nao estou fazendo verificaçao pra ver se retirou mesmo.
     if(outputList.size() == 0){
@@ -44,6 +71,12 @@ public class CombinatorialNeuron extends Neuron implements Serializable{
     }
   }
 
+  /**
+   * Used to verify if the neuron has been activated or not.
+   *
+   * @return <code>true</code> if the neuron has been activated;
+   *         <code>false</code> otherwise.
+   */
   public boolean getSignal(){                 //implementação do AND
     int inputSize = inputList.length;
     boolean signal = true;
@@ -53,22 +86,39 @@ public class CombinatorialNeuron extends Neuron implements Serializable{
     return signal;
   }
 
-  /** Retorna uma enumeracao com os neuronios de saida associados a este neuronio combinatorial */
+  /**
+   * Returns an enumeration with the output neurons associated to this
+   * combinatorial neuron.
+   *
+   * @returns the output neurons enumeration.
+   */
   public Enumeration getOutputList(){
     return outputList.elements();
   }
 
-  /** Retorn a lista de neuronios de entrada */
+  /**
+   * Returns a list of input neurons.
+   *
+   * @returns a list of input neurons
+   */
   public InputNeuron[] getInputList(){
     return inputList;
   }
 
-  /** Retorna a quantidade de neuronios de entrada que são combinados por este neuronio */
+  /**
+   * Returns the number of input neurons that are combined by this neuron.
+   *
+   * @returns the number of input neurons associated to this neuron
+   */
   public int getInputCombinationsNum(){
     return inputList.length;
   }
 
-  /** Retorna a quantidade de neuronios de saida apontados por este neuronio */
+  /**
+   * Returns the number of output neurons pointed by this neuron.
+   *
+   * @returns the number of output neurons associated to this neuron
+   */
   public int getOutputCombinationsNum(){
     return outputList.size();
   }
