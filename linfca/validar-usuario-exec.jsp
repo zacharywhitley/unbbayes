@@ -1,6 +1,6 @@
 <%@page import="linfca.*, 
 		linfca.gerencia.usuario.*, 
-		java.sql.*,
+		linfca.gerencia.lancamento.*,
 		javax.servlet.RequestDispatcher,
         org.jdom.Element" 
         errorPage="" %> 
@@ -22,38 +22,31 @@
 		
 		Feature feature = new ValidarUsuarioFeature();
 		Element outXML = feature.process(in);
-		if (outXML.getChild("false") != null) {
-			throw new ServletException("Informação de autenticação inválida!");
+		
+		String codUsuario = outXML.getChildTextTrim("cod-usuario");
+		
+		Element inLancamento = new Element("in");
+		Element codUsuarioXML = new Element("cod-usuario");
+		codUsuarioXML.setText(codUsuario);
+		inLancamento.getChildren().add(codUsuarioXML);
+		Feature mostrar = new MostrarTipoLancamentoFeature();
+		outXML = mostrar.process(inLancamento);	
+		
+		if (outXML.getChild("entrar") != null) {
+			request.setAttribute("cod-usuario", codUsuario);
+			RequestDispatcher dispatcher = request.getRequestDispatcher("/gerencia/equipamento/selecionar-equipamento.jsp");					
+			dispatcher.forward(request, response);
 		} else {
-			Connection con = Controller.getInstance().makeConnection();
-			PreparedStatement ps = con.prepareStatement(
-									"select cod_usuario, nome from usuario" +
-									" where identificacao = ? or cpf = ?"
-									);
-			ps.setString(1, idStr);
-			ps.setString(2, idStr);
-			ResultSet rs = ps.executeQuery();
-			rs.next();				
-			if (outXML.getChild("entrar") != null) {
-				request.setAttribute("nome-usuario", rs.getString("nome"));
-				request.setAttribute("cod-usuario", "" + rs.getLong("cod_usuario"));
-				RequestDispatcher dispatcher = request.getRequestDispatcher("/gerencia/equipamento/selecionar-equipamento.jsp");					
-				dispatcher.forward(request, response);
-			} else {
-				Element sair = outXML.getChild("sair");
-				String codLancamento = sair.getChildTextTrim("cod-lancamento-uso");
-				request.setAttribute("cod-lancamento-uso", codLancamento);
-				
-				String codEquipamento = sair.getChildTextTrim("cod-equipamento");
-				request.setAttribute("cod-equipamento", codEquipamento);
-
-				RequestDispatcher dispatcher = request.getRequestDispatcher("/gerencia/equipamento/lancar-equipamento-exec.jsp");
-				dispatcher.forward(request, response);
-			}
-			rs.close();
-			ps.close();
-			con.close();
-		}		
+			Element sair = outXML.getChild("sair");
+			String codLancamento = sair.getChildTextTrim("cod-lancamento-uso");
+			request.setAttribute("cod-lancamento-uso", codLancamento);
+			
+			String codEquipamento = sair.getChildTextTrim("cod-equipamento");
+			request.setAttribute("cod-equipamento", codEquipamento);
+	
+			RequestDispatcher dispatcher = request.getRequestDispatcher("/gerencia/equipamento/lancar-equipamento-exec.jsp");
+			dispatcher.forward(request, response);
+		}
 %>
 </body>
 </html>

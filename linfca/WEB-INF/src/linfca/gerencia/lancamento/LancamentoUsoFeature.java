@@ -41,7 +41,7 @@ public class LancamentoUsoFeature implements Feature {
 		PreparedStatement ps = null;		
 		Timestamp dtHora = new Timestamp(System.currentTimeMillis());
 		
-		String descTipoSituacao = TipoSituacao.USO;
+		String descTipoSituacao = null;
 		String codEquipamento = in.getChildTextTrim("cod-equipamento");
 		
 		if ( in.getChild("cod-lancamento-uso") != null ) {
@@ -63,7 +63,9 @@ public class LancamentoUsoFeature implements Feature {
 			ps.setTimestamp(1, dtHora);
 			ps.setInt(2, Integer.parseInt(codLancamento));
 			
-		} else {			
+		} else {
+			
+			descTipoSituacao = TipoSituacao.USO;
 			
 			String codUsuario = in.getChildTextTrim("cod-usuario");
 			
@@ -121,7 +123,9 @@ public class LancamentoUsoFeature implements Feature {
 		
 		rs = ps.executeQuery();
 		
-		rs.next();
+		if (! rs.next()) {
+			throw new RuntimeException("Descrição Tipo Situação Não Encontrada no BD - " + descTipoSituacao);
+		}
 		
 		sql.delete(0, sql.length());
 		sql.append("UPDATE ");

@@ -1,17 +1,14 @@
 package linfca.gerencia.usuario;
 
+import java.security.MessageDigest;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.Date;
-
-import org.jdom.Element;
-
-import java.security.*;
 
 import linfca.Controller;
 import linfca.Feature;
 import linfca.util.Base64;
+import org.jdom.Element;
 
 public class ValidarUsuarioFeature implements Feature {
 	
@@ -23,16 +20,11 @@ public class ValidarUsuarioFeature implements Feature {
 	 * </in>
 	 * 
 	 * <out>
-	 *    <entrar/> 
-	 *      | 
-	 * 	  <sair>
-	 * 		 <cod-lancamento>4</cod-lancamento>
-	 * 		 <cod-computador>3></cod-computador>	
-	 *    </sair>
-	 *      |
-	 *    <false/>
+	 *    <cod-usuario>4</cod-usuario>
 	 * </out> 
 	 * </pre>
+	 * 
+	 * @throws InvalidUserException caso as informações sejam inválidas.
 	 * @see Feature#process(Element)
 	 */
 	public Element process(Element in) throws Exception {
@@ -41,54 +33,38 @@ public class ValidarUsuarioFeature implements Feature {
 		String senha = in.getChildTextTrim("senha");
 		Element out = new Element("out");
 		
-		PreparedStatement ps = con.prepareStatement("SELECT * FROM usuario WHERE identificacao = ? OR cpf = ?");
+		PreparedStatement ps = con.prepareStatement(
+						"SELECT cod_usuario, senha FROM usuario"+
+						" WHERE identificacao = ? OR cpf = ?");
 		ps.setString(1,login);
 		ps.setString(2,login);
 		
 		ResultSet rs = ps.executeQuery();
-	
+		
 		if (rs.next()) {
 			
 			MessageDigest md = MessageDigest.getInstance("MD5");
 			if (md.isEqual(md.digest(senha.getBytes()), Base64.decode(rs.getBytes("senha")))) {
-				
-				ps = con.prepareStatement(
-					"SELECT cod_lancamento_uso, cod_equipamento" +
-					" FROM lancamento_uso " +
-					" WHERE cod_usuario = ? AND dt_hora_fim_lancamento_uso IS NULL"
-				);
-				long codUsuario = rs.getLong("cod_usuario");
-				ps.setLong(1, codUsuario);
-				rs = ps.executeQuery();
-				if (rs.next()) {
-					Element sair = new Element("sair");
-					Element codLancamento = new Element("cod-lancamento-uso");
-					codLancamento.setText("" + rs.getLong("cod_lancamento_uso"));
-					sair.getChildren().add(codLancamento);
-
-					Element codEquipamento = new Element("cod-equipamento");
-					codEquipamento.setText("" + rs.getLong("cod_equipamento"));
-					sair.getChildren().add(codEquipamento);
-
-					out.getChildren().add(sair);
-				} else {
-					Element entrar = new Element("entrar");
-					out.getChildren().add(entrar);
-				}
-				
+				int codUsuario = rs.getInt("cod_usuario");
+				Element codUsuarioXML = new Element("cod-usuario");
+				codUsuarioXML.setText("" + codUsuario);
+				out.getChildren().add(codUsuarioXML);				
 			} else {
-				System.out.println("Senha não confere!!!");
-				out.getChildren().add(new Element("false"));
+	   			ps.close();		
+				rs.close();		
+				con.close();
+				throw new InvalidUserException("Usuário Inválido");
 			}
 			
 		} else {
-			out.getChildren().add(new Element("false"));
+			ps.close();		
+			rs.close();		
+			con.close();
+			throw new InvalidUserException("Usuário Inválido");
 		}
-		
 		ps.close();		
 		rs.close();		
-		con.close();
-			
+		con.close();	
 		return out;
 	}
 }
