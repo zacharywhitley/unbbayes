@@ -130,12 +130,12 @@ public class OrdenationInterationController {
            	for(int i = 0; i < frame.getMetricsSize(); i++){			    
            		metricList.addItem(frame.getMetrics(i));            		
            	}
-           	metricList.enable();
+           	metricList.setEnabled(true);
 	    } else if(index == 1) {	    	
 	 	    for(int i = 0; i < frame.getIcSize(); i++){			    
            		algorithmsList.addItem(frame.getIcAlgorithms(i));            		
 		    }            	            	
-		    metricList.disable();
+		    metricList.setEnabled(false);
         }		
 	}	
 	
