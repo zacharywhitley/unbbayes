@@ -17,7 +17,7 @@ public class OutputNeuron extends Neuron implements Serializable{
   private short value;
 
   /**List of the combinatorial neurons that are associated to this neuron*/
-  private Hashtable combinationsList = new Hashtable();
+  private HashMap combinationsList = new HashMap();
 
   /**
    * Constructs a new output neuron.
@@ -72,7 +72,7 @@ public class OutputNeuron extends Neuron implements Serializable{
    *
    * @return the list of combinations associated to this output neuron.
    */
-  public Hashtable getCombinations(){
+  public Map getCombinations(){
     return combinationsList;
   }
 
@@ -81,8 +81,8 @@ public class OutputNeuron extends Neuron implements Serializable{
    *
    * @return the enumeration of the combinations associated to this output neuron.
    */
-  public Enumeration getCombinationsEnum(){
-    return combinationsList.elements();
+  public Iterator getCombinationsEnum(){
+    return combinationsList.values().iterator();
   }
 
   public void prunning(String key){}  //metodo declarado para satisfazer a classe abstrata pai
@@ -94,11 +94,11 @@ public class OutputNeuron extends Neuron implements Serializable{
    * @param threshold the limit value of the arc's accumulators.
    */
   public void prunning(int threshold){
-    Enumeration outputEnum = combinationsList.elements();
+    Iterator outputEnum = combinationsList.values().iterator();
     Arc tempArc;
 
-    while(outputEnum.hasMoreElements()){
-      tempArc = (Arc)outputEnum.nextElement();
+    while(outputEnum.hasNext()){
+      tempArc = (Arc)outputEnum.next();
       if(tempArc.netWeight < threshold){
         tempArc.combinationNeuron.prunning(this.key);
         combinationsList.remove(tempArc.combinationNeuron.key);
@@ -115,11 +115,11 @@ public class OutputNeuron extends Neuron implements Serializable{
    * @param minSupport the minimum support allowed.
    */
   public void prunning(int minConfidence, int minSupport){
-    Enumeration outputEnum = combinationsList.elements();
+    Iterator outputEnum = combinationsList.values().iterator();
     Arc tempArc;
 
-    while(outputEnum.hasMoreElements()){
-      tempArc = (Arc)outputEnum.nextElement();
+    while(outputEnum.hasNext()){
+      tempArc = (Arc)outputEnum.next();
       if(tempArc.support < minSupport || tempArc.confidence < minConfidence){
         tempArc.combinationNeuron.prunning(this.key);
         combinationsList.remove(tempArc.combinationNeuron.key);
@@ -134,12 +134,11 @@ public class OutputNeuron extends Neuron implements Serializable{
    * @param numOfInstances the total number of instaces of the training set.
    */
   public void calculateSupport(int numOfInstances){
-    Enumeration outputEnum;
+    Iterator outputEnum = combinationsList.values().iterator();
     Arc tempArc;
 
-    outputEnum = combinationsList.elements();
-    while(outputEnum.hasMoreElements()){
-      tempArc = (Arc)outputEnum.nextElement();
+    while(outputEnum.hasNext()){
+      tempArc = (Arc)outputEnum.next();
       tempArc.support = ((float)tempArc.accumulator / (float)numOfInstances) * 100;
     }
   }
@@ -179,12 +178,12 @@ public class OutputNeuron extends Neuron implements Serializable{
    */
   public Arc classify(){
     Arc tempArc, returnArc = null;
-    Enumeration combEnum = combinationsList.elements();
+    Iterator combEnum = combinationsList.values().iterator();
     boolean signal;
     int result = -1;
 
-    while(combEnum.hasMoreElements()){
-      tempArc = (Arc)combEnum.nextElement();
+    while(combEnum.hasNext()){
+      tempArc = (Arc)combEnum.next();
       signal = tempArc.getCombinationNeuron().getSignal();
       if(signal && tempArc.getNetWeight() >= result){                           //implementacao do OR, max(weight*sinal)
         result = tempArc.getNetWeight();

@@ -13,13 +13,13 @@ import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
  */
 public class CombinatorialNeuralModel extends BayesianLearning implements Serializable{
   /**The model's input layer.*/
-  private Hashtable inputLayer = new Hashtable();
+  private HashMap inputLayer = new HashMap();
 
   /**The model's combinatorial layer.*/
-  private Hashtable combinatorialLayer = new Hashtable();
+  private HashMap combinatorialLayer = new HashMap();
 
   /**The model's output layer.*/
-  private Hashtable outputLayer = new Hashtable();
+  private HashMap outputLayer = new HashMap();
 
   /**Vector that contains the attributes of the training set.*/
   private Attribute[] attributeVector;
@@ -53,7 +53,7 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
     this.instanceSet = instanceSet;
     Instance instance;
     Enumeration instanceEnum = instanceSet.enumerateInstances();
-    Enumeration outputEnum;
+    Iterator outputEnum;
     OutputNeuron output;
     int attributeNum = instanceSet.numAttributes();
     int numOfInstances = instanceSet.numWeightedInstances();
@@ -71,9 +71,9 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
 
     punishment();
 
-    outputEnum = outputLayer.elements();
-    while(outputEnum.hasMoreElements()){
-      output = (OutputNeuron)outputEnum.nextElement();
+    outputEnum = outputLayer.values().iterator();
+    while(outputEnum.hasNext()){
+      output = (OutputNeuron)outputEnum.next();
       output.calculateSupport(numOfInstances);   // da pra fazer no método punishment
 //      output.calculateConfidence();
     }
@@ -277,19 +277,19 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
     String tempKey;
     int sum = 0;
     int outputNum = outputLayer.size();
-    Hashtable[] outputs = new Hashtable[outputNum];
-    Enumeration outputEnum = outputLayer.elements();
+    HashMap[] outputs = new HashMap[outputNum];
+    Iterator outputEnum = outputLayer.values().iterator();
 
     int position = 0;
-    while(outputEnum.hasMoreElements()){
-      outputs[position] = ((OutputNeuron)outputEnum.nextElement()).getCombinations();
+    while(outputEnum.hasNext()){
+      outputs[position] = (HashMap)((OutputNeuron)outputEnum.next()).getCombinations();
       position++;
     }
 
     for(int i=0; i<outputNum; i++){
-      outputEnum = outputs[i].elements();
-      while(outputEnum.hasMoreElements()){           //para cada combinação do neuronio i de saida
-        arc = (Arc)outputEnum.nextElement();
+      outputEnum = outputs[i].values().iterator();
+      while(outputEnum.hasNext()){           //para cada combinação do neuronio i de saida
+        arc = (Arc)outputEnum.next();
         tempKey = arc.getCombinationNeuron().getKey();
         for(int j=0; j<outputNum; j++){
           if(j!=i && outputs[j].containsKey(tempKey)){
@@ -311,34 +311,35 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
    *                  must be prunned
    */
   public void prunning(int threshold){
-    Enumeration outputEnum;
-    Enumeration combEnum;
-    Enumeration inputEnum;
+    Iterator outputEnum;
+    Iterator combEnum;
+    Iterator inputEnum;
     OutputNeuron tempOutput;
     CombinatorialNeuron tempComb;
     InputNeuron tempInput;
 
-    outputEnum = outputLayer.elements();
-    while(outputEnum.hasMoreElements()){
-      tempOutput = (OutputNeuron)outputEnum.nextElement();
+    outputEnum = outputLayer.values().iterator();
+    while(outputEnum.hasNext()){
+      tempOutput = (OutputNeuron)outputEnum.next();
       tempOutput.prunning(threshold);
     }
 
-    combEnum = combinatorialLayer.elements();
-    while(combEnum.hasMoreElements()){
-      tempComb = (CombinatorialNeuron)combEnum.nextElement();
+    combEnum = combinatorialLayer.values().iterator();
+    while(combEnum.hasNext()){
+      tempComb = (CombinatorialNeuron)combEnum.next();
       if(tempComb.getInputCombinationsNum() == 0){
         combinatorialLayer.remove(tempComb.getKey());
       }
     }
 
-    inputEnum = inputLayer.elements();
-    while(inputEnum.hasMoreElements()){
-      tempInput = (InputNeuron)inputEnum.nextElement();
+    inputEnum = inputLayer.values().iterator();
+    while(inputEnum.hasNext()){
+      tempInput = (InputNeuron)inputEnum.next();
       if(tempInput.getCombinationsNum() == 0){
         inputLayer.remove(tempInput.getKey());
       }
     }
+
   }
 
   /**
@@ -350,30 +351,30 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
    *                      must be prunned
    */
   public void prunning(int minSupport, int minConfidence){
-    Enumeration outputEnum;
-    Enumeration combEnum;
-    Enumeration inputEnum;
+    Iterator outputEnum;
+    Iterator combEnum;
+    Iterator inputEnum;
     OutputNeuron tempOutput;
     CombinatorialNeuron tempComb;
     InputNeuron tempInput;
 
-    outputEnum = outputLayer.elements();
-    while(outputEnum.hasMoreElements()){
-      tempOutput = (OutputNeuron)outputEnum.nextElement();
+    outputEnum = outputLayer.values().iterator();
+    while(outputEnum.hasNext()){
+      tempOutput = (OutputNeuron)outputEnum.next();
       tempOutput.prunning(minConfidence, minSupport);
     }
 
-    combEnum = combinatorialLayer.elements();
-    while(combEnum.hasMoreElements()){
-      tempComb = (CombinatorialNeuron)combEnum.nextElement();
+    combEnum = combinatorialLayer.values().iterator();
+    while(combEnum.hasNext()){
+      tempComb = (CombinatorialNeuron)combEnum.next();
       if(tempComb.getInputCombinationsNum() == 0){
         combinatorialLayer.remove(tempComb.getKey());
       }
     }
 
-    inputEnum = inputLayer.elements();
-    while(inputEnum.hasMoreElements()){
-      tempInput = (InputNeuron)inputEnum.nextElement();
+    inputEnum = inputLayer.values().iterator();
+    while(inputEnum.hasNext()){
+      tempInput = (InputNeuron)inputEnum.next();
       if(tempInput.getCombinationsNum() == 0){
         inputLayer.remove(tempInput.getKey());
       }
@@ -428,7 +429,8 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
    *         output neuron.
    */
   public Arc[] inference(Instance instance){
-    Enumeration inputEnum, outputEnum;
+    Iterator inputEnum, outputEnum;
+
     InputNeuron tempInput;
     OutputNeuron tempOutput;
     int numAtt = attributeVector.length;
@@ -436,9 +438,9 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
     String key;
     Arc[] arcVector = new Arc[outputLayer.size()];      //vetor que contem os arcos de maior peso de cada neuronio
 
-    inputEnum = inputLayer.elements();
-    while(inputEnum.hasMoreElements()){                  //deixa todos os neuronios de entrada igual a false
-      tempInput = (InputNeuron)inputEnum.nextElement();
+    inputEnum = inputLayer.values().iterator();
+    while(inputEnum.hasNext()){                  //deixa todos os neuronios de entrada igual a false
+      tempInput = (InputNeuron)inputEnum.next();
       tempInput.setEnabled(false);
     }
 
@@ -453,14 +455,13 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
       }
     }
 
-    outputEnum = outputLayer.elements();
+    outputEnum = outputLayer.values().iterator();
     Arc tempArc;
-    while(outputEnum.hasMoreElements()){
-      tempOutput = (OutputNeuron)outputEnum.nextElement();
+    while(outputEnum.hasNext()){
+      tempOutput = (OutputNeuron)outputEnum.next();
       tempArc = tempOutput.classify();
       arcVector[tempOutput.getValue()] = tempArc;
     }
-
     return arcVector;
   }
 
@@ -486,7 +487,7 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
    *
    * @return the model's input layer.
    */
-  public Hashtable getInputLayer(){
+  public Map getInputLayer(){
     return inputLayer;
   }
 
@@ -495,7 +496,7 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
    *
    * @return the model's output layer.
    */
-  public Hashtable getOutputLayer(){
+  public Map getOutputLayer(){
     return outputLayer;
   }
 
@@ -504,7 +505,7 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
    *
    * @return the model's combinatorial layer.
    */
-  public Hashtable getCombinatorialLayer(){
+  public Map getCombinatorialLayer(){
     return combinatorialLayer;
   }
 

@@ -17,7 +17,7 @@ public class InputNeuron extends Neuron implements Serializable{
   private short value;
 
   /**List of the combinatorial neurons that are associated to this neuron*/
-  private Hashtable combinationsList = new Hashtable();
+  private HashMap combinationsList = new HashMap();
 
   /**Activation state of the neuron*/
   private boolean enabled;

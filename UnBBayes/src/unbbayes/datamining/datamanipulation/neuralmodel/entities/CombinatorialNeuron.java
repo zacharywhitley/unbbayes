@@ -14,7 +14,7 @@ public class CombinatorialNeuron extends Neuron implements Serializable{
   private InputNeuron[] inputList;
 
   /**List of output neurons that are connected to this combination neuron*/
-  private Hashtable outputList = new Hashtable();
+  private HashMap outputList = new HashMap();
 
   /**
    * Constructs a new combinatorial neuron.
@@ -92,8 +92,8 @@ public class CombinatorialNeuron extends Neuron implements Serializable{
    *
    * @returns the output neurons enumeration.
    */
-  public Enumeration getOutputList(){
-    return outputList.elements();
+  public Iterator getOutputList(){
+    return outputList.values().iterator();
   }
 
   /**
