@@ -148,12 +148,12 @@ public class MSNetwork {
 		for (int i = links.size()-1; i>=0; i--) {
 			Linkage l = (Linkage) links.get(i);
 			if (l.getN1() == net1 && l.getN2() == net2) {
-				l.absorve(true);
+				l.absorb(true);
 				return;											
 			}
 			
 			if (l.getN2() == net1 && l.getN1() == net2) {
-				l.absorve(false);
+				l.absorb(false);
 				return;
 			}
 		}

@@ -1,4 +1,24 @@
-package unbbayes.prs.msbn;
+/*
+ *  UnbBayes
+ *  Copyright (C) 2002 Universidade de Brasília
+ *
+ *  This file is part of UnbBayes.
+ *
+ *  UnbBayes is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnbBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnbBayes; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+ package unbbayes.prs.msbn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,9 +69,7 @@ public class Linkage {
 		
 		remove2ndPass();
 		
-		raiz = (Clique) jt.getCliques().get(0); 
-		
-		assert raiz.getParent() == null;		
+		assert ((Clique) jt.getCliques().get(0)).getParent() == null;
 		
 		assignV1();	
 			
@@ -130,14 +148,12 @@ public class Linkage {
 	private void initTables() throws Exception {
 		insertSeparators();
 				
-		for (int i = linkList.size()-1; i >=0; i--) {
-			Link l = (Link) linkList.get(i);
-			Clique c = l.getClique();
+		for (int i = jt.getCliques().size()-1; i >=0; i--) {
+			Clique c = (Clique) jt.getCliques().get(i);
 			PotentialTable tab = c.getPotentialTable();
 			for (int j = 0; j < c.getNos().size(); j++) {
 				tab.addVariable(c.getNos().get(j));
 			}
-
 			for (int j = tab.tableSize()-1; j>=0; j--) {
 				tab.setValue(j, 1);				
 			}
@@ -150,7 +166,6 @@ public class Linkage {
 			for (int c = 0; c < auxSep.getNos().size(); c++) {
 				tab.addVariable(auxSep.getNos().get(c));
 			}
-			
 			for (int j = tab.tableSize()-1; j>=0; j--) {
 				tab.setValue(j, 1);				
 			}
@@ -160,12 +175,11 @@ public class Linkage {
 	private void insertSeparators() {
 		for (int i = jt.getCliques().size()-1; i>=0; i--) {
 			Clique c = (Clique) jt.getCliques().get(i);
-			for (int j = c.getChildrenSize()-1; j>=0; j--) {
-				//c.getChildAt(j).getNos().removeAll(c.getNos());
+			for (int j = c.getChildrenSize()-1; j>=0; j--) {			
 				Separator sep = new Separator(c, c.getChildAt(j), false);
 				sep.setNos(SetToolkit.intersection(c.getNos(), c.getChildAt(j).getNos()));
 				jt.addSeparator(sep);
-			}
+			} 
 		}
 	}
 	
@@ -221,26 +235,51 @@ public class Linkage {
 	}
 	
 	
-	protected void absorve(boolean naOrdem) throws Exception {
+	protected void absorb(boolean naOrdem) throws Exception {
 		int treeSize = linkList.size();
+		
+		for (int i = jt.getSeparatorsSize()-1; i >=0; i--) {
+			Separator sep = jt.getSeparatorAt(i);
+			NodeList toDie = SetToolkit.clone(sep.getNo1().getNos());
+			toDie.removeAll(sep.getNos());
+			PotentialTable tA =
+				(PotentialTable) sep.getNo1().getPotentialTable().clone();
+				
+			for (int j = toDie.size()-1; j >= 0; j--) {
+				tA.removeVariable(toDie.get(i));
+			}
+			
+			sep.getNo2().getPotentialTable().opTab(tA, PotentialTable.DIVISION_OPERATOR);
+		}
+		
 		for (int i = 0; i < treeSize; i++) {		
 			Link l = (Link) linkList.get(i);
 			l.absorveIn(naOrdem);
 		}
 		
-		jt.consistencia();
+		//jt.consistencia();
 		
-		for (int i = 0; i < treeSize; i++) {
+		for (int i = jt.getSeparatorsSize()-1; i >=0; i--) {
+			Separator sep = jt.getSeparatorAt(i);
+			NodeList toDie = SetToolkit.clone(sep.getNo1().getNos());
+			toDie.removeAll(sep.getNos());
+			PotentialTable tA =
+				(PotentialTable) sep.getNo1().getPotentialTable().clone();
+				
+			for (int j = toDie.size()-1; j >= 0; j--) {
+				tA.removeVariable(toDie.get(i));
+			}
+			
+			sep.getNo2().getPotentialTable().opTab(tA, PotentialTable.DIVISION_OPERATOR);
+		}
+		
+		for (int i = 0; i < treeSize; i++) {		
 			Link l = (Link) linkList.get(i);
 			l.absorveOut(naOrdem);
 		}
-
-		if (naOrdem) {
-			n1.getJunctionTree().consistencia();
-			n1.updateMarginais();
-		} else {
-			n2.getJunctionTree().consistencia();
-			n2.updateMarginais();
-		}
+		
+		SubNetwork net = (naOrdem) ? n1 : n2;
+		net.getJunctionTree().consistencia();
+		net.updateMarginais();
 	}
 }

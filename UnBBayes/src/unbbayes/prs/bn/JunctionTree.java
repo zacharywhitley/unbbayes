@@ -123,7 +123,9 @@ public class JunctionTree implements java.io.Serializable {
 			if (auxClique.getChildrenSize() != 0) {
 				this.coleteEvidencia(auxClique);
 			}
-			this.absorve(clique, auxClique);
+			
+			Separator sep = getSeparator(clique, auxClique); 
+			clique.absorb(auxClique, sep.getPotentialTable());
 		}
 
 		n *= clique.normalize();
@@ -139,36 +141,15 @@ public class JunctionTree implements java.io.Serializable {
 		int sizeFilhos = clique.getChildrenSize();
 		for (int c = 0; c < sizeFilhos; c++) {
 			auxClique = clique.getChildAt(c);
-			absorve(auxClique, clique);
+			
+			Separator sep = getSeparator(clique, auxClique); 
+			auxClique.absorb(clique, sep.getPotentialTable());
+//			absorve(auxClique, clique);
 			if (auxClique.getChildrenSize() != 0) {
 				distribuaEvidencia(auxClique);
 			}
 		}
 	}
-
-	protected void absorve(Clique clique1, Clique clique2) {
-		Separator separator = getSeparator(clique1, clique2);
-		NodeList toDie = SetToolkit.clone(clique2.getNos());
-		toDie.removeAll(separator.getNos());
-
-		PotentialTable originalSeparatorTable =
-			(PotentialTable) separator.getPotentialTable().clone();
-		PotentialTable dummyTable =
-			(PotentialTable) clique2.getPotentialTable().clone();
-		for (int i = 0; i < toDie.size(); i++) {
-			dummyTable.removeVariable(toDie.get(i));
-		}
-
-		for (int i = separator.getPotentialTable().tableSize() - 1; i >= 0; i--) {
-			separator.getPotentialTable().setValue(i, dummyTable.getValue(i));
-		}
-//		dummyTable = (PotentialTable) separator.getPotentialTable().clone();
-		dummyTable.directOpTab(
-			originalSeparatorTable,
-			PotentialTable.DIVISION_OPERATOR);
-		clique1.getPotentialTable().opTab(dummyTable, PotentialTable.PRODUCT_OPERATOR);
-	}
-
 
 	/**
 	 *  Inicia crenças da árvore.
