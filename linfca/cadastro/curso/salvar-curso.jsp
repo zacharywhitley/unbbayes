@@ -1,6 +1,7 @@
 <%@page 
 	import="java.sql.*,
 	linfca.*,
+	linfca.cadastro.curso.*,
 	org.jdom.Element"
 	errorPage="" %>
 	
@@ -11,7 +12,6 @@
 	String codCurso = request.getParameter("cod_curso");
 	Element cursoXML = null;
 
-/*
 	if (codCurso != null) {	
 		Element in = new Element("in");
 		Element codCursoXML = new Element("cod-curso");
@@ -21,7 +21,6 @@
 		Feature  detalharCurso = new DetalharCursoFeature();
 		cursoXML = detalharCurso.process(in);	
 	}
-	*/
 %>
 
 
@@ -48,7 +47,7 @@
 		</td>
 		<td width="50%">
 		        <INPUT maxLength=40 name="string_desc_curso"
-				 value="<% if (cursoXML != null) { %><%=cursoXML.getChildTextTrim("desc-curso")%><% } %>">
+				 value="<% if (cursoXML != null) { %><%=cursoXML.getChildTextTrim("descricao-curso")%><% } %>">
 		</td>
 	  </tr>
 	  <% if (cursoXML != null) { %>
