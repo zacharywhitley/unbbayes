@@ -21,7 +21,7 @@ package unbbayes.controller;
 import java.awt.*;
 import java.awt.print.*;
 import javax.swing.*;
-import javax.swing.table.*;
+
 import java.util.*;
 import java.util.List;
 

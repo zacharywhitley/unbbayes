@@ -39,8 +39,7 @@ import javax.swing.JViewport;
 import unbbayes.prs.*;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
-import unbbayes.util.*;
-import unbbayes.prs.bn.*;
+
 /**
  * Title:
  * Description:

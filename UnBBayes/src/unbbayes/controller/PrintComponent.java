@@ -21,7 +21,7 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.awt.print.*;
 import javax.swing.*;
-import javax.swing.border.*;
+
 
 /**
  * Classe auxiliar da classe PrintPreviewer.

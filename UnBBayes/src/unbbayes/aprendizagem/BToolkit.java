@@ -3,7 +3,6 @@ package unbbayes.aprendizagem;
 
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
-import java.util.List;
 
 public abstract class BToolkit extends PonctuationToolkit{
 	

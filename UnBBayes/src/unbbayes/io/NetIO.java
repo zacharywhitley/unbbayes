@@ -24,7 +24,6 @@ package unbbayes.io;
 import java.io.*;
 import java.util.*;
 
-import javax.swing.*;
 import javax.swing.tree.*;
 
 import unbbayes.prs.*;

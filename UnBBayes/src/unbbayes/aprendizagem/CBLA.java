@@ -1,18 +1,8 @@
 package unbbayes.aprendizagem;
 
-import sun.awt.VariableGridLayout;
-import sun.beans.editors.IntEditor;
-import sun.misc.Queue;
 import unbbayes.util.*;
-import unbbayes.gui.TJanelaEdicao;
-import unbbayes.prs.Node;
-import unbbayes.prs.bn.PotentialTable;
-import unbbayes.prs.bn.ProbabilisticNetwork;
 
-
-import java.awt.SystemColor;
 import java.util.*;
-import java.util.Stack;
 
 
 public class CBLA extends CBLToolkit{

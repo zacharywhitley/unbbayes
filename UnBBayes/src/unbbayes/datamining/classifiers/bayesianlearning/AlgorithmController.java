@@ -1,12 +1,8 @@
 package unbbayes.datamining.classifiers.bayesianlearning;
 
 import unbbayes.datamining.datamanipulation.*;
-import javax.swing.*;
-import java.awt.*;
-import java.util.ArrayList;
 
 import unbbayes.prs.bn.*;
-import unbbayes.prs.*;
 import unbbayes.gui.*;
 /**
  * @author Mário Henrique

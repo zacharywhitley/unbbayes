@@ -3,7 +3,7 @@ package unbbayes.gui;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Container;
-import java.awt.GridLayout;
+
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 import java.util.ResourceBundle;
@@ -12,13 +12,13 @@ import javax.swing.AbstractListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JInternalFrame;
-import javax.swing.JLabel;
+
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
-import javax.swing.ListModel;
+
 import javax.swing.ListSelectionModel;
 
 import unbbayes.prs.msbn.MSNetwork;

@@ -74,7 +74,7 @@ public class NeuralModelController {
   }
 
   private void openFile(File selectedFile) throws Exception{
-    instanceSet = FileController.getInstance().setBaseInstancesFromFile(selectedFile, mainScreen);
+    instanceSet = FileController.getInstance().getInstanceSet(selectedFile, mainScreen);
     boolean numericAttributes = instanceSet.checkNumericAttributes();
     if (numericAttributes == true){
       throw new Exception(resource.getString("numericAttributesException"));

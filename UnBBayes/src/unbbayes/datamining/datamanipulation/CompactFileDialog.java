@@ -4,8 +4,6 @@ import java.awt.*;
 
 import javax.swing.*;
 
-import unbbayes.datamining.datamanipulation.*;
-
 public class CompactFileDialog
 {   public CompactFileDialog(Loader loader,Component parent)
     {   if ((JOptionPane.showInternalConfirmDialog(parent, "Compacted File?", "", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION))

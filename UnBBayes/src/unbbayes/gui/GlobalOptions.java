@@ -21,7 +21,7 @@
 
 package unbbayes.gui;
 
-import java.util.Locale;
+
 import java.util.ResourceBundle;
 import unbbayes.controller.WindowController;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -29,7 +29,7 @@ import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
 
 import java.awt.*;
-import java.awt.geom.*;
+
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;

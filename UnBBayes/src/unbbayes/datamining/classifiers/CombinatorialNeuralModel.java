@@ -375,7 +375,6 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
     }
 
     this.support = minSupport;
-    this.confidence = confidence;
   }
 
   /**

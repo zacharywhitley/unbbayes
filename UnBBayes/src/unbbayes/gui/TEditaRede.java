@@ -20,7 +20,7 @@ package unbbayes.gui;
 
 import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
-import unbbayes.util.NodeList;
+
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,10 +29,9 @@ import java.awt.event.*;
 import java.awt.font.TextAttribute;
 import java.awt.font.FontRenderContext;
 import java.util.List;
-import java.util.ArrayList;
+
 import java.util.ResourceBundle;
 import java.text.AttributedString;
-import java.text.*;
 
 /**
  *  Essa classe é responsável por desenhar a rede Bayesiana na tela. Ela extende a classe
@@ -378,7 +377,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
      */
     public void keyPressed(KeyEvent e) {
 
-        if (e.getKeyCode() == e.VK_DELETE) {
+        if (e.getKeyCode() == KeyEvent.VK_DELETE) {
             apagaArco(selecionado);
         }
         this.repintar();
@@ -407,7 +406,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         //setar o melhor scrollMode para desenhar e mexer na rede
         desenho.setScrollMode(JViewport.BLIT_SCROLL_MODE);
 
-        if (e.getModifiers() == e.BUTTON1_MASK) {
+        if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
             Node no = getNo(e.getX(), e.getY());
 
             if (bArco) {
@@ -457,7 +456,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
      */
     public void mouseClicked(MouseEvent e) { 
     	Edge edge = getArc(e.getX(), e.getY());
-	    if ((edge != null) && (e.getModifiers() == e.BUTTON1_MASK) && (e.getClickCount() == 2)) {
+	    if ((edge != null) && (e.getModifiers() == MouseEvent.BUTTON1_MASK) && (e.getClickCount() == 2)) {
 	    	if ((direction == 0) || (direction == 1)) {
 	    		direction++;
 	    		edge.setDirection(true);
@@ -478,7 +477,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
      */
     public void mouseReleased(MouseEvent e) {
         Node noDestino = getNo(e.getX(), e.getY());
-        if ((bArco) && (e.getModifiers() == e.BUTTON1_MASK)) {
+        if ((bArco) && (e.getModifiers() == MouseEvent.BUTTON1_MASK)) {
 //            Node noOrigem = getNo(arcoInicioAtual.getX(), arcoInicioAtual.getY());
             if ((noDestino != null)/* && (controlador.getRede().existeArco(noOrigem, noDestino) == -1)*/) {
                 insereArco(arcoInicioAtual.getX(), arcoInicioAtual.getY(), arcoFimAtual.getX(), arcoFimAtual.getY());
@@ -490,7 +489,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
 
         Edge arco = getArco(e.getX(), e.getY());
 
-        if ((!bArco) && (noDestino == null) && (arco == null) && (e.getModifiers() == e.BUTTON1_MASK)) {
+        if ((!bArco) && (noDestino == null) && (arco == null) && (e.getModifiers() == MouseEvent.BUTTON1_MASK)) {
             deselecionaNo();
             deselecionaArco();
             selecionado = null;
@@ -506,7 +505,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
             setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
 
-        if ((e.getModifiers() == e.BUTTON3_MASK) && (bArco)) {
+        if ((e.getModifiers() == MouseEvent.BUTTON3_MASK) && (bArco)) {
             //seta o booleano do arco e selecionar para false
             bArco = false;
             setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -633,7 +632,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
             }
         }
 
-        if (e.getModifiers() == e.BUTTON1_MASK) {
+        if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
             //move nó somente se este menos o raio for menor que (0,0)
             if ((bMoverNo) && (e.getX() > raio) && (e.getY() > raio) && (e.getX() < tamanhoRede.getWidth() - raio) && (e.getY() < tamanhoRede.getHeight() - raio)) {
                 noAtual = noMover;

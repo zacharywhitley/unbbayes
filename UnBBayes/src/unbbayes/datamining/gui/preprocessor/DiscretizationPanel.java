@@ -1,7 +1,6 @@
 package unbbayes.datamining.gui.preprocessor;
 
 import java.awt.*;
-import java.awt.event.*;
 
 import javax.swing.*;
 

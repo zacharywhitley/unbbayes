@@ -26,7 +26,7 @@ import javax.swing.JToolBar;
 
 import unbbayes.controller.WindowController;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.ProbabilisticNetwork;
+
 
 /**
  * <p>Title: UnBBayes</p>
@@ -256,7 +256,7 @@ public class NetWindowEdition extends JPanel {
             Object selected = netWindow.getIGraph().getSelected();
             if (selected instanceof Node) {
               Node nodeAux = (Node)selected;
-              if ((e.getKeyCode() == e.VK_ENTER) && (txtSigla.getText().length()>0)) {
+              if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtSigla.getText().length()>0)) {
                 try {
                     String name = txtSigla.getText(0,txtSigla.getText().length());
                     matcher = wordPattern.matcher(name);
@@ -284,7 +284,7 @@ public class NetWindowEdition extends JPanel {
             if (selected instanceof Node)
             {
               Node nodeAux = (Node)selected;
-              if ((e.getKeyCode() == e.VK_ENTER) && (txtDescription.getText().length()>0)) {
+              if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtDescription.getText().length()>0)) {
                 try {
                     String name = txtDescription.getText(0,txtDescription.getText().length());
                     matcher = wordPattern.matcher(name);

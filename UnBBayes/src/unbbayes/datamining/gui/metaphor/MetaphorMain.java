@@ -11,7 +11,6 @@ import unbbayes.controller.*;
 import unbbayes.gui.*;
 import unbbayes.io.*;
 import unbbayes.prs.bn.*;
-import unbbayes.util.*;
 
 /**
  * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)

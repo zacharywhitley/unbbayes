@@ -674,7 +674,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         //setar o melhor scrollMode para desenhar e mexer na rede
         graphViewport.setScrollMode(JViewport.BLIT_SCROLL_MODE);
 
-        if ((e.getModifiers() == e.BUTTON1_MASK) || (e.getModifiers() == e.BUTTON3_MASK)) {
+        if ((e.getModifiers() == MouseEvent.BUTTON1_MASK) || (e.getModifiers() == MouseEvent.BUTTON3_MASK)) {
             Node node = getNode(e.getX(), e.getY());
 
             if (bArc) {
@@ -762,7 +762,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
 
         Node node = getNode(e.getX(), e.getY());
         if (node != null) {
-        	if (e.getModifiers() == e.BUTTON1_MASK) {
+        	if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 	            controller.getScreen().setTable(controller.makeTable(node));
 	            controller.getScreen().setTableOwner(node);
 	            if (controller.getScreen().isCompiled()) {
@@ -781,7 +781,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         	}
         } else {
 	        Edge edge = getArc(e.getX(), e.getY());
-	        if ((edge != null) && (e.getModifiers() == e.BUTTON1_MASK) && (e.getClickCount() == 2)) {
+	        if ((edge != null) && (e.getModifiers() == MouseEvent.BUTTON1_MASK) && (e.getClickCount() == 2)) {
 	        	if ((direction == 0) || (direction == 1)) {
 	        		direction++;
 	        		edge.setDirection(true);
@@ -803,7 +803,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
      */
     public void mouseReleased(MouseEvent e) {
         Node endNode = getNode(e.getX(), e.getY());
-        if ((bArc) && (e.getModifiers() == e.BUTTON1_MASK)) {
+        if ((bArc) && (e.getModifiers() == MouseEvent.BUTTON1_MASK)) {
             Node beginNode = getNode(presentBeginArc.getX(), presentBeginArc.getY());
             if ((endNode != null) && (controller.getNet().hasEdge(beginNode, endNode) == -1)) {
                 insertArc(presentBeginArc.getX(), presentBeginArc.getY(), presentEndArc.getX(), presentEndArc.getY());
@@ -815,7 +815,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
 
         Edge arc = getArc(e.getX(), e.getY());
 
-        if ((!bProbabilisticNode) && (!bDecisionNode) && (!bUtilityNode) && (!bArc) && (endNode == null) && (arc == null) && (e.getModifiers() == e.BUTTON1_MASK)) {
+        if ((!bProbabilisticNode) && (!bDecisionNode) && (!bUtilityNode) && (!bArc) && (endNode == null) && (arc == null) && (e.getModifiers() == MouseEvent.BUTTON1_MASK)) {
             unselectNode();
             unselectArc();
             selected = null;
@@ -831,7 +831,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
             setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
 
-        if ((e.getModifiers() == e.BUTTON3_MASK) && ((bProbabilisticNode) || (bDecisionNode) || (bUtilityNode) || (bArc) || (bSelect))) {
+        if ((e.getModifiers() == MouseEvent.BUTTON3_MASK) && ((bProbabilisticNode) || (bDecisionNode) || (bUtilityNode) || (bArc) || (bSelect))) {
             //seta o booleano do arco e nó e selecionar para false
             bProbabilisticNode = false;
 			bDecisionNode = false;
@@ -989,7 +989,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
             }
         }
 
-        if (e.getModifiers() == e.BUTTON1_MASK) {
+        if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
             //move nó somente se este menos o raio for menor que (0,0)
             if ((bMoveNode) && (e.getX() > radius) && (e.getY() > radius) && (e.getX() < graphDimension.getWidth() - radius) && (e.getY() < graphDimension.getHeight() - radius)) {
                 presentNode = movingNode;

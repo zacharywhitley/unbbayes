@@ -21,10 +21,10 @@
 
 package unbbayes.prs.bn;
 
-import java.io.IOException;
+
 import java.util.*;
 
-import javax.swing.JTree;
+
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
@@ -32,7 +32,7 @@ import unbbayes.io.LogManager;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.id.DecisionNode;
-import unbbayes.prs.id.JunctionTreeID;
+
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 

@@ -5,8 +5,7 @@ package unbbayes.gui.table;
  */
 
 import java.util.*;
-import java.awt.*;
-import javax.swing.*;
+
 import javax.swing.table.*;
 
 /**

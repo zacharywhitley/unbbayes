@@ -180,7 +180,7 @@ public class PreprocessorMain extends JInternalFrame
 
   private void openFile(File selectedFile)
   {   try
-      {   inst = FileController.getInstance().setBaseInstancesFromFile(selectedFile,this);
+      {   inst = FileController.getInstance().getInstanceSet(selectedFile,this);
           String fileName = selectedFile.getName();
           if (fileName.regionMatches(true,fileName.length() - 5,".arff",0,5))
           {   fileExtension = ARFF_EXTENSION;

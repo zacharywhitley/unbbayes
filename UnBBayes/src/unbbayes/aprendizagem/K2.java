@@ -1,13 +1,7 @@
 package unbbayes.aprendizagem;
 
-import java.util.Date;
-import java.util.List;
-import unbbayes.gui.TJanelaEdicao;
-import unbbayes.prs.Node;
-import unbbayes.prs.bn.PotentialTable;
-import unbbayes.prs.bn.ProbabilisticNetwork;
+
 import unbbayes.util.NodeList;
-import unbbayes.util.SetToolkit;
 
 /**
  *   Essa classe implementa os métodos necessários para que

@@ -28,7 +28,7 @@ import java.util.ResourceBundle;
 import unbbayes.prs.*;
 import unbbayes.prs.id.*;
 import unbbayes.util.NodeList;
-import unbbayes.util.SetToolkit;
+
 
 /**
  *  Classe que representa um Clique na Árvore de Junção (JunctionTree).

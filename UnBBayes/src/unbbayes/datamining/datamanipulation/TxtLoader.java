@@ -1,6 +1,5 @@
 package unbbayes.datamining.datamanipulation;
 
-import java.awt.*;
 import java.io.*;
 import java.util.*;
 
@@ -236,7 +235,7 @@ public class TxtLoader extends Loader
 			if (att.numValues() > maximumStatesAllowed)
 			{	boolean bool = checkNominal(att);
                                 if (bool == false)
-					att.setAttributeType(att.NUMERIC);
+					att.setAttributeType(Attribute.NUMERIC);
 			}
     	}
 

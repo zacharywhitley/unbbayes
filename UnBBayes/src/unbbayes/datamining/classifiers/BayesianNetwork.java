@@ -4,7 +4,6 @@ import java.util.*;
 
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.prs.bn.*;
-import unbbayes.util.*;
 
 /**
  * Class implementing a Bayesian Network.
@@ -192,7 +191,7 @@ public class BayesianNetwork extends BayesianLearning
             result = compareClasses(classAttribute,(ProbabilisticNode)net.getNodeAt(i));
             if (result == true)
             {
-              classAttribute = classAttribute;
+              this.classAttribute = classAttribute;
               classNodeIndex = net.getNodeIndex(classAttribute.getAttributeName());
               classAttributeIndex = classAttribute.getIndex();
 

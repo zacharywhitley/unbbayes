@@ -3,7 +3,7 @@ package unbbayes.aprendizagem;
 
 import unbbayes.util.NodeList;
 import java.util.ArrayList;
-import java.util.Stack;
+
 
 public class CBLB extends CBLToolkit{
 	

@@ -21,7 +21,6 @@
 
 package unbbayes.prs.bn;
 
-import java.util.*;
 
 import unbbayes.prs.id.*;
 import unbbayes.util.NodeList;

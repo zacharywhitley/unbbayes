@@ -1,13 +1,14 @@
 package unbbayes.datamining.datamanipulation;
 
 import java.io.*;
+import unbbayes.controller.IProgress;
 
 /** This class defines abstracs methods for open a file building an InstanceSet object
  *
  *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @version $1.0 $ (16/02/2002)
  */
-public abstract class Loader
+public abstract class Loader implements IProgress
 {	/** Database created from a file */
 	protected InstanceSet instances;
 
@@ -112,6 +113,29 @@ public abstract class Loader
         public int getInitialInstancesCount()
         {   return initialInstances;
         }
+    
+	public boolean next()
+	{
+		boolean result = false;
+		try
+		{
+			result = getInstance();
+		}
+		catch(IOException ioe)
+		{
+			result = false;
+		}		
+		return result;
+	}
+	
+	public void cancel()
+	{
+		instances=null;
+	}
+	public int maxCount()
+	{
+		return initialInstances;	
+	}
 
         protected void countInstancesFromFile(File file) throws IOException
         {   FileInputStream fileIn = new FileInputStream(file);

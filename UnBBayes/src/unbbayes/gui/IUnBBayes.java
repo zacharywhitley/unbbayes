@@ -22,12 +22,12 @@
 package unbbayes.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
+
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Event;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;

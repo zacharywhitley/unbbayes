@@ -3,7 +3,7 @@ package unbbayes.gui.table;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import javax.swing.JTable;
+
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
 

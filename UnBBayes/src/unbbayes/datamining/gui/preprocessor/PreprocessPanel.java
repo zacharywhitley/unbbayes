@@ -396,7 +396,7 @@ public class PreprocessPanel extends JPanel
                   {   selectedAttribute = i;
                       Attribute att = instances.getAttribute(selectedAttribute);
                       int type = att.getAttributeType();
-                      if (type == att.NOMINAL)
+                      if (type == Attribute.NOMINAL)
                       {   jLabel12.setText(resource.getString("nominal"));
                           jButton1.setEnabled(false);
                       }
@@ -431,7 +431,7 @@ public class PreprocessPanel extends JPanel
                   int fileExtension = reference.getFileExtension();
                   int i;
                   int numInstances = instances.numInstances();
-                  if (fileExtension == reference.ARFF_EXTENSION)
+                  if (fileExtension == PreprocessorMain.ARFF_EXTENSION)
                   {   sb.append("@relation "+instances.getRelationName()+"\n\n");
                       for (i=0; i<selectedAttributes.length; i++)
                       {   sb.append(instances.getAttribute(selectedAttributes[i])+"\n");

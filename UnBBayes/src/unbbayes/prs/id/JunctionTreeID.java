@@ -21,7 +21,7 @@
 
 package unbbayes.prs.id;
 
-import java.util.List;
+
 
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTree;

@@ -25,7 +25,7 @@ import java.util.List;
 
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.Clique;
+
 import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.Network;
 import unbbayes.util.NodeList;

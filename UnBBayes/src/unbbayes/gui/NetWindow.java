@@ -22,7 +22,7 @@
 package unbbayes.gui;
 
 import javax.swing.*;
-import javax.swing.tree.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ResourceBundle;

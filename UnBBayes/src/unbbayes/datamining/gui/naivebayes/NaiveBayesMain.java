@@ -285,7 +285,7 @@ public class NaiveBayesMain extends JInternalFrame
 
   private void openFile(File selectedFile)
   {   try
-      {   inst = FileController.getInstance().setBaseInstancesFromFile(selectedFile,this);
+      {   inst = FileController.getInstance().getInstanceSet(selectedFile,this);
           boolean bool = inst.checkNumericAttributes();
           if (bool == true)
               throw new Exception(resource.getString("numericAttributesException"));

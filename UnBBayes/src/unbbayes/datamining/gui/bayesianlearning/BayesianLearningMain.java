@@ -11,7 +11,6 @@ import javax.swing.border.*;
 import unbbayes.controller.*;
 import unbbayes.datamining.classifiers.bayesianlearning.*;
 import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.gui.*;
 import unbbayes.gui.*;
 import unbbayes.io.*;
 import unbbayes.prs.bn.*;
@@ -340,7 +339,7 @@ public class BayesianLearningMain extends JInternalFrame
     try
     {
       jTabbedPane1.setEnabledAt(0,false);
-      inst = FileController.getInstance().setBaseInstancesFromFile(selectedFile,this);
+      inst = FileController.getInstance().getInstanceSet(selectedFile,this);
       boolean bool = inst.checkNumericAttributes();
       if (bool == true)
       {

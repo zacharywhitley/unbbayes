@@ -1,11 +1,11 @@
 package unbbayes.aprendizagem;
 
 import java.awt.*;
-import java.io.*;
-import java.util.*;
+
+
 import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.event.*;
+
 import unbbayes.util.NodeList;
 
 /**

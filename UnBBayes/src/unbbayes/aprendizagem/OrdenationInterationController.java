@@ -1,7 +1,7 @@
 
 package unbbayes.aprendizagem;
 
-import unbbayes.controller.MainController;
+
 import unbbayes.util.NodeList;
 import javax.swing.JComboBox;
 import javax.swing.JList;

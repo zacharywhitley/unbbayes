@@ -1,7 +1,6 @@
 package unbbayes.gui.table;
 
-import java.text.NumberFormat;
-import java.util.Locale;
+
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -9,7 +8,7 @@ import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
+
 import javax.swing.table.JTableHeader;
 
 import unbbayes.prs.Node;

@@ -8,7 +8,7 @@ import javax.swing.*;
 import javax.swing.tree.*;
 
 import unbbayes.util.*;
-import unbbayes.datamining.classifiers.*;
+
 import unbbayes.datamining.datamanipulation.*;
 
 /**

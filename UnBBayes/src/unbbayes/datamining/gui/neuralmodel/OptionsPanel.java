@@ -3,7 +3,7 @@ package unbbayes.datamining.gui.neuralmodel;
 import java.awt.*;
 import java.util.*;
 import javax.swing.*;
-import javax.swing.border.*;
+
 
 /**
  *  Class that implements a panel with configuration options of the CNM.

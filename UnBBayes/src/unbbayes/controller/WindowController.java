@@ -647,11 +647,11 @@ public class WindowController implements KeyListener {
      * @see       KeyListener
      */
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() ==  e.VK_C) {
+        if (e.getKeyCode() ==  KeyEvent.VK_C) {
             copia = screen.getIGraph().getSelectedGroup();
         }
 
-        if ((e.getKeyCode() ==  e.VK_P) && (!bColou)) {
+        if ((e.getKeyCode() ==  KeyEvent.VK_P) && (!bColou)) {
             for (int i = 0; i < copia.size(); i++) {
                 if (copia.get(i) instanceof Node) {
                     ProbabilisticNode noAux = (ProbabilisticNode)copia.get(i);
@@ -696,7 +696,7 @@ public class WindowController implements KeyListener {
         }
         copiados.clear();
 
-        if (e.getKeyCode() == e.VK_DELETE) {
+        if (e.getKeyCode() == KeyEvent.VK_DELETE) {
             Object selecionado = screen.getIGraph().getSelected();
             deleteSelected(selecionado);
             for (int i = 0; i < screen.getIGraph().getSelectedGroup().size(); i++) {

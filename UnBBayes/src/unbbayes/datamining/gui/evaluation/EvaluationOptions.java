@@ -3,7 +3,6 @@ package unbbayes.datamining.gui.evaluation;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
-import java.awt.event.*;
 import unbbayes.prs.bn.*;
 
 public class EvaluationOptions
