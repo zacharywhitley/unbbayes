@@ -13,9 +13,9 @@ public class TestUtils extends TestCase {
   /** The small deviation allowed in double comparisons */
   private final double DELTA = 1e-6;
   private final double DELTA2 = 1e-3;
-  public static File CONTACT_LENCES_FILE = new File("contact-lenses.txt");
-  public static File WEATHER_NOMINAL_FILE = new File("weather.nominal.txt");
-  public static File WEATHER_NUMERIC_CUT_FILE = new File("weather.cut.txt");
+  public static File CONTACT_LENCES_FILE = new File("examples/contact-lenses.txt");
+  public static File WEATHER_NOMINAL_FILE = new File("examples/weather.nominal.arff");
+  public static File WEATHER_NUMERIC_CUT_FILE = new File("examples/weather.cut.txt");
   private InstanceSet contactInst;
   private InstanceSet weatherInst;
   private InstanceSet weatherCutInst;
@@ -36,13 +36,9 @@ public class TestUtils extends TestCase {
       contactInst = loader.getInstances();
       contactInst.setClass(contactInst.getAttribute(contactInst.numAttributes()-1));
 
-      loader = new TxtLoader(WEATHER_NOMINAL_FILE);
+      loader = new ArffLoader(WEATHER_NOMINAL_FILE);
       while (loader.getInstance())
       {}
-
-      if (loader instanceof TxtLoader)
-      {   ((TxtLoader)loader).checkNumericAttributes();
-      }
 
       weatherInst = loader.getInstances();
       weatherInst.setClass(weatherInst.getAttribute(weatherInst.numAttributes()-1));
