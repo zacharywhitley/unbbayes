@@ -35,7 +35,7 @@ public class FileController
 
     /** Construtor padrão. Só pode ser instanciado pelo método getInstance. */
     protected FileController()
-    {   resource = ResourceBundle.getBundle("unbbayes.datamining.gui.naivebayes.resources.NaiveBayesResource");        
+    {   resource = ResourceBundle.getBundle("unbbayes.datamining.gui.naivebayes.resources.NaiveBayesResource");
     }
     
     //--------------------------------------------------------------//
@@ -72,6 +72,9 @@ public class FileController
         else if (className.equals("unbbayes.datamining.gui.preprocessor.PreprocessorMain"))
         {   set = new HelpSet(null, getClass().getResource("/help/DataMiningHelp/Preprocessor.hs"));
         }
+        else if (className.equals("unbbayes.datamining.gui.neuralmodel.NeuralModelMain"))
+        {   set = new HelpSet(null, getClass().getResource("/help/CNMHelp/cnm.hs"));
+        }
         else
         {   component.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             throw new Exception("HelpSet not found "+this.getClass().getName());
@@ -101,15 +104,18 @@ public class FileController
         }
 
         new CompactFileDialog(loader,component);
-        
+
 		//starts loading and shows a status screen
+		ProgressDialog progressDialog = new ProgressDialog (f, loader);
+		progressDialog.start();
+
 		ProgressDialog progressDialog = new ProgressDialog (f.getName(), loader);
 		boolean successStatus = progressDialog.load();
 		
 		InstanceSet inst = loader.getInstances();
-        
+
         if ((loader instanceof TxtLoader)&&(inst!=null))
-        {   
+        {
         	((TxtLoader)loader).checkNumericAttributes();
         }
 
@@ -122,6 +128,8 @@ public class FileController
         	return null;	
         }
     }
+
+//	---------------------------------------------------------------------//
     
 	//--------------------------------------------------------------//
 
@@ -137,7 +145,7 @@ public class FileController
 		  else
 		  {   throw new IOException(resource.getString("fileExtensionException"));
 		  }
-        
+
 		  while (loader.getInstance())
 		  {}
 
@@ -145,6 +153,6 @@ public class FileController
 		  {   ((TxtLoader)loader).checkNumericAttributes();
 		  }
 
-		  return loader.getInstances();		  
+		  return loader.getInstances();
 	  }
 }
