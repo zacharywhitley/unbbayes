@@ -10,12 +10,16 @@ public class NeuralNetwork extends BayesianLearning implements Serializable{
   public static final int SIGMOID = 0;
   public static final int TANH = 1;
 
+  private int[] inputLayer;
   private HiddenNeuron[] hiddenLayer;
   private OutputNeuron[] outputLayer;
   private transient float learningRate;
   private transient float momentum;
   private transient int hiddenLayerSize;
   private transient ActivationFunction activationFunction;
+  private transient int numOfAttributes;
+
+  private int[] attNumOfValues;
 
   /**Vector that contains the attributes of the training set.*/
   private Attribute[] attributeVector;
@@ -26,18 +30,17 @@ public class NeuralNetwork extends BayesianLearning implements Serializable{
   /**The set of instances of the training set*/
   private transient InstanceSet instanceSet;
 
-
-
-  public NeuralNetwork(float learningRate, float momentum, int hiddenLayerSize, int activationFunction) {
+  public NeuralNetwork(float learningRate, float momentum, int hiddenLayerSize, /*trainning time*/ int activationFunction) {
     this.learningRate = learningRate;
     this.momentum = momentum;
     this.hiddenLayerSize = hiddenLayerSize;
 
-    if(activationFunction == this.SIGMOID){
+    if(activationFunction == NeuralNetwork.SIGMOID){
       this.activationFunction = new Sigmoid(0.5);   //valores default   pode modificar?????
-    } else if(activationFunction == this.TANH){
+    } else if(activationFunction == NeuralNetwork.TANH){
       this.activationFunction = new Tanh(1.7159, 2/3);
     }
+
   }
 
   /**
@@ -50,17 +53,93 @@ public class NeuralNetwork extends BayesianLearning implements Serializable{
     this.instanceSet = instanceSet;
     Instance instance;
     Enumeration instanceEnum = instanceSet.enumerateInstances();
-    int attributeNum = instanceSet.numAttributes();
-    int numOfInstances = instanceSet.numWeightedInstances();
+    numOfAttributes = instanceSet.numAttributes();
 
     attributeVector = instanceSet.getAttributes();      //cria um array com os atributos para serialização
     this.classIndex = instanceSet.getClassIndex();      //guarda o indice da classa para serialização
 
+
+//iniciliza numero de valores dos atributos
+    attNumOfValues = new int[numOfAttributes - 2];
+    Enumeration attEnum = instanceSet.enumerateAttributes();
+    int index = 0;
+    while (attEnum.hasMoreElements()){
+      Attribute att = (Attribute)attEnum.nextElement();
+      if(!attEnum.hasMoreElements()){
+        break;
+      }
+      attNumOfValues[index] = att.numValues();
+      index++;
+    }
+
+
+   /////////////////////////////////////
+    int inputLayerSize = 0;
+    for(int i=0; i<numOfAttributes; i++){
+      if(i != classIndex){
+        inputLayerSize = inputLayerSize + instanceSet.getAttribute(i).numValues();
+      }
+    }
+    inputLayer = new int[inputLayerSize];
+
+/*    ArrayList inputArray = new ArrayList();
+    for(int i=0; i<numOfAttributes; i++){
+      if(i != classIndex){
+        Attribute att = instanceSet.getAttribute(i);
+        for(int j=0; j<att.numValues(); j++){
+          inputArray.add(new InputNeuron(i, j));
+        }
+      }
+    }
+
+
+    for(int i=0; i<inputLayerSize; i++){
+      inputLayer[i] = (InputNeuron)inputArray.get(i);
+    }
+*////////////////////////////////////
+
+    hiddenLayer = new HiddenNeuron[hiddenLayerSize];
+    for(int i=0; i<hiddenLayer.length; i++){
+      hiddenLayer[i] = new HiddenNeuron(activationFunction, inputLayer.length);
+    }
+
+    outputLayer = new OutputNeuron[instanceSet.getClassAttribute().numValues()];
+    for(int i=0; i<outputLayer.length; i++){
+      outputLayer[i] = new OutputNeuron(activationFunction, hiddenLayer.length);
+    }
+
     while(instanceEnum.hasMoreElements()){
       instance = (Instance)instanceEnum.nextElement();
-///////////////////////propagar na rede
+      learn(instance);
     }
   }
+
+  public void learn(Instance instance){
+    for(int i=0; i<inputLayer.length; i++){
+      inputLayer[i] = 0;
+    }
+
+    int counter = 0;
+    for(int i=0; i<numOfAttributes; i++){
+      if(i != classIndex){
+        if(!instance.isMissing(i)){
+          int index = 0;
+          for(int j=0; j<counter; j++){
+            index = index + attNumOfValues[j];
+          }
+          index = index + instance.getValue(i);
+          inputLayer[index] = 1;
+        }
+        counter++;
+      }
+    }
+
+    for(int i=0; i<inputLayer.length; i++){
+      System.out.println(inputLayer[i]);
+    }
+    System.out.println("  ");
+  }
+
 
   /**
    * Make inference of an instance on the model.
