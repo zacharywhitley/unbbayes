@@ -440,7 +440,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
      *
      *@return    True como valor do focusTransversable (método necessário para que se possa tratar evento de tecla)
      */
-    public boolean isFocusTraversable() {
+    public boolean isFocusable() {
         return true;
     }
 
@@ -892,12 +892,20 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
      */
     public void mouseEntered(MouseEvent e) {
         if ((!bMoveNode) && (!bMoveArc)) {
+        	//graphViewport.setBounds(0, 0, (int)this.getBiggestPoint().x, (int)this.getBiggestPoint().y);
+        	//graphDimension = new Dimension((int)this.getBiggestPoint().x, (int)this.getBiggestPoint().y);
+        	//System.out.println((int)this.getBiggestPoint().x + "  " + (int)this.getBiggestPoint().y);
+        	//Dimension d = new Dimension((int)this.getBiggestPoint().x, (int)this.getBiggestPoint().y);
+        	//System.out.println((int)this.getBiggestPoint().x + "  " + (int)this.getBiggestPoint().y);
             //setar o tamanho visivel da rede como o tamanho o jspDesenho - raio
             visibleDimension = new Dimension((int) (controller.getTela().getJspGraph().getSize().getWidth()), (int) (controller.getTela().getJspGraph().getSize().getHeight()));
-
+			graphViewport.setOpaque(true);
+			graphViewport.scrollRectToVisible(new Rectangle(graphDimension));
             //setar o tamanho do JViewport desenho e de seu view
-            graphViewport.setSize(graphDimension);
-            graphViewport.setViewSize(graphDimension);
+            //graphViewport.setSize(graphDimension);
+            //graphViewport.setPreferredSize(d);
+            graphViewport.setPreferredSize(graphDimension);
+            graphViewport.revalidate();
 
             //receber o focus para poder tratar o evento de tecla
             this.requestFocus();
