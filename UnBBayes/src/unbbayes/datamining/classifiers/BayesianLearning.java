@@ -73,33 +73,16 @@ public abstract class BayesianLearning extends Classifier
                     case ABSOLUTE_FREQUENCY_CLASSIFICATION :  int j;
                                                               for (j=0; j<classValues.length; j++)
                                                               {   int actualValue = classValues[j];
-                                                                  //System.out.println("value "+actualValue);
+                                                                  System.out.println("value "+actualValue);
                                                                   if (dist[actualValue] >= probabilities[j])
-                                                                  {   //System.out.println("Predic "+dist[actualValue]);
-                                                                      //System.out.println("User "+probabilities[j]);
+                                                                  {   System.out.println("Predic "+dist[actualValue]);
+                                                                      System.out.println("User "+probabilities[j]);
                                                                   return (short)actualValue;
                                                                   }
                                                               }
                                                               return Instance.MISSING_VALUE;
                     default:		                      throw new Exception("Classification type not known");
                 }
-                   /*switch (instance.getDataset().getClassAttribute().getAttributeType())
-		    {   case Attribute.NOMINAL:   float max = 0;
-                                                  short maxIndex = 0;
-                                                  for (int i = 0; i < dist.length; i++)
-                                                  {   if (dist[i] > max)
-                                                      {   maxIndex = (short)i;
-                                                          max = dist[i];
-                                                      }
-                                                  }
-                                                  if (max > 0)
-                                              {   return maxIndex;
-                                              }
-                                              else
-                                              {   return Instance.missingValue();
-                                              }
-                    case Attribute.NUMERIC:   return (short)Utils.maxIndex(dist);
-                    default:		      return Instance.missingValue();*/
             }
       }
 

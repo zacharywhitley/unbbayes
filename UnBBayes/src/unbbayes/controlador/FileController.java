@@ -121,6 +121,10 @@ public class FileController
         while (loader.getInstance())
         {}
 
+        if (loader instanceof TxtLoader)
+        {   ((TxtLoader)loader).checkNumericAttributes();
+        }
+
         inst = loader.getInstances();
         return inst;
     }

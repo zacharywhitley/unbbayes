@@ -43,7 +43,6 @@ public class TxtLoader extends Loader
 		initTokenizer(tokenizer);
     	        readHeader(tokenizer);
 		while (getInstance(tokenizer)) {};
-		maximumStatesAllowed = Options.getInstance().getNumberStatesAllowed();
 		checkNumericAttributes();*/
 
                 // Count instances
@@ -54,6 +53,7 @@ public class TxtLoader extends Loader
                 tokenizer = new StreamTokenizer(reader);
                 initTokenizer();
     	        readHeader();
+                maximumStatesAllowed = Options.getInstance().getNumberStatesAllowed();
 	}
 
 	/**
@@ -161,6 +161,7 @@ public class TxtLoader extends Loader
                     //Insert new value for attribute if number of values is 0 or this value isn't inserted
                     if(tokenizer.sval != null)
                     {   stateName = tokenizer.sval;
+                        // Check if value is missing.
                         if (stateName.equals("?"))
                         {   instance[attributeNumber] = Instance.missingValue();
                         }
@@ -177,17 +178,11 @@ public class TxtLoader extends Loader
                     else
                     {}
                     if (tokenizer.ttype == StreamTokenizer.TT_WORD)
-                    {	// Check if value is missing.
-                        /*if (tokenizer.ttype == '?')
-                        {   instance[attributeNumber] = Instance.missingValue();
+                    {	if (instances.getAttribute(attributeNumber).isNominal())
+                        {   // Check if value appears in header.
+                            index = att.indexOfValue(tokenizer.sval);
+                            instance[attributeNumber] = (short)index;
                         }
-                        else
-                        { */  if (instances.getAttribute(attributeNumber).isNominal())
-                            {   // Check if value appears in header.
-                                index = att.indexOfValue(tokenizer.sval);
-                                instance[attributeNumber] = (short)index;
-                            }
-                        //}
                     }
                     else if (tokenizer.ttype == StreamTokenizer.TT_NUMBER)
                     {	if (instances.getAttribute(attributeNumber).isNominal())
@@ -234,13 +229,13 @@ public class TxtLoader extends Loader
 
 	/** Changes all nominal attributes that can be parsed to numeric attributes
 	*/
-	private void checkNumericAttributes()
+	public void checkNumericAttributes()
 	{	int numAttributes = instances.numAttributes();
 		for (int i = 0; i < numAttributes; i++)
 		{	Attribute att = instances.getAttribute(i);
 			if (att.numValues() > maximumStatesAllowed)
 			{	boolean bool = checkNominal(att);
-				if (bool == false)
+                                if (bool == false)
 					att.setAttributeType(att.NUMERIC);
 			}
     	}
@@ -255,14 +250,16 @@ public class TxtLoader extends Loader
 	{	int numValues = att.numValues();
 		for (int j = 0; j<numValues; j++)
 		{	String value = att.value(j);
-			if (value.equals(""))
-				return true;
-			try
-			{	Float.parseFloat(value);
-			}
-			catch (NumberFormatException nfe)
-			{	return true;
-			}
+			if (!value.equals("?"))
+                        {   if (value.equals(""))
+                                return true;
+			    try
+			    {	Float.parseFloat(value);
+			    }
+			    catch (NumberFormatException nfe)
+			    {	return true;
+			    }
+                        }
 		}
 		return false;
 	}

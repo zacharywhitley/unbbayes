@@ -150,4 +150,12 @@ public class BayesianNetwork extends BayesianLearning
 		}
 	}
 
+        public void resetNet()
+        {   try
+            {   net.initialize();
+            }
+            catch (Exception e)
+            {}
+        }
+
 }

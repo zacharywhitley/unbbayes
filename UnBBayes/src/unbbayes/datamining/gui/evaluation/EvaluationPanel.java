@@ -15,6 +15,7 @@ import unbbayes.datamining.classifiers.*;
 //import unbbayes.datamining.controller.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.fronteira.*;
+import unbbayes.jprs.jbn.*;
 
 public class EvaluationPanel extends JPanel
 {
@@ -57,10 +58,26 @@ public class EvaluationPanel extends JPanel
   private JComboBox jComboBox2 = new JComboBox();
   private JPanel jPanel49 = new JPanel();
   private JButton jButton8 = new JButton();
-  private JTextArea jTextArea1 = new JTextArea();
-  private JScrollPane jScrollPane1 = new JScrollPane();
   private JPanel jPanel50 = new JPanel();
   private BorderLayout borderLayout43 = new BorderLayout();
+  private JPanel jPanel3 = new JPanel();
+  private GridLayout gridLayout3 = new GridLayout();
+  private JPanel jPanel4 = new JPanel();
+  private JPanel jPanel5 = new JPanel();
+  private JPanel jPanel6 = new JPanel();
+  private BorderLayout borderLayout3 = new BorderLayout();
+  private BorderLayout borderLayout4 = new BorderLayout();
+  private BorderLayout borderLayout5 = new BorderLayout();
+  private JRadioButton jRadioButton1 = new JRadioButton();
+  private JRadioButton jRadioButton2 = new JRadioButton();
+  private JRadioButton jRadioButton3 = new JRadioButton();
+  private JButton jButton1 = new JButton();
+  private ButtonGroup buttonGroup1 = new ButtonGroup();
+  private TitledBorder titledBorder1;
+  private JScrollPane jScrollPane1 = new JScrollPane();
+  private JTextArea jTextArea1 = new JTextArea();
+  private int[] priorityClassValues;
+  private float[] priorityProbabilities;
 
   public EvaluationPanel(EvaluationMain reference)
   { this.reference = reference;
@@ -80,7 +97,7 @@ public class EvaluationPanel extends JPanel
     titledBorder8 = new TitledBorder(border10,"Log");
     titledBorder7 = new TitledBorder(border10,"Test Options");
     titledBorder6 = new TitledBorder(border10,"Model");
-    border10 = BorderFactory.createLineBorder(new Color(153, 153, 153),1);
+    titledBorder1 = new TitledBorder(border10,"Evaluation Type");
     jPanel62.setLayout(borderLayout45);
     jButton9.setEnabled(false);
     jButton9.setIcon(salvarIcon);
@@ -135,9 +152,52 @@ public class EvaluationPanel extends JPanel
         jButton8_actionPerformed(e);
       }
     });
-    jTextArea1.setEditable(false);
     jPanel50.setLayout(borderLayout43);
     jPanel50.setBorder(titledBorder8);
+    jPanel3.setLayout(gridLayout3);
+    gridLayout3.setRows(3);
+    jPanel3.setBorder(titledBorder1);
+    jPanel6.setLayout(borderLayout3);
+    jPanel5.setLayout(borderLayout4);
+    jPanel4.setLayout(borderLayout5);
+    jRadioButton1.setEnabled(false);
+    jRadioButton1.setSelected(true);
+    jRadioButton1.setText("Normal");
+    jRadioButton1.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jRadioButton_actionPerformed(e);
+      }
+    });
+    jRadioButton2.setEnabled(false);
+    jRadioButton2.setText("Relative probabilities");
+    jRadioButton2.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jRadioButton_actionPerformed(e);
+      }
+    });
+    jRadioButton3.setEnabled(false);
+    jRadioButton3.setText("Absolute probabilities");
+    jRadioButton3.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jRadioButton_actionPerformed(e);
+      }
+    });
+    jButton1.setEnabled(false);
+    jButton1.setText("Set ...");
+    jButton1.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jButton1_actionPerformed(e);
+      }
+    });
+    jTextArea1.setEditable(false);
     jPanel2.add(jPanel46, BorderLayout.NORTH);
     jPanel46.add(jLabel2,  BorderLayout.CENTER);
     jPanel2.add(jPanel45, BorderLayout.CENTER);
@@ -146,24 +206,32 @@ public class EvaluationPanel extends JPanel
     jScrollPane2.getViewport().add(jTextArea2, null);
     jPanel47.add(jPanel63, BorderLayout.SOUTH);
     jPanel63.add(jButton9, null);
-    jPanel45.add(jPanel49,              new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0
-            ,GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, -3));
+    jPanel45.add(jPanel3,  new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
+            ,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+    jPanel3.add(jPanel6, null);
+    jPanel6.add(jRadioButton1, BorderLayout.CENTER);
+    jPanel3.add(jPanel5, null);
+    jPanel5.add(jRadioButton2, BorderLayout.NORTH);
+    jPanel3.add(jPanel4, null);
+    jPanel4.add(jRadioButton3, BorderLayout.CENTER);
+    jPanel4.add(jButton1,  BorderLayout.EAST);
+    jPanel45.add(jPanel49,                  new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0
+            ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
     jPanel49.add(jComboBox2, null);
     jPanel49.add(jPanel1, null);
     jPanel1.add(jButton7, null);
     jPanel1.add(jButton8, null);
-    jPanel45.add(jPanel50,              new GridBagConstraints(1, 2, 1, 2, 0.0, 0.0
+    jPanel45.add(jPanel50,                    new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0
             ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-    jPanel50.add(jScrollPane1, BorderLayout.CENTER);
-    jScrollPane1.add(jTextArea1, null);
-    /*jPanel45.add(jPanel48,  new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0
-            ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, -47));
-    */
-
-    jPanel45.add(jPanel47,            new GridBagConstraints(2, 0, 1, 4, 100.0, 100.0
-            ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 93, 169));
+    jPanel50.add(jScrollPane1,  BorderLayout.CENTER);
+    jScrollPane1.getViewport().add(jTextArea1, null);
+    jPanel45.add(jPanel47,              new GridBagConstraints(1, 0, 2, 3, 100.0, 100.0
+            ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 1690));
 
     this.add(jPanel2, BorderLayout.CENTER);
+    buttonGroup1.add(jRadioButton1);
+    buttonGroup1.add(jRadioButton2);
+    buttonGroup1.add(jRadioButton3);
   }
 
   /** Salva as informações da text area
@@ -245,6 +313,20 @@ public class EvaluationPanel extends JPanel
           {   public void run()
               {   //Classifier classifier;
                   int numAttributes = numAttributes = instances.numAttributes();
+                  if (classifier instanceof BayesianLearning)
+                  {   if (jRadioButton1.isSelected())
+                      {   ((BayesianLearning)classifier).setNormalClassification();
+                      }
+                      else if (jRadioButton2.isSelected())
+                      {   ((BayesianLearning)classifier).setRelativeClassification();
+                      }
+                      else if (jRadioButton3.isSelected())
+                      {   ((BayesianLearning)classifier).setAbsoluteClassification(priorityClassValues,priorityProbabilities);
+                          for (int i=0;i<priorityClassValues.length;i++)
+                          {   System.out.println(priorityClassValues[i]+" "+priorityProbabilities[i]);
+                          }
+                      }
+                  }
                   //int classifierType = 0;//jComboBox1.getSelectedIndex();
                   //int testMode = 0;//jComboBox3.getSelectedIndex();
                   //int numFolds = 10, percent = 66;
@@ -452,14 +534,28 @@ public class EvaluationPanel extends JPanel
       }
       instances.setClassIndex(jComboBox2.getSelectedIndex());
       if (classifier instanceof BayesianLearning)
-      {   try
+      {   jRadioButton1.setEnabled(true);
+          jRadioButton2.setEnabled(true);
+          jRadioButton3.setEnabled(true);
+          try
           {   ((BayesianNetwork)classifier).setClassAttribute(instances.getAttribute(jComboBox2.getSelectedIndex()));
-              //float[] flo = ((BayesianNetwork)classifier).distributionForInstance(inst.getInstance(0));
-              //System.out.println(flo[0]);
+              ProbabilisticNode classNode = ((BayesianNetwork)classifier).getClassNode();
+              int statesSize = classNode.getStatesSize();
+              priorityClassValues = new int[statesSize];
+              priorityProbabilities = new float[statesSize];
+              for (int i=0;i<statesSize;i++)
+              {   priorityClassValues[i] = i;
+                  priorityProbabilities[i] = (float)classNode.getMarginalAt(i);
+              }
           }
           catch (Exception ex)
-          {
+          {   reference.setStatusBar(ex.getMessage());
           }
+      }
+      else if (classifier instanceof DecisionTreeLearning)
+      {   jRadioButton1.setEnabled(true);
+          jRadioButton2.setEnabled(false);
+          jRadioButton3.setEnabled(false);
       }
   }
 
@@ -485,4 +581,26 @@ public class EvaluationPanel extends JPanel
   public void setTextArea(String text)
   {   jTextArea2.setText(text);
   }
+
+  void jRadioButton_actionPerformed(ActionEvent e)
+  {   if (e.getSource() == jRadioButton3)
+      {   jButton1.setEnabled(true);
+      }
+      else
+      {   jButton1.setEnabled(false);
+      }
+  }
+
+  void jButton1_actionPerformed(ActionEvent e)
+  {   if (classifier instanceof BayesianNetwork)
+      {   ((BayesianNetwork)classifier).resetNet();
+          new EvaluationOptions(((BayesianNetwork)classifier).getClassNode(),this);
+      }
+  }
+
+  public void setAbsoluteValues(int[] priorityClassValues,float[] priorityProbabilities)
+  {   this.priorityClassValues = priorityClassValues;
+      this.priorityProbabilities = priorityProbabilities;
+  }
+
 }

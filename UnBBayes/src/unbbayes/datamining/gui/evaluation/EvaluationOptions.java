@@ -12,7 +12,7 @@ public class EvaluationOptions
   private JPanel statesPanel = new JPanel(new BorderLayout());
   private ProbabilisticNode classNode;
 
-  public EvaluationOptions(ProbabilisticNode classNode,Component parent)
+  public EvaluationOptions(ProbabilisticNode classNode,EvaluationPanel parent)
   {   this.classNode = classNode;
       statesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
       statesTable.getTableHeader().setReorderingAllowed(false);
@@ -22,6 +22,11 @@ public class EvaluationOptions
       StatesTableModel model = new StatesTableModel(classNode);
       statesTable.setModel(model);
       JComboBox comboBox = new JComboBox();
+      /*comboBox.addActionListener(new ActionListener()
+      {   public void actionPerformed(ActionEvent e)
+          {   System.out.println("combo");
+          }
+      });*/
       int size = classNode.getStatesSize();
       for (int i=0;i<size;i++)
       {   comboBox.addItem(new Integer(i));
@@ -33,8 +38,20 @@ public class EvaluationOptions
       statesPanel.add(statesLabel,BorderLayout.NORTH);
       statesPanel.add(statesTable,BorderLayout.CENTER);
 
-      if ((JOptionPane.showInternalConfirmDialog(parent, statesPanel, "", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION))
-      {   System.out.println("mario");
+      if ((JOptionPane.showInternalConfirmDialog(parent, statesTable, "Enter new Values:", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION))
+      {   int[] ints = model.getPriorityClassValues();
+          float[] floats = model.getPriorityProbabilities();
+          int[] priorityClassValues = new int[ints.length];
+          float[] priorityProbabilities = new float[ints.length];
+          for (int i=0;i<ints.length;i++)
+          {   for (int j=0;j<ints.length;j++)
+              {   if (ints[i] == j)
+                  {   priorityClassValues[i] = ints[j];
+                      priorityProbabilities[i] = floats[j];
+                  }
+              }
+          }
+          parent.setAbsoluteValues(priorityClassValues,priorityProbabilities);
       }
   }
 
@@ -142,21 +159,21 @@ public class EvaluationOptions
           return false;
       }
 
-    /**
-     * Gets an array containing the indices of all selected attributes.
-     * @return the array of selected indices.
-     */
-    /*public int [] getSelectedAttributes()
-    { int [] r1 = new int[getRowCount()];
-      int selCount = 0;
-      for (int i = 0; i < getRowCount(); i++)
-      {   if (m_Selected[i])
-          {   r1[selCount++] = i;
-	  }
+      public int[] getPriorityClassValues()
+      {   int[] priorityClassValues = new int[statesSize];
+          for (int i=0;i<statesSize;i++)
+          {   priorityClassValues[i] = ((Integer)cells[i][0]).intValue();
+          }
+          return priorityClassValues;
       }
-      int [] result = new int[selCount];
-      System.arraycopy(r1, 0, result, 0, selCount);
-      return result;
-    }*/
+
+      public float[] getPriorityProbabilities()
+      {   float[] priorityProbabilities = new float[statesSize];
+          for (int i=0;i<statesSize;i++)
+          {   priorityProbabilities[i] = Float.parseFloat(""+cells[i][2]);
+          }
+          return priorityProbabilities;
+      }
+
   }
 }
