@@ -11,7 +11,7 @@
 <%
 
 	String codUsuario = request.getParameter("cod_usuario");
-	String nomeFoto = null;
+	File foto = null;
 	Element usuarioXML = null;
 	if (codUsuario != null) {
 	
@@ -24,10 +24,8 @@
 		usuarioXML = detalharUsuario.process(in);	
 		
 		if (usuarioXML != null) {
-			byte[] buffer = Base64.decode(Base64.getBinaryBytes(usuarioXML.getChildTextTrim("foto"))); 
-			nomeFoto = "" + System.currentTimeMillis();
-//			nomeFoto = "FOTO_USUARIO";
-			File foto = new File("C:/eclipse/workspace/Linf/tmp/" + nomeFoto);
+			byte[] buffer = Base64.decode(Base64.getBinaryBytes(usuarioXML.getChildTextTrim("foto"))); 			
+			foto = File.createTempFile("usuario", null, new File("C:/eclipse/workspace/Linf/tmp/"));
 			FileOutputStream fos = new FileOutputStream(foto);
 			fos.write(buffer);
 			fos.close();
@@ -48,7 +46,7 @@
               <% if (usuarioXML != null) { %>
                 <tr>
                   <td colspan=2>
-                    <P><img src="<%=path + "/tmp/" + nomeFoto%>" border="0" hspace="20" alt="Foto do Usuário"><br>
+                    <P><img src="<%=path + "/tmp/" + foto.getName() %>" border="0" hspace="20" alt="Foto do Usuário"><br>
 				  </td>
 			    </tr>
 			  <% } %>
