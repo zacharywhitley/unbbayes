@@ -43,11 +43,8 @@
 			  </tr>
               <tr>
                 <td width="50%">
-                	<% if (usuarioXML != null) { %>
-                		<INPUT maxLength=35 name="identificacao" value="<%=usuarioXML.getChild("identificacao").getTextTrim()%>">
-                	<% } else { %>
-                		<INPUT maxLength=35 name="identificacao">
-                	<% } %>
+                		<INPUT maxLength=35 name="identificacao" 
+                		 value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("identificacao").getTextTrim()%><% } %>">
                 </td>
                 <td width="50%">
                   <select name="cod_tipo_usuario">
@@ -58,7 +55,8 @@
 			         while (tipos.hasNext()) {
 		  	            Element tipo = (Element) tipos.next();
 		                %>
-                     <option value="<%= ((Element)tipo.getChild("cod-tipo-usuario")).getText() %>"> 
+                     <option value="<%= ((Element)tipo.getChild("cod-tipo-usuario")).getText() %>" 
+                      <% if ( ((Element)tipo.getChild("cod-tipo-usuario")).getTextTrim().equals(usuarioXML.getChild("cod-tipo-usuario").getTextTrim()) ) { %> selected <% } %> > 
                      <%= ((Element)tipo.getChild("descricao-tipo-usuario")).getText() %> </option>
                   <% }	%>
                   </select>
@@ -77,8 +75,14 @@
                 <td width="50%"><P>Sobrenome</P></td>
               </tr> 
               <tr>
-                <td width="50%"><INPUT type=text maxLength=35 name="nome"></td>
-                <td width="50%"><INPUT type=text maxLength=35 name="sobrenome"></td>
+                <td width="50%">
+                  <INPUT type=text maxLength=35 name="nome"
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("nome").getTextTrim()%><% } %>">
+                </td>
+                <td width="50%">
+                  <INPUT type=text maxLength=35 name="sobrenome"
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("sobrenome").getTextTrim()%><% } %>">
+                </td>
               </tr>
               <tr>
                 <td width="50%"><P>Data de Nascimento</P></td>
@@ -86,9 +90,16 @@
               </tr> 
               <tr>
                 <td width="50%">
-                  <input maxLength=2 name="dia" type="text" size="2">&nbsp;<font size=4>/</font>&nbsp;
-                  <input maxLength=2 name="mes" type="text" size="2">&nbsp;<font size=4>/</font>&nbsp;
-                  <input maxLength=4 name="ano" type="text" size="4">
+                  <input maxLength=2 name="dia" type="text" size="2"
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("dia").getTextTrim()%><% } %>">
+                   &nbsp;<font size=4>/</font>&nbsp;
+                   
+                  <input maxLength=2 name="mes" type="text" size="2"
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("mes").getTextTrim()%><% } %>">
+                   &nbsp;<font size=4>/</font>&nbsp;
+                   
+                  <input maxLength=4 name="ano" type="text" size="4"
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("ano").getTextTrim()%><% } %>">
                 </td>
                 <td width="50%">                
                   <% 
@@ -98,7 +109,8 @@
 			         while (tipos.hasNext()) {
 		  	            Element tipo = (Element) tipos.next();
 		          %>
-                     <input type="radio" name="cod_tipo_sexo" value="<%= ((Element)tipo.getChild("cod-tipo-sexo")).getText() %>">
+                     <input type="radio" name="cod_tipo_sexo" value="<%= ((Element)tipo.getChild("cod-tipo-sexo")).getText() %>"
+                      <% if ( ((Element)tipo.getChild("cod-tipo-sexo")).getTextTrim().equals(usuarioXML.getChild("cod-tipo-sexo").getTextTrim()) ) { %> checked <% } %> >
                      <%= ((Element)tipo.getChild("descricao-tipo-sexo")).getText() %> 
                   <% }	%>                
                 </td>
@@ -108,8 +120,14 @@
                 <td width="50%"><P>E-mail</P></td>
               </tr> 
               <tr>
-                <td width="50%"><INPUT type=text maxLength=35 name="telefone"></td>
-                <td width="50%"><INPUT type=text maxLength=35 name="email"></td>
+                <td width="50%">
+                  <INPUT type=text maxLength=35 name="telefone"
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("telefone").getTextTrim()%><% } %>">
+                </td>
+                <td width="50%">
+                  <INPUT type=text maxLength=35 name="email"
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("email").getTextTrim()%><% } %>">
+                </td>
               </tr>
               <tr>
                 <td width="50%"><P>Foto</P></td>
@@ -117,14 +135,23 @@
               </tr> 
               <tr>                                
                 <td width="50%"><INPUT type=file name="foto"></td>
-                <td width="50%"><INPUT type=text maxLength=11 name="cpf"></td>                
+                <td width="50%">
+                  <INPUT type=text maxLength=11 name="cpf"
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("cpf").getTextTrim()%><% } %>">
+                </td>
               </tr>
               <tr>
                 <td><P>Endereço</P></td>
               </tr> 
               <tr>                
-                <td><INPUT type=text maxLength=60 name="endereco" size=50></td>
+                <td>
+                  <INPUT type=text maxLength=60 name="endereco" size=50
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("endereco").getTextTrim()%><% } %>">
+                </td>
               </tr>
+              <% if (usuarioXML != null) { %>
+                    <INPUT type="hidden" name="cod_usuario" value="<%=codUsuario%>">
+              <% } %>
               <tr>
                 <td colspan=2>
                   <P><INPUT type="submit" value="Processar">&nbsp;&nbsp;<INPUT type="reset" value="Limpar">

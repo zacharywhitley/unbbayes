@@ -4,6 +4,7 @@ package linfca.cadastro.usuario;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Iterator;
 
 import com.oreilly.servlet.Base64Decoder;
 import com.oreilly.servlet.Base64Encoder;
@@ -25,8 +26,7 @@ public class ListarUsuarioFeature implements Feature {
 	 * 	  <usuario>
 	 * 		 <cod-usuario>1</cod-usuario>
 	 *       <identificacao>9912345</identificacao>
-	 *       <nome>Mané</nome>
-	 *       <sobrenome>Peregrino</sobrenome>
+	 *       <nome-completo>Mané Peregrino</nome-completo>
 	 * 	  </usuario>*
 	 * </out> 
 	 * </pre>
@@ -58,18 +58,27 @@ public class ListarUsuarioFeature implements Feature {
 			identificacaoXML.setText(identificacao);
 			usuario.getChildren().add(identificacaoXML);
 			
-			Element nomeXML = new Element("nome");
-			nomeXML.setText(nome);
-			System.out.println("NomeF: " + nome);
+			Element nomeXML = new Element("nome-completo");
+			nomeXML.setText(nome + " " + sobrenome);			
 			usuario.getChildren().add(nomeXML);
 			
+			/*
 			Element sobrenomeXML = new Element("sobrenome");
-			nomeXML.setText(sobrenome);
-			System.out.println("SobreNomeF: " + sobrenome);
+			nomeXML.setText(sobrenome);			
 			usuario.getChildren().add(sobrenomeXML);			
+			*/
 			
 			out.getChildren().add(usuario);
 			
+		}
+		
+		Iterator usuarios = out.getChildren().iterator();
+		while (usuarios.hasNext()) {
+			Element usuario = (Element) usuarios.next();
+			System.out.println("CodUsuarioF: " + ((Element)usuario.getChild("cod-usuario")).getText());
+			System.out.println("IdentificacaoF: " + ((Element)usuario.getChild("identificacao")).getText());
+			System.out.println("NomeF: " + ((Element)usuario.getChild("nome-completo")).getText());
+			//System.out.println("SobreNomeF: " + ((Element)usuario.getChild("sobrenome")).getText());
 		}
 		
 		rs.close();

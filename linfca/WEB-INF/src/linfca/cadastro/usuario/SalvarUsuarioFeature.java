@@ -32,7 +32,8 @@ public class SalvarUsuarioFeature implements Feature {
 	 *    <confirmacao-senha>supersecreta</confirmacao-senha>
 	 *    <dia>20</dia>
 	 *    <mes>04</mes>
-	 * 	  <ano>1980</ano>
+	 *    <ano>1980</ano>
+	 *    <telefone>61-3681244</telefone>
 	 *    <email>mp@provedor.com.br</email>
 	 *    <endereco>SQN 410 Bl. B Apto. 101</endereco>
 	 *    <foto>LÇKHÇAOFOHASFOHWQOHQWRLKÇHJLÇJA...</foto>
@@ -48,20 +49,22 @@ public class SalvarUsuarioFeature implements Feature {
 		
 		Connection con = Controller.getInstance().makeConnection();
 		
-		String codTipoUsuario  = in.getChildTextTrim("cod-tipo-usuario");
-		String codTipoSexo     = in.getChildTextTrim("cod-tipo-sexo");
-		String identificacao   = in.getChildTextTrim("identificacao");
-		String cpf             = in.getChildTextTrim("cpf");
-		String nome            = in.getChildTextTrim("nome");
-		String sobrenome       = in.getChildTextTrim("sobrenome");
-		String senha           = in.getChildTextTrim("senha");
-		String email           = in.getChildTextTrim("email");
-		String endereco        = in.getChildTextTrim("endereco");
-		String foto            = in.getChildTextTrim("foto");
-		String dia             = in.getChildTextTrim("dia");
-		String mes             = in.getChildTextTrim("mes");
-    	String ano             = in.getChildTextTrim("ano");
-		Date dataNascimento = Date.valueOf(ano + '/' + mes + '/' + dia);
+
+		String codTipoUsuario  = in.getChild("cod-tipo-usuario").getTextTrim();
+		String codTipoSexo     = in.getChild("cod-tipo-sexo").getTextTrim();
+		String identificacao   = in.getChild("identificacao").getTextTrim();
+		String cpf             = in.getChild("cpf").getTextTrim();
+		String nome            = in.getChild("nome").getTextTrim();
+		String sobrenome       = in.getChild("sobrenome").getTextTrim();
+		String senha           = in.getChild("senha").getTextTrim();
+		String telefone        = in.getChild("telefone").getTextTrim();
+		String email           = in.getChild("email").getTextTrim();
+		String endereco        = in.getChild("endereco").getTextTrim();
+		String foto            = in.getChild("foto").getTextTrim();
+		String dia             = in.getChild("dia").getTextTrim();
+		String mes             = in.getChild("mes").getTextTrim();
+		String ano             = in.getChild("ano").getTextTrim();
+		Date dataNascimento    = Date.valueOf(ano + '/' + mes + '/' + dia);
 		
 		MessageDigest md = MessageDigest.getInstance("MD5");
 		byte [] senhaEncode = md.digest(senha.getBytes());
@@ -77,7 +80,7 @@ public class SalvarUsuarioFeature implements Feature {
 			
 			if (atualizarUsuario(codUsuario, codTipoUsuario, codTipoSexo, 
 					identificacao, cpf, nome, sobrenome, senhaEncode64, email, 
-					endereco, foto, dataNascimento, con)) {
+					endereco, foto, dataNascimento, telefone, con)) {
 				System.out.println("Atualizou Usuário: " + nome);
 				out.getChildren().add(new Element("ok"));
 			} else {
@@ -91,7 +94,7 @@ public class SalvarUsuarioFeature implements Feature {
 			
 			if (inserirUsuario(codTipoUsuario, codTipoSexo, identificacao, cpf,
 					nome, sobrenome, senhaEncode64, email, endereco, foto, 
-					dataNascimento, con)) {
+					dataNascimento, telefone, con)) {
 				System.out.println("Inseriu Usuário: " + nome);
 				out.getChildren().add(new Element("ok"));
 			} else {
@@ -110,8 +113,9 @@ public class SalvarUsuarioFeature implements Feature {
 		
 	private boolean inserirUsuario(String codTipoUsuario, String codTipoSexo, 
 			String identificacao, String cpf, String nome, String sobrenome, 
-			byte[] senha, String email, String endereco, String foto, 
-			Date dataNascimento, Connection con) throws SQLException {
+			byte [] senha, String email, String endereco, String foto, 
+			Date dataNascimento, String telefone, Connection con)
+			throws SQLException {
 		
 		PreparedStatement ps = null;
 //		ResultSet rs = null;
@@ -121,7 +125,7 @@ public class SalvarUsuarioFeature implements Feature {
 		sql.append("  Usuario ");
 		sql.append("  (cod_tipo_usuario, cod_tipo_sexo, identificacao, cpf, ");
 		sql.append("   nome, sobrenome, senha, email, endereco, foto, ");
-		sql.append("   data_nascimento) ");
+		sql.append("   data_nascimento, telefone) ");
 		sql.append("VALUES ");
 		sql.append("  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ");
 		
@@ -138,7 +142,8 @@ public class SalvarUsuarioFeature implements Feature {
 		ps.setString(8, email);
 		ps.setString(9, endereco);
 		ps.setString(10, foto);
-		ps.setDate(11, dataNascimento);
+		ps.setDate(11, new java.sql.Date(dataNascimento.getTime()));
+		ps.setString(12, telefone);
 
 		return (ps.executeUpdate() > 0);
 		
@@ -147,7 +152,7 @@ public class SalvarUsuarioFeature implements Feature {
 	private boolean atualizarUsuario(String codUsuario, String codTipoUsuario,
 			String codTipoSexo, String identificacao, String cpf, String nome, 
 			String sobrenome, byte [] senha, String email, String endereco, 
-			String foto, Date dataNascimento, Connection con) 
+			String foto, Date dataNascimento, String telefone, Connection con) 
 			throws SQLException {
 		
 		PreparedStatement ps = null;
@@ -160,7 +165,7 @@ public class SalvarUsuarioFeature implements Feature {
 		sql.append("  cod_tipo_usuario = ?, cod_tipo_sexo = ?, ");
 		sql.append("  identificacao = ?, cpf = ?, nome = ?, sobrenome = ?, ");
 		sql.append("  senha = ?, email = ?, endereco = ?, foto = ?, ");
-		sql.append("   data_nascimento = ? ");
+		sql.append("   data_nascimento = ?, telefone = ? ");
 		sql.append("WHERE ");
 		sql.append("  cod_usuario = ? ");
 		
@@ -176,8 +181,10 @@ public class SalvarUsuarioFeature implements Feature {
 		ps.setString(8, email);
 		ps.setString(9, endereco);
 		ps.setString(10, foto);
-		ps.setDate(11, dataNascimento);
-		ps.setString(12, codUsuario);
+		System.out.println("Data salvar: " + dataNascimento.toString());
+		ps.setDate(11, new java.sql.Date(dataNascimento.getTime()));
+		ps.setString(12, telefone);
+		ps.setString(13, codUsuario);
 
 		return (ps.executeUpdate() > 0);
 		
