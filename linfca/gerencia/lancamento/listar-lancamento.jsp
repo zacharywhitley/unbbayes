@@ -126,7 +126,7 @@ setTimeout("reload()", speed);
                 </td>
                 
                 <td align="center">
-                  <img src="<%=path + "/tmp/" + foto.getName() %>" border="0" hspace="20" height="240" alt="Foto do Usuário">
+                  <img src="<%=path + "/tmp/" + foto.getName() %>" border="0" hspace="20" height="150" width="200" alt="Foto do Usuário">
                 </td>
                 
                 <td align="center">

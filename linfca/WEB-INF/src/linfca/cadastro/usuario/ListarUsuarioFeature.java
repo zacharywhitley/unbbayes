@@ -6,15 +6,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Iterator;
 
-import com.oreilly.servlet.Base64Decoder;
-import com.oreilly.servlet.Base64Encoder;
-
 import linfca.Controller;
 import linfca.Feature;
-import linfca.util.Base64;
-import org.apache.xerces.validators.datatype.Base64BinaryDatatypeValidator;
+
 import org.jdom.Element;
-import sun.misc.BASE64Decoder;
 
 public class ListarUsuarioFeature implements Feature {
 

@@ -67,9 +67,6 @@ function MM_swapImage() { //v3.0
 <body bgcolor="#6CA66C" text="#000000" link="#000000" vlink="#000000" alink="#000000" style="margin: 0px" marginheight="0" marginwidth="0" border="0" onLoad="MM_preloadImages('design/imagens/nome_cursoON.gif','design/imagens/nome_equipamentoON.gif','design/imagens/nome_semestreON.gif','design/imagens/usuarioON.gif','design/imagens/nome_eventosON.gif','design/imagens/nome_downloadsON.gif')">
 <table width="100%" border="0" cellspacing="0" cellpadding="0" align="left" bgcolor="#6CA66C">
   <tr>
-    <td bgcolor="#6CA66C" colspan="2"><a href="http://www.unb.br"><img src="<%=path%>/design/imagens/logo_unb.gif" height="32" width="210" vspace="10" hspace="10" border="0" alt="Universidade de Brasília."></a></td>
-  </tr>
-  <tr>
 	<td height="1" colspan="2" bgcolor="#3C783C"><img src="#" width=1 height=1></td>
   </tr>
   <tr>
@@ -82,9 +79,9 @@ function MM_swapImage() { //v3.0
     <td colspan="2" bgcolor="#336633">
       <table align="center" cellspacing="0" cellpadding="5" border="0" name="menu_table">
         <tr>
-          <td align="center"><a href="<%=path%>/cadastro/curso/salvar-curso.jsp" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Curso','','<%=path%>/design/imagens/nome_cursoON.gif',1)"><img name="Curso" border="0" src="<%=path%>/design/imagens/nome_curso.gif"></a></td>
-          <td align="center"><a href="<%=path%>/cadastro/equipamento/salvar-equipamento.jsp" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Equipamento','','<%=path%>/design/imagens/nome_equipamentoON.gif',1)"><img name="Equipamento" border="0" src="<%=path%>/design/imagens/nome_equipamento.gif"></a></td>
-		  <td align="center"><a href="<%=path%>/cadastro/semestre/salvar-semestre.jsp" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Semestre','','<%=path%>/design/imagens/nome_semestreON.gif',1)"><img name="Semestre" border="0" src="<%=path%>/design/imagens/nome_semestre.gif"></a></td>
+          <td align="center"><a href="<%=path%>/cadastro/curso/selecionar-curso.jsp" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Curso','','<%=path%>/design/imagens/nome_cursoON.gif',1)"><img name="Curso" border="0" src="<%=path%>/design/imagens/nome_curso.gif"></a></td>
+          <td align="center"><a href="<%=path%>/cadastro/equipamento/selecionar-equipamento.jsp" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Equipamento','','<%=path%>/design/imagens/nome_equipamentoON.gif',1)"><img name="Equipamento" border="0" src="<%=path%>/design/imagens/nome_equipamento.gif"></a></td>
+		  <td align="center"><a href="<%=path%>/cadastro/semestre/selecionar-semestre.jsp" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Semestre','','<%=path%>/design/imagens/nome_semestreON.gif',1)"><img name="Semestre" border="0" src="<%=path%>/design/imagens/nome_semestre.gif"></a></td>
           <td align="center"><a href="<%=path%>/cadastro/usuario/selecionar-usuario.jsp" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Usuario','','<%=path%>/design/imagens/nome_usuarioON.gif',1)"><img name="Usuario" border="0" src="<%=path%>/design/imagens/nome_usuario.gif"></a></td>
           <td align="center"><a href="<%=path%>/gerencia/lancamento/filtrar-lancamento.jsp" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Lancamento','','<%=path%>/design/imagens/nome_lancamentoON.gif',1)"><img name="Lancamento" border="0" src="<%=path%>/design/imagens/nome_lancamento.gif"></a></td>
           <td align="center"><a href="#" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Eventos','','<%=path%>/design/imagens/nome_eventosON.gif',1)"><img name="Eventos" border="0" src="<%=path%>/design/imagens/nome_eventos.gif" width="75" height="15"></a></td>

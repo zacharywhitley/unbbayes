@@ -176,7 +176,7 @@ public class SalvarGenericoFeature implements Feature {
 				
 				ps.setBytes(i + 1 + indiceInicial, senhaEncode64);				
 			} else {
-				throw new RuntimeException("Tipo não reconhecido no salvar-generico");				
+				throw new RuntimeException("Tipo não reconhecido no salvar-generico: " + nomeTipo);				
 			}			
 		}
 			

@@ -4,35 +4,57 @@ package linfca.cadastro.equipamento;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import org.jdom.Element;
 import linfca.Controller;
 import linfca.Feature;
+import linfca.XMLUtil;
 
 /**
  * Lista os equipamentos agrupados por sala.
  */
 public class ListarEquipamentoFeature implements Feature {
+	
+	private Connection con;
 
 	/**
 	 * <pre>
 	 * <in>
 	 *    <desc-tipo-equipamento>Computador</desc-tipo-equipamento>?
 	 *    <desc-tipo-situacao>Disponível</desc-tipo-situacao>?
-	 * </in>
+	 * </in> 
 	 * 
 	 * <out>
-	 * 	  <equipamento>
-	 *      <nome-sala>Laboratorio 3</nome-sala>
-	 * 		<cod-equipamento>34</cod-equipamento>
-	 * 		<nome-equipamento>Equipamento 25</nome-equipamento>
-	 * 	  </equipamento>*
+	 *      <sala>
+	 * 		  <nome-sala>Laboratorio 3</nome-sala>
+	 *        <equipamento>
+	 * 			<cod-equipamento>34</cod-equipamento>
+	 *	 		<nome-equipamento>Equipamento 25</nome-equipamento>
+	 *	 	  </equipamento>*
+	 * 		</sala>*
 	 * </out> 
+	 * 
+	 * ||
+	 * 
+	 * <in/>
+	 * 
+	 * <out>
+	 *   <equipamento>
+	 * 		<cod-equipamento>34</cod-equipamento>
+	 *		<nome-equipamento>Equipamento 25</nome-equipamento>
+	 *	 </equipamento>*
+	 * </out>
 	 * </pre>
 	 * @see Feature#process(Element)
 	 */
 	public Element process(Element in) throws Exception {
-		Connection con = Controller.getInstance().makeConnection();
+		con = Controller.getInstance().makeConnection();
 		
+		if (in == null || in.getChildren().size() == 0) {
+			return listarTodos();
+		}
+	
 		String descTipoEquipamento = in.getChildTextTrim("desc-tipo-equipamento");
 		String descTipoSituacao    = in.getChildTextTrim("desc-tipo-situacao");
 		
@@ -81,22 +103,34 @@ public class ListarEquipamentoFeature implements Feature {
 		ResultSet rs = ps.executeQuery();
 		
 		Element out = new Element("out");
+		String sala = null;
+		Element salaXML = null;
 		while (rs.next()) {
 			Element equipamento = new Element("equipamento");
 			String nomeSala = rs.getString("S.nome_sala");
+			if (! nomeSala.equals(sala)) {
+				if (salaXML != null) {
+					out.getChildren().add(salaXML);
+				}
+				sala = nomeSala;
+				salaXML = new Element("sala");
+				Element nome = new Element("nome-sala");
+				nome.setText(sala);
+				salaXML.getChildren().add(nome);				
+			}
 			long codigo = rs.getLong("E.cod_equipamento");
-			String nome = rs.getString("E.nome_equipamento");
+			String nome = rs.getString("E.nome_equipamento");			
 			
-			Element nomeSalaXML = new Element("nome-sala");
-			nomeSalaXML.setText(nomeSala);
-			equipamento.getChildren().add(nomeSalaXML);
 			Element codigoXML = new Element("cod-equipamento");
 			codigoXML.setText("" + codigo);			
 			equipamento.getChildren().add(codigoXML);
 			Element nomeXML = new Element("nome-equipamento");
 			nomeXML.setText(nome);
 			equipamento.getChildren().add(nomeXML);
-			out.getChildren().add(equipamento);
+			salaXML.getChildren().add(equipamento);
+		}
+		if (salaXML != null) {		
+			out.getChildren().add(salaXML);
 		}
 		
 		rs.close();
@@ -104,5 +138,42 @@ public class ListarEquipamentoFeature implements Feature {
 		con.close();
 		
 		return out;
+	}
+	
+	private Element listarTodos() throws SQLException {
+		PreparedStatement ps = con.prepareStatement("select * from equipamento group by cod_tipo_equipamento");
+		ResultSet rs = ps.executeQuery();
+		Element out = new Element("out");
+		while (rs.next()) {
+			Element equip = new Element("equipamento");
+			int codEquip = rs.getInt("cod_equipamento");
+			String nome = rs.getString("nome_equipamento");
+			
+			Element codXML = new Element("cod-equipamento");
+			codXML.setText("" + codEquip);
+			
+			Element nomeXML = new Element("nome-equipamento");
+			nomeXML.setText(nome);
+			
+			equip.getChildren().add(codXML);
+			equip.getChildren().add(nomeXML);
+			
+			out.getChildren().add(equip);
+		}
+		return out;
+	}
+	
+	public static void main(String args[]) throws Exception {
+		Element in = new Element("in");
+		Element temp;
+		temp = new Element("desc-tipo-equipamento");
+		temp.setText("Computador");
+		in.getChildren().add(temp);
+		temp = new Element("desc-tipo-situacao");
+		temp.setText("Disponível");
+		in.getChildren().add(temp);
+		Feature f = new ListarEquipamentoFeature();
+		Element out = f.process(in);
+		XMLUtil.print(out);
 	}
 }

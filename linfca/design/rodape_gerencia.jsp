@@ -11,9 +11,9 @@
     <td height="40" colspan="2" align="center" bgcolor="#336633" valign="middle">
 	  <font face="Arial, Helvetica, sans-serif" size="1" color="black">
 	  <span style="font-size: 13px">
-	  <a href="<%=path%>/cadastro/curso/salvar-curso.jsp">curso</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; 
-      <a href="<%=path%>/cadastro/equipamento/salvar-equipamento.jsp">equipamento</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; 
-      <a href="<%=path%>/cadastro/semestre/salvar-semestre.jsp">semestre</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; 
+	  <a href="<%=path%>/cadastro/curso/selecionar-curso.jsp">curso</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; 
+      <a href="<%=path%>/cadastro/equipamento/selecionar-equipamento.jsp">equipamento</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; 
+      <a href="<%=path%>/cadastro/semestre/selecionar-semestre.jsp">semestre</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; 
 	  <a href="<%=path%>/cadastro/usuario/selecionar-usuario.jsp">usuário</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; 
       <a href="<%=path%>/gerencia/lancamento/filtrar-lancamento.jsp">lançamento</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; 
       <a href="#">eventos</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;       

@@ -13,32 +13,24 @@
 %>
 
         <tr>
-          <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_computador.gif" width="174" border="0" hspace="20" alt="Seleção de Computador"></td>
           <td>
 		  <BR>
             <table width="100%" border="0" cellspacing="5" cellpadding="0" align="center">
             
               <tr>
               
-                <td colspan=2>
-                  <P class="header">Escolha o computador que irá utilizar:</P><br>
-				</td>
+                <td>
+                  <P class="header">Olá, <%=request.getAttribute("nome")%> (<%=request.getAttribute("identificacao")%>), escolha o computador que irá utilizar:</P><br>
+		</td>
 				
-			  </tr>
+	</tr>
 			  
+	  
               <tr>
               
-                <td width="30%">
-                  <P>Computador</P></td>
-                <td width="70%"></td>
-                
-			  </tr>
-			  
-              <tr>
-              
-                <td width="30%"> <h3> 
+                <td>
                     <% 
-		             Feature  listarComputadorDisponivel = new ListarEquipamentoFeature();
+	                         Feature  listarComputadorDisponivel = new ListarEquipamentoFeature();
 					 Element in = new Element("in");
 					 Element descTipo = new Element("desc-tipo-equipamento");
 					 descTipo.setText("Computador");					 
@@ -47,31 +39,38 @@
 					 descTipo = new Element("desc-tipo-situacao");
 					 descTipo.setText("Disponível");					 
 					 in.getChildren().add(descTipo);					 
-			         Element tiposXML = listarComputadorDisponivel.process(in);
-			         Iterator tipos = tiposXML.getChildren().iterator();
+				         Element tiposXML = listarComputadorDisponivel.process(in);
+				         Iterator tipos = tiposXML.getChildren().iterator();
 					 if (! tipos.hasNext()) {
 					 %>
                     Nenhum computador disponível 
-                    <% } else {  %>
-					<table>
-					   <tr>
-					      <td>Sala</td>
-						  <td>Computador</td>
-					   </tr>
-                      <%
-				         while (tipos.hasNext()) {
-			  	            Element tipo = (Element) tipos.next();
-			          %>
-					   <tr>
-					      <td><%= tipo.getChildTextTrim("nome-sala") %></td>
-					      <td><a href="<%= destino %>?cod-usuario=<%=request.getAttribute("cod-usuario")%>&cod-equipamento=<%= tipo.getChildTextTrim("cod-equipamento") %>"><%= tipo.getChildTextTrim("nome-equipamento") %></a></td>
-					   </tr>						
-                      <% }	%>
+			              <% } else {  %>
+					<table cellspacing="5" cellpadding="5" align="left" valign="top" width="100%">
+					  <% while (tipos.hasNext()) { 
+						Element sala = (Element) tipos.next();
+						String nomeSala = sala.getChildTextTrim("nome-sala");
+  			      	  %>
+	      				   <td>
+							<table cellspacing="5" cellpadding="5" align="left" valign="top">
+							<tr><h4>Sala <%= nomeSala %></h4></tr>
+							
+					  <%
+						Iterator comps = sala.getChildren("equipamento").iterator();
+  						while (comps.hasNext()) {
+							Element c = (Element) comps.next();
+
+							%>
+			 				<tr>
+				<a href="<%= destino %>?cod-usuario=<%=request.getAttribute("cod-usuario")%>&cod-equipamento=<%= c.getChildTextTrim("cod-equipamento") %>"><%= c.getChildTextTrim("nome-equipamento") %></a>
+							</tr>
+					<%	}  %>
+
+						    </table>
+       					  </td>
+					<%  } %>
 					</table>
-                     <% } %>
-                  </h3>
-				  </td>                  
-                <td width="70%"><img src="<%=path%>/design/imagens/mapa_linf.gif" border="0" hspace="20" alt="Mapa do Linf"></td>
+                           <% } %>
+				  </td>                                 
                 
               </tr>
 			</table>

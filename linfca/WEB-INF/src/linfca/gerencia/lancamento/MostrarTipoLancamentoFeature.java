@@ -1,20 +1,14 @@
 
 package linfca.gerencia.lancamento;
 
-import linfca.Feature;
-import org.jdom.Element;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.Date;
-
-import org.jdom.Element;
-
-import java.security.*;
 
 import linfca.Controller;
 import linfca.Feature;
-import linfca.util.Base64;
+
+import org.jdom.Element;
 
 public class MostrarTipoLancamentoFeature implements Feature {
 
