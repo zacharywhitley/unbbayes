@@ -20,7 +20,7 @@ import unbbayes.util.SetToolkit;
 public class MSNetwork {
 	protected List nets;
 	protected List links;
-	
+	protected SubNetwork activeNet;	
 	
 	public MSNetwork() {
 		nets = new ArrayList();
@@ -68,12 +68,23 @@ public class MSNetwork {
 		}
 	}
 	
+	public void desviaAtencao(SubNetwork net) {
+		List caminho = activeNet.makePath(net);		
+		for (int i = 1; i < caminho.size(); i++) {
+			SubNetwork netAux = (SubNetwork) caminho.get(i);
+			atualizaCrenca(netAux, activeNet);
+			activeNet = netAux;
+		}
+		
+		assert activeNet == net;				
+	}
+	
 	protected void atualizaCrenca(SubNetwork net1, SubNetwork net2) {
-		for (int i = links.size()-1; i>=0; i--) {
+		for (int i = 0; i<links.size(); i++) {
 			Linkage l = (Linkage) links.get(i);
 			if (l.getN1() == net1 && l.getN2() == net2) {
 				l.absorve(true);
-				return;												
+				return;											
 			}
 			
 			if (l.getN2() == net1 && l.getN1() == net2) {

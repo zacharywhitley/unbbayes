@@ -1,6 +1,9 @@
 package unbbayes.prs.msbn;
 
 import unbbayes.prs.bn.Clique;
+import unbbayes.prs.bn.PotentialTable;
+import unbbayes.util.NodeList;
+import unbbayes.util.SetToolkit;
 
 /**
  * @author michael
@@ -15,6 +18,41 @@ public class Link {
 	
 	public Link(Clique clique) {
 		this.clique = clique;
+	}
+	
+	protected void absorve(boolean naOrdem) {
+		Clique c1, c2;
+		
+		if (naOrdem) {
+			c1 = v0;
+			c2 = v1;
+		} else {
+			c1 = v1;
+			c2 = v0;						
+		}
+
+		NodeList toDie = SetToolkit.clone(c2.getNos());
+		toDie.removeAll(clique.getNos());
+		
+		PotentialTable tB =
+			(PotentialTable) c2.getPotentialTable().clone();
+			
+		for (int i = 0; i < toDie.size(); i++) {
+			tB.removeVariable(toDie.get(i));
+		}	
+
+		toDie = SetToolkit.clone(c1.getNos());
+		toDie.removeAll(clique.getNos());
+
+		PotentialTable tA = (PotentialTable) c1.getPotentialTable().clone();
+		
+		for (int i = 0; i < toDie.size(); i++) {
+			tA.removeVariable(toDie.get(i));
+		}
+		
+		tB.opTab(tA, PotentialTable.DIVISION_OPERATOR);
+		
+		c1.getPotentialTable().opTab(tB, PotentialTable.PRODUCT_OPERATOR);
 	}
 	
 	

@@ -65,6 +65,39 @@ public class SubNetwork extends Network {
 		super.verifyConsistency();		
 	}
 	
+	protected List makePath(SubNetwork net) {
+		List path = new ArrayList();
+		makePath(net, path, new ArrayList());
+		return path;				
+	}
+	
+	private boolean makePath(SubNetwork net, List path, List visited) {
+		path.add(this);
+		
+		if (visited.contains(this)) {
+			return false;
+		}
+		visited.add(this);
+		
+		if (this.equals(net)) {
+			return true;
+		}
+		
+		for (int i = adjacents.size()-1; i>=0; i--) {
+			SubNetwork netAux = (SubNetwork) adjacents.get(i);
+			if (netAux.makePath(net, path, visited)) {
+				return true;				
+			}			
+		}
+		
+		if (parent.makePath(net, path, visited)) {
+			return true;			
+		}	
+		
+		path.remove(net);
+		return false;
+	}
+	
 	/**
 	 * 
 	 * Triangulacao com peso minimo primeiro só os não d-sepnodes e depois só os d-sep-nodes;	 * 
@@ -177,7 +210,7 @@ public class SubNetwork extends Network {
 	protected void distributedCycle() throws Exception {
 		for (int i = nos.size()-1; i>=0; i--) {
 			dfsCycle(i, null);
-		}		
+		}
 	}
 	
 	/**

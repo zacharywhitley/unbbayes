@@ -104,7 +104,7 @@ public class Linkage {
 						removeLink(link);
 						break;					
 					}					
-				}				
+				}		
 			}
 		}	
 	}
@@ -188,38 +188,12 @@ public class Linkage {
 		int treeSize = tree.size();
 		for (int i = 0; i < treeSize; i++) {
 			Link l = (Link) tree.get(i);
+			l.absorve(naOrdem);
 			if (naOrdem) {
-				absorve(l.getV0(), l.getClique(), l.getV1());				
 				n1.getJunctionTree().distribuaEvidencia(l.getV0());
 			} else {				
-				absorve(l.getV1(), l.getClique(), l.getV0());
 				n2.getJunctionTree().distribuaEvidencia(l.getV1());
 			}
 		}
-	}
-	
-	protected static void absorve(Clique c1, Clique l, Clique c2) {
-		NodeList toDie = SetToolkit.clone(c2.getNos());
-		toDie.removeAll(l.getNos());
-		
-		PotentialTable tB =
-			(PotentialTable) c2.getPotentialTable().clone();
-			
-		for (int i = 0; i < toDie.size(); i++) {
-			tB.removeVariable(toDie.get(i));
-		}	
-
-		toDie = SetToolkit.clone(c1.getNos());
-		toDie.removeAll(l.getNos());
-
-		PotentialTable tA = (PotentialTable) c1.getPotentialTable().clone();
-		
-		for (int i = 0; i < toDie.size(); i++) {
-			tA.removeVariable(toDie.get(i));
-		}
-		
-		tB.opTab(tA, PotentialTable.DIVISION_OPERATOR);
-		
-		c1.getPotentialTable().opTab(tB, PotentialTable.PRODUCT_OPERATOR);
 	}
 }
