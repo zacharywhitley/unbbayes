@@ -127,6 +127,7 @@ public class SalvarUsuarioFeature implements Feature {
 		ps = con.prepareStatement(sql.toString());
 		
 		ps.setInt(1, Integer.parseInt(codTipoUsuario));
+		System.out.println("codTipoSexo: " + codTipoSexo);
 		ps.setInt(2, Integer.parseInt(codTipoSexo));
 		ps.setString(3, identificacao);
 		ps.setString(4, cpf);

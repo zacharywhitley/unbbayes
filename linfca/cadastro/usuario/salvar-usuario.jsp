@@ -67,7 +67,7 @@
 			         while (tipos.hasNext()) {
 		  	            Element tipo = (Element) tipos.next();
 		          %>
-                     <input type="radio" name="sexo" value="<%= ((Element)tipo.getChild("cod-tipo-sexo")).getText() %>">
+                     <input type="radio" name="cod_tipo_sexo" value="<%= ((Element)tipo.getChild("cod-tipo-sexo")).getText() %>">
                      <%= ((Element)tipo.getChild("descricao-tipo-sexo")).getText() %> 
                   <% }	%>                
                 </td>
