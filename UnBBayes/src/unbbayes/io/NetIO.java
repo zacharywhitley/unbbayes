@@ -23,11 +23,14 @@
 package unbbayes.io;
 
 import unbbayes.jprs.jbn.*;
-import unbbayes.util.NodeList;
+import unbbayes.util.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import javax.swing.*;
+import javax.swing.tree.*;
 
 /**
  * Classe que manipula a entrada e saída de arquivos NET.
@@ -63,7 +66,8 @@ public class NetIO implements BaseIO {
 
 		st.wordChars('A', 'Z');
 		st.wordChars('a', '}');
-		st.wordChars('_', '_');
+		st.wordChars('\u00A0', '\u00FF');
+                st.wordChars('_', '_');
 		st.wordChars('-', '-');
 		st.wordChars('0', '9');
 		st.wordChars('.', '.');
@@ -86,7 +90,18 @@ public class NetIO implements BaseIO {
 						proximo(st);
 						proximo(st);
 						net.setRadius(Double.parseDouble(st.sval) / 2);
-					} else if (st.sval.equals("HR_Color_Utility")) {
+					} else if (st.sval.equals("tree"))
+                                        {   proximo(st);
+                                            StringBuffer sb = new StringBuffer(st.sval);
+                                            DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
+                                            loadHierarchicTree(sb,root);
+
+                                            // construct tree
+                                            DefaultTreeModel model = new DefaultTreeModel(root);
+                                            HierarchicTree hierarchicTree = new HierarchicTree(model);
+
+                                            net.setHierarchicTree(hierarchicTree);
+                                        } else if (st.sval.equals("HR_Color_Utility")) {
 						proximo(st);
 						UtilityNode.setColor(Integer.parseInt(st.sval));
 					} else if (st.sval.equals("HR_Color_Decision")) {
@@ -249,7 +264,8 @@ public class NetIO implements BaseIO {
 					+ (int) net.getRadius()
 					+ ");");
 			arq.println("     name = \"" + net.getName() + "\";");
-			arq.println("     HR_Color_Utility = \"" + 10 + "\";");
+                        arq.println("     tree = \"" + saveHierarchicTree(net.getHierarchicTree()) + "\";");
+                        arq.println("     HR_Color_Utility = \"" + 10 + "\";");
 			arq.println("     HR_Color_Decision = \"" + 30 + "\";");
 			arq.println("}");
 			arq.println();
@@ -302,10 +318,10 @@ public class NetIO implements BaseIO {
 				NodeList auxListVa = auxNo1.getParents();
 
 				arq.print("potential (" + auxNo1.getName());
-				
+
 				int sizeVa = auxListVa.size();
 				if (sizeVa > 0) {
-					arq.print(" |");					
+					arq.print(" |");
 				}
 				for (int c2 = 0; c2 < sizeVa; c2++) {
 					Node auxNo2 = (Node) auxListVa.get(c2);
@@ -389,4 +405,75 @@ public class NetIO implements BaseIO {
 				&& (st.ttype != StreamTokenizer.TT_EOF));
 		return st.ttype;
 	}
+
+    private void loadHierarchicTree(StringBuffer sb,DefaultMutableTreeNode root)
+    {   int size = sb.length();
+        DefaultMutableTreeNode nextRoot = null;
+        Stack stack = new Stack();
+        for (int i=0;i<size;i++)
+        {   char c = sb.charAt(i);
+            if (c == '(')
+            {   if (nextRoot != null)
+                {   stack.add(root);
+                    root = nextRoot;
+                }
+            }
+            else if (c == ')')
+            {   if (stack.size() > 0)
+                {   root = (DefaultMutableTreeNode)stack.remove();
+                }
+            }
+            else if (c == ',')
+            {
+            }
+            else
+            {   StringBuffer newWord = new StringBuffer();
+                while ((c != '(')&&(c != ')')&&(c != ','))
+                {   newWord.append(c);
+                    i++;
+                    c = sb.charAt(i);
+                }
+                i--;
+                DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(newWord);
+                nextRoot = newNode;
+                root.add(newNode);
+            }
+        }
+    }
+
+    private String saveHierarchicTree(HierarchicTree hierarchicTree)
+    {   TreeModel model = hierarchicTree.getModel();
+        StringBuffer sb = new StringBuffer();
+        TreeNode root = (TreeNode)model.getRoot();
+        int childCount = model.getChildCount(root);
+        if (childCount == 0)
+        {   return null;
+        }
+        else
+        {   sb.append('(');
+            for (int i=0; i<childCount; i++)
+            {   processTreeNode((TreeNode)model.getChild(root,i),sb,model);
+                if (i != (childCount-1))
+                {   sb.append(',');
+                }
+            }
+            sb.append(')');
+            return sb.toString();
+        }
+    }
+
+    private void processTreeNode(TreeNode node,StringBuffer sb,TreeModel model)
+    {   sb.append(node.toString());
+        if (!node.isLeaf())
+        {   sb.append('(');
+            int childCount = model.getChildCount(node);
+            for (int i=0; i<childCount; i++)
+            {   processTreeNode((TreeNode)model.getChild(node,i),sb,model);
+                if (i != (childCount-1))
+                {   sb.append(',');
+                }
+            }
+            sb.append(')');
+        }
+    }
 }
