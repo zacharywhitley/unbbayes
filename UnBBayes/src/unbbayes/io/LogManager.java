@@ -27,15 +27,22 @@ import unbbayes.util.NodeList;
 
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * Responsável por gerar o log de compilação da rede.
+ * @author Rommel N. Carvalho
+ * @author Michael S. Onishi
+ * @version 1.0
  */
 public class LogManager {
     public static final int DEFAULT_BUFFER_SIZE = 10 * 1024;
     public static final String DEFAULT_FILENAME = "aj.txt";
 
     private StringBuffer log;
+    
+    /** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.fronteira.resources.FronteiraResources");
 
     public LogManager(int bufferSize) {
         log = new StringBuffer(bufferSize);
@@ -56,10 +63,7 @@ public class LogManager {
      */
     public void reset() {
         clear();
-        log.append("Essa descrição é feita no processo de compilação da rede.\n" +
-                     "Ela dispõe de informações de como a árvore de junção subjacente foi\n" +
-                     "criada baseada na técnica de árvore de junção com uso da heurística do\n" +
-                     "peso mínimo.\n\n");
+        log.append(resource.getString("logHeader"));
     }
 
     public void append(String text) {
@@ -85,26 +89,26 @@ public class LogManager {
         Separator auxSep;
 
         DecimalFormat df = new DecimalFormat();
-        append("******************* cliques ******************\n");
+        append(resource.getString("cliqueHeader"));
 
         int sizeclicks1 = clicks.size();
         for (int c = 0; c < sizeclicks1; c++) {
             auxClique = (Clique) clicks.get(c);
 
             int sizenodes1 = auxClique.getNos().size();
-            append("Clique " + c + "\n");
+            append(resource.getString("cliqueName") + c + "\n");
             for (int c2 = 0; c2 < sizenodes1; c2++) {
                 append((auxClique.getNos().get(c2)).getName() + "-");
             }
 
-            append("\nPotential Table\n");
+            append(resource.getString("potentialTableName"));
             auxTab = auxClique.getPotentialTable();
             int sizeDados = auxTab.tableSize();
             for (int c2 = 0; c2 < sizeDados; c2++) {
                 append(df.format(auxTab.getValue(c2)) + " ");
             }
 
-            append("\nUtility Table\n");
+            append(resource.getString("utilityTableName"));
             auxTab = auxClique.getUtilityTable();
             sizeDados = auxTab.tableSize();
             for (int c2 = 0; c2 < sizeDados; c2++) {
@@ -113,15 +117,15 @@ public class LogManager {
             append("\n\n");
         }
 
-        append("**************** separators *****************\n");
+        append(resource.getString("separatorHeader"));
 
         int sizeseparators = tree.getSeparatorsSize();
         for (int c = 0; c < sizeseparators; c++) {
             auxSep = tree.getSeparatorAt(c);
-            append("Separador " + c + " ");
-            append("entre " + clicks.indexOf(auxSep.getNo1()) + " e " +
-                    clicks.indexOf(auxSep.getNo2()) + "\n");
-            append("No(s): ");
+            append(resource.getString("separatorName") + c + " ");
+            append(resource.getString("betweenName") + clicks.indexOf(auxSep.getNo1()) + 
+            		resource.getString("andName") + clicks.indexOf(auxSep.getNo2()) + "\n");
+            append(resource.getString("nodeName"));
             int sizenodes2 = auxSep.getNos().size();
             for (int c2 = 0; c2 < sizenodes2; c2++) {
                 node = (Node) auxSep.getNos().get(c2);
@@ -138,7 +142,7 @@ public class LogManager {
             }
         }
 
-        append("************ Potenciais associados aos cliques **************\n");
+        append(resource.getString("potentialAssociatedHeader"));
         int sizenodes3 = nodes.size();
         for (int c = 0; c < sizenodes3; c++) {
             node = (Node) nodes.get(c);
@@ -146,7 +150,8 @@ public class LogManager {
             for (int c2 = 0; c2 < sizeclicks; c2++) {
                 auxClique = (Clique) clicks.get(c2);
                 if (auxClique.getAssociatedProbabilisticNodes().contains(node) || auxClique.getAssociatedUtilityNodes().contains(node)) {
-                    append("No(s): " + node.getName() + " Clique:" + c2 + "\n");
+                    append(resource.getString("nodeName") + node.getName() + 
+                    resource.getString("cliqueLabel") + c2 + "\n");
                     break;
                 }
             }

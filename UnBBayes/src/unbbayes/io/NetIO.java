@@ -26,13 +26,20 @@ import unbbayes.util.NodeList;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
- * Classe que manupula a entrada e saída de arquivos NET.
+ * Classe que manipula a entrada e saída de arquivos NET.
+ * @author Rommel N. Carvalho
+ * @author Michael S. Onishi
+ * @version 1.0
  */
 public class NetIO implements BaseIO {
+	
+	/** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.fronteira.resources.FronteiraResources");
 
-    private static final String ERROR_NET = "This file do not conform with the NET specification.";
+    private static final String ERROR_NET = resource.getString("errorNet");
 
     /**
      *  Carrega a rede de um arquivo no formato NET.
@@ -91,7 +98,7 @@ public class NetIO implements BaseIO {
             }
         }
         else {
-            throw new LoadException(ERROR_NET + " Missing 'net'");
+            throw new LoadException(ERROR_NET + resource.getString("LoadException"));
         }
 
 
@@ -139,13 +146,13 @@ public class NetIO implements BaseIO {
                             }
                         }
                         else {
-                            throw new LoadException(ERROR_NET + " l." + st.lineno() +  ": Unknown statement: " + st.sval);
+                            throw new LoadException(ERROR_NET + " l." + st.lineno() +  resource.getString("LoadException2") + st.sval);
                         }
                     }
                     net.addNode(auxNo);
                 }
                 else {
-                    throw new LoadException(ERROR_NET + " l." + st.lineno() +  ": Missing '{'");
+                    throw new LoadException(ERROR_NET + " l." + st.lineno() +  resource.getString("LoadExecption3"));
                 }
             }
             else if (st.sval.equals("potential")) {
@@ -189,7 +196,7 @@ public class NetIO implements BaseIO {
                 while (!st.sval.endsWith("}")) {
                     if (st.sval.equals("data")) {
                         if (auxNo1.getType() == Node.DECISION_NODE_TYPE) {
-                           throw new LoadException(ERROR_NET + " l." + st.lineno() +  ": Decision variable cannot have a table");
+                           throw new LoadException(ERROR_NET + " l." + st.lineno() +  resource.getString("LoadException4"));
                         }
                         proximo(st);
                         while (!st.sval.equals("}")) {
@@ -198,7 +205,7 @@ public class NetIO implements BaseIO {
                         }
                     }
                     else {
-                        throw new LoadException(ERROR_NET + " l." + st.lineno() +  ": Missing 'data'");
+                        throw new LoadException(ERROR_NET + " l." + st.lineno() +  resource.getString("LoadException5"));
                     }
                 }
             }
@@ -338,7 +345,7 @@ public class NetIO implements BaseIO {
             arq.close();
         }
         catch (FileNotFoundException e) {
-            System.err.println("Não foi possível abrir o arquivo!");
+            System.err.println(resource.getString("FileNotFoundException"));
         }
 
     }

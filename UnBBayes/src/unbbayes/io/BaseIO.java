@@ -25,11 +25,9 @@ import unbbayes.jprs.jbn.ProbabilisticNetwork;
 import java.io.*;
 
 /**
- * <p>Title: </p>
- * <p>Description: </p>
- * <p>Copyright: Copyright (c) 2001</p>
- * <p>Company: </p>
- * @author unascribed
+ * Interface de io de uma rede.
+ * @author Rommel N. Carvalho
+ * @author Michael S. Onishi
  * @version 1.0
  */
 public interface BaseIO {
