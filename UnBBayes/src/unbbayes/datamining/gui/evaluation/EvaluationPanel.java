@@ -3,14 +3,17 @@ package unbbayes.datamining.gui.evaluation;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.lang.*;
 import java.text.*;
 import java.util.*;
+
 import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.text.BadLocationException;
-import unbbayes.datamining.datamanipulation.*;
+import javax.swing.text.*;
+
+import unbbayes.controlador.*;
 import unbbayes.datamining.classifiers.*;
+//import unbbayes.datamining.controller.*;
+import unbbayes.datamining.datamanipulation.*;
 import unbbayes.fronteira.*;
 
 public class EvaluationPanel extends JPanel
@@ -37,12 +40,12 @@ public class EvaluationPanel extends JPanel
   private TitledBorder titledBorder8;
   private TitledBorder titledBorder7;
   private TitledBorder titledBorder6;
-  private ImageIcon image1;
+  private ImageIcon salvarIcon;
   private Border border10;
   private BorderLayout borderLayout2 = new BorderLayout();
   private InstanceSet instances;
   private Classifier classifier;
-  private Thread thread;
+//  private EvaluationThread thread;
   private JTextArea jTextArea2 = new JTextArea();
   private JTextArea jTextArea1 = new JTextArea();
   private JTextField jTextField1 = new JTextField();
@@ -80,7 +83,7 @@ public class EvaluationPanel extends JPanel
     }
   }
   private void jbInit() throws Exception
-  { image1 = new ImageIcon("icones/salvar.gif");
+  { salvarIcon = new ImageIcon(getClass().getResource("/icones/salvar.gif"));
     titledBorder10 = new TitledBorder(border10,"Classifier output");
     titledBorder9 = new TitledBorder(border10,"Select Class");
     titledBorder8 = new TitledBorder(border10,"Log");
@@ -89,7 +92,7 @@ public class EvaluationPanel extends JPanel
     border10 = BorderFactory.createLineBorder(new Color(153, 153, 153),1);
     jPanel62.setLayout(borderLayout45);
     jButton9.setEnabled(false);
-    jButton9.setIcon(image1);
+    jButton9.setIcon(salvarIcon);
     jButton9.setMnemonic('S');
     jButton9.setText("Save information...");
     jButton9.addActionListener(new java.awt.event.ActionListener()
@@ -183,11 +186,13 @@ public class EvaluationPanel extends JPanel
     this.add(jPanel2, BorderLayout.CENTER);
   }
 
-  /** Salva as informações da text area */
+  /** Salva as informações da text area
+   *  @param e One ActionEvent
+   *  */
   void jButton9_actionPerformed(ActionEvent e)
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
       String[] s2 = {"TXT"};
-      fileChooser = new JFileChooser(reference.getCurrentDirectory());
+      fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setMultiSelectionEnabled(false);
       //adicionar FileView no FileChooser para desenhar ícones de arquivos
       fileChooser.setFileView(new FileIcon(EvaluationPanel.this));
@@ -218,196 +223,62 @@ public class EvaluationPanel extends JPanel
           catch (IOException ioe)
           {   reference.setStatusBar("Error writing file "+selectedFile.getName()+" "+ioe.getMessage());
           }
+          FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
-  /** Faz a avaliação */
+  /** Faz a avaliação
+   *  @param e An ActionEvent
+   *  */
   void jButton7_actionPerformed(ActionEvent e)
-  {   if (thread == null)
-      {   jButton7.setEnabled(false);
-          jButton8.setEnabled(true);
-          thread = new Thread()
-          {   public void run()
-              {   //Classifier classifier;
-                  int numAttributes = numAttributes = instances.numAttributes();
-                  //int classifierType = 0;//jComboBox1.getSelectedIndex();
-                  //int testMode = 0;//jComboBox3.getSelectedIndex();
-                  //int numFolds = 10, percent = 66;
-                  /*if (evaluationType == INSTANCES_EVALUATION)
-                  {   numAttributes = instances.numAttributes();
-                  }*/
+  {   /*if (thread == null)
+      {   try
+          {   jButton7.setEnabled(false);
+              jButton8.setEnabled(true);
+              setCursor(new Cursor(Cursor.WAIT_CURSOR));
+              String currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
+              String classifierName = classifier.getClass().getName().substring("unbbayes.datamining.classifiers.".length());
+              jTextArea1.append("Started  "+currentHour+classifierName+"\n");
 
-                  setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                  try
-                  {   /*switch (testMode)
-                      {   case 0 :    break;
-                          case 1 :    // Check the test instance compatibility
-	                              if (userTest == null)
-                                      {   throw new Exception("No user test set has been opened");
-	                              }
-   	                              if (numAttributes != userTest.numAttributes())
-                                      {   throw new Exception("Train and test set are not compatible");
-                                      }
-                                      for (int i = 0; i < numAttributes; i++)
-                                      {   if (!(instances.getAttribute(i).equals(userTest.getAttribute(i))))
-                                          {   throw new Exception("Train and test set are not compatible");
-                                          }
-                                      }
-                                      userTest.setClassIndex(instances.getClassIndex());
-                                      break;
-                          case 2 :    numFolds = Integer.parseInt(jTextField1.getText());
-	                              if (numFolds <= 1)
-                                      {   throw new Exception("Number of folds must be greater than 1");
-	                              }
-                                      break;
-                          case 3 :    percent = Integer.parseInt(jTextField1.getText());
-	                              if ((percent <= 0) || (percent >= 100))
-                                      {   throw new Exception("Percentage must be between 0 and 100");
-	                              }
-                                      break;
-                          default :   throw new Exception("Unknown test mode");
-                      }*/
-                      /*if (evaluationType == INSTANCES_EVALUATION)
-                      {   switch (classifierType)
-                          {   case 0: classifier = new Id3();
-                                      break;
-                              case 1: classifier = new NaiveBayes();
-                                      break;
-                              default: classifier = new NaiveBayes();
-                          }
-                      }*/
-                      StringBuffer outBuff = new StringBuffer();
-	              String currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
-	              String classifierName = classifier.getClass().getName().substring("unbbayes.datamining.classifiers.".length());
-                      jTextArea1.append("Started  "+currentHour+classifierName+/*" "+jComboBox3.getSelectedItem()+*/"\n");
-                      outBuff.append("=== Run information ===\n\n");
-	              outBuff.append("Scheme:           " + classifierName);
-	              outBuff.append("\n");
-                      outBuff.append("Relation:         " + instances.getRelationName() + '\n');
-                      outBuff.append("Instances:        " + instances.numWeightedInstances() + '\n');
-                      outBuff.append("Attributes:       " + instances.numAttributes() + '\n');
-                      if (numAttributes < 100)
-                      {   for (int i = 0; i < numAttributes; i++)
-                          {   outBuff.append("                  "+instances.getAttribute(i).getAttributeName()+'\n');
-                          }
-                      }
-                      else
-                      {   outBuff.append("                  [list of attributes omitted]\n");
-                      }
-                      outBuff.append("ClassAttribute:   " + instances.getClassAttribute().getAttributeName()+'\n');
-                      outBuff.append("Test mode:    ");
+              thread = new EvaluationThread(classifier,instances,this);
+              thread.start();
 
-                      /*switch (testMode)
-                      {   case 0:
-                                    // Test on training
-	                            outBuff.append("evaluate on training data\n\n");
-                                    reference.setStatusBar("Evaluation on training data");
-	                            break;
-	                  case 1:
-                                    // Test on user split
-	                            outBuff.append("user supplied test set: " + userTest.numInstances() + " instances\n\n");
-                                    reference.setStatusBar("Supplied test set");
-	                            break;
-	                  case 2:   // CV mode
-	                            outBuff.append("" + numFolds + "-fold cross-validation\n\n");
-                                    reference.setStatusBar("Cross Validation");
-	                            break;
-	                  case 3:   // Percent split
-	                            outBuff.append("split " + percent + "% train, remainder test\n\n");
-                                    reference.setStatusBar("Percent split");
-	                            break;
-	              }
-                      if (evaluationType == INSTANCES_EVALUATION)
-                      {   classifier.buildClassifier(instances);
-                      }*/
-                      outBuff.append("=== Classifier model ===\n\n");
-                      outBuff.append(classifier.toString() + "\n\n");
-                      Evaluation eval;
-                      //switch (testMode)
-                      //{   case 0:   // Test on training
-	                            eval = new Evaluation(instances);
-	                            eval.evaluateModel(classifier);
-                                    outBuff.append(eval.toString());
-                                    outBuff.append("\n");
-                                    outBuff.append(eval.toClassDetailsString());
-                                    outBuff.append("\n");
-                                    outBuff.append(eval.toMatrixString());
-                                //    break;
-	                /*  case 1:   // Test on user split
-	                            outBuff.append("user supplied test set: " + userTest.numInstances() + " instances\n\n");
-	                            eval = new Evaluation(instances);
-                                    eval.evaluateModel(classifier,userTest);
-                                    outBuff.append(eval.toString());
-                                    outBuff.append("\n");
-                                    outBuff.append(eval.toClassDetailsString());
-                                    outBuff.append("\n");
-                                    outBuff.append(eval.toMatrixString());
-                                    break;
-	                  case 2:   // CV mode
-	                            if (instances.getClassAttribute().isNominal())
-                                    {   outBuff.append("" + numFolds + "-fold stratified cross-validation\n\n");
-                                    }
-                                    else
-                                    {   outBuff.append("" + numFolds + "-fold cross-validation\n\n");
-                                    }
-	                            eval = new Evaluation(instances);
-                                    eval.crossValidateModel(classifier,numFolds);
-                                    outBuff.append(eval.toString());
-                                    outBuff.append("\n");
-                                    outBuff.append(eval.toClassDetailsString());
-                                    outBuff.append("\n");
-                                    outBuff.append(eval.toMatrixString());
-                                    break;
-	                  case 3:   // Percent split
-	                            outBuff.append("split " + percent + "% train\n\n");
-	                            instances.randomize(new Random(42));
-	                            int numInstances = instances.numInstances();
-                                    int trainSize = numInstances * percent / 100;
-                                    int testSize = numInstances - trainSize;
-	                            InstanceSet train = new InstanceSet(instances, 0, trainSize);
-	                            InstanceSet test = new InstanceSet(instances, trainSize, testSize);
-	                            eval = new Evaluation(train);
-                                    eval.evaluateModel(classifier,test);
-                                    outBuff.append(eval.toString());
-                                    outBuff.append("\n");
-                                    outBuff.append(eval.toClassDetailsString());
-                                    outBuff.append("\n");
-                                    outBuff.append(eval.toMatrixString());
-                                    break;
-	              }*/
-                      jTextArea2.setText(outBuff.toString());
-                      currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
-	              jTextArea1.append("Finished "+currentHour+classifierName+/*" "+jComboBox3.getSelectedItem()+*/"\n");
-                      jButton9.setEnabled(true);
-                      setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                  }
-                  catch (Exception e)
-                  {   setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                      JOptionPane.showConfirmDialog(EvaluationPanel.this,"Exception "+e.getMessage(),"Error",JOptionPane.CLOSED_OPTION,JOptionPane.ERROR_MESSAGE);
-                  }
-
-                  thread = null;  // Termina a thread.
-                  jButton7.setEnabled(true);
-                  jButton8.setEnabled(false);
-              }
-          };
-          thread.start();
-
-      }
+              //jTextArea2.setText(outBuff.toString());
+              currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
+              jTextArea1.append("Finished "+currentHour+classifierName+"\n");
+              jButton9.setEnabled(true);
+              setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+          }
+          catch (Exception ex)
+          {   setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+              JOptionPane.showConfirmDialog(EvaluationPanel.this,"Exception "+ex.getMessage(),"Error",JOptionPane.CLOSED_OPTION,JOptionPane.ERROR_MESSAGE);
+          }
+          thread = null;  // Termina a thread.
+          jButton7.setEnabled(true);
+          jButton8.setEnabled(false);
+      }*/
   }
 
-  /** Interrompe a thread */
+  /** Interrompe a thread
+   *  @param e One ActionEvent
+   *  */
   void jButton8_actionPerformed(ActionEvent e)
-  {   if (thread != null)
+  {   /*if (thread != null)
       {   thread.interrupt();
+          String classifierName = classifier.getClass().getName().substring("unbbayes.datamining.classifiers.".length());
+          String currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
+          jTextArea1.append("Finished "+currentHour+classifierName+" "+jComboBox2.getSelectedItem()+"\n");
       }
       jButton7.setEnabled(true);
       jButton8.setEnabled(false);
-      setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+      setCursor(new Cursor(Cursor.DEFAULT_CURSOR));*/
   }
 
-  /** Altera um modelo */
+  /** Altera um modelo
+   *  @param classifier A classifier
+   *  @param inst A InstanceSet
+   *  */
   public void setModel(Classifier classifier,InstanceSet inst)
   {   jTextArea2.setText("");
       if (classifier instanceof BayesianLearning)
@@ -438,7 +309,9 @@ public class EvaluationPanel extends JPanel
       }
   }
 
-  /** Altera a classe */
+  /** Altera a classe
+   *  @param e An ActionEvent
+   *  */
   void jComboBox2_actionPerformed(ActionEvent e)
   {   if(jComboBox2.getSelectedIndex()>=0)
       {   instances.setClassIndex(jComboBox2.getSelectedIndex());
@@ -453,4 +326,7 @@ public class EvaluationPanel extends JPanel
       }
   }
 
+  public void setTextArea(String text)
+  {   jTextArea2.setText(text);
+  }
 }

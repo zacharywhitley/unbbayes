@@ -3,19 +3,23 @@ package unbbayes.datamining.gui.evaluation;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.net.URL;
-import javax.help.*;
+import java.util.*;
+
 import javax.swing.*;
 import javax.swing.border.*;
-import unbbayes.datamining.datamanipulation.*;
+
+import unbbayes.controlador.*;
 import unbbayes.datamining.classifiers.*;
+import unbbayes.datamining.datamanipulation.*;
 import unbbayes.fronteira.*;
 import unbbayes.io.*;
-import unbbayes.jprs.jbn.ProbabilisticNetwork;
+import unbbayes.jprs.jbn.*;
 
-public class EvaluationMain extends /*JFrame*/JInternalFrame
-{ private ImageIcon image1;
-  private ImageIcon image2;
+public class EvaluationMain extends JInternalFrame
+{ /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+  private ResourceBundle resource;
+  private ImageIcon abrirIcon;
+  private ImageIcon helpIcon;
   private JPanel contentPane;
   private JMenuBar jMenuBar1 = new JMenuBar();
   private JMenu jMenuFile = new JMenu();
@@ -30,18 +34,19 @@ public class EvaluationMain extends /*JFrame*/JInternalFrame
   private BorderLayout borderLayout2 = new BorderLayout();
   private InstanceSet inst;
   private Classifier classifier;
-  private File file;
+  private File selectedFile;
   private boolean instOK = false;
   private JMenuItem jMenuFileExit = new JMenuItem();
-  private JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
+  private JFileChooser fileChooser;
   private JToolBar jToolBar1 = new JToolBar();
-  private JButton jButton1 = new JButton();
-  private JButton jButton3 = new JButton();
+  private JButton helpButton = new JButton();
+  private JButton openButton = new JButton();
   private JMenuItem jMenuItem2 = new JMenuItem();
 
   /**Construct the frame*/
   public EvaluationMain()
   { super("Evaluation",true,true,true,true);
+    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.evaluation.resources.EvaluationResource");
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     try
     {
@@ -52,23 +57,24 @@ public class EvaluationMain extends /*JFrame*/JInternalFrame
       e.printStackTrace();
     }
   }
-  /**Component initialization*/
+  /**Component initialization
+   * @throws Exception if any error
+   * */
   private void jbInit() throws Exception
-  { image1 = new ImageIcon("icones/abrir.gif");
-    image2 = new ImageIcon("icones/help.gif");
+  { abrirIcon = new ImageIcon(getClass().getResource("/icones/abrir.gif"));
+    helpIcon = new ImageIcon(getClass().getResource("/icones/help.gif"));
     contentPane = (JPanel) this.getContentPane();
-    titledBorder5 = new TitledBorder(border5,"Select Program");
+    titledBorder5 = new TitledBorder(border5,resource.getString("selectProgram"));
     border5 = BorderFactory.createLineBorder(new Color(153, 153, 153),1);
     contentPane.setLayout(borderLayout1);
     this.setSize(new Dimension(640,480));
-    this.setTitle("Evaluation");
-    jMenuFile.setMnemonic('F');
-    jMenuFile.setText("File");
-    jMenuHelp.setMnemonic('H');
-    jMenuHelp.setText("Help");
-    jMenuHelpAbout.setIcon(image2);
-    jMenuHelpAbout.setMnemonic('E');
-    jMenuHelpAbout.setText("Help Topics");
+    jMenuFile.setMnemonic(((Character)resource.getObject("fileMnemonic")).charValue());
+    jMenuFile.setText(resource.getString("file"));
+    jMenuHelp.setMnemonic(((Character)resource.getObject("helpMnemonic")).charValue());
+    jMenuHelp.setText(resource.getString("help"));
+    jMenuHelpAbout.setIcon(helpIcon);
+    jMenuHelpAbout.setMnemonic(((Character)resource.getObject("helpTopicsMnemonic")).charValue());
+    jMenuHelpAbout.setText(resource.getString("helpTopics"));
     jMenuHelpAbout.addActionListener(new ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -78,10 +84,10 @@ public class EvaluationMain extends /*JFrame*/JInternalFrame
     });
     jPanel41.setLayout(borderLayout2);
     jPanel41.setBorder(titledBorder5);
-    titledBorder5.setTitle("Status");
-    statusBar.setText("Welcome");
-    jMenuFileExit.setMnemonic('E');
-    jMenuFileExit.setText("Exit");
+    titledBorder5.setTitle(resource.getString("status"));
+    statusBar.setText(resource.getString("welcome"));
+    jMenuFileExit.setMnemonic(((Character)resource.getObject("fileExitMnemonic")).charValue());
+    jMenuFileExit.setText(resource.getString("exit"));
     jMenuFileExit.addActionListener(new ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -89,27 +95,27 @@ public class EvaluationMain extends /*JFrame*/JInternalFrame
         jMenuFileExit_actionPerformed(e);
       }
     });
-    jButton1.setIcon(image2);
-    jButton1.addActionListener(new java.awt.event.ActionListener()
+    helpButton.setIcon(helpIcon);
+    helpButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jButton1_actionPerformed(e);
+        helpButton_actionPerformed(e);
       }
     });
     jToolBar1.setFloatable(false);
-    jButton3.setToolTipText("Open a model");
-    jButton3.setIcon(image1);
-    jButton3.addActionListener(new java.awt.event.ActionListener()
+    openButton.setToolTipText(resource.getString("openModel"));
+    openButton.setIcon(abrirIcon);
+    openButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jButton3_actionPerformed(e);
+        openButton_actionPerformed(e);
       }
     });
-    jMenuItem2.setIcon(image1);
-    jMenuItem2.setMnemonic('M');
-    jMenuItem2.setText("Open Model ...");
+    jMenuItem2.setIcon(abrirIcon);
+    jMenuItem2.setMnemonic(((Character)resource.getObject("openModelMnemonic")).charValue());
+    jMenuItem2.setText(resource.getString("openModelDialog"));
     jMenuItem2.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -127,64 +133,25 @@ public class EvaluationMain extends /*JFrame*/JInternalFrame
     jPanel41.add(statusBar, BorderLayout.CENTER);
     contentPane.add(jPanel2,BorderLayout.CENTER);
     contentPane.add(jToolBar1, BorderLayout.NORTH);
-    jToolBar1.add(jButton3, null);
-    jToolBar1.add(jButton1, null);
+    jToolBar1.add(openButton, null);
+    jToolBar1.add(helpButton, null);
   }
-  /**File | Exit action performed*/
+  /**File | Exit action performed
+   * @param e One ActionEvent
+   * */
   public void jMenuFileExit_actionPerformed(ActionEvent e)
   {
     dispose();
   }
-  /**Help | About action performed*/
+  /**Help | About action performed
+   * @param e One ActionEvent
+   * */
   public void jMenuHelpAbout_actionPerformed(ActionEvent e)
-  {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
-      try
-      {   URL helpSetURL = new URL("file:./help/Evaluation.hs");
-          HelpSet set = new HelpSet(null, helpSetURL);
-          JHelp help = new JHelp(set);
-          JFrame f = new JFrame();
-          f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-          f.setContentPane(help);
-          f.setSize(500,400);
-          f.setVisible(true);
+  {   try
+      {   FileController.getInstance().openHelp(this);
       }
       catch (Exception evt)
-      {   evt.printStackTrace();
-          statusBar.setText("Error= "+evt.getMessage());
-      }
-      setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-  }
-
-  private void setBaseInstancesFromFile(File f)
-  {   try
-      {   Reader r = new BufferedReader(new FileReader(f));
-	  Loader loader;
-          String fileName = f.getName();
-          if (fileName.regionMatches(true,fileName.length() - 5,".arff",0,5))
-          {   loader = new ArffLoader(r,this);
-          }
-          else if (fileName.regionMatches(true,fileName.length() - 4,".txt",0,4))
-          {   loader = new TxtLoader(r,this);
-          }
-          else
-          {   throw new IOException(" Extensão de arquivo não conhecida.");
-          }
-          inst = loader.getInstances();
-          instOK = true;
-          r.close();
-      }
-      catch (NullPointerException npe)
-      {   statusBar.setText("NullPointer error "+npe.getMessage());
-      }
-      catch (FileNotFoundException fnfe)
-      {   statusBar.setText("FileNotFound error "+fnfe.getMessage());
-      }
-      catch (IOException ioe)
-      {   statusBar.setText("ErrorOpen error "+ioe.getMessage());
-      }
-      catch(Exception e)
-      {   statusBar.setText("Exception error "+e.getMessage());
-          e.printStackTrace();
+      {   statusBar.setText(resource.getString("error2")+evt.getMessage()+" "+this.getClass().getName());
       }
   }
 
@@ -196,30 +163,49 @@ public class EvaluationMain extends /*JFrame*/JInternalFrame
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
       String[] s1 = {"ARFF"};
       String[] s2 = {"TXT"};
-      fileChooser = new JFileChooser(fileChooser.getCurrentDirectory());
+      fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setMultiSelectionEnabled(false);
       //adicionar FileView no FileChooser para desenhar ícones de arquivos
-      fileChooser.setFileView(new FileIcon(EvaluationMain.this));
+      fileChooser.setFileView(new FileIcon(this));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "TxtFiles (*.txt)"));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ArffFiles (*.arff)"));
-      fileChooser.setDialogTitle("Open Test File");
       int returnVal = fileChooser.showOpenDialog(this);
       if (returnVal == JFileChooser.APPROVE_OPTION)
-      {   File selectedFile = fileChooser.getSelectedFile();
-          setBaseInstancesFromFile(selectedFile);
+      {   selectedFile = fileChooser.getSelectedFile();
+          openFile(selectedFile);
+          FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
-  void jButton1_actionPerformed(ActionEvent e)
+  private void openFile(File selectedFile)
+  {   try
+      {   inst = FileController.getInstance().setBaseInstancesFromFile(selectedFile,this);
+          boolean bool = inst.checkNumericAttributes();
+          if (bool == true)
+              throw new Exception(resource.getString("numericAttributesException"));
+          instOK = true;
+          statusBar.setText("Test file opened sucessfully");
+      }
+      catch (NullPointerException npe)
+      {   statusBar.setText(resource.getString("errorDB")+npe.getMessage());
+      }
+      catch (FileNotFoundException fnfe)
+      {   statusBar.setText(resource.getString("fileNotFound")+fnfe.getMessage());
+      }
+      catch (IOException ioe)
+      {   statusBar.setText(resource.getString("errorOpen")+ioe.getMessage());
+      }
+      catch(Exception e)
+      {   statusBar.setText(resource.getString("error")+e.getMessage());
+      }
+  }
+
+  void helpButton_actionPerformed(ActionEvent e)
   {   jMenuHelpAbout_actionPerformed(e);
   }
 
-  public File getCurrentDirectory()
-  {   return fileChooser.getCurrentDirectory();
-  }
-
-  void jButton3_actionPerformed(ActionEvent e)
+  void openButton_actionPerformed(ActionEvent e)
   {   jMenuItem2_actionPerformed(e);
   }
 
@@ -228,8 +214,8 @@ public class EvaluationMain extends /*JFrame*/JInternalFrame
       openTest();
       if (instOK)
       { jPanel2.setModel(classifier,inst);
-        statusBar.setText("Model opened successfully");
-        this.setTitle("Evaluation - Model "+file.getName());
+        statusBar.setText(resource.getString("modelOpened"));
+        this.setTitle("Evaluation - "+resource.getString("model")+selectedFile.getName());
       }
   }
 
@@ -237,7 +223,7 @@ public class EvaluationMain extends /*JFrame*/JInternalFrame
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
       String[] s1 = {"ID3"};
       String[] s2 = {"NET"};
-      fileChooser = new JFileChooser(fileChooser.getCurrentDirectory());
+      fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setMultiSelectionEnabled(false);
       //adicionar FileView no FileChooser para desenhar ícones de arquivos
       fileChooser.setFileView(new FileIcon(EvaluationMain.this));
@@ -245,8 +231,9 @@ public class EvaluationMain extends /*JFrame*/JInternalFrame
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ID3 Models (*.id3)"));
       int returnVal = fileChooser.showOpenDialog(this);
       if (returnVal == JFileChooser.APPROVE_OPTION)
-      {   File selectedFile = fileChooser.getSelectedFile();
+      {   selectedFile = fileChooser.getSelectedFile();
           setModelFromFile(selectedFile);
+          FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
@@ -254,7 +241,6 @@ public class EvaluationMain extends /*JFrame*/JInternalFrame
   private void setModelFromFile(File f)
   {   try
       {   String fileName = f.getName();
-          file = f;
           if (fileName.regionMatches(true,fileName.length() - 4,".id3",0,4))
           {   ObjectInputStream in = new ObjectInputStream(new FileInputStream(f));
               classifier = (Id3)in.readObject();
@@ -263,9 +249,6 @@ public class EvaluationMain extends /*JFrame*/JInternalFrame
           {   ProbabilisticNetwork net;
               BaseIO io = new NetIO();
               net = io.load(f);
-              /*ComputeNaiveBayes computeNaiveBayes = new ComputeNaiveBayes();
-              computeNaiveBayes.setProbabilisticNetwork(net);
-              classifier = computeNaiveBayes.getNaiveBayes();*/
               try
               {   BayesianNetwork bayesianNetwork = new BayesianNetwork(net);
                   classifier = bayesianNetwork;
@@ -275,20 +258,20 @@ public class EvaluationMain extends /*JFrame*/JInternalFrame
               }
           }
           else
-          {   throw new IOException(" Extensão de arquivo não conhecida.");
+          {   throw new IOException(resource.getString("fileExtensionNotKnown"));
           }
       }
       catch (NullPointerException npe)
-      {   statusBar.setText("NullPointer error "+npe.getMessage());
+      {   statusBar.setText(resource.getString("errorDB")+npe.getMessage());
       }
       catch (FileNotFoundException fnfe)
-      {   statusBar.setText("FileNotFound error "+fnfe.getMessage());
+      {   statusBar.setText(resource.getString("fileNotFound")+fnfe.getMessage());
       }
       catch (IOException ioe)
-      {   statusBar.setText("ErrorOpen error "+ioe.getMessage());
+      {   statusBar.setText(resource.getString("errorOpen")+ioe.getMessage());
       }
       catch(Exception e)
-      {   statusBar.setText("Exception error "+e.getMessage());
+      {   statusBar.setText(resource.getString("error")+e.getMessage());
           e.printStackTrace();
       }
   }
