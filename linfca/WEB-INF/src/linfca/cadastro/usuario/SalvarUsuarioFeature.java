@@ -47,23 +47,22 @@ public class SalvarUsuarioFeature implements Feature {
 	 */
 	public Element process(Element in) throws Exception {
 		
-		Connection con = Controller.getInstance().makeConnection();
-		
+		Connection con = Controller.getInstance().makeConnection();		
 
-		String codTipoUsuario  = in.getChild("cod-tipo-usuario").getTextTrim();
-		String codTipoSexo     = in.getChild("cod-tipo-sexo").getTextTrim();
-		String identificacao   = in.getChild("identificacao").getTextTrim();
-		String cpf             = in.getChild("cpf").getTextTrim();
-		String nome            = in.getChild("nome").getTextTrim();
-		String sobrenome       = in.getChild("sobrenome").getTextTrim();
-		String senha           = in.getChild("senha").getTextTrim();
-		String telefone        = in.getChild("telefone").getTextTrim();
-		String email           = in.getChild("email").getTextTrim();
-		String endereco        = in.getChild("endereco").getTextTrim();
-		String foto            = in.getChild("foto").getTextTrim();
-		String dia             = in.getChild("dia").getTextTrim();
-		String mes             = in.getChild("mes").getTextTrim();
-		String ano             = in.getChild("ano").getTextTrim();
+		String codTipoUsuario  = in.getChildTextTrim("cod-tipo-usuario");
+		String codTipoSexo     = in.getChildTextTrim("cod-tipo-sexo");
+		String identificacao   = in.getChildTextTrim("identificacao");
+		String cpf             = in.getChildTextTrim("cpf");
+		String nome            = in.getChildTextTrim("nome");
+		String sobrenome       = in.getChildTextTrim("sobrenome");
+		String senha           = in.getChildTextTrim("senha");
+		String telefone        = in.getChildTextTrim("telefone");
+		String email           = in.getChildTextTrim("email");
+		String endereco        = in.getChildTextTrim("endereco");
+		String foto            = in.getChildTextTrim("foto");
+		String dia             = in.getChildTextTrim("dia");
+		String mes             = in.getChildTextTrim("mes");
+		String ano             = in.getChildTextTrim("ano");
 		System.out.println(ano + '-' + mes + '-' + dia);
 		Date dataNascimento    = Date.valueOf(ano + '-' + mes + '-' + dia);
 		System.out.println("Data salvar: " + dataNascimento.toString());
