@@ -32,8 +32,8 @@ import java.util.ResourceBundle;
 public final class DoubleCollection implements java.io.Serializable {
     public static final int DEFAULT_SIZE = 30;
 
-    private double data[];
-    private int size;
+    public double data[];
+    public int size;
     
     /** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.util.resources.UtilResources");
