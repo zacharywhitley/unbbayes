@@ -1,16 +1,18 @@
 <%@page import="linfca.*, 
 		linfca.cadastro.*, 
+		linfca.cadastro.semestre.*, 
 		java.sql.*, 
 		org.jdom.Element, 
 		java.util.Iterator" 
 		errorPage="/design/erro.jsp" %>
-		<%@include file="/util.jsp" %> 
+
+<%@include file="/util.jsp" %> 
 
 <%
 
 	String codSemestre = request.getParameter("cod_semestre");
 	Element semestreXML = null;
-/*
+
 	if (codSemestre != null) {
 	
 		Element in = new Element("in");
@@ -22,7 +24,6 @@
 		semestreXML = detalharSemestre.process(in);
 	
 	}
-*/
 %>
 
 <%@include file =  "/design/cabecalho_gerencia.jsp"%>
@@ -41,7 +42,7 @@
               <tr>
                 <td width="50%"><P>Semestre</P></td>
                 <td width="50%"></td> 
-			  </tr>
+              </tr>
               <tr>
                 <td width="50%">
                 		<INPUT maxLength=7 name="string_desc_semestre" 
@@ -51,10 +52,32 @@
                   <P>O semestre deve estar no formato SS/AAAA. Ex: 01/2002</P>
                 </td>
               </tr>
+
+              <tr>
+                <td width="50%">
+		 <p>Data Início</p>
+                </td>
+                <td width="50%">
+		 <p>Data Fim</p>
+                </td>
+              </tr>
+
+              <tr>
+                <td width="50%">
+       		   <INPUT name="date_data_inicio" 
+              	     value="<% if (semestreXML != null) { %><%=semestreXML.getChild("data-inicio").getTextTrim()%><% } %>">
+                </td>
+                <td width="50%">
+       		   <INPUT name="date_data_fim" 
+              	     value="<% if (semestreXML != null) { %><%=semestreXML.getChild("data-fim").getTextTrim()%><% } %>">
+                </td>
+              </tr>
+
+
               <% if (semestreXML != null) { %>
                     <INPUT type="hidden" name="int_cod_semestre" value="<%=codSemestre%>">
               <% } %>
-              <INPUT type="hidden" name="int_cod_semestre" value="7">
+
               <tr>
                 <td colspan=2>
                   <P><INPUT type="submit" value="Salvar">&nbsp;&nbsp;<INPUT type="reset" value="Limpar">
