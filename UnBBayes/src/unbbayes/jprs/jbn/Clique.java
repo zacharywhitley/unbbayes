@@ -21,7 +21,9 @@
 
 package unbbayes.jprs.jbn;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ResourceBundle;
 
 import unbbayes.util.NodeList;
 
@@ -54,12 +56,12 @@ public class Clique implements ITabledVariable, java.io.Serializable {
     /**
      *  Tabela de Potencial Associada ao Clique.
      */
-    private PotentialTable tabelaPot;
-
+    private PotentialTable potentialTable;
+    
     /**
      *  Tabela de Utilidade Associada ao Clique.
      */
-    private PotentialTable utilityTable;
+    private PotentialTable utilityTable;    
 
     /**
      *  Lista de Nós Clusterizados.
@@ -86,7 +88,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
         nos = new NodeList();
         nosAssociados = new NodeList();
         associatedUtilNodes = new NodeList();
-        tabelaPot = new ProbabilisticTable();
+        potentialTable = new ProbabilisticTable();
         utilityTable = new UtilityTable();
     }
 
@@ -124,18 +126,18 @@ public class Clique implements ITabledVariable, java.io.Serializable {
         double n = 0.0;
         double valor;
 
-        int sizeDados = tabelaPot.tableSize();
+        int sizeDados = potentialTable.tableSize();
         for (int c = 0; c < sizeDados; c++) {
-            n += tabelaPot.getValue(c);
+            n += potentialTable.getValue(c);
         }
         if (Math.abs(n - 1.0) > 0.001) {
             for (int c = 0; c < sizeDados; c++) {
-                valor = tabelaPot.getValue(c);
+                valor = potentialTable.getValue(c);
                 if (n == 0.0) {
                     throw new Exception(resource.getString("InconsistencyUnderflowException"));
                 }
                 valor /= n;
-                tabelaPot.setValue(c, valor);
+                potentialTable.setValue(c, valor);
             }
         }
         return n;
@@ -177,7 +179,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
 
     private double sum(int control, boolean fixo[], int coord[]) {
         if (control == nos.size()) {
-            return tabelaPot.getValue(coord);
+            return potentialTable.getValue(coord);
         }
 
         if (fixo[control]) {
@@ -195,8 +197,8 @@ public class Clique implements ITabledVariable, java.io.Serializable {
 
     private void div(int control, boolean fixo[], int coord[], double soma) {
         if (control == nos.size()) {
-            int cLinear = tabelaPot.getLinearCoord(coord);
-            tabelaPot.setValue(cLinear, tabelaPot.getValue(cLinear) / soma);
+            int cLinear = potentialTable.getLinearCoord(coord);
+            potentialTable.setValue(cLinear, potentialTable.getValue(cLinear) / soma);
             return;
         }
 
@@ -304,7 +306,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
      *@return    tabela de potencial.
      */
     public PotentialTable getPotentialTable() {
-        return tabelaPot;
+        return potentialTable;
     }
 
     /**

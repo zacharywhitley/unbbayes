@@ -33,6 +33,8 @@ import unbbayes.util.SetToolkit;
  *@author     Rommel
  */
 public class JunctionTree implements java.io.Serializable {
+	
+	private boolean initialized;
 
 	/**
 	 *  Probabilidade total estimada.
@@ -238,66 +240,95 @@ public class JunctionTree implements java.io.Serializable {
 	 *  Inicia crenças da árvore.
 	 */
 	void iniciaCrencas() throws Exception {
-		Clique auxClique;
-		PotentialTable auxTabPot;
-		PotentialTable auxUtilTab;
-
+		
+		if (! initialized) {
+			Clique auxClique;
+			PotentialTable auxTabPot;
+			PotentialTable auxUtilTab;
+	
+			int sizeCliques = cliques.size();
+			for (int k = 0; k < sizeCliques; k++) {
+				auxClique = (Clique) cliques.get(k);
+				auxTabPot = auxClique.getPotentialTable();
+				auxUtilTab = auxClique.getUtilityTable();
+	
+				int tableSize = auxTabPot.tableSize();
+				for (int c = 0; c < tableSize; c++) {
+					auxTabPot.setValue(c, 1.0);
+				}
+	
+				ProbabilisticNode auxVP;
+				int sizeAssociados = auxClique.getAssociatedProbabilisticNodes().size();
+				for (int c = 0; c < sizeAssociados; c++) {
+					auxVP = (ProbabilisticNode) auxClique.getAssociatedProbabilisticNodes().get(c);
+					auxTabPot.opTab(auxVP.getPotentialTable(), PotentialTable.PRODUCT_OPERATOR);
+				}
+	
+				tableSize = auxUtilTab.tableSize();
+				for (int i = 0; i < tableSize; i++) {
+					auxUtilTab.setValue(i, 0.0);
+				}
+				UtilityNode utilNode;
+				sizeAssociados = auxClique.getAssociatedUtilityNodes().size();
+				for (int i = 0; i < sizeAssociados; i++) {
+					utilNode = (UtilityNode) auxClique.getAssociatedUtilityNodes().get(i);
+					auxUtilTab.opTab(utilNode.getPotentialTable(), PotentialTable.PLUS_OPERATOR);
+				}
+			}
+	
+			Separator auxSep;
+			int sizeSeparadores = separators.size();
+			for (int k = 0; k < sizeSeparadores; k++) {
+				auxSep = (Separator) separators.get(k);
+				auxTabPot = auxSep.getPotentialTable();
+				int sizeDados = auxTabPot.tableSize();
+				for (int c = 0; c < sizeDados; c++) {
+					auxTabPot.setValue(c, 1.0);
+				}
+	
+				auxUtilTab = auxSep.getUtilityTable();
+				sizeDados = auxUtilTab.tableSize();
+				for (int i = 0; i < sizeDados; i++) {
+					auxUtilTab.setValue(i, 0.0);
+				}
+			}
+			
+			consistencia();
+			copyTableData();
+			initialized = true;
+		} else {
+			restoreTableData();						
+		}
+	}
+	
+	private void restoreTableData() {
 		int sizeCliques = cliques.size();
 		for (int k = 0; k < sizeCliques; k++) {
-			auxClique = (Clique) cliques.get(k);
-			auxTabPot = auxClique.getPotentialTable();
-			auxUtilTab = auxClique.getUtilityTable();
-
-			int tableSize = auxTabPot.tableSize();
-			for (int c = 0; c < tableSize; c++) {
-				auxTabPot.setValue(c, 1.0);
-			}
-
-			ProbabilisticNode auxVP;
-			int sizeAssociados = auxClique.getAssociatedProbabilisticNodes().size();
-			for (int c = 0; c < sizeAssociados; c++) {
-				auxVP = (ProbabilisticNode) auxClique.getAssociatedProbabilisticNodes().get(c);
-				auxTabPot.opTab(auxVP.getPotentialTable(), PotentialTable.PRODUCT_OPERATOR);
-			}
-
-			tableSize = auxUtilTab.tableSize();
-			for (int i = 0; i < tableSize; i++) {
-				auxUtilTab.setValue(i, 0.0);
-			}
-			UtilityNode utilNode;
-			sizeAssociados = auxClique.getAssociatedUtilityNodes().size();
-			for (int i = 0; i < sizeAssociados; i++) {
-				utilNode = (UtilityNode) auxClique.getAssociatedUtilityNodes().get(i);
-				auxUtilTab.opTab(utilNode.getPotentialTable(), PotentialTable.PLUS_OPERATOR);
-			}
-		}
-
-		Separator auxSep;
-		int sizeSeparadores = separators.size();
-		for (int k = 0; k < sizeSeparadores; k++) {
-			auxSep = (Separator) separators.get(k);
-			auxTabPot = auxSep.getPotentialTable();
-			int sizeDados = auxTabPot.tableSize();
-			for (int c = 0; c < sizeDados; c++) {
-				auxTabPot.setValue(c, 1.0);
-			}
-
-			auxUtilTab = auxSep.getUtilityTable();
-			sizeDados = auxUtilTab.tableSize();
-			for (int i = 0; i < sizeDados; i++) {
-				auxUtilTab.setValue(i, 0.0);
-			}
+			Clique auxClique = (Clique) cliques.get(k);
+			auxClique.getPotentialTable().restoreData();
+			auxClique.getUtilityTable().restoreData();
 		}
 		
-		/*		
-		for (int i = 0; i < cliques.size(); i++) {
-			Clique clique = (Clique) cliques.get(i);
-			clique.getUtilityTable().mostrarTabela(""+ i);		
+		int sizeSeparadores = separators.size();
+		for (int k = 0; k < sizeSeparadores; k++) {
+			Separator auxSep = (Separator) separators.get(k);
+			auxSep.getPotentialTable().restoreData();
 		}
-		*/
-
-//		this.calcularCoordenadasMulti();
-		consistencia();
+	}	
+	
+	private void copyTableData() {
+		int sizeCliques = cliques.size();
+		for (int k = 0; k < sizeCliques; k++) {
+			Clique auxClique = (Clique) cliques.get(k);
+			auxClique.getPotentialTable().copyData();
+			auxClique.getUtilityTable().copyData();
+		}
+		
+		int sizeSeparadores = separators.size();
+		for (int k = 0; k < sizeSeparadores; k++) {
+			Separator auxSep = (Separator) separators.get(k);
+			auxSep.getPotentialTable().copyData();
+		}
 	}
 
 	/**
@@ -319,34 +350,6 @@ public class JunctionTree implements java.io.Serializable {
 		return null;
 	}
 
-	/**
-	 * Sub-método do método iniciaCrencas que pré-calcula
-	 * as coordenadas multidimensionais de todos os
-	 * separadores da arvore de junção.
-	 */
-	/*
-	private void calcularCoordenadasMulti() {
-		ITabledVariable aux;
-
-		coordSep = new int[separators.size()][][];
-
-		int sizeSeparadores = separators.size();
-		for (int i = 0; i < sizeSeparadores; i++) {
-			aux = (ITabledVariable) separators.get(i);
-			coordSep[i] =
-				new int[aux
-					.getPotentialTable()
-					.tableSize()][aux
-					.getPotentialTable()
-					.variableCount()];
-
-			int sizeDados1 = aux.getPotentialTable().tableSize();
-			for (int w = 0; w < sizeDados1; w++) {
-				coordSep[i][w] = aux.getPotentialTable().voltaCoord(w);
-			}
-		}
-	}
-	*/
 	/**
 	 * Sets the cliques.
 	 * @param cliques The cliques to set

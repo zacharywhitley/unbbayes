@@ -60,6 +60,11 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      * Dados armazenados em forma de lista do tipo primitivo double
      */
     protected DoubleCollection dados;
+    
+    /**
+     * Copy of the table data
+     */
+    private DoubleCollection dataCopy;
 
     /**
      * Fatores utilizados para converter coordenadas lineares em multidimensionais.
@@ -72,7 +77,22 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
     public PotentialTable() {
         modified = true;
         dados = new DoubleCollection();
+        dataCopy = new DoubleCollection();
         variaveis = new NodeList();
+    }
+    
+    public void copyData() {
+    	int dataSize = dados.size();
+    	for (int i = 0; i < dataSize; i++) {
+    		dataCopy.add(dados.get(i));
+    	}
+    }
+    
+    public void restoreData() {
+    	int dataSize = dados.size();
+    	for (int i = 0; i < dataSize; i++) {
+    		dados.set(i, dataCopy.get(i));
+    	}
     }
 
     /**
