@@ -33,7 +33,8 @@ public class MainGibbs {
       super();      
    }
 
-	public static void main(String args[]){		
+	public static void main(String args[]){
+		//GibbsFrame gf = new GibbsFrame();		
 		//GibbsController gc = new GibbsController(data vector,variables);
 	}
 }

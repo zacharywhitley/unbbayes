@@ -90,6 +90,32 @@ public class ConstructionController {
      * 
      * @see ProbabilisticController
      */
+    
+	public ConstructionController(File file){
+		try{
+		  InputStreamReader isr = new InputStreamReader(new FileInputStream(file));
+		  BufferedReader  br    = new BufferedReader(isr);
+		  int rows = getRowCount(br);           
+		  isr = new InputStreamReader(new FileInputStream(file));
+		  br  = new BufferedReader(isr);
+		  StreamTokenizer cols = new StreamTokenizer(br);
+		  setColsConstraints(cols);
+		  variablesVector = new NodeList();           
+		  variables = new NodeList();                      
+		  makeVariablesVector(cols);		                 
+		  filterVariablesVector(rows);
+		  matrix = new byte[rows][variables.size()];      
+		  IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));                
+		  makeMatrix(cols, rows);           
+		  IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		  br.close();          
+		 }
+		 catch(Exception e){
+			String msg = "Não foi possível abrir o arquivo solicitado. Verifique o formato do arquivo.";
+			JOptionPane.showMessageDialog(null,msg,"ERROR",JOptionPane.ERROR_MESSAGE);                    	
+		 };		 		 		
+	}
+    
 	public ConstructionController(File file, MainController controller){				
 	    try{
            InputStreamReader isr = new InputStreamReader(new FileInputStream(file));
@@ -142,7 +168,7 @@ public class ConstructionController {
 	 * 
 	 * @param cols - A streamTokenizer object
 	 */
-	private void setColsConstraints(StreamTokenizer cols){
+	public void setColsConstraints(StreamTokenizer cols){
         cols.wordChars('A', 'Z');
         cols.wordChars('a', '}');
         cols.wordChars('_', '_');
@@ -167,9 +193,11 @@ public class ConstructionController {
                 if(cols.sval != null){
                      variablesVector.add(new TVariavel(cols.sval, position));
                      ((TVariavel)variablesVector.get(variablesVector.size()-1)).setDescription(cols.sval);
+					 ((TVariavel)variablesVector.get(variablesVector.size()-1)).setParticipa(true);
                 } else{
                      variablesVector.add(new TVariavel(String.valueOf(cols.nval),position));
                      ((TVariavel)variablesVector.get(variablesVector.size()-1)).setDescription(String.valueOf(cols.nval));
+					 ((TVariavel)variablesVector.get(variablesVector.size()-1)).setParticipa(true);
                 }
                 position++;
             }            
@@ -250,8 +278,8 @@ public class ConstructionController {
                     	if(cols.sval != null){
                          	stateName = cols.sval;
                          	if(! aux.existeEstado(stateName)){
-                         		if(!stateName.equals(" ")){                         		
-                              	aux.adicionaEstado(stateName);                              	
+                         		if(!stateName.equals("?")){                         		
+                              		aux.adicionaEstado(stateName);                              	
                          		} else {
                          			missing = true;
                          		}
@@ -310,4 +338,13 @@ public class ConstructionController {
             }
         }
     }
+    
+    public byte[][] getMatrix(){
+    	return this.matrix;    	
+    }
+    
+    public NodeList getVariables(){
+    	return this.variables;
+    }
+    
 }
