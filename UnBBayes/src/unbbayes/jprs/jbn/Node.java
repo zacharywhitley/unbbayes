@@ -45,6 +45,10 @@ public abstract class Node {
     private boolean selecionado;
     private static int altura;
     private static int largura;
+    
+    public static final int PROBABILISTIC_NODE_TYPE = 0;
+    public static final int UTILITY_NODE_TYPE = 1;
+    public static final int DECISION_NODE_TYPE = 2;
 
 
     /**
@@ -60,6 +64,8 @@ public abstract class Node {
         posicao = new Point2D.Double();
         selecionado = false;
     }
+    
+    public abstract int getType();
 
 
     /**

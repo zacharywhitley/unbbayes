@@ -47,7 +47,7 @@ public class ProbabilisticTable extends PotentialTable {
         int noCol = 1;
         int sizeVariaveis = variaveis.size();
         for (int k = 1; k < sizeVariaveis; k++) {
-            auxNo = (Node) variaveis.get(k);
+            auxNo = variaveis.get(k);
             noCol *= auxNo.getStatesSize();
         }
 

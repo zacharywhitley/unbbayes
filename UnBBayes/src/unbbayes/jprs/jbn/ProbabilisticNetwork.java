@@ -275,13 +275,13 @@ public class ProbabilisticNetwork extends Network {
 
         int sizeNos = nos.size();
         for (int n = 0; n < sizeNos; n++) {
-            auxNo = (Node) nos.get(n);
+            auxNo = nos.get(n);
             if (!(auxNo instanceof DecisionNode) && auxNo.getParents().size() > 1) {
                 int sizePais = auxNo.getParents().size();
                 for (int j = 0; j < sizePais - 1; j++) {
-                    auxPai1 = (Node) auxNo.getParents().get(j);
+                    auxPai1 = auxNo.getParents().get(j);
                     for (int k = j + 1; k < sizePais; k++) {
-                        auxPai2 = (Node) auxNo.getParents().get(k);
+                        auxPai2 = auxNo.getParents().get(k);
                         if ((existeArco(auxPai1, auxPai2, copiaArcos) == -1) && (existeArco(auxPai1, auxPai2, arcosMarkov) == -1)) {
                             auxArco = new Edge(auxPai1, auxPai2);
                             logManager.append(auxPai1.getName() + " - " + auxPai2.getName() + "\n");
@@ -329,7 +329,7 @@ public class ProbabilisticNetwork extends Network {
         copiaNos = SetToolkit.clone(auxNos);
         int sizeDecisao = decisionNodes.size();
         for (int i = 0; i < sizeDecisao; i++) {
-            aux = (Node) decisionNodes.get(i);
+            aux = decisionNodes.get(i);
             auxNos.remove(aux);
             auxNos.removeAll(aux.getParents());
         }
@@ -342,11 +342,11 @@ public class ProbabilisticNetwork extends Network {
 
 //        int index;
         for (int i = decisionNodes.size()-1; i >= 0; i--) {
-            aux = (Node) decisionNodes.get(i);
+            aux = decisionNodes.get(i);
             oe.add(aux);
             int sizeAdjacentes = aux.getAdjacents().size();
             for (int j = 0; j < sizeAdjacentes; j++) {
-                Node v = (Node) aux.getAdjacents().get(j);
+                Node v = aux.getAdjacents().get(j);
                 v.getAdjacents().remove(aux);
             }
             logManager.append("\t" + oe.size() + " " + aux.getName() + "\n");
@@ -355,7 +355,7 @@ public class ProbabilisticNetwork extends Network {
             auxNos.removeAll(decisionNodes);
             auxNos.removeAll(oe);
             for (int j = 0; j < i; j++) {
-                Node decision = (Node) decisionNodes.get(j);
+                Node decision = decisionNodes.get(j);
                 auxNos.removeAll(decision.getParents());
             }
 
@@ -533,7 +533,7 @@ public class ProbabilisticNetwork extends Network {
             }
         }
 
-        List fila = new ArrayList(nos.size());
+        NodeList fila = new NodeList(nos.size());
         Node aux,aux2,aux3;
 
         int sizeDecisao = decisionNodes.size();
@@ -543,8 +543,8 @@ public class ProbabilisticNetwork extends Network {
             fila.clear();
             fila.add(aux);
             
-            while (! fila.isEmpty()) {
-                aux2 = (Node) fila.remove(0);
+            while (fila.size() != 0) {
+                aux2 =  fila.remove(0);
                 visitados[nos.indexOf(aux2)] = true;
 
                 int sizeFilhos = aux2.getChildren().size();
@@ -565,8 +565,8 @@ public class ProbabilisticNetwork extends Network {
         while (haTroca) {
             haTroca = false;
             for (int i = 0; i < decisionNodes.size() - 1; i++) {
-                Node node1 = (Node) decisionNodes.get(i);
-                Node node2 = (Node) decisionNodes.get(i + 1);
+                Node node1 =  decisionNodes.get(i);
+                Node node2 =  decisionNodes.get(i + 1);
                 if (node1.getAdjacents().size() < node2.getAdjacents().size()) {
                     decisionNodes.set(i + 1, node1);
                     decisionNodes.set(i, node2);
@@ -583,7 +583,7 @@ public class ProbabilisticNetwork extends Network {
 
 
         for (int i = 0; i < decisionNodes.size(); i++) {
-            aux = (Node) decisionNodes.get(i);
+            aux =  decisionNodes.get(i);
 //            System.out.print(aux.getAdjacents().size() + " ");
             if (aux.getAdjacents().size() != decisionNodes.size()-i-1) {
                 throw new Exception("Não existe ordenação das variáveis de decisão");
@@ -623,7 +623,7 @@ public class ProbabilisticNetwork extends Network {
 
         int sizeNos = nos.size();
         for (c = 0; c < sizeNos; c++) {
-            auxNo = (Node) nos.get(c);
+            auxNo =  nos.get(c);
             if (auxNo instanceof ProbabilisticNode) {
                 auxVP = (ProbabilisticNode) auxNo;
                 auxTabPot = (ProbabilisticTable) auxVP.getPotentialTable();
@@ -648,14 +648,14 @@ public class ProbabilisticNetwork extends Network {
 
         int sizeNos = copiaNos.size();
         for (i = 0; i < sizeNos; i++) {
-            auxNo = (Node) copiaNos.get(i);
+            auxNo =  copiaNos.get(i);
             e = oe.indexOf(auxNo);
             auxClique = new Clique();
             auxClique.getNos().add(auxNo);
 
             int sizeAdjacentes = auxNo.getAdjacents().size();
             for (j = 0; j < sizeAdjacentes; j++) {
-                auxNo2 = (Node) auxNo.getAdjacents().get(j);
+                auxNo2 =  auxNo.getAdjacents().get(j);
                 if (oe.indexOf(auxNo2) > e) {
                     auxClique.getNos().add(auxNo2);
                 }
@@ -709,7 +709,7 @@ public class ProbabilisticNetwork extends Network {
         mx = -1;
         int sizeNos = listaNos.size();
         for (int i = 0; i < sizeNos; i++) {
-            auxNo = (Node) listaNos.get(i);
+            auxNo =  listaNos.get(i);
             ndx = alpha.indexOf(auxNo);
             if (mx < ndx) {
                 mx = ndx;
@@ -721,11 +721,11 @@ public class ProbabilisticNetwork extends Network {
         listaNos.remove(noMax);
 
         // Monta uma lista de vizinhos do clique
-        auxNo = (Node) listaNos.get(0);
+        auxNo =  listaNos.get(0);
         vizinhos = SetToolkit.clone(auxNo.getAdjacents());
         int sizeNos1 = listaNos.size();
         for (int i = 1; i < sizeNos1; i++) {
-            auxNo = (Node) listaNos.get(i);
+            auxNo =  listaNos.get(i);
             auxList = SetToolkit.intersection(vizinhos, auxNo.getAdjacents());
             vizinhos.clear();
             vizinhos = auxList;
@@ -735,7 +735,7 @@ public class ProbabilisticNetwork extends Network {
         ndx = 0;
         int sizeVizinhos = vizinhos.size();
         for (int i = 0; i < sizeVizinhos; i++) {
-            auxNo = (Node) vizinhos.get(i);
+            auxNo =  vizinhos.get(i);
             if (listaNos.contains(auxNo) || (alpha.indexOf(auxNo) > mx)) {
                 continue;
             }
@@ -840,8 +840,8 @@ public class ProbabilisticNetwork extends Network {
             while (haTroca) {
                 haTroca = false;
                 for (int i = 0; i < nosClique.size() - 1; i++) {
-                    Node node1 = (Node) nosClique.get(i);
-                    Node node2 = (Node) nosClique.get(i + 1);
+                    Node node1 =  nosClique.get(i);
+                    Node node2 =  nosClique.get(i + 1);
                     if (oe.indexOf(node1) > oe.indexOf(node2)) {
                         nosClique.set(i + 1, node1);
                         nosClique.set(i, node2);
@@ -858,8 +858,8 @@ public class ProbabilisticNetwork extends Network {
             while (haTroca) {
                 haTroca = false;
                 for (int i = 0; i < nosSeparator.size() - 1; i++) {
-                    Node node1 = (Node) nosSeparator.get(i);
-                    Node node2 = (Node) nosSeparator.get(i + 1);
+                    Node node1 =  nosSeparator.get(i);
+                    Node node2 =  nosSeparator.get(i + 1);
                     if (oe.indexOf(node1) > oe.indexOf(node2)) {
                         nosSeparator.set(i + 1, node1);
                         nosSeparator.set(i, node2);
@@ -889,8 +889,8 @@ public class ProbabilisticNetwork extends Network {
 
             int sizeNos = auxClique.getNos().size();
             for (int c = 0; c < sizeNos; c++) {
-                auxTabPot.addVariable((Node) auxClique.getNos().get(c));
-                auxUtilTab.addVariable((Node) auxClique.getNos().get(c));
+                auxTabPot.addVariable( auxClique.getNos().get(c));
+                auxUtilTab.addVariable( auxClique.getNos().get(c));
             }
         }
 
@@ -900,8 +900,8 @@ public class ProbabilisticNetwork extends Network {
             auxUtilTab = auxSep.getUtilityTable();
             int sizeNos = auxSep.getNos().size();
             for (int c = 0; c < sizeNos; c++) {
-                auxTabPot.addVariable((Node) auxSep.getNos().get(c));
-                auxUtilTab.addVariable((Node) auxSep.getNos().get(c));
+                auxTabPot.addVariable( auxSep.getNos().get(c));
+                auxUtilTab.addVariable( auxSep.getNos().get(c));
             }
         }
 
@@ -912,7 +912,7 @@ public class ProbabilisticNetwork extends Network {
             }
 
             min = Integer.MAX_VALUE;
-            auxNo = (Node) nos.get(n);
+            auxNo =  nos.get(n);
 
             int sizeCliques = junctionTree.getCliques().size();
             for (int c = 0; c < sizeCliques; c++) {
@@ -951,10 +951,10 @@ public class ProbabilisticNetwork extends Network {
 
         int sizeAdjacentes = no.getAdjacents().size();
         for (int i = 0; i < sizeAdjacentes - 1; i++) {
-            Node auxNo1 = (Node) no.getAdjacents().get(i);
+            Node auxNo1 =  no.getAdjacents().get(i);
 
             for (int j = i + 1; j < sizeAdjacentes; j++) {
-                Node auxNo2 = (Node) no.getAdjacents().get(j);
+                Node auxNo2 =  no.getAdjacents().get(j);
                 if (!auxNo2.getAdjacents().contains(auxNo1)) {
                     return true;
                 }
@@ -975,23 +975,23 @@ public class ProbabilisticNetwork extends Network {
         Node auxNo;
         double p;
 
-        Node noMin = (Node) auxNos.get(0);
+        Node noMin =  auxNos.get(0);
         double pmin = Math.log(noMin.getStatesSize());
 
         int sizeAdjacentes = noMin.getAdjacents().size();
         for (int i = 0; i < sizeAdjacentes; i++) {
-            v = (Node) noMin.getAdjacents().get(i);
+            v =  noMin.getAdjacents().get(i);
             pmin += Math.log(v.getStatesSize());
         }
 
         int sizeNos = auxNos.size();
         for (int i = 1; i < sizeNos; i++) {
-            auxNo = (Node) auxNos.get(i);
+            auxNo =  auxNos.get(i);
             p = Math.log(auxNo.getStatesSize());
 
             int sizeAdjacentes1 = auxNo.getAdjacents().size();
             for (int j = 0; j < sizeAdjacentes1; j++) {
-                v = (Node) auxNo.getAdjacents().get(j);
+                v =  auxNo.getAdjacents().get(j);
                 p += Math.log(v.getStatesSize());
             }
             if (p < pmin) {
@@ -1018,10 +1018,10 @@ public class ProbabilisticNetwork extends Network {
         int sizeAdjacentes = no.getAdjacents().size();
 
         for (int i = 0; i < sizeAdjacentes - 1; i++) {
-            auxNo1 = (Node) no.getAdjacents().get(i);
+            auxNo1 =  no.getAdjacents().get(i);
 
             for (int j = i + 1; j < sizeAdjacentes; j++) {
-                auxNo2 = (Node) no.getAdjacents().get(j);
+                auxNo2 =  no.getAdjacents().get(j);
                 if (! auxNo2.getAdjacents().contains(auxNo1)) {
                     auxArco = new Edge(auxNo1, auxNo2);
                     logManager.append(auxNo1.getName() + " ligado a " + auxNo2.getName() + "\n");
@@ -1034,7 +1034,7 @@ public class ProbabilisticNetwork extends Network {
 
         int sizeAdjacentes1 = no.getAdjacents().size();
         for (int i = 0; i < sizeAdjacentes1; i++) {
-            auxNo1 = (Node) no.getAdjacents().get(i);
+            auxNo1 =  no.getAdjacents().get(i);
             auxNo1.getAdjacents().remove(no);
         }
         auxNos.remove(no);
@@ -1061,7 +1061,7 @@ public class ProbabilisticNetwork extends Network {
 
             int sizeNos = auxNos.size();
             for (int i = 0; i < sizeNos; i++) {
-                auxNo = (Node) auxNos.get(i);
+                auxNo = auxNos.get(i);
 
                 if (cordas(auxNo)) {
                     //Não tem cordas necessárias:teste próximo.
@@ -1070,7 +1070,7 @@ public class ProbabilisticNetwork extends Network {
 
                 int sizeAdjacentes = auxNo.getAdjacents().size();
                 for (int j = 0; j < sizeAdjacentes; j++) {
-                    v = (Node) auxNo.getAdjacents().get(j);
+                    v = auxNo.getAdjacents().get(j);
                     v.getAdjacents().remove(auxNo);
                 }
                 auxNos.remove(auxNo);

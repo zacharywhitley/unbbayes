@@ -93,8 +93,8 @@ public class Network {
      */
     public Node getNode(String name) {
         for (int qnos = 0; qnos < nos.size(); qnos++) {
-            if (((Node) (nos.get(qnos))).getName().equals(name)) {
-                return (Node) (nos.get(qnos));
+            if (((nos.get(qnos))).getName().equals(name)) {
+                return nos.get(qnos);
             }
         }
         return null;
@@ -147,7 +147,7 @@ public class Network {
 
         nos.remove(elemento);
         for (c = 0; c < nos.size(); c++) {
-            auxNo = (Node) nos.get(c);
+            auxNo = nos.get(c);
             auxNo.getParents().remove(elemento);
             auxNo.getChildren().remove(elemento);
         }
@@ -198,7 +198,7 @@ public class Network {
     protected void montaAdjacentes() {
         this.desmontaAdjacentes();
         for (int qnos = 0; qnos < nos.size(); qnos++) {
-            ((Node) nos.get(qnos)).montaAdjacentes();
+            nos.get(qnos).montaAdjacentes();
         }
     }
 
@@ -208,7 +208,7 @@ public class Network {
      */
     protected void desmontaAdjacentes() {
         for (int qnos = 0; qnos < nos.size(); qnos++) {
-            ((Node) nos.get(qnos)).desmontaAdjacentes();
+            nos.get(qnos).desmontaAdjacentes();
         }
     }
 
@@ -250,11 +250,11 @@ public class Network {
 
         if (listaCloneNos.size() != 0) {
             for (i = 0; i < listaCloneNos.size(); i++) {
-                auxNo1 = (Node) listaCloneNos.get(i);
+                auxNo1 = listaCloneNos.get(i);
                 listaPais.add(SetToolkit.clone(auxNo1.getParents()));
                 listaFilhos.add(SetToolkit.clone(auxNo1.getChildren()));
             }
-            auxNo1 = (Node) listaCloneNos.get(0);
+            auxNo1 = listaCloneNos.get(0);
             existeRetirada = false;
             if (auxNo1 != null) {
                 existeRetirada = true;
@@ -268,7 +268,7 @@ public class Network {
                         listaCloneNos.remove(auxNo1);
                         existeRetirada = true;
                         for (j = 0; j < listaCloneNos.size(); j++) {
-                            auxNo2 = (Node) listaCloneNos.get(j);
+                            auxNo2 = listaCloneNos.get(j);
                             if (auxNo2.getParents().contains(auxNo1)) {
                                 auxNo2.getParents().remove(auxNo1);
                                 auxNo1.getChildren().remove(auxNo2);
@@ -298,7 +298,7 @@ public class Network {
                         l = 0;
                     }
                     if (n > 0) {
-                        auxNo1 = (Node) listaCloneNos.get(l);
+                        auxNo1 = listaCloneNos.get(l);
                     }
                     else {
                         auxNo1 = null;
@@ -308,7 +308,7 @@ public class Network {
             }
 
             for (i = 0; i < nos.size(); i++) {
-                auxNo1 = (Node) nos.get(i);
+                auxNo1 = nos.get(i);
                 auxNo1.setParents((NodeList) listaPais.get(i));
                 auxNo1.setChildren((NodeList) listaFilhos.get(i));
             }
@@ -318,7 +318,7 @@ public class Network {
             if (listaCloneNos.size() != 0) {
                 StringBuffer sb = new StringBuffer("Rede com ciclo:");
                 for (i = 0; i < listaCloneNos.size(); i++) {
-                   auxNo1 = (Node)listaCloneNos.get(i);
+                   auxNo1 = listaCloneNos.get(i);
                    sb.append(" " + auxNo1.getName());
                 }
                 throw new Exception(sb.toString());
@@ -338,7 +338,7 @@ public class Network {
             return;
         }
         montaAdjacentes();
-        percorre((Node)nos.get(0), visitados);
+        percorre(nos.get(0), visitados);
         desmontaAdjacentes();
         if (visitados.size() != nos.size()) {
             throw new Exception("Rede Disconexa");
@@ -351,7 +351,7 @@ public class Network {
     private void percorre(Node no, List visitados) {
         visitados.add(no);
         for (int i = 0; i < no.getAdjacents().size(); i++) {
-            Node aux = (Node)no.getAdjacents().get(i);
+            Node aux = no.getAdjacents().get(i);
             if (! visitados.contains(aux)) {
                 percorre(aux, visitados);
             }

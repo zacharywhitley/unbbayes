@@ -39,6 +39,11 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable {
     public ProbabilisticNode() {
         tabelaPot = new ProbabilisticTable();
     }
+    
+    
+    public int getType() {
+    	return PROBABILISTIC_NODE_TYPE;    	
+    }
 
     /**
      *  Copia as características principais para o nó desejado

@@ -41,6 +41,11 @@ public class UtilityNode extends Node implements ITabledVariable {
         utilTable = new UtilityTable();
         states.add("Utility");
     }
+    
+    
+    public int getType() {
+    	return UTILITY_NODE_TYPE;    	
+    }
 
     /**
      * Não faz nada ao se tentar inserir um estado, pois

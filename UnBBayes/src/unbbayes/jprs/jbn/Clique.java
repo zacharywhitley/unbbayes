@@ -196,7 +196,7 @@ public class Clique implements ITabledVariable {
             return;
         }
 
-        Node node = (Node) nos.get(control);
+        Node node = nos.get(control);
         for (int i = 0; i < node.getStatesSize(); i++) {
             coord[control] = i;
             div(control+1, fixo, coord, soma);

@@ -228,7 +228,7 @@ public abstract class PotentialTable implements Cloneable {
         }
 
         int fim = (index == control) ? 1 : 0;
-        Node node = (Node)variaveis.get(control);
+        Node node = variaveis.get(control);
         for (int i = node.getStatesSize()-1; i >= fim; i--) {
             coord[control] = i;
             sum(control-1, index, coord);
@@ -249,7 +249,7 @@ public abstract class PotentialTable implements Cloneable {
         }
 
         int fim = (index == control) ? 1 : 0;
-        Node node = (Node)variaveis.get(control);
+        Node node = variaveis.get(control);
         for (int i = node.getStatesSize()-1; i >= fim; i--) {
             coord[control] = i;
             finding(control-1, index, coord, state);
@@ -290,7 +290,7 @@ public abstract class PotentialTable implements Cloneable {
         fatores[0] = 1;
         Node auxNo;
         for (int i = 1; i < sizeVariaveis; i++) {
-            auxNo = (Node) variaveis.get(i-1);
+            auxNo = variaveis.get(i-1);
             fatores[i] = fatores[i-1] * auxNo.getStatesSize();
         }
     }
@@ -352,7 +352,7 @@ public abstract class PotentialTable implements Cloneable {
         int sizeVariaveis = tab.variaveis.size();
         for (int c = sizeVariaveis-1; c >= 0; c--) {
            index[c] = variaveis.indexOf(tab.variaveis.get(c));
-           numEstados[c] = ((Node)tab.variaveis.get(c)).getStatesSize();
+           numEstados[c] = tab.variaveis.get(c).getStatesSize();
         }
 
         for (int k = dados.size()-1; k >= 0; k--) {

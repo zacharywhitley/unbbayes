@@ -38,6 +38,11 @@ public class DecisionNode extends TreeVariable {
      */
     public DecisionNode() {
     }
+    
+    
+    public int getType() {
+    	return DECISION_NODE_TYPE;    	
+    }
 
     /**
      *  Retorna a cor do nó.

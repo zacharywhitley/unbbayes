@@ -182,7 +182,7 @@ public class JunctionTree {
 		
 		int divisor = 1;
 		for (int i = 0 ; i < toDie.size(); i++) {
-		    Node node = (Node) toDie.get(i);
+		    Node node = toDie.get(i);
 		    if (node instanceof DecisionNode) {
 		        divisor *= node.getStatesSize();
 		    }
@@ -218,7 +218,7 @@ public class JunctionTree {
 	
 	    double retorno = 0.0;
 	
-	    Node node = (Node) toDie.get(index);
+	    Node node = toDie.get(index);
 	    int indexVariable = potTable.indexOfVariable(node);
 	    for (int i = node.getStatesSize()-1; i >= 0; i--) {
 	        coord[indexVariable] = i;
