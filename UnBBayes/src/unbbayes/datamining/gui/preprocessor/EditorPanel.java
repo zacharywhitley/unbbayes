@@ -1,12 +1,15 @@
 package unbbayes.datamining.gui.preprocessor;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import javax.swing.text.BadLocationException;
-import unbbayes.fronteira.*;
+
+import javax.swing.*;
 import javax.swing.event.*;
+import javax.swing.text.*;
+
+import unbbayes.controlador.*;
+import unbbayes.fronteira.*;
 
 public class EditorPanel extends JPanel
 { private ImageIcon image1;
@@ -42,7 +45,7 @@ public class EditorPanel extends JPanel
     }
   }
   private void jbInit() throws Exception
-  { image1 = new ImageIcon("icones/salvar.gif");
+  { image1 = new ImageIcon(getClass().getResource("/icones/salvar.gif"));
     this.setLayout(borderLayout1);
     jTextArea1.addInputMethodListener(new java.awt.event.InputMethodListener()
     {
@@ -103,7 +106,7 @@ public class EditorPanel extends JPanel
 
   void jButton1_actionPerformed(ActionEvent e)
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
-      JFileChooser fileChooser = new JFileChooser(reference.getCurrentDirectory());
+      JFileChooser fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setMultiSelectionEnabled(false);
       //adicionar FileView no FileChooser para desenhar ícones de arquivos
       fileChooser.setFileView(new FileIcon(EditorPanel.this));
@@ -149,6 +152,7 @@ public class EditorPanel extends JPanel
           catch (IOException ioe)
           {   reference.setStatusBar("Error writing file "+selectedFile.getName()+" "+ioe.getMessage());
           }
+          FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }

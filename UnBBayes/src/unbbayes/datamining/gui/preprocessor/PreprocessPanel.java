@@ -2,15 +2,19 @@ package unbbayes.datamining.gui.preprocessor;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.text.DecimalFormat;
+import java.util.*;
+
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
+
 import unbbayes.datamining.datamanipulation.*;
 
 public class PreprocessPanel extends JPanel
-{ private JPanel jPanel7 = new JPanel();
+{ /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+  private ResourceBundle resource;
+  private JPanel jPanel7 = new JPanel();
   private JPanel jPanel6 = new JPanel();
   private JPanel jPanel4 = new JPanel();
   private JPanel jPanel3 = new JPanel();
@@ -109,6 +113,7 @@ public class PreprocessPanel extends JPanel
 
   public PreprocessPanel(PreprocessorMain reference)
   { this.reference = reference;
+    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.preprocessor.resources.PreprocessorResource");
     try
     {
       jbInit();
@@ -120,21 +125,21 @@ public class PreprocessPanel extends JPanel
   }
   private void jbInit() throws Exception
   {
-    titledBorder4 = new TitledBorder(border1,"Continuous attributes");
-    titledBorder3 = new TitledBorder(border1,"Attribute info for base relation");
-    titledBorder2 = new TitledBorder(border1,"Attributes in file");
-    titledBorder1 = new TitledBorder(border1,"File");
+    titledBorder4 = new TitledBorder(border1,resource.getString("continuousAttributes"));
+    titledBorder3 = new TitledBorder(border1,resource.getString("attributeInfo"));
+    titledBorder2 = new TitledBorder(border1,resource.getString("fileAttributes"));
+    titledBorder1 = new TitledBorder(border1,resource.getString("file"));
     border1 = BorderFactory.createLineBorder(new Color(153, 153, 153),1);
     jPanel7.setLayout(gridLayout2);
     jPanel4.setLayout(borderLayout3);
     jPanel3.setLayout(gridLayout1);
     jPanel1.setLayout(borderLayout2);
-    jLabel6.setText("Attributes: ");
-    jLabel5.setText("Instances: ");
-    jLabel4.setText("None");
-    jLabel3.setText("None");
-    jLabel2.setText("None");
-    jLabel1.setText("Relation: ");
+    jLabel6.setText(resource.getString("attributes"));
+    jLabel5.setText(resource.getString("instances"));
+    jLabel4.setText(resource.getString("none"));
+    jLabel3.setText(resource.getString("none"));
+    jLabel2.setText(resource.getString("none"));
+    jLabel1.setText(resource.getString("relation"));
     jPanel23.setLayout(borderLayout13);
     jPanel22.setLayout(borderLayout12);
     jPanel21.setLayout(borderLayout11);
@@ -156,7 +161,7 @@ public class PreprocessPanel extends JPanel
     jPanel39.setLayout(borderLayout28);
     jPanel38.setLayout(borderLayout29);
     jPanel37.setLayout(borderLayout30);
-    jLabel9.setText("Name: ");
+    jLabel9.setText(resource.getString("name"));
     jPanel36.setLayout(borderLayout32);
     jPanel35.setLayout(borderLayout31);
     jPanel34.setLayout(borderLayout26);
@@ -166,13 +171,13 @@ public class PreprocessPanel extends JPanel
     jPanel30.setLayout(borderLayout24);
     jPanel29.setLayout(borderLayout21);
     jPanel28.setLayout(gridLayout5);
-    jLabel16.setText("Distinct: ");
-    jLabel15.setText("None");
-    jLabel14.setText("Missing: ");
-    jLabel13.setText("None");
-    jLabel12.setText("None");
-    jLabel11.setText("Type: ");
-    jLabel10.setText("None");
+    jLabel16.setText(resource.getString("distinct"));
+    jLabel15.setText(resource.getString("none"));
+    jLabel14.setText(resource.getString("missing"));
+    jLabel13.setText(resource.getString("none"));
+    jLabel12.setText(resource.getString("none"));
+    jLabel11.setText(resource.getString("type"));
+    jLabel10.setText(resource.getString("none"));
     gridLayout5.setRows(2);
     gridLayout5.setColumns(2);
     jPanel7.setBorder(titledBorder1);
@@ -182,7 +187,7 @@ public class PreprocessPanel extends JPanel
     jPanel27.setLayout(borderLayout35);
     jPanel2.setLayout(gridLayout4);
     jButton1.setEnabled(false);
-    jButton1.setText("Discretize attribute ...");
+    jButton1.setText(resource.getString("discretizeAttribute"));
     jButton1.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -192,7 +197,7 @@ public class PreprocessPanel extends JPanel
     });
     jPanel2.setBorder(titledBorder4);
     jButton2.setEnabled(false);
-    jButton2.setText("Instances Editor from Selected Attributes");
+    jButton2.setText(resource.getString("instancesEditor"));
     jButton2.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -202,7 +207,7 @@ public class PreprocessPanel extends JPanel
     });
     jPanel15.setLayout(borderLayout14);
     jScrollPane2.setBorder(null);
-    jPanel8.setToolTipText("Only selected attributes will be used by Instances Editor");
+    jPanel8.setToolTipText(resource.getString("selectedAttributes"));
     jPanel3.add(jPanel4, null);
     jPanel4.add(jPanel6, BorderLayout.CENTER);
     jPanel6.add(jPanel15,  BorderLayout.SOUTH);
@@ -284,7 +289,7 @@ public class PreprocessPanel extends JPanel
       }
       else if (as.getNominalCounts() != null)
       {   Attribute att = instances.getAttribute(index);
-          Object [] colNames = {"Label", "Count"};
+          Object [] colNames = {resource.getString("label"),resource.getString("count")};
       	  Object [][] data = new Object [as.getNominalCounts().length][2];
       	  for (int i = 0; i < as.getNominalCounts().length; i++)
           {   data[i][0] = att.value(i);
@@ -293,13 +298,13 @@ public class PreprocessPanel extends JPanel
       	  jTable1.setModel(new DefaultTableModel(data, colNames));
       }
       else if (as.getNumericStats() != null)
-      {   Object [] colNames = {"Statistic", "Value"};
+      {   Object [] colNames = {resource.getString("statistic"),resource.getString("value")};
       	  Object [][] data = new Object [4][2];
           Stats stats = as.getNumericStats();
-      	  data[0][0] = "Minimum"; data[0][1] = new Float((float)stats.getMin());
-      	  data[1][0] = "Maximum"; data[1][1] = new Float((float)stats.getMax());
-      	  data[2][0] = "Mean";    data[2][1] = new Float((float)stats.getMean());
-      	  data[3][0] = "StdDev";  data[3][1] = new Float((float)stats.getStdDev());
+      	  data[0][0] = resource.getString("minimum"); data[0][1] = new Float((float)stats.getMin());
+      	  data[1][0] = resource.getString("maximum"); data[1][1] = new Float((float)stats.getMax());
+      	  data[2][0] = resource.getString("mean");    data[2][1] = new Float((float)stats.getMean());
+      	  data[3][0] = resource.getString("stdDev");  data[3][1] = new Float((float)stats.getStdDev());
       	  jTable1.setModel(new DefaultTableModel(data, colNames));
       }
       else
@@ -317,11 +322,11 @@ public class PreprocessPanel extends JPanel
                       Attribute att = instances.getAttribute(selectedAttribute);
                       int type = att.getAttributeType();
                       if (type == att.NOMINAL)
-                      {   jLabel12.setText("Nominal");
+                      {   jLabel12.setText(resource.getString("nominal"));
                           jButton1.setEnabled(false);
                       }
                       else
-                      {   jLabel12.setText("Numeric");
+                      {   jLabel12.setText(resource.getString("numeric"));
                           jButton1.setEnabled(true);
                       }
                       jLabel10.setText(att.getAttributeName());
@@ -394,7 +399,7 @@ public class PreprocessPanel extends JPanel
                           }
                       }
                   }
-                  else if (fileExtension == reference.TXT_EXTENSION)
+                  else
                   {   for (i=0; i<selectedAttributes.length; i++)
                       {   sb.append(instances.getAttribute(i).getAttributeName()+" ");
                       }
@@ -438,15 +443,15 @@ public class PreprocessPanel extends JPanel
                   reference.setEditorText(sb.toString());
               }
               else
-              {   reference.setStatusBar("Nunhum atributo selecionado.");
+              {   reference.setStatusBar(resource.getString("noAttributeSelected"));
               }
           }
           else
-          {   reference.setStatusBar("Nunhum atributo selecionado.");
+          {   reference.setStatusBar(resource.getString("noAttributeSelected"));
           }
       }
       catch (NullPointerException npe)
-      {   reference.setStatusBar("Nunhum atributo selecionado.");
+      {   reference.setStatusBar(resource.getString("noAttributeSelected"));
       }
   }
 

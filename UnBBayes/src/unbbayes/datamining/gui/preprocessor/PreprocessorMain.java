@@ -3,25 +3,29 @@ package unbbayes.datamining.gui.preprocessor;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.net.URL;
-import javax.help.*;
+import java.util.*;
+
 import javax.swing.*;
 import javax.swing.border.*;
+
+import unbbayes.controlador.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.fronteira.*;
 
-public class PreprocessorMain extends /*JFrame*/JInternalFrame
+public class PreprocessorMain extends JInternalFrame
 {
+  /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+  private ResourceBundle resource;
   private JPanel contentPane;
   private JMenuBar jMenuBar1 = new JMenuBar();
   private JMenu jMenuFile = new JMenu();
   private JMenu jMenuHelp = new JMenu();
   private JMenuItem jMenuHelpAbout = new JMenuItem();
   private JToolBar jToolBar = new JToolBar();
-  private JButton jButton1 = new JButton();
-  private JButton jButton3 = new JButton();
-  private ImageIcon image1;
-  private ImageIcon image2;
+  private JButton openButton = new JButton();
+  private JButton helpButton = new JButton();
+  private ImageIcon abrirIcon;
+  private ImageIcon helpIcon;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JTabbedPane jTabbedPane1 = new JTabbedPane();
   private JPanel jPanel41 = new JPanel();
@@ -34,14 +38,17 @@ public class PreprocessorMain extends /*JFrame*/JInternalFrame
   private JMenuItem jMenuItem1 = new JMenuItem();
   private JMenuItem jMenuFileExit = new JMenuItem();
   private EditorPanel jPanel2;
-  private JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
+  private JFileChooser fileChooser;
   public static final int TXT_EXTENSION = 0;
   public static final int ARFF_EXTENSION = 1;
   private int fileExtension = 2;
+  private JPanel jPanel3 = new JPanel();
+  private BorderLayout borderLayout3 = new BorderLayout();
 
   /**Construct the frame*/
   public PreprocessorMain()
   { super("Preprocessor",true,true,true,true);
+    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.preprocessor.resources.PreprocessorResource");
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     try
     {
@@ -54,22 +61,21 @@ public class PreprocessorMain extends /*JFrame*/JInternalFrame
   }
   /**Component initialization*/
   private void jbInit() throws Exception
-  { image1 = new ImageIcon("icones/abrir.gif");
-    image2 = new ImageIcon("icones/help.gif");
+  { abrirIcon = new ImageIcon(getClass().getResource("/icones/abrir.gif"));
+    helpIcon = new ImageIcon(getClass().getResource("/icones/help.gif"));
     jPanel2 = new EditorPanel(this);
     contentPane = (JPanel) this.getContentPane();
-    titledBorder5 = new TitledBorder(border5,"Select Program");
+    titledBorder5 = new TitledBorder(border5,resource.getString("selectProgram"));
     border5 = BorderFactory.createLineBorder(new Color(153, 153, 153),1);
     contentPane.setLayout(borderLayout1);
-    jTabbedPane1.setOpaque(true);
     this.setSize(new Dimension(640, 480));
-    jMenuFile.setMnemonic('F');
-    jMenuFile.setText("File");
-    jMenuHelp.setMnemonic('H');
-    jMenuHelp.setText("Help");
-    jMenuHelpAbout.setIcon(image2);
-    jMenuHelpAbout.setMnemonic('E');
-    jMenuHelpAbout.setText("Help Topics");
+    jMenuFile.setMnemonic(((Character)resource.getObject("fileMnemonic")).charValue());
+    jMenuFile.setText(resource.getString("file"));
+    jMenuHelp.setMnemonic(((Character)resource.getObject("helpMnemonic")).charValue());
+    jMenuHelp.setText(resource.getString("help"));
+    jMenuHelpAbout.setIcon(helpIcon);
+    jMenuHelpAbout.setMnemonic(((Character)resource.getObject("helpTopicsMnemonic")).charValue());
+    jMenuHelpAbout.setText(resource.getString("helpTopics"));
     jMenuHelpAbout.addActionListener(new ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -77,32 +83,32 @@ public class PreprocessorMain extends /*JFrame*/JInternalFrame
         jMenuHelpAbout_actionPerformed(e);
       }
     });
-    jButton1.setIcon(image1);
-    jButton1.addActionListener(new java.awt.event.ActionListener()
+    openButton.setIcon(abrirIcon);
+    openButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jButton1_actionPerformed(e);
+        openButton_actionPerformed(e);
       }
     });
-    jButton1.setToolTipText("Open File");
-    jButton3.setIcon(image2);
-    jButton3.addActionListener(new java.awt.event.ActionListener()
+    openButton.setToolTipText(resource.getString("openFile"));
+    helpButton.setIcon(helpIcon);
+    helpButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jButton3_actionPerformed(e);
+        helpButton_actionPerformed(e);
       }
     });
-    jButton3.setToolTipText("Help");
+    helpButton.setToolTipText(resource.getString("help"));
     jPanel41.setLayout(borderLayout2);
     jToolBar.setFloatable(false);
     jPanel41.setBorder(titledBorder5);
-    titledBorder5.setTitle("Status");
-    statusBar.setText("Welcome");
-    jMenuItem1.setIcon(image1);
-    jMenuItem1.setMnemonic('O');
-    jMenuItem1.setText("Open ...");
+    titledBorder5.setTitle(resource.getString("status"));
+    statusBar.setText(resource.getString("welcome"));
+    jMenuItem1.setIcon(abrirIcon);
+    jMenuItem1.setMnemonic(((Character)resource.getObject("openMnemonic")).charValue());
+    jMenuItem1.setText(resource.getString("open"));
     jMenuItem1.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -110,8 +116,8 @@ public class PreprocessorMain extends /*JFrame*/JInternalFrame
         jMenuItem1_actionPerformed(e);
       }
     });
-    jMenuFileExit.setMnemonic('E');
-    jMenuFileExit.setText("Exit");
+    jMenuFileExit.setMnemonic(((Character)resource.getObject("fileExitMnemonic")).charValue());
+    jMenuFileExit.setText(resource.getString("exit"));
     jMenuFileExit.addActionListener(new ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -120,20 +126,22 @@ public class PreprocessorMain extends /*JFrame*/JInternalFrame
       }
     });
     jPanel2.setEnabled(false);
-    jToolBar.add(jButton1);
-    jToolBar.add(jButton3);
+    jPanel3.setLayout(borderLayout3);
+    jToolBar.add(openButton);
+    jToolBar.add(helpButton);
     jMenuFile.add(jMenuItem1);
     jMenuFile.add(jMenuFileExit);
     jMenuHelp.add(jMenuHelpAbout);
     jMenuBar1.add(jMenuFile);
     jMenuBar1.add(jMenuHelp);
     this.setJMenuBar(jMenuBar1);
-    contentPane.add(jToolBar, BorderLayout.NORTH);
+    contentPane.add(jToolBar,  BorderLayout.NORTH);
     contentPane.add(jPanel41,  BorderLayout.SOUTH);
     jPanel41.add(statusBar, BorderLayout.CENTER);
-    contentPane.add(jTabbedPane1, BorderLayout.CENTER);
-    jTabbedPane1.add(jPanel1,  "Preprocess");
-    jTabbedPane1.add(jPanel2,   "Editor");
+    jTabbedPane1.add(jPanel1,resource.getString("preprocess"));
+    jTabbedPane1.add(jPanel2,resource.getString("editor"));
+    contentPane.add(jPanel3,  BorderLayout.CENTER);
+    jPanel3.add(jTabbedPane1,BorderLayout.CENTER);
     jTabbedPane1.setEnabledAt(1,false);
   }
   /**File | Exit action performed*/
@@ -143,82 +151,60 @@ public class PreprocessorMain extends /*JFrame*/JInternalFrame
   }
   /**Help | About action performed*/
   public void jMenuHelpAbout_actionPerformed(ActionEvent e)
-  {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
-      try
-      {   URL helpSetURL = new URL("file:./help/Preprocessor.hs");
-          HelpSet set = new HelpSet(null, helpSetURL);
-          JHelp help = new JHelp(set);
-          JFrame f = new JFrame();
-          f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-          f.setContentPane(help);
-          f.setSize(500,400);
-          f.setVisible(true);
+  {   try
+      {   FileController.getInstance().openHelp(this);
       }
       catch (Exception evt)
-      {   evt.printStackTrace();
-          statusBar.setText("Error= "+evt.getMessage());
+      {   statusBar.setText(resource.getString("errorException")+evt.getMessage()+" "+this.getClass().getName());
       }
-      setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
-  void jButton1_actionPerformed(ActionEvent e)
-  {   openFile();
-  }
-
-  private void openFile()
+  void openButton_actionPerformed(ActionEvent e)
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
       String[] s1 = {"ARFF"};
       String[] s2 = {"TXT"};
-      fileChooser = new JFileChooser(fileChooser.getCurrentDirectory());
+      fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setMultiSelectionEnabled(false);
       //adicionar FileView no FileChooser para desenhar ícones de arquivos
-      fileChooser.setFileView(new FileIcon(PreprocessorMain.this));
+      fileChooser.setFileView(new FileIcon(this));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "TxtFiles (*.txt)"));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ArffFiles (*.arff)"));
       int returnVal = fileChooser.showOpenDialog(this);
       if (returnVal == JFileChooser.APPROVE_OPTION)
       {   File selectedFile = fileChooser.getSelectedFile();
-          setBaseInstancesFromFile(selectedFile);
+          openFile(selectedFile);
+          FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
-  private void setBaseInstancesFromFile(File f)
+  private void openFile(File selectedFile)
   {   try
-      {   jTabbedPane1.setEnabledAt(1,false);
-          Reader r = new BufferedReader(new FileReader(f));
-	  Loader loader;
-          String fileName = f.getName();
+      {   inst = FileController.getInstance().setBaseInstancesFromFile(selectedFile,this);
+          String fileName = selectedFile.getName();
           if (fileName.regionMatches(true,fileName.length() - 5,".arff",0,5))
-          {   loader = new ArffLoader(r,this);
-              fileExtension = ARFF_EXTENSION;
+          {   fileExtension = ARFF_EXTENSION;
           }
           else if (fileName.regionMatches(true,fileName.length() - 4,".txt",0,4))
-          {   loader = new TxtLoader(r,this);
-              fileExtension = TXT_EXTENSION;
+          {   fileExtension = TXT_EXTENSION;
           }
-          else
-          {   throw new IOException(" Extensão de arquivo não conhecida.");
-          }
+          jTabbedPane1.setEnabledAt(1,false);
           jTabbedPane1.setSelectedIndex(0);
-          inst = loader.getInstances();
           jPanel1.setBaseInstances(inst);
-          statusBar.setText("File opened successfully");
-          this.setTitle("Preprocessor - "+f.getName());
-          r.close();
+          statusBar.setText(resource.getString("fileOpened"));
+          this.setTitle(resource.getString("preprocessorTitle")+selectedFile.getName());
       }
       catch (NullPointerException npe)
-      {   statusBar.setText("NullPointer error "+npe.getMessage());
+      {   statusBar.setText(resource.getString("errorDB")+selectedFile.getName()+" "+npe.getMessage());
       }
       catch (FileNotFoundException fnfe)
-      {   statusBar.setText("FileNotFound error "+fnfe.getMessage());
+      {   statusBar.setText(resource.getString("fileNotFound")+selectedFile.getName()+" "+fnfe.getMessage());
       }
       catch (IOException ioe)
-      {   statusBar.setText("ErrorOpen error "+ioe.getMessage());
+      {   statusBar.setText(resource.getString("errorOpen")+selectedFile.getName()+" "+ioe.getMessage());
       }
-      catch(Exception e)
-      {   statusBar.setText("Exception error "+e.getMessage());
-          e.printStackTrace();
+      catch (Exception ex)
+      {   statusBar.setText(resource.getString("error")+ex.getMessage());
       }
   }
 
@@ -233,10 +219,10 @@ public class PreprocessorMain extends /*JFrame*/JInternalFrame
   }
 
   void jMenuItem1_actionPerformed(ActionEvent e)
-  {   openFile();
+  {   openButton_actionPerformed(e);
   }
 
-  void jButton3_actionPerformed(ActionEvent e)
+  void helpButton_actionPerformed(ActionEvent e)
   {   jMenuHelpAbout_actionPerformed(e);
   }
 
@@ -246,10 +232,6 @@ public class PreprocessorMain extends /*JFrame*/JInternalFrame
 
   public int getFileExtension()
   {   return fileExtension;
-  }
-
-  public File getCurrentDirectory()
-  {   return fileChooser.getCurrentDirectory();
   }
 
   public JTabbedPane getTabbedPane()

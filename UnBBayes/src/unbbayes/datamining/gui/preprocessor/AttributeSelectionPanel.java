@@ -1,9 +1,12 @@
 package unbbayes.datamining.gui.preprocessor;
 
 import java.awt.*;
+import java.util.*;
+
 import javax.swing.*;
 import javax.swing.table.*;
-import unbbayes.datamining.datamanipulation.InstanceSet;
+
+import unbbayes.datamining.datamanipulation.*;
 
 /**
  * Creates a panel that displays the attributes contained in a set of
@@ -12,7 +15,9 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
  * classification).
  */
 public class AttributeSelectionPanel extends JPanel
-{ /**
+{ /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+  private ResourceBundle resource;
+  /**
    * A table model that looks at the names of attributes and maintains
    * a list of attributes that have been "selected".
    */
@@ -83,7 +88,7 @@ public class AttributeSelectionPanel extends JPanel
     { switch (column)
       {   case 0:   return new String("No.");
           case 1:   return new String("");
-          case 2:   return new String("Name");
+          case 2:   return new String(resource.getString("name"));
           default:  return null;
       }
     }
@@ -150,13 +155,13 @@ public class AttributeSelectionPanel extends JPanel
    * Creates the attribute selection panel with no initial instances.
    */
   public AttributeSelectionPanel() {
-
+   resource = ResourceBundle.getBundle("unbbayes.datamining.gui.preprocessor.resources.PreprocessorResource");
     m_Table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     m_Table.getTableHeader().setReorderingAllowed(false);
     m_Table.getTableHeader().setResizingAllowed(false);
     m_Table.setColumnSelectionAllowed(false);
     m_Table.setPreferredScrollableViewportSize(new Dimension(250, 150));
-    m_Table.setToolTipText("Only selected attributes will be used by Instances Editor");
+    m_Table.setToolTipText(resource.getString("selectedAttributes"));
 
     setLayout(new BorderLayout());
     add(new JScrollPane(m_Table), BorderLayout.CENTER);
@@ -190,7 +195,7 @@ public class AttributeSelectionPanel extends JPanel
    *
    * @return the array of selected indices.
    */
-  public int [] getSelectedAttributes() {
+  public int[] getSelectedAttributes() {
 
     return m_Model.getSelectedAttributes();
   }
