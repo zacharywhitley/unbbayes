@@ -27,7 +27,7 @@ public class ValidarUsuario extends HttpServlet {
 		try {
 			Element out = feature.process(in);
 			if (out.getChild("false") != null) {
-				throw new ServletException("Informação inválida!");
+				throw new ServletException("Informação de autenticação inválida!");
 			} else {
 				Connection con = Controller.getInstance().makeConnection();
 				PreparedStatement ps = con.prepareStatement(

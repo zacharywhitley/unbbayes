@@ -58,13 +58,14 @@ public class LancamentoFeature implements Feature {
 			ps = con.prepareStatement(sql.toString());
 						
 			ps.setTimestamp(1, dtHora);
-			ps.setInt(2, Integer.parseInt(codLancamento));	
+			ps.setInt(2, Integer.parseInt(codLancamento));
 			
 		} else {			
 			String codUsuario = in.getChild("cod-usuario").getTextTrim();
 			String codComputador = in.getChild("cod-computador").getTextTrim();
-			System.out.println("codusuario = " + codUsuario);
-			System.out.println("codcomputador = " + codComputador);
+
+//			System.out.println("codusuario = " + codUsuario);
+//			System.out.println("codcomputador = " + codComputador);
 			
 			int codTipoLancamento = 0;
 			if ( in.getChild("manutencao") != null ) {
@@ -76,8 +77,7 @@ public class LancamentoFeature implements Feature {
 			} else if ( in.getChild("deposito") != null ) {
 				codTipoLancamento = 
 				retornarCodTipoLancamento(Lancamento.DEPOSITO, con);
-			}
-			
+			}			
 			
 			StringBuffer sql = new StringBuffer();
 			sql.append("INSERT INTO ");
@@ -88,7 +88,7 @@ public class LancamentoFeature implements Feature {
 			sql.append("  (?, ?, ?, ?) ");
 			
 			ps = con.prepareStatement(sql.toString());
-			System.out.println(codTipoLancamento);
+//			System.out.println(codTipoLancamento);
 			ps.setLong(1, Long.parseLong(codUsuario));
 			ps.setLong(2, Long.parseLong(codComputador));
 			ps.setInt(3, codTipoLancamento);
@@ -131,12 +131,13 @@ public class LancamentoFeature implements Feature {
 		
 		rs = ps.executeQuery();
 		
+		/*
 		if (rs.next()) {
 			System.out.println("deu");	
 		} else {
 			System.out.println("nao deu");
 		}
-		
+		*/	
 		
 		
 		return rs.getInt("cod_tipo_lancamento");
