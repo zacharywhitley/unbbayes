@@ -1,55 +1,46 @@
 <%@page import="linfca.*,
 		linfca.cadastro.*,  
-		com.oreilly.servlet.*,
-		linfca.util.*, 
-		java.io.*,
 		java.util.Enumeration,
-        java.sql.*, 
         org.jdom.Element" 
         errorPage="" %> 
-        
+      
 <%
 
    boolean inserir = true;
    
-   Element in = new Element("semestre");
+   Element in = new Element("curso");
    
-   MultipartRequest multi = new MultipartRequest(request, ".");   
-   Enumeration params = multi.getParameterNames();
+   Enumeration params = request.getParameterNames();
    
    while (params.hasMoreElements()) {
    
       String name = (String)params.nextElement();
       
-	  if (name.equals("int_cod_semestre")) {
-	     inserir = false;	     
+	  if (name.equals("int_cod_curso")) {
+	     inserir = false;
 	     
 	     Element where = new Element("where");	     
-	     String value = multi.getParameter(name);
+	     String value = request.getParameter(name);
 	     Element element = new Element(name);
 	     element.setText(value);	     
 	     where.getChildren().add(element);	     
-	     in.getChildren().add(where);
-	     
+	     in.getChildren().add(where);	     
 	     continue;	     
-	     
 	  }
 	  
-      String value = multi.getParameter(name);
+      String value = request.getParameter(name);
 	  Element element = new Element(name);
 	  element.setText(value);
 	  in.getChildren().add(element);
-      System.out.println(name + " = " + value);
-      
    }
 
-   Feature  salvarSemestreF = new SalvarGenericoFeature();
-   Element saida = salvarSemestreF.process(in);
+   Feature  salvarF = new SalvarGenericoFeature();
+   Element saida = salvarF.process(in);
    
    String mensagem = null;
    if (saida.getChild("ok") != null) {
-      mensagem = (inserir) ? "O semestre foi incluído com sucesso!"
-	   						: "Os dados do semestre foram alterados com sucesso!";	
+      mensagem = (inserir) ? "O curso foi incluído com sucesso!"
+	   						: "Os dados do curso foram alterados com sucesso!";	
    } else {
       mensagem = "Ocorreu um erro!";   
    }
@@ -65,3 +56,4 @@
   </form>
 </body>
 </html>
+
