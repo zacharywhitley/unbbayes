@@ -117,7 +117,7 @@ public class Network implements java.io.Serializable {
     public Network(String id) {
         nos = new NodeList();
         assert ! id.trim().equals("");
-        this.id = id;
+        this.id = this.name = id;
         //descriptionNodes = new NodeList();
         //explanationNodes = new NodeList();
         arcos = new ArrayList();
