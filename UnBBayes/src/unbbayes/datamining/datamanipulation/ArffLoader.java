@@ -255,79 +255,86 @@ public class ArffLoader extends Loader
    	* successfully
    	*/
   	protected boolean getInstanceFull() throws IOException
-	{	short[] instance;
-		if (counterAttribute >= 0)
-		{	instance = new short[instances.numAttributes() - 1];
-		}
-		else
-		{	instance = new short[instances.numAttributes()];
-		}
-		int index;
-		int instanceWeight = 1;
+	{   int numAttributes = instances.numAttributes();
+            //short[] instance;
+            /*if (counterAttribute >= 0)
+            {	instance = new short[instances.numAttributes() - 1];
+            }
+            else
+            {	instance = new short[instances.numAttributes()];
+            }*/
+            short[] instance = new short[numAttributes];
+            int index;
+            int instanceWeight = 1;
 
-		// Get values for all attributes.
-    	for (int i = 0; i < instances.numAttributes(); i++)
-		{	// Get next token
-      		if (i > 0)
-			{	getNextToken();
-      		}
-
-			if (counterAttribute == i)
-			{	try
-				{	instanceWeight = Integer.valueOf(tokenizer.sval).intValue();
-				}
-				catch(NumberFormatException nfe)
-				{	errms("Atributo de contagem inválido");
-				}
-			}
-			else
-			{	// Check if value is missing.
-      			if  (tokenizer.ttype == '?')
-				{	instance[i] = Instance.missingValue();
-      			}
-				else
-				{	// Check if token is valid.
-					if (tokenizer.ttype != StreamTokenizer.TT_WORD)
-					{	errms(resource.getString("getInstanceFullException1"));
-					}
-					if (instances.getAttribute(i).isNominal())
-					{	// Check if value appears in header.
-	  					index = instances.getAttribute(i).indexOfValue(tokenizer.sval);
-	  					if (index == -1)
-						{	errms(resource.getString("getInstanceFullException2"));
-	  					}
-	  					instance[i] = (short)index;
-					}
-					else if (instances.getAttribute(i).isNumeric())
-					{	// Check if value is really a number.
-	  					try
-						{	Attribute att = instances.getAttribute(i);
-							float newValue = Float.valueOf(tokenizer.sval).floatValue();
-							String nomeEstado = newValue + "";
-							if (att.numValues()==0 || att.indexOfValue(nomeEstado) == -1)
-							{	att.addValue(nomeEstado);
-							}
-
-							// Check if value appears in header.
-	  						index = att.indexOfValue(nomeEstado);
-	  						if (index == -1)
-							{	errms(resource.getString("getInstanceFullException2"));
-	  						}
-	  						instance[i] = (short)index;
-	  					}
-						catch (NumberFormatException e)
-						{	errms(resource.getString("getInstanceFullException3"));
-	  					}
-					}
-      			}
-			}
-    	}
-    	getLastToken(true);
-
-    	// Add instance to dataset
-    	add(new Instance(instanceWeight,instance));
-		return true;
-  	}
+            // Get values for all attributes.
+    	    int instanceSize = 0;
+            if (counterAttribute >= 0)
+            {   instanceSize = numAttributes + 1;
+            }
+            else
+            {	instanceSize = numAttributes;
+            }
+            int attributeNumber = -1;
+            for (int i = 0; i < instanceSize; i++)
+            {   // Get next token
+                if (i > 0)
+                    getNextToken();
+                if (counterAttribute == i)
+                {   try
+                    {   instanceWeight = Integer.valueOf(tokenizer.sval).intValue();
+                    }
+                    catch(NumberFormatException nfe)
+                    {   errms("Atributo de contagem inválido");
+                    }
+                }
+                else
+                {   attributeNumber++;
+                    // Check if value is missing.
+                    if  (tokenizer.ttype == '?')
+                    {	instance[attributeNumber] = Instance.missingValue();
+                    }
+                    else
+                    {	// Check if token is valid.
+                        if (tokenizer.ttype != StreamTokenizer.TT_WORD)
+                        {   errms(resource.getString("getInstanceFullException1"));
+                        }
+                        if (instances.getAttribute(attributeNumber).isNominal())
+                        {   // Check if value appears in header.
+                            index = instances.getAttribute(attributeNumber).indexOfValue(tokenizer.sval);
+                            if (index == -1)
+                            {   errms(resource.getString("getInstanceFullException2"));
+                            }
+                            instance[attributeNumber] = (short)index;
+                        }
+                        else if (instances.getAttribute(attributeNumber).isNumeric())
+                        {   // Check if value is really a number.
+                            try
+                            {   Attribute att = instances.getAttribute(attributeNumber);
+                                float newValue = Float.valueOf(tokenizer.sval).floatValue();
+                                String nomeEstado = newValue + "";
+                                if (att.numValues()==0 || att.indexOfValue(nomeEstado) == -1)
+                                {   att.addValue(nomeEstado);
+                                }
+                                // Check if value appears in header.
+                                index = att.indexOfValue(nomeEstado);
+                                if (index == -1)
+                                {   errms(resource.getString("getInstanceFullException2"));
+                                }
+                                instance[attributeNumber] = (short)index;
+                            }
+                            catch (NumberFormatException e)
+                            {   errms(resource.getString("getInstanceFullException3"));
+                            }
+                        }
+                    }
+                }
+    	    }
+    	    getLastToken(true);
+    	    // Add instance to dataset
+    	    add(new Instance(instanceWeight,instance));
+            return true;
+        }
 
 }
 

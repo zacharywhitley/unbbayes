@@ -82,7 +82,7 @@ public class CombinatorialNetwork {
   private void createCombinatorialNeurons(Instance instance, int attributeNum, int classIndex){
     short value;
     InputNeuron inputNeuron;
-    InputNeuron[] inputList = new InputNeuron[attributeNum - 1];
+    InputNeuron[] inputList = new InputNeuron[attributeNum/* - 1*/];
     CombinatorialNeuron combNeuron;
     OutputNeuron outputNeuron = (OutputNeuron)outputLayer.get(generateOutputKey(classIndex, instance.classValue()));
     String key;

@@ -1,4 +1,4 @@
-import unbbayes.datamining.gui.*;
+import unbbayes.datamining.gui.InvokerTest;
 
 public class Start
 {	public static void main(String[] args)

@@ -135,12 +135,6 @@ public class BayesianNetwork extends BayesianLearning
 
                                 int numClasses = classNode.getStatesSize();
                                 originalDistribution = new float[numClasses];
-                                for (int j=0;j<numClasses;j++)
-		                {   originalDistribution[j] = (float)classNode.getMarginalAt(j);
-                                    //System.out.println(""+originalDistribution[j]);
-		                }
-
-
                                 break;
 			}
 		}

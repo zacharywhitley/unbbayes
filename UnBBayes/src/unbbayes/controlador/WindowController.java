@@ -1122,11 +1122,11 @@ public class WindowController implements KeyListener {
         explanation.setVisible(true);
         tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
-    
+
     public void changeToNetEdition() {
     	rede.setFirstInitialization(true);
     }
-    
+
     public void changeToNetCompilation() {
     	rede.setFirstInitialization(true);
     }

@@ -418,23 +418,22 @@ public class Evaluation
    * successfully or the class is not defined
    */
   public void crossValidateModel(Classifier classifier,int numFolds) throws Exception
-  {	// Make a copy of the data we can reorder
-    //InstanceSet instances = new InstanceSet(data);
-    InstanceSet instances = new InstanceSet(data,data.numInstances());
-	int numInstances = data.numInstances();
-	for (int i=0;i<numInstances;i++)
-	{	Instance inst = data.getInstance(i);
-		int originalWeight = inst.getWeight();
-		inst.setWeight(1);
-		for (int j=0;j<originalWeight;j++)
-			instances.add(inst);
-	}
-	data = new InstanceSet(instances);
+  {   // Make a copy of the data we can reorder
+      InstanceSet instances = new InstanceSet(data,data.numInstances());
+      int numInstances = data.numInstances();
+      for (int i=0;i<numInstances;i++)
+      {   Instance inst = data.getInstance(i);
+          int originalWeight = inst.getWeight();
+          inst.setWeight(1);
+          for (int j=0;j<originalWeight;j++)
+              instances.add(inst);
+      }
+      data = new InstanceSet(instances);
 
-	instances.randomize(new Random(42));
-	if (instances.getClassAttribute().isNominal())
-	{	stratify(instances,numFolds);
-    }
+      instances.randomize(new Random(42));
+      if (instances.getClassAttribute().isNominal())
+      {   stratify(instances,numFolds);
+      }
     // Do the folds
     for (int i = 0; i < numFolds; i++)
 	{	InstanceSet train = trainCV(instances,numFolds, i);
@@ -608,7 +607,7 @@ public class Evaluation
   	{ throw new Exception(resource.getString("noMatrix"));
     }
     StringBuffer text = new StringBuffer(resource.getString("accuracy"));
-	text.append("\nTP Rate   FP Rate   TN Rate   FN Rate\n");
+	text.append("\nTP Rate   FP Rate   TN Rate   FN Rate   Class\n");
     for(int i = 0; i < numClasses; i++)
 	{ text.append(Utils.doubleToString(truePositiveRate(i), 7, 3)).append("   ");
       text.append(Utils.doubleToString(falsePositiveRate(i), 7, 3)).append("    ");

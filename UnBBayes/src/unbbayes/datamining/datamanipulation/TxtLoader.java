@@ -131,75 +131,76 @@ public class TxtLoader extends Loader
    	* successfully
    	*/
   	protected boolean getInstanceFull() throws IOException
-	{	short[] instance;
-		if (counterAttribute >= 0)
-		{	instance = new short[instances.numAttributes() - 1];
-		}
-		else
-		{	instance = new short[instances.numAttributes()];
-		}
-		int instanceWeight = 1;
-		int posicao = 0,index = 0;
-		String nomeEstado = "";
+	{   int numAttributes = instances.numAttributes();
+            short[] instance = new short[numAttributes];
+            int instanceWeight = 1;
+            int position = 0,index = 0;
+            int attributeNumber = -1;
+            String stateName = "";
 
-		//Create instances
-  		while(posicao < instances.numAttributes())
-		{	Attribute att = instances.getAttribute(posicao);
-			//Insert new value for attribute if number of values is 0 or this value isn't inserted
-			if(tokenizer.sval != null)
-			{	nomeEstado = tokenizer.sval;
-				if (att.numValues()==0 || att.indexOfValue(nomeEstado) == -1)
-				{	att.addValue(nomeEstado);
-				}
-			}
-			else if (tokenizer.ttype == StreamTokenizer.TT_NUMBER)
-			{	nomeEstado = String.valueOf(tokenizer.nval);
-				if (att.numValues()==0 || att.indexOfValue(nomeEstado) == -1)
-				{	att.addValue(nomeEstado);
-				}
-			}
-			else
-			{}
-			if (counterAttribute == posicao)
-			{	try
-				{	instanceWeight = (int)tokenizer.nval;
-				}
-				catch(NumberFormatException nfe)
-				{	errms("Atributo de contagem inválido");
-				}
-				catch(Exception exc)
-				{	errms("erro "+exc.getMessage());
-				}
-			}
-			else
-			{	if (tokenizer.ttype == StreamTokenizer.TT_WORD)
-				{	// Check if value is missing.
-      				if (tokenizer.ttype == '?')
-					{	instance[posicao] = Instance.missingValue();
-      				}
-					else
-					{	if (instances.getAttribute(posicao).isNominal())
-						{	// Check if value appears in header.
-	  						index = att.indexOfValue(tokenizer.sval);
-	  						instance[posicao] = (short)index;
-						}
-					}
-				}
-				else if (tokenizer.ttype == StreamTokenizer.TT_NUMBER)
-				{	if (instances.getAttribute(posicao).isNominal())
-					{	// Check if value appears in header.
-	  					index = att.indexOfValue(tokenizer.nval+"");
-	  					instance[posicao] = (short)index;
-					}
-				}
-			}
-			posicao++;
-			tokenizer.nextToken();
-		}
+            int instanceSize = 0;
+            if (counterAttribute >= 0)
+            {   instanceSize = numAttributes + 1;
+            }
+            else
+            {   instanceSize = numAttributes;
+            }
+            //Create instances
+            while(position < instanceSize)
+            {   if (counterAttribute == position)
+                {   try
+                    {   instanceWeight = Integer.valueOf(tokenizer.sval).intValue();
+                    }
+                    catch(NumberFormatException nfe)
+                    {   errms("Atributo de contagem inválido");
+                    }
+                }
+                else
+                {   attributeNumber++;
+                    Attribute att = instances.getAttribute(attributeNumber);
+                    //Insert new value for attribute if number of values is 0 or this value isn't inserted
+                    if(tokenizer.sval != null)
+                    {   stateName = tokenizer.sval;
+                        if (att.numValues()==0 || att.indexOfValue(stateName) == -1)
+                        {   att.addValue(stateName);
+                        }
+                    }
+                    else if (tokenizer.ttype == StreamTokenizer.TT_NUMBER)
+                    {	stateName = String.valueOf(tokenizer.nval);
+                        if (att.numValues()==0 || att.indexOfValue(stateName) == -1)
+                        {   att.addValue(stateName);
+                        }
+                    }
+                    else
+                    {}
+                    if (tokenizer.ttype == StreamTokenizer.TT_WORD)
+                    {	// Check if value is missing.
+                        if (tokenizer.ttype == '?')
+                        {   instance[attributeNumber] = Instance.missingValue();
+                        }
+                        else
+                        {   if (instances.getAttribute(attributeNumber).isNominal())
+                            {   // Check if value appears in header.
+                                index = att.indexOfValue(tokenizer.sval);
+                                instance[attributeNumber] = (short)index;
+                            }
+                        }
+                    }
+                    else if (tokenizer.ttype == StreamTokenizer.TT_NUMBER)
+                    {	if (instances.getAttribute(attributeNumber).isNominal())
+                        {   // Check if value appears in header.
+                            index = att.indexOfValue(tokenizer.nval+"");
+                            instance[attributeNumber] = (short)index;
+                        }
+                    }
+                }
+                position++;
+                tokenizer.nextToken();
+            }
 
-		// Add instance to dataset
-    	add(new Instance(instanceWeight,instance));
-    	return true;
+            // Add instance to dataset
+    	    add(new Instance(instanceWeight,instance));
+    	    return true;
 	}
 
 	/**

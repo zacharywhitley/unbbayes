@@ -71,7 +71,7 @@ public class DecisionTreeMain extends JInternalFrame
   /**Component initialization*/
   private void jbInit() throws Exception
   { abrirIcon = new ImageIcon(getClass().getResource("/icones/abrir.gif"));
-    compilaIcon = new ImageIcon(getClass().getResource("/icones/compila.gif"));
+    compilaIcon = new ImageIcon(getClass().getResource("/icones/aprende.gif"));
     helpIcon = new ImageIcon(getClass().getResource("/icones/help.gif"));
     salvarIcon = new ImageIcon(getClass().getResource("/icones/salvar.gif"));
     contentPane = (JPanel) this.getContentPane();

@@ -71,19 +71,19 @@ public class MetaphorTree extends JTree
         public static final int CHECK_NO = -1;
         public static final int CHECK_EMPTY = 0;
 
-	private DefaultMutableTreeNode root = null;
+	//private DefaultMutableTreeNode root = null;
 	private ProbabilisticNetwork net = null;
         private boolean showProbability = false;
         private ArrayMap objectsMap = new ArrayMap();
         private NumberFormat nf;
 
 	protected MetaphorTree()
-        {   super(new DefaultMutableTreeNode());
+        {   /*super(new DefaultMutableTreeNode());
             root = (DefaultMutableTreeNode)getModel().getRoot();
             setShowsRootHandles(true);
-            setSelectionModel(null);
+            setSelectionModel(null);*/
             setRootVisible(false);
-            this.setAutoscrolls(true);
+            //this.setAutoscrolls(true);
             setCellRenderer(new MetaphorTreeCellRenderer());
             addMouseListener(new MouseAdapter()
             {   public void mouseClicked(java.awt.event.MouseEvent evt)
@@ -106,7 +106,8 @@ public class MetaphorTree extends JTree
 	}
 
 	public void setProbabilisticNetwork(ProbabilisticNetwork net)
-        {	if (net != null)
+        {	DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
+                if (net != null)
                 {	if (!net.equals(this.net))
                         {	this.net = net;
 		                root.removeAllChildren();
@@ -125,7 +126,6 @@ public class MetaphorTree extends JTree
 		                    }
 		                    root.add(treeNode);
 		                }
-		                ((DefaultTreeModel)getModel()).reload(root);
 			}
 		}
 		else
@@ -134,6 +134,7 @@ public class MetaphorTree extends JTree
 	                objectsMap.clear();
                         System.out.println("problem");
 		}
+                ((DefaultTreeModel)getModel()).reload(root);
 	}
 
 	public ProbabilisticNetwork getProbabilisticNetwork() {

@@ -16,7 +16,10 @@ public abstract class Loader
         protected StreamTokenizer tokenizer;
 
 	public void setCounterAttribute(int counterAttribute)
-	{	this.counterAttribute = counterAttribute;
+	{   if (counterAttribute >= 0)
+            {   instances.removeAttribute(counterAttribute);
+                this.counterAttribute = counterAttribute;
+            }
 	}
 
 	/** Returns instance set generated from reader

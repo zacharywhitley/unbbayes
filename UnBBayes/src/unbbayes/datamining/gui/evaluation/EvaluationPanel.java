@@ -22,18 +22,13 @@ public class EvaluationPanel extends JPanel
   private BorderLayout borderLayout45 = new BorderLayout();
   private JPanel jPanel62 = new JPanel();
   private BorderLayout borderLayout44 = new BorderLayout();
-  private BorderLayout borderLayout43 = new BorderLayout();
   private JButton jButton9 = new JButton();
-  private JPanel jPanel50 = new JPanel();
   private BorderLayout borderLayout33 = new BorderLayout();
   private JPanel jPanel2 = new JPanel();
-  private JPanel jPanel49 = new JPanel();
-  private JPanel jPanel48 = new JPanel();
   private JPanel jPanel47 = new JPanel();
   private JPanel jPanel46 = new JPanel();
   private JPanel jPanel45 = new JPanel();
   private JScrollPane jScrollPane2 = new JScrollPane();
-  private JScrollPane jScrollPane1 = new JScrollPane();
   private BorderLayout borderLayout1 = new BorderLayout();
   private TitledBorder titledBorder10;
   private TitledBorder titledBorder9;
@@ -48,29 +43,24 @@ public class EvaluationPanel extends JPanel
 //  private EvaluationThread thread;
   private Thread thread; //fasffsafsasfafsafasfa vai ser removido depois
   private JTextArea jTextArea2 = new JTextArea();
-  private JTextArea jTextArea1 = new JTextArea();
   private JTextField jTextField1 = new JTextField();
   private InstanceSet userTest;
   private JLabel jLabel1 = new JLabel();
   private EvaluationMain reference;
   private JFileChooser fileChooser;
   private GridBagLayout gridBagLayout1 = new GridBagLayout();
-  private BorderLayout borderLayout3 = new BorderLayout();
-  private JScrollPane jScrollPane4 = new JScrollPane();
-  private JComboBox jComboBox2 = new JComboBox();
-  private BorderLayout borderLayout42 = new BorderLayout();
-  private GridLayout gridLayout8 = new GridLayout();
-  private GridLayout gridLayout3 = new GridLayout();
-  private JButton jButton8 = new JButton();
-  private JButton jButton7 = new JButton();
-  private JPanel jPanel61 = new JPanel();
-  private JPanel jPanel59 = new JPanel();
-  private JPanel jPanel60 = new JPanel();
-  private JPanel jPanel58 = new JPanel();
-  private JPanel jPanel57 = new JPanel();
-  private JPanel jPanel4 = new JPanel();
   private JLabel jLabel2 = new JLabel();
-  private BorderLayout borderLayout4 = new BorderLayout();
+  private JButton jButton7 = new JButton();
+  private GridLayout gridLayout2 = new GridLayout();
+  private GridLayout gridLayout1 = new GridLayout();
+  private JPanel jPanel1 = new JPanel();
+  private JComboBox jComboBox2 = new JComboBox();
+  private JPanel jPanel49 = new JPanel();
+  private JButton jButton8 = new JButton();
+  private JTextArea jTextArea1 = new JTextArea();
+  private JScrollPane jScrollPane1 = new JScrollPane();
+  private JPanel jPanel50 = new JPanel();
+  private BorderLayout borderLayout43 = new BorderLayout();
 
   public EvaluationPanel(EvaluationMain reference)
   { this.reference = reference;
@@ -103,41 +93,15 @@ public class EvaluationPanel extends JPanel
         jButton9_actionPerformed(e);
       }
     });
-    jPanel50.setLayout(borderLayout43);
     jPanel2.setLayout(borderLayout33);
-    jPanel49.setLayout(borderLayout3);
-    jPanel48.setLayout(borderLayout4);
     jPanel47.setLayout(borderLayout44);
     jPanel45.setLayout(gridBagLayout1);
     this.setLayout(borderLayout1);
     jPanel46.setBorder(titledBorder6);
     jPanel46.setLayout(borderLayout2);
     jPanel47.setBorder(titledBorder10);
-    jPanel50.setBorder(titledBorder8);
-    jPanel49.setBorder(titledBorder9);
-    jPanel49.setMinimumSize(new Dimension(148, 104));
     jTextArea2.setEditable(false);
-    jTextArea1.setEditable(false);
-    jScrollPane4.setBorder(null);
-    jComboBox2.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jComboBox2_actionPerformed(e);
-      }
-    });
-    jComboBox2.setEnabled(false);
-    gridLayout8.setColumns(2);
-    gridLayout3.setRows(2);
-    jButton8.setEnabled(false);
-    jButton8.setText("Stop");
-    jButton8.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jButton8_actionPerformed(e);
-      }
-    });
+    jLabel2.setText("  ");
     jButton7.setEnabled(false);
     jButton7.setText("Start");
     jButton7.addActionListener(new java.awt.event.ActionListener()
@@ -147,12 +111,33 @@ public class EvaluationPanel extends JPanel
         jButton7_actionPerformed(e);
       }
     });
-    jPanel59.setLayout(gridLayout8);
-    jPanel58.setLayout(borderLayout42);
-    jPanel4.setLayout(gridLayout3);
-    jPanel4.setMinimumSize(new Dimension(135, 62));
-    jPanel4.setPreferredSize(new Dimension(135, 62));
-    jLabel2.setText("  ");
+    gridLayout2.setColumns(2);
+    gridLayout1.setColumns(1);
+    gridLayout1.setRows(2);
+    jPanel1.setLayout(gridLayout2);
+    jComboBox2.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jComboBox2_actionPerformed(e);
+      }
+    });
+    jComboBox2.setEnabled(false);
+    jPanel49.setLayout(gridLayout1);
+    jPanel49.setBorder(titledBorder9);
+    jPanel49.setMinimumSize(new Dimension(148, 104));
+    jButton8.setEnabled(false);
+    jButton8.setText("Stop");
+    jButton8.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jButton8_actionPerformed(e);
+      }
+    });
+    jTextArea1.setEditable(false);
+    jPanel50.setLayout(borderLayout43);
+    jPanel50.setBorder(titledBorder8);
     jPanel2.add(jPanel46, BorderLayout.NORTH);
     jPanel46.add(jLabel2,  BorderLayout.CENTER);
     jPanel2.add(jPanel45, BorderLayout.CENTER);
@@ -161,29 +146,23 @@ public class EvaluationPanel extends JPanel
     jScrollPane2.getViewport().add(jTextArea2, null);
     jPanel47.add(jPanel63, BorderLayout.SOUTH);
     jPanel63.add(jButton9, null);
+    jPanel45.add(jPanel49,              new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0
+            ,GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, -3));
+    jPanel49.add(jComboBox2, null);
+    jPanel49.add(jPanel1, null);
+    jPanel1.add(jButton7, null);
+    jPanel1.add(jButton8, null);
+    jPanel45.add(jPanel50,              new GridBagConstraints(1, 2, 1, 2, 0.0, 0.0
+            ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+    jPanel50.add(jScrollPane1, BorderLayout.CENTER);
+    jScrollPane1.add(jTextArea1, null);
     /*jPanel45.add(jPanel48,  new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0
             ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, -47));
     */
-    jPanel45.add(jPanel48,   new GridBagConstraints(GridBagConstraints.RELATIVE, GridBagConstraints.RELATIVE, 1, 1, 0.0, 0.0
-            ,GridBagConstraints.CENTER, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0));
 
-    jPanel45.add(jPanel47,  new GridBagConstraints(1, 0, 1, 1, 1.0, 1.0
+    jPanel45.add(jPanel47,            new GridBagConstraints(2, 0, 1, 4, 100.0, 100.0
             ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 93, 169));
 
-    jPanel48.add(jPanel49, BorderLayout.NORTH);
-    jPanel49.add(jScrollPane4,  BorderLayout.CENTER);
-    jScrollPane4.getViewport().add(jPanel4, null);
-    jPanel4.add(jPanel57, null);
-    jPanel57.add(jComboBox2, null);
-    jPanel4.add(jPanel58, null);
-    jPanel58.add(jPanel59, BorderLayout.CENTER);
-    jPanel59.add(jPanel60, null);
-    jPanel60.add(jButton7, null);
-    jPanel59.add(jPanel61, null);
-    jPanel61.add(jButton8, null);
-    jPanel48.add(jPanel50, BorderLayout.CENTER);
-    jPanel50.add(jScrollPane1, BorderLayout.CENTER);
-    jScrollPane1.getViewport().add(jTextArea1, null);
     this.add(jPanel2, BorderLayout.CENTER);
   }
 
@@ -475,7 +454,8 @@ public class EvaluationPanel extends JPanel
       if (classifier instanceof BayesianLearning)
       {   try
           {   ((BayesianNetwork)classifier).setClassAttribute(instances.getAttribute(jComboBox2.getSelectedIndex()));
-              float[] flo = ((BayesianNetwork)classifier).distributionForInstance(inst.getInstance(0));
+              //float[] flo = ((BayesianNetwork)classifier).distributionForInstance(inst.getInstance(0));
+              //System.out.println(flo[0]);
           }
           catch (Exception ex)
           {

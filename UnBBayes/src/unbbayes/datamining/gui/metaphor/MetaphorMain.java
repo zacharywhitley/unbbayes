@@ -37,16 +37,36 @@ public class MetaphorMain extends JPanel
   private BorderLayout borderLayout5 = new BorderLayout();
   private JScrollPane descriptionScrollPane = new JScrollPane();
   private JTextArea descriptionTextArea = new JTextArea();
-  private BorderLayout borderLayout6 = new BorderLayout();
   private JPanel jPanel3 = new JPanel();
   private JPanel jPanel5 = new JPanel();
-  private MetaphorTree metaphorTree = new MetaphorTree();
+  private MetaphorTree metaphorTree;
   private BorderLayout borderLayout7 = new BorderLayout();
   private ImageIcon openMetaphorIcon;
   private ImageIcon saveMetaphorIcon;
   private ImageIcon diagnosticMetaphorIcon;
+  private ImageIcon openMetaphorRollOverIcon;
+  private ImageIcon saveMetaphorRollOverIcon;
+  private ImageIcon diagnosticMetaphorRollOverIcon;
   private ProbabilisticNetwork net = new ProbabilisticNetwork();
   private JFileChooser fileChooser;
+  private GridLayout gridLayout1 = new GridLayout();
+  private JPanel jPanel6 = new JPanel();
+  private JPanel jPanel7 = new JPanel();
+  private BorderLayout borderLayout6 = new BorderLayout();
+  private BorderLayout borderLayout8 = new BorderLayout();
+  private JLabel jLabel1 = new JLabel();
+  private JLabel jLabel2 = new JLabel();
+  private JTextArea jTextArea1 = new JTextArea();
+  private JTextArea jTextArea2 = new JTextArea();
+  private TitledBorder titledBorder1;
+  private JScrollPane jScrollPane1 = new JScrollPane();
+  private JScrollPane jScrollPane2 = new JScrollPane();
+  private JTextArea jTextArea3 = new JTextArea();
+  private JTextArea jTextArea4 = new JTextArea();
+  private JScrollPane jScrollPane3;
+  private Border border1;
+  private Border border2;
+  private Border border3;
 
   public MetaphorMain()
   { try
@@ -62,6 +82,13 @@ public class MetaphorMain extends JPanel
   { openMetaphorIcon = new ImageIcon(getClass().getResource("/icones/openMetaphor.gif"));
     saveMetaphorIcon = new ImageIcon(getClass().getResource("/icones/saveMetaphor.gif"));
     diagnosticMetaphorIcon = new ImageIcon(getClass().getResource("/icones/diagnosticMetaphor.gif"));
+    openMetaphorRollOverIcon = new ImageIcon(getClass().getResource("/icones/openSMetaphor.gif"));
+    saveMetaphorRollOverIcon = new ImageIcon(getClass().getResource("/icones/saveSMetaphor.gif"));
+    diagnosticMetaphorRollOverIcon = new ImageIcon(getClass().getResource("/icones/diagnosticSMetaphor.gif"));
+    titledBorder1 = new TitledBorder("");
+    border1 = BorderFactory.createEmptyBorder(5,5,5,5);
+    border2 = BorderFactory.createEmptyBorder(5,5,5,5);
+    border3 = BorderFactory.createEmptyBorder(5,5,5,5);
     this.setLayout(borderLayout1);
     statusPanel.setLayout(borderLayout2);
     statusPanel.setBorder(new TitledBorder("Status"));
@@ -72,10 +99,14 @@ public class MetaphorMain extends JPanel
     jPanel1.setLayout(borderLayout3);
     jPanel2.setLayout(borderLayout4);
     descriptionPanel.setLayout(borderLayout5);
+    descriptionTextArea.setBackground(new Color(255, 255, 210));
     descriptionTextArea.setEditable(false);
-    jPanel4.setLayout(borderLayout6);
+    jPanel4.setLayout(gridLayout1);
     jPanel3.setLayout(borderLayout7);
+    openButton.setBorder(border1);
     openButton.setIcon(openMetaphorIcon);
+    openButton.setRolloverIcon(openMetaphorRollOverIcon);
+    openButton.setPressedIcon(openMetaphorRollOverIcon);
     openButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -83,8 +114,14 @@ public class MetaphorMain extends JPanel
         openButton_actionPerformed(e);
       }
     });
+    saveButton.setBorder(border2);
     saveButton.setIcon(saveMetaphorIcon);
+    saveButton.setRolloverIcon(saveMetaphorRollOverIcon);
+    saveButton.setPressedIcon(saveMetaphorRollOverIcon);
+    diagnosticButton.setBorder(border3);
     diagnosticButton.setIcon(diagnosticMetaphorIcon);
+    diagnosticButton.setRolloverIcon(diagnosticMetaphorRollOverIcon);
+    diagnosticButton.setPressedIcon(diagnosticMetaphorRollOverIcon);
     diagnosticButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -92,6 +129,24 @@ public class MetaphorMain extends JPanel
         diagnosticButton_actionPerformed(e);
       }
     });
+    gridLayout1.setColumns(1);
+    gridLayout1.setHgap(5);
+    gridLayout1.setRows(2);
+    gridLayout1.setVgap(5);
+    jPanel6.setLayout(borderLayout6);
+    jPanel7.setLayout(borderLayout8);
+    jLabel1.setText("Prováveis diagnósticos:");
+    jLabel2.setText("Diagnósticos não prováveis:");
+    jTextArea1.setBorder(BorderFactory.createEtchedBorder());
+    jTextArea1.setEditable(false);
+    jTextArea2.setBorder(BorderFactory.createEtchedBorder());
+    jTextArea2.setEditable(false);
+    borderLayout4.setHgap(5);
+    borderLayout6.setVgap(5);
+    borderLayout8.setVgap(5);
+    jTextArea3.setBackground(new Color(255, 255, 210));
+    jTextArea4.setBackground(new Color(255, 255, 210));
+    jPanel3.setBorder(BorderFactory.createLoweredBevelBorder());
     this.add(metaphorToolBar, BorderLayout.NORTH);
     metaphorToolBar.add(openButton, null);
     metaphorToolBar.add(saveButton, null);
@@ -102,12 +157,23 @@ public class MetaphorMain extends JPanel
     jTabbedPane1.add(jPanel1,  "Entrada de evidencias");
     jTabbedPane1.add(jPanel2,   "Laudo");
     jPanel2.add(jPanel4,  BorderLayout.WEST);
+    jPanel4.add(jPanel6, null);
+    jPanel6.add(jLabel1,  BorderLayout.NORTH);
+    jPanel6.add(jTextArea1, BorderLayout.CENTER);
+    jPanel4.add(jPanel7, null);
+    jPanel7.add(jLabel2,  BorderLayout.NORTH);
+    jPanel7.add(jTextArea2, BorderLayout.CENTER);
     jPanel2.add(descriptionPanel, BorderLayout.CENTER);
     descriptionPanel.add(descriptionTabbedPane,  BorderLayout.CENTER);
     descriptionTabbedPane.add(descriptionScrollPane,   "Descrição do diagnóstico");
+    descriptionTabbedPane.add(jScrollPane1,  "Laudo");
+    jScrollPane1.getViewport().add(jTextArea3, null);
+    descriptionTabbedPane.add(jScrollPane2,  "Frases de Apoio");
+    jScrollPane2.getViewport().add(jTextArea4, null);
     descriptionScrollPane.getViewport().add(descriptionTextArea, null);
     jPanel1.add(jPanel3, BorderLayout.CENTER);
-    jPanel3.add(metaphorTree,  BorderLayout.CENTER);
+    jScrollPane3 = new JScrollPane(metaphorTree);
+    jPanel3.add(jScrollPane3,  BorderLayout.CENTER);
     jPanel1.add(jPanel5,  BorderLayout.EAST);
   }
 
