@@ -182,11 +182,8 @@ public class MainController {
             
         } else{
             netWindow.changeToNetCompilation();		
-		}
-		JInternalFrame jif = new JInternalFrame(net.getName(), true, true, true, true);
-		jif.getContentPane().add(netWindow);
-		jif.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-		screen.addWindow(jif);
+		}		
+		screen.addWindow(netWindow);
         screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));    	
     }
     
