@@ -21,16 +21,42 @@
 
 package unbbayes.fronteira;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.font.*;
-import java.awt.geom.*;
-import java.text.*;
-import java.util.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextAttribute;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
+import java.text.AttributedString;
+import java.util.ArrayList;
 import java.util.List;
-import javax.swing.*;
-import unbbayes.controlador.*;
-import unbbayes.jprs.jbn.*;
+import java.util.ResourceBundle;
+
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JViewport;
+import unbbayes.controlador.WindowController;
+import unbbayes.jprs.jbn.DecisionNode;
+import unbbayes.jprs.jbn.Edge;
+import unbbayes.jprs.jbn.Node;
+import unbbayes.jprs.jbn.ProbabilisticNode;
+import unbbayes.jprs.jbn.UtilityNode;
 import unbbayes.util.NodeList;
 
 /**
@@ -78,6 +104,9 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
     private JViewport graphViewport;
     private Dimension visibleDimension;
     private Dimension graphDimension;
+
+	// se 0 e 1 mudar a direção do arco e se 2 deixar sem direção    
+    private int direction;
 
     private JPopupMenu popup = new JPopupMenu();
 
@@ -479,8 +508,6 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         return null;
     }
 
-
-    //
     /**
      *  Método para achar o ponto do arco (<code>Point2D.Double</code>) na circunferência do nó em
      *  relação ao ponto1 (<code>Point2D.Double</code>)
@@ -769,6 +796,18 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
                     }
                 }
             }
+        } else {
+	        Edge edge = getArc(e.getX(), e.getY());
+	        if ((edge != null) && (e.getModifiers() == e.BUTTON1_MASK) && (e.getClickCount() == 2)) {
+	        	if ((direction == 0) || (direction == 1)) {
+	        		direction++;
+	        		edge.setDirection(true);
+	        		edge.changeDirection();
+	        	} else if (direction == 2) {
+	        		direction = 0;
+	        		edge.setDirection(false);
+	        	}
+	        }
         }
     }
 
@@ -1478,12 +1517,14 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
                view.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_OFF);
             }
 
-            //chama o método que cria um Line2D.Double e desenha o mesmo
+            // chama o método que cria um Line2D.Double e desenha o mesmo
             view.draw(drawArc(arcAux));
-            //chama o método que desenha a ponta da seta e desenha na tela
-
-
-            view.fill(drawArrow(arcAux, true));
+            
+            if (arcAux.hasDirection()) {
+	            // chama o método que desenha a ponta da seta e desenha na tela
+	            view.fill(drawArrow(arcAux, true));
+            }
+            
             view.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
             view.setStroke(new BasicStroke(1));
         }

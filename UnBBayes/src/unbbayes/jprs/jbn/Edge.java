@@ -41,6 +41,11 @@ public class Edge implements java.io.Serializable {
      *  Status de seleção. Utilizado pela interface.
      */
     private boolean selecionado;
+    
+    /**
+     *  Status que indica se existe ou não direção no arco. Utilizado pela interface.
+     */
+    private boolean direction;
 
 
     /**
@@ -52,6 +57,7 @@ public class Edge implements java.io.Serializable {
     public Edge(Node no1, Node no2) {
         this.no1 = no1;
         this.no2 = no2;
+        direction = true;
     }
 
 
@@ -62,6 +68,15 @@ public class Edge implements java.io.Serializable {
      */
     public void setSelecionado(boolean selecionado) {
         this.selecionado = selecionado;
+    }
+    
+    /**
+     *  Modifica o status de direção do arco.
+     *
+     *@param  direction  status de existência de direção.
+     */
+    public void setDirection(boolean direction) {
+        this.direction = direction;
     }
 
 
@@ -92,6 +107,31 @@ public class Edge implements java.io.Serializable {
      */
     public boolean isSelecionado() {
         return selecionado;
+    }
+    
+    /**
+     *  Retorna o status de direção do arco.
+     *
+     *@return    status de direção.
+     */
+    public boolean hasDirection() {
+        return direction;
+    }
+ 
+ 	/**
+ 	 *  Muda a direção do arco. O pai vira filho e o filho vira pai
+ 	 */   
+    public void changeDirection() {
+    	// Faz a troca na lista de pais e filhos de no1 e no2
+    	no1.getChildren().remove(no2);
+	    no2.getParents().remove(no1);
+	    no1.getParents().add(no2);
+	    no2.getChildren().add(no1);
+	    
+	    // Faz a troca no próprio Edge
+    	Node aux = no1;
+    	no1 = no2;
+    	no2 = aux;
     }
 }
 

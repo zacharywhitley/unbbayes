@@ -75,6 +75,9 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
     private Dimension tamanhoRede;
     private TJanelaEdicao janela;
 	private ProbabilisticNetwork net;
+	
+	// se 0 e 1 mudar a direção do arco e se 2 deixar sem direção    
+    private int direction;
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.fronteira.resources.FronteiraResources");
@@ -467,7 +470,19 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
      *@param  e  O <code>MouseEvent</code>
      *@see MouseEvent
      */
-    public void mouseClicked(MouseEvent e) { }
+    public void mouseClicked(MouseEvent e) { 
+    	Edge edge = getArc(e.getX(), e.getY());
+	    if ((edge != null) && (e.getModifiers() == e.BUTTON1_MASK) && (e.getClickCount() == 2)) {
+	    	if ((direction == 0) || (direction == 1)) {
+	    		direction++;
+	    		edge.setDirection(true);
+	    		edge.changeDirection();
+	    	} else if (direction == 2) {
+	    		direction = 0;
+	    		edge.setDirection(false);
+	    	}
+	    }
+    }
 
 
     /**
@@ -1041,10 +1056,12 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
 
             //chama o método que cria um Line2D.Double e desenha o mesmo
             view.draw(desenhaArco(arcoAux));
-            //chama o método que desenha a ponta da seta e desenha na tela
-
-
-            view.fill(desenhaSeta(arcoAux, true));
+            
+            if (arcoAux.hasDirection()) {
+            	//chama o método que desenha a ponta da seta e desenha na tela
+            	view.fill(desenhaSeta(arcoAux, true));
+            }
+            
             view.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
             view.setStroke(new BasicStroke(1));
         }
@@ -1083,5 +1100,97 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         no1.getChildren().remove(no2);
         arco.remove(o);
         repintar();
+    }
+    
+    /**
+     *  Pega o arco que se encontra na posição x,y
+     *
+     *@param  x  A posição x (double)
+     *@param  y  A posição y (double)
+     *@return    O arco encontrado (<code>Edge</code>)
+     *@see Edge
+     */
+    public Edge getArc(double x, double y) {
+        double x1;
+        double y1;
+        double x2;
+        double y2;
+
+        for (int i = 0; i < arco.size(); i++) {
+            Edge arcoPegar = (Edge) arco.get(i);
+            x1 = arcoPegar.getOriginNode().getPosicao().getX();
+            y1 = arcoPegar.getOriginNode().getPosicao().getY();
+            x2 = arcoPegar.getDestinationNode().getPosicao().getX();
+            y2 = arcoPegar.getDestinationNode().getPosicao().getY();
+
+            double yTeste = ((y2 - y1) / (x2 - x1)) * x + (y1 - x1 * ((y2 - y1) / (x2 - x1)));
+            double xTeste = (y - (y1 - x1 * ((y2 - y1) / (x2 - x1)))) / ((y2 - y1) / (x2 - x1));
+
+            Node no1 = arcoPegar.getOriginNode();
+            Node no2 = arcoPegar.getDestinationNode();
+
+            Point2D.Double ponto1 = getPoint(no1.getPosicao(), no2.getPosicao(), raio);
+            Point2D.Double ponto2 = getPoint(no2.getPosicao(), no1.getPosicao(), raio);
+
+            if (ponto1.getX() < ponto2.getX()) {
+                if (((y <= yTeste + 5) && (y >= yTeste - 5)) || ((x <= xTeste + 5) && (x >= xTeste - 5))) {
+                    if (ponto1.getY() < ponto2.getY()) {
+                        if ((y >= ponto1.getY() - 5) && (y <= ponto2.getY() + 5) && (x >= ponto1.getX() - 5) && (x <= ponto2.getX() + 5)) {
+                            return arcoPegar;
+                        }
+                    }
+                    else {
+                        if ((y >= ponto2.getY() - 5) && (y <= ponto1.getY() + 5) && (x >= ponto1.getX() - 5) && (x <= ponto2.getX() + 5)) {
+                            return arcoPegar;
+                        }
+                    }
+                }
+            }
+            else {
+                if (((y <= yTeste + 5) && (y >= yTeste - 5)) || ((x <= xTeste + 5) && (x >= xTeste - 5))) {
+                    if (ponto1.getY() < ponto2.getY()) {
+                        if ((y >= ponto1.getY() - 5) && (y <= ponto2.getY() + 5) && (x >= ponto2.getX() - 5) && (x <= ponto1.getX() + 5)) {
+                            return arcoPegar;
+                        }
+                    }
+                    else {
+                        if ((y >= ponto2.getY() - 5) && (y <= ponto1.getY() + 5) && (x >= ponto2.getX() - 5) && (x <= ponto1.getX() + 5)) {
+                            return arcoPegar;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+    
+    /**
+     *  Método para achar o ponto do arco (<code>Point2D.Double</code>) na circunferência do nó em
+     *  relação ao ponto1 (<code>Point2D.Double</code>)
+     *
+     *@param  point1  Centro da circunferência do nó de origem
+     *@param  point2  Centro da circunferência do nó de destino
+     *@param  r       O raio da circunferência
+     *@return         O ponto do arco na circunferência
+     *@see Point2D.Double
+     */
+    public Point2D.Double getPoint(Point2D.Double point1, Point2D.Double point2, double r) {
+        double x = 0;
+        double y = 0;
+        double x1 = point1.getX();
+        double y1 = point1.getY();
+        double x2 = point2.getX();
+        double y2 = point2.getY();
+
+        if (x2 < x1) {
+            x = Math.abs((r * Math.cos(Math.atan((y2 - y1) / (x2 - x1)))) - x1);
+            y = Math.abs((r * Math.sin(Math.atan((y2 - y1) / (x2 - x1)))) - y1);
+        }
+        else {
+            x = Math.abs((r * Math.cos(Math.atan((y2 - y1) / (x2 - x1)))) + x1);
+            y = Math.abs((r * Math.sin(Math.atan((y2 - y1) / (x2 - x1)))) + y1);
+        }
+        return new Point2D.Double(x, y);
     }
 }
