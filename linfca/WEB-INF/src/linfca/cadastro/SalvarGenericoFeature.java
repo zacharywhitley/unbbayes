@@ -18,8 +18,6 @@ import java.util.List;
  * 
  * Entrada:
  * <NOME DA TABELA NO BANCO DE DADOS>
- *    <inserir/> | <atualizar/>
- * 
  * 	  <CAMPOS A SEREM SALVOS>*
  * 
  *    <where>
@@ -57,16 +55,13 @@ public class SalvarGenericoFeature implements Feature {
 	public Element process(Element in) throws Exception {
 		nomeTabela = in.getName();
 		
-		if (in.getChild("inserir") != null) {
+		if (in.getChild("where") == null) {
 			in.removeChild("inserir");
 			return inserir(in);
-		} else if (in.getChild("atualizar") != null) {
+		} else {
 			in.removeChild("atualizar");
 			return alterar(in);			
-		} else {
-			throw new RuntimeException("Não possui instrução nem de inserir nem de atualizar!");			
-		}
-		
+		}		
 	}
 	
 	private Element inserir(Element in) throws Exception {
@@ -102,8 +97,7 @@ public class SalvarGenericoFeature implements Feature {
 		
 		if (ps.executeUpdate() > 0) {
 			out.getChildren().add(new Element("ok"));
-		}
-		
+		}		
 		return out;		
 	}
 	
@@ -173,17 +167,14 @@ public class SalvarGenericoFeature implements Feature {
 			
 			if (nomeTipo.equals("date")) {
 				ps.setDate(i + 1 + indiceInicial, Date.valueOf(((Element)campos.get(i)).getTextTrim()));
-			}						
-			
+			}			
 		}
 			
 	}
 	
-	private void prepare(PreparedStatement ps, List campos, List camposWhere) throws SQLException {
-		
+	private void prepare(PreparedStatement ps, List campos, List camposWhere) throws SQLException {		
 		prepare(ps, campos, 0);
-		prepare(ps, camposWhere, campos.size());
-			
+		prepare(ps, camposWhere, campos.size());			
 	}
 			
 }
