@@ -29,12 +29,22 @@ public class MSNetwork {
 		nets.add(net);
 	}
 	
-	public void compile() {
+	public void compile() throws Exception {
 		hyperTree();
-		verifyCycle();				
+		verifyCycles();
+		
+		for (int i = nets.size()-1; i >= 0; i--) {
+			SubNetwork net = (SubNetwork) nets.get(i);
+			net.moralize();			
+		}
+		
+		SubNetwork raiz = (SubNetwork) nets.get(0);
+		raiz.distributeArcs();
+		
+		cooperativeTriangulation();						
 	}
 	
-	private void hyperTree() {
+	private void hyperTree() throws Exception {
 		int netsSize = nets.size();
 		
 		if (netsSize < 2) {
@@ -65,7 +75,7 @@ public class MSNetwork {
 		return interseccoes;
 	}
 	
-	private void insertLink(NodeList inters[][], boolean naArvore[]) {
+	private void insertLink(NodeList inters[][], boolean naArvore[]) throws Exception {
 		int netsSize = nets.size();
 		int iMax = 0, kMax = 1;
 		
@@ -87,7 +97,7 @@ public class MSNetwork {
 		
 		for (int j = 0; j < netsSize; j++) {
 			if (naArvore[j] && ! isDSepSet(j, kMax, inters[j][kMax])) {
-				throw new RuntimeException("Erro na contrução da HyperÁrvore");					
+				throw new Exception("Erro na contrução da HyperÁrvore");					
 			}
 		}
 		
@@ -113,7 +123,43 @@ public class MSNetwork {
 	
 	
 	
-	private void verifyCycle() {
-				
-	}	
+	/**
+     *  Verify if this network has cycle.
+     *
+     *@throws Exception If this network has a cycle.
+     */
+    public final void verifyCycles() throws Exception {
+    	for (int i = nets.size(); i>=0; i--) {
+    		SubNetwork net = (SubNetwork) nets.get(i);    		
+    		net.initVisited();    		
+    	}
+    	
+    	for (int i = nets.size(); i>=0; i--) {
+    		SubNetwork net = (SubNetwork) nets.get(i);    		
+    		net.distributedCycle();    		
+    	}
+    }
+	
+	
+	private void cooperativeTriangulation() {
+		coTriag();
+		
+		List arcos = new ArrayList();
+		for (int i = nets.size()-1; i>=0; i--) {
+			SubNetwork net = (SubNetwork) nets.get(i);
+			for (int j = net.getAdjacentsSize()-1; j>=0; j--) {
+				arcos.addAll(net.elimine(j));		
+			}
+		}
+		
+		if (arcos.size() > 0) {
+			coTriag();						
+		}
+	}
+	
+	private void coTriag() {
+		SubNetwork a1 = (SubNetwork) nets.get(0);
+		a1.elimineProfundidade();
+		a1.distributeArcs();
+	}
 }
