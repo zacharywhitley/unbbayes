@@ -119,7 +119,6 @@ public class SalvarUsuarioFeature implements Feature {
 			throws SQLException {
 		
 		PreparedStatement ps = null;
-//		ResultSet rs = null;
 		
 		StringBuffer sql = new StringBuffer();
 		sql.append("INSERT INTO ");
@@ -128,12 +127,11 @@ public class SalvarUsuarioFeature implements Feature {
 		sql.append("   nome, sobrenome, senha, email, endereco, foto, ");
 		sql.append("   data_nascimento, telefone) ");
 		sql.append("VALUES ");
-		sql.append("  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ");
+		sql.append("  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ");
 		
 		ps = con.prepareStatement(sql.toString());
 		
 		ps.setInt(1, Integer.parseInt(codTipoUsuario));
-		System.out.println("codTipoSexo: " + codTipoSexo);
 		ps.setInt(2, Integer.parseInt(codTipoSexo));
 		ps.setString(3, identificacao);
 		ps.setString(4, cpf);
@@ -157,7 +155,6 @@ public class SalvarUsuarioFeature implements Feature {
 			throws SQLException {
 		
 		PreparedStatement ps = null;
-//		ResultSet rs = null;
 		
 		StringBuffer sql = new StringBuffer();
 		sql.append("UPDATE ");
@@ -166,7 +163,7 @@ public class SalvarUsuarioFeature implements Feature {
 		sql.append("  cod_tipo_usuario = ?, cod_tipo_sexo = ?, ");
 		sql.append("  identificacao = ?, cpf = ?, nome = ?, sobrenome = ?, ");
 		sql.append("  senha = ?, email = ?, endereco = ?, foto = ?, ");
-		sql.append("   data_nascimento = ?, telefone = ? ");
+		sql.append("  data_nascimento = ?, telefone = ? ");
 		sql.append("WHERE ");
 		sql.append("  cod_usuario = ? ");
 		
