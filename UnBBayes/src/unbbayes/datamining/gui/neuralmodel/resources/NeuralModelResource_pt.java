@@ -12,7 +12,7 @@ public class NeuralModelResource_pt extends ListResourceBundle{
     {"openFileToolTip","Abrir arquivo"},
     {"saveModelToolTip","Salvar modelo"},
     {"learnDataTooltip","Aprende os dados"},
-    {"helpFileTooltip","Chama arquivo de ajuda"},
+    {"helpFileTooltip","Tópicos de ajuda"},
     {"welcome","Bem vindo"},
     {"openModelToolTip","Abrir modelo"},
     {"attributes","Atributos"},
