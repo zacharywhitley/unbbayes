@@ -10,15 +10,12 @@
 	   
 <script language="Javascript">
 <!--
-// please keep these lines on when you copy the source
-// made by: Nicolas - http://www.javascript-page.com
-
-var URL   = "listar-lancamento.jsp"
+//var URL   = "listar-lancamento.jsp"
 var speed = 10000
 
 
 function reload() {
-location = URL
+location.reload()
 }
 
 setTimeout("reload()", speed);
