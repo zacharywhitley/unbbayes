@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>UnBBayes</name>
+	<name>UnBBayes1</name>
 	<comment></comment>
 	<projects>
+		<project>unbbayes</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
     <classpathentry kind="src" path="src"/>
-    <classpathentry kind="var" path="JRE_LIB" rootpath="JRE_SRCROOT" sourcepath="JRE_SRC"/>
-    <classpathentry kind="lib" path="lib/jh.jar"/>
-    <classpathentry kind="lib" path="lib/GIFOutput.jar"/>
-    <classpathentry kind="lib" path="C:/eclipse/plugins/org.junit/junit.jar"/>
+    <classpathentry exported="true" kind="var" path="JRE_LIB"
+        rootpath="JRE_SRCROOT" sourcepath="JRE_SRC"/>
+    <classpathentry exported="true" kind="lib" path="lib/jh.jar"/>
+    <classpathentry exported="true" kind="lib" path="lib/GIFOutput.jar"/>
+    <classpathentry exported="true" kind="lib" path="H:/Meus documentos/programas/JBuilder6/lib/junit.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>
