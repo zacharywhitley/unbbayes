@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RDBSchema:RDBTable xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:RDBSchema="RDBSchema.xmi" xmi:id="RDBTable_1056653239938" name="DOMAIN1" primaryKey="SQLReference_1056653240016">
+  <database href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS.dbxmi#RDBDatabase_1056206641484"/>
+  <schema href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS_NULLID.schxmi#RDBSchema_1056206641547"/>
+  <columns xmi:type="RDBSchema:RDBColumn" xmi:id="RDBColumn_1056653239938" name="ID" allowNull="false">
+    <type xmi:type="RDBSchema:SQLExactNumeric" xmi:id="SQLExactNumeric_1056653240062">
+      <originatingType xmi:type="RDBSchema:SQLExactNumeric" href="CLOUDSCAPE_V50_Primitives.xmi#SQLExactNumeric_1"/>
+    </type>
+  </columns>
+  <columns xmi:type="RDBSchema:RDBColumn" xmi:id="RDBColumn_1056653239939" name="NAME" allowNull="false">
+    <type xmi:type="RDBSchema:SQLCharacterStringType" xmi:id="SQLCharacterStringType_1056653240062" length="250">
+      <originatingType xmi:type="RDBSchema:SQLCharacterStringType" href="JavatoCLOUDSCAPE_V50TypeMaps.xmi#SQLCharacterStringType_250"/>
+    </type>
+  </columns>
+  <namedGroup xmi:type="RDBSchema:SQLReference" xmi:id="SQLReference_1056653240016" name="PK_DOMAIN1" members="RDBColumn_1056653239938" constraint="SQLConstraint_1056653240062">
+    <referenceByKey href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS_NULLID_MODEL.tblxmi#RDBReferenceByKey_1056653239938"/>
+  </namedGroup>
+  <constraints xmi:id="SQLConstraint_1056653240062" name="PK_DOMAIN1" type="PRIMARYKEY" primaryKey="SQLReference_1056653240016"/>
+</RDBSchema:RDBTable>

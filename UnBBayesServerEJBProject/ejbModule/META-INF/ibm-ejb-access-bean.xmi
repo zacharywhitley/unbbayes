@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<accessbean:EJBShadow xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:accessbean="accessbean.xmi" xmlns:ejb="ejb.xmi" xmi:id="EJBShadow_1056231663031" name="ModelSession">
+  <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#ModelSession"/>
+</accessbean:EJBShadow>

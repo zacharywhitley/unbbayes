@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejbbnd:EJBJarBinding xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ejbbnd="ejbbnd.xmi" xmlns:ejb="ejb.xmi" xmlns:commonbnd="commonbnd.xmi" xmlns:common="common.xmi" xmi:id="EJBJarBinding_1056204659781" currentBackendId="CLOUDSCAPE_V50_1">
+  <ejbJar href="META-INF/ejb-jar.xml#ejb-jar_ID"/>
+  <ejbBindings xmi:id="EnterpriseBeanBinding_1056204659781" jndiName="ejb/unbbs/Model">
+    <enterpriseBean xmi:type="ejb:ContainerManagedEntity" href="META-INF/ejb-jar.xml#Model"/>
+    <ejbRefBindings xmi:id="EjbRefBinding_1056653187969" jndiName="ejb/unbbs/Domain">
+      <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_1056653187969"/>
+    </ejbRefBindings>
+    <cmpConnectionFactory xmi:id="CMPConnectionFactoryBinding_1056207689234" jndiName="jdbc/cloudscape/ModelDatasource" resAuth="Per_Connection_Factory"/>
+  </ejbBindings>
+  <ejbBindings xmi:id="EnterpriseBeanBinding_1056205074125" jndiName="ejb/unbbs/ModelSession">
+    <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#ModelSession"/>
+    <ejbRefBindings xmi:id="EjbRefBinding_1056653765812" jndiName="ejb/unbbs/Model">
+      <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_1056653765812"/>
+    </ejbRefBindings>
+    <ejbRefBindings xmi:id="EjbRefBinding_1056654012734" jndiName="ejb/unbbs/Domain">
+      <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_1056654012734"/>
+    </ejbRefBindings>
+  </ejbBindings>
+  <ejbBindings xmi:id="EnterpriseBeanBinding_1056652753125" jndiName="ejb/unbbs/Domain">
+    <enterpriseBean xmi:type="ejb:ContainerManagedEntity" href="META-INF/ejb-jar.xml#Domain"/>
+    <ejbRefBindings xmi:id="EjbRefBinding_1056653187970" jndiName="ejb/unbbs/Model">
+      <bindingEjbRef xmi:type="common:EJBLocalRef" href="META-INF/ejb-jar.xml#EJBLocalRef_1056653187970"/>
+    </ejbRefBindings>
+    <cmpConnectionFactory xmi:id="CMPConnectionFactoryBinding_1056655843250" jndiName="jdbc/cloudscape/ModelDatasource" resAuth="Per_Connection_Factory"/>
+  </ejbBindings>
+  <ejbBindings xmi:id="EnterpriseBeanBinding_1057948915171" jndiName="ejb/unbbs/manipulation/ModelManipulationHome">
+    <enterpriseBean xmi:type="ejb:Session" href="META-INF/ejb-jar.xml#ModelManipulation"/>
+  </ejbBindings>
+  <defaultCMPConnectionFactory xmi:id="CMPConnectionFactoryBinding_1057119108484" jndiName="jdbc/cloudscape/ModelDatasource" resAuth="Per_Connection_Factory"/>
+</ejbbnd:EJBJarBinding>

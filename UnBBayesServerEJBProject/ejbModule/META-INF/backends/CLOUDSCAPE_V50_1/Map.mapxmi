@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejbrdbmapping:EjbRdbDocumentRoot xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ejbrdbmapping="ejbrdbmapping.xmi" xmlns:RDBSchema="RDBSchema.xmi" xmlns:ejb="ejb.xmi" xmlns:Mapping="Mapping.xmi" xmi:id="EjbRdbDocumentRoot_1056206641453" outputReadOnly="false" topToBottom="true" commandStack="&#60;collection>&#60;command-creation-record>&#60;class name=&#34;com.ibm.etools.ejbrdbmapping.command.TopDownEjbJarCommand&#34;/>&#60;command-parameter>&#60;ref-object href=&#34;META-INF/ejb-jar.xml#ejb-jar_ID&#34;/>&#60;null/>&#60;collection>&#60;string value=&#34;UNBBS&#34;/>&#60;string value=&#34;NULLID&#34;/>&#60;int value=&#34;19&#34;/>&#60;hashtable>&#60;/hashtable>&#60;hashtable>&#60;/hashtable>&#60;boolean value=&#34;false&#34;/>&#60;boolean value=&#34;false&#34;/>&#60;/collection>&#60;null/>&#60;int value=&#34;-1&#34;/>&#60;/command-parameter>&#60;/command-creation-record>&#60;/collection>">
+  <helper xmi:type="ejbrdbmapping:RdbSchemaProperies" xmi:id="RdbSchemaProperies_1056206641453" primitivesDocument="CLOUDSCAPE_V50"/>
+  <nested xmi:type="ejbrdbmapping:RDBEjbMapper" xmi:id="RDBEjbMapper_1056653239922">
+    <helper xmi:type="ejbrdbmapping:PrimaryTableStrategy" xmi:id="PrimaryTableStrategy_1056653239922">
+      <table href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS_NULLID_MODEL.tblxmi#RDBTable_1056653239922"/>
+    </helper>
+    <nested xmi:type="ejbrdbmapping:RDBEjbFieldMapper" xmi:id="RDBEjbFieldMapper_1056653239922">
+      <inputs xmi:type="ejb:CMPAttribute" href="META-INF/ejb-jar.xml#CMPAttribute_1056206641469"/>
+      <outputs xmi:type="RDBSchema:RDBColumn" href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS_NULLID_MODEL.tblxmi#RDBColumn_1056653239922"/>
+      <typeMapping href="JavatoCLOUDSCAPE_V50TypeMaps.xmi#int-INTEGER"/>
+    </nested>
+    <nested xmi:type="ejbrdbmapping:RDBEjbFieldMapper" xmi:id="RDBEjbFieldMapper_1056653239923">
+      <inputs xmi:type="ejb:CMPAttribute" href="META-INF/ejb-jar.xml#CMPAttribute_1056206641470"/>
+      <outputs xmi:type="RDBSchema:RDBColumn" href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS_NULLID_MODEL.tblxmi#RDBColumn_1056653239923"/>
+      <typeMapping href="JavatoCLOUDSCAPE_V50TypeMaps.xmi#String-VARCHAR"/>
+    </nested>
+    <nested xmi:type="ejbrdbmapping:RDBEjbFieldMapper" xmi:id="RDBEjbFieldMapper_1056653239924">
+      <inputs xmi:type="ejb:CMPAttribute" href="META-INF/ejb-jar.xml#CMPAttribute_1056206641471"/>
+      <outputs xmi:type="RDBSchema:RDBColumn" href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS_NULLID_MODEL.tblxmi#RDBColumn_1056653239924"/>
+      <typeMapping href="JavatoCLOUDSCAPE_V50TypeMaps.xmi#String-VARCHAR"/>
+    </nested>
+    <nested xmi:type="ejbrdbmapping:RDBEjbFieldMapper" xmi:id="RDBEjbFieldMapper_1056653239925">
+      <inputs xmi:type="ejb:CMPAttribute" href="META-INF/ejb-jar.xml#CMPAttribute_1056206641484"/>
+      <outputs xmi:type="RDBSchema:RDBColumn" href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS_NULLID_MODEL.tblxmi#RDBColumn_1056653239925"/>
+      <typeMapping href="JavatoCLOUDSCAPE_V50TypeMaps.xmi#String-VARCHAR"/>
+    </nested>
+    <nested xmi:type="ejbrdbmapping:RDBEjbFieldMapper" xmi:id="Model_domain---MODEL_C4650297">
+      <helper xmi:type="ejbrdbmapping:ForwardFlattenedFKComposer" xmi:id="ForwardFlattenedFKComposer_1056653239922"/>
+      <inputs xmi:type="ejb:EJBRelationshipRole" href="META-INF/ejb-jar.xml#EJBRelationshipRole_1056653239922"/>
+      <inputs xmi:type="ejb:EJBRelationshipRole" href="META-INF/ejb-jar.xml#EJBRelationshipRole_1056653239938"/>
+      <outputs xmi:type="RDBSchema:RDBReferenceByKey" href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS_NULLID_MODEL.tblxmi#RDBReferenceByKey_1056653239938"/>
+    </nested>
+    <inputs xmi:type="ejb:ContainerManagedEntity" href="META-INF/ejb-jar.xml#Model"/>
+    <outputs xmi:type="RDBSchema:RDBTable" href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS_NULLID_MODEL.tblxmi#RDBTable_1056653239922"/>
+  </nested>
+  <nested xmi:type="ejbrdbmapping:RDBEjbMapper" xmi:id="RDBEjbMapper_1056653239938">
+    <helper xmi:type="ejbrdbmapping:PrimaryTableStrategy" xmi:id="PrimaryTableStrategy_1056653239938">
+      <table href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS_NULLID_DOMAIN1.tblxmi#RDBTable_1056653239938"/>
+    </helper>
+    <nested xmi:type="ejbrdbmapping:RDBEjbFieldMapper" xmi:id="RDBEjbFieldMapper_1056653239938">
+      <inputs xmi:type="ejb:CMPAttribute" href="META-INF/ejb-jar.xml#CMPAttribute_1056652948969"/>
+      <outputs xmi:type="RDBSchema:RDBColumn" href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS_NULLID_DOMAIN1.tblxmi#RDBColumn_1056653239938"/>
+      <typeMapping href="JavatoCLOUDSCAPE_V50TypeMaps.xmi#int-INTEGER"/>
+    </nested>
+    <nested xmi:type="ejbrdbmapping:RDBEjbFieldMapper" xmi:id="RDBEjbFieldMapper_1056653239939">
+      <inputs xmi:type="ejb:CMPAttribute" href="META-INF/ejb-jar.xml#CMPAttribute_1056652948970"/>
+      <outputs xmi:type="RDBSchema:RDBColumn" href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS_NULLID_DOMAIN1.tblxmi#RDBColumn_1056653239939"/>
+      <typeMapping href="JavatoCLOUDSCAPE_V50TypeMaps.xmi#String-VARCHAR"/>
+    </nested>
+    <inputs xmi:type="ejb:ContainerManagedEntity" href="META-INF/ejb-jar.xml#Domain"/>
+    <outputs xmi:type="RDBSchema:RDBTable" href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS_NULLID_DOMAIN1.tblxmi#RDBTable_1056653239938"/>
+  </nested>
+  <inputs xmi:type="ejb:EJBJar" href="META-INF/ejb-jar.xml#ejb-jar_ID"/>
+  <outputs xmi:type="RDBSchema:RDBDatabase" href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS.dbxmi#RDBDatabase_1056206641484"/>
+  <typeMapping xmi:type="Mapping:MappingRoot" href="JavatoCLOUDSCAPE_V50TypeMaps.xmi#Java_to_CLOUDSCAPE_V50_TypeMaps"/>
+</ejbrdbmapping:EjbRdbDocumentRoot>

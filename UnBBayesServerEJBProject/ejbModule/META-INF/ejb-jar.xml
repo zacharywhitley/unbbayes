@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ejb-jar PUBLIC "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN" "http://java.sun.com/dtd/ejb-jar_2_0.dtd">
+<ejb-jar id="ejb-jar_ID">
+	<display-name>UnBBayesServerEJBProject</display-name>
+	<enterprise-beans>
+		<entity id="Model">
+			<ejb-name>Model</ejb-name>
+			<local-home>unbbs.persistence.model.ModelLocalHome</local-home>
+			<local>unbbs.persistence.model.ModelLocal</local>
+			<ejb-class>unbbs.persistence.model.ModelBean</ejb-class>
+			<persistence-type>Container</persistence-type>
+			<prim-key-class>unbbs.persistence.model.ModelKey</prim-key-class>
+			<reentrant>False</reentrant>
+			<cmp-version>2.x</cmp-version>
+			<abstract-schema-name>Model</abstract-schema-name>
+			<cmp-field id="CMPAttribute_1056206641469">
+				<field-name>id</field-name>
+			</cmp-field>
+			<cmp-field id="CMPAttribute_1056206641470">
+				<field-name>name</field-name>
+			</cmp-field>
+			<cmp-field id="CMPAttribute_1056206641471">
+				<field-name>description</field-name>
+			</cmp-field>
+			<cmp-field id="CMPAttribute_1056206641484">
+				<field-name>model</field-name>
+			</cmp-field>
+			<ejb-local-ref id="EJBLocalRef_1056653187969">
+				<ejb-ref-name>ejb/Domain</ejb-ref-name>
+				<ejb-ref-type>Entity</ejb-ref-type>
+				<local-home>unbbs.persistence.model.DomainLocalHome</local-home>
+				<local>unbbs.persistence.model.DomainLocal</local>
+				<ejb-link>Domain</ejb-link>
+			</ejb-local-ref>
+			<query>
+				<description></description>
+				<query-method>
+					<method-name>findByNameOrDescription</method-name>
+					<method-params>
+						<method-param>java.lang.String</method-param>
+					</method-params>
+				</query-method>
+				<ejb-ql>select object(o) from Model o where o.name  like ?1 or o.description like ?1</ejb-ql>
+			</query>
+		</entity>
+		<session id="ModelSession">
+			<ejb-name>ModelSession</ejb-name>
+			<home>unbbs.controller.model.ModelSessionHome</home>
+			<remote>unbbs.controller.model.ModelSession</remote>
+			<ejb-class>unbbs.controller.model.ModelSessionBean</ejb-class>
+			<session-type>Stateless</session-type>
+			<transaction-type>Container</transaction-type>
+			<ejb-local-ref id="EJBLocalRef_1056653765812">
+				<description></description>
+				<ejb-ref-name>ejb/Model</ejb-ref-name>
+				<ejb-ref-type>Entity</ejb-ref-type>
+				<local-home>unbbs.persistence.model.ModelLocalHome</local-home>
+				<local>unbbs.persistence.model.ModelLocal</local>
+				<ejb-link>Model</ejb-link>
+			</ejb-local-ref>
+			<ejb-local-ref id="EJBLocalRef_1056654012734">
+				<description></description>
+				<ejb-ref-name>ejb/Domain</ejb-ref-name>
+				<ejb-ref-type>Entity</ejb-ref-type>
+				<local-home>unbbs.persistence.model.DomainLocalHome</local-home>
+				<local>unbbs.persistence.model.DomainLocal</local>
+				<ejb-link>Domain</ejb-link>
+			</ejb-local-ref>
+		</session>
+		<entity id="Domain">
+			<ejb-name>Domain</ejb-name>
+			<local-home>unbbs.persistence.model.DomainLocalHome</local-home>
+			<local>unbbs.persistence.model.DomainLocal</local>
+			<ejb-class>unbbs.persistence.model.DomainBean</ejb-class>
+			<persistence-type>Container</persistence-type>
+			<prim-key-class>unbbs.persistence.model.DomainKey</prim-key-class>
+			<reentrant>False</reentrant>
+			<cmp-version>2.x</cmp-version>
+			<abstract-schema-name>Domain</abstract-schema-name>
+			<cmp-field id="CMPAttribute_1056652948969">
+				<field-name>id</field-name>
+			</cmp-field>
+			<cmp-field id="CMPAttribute_1056652948970">
+				<field-name>name</field-name>
+			</cmp-field>
+			<ejb-local-ref id="EJBLocalRef_1056653187970">
+				<ejb-ref-name>ejb/Model</ejb-ref-name>
+				<ejb-ref-type>Entity</ejb-ref-type>
+				<local-home>unbbs.persistence.model.ModelLocalHome</local-home>
+				<local>unbbs.persistence.model.ModelLocal</local>
+				<ejb-link>Model</ejb-link>
+			</ejb-local-ref>
+			<query>
+				<description>Find all domains available</description>
+				<query-method>
+					<method-name>findAll</method-name>
+					<method-params>
+					</method-params>
+				</query-method>
+				<ejb-ql>select object(o) from Domain o</ejb-ql>
+			</query>
+		</entity>
+		<session id="ModelManipulation">
+			<ejb-name>ModelManipulation</ejb-name>
+			<home>unbbs.manipulation.ModelManipulationHome</home>
+			<remote>unbbs.manipulation.ModelManipulation</remote>
+			<ejb-class>unbbs.manipulation.ModelManipulationBean</ejb-class>
+			<session-type>Stateless</session-type>
+			<transaction-type>Container</transaction-type>
+		</session>
+	</enterprise-beans>
+	<relationships>
+		<ejb-relation>
+			<description></description>
+			<ejb-relation-name>Domain-Model</ejb-relation-name>
+			<ejb-relationship-role id="EJBRelationshipRole_1056653239922">
+				<ejb-relationship-role-name>domain</ejb-relationship-role-name>
+				<multiplicity>Many</multiplicity>
+				<cascade-delete />
+				<relationship-role-source>
+					<ejb-name>Model</ejb-name>
+				</relationship-role-source>
+				<cmr-field>
+					<cmr-field-name>domain</cmr-field-name>
+				</cmr-field>
+			</ejb-relationship-role>
+			<ejb-relationship-role id="EJBRelationshipRole_1056653239938">
+				<ejb-relationship-role-name>models</ejb-relationship-role-name>
+				<multiplicity>One</multiplicity>
+				<relationship-role-source>
+					<ejb-name>Domain</ejb-name>
+				</relationship-role-source>
+				<cmr-field>
+					<cmr-field-name>models</cmr-field-name>
+					<cmr-field-type>java.util.Collection</cmr-field-type>
+				</cmr-field>
+			</ejb-relationship-role>
+		</ejb-relation>
+	</relationships>
+</ejb-jar>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RDBSchema:RDBDatabase xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:RDBSchema="RDBSchema.xmi" xmi:id="RDBDatabase_1056206641484" name="UNBBS">
+  <schemata href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS_NULLID.schxmi#RDBSchema_1056206641547"/>
+  <tableGroup xmi:type="RDBSchema:RDBTable" href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS_NULLID_MODEL.tblxmi#RDBTable_1056653239922"/>
+  <tableGroup xmi:type="RDBSchema:RDBTable" href="META-INF/backends/CLOUDSCAPE_V50_1/UNBBS_NULLID_DOMAIN1.tblxmi#RDBTable_1056653239938"/>
+  <domain href="CLOUDSCAPE_V50_Domain.xmi#SQLVendor_1"/>
+</RDBSchema:RDBDatabase>
