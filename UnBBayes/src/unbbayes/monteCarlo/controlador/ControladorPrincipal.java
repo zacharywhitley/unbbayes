@@ -28,7 +28,7 @@ public class ControladorPrincipal {
 	private BaseIO io;
 	ProbabilisticNetwork redeProbabilistica;	
 	
-	public ControladorPrincipal(){		
+	public ControladorPrincipal(){	
 		io = new NetIO();
 		getNet();		
 		tp = new TelaParametros();	

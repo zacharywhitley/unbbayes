@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import unbbayes.prs.Node;
+import unbbayes.prs.bn.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -53,8 +53,9 @@ public class SimulacaoMonteCarlo {
 			if(pn.getNodeAt(i).getParents().size() == 0 ){
 				visitados[i]= true ;					
 				fila.add(pn.getNodeAt(i));
+				
 			}
-		}				
+		}			
 	}
 	
 	private void adicionaFila(NodeList filhos,boolean[] visitados){
@@ -64,13 +65,14 @@ public class SimulacaoMonteCarlo {
 				Node n2 = pn.getNodeAt(j);
 				if(n1.getName().equals(n2.getName())){
 					if(!visitados[j]){
-						fila.add(n1);
+						fila.add(n1);						
 						visitados[j] = true;						
 						break;						
 					}										
 				}				
 			}	
-		}		
+		}
+		System.out.println();		
 	}
 	
 	private void simular(byte[][] matrizFila, int caso){
@@ -84,7 +86,7 @@ public class SimulacaoMonteCarlo {
 			coluna = getColuna(estado,indicesAnteriores,n);													
 			estado[i] = getEstado(coluna);
 			matrizFila[caso][i] = (byte)estado[i];
-			System.out.println("Estado "+ n.getDescription() + " = " + estado[i]); 						 						
+			//System.out.println("Estado "+ n.getDescription() + " = " + estado[i]); 						 						
 		}				
 	}
 	
@@ -100,7 +102,7 @@ public class SimulacaoMonteCarlo {
 	
 	private Integer getIndiceFila(Node n){
 		for(int i = 0 ; i <fila.size();i++){
-			if(n.getName().equals(fila.get(i).getName())){
+			if(n.getName().equals(fila.get(i).getName())){				
 				return new Integer(i);				
 			}			
 		}	
@@ -109,30 +111,32 @@ public class SimulacaoMonteCarlo {
 	
 	private int getEstado(double[] coluna){		
 		double[][] faixa;
-		double numero = Math.random();
-		System.out.println("Numero Randomico = "+ numero);
+		double numero = Math.random();		
 		faixa = criarFaixasIntervalo(coluna);			
-		for(int i = 0; i< coluna.length; i++){
-			if(i ==0){
-				if (numero <= faixa[i][1] && numero >= faixa[i][0]){
-					return i;					
-				}  				
-			}else{
+		for(int i = 0; i< faixa.length; i++){
+			if(i == 0){				
+				if (numero <= faixa[i][1] || faixa[i][1] == 0.0 ){
+					return i;										
+				}
+				continue;  				
+			}else{				
 				if(numero <= faixa[i][1] && numero > faixa[i][0]){
 					return i;	
-				}
+				}				
 			}			
 		}
+		System.out.println("AKI  = " + numero);
 		return -1;				
 	}
 	
 	private double[][] criarFaixasIntervalo(double[] coluna){
 		double[][] faixa = new double[coluna.length][2];		
-		double[] colunaOrdenada = ordenar(coluna);
+		//double[] colunaOrdenada = ordenar(coluna);
 		double atual = 0.0d;
 		for(int i = 0 ; i < coluna.length; i++){
 			faixa[i][0] = atual;
-			faixa[i][1] = coluna[i] + atual;
+			//
+			faixa[i][1] = coluna[i] + atual;			
 			atual = faixa[i][1]; 
 		}
 		return faixa;
@@ -156,21 +160,67 @@ public class SimulacaoMonteCarlo {
 		//System.out.println("Nomde Nó = "+ n.getDescription());
 		int numeroEstados = n.getStatesSize();
 		int indice;
-		double[] coluna = new double[numeroEstados];		
-		for(int i = 0; i < n.getStatesSize(); i++){
-			int[] coordenadas = new int[indicesAnteriores.size()+1];	
+		double[] coluna = new double[numeroEstados];
+		int[] coordenadas = new int[indicesAnteriores.size()+1];
+		NodeList parents = new NodeList();		
+		for(int i = 0; i < n.getStatesSize(); i++){				
 			coordenadas[0] = i;
-			for(int j = 0 ; j < indicesAnteriores.size(); j++){				
-				indice = ((Integer)indicesAnteriores.get(j)).intValue();
-				coordenadas[j+1] = estado[indice];								
-			}
-			for(int k = 0 ; k < coordenadas.length ; k++){
-				System.out.print("Coordenada "+ i +" = "+ coordenadas[k]);								
-			}
-			System.out.println();	
-			coluna[i] = pt.getValue(coordenadas);
-			System.out.println("Coluna "+ i + " = " + coluna[i]);			
-		}
+			if(i == 0){
+				for(int j = 0 ; j < indicesAnteriores.size(); j++){				
+					indice = ((Integer)indicesAnteriores.get(j)).intValue();
+					parents.add(fila.get(indice));
+					coordenadas[j+1] = estado[indice];								
+				}
+			}			
+			/*for(int k = 0 ; k < coordenadas.length ; k++){
+				System.out.print("Coordenada "+ k +" = "+ coordenadas[k]);								
+			}*/
+			//System.out.println();
+			/*try{
+				
+				if( i == 1 && coluna[i] == 0.0){
+				  //System.out.println("Coluna "+ i + " = " + coluna[i]);				  
+				}*s/coluna[i] = pt.getValue(getLinearCoord(coordenadas,parents));/* 	
+			}catch(Exception e){
+				for(int k = 0 ; k < coordenadas.length ; k++){
+					  System.out.println(" Coordenada  "+ k +"  =  "+ coordenadas[k]);								
+				}
+				e.printStackTrace();
+			}*/
+			
+			//			
+		}		
 		return coluna;
 	}
+	
+	public  final int getLinearCoord(int coord[], NodeList parents) {
+        int fatores[] = calcularFatores(parents);
+        int coordLinear = 0;
+        int sizeVariaveis = parents.size();
+        for (int v = 0; v < sizeVariaveis; v++) {
+            coordLinear += coord[v] * fatores[v];
+            System.out.print("Coord = " + coord[v] + " Fator  = " + fatores[v]);
+        }        
+        System.out.println();
+        return coordLinear;        
+    }
+    
+	 protected int[] calcularFatores(NodeList variaveis) {		
+		int sizeVariaveis = variaveis.size();
+		int fatores[] = null;
+		if (fatores == null || fatores.length < sizeVariaveis) {
+			fatores = new int[sizeVariaveis];
+		}
+		if(fatores.length > 0 ){
+			fatores[0] = 1;
+		}
+		Node auxNo;
+		for (int i = 1; i < sizeVariaveis; i++) {
+			 auxNo = variaveis.get(i-1);
+			 fatores[i] = fatores[i-1] * auxNo.getStatesSize();
+		}
+		return fatores;
+  }
+	
+	
 }
