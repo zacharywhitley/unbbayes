@@ -50,7 +50,10 @@
 				RequestDispatcher dispatcher = request.getRequestDispatcher("/gerencia/equipamento/lancar-equipamento-exec.jsp");
 				dispatcher.forward(request, response);
 			}
-		}
+			rs.close();
+			ps.close();
+			con.close();
+		}		
 %>
 </body>
 </html>
