@@ -36,6 +36,20 @@ public class OutputNeuron extends Neuron{
     return combinationsList;
   }
 
+  public void prunning(String key){}  //metodo declarado para satisfazer a classe abstrata pai
+  public void prunning(int threshold){
+    Enumeration outputEnum = combinationsList.elements();
+    Arc tempArc;
+
+    while(outputEnum.hasMoreElements()){
+      tempArc = (Arc)outputEnum.nextElement();
+      if(tempArc.weigth < threshold){
+        tempArc.combinationNeuron.prunning(this.getKey());
+        combinationsList.remove(tempArc.combinationNeuron.key);
+      }
+    }
+  }
+
 //////////////////////////////
   public void printClassValue(){
     System.out.println("Classe: " + attributeIndex + "\nValor: " + value );
@@ -43,10 +57,10 @@ public class OutputNeuron extends Neuron{
     Arc tempNeuron;
     while(enum.hasMoreElements()){
       tempNeuron = (Arc)enum.nextElement();
-      if(tempNeuron.combinatorialNeuron instanceof InputNeuron){
-        System.out.println("input neuron: " + tempNeuron.combinatorialNeuron.getKey() + " acc:" + tempNeuron.accumulator + " weight:" + tempNeuron.weigth);
+      if(tempNeuron.combinationNeuron instanceof InputNeuron){
+        System.out.println("input neuron: " + tempNeuron.combinationNeuron.getKey() + " acc:" + tempNeuron.accumulator + " weight:" + tempNeuron.weigth);
       } else {
-        System.out.println("comb neuron: " + tempNeuron.combinatorialNeuron.getKey() + " acc:" + tempNeuron.accumulator + " weight:" + tempNeuron.weigth);
+        System.out.println("comb neuron: " + tempNeuron.combinationNeuron.getKey() + " acc:" + tempNeuron.accumulator + " weight:" + tempNeuron.weigth);
       }
     }
   }

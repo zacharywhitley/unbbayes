@@ -11,12 +11,11 @@ package unbbayes.datamining.datamanipulation.neuralmodel.entities;
 
 public abstract class Neuron {
 
-  String key;
-
-  public Neuron() {
-  }
+  protected String key;
 
   public String getKey(){
     return key;
   }
+
+  public abstract void prunning(String key);
 }

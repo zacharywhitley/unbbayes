@@ -25,15 +25,23 @@ public class InputNeuron extends Neuron {
     this.key = key;
   }
 
-//  public void addCombinatorialNeuron(CombinatorialNeuron combinatorialNeuron){
-//    combinatorialList.add(combinatorialNeuron);
-//  }
-
   public void addNeuron(Neuron neuron){
     String neuronKey = neuron.getKey();
     if(!combinationsList.containsKey(neuronKey)){
       combinationsList.put(neuronKey, neuron);
     }
+  }
+
+  public void prunning(String combinationKey){
+    removeCombNeuron(combinationKey);
+  }
+
+  public void removeCombNeuron(String combKey){
+    combinationsList.remove(combKey);
+  }
+
+  public int getCombinationsNum(){
+    return combinationsList.size();
   }
 
 /*  public void propagate(int signal){

@@ -31,6 +31,24 @@ public class CombinatorialNeuron extends Neuron{
     }
   }
 
+  public void prunning(String outputKey){
+    removeOutputNeuron(outputKey);
+  }
+
+  public void removeOutputNeuron(String outputKey){
+    outputList.remove(outputKey);                     //nao estou fazendo verificaçao pra ver se retirou mesmo.
+    if(outputList.size() == 0){
+      int inputListSize = inputList.length;
+      for(int i=0; i<inputListSize; i++){
+        inputList[i].prunning(this.getKey());
+      }
+    }
+  }
+
+  public int getCombinationsNum(){
+    return inputList.length;
+  }
+
 /*  public void setSignal(int signalValue, Integer originKey){
     inputCounter ++;
     if(this.signalValue > signalValue){

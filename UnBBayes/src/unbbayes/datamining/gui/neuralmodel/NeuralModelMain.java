@@ -207,14 +207,14 @@ public class NeuralModelMain extends JInternalFrame
 
   void openButton_actionPerformed(ActionEvent e)
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
-//      String[] arff = {"ARFF"};
+      String[] arff = {"ARFF"};
       String[] txt = {"TXT"};
       fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setMultiSelectionEnabled(false);
 //adicionar FileView no FileChooser para desenhar ícones de arquivos
       fileChooser.setFileView(new FileIcon(this));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(txt, "TxtFiles (*.txt)"));
-//      fileChooser.addChoosableFileFilter(new SimpleFileFilter(arff, "ArffFiles (*.arff)"));
+      fileChooser.addChoosableFileFilter(new SimpleFileFilter(arff, "ArffFiles (*.arff)"));
       int returnValue = fileChooser.showOpenDialog(this);
       if (returnValue == JFileChooser.APPROVE_OPTION)
       {   File selectedFile = fileChooser.getSelectedFile();

@@ -12,8 +12,8 @@ package unbbayes.datamining.datamanipulation.neuralmodel.entities;
 public class Arc {
   public int accumulator = 1;
   public int weigth;
-  public Neuron combinatorialNeuron;
+  public Neuron combinationNeuron;
   public Arc(Neuron combNeuron){
-    combinatorialNeuron = combNeuron;
+    combinationNeuron = combNeuron;
   }
 }

@@ -19,8 +19,8 @@ public class CombinatorialNetwork {
   private Hashtable inputLayer = new Hashtable();
   private Hashtable combinatorialLayer = new Hashtable();
   private Hashtable outputLayer = new Hashtable();
+  private Hashtable combinationsTable = new Hashtable();
   private InstanceSet instanceSet;
-  private boolean[][][] combinations;
 
   public CombinatorialNetwork(InstanceSet instanceSet) {
     this.instanceSet = instanceSet;
@@ -32,20 +32,22 @@ public class CombinatorialNetwork {
     Enumeration instanceEnum = instanceSet.enumerateInstances();
     int attributeNum = instanceSet.numAttributes();
     int classIndex = instanceSet.getClassIndex();
+    boolean[][][] combinations;
 
 
     int maxOrder = /*attributeNum-1*/3;  //retirar isso, maxOrder será passado por parametro
-    /**/combinations = makeCombinations(attributeNum-1, maxOrder);
+    /**///combinations = makeCombinations(attributeNum-1, maxOrder);
 
     while(instanceEnum.hasMoreElements()){
       instance = (Instance)instanceEnum.nextElement();
 
       createInputNeurons(instance, attributeNum, classIndex);
       createOutputNeuron(instance, classIndex);
-      createCombinatorialNeurons(instance, attributeNum, classIndex, maxOrder);
+      createCombinatorialNeurons(instance, attributeNum, classIndex, maxOrder/*, combinations*/);
     }
 
     punishment();
+//    prunning(-1);   //modificar, passar o threshold definido pelo usuario.
 
 //////////////////////////////////// impressao para teste
     for(int i=0; i<instanceSet.numAttributes(); i++){
@@ -66,7 +68,7 @@ public class CombinatorialNetwork {
     String key;
     InputNeuron inputNeuron;
     for(int att=0; att<attributeNum; att++){
-      if(att != classIndex){
+      if(att != classIndex && !instance.isMissing(att)){
         value = instance.getValue(att);
         key = generateInputKey(att, value);
         if(!inputLayer.containsKey(key)){
@@ -84,26 +86,42 @@ public class CombinatorialNetwork {
     }
   }
 
-  private void createCombinatorialNeurons(Instance instance, int attributeNum, int classIndex, int maxOrder){
+  private void createCombinatorialNeurons(Instance instance, int attributeNum, int classIndex, int maxOrder/*, boolean[][][] combinations*/){
     short value;
-    InputNeuron inputNeuron;
-    InputNeuron[] inputList = new InputNeuron[attributeNum - 1]; //lista de todos os neuronios de entrada da instancia
+    InputNeuron[] inputList;                                     //lista de todos os neuronios de entrada da instancia
     InputNeuron[] combList;                                      //lista do neuronios da combinanção de ordem x
     CombinatorialNeuron combNeuron;
     OutputNeuron outputNeuron = (OutputNeuron)outputLayer.get(generateOutputKey(classIndex, instance.classValue()));
     String key;
-//    int maxOrder = attributeNum;
+
+    int count=0;
+    for(int att=0; att<attributeNum; att++){
+      if(instance.isMissing(att)){
+        count++;
+      }
+    }
+
+    inputList = new InputNeuron[attributeNum - (count + 1)];    //soma um do atributo de classe
 
     int position = 0;
     for(int att=0; att<attributeNum; att++){                    //cria uma lista com todas os neuronios de entrada associados a instancia do exemplo
-      if(att != classIndex){
+      if(att != classIndex && !instance.isMissing(att)){
         value = instance.getValue(att);
         key = generateInputKey(att, value);
-        inputNeuron = (InputNeuron)inputLayer.get(key);
-        inputList[position] = inputNeuron;
+        inputList[position] = (InputNeuron)inputLayer.get(key);
         position++;
       }
     }
+
+    if(inputList.length < maxOrder){
+      maxOrder = inputList.length;
+    }
+
+
+
+/**/boolean[][][] combinations = makeCombinations(attributeNum - (count + 1), maxOrder);
+
+
 
     for(int order=1; order<maxOrder+1; order++){                //faz as ligações de ordem 1
       if(order==1){
@@ -112,11 +130,12 @@ public class CombinatorialNetwork {
           outputNeuron.addCombination(inputList[i]);
         }
       } else {                                                  //faz combinações de ordem > 1
+
         combList = new InputNeuron[order];
         int combNum = combinations[order].length;
         for(int comb=0; comb<combNum; comb++){                  //para cada combinação
           position = 0;
-          for(int att=0; att<attributeNum-1; att++){            //para cada atributo
+          for(int att=0; att<attributeNum - (count + 1); att++){            //para cada atributo
             if(combinations[order][comb][att] == true){         //se atributo é verdadeiro
               combList[position] = inputList[att];              //adiciona o atributo corresp da inputList na combList
               position++;
@@ -145,7 +164,7 @@ public class CombinatorialNetwork {
 
   private String generateCombKey(InputNeuron[] inputList){
     int inputListSize = inputList.length;
-    String stringKey = new String("comb");
+    String stringKey = new String("c");
     for(int i=0; i<inputListSize; i++){
       stringKey = stringKey.concat(inputList[i].getKey().toString());
     }
@@ -153,11 +172,11 @@ public class CombinatorialNetwork {
   }
 
   private String generateInputKey(int attribute, int value){
-    return new String("in" + attribute + value);
+    return new String("i" + attribute + value);
   }
 
   private String generateOutputKey(int attribute, int value){
-    return new String("out" + attribute + value);
+    return new String("o" + attribute + value);
   }
 
   private void punishment(){
@@ -179,7 +198,7 @@ public class CombinatorialNetwork {
       outputEnum = outputs[i].elements();
       while(outputEnum.hasMoreElements()){           //para cada combinação do neuronio i de saida
         arc = (Arc)outputEnum.nextElement();
-        tempKey = arc.combinatorialNeuron.getKey();
+        tempKey = arc.combinationNeuron.getKey();
         for(int j=0; j<outputNum; j++){
           if(j!=i && outputs[j].containsKey(tempKey)){
             sum += ((Arc)outputs[j].get(tempKey)).accumulator;
@@ -192,6 +211,12 @@ public class CombinatorialNetwork {
   }
 
   private boolean[][][] makeCombinations(int numAttributes, int maxOrder){
+
+
+    if(combinationsTable.containsKey(new Integer(numAttributes))){
+      return (boolean[][][])combinationsTable.get(new Integer(numAttributes));
+    }
+
     boolean[][][] combTable = new boolean[maxOrder+1][][];              //primeira dimensão: ordem; segunda dimensão: quantidade de combinações; terceira dimensao: atributos
     boolean[][] combinations;
 
@@ -254,24 +279,13 @@ public class CombinatorialNetwork {
         combTable[order] = combinations;
       }
     }
-/*
-    for(int i=1;i<maxOrder; i++){
-      System.out.println("ordem:" + i);
-      for(int j=0; j<combTable[i].length; j++){
-        System.out.print("combinaçaõ:" + j + " ");
-        for(int k=0; k<numAttributes; k++){
-          System.out.print(combTable[i][j][k] + " ");
-        }
-        System.out.println();
-      }
-    }
-*/
 
+    combinationsTable.put(new Integer(numAttributes), combTable);
     return combTable;
   }
 
   private int possibleCombinations(int numAttributes, int order){
-    long nFactorial = 1;
+/*    long nFactorial = 1;
     for(int i=1; i<numAttributes+1; i++){
       nFactorial = nFactorial * i;
     }
@@ -287,6 +301,48 @@ public class CombinatorialNetwork {
     }
 
     return (int)(nFactorial/(pFactorial * npFactorial));
+ */
+    int numerator = 1;
+    for (int i=numAttributes; i>order; i--)
+    {
+      numerator = numerator * i;
+    }
+
+    int denominator = 1;
+    for (int i=1; i<(numAttributes-order)+1; i++){
+      denominator = denominator * i;
+    }
+
+    return numerator/denominator;
+
+  }
+
+  private void prunning(int threshold){
+    Enumeration outputEnum = outputLayer.elements();
+    OutputNeuron tempOutput;
+    CombinatorialNeuron tempComb;
+    InputNeuron tempInput;
+
+    while(outputEnum.hasMoreElements()){
+      tempOutput = (OutputNeuron)outputEnum.nextElement();
+      tempOutput.prunning(threshold);
+    }
+
+    Enumeration combEnum = combinatorialLayer.elements();
+    while(combEnum.hasMoreElements()){
+      tempComb = (CombinatorialNeuron)combEnum.nextElement();
+      if(tempComb.getCombinationsNum() == 0){
+        combinatorialLayer.remove(tempComb.getKey());
+      }
+    }
+
+    Enumeration inputEnum = inputLayer.elements();
+    while(inputEnum.hasMoreElements()){
+      tempInput = (InputNeuron)inputEnum.nextElement();
+      if(tempInput.getCombinationsNum() == 0){
+        inputLayer.remove(tempInput.getKey());
+      }
+    }
   }
 
 }
