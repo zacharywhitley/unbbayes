@@ -2,12 +2,12 @@ package linfca.test;
 
 import org.jdom.Element;
 import linfca.*;
-import linfca.gerencia.controle.*;
-import linfca.gerencia.controle.ValidarUsuarioFeature;
+import linfca.gerencia.usuario.*;
+import linfca.gerencia.usuario.ValidarUsuarioFeature;
 
 import junit.framework.TestCase;
 import linfca.Feature;
-import linfca.gerencia.controle.ValidarUsuarioFeature;
+import linfca.gerencia.usuario.ValidarUsuarioFeature;
 
 public class ValidarUsuarioFeatureTest extends TestCase {
 
