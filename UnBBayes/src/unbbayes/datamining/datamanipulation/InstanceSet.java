@@ -463,20 +463,22 @@ public class InstanceSet
 			for (int i=0;i<numAttributes;i++)
 			{
 				attributeStats[i].setMissingCount(countResults[i][((countResults[i]).length)-1]);
-				attributeStats[i].setMissingCountWeighted(countWeightResults[i][((countWeightResults[i]).length)-1]);
+				//attributeStats[i].setMissingCountWeighted(countWeightResults[i][((countWeightResults[i]).length)-1]);
 				Attribute tempAtt = getAttribute(i);
 				if (tempAtt.isNominal())
 				{
 					for (int j = 0; j < tempAtt.numValues(); j++)
 					{
-						attributeStats[i].addDistinct(j,countResults[i][j],countWeightResults[i][j]);
+						//attributeStats[i].addDistinct(j,countResults[i][j],countWeightResults[i][j]);
+						attributeStats[i].addDistinct(j,countResults[i][j]);
 					}
 				}
 				else
 				{	
 					for (int j = 0; j < tempAtt.numValues(); j++)
 					{
-						attributeStats[i].addDistinct(Float.parseFloat(tempAtt.value(j)),j,countResults[i][j],countWeightResults[i][j]);
+						//attributeStats[i].addDistinct(Float.parseFloat(tempAtt.value(j)),j,countResults[i][j],countWeightResults[i][j]);
+						attributeStats[i].addDistinct(Float.parseFloat(tempAtt.value(j)),countResults[i][j]);
 					}
 				}		
 			}
