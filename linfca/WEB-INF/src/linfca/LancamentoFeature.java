@@ -45,16 +45,17 @@ public class LancamentoFeature implements Feature {
 		if ( in.getChild("cod-lancamento") != null ) {
 			
 			String codLancamento = in.getChild("cod-lancamento").getTextTrim();			
+			System.out.println("codlancamento = " + codLancamento);
 			
 			StringBuffer sql = new StringBuffer();
 			sql.append("UPDATE ");
-			sql.append("  Lancamento L ");
+			sql.append("  Lancamento ");
 			sql.append("SET ");
-			sql.append("  (L.dt_hora_fim_lancamento) ");
+			sql.append("  (dt_hora_fim_lancamento) ");
 			sql.append("VALUES ");
 			sql.append("  (?) ");			
 			sql.append("WHERE ");
-			sql.append("  L.cod_lancamento = ? ");
+			sql.append("  cod_lancamento = ? ");
 			
 			ps = con.prepareStatement(sql.toString());
 						
