@@ -54,9 +54,9 @@ public class XMLIO implements BaseIO {
 			node.setDescription(XMLUtil.getValue(tmpNode));
 		}
 		
-		node.setName(XPathAPI.selectSingleNode(elNode, "/@NAME").getNodeValue());
-		int xPos = Integer.parseInt(XPathAPI.selectSingleNode(elNode, "/@XPOS").getNodeValue());
-		int yPos = Integer.parseInt(XPathAPI.selectSingleNode(elNode, "/@YPOS").getNodeValue());
+		node.setName(XPathAPI.selectSingleNode(elNode, "@NAME").getNodeValue());
+		int xPos = Integer.parseInt(XPathAPI.selectSingleNode(elNode, "@XPOS").getNodeValue());
+		int yPos = Integer.parseInt(XPathAPI.selectSingleNode(elNode, "@YPOS").getNodeValue());
 		node.getPosition().setLocation(xPos, yPos);
 		
 		NodeIterator states = XPathAPI.selectNodeIterator(elNode, "/VAR/STATENAME");
@@ -69,8 +69,8 @@ public class XMLIO implements BaseIO {
 	private static void makeStructure(ProbabilisticNetwork net, NodeIterator arcs) throws Exception {
 		org.w3c.dom.Node node;
 		while ((node = arcs.nextNode()) != null) {
-			String parent = XPathAPI.selectSingleNode(node, "/@PARENT").getNodeValue();
-			String child = XPathAPI.selectSingleNode(node, "/@CHILD").getNodeValue();
+			String parent = XPathAPI.selectSingleNode(node, "@PARENT").getNodeValue();
+			String child = XPathAPI.selectSingleNode(node, "@CHILD").getNodeValue();
 			Node parentNode = net.getNode(parent);
 			Node childNode = net.getNode(child);
 			Edge auxEdge = new Edge(parentNode, childNode);
@@ -81,7 +81,9 @@ public class XMLIO implements BaseIO {
 	private static void assignPotentials(ProbabilisticNetwork net, NodeIterator arcs) throws Exception {
 		org.w3c.dom.Node node;
 		while ((node = arcs.nextNode()) != null) {
-			String nodeName = XPathAPI.selectSingleNode(node, "/POT/PRIVATE/@NAME").getNodeValue();
+			org.w3c.dom.Node tmp = XPathAPI.selectSingleNode(node, "/POT/PRIVATE");			
+			String nodeName = XPathAPI.selectSingleNode(tmp, "@NAME").getNodeValue();
+			
 			ITabledVariable childNode = (ITabledVariable) net.getNode(nodeName);
 			childNode.getPotentialTable();
 			
@@ -97,7 +99,7 @@ public class XMLIO implements BaseIO {
 		org.w3c.dom.Node elNode = null;
 		try {			
 			InputSource is = new InputSource(new FileReader(input));
-			Document doc = XMLUtil.getDocument(is);			
+			Document doc = XMLUtil.getDocument(is);						
 			elNode = XPathAPI.selectSingleNode(doc, NET_NAME);
 			net = new ProbabilisticNetwork(XMLUtil.getValue(elNode));
 			
@@ -109,8 +111,9 @@ public class XMLIO implements BaseIO {
 			makeStructure(net, nodeIterator);
 			
 			nodeIterator = XPathAPI.selectNodeIterator(doc, POTENTIALS);
-			assignPotentials(net, nodeIterator);
+			assignPotentials(net, nodeIterator);			
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new LoadException("Load Error");			
 		}
 		return net;
@@ -201,6 +204,8 @@ public class XMLIO implements BaseIO {
 		writeStaticProperty(arq, net);
 		writeNetwork(arq, net);
 		arq.println("</BIF>");
+		arq.flush();
+		arq.close();
 	}
 
 

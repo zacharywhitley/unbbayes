@@ -591,4 +591,5 @@ public class NetIO implements BaseIO {
 	private String unformatString(String string) {
 		return string.replace('#', '\n');
 	}
+
 }

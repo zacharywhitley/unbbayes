@@ -51,8 +51,6 @@ import unbbayes.util.*;
 public class MainController {
 
     private IUnBBayes screen;
-    private BaseIO io;
-
     private List copia;
     private List copiados;
     private boolean bColou;
@@ -73,7 +71,6 @@ public class MainController {
         screen = new IUnBBayes(this);
         copia = new ArrayList();
         copiados = new ArrayList();
-        io = new NetIO();
     }
 
     public void newBN() {
@@ -95,18 +92,24 @@ public class MainController {
      * @param  arquivo  nome do aqruivo que representa a rede a ser salvada.
      * @see             String
      */
-    public void saveNet(File arquivo) {
+    public void saveNet(File file) {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        try {        	
-        	JInternalFrame window = screen.getSelectedWindow();
-        	if (window instanceof NetWindow) {
-        		io.save(arquivo, ((NetWindow) window).getRede());
-        	} else if (window instanceof MSBNWindow) {
-        		io.saveMSBN(arquivo, ((MSBNWindow) window).getMSNet());
-        	} else {
-        		assert false : "Não era pra chegar aqui";        		
+        try {
+			BaseIO io = null;
+			JInternalFrame window = screen.getSelectedWindow();
+			if (file.isDirectory()) {
+				io = new NetIO();
+				io.saveMSBN(file, ((MSBNWindow) window).getMSNet());								
+			} else {
+				String name = file.getName().toLowerCase();							
+				if (name.endsWith("net")) {
+					io = new NetIO();		
+				} else if (name.endsWith("xml")){
+					io = new XMLIO();
+				}
+				io.save(file, ((NetWindow) window).getRede());
         	}
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             JOptionPane.showMessageDialog(screen, e.getMessage(), "saveNetException", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         } finally {
@@ -125,14 +128,21 @@ public class MainController {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));        
         try {
         	JInternalFrame window = null;
+			BaseIO io = null;
         	if (file.isDirectory()) { //MSBN
-        		SingleAgentMSBN msbn = io.loadMSBN(file);        		
+        		io = new NetIO();
+        		SingleAgentMSBN msbn = io.loadMSBN(file);	
         		MSBNController controller = new MSBNController(msbn);
         		window = controller.getPanel();
         	} else {
-		        ProbabilisticNetwork net = io.load(file);
-		        //screen.addWindow(new NetWindow(net));
-				window = new NetWindow(net);				
+				String name = file.getName().toLowerCase();				
+				if (name.endsWith("net")) {
+					io = new NetIO();					
+				} else if (name.endsWith("xml")){
+					io = new XMLIO();					
+				}
+				ProbabilisticNetwork net = io.load(file);
+				window = new NetWindow(net);
         	}
 			screen.addWindow(window);
         } catch (Exception e){

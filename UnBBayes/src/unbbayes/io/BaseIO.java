@@ -34,6 +34,7 @@ import java.io.*;
  * @version 1.0
  */
 public interface BaseIO {
+	
 	/**
 	 * Loads a new Probabilistic network from the input file.
 	 * 
@@ -42,7 +43,7 @@ public interface BaseIO {
 	 * @throws LoadException If the file doesn't describes a network.
 	 * @throws IOException	If an IO error occurs
 	 */
-    public ProbabilisticNetwork load(File input) throws LoadException, IOException;    
+    public ProbabilisticNetwork load(File input) throws LoadException, IOException;
     
     /**
      * Loads a new MSBN from the input DIRECTORY
