@@ -564,11 +564,12 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
       * Inicia as crenças da árvore de junção.
       */
      public void initialize() throws Exception {
-     	if (firstInitialization) {
+     	//if (firstInitialization) {
      		//System.out.println("Primeira vez");
 	        resetEvidences();
 	        junctionTree.iniciaCrencas();
 	        updateMarginais();
+	        /*
 	        //System.out.println("Size ini "+copiaNos.size());
 	        initializedCopiaNos = (NodeList)copiaNos.clone();
 	        if (junctionTree instanceof JunctionTree) {
@@ -598,7 +599,7 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
      		//System.out.println(initializedCopiaNos.toString());
      		//System.out.println("InitializedCopia" + ((TreeVariable)initializedCopiaNos.get(0)).getMarginalAt(0) + ((TreeVariable)initializedCopiaNos.get(0)).getMarginalAt(1));
      		
-     	}
+     	}*/
      }
 
 
