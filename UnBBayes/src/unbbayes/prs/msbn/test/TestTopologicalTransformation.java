@@ -32,12 +32,12 @@ public class TestTopologicalTransformation extends TestCase {
 		} catch (Exception e) {
 			cycleDetected = true;
 		}
-		assertTrue("Ciclo não detectado", cycleDetected);
+		assertTrue("Cycle not detected", cycleDetected);
 	}
 	
 	public void testTopological() throws Exception {
 		NetIO loader = new NetIO();
 		MSNetwork msbn =  loader.loadMSBN(TOPOLOGICAL_FILE);
-		msbn.compile();		
+		msbn.compile();	
 	}
 }
