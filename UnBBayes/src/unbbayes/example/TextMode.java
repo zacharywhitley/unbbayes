@@ -26,7 +26,8 @@ import java.io.File;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import java.util.ResourceBundle;
-import unbbayes.prs.bn.Edge;
+
+import unbbayes.prs.Edge;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;

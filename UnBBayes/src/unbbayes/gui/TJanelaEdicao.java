@@ -36,7 +36,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JViewport;
 
-import unbbayes.prs.bn.Edge;
+import unbbayes.prs.*;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
 import unbbayes.util.*;

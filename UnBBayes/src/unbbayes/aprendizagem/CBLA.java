@@ -5,7 +5,7 @@ import sun.beans.editors.IntEditor;
 import sun.misc.Queue;
 import unbbayes.util.*;
 import unbbayes.gui.TJanelaEdicao;
-import unbbayes.prs.bn.Node;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 

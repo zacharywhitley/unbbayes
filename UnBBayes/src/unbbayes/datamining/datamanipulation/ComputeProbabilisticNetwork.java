@@ -3,6 +3,7 @@ package unbbayes.datamining.datamanipulation;
 import java.util.*;
 
 import unbbayes.datamining.classifiers.*;
+import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
 
 /** Esta classe calcula uma rede ProbabilisticNetwork utilizando-se do classificador Naive Bayes

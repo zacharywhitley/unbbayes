@@ -27,7 +27,9 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.tree.*;
 
+import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
+import unbbayes.prs.id.*;
 import unbbayes.util.*;
 
 /**

@@ -19,13 +19,15 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package unbbayes.prs.bn;
+package unbbayes.prs;
 
 import java.awt.Color;
 import java.awt.geom.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.bn.ExplanationPhrase;
+import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.util.*;
 
 /**

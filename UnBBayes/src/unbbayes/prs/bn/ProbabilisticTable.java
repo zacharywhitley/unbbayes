@@ -2,6 +2,9 @@ package unbbayes.prs.bn;
 
 import java.util.ResourceBundle;
 
+import unbbayes.prs.*;
+import unbbayes.prs.id.*;
+
 /**
  * Probabilistic Potential Table
  * @author Michael

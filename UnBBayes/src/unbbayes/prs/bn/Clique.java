@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import unbbayes.prs.*;
+import unbbayes.prs.id.*;
 import unbbayes.util.NodeList;
 
 /**

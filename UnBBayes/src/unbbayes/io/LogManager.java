@@ -22,6 +22,8 @@
 package unbbayes.io;
 
 import java.io.*;
+
+import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
 import unbbayes.util.NodeList;
 

@@ -3,7 +3,7 @@ package unbbayes.aprendizagem;
 
 import unbbayes.util.NodeList;
 import unbbayes.controller.MainController;
-import unbbayes.prs.bn.Node;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.gui.TJanelaEdicao;

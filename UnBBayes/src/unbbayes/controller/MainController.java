@@ -30,6 +30,7 @@ import javax.swing.*;
 
 import unbbayes.gui.*;
 import unbbayes.io.*;
+import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
 import unbbayes.util.*;
 

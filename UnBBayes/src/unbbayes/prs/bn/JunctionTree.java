@@ -23,6 +23,7 @@ package unbbayes.prs.bn;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.id.*;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 

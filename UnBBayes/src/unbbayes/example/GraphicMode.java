@@ -33,7 +33,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
-import unbbayes.prs.bn.Edge;
+import unbbayes.prs.Edge;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;

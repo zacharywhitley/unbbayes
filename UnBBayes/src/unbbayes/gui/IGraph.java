@@ -52,11 +52,11 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
 import unbbayes.controller.WindowController;
-import unbbayes.prs.bn.DecisionNode;
-import unbbayes.prs.bn.Edge;
-import unbbayes.prs.bn.Node;
+import unbbayes.prs.Edge;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.bn.UtilityNode;
+import unbbayes.prs.id.DecisionNode;
+import unbbayes.prs.id.UtilityNode;
 import unbbayes.util.NodeList;
 
 /**

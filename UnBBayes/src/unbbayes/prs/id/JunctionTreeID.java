@@ -19,10 +19,14 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package unbbayes.prs.bn;
+package unbbayes.prs.id;
 
 import java.util.List;
 
+import unbbayes.prs.bn.Clique;
+import unbbayes.prs.bn.JunctionTree;
+import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.Separator;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 

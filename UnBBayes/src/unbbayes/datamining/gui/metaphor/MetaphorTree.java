@@ -8,6 +8,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.tree.*;
 
+import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
 import unbbayes.util.*;
 

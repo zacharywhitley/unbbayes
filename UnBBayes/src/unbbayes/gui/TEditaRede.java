@@ -18,6 +18,7 @@
 
 package unbbayes.gui;
 
+import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
 import unbbayes.util.NodeList;
 

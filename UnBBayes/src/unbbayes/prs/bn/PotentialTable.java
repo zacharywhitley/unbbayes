@@ -27,6 +27,8 @@ import java.util.List;
 import javax.swing.JDialog;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+
+import unbbayes.prs.*;
 import unbbayes.util.DoubleCollection;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
@@ -245,32 +247,6 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      */
     public abstract PotentialTable newInstance();
 
-
-
-	/*
-    protected void sum(int control, int index, int coord, int base) {
-        if (control == -1) {            
-            int linearCoordDestination = coord - base;
-            float value = dados.data[linearCoordDestination] + dados.data[coord];
-            dados.data[linearCoordDestination] = value;
-            dados.remove(coord);
-            return;
-        }
-		
-		Node node = variaveis.get(control);
-		if (control == index) {	
-	        for (int i = node.getStatesSize()-1; i >= 1; i--) {
-	            sum(control-1, index, coord + i*fatores[control], i*fatores[index]);
-	        }	
-		} else {
-	        for (int i = node.getStatesSize()-1; i >= 0; i--) {
-	            sum(control-1, index, coord + i*fatores[control], base);
-	        }
-		}
-    }
-    */
-    
-    
     protected void sum(int index) {
     	boolean marked[]  = new boolean[dados.size]; 
     	sumAux(variaveis.size() - 1, index, 0, 0, marked);
@@ -317,27 +293,6 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 		}
     }
     
-
-/*
-    protected void sum(int control, int index, int coord[]) {
-        if (control == -1) {
-            int linearCoordToKill = getLinearCoord(coord);
-            int linearCoordDestination = linearCoordToKill - coord[index]*fatores[index];
-            double value = dados.data[linearCoordDestination] + dados.data[linearCoordToKill];
-            dados.data[linearCoordDestination] = value;
-            dados.remove(linearCoordToKill);
-            return;
-        }
-
-        int fim = (index == control) ? 1 : 0;
-        Node node = variaveis.get(control);
-        for (int i = node.getStatesSize()-1; i >= fim; i--) {
-            coord[control] = i;
-            sum(control-1, index, coord);
-        }
-    }
-*/
-
 
     protected void finding(int control, int index, int coord[], int state) {
         if (control == -1) {
@@ -425,7 +380,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      * @param tab table to operate.
      * @param operator operator to use, defined in this class constants.
      */
-    protected void directOpTab(PotentialTable tab, int operator) {
+    public void directOpTab(PotentialTable tab, int operator) {
         if (tableSize() != tab.tableSize()) {
             throw new RuntimeException(resource.getString("TableSizeException"));
         }
@@ -463,7 +418,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      *@param  operator  operador a ser utilizado, definido pelas
      *                  constantes desta classe.
      */
-    protected void opTab(PotentialTable tab, int operator) {    	
+    public void opTab(PotentialTable tab, int operator) {    	
         int[] index = new int[variaveis.size()];
         for (int c = variaveis.size()-1; c >= 0; c--) {
         	index[c] = tab.variaveis.indexOf(variaveis.get(c));
@@ -513,27 +468,6 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
     		}
     	}
     }
-
-	/*
-    private float operate(float a, float b, int operator) {
-        switch (operator) {
-            case MINUS_OPERATOR:
-                b = -b;
-            case PLUS_OPERATOR:
-                return a + b;
-            case DIVISION_OPERATOR:
-                if (b == 0.0) {
-                    return 0;
-                }
-                b = 1 / b;
-            case PRODUCT_OPERATOR:
-                return a * b;
-            default:
-                throw new RuntimeException(resource.getString("OperatorException"));
-        }
-    }
-    */
-
 
     /**
      *  Mostra a tabela de potenciais. Utilizado para DEBUG.

@@ -19,10 +19,14 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package unbbayes.prs.bn;
+package unbbayes.prs.id;
 
 import java.awt.Color;
 import java.util.ResourceBundle;
+
+import unbbayes.prs.*;
+import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.PotentialTable;
 
 /**
  *  Classe que representa variável de utilidade.

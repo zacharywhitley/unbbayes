@@ -92,9 +92,9 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
         cloned.setExplanationDescription(this.getExplanationDescription());
         cloned.setPhrasesMap(this.getPhrasesMap());
         cloned.setInformationType(this.getInformationType());
-        double[] marginais = new double[this.getMarginais().length];
-        System.arraycopy(this.getMarginais(), 0, marginais, 0, marginais.length);
-        cloned.setMarginais(marginais);
+        double[] marginais = new double[super.marginais.length];
+        System.arraycopy(super.marginais, 0, marginais, 0, marginais.length);
+        cloned.marginais = marginais;
         
         return cloned;
     }
@@ -113,7 +113,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
     /**
      * Calcula a marginal deste nó.
      */
-    void marginal() {
+    protected void marginal() {
         marginais = new double[getStatesSize()];
         PotentialTable auxTab = (PotentialTable) cliqueAssociado.getPotentialTable().clone();
         int index = auxTab.indexOfVariable(this);

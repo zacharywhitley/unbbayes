@@ -27,8 +27,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ResourceBundle;
 import unbbayes.controller.*;
+import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
-import unbbayes.gui.*;
 
 /**
  * Janela de uma rede.

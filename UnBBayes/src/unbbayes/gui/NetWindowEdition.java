@@ -7,6 +7,7 @@ import java.util.*;
 import javax.swing.*;
 
 import unbbayes.controller.*;
+import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
 
 /**

@@ -1,4 +1,7 @@
-package unbbayes.prs.bn;
+package unbbayes.prs.id;
+
+import unbbayes.prs.*;
+import unbbayes.prs.bn.PotentialTable;
 
 /**
  * Utility Potential Table

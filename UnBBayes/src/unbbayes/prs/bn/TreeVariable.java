@@ -21,6 +21,8 @@
 
 package unbbayes.prs.bn;
 
+import unbbayes.prs.*;
+
 /**
  * Interface para variáveis que serão visualizadas na árvore.
  * Interface para o DecisionNode e ProbabilisticNode.
@@ -41,7 +43,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      * Tem que ser sobrescrito para atualizar as marginais
      * que serão visualizadas na árvore da interface.
      */
-    abstract void marginal();
+    protected abstract void marginal();
     
     void copyMarginal() {
     	int size = marginais.length;
@@ -81,12 +83,12 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      *
      * @return true se esta variável contém alguma evidência e false caso contrário.
      */
-    boolean hasEvidence() {
+    public boolean hasEvidence() {
         return (evidence != -1);
     }
 
 
-    int getEvidence() {
+    public int getEvidence() {
         return evidence;
     }
 
@@ -119,7 +121,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      *
      *@return    clique associado
      */
-    public ITabledVariable getAssociatedClique() {
+    protected ITabledVariable getAssociatedClique() {
         return this.cliqueAssociado;
     }
 
@@ -128,43 +130,17 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      *
      *@param  clique  clique associado a esta variavel.
      */
-    void setAssociatedClique(ITabledVariable clique) {
+    protected void setAssociatedClique(ITabledVariable clique) {
         this.cliqueAssociado = clique;
-    }
-	/**
-	 * Gets the marginais.
-	 * @return Returns a double[]
-	 */
-	public double[] getMarginais() {
-		return marginais;
-	}
+    }    
+	
 
-	/**
-	 * Sets the marginais.
-	 * @param marginais The marginais to set
-	 */
-	public void setMarginais(double[] marginais) {
-		this.marginais = marginais;
-	}
-	
-	
 	void updateEvidences() {
 		if (evidence != -1) {						
 			PotentialTable auxTab = cliqueAssociado.getPotentialTable();
 			int index = auxTab.indexOfVariable(this);
 			auxTab.calcularFatores();
 			updateRecursive(auxTab, 0, 0, index, 0);			
-			
-			/*
-			int sizeDados = auxTab.tableSize();
-			int[] coord;
-			for (int c2 = 0; c2 < sizeDados; c2++) {
-				double aux = auxTab.getValue(c2);
-				coord = auxTab.voltaCoord(c2);
-				aux *= marginais[coord[index]];
-				auxTab.setValue(c2, aux);
-			}
-			*/
 		}
 	}
 	

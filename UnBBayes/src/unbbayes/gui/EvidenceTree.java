@@ -6,6 +6,7 @@ import java.util.Locale;
 import javax.swing.*;
 import javax.swing.tree.*;
 
+import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
 import unbbayes.util.*;
 

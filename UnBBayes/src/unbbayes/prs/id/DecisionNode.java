@@ -19,10 +19,13 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package unbbayes.prs.bn;
+package unbbayes.prs.id;
 
 import java.awt.Color;
 
+import unbbayes.prs.bn.Clique;
+import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.TreeVariable;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -56,9 +59,9 @@ public class DecisionNode extends TreeVariable implements java.io.Serializable {
         cloned.setExplanationDescription(this.getExplanationDescription());
         cloned.setPhrasesMap(this.getPhrasesMap());
         cloned.setInformationType(this.getInformationType());
-        double[] marginais = new double[this.getMarginais().length];
-        System.arraycopy(this.getMarginais(), 0, marginais, 0, marginais.length);
-        cloned.setMarginais(marginais);
+        double[] marginais = new double[super.marginais.length];
+        System.arraycopy(super.marginais, 0, marginais, 0, marginais.length);
+        cloned.marginais = marginais;
         
         return cloned;
     }
@@ -76,7 +79,7 @@ public class DecisionNode extends TreeVariable implements java.io.Serializable {
         return color;
     }
 
-    void marginal() {
+    protected void marginal() {
         marginais = new double[getStatesSize()];
         PotentialTable auxTab = (PotentialTable)((Clique)cliqueAssociado).getUtilityTable().clone();
         auxTab.directOpTab(cliqueAssociado.getPotentialTable(), PotentialTable.PRODUCT_OPERATOR);
