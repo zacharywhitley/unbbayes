@@ -48,6 +48,9 @@ public class Network implements java.io.Serializable {
      *  Lista de arcos que compõem o grafo.
      */
     protected List arcos;
+    
+    
+    private Map nodeIndexes;
 
 
     /**
@@ -58,6 +61,8 @@ public class Network implements java.io.Serializable {
         //descriptionNodes = new NodeList();
         //explanationNodes = new NodeList();
         arcos = new ArrayList();
+        
+        nodeIndexes = new HashMap();
     }
 
 
@@ -75,9 +80,16 @@ public class Network implements java.io.Serializable {
      *  Retorna os nós do grafo.
      *
      *@return    nós do grafo.
+     * 
+     * @todo Eliminar esse metodo! eh utilizado na classe NetWindow
      */
     public NodeList getNos() {
         return this.nos;
+    }
+    
+    
+    public int getNodeCount() {
+    	return nos.size();    	
     }
 
 
@@ -123,21 +135,29 @@ public class Network implements java.io.Serializable {
      *@return       nó com a respectiva sigla.
      */
     public Node getNode(String name) {
-        for (int qnos = 0; qnos < nos.size(); qnos++) {
-            if (((nos.get(qnos))).getName().equals(name)) {
-                return nos.get(qnos);
-            }
-        }
-        return null;
+    	int index = getNodeIndex(name);
+    	if (index == -1) return null;
+    	return nos.get(index);
     }
+    
+    /**
+     * @todo prever o caso de mudanca de nome de nos.
+     */
 
     public int getNodeIndex(String name) {
-        for (int qnos = 0; qnos < nos.size(); qnos++) {
+    	Object index = nodeIndexes.get(name);
+    	if (index == null) {
+    		return -1;    		
+    	}
+    	return ((Integer) index).intValue();
+    	/*
+    	int size = nos.size();
+        for (int qnos = 0; qnos < size; qnos++) {
             if (((nos.get(qnos))).getName().equals(name)) {
                 return qnos;
             }
         }
-        return -1;
+        return -1;*/
     }
 
     /**
@@ -159,6 +179,7 @@ public class Network implements java.io.Serializable {
      */
     public void addNode(Node no) {
         nos.add(no);
+        nodeIndexes.put(no.getName(), new Integer(nos.size()-1));
         /*if (no.getInformationType() == Node.EXPLANATION_TYPE)
         {   explanationNodes.add(no);
         }
@@ -189,8 +210,10 @@ public class Network implements java.io.Serializable {
         int c;
         Node auxNo;
         Edge auxArco;
-
+        
         nos.remove(elemento);
+        
+        nodeIndexes.remove(elemento.getName());
         /*if (elemento.getInformationType() == Node.EXPLANATION_TYPE)
         {   explanationNodes.remove(elemento);
         }

@@ -5,7 +5,9 @@ import unbbayes.jprs.jbn.*;
 
 public class ComputeNaiveBayes
 {	public void setProbabilisticNetwork(ProbabilisticNetwork net) throws Exception
-	{	int numNodes = net.getNos().size();
+	{	
+//		int numNodes = net.getNos().size();
+		int numNodes = net.getNodeCount();
 		for (int i=0; i<numNodes; i++)
 		{	classNode = (ProbabilisticNode)net.getNodeAt(i);
 			if (classNode.getParents().size() == 0)

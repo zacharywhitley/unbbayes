@@ -734,10 +734,9 @@ public class WindowController implements KeyListener {
             for (int i = 0; i < copia.size(); i++) {
                 if (copia.get(i) instanceof Node) {
                     ProbabilisticNode noAux = (ProbabilisticNode)copia.get(i);
-                    NodeList nos = rede.getNos();
                     ProbabilisticNode noAux2 = new ProbabilisticNode();
                     noAux2 = (ProbabilisticNode)noAux.clone(tela.getIGraph().getRadius());
-                    nos.add(noAux2);
+                    rede.addNode(noAux2);
                     copiados.add(noAux2);
                 }
             }
@@ -1071,8 +1070,11 @@ public class WindowController implements KeyListener {
         NodeList nos;
         List vetorAux = tela.getIGraph().getSelectedGroup();
 
-        if (vetorAux.size() == 0) {
-            nos = rede.getNos();
+        if (vetorAux.size() == 0) {        	
+            nos = new NodeList();
+            for (int i = 0; i < rede.getNodeCount(); i++) {
+            	nos.add(i, rede.getNodeAt(i));            	
+            }
         } else {
             nos = new NodeList();
             for (int i = 0; i < vetorAux.size(); i++) {

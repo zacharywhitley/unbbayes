@@ -79,15 +79,16 @@ public class BayesianNetwork extends BayesianLearning
 
                 net.initialize();
 
-                NodeList nodes = net.getNos();
-                int size = nodes.size();
+//                NodeList nodes = net.getNos();
+//                int size = nodes.size();
+                int size = net.getNodeCount();
                 int j;
                 for (j=0; j<size; j++)
                 {   int actualNode = indexAttributes[j];
                     if (actualNode != classIndex)
                     {   instanceValue = instance.getValue(j);
                         if (instanceValue != Instance.MISSING_VALUE)
-                            ((TreeVariable)nodes.get(actualNode)).addFinding(instanceValue);
+                            ((TreeVariable)net.getNodeAt(actualNode)).addFinding(instanceValue);
                     }
                 }
 

@@ -71,10 +71,10 @@ public class AttributePanel extends JPanel
       classComboBox.removeAllItems();
       for(int i=0; i<numAtt; i++)
       {   classComboBox.addItem(instances.getAttribute(i).getAttributeName());
-          if(i==(numAtt-1))
+          if(i == (numAtt - 1))
               classComboBox.setSelectedItem(instances.getAttribute(i).getAttributeName());
       }
-      buildTrees(numAtt-1);
+      buildTrees(numAtt - 1);
       jSplitPane.setEnabled(true);
       jSplitPane.setDividerLocation(0.3);
   }

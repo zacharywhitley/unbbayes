@@ -121,11 +121,11 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         tamanhoVisivel = new Dimension(0, 0);
 
 		arco = net.getArcos();
-        no = net.getNos();
+//        no = net.getNos();
         Node noAux;
         int linha = 1;
         for (int i = 0; i < no.size(); i++) {
-            noAux = no.get(i);
+            noAux = net.getNodeAt(i);
             if ((i + 1) * raio >= this.getSize().getWidth()) {
                 linha++;
             }
