@@ -212,7 +212,7 @@ public class NetIO implements BaseIO {
 						}
 						proximo(st);
 						while (!st.sval.equals("}")) {
-							auxTabPot.addValueAt(
+							auxTabPot.setValueAt(
 								nDim++,
 								Double.parseDouble(st.sval));
 							proximo(st);

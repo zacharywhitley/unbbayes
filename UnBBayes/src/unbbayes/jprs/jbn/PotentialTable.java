@@ -111,6 +111,10 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
     public void addValueAt(int index, double value) {
         dados.add(index, value);
     }
+    
+    public void setValueAt(int index, double value) {
+    	dados.set(index, value);    	
+    }
 
     public void removeValueAt(int index) {
         dados.remove(index);
