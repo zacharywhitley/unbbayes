@@ -40,9 +40,10 @@ public class EvaluationMain extends JInternalFrame
   private JMenuItem jMenuFileExit = new JMenuItem();
   private JFileChooser fileChooser;
   private JToolBar jToolBar1 = new JToolBar();
-  private JButton helpButton = new JButton();
-  private JButton openButton = new JButton();
   private JMenuItem jMenuItem2 = new JMenuItem();
+  private JButton jButton1 = new JButton();
+  private JButton openButton = new JButton();
+  private JButton helpButton = new JButton();
 
   /**Construct the frame*/
   public EvaluationMain()
@@ -96,15 +97,25 @@ public class EvaluationMain extends JInternalFrame
         jMenuFileExit_actionPerformed(e);
       }
     });
-    helpButton.setIcon(helpIcon);
-    helpButton.addActionListener(new java.awt.event.ActionListener()
+    jToolBar1.setFloatable(false);
+    jMenuItem2.setIcon(abrirIcon);
+    jMenuItem2.setMnemonic(((Character)resource.getObject("openModelMnemonic")).charValue());
+    jMenuItem2.setText(resource.getString("openModelDialog"));
+    jMenuItem2.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        helpButton_actionPerformed(e);
+        jMenuItem2_actionPerformed(e);
       }
     });
-    jToolBar1.setFloatable(false);
+    jButton1.setText("jButton1");
+    jButton1.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jButton1_actionPerformed(e);
+      }
+    });
     openButton.setToolTipText(resource.getString("openModel"));
     openButton.setIcon(abrirIcon);
     openButton.addActionListener(new java.awt.event.ActionListener()
@@ -114,14 +125,12 @@ public class EvaluationMain extends JInternalFrame
         openButton_actionPerformed(e);
       }
     });
-    jMenuItem2.setIcon(abrirIcon);
-    jMenuItem2.setMnemonic(((Character)resource.getObject("openModelMnemonic")).charValue());
-    jMenuItem2.setText(resource.getString("openModelDialog"));
-    jMenuItem2.addActionListener(new java.awt.event.ActionListener()
+    helpButton.setIcon(helpIcon);
+    helpButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jMenuItem2_actionPerformed(e);
+        helpButton_actionPerformed(e);
       }
     });
     jMenuFile.add(jMenuItem2);
@@ -134,8 +143,9 @@ public class EvaluationMain extends JInternalFrame
     jPanel41.add(statusBar, BorderLayout.CENTER);
     contentPane.add(jPanel2,BorderLayout.CENTER);
     contentPane.add(jToolBar1, BorderLayout.NORTH);
-    jToolBar1.add(openButton, null);
     jToolBar1.add(helpButton, null);
+    jToolBar1.add(openButton, null);
+    jToolBar1.add(jButton1, null);
   }
   /**File | Exit action performed
    * @param e One ActionEvent
@@ -286,6 +296,14 @@ public class EvaluationMain extends JInternalFrame
       catch(Exception e)
       {   statusBar.setText(resource.getString("error")+e.getMessage());
           e.printStackTrace();
+      }
+  }
+
+  void jButton1_actionPerformed(ActionEvent e)
+  {   if (classifier instanceof BayesianLearning)
+      {   int[] classValues = {1,0};
+          float[] probabilities = {0.2f,0.8f};
+          ((BayesianLearning)classifier).setAbsoluteClassification(classValues,probabilities);
       }
   }
 
