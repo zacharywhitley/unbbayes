@@ -126,9 +126,11 @@ public class Evaluation
     	short pred=0;
 		if (classIsNominal)
 		{	if (classifier instanceof BayesianLearning)
-			{	float[] dist = ((BayesianLearning)classifier).distributionForInstance(classMissing);
-				pred = (short)Utils.maxIndex(dist);
-				updateStatsForClassifier(dist,instance);
+			{	//float[] dist = ((BayesianLearning)classifier).distributionForInstance(classMissing);
+				//pred = (short)Utils.maxIndex(dist);
+				//updateStatsForClassifier(dist,instance);
+                                pred = classifier.classifyInstance(classMissing);
+				updateStatsForClassifier(makeDistribution(pred),instance);
       		}
 			else
 			{	pred = classifier.classifyInstance(classMissing);
