@@ -152,7 +152,9 @@ public class DoubleCollection implements java.io.Serializable {
         if (numMoved > 0)
             System.arraycopy(data, index+1, data, index,
                      numMoved);
-        data[--size] = 0.0;
+        if (size > 0) {        
+	        data[--size] = 0.0;
+        }
         return oldValue;
     }
 }
