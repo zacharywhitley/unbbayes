@@ -34,8 +34,8 @@ import unbbayes.util.*;
  *
  *@author     Michael e Rommel
  */
-public abstract class Node {
-    public static class ExplanationPhrase {
+public abstract class Node implements java.io.Serializable {
+    public static class ExplanationPhrase implements java.io.Serializable {
         public static final String TRIGGER_TYPE = "TRI";
         public static final String COMPLEMENTARY_TYPE = "COM";
         public static final String NA_TYPE = "N/A";
@@ -53,10 +53,21 @@ public abstract class Node {
             this.type = type;
         }
     }
+    public class SerializablePoint2D extends Point2D.Double implements java.io.Serializable {
+    	private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+    		out.writeDouble(x);
+    		out.writeDouble(y);
+    	}
+
+		private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+			x = in.readDouble();
+			y = in.readDouble();
+		}
+    }
     
     private String description = "";
     protected String name;
-    private Point2D.Double posicao;
+    private SerializablePoint2D posicao;
     protected NodeList parents;
     private NodeList children;
     protected List states;
@@ -82,7 +93,7 @@ public abstract class Node {
         states = new ArrayList();
         altura = 35;
         largura = 35;
-        posicao = new Point2D.Double();
+        posicao = new SerializablePoint2D();
         selecionado = false;
     }
     

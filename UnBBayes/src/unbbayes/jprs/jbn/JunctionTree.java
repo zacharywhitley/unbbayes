@@ -32,7 +32,7 @@ import unbbayes.util.SetToolkit;
  *@author     Michael
  *@author     Rommel
  */
-public class JunctionTree {
+public class JunctionTree implements java.io.Serializable {
 
 	/**
 	 *  Probabilidade total estimada.

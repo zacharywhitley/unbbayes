@@ -39,7 +39,7 @@ import java.util.ResourceBundle;
  *@author     Michael e Rommel
  *@version    21 de Setembro de 2001
  */
-public abstract class PotentialTable implements Cloneable {
+public abstract class PotentialTable implements Cloneable, java.io.Serializable {
 
     public static final int PRODUCT_OPERATOR = 0;
     public static final int DIVISION_OPERATOR = 1;

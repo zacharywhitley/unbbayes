@@ -31,7 +31,7 @@ import java.util.*;
 /**
  * Classe que implementa um Map baseado em ArrayList.
  */
-public class ArrayMap extends AbstractMap {
+public class ArrayMap extends AbstractMap implements java.io.Serializable {
     private ArrayList 
         keys = new ArrayList(),
         values = new ArrayList();

@@ -30,7 +30,7 @@ import unbbayes.util.NodeList;
  *
  *@author     Michael e Rommel
  */
-public class Separator implements ITabledVariable {
+public class Separator implements ITabledVariable, java.io.Serializable {
 
     private PotentialTable tabelaPot;
     private PotentialTable utilityTable;

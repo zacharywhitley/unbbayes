@@ -26,7 +26,7 @@ package unbbayes.jprs.jbn;
  *
  *@author     Michael e Rommel
  */
-public class Edge {
+public class Edge implements java.io.Serializable {
     /**
      *  Guarda o primeiro nó. Quando há orientação assume semântica como origem.
      */

@@ -28,7 +28,7 @@ import java.awt.Color;
  *
  *@author     Michael e Rommel
  */
-public class ProbabilisticNode extends TreeVariable implements ITabledVariable {
+public class ProbabilisticNode extends TreeVariable implements ITabledVariable, java.io.Serializable {
 
     private ProbabilisticTable tabelaPot;
     private static Color color = new Color(Color.yellow.getRGB());

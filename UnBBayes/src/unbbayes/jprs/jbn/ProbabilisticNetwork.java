@@ -37,7 +37,7 @@ import unbbayes.util.SetToolkit;
  *@author     michael
  *@author     rommel
  */
-public class ProbabilisticNetwork extends Network {
+public class ProbabilisticNetwork extends Network implements java.io.Serializable {
 	
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.jprs.jbn.resources.JbnResources");

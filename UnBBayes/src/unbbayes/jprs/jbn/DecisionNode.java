@@ -29,7 +29,7 @@ import java.awt.Color;
  *
  *@author     Michael e Rommel
  */
-public class DecisionNode extends TreeVariable {
+public class DecisionNode extends TreeVariable implements java.io.Serializable {
 
     private static Color color = new Color(Color.orange.getRGB());
 

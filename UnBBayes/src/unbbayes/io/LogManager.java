@@ -35,7 +35,7 @@ import java.util.ResourceBundle;
  * @author Michael S. Onishi
  * @version 1.0
  */
-public class LogManager {
+public class LogManager implements java.io.Serializable {
     public static final int DEFAULT_BUFFER_SIZE = 10 * 1024;
     public static final String DEFAULT_FILENAME = "aj.txt";
 

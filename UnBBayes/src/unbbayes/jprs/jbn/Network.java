@@ -32,7 +32,7 @@ import unbbayes.util.SetToolkit;
  *@author     Michael e Rommel
  *@version    21 de Setembro de 2001
  */
-public class Network {
+public class Network implements java.io.Serializable {
 	
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.jprs.jbn.resources.JbnResources");

@@ -31,7 +31,7 @@ import unbbayes.util.NodeList;
  *@author    Michael e Rommel
  *@version   27 de Junho de 2001
  */
-public class Clique implements ITabledVariable {
+public class Clique implements ITabledVariable, java.io.Serializable {
 	
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.jprs.jbn.resources.JbnResources");

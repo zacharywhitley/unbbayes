@@ -32,7 +32,7 @@ import unbbayes.util.SetToolkit;
  *@author     Michael
  *@author     Rommel
  */
-public class JunctionTreeID extends JunctionTree {
+public class JunctionTreeID extends JunctionTree implements java.io.Serializable {
 
 
    /**

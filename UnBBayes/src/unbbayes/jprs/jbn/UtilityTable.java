@@ -4,7 +4,7 @@ package unbbayes.jprs.jbn;
  * Utility Potential Table
  * @author Michael
  */
-public class UtilityTable extends PotentialTable {
+public class UtilityTable extends PotentialTable implements java.io.Serializable {
 
     public UtilityTable() {
     }

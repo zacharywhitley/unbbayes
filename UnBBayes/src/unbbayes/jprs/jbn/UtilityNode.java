@@ -29,7 +29,7 @@ import java.util.ResourceBundle;
  *
  *@author     Michael e Rommel
  */
-public class UtilityNode extends Node implements ITabledVariable {
+public class UtilityNode extends Node implements ITabledVariable, java.io.Serializable {
 
     private PotentialTable utilTable;
 

@@ -25,7 +25,7 @@ package unbbayes.jprs.jbn;
  * Interface para variáveis que serão visualizadas na árvore.
  * Interface para o DecisionNode e ProbabilisticNode.
  */
-public abstract class TreeVariable extends Node {
+public abstract class TreeVariable extends Node implements java.io.Serializable {
 
     // Clique que a variável está associada.
     protected ITabledVariable cliqueAssociado;

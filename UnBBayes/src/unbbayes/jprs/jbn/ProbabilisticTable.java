@@ -6,7 +6,7 @@ import java.util.ResourceBundle;
  * Probabilistic Potential Table
  * @author Michael
  */
-public class ProbabilisticTable extends PotentialTable {
+public class ProbabilisticTable extends PotentialTable implements java.io.Serializable {
 	
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.jprs.jbn.resources.JbnResources");

@@ -32,7 +32,7 @@ import java.util.*;
  * @author Michael
  * @author Rommel
  */
-public class NodeList {
+public class NodeList implements java.io.Serializable {
     public static final int DEFAULT_SIZE = 30;
 
     private Node data[];

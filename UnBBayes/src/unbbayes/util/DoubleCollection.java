@@ -29,7 +29,7 @@ import java.util.ResourceBundle;
  * @author Michael
  * @author Rommel
  */
-public class DoubleCollection {
+public class DoubleCollection implements java.io.Serializable {
     public static final int DEFAULT_SIZE = 30;
 
     private double data[];
