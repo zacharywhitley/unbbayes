@@ -84,7 +84,7 @@
 			in.getChildren().add(new Element("abertos"));
 		}
 		
-		Feature f = new ListarLancamentoFeature();
+		Feature f = new ListarLancamentoUsoFeature();
 		Element outXML = f.process(in);
 		List children = outXML.getChildren();
 		for (int i = 0; i < children.size(); i++) {									
@@ -109,11 +109,11 @@
                 </td>
                 
                 <td align="center">
-                  <%= lan.getChildTextTrim("data-hora-inicio")  %>
+                  <%= lan.getChildTextTrim("data-hora-inicio-uso")  %>
                 </td align="center">
                 
                 <td align="center">
-                  <%= lan.getChildTextTrim("data-hora-fim")  %>
+                  <%= lan.getChildTextTrim("data-hora-fim-uso")  %>
                 </td>
                 
 			  </tr>			  

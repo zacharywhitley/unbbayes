@@ -66,9 +66,9 @@ public class ListarLancamentoUsoFeature implements Feature {
 		while (rs.next()) {
 			
 			Element lancamento = new Element("lancamento");
-			int codigo = rs.getInt("l.cod_lancamento");
-			Timestamp inicio = rs.getTimestamp("l.dt_hora_inicio_lancamento");
-			Timestamp fim = rs.getTimestamp("l.dt_hora_fim_lancamento");
+			int codigo = rs.getInt("l.cod_lancamento_uso");
+			Timestamp inicio = rs.getTimestamp("l.dt_hora_inicio_lancamento_uso");
+			Timestamp fim = rs.getTimestamp("l.dt_hora_fim_lancamento_uso");
 			String nome = rs.getString("u.nome");
 			String foto = rs.getString("u.foto");
 
