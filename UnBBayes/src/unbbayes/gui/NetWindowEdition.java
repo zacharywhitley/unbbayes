@@ -77,7 +77,6 @@ public class NetWindowEdition extends JPanel {
     private final JButton globalOption;
     private final JButton hierarchy;
     private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
-    private final Pattern decimalPattern = Pattern.compile("[0-9]*[.|,][0-9]*");
     private Matcher matcher;
 
 	/** Load resource file from this package */
@@ -259,7 +258,7 @@ public class NetWindowEdition extends JPanel {
             Object selected = netWindow.getIGraph().getSelected();
             if (selected instanceof Node) {
               Node nodeAux = (Node)selected;
-              if ((e.getKeyCode() == e.VK_ENTER) && (txtSigla.getText().length()>0)) {
+              if ((e.getKeyCode() == e.VK_ENTER) && (txtSigla.getText().length()>1)) {
                 try {
                     String name = txtSigla.getText(0,txtSigla.getText().length());
                     matcher = wordPattern.matcher(name);
@@ -287,7 +286,7 @@ public class NetWindowEdition extends JPanel {
             if (selected instanceof Node)
             {
               Node nodeAux = (Node)selected;
-              if ((e.getKeyCode() == e.VK_ENTER) && (txtDescription.getText().length()>0)) {
+              if ((e.getKeyCode() == e.VK_ENTER) && (txtDescription.getText().length()>1)) {
                 try {
                     String name = txtDescription.getText(0,txtDescription.getText().length());
                     matcher = wordPattern.matcher(name);

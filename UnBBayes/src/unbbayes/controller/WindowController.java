@@ -21,28 +21,60 @@
 
 package unbbayes.controller;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.*;
-import java.awt.image.*;
-import java.awt.print.*;
-import java.io.*;
-import java.text.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
+import java.awt.print.PageFormat;
+import java.awt.print.PrinterException;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Collections;
 import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 
-import org.shetline.io.*;
-import unbbayes.gui.*;
-import unbbayes.prs.*;
-import unbbayes.prs.bn.*;
-import unbbayes.prs.id.*;
+import org.shetline.io.GIFOutputStream;
+import sun.security.krb5.internal.crypto.e;
+import unbbayes.gui.EvidenceTree;
+import unbbayes.gui.ExplanationProperties;
+import unbbayes.gui.FileIcon;
+import unbbayes.gui.NetWindow;
+import unbbayes.gui.SimpleFileFilter;
+import unbbayes.prs.Edge;
+import unbbayes.prs.Node;
+import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.id.DecisionNode;
+import unbbayes.prs.id.UtilityNode;
 import unbbayes.util.NodeList;
 
 /**
@@ -70,6 +102,9 @@ public class WindowController implements KeyListener {
     private List copiados;
 
     private boolean bColou;
+    
+    private final Pattern decimalPattern = Pattern.compile("[0-9]*([.|,][0-9]+)?");
+    private Matcher matcher;
 
     /** Load resource file from this package */
     private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.controller.resources.ControllerResources");
@@ -444,93 +479,149 @@ public class WindowController implements KeyListener {
      * @since
      * @see        unbbayes.prs.bn.Node
      */
-    public JTable retornarTabela(final Node no) {
+    public JTable retornarTabela(final Node node) {
         tela.getTxtDescription().setEnabled(true);
         tela.getTxtSigla().setEnabled(true);
-        tela.getTxtDescription().setText(no.getDescription());
-        tela.getTxtSigla().setText(no.getName());
+        tela.getTxtDescription().setText(node.getDescription());
+        tela.getTxtSigla().setText(node.getName());
 
-        final JTable tabela;
-        final PotentialTable auxTabPot;
-        final int noVariaveis;
+        final JTable table;
+        final PotentialTable potTab;
+        final int variables;
+        if (node instanceof ITabledVariable) {
+            potTab = ((ITabledVariable) node).getPotentialTable();
 
-        if (no instanceof ITabledVariable) {
-            auxTabPot = ((ITabledVariable) no).getPotentialTable();
+            int states = 1;
+            variables = potTab.variableCount();
 
-            int nEstados = 1;
-            noVariaveis = auxTabPot.variableCount();
+            // calculate the number of states by multiplying the number of 
+            // states that each father (variables) has. Where variable 0 is the
+            // node itself. That is why it starts at 1.
+            /* Ex: states = 2 * 2;
+             *
+             * |------------------------------------------------------|
+             * |   Father 2   |      State 1      |      State 2      |
+             * |--------------|-------------------|-------------------|
+             * |   Father 1   | State 1 | State 2 | State 1 | State 2 |
+             * |------------------------------------------------------|
+             * | Node State 1 |    1    |    1    |    1    |    1    |
+             * | Node State 2 |    0    |    0    |    0    |    0    |
+             *
+             */
+            for (int count = 1; count < variables; count++) {
+                states *= potTab.getVariableAt(count).getStatesSize();
+            }
+            
+            // the number of rows is the number of states the node has plus the
+            // number of fathers (variables - 1, because one of the variables 
+            // is the node itself).
+            int rows = node.getStatesSize() + variables - 1;
+            
+            // the number of columns is the number of states that we calculate
+            // before plus one that is the column where the fathers names and 
+            // the states of the node itself will be placed.
+            int columns = states + 1;
+            
 
-            for (int count = 1; count < noVariaveis; count++) {
-                nEstados *= auxTabPot.getVariableAt(count).getStatesSize();
+            table = new JTable(rows, columns);
+
+            // put the name of the states of the node in the first column 
+            // starting in the (variables - 1)th row (number of fathers). That 
+            // is because on the rows before that there will be placed the 
+            // name of the fathers.
+            for (int k = variables - 1, l = 0; k < table.getRowCount(); k++, l++) {
+                table.setValueAt(node.getStateAt(l), k, 0);
             }
 
-            tabela = new JTable(no.getStatesSize() + noVariaveis - 1, nEstados + 1);
-
-            for (int k = noVariaveis - 1, l = 0; k < tabela.getRowCount(); k++, l++) {
-                tabela.setValueAt(no.getStateAt(l), k, 0);
-            }
-
-            for (int k = noVariaveis - 1, l = 0; k >= 1; k--, l++) {
-                Node auxNo = auxTabPot.getVariableAt(k);
-                nEstados /= auxNo.getStatesSize();
-                tabela.setValueAt(auxNo.getName(), l, 0);
-                for (int i = 0; i < tabela.getColumnCount() - 1; i++) {
-                    tabela.setValueAt(auxNo.getStateAt((i / nEstados) % auxNo.getStatesSize()), l, i + 1);
+            // put the name of the father and its states' name in the right 
+            // place.
+            for (int k = variables - 1, l = 0; k >= 1; k--, l++) {
+                Node variable = potTab.getVariableAt(k);
+                
+                // the number of states is the multiplication of the number of
+                // states of the other fathers above this one.
+                states /= variable.getStatesSize();
+                
+                // put the name of the father in the first column.
+                table.setValueAt(variable.getName(), l, 0);
+                
+                // put the name of the states of this father in the lth row 
+                // and ith column, repeating the name if necessary (for each 
+                // state of the father above).
+                for (int i = 0; i < table.getColumnCount() - 1; i++) {
+                    table.setValueAt(variable.getStateAt((i / states) % variable.getStatesSize()), l, i + 1);
                 }
             }
 
-            nEstados = no.getStatesSize();
-            for (int i = 1, k = 0; i < tabela.getColumnCount(); i++, k += nEstados) {
-                for (int j = noVariaveis - 1, l = 0; j < tabela.getRowCount(); j++, l++) {
-                    tabela.setValueAt("" + df.format(auxTabPot.getValue(k + l)), j, i);
+            // now states is the number of states that the node has.
+            states = node.getStatesSize();
+            
+            // put the values of the probabilistic table in the jth row and ith
+            // column, picking up the values in a double collection in potTab.
+            for (int i = 1, k = 0; i < table.getColumnCount(); i++, k += states) {
+                for (int j = variables - 1, l = 0; j < table.getRowCount(); j++, l++) {
+                    table.setValueAt("" + df.format(potTab.getValue(k + l)), j, i);
                 }
             }
+            
         } else {
             // decision
-            auxTabPot = null;
-            noVariaveis = no.getParents().size();
+            
+            // the number of rows in this case is the number of states of the 
+            // node and the number of columns is always 1.
+            int rows = node.getStatesSize();
+            int columns = 1;
+            
+            // there is no potential table and the number of variables is the 
+            // number of parents this node has.
+            potTab = null;
+            variables = node.getParents().size();
 
-            tabela = new JTable(no.getStatesSize(), 1);
-            for (int i = 0; i < no.getStatesSize(); i++) {
-                tabela.setValueAt(no.getStateAt(i), i, 0);
+            table = new JTable(node.getStatesSize(), 1);
+            // put the name of each state in the first and only column.
+            for (int i = 0; i < node.getStatesSize(); i++) {
+                table.setValueAt(node.getStateAt(i), i, 0);
             }
+            
         }
-        tabela.setTableHeader(null);
-        tabela.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        tabela.getModel().addTableModelListener(
+        
+        table.setTableHeader(null);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        table.getModel().addTableModelListener(
             new TableModelListener() {
                 public void tableChanged(TableModelEvent e) {
-                    if (e.getLastRow() < noVariaveis - 1) {
+                    if (e.getLastRow() < variables - 1) {
                         return;
                     }
                     if (e.getColumn() == 0) {
-                        if (!tabela.getValueAt(e.getLastRow(), e.getColumn()).equals("")) {
-                            no.setStateAt(tabela.getValueAt(e.getLastRow(), e.getColumn()).toString(), e.getLastRow() - (tabela.getRowCount() - no.getStatesSize()));
+                        if (!table.getValueAt(e.getLastRow(), e.getColumn()).equals("")) {
+                            node.setStateAt(table.getValueAt(e.getLastRow(), e.getColumn()).toString(), e.getLastRow() - (table.getRowCount() - node.getStatesSize()));
                         }
                     } else {
                         try {
-                            String temp = tabela.getValueAt(e.getLastRow(), e.getColumn()).toString().replace(',', '.');
-//                            double valor = df.parse(temp).doubleValue();
-							float valor = Float.parseFloat(temp);
-                            /*
-                            if (valor > 1.0) {
-                                valor = 1.0;
-                                tabela.setValueAt("1", e.getLastRow(), e.getColumn());
-                            } else if (valor < 0) {
-                                valor = 0.0;
-                                tabela.setValueAt("0", e.getLastRow(), e.getColumn());
+                            String temp = table.getValueAt(e.getLastRow(), e.getColumn()).toString().replace(',', '.');
+                            matcher = decimalPattern.matcher(temp);
+                            if (!matcher.matches()) {
+                                JOptionPane.showMessageDialog(null, /*resource.getString("decimalError")*/"Decimal Error", /*resource.getString("decimalException")*/"Decimal Exception", JOptionPane.ERROR_MESSAGE);
+                                table.revalidate();
+                                table.setValueAt("" + potTab.getValue((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow() - variables + 1), e.getLastRow(), e.getColumn());
+                                return;
                             }
-                            */
-                            auxTabPot.setValueAt((e.getColumn() - 1) * no.getStatesSize() + e.getLastRow() - noVariaveis + 1, valor);
+							float valor = Float.parseFloat(temp);
+                            potTab.setValueAt((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow() - variables + 1, valor);
                         } catch (Exception pe) {
                             System.err.println(resource.getString("potentialTableException"));
                         }
                     }
                 }
             });
+            
+            //table = new unbbayes.gui.table.ProbabilisticTable(node, new ProbabilisticTableModel(node));
+            //table = new JTable(new ProbabilisticTableModel(node));
+            //System.out.println(table.toString());
 
 
-            return tabela;
+            return table;
     }
 
 
@@ -915,6 +1006,6 @@ public class WindowController implements KeyListener {
     }
 
     public void changeToNetCompilation() {
-    	rede.setFirstInitialization(true);
+        rede.setFirstInitialization(true);
     }
 }
