@@ -15,8 +15,8 @@ import unbbayes.util.GraphPaperLayout;
 public class PreprocessPanel extends JPanel
 { /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
-  private JPanel jPanel7 = new JPanel();
-  private JPanel jPanel6 = new JPanel();
+  private JPanel filePanel = new JPanel();
+  private AttributeSelectionPanel attributePanel = new AttributeSelectionPanel();
   private JLabel jLabel6 = new JLabel();
   private JLabel jLabel5 = new JLabel();
   private JLabel jLabel4 = new JLabel();
@@ -49,7 +49,7 @@ public class PreprocessPanel extends JPanel
   private BorderLayout borderLayout31 = new BorderLayout();
   private BorderLayout borderLayout30 = new BorderLayout();
   private JPanel jPanel40 = new JPanel();
-  private JPanel jPanel9 = new JPanel();
+  private JPanel attributeInformationPanel = new JPanel();
   private BorderLayout borderLayout29 = new BorderLayout();
   private BorderLayout borderLayout28 = new BorderLayout();
   private BorderLayout borderLayout27 = new BorderLayout();
@@ -89,19 +89,14 @@ public class PreprocessPanel extends JPanel
   private TitledBorder titledBorder1;
   private Border border1;
   private InstanceSet instances;
-  private BorderLayout borderLayout34 = new BorderLayout();
   private JScrollPane jScrollPane2 = new JScrollPane();
   private BorderLayout borderLayout35 = new BorderLayout();
   private JTable jTable1 = new JTable();
-  private JPanel jPanel2 = new JPanel();
+  private JPanel numericAttributePanel = new JPanel();
   private PreprocessorMain reference;
   private GridLayout gridLayout4 = new GridLayout();
   private JPanel jPanel14 = new JPanel();
-  private JButton jButton1 = new JButton();
-  private JButton jButton2 = new JButton();
-  private JPanel jPanel15 = new JPanel();
-  private BorderLayout borderLayout14 = new BorderLayout();
-  private AttributeSelectionPanel jPanel8 = new AttributeSelectionPanel();
+  private JButton discretizeButton = new JButton();
   private int selectedAttribute;
   private GridLayout gridLayout6 = new GridLayout();
   private GraphPaperLayout gridLayout1 = new GraphPaperLayout(new Dimension(6,6));
@@ -126,7 +121,7 @@ public class PreprocessPanel extends JPanel
     titledBorder2 = new TitledBorder(border1,resource.getString("fileAttributes"));
     titledBorder1 = new TitledBorder(border1,resource.getString("file"));
     border1 = BorderFactory.createLineBorder(new Color(153, 153, 153),1);
-    jPanel7.setLayout(gridLayout2);
+    filePanel.setLayout(gridLayout2);
     jLabel6.setText(resource.getString("attributes"));
     jLabel5.setText(resource.getString("instances"));
     jLabel4.setText(resource.getString("none"));
@@ -148,7 +143,7 @@ public class PreprocessPanel extends JPanel
     gridLayout2.setVgap(3);
     this.setLayout(gridLayout1);
     jPanel40.setLayout(borderLayout27);
-    jPanel9.setLayout(borderLayout17);
+    attributeInformationPanel.setLayout(borderLayout17);
     jPanel39.setLayout(borderLayout28);
     jPanel38.setLayout(borderLayout29);
     jPanel37.setLayout(borderLayout30);
@@ -171,38 +166,24 @@ public class PreprocessPanel extends JPanel
     jLabel10.setText(resource.getString("none"));
     gridLayout5.setRows(2);
     gridLayout5.setColumns(2);
-    jPanel7.setBorder(titledBorder1);
-    jPanel6.setBorder(titledBorder2);
-    jPanel6.setLayout(borderLayout34);
-    jPanel9.setBorder(titledBorder3);
+    filePanel.setBorder(titledBorder1);
+    attributePanel.setBorder(titledBorder2);
+    attributeInformationPanel.setBorder(titledBorder3);
     jPanel27.setLayout(borderLayout35);
-    jPanel2.setLayout(gridLayout4);
-    jButton1.setEnabled(false);
-    jButton1.setText(resource.getString("discretizeAttribute"));
-    jButton1.addActionListener(new java.awt.event.ActionListener()
+    numericAttributePanel.setLayout(gridLayout4);
+    discretizeButton.setEnabled(false);
+    discretizeButton.setText(resource.getString("discretizeAttribute"));
+    discretizeButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jButton1_actionPerformed(e);
+        discretizeButton_actionPerformed(e);
       }
     });
-    jPanel2.setBorder(titledBorder4);
-    jButton2.setEnabled(false);
-    jButton2.setText(resource.getString("instancesEditor"));
-    jButton2.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jButton2_actionPerformed(e);
-      }
-    });
-    jPanel15.setLayout(borderLayout14);
+    numericAttributePanel.setBorder(titledBorder4);
     jScrollPane2.setBorder(null);
-    jPanel8.setToolTipText(resource.getString("selectedAttributes"));
+    attributePanel.setToolTipText(resource.getString("selectedAttributes"));
     gridLayout6.setColumns(2);
-    jPanel6.add(jPanel15, BorderLayout.SOUTH);
-    jPanel15.add(jButton2, BorderLayout.CENTER);
-    jPanel6.add(jPanel8,  BorderLayout.CENTER);
     jPanel13.add(jPanel22, BorderLayout.CENTER);
     jPanel22.add(jLabel3, BorderLayout.CENTER);
     jPanel13.add(jPanel23, BorderLayout.WEST);
@@ -213,16 +194,16 @@ public class PreprocessPanel extends JPanel
     jPanel12.add(jPanel21, BorderLayout.WEST);
     jPanel21.add(jLabel5, BorderLayout.CENTER);
     jPanel10.add(jPanel13, null);
-    jPanel7.add(jPanel11, null);
+    filePanel.add(jPanel11, null);
     jPanel11.add(jPanel18, BorderLayout.WEST);
     jPanel18.add(jLabel1, BorderLayout.CENTER);
     jPanel11.add(jPanel19, BorderLayout.CENTER);
     jPanel19.add(jLabel4, BorderLayout.CENTER);
-    jPanel7.add(jPanel10, null);
-    jPanel9.add(jPanel27, BorderLayout.CENTER);
+    filePanel.add(jPanel10, null);
+    attributeInformationPanel.add(jPanel27, BorderLayout.CENTER);
     jPanel27.add(jScrollPane2,  BorderLayout.CENTER);
     jScrollPane2.getViewport().add(jTable1, null);
-    jPanel9.add(jPanel28, BorderLayout.NORTH);
+    attributeInformationPanel.add(jPanel28, BorderLayout.NORTH);
     jPanel29.add(jPanel33, BorderLayout.WEST);
     jPanel33.add(jLabel9, BorderLayout.CENTER);
     jPanel29.add(jPanel34, BorderLayout.CENTER);
@@ -243,22 +224,22 @@ public class PreprocessPanel extends JPanel
     jPanel39.add(jLabel15, BorderLayout.CENTER);
     jPanel30.add(jPanel40, BorderLayout.WEST);
     jPanel40.add(jLabel16, BorderLayout.CENTER);
-    jPanel2.add(jPanel14, null);
-    jPanel14.add(jButton1, null);
+    numericAttributePanel.add(jPanel14, null);
+    jPanel14.add(discretizeButton, null);
     jTable1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     jTable1.getTableHeader().setReorderingAllowed(false);
     jTable1.getTableHeader().setResizingAllowed(false);
     jTable1.setColumnSelectionAllowed(false);
     jTable1.setRowSelectionAllowed(false);
-    jPanel8.getSelectionModel().addListSelectionListener(new ListSelectionListener()
+    attributePanel.getSelectionModel().addListSelectionListener(new ListSelectionListener()
     {   public void valueChanged(ListSelectionEvent e)
         {   jPanel8_valueChanged(e);
 	}
     });
-    this.add(jPanel7, new Rectangle(0,0,3,1));
-    this.add(jPanel6, new Rectangle(0,1,3,5));
-    this.add(jPanel2, new Rectangle(3,0,3,1));
-    this.add(jPanel9, new Rectangle(3,1,3,5));
+    this.add(filePanel, new Rectangle(0,0,3,1));
+    this.add(attributePanel, new Rectangle(0,1,3,5));
+    this.add(numericAttributePanel, new Rectangle(3,0,3,1));
+    this.add(attributeInformationPanel, new Rectangle(3,1,3,5));
   }
 
   public void setBaseInstances(InstanceSet inst)
@@ -268,8 +249,7 @@ public class PreprocessPanel extends JPanel
       jLabel2.setText(inst.numWeightedInstances()+"");
       jLabel3.setText(inst.numAttributes()+"");
       attributeStats = inst.getAllAttributeStats();
-      jPanel8.setInstances(instances);
-      jButton2.setEnabled(true);
+      attributePanel.setInstances(instances);
   }
 
   /**
@@ -388,11 +368,11 @@ public class PreprocessPanel extends JPanel
                       int type = att.getAttributeType();
                       if (type == Attribute.NOMINAL)
                       {   jLabel12.setText(resource.getString("nominal"));
-                          jButton1.setEnabled(false);
+                          discretizeButton.setEnabled(false);
                       }
                       else
                       {   jLabel12.setText(resource.getString("numeric"));
-                          jButton1.setEnabled(true);
+                          discretizeButton.setEnabled(true);
                       }
                       jLabel10.setText(att.getAttributeName());
                       AttributeStats attStats = attributeStats[selectedAttribute];
@@ -410,11 +390,8 @@ public class PreprocessPanel extends JPanel
   }
 
   //Chama editor de instâncias
-  void jButton2_actionPerformed(ActionEvent e)
-  {
-  }
 
-  void jButton1_actionPerformed(ActionEvent e)
+  void discretizeButton_actionPerformed(ActionEvent e)
   {   new DiscretizationPanel(reference,instances,instances.getAttribute(selectedAttribute));
   }
 }

@@ -154,4 +154,11 @@ public class FileController
 
 		  return loader.getInstances();
 	  }
+
+	//--------------------------------------------------------------//
+
+	  public void saveInstanceSet(InstanceSet instanceSet) throws Exception
+	  {   	  
+	  }
+
 }

@@ -25,8 +25,8 @@ public class EvaluationPanel extends JPanel
   private BorderLayout borderLayout44 = new BorderLayout();
   private JButton jButton9 = new JButton();
   private JPanel jPanel2 = new JPanel();
-  private JPanel jPanel47 = new JPanel();
-  private JPanel jPanel46 = new JPanel();
+  private JPanel classifierOutputPanel = new JPanel();
+  private JPanel modelPanel = new JPanel(new BorderLayout());
   private JScrollPane jScrollPane2 = new JScrollPane();
   private BorderLayout borderLayout1 = new BorderLayout();
   private TitledBorder titledBorder10;
@@ -36,7 +36,6 @@ public class EvaluationPanel extends JPanel
   private TitledBorder titledBorder6;
   private ImageIcon salvarIcon;
   private Border border10;
-  private BorderLayout borderLayout2 = new BorderLayout();
   private InstanceSet instances;
   private Classifier classifier;
 //  private EvaluationThread thread;
@@ -53,11 +52,11 @@ public class EvaluationPanel extends JPanel
   private GridLayout gridLayout1 = new GridLayout();
   private JPanel jPanel1 = new JPanel();
   private JComboBox jComboBox2 = new JComboBox();
-  private JPanel jPanel49 = new JPanel();
+  private JPanel classSelectionPanel = new JPanel();
   //private JButton jButton8 = new JButton();
-  private JPanel jPanel50 = new JPanel();
+  private JPanel logPanel = new JPanel();
   private BorderLayout borderLayout43 = new BorderLayout();
-  private JPanel jPanel3 = new JPanel();
+  private JPanel evaluationTypePanel = new JPanel();
   private GridLayout gridLayout3 = new GridLayout();
   private JPanel jPanel4 = new JPanel();
   private JPanel jPanel5 = new JPanel();
@@ -110,11 +109,10 @@ public class EvaluationPanel extends JPanel
       }
     });
     jPanel2.setLayout(paperLayout);
-    jPanel47.setLayout(borderLayout44);
+    classifierOutputPanel.setLayout(borderLayout44);
     this.setLayout(borderLayout1);
-    jPanel46.setBorder(titledBorder6);
-    jPanel46.setLayout(borderLayout2);
-    jPanel47.setBorder(titledBorder10);
+    modelPanel.setBorder(titledBorder6);
+    classifierOutputPanel.setBorder(titledBorder10);
     jTextArea2.setEditable(false);
     jLabel2.setText("  ");
     jButton7.setEnabled(false);
@@ -138,9 +136,9 @@ public class EvaluationPanel extends JPanel
       }
     });
     jComboBox2.setEnabled(false);
-    jPanel49.setLayout(gridLayout1);
-    jPanel49.setBorder(titledBorder9);
-    jPanel49.setMinimumSize(new Dimension(148, 104));
+    classSelectionPanel.setLayout(gridLayout1);
+    classSelectionPanel.setBorder(titledBorder9);
+    classSelectionPanel.setMinimumSize(new Dimension(148, 104));
     //jButton8.setEnabled(false);
     //jButton8.setText("Stop");
     /*jButton8.addActionListener(new java.awt.event.ActionListener()
@@ -150,11 +148,11 @@ public class EvaluationPanel extends JPanel
         jButton8_actionPerformed(e);
       }
     });*/
-    jPanel50.setLayout(borderLayout43);
-    jPanel50.setBorder(titledBorder8);
-    jPanel3.setLayout(gridLayout3);
+    logPanel.setLayout(borderLayout43);
+    logPanel.setBorder(titledBorder8);
+    evaluationTypePanel.setLayout(gridLayout3);
     gridLayout3.setRows(3);
-    jPanel3.setBorder(titledBorder1);
+    evaluationTypePanel.setBorder(titledBorder1);
     jPanel6.setLayout(borderLayout3);
     jPanel5.setLayout(borderLayout4);
     jPanel4.setLayout(borderLayout5);
@@ -196,30 +194,30 @@ public class EvaluationPanel extends JPanel
       }
     });
     jTextArea1.setEditable(false);
-    jPanel46.add(jLabel2,  BorderLayout.CENTER);
-    jPanel47.add(jPanel62, BorderLayout.CENTER);
+    modelPanel.add(jLabel2,  BorderLayout.CENTER);
+    classifierOutputPanel.add(jPanel62, BorderLayout.CENTER);
     jPanel62.add(jScrollPane2, BorderLayout.CENTER);
     jScrollPane2.getViewport().add(jTextArea2, null);
-    jPanel47.add(jPanel63, BorderLayout.SOUTH);
+    classifierOutputPanel.add(jPanel63, BorderLayout.SOUTH);
     jPanel63.add(jButton9, null);
-    jPanel3.add(jPanel6, null);
+    evaluationTypePanel.add(jPanel6, null);
     jPanel6.add(jRadioButton1, BorderLayout.CENTER);
-    jPanel3.add(jPanel5, null);
-    jPanel5.add(jRadioButton2, BorderLayout.NORTH);
-    jPanel3.add(jPanel4, null);
+    evaluationTypePanel.add(jPanel5, null);
+    jPanel5.add(jRadioButton2,  BorderLayout.CENTER);
+    evaluationTypePanel.add(jPanel4, null);
     jPanel4.add(jRadioButton3, BorderLayout.CENTER);
     jPanel4.add(jButton1,  BorderLayout.EAST);
-    jPanel49.add(jComboBox2, null);
-    jPanel49.add(jPanel1, null);
+    classSelectionPanel.add(jComboBox2, null);
+    classSelectionPanel.add(jPanel1, null);
     jPanel1.add(jButton7, null);
     //jPanel1.add(jButton8, null);
-    jPanel50.add(jScrollPane1,  BorderLayout.CENTER);
+    logPanel.add(jScrollPane1,  BorderLayout.CENTER);
     jScrollPane1.getViewport().add(jTextArea1, null);
-    jPanel2.add(jPanel46, new Rectangle(0,0,4,1));
-    jPanel2.add(jPanel3, new Rectangle(0,1,1,2));
-    jPanel2.add(jPanel49, new Rectangle(0,3,1,2));
-    jPanel2.add(jPanel50, new Rectangle(0,5,1,4));
-    jPanel2.add(jPanel47, new Rectangle(1,1,3,8));
+    jPanel2.add(modelPanel, new Rectangle(0,0,4,1));
+    jPanel2.add(evaluationTypePanel, new Rectangle(0,1,1,2));
+    jPanel2.add(classSelectionPanel, new Rectangle(0,3,1,2));
+    jPanel2.add(logPanel, new Rectangle(0,5,1,4));
+    jPanel2.add(classifierOutputPanel, new Rectangle(1,1,3,8));
     this.add(jPanel2, BorderLayout.CENTER);
     buttonGroup1.add(jRadioButton1);
     buttonGroup1.add(jRadioButton2);
@@ -279,15 +277,15 @@ public class EvaluationPanel extends JPanel
           {   public void run()
               {   //Classifier classifier;
                   int numAttributes = instances.numAttributes();
-                  if (classifier instanceof BayesianLearning)
+                  if (classifier instanceof DistributionClassifier)
                   {   if (jRadioButton1.isSelected())
-                      {   ((BayesianLearning)classifier).setNormalClassification();
+                      {   ((DistributionClassifier)classifier).setNormalClassification();
                       }
                       else if (jRadioButton2.isSelected())
-                      {   ((BayesianLearning)classifier).setRelativeClassification();
+                      {   ((DistributionClassifier)classifier).setRelativeClassification();
                       }
                       else if (jRadioButton3.isSelected())
-                      {   ((BayesianLearning)classifier).setAbsoluteClassification(priorityClassValues,priorityProbabilities);
+                      {   ((DistributionClassifier)classifier).setAbsoluteClassification(priorityClassValues,priorityProbabilities);
                           for (int i=0;i<priorityClassValues.length;i++)
                           {   System.out.println(priorityClassValues[i]+" "+priorityProbabilities[i]);
                           }
@@ -373,7 +371,7 @@ public class EvaluationPanel extends JPanel
    *  */
   public void setModel(Classifier classifier,InstanceSet inst)
   {   jTextArea2.setText("");
-      if (classifier instanceof BayesianLearning && !(classifier instanceof CombinatorialNeuralModel))
+      if (classifier instanceof DistributionClassifier && !(classifier instanceof CombinatorialNeuralModel))
       {   jLabel2.setText("Model - Bayesian Network");
       }
       else if (classifier instanceof DecisionTreeLearning)
@@ -394,7 +392,7 @@ public class EvaluationPanel extends JPanel
               jComboBox2.setSelectedItem(instances.getAttribute(i).getAttributeName());
       }
       instances.setClassIndex(jComboBox2.getSelectedIndex());
-      if (classifier instanceof BayesianLearning && !(classifier instanceof CombinatorialNeuralModel))
+      if (classifier instanceof DistributionClassifier && !(classifier instanceof CombinatorialNeuralModel))
       {   jRadioButton1.setEnabled(true);
           jRadioButton2.setEnabled(true);
           jRadioButton3.setEnabled(true);

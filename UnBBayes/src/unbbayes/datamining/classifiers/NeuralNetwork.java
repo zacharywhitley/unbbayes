@@ -5,7 +5,7 @@ import java.util.*;
 import unbbayes.datamining.classifiers.neuralnetwork.*;
 import unbbayes.datamining.datamanipulation.*;
 
-public class NeuralNetwork extends BayesianLearning implements Serializable{
+public class NeuralNetwork extends DistributionClassifier implements Serializable{
 
   public static final int SIGMOID = 0;
   public static final int TANH = 1;

@@ -49,10 +49,6 @@ public class Id3 extends DecisionTreeLearning implements Serializable
           while (enumAtt.hasMoreElements())
           {
             Attribute attr = (Attribute) enumAtt.nextElement();
-            //if (!attr.isNominal())
-            //{
-            //     throw new Exception(resource.getString("exception2"));
-            //}
             Enumeration enum = data.enumerateInstances();
             while (enum.hasMoreElements())
             {
@@ -203,8 +199,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable
        		node = (Node)treeNode.getUserObject();
        		root.setUserObject(node.getAttributeName());
        }
-       tree = new JTree(root);System.out.println(toString());
-       byte[] values = {0,0,0}; System.out.println(classifyInstance(new Instance(values)));
+       tree = new JTree(root);
     }
    
   //-----------------------------------------------------------------------//

@@ -12,7 +12,7 @@ import unbbayes.prs.bn.*;
  * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
  * @version $1.0 $ (17/02/2002)
  */
-public class NaiveBayes extends BayesianLearning
+public class NaiveBayes extends DistributionClassifier
 {	/** Load resources file from this package */
 	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.classifiers.resources.ClassifiersResource");
 

@@ -11,7 +11,7 @@ import unbbayes.datamining.datamanipulation.*;
  *  @author Rafael Moraes Noivo
  *  @version $1.0 $ (02/16/2003)
  */
-public class CombinatorialNeuralModel extends BayesianLearning implements Serializable{
+public class CombinatorialNeuralModel extends DistributionClassifier implements Serializable{
 
   /**The model's combinations.*/
   private HashMap model = new HashMap();

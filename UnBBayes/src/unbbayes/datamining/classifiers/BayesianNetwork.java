@@ -11,7 +11,7 @@ import unbbayes.prs.bn.*;
  * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
  * @version $1.0 $ (17/02/2002)
  */
-public class BayesianNetwork extends BayesianLearning
+public class BayesianNetwork extends DistributionClassifier
 {
   /** Atributo classe do conjunto de dados */
   private Attribute classAttribute;

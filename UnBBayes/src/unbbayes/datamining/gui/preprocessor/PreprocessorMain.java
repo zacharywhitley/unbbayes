@@ -23,8 +23,10 @@ public class PreprocessorMain extends JInternalFrame
   private JMenuItem jMenuHelpAbout = new JMenuItem();
   private JToolBar jToolBar = new JToolBar();
   private JButton openButton = new JButton();
+  private JButton saveButton = new JButton();
   private JButton helpButton = new JButton();
-  private ImageIcon abrirIcon;
+  private ImageIcon openIcon;
+  private ImageIcon saveIcon;
   private ImageIcon helpIcon;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JTabbedPane jTabbedPane1 = new JTabbedPane();
@@ -35,12 +37,13 @@ public class PreprocessorMain extends JInternalFrame
   private JLabel statusBar = new JLabel();
   private BorderLayout borderLayout2 = new BorderLayout();
   private InstanceSet inst;
-  private JMenuItem jMenuItem1 = new JMenuItem();
+  private JMenuItem jMenuFileOpen = new JMenuItem();
   private JMenuItem jMenuFileExit = new JMenuItem();
   private JFileChooser fileChooser;
   private JPanel jPanel3 = new JPanel();
   private BorderLayout borderLayout3 = new BorderLayout();
   protected IconController iconController = IconController.getInstance();
+  JMenuItem jMenuFileSave = new JMenuItem();
 
   /**Construct the frame*/
   public PreprocessorMain()
@@ -58,7 +61,8 @@ public class PreprocessorMain extends JInternalFrame
   }
   /**Component initialization*/
   private void jbInit() throws Exception
-  { abrirIcon = iconController.getOpenIcon();
+  { openIcon = iconController.getOpenIcon();
+    saveIcon = iconController.getSaveIcon();
     helpIcon = iconController.getHelpIcon();
     contentPane = (JPanel) this.getContentPane();
     titledBorder5 = new TitledBorder(border5,resource.getString("selectProgram"));
@@ -79,7 +83,7 @@ public class PreprocessorMain extends JInternalFrame
         jMenuHelpAbout_actionPerformed(e);
       }
     });
-    openButton.setIcon(abrirIcon);
+    openButton.setIcon(openIcon);
     openButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -88,6 +92,16 @@ public class PreprocessorMain extends JInternalFrame
       }
     });
     openButton.setToolTipText(resource.getString("openFile"));
+    saveButton.setIcon(saveIcon);
+    saveButton.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        saveButton_actionPerformed(e);
+      }
+    });
+    saveButton.setEnabled(false);
+    saveButton.setToolTipText(resource.getString("saveFile"));
     helpButton.setIcon(helpIcon);
     helpButton.addActionListener(new java.awt.event.ActionListener()
     {
@@ -102,14 +116,14 @@ public class PreprocessorMain extends JInternalFrame
     jPanel41.setBorder(titledBorder5);
     titledBorder5.setTitle(resource.getString("status"));
     statusBar.setText(resource.getString("welcome"));
-    jMenuItem1.setIcon(abrirIcon);
-    jMenuItem1.setMnemonic(((Character)resource.getObject("openMnemonic")).charValue());
-    jMenuItem1.setText(resource.getString("open"));
-    jMenuItem1.addActionListener(new java.awt.event.ActionListener()
+    jMenuFileOpen.setIcon(openIcon);
+    jMenuFileOpen.setMnemonic(((Character)resource.getObject("openMnemonic")).charValue());
+    jMenuFileOpen.setText(resource.getString("open"));
+    jMenuFileOpen.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jMenuItem1_actionPerformed(e);
+        jMenuFileOpen_actionPerformed(e);
       }
     });
     jMenuFileExit.setMnemonic(((Character)resource.getObject("fileExitMnemonic")).charValue());
@@ -122,9 +136,22 @@ public class PreprocessorMain extends JInternalFrame
       }
     });
     jPanel3.setLayout(borderLayout3);
+    jMenuFileSave.setEnabled(false);
+    jMenuFileSave.setIcon(saveIcon);
+    jMenuFileSave.setMnemonic(((Character)resource.getObject("saveMnemonic")).charValue());
+    jMenuFileSave.setText(resource.getString("save"));
+    jMenuFileSave.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        saveButton_actionPerformed(e);
+      }
+    });
     jToolBar.add(openButton);
+    jToolBar.add(saveButton);
     jToolBar.add(helpButton);
-    jMenuFile.add(jMenuItem1);
+    jMenuFile.add(jMenuFileOpen);
+    jMenuFile.add(jMenuFileSave);
     jMenuFile.add(jMenuFileExit);
     jMenuHelp.add(jMenuHelpAbout);
     jMenuBar1.add(jMenuFile);
@@ -133,7 +160,7 @@ public class PreprocessorMain extends JInternalFrame
     contentPane.add(jToolBar,  BorderLayout.NORTH);
     contentPane.add(jPanel41,  BorderLayout.SOUTH);
     jPanel41.add(statusBar, BorderLayout.CENTER);
-    jTabbedPane1.add(jPanel1,resource.getString("preprocess"));
+    jTabbedPane1.add(jPanel1, "jPanel1");
     contentPane.add(jPanel3,  BorderLayout.CENTER);
     jPanel3.add(jTabbedPane1,BorderLayout.CENTER);
   }
@@ -150,6 +177,51 @@ public class PreprocessorMain extends JInternalFrame
       catch (Exception evt)
       {   statusBar.setText(resource.getString("errorException")+evt.getMessage()+" "+this.getClass().getName());
       }
+  }
+
+  void saveButton_actionPerformed(ActionEvent e)
+  {
+	setCursor(new Cursor(Cursor.WAIT_CURSOR));
+	String[] s1 = {"ARFF"};
+	String[] s2 = {"TXT"};
+	fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+	fileChooser.setMultiSelectionEnabled(false);
+	//adicionar FileView no FileChooser para desenhar ícones de arquivos
+	fileChooser.setFileView(new FileIcon(this));
+	fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "TxtFiles (*.txt)"));
+	fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ArffFiles (*.arff)"));
+	int returnVal = fileChooser.showSaveDialog(this);
+	if (returnVal == JFileChooser.APPROVE_OPTION)
+	{   
+		File selectedFile = fileChooser.getSelectedFile();
+		/*try
+		{ */  
+			String fileName = selectedFile.getName();
+			String selectedFilter = fileChooser.getFileFilter().getDescription();
+			if (selectedFilter.equals("TxtFiles (*.txt)"))
+			{
+				if (!fileName.regionMatches(true,fileName.length() - 4,".txt",0,4))
+				{   
+					selectedFile = new File(selectedFile.getAbsolutePath()+".txt");
+				}	
+			}
+			else if (selectedFilter.equals("ArffFiles (*.arff)"))
+			{
+				if (!fileName.regionMatches(true,fileName.length() - 5,".arff",0,5))
+				{   
+					selectedFile = new File(selectedFile.getAbsolutePath()+".arff");
+				}
+			}			
+			//ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(selectedFile));
+			//out.writeObject(id3);
+			System.out.println("saved saved saved" + selectedFile);
+		/*}
+		catch (IOException ioe)
+		{   statusBar.setText(resource.getString("errorWritingFile")+selectedFile.getName()+" "+ioe.getMessage());
+		}*/
+		FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());		
+	}
+	setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
   void openButton_actionPerformed(ActionEvent e)
@@ -174,7 +246,9 @@ public class PreprocessorMain extends JInternalFrame
   private void openFile(File selectedFile)
   {   try
       {
-        inst = FileController.getInstance().getInstanceSet(selectedFile,this);
+		saveButton.setEnabled(false);
+		jMenuFileSave.setEnabled(false);
+		inst = FileController.getInstance().getInstanceSet(selectedFile,this);
         if (inst != null)
         {
           String fileName = selectedFile.getName();
@@ -182,6 +256,8 @@ public class PreprocessorMain extends JInternalFrame
 		  jPanel1.setBaseInstances(inst);
 		  statusBar.setText(resource.getString("fileOpened"));
           this.setTitle(resource.getString("preprocessorTitle")+selectedFile.getName());
+		  saveButton.setEnabled(true);
+		  jMenuFileSave.setEnabled(true);
         }
         else
         {
@@ -213,7 +289,7 @@ public class PreprocessorMain extends JInternalFrame
   {   statusBar.setText(text);
   }
 
-  void jMenuItem1_actionPerformed(ActionEvent e)
+  void jMenuFileOpen_actionPerformed(ActionEvent e)
   {   openButton_actionPerformed(e);
   }
 

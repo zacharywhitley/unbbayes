@@ -56,41 +56,50 @@ public class Evaluation implements IProgress
   private String[] confidenceProbs = {"99.8%","99%","98%","90%","80%","60%","20%"};
 
   private int confidenceLimit = 100;
-  
+
   private int numInstances;
   private int counter;
-  
+
   private Classifier classifier;
 
-  	/**
-	* Initializes all the counters for the evaluation.
-   	*
-   	* @param data set of training instances, to get some header
-   	* information and prior class distribution information
-   	* @exception Exception if the class is not defined
-   	*/
-  	public Evaluation(InstanceSet data) throws Exception
-	{	this.data = data;
-		numClasses = data.numClasses();
-		numInstances = data.numInstances();
-		counter=0;
-    	classIsNominal = data.getClassAttribute().isNominal();
-		confidenceLimit = Options.getInstance().getConfidenceLimit();
-		if (classIsNominal)
-		{	confusionMatrix = new int [numClasses][numClasses];
-			classNames = new String [numClasses];
-      		for(int i = 0; i < numClasses; i++)
-			{	classNames[i] = data.getClassAttribute().value(i);
-      		}
-		}
+  private float[][] propagationResults;
+
+  /**
+   * Initializes all the counters for the evaluation.
+   *
+   * @param data set of training instances, to get some header
+   * information and prior class distribution information
+   * @exception Exception if the class is not defined
+   */
+  public Evaluation(InstanceSet data) throws Exception
+  {
+    this.data = data;
+    numClasses = data.numClasses();
+    numInstances = data.numInstances();
+    counter=0;
+    classIsNominal = data.getClassAttribute().isNominal();
+    confidenceLimit = Options.getInstance().getConfidenceLimit();
+    if (classIsNominal)
+    {
+      confusionMatrix = new int [numClasses][numClasses];
+      classNames = new String [numClasses];
+      for(int i = 0; i < numClasses; i++)
+      {
+        classNames[i] = data.getClassAttribute().value(i);
+      }
     }
-    
+  }
+
     public Evaluation(InstanceSet data,Classifier classifier) throws Exception
     {
     	this(data);
     	this.classifier = classifier;
+    	if (classifier instanceof DistributionClassifier)
+    	{
+			propagationResults = new float[numInstances][numClasses];
+    	}
     }
-    
+
     /**
    	* Evaluates the classifier on a given set of instances.
    	*
@@ -99,8 +108,12 @@ public class Evaluation implements IProgress
    	* successfully
    	*/
   	public void evaluateModel(Classifier classifier) throws Exception
-	{   
-            for (int i = 0; i < numInstances; i++)
+	{
+		if (classifier instanceof DistributionClassifier)
+		{
+			propagationResults = new float[numInstances][numClasses];
+		}	
+		for	(int i = 0; i < numInstances; i++)
             {   if ((i%50000)==0)
                 {   String currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
                     System.out.println("instância = "+i+" hora = "+currentHour);
@@ -118,7 +131,12 @@ public class Evaluation implements IProgress
    	* successfully
    	*/
   	public void evaluateModel(Classifier classifier,InstanceSet testData) throws Exception
-	{	int numInstances = testData.numInstances();
+	{	
+		if (classifier instanceof DistributionClassifier)
+		{
+			propagationResults = new float[numInstances][numClasses];
+		}
+		int numInstances = testData.numInstances();
 		for (int i = 0; i < numInstances; i++)
 		{	evaluateModelOnce(classifier,testData.getInstance(i));
     	}
@@ -137,21 +155,20 @@ public class Evaluation implements IProgress
 	{   Instance classMissing = instance;
     	    byte pred=0;
             if (classIsNominal)
-            {   /*if (classifier instanceof BayesianLearning)
-			{	//float[] dist = ((BayesianLearning)classifier).distributionForInstance(classMissing);
-				//pred = (byte)Utils.maxIndex(dist);
-				//updateStatsForClassifier(dist,instance);
-                                pred = classifier.classifyInstance(classMissing);
-				updateStatsForClassifier(makeDistribution(pred),instance);
-      		}
-			else
-			{	pred = classifier.classifyInstance(classMissing);
-				updateStatsForClassifier(makeDistribution(pred),instance);
-      		}*/
-                pred = classifier.classifyInstance(classMissing);
-
-
-                updateStatsForClassifier(pred,instance);
+            {   
+            	if (classifier instanceof DistributionClassifier)
+				{	
+					float[] dist = ((DistributionClassifier)classifier).distributionForInstance(classMissing);
+					propagationResults[counter] = dist;
+					
+					pred = ((DistributionClassifier)classifier).classifyInstance(dist);
+					updateStatsForClassifier(pred,instance);
+      			}
+				else
+				{	
+					pred = classifier.classifyInstance(classMissing);
+					updateStatsForClassifier(pred,instance);
+      			}
     	    }
             else
             {   //Class is numeric
@@ -194,6 +211,15 @@ public class Evaluation implements IProgress
   	public String toString()
 	{	StringBuffer text = new StringBuffer(resource.getString("summary"));
 
+		for (int i=0;i<numInstances;i++)
+		{
+			for (int j=0;j<numClasses;j++)
+			{
+				System.out.println("j = "+propagationResults[i][j]);
+			}
+			System.out.println("i = "+i);
+		}
+		
     	try
 		{	text.append(resource.getString("correctly"));
 	  		text.append(Utils.doubleToString(correct(), 12, 4) + " " + Utils.doubleToString(pctCorrect(),12, 4) + " %\n");
@@ -894,20 +920,20 @@ public class Evaluation implements IProgress
     }
     return new String(ID);
   }
-  
+
   public int maxCount()
 	{
-		return numInstances;	
+		return numInstances;
 	}
 
 	public boolean next()
 	{
 		if (counter==numInstances)
 		{
-			return false;	
+			return false;
 		}
 		else
-		{   
+		{
         	try
         	{
         		evaluateModelOnce(classifier,data.getInstance(counter));
@@ -917,10 +943,10 @@ public class Evaluation implements IProgress
         	catch(Exception e)
         	{
         		return false;
-        	}    	
-        }        
+        	}
+        }
 	}
-	
+
 	public void cancel()
 	{
 		counter=0;
