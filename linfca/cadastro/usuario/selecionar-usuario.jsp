@@ -43,7 +43,7 @@
 		          %>
                   <a href="<%=path%>/cadastro/usuario/salvar-usuario.jsp?cod_usuario=<%=((Element)usuario.getChild("cod-usuario")).getText()%>">
                   <%= ((Element)usuario.getChild("identificacao")).getText() + " - " + 
-                      ((Element)usuario.getChild("nome-completo")).getText() %> </a>
+                      ((Element)usuario.getChild("nome-completo")).getText() %> </a><br>
                   <% }	%>
                 </td>
                   
