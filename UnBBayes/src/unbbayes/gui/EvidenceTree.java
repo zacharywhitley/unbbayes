@@ -95,6 +95,7 @@ public class EvidenceTree extends JTree
     private class EvidenceTreeCellRenderer extends DefaultTreeCellRenderer
     {
       private ImageIcon folderSmallIcon = new ImageIcon(getClass().getResource("/icons/folder-small.gif"));
+      private ImageIcon folderSmallDisabledIcon = new ImageIcon(getClass().getResource("/icons/folder-small-disabled.gif"));
       private ImageIcon yellowBallIcon = new ImageIcon(getClass().getResource("/icons/yellow-ball.gif"));
       private ImageIcon greenBallIcon = new ImageIcon(getClass().getResource("/icons/green-ball.gif"));
 
@@ -123,8 +124,30 @@ public class EvidenceTree extends JTree
           }
         }
         else
-        {   this.setOpenIcon(folderSmallIcon);
-            this.setClosedIcon(folderSmallIcon);
+        {
+          Object obj = objectsMap.get((DefaultMutableTreeNode)value);
+          if (obj != null)
+          {
+            Node node = (Node)obj;
+            if (node.getInformationType()==Node.DESCRIPTION_TYPE)
+            {
+              setOpenIcon(folderSmallIcon);
+              setClosedIcon(folderSmallIcon);
+              setIcon(folderSmallIcon);
+            }
+            else
+            {
+              setOpenIcon(folderSmallDisabledIcon);
+              setClosedIcon(folderSmallDisabledIcon);
+              setIcon(folderSmallDisabledIcon);
+            }
+          }
+          else
+          {
+            setOpenIcon(folderSmallIcon);
+            setClosedIcon(folderSmallIcon);
+            setIcon(folderSmallIcon);
+          }
         }
         return this;
       }
