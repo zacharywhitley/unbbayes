@@ -114,7 +114,7 @@ public class FronteiraResources_pt extends ListResourceBundle {
 		{"saveTableImageToolTip","Salvar a tabela como imagem gif"},
 		{"previewTitle","Pré Visualização"},
 		{"filesText"," arquivos"},
-		{"aprendizagemTile","Edição da Rede de Aprendizagem"},
+		{"aprendizagemTitle","Edição da Rede de Aprendizagem"},
 		{"calculateProbabilitiesFromLearningToEditMode","Remontar a estrutura da rede e voltar para o modo de edição"}
 	};
 }

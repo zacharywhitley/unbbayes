@@ -114,7 +114,7 @@ public class FronteiraResources extends ListResourceBundle {
 		{"saveTableImageToolTip","Save table as a gif image"},
 		{"previewTitle","Preview"},
 		{"filesText"," files"},
-		{"aprendizagemTile","Net Learning Edition"},
+		{"aprendizagemTitle","Net Learning Edition"},
 		{"calculateProbabilitiesFromLearningToEditMode","Rebuild net structure and return to edit mode"}
 	};
 }
