@@ -38,29 +38,21 @@ import unbbayes.util.*;
  */
 public class ExplanationProperties extends JDialog
 {
-  private BorderLayout borderLayout1 = new BorderLayout();
   private JTabbedPane jTabbedPane = new JTabbedPane();
   private JPanel southPanel = new JPanel();
   private JPanel descriptionPanel = new JPanel();
   private JPanel explanationPanel = new JPanel();
   private JButton okButton = new JButton();
   private Border border1;
-  private BorderLayout borderLayout2 = new BorderLayout();
   private Border border2;
-  private GridLayout gridLayout2 = new GridLayout();
   private JPanel evidencePhrasePanel = new JPanel();
   private JPanel explanationTopPanel = new JPanel();
-  private BorderLayout borderLayout9 = new BorderLayout();
-  private BorderLayout borderLayout10 = new BorderLayout();
   private JPanel evidenceTypePanel = new JPanel();
   private JPanel evidenceNodePanel = new JPanel();
   private JPanel evidencePhraseBottomPanel = new JPanel();
   private JLabel evidenceNodeLabel = new JLabel();
   private JComboBox evidenceNodeComboBox = new JComboBox();
-  private BorderLayout borderLayout11 = new BorderLayout();
-  private Border border3;
   private TitledBorder titledBorder1;
-  private GridLayout gridLayout3 = new GridLayout();
   private JPanel notUsedPanel = new JPanel();
   private JPanel exclusivePanel = new JPanel();
   private JPanel necessaryPanel = new JPanel();
@@ -72,40 +64,26 @@ public class ExplanationProperties extends JDialog
   private JRadioButton naRadioButton = new JRadioButton();
   private JRadioButton necessaryRadioButton = new JRadioButton();
   private JRadioButton exclusiveRadioButton = new JRadioButton();
-  private BorderLayout borderLayout12 = new BorderLayout();
-  private BorderLayout borderLayout13 = new BorderLayout();
-  private BorderLayout borderLayout14 = new BorderLayout();
-  private BorderLayout borderLayout15 = new BorderLayout();
-  private BorderLayout borderLayout16 = new BorderLayout();
-  private BorderLayout borderLayout17 = new BorderLayout();
   private ButtonGroup buttonGroup1 = new ButtonGroup();
   private Border evidenceTypeBorder;
   private JPanel evidencePhraseTopPanel = new JPanel();
   private JLabel evidencePhraseLabel = new JLabel();
-  private BorderLayout borderLayout18 = new BorderLayout();
   private JScrollPane evidencePhraseScrollPane = new JScrollPane();
-  private BorderLayout borderLayout19 = new BorderLayout();
   private JTextArea evidencePhraseTextArea = new JTextArea();
   private NetWindow netWindow;
   private ProbabilisticNode node;
   private ProbabilisticNetwork net;
   private JButton cancelButton = new JButton();
-  private JTextArea explanationNodeTextArea = new JTextArea();
   private JLabel nodeNameLabel = new JLabel();
   private JScrollPane explanationNodeScrollPane = new JScrollPane();
-  private BorderLayout borderLayout7 = new BorderLayout();
-  private BorderLayout borderLayout6 = new BorderLayout();
   private JPanel descriptionTopPanel1 = new JPanel();
-  private BorderLayout borderLayout5 = new BorderLayout();
   private JPanel descriptionTopPanel2 = new JPanel();
   private JPanel descriptionTopPanel3 = new JPanel();
-  private GridLayout gridLayout1 = new GridLayout();
   private JPanel descriptionTopPanel = new JPanel();
   private JPanel descriptionBottomPanel = new JPanel();
   private JLabel explanationVariableLabel = new JLabel();
-  private BorderLayout borderLayout3 = new BorderLayout();
   private JLabel descriptionLabel = new JLabel();
-  private GridLayout gridLayout4 = new GridLayout();
+  private JTextArea explanationNodeTextArea = new JTextArea();
 
   public ExplanationProperties(NetWindow netWindow,ProbabilisticNetwork net)
   { this.netWindow = netWindow;
@@ -120,14 +98,18 @@ public class ExplanationProperties extends JDialog
     }
   }
   private void jbInit() throws Exception
-  { this.setSize(550, 470);
-    border1 = BorderFactory.createEmptyBorder(0,10,0,10);
-    border2 = BorderFactory.createEmptyBorder(20,20,20,20);
-    border3 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
-    titledBorder1 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de Evidência:");
-    evidenceTypeBorder = BorderFactory.createCompoundBorder(new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de Evidência:"),BorderFactory.createEmptyBorder(0,10,0,0));
+  {
+    this.setSize(550, 470);
     this.setResizable(false);
     this.setTitle("Propriedades da Variável de Explicação");
+
+    // Cria bordas
+    border1 = BorderFactory.createEmptyBorder(0,10,0,10);
+    border2 = BorderFactory.createEmptyBorder(20,20,20,20);
+    titledBorder1 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de Evidência:");
+    evidenceTypeBorder = BorderFactory.createCompoundBorder(new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de Evidência:"),BorderFactory.createEmptyBorder(0,10,0,0));
+
+    // Muda propriedades do botão ok
     okButton.setMaximumSize(new Dimension(85, 27));
     okButton.setMinimumSize(new Dimension(85, 27));
     okButton.setPreferredSize(new Dimension(85, 27));
@@ -139,20 +121,15 @@ public class ExplanationProperties extends JDialog
         okButton_actionPerformed(e);
       }
     });
-    jTabbedPane.setBorder(border1);
-    descriptionPanel.setLayout(borderLayout2);
-    explanationPanel.setLayout(gridLayout4);
-    gridLayout2.setRows(2);
-    gridLayout2.setVgap(10);
-    explanationTopPanel.setLayout(borderLayout9);
-    evidencePhrasePanel.setLayout(borderLayout10);
+
+    descriptionPanel.setLayout(new BorderLayout(0,5));
+    explanationPanel.setLayout(new GridLayout(2,0,0,10));
+    explanationTopPanel.setLayout(new BorderLayout(0,10));
+    evidencePhrasePanel.setLayout(new BorderLayout(0,5));
     evidenceNodeLabel.setText("Evidencia : ");
-    evidenceNodePanel.setLayout(borderLayout11);
+    evidenceNodePanel.setLayout(new BorderLayout());
     evidenceTypePanel.setBorder(evidenceTypeBorder);
-    evidenceTypePanel.setLayout(gridLayout3);
-    gridLayout3.setColumns(3);
-    gridLayout3.setHgap(10);
-    gridLayout3.setRows(2);
+    evidenceTypePanel.setLayout(new GridLayout(2,3,10,0));
     triggerRadioButton.setText("Trigger");
     triggerRadioButton.addActionListener(new java.awt.event.ActionListener()
     {
@@ -193,17 +170,15 @@ public class ExplanationProperties extends JDialog
         evidenceRadioButton_actionPerformed(e);
       }
     });
-    triggerPanel.setLayout(borderLayout12);
-    complementaryPanel.setLayout(borderLayout13);
-    naPanel.setLayout(borderLayout14);
-    necessaryPanel.setLayout(borderLayout15);
-    exclusivePanel.setLayout(borderLayout16);
-    notUsedPanel.setLayout(borderLayout17);
+    triggerPanel.setLayout(new BorderLayout());
+    complementaryPanel.setLayout(new BorderLayout());
+    naPanel.setLayout(new BorderLayout());
+    necessaryPanel.setLayout(new BorderLayout());
+    exclusivePanel.setLayout(new BorderLayout());
+    notUsedPanel.setLayout(new BorderLayout());
     evidencePhraseLabel.setText("Texto para Explanação :");
-    evidencePhraseTopPanel.setLayout(borderLayout18);
-    evidencePhraseBottomPanel.setLayout(borderLayout19);
-    borderLayout10.setVgap(5);
-    borderLayout9.setVgap(10);
+    evidencePhraseTopPanel.setLayout(new BorderLayout());
+    evidencePhraseBottomPanel.setLayout(new BorderLayout());
     cancelButton.setText("Cancelar");
     cancelButton.addActionListener(new java.awt.event.ActionListener()
     {
@@ -226,22 +201,16 @@ public class ExplanationProperties extends JDialog
         evidencePhraseTextArea_focusLost(e);
       }
     });
-    borderLayout2.setVgap(5);
-    descriptionTopPanel2.setLayout(borderLayout7);
-    descriptionTopPanel3.setLayout(borderLayout6);
-    gridLayout1.setRows(3);
-    descriptionTopPanel.setLayout(gridLayout1);
-    descriptionBottomPanel.setLayout(borderLayout5);
+    descriptionTopPanel2.setLayout(new BorderLayout());
+    descriptionTopPanel3.setLayout(new BorderLayout());
+    descriptionTopPanel.setLayout(new GridLayout(3,0));
+    descriptionBottomPanel.setLayout(new BorderLayout());
     explanationVariableLabel.setText("Variável de explicação : ");
     descriptionPanel.setBorder(border2);
-    descriptionTopPanel1.setLayout(borderLayout3);
+    descriptionTopPanel1.setLayout(new BorderLayout());
     descriptionLabel.setText("Descrição:");
-    gridLayout4.setRows(2);
-    gridLayout4.setVgap(10);
     explanationPanel.setBorder(border2);
-    this.getContentPane().add(jTabbedPane,  BorderLayout.CENTER);
     this.getContentPane().add(southPanel,  BorderLayout.SOUTH);
-    jTabbedPane.add(descriptionPanel, "Descrição");
     descriptionTopPanel.add(descriptionTopPanel1, null);
     descriptionTopPanel1.add(descriptionLabel,  BorderLayout.CENTER);
     descriptionTopPanel.add(descriptionTopPanel2, null);
@@ -250,9 +219,8 @@ public class ExplanationProperties extends JDialog
     descriptionTopPanel3.add(nodeNameLabel, BorderLayout.CENTER);
     descriptionPanel.add(descriptionBottomPanel,  BorderLayout.CENTER);
     descriptionBottomPanel.add(explanationNodeScrollPane, BorderLayout.CENTER);
-    explanationNodeScrollPane.add(explanationNodeTextArea, null);
+    explanationNodeScrollPane.getViewport().add(explanationNodeTextArea, null);
     descriptionPanel.add(descriptionTopPanel, BorderLayout.NORTH);
-    jTabbedPane.add(explanationPanel, "Explanação");
     southPanel.add(okButton, null);
     southPanel.add(cancelButton, null);
     explanationPanel.add(explanationTopPanel, null);
@@ -282,6 +250,10 @@ public class ExplanationProperties extends JDialog
     buttonGroup1.add(naRadioButton);
     buttonGroup1.add(necessaryRadioButton);
     buttonGroup1.add(exclusiveRadioButton);
+    jTabbedPane.setBorder(border1);
+    jTabbedPane.add(descriptionPanel, "Descrição");
+    jTabbedPane.add(explanationPanel, "Explanação");
+    this.getContentPane().add(jTabbedPane,  BorderLayout.CENTER);
     NodeList nodes = net.getDescriptionNodes();
     int size = nodes.size();
     int i;
@@ -296,11 +268,15 @@ public class ExplanationProperties extends JDialog
   }
 
   public void setProbabilisticNode(ProbabilisticNode node)
-  {   this.node = node;
-      explanationNodeTextArea.setText(node.getExplanationDescription());
-      if (evidenceNodeComboBox.getItemCount() != 0)
-        updateExplanationInformation(evidenceNodeComboBox.getItemAt(0).toString());
-      nodeNameLabel.setText(node.getName());
+  {
+    this.node = node;
+    explanationNodeTextArea.setText(node.getExplanationDescription());
+    if (evidenceNodeComboBox.getItemCount() != 0)
+    {
+      updateExplanationInformation(evidenceNodeComboBox.getItemAt(0).toString());
+    }
+    nodeNameLabel.setText(node.getName());
+    descriptionLabel.setText("Descrição: "+node.getDescription());
   }
 
   void okButton_actionPerformed(ActionEvent e)

@@ -39,8 +39,11 @@ import javax.swing.event.*;
 import javax.swing.tree.*;
 
 import org.shetline.io.*;
+
 import unbbayes.gui.*;
+import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
+import unbbayes.prs.id.*;
 import unbbayes.util.NodeList;
 
 /**
@@ -137,11 +140,6 @@ public class WindowController implements KeyListener {
     public ProbabilisticNetwork getRede() {
         return this.rede;
     }
-
-    /*public boolean[] getSituacaoArvore() {
-      return this.situacaoArvore;
-    }*/
-
 
     /**
      * Salva a imagem da rede para um arquivo.
@@ -251,11 +249,11 @@ public class WindowController implements KeyListener {
 
             DefaultMutableTreeNode auxNode;
 
-            double[] valores = new double[auxVP.getStatesSize()];
+            float[] valores = new float[auxVP.getStatesSize()];
 
             try {
                 for (i = 0; i < auxVP.getStatesSize(); i++) {
-                    valores[i] = df.parse((String) tabela.getValueAt(i, 1)).doubleValue();
+                    valores[i] = df.parse((String) tabela.getValueAt(i, 1)).floatValue();
                 }
             } catch (ParseException e) {
                 System.err.println(e.getMessage());
@@ -300,26 +298,9 @@ public class WindowController implements KeyListener {
      * Inicia as crenças da árvore de junção.
      */
     public void initialize() {
-    	/*try {
+    	try {
 	        rede.initialize();
        		evidenceTree.updateTree();
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    	}*/
-        try {
-	        long start = System.currentTimeMillis();
-                for (int i=0;i<250;i++)
-                {   rede.initialize();
-       		    NodeList nodes = rede.getNos();
-                    int size = nodes.size();
-                    int j;
-                    for (j=1;j<size;j++)
-                    {   ((TreeVariable)nodes.get(j)).addFinding(0);
-                    }
-                    rede.updateEvidences();
-                }
-                long end = System.currentTimeMillis();
-                System.out.println(end-start);
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
@@ -345,50 +326,6 @@ public class WindowController implements KeyListener {
         evidenceTree.updateTree();
         tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
-
-
-    /**
-     *  Retrai todos os nós da árvore desejada.
-     *
-     * @param  arvore  uma <code>JTree</code> que representa a rede Bayesiana em
-     *      forma de árvore.
-     * @since
-     * @see            JTree
-     */
-    /*public void collapseTree(JTree arvore) {
-        tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        for (int i = 0; i < arvore.getRowCount(); i++) {
-            arvore.collapseRow(i);
-        }
-
-        for (int i = 0; i < situacaoArvore.length; i++) {
-          situacaoArvore[i] = false;
-        }
-
-        tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-    }*/
-
-
-    /**
-     *  Expande todos os nós da árvore desejada.
-     *
-     * @param  arvore  uma <code>JTree</code> que representa a rede Bayesiana em
-     *      forma de árvore.
-     * @since
-     * @see            JTree
-     */
-    /*public void expandTree(JTree arvore) {
-        tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        for (int i = 0; i < arvore.getRowCount(); i++) {
-            arvore.expandRow(i);
-        }
-
-        for (int i = 0; i < situacaoArvore.length; i++) {
-          situacaoArvore[i] = true;
-        }
-
-        tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-    }*/
 
 
     /**
@@ -468,22 +405,30 @@ public class WindowController implements KeyListener {
      * @see             TreePath
      */
     public void arvoreDuploClick(DefaultMutableTreeNode treeNode) {
-        DefaultMutableTreeNode pai = ((DefaultMutableTreeNode) treeNode.getParent());
-        TreeVariable node = (TreeVariable) pai.getUserObject();
+      DefaultMutableTreeNode pai = ((DefaultMutableTreeNode) treeNode.getParent());
+      TreeVariable node = (TreeVariable) pai.getUserObject();
 
-
-        for (int i = 0; i < pai.getChildCount(); i++) {
-            DefaultMutableTreeNode auxNode = (DefaultMutableTreeNode) pai.getChildAt(i);
-            auxNode.setUserObject(node.getStateAt(i) + ": 0");
+      //Só propaga nós de descrição
+      if (node.getInformationType()==Node.DESCRIPTION_TYPE)
+      {
+        for (int i = 0; i < pai.getChildCount(); i++)
+        {
+          DefaultMutableTreeNode auxNode = (DefaultMutableTreeNode) pai.getChildAt(i);
+          auxNode.setUserObject(node.getStateAt(i) + ": 0");
         }
 
-        if (node instanceof ProbabilisticNode) {
-            treeNode.setUserObject(node.getStateAt(pai.getIndex(treeNode)) + ": 100");
-        } else {
-            treeNode.setUserObject(node.getStateAt(pai.getIndex(treeNode)) + ": **");
+        if (node instanceof ProbabilisticNode)
+        {
+          treeNode.setUserObject(node.getStateAt(pai.getIndex(treeNode)) + ": 100");
+        }
+        else
+        {
+          treeNode.setUserObject(node.getStateAt(pai.getIndex(treeNode)) + ": **");
         }
         node.addFinding(pai.getIndex(treeNode));
-        ((DefaultTreeModel) evidenceTree.getModel()).reload(pai);
+        (
+          (DefaultTreeModel) tela.getEvidenceTree().getModel()).reload(pai);
+      }
     }
 
 
@@ -524,13 +469,6 @@ public class WindowController implements KeyListener {
             }
         }
 
-        //situacaoArvore = new boolean[nos.size()];
-
-/*        for (int i = 0; i < situacaoArvore.length; i++) {
-            situacaoArvore[i] = false;
-        }
-
-        updateTree();*/
         evidenceTree = tela.getEvidenceTree();
         evidenceTree.setProbabilisticNetwork(rede);
         tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -555,7 +493,7 @@ public class WindowController implements KeyListener {
         node.setDescription(node.getName());
         PotentialTable auxTabProb = ((ITabledVariable)node).getPotentialTable();
         auxTabProb.addVariable(node);
-        auxTabProb.addValueAt(0, 1d);
+        auxTabProb.addValueAt(0, 1f);
         rede.addNode(node);
     }
 
@@ -680,7 +618,7 @@ public class WindowController implements KeyListener {
                         try {
                             String temp = tabela.getValueAt(e.getLastRow(), e.getColumn()).toString().replace(',', '.');
 //                            double valor = df.parse(temp).doubleValue();
-							double valor = Double.parseDouble(temp);
+							float valor = Float.parseFloat(temp);
                             /*
                             if (valor > 1.0) {
                                 valor = 1.0;
@@ -1002,53 +940,6 @@ public class WindowController implements KeyListener {
         });
         t.start();
     }
-
-
-    /**
-     *  Atualiza as marginais na árvore desejada.
-     *
-     * @param  arvore  uma <code>JTree</code> que representa a árvore a ser
-     *      atualizada
-     * @since
-     * @see            JTree
-     */
-    /*private void updateTree() {
-        JTree arvore = tela.getEvidenceTree();
-        NodeList nos = rede.getCopiaNos();
-        DefaultMutableTreeNode root = (DefaultMutableTreeNode) arvore.getModel().getRoot();
-
-        root.removeAllChildren();
-
-        for (int c = 0; c < nos.size(); c++) {
-            Node node = (Node) nos.get(c);
-            TreeVariable treeVariable = (TreeVariable) node;
-            DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(node);
-
-            for (int i = 0; i < node.getStatesSize(); i++) {
-                String label;
-                if (treeVariable instanceof ProbabilisticNode) {
-                    label = node.getStateAt(i) + ": " + df.format(treeVariable.getMarginalAt(i) * 100.0);
-                } else {
-                    label = node.getStateAt(i) + ": " + df.format(treeVariable.getMarginalAt(i));
-                }
-                treeNode.add(new DefaultMutableTreeNode(label));
-            }
-            root.add(treeNode);
-        }
-
-        ((DefaultTreeModel) arvore.getModel()).reload(root);
-
-        int temp = 0;
-        for (int i = 0; i < situacaoArvore.length; i++) {
-          if (situacaoArvore[i]) {
-            arvore.expandRow(temp);
-            Node node = (Node) nos.get(i);
-            temp += node.getStatesSize();
-          }
-          temp++;
-        }
-    }*/
-
 
 
     /**

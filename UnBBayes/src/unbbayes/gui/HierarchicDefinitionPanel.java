@@ -24,7 +24,6 @@ public class HierarchicDefinitionPanel extends JPanel
   private HierarchicTree hierarchicTree;
   private DefaultTreeModel model;
   private ProbabilisticNetwork net;
-  private ImageIcon greenBallIcon;
   private HierarchicTree explanationTree;
   private NetWindow netWindow;
   private JPanel bottomPanel;
@@ -37,8 +36,6 @@ public class HierarchicDefinitionPanel extends JPanel
   private JButton edit;
   private JButton collapse;
   private JLabel statusBar;
-  private Node draggedDescriptionNode;
-  private Node draggedExplanationNode;
   private DefaultMutableTreeNode selectedNode;
 
   /** Load resource file from this package */
@@ -59,8 +56,6 @@ public class HierarchicDefinitionPanel extends JPanel
     bottomPanel    = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 1));
     statusBar      = new JLabel("Definição da hierarquia");
     hierarchicTree = net.getHierarchicTree();
-
-    greenBallIcon = new ImageIcon(getClass().getResource("/icons/green-ball.gif"));
 
     //cria botões que serão usados nos toolbars
     deleteButton        = new JButton(new ImageIcon(getClass().getResource("/icons/delete-folder.gif")));
@@ -152,50 +147,6 @@ public class HierarchicDefinitionPanel extends JPanel
           }
         }
       }
-
-      public void mouseReleased(MouseEvent e)
-      {
-        if (draggedExplanationNode!=null)
-        {
-          draggedExplanationNode.setInformationType(Node.DESCRIPTION_TYPE);
-          ((DefaultTreeModel)explanationTree.getModel()).removeNodeFromParent(selectedNode);
-          updateExplanationTree();
-          draggedExplanationNode = null;
-        }
-        setCursor(Cursor.getDefaultCursor());
-      }
-
-      public void mouseEntered(MouseEvent e)
-      {
-        mouseReleased(e);
-      }
-
-    });
-
-    //trata os eventos de mouse para a árvore de hierarquia para movimento do mouse
-    hierarchicTree.addMouseMotionListener(new MouseMotionListener()
-    {
-      public void mouseDragged(MouseEvent e)
-      {
-        selectedNode = (DefaultMutableTreeNode)hierarchicTree.getLastSelectedPathComponent();
-        if (selectedNode != null)
-        {
-          Enumeration enum = selectedNode.breadthFirstEnumeration();
-          while (enum.hasMoreElements())
-          {
-            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)enum.nextElement();
-            Node node = hierarchicTree.getNodeInformation(treeNode);
-            if (node != null)
-            {
-              setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-              draggedDescriptionNode = node;
-            }
-          }
-        }
-      }
-
-      public void mouseMoved(MouseEvent e)
-      {}
     });
 
     //coloca botões no toolbar e edte no painel principal
@@ -227,13 +178,6 @@ public class HierarchicDefinitionPanel extends JPanel
     DefaultTreeModel explanationModel = new DefaultTreeModel(root);
     explanationTree = new HierarchicTree(explanationModel);
 
-    DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
-    renderer.setIcon(greenBallIcon);
-    renderer.setClosedIcon(greenBallIcon);
-    renderer.setLeafIcon(greenBallIcon);
-    renderer.setOpenIcon(greenBallIcon);
-    explanationTree.setCellRenderer(renderer);
-
     explanationScrollPane.getViewport().add(explanationTree, null);
 
     //trata os eventos de mouse para a árvore de explanação
@@ -263,49 +207,6 @@ public class HierarchicDefinitionPanel extends JPanel
         }
       }
 
-      public void mouseReleased(MouseEvent e)
-      {
-        if (draggedDescriptionNode!=null)
-        {
-          draggedDescriptionNode.setInformationType(Node.EXPLANATION_TYPE);
-          model.removeNodeFromParent(selectedNode);
-          updateExplanationTree();
-          draggedDescriptionNode = null;
-        }
-        setCursor(Cursor.getDefaultCursor());
-      }
-
-      public void mouseEntered(MouseEvent e)
-      {
-        mouseReleased(e);
-      }
-
-    });
-
-    //trata os eventos de mouse para a árvore de hierarquia para movimento do mouse
-    explanationTree.addMouseMotionListener(new MouseMotionListener()
-    {
-      public void mouseDragged(MouseEvent e)
-      {
-        selectedNode = (DefaultMutableTreeNode)explanationTree.getLastSelectedPathComponent();
-        if (selectedNode != null)
-        {
-          Enumeration enum = selectedNode.breadthFirstEnumeration();
-          while (enum.hasMoreElements())
-          {
-            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)enum.nextElement();
-            Node node = explanationTree.getNodeInformation(treeNode);
-            if (node != null)
-            {
-              setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-              draggedExplanationNode = node;
-            }
-          }
-        }
-      }
-
-      public void mouseMoved(MouseEvent e)
-      {}
     });
 
     // adiciona o statusBar ao bottomPanel
@@ -317,6 +218,7 @@ public class HierarchicDefinitionPanel extends JPanel
     this.add(bottomPanel, BorderLayout.SOUTH);
     setVisible(true);
 
+    updateExplanationTree();
   }
 
   public void updateExplanationTree()
@@ -327,10 +229,13 @@ public class HierarchicDefinitionPanel extends JPanel
     model = (DefaultTreeModel)hierarchicTree.getModel();
     descriptionScrollPane.getViewport().removeAll();
     descriptionScrollPane.getViewport().add(hierarchicTree, null);
+    hierarchicTree.expandTree();
 
     explanationTree.setProbabilisticNetwork(net,HierarchicTree.EXPLANATION_TYPE);
     explanationScrollPane.getViewport().removeAll();
     explanationScrollPane.getViewport().add(explanationTree, null);
+
+    centerPanel.setDividerLocation(0.5);
   }
 
   private void deleteButton_actionPerformed(ActionEvent e)
@@ -342,13 +247,18 @@ public class HierarchicDefinitionPanel extends JPanel
       while (enum.hasMoreElements())
       {
         DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)enum.nextElement();
+        System.out.println(treeNode);
         Node node = hierarchicTree.getNodeInformation(treeNode);
         if (node == null)
         {
           model.removeNodeFromParent(selectedNode);
-          //updateExplanationTree();
+        }
+        else
+        {
+          node.setInformationType(Node.EXPLANATION_TYPE);
         }
       }
+      updateExplanationTree();
     }
   }
 
@@ -361,12 +271,17 @@ public class HierarchicDefinitionPanel extends JPanel
       String newNodeName = JOptionPane.showInternalInputDialog(this,"","New Folder Name",JOptionPane.QUESTION_MESSAGE);
       enableButtons();
       Node node = hierarchicTree.getNodeInformation(selectedNode);
-      if ((node != null)&&(!newNodeName.equals("")))
+      if ((node != null)&&(newNodeName != null)&&(!newNodeName.equals("")))
       {
         node.setDescription(newNodeName);
+        selectedNode.setUserObject(newNodeName);
+        model.reload(selectedNode);
       }
-      selectedNode.setUserObject(newNodeName);
-      model.reload(selectedNode);
+      else if ((newNodeName != null)&&(!newNodeName.equals("")))
+      {
+        selectedNode.setUserObject(newNodeName);
+        model.reload(selectedNode);
+      }
     }
     selectedNode = (DefaultMutableTreeNode)explanationTree.getLastSelectedPathComponent();
     if (selectedNode != null)
@@ -375,12 +290,12 @@ public class HierarchicDefinitionPanel extends JPanel
       String newNodeName = JOptionPane.showInternalInputDialog(this,"","New Folder Name",JOptionPane.QUESTION_MESSAGE);
       enableButtons();
       Node node = explanationTree.getNodeInformation(selectedNode);
-      if ((node != null)&&(!newNodeName.equals("")))
+      if ((node != null)&&(newNodeName != null)&&(!newNodeName.equals("")))
       {
         node.setDescription(newNodeName);
+        selectedNode.setUserObject(newNodeName);
+        model.reload((TreeNode)model.getRoot());
       }
-      selectedNode.setUserObject(newNodeName);
-      model.reload((TreeNode)model.getRoot());
     }
   }
 
@@ -395,7 +310,7 @@ public class HierarchicDefinitionPanel extends JPanel
         disableButtons();
         String newNodeName = JOptionPane.showInternalInputDialog(this,"","Add Top Folder",JOptionPane.QUESTION_MESSAGE);
         enableButtons();
-        if ((newNodeName != null)&&(!newNodeName.equals("")))
+        if ((newNodeName != null)&&(newNodeName != null)&&(!newNodeName.equals("")))
         {
           DefaultMutableTreeNode root = ((DefaultMutableTreeNode)model.getRoot());
           insertNewNode(root,newNodeName);
@@ -403,8 +318,10 @@ public class HierarchicDefinitionPanel extends JPanel
       }
       else
       {
+        disableButtons();
         String newNodeName = JOptionPane.showInternalInputDialog(this,"","Add Child Folder",JOptionPane.QUESTION_MESSAGE);
-        if ((newNodeName != null)&&(!newNodeName.equals("")))
+        enableButtons();
+        if ((newNodeName != null)&&(newNodeName != null)&&(!newNodeName.equals("")))
         {
           insertNewNode(selectedNode,newNodeName);
         }

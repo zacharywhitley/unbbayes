@@ -1,5 +1,6 @@
 package unbbayes.gui;
 
+import java.awt.*;
 import java.text.NumberFormat;
 import java.util.Locale;
 
@@ -22,32 +23,43 @@ public class EvidenceTree extends JTree
     public EvidenceTree()
     {   nf = NumberFormat.getInstance(Locale.US);
         nf.setMaximumFractionDigits(4);
+
+        // set up node icons
+        setCellRenderer(new EvidenceTreeCellRenderer());
+
     }
 
-        /**
-     *  Adiciona uma evidencia no estado especificado.
-     *
-     * @param  caminho  caminho do estado a ser setado para 100%;
-     * @see             TreePath
-     */
-    /*public void arvoreDuploClick(DefaultMutableTreeNode treeNode) {
-        DefaultMutableTreeNode pai = ((DefaultMutableTreeNode) treeNode.getParent());
-        TreeVariable node = (TreeVariable) pai.getUserObject();
+    private class EvidenceTreeCellRenderer extends DefaultTreeCellRenderer
+    {
+      private ImageIcon folderSmallIcon = new ImageIcon(getClass().getResource("/icons/folder-small.gif"));
+      private ImageIcon yellowBallIcon = new ImageIcon(getClass().getResource("/icons/yellow-ball.gif"));
+      private ImageIcon greenBallIcon = new ImageIcon(getClass().getResource("/icons/green-ball.gif"));
 
+      public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus)
+      {
+        super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+        if (leaf)
+        {
+          DefaultMutableTreeNode parent = (DefaultMutableTreeNode)(((DefaultMutableTreeNode) value).getParent());
+          TreeVariable node = (TreeVariable) parent.getUserObject();
 
-        for (int i = 0; i < pai.getChildCount(); i++) {
-            DefaultMutableTreeNode auxNode = (DefaultMutableTreeNode) pai.getChildAt(i);
-            auxNode.setUserObject(node.getStateAt(i) + ": 0");
+          if (node.getInformationType()==Node.DESCRIPTION_TYPE)
+          {
+            setIcon(yellowBallIcon);
+          }
+          else
+          {
+            setIcon(greenBallIcon);
+          }
         }
-
-        if (node instanceof ProbabilisticNode) {
-            treeNode.setUserObject(node.getStateAt(pai.getIndex(treeNode)) + ": 100");
-        } else {
-            treeNode.setUserObject(node.getStateAt(pai.getIndex(treeNode)) + ": **");
+        else
+        {   this.setOpenIcon(folderSmallIcon);
+            this.setClosedIcon(folderSmallIcon);
         }
-        node.addFinding(pai.getIndex(treeNode));
-        ((DefaultTreeModel) tela.getEvidenceTree().getModel()).reload(pai);
+        return this;
     }
+}
+
 
     /**
      *  Retrai todos os nós da árvore desejada.

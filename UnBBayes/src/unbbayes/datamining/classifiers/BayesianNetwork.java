@@ -1,6 +1,6 @@
 package unbbayes.datamining.classifiers;
 
-import java.util.Enumeration;
+import java.util.*;
 
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.prs.bn.*;
@@ -13,33 +13,53 @@ import unbbayes.util.*;
  * @version $1.0 $ (17/02/2002)
  */
 public class BayesianNetwork extends BayesianLearning
-{	private Attribute classAttribute;
-
-	private ProbabilisticNode classNode;
-        private int classIndex = -1;
-
-	private ProbabilisticNetwork net;
-
-	private int numNodes;
-
-        private int[] indexAttributes;
+{
+  /** Atributo classe do conjunto de dados */
+  private Attribute classAttribute;
+  /** Nó classe na rede bayesiana */
+  private ProbabilisticNode classNode;
+  /** Índice da classe na rede vayesiana */
+  private int classNodeIndex = -1;
+  /** Índice da classe no conjunto de dados */
+  private int classAttributeIndex = -1;
+  /** Referência para rede bayesiana usada nesta classe */
+  private ProbabilisticNetwork net;
+  /** Referência para o conjunto de instâncias usado nesta classe */
+  private InstanceSet instanceSet;
+  /** Número de nós na rede bayesiana */
+  private int numNodes;
+  /** Mapeamento dos nós da rede bayesiana para os atributos do conjunto de dados */
+  private int[] indexAttributes;
+  /** Guarda as distribuições de probabilidades já calculadas.
+   * Usado para otimização.
+   */
+  private HashMap hashMap;
+  /** Multiplicadores para otimização com hashMap */
+  private int[] multipliers;
+  /** Guarda o número de classes */
+  private int numClasses = 0;
 
 	public BayesianNetwork(ProbabilisticNetwork net,InstanceSet instanceSet) throws Exception
-	{	this.net = net;
-		this.net.compile();
-		numNodes = net.size();
-                indexAttributes = new int[instanceSet.numAttributes()];
-                Enumeration enum = instanceSet.enumerateAttributes();
-                int i = 0;
-                String attributeName;
-                while (enum.hasMoreElements())
-                {   attributeName = ((Attribute)enum.nextElement()).getAttributeName();
-                    indexAttributes[i] = net.getNodeIndex(attributeName);
-                    if (indexAttributes[i] == -1)
-                    {   throw new Exception("Atributo não encontrado na rede: "+attributeName);
-                    }
-                    i++;
-                }
+	{
+          this.net = net;
+          this.instanceSet = instanceSet;
+          this.net.compile();
+          numNodes = net.size();
+          multipliers = new int[numNodes-1];
+          indexAttributes = new int[instanceSet.numAttributes()];
+          Enumeration enum = instanceSet.enumerateAttributes();
+          int i = 0;
+          String attributeName;
+          while (enum.hasMoreElements())
+          {
+            attributeName = ((Attribute)enum.nextElement()).getAttributeName();
+            indexAttributes[i] = net.getNodeIndex(attributeName);
+            if (indexAttributes[i] == -1)
+            {
+              throw new Exception("Atributo não encontrado na rede: "+attributeName);
+            }
+            i++;
+          }
 	}
 
 	private boolean compareClasses(Attribute classAttribute,ProbabilisticNode node)
@@ -69,35 +89,70 @@ public class BayesianNetwork extends BayesianLearning
   	 * @exception Exception if distribution can't be computed
   	 */
   	public float[] distributionForInstance(Instance instance) throws Exception
-	{	int numClasses = classNode.getStatesSize();
-		float[] probs = new float[numClasses];
-                short instanceValue;
+	{
+            float[] probs = new float[numClasses];
+            short instanceValue;
 
-		if (classIndex < 0)
-                {   throw new Exception("Classe não definida.");
+            if (classNodeIndex < 0)
+            {
+              throw new Exception("Classe não definida.");
+            }
+
+            // Calcula um hashCode para a instância
+            int j,i=1,hashCode=0,k=0;
+            for (j=0; j<numNodes; j++)
+            {
+              if (j != classAttributeIndex)
+              {
+                 instanceValue = instance.getValue(j);
+                 if (instanceValue != Instance.MISSING_VALUE)
+                 {
+                   hashCode+=instanceValue*multipliers[k];
+                   k++;
+                 }
+                 else
+                 {
+                   int numValues = instance.getDataset().getAttribute(j).numValues();
+                   hashCode+=numValues*multipliers[k];
+                   k++;
+                 }
+
+              }
+            }
+
+            Integer hashInt = new Integer(hashCode);
+            /** Se a instância já tiver sido propagada, a cópia dela retornada */
+            if (hashMap.containsKey(hashInt))
+            {
+              //float[] hashProbs = (float[])hashMap.get(hashInt);
+              probs = (float[])hashMap.get(hashInt);
+              //System.arraycopy(hashProbs,0,probs,0,hashProbs.length);
+            }
+            /** Senão a instância é propagada e inserida no HashMap*/
+            else
+            {
+              net.initialize();
+
+              for (j=0; j<numNodes; j++)
+              {
+                int actualNode = indexAttributes[j];
+                if (actualNode != classNodeIndex)
+                {
+                  instanceValue = instance.getValue(j);
+                  if (instanceValue != Instance.MISSING_VALUE)
+                  {
+                    ((TreeVariable)net.getNodeAt(actualNode)).addFinding(instanceValue);
+                  }
                 }
-
-                net.initialize();
-
-//                NodeList nodes = net.getNos();
-//                int size = nodes.size();
-                int size = net.getNodeCount();
-                int j;
-                for (j=0; j<size; j++)
-                {   int actualNode = indexAttributes[j];
-                    if (actualNode != classIndex)
-                    {   instanceValue = instance.getValue(j);
-                        if (instanceValue != Instance.MISSING_VALUE)
-                            ((TreeVariable)net.getNodeAt(actualNode)).addFinding(instanceValue);
-                    }
-                }
-
-                net.updateEvidences();
-
-                for (j=0;j<numClasses;j++)
-		{	probs[j] = (float)classNode.getMarginalAt(j);
-		}
-		return probs;
+              }
+              net.updateEvidences();
+              for (j=0;j<numClasses;j++)
+              {
+                probs[j] = classNode.getMarginalAt(j);
+              }
+              hashMap.put(hashInt,probs);
+            }
+            return probs;
   	}
 
 	/**
@@ -108,8 +163,7 @@ public class BayesianNetwork extends BayesianLearning
 	public String toString()
 	{	try
 		{	StringBuffer text = new StringBuffer("Bayesian Network\n");
-      		        int numNodes = net.size();
-			for (int i=0; i<numNodes; i++)
+      		        for (int i=0; i<numNodes; i++)
 			{	ProbabilisticNode node = (ProbabilisticNode)net.getNodeAt(i);
 				text.append(node+"\n");
 			}
@@ -129,34 +183,61 @@ public class BayesianNetwork extends BayesianLearning
         }
 
 	public void setClassAttribute(Attribute classAttribute) throws Exception
-	{	int i;
-		// Procura pela classe
-		boolean result = false;
-                for (i=0; i<numNodes; i++)
-		{	result = compareClasses(classAttribute,(ProbabilisticNode)net.getNodeAt(i));
-			if (result == true)
-			{	this.classAttribute = classAttribute;
-                                this.classIndex = net.getNodeIndex(classAttribute.getAttributeName());
+	{
+          int i,j;
+          // Procura pela classe
+          boolean result = false;
+          for (i=0; i<numNodes; i++)
+          {
+            result = compareClasses(classAttribute,(ProbabilisticNode)net.getNodeAt(i));
+            if (result == true)
+            {
+              classAttribute = classAttribute;
+              classNodeIndex = net.getNodeIndex(classAttribute.getAttributeName());
+              classAttributeIndex = classAttribute.getIndex();
 
-                                int numClasses = classNode.getStatesSize();
-                                originalDistribution = new float[numClasses];
-                                for (int j=0; j < numClasses; j++)
-                                {   originalDistribution[j] = (float)classNode.getMarginalAt(j);
-                                }
-                                break;
-			}
-		}
-		if (result == false)
-		{	throw new Exception("Attributo classe não encontrado na rede");
-		}
+              numClasses = classNode.getStatesSize();
+              originalDistribution = new float[numClasses];
+              for (j=0; j < numClasses; j++)
+              {
+                originalDistribution[j] = (float)classNode.getMarginalAt(j);
+              }
+              break;
+            }
+          }
+          // se a classe não for encontrada
+          if (result == false)
+          {
+            throw new Exception("Attributo classe não encontrado na rede");
+          }
+          else
+          {
+            // Inicializa com a capacidade inicial 1500 para conter pelo menos 1000 elementos sem precisar fazer o rehash().
+            hashMap = new HashMap(1500);
+            // Calcula os multiplicadores para calcular o hashCode
+            int k=0;
+            i=1;
+            for (j=0; j<numNodes; j++)
+            {
+              	if (j != classAttributeIndex)
+              	{
+                    multipliers[k]=i;
+                    i*=(instanceSet.getAttribute(j).numValues()+1);
+                    k++;
+              	}
+            }
+          }
 	}
 
         public void resetNet()
-        {   try
-            {   net.initialize();
-            }
-            catch (Exception e)
-            {}
+        {
+          try
+          {
+            net.initialize();
+          }
+          catch (Exception e)
+          {
+            e.printStackTrace();
+          }
         }
-
 }
