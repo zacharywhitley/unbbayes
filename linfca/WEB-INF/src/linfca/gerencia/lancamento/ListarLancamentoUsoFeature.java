@@ -70,11 +70,13 @@ public class ListarLancamentoUsoFeature implements Feature {
 			int codigo = rs.getInt("l.cod_lancamento_uso");
 			Timestamp inicio = rs.getTimestamp("l.dt_hora_inicio_lancamento_uso");
 			Calendar calInicio = Calendar.getInstance();
-			calInicio.setTime(inicio);
-						
-			Timestamp fim = rs.getTimestamp("l.dt_hora_fim_lancamento_uso");			
+			calInicio.setTime(inicio);					
+				
+			Timestamp fim = rs.getTimestamp("l.dt_hora_fim_lancamento_uso");
 			Calendar calFim = Calendar.getInstance();
-			calFim.setTime(fim);
+			if (fim != null) {
+				calFim.setTime(fim);
+			}
 			
 			String nome = rs.getString("u.nome");
 			String foto = rs.getString("u.foto");
