@@ -1,6 +1,6 @@
 package unbbayes.datamining.datamanipulation;
 
-import java.awt.Component;
+import java.awt.*;
 import java.io.*;
 import java.util.*;
 
@@ -12,50 +12,55 @@ import java.util.*;
 public class ArffLoader extends Loader
 {	/** The filename extension that should be used for arff files */
   	public static String FILE_EXTENSION = ".arff";
-	
+
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.datamanipulation.resources.DataManipulationResource");
-  
+
   	/**
    	* Reads an ARFF file from a reader.
    	*
    	* @param reader Reader
-	* @exception IOException if the ARFF file is not read 
+	* @exception IOException if the ARFF file is not read
    	* successfully
    	*/
-  	public ArffLoader(Reader reader) throws IOException 
-  	{	StreamTokenizer tokenizer = new StreamTokenizer(reader);
-		instances = new InstanceSet();
-		initTokenizer(tokenizer);
-    	readHeader(tokenizer);
-		while (getInstance(tokenizer)) {};
-		instances.compactify();
-	}
-	
-	public ArffLoader(Reader reader,Component component) throws IOException 
-  	{	StreamTokenizer tokenizer = new StreamTokenizer(reader);
-		instances = new InstanceSet();
-		initTokenizer(tokenizer);
-    	readHeader(tokenizer);
-		new CompactFileDialog(this,component);
-    	while (getInstance(tokenizer)) {};
-		if (counterAttribute >= 0)
-		{	instances.removeAttribute(counterAttribute);
-		}
-		/*maximumStatesAllowed = Options.getInstance().getNumberStatesAllowed();		
-		checkNumericAttributes();*/
-		instances.compactify();
+  	public ArffLoader(File file) throws IOException
+  	{   // Count instances
+            countInstancesFromFile(file);
+            //Memory initialization
+            instances = new InstanceSet(initialInstances);
+            Reader reader = new BufferedReader(new FileReader(file));
+            tokenizer = new StreamTokenizer(reader);
+            initTokenizer();
+            readHeader();
 	}
 
-	
+	//public ArffLoader(Reader reader,Component component) throws IOException
+        /*public ArffLoader(File reader,Component component) throws IOException
+  	{   Reader r = new BufferedReader(new FileReader(reader));
+            //StreamTokenizer tokenizer = new StreamTokenizer(reader);
+            tokenizer = new StreamTokenizer(r);
+            instances = new InstanceSet();
+            initTokenizer();
+    	    readHeader();
+            new CompactFileDialog(this,component);
+    	    while (getInstance()) {};
+            if (counterAttribute >= 0)
+            {   instances.removeAttribute(counterAttribute);
+            }
+		/*maximumStatesAllowed = Options.getInstance().getNumberStatesAllowed();
+		checkNumericAttributes();
+            instances.compactify();
+	}*/
+
+
   	/**
    	* Initializes the StreamTokenizer used for reading the ARFF file.
    	*
    	* @param tokenizer Stream tokenizer
    	*/
-  	protected void initTokenizer(StreamTokenizer tokenizer)
-	{	tokenizer.resetSyntax();         
-    	tokenizer.whitespaceChars(0, ' ');    
+  	protected void initTokenizer()
+	{	tokenizer.resetSyntax();
+    	tokenizer.whitespaceChars(0, ' ');
     	tokenizer.wordChars(' '+1,'\u00FF');
     	tokenizer.whitespaceChars(',',',');
     	tokenizer.commentChar('%');
@@ -65,119 +70,120 @@ public class ArffLoader extends Loader
     	tokenizer.ordinaryChar('}');
     	tokenizer.eolIsSignificant(true);
   	}
-  
+
   	/**
    	* Reads and stores header of an ARFF file.
    	*
    	* @param tokenizer Stream tokenizer
-   	* @exception IOException if the information is not read 
+   	* @exception IOException if the information is not read
    	* successfully
-   	*/ 
-  	protected void readHeader(StreamTokenizer tokenizer) throws IOException
+   	*/
+  	protected void readHeader() throws IOException
 	{	String attributeName;
     	ArrayList attributeValues;
     	int i;
 
     	// Get name of relation.
-    	getFirstToken(tokenizer);
-    	if (tokenizer.ttype == StreamTokenizer.TT_EOF) 
-			errms(tokenizer,resource.getString("readHeaderException1"));
+    	getFirstToken();
+    	if (tokenizer.ttype == StreamTokenizer.TT_EOF)
+			errms(resource.getString("readHeaderException1"));
     	if (tokenizer.sval.equalsIgnoreCase("@relation"))
-		{	getNextToken(tokenizer);
+		{	getNextToken();
       		instances.setRelationName(tokenizer.sval);
-      		getLastToken(tokenizer,false);
-    	} 
-		else 
-		{	errms(tokenizer,resource.getString("readHeaderException2"));
+      		getLastToken(false);
+    	}
+		else
+		{	errms(resource.getString("readHeaderException2"));
     	}
 
     	// Get attribute declarations.
-    	getFirstToken(tokenizer);
-    	if (tokenizer.ttype == StreamTokenizer.TT_EOF) 
-		{	errms(tokenizer,resource.getString("readHeaderException1"));
+    	getFirstToken();
+    	if (tokenizer.ttype == StreamTokenizer.TT_EOF)
+		{	errms(resource.getString("readHeaderException1"));
     	}
-    	while (tokenizer.sval.equalsIgnoreCase("@attribute")) 
+    	while (tokenizer.sval.equalsIgnoreCase("@attribute"))
 		{	// Get attribute name.
-      		getNextToken(tokenizer);
+      		getNextToken();
       		attributeName = tokenizer.sval;
-      		getNextToken(tokenizer);
+      		getNextToken();
 
       		// Check if attribute is nominal.
-      		if (tokenizer.ttype == StreamTokenizer.TT_WORD) 
+      		if (tokenizer.ttype == StreamTokenizer.TT_WORD)
 			{	// Attribute is real, or integer.
-				if (tokenizer.sval.equalsIgnoreCase("real") || tokenizer.sval.equalsIgnoreCase("integer") || tokenizer.sval.equalsIgnoreCase("numeric")) 
+				if (tokenizer.sval.equalsIgnoreCase("real") || tokenizer.sval.equalsIgnoreCase("integer") || tokenizer.sval.equalsIgnoreCase("numeric"))
 				{	instances.insertAttribute(new Attribute(attributeName,null,Attribute.NUMERIC,instances.numAttributes()));
-	  				readTillEOL(tokenizer);
-				} 
-				else 
-				{	errms(tokenizer,resource.getString("readHeaderException3"));
+	  				readTillEOL();
 				}
-      		} 
-			else 
+				else
+				{	errms(resource.getString("readHeaderException3"));
+				}
+      		}
+			else
 			{	// Attribute is nominal.
 				attributeValues = new ArrayList();
 				tokenizer.pushBack();
-	
+
 				// Get values for nominal attribute.
-				if (tokenizer.nextToken() != '{') 
-				{	errms(tokenizer,resource.getString("readHeaderException4"));
+				if (tokenizer.nextToken() != '{')
+				{	errms(resource.getString("readHeaderException4"));
 				}
-				while (tokenizer.nextToken() != '}') 
-				{	if (tokenizer.ttype == StreamTokenizer.TT_EOL) 
-					{	errms(tokenizer,resource.getString("readHeaderException5"));
-	  				} 
-					else 
+				while (tokenizer.nextToken() != '}')
+				{	if (tokenizer.ttype == StreamTokenizer.TT_EOL)
+					{	errms(resource.getString("readHeaderException5"));
+	  				}
+					else
 					{	attributeValues.add(tokenizer.sval);
 	  				}
 				}
-				if (attributeValues.size() == 0) 
-				{	errms(tokenizer,resource.getString("readHeaderException6"));
+				if (attributeValues.size() == 0)
+				{	errms(resource.getString("readHeaderException6"));
 				}
 				instances.insertAttribute(new Attribute(attributeName, attributeValues, Attribute.NOMINAL,instances.numAttributes()));
       		}
-      		getLastToken(tokenizer,false);
-      		getFirstToken(tokenizer);
+      		getLastToken(false);
+      		getFirstToken();
       		if (tokenizer.ttype == StreamTokenizer.TT_EOF)
-				errms(tokenizer,resource.getString("readHeaderException1"));
+				errms(resource.getString("readHeaderException1"));
     	}
 
     	// Check if data part follows. We can't easily check for EOL.
-    	if (!tokenizer.sval.equalsIgnoreCase("@data")) 
-		{	errms(tokenizer,resource.getString("readHeaderException7"));
+    	if (!tokenizer.sval.equalsIgnoreCase("@data"))
+		{	errms(resource.getString("readHeaderException7"));
     	}
-    
+
     	// Check if any attributes have been declared.
-    	if (instances.numAttributes() == 0) 
-		{	errms(tokenizer,resource.getString("readHeaderException8"));
+    	if (instances.numAttributes() == 0)
+		{	errms(resource.getString("readHeaderException8"));
     	}
   	}
-  
+
   	/**
    	* Gets next token, skipping empty lines.
    	*
    	* @param tokenizer Stream tokenizer
    	* @exception IOException if reading the next token fails
    	*/
-  	protected void getFirstToken(StreamTokenizer tokenizer) throws IOException
+  	protected void getFirstToken() throws IOException
 	{	while (tokenizer.nextToken() == StreamTokenizer.TT_EOL)
 		{};
-    	if ((tokenizer.ttype == '\'') || (tokenizer.ttype == '"')) 
+    	if ((tokenizer.ttype == '\'') || (tokenizer.ttype == '"'))
 		{	tokenizer.ttype = StreamTokenizer.TT_WORD;
-    	} 
+    	}
 		else if ((tokenizer.ttype == StreamTokenizer.TT_WORD) && (tokenizer.sval.equals("?")))
 		{	tokenizer.ttype = '?';
     	}
   	}
-  
+
   	/**
    	* Gets token and checks if its end of line.
    	*
    	* @param tokenizer Stream tokenizer
+        * @param endOfFileOk Checks if it's end of line
    	* @exception IOException if it doesn't find an end of line
    	*/
-  	protected void getLastToken(StreamTokenizer tokenizer, boolean endOfFileOk) throws IOException
-	{	if ((tokenizer.nextToken() != StreamTokenizer.TT_EOL) && ((tokenizer.nextToken() != StreamTokenizer.TT_EOF) || !endOfFileOk)) 
-			errms(tokenizer,resource.getString("getLastTokenException1"));
+  	protected void getLastToken(boolean endOfFileOk) throws IOException
+	{	if ((tokenizer.nextToken() != StreamTokenizer.TT_EOL) && ((tokenizer.nextToken() != StreamTokenizer.TT_EOF) || !endOfFileOk))
+			errms(resource.getString("getLastTokenException1"));
   	}
 
   	/**
@@ -186,32 +192,33 @@ public class ArffLoader extends Loader
    	* @param tokenizer Stream tokenizer
    	* @exception IOException if it finds a premature end of line
    	*/
-  	protected void getNextToken(StreamTokenizer tokenizer) throws IOException
-	{	if (tokenizer.nextToken() == StreamTokenizer.TT_EOL) 
-		{	errms(tokenizer,resource.getString("getNextTokenException1"));
+  	protected void getNextToken() throws IOException
+	{	if (tokenizer.nextToken() == StreamTokenizer.TT_EOL)
+		{	errms(resource.getString("getNextTokenException1"));
     	}
-    	if (tokenizer.ttype == StreamTokenizer.TT_EOF) 
-		{	errms(tokenizer,resource.getString("getNextTokenException2"));
-    	} 
-		else if ((tokenizer.ttype == '\'') || (tokenizer.ttype == '"')) 
+    	if (tokenizer.ttype == StreamTokenizer.TT_EOF)
+		{	errms(resource.getString("getNextTokenException2"));
+    	}
+		else if ((tokenizer.ttype == '\'') || (tokenizer.ttype == '"'))
 		{	tokenizer.ttype = StreamTokenizer.TT_WORD;
-    	} 
+    	}
 		else if ((tokenizer.ttype == StreamTokenizer.TT_WORD) && (tokenizer.sval.equals("?")))
 		{	tokenizer.ttype = '?';
     	}
   	}
-  
+
   	/**
    	* Reads and skips all tokens before next end of line token.
    	*
    	* @param tokenizer Stream tokenizer
+        * @throws IOException EOF not found
    	*/
-  	private void readTillEOL(StreamTokenizer tokenizer) throws IOException
-  	{	while (tokenizer.nextToken() != StreamTokenizer.TT_EOL) 
+  	private void readTillEOL() throws IOException
+  	{	while (tokenizer.nextToken() != StreamTokenizer.TT_EOL)
 		{};
     	tokenizer.pushBack();
   	}
-  
+
   	/**
    	* Reads a single instance using the tokenizer and appends it
    	* to the dataset. Automatically expands the dataset if it
@@ -219,22 +226,22 @@ public class ArffLoader extends Loader
    	*
    	* @param tokenizer Tokenizer to be used
    	* @return False if end of file has been reached
-   	* @exception IOException if the information is not read 
+   	* @exception IOException if the information is not read
    	* successfully
-   	*/ 
-  	protected boolean getInstance(StreamTokenizer tokenizer) throws IOException 
+   	*/
+  	public boolean getInstance() throws IOException
 	{	// Check if any attributes have been declared.
-    	if (instances.numAttributes() == 0) 
-		{	errms(tokenizer,resource.getString("getInstanceException1"));
+    	if (instances.numAttributes() == 0)
+		{	errms(resource.getString("getInstanceException1"));
     	}
 
     	// Check if end of file reached.
-    	getFirstToken(tokenizer);
-    	if (tokenizer.ttype == StreamTokenizer.TT_EOF) 
+    	getFirstToken();
+    	if (tokenizer.ttype == StreamTokenizer.TT_EOF)
 		{	return false;
     	}
-    
-    	return getInstanceFull(tokenizer);
+
+    	return getInstanceFull();
   	}
 
   	/**
@@ -244,10 +251,10 @@ public class ArffLoader extends Loader
    	*
    	* @param tokenizer Tokenizer to be used
    	* @return False if end of file has been reached
-   	* @exception IOException if the information is not read 
+   	* @exception IOException if the information is not read
    	* successfully
-   	*/ 
-  	protected boolean getInstanceFull(StreamTokenizer tokenizer) throws IOException 
+   	*/
+  	protected boolean getInstanceFull() throws IOException
 	{	short[] instance;
 		if (counterAttribute >= 0)
 		{	instance = new short[instances.numAttributes() - 1];
@@ -257,41 +264,41 @@ public class ArffLoader extends Loader
 		}
 		int index;
 		int instanceWeight = 1;
-    	
+
 		// Get values for all attributes.
     	for (int i = 0; i < instances.numAttributes(); i++)
 		{	// Get next token
-      		if (i > 0) 
-			{	getNextToken(tokenizer);
+      		if (i > 0)
+			{	getNextToken();
       		}
-            
+
 			if (counterAttribute == i)
 			{	try
 				{	instanceWeight = Integer.valueOf(tokenizer.sval).intValue();
 				}
 				catch(NumberFormatException nfe)
-				{	errms(tokenizer,"Atributo de contagem inválido");
+				{	errms("Atributo de contagem inválido");
 				}
 			}
-			else			
+			else
 			{	// Check if value is missing.
-      			if  (tokenizer.ttype == '?') 
+      			if  (tokenizer.ttype == '?')
 				{	instance[i] = Instance.missingValue();
-      			} 
-				else 
+      			}
+				else
 				{	// Check if token is valid.
-					if (tokenizer.ttype != StreamTokenizer.TT_WORD) 
-					{	errms(tokenizer,resource.getString("getInstanceFullException1"));
+					if (tokenizer.ttype != StreamTokenizer.TT_WORD)
+					{	errms(resource.getString("getInstanceFullException1"));
 					}
-					if (instances.getAttribute(i).isNominal()) 
+					if (instances.getAttribute(i).isNominal())
 					{	// Check if value appears in header.
 	  					index = instances.getAttribute(i).indexOfValue(tokenizer.sval);
-	  					if (index == -1) 
-						{	errms(tokenizer,resource.getString("getInstanceFullException2"));
+	  					if (index == -1)
+						{	errms(resource.getString("getInstanceFullException2"));
 	  					}
 	  					instance[i] = (short)index;
-					} 
-					else if (instances.getAttribute(i).isNumeric()) 
+					}
+					else if (instances.getAttribute(i).isNumeric())
 					{	// Check if value is really a number.
 	  					try
 						{	Attribute att = instances.getAttribute(i);
@@ -300,29 +307,29 @@ public class ArffLoader extends Loader
 							if (att.numValues()==0 || att.indexOfValue(nomeEstado) == -1)
 							{	att.addValue(nomeEstado);
 							}
-				
+
 							// Check if value appears in header.
 	  						index = att.indexOfValue(nomeEstado);
-	  						if (index == -1) 
-							{	errms(tokenizer,resource.getString("getInstanceFullException2"));
+	  						if (index == -1)
+							{	errms(resource.getString("getInstanceFullException2"));
 	  						}
-	  						instance[i] = (short)index;						
-	  					} 
-						catch (NumberFormatException e) 
-						{	errms(tokenizer,resource.getString("getInstanceFullException3"));
+	  						instance[i] = (short)index;
 	  					}
-					} 
+						catch (NumberFormatException e)
+						{	errms(resource.getString("getInstanceFullException3"));
+	  					}
+					}
       			}
 			}
     	}
-    	getLastToken(tokenizer,true);
-    	
+    	getLastToken(true);
+
     	// Add instance to dataset
     	add(new Instance(instanceWeight,instance));
 		return true;
   	}
-  
+
 }
 
-     
+
 

@@ -300,10 +300,10 @@ public class WindowController implements KeyListener {
      */
     public void initialize() {
     	try {
-	        rede.initialize();	        
-       		this.updateTree();    		
+	        rede.initialize();
+       		this.updateTree();
     	} catch (Exception e) {
-    		e.printStackTrace();    		
+    		e.printStackTrace();
     	}
     }
 
@@ -569,7 +569,7 @@ public class WindowController implements KeyListener {
         node.setName(resource.getString("utilityNodeName") + rede.noVariaveis());
         node.setDescription(node.getName());
         PotentialTable auxTab = ((ITabledVariable)node).getPotentialTable();
-        auxTab.addVariable(node);        
+        auxTab.addVariable(node);
         rede.addNode(node);
     }
 
@@ -1093,5 +1093,13 @@ public class WindowController implements KeyListener {
         menorX -= raio;
         menorY -= raio;
         return new Rectangle(menorX, menorY, maiorX - menorX, maiorY - menorY);
+    }
+
+    public void showExplanationProperties(ProbabilisticNode node)
+    {   tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        ExplanationProperties explanation = new ExplanationProperties(tela);
+        explanation.setProbabilisticNode(node);
+        explanation.setVisible(true);
+        tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 }

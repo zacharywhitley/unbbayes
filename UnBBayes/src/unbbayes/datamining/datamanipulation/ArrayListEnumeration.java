@@ -8,7 +8,7 @@ import java.util.*;
  *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @version $1.0 $ (16/02/2002)
  */
-public class ArrayListEnumeration implements Enumeration 
+public class ArrayListEnumeration implements Enumeration
 {	/** The counter. */
    	private int counter;
 
@@ -23,7 +23,7 @@ public class ArrayListEnumeration implements Enumeration
      *
      * 	@param arrayList Vector which is to be enumerated
      */
-    public ArrayListEnumeration(ArrayList arrayList) 
+    public ArrayListEnumeration(ArrayList arrayList)
 	{	counter = 0;
       	this.arrayList = arrayList;
       	specialElement = -1;
@@ -36,13 +36,13 @@ public class ArrayListEnumeration implements Enumeration
      * @param arrayList the vector which is to be enumerated
      * @param special the index of the special element
      */
-    public ArrayListEnumeration(ArrayList arrayList, int special) 
+    public ArrayListEnumeration(ArrayList arrayList, int special)
 	{	this.arrayList = arrayList;
       	specialElement = special;
-      	if (special == 0) 
+      	if (special == 0)
 		{	counter = 1;
-      	} 
-		else 
+      	}
+		else
 		{	counter = 0;
       	}
     }
@@ -53,8 +53,8 @@ public class ArrayListEnumeration implements Enumeration
      *
      * @return true If there are some elements left
      */
-    public final boolean hasMoreElements() 
-	{	if (counter < arrayList.size()) 
+    public final boolean hasMoreElements()
+	{	if (counter < arrayList.size())
 		{	return true;
       	}
       	return false;
@@ -65,13 +65,13 @@ public class ArrayListEnumeration implements Enumeration
      *
      * @return the next element to be enumerated
      */
-    public final Object nextElement() 
+    public final Object nextElement()
 	{	Object result = arrayList.get(counter);
 
       	counter++;
-      	if (counter == specialElement) 
+      	if (counter == specialElement)
 		{	counter++;
       	}
       	return result;
     }
-}  
+}

@@ -2,6 +2,7 @@ package unbbayes.datamining.datamanipulation;
 
 import java.awt.*;
 import java.awt.event.*;
+
 import javax.swing.*;
 
 public class CompactFileAttributeSelection extends JDialog
@@ -44,7 +45,7 @@ public class CompactFileAttributeSelection extends JDialog
 	  	//container.add(new JLabel("Informe a variavel que contem o numero de repeticoes"),BorderLayout.NORTH);
         //setBounds(100,100,320,65);
 	  	setSize(260,100);
-		
+
 		//Center the window
     	Dimension screenSize = parent.getSize();
     	Dimension frameSize = getSize();
@@ -56,7 +57,7 @@ public class CompactFileAttributeSelection extends JDialog
     	}
     	Point loc = parent.getLocation();
       	setLocation((screenSize.width - frameSize.width) / 2 + loc.x, (screenSize.height - frameSize.height) / 2 + loc.y);
-    	
+
 		setVisible(true);
 	}
 
@@ -70,9 +71,10 @@ public class CompactFileAttributeSelection extends JDialog
 	};
 
 	ActionListener ActionCancelar = new ActionListener()
-	{	public void actionPerformed(ActionEvent ae)
-		{	dispose();
-		}
+	{   public void actionPerformed(ActionEvent ae)
+            {   //Options.getInstance().setCompactedFile(false);
+                dispose();
+            }
 	};
 }
 

@@ -79,6 +79,8 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
     private Dimension visibleDimension;
     private Dimension graphDimension;
 
+    private JPopupMenu popup = new JPopupMenu();
+
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.fronteira.resources.FronteiraResources");
 
@@ -90,7 +92,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
      *@param  controlador  o controlador (<code>TControladorTelaPrincipal</code>)
      *@param  graphViewport a tela, (<code>TViewport</code>), onde será inserida essa classe
      */
-    public IGraph(WindowController controlador, JViewport graphViewport) {
+    public IGraph(final WindowController controlador, JViewport graphViewport) {
         super();
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
@@ -132,6 +134,14 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         scrollY = 0;
         graphDimension = new Dimension(1500, 1500);
         visibleDimension = new Dimension(0, 0);
+
+        JMenuItem item = new JMenuItem("Propriedades...");
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae)
+            {   controlador.showExplanationProperties((ProbabilisticNode)getSelected());
+            }
+        });
+        popup.add(item);
     }
 
 
@@ -656,7 +666,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         //setar o melhor scrollMode para desenhar e mexer na rede
         graphViewport.setScrollMode(JViewport.BLIT_SCROLL_MODE);
 
-        if (e.getModifiers() == e.BUTTON1_MASK) {
+        if ((e.getModifiers() == e.BUTTON1_MASK) || (e.getModifiers() == e.BUTTON3_MASK)) {
             Node node = getNode(e.getX(), e.getY());
 
             if (bArc) {
@@ -823,6 +833,11 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         }
 
         update();
+
+        if (e.isPopupTrigger() && (getSelected() != null))
+        {   if (!(getSelected() instanceof Edge))
+                popup.show(e.getComponent(),e.getX(),e.getY());
+        }
     }
 
 

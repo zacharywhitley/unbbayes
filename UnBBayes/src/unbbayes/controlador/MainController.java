@@ -31,7 +31,7 @@ import javax.swing.*;
 import unbbayes.fronteira.*;
 import unbbayes.io.*;
 import unbbayes.jprs.jbn.*;
-import unbbayes.util.NodeList;
+import unbbayes.util.*;
 
 /**
  *  Essa classe implementa o <code>KeyListener</code> e o <code>

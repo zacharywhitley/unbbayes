@@ -25,13 +25,13 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.*;
-import java.util.ResourceBundle;
+import java.util.*;
+
 import javax.help.*;
 import javax.swing.*;
-import javax.swing.tree.*;
+
 import unbbayes.aprendizagem.*;
 import unbbayes.controlador.*;
-import unbbayes.jprs.jbn.*;
 
 /**
  *  Essa classe extende o <code>JFrame</code> e é responsável pela interface
@@ -95,16 +95,16 @@ public class IUnBBayes extends JFrame {
         bottomPanel      = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 1));
 
         //criar botões que serão usados nos toolbars
-        newNet         = new JButton(new ImageIcon("icones/novo.gif"));
-        loadNet        = new JButton(new ImageIcon("icones/abrir.gif"));
-        saveNet        = new JButton(new ImageIcon("icones/salvar.gif"));
-        learn          = new JButton(new ImageIcon("icones/aprende.gif"));
-        metal          = new JButton(new ImageIcon("icones/metal.gif"));
-        motif          = new JButton(new ImageIcon("icones/motif.gif"));
-        windows        = new JButton(new ImageIcon("icones/windows.gif"));
-        tile           = new JButton(new ImageIcon("icones/tile.gif"));
-        cascade        = new JButton(new ImageIcon("icones/cascade.gif"));
-		help           = new JButton(new ImageIcon("icones/ajuda.gif"));
+        newNet         = new JButton(new ImageIcon(getClass().getResource("/icones/novo.gif")));
+        loadNet        = new JButton(new ImageIcon(getClass().getResource("/icones/abrir.gif")));
+        saveNet        = new JButton(new ImageIcon(getClass().getResource("/icones/salvar.gif")));
+        learn          = new JButton(new ImageIcon(getClass().getResource("/icones/aprende.gif")));
+        metal          = new JButton(new ImageIcon(getClass().getResource("/icones/metal.gif")));
+        motif          = new JButton(new ImageIcon(getClass().getResource("/icones/motif.gif")));
+        windows        = new JButton(new ImageIcon(getClass().getResource("/icones/windows.gif")));
+        tile           = new JButton(new ImageIcon(getClass().getResource("/icones/tile.gif")));
+        cascade        = new JButton(new ImageIcon(getClass().getResource("/icones/cascade.gif")));
+		help           = new JButton(new ImageIcon(getClass().getResource("/icones/ajuda.gif")));
 
         //setar tooltip para esses botões
         help.setToolTipText(resource.getString("helpToolTip"));

@@ -1,6 +1,8 @@
 package unbbayes.datamining.classifiers;
 
 import java.util.*;
+import java.text.*;//SimpleDateFormat
+
 import unbbayes.datamining.datamanipulation.*;
 
 /**
@@ -12,7 +14,7 @@ import unbbayes.datamining.datamanipulation.*;
 public class Evaluation
 { /** Load resource file from this package */
   private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.classifiers.resources.ClassifiersResource");
-  
+
   /** The number of classes. */
   private int numClasses;
 
@@ -33,25 +35,25 @@ public class Evaluation
 
   /** Is the class nominal or numeric? */
   private boolean classIsNominal;
-  
+
   /** Array for storing the confusion matrix. */
   private int [][] confusionMatrix;
-  
+
   /** Sum of squared errors. */
   private double sumSqrErr;
-  
+
   /** The names of the classes. */
   private String [] classNames;
 
   /** The instance set that will be manipulated. */
   private InstanceSet data;
-  
+
   /** Confidence limits for the normal distribution */
   private double[] confidenceLimits = {3.09,2.58,2.33,1.65,1.28,0.84,0.25};
-  
+
   //private String[] confidenceProbs = {"0.1%","0.5%","1%","5%","10%","20%","40%"};
   private String[] confidenceProbs = {"99.8%","99%","98%","90%","80%","60%","20%"};
-  
+
   private int confidenceLimit = 100;
 
   	/**
@@ -66,11 +68,11 @@ public class Evaluation
 		numClasses = data.numClasses();
     	classIsNominal = data.getClassAttribute().isNominal();
 		confidenceLimit = Options.getInstance().getConfidenceLimit();
-		if (classIsNominal) 
+		if (classIsNominal)
 		{	confusionMatrix = new int [numClasses][numClasses];
 			classNames = new String [numClasses];
-      		for(int i = 0; i < numClasses; i++) 
-			{	classNames[i] = data.getClassAttribute().value(i);	
+      		for(int i = 0; i < numClasses; i++)
+			{	classNames[i] = data.getClassAttribute().value(i);
       		}
 		}
     }
@@ -83,9 +85,13 @@ public class Evaluation
    	* successfully
    	*/
   	public void evaluateModel(Classifier classifier) throws Exception
-	{	for (int i = 0; i < data.numInstances(); i++)
-		{	evaluateModelOnce(classifier,data.getInstance(i));
-    	}
+	{   for (int i = 0; i < data.numInstances(); i++)
+            {   if ((i%50000)==0)
+                {   String currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
+                    System.out.println("instância = "+i+" hora = "+currentHour);
+                }
+                evaluateModelOnce(classifier,data.getInstance(i));
+            }
   	}
 
 	/**
@@ -180,7 +186,7 @@ public class Evaluation
 			if (withClass >= confidenceLimit)
 				text.append(incorrectConfidence());
 			text.append("Quadratic loss function\t"+Utils.doubleToString((sumSqrErr/withClass), 12, 4)+"\n");
-	  		
+
       		if (Utils.gr(unclassified(), 0))
 			{	text.append(resource.getString("unclassified"));
 				text.append(Utils.doubleToString(unclassified(), 12,4) + " " + Utils.doubleToString(pctUnclassified(),12, 4) + "%\n");
@@ -204,18 +210,18 @@ public class Evaluation
 
   /**
    * Update the numeric accuracy measures. For numeric classes, the
-   * accuracy is between the actual and predicted class values. For 
-   * nominal classes, the accuracy is between the actual and 
+   * accuracy is between the actual and predicted class values. For
+   * nominal classes, the accuracy is between the actual and
    * predicted class probabilities.
    *
    * @param predicted the predicted values
    * @param actual the actual value
    * @param weight the weight associated with this prediction
    */
-  private void updateNumericScores(float[] predicted,float[] actual,float weight) 
+  private void updateNumericScores(float[] predicted,float[] actual,float weight)
   { float diff;
     double partialSumSqrErr = 0;
-    for(int i = 0; i < numClasses; i++) 
+    for(int i = 0; i < numClasses; i++)
 	{	diff = predicted[i] - actual[i];
       	partialSumSqrErr += diff * diff;
     }
@@ -225,11 +231,11 @@ public class Evaluation
   private String correctConfidence()
   {	double lowerBound,upperBound,z;
 	double f = (double)correct/(double)withClass;
-	double n = (double)(numInstances());  
+	double n = (double)(numInstances());
 	double finalTerm,mediumTerm,initialTerm;
 	StringBuffer sb = new StringBuffer("Correct confidence limits\nPr[c]\t   z\n");
   	for (int i=0;i<confidenceLimits.length;i++)
-  	{	z = confidenceLimits[i];	
+  	{	z = confidenceLimits[i];
 		initialTerm = initialTerm(f,z,n);
 		mediumTerm = mediumTerm(f,z,n);
 		finalTerm = finalTerm(z,n);
@@ -239,15 +245,15 @@ public class Evaluation
 	}
 	return sb.toString();
   }
-  
+
   private String incorrectConfidence()
   {	double lowerBound,upperBound,z;
 	double f = (double)incorrect/(double)withClass;
-	double n = (double)(numInstances());  
+	double n = (double)(numInstances());
 	double finalTerm,mediumTerm,initialTerm;
 	StringBuffer sb = new StringBuffer("Incorrect confidence limits\nPr[c]\t   z\n");
   	for (int i=0;i<confidenceLimits.length;i++)
-  	{	z = confidenceLimits[i];	
+  	{	z = confidenceLimits[i];
 		initialTerm = initialTerm(f,z,n);
 		mediumTerm = mediumTerm(f,z,n);
 		finalTerm = finalTerm(z,n);
@@ -257,35 +263,35 @@ public class Evaluation
 	}
 	return sb.toString();
   }
-  
+
   private double finalTerm(double z,double n)
   {	return 1.0d+(Math.pow(z,2.0d)/n);
   }
-  
+
   private double initialTerm(double f,double z,double n)
   {	return f+(Math.pow(z,2.0d)/(2.0d*n));
   }
-  
+
   private double mediumTerm(double f,double z,double n)
   {	return (z*Math.sqrt((f/n)-(Math.pow(f,2.0d)/n)+((Math.pow(z,2.0d))/(4.0d*(Math.pow(n,2.0d))))));
   }
-  
+
   /**
    * Gets the number of test instances that had a known class value
    *
    * @return the number of test instances with known class
    */
-  public final int numInstances() 
+  public final int numInstances()
   { return withClass;
   }
 
   /**
    * Gets the number of instances incorrectly classified (that is, for
-   * which an incorrect prediction was made). 
+   * which an incorrect prediction was made).
    *
    * @return the number of incorrectly classified instances
    */
-  public final int incorrect() 
+  public final int incorrect()
   { return incorrect;
   }
 
@@ -296,17 +302,17 @@ public class Evaluation
    * @return the percent of incorrectly classified instances
    * (between 0 and 100)
    */
-  public final double pctIncorrect() 
+  public final double pctIncorrect()
   { return 100 * (double)incorrect / (double)withClass;
   }
 
   /**
    * Gets the number of instances correctly classified (that is, for
-   * which a correct prediction was made). 
+   * which a correct prediction was made).
    *
    * @return the number of correctly classified instances
    */
-  public final int correct() 
+  public final int correct()
   { return correct;
   }
 
@@ -316,7 +322,7 @@ public class Evaluation
    *
    * @return the percent of correctly classified instances (between 0 and 100)
    */
-  public final double pctCorrect() 
+  public final double pctCorrect()
   { return 100 * (double)correct / (double)withClass;
   }
 
@@ -326,7 +332,7 @@ public class Evaluation
    *
    * @return the number of unclassified instances
    */
-  public final int unclassified() 
+  public final int unclassified()
   { return unclassified;
   }
 
@@ -336,7 +342,7 @@ public class Evaluation
    *
    * @return the percent of unclassified instances (between 0 and 100)
    */
-  public final double pctUnclassified() 
+  public final double pctUnclassified()
   { return 100 * (double)unclassified / (double)withClass;
   }
 
@@ -352,7 +358,7 @@ public class Evaluation
    */
   private void updateStatsForClassifier(float[] predictedDistribution,Instance instance) throws Exception
   {	int actualClass = (int)instance.classValue();
-    
+
     if (!instance.classIsMissing())
 	{	// Determine the predicted class (doesn't detect multiple classifications)
       	int predictedClass = -1;
@@ -373,13 +379,13 @@ public class Evaluation
       	}
 
 		updateNumericScores(predictedDistribution,makeDistribution(instance.classValue()),instance.getWeight());
-			  
+
 		// Update other stats
 		/*if (modelEvaluation == false)
 		{	confusionMatrix[actualClass][predictedClass] += instance.getWeight();
 		}*/
 		confusionMatrix[actualClass][predictedClass] += instance.getWeight();
-		
+
 		if (predictedClass != actualClass)
 	  	{	incorrect += instance.getWeight();
       	}
@@ -410,11 +416,11 @@ public class Evaluation
 	{	Instance inst = data.getInstance(i);
 		int originalWeight = inst.getWeight();
 		inst.setWeight(1);
-		for (int j=0;j<originalWeight;j++)			
+		for (int j=0;j<originalWeight;j++)
 			instances.add(inst);
 	}
 	data = new InstanceSet(instances);
-	
+
 	instances.randomize(new Random(42));
 	if (instances.getClassAttribute().isNominal())
 	{	stratify(instances,numFolds);
@@ -440,25 +446,25 @@ public class Evaluation
    * @exception IllegalArgumentException if the number of folds is less than 2
    * or greater than the number of instances.
    */
-  public InstanceSet trainCV(InstanceSet instances, int numFolds, int numFold) 
+  public InstanceSet trainCV(InstanceSet instances, int numFolds, int numFold)
   {	int numInstForFold, first, offset;
 	int numInstances = instances.numInstances();
     InstanceSet train;
-	
-	if (numFolds < 2) 
+
+	if (numFolds < 2)
 	{	throw new IllegalArgumentException(resource.getString("folds2"));
     }
-    if (numFolds > numInstances) 
+    if (numFolds > numInstances)
 	{	throw new IllegalArgumentException(resource.getString("moreFolds"));
     }
     numInstForFold = numInstances / numFolds;
-    if (numFold < numInstances % numFolds) 
+    if (numFold < numInstances % numFolds)
 	{	numInstForFold++;
       	offset = numFold;
     }
 	else
     {  offset = numInstances % numFolds;
-    }	
+    }
     train = new InstanceSet(instances, (numInstances - numInstForFold));
     first = numFold * (numInstances / numFolds) + offset;
     instances.copyInstances(0, train, first);
@@ -479,15 +485,15 @@ public class Evaluation
    * @exception IllegalArgumentException if the number of folds is less than 2
    * or greater than the number of instances.
    */
-  public InstanceSet testCV(InstanceSet instances,int numFolds, int numFold) 
+  public InstanceSet testCV(InstanceSet instances,int numFolds, int numFold)
   { int numInstForFold, first, offset;
     int numInstances = instances.numInstances();
 	InstanceSet test;
 
-    if (numFolds < 2) 
+    if (numFolds < 2)
 	{ throw new IllegalArgumentException(resource.getString("folds2"));
     }
-    if (numFolds > numInstances) 
+    if (numFolds > numInstances)
 	{ throw new IllegalArgumentException(resource.getString("moreFolds"));
     }
     numInstForFold = numInstances / numFolds;
@@ -512,23 +518,23 @@ public class Evaluation
    * @param numFolds the number of folds in the cross-validation
    * @exception UnassignedClassException if the class is not set
    */
-  public final void stratify(InstanceSet instances, int numFolds) 
-  { if (numFolds <= 0) 
+  public final void stratify(InstanceSet instances, int numFolds)
+  { if (numFolds <= 0)
   	{ throw new IllegalArgumentException(resource.getString("folds1"));
     }
-    if (instances.getClassIndex() < 0) 
+    if (instances.getClassIndex() < 0)
 	{ throw new UnassignedClassException(resource.getString("classNegative"));
     }
-    if (instances.getClassAttribute().isNominal()) 
+    if (instances.getClassAttribute().isNominal())
 	{ // sort by class
       int index = 1;
       int numInstances = instances.numInstances();
-      while (index < numInstances) 
+      while (index < numInstances)
 	  {	Instance instance1 = instances.getInstance(index - 1);
-		for (int j = index; j < numInstances; j++) 
+		for (int j = index; j < numInstances; j++)
 		{	Instance instance2 = instances.getInstance(j);
 	  		if ((instance1.classValue() == instance2.classValue()) ||
-	      		(instance1.classIsMissing() && instance2.classIsMissing())) 
+	      		(instance1.classIsMissing() && instance2.classIsMissing()))
 			{	instances.swap(index,j);
 	    		index++;
 	  		}
@@ -551,9 +557,9 @@ public class Evaluation
     int start = 0, j;
 
     // create stratified batch
-    while (newVec.size() < numInstances) 
+    while (newVec.size() < numInstances)
 	{	j = start;
-      	while (j < numInstances) 
+      	while (j < numInstances)
 		{	newVec.add(instances.getInstance(j));
 			j += numFolds;
       	}
@@ -561,39 +567,39 @@ public class Evaluation
     }
     instances.setInstances(newVec);
   }
-  
+
   /**
    * Returns a copy of the confusion matrix.
    *
    * @return a copy of the confusion matrix as a two-dimensional array
    */
-  public double[][] confusionMatrix() 
+  public double[][] confusionMatrix()
   { double[][] newMatrix = new double[confusionMatrix.length][0];
 
-    for (int i = 0; i < confusionMatrix.length; i++) 
+    for (int i = 0; i < confusionMatrix.length; i++)
 	{ newMatrix[i] = new double[confusionMatrix[i].length];
       System.arraycopy(confusionMatrix[i], 0, newMatrix[i], 0,
 		       confusionMatrix[i].length);
     }
     return newMatrix;
   }
-  
+
   /**
    * Generates a breakdown of the accuracy for each class,
    * incorporating various information-retrieval statistics, such as
    * true/false positive rate.  Should be
-   * useful for ROC curves.  
-   * 
+   * useful for ROC curves.
+   *
    * @return the statistics presented as a string
    * @exception Exception if the class is numeric
    */
-  public String toClassDetailsString() throws Exception 
-  { if (!classIsNominal) 
+  public String toClassDetailsString() throws Exception
+  { if (!classIsNominal)
   	{ throw new Exception(resource.getString("noMatrix"));
     }
     StringBuffer text = new StringBuffer(resource.getString("accuracy"));
 	text.append("\nTP Rate   FP Rate   TN Rate   FN Rate\n");
-    for(int i = 0; i < numClasses; i++) 
+    for(int i = 0; i < numClasses; i++)
 	{ text.append(Utils.doubleToString(truePositiveRate(i), 7, 3)).append("   ");
       text.append(Utils.doubleToString(falsePositiveRate(i), 7, 3)).append("    ");
       text.append(Utils.doubleToString(trueNegativeRate(i), 7, 3)).append("   ");
@@ -602,18 +608,18 @@ public class Evaluation
     }
     return text.toString();
   }
-  
+
   /**
-   * Calculate the number of true positives with respect to a particular class. 
+   * Calculate the number of true positives with respect to a particular class.
    * This is defined as correctly classified positives
    *
    * @param classIndex the index of the class to consider as "positive"
    * @return the number of true positives
    */
-  public int numTruePositives(int classIndex) 
+  public int numTruePositives(int classIndex)
   { int correct = 0;
-    for (int j = 0; j < numClasses; j++) 
-	{ 	if (j == classIndex) 
+    for (int j = 0; j < numClasses; j++)
+	{ 	if (j == classIndex)
 		{	correct += confusionMatrix[classIndex][j];
       	}
     }
@@ -621,39 +627,39 @@ public class Evaluation
   }
 
   /**
-   * Calculate the true positive rate with respect to a particular class. 
+   * Calculate the true positive rate with respect to a particular class.
    * This is defined correctly classified positives divided by total positives
    *
    * @param classIndex the index of the class to consider as "positive"
    * @return the true positive rate
    */
-  public double truePositiveRate(int classIndex) 
+  public double truePositiveRate(int classIndex)
   { double correct = 0, total = 0;
-    for (int j = 0; j < numClasses; j++) 
-	{ 	if (j == classIndex) 
+    for (int j = 0; j < numClasses; j++)
+	{ 	if (j == classIndex)
 		{	correct += confusionMatrix[classIndex][j];
       	}
       	total += confusionMatrix[classIndex][j];
     }
-    if (total == 0) 
+    if (total == 0)
 	{ return 0;
     }
     return correct / total;
   }
 
   /**
-   * Calculate the number of true negatives with respect to a particular class. 
-   * This is defined as correctly classified negatives 
+   * Calculate the number of true negatives with respect to a particular class.
+   * This is defined as correctly classified negatives
    *
    * @param classIndex the index of the class to consider as "negative"
    * @return the number of true negatives
    */
-  public int numTrueNegatives(int classIndex) 
+  public int numTrueNegatives(int classIndex)
   { int correct = 0;
-    for (int i = 0; i < numClasses; i++) 
-	{ 	if (i != classIndex) 
-		{	for (int j = 0; j < numClasses; j++) 
-			{	if (j != classIndex) 
+    for (int i = 0; i < numClasses; i++)
+	{ 	if (i != classIndex)
+		{	for (int j = 0; j < numClasses; j++)
+			{	if (j != classIndex)
 				{	correct += confusionMatrix[i][j];
 	  			}
 			}
@@ -663,43 +669,43 @@ public class Evaluation
   }
 
   /**
-   * Calculate the true negative rate with respect to a particular class. 
+   * Calculate the true negative rate with respect to a particular class.
    * This is defined as correctly classified negatives divided by total negatives
    *
    * @param classIndex the index of the class to consider as "negative"
    * @return the true negative rate
    */
-  public double trueNegativeRate(int classIndex) 
+  public double trueNegativeRate(int classIndex)
   { double correct = 0, total = 0;
-    for (int i = 0; i < numClasses; i++) 
-	{ 	if (i != classIndex) 
-		{	for (int j = 0; j < numClasses; j++) 
-			{	if (j != classIndex) 
+    for (int i = 0; i < numClasses; i++)
+	{ 	if (i != classIndex)
+		{	for (int j = 0; j < numClasses; j++)
+			{	if (j != classIndex)
 				{	correct += confusionMatrix[i][j];
 	  			}
 	  			total += confusionMatrix[i][j];
 			}
       	}
     }
-    if (total == 0) 
+    if (total == 0)
 	{ return 0;
     }
     return correct / total;
   }
 
   /**
-   * Calculate number of false positives with respect to a particular class. 
+   * Calculate number of false positives with respect to a particular class.
    * This is defined as incorrectly classified negatives
    *
    * @param classIndex the index of the class to consider as "positive"
    * @return number of false positives
    */
-  public int numFalsePositives(int classIndex) 
+  public int numFalsePositives(int classIndex)
   { int incorrect = 0;
-    for (int i = 0; i < numClasses; i++) 
-	{ 	if (i != classIndex) 
-		{	for (int j = 0; j < numClasses; j++) 
-			{	if (j == classIndex) 
+    for (int i = 0; i < numClasses; i++)
+	{ 	if (i != classIndex)
+		{	for (int j = 0; j < numClasses; j++)
+			{	if (j == classIndex)
 				{	incorrect += confusionMatrix[i][j];
 	  			}
 			}
@@ -709,43 +715,43 @@ public class Evaluation
   }
 
   /**
-   * Calculate the false positive rate with respect to a particular class. 
+   * Calculate the false positive rate with respect to a particular class.
    * This is defined as incorrectly classified negatives divided by total negatives
    *
    * @param classIndex the index of the class to consider as "positive"
    * @return the false positive rate
    */
-  public double falsePositiveRate(int classIndex) 
+  public double falsePositiveRate(int classIndex)
   { double incorrect = 0, total = 0;
-    for (int i = 0; i < numClasses; i++) 
-	{	if (i != classIndex) 
-		{	for (int j = 0; j < numClasses; j++) 
-			{	if (j == classIndex) 
+    for (int i = 0; i < numClasses; i++)
+	{	if (i != classIndex)
+		{	for (int j = 0; j < numClasses; j++)
+			{	if (j == classIndex)
 				{	incorrect += confusionMatrix[i][j];
 	  			}
 	  			total += confusionMatrix[i][j];
 			}
       	}
     }
-    if (total == 0) 
+    if (total == 0)
 	{ return 0;
     }
     return incorrect / total;
   }
 
   /**
-   * Calculate number of false negatives with respect to a particular class. 
+   * Calculate number of false negatives with respect to a particular class.
    * This is defined as incorrectly classified positives
    *
    * @param classIndex the index of the class to consider as "negative"
    * @return the number of false negatives
    */
-  public int numFalseNegatives(int classIndex) 
+  public int numFalseNegatives(int classIndex)
   { int incorrect = 0;
-    for (int i = 0; i < numClasses; i++) 
-	{	if (i == classIndex) 
-		{	for (int j = 0; j < numClasses; j++) 
-			{	if (j != classIndex) 
+    for (int i = 0; i < numClasses; i++)
+	{	if (i == classIndex)
+		{	for (int j = 0; j < numClasses; j++)
+			{	if (j != classIndex)
 				{	incorrect += confusionMatrix[i][j];
 	  			}
 			}
@@ -755,51 +761,51 @@ public class Evaluation
   }
 
   /**
-   * Calculate the false negative rate with respect to a particular class. 
+   * Calculate the false negative rate with respect to a particular class.
    * This is defined as incorrectly classified positives divided by total positives
    *
    * @param classIndex the index of the class to consider as "negative"
    * @return the false negative rate
    */
-  public double falseNegativeRate(int classIndex) 
+  public double falseNegativeRate(int classIndex)
   { double incorrect = 0, total = 0;
-    for (int i = 0; i < numClasses; i++) 
-	{	if (i == classIndex) 
-		{	for (int j = 0; j < numClasses; j++) 
-			{	if (j != classIndex) 
+    for (int i = 0; i < numClasses; i++)
+	{	if (i == classIndex)
+		{	for (int j = 0; j < numClasses; j++)
+			{	if (j != classIndex)
 				{	incorrect += confusionMatrix[i][j];
 	  			}
 	  			total += confusionMatrix[i][j];
 			}
       	}
     }
-    if (total == 0) 
+    if (total == 0)
 	{ return 0;
     }
     return incorrect / total;
   }
-  
+
   /**
    * Outputs the performance statistics as a classification confusion
-   * matrix. For each class value, shows the distribution of 
+   * matrix. For each class value, shows the distribution of
    * predicted class values.
    *
    * @return the confusion matrix as a String
    * @exception Exception if the class is numeric
    */
-  public String toMatrixString() throws Exception 
+  public String toMatrixString() throws Exception
   { StringBuffer text = new StringBuffer(resource.getString("matrix"));
-    if (!classIsNominal) 
+    if (!classIsNominal)
 	{ throw new Exception(resource.getString("noMatrix"));
     }
 
-    /*for(int i = 0; i< numClasses; i++) 
-	{	for(int j = 0; j < numClasses; j++) 
+    /*for(int i = 0; i< numClasses; i++)
+	{	for(int j = 0; j < numClasses; j++)
 		{	text.append(" ").append("  "+confusionMatrix[i][j]);
       	}
       	text.append("   =   ").append(classNames[i]).append("\n");
     }*/
-	
+
 	char[] IDChars = {'a','b','c','d','e','f','g','h','i','j',
 		       		  'k','l','m','n','o','p','q','r','s','t',
 		       		  'u','v','w','x','y','z'};
@@ -807,65 +813,67 @@ public class Evaluation
     boolean fractional = false;
 
     // Find the maximum value in the matrix
-    // and check for fractional display requirement 
+    // and check for fractional display requirement
     double maxval = 0;
-    for(int i = 0; i < numClasses; i++) 
-	{	for(int j = 0; j < numClasses; j++) 
+    for(int i = 0; i < numClasses; i++)
+	{	for(int j = 0; j < numClasses; j++)
 		{	double current = confusionMatrix[i][j];
-        	if (current < 0) 
+        	if (current < 0)
 			{	current *= -10;
         	}
-			if (current > maxval) 
+			if (current > maxval)
 			{	maxval = current;
 			}
 			double fract = current - Math.rint(current);
-			if (!fractional && ((Math.log(fract) / Math.log(10)) >= -2)) 
+			if (!fractional && ((Math.log(fract) / Math.log(10)) >= -2))
 			{	fractional = true;
 			}
      	}
     }
 
     IDWidth = 1 + Math.max((int)(Math.log(maxval)/Math.log(10)+(fractional ? 3 : 0)),(int)(Math.log(numClasses) / Math.log(IDChars.length)));
-    for(int i = 0; i < numClasses; i++) 
-	{	if (fractional) 
+    for(int i = 0; i < numClasses; i++)
+	{	if (fractional)
 		{	text.append(" ").append(num2ShortID(i,IDChars,IDWidth - 3)).append("   ");
-      	} 
-		else 
+      	}
+		else
 		{	text.append(" ").append(num2ShortID(i,IDChars,IDWidth));
       	}
     }
     text.append("   <-- classified as\n");
-    for(int i = 0; i< numClasses; i++) 
-	{	for(int j = 0; j < numClasses; j++) 
+    for(int i = 0; i< numClasses; i++)
+	{	for(int j = 0; j < numClasses; j++)
 		{	text.append(" ").append(Utils.doubleToString(confusionMatrix[i][j],IDWidth,(fractional ? 2 : 0)));
       	}
       	text.append(" | ").append(num2ShortID(i,IDChars,IDWidth)).append(" = ").append(classNames[i]).append("\n");
     }
-	
+
     return text.toString();
   }
-  
+
   /**
    * Method for generating indices for the confusion matrix.
    *
    * @param num integer to format
+   * @param IDChars Number of chars in the new String
+   * @param IDWidth The width of the new String
    * @return the formatted integer as a string
    */
-  private String num2ShortID(int num,char [] IDChars,int IDWidth) 
+  private String num2ShortID(int num,char [] IDChars,int IDWidth)
   {	char ID [] = new char [IDWidth];
     int i;
-    
-    for(i = IDWidth - 1; i >=0; i--) 
+
+    for(i = IDWidth - 1; i >=0; i--)
 	{	ID[i] = IDChars[num % IDChars.length];
       	num = num / IDChars.length - 1;
-      	if (num < 0) 
+      	if (num < 0)
 		{	break;
       	}
     }
-    for(i--; i >= 0; i--) 
+    for(i--; i >= 0; i--)
 	{	ID[i] = ' ';
     }
     return new String(ID);
   }
-  
+
 }

@@ -1,22 +1,23 @@
 package unbbayes.datamining.discretize;
 
-import java.util.*;
 import java.text.*;
+import java.util.*;
+
 import unbbayes.datamining.datamanipulation.*;
 
 /** faz discretizacao por frequencia */
 public class FrequencyDiscretization implements IDiscretization
 {	private int numThresholds;
 	private InstanceSet inst;
-	 
+
 	public FrequencyDiscretization(InstanceSet inst)
 	{	this.inst = new InstanceSet(inst);
 	}
-	
+
 	public void discretizeAttribute(Attribute att) throws Exception
 	{	discretizeAttribute(att,10);
 	}
-	
+
 	public void discretizeAttribute(Attribute att,int numThresholds) throws Exception
 	{	if (!att.isNumeric())// garante que o atributo seja numerico
 		{	throw new IllegalArgumentException("Attribute not numeric");
@@ -50,10 +51,10 @@ public class FrequencyDiscretization implements IDiscretization
             if (changedValues.length < numThresholds)
 				throw new Exception("Número de thresholds maior que a frequencia dos valores");
 			// ordena os valores e retorna vetor com as frequencias
-			float[] freq = Utils.getFrequency(values);              
+			float[] freq = Utils.getFrequency(values);
 			float[] breakPoint = new float[numThresholds];
-			
-			//cria os labels 
+
+			//cria os labels
 			int inicialValue = 0;
             int actualValue = 0;
             for (i=0; i<numThresholds; i++)
@@ -70,7 +71,7 @@ public class FrequencyDiscretization implements IDiscretization
 				}
 				else
 				{	actualValue++;
-				}	
+				}
 				DecimalFormat df = new DecimalFormat("0.0#");
 				DecimalFormatSymbols dfs = new DecimalFormatSymbols();
 				dfs.setDecimalSeparator('.');
@@ -85,7 +86,7 @@ public class FrequencyDiscretization implements IDiscretization
                 }
                 inicialValue = actualValue;
 			}
-			//insere o atributo   
+			//insere o atributo
 			inst.setAttributeAt(newAttribute,position);
 			// insere os novos valores
 			for (i=0; i<numInstances; i++)
@@ -94,31 +95,31 @@ public class FrequencyDiscretization implements IDiscretization
 					if (values2[i] <= breakPoint[j])
 					{	newValue = (byte)j;
 						break;
-					}	
+					}
 				inst.getInstance(i).setValue(position,newValue);
 			}
 		}
 		catch (Exception e)
 		{	throw new IllegalArgumentException(e.getMessage());
-		}	
+		}
 	}
-	
+
 	public void autoDiscretize() throws Exception
 	{	autoDiscretize(10);
 	}
-	
-	public void autoDiscretize(int numThresholds) throws Exception 
+
+	public void autoDiscretize(int numThresholds) throws Exception
 	{	int numAttributes = inst.numAttributes();
-		
+
 		for (int i=0; i<numAttributes; i++)
 		{	Attribute att = inst.getAttribute(i);
 			if (att.isNumeric())
 			{	discretizeAttribute(att,numThresholds);
-			}	
-		}	
+			}
+		}
 	}
-	
+
 	public InstanceSet getInstances()
 	{	return inst;
-	}	
+	}
 }

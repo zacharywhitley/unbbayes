@@ -32,7 +32,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
 
     private ProbabilisticTable tabelaPot;
     private static Color color = new Color(Color.yellow.getRGB());
-    
+
     /** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.jprs.jbn.resources.JbnResources");
 
@@ -41,11 +41,13 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
      */
     public ProbabilisticNode() {
         tabelaPot = new ProbabilisticTable();
+        /*nodeType = EXPLANATION_NODE;
+        evidenceType = NA_TYPE;*/
     }
-    
-    
+
+
     public int getType() {
-    	return PROBABILISTIC_NODE_TYPE;    	
+    	return PROBABILISTIC_NODE_TYPE;
     }
 
     /**

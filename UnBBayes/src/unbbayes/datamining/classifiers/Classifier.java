@@ -1,9 +1,8 @@
 package unbbayes.datamining.classifiers;
 
-import unbbayes.datamining.datamanipulation.InstanceSet;
-import unbbayes.datamining.datamanipulation.Instance;
+import unbbayes.datamining.datamanipulation.*;
 
-/** 
+/**
  *  Abstract classifier. All schemes for numeric or nominal prediction extends this class.
  *
  *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
@@ -17,7 +16,7 @@ public abstract class Classifier
 	  @exception Exception If classifier can't be build sucessfully.
    	*/
   	public abstract void buildClassifier(InstanceSet data) throws Exception;
-	
+
   	/**
   	* Classifies a given test instance.
   	*
@@ -26,5 +25,4 @@ public abstract class Classifier
 	* @exception Exception if an error occurred during the prediction
   	*/
   	public abstract short classifyInstance(Instance instance) throws Exception;
-	
 }

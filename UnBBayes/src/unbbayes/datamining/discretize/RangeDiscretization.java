@@ -1,22 +1,23 @@
 package unbbayes.datamining.discretize;
 
-import java.util.*;
 import java.text.*;
+import java.util.*;
+
 import unbbayes.datamining.datamanipulation.*;
 
 /** Faz discretizacao por alcance*/
 public class RangeDiscretization implements IDiscretization
 {	private int numThresholds;
 	private InstanceSet inst;
-	 
+
 	public RangeDiscretization(InstanceSet inst)
 	{	this.inst = new InstanceSet(inst);
 	}
-	
+
 	public void discretizeAttribute(Attribute att) throws Exception
 	{	discretizeAttribute(att,10);
 	}
-	
+
 	public void discretizeAttribute(Attribute att,int numThresholds) throws Exception
 	{	if (!att.isNumeric())//garante que o atributo seja numérico
 		{	throw new IllegalArgumentException("Attribute not numeric");
@@ -62,25 +63,25 @@ public class RangeDiscretization implements IDiscretization
 		}
 		catch (Exception e)
 		{	throw new IllegalArgumentException("Attribute not found in InstanceSet "+e.getMessage());
-		}	
+		}
 	}
-	
+
 	public void autoDiscretize() throws Exception
 	{	autoDiscretize(10);
 	}
-	
+
 	public void autoDiscretize(int numThresholds) throws Exception
 	{	int numAttributes = inst.numAttributes();
-		
+
 		for (int i=0; i<numAttributes; i++)
 		{	Attribute att = inst.getAttribute(i);
 			if (att.isNumeric())
 			{	discretizeAttribute(att,numThresholds);
-			}	
-		}	
+			}
+		}
 	}
-	
+
 	public InstanceSet getInstances()
 	{	return inst;
-	}	
+	}
 }

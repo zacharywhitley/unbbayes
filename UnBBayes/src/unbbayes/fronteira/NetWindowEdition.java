@@ -1,11 +1,13 @@
 package unbbayes.fronteira;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ResourceBundle;
-import unbbayes.jprs.jbn.*;
+import java.util.*;
+
+import javax.swing.*;
+
 import unbbayes.controlador.*;
+import unbbayes.jprs.jbn.*;
 
 /**
  * <p>Title: UnBBayes</p>
@@ -82,21 +84,21 @@ public class NetWindowEdition extends JPanel {
         txtDescription     = new JTextField(15);
 
         //criar botões que serão usados nos toolbars
-        compile           = new JButton(new ImageIcon("icones/compila.gif"));
-        more              = new JButton(new ImageIcon("icones/mais.gif"));
-        less              = new JButton(new ImageIcon("icones/menos.gif"));
-        arc               = new JButton(new ImageIcon("icones/ferraarco.gif"));
-        probabilisticNode = new JButton(new ImageIcon("icones/ferraelip.gif"));
-        decisionNode      = new JButton(new ImageIcon("icones/decisionNode.gif"));
-        utilityNode       = new JButton(new ImageIcon("icones/utilityNode.gif"));
-        select            = new JButton(new ImageIcon("icones/selecao.gif"));
-        printNet          = new JButton(new ImageIcon("icones/IMPRIMIRREDE.gif"));
-        printTable        = new JButton(new ImageIcon("icones/IMPRIMIRTABELA.gif"));
-        previewNet        = new JButton(new ImageIcon("icones/previewimpressao.gif"));
-        previewTable      = new JButton(new ImageIcon("icones/previewtabela.gif"));
-        saveNetImage      = new JButton(new ImageIcon("icones/salvargrafo.gif"));
-        saveTableImage    = new JButton(new ImageIcon("icones/salvartabela.gif"));
-        globalOption      = new JButton(new ImageIcon("icones/opcaoglobal.gif"));
+        compile           = new JButton(new ImageIcon(getClass().getResource("/icones/compila.gif")));
+        more              = new JButton(new ImageIcon(getClass().getResource("/icones/mais.gif")));
+        less              = new JButton(new ImageIcon(getClass().getResource("/icones/menos.gif")));
+        arc               = new JButton(new ImageIcon(getClass().getResource("/icones/ferraarco.gif")));
+        probabilisticNode = new JButton(new ImageIcon(getClass().getResource("/icones/ferraelip.gif")));
+        decisionNode      = new JButton(new ImageIcon(getClass().getResource("/icones/decisionNode.gif")));
+        utilityNode       = new JButton(new ImageIcon(getClass().getResource("/icones/utilityNode.gif")));
+        select            = new JButton(new ImageIcon(getClass().getResource("/icones/selecao.gif")));
+        printNet          = new JButton(new ImageIcon(getClass().getResource("/icones/IMPRIMIRREDE.gif")));
+        printTable        = new JButton(new ImageIcon(getClass().getResource("/icones/IMPRIMIRTABELA.gif")));
+        previewNet        = new JButton(new ImageIcon(getClass().getResource("/icones/previewimpressao.gif")));
+        previewTable      = new JButton(new ImageIcon(getClass().getResource("/icones/previewtabela.gif")));
+        saveNetImage      = new JButton(new ImageIcon(getClass().getResource("/icones/salvargrafo.gif")));
+        saveTableImage    = new JButton(new ImageIcon(getClass().getResource("/icones/salvartabela.gif")));
+        globalOption      = new JButton(new ImageIcon(getClass().getResource("/icones/opcaoglobal.gif")));
 
 
         //setar tooltip para esses botões

@@ -43,7 +43,7 @@ public class PrintMonitor implements Pageable {
   public PrintMonitor(Pageable p) {
     pageable = p;
     printerJob = PrinterJob.getPrinterJob();
-    String[] options = {resource.getString("getCancelOption")};
+    String[] options = {resource.getString("cancelOption")};
     optionPane = new JOptionPane("",
         JOptionPane.INFORMATION_MESSAGE,
         JOptionPane.CANCEL_OPTION,

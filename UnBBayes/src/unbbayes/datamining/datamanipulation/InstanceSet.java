@@ -1,6 +1,5 @@
 package unbbayes.datamining.datamanipulation;
 
-import java.io.*;
 import java.util.*;
 
 /**
@@ -24,7 +23,7 @@ public class InstanceSet
    	* attribute be undefined.
 	*/
   	private int classIndex;
-	
+
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.datamanipulation.resources.DataManipulationResource");
 
@@ -46,7 +45,7 @@ public class InstanceSet
 	{	relationName = newName;
   	}
 
-    /** 
+    /**
 	* Sets the instance set. Does not
    	* check if the instances are compatible with the dataset.
 	*
@@ -64,7 +63,7 @@ public class InstanceSet
   	public final int numAttributes()
 	{	return attributes.size();
   	}
-	
+
 	public final void removeAttribute(int index)
 	{	attributes.remove(index);
 	}
@@ -95,13 +94,13 @@ public class InstanceSet
   	public final int numInstances()
 	{	return instanceSet.size();
   	}
-	
+
 	public final int numWeightedInstances()
 	{	int numInstances = numInstances();
 		int result = 0;
 		for (int i=0;i<numInstances;i++)
 		{	Instance instance = (Instance)getInstance(i);
-			result += instance.getWeight();	
+			result += instance.getWeight();
 		}
 		return result;
 	}
@@ -152,24 +151,23 @@ public class InstanceSet
 	public void insertAttribute(Attribute att)
 	{	attributes.add(att);
 	}
-	
+
 	/**
-   	* Inserts an attribute at the given position (0 to 
-   	* numAttributes()) and sets all values to be missing.
+   	* Inserts an attribute at the given position (0 to
+   	* numAttributes()) and sets all values to be missing. IllegalArgumentException if the given index is out of range
    	*
    	* @param att The attribute to be inserted
-   	* @param pos The attribute's position
-   	* @exception IllegalArgumentException if the given index is out of range
+   	* @param position The attribute's position
    	*/
-  	public void setAttributeAt(Attribute att, int position) 
-	{	if ((position < 0) || (position > attributes.size())) 
+  	public void setAttributeAt(Attribute att, int position)
+	{	if ((position < 0) || (position > attributes.size()))
 		{	throw new IllegalArgumentException(resource.getString("setAttributeAtException"));
     	}
     	attributes.set(position, att);
 		int numInstances = numInstances();
-    	for (int i = 0; i < numInstances; i++) 
-		{	getInstance(i).setValue(att,Instance.MISSING_VALUE);			
-		}		
+    	for (int i = 0; i < numInstances; i++)
+		{	getInstance(i).setValue(att,Instance.MISSING_VALUE);
+		}
   	}
 
 	/**
@@ -254,15 +252,31 @@ public class InstanceSet
 	public InstanceSet()
 	{	attributes = new ArrayList();
 		instanceSet = new ArrayList(50);
-		classIndex = -1;		
+		classIndex = -1;
 	}
 
 	/**
+   	* Constructor creating an empty set of instances.
+        * Set class index to be undefined. Sets
+   	* the capacity of the set of instances to 0 if it's negative.
+	*
+   	* @param capacity The capacity of the new dataset
+   	*/
+  	public InstanceSet(int capacity)
+	{   if (capacity < 0)
+            {   capacity = 0;
+            }
+            attributes = new ArrayList();
+            instanceSet = new ArrayList(capacity);
+            classIndex = -1;
+  	}
+
+  	/**
    	* Constructor copying all instances and references to
    	* the header information from the given set of instances.
 	* Makes a deep copy.
    	*
-   	* @param instances Set to be copied
+   	* @param dataset Set to be copied
    	*/
   	public InstanceSet(InstanceSet dataset)
 	{	this(dataset, dataset.numInstances());
@@ -275,7 +289,7 @@ public class InstanceSet
    	* the capacity of the set of instances to 0 if its negative.
 	* Makes a deep copy.
    	*
-   	* @param instances Instances from which the header information is to be taken
+   	* @param dataset Instances from which the header information is to be taken
    	* @param capacity The capacity of the new dataset
    	*/
   	public InstanceSet(InstanceSet dataset, int capacity)
@@ -286,28 +300,28 @@ public class InstanceSet
 		classIndex = dataset.classIndex;
     	relationName = dataset.relationName;
     	attributes = (ArrayList)(dataset.attributes.clone());
-    	instanceSet = new ArrayList(capacity);		
+    	instanceSet = new ArrayList(capacity);
   	}
-	
+
   	/**
-  	 * Creates a new set of instances by copying a 
+  	 * Creates a new set of instances by copying a
   	 * subset of another set.
   	 *
-  	 * @param source The set of instances from which a subset 
+  	 * @param source The set of instances from which a subset
   	 * is to be created
   	 * @param first The index of the first instance to be copied
   	 * @param toCopy The number of instances to be copied
   	 * @exception IllegalArgumentException if first and toCopy are out of range
   	 */
-  	public InstanceSet(InstanceSet source, int first, int toCopy) 
+  	public InstanceSet(InstanceSet source, int first, int toCopy)
 	{ this(source, toCopy);
-  
-  	  if ((first < 0) || ((first + toCopy) > source.numInstances())) 
+
+  	  if ((first < 0) || ((first + toCopy) > source.numInstances()))
 	  { throw new IllegalArgumentException(resource.getString("outOfRange"));
   	  }
   	  source.copyInstances(first, this, toCopy);
-  	}  
-	
+  	}
+
 	/**
    	* Removes all instances with a missing class value
    	* from the dataset.
@@ -356,7 +370,7 @@ public class InstanceSet
 			Instance ins = new Instance(getInstance(j).getWeight(),by);
 			dest.add(ins);
     	}
-				
+
   	}
 
   	/**
@@ -434,30 +448,30 @@ public class InstanceSet
   	}
 
 	/**
-   	* Shuffles the instances in the set so that they are ordered 
+   	* Shuffles the instances in the set so that they are ordered
    	* randomly.
    	*
    	* @param random A random number generator
    	*/
-  	public final void randomize(Random random) 
+  	public final void randomize(Random random)
 	{	int numInstances = numInstances();
 		for (int j = numInstances - 1; j > 0; j--)
       		swap(j,(int)(random.nextDouble()*(double)j));
   	}
-	
+
   	/**
   	 * Swaps two instances.
   	 *
   	 * @param first Index of the first element
   	 * @param second Index of the second element
   	 */
-  	public final void swap(int first, int second) 
+  	public final void swap(int first, int second)
 	{	Object temp = instanceSet.get(first);
-  
+
   	  	instanceSet.set(first,instanceSet.get(second));
 		instanceSet.set(second,temp);
   	}
-	
+
 	/** Verifies if there is any numeric attribute in the dataset.
 		@return True if there is at leats one numeric attribute in the dataset
 	*/
@@ -466,21 +480,23 @@ public class InstanceSet
 	  for(int i=0; i<numAttributes; i++)
       {  if (getAttribute(i).isNumeric())
          {  return true;
-         } 
+         }
       }
       return false;
     }
-	
+
 	/** Verifies if an specific attribute is numeric
-		@return True if it is a numeric attribute
+         *
+         * @param att An attribute
+         * @return True if it is a numeric attribute
 	*/
 	public boolean checkNumericAttribute(Attribute att)
-    { if (getAttribute(att.getIndex()).isNumeric())
-      {  return true;
-      } 
-      return false;
-    }
-	
+        {   if (getAttribute(att.getIndex()).isNumeric())
+            {   return true;
+            }
+            return false;
+        }
+
 	/**
    	* Returns the dataset as a string in ARFF format.
    	*

@@ -35,6 +35,16 @@ import unbbayes.util.*;
  *@author     Michael e Rommel
  */
 public abstract class Node implements java.io.Serializable {
+        /*public static final int EXPLANATION_NODE = 0;
+    public static final int INFORMATION_NODE = 1;
+    public static final int TRIGGER_TYPE = 2;
+    public static final int EXCLUSIVE_TYPE = 3;
+    public static final int COMPLEMENTARY_TYPE = 4;
+    public static final int NECESSARY_TYPE = 5;
+    public static final int NA_TYPE = 6;
+    private int nodeType;
+    private int evidenceType; */
+
     public static class ExplanationPhrase implements java.io.Serializable {
         public static final String TRIGGER_TYPE = "TRI";
         public static final String COMPLEMENTARY_TYPE = "COM";
@@ -42,12 +52,12 @@ public abstract class Node implements java.io.Serializable {
         public static final String NECESSARY_TYPE = "NEC";
         public static final String EXCLUSIVE_TYPE = "EXC";
         public String strPhrase, type;
-        
+
         public ExplanationPhrase() {
             this.strPhrase = "";
             this.type = NA_TYPE;
         }
-        
+
         public ExplanationPhrase(String strPhrase, String type) {
             this.strPhrase = strPhrase;
             this.type = type;
@@ -64,7 +74,7 @@ public abstract class Node implements java.io.Serializable {
 			y = in.readDouble();
 		}
     }
-    
+
     private String description = "";
     protected String name;
     private SerializablePoint2D posicao;
@@ -77,7 +87,7 @@ public abstract class Node implements java.io.Serializable {
     private static int largura;
     private String explanationDescription = "";
     private ArrayMap phrasesMap = new ArrayMap();
-    
+
     public static final int PROBABILISTIC_NODE_TYPE = 0;
     public static final int UTILITY_NODE_TYPE = 1;
     public static final int DECISION_NODE_TYPE = 2;
@@ -96,7 +106,7 @@ public abstract class Node implements java.io.Serializable {
         posicao = new SerializablePoint2D();
         selecionado = false;
     }
-    
+
     public abstract int getType();
 
 

@@ -7,17 +7,17 @@ import java.util.*;
  *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @version $1.0 $ (16/02/2002)
  */
-public class DataManipulationResource_pt extends ListResourceBundle 
-{	/** Override getContents and provide an array, where each item in the array is a pair 
-		of objects. The first element of each pair is a String key, 
-		and the second is the value associated with that key. 
+public class DataManipulationResource_pt extends ListResourceBundle
+{	/** Override getContents and provide an array, where each item in the array is a pair
+		of objects. The first element of each pair is a String key,
+		and the second is the value associated with that key.
 	*/
-	public Object[][] getContents() 
+	public Object[][] getContents()
 	{	return contents;
 	}
-	
+
 	/** The resources */
-	static final Object[][] contents = 
+	static final Object[][] contents =
 	{	{"normalizeException1","Array não pode ser normalizado. Soma é NaN."},
 		{"normalizeException2","Array não pode ser normalizado. Soma é zero."},
 		{"readHeaderException1","Fim de linha prematuro."},
@@ -34,7 +34,7 @@ public class DataManipulationResource_pt extends ListResourceBundle
 		{"getInstanceException1","Nenhuma informação no cabeçalho disponível"},
 		{"getInstanceFullException1","Valor inválido"},
 		{"getInstanceFullException2","Valor nominal não declarado no cabeçalho"},
-		{"getInstanceFullException3","Numero esperado"}, 
+		{"getInstanceFullException3","Numero esperado"},
 		{"getInstanceTXT","Nenhuma informação sobre o atributo disponível"},
 		{"runtimeException1","Instância não tem acesso à base de dados!"},
 		{"runtimeException2","Classe não está definida!"},
@@ -43,5 +43,5 @@ public class DataManipulationResource_pt extends ListResourceBundle
 		{"setClassIndexException","Índice da classe inválido: "},
 		{"outOfRange","Parâmetro first e/ou toCopy não definidos"},
 		{"setValueException","Valor não pode ser inserido. Não consegue traduzir String para float."},
-	}; 
+	};
 }

@@ -1,6 +1,6 @@
 package unbbayes.datamining.classifiers.resources;
 
-import java.io.Serializable;
+import java.io.*;
 import java.util.*;
 
 /** Resources file for classifiers package. Localization = english.
@@ -9,19 +9,19 @@ import java.util.*;
  *  @version $1.0 $ (17/02/2002)
  */
 public class ClassifiersResource extends ListResourceBundle implements Serializable
-{	/** Override getContents and provide an array, where each item in the array is a pair 
-		of objects. The first element of each pair is a String key, 
-		and the second is the value associated with that key. 
+{	/** Override getContents and provide an array, where each item in the array is a pair
+		of objects. The first element of each pair is a String key,
+		and the second is the value associated with that key.
 	*/
-	public Object[][] getContents() 
+	public Object[][] getContents()
 	{	return contents;
 	}
-	
+
 	/** The resources */
-	static final Object[][] contents = 
+	static final Object[][] contents =
 	{	// Naive Bayes
-		{"nullPrediction","Null distribution predicted"},		
-		{"exception1","Class is numeric!"},	
+		{"nullPrediction","Null distribution predicted"},
+		{"exception1","Class is numeric!"},
 		{"attribute","attribute"},
 		{"exception2","less than two values for class"},
 		{"exception3","standard deviation is 0 for class"},
@@ -51,6 +51,6 @@ public class ClassifiersResource extends ListResourceBundle implements Serializa
 		{ "toStringException1","Decision tree: No model built yet. Try again!"	},
 		{ "toStringException2","Decision tree: \n\n"	},
 		{ "null","null"	},
-		{ "NULL","NULL"	},	
-	}; 
+		{ "NULL","NULL"	},
+	};
 }

@@ -1,7 +1,8 @@
 package unbbayes.datamining.datamanipulation;
 
 import java.util.*;
-import unbbayes.datamining.classifiers.NaiveBayes;
+
+import unbbayes.datamining.classifiers.*;
 import unbbayes.jprs.jbn.*;
 
 /** Esta classe calcula uma rede ProbabilisticNetwork utilizando-se do classificador Naive Bayes
@@ -38,8 +39,8 @@ public class ComputeProbabilisticNetwork
   */
   public ProbabilisticNetwork getProbabilisticNetwork()
   {	  return net;
-  }  
-  
+  }
+
   /** Cria o nó classe */
   private void createProbabilisticNodeClass(Attribute att)
   {   ProbabilisticNode no = new ProbabilisticNode();

@@ -27,6 +27,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.swing.JTree;
+import javax.swing.tree.*;
+
 import unbbayes.io.LogManager;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
@@ -38,7 +41,7 @@ import unbbayes.util.SetToolkit;
  *@author     rommel
  */
 public class ProbabilisticNetwork extends Network implements java.io.Serializable {
-	
+
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.jprs.jbn.resources.JbnResources");
 
@@ -77,12 +80,15 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
      */
     private NodeList oe;
 
-
+    private HierarchicTree hierarchicTree;
     /**
      *  Cria uma nova rede probabilística. Limpa o arquivo de log e inicializa o
      *  vetor da ordem de eliminação.
      */
     public ProbabilisticNetwork() {
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
+        DefaultTreeModel model = new DefaultTreeModel(root);
+        hierarchicTree = new HierarchicTree(model);
         logManager = new LogManager();
         arcosMarkov = new ArrayList();
         oe = new NodeList();
@@ -104,6 +110,14 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
      */
     public String getName() {
         return nome;
+    }
+
+    public void setHierarchicTree(HierarchicTree hierarchicTree)
+    {   this.hierarchicTree = hierarchicTree;
+    }
+
+    public HierarchicTree getHierarchicTree()
+    {   return hierarchicTree;
     }
 
 
@@ -503,8 +517,8 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
                 }
             }
         }
-  
-  		try {      
+
+  		try {
 	      	junctionTree.consistencia();
   		} catch (Exception e) {
             initialize();
@@ -548,7 +562,7 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
             aux = (Node)decisionNodes.get(i);
             fila.clear();
             fila.add(aux);
-            
+
             while (fila.size() != 0) {
                 aux2 =  fila.remove(0);
                 visitados[nos.indexOf(aux2)] = true;
@@ -566,7 +580,7 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
             }
         }
 
-        
+
         boolean haTroca = true;
         while (haTroca) {
             haTroca = false;

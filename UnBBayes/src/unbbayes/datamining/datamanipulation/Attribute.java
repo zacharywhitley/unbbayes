@@ -3,7 +3,7 @@ package unbbayes.datamining.datamanipulation;
 import java.io.*;
 import java.util.*;
 
-/** 
+/**
  * Class for handling an attribute. <p>
  *
  * Two attribute types are supported:
@@ -34,37 +34,37 @@ public class Attribute implements Serializable
 
   	/** The attribute's values */
   	private ArrayList attributeValues;
-	
+
 	/** Mapping of values to indices */
   	private Hashtable hashtable;
-  	
+
   	/** The attribute's index. */
   	private int index;
-	
+
   	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.datamanipulation.resources.DataManipulationResource");
-  
+
   	/**
    	* Constructor for attributes.
    	*
    	* @param attributeName Name for the attribute
-   	* @param attributeValues A arrayList of strings denoting the 
+   	* @param attributeValues A arrayList of strings denoting the
    	* attribute values.
 	* @param attributeType Type of this attribute (Nominal or Numeric)
 	*/
-  	public Attribute(String attributeName,ArrayList attributeValues,int attributeType) 
+  	public Attribute(String attributeName,ArrayList attributeValues,int attributeType)
 	{	this.attributeName = attributeName;
     	index = -1;
     	this.attributeValues = attributeValues;
-      	if (attributeValues != null) 
+      	if (attributeValues != null)
 		{	hashtable = new Hashtable(attributeValues.size());
-      		for (int i = 0; i < attributeValues.size(); i++) 
+      		for (int i = 0; i < attributeValues.size(); i++)
 			{	hashtable.put(attributeValues.get(i), new Integer(i));
       		}
 		}
 		else
 		{	hashtable =null;
-		}      	
+		}
 		this.attributeType = attributeType;
   	}
 
@@ -80,53 +80,53 @@ public class Attribute implements Serializable
 	{	this(attributeName, attributeValues, attributeType);
 		this.index = index;
 	}
-	
+
   	/**
-   	* Returns an enumeration of all the attribute's values 
+   	* Returns an enumeration of all the attribute's values
    	*
    	* @return Enumeration of all the attribute's values
    	*/
-  	public final Enumeration enumerateValues() 
-	{	if (attributeValues != null) 
+  	public final Enumeration enumerateValues()
+	{	if (attributeValues != null)
 		{	final ArrayListEnumeration ale = new ArrayListEnumeration(attributeValues);
-			
-			return new Enumeration () 
-			{	public boolean hasMoreElements() 
+
+			return new Enumeration ()
+			{	public boolean hasMoreElements()
 				{	return ale.hasMoreElements();
           		}
-          		
-				public Object nextElement() 
+
+				public Object nextElement()
 				{	Object oo = ale.nextElement();
             		return oo;
             	}
         	};
-			
+
     	}
     	return null;
   	}
-  
+
   	/**
    	* Tests if given attribute is equal to this attribute.
    	*
    	* @param other The Object to be compared to this attribute
    	* @return True if the given attribute is equal to this attribute
    	*/
-  	public final boolean equals(Object other) 
-	{	if ((other == null) || !(other.getClass().equals(this.getClass()))) 
+  	public final boolean equals(Object other)
+	{	if ((other == null) || !(other.getClass().equals(this.getClass())))
 		{	return false;
     	}
     	Attribute att = (Attribute) other;
-    	if (!attributeName.equals(att.attributeName)) 
+    	if (!attributeName.equals(att.attributeName))
 		{	return false;
     	}
-    	if (attributeType != att.attributeType) 
+    	if (attributeType != att.attributeType)
 		{	return false;
     	}
-    	if (attributeValues.size() != att.attributeValues.size()) 
+    	if (attributeValues.size() != att.attributeValues.size())
 		{	return false;
     	}
-    	for (int i = 0; i < attributeValues.size(); i++) 
-		{	if (!attributeValues.get(i).equals(att.attributeValues.get(i))) 
+    	for (int i = 0; i < attributeValues.size(); i++)
+		{	if (!attributeValues.get(i).equals(att.attributeValues.get(i)))
 			{	return false;
       		}
     	}
@@ -138,7 +138,7 @@ public class Attribute implements Serializable
    	*
    	* @return The index of this attribute
    	*/
-  	public final int getIndex() 
+  	public final int getIndex()
 	{	return index;
   	}
 
@@ -149,7 +149,7 @@ public class Attribute implements Serializable
    	* @param value The value for which the index is to be returned
    	* @return The index of the given attribute value, -1 if the value can't be found
 	*/
-  	public final int indexOfValue(String value) 
+  	public final int indexOfValue(String value)
 	{	if (hashtable == null)
       		return -1;
     	Object store = value;
@@ -158,9 +158,9 @@ public class Attribute implements Serializable
 			return -1;
 		else
 		{	Integer integer = new Integer(store.toString());
-			return integer.intValue();	
-		}	
-		 
+			return integer.intValue();
+		}
+
   	}
 
   	/**
@@ -168,7 +168,7 @@ public class Attribute implements Serializable
    	*
    	* @return true if the attribute is nominal
    	*/
-  	public final boolean isNominal() 
+  	public final boolean isNominal()
 	{	return (attributeType == NOMINAL);
   	}
 
@@ -177,7 +177,7 @@ public class Attribute implements Serializable
    	*
    	* @return true if the attribute is numeric
    	*/
-  	public final boolean isNumeric() 
+  	public final boolean isNumeric()
 	{	return (attributeType == NUMERIC);
   	}
 
@@ -186,20 +186,20 @@ public class Attribute implements Serializable
    	*
    	* @return the attribute's name as a string
    	*/
-  	public final String getAttributeName() 
+  	public final String getAttributeName()
 	{	return attributeName;
   	}
-  
+
   	/**
    	* Returns the number of attribute values.
    	*
    	* @return the number of attribute values
    	*/
-  	public final int numValues() 
-	{	if (attributeValues == null) 
+  	public final int numValues()
+	{	if (attributeValues == null)
 		{	return 0;
-    	} 
-		else 
+    	}
+		else
 		{	return attributeValues.size();
     	}
   	}
@@ -209,24 +209,24 @@ public class Attribute implements Serializable
    	*
    	* @return a description of this attribute as a string
    	*/
-  	public final String toString() 
+  	public final String toString()
 	{	StringBuffer text = new StringBuffer();
-    
+
     	text.append("@attribute " + attributeName + " ");
-    	if (isNominal()) 
+    	if (isNominal())
 		{	text.append('{');
       		Enumeration enum = enumerateValues();
-      		while (enum.hasMoreElements()) 
+      		while (enum.hasMoreElements())
 			{	text.append(enum.nextElement());
 				if (enum.hasMoreElements())
 	  				text.append(',');
       		}
       		text.append('}');
-    	} 
-		else 
-		{	if (isNumeric()) 
+    	}
+		else
+		{	if (isNumeric())
 			{	text.append("numeric");
-      		} 
+      		}
 		}
     	return text.toString();
   	}
@@ -236,35 +236,35 @@ public class Attribute implements Serializable
    	*
    	* @returns the attribute's type.
    	*/
-  	public final int getAttributeType() 
+  	public final int getAttributeType()
 	{	return attributeType;
   	}
 
   	/**
-   	* Returns a value of a attribute. 
+   	* Returns a value of a attribute.
    	*
    	* @param valIndex The value's index
    	* @return the attribute's value as a string. If value is not found returns ""
    	*/
-  	public final String value(int valIndex) 
+  	public final String value(int valIndex)
 	{	if (attributeValues != null && valIndex >= 0 && valIndex <= attributeValues.size())
 		{	Object val = attributeValues.get(valIndex);
       		return (String) val;
 		}
 		else
 		{	return "";
-    	} 
+    	}
   	}
-	
+
 	/**
-   	* Adds an attribute value. 
+   	* Adds an attribute value.
    	*
    	* @param value The attribute value
    	*/
-  	public final void addValue(String value) 
+  	public final void addValue(String value)
 	{	if (hashtable == null)
 		{	hashtable = new Hashtable();
-			attributeValues = new ArrayList();	
+			attributeValues = new ArrayList();
 		}
 		attributeValues.add(value);
     	hashtable.put(value, new Integer(attributeValues.size() - 1));
@@ -275,7 +275,7 @@ public class Attribute implements Serializable
    	*
    	* @return a copy of this attribute with the same index
    	*/
-  	public Object copy() 
+  	public Object copy()
   	{	Attribute copy = new Attribute(attributeName,attributeValues,attributeType,index);
     	return copy;
 	}
@@ -286,28 +286,28 @@ public class Attribute implements Serializable
    	* @param newName Name of the new attribute
    	* @return a copy of this attribute with the same index
    	*/
-  	public final Attribute copy(String newName) 
+  	public final Attribute copy(String newName)
 	{	Attribute copy = new Attribute(newName,attributeValues,attributeType,index);
     	return copy;
   	}
 
   	/**
-   	* Removes a value of a nominal attribute. 
+   	* Removes a value of a nominal attribute.
    	*
    	* @param index The value's index
    	*/
-  	public final void delete(int index) 
+  	public final void delete(int index)
 	{	attributeValues.remove(index);
       	Hashtable hash = new Hashtable(hashtable.size());
       	Enumeration enum = hashtable.keys();
-      	while (enum.hasMoreElements()) 
+      	while (enum.hasMoreElements())
 		{	String string = (String)enum.nextElement();
 			Integer valIndexObject = (Integer)hashtable.get(string);
 			int valIndex = valIndexObject.intValue();
-			if (valIndex > index) 
+			if (valIndex > index)
 			{	hash.put(string, new Integer(valIndex - 1));
-			} 
-			else if (valIndex < index) 
+			}
+			else if (valIndex < index)
 			{	hash.put(string, valIndexObject);
 			}
       	}
@@ -319,7 +319,7 @@ public class Attribute implements Serializable
    	*
    	* @param index Index of this attribute
    	*/
-  	public final void setIndex(int index) 
+  	public final void setIndex(int index)
 	{	this.index = index;
   	}
 
@@ -329,7 +329,7 @@ public class Attribute implements Serializable
    	* @param index The value's index
    	* @param string The value
    	*/
-  	public final void setValue(int index, String string) 
+  	public final void setValue(int index, String string)
 	{	if (attributeType == NUMERIC)
 		{	try
 			{	Float.parseFloat(string);
@@ -343,7 +343,7 @@ public class Attribute implements Serializable
       	attributeValues.set(index, store);
       	hashtable.put(store, new Integer(index));
   	}
-	
+
 	/**
    	* Changes the type of an attribute.
    	*
@@ -354,4 +354,4 @@ public class Attribute implements Serializable
 	}
 
 }
-  
+
