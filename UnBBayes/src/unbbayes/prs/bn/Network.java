@@ -96,6 +96,8 @@ public class Network implements java.io.Serializable {
 	 * de transformação.
 	 */
 	protected NodeList copiaNos;
+	
+	protected List copiaArcos;
 
 	/**
 	 *  Armazena handle do objeto Árvore de Junção associado ao Grafo.
@@ -335,6 +337,32 @@ public class Network implements java.io.Serializable {
             nos.get(qnos).montaAdjacentes();
         }
     }
+    
+    
+    protected void makeAdjacents() {
+    	desmontaAdjacentes();
+    	for (int z = arcosMarkov.size() - 1; z >= 0; z--) {
+			Edge auxArco = (Edge) arcosMarkov.get(z);
+			auxArco.getOriginNode().getAdjacents().add(
+				auxArco.getDestinationNode());
+			auxArco.getDestinationNode().getAdjacents().add(
+				auxArco.getOriginNode());
+		}
+	
+		for (int z = copiaArcos.size() - 1; z >= 0; z--) {
+			Edge auxArco = (Edge) copiaArcos.get(z);
+			if (auxArco.getDestinationNode().getType()
+				== Node.UTILITY_NODE_TYPE) {
+				copiaArcos.remove(z);
+			} else {
+				auxArco.getOriginNode().getAdjacents().add(
+					auxArco.getDestinationNode());
+				auxArco.getDestinationNode().getAdjacents().add(
+					auxArco.getOriginNode());
+			}
+		}
+//		arcosMarkov = SetToolkit.union(arcosMarkov, edges);    	
+    }
 
 
     /**
@@ -552,7 +580,6 @@ public class Network implements java.io.Serializable {
 		Node auxPai1;
 		Node auxPai2;
 		Edge auxArco;
-		List copiaArcos;
 	
 		if (createLog) {
 			logManager.append(resource.getString("moralizeLabel"));
@@ -596,30 +623,9 @@ public class Network implements java.io.Serializable {
 				}
 			}
 		}
-	
-		desmontaAdjacentes();
-	
-		for (int z = arcosMarkov.size() - 1; z >= 0; z--) {
-			auxArco = (Edge) arcosMarkov.get(z);
-			auxArco.getOriginNode().getAdjacents().add(
-				auxArco.getDestinationNode());
-			auxArco.getDestinationNode().getAdjacents().add(
-				auxArco.getOriginNode());
-		}
-	
-		for (int z = copiaArcos.size() - 1; z >= 0; z--) {
-			auxArco = (Edge) copiaArcos.get(z);
-			if (auxArco.getDestinationNode().getType()
-				== Node.UTILITY_NODE_TYPE) {
-				copiaArcos.remove(z);
-			} else {
-				auxArco.getOriginNode().getAdjacents().add(
-					auxArco.getDestinationNode());
-				auxArco.getDestinationNode().getAdjacents().add(
-					auxArco.getOriginNode());
-			}
-		}
-		arcosMarkov = SetToolkit.union(arcosMarkov, copiaArcos);
+		
+		makeAdjacents();
+		
 		if (createLog) {
 			logManager.append("\n");
 		}
@@ -667,7 +673,6 @@ public class Network implements java.io.Serializable {
 	 *  Monta árvore de junção a partir do grafo.
 	 */
 	protected void compilaAJ() throws Exception {
-		Edge auxArc;
 		int menor;
 		Clique auxClique;
 		Separator auxSep;
@@ -679,16 +684,19 @@ public class Network implements java.io.Serializable {
 		} else {
 			junctionTree = new JunctionTree();
 		}
+		
+		/*
 		desmontaAdjacentes();
-	
+			
 		int sizeMarkov = arcosMarkov.size();
 		for (int c = 0; c < sizeMarkov; c++) {
-			auxArc = (Edge) arcosMarkov.get(c);
+			Edge auxArc = (Edge) arcosMarkov.get(c);
 			auxArc.getOriginNode().getAdjacents().add(
 				auxArc.getDestinationNode());
 			auxArc.getDestinationNode().getAdjacents().add(
 				auxArc.getOriginNode());
 		}
+		*/
 	
 		this.cliques();
 		this.arvoreForte();
@@ -1150,18 +1158,14 @@ public class Network implements java.io.Serializable {
 	 *@param  no      nó a ser eliminado
 	 *@param  auxNos  lista de nós
 	 */
-	private void elimine(Node no, NodeList auxNos) {
-		Node auxNo1;
-		Node auxNo2;
-		Edge auxArco;
-	
+	private void elimine(Node no, NodeList auxNos) {	
 		for (int i = no.getAdjacents().size()-1; i > 0; i--) {
-			auxNo1 = no.getAdjacents().get(i);
+			Node auxNo1 = no.getAdjacents().get(i);
 	
 			for (int j = i - 1; j >= 0; j--) {
-				auxNo2 = no.getAdjacents().get(j);
+				Node auxNo2 = no.getAdjacents().get(j);
 				if (! auxNo2.getAdjacents().contains(auxNo1)) {
-					auxArco = new Edge(auxNo1, auxNo2);
+					Edge auxArco = new Edge(auxNo1, auxNo2);
 					if (createLog) {
 						logManager.append(
 							auxNo1.getName()
@@ -1171,7 +1175,7 @@ public class Network implements java.io.Serializable {
 					}
 					arcosMarkov.add(auxArco);
 					auxNo1.getAdjacents().add(auxNo2);
-					auxNo2.getAdjacents().add(auxNo1);				
+					auxNo2.getAdjacents().add(auxNo1);			
 					
 					System.out.println(auxArco);
 				}
@@ -1179,7 +1183,7 @@ public class Network implements java.io.Serializable {
 		}
 	
 		for (int i = no.getAdjacents().size() - 1; i >= 0; i--) {
-			auxNo1 = no.getAdjacents().get(i);
+			Node auxNo1 = no.getAdjacents().get(i);
 			boolean removed = auxNo1.getAdjacents().remove(no);
 			assert removed;
 		}
@@ -1197,15 +1201,10 @@ public class Network implements java.io.Serializable {
 		Node auxNo;
 		double p;
 	
-		Node noMin = auxNos.get(0);
-		double pmin = Math.log(noMin.getStatesSize());
-	
-		for (int i = noMin.getAdjacents().size()-1; i >= 0; i--) {
-			v = noMin.getAdjacents().get(i);
-			pmin += Math.log(v.getStatesSize());
-		}
-	
-		for (int i = auxNos.size()-1; i > 0; i--) {
+		Node noMin = null;
+		double pmin = Double.MAX_VALUE;
+
+		for (int i = auxNos.size()-1; i >= 0; i--) {
 			auxNo = auxNos.get(i);
 			p = Math.log(auxNo.getStatesSize());
 	
@@ -1218,6 +1217,8 @@ public class Network implements java.io.Serializable {
 				noMin = auxNo;
 			}
 		}
+		
+		assert noMin != null;
 		return noMin;
 	}
 
@@ -1233,11 +1234,10 @@ public class Network implements java.io.Serializable {
 			return false;
 		}
 	
-		int sizeAdjacentes = no.getAdjacents().size();
-		for (int i = 0; i < sizeAdjacentes - 1; i++) {
+		for (int i = no.getAdjacents().size()-1; i > 0; i--) {
 			Node auxNo1 = no.getAdjacents().get(i);
 	
-			for (int j = i + 1; j < sizeAdjacentes; j++) {
+			for (int j = i - 1; j >=0; j--) {
 				Node auxNo2 = no.getAdjacents().get(j);
 				if (! auxNo2.getAdjacents().contains(auxNo1)) {
 					return true;

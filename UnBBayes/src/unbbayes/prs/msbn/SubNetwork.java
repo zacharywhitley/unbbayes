@@ -74,12 +74,18 @@ public class SubNetwork extends Network {
 	 * @return boolean   true se inseriu algum arco, false caso contrário.
 	 */	
 	protected boolean elimine(SubNetwork adj) {
-		System.out.println("Elimine");	
+		System.out.println("Elimine");
 		
 		oe.clear();
 		NodeList inter = SetToolkit.intersection(copiaNos, adj.nos);				
-		NodeList auxNos = SetToolkit.clone(copiaNos);		
+		NodeList auxNos = SetToolkit.clone(copiaNos);
+		
+		int sizeAnt = auxNos.size();
+				
 		auxNos.removeAll(inter);
+		
+		assert inter.size() + auxNos.size() == sizeAnt;
+		
 		boolean inseriu = false;		
 		while (pesoMinimo(auxNos)) {
 			inseriu = true;		
@@ -89,17 +95,19 @@ public class SubNetwork extends Network {
 			inseriu = true;			
 		}
 		
+		makeAdjacents();
+		
 		return inseriu;
 	}
 	
 	//----------------------------
-	private void teste() {
+	public void teste() {
 		for (int i = 0; i < nos.size(); i++) {
 			Node a = nos.get(i);
 			for (int j = 0; j < a.getAdjacents().size(); j++) {
 				Node b = a.getAdjacents().get(j);
 				if (! b.getAdjacents().contains(a)) {
-					System.err.println("erro");
+					System.out.println("erro - " + a + " nao adj de " + b);
 				}								
 			}			
 		}		
@@ -112,16 +120,16 @@ public class SubNetwork extends Network {
 		for (int i = adjacents.size()-1; i >= 0; i--) {
 			SubNetwork ai = (SubNetwork) adjacents.get(i);			
 			if (elimine(ai)) {
-				updateArcs(ai);
+				updateArcs(this, ai);
 			}
 			ai.elimineProfundidade(this);
 		}
 		
-		if (caller != null) {
-			if (elimine(caller)) {
-				updateArcs(caller);
-			}						
-		}
+		if (caller != null) {			
+			if (elimine(caller)) {				
+				updateArcs(this, caller);
+			}
+		}	
 	}
 	
 	protected void distributeArcs() {
@@ -134,63 +142,34 @@ public class SubNetwork extends Network {
 		}
 	}
 	
-	private void updateArcs(SubNetwork net) {
-		System.out.println("updateArcs");
-		
-		NodeList dsepset = SetToolkit.intersection(nos, net.nos);
-		for (int i = arcosMarkov.size()-1; i>=0; i--) {
-			Edge e = (Edge) arcosMarkov.get(i);
+	private static void updateArcs(SubNetwork net1, SubNetwork net2) {
+		NodeList dsepset = SetToolkit.intersection(net1.nos, net2.nos);
+		for (int i = net1.arcosMarkov.size()-1; i>=0; i--) {
+			Edge e = (Edge) net1.arcosMarkov.get(i);
 			if (dsepset.contains(e.getOriginNode()) 
 				&& dsepset.contains(e.getDestinationNode())) {
 				
-				Node a,b;
-				a = b = null;
-				for (int j = net.getNodeCount()-1; j >= 0; j--) {
-					if (net.getNodeAt(j).equals(e.getOriginNode())) {
-						a = net.getNodeAt(j);
-					} else if (net.getNodeAt(j).equals(e.getDestinationNode())) {
-						b = net.getNodeAt(j);
-					}		
-				}
+				Node a = net2.getNode(e.getOriginNode().getName());
+				Node b = net2.getNode(e.getDestinationNode().getName()); 
+				
 				assert(a != null && b != null);
 				if (! a.getAdjacents().contains(b) && ! b.getAdjacents().contains(a)) {
 					a.getAdjacents().add(b);
 					b.getAdjacents().add(a);
 					Edge newEdge = new Edge(a,b);
-					net.arcosMarkov.add(newEdge);
+					net2.arcosMarkov.add(newEdge);
 
 					System.out.println(newEdge);
-				}					
-			}
-		}
-		
-		for (int i = net.arcosMarkov.size()-1; i>=0; i--) {
-			Edge e = (Edge) net.arcosMarkov.get(i);
-			if (dsepset.contains(e.getOriginNode()) 
-				&& dsepset.contains(e.getDestinationNode())) {
-				
-				Node a,b;
-				a = b = null;
-				for (int j = getNodeCount()-1; j >= 0; j--) {
-					if (getNodeAt(j).equals(e.getOriginNode())) {
-						a = getNodeAt(j);
-					} else if (getNodeAt(j).equals(e.getDestinationNode())) {
-						b = getNodeAt(j);
-					}			
-				}
-				assert(a != null && b != null);
-				
-				if (! a.getAdjacents().contains(b) && ! b.getAdjacents().contains(a)) {				
-					a.getAdjacents().add(b);
-					b.getAdjacents().add(a);					
-					Edge newEdge = new Edge(a,b);
-					arcosMarkov.add(newEdge);
-					
-					System.out.println(newEdge);
 				}
 			}
 		}
+	}
+	
+	private void updateArcs(SubNetwork net) {
 		teste();
+		System.out.println("updateArcs");
+		updateArcs(this, net);
+		updateArcs(net, this);		
 	}
 	
 	protected void initVisited() {

@@ -227,9 +227,11 @@ public class NetIO implements BaseIO {
 		MSNetwork msbn = new MSNetwork();
 		File files[] = input.listFiles();
 		for (int i = 0; i < files.length; i++) {
-			SubNetwork net = new SubNetwork();
-			load(files[i], net);
-			msbn.addNetwork(net);	
+			if (files[i].isFile()) {
+				SubNetwork net = new SubNetwork();
+				load(files[i], net);
+				msbn.addNetwork(net);
+			}	
 		}
 		return msbn;
 	}

@@ -67,7 +67,7 @@ public class ProbabilisticNetwork
 	/**
 	 *  Faz o processo de triangulação da rede.
 	 */
-	private void triangula() {
+	private void triangula() {		
 		Node aux;
 		NodeList auxNos;
 
@@ -114,6 +114,8 @@ public class ProbabilisticNetwork
 			while (pesoMinimo(auxNos)) 
 				;
 		}
+		
+		makeAdjacents();
 	}
 
 	private void removeUtilityNodes(NodeList nodes) {

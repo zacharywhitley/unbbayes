@@ -180,7 +180,7 @@ public class MSNetwork {
 		}
 		
 		if (inseriu) {
-			coTriag();					
+			coTriag();				
 		}
 	}
 	
@@ -188,7 +188,7 @@ public class MSNetwork {
 		System.out.println("coTriag");
 		
 		SubNetwork a1 = (SubNetwork) nets.get(0);
-		a1.elimineProfundidade(null);
+		a1.elimineProfundidade(null);		
 		a1.distributeArcs();
 	}
 	
