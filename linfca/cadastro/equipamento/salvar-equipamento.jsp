@@ -1,4 +1,6 @@
 <%@page import="linfca.*, 
+		linfca.cadastro.tiposituacao.*, 
+		linfca.cadastro.sala.*, 
 		linfca.cadastro.equipamento.*, 
 		org.jdom.Element, 
 		java.util.Iterator" 
