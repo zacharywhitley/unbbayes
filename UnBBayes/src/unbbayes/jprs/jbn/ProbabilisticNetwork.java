@@ -160,7 +160,7 @@ public class ProbabilisticNetwork extends Network {
     /**
      *  Monta árvore de junção a partir do grafo.
      */
-    private void compilaAJ() {
+    private void compilaAJ() throws Exception {
         Edge auxArc;
         int menor;
         Clique auxClique;
@@ -480,7 +480,7 @@ public class ProbabilisticNetwork extends Network {
      *  Chama o método da árvore de junção para atualizar evidências.
      *  @return             consistência da árvore atualizada.
      */
-     public boolean updateEvidences() {
+     public void updateEvidences() throws Exception {
         int sizeNos = copiaNos.size();
         for (int c = 0; c < sizeNos; c++) {
             TreeVariable node = (TreeVariable) copiaNos.get(c);
@@ -499,20 +499,22 @@ public class ProbabilisticNetwork extends Network {
                 }
             }
         }
-        if (! junctionTree.consistencia()) {
+  
+  		try {      
+	      	junctionTree.consistencia();
+  		} catch (Exception e) {
             initialize();
-            return false;
+            throw e;
         }
 //        resetEvidences();
         updateMarginais();
-        return true;
      }
 
 
      /**
       * Inicia as crenças da árvore de junção.
       */
-     public void initialize() {
+     public void initialize() throws Exception {
         resetEvidences();
         junctionTree.iniciaCrencas();
         updateMarginais();

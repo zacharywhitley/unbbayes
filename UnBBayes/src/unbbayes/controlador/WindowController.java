@@ -299,8 +299,12 @@ public class WindowController implements KeyListener {
      * Inicia as crenças da árvore de junção.
      */
     public void initialize() {
-        rede.initialize();
-        this.updateTree();
+    	try {
+	        rede.initialize();	        
+       		this.updateTree();    		
+    	} catch (Exception e) {
+    		e.printStackTrace();    		
+    	}
     }
 
 
@@ -312,11 +316,12 @@ public class WindowController implements KeyListener {
     public void propagar() {
         tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         boolean temLikeliHood = false;
-        if (rede.updateEvidences()) {
+        try {
+        	rede.updateEvidences();
             if (! temLikeliHood) {
                 NetWindow.getInstance().setStatus(resource.getString("statusEvidenceProbabilistic") + rede.PET() * 100.0);
             }
-        } else {
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(tela, resource.getString("statusEvidenceException"), resource.getString("statusError"), JOptionPane.ERROR_MESSAGE);
         }
         updateTree();

@@ -97,17 +97,12 @@ public class JunctionTree {
 	/**
 	 *  Verifica a consistência global.
 	 *  Aplica o algoritmo Colete seguido do Distribua no clique raiz da árvore.
-	 *
-	 *@return    resultado da consistência.
 	 */
-	boolean consistencia() {
+	void consistencia() throws Exception {
 		n = 1.0;
 		Clique raiz = (Clique) cliques.get(0);
-		boolean result = coleteEvidencia(raiz);
-		if (result) {
-			distribuaEvidencia(raiz);
-		}		
-		return result;
+		coleteEvidencia(raiz);
+		distribuaEvidencia(raiz);
 	}
 
 	/**
@@ -116,7 +111,7 @@ public class JunctionTree {
 	 *@param  clique  clique.
 	 *@return         sucesso da coleta de evidências.
 	 */
-	private boolean coleteEvidencia(Clique clique) {
+	private void coleteEvidencia(Clique clique) throws Exception {
 		Clique auxClique;
 		int sizeFilhos = clique.getChildrenSize();
 		for (int c = 0; c < sizeFilhos; c++) {
@@ -127,9 +122,7 @@ public class JunctionTree {
 			this.absorve(clique, auxClique);
 		}
 
-		boolean[] ok = new boolean[1];
-		n *= clique.normalize(ok);
-		return ok[0];
+		n *= clique.normalize();
 	}
 
 	/**
@@ -231,7 +224,7 @@ public class JunctionTree {
 	/**
 	 *  Inicia crenças da árvore.
 	 */
-	void iniciaCrencas() {
+	void iniciaCrencas() throws Exception {
 		Clique auxClique;
 		PotentialTable auxTabPot;
 		PotentialTable auxUtilTab;

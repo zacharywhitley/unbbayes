@@ -94,8 +94,7 @@ public class Clique implements ITabledVariable {
      *@param  ok      vetor boolean de tamanho 1 para passar parametro por referência.
      *@return         constante de normalização.
      */
-    protected double normalize(boolean[] ok) {
-        ok[0] = true;
+    protected double normalize() throws Exception {
         boolean fixo[] = new boolean[nos.size()];
         NodeList decisoes = new NodeList();
         for (int i = 0; i < nos.size(); i++) {        	
@@ -106,19 +105,19 @@ public class Clique implements ITabledVariable {
         }
 
         if (decisoes.size() == 0) {
-            return normalizeBN(ok);
+            return normalizeBN();
         }
 
         int index[] = new int[decisoes.size()];
         for (int i = 0; i < index.length; i++) {
             index[i] = nos.indexOf(decisoes.get(i));
         }
-        normalizeID(0, decisoes, fixo, index, new int[nos.size()], ok);
+        normalizeID(0, decisoes, fixo, index, new int[nos.size()]);
         /** @todo retornar a constante de normalizacao correta */
         return 0.0;
     }
 
-    private double normalizeBN(boolean[] ok) {
+    private double normalizeBN() throws Exception {
         double n = 0.0;
         double valor;
 
@@ -130,11 +129,9 @@ public class Clique implements ITabledVariable {
             for (int c = 0; c < sizeDados; c++) {
                 valor = tabelaPot.getValue(c);
                 if (n == 0.0) {
-                    ok[0] = false;
-                } else {
-                    valor /= n;
+                    throw new Exception("Inconsistency or Underflow found");
                 }
-
+                valor /= n;
                 tabelaPot.setValue(c, valor);
             }
         }
@@ -146,23 +143,28 @@ public class Clique implements ITabledVariable {
                              NodeList decisoes,
                              boolean fixo[],
                              int index[],
-                             int coord[],
-                             boolean ok[]) {
+                             int coord[]) throws Exception {
 
         if (control == decisoes.size()) {
             double soma = sum(0, fixo, coord);
             if (soma == 0.0) {
-//                ok[0] = false;
-            } else {
-                div(0, fixo, coord, soma);
+                throw new Exception("Inconsistency or Underflow found");
             }
+            div(0, fixo, coord, soma);            
             return;
         }
 
-        Node node = decisoes.get(control);
-        for (int i = 0; i < node.getStatesSize(); i++) {
+        DecisionNode node = (DecisionNode) decisoes.get(control);
+        
+        if (node.hasEvidence()) {
+        	coord[index[control]] = node.getEvidence();
+            normalizeID(control+1, decisoes, fixo, index, coord);
+        	return;        	
+        }
+                
+        for (int i = 0; i < node.getStatesSize(); i++) {        	
             coord[index[control]] = i;
-            normalizeID(control+1, decisoes, fixo, index, coord, ok);
+			normalizeID(control+1, decisoes, fixo, index, coord);
         }
     }
 

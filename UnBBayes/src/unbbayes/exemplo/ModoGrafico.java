@@ -94,7 +94,11 @@ public class ModoGrafico {
                 likelihood[1] = 0.8;
 
                 auxVP.addLikeliHood(likelihood);
-                rede.updateEvidences();
+                try {
+	                rede.updateEvidences();
+                } catch (Exception ex) {
+                	ex.printStackTrace();               	
+                }
             }
         });
 

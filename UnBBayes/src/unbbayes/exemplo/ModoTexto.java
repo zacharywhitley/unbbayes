@@ -79,7 +79,10 @@ public class ModoTexto {
 
         auxVP.addLikeliHood(likelihood);
 
-        rede.updateEvidences();
-
+		try {
+	        rede.updateEvidences();
+		} catch (Exception e) {
+			e.printStackTrace();			
+		}
     }
 }
