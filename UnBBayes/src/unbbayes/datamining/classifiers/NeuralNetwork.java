@@ -138,6 +138,9 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 
   /**The activation function steep*/
   private float activationFunctionSteep;
+  
+  /**The number of possible values of the class attribute*/
+  private transient int classAttNumOfValues;
 
   /**
    * Constructor of the neural network
@@ -218,6 +221,8 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     attributeVector = instanceSet.getAttributes();      //cria um array com os atributos para serialização
     this.classIndex = instanceSet.getClassIndex();      //guarda o indice da classe para serialização
 
+	classAttNumOfValues = attributeVector[classIndex].numValues();
+
     highestValue = new float[numOfAttributes];
     lowestValue = new float[numOfAttributes];
 
@@ -294,9 +299,13 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
         outputLayer[i] = new OutputNeuron(activationFunction, hiddenLayer.length);
       }
     }
-
+	
     //Learning
     for (int epoch=0; epoch<trainingTime; epoch++) {
+    	//teste
+    	System.out.println(epoch + " de " + trainingTime);
+    	
+    	
       instanceEnum = instanceSet.enumerateInstances();
       oldQuadraticError = quadraticError;
       quadraticError = 0;
@@ -392,7 +401,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
             float data = Float.parseFloat(att.getAttributeValues()[instance.getValue(att)]);
             inputLayer[index] = normalizationFunction.normalize(data, i);
           } else {
-            index = index + instance.getValue (i);
+            index = index + instance.getValue(i);
             inputLayer[index] = 1;
           }
         }
@@ -415,8 +424,10 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       float output = Float.parseFloat(attributeVector[classIndex].getAttributeValues()[instance.classValue()]);
       expectedOutput[0] = activationFunction.normalizeToFunctionInterval(output, highestValue[classIndex], lowestValue[classIndex]);
     } else {
-      expectedOutput = new float[attributeVector[classIndex].numValues()];
+      expectedOutput = new float[classAttNumOfValues];
       Arrays.fill(expectedOutput, 0);
+	  //Arrays.fill(expectedOutput, -1);
+	  ///////////////////////////////////ver com o mário
       expectedOutput[instance.classValue()] = 1;
     }
     return expectedOutput;
@@ -458,7 +469,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
         }
       }
     }
-// Falar com mário sobre o unnormalize
+
     return distribution;
   }
 
@@ -518,6 +529,8 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     } else if(numericalInputNormalization == MEAN_0_STANDARD_DEVIATION_1_NORMALIZATION){
       inputNormalization = inputNormalization + "Mean 0 and standard deviation 1 normalization";
     }
+    String classAttribute = "Class Attribute: " + attributeVector[classIndex].getAttributeName(); 
+        
     return learningRateStr + "\n" +
            momentumStr + "\n" +
            hiddenSizeStr + "\n" +
@@ -525,7 +538,8 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
            activationFunctionStr + "\n" +
            learningRateDecayStr + "\n" +
            inputNormalization + "\n" +
-           actFunctionSteepStr + "\n";
+           actFunctionSteepStr + "\n" +
+           classAttribute;
   }
 
 

@@ -63,7 +63,7 @@ public class Tanh implements ActivationFunction, Serializable{
    * @return the ouput of the tanh funciton
    */
   public double functionValue(double v){
-    return (1 - Math.exp(-2 * steep * v))/(1 + Math.exp(-2 * steep * v));
+    return ((2/(1 + Math.exp(-2 * steep * v))) -1);
   }
 
   /**
@@ -75,7 +75,8 @@ public class Tanh implements ActivationFunction, Serializable{
    * @return the value of the error term.
    */
   public double outputErrorTerm(double d, double o){  //sigma
-    return steep * (d - o) * (1 - o) * (1 + o);
+    //return steep * (d - o) * (1 - o) * (1 + o);
+    return (steep * (d - o) * (1 - (o * o)));
   }
 
   /**
@@ -87,7 +88,8 @@ public class Tanh implements ActivationFunction, Serializable{
    * @return the value of the error term.
    */
   public double hiddenErrorTerm(double y, double sum){   //sigma
-    return steep * (1 - y) * (1 + y) * sum;
+    //return steep * (1 - y) * (1 + y) * sum;
+    return (steep * (1 - (y * y)) * sum);
   }
 
   /**

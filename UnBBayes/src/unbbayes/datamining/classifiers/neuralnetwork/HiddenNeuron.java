@@ -51,11 +51,12 @@ public class HiddenNeuron extends Neuron implements Serializable{
    * @param inputValues The input values of the neuron
    */
   public void updateWeights(float learningRate, float momentum, float[] inputValues) {
-    deltaW[0] = (momentum * deltaW[0]) + (learningRate * errorTerm);
+  	float learningRateXErrorTerm = learningRate * errorTerm;
+    deltaW[0] = (momentum * deltaW[0]) + learningRateXErrorTerm;
     weights[0] = weights[0] + deltaW[0]; //bias
 
     for (int i=1; i<weights.length; i++) {
-      deltaW[i] = (momentum * deltaW[i]) + (learningRate * errorTerm * inputValues[i-1]);
+      deltaW[i] = (momentum * deltaW[i]) + (learningRateXErrorTerm * inputValues[i-1]);
       weights[i] = weights[i] + deltaW[i];
     }
   }
