@@ -15,6 +15,7 @@ import unbbayes.datamining.gui.metaphor.*;
 import unbbayes.datamining.gui.naivebayes.*;
 import unbbayes.datamining.gui.preprocessor.*;
 import unbbayes.datamining.gui.neuralmodel.*;
+import unbbayes.datamining.gui.bayesianlearning.*;
 import unbbayes.gui.*;
 
 public class InvokerMain extends JFrame
@@ -62,6 +63,7 @@ public class InvokerMain extends JFrame
   private JButton jButton6 = new JButton();
   private JButton jButton7 = new JButton();
   private JButton jButton4 = new JButton();
+  private JMenuItem jMenuItem6 = new JMenuItem();
 
 
   //Construct the frame
@@ -269,6 +271,14 @@ public class InvokerMain extends JFrame
     });
     jToolBar1.setBorder(null);
     jToolBar1.setFloatable(false);
+    jMenuItem6.setText("Bayesian Learning");
+    jMenuItem6.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jMenuItem6_actionPerformed(e);
+      }
+    });
     contentPane.add(new JScrollPane(desktop), BorderLayout.CENTER);
     this.setJMenuBar(jMenuBar1);
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -294,6 +304,7 @@ public class InvokerMain extends JFrame
     jMenu1.add(jMenuItem4);
     jMenu1.add(jMenuItem13);
     jMenu1.add(jMenuItem14);
+    jMenu1.add(jMenuItem6);
     jMenu5.add(jMenuItem7);
     jMenu3.add(jMenuItem8);
     jMenu3.add(jMenuItem9);
@@ -526,5 +537,11 @@ public class InvokerMain extends JFrame
 
   void jButton4_actionPerformed(ActionEvent e)
   {   jMenuItem7_actionPerformed(e);
+  }
+
+  void jMenuItem6_actionPerformed(ActionEvent e)
+  {
+    BayesianLearningMain bayesianLearning = new BayesianLearningMain();
+    desktop.add(bayesianLearning);
   }
 }
