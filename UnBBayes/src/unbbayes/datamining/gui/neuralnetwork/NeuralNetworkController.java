@@ -61,7 +61,7 @@ public class NeuralNetworkController {
       hiddenSize = mainScreen.optionsPanel.getHiddenLayerSize();
       trainningTime = mainScreen.optionsPanel.getTrainningTime();
       activationFunction = mainScreen.optionsPanel.getSelectedActivationFunction();
-      bpn = new NeuralNetwork(learningRate, momentum, hiddenSize, activationFunction);
+      bpn = new NeuralNetwork(learningRate, momentum, hiddenSize, activationFunction, 0);
       bpn.buildClassifier(instanceSet);
     }
     mainScreen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));

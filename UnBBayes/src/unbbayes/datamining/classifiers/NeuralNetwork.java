@@ -42,7 +42,6 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     } else if(activationFunction == NeuralNetwork.TANH){
       this.activationFunction = new Tanh(1.7159, 2/3);
     }
-
   }
 
   /**
@@ -54,13 +53,12 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   public void buildClassifier(InstanceSet instanceSet) throws Exception{
     this.instanceSet = instanceSet;
     Instance instance;
-    Enumeration instanceEnum = instanceSet.enumerateInstances();
+    Enumeration instanceEnum;
     numOfAttributes = instanceSet.numAttributes();
     float quadraticAverageError = 0;
 
     attributeVector = instanceSet.getAttributes();      //cria um array com os atributos para serialização
     this.classIndex = instanceSet.getClassIndex();      //guarda o indice da classa para serialização
-
 
     //iniciliza numero de valores dos atributos
     attNumOfValues = new int[numOfAttributes - 2];
@@ -94,15 +92,64 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       outputLayer[i] = new OutputNeuron(activationFunction, hiddenLayer.length);
     }
 
-    for (int i = 0; i < trainningTime; i++) {
+/*////////////////////////////////////////
+    for (int j = 0; j < hiddenLayer.length; j++) {
+      System.out.println("peso inicial - neuronio escondido " + j + ":");
+      hiddenLayer[j].printWeights();
+    }
+
+    for (int j = 0; j < outputLayer.length; j++) {
+      System.out.println("peso inicial - neuronio de saida " + j + ":");
+      outputLayer[j].printWeights();
+    }
+*//////////////////////////////////////
+
+    for (int i = 0; i < 1000/*trainningTime*/; i++) {
+      quadraticAverageError = 0;
+      instanceEnum = instanceSet.enumerateInstances();
+
       while (instanceEnum.hasMoreElements()) {
         instance = (Instance) instanceEnum.nextElement();
         quadraticAverageError = quadraticAverageError + learn(instance);
+
+
+/*        System.out.println("--------------");
+        ////////////////////////////////////////// teste para ver os valores dos pesos
+ System.out.println("SOMATÓRIO DE Erro quadrado médio " + i + " :" + quadraticAverageError);
+/////////////////////////////////////////
+ for (int j = 0; j < hiddenLayer.length; j++) {
+   System.out.println("instancia " + i + " neuronio escondido " + j + ":");
+   hiddenLayer[j].printWeights();
+ }
+
+ for (int j = 0; j < outputLayer.length; j++) {
+   System.out.println("instancia " + i + " neuronio de saida " + j + ":");
+   outputLayer[j].printWeights();
+ }
+ /*//////////////////////////////////////////
+
+
+
+
       }
       quadraticAverageError = quadraticAverageError/instanceSet.numWeightedInstances();
+
+
+     ////////////////////////////////////////// teste para ver os valores dos pesos
+      System.out.println("Erro quadrado médio " + i + " :" + quadraticAverageError);
+     /////////////////////////////////////////
+/*      for (int j = 0; j < hiddenLayer.length; j++) {
+
+        System.out.println("iteração " + i + " neuronio escondido " + j + ":");
+        hiddenLayer[j].printWeights();
+      }
+
+      for (int j = 0; j < outputLayer.length; j++) {
+        System.out.println("iteração " + i + " neuronio de saida " + j + ":");
+        outputLayer[j].printWeights();
+      }
+  */    ///////////////////////////////////////////
     }
-
-
   }
 
   public float learn(Instance instance){
@@ -127,7 +174,6 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       }
     }
 
-
     ///////////calcula as saidas da hiddem
     for(int i=0; i<hiddenLayer.length; i++){
       hiddenLayer[i].calculateOutputValue(inputLayer);
@@ -143,11 +189,8 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       float instantaneousError;
       instantaneousError = outputLayer[i].calculateOutputValue(hiddenLayer, expectedOutput[i]);
       totalErrorEnergy = totalErrorEnergy + (instantaneousError * instantaneousError);
-    }
 
-    //////////calcula error terms  (SIGMA) da camada oculta, da saída já está calculado
-    for(int i=0; i<hiddenLayer.length; i++){
-      hiddenLayer[i].calculateErrorTerm(outputLayer, i);
+//teste      System.out.println("saida " + i + ": " + outputLayer[i].outputValue() );
     }
 
     ///////// UPDATE  dos pesos dos neuronios de saida
@@ -155,15 +198,17 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       outputLayer[i].updateWeights(learningRate, hiddenLayer);
     }
 
+    //////////calcula error terms  (SIGMA) da camada oculta, da saída já está calculado
+    for(int i=0; i<hiddenLayer.length; i++){
+      hiddenLayer[i].calculateErrorTerm(outputLayer, i);
+    }
+
     /////////UPDATE dos pesos dos neuronios ocultos
     for(int i=0; i<hiddenLayer.length; i++){
       hiddenLayer[i].updateWeights(learningRate, inputLayer);
     }
 
-
-
     return (totalErrorEnergy / 2);
-
   }
 
 
