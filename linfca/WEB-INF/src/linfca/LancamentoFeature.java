@@ -101,9 +101,8 @@ public class LancamentoFeature implements Feature {
 		if ( ps.executeUpdate() > 0 ) {
 			out.getChildren().add(new Element("ok"));
 		} else {
-			out.getChildren().add(new Element("false"));
-		}
-		
+			throw new RuntimeException("Nao foi possível processar o lançamento!");
+		}	
 		ps.close();		
 		con.close();
 		

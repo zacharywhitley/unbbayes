@@ -27,9 +27,13 @@
    }
    
    Feature  lancamentoF = new LancamentoFeature();
-   Element tiposXML = lancamentoF.process(in);
+   Element saida = lancamentoF.process(in);
    
-
+   if (saida.getChild("ok") != null) {
+   
+   } else {
+   
+   }
 %>
 
 <html>
@@ -37,6 +41,6 @@
 </head>
 
 <body onLoad="javascript:document.form1.submit()">
-  <form name="form1" method="post" action="<%=request.getContextPath()%>/log.jsp">
+  <form name="form1" method="post" action="<%=request.getContextPath()%>/lancamento-sucesso.jsp">
 </body>
 </html>
