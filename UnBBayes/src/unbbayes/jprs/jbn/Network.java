@@ -115,6 +115,14 @@ public class Network implements java.io.Serializable {
         return null;
     }
 
+    public int getNodeIndex(String name) {
+        for (int qnos = 0; qnos < nos.size(); qnos++) {
+            if (((nos.get(qnos))).getName().equals(name)) {
+                return qnos;
+            }
+        }
+        return -1;
+    }
 
     /**
      *  Retira do grafo o arco especificado.

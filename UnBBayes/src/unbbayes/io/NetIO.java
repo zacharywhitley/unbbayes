@@ -256,11 +256,14 @@ public class NetIO implements BaseIO {
 									+ resource.getString("LoadException4"));
 						}
 						proximo(st);
-						while (!st.sval.equals("}")) {
-							auxTabPot.setValueAt(
-								nDim++,
-								Double.parseDouble(st.sval));
-							proximo(st);
+						while (!st.sval.equals("}"))
+                                                {	if (st.sval.equals("%"))
+                                                        {   readTillEOL(st);
+                                                        }
+                                                        else
+                                                        {   auxTabPot.setValueAt(nDim++,Double.parseDouble(st.sval));
+                                                        }
+                                                        proximo(st);
 						}
 					} else {
 						throw new LoadException(
