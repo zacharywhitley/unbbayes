@@ -138,7 +138,7 @@ public class TCaixaRelacionamentos extends JDialog{
         public void actionPerformed(ActionEvent ae){
             Object relacionamento     = JLRelacionamentos.getSelectedValue();
             String nomeRelacionamento = (String)relacionamento;
-            java.util.List vetorAux = new ArrayList();
+            NodeList vetorAux = new NodeList();
             if (!JLRelacionamentos.isSelectionEmpty() && relacionamento != null){
                 int index   = nomeRelacionamento.indexOf('-');
                 int tamanho = nomeRelacionamento.length();
@@ -148,7 +148,7 @@ public class TCaixaRelacionamentos extends JDialog{
                 for (int i = 0; i < vetorGrafo.size() ; i++ ){
                     TVariavel variavelAux = (TVariavel)vetorGrafo.get(i);
                     if (variavelAux.getName().equals(nomeFilho)){
-                        vetorAux =  (java.util.List)variavelAux.getPais();
+                        vetorAux =  variavelAux.getPais();
                         for (int j = 0 ; j < vetorAux.size() ;j++ ){
                             TVariavel variavelAux1 = (TVariavel)vetorAux.get(j);
                             if (variavelAux1.getName().equals(nomePai)){
@@ -185,7 +185,7 @@ public class TCaixaRelacionamentos extends JDialog{
                                 variavelAux = (TVariavel)vetorGrafo.get(j);
                                 if (!(variavelAux.getPai(""+indice2).equals(""+indice2))){
                                     variavelAux = (TVariavel)vetorGrafo.get(i);
-                                    java.util.List vetorAux = (java.util.List)variavelAux.getPais();
+                                    NodeList vetorAux = variavelAux.getPais();
                                     for (int k = 0; k < vetorAux.size() ; k++ ){
                                         TVariavel variavelAux1 = (TVariavel)vetorAux.get(k);
                                         if (variavelAux1.getName().equals(""+indice1)){
@@ -195,7 +195,8 @@ public class TCaixaRelacionamentos extends JDialog{
                                             existe = false;
                                         }
                                     }
-                                    if (!existe){                                       variavelAux.adicionaPai((TVariavel)vetorGrafo.get(j));
+                                    if (!existe){ 
+                                    	  variavelAux.adicionaPai((TVariavel)vetorGrafo.get(j));
                                           modeloLista.addElement(indiceRelacionamento);
                                     }
                                 }

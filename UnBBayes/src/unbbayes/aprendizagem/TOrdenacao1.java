@@ -244,19 +244,19 @@ public class TOrdenacao1 extends JDialog
                 index--;
                 modeloLista.add(index, nomeAux);
                 for (int i = 0 ; i < vetorVariaveis.size() ; i++ ){
-                    variavelAux = (TVariavel)vetorVariaveis.get(i);
+                    variavelAux = (TVariavel)variaveis.get(i);
                     if (variavelAux.getName().equals(nomeAux)){
-                        vetorVariaveis.remove(i);
+                        variaveis.remove(i);
                         for(int j = 0; j < i - 1 ; j++){
-                            vetorAux.add(vetorVariaveis.get(j));
+                            vetorAux.add(variaveis.get(j));
                         }
                         vetorAux.add(variavelAux);
-                        for (int k = i -1 ; k < vetorVariaveis.size() ; k++){
-                            vetorAux.add(vetorVariaveis.get(k));
+                        for (int k = i -1 ; k < variaveis.size() ; k++){
+                            vetorAux.add(variaveis.get(k));
                         }
-                        vetorVariaveis = vetorAux;
-                        for (int g = 0 ;g < vetorVariaveis.size() ; g++ ){
-                            variavelAux = (TVariavel)vetorVariaveis.get(g);
+                        variaveis = vetorAux;
+                        for (int g = 0 ;g < variaveis.size() ; g++ ){
+                            variavelAux = (TVariavel)variaveis.get(g);
                         }
                         JLOrdenacao.setSelectedIndex(index);
                         break;
@@ -277,20 +277,20 @@ public class TOrdenacao1 extends JDialog
                 index++;
                 modeloLista.add(index, nomeAux);
                 NodeList vetorAux = new NodeList();
-                for (int i = 0 ; i < vetorVariaveis.size() ; i++ ){
-                    variavelAux = (TVariavel)vetorVariaveis.get(i);
+                for (int i = 0 ; i < variaveis.size() ; i++ ){
+                    variavelAux = (TVariavel)variaveis.get(i);
                     if (variavelAux.getName().equals(nomeAux)){
-                        vetorVariaveis.remove(i);
+                        variaveis.remove(i);
                         for(int j = 0; j < i +1 ; j++){
-                            vetorAux.add(vetorVariaveis.get(j));
+                            vetorAux.add(variaveis.get(j));
                         }
                         vetorAux.add(variavelAux);
-                        for (int k = i +1 ; k < vetorVariaveis.size() ; k++){
-                            vetorAux.add(vetorVariaveis.get(k));
+                        for (int k = i +1 ; k < variaveis.size() ; k++){
+                            vetorAux.add(variaveis.get(k));
                         }
-                        vetorVariaveis = vetorAux;
-                        for (int g = 0 ;g < vetorVariaveis.size() ; g++ ){
-                            variavelAux = (TVariavel)vetorVariaveis.get(g);
+                        variaveis = vetorAux;
+                        for (int g = 0 ;g < variaveis.size() ; g++ ){
+                            variavelAux = (TVariavel)variaveis.get(g);
                         }
                         JLOrdenacao.setSelectedIndex(index);
                         break;
@@ -304,7 +304,7 @@ public class TOrdenacao1 extends JDialog
       definir com certeza quais os pais de uma determinada variável*/
     ActionListener relacionamentoEvento = new ActionListener(){
         public void actionPerformed(ActionEvent ae){
-            new TCaixaRelacionamentos(vetorVariaveis);
+            new TCaixaRelacionamentos(variaveis);
         }
     };
 
@@ -334,14 +334,14 @@ public class TOrdenacao1 extends JDialog
                             Alg = new TAlgoritmoK2_MDL(variaveis,matriz,numeroCaso, vetor,delta,net);
 							//Alg = new TAlgoritmoK2_MDL(variaveis,matriz,numeroCaso, vetor,delta,controlador);
                         } else if(listaAlgoritmos.getSelectedItem().equals("B_MDL")){
-                            Alg = new TAlgoritmoB_MDL(vetorVariaveis,matriz,numeroCaso,vetor,net);
-							//Alg = new TAlgoritmoB_MDL(vetorVariaveis,matriz,numeroCaso,vetor,controlador);
+                            Alg = new TAlgoritmoB_MDL(variaveis,matriz,numeroCaso,vetor,net);
+							//Alg = new TAlgoritmoB_MDL(variaveis,matriz,numeroCaso,vetor,controlador);
                         } else if(listaAlgoritmos.getSelectedItem().equals("B_GHS")){
-                            Alg = new TAlgoritmoB_GHS(vetorVariaveis,matriz,numeroCaso,vetor,net);
-							//Alg = new TAlgoritmoB_GHS(vetorVariaveis,matriz,numeroCaso,vetor,controlador);
+                            Alg = new TAlgoritmoB_GHS(variaveis,matriz,numeroCaso,vetor,net);
+							//Alg = new TAlgoritmoB_GHS(variaveis,matriz,numeroCaso,vetor,controlador);
                         } else if(listaAlgoritmos.getSelectedItem().equals("B_GH")){
-                            Alg  = new TAlgoritmoB_GHS(vetorVariaveis,matriz,numeroCaso,vetor,net);
-							//Alg  = new TAlgoritmoB_GHS(vetorVariaveis,matriz,numeroCaso,vetor,controlador);
+                            Alg  = new TAlgoritmoB_GHS(variaveis,matriz,numeroCaso,vetor,net);
+							//Alg  = new TAlgoritmoB_GHS(variaveis,matriz,numeroCaso,vetor,controlador);
                         }
                     }
                 });
@@ -362,8 +362,8 @@ public class TOrdenacao1 extends JDialog
                     TVariavel variavelLista = null;
                     Object objeto = lista.getSelectedValue();
                     String nome = objeto.toString();
-                    for (int i = 0 ; i < vetorVariaveis.size(); i++ ){
-                        variavelLista = (TVariavel)vetorVariaveis.get(i);
+                    for (int i = 0 ; i < variaveis.size(); i++ ){
+                        variavelLista = (TVariavel)variaveis.get(i);
                         if (variavelLista.getName().equals(nome)){
                             break;
                         }
