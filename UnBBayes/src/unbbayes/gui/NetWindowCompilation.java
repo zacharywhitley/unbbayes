@@ -111,7 +111,7 @@ public class NetWindowCompilation extends JPanel {
         //propagar as evidencias
         propagate.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
-                    controller.propagar();
+                    controller.propagate();
                 }
         });
 
@@ -139,20 +139,20 @@ public class NetWindowCompilation extends JPanel {
         // action para imprimir a rede
         printNet.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                controller.imprimirRede(netWindow.getIGraph(), controller.calcularBordasRede());
+                controller.printNet(netWindow.getIGraph(), controller.calculateNetRectangle());
             }
         });
 
         // action para visualizar a rede.
         previewNet.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                controller.visualizarImpressaoRede(netWindow.getIGraph(), controller.calcularBordasRede());
+                controller.previewPrintNet(netWindow.getIGraph(), controller.calculateNetRectangle());
             }
         });
 
         saveNetImage.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                controller.salvarImagemRede();
+                controller.saveNetImage();
             }
         });
 

@@ -63,11 +63,11 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
         for (int i = 0; i < getStatesSize(); i++) {
             no.appendState(getStateAt(i));
         }
-        no.setAltura(this.getAltura());
+        no.setHeight(this.getHeight());
         no.setDescriptionColor(this.getDescriptionColor().getRGB());
         no.setExplanationColor(this.getExplanationColor().getRGB());
-        no.setLargura(this.getLargura());
-        no.setPosicao(this.getPosicao().getX() + 1.3 * raio, this.getPosicao().getY() + 1.3 * raio);
+        no.setWidth(this.getWidth());
+        no.setPosition(this.getPosition().getX() + 1.3 * raio, this.getPosition().getY() + 1.3 * raio);
         no.setName(resource.getString("copyName") + this.getName());
         no.setDescription(resource.getString("copyName") + this.getDescription());
         no.tabelaPot = (ProbabilisticTable)this.tabelaPot.clone();
@@ -81,14 +81,14 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
 		cloned.setExplanationColor(this.getExplanationColor().getRGB());
 		cloned.setDescription(this.getDescription());
 		cloned.setName(this.getName());
-		cloned.setPosicao(this.getPosicao().getX(), this.getPosicao().getY());
+		cloned.setPosition(this.getPosition().getX(), this.getPosition().getY());
 		cloned.setParents(SetToolkit.clone(parents));
 		cloned.setChildren(SetToolkit.clone(this.getChildren()));
 		cloned.setStates(SetToolkit.clone(states));
 		cloned.setAdjacents(SetToolkit.clone(this.getAdjacents()));
-		cloned.setSelected(this.isSelecionado());
-		cloned.setAltura(this.getAltura());
-        cloned.setLargura(this.getLargura());
+		cloned.setSelected(this.isSelected());
+		cloned.setHeight(this.getHeight());
+        cloned.setWidth(this.getWidth());
         cloned.setExplanationDescription(this.getExplanationDescription());
         cloned.setPhrasesMap(this.getPhrasesMap());
         cloned.setInformationType(this.getInformationType());

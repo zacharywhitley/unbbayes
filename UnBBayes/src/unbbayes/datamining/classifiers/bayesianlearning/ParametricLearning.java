@@ -192,7 +192,7 @@ public ProbabilisticNetwork getProbabilisticNetwork(ArrayList pa)
     	ProbabilisticNode node = new ProbabilisticNode(); 
       	node.setDescription(x[i]);
       	node.setName(x[i]);
-      	node.setPosicao(width,100);
+      	node.setPosition(width,100);
       	width += 100;
       	ArrayList states = dx[i];
       	for (int j=0;j<states.size();j++)

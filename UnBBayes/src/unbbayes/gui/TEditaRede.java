@@ -128,7 +128,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
             if ((i + 1) * raio >= this.getSize().getWidth()) {
                 linha++;
             }
-            noAux.setPosicao((i + 1) * 3 * raio, 3 * raio * linha);
+            noAux.setPosition((i + 1) * 3 * raio, 3 * raio * linha);
         }
     }
 
@@ -162,8 +162,8 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
 
         for (int i = 0; i < net.getNodeCount(); i++) {
             Node noPegar = net.getNodeAt(i);
-            x1 = noPegar.getPosicao().getX();
-            y1 = noPegar.getPosicao().getY();
+            x1 = noPegar.getPosition().getX();
+            y1 = noPegar.getPosition().getY();
 
             if ((x >= x1 - raio) && (x <= x1 + raio) && (y >= y1 - raio) && (y <= y1 + raio)) {
                 return noPegar;
@@ -198,10 +198,10 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
 
         for (int i = 0; i < arco.size(); i++) {
             Edge arcoPegar = (Edge) arco.get(i);
-            x1 = arcoPegar.getOriginNode().getPosicao().getX();
-            y1 = arcoPegar.getOriginNode().getPosicao().getY();
-            x2 = arcoPegar.getDestinationNode().getPosicao().getX();
-            y2 = arcoPegar.getDestinationNode().getPosicao().getY();
+            x1 = arcoPegar.getOriginNode().getPosition().getX();
+            y1 = arcoPegar.getOriginNode().getPosition().getY();
+            x2 = arcoPegar.getDestinationNode().getPosition().getX();
+            y2 = arcoPegar.getDestinationNode().getPosition().getY();
 
             double yTeste = ((y2 - y1) / (x2 - x1)) * x + (y1 - x1 * ((y2 - y1) / (x2 - x1)));
             double xTeste = (y - (y1 - x1 * ((y2 - y1) / (x2 - x1)))) / ((y2 - y1) / (x2 - x1));
@@ -209,8 +209,8 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
             Node no1 = arcoPegar.getOriginNode();
             Node no2 = arcoPegar.getDestinationNode();
 
-            Point2D.Double ponto1 = getPonto(no1.getPosicao(), no2.getPosicao(), raio);
-            Point2D.Double ponto2 = getPonto(no2.getPosicao(), no1.getPosicao(), raio);
+            Point2D.Double ponto1 = getPonto(no1.getPosition(), no2.getPosition(), raio);
+            Point2D.Double ponto2 = getPonto(no2.getPosition(), no1.getPosition(), raio);
 
             if (ponto1.getX() < ponto2.getX()) {
                 if (((y <= yTeste + 5) && (y >= yTeste - 5)) || ((x <= xTeste + 5) && (x >= xTeste - 5))) {
@@ -290,30 +290,30 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         if (bMoverNo)
         {
             Node noAux = (Node) selecionado;
-            maiorX = noAux.getPosicao().getX();
-            menorX = noAux.getPosicao().getX();
-            maiorY = noAux.getPosicao().getY();
-            menorY = noAux.getPosicao().getY();
+            maiorX = noAux.getPosition().getX();
+            menorX = noAux.getPosition().getX();
+            maiorY = noAux.getPosition().getY();
+            menorY = noAux.getPosition().getY();
 
             Node noAux2;
             for (int i = 0; i < noAux.getParents().size(); i++) {
                 noAux2 = (Node) noAux.getParents().get(i);
 
-                if (maiorX < noAux2.getPosicao().getX()) {
-                    maiorX = noAux2.getPosicao().getX();
+                if (maiorX < noAux2.getPosition().getX()) {
+                    maiorX = noAux2.getPosition().getX();
                 }
                 else {
-                    if (menorX > noAux2.getPosicao().getX()) {
-                        menorX = noAux2.getPosicao().getX();
+                    if (menorX > noAux2.getPosition().getX()) {
+                        menorX = noAux2.getPosition().getX();
                     }
                 }
 
-                if (maiorY < noAux2.getPosicao().getY()) {
-                    maiorY = noAux2.getPosicao().getY();
+                if (maiorY < noAux2.getPosition().getY()) {
+                    maiorY = noAux2.getPosition().getY();
                 }
                 else {
-                    if (menorY > noAux2.getPosicao().getY()) {
-                        menorY = noAux2.getPosicao().getY();
+                    if (menorY > noAux2.getPosition().getY()) {
+                        menorY = noAux2.getPosition().getY();
                     }
                 }
             }
@@ -321,21 +321,21 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
             for (int i = 0; i < noAux.getChildren().size(); i++) {
                 noAux2 = (Node) noAux.getChildren().get(i);
 
-                if (maiorX < noAux2.getPosicao().getX()) {
-                    maiorX = noAux2.getPosicao().getX();
+                if (maiorX < noAux2.getPosition().getX()) {
+                    maiorX = noAux2.getPosition().getX();
                 }
                 else {
-                    if (menorX > noAux2.getPosicao().getX()) {
-                        menorX = noAux2.getPosicao().getX();
+                    if (menorX > noAux2.getPosition().getX()) {
+                        menorX = noAux2.getPosition().getX();
                     }
                 }
 
-                if (maiorY < noAux2.getPosicao().getY()) {
-                    maiorY = noAux2.getPosicao().getY();
+                if (maiorY < noAux2.getPosition().getY()) {
+                    maiorY = noAux2.getPosition().getY();
                 }
                 else {
-                    if (menorY > noAux2.getPosicao().getY()) {
-                        menorY = noAux2.getPosicao().getY();
+                    if (menorY > noAux2.getPosition().getY()) {
+                        menorY = noAux2.getPosition().getY();
                     }
                 }
             }
@@ -414,13 +414,13 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
                 if (no != null) {
                     bMoverArco = true;
                     //seto o ponto origem para o arco
-                    arcoInicioAtual.setLocation(no.getPosicao().getX(), no.getPosicao().getY());
-                    arcoAtual.setLine(no.getPosicao().getX(), no.getPosicao().getY(), e.getX(), e.getY());
+                    arcoInicioAtual.setLocation(no.getPosition().getX(), no.getPosition().getY());
+                    arcoAtual.setLine(no.getPosition().getX(), no.getPosition().getY(), e.getX(), e.getY());
                 }
             }
 
             if ((!bArco) && (no != null)) {
-                if (!no.isSelecionado()) {
+                if (!no.isSelected()) {
                     selecionaNo(no);
                 }
             }
@@ -436,7 +436,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
             }
 
             if (!bArco) {
-                if ((no != null) && (no.isSelecionado())) {
+                if ((no != null) && (no.isSelected())) {
                     noMover = no;
                     bMoverNo = true;
                     setCursor(new Cursor(Cursor.MOVE_CURSOR));
@@ -566,8 +566,8 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         //mover o scroll junto com a seta e/ou nó
         if ((e.getX() < tamanhoRede.getWidth()) && (e.getY() < tamanhoRede.getHeight()) && (e.getX() + 2 * raio > tamanhoVisivel.getWidth() + janela.getJspView().getHorizontalScrollBar().getValue()) && (e.getY() + 2 * raio > tamanhoVisivel.getHeight() + janela.getJspView().getVerticalScrollBar().getValue())) {
             if (bMoverNo && noMover != null) {
-                janela.getJspView().getHorizontalScrollBar().setValue((int) (noMover.getPosicao().getX() + 2 * raio - tamanhoVisivel.getWidth()));
-                janela.getJspView().getVerticalScrollBar().setValue((int) (noMover.getPosicao().getY() + 2 * raio - tamanhoVisivel.getHeight()));
+                janela.getJspView().getHorizontalScrollBar().setValue((int) (noMover.getPosition().getX() + 2 * raio - tamanhoVisivel.getWidth()));
+                janela.getJspView().getVerticalScrollBar().setValue((int) (noMover.getPosition().getY() + 2 * raio - tamanhoVisivel.getHeight()));
             }
             else {
                 janela.getJspView().getHorizontalScrollBar().setValue((int) (e.getX() + 2 * raio - tamanhoVisivel.getWidth()));
@@ -577,7 +577,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         else {
             if ((e.getX() < tamanhoRede.getWidth()) && (e.getX() + 2 * raio > tamanhoVisivel.getWidth() + janela.getJspView().getHorizontalScrollBar().getValue()) && (e.getY() + 2 * raio <= tamanhoVisivel.getHeight() + janela.getJspView().getVerticalScrollBar().getValue())) {
                 if (bMoverNo && noMover != null) {
-                    janela.getJspView().getHorizontalScrollBar().setValue((int) (noMover.getPosicao().getX() + 2 * raio - tamanhoVisivel.getWidth()));
+                    janela.getJspView().getHorizontalScrollBar().setValue((int) (noMover.getPosition().getX() + 2 * raio - tamanhoVisivel.getWidth()));
                 }
                 else {
                     janela.getJspView().getHorizontalScrollBar().setValue((int) (e.getX() + 2 * raio - tamanhoVisivel.getWidth()));
@@ -586,7 +586,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
             else {
                 if ((e.getY() < tamanhoRede.getHeight()) && (e.getX() + 2 * raio <= tamanhoVisivel.getWidth() + janela.getJspView().getHorizontalScrollBar().getValue()) && (e.getY() + 2 * raio > tamanhoVisivel.getHeight() + janela.getJspView().getVerticalScrollBar().getValue())) {
                     if (bMoverNo && noMover != null) {
-                        janela.getJspView().getVerticalScrollBar().setValue((int) (noMover.getPosicao().getY() + 2 * raio - tamanhoVisivel.getHeight()));
+                        janela.getJspView().getVerticalScrollBar().setValue((int) (noMover.getPosition().getY() + 2 * raio - tamanhoVisivel.getHeight()));
                     }
                     else {
                         janela.getJspView().getVerticalScrollBar().setValue((int) (e.getY() + 2 * raio - tamanhoVisivel.getHeight()));
@@ -599,8 +599,8 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
 
                         if ((e.getX() > 0) && (e.getY() > 0) && (e.getX() - raio < janela.getJspView().getHorizontalScrollBar().getValue()) && (e.getY() - raio < janela.getJspView().getVerticalScrollBar().getValue())) {
                             if (bMoverNo && noMover != null) {
-                                janela.getJspView().getHorizontalScrollBar().setValue((int) (noMover.getPosicao().getX() - raio));
-                                janela.getJspView().getVerticalScrollBar().setValue((int) (noMover.getPosicao().getY() - raio));
+                                janela.getJspView().getHorizontalScrollBar().setValue((int) (noMover.getPosition().getX() - raio));
+                                janela.getJspView().getVerticalScrollBar().setValue((int) (noMover.getPosition().getY() - raio));
                             }
                             else {
                                 janela.getJspView().getHorizontalScrollBar().setValue((int) (e.getX() - raio));
@@ -610,7 +610,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
                         else {
                             if ((e.getY() > 0) && (e.getX() - raio >= janela.getJspView().getHorizontalScrollBar().getValue()) && (e.getY() - raio < janela.getJspView().getVerticalScrollBar().getValue())) {
                                 if (bMoverNo && noMover != null) {
-                                    janela.getJspView().getVerticalScrollBar().setValue((int) (noMover.getPosicao().getY() - raio));
+                                    janela.getJspView().getVerticalScrollBar().setValue((int) (noMover.getPosition().getY() - raio));
                                 }
                                 else {
                                     janela.getJspView().getVerticalScrollBar().setValue((int) (e.getY() - raio));
@@ -620,7 +620,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
 
                                 if ((e.getX() > 0) && (e.getX() - raio < janela.getJspView().getHorizontalScrollBar().getValue()) && (e.getY() - raio >= janela.getJspView().getVerticalScrollBar().getValue())) {
                                     if (bMoverNo && noMover != null) {
-                                        janela.getJspView().getHorizontalScrollBar().setValue((int) (noMover.getPosicao().getX() - raio));
+                                        janela.getJspView().getHorizontalScrollBar().setValue((int) (noMover.getPosition().getX() - raio));
                                     }
                                     else {
                                         janela.getJspView().getHorizontalScrollBar().setValue((int) (e.getX() - raio));
@@ -855,7 +855,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
      *@see Node
      */
     public void atualizaNoAtual(double x, double y) {
-        noAtual.setPosicao(x, y);
+        noAtual.setPosition(x, y);
         repintar();
     }
 
@@ -904,8 +904,8 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         no1 = a.getOriginNode();
         no2 = a.getDestinationNode();
 
-        ponto1 = getPonto(no1.getPosicao(), no2.getPosicao(), raio);
-        ponto2 = getPonto(no2.getPosicao(), no1.getPosicao(), raio);
+        ponto1 = getPonto(no1.getPosition(), no2.getPosition(), raio);
+        ponto2 = getPonto(no2.getPosition(), no1.getPosition(), raio);
 
         return new Line2D.Double(ponto1, ponto2);
     }
@@ -928,8 +928,8 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         no1 = a.getOriginNode();
         no2 = a.getDestinationNode();
 
-        double x1 = no1.getPosicao().getX();
-        double y1 = no1.getPosicao().getY();
+        double x1 = no1.getPosition().getX();
+        double y1 = no1.getPosition().getY();
         double x2;
         double y2;
         double x3;
@@ -939,16 +939,16 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
 
         //ponta da seta = ponto correspondente na circunferência do nó, caso a seta já esteja inserida - base da seta deslecada de 10 do centro do nó
         if (bExisteArco) {
-            ponto1 = getPonto(no2.getPosicao(), no1.getPosicao(), raio + 10);
-            ponto2 = getPonto(no2.getPosicao(), no1.getPosicao(), raio);
+            ponto1 = getPonto(no2.getPosition(), no1.getPosition(), raio + 10);
+            ponto2 = getPonto(no2.getPosition(), no1.getPosition(), raio);
             x2 = ponto2.getX();
             y2 = ponto2.getY();
         }
         //ponta do seta = ponto na ponta do mouse - base da seta deslecada de 10 da ponta do mouse
         else {
-            ponto1 = getPonto(no2.getPosicao(), no1.getPosicao(), 10);
-            x2 = no2.getPosicao().getX();
-            y2 = no2.getPosicao().getY();
+            ponto1 = getPonto(no2.getPosition(), no1.getPosition(), 10);
+            x2 = no2.getPosition().getX();
+            y2 = no2.getPosition().getY();
         }
 
         //se for no segundo ou quarto quadrante usamos as primeiras 4 equações, senão, usammos as outras 4
@@ -991,7 +991,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         //desenha todos os nós
         for (int i = 0; i < net.getNodeCount(); i++) {
             Node noAux = (Node) net.getNodeAt(i);
-            view.fill(new Ellipse2D.Double(noAux.getPosicao().x - raio, noAux.getPosicao().y - raio, raio * 2, raio * 2));
+            view.fill(new Ellipse2D.Double(noAux.getPosition().x - raio, noAux.getPosition().y - raio, raio * 2, raio * 2));
             if (noAux.getName() == null) {
                 noAux.setName(resource.getString("nodeGraphName") + i);
             }
@@ -1003,7 +1003,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
             double lar = serifFont.getStringBounds(noAux.getName(), frc).getWidth();
             as.addAttribute(TextAttribute.FONT, serifFont);
             as.addAttribute(TextAttribute.FOREGROUND, Color.black);
-            view.drawString(as.getIterator(), (int) (noAux.getPosicao().getX() - lar/2), (int) (noAux.getPosicao().getY() + alt/2));
+            view.drawString(as.getIterator(), (int) (noAux.getPosition().getX() - lar/2), (int) (noAux.getPosition().getY() + alt/2));
         }
 
         view.setColor(corArco);
@@ -1013,9 +1013,9 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
             view.draw(arcoAtual);
             //chama o método que desenha a ponta da seta e desenha na tela
             Node noAux = new ProbabilisticNode();
-            noAux.setPosicao(arcoAtual.getX1(), arcoAtual.getY1());
+            noAux.setPosition(arcoAtual.getX1(), arcoAtual.getY1());
             Node noAux2 = new ProbabilisticNode();
-            noAux2.setPosicao(arcoAtual.getX2(), arcoAtual.getY2());
+            noAux2.setPosition(arcoAtual.getX2(), arcoAtual.getY2());
             Edge arcoAux = new Edge(noAux, noAux2);
             view.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_OFF);
             view.fill(desenhaSeta(arcoAux, false));
@@ -1025,7 +1025,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         //desenha todos os arcos
         for (int i = 0; i < arco.size(); i++) {
             Edge arcoAux = (Edge) arco.get(i);
-            if (arcoAux.isSelecionado()) {
+            if (arcoAux.isSelected()) {
                 view.setColor(corSelecao);
                 view.setStroke(new BasicStroke(2));
             }
@@ -1034,8 +1034,8 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
             }
 
 
-            if (arcoAux.getOriginNode().getPosicao().getX() == arcoAux.getDestinationNode().getPosicao().getX() ||
-                arcoAux.getOriginNode().getPosicao().getY() == arcoAux.getDestinationNode().getPosicao().getY()) {
+            if (arcoAux.getOriginNode().getPosition().getX() == arcoAux.getDestinationNode().getPosition().getX() ||
+                arcoAux.getOriginNode().getPosition().getY() == arcoAux.getDestinationNode().getPosition().getY()) {
                view.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_OFF);
             }
 
@@ -1052,21 +1052,21 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         }
 
         //desenha o nó atual se for para mover o nó selecionado
-        if ((bMoverNo) && (noAtual != null) && (noAtual.getPosicao().getX() != 0) && (noAtual.getPosicao().getY() != 0) ) {
+        if ((bMoverNo) && (noAtual != null) && (noAtual.getPosition().getX() != 0) && (noAtual.getPosition().getY() != 0) ) {
             view.setColor(corNo);
-            view.draw(new Ellipse2D.Double(noAtual.getPosicao().getX() - raio, noAtual.getPosicao().getY() - raio, raio * 2, raio * 2));
+            view.draw(new Ellipse2D.Double(noAtual.getPosition().getX() - raio, noAtual.getPosition().getY() - raio, raio * 2, raio * 2));
         }
 
         for (int i = 0; i < net.getNodeCount(); i++) {
             Node noAux = (Node) net.getNodeAt(i);
-            if (noAux.isSelecionado()) {
+            if (noAux.isSelected()) {
                 view.setColor(corSelecao);
                 view.setStroke(new BasicStroke(2));
             }
             else {
                 view.setColor(corArco);
             }
-            view.draw(new Ellipse2D.Double(noAux.getPosicao().x - raio, noAux.getPosicao().y - raio, raio * 2, raio * 2));
+            view.draw(new Ellipse2D.Double(noAux.getPosition().x - raio, noAux.getPosition().y - raio, raio * 2, raio * 2));
             view.setStroke(new BasicStroke(1));
         }
     }
@@ -1103,10 +1103,10 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
 
         for (int i = 0; i < arco.size(); i++) {
             Edge arcoPegar = (Edge) arco.get(i);
-            x1 = arcoPegar.getOriginNode().getPosicao().getX();
-            y1 = arcoPegar.getOriginNode().getPosicao().getY();
-            x2 = arcoPegar.getDestinationNode().getPosicao().getX();
-            y2 = arcoPegar.getDestinationNode().getPosicao().getY();
+            x1 = arcoPegar.getOriginNode().getPosition().getX();
+            y1 = arcoPegar.getOriginNode().getPosition().getY();
+            x2 = arcoPegar.getDestinationNode().getPosition().getX();
+            y2 = arcoPegar.getDestinationNode().getPosition().getY();
 
             double yTeste = ((y2 - y1) / (x2 - x1)) * x + (y1 - x1 * ((y2 - y1) / (x2 - x1)));
             double xTeste = (y - (y1 - x1 * ((y2 - y1) / (x2 - x1)))) / ((y2 - y1) / (x2 - x1));
@@ -1114,8 +1114,8 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
             Node no1 = arcoPegar.getOriginNode();
             Node no2 = arcoPegar.getDestinationNode();
 
-            Point2D.Double ponto1 = getPoint(no1.getPosicao(), no2.getPosicao(), raio);
-            Point2D.Double ponto2 = getPoint(no2.getPosicao(), no1.getPosicao(), raio);
+            Point2D.Double ponto1 = getPoint(no1.getPosition(), no2.getPosition(), raio);
+            Point2D.Double ponto2 = getPoint(no2.getPosition(), no1.getPosition(), raio);
 
             if (ponto1.getX() < ponto2.getX()) {
                 if (((y <= yTeste + 5) && (y >= yTeste - 5)) || ((x <= xTeste + 5) && (x >= xTeste - 5))) {

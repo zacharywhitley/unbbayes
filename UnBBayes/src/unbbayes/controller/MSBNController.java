@@ -34,6 +34,11 @@ public class MSBNController {
 	private MSBNWindow window;
 	private NetWindow active;
 	
+	/**
+	 * Creates a controller that controls a MSBNWindow.
+	 * The MSBNWindows is created.
+	 * @param msbn The msbn to display.
+	 */
 	public MSBNController(MSNetwork msbn) {
 		this.msbn = msbn;
 		window = new MSBNWindow(msbn);
@@ -89,6 +94,10 @@ public class MSBNController {
 		 tree.addMouseListener(ml);	
 	}
 	
+	/**
+	 * Gets the MSBNWindow associated with this controller.
+	 * @return JInternalFrame
+	 */
 	public JInternalFrame getPanel() {
 		return window;	
 	}
@@ -120,7 +129,7 @@ public class MSBNController {
 	}
 	
 	
-	public void addListeners() {
+	private void addListeners() {
 		MouseListener mouseListener = new MouseAdapter() {
 		     public void mouseClicked(MouseEvent e) {
 		     	if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {

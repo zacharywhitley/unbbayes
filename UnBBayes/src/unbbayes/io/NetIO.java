@@ -112,9 +112,9 @@ public class NetIO implements BaseIO {
 				"     label = \"" + auxNo1.getDescription() + "\";");
 			arq.println(
 				"     position = ("
-					+ (int) auxNo1.getPosicao().getX()
+					+ (int) auxNo1.getPosition().getX()
 					+ " "
-					+ (int) auxNo1.getPosicao().getY()
+					+ (int) auxNo1.getPosition().getY()
 					+ ");");
 
 			if (!(auxNo1.getType() == Node.UTILITY_NODE_TYPE)) {
@@ -352,13 +352,13 @@ public class NetIO implements BaseIO {
 							int x = Integer.parseInt(st.sval);
 							proximo(st);
 							if (x <= 0) {
-								x = Node.getLargura();
+								x = Node.getWidth();
 							}
 							int y = Integer.parseInt(st.sval);
 							if (y <= 0) {
-								y = Node.getAltura();
+								y = Node.getHeight();
 							}
-							auxNo.getPosicao().setLocation(x, y);
+							auxNo.getPosition().setLocation(x, y);
 							proximo(st);
 						} else if (st.sval.equals("states")) {
 							while (proximo(st) == '"') {

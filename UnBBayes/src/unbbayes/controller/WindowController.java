@@ -91,8 +91,8 @@ import unbbayes.util.NodeList;
  */
 public class WindowController implements KeyListener {
 
-    private NetWindow tela;
-    private Network rede;
+    private NetWindow screen;
+    private Network net;
 
     private NumberFormat df;
 
@@ -119,8 +119,8 @@ public class WindowController implements KeyListener {
      * @see      KeyListener
      */
     public WindowController(Network _rede, NetWindow _tela) {
-        this.rede = _rede;
-        this.tela = _tela;
+        this.net = _rede;
+        this.screen = _tela;
         df = NumberFormat.getInstance(Locale.US);
         df.setMaximumFractionDigits(4);
         copia = new ArrayList();
@@ -135,8 +135,8 @@ public class WindowController implements KeyListener {
      * @since
      * @see       unbbayes.gui.IUnBBayes
      */
-    public NetWindow getTela() {
-        return this.tela;
+    public NetWindow getScreen() {
+        return this.screen;
     }
 
 
@@ -167,28 +167,28 @@ public class WindowController implements KeyListener {
      *
      * @return    retorna a rede <code>TRP</code>
      */
-    public Network getRede() {
-        return this.rede;
+    public Network getNet() {
+        return this.net;
     }
 
     /**
      * Salva a imagem da rede para um arquivo.
      */
-    public void salvarImagemRede() {
+    public void saveNetImage() {
         String gif[] = { "GIF" };
         JFileChooser chooser = new JFileChooser(".");
         chooser.setMultiSelectionEnabled(false);
 
         //adicionar FileView no FileChooser para desenhar ícones de arquivos
-        chooser.setFileView(new FileIcon(tela));
+        chooser.setFileView(new FileIcon(screen));
         chooser.addChoosableFileFilter(new SimpleFileFilter( gif, resource.getString("imageFileFilter")));
 
-        int opcao = chooser.showSaveDialog(tela);
+        int opcao = chooser.showSaveDialog(screen);
         if (opcao == JFileChooser.APPROVE_OPTION) {
             try {
                 GIFOutputStream out = new GIFOutputStream(new BufferedOutputStream(new FileOutputStream(chooser.getSelectedFile().getPath() + ".gif")));
-                Rectangle r = calcularBordasRede();
-                out.write(graphicsToImage(tela.getIGraph().getGraphViewport(), r));
+                Rectangle r = calculateNetRectangle();
+                out.write(graphicsToImage(screen.getIGraph().getGraphViewport(), r));
                 out.flush();
                 out.close();
             } catch (IOException e) {
@@ -200,21 +200,21 @@ public class WindowController implements KeyListener {
     /**
      * Salva a imagem da tabela para um arquivo.
      */
-    public void salvarImagemTabela() {
+    public void saveTableImage() {
         String gif[] = { "GIF" };
         JFileChooser chooser = new JFileChooser(".");
         chooser.setMultiSelectionEnabled(false);
 
 
         //adicionar FileView no FileChooser para desenhar ícones de arquivos
-        chooser.setFileView(new FileIcon(tela));
+        chooser.setFileView(new FileIcon(screen));
         chooser.addChoosableFileFilter(new SimpleFileFilter( gif, resource.getString("imageFileFilter")));
 
-        int opcao = chooser.showSaveDialog(tela);
+        int opcao = chooser.showSaveDialog(screen);
         if (opcao == JFileChooser.APPROVE_OPTION) {
             try {
                 GIFOutputStream out = new GIFOutputStream(new BufferedOutputStream(new FileOutputStream(chooser.getSelectedFile().getPath() + ".gif")));
-                out.write(graphicsToImage(tela.getTable(), null));
+                out.write(graphicsToImage(screen.getTable(), null));
                 out.flush();
                 out.close();
             } catch (IOException e) {
@@ -231,13 +231,13 @@ public class WindowController implements KeyListener {
      * @since
      * @see        Object
      */
-    public void inserirEstado(Node no) {
+    public void insertState(Node no) {
     	if (no instanceof ProbabilisticNode) {
         	no.appendState(resource.getString("stateProbabilisticName") + no.getStatesSize());
     	} else if (no instanceof DecisionNode) {
     		no.appendState(resource.getString("stateDecisionName") + no.getStatesSize());
     	}
-        tela.setTable(retornarTabela(no));
+        screen.setTable(makeTable(no));
     }
 
 
@@ -248,9 +248,9 @@ public class WindowController implements KeyListener {
      * @since
      * @see        Object
      */
-    public void removerEstado(Node no) {
+    public void removeState(Node no) {
         no.removeLastState();
-        tela.setTable(retornarTabela(no));
+        screen.setTable(makeTable(no));
     }
 
 
@@ -259,8 +259,8 @@ public class WindowController implements KeyListener {
      */
     public void initialize() {
     	try {
-	        rede.initialize();
-       		tela.getEvidenceTree().updateTree();
+	        net.initialize();
+       		screen.getEvidenceTree().updateTree();
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
@@ -272,19 +272,19 @@ public class WindowController implements KeyListener {
      *
      * @since
      */
-    public void propagar() {
-        tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    public void propagate() {
+        screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         boolean temLikeliHood = false;
         try {
-        	rede.updateEvidences();
+        	net.updateEvidences();
             if (! temLikeliHood) {
-                tela.setStatus(resource.getString("statusEvidenceProbabilistic") + df.format(rede.PET() * 100.0));
+                screen.setStatus(resource.getString("statusEvidenceProbabilistic") + df.format(net.PET() * 100.0));
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(tela, resource.getString("statusEvidenceException"), resource.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(screen, resource.getString("statusEvidenceException"), resource.getString("statusError"), JOptionPane.ERROR_MESSAGE);
         }
-        tela.getEvidenceTree().updateTree();
-        tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        screen.getEvidenceTree().updateTree();
+        screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
 
@@ -296,11 +296,11 @@ public class WindowController implements KeyListener {
      * @see      JDialog
      */
     public void showLog() {
-        tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         final JTextArea texto = new JTextArea();
 
         texto.setEditable(false);
-        texto.setText(rede.getLog());
+        texto.setText(net.getLog());
         texto.moveCaretPosition(0);
         texto.setSelectionEnd(0);
 
@@ -354,7 +354,7 @@ public class WindowController implements KeyListener {
         dialog.getContentPane().add(panel);
         dialog.pack();
         dialog.setVisible(true);
-        tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
 
@@ -369,18 +369,18 @@ public class WindowController implements KeyListener {
      */ 
     public boolean compileNetwork() {
         long ini = System.currentTimeMillis();
-        tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         try {
-            ((ProbabilisticNetwork) rede).compile();
+            ((ProbabilisticNetwork) net).compile();
         } catch (Exception e){
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, e.getMessage(), resource.getString("statusError"), JOptionPane.ERROR_MESSAGE);
-            tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             return false;
         }
 
         // Ordenar pela descricao do nó apenas para facilitar a visualização da árvore.
-        NodeList nos = rede.getCopiaNos();
+        NodeList nos = net.getCopiaNos();
         boolean haTroca = true;
         while (haTroca) {
             haTroca = false;
@@ -395,11 +395,11 @@ public class WindowController implements KeyListener {
             }
         }
         
-        tela.getEvidenceTree().updateTree();
+        screen.getEvidenceTree().updateTree();
         
-        tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 
-        tela.setStatus(resource.getString("statusTotalTime") + df.format(((System.currentTimeMillis() - ini))/1000.0) + resource.getString("statusSeconds"));
+        screen.setStatus(resource.getString("statusTotalTime") + df.format(((System.currentTimeMillis() - ini))/1000.0) + resource.getString("statusSeconds"));
         return true;
     }
 
@@ -413,14 +413,14 @@ public class WindowController implements KeyListener {
      */
     public void insertProbabilisticNode(double x, double y) {
         ProbabilisticNode node = new ProbabilisticNode();
-        node.setPosicao(x, y);
+        node.setPosition(x, y);
         node.appendState(resource.getString("firstStateProbabilisticName"));
-        node.setName(resource.getString("probabilisticNodeName") + rede.getNodeCount());
+        node.setName(resource.getString("probabilisticNodeName") + net.getNodeCount());
         node.setDescription(node.getName());
         PotentialTable auxTabProb = ((ITabledVariable)node).getPotentialTable();
         auxTabProb.addVariable(node);
         auxTabProb.setValue(0, 1);
-        rede.addNode(node);
+        net.addNode(node);
     }
 
 
@@ -433,11 +433,11 @@ public class WindowController implements KeyListener {
      */
     public void insertDecisionNode(double x, double y) {
         DecisionNode node = new DecisionNode();
-        node.setPosicao(x, y);
+        node.setPosition(x, y);
         node.appendState(resource.getString("firstStateDecisionName"));
-        node.setName(resource.getString("decisionNodeName") + rede.getNodeCount());
+        node.setName(resource.getString("decisionNodeName") + net.getNodeCount());
         node.setDescription(node.getName());
-        rede.addNode(node);
+        net.addNode(node);
     }
 
     /**
@@ -449,12 +449,12 @@ public class WindowController implements KeyListener {
      */
     public void insertUtilityNode(double x, double y) {
         UtilityNode node = new UtilityNode();
-        node.setPosicao(x, y);
-        node.setName(resource.getString("utilityNodeName") + rede.getNodeCount());
+        node.setPosition(x, y);
+        node.setName(resource.getString("utilityNodeName") + net.getNodeCount());
         node.setDescription(node.getName());
         PotentialTable auxTab = ((ITabledVariable)node).getPotentialTable();
         auxTab.addVariable(node);
-        rede.addNode(node);
+        net.addNode(node);
     }
 
 
@@ -464,8 +464,8 @@ public class WindowController implements KeyListener {
      * @param  arco  um <code>TArco</code> que representa o arco a ser ligado
      * @since
      */
-    public void inserirArco(Edge arco) {
-        rede.addEdge(arco);
+    public void insertEdge(Edge arco) {
+        net.addEdge(arco);
     }
 
 
@@ -477,11 +477,11 @@ public class WindowController implements KeyListener {
      * @since
      * @see        unbbayes.prs.bn.Node
      */
-    public JTable retornarTabela(final Node node) {
-        tela.getTxtDescription().setEnabled(true);
-        tela.getTxtSigla().setEnabled(true);
-        tela.getTxtDescription().setText(node.getDescription());
-        tela.getTxtSigla().setText(node.getName());
+    public JTable makeTable(final Node node) {
+        screen.getTxtDescription().setEnabled(true);
+        screen.getTxtSigla().setEnabled(true);
+        screen.getTxtDescription().setText(node.getDescription());
+        screen.getTxtSigla().setText(node.getName());
 
         final JTable table;
         final PotentialTable potTab;
@@ -648,7 +648,7 @@ public class WindowController implements KeyListener {
      */
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() ==  e.VK_C) {
-            copia = tela.getIGraph().getSelectedGroup();
+            copia = screen.getIGraph().getSelectedGroup();
         }
 
         if ((e.getKeyCode() ==  e.VK_P) && (!bColou)) {
@@ -656,8 +656,8 @@ public class WindowController implements KeyListener {
                 if (copia.get(i) instanceof Node) {
                     ProbabilisticNode noAux = (ProbabilisticNode)copia.get(i);
                     ProbabilisticNode noAux2 = new ProbabilisticNode();
-                    noAux2 = (ProbabilisticNode)noAux.clone(tela.getIGraph().getRadius());
-                    rede.addNode(noAux2);
+                    noAux2 = (ProbabilisticNode)noAux.clone(screen.getIGraph().getRadius());
+                    net.addNode(noAux2);
                     copiados.add(noAux2);
                 }
             }
@@ -689,7 +689,7 @@ public class WindowController implements KeyListener {
                     }
                     no2.getParents().add(no1);
                     no1.getChildren().add(no2);
-                    rede.getArcos().add(new Edge(no1, no2));
+                    net.getArcos().add(new Edge(no1, no2));
                 }
             }
             bColou = true;
@@ -697,19 +697,19 @@ public class WindowController implements KeyListener {
         copiados.clear();
 
         if (e.getKeyCode() == e.VK_DELETE) {
-            Object selecionado = tela.getIGraph().getSelected();
+            Object selecionado = screen.getIGraph().getSelected();
             deleteSelected(selecionado);
-            for (int i = 0; i < tela.getIGraph().getSelectedGroup().size(); i++) {
-                selecionado = tela.getIGraph().getSelectedGroup().get(i);
+            for (int i = 0; i < screen.getIGraph().getSelectedGroup().size(); i++) {
+                selecionado = screen.getIGraph().getSelectedGroup().get(i);
                 deleteSelected(selecionado);
             }
         }
-        tela.getIGraph().update();
+        screen.getIGraph().update();
     }
 
     private void deleteSelected(Object selecionado) {
         if (selecionado instanceof Edge) {
-            rede.removeEdge((Edge) selecionado);
+            net.removeEdge((Edge) selecionado);
 //            tela.getIGraph().apagaArco(selecionado);
         } else if (selecionado instanceof Node) {
             /*
@@ -721,7 +721,7 @@ public class WindowController implements KeyListener {
             }
             tela.getIGraph().apagaNo(selecionado);
             */
-            rede.removeNode((Node) selecionado);
+            net.removeNode((Node) selecionado);
         }
     }
 
@@ -745,7 +745,7 @@ public class WindowController implements KeyListener {
      * Visualiza a impressão do Log.
      */
     public void previewPrintLog(final JTextArea texto, final JDialog dialog) {
-        tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         Thread t = new Thread(new Runnable() {
           public void run() {
             PrintText it = new PrintText(texto,
@@ -762,28 +762,28 @@ public class WindowController implements KeyListener {
         });
 
         t.start();
-        tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
 
     /**
      * Visualiza a impressão da tabela.
      */
-    public void visualizarImpressaoTabela() {
-        tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    public void previewPrintTable() {
+        screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         Thread t = new Thread(new Runnable() {
           public void run() {
             List tabelas = new ArrayList();
             List donos = new ArrayList();
-            List temp = tela.getIGraph().getSelectedGroup();
+            List temp = screen.getIGraph().getSelectedGroup();
             if (temp.size() == 0) {
-               tabelas.add(tela.getTable());
-               donos.add(tela.getTableOwner());
+               tabelas.add(screen.getTable());
+               donos.add(screen.getTableOwner());
             }  else {
                 for (int i = 0; i< temp.size(); i++) {
                     if (temp.get(i) instanceof Node) {
                         donos.add(((Node)temp.get(i)).toString());
-                        tabelas.add(retornarTabela((Node)temp.get(i)));
+                        tabelas.add(makeTable((Node)temp.get(i)));
                     }
                 }
             }
@@ -798,18 +798,18 @@ public class WindowController implements KeyListener {
           }
         });
         t.start();
-        tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
 
     /**
      * Visualiza a impressão da rede.
      */
-    public void visualizarImpressaoRede(final JComponent rede, final Rectangle retangulo) {
-        tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    public void previewPrintNet(final JComponent rede, final Rectangle retangulo) {
+        screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         Thread t = new Thread(new Runnable() {
           public void run() {
-            String rotulo = JOptionPane.showInputDialog(tela, resource.getString("askTitle"), resource.getString("informationText"), JOptionPane.INFORMATION_MESSAGE);
+            String rotulo = JOptionPane.showInputDialog(screen, resource.getString("askTitle"), resource.getString("informationText"), JOptionPane.INFORMATION_MESSAGE);
             if (rotulo == null) {
                 rotulo = "";
             }
@@ -825,7 +825,7 @@ public class WindowController implements KeyListener {
         });
 
         t.start();
-        tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
 
@@ -834,11 +834,11 @@ public class WindowController implements KeyListener {
      *
      * @param texto JTextArea que contém o log de compilação.
      */
-    public void imprimirRede(final JComponent rede, final Rectangle retangulo) {
-        tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    public void printNet(final JComponent rede, final Rectangle retangulo) {
+        screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         Thread t = new Thread(new Runnable() {
           public void run() {
-            String rotulo = JOptionPane.showInputDialog(tela, resource.getString("askTitle"), resource.getString("informationText"), JOptionPane.INFORMATION_MESSAGE);
+            String rotulo = JOptionPane.showInputDialog(screen, resource.getString("askTitle"), resource.getString("informationText"), JOptionPane.INFORMATION_MESSAGE);
             if (rotulo == null) {
                 rotulo = "";
             }
@@ -848,14 +848,14 @@ public class WindowController implements KeyListener {
               pm.performPrint(true);
             } catch (PrinterException pe) {
               JOptionPane.showMessageDialog(
-                  tela,
+                  screen,
                   resource.getString("printException") +
                   pe.getMessage());
             }
           }
         });
         t.start();
-        tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
 
@@ -864,21 +864,21 @@ public class WindowController implements KeyListener {
      *
      * @param tabela tabela a ser impressa.
      */
-    public void imprimirTabela() {
-        tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    public void printTable() {
+        screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         Thread t = new Thread(new Runnable() {
           public void run() {
             List tabelas = new ArrayList();
             List donos = new ArrayList();
-            List temp = tela.getIGraph().getSelectedGroup();
+            List temp = screen.getIGraph().getSelectedGroup();
             if (temp.size() == 0) {
-               tabelas.add(tela.getTable());
-               donos.add(tela.getTableOwner());
+               tabelas.add(screen.getTable());
+               donos.add(screen.getTableOwner());
             }  else {
                 for (int i = 0; i< temp.size(); i++) {
                     if (temp.get(i) instanceof Node) {
                         donos.add(((Node)temp.get(i)).toString());
-                        tabelas.add(retornarTabela((Node)temp.get(i)));
+                        tabelas.add(makeTable((Node)temp.get(i)));
                     }
                 }
             }
@@ -888,14 +888,14 @@ public class WindowController implements KeyListener {
               pm.performPrint(true);
             } catch (PrinterException pe) {
               JOptionPane.showMessageDialog(
-                  tela,
+                  screen,
                   resource.getString("printException") +
                   pe.getMessage());
             }
           }
         });
         t.start();
-        tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
 
@@ -914,7 +914,7 @@ public class WindowController implements KeyListener {
               pm.performPrint(true);
             } catch (PrinterException pe) {
               JOptionPane.showMessageDialog(
-                  tela,
+                  screen,
                   resource.getString("printException") +
                   pe.getMessage());
             }
@@ -940,14 +940,14 @@ public class WindowController implements KeyListener {
      * o retangulo resultante é calculado apenas levando em conta os selecionados.
      * Caso contrario, a rede toda é levada em conta.
      */
-    public Rectangle calcularBordasRede() {
+    public Rectangle calculateNetRectangle() {
         NodeList nos;
-        List vetorAux = tela.getIGraph().getSelectedGroup();
+        List vetorAux = screen.getIGraph().getSelectedGroup();
 
         if (vetorAux.size() == 0) {
             nos = new NodeList();
-            for (int i = 0; i < rede.getNodeCount(); i++) {
-            	nos.add(i, rede.getNodeAt(i));
+            for (int i = 0; i < net.getNodeCount(); i++) {
+            	nos.add(i, net.getNodeAt(i));
             }
         } else {
             nos = new NodeList();
@@ -967,7 +967,7 @@ public class WindowController implements KeyListener {
         int yAux;
         for (int i = 0; i < nos.size(); i++) {
             noAux = (Node)nos.get(i);
-            pontoAux = noAux.getPosicao();
+            pontoAux = noAux.getPosition();
             xAux = (int)pontoAux.getX();
             yAux = (int)pontoAux.getY();
             if (xAux > maiorX) {
@@ -983,7 +983,7 @@ public class WindowController implements KeyListener {
                 menorY = yAux;
             }
         }
-        double raio = tela.getIGraph().getRadius();
+        double raio = screen.getIGraph().getRadius();
         maiorX += raio;
         maiorY += raio;
         menorX -= raio;
@@ -992,10 +992,10 @@ public class WindowController implements KeyListener {
     }
 
     public void showExplanationProperties(ProbabilisticNode node)
-    {   tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        ExplanationProperties explanation = new ExplanationProperties(tela,rede);
+    {   screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        ExplanationProperties explanation = new ExplanationProperties(screen,net);
         explanation.setProbabilisticNode(node);
         explanation.setVisible(true);
-        tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 }

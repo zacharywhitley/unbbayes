@@ -139,7 +139,7 @@ public class GlobalOptions extends JDialog {
         arcColor               = graph.getArcColor();
         selectionColor         = graph.getSelectionColor();
         backColor              = graph.getBackColor();
-        createLogBoolean       = controller.getRede().isCreateLog();
+        createLogBoolean       = controller.getNet().isCreateLog();
 
         radius = new JLabel(resource.getString("radiusLabel"));
         radius.setToolTipText(resource.getString("radiusToolTip"));
@@ -288,7 +288,7 @@ public class GlobalOptions extends JDialog {
                     graph.setBackColor(backColor);
                     graph.setRadius(radiusSlider.getValue());
                     graph.setGraphDimension(new Dimension((int) netSlider.getValue(), (int) netSlider.getValue()));
-                    controller.getRede().setCreateLog(createLog.isSelected());
+                    controller.getNet().setCreateLog(createLog.isSelected());
                     setVisible(false);
                     dispose();
                     graph.update();
@@ -310,7 +310,7 @@ public class GlobalOptions extends JDialog {
                     backColor = graph.getBackColor();
                     netSlider.setValue((int) graph.getGraphDimension().getWidth());
                     radiusSlider.setValue((int) graph.getRadius());
-                    controller.getRede().setCreateLog(createLogBoolean);
+                    controller.getNet().setCreateLog(createLogBoolean);
                     repaint();
                 }
             });

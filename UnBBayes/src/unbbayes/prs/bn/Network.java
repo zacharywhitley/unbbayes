@@ -345,7 +345,7 @@ public class Network implements java.io.Serializable {
     protected void montaAdjacentes() {
         this.desmontaAdjacentes();
         for (int qnos = 0; qnos < nos.size(); qnos++) {
-            nos.get(qnos).montaAdjacentes();
+            nos.get(qnos).makeAdjacents();
         }
     }
     
@@ -382,7 +382,7 @@ public class Network implements java.io.Serializable {
     protected void desmontaAdjacentes() {
     	int size = nos.size();
         for (int qnos = 0; qnos < size; qnos++) {
-            nos.get(qnos).desmontaAdjacentes();
+            nos.get(qnos).clearAdjacents();
         }
     }
 

@@ -52,10 +52,10 @@ public class ComputeProbabilisticNetwork
       {   no.appendState(""+enum.nextElement());
       }
       if (numAtt == 1)
-      {   no.setPosicao(50,30);
+      {   no.setPosition(50,30);
       }
       else
-      {   no.setPosicao(50 + ((numAtt-2) * 50),30);
+      {   no.setPosition(50 + ((numAtt-2) * 50),30);
       }
       PotentialTable tab = no.getPotentialTable();
       //tab.porVariavel(no);
@@ -83,7 +83,7 @@ public class ComputeProbabilisticNetwork
       PotentialTable tab = no.getPotentialTable();  // Criação do Tabela de probabilidades
       //tab.porVariavel(no);
       tab.addVariable(no);
-      no.setPosicao(width,100);
+      no.setPosition(width,100);
       width += 100;
       net.addNode(no);
       Edge arco = new Edge(classAtt,no);

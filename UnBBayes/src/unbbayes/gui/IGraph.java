@@ -132,8 +132,8 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         this.graphViewport = graphViewport;
         this.setSize(800, 600);
 
-        arc = controlador.getRede().getArcos();
-        node = controlador.getRede().getNos();
+        arc = controlador.getNet().getArcos();
+        node = controlador.getNet().getNos();
         selectedGroup = new ArrayList();
         presentBeginArc = new Point2D.Double();
         presentEndArc = new Point2D.Double();
@@ -153,7 +153,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         arcColor = Color.black;
         selectionColor = Color.red;
         backColor = Color.white;
-        double r = controller.getRede().getRadius();
+        double r = controller.getNet().getRadius();
 		if (r > 40) {
             radius = 40;
 		} else if (r < 10) {
@@ -231,7 +231,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
     public void setRadius(double radius) {
         this.radius = radius;
 		// gato pro momento
-		controller.getRede().setRadius(radius);
+		controller.getNet().setRadius(radius);
     }
 
 
@@ -406,8 +406,8 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
 
         for (int i = 0; i < node.size(); i++) {
             Node nodeAux = node.get(i);
-            x1 = nodeAux.getPosicao().getX();
-            y1 = nodeAux.getPosicao().getY();
+            x1 = nodeAux.getPosition().getX();
+            y1 = nodeAux.getPosition().getY();
 
             if ((x >= x1 - radius) && (x <= x1 + radius) && (y >= y1 - radius) && (y <= y1 + radius)) {
                 return nodeAux;
@@ -442,10 +442,10 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
 
         for (int i = 0; i < arc.size(); i++) {
             Edge arcoPegar = (Edge) arc.get(i);
-            x1 = arcoPegar.getOriginNode().getPosicao().getX();
-            y1 = arcoPegar.getOriginNode().getPosicao().getY();
-            x2 = arcoPegar.getDestinationNode().getPosicao().getX();
-            y2 = arcoPegar.getDestinationNode().getPosicao().getY();
+            x1 = arcoPegar.getOriginNode().getPosition().getX();
+            y1 = arcoPegar.getOriginNode().getPosition().getY();
+            x2 = arcoPegar.getDestinationNode().getPosition().getX();
+            y2 = arcoPegar.getDestinationNode().getPosition().getY();
 
             double yTeste = ((y2 - y1) / (x2 - x1)) * x + (y1 - x1 * ((y2 - y1) / (x2 - x1)));
             double xTeste = (y - (y1 - x1 * ((y2 - y1) / (x2 - x1)))) / ((y2 - y1) / (x2 - x1));
@@ -453,8 +453,8 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
             Node no1 = arcoPegar.getOriginNode();
             Node no2 = arcoPegar.getDestinationNode();
 
-            Point2D.Double ponto1 = getPoint(no1.getPosicao(), no2.getPosicao(), radius);
-            Point2D.Double ponto2 = getPoint(no2.getPosicao(), no1.getPosicao(), radius);
+            Point2D.Double ponto1 = getPoint(no1.getPosition(), no2.getPosition(), radius);
+            Point2D.Double ponto2 = getPoint(no2.getPosition(), no1.getPosition(), radius);
 
             if (ponto1.getX() < ponto2.getX()) {
                 if (((y <= yTeste + 5) && (y >= yTeste - 5)) || ((x <= xTeste + 5) && (x >= xTeste - 5))) {
@@ -565,12 +565,12 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
 
         for (int i = 0; i < node.size(); i++) {
             Node noAux = (Node) node.get(i);
-            if (maiorX < noAux.getPosicao().getX() + radius) {
-                maiorX = noAux.getPosicao().getX() + radius;
+            if (maiorX < noAux.getPosition().getX() + radius) {
+                maiorX = noAux.getPosition().getX() + radius;
             }
 
-            if (maiorY < noAux.getPosicao().getY() + radius) {
-                maiorY = noAux.getPosicao().getY() + radius;
+            if (maiorY < noAux.getPosition().getY() + radius) {
+                maiorY = noAux.getPosition().getY() + radius;
             }
         }
         if (maiorX < visibleDimension.getWidth()) {
@@ -599,30 +599,30 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         if (bMoveNode && selected instanceof Node)
         {
             Node noAux = (Node) selected;
-            maiorX = noAux.getPosicao().getX();
-            menorX = noAux.getPosicao().getX();
-            maiorY = noAux.getPosicao().getY();
-            menorY = noAux.getPosicao().getY();
+            maiorX = noAux.getPosition().getX();
+            menorX = noAux.getPosition().getX();
+            maiorY = noAux.getPosition().getY();
+            menorY = noAux.getPosition().getY();
 
             Node noAux2;
             for (int i = 0; i < noAux.getParents().size(); i++) {
                 noAux2 = (Node) noAux.getParents().get(i);
 
-                if (maiorX < noAux2.getPosicao().getX()) {
-                    maiorX = noAux2.getPosicao().getX();
+                if (maiorX < noAux2.getPosition().getX()) {
+                    maiorX = noAux2.getPosition().getX();
                 }
                 else {
-                    if (menorX > noAux2.getPosicao().getX()) {
-                        menorX = noAux2.getPosicao().getX();
+                    if (menorX > noAux2.getPosition().getX()) {
+                        menorX = noAux2.getPosition().getX();
                     }
                 }
 
-                if (maiorY < noAux2.getPosicao().getY()) {
-                    maiorY = noAux2.getPosicao().getY();
+                if (maiorY < noAux2.getPosition().getY()) {
+                    maiorY = noAux2.getPosition().getY();
                 }
                 else {
-                    if (menorY > noAux2.getPosicao().getY()) {
-                        menorY = noAux2.getPosicao().getY();
+                    if (menorY > noAux2.getPosition().getY()) {
+                        menorY = noAux2.getPosition().getY();
                     }
                 }
             }
@@ -630,27 +630,27 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
             for (int i = 0; i < noAux.getChildren().size(); i++) {
                 noAux2 = (Node) noAux.getChildren().get(i);
 
-                if (maiorX < noAux2.getPosicao().getX()) {
-                    maiorX = noAux2.getPosicao().getX();
+                if (maiorX < noAux2.getPosition().getX()) {
+                    maiorX = noAux2.getPosition().getX();
                 }
                 else {
-                    if (menorX > noAux2.getPosicao().getX()) {
-                        menorX = noAux2.getPosicao().getX();
+                    if (menorX > noAux2.getPosition().getX()) {
+                        menorX = noAux2.getPosition().getX();
                     }
                 }
 
-                if (maiorY < noAux2.getPosicao().getY()) {
-                    maiorY = noAux2.getPosicao().getY();
+                if (maiorY < noAux2.getPosition().getY()) {
+                    maiorY = noAux2.getPosition().getY();
                 }
                 else {
-                    if (menorY > noAux2.getPosicao().getY()) {
-                        menorY = noAux2.getPosicao().getY();
+                    if (menorY > noAux2.getPosition().getY()) {
+                        menorY = noAux2.getPosition().getY();
                     }
                 }
             }
             return new Rectangle((int) (menorX - 6 * radius), (int) (menorY - 6 * radius), (int) (maiorX - menorX + 12 * radius), (int) (maiorY - menorY + 12 * radius));
         } else {
-            return new Rectangle((int) controller.getTela().getJspGraph().getHorizontalScrollBar().getValue(), (int) controller.getTela().getJspGraph().getVerticalScrollBar().getValue(), (int) visibleDimension.getWidth(), (int) visibleDimension.getHeight());
+            return new Rectangle((int) controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue(), (int) controller.getScreen().getJspGraph().getVerticalScrollBar().getValue(), (int) visibleDimension.getWidth(), (int) visibleDimension.getHeight());
         }
     }
 
@@ -681,18 +681,18 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
                 if (node != null) {
                     bMoveArc = true;
                     //seto o ponto origem para o arco
-                    presentBeginArc.setLocation(node.getPosicao().getX(), node.getPosicao().getY());
-                    presentArc.setLine(node.getPosicao().getX(), node.getPosicao().getY(), e.getX(), e.getY());
+                    presentBeginArc.setLocation(node.getPosition().getX(), node.getPosition().getY());
+                    presentArc.setLine(node.getPosition().getX(), node.getPosition().getY(), e.getX(), e.getY());
                 }
             }
 
             if ((!bArc) && (node != null)) {
-                if (!node.isSelecionado()) {
+                if (!node.isSelected()) {
                     selectNode(node);
-                    if (controller.getTela().isCompiled()) {
-                        for (int i = 0; i < controller.getTela().getEvidenceTree().getRowCount(); i++) {
-                            if (controller.getTela().getEvidenceTree().getPathForRow(i).getLastPathComponent().toString().equals(selected.toString())) {
-                                controller.getTela().getEvidenceTree().setSelectionPath(controller.getTela().getEvidenceTree().getPathForRow(i));
+                    if (controller.getScreen().isCompiled()) {
+                        for (int i = 0; i < controller.getScreen().getEvidenceTree().getRowCount(); i++) {
+                            if (controller.getScreen().getEvidenceTree().getPathForRow(i).getLastPathComponent().toString().equals(selected.toString())) {
+                                controller.getScreen().getEvidenceTree().setSelectionPath(controller.getScreen().getEvidenceTree().getPathForRow(i));
                                 break;
                             }
                         }
@@ -717,7 +717,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
             }
 
             if ((!bProbabilisticNode) && (!bDecisionNode) && (!bUtilityNode) && (!bArc)) {
-                if ((node != null) && (node.isSelecionado()) && (!bSelect) && (selectedGroup.size() == 0)) {
+                if ((node != null) && (node.isSelected()) && (!bSelect) && (selectedGroup.size() == 0)) {
                     movingNode = node;
                     bMoveNode = true;
                     setCursor(new Cursor(Cursor.MOVE_CURSOR));
@@ -748,7 +748,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
             endSelectionPoint.setLocation(e.getX(), e.getY());
         }
 
-        this.repaint((int) controller.getTela().getJspGraph().getHorizontalScrollBar().getValue(), (int) controller.getTela().getJspGraph().getVerticalScrollBar().getValue(), (int) visibleDimension.getWidth(), (int) visibleDimension.getHeight());
+        this.repaint((int) controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue(), (int) controller.getScreen().getJspGraph().getVerticalScrollBar().getValue(), (int) visibleDimension.getWidth(), (int) visibleDimension.getHeight());
     }
 
 
@@ -763,16 +763,16 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         Node node = getNode(e.getX(), e.getY());
         if (node != null) {
         	if (e.getModifiers() == e.BUTTON1_MASK) {
-	            controller.getTela().setTable(controller.retornarTabela(node));
-	            controller.getTela().setTableOwner(node);
-	            if (controller.getTela().isCompiled()) {
-	                for (int i = 0; i < controller.getTela().getEvidenceTree().getRowCount(); i++) {
-	                    if (controller.getTela().getEvidenceTree().getPathForRow(i).getLastPathComponent().toString().equals(selected.toString())) {
-	                        if (controller.getTela().getEvidenceTree().isExpanded(controller.getTela().getEvidenceTree().getPathForRow(i))) {
-	                            controller.getTela().getEvidenceTree().collapsePath(controller.getTela().getEvidenceTree().getPathForRow(i));
+	            controller.getScreen().setTable(controller.makeTable(node));
+	            controller.getScreen().setTableOwner(node);
+	            if (controller.getScreen().isCompiled()) {
+	                for (int i = 0; i < controller.getScreen().getEvidenceTree().getRowCount(); i++) {
+	                    if (controller.getScreen().getEvidenceTree().getPathForRow(i).getLastPathComponent().toString().equals(selected.toString())) {
+	                        if (controller.getScreen().getEvidenceTree().isExpanded(controller.getScreen().getEvidenceTree().getPathForRow(i))) {
+	                            controller.getScreen().getEvidenceTree().collapsePath(controller.getScreen().getEvidenceTree().getPathForRow(i));
 	                        }
 	                        else {
-	                            controller.getTela().getEvidenceTree().expandPath(controller.getTela().getEvidenceTree().getPathForRow(i));
+	                            controller.getScreen().getEvidenceTree().expandPath(controller.getScreen().getEvidenceTree().getPathForRow(i));
 	                        }
 	                        break;
 	                    }
@@ -805,7 +805,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         Node endNode = getNode(e.getX(), e.getY());
         if ((bArc) && (e.getModifiers() == e.BUTTON1_MASK)) {
             Node beginNode = getNode(presentBeginArc.getX(), presentBeginArc.getY());
-            if ((endNode != null) && (controller.getRede().existeArco(beginNode, endNode) == -1)) {
+            if ((endNode != null) && (controller.getNet().existeArco(beginNode, endNode) == -1)) {
                 insertArc(presentBeginArc.getX(), presentBeginArc.getY(), presentEndArc.getX(), presentEndArc.getY());
             }
 
@@ -881,7 +881,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         	//Dimension d = new Dimension((int)this.getBiggestPoint().x, (int)this.getBiggestPoint().y);
         	//System.out.println((int)this.getBiggestPoint().x + "  " + (int)this.getBiggestPoint().y);
             //setar o tamanho visivel da rede como o tamanho o jspDesenho - raio
-            visibleDimension = new Dimension((int) (controller.getTela().getJspGraph().getSize().getWidth()), (int) (controller.getTela().getJspGraph().getSize().getHeight()));
+            visibleDimension = new Dimension((int) (controller.getScreen().getJspGraph().getSize().getWidth()), (int) (controller.getScreen().getJspGraph().getSize().getHeight()));
 			graphViewport.setOpaque(true);
 			graphViewport.scrollRectToVisible(new Rectangle(graphDimension));
             //setar o tamanho do JViewport desenho e de seu view
@@ -920,66 +920,66 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         }
 
         //mover o scroll junto com a seta e/ou nó
-        if ((e.getX() < graphDimension.getWidth()) && (e.getY() < graphDimension.getHeight()) && (e.getX() + 2 * radius > visibleDimension.getWidth() + controller.getTela().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() + 2 * radius > visibleDimension.getHeight() + controller.getTela().getJspGraph().getVerticalScrollBar().getValue())) {
+        if ((e.getX() < graphDimension.getWidth()) && (e.getY() < graphDimension.getHeight()) && (e.getX() + 2 * radius > visibleDimension.getWidth() + controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() + 2 * radius > visibleDimension.getHeight() + controller.getScreen().getJspGraph().getVerticalScrollBar().getValue())) {
             if (bMoveNode) {
-                controller.getTela().getJspGraph().getHorizontalScrollBar().setValue((int) (movingNode.getPosicao().getX() + 2 * radius - visibleDimension.getWidth()));
-                controller.getTela().getJspGraph().getVerticalScrollBar().setValue((int) (movingNode.getPosicao().getY() + 2 * radius - visibleDimension.getHeight()));
+                controller.getScreen().getJspGraph().getHorizontalScrollBar().setValue((int) (movingNode.getPosition().getX() + 2 * radius - visibleDimension.getWidth()));
+                controller.getScreen().getJspGraph().getVerticalScrollBar().setValue((int) (movingNode.getPosition().getY() + 2 * radius - visibleDimension.getHeight()));
             }
             else {
-                controller.getTela().getJspGraph().getHorizontalScrollBar().setValue((int) (e.getX() + 2 * radius - visibleDimension.getWidth()));
-                controller.getTela().getJspGraph().getVerticalScrollBar().setValue((int) (e.getY() + 2 * radius - visibleDimension.getHeight()));
+                controller.getScreen().getJspGraph().getHorizontalScrollBar().setValue((int) (e.getX() + 2 * radius - visibleDimension.getWidth()));
+                controller.getScreen().getJspGraph().getVerticalScrollBar().setValue((int) (e.getY() + 2 * radius - visibleDimension.getHeight()));
             }
         }
         else {
-            if ((e.getX() < graphDimension.getWidth()) && (e.getX() + 2 * radius > visibleDimension.getWidth() + controller.getTela().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() + 2 * radius <= visibleDimension.getHeight() + controller.getTela().getJspGraph().getVerticalScrollBar().getValue())) {
+            if ((e.getX() < graphDimension.getWidth()) && (e.getX() + 2 * radius > visibleDimension.getWidth() + controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() + 2 * radius <= visibleDimension.getHeight() + controller.getScreen().getJspGraph().getVerticalScrollBar().getValue())) {
                 if (bMoveNode) {
-                    controller.getTela().getJspGraph().getHorizontalScrollBar().setValue((int) (movingNode.getPosicao().getX() + 2 * radius - visibleDimension.getWidth()));
+                    controller.getScreen().getJspGraph().getHorizontalScrollBar().setValue((int) (movingNode.getPosition().getX() + 2 * radius - visibleDimension.getWidth()));
                 }
                 else {
-                    controller.getTela().getJspGraph().getHorizontalScrollBar().setValue((int) (e.getX() + 2 * radius - visibleDimension.getWidth()));
+                    controller.getScreen().getJspGraph().getHorizontalScrollBar().setValue((int) (e.getX() + 2 * radius - visibleDimension.getWidth()));
                 }
             }
             else {
-                if ((e.getY() < graphDimension.getHeight()) && (e.getX() + 2 * radius <= visibleDimension.getWidth() + controller.getTela().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() + 2 * radius > visibleDimension.getHeight() + controller.getTela().getJspGraph().getVerticalScrollBar().getValue())) {
+                if ((e.getY() < graphDimension.getHeight()) && (e.getX() + 2 * radius <= visibleDimension.getWidth() + controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() + 2 * radius > visibleDimension.getHeight() + controller.getScreen().getJspGraph().getVerticalScrollBar().getValue())) {
                     if (bMoveNode) {
-                        controller.getTela().getJspGraph().getVerticalScrollBar().setValue((int) (movingNode.getPosicao().getY() + 2 * radius - visibleDimension.getHeight()));
+                        controller.getScreen().getJspGraph().getVerticalScrollBar().setValue((int) (movingNode.getPosition().getY() + 2 * radius - visibleDimension.getHeight()));
                     }
                     else {
-                        controller.getTela().getJspGraph().getVerticalScrollBar().setValue((int) (e.getY() + 2 * radius - visibleDimension.getHeight()));
+                        controller.getScreen().getJspGraph().getVerticalScrollBar().setValue((int) (e.getY() + 2 * radius - visibleDimension.getHeight()));
                     }
                 }
                 else {
-                    if ((e.getX() - radius > controller.getTela().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() - radius > controller.getTela().getJspGraph().getVerticalScrollBar().getValue())) {
+                    if ((e.getX() - radius > controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() - radius > controller.getScreen().getJspGraph().getVerticalScrollBar().getValue())) {
                     }
                     else {
 
-                        if ((e.getX() > 0) && (e.getY() > 0) && (e.getX() - radius < controller.getTela().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() - radius < controller.getTela().getJspGraph().getVerticalScrollBar().getValue())) {
+                        if ((e.getX() > 0) && (e.getY() > 0) && (e.getX() - radius < controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() - radius < controller.getScreen().getJspGraph().getVerticalScrollBar().getValue())) {
                             if (bMoveNode) {
-                                controller.getTela().getJspGraph().getHorizontalScrollBar().setValue((int) (movingNode.getPosicao().getX() - radius));
-                                controller.getTela().getJspGraph().getVerticalScrollBar().setValue((int) (movingNode.getPosicao().getY() - radius));
+                                controller.getScreen().getJspGraph().getHorizontalScrollBar().setValue((int) (movingNode.getPosition().getX() - radius));
+                                controller.getScreen().getJspGraph().getVerticalScrollBar().setValue((int) (movingNode.getPosition().getY() - radius));
                             }
                             else {
-                                controller.getTela().getJspGraph().getHorizontalScrollBar().setValue((int) (e.getX() - radius));
-                                controller.getTela().getJspGraph().getVerticalScrollBar().setValue((int) (e.getY() - radius));
+                                controller.getScreen().getJspGraph().getHorizontalScrollBar().setValue((int) (e.getX() - radius));
+                                controller.getScreen().getJspGraph().getVerticalScrollBar().setValue((int) (e.getY() - radius));
                             }
                         }
                         else {
-                            if ((e.getY() > 0) && (e.getX() - radius >= controller.getTela().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() - radius < controller.getTela().getJspGraph().getVerticalScrollBar().getValue())) {
+                            if ((e.getY() > 0) && (e.getX() - radius >= controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() - radius < controller.getScreen().getJspGraph().getVerticalScrollBar().getValue())) {
                                 if (bMoveNode) {
-                                    controller.getTela().getJspGraph().getVerticalScrollBar().setValue((int) (movingNode.getPosicao().getY() - radius));
+                                    controller.getScreen().getJspGraph().getVerticalScrollBar().setValue((int) (movingNode.getPosition().getY() - radius));
                                 }
                                 else {
-                                    controller.getTela().getJspGraph().getVerticalScrollBar().setValue((int) (e.getY() - radius));
+                                    controller.getScreen().getJspGraph().getVerticalScrollBar().setValue((int) (e.getY() - radius));
                                 }
                             }
                             else {
 
-                                if ((e.getX() > 0) && (e.getX() - radius < controller.getTela().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() - radius >= controller.getTela().getJspGraph().getVerticalScrollBar().getValue())) {
+                                if ((e.getX() > 0) && (e.getX() - radius < controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() - radius >= controller.getScreen().getJspGraph().getVerticalScrollBar().getValue())) {
                                     if (bMoveNode) {
-                                        controller.getTela().getJspGraph().getHorizontalScrollBar().setValue((int) (movingNode.getPosicao().getX() - radius));
+                                        controller.getScreen().getJspGraph().getHorizontalScrollBar().setValue((int) (movingNode.getPosition().getX() - radius));
                                     }
                                     else {
-                                        controller.getTela().getJspGraph().getHorizontalScrollBar().setValue((int) (e.getX() - radius));
+                                        controller.getScreen().getJspGraph().getHorizontalScrollBar().setValue((int) (e.getX() - radius));
                                     }
                                 }
                             }
@@ -1218,7 +1218,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
      *@see Node
      */
     public void updatePresentNode(double x, double y) {
-        presentNode.setPosicao(x, y);
+        presentNode.setPosition(x, y);
         update();
     }
 
@@ -1248,7 +1248,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         Edge insertArc = new Edge(node1, node2);
 
         //chama o controlador para inserir o arco na rede TRP
-        controller.inserirArco(insertArc);
+        controller.insertEdge(insertArc);
         update();
     }
 
@@ -1269,8 +1269,8 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         node1 = a.getOriginNode();
         node2 = a.getDestinationNode();
 
-        point1 = getPoint(node1.getPosicao(), node2.getPosicao(), radius);
-        point2 = getPoint(node2.getPosicao(), node1.getPosicao(), radius);
+        point1 = getPoint(node1.getPosition(), node2.getPosition(), radius);
+        point2 = getPoint(node2.getPosition(), node1.getPosition(), radius);
 
         return new Line2D.Double(point1, point2);
     }
@@ -1291,8 +1291,8 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         Node node1            = a.getOriginNode();
         Node node2            = a.getDestinationNode();
 
-        double x1 = node1.getPosicao().getX();
-        double y1 = node1.getPosicao().getY();
+        double x1 = node1.getPosition().getX();
+        double y1 = node1.getPosition().getY();
         double x2;
         double y2;
         double x3;
@@ -1302,16 +1302,16 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
 
         //ponta da seta = ponto correspondente na circunferência do nó, caso a seta já esteja inserida - base da seta deslecada de 10 do centro do nó
         if (existArc) {
-            point1 = getPoint(node2.getPosicao(), node1.getPosicao(), radius + 10);
-            point2 = getPoint(node2.getPosicao(), node1.getPosicao(), radius);
+            point1 = getPoint(node2.getPosition(), node1.getPosition(), radius + 10);
+            point2 = getPoint(node2.getPosition(), node1.getPosition(), radius);
             x2 = point2.getX();
             y2 = point2.getY();
         }
         //ponta do seta = ponto na ponta do mouse - base da seta deslecada de 10 da ponta do mouse
         else {
-            point1 = getPoint(node2.getPosicao(), node1.getPosicao(), 10);
-            x2 = node2.getPosicao().getX();
-            y2 = node2.getPosicao().getY();
+            point1 = getPoint(node2.getPosition(), node1.getPosition(), 10);
+            x2 = node2.getPosition().getX();
+            y2 = node2.getPosition().getY();
         }
 
         //se for no segundo ou quarto quadrante usamos as primeiras 4 equações, senão, usammos as outras 4
@@ -1349,10 +1349,10 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         unselectAll();
         for (int i = 0; i < node.size(); i++) {
             Node nodeAux = (Node)node.get(i);
-            if ( ( ((p1.getX() <= p2.getX()) && (nodeAux.getPosicao().getX() >= p1.getX()) && (nodeAux.getPosicao().getX() <= p2.getX()))
-               || ((p2.getX() < p1.getX()) && (nodeAux.getPosicao().getX() >= p2.getX()) && (nodeAux.getPosicao().getX() <= p1.getX())) )
-               && ( ((p1.getY() <= p2.getY()) && (nodeAux.getPosicao().getY() >= p1.getY()) && (nodeAux.getPosicao().getY() <= p2.getY()))
-               || ((p2.getY() < p1.getY()) && (nodeAux.getPosicao().getY() >= p2.getY()) && (nodeAux.getPosicao().getY() <= p1.getY())) ) ) {
+            if ( ( ((p1.getX() <= p2.getX()) && (nodeAux.getPosition().getX() >= p1.getX()) && (nodeAux.getPosition().getX() <= p2.getX()))
+               || ((p2.getX() < p1.getX()) && (nodeAux.getPosition().getX() >= p2.getX()) && (nodeAux.getPosition().getX() <= p1.getX())) )
+               && ( ((p1.getY() <= p2.getY()) && (nodeAux.getPosition().getY() >= p1.getY()) && (nodeAux.getPosition().getY() <= p2.getY()))
+               || ((p2.getY() < p1.getY()) && (nodeAux.getPosition().getY() >= p2.getY()) && (nodeAux.getPosition().getY() <= p1.getY())) ) ) {
                 //if ((noAux.getPosicao().getX() >= p1.getX()) && (noAux.getPosicao().getX() <= p2.getX()) && (noAux.getPosicao().getY() >= p1.getY()) && (noAux.getPosicao().getY() <= p2.getY())) {
                     selectedGroup.add(nodeAux);
                     nodeAux.setSelected(true);
@@ -1367,10 +1367,10 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
                || ((p2.getX() < p1.getX()) && (noAux1.getPosicao().getX() >= p2.getX()) && (noAux1.getPosicao().getX() <= p1.getX())) )
                && ( ((p1.getY() <= p2.getY()) && (noAux1.getPosicao().getY() >= p1.getY()) && (noAux1.getPosicao().getY() <= p2.getY()))
                || ((p2.getY() < p1.getY()) && (noAux1.getPosicao().getY() >= p2.getY()) && (noAux1.getPosicao().getY() <= p1.getY())) ) )
-               && */( ( ((p1.getX() <= p2.getX()) && (nodeAux2.getPosicao().getX() >= p1.getX()) && (nodeAux2.getPosicao().getX() <= p2.getX()))
-               || ((p2.getX() < p1.getX()) && (nodeAux2.getPosicao().getX() >= p2.getX()) && (nodeAux2.getPosicao().getX() <= p1.getX())) )
-               && ( ((p1.getY() <= p2.getY()) && (nodeAux2.getPosicao().getY() >= p1.getY()) && (nodeAux2.getPosicao().getY() <= p2.getY()))
-               || ((p2.getY() < p1.getY()) && (nodeAux2.getPosicao().getY() >= p2.getY()) && (nodeAux2.getPosicao().getY() <= p1.getY())) ) ) ) {
+               && */( ( ((p1.getX() <= p2.getX()) && (nodeAux2.getPosition().getX() >= p1.getX()) && (nodeAux2.getPosition().getX() <= p2.getX()))
+               || ((p2.getX() < p1.getX()) && (nodeAux2.getPosition().getX() >= p2.getX()) && (nodeAux2.getPosition().getX() <= p1.getX())) )
+               && ( ((p1.getY() <= p2.getY()) && (nodeAux2.getPosition().getY() >= p1.getY()) && (nodeAux2.getPosition().getY() <= p2.getY()))
+               || ((p2.getY() < p1.getY()) && (nodeAux2.getPosition().getY() >= p2.getY()) && (nodeAux2.getPosition().getY() <= p1.getY())) ) ) ) {
             //if (((noAux1.getPosicao().getX() >= p1.getX()) && (noAux1.getPosicao().getX() <= p2.getX()) && (noAux1.getPosicao().getY() >= p1.getY()) && (noAux1.getPosicao().getY() <= p2.getY())) && ((noAux2.getPosicao().getX() >= p1.getX()) && (noAux2.getPosicao().getX() <= p2.getX()) && (noAux2.getPosicao().getY() >= p1.getY()) && (noAux2.getPosicao().getY() <= p2.getY())))  {
                 selectedGroup.add(arcAux);
                 arcAux.setSelecionado(true);
@@ -1419,7 +1419,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
     public void paint(Graphics g) {
         view = (Graphics2D) g;
         view.setBackground(backColor);
-        view.clearRect((int) controller.getTela().getJspGraph().getHorizontalScrollBar().getValue(), (int) controller.getTela().getJspGraph().getVerticalScrollBar().getValue(), (int) (controller.getTela().getJspGraph().getSize().getWidth()), (int) (controller.getTela().getJspGraph().getSize().getHeight()));
+        view.clearRect((int) controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue(), (int) controller.getScreen().getJspGraph().getVerticalScrollBar().getValue(), (int) (controller.getScreen().getJspGraph().getSize().getWidth()), (int) (controller.getScreen().getJspGraph().getSize().getHeight()));
         view.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 
         //desenha area de selecao
@@ -1453,13 +1453,13 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
             	} else if (nodeAux.getInformationType() == Node.EXPLANATION_TYPE) {
             		view.setColor(ProbabilisticNode.getExplanationColor());
             	}
-                view.fill(new Ellipse2D.Double(nodeAux.getPosicao().x - radius, nodeAux.getPosicao().y - radius, radius * 2, radius * 2));
+                view.fill(new Ellipse2D.Double(nodeAux.getPosition().x - radius, nodeAux.getPosition().y - radius, radius * 2, radius * 2));
             } else if (nodeAux instanceof DecisionNode) {
                 view.setColor(DecisionNode.getColor());
-                view.fillRect((int)(nodeAux.getPosicao().x - radius), (int)(nodeAux.getPosicao().y - radius), (int)(2 * radius), (int)(2 * radius));
+                view.fillRect((int)(nodeAux.getPosition().x - radius), (int)(nodeAux.getPosition().y - radius), (int)(2 * radius), (int)(2 * radius));
             } else {
                 view.setColor(UtilityNode.getColor());
-                view.fill(drawUtility(nodeAux.getPosicao().x, nodeAux.getPosicao().y));
+                view.fill(drawUtility(nodeAux.getPosition().x, nodeAux.getPosition().y));
             }
             if (nodeAux.getName() == null) {
                 nodeAux.setName(resource.getString("nodeGraphName") + i);
@@ -1472,7 +1472,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
             double lar = serifFont.getStringBounds(nodeAux.getName(), frc).getWidth();
             as.addAttribute(TextAttribute.FONT, serifFont);
             as.addAttribute(TextAttribute.FOREGROUND, Color.black);
-            view.drawString(as.getIterator(), (int) (nodeAux.getPosicao().getX() - lar/2), (int) (nodeAux.getPosicao().getY() + alt/2));
+            view.drawString(as.getIterator(), (int) (nodeAux.getPosition().getX() - lar/2), (int) (nodeAux.getPosition().getY() + alt/2));
         }
 
         view.setColor(arcColor);
@@ -1482,9 +1482,9 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
             view.draw(presentArc);
             //chama o método que desenha a ponta da seta e desenha na tela
             Node nodeAux1 = new ProbabilisticNode();
-            nodeAux1.setPosicao(presentArc.getX1(), presentArc.getY1());
+            nodeAux1.setPosition(presentArc.getX1(), presentArc.getY1());
             Node noAux2 = new ProbabilisticNode();
-            noAux2.setPosicao(presentArc.getX2(), presentArc.getY2());
+            noAux2.setPosition(presentArc.getX2(), presentArc.getY2());
             Edge arcoAux = new Edge(nodeAux1, noAux2);
             view.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_OFF);
             view.fill(drawArrow(arcoAux, false));
@@ -1494,7 +1494,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         //desenha todos os arcos
         for (int i = 0; i < arc.size(); i++) {
             Edge arcAux = (Edge) arc.get(i);
-            if (arcAux.isSelecionado()) {
+            if (arcAux.isSelected()) {
                 view.setColor(selectionColor);
                 view.setStroke(new BasicStroke(2));
             }
@@ -1503,8 +1503,8 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
             }
 
 
-            if (arcAux.getOriginNode().getPosicao().getX() == arcAux.getDestinationNode().getPosicao().getX() ||
-                arcAux.getOriginNode().getPosicao().getY() == arcAux.getDestinationNode().getPosicao().getY()) {
+            if (arcAux.getOriginNode().getPosition().getX() == arcAux.getDestinationNode().getPosition().getX() ||
+                arcAux.getOriginNode().getPosition().getY() == arcAux.getDestinationNode().getPosition().getY()) {
                view.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_OFF);
             }
 
@@ -1530,7 +1530,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
 
         for (int i = 0; i < node.size(); i++) {
             Node nodeAux3 = (Node) node.get(i);
-            if (nodeAux3.isSelecionado()) {
+            if (nodeAux3.isSelected()) {
                 view.setColor(selectionColor);
                 view.setStroke(new BasicStroke(2));
             }
@@ -1538,11 +1538,11 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
                 view.setColor(arcColor);
             }
             if (nodeAux3 instanceof ProbabilisticNode) {
-                view.draw(new Ellipse2D.Double(nodeAux3.getPosicao().x - radius, nodeAux3.getPosicao().y - radius, radius * 2, radius * 2));
+                view.draw(new Ellipse2D.Double(nodeAux3.getPosition().x - radius, nodeAux3.getPosition().y - radius, radius * 2, radius * 2));
             } else if (nodeAux3 instanceof DecisionNode) {
-                view.drawRect((int)(nodeAux3.getPosicao().x - radius), (int)(nodeAux3.getPosicao().y - radius), (int)(2 * radius), (int)(2 * radius));
+                view.drawRect((int)(nodeAux3.getPosition().x - radius), (int)(nodeAux3.getPosition().y - radius), (int)(2 * radius), (int)(2 * radius));
             } else {
-                view.draw(drawUtility(nodeAux3.getPosicao().x, nodeAux3.getPosicao().y));
+                view.draw(drawUtility(nodeAux3.getPosition().x, nodeAux3.getPosition().y));
             }
             view.setStroke(new BasicStroke(1));
         }

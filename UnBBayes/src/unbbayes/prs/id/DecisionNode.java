@@ -48,14 +48,14 @@ public class DecisionNode extends TreeVariable implements java.io.Serializable {
 		cloned.setColor(this.getColor().getRGB());
 		cloned.setDescription(this.getDescription());
 		cloned.setName(this.getName());
-		cloned.setPosicao(this.getPosicao().getX(), this.getPosicao().getY());
+		cloned.setPosition(this.getPosition().getX(), this.getPosition().getY());
 		cloned.setParents(SetToolkit.clone(parents));
 		cloned.setChildren(SetToolkit.clone(this.getChildren()));
 		cloned.setStates(SetToolkit.clone(states));
 		cloned.setAdjacents(SetToolkit.clone(this.getAdjacents()));
-		cloned.setSelected(this.isSelecionado());
-		cloned.setAltura(this.getAltura());
-        cloned.setLargura(this.getLargura());
+		cloned.setSelected(this.isSelected());
+		cloned.setHeight(this.getHeight());
+        cloned.setWidth(this.getWidth());
         cloned.setExplanationDescription(this.getExplanationDescription());
         cloned.setPhrasesMap(this.getPhrasesMap());
         cloned.setInformationType(this.getInformationType());

@@ -24,14 +24,15 @@ package unbbayes;
 import unbbayes.controller.MainController;
 
 /**
- *  Inicia-se o programa por esta Classe.
+ *  This class starts UnBBayes
  *
  *@author     Michael e Rommel.
  *@version    24 de Junho de 2001
  */
 public class Main {
+	
     /**
-     *  Inicia a aplicação criando um objeto do tipo TControladorTelaPrincipal.
+     *  Starts UnBBayes.
      */
     public static void main(String[] args) {
         new MainController();

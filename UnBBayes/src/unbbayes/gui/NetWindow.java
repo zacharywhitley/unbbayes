@@ -238,7 +238,7 @@ public class NetWindow extends JInternalFrame {
      * @see ProbabilisticNetwork
      */
     public Network getRede() {
-        return controller.getRede();
+        return controller.getNet();
     }
 
     /**
@@ -275,7 +275,7 @@ public class NetWindow extends JInternalFrame {
 
 		bCompiled = true;
 
-		controller.getRede().setFirstInitialization(true);
+		controller.getNet().setFirstInitialization(true);
 
 		carta.show(getContentPane(), "netCompilation");
 		netCompilation.getEvidenceTree().updateTree();
@@ -294,7 +294,7 @@ public class NetWindow extends JInternalFrame {
 
 		bCompiled = false;
 
-		controller.getRede().setFirstInitialization(true);
+		controller.getNet().setFirstInitialization(true);
 
 		carta.show(getContentPane(), "netEdition");
 	}

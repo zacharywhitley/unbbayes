@@ -108,7 +108,7 @@ public class Edge implements java.io.Serializable {
      *
      *@return    status de seleção.
      */
-    public boolean isSelecionado() {
+    public boolean isSelected() {
         return selecionado;
     }
     

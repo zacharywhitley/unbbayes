@@ -15,7 +15,6 @@
  *  along with UnbBayes; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
 package unbbayes.controller;
 
 import java.awt.*;
@@ -26,7 +25,6 @@ import javax.swing.border.*;
 
 /**
  * Classe auxiliar da classe PrintPreviewer.
- *
  */
 public class PrintComponent extends JPanel {
 

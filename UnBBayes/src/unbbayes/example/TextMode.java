@@ -18,7 +18,6 @@
  *  along with UnbBayes; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
 package unbbayes.example;
 
 import java.io.File;
@@ -48,7 +47,7 @@ public class TextMode {
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.example.resources.ExampleResources");
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 
 		ProbabilisticNetwork rede = null;
 
@@ -75,12 +74,7 @@ public class TextMode {
 		Edge auxArco = new Edge(auxVP, auxVP2);
 		rede.addEdge(auxArco);
 
-		try {
-			rede.compile();
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-			System.exit(1);
-		}
+		rede.compile();
 
 		float likelihood[] = new float[auxVP.getStatesSize()];
 		likelihood[0] = 1;

@@ -169,7 +169,7 @@ public abstract class Node implements java.io.Serializable {
 	 *@param  x  Posição x do nó.
 	 *@param  y  Posição y do nó.
 	 */
-	public void setPosicao(double x, double y) {
+	public void setPosition(double x, double y) {
 		posicao.setLocation(x, y);
 	}
 
@@ -178,7 +178,7 @@ public abstract class Node implements java.io.Serializable {
 	 *
 	 *@param  l  Nova largura do nó.
 	 */
-	public static void setLargura(int l) {
+	public static void setWidth(int l) {
 		largura = l;
 	}
 
@@ -187,7 +187,7 @@ public abstract class Node implements java.io.Serializable {
 	 *
 	 *@param  a  A nova altura do nó.
 	 */
-	public static void setAltura(int a) {
+	public static void setHeight(int a) {
 		altura = a;
 	}
 
@@ -271,7 +271,7 @@ public abstract class Node implements java.io.Serializable {
 	 *
 	 *@return    Posição do nó.
 	 */
-	public Point2D.Double getPosicao() {
+	public Point2D.Double getPosition() {
 		return posicao;
 	}
 
@@ -280,7 +280,7 @@ public abstract class Node implements java.io.Serializable {
 	 *
 	 *@return    largura do nó.
 	 */
-	public static int getLargura() {
+	public static int getWidth() {
 		return largura;
 	}
 
@@ -289,7 +289,7 @@ public abstract class Node implements java.io.Serializable {
 	 *
 	 *@return    Altura do nó.
 	 */
-	public static int getAltura() {
+	public static int getHeight() {
 		return altura;
 	}
 
@@ -299,7 +299,7 @@ public abstract class Node implements java.io.Serializable {
 	 *@return    Status de seleção do nó.
 	 */
 
-	public boolean isSelecionado() {
+	public boolean isSelected() {
 		return selecionado;
 	}
 	/**
@@ -394,7 +394,7 @@ public abstract class Node implements java.io.Serializable {
 	/**
 	 *  Monta lista de nós adjacentes.
 	 */
-	public void montaAdjacentes() {
+	public void makeAdjacents() {
 		adjacents.addAll(parents);
 		adjacents.addAll(children);
 	}
@@ -402,7 +402,7 @@ public abstract class Node implements java.io.Serializable {
 	/**
 	 *  Desmonta a lista de nós adjacentes.
 	 */
-	public void desmontaAdjacentes() {
+	public void clearAdjacents() {
 		adjacents.clear();
 	}
 

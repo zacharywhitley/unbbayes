@@ -309,7 +309,7 @@ public class NetWindowEdition extends JPanel {
         less.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent ae) {
             if (netWindow.getIGraph().getSelected() instanceof Node) {
-               controller.removerEstado((Node)netWindow.getIGraph().getSelected());
+               controller.removeState((Node)netWindow.getIGraph().getSelected());
             }
           }
         });
@@ -319,7 +319,7 @@ public class NetWindowEdition extends JPanel {
         more.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent ae) {
             if (netWindow.getIGraph().getSelected() instanceof Node) {
-               controller.inserirEstado((Node)netWindow.getIGraph().getSelected());
+               controller.insertState((Node)netWindow.getIGraph().getSelected());
             }
           }
         });
@@ -327,42 +327,42 @@ public class NetWindowEdition extends JPanel {
         // action para imprimir a rede
         printNet.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                controller.imprimirRede(netWindow.getIGraph(), controller.calcularBordasRede());
+                controller.printNet(netWindow.getIGraph(), controller.calculateNetRectangle());
             }
         });
 
         // action para imprimir a tabela
         printTable.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                controller.imprimirTabela();
+                controller.printTable();
             }
         });
 
         // action para visualizar a tabela
         previewTable.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                controller.visualizarImpressaoTabela();
+                controller.previewPrintTable();
             }
         });
 
         // action para visualizar a rede.
         previewNet.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                controller.visualizarImpressaoRede(netWindow.getIGraph(), controller.calcularBordasRede());
+                controller.previewPrintNet(netWindow.getIGraph(), controller.calculateNetRectangle());
             }
         });
 
 
         saveNetImage.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                controller.salvarImagemRede();
+                controller.saveNetImage();
             }
         });
 
 
         saveTableImage.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                controller.salvarImagemTabela();
+                controller.saveTableImage();
             }
         });
 
