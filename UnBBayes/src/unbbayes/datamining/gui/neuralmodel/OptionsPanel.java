@@ -39,12 +39,17 @@ public class OptionsPanel extends JPanel{
     }
   }
   private void jbInit() throws Exception {
+    labelMaxOrder.setHorizontalAlignment(SwingConstants.RIGHT);
+    labelMaxOrder.setHorizontalTextPosition(SwingConstants.TRAILING);
     labelMaxOrder.setText(resource.getString("maximumOrder"));
     this.setLayout(borderLayout1);
+    labelConfidence.setHorizontalAlignment(SwingConstants.RIGHT);
     labelConfidence.setText(resource.getString("minimumConfidence"));
     jPanel1.setLayout(gridLayout1);
     gridLayout1.setColumns(6);
     gridLayout1.setHgap(15);
+    labelSupport.setHorizontalAlignment(SwingConstants.RIGHT);
+    labelSupport.setHorizontalTextPosition(SwingConstants.TRAILING);
     labelSupport.setText(resource.getString("minimumSupport"));
     jPanel2.setLayout(gridLayout2);
     jPanel3.setLayout(gridLayout3);

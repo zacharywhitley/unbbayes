@@ -1,6 +1,15 @@
-package unbbayes.datamining.datamanipulation.neuralmodel.entities;
+package unbbayes.datamining.classifiers.cnmentities;
 
 import java.io.*;
+
+/**
+ * <p>Title: </p>
+ * <p>Description: </p>
+ * <p>Copyright: Copyright (c) 2002</p>
+ * <p>Company: </p>
+ * @author not attributable
+ * @version 1.0
+ */
 
 /**
  *  Class that implements the arcs tha compound the
@@ -9,7 +18,8 @@ import java.io.*;
  *  @author Rafael Moraes Noivo
  *  @version $1.0 $ (02/16/2003)
  */
-public class Arc implements Serializable{
+public class OutputNeuron implements Serializable{
+
   /**Value of the arc accumulator*/
   protected int accumulator;
 
@@ -22,17 +32,13 @@ public class Arc implements Serializable{
   /**Value of the support of the arc*/
   protected float support;
 
-  /**Neuron that represents the combination connected by the arc*/
-  protected InternalNeuron combinationNeuron;
-
   /**
    * Constructs a new arc.
    *
    * @param combinationNeuron the neuron that represents the combination
    *                          connected by this arc.
    */
-  public Arc(InternalNeuron combinationNeuron){
-    this.combinationNeuron = combinationNeuron;
+  public OutputNeuron(){
     this.accumulator = 1;
   }
 
@@ -43,18 +49,8 @@ public class Arc implements Serializable{
    *                          connected by this arc.
    * @param accumulator the value of the arc accumulator
    */
-  public Arc(InternalNeuron combinationNeuron, int accumulator){
-    this.combinationNeuron = combinationNeuron;
+  public OutputNeuron(int accumulator){
     this.accumulator = accumulator;
-  }
-
-  /**
-   * Outputs the neuron that represents the combination conected by this arc.
-   *
-   * @return the neuron that represents the combination conected by this arc.
-   */
-  public InternalNeuron getCombinationNeuron(){
-    return combinationNeuron;
   }
 
   /**
@@ -118,5 +114,13 @@ public class Arc implements Serializable{
    */
   public void setConfidence(float confidence){
     this.confidence = confidence;
+  }
+
+  public void increaseAccumulator(){
+    accumulator++;
+  }
+
+  public void increaseAccumulator(int weight){
+    accumulator = accumulator + weight;
   }
 }

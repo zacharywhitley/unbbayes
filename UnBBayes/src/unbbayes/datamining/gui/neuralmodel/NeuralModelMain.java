@@ -173,7 +173,6 @@ public class NeuralModelMain extends JInternalFrame{
   }
 
   void learnButton_actionPerformed(ActionEvent e){
-    setCursor(new Cursor(Cursor.WAIT_CURSOR));
     try{
       controller.learn();
     } catch (Exception ex){
@@ -184,12 +183,10 @@ public class NeuralModelMain extends JInternalFrame{
     jTabbedPane1.setEnabledAt(2,true);
     jTabbedPane1.setSelectedIndex(1);
     saveButton.setEnabled(true);
-    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
   void openButton_actionPerformed(ActionEvent e){
     boolean success;
-    setCursor(new Cursor(Cursor.WAIT_CURSOR));
     try{
       success = controller.openFile();
       if(success){
@@ -202,7 +199,6 @@ public class NeuralModelMain extends JInternalFrame{
         learnButton.setEnabled(true);
         saveButton.setEnabled(false);
         statusBar.setText(resource.getString("openFile"));
-        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
       }
     }catch (NullPointerException npe){
       statusBar.setText(resource.getString("errorDB") + " " + npe.getMessage());
@@ -217,12 +213,10 @@ public class NeuralModelMain extends JInternalFrame{
 
   void saveButton_actionPerformed(ActionEvent e){
     boolean success;
-    setCursor(new Cursor(Cursor.WAIT_CURSOR));
     try{
       success = controller.saveModel();
       if(success){
         statusBar.setText(resource.getString("saveModel"));
-        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
       }
     } catch (Exception ioe) {
       statusBar.setText(resource.getString("errorWritingFileException") + " " + ioe.getMessage());
@@ -231,7 +225,6 @@ public class NeuralModelMain extends JInternalFrame{
 
   void openModelButton_actionPerformed(ActionEvent e) {
     boolean success;
-    setCursor(new Cursor(Cursor.WAIT_CURSOR));
     try{
       success = controller.openModel();
       if(success){
@@ -242,7 +235,6 @@ public class NeuralModelMain extends JInternalFrame{
         saveButton.setEnabled(false);
         statusBar.setText(resource.getString("modelOpenedSuccessfully"));
         jTabbedPane1.setSelectedIndex(1);
-        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
       }
     } catch (IOException ioe) {
       statusBar.setText(resource.getString("errorWritingFileException") + " " + ioe.getMessage());

@@ -11,7 +11,7 @@ import javax.swing.table.*;
 import unbbayes.controller.IconController;
 import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
+import unbbayes.datamining.classifiers.cnmentities.*;
 //import unbbayes.datamining.datamanipulation.neuralmodel.util.*;
 
 /**
@@ -75,7 +75,9 @@ public class RulesPanel extends JPanel {
     jPanel2.setLayout(gridLayout1);
     gridLayout1.setColumns(5);
     gridLayout1.setHgap(5);
+    labelMinSupport.setHorizontalAlignment(SwingConstants.RIGHT);
     labelMinSupport.setText(resource.getString("minimumSupport"));
+    labelMinConfidence.setHorizontalAlignment(SwingConstants.RIGHT);
     labelMinConfidence.setText(resource.getString("minimumConfidence"));
     jPanel2.setBorder(BorderFactory.createEtchedBorder());
     comboMinSupport.addActionListener(new java.awt.event.ActionListener() {
@@ -178,40 +180,33 @@ public class RulesPanel extends JPanel {
   }
 
   private void createTableLines(int minSupport, int minConfidence){
-    Arc tempArc;                                           // arco temporário
     Attribute att;
-    Enumeration outputEnum = combinatorialNetwork.getOutputLayer().elements();  // enumeraçao da camada de saida
-    Enumeration arcEnum;                                      // enumeracao dos arcos de um neuronio de saida
+    ArrayList inputList;
+    Iterator combinations = combinatorialNetwork.getModel();
     TableLine tableLine;                                   // linha da tabela de regras
-    InputNeuron[] inputList;                               // lista de neuronios de entrada
-    OutputNeuron tempOutputNeuron;                         // neuronio de saida temporário
     String inputCell, outputCell, confidence, support;
     Integer numberOfCases;
+    OutputNeuron[] outputArray;
+    OutputNeuron tempOutput;
     DecimalFormat numFormat = new DecimalFormat("##0.0");
     tableLinesArray = new ArrayList();
 
-    while(outputEnum.hasMoreElements()){                   // para todos os neuronios de saida
-      tempOutputNeuron = (OutputNeuron)outputEnum.nextElement();
-      arcEnum = tempOutputNeuron.getCombinationsEnum();
+    while(combinations.hasNext()){                   // para todos os neuronios de saida
+      Combination combination = (Combination)combinations.next();
+      outputArray = combination.getOutputArray();
+      inputList = extractInputs(combination);
 
-      while(arcEnum.hasMoreElements()){                    // para todos os arcos dos neuronios de saida
-        tempArc = (Arc)arcEnum.nextElement();
-        if(tempArc.getConfidence() > minConfidence && tempArc.getSupport() > minSupport){
-
-          if(tempArc.getCombinationNeuron() instanceof InputNeuron){ // se o neuronio de combinaçao for de entrada
-            inputList = new InputNeuron[1];
-            inputList[0] = (InputNeuron)tempArc.getCombinationNeuron();
-          } else {                                            //se o neuronio de combinaçao for combinatorial
-            inputList = ((CombinatorialNeuron)tempArc.getCombinationNeuron()).getInputList();
-          }
+      for(int i=0; i<outputArray.length; i++){
+        tempOutput = outputArray[i];
+        if(tempOutput != null && tempOutput.getConfidence() >= minConfidence && tempOutput.getSupport() >= minSupport){
 
           //constroi a string da entrada "SE"
           inputCell = resource.getString("if") + " ";
-          for(int i=0; i<inputList.length; i++){
-            att = attributeVector[(inputList[i]).getAttributeIndex()];
-
-            inputCell = inputCell + att.getAttributeName() + " = " + att.value(inputList[i].getValue()) + " ";
-            if(i < (inputList.length - 1)){
+          for(int j=0; j<inputList.size(); j++){
+            int[] input = (int[])inputList.get(j);
+            att = attributeVector[input[0]];
+            inputCell = inputCell + att.getAttributeName() + " = " + att.value(input[1]) + " ";
+            if(j < (inputList.size() - 1)){
               inputCell = inputCell + " " + resource.getString("and") + " ";
             }
           }
@@ -223,26 +218,43 @@ public class RulesPanel extends JPanel {
           outputCell = resource.getString("then") + " "; //new String("ENTÃO ");
           att = attributeVector[classIndex];
 
-          outputCell = outputCell + att.getAttributeName() + " = " + att.value(tempOutputNeuron.getValue());
+          outputCell = outputCell + att.getAttributeName() + " = " + att.value(i);
 
           if(((String)longValues[2]).length() < outputCell.length()){  //atualiza o array que contém a maior string formada
             longValues[2] = outputCell;
           }
 
           // constroi o valor do numero de casos
-          numberOfCases = new Integer(tempArc.getAccumulator());
+          numberOfCases = new Integer(tempOutput.getAccumulator());
 
           // constroi o valor da confiança
-          confidence = new String(numFormat.format(tempArc.getConfidence()) + "%");
+          confidence = new String(numFormat.format(tempOutput.getConfidence()) + "%");
 
           // constroi o valor do suporte
-          support = new String(numFormat.format(tempArc.getSupport()) + "%");
+          support = new String(numFormat.format(tempOutput.getSupport()) + "%");
 
           tableLine = new TableLine(inputCell, outputCell, confidence, numberOfCases, support);
           tableLinesArray.add(tableLine);
         }
       }
     }
+  }
+
+  private ArrayList extractInputs(Combination combination){
+    String key = combination.getKey();
+    StringTokenizer strTokenizer = new StringTokenizer(key, " ");
+    int[] input;
+    int numOfTokens = strTokenizer.countTokens();
+    ArrayList inputArray = new ArrayList();
+
+    for(int i=0; i<numOfTokens; i++){
+      input = new int[2];
+      input[0] = Integer.parseInt(strTokenizer.nextToken());
+      i++;
+      input[1] = Integer.parseInt(strTokenizer.nextToken());
+      inputArray.add(input);
+    }
+    return inputArray;
   }
 
 
@@ -311,14 +323,13 @@ public class RulesPanel extends JPanel {
 
   class RulesTableModel extends AbstractTableModel{
     public String getColumnName(int col) {
-//      String[] columnNames = {"Indice", "SE", "ENTÃO", "Confiança", "Casos", "Suporte"};
       String[] columnNames = {resource.getString("index"),
                               resource.getString("if"),
                               resource.getString("then"),
                               resource.getString("confidence"),
                               resource.getString("cases"),
                               resource.getString("support")
-        };
+      };
       return columnNames[col].toString();
     }
 

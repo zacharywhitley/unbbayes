@@ -3,7 +3,7 @@ package unbbayes.datamining.classifiers;
 import java.util.*;
 import java.io.*;
 import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
+import unbbayes.datamining.classifiers.cnmentities.*;
 
 /**
  *  Class that implements the Combinatorial Neural Model (CNM).
@@ -12,14 +12,9 @@ import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
  *  @version $1.0 $ (02/16/2003)
  */
 public class CombinatorialNeuralModel extends BayesianLearning implements Serializable{
-  /**The model's input layer.*/
-  private Hashtable inputLayer = new Hashtable();
 
-  /**The model's combinatorial layer.*/
-  private Hashtable combinatorialLayer = new Hashtable();
-
-  /**The model's output layer.*/
-  private Hashtable outputLayer = new Hashtable();
+  /**The model's combinations.*/
+  private HashMap model = new HashMap();
 
   /**Vector that contains the attributes of the training set.*/
   private Attribute[] attributeVector;
@@ -34,11 +29,16 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
   private int confidence;
 
   /**Value of the maximum order of combinations allowed.*/
-  private transient int maxOrder;
+  private int maxOrder;
 
   /**The set of instances of the training set*/
   private transient InstanceSet instanceSet;
 
+  /**
+   * Class constructor
+   *
+   * @param maxOrder the maximun order of combinations allowed
+   */
   public CombinatorialNeuralModel(int maxOrder) {
     this.maxOrder = maxOrder;
   }
@@ -46,15 +46,13 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
   /**
    * Builds the Combinatorial Neural Model classifier (CNM).
    *
-   * @param data The training data
+   * @param instanceSet The training data
    * @exception Exception if classifier can't be built successfully
    */
   public void buildClassifier(InstanceSet instanceSet) throws Exception{
     this.instanceSet = instanceSet;
     Instance instance;
     Enumeration instanceEnum = instanceSet.enumerateInstances();
-    Enumeration outputEnum;
-    OutputNeuron output;
     int attributeNum = instanceSet.numAttributes();
     int numOfInstances = instanceSet.numWeightedInstances();
 
@@ -63,13 +61,26 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
 
     while(instanceEnum.hasMoreElements()){
       instance = (Instance)instanceEnum.nextElement();
-
-      createInputNeurons(instance, attributeNum, classIndex);
-      createOutputNeuron(instance, classIndex);
-      createCombinatorialNeurons(instance, attributeNum, classIndex, maxOrder);
+      createCombinations(instance, attributeNum, classIndex);
     }
-
     punishment(numOfInstances);
+
+  /*  ////////////////////////////////////////
+    Iterator it = model.values().iterator();
+    while(it.hasNext()){
+      Combination c = (Combination)it.next();
+      OutputNeuron[] saida = c.getOutputArray();
+      String out = c.getKey() + " ";
+      for(int i=0; i<saida.length; i++){
+        if(saida[i] != null){
+          out = out + " acc:" + saida[i].getAccumulator() + " sup:" + saida[i].getSupport() + " con:" + saida[i].getConfidence();;
+        } else {
+          out = out + " nulo ";
+        }
+      }
+      System.out.println(out);
+    }
+////*//////////////////////////////////////////
   }
 
   /**
@@ -85,58 +96,16 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
   }
 
   /**
-   * Creates the input neurons that composes the model.
+   * Creates the combinations that composes the model.
    *
    * @param instance the instance to be processed
    * @param attributeNum the number of attributes of the instance
    * @param classIndex the index of the class attribute of the instance
    */
-  private void createInputNeurons(Instance instance, int attributeNum, int classIndex){
-    short value;
-    String key;
-    InputNeuron inputNeuron;
-    for(int att=0; att<attributeNum; att++){
-      if(att != classIndex && !instance.isMissing(att)){
-        value = instance.getValue(att);
-        key = generateInputKey(att, value);
-        if(!inputLayer.containsKey(key)){
-          inputLayer.put(key, new InputNeuron(att, value, key));
-        }
-      }
-    }
-  }
-
-  /**
-   * Creates the output neurons that composes the model.
-   *
-   * @param instance the instance to be processed
-   * @param classIndex the index of the class attribute of the instance
-   */
-  private void createOutputNeuron(Instance instance, int classIndex){
-    short value = instance.classValue();
-    String key = generateOutputKey(classIndex, value);
-    if(!outputLayer.containsKey(key)){
-      outputLayer.put(key, new OutputNeuron(classIndex, value, key));
-    }
-  }
-
-  /**
-   * Creates the combinatorial neurons that composes the model.
-   *
-   * @param instance the instance to be processed
-   * @param attributeNum the number of attributes of the instance
-   * @param classIndex the index of the class attribute of the instance
-   * @param maxOrder the maximum order of combinations of attributes allowed
-   */
-  private void createCombinatorialNeurons(Instance instance, int attributeNum, int classIndex, int maxOrder){
-    short value;
+  private void createCombinations(Instance instance, int attributeNum, int classIndex){
     int combinationsSize;
-    InputNeuron[] inputList;         //lista de todos os neuronios de entrada da instancia
-    InputNeuron[] tempInputList;
-    CombinatorialNeuron combNeuron;
-    OutputNeuron outputNeuron = (OutputNeuron)outputLayer.get(generateOutputKey(classIndex, instance.classValue()));
-    ArrayList combinations;
-    String key;
+    int evidenceNum;
+    String[] combinationsKeys;
 
     int missingAttNum = 0;
     for(int att=0; att<attributeNum; att++){
@@ -144,44 +113,43 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
         missingAttNum++;
       }
     }
-    inputList = new InputNeuron[attributeNum - (missingAttNum + 1)]; //soma um do atributo de classe
 
-    int position = 0;
-    for(int att=0; att<attributeNum; att++){                    //cria uma lista com todas os neuronios de entrada associados a instancia do exemplo
-      if(att != classIndex && !instance.isMissing(att)){
-        value = instance.getValue(att);
-        key = generateInputKey(att, value);
-        inputList[position] = (InputNeuron)inputLayer.get(key);
-        position++;
+    evidenceNum = attributeNum - missingAttNum - 1;    // - 1 do attributo classe
+    if(evidenceNum < maxOrder){
+      maxOrder = evidenceNum;
+    }
+
+    String[] inputKeys = new String[evidenceNum];      //array com as chaves de entrada
+    int keyIndex = 0;
+    for(int att=0; att<attributeNum; att++){
+      if(!instance.isMissing(att) && (att != classIndex)){
+        inputKeys[keyIndex] = generateInputKey(att, instance.getValue(att));
+        keyIndex ++;
       }
     }
 
-    if(inputList.length < maxOrder){
-      maxOrder = inputList.length;
+    combinationsKeys = makeCombinations(inputKeys);     //cria todas as combinações dos neuronios de entrada
+    combinationsSize = combinationsKeys.length;
+
+    for(int i=0; i<combinationsSize; i++){                    //para cada combinaçao gerada
+      addCombination(combinationsKeys[i], instance.classValue(), instance.getWeight());
     }
+  }
 
-    combinations = makeCombinations(inputList, maxOrder);     //cria todas as combinações dos neuronios de entrada
-    combinationsSize = combinations.size();
+  private void addCombination(String key, short classValue, int weight){
+    Combination combination;
 
-    for(int i=0; i<combinationsSize; i++){                    //para cada combinaçao
-      tempInputList = (InputNeuron[])combinations.get(i);
-      if(tempInputList.length == 1){                          //se combinação de ordem 1 então
-        tempInputList[0].addCombNeuron(outputNeuron);
-        outputNeuron.addCombination(tempInputList[0], instance.getWeight());
-      } else {                                                //se combinação de ordem maior q 1 então
-        key = generateCombKey(tempInputList);                 //gera a chave da combinação
-        if(!combinatorialLayer.containsKey(key)){             //se nao existe comb neuron com esta chave cria um novo
-          combNeuron = new CombinatorialNeuron(tempInputList, outputNeuron, key);
-          combinatorialLayer.put(key, combNeuron);
-          for(int j=0; j<tempInputList.length; j++){          // adiciona o comb neuron em todas as entradas da instancia
-            tempInputList[j].addCombNeuron(combNeuron);
-          }
-        } else {                                              //se já existir pega ele e adiciona a saida da instancia
-          combNeuron = (CombinatorialNeuron)combinatorialLayer.get(key);
-          combNeuron.addOutputNeuron(outputNeuron);
-        }
-        outputNeuron.addCombination(combNeuron, instance.getWeight());  // adiciona o comb neuron no output da instancia
+    if(!model.containsKey(key)){
+      OutputNeuron[] outputArray = new OutputNeuron[instanceSet.getClassAttribute().numValues()];
+      for(int i=0; i<outputArray.length; i++){
+        outputArray[i] = null;
       }
+      outputArray[classValue] = new OutputNeuron(weight);
+      combination = new Combination(key, outputArray);
+      model.put(key, combination);
+    } else {
+      combination = (Combination)model.get(key);
+      combination.increaseAccumulator(classValue, weight);
     }
   }
 
@@ -189,17 +157,16 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
    * Creates a unique key for a combinatorial neuron based on the combination
    * that the combinatorial neuron implements.
    *
-   * @param inputList the list of input neurons that represents the combination
-   *        implemented by combinatorial neuron
+   * @param inputKeys the list of input keys that represents the combinations
    * @return the generated key
    */
-  private String generateCombKey(InputNeuron[] inputList){
-    int inputListSize = inputList.length;
-    String stringKey = new String("c");
-    for(int i=0; i<inputListSize; i++){
-      stringKey = stringKey + inputList[i].getKey();
+  private String generateCombKey(String[] inputKeys){
+    int inputSize = inputKeys.length;
+    String combKey = new String();
+    for(int i=0; i<inputSize; i++){
+      combKey = combKey + inputKeys[i] + " ";
     }
-    return stringKey;
+    return combKey;
   }
 
   /**
@@ -211,54 +178,48 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
    * @return the generated key
    */
   private String generateInputKey(int attribute, short value){
-    return new String("i" + attribute + value);
-  }
-
-  /**
-   * Creates a unique key for an output neuron based on it's attribute index
-   * and value.
-   *
-   * @param attribute the index of the attribute in the training set
-   * @param value the value of the attribute
-   * @return the generated key
-   */
-  private String generateOutputKey(int attribute, short value){
-    return new String("o" + attribute + value);
+    return new String(attribute + " " + value);
   }
 
   /**
    * Creates all possible combinations of input neurons with order limited
    * by the maxOrder parameter.
    *
-   * @param inputArray the array with the input neurons to be combined
-   * @param maxOrder the maximum order of combinations allowed
-   * @return the generated combinations of input neurons
+   * @param inputKeys an array with the input keys to be combined
+   * @return the generated combinations of input keys
    */
-  private ArrayList makeCombinations(InputNeuron[] inputArray, int maxOrder){
-    InputNeuron[] tempInputArray, temp;
+  private String[] makeCombinations(String[] inputKeys){
+    String[] keysArray, tempArray;
+    String[] combinationsArray;
     ArrayList combinations = new ArrayList();
-    int inputSize = inputArray.length;
+    int inputKeysNum = inputKeys.length;
     int combArraySize, tempSize;
 
-    for(int inputNum=0; inputNum<inputSize; inputNum++){      //para todos os neuronios de entrada
-      combArraySize = combinations.size();                    //pega o tamanho do array de combinações
+    for(int inputNum=0; inputNum<inputKeysNum; inputNum++){  //para todos os neuronios de entrada
+      combArraySize = combinations.size();                   //pega o tamanho do array de combinações
+      for(int j=0; j<combArraySize; j++){                    //para todas as combinações já existentes
+        tempArray = (String[])combinations.get(j);
+        tempSize = tempArray.length;                         //pega o tamanho da combinação
 
-      for(int j=0; j<combArraySize; j++){                     //para todas as combinações já existentes
-        temp = (InputNeuron[])combinations.get(j);
-        tempSize = temp.length;                               //pega o tamanho da combinação
-
-        if(tempSize < maxOrder){                              //se tamanho da combinação < ordem máxima
-          tempInputArray = new InputNeuron[tempSize + 1];     //cria nova combinação
-          tempInputArray[tempSize] = inputArray[inputNum];    //adiciona o neuronio de entrada atual
-          System.arraycopy(temp, 0, tempInputArray, 0, tempSize); //copia o resto da combinação atual
-          combinations.add(tempInputArray);                   //adiciona nova combinação no array de combinacoes
+        if(tempSize < maxOrder){                             //se tamanho da combinação < ordem máxima
+          keysArray = new String[tempSize + 1];              //cria nova combinação
+          keysArray[tempSize] = inputKeys[inputNum];         //adiciona o neuronio de entrada atual
+          System.arraycopy(tempArray, 0, keysArray, 0, tempSize); //copia o resto da combinação atual
+          combinations.add(keysArray);                       //adiciona nova combinação no array de combinacoes
         }
       }
-      tempInputArray = new InputNeuron[1];                    //cria nova combinação de um elemento
-      tempInputArray[0] = inputArray[inputNum];               //coloca o neuronio de entrada atual nesta combinação
-      combinations.add(tempInputArray);                       //adiciona nova combinação no array de combinacoes
+      keysArray = new String[1];                             //cria nova combinação de um elemento
+      keysArray[0] = inputKeys[inputNum];                    //coloca o neuronio de entrada atual nesta combinação
+      combinations.add(keysArray);                           //adiciona nova combinação no array de combinacoes
     }
-    return combinations;
+
+    combArraySize = combinations.size();
+    combinationsArray = new String[combArraySize];
+    for(int i=0; i<combArraySize; i++){                      //gera as chaves das combinações
+      combinationsArray[i] = generateCombKey((String[])combinations.get(i));
+    }
+
+    return combinationsArray;
   }
 
   /**
@@ -266,34 +227,12 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
    * of the arcs and calculating the support and confidence.
    */
   private void punishment(int numOfInstances){
-    Arc arc;
-    String tempKey;
-    int sum = 0;
-    int outputNum = outputLayer.size();
-    Hashtable[] outputs = new Hashtable[outputNum];
-    Enumeration outputEnum = outputLayer.elements();
+    Iterator i = model.values().iterator();
+    Combination tempCombination;
 
-    int position = 0;
-    while(outputEnum.hasMoreElements()){
-      outputs[position] = ((OutputNeuron)outputEnum.nextElement()).getCombinations();
-      position++;
-    }
-
-    for(int i=0; i<outputNum; i++){
-      outputEnum = outputs[i].elements();
-      while(outputEnum.hasMoreElements()){           //para cada combinação do neuronio i de saida
-        arc = (Arc)outputEnum.nextElement();
-        tempKey = arc.getCombinationNeuron().getKey();
-        for(int j=0; j<outputNum; j++){
-          if(j!=i && outputs[j].containsKey(tempKey)){
-            sum += ((Arc)outputs[j].get(tempKey)).getAccumulator();
-          }
-        }
-        arc.setNetWeight(arc.getAccumulator() - sum);       //netWeight
-        arc.setConfidence((float)arc.getAccumulator() * 100/(float)(sum + arc.getAccumulator())); //confidence
-        arc.setSupport(((float)arc.getAccumulator() / (float)numOfInstances) * 100 );  //support
-        sum = 0;
-      }
+    while(i.hasNext()){
+      tempCombination = (Combination)i.next();
+      tempCombination.punish(numOfInstances);
     }
   }
 
@@ -305,35 +244,21 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
    *                  must be prunned
    */
   public void prunning(int threshold){
-    Enumeration outputEnum;
-    Enumeration combEnum;
-    Enumeration inputEnum;
-    OutputNeuron tempOutput;
-    CombinatorialNeuron tempComb;
-    InputNeuron tempInput;
+    Iterator iterator = model.values().iterator();
+    Combination tempCombination;
+    ArrayList keysArray = new ArrayList();
 
-    outputEnum = outputLayer.elements();
-    while(outputEnum.hasMoreElements()){
-      tempOutput = (OutputNeuron)outputEnum.nextElement();
-      tempOutput.prunning(threshold);
-    }
-
-    combEnum = combinatorialLayer.elements();
-    while(combEnum.hasMoreElements()){
-      tempComb = (CombinatorialNeuron)combEnum.nextElement();
-      if(tempComb.getInputCombinationsNum() == 0){
-        combinatorialLayer.remove(tempComb.getKey());
+    while(iterator.hasNext()){
+      tempCombination = (Combination)iterator.next();
+      tempCombination.prunning(threshold);
+      if(tempCombination.isNull()){
+        keysArray.add(tempCombination.getKey());
       }
     }
-
-    inputEnum = inputLayer.elements();
-    while(inputEnum.hasMoreElements()){
-      tempInput = (InputNeuron)inputEnum.nextElement();
-      if(tempInput.getCombinationsNum() == 0){
-        inputLayer.remove(tempInput.getKey());
-      }
+    int arraySize = keysArray.size();
+    for (int i = 0; i < arraySize; i++) {
+      model.remove( (String) keysArray.get(i));
     }
-
   }
 
   /**
@@ -345,36 +270,21 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
    *                      must be prunned
    */
   public void prunning(int minSupport, int minConfidence){
-    Enumeration outputEnum;
-    Enumeration combEnum;
-    Enumeration inputEnum;
-    OutputNeuron tempOutput;
-    CombinatorialNeuron tempComb;
-    InputNeuron tempInput;
+    Iterator iterator = model.values().iterator();
+    Combination tempCombination;
+    ArrayList keysArray = new ArrayList();
 
-    outputEnum = outputLayer.elements();
-    while(outputEnum.hasMoreElements()){
-      tempOutput = (OutputNeuron)outputEnum.nextElement();
-      tempOutput.prunning(minConfidence, minSupport);
-    }
-
-    combEnum = combinatorialLayer.elements();
-    while(combEnum.hasMoreElements()){
-      tempComb = (CombinatorialNeuron)combEnum.nextElement();
-      if(tempComb.getInputCombinationsNum() == 0){
-        combinatorialLayer.remove(tempComb.getKey());
+    while(iterator.hasNext()){
+      tempCombination = (Combination)iterator.next();
+      tempCombination.prunning(minSupport, minConfidence);
+      if(tempCombination.isNull()){
+        keysArray.add(tempCombination.getKey());
       }
     }
-
-    inputEnum = inputLayer.elements();
-    while(inputEnum.hasMoreElements()){
-      tempInput = (InputNeuron)inputEnum.nextElement();
-      if(tempInput.getCombinationsNum() == 0){
-        inputLayer.remove(tempInput.getKey());
-      }
+    int arraySize = keysArray.size();
+    for(int i=0; i<arraySize; i++){
+      model.remove((String)keysArray.get(i));
     }
-
-    this.support = minSupport;
   }
 
   /**
@@ -384,41 +294,54 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
    * @return an array that contains the arc with greater weight of each
    *         output neuron.
    */
-  public Arc[] inference(Instance instance){
-    Enumeration inputEnum, outputEnum;
-
-    InputNeuron tempInput;
-    OutputNeuron tempOutput;
+  public Combination[] inference(Instance instance){
     int numAtt = attributeVector.length;
     short value;
-    String key;
-    Arc[] arcVector = new Arc[outputLayer.size()];      //vetor que contem os arcos de maior peso de cada neuronio
-
-    inputEnum = inputLayer.elements();
-    while(inputEnum.hasMoreElements()){                  //deixa todos os neuronios de entrada igual a false
-      tempInput = (InputNeuron)inputEnum.nextElement();
-      tempInput.setEnabled(false);
-    }
+    String[] instanceKeys;
+    String[] combKeys;
+    Combination[] combArray = new Combination[attributeVector[classIndex].numValues()];   //array que conterá os arcos de maior peso de cada neuronio
+    int missingAttNum = 0;
+    Combination tempCombination;
+    OutputNeuron[] tempOutput;
 
     for(int att=0; att<numAtt; att++){
-      if(att != classIndex && !instance.isMissing(att)){
-        value = instance.getValue(att);
-        key = generateInputKey(att, value);             //cria a chave atributo-valor da entrada
-
-        if(inputLayer.containsKey(key)){                //faz a propagação
-          ((InputNeuron)inputLayer.get(key)).setEnabled(true);
-        }
+      if(instance.isMissing(att)){
+        missingAttNum++;
       }
     }
 
-    outputEnum = outputLayer.elements();
-    Arc tempArc;
-    while(outputEnum.hasMoreElements()){
-      tempOutput = (OutputNeuron)outputEnum.nextElement();
-      tempArc = tempOutput.classify();
-      arcVector[tempOutput.getValue()] = tempArc;
+    instanceKeys = new String[numAtt - missingAttNum];   // - 1 do attributo classe
+    int keyIndex = 0;
+    for(int att=0; att<numAtt; att++){                  //gera um array com as chaves da instancia atual
+      if(att != classIndex && !instance.isMissing(att)){
+        value = instance.getValue(att);
+        instanceKeys[keyIndex] = generateInputKey(att, value); //cria a chave atributo-valor da entrada
+        keyIndex++;
+      }
     }
-    return arcVector;
+    combKeys = makeCombinations(instanceKeys);   //gera as chaves de todas as combinações ativadas por esta instancia
+
+    for(int i=0; i<combKeys.length; i++){
+      if(model.containsKey(combKeys[i])){
+        tempCombination = (Combination)model.get(combKeys[i]);
+        tempOutput = tempCombination.getOutputArray();
+        for(int j=0; j<tempOutput.length; j++){
+          if(combArray[j] == null || combArray[j].getOutputNeuron(j) == null){        //testa se o elemento do array de saida é nulo
+            combArray[j] = tempCombination;  //se for pega o valor do array temporário
+          } else if(tempOutput[j] != null){  //testa se o elemento do array temporario é nulo
+            if(combArray[j].getOutputNeuron(j).getNetWeight() < tempCombination.getOutputNeuron(j).getNetWeight()){  //compara os pesos
+              combArray[j] = tempCombination;  //se o array de saida for menor então pega o temporario.
+            }
+          }
+        }
+      }
+    }
+    for(int i=0; i<combArray.length; i++){
+      if(combArray[i].getOutputNeuron(i) == null){
+        combArray[i] = null;
+      }
+    }
+    return combArray;
   }
 
   /**
@@ -429,40 +352,17 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
    * @throws Exception if classifier can't carry through the inference successfully
    */
   public float[] distributionForInstance(Instance instance) throws Exception{
-    float[] distribution;
-    Arc[] arcVector = inference(instance);
-    distribution = new float[arcVector.length];
+    float[] distribution = null;
+    Combination[] outputArray = inference(instance);
+    distribution = new float[outputArray.length];
     for(int i=0; i<distribution.length; i++){
-      distribution[i] = arcVector[i].getNetWeight();
+      if(outputArray[i] != null){
+        distribution[i] = outputArray[i].getOutputNeuron(i).getNetWeight();
+      } else {
+        distribution[i] = 0;
+      }
     }
     return distribution;
-  }
-
-  /**
-   * Outputs the model's input layer.
-   *
-   * @return the model's input layer.
-   */
-  public Hashtable getInputLayer(){
-    return inputLayer;
-  }
-
-  /**
-   * Outputs the model's output layer.
-   *
-   * @return the model's output layer.
-   */
-  public Hashtable getOutputLayer(){
-    return outputLayer;
-  }
-
-  /**
-   * Outputs the model's combinatorial layer.
-   *
-   * @return the model's combinatorial layer.
-   */
-  public Hashtable getCombinatorialLayer(){
-    return combinatorialLayer;
   }
 
   /**
@@ -499,5 +399,9 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
    */
   public int getSupport(){
     return support;
+  }
+
+  public Iterator getModel(){
+    return model.values().iterator();
   }
 }

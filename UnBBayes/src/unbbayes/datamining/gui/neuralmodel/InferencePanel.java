@@ -11,7 +11,7 @@ import javax.swing.text.*;
 import unbbayes.controller.IconController;
 import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
+import unbbayes.datamining.classifiers.cnmentities.*;
 
 /**
  *  Class that implements the the panel used to make inferences on the model.
@@ -144,12 +144,16 @@ public class InferencePanel extends JPanel {
     textAreaResults.setText("");
   }
 
-  private void printResults(Arc[] results, Instance instance){
+  private void printResults(Combination[] results, Instance instance){
     float[] distributionNormalized = new float[results.length];
     Attribute[] attArray = combinatorialNetwork.getAttributeVector();
 
     for(int i=0; i<results.length; i++){
-      distributionNormalized[i] = results[i].getNetWeight();
+      if(results[i] != null){
+        distributionNormalized[i] = results[i].getOutputNeuron(i).getNetWeight();
+      } else {
+        distributionNormalized[i] = 0;
+      }
     }
     Utils.normalize(distributionNormalized);
 
@@ -158,9 +162,15 @@ public class InferencePanel extends JPanel {
     String[] initString = new String[results.length + 1];
     initString[0] = resource.getString("class") + ": " + classAtt.getAttributeName() + "\n";
     for(int i=0; i<results.length; i++){
-      initString[i+1] = "- " + classAtt.value(i) +
-                        ":  " + numFormat.format(results[i].getNetWeight()) +
-                        "    " + numFormat.format(distributionNormalized[i] * 100) + "%\n";
+      if(results[i] != null){
+        initString[i + 1] = "- " + classAtt.value(i) +
+            ":  " + numFormat.format(results[i].getOutputNeuron(i).getNetWeight()) +
+            "    " + numFormat.format(distributionNormalized[i] * 100) + "%\n";
+      } else {
+        initString[i + 1] = "- " + classAtt.value(i) +
+            ":  " + numFormat.format(0) +
+            "    " + numFormat.format(0) + "%\n";
+      }
     }
 
     String[] initStyles = new String[initString.length];
@@ -184,9 +194,27 @@ public class InferencePanel extends JPanel {
     } catch (BadLocationException ble) {
       System.out.println("InferencePanel - Couldn't insert initial text.");
     }
-
-
+/*
     //codigo para escrever a regra utilizada
+
+    String key = results[maxValue].;
+    int[] input;
+    ArrayList inputArray = new ArrayList();
+
+    for (int i = 0; i < key.length(); i++) {
+      input = new int[2];
+      input[0] = Integer.parseInt(String.valueOf(key.charAt(i)));
+      i++;
+      input[1] = Integer.parseInt(String.valueOf(key.charAt(i)));
+      inputArray.add(input);
+    }
+
+
+
+
+
+
+
     InputNeuron[] inputList;
     Attribute att;
 
@@ -233,6 +261,7 @@ public class InferencePanel extends JPanel {
     title = title + resource.getString("support");
     rule = rule + numFormat.format(results[maxValue].getSupport()) + "%";
     textAreaResults.setText(title + "\n" + rule);
+*/
   }
 
   private void initStylesForTextPane(JTextPane textPane) {
@@ -288,13 +317,12 @@ public class InferencePanel extends JPanel {
   }
 
   private void classifyButton_actionPerformed(ActionEvent e) {
-    Arc[] arcArray;
     try{
       Instance instance = inferenceTree.getInstance();
-      arcArray = combinatorialNetwork.inference(instance);
-      printResults(arcArray, instance);
+      printResults(combinatorialNetwork.inference(instance), instance);
     } catch(Exception exception){
       System.out.println(exception);
+      exception.printStackTrace();
     }
   }
 

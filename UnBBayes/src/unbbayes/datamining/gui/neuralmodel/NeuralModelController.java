@@ -31,7 +31,6 @@ public class NeuralModelController {
     resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralmodel.resources.NeuralModelResource");
     mainScreen = new NeuralModelMain(this);
     mainScreen.setController(this);
-//    mainScreen.rulesPanel.setController(this);
   }
 
   /**
@@ -52,6 +51,7 @@ public class NeuralModelController {
    * @throws Exception if the file is not openned successfully.
    */
   protected boolean openFile() throws Exception{
+    mainScreen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
     String[] arff = {"ARFF"};
     String[] txt = {"TXT"};
     boolean fileOpenSuccess = false;
@@ -70,26 +70,19 @@ public class NeuralModelController {
       FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       fileOpenSuccess = true;
     }
+    mainScreen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     return fileOpenSuccess;
   }
 
   private void openFile(File selectedFile) throws Exception{
     instanceSet = FileController.getInstance().getInstanceSet(selectedFile, mainScreen);
-    if (instanceSet!=null)
-    {
-      boolean numericAttributes = instanceSet.checkNumericAttributes();
-      if (numericAttributes == true){
-        throw new Exception(resource.getString("numericAttributesException"));
-      }
-      mainScreen.setTitle("CNM - " + selectedFile.getName());
-      mainScreen.attributePanel.setInstances(instanceSet);
-      mainScreen.attributePanel.enableComboBox(true);
+    boolean numericAttributes = instanceSet.checkNumericAttributes();
+    if (numericAttributes == true){
+      throw new Exception(resource.getString("numericAttributesException"));
     }
-    else
-    {
-      // Setar status bar com operação de abertura de arquivo cancelada
-      throw new Exception("Operação cancelada");
-    }
+    mainScreen.setTitle("CNM - " + selectedFile.getName());
+    mainScreen.attributePanel.setInstances(instanceSet);
+    mainScreen.attributePanel.enableComboBox(true);
   }
 
   /**
@@ -100,6 +93,7 @@ public class NeuralModelController {
    * @throws Exception if the file is not saved successfully.
    */
   public boolean saveModel() throws Exception{
+    mainScreen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
     String[] cnmString = {"cnm"};
     boolean success = false;
     fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
@@ -121,13 +115,14 @@ public class NeuralModelController {
       FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       success = true;
     }
+    mainScreen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     return success;
   }
 
   private void modelPrunnig(){
     int minSupport = mainScreen.rulesPanel.getSupport();
     int minConfidence = mainScreen.rulesPanel.getConfidence();
-//    cnm.prunning(minSupport, minConfidence);
+    cnm.prunning(minSupport, minConfidence);
   }
 
   /**
@@ -139,6 +134,7 @@ public class NeuralModelController {
    * @throws ClassNotFoundException if the file is not openned successfully.
    */
   public boolean openModel() throws IOException, ClassNotFoundException{
+    mainScreen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
     String[] cnmString = {"cnm"};
     boolean success = false;
     fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
@@ -163,14 +159,15 @@ public class NeuralModelController {
       file = selectedFile;
       success = true;
     }
+    mainScreen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     return success;
   }
 
   /**
    * Used to call the help files.
    */
-  public void help(){
-    //FileController.getInstance().openHelp(this);
+  public void help() throws Exception{
+    FileController.getInstance().openHelp(mainScreen);
   }
 
   /**
@@ -183,6 +180,7 @@ public class NeuralModelController {
     int confidence;
     int support;
 
+    mainScreen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
     if(instanceSet != null){
       maxOrder = mainScreen.optionsPanel.getMaxOrder();
       confidence = mainScreen.optionsPanel.getConfidence();
@@ -192,6 +190,7 @@ public class NeuralModelController {
       mainScreen.rulesPanel.setRulesPanel(cnm, confidence, support);
       mainScreen.inferencePanel.setNetwork(cnm);
     }
+    mainScreen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
   /**
@@ -240,5 +239,4 @@ public class NeuralModelController {
     });
     t.start();
   }
-
 }
