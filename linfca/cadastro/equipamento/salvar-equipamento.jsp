@@ -54,7 +54,9 @@
                 <td width="50%"><INPUT name="string_numero_patrimonio_equipamento" type=text maxLength=15
 										value="<% if (equipamentoXML != null) { %><%=equipamentoXML.getChildTextTrim("numero-patrimonio-equipamento")%><% } %>">
 				</td>
-                <td width="50%"><INPUT name="float_valor_equipamento" type=text maxLength=10></td>
+                <td width="50%"><INPUT name="float_valor_equipamento" type=text maxLength=10
+										value="<% if (equipamentoXML != null) { %><%=equipamentoXML.getChildTextTrim("valor-equipamento")%><% } %>">
+				</td>
               </tr>
               <tr>
                 <td width="50%"><P>Situação</P></td>
