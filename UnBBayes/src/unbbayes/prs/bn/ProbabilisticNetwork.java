@@ -235,15 +235,6 @@ public class ProbabilisticNetwork
 	}
 
 	/**
-	 *  Returna o número de variáveis da rede.
-	 *
-	 *@return    número de variáveis da rede.
-	 */
-	public int noVariaveis() {
-		return nos.size();
-	}
-
-	/**
 	 * Retorna o vetor de cópia dos nós
 	 * (sem as variáveis de utilidade).
 	 *

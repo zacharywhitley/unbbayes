@@ -50,6 +50,7 @@ public class IoResources extends ListResourceBundle {
 		{"LoadException3",": Missing '{'"},
 		{"LoadException4",": Decision variable cannot have a table"},
 		{"LoadException5",": Missing 'data'"},
-		{"FileNotFoundException","It was not possible to load the file!"}		
+		{"FileNotFoundException","It was not possible to load the file!"},
+		{"IsNotDirectoryException", "The specified path must be a directory"}
 	};
 }

@@ -50,7 +50,8 @@ public class IoResources_pt extends ListResourceBundle {
 		{"LoadException3",": Falta '{'"},
 		{"LoadException4",": Variável de decisão não pode ter tabela"},
 		{"LoadException5",": Falta 'data'"},
-		{"FileNotFoundException","Não foi possível abrir o arquivo!"}
+		{"FileNotFoundException","Não foi possível abrir o arquivo!"},
+		{"IsNotDirectoryException", "O caminho especificado tem que ser um diretório"}
 		
 	};
 }

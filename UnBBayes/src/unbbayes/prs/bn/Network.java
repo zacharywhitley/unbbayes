@@ -130,7 +130,11 @@ public class Network implements java.io.Serializable {
         return this.nos;
     }
     
-    
+    /**
+	 *  Returna o número de variáveis da rede.
+	 *
+	 *@return    número de variáveis da rede.
+	 */
     public int getNodeCount() {
     	return nos.size();    	
     }

@@ -382,7 +382,7 @@ public class WindowController implements KeyListener {
         ProbabilisticNode node = new ProbabilisticNode();
         node.setPosicao(x, y);
         node.appendState(resource.getString("firstStateProbabilisticName"));
-        node.setName(resource.getString("probabilisticNodeName") + rede.noVariaveis());
+        node.setName(resource.getString("probabilisticNodeName") + rede.getNodeCount());
         node.setDescription(node.getName());
         PotentialTable auxTabProb = ((ITabledVariable)node).getPotentialTable();
         auxTabProb.addVariable(node);
@@ -402,7 +402,7 @@ public class WindowController implements KeyListener {
         DecisionNode node = new DecisionNode();
         node.setPosicao(x, y);
         node.appendState(resource.getString("firstStateDecisionName"));
-        node.setName(resource.getString("decisionNodeName") + rede.noVariaveis());
+        node.setName(resource.getString("decisionNodeName") + rede.getNodeCount());
         node.setDescription(node.getName());
         rede.addNode(node);
     }
@@ -417,7 +417,7 @@ public class WindowController implements KeyListener {
     public void insertUtilityNode(double x, double y) {
         UtilityNode node = new UtilityNode();
         node.setPosicao(x, y);
-        node.setName(resource.getString("utilityNodeName") + rede.noVariaveis());
+        node.setName(resource.getString("utilityNodeName") + rede.getNodeCount());
         node.setDescription(node.getName());
         PotentialTable auxTab = ((ITabledVariable)node).getPotentialTable();
         auxTab.addVariable(node);

@@ -25,7 +25,7 @@ public class MSNetwork {
 		links = new ArrayList();				
 	}
 	
-	public void addNetwork(ProbabilisticNetwork net) {
+	public void addNetwork(SubNetwork net) {
 		nets.add(net);
 	}
 	

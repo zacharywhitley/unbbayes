@@ -30,6 +30,7 @@ import javax.swing.tree.*;
 import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
 import unbbayes.prs.id.*;
+import unbbayes.prs.msbn.MSNetwork;
 import unbbayes.util.*;
 
 /**
@@ -46,6 +47,19 @@ public class NetIO implements BaseIO {
 		ResourceBundle.getBundle("unbbayes.io.resources.IoResources");
 
 	private static final String ERROR_NET = resource.getString("errorNet");
+	
+	
+	public MSNetwork loadMSBN(File input) throws LoadException {
+		if (! input.isDirectory()) {
+			throw new LoadException(resource.getString("IsNotDirectoryException"));
+		}
+		MSNetwork msbn = new MSNetwork();
+		File files[] = input.listFiles();
+		for (int i = 0; i < files.length; i++) {
+//			msbn.addNetwork();			
+		}
+		return msbn;
+	}
 
 	/**
 	 *  Carrega a rede de um arquivo no formato NET.
@@ -314,7 +328,7 @@ public class NetIO implements BaseIO {
 			arq.println("}");
 			arq.println();
 
-			int sizeNos = net.noVariaveis();
+			int sizeNos = net.getNodeCount();
 			Node auxNo1;
 			for (int c1 = 0; c1 < sizeNos; c1++) {
 				auxNo1 = (Node) net.getNodeAt(c1);
@@ -371,7 +385,7 @@ public class NetIO implements BaseIO {
 			 * fim da escrita das variaveis!
 			 * agora vamos à escrita dos potenciais!
 			 */
-			for (int c1 = 0; c1 < net.noVariaveis(); c1++) {
+			for (int c1 = 0; c1 < net.getNodeCount(); c1++) {
 				auxNo1 = (Node) net.getNodeAt(c1);
 
 				NodeList auxListVa = auxNo1.getParents();
