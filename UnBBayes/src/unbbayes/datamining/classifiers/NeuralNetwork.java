@@ -7,6 +7,8 @@ import unbbayes.datamining.datamanipulation.*;
 
 public class NeuralNetwork extends DistributionClassifier implements Serializable{
 
+  public static final int AUTO_HIDDEN_LAYER_SIZE = -1;
+  public static final int NO_ERROR_VARIATION_STOP_CRITERION = -2;
   public static final int SIGMOID = 0;
   public static final int TANH = 1;
 
@@ -14,11 +16,14 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   private HiddenNeuron[] hiddenLayer;
   private OutputNeuron[] outputLayer;
   private transient float learningRate;
+  private transient float originalLearningRate;
   private transient float momentum;
   private transient int hiddenLayerSize;
   private transient ActivationFunction activationFunction = null;
   private int numOfAttributes;
-  private transient int trainningTime;
+  private transient int trainingTime;
+  private transient float minimumErrorVariation;
+  private transient boolean learningRateDecay = false;
 
   private transient QuadraticAverageError quadraticAverageError;
 
@@ -33,21 +38,49 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   /**The set of instances of the training set*/
   private transient InstanceSet instanceSet;
 
-  public NeuralNetwork(float learningRate, float momentum, int hiddenLayerSize, int activationFunction, int trainningTime) {
+  public NeuralNetwork(float learningRate,
+                       boolean learningRateDecay,
+                       float momentum,
+                       int hiddenLayerSize,
+                       int activationFunction,
+                       int trainingTime,
+                       float activationFunctionSteep,
+                       float minimumErrorVariation) {
     this.learningRate = learningRate;
+    this.originalLearningRate = learningRate;
+    this.learningRateDecay = learningRateDecay;
     this.momentum = momentum;
     this.hiddenLayerSize = hiddenLayerSize;
-    this.trainningTime = trainningTime;
+    this.trainingTime = trainingTime;
+    this.minimumErrorVariation = minimumErrorVariation;
 
     if(activationFunction == NeuralNetwork.SIGMOID){
-      this.activationFunction = new Sigmoid(1.0);   //valores default   pode modificar?????
+      this.activationFunction = new Sigmoid(activationFunctionSteep);
     } else if(activationFunction == NeuralNetwork.TANH){
-      this.activationFunction = new Tanh(/*1.7159, 2/3*/1 ,1);
+      this.activationFunction = new Tanh(activationFunctionSteep);
+    }
+  }
+
+  public NeuralNetwork(float learningRate,
+                       float momentum,
+                       int hiddenLayerSize,
+                       int activationFunction,
+                       int trainingTime) {
+    this.learningRate = learningRate;
+    this.originalLearningRate = learningRate;
+    this.momentum = momentum;
+    this.hiddenLayerSize = hiddenLayerSize;
+    this.trainingTime = trainingTime;
+
+    if(activationFunction == NeuralNetwork.SIGMOID){
+      this.activationFunction = new Sigmoid();
+    } else if(activationFunction == NeuralNetwork.TANH){
+      this.activationFunction = new Tanh();
     }
   }
 
   /**
-   * Builds the Combinatorial Neural Model classifier (CNM).
+   *
    *
    * @param instanceSet The training data
    * @exception Exception if classifier can't be built successfully
@@ -58,6 +91,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     Enumeration instanceEnum;
     numOfAttributes = instanceSet.numAttributes();
     float quadraticError = 0;
+    float oldQuadraticError;
 
     attributeVector = instanceSet.getAttributes();      //cria um array com os atributos para serialização
     this.classIndex = instanceSet.getClassIndex();      //guarda o indice da classa para serialização
@@ -84,6 +118,15 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     }
     inputLayer = new int[inputLayerSize];
 
+
+    //verifica se o numero de hidden neurons deve ser automatico
+    if(hiddenLayerSize == AUTO_HIDDEN_LAYER_SIZE){
+      hiddenLayerSize = (instanceSet.numAttributes() + instanceSet.numClasses()) / 2;
+      if(hiddenLayerSize < 3){
+        hiddenLayerSize = 3;
+      }
+    }
+
     hiddenLayer = new HiddenNeuron[hiddenLayerSize];
     for(int i=0; i<hiddenLayer.length; i++){
       hiddenLayer[i] = new HiddenNeuron(activationFunction, inputLayer.length);
@@ -94,9 +137,15 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       outputLayer[i] = new OutputNeuron(activationFunction, hiddenLayer.length);
     }
 
-    for (int i = 0; i < 100/*trainningTime*/; i++) {
-      quadraticError = 0;
+    for (int epoch = 1; epoch < trainingTime + 1; epoch++) {
       instanceEnum = instanceSet.enumerateInstances();
+      oldQuadraticError = quadraticError;
+      quadraticError = 0;
+
+      if(learningRateDecay){
+        learningRate = originalLearningRate / epoch;
+        System.out.println("leaningRate: " + learningRate  + "     original: " + originalLearningRate);
+      }
 
       while (instanceEnum.hasMoreElements()) {
         instance = (Instance) instanceEnum.nextElement();
@@ -105,12 +154,16 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       quadraticError = quadraticError/instanceSet.numWeightedInstances();
 
       if(quadraticAverageError != null){
-        quadraticAverageError.setQuadraticAverageError(i, quadraticError);
-        System.out.println("Erro quadrado médio " + i + " :" + quadraticError);
+        quadraticAverageError.setQuadraticAverageError(epoch, quadraticError);
+//        System.out.println("Erro quadrado médio " + epoch + " :" + quadraticError);
       }
-     ////////////////////////////////////////// teste para ver os valores dos pesos
-//      System.out.println("Erro quadrado médio " + i + " :" + quadraticError);
-     /////////////////////////////////////////
+
+      if(minimumErrorVariation != NO_ERROR_VARIATION_STOP_CRITERION){
+        if( Math.abs((oldQuadraticError - quadraticError) * 100 / oldQuadraticError) < minimumErrorVariation){
+          break;
+        }
+      }
+
     }
   }
 

@@ -11,7 +11,6 @@ import javax.swing.text.*;
 import unbbayes.controller.IconController;
 import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.gui.neuralmodel.*;
 import unbbayes.datamining.gui.*;
 
 /**

@@ -67,6 +67,9 @@ public class IconController
   protected ImageIcon selectionIcon;
   protected ImageIcon saveTableIcon;
   protected ImageIcon hierarchyIcon;
+  protected ImageIcon gridIcon;
+  protected ImageIcon fillIcon;
+  protected ImageIcon resetSizeIcon;
 
   public static IconController getInstance()
     {   if (singleton == null)
@@ -648,4 +651,41 @@ public class IconController
       return utilityNodeIcon;
     }
   }
+
+  public ImageIcon getFillIcon() {
+    if (fillIcon!=null)
+    {
+      return fillIcon;
+    }
+    else
+    {
+      fillIcon = new ImageIcon(getClass().getResource("/icons/fill.gif"));
+      return fillIcon;
+    }
+  }
+
+  public ImageIcon getResetSizeIcon() {
+    if (resetSizeIcon!=null)
+    {
+      return resetSizeIcon;
+    }
+    else
+    {
+      resetSizeIcon = new ImageIcon(getClass().getResource("/icons/reset_size.gif"));
+      return resetSizeIcon;
+    }
+  }
+
+  public ImageIcon getGridIcon() {
+    if (gridIcon!=null)
+    {
+      return gridIcon;
+    }
+    else
+    {
+      gridIcon = new ImageIcon(getClass().getResource("/icons/grid.gif"));
+      return gridIcon;
+    }
+  }
+
 }

@@ -11,8 +11,6 @@ import unbbayes.util.*;
 
 import unbbayes.controller.IconController;
 import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.gui.neuralnetwork.*;
-import unbbayes.datamining.gui.neuralmodel.*;
 
 /**
  *  Class that implements a tree used to insert a new instance for classification.

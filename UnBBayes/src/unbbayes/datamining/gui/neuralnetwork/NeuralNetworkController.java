@@ -16,6 +16,7 @@ public class NeuralNetworkController {
   private JFileChooser fileChooser;
   private InstanceSet instanceSet;
   private File file;
+  private int hiddenLayerSize;
 
   public NeuralNetworkController() {
 //    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralmodel.resources.NeuralModelResource");
@@ -39,20 +40,26 @@ public class NeuralNetworkController {
 
   public void learn() throws Exception{
     float learningRate;
+    boolean learningRateDecay;
     float momentum;
     int hiddenSize;
-    String trainningTime;  // não usado por enquanto
+    int trainningTime;
     int activationFunction;
+    float activationFunctionSteep;
+    float minimumErrorVariation;
 
     mainScreen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
     if(instanceSet != null){
       learningRate = mainScreen.optionsPanel.getLearningRate();
+      learningRateDecay = mainScreen.advancedOptionsPanel.getLearningRateDecayEnabled();
       momentum = mainScreen.optionsPanel.getMomentum();
-      hiddenSize = mainScreen.optionsPanel.getHiddenLayerSize();
+      hiddenSize = mainScreen.advancedOptionsPanel.getHiddenLayerSize();
       activationFunction = mainScreen.optionsPanel.getSelectedActivationFunction();
-      trainningTime = mainScreen.optionsPanel.getTrainningTime();
+      trainningTime = mainScreen.advancedOptionsPanel.getTrainningTime();
+      activationFunctionSteep = (float)mainScreen.advancedOptionsPanel.getActivationFunctionSteep();
+      minimumErrorVariation = (float)mainScreen.advancedOptionsPanel.getMinimumErrorVariation();
 
-      bpn = new NeuralNetwork(learningRate, momentum, hiddenSize, activationFunction, 0);
+      bpn = new NeuralNetwork(learningRate, learningRateDecay, momentum, hiddenSize, activationFunction, trainningTime, activationFunctionSteep, minimumErrorVariation);
       bpn.setQuadraticErrorOutput(mainScreen.chartPanel);
       bpn.buildClassifier(instanceSet);
       mainScreen.inferencePanel.setNetwork(bpn);
@@ -85,6 +92,7 @@ public class NeuralNetworkController {
 
   private void openSelectedFile(File selectedFile) throws Exception{
     instanceSet = FileController.getInstance().getInstanceSet(selectedFile, mainScreen);
+
     boolean numericAttributes = instanceSet.checkNumericAttributes();
     if (numericAttributes == true){
       throw new Exception(/*resource.getString*/("numericAttributesException"));
@@ -92,6 +100,14 @@ public class NeuralNetworkController {
     mainScreen.setTitle("Backpropagation Neural Network - " + selectedFile.getName());
     mainScreen.attributePanel.setInstances(instanceSet);
     mainScreen.attributePanel.enableComboBox(true);
+    hiddenLayerSize = (instanceSet.numAttributes() + instanceSet.numClasses()) / 2;
+    if(hiddenLayerSize < 3){
+      hiddenLayerSize = 3;
+    }
+  }
+
+  public int getHiddenLayerSize(){
+    return hiddenLayerSize;
   }
 
   public boolean saveModel() throws Exception{

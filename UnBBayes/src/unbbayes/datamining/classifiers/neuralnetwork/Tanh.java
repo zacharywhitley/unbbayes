@@ -4,26 +4,38 @@ import java.io.*;
 
 public class Tanh implements ActivationFunction, Serializable{
 
-  private double a;
-  private double b;
-  private double ba;
+  public static final double MIN_STEEP = 0.0;
+  public static final double DEF_STEEP = 1.0;
 
-  public Tanh(double a, double b) {
-    this.a = a;
-    this.b = b;
-    this.ba = b / a;
+  private double steep;
+
+  public Tanh(){
+    steep = DEF_STEEP;
+  }
+
+  public Tanh(double steep) {
+    this.steep = steep;
+  }
+
+  public void setSteep(float steep) {
+    if (steep > MIN_STEEP){
+      this.steep = steep;
+    }
+  }
+
+  public double getSteep(){
+    return steep;
   }
 
   public double functionValue(double v){
-    //return (1 - Math.exp(-2 * v))/(1 + Math.exp(-2 * v));
-    return a * (1 - Math.exp(-2 * b * v))/(1 + Math.exp(-2 * b * v));
+    return (1 - Math.exp(-2 * steep * v))/(1 + Math.exp(-2 * steep * v));
   }
 
   public double outputErrorTerm(double d, double o){  //sigma
-    return ba * (d - o) * (a - o) * (a + o);
+    return steep * (d - o) * (1 - o) * (1 + o);
   }
 
   public double hiddenErrorTerm(double y, double sum){   //sigma
-    return ba * (a - y) * (a + y) * sum;
+    return steep * (1 - y) * (1 + y) * sum;
   }
 }

@@ -12,7 +12,6 @@ import unbbayes.controller.IconController;
 import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.classifiers.cnmentities.*;
-//import unbbayes.datamining.datamanipulation.neuralmodel.util.*;
 
 /**
  *  Class that implements a panel that shows the rules extracted from the model.

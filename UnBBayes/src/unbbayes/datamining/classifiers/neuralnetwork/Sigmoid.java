@@ -4,26 +4,27 @@ import java.io.*;
 
 public class Sigmoid implements ActivationFunction, Serializable{
 
-  public static final double MIN_BETA = 0.0;
-  public static final double DEF_BETA = 1.0;
+  public static final double MIN_STEEP = 0.0;
+  public static final double DEF_STEEP = 1.0;
 
-  private double beta;  //constant (determining the steepness of the sigmoid)
+  private double steep;  //constant (determining the steepness of the sigmoid)
 
   public Sigmoid(){
-    beta = DEF_BETA;
+    steep = DEF_STEEP;
   }
 
-  public Sigmoid(double beta) {
-    this.beta = beta;
+  public Sigmoid(double steep) {
+    this.steep = steep;
   }
 
-  public void setBeta(float beta) {
-    if (beta > MIN_BETA)
-      beta = beta;
+  public void setSteep(float steep) {
+    if (steep > MIN_STEEP){
+      this.steep = steep;
+    }
   }
 
-  public double getBeta(){
-    return beta;
+  public double getSteep(){
+    return steep;
   }
 
   /**
@@ -32,7 +33,7 @@ public class Sigmoid implements ActivationFunction, Serializable{
    * @return the ouput of the sigomid funciton
    */
   public double functionValue(double v){
-    return 1 / (1 + Math.exp(- beta * v));
+    return 1 / (1 + Math.exp(- steep * v));
   }
 
   /**
@@ -42,11 +43,11 @@ public class Sigmoid implements ActivationFunction, Serializable{
    * @return the value of sigma
    */
   public double outputErrorTerm(double desiredOutput, double actualOutput){   //sigma
-    return beta * (desiredOutput - actualOutput) * actualOutput * (1 - actualOutput);
+    return steep * (desiredOutput - actualOutput) * actualOutput * (1 - actualOutput);
   }
 
   public double hiddenErrorTerm(double y, double sum){   //sigma
-    return beta * y * (1 - y) * sum;
+    return steep * y * (1 - y) * sum;
   }
 
 }
