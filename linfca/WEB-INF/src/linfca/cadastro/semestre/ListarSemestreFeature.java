@@ -35,7 +35,6 @@ public class ListarSemestreFeature implements Feature {
 	public Element process(Element in) throws Exception {
 		
 		Connection con = Controller.getInstance().makeConnection();
-		
 		PreparedStatement ps = con.prepareStatement("select * from semestre");
 		ResultSet rs = ps.executeQuery();
 		
@@ -44,8 +43,8 @@ public class ListarSemestreFeature implements Feature {
 			
 			int codigo = rs.getInt("cod_semestre");			
 			String descricao = rs.getString("desc_semestre");
-			Date dataInicio = rs.getDate("data-inicio");
-			Date dataFim = rs.getDate("data-fim");
+			Date dataInicio = rs.getDate("data_inicio");
+			Date dataFim = rs.getDate("data_fim");
 			
 			StringTokenizer st = new StringTokenizer(dataInicio.toString(), "-");
 			String anoInicio = st.nextToken();

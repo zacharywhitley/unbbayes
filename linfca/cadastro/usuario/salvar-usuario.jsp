@@ -1,4 +1,7 @@
 <%@page import="linfca.*, 
+		linfca.cadastro.tipousuario.*, 
+		linfca.cadastro.tiposexo.*, 
+		linfca.cadastro.semestre.*, 
 		linfca.cadastro.usuario.*, 
 		linfca.util.*,
 		java.io.*,
