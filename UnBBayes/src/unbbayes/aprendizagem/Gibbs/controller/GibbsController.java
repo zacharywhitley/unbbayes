@@ -16,7 +16,6 @@ import unbbayes.aprendizagem.Gibbs.io.IOGibbs;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
 import unbbayes.io.LoadException;
-import unbbayes.monteCarlo.io.IOMonteCarlo;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.util.NodeList;

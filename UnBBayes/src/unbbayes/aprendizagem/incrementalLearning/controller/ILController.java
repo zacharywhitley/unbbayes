@@ -21,23 +21,18 @@
 package unbbayes.aprendizagem.incrementalLearning.controller;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFileChooser;
 
-import unbbayes.aprendizagem.LearningToolkit;
-import unbbayes.aprendizagem.PonctuationToolkit;
 import unbbayes.aprendizagem.TVariavel;
 import unbbayes.aprendizagem.incrementalLearning.io.ILIO;
 import unbbayes.aprendizagem.incrementalLearning.util.ILToolkit;
 import unbbayes.controller.FileController;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
-import unbbayes.io.LoadException;
 import unbbayes.io.NetIO;
-import unbbayes.monteCarlo.gui.TelaParametros;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.util.NodeList;
