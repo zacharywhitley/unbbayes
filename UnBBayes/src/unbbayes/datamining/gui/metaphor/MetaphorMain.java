@@ -137,7 +137,9 @@ public class MetaphorMain extends JPanel
   {   try
       {   net = new NetIO().load(selectedFile);
           metaphorTree = new MetaphorTree(net);
-
+          metaphorTree.expandTree();
+          jPanel3.removeAll();
+          jPanel3.add(metaphorTree,  BorderLayout.CENTER);
           statusBar.setText("File opened successfully");
       }
       catch (Exception e)

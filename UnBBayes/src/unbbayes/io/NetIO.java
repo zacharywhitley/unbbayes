@@ -74,7 +74,7 @@ public class NetIO implements BaseIO {
 		st.ordinaryChars('(', ')');
 		st.eolIsSignificant(false);
 		st.quoteChar('"');
-		//st.commentChar('%');
+		st.commentChar('%');
 
 		proximo(st);
 		if (st.sval.equals("net")) {
@@ -157,7 +157,7 @@ public class NetIO implements BaseIO {
 								auxNo.appendState(st.sval);
 							}
 						}
-                                                else if (st.sval.equals("%descricao"))
+                                                /*else if (st.sval.equals("%descricao"))
                                                 {	proximo(st);
 							auxNo.setExplanationDescription(st.sval);
                                                         proximo(st);
@@ -170,7 +170,7 @@ public class NetIO implements BaseIO {
                                                         proximo(st);
 							System.out.println(st.sval);
                                                         proximo(st);
-						}
+						}*/
                                                 else {
 							throw new LoadException(
 								ERROR_NET
@@ -321,13 +321,13 @@ public class NetIO implements BaseIO {
 					arq.println(
 						"     states = (" + auxString.toString() + ");");
 				}
-                                if (!auxNo1.getExplanationDescription().equals(""))
+                                /*if (!auxNo1.getExplanationDescription().equals(""))
                                 {   arq.println("     %descricao \"" + auxNo1.getExplanationDescription() + "\"");
                                 }
                                 if (auxNo1.getInformationType() == Node.EXPLANATION_TYPE)
                                 {   //  inserir código para salvar as frases
                                     //arq.println("     %frase \"" + "" + "\"" + "\"" + "" + "\"" + "\"" + "" + "\"");
-                                }
+                                }*/
 
 				arq.println("}");
 				arq.println();
