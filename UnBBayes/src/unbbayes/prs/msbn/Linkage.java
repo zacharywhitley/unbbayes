@@ -247,6 +247,19 @@ public class Linkage {
 			l.absorveIn(naOrdem);
 		}
 		
+		removeRedundance();
+		
+		for (int i = 0; i < treeSize; i++) {		
+			Link l = (Link) linkList.get(i);
+			l.absorveOut(naOrdem);
+		}
+		
+		SubNetwork net = (naOrdem) ? n1 : n2;
+		net.getJunctionTree().consistencia();
+		net.updateMarginais();
+	}
+
+	private void removeRedundance() {
 		for (int i = jt.getSeparatorsSize()-1; i >=0; i--) {
 			Separator sep = jt.getSeparatorAt(i);
 			PotentialTable oldRedTab = (PotentialTable) sep.getPotentialTable().clone();
@@ -267,20 +280,10 @@ public class Linkage {
 			for (int j = linkList.size()-1; j>=0; j--) {
 				Link l = (Link) linkList.get(j);
 				if (l.getClique() == sep.getNo2()) {
-					System.out.println("Entrou");
 					l.removeRedundancy(tA, oldRedTab);					
 					break;					
 				}
 			}
 		}
-		
-		for (int i = 0; i < treeSize; i++) {		
-			Link l = (Link) linkList.get(i);
-			l.absorveOut(naOrdem);
-		}
-		
-		SubNetwork net = (naOrdem) ? n1 : n2;
-		net.getJunctionTree().consistencia();
-		net.updateMarginais();
 	}
 }
