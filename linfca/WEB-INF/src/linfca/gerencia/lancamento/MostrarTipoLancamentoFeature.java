@@ -25,7 +25,6 @@ public class MostrarTipoLancamentoFeature implements Feature {
 	 * 
 	 * 	  <sair>
 	 *		<cod-lancamento-uso>4</cod-lancamento-uso>
-	 * 		<cod-equipamento>1</cod-equipamento>
 	 *    </sair>
 	 * </out> 
 	 * </pre>
@@ -35,7 +34,7 @@ public class MostrarTipoLancamentoFeature implements Feature {
 		Element out = new Element("out");
 		Connection con = Controller.getInstance().makeConnection();
 		PreparedStatement ps = con.prepareStatement(
-			"SELECT cod_lancamento_uso, cod_equipamento" +
+			"SELECT cod_lancamento_uso" +
 			" FROM lancamento_uso " +
 			" WHERE cod_usuario = ? AND dt_hora_fim_lancamento_uso IS NULL"
 		);
@@ -48,10 +47,12 @@ public class MostrarTipoLancamentoFeature implements Feature {
 			Element codLancamento = new Element("cod-lancamento-uso");
 			codLancamento.setText("" + rs.getLong("cod_lancamento_uso"));
 			sair.getChildren().add(codLancamento);
-
+			
+			/*
 			Element codEquipamento = new Element("cod-equipamento");
 			codEquipamento.setText("" + rs.getLong("cod_equipamento"));
 			sair.getChildren().add(codEquipamento);
+			*/
 
 			out.getChildren().add(sair);
 		} else {

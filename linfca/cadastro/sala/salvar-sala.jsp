@@ -10,7 +10,7 @@
 
 <%
 	String nomeTabela = "sala";
-	String codElemento = request.getParameter("cod_sala");
+	String codElemento = request.getParameter("cod_elemento");
 	Element outXML = null;
 
 	if (codElemento != null) {	

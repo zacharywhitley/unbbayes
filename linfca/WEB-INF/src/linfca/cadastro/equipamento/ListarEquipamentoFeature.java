@@ -34,27 +34,12 @@ public class ListarEquipamentoFeature implements Feature {
 	 *	 	  </equipamento>*
 	 * 		</sala>*
 	 * </out> 
-	 * 
-	 * ||
-	 * 
-	 * <in/>
-	 * 
-	 * <out>
-	 *   <equipamento>
-	 * 		<cod-equipamento>34</cod-equipamento>
-	 *		<nome-equipamento>Equipamento 25</nome-equipamento>
-	 *	 </equipamento>*
-	 * </out>
 	 * </pre>
 	 * @see Feature#process(Element)
 	 */
 	public Element process(Element in) throws Exception {
 		con = Controller.getInstance().makeConnection();
 		
-		if (in == null || in.getChildren().size() == 0) {
-			return listarTodos();
-		}
-	
 		String descTipoEquipamento = in.getChildTextTrim("desc-tipo-equipamento");
 		String descTipoSituacao    = in.getChildTextTrim("desc-tipo-situacao");
 		
@@ -140,28 +125,6 @@ public class ListarEquipamentoFeature implements Feature {
 		return out;
 	}
 	
-	private Element listarTodos() throws SQLException {
-		PreparedStatement ps = con.prepareStatement("select * from equipamento group by cod_tipo_equipamento");
-		ResultSet rs = ps.executeQuery();
-		Element out = new Element("out");
-		while (rs.next()) {
-			Element equip = new Element("equipamento");
-			int codEquip = rs.getInt("cod_equipamento");
-			String nome = rs.getString("nome_equipamento");
-			
-			Element codXML = new Element("cod-equipamento");
-			codXML.setText("" + codEquip);
-			
-			Element nomeXML = new Element("nome-equipamento");
-			nomeXML.setText(nome);
-			
-			equip.getChildren().add(codXML);
-			equip.getChildren().add(nomeXML);
-			
-			out.getChildren().add(equip);
-		}
-		return out;
-	}
 	
 	public static void main(String args[]) throws Exception {
 		Element in = new Element("in");

@@ -3,7 +3,7 @@ package linfca.cadastro;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Date;
 import java.util.StringTokenizer;
 
@@ -13,21 +13,11 @@ import org.jdom.Element;
 
 public class ListarGenericoFeature implements Feature {
 	
-	private ArrayList listaCampos;
-	
-	public ListarGenericoFeature() {
-		listaCampos = new ArrayList();
-	}
-	
-	public void inserirCampo(String nome) {
-		listaCampos.add(nome);	
-	}
-	
-	
 	/**
 	 * <pre>
 	 * <in>
  	 * 		<nome-tabela>curso</nome-tabela>
+ 	 * 		<campo>campo1</campo>
 	 * </in>
 	 * 
 	 * <out>
@@ -45,8 +35,11 @@ public class ListarGenericoFeature implements Feature {
 		Connection con = Controller.getInstance().makeConnection();
 		StringBuffer sql = new StringBuffer("select cod_" + nomeTabela);
 		
+		List listaCampos = in.getChildren("campo");
+		
 		for (int i = 0; i < listaCampos.size(); i++) {
-			sql.append(", " + listaCampos.get(i));
+			Element el = (Element) listaCampos.get(i);
+			sql.append(", " + el.getTextTrim());
 		}
 		
 		sql.append(" from " + nomeTabela);
@@ -64,7 +57,8 @@ public class ListarGenericoFeature implements Feature {
 		
 			elementoXML.getChildren().add(codigoXML);
 			for (int i = 0; i < listaCampos.size(); i++) {
-				String campo = (String) listaCampos.get(i);
+				Element el = (Element) listaCampos.get(i);
+				String campo = el.getTextTrim();
 				String valor = rs.getString(campo);
 				Element campoXML = new Element(campo);				
 				campoXML.setText(valor);

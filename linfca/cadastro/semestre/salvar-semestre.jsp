@@ -10,7 +10,7 @@
 
 <%
 
-	String codSemestre = request.getParameter("cod_semestre");
+	String codSemestre = request.getParameter("cod_elemento");
 	Element semestreXML = null;
 
 	if (codSemestre != null) {

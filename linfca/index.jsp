@@ -1,5 +1,6 @@
-<%@include file="/util.jsp" %> 
-<%@include file =  "/design/cabecalho.jsp"%>
+<%@ taglib uri="/WEB-INF/taglib/c.tld" prefix="c" %>
+<%@ include file="/util.jsp" %> 
+<%@ include file= "/design/cabecalho.jsp" %>
 
 <script language="javascript">
 	function submeter() {
@@ -31,7 +32,7 @@
               <tr>
                 <td colspan=2>
                   <P><INPUT type="submit" value="Processar">&nbsp;&nbsp;<INPUT type="reset" value="Limpar">
-                  </P><br><br>				  
+                  </P><br><br>
 		</td>
 		</form>
 	       </tr>

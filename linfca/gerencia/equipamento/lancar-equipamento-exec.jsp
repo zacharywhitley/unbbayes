@@ -8,37 +8,25 @@
         
 <%
 
-   String mensagem = "";
-   String codUsuario = request.getParameter("cod-usuario");   
+   String identificacao = request.getAttribute("identificacao").toString();
+   String nome = request.getAttribute("nome").toString();
 
+   String mensagem = nome + " (" + identificacao + ")";
+   
    Element in = new Element("in");
    
-   if (codUsuario != null)  {
-      mensagem = "Lançamento de uso de máquina concluído com sucesso!";
-      String codEquipamento = request.getParameter("cod-equipamento");
-
-	  Element usuario = new Element("cod-usuario");
-	  Element equipamento = new Element("cod-equipamento");	   	  
-	  usuario.setText(codUsuario);
-	  equipamento.setText(codEquipamento);
+   if (request.getAttribute("cod-usuario") != null) {
+	String codUsuario = request.getAttribute("cod-usuario").toString();
+      mensagem += " entrou no LINF com sucesso!";
+	Element usuario = new Element("cod-usuario");
+	usuario.setText(codUsuario);
       in.getChildren().add(usuario);
-      in.getChildren().add(equipamento);
    } else {
-      mensagem = "Fechamento do lançamento de uso de máquina concluído com sucesso!";
-	  String codLancamento = request.getAttribute("cod-lancamento-uso").toString();
+      mensagem += " saiu do LINF com sucesso!";
+      String codLancamento = request.getAttribute("cod-lancamento-uso").toString();
       Element lancamento = new Element("cod-lancamento-uso");
       lancamento.setText(codLancamento);
       in.getChildren().add(lancamento);
-	  	  
-	  Element equipamento = new Element("cod-equipamento");
-	  String codEquipamento = request.getAttribute("cod-equipamento").toString();
-	  equipamento.setText(codEquipamento);
-	  in.getChildren().add(equipamento);
-/*	  	  
-      Element descricao = new Element("desc-tipo-situacao");
-      descricao.setText(TipoSituacao.DISPONIVEL);
-	  in.getChildren().add(descricao);
-*/	  
    }
    
    Feature  lancamentoF = new LancamentoUsoFeature();

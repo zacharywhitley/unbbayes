@@ -3,7 +3,7 @@
 		linfca.gerencia.lancamento.*,
 		javax.servlet.RequestDispatcher,
         org.jdom.Element" 
-        errorPage="/design/erro.jsp" %> 
+        errorPage="/design/erro_index.jsp" %> 
 <html>
 <head>
 </head>
@@ -12,18 +12,16 @@
 <%		
 		Element in = new Element("in");
 		Element identificacao = new Element("identificacao");
-		String idStr = request.getParameter("identificacao");
-		identificacao.setText(idStr);		
-		Element senha = new Element("senha");
-		senha.setText(request.getParameter("senha"));
-
+                String idStr = request.getParameter("identificacao").substring(4, 11);
+		
+		identificacao.setText(idStr);
 		in.getChildren().add(identificacao);		
-		in.getChildren().add(senha);
 		
 		Feature feature = new ValidarUsuarioFeature();
 		Element outXML = feature.process(in);
 		
 		String codUsuario = outXML.getChildTextTrim("cod-usuario");
+		String nome = outXML.getChildTextTrim("nome");	
 		
 		Element inLancamento = new Element("in");
 		Element codUsuarioXML = new Element("cod-usuario");
@@ -32,21 +30,18 @@
 		Feature mostrar = new MostrarTipoLancamentoFeature();
 		outXML = mostrar.process(inLancamento);	
 		
+		request.setAttribute("identificacao", idStr);
+		request.setAttribute("nome", nome);
 		if (outXML.getChild("entrar") != null) {
-			request.setAttribute("cod-usuario", codUsuario);
-			RequestDispatcher dispatcher = request.getRequestDispatcher("/gerencia/equipamento/selecionar-equipamento.jsp");					
-			dispatcher.forward(request, response);
+			request.setAttribute("cod-usuario", codUsuario);			
 		} else {
 			Element sair = outXML.getChild("sair");
 			String codLancamento = sair.getChildTextTrim("cod-lancamento-uso");
 			request.setAttribute("cod-lancamento-uso", codLancamento);
-			
-			String codEquipamento = sair.getChildTextTrim("cod-equipamento");
-			request.setAttribute("cod-equipamento", codEquipamento);
-	
-			RequestDispatcher dispatcher = request.getRequestDispatcher("/gerencia/equipamento/lancar-equipamento-exec.jsp");
-			dispatcher.forward(request, response);
 		}
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/gerencia/equipamento/lancar-equipamento-exec.jsp");
+		dispatcher.forward(request, response);
 %>
+
 </body>
 </html>

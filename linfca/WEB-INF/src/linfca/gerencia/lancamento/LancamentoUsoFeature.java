@@ -18,12 +18,9 @@ public class LancamentoUsoFeature implements Feature {
 	/**
 	 * <pre>
 	 * <in>
-	 *    (<cod-lancamento-uso>1</cod-lancamento-uso>
-	 *     <cod-equipamento>7</cod-equipamento>)
+	 *    <cod-lancamento-uso>1</cod-lancamento-uso>
 	 *       |
-	 *    (<cod-usuario>1</cod-usuario>
-	 *     <desc-tipo-situacao>Disponível</desc-tipo-situacao>)
-	 * 
+	 *    <cod-usuario>1</cod-usuario>
 	 * </in>
 	 * 
 	 * <out>
@@ -42,7 +39,6 @@ public class LancamentoUsoFeature implements Feature {
 		Timestamp dtHora = new Timestamp(System.currentTimeMillis());
 		
 		String descTipoSituacao = null;
-		String codEquipamento = in.getChildTextTrim("cod-equipamento");
 		
 		if ( in.getChild("cod-lancamento-uso") != null ) {
 			
@@ -64,28 +60,27 @@ public class LancamentoUsoFeature implements Feature {
 			ps.setInt(2, Integer.parseInt(codLancamento));
 			
 		} else {
-			
-			descTipoSituacao = TipoSituacao.USO;
-			
 			String codUsuario = in.getChildTextTrim("cod-usuario");
+			descTipoSituacao = TipoSituacao.USO;			
 			
+			/*		
 			if (! situacaoOK(codEquipamento, con)) {
 				throw new RuntimeException("Esse computador já está em uso!");
 			}
+			*/
 			
 			StringBuffer sql = new StringBuffer();
 			sql.append("INSERT INTO ");
 			sql.append("  Lancamento_Uso ");
-			sql.append("  (cod_usuario, cod_equipamento, ");
+			sql.append("  (cod_usuario, ");
 			sql.append("   dt_hora_inicio_lancamento_uso) ");
 			sql.append("VALUES ");
-			sql.append("  (?, ?, ?) ");
+			sql.append("  (?, ?) ");
 			
 			ps = con.prepareStatement(sql.toString());
 
 			ps.setLong(1, Long.parseLong(codUsuario));
-			ps.setLong(2, Long.parseLong(codEquipamento));
-			ps.setTimestamp(3, dtHora);
+			ps.setTimestamp(2, dtHora);
 		}
 		
 		// cria o elemento de saída
@@ -97,9 +92,9 @@ public class LancamentoUsoFeature implements Feature {
 			throw new RuntimeException("Não foi possível processar o lançamento!");
 		}	
 						
-		ps.close();		
+		ps.close();
 		
-		atualizarSituacaoComputador(codEquipamento, descTipoSituacao, con);
+//		atualizarSituacaoComputador(codEquipamento, descTipoSituacao, con);
 		
 		con.close();
 		

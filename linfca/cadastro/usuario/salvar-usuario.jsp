@@ -1,4 +1,5 @@
 <%@page import="linfca.*, 
+            linfca.cadastro.*,
 		linfca.cadastro.tipousuario.*, 
 		linfca.cadastro.tiposexo.*, 
 		linfca.cadastro.semestre.*, 
@@ -13,7 +14,7 @@
 
 <%
 
-	String codUsuario = request.getParameter("cod_usuario");
+	String codUsuario = request.getParameter("cod_elemento");
 	File foto = null;
 	Element usuarioXML = null;
 	if (codUsuario != null) {
@@ -24,7 +25,7 @@
 		in.getChildren().add(codUsuarioXML);
 		
 		Feature  detalharUsuario = new DetalharUsuarioFeature();
-		usuarioXML = detalharUsuario.process(in);	
+		usuarioXML = detalharUsuario.process(in);
 		
 		if (usuarioXML != null) {
 			byte[] buffer = Base64.decode(Base64.getBinaryBytes(usuarioXML.getChildTextTrim("foto")));
@@ -71,7 +72,7 @@
                   <% 
 		             Feature  listarTipos = new ListarTipoUsuarioFeature();
 			         Element tiposXML = listarTipos.process(null);
-			         Iterator tipos = tiposXML.getChildren().iterator();
+		         Iterator tipos = tiposXML.getChildren().iterator();
 			         while (tipos.hasNext()) {
 		  	            Element tipo = (Element) tipos.next();
 		                %>
@@ -97,11 +98,11 @@
               <tr>
                 <td width="50%">
                   <INPUT type=text maxLength=35 name="string_nome"
-                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("nome").getTextTrim()%><% } %>">
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChildTextTrim("nome")%><% } %>">
                 </td>
                 <td width="50%">
                   <INPUT type=text maxLength=35 name="string_sobrenome"
-                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("sobrenome").getTextTrim()%><% } %>">
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChildTextTrim("sobrenome")%><% } %>">
                 </td>
               </tr>
               <tr>
@@ -171,12 +172,13 @@
               </tr>
 			  <tr>
                 <td><P>Semestre</P></td>
+                <td><P>Curso</P></td>
               </tr> 
-			  <tr>                
+		  <tr>                
                 <td>
                   <select name="int_cod_semestre">
                   <% 
-		             listarTipos = new ListarSemestreFeature();
+        		         listarTipos = new ListarSemestreFeature();
 			         tiposXML = listarTipos.process(null);
 			         tipos = tiposXML.getChildren().iterator();
 			         while (tipos.hasNext()) {
@@ -184,10 +186,37 @@
 		                %>
                      <option value="<%= tipo.getChildTextTrim("cod-semestre") %>" 
                       <% if ( (usuarioXML != null) && (tipo.getChildTextTrim("cod-semestre").equals(usuarioXML.getChildTextTrim("cod-semestre")))) { %> selected <% } %> > 
-                     <%= ((Element)tipo.getChild("descricao-semestre")).getText() %> </option>
+                     <%= tipo.getChildTextTrim("descricao-semestre") %> </option>
                   <% }	%>
                   </select>
                 </td>
+
+  		    <td>
+                  <select name="int_cod_curso">
+                  <% 
+		         Feature listar = new ListarGenericoFeature();
+                         Element in = new Element("in");
+			 Element nomeXML = new Element("nome-tabela");
+			 nomeXML.setText("curso");
+			 in.getChildren().add(nomeXML);
+
+                         Element campoXML = new Element("campo");
+  		         campoXML.setText("desc_curso");
+			 in.getChildren().add(campoXML);
+                         
+
+		         Element elementoXML = listar.process(in);
+		         Iterator elementos = elementoXML.getChildren().iterator();
+		         while (elementos.hasNext()) {
+		  	         Element elemento = (Element) elementos.next();
+		       %>
+                     <option value="<%= elemento.getChildTextTrim("cod-elemento") %>" 
+                      <% if ( (usuarioXML != null) && (elemento.getChildTextTrim("cod-elemento").equals(usuarioXML.getChildTextTrim("cod-curso")))) { %> selected <% } %> > 
+                      <%= elemento.getChildTextTrim("desc_curso") %></option>
+                     <% }	%>
+                  </select>
+                </td>
+
               </tr>
               <% if (usuarioXML != null) { %>
                     <INPUT type="hidden" name="int_cod_usuario" value="<%=codUsuario%>">

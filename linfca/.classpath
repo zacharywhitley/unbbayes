@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-    <classpathentry kind="var" path="JRE_LIB" rootpath="JRE_SRCROOT" sourcepath="JRE_SRC"/>
-    <classpathentry kind="lib" path="C:/Program Files/Apache Tomcat 4.0/lib/jasper-runtime.jar"/>
+    <classpathentry exported="true" kind="var" path="JRE_LIB"
+        rootpath="JRE_SRCROOT" sourcepath="JRE_SRC"/>
     <classpathentry kind="src" path="WEB-INF/src"/>
-    <classpathentry kind="src" path="work"/>
-    <classpathentry kind="lib" path="WEB-INF/lib/jdbc2_0-stdext.jar"/>
-    <classpathentry kind="lib" path="WEB-INF/lib/jdom.jar"/>
-    <classpathentry kind="lib" path="WEB-INF/lib/mm.mysql-2.0.13-bin.jar"/>
-    <classpathentry kind="lib" path="WEB-INF/lib/servlet.jar"/>
-    <classpathentry kind="lib" path="WEB-INF/lib/xerces.jar"/>
-    <classpathentry kind="lib" path="WEB-INF/lib/cos.jar"/>
-    <classpathentry kind="lib" path="D:/eclipse/plugins/org.junit_3.7.0/junit.jar"/>
+    <classpathentry exported="true" kind="lib" path="WEB-INF/lib/jdom.jar"/>
+    <classpathentry exported="true" kind="lib" path="WEB-INF/lib/mm.mysql-2.0.13-bin.jar"/>
+    <classpathentry exported="true" kind="lib" path="WEB-INF/lib/servlet.jar"/>
+    <classpathentry exported="true" kind="lib" path="WEB-INF/lib/xerces.jar"/>
+    <classpathentry exported="true" kind="lib" path="WEB-INF/lib/cos.jar"/>
+    <classpathentry exported="true" kind="lib" path="H:/Meus documentos/programas/eclipse2.0/plugins/org.eclipse.tomcat_4.0.3/jasper-runtime.jar"/>
+    <classpathentry exported="true" kind="lib" path="H:/Meus documentos/programas/eclipse2.0/plugins/org.junit_3.7.0/junit.jar"/>
     <classpathentry kind="output" path="WEB-INF\classes"/>
 </classpath>

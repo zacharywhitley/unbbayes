@@ -11,7 +11,7 @@
 <%
 
    boolean inserir = true;
-   
+  
    Element in = new Element("usuario");
    
    MultipartRequest multi = new MultipartRequest(request, ".");   
@@ -22,6 +22,7 @@
       String name = (String)params.nextElement();
       
       String value = multi.getParameter(name);
+
 	  Element element = new Element(name);
 	  element.setText(value);
 	  
@@ -56,17 +57,23 @@
 	  File f = multi.getFile(name);
 	  
 	  if (f != null) {
+	     String nomeFoto = in.getChildTextTrim("string_identificacao");
+	     String nomeArquivo = f.getName();
+	     String extensao = nomeArquivo.substring(nomeArquivo.lastIndexOf('.'));
 	     FileInputStream fis = new FileInputStream(f);
 	     byte buffer[] = new byte[(int)f.length()];
 	     fis.read(buffer);
+	     FileOutputStream fos = new FileOutputStream("d:\\fotos\\" + nomeFoto + extensao);
+           fos.write(buffer);
 	     foto64 = Base64.getString(Base64.encode(buffer));
 	  
 	     Element element = new Element("string_foto");
 	     element.setText(foto64);
 	     in.getChildren().add(element);
-		 f.deleteOnExit();
+	     f.deleteOnExit();
 	  
 	     fis.close();
+	     fos.close();
 	  }
 	  
    }  

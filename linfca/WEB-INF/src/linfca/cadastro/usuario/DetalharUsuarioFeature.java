@@ -25,6 +25,8 @@ public class DetalharUsuarioFeature implements Feature {
 	 * 	  <cod-usuario>1</cod-usuario>
 	 *    <cod-tipo-usuario>1<cod-tipo-usuario>
 	 *    <cod-tipo-sexo>1</cod-tipo-sexo>
+	 *    <cod-curso>2</cod-curso> 
+	 *    <cod-semestre>5</cod-semestre>
 	 *    <identificacao>9912345</identificacao>
 	 *    <cpf>12345678912</cpf>
 	 *    <nome>Mané</nome>
@@ -67,6 +69,8 @@ public class DetalharUsuarioFeature implements Feature {
 			String email = rs.getString("email");
 			String endereco = rs.getString("endereco");
 			String foto = rs.getString("foto");
+			int codSemestre = rs.getInt("cod_semestre");
+			int codCurso = rs.getInt("cod_curso");
 			
 			StringTokenizer st = new StringTokenizer(dtNascimento.toString(), "-");			
 			String ano = st.nextToken();
@@ -76,6 +80,8 @@ public class DetalharUsuarioFeature implements Feature {
 			Element codUsuarioXML = new Element("cod-usuario");
 			Element codTipoUsuarioXML = new Element("cod-tipo-usuario");
 			Element codTipoSexoXML = new Element("cod-tipo-sexo");
+			Element codSemestreXML = new Element("cod-semestre");
+			Element codCursoXML = new Element("cod-curso");
 			Element identificacaoXML = new Element("identificacao");
 			Element cpfXML = new Element("cpf");
 			Element nomeXML = new Element("nome");
@@ -91,6 +97,8 @@ public class DetalharUsuarioFeature implements Feature {
 			codUsuarioXML.setText(codUsuario);
 			codTipoUsuarioXML.setText("" + codTipoUsuario);
 			codTipoSexoXML.setText("" + codTipoSexo);
+			codSemestreXML.setText("" + codSemestre);
+			codCursoXML.setText("" + codCurso);
 			identificacaoXML.setText(identificacao);
 			cpfXML.setText(cpf);
 			nomeXML.setText(nome);
@@ -103,10 +111,11 @@ public class DetalharUsuarioFeature implements Feature {
 			enderecoXML.setText(endereco);
 			fotoXML.setText(foto);
 			
-			
 			out.getChildren().add(codUsuarioXML);
 			out.getChildren().add(codTipoUsuarioXML);
 			out.getChildren().add(codTipoSexoXML);
+			out.getChildren().add(codSemestreXML);
+			out.getChildren().add(codCursoXML);
 			out.getChildren().add(identificacaoXML);
 			out.getChildren().add(cpfXML);
 			out.getChildren().add(nomeXML);

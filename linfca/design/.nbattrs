@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE attributes PUBLIC "-//NetBeans//DTD DefaultAttributes 1.0//EN" "http://www.netbeans.org/dtds/attributes-1_0.dtd">
+<attributes version="1.0">
+    <fileobject name="cabecalho.jsp">
+        <attr name="ATTR_INCLUDING_JSPS" serialvalue="aced0005737200116a6176612e7574696c2e48617368536574ba44859596b8b7340300007870770c000000083f4000000000000174000a2f696e6465782e6a737078"/>
+    </fileobject>
+    <fileobject name="rodape.jsp">
+        <attr name="ATTR_INCLUDING_JSPS" serialvalue="aced0005737200116a6176612e7574696c2e48617368536574ba44859596b8b7340300007870770c000000083f4000000000000174000a2f696e6465782e6a737078"/>
+    </fileobject>
+</attributes>

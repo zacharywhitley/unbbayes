@@ -9,22 +9,22 @@
 <%@include file =  "/design/cabecalho_gerencia.jsp"%>
 
 <%
-	String nomeTabela = "curso";
-	String codCurso = request.getParameter("cod_elemento");
-	Element cursoXML = null;
+	String nomeTabela = "tipo_sexo";
+	String codElemento = request.getParameter("cod_elemento");
+	Element elementoXML = null;
 
-	if (codCurso != null) {
+	if (codElemento != null) {
 		Element in = new Element("in");
 		Element nomeTabelaXML = new Element("nome-tabela");
 		nomeTabelaXML.setText(nomeTabela);
 		in.getChildren().add(nomeTabelaXML);	
 
-		Element codCursoXML = new Element("cod-elemento");
-		codCursoXML.setText(codCurso);
-		in.getChildren().add(codCursoXML);
+		Element codElementoXML = new Element("cod-elemento");
+		codElementoXML.setText(codElemento);
+		in.getChildren().add(codElementoXML);
 		
-		Feature  detalharCurso = new DetalharGenericoFeature();
-		cursoXML = detalharCurso.process(in);	
+		Feature  detalharElemento = new DetalharGenericoFeature();
+		elementoXML = detalharElemento.process(in);	
 	}
 %>
 
@@ -42,22 +42,17 @@
 		</td>
 	  </tr>
 	  <tr>
-		<td width="50%"><P>Código da Opção</P></td>
-		<td width="50%"><p>Descrição</p></td> 
+		<td><p>Descrição</p></td> 
 	  </tr>
 	  <tr>
-		<td width="50%">
-				<INPUT maxLength=7 name="string_cod_opcao" 
-				 value="<% if (cursoXML != null) { %><%=cursoXML.getChildTextTrim("cod_opcao")%><% } %>">
-		</td>
-		<td width="50%">
-		        <INPUT maxLength=40 name="string_desc_curso"
-				 value="<% if (cursoXML != null) { %><%=cursoXML.getChildTextTrim("desc_curso")%><% } %>">
+		<td>
+		        <INPUT maxLength=30 name="string_desc_tipo_sexo"
+				 value="<% if (elementoXML != null) { %><%=elementoXML.getChildTextTrim("desc_tipo_sexo")%><% } %>">
 		</td>
 	  </tr>
 	  <INPUT type="hidden" name="nome_tabela" value="<%=nomeTabela%>">
-	  <% if (cursoXML != null) { %>
-			<INPUT type="hidden" name="int_cod_curso" value="<%=codCurso%>">
+	  <% if (elementoXML != null) { %>
+			<INPUT type="hidden" name="int_cod_tipo_sexo" value="<%=codElemento%>">
 	  <% } %>
 	  <tr>
 		<td colspan=2>
@@ -70,5 +65,3 @@
   </td>
 </tr>
 <%@include file =  "/design/rodape_gerencia.jsp"%>
-
-
