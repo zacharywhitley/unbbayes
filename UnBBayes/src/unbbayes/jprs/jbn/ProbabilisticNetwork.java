@@ -120,6 +120,9 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
     {   return hierarchicTree;
     }
 
+    public int size()
+    {   return nos.size();
+    }
 
     /**
      *  Verifica integridade como grafo direcionado acíclico / conexo e coesão.

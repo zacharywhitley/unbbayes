@@ -1,7 +1,10 @@
 package unbbayes.datamining.classifiers;
 
+import java.util.Enumeration;
+
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.jprs.jbn.*;
+import unbbayes.util.*;
 
 /**
  * Class implementing a Bayesian Network.
@@ -13,26 +16,41 @@ public class BayesianNetwork extends BayesianLearning
 {	private Attribute classAttribute;
 
 	private ProbabilisticNode classNode;
+        private int classIndex = -1;
 
 	private ProbabilisticNetwork net;
 
 	private int numNodes;
 
-	public BayesianNetwork(ProbabilisticNetwork net) throws Exception
+        private int[] indexAttributes;
+
+	public BayesianNetwork(ProbabilisticNetwork net,InstanceSet instanceSet) throws Exception
 	{	this.net = net;
 		this.net.compile();
-		numNodes = net.getNos().size();
+		numNodes = net.size();
+                indexAttributes = new int[instanceSet.numAttributes()];
+                Enumeration enum = instanceSet.enumerateAttributes();
+                int i = 0;
+                String attributeName;
+                while (enum.hasMoreElements())
+                {   attributeName = ((Attribute)enum.nextElement()).getAttributeName();
+                    indexAttributes[i] = net.getNodeIndex(attributeName);
+                    if (indexAttributes[i] == -1)
+                    {   throw new Exception("Atributo não encontrado na rede: "+attributeName);
+                    }
+                    i++;
+                }
 	}
 
 	private boolean compareClasses(Attribute classAttribute,ProbabilisticNode node)
 	{	boolean equals = false;
-		if (classAttribute.getAttributeName().equals(node.getName()))
-		{	int numValues = classAttribute.numValues();
+		if ((classAttribute.getAttributeName().compareToIgnoreCase(node.getName())) == 0)
+                {	int numValues = classAttribute.numValues();
 			classNode = node;
 			equals = true;
 			for (int i=0; i<numValues; i++)
-			{	if (!classAttribute.value(i).equals(node.getStateAt(i)))
-				{	equals = false;
+			{	if (classAttribute.value(i).compareToIgnoreCase(node.getStateAt(i)) != 0)
+                                {	equals = false;
 					classNode = null;
 					break;
 				}
@@ -60,22 +78,27 @@ public class BayesianNetwork extends BayesianLearning
   	public float[] distributionForInstance(Instance instance) throws Exception
 	{	int numClasses = classNode.getStatesSize();
 		float[] probs = new float[numClasses];
-  	  	int i;
 
-		net.initialize();
+		if (classIndex < 0)
+                {   throw new Exception("Classe não definida.");
+                }
 
-		InstanceSet data = instance.getDataset();
-		int numAttributes = data.numAttributes();
-		for (i=0;i<numAttributes;i++)
-		{	Attribute att = data.getAttribute(i);
-			if (!instance.isMissing(i) && (!att.equals(classAttribute)))
-			{	ProbabilisticNode node = (ProbabilisticNode)net.getNode(att.getAttributeName());
-				node.addFinding(instance.getValue(i));
-			}
-		}
-		net.updateEvidences();
-		for (i=0;i<numClasses;i++)
-		{	probs[i] = (float)classNode.getMarginalAt(i);
+                net.initialize();
+
+		        NodeList nodes = net.getNos();
+                int size = nodes.size();
+                int j;
+                for (j=0; j<size; j++)
+                {   int actualNode = indexAttributes[j];
+                    if (actualNode != classIndex)
+                    {   ((TreeVariable)nodes.get(actualNode)).addFinding(instance.getValue(j));
+                    }
+                }
+
+                net.updateEvidences();
+
+                for (j=0;j<numClasses;j++)
+		{	probs[j] = (float)classNode.getMarginalAt(j);
 		}
 		return probs;
   	}
@@ -88,16 +111,16 @@ public class BayesianNetwork extends BayesianLearning
 	public String toString()
 	{	try
 		{	StringBuffer text = new StringBuffer("Bayesian Network\n");
-      		int numNodes = net.getNos().size();
+      		        int numNodes = net.size();
 			for (int i=0; i<numNodes; i++)
 			{	ProbabilisticNode node = (ProbabilisticNode)net.getNodeAt(i);
 				text.append(node+"\n");
 			}
 			return text.toString();
-    	}
+    	        }
 		catch (Exception e)
 		{	return resource.getString("exception5");
-    	}
+    	        }
 	}
 
 	public Attribute getClassAttribute()
@@ -112,6 +135,7 @@ public class BayesianNetwork extends BayesianLearning
 		{	result = compareClasses(classAttribute,(ProbabilisticNode)net.getNodeAt(i));
 			if (result == true)
 			{	this.classAttribute = classAttribute;
+                                this.classIndex = net.getNodeIndex(classAttribute.getAttributeName());
 				break;
 			}
 		}

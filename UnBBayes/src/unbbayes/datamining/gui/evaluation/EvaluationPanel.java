@@ -457,7 +457,7 @@ public class EvaluationPanel extends JPanel
       if (classifier instanceof BayesianLearning)
       {   jLabel2.setText("Model - Bayesian Network");
       }
-      else if (classifier instanceof Id3)
+      else if (classifier instanceof DecisionTreeLearning)
       {   jLabel2.setText("Model - Decision Tree");
       }
       this.classifier = classifier;
@@ -475,6 +475,7 @@ public class EvaluationPanel extends JPanel
       if (classifier instanceof BayesianLearning)
       {   try
           {   ((BayesianNetwork)classifier).setClassAttribute(instances.getAttribute(jComboBox2.getSelectedIndex()));
+              float[] flo = ((BayesianNetwork)classifier).distributionForInstance(inst.getInstance(0));
           }
           catch (Exception ex)
           {

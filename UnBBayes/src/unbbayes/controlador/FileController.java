@@ -106,6 +106,7 @@ public class FileController
         else
         {   throw new IOException(resource.getString("fileExtensionException"));
         }
+
         new CompactFileDialog(loader,component);
         //fileThread = new FileActivityThread(loader);
         //fileThread.start();

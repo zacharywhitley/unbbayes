@@ -33,6 +33,7 @@ public class EvaluationMain extends JInternalFrame
   private JLabel statusBar = new JLabel();
   private BorderLayout borderLayout2 = new BorderLayout();
   private InstanceSet inst;
+  private ProbabilisticNetwork net;
   private Classifier classifier;
   private File selectedFile;
   private boolean instOK = false;
@@ -209,13 +210,21 @@ public class EvaluationMain extends JInternalFrame
   {   jMenuItem2_actionPerformed(e);
   }
 
-  void jMenuItem2_actionPerformed(ActionEvent e)
+  void jMenuItem2_actionPerformed(ActionEvent evt)
   {   openModel();
       openTest();
+      try
+      {   BayesianNetwork bayesianNetwork = new BayesianNetwork(net,inst);
+          classifier = bayesianNetwork;
+      }
+      catch (Exception e)
+      {   statusBar.setText(e.getMessage());
+          instOK = false;
+      }
       if (instOK)
-      { jPanel2.setModel(classifier,inst);
-        statusBar.setText(resource.getString("modelOpened"));
-        this.setTitle("Evaluation - "+resource.getString("model")+selectedFile.getName());
+      {   jPanel2.setModel(classifier,inst);
+          statusBar.setText(resource.getString("modelOpened"));
+          this.setTitle("Evaluation - "+resource.getString("model")+selectedFile.getName());
       }
   }
 
@@ -246,16 +255,8 @@ public class EvaluationMain extends JInternalFrame
               classifier = (Id3)in.readObject();
           }
           else if (fileName.regionMatches(true,fileName.length() - 4,".net",0,4))
-          {   ProbabilisticNetwork net;
-              BaseIO io = new NetIO();
+          {   BaseIO io = new NetIO();
               net = io.load(f);
-              try
-              {   BayesianNetwork bayesianNetwork = new BayesianNetwork(net);
-                  classifier = bayesianNetwork;
-              }
-              catch (Exception e)
-              {   throw new Exception(e.getMessage());
-              }
           }
           else
           {   throw new IOException(resource.getString("fileExtensionNotKnown"));
