@@ -10,49 +10,49 @@ net
 
 node A
 {
-     label = "C0";
+     label = "A";
      position = (123 29);
      states = ("y" "n");
 }
 
 node var_4
 {
-     label = "C1";
+     label = "var_4";
      position = (98 140);
      states = ("y" "n");
 }
 
 node var_2
 {
-     label = "C2";
+     label = "var_2";
      position = (210 124);
      states = ("y" "n");
 }
 
 node B
 {
-     label = "C3";
+     label = "B";
      position = (274 32);
      states = ("y" "n");
 }
 
 node C
 {
-     label = "C4";
+     label = "C";
      position = (287 188);
      states = ("y" "n");
 }
 
 node D
 {
-     label = "C5";
+     label = "D";
      position = (350 124);
      states = ("H" "M" "L");
 }
 
 node var_3
 {
-     label = "C6";
+     label = "var_3";
      position = (468 42);
      states = ("y" "n");
 }

@@ -81,8 +81,8 @@ public class MSBNWindow extends JInternalFrame {
 		netList = new JList(new MSBNListModel());		
 		compileBtn = new JButton(new ImageIcon(getClass().getResource("/icons/compile.gif")));
 		editionBtn = new JButton(new ImageIcon(getClass().getResource("/icons/edit.gif")));
-		removeBtn = new JButton("R");
-		newBtn = new JButton(new ImageIcon(getClass().getResource("/icons/new.gif")));
+		removeBtn = new JButton(new ImageIcon(getClass().getResource("/icons/less.gif")));
+		newBtn = new JButton(new ImageIcon(getClass().getResource("/icons/more.gif")));
 	}
 	
 	private void init() {
