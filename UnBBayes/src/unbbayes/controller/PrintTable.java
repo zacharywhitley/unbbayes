@@ -38,6 +38,7 @@ public class PrintTable implements Printable, Pageable {
   protected List tables;
   protected List owners;
   protected PageFormat pageFormat;
+/**/  protected String title;
 
 
   public PrintTable(List tbs, List owners, PageFormat pf) {
@@ -45,6 +46,14 @@ public class PrintTable implements Printable, Pageable {
     this.owners = owners;
     pageFormat = pf;
   }
+
+/**/  public PrintTable(List tables, String title, PageFormat pageFormat){
+/**/    this.tables = tables;
+/**/    this.pageFormat = pageFormat;
+/**/    this.owners = null;
+        this.title = title;
+/**/  }
+/**/
 
   /**
    * Perform the printing here
@@ -74,7 +83,15 @@ public class PrintTable implements Printable, Pageable {
             if (pageIndex == index) {
               //  Paint as much of the table as will fit on a page
 //              g.drawString("Nó: " + donos.get(i), positionX + (int)pageFormat.getImageableX(), (int)pageFormat.getImageableY() + SIZE);
-              paintTable(resource.getString("nodeName") + owners.get(i), table, g, positionX, positionY, size);
+       //       paintTable(resource.getString("nodeName") + owners.get(i), table, g, positionX, positionY, size);
+
+/**/            if(owners != null){
+/**/              paintTable(resource.getString("nodeName") + owners.get(i), table, g, positionX, positionY, size);
+/**/
+/**/            } else {
+/**/              paintTable(title, table, g, positionX, positionY, size);
+                }
+
               return Printable.PAGE_EXISTS;
             }
             pageIndex++;
