@@ -11,9 +11,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
-import javax.xml.transform.TransformerException;
-
-import org.apache.xpath.XPath;
 import org.apache.xpath.XPathAPI;
 import org.w3c.dom.Document;
 import org.w3c.dom.traversal.NodeIterator;
@@ -40,9 +37,7 @@ public class XMLIO implements BaseIO {
 							
 	private static Node makeNode(org.w3c.dom.Node elNode) throws Exception {
 		Node node = null;
-		
-		node = new ProbabilisticNode();
-		
+		node = new ProbabilisticNode();		
 		org.w3c.dom.Node tmpNode = XPathAPI.selectSingleNode(elNode, "/VAR/LABEL");
 		node.setName(XMLUtil.getValue(tmpNode));
 		
@@ -52,6 +47,10 @@ public class XMLIO implements BaseIO {
 		}
 		
 		return node;				
+	}
+	
+	private static void makeStructure(ProbabilisticNetwork net, org.w3c.dom.Node elNode) {
+		
 	}
 
 	/* (non-Javadoc)
@@ -70,6 +69,8 @@ public class XMLIO implements BaseIO {
 			while ((elNode = nodeIterator.nextNode()) != null) {
 				net.addNode(makeNode(elNode));
 			}
+			elNode = XPathAPI.selectSingleNode(doc, "/BIF/NETWORK/STRUCTURE");
+			makeStructure(net, elNode);
 			
 		} catch (Exception e) {
 			throw new LoadException("Load Error");			
