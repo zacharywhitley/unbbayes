@@ -339,5 +339,9 @@ public class NetWindow extends JPanel {
 	public NetWindowCompilation getNetWindowCompilation() {
 		return this.netCompilation;
 	}
+	
+	public WindowController getWindowController(){
+		return controller;				
+	}
 
 }

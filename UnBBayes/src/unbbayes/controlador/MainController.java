@@ -156,16 +156,27 @@ public class MainController {
               	direction = true;
                 net.getArcos().add(arcoAux);
             }
-        }
-        //screen.addWindow(new NetWindow(net));
-		NetWindow netWindow = new NetWindow(net);
+        }        		
+		return net;
+    }
+    
+    public void showNetwork(ProbabilisticNetwork net){
+    	NetWindow netWindow = new NetWindow(net);
+		if (! netWindow.getWindowController().compileNetwork()) {
+            netWindow.changeToNetEdition();            
+            
+        } else{
+            netWindow.changeToNetCompilation();		
+		}
 		JInternalFrame jif = new JInternalFrame(net.getName(), true, true, true, true);
 		jif.getContentPane().add(netWindow);
 		jif.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
 		screen.addWindow(jif);
-        screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-
-		return net;
+        screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));    	
+    }
+    
+    public IUnBBayes getScreen(){
+    	return screen;    	
     }
 
 }

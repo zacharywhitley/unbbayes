@@ -47,5 +47,6 @@ for2:       for (int j = 0; j < parentsLength; j++) {
             }
             getProbability(arrayNijk, variable); 
         }                
+        controller.showNetwork(net);
     }
 }

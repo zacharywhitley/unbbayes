@@ -38,6 +38,9 @@ import javax.swing.JViewport;
 
 import unbbayes.jprs.jbn.Edge;
 import unbbayes.jprs.jbn.ProbabilisticNetwork;
+
+import unbbayes.util.*;
+import unbbayes.jprs.jbn.*;
 /**
  * Title:
  * Description:
@@ -86,22 +89,28 @@ public class TJanelaEdicao extends JDialog {
 
         //ao clicar no botão reaprende, mostra-se o menu para escolha do arquivo para o aprendizado.
         reaprende.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
+            public void actionPerformed(ActionEvent ae) {            	
             	List edgeList = net.getArcos();
-            	Edge edge;
+            	NodeList nodeList = net.getNos();
+            	Edge edge;            
+            	Node node;	            	
             	boolean close = true;
             	for(int i = 0; i < edgeList.size() && close; i++){
                      edge = (Edge)edgeList.get(i);
                     if(!edge.hasDirection()){
-                    	JOptionPane.showMessageDialog(null,"Todos os arcos tem que ter uma direção.","ERROR",JOptionPane.ERROR_MESSAGE);
-                    	close = false;
-
+                    	JOptionPane.showMessageDialog(null,"Todos os arcos tem que ter uma direção.","ERROR",JOptionPane.ERROR_MESSAGE);                 
+                    	return;
                     }
                	}
-               	if(close){
-                    setVisible(false);
-                    dispose();
-               	}
+               	for(int i = 0; i < nodeList.size() && close; i++){
+                     node = (Node)nodeList.get(i);
+                    if(node.getChildren().size() == 0 && node.getParents().size() == 0){
+                    	JOptionPane.showMessageDialog(null,"Todo nó deve tem que ter pelo menos um adjacente.","ERROR",JOptionPane.ERROR_MESSAGE);                    	
+                    	return;
+                    }
+               	}               	
+                setVisible(false);
+                dispose();               	
             }
         });
 

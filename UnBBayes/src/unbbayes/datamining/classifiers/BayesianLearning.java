@@ -73,10 +73,10 @@ public abstract class BayesianLearning extends Classifier
                     case ABSOLUTE_FREQUENCY_CLASSIFICATION :  int j;
                                                               for (j=0; j<classValues.length; j++)
                                                               {   int actualValue = classValues[j];
-                                                                  System.out.println("value "+actualValue);
+                                                                  //System.out.println("value "+actualValue);
                                                                   if (dist[actualValue] >= probabilities[j])
-                                                                  {   System.out.println("Predic "+dist[actualValue]);
-                                                                      System.out.println("User "+probabilities[j]);
+                                                                  {   //System.out.println("Predic "+dist[actualValue]);
+                                                                      //System.out.println("User "+probabilities[j]);
                                                                   return (short)actualValue;
                                                                   }
                                                               }
