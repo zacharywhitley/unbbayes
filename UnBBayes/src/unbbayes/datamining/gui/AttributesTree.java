@@ -114,7 +114,7 @@ public class AttributesTree extends JTree{
   public Instance getInstance(){
     ArrayList keys = objectsMap.getKeys();
     int keysSize = keys.size();
-    Instance instance = new Instance(new byte[attributeVector.length]);
+    Instance instance = new Instance(new short[attributeVector.length]);
 
     for(int i=0; i<attributeVector.length; i++){
       instance.setMissing(i);

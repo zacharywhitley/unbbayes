@@ -155,9 +155,9 @@ public class Evaluation implements IProgress
 	* @exception Exception if model could not be evaluated
 	* successfully
 	*/
-	public byte evaluateModelOnce(Classifier classifier,Instance instance) throws Exception
+	public short evaluateModelOnce(Classifier classifier,Instance instance) throws Exception
 	{   Instance classMissing = instance;
-			byte pred=0;
+			short pred=0;
 			if (classIsNominal)
 			{   
 				if (classifier instanceof DistributionClassifier)
@@ -189,7 +189,7 @@ public class Evaluation implements IProgress
 	 * @param predictedClass the index of the predicted class
 	 * @return the probability distribution
 	 */
-	private float[] makeDistribution(byte predictedClass)
+	private float[] makeDistribution(short predictedClass)
 	{	float[] result = new float[numClasses];
 		if (Instance.isMissingValue(predictedClass))
 		{	return result;
@@ -397,7 +397,7 @@ public class Evaluation implements IProgress
    * @exception Exception if the class of the instance is not
    * set
    */
-  private void updateStatsForClassifier(byte predictedClass/*float[] predictedDistribution*/,Instance instance) throws Exception
+  private void updateStatsForClassifier(short predictedClass/*float[] predictedDistribution*/,Instance instance) throws Exception
   {	if (!instance.classIsMissing())
 	{	/*float[] result = new float[numClasses];
 		if (Instance.isMissingValue(predictedClass))
@@ -429,7 +429,7 @@ public class Evaluation implements IProgress
 			return;
 				}
 
-		byte actualClass = instance.classValue();
+		short actualClass = instance.classValue();
 				updateNumericScores(makeDistribution(predictedClass)/*predictedDistribution*/,makeDistribution(actualClass),instance.getWeight());
 
 		//propagation[counter][0] = actualClass;

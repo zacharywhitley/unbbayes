@@ -336,7 +336,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 	 * @param instance the instance to be classified
 	 * @return the classification
 	 */
-	public byte classifyInstance(Instance instance)
+	public short classifyInstance(Instance instance)
 	{
           Leaf leaf;
           NominalNode node;

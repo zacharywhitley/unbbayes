@@ -309,7 +309,7 @@ public class ArffLoader extends Loader
   	protected boolean getInstanceFull() throws IOException
 	{
           int numAttributes = instances.numAttributes();
-          byte[] instance = new byte[numAttributes];
+          short[] instance = new short[numAttributes];
           int index;
           int instanceWeight = 1;
 

@@ -14,7 +14,7 @@ public class Leaf implements Serializable
 	private Attribute classAttribute;
 	
 	/** Leaf's class value */
-	private byte classValue;
+	private short classValue;
 
 	/** Leaf's weight class distribution. */
 	private float[] weightDistribution;
@@ -46,7 +46,7 @@ public class Leaf implements Serializable
   	 * 
   	 * @return the leaf's class value
   	 */
-	public byte getClassValue()
+	public short getClassValue()
 	{
 		return classValue;
 	}

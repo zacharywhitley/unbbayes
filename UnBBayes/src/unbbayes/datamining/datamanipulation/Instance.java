@@ -4,7 +4,7 @@ import java.util.*;
 
 /**
  * Class for handling an instance. All values (numeric or nominal) are internally
- * stored as byte numbers. The stored value is the index of the
+ * stored as short numbers. The stored value is the index of the
  * corresponding nominal value in the attribute's definition.
  *
  *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
@@ -12,7 +12,7 @@ import java.util.*;
  */
 public class Instance
 {	/** Constant representing a missing value. */
-  	public final static byte MISSING_VALUE = -1;
+  	public final static short MISSING_VALUE = -1;
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.datamanipulation.resources.DataManipulationResource");
@@ -25,7 +25,7 @@ public class Instance
   	protected InstanceSet dataset;
 
   	/** The instance's attribute values. */
-  	protected byte[] attValues;
+  	protected short[] attValues;
 
 	/** The instance's weight. */
   	protected float weight;
@@ -53,7 +53,7 @@ public class Instance
 	*
    	* @param attValues An array of attribute values
    	*/
-  	public Instance(byte[] attValues)
+  	public Instance(short[] attValues)
 	{	this.attValues = attValues;
 		weight = 1;
     	dataset = null;
@@ -67,7 +67,7 @@ public class Instance
    	* @param weight the instance's weight
    	* @param attValues a vector of attribute values
    	*/
-  	public Instance(int weight, byte[] attValues)
+  	public Instance(int weight, short[] attValues)
   	{	this.attValues = attValues;
 		this.weight = weight;
     	dataset = null;
@@ -120,14 +120,14 @@ public class Instance
 
   	/**
    	* Returns an instance's class value in internal format. (ie. as a
-   	* byte number)
+   	* short number)
    	*
-   	* @return The corresponding value as a byte (It returns the
-   	* value's index as a byte).
+   	* @return The corresponding value as a short (It returns the
+   	* value's index as a short).
    	* @exception UnassignedClassException if the class is not set or the instance doesn't
    	* have access to a dataset
    	*/
-  	public final byte classValue()
+  	public final short classValue()
 	{	if (getClassIndex() < 0)
 		{	throw new UnassignedClassException(resource.getString("runtimeException2"));
     	}
@@ -176,7 +176,7 @@ public class Instance
    	* @param val Value to be tested
    	* @return true if val codes "missing"
    	*/
-  	public static final boolean isMissingValue(byte val)
+  	public static final boolean isMissingValue(short val)
 	{	if (MISSING_VALUE == val)
 		{	return true;
     	}
@@ -185,11 +185,11 @@ public class Instance
 
 
   	/**
-   	* Returns the byte that codes "missing".
+   	* Returns the short that codes "missing".
    	*
-   	* @return the byte that codes "missing"
+   	* @return the short that codes "missing"
    	*/
-  	public static final byte missingValue()
+  	public static final short missingValue()
 	{	return MISSING_VALUE;
   	}
 
@@ -267,7 +267,7 @@ public class Instance
   	/**
    	* Returns the description of one instance. If the instance
    	* doesn't have access to a dataset, it returns the internal
-   	* byte values.
+   	* short values.
    	*
    	* @return The instance's description as a string
    	*/
@@ -285,7 +285,7 @@ public class Instance
   	/**
    	* Returns the description of one value of the instance as a
    	* string. If the instance doesn't have access to a dataset, it
-   	* returns The internal byte value.
+   	* returns The internal short value.
    	*
    	* @param attIndex Attribute's index
    	* @return The value's description as a string
@@ -310,7 +310,7 @@ public class Instance
   	/**
    	* Returns the description of one value of the instance as a
    	* string. If the instance doesn't have access to a dataset it
-   	* returns the internal byte value.
+   	* returns the internal short value.
    	* The given attribute has to belong to a dataset.
    	*
    	* @param att Attribute
@@ -324,9 +324,9 @@ public class Instance
    	* Returns an instance's attribute value in internal format.
    	*
    	* @param attIndex Attribute's index
-   	* @return The specified value as a byte
+   	* @return The specified value as a short
    	*/
-  	public final byte getValue(int attIndex)
+  	public final short getValue(int attIndex)
 	{	return attValues[attIndex];
   	}
 
@@ -334,9 +334,9 @@ public class Instance
    	* Sets an instance's attribute value in internal format.
    	*
    	* @param attIndex Attribute's index
-	* @param newValue New value as a byte
+	* @param newValue New value as a short
    	*/
-  	public final void setValue(int attIndex, byte newValue)
+  	public final void setValue(int attIndex, short newValue)
 	{	attValues[attIndex] = newValue;
 	}
 
@@ -345,9 +345,9 @@ public class Instance
    	* The given attribute has to belong to a dataset.
    	*
    	* @param att Attribute
-   	* @return The specified value as a byte
+   	* @return The specified value as a short
    	*/
-  	public final byte getValue(Attribute att)
+  	public final short getValue(Attribute att)
 	{	return getValue(att.getIndex());
   	}
 
@@ -356,15 +356,15 @@ public class Instance
    	* The given attribute has to belong to a dataset.
 	*
    	* @param att Attribute
-	* @param newValue New value as a byte
+	* @param newValue New value as a short
    	*/
-  	public final void setValue(Attribute att, byte newValue)
+  	public final void setValue(Attribute att, short newValue)
 	{	attValues[att.getIndex()] = newValue;
 	}
 	
 	public final void removeAttribute(int index)
 	{
-		byte[] newValues = new byte[attValues.length-1];
+		short[] newValues = new short[attValues.length-1];
 		int j=0;
 		for (int i=0;i<attValues.length;i++)
 		{

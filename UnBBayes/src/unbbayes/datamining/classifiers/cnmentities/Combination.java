@@ -139,7 +139,7 @@ public class Combination implements Serializable{
    * @param classValue the class value that specify the output neuron.
    * @param weight the weight to increase the accumulator.
    */
-  public void increaseAccumulator(byte classValue, int weight){  // classValue, para selecionar qual classe deve ser incrementado o acumulador
+  public void increaseAccumulator(short classValue, int weight){  // classValue, para selecionar qual classe deve ser incrementado o acumulador
     if(outputArray[classValue] != null){                          // e o peso para incrementar
       outputArray[classValue].increaseAccumulator(weight);
     } else {

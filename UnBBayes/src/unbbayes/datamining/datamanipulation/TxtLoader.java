@@ -123,7 +123,7 @@ public class TxtLoader extends Loader
   	protected boolean getInstanceFull() throws IOException
 	{
           int numAttributes = instances.numAttributes();
-            byte[] instance = new byte[numAttributes];
+            short[] instance = new short[numAttributes];
             int instanceWeight = 1;
             int position = 0,index = 0;
             int attributeNumber = -1;

@@ -51,7 +51,7 @@ public abstract class DistributionClassifier extends Classifier
    	* Instance.missingValue() if no prediction is made
    	* @exception Exception if an error occurred during the prediction
    	*/
-  	public byte classifyInstance(Instance instance) throws Exception
+  	public short classifyInstance(Instance instance) throws Exception
 	{   float[] dist = distributionForInstance(instance);
             if (dist == null)
             {	throw new Exception(resource.getString("nullPrediction"));
