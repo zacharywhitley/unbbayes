@@ -17,7 +17,7 @@
     
       <td> <table width="100%" border="0" cellspacing="0" cellpadding="4" bgcolor="#CCCCCC">
           <font color="#FFFFFF">
-             <%= "Olá " + request.getParameter("nome-usuario").trim() %>
+             <%= "Olá " + request.getAttribute("nome-usuario").trim() %>
           </font>
         </table></td>
         
@@ -51,6 +51,9 @@
     </tr>
     
   </table>
+  
+  <input type="hidden" name="cod-usuario" value="<%=request.getAttribute("cod-usuario")%>">
+  
 </form>
 </body>
 </html>

@@ -6,8 +6,8 @@ public class Controller {
 	private static Controller instance;
 		
     private static final String DB_URL = "jdbc:mysql://localhost/linfca";
-	private static final String USER_NAME = "michael";
-	private static final String PASSWORD = "michael";
+	private static final String USER_NAME = "";
+	private static final String PASSWORD = "";
 	
 	public static Controller getInstance() throws Exception {
 		if (instance == null) {
