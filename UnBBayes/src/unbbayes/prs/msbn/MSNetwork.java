@@ -112,8 +112,17 @@ public class MSNetwork {
 	protected void coleteCrencas(SubNetwork net) {
 		for (int i = net.adjacents.size()-1; i>=0; i--) {
 			SubNetwork netAdj = (SubNetwork) net.adjacents.get(i);
-			coleteCrencas(netAdj);
-			atualizaCrenca(net, netAdj);
+			coleteCrencas(netAdj);			
+		}
+		
+		try {
+			net.getJunctionTree().unificaCrencas();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		if (net.parent != null) {
+			atualizaCrenca(net.parent, net);
 		}
 	}
 	
