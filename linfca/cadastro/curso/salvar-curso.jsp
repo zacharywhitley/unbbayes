@@ -6,7 +6,7 @@
 	errorPage="/design/erro.jsp" %>
 	
 <%@include file="/util.jsp" %> 
-<%@include file =  "/design/cabecalho.jsp"%>
+<%@include file =  "/design/cabecalho_gerencia.jsp"%>
 
 <%
 	String codCurso = request.getParameter("cod_curso");
@@ -63,6 +63,6 @@
 	</table>
   </td>
 </tr>
-<%@include file =  "/design/rodape.jsp"%>
+<%@include file =  "/design/rodape_gerencia.jsp"%>
 
 

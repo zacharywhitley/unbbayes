@@ -77,7 +77,22 @@ function MM_swapImage() { //v3.0
   </tr>
   <tr>
 	<td height="3" colspan="2" bgcolor="#3C783C"><img src="#" width=1 height=3></td>
-  </tr>  
+  </tr>
+  <tr>
+    <td colspan="2" bgcolor="#336633">
+      <table align="center" cellspacing="0" cellpadding="5" border="0" name="menu_table">
+        <tr>
+          <td align="center"><a href="<%=path%>/cadastro/curso/salvar-curso.jsp" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Curso','','<%=path%>/design/imagens/nome_cursoON.gif',1)"><img name="Curso" border="0" src="<%=path%>/design/imagens/nome_curso.gif"></a></td>
+          <td align="center"><a href="<%=path%>/cadastro/equipamento/salvar-equipamento.jsp" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Equipamento','','<%=path%>/design/imagens/nome_equipamentoON.gif',1)"><img name="Equipamento" border="0" src="<%=path%>/design/imagens/nome_equipamento.gif"></a></td>
+		  <td align="center"><a href="<%=path%>/cadastro/semestre/salvar-semestre.jsp" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Semestre','','<%=path%>/design/imagens/nome_semestreON.gif',1)"><img name="Semestre" border="0" src="<%=path%>/design/imagens/nome_semestre.gif"></a></td>
+          <td align="center"><a href="<%=path%>/cadastro/usuario/selecionar-usuario.jsp" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Usuario','','<%=path%>/design/imagens/nome_usuarioON.gif',1)"><img name="Usuario" border="0" src="<%=path%>/design/imagens/nome_usuario.gif"></a></td>
+          <td align="center"><a href="<%=path%>/gerencia/lancamento/filtrar-lancamento.jsp" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Lancamento','','<%=path%>/design/imagens/nome_lancamentoON.gif',1)"><img name="Lancamento" border="0" src="<%=path%>/design/imagens/nome_lancamento.gif"></a></td>
+          <td align="center"><a href="#" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Eventos','','<%=path%>/design/imagens/nome_eventosON.gif',1)"><img name="Eventos" border="0" src="<%=path%>/design/imagens/nome_eventos.gif" width="75" height="15"></a></td>
+          <td align="center"><a href="<%=path%>/downloads.jsp" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('Downloads','','<%=path%>/design/imagens/nome_downloadsON.gif',1)"><img name="Downloads" border="0" src="<%=path%>/design/imagens/nome_downloads.gif" width="105" height="16"></a></td>
+		</tr>
+	  </table>
+	</td>
+  </tr>
   <tr>
     <td width="25%" bgcolor="#FFFFFF"><img  src="<%=path%>/design/imagens/logo_linfca.jpg" width="181" border="0"></td>
     <td width="75%" align="center" bgcolor="#FFFFFF"><img src="<%=path%>/design/imagens/nome_logo_linfca.gif" border="0" alt="Controle de Acesso do Linf"></td>

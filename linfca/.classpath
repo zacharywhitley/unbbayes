@@ -9,7 +9,7 @@
     <classpathentry kind="lib" path="WEB-INF/lib/mm.mysql-2.0.13-bin.jar"/>
     <classpathentry kind="lib" path="WEB-INF/lib/servlet.jar"/>
     <classpathentry kind="lib" path="WEB-INF/lib/xerces.jar"/>
-    <classpathentry kind="lib" path="C:/eclipse/plugins/org.junit/junit.jar"/>
     <classpathentry kind="lib" path="WEB-INF/lib/cos.jar"/>
+    <classpathentry kind="lib" path="D:/eclipse/plugins/org.junit_3.7.0/junit.jar"/>
     <classpathentry kind="output" path="WEB-INF\classes"/>
 </classpath>

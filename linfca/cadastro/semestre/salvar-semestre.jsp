@@ -25,7 +25,7 @@
 */
 %>
 
-<%@include file =  "/design/cabecalho.jsp"%>
+<%@include file =  "/design/cabecalho_gerencia.jsp"%>
         <tr>
           <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_semestre.gif" width="174" border="0" hspace="20" alt="Salvar Semestre"></td>
           <td>
@@ -65,4 +65,4 @@
 			</table>
 		  </td>
 		</tr>
-<%@include file =  "/design/rodape.jsp"%>
+<%@include file =  "/design/rodape_gerencia.jsp"%>

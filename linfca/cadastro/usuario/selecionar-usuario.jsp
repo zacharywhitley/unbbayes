@@ -5,7 +5,7 @@
         java.util.Iterator" 
         errorPage="/design/erro.jsp" %> 
 <%@include file="/util.jsp" %> 
-<%@include file =  "/design/cabecalho.jsp"%>
+<%@include file =  "/design/cabecalho_gerencia.jsp"%>
 
         <tr>
           <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_usuario.gif" width="174" border="0" hspace="20" alt="Seleção de Usuário"></td>
@@ -51,8 +51,8 @@
               
               <tr>
               
-                <td>
-				  &nbsp;
+                <td>&nbsp;
+				  
                 </td>
                   
               </tr>
@@ -68,4 +68,4 @@
 		  </td>
 		</tr>
 		
-<%@include file =  "/design/rodape.jsp"%>
+<%@include file =  "/design/rodape_gerencia.jsp"%>

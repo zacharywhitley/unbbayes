@@ -9,13 +9,13 @@
 
 <%@include file="/util.jsp" %> 
 
-<%@include file =  "/design/cabecalho.jsp"%>
+<%@include file =  "/design/cabecalho_gerencia.jsp"%>
 
         <tr>
           <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_lancamento.gif" width="174" border="0" hspace="20" alt="Filtro de Lançamentos"></td>
           <td>
 		  <BR>
-            <FORM name="filtrar" method="post" action="<%=path%>/gerencia/lancamento/listar-lancamento.jsp">
+            <FORM name="filtrar" action="<%=path%>/gerencia/lancamento/listar-lancamento.jsp">
             
             <table width="100%" border="0" cellspacing="5" cellpadding="0" align="center">
             
@@ -74,4 +74,4 @@
 		  </td>
 		</tr>
 
-<%@include file =  "/design/rodape.jsp"%>
+<%@include file =  "/design/rodape_gerencia.jsp"%>
