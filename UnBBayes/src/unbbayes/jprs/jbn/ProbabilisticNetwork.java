@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import unbbayes.io.LogManager;
 import unbbayes.util.NodeList;
@@ -37,6 +38,9 @@ import unbbayes.util.SetToolkit;
  *@author     rommel
  */
 public class ProbabilisticNetwork extends Network {
+	
+	/** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.jprs.jbn.resources.JbnResources");
 
     /**
      * Faz o processamento do log de compilação.
@@ -260,7 +264,7 @@ public class ProbabilisticNetwork extends Network {
         Edge auxArco;
         List copiaArcos;
 
-        logManager.append("Moralizados com os arcos:\n");
+        logManager.append(resource.getString("moralizeLabel"));
         arcosMarkov.clear();
         copiaArcos = SetToolkit.clone(arcos);
 
@@ -323,7 +327,7 @@ public class ProbabilisticNetwork extends Network {
         Node aux;
         NodeList auxNos;
 
-        logManager.append("\nOrdem de Eliminação e Triangulação (ligações):\n");
+        logManager.append(resource.getString("triangulateLabel"));
         auxNos = SetToolkit.clone (nos);
         removeUtilityNodes(auxNos);
         copiaNos = SetToolkit.clone(auxNos);
@@ -460,7 +464,7 @@ public class ProbabilisticNetwork extends Network {
      */
     public void compile() throws Exception {
         if (nos.size() == 0) {
-            throw new Exception("A rede está vazia!");
+            throw new Exception(resource.getString("EmptyNetException"));
         }
         logManager.reset();
         verificaConsistencia();
@@ -588,7 +592,7 @@ public class ProbabilisticNetwork extends Network {
             aux =  decisionNodes.get(i);
 //            System.out.print(aux.getAdjacents().size() + " ");
             if (aux.getAdjacents().size() != decisionNodes.size()-i-1) {
-                throw new Exception("Não existe ordenação das variáveis de decisão");
+                throw new Exception(resource.getString("DecisionOrderException"));
             }
         }
 
@@ -607,7 +611,7 @@ public class ProbabilisticNetwork extends Network {
         for (int i = 0; i < sizeNos; i++) {
             aux = (Node)nos.get(i);
             if (aux.getType() == Node.UTILITY_NODE_TYPE && aux.getChildren().size() != 0) {
-                throw new Exception("Variável " + aux + " contém filho(s)");
+                throw new Exception(resource.getString("variableName") + aux + resource.getString("hasChildName"));
             }
         }
     }
@@ -1026,7 +1030,7 @@ public class ProbabilisticNetwork extends Network {
                 auxNo2 =  no.getAdjacents().get(j);
                 if (! auxNo2.getAdjacents().contains(auxNo1)) {
                     auxArco = new Edge(auxNo1, auxNo2);
-                    logManager.append(auxNo1.getName() + " ligado a " + auxNo2.getName() + "\n");
+                    logManager.append(auxNo1.getName() + resource.getString("linkedName") + auxNo2.getName() + "\n");
                     arcosMarkov.add(auxArco);
                     auxNo1.getAdjacents().add(auxNo2);
                     auxNo2.getAdjacents().add(auxNo1);

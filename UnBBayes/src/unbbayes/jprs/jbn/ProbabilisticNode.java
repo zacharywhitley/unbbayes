@@ -32,6 +32,9 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable {
 
     private ProbabilisticTable tabelaPot;
     private static Color color = new Color(Color.yellow.getRGB());
+    
+    /** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.jprs.jbn.resources.JbnResources");
 
     /**
      * Inicializa a tabela de potenciais.
@@ -60,8 +63,8 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable {
         no.setColor(this.getColor().getRGB());
         no.setLargura(this.getLargura());
         no.setPosicao(this.getPosicao().getX() + 1.3 * raio, this.getPosicao().getY() + 1.3 * raio);
-        no.setName("Cópia do " + this.getName());
-        no.setDescription("Cópia do " + this.getDescription());
+        no.setName(resource.getString("copyName") + this.getName());
+        no.setDescription(resource.getString("copyName") + this.getDescription());
         no.tabelaPot = (ProbabilisticTable)this.tabelaPot.clone();
         return no;
     }

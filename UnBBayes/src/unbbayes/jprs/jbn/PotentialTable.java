@@ -30,6 +30,7 @@ import javax.swing.JTable;
 import unbbayes.util.DoubleCollection;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
+import java.util.ResourceBundle;
 
 
 /**
@@ -46,6 +47,9 @@ public abstract class PotentialTable implements Cloneable {
     public static final int MINUS_OPERATOR = 3;
 
     private boolean modified;
+    
+    /** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.jprs.jbn.resources.JbnResources");
 
     /**
      * Variáveis que pertencem à tabela
@@ -324,7 +328,7 @@ public abstract class PotentialTable implements Cloneable {
      */
     protected void directOpTab(PotentialTable tab, int operator) {
         if (tableSize() != tab.tableSize()) {
-            throw new RuntimeException("Table size's differs");
+            throw new RuntimeException(resource.getString("TableSizeException"));
         }
 
         for (int k = tableSize()-1; k >= 0; k--) {
@@ -386,7 +390,7 @@ public abstract class PotentialTable implements Cloneable {
             case PRODUCT_OPERATOR:
                 return a * b;
             default:
-                throw new RuntimeException("Unknown operator");
+                throw new RuntimeException(resource.getString("OperatorException"));
         }
     }
 

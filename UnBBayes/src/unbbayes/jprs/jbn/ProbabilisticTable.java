@@ -1,10 +1,15 @@
 package unbbayes.jprs.jbn;
 
+import java.util.ResourceBundle;
+
 /**
  * Probabilistic Potential Table
  * @author Michael
  */
 public class ProbabilisticTable extends PotentialTable {
+	
+	/** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.jprs.jbn.resources.JbnResources");
 
     public ProbabilisticTable() {
     }
@@ -59,7 +64,7 @@ public class ProbabilisticTable extends PotentialTable {
             }
 
             if (Math.abs(soma - 100.0) > 0.01) {
-                throw new Exception("Tabela da variável " + variaveis.get(0) + " inconsistente -> " + soma + "%\n");
+                throw new Exception(resource.getString("variableTableName") + variaveis.get(0) + resource.getString("inconsistencyName") + soma + "%\n");
             }
         }
     }

@@ -7,7 +7,8 @@ import java.util.*;
  * <p>Description: Arquivo de recurso para o pacote unbbayes.util. Localization = portuguese.</p>
  * <p>Copyright: Copyright (c) 2001</p>
  * <p>Company: UnB</p>
- * @author Rommel Novaes Carvalho, Michael Onishi
+ * @author Rommel Novaes Carvalho
+ * @author Michael Onishi
  * @version 1.0
  * @since 02/05/2002
  */

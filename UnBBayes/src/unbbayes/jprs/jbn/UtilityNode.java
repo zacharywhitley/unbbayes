@@ -22,6 +22,7 @@
 package unbbayes.jprs.jbn;
 
 import java.awt.Color;
+import java.util.ResourceBundle;
 
 /**
  *  Classe que representa variável de utilidade.
@@ -33,13 +34,16 @@ public class UtilityNode extends Node implements ITabledVariable {
     private PotentialTable utilTable;
 
     private static Color color = new Color(Color.green.getRGB());
+    
+    /** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.jprs.jbn.resources.JbnResources");
 
     /**
      *  Construtor. Inicializa a tabela de potencial
      */
     public UtilityNode() {
         utilTable = new UtilityTable();
-        states.add("Utility");
+        states.add(resource.getString("utilityName"));
     }
     
     

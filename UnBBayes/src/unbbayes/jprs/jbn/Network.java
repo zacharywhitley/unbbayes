@@ -33,6 +33,9 @@ import unbbayes.util.SetToolkit;
  *@version    21 de Setembro de 2001
  */
 public class Network {
+	
+	/** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.jprs.jbn.resources.JbnResources");
 
     /**
      *  Lista de nós que compõem o grafo.
@@ -316,7 +319,7 @@ public class Network {
             listaFilhos.clear();
 
             if (listaCloneNos.size() != 0) {
-                StringBuffer sb = new StringBuffer("Rede com ciclo:");
+                StringBuffer sb = new StringBuffer(resource.getString("CicleNetException"));
                 for (i = 0; i < listaCloneNos.size(); i++) {
                    auxNo1 = listaCloneNos.get(i);
                    sb.append(" " + auxNo1.getName());
@@ -341,7 +344,7 @@ public class Network {
         percorre(nos.get(0), visitados);
         desmontaAdjacentes();
         if (visitados.size() != nos.size()) {
-            throw new Exception("Rede Disconexa");
+            throw new Exception(resource.getString("DisconectedNetException"));
         }
     }
 
