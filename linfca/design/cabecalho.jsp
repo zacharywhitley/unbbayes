@@ -94,8 +94,8 @@ function MM_swapImage() { //v3.0
 	</td>
   </tr>
   <tr>
-    <td width="248" bgcolor="#FFFFFF"><img  src="<%=path%>/design/imagens/logo_linfca.jpg" width="181" border="0"></td>
-    <td bgcolor="#FFFFFF"><img src="<%=path%>/design/imagens/nome_logo_linfca.gif" border="0" alt="Controle de "></td>
+    <td width="25%" bgcolor="#FFFFFF"><img  src="<%=path%>/design/imagens/logo_linfca.jpg" width="181" border="0"></td>
+    <td width="75%" align="center" bgcolor="#FFFFFF"><img src="<%=path%>/design/imagens/nome_logo_linfca.gif" border="0" alt="Controle de Acesso do Linf"></td>
   </tr>
   <tr>
 	<td height="8" colspan="2" bgcolor="#336633"><img src="#" width="1" height="8" border="0"></td>
