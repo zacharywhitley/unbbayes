@@ -29,7 +29,7 @@ import javax.swing.tree.*;
 import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
 import unbbayes.prs.id.*;
-import unbbayes.prs.msbn.MSNetwork;
+import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.msbn.SubNetwork;
 import unbbayes.util.*;
 
@@ -219,7 +219,7 @@ public class NetIO implements BaseIO {
 		arq.close();
 	}
 	
-	public void saveMSBN(File output, MSNetwork msbn) throws FileNotFoundException {
+	public void saveMSBN(File output, SingleAgentMSBN msbn) throws FileNotFoundException {
 		if (! output.isDirectory()) {
 			System.err.println(resource.getString("IsNotDirectoryException"));
 			return;			
@@ -233,11 +233,11 @@ public class NetIO implements BaseIO {
 	}
 
 	
-	public MSNetwork loadMSBN(File input) throws IOException,LoadException {
+	public SingleAgentMSBN loadMSBN(File input) throws IOException,LoadException {
 		if (! input.isDirectory()) {
 			throw new LoadException(resource.getString("IsNotDirectoryException"));
 		}
-		MSNetwork msbn = new MSNetwork(input.getName());
+		SingleAgentMSBN msbn = new SingleAgentMSBN(input.getName());
 		File files[] = input.listFiles();
 		for (int i = 0; i < files.length; i++) {			
 			if (files[i].isFile()) {

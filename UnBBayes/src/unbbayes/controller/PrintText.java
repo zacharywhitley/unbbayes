@@ -123,5 +123,4 @@ public class PrintText implements Printable, Pageable {
   public PageFormat getPageFormat(int index) {
     return pageFormat;
   }
-
 }

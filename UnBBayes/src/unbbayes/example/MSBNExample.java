@@ -25,7 +25,7 @@ import java.io.File;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.msbn.MSNetwork;
+import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.msbn.SubNetwork;
 
 /**
@@ -36,7 +36,7 @@ import unbbayes.prs.msbn.SubNetwork;
 public class MSBNExample {
 
 	public static void main(String[] args) throws Exception {
-		MSNetwork msbn = null;
+		SingleAgentMSBN msbn = null;
 		
 		BaseIO io = new NetIO();
 		msbn = io.loadMSBN(new File("./examples/msbn/5partc/"));

@@ -21,7 +21,7 @@ import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 
 import unbbayes.controller.IconController;
-import unbbayes.prs.msbn.MSNetwork;
+import unbbayes.prs.msbn.SingleAgentMSBN;
 
 /**
  * @author Michael Onishi
@@ -49,7 +49,7 @@ public class MSBNWindow extends JInternalFrame {
 		}
 	}
 
-	private MSNetwork msbn;
+	private SingleAgentMSBN msbn;
 
 	private JScrollPane netScroll;
 	private JList netList;
@@ -64,7 +64,7 @@ public class MSBNWindow extends JInternalFrame {
 
         protected IconController iconController = IconController.getInstance();
 
-	public MSBNWindow(MSNetwork msbn) {
+	public MSBNWindow(SingleAgentMSBN msbn) {
 		super(msbn.getId(), true, true, true, true);
 		this.msbn = msbn;
         setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
@@ -75,7 +75,7 @@ public class MSBNWindow extends JInternalFrame {
 		init();
 	}
 
-	public MSNetwork getMSNet() {
+	public SingleAgentMSBN getMSNet() {
 		return msbn;
 	}
 

@@ -32,7 +32,7 @@ import unbbayes.gui.*;
 import unbbayes.io.*;
 import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
-import unbbayes.prs.msbn.MSNetwork;
+import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.util.*;
 
 /**
@@ -84,7 +84,7 @@ public class MainController {
     }
     
     public void newMSBN() {
-    	MSNetwork msbn = new MSNetwork("New MSBN");
+    	SingleAgentMSBN msbn = new SingleAgentMSBN("New MSBN");
     	MSBNController controller = new MSBNController(msbn);
     	screen.addWindow(controller.getPanel());
     }
@@ -126,7 +126,7 @@ public class MainController {
         try {
         	JInternalFrame window = null;
         	if (file.isDirectory()) { //MSBN
-        		MSNetwork msbn = io.loadMSBN(file);        		
+        		SingleAgentMSBN msbn = io.loadMSBN(file);        		
         		MSBNController controller = new MSBNController(msbn);
         		window = controller.getPanel();
         	} else {

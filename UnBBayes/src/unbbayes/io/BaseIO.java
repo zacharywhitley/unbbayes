@@ -23,7 +23,7 @@ package unbbayes.io;
 
 import unbbayes.prs.bn.Network;
 import unbbayes.prs.bn.ProbabilisticNetwork;
-import unbbayes.prs.msbn.MSNetwork;
+import unbbayes.prs.msbn.SingleAgentMSBN;
 
 import java.io.*;
 
@@ -51,7 +51,7 @@ public interface BaseIO {
      * @throws LoadException If the directory doesn't describes a MSBN.
      * @throws IOException	 If an IO error occurs
      */
-    public MSNetwork loadMSBN(File input) throws LoadException, IOException;
+    public SingleAgentMSBN loadMSBN(File input) throws LoadException, IOException;
     
     /**
      * Saves a network to the output file.
@@ -65,5 +65,5 @@ public interface BaseIO {
      * @param output The output file to save
      * @param net		The MSBN to save.
      */
-    public void saveMSBN(File output, MSNetwork net) throws FileNotFoundException;
+    public void saveMSBN(File output, SingleAgentMSBN net) throws FileNotFoundException;
 }

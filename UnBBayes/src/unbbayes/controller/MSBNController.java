@@ -18,7 +18,7 @@ import javax.swing.tree.TreeNode;
 import unbbayes.gui.MSBNWindow;
 import unbbayes.gui.NetWindow;
 import unbbayes.prs.bn.Network;
-import unbbayes.prs.msbn.MSNetwork;
+import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.msbn.SubNetwork;
 
 /**
@@ -30,7 +30,7 @@ import unbbayes.prs.msbn.SubNetwork;
  * Window>Preferences>Java>Code Generation.
  */
 public class MSBNController {
-	private MSNetwork msbn;
+	private SingleAgentMSBN msbn;
 	private MSBNWindow window;
 	private NetWindow active;
 	
@@ -39,7 +39,7 @@ public class MSBNController {
 	 * The MSBNWindows is created.
 	 * @param msbn The msbn to display.
 	 */
-	public MSBNController(MSNetwork msbn) {
+	public MSBNController(SingleAgentMSBN msbn) {
 		this.msbn = msbn;
 		window = new MSBNWindow(msbn);
 		init();
