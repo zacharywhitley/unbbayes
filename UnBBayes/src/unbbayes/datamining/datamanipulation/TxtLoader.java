@@ -161,7 +161,10 @@ public class TxtLoader extends Loader
                     //Insert new value for attribute if number of values is 0 or this value isn't inserted
                     if(tokenizer.sval != null)
                     {   stateName = tokenizer.sval;
-                        if (att.numValues()==0 || att.indexOfValue(stateName) == -1)
+                        if (stateName.equals("?"))
+                        {   instance[attributeNumber] = Instance.missingValue();
+                        }
+                        else if (att.numValues()==0 || att.indexOfValue(stateName) == -1)
                         {   att.addValue(stateName);
                         }
                     }
@@ -175,16 +178,16 @@ public class TxtLoader extends Loader
                     {}
                     if (tokenizer.ttype == StreamTokenizer.TT_WORD)
                     {	// Check if value is missing.
-                        if (tokenizer.ttype == '?')
+                        /*if (tokenizer.ttype == '?')
                         {   instance[attributeNumber] = Instance.missingValue();
                         }
                         else
-                        {   if (instances.getAttribute(attributeNumber).isNominal())
+                        { */  if (instances.getAttribute(attributeNumber).isNominal())
                             {   // Check if value appears in header.
                                 index = att.indexOfValue(tokenizer.sval);
                                 instance[attributeNumber] = (short)index;
                             }
-                        }
+                        //}
                     }
                     else if (tokenizer.ttype == StreamTokenizer.TT_NUMBER)
                     {	if (instances.getAttribute(attributeNumber).isNominal())
