@@ -212,6 +212,7 @@ public class ExplanationMain extends JPanel
             networkPanel.removeAll();
             networkPanel.setLayout(new BorderLayout());
             networkPanel.add(netWindow,BorderLayout.CENTER);
+            networkPanel.updateUI();
 
             statusBar.setText("File opened successfully");
 

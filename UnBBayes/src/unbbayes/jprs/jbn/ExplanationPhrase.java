@@ -6,10 +6,10 @@ package unbbayes.jprs.jbn;
  */
 public class ExplanationPhrase
 {   public static final int TRIGGER_EVIDENCE_TYPE = 0;
-    public static final int COMPLEMENTARY_EVIDENCE_TYPE = 1;
-    public static final int NA_EVIDENCE_TYPE = 2;
-    public static final int NECESSARY_EVIDENCE_TYPE = 3;
-    public static final int EXCLUSIVE_EVIDENCE_TYPE = 4;
+    public static final int COMPLEMENTARY_EVIDENCE_TYPE = 2;
+    public static final int NA_EVIDENCE_TYPE = 4;
+    public static final int NECESSARY_EVIDENCE_TYPE = 1;
+    public static final int EXCLUSIVE_EVIDENCE_TYPE = 3;
     private String strPhrase, strNode;
     private int evidenceType;
 

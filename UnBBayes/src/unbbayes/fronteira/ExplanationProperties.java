@@ -23,6 +23,7 @@ package unbbayes.fronteira;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Arrays;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -293,8 +294,14 @@ public class ExplanationProperties extends JDialog
     buttonGroup1.add(exclusiveRadioButton);
     NodeList nodes = net.getDescriptionNodes();
     int size = nodes.size();
-    for (int i=0; i<size; i++)
-    {   evidenceNodeComboBox.addItem(nodes.get(i).getName());
+    int i;
+    String[] stringNodes = new String[size];
+    for (i=0; i<size; i++)
+    {   stringNodes[i] = nodes.get(i).getDescription();
+    }
+    Arrays.sort(stringNodes);
+    for (i=0; i<size; i++)
+    {   evidenceNodeComboBox.addItem(stringNodes[i]);
     }
   }
 
