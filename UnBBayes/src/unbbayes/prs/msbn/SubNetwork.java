@@ -275,8 +275,6 @@ public class SubNetwork extends Network {
     	Node node = nos.get(nodeIndex);    	
     	visited[nodeIndex] = 1;
     	
-//    	System.out.println(node);
-    	
     	for (int i = node.getChildren().size()-1; i >= 0; i--) {
     		int newIndex = getNodeIndex(node.getChildren().get(i).getName());
     		dfsCycle(newIndex, node);

@@ -53,12 +53,7 @@ public class Linkage {
 		
 		// DEBUG-------------------
 		for (int i = tree.size()-1; i >=0; i--) {
-			Link link = (Link) tree.get(i);
-			Clique c = link.getClique();
-			for (int j = c.getNos().size()-1; j>=0;j--) {
-				System.out.print(c.getNos().get(j) + " ");				
-			}
-			System.out.println();
+			System.out.println(tree.get(i));
 		}
 		System.out.println();
 		// DEBUG-------------------	
@@ -196,10 +191,10 @@ public class Linkage {
 		}
 		try {
 			if (naOrdem) {
-				n1.getJunctionTree().unificaCrencas();
+				n1.getJunctionTree().consistencia();
 				n1.updateMarginais();
 			} else {
-				n2.getJunctionTree().unificaCrencas();
+				n2.getJunctionTree().consistencia();
 				n2.updateMarginais();
 			}
 		} catch (Exception e) {

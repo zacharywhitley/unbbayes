@@ -59,6 +59,7 @@ public class Link {
 		for (int i = clique.getPotentialTable().tableSize() - 1; i >= 0; i--) {
 			clique.getPotentialTable().setValue(i, tB.getValue(i));
 		}
+		
 		tB.directOpTab(originalLinkTable, PotentialTable.DIVISION_OPERATOR);
 		c1.getPotentialTable().opTab(tB, PotentialTable.PRODUCT_OPERATOR);
 	}
@@ -102,6 +103,29 @@ public class Link {
 	 */
 	public Clique getV1() {
 		return v1;
+	}
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		for (int j = v0.getNos().size()-1; j>=0;j--) {
+			sb.append(v0.getNos().get(j) + " ");				
+		}
+		sb.append("-> ");
+		
+		for (int j = clique.getNos().size()-1; j>=0;j--) {
+			sb.append(clique.getNos().get(j) + " ");				
+		}
+		
+		sb.append("<- ");
+		
+		for (int j = v1.getNos().size()-1; j>=0;j--) {
+			sb.append(v1.getNos().get(j) + " ");				
+		}
+		sb.append('\n');
+		return sb.toString();
 	}
 
 }

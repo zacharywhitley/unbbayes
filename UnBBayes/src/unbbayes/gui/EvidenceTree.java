@@ -64,7 +64,7 @@ public class EvidenceTree extends JTree {
 					} else if (e.getClickCount() == 2) {
 						DefaultMutableTreeNode root = (DefaultMutableTreeNode)getModel().getRoot();
 						int index = root.getIndex(node);
-						expandedNodes[index] = ! expandedNodes[index];
+						expandedNodes[index] = ! expandedNodes[index];						
 						/*
 						Node newNode = getNodeMap(node);
 						if (newNode != null) {
@@ -77,6 +77,7 @@ public class EvidenceTree extends JTree {
 				}
 			}
 		});
+		super.treeDidChange();
 	}
 
 	private class EvidenceTreeCellRenderer extends DefaultTreeCellRenderer {

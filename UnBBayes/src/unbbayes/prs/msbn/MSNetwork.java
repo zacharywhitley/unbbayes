@@ -105,7 +105,7 @@ public class MSNetwork {
 		}
 	
 		SubNetwork raiz = (SubNetwork) nets.get(0);
-//		coleteCrencas(raiz);
+		coleteCrencas(raiz);
 		distribuaCrencas(raiz);
 	}
 	
@@ -116,7 +116,7 @@ public class MSNetwork {
 		}
 		
 		try {
-			net.getJunctionTree().unificaCrencas();
+			net.getJunctionTree().consistencia();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -12,7 +12,10 @@ public class MSJunctionTree extends JunctionTree {
 		super.distribuaEvidencia(c);
 	}
 	
-	protected void unificaCrencas() throws Exception {
-		consistencia();		
+	/**
+	 * @see unbbayes.prs.bn.JunctionTree#consistencia()
+	 */
+	protected void consistencia() throws Exception {
+		super.consistencia();		
 	}
 }

@@ -102,9 +102,12 @@ public class MSBNController {
 				net.getNodeAt(i).setSelected(false);			            	
 			}
 			window.getContentPane().remove(active.getContentPane());			
-		}		
+		}	
 		
 		active = newWindow;
+		if (newWindow == null) {
+			return;			
+		}
 		active.getNetWindowEdition().getCompile().setVisible(false);
 		active.getNetWindowCompilation().getEditMode().setVisible(false);
 		window.getContentPane().add(active.getContentPane(), BorderLayout.CENTER);
@@ -137,12 +140,13 @@ public class MSBNController {
 			}
 		});
 		
-		window.addNewBtnActionListener(new ActionListener() {
+		final ActionListener newBtnAction = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				msbn.addNetwork(new SubNetwork("new net " + msbn.getNetCount()));
 				window.getNetList().updateUI();
 			}
-		});
+		};		
+		window.addNewBtnActionListener(newBtnAction);
 		
 		window.addRemoveBtnActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -151,6 +155,14 @@ public class MSBNController {
 					return;
 				}
 				msbn.remove(index);
+				if (msbn.getNetCount() > 0) {
+					NetWindow netWindow = new NetWindow(msbn.getNetAt(0));										
+					changeActive(netWindow);
+				} else {
+					newBtnAction.actionPerformed(null);
+					changeActive(new NetWindow(msbn.getNetAt(0)));					
+				}
+				window.getNetList().setSelectedIndex(0);
 				window.getNetList().repaint();
 			}
 		});
