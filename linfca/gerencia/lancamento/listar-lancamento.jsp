@@ -7,6 +7,25 @@
 				org.jdom.Element" 
        errorPage="" %>
 	   
+	   
+<script language="Javascript">
+<!--
+// please keep these lines on when you copy the source
+// made by: Nicolas - http://www.javascript-page.com
+
+var URL   = "listar-lancamento.jsp"
+var speed = 10000
+
+
+function reload() {
+location = URL
+}
+
+setTimeout("reload()", speed);
+//-->
+</script>
+
+	   
 <%@include file="/util.jsp" %> 
 
 <%@include file =  "/design/cabecalho.jsp"%>
@@ -64,8 +83,9 @@
   <% 
   		Element in = new Element("in");
 		Element dataInicio = new Element("data-hora-inicio");
-		if (request.getParameter("data-hora-inicio") != null)  {
-			dataInicio.setText(request.getParameter("data-hora-inicio"));
+		String temp = request.getParameter("data-hora-inicio");
+		if (temp != null && ! temp.equals(""))  {
+			dataInicio.setText(temp);
 		} else {
 			dataInicio.setText(new Timestamp(System.currentTimeMillis() - 1000000L).toString());
 		}
@@ -73,8 +93,9 @@
 		in.getChildren().add(dataInicio);
 		
 		Element dataFim = new Element("data-hora-fim");		
-		if (request.getParameter("data-hora-fim") != null)  {
-			dataFim.setText(request.getParameter("data-hora-fim"));
+		temp = request.getParameter("data-hora-fim");
+		if (temp != null && ! temp.equals(""))  {
+			dataFim.setText(temp);
 		} else {
 			dataFim.setText(new Timestamp(System.currentTimeMillis()).toString());
 		}
@@ -105,7 +126,7 @@
                 </td>
                 
                 <td align="center">
-                  <img src="<%=path + "/tmp/" + foto.getName() %>" border="0" hspace="20" alt="Foto do Usuário">
+                  <img src="<%=path + "/tmp/" + foto.getName() %>" border="0" hspace="20" height="240" alt="Foto do Usuário">
                 </td>
                 
                 <td align="center">

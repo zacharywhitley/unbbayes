@@ -46,7 +46,7 @@ public class ListarLancamentoUsoFeature implements Feature {
 		if (aberto) {
 			sql.append(" AND l.dt_hora_fim_lancamento_uso IS NULL");
 		} else {
-			sql.append(" AND l.dt_hora_fim_lancamento_uso < ?");
+			sql.append(" AND (l.dt_hora_fim_lancamento_uso < ? OR l.dt_hora_fim_lancamento_uso IS NULL)");
 		}
 		sql.append(" order by l.dt_hora_inicio_lancamento_uso desc");
 		
