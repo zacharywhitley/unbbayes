@@ -371,32 +371,30 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      *                  constantes desta classe.
      */
     protected void opTab(PotentialTable tab, int operator) {    	
-        double a, b;
-        int[] coordA;
-        int[] coordB = new int[tab.variaveis.size()];
-        int[] index = new int[tab.variaveis.size()];
-        
-        int sizeVariaveis = tab.variaveis.size();
-        for (int c = sizeVariaveis-1; c >= 0; c--) {
-        	index[c] = variaveis.indexOf(tab.variaveis.get(c));
+        int[] index = new int[variaveis.size()];
+        for (int c = variaveis.size()-1; c >= 0; c--) {
+        	index[c] = tab.variaveis.indexOf(variaveis.get(c));
         }
-
-        for (int k = dados.size()-1; k >= 0; k--) {
-            coordA = this.voltaCoord(k);
-            for (int c = 0; c < sizeVariaveis; c++) {
-                if (index[c] != -1) {
-                    coordB[c] = coordA[index[c]];
-                }
-                /* else {
-                    coordB[c] = (coordB[c]+1) % numEstados[c];
-                }*/
-            }
-
-            b = tab.getValue(coordB);
-            a = getValue(k);
-
-            setValue(k, operate(a, b, operator));
-        }
+        calcularFatores();
+        tab.calcularFatores();
+        fastOpTab(0, 0, 0, index, tab, operator);
+    }
+    
+    
+    private void fastOpTab(int c, int linearA, int linearB, int index[], PotentialTable tab, int operator) {
+    	if (c >= variaveis.size()) {
+    		setValue(linearA, operate(getValue(linearA), tab.getValue(linearB),operator));
+    		return;    		    		
+    	}
+    	if (index[c] == -1) {
+    		for (int i = variaveis.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
+	    		fastOpTab(c+1, linearA + i*fatores[c] , linearB, index, tab, operator);
+    		}
+    	} else {
+	    	for (int i = variaveis.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
+	    		fastOpTab(c+1, linearA + i*fatores[c] , linearB + i*tab.fatores[index[c]], index, tab, operator);
+    		}
+    	}
     }
 
     private double operate(double a, double b, int operator) {
