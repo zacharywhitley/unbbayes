@@ -53,7 +53,7 @@ public class ListarLancamentoUsoFeature implements Feature {
 		
 		PreparedStatement ps = con.prepareStatement(sql.toString());
 						
-		Timestamp inicioIn = Timestamp.valueOf(in.getChildTextTrim("data-hora-inicio"));			
+		Timestamp inicioIn = Timestamp.valueOf(in.getChildTextTrim("data-hora-inicio"));
 		
 		ps.setTimestamp(1, inicioIn);
 		if (! aberto) {
