@@ -34,27 +34,32 @@
               <tr>
               
                 <td>
-                  <select name="cod_usuario" size="20">
                   <% 
 		             Feature  listarUsuario = new ListarUsuarioFeature();
 			         Element usuariosXML = listarUsuario.process(null);
 			         Iterator usuarios = usuariosXML.getChildren().iterator();
 			         while (usuarios.hasNext()) {
 		  	            Element usuario = (Element) usuarios.next();
-		  	            System.out.println("Nome: " + ((Element)usuario.getChild("nome-completo")).getText());
-		  	            //System.out.println("SobreNome: " + ((Element)usuario.getChild("sobrenome")).getText());
-		          %>		          
-                  <option value="<%= ((Element)usuario.getChild("cod-usuario")).getText() %>"> 
+		          %>
+                  <a href="<%=path%>/cadastro/usuario/salvar-usuario.jsp?cod_usuario=<%=((Element)usuario.getChild("cod-usuario")).getText()%>">
                   <%= ((Element)usuario.getChild("identificacao")).getText() + " - " + 
-                      ((Element)usuario.getChild("nome-completo")).getText() %> </option>
+                      ((Element)usuario.getChild("nome-completo")).getText() %> </a>
                   <% }	%>
                 </td>
                   
               </tr>
-                
+              
+              <tr>
+              
+                <td>
+				  &nbsp;
+                </td>
+                  
+              </tr>
+              
               <tr>
                 <td colspan=2>
-                  <P><INPUT type="submit" value="Salvar">
+                  <P><INPUT type="submit" value="Novo">
                   </P><br><br>				  
 				</td>
 				</form>
