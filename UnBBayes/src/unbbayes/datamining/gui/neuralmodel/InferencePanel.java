@@ -147,19 +147,15 @@ public class InferencePanel extends JPanel {
   private void printResults(Combination[] results, Instance instance){
     float[] distributionNormalized = new float[results.length];
     Attribute[] attributeArray = combinatorialNetwork.getAttributeVector();
-    Attribute classAtt;
-    String[] initString;
-    String[] initStyles;
+    Attribute classAtt, att;
+    String[] initString, initStyles;
     int maxValue;
     Document docResults;
-    Attribute att;
     ArrayList inputList;
     String rule;
-    Integer numberOfCases;
-    OutputNeuron[] outputArray;
-    OutputNeuron tempOutput;
+    OutputNeuron selectedOutput;
     DecimalFormat numFormat = new DecimalFormat("##0.0");
-
+    Combination selectedCombination;
 
     for(int i=0; i<results.length; i++){
       if(results[i] != null){
@@ -208,124 +204,33 @@ public class InferencePanel extends JPanel {
       System.out.println("InferencePanel - Couldn't insert initial text.");
     }
 
+    selectedCombination = results[maxValue];
+    selectedOutput = selectedCombination.getOutputNeuron(maxValue);
+    inputList = extractInputs(selectedCombination);
 
-
-
-      Combination combination = results[maxValue];
-      outputArray = combination.getOutputArray();
-      inputList = extractInputs(combination);
-
-      for (int i = 0; i < outputArray.length; i++) {
-        tempOutput = outputArray[i];
-
-        //constroi a string da entrada "SE"
-        rule = resource.getString("rule") + ": " + resource.getString("if") + " ";
-        for (int j = 0; j < inputList.size(); j++) {
-          int[] input = (int[]) inputList.get(j);
-          att = attributeArray[input[0]];
-          rule = rule + att.getAttributeName() + " = " +
-              att.value(input[1]) + " ";
-          if (j < (inputList.size() - 1)) {
-            rule = rule + " " + resource.getString("and") + " ";
-          }
-        }
-
-        //constroi a string de saida "ENTAO"
-        rule = rule + resource.getString("then") + " "; //new String("ENTÃO ");
-        att = attributeArray[maxValue];
-
-        rule = rule + att.getAttributeName() + " = " +
-            att.value(i);
-
-        // constroi o valor da confiança
-        rule = "\n" + resource.getString("confidence") + ": " + numFormat.format(tempOutput.getConfidence()) + "%";
-
-        // constroi o valor do suporte
-        rule = "\n" + resource.getString("support") + ": " + numFormat.format(tempOutput.getSupport() + "%");
-
-
-        textAreaResults.setText( rule);
-      }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-    //codigo para escrever a regra utilizada
-
-    InputNeuron[] inputList;
-    Attribute att;
-
-    if(results[maxValue].getCombinationNeuron() instanceof InputNeuron){ // se o neuronio de combinaçao for de entrada
-      inputList = new InputNeuron[1];
-      inputList[0] = (InputNeuron)results[maxValue].getCombinationNeuron();
-    } else {                                            //se o neuronio de combinaçao for combinatorial
-      inputList = ((CombinatorialNeuron)results[maxValue].getCombinationNeuron()).getInputList();
-    }
-
-    String rule = resource.getString("if") + " ";
-    for(int i=0; i<inputList.length; i++){
-      att = attArray[inputList[i].getAttributeIndex()];
-
-      rule = rule + att.getAttributeName() + " = " + att.value(inputList[i].getValue()) + " ";
-      if(i < (inputList.length - 1)){
+    //constroi a string da entrada "SE"
+    rule = resource.getString("rule") + ": " + resource.getString("if") + " ";
+    for (int j = 0; j < inputList.size(); j++) {
+      int[] input = (int[]) inputList.get(j);
+      att = attributeArray[input[0]];
+      rule = rule + att.getAttributeName() + " = " +
+          att.value(input[1]) + " ";
+      if (j < (inputList.size() - 1)) {
         rule = rule + " " + resource.getString("and") + " ";
       }
     }
-    rule = rule + resource.getString("then") + " " + classAtt.getAttributeName() + " = " + classAtt.value(maxValue);
 
-    //codigo para escrever suporte e confianca
-    String supportAndConfidence = new String();
-    supportAndConfidence = supportAndConfidence + resource.getString("confidence") + ": "
-                           + numFormat.format(results[maxValue].getConfidence()) + "%  "
-                           + resource.getString("support") + ": "
-                           + numFormat.format(results[maxValue].getSupport()) + "%";
+    //constroi a string de saida "ENTAO"
+    rule = rule + resource.getString("then") + " "; //new String("ENTÃO ");
+    rule = rule + classAtt.getAttributeName() + " = " + classAtt.value(maxValue);
 
-    String title = new String();
-    title = resource.getString("rule");
-    rule = rule + "   ";
-    int ruleSize = rule.length();
-    for(int i=0; i<ruleSize - resource.getString("rule").length(); i++){
-      title = title + " ";
-    }
+    // constroi o valor da confiança
+    rule = rule + "\n" + resource.getString("confidence") + ": " + numFormat.format(selectedOutput.getConfidence()) + "%";
 
-    title = title + resource.getString("confidence") + "  ";
-    rule = rule + numFormat.format(results[maxValue].getConfidence()) + "%";
-    ruleSize = rule.length();
-    for(int i=0; i<title.length() - ruleSize; i++){
-      rule = rule + " ";
-    }
+    // constroi o valor do suporte
+    rule = rule + "\n" + resource.getString("support") + ": " + numFormat.format(selectedOutput.getSupport()) + "%";
 
-    title = title + resource.getString("support");
-    rule = rule + numFormat.format(results[maxValue].getSupport()) + "%";
-    textAreaResults.setText(title + "\n" + rule);
-*/
+    textAreaResults.setText( rule);
   }
 
   private ArrayList extractInputs(Combination combination) {
