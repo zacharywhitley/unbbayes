@@ -95,7 +95,6 @@ public class InferencePanel extends JPanel implements IInferencePanel{
     textPaneRules.setEditable(false);
     this.add(jPanel1,  BorderLayout.CENTER);
     jPanel2.add(jPanel3,  BorderLayout.CENTER);
-//    jPanel3.add(treeScrollPane,  BorderLayout.CENTER);
     splitPane1.add(jPanel4, JSplitPane.RIGHT);
     jPanel4.add(splitPane2,  BorderLayout.CENTER);
     jPanel1.add(splitPane1, BorderLayout.CENTER);
@@ -137,7 +136,7 @@ public class InferencePanel extends JPanel implements IInferencePanel{
   }
 
   private void printResults(float[] results, Instance instance){
-    float[] distributionNormalized = new float[results.length];
+//    float[] distributionNormalized = new float[results.length];
     Attribute[] attributeVector = neuralNetwork.getAttributeVector();
     Attribute classAtt, att;
     String[] initString, initStyles;
@@ -145,10 +144,10 @@ public class InferencePanel extends JPanel implements IInferencePanel{
     Document docResults;
     DecimalFormat numFormat = new DecimalFormat("##0.000");
 
-    for(int i=0; i<results.length; i++){
-      distributionNormalized[i] = results[i];
-    }
-    Utils.normalize(distributionNormalized);
+//    for(int i=0; i<results.length; i++){
+//      distributionNormalized[i] = results[i];
+//    }
+//    Utils.normalize(distributionNormalized);
 
     classAtt = attributeVector[neuralNetwork.getClassIndex()];
 
@@ -157,12 +156,12 @@ public class InferencePanel extends JPanel implements IInferencePanel{
     for(int i=0; i<results.length; i++){
       initString[i + 1] = "- " + classAtt.value(i) +
           ":  " + numFormat.format(results[i]) +
-          "    " + numFormat.format(distributionNormalized[i] * 100) + "%\n";
+        "\n"; // "    " + numFormat.format(distributionNormalized[i] * 100) + "%\n";
     }
 
     initStyles = new String[initString.length];
     initStyles[0] = "largeBold";
-    maxValue = Utils.maxIndex(distributionNormalized);
+    maxValue = Utils.maxIndex(results);
     for(int i=0; i<results.length; i++){
       if(i == maxValue){
         initStyles[i+1] = "bold";

@@ -75,6 +75,9 @@ public class FileController
 		else if (className.equals("unbbayes.datamining.gui.neuralmodel.NeuralModelMain"))
 		{   set = new HelpSet(null, getClass().getResource("/help/CNMHelp/cnm.hs"));
 		}
+                else if (className.equals("unbbayes.datamining.gui.neuralnetwork.NeuralNetworkMain"))
+                {   set = new HelpSet(null, getClass().getResource("/help/BpnHelp/BpnHelp.hs"));
+                }
                 else if (className.equals("unbbayes.gui.IUnBBayes"))
                 {   set = new HelpSet(null, getClass().getResource("/help/JUnBBayes.hs"));
                 }
