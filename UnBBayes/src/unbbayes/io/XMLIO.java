@@ -8,8 +8,13 @@ package unbbayes.io;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+
+import unbbayes.util.*;
 import unbbayes.prs.bn.Network;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.msbn.SingleAgentMSBN;
@@ -26,8 +31,19 @@ public class XMLIO implements BaseIO {
 	 * @see unbbayes.io.BaseIO#load(java.io.File)
 	 */
 	public ProbabilisticNetwork load(File input) throws LoadException, IOException {
-		// TODO Auto-generated method stub
-		return null;
+		ProbabilisticNetwork net = null;
+		try {
+			
+			InputSource is = new InputSource(new FileReader(input));
+			Document doc = XMLUtil.getDocument(is);
+			String xPathName = "//BIF/HEADER/NAME/value";			
+			net = new ProbabilisticNetwork("");
+						
+			
+		} catch (Exception e) {
+			throw new LoadException("Load Error");			
+		}
+		return net;
 	}
 
 	/* (non-Javadoc)
@@ -42,9 +58,8 @@ public class XMLIO implements BaseIO {
 	/* (non-Javadoc)
 	 * @see unbbayes.io.BaseIO#save(java.io.File, unbbayes.prs.bn.Network)
 	 */
-	public void save(File output, Network net) throws FileNotFoundException {
+	public void save(File output, Network net) throws FileNotFoundException {		
 		// TODO Auto-generated method stub
-
 	}
 
 	/* (non-Javadoc)
