@@ -508,9 +508,12 @@ public class WindowController implements KeyListener {
              * | Node State 2 |    0    |    0    |    0    |    0    |
              *
              */
+            states = potTab.tableSize() / node.getStatesSize();
+            /* 
             for (int count = 1; count < variables; count++) {
                 states *= potTab.getVariableAt(count).getStatesSize();
             }
+            */
 
             // the number of rows is the number of states the node has plus the
             // number of fathers (variables - 1, because one of the variables
@@ -535,7 +538,7 @@ public class WindowController implements KeyListener {
 
             // put the name of the father and its states' name in the right
             // place.
-            for (int k = variables - 1, l = 0; k >= 1; k--, l++) {
+            for (int k = variables-1, l=0; k>=1; k--, l++) {
                 Node variable = potTab.getVariableAt(k);
 
                 // the number of states is the multiplication of the number of

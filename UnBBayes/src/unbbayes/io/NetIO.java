@@ -160,11 +160,12 @@ public class NetIO implements BaseIO {
 			int sizeVa = auxListVa.size();
 			if (sizeVa > 0) {
 				arq.print(" |");
+				for (int c2 = 0; c2 < sizeVa; c2++) {
+					Node auxNo2 = (Node) auxListVa.get(c2);
+					arq.print(" " + auxNo2.getName());
+				}
 			}
-			for (int c2 = 0; c2 < sizeVa; c2++) {
-				Node auxNo2 = (Node) auxListVa.get(c2);
-				arq.print(" " + auxNo2.getName());
-			}
+			
 			arq.println(")");
 			arq.println("{");
 			if (auxNo1 instanceof ITabledVariable) {
@@ -433,7 +434,12 @@ public class NetIO implements BaseIO {
 					net.addEdge(auxArco);
 					proximo(st);
 				}
-
+				
+				/*
+				 * Invert the parents in the table, to
+				 * mantain consistency in the program.
+				 * Internal pre-requisite.
+				 */
 				if (auxNo1 instanceof ITabledVariable) {
 					int sizeVetor = auxTabPot.variableCount() / 2;
 					for (int k = 1; k <= sizeVetor; k++) {
@@ -447,6 +453,7 @@ public class NetIO implements BaseIO {
 							(Node) temp);
 					}
 				}
+				
 				if (st.sval.length() == 1) {
 					proximo(st);
 				}
