@@ -468,7 +468,7 @@ public class NetIO implements BaseIO {
 							if (st.sval.equals("%")) {
 								readTillEOL(st);
 							} else {
-								auxTabPot.setValueAt(
+								auxTabPot.setValue(
 									nDim++,
 									Float.parseFloat(st.sval));
 							}

@@ -692,13 +692,13 @@ public class Network implements java.io.Serializable {
 	
 		resetEvidences();
 		
-		junctionTree = jt;	
+		junctionTree = jt;
 		
 		this.cliques();
 		this.arvoreForte();
 		this.sortCliqueNodes();
 		this.associaCliques();
-		junctionTree.iniciaCrencas();
+		junctionTree.initBeliefs();
 	
 		int sizeNos = copiaNos.size();
 		for (int c = 0; c < sizeNos; c++) {
@@ -1513,7 +1513,7 @@ public class Network implements java.io.Serializable {
 	 */
 	public void initialize() throws Exception {
 		resetEvidences();
-		junctionTree.iniciaCrencas();
+		junctionTree.initBeliefs();
 		if (firstInitialization) {
 			updateMarginais();
 			copyMarginal();

@@ -15,6 +15,7 @@ import unbbayes.util.SetToolkit;
  */
 public class Link {	
 	private Clique clique, v0, v1;
+	private PotentialTable originalLinkTable;
 	
 	/**
 	 * Constructs a new Link with the parameter clique as the 
@@ -26,21 +27,13 @@ public class Link {
 		this.clique = clique;
 	}
 	
-	protected void absorve(boolean naOrdem) {
-		Clique c1, c2;
+	protected void absorveIn(boolean naOrdem) {
+		Clique c2 = (naOrdem) ? v1 : v0;
 		
-		if (naOrdem) {
-			c1 = v0;
-			c2 = v1;
-		} else {
-			c1 = v1;
-			c2 = v0;						
-		}
-
+		originalLinkTable = (PotentialTable) clique.getPotentialTable().clone();
+				
 		NodeList toDie = SetToolkit.clone(c2.getNos());
 		toDie.removeAll(clique.getNos());
-		PotentialTable originalLinkTable = (PotentialTable) clique.getPotentialTable().clone();
-		
 		PotentialTable tB =
 			(PotentialTable) c2.getPotentialTable().clone();
 			
@@ -48,22 +41,19 @@ public class Link {
 			tB.removeVariable(toDie.get(i));
 		}
 		
-		// DEBUG-------------
-		for (int i = 0; i < tB.variableCount(); i++) {
-			if (! clique.getPotentialTable().getVariableAt(i).equals(tB.getVariableAt(i))) {
-				System.err.println("variáveis fora de ordem");				
-			}						
-		}
-		//---------
-		
 		for (int i = clique.getPotentialTable().tableSize() - 1; i >= 0; i--) {
 			clique.getPotentialTable().setValue(i, tB.getValue(i));
 		}
-		
-		tB.directOpTab(originalLinkTable, PotentialTable.DIVISION_OPERATOR);
-		c1.getPotentialTable().opTab(tB, PotentialTable.PRODUCT_OPERATOR);
 	}
 	
+	protected void absorveOut(boolean naOrdem) {
+		Clique c1 = (naOrdem) ? v0 : v1;
+		
+		PotentialTable tB = (PotentialTable) clique.getPotentialTable().clone();
+		tB.directOpTab(originalLinkTable, PotentialTable.DIVISION_OPERATOR);
+		
+		c1.getPotentialTable().opTab(tB, PotentialTable.PRODUCT_OPERATOR);		
+	}
 	
 	/**
 	 * Sets the host clique on the first.sub-network.
@@ -109,23 +99,7 @@ public class Link {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		for (int j = v0.getNos().size()-1; j>=0;j--) {
-			sb.append(v0.getNos().get(j) + " ");				
-		}
-		sb.append("-> ");
-		
-		for (int j = clique.getNos().size()-1; j>=0;j--) {
-			sb.append(clique.getNos().get(j) + " ");				
-		}
-		
-		sb.append("<- ");
-		
-		for (int j = v1.getNos().size()-1; j>=0;j--) {
-			sb.append(v1.getNos().get(j) + " ");				
-		}
-		sb.append('\n');
-		return sb.toString();
+		return (v0 + "-> " + clique + "<- " + v1);
 	}
 
 }

@@ -46,46 +46,41 @@ public class Separator implements ITabledVariable, java.io.Serializable {
      *  Guarda o segundo clique, quando há orientação assume semântica como destino.
      */
     private Clique clique2;
-
-
+    
+    private Separator() {
+    	nos = new NodeList();
+        tabelaPot = new ProbabilisticTable();
+        utilityTable = new UtilityTable();
+    }
+    
     /**
-     *  Constructor for the TSep object
+     *  Constructor for the Separator. It updates the cliques, 
+     * adding clique2 to the child list of clique1 and setting 
+     * clique1 as the parent of clique2. 
      *
      * @param clique1 the origin clique
      * @param clique2 the destination clique
      */
     public Separator(Clique clique1, Clique clique2) {
-        nos = new NodeList();
-        tabelaPot = new ProbabilisticTable();
-        utilityTable = new UtilityTable();
+    	this(clique1, clique2, true);        
+    }
+    
+    /**
+     *  Constructor for the Separator.
+     *  
+     * @param c1
+     * @param c2
+     * @param updateCliques
+     */
+    public Separator(Clique clique1, Clique clique2, boolean updateCliques) {
+    	this();    	
         this.clique1 = clique1;
         this.clique2 = clique2;
-        clique2.setParent(clique1);
-        clique1.addChild(clique2);
+        if (updateCliques) {
+	        clique2.setParent(clique1);
+	        clique1.addChild(clique2);
+        }
     }
-
-
-    /**
-     *  Insere um novo nó 1.
-     *
-     *@param  no1  novo nó 1.
-     */
-     /*
-    public void setNo1(Clique no1) {
-        this.no1 = no1;
-    }
-
-
-    /**
-     *  Insere um novo nó 2.
-     *
-     *@param  no2  novo nó 2
-     */
-     /*
-    public void setNo2(Clique no2) {
-        this.no2 = no2;
-    }
-    */
 
 
     /**

@@ -102,7 +102,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
      *@param  ok      vetor boolean de tamanho 1 para passar parametro por referência.
      *@return         constante de normalização.
      */
-    protected float normalize() throws Exception {
+    public float normalize() throws Exception {
         boolean fixo[] = new boolean[nos.size()];
         NodeList decisoes = new NodeList();
         for (int i = 0; i < nos.size(); i++) {        	
@@ -336,4 +336,15 @@ public class Clique implements ITabledVariable, java.io.Serializable {
 	public Clique getParent() {
 		return parent;
 	}
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		for (int j = nos.size()-1; j>=0;j--) {
+			sb.append(nos.get(j) + " ");				
+		}
+		return sb.toString();
+	}
+
 }

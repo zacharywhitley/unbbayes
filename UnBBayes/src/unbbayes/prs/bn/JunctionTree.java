@@ -102,7 +102,7 @@ public class JunctionTree implements java.io.Serializable {
 	 *  Verifica a consistência global.
 	 *  Aplica o algoritmo Colete seguido do Distribua no clique raiz da árvore.
 	 */
-	protected void consistencia() throws Exception {
+	public void consistencia() throws Exception {
 		n = 1;
 		Clique raiz = (Clique) cliques.get(0);
 		coleteEvidencia(raiz);
@@ -173,8 +173,7 @@ public class JunctionTree implements java.io.Serializable {
 	/**
 	 *  Inicia crenças da árvore.
 	 */
-	protected void iniciaCrencas() throws Exception {
-		
+	public void initBeliefs() throws Exception {		
 		if (! initialized) {
 			Clique auxClique;
 			PotentialTable auxTabPot;

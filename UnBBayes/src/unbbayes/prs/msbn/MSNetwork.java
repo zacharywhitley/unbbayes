@@ -23,7 +23,7 @@ public class MSNetwork {
 	public MSNetwork(String id) {
 		this.id = id;
 		nets = new ArrayList();
-		links = new ArrayList();
+		links = new ArrayList();				
 	}
 	
 	/**
@@ -101,36 +101,31 @@ public class MSNetwork {
 		
 		for (int i = links.size()-1; i>=0; i--) {
 			Linkage link = (Linkage) links.get(i);
-			link.makeLinkageTree();
+			link.makeLinkageTree();			
 		}
 	
-		SubNetwork raiz = (SubNetwork) nets.get(0);
+		SubNetwork raiz = (SubNetwork) nets.get(0);		
 		coleteCrencas(raiz);
 		distribuaCrencas(raiz);
 	}
 	
-	protected void coleteCrencas(SubNetwork net) {
+	protected void coleteCrencas(SubNetwork net) throws Exception {
 		for (int i = net.adjacents.size()-1; i>=0; i--) {
 			SubNetwork netAdj = (SubNetwork) net.adjacents.get(i);
-			coleteCrencas(netAdj);			
-		}
-		
-		try {
-			net.getJunctionTree().consistencia();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		if (net.parent != null) {
-			atualizaCrenca(net.parent, net);
+			if (netAdj.getAdjacentsSize() > 0) { 
+				coleteCrencas(netAdj);
+			}			
+			atualizaCrenca(net, netAdj);
 		}
 	}
 	
-	protected void distribuaCrencas(SubNetwork net) {
+	protected void distribuaCrencas(SubNetwork net) throws Exception {
 		for (int i = net.adjacents.size()-1; i>=0; i--) {
 			SubNetwork netAdj = (SubNetwork) net.adjacents.get(i);
 			atualizaCrenca(netAdj, net);
-			distribuaCrencas(netAdj);
+			if (netAdj.getAdjacentsSize() > 0) { 
+				distribuaCrencas(netAdj);
+			}
 		}
 	}
 	
@@ -138,7 +133,7 @@ public class MSNetwork {
 	 * Shifts attention from the active sub-network to the specified sub-network.
 	 * @param net	the subnetwork to shift attention.
 	 */
-	public void shiftAttention(SubNetwork net) {
+	public void shiftAttention(SubNetwork net) throws Exception {
 		List caminho = activeNet.makePath(net);		
 		for (int i = 1; i < caminho.size(); i++) {
 			SubNetwork netAux = (SubNetwork) caminho.get(i);
@@ -149,7 +144,7 @@ public class MSNetwork {
 		assert activeNet == net;
 	}
 	
-	protected void atualizaCrenca(SubNetwork net1, SubNetwork net2) {				
+	protected void atualizaCrenca(SubNetwork net1, SubNetwork net2) throws Exception {				
 		for (int i = links.size()-1; i>=0; i--) {
 			Linkage l = (Linkage) links.get(i);
 			if (l.getN1() == net1 && l.getN2() == net2) {

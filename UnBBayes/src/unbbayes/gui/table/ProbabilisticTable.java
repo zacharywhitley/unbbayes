@@ -163,7 +163,7 @@ public class ProbabilisticTable extends JTable {
                         JOptionPane.showMessageDialog(null, /*resource.getString("decimalError")*/"Decimal Error", /*resource.getString("decimalException")*/"Decimal Exception", JOptionPane.ERROR_MESSAGE);
                     }
 				float valor = Float.parseFloat(temp);
-				potTab.setValueAt(
+				potTab.setValue(
 					(e.getColumn() - 1) * node.getStatesSize()
 						+ e.getLastRow()
 						- variables

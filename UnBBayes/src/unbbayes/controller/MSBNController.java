@@ -72,12 +72,15 @@ public class MSBNController {
 			            	 || JOptionPane.showConfirmDialog(window, "Shift Attention?") != JOptionPane.OK_OPTION) {
 			            	return;
 			            }
-			            
-			           	NetWindow netWindow = new NetWindow(net);
-			            changeActive(netWindow);            
-		            	msbn.shiftAttention(net);
-		            	netWindow.changeToNetCompilation();
-		            	tree.scrollRowToVisible(selRow);
+			            try {
+			           		NetWindow netWindow = new NetWindow(net);
+			            	changeActive(netWindow);
+		            		msbn.shiftAttention(net);
+			            	netWindow.changeToNetCompilation();
+			            	tree.scrollRowToVisible(selRow);
+			            } catch (Exception ex) {
+			            	ex.printStackTrace();			            	
+			            }
 		             }
 		         }
 		     }

@@ -5,6 +5,7 @@ import java.util.List;
 
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.Network;
 import unbbayes.util.NodeList;
@@ -83,15 +84,15 @@ public class SubNetwork extends Network {
 	 * @throws Exception	If a junction tree cannot be constructed.
 	 */
 	protected void compileJunctionTree() throws Exception {
-		super.compilaAJ(new MSJunctionTree());
+		super.compilaAJ(new JunctionTree());
 	}
 	
 	/**
 	 * Returns the junctiontree.
 	 * @return the junctiontree.
 	 */
-	protected MSJunctionTree getJunctionTree() {
-		return (MSJunctionTree) junctionTree;
+	protected JunctionTree getJunctionTree() {
+		return junctionTree;
 	}
 	
 	protected void initTriangulation() {
@@ -310,5 +311,15 @@ public class SubNetwork extends Network {
 	protected void updateMarginais() {
 		super.updateMarginais();
 	}
-
+	
+	public void normalize() {
+		for (int i = 0 ; i < junctionTree.getCliques().size(); i++) {
+			Clique c1 = (Clique) junctionTree.getCliques().get(i);
+			try {
+				System.out.println(c1.normalize());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }

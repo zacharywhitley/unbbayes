@@ -134,10 +134,6 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
         dados.add(index, value);
     }
     
-    public final void setValueAt(int index, float value) {
-    	dados.data[index] = value;
-    }
-
     public final void removeValueAt(int index) {
         dados.remove(index);
     }
@@ -382,7 +378,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      */
     public final void directOpTab(PotentialTable tab, int operator) {
         if (tableSize() != tab.tableSize()) {
-            throw new RuntimeException(resource.getString("TableSizeException"));
+            throw new RuntimeException(resource.getString("TableSizeException") + ": " + tableSize() + " " + tab.tableSize());
         }
         
         switch (operator) {

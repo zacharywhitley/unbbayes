@@ -419,7 +419,7 @@ public class WindowController implements KeyListener {
         node.setDescription(node.getName());
         PotentialTable auxTabProb = ((ITabledVariable)node).getPotentialTable();
         auxTabProb.addVariable(node);
-        auxTabProb.setValueAt(0, 1);
+        auxTabProb.setValue(0, 1);
         rede.addNode(node);
     }
 
@@ -606,7 +606,7 @@ public class WindowController implements KeyListener {
                                 return;
                             }
 							float valor = Float.parseFloat(temp);
-                            potTab.setValueAt((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow() - variables + 1, valor);
+                            potTab.setValue((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow() - variables + 1, valor);
                         } catch (Exception pe) {
                             System.err.println(resource.getString("potentialTableException"));
                         }
