@@ -178,8 +178,8 @@ public class RulesPanel extends JPanel {
   private void createTableLines(int minSupport, int minConfidence){
     Arc tempArc;                                           // arco temporário
     Attribute att;
-    Iterator outputEnum = combinatorialNetwork.getOutputLayer().values().iterator();  // enumeraçao da camada de saida
-    Iterator arcEnum;                                      // enumeracao dos arcos de um neuronio de saida
+    Enumeration outputEnum = combinatorialNetwork.getOutputLayer().elements();  // enumeraçao da camada de saida
+    Enumeration arcEnum;                                      // enumeracao dos arcos de um neuronio de saida
     TableLine tableLine;                                   // linha da tabela de regras
     InputNeuron[] inputList;                               // lista de neuronios de entrada
     OutputNeuron tempOutputNeuron;                         // neuronio de saida temporário
@@ -188,12 +188,12 @@ public class RulesPanel extends JPanel {
     DecimalFormat numFormat = new DecimalFormat("##0.0");
     tableLinesArray = new ArrayList();
 
-    while(outputEnum.hasNext()){                   // para todos os neuronios de saida
-      tempOutputNeuron = (OutputNeuron)outputEnum.next();
+    while(outputEnum.hasMoreElements()){                   // para todos os neuronios de saida
+      tempOutputNeuron = (OutputNeuron)outputEnum.nextElement();
       arcEnum = tempOutputNeuron.getCombinationsEnum();
 
-      while(arcEnum.hasNext()){                    // para todos os arcos dos neuronios de saida
-        tempArc = (Arc)arcEnum.next();
+      while(arcEnum.hasMoreElements()){                    // para todos os arcos dos neuronios de saida
+        tempArc = (Arc)arcEnum.nextElement();
         if(tempArc.getConfidence() > minConfidence && tempArc.getSupport() > minSupport){
 
           if(tempArc.getCombinationNeuron() instanceof InputNeuron){ // se o neuronio de combinaçao for de entrada

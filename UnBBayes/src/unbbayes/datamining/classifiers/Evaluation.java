@@ -135,6 +135,8 @@ public class Evaluation
 				updateStatsForClassifier(makeDistribution(pred),instance);
       		}*/
                 pred = classifier.classifyInstance(classMissing);
+
+
                 updateStatsForClassifier(pred,instance);
     	    }
             else

@@ -9,12 +9,12 @@ import java.io.*;
  *  @author Rafael Moraes Noivo
  *  @version $1.0 $ (02/16/2003)
  */
-public class CombinatorialNeuron extends Neuron implements Serializable{
+public class CombinatorialNeuron extends InternalNeuron implements Serializable{
   /**Array of input neurons that represent this neuron combination*/
-  private InputNeuron[] inputList;
+  private InputNeuron[] inputList;           //como esta lista não varia, pode ser representada por um array
 
   /**List of output neurons that are connected to this combination neuron*/
-  private HashMap outputList = new HashMap();
+  private Hashtable outputList = new Hashtable();
 
   /**
    * Constructs a new combinatorial neuron.
@@ -45,23 +45,14 @@ public class CombinatorialNeuron extends Neuron implements Serializable{
   }
 
   /**
-   * Method used to prunne the network.
+   * Method used to prunne the network. Removes an output neuron from
+   * this neuron output list, verifying the size of the list and taking
+   * the necessary attitudes.
    *
    * @param outputKey the key of the output neuron to be removd from this
    *                  neuron output list.
    */
   public void prunning(String outputKey){
-    removeOutputNeuron(outputKey);
-  }
-
-  /**
-   * Method used to remove an output neuron from this neuron output list,
-   * verifying the size of the list and taking the necessary attitudes.
-   *
-   * @param outputKey the key of the output neuron to be removd from this
-   *                  neuron output list.
-   */
-  public void removeOutputNeuron(String outputKey){
     outputList.remove(outputKey);                     //nao estou fazendo verificaçao pra ver se retirou mesmo.
     if(outputList.size() == 0){
       int inputListSize = inputList.length;
@@ -105,8 +96,8 @@ public class CombinatorialNeuron extends Neuron implements Serializable{
    *
    * @returns the output neurons enumeration.
    */
-  public Iterator getOutputList(){
-    return outputList.values().iterator();
+  public Enumeration getOutputList(){
+    return outputList.elements();
   }
 
   /**

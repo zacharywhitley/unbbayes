@@ -9,7 +9,7 @@ import java.io.*;
  *  @author Rafael Moraes Noivo
  *  @version $1.0 $ (02/16/2003)
  */
-public class InputNeuron extends Neuron implements Serializable{
+public class InputNeuron extends InternalNeuron implements Serializable{
   /**Index of the attribute this neuron describes*/
   private int attributeIndex;
 
@@ -17,10 +17,10 @@ public class InputNeuron extends Neuron implements Serializable{
   private short value;
 
   /**List of the combinatorial neurons that are associated to this neuron*/
-  private HashMap combinationsList = new HashMap();
+  private Hashtable combinationsList = new Hashtable();
 
   /**Activation state of the neuron*/
-  private boolean enabled;
+  private boolean activation;
 
   /**
    * Constructs a new input neuron.
@@ -50,23 +50,12 @@ public class InputNeuron extends Neuron implements Serializable{
 
   /**
    * Method used to prunne the network, removing the combinatorial neuron
-   * with the received key.
+   * with the received key from this neuron combinatorial list.
    *
    * @param combinationKey the key of the combinatorial neuron to be removed.
    */
   public void prunning(String combinationKey){
-    removeCombNeuron(combinationKey);
-  }
-
-  /**
-   * Method used to remove a combinatorial neuron from this neuron combinatorial
-   * list.
-   *
-   * @param combKey the key of the combinatorial neuron to be removd from this
-   *                  neuron combinatorial list.
-   */
-  public void removeCombNeuron(String combKey){
-    combinationsList.remove(combKey);
+    combinationsList.remove(combinationKey);
   }
 
   /**
@@ -102,8 +91,8 @@ public class InputNeuron extends Neuron implements Serializable{
    * @param enable <code>true</code> to activate the neuron;
    *               <code>false</code> otherwise.
    */
-  public void setEnabled(boolean enable){
-    this.enabled = enable;
+  public void setEnabled(boolean activation){
+    this.activation = activation;
   }
 
   /**
@@ -113,6 +102,6 @@ public class InputNeuron extends Neuron implements Serializable{
    *         <code>false</code> otherwise.
    */
   public boolean getSignal(){
-    return enabled;
+    return activation;
   }
 }

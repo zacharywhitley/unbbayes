@@ -23,7 +23,7 @@ public class Arc implements Serializable{
   protected float support;
 
   /**Neuron that represents the combination connected by the arc*/
-  protected Neuron combinationNeuron;
+  protected InternalNeuron combinationNeuron;
 
   /**
    * Constructs a new arc.
@@ -31,7 +31,7 @@ public class Arc implements Serializable{
    * @param combinationNeuron the neuron that represents the combination
    *                          connected by this arc.
    */
-  public Arc(Neuron combinationNeuron){
+  public Arc(InternalNeuron combinationNeuron){
     this.combinationNeuron = combinationNeuron;
     this.accumulator = 1;
   }
@@ -43,7 +43,7 @@ public class Arc implements Serializable{
    *                          connected by this arc.
    * @param accumulator the value of the arc accumulator
    */
-  public Arc(Neuron combinationNeuron, int accumulator){
+  public Arc(InternalNeuron combinationNeuron, int accumulator){
     this.combinationNeuron = combinationNeuron;
     this.accumulator = accumulator;
   }
@@ -53,7 +53,7 @@ public class Arc implements Serializable{
    *
    * @return the neuron that represents the combination conected by this arc.
    */
-  public Neuron getCombinationNeuron(){
+  public InternalNeuron getCombinationNeuron(){
     return combinationNeuron;
   }
 
