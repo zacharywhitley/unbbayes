@@ -1,5 +1,30 @@
-<%@page import="linfca.*, java.sql.*, org.jdom.Element, java.util.Iterator" errorPage="" %>
-<%@include file="/util.jsp" %> 
+<%@page import="linfca.*, 
+		linfca.cadastro.usuario.*, 
+		java.sql.*, 
+		org.jdom.Element, 
+		java.util.Iterator" 
+		errorPage="" %>
+		<%@include file="/util.jsp" %> 
+
+<%
+
+	String codUsuario = request.getParameter("cod_usuario");
+	Element usuarioXML = null;
+
+	if (codUsuario != null) {
+	
+		Element in = new Element("in");
+		Element codUsuarioXML = new Element("cod-usuario");
+		codUsuarioXML.setText(codUsuario);
+		in.getChildren().add(codUsuarioXML);
+		
+		Feature  detalharUsuario = new DetalharUsuarioFeature();
+		usuarioXML = detalharUsuario.process(in);
+	
+	}
+
+%>
+
 <%@include file =  "/design/cabecalho.jsp"%>
         <tr>
           <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_usuario.gif" width="174" border="0" hspace="20" alt="Log In / Log Out"></td>
@@ -17,7 +42,13 @@
                 <td width="50%"><P>Tipo de Usuário</P></td> 
 			  </tr>
               <tr>
-                <td width="50%"><INPUT maxLength=35 name="identificacao"></td>
+                <td width="50%">
+                	<% if (usuarioXML != null) { %>
+                		<INPUT maxLength=35 name="identificacao" value="<%=usuarioXML.getChild("identificacao").getTextTrim()%>">
+                	<% } else { %>
+                		<INPUT maxLength=35 name="identificacao">
+                	<% } %>
+                </td>
                 <td width="50%">
                   <select name="cod_tipo_usuario">
                   <% 
