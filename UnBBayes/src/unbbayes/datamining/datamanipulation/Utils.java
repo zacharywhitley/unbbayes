@@ -6,12 +6,13 @@ import java.util.*;
  * Class implementing some simple utility methods.
  *
  *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ *  @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  *  @version $1.0 $ (16/02/2002)
  */
 public final class Utils
-{ /** The small deviation allowed in double comparisons */
+{ 
+  /** The small deviation allowed in double comparisons */
   public static double SMALL = 1e-6;
-
   /** Load resource file from this package */
   private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.datamanipulation.resources.DataManipulationResource");
 
@@ -22,11 +23,19 @@ public final class Utils
    * @param b A double
    */
   public static boolean eq(double a, double b)
-  {	return (a - b < SMALL) && (b - a < SMALL);
+  {	
+  	return (a - b < SMALL) && (b - a < SMALL);
   }
 
+  /**
+   * Tests if a is equal to b.
+   *
+   * @param a A byte
+   * @param b A byte
+   */
   public static boolean eq(byte a, byte b)
-  {	if (a == b)
+  {	
+  	if (a == b)
   	{	return true;
 	}
 	else
@@ -49,7 +58,7 @@ public final class Utils
    * array of doubles. First maximum is returned.
    *
    * @param doubles The array of doubles not null
-   * @return The index of the maximum element
+   * @return the index of the maximum element
    */
   public static int maxIndex(double[] doubles)
   {
@@ -71,7 +80,7 @@ public final class Utils
    * array of floats. First maximum is returned.
    *
    * @param floats The array of floats not null
-   * @return The index of the maximum element
+   * @return the index of the maximum element
    */
   public static int maxIndex(float[] floats)
   {	float maximum = floats[0];
@@ -93,7 +102,7 @@ public final class Utils
    * array of integers. First maximum is returned.
    *
    * @param ints The array of integers not null
-   * @return The index of the maximum element
+   * @return the index of the maximum element
    */
   public static int maxIndex(int [] ints)
   {   int maximum = ints[0];
@@ -113,7 +122,7 @@ public final class Utils
    * Returns minimum element in a given array of doubles.
    *
    * @param doubles The array of doubles not null
-   * @return Minimum element
+   * @return minimum element
    */
   public static double min(double[] doubles)
   {   double minimum = doubles[0];
@@ -131,7 +140,7 @@ public final class Utils
    * Returns minimum element in a given array of floats.
    *
    * @param doubles The array of floats not null
-   * @return Minimum element
+   * @return minimum element
    */
   public static float min(float[] floats)
   {   float minimum = floats[0];
@@ -712,8 +721,8 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
 	}
 
 	/** applies a two arrays sum
-	 * 	@param array1: one of the arrays to apply the sum
-	 *  @param array2: one of the arrays to apply the sum
+	 * 	@param array1 one of the arrays to apply the sum
+	 *  @param array2 one of the arrays to apply the sum
 	 *  @return result of the sum, null if the arrays if of different sizes
 	 */
 	public static int[] arraysSum(int[] array1, int[] array2)
@@ -753,19 +762,40 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
 
 		return newArray;
 	}
+	
+	/** applies a two arrays sum
+	 * 	@param array1: one of the arrays to apply the sum
+	 *  @param array2: one of the arrays to apply the sum
+	 *  @return result of the sum, null if the arrays if of different sizes
+	 */
+	 public static float[] arraysSum(float[] array1, float[] array2)
+	 {
+		if (array1.length!=array2.length)
+		{
+			return null;
+		}
+
+		float[] newArray = new float[array1.length];
+		for(int i=0;i<array1.length;i++)
+		{
+			newArray[i] = array1[i]+array2[i];
+		}
+
+		return newArray;
+	}
 
 
-        /**
-         * Calculates the standard deviation of a specific attribute of an instance set.
-         *
-         * @param instanceSet The instanceSet that contains the attribute witch the standard deviation is to be calculated
-         * @param attribute The attributo to calculate the standard deviation
-         * @return The specified attribute standard deviation
-         * @throws Exception
-         */
-        public static double standardDeviation(InstanceSet instanceSet, int attribute) throws Exception{
-          Enumeration instancesEnum = instanceSet.enumerateInstances();
-          Instance instance;
+   /**
+    * Calculates the standard deviation of a specific attribute of an instance set.
+    *
+    * @param instanceSet The instanceSet that contains the attribute witch the standard deviation is to be calculated
+    * @param attribute The attributo to calculate the standard deviation
+    * @return The specified attribute standard deviation
+    * @throws Exception
+    */
+    public static double standardDeviation(InstanceSet instanceSet, int attribute) throws Exception{
+    	  Enumeration instancesEnum = instanceSet.enumerateInstances();
+		  Instance instance;
           Attribute att = instanceSet.getAttribute(attribute);
           double sigma = 0;
           double mean = 0;
@@ -794,16 +824,16 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
           return sigma;
         }
 
-        /**
-         * Calculates the standard deviation of a specific attribute of an instance set given the attribute mean.
-         *
-         * @param instanceSet The instanceSet that contains the attribute witch the standard deviation is to be calculated
-         * @param attribute The attribute to calculate the standard deviation
-         * @param mean The mean of the desired standard deviation attribute
-         * @return the standard deviation of the desired attribute
-         * @throws Exception
-         */
-        public static double standardDeviation(InstanceSet instanceSet, int attribute, double mean) throws Exception{
+	/**
+     * Calculates the standard deviation of a specific attribute of an instance set given the attribute mean.
+     *
+     * @param instanceSet The instanceSet that contains the attribute witch the standard deviation is to be calculated
+     * @param attribute The attribute to calculate the standard deviation
+     * @param mean The mean of the desired standard deviation attribute
+     * @return the standard deviation of the desired attribute
+     * @throws Exception
+     */
+	public static double standardDeviation(InstanceSet instanceSet, int attribute, double mean) throws Exception{
           Enumeration instancesEnum = instanceSet.enumerateInstances();
           Instance instance;
           Attribute att = instanceSet.getAttribute(attribute);
@@ -831,15 +861,15 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
           return sigma;
         }
 
-        /**
-         * Calculate the mean of an specified attribute of an instanceSet
-         *
-         * @param instanceSet The instanceSet that contains the attribute to calculate the mean
-         * @param attribute The attribute to calculate mean
-         * @return The mean of the specified attribute
-         * @throws Exception
-         */
-        public static double mean(InstanceSet instanceSet, int attribute) throws Exception{
+	/**
+     * Calculate the mean of an specified attribute of an instanceSet
+     *
+     * @param instanceSet The instanceSet that contains the attribute to calculate the mean
+     * @param attribute The attribute to calculate mean
+     * @return The mean of the specified attribute
+     * @throws Exception
+     */
+	public static double mean(InstanceSet instanceSet, int attribute) throws Exception{
           Enumeration instancesEnum = instanceSet.enumerateInstances();
           Instance instance;
           Attribute att = instanceSet.getAttribute(attribute);
@@ -860,5 +890,25 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
 
           return sum / numOfInstances;
         }
+        
+	/** 
+	 * Set a float number only to keep two digits after dot on a 
+	 * string representation
+	 * 
+	 * @floatValue value desirable to transform
+	 * @return string relative to floatValue with only two digits after dot
+	 *   
+	 * */
+	public static String keep2DigitsAfterDot(float floatValue) 
+	{		
+		String stringValue = floatValue+"";		
+		int index = stringValue.indexOf('.');
+		if(stringValue.length()>index+3)
+		{
+			stringValue = stringValue.substring(0,index+3);
+		}
+		
+		return stringValue;
+	}
 }
 
