@@ -1,4 +1,4 @@
-package unbbayes.datamining.gui.decisiontree;
+package unbbayes.datamining.gui.id3;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -47,7 +47,7 @@ public class InductionPanel extends JPanel
   private ResourceBundle resource;
 
   public InductionPanel()
-  {	resource = ResourceBundle.getBundle("unbbayes.datamining.gui.decisiontree.resources.DecisiontreeResource");
+  {	resource = ResourceBundle.getBundle("unbbayes.datamining.gui.id3.resources.DecisiontreeResource");
     try
     {
       jbInit();
@@ -87,7 +87,7 @@ public class InductionPanel extends JPanel
     messageTitlePanel.add(messageLabel, null);
   }
 
-  public void setInstances(C45 id3)
+  public void setInstances(DecisionTreeLearning id3)
   {   jTree = id3.getTree();
       expand(jTree);
       jTree.addTreeWillExpandListener(new javax.swing.event.TreeWillExpandListener()

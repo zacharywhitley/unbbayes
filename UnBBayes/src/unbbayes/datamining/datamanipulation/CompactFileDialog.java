@@ -23,6 +23,7 @@ public class CompactFileDialog
             if ((JOptionPane.showInternalConfirmDialog(parent, counterPanel, "", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION))
             {   int selectedAttribute = attributesComboBox.getSelectedIndex();
                 loader.setCounterAttribute(selectedAttribute);
+                loader.getInstances().setCounterAttributeName(attributesComboBox.getSelectedItem()+"");
                 Options.getInstance().setCompactedFile(true);
             }
         }

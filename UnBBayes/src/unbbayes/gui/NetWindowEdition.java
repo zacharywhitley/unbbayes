@@ -578,4 +578,8 @@ public class NetWindowEdition extends JPanel {
         return this.utilityNode;
     }
 
+    public JButton getHierarchy() {
+        return this.hierarchy;
+    }
+
 }

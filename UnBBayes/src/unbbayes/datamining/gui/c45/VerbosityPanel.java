@@ -1,4 +1,4 @@
-package unbbayes.datamining.gui.decisiontree;
+package unbbayes.datamining.gui.c45;
 
 import javax.swing.*;
 import javax.swing.tree.*;

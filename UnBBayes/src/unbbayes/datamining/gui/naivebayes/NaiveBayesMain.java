@@ -192,7 +192,9 @@ public class NaiveBayesMain extends JInternalFrame
     contentPane.add(jToolBar1, BorderLayout.NORTH);
     jToolBar1.add(openButton, null);
     jToolBar1.add(saveButton, null);
+    jToolBar1.addSeparator();
     jToolBar1.add(learnButton, null);
+    jToolBar1.addSeparator();
     jToolBar1.add(helpButton, null);
     contentPane.add(jPanel3, BorderLayout.CENTER);
     jPanel3.add(jTabbedPane1,BorderLayout.CENTER);
@@ -230,7 +232,7 @@ public class NaiveBayesMain extends JInternalFrame
   void jMenuItem4_actionPerformed(ActionEvent e)
   {   if (inst != null)
       {   try
-          {   
+          {
           	  NaiveBayes naiveBayes = new NaiveBayes();
           	  naiveBayes.buildClassifier(inst);
           	  net = naiveBayes.getProbabilisticNetwork();
@@ -251,6 +253,7 @@ public class NaiveBayesMain extends JInternalFrame
               edition.getProbabilisticNode().setVisible(false);
               edition.getUtilityNode().setVisible(false);
               edition.getSelect().setVisible(false);
+              edition.getHierarchy().setVisible(false);
 
               // mostra a nova tela
               jPanel1.removeAll();

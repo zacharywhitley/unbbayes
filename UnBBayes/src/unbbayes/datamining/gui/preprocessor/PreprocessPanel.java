@@ -394,4 +394,9 @@ public class PreprocessPanel extends JPanel
   void discretizeButton_actionPerformed(ActionEvent e)
   {   new DiscretizationPanel(reference,instances,instances.getAttribute(selectedAttribute));
   }
+
+  public AttributeSelectionPanel getAttributePanel()
+  {
+    return attributePanel;
+  }
 }

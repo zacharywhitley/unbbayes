@@ -12,6 +12,8 @@ public class InstanceSet
 {	/** The dataset's name. */
   	private String relationName;
 
+        private String counterAttributeName;
+
 	/** The attribute information. */
   	private Attribute[] attributes;
   	private AttributeStats[] attributeStats;
@@ -48,6 +50,16 @@ public class InstanceSet
   	public final void setRelationName(String newName)
 	{	relationName = newName;
   	}
+
+        public final String getCounterAttributeName()
+        {
+          return counterAttributeName;
+        }
+
+        public void setCounterAttributeName(String counterAttributeName)
+        {
+          this.counterAttributeName = counterAttributeName;
+        }
 
     /**
 	* Sets the instance set. Does not

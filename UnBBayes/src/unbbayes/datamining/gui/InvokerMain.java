@@ -9,7 +9,6 @@ import javax.swing.*;
 
 import unbbayes.controller.*;
 import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.gui.decisiontree.*;
 import unbbayes.datamining.gui.evaluation.*;
 import unbbayes.datamining.gui.metaphor.*;
 import unbbayes.datamining.gui.naivebayes.*;
@@ -253,10 +252,20 @@ public class InvokerMain extends JFrame
         alId3 = new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                         setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                        DecisionTreeMain id3 = new DecisionTreeMain();
+                        unbbayes.datamining.gui.id3.DecisionTreeMain id3 = new unbbayes.datamining.gui.id3.DecisionTreeMain();
                         addWindow(id3);
                         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 }
+        };
+
+        // create an ActionListener for opening new window for C4.5
+        alC45 = new ActionListener() {
+          public void actionPerformed(ActionEvent ae) {
+            setCursor(new Cursor(Cursor.WAIT_CURSOR));
+            unbbayes.datamining.gui.c45.DecisionTreeMain c45 = new unbbayes.datamining.gui.c45.DecisionTreeMain();
+            addWindow(c45);
+            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+          }
         };
 
         // create an ActionListener for opening new window for Evaluation
@@ -477,7 +486,7 @@ public class InvokerMain extends JFrame
         /////////////
         JMenuItem metaphorItem = new JMenuItem("Metaphor"/*, icon*/ );
         JMenuItem cnmItem = new JMenuItem("Combinatorial Neural Model"/*, icon*/ );
-        JMenuItem c45Item = new JMenuItem("C4.5"/*, icon*/ );
+        JMenuItem c45Item = new JMenuItem("C4.5 Classifier"/*, icon*/ );
         JMenuItem bayesianItem = new JMenuItem("Bayesian Learning"/*, icon*/ );
         JMenuItem neuralNetworkItem = new JMenuItem("Neural Network"/*, icon*/);
         ///////////
@@ -538,7 +547,6 @@ public class InvokerMain extends JFrame
         evaluationItem.addActionListener(alEvaluation);
         metaphorItem.addActionListener(alMetaphor);
         cnmItem.addActionListener(alCnm);
-        c45Item.addActionListener(alC45);
         neuralNetworkItem.addActionListener(alNeuralNetwork);
         bayesianItem.addActionListener(alBayesianLearning);
         metalItem.addActionListener(alMetal);
@@ -552,14 +560,14 @@ public class InvokerMain extends JFrame
         // add menu items to their respective menu
         programMenu.add(preprocessorItem);
         programMenu.add(id3Item);
+		programMenu.add(c45Item);//
         programMenu.add(naiveBayesItem);
-        programMenu.add(evaluationItem);
-        programMenu.add(metaphorItem);
+		programMenu.add(bayesianItem);//
         programMenu.add(cnmItem);
-        programMenu.add(c45Item);
-        programMenu.add(bayesianItem);
-        programMenu.add(neuralNetworkItem);
-        lafMenu.add(metalItem);
+        programMenu.add(neuralNetworkItem);//
+		programMenu.add(metaphorItem);//
+        programMenu.add(evaluationItem);
+		lafMenu.add(metalItem);
         lafMenu.add(motifItem);
         lafMenu.add(windowsItem);
         tbMenu.add(tbView);

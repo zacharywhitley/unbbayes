@@ -1,21 +1,22 @@
 package unbbayes.datamining.classifiers.decisiontree;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
  * @author Mário Henrique
  */
-public class SplitObject {
+public class SplitObject implements Serializable{
 
 	private ArrayList instances;
 	private Integer[] attributes;
-	
+
 	public SplitObject(ArrayList instances, Integer[] attributes)
 	{
 		this.instances = instances;
 		this.attributes = attributes;
 	}
-	
+
 	public Integer[] getAttributes() {
 		return attributes;
 	}

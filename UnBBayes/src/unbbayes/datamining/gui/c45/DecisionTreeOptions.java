@@ -1,4 +1,4 @@
-package unbbayes.datamining.gui.decisiontree;
+package unbbayes.datamining.gui.c45;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -17,7 +17,7 @@ public class DecisionTreeOptions extends JDialog
   
   public DecisionTreeOptions()
   {   
-	resource = ResourceBundle.getBundle("unbbayes.datamining.gui.decisiontree.resources.DecisiontreeResource");
+	resource = ResourceBundle.getBundle("unbbayes.datamining.gui.c45.resources.DecisiontreeResource");
 	enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 	this.setTitle(resource.getString("preferences"));
 	this.setSize(220,130);

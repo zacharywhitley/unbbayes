@@ -1,4 +1,4 @@
-package unbbayes.datamining.gui.decisiontree.resources;
+package unbbayes.datamining.gui.c45.resources;
 
 import java.util.*;
 

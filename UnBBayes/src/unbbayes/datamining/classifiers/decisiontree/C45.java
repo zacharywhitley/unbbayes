@@ -96,7 +96,7 @@ public class C45 extends DecisionTreeLearning implements Serializable{
 		//////////////////////////
 
 		//start stack with the initial data
-		//queue.add(new QueueComponent(treeNode,split));
+		queue.add(new QueueComponent(treeNode,split));
 		//queue.add(new QueueComponent(treeNode,split,xNode));
 
 		QueueComponent queueComponent;
@@ -283,7 +283,6 @@ public class C45 extends DecisionTreeLearning implements Serializable{
 		DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)tree.getModel().getRoot();
 	
 		stack.push(treeNode);
-		//text.append(resource.getString("id3ToString"));
 	 
 		while (!stack.empty())
 		{
@@ -412,4 +411,3 @@ public class C45 extends DecisionTreeLearning implements Serializable{
 		}
 	}
 }
-

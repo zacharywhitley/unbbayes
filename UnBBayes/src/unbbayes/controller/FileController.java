@@ -60,7 +60,7 @@ public class FileController
 		if (className.equals("unbbayes.datamining.gui.InvokerMain"))
 		{   set = new HelpSet(null, getClass().getResource("/help/DataMiningHelp/Data_Mining.hs"));
 		}
-		else if (className.equals("unbbayes.datamining.gui.decisiontree.DecisionTreeMain"))
+		else if (className.equals("unbbayes.datamining.gui.id3.DecisionTreeMain"))
 		{   set = new HelpSet(null, getClass().getResource("/help/DataMiningHelp/Decision_Tree.hs"));
 		}
 		else if (className.equals("unbbayes.datamining.gui.evaluation.EvaluationMain"))
@@ -114,12 +114,12 @@ public class FileController
 		boolean successStatus = progressDialog.load();
 
 		InstanceSet inst = loader.getInstances();
-		
+
         if ((loader instanceof TxtLoader)&&(inst!=null))
         {
         	((TxtLoader)loader).checkNumericAttributes();
         }
-        
+
         if(successStatus)
         {
         	return inst;
@@ -157,8 +157,40 @@ public class FileController
 
 	//--------------------------------------------------------------//
 
-	  public void saveInstanceSet(InstanceSet instanceSet) throws Exception
-	  {   	  
-	  }
+        public void saveInstanceSet(File output, InstanceSet instanceSet, int[] selectedAttributes) throws IOException
+        {
+          Saver saver;
+          String fileName = output.getName();
+          if (fileName.regionMatches(true,fileName.length() - 5,".arff",0,5))
+          {
+            if (instanceSet.getCounterAttributeName()==null)
+            {
+              saver = new ArffSaver(output,instanceSet,selectedAttributes,false);
+            }
+            else
+            {
+              saver = new ArffSaver(output,instanceSet,selectedAttributes,true);
+            }
+          }
+          else if (fileName.regionMatches(true,fileName.length() - 4,".txt",0,4))
+          {
+            if (instanceSet.getCounterAttributeName()==null)
+            {
+              saver = new TxtSaver(output,instanceSet,selectedAttributes,false);
+            }
+            else
+            {
+              saver = new TxtSaver(output,instanceSet,selectedAttributes,true);
+            }
+          }
+          else
+          {
+            throw new IOException(resource.getString("fileExtensionException"));
+          }
+
+          //starts loading and shows a status screen
+          ProgressDialog progressDialog = new ProgressDialog (output.getName(), saver);
+          boolean successStatus = progressDialog.load();
+        }
 
 }
