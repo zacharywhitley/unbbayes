@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <map>
 
-	<mapID target="junbbayes" url="../icones/junbbayes.gif" />
 	<mapID target="introducao" url="./html/introducao.htm" />
 	<mapID target="controles" url="./html/controles.htm" />
 	<mapID target="novarede" url="./html/novarede.htm" />
@@ -39,43 +38,32 @@
 	<mapID target="modotexto" url="./html/modotexto.htm" />
 	<mapID target="jhelp" url="./html/jhelp.htm" />
 	<mapID target="doc" url="./documentacao/index.html" />
-	<mapID target="idoc" url="../icones/docu.gif" />
-	<mapID target="iaprendizagem" url="../icones/aprende.gif" />
-	<mapID target="imais" url="../icones/mais.gif" />
-	<mapID target="imenos" url="../icones/menos.gif" />
-	<mapID target="inovo" url="../icones/novo.gif" />
-	<mapID target="iabrir" url="../icones/abrir.gif" />
-	<mapID target="isalvar" url="../icones/salvar.gif" />
-	<mapID target="icompilar" url="../icones/compila.gif" />
-	<mapID target="iarco" url="../icones/ferraarco.gif" />
-	<mapID target="ino" url="../icones/ferraelip.gif" />
-	<mapID target="iselecionar" url="../icones/selecao.gif" />
-	<mapID target="iopcaoglobal" url="../icones/opcaoglobal.gif" />
-	<mapID target="imetal" url="../icones/metal.gif" />
-	<mapID target="imotif" url="../icones/motif.gif" />
-	<mapID target="iwindows" url="../icones/windows.gif" />
-	<mapID target="iimprimir" url="../icones/IMPRIMIR.gif" />
-	<mapID target="iimprimirtabela" url="../icones/IMPRIMIRTABELA.gif" />
-	<mapID target="ivisualisar" url="../icones/previewimpressao.gif" />
-	<mapID target="ivisualisartabela" url="../icones/previewtabela.gif" />
-	<mapID target="iajuda" url="../icones/ajuda.gif" />
-	<mapID target="ijhelp" url="../icones/jhelp.gif" />
-	<mapID target="ipropagar" url="../icones/propagar.gif" />
-	<mapID target="iexpandir" url="../icones/expandir.gif" />
-	<mapID target="icontrair" url="../icones/contrair.gif" />
-	<mapID target="icopiar" url="../icones/copiar.gif" />
-	<mapID target="icolar" url="../icones/colar.gif" />
-	<mapID target="icerteza" url="../icones/certeza.gif" />
-	<mapID target="ilikelihood" url="../icones/likelihood.gif" />
-	<mapID target="ieditar" url="../icones/editar.gif" />
-	<mapID target="ilog" url="../icones/informacao.gif" />
-	<mapID target="itext" url="../icones/text.gif" />
-	<mapID target="ilnf" url="../icones/lnf.gif" />
-	<mapID target="irede" url="../icones/net.gif" />
-	<mapID target="iarvore" url="../icones/arvore.gif" />
-	<mapID target="iintroducao" url="../icones/introducao.gif" />
-	<mapID target="iacao" url="../icones/acao2.gif" />
-	<mapID target="icomponentes" url="../icones/componentes.gif" />
+	<mapID target="iaprendizagem" url="../icons/learn.gif" />
+	<mapID target="imais" url="../icons/more.gif" />
+	<mapID target="imenos" url="../icons/less.gif" />
+	<mapID target="inovo" url="../icons/new.gif" />
+	<mapID target="iabrir" url="../icons/open.gif" />
+	<mapID target="isalvar" url="../icons/save.gif" />
+	<mapID target="icompilar" url="../icons/compile.gif" />
+	<mapID target="iarco" url="../icons/arc.gif" />
+	<mapID target="ino" url="../icons/ellipsis.gif" />
+	<mapID target="iselecionar" url="../icons/selection.gif" />
+	<mapID target="iopcaoglobal" url="../icons/global-options.gif" />
+	<mapID target="imetal" url="../icons/metal.gif" />
+	<mapID target="imotif" url="../icons/motif.gif" />
+	<mapID target="iwindows" url="../icons/windows.gif" />
+	<mapID target="iimprimir" url="../icons/print.gif" />
+	<mapID target="iimprimirtabela" url="../icons/print-table.gif" />
+	<mapID target="ivisualisar" url="../icons/preview-print.gif" />
+	<mapID target="ivisualisartabela" url="../icons/preview-table.gif" />
+	<mapID target="iajuda" url="../icons/help.gif" />
+	<mapID target="ipropagar" url="../icons/propagate.gif" />
+	<mapID target="iexpandir" url="../icons/expand-nodes.gif" />
+	<mapID target="icontrair" url="../icons/contract-nodes.gif" />
+	<mapID target="ieditar" url="../icons/edit.gif" />
+	<mapID target="ilog" url="../icons/information.gif" />
+	<mapID target="itext" url="../icons/text-file.gif" />
+	<mapID target="irede" url="../icons/net-file.gif" />
 	<mapID target="branco" url="./html/branco.htm" />
 	
 </map>
