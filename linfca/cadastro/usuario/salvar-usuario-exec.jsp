@@ -64,6 +64,7 @@
 	     Element element = new Element("string_foto");
 	     element.setText(foto64);
 	     in.getChildren().add(element);
+		 f.deleteOnExit();
 	  
 	     fis.close();
 	  }
