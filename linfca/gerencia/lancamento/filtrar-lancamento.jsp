@@ -58,7 +58,7 @@
 				</td>
 				
 				<td>
-                  <P>Entre com a Data Hora no formato AAAA-MM-DD HH:MM. Ex: 2002-01-15 10:15</P>
+                  <P>Entre com a Data Hora no formato AAAA-MM-DD HH:MM:SS. Ex: 2002-01-15 10:15:30</P>
 				</td>
 			    
 			  </tr>
