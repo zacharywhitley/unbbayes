@@ -11,13 +11,49 @@
 
 <%@include file =  "/design/cabecalho.jsp"%>
 
-<table width="75%" border="1">
-  <tr> 
-    <td width="22%">Usu&aacute;rio</td>
-    <td width="25%">Foto</td>
-    <td width="25%">Data-Hora In&iacute;cio</td>
-    <td width="28%">Data-Hora Fim</td>
-  </tr>
+        <tr>
+          <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_lancamento.gif" width="174" border="0" hspace="20" alt="Histórico de Lançamentos"></td>
+          <td>
+		  <BR>
+            <FORM name="listar" action="" method="post">
+            
+            <table width="100%" border="0" cellspacing="5" cellpadding="0" align="center">
+            
+              <tr>
+              
+                <td colspan=2>
+                  <P class="header">Histórico de Lançamentos:</P><br>
+				</td>
+				
+			  </tr>
+			  
+			  <tr>
+			  
+			    <td colspan=2>
+			      <table width="100%" border="1" cellspacing="0" cellpadding="10" align="center">
+			      
+
+            
+              <tr> 
+              
+                <td align="center">
+                  Usu&aacute;rio
+                </td>
+                
+                <td align="center">
+                  Foto
+                </td>
+                
+                <td align="center">
+                  Data-Hora In&iacute;cio
+                </td>
+                
+                <td align="center">
+                  Data-Hora Fim
+                </td>
+                
+              </tr>
+  
   <% 
   		Element in = new Element("in");
 		Element dataInicio = new Element("data-hora-inicio");
@@ -54,12 +90,43 @@
 			fos.close();
 			foto.deleteOnExit();
   %>
-  <tr> 
-    <td><%= lan.getChildTextTrim("nome-usuario")  %></td>
-    <td><img src="<%=path + "/tmp/" + foto.getName() %>" border="0" hspace="20" alt="Foto do Usuário"></td>
-    <td><%= lan.getChildTextTrim("data-hora-inicio")  %></td>
-    <td><%= lan.getChildTextTrim("data-hora-fim")  %></td>
-  </tr>
+			  
+              <tr>
+              
+                <td align="center">
+                  <P><%= lan.getChildTextTrim("nome-usuario")  %></P>
+                </td>
+                
+                <td align="center">
+                  <img src="<%=path + "/tmp/" + foto.getName() %>" border="0" hspace="20" alt="Foto do Usuário">
+                </td>
+                
+                <td align="center">
+                  <%= lan.getChildTextTrim("data-hora-inicio")  %>
+                </td align="center">
+                
+                <td align="center">
+                  <%= lan.getChildTextTrim("data-hora-fim")  %>
+                </td>
+                
+			  </tr>			  
+		
   <%     }  %>
-</table>
+  
+			      </table>  
+			    </td>
+			    
+			  </tr>  
+			  
+              <tr>
+                <td colspan=2>
+                  <P>
+                  </P><br><br>
+				</td>
+				</form>
+			  </tr>
+			</table>
+		  </td>
+		</tr>
+
 <%@include file =  "/design/rodape.jsp"%>
