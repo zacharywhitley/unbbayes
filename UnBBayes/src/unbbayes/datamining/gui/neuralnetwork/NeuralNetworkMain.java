@@ -242,6 +242,12 @@ public class NeuralNetworkMain extends JInternalFrame {
     jTabbedPane1.setEnabledAt(0,false);
     jTabbedPane1.setEnabledAt(1,true);
     jTabbedPane1.setSelectedIndex(1);
+    jTabbedPane1.setEnabledAt(2,true);
+    saveButton.setEnabled(true);
+    saveModelMenu.setEnabled(true);
+    learnButton.setEnabled(false);
+    advancedOptionsButton.setEnabled(false);
+    optionsMenu.setEnabled(false);
 
     try{
       controller.learn();
@@ -250,11 +256,13 @@ public class NeuralNetworkMain extends JInternalFrame {
       jTabbedPane1.setEnabledAt(0,true);
       jTabbedPane1.setEnabledAt(1,false);
       jTabbedPane1.setSelectedIndex(0);
+      jTabbedPane1.setEnabledAt(2,false);
+      saveButton.setEnabled(false);
+      saveModelMenu.setEnabled(false);
+      learnButton.setEnabled(true);
+      advancedOptionsButton.setEnabled(true);
+      optionsMenu.setEnabled(true);
     }
-
-    jTabbedPane1.setEnabledAt(2,true);
-    saveButton.setEnabled(true);
-    saveModelMenu.setEnabled(true);
   }
 
   void open_actionPerformed(ActionEvent e){

@@ -87,7 +87,7 @@ public class AdvancedOptionsPanel extends JPanel {
     titledBorder3 = new TitledBorder(border3,"Activation Function Steep:");
     titledBorder3.setTitleFont(new java.awt.Font("Dialog", 0, 12));
     border4 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
-    titledBorder4 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Learning Stop Criterion:");
+    titledBorder4 = new TitledBorder(border4,"Learning Stop Condition:");
     titledBorder4.setTitleFont(new java.awt.Font("Dialog", 0, 12));
     this.setLayout(borderLayout1);
     advancedOptions.setLayout(gridBagLayout1);
@@ -127,7 +127,7 @@ public class AdvancedOptionsPanel extends JPanel {
     errorVariationSpinner.setEnabled(false);
     fuctionSteepSpinner.setBorder(null);
     errorVariationCheckBox.setFont(new java.awt.Font("Dialog", 0, 12));
-    errorVariationCheckBox.setText("Minimum Error of the Mean Square Error (%)");
+    errorVariationCheckBox.setText("Relative Error of the Mean Square Error (%)");
     errorVariationCheckBox.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
         errorVariationCheckBox_actionPerformed(e);
