@@ -193,7 +193,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
      *
      *@return    True como valor do focusTransversable (método necessário para que se possa tratar evento de tecla)
      */
-    public boolean isFocusTraversable() {
+    public boolean isFocusable() {
         return true;
     }
 
@@ -547,9 +547,11 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
             //setar o tamanho visivel da rede como o tamanho o jspDesenho - raio
             tamanhoVisivel = new Dimension((int) (janela.getJspView().getSize().getWidth()), (int) (janela.getJspView().getSize().getHeight()));
 
-            //setar o tamanho do JViewport desenho e de seu view
-            desenho.setSize(tamanhoRede);
-            desenho.setViewSize(tamanhoRede);
+			desenho.setOpaque(true);
+			desenho.scrollRectToVisible(new Rectangle(tamanhoRede));
+
+            desenho.setPreferredSize(tamanhoRede);
+            desenho.revalidate();
 
             //receber o focus para poder tratar o evento de tecla
             this.requestFocus();
