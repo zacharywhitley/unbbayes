@@ -11,7 +11,6 @@ import java.util.*;
 /**
  *
  * @author  Paulo F. Duarte
- * @version 
  */
 public class TwoLevelMap {
     private ArrayMap mainMap = new ArrayMap();

@@ -409,7 +409,7 @@ public class WindowController implements KeyListener {
      *
      * @param  no  uma <code>Node</code> que representa o nó a ser inserido
      * @since
-     * @see        unbbayes.prs.bn.Node
+     * @see        unbbayes.prs.Node
      */
     public void insertProbabilisticNode(double x, double y) {
         ProbabilisticNode node = new ProbabilisticNode();
@@ -429,7 +429,7 @@ public class WindowController implements KeyListener {
      *
      * @param  no  uma <code>DecisionNode</code> que representa o nó a ser inserido
      * @since
-     * @see        unbbayes.prs.bn.DecisionNode
+     * @see        unbbayes.prs.DecisionNode
      */
     public void insertDecisionNode(double x, double y) {
         DecisionNode node = new DecisionNode();
@@ -445,7 +445,7 @@ public class WindowController implements KeyListener {
      *
      * @param  no  uma <code>UtilityNode</code> que representa o nó a ser inserido
      * @since
-     * @see        unbbayes.prs.bn.UtilityNode
+     * @see        unbbayes.prs.UtilityNode
      */
     public void insertUtilityNode(double x, double y) {
         UtilityNode node = new UtilityNode();
@@ -475,7 +475,7 @@ public class WindowController implements KeyListener {
      * @param  no  um <code>Node</code> que representa o nó o qual deve-se mostrar a
      *      tabela de potenciais
      * @since
-     * @see        unbbayes.prs.bn.Node
+     * @see        unbbayes.prs.Node
      */
     public JTable makeTable(final Node node) {
         screen.getTxtDescription().setEnabled(true);

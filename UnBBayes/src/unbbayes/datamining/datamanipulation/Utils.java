@@ -230,7 +230,7 @@ public final class Utils
    * Computes the sum of the elements of an array of doubles.
    *
    * @param doubles The array of double
-   * @returns The sum of the elements
+   * @return The sum of the elements
    */
   public static double sum(double[] doubles)
   {	double sum = 0;
@@ -245,7 +245,7 @@ public final class Utils
    * Computes the sum of the elements of an array of floats.
    *
    * @param floats The array of float
-   * @returns The sum of the elements
+   * @return The sum of the elements
    */
   public static float sum(float[] floats)
   {	float sum = 0;
@@ -260,7 +260,7 @@ public final class Utils
    * Computes the sum of the elements of an array of integers.
    *
    * @param ints The array of integers
-   * @returns The sum of the elements
+   * @return The sum of the elements
    */
   public static int sum(int[] ints)
   { int sum = 0;

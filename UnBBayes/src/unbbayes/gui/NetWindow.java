@@ -186,7 +186,7 @@ public class NetWindow extends JInternalFrame {
     /**
      *  Substitui a tabela de probabilidades existente pela desejada.
      *
-     *@parm      table a nova tabela (<code>JTable</code>) desejada.
+     *@param     table a nova tabela (<code>JTable</code>) desejada.
      *@see       JTable
      */
     public void setTable(JTable table) {

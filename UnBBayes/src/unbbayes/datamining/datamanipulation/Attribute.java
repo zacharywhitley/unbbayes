@@ -234,7 +234,7 @@ public class Attribute implements Serializable
 	/**
    	* Returns the attribute's type as an integer.
    	*
-   	* @returns the attribute's type.
+   	* @return the attribute's type.
    	*/
   	public final int getAttributeType()
 	{	return attributeType;
@@ -356,7 +356,7 @@ public class Attribute implements Serializable
 	/**
     * Returns the attribute's values.
     *
-    * @returns the attribute's values.
+    * @return the attribute's values.
     */
     public ArrayList getAttributeValues()
     {	return (ArrayList)attributeValues.clone();
