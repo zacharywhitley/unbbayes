@@ -285,8 +285,7 @@ public class Network implements java.io.Serializable {
                     n = listaCloneNos.size();
                     if (!existeRetirada) {
                         m++;
-                    }
-                    else {
+                    } else {
                         m = 0;
                     }
                     if (m > n) {
