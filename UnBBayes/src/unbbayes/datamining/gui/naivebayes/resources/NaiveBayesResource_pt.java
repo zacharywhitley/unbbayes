@@ -2,9 +2,9 @@ package unbbayes.datamining.gui.naivebayes.resources;
 
 import java.util.*;
 
-public class NaiveBayesResource_pt extends ListResourceBundle { 
-	
-	public Object[][] getContents() { 
+public class NaiveBayesResource_pt extends ListResourceBundle {
+
+	public Object[][] getContents() {
 		return contents;
 	}
 	static final Object[][] contents = {
@@ -43,7 +43,7 @@ public class NaiveBayesResource_pt extends ListResourceBundle {
 	{"openFileTooltip","Abre um arquivo"},
 	{"saveFileTooltip","Salva uma rede"},
 	{"learnDataTooltip","Aprende os dados"},
-	{"helpFileTooltip","Chama arquivo de juda"},
+	{"helpFileTooltip","Chama arquivo de ajuda"},
 	{"welcome","Bem Vindo"},
 	{"attributes2","Atributos"},
 	{"inference","Inferência"},
@@ -54,9 +54,6 @@ public class NaiveBayesResource_pt extends ListResourceBundle {
 	{"learnSuccessful","Aprendizagem Naive Bayes com sucesso"},
 	{"exception","Exceção "},
 	{"errorWritingFileException","Erro na escrita do arquivo "},
-	// Attribute Panel
-	{"selectClass","Selecione Classe ="},
-	{"class","Classe = "},
-	{"attributes","Attributos = "},
-	}; 
+        {"saveModel","Modelo salvo com sucesso"},
+	};
 }

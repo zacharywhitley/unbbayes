@@ -2,9 +2,9 @@ package unbbayes.datamining.gui.naivebayes.resources;
 
 import java.util.*;
 
-public class NaiveBayesResource extends ListResourceBundle { 
-	
-	public Object[][] getContents() { 
+public class NaiveBayesResource extends ListResourceBundle {
+
+	public Object[][] getContents() {
 		return contents;
 	}
 	static final Object[][] contents = {
@@ -20,7 +20,7 @@ public class NaiveBayesResource extends ListResourceBundle {
 	{"frequency","Frequency"},
 	{"range","Range"},
 	{"errorDB","Error in data base: "},
-	{"error","Error"},
+	{"error","Error "},
 	{"fileNotFound","File not found: "},
 	{"errorOpen","Error opening file: "},
 	{"selectMnemonic",new Character('B')},
@@ -54,9 +54,6 @@ public class NaiveBayesResource extends ListResourceBundle {
 	{"learnSuccessful","Naive Bayes learning successful"},
 	{"exception","Exception "},
 	{"errorWritingFileException","Error writing file "},
-	// Attribute Panel
-	{"selectClass","Select Class ="},
-	{"class","Class = "},
-	{"attributes","Attributes = "},
-	}; 
+        {"saveModel","Model saved successfully"},
+	};
 }

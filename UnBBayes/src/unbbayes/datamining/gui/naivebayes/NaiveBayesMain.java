@@ -3,19 +3,19 @@ package unbbayes.datamining.gui.naivebayes;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.lang.*;
-import java.net.URL;
 import java.util.*;
-import javax.help.*;
+
 import javax.swing.*;
 import javax.swing.border.*;
-import unbbayes.controlador.WindowController;
-import unbbayes.fronteira.*;
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.io.*;
-import unbbayes.jprs.jbn.ProbabilisticNetwork;
 
-public class NaiveBayesMain extends /*JFrame*/JInternalFrame
+import unbbayes.controlador.*;
+import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.gui.*;
+import unbbayes.fronteira.*;
+import unbbayes.io.*;
+import unbbayes.jprs.jbn.*;
+
+public class NaiveBayesMain extends JInternalFrame
 {
   private JPanel contentPane;
   private BorderLayout borderLayout1 = new BorderLayout();
@@ -33,23 +33,25 @@ public class NaiveBayesMain extends /*JFrame*/JInternalFrame
   private JMenu jMenu3 = new JMenu();
   private JMenuItem jMenuItem4 = new JMenuItem();
   private JMenuItem jMenuItem5 = new JMenuItem();
-  private JButton jButton7 = new JButton();
-  private JButton jButton8 = new JButton();
-  private JButton jButton9 = new JButton();
-  private JButton jButton10 = new JButton();
-  private ImageIcon image1;
-  private ImageIcon image2;
-  private ImageIcon image3;
-  private ImageIcon image4;
+  private JButton helpButton = new JButton();
+  private JButton learnButton = new JButton();
+  private JButton saveButton = new JButton();
+  private JButton openButton = new JButton();
+  private ImageIcon abrirIcon;
+  private ImageIcon compilaIcon;
+  private ImageIcon helpIcon;
+  private ImageIcon salvarIcon;
   private JTabbedPane jTabbedPane1 = new JTabbedPane();
   private AttributePanel jPanel4;
   private BorderLayout borderLayout3 = new BorderLayout();
   private BorderLayout borderLayout4 = new BorderLayout();
+  private BorderLayout borderLayout6 = new BorderLayout();
   private JScrollPane jScrollPane1 = new JScrollPane();
   private JPanel jPanel1;
   private BorderLayout borderLayout2 = new BorderLayout();
-  private JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
+  private JFileChooser fileChooser;
   private JPanel jPanel2 = new JPanel();
+  private JPanel jPanel3 = new JPanel();
   private BorderLayout borderLayout5 = new BorderLayout();
   private JLabel statusBar = new JLabel();
   private Border border1;
@@ -70,23 +72,22 @@ public class NaiveBayesMain extends /*JFrame*/JInternalFrame
       e.printStackTrace();
     }
   }
-  /**Component initialization*/
+  /**Component initialization
+   * @throws Exception
+   * */
   private void jbInit() throws Exception
-  { image1 = new ImageIcon("icones/abrir.gif");
-    image2 = new ImageIcon("icones/compila.gif");
-    image3 = new ImageIcon("icones/help.gif");
-    image4 = new ImageIcon("icones/salvar.gif");
+  { abrirIcon = new ImageIcon(getClass().getResource("/icones/abrir.gif"));
+    compilaIcon = new ImageIcon(getClass().getResource("/icones/compila.gif"));
+    helpIcon = new ImageIcon(getClass().getResource("/icones/help.gif"));
+    salvarIcon = new ImageIcon(getClass().getResource("/icones/salvar.gif"));
     contentPane = (JPanel) this.getContentPane();
     jPanel1 = new JPanel();
-    border1 = BorderFactory.createLineBorder(new Color(153, 153, 153),1);
-    jTabbedPane1.setOpaque(true);
     titledBorder1 = new TitledBorder(border1,"Status");
-    contentPane.setLayout(borderLayout1);
     this.setJMenuBar(jMenuBar1);
     this.setSize(new Dimension(640,480));
     jMenu1.setMnemonic(((Character)resource.getObject("fileMnemonic")).charValue());
     jMenu1.setText(resource.getString("fileMenu"));
-    jMenuItem1.setIcon(image1);
+    jMenuItem1.setIcon(abrirIcon);
     jMenuItem1.setMnemonic(((Character)resource.getObject("openMnemonic")).charValue());
     jMenuItem1.setText(resource.getString("openMenu"));
     jMenuItem1.addActionListener(new java.awt.event.ActionListener()
@@ -107,7 +108,7 @@ public class NaiveBayesMain extends /*JFrame*/JInternalFrame
     });
     jMenu2.setMnemonic(((Character)resource.getObject("helpMnemonic")).charValue());
     jMenu2.setText(resource.getString("help"));
-    jMenuItem3.setIcon(image3);
+    jMenuItem3.setIcon(helpIcon);
     jMenuItem3.setMnemonic(((Character)resource.getObject("helpTopicsMnemonic")).charValue());
     jMenuItem3.setText(resource.getString("helpTopicsMenu"));
     jMenuItem3.addActionListener(new java.awt.event.ActionListener()
@@ -120,7 +121,7 @@ public class NaiveBayesMain extends /*JFrame*/JInternalFrame
     jMenu3.setMnemonic(((Character)resource.getObject("learningMnemonic")).charValue());
     jMenu3.setText(resource.getString("learningMenu"));
     jMenuItem4.setEnabled(false);
-    jMenuItem4.setIcon(image2);
+    jMenuItem4.setIcon(compilaIcon);
     jMenuItem4.setMnemonic(((Character)resource.getObject("learnNaiveBayesMnemonic")).charValue());
     jMenuItem4.setText(resource.getString("learnNaiveBayes"));
     jMenuItem4.addActionListener(new java.awt.event.ActionListener()
@@ -131,7 +132,7 @@ public class NaiveBayesMain extends /*JFrame*/JInternalFrame
       }
     });
     jMenuItem5.setEnabled(false);
-    jMenuItem5.setIcon(image4);
+    jMenuItem5.setIcon(salvarIcon);
     jMenuItem5.setMnemonic(((Character)resource.getObject("saveNetworkMnemonic")).charValue());
     jMenuItem5.setText(resource.getString("saveNetworkMenu"));
     jMenuItem5.addActionListener(new java.awt.event.ActionListener()
@@ -141,57 +142,63 @@ public class NaiveBayesMain extends /*JFrame*/JInternalFrame
         jMenuItem5_actionPerformed(e);
       }
     });
-    jButton10.setToolTipText(resource.getString("openFileTooltip"));
-    jButton10.setIcon(image1);
-    jButton10.addActionListener(new java.awt.event.ActionListener()
+    openButton.setToolTipText(resource.getString("openFileTooltip"));
+    openButton.setIcon(abrirIcon);
+    openButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jButton10_actionPerformed(e);
+        openButton_actionPerformed(e);
       }
     });
-    jButton9.setEnabled(false);
-    jButton9.setToolTipText(resource.getString("saveFileTooltip"));
-    jButton9.setIcon(image4);
-    jButton9.addActionListener(new java.awt.event.ActionListener()
+    saveButton.setEnabled(false);
+    saveButton.setToolTipText(resource.getString("saveFileTooltip"));
+    saveButton.setIcon(salvarIcon);
+    saveButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jButton9_actionPerformed(e);
+        saveButton_actionPerformed(e);
       }
     });
-    jButton8.setEnabled(false);
-    jButton8.setToolTipText(resource.getString("learnDataTooltip"));
-    jButton8.setIcon(image2);
-    jButton8.addActionListener(new java.awt.event.ActionListener()
+    learnButton.setEnabled(false);
+    learnButton.setToolTipText(resource.getString("learnDataTooltip"));
+    learnButton.setIcon(compilaIcon);
+    learnButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jButton8_actionPerformed(e);
+        learnButton_actionPerformed(e);
       }
     });
-    jButton7.setToolTipText(resource.getString("helpFileTooltip"));
-    jButton7.setIcon(image3);
-    jButton7.addActionListener(new java.awt.event.ActionListener()
+    helpButton.setToolTipText(resource.getString("helpFileTooltip"));
+    helpButton.setIcon(helpIcon);
+    helpButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jButton7_actionPerformed(e);
+        helpButton_actionPerformed(e);
       }
     });
     jToolBar1.setFloatable(false);
     jPanel1.setLayout(borderLayout2);
     jPanel2.setLayout(borderLayout5);
+    jPanel3.setLayout(borderLayout6);
     statusBar.setText(resource.getString("welcome"));
     jPanel2.setBorder(titledBorder1);
     contentPane.add(jToolBar1, BorderLayout.NORTH);
-    jToolBar1.add(jButton10, null);
-    jToolBar1.add(jButton9, null);
-    jToolBar1.add(jButton8, null);
-    jToolBar1.add(jButton7, null);
-    contentPane.add(jTabbedPane1, BorderLayout.CENTER);
+    jToolBar1.add(openButton, null);
+    jToolBar1.add(saveButton, null);
+    jToolBar1.add(learnButton, null);
+    jToolBar1.add(helpButton, null);
+    contentPane.add(jPanel3, BorderLayout.CENTER);
+    jPanel3.add(jTabbedPane1,BorderLayout.CENTER);
     jPanel4 = new AttributePanel();
-    jTabbedPane1.add(jPanel4,  resource.getString("attributes2"));
+    //jTabbedPane1.add(jPanel4,   "jPanel4");
+    //jTabbedPane1.add(jScrollPane1,  "jScrollPane1");
+    //jTabbedPane.add(jPanel4, resource.getString("attributes"));
+    //jTabbedPane.add(jScrollPane1, resource.getString("inference"));
+    jTabbedPane1.add(jPanel4, resource.getString("attributes2"));
     jTabbedPane1.add(jScrollPane1, resource.getString("inference"));
     contentPane.add(jPanel2,  BorderLayout.SOUTH);
     jPanel2.add(statusBar,  BorderLayout.CENTER);
@@ -208,70 +215,13 @@ public class NaiveBayesMain extends /*JFrame*/JInternalFrame
     jMenu3.add(jMenuItem4);
   }
 
-  private void setBaseInstancesFromFile(File f)
-  {   try
-      {   jTabbedPane1.setEnabledAt(0,false);
-          Reader r = new BufferedReader(new FileReader(f));
-	  Loader loader;
-          String fileName = f.getName();
-          if (fileName.regionMatches(true,fileName.length() - 5,".arff",0,5))
-          {   loader = new ArffLoader(r,this);
-          }
-          else if (fileName.regionMatches(true,fileName.length() - 4,".txt",0,4))
-          {   loader = new TxtLoader(r,this);
-          }
-          else
-          {   throw new IOException(resource.getString("fileExtensionException"));
-          }
-          setTitle("Naive Bayes - "+fileName);
-          boolean bool = loader.getInstances().checkNumericAttributes();
-          if (bool == true)
-              throw new Exception(resource.getString("numericAttributesException"));
-          inst = loader.getInstances();
-          jPanel4.enableComboBox(true);
-          jPanel4.setInstances(inst);
-          jTabbedPane1.setEnabledAt(0,true);
-          jTabbedPane1.setSelectedIndex(0);
-          jTabbedPane1.setEnabledAt(1,false);
-          jMenuItem4.setEnabled(true);
-          jButton8.setEnabled(true);
-          jMenuItem5.setEnabled(false);
-          jButton9.setEnabled(false);
-          int numAtt = inst.numAttributes();
-          statusBar.setText(resource.getString("openFile"));
-          r.close();
-      }
-      catch (NullPointerException npe)
-      {   statusBar.setText(resource.getString("errorBD")+f.getName()+" "+npe.getMessage());
-      }
-      catch (FileNotFoundException fnfe)
-      {   statusBar.setText(resource.getString("fileNotFound")+f.getName()+" "+fnfe.getMessage());
-      }
-      catch (IOException ioe)
-      {   statusBar.setText(resource.getString("errorOpen")+f.getName()+" "+ioe.getMessage());
-      }
-      catch (Exception e)
-      {   statusBar.setText(resource.getString("error")+e.getMessage());
-      }
-  }
-
   void jMenuItem3_actionPerformed(ActionEvent e)
-  {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
-      try
-      {   URL helpSetURL = new URL("file:./help/Naive_Bayes.hs");
-          HelpSet set = new HelpSet(null, helpSetURL);
-          JHelp help = new JHelp(set);
-          JFrame f = new JFrame();
-          f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-          f.setContentPane(help);
-          f.setSize(500,400);
-          f.setVisible(true);
+  {   try
+      {   FileController.getInstance().openHelp(this);
       }
       catch (Exception evt)
-      {   evt.printStackTrace();
-          statusBar.setText(resource.getString("error2")+evt.getMessage());
+      {   statusBar.setText("Error= "+evt.getMessage()+" "+this.getClass().getName());
       }
-      setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
   void jMenuItem4_actionPerformed(ActionEvent e)
@@ -283,7 +233,7 @@ public class NaiveBayesMain extends /*JFrame*/JInternalFrame
               jMenuItem5.setEnabled(true);
               jTabbedPane1.setEnabledAt(1,true);
               jTabbedPane1.setSelectedIndex(1);
-              jButton9.setEnabled(true);
+              saveButton.setEnabled(true);
 
               NetWindow netWindow = new NetWindow(net);
               NetWindowEdition edition = netWindow.getNetWindowEdition();
@@ -318,24 +268,58 @@ public class NaiveBayesMain extends /*JFrame*/JInternalFrame
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
       String[] s1 = {"ARFF"};
       String[] s2 = {"TXT"};
-      fileChooser = new JFileChooser(fileChooser.getCurrentDirectory());
+      fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setMultiSelectionEnabled(false);
       //adicionar FileView no FileChooser para desenhar ícones de arquivos
-      fileChooser.setFileView(new FileIcon(NaiveBayesMain.this));
+      fileChooser.setFileView(new FileIcon(this));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "TxtFiles (*.txt)"));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ArffFiles (*.arff)"));
       int returnVal = fileChooser.showOpenDialog(this);
       if (returnVal == JFileChooser.APPROVE_OPTION)
       {   File selectedFile = fileChooser.getSelectedFile();
-          setBaseInstancesFromFile(selectedFile);
+          openFile(selectedFile);
+          FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+  }
+
+  private void openFile(File selectedFile)
+  {   try
+      {   inst = FileController.getInstance().setBaseInstancesFromFile(selectedFile,this);
+          boolean bool = inst.checkNumericAttributes();
+          if (bool == true)
+              throw new Exception(resource.getString("numericAttributesException"));
+          jTabbedPane1.setEnabledAt(0,false);
+          setTitle("Naive Bayes - "+selectedFile.getName());
+          jPanel4.enableComboBox(true);
+          jPanel4.setInstances(inst);
+          jTabbedPane1.setEnabledAt(0,true);
+          jTabbedPane1.setSelectedIndex(0);
+          jTabbedPane1.setEnabledAt(1,false);
+          jMenuItem4.setEnabled(true);
+          learnButton.setEnabled(true);
+          jMenuItem5.setEnabled(false);
+          saveButton.setEnabled(false);
+          statusBar.setText(resource.getString("openFile"));
+      }
+      catch (NullPointerException npe)
+      {   statusBar.setText(resource.getString("errorDB")+selectedFile.getName()+" "+npe.getMessage());
+      }
+      catch (FileNotFoundException fnfe)
+      {   statusBar.setText(resource.getString("fileNotFound")+selectedFile.getName()+" "+fnfe.getMessage());
+      }
+      catch (IOException ioe)
+      {   statusBar.setText(resource.getString("errorOpen")+selectedFile.getName()+" "+ioe.getMessage());
+      }
+      catch (Exception ex)
+      {   statusBar.setText(resource.getString("error")+ex.getMessage());
+      }
   }
 
   void jMenuItem5_actionPerformed(ActionEvent e)
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
       String[] s2 = {"net"};
-      fileChooser = new JFileChooser(fileChooser.getCurrentDirectory());
+      fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setMultiSelectionEnabled(false);
       //adicionar FileView no FileChooser para desenhar ícones de arquivos
       fileChooser.setFileView(new FileIcon(NaiveBayesMain.this));
@@ -350,28 +334,30 @@ public class NaiveBayesMain extends /*JFrame*/JInternalFrame
               }
               BaseIO io = new NetIO();
               io.save(selectedFile,net);
+              statusBar.setText(resource.getString("saveModel"));
           }
           catch (Exception ioe)
           {   statusBar.setText(resource.getString("errorWritingFileException")+selectedFile.getName()+" "+ioe.getMessage());
           }
+          FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 
   }
 
-  void jButton7_actionPerformed(ActionEvent e)
+  void helpButton_actionPerformed(ActionEvent e)
   {   jMenuItem3_actionPerformed(e);
   }
 
-  void jButton10_actionPerformed(ActionEvent e)
+  void openButton_actionPerformed(ActionEvent e)
   {   jMenuItem1_actionPerformed(e);
   }
 
-  void jButton9_actionPerformed(ActionEvent e)
+  void saveButton_actionPerformed(ActionEvent e)
   {   jMenuItem5_actionPerformed(e);
   }
 
-  void jButton8_actionPerformed(ActionEvent e)
+  void learnButton_actionPerformed(ActionEvent e)
   {   jMenuItem4_actionPerformed(e);
   }
 
