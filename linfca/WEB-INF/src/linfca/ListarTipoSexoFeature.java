@@ -4,6 +4,7 @@ package linfca;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+
 import org.jdom.Element;
 
 public class ListarTipoSexoFeature implements Feature {

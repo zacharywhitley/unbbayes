@@ -4,10 +4,6 @@ package linfca.cadastro.curso;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.StringTokenizer;
 
 import linfca.Controller;
 import linfca.Feature;
@@ -23,7 +19,7 @@ public class DetalharCursoFeature implements Feature {
 	 * 
 	 * <out>
 	 * 	  <cod-curso>1</cod-curso>
-	 *    <cod-opcao>1<cod-opcao>
+	 *    <cod-opcao>1</cod-opcao>
 	 *    <descricao-curso>1</descricao-curso>
 	 * </out> 
 	 * </pre>

@@ -152,24 +152,21 @@ public class SalvarGenericoFeature implements Feature {
 		String nomeTipo = null;
 		int fim = 0;
 		for (int i = 0; i < campos.size(); i++) {
-			nomeCampo = ((Element)campos.get(i)).getName();
+			Element campo = (Element) campos.get(i);
+			nomeCampo = campo.getName();
 			fim = nomeCampo.indexOf('_');
 			nomeTipo = nomeCampo.substring(0, fim);
 			System.out.println(nomeTipo);
 			
 			if (nomeTipo.equals("string")) {
-				ps.setString(i + 1 + indiceInicial, ((Element)campos.get(i)).getTextTrim());
-			}
-			
-			if (nomeTipo.equals("int")) {
-				ps.setInt(i + 1 + indiceInicial, Integer.parseInt(((Element)campos.get(i)).getTextTrim()));
-			}
-			
-			if (nomeTipo.equals("date")) {
-				ps.setDate(i + 1 + indiceInicial, Date.valueOf(((Element)campos.get(i)).getTextTrim()));
-			}
-			
-			if (nomeTipo.equals("password")) {
+				ps.setString(i + 1 + indiceInicial, campo.getTextTrim());
+			} else	if (nomeTipo.equals("int")) {
+				ps.setInt(i + 1 + indiceInicial, Integer.parseInt(campo.getTextTrim()));
+			} else if (nomeTipo.equals("date")) {
+				ps.setDate(i + 1 + indiceInicial, Date.valueOf(campo.getTextTrim()));
+			} else if (nomeTipo.equals("float")) {
+				ps.setFloat(i + 1 + indiceInicial, Float.parseFloat(campo.getTextTrim()));
+			} else	if (nomeTipo.equals("password")) {
 				
 				String password = ((Element)campos.get(i)).getTextTrim();
 				
@@ -177,10 +174,10 @@ public class SalvarGenericoFeature implements Feature {
 				byte [] senhaEncode = md.digest(password.getBytes());
 				byte [] senhaEncode64 = Base64.encode(senhaEncode);
 				
-				ps.setBytes(i + 1 + indiceInicial, senhaEncode64);
-				
-			}
-			
+				ps.setBytes(i + 1 + indiceInicial, senhaEncode64);				
+			} else {
+				throw new RuntimeException("Tipo não reconhecido no salvar-generico");				
+			}			
 		}
 			
 	}
