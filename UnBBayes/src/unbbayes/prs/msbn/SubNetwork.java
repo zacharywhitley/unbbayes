@@ -140,7 +140,7 @@ public class SubNetwork extends Network {
 			return true;			
 		}	
 		
-		path.remove(net);
+		path.remove(this);
 		return false;
 	}
 	
