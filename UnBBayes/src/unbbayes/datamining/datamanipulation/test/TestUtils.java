@@ -1,5 +1,7 @@
 package unbbayes.datamining.datamanipulation.test;
 
+import java.io.*;
+
 import junit.framework.*;
 
 import unbbayes.datamining.datamanipulation.*;
@@ -8,53 +10,116 @@ public class TestUtils extends TestCase {
 
   /** The natural logarithm of 2. */
   private final double LOG2 = Math.log(2);
-
   /** The small deviation allowed in double comparisons */
   private final double DELTA = 1e-6;
+  private final double DELTA2 = 1e-3;
+  public static File CONTACT_LENCES_FILE = new File("contact-lenses.txt");
+  public static File WEATHER_NOMINAL_FILE = new File("weather.nominal.txt");
+  public static File WEATHER_NUMERIC_CUT_FILE = new File("weather.cut.txt");
+  private InstanceSet contactInst;
+  private InstanceSet weatherInst;
+  private InstanceSet weatherCutInst;
 
   public TestUtils(String s) {
     super(s);
   }
 
-  protected void setUp() {
+  protected void setUp() throws Exception{
+      Loader loader = new TxtLoader(CONTACT_LENCES_FILE);
+      while (loader.getInstance())
+      {}
+
+      if (loader instanceof TxtLoader)
+      {   ((TxtLoader)loader).checkNumericAttributes();
+      }
+
+      contactInst = loader.getInstances();
+      contactInst.setClass(contactInst.getAttribute(contactInst.numAttributes()-1));
+
+      loader = new TxtLoader(WEATHER_NOMINAL_FILE);
+      while (loader.getInstance())
+      {}
+
+      if (loader instanceof TxtLoader)
+      {   ((TxtLoader)loader).checkNumericAttributes();
+      }
+
+      weatherInst = loader.getInstances();
+      weatherInst.setClass(weatherInst.getAttribute(weatherInst.numAttributes()-1));
+
+      loader = new TxtLoader(WEATHER_NUMERIC_CUT_FILE);
+      while (loader.getInstance())
+      {}
+
+      if (loader instanceof TxtLoader)
+      {   ((TxtLoader)loader).checkNumericAttributes();
+      }
+
+      weatherCutInst = loader.getInstances();
+      weatherCutInst.setClass(weatherCutInst.getAttribute(weatherCutInst.numAttributes()-1));
+
   }
 
-  /*protected void tearDown() {
+  protected void tearDown() {
+    contactInst = null;
+    weatherInst = null;
+    weatherCutInst = null;
   }
 
-  /*public void testComputeEntropy() {
-    InstanceSet data1=  null  /** @todo fill in non-null value */;
-    /*try {
-      double doubleRet = Utils.computeEntropy(data1);
-  /** @todo:  Insert test code here.  Use assertEquals(), for example. */
-    /*}
+  public void testComputeEntropy() {
+    try {
+      // contact
+      Assert.assertEquals(Utils.computeEntropy(contactInst),1.326,DELTA2);
+      // weather
+      Assert.assertEquals(Utils.computeEntropy(weatherInst),0.940,DELTA2);
+      // weather cut
+      Assert.assertEquals(Utils.computeEntropy(weatherCutInst),0.971,DELTA2);
+    }
     catch(Exception e) {
-      System.err.println("Exception thrown:  "+e);
+      Assert.fail("Exception thrown: "+e);
     }
   }
+
   public void testComputeGainRatio() {
-    InstanceSet data1=  null  /** @todo fill in non-null value */;
-    /*Attribute att2=  null  /** @todo fill in non-null value */;
-    /*try {
-      double doubleRet = Utils.computeGainRatio(data1, att2);
-  /** @todo:  Insert test code here.  Use assertEquals(), for example. */
-    /*}
+    try {
+      // weather
+      Assert.assertEquals(Utils.computeGainRatio(weatherInst, weatherInst.getAttribute(0)),0.156,DELTA2);
+      Assert.assertEquals(Utils.computeGainRatio(weatherInst, weatherInst.getAttribute(1)),0.018,DELTA2);
+      Assert.assertEquals(Utils.computeGainRatio(weatherInst, weatherInst.getAttribute(2)),0.152,DELTA2);
+      Assert.assertEquals(Utils.computeGainRatio(weatherInst, weatherInst.getAttribute(3)),0.049,DELTA2);
+      // contact
+      Assert.assertEquals(Utils.computeGainRatio(contactInst, contactInst.getAttribute(0)),0.025,DELTA2);
+      Assert.assertEquals(Utils.computeGainRatio(contactInst, contactInst.getAttribute(1)),0.04,DELTA2);
+      Assert.assertEquals(Utils.computeGainRatio(contactInst, contactInst.getAttribute(2)),0.377,DELTA2);
+      Assert.assertEquals(Utils.computeGainRatio(contactInst, contactInst.getAttribute(3)),0.549,DELTA2);
+    }
     catch(Exception e) {
-      System.err.println("Exception thrown:  "+e);
+      Assert.fail("Exception thrown: "+e);
     }
   }
+
   public void testComputeInfoGain() {
-    InstanceSet data1=  null  /** @todo fill in non-null value */;
-    /*Attribute att2=  null  /** @todo fill in non-null value */;
-    /*try {
-      double doubleRet = Utils.computeInfoGain(data1, att2);
-  /** @todo:  Insert test code here.  Use assertEquals(), for example. */
-    /*}
+    try {
+      // weather
+      Assert.assertEquals(Utils.computeInfoGain(weatherInst, weatherInst.getAttribute(0)),0.247,DELTA2);
+      Assert.assertEquals(Utils.computeInfoGain(weatherInst, weatherInst.getAttribute(1)),0.029,DELTA2);
+      Assert.assertEquals(Utils.computeInfoGain(weatherInst, weatherInst.getAttribute(2)),0.152,DELTA2);
+      Assert.assertEquals(Utils.computeInfoGain(weatherInst, weatherInst.getAttribute(3)),0.048,DELTA2);
+      // contact
+      Assert.assertEquals(Utils.computeInfoGain(contactInst, contactInst.getAttribute(0)),0.039,DELTA2);
+      Assert.assertEquals(Utils.computeInfoGain(contactInst, contactInst.getAttribute(1)),0.04,DELTA2);
+      Assert.assertEquals(Utils.computeInfoGain(contactInst, contactInst.getAttribute(2)),0.377,DELTA2);
+      Assert.assertEquals(Utils.computeInfoGain(contactInst, contactInst.getAttribute(3)),0.549,DELTA2);
+      // weather cut
+      Assert.assertEquals(Utils.computeInfoGain(weatherCutInst, weatherCutInst.getAttribute(0)),0.420,DELTA2);
+      Assert.assertEquals(Utils.computeInfoGain(weatherCutInst, weatherCutInst.getAttribute(1)),0.971,DELTA2);
+      Assert.assertEquals(Utils.computeInfoGain(weatherCutInst, weatherCutInst.getAttribute(2)),0.02,DELTA2);
+    }
     catch(Exception e) {
-      System.err.println("Exception thrown:  "+e);
+      Assert.fail("Exception thrown: "+e);
     }
   }
-  public void testDoubleToString() {
+  /*public void testDoubleToString() {
     double value1=  0.0;
     int afterDecimalPoint2=  0;
     String stringRet = Utils.doubleToString(value1, afterDecimalPoint2);

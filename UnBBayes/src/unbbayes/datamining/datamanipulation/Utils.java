@@ -48,9 +48,13 @@ public final class Utils
   }
 
   /**
-   * Returns the logarithm of a for base 2.
+   * Returns the logarithm for base 2 of a double value. Special cases:
+   * If the argument is NaN or less than zero, then the result is NaN.
+   * If the argument is positive infinity, then the result is positive infinity.
+   * If the argument is positive zero or negative zero, then the result is negative infinity.
    *
-   * @param a A double
+   * @param a - a number greater than 0.0.
+   * @return The value log2 a, the natural logarithm of a.
    */
   public static double log2(double a)
   {	return Math.log(a) / LOG2;
