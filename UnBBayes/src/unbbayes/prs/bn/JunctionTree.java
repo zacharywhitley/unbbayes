@@ -76,32 +76,6 @@ public class JunctionTree implements java.io.Serializable {
 		return n;
 	}
 	
-	public Object clone() {
-		JunctionTree cloned = new JunctionTree();
-		cloned.setSeparators(SetToolkit.clone(separators));		
-		cloned.setCliques(SetToolkit.clone(cliques));
-		cloned.setN(n);
-		cloned.initialized = initialized;
-		if (coordSep != null) {
-			int [][][] coordSep1 = new int[coordSep.length][coordSep[0].length][coordSep[0][0].length];
-			System.arraycopy(coordSep, 0, coordSep1, 0, coordSep.length);
-			cloned.setCoordSep(coordSep1);
-		}
-		return cloned;
-	}
-	
-	/**
-	 * Remove the specified clique
-	 * 
-	 * @param c the clique to remove
-	 */
-	public void removeClique(Clique c) {
-		if (c.getParent() != null) {
-			c.getParent().removeChild(c);				
-		}
-		cliques.remove(c);				
-	}
-
 	public void addSeparator(Separator sep) {
 		separators.add(sep);
 	}
@@ -128,7 +102,7 @@ public class JunctionTree implements java.io.Serializable {
 	 *  Verifica a consistência global.
 	 *  Aplica o algoritmo Colete seguido do Distribua no clique raiz da árvore.
 	 */
-	void consistencia() throws Exception {
+	protected void consistencia() throws Exception {
 		n = 1;
 		Clique raiz = (Clique) cliques.get(0);
 		coleteEvidencia(raiz);
@@ -141,7 +115,7 @@ public class JunctionTree implements java.io.Serializable {
 	 *@param  clique  clique.
 	 *@return         sucesso da coleta de evidências.
 	 */
-	private void coleteEvidencia(Clique clique) throws Exception {
+	protected void coleteEvidencia(Clique clique) throws Exception {
 		Clique auxClique;
 		int sizeFilhos = clique.getChildrenSize();
 		for (int c = 0; c < sizeFilhos; c++) {
@@ -160,7 +134,7 @@ public class JunctionTree implements java.io.Serializable {
 	 *
 	 *@param  clique  clique.
 	 */
-	private void distribuaEvidencia(Clique clique) {
+	protected void distribuaEvidencia(Clique clique) {
 		Clique auxClique;
 		int sizeFilhos = clique.getChildrenSize();
 		for (int c = 0; c < sizeFilhos; c++) {
@@ -308,37 +282,5 @@ public class JunctionTree implements java.io.Serializable {
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * Sets the cliques.
-	 * @param cliques The cliques to set
-	 */
-	public void setCliques(List cliques) {
-		this.cliques = cliques;
-	}
-
-	/**
-	 * Sets the coordSep.
-	 * @param coordSep The coordSep to set
-	 */
-	public void setCoordSep(int[][][] coordSep) {
-		this.coordSep = coordSep;
-	}
-
-	/**
-	 * Sets the n.
-	 * @param n The n to set
-	 */
-	public void setN(float n) {
-		this.n = n;
-	}
-
-	/**
-	 * Sets the separators.
-	 * @param separators The separators to set
-	 */
-	public void setSeparators(List separators) {
-		this.separators = separators;
 	}
 }

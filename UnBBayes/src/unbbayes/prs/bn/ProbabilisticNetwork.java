@@ -48,8 +48,6 @@ public class ProbabilisticNetwork
 	extends Network
 	implements java.io.Serializable {
 
-	private boolean firstInitialization;
-
 	/**
 	 *  Cria uma nova rede probabilística. Limpa o arquivo de log e inicializa o
 	 *  vetor da ordem de eliminação.
@@ -59,10 +57,6 @@ public class ProbabilisticNetwork
 		firstInitialization = true;
 	}
 	
-
-	public String getLog() {
-		return logManager.getLog();
-	}
 
 	/**
 	 *  Faz o processo de triangulação da rede.
@@ -126,38 +120,6 @@ public class ProbabilisticNetwork
 		}
 	}
 
-	/**
-	 *  Liga as duas variáveis e toma as devidas providências.
-	 *
-	 *@param  arco  arco a ser inserido na rede.
-	 */
-	public void addEdge(Edge arco) {
-		super.addEdge(arco);
-		if (arco.getDestinationNode() instanceof ITabledVariable) {
-			ITabledVariable v2 = (ITabledVariable) arco.getDestinationNode();
-			PotentialTable auxTab = v2.getPotentialTable();
-			auxTab.addVariable(arco.getOriginNode());
-		}
-	}
-
-	/**
-	 * Retorna o vetor de cópia dos nós
-	 * (sem as variáveis de utilidade).
-	 *
-	 * @return vetor de cópia dos nós sem as variáveis de utilidade.
-	 */
-	public NodeList getCopiaNos() {
-		return copiaNos;
-	}
-
-	/**
-	 *  Retorna a probabilidade estimada total da árvore de junção associada.
-	 *
-	 *@return    probabilidade estimada total da árvore de junção associada.
-	 */
-	public float PET() {
-		return junctionTree.getN();
-	}
 
 	/**
 	 * Realiza todos os passos necessários para compilar uma rede em árvore de junção. <br><br>
@@ -176,74 +138,13 @@ public class ProbabilisticNetwork
 		}
 		verifyConsistency();
 		moraliza();
-		triangula();
-		compilaAJ();
-	}
-
-	/**
-	 *  Chama o método da árvore de junção para atualizar evidências.
-	 *  @return             consistência da árvore atualizada.
-	 */
-	public void updateEvidences() throws Exception {
-		int sizeNos = copiaNos.size();
-		for (int c = 0; c < sizeNos; c++) {
-			TreeVariable node = (TreeVariable) copiaNos.get(c);
-			node.updateEvidences();
-		}
-
-		try {
-			junctionTree.consistencia();
-		} catch (Exception e) {
-			initialize();
-			throw e;
-		}
-		//        resetEvidences();
-		updateMarginais();
-	}
-
-	/**
-	 * Inicia as crenças da árvore de junção.
-	 */
-	public void initialize() throws Exception {
-		resetEvidences();
-		junctionTree.iniciaCrencas();
-		if (firstInitialization) {
-			updateMarginais();
-			copyMarginal();
-			firstInitialization = false;
+		triangula();		
+		
+		if (isID()) {
+			compilaAJ(new JunctionTreeID());
 		} else {
-			restoreMarginais();
+			compilaAJ(new JunctionTree());
 		}
-	}
-
-	private void copyMarginal() {
-		for (int i = 0; i < copiaNos.size(); i++) {
-			TreeVariable node = (TreeVariable) copiaNos.get(i);
-			node.copyMarginal();
-		}
-	}
-
-	private void restoreMarginais() {
-		for (int i = 0; i < copiaNos.size(); i++) {
-			TreeVariable node = (TreeVariable) copiaNos.get(i);
-			node.restoreMarginal();
-		}
-	}
-
-	/**
-	 * Gets the createLog.
-	 * @return Returns a boolean
-	 */
-	public boolean isCreateLog() {
-		return createLog;
-	}
-
-	/**
-	 * Sets the firstInitialization.
-	 * @param firstInitialization The firstInitialization to set
-	 */
-	public void setFirstInitialization(boolean firstInitialization) {
-		this.firstInitialization = firstInitialization;
 	}
 
 }

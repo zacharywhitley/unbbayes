@@ -49,13 +49,12 @@ public class SubNetwork extends Network {
 	}
 	
 	protected void compilaAJ() throws Exception {
-		super.compilaAJ();
+		super.compilaAJ(new MSJunctionTree(this));
 	}
 	
-	protected JunctionTree getJunctionTree() {
-		return junctionTree;
+	protected MSJunctionTree getJunctionTree() {
+		return (MSJunctionTree) junctionTree;
 	}
-	
 	
 	protected void initTriangulation() {
 		copiaNos = SetToolkit.clone(nos);

@@ -336,5 +336,4 @@ public class Clique implements ITabledVariable, java.io.Serializable {
 	public Clique getParent() {
 		return parent;
 	}
-
 }

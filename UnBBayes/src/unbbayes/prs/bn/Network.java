@@ -49,6 +49,8 @@ public class Network implements java.io.Serializable {
   	
   	protected HierarchicTree hierarchicTree;
   	
+  	protected boolean firstInitialization;
+  	
   	/**
 	 * Nós de decisão utilizado no processo de transformação.
 	 */
@@ -260,6 +262,11 @@ public class Network implements java.io.Serializable {
         arco.getOriginNode().getChildren().add(arco.getDestinationNode());
         arco.getDestinationNode().getParents().add(arco.getOriginNode());
         arcos.add(arco);
+        if (arco.getDestinationNode() instanceof ITabledVariable) {
+			ITabledVariable v2 = (ITabledVariable) arco.getDestinationNode();
+			PotentialTable auxTab = v2.getPotentialTable();
+			auxTab.addVariable(arco.getOriginNode());
+		}
     }
 
 
@@ -672,32 +679,15 @@ public class Network implements java.io.Serializable {
 	/**
 	 *  Monta árvore de junção a partir do grafo.
 	 */
-	protected void compilaAJ() throws Exception {
+	protected void compilaAJ(JunctionTree jt) throws Exception {
 		int menor;
 		Clique auxClique;
 		Separator auxSep;
 	
 		resetEvidences();
-	
-		if (isID()) {
-			junctionTree = new JunctionTreeID();
-		} else {
-			junctionTree = new JunctionTree();
-		}
 		
-		/*
-		desmontaAdjacentes();
-			
-		int sizeMarkov = arcosMarkov.size();
-		for (int c = 0; c < sizeMarkov; c++) {
-			Edge auxArc = (Edge) arcosMarkov.get(c);
-			auxArc.getOriginNode().getAdjacents().add(
-				auxArc.getDestinationNode());
-			auxArc.getDestinationNode().getAdjacents().add(
-				auxArc.getOriginNode());
-		}
-		*/
-	
+		junctionTree = jt;	
+		
 		this.cliques();
 		this.arvoreForte();
 		this.sortCliqueNodes();
@@ -1443,6 +1433,99 @@ public class Network implements java.io.Serializable {
 		}
 	
 		desmontaAdjacentes();
-	}	
+	}
+
+	/**
+	 * Retorna o vetor de cópia dos nós
+	 * (sem as variáveis de utilidade).
+	 *
+	 * @return vetor de cópia dos nós sem as variáveis de utilidade.
+	 */
+	public NodeList getCopiaNos() {
+		return copiaNos;
+	}
+
+	public String getLog() {
+		return logManager.getLog();
+	}
+
+	/**
+	 * Gets the createLog.
+	 * @return Returns a boolean
+	 */
+	public boolean isCreateLog() {
+		return createLog;
+	}
+
+	/**
+	 *  Chama o método da árvore de junção para atualizar evidências.
+	 *  @return             consistência da árvore atualizada.
+	 */
+	public void updateEvidences() throws Exception {
+		int sizeNos = copiaNos.size();
+		for (int c = 0; c < sizeNos; c++) {
+			TreeVariable node = (TreeVariable) copiaNos.get(c);
+			node.updateEvidences();
+		}
+
+		try {
+			junctionTree.consistencia();
+		} catch (Exception e) {
+			initialize();
+			throw e;
+		}
+		//        resetEvidences();
+		updateMarginais();
+	}
+
+	/**
+	 * Inicia as crenças da árvore de junção.
+	 */
+	public void initialize() throws Exception {
+		resetEvidences();
+		junctionTree.iniciaCrencas();
+		if (firstInitialization) {
+			updateMarginais();
+			copyMarginal();
+			firstInitialization = false;
+		} else {
+			restoreMarginais();
+		}
+	}
+
+	protected void copyMarginal() {
+		for (int i = 0; i < copiaNos.size(); i++) {
+			TreeVariable node = (TreeVariable) copiaNos.get(i);
+			node.copyMarginal();
+		}
+	}
+
+	protected void restoreMarginais() {
+		for (int i = 0; i < copiaNos.size(); i++) {
+			TreeVariable node = (TreeVariable) copiaNos.get(i);
+			node.restoreMarginal();
+		}
+	}
+
+	/**
+	 * Sets the firstInitialization.
+	 * @param firstInitialization The firstInitialization to set
+	 */
+	public void setFirstInitialization(boolean firstInitialization) {
+		this.firstInitialization = firstInitialization;
+	}
+
+	/**
+	 *  Retorna a probabilidade estimada total da árvore de junção associada.
+	 *
+	 *@return    probabilidade estimada total da árvore de junção associada.
+	 */
+	public float PET() {
+		return junctionTree.getN();
+	}
+
+
+
+
 }
 

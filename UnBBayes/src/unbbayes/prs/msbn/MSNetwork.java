@@ -51,8 +51,35 @@ public class MSNetwork {
 		}
 		
 		for (int i = links.size()-1; i>=0; i--) {
-			Link link = (Link) links.get(i);
+			Linkage link = (Linkage) links.get(i);
 			link.makeLinkageTree();			
+		}
+		
+		
+		SubNetwork raiz = (SubNetwork) nets.get(0);
+		distribuaCrencas(raiz);
+	}
+	
+	protected void distribuaCrencas(SubNetwork net) {
+		for (int i = net.adjacents.size()-1; i>=0; i--) {
+			SubNetwork netAdj = (SubNetwork) net.adjacents.get(i);
+			atualizaCrenca(netAdj, net);
+			distribuaCrencas(netAdj);
+		}
+	}
+	
+	protected void atualizaCrenca(SubNetwork net1, SubNetwork net2) {
+		for (int i = links.size()-1; i>=0; i--) {
+			Linkage l = (Linkage) links.get(i);
+			if (l.getN1() == net1 && l.getN2() == net2) {
+				l.absorve(true);
+				return;												
+			}
+			
+			if (l.getN2() == net1 && l.getN1() == net2) {
+				l.absorve(false);								
+				return;
+			}
 		}
 	}
 	
@@ -133,7 +160,7 @@ public class MSNetwork {
 		SubNetwork ni = (SubNetwork) nets.get(iMax);
 		SubNetwork nk = (SubNetwork) nets.get(kMax);
 		naArvore[kMax] = true;
-		links.add(new Link(ni,nk));
+		links.add(new Linkage(ni,nk));
 	}
 	
 	private boolean isDSepSet(int j, int k, NodeList inter) {
