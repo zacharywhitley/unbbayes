@@ -50,7 +50,7 @@ public class ValidarUsuarioFeature implements Feature {
 			if (md.isEqual(md.digest(senha.getBytes()), Base64.decode(rs.getBytes("senha")))) {
 				
 				ps = con.prepareStatement(
-					"SELECT cod_lancamento" +
+					"SELECT cod_lancamento, cod_computador" +
 					" FROM lancamento" +
 					" WHERE cod_usuario = ? AND dt_hora_fim_lancamento IS NULL"
 				);
@@ -62,6 +62,11 @@ public class ValidarUsuarioFeature implements Feature {
 					Element codLancamento = new Element("cod-lancamento");
 					codLancamento.setText("" + rs.getLong("cod_lancamento"));
 					sair.getChildren().add(codLancamento);
+
+					Element codComputador = new Element("cod-computador");
+					codComputador.setText("" + rs.getLong("cod_computador"));
+					sair.getChildren().add(codComputador);
+
 					out.getChildren().add(sair);
 				} else {
 					Element entrar = new Element("entrar");

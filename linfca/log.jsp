@@ -33,5 +33,8 @@
     </tr>
   </table>
 </form>
+<%
+   java.awt.Toolkit.getDefaultToolkit().beep();
+%>
 </body>
 </html>

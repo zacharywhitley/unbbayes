@@ -9,7 +9,7 @@
             <table width="100%" border="0" cellspacing="5" cellpadding="0" align="center">
               <tr>
                 <td colspan=2>
-                  <P class="header">Operação realizada com sucesso! <%=request.getParameter("menssagem")%></P><br>
+                  <P class="header">Operação realizada com sucesso! <%=request.getParameter("mensagem")%></P><br>
 				</td>
 			  </tr>
               <tr>

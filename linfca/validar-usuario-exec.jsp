@@ -40,8 +40,12 @@
 				dispatcher.forward(request, response);
 			} else {
 				Element sair = outXML.getChild("sair");
-				String codLancamento = ((Element)sair.getChild("cod-lancamento")).getTextTrim();
+				String codLancamento = sair.getChildTextTrim("cod-lancamento");
 				request.setAttribute("cod-lancamento", codLancamento);
+				
+				String codComputador = sair.getChildTextTrim("cod-computador");
+				request.setAttribute("cod-computador", codComputador);
+
 				RequestDispatcher dispatcher = request.getRequestDispatcher("/controle/computador/lancar-computador-exec.jsp");
 				dispatcher.forward(request, response);
 			}
