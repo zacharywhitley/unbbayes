@@ -111,7 +111,7 @@ public class Network implements java.io.Serializable {
         int size = nos.size();
         for (int i=0;i<size;i++)
         {   Node node = getNodeAt(i);
-            if (node.getInformationType() == Node.DESCRIPTION_TYPE)
+            if ((node.getType() == Node.PROBABILISTIC_NODE_TYPE) && (node.getInformationType() == Node.DESCRIPTION_TYPE))
             {   descriptionNodes.add(node);
             }
         }
@@ -123,7 +123,7 @@ public class Network implements java.io.Serializable {
         int size = nos.size();
         for (int i=0;i<size;i++)
         {   Node node = getNodeAt(i);
-            if (node.getInformationType() == Node.EXPLANATION_TYPE)
+            if ((node.getType() == Node.PROBABILISTIC_NODE_TYPE) && (node.getInformationType() == Node.EXPLANATION_TYPE))
             {   explanationNodes.add(node);
             }
         }
