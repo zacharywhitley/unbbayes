@@ -31,7 +31,7 @@
 	  in.getChildren().add(element);
       System.out.println(name + " = " + value);
       
-   }   
+   }
    
    String foto64 = null;   
    Enumeration files = multi.getFileNames();

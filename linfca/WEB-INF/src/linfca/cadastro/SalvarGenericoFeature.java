@@ -146,7 +146,7 @@ public class SalvarGenericoFeature implements Feature {
 		return out;		
 	}
 	
-	private void prepare(PreparedStatement ps, List campos, int indiceInicial) throws SQLException {
+	private void prepare(PreparedStatement ps, List campos, int indiceInicial) throws SQLException, NoSuchAlgorithmException {
 		
 		String nomeCampo = null;
 		String nomeTipo = null;
@@ -167,12 +167,27 @@ public class SalvarGenericoFeature implements Feature {
 			
 			if (nomeTipo.equals("date")) {
 				ps.setDate(i + 1 + indiceInicial, Date.valueOf(((Element)campos.get(i)).getTextTrim()));
-			}			
+			}
+			
+			if (nomeTipo.equals("password")) {
+				
+				String password = ((Element)campos.get(i)).getTextTrim();
+				
+				MessageDigest md = MessageDigest.getInstance("MD5");				
+				byte [] senhaEncode = md.digest(password.getBytes());
+				byte [] senhaEncode64 = Base64.encode(senhaEncode);
+				
+				ps.setBytes(i + 1 + indiceInicial, senhaEncode64);
+				
+			}
+			
 		}
 			
 	}
 	
-	private void prepare(PreparedStatement ps, List campos, List camposWhere) throws SQLException {		
+
+	private void prepare(PreparedStatement ps, List campos, List camposWhere) throws SQLException, NoSuchAlgorithmException {
+		
 		prepare(ps, campos, 0);
 		prepare(ps, camposWhere, campos.size());			
 	}

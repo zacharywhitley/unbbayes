@@ -21,8 +21,6 @@
 		Feature  detalharUsuario = new DetalharUsuarioFeature();
 		usuarioXML = detalharUsuario.process(in);
 		
-		System.out.println("Entrou onde nao devia");
-	
 	}
 
 %>
@@ -37,7 +35,7 @@
               <% if (usuarioXML != null) { %>
                 <tr>
                   <td colspan=2>
-                    <P><img height="86" src="" width="174" border="0" hspace="20" alt="Foto do Usuário"><br>
+                    <P><img height="86" src="<%=usuarioXML.getChildTextTrim("foto")%>" width="174" border="0" hspace="20" alt="Foto do Usuário"><br>
 				  </td>
 			    </tr>
 			  <% } %>
