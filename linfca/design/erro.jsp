@@ -1,4 +1,4 @@
-<%@page errorPage="" %>
+<%@page isErrorPage="true" %>
 <%@include file="/util.jsp" %> 
 <%@include file =  "/design/cabecalho.jsp"%>
         <tr>
@@ -9,7 +9,13 @@
             <table width="100%" border="0" cellspacing="5" cellpadding="0" align="center">
               <tr>
                 <td colspan=2>
-                  <P class="header">Operação realizada com sucesso! <%=request.getParameter("menssagem")%></P><br>
+                  <P class="header">O seguinte erro foi encontrado:</P><br>
+				</td>
+			  </tr>
+			  <tr>
+                <td colspan=2>
+                  <b><%= exception %></b>
+                  <% exception.printStackTrace(out); %><br>
 				</td>
 			  </tr>
               <tr>

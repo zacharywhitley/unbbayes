@@ -6,11 +6,13 @@
         
 <%
 
+   String menssagem = "";
    String codUsuario = request.getParameter("cod-usuario");   
    System.out.println("Foi : " + codUsuario);
    Element in = new Element("in");
    
    if (codUsuario != null)  {
+      menssagem = "Lançamento de uso de máquina concluído com sucesso!";
       String codComputador = request.getParameter("cod-computador");
       System.out.println("Foi : " + codComputador);
 	  Element usuario = new Element("cod-usuario");
@@ -21,6 +23,7 @@
       in.getChildren().add(computador);
       in.getChildren().add(new Element("uso"));
    } else {
+      menssagem = "Fechamento do lançamento de uso de máquina concluído com sucesso!";
 	  String codLancamento = request.getAttribute("cod-lancamento").toString();
       Element lancamento = new Element("cod-lancamento");
       lancamento.setText(codLancamento);
@@ -43,5 +46,7 @@
 
 <body onLoad="javascript:document.form1.submit()">
   <form name="form1" method="post" action="<%=request.getContextPath()%>/design/sucesso-lancamento.jsp">
+    <input type="hidden" name="menssagem" value="<%=menssagem%>">
+  </form>
 </body>
 </html>
