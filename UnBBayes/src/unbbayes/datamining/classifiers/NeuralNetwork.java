@@ -138,9 +138,14 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 
   /**The activation function steep*/
   private float activationFunctionSteep;
-  
+
   /**The number of possible values of the class attribute*/
   private transient int classAttNumOfValues;
+
+
+  private float[][] expectedOutput;
+
+
 
   /**
    * Constructor of the neural network
@@ -226,6 +231,26 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     highestValue = new float[numOfAttributes];
     lowestValue = new float[numOfAttributes];
 
+
+    expectedOutput = new float[classAttNumOfValues][0];
+    for (int i=0;i<classAttNumOfValues;i++)
+    {
+      if(numericOutput)
+      {
+        expectedOutput[i] = new float[1];
+        float output = Float.parseFloat(attributeVector[classIndex].getAttributeValues()[i]);
+        expectedOutput[i][0] = activationFunction.normalizeToFunctionInterval(output, highestValue[classIndex], lowestValue[classIndex]);
+      }
+      else
+      {
+        expectedOutput[i] = new float[classAttNumOfValues];
+        //Arrays.fill(expectedOutput[i], 0);
+            //Arrays.fill(expectedOutput, -1);
+            ///////////////////////////////////ver com o mário
+        expectedOutput[i][i] = 1;
+      }
+    }
+
     //inicializa o tipo de normalização escolida
     if(numericalInputNormalization == NO_NORMALIZATION){
       normalizationFunction = new NoNormalization();
@@ -299,13 +324,14 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
         outputLayer[i] = new OutputNeuron(activationFunction, hiddenLayer.length);
       }
     }
-	
+
     //Learning
+    System.out.println((new java.text.SimpleDateFormat("HH:mm:ss - ")).format(new Date()));
     for (int epoch=0; epoch<trainingTime; epoch++) {
     	//teste
-    	System.out.println(epoch + " de " + trainingTime);
-    	
-    	
+    	//System.out.println(epoch + " de " + trainingTime);
+
+
       instanceEnum = instanceSet.enumerateInstances();
       oldQuadraticError = quadraticError;
       quadraticError = 0;
@@ -316,7 +342,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 
       while (instanceEnum.hasMoreElements()) {
         instance = (Instance) instanceEnum.nextElement();
-    	int instanceWeight = instance.getWeight(); 
+    	int instanceWeight = instance.getWeight();
         for(int i=0; i<instanceWeight; i++){
 	      quadraticError = quadraticError + learn(instance);
         }
@@ -334,6 +360,8 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
         }
       }
     }
+    System.out.println((new java.text.SimpleDateFormat("HH:mm:ss - ")).format(new Date()));
+
   }
 
   /**
@@ -345,7 +373,6 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
    */
   private float learn(Instance instance){
     float totalErrorEnergy = 0;
-    float[] expectedOutput;
 
     inputLayerSetUp(instance);
 
@@ -355,13 +382,13 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     }
 
     /////////calcula as saídas esperadas
-    expectedOutput = expectedOutput(instance);
+    //expectedOutput2 = expectedOutput(instance);
 
     //////////calcula as saidas da camada de saída
     for(int i=0; i<outputLayer.length; i++){
       float instantaneousError;
       outputLayer[i].calculateOutputValue(hiddenLayer);
-      instantaneousError = outputLayer[i].calculateErrorTerm(expectedOutput[i]);
+      instantaneousError = outputLayer[i].calculateErrorTerm(expectedOutput[instance.classValue()][i]);
       totalErrorEnergy = totalErrorEnergy + (instantaneousError * instantaneousError);
     }
 
@@ -419,7 +446,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
    * @param instance The instance to calculate the exepected output
    * @return An array with the expected output for the instance
    */
-  private float[] expectedOutput(Instance instance){
+  /*private float[] expectedOutput(Instance instance){
     float[] expectedOutput;
 
     if(numericOutput){
@@ -434,7 +461,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       expectedOutput[instance.classValue()] = 1;
     }
     return expectedOutput;
-  }
+  }*/
 
   /**
    * Make inference of an instance on the model.
@@ -532,8 +559,8 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     } else if(numericalInputNormalization == MEAN_0_STANDARD_DEVIATION_1_NORMALIZATION){
       inputNormalization = inputNormalization + "Mean 0 and standard deviation 1 normalization";
     }
-    String classAttribute = "Class Attribute: " + attributeVector[classIndex].getAttributeName(); 
-        
+    String classAttribute = "Class Attribute: " + attributeVector[classIndex].getAttributeName();
+
     return learningRateStr + "\n" +
            momentumStr + "\n" +
            hiddenSizeStr + "\n" +
