@@ -1,5 +1,8 @@
 package unbbayes.prs.msbn;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTree;
 import unbbayes.util.NodeList;
@@ -16,7 +19,7 @@ import unbbayes.util.SetToolkit;
 public class Link {
 	private SubNetwork n1, n2;
 	private NodeList nodes;
-	private JunctionTree tree;
+	private List tree;
 	
 	public Link(SubNetwork n1, SubNetwork n2) {
 		this.n1 = n1;
@@ -24,39 +27,64 @@ public class Link {
 		n1.addAdjacent(n2);
 		n2.setParent(n1);
 		nodes = SetToolkit.intersection(n1.getNos(), n2.getNos());
+		tree = new ArrayList();
 	}
 	
 	/**
 	 * Must be called after the Junction Tree creation
 	 */
 	protected void makeLinkageTree() {
-		
-		// tem que montar a árvore com referencias diferentes aos cliques.
-		tree = (JunctionTree) n1.getJunctionTree().clone();
+		tree.clear();		
+			
+		Clique raiz = (Clique) n1.getJunctionTree().getCliques().get(0);
+		makeCliqueList(raiz);	
 		
 		boolean retirou = true;
 		while (retirou) {
 			retirou = false;
-			for (int i = tree.getCliques().size()-1; i>=0; i--) {
-				Clique c = (Clique) tree.getCliques().get(i);
+			for (int i = tree.size()-1; i>=0; i--) {
+				Clique c = (Clique) tree.get(i);
 				if (c.getChildrenSize() == 0) {
 					NodeList inter = SetToolkit.intersection(c.getNos(), nodes);
-					if (inter.size() == 0 ||
-					    	 (c.getParent() != null &&
-							  c.getParent().getNos().contains(inter))) {
-						 	
-						tree.removeClique(c);
+					if (inter.size() == 0) {						 	
+						tree.remove(i);
 						retirou = true;
-					}									
+					} else {
+						for (int j = tree.size()-1; j>=0; j--) {
+							Clique c2 = (Clique) tree.get(j);
+							if (i != j && c2.getNos().contains(inter)) {
+								tree.remove(i);
+								retirou = true;
+								break;								
+							}
+						}						
+					}			
 				}
-			}			
+			}
 		}
 		
-		for (int i = tree.getCliques().size()-1; i >=0; i--) {
-			Clique c = (Clique) tree.getCliques().get(i);
-			c.getNos().removeAll(nodes);						
+		for (int i = tree.size()-1; i >=0; i--) {
+			Clique c = (Clique) tree.get(i);
+			c.getNos().removeAll(nodes);
+			for (int j = tree.size()-1; j>=0; j--) {
+				if (i != j) {
+					Clique c2 = (Clique) tree.get(j);
+					if (c2.getNos().contains(c.getNos())) {
+						tree.remove(i);						
+					}					
+				}				
+			}
 		}
-		
-		// fazer as unioes entre cliques contidos em outros	
+	}
+	
+	
+	/**
+	 * Makes the tree with DFS.
+	 */ 
+	private void makeCliqueList(Clique c) {
+		tree.add(c.clone());
+		for (int i = c.getChildrenSize()-1; i>=0; i--) {
+			makeCliqueList(c.getChildAt(i));			
+		}		
 	}
 }

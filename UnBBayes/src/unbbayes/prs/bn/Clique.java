@@ -28,6 +28,7 @@ import java.util.ResourceBundle;
 import unbbayes.prs.*;
 import unbbayes.prs.id.*;
 import unbbayes.util.NodeList;
+import unbbayes.util.SetToolkit;
 
 /**
  *  Classe que representa um Clique na Árvore de Junção (JunctionTree).
@@ -35,7 +36,7 @@ import unbbayes.util.NodeList;
  *@author    Michael e Rommel
  *@version   27 de Junho de 2001
  */
-public class Clique implements ITabledVariable, java.io.Serializable {
+public class Clique implements ITabledVariable, java.io.Serializable, Cloneable {
 	
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
@@ -334,6 +335,16 @@ public class Clique implements ITabledVariable, java.io.Serializable {
 	 */
 	public Clique getParent() {
 		return parent;
+	}
+
+	/**
+	 * @see java.lang.Object#clone()
+	 */
+	public Object clone() {
+		Clique c = new Clique();
+		c.nos = SetToolkit.clone(nos);
+		c.index = index;
+		return c;
 	}
 
 }
