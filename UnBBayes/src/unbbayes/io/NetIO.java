@@ -201,7 +201,7 @@ public class NetIO implements BaseIO {
 						ERROR_NET
 							+ " l."
 							+ st.lineno()
-							+ resource.getString("LoadExecption3"));
+							+ resource.getString("LoadException3"));
 				}
 			} else if (st.sval.equals("potential")) {
 				proximo(st);

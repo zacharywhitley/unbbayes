@@ -531,13 +531,6 @@ public class PreprocessPanel extends JPanel
   }
 
   void jButton1_actionPerformed(ActionEvent e)
-  {   DiscretizationPanel dlg = new DiscretizationPanel(reference);
-      dlg.setBaseInstances(instances,instances.getAttribute(selectedAttribute));
-      Dimension dlgSize = dlg.getPreferredSize();
-      Dimension frmSize = reference.getSize();
-      Point loc = reference.getLocation();
-      dlg.setLocation((frmSize.width - dlgSize.width) / 2 + loc.x, (frmSize.height - dlgSize.height) / 2 + loc.y);
-      dlg.setModal(true);
-      dlg.show();
+  {   new DiscretizationPanel(reference,instances,instances.getAttribute(selectedAttribute));
   }
 }

@@ -4,12 +4,12 @@ package unbbayes.jprs.jbn;
  * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
  * @version 1.0
  */
-public /*static*/ class ExplanationPhrase /*implements java.io.Serializable*/
-{   public static final int TRIGGER_EVIDENCE_TYPE = 5;
-    public static final int COMPLEMENTARY_EVIDENCE_TYPE = 6;
-    public static final int NA_EVIDENCE_TYPE = 7;
-    public static final int NECESSARY_EVIDENCE_TYPE = 8;
-    public static final int EXCLUSIVE_EVIDENCE_TYPE = 9;
+public class ExplanationPhrase
+{   public static final int TRIGGER_EVIDENCE_TYPE = 0;
+    public static final int COMPLEMENTARY_EVIDENCE_TYPE = 1;
+    public static final int NA_EVIDENCE_TYPE = 2;
+    public static final int NECESSARY_EVIDENCE_TYPE = 3;
+    public static final int EXCLUSIVE_EVIDENCE_TYPE = 4;
     private String strPhrase, strNode;
     private int evidenceType;
 
@@ -35,7 +35,7 @@ public /*static*/ class ExplanationPhrase /*implements java.io.Serializable*/
     *  @param evidenceType Tipo de evidência
     */
     public void setEvidenceType(int evidenceType)
-    {   if ((evidenceType > 4) && (evidenceType < 10))
+    {   if ((evidenceType > -1) && (evidenceType < 5))
         {   this.evidenceType = evidenceType;
         }
     }

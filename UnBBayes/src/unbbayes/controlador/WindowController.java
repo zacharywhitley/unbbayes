@@ -305,6 +305,23 @@ public class WindowController implements KeyListener {
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
+        /*try {
+	        long start = System.currentTimeMillis();
+                for (int i=0;i<250;i++)
+                {   rede.initialize();
+       		    NodeList nodes = rede.getNos();
+                    int size = nodes.size();
+                    int j;
+                    for (j=1;j<size;j++)
+                    {   ((TreeVariable)nodes.get(j)).addFinding(0);
+                    }
+                    rede.updateEvidences();
+                }
+                long end = System.currentTimeMillis();
+                System.out.println(end-start);
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}*/
     }
 
 
