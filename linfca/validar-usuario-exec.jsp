@@ -37,7 +37,7 @@
 			if (outXML.getChild("entrar") != null) {
 				request.setAttribute("nome-usuario", rs.getString("nome"));
 				request.setAttribute("cod-usuario", "" + rs.getLong("cod_usuario"));
-				RequestDispatcher dispatcher = request.getRequestDispatcher("/controle/computador/selecionar-computador.jsp");					
+				RequestDispatcher dispatcher = request.getRequestDispatcher("/gerencia/equipamento/selecionar-equipamento.jsp");					
 				dispatcher.forward(request, response);
 			} else {
 				Element sair = outXML.getChild("sair");
@@ -47,7 +47,7 @@
 				String codEquipamento = sair.getChildTextTrim("cod-equipamento");
 				request.setAttribute("cod-equipamento", codEquipamento);
 
-				RequestDispatcher dispatcher = request.getRequestDispatcher("/gerencia/computador/lancar-computador-exec.jsp");
+				RequestDispatcher dispatcher = request.getRequestDispatcher("/gerencia/equipamento/lancar-equipamento-exec.jsp");
 				dispatcher.forward(request, response);
 			}
 		}
