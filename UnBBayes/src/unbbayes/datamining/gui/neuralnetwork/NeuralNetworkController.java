@@ -119,7 +119,7 @@ public class NeuralNetworkController {
     mainScreen.setTitle("Backpropagation Neural Network - " + selectedFile.getName());
     mainScreen.attributePanel.setInstances(instanceSet);
     mainScreen.attributePanel.enableComboBox(true);
-    hiddenLayerSize = (instanceSet.numAttributes() + instanceSet.numClasses()) / 2;
+    hiddenLayerSize = (instanceSet.numAttributes() + 1 /*class attribute*/) / 2;
     if(hiddenLayerSize < 3){
       hiddenLayerSize = 3;
     }
