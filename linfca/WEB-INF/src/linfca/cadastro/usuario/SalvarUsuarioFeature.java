@@ -64,7 +64,9 @@ public class SalvarUsuarioFeature implements Feature {
 		String dia             = in.getChild("dia").getTextTrim();
 		String mes             = in.getChild("mes").getTextTrim();
 		String ano             = in.getChild("ano").getTextTrim();
-		Date dataNascimento    = Date.valueOf(ano + '/' + mes + '/' + dia);
+		System.out.println(ano + '-' + mes + '-' + dia);
+		Date dataNascimento    = Date.valueOf(ano + '-' + mes + '-' + dia);
+		System.out.println("Data salvar: " + dataNascimento.toString());
 		
 		MessageDigest md = MessageDigest.getInstance("MD5");
 		byte [] senhaEncode = md.digest(senha.getBytes());
@@ -177,11 +179,10 @@ public class SalvarUsuarioFeature implements Feature {
 		ps.setString(4, cpf);
 		ps.setString(5, nome);
 		ps.setString(6, sobrenome);
-		ps.setBytes(7, senha);
+		ps.setBytes(7, senha); 
 		ps.setString(8, email);
 		ps.setString(9, endereco);
-		ps.setString(10, foto);
-		System.out.println("Data salvar: " + dataNascimento.toString());
+		ps.setString(10, foto);		
 		ps.setDate(11, new java.sql.Date(dataNascimento.getTime()));
 		ps.setString(12, telefone);
 		ps.setString(13, codUsuario);

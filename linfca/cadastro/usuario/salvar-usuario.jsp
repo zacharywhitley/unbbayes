@@ -27,11 +27,18 @@
 
 <%@include file =  "/design/cabecalho.jsp"%>
         <tr>
-          <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_usuario.gif" width="174" border="0" hspace="20" alt="Log In / Log Out"></td>
+          <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_usuario.gif" width="174" border="0" hspace="20" alt="Salvar Usuário"></td>
           <td>
 		  <BR>
             <FORM name="login" action="<%=path%>/cadastro/usuario/salvar-usuario-exec.jsp" METHOD="post" ENCTYPE="multipart/form-data">
             <table width="100%" border="0" cellspacing="5" cellpadding="0" align="center">
+              <% if (usuarioXML != null) { %>
+                <tr>
+                  <td colspan=2>
+                    <P><img height="86" src="" width="174" border="0" hspace="20" alt="Foto do Usuário"><br>
+				  </td>
+			    </tr>
+			  <% } %>
               <tr>
                 <td colspan=2>
                   <P class="header">Digite as informações do novo usuário do Linf:</P><br>
@@ -144,7 +151,7 @@
                 <td><P>Endereço</P></td>
               </tr> 
               <tr>                
-                <td>
+                <td colspan=2>
                   <INPUT type=text maxLength=60 name="endereco" size=50
                    value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("endereco").getTextTrim()%><% } %>">
                 </td>
@@ -154,7 +161,7 @@
               <% } %>
               <tr>
                 <td colspan=2>
-                  <P><INPUT type="submit" value="Processar">&nbsp;&nbsp;<INPUT type="reset" value="Limpar">
+                  <P><INPUT type="submit" value="Salvar">&nbsp;&nbsp;<INPUT type="reset" value="Limpar">
                   </P><br><br>				  
 				</td>
 				</form>
