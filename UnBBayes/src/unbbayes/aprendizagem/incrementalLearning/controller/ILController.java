@@ -20,7 +20,7 @@ import unbbayes.io.BaseIO;
 import unbbayes.io.LoadException;
 import unbbayes.io.NetIO;
 import unbbayes.monteCarlo.gui.TelaParametros;
-import unbbayes.prs.bn.Node;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.util.NodeList;
 
@@ -51,7 +51,7 @@ public class ILController extends ILToolkit{
 		Object[]o1;		 		
 		Object[] betterTransformation = null;
 		TVariavel node;
-   		for(int i = 0 ; i < pn.size(); i++){
+   		for(int i = 0 ; i < pn.getNodeCount(); i++){
    			node = (TVariavel)pn.getNodeAt(i);
    			node.setPos(i);   			
    			int[][] nijk = (int[][])nijks.get(i);
@@ -108,7 +108,7 @@ public class ILController extends ILToolkit{
    		float betterValue = Float.MIN_VALUE;   		
    		float g = 0.0f;
    		TVariavel betterNode = null;   		  		
-   		for(int i = 0 ; i < pn.size(); i++){
+   		for(int i = 0 ; i < pn.getNodeCount(); i++){
    			TVariavel iNode = (TVariavel)pn.getNodeAt(i);
    			if(iNode.getName().equals(node.getName()) || isParent(iNode,node)){
    				 parents.add(iNode);
@@ -183,7 +183,7 @@ public class ILController extends ILToolkit{
    	}
    	
    	private void paramRecalc(){
-   		for(int i = 0; i < pn.size(); i++){
+   		for(int i = 0; i < pn.getNodeCount(); i++){
    			int[][]old = (int[][])nijks.get(i);
    			TVariavel node = (TVariavel)pn.getNodeAt(i);
    			int[][] news =  getFrequencies((TVariavel)node,node.getParents());

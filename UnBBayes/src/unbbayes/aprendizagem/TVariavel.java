@@ -16,7 +16,7 @@ import unbbayes.util.SetToolkit;
  * @author Danilo Custódio da Silva
  */
 
-class TVariavel extends ProbabilisticNode implements Cloneable {
+public class TVariavel extends ProbabilisticNode implements Cloneable {
 
     private NodeList predecessores;
     private TVariavel variavelAux;

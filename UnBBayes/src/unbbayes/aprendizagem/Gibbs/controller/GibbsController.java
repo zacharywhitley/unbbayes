@@ -12,7 +12,7 @@ import java.util.List;
 
 import unbbayes.aprendizagem.LearningToolkit;
 import unbbayes.aprendizagem.TVariavel;
-import unbbayes.prs.bn.Node;
+import unbbayes.prs.Node;
 import unbbayes.util.NodeList;
 
 /**
