@@ -40,15 +40,13 @@ public class ValidarUsuario extends HttpServlet {
 				if (out.getChild("entrar") != null) {
 					req.setAttribute("nome-usuario", rs.getString("nome"));
 					req.setAttribute("cod-usuario", "" + rs.getLong("cod_usuario"));
-					RequestDispatcher dispatcher = req.getRequestDispatcher(req.getContextPath() + 
-											"/controle/computador/selecionar-computador.jsp");
-					dispatcher.forward(req, res);				
+					RequestDispatcher dispatcher = req.getRequestDispatcher("/controle/computador/selecionar-computador.jsp");
+					dispatcher.forward(req, res);					
 				} else {
 					Element sair = out.getChild("sair");
 					String codLancamento = ((Element)sair.getChild("cod-lancamento")).getTextTrim();
 					req.setAttribute("cod-lancamento", codLancamento);
-					RequestDispatcher dispatcher = req.getRequestDispatcher(req.getContextPath() + 
-											"/controle/computador/lancar-computador-exec.jsp");
+					RequestDispatcher dispatcher = req.getRequestDispatcher("/controle/computador/lancar-computador-exec.jsp");
 					dispatcher.forward(req, res);
 				}
 			}
