@@ -85,6 +85,31 @@ public class InstanceSet
   		return attributes;
   	}
 
+        public final void removeInstance(int numInstance)
+        {
+          int numInstances = numInstances();
+          if((numInstance>=0)&&(numInstance<numInstances))
+          {
+                  Instance[] newInstanceSet = new Instance[numInstances-1];
+
+                  // instances before index
+                  int i;
+                  for(i=0;i<numInstance;i++)
+                  {
+                          newInstanceSet[i] = instanceSet[i];
+                  }
+
+                  //instances after index
+                  while(i<(numInstances-1))
+                  {
+                          newInstanceSet[i]=instanceSet[i+1];
+                          i++;
+                  }
+
+                  instanceSet = newInstanceSet;
+          }
+        }
+
 	public final void removeAttribute(int index)
 	{
 		int numAttributes = numAttributes();
@@ -524,6 +549,29 @@ public class InstanceSet
 		for (int j = numInstances - 1; j > 0; j--)
       		swap(j,(int)(random.nextDouble()*(double)j));
   	}
+
+          public final void sortInstancesByAttribute(Attribute att)
+          {
+            sortInstancesByAttribute(att.getIndex());
+          }
+
+          public final void sortInstancesByAttribute(int attIndex)
+          {
+            int i,j;
+            int numInstances = numInstances();
+            for(j=1; j<numInstances; j++)
+            {
+              Instance key = instanceSet[j];
+              i = j-1;
+              while (i>-1 && (instanceSet[i].getValue(attIndex)>key.getValue(attIndex)))
+              {
+                instanceSet[i+1] = instanceSet[i];
+                i--;
+              }
+              instanceSet[i+1] = key;
+            }
+          }
+
 
   	/**
   	 * Swaps two instances.
