@@ -32,6 +32,8 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
 
     // Armazena marginais e evidências.
     protected double[] marginais;
+    
+    private double[] marginalCopy;
 
     private int evidence = -1;
 
@@ -40,7 +42,18 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      * que serão visualizadas na árvore da interface.
      */
     abstract void marginal();
-
+    
+    void copyMarginal() {
+    	int size = marginais.length;
+    	marginalCopy = new double[size];
+    	System.arraycopy(marginais, 0, marginalCopy, 0, size);
+    }
+    
+    void restoreMarginal() {
+    	int size = marginais.length;
+    	System.arraycopy(marginalCopy, 0, marginais, 0, size);
+    }
+    
     /**
      *  Retorna o valor da marginal de determinado índice.
      *
@@ -133,5 +146,4 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
 	public void setMarginais(double[] marginais) {
 		this.marginais = marginais;
 	}
-
 }

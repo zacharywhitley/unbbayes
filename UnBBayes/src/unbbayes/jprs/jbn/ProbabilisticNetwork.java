@@ -55,8 +55,6 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
      */
     private JunctionTree junctionTree;
     
-    private JunctionTree initializedJunctionTree;
-    
     /**
      *  Lista de arcos utilizada no processo de transformação.
      */
@@ -75,8 +73,6 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
      */
     private NodeList copiaNos;
     
-    private NodeList initializedCopiaNos;
-
     private String nome = "";
 
     /**
@@ -520,7 +516,8 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
 
     private void updateMarginais() {
         for (int i = 0; i < copiaNos.size(); i++) {
-            ((TreeVariable)copiaNos.get(i)).marginal();
+        	TreeVariable node = (TreeVariable)copiaNos.get(i);
+            node.marginal();            
         }
     }
 
@@ -564,43 +561,30 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
       * Inicia as crenças da árvore de junção.
       */
      public void initialize() throws Exception {
-     	//if (firstInitialization) {
-     		//System.out.println("Primeira vez");
-	        resetEvidences();
-	        junctionTree.iniciaCrencas();
+        resetEvidences();
+        junctionTree.iniciaCrencas();
+        if (firstInitialization) {
 	        updateMarginais();
-	        /*
-	        //System.out.println("Size ini "+copiaNos.size());
-	        initializedCopiaNos = (NodeList)copiaNos.clone();
-	        if (junctionTree instanceof JunctionTree) {
-	        	initializedJunctionTree = (JunctionTree)junctionTree.clone();
-	        } else if (junctionTree instanceof JunctionTreeID) {
-	        	initializedJunctionTree = (JunctionTreeID)junctionTree.clone();
-	        }
-	        
-	        
-	        //System.out.println("cop " + ((TreeVariable)copiaNos.get(0)).getMarginalAt(0));
-     		//System.out.println("initia " + ((TreeVariable)initializedCopiaNos.get(0)).getMarginalAt(0));
+	        copyMarginal();	        
 	        firstInitialization = false;
-     	} else {
-     		//System.out.println("Faz clone");
-     		copiaNos = (NodeList)initializedCopiaNos.clone();
-     		//System.out.println("Size fim "+copiaNos.size());
-     		if (junctionTree instanceof JunctionTree) {
-     			junctionTree = (JunctionTree)initializedJunctionTree.clone();
-     		} else if (junctionTree instanceof JunctionTreeID) {
-     			junctionTree = (JunctionTreeID)initializedJunctionTree.clone();
-     		}
-     		//((TreeVariable)initializedCopiaNos.get(0)).getMarginais()[0] = .5;
-     		//System.out.println("initia " + ((TreeVariable)initializedCopiaNos.get(0)).getMarginalAt(0));
-     		//System.out.println("cop " + ((TreeVariable)copiaNos.get(0)).getMarginalAt(0));
-     		//System.out.println("Copia" + ((TreeVariable)copiaNos.get(0)).getMarginalAt(0) + ((TreeVariable)copiaNos.get(0)).getMarginalAt(1));
-     		//System.out.println(copiaNos.toString());
-     		//System.out.println(initializedCopiaNos.toString());
-     		//System.out.println("InitializedCopia" + ((TreeVariable)initializedCopiaNos.get(0)).getMarginalAt(0) + ((TreeVariable)initializedCopiaNos.get(0)).getMarginalAt(1));
-     		
-     	}*/
+        } else {
+        	restoreMarginais();        	
+        }
      }
+     
+     private void copyMarginal() {
+     	for (int i = 0; i < copiaNos.size(); i++) {
+        	TreeVariable node = (TreeVariable)copiaNos.get(i);
+            node.copyMarginal();            
+	    }
+     }
+     
+	private void restoreMarginais() {
+		for (int i = 0; i < copiaNos.size(); i++) {
+			TreeVariable node = (TreeVariable)copiaNos.get(i);
+		    node.restoreMarginal();
+		}
+    }
 
 
     /**
@@ -1223,14 +1207,6 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
 	 */
 	public void setFirstInitialization(boolean firstInitialization) {
 		this.firstInitialization = firstInitialization;
-	}
-
-	/**
-	 * Gets the firstInitialization.
-	 * @return Returns a boolean
-	 */
-	public boolean isFirstInitialization() {
-		return firstInitialization;
 	}
 
 }
