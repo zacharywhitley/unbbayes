@@ -49,7 +49,9 @@ public class Linkage {
 		
 		remove2ndPass();
 		
-		assert ((Clique) jt.getCliques().get(0)).getParent() == null;
+		raiz = (Clique) jt.getCliques().get(0); 
+		
+		assert raiz.getParent() == null;		
 		
 		assignV1();	
 			
@@ -128,12 +130,14 @@ public class Linkage {
 	private void initTables() throws Exception {
 		insertSeparators();
 				
-		for (int i = jt.getCliques().size()-1; i >=0; i--) {
-			Clique c = (Clique) jt.getCliques().get(i);
+		for (int i = linkList.size()-1; i >=0; i--) {
+			Link l = (Link) linkList.get(i);
+			Clique c = l.getClique();
 			PotentialTable tab = c.getPotentialTable();
 			for (int j = 0; j < c.getNos().size(); j++) {
 				tab.addVariable(c.getNos().get(j));
 			}
+
 			for (int j = tab.tableSize()-1; j>=0; j--) {
 				tab.setValue(j, 1);				
 			}
@@ -156,11 +160,12 @@ public class Linkage {
 	private void insertSeparators() {
 		for (int i = jt.getCliques().size()-1; i>=0; i--) {
 			Clique c = (Clique) jt.getCliques().get(i);
-			for (int j = c.getChildrenSize()-1; j>=0; j--) {			
+			for (int j = c.getChildrenSize()-1; j>=0; j--) {
+				//c.getChildAt(j).getNos().removeAll(c.getNos());
 				Separator sep = new Separator(c, c.getChildAt(j), false);
 				sep.setNos(SetToolkit.intersection(c.getNos(), c.getChildAt(j).getNos()));
 				jt.addSeparator(sep);
-			} 
+			}
 		}
 	}
 	
@@ -225,7 +230,7 @@ public class Linkage {
 		
 		jt.consistencia();
 		
-		for (int i = 0; i < treeSize; i++) {		
+		for (int i = 0; i < treeSize; i++) {
 			Link l = (Link) linkList.get(i);
 			l.absorveOut(naOrdem);
 		}
