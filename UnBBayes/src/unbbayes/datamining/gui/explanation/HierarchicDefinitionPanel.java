@@ -2,11 +2,13 @@ package unbbayes.datamining.gui.explanation;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
 
 import javax.swing.*;
 import javax.swing.tree.*;
 
 import unbbayes.jprs.jbn.*;
+import unbbayes.util.*;
 
 public class HierarchicDefinitionPanel extends JPanel
 {
@@ -32,10 +34,11 @@ public class HierarchicDefinitionPanel extends JPanel
   private JToolBar jToolBar1 = new JToolBar();
   private JButton jButton1 = new JButton();
   private JButton jButton2 = new JButton();
-  private JButton jButton3 = new JButton();
   private JButton jButton4 = new JButton();
   private JButton jButton5 = new JButton();
   private JButton jButton6 = new JButton();
+  private TreePath oldPath;
+  private JTree explanationTree;
 
   public HierarchicDefinitionPanel()
   {
@@ -78,15 +81,7 @@ public class HierarchicDefinitionPanel extends JPanel
         jButton1_actionPerformed(e);
       }
     });
-    jButton3.setToolTipText("Add Top Folder");
-    jButton3.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jButton3_actionPerformed(e);
-      }
-    });
-    jButton4.setToolTipText("Add Child Folder");
+    jButton4.setToolTipText("Add Folder");
     jButton4.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -116,39 +111,32 @@ public class HierarchicDefinitionPanel extends JPanel
     jPanel1.add(jScrollPane1,  BorderLayout.CENTER);
     jSplitPane1.add(jPanel3, JSplitPane.BOTTOM);
     jPanel3.add(jScrollPane2,  BorderLayout.CENTER);
-    jScrollPane2.getViewport().add(jPanel5, null);
+
+    DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
+    DefaultTreeModel model = new DefaultTreeModel(root);
+    explanationTree = new HierarchicTree(model);
+    explanationTree.setRootVisible(false);
+    explanationTree.setEditable(false);
+    explanationTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+
+    DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
+    renderer.setIcon(greenBallIcon);
+    renderer.setClosedIcon(greenBallIcon);
+    renderer.setLeafIcon(greenBallIcon);
+    renderer.setOpenIcon(greenBallIcon);
+    explanationTree.setCellRenderer(renderer);
+
+    jScrollPane2.getViewport().add(explanationTree, null);
     this.add(jToolBar1, BorderLayout.NORTH);
     jToolBar1.add(jButton1, null);
     jToolBar1.add(jButton2, null);
     jToolBar1.addSeparator();
-    jToolBar1.add(jButton3, null);
     jToolBar1.add(jButton4, null);
     jToolBar1.addSeparator();
     jToolBar1.add(jButton5, null);
     jToolBar1.add(jButton6, null);
+
   }
-
-  /*void addChildButton_actionPerformed(ActionEvent e)
-  {   DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)hierarchicTree.getLastSelectedPathComponent();
-
-      if (selectedNode == null)
-      {   return;
-      }
-      else if (e.getSource().equals(addChildButton))
-      {   // add new node child
-          String newNodeName = "New";
-          if (!jTextField1.getText().equals(""))
-              newNodeName = jTextField1.getText();
-          DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(newNodeName);
-          model.insertNodeInto(newNode, selectedNode, selectedNode.getChildCount());
-
-          // now display new node
-          TreeNode[] nodes = model.getPathToRoot(newNode);
-          TreePath path = new TreePath(nodes);
-          hierarchicTree.scrollPathToVisible(path);
-      }
-  }*/
-
 
   void applyButton_actionPerformed(ActionEvent e)
   {   net.setHierarchicTree(hierarchicTree);
@@ -157,23 +145,47 @@ public class HierarchicDefinitionPanel extends JPanel
   public void setHierarchicTree(ProbabilisticNetwork net)
   {   this.net = net;
       this.hierarchicTree = net.getHierarchicTree();
+
+      //trata os eventos de mouse para a árvore de hierarquia
+      hierarchicTree.addMouseListener(new MouseAdapter()
+      {   public void mousePressed(MouseEvent e)
+          {   int selRow = hierarchicTree.getRowForLocation(e.getX(), e.getY());
+              if (selRow == -1)
+              {   return;
+              }
+              else
+              {   TreePath selPath = hierarchicTree.getPathForLocation(e.getX(), e.getY());
+                  if (oldPath != null && oldPath.equals(selPath))
+                  {   hierarchicTree.clearSelection();
+                      oldPath = null;
+                  }
+                  else
+                  {   oldPath = selPath;
+                  }
+              }
+          }
+      });
+
       model = (DefaultTreeModel)hierarchicTree.getModel();
       jScrollPane1.getViewport().removeAll();
       jScrollPane1.getViewport().add(hierarchicTree, null);
       jSplitPane1.setDividerLocation(0.5);
-      updateScreen();
+      updateExplanationTree();
   }
 
-  private void updateScreen()
-  {   int size = net.getExplanationNodes().size();
-      if (size != 0)
-          gridLayout1.setRows(size);
-      jPanel5.removeAll();
+  private void updateExplanationTree()
+  {   NodeList explanationNodes = net.getExplanationNodes();
+      int size = explanationNodes.size();
+      DefaultMutableTreeNode root = (DefaultMutableTreeNode)explanationTree.getModel().getRoot();
+      root.removeAllChildren();
       for(int i=0;i<size;i++)
-      {   JRadioButton radio = new JRadioButton(net.getExplanationNodes().get(i).getDescription(),greenBallIcon);
-          radio.setBackground(new Color(255,251,240));
-          jPanel5.add(radio);
+      {   Node node = explanationNodes.get(i);
+          DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(node.getDescription());
+          root.add(newNode);
       }
+      jScrollPane2.getViewport().removeAll();
+      ((DefaultTreeModel)explanationTree.getModel()).reload(root);
+      jScrollPane2.getViewport().add(explanationTree, null);
   }
 
   void jButton2_actionPerformed(ActionEvent e)
@@ -184,28 +196,21 @@ public class HierarchicDefinitionPanel extends JPanel
   {   hierarchicTree.collapseTree();
   }
 
-  void jButton3_actionPerformed(ActionEvent e)
-  {   String result = JOptionPane.showInternalInputDialog(this,"","Add Top Folder",JOptionPane.QUESTION_MESSAGE);
-      if ((result != null)&&(!result.equals("")))
-      {   DefaultMutableTreeNode root = ((DefaultMutableTreeNode)model.getRoot());
-          DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(result);
-          model.insertNodeInto(newNode,root,root.getChildCount());
-          showNewNode(newNode);
-      }
-  }
-
-  private void showNewNode(DefaultMutableTreeNode newNode)
-  {   TreeNode[] nodes = model.getPathToRoot(newNode);
-      TreePath path = new TreePath(nodes);
-      hierarchicTree.scrollPathToVisible(path);
-  }
-
   void jButton6_actionPerformed(ActionEvent e)
   {   DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)hierarchicTree.getLastSelectedPathComponent();
       if (selectedNode == null)
           return;
       else
       {   model.removeNodeFromParent(selectedNode);
+          Enumeration enum = selectedNode.breadthFirstEnumeration();
+          while (enum.hasMoreElements())
+          {   DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)enum.nextElement();
+              Node node = hierarchicTree.getNodeInformation(treeNode);
+              if (node != null)
+              {   node.setInformationType(Node.EXPLANATION_TYPE);
+              }
+          }
+          updateExplanationTree();
       }
   }
 
@@ -215,6 +220,10 @@ public class HierarchicDefinitionPanel extends JPanel
           return;
       else
       {   String result = JOptionPane.showInternalInputDialog(this,"","New Folder Name",JOptionPane.QUESTION_MESSAGE);
+          Node node = hierarchicTree.getNodeInformation(selectedNode);
+          if (node != null)
+          {   node.setDescription(result);
+          }
           selectedNode.setUserObject(result);
           model.reload(selectedNode);
       }
@@ -222,9 +231,17 @@ public class HierarchicDefinitionPanel extends JPanel
 
   void jButton4_actionPerformed(ActionEvent e)
   {   DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)hierarchicTree.getLastSelectedPathComponent();
-      if (selectedNode == null)
-          return;
-      else
+      Node node = hierarchicTree.getNodeInformation(selectedNode);
+      if (selectedNode == null && node == null)
+      {   String result = JOptionPane.showInternalInputDialog(this,"","Add Top Folder",JOptionPane.QUESTION_MESSAGE);
+          if ((result != null)&&(!result.equals("")))
+          {   DefaultMutableTreeNode root = ((DefaultMutableTreeNode)model.getRoot());
+              DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(result);
+              model.insertNodeInto(newNode,root,root.getChildCount());
+              showNewNode(newNode);
+          }
+      }
+      else if (selectedNode != null && node == null)
       {   String result = JOptionPane.showInternalInputDialog(this,"","Add Child Folder",JOptionPane.QUESTION_MESSAGE);
           if ((result != null)&&(!result.equals("")))
           {   DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(result);
@@ -232,5 +249,11 @@ public class HierarchicDefinitionPanel extends JPanel
               showNewNode(newNode);
           }
       }
+  }
+
+  private void showNewNode(DefaultMutableTreeNode newNode)
+  {   TreeNode[] nodes = model.getPathToRoot(newNode);
+      TreePath path = new TreePath(nodes);
+      hierarchicTree.scrollPathToVisible(path);
   }
 }

@@ -41,8 +41,8 @@ public class Network implements java.io.Serializable {
      *  Lista de nós que compõem o grafo.
      */
     protected NodeList nos;
-    protected NodeList descriptionNodes;
-    protected NodeList explanationNodes;
+    //protected NodeList descriptionNodes;
+    //protected NodeList explanationNodes;
 
     /**
      *  Lista de arcos que compõem o grafo.
@@ -55,8 +55,8 @@ public class Network implements java.io.Serializable {
      */
     public Network() {
         nos = new NodeList();
-        descriptionNodes = new NodeList();
-        explanationNodes = new NodeList();
+        //descriptionNodes = new NodeList();
+        //explanationNodes = new NodeList();
         arcos = new ArrayList();
     }
 
@@ -93,11 +93,27 @@ public class Network implements java.io.Serializable {
 
 
     public NodeList getDescriptionNodes()
-    {   return descriptionNodes;
+    {   NodeList descriptionNodes = new NodeList();
+        int size = nos.size();
+        for (int i=0;i<size;i++)
+        {   Node node = getNodeAt(i);
+            if (node.getInformationType() == Node.DESCRIPTION_TYPE)
+            {   descriptionNodes.add(node);
+            }
+        }
+        return descriptionNodes;
     }
 
     public NodeList getExplanationNodes()
-    {   return explanationNodes;
+    {   NodeList explanationNodes = new NodeList();
+        int size = nos.size();
+        for (int i=0;i<size;i++)
+        {   Node node = getNodeAt(i);
+            if (node.getInformationType() == Node.EXPLANATION_TYPE)
+            {   explanationNodes.add(node);
+            }
+        }
+        return explanationNodes;
     }
 
     /**
@@ -143,12 +159,12 @@ public class Network implements java.io.Serializable {
      */
     public void addNode(Node no) {
         nos.add(no);
-        if (no.getInformationType() == Node.EXPLANATION_TYPE)
+        /*if (no.getInformationType() == Node.EXPLANATION_TYPE)
         {   explanationNodes.add(no);
         }
         else
         {   descriptionNodes.add(no);
-        }
+        }*/
     }
 
 
@@ -175,12 +191,12 @@ public class Network implements java.io.Serializable {
         Edge auxArco;
 
         nos.remove(elemento);
-        if (elemento.getInformationType() == Node.EXPLANATION_TYPE)
+        /*if (elemento.getInformationType() == Node.EXPLANATION_TYPE)
         {   explanationNodes.remove(elemento);
         }
         else
         {   descriptionNodes.remove(elemento);
-        }
+        }*/
         for (c = 0; c < nos.size(); c++) {
             auxNo = nos.get(c);
             auxNo.getParents().remove(elemento);
@@ -254,8 +270,8 @@ public class Network implements java.io.Serializable {
      */
     protected void limpaNos() {
         nos.clear();
-        explanationNodes.clear();
-        descriptionNodes.clear();
+        //explanationNodes.clear();
+        //descriptionNodes.clear();
     }
 
 

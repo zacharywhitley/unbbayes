@@ -1,6 +1,7 @@
 package unbbayes.jprs.jbn;
 
 import java.awt.Component;
+import java.util.*;
 
 import javax.swing.*;
 import javax.swing.tree.*;
@@ -23,15 +24,9 @@ public class HierarchicTree extends JTree
       // set up node icons
       setCellRenderer(new HierarchicTreeCellRenderer());
 
-
-      /*DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
-      renderer.setClosedIcon(folderSmallIcon);
-      renderer.setOpenIcon(folderSmallIcon);
-      renderer.setLeafIcon(yellowBallIcon);
-      this.setCellRenderer(renderer);*/
-
       this.setRootVisible(false);
       this.setEditable(true);
+      this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
   }
 
   public class HierarchicTreeCellRenderer extends DefaultTreeCellRenderer
@@ -59,34 +54,39 @@ public class HierarchicTree extends JTree
   }
 
   public void setProbabilisticNetwork(ProbabilisticNetwork net)
-  {   /*DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
+  {   DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
+
       if (net != null)
       {   if (!net.equals(this.net))
           {   this.net = net;
-              root.removeAllChildren();
               objectsMap.clear();
-              NodeList nos = net.getNos();
+              NodeList nos = net.getDescriptionNodes();
               int size = nos.size();
               for (int i = 0; i < size; i++)
               {   Node node = (Node) nos.get(i);
-                  DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(node.getDescription());
-                  objectsMap.put(treeNode, node);
-                  int statesSize = node.getStatesSize();
-                  for (int j = 0; j < statesSize; j++)
-                  {   DefaultMutableTreeNode stateNode = new DefaultMutableTreeNode(node.getStateAt(j) + (showProbability ? " " + nf.format(((TreeVariable)node).getMarginalAt(j) * 100.0) + "%" : ""));
-                      treeNode.add(stateNode);
-                      objectsMap.put(stateNode,new StateObject(j, CHECK_EMPTY));
+                  DefaultMutableTreeNode treeNode = findUserObject(node.getDescription(),root);
+                  if (treeNode != null)
+                  {   objectsMap.put(treeNode, node);
                   }
-                  root.add(treeNode);
+                  else
+                  {   DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(node.getDescription());
+                      objectsMap.put(newNode, node);
+                      root.add(newNode);
+                  }
               }
           }
       }
-      else
-      {   this.net = null;
-          root.removeAllChildren();
-          objectsMap.clear();
+      ((DefaultTreeModel)getModel()).reload(root);
+  }
+
+  private DefaultMutableTreeNode findUserObject(String treeNode,DefaultMutableTreeNode root)
+  {   Enumeration e = root.breadthFirstEnumeration();
+      while (e.hasMoreElements())
+      {   DefaultMutableTreeNode node = (DefaultMutableTreeNode)e.nextElement();
+          if (node.getUserObject().toString().equals(treeNode))
+              return node;
       }
-      ((DefaultTreeModel)getModel()).reload(root);*/
+      return null;
   }
 
   /**
@@ -109,5 +109,9 @@ public class HierarchicTree extends JTree
     {   for (int i = 0; i < getRowCount(); i++)
         {   collapseRow(i);
         }
+    }
+
+    public Node getNodeInformation(DefaultMutableTreeNode treeNode)
+    {   return (Node)objectsMap.get(treeNode);
     }
 }

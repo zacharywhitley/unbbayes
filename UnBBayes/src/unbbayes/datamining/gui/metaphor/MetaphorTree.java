@@ -12,11 +12,12 @@ import unbbayes.jprs.jbn.*;
 import unbbayes.util.*;
 
 /**
- * @author Paulo F. Duarte
+ * @author Mário Henrique Paes Vieira
+ * @version 1.0
  */
 public class MetaphorTree extends JTree
 {
-	private class StateObject
+	/*private class StateObject
         {   private int stateIndex = -1;
 	    private int check = CHECK_EMPTY;
 
@@ -40,7 +41,38 @@ public class MetaphorTree extends JTree
 	    public void setCheck(int check)
             {   this.check = check;
 	    }
-	}
+	}*/
+        private class StateObject
+        {   private ProbabilisticNode node;
+            private int stateIndex = -1;
+	    private int check = CHECK_EMPTY;
+
+	    public StateObject(ProbabilisticNode node,int stateIndex, int check)
+            {   this.node = node;
+                this.stateIndex = stateIndex;
+	        this.check = check;
+	    }
+
+	    public int getStateIndex()
+            {   return stateIndex;
+	    }
+
+	    public void setStateIndex(int stateIndex)
+            {   this.stateIndex = stateIndex;
+	    }
+
+	    public int getCheck()
+            {   return check;
+	    }
+
+	    public void setCheck(int check)
+            {   this.check = check;
+	    }
+
+            public ProbabilisticNode getProbabilisticNode()
+            {   return node;
+            }
+        }
 
 	private class MetaphorTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer
         {   ImageIcon yesIcon = new ImageIcon(getClass().getResource("/icones/yesState.gif"));
@@ -106,13 +138,36 @@ public class MetaphorTree extends JTree
 	}
 
 	public void setProbabilisticNetwork(ProbabilisticNetwork net)
-        {	DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
-                if (net != null)
-                {	if (!net.equals(this.net))
-                        {	this.net = net;
-		                root.removeAllChildren();
-		                objectsMap.clear();
-		                NodeList nos = net.getNos();
+        {   DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
+            if (net != null)
+            {   if (!net.equals(this.net))
+                {   this.net = net;
+                    root.removeAllChildren();
+                    objectsMap.clear();
+                    DefaultTreeModel model = new DefaultTreeModel((DefaultMutableTreeNode)net.getHierarchicTree().getModel().getRoot());
+                    this.setModel(model);
+                    root = (DefaultMutableTreeNode) getModel().getRoot();
+                    NodeList nos = net.getDescriptionNodes();
+                    int size = nos.size();
+                    for (int i = 0; i < size; i++)
+                    {   Node node = (Node) nos.get(i);
+                        DefaultMutableTreeNode treeNode = findUserObject(node.getDescription(),root);
+                        if (treeNode != null)
+                        {   //objectsMap.put(treeNode, node);
+                            int statesSize = node.getStatesSize();
+                            for (int j = 0; j < statesSize; j++)
+                            {   DefaultMutableTreeNode stateNode = new DefaultMutableTreeNode(node.getStateAt(j) + (showProbability ? " " + nf.format(((TreeVariable)node).getMarginalAt(j) * 100.0) + "%" : ""));
+                                treeNode.add(stateNode);
+                                objectsMap.put(stateNode,new StateObject((ProbabilisticNode)node, j, CHECK_EMPTY));
+                            }
+                        }
+                        else
+                        {   DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(node.getDescription());
+                            //objectsMap.put(newNode, node);
+                            root.add(newNode);
+                        }
+                    }
+                                /*NodeList nos = net.getNos();
                                 int size = nos.size();
 		                for (int i = 0; i < size; i++)
                                 {   Node node = (Node) nos.get(i);
@@ -125,16 +180,26 @@ public class MetaphorTree extends JTree
 		            	        objectsMap.put(stateNode,new StateObject(j, CHECK_EMPTY));
 		                    }
 		                    root.add(treeNode);
-		                }
-			}
-		}
-		else
-                {	this.net = null;
-	                root.removeAllChildren();
-	                objectsMap.clear();
+		                }*/
                 }
-                ((DefaultTreeModel)getModel()).reload(root);
+            }
+            else
+            {   this.net = null;
+                root.removeAllChildren();
+                objectsMap.clear();
+            }
+                //((DefaultTreeModel)getModel()).reload(root);
 	}
+
+        private DefaultMutableTreeNode findUserObject(String treeNode,DefaultMutableTreeNode root)
+        {   Enumeration e = root.breadthFirstEnumeration();
+            while (e.hasMoreElements())
+            {   DefaultMutableTreeNode node = (DefaultMutableTreeNode)e.nextElement();
+                if (node.getUserObject().toString().equals(treeNode))
+                    return node;
+            }
+            return null;
+        }
 
 	public ProbabilisticNetwork getProbabilisticNetwork() {
 		return net;
@@ -154,34 +219,32 @@ public class MetaphorTree extends JTree
 	}
 
 	public void propagate()
-        {	int count = getRowCount();
-		for (int i = 0; i < count; i++)
-                {	TreePath path = getPathForRow(i);
-			DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)path.getLastPathComponent();
-			Object obj = objectsMap.get(treeNode);
-			if (obj instanceof StateObject)
-                        {	StateObject stateObject = (StateObject)obj;
-				PotentialTable table = ((ITabledVariable)objectsMap.get(treeNode.getParent())).getPotentialTable();
-				if (stateObject.getCheck() == CHECK_YES)
-                                {	table.setValue(stateObject.getStateIndex(), 1);
-				}
-				else if(stateObject.getCheck() == CHECK_NO)
-                                {	table.setValue(stateObject.getStateIndex(), 0);
-				}
-			}
-		}
-		try
-                {	net.updateEvidences();
-		}
-                catch (Exception e)
-                {   System.err.print(e.getMessage());
-                    e.printStackTrace();
+        {   try
+            {   net.initialize();
+                int count = getRowCount();
+                for (int i = 0; i < count; i++)
+                {   TreePath path = getPathForRow(i);
+                    DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)path.getLastPathComponent();
+                    Object obj = objectsMap.get(treeNode);
+                    if (obj instanceof StateObject)
+                    {   StateObject stateObject = (StateObject)obj;
+                        if (stateObject.getCheck() == CHECK_YES)
+                        {   ProbabilisticNode node = stateObject.getProbabilisticNode();
+                            node.addFinding(stateObject.getStateIndex());
+                        }
+                    }
                 }
-		if (showProbability)
+                net.updateEvidences();
+            }
+            catch (Exception e)
+            {   System.err.print(e.getMessage());
+                e.printStackTrace();
+            }
+		/*if (showProbability)
                 {	ProbabilisticNetwork temp = net;
 			setProbabilisticNetwork(null);
 			setProbabilisticNetwork(temp);
-		}
+		}*/
 	}
 
 	private void methaphorTreeMouseClicked(java.awt.event.MouseEvent evt) {

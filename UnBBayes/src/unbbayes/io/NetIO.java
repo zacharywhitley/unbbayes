@@ -276,6 +276,10 @@ public class NetIO implements BaseIO {
 			}
 		}
 		r.close();
+                HierarchicTree tree = net.getHierarchicTree();
+                if (tree != null)
+                {   tree.setProbabilisticNetwork(net);
+                }
 		return net;
 	}
 
