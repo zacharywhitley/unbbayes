@@ -25,7 +25,6 @@ public class NetWindowCompilation extends JPanel {
     private final ProbabilisticNetwork net;
     private final NetWindow netWindow;
 
-    //private JTree evidenceTree;
     private EvidenceTree evidenceTree;
     private final WindowController controller;
     private final JScrollPane jspTree;
@@ -60,8 +59,7 @@ public class NetWindowCompilation extends JPanel {
         topPanel       = new JPanel(new GridLayout(0,1));
         jtbCompilation = new JToolBar();
         centerPanel    = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        //evidenceTree   = new JTree(new DefaultMutableTreeNode(null));
-        evidenceTree   = new EvidenceTree();
+        evidenceTree   = new EvidenceTree(this,netWindow);
         jspTree        = new JScrollPane(evidenceTree);
         bottomPanel    = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 1));
         status         = new JLabel(resource.getString("statusReadyLabel"));
@@ -123,7 +121,6 @@ public class NetWindowCompilation extends JPanel {
         //contrair árvore de evidências
         collapse.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
-                    //controller.collapseTree(evidenceTree);
                     setCursor(new Cursor(Cursor.WAIT_CURSOR));
                     evidenceTree.collapseTree();
                     setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -134,7 +131,6 @@ public class NetWindowCompilation extends JPanel {
         //expandir árvore de evidências
         expand.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
-                    //controller.expandTree(evidenceTree);
                     setCursor(new Cursor(Cursor.WAIT_CURSOR));
                     evidenceTree.expandTree();
                     setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -160,39 +156,6 @@ public class NetWindowCompilation extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 controller.salvarImagemRede();
             }
-        });
-
-        //trata os eventos de mouse para a árvore de evidências
-        evidenceTree.addMouseListener(new MouseAdapter() {
-            public void mousePressed(MouseEvent e) {
-                int selRow = evidenceTree.getRowForLocation(e.getX(), e.getY());
-                if (selRow == -1) {
-                    return;
-                }
-
-                TreePath selPath = evidenceTree.getPathForLocation(e.getX(), e.getY());
-                DefaultMutableTreeNode node = (DefaultMutableTreeNode)selPath.getLastPathComponent();
-
-                if (node.isLeaf()) {
-                    if (e.getModifiers()==MouseEvent.BUTTON3_MASK) {
-                        controller.mostrarLikelihood((DefaultMutableTreeNode)node.getParent());
-                    } else if (e.getClickCount() == 2 && e.getModifiers()==MouseEvent.BUTTON1_MASK) {
-                        controller.arvoreDuploClick(node);
-                    }
-                } else if (selPath.getPathCount() == 2) {
-                    if (e.getModifiers()==MouseEvent.BUTTON3_MASK) {
-                        controller.mostrarLikelihood(node);
-                    }
-                    if (e.getClickCount() == 1) {
-                        netWindow.getIGraph().selectNode( (Node)node.getUserObject() );
-                        netWindow.getIGraph().update();
-                    } else if (e.getClickCount() == 2) {
-                        DefaultMutableTreeNode root = (DefaultMutableTreeNode) evidenceTree.getModel().getRoot();
-                        int index = root.getIndex(node);
-                        evidenceTree.getExpandedNodes()[index] = ! evidenceTree.getExpandedNodes()[index];
-                    }
-                }
-           }
         });
 
         //colocar botões e controladores do look-and-feel no toolbar e esse no topPanel
@@ -228,24 +191,11 @@ public class NetWindowCompilation extends JPanel {
 
         bottomPanel.add(status);
 
-
-
         //adiciona containers para o contentPane
         this.add(topPanel, BorderLayout.NORTH);
         this.add(centerPanel, BorderLayout.CENTER);
         this.add(bottomPanel, BorderLayout.SOUTH);
         setVisible(true);
-
-    }
-
-    /**
-     *  Substitui a árvore existente pela desejada.
-     *
-     *@parm      tree a nova árvore (<code>JTree</code>) desejada.
-     *@see       JTree
-     */
-    public void setEvidenceTree(EvidenceTree tree) {
-        evidenceTree = tree;
     }
 
     /**

@@ -5,7 +5,7 @@ import java.awt.Component;
 import java.awt.dnd.*;
 import java.awt.datatransfer.*;
 
-import  java.io.IOException;
+import java.io.IOException;
 
 import java.util.*;
 
@@ -153,6 +153,31 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
     {   for (int i = 0; i < getRowCount(); i++)
         {   collapseRow(i);
         }
+    }
+
+    public JTree copyTree()
+    {
+      Stack stack = new Stack();
+      DefaultMutableTreeNode root = (DefaultMutableTreeNode)getModel().getRoot();
+      DefaultMutableTreeNode newRoot = new DefaultMutableTreeNode(root.toString());
+      JTree jTree = new JTree(newRoot);
+      stack.push(root);
+      int i;
+      while (!stack.empty())
+      {
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)stack.pop();
+        int size = node.getChildCount();
+        TreeNode child;
+        for (i=0;i<size;i++)
+        {
+          child = node.getChildAt(i);
+          DefaultMutableTreeNode mutableTreeNode = findUserObject(node.toString(),newRoot);
+          if (mutableTreeNode != null)
+            ((DefaultTreeModel)jTree.getModel()).insertNodeInto(new DefaultMutableTreeNode(child.toString()),mutableTreeNode,mutableTreeNode.getChildCount());
+          stack.push(child);
+        }
+      }
+      return jTree;
     }
 
     public Node getNodeInformation(DefaultMutableTreeNode treeNode)

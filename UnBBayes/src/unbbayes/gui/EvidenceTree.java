@@ -1,8 +1,9 @@
 package unbbayes.gui;
 
 import java.awt.*;
-import java.text.NumberFormat;
-import java.util.Locale;
+import java.awt.event.*;
+import java.text.*;
+import java.util.*;
 
 import javax.swing.*;
 import javax.swing.tree.*;
@@ -18,15 +19,77 @@ import unbbayes.util.*;
 public class EvidenceTree extends JTree
 {   private ProbabilisticNetwork net;
     private NumberFormat nf;
-    private boolean[] expandedNodes;
+    //private boolean[] expandedNodes;
+    private ArrayMap objectsMap = new ArrayMap();
+    private JPanel reference;
+    private NetWindow netWindow;
 
-    public EvidenceTree()
-    {   nf = NumberFormat.getInstance(Locale.US);
-        nf.setMaximumFractionDigits(4);
+    public EvidenceTree(JPanel reference,final NetWindow netWindow)
+    {
+      this.reference = reference;
+      this.netWindow = netWindow;
+      nf = NumberFormat.getInstance(Locale.US);
+      nf.setMaximumFractionDigits(4);
 
-        // set up node icons
-        setCellRenderer(new EvidenceTreeCellRenderer());
+      // set up node icons
+      setCellRenderer(new EvidenceTreeCellRenderer());
 
+      //trata os eventos de mouse para a árvore de evidências
+      addMouseListener(new MouseAdapter()
+      {
+        public void mousePressed(MouseEvent e)
+        {
+          int selRow = getRowForLocation(e.getX(), e.getY());
+          if (selRow == -1)
+          {
+            return;
+          }
+
+          TreePath selPath = getPathForLocation(e.getX(), e.getY());
+          DefaultMutableTreeNode node = (DefaultMutableTreeNode)selPath.getLastPathComponent();
+
+          if (node.isLeaf())
+          {
+            if (e.getModifiers()==MouseEvent.BUTTON3_MASK)
+            {
+                showLikelihood((DefaultMutableTreeNode)node.getParent());
+            }
+            else if (e.getClickCount() == 2 && e.getModifiers()==MouseEvent.BUTTON1_MASK)
+            {
+              treeDoubleClick(node);
+            }
+          }
+          else
+          {
+            if (e.getModifiers()==MouseEvent.BUTTON3_MASK)
+            {
+              showLikelihood(node);
+            }
+            if (e.getClickCount() == 1)
+            {
+              Node newNode = getNodeMap(node);
+              if (newNode != null)
+              {
+                netWindow.getIGraph().selectNode(newNode);
+                netWindow.getIGraph().update();
+              }
+            }
+            else if (e.getClickCount() == 2)
+            {
+              /*DefaultMutableTreeNode root = (DefaultMutableTreeNode)getModel().getRoot();
+              int index = root.getIndex(node);
+              expandedNodes[index] = ! expandedNodes[index];*/
+              /*Node newNode = getNodeMap(node);
+              if (newNode != null)
+              {
+                int index = net.getNodeIndex(newNode.getName());
+                System.out.println(newNode+" "+index);
+                expandedNodes[index] = !expandedNodes[index];
+              }*/
+            }
+          }
+        }
+      });
     }
 
     private class EvidenceTreeCellRenderer extends DefaultTreeCellRenderer
@@ -41,15 +104,22 @@ public class EvidenceTree extends JTree
         if (leaf)
         {
           DefaultMutableTreeNode parent = (DefaultMutableTreeNode)(((DefaultMutableTreeNode) value).getParent());
-          TreeVariable node = (TreeVariable) parent.getUserObject();
-
-          if (node.getInformationType()==Node.DESCRIPTION_TYPE)
+          Object obj = objectsMap.get((DefaultMutableTreeNode)parent);
+          if (obj != null)
           {
-            setIcon(yellowBallIcon);
+            Node node = (Node)obj;
+            if (node.getInformationType()==Node.DESCRIPTION_TYPE)
+            {
+              setIcon(yellowBallIcon);
+            }
+            else
+            {
+              setIcon(greenBallIcon);
+            }
           }
           else
           {
-            setIcon(greenBallIcon);
+            setIcon(yellowBallIcon);
           }
         }
         else
@@ -57,8 +127,8 @@ public class EvidenceTree extends JTree
             this.setClosedIcon(folderSmallIcon);
         }
         return this;
+      }
     }
-}
 
 
     /**
@@ -74,9 +144,9 @@ public class EvidenceTree extends JTree
         {   collapseRow(i);
         }
 
-        for (int i = 0; i < expandedNodes.length; i++)
+        /*for (int i = 0; i < expandedNodes.length; i++)
         {   expandedNodes[i] = false;
-        }
+        }*/
     }
 
     /**
@@ -92,9 +162,9 @@ public class EvidenceTree extends JTree
         {   expandRow(i);
         }
 
-        for (int i = 0; i < expandedNodes.length; i++)
+        /*for (int i = 0; i < expandedNodes.length; i++)
         {   expandedNodes[i] = true;
-        }
+        }*/
     }
 
     /**
@@ -106,43 +176,42 @@ public class EvidenceTree extends JTree
      * @see            JTree
      */
     public void updateTree()
-    {   int i,j;
-        NodeList nodes = net.getCopiaNos();
-        DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
-
-        root.removeAllChildren();
-
-        int nodeSize = nodes.size();
-        for (j = 0; j < nodeSize; j++)
-        {   Node node = (Node)nodes.get(j);
-            TreeVariable treeVariable = (TreeVariable) node;
-            DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(node);
-
-            int statesSize = node.getStatesSize();
-            for (i = 0; i < statesSize; i++)
-            {   String label;
-                if (treeVariable instanceof ProbabilisticNode)
-                {   label = node.getStateAt(i) + ": " + nf.format(treeVariable.getMarginalAt(i) * 100.0);
-                }
-                else
-                {   label = node.getStateAt(i) + ": " + nf.format(treeVariable.getMarginalAt(i));
-                }
-                treeNode.add(new DefaultMutableTreeNode(label));
-            }
-            root.add(treeNode);
+    {
+      DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
+      root.removeAllChildren();
+      objectsMap.clear();
+      DefaultTreeModel model = new DefaultTreeModel((DefaultMutableTreeNode)net.getHierarchicTree().copyTree().getModel().getRoot());
+      this.setModel(model);
+      root = (DefaultMutableTreeNode) getModel().getRoot();
+      NodeList nodes = net.getCopiaNos();
+      int size = nodes.size();
+      for (int i = 0; i < size; i++)
+      {
+        Node node = (Node) nodes.get(i);
+        TreeVariable treeVariable = (TreeVariable) node;
+        DefaultMutableTreeNode treeNode = findUserObject(node.getDescription(),root);
+        if (treeNode == null)
+        {
+          treeNode = new DefaultMutableTreeNode(node.getDescription());
+          root.add(treeNode);
         }
-
-        ((DefaultTreeModel) getModel()).reload(root);
-        j = 0;
-        for (i = 0; i < expandedNodes.length; i++)
-        {   if (expandedNodes[i])
-            {   expandRow(j);
-                Node node = (Node) nodes.get(i);
-                j += node.getStatesSize();
-            }
-            j++;
+        objectsMap.put(treeNode, node);
+        int statesSize = node.getStatesSize();
+        for (int j = 0; j < statesSize; j++)
+        {
+          String label;
+          if (treeVariable instanceof ProbabilisticNode)
+          {
+            label = node.getStateAt(j) + ": " + nf.format(treeVariable.getMarginalAt(j) * 100.0);
+          }
+          else
+          {
+            label = node.getStateAt(j) + ": " + nf.format(treeVariable.getMarginalAt(j));
+          }
+          treeNode.add(new DefaultMutableTreeNode(label));
         }
-
+      }
+      ((DefaultTreeModel)getModel()).reload(root);
     }
 
     /**
@@ -159,14 +228,153 @@ public class EvidenceTree extends JTree
     	// deve pegar o copiaNos que possui todos os nos que aparecem na
     	// arvore, ou seja, todos menos os de Utilidade
         //expandedNodes = new boolean[net.getNos().size()];
-        expandedNodes = new boolean[net.getCopiaNos().size()];
+        /*expandedNodes = new boolean[net.getNos().size()];
         for (int i = 0; i < expandedNodes.length; i++) {
             expandedNodes[i] = false;
-        }
+        }*/
         updateTree();
     }
 
-    public boolean[] getExpandedNodes()
-    {   return expandedNodes;
+    private DefaultMutableTreeNode findUserObject(String treeNode,DefaultMutableTreeNode root)
+    {
+      Enumeration e = root.breadthFirstEnumeration();
+      while (e.hasMoreElements())
+      {
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)e.nextElement();
+        if (node.getUserObject().toString().equals(treeNode))
+        {
+          return node;
+        }
+      }
+      return null;
+    }
+
+    /**
+     *  Adiciona uma evidencia no estado especificado.
+     *
+     * @param  caminho  caminho do estado a ser setado para 100%;
+     * @see             TreePath
+     */
+    private void treeDoubleClick(DefaultMutableTreeNode treeNode)
+    {
+      DefaultMutableTreeNode parent = (DefaultMutableTreeNode)((treeNode).getParent());
+      Object obj = objectsMap.get((DefaultMutableTreeNode)parent);
+      if (obj != null)
+      {
+        TreeVariable node = (TreeVariable) obj;
+
+        //Só propaga nós de descrição
+        if (node.getInformationType()==Node.DESCRIPTION_TYPE)
+        {
+          for (int i = 0; i < parent.getChildCount(); i++)
+          {
+            DefaultMutableTreeNode auxNode = (DefaultMutableTreeNode) parent.getChildAt(i);
+            auxNode.setUserObject(node.getStateAt(i) + ": 0");
+          }
+
+          if (node instanceof ProbabilisticNode)
+          {
+            treeNode.setUserObject(node.getStateAt(parent.getIndex(treeNode)) + ": 100");
+          }
+          else
+          {
+            treeNode.setUserObject(node.getStateAt(parent.getIndex(treeNode)) + ": **");
+          }
+          node.addFinding(parent.getIndex(treeNode));
+          ((DefaultTreeModel)getModel()).reload(parent);
+        }
+      }
+    }
+
+    /**
+     *  Abre uma nova janela modal para inserir os dados para serem usados no
+     *  likelihood.
+     *
+     * @param  caminho  um <code>TreePath <code>dizendo a posição do mouse.
+     * @since
+     * @see             TreePath
+     */
+    private void showLikelihood(DefaultMutableTreeNode node)
+    {
+      ProbabilisticNode auxVP = (ProbabilisticNode)objectsMap.get(node);
+      if ((auxVP!=null)&&(auxVP.getInformationType()==Node.DESCRIPTION_TYPE))
+      {
+        int i;
+        JPanel panel = new JPanel();
+        JTable table = new JTable(auxVP.getStatesSize(), 2);
+        for (i = 0; i < auxVP.getStatesSize(); i++)
+        {
+          table.setValueAt(auxVP.getStateAt(i), i, 0);
+          table.setValueAt("100", i, 1);
+        }
+        JLabel label = new JLabel(auxVP.toString());
+        panel.add(label);
+        panel.add(table);
+        if (JOptionPane.showConfirmDialog(reference, panel, "likelihoodName",JOptionPane.OK_CANCEL_OPTION)==JOptionPane.OK_OPTION)
+        {
+          DefaultMutableTreeNode auxNode;
+
+          float[] values = new float[auxVP.getStatesSize()];
+
+          try
+          {
+            for (i = 0; i < auxVP.getStatesSize(); i++)
+            {
+              values[i] = nf.parse((String) table.getValueAt(i, 1)).floatValue();
+            }
+          }
+          catch (ParseException e)
+          {
+            System.err.println(e.getMessage());
+            return;
+          }
+
+          double maxValue = values[0];
+          for (i = 1; i < auxVP.getStatesSize(); i++)
+          {
+            if (maxValue < values[i])
+            {
+               maxValue = values[i];
+            }
+          }
+
+          if (maxValue == 0.0)
+          {
+            System.err.println("likelihoodException");
+            return;
+          }
+
+          for (i = 0; i < auxVP.getStatesSize(); i++)
+          {
+            values[i] /= maxValue;
+          }
+
+          for (i = 0; i < values.length && values[i] == 1; i++);
+          if (i == values.length)
+          {
+            return;
+          }
+
+          String str;
+          auxVP.addLikeliHood(values);
+          for (i = 0; i < node.getChildCount(); i++)
+          {
+            auxNode = (DefaultMutableTreeNode) node.getChildAt(i);
+            str = (String) auxNode.getUserObject();
+            auxNode.setUserObject(str.substring(0, str.lastIndexOf(':') + 1) + nf.format(values[i] * 100));
+          }
+          ((DefaultTreeModel) getModel()).reload(node);
+        }
+      }
+    }
+
+    public Node getNodeMap(DefaultMutableTreeNode node)
+    {
+      Object obj = objectsMap.get(node);
+      if (obj!=null)
+      {
+        return (Node)obj;
+      }
+      return null;
     }
 }

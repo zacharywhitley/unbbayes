@@ -201,9 +201,9 @@ public class NetWindow extends JPanel {
      *@parm      tree a nova árvore (<code>JTree</code>) desejada.
      *@see       JTree
      */
-    public void setEvidenceTree(EvidenceTree tree) {
+    /*public void setEvidenceTree(EvidenceTree tree) {
         netCompilation.setEvidenceTree(tree);
-    }
+    }*/
 
     /**
      *  Retorna o painel do draw.

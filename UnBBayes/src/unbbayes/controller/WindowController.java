@@ -67,8 +67,6 @@ public class WindowController implements KeyListener {
     private NumberFormat df;
     private EvidenceTree evidenceTree;
 
-    //private boolean[] situacaoArvore;
-
     private List copia;
     private List copiados;
 
@@ -225,76 +223,6 @@ public class WindowController implements KeyListener {
 
 
     /**
-     *  Abre uma nova janela modal para inserir os dados para serem usados no
-     *  likelihood.
-     *
-     * @param  caminho  um <code>TreePath <code>dizendo a posição do mouse.
-     * @since
-     * @see             TreePath
-     */
-    public void mostrarLikelihood(DefaultMutableTreeNode node) {
-        ProbabilisticNode auxVP = (ProbabilisticNode) node.getUserObject();
-        int i;
-        JPanel panel = new JPanel();
-        JTable tabela = new JTable(auxVP.getStatesSize(), 2);
-        for (i = 0; i < auxVP.getStatesSize(); i++) {
-            tabela.setValueAt(auxVP.getStateAt(i), i, 0);
-            tabela.setValueAt("100", i, 1);
-        }
-        JLabel label = new JLabel(auxVP.toString());
-        panel.add(label);
-        panel.add(tabela);
-        if (JOptionPane.showConfirmDialog(tela, panel, resource.getString("likelihoodName"), JOptionPane.OK_CANCEL_OPTION) ==
-                JOptionPane.OK_OPTION) {
-
-            DefaultMutableTreeNode auxNode;
-
-            float[] valores = new float[auxVP.getStatesSize()];
-
-            try {
-                for (i = 0; i < auxVP.getStatesSize(); i++) {
-                    valores[i] = df.parse((String) tabela.getValueAt(i, 1)).floatValue();
-                }
-            } catch (ParseException e) {
-                System.err.println(e.getMessage());
-                return;
-            }
-
-            double valorMax = valores[0];
-            for (i = 1; i < auxVP.getStatesSize(); i++) {
-                if (valorMax < valores[i]) {
-                    valorMax = valores[i];
-                }
-            }
-
-            if (valorMax == 0.0) {
-                System.err.println(resource.getString("likelihoodException"));
-                return;
-            }
-
-            for (i = 0; i < auxVP.getStatesSize(); i++) {
-                valores[i] /= valorMax;
-            }
-
-            for (i = 0; i < valores.length && valores[i] == 1; i++)
-                ;
-            if (i == valores.length) {
-                return;
-            }
-
-            String str;
-            auxVP.addLikeliHood(valores);
-            for (i = 0; i < node.getChildCount(); i++) {
-                auxNode = (DefaultMutableTreeNode) node.getChildAt(i);
-                str = (String) auxNode.getUserObject();
-                auxNode.setUserObject(str.substring(0, str.lastIndexOf(':') + 1) + df.format(valores[i] * 100));
-            }
-            ((DefaultTreeModel) evidenceTree.getModel()).reload(node);
-        }
-    }
-
-
-    /**
      * Inicia as crenças da árvore de junção.
      */
     public void initialize() {
@@ -395,40 +323,6 @@ public class WindowController implements KeyListener {
         dialog.pack();
         dialog.setVisible(true);
         tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-    }
-
-
-    /**
-     *  Adiciona uma evidencia no estado especificado.
-     *
-     * @param  caminho  caminho do estado a ser setado para 100%;
-     * @see             TreePath
-     */
-    public void arvoreDuploClick(DefaultMutableTreeNode treeNode) {
-      DefaultMutableTreeNode pai = ((DefaultMutableTreeNode) treeNode.getParent());
-      TreeVariable node = (TreeVariable) pai.getUserObject();
-
-      //Só propaga nós de descrição
-      if (node.getInformationType()==Node.DESCRIPTION_TYPE)
-      {
-        for (int i = 0; i < pai.getChildCount(); i++)
-        {
-          DefaultMutableTreeNode auxNode = (DefaultMutableTreeNode) pai.getChildAt(i);
-          auxNode.setUserObject(node.getStateAt(i) + ": 0");
-        }
-
-        if (node instanceof ProbabilisticNode)
-        {
-          treeNode.setUserObject(node.getStateAt(pai.getIndex(treeNode)) + ": 100");
-        }
-        else
-        {
-          treeNode.setUserObject(node.getStateAt(pai.getIndex(treeNode)) + ": **");
-        }
-        node.addFinding(pai.getIndex(treeNode));
-        (
-          (DefaultTreeModel) tela.getEvidenceTree().getModel()).reload(pai);
-      }
     }
 
 
