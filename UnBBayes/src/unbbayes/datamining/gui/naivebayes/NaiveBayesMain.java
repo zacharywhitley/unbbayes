@@ -287,7 +287,10 @@ public class NaiveBayesMain extends JInternalFrame
 
   private void openFile(File selectedFile)
   {   try
-      {   inst = FileController.getInstance().getInstanceSet(selectedFile,this);
+      {
+        inst = FileController.getInstance().getInstanceSet(selectedFile,this);
+        if (inst!=null)
+        {
           boolean bool = inst.checkNumericAttributes();
           if (bool == true)
               throw new Exception(resource.getString("numericAttributesException"));
@@ -303,6 +306,11 @@ public class NaiveBayesMain extends JInternalFrame
           jMenuItem5.setEnabled(false);
           saveButton.setEnabled(false);
           statusBar.setText(resource.getString("openFile"));
+        }
+        else
+        {
+          statusBar.setText("Operação cancelada");
+        }
       }
       catch (NullPointerException npe)
       {   statusBar.setText(resource.getString("errorDB")+selectedFile.getName()+" "+npe.getMessage());

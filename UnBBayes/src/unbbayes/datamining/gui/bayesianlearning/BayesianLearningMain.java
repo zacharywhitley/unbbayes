@@ -342,13 +342,20 @@ public class BayesianLearningMain extends JInternalFrame
     {
       jTabbedPane1.setEnabledAt(0,false);
       inst = FileController.getInstance().getInstanceSet(selectedFile,this);
-      boolean bool = inst.checkNumericAttributes();
-      if (bool == true)
+      if (inst!= null)
       {
-        throw new Exception(resource.getString("numericAttributesException"));
+        boolean bool = inst.checkNumericAttributes();
+        if (bool == true)
+        {
+          throw new Exception(resource.getString("numericAttributesException"));
+        }
+        setTitle("Bayesian Learnning - "+selectedFile.getName());
+        enableScreen();
       }
-      setTitle("Bayesian Learnning - "+selectedFile.getName());
-      enableScreen();
+      else
+      {
+        statusBar.setText("Operação cancelada");
+      }
     }
     catch (NullPointerException npe)
       {   statusBar.setText(resource.getString("errorDB")+selectedFile.getName()+" "+npe.getMessage());

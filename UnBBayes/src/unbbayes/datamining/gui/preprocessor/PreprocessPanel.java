@@ -10,15 +10,13 @@ import javax.swing.event.*;
 import javax.swing.table.*;
 
 import unbbayes.datamining.datamanipulation.*;
+import unbbayes.util.GraphPaperLayout;
 
 public class PreprocessPanel extends JPanel
 { /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
   private JPanel jPanel7 = new JPanel();
   private JPanel jPanel6 = new JPanel();
-  private JPanel jPanel4 = new JPanel();
-  private JPanel jPanel3 = new JPanel();
-  private JPanel jPanel1 = new JPanel();
   private JLabel jLabel6 = new JLabel();
   private JLabel jLabel5 = new JLabel();
   private JLabel jLabel4 = new JLabel();
@@ -30,7 +28,6 @@ public class PreprocessPanel extends JPanel
   private BorderLayout borderLayout7 = new BorderLayout();
   private BorderLayout borderLayout6 = new BorderLayout();
   private BorderLayout borderLayout5 = new BorderLayout();
-  private BorderLayout borderLayout3 = new BorderLayout();
   private BorderLayout borderLayout2 = new BorderLayout();
   private BorderLayout borderLayout13 = new BorderLayout();
   private BorderLayout borderLayout12 = new BorderLayout();
@@ -48,8 +45,6 @@ public class PreprocessPanel extends JPanel
   private JPanel jPanel10 = new JPanel();
   private GridLayout gridLayout3 = new GridLayout();
   private GridLayout gridLayout2 = new GridLayout();
-  private GridLayout gridLayout1 = new GridLayout();
-  private BorderLayout borderLayout1 = new BorderLayout();
   private BorderLayout borderLayout32 = new BorderLayout();
   private BorderLayout borderLayout31 = new BorderLayout();
   private BorderLayout borderLayout30 = new BorderLayout();
@@ -59,7 +54,6 @@ public class PreprocessPanel extends JPanel
   private BorderLayout borderLayout28 = new BorderLayout();
   private BorderLayout borderLayout27 = new BorderLayout();
   private BorderLayout borderLayout26 = new BorderLayout();
-  private JPanel jPanel5 = new JPanel();
   private BorderLayout borderLayout25 = new BorderLayout();
   private BorderLayout borderLayout24 = new BorderLayout();
   private BorderLayout borderLayout23 = new BorderLayout();
@@ -76,7 +70,6 @@ public class PreprocessPanel extends JPanel
   private JPanel jPanel32 = new JPanel();
   private JPanel jPanel31 = new JPanel();
   private JPanel jPanel30 = new JPanel();
-  private BorderLayout borderLayout4 = new BorderLayout();
   private BorderLayout borderLayout17 = new BorderLayout();
   private JPanel jPanel29 = new JPanel();
   private JPanel jPanel28 = new JPanel();
@@ -110,6 +103,8 @@ public class PreprocessPanel extends JPanel
   private BorderLayout borderLayout14 = new BorderLayout();
   private AttributeSelectionPanel jPanel8 = new AttributeSelectionPanel();
   private int selectedAttribute;
+  private GridLayout gridLayout6 = new GridLayout();
+  private GraphPaperLayout gridLayout1 = new GraphPaperLayout(new Dimension(6,6));
 
   public PreprocessPanel(PreprocessorMain reference)
   { this.reference = reference;
@@ -131,9 +126,6 @@ public class PreprocessPanel extends JPanel
     titledBorder1 = new TitledBorder(border1,resource.getString("file"));
     border1 = BorderFactory.createLineBorder(new Color(153, 153, 153),1);
     jPanel7.setLayout(gridLayout2);
-    jPanel4.setLayout(borderLayout3);
-    jPanel3.setLayout(gridLayout1);
-    jPanel1.setLayout(borderLayout2);
     jLabel6.setText(resource.getString("attributes"));
     jLabel5.setText(resource.getString("instances"));
     jLabel4.setText(resource.getString("none"));
@@ -153,11 +145,9 @@ public class PreprocessPanel extends JPanel
     gridLayout3.setColumns(2);
     gridLayout2.setRows(2);
     gridLayout2.setVgap(3);
-    gridLayout1.setColumns(2);
-    this.setLayout(borderLayout1);
+    this.setLayout(gridLayout1);
     jPanel40.setLayout(borderLayout27);
     jPanel9.setLayout(borderLayout17);
-    jPanel5.setLayout(borderLayout4);
     jPanel39.setLayout(borderLayout28);
     jPanel38.setLayout(borderLayout29);
     jPanel37.setLayout(borderLayout30);
@@ -208,29 +198,26 @@ public class PreprocessPanel extends JPanel
     jPanel15.setLayout(borderLayout14);
     jScrollPane2.setBorder(null);
     jPanel8.setToolTipText(resource.getString("selectedAttributes"));
-    jPanel3.add(jPanel4, null);
-    jPanel4.add(jPanel6, BorderLayout.CENTER);
-    jPanel6.add(jPanel15,  BorderLayout.SOUTH);
+    gridLayout6.setColumns(2);
+    jPanel6.add(jPanel15, BorderLayout.SOUTH);
     jPanel15.add(jButton2, BorderLayout.CENTER);
     jPanel6.add(jPanel8,  BorderLayout.CENTER);
-    jPanel4.add(jPanel7, BorderLayout.NORTH);
     jPanel13.add(jPanel22, BorderLayout.CENTER);
     jPanel22.add(jLabel3, BorderLayout.CENTER);
     jPanel13.add(jPanel23, BorderLayout.WEST);
     jPanel23.add(jLabel6, BorderLayout.CENTER);
     jPanel10.add(jPanel12, null);
-    jPanel10.add(jPanel13, null);
     jPanel12.add(jPanel20, BorderLayout.CENTER);
     jPanel20.add(jLabel2, BorderLayout.CENTER);
     jPanel12.add(jPanel21, BorderLayout.WEST);
     jPanel21.add(jLabel5, BorderLayout.CENTER);
+    jPanel10.add(jPanel13, null);
     jPanel7.add(jPanel11, null);
-    jPanel7.add(jPanel10, null);
     jPanel11.add(jPanel18, BorderLayout.WEST);
     jPanel18.add(jLabel1, BorderLayout.CENTER);
     jPanel11.add(jPanel19, BorderLayout.CENTER);
     jPanel19.add(jLabel4, BorderLayout.CENTER);
-    jPanel3.add(jPanel5, null);
+    jPanel7.add(jPanel10, null);
     jPanel9.add(jPanel27, BorderLayout.CENTER);
     jPanel27.add(jScrollPane2,  BorderLayout.CENTER);
     jScrollPane2.getViewport().add(jTable1, null);
@@ -255,12 +242,8 @@ public class PreprocessPanel extends JPanel
     jPanel39.add(jLabel15, BorderLayout.CENTER);
     jPanel30.add(jPanel40, BorderLayout.WEST);
     jPanel40.add(jLabel16, BorderLayout.CENTER);
-    jPanel5.add(jPanel2, BorderLayout.NORTH);
     jPanel2.add(jPanel14, null);
     jPanel14.add(jButton1, null);
-    jPanel5.add(jPanel9, BorderLayout.CENTER);
-    this.add(jPanel1, BorderLayout.CENTER);
-    jPanel1.add(jPanel3, BorderLayout.CENTER);
     jTable1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     jTable1.getTableHeader().setReorderingAllowed(false);
     jTable1.getTableHeader().setResizingAllowed(false);
@@ -271,6 +254,10 @@ public class PreprocessPanel extends JPanel
         {   jPanel8_valueChanged(e);
 	}
     });
+    this.add(jPanel2, new Rectangle(0,0,3,1));
+    this.add(jPanel9, new Rectangle(0,1,3,5));
+    this.add(jPanel7, new Rectangle(3,0,3,1));
+    this.add(jPanel6, new Rectangle(3,1,3,5));
   }
 
   public void setBaseInstances(InstanceSet inst)
@@ -421,113 +408,7 @@ public class PreprocessPanel extends JPanel
 
   //Chama editor de instâncias
   void jButton2_actionPerformed(ActionEvent e)
-  {   try
-      {   if (jPanel8.getSelectedAttributes() != null)
-          {   int[] selectedAttributes = jPanel8.getSelectedAttributes();
-              if (selectedAttributes != null && selectedAttributes.length > 0)
-              {   reference.getTabbedPane().setEnabledAt(1,true);
-                  reference.getTabbedPane().setSelectedIndex(1);
-                  StringBuffer sb = new StringBuffer();
-                  int fileExtension = reference.getFileExtension();
-                  int i;
-                  int numInstances = instances.numInstances();
-                  if (fileExtension == PreprocessorMain.ARFF_EXTENSION)
-                  {   sb.append("@relation "+instances.getRelationName()+"\n\n");
-                      for (i=0; i<selectedAttributes.length; i++)
-                      {   sb.append(instances.getAttribute(selectedAttributes[i])+"\n");
-                      }
-                      boolean bool = Options.getInstance().getCompactedFile();
-                      if (bool == true)
-                      {   sb.append("@attribute counter real\n");
-                          sb.append("\n"+"@data\n");
-                          for(i=0; i<numInstances; i++)
-                          {   Instance instance = instances.getInstance(i);
-                              for (int j=0; j<selectedAttributes.length; j++)
-                              {   if (instance.isMissing(j))
-		                  {   sb.append("?,");
-   		                  }
-                                  else
-                                  {   sb.append(instance.stringValue(selectedAttributes[j])+",");
-                                  }
-                              }
-                              sb.append(instance.getWeight()+"\n");
-                          }
-                      }
-                      else
-                      {   sb.append("\n"+"@data\n");
-                          for(i=0; i<numInstances; i++)
-                          {   Instance instance = instances.getInstance(i);
-                              for (int j=0; j<selectedAttributes.length; j++)
-                              {   if (instance.isMissing(j))
-		                  {   if (j == (selectedAttributes.length-1))
-                                          sb.append("?\n");
-                                      else
-                                          sb.append("?,");
-   		                  }
-                                  else
-                                  {   if (j == (selectedAttributes.length-1))
-                                          sb.append(instance.stringValue(selectedAttributes[j])+"\n");
-                                      else
-                                          sb.append(instance.stringValue(selectedAttributes[j])+",");
-                                  }
-                              }
-                          }
-                      }
-                  }
-                  else
-                  {   for (i=0; i<selectedAttributes.length; i++)
-                      {   sb.append(instances.getAttribute(i).getAttributeName()+" ");
-                      }
-                      boolean bool = Options.getInstance().getCompactedFile();
-                      if (bool == true)
-                      {   sb.append("counter\n");
-                          for(i=0; i<numInstances; i++)
-                          {   Instance instance = instances.getInstance(i);
-                              for (int j=0; j<selectedAttributes.length; j++)
-                              {   if (instance.isMissing(j))
-		                  {   sb.append("? ");
-   		                  }
-                                  else
-                                  {   sb.append(instance.stringValue(selectedAttributes[j])+" ");
-                                  }
-                              }
-                              sb.append(instance.getWeight()+"\n");
-                          }
-                      }
-                      else
-                      {   sb.append("\n");
-                          for(i=0; i<numInstances; i++)
-                          {   Instance instance = instances.getInstance(i);
-                              for (int j=0; j<selectedAttributes.length; j++)
-                              {   if (instance.isMissing(j))
-		                  {   if (j == (selectedAttributes.length-1))
-                                          sb.append("?\n");
-                                      else
-                                          sb.append("? ");
-   		                  }
-                                  else
-                                  {   if (j == (selectedAttributes.length-1))
-                                          sb.append(instance.stringValue(selectedAttributes[j])+"\n");
-                                      else
-                                          sb.append(instance.stringValue(selectedAttributes[j])+" ");
-                                  }
-                              }
-                          }
-                      }
-                  }
-                  reference.setEditorText(sb.toString());
-              }
-              else
-              {   reference.setStatusBar(resource.getString("noAttributeSelected"));
-              }
-          }
-          else
-          {   reference.setStatusBar(resource.getString("noAttributeSelected"));
-          }
-      }
-      catch (NullPointerException npe)
-      {   reference.setStatusBar(resource.getString("noAttributeSelected"));
-      }
+  {
   }
 
   void jButton1_actionPerformed(ActionEvent e)

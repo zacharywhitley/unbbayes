@@ -16,6 +16,7 @@ import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.gui.*;
 import unbbayes.prs.bn.*;
+import unbbayes.util.GraphPaperLayout;
 
 public class EvaluationPanel extends JPanel
 {
@@ -24,11 +25,9 @@ public class EvaluationPanel extends JPanel
   private JPanel jPanel62 = new JPanel();
   private BorderLayout borderLayout44 = new BorderLayout();
   private JButton jButton9 = new JButton();
-  private BorderLayout borderLayout33 = new BorderLayout();
   private JPanel jPanel2 = new JPanel();
   private JPanel jPanel47 = new JPanel();
   private JPanel jPanel46 = new JPanel();
-  private JPanel jPanel45 = new JPanel();
   private JScrollPane jScrollPane2 = new JScrollPane();
   private BorderLayout borderLayout1 = new BorderLayout();
   private TitledBorder titledBorder10;
@@ -49,7 +48,6 @@ public class EvaluationPanel extends JPanel
   private JLabel jLabel1 = new JLabel();
   private EvaluationMain reference;
   private JFileChooser fileChooser;
-  private GridBagLayout gridBagLayout1 = new GridBagLayout();
   private JLabel jLabel2 = new JLabel();
   private JButton jButton7 = new JButton();
   private GridLayout gridLayout2 = new GridLayout();
@@ -71,6 +69,7 @@ public class EvaluationPanel extends JPanel
   private JRadioButton jRadioButton1 = new JRadioButton();
   private JRadioButton jRadioButton2 = new JRadioButton();
   private JRadioButton jRadioButton3 = new JRadioButton();
+  private GraphPaperLayout paperLayout = new GraphPaperLayout(new Dimension(4,9));
   private JButton jButton1 = new JButton();
   private ButtonGroup buttonGroup1 = new ButtonGroup();
   private TitledBorder titledBorder1;
@@ -111,9 +110,8 @@ public class EvaluationPanel extends JPanel
         jButton9_actionPerformed(e);
       }
     });
-    jPanel2.setLayout(borderLayout33);
+    jPanel2.setLayout(paperLayout);
     jPanel47.setLayout(borderLayout44);
-    jPanel45.setLayout(gridBagLayout1);
     this.setLayout(borderLayout1);
     jPanel46.setBorder(titledBorder6);
     jPanel46.setLayout(borderLayout2);
@@ -199,16 +197,12 @@ public class EvaluationPanel extends JPanel
       }
     });
     jTextArea1.setEditable(false);
-    jPanel2.add(jPanel46, BorderLayout.NORTH);
     jPanel46.add(jLabel2,  BorderLayout.CENTER);
-    jPanel2.add(jPanel45, BorderLayout.CENTER);
     jPanel47.add(jPanel62, BorderLayout.CENTER);
     jPanel62.add(jScrollPane2, BorderLayout.CENTER);
     jScrollPane2.getViewport().add(jTextArea2, null);
     jPanel47.add(jPanel63, BorderLayout.SOUTH);
     jPanel63.add(jButton9, null);
-    jPanel45.add(jPanel3,  new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
-            ,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
     jPanel3.add(jPanel6, null);
     jPanel6.add(jRadioButton1, BorderLayout.CENTER);
     jPanel3.add(jPanel5, null);
@@ -216,19 +210,17 @@ public class EvaluationPanel extends JPanel
     jPanel3.add(jPanel4, null);
     jPanel4.add(jRadioButton3, BorderLayout.CENTER);
     jPanel4.add(jButton1,  BorderLayout.EAST);
-    jPanel45.add(jPanel49,                  new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0
-            ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
     jPanel49.add(jComboBox2, null);
     jPanel49.add(jPanel1, null);
     jPanel1.add(jButton7, null);
     jPanel1.add(jButton8, null);
-    jPanel45.add(jPanel50,                    new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0
-            ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
     jPanel50.add(jScrollPane1,  BorderLayout.CENTER);
     jScrollPane1.getViewport().add(jTextArea1, null);
-    jPanel45.add(jPanel47,              new GridBagConstraints(1, 0, 2, 3, 100.0, 100.0
-            ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 1690));
-
+    jPanel2.add(jPanel46, new Rectangle(0,0,4,1));
+    jPanel2.add(jPanel3, new Rectangle(0,1,1,2));
+    jPanel2.add(jPanel49, new Rectangle(0,3,1,2));
+    jPanel2.add(jPanel50, new Rectangle(0,5,1,4));
+    jPanel2.add(jPanel47, new Rectangle(1,1,3,8));
     this.add(jPanel2, BorderLayout.CENTER);
     buttonGroup1.add(jRadioButton1);
     buttonGroup1.add(jRadioButton2);

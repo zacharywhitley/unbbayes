@@ -19,7 +19,6 @@ public class PreprocessorResource extends ListResourceBundle {
         {"open","Open ..."},
         {"exit","Exit"},
         {"preprocess","Preprocess"},
-	{"editor","Editor"},
 	{"errorException","Error= "},
 	{"fileOpened","File opened successfully"},
 	{"preprocessorTitle","Preprocessor - "},

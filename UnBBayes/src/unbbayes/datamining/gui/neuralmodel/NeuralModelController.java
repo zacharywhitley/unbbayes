@@ -75,13 +75,21 @@ public class NeuralModelController {
 
   private void openFile(File selectedFile) throws Exception{
     instanceSet = FileController.getInstance().getInstanceSet(selectedFile, mainScreen);
-    boolean numericAttributes = instanceSet.checkNumericAttributes();
-    if (numericAttributes == true){
-      throw new Exception(resource.getString("numericAttributesException"));
+    if (instanceSet!=null)
+    {
+      boolean numericAttributes = instanceSet.checkNumericAttributes();
+      if (numericAttributes == true){
+        throw new Exception(resource.getString("numericAttributesException"));
+      }
+      mainScreen.setTitle("CNM - " + selectedFile.getName());
+      mainScreen.attributePanel.setInstances(instanceSet);
+      mainScreen.attributePanel.enableComboBox(true);
     }
-    mainScreen.setTitle("CNM - " + selectedFile.getName());
-    mainScreen.attributePanel.setInstances(instanceSet);
-    mainScreen.attributePanel.enableComboBox(true);
+    else
+    {
+      // Setar status bar com operação de abertura de arquivo cancelada
+      throw new Exception("Operação cancelada");
+    }
   }
 
   /**

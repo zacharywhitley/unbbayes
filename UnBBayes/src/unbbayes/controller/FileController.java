@@ -16,19 +16,29 @@ public class FileController
     private File selectedFile;
     private ResourceBundle resource;
     private JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
+    private Timer activityMonitor;
+    private ProgressMonitor progressDialog;
+    
+    //--------------------------------------------------------------//
 
     public File getCurrentDirectory()
     {   return fileChooser.getCurrentDirectory();
     }
+    
+    //--------------------------------------------------------------//
 
     public void setCurrentDirectory(File file)
     {   fileChooser.setCurrentDirectory(file);
     }
+    
+    //--------------------------------------------------------------//
 
     /** Construtor padrão. Só pode ser instanciado pelo método getInstance. */
     protected FileController()
     {   resource = ResourceBundle.getBundle("unbbayes.datamining.gui.naivebayes.resources.NaiveBayesResource");        
     }
+    
+    //--------------------------------------------------------------//
 
     /** Retorna uma instância deste objeto. Se o objeto já estiver instanciado retorna o
         objeto atual, senão retorna uma nova instância do objeto.
@@ -40,6 +50,8 @@ public class FileController
         }
         return singleton;
     }
+    
+    //--------------------------------------------------------------//
 
     public void openHelp(Component component) throws Exception
     {   component.setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -73,6 +85,8 @@ public class FileController
         component.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
+    //--------------------------------------------------------------//
+    
     public InstanceSet getInstanceSet(File f,Component component) throws Exception
     {   Loader loader;
         String fileName = f.getName();
@@ -90,7 +104,7 @@ public class FileController
         
 		//starts loading and shows a status screen
 		ProgressDialog progressDialog = new ProgressDialog (f, loader);
-		progressDialog.load();
+		boolean successStatus = progressDialog.load();
 		
 		InstanceSet inst = loader.getInstances();
         
@@ -99,10 +113,17 @@ public class FileController
         	((TxtLoader)loader).checkNumericAttributes();
         }
 
-        return inst;
+        if(successStatus)
+        {
+        	return inst;
+        }
+        else
+        {
+        	return null;	
+        }
     }
     
-//	---------------------------------------------------------------------//
+	//--------------------------------------------------------------//
 
 	  public InstanceSet getInstanceSet(File f) throws Exception
 	  {   Loader loader;
@@ -126,8 +147,4 @@ public class FileController
 
 		  return loader.getInstances();		  
 	  }
-
-    private Timer activityMonitor;
-    private ProgressMonitor progressDialog;
-
 }

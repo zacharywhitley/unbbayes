@@ -21,23 +21,8 @@ import unbbayes.gui.*;
 public class InvokerMain extends JFrame
 {
   private JPanel contentPane;
-  private BorderLayout borderLayout1 = new BorderLayout();
   private MDIDesktopPane desktop = new MDIDesktopPane();
-  private JMenuBar jMenuBar1 = new JMenuBar();
-  private JMenu jMenu1 = new JMenu();
-  private JMenuItem jMenuItem1 = new JMenuItem();
-  private JMenuItem jMenuItem2 = new JMenuItem();
-  private JMenuItem jMenuItem3 = new JMenuItem();
-  private JMenuItem jMenuItem4 = new JMenuItem();
-  private JMenu jMenu3 = new JMenu();
-  private JMenu jMenu4 = new JMenu();
-  private JMenu jMenu5 = new JMenu();
-  private JMenuItem jMenuItem7 = new JMenuItem();
-  private JMenuItem jMenuItem8 = new JMenuItem();
-  private JMenuItem jMenuItem9 = new JMenuItem();
-  private JMenuItem jMenuItem10 = new JMenuItem();
-  private JMenuItem jMenuItem11 = new JMenuItem();
-  private JMenuItem jMenuItem12 = new JMenuItem();
+
   private ImageIcon metalIcon;
   private ImageIcon motifIcon;
   private ImageIcon windowsIcon;
@@ -45,44 +30,57 @@ public class InvokerMain extends JFrame
   private ImageIcon tileIcon;
   private ImageIcon helpIcon;
   private ImageIcon opcaoglobalIcon;
-  private JMenu jMenu6 = new JMenu();
-  private JMenuItem jMenuItem5 = new JMenuItem();
+
   private int defaultStates = 40;
   private int confidenceLimit = 100;
   private String defaultLanguage = "Portuguese";
   private String defaultLaf = "Windows";
-  /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
-  private ResourceBundle resource;
-  private JMenuItem jMenuItem13 = new JMenuItem();
-  private JMenuItem jMenuItem14 = new JMenuItem();
-  private JToolBar jToolBar1 = new JToolBar();
-  private JButton jButton1 = new JButton();
-  private JButton jButton2 = new JButton();
-  private JButton jButton3 = new JButton();
-  private JButton jButton5 = new JButton();
-  private JButton jButton6 = new JButton();
-  private JButton jButton7 = new JButton();
-  private JButton jButton4 = new JButton();
-  private JMenuItem jMenuItem6 = new JMenuItem();
 
+  /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+  private ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.gui.resources.GuiResource");
+  private InvokerMain reference = this;
+  private IconController iconController = IconController.getInstance();
+
+  private JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+  private JToolBar jtbView;
+  private JToolBar jtbPreferences;
+  private JToolBar jtbWindow;
+  private JToolBar jtbHelp;
+
+  private JButton metal = new JButton();
+  private JButton motif = new JButton();
+  private JButton windows = new JButton();
+  private JButton tile = new JButton();
+  private JButton cascade = new JButton();
+  private JButton help = new JButton();
+  private JButton preferences = new JButton();
+
+  private ActionListener alNaiveBayes;
+  private ActionListener alPreProcessor;
+  private ActionListener alId3;
+  private ActionListener alEvaluation;
+  private ActionListener alMetaphor;
+  private ActionListener alCnm;
+  private ActionListener alC45;
+  private ActionListener alBayesianLearning;
+  private ActionListener alPreferences;
+  private ActionListener alTbPreferences;
+  private ActionListener alTbView;
+  private ActionListener alTbWindow;
+  private ActionListener alTbHelp;
+  private ActionListener alMetal;
+  private ActionListener alMotif;
+  private ActionListener alWindows;
+  private ActionListener alCascade;
+  private ActionListener alTile;
+  private ActionListener alHelp;
 
   //Construct the frame
   public InvokerMain()
-  {	enableEvents(AWTEvent.WINDOW_EVENT_MASK);
-    try
-    {
-      jbInit();
-    }
-    catch(Exception e)
-    {
-      e.printStackTrace();
-    }
-  }
-  //Component initialization
-  private void jbInit() throws Exception
-  { openDefaultOptions();
-    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.resources.GuiResource");
-    IconController iconController = IconController.getInstance();
+  {
+    openDefaultOptions();
+
     metalIcon = iconController.getMetalIcon();
     motifIcon = iconController.getMotifIcon();
     windowsIcon = iconController.getWindowsIcon();
@@ -90,241 +88,19 @@ public class InvokerMain extends JFrame
     tileIcon = iconController.getTileIcon();
     helpIcon = iconController.getHelpIcon();
     opcaoglobalIcon = iconController.getGlobalOptionIcon();
+
+    createActionListeners();
+    createToolBars();
+    createMenu();
+
     contentPane = (JPanel) this.getContentPane();
-    contentPane.setLayout(borderLayout1);
-    jMenuItem2.setMnemonic(((Character)resource.getObject("id3Mnemonic")).charValue());
-    jMenuItem2.setText(resource.getString("id3Classifier"));
-    jMenuItem2.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jMenuItem2_actionPerformed(e);
-      }
-    });
-    jMenuItem3.setMnemonic(((Character)resource.getObject("naiveBayesMnemonic")).charValue());
-    jMenuItem3.setText(resource.getString("naiveBayesClassifier"));
-    jMenuItem3.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jMenuItem3_actionPerformed(e);
-      }
-    });
-    jMenuItem4.setMnemonic(((Character)resource.getObject("evaluationMnemonic")).charValue());
-    jMenuItem4.setText(resource.getString("evaluation"));
-    jMenuItem4.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jMenuItem4_actionPerformed(e);
-      }
-    });
-    jMenu3.setMnemonic(((Character)resource.getObject("lafMnemonic")).charValue());
-    jMenu3.setText(resource.getString("lookAndFeel"));
-    jMenu4.setMnemonic(((Character)resource.getObject("windowMnemonic")).charValue());
-    jMenu4.setText(resource.getString("window"));
-    jMenu5.setMnemonic(((Character)resource.getObject("helpMnemonic")).charValue());
-    jMenu5.setText(resource.getString("help"));
-    jMenuItem7.setIcon(helpIcon);
-    jMenuItem7.setMnemonic(((Character)resource.getObject("helpTopicsMnemonic")).charValue());
-    jMenuItem7.setText(resource.getString("helpTopics"));
-    jMenuItem7.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jMenuItem7_actionPerformed(e);
-      }
-    });
-    jMenuItem8.setIcon(metalIcon);
-    jMenuItem8.setMnemonic('M');
-    jMenuItem8.setText("Metal");
-    jMenuItem8.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jMenuItem8_actionPerformed(e);
-      }
-    });
-    jMenuItem9.setIcon(motifIcon);
-    jMenuItem9.setMnemonic('O');
-    jMenuItem9.setText("Motif");
-    jMenuItem9.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jMenuItem9_actionPerformed(e);
-      }
-    });
-    jMenuItem10.setIcon(windowsIcon);
-    jMenuItem10.setMnemonic('W');
-    jMenuItem10.setText("Windows");
-    jMenuItem10.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jMenuItem10_actionPerformed(e);
-      }
-    });
-    jMenuItem11.setIcon(cascadeIcon);
-    jMenuItem11.setMnemonic(((Character)resource.getObject("cascadeMnemonic")).charValue());
-    jMenuItem11.setText(resource.getString("cascade"));
-    jMenuItem11.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jMenuItem11_actionPerformed(e);
-      }
-    });
-    jMenuItem12.setIcon(tileIcon);
-    jMenuItem12.setMnemonic(((Character)resource.getObject("tileMnemonic")).charValue());
-    jMenuItem12.setText(resource.getString("tile"));
-    jMenuItem12.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jMenuItem12_actionPerformed(e);
-      }
-    });
-    jMenu1.setMnemonic(((Character)resource.getObject("selectMnemonic")).charValue());
-    jMenuItem1.setMnemonic(((Character)resource.getObject("preprocessorMnemonic")).charValue());
-    //jRadioButtonMenuItem4.setSelected(true);
-    jMenu6.setMnemonic(((Character)resource.getObject("globalOptionsMnemonic")).charValue());
-    jMenu6.setText(resource.getString("globalOptions"));
-    jMenuItem5.setIcon(opcaoglobalIcon);
-    jMenuItem5.setMnemonic(((Character)resource.getObject("preferencesMnemonic")).charValue());
-    jMenuItem5.setText(resource.getString("preferences"));
-    jMenuItem5.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jMenuItem5_actionPerformed(e);
-      }
-    });
-    jMenuItem13.setText("Metaphor");
-    jMenuItem13.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jMenuItem13_actionPerformed(e);
-      }
-    });
-    jMenuItem14.setText("Combinatorial Neural Model");
-    jMenuItem14.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        jMenuItem14_actionPerformed(e);
-      }
-    });
-    jButton7.setIcon(metalIcon);
-    jButton7.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jButton7_actionPerformed(e);
-      }
-    });
-    jButton6.setIcon(motifIcon);
-    jButton6.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jButton6_actionPerformed(e);
-      }
-    });
-    jButton5.setIcon(windowsIcon);
-    jButton5.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jButton5_actionPerformed(e);
-      }
-    });
-    jButton3.setIcon(opcaoglobalIcon);
-    jButton3.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jButton3_actionPerformed(e);
-      }
-    });
-    jButton2.setIcon(cascadeIcon);
-    jButton2.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jButton2_actionPerformed(e);
-      }
-    });
-    jButton1.setIcon(tileIcon);
-    jButton1.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jButton1_actionPerformed(e);
-      }
-    });
-    jButton4.setIcon(helpIcon);
-    jButton4.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jButton4_actionPerformed(e);
-      }
-    });
-    jToolBar1.setBorder(null);
-    jToolBar1.setFloatable(false);
-    jMenuItem6.setText("Bayesian Learning");
-    jMenuItem6.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jMenuItem6_actionPerformed(e);
-      }
-    });
+    contentPane.add(topPanel, BorderLayout.NORTH);
+    topPanel.setBorder(null);
     contentPane.add(new JScrollPane(desktop), BorderLayout.CENTER);
-    this.setJMenuBar(jMenuBar1);
+
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     this.setSize(screenSize);
     this.setTitle("UnBMiner");
-    jMenu1.setText(resource.getString("selectProgram"));
-    jMenuItem1.setText(resource.getString("instancesPreprocessor"));
-    jMenuItem1.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jMenuItem1_actionPerformed(e);
-      }
-    });
-    jMenuBar1.add(jMenu1);
-    jMenuBar1.add(jMenu3);
-    jMenuBar1.add(jMenu6);
-    jMenuBar1.add(jMenu4);
-    jMenuBar1.add(jMenu5);
-    jMenu1.add(jMenuItem1);
-    jMenu1.add(jMenuItem2);
-    jMenu1.add(jMenuItem3);
-    jMenu1.add(jMenuItem4);
-    jMenu1.add(jMenuItem13);
-    jMenu1.add(jMenuItem14);
-    jMenu1.add(jMenuItem6);
-    jMenu5.add(jMenuItem7);
-    jMenu3.add(jMenuItem8);
-    jMenu3.add(jMenuItem9);
-    jMenu3.add(jMenuItem10);
-    jMenu4.add(jMenuItem11);
-    jMenu4.add(jMenuItem12);
-    jMenu4.addSeparator();
-    jMenu6.add(jMenuItem5);
-    contentPane.add(jToolBar1, BorderLayout.NORTH);
-    jToolBar1.add(jButton7, null);
-    jToolBar1.add(jButton6, null);
-    jToolBar1.add(jButton5, null);
-    jToolBar1.addSeparator();
-    jToolBar1.add(jButton3, null);
-    jToolBar1.addSeparator();
-    jToolBar1.add(jButton2, null);
-    jToolBar1.add(jButton1, null);
-    jToolBar1.addSeparator();
-    jToolBar1.add(jButton4, null);
     Options.getInstance().setNumberStatesAllowed(defaultStates);
     Options.getInstance().setConfidenceLimit(confidenceLimit);
     if (defaultLaf.equals("Metal"))
@@ -336,7 +112,9 @@ public class InvokerMain extends JFrame
     else if (defaultLaf.equals("Windows"))
     {   setLnF("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
     }
+
   }
+
   //Overridden so we can exit when window is closed
   protected void processWindowEvent(WindowEvent e)
   {
@@ -395,11 +173,6 @@ public class InvokerMain extends JFrame
     {}
   }
 
-  void jMenuItem1_actionPerformed(ActionEvent e)
-  {   PreprocessorMain editor = new PreprocessorMain();
-      desktop.add(editor);
-  }
-
   private void setLnF(String lnfName)
   {   try
       {   UIManager.setLookAndFeel(lnfName);
@@ -419,130 +192,430 @@ public class InvokerMain extends JFrame
       }
   }
 
-  //se apertar nesse botão o look and feel do metal é acionado
-  void jMenuItem8_actionPerformed(ActionEvent e)
-  {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
-      setLnF("javax.swing.plaf.metal.MetalLookAndFeel");
-      setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-  }
+  /**
+   * Retorna a janela que está selecionada.
+   *
+   * @return janela que está selecionada.
+   */
+   public JInternalFrame getSelectedWindow() {
+     return desktop.getSelectedFrame();
+   }
 
-  //se apertar nesse botão o look and feel do motif é acionado
-  void jMenuItem9_actionPerformed(ActionEvent e)
-  {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
-      setLnF("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
-      setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-  }
+   /**
+    * Adiciona uma nova janela.
+    *
+    * @param newWindow nova janela.
+    */
+    public void addWindow(JInternalFrame newWindow) {
+      desktop.add(newWindow);
+    }
 
-  //se apertar nesse botão o look and feel do windows é acionado
-  void jMenuItem10_actionPerformed(ActionEvent e)
-  {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
-      setLnF("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-      setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-  }
+  /**
+   * Method responsible for creating all ActionListeners
+   * needed.
+   */
+  public void createActionListeners() {
 
-  void jMenuItem11_actionPerformed(ActionEvent e)
-  {   desktop.cascadeFrames();
-  }
+        // create an ActionListener for opening new window for Naive Bayes
+        alNaiveBayes = new ActionListener() {
+                public void actionPerformed(ActionEvent ae) {
+                        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        NaiveBayesMain naive = new NaiveBayesMain();
+                        addWindow(naive);
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+        };
 
-  void jMenuItem12_actionPerformed(ActionEvent e)
-  {   desktop.tileFrames();
-  }
+        // create an ActionListener for opening new window for Naive Bayes
+        alPreferences = new ActionListener() {
+                public void actionPerformed(ActionEvent ae) {
+                        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        GlobalOptions options = new GlobalOptions();
+                        options.setDefaultOptions(Options.getInstance().getNumberStatesAllowed(),Options.getInstance().getConfidenceLimit(),defaultLanguage,defaultLaf);
+                        addWindow(options);
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+        };
 
-  void jMenuItem7_actionPerformed(ActionEvent e)
-  {   try
-      {   FileController.getInstance().openHelp(this);
-      }
-      catch (Exception evt)
-      {   System.out.println("Error= "+evt.getMessage()+" "+this.getClass().getName());
-      }
-  }
+        // create an ActionListener for opening new window for Preprocessor
+        alPreProcessor = new ActionListener() {
+                public void actionPerformed(ActionEvent ae) {
+                        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        PreprocessorMain preprocessor = new PreprocessorMain();
+                        addWindow(preprocessor);
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+        };
 
-  void jMenuItem2_actionPerformed(ActionEvent e)
-  {   DecisionTreeMain id3 = new DecisionTreeMain();
-      desktop.add(id3);
-      /*counterComponent++;
-      JMenuItem jMenuItem = new JMenuItem(counterComponent+" Id3");
-      final int number = desktop.getComponentCount()-1;
-      final JMenuItem aux = jMenuItem;
-      final DecisionTreeMain aux2 = id3;
-      jMenuItem.addActionListener(new java.awt.event.ActionListener()
-      {   public void actionPerformed(ActionEvent e)
-          {   ((DecisionTreeMain)desktop.getComponent(number)).dispose();
-              jMenu4.remove(aux);
-              //System.out.println(number+1+" "+counterComponent);
-              //counterComponent--;
+        // create an ActionListener for opening new window for ID3
+        alId3 = new ActionListener() {
+                public void actionPerformed(ActionEvent ae) {
+                        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        DecisionTreeMain id3 = new DecisionTreeMain();
+                        addWindow(id3);
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+        };
+
+        // create an ActionListener for opening new window for Evaluation
+        alEvaluation = new ActionListener() {
+                public void actionPerformed(ActionEvent ae) {
+                        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        EvaluationMain evaluation = new EvaluationMain();
+                        addWindow(evaluation);
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+        };
+
+        // create an ActionListener for opening new window for Metaphor
+        alMetaphor = new ActionListener() {
+                public void actionPerformed(ActionEvent ae) {
+                        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        MetaphorMain metaphor = new MetaphorMain();
+                        JInternalFrame jif = new JInternalFrame("Metáfora Médica", true, true, true, true);
+                        jif.getContentPane().add(metaphor);
+                        addWindow(jif);
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+        };
+
+        // create an ActionListener for opening new window for Combinatorial Neural Model
+        alCnm = new ActionListener() {
+                public void actionPerformed(ActionEvent ae) {
+                        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        NeuralModelController cnm = new NeuralModelController();
+                        addWindow(cnm.getCnmFrame());
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+        };
+
+        // create an ActionListener for opening new window for Bayesian Learning
+        alBayesianLearning = new ActionListener() {
+                public void actionPerformed(ActionEvent ae) {
+                        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        BayesianLearningMain bayesianLearning = new BayesianLearningMain();
+                        addWindow(bayesianLearning);
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+        };
+
+        // create an ActionListener for showing the View Tool Bar
+        alTbView = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        if (((JCheckBoxMenuItem) e.getSource()).getState()) {
+                                topPanel.add(jtbView);
+                        } else {
+                                topPanel.remove(jtbView);
+                        }
+                        // lay out its subcomponents again after an container has been
+                        // added, removed or modified
+                        validate();
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+
+        };
+
+        // create an ActionListener for showing the View Tool Bar
+        alTbPreferences = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        if (((JCheckBoxMenuItem) e.getSource()).getState()) {
+                                topPanel.add(jtbPreferences);
+                        } else {
+                                topPanel.remove(jtbPreferences);
+                        }
+                        // lay out its subcomponents again after an container has been
+                        // added, removed or modified
+                        validate();
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+
+        };
+
+        // create an ActionListener for showing the Window Tool Bar
+        alTbWindow = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        if (((JCheckBoxMenuItem) e.getSource()).getState()) {
+                                topPanel.add(jtbWindow);
+                        } else {
+                                topPanel.remove(jtbWindow);
+                        }
+                        // lay out its subcomponents again after an container has been
+                        // added, removed or modified
+                        validate();
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+
+        };
+
+        // create an ActionListener for showing the Help Tool Bar
+        alTbHelp = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        if (((JCheckBoxMenuItem) e.getSource()).getState()) {
+                                topPanel.add(jtbHelp);
+                        } else {
+                                topPanel.remove(jtbHelp);
+                        }
+                        // lay out its subcomponents again after an container has been
+                        // added, removed or modified
+                        validate();
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+
+        };
+
+        // create an ActionListener for choosing Metal Look and Feel
+        alMetal = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        setLnF("javax.swing.plaf.metal.MetalLookAndFeel");
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+
+        };
+
+        // create an ActionListener for choosing Motif Look and Feel
+        alMotif = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        setLnF("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+
+        };
+
+        // create an ActionListener for choosing Windows Look and Feel
+        alWindows = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        setLnF("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+
+        };
+
+        // create an ActionListener for ordering windows as cascade
+        alCascade = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                        desktop.cascadeFrames();
+                }
+        };
+
+        // create an ActionListener for ordering windows as tile
+        alTile = new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                        desktop.tileFrames();
+                }
+        };
+
+        // create an ActionListener for opening the Help window
+        alHelp = new ActionListener()
+        {
+          public void actionPerformed(ActionEvent ae)
+          {
+            setCursor(new Cursor(Cursor.WAIT_CURSOR));
+            try
+            {
+              FileController.getInstance().openHelp(reference);
+            }
+            catch (Exception evt)
+            {
+              System.out.println("Error= "+evt.getMessage()+" "+this.getClass().getName());
+            }
+            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
           }
-      });
-      jMenu4.add(jMenuItem);*/
+
+        };
+
+      }
+
+      /**
+       * Method responsible for creating the menu used in this
+       * class, JFrame.
+       */
+      public void createMenu() {
+        JMenuBar menu = new JMenuBar();
+
+        // create menus and set their mnemonic
+        JMenu programMenu = new JMenu(resource.getString("selectProgram"));
+        JMenu lafMenu = new JMenu(resource.getString("lookAndFeel"));
+        JMenu viewMenu = new JMenu("View");
+        JMenu tbMenu = new JMenu("tbMenu");
+        JMenu preferencesMenu = new JMenu(resource.getString("globalOptions"));
+        JMenu windowMenu = new JMenu(resource.getString("window"));
+        JMenu helpMenu = new JMenu(resource.getString("help"));
+
+        programMenu.setMnemonic(((Character)resource.getObject("selectMnemonic")).charValue());
+        lafMenu.setMnemonic(((Character)resource.getObject("lafMnemonic")).charValue());
+        preferencesMenu.setMnemonic(((Character)resource.getObject("globalOptionsMnemonic")).charValue());
+        //////////
+        viewMenu.setMnemonic('V');
+        ///////////
+        windowMenu.setMnemonic(((Character)resource.getObject("windowMnemonic")).charValue());
+        helpMenu.setMnemonic(((Character)resource.getObject("helpMnemonic")).charValue());
+
+        // create menu items, set their mnemonic and their key accelerator
+        JMenuItem preprocessorItem = new JMenuItem(resource.getString("instancesPreprocessor")/*, icon*/ );
+        JMenuItem id3Item = new JMenuItem(resource.getString("id3Classifier")/*, icon*/ );
+        JMenuItem naiveBayesItem = new JMenuItem(resource.getString("naiveBayesClassifier")/*, icon*/ );
+        JMenuItem evaluationItem = new JMenuItem(resource.getString("evaluation")/*, icon*/ );
+        JMenuItem optionsItem = new JMenuItem(resource.getString("preferences"),opcaoglobalIcon);
+        /////////////
+        JMenuItem metaphorItem = new JMenuItem("Metaphor"/*, icon*/ );
+        JMenuItem cnmItem = new JMenuItem("Combinatorial Neural Model"/*, icon*/ );
+        JMenuItem c45Item = new JMenuItem("C4.5"/*, icon*/ );
+        JMenuItem bayesianItem = new JMenuItem("Bayesian Learning"/*, icon*/ );
+        ///////////
+        JMenuItem metalItem = new JMenuItem("Metal",metalIcon);
+        JMenuItem motifItem = new JMenuItem("Motif",motifIcon);
+        JMenuItem windowsItem = new JMenuItem("Windows",windowsIcon);
+        JMenuItem cascadeItem = new JMenuItem(resource.getString("cascade"),cascadeIcon);
+        JMenuItem tileItem = new JMenuItem(resource.getString("tile"),tileIcon);
+        JMenuItem helpItem = new JMenuItem(resource.getString("helpTopics"),helpIcon);
+
+        JMenuItem tbPreferences = new JCheckBoxMenuItem("tbPreferences", true);
+        JMenuItem tbView = new JCheckBoxMenuItem("tbView", true);
+        JMenuItem tbWindow = new JCheckBoxMenuItem("tbWindow", true);
+        JMenuItem tbHelp = new JCheckBoxMenuItem("tbHelp", true);
+
+        preprocessorItem.setMnemonic(((Character)resource.getObject("preprocessorMnemonic")).charValue());
+        id3Item.setMnemonic(((Character)resource.getObject("id3Mnemonic")).charValue());
+        naiveBayesItem.setMnemonic(((Character)resource.getObject("naiveBayesMnemonic")).charValue());
+        evaluationItem.setMnemonic(((Character)resource.getObject("evaluationMnemonic")).charValue());
+        optionsItem.setMnemonic(((Character)resource.getObject("preferencesMnemonic")).charValue());
+        ///////////////
+        metaphorItem.setMnemonic('M');
+        cnmItem.setMnemonic('N');
+        c45Item.setMnemonic('C');
+        bayesianItem.setMnemonic('B');
+        //////////////
+        metalItem.setMnemonic('M');
+        motifItem.setMnemonic('O');
+        windowsItem.setMnemonic('W');
+        cascadeItem.setMnemonic(((Character)resource.getObject("cascadeMnemonic")).charValue());
+        tileItem.setMnemonic(((Character)resource.getObject("tileMnemonic")).charValue());
+        helpItem.setMnemonic(((Character)resource.getObject("helpTopicsMnemonic")).charValue());
+
+/*      newBN.setAccelerator(
+                KeyStroke.getKeyStroke(resource.getString("newItemMn").charAt(0), Event.CTRL_MASK, false));
+        openItem.setAccelerator(
+                KeyStroke.getKeyStroke(resource.getString("openItemMn").charAt(0), Event.CTRL_MASK, false));
+        saveItem.setAccelerator(
+                KeyStroke.getKeyStroke(resource.getString("saveItemMn").charAt(0), Event.CTRL_MASK, false));
+        learningItem.setAccelerator(
+                KeyStroke.getKeyStroke(resource.getString("learningItemMn").charAt(0), Event.CTRL_MASK, false));
+        helpItem.setAccelerator(
+                KeyStroke.getKeyStroke(resource.getString("helpItemMn").charAt(0), Event.CTRL_MASK, false));*/
+
+        // add ActionListener to all menu items
+        tbPreferences.addActionListener(alTbPreferences);
+        tbView.addActionListener(alTbView);
+        tbWindow.addActionListener(alTbWindow);
+        tbHelp.addActionListener(alTbHelp);
+        preprocessorItem.addActionListener(alPreProcessor);
+        id3Item.addActionListener(alId3);
+        c45Item.addActionListener(alC45);
+        naiveBayesItem.addActionListener(alNaiveBayes);
+        evaluationItem.addActionListener(alEvaluation);
+        metaphorItem.addActionListener(alMetaphor);
+        cnmItem.addActionListener(alCnm);
+        c45Item.addActionListener(alC45);
+        bayesianItem.addActionListener(alBayesianLearning);
+        metalItem.addActionListener(alMetal);
+        motifItem.addActionListener(alMotif);
+        windowsItem.addActionListener(alWindows);
+        cascadeItem.addActionListener(alCascade);
+        tileItem.addActionListener(alTile);
+        helpItem.addActionListener(alHelp);
+        optionsItem.addActionListener(alPreferences);
+
+        // add menu items to their respective menu
+        programMenu.add(preprocessorItem);
+        programMenu.add(id3Item);
+        programMenu.add(naiveBayesItem);
+        programMenu.add(evaluationItem);
+        programMenu.add(metaphorItem);
+        programMenu.add(cnmItem);
+        programMenu.add(c45Item);
+        programMenu.add(bayesianItem);
+        lafMenu.add(metalItem);
+        lafMenu.add(motifItem);
+        lafMenu.add(windowsItem);
+        tbMenu.add(tbView);
+        tbMenu.add(tbPreferences);
+        tbMenu.add(tbWindow);
+        tbMenu.add(tbHelp);
+        viewMenu.add(tbMenu);
+        viewMenu.addSeparator();
+        viewMenu.add(lafMenu);
+        windowMenu.add(cascadeItem);
+        windowMenu.add(tileItem);
+        helpMenu.add(helpItem);
+        preferencesMenu.add(optionsItem);
+
+        menu.add(programMenu);
+        menu.add(viewMenu);
+        menu.add(preferencesMenu);
+        menu.add(windowMenu);
+        menu.add(helpMenu);
+
+        this.setJMenuBar(menu);
   }
 
-  void jMenuItem3_actionPerformed(ActionEvent e)
-  {   NaiveBayesMain naive = new NaiveBayesMain();
-      desktop.add(naive);
+  /**
+ * Call the method for creating the needed buttons and then create the
+ * tool bars and add the buttons to them and finally to the topPanel.
+ */
+public void createToolBars() {
+
+        createButtons();
+
+        // create tool bars
+        jtbView = new JToolBar();
+        jtbView.setFloatable(false);
+        jtbPreferences = new JToolBar();
+        jtbPreferences.setFloatable(false);
+        jtbWindow = new JToolBar();
+        jtbWindow.setFloatable(false);
+        jtbHelp = new JToolBar();
+        jtbHelp.setFloatable(false);
+
+        // add their buttons
+        jtbView.add(metal);
+        jtbView.add(motif);
+        jtbView.add(windows);
+        jtbPreferences.add(preferences);
+        jtbWindow.add(cascade);
+        jtbWindow.add(tile);
+        jtbHelp.add(help);
+
+        // add the tool bars to the topPanel
+        topPanel.add(jtbView);
+        topPanel.add(jtbPreferences);
+        topPanel.add(jtbWindow);
+        topPanel.add(jtbHelp);
+}
+
+  /**
+   * Create the needed buttons and add their respectinve tool tip.
+   */
+  public void createButtons() {
+    createButton(metal,metalIcon,"",alMetal);
+    createButton(motif,motifIcon,"",alMotif);
+    createButton(windows,windowsIcon,"",alWindows);
+    createButton(tile,tileIcon,"",alTile);
+    createButton(cascade,cascadeIcon,"",alCascade);
+    createButton(help,helpIcon,"",alHelp);
+    createButton(preferences,opcaoglobalIcon,"",alPreferences);
   }
 
-  void jRadioButtonMenuItem3_actionPerformed(ActionEvent e)
-  {   Locale.setDefault(new Locale("en",""));
-  }
-
-  void jRadioButtonMenuItem4_actionPerformed(ActionEvent e)
-  {   Locale.setDefault(new Locale("pt",""));
-  }
-
-  void jMenuItem4_actionPerformed(ActionEvent e)
-  {   EvaluationMain evaluation = new EvaluationMain();
-      desktop.add(evaluation);
-  }
-
-  void jMenuItem5_actionPerformed(ActionEvent e)
-  {   GlobalOptions options = new GlobalOptions();
-      options.setDefaultOptions(Options.getInstance().getNumberStatesAllowed(),Options.getInstance().getConfidenceLimit(),defaultLanguage,defaultLaf);
-      desktop.add(options);
-  }
-
-  void jMenuItem13_actionPerformed(ActionEvent e)
-  {   MetaphorMain metaphor = new MetaphorMain();
-      JInternalFrame jif = new JInternalFrame("Metáfora Médica", true, true, true, true);
-      jif.getContentPane().add(metaphor);
-      desktop.add(jif);
-  }
-
-  void jMenuItem14_actionPerformed(ActionEvent e) {
-      NeuralModelController cnm = new NeuralModelController();
-      desktop.add(cnm.getCnmFrame());
-  }
-
-  void jButton7_actionPerformed(ActionEvent e)
-  {   jMenuItem8_actionPerformed(e);
-  }
-
-  void jButton6_actionPerformed(ActionEvent e)
-  {   jMenuItem9_actionPerformed(e);
-  }
-
-  void jButton5_actionPerformed(ActionEvent e)
-  {   jMenuItem10_actionPerformed(e);
-  }
-
-  void jButton3_actionPerformed(ActionEvent e)
-  {   jMenuItem5_actionPerformed(e);
-  }
-
-  void jButton2_actionPerformed(ActionEvent e)
-  {   desktop.cascadeFrames();
-  }
-
-  void jButton1_actionPerformed(ActionEvent e)
-  {   desktop.tileFrames();
-  }
-
-  void jButton4_actionPerformed(ActionEvent e)
-  {   jMenuItem7_actionPerformed(e);
-  }
-
-  void jMenuItem6_actionPerformed(ActionEvent e)
+  private void createButton(JButton button,ImageIcon icon,String toolTip,ActionListener al)
   {
-    BayesianLearningMain bayesianLearning = new BayesianLearningMain();
-    desktop.add(bayesianLearning);
+    button.setIcon(icon);
+    button.setToolTipText(toolTip);
+    button.addActionListener(al);
   }
 }

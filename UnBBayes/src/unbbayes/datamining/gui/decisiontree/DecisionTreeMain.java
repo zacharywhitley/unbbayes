@@ -271,7 +271,10 @@ public class DecisionTreeMain extends JInternalFrame
 
   private void openFile(File selectedFile)
   {   try
-      {   inst = FileController.getInstance().getInstanceSet(selectedFile,this);
+      {
+        inst = FileController.getInstance().getInstanceSet(selectedFile,this);
+        if (inst!=null)
+        {
           boolean bool = inst.checkNumericAttributes();
           if (bool == true)
               throw new Exception(resource.getString("numericAttributesException"));
@@ -287,6 +290,11 @@ public class DecisionTreeMain extends JInternalFrame
           learnButton.setEnabled(true);
           jMenuFileBuild.setEnabled(true);
           statusBar.setText(resource.getString("fileOpenedSuccessfully"));
+        }
+        else
+        {
+          statusBar.setText("Operação cancelada");
+        }
       }
       catch (NullPointerException npe)
       {   statusBar.setText(resource.getString("nullPointerException") + selectedFile.getName());
