@@ -1,5 +1,6 @@
 package unbbayes.prs.msbn;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.Network;
@@ -13,8 +14,22 @@ import unbbayes.prs.Network;
  * Window>Preferences>Java>Code Generation.
  */
 public class SubNetwork extends Network {
-	protected List adjacentes;
-	protected SubNetwork pai;
+	protected List adjacents;
+	protected SubNetwork parent;
+	
+	public SubNetwork() {
+		super();
+		adjacents = new ArrayList();
+	}
+		
+	
+	public void addAdjacent(SubNetwork net) {
+		adjacents.add(net);			
+	}
+	
+	public void setParent(SubNetwork parent) {
+		this.parent = parent;		
+	}	
 	
 	public void compile() {
 		distributedMoralization();		
