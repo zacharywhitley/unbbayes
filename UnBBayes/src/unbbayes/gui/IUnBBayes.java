@@ -54,6 +54,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import unbbayes.aprendizagem.ConstructionController;
 import unbbayes.controller.*;
+import unbbayes.monteCarlo.controlador.ControladorPrincipal;
 
 /**
  *  Essa classe extende o <code>JFrame</code> e é responsável pela interface
@@ -106,6 +107,8 @@ public class IUnBBayes extends JFrame {
 	private ActionListener alTile;
 	private ActionListener alHelp;
 	private ActionListener alAbout;
+	private ActionListener alMonteCarlo;
+	
         private JFileChooser chooser;
         private FileController fileController;
 
@@ -313,6 +316,12 @@ public class IUnBBayes extends JFrame {
                                         fileController.setCurrentDirectory(chooser.getCurrentDirectory());
 					new ConstructionController(file, controller);
 				}
+			}
+		};
+		
+		alMonteCarlo = new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				ControladorPrincipal cp = new ControladorPrincipal();				
 			}
 		};
 
@@ -526,6 +535,8 @@ public class IUnBBayes extends JFrame {
 		JMenuItem learningItem =
 			new JMenuItem(
 				resource.getString("learningItem"),iconController.getCompileIcon());
+		JMenuItem monteCarloItem = 
+			new JMenuItem("Monte Carlo");
 		JMenuItem cascadeItem =
 			new JMenuItem(
 				resource.getString("cascadeItem"),iconController.getCascadeIcon());
@@ -581,6 +592,7 @@ public class IUnBBayes extends JFrame {
 		cascadeItem.addActionListener(alCascade);
 		tileItem.addActionListener(alTile);
 		helpItem.addActionListener(alHelp);
+		monteCarloItem.addActionListener(alMonteCarlo);
 		// aboutItem.addActionListener(alAbout);
 
 		// add menu items to their respective menu
@@ -603,6 +615,7 @@ public class IUnBBayes extends JFrame {
 		viewMenu.addSeparator();
 		viewMenu.add(lafMenu);
 		toolsMenu.add(learningItem);
+		toolsMenu.add(monteCarloItem);
 		windowMenu.add(cascadeItem);
 		windowMenu.add(tileItem);
 		helpMenu.add(helpItem);
