@@ -11,8 +11,9 @@ package unbbayes.datamining.datamanipulation.neuralmodel.entities;
 
 public class Arc {
   protected int accumulator;
-  protected int weigth;
-  protected float reliability;
+  protected int netWeigth;
+  protected float confidence;
+  protected float support;
   protected Neuron combinationNeuron;
 
   public Arc(Neuron combinationNeuron){
@@ -29,19 +30,31 @@ public class Arc {
     return combinationNeuron;
   }
 
-  public float getReliability(){
-    return reliability;
+  public float getConfidence(){
+    return confidence;
   }
 
-  public int getWeigth(){
-    return weigth;
+  public float getSupport(){
+    return support;
   }
 
   public int getAccumulator(){
     return accumulator;
   }
 
-  public void setWeight(int weigth){
-    this.weigth = weigth;
+  public int getNetWeigth(){
+    return netWeigth;
+  }
+
+  public void setNetWeight(int netWeigth){
+    this.netWeigth = netWeigth;
+  }
+
+  public void setSupport(float support){
+    this.support = support;
+  }
+
+  public void setConfidence(float confidence){
+    this.confidence = confidence;
   }
 }

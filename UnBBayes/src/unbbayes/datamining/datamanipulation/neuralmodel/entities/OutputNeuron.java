@@ -56,58 +56,42 @@ public class OutputNeuron extends Neuron{
 
     while(outputEnum.hasMoreElements()){
       tempArc = (Arc)outputEnum.nextElement();
-      if(tempArc.weigth < threshold){
+      if(tempArc.netWeigth < threshold){
         tempArc.combinationNeuron.prunning(this.key);
         combinationsList.remove(tempArc.combinationNeuron.key);
       }
     }
   }
 
-  public int maxAccumulator(){
-    Enumeration outputEnum = combinationsList.elements();
+  public void calculateSupport(int numOfInstances){
+    Enumeration outputEnum;
     Arc tempArc;
-    int maxAccumulator = 0;
 
+    outputEnum = combinationsList.elements();
     while(outputEnum.hasMoreElements()){
       tempArc = (Arc)outputEnum.nextElement();
-      maxAccumulator = Math.max(maxAccumulator, tempArc.accumulator);
+      tempArc.support = ((float)tempArc.accumulator / (float)numOfInstances) * 100;
     }
-    return maxAccumulator;
   }
 
-  public int minAccumulator(){
+/*  public void calculateConfidence(){
     Enumeration outputEnum = combinationsList.elements();
     Arc tempArc;
-    int minAccumulator = 0;
+    long netWeigthSum = 0;
 
     while(outputEnum.hasMoreElements()){
       tempArc = (Arc)outputEnum.nextElement();
-      minAccumulator = Math.min(minAccumulator, tempArc.accumulator);
-    }
-    return minAccumulator;
-  }
-
-  public void calculateReliability(){
-    Enumeration outputEnum = combinationsList.elements();
-    Arc tempArc;
-    long accumulatorsSum = 0;
-
-    while(outputEnum.hasMoreElements()){
-      tempArc = (Arc)outputEnum.nextElement();
-      if(tempArc.accumulator > 0){
-        accumulatorsSum = accumulatorsSum + tempArc.accumulator;
+      if(tempArc.netWeigth > 0){
+        netWeigthSum = netWeigthSum + tempArc.netWeigth;
       }
     }
 
     outputEnum = combinationsList.elements();
     while(outputEnum.hasMoreElements()){
       tempArc = (Arc)outputEnum.nextElement();
-      tempArc.reliability = tempArc.accumulator / accumulatorsSum;
+      if(tempArc.netWeigth > 0){
+        tempArc.confidence = ((float)tempArc.netWeigth / (float)netWeigthSum) * 100;
+      }
     }
-  }
-
-/*  public void setSignal(int signal, Integer key){
-    ((Arc)combinationsList.get(key)).
-  }
-*/
+  }*/
 }

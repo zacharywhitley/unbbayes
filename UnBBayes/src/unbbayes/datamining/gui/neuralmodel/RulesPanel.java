@@ -8,6 +8,7 @@ import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.datamanipulation.neuralmodel.*;
 import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
 //import unbbayes.datamining.datamanipulation.neuralmodel.util.*;
+import java.text.*;
 
 public class RulesPanel extends JPanel {
   private BorderLayout borderLayout1 = new BorderLayout();
@@ -32,15 +33,15 @@ public class RulesPanel extends JPanel {
     longValues[0] = new Integer(999);
     longValues[1] = new String();
     longValues[2] = new String();
-    longValues[3] = new String("100,00%");
+    longValues[3] = new String("100,0%");
     longValues[4] = new Integer(999);
-    longValues[5] = new String("100,00%");
+    longValues[5] = new String("100,0%");
   }
 
-  public void setRulesPanel(CombinatorialNetwork combinatorialNetwork, InstanceSet instanceSet){
+  public void setRulesPanel(CombinatorialNetwork combinatorialNetwork, InstanceSet instanceSet, int confidence, int support){
     this.combinatorialNetwork = combinatorialNetwork;
     this.instanceSet = instanceSet;
-    this.createTableLines();
+    this.createTableLines(support, confidence);
     RulesTableModel rulesTableModel = new RulesTableModel();
 //    TableSorter sorter = new TableSorter(rulesTableModel);   //adicionada
 
@@ -52,7 +53,7 @@ public class RulesPanel extends JPanel {
     jScrollPane1.getViewport().add(tableRules, null);
   }
 
-  private void createTableLines(){
+  private void createTableLines(int minSupport, int minConfidence){
     Arc tempArc;                                           // arco temporário
     Attribute att;
     Enumeration outputEnum = combinatorialNetwork.getOutputLayer().elements();  // enumeraçao da camada de saida
@@ -60,9 +61,9 @@ public class RulesPanel extends JPanel {
     TableLine tableLine;                                   // linha da tabela de regras
     InputNeuron[] inputList;                               // lista de neuronios de entrada
     OutputNeuron tempOutputNeuron;                         // neuronio de saida temporário
-    String inputCell, outputCell;
-    Integer numberOfCases, reliability, support;
-
+    String inputCell, outputCell, confidence, support;
+    Integer numberOfCases;
+    DecimalFormat numFormat = new DecimalFormat("##0.0");
 
     while(outputEnum.hasMoreElements()){                   // para todos os neuronios de saida
       tempOutputNeuron = (OutputNeuron)outputEnum.nextElement();
@@ -70,46 +71,49 @@ public class RulesPanel extends JPanel {
 
       while(arcEnum.hasMoreElements()){                    // para todos os arcos dos neuronios de saida
         tempArc = (Arc)arcEnum.nextElement();
-        if(tempArc.getCombinationNeuron() instanceof InputNeuron){ // se o neuronio de combinaçao for de entrada
-          inputList = new InputNeuron[1];
-          inputList[0] = (InputNeuron)tempArc.getCombinationNeuron();
-        } else {                                            //se o neuronio de combinaçao for combinatorial
-          inputList = ((CombinatorialNeuron)tempArc.getCombinationNeuron()).getInputList();
-        }
+        if(tempArc.getConfidence() > minConfidence && tempArc.getSupport() > minSupport && tempArc.getAccumulator() > 1){
 
-        //constroi a string da entrada "SE"
-        inputCell = new String("SE ");
-        for(int i=0; i<inputList.length; i++){
-          att = instanceSet.getAttribute((inputList[i]).getAttributeIndex());
-          inputCell = inputCell + att.getAttributeName() + " = " + att.value(inputList[i].getValue()) + " ";
-          if(i < (inputList.length - 1)){
-            inputCell = inputCell + " E ";
+          if(tempArc.getCombinationNeuron() instanceof InputNeuron){ // se o neuronio de combinaçao for de entrada
+            inputList = new InputNeuron[1];
+            inputList[0] = (InputNeuron)tempArc.getCombinationNeuron();
+          } else {                                            //se o neuronio de combinaçao for combinatorial
+            inputList = ((CombinatorialNeuron)tempArc.getCombinationNeuron()).getInputList();
           }
+
+          //constroi a string da entrada "SE"
+          inputCell = new String("SE ");
+          for(int i=0; i<inputList.length; i++){
+            att = instanceSet.getAttribute((inputList[i]).getAttributeIndex());
+            inputCell = inputCell + att.getAttributeName() + " = " + att.value(inputList[i].getValue()) + " ";
+            if(i < (inputList.length - 1)){
+              inputCell = inputCell + " E ";
+            }
+          }
+          if(((String)longValues[1]).length() < inputCell.length()){  //atualiza o array que contém a maior string formada
+            longValues[1] = inputCell;
+          }
+
+          //constroi a string de saida "ENTAO"
+          outputCell = new String("ENTÃO ");
+          att = instanceSet.getClassAttribute();
+          outputCell = outputCell + att.getAttributeName() + " = " + att.value(tempOutputNeuron.getValue());
+
+          if(((String)longValues[2]).length() < outputCell.length()){  //atualiza o array que contém a maior string formada
+            longValues[2] = outputCell;
+          }
+
+          // constroi o valor do numero de casos
+          numberOfCases = new Integer(tempArc.getAccumulator());
+
+          // constroi o valor da confiança
+          confidence = new String(numFormat.format(tempArc.getConfidence()) + "%");
+
+          // constroi o valor do suporte
+          support = new String(numFormat.format(tempArc.getSupport()) + "%");
+
+          tableLine = new TableLine(inputCell, outputCell, confidence, numberOfCases, support);
+          tableLinesArray.add(tableLine);
         }
-        if(((String)longValues[1]).length() < inputCell.length()){  //atualiza o array que contém a maior string formada
-          longValues[1] = inputCell;
-        }
-
-        //constroi a string de saida "ENTAO"
-        outputCell = new String("ENTÃO ");
-        att = instanceSet.getClassAttribute();
-        outputCell = outputCell + att.getAttributeName() + " = " + att.value(tempOutputNeuron.getValue());
-
-        if(((String)longValues[2]).length() < outputCell.length()){  //atualiza o array que contém a maior string formada
-          longValues[2] = outputCell;
-        }
-
-        // constroi o valor do suporte
-        numberOfCases = new Integer(tempArc.getAccumulator());
-
-        // constroi o valor da confiança
-        reliability = new Integer(0);
-
-        // constroi o valor do suporte
-        support = new Integer(tempArc.getWeigth());
-
-        tableLine = new TableLine(inputCell, outputCell, reliability, numberOfCases, support);
-        tableLinesArray.add(tableLine);
       }
     }
   }
@@ -123,7 +127,6 @@ public class RulesPanel extends JPanel {
     Component component = null;
     int headerWidth = 0;
     int cellWidth = 0;
-//    Object[] longValues = tableModel.longValues;
     TableCellRenderer headerRenderer = table.getTableHeader().getDefaultRenderer();
 
     for (int i=0; i<6; i++) {
@@ -167,13 +170,13 @@ public class RulesPanel extends JPanel {
         case 2:
           return tableLine.output;
         case 3:
-          return null;
-//          return tableLine.reliability;
+          return tableLine.confidence;
         case 4:
           return tableLine.numberOfCases;
         case 5:
           return tableLine.support;
-        default: return null;
+        default:
+          return null;
       }
     }
   }
@@ -181,14 +184,14 @@ public class RulesPanel extends JPanel {
   class TableLine{
     String input;
     String output;
-    Integer reliability;
+    String confidence;
     Integer numberOfCases;
-    Integer support;
+    String support;
 
-    public TableLine(String input, String output, Integer reliability, Integer numberOfCases, Integer support){
+    public TableLine(String input, String output, String confidence, Integer numberOfCases, String support){
       this.input = input;
       this.output = output;
-      this.reliability = reliability;
+      this.confidence = confidence;
       this.numberOfCases = numberOfCases;
       this.support = support;
     }

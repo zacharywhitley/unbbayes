@@ -17,20 +17,20 @@ public class CombinatorialNetworkConstructor{
   private Hashtable inputLayer = new Hashtable();
   private Hashtable combinatorialLayer = new Hashtable();
   private Hashtable outputLayer = new Hashtable();
-/**/  private Hashtable combinationsTable = new Hashtable();
   private InstanceSet instanceSet;
 
   public CombinatorialNetworkConstructor(InstanceSet instanceSet) {
     this.instanceSet = instanceSet;
   }
 
-  public CombinatorialNetwork generateNetwork(/*int threshold, int reliability, int maxOrder*/){
+  public CombinatorialNetwork generateNetwork(int maxOrder){
     Instance instance;
     Enumeration instanceEnum = instanceSet.enumerateInstances();
     Enumeration outputEnum;
+    OutputNeuron output;
     int attributeNum = instanceSet.numAttributes();
     int classIndex = instanceSet.getClassIndex();
-    int maxOrder = 3;  //retirar isso, maxOrder será passado por parametro
+    int numOfInstances = instanceSet.numWeightedInstances();
 
     while(instanceEnum.hasMoreElements()){
       instance = (Instance)instanceEnum.nextElement();
@@ -41,13 +41,12 @@ public class CombinatorialNetworkConstructor{
     }
 
     punishment();
-//    prunning(/*threshold*/1);   //modificar, passar o threshold definido pelo usuario.
 
     outputEnum = outputLayer.elements();
-    OutputNeuron output;
     while(outputEnum.hasMoreElements()){
       output = (OutputNeuron)outputEnum.nextElement();
-      output.calculateReliability();
+      output.calculateSupport(numOfInstances);   // da pra fazer no método punishment
+//      output.calculateConfidence();
     }
 
     return new CombinatorialNetwork(inputLayer, combinatorialLayer, outputLayer);
@@ -166,9 +165,7 @@ public class CombinatorialNetworkConstructor{
         if(tempSize < maxOrder){                              //se tamanho da combinação < ordem máxima
           tempInputArray = new InputNeuron[tempSize + 1];     //cria nova combinação
           tempInputArray[tempSize] = inputArray[inputNum];    //adiciona o neuronio de entrada atual
-          for(int k=0; k<tempSize; k++){                      //copia o resto da combinação atual
-            tempInputArray[k] = temp[k];
-          }
+          System.arraycopy(temp, 0, tempInputArray, 0, tempSize); //copia o resto da combinação atual
           combinations.add(tempInputArray);                   //adiciona nova combinação no array de combinacoes
         }
       }
@@ -203,7 +200,10 @@ public class CombinatorialNetworkConstructor{
             sum += ((Arc)outputs[j].get(tempKey)).getAccumulator();
           }
         }
-        arc.setWeight(arc.getAccumulator() - sum);
+        arc.setNetWeight(arc.getAccumulator() - sum);       //netWeight
+
+        arc.setConfidence((float)arc.getAccumulator() * 100/(float)(sum + arc.getAccumulator())); //confidence
+
         sum = 0;
       }
     }

@@ -47,7 +47,7 @@ public class NeuralModelMain extends JInternalFrame{
   private AttributePanel attributePanel;
   private RulesPanel rulesPanel = new RulesPanel();
   private CombinatorialNetwork combinatorialNetwork;
-  private InstanceSet inst;
+  private InstanceSet instanceSet;
 
   /**Construct the frame*/
   public NeuralModelMain(){
@@ -80,7 +80,7 @@ public class NeuralModelMain extends JInternalFrame{
       }
     });
     saveButton.setEnabled(false);
-    saveButton.setToolTipText("Save file"/*resource.getString("saveFileTooltip")*/);
+//    saveButton.setToolTipText("Save file"/*resource.getString("saveFileTooltip")*/);
     saveButton.setIcon(saveIcon);
     saveButton.addActionListener(new java.awt.event.ActionListener(){
       public void actionPerformed(ActionEvent e){
@@ -88,14 +88,14 @@ public class NeuralModelMain extends JInternalFrame{
       }
     });
     learnButton.setEnabled(false);
-    learnButton.setToolTipText("Learn Data"/*resource.getString("learnDataTooltip")*/);
+//    learnButton.setToolTipText("Learn Data"/*resource.getString("learnDataTooltip")*/);
     learnButton.setIcon(compileIcon);
     learnButton.addActionListener(new java.awt.event.ActionListener(){
       public void actionPerformed(ActionEvent e){
         learnButton_actionPerformed(e);
       }
     });
-    helpButton.setToolTipText("Help File"/*resource.getString("helpFileTooltip")*/);
+//    helpButton.setToolTipText("Help File"/*resource.getString("helpFileTooltip")*/);
     helpButton.setIcon(helpIcon);
     helpButton.addActionListener(new java.awt.event.ActionListener(){
       public void actionPerformed(ActionEvent e){
@@ -105,7 +105,7 @@ public class NeuralModelMain extends JInternalFrame{
     jToolBar1.setFloatable(false);
     jPanel2.setLayout(borderLayout5);
     jPanel3.setLayout(borderLayout6);
-    statusBar.setText(/*resource.getString*/("welcome"));
+    statusBar.setText("Bem vindo."/*resource.getString("welcome")*/);
     jPanel2.setBorder(titledBorder1);
     tabbedPaneRules.setLayout(borderLayout2);
     contentPane.add(jToolBar1, BorderLayout.NORTH);
@@ -116,8 +116,8 @@ public class NeuralModelMain extends JInternalFrame{
     contentPane.add(jPanel3, BorderLayout.CENTER);
     jPanel3.add(jTabbedPane1,BorderLayout.CENTER);
     attributePanel = new AttributePanel();
-    jTabbedPane1.add(attributePanel, /*resource.getString*/("attributes2"));
-    jTabbedPane1.add(tabbedPaneRules,  "Rules");
+    jTabbedPane1.add(attributePanel, /*resource.getString*/( "Atributos"));
+    jTabbedPane1.add(tabbedPaneRules,   "Regras");
     tabbedPaneRules.add(rulesPanel, BorderLayout.CENTER);
     contentPane.add(jPanel2,  BorderLayout.SOUTH);
     jPanel2.add(statusBar,  BorderLayout.CENTER);
@@ -134,30 +134,23 @@ public class NeuralModelMain extends JInternalFrame{
   }
 
   void learnButton_actionPerformed(ActionEvent e){
-    int threshold;
-    int reliability;
+    int maxOrder;
+    int confidence;
+    int support;
 
-    if (inst != null){
+    if (instanceSet != null){
       thresholdPanel = new ThresholdPanel();
       paneThreshold.showInternalMessageDialog(this, thresholdPanel, "CNM", JOptionPane.QUESTION_MESSAGE);
-      threshold = thresholdPanel.getThreshold();
-      reliability = thresholdPanel.getReliability();
-
-      while(threshold > inst.numAttributes() || threshold < 1){
-        thresholdPanel = new ThresholdPanel();
-        paneThreshold.showInternalMessageDialog(this, "Ordem máxima inválida!", "CNM", JOptionPane.ERROR_MESSAGE);
-        paneThreshold.showInternalMessageDialog(this, thresholdPanel, "CNM", JOptionPane.QUESTION_MESSAGE);
-        threshold = thresholdPanel.getThreshold();
-        reliability = thresholdPanel.getReliability();
-      }//nao ta fazendo nada com esses valores por enqunato.
-
+      maxOrder = thresholdPanel.getMaxOrder();
+      confidence = thresholdPanel.getConfidence();
+      support = thresholdPanel.getSupport();
 
       try{
-        CombinatorialNetworkConstructor netConstructor = new CombinatorialNetworkConstructor(inst);
-        combinatorialNetwork = netConstructor.generateNetwork();
+        CombinatorialNetworkConstructor netConstructor = new CombinatorialNetworkConstructor(instanceSet);
+        combinatorialNetwork = netConstructor.generateNetwork(maxOrder);
 
 
-        rulesPanel.setRulesPanel(combinatorialNetwork, inst);
+        rulesPanel.setRulesPanel(combinatorialNetwork, instanceSet, confidence, support);
         jTabbedPane1.setEnabledAt(1,true);
         jTabbedPane1.setSelectedIndex(1);
 /*              saveButton.setEnabled(true);
@@ -179,10 +172,10 @@ public class NeuralModelMain extends JInternalFrame{
               jPanel1.removeAll();
               jPanel1.setLayout(new BorderLayout());
               jPanel1.add(netWindow,BorderLayout.CENTER);
-  */            statusBar.setText(/*resource.getString*/("learnSuccessful"));
+  */ //           statusBar.setText(/*resource.getString*/("learnSuccessful"));
 
       } catch (Exception ex){
-        statusBar.setText(/*resource.getString*/("exception ") + ex.getMessage());
+        statusBar.setText(/*resource.getString("exception ") +*/ ex.getMessage());
       }
     }
   }
@@ -208,21 +201,21 @@ public class NeuralModelMain extends JInternalFrame{
 
   private void openFile(File selectedFile){
     try{
-      inst = FileController.getInstance().setBaseInstancesFromFile(selectedFile,this);
-      boolean bool = inst.checkNumericAttributes();
+      instanceSet = FileController.getInstance().setBaseInstancesFromFile(selectedFile,this);
+      boolean bool = instanceSet.checkNumericAttributes();
       if (bool == true){
         throw new Exception(/*resource.getString*/("numericAttributesException"));
       }
       jTabbedPane1.setEnabledAt(0,false);
       setTitle("CNM - " + selectedFile.getName());
-      attributePanel.setInstances(inst);
+      attributePanel.setInstances(instanceSet);
       attributePanel.enableComboBox(true);
       jTabbedPane1.setEnabledAt(0,true);
       jTabbedPane1.setSelectedIndex(0);
       jTabbedPane1.setEnabledAt(1,false);
       learnButton.setEnabled(true);
       saveButton.setEnabled(false);
-      statusBar.setText(/*resource.getString*/("openFile"));
+      statusBar.setText(/*resource.getString("openFile")*/"Arquivo aberto.");
     }catch (NullPointerException npe){
       statusBar.setText(/*resource.getString*/("errorDB")+selectedFile.getName()+" "+npe.getMessage());
     }catch (FileNotFoundException fnfe){

@@ -4,28 +4,22 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
-/**
- * <p>Title: </p>
- * <p>Description: </p>
- * <p>Copyright: Copyright (c) 2002</p>
- * <p>Company: </p>
- * @author unascribed
- * @version 1.0
- */
 
 public class ThresholdPanel extends JPanel{
-  private JLabel labelThreshold = new JLabel();
-  private JLabel labelReliability = new JLabel();
-  private JTextField jTextFieldReliability = new JTextField();
-  private JTextField jTextFieldThreshold = new JTextField();
+  private JLabel labelMaxOrder = new JLabel();
+  private JLabel labelConfidence = new JLabel();
   private Border border1;
   private TitledBorder titledBorder1;
   private Border border2;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JPanel jPanel1 = new JPanel();
   private GridLayout gridLayout1 = new GridLayout();
+  private JLabel labelSupport = new JLabel();
+  private JComboBox jComboBoxMaxOrder = new JComboBox();
+  private JComboBox jComboBoxSupport = new JComboBox();
+  private JComboBox jComboBoxConfidence = new JComboBox();
 
-  public ThresholdPanel(/*int numAtt /*, int maxAcc, int minAcc*/) {
+  public ThresholdPanel() {
     try {
       jbInit();
     }
@@ -37,54 +31,45 @@ public class ThresholdPanel extends JPanel{
     border1 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
     titledBorder1 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Opções");
     border2 = BorderFactory.createCompoundBorder(titledBorder1,BorderFactory.createEmptyBorder(5,5,5,5));
-    labelThreshold.setText("Ordem Máxima:");
+    labelMaxOrder.setText("Ordem Máxima:");
     this.setLayout(borderLayout1);
-    labelReliability.setText("Confiança:");
-    jTextFieldReliability.setText("60");
-    jTextFieldReliability.addKeyListener(new java.awt.event.KeyAdapter() {
-      public void keyPressed(KeyEvent e) {
-        jTextField_keyPressed(e);
-      }
-    });
-    jTextFieldThreshold.setText("3");
-    jTextFieldThreshold.addKeyListener(new java.awt.event.KeyAdapter() {
-      public void keyPressed(KeyEvent e) {
-        jTextField_keyPressed(e);
-      }
-    });
+    labelConfidence.setText("Confiança mínima:");
     jPanel1.setLayout(gridLayout1);
     gridLayout1.setColumns(2);
-    gridLayout1.setRows(2);
+    gridLayout1.setRows(3);
     jPanel1.setBorder(border2);
+    labelSupport.setText("Suporte mínimo:");
     this.add(jPanel1,  BorderLayout.CENTER);
-    jPanel1.add(labelThreshold, null);
-    jPanel1.add(jTextFieldThreshold, null);
-    jPanel1.add(labelReliability, null);
-    jPanel1.add(jTextFieldReliability, null);
-  }
+    jPanel1.add(labelMaxOrder, null);
+    jPanel1.add(jComboBoxMaxOrder, null);
+    jPanel1.add(labelSupport, null);
+    jPanel1.add(jComboBoxSupport, null);
+    jPanel1.add(labelConfidence, null);
+    jPanel1.add(jComboBoxConfidence, null);
 
-  void jTextField_keyPressed(KeyEvent e) {
-    int valor;
-
-    int codigoTecla = e.getKeyCode();
-    if (codigoTecla == KeyEvent.VK_UP || codigoTecla == KeyEvent.VK_DOWN){
-      valor = Integer.parseInt(((JTextField)e.getSource()).getText());
-
-      if (codigoTecla == KeyEvent.VK_UP){
-        valor++;
-        ((JTextField)e.getSource()).setText("" + valor);
-      } else if (codigoTecla == KeyEvent.VK_DOWN){
-        valor--;
-        ((JTextField)e.getSource()).setText("" + valor);
-      }
+    for(int i=1; i<12; i++){
+      jComboBoxMaxOrder.addItem(new Integer(i));
     }
+
+    for(int i=0; i<101; i++){
+      jComboBoxSupport.addItem(new String(i + "%"));
+      jComboBoxConfidence.addItem(new String(i + "%"));
+    }
+
+    jComboBoxMaxOrder.setSelectedIndex(5);
+    jComboBoxSupport.setSelectedIndex(7);
+    jComboBoxConfidence.setSelectedIndex(7);
   }
 
-  public int getThreshold(){
-    return Integer.parseInt(jTextFieldThreshold.getText());
+  public int getMaxOrder(){
+    return ((Integer)jComboBoxMaxOrder.getSelectedItem()).intValue();
   }
 
-  public int getReliability(){
-    return Integer.parseInt(jTextFieldReliability.getText());
+  public int getConfidence(){
+    return jComboBoxConfidence.getSelectedIndex();
+  }
+
+  public int getSupport(){
+    return jComboBoxSupport.getSelectedIndex();
   }
 }
