@@ -98,8 +98,8 @@ public class Clique implements ITabledVariable {
         ok[0] = true;
         boolean fixo[] = new boolean[nos.size()];
         NodeList decisoes = new NodeList();
-        for (int i = 0; i < nos.size(); i++) {
-            if (nos.get(i) instanceof DecisionNode) {
+        for (int i = 0; i < nos.size(); i++) {        	
+            if (nos.get(i).getType() == Node.DECISION_NODE_TYPE) {
                 decisoes.add(nos.get(i));
                 fixo[i] = true;
             }

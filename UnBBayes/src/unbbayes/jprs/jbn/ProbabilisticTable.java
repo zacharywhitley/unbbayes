@@ -16,7 +16,7 @@ public class ProbabilisticTable extends PotentialTable {
      */
     public void removeVariable(Node variavel) {
         int index = variaveis.indexOf(variavel);
-        if (variavel instanceof DecisionNode) {
+        if (variavel.getType() == Node.DECISION_NODE_TYPE) {
             DecisionNode decision = (DecisionNode) variavel;
             int statesSize = variavel.getStatesSize();
             if (decision.hasEvidence()) {

@@ -24,7 +24,7 @@ public class UtilityTable extends PotentialTable {
      */
     public void removeVariable(Node variavel) {
         int index = variaveis.indexOf(variavel);
-        if (variavel instanceof ProbabilisticNode) {
+        if (variavel.getType() == Node.PROBABILISTIC_NODE_TYPE) {
             sum(variaveis.size()-1, index, new int[variaveis.size()]);
         } else {
             DecisionNode decision = (DecisionNode) variavel;

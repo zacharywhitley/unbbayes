@@ -188,7 +188,7 @@ public class NetIO implements BaseIO {
 
                 while (!st.sval.endsWith("}")) {
                     if (st.sval.equals("data")) {
-                        if (auxNo1 instanceof DecisionNode) {
+                        if (auxNo1.getType() == Node.DECISION_NODE_TYPE) {
                            throw new LoadException(ERROR_NET + " l." + st.lineno() +  ": Decision variable cannot have a table");
                         }
                         proximo(st);
@@ -229,9 +229,9 @@ public class NetIO implements BaseIO {
             Node auxNo1;
             for (int c1 = 0; c1 < sizeNos; c1++) {
                 auxNo1 = (Node) net.getNodeAt(c1);
-                if (auxNo1 instanceof ProbabilisticNode) {
+                if (auxNo1.getType() == Node.PROBABILISTIC_NODE_TYPE) {
                     arq.print("node");
-                } else if (auxNo1 instanceof DecisionNode) {
+                } else if (auxNo1.getType() == Node.DECISION_NODE_TYPE) {
                     arq.print("decision");
                 } else { // TVU
                     arq.print("utility");
@@ -242,7 +242,7 @@ public class NetIO implements BaseIO {
                 arq.println("     label = \"" + auxNo1.getDescription() + "\";");
                 arq.println("     position = (" + (int) auxNo1.getPosicao().getX() + " " + (int) auxNo1.getPosicao().getY() + ");");
 
-                if (! (auxNo1 instanceof UtilityNode)) {
+                if (! (auxNo1.getType() == Node.UTILITY_NODE_TYPE)) {
                     StringBuffer auxString = new StringBuffer("\"" + auxNo1.getStateAt(0) + "\"");
 
                     int sizeEstados = auxNo1.getStatesSize();

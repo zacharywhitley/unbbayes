@@ -192,7 +192,7 @@ public class ProbabilisticNetwork extends Network {
         for (int c = 0; c < sizeNos; c++) {
             Node auxNode = copiaNos.get(c);
             menor = Integer.MAX_VALUE;
-            if (auxNode instanceof ProbabilisticNode) {
+            if (auxNode.getType() == Node.PROBABILISTIC_NODE_TYPE) {
                 int sizeSeparadores = junctionTree.getSeparatorsSize();
                 for (int c2 = 0; c2 < sizeSeparadores; c2++) {
                     auxSep = (Separator) junctionTree.getSeparatorAt(c2);
@@ -208,7 +208,7 @@ public class ProbabilisticNetwork extends Network {
                 for (int c2 = 0; c2 < sizeCliques; c2++) {
                     auxClique = (Clique) junctionTree.getCliques().get(c2);
                     if (auxClique.getNos().contains(auxNode) && (auxClique.getPotentialTable().tableSize() < menor)) {
-                        if (auxNode instanceof ProbabilisticNode) {
+                        if (auxNode.getType() == Node.PROBABILISTIC_NODE_TYPE) {
                             ((ProbabilisticNode)auxNode).setAssociatedClique(auxClique);
                         } else {
                             ((DecisionNode)auxNode).setAssociatedClique(auxClique);
@@ -268,7 +268,7 @@ public class ProbabilisticNetwork extends Network {
         int sizeArcos = copiaArcos.size()-1;
         for (int i = sizeArcos; i >= 0; i--) {
            auxArco = (Edge)copiaArcos.get(i);
-           if (auxArco.getDestinationNode() instanceof DecisionNode) {
+           if (auxArco.getDestinationNode().getType() == Node.DECISION_NODE_TYPE) {
               copiaArcos.remove(i);
            }
         }
@@ -276,7 +276,7 @@ public class ProbabilisticNetwork extends Network {
         int sizeNos = nos.size();
         for (int n = 0; n < sizeNos; n++) {
             auxNo = nos.get(n);
-            if (!(auxNo instanceof DecisionNode) && auxNo.getParents().size() > 1) {
+            if (!(auxNo.getType() == Node.DECISION_NODE_TYPE) && auxNo.getParents().size() > 1) {
                 int sizePais = auxNo.getParents().size();
                 for (int j = 0; j < sizePais - 1; j++) {
                     auxPai1 = auxNo.getParents().get(j);
@@ -304,7 +304,7 @@ public class ProbabilisticNetwork extends Network {
         int sizeArcos1 = copiaArcos.size();
         for (int z = sizeArcos1-1; z >= 0; z--) {
             auxArco = (Edge) copiaArcos.get(z);
-            if (auxArco.getDestinationNode() instanceof UtilityNode) {
+            if (auxArco.getDestinationNode().getType() == Node.UTILITY_NODE_TYPE) {
                 copiaArcos.remove(z);
             } else {
                 auxArco.getOriginNode().getAdjacents().add(auxArco.getDestinationNode());
@@ -368,7 +368,7 @@ public class ProbabilisticNetwork extends Network {
 
     private void removeUtilityNodes(NodeList nodes) {
         for (int i = nodes.size()-1; i >= 0; i--) {
-            if (nodes.get(i) instanceof UtilityNode) {
+            if (nodes.get(i).getType() == Node.UTILITY_NODE_TYPE) {
                 nodes.remove(i);
             }
         }
@@ -528,7 +528,7 @@ public class ProbabilisticNetwork extends Network {
         decisionNodes = new NodeList();
         int sizeNos = nos.size();
         for (int i = 0; i < sizeNos; i++) {
-            if (nos.get(i) instanceof DecisionNode) {
+            if (nos.get(i).getType() == Node.DECISION_NODE_TYPE) {
                 decisionNodes.add(nos.get(i));
             }
         }
@@ -551,7 +551,7 @@ public class ProbabilisticNetwork extends Network {
                 for (int k = 0; k < sizeFilhos; k++) {
                     aux3 = (Node)aux2.getChildren().get(k);
                     if (! visitados[nos.indexOf(aux3)]) {
-                        if (aux3 instanceof DecisionNode && ! aux.getAdjacents().contains(aux3)) {
+                        if (aux3.getType() == Node.DECISION_NODE_TYPE && ! aux.getAdjacents().contains(aux3)) {
                             aux.getAdjacents().add(aux3);
                         }
                         fila.add(aux3);
@@ -604,7 +604,7 @@ public class ProbabilisticNetwork extends Network {
         int sizeNos = nos.size();
         for (int i = 0; i < sizeNos; i++) {
             aux = (Node)nos.get(i);
-            if (aux instanceof UtilityNode && aux.getChildren().size() != 0) {
+            if (aux.getType() == Node.UTILITY_NODE_TYPE && aux.getChildren().size() != 0) {
                 throw new Exception("Variável " + aux + " contém filho(s)");
             }
         }
@@ -624,7 +624,7 @@ public class ProbabilisticNetwork extends Network {
         int sizeNos = nos.size();
         for (c = 0; c < sizeNos; c++) {
             auxNo =  nos.get(c);
-            if (auxNo instanceof ProbabilisticNode) {
+            if (auxNo.getType() == Node.PROBABILISTIC_NODE_TYPE) {
                 auxVP = (ProbabilisticNode) auxNo;
                 auxTabPot = (ProbabilisticTable) auxVP.getPotentialTable();
                 auxTabPot.verificaConsistencia();
@@ -907,7 +907,7 @@ public class ProbabilisticNetwork extends Network {
 
         int sizeNos = nos.size();
         for (int n = 0; n < sizeNos; n++) {
-            if (nos.get(n) instanceof DecisionNode) {
+            if (nos.get(n).getType() == Node.DECISION_NODE_TYPE) {
                 continue;
             }
 
@@ -919,7 +919,7 @@ public class ProbabilisticNetwork extends Network {
                 auxClique = (Clique) junctionTree.getCliques().get(c);
 
                 if (auxClique.getPotentialTable().tableSize() < min && auxClique.getNos().containsAll(auxNo.getParents())) {
-                    if (auxNo instanceof ProbabilisticNode && ! auxClique.getNos().contains(auxNo)) {
+                    if (auxNo.getType() == Node.PROBABILISTIC_NODE_TYPE && ! auxClique.getNos().contains(auxNo)) {
                         continue;
                     }
                     cliqueMin = auxClique;
@@ -927,7 +927,7 @@ public class ProbabilisticNetwork extends Network {
                 }
             }
 
-            if (auxNo instanceof ProbabilisticNode) {
+            if (auxNo.getType() == Node.PROBABILISTIC_NODE_TYPE) {
                 cliqueMin.getAssociatedProbabilisticNodes().add(auxNo);
             } else {
                 cliqueMin.getAssociatedUtilityNodes().add(auxNo);
@@ -1103,8 +1103,8 @@ public class ProbabilisticNetwork extends Network {
      */
     public boolean isID() {
         for (int i = 0; i < nos.size(); i++) {
-            if (nos.get(i) instanceof DecisionNode ||
-                nos.get(i) instanceof UtilityNode) {
+            if (nos.get(i).getType() == Node.DECISION_NODE_TYPE ||
+                nos.get(i).getType() == Node.UTILITY_NODE_TYPE) {
 
                 return true;
             }
