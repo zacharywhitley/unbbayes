@@ -82,18 +82,20 @@ public class CombinatorialNetwork {
   private void createCombinatorialNeurons(Instance instance, int attributeNum, int classIndex){
     short value;
     InputNeuron inputNeuron;
-    InputNeuron[] inputList = new InputNeuron[attributeNum/* - 1*/];
+    InputNeuron[] inputList = new InputNeuron[attributeNum - 1];
     CombinatorialNeuron combNeuron;
     OutputNeuron outputNeuron = (OutputNeuron)outputLayer.get(generateOutputKey(classIndex, instance.classValue()));
     String key;
     int maxOrder = attributeNum;
 
+    int position = -1;
     for(int att=0; att<attributeNum; att++){        //cria uma lista com todas os neuronios de entrada associados a instancia do exemplo
       if(att != classIndex){
         value = instance.getValue(att);
         key = generateInputKey(att, value);
         inputNeuron = (InputNeuron)inputLayer.get(key);
-        inputList[att] = inputNeuron;
+        position++;
+        inputList[position] = inputNeuron;
       }
     }
 
@@ -126,6 +128,9 @@ public class CombinatorialNetwork {
 ///////////////////////
       }
     }
+
+
+/**/makeCombinations(attributeNum, maxOrder);
 
   }
 
@@ -177,4 +182,102 @@ public class CombinatorialNetwork {
       }
     }
   }
+
+
+  private void makeCombinations(int numAttributes, int maxOrder){
+//    int possibleComb = ((int)Math.pow(2,numAttributes)) - 1;
+    boolean[][][] combTable = new boolean[maxOrder+1][/*possibleComb*/][/*numAttributes*/];
+    boolean[][] combinations;
+
+    for(int order=1; order<maxOrder+1; order++){
+      if(order == 1){
+        combinations = new boolean[numAttributes][numAttributes];
+        for(int j=0; j<numAttributes; j++){
+          for(int i=0; i<numAttributes; i++){
+            if(i==j){
+              combinations[j][i] = true;
+            }else{
+              combinations[j][i] = false;
+            }
+          }
+        }
+        combTable[order] = combinations;
+      } else {
+        int comb = combTable[order-1].length; //possibleCombinations(numAttributes, order-1);
+        int possibleComb = possibleCombinations(numAttributes, order);
+        combinations = new boolean[possibleComb][numAttributes];
+        boolean finished = false;
+
+        int combCounter = 0;
+        for(int att=0; att<numAttributes; att++){
+          for(int i=0; i<comb; i++){
+            if(!combTable[order-1][i][att]){
+              for(int k=0; k<numAttributes; k++){
+                combinations[combCounter][k] = combTable[order-1][i][k];
+                combinations[combCounter][att] = true;
+              }
+              //identificando repetição
+              boolean repetition = false;
+              for(int comb2=0; comb2<combCounter; comb2++){
+                int attCounter = 0;
+                for(int att2=0; att2<numAttributes; att2++){
+                  if(combinations[comb2][att2] == combinations[combCounter][att2]){
+                    attCounter++;
+                  }
+                }
+                if(attCounter == numAttributes){
+                  repetition = true;
+                  break;
+                }
+              }
+              if(!repetition){  //se não for repetição vai pra proxima combinacao
+                combCounter++;
+                if(combCounter == possibleComb){
+                  finished = true;
+                  break;
+                }
+              }
+            }
+          }
+          if(finished)
+            break;
+        }
+        combTable[order] = combinations;
+      }
+    }
+
+    for(int i=1;i<maxOrder; i++){
+      System.out.println("ordem:" + i);
+      for(int j=0; j<combTable[i].length; j++){
+        System.out.print("combinaçaõ:" + j + " ");
+        for(int k=0; k<numAttributes; k++){
+          System.out.print(combTable[i][j][k] + " ");
+        }
+        System.out.println();
+      }
+    }
+
+  }
+
+  private int possibleCombinations(int numAttributes, int order){
+    int nFactorial = 1;
+    for(int i=1; i<numAttributes+1; i++){
+      nFactorial = nFactorial * i;
+    }
+
+    int pFactorial = 1;
+    for(int i=1; i<order+1; i++){
+      pFactorial = pFactorial * i;
+    }
+
+    int npFactorial = 1;
+    for(int i=1; i<(numAttributes-order)+1; i++){
+      npFactorial = npFactorial * i;
+    }
+
+    return nFactorial/(pFactorial * npFactorial);
+  }
+
+
+
 }
