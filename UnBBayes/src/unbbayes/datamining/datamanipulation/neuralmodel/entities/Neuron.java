@@ -9,7 +9,7 @@ package unbbayes.datamining.datamanipulation.neuralmodel.entities;
  * @version 1.0
  */
 
-public class Neuron {
+public abstract class Neuron {
 
   String key;
 

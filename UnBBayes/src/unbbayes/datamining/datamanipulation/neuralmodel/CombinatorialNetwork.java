@@ -20,6 +20,7 @@ public class CombinatorialNetwork {
   private Hashtable combinatorialLayer = new Hashtable();
   private Hashtable outputLayer = new Hashtable();
   private InstanceSet instanceSet;
+  private boolean[][][] combinations;
 
   public CombinatorialNetwork(InstanceSet instanceSet) {
     this.instanceSet = instanceSet;
@@ -32,12 +33,16 @@ public class CombinatorialNetwork {
     int attributeNum = instanceSet.numAttributes();
     int classIndex = instanceSet.getClassIndex();
 
+
+    int maxOrder = attributeNum-1;  //retirar isso, maxOrder será passado por parametro
+    /**/combinations = makeCombinations(attributeNum-1, maxOrder);
+
     while(instanceEnum.hasMoreElements()){
       instance = (Instance)instanceEnum.nextElement();
 
       createInputNeurons(instance, attributeNum, classIndex);
       createOutputNeuron(instance, classIndex);
-      createCombinatorialNeurons(instance, attributeNum, classIndex);
+      createCombinatorialNeurons(instance, attributeNum, classIndex, maxOrder);
     }
 
     punishment();
@@ -79,59 +84,62 @@ public class CombinatorialNetwork {
     }
   }
 
-  private void createCombinatorialNeurons(Instance instance, int attributeNum, int classIndex){
+  private void createCombinatorialNeurons(Instance instance, int attributeNum, int classIndex, int maxOrder){
     short value;
     InputNeuron inputNeuron;
-    InputNeuron[] inputList = new InputNeuron[attributeNum - 1];
+    InputNeuron[] inputList = new InputNeuron[attributeNum - 1]; //lista de todos os neuronios de entrada da instancia
+    InputNeuron[] combList;                                      //lista do neuronios da combinanção de ordem x
     CombinatorialNeuron combNeuron;
     OutputNeuron outputNeuron = (OutputNeuron)outputLayer.get(generateOutputKey(classIndex, instance.classValue()));
     String key;
-    int maxOrder = attributeNum;
+//    int maxOrder = attributeNum;
 
-    int position = -1;
-    for(int att=0; att<attributeNum; att++){        //cria uma lista com todas os neuronios de entrada associados a instancia do exemplo
+    int position = 0;
+    for(int att=0; att<attributeNum; att++){                    //cria uma lista com todas os neuronios de entrada associados a instancia do exemplo
       if(att != classIndex){
         value = instance.getValue(att);
         key = generateInputKey(att, value);
         inputNeuron = (InputNeuron)inputLayer.get(key);
-        position++;
         inputList[position] = inputNeuron;
+        position++;
       }
     }
 
-    for(int order=1; order<maxOrder+1; order++){
+    for(int order=1; order<maxOrder+1; order++){                //faz as ligações de ordem 1
       if(order==1){
         for(int i=0; i<inputList.length; i++){
           inputList[i].addNeuron(outputNeuron);
           outputNeuron.addCombination(inputList[i]);
         }
-      } else {                 //implementar um algoritmo que faça as combinações das entradas
-//////////////////////
-        if(order == maxOrder){
-          key = generateCombKey(inputList);
-          if(!combinatorialLayer.containsKey(key)){              // se nao existe comb neuron cria um novo
-            combNeuron = new CombinatorialNeuron(inputList, outputNeuron, key);
+      } else {                                                  //faz combinações de ordem > 1
+        combList = new InputNeuron[order];
+        int combNum = combinations[order].length;
+        for(int comb=0; comb<combNum; comb++){                  //para cada combinação
+          position = 0;
+          for(int att=0; att<attributeNum-1; att++){            //para cada atributo
+            if(combinations[order][comb][att] == true){         //se atributo é verdadeiro
+              combList[position] = inputList[att];              //adiciona o atributo corresp da inputList na combList
+              position++;
+            }
+          }
+
+          key = generateCombKey(combList);                       //gera a chave da combinação
+          if(!combinatorialLayer.containsKey(key)){              //se nao existe comb neuron cria um novo
+            combNeuron = new CombinatorialNeuron(combList, outputNeuron, key);
             combinatorialLayer.put(key, combNeuron);
-          } else {                                               // se já existir pega ele e adiciona uma saida
+          } else {                                               //se já existir pega ele e adiciona uma saida
             combNeuron = (CombinatorialNeuron)combinatorialLayer.get(key);
             combNeuron.addOutputNeuron(outputNeuron);
           }
 
           outputNeuron.addCombination(combNeuron);               // adiciona o comb neuron no output da instancia
 
-          int inputSize = inputList.length;
-          for(int i=0; i<inputSize; i++){                        // adiciona o comb neuron em todas as entradas da instancia
-            inputList[i].addNeuron(combNeuron);
+          for(int i=0; i<order; i++){                            // adiciona o comb neuron em todas as entradas da instancia
+            combList[i].addNeuron(combNeuron);
           }
-
         }
-///////////////////////
       }
     }
-
-
-/**/makeCombinations(attributeNum, maxOrder);
-
   }
 
 
@@ -183,14 +191,12 @@ public class CombinatorialNetwork {
     }
   }
 
-
-  private void makeCombinations(int numAttributes, int maxOrder){
-//    int possibleComb = ((int)Math.pow(2,numAttributes)) - 1;
-    boolean[][][] combTable = new boolean[maxOrder+1][/*possibleComb*/][/*numAttributes*/];
+  private boolean[][][] makeCombinations(int numAttributes, int maxOrder){
+    boolean[][][] combTable = new boolean[maxOrder+1][][];              //primeira dimensão: ordem; segunda dimensão: quantidade de combinações; terceira dimensao: atributos
     boolean[][] combinations;
 
     for(int order=1; order<maxOrder+1; order++){
-      if(order == 1){
+      if(order == 1){                                                   //gera as combinações de ordem 1
         combinations = new boolean[numAttributes][numAttributes];
         for(int j=0; j<numAttributes; j++){
           for(int i=0; i<numAttributes; i++){
@@ -202,50 +208,53 @@ public class CombinatorialNetwork {
           }
         }
         combTable[order] = combinations;
-      } else {
-        int comb = combTable[order-1].length; //possibleCombinations(numAttributes, order-1);
-        int possibleComb = possibleCombinations(numAttributes, order);
-        combinations = new boolean[possibleComb][numAttributes];
-        boolean finished = false;
-
+      } else {                                                          //gera as combinações de ordem maior q 1
+        int prevCombNum = combTable[order-1].length;                    //numero de combinações da ordem anterior
+        int possibleComb = possibleCombinations(numAttributes, order);  //numero de possiveis combinações para esta ordem
+        combinations = new boolean[possibleComb][numAttributes];        //array de combinações para esta ordem
+        boolean finished = false;                                       //variavel de controle
         int combCounter = 0;
-        for(int att=0; att<numAttributes; att++){
-          for(int i=0; i<comb; i++){
-            if(!combTable[order-1][i][att]){
-              for(int k=0; k<numAttributes; k++){
+        int attCounter;
+        boolean repetition;
+
+        for(int att=0; att<numAttributes; att++){                  //para cada atributo
+          for(int i=0; i<prevCombNum; i++){                        //para cada combinação de ordem anterior
+            if(!combTable[order-1][i][att]){                       //se falso,
+              for(int k=0; k<numAttributes; k++){                  //cria uma nova combinação de ordem atual baseada na de ordem anterior
                 combinations[combCounter][k] = combTable[order-1][i][k];
                 combinations[combCounter][att] = true;
               }
-              //identificando repetição
-              boolean repetition = false;
-              for(int comb2=0; comb2<combCounter; comb2++){
-                int attCounter = 0;
-                for(int att2=0; att2<numAttributes; att2++){
+
+              repetition = false;                                  //identificando repetição
+              for(int comb2=0; comb2<combCounter; comb2++){        //para cada combinação de ordem atual já existente
+                attCounter = 0;                                    //contador de atributos
+                for(int att2=0; att2<numAttributes; att2++){       //para cada atributo da nova combinacao compara com as combinações já existentes
                   if(combinations[comb2][att2] == combinations[combCounter][att2]){
-                    attCounter++;
+                    attCounter++;                                  //soma o numero de atributos iguais entre duas combinações
                   }
                 }
-                if(attCounter == numAttributes){
-                  repetition = true;
+                if(attCounter == numAttributes){                   //se o numero de atributos iguais for igual ao numero de atributos existentes
+                  repetition = true;                               //sai do loop e seta repetição
                   break;
                 }
               }
-              if(!repetition){  //se não for repetição vai pra proxima combinacao
+              if(!repetition){                                     //se não for repetição vai pra proxima combinacao
                 combCounter++;
-                if(combCounter == possibleComb){
+                if(combCounter == possibleComb){                   // quando atingir o numero de combinaçóes possíveis para
                   finished = true;
                   break;
                 }
               }
             }
           }
-          if(finished)
+          if(finished){                                            //se atingir o nr de comb possiveis pra esta ordem então para.
             break;
+          }
         }
         combTable[order] = combinations;
       }
     }
-
+/*
     for(int i=1;i<maxOrder; i++){
       System.out.println("ordem:" + i);
       for(int j=0; j<combTable[i].length; j++){
@@ -256,28 +265,28 @@ public class CombinatorialNetwork {
         System.out.println();
       }
     }
+*/
 
+    return combTable;
   }
 
   private int possibleCombinations(int numAttributes, int order){
-    int nFactorial = 1;
+    long nFactorial = 1;
     for(int i=1; i<numAttributes+1; i++){
       nFactorial = nFactorial * i;
     }
 
-    int pFactorial = 1;
+    long pFactorial = 1;
     for(int i=1; i<order+1; i++){
       pFactorial = pFactorial * i;
     }
 
-    int npFactorial = 1;
+    long npFactorial = 1;
     for(int i=1; i<(numAttributes-order)+1; i++){
       npFactorial = npFactorial * i;
     }
 
-    return nFactorial/(pFactorial * npFactorial);
+    return (int)(nFactorial/(pFactorial * npFactorial));
   }
-
-
 
 }
