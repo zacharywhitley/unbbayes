@@ -387,9 +387,9 @@ public abstract class Node implements java.io.Serializable {
      *
      *@return    descrição do nó formatado.
      */
-    //public String toString() {
-    //    return description + " (" + name + ")";
-    //}
+    public String toString() {
+        return description + " (" + name + ")";
+    }
 
 
     /**
