@@ -5,6 +5,7 @@ import java.util.List;
 
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTree;
+import unbbayes.prs.bn.PotentialTable;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
@@ -58,7 +59,7 @@ public class Link {
 								retirou = true;
 								break;								
 							}
-						}						
+						}				
 					}
 				}
 			}
@@ -71,9 +72,22 @@ public class Link {
 				if (i != j) {
 					Clique c2 = (Clique) tree.get(j);
 					if (c2.getNos().containsAll(c.getNos())) {
-						removeClique(c);						
+						removeClique(c);
+						break;					
 					}					
 				}				
+			}
+		}
+		
+		for (int i = tree.size()-1; i >=0; i--) {
+			Clique c = (Clique) tree.get(i);
+			PotentialTable tab = c.getPotentialTable();
+			for (int j = c.getNos().size()-1; j>=0; j--) {
+				tab.addVariable(c.getNos().get(j));
+			}
+			
+			for (int j = tab.tableSize()-1; j>=0; j--) {
+				tab.setValue(j, 1);
 			}
 		}
 		
