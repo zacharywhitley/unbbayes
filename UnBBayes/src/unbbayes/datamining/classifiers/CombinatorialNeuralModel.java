@@ -1,15 +1,18 @@
 package unbbayes.datamining.classifiers;
 
 import java.util.*;
+import java.io.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
 
-public class CombinatorialNeuralModel extends BayesianLearning{
+public class CombinatorialNeuralModel extends BayesianLearning implements Serializable{
   private Hashtable inputLayer = new Hashtable();
   private Hashtable combinatorialLayer = new Hashtable();
   private Hashtable outputLayer = new Hashtable();
-  private InstanceSet instanceSet;
-  private int maxOrder;
+  private transient InstanceSet instanceSet;
+  private Attribute[] attributeVector;
+  private transient int maxOrder;
+  private int classIndex;
 
   public CombinatorialNeuralModel(int maxOrder) {
     this.maxOrder = maxOrder;
@@ -22,8 +25,10 @@ public class CombinatorialNeuralModel extends BayesianLearning{
     Enumeration outputEnum;
     OutputNeuron output;
     int attributeNum = instanceSet.numAttributes();
-    int classIndex = instanceSet.getClassIndex();
     int numOfInstances = instanceSet.numWeightedInstances();
+
+    createAttributeVector();                                //cria um array com os atributos para serialização
+    this.classIndex = instanceSet.getClassIndex();           //guarda o indice da classa para serialização
 
     while(instanceEnum.hasMoreElements()){
       instance = (Instance)instanceEnum.nextElement();
@@ -40,6 +45,15 @@ public class CombinatorialNeuralModel extends BayesianLearning{
       output = (OutputNeuron)outputEnum.nextElement();
       output.calculateSupport(numOfInstances);   // da pra fazer no método punishment
 //      output.calculateConfidence();
+    }
+  }
+
+  private void createAttributeVector(){
+    int numAttributes = instanceSet.numAttributes();
+    attributeVector = new Attribute[numAttributes];
+
+    for(int att=0; att<numAttributes; att++){
+      attributeVector[att] = instanceSet.getAttribute(att);
     }
   }
 
@@ -192,9 +206,7 @@ public class CombinatorialNeuralModel extends BayesianLearning{
           }
         }
         arc.setNetWeight(arc.getAccumulator() - sum);       //netWeight
-
         arc.setConfidence((float)arc.getAccumulator() * 100/(float)(sum + arc.getAccumulator())); //confidence
-
         sum = 0;
       }
     }
@@ -235,8 +247,8 @@ public class CombinatorialNeuralModel extends BayesianLearning{
     Enumeration inputEnum, outputEnum;
     InputNeuron tempInput;
     OutputNeuron tempOutput;
-    int numAtt = instanceSet.numAttributes();
-    int classIndex = instance.getClassIndex();
+//    int numAtt = instanceSet.numAttributes();
+    int numAtt = attributeVector.length;
     short value;
     String key;
     float[] distribution = new float[outputLayer.size()];
@@ -278,5 +290,13 @@ public class CombinatorialNeuralModel extends BayesianLearning{
 
   public Hashtable getCombinatorialLayer(){
     return combinatorialLayer;
+  }
+
+  public Attribute[] getAttributeVector(){
+    return attributeVector;
+  }
+
+  public int getClassIndex(){
+    return classIndex;
   }
 }

@@ -1,6 +1,7 @@
 package unbbayes.datamining.datamanipulation.neuralmodel.entities;
 
 import java.util.*;
+import java.io.*;
 
 /**
  * <p>Title: </p>
@@ -11,7 +12,7 @@ import java.util.*;
  * @version 1.0
  */
 
-public class OutputNeuron extends Neuron{
+public class OutputNeuron extends Neuron implements Serializable{
   private int attributeIndex;
   private short value;
   private Hashtable combinationsList = new Hashtable();
@@ -79,20 +80,6 @@ public class OutputNeuron extends Neuron{
     Arc tempArc;
     long netWeigthSum = 0;
 
-    while(outputEnum.hasMoreElements()){
-      tempArc = (Arc)outputEnum.nextElement();
-      if(tempArc.netWeigth > 0){
-        netWeigthSum = netWeigthSum + tempArc.netWeigth;
-      }
-    }
-
-    outputEnum = combinationsList.elements();
-    while(outputEnum.hasMoreElements()){
-      tempArc = (Arc)outputEnum.nextElement();
-      if(tempArc.netWeigth > 0){
-        tempArc.confidence = ((float)tempArc.netWeigth / (float)netWeigthSum) * 100;
-      }
-    }
   }*/
 
   public boolean getSignal(){return false;}  //??????????????????????

@@ -1,5 +1,7 @@
 package unbbayes.datamining.datamanipulation.neuralmodel.entities;
 
+import java.io.*;
+
 /**
  * <p>Title: </p>
  * <p>Description: </p>
@@ -9,7 +11,7 @@ package unbbayes.datamining.datamanipulation.neuralmodel.entities;
  * @version 1.0
  */
 
-public class Arc {
+public class Arc implements Serializable{
   protected int accumulator;
   protected int netWeigth;
   protected float confidence;

@@ -1,6 +1,7 @@
 package unbbayes.datamining.datamanipulation.neuralmodel.entities;
 
 import java.util.*;
+import java.io.*;
 
 /**
  * <p>Title: </p>
@@ -11,7 +12,7 @@ import java.util.*;
  * @version 1.0
  */
 
-public class CombinatorialNeuron extends Neuron{
+public class CombinatorialNeuron extends Neuron implements Serializable{
   private InputNeuron[] inputList;
   private Hashtable outputList = new Hashtable();
 
