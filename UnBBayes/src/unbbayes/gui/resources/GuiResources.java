@@ -71,7 +71,10 @@ public class GuiResources extends ListResourceBundle {
 		{"utilityNodeColorLabel","Utility"},
 		{"utilityNodeColorToolTip","Select utility node color"},
 		{"nodeColorLabel","Node Color"},
-		{"arcColorLabel","Arc"},
+                {"arcColor","Arc Color"},
+                {"selectionColor","Selection Color"},
+                {"backGroundColor","Background Color"},
+                {"arcColorLabel","Arc"},
 		{"arcColorToolTip","Select arc color"},
 		{"selectionColorLabel","Selection"},
 		{"selectionColorToolTip","Select selection color"},
@@ -163,6 +166,7 @@ public class GuiResources extends ListResourceBundle {
         {"cascadeItemMn","C"},
         {"tileItemMn","T"},
         {"helpItemMn","H"},
-        {"aboutItemMn","A"}
+        {"aboutItemMn","A"},
+        {"properties","Properties..."}
 	};
 }

@@ -38,50 +38,30 @@ import unbbayes.util.*;
  */
 public class ExplanationProperties extends JDialog
 {
-  private JPanel jPanel1 = new JPanel();
   private BorderLayout borderLayout1 = new BorderLayout();
-  private JTabbedPane jTabbedPane1 = new JTabbedPane();
-  private JPanel jPanel2 = new JPanel();
+  private JTabbedPane jTabbedPane = new JTabbedPane();
+  private JPanel southPanel = new JPanel();
   private JPanel descriptionPanel = new JPanel();
   private JPanel explanationPanel = new JPanel();
-  private JButton jButton1 = new JButton();
+  private JButton okButton = new JButton();
   private Border border1;
-  private JPanel jPanel5 = new JPanel();
   private BorderLayout borderLayout2 = new BorderLayout();
-  private JPanel jPanel7 = new JPanel();
-  private BorderLayout borderLayout3 = new BorderLayout();
   private Border border2;
-  private JPanel jPanel6 = new JPanel();
-  private JPanel jPanel8 = new JPanel();
-  private BorderLayout borderLayout4 = new BorderLayout();
-  private GridLayout gridLayout1 = new GridLayout();
-  private JPanel jPanel9 = new JPanel();
-  private JPanel jPanel10 = new JPanel();
-  private JPanel jPanel11 = new JPanel();
-  private JScrollPane jScrollPane1 = new JScrollPane();
-  private BorderLayout borderLayout5 = new BorderLayout();
-  private JTextArea jTextArea1 = new JTextArea();
-  private JLabel jLabel1 = new JLabel();
-  private JLabel jLabel2 = new JLabel();
-  private BorderLayout borderLayout6 = new BorderLayout();
-  private BorderLayout borderLayout7 = new BorderLayout();
-  private BorderLayout borderLayout8 = new BorderLayout();
-  private JPanel jPanel3 = new JPanel();
   private GridLayout gridLayout2 = new GridLayout();
   private JPanel evidencePhrasePanel = new JPanel();
-  private JPanel jPanel12 = new JPanel();
+  private JPanel explanationTopPanel = new JPanel();
   private BorderLayout borderLayout9 = new BorderLayout();
   private BorderLayout borderLayout10 = new BorderLayout();
   private JPanel evidenceTypePanel = new JPanel();
   private JPanel evidenceNodePanel = new JPanel();
-  private JPanel jPanel15 = new JPanel();
+  private JPanel evidencePhraseBottomPanel = new JPanel();
   private JLabel evidenceNodeLabel = new JLabel();
   private JComboBox evidenceNodeComboBox = new JComboBox();
   private BorderLayout borderLayout11 = new BorderLayout();
   private Border border3;
   private TitledBorder titledBorder1;
   private GridLayout gridLayout3 = new GridLayout();
-  private JPanel jPanel17 = new JPanel();
+  private JPanel notUsedPanel = new JPanel();
   private JPanel exclusivePanel = new JPanel();
   private JPanel necessaryPanel = new JPanel();
   private JPanel naPanel = new JPanel();
@@ -100,8 +80,8 @@ public class ExplanationProperties extends JDialog
   private BorderLayout borderLayout17 = new BorderLayout();
   private ButtonGroup buttonGroup1 = new ButtonGroup();
   private Border evidenceTypeBorder;
-  private JPanel jPanel24 = new JPanel();
-  private JLabel jLabel4 = new JLabel();
+  private JPanel evidencePhraseTopPanel = new JPanel();
+  private JLabel evidencePhraseLabel = new JLabel();
   private BorderLayout borderLayout18 = new BorderLayout();
   private JScrollPane evidencePhraseScrollPane = new JScrollPane();
   private BorderLayout borderLayout19 = new BorderLayout();
@@ -109,8 +89,23 @@ public class ExplanationProperties extends JDialog
   private NetWindow netWindow;
   private ProbabilisticNode node;
   private ProbabilisticNetwork net;
-  private JButton jButton2 = new JButton();
+  private JButton cancelButton = new JButton();
+  private JTextArea explanationNodeTextArea = new JTextArea();
   private JLabel nodeNameLabel = new JLabel();
+  private JScrollPane explanationNodeScrollPane = new JScrollPane();
+  private BorderLayout borderLayout7 = new BorderLayout();
+  private BorderLayout borderLayout6 = new BorderLayout();
+  private JPanel descriptionTopPanel1 = new JPanel();
+  private BorderLayout borderLayout5 = new BorderLayout();
+  private JPanel descriptionTopPanel2 = new JPanel();
+  private JPanel descriptionTopPanel3 = new JPanel();
+  private GridLayout gridLayout1 = new GridLayout();
+  private JPanel descriptionTopPanel = new JPanel();
+  private JPanel descriptionBottomPanel = new JPanel();
+  private JLabel explanationVariableLabel = new JLabel();
+  private BorderLayout borderLayout3 = new BorderLayout();
+  private JLabel descriptionLabel = new JLabel();
+  private GridLayout gridLayout4 = new GridLayout();
 
   public ExplanationProperties(NetWindow netWindow,ProbabilisticNetwork net)
   { this.netWindow = netWindow;
@@ -133,37 +128,23 @@ public class ExplanationProperties extends JDialog
     evidenceTypeBorder = BorderFactory.createCompoundBorder(new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de Evidência:"),BorderFactory.createEmptyBorder(0,10,0,0));
     this.setResizable(false);
     this.setTitle("Propriedades da Variável de Explicação");
-    jPanel1.setLayout(borderLayout1);
-    jButton1.setMaximumSize(new Dimension(85, 27));
-    jButton1.setMinimumSize(new Dimension(85, 27));
-    jButton1.setPreferredSize(new Dimension(85, 27));
-    jButton1.setText("OK");
-    jButton1.addActionListener(new java.awt.event.ActionListener()
+    okButton.setMaximumSize(new Dimension(85, 27));
+    okButton.setMinimumSize(new Dimension(85, 27));
+    okButton.setPreferredSize(new Dimension(85, 27));
+    okButton.setText("OK");
+    okButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jButton1_actionPerformed(e);
+        okButton_actionPerformed(e);
       }
     });
-    jTabbedPane1.setBorder(border1);
+    jTabbedPane.setBorder(border1);
     descriptionPanel.setLayout(borderLayout2);
-    jPanel5.setLayout(borderLayout3);
-    jPanel5.setBorder(border2);
-    jPanel7.setLayout(borderLayout4);
-    jPanel8.setLayout(gridLayout1);
-    gridLayout1.setRows(3);
-    jPanel6.setLayout(borderLayout5);
-    jLabel1.setText("Variável de explicação : ");
-    jLabel2.setText("Descrição:");
-    jPanel9.setLayout(borderLayout6);
-    jPanel10.setLayout(borderLayout7);
-    borderLayout4.setVgap(5);
-    explanationPanel.setLayout(borderLayout8);
-    jPanel3.setBorder(border2);
-    jPanel3.setLayout(gridLayout2);
+    explanationPanel.setLayout(gridLayout4);
     gridLayout2.setRows(2);
     gridLayout2.setVgap(10);
-    jPanel12.setLayout(borderLayout9);
+    explanationTopPanel.setLayout(borderLayout9);
     evidencePhrasePanel.setLayout(borderLayout10);
     evidenceNodeLabel.setText("Evidencia : ");
     evidenceNodePanel.setLayout(borderLayout11);
@@ -217,18 +198,18 @@ public class ExplanationProperties extends JDialog
     naPanel.setLayout(borderLayout14);
     necessaryPanel.setLayout(borderLayout15);
     exclusivePanel.setLayout(borderLayout16);
-    jPanel17.setLayout(borderLayout17);
-    jLabel4.setText("Texto para Explanação :");
-    jPanel24.setLayout(borderLayout18);
-    jPanel15.setLayout(borderLayout19);
+    notUsedPanel.setLayout(borderLayout17);
+    evidencePhraseLabel.setText("Texto para Explanação :");
+    evidencePhraseTopPanel.setLayout(borderLayout18);
+    evidencePhraseBottomPanel.setLayout(borderLayout19);
     borderLayout10.setVgap(5);
     borderLayout9.setVgap(10);
-    jButton2.setText("Cancelar");
-    jButton2.addActionListener(new java.awt.event.ActionListener()
+    cancelButton.setText("Cancelar");
+    cancelButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jButton2_actionPerformed(e);
+        cancelButton_actionPerformed(e);
       }
     });
     evidenceNodeComboBox.addActionListener(new java.awt.event.ActionListener()
@@ -245,28 +226,38 @@ public class ExplanationProperties extends JDialog
         evidencePhraseTextArea_focusLost(e);
       }
     });
-    this.getContentPane().add(jPanel1,  BorderLayout.CENTER);
-    jPanel1.add(jTabbedPane1,  BorderLayout.CENTER);
-    jTabbedPane1.add(descriptionPanel, "Descrição");
-    descriptionPanel.add(jPanel5, BorderLayout.CENTER);
-    jPanel5.add(jPanel7,  BorderLayout.CENTER);
-    jPanel7.add(jPanel8, BorderLayout.NORTH);
-    jPanel8.add(jPanel9, null);
-    jPanel9.add(jLabel1,  BorderLayout.WEST);
-    jPanel9.add(nodeNameLabel,  BorderLayout.CENTER);
-    jPanel8.add(jPanel11, null);
-    jPanel8.add(jPanel10, null);
-    jPanel10.add(jLabel2, BorderLayout.CENTER);
-    jPanel7.add(jPanel6, BorderLayout.CENTER);
-    jPanel6.add(jScrollPane1,  BorderLayout.CENTER);
-    jScrollPane1.getViewport().add(jTextArea1, null);
-    jTabbedPane1.add(explanationPanel, "Explanação");
-    jPanel1.add(jPanel2,  BorderLayout.SOUTH);
-    jPanel2.add(jButton1, null);
-    jPanel2.add(jButton2, null);
-    explanationPanel.add(jPanel3,  BorderLayout.CENTER);
-    jPanel3.add(jPanel12, null);
-    jPanel12.add(evidenceTypePanel, BorderLayout.CENTER);
+    borderLayout2.setVgap(5);
+    descriptionTopPanel2.setLayout(borderLayout7);
+    descriptionTopPanel3.setLayout(borderLayout6);
+    gridLayout1.setRows(3);
+    descriptionTopPanel.setLayout(gridLayout1);
+    descriptionBottomPanel.setLayout(borderLayout5);
+    explanationVariableLabel.setText("Variável de explicação : ");
+    descriptionPanel.setBorder(border2);
+    descriptionTopPanel1.setLayout(borderLayout3);
+    descriptionLabel.setText("Descrição:");
+    gridLayout4.setRows(2);
+    gridLayout4.setVgap(10);
+    explanationPanel.setBorder(border2);
+    this.getContentPane().add(jTabbedPane,  BorderLayout.CENTER);
+    this.getContentPane().add(southPanel,  BorderLayout.SOUTH);
+    jTabbedPane.add(descriptionPanel, "Descrição");
+    descriptionTopPanel.add(descriptionTopPanel1, null);
+    descriptionTopPanel1.add(descriptionLabel,  BorderLayout.CENTER);
+    descriptionTopPanel.add(descriptionTopPanel2, null);
+    descriptionTopPanel.add(descriptionTopPanel3, null);
+    descriptionTopPanel3.add(explanationVariableLabel, BorderLayout.WEST);
+    descriptionTopPanel3.add(nodeNameLabel, BorderLayout.CENTER);
+    descriptionPanel.add(descriptionBottomPanel,  BorderLayout.CENTER);
+    descriptionBottomPanel.add(explanationNodeScrollPane, BorderLayout.CENTER);
+    explanationNodeScrollPane.add(explanationNodeTextArea, null);
+    descriptionPanel.add(descriptionTopPanel, BorderLayout.NORTH);
+    jTabbedPane.add(explanationPanel, "Explanação");
+    southPanel.add(okButton, null);
+    southPanel.add(cancelButton, null);
+    explanationPanel.add(explanationTopPanel, null);
+    explanationPanel.add(evidencePhrasePanel, null);
+    explanationTopPanel.add(evidenceTypePanel, BorderLayout.CENTER);
     evidenceTypePanel.add(triggerPanel, null);
     triggerPanel.add(triggerRadioButton, BorderLayout.CENTER);
     evidenceTypePanel.add(complementaryPanel, null);
@@ -277,16 +268,15 @@ public class ExplanationProperties extends JDialog
     necessaryPanel.add(necessaryRadioButton, BorderLayout.CENTER);
     evidenceTypePanel.add(exclusivePanel, null);
     exclusivePanel.add(exclusiveRadioButton, BorderLayout.CENTER);
-    evidenceTypePanel.add(jPanel17, null);
-    jPanel12.add(evidenceNodePanel, BorderLayout.NORTH);
+    evidenceTypePanel.add(notUsedPanel, null);
+    explanationTopPanel.add(evidenceNodePanel, BorderLayout.NORTH);
     evidenceNodePanel.add(evidenceNodeLabel, BorderLayout.WEST);
     evidenceNodePanel.add(evidenceNodeComboBox, BorderLayout.CENTER);
-    jPanel3.add(evidencePhrasePanel, null);
-    evidencePhrasePanel.add(jPanel15, BorderLayout.CENTER);
-    jPanel15.add(evidencePhraseScrollPane,  BorderLayout.CENTER);
+    evidencePhrasePanel.add(evidencePhraseBottomPanel, BorderLayout.CENTER);
+    evidencePhraseBottomPanel.add(evidencePhraseScrollPane,  BorderLayout.CENTER);
     evidencePhraseScrollPane.getViewport().add(evidencePhraseTextArea, null);
-    evidencePhrasePanel.add(jPanel24, BorderLayout.NORTH);
-    jPanel24.add(jLabel4, BorderLayout.CENTER);
+    evidencePhrasePanel.add(evidencePhraseTopPanel, BorderLayout.NORTH);
+    evidencePhraseTopPanel.add(evidencePhraseLabel, BorderLayout.CENTER);
     buttonGroup1.add(triggerRadioButton);
     buttonGroup1.add(complementaryRadioButton);
     buttonGroup1.add(naRadioButton);
@@ -307,18 +297,18 @@ public class ExplanationProperties extends JDialog
 
   public void setProbabilisticNode(ProbabilisticNode node)
   {   this.node = node;
-      jTextArea1.setText(node.getExplanationDescription());
+      explanationNodeTextArea.setText(node.getExplanationDescription());
       if (evidenceNodeComboBox.getItemCount() != 0)
         updateExplanationInformation(evidenceNodeComboBox.getItemAt(0).toString());
       nodeNameLabel.setText(node.getName());
   }
 
-  void jButton1_actionPerformed(ActionEvent e)
-  {   node.setExplanationDescription(jTextArea1.getText());
+  void okButton_actionPerformed(ActionEvent e)
+  {   node.setExplanationDescription(explanationNodeTextArea.getText());
       dispose();
   }
 
-  void jButton2_actionPerformed(ActionEvent e)
+  void cancelButton_actionPerformed(ActionEvent e)
   {   dispose();
   }
 

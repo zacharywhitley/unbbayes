@@ -105,7 +105,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
     private Dimension visibleDimension;
     private Dimension graphDimension;
 
-	// se 0 e 1 mudar a direção do arco e se 2 deixar sem direção    
+	// se 0 e 1 mudar a direção do arco e se 2 deixar sem direção
     private int direction;
 
     private JPopupMenu popup = new JPopupMenu();
@@ -164,7 +164,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         graphDimension = new Dimension(1500, 1500);
         visibleDimension = new Dimension(0, 0);
 
-        JMenuItem item = new JMenuItem("Propriedades...");
+        JMenuItem item = new JMenuItem(resource.getString("properties"));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae)
             {   controlador.showExplanationProperties((ProbabilisticNode)getSelected());
@@ -1527,12 +1527,12 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
 
             // chama o método que cria um Line2D.Double e desenha o mesmo
             view.draw(drawArc(arcAux));
-            
+
             if (arcAux.hasDirection()) {
 	            // chama o método que desenha a ponta da seta e desenha na tela
 	            view.fill(drawArrow(arcAux, true));
             }
-            
+
             view.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
             view.setStroke(new BasicStroke(1));
         }

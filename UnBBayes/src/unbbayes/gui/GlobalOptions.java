@@ -111,7 +111,7 @@ public class GlobalOptions extends JDialog {
         setResizable(true);
         this.graph = gra;
         this.controller = con;
-		
+
 		/*
         decimalGroup = new ButtonGroup();
         usa          = new JRadioButtonMenuItem(resource.getString("usaName"));
@@ -123,7 +123,7 @@ public class GlobalOptions extends JDialog {
         brazil       = new JRadioButtonMenuItem(resource.getString("brazilName"));
         korea        = new JRadioButtonMenuItem(resource.getString("koreaName"));
         */
-        
+
         createLog = new JCheckBox(resource.getString("createLogLabel"));
 
         gbl     = new GridBagLayout();
@@ -171,19 +171,29 @@ public class GlobalOptions extends JDialog {
 		probabilisticDescriptionNode.setToolTipText(resource.getString("probabilisticDescriptionNodeColorToolTip"));
         probabilisticDescriptionNode.addActionListener(
             new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    probabilisticDescriptionNodeColor = JColorChooser.showDialog(((Component) e.getSource()).getParent(), resource.getString("nodeColorLabel"), probabilisticDescriptionNodeColor);
+                public void actionPerformed(ActionEvent e)
+                {
+                  Color color = JColorChooser.showDialog(((Component) e.getSource()).getParent(), resource.getString("nodeColorLabel"), probabilisticDescriptionNodeColor);
+                  if (color != null)
+                  {
+                    probabilisticDescriptionNodeColor = color;
                     repaint();
+                  }
                 }
             });
-            
+
         probabilisticExplanationNode = new JButton(resource.getString("probabilisticExplanationNodeColorLabel"));
 		probabilisticExplanationNode.setToolTipText(resource.getString("probabilisticExplanationNodeColorToolTip"));
         probabilisticExplanationNode.addActionListener(
             new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    probabilisticExplanationNodeColor = JColorChooser.showDialog(((Component) e.getSource()).getParent(), resource.getString("nodeColorLabel"), probabilisticExplanationNodeColor);
+                public void actionPerformed(ActionEvent e)
+                {
+                  Color color = JColorChooser.showDialog(((Component) e.getSource()).getParent(), resource.getString("nodeColorLabel"), probabilisticExplanationNodeColor);
+                  if (color != null)
+                  {
+                    probabilisticExplanationNodeColor = color;
                     repaint();
+                  }
                 }
             });
 
@@ -191,9 +201,14 @@ public class GlobalOptions extends JDialog {
 		decisionNode.setToolTipText(resource.getString("decisionNodeColorToolTip"));
         decisionNode.addActionListener(
             new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    decisionNodeColor = JColorChooser.showDialog(((Component) e.getSource()).getParent(), resource.getString("nodeColorLabel"), decisionNodeColor);
+                public void actionPerformed(ActionEvent e)
+                {
+                  Color color = JColorChooser.showDialog(((Component) e.getSource()).getParent(), resource.getString("nodeColorLabel"), decisionNodeColor);
+                  if (color != null)
+                  {
+                    decisionNodeColor = color;
                     repaint();
+                  }
                 }
             });
 
@@ -201,9 +216,14 @@ public class GlobalOptions extends JDialog {
 		utilityNode.setToolTipText(resource.getString("utilityNodeColorToolTip"));
         utilityNode.addActionListener(
             new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    utilityNodeColor = JColorChooser.showDialog(((Component) e.getSource()).getParent(), resource.getString("nodeColorLabel"), utilityNodeColor);
+                public void actionPerformed(ActionEvent e)
+                {
+                  Color color = JColorChooser.showDialog(((Component) e.getSource()).getParent(), resource.getString("nodeColorLabel"), utilityNodeColor);
+                  if (color != null)
+                  {
+                    utilityNodeColor = color;
                     repaint();
+                  }
                 }
             });
 
@@ -211,9 +231,14 @@ public class GlobalOptions extends JDialog {
 		arc.setToolTipText(resource.getString("arcColorToolTip"));
         arc.addActionListener(
             new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    arcColor = JColorChooser.showDialog(((Component) e.getSource()).getParent(), "Cor do Arco", arcColor);
+                public void actionPerformed(ActionEvent e)
+                {
+                  Color color = JColorChooser.showDialog(((Component) e.getSource()).getParent(), resource.getString("arcColor"), arcColor);
+                  if (color != null)
+                  {
+                    arcColor = color;
                     repaint();
+                  }
                 }
             });
 
@@ -221,9 +246,14 @@ public class GlobalOptions extends JDialog {
 		selection.setToolTipText(resource.getString("selectionColorToolTip"));
         selection.addActionListener(
             new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    selectionColor = JColorChooser.showDialog(((Component) e.getSource()).getParent(), "Cor de Seleção", selectionColor);
+                public void actionPerformed(ActionEvent e)
+                {
+                  Color color = JColorChooser.showDialog(((Component) e.getSource()).getParent(), resource.getString("selectionColor"), selectionColor);
+                  if (color != null)
+                  {
+                    selectionColor = color;
                     repaint();
+                  }
                 }
             });
 
@@ -231,9 +261,14 @@ public class GlobalOptions extends JDialog {
 		back.setToolTipText(resource.getString("backgroundColorToolTip"));
         back.addActionListener(
             new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    backColor = JColorChooser.showDialog(((Component) e.getSource()).getParent(), "Cor de Fundo", backColor);
+                public void actionPerformed(ActionEvent e)
+                {
+                  Color color = JColorChooser.showDialog(((Component) e.getSource()).getParent(), resource.getString("backGroundColor"), backColor);
+                  if (color != null)
+                  {
+                    backColor = color;
                     repaint();
+                  }
                 }
             });
 
@@ -421,7 +456,7 @@ public class GlobalOptions extends JDialog {
 		controllerSizePanel.add(northControllerSizePanel,  BorderLayout.NORTH);
 		controllerSizePanel.add(new Preview(this),  BorderLayout.CENTER);
 		logPanel.add(createLog);
-		
+
 //		jtp.addTab(resource.getString("decimalPatternTab"), decimalPatternPanel);
 		jtp.addTab(resource.getString("colorControllerTab"), controllerColorPanel);
 		jtp.addTab(resource.getString("sizeControllerTab"), controllerSizePanel);
@@ -450,7 +485,7 @@ public class GlobalOptions extends JDialog {
     public Color getPropabilisticDescriptionNodeColor() {
         return this.probabilisticDescriptionNodeColor;
     }
-    
+
     /**
      *  Retorna a cor do nó de probabilidade do botão <code>corNo</code>
      *
