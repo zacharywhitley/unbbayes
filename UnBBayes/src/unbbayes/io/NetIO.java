@@ -264,7 +264,7 @@ public class NetIO implements BaseIO {
 							} else {
 								auxTabPot.setValueAt(
 									nDim++,
-									Double.parseDouble(st.sval));
+									Float.parseFloat(st.sval));
 							}
 							proximo(st);
 						}
