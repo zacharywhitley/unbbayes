@@ -545,6 +545,8 @@ public class WindowController implements KeyListener {
         node.setPosicao(x, y);
         node.setName(resource.getString("utilityNodeName") + rede.noVariaveis());
         node.setDescription(node.getName());
+        PotentialTable auxTab = ((ITabledVariable)node).getPotentialTable();
+        auxTab.addVariable(node);        
         rede.addNode(node);
     }
 
@@ -578,8 +580,8 @@ public class WindowController implements KeyListener {
         final PotentialTable auxTabPot;
         final int noVariaveis;
 
-        if (no instanceof ProbabilisticNode) {
-            auxTabPot = ((ProbabilisticNode) no).getPotentialTable();
+        if (no instanceof ITabledVariable) {
+            auxTabPot = ((ITabledVariable) no).getPotentialTable();
 
             int nEstados = 1;
             noVariaveis = auxTabPot.variableCount();
@@ -606,35 +608,6 @@ public class WindowController implements KeyListener {
             nEstados = no.getStatesSize();
             for (int i = 1, k = 0; i < tabela.getColumnCount(); i++, k += nEstados) {
                 for (int j = noVariaveis - 1, l = 0; j < tabela.getRowCount(); j++, l++) {
-                    tabela.setValueAt("" + df.format(auxTabPot.getValue(k + l)), j, i);
-                }
-            }
-        } else if (no instanceof UtilityNode) {
-            auxTabPot = ((UtilityNode) no).getPotentialTable();
-
-            int nEstados = 1;
-            noVariaveis = auxTabPot.variableCount();
-
-            for (int count = 0; count < noVariaveis; count++) {
-                nEstados *= auxTabPot.getVariableAt(count).getStatesSize();
-            }
-
-            tabela = new JTable(1 + noVariaveis, nEstados + 1);
-
-            tabela.setValueAt(resource.getString("stateUtilityName"), noVariaveis, 0);
-
-            for (int k = noVariaveis - 1, l = 0; k >= 0; k--, l++) {
-                Node auxNo = auxTabPot.getVariableAt(k);
-                nEstados /= auxNo.getStatesSize();
-                tabela.setValueAt(auxNo.getName(), l, 0);
-                for (int i = 0; i < tabela.getColumnCount() - 1; i++) {
-                    tabela.setValueAt(auxNo.getStateAt((i / nEstados) % auxNo.getStatesSize()), l, i + 1);
-                }
-            }
-
-            nEstados = no.getStatesSize();
-            for (int i = 1, k = 0; i < tabela.getColumnCount(); i++, k += nEstados) {
-                for (int j = noVariaveis, l = 0; j < tabela.getRowCount(); j++, l++) {
                     tabela.setValueAt("" + df.format(auxTabPot.getValue(k + l)), j, i);
                 }
             }

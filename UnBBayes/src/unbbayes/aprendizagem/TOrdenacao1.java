@@ -122,7 +122,6 @@ public class TOrdenacao1 extends JDialog
            }
            matriz = new byte[linhas][variaveis.size()];
            posicao = 0;
-           int finalLinha;
            String nomeEstado = "";
            System.out.println("Linhas = " + linhas);
            System.out.println("tamanho = "+variaveis.size());
@@ -151,10 +150,10 @@ public class TOrdenacao1 extends JDialog
                }
                numeroCaso++;
                while (colunas.ttype != StreamTokenizer.TT_EOL && numeroCaso < linhas ){
-                   finalLinha = colunas.nextToken();
+                   colunas.nextToken();
                }
                posicao = 0;
-               finalLinha = colunas.nextToken();
+               colunas.nextToken();
            }
            System.out.println("NumeroCasos " + numeroCaso);
            arquivoLeituraChar.close();

@@ -484,7 +484,7 @@ public class ProbabilisticNetwork extends Network {
         int sizeNos = copiaNos.size();
         for (int c = 0; c < sizeNos; c++) {
             TreeVariable node = (TreeVariable) copiaNos.get(c);
-            if (node.hasEvidence() && node instanceof ProbabilisticNode) {
+            if (node.hasEvidence()) {
                 ITabledVariable auxObj;
                 auxObj = node.getAssociatedClique();
                 PotentialTable auxTab = auxObj.getPotentialTable();

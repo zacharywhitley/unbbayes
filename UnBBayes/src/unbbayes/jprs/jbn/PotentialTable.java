@@ -354,7 +354,6 @@ public abstract class PotentialTable implements Cloneable {
                 if (index[c] != -1) {
                     coordB[c] = coordA[index[c]];
                 } else {
-                    System.out.println("entrou");
                     coordB[c] = (coordB[c]+1) % numEstados[c];
                 }
             }

@@ -154,10 +154,7 @@ public class NetIO implements BaseIO {
                 if (auxNo1 instanceof ITabledVariable) {
                     auxIVTab = (ITabledVariable)auxNo1;
                     auxTabPot = auxIVTab.getPotentialTable();
-                    if (auxNo1 instanceof ProbabilisticNode) {
-        /** @todo add the variable to the table on the constructor of ProbabilisticNode  */
-                       auxTabPot.addVariable(auxNo1);
-                    }
+                    auxTabPot.addVariable(auxNo1);
                 }
 
                 proximo(st);
@@ -176,19 +173,11 @@ public class NetIO implements BaseIO {
 
                 if (auxIVTab != null) {
                     int sizeVetor = auxTabPot.variableCount() / 2;
-                    if (auxIVTab instanceof ProbabilisticNode) {
-                        for (int k = 1; k <= sizeVetor; k++) {
-                            Object temp = auxTabPot.getVariableAt(k);
-                            auxTabPot.setVariableAt(k, auxTabPot.getVariableAt(auxTabPot.variableCount() - k));
-                            auxTabPot.setVariableAt(auxTabPot.variableCount() - k, (Node)temp);
-                        }
-                    } else {
-                        for (int k = 0; k < sizeVetor; k++) {
-                            Object temp = auxTabPot.getVariableAt(k);
-                            auxTabPot.setVariableAt(k, auxTabPot.getVariableAt(auxTabPot.variableCount() - k - 1));
-                            auxTabPot.setVariableAt(auxTabPot.variableCount() - k - 1, (Node)temp);
-                        }
-                    }
+	                for (int k = 1; k <= sizeVetor; k++) {
+	                    Object temp = auxTabPot.getVariableAt(k);
+	                    auxTabPot.setVariableAt(k, auxTabPot.getVariableAt(auxTabPot.variableCount() - k));
+	                    auxTabPot.setVariableAt(auxTabPot.variableCount() - k, (Node)temp);
+	                }
                 }
                 if (st.sval.length() == 1) {
                    proximo(st);

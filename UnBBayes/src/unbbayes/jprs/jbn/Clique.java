@@ -150,7 +150,7 @@ public class Clique implements ITabledVariable {
         if (control == decisoes.size()) {
             double soma = sum(0, fixo, coord);
             if (soma == 0.0) {
-                ok[0] = false;
+//                ok[0] = false;
             } else {
                 div(0, fixo, coord, soma);
             }
