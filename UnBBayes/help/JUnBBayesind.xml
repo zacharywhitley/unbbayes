@@ -1,55 +1,52 @@
 <?xml version="1.0"?>
 <index>
-	
-	<indexitem image="junbbayes" text="Ajuda do JAVA UnBBayes" target="branco">
-		<indexitem image="iintroducao" text="Introdu&ccedil;&atilde;o ao JAVA UnBBayes" target="introducao" />
-		<indexitem image="icomponentes" text="Componentes" target="controles">
-			<indexitem image="iaprendizagem" text="Aprendizagem" target="aprendizagem" />
+	<indexitem image="iunbbayes" text="Ajuda do UnBBayes" target="branco">
+		<indexitem image="iintroduction" text="Introdu&ccedil;&atilde;o ao UnBBayes" target="introducao"/>
+		<indexitem image="icomponents" text="Componentes" target="controles">
+			<indexitem image="iaprendizagem" text="Aprendizagem" target="aprendizagem"/>
 			<indexitem image="iacao" text="Comandos da Rede" target="branco">
-				<indexitem image="iabrir" text="Abrir Rede" target="abrirrede" />
-				<indexitem image="icompilar" text="Compilar Rede" target="compilarrede" />
-				<indexitem image="iimprimir" text="Imprimir Rede Bayesiana" target="imprimir" />
-				<indexitem image="iimprimirtabela" text="Imprimir Tabela de Potencial de um N&oacute; da Rede Bayesiana" target="imprimirtabela" />
-				<indexitem image="ilog" text="Mostrar Informa&ccedil;&otilde;es sobre a Compila&ccedil;&atilde;o" target="log" />
-				<indexitem image="inovo" text="Nova Rede" target="novarede" />
-				<indexitem image="isalvar" text="Salvar Rede" target="salvarrede" />
-				<indexitem image="ieditar" text="Voltar para Edi&ccedil;&atilde;o da Rede Bayesiana" target="edicaorede" />				
-				<indexitem image="ivisualisar" text="Visualisar Rede Bayesiana" target="visualisar" />
-				<indexitem image="ivisualisartabela" text="Visualisar Tabela de Potencial de um N&oacute; da Rede Bayesiana" target="visualisartabela" />
+				<indexitem image="iabrir" text="Abrir Rede" target="abrirrede"/>
+				<indexitem image="icompilar" text="Compilar Rede" target="compilarrede"/>
+				<indexitem image="iimprimir" text="Imprimir Rede Bayesiana" target="imprimir"/>
+				<indexitem image="iimprimirtabela" text="Imprimir Tabela de Potencial de um N&oacute; da Rede Bayesiana" target="imprimirtabela"/>
+				<indexitem image="ilog" text="Mostrar Informa&ccedil;&otilde;es sobre a Compila&ccedil;&atilde;o" target="log"/>
+				<indexitem image="inovo" text="Nova Rede" target="novarede"/>
+				<indexitem image="isalvar" text="Salvar Rede" target="salvarrede"/>
+				<indexitem image="ieditar" text="Voltar para Edi&ccedil;&atilde;o da Rede Bayesiana" target="edicaorede"/>
+				<indexitem image="ivisualisar" text="Visualisar Rede Bayesiana" target="visualisar"/>
+				<indexitem image="ivisualisartabela" text="Visualisar Tabela de Potencial de um N&oacute; da Rede Bayesiana" target="visualisartabela"/>
 			</indexitem>
 			<indexitem image="irede" text="Criando uma Rede Bayesiana" target="branco">
-				<indexitem image="imais" text="Adicionar Estado a um N&oacute;" target="adicionarestado" />
-				<indexitem image="icolar" text="Colar uma Parte da Rede Bayesiana" target="colar" />
-				<indexitem image="icopiar" text="Copiar uma Parte da Rede Bayesiana" target="copiar" />				
-				<indexitem image="itext" text="Editar Descri&ccedil;&atilde;o de um N&oacute;" target="editardescricao" />
-				<indexitem image="itext" text="Editar Sigla de um N&oacute;" target="editarsigla" />
-				<indexitem image="iarco" text="Inserir Arco" target="inserirarco" />
-				<indexitem image="ino" text="Inserir N&oacute;" target="inserirno" />			
-				<indexitem image="imenos" text="Remover Estado de um N&oacute;" target="removerestado" />								
-				<indexitem image="iselecionar" text="Selecionar uma Parte da Rede Bayesiana" target="selecionar" />				
+				<indexitem image="imais" text="Adicionar Estado a um N&oacute;" target="adicionarestado"/>
+				<indexitem image="ipaste" text="Colar uma Parte da Rede Bayesiana" target="colar"/>
+				<indexitem image="icopyr" text="Copiar uma Parte da Rede Bayesiana" target="copiar"/>
+				<indexitem image="itext_edition" text="Editar Descri&ccedil;&atilde;o de um N&oacute;" target="editardescricao"/>
+				<indexitem image="itext_edition" text="Editar Sigla de um N&oacute;" target="editarsigla"/>
+				<indexitem image="iarco" text="Inserir Arco" target="inserirarco"/>
+				<indexitem image="ino" text="Inserir N&oacute;" target="inserirno"/>
+				<indexitem image="imenos" text="Remover Estado de um N&oacute;" target="removerestado"/>
+				<indexitem image="iselecionar" text="Selecionar uma Parte da Rede Bayesiana" target="selecionar"/>
 			</indexitem>
-			<indexitem image="iarvore" text="Editando &Aacute;rvore de Evid&ecirc;ncias" target="branco">
-				<indexitem image="icontrair" text="Contrair &Aacute;rvore de Evid&ecirc;ncias" target="contrairarvore" />
-				<indexitem image="iexpandir" text="Expandir &Aacute;rvore de Evid&ecirc;ncias" target="expandirarvore" />				
-				<indexitem image="ipropagar" text="Propagar Evid&ecirc;ncias da &Aacute;rvore" target="propagarevidencias" />
-				<indexitem image="ilikelihood" text="Entrar com Likelihood" target="likelihood" />
-				<indexitem image="icerteza" text="Entrar com a Certeza" target="certeza" />
+			<indexitem image="itree" text="Editando &Aacute;rvore de Evid&ecirc;ncias" target="branco">
+				<indexitem image="icontrair" text="Contrair &Aacute;rvore de Evid&ecirc;ncias" target="contrairarvore"/>
+				<indexitem image="iexpandir" text="Expandir &Aacute;rvore de Evid&ecirc;ncias" target="expandirarvore"/>
+				<indexitem image="ipropagar" text="Propagar Evid&ecirc;ncias da &Aacute;rvore" target="propagarevidencias"/>
+				<indexitem image="ilikelihood" text="Entrar com Likelihood" target="likelihood"/>
+				<indexitem image="icertain" text="Entrar com a Certeza" target="certeza"/>
 			</indexitem>
 			<indexitem image="ilnf" text="Look-and-Feel" target="branco">
-				<indexitem image="imetal" text="Metal" target="metal" />
-				<indexitem image="imotif" text="Motif" target="motif" />
-				<indexitem image="iwindows" text="Windows" target="windows" />
+				<indexitem image="imetal" text="Metal" target="metal"/>
+				<indexitem image="imotif" text="Motif" target="motif"/>
+				<indexitem image="iwindows" text="Windows" target="windows"/>
 			</indexitem>
-			<indexitem image="iopcaoglobal" text="Op&ccedil;&otilde;es Globais" target="opcoesglobais" />			
-			
+			<indexitem image="iopcaoglobal" text="Op&ccedil;&otilde;es Globais" target="opcoesglobais"/>
 		</indexitem>
-		<indexitem image="ilnf" text="Exemplo de Uso da API" target="branco">
-			<indexitem image="imotif" text="Modo Texto" target="modotexto" />
-			<indexitem image="imetal" text="Modo Gr&aacute;fico" target="modografico" />			
+		<indexitem image="iapi_use" text="Exemplo de Uso da API" target="branco">
+			<indexitem image="imotif" text="Modo Texto" target="modotexto"/>
+			<indexitem image="imetal" text="Modo Gr&aacute;fico" target="modografico"/>
 		</indexitem>
-		<indexitem image="iajuda" text="Ativar Janela de Ajuda" target="ajuda" />
-		<indexitem image="ijhelp" text="Continuar Desenvolvimento da Ajuda do JAVA UnBBayes" target="jhelp" />
-		<indexitem image="idoc" text="Documenta&ccedil;&atilde;o da API" target="doc" />
+		<indexitem image="iajuda" text="Ativar Janela de Ajuda" target="ajuda"/>
+		<indexitem image="iajuda" text="Continuar Desenvolvimento da Ajuda do JAVA UnBBayes" target="jhelp"/>
+		<indexitem image="idocumentation" text="Documenta&ccedil;&atilde;o da API" target="doc"/>
 	</indexitem>
-	
 </index>
