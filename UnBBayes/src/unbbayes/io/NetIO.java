@@ -93,7 +93,7 @@ public class NetIO implements BaseIO {
 					} else if (st.sval.equals("tree"))
                                         {   proximo(st);
                                             StringBuffer sb = new StringBuffer(st.sval);
-                                            DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
+                                            DefaultMutableTreeNode root = new DefaultMutableTreeNode("Variáveis de Informação");
                                             loadHierarchicTree(sb,root);
 
                                             // construct tree

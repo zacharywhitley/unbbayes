@@ -135,7 +135,7 @@ public class NetWindow extends JPanel {
      *@return    retorna o evidenceTree (<code>JTree</code>)
      *@see       JTree
      */
-    public JTree getEvidenceTree()
+    public EvidenceTree getEvidenceTree()
     {
         return netCompilation.getEvidenceTree();
     }
@@ -198,7 +198,7 @@ public class NetWindow extends JPanel {
      *@parm      tree a nova árvore (<code>JTree</code>) desejada.
      *@see       JTree
      */
-    public void setEvidenceTree(JTree tree) {
+    public void setEvidenceTree(EvidenceTree tree) {
         netCompilation.setEvidenceTree(tree);
     }
 

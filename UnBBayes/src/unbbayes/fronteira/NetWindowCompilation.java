@@ -24,7 +24,8 @@ public class NetWindowCompilation extends JPanel {
     private final ProbabilisticNetwork net;
     private final NetWindow netWindow;
 
-    private JTree evidenceTree;
+    //private JTree evidenceTree;
+    private EvidenceTree evidenceTree;
     private final WindowController controller;
     private final JScrollPane jspTree;
     private final JSplitPane centerPanel;
@@ -58,7 +59,8 @@ public class NetWindowCompilation extends JPanel {
         topPanel       = new JPanel(new GridLayout(0,1));
         jtbCompilation = new JToolBar();
         centerPanel    = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        evidenceTree   = new JTree(new DefaultMutableTreeNode(null));
+        //evidenceTree   = new JTree(new DefaultMutableTreeNode(null));
+        evidenceTree   = new EvidenceTree();
         jspTree        = new JScrollPane(evidenceTree);
         bottomPanel    = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 1));
         status         = new JLabel(resource.getString("statusReadyLabel"));
@@ -120,7 +122,10 @@ public class NetWindowCompilation extends JPanel {
         //contrair árvore de evidências
         collapse.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
-                    controller.collapseTree(evidenceTree);
+                    //controller.collapseTree(evidenceTree);
+                    setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                    evidenceTree.collapseTree();
+                    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 }
         });
 
@@ -128,7 +133,10 @@ public class NetWindowCompilation extends JPanel {
         //expandir árvore de evidências
         expand.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
-                    controller.expandTree(evidenceTree);
+                    //controller.expandTree(evidenceTree);
+                    setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                    evidenceTree.expandTree();
+                    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 }
         });
 
@@ -180,7 +188,7 @@ public class NetWindowCompilation extends JPanel {
                     } else if (e.getClickCount() == 2) {
                         DefaultMutableTreeNode root = (DefaultMutableTreeNode) evidenceTree.getModel().getRoot();
                         int index = root.getIndex(node);
-                        controller.getSituacaoArvore()[index] = ! controller.getSituacaoArvore()[index];
+                        evidenceTree.getSituacaoArvore()[index] = ! evidenceTree.getSituacaoArvore()[index];
                     }
                 }
            }
@@ -235,8 +243,8 @@ public class NetWindowCompilation extends JPanel {
      *@parm      tree a nova árvore (<code>JTree</code>) desejada.
      *@see       JTree
      */
-    public void setEvidenceTree(JTree tree) {
-        this.evidenceTree = tree;
+    public void setEvidenceTree(EvidenceTree tree) {
+        evidenceTree = tree;
     }
 
     /**
@@ -264,9 +272,9 @@ public class NetWindowCompilation extends JPanel {
      *@return    retorna o evidenceTree (<code>JTree</code>)
      *@see       JTree
      */
-    public JTree getEvidenceTree()
+    public EvidenceTree getEvidenceTree()
     {
-        return this.evidenceTree;
+        return evidenceTree;
     }
 
     /**

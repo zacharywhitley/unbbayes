@@ -62,8 +62,9 @@ public class WindowController implements KeyListener {
     private ProbabilisticNetwork rede;
 
     private NumberFormat df;
+    private EvidenceTree evidenceTree;
 
-    private boolean[] situacaoArvore;
+    //private boolean[] situacaoArvore;
 
     private List copia;
     private List copiados;
@@ -137,9 +138,9 @@ public class WindowController implements KeyListener {
         return this.rede;
     }
 
-    public boolean[] getSituacaoArvore() {
+    /*public boolean[] getSituacaoArvore() {
       return this.situacaoArvore;
-    }
+    }*/
 
 
     /**
@@ -290,7 +291,7 @@ public class WindowController implements KeyListener {
                 str = (String) auxNode.getUserObject();
                 auxNode.setUserObject(str.substring(0, str.lastIndexOf(':') + 1) + df.format(valores[i] * 100));
             }
-            ((DefaultTreeModel) tela.getEvidenceTree().getModel()).reload(node);
+            ((DefaultTreeModel) evidenceTree.getModel()).reload(node);
         }
     }
 
@@ -301,7 +302,7 @@ public class WindowController implements KeyListener {
     public void initialize() {
     	try {
 	        rede.initialize();
-       		this.updateTree();
+       		evidenceTree.updateTree();
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
@@ -341,7 +342,7 @@ public class WindowController implements KeyListener {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(tela, resource.getString("statusEvidenceException"), resource.getString("statusError"), JOptionPane.ERROR_MESSAGE);
         }
-        updateTree();
+        evidenceTree.updateTree();
         tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
@@ -354,7 +355,7 @@ public class WindowController implements KeyListener {
      * @since
      * @see            JTree
      */
-    public void collapseTree(JTree arvore) {
+    /*public void collapseTree(JTree arvore) {
         tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         for (int i = 0; i < arvore.getRowCount(); i++) {
             arvore.collapseRow(i);
@@ -365,7 +366,7 @@ public class WindowController implements KeyListener {
         }
 
         tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-    }
+    }*/
 
 
     /**
@@ -376,7 +377,7 @@ public class WindowController implements KeyListener {
      * @since
      * @see            JTree
      */
-    public void expandTree(JTree arvore) {
+    /*public void expandTree(JTree arvore) {
         tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         for (int i = 0; i < arvore.getRowCount(); i++) {
             arvore.expandRow(i);
@@ -387,7 +388,7 @@ public class WindowController implements KeyListener {
         }
 
         tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-    }
+    }*/
 
 
     /**
@@ -482,7 +483,7 @@ public class WindowController implements KeyListener {
             treeNode.setUserObject(node.getStateAt(pai.getIndex(treeNode)) + ": **");
         }
         node.addFinding(pai.getIndex(treeNode));
-        ((DefaultTreeModel) tela.getEvidenceTree().getModel()).reload(pai);
+        ((DefaultTreeModel) evidenceTree.getModel()).reload(pai);
     }
 
 
@@ -523,13 +524,15 @@ public class WindowController implements KeyListener {
             }
         }
 
-        situacaoArvore = new boolean[nos.size()];
+        //situacaoArvore = new boolean[nos.size()];
 
-        for (int i = 0; i < situacaoArvore.length; i++) {
+/*        for (int i = 0; i < situacaoArvore.length; i++) {
             situacaoArvore[i] = false;
         }
 
-        updateTree();
+        updateTree();*/
+        evidenceTree = tela.getEvidenceTree();
+        evidenceTree.setProbabilisticNetwork(rede);
         tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 
         NetWindow.getInstance().setStatus(resource.getString("statusTotalTime") + (((double)(System.currentTimeMillis() - ini))/1000) + resource.getString("statusSeconds"));
@@ -1009,7 +1012,7 @@ public class WindowController implements KeyListener {
      * @since
      * @see            JTree
      */
-    private void updateTree() {
+    /*private void updateTree() {
         JTree arvore = tela.getEvidenceTree();
         NodeList nos = rede.getCopiaNos();
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) arvore.getModel().getRoot();
@@ -1044,7 +1047,7 @@ public class WindowController implements KeyListener {
           }
           temp++;
         }
-    }
+    }*/
 
 
 
