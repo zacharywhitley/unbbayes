@@ -242,7 +242,8 @@ public class Network implements java.io.Serializable {
      *  Destrói a lista de adjacentes de cada nó do grafo.
      */
     protected void desmontaAdjacentes() {
-        for (int qnos = 0; qnos < nos.size(); qnos++) {
+    	int size = nos.size();
+        for (int qnos = 0; qnos < size; qnos++) {
             nos.get(qnos).desmontaAdjacentes();
         }
     }

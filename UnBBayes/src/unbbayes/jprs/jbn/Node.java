@@ -387,9 +387,9 @@ public abstract class Node implements java.io.Serializable {
      *
      *@return    descrição do nó formatado.
      */
-    public String toString() {
-        return description + " (" + name + ")";
-    }
+    //public String toString() {
+    //    return description + " (" + name + ")";
+    //}
 
 
     /**
@@ -437,4 +437,20 @@ public abstract class Node implements java.io.Serializable {
             }
         }
     }
+	/**
+	 * Sets the adjacents.
+	 * @param adjacents The adjacents to set
+	 */
+	public void setAdjacents(NodeList adjacents) {
+		this.adjacents = adjacents;
+	}
+
+	/**
+	 * Sets the states.
+	 * @param states The states to set
+	 */
+	public void setStates(List states) {
+		this.states = states;
+	}
+
 }

@@ -7,7 +7,7 @@ import java.util.List;
 import unbbayes.fronteira.TJanelaEdicao;
 import unbbayes.jprs.jbn.ProbabilisticNetwork;
 import unbbayes.util.NodeList;
-import unbbayes.util.SetToolkit;
+import unbbayes.util.SetToolkit; 
 
 /**
  *   Essa classe implementa os métodos necessários para que

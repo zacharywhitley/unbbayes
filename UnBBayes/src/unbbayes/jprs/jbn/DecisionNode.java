@@ -21,8 +21,9 @@
 
 package unbbayes.jprs.jbn;
 
-import java.util.*;
 import java.awt.Color;
+
+import unbbayes.util.SetToolkit;
 
 /**
  *  Variavel de decisao
@@ -37,6 +38,29 @@ public class DecisionNode extends TreeVariable implements java.io.Serializable {
      * Inicializa a cor do nó.
      */
     public DecisionNode() {
+    }
+    
+    public Object clone() {
+    	DecisionNode cloned = new DecisionNode();
+		cloned.setColor(this.getColor().getRGB());
+		cloned.setDescription(this.getDescription());
+		cloned.setName(this.getName());
+		cloned.setPosicao(this.getPosicao().getX(), this.getPosicao().getY());
+		cloned.setParents(SetToolkit.clone(parents));
+		cloned.setChildren(SetToolkit.clone(this.getChildren()));
+		cloned.setStates(SetToolkit.clone(states));
+		cloned.setAdjacents(SetToolkit.clone(this.getAdjacents()));
+		cloned.setSelected(this.isSelecionado());
+		cloned.setAltura(this.getAltura());
+        cloned.setLargura(this.getLargura());
+        cloned.setExplanationDescription(this.getExplanationDescription());
+        cloned.setPhrasesMap(this.getPhrasesMap());
+        cloned.setInformationType(this.getInformationType());
+        double[] marginais = new double[this.getMarginais().length];
+        System.arraycopy(this.getMarginais(), 0, marginais, 0, marginais.length);
+        cloned.setMarginais(marginais);
+        
+        return cloned;
     }
     
     

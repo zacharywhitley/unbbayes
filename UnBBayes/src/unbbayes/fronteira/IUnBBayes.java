@@ -21,17 +21,32 @@
 
 package unbbayes.fronteira;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.net.URL;
+import java.util.ResourceBundle;
 
-import javax.help.*;
-import javax.swing.*;
-
-import unbbayes.aprendizagem.*;
-import unbbayes.controlador.*;
+import javax.help.HelpSet;
+import javax.help.JHelp;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import unbbayes.aprendizagem.ConstructionController;
+import unbbayes.controlador.MainController;
 
 /**
  *  Essa classe extende o <code>JFrame</code> e é responsável pela interface
@@ -256,7 +271,7 @@ public class IUnBBayes extends JFrame {
                 File file;
                 if (option == JFileChooser.APPROVE_OPTION) {
                     file = chooser.getSelectedFile();
-                    new TOrdenacao1(file, controller);
+                    new ConstructionController(file, controller);
                 }
             }
         });

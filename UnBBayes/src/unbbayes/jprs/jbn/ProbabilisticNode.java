@@ -23,6 +23,8 @@ package unbbayes.jprs.jbn;
 import java.util.*;
 import java.awt.Color;
 
+import unbbayes.util.SetToolkit;
+
 /**
  *  Representa variável probabilística.
  *
@@ -68,6 +70,30 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
         no.tabelaPot = (ProbabilisticTable)this.tabelaPot.clone();
         return no;
     }
+    
+    public Object clone() {
+    	ProbabilisticNode cloned = new ProbabilisticNode();
+    	cloned.tabelaPot = (ProbabilisticTable)this.tabelaPot.clone();
+		cloned.setColor(this.getColor().getRGB());
+		cloned.setDescription(this.getDescription());
+		cloned.setName(this.getName());
+		cloned.setPosicao(this.getPosicao().getX(), this.getPosicao().getY());
+		cloned.setParents(SetToolkit.clone(parents));
+		cloned.setChildren(SetToolkit.clone(this.getChildren()));
+		cloned.setStates(SetToolkit.clone(states));
+		cloned.setAdjacents(SetToolkit.clone(this.getAdjacents()));
+		cloned.setSelected(this.isSelecionado());
+		cloned.setAltura(this.getAltura());
+        cloned.setLargura(this.getLargura());
+        cloned.setExplanationDescription(this.getExplanationDescription());
+        cloned.setPhrasesMap(this.getPhrasesMap());
+        cloned.setInformationType(this.getInformationType());
+        double[] marginais = new double[this.getMarginais().length];
+        System.arraycopy(this.getMarginais(), 0, marginais, 0, marginais.length);
+        cloned.setMarginais(marginais);
+        
+        return cloned;
+    }
 
 
     /**
@@ -87,7 +113,8 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
         marginais = new double[getStatesSize()];
         PotentialTable auxTab = (PotentialTable) cliqueAssociado.getPotentialTable().clone();
         int index = auxTab.indexOfVariable(this);
-        for (int i = 0; i < cliqueAssociado.getPotentialTable().variableCount(); i++) {
+        int size = cliqueAssociado.getPotentialTable().variableCount();
+        for (int i = 0; i < size; i++) {
             if (i != index) {
                 auxTab.removeVariable(cliqueAssociado.getPotentialTable().getVariableAt(i));
             }

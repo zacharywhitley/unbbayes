@@ -118,4 +118,20 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     void setAssociatedClique(ITabledVariable clique) {
         this.cliqueAssociado = clique;
     }
+	/**
+	 * Gets the marginais.
+	 * @return Returns a double[]
+	 */
+	public double[] getMarginais() {
+		return marginais;
+	}
+
+	/**
+	 * Sets the marginais.
+	 * @param marginais The marginais to set
+	 */
+	public void setMarginais(double[] marginais) {
+		this.marginais = marginais;
+	}
+
 }

@@ -282,6 +282,8 @@ public class NetWindow extends JPanel {
 		netCompilation.getEvidenceTree().setRootVisible(false);
 
 		bCompiled = true;
+		
+		controller.changeToNetCompilation();
 
 		carta.show(this, "netCompilation");
 
@@ -300,6 +302,8 @@ public class NetWindow extends JPanel {
 		netEdition.setStatus(status.getText());
 
 		bCompiled = false;
+		
+		controller.changeToNetEdition();
 
 		carta.show(this, "netEdition");
 

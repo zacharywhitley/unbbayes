@@ -143,7 +143,10 @@ public class EvidenceTree extends JTree
 
     public void setProbabilisticNetwork(ProbabilisticNetwork net)
     {   this.net = net;
-        expandedNodes = new boolean[net.getNos().size()];
+    	// deve pegar o copiaNos que possui todos os nos que aparecem na
+    	// arvore, ou seja, todos menos os de Utilidade
+        //expandedNodes = new boolean[net.getNos().size()];
+        expandedNodes = new boolean[net.getCopiaNos().size()];
         for (int i = 0; i < expandedNodes.length; i++) {
             expandedNodes[i] = false;
         }

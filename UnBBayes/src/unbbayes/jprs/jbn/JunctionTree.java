@@ -72,6 +72,19 @@ public class JunctionTree implements java.io.Serializable {
 	public double getN() {
 		return n;
 	}
+	
+	public Object clone() {
+		JunctionTree cloned = new JunctionTree();
+		cloned.setSeparators(SetToolkit.clone(separators));
+		cloned.setCliques(SetToolkit.clone(cliques));
+		cloned.setN(n);
+		if (coordSep != null) {
+			int [][][] coordSep1 = new int[coordSep.length][coordSep[0].length][coordSep[0][0].length];
+			System.arraycopy(coordSep, 0, coordSep1, 0, coordSep.length);
+			cloned.setCoordSep(coordSep1);
+		}
+		return cloned;
+	}
 
 	public void addSeparator(Separator sep) {
 		separators.add(sep);
@@ -334,4 +347,36 @@ public class JunctionTree implements java.io.Serializable {
 		}
 	}
 	*/
+	/**
+	 * Sets the cliques.
+	 * @param cliques The cliques to set
+	 */
+	public void setCliques(List cliques) {
+		this.cliques = cliques;
+	}
+
+	/**
+	 * Sets the coordSep.
+	 * @param coordSep The coordSep to set
+	 */
+	public void setCoordSep(int[][][] coordSep) {
+		this.coordSep = coordSep;
+	}
+
+	/**
+	 * Sets the n.
+	 * @param n The n to set
+	 */
+	public void setN(double n) {
+		this.n = n;
+	}
+
+	/**
+	 * Sets the separators.
+	 * @param separators The separators to set
+	 */
+	public void setSeparators(List separators) {
+		this.separators = separators;
+	}
+
 }
