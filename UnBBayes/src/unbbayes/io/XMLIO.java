@@ -13,6 +13,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.StringTokenizer;
 
 import org.apache.xpath.XPathAPI;
 import org.w3c.dom.Document;
@@ -46,9 +47,7 @@ public class XMLIO implements BaseIO {
 	private static Node makeNode(org.w3c.dom.Node elNode) throws Exception {
 		// TODO Load Decision and Utility node!
 		ProbabilisticNode node = null;
-		node = new ProbabilisticNode();
-		PotentialTable auxTabPot = node.getPotentialTable();
-		auxTabPot.addVariable(node);
+		node = new ProbabilisticNode();		
 		node.setName(XPathAPI.selectSingleNode(elNode, "@NAME").getNodeValue());
 		org.w3c.dom.Node tmpNode = XPathAPI.selectSingleNode(elNode, "LABEL");
 		if (tmpNode != null) {
@@ -62,9 +61,13 @@ public class XMLIO implements BaseIO {
 		while ((elNode = states.nextNode()) != null) {
 			node.appendState(XMLUtil.getValue(elNode));
 		}
+		
+		PotentialTable auxTabPot = node.getPotentialTable();
+		auxTabPot.addVariable(node);
 		return node;				
 	}
 	
+	/*
 	private static void makeStructure(ProbabilisticNetwork net, NodeIterator arcs) throws Exception {
 		org.w3c.dom.Node node;
 		while ((node = arcs.nextNode()) != null) {
@@ -76,17 +79,45 @@ public class XMLIO implements BaseIO {
 			net.addEdge(auxEdge);
 		}
 	}
+	*/
+	
+	private static void readCondSet(Node childNode, ProbabilisticNetwork net, NodeIterator condSet) throws Exception {
+		org.w3c.dom.Node node;
+		while ((node = condSet.nextNode()) != null) {
+			String parent = XPathAPI.selectSingleNode(node, "@NAME").getNodeValue();
+			Node parentNode = net.getNode(parent);
+			Edge auxEdge = new Edge(parentNode, childNode);
+			net.addEdge(auxEdge);
+		}
+	}
+	
+	private static void fillTable(PotentialTable table, NodeIterator dpis) throws Exception {
+		int numStates = table.getVariableAt(0).getStatesSize();
+		int num = table.tableSize() / numStates;		
+		for (int i = 0; i < num; i++) {
+			org.w3c.dom.Node node = dpis.nextNode();			
+			StringTokenizer stk = new StringTokenizer(XMLUtil.getValue(node));
+			int offset = i*numStates;
+			for (int j = 0; j < numStates ; j++) {
+				float value = Float.parseFloat(stk.nextToken());
+				table.setValue(offset + j, value);
+			}
+		}
+	}
 	
 	private static void assignPotentials(ProbabilisticNetwork net, NodeIterator potentials) throws Exception {
 		org.w3c.dom.Node node;
 		while ((node = potentials.nextNode()) != null) {
 			org.w3c.dom.Node tmp = XPathAPI.selectSingleNode(node, "PRIVATE");
 			String nodeName = XPathAPI.selectSingleNode(tmp, "@NAME").getNodeValue();
+			Node childNode = net.getNode(nodeName);
 			
-			ITabledVariable childNode = (ITabledVariable) net.getNode(nodeName);
-			childNode.getPotentialTable();
-			
-			NodeIterator dpis = XPathAPI.selectNodeIterator(node, "/POT/DPIS/DPI");
+			NodeIterator condSet = XPathAPI.selectNodeIterator(node, "CONDSET/CONDLEM");
+			readCondSet(childNode, net, condSet);
+						
+			PotentialTable table = ((ITabledVariable)childNode).getPotentialTable();			
+			NodeIterator dpis = XPathAPI.selectNodeIterator(node, "DPIS/DPI");
+			fillTable(table, dpis);
 		}
 	}
 
@@ -106,8 +137,11 @@ public class XMLIO implements BaseIO {
 			while ((elNode = nodeIterator.nextNode()) != null) {
 				net.addNode(makeNode(elNode));
 			}
+			
+			/*
 			nodeIterator = XPathAPI.selectNodeIterator(doc, ARCS);
 			makeStructure(net, nodeIterator);
+			*/
 			
 			nodeIterator = XPathAPI.selectNodeIterator(doc, POTENTIALS);
 			assignPotentials(net, nodeIterator);
@@ -157,6 +191,7 @@ public class XMLIO implements BaseIO {
 		}
 		arq.println("</VARIABLES>");
 		
+		/*
 		arq.println("<STRUCTURE>");
 		
 		for (int i = 0; i < net.getEdges().size(); i++) {
@@ -166,6 +201,7 @@ public class XMLIO implements BaseIO {
 		}
 			
 		arq.println("</STRUCTURE>");
+		*/
 		
 		arq.println("<POTENTIAL>");
 		for (int i = 0; i < net.getNodeCount(); i++) {
@@ -173,18 +209,31 @@ public class XMLIO implements BaseIO {
 			if (node.getType() == Node.DECISION_NODE_TYPE) {
 				continue;
 			}
-			ITabledVariable tabNode = (ITabledVariable) node;
+			
 			arq.println("<POT TYPE='discrete'>");
 			arq.println("<PRIVATE NAME='" + node.getName() + "' />");
-			arq.println("<CONDSET>");			
-			for (int j = 0; j < node.getParents().size(); j++) {
-				Node parent = (Node) node.getParents().get(j);
+			arq.println("<CONDSET>");
+			
+			PotentialTable table = ((ITabledVariable) node).getPotentialTable();			
+			for (int j = 1; j < table.variableCount(); j++) {
+				Node parent = table.getVariableAt(j);
 				arq.println("<CONDLEM NAME='" + parent.getName() + "' />");
 			}
+			
 			arq.println("</CONDSET>");
 			arq.println("<DPIS>");
-			for (int j = 0; j < node.getStatesSize(); j++) {
-				arq.println("<DPI INDEXES='" + j + "'>0</DPI>");				
+			int statesSize = node.getStatesSize();
+			int num = table.tableSize() / statesSize;
+			for (int j = 0; j < num; j++) {
+				arq.print("<DPI INDEXES='" + j + "'>");
+				int offset = j*statesSize;
+				for (int k = 0; k < statesSize; k++) {
+					if (k != 0) {
+						arq.print(" ");						
+					}
+					arq.print(table.getValue(offset + k));					
+				}
+				arq.println("</DPI>");
 			}
 			arq.println("</DPIS>");
 			arq.println("</POT>");
