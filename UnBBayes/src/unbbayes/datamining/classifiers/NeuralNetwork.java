@@ -16,9 +16,11 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   private transient float learningRate;
   private transient float momentum;
   private transient int hiddenLayerSize;
-  private transient ActivationFunction activationFunction;
+  private transient ActivationFunction activationFunction = null;
   private int numOfAttributes;
   private transient int trainningTime;
+
+  private transient QuadraticAverageError quadraticAverageError;
 
   private int[] attNumOfValues;
 
@@ -55,7 +57,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     Instance instance;
     Enumeration instanceEnum;
     numOfAttributes = instanceSet.numAttributes();
-    float quadraticAverageError = 0;
+    float quadraticError = 0;
 
     attributeVector = instanceSet.getAttributes();      //cria um array com os atributos para serialização
     this.classIndex = instanceSet.getClassIndex();      //guarda o indice da classa para serialização
@@ -92,19 +94,22 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       outputLayer[i] = new OutputNeuron(activationFunction, hiddenLayer.length);
     }
 
-    for (int i = 0; i < 5/*trainningTime*/; i++) {
-      quadraticAverageError = 0;
+    for (int i = 0; i < 100/*trainningTime*/; i++) {
+      quadraticError = 0;
       instanceEnum = instanceSet.enumerateInstances();
 
       while (instanceEnum.hasMoreElements()) {
         instance = (Instance) instanceEnum.nextElement();
-        quadraticAverageError = quadraticAverageError + learn(instance);
+        quadraticError = quadraticError + learn(instance);
       }
-      quadraticAverageError = quadraticAverageError/instanceSet.numWeightedInstances();
+      quadraticError = quadraticError/instanceSet.numWeightedInstances();
 
-
+      if(quadraticAverageError != null){
+        quadraticAverageError.setQuadraticAverageError(i, quadraticError);
+        System.out.println("Erro quadrado médio " + i + " :" + quadraticError);
+      }
      ////////////////////////////////////////// teste para ver os valores dos pesos
-      System.out.println("Erro quadrado médio " + i + " :" + quadraticAverageError);
+//      System.out.println("Erro quadrado médio " + i + " :" + quadraticError);
      /////////////////////////////////////////
     }
   }
@@ -206,6 +211,12 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 
     return distribution;
   }
+
+
+  public void setQuadraticErrorOutput(QuadraticAverageError quadraticAverageError){
+    this.quadraticAverageError = quadraticAverageError;
+  }
+
 
   /**
    * Outputs an array of attributes with the attributes of the training set.

@@ -35,7 +35,7 @@ public class NeuralNetworkMain extends JInternalFrame {
   protected OptionsPanel optionsPanel = new OptionsPanel();
   private NeuralNetworkController controller;
   protected AttributePanel attributePanel;
-  JPanel jPanel2 = new JPanel();
+  TrainingPanel chartPanel = new TrainingPanel();
   JMenuBar jMenuBar1 = new JMenuBar();
   JMenu fileMenu = new JMenu();
   JMenuItem openMenu = new JMenuItem();
@@ -156,6 +156,7 @@ public class NeuralNetworkMain extends JInternalFrame {
         help_actionPerformed(e);
       }
     });
+
     toolBar.add(openButton, null);
     toolBar.add(learnButton, null);
     toolBar.add(helpButton, null);
@@ -170,7 +171,7 @@ public class NeuralNetworkMain extends JInternalFrame {
     statusPanel.add(statusBar, BorderLayout.CENTER);
     settingsPanel.add(optionsPanel, BorderLayout.WEST);
     settingsPanel.add(attributePanel,  BorderLayout.CENTER);
-    jTabbedPane1.add(jPanel2,  "jPanel2");
+    jTabbedPane1.add(chartPanel,   "Chart");
     jTabbedPane1.add(inferencePanel,   "Inference");
     jMenuBar1.add(fileMenu);
     jMenuBar1.add(learnMenu);
@@ -213,7 +214,7 @@ public class NeuralNetworkMain extends JInternalFrame {
       statusBar.setText(/*resource.getString*/("exception") + " " + ex.getMessage());
     }
 
-//    jTabbedPane1.setEnabledAt(1,true);    ///que vai conter o gráfico
+    jTabbedPane1.setEnabledAt(1,true);    ///que vai conter o gráfico
     jTabbedPane1.setEnabledAt(2,true);
     jTabbedPane1.setSelectedIndex(2);
     saveButton.setEnabled(true);

@@ -53,6 +53,7 @@ public class NeuralNetworkController {
       trainningTime = mainScreen.optionsPanel.getTrainningTime();
 
       bpn = new NeuralNetwork(learningRate, momentum, hiddenSize, activationFunction, 0);
+      bpn.setQuadraticErrorOutput(mainScreen.chartPanel);
       bpn.buildClassifier(instanceSet);
       mainScreen.inferencePanel.setNetwork(bpn);
     }
