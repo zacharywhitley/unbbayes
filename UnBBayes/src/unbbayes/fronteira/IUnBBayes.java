@@ -251,7 +251,7 @@ public class IUnBBayes extends JFrame {
                 String[] nets = new String[] {"txt"};
                 JFileChooser chooser = new JFileChooser(".");
                 chooser.setMultiSelectionEnabled(false);
-                chooser.addChoosableFileFilter(new SimpleFileFilter(nets, resource.getString("netFileFilter")));
+                chooser.addChoosableFileFilter(new SimpleFileFilter(nets, resource.getString("textFileFilter")));
                 int option = chooser.showOpenDialog(IUnBBayes.this);
                 File file;
                 if (option == JFileChooser.APPROVE_OPTION) {
