@@ -1,5 +1,5 @@
 <%@page import="linfca.*, 
-		linfca.cadastro.equipamento.*,
+		linfca.cadastro.*,
         java.sql.*, 
         org.jdom.Element, 
         java.util.Iterator" 
@@ -30,15 +30,18 @@
               
                 <td>
                     <% 
-	                         Feature  listarComputadorDisponivel = new ListarEquipamentoFeature();
+	                 Feature  listarComputadorDisponivel = new ListarGenericoFeature();
 					 Element in = new Element("in");
-					 Element descTipo = new Element("desc-tipo-equipamento");
-					 descTipo.setText("Computador");					 
-					 in.getChildren().add(descTipo);
+					 Element whereXML = new Element("where");
+					 
+					 Element descTipo = new Element("cod_tipo_equipamento");
+					 descTipo.setText("Computador");
+					 whereXML.getChildren().add(descTipo);
 					
-					 descTipo = new Element("desc-tipo-situacao");
-					 descTipo.setText("Disponível");					 
-					 in.getChildren().add(descTipo);					 
+					 descTipo = new Element("cod_tipo_situacao");
+					 descTipo.setText("Disponível");
+					 whereXML.getChildren().add(descTipo);					 
+					 in.getChildren().add(whereXML);					 
 				         Element tiposXML = listarComputadorDisponivel.process(in);
 				         Iterator tipos = tiposXML.getChildren().iterator();
 					 if (! tipos.hasNext()) {
