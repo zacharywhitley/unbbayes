@@ -94,7 +94,7 @@ public class MSNetwork {
 	 * @param activeNet the active network after compilation
 	 * @throws Exception	if a compilation error occurs.
 	 */
-	public void compile(SubNetwork activeNet) throws Exception {
+	public void compile(SubNetwork activeNet) throws Exception {		
 		links.clear();
 		this.activeNet = activeNet;
 		
@@ -126,7 +126,7 @@ public class MSNetwork {
 	
 		SubNetwork raiz = (SubNetwork) nets.get(0);		
 		coleteCrencas(raiz);
-		distribuaCrencas(raiz);
+		distributeBelief(raiz);
 	}
 	
 	protected void coleteCrencas(SubNetwork net) throws Exception {
@@ -135,16 +135,16 @@ public class MSNetwork {
 			if (netAdj.getAdjacentsSize() > 0) { 
 				coleteCrencas(netAdj);
 			}			
-			atualizaCrenca(net, netAdj);
+			updateBelief(net, netAdj);
 		}
 	}
 	
-	protected void distribuaCrencas(SubNetwork net) throws Exception {
+	protected void distributeBelief(SubNetwork net) throws Exception {
 		for (int i = net.adjacents.size()-1; i>=0; i--) {
 			SubNetwork netAdj = (SubNetwork) net.adjacents.get(i);
-			atualizaCrenca(netAdj, net);
+			updateBelief(netAdj, net);
 			if (netAdj.getAdjacentsSize() > 0) { 
-				distribuaCrencas(netAdj);
+				distributeBelief(netAdj);
 			}
 		}
 	}
@@ -157,14 +157,14 @@ public class MSNetwork {
 		List caminho = activeNet.makePath(net);		
 		for (int i = 1; i < caminho.size(); i++) {
 			SubNetwork netAux = (SubNetwork) caminho.get(i);
-			atualizaCrenca(netAux, activeNet);
+			updateBelief(netAux, activeNet);
 			activeNet = netAux;
 		}
 		
 		assert activeNet == net;
 	}
 	
-	protected void atualizaCrenca(SubNetwork net1, SubNetwork net2) throws Exception {				
+	protected void updateBelief(SubNetwork net1, SubNetwork net2) throws Exception {				
 		for (int i = links.size()-1; i>=0; i--) {
 			Linkage l = (Linkage) links.get(i);
 			if (l.getN1() == net1 && l.getN2() == net2) {
