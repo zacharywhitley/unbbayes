@@ -41,7 +41,7 @@ public class TestCompiled extends TestCase {
 				TreeVariable varMono = (TreeVariable) net.getNode(var.getName());
 				for (int k = 0; k < var.getStatesSize(); k++) {
 					assertEquals(varMono.getMarginalAt(k), var.getMarginalAt(k), DELTA);					
-				}	
+				}
 			}	
 		}
 	}

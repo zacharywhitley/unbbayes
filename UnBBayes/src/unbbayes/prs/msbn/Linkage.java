@@ -164,8 +164,8 @@ public class Linkage {
 		tree.add(l);
 		for (int i = c.getChildrenSize()-1; i>=0; i--) {
 			Clique c2 = makeCliqueList(c.getChildAt(i));
-			c2.setParent(cliqueClone);
-			cliqueClone.addChild(c2);
+//			c2.setParent(cliqueClone);
+//			cliqueClone.addChild(c2);
 		}
 		return cliqueClone;
 	}
@@ -192,13 +192,15 @@ public class Linkage {
 		int treeSize = tree.size();
 		for (int i = 0; i < treeSize; i++) {
 			Link l = (Link) tree.get(i);
-			l.absorve(naOrdem);			
+			l.absorve(naOrdem);
 		}
 		try {
 			if (naOrdem) {
-				n1.updateEvidences();	
+				n1.getJunctionTree().unificaCrencas();
+				n1.updateMarginais();
 			} else {
-				n2.updateEvidences();
+				n2.getJunctionTree().unificaCrencas();
+				n2.updateMarginais();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();			

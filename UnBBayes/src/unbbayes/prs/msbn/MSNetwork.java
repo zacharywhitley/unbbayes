@@ -60,11 +60,23 @@ public class MSNetwork {
 	}
 	
 	/**
-	 * Compile this multi-sectioned network.
-	 * @throws Exception	if a compilation error occurs.
+	 * Compile this multi-sectioned network. 
+	 * The active Network is the root of the hyper-tree.
+	 * @throws Exception
 	 */
 	public void compile() throws Exception {
+		compile((SubNetwork) nets.get(0));		
+	}
+	
+	/**
+	 * Compile this multi-sectioned network. The active Network is
+	 * specified by the user.
+	 * @param activeNet the active network after compilation
+	 * @throws Exception	if a compilation error occurs.
+	 */
+	public void compile(SubNetwork activeNet) throws Exception {
 		links.clear();
+		this.activeNet = activeNet;
 		
 		for (int i = nets.size()-1; i>=0; i--) {
 			SubNetwork net = (SubNetwork) nets.get(i);
@@ -91,10 +103,18 @@ public class MSNetwork {
 			Linkage link = (Linkage) links.get(i);
 			link.makeLinkageTree();			
 		}
-		
-		
-		activeNet = (SubNetwork) nets.get(0);
-		distribuaCrencas(activeNet);
+	
+		SubNetwork raiz = (SubNetwork) nets.get(0);
+//		coleteCrencas(raiz);
+		distribuaCrencas(raiz);
+	}
+	
+	protected void coleteCrencas(SubNetwork net) {
+		for (int i = net.adjacents.size()-1; i>=0; i--) {
+			SubNetwork netAdj = (SubNetwork) net.adjacents.get(i);
+			coleteCrencas(netAdj);
+			atualizaCrenca(net, netAdj);
+		}
 	}
 	
 	protected void distribuaCrencas(SubNetwork net) {
@@ -103,14 +123,6 @@ public class MSNetwork {
 			atualizaCrenca(netAdj, net);
 			distribuaCrencas(netAdj);
 		}
-	}
-	
-	/**
-	 * Gets the active sub-network.
-	 * @return the active sub-network.
-	 */
-	public SubNetwork getActiveNet() {
-		return activeNet;		
 	}
 	
 	/**
@@ -125,10 +137,10 @@ public class MSNetwork {
 			activeNet = netAux;
 		}
 		
-		assert activeNet == net;				
+		assert activeNet == net;
 	}
 	
-	protected void atualizaCrenca(SubNetwork net1, SubNetwork net2) {		
+	protected void atualizaCrenca(SubNetwork net1, SubNetwork net2) {				
 		for (int i = links.size()-1; i>=0; i--) {
 			Linkage l = (Linkage) links.get(i);
 			if (l.getN1() == net1 && l.getN2() == net2) {

@@ -17,6 +17,7 @@ import javax.swing.tree.TreeNode;
 
 import unbbayes.gui.MSBNWindow;
 import unbbayes.gui.NetWindow;
+import unbbayes.prs.bn.Network;
 import unbbayes.prs.msbn.MSNetwork;
 import unbbayes.prs.msbn.SubNetwork;
 
@@ -72,10 +73,6 @@ public class MSBNController {
 			            	return;
 			            }
 			            
-			            for (int i = 0; i < net.getNodeCount(); i++) {
-			            	net.getNodeAt(i).setSelected(false);			            	
-			            }
-			            
 			           	NetWindow netWindow = new NetWindow(net);
 			            changeActive(netWindow);            
 		            	msbn.shiftAttention(net);
@@ -98,10 +95,15 @@ public class MSBNController {
 		changeActive(new NetWindow(msbn.getNetAt(0)));	
 	}
 	
-	private void changeActive(NetWindow newWindow) {
+	private void changeActive(NetWindow newWindow) {				
 		if (active != null) {
-			window.getContentPane().remove(active.getContentPane());
-		}
+			Network net = active.getRede();
+			for (int i = 0; i < net.getNodeCount(); i++) {
+				net.getNodeAt(i).setSelected(false);			            	
+			}
+			window.getContentPane().remove(active.getContentPane());			
+		}		
+		
 		active = newWindow;
 		active.getNetWindowEdition().getCompile().setVisible(false);
 		active.getNetWindowCompilation().getEditMode().setVisible(false);
@@ -156,7 +158,7 @@ public class MSBNController {
 		window.addCompileBtnActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 				try {
-					msbn.compile();
+					msbn.compile((SubNetwork) active.getRede());
 					active.changeToNetCompilation();
 					window.changeToTreeView(makeJTree());
 					window.showBtnPanel(MSBNWindow.COMPILED_PANE);

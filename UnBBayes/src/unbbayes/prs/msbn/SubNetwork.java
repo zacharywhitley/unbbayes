@@ -208,7 +208,7 @@ public class SubNetwork extends Network {
 		
 		for (int i = adjacents.size()-1; i>=0; i--) {
 			SubNetwork net = (SubNetwork) adjacents.get(i);
-			updateArcs(net);
+			updateArcsBilateral(net);
 			net.distributeArcs();
 		}
 	}
@@ -236,7 +236,7 @@ public class SubNetwork extends Network {
 		}
 	}
 	
-	private void updateArcs(SubNetwork net) {
+	private void updateArcsBilateral(SubNetwork net) {
 		System.out.println("updateArcs");
 		updateArcsAux(net);
 		net.updateArcsAux(this);		
@@ -258,6 +258,7 @@ public class SubNetwork extends Network {
 			dfsCycle(i, null);
 		}
 	}
+	
 	
 	/**
      * Depth first search to verify cycle.
@@ -304,4 +305,12 @@ public class SubNetwork extends Network {
     	
     	visited[nodeIndex] = 2;
     }
+    
+	/**
+	 * @see unbbayes.prs.bn.Network#updateMarginais()
+	 */
+	protected void updateMarginais() {
+		super.updateMarginais();
+	}
+
 }
