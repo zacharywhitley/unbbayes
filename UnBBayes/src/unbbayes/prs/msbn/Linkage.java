@@ -244,14 +244,14 @@ public class Linkage {
 		
 		for (int i = 0; i < treeSize; i++) {
 			Link l = (Link) linkList.get(i);
-			l.absorveIn(naOrdem);
+			l.absorbIn(naOrdem);
 		}
 		
 		removeRedundance();
 		
 		for (int i = 0; i < treeSize; i++) {		
 			Link l = (Link) linkList.get(i);
-			l.absorveOut(naOrdem);
+			l.absorbOut(naOrdem);
 		}
 		
 		SubNetwork net = (naOrdem) ? n1 : n2;
