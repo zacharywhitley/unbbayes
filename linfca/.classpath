@@ -6,7 +6,6 @@
     <classpathentry exported="true" kind="lib" path="WEB-INF/lib/jdom.jar"/>
     <classpathentry exported="true" kind="lib" path="WEB-INF/lib/mm.mysql-2.0.13-bin.jar"/>
     <classpathentry exported="true" kind="lib" path="WEB-INF/lib/servlet.jar"/>
-    <classpathentry exported="true" kind="lib" path="WEB-INF/lib/xerces.jar"/>
     <classpathentry exported="true" kind="lib" path="WEB-INF/lib/cos.jar"/>
     <classpathentry exported="true" kind="lib" path="H:/Meus documentos/programas/eclipse2.0/plugins/org.eclipse.tomcat_4.0.3/jasper-runtime.jar"/>
     <classpathentry exported="true" kind="lib" path="H:/Meus documentos/programas/eclipse2.0/plugins/org.junit_3.7.0/junit.jar"/>
