@@ -20,11 +20,13 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   private transient float momentum;
   private transient int hiddenLayerSize;
   private transient ActivationFunction activationFunction = null;
+  private int activationFunctionType;
   private int numOfAttributes;
   private transient int trainingTime;
   private transient float minimumErrorVariation;
   private transient boolean learningRateDecay = false;
   private boolean numericalInputNormalization = true;
+  private boolean numericOutput;
   private float[] highestValue;
   private float[] lowestValue;
 
@@ -58,6 +60,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     this.trainingTime = trainingTime;
     this.numericalInputNormalization = numericalInputNormalization;
     this.minimumErrorVariation = minimumErrorVariation;
+    activationFunctionType = activationFunction;
 
     if(activationFunction == NeuralNetwork.SIGMOID){
       this.activationFunction = new Sigmoid(activationFunctionSteep);
@@ -76,6 +79,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     this.momentum = momentum;
     this.hiddenLayerSize = hiddenLayerSize;
     this.trainingTime = trainingTime;
+    activationFunctionType = activationFunction;
 
     if(activationFunction == NeuralNetwork.SIGMOID){
       this.activationFunction = new Sigmoid();
@@ -95,17 +99,17 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     Instance instance;
     Enumeration instanceEnum;
     numOfAttributes = instanceSet.numAttributes();
+    numericOutput = instanceSet.getClassAttribute().isNumeric();
     float quadraticError = 0;
     float oldQuadraticError;
 
     attributeVector = instanceSet.getAttributes();      //cria um array com os atributos para serialização
     this.classIndex = instanceSet.getClassIndex();      //guarda o indice da classe para serialização
 
-
-    //seta os maiores e menores valores do instanceSet
+    //seta os maiores e menores valores dos atributos do instanceSet
+    highestValue = new float[numOfAttributes];
+    lowestValue = new float[numOfAttributes];
     if(numericalInputNormalization){
-      highestValue = new float[numOfAttributes];
-      lowestValue = new float[numOfAttributes];
       for(int i=0; i<numOfAttributes; i++){
         if(i!=classIndex && instanceSet.getAttribute(i).isNumeric()){
           highestValue[i] = Float.MIN_VALUE;
@@ -116,6 +120,17 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
             lowestValue[i] = Math.min(lowestValue[i], Float.parseFloat(values[j]));
           }
         }
+      }
+    }
+
+    //seta os maiores e menores valores da classe
+    if(numericOutput){
+      highestValue[classIndex] = Float.MIN_VALUE;
+      lowestValue[classIndex] = Float.MAX_VALUE;
+      String[] values = instanceSet.getClassAttribute().getAttributeValues();
+      for(int j=0; j<values.length; j++){
+        highestValue[classIndex] = Math.max(highestValue[classIndex], Float.parseFloat(values[j]));
+        lowestValue[classIndex] = Math.min(lowestValue[classIndex], Float.parseFloat(values[j]));
       }
     }
 
@@ -136,7 +151,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       index++;
     }
 
-   /////////////////////////////////////
+   //inicializa input layer
     int inputLayerSize = 0;
     for(int i=0; i<numOfAttributes; i++){
       if(i != classIndex){
@@ -162,11 +177,18 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       hiddenLayer[i] = new HiddenNeuron(activationFunction, inputLayer.length);
     }
 
-    outputLayer = new OutputNeuron[instanceSet.getClassAttribute().numValues()];
-    for(int i=0; i<outputLayer.length; i++){
-      outputLayer[i] = new OutputNeuron(activationFunction, hiddenLayer.length);
+    //output inicialization
+    if(numericOutput){
+      outputLayer = new OutputNeuron[1];
+      outputLayer[0] = new OutputNeuron(activationFunction, hiddenLayer.length);
+    } else{
+      outputLayer = new OutputNeuron[instanceSet.getClassAttribute().numValues()];
+      for(int i = 0; i<outputLayer.length; i++){
+        outputLayer[i] = new OutputNeuron(activationFunction, hiddenLayer.length);
+      }
     }
 
+    //Learning
     for (int epoch = 1; epoch < (trainingTime+1); epoch++) {
       instanceEnum = instanceSet.enumerateInstances();
       oldQuadraticError = quadraticError;
@@ -188,7 +210,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       }
 
       if(minimumErrorVariation != NO_ERROR_VARIATION_STOP_CRITERION){
-        if( Math.abs((oldQuadraticError - quadraticError) * 100 / oldQuadraticError) < minimumErrorVariation){
+        if(Math.abs((oldQuadraticError - quadraticError) * 100 / oldQuadraticError) < minimumErrorVariation){
           break;
         }
       }
@@ -197,6 +219,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 
   public float learn(Instance instance){
     float totalErrorEnergy = 0;
+    float[] expectedOutput;
 
     Arrays.fill(inputLayer, 0);  //zera o vetor de entradas
 
@@ -207,12 +230,10 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       hiddenLayer[i].calculateOutputValue(inputLayer);
     }
 
-    //////////create expected output
-    int[] expectedOutput = new int[instanceSet.getClassAttribute().numValues()];
-    Arrays.fill(expectedOutput, 0);
-    expectedOutput[instance.classValue()] = 1;
+    /////////calcula as saídas esperadas
+    expectedOutput = calculateExpectedOutput(instance);
 
-    //////////calcula as saidas da camada oculta
+    //////////calcula as saidas da camada de saída
     for(int i=0; i<outputLayer.length; i++){
       float instantaneousError;
       outputLayer[i].calculateOutputValue(hiddenLayer);
@@ -247,7 +268,6 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
           for (int j=0; j<counter; j++) {
             index = index + attNumOfValues[j];
           }
-/////////////////////teste
           Attribute att = instanceSet.getAttribute(i);
           if (att.isNumeric()) {
             int value = instance.getValue (att);
@@ -260,15 +280,30 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
             index = index + instance.getValue (i);
             inputLayer[index] = 1;
           }
-///////////////////////////////////////
         }
         counter++;
       }
     }
+  }
 
-    for(int i=0; i<inputLayer.length; i++){
-      System.out.println("entrada " + i + "   valor " + inputLayer[i]);
+  private float[] calculateExpectedOutput(Instance instance){
+    float[] expectedOutput;
+    if(numericOutput){
+      expectedOutput = new float[1];
+                           //sugestão pra melhorar, instanceSet.getClassAttribute().getAttributeValues() pode ser atribuido a uma variavel global.
+      float output = Float.parseFloat(instanceSet.getClassAttribute().getAttributeValues()[instance.classValue()]);
+      if(activationFunctionType == SIGMOID){
+                           //sugestão, pode usar fórmulas mais otimizadas para intervalo [0,1] e [-1,1] que tem no FAQ
+        expectedOutput[0] = Utils.normalize(output, highestValue[classIndex], lowestValue[classIndex], 1, 0);
+      } else if(activationFunctionType == TANH){
+        expectedOutput[0] = Utils.normalize(output, highestValue[classIndex], lowestValue[classIndex], 1, -1);
+      }
+    } else {
+      expectedOutput = new float[instanceSet.getClassAttribute().numValues()];
+      Arrays.fill(expectedOutput, 0);
+      expectedOutput[instance.classValue()] = 1;
     }
+    return expectedOutput;
   }
 
   /**
@@ -294,6 +329,20 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     for(int i=0; i<outputLayer.length; i++){
       distribution[i] = outputLayer[i].calculateOutputValue(hiddenLayer);
     }
+
+////////////////////////////////// un-normalization
+    if(numericOutput){
+      if(activationFunctionType == SIGMOID){
+        for(int i=0; i<distribution.length; i++){
+          distribution[i] = Utils.normalize(distribution[i], 1, 0, highestValue[classIndex], lowestValue[classIndex]);
+        }
+      } else {
+        for(int i=0; i<distribution.length; i++){
+          distribution[i] = Utils.normalize(distribution[i], 1, -1, highestValue[classIndex], lowestValue[classIndex]);
+        }
+      }
+    }
+///////////////////////////////////
 
     return distribution;
   }

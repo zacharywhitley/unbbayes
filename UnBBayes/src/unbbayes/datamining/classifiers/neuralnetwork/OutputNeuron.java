@@ -47,7 +47,7 @@ public class OutputNeuron extends Neuron implements Serializable{
     return outputValue;
   }
 
-  public float calculateErrorTerm(int expectedOutput){
+  public float calculateErrorTerm(float expectedOutput){
     float instantaneousError = expectedOutput - outputValue;
     errorTerm = (float)activationFunction.outputErrorTerm(expectedOutput, outputValue);  //calculo de sigma
     return instantaneousError;
