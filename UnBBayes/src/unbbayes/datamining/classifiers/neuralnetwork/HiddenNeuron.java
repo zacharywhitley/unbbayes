@@ -20,7 +20,7 @@ public class HiddenNeuron extends Neuron implements Serializable{
     return outputValue;
   }
 
-  public void updateWeights(float learningRate, float momentum, int[] inputLayer) {
+  public void updateWeights(float learningRate, float momentum, float[] inputLayer) {
     deltaW[0] = (momentum * deltaW[0]) + (learningRate * errorTerm);
     weights[0] = weights[0] + deltaW[0]; //bias
 
@@ -34,7 +34,7 @@ public class HiddenNeuron extends Neuron implements Serializable{
     return errorTerm;
   }
 
-  public void calculateOutputValue(int[] inputValues){
+  public void calculateOutputValue(float[] inputValues){
     float net = weights[0];  //bias value
     for(int i=0; i<inputValues.length; i++){
       net = net + (inputValues[i] * weights[i + 1]);

@@ -44,6 +44,7 @@ public class NeuralNetworkController {
     float momentum;
     int hiddenSize;
     int trainningTime;
+    boolean numerialInputNormalization;
     int activationFunction;
     float activationFunctionSteep;
     float minimumErrorVariation;
@@ -56,10 +57,11 @@ public class NeuralNetworkController {
       hiddenSize = mainScreen.advancedOptionsPanel.getHiddenLayerSize();
       activationFunction = mainScreen.optionsPanel.getSelectedActivationFunction();
       trainningTime = mainScreen.advancedOptionsPanel.getTrainningTime();
+      numerialInputNormalization = mainScreen.advancedOptionsPanel.getNumericalInputNormalizationEnabled();
       activationFunctionSteep = (float)mainScreen.advancedOptionsPanel.getActivationFunctionSteep();
       minimumErrorVariation = (float)mainScreen.advancedOptionsPanel.getMinimumErrorVariation();
 
-      bpn = new NeuralNetwork(learningRate, learningRateDecay, momentum, hiddenSize, activationFunction, trainningTime, activationFunctionSteep, minimumErrorVariation);
+      bpn = new NeuralNetwork(learningRate, learningRateDecay, momentum, hiddenSize, activationFunction, trainningTime, numerialInputNormalization, activationFunctionSteep, minimumErrorVariation);
       bpn.setQuadraticErrorOutput(mainScreen.chartPanel);
       bpn.buildClassifier(instanceSet);
       mainScreen.inferencePanel.setNetwork(bpn);
@@ -93,10 +95,11 @@ public class NeuralNetworkController {
   private void openSelectedFile(File selectedFile) throws Exception{
     instanceSet = FileController.getInstance().getInstanceSet(selectedFile, mainScreen);
 
-    boolean numericAttributes = instanceSet.checkNumericAttributes();
-    if (numericAttributes == true){
-      throw new Exception(/*resource.getString*/("numericAttributesException"));
-    }
+//    boolean numericAttributes = instanceSet.checkNumericAttributes();
+//    if (numericAttributes == true){
+//      throw new Exception(/*resource.getString*/("numericAttributesException"));
+//    }
+
     mainScreen.setTitle("Backpropagation Neural Network - " + selectedFile.getName());
     mainScreen.attributePanel.setInstances(instanceSet);
     mainScreen.attributePanel.enableComboBox(true);

@@ -52,7 +52,7 @@ public final class Utils
    * @return The index of the maximum element
    */
   public static int maxIndex(double[] doubles)
-  {   
+  {
   	double maximum = doubles[0];
       int maxIndex = 0;
 
@@ -210,6 +210,56 @@ public final class Utils
 	{	floats[i] /= sum;
     }
   }
+
+
+  /**
+   * Normalizes a float array to ensure that all elements of the input data vector are
+   * proportionally tranformed into an vector with predifined upper limit and lower limit.
+   *
+   * @param data The vetor to be normalized
+   * @param upperLimit The upper limit of the normalized vector
+   * @param lowerLimit The lower limit of the normalized vector
+   */
+  public static void normalize(float[] data, float upperLimit, float lowerLimit){
+    float hi = Float.MIN_VALUE;
+    float lo = Float.MAX_VALUE;
+
+    if(upperLimit <= lowerLimit){
+      throw new IllegalArgumentException(resource.getString("normalizeException3"));
+    }
+
+    for(int i=0; i<data.length; i++){
+      hi = Math.max(hi, data[i]);
+      lo = Math.min(lo, data[i]);
+    }
+
+    float fact = (upperLimit - lowerLimit) / (hi-lo);
+
+    for(int i=0; i<data.length; i++){
+      data[i] = ((data[i] - lo) * fact) + lowerLimit;
+    }
+  }
+
+  /**
+   * Normalizes a float to ensure that it will be proportionally tranformed
+   * into a float with predifined upper limit and lower limit.
+   *
+   * @param data The data to normalize
+   * @param highestValue The highest value that data may assume
+   * @param smallestValue The smallest value that data may assume
+   * @param upperLimit The upper limit for normalization
+   * @param lowerLimit The lower limit for normalization
+   * @return The normalized data
+   */
+  public static float normalize(float data, float highestValue, float smallestValue, float upperLimit, float lowerLimit){
+    if(upperLimit <= lowerLimit){
+      throw new IllegalArgumentException(resource.getString("normalizeException3"));
+    }
+
+    data = ((data - smallestValue) * (upperLimit - lowerLimit) / (highestValue - smallestValue)) + lowerLimit;
+    return data;
+  }
+
 
   /**
    * Computes the sum of the elements of an array of doubles.
@@ -660,7 +710,7 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
 			b[i + 1] = temp;
 		}
 	}
-	
+
 	/** applies a two arrays sum
 	 * 	@param array1: one of the arrays to apply the sum
 	 *  @param array2: one of the arrays to apply the sum
@@ -672,13 +722,13 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
 		{
 			return null;
 		}
-		
+
 		int[] newArray = new int[array1.length];
 		for(int i=0;i<array1.length;i++)
 		{
-			newArray[i] = array1[i]+array2[i]; 
+			newArray[i] = array1[i]+array2[i];
 		}
-	
+
 		return newArray;
 	}
 
@@ -694,13 +744,13 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
 		{
 			return null;
 		}
-		
+
 		double[] newArray = new double[array1.length];
 		for(int i=0;i<array1.length;i++)
 		{
-			newArray[i] = array1[i]+array2[i]; 
+			newArray[i] = array1[i]+array2[i];
 		}
-	
+
 		return newArray;
 	}
 }

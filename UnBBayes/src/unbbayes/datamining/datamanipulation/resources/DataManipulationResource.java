@@ -20,6 +20,7 @@ public class DataManipulationResource extends ListResourceBundle
 	static final Object[][] contents =
 	{	{"normalizeException1","Can't normalize array. Sum is NaN."},
 		{"normalizeException2","Can't normalize array. Sum is zero."},
+                {"normalizeException3","Can't normalize. Invalid normalization limits."},
 		{"readHeaderException1","Premature end of line."},
 		{"readHeaderException2","keyword @relation expected"},
 		{"readHeaderException3","no valid attribute type or invalid enumeration"},

@@ -67,7 +67,7 @@ public class InstanceSet
   	public final int numAttributes()
 	{	return attributes.length;
   	}
-  	
+
   	public Attribute[] getAttributes()
   	{
   		return attributes;
@@ -158,7 +158,7 @@ public class InstanceSet
    	* @return Enumeration of all the attributes.
    	*/
   	public final Enumeration enumerateAttributes()
-	{	
+	{
 		return new ArrayListEnumeration(attributes, classIndex);
   	}
 
@@ -168,7 +168,7 @@ public class InstanceSet
    	* @return Enumeration of all instances in the dataset
    	*/
   	public final Enumeration enumerateInstances()
-	{	
+	{
 		return new ArrayListEnumeration(instanceSet);
   	}
 
@@ -408,10 +408,10 @@ public class InstanceSet
    	* @return An AttributeStats object with it's fields calculated.
    	*/
   	public AttributeStats getAttributeStats(int index)
-  	{	
+  	{
   		return attributeStats[index];
   	}
-  	
+
 	public AttributeStats[] getAllAttributeStats()
 	{
 		int numWeightedInstances = numWeightedInstances();
@@ -422,11 +422,11 @@ public class InstanceSet
 			{
 				attFlag = true;
 				if (getAttribute(i).isNominal())
-				{	
+				{
 					attributeStats[i] = new AttributeStats(AttributeStats.NOMINAL,getAttribute(i).numValues());
 				}
 				else
-				{	
+				{
 					attributeStats[i] = new AttributeStats(AttributeStats.NUMERIC,getAttribute(i).numValues());
 				}
 			}
@@ -449,15 +449,15 @@ public class InstanceSet
 				for (int i=0;i<numAttributes;i++)
 				{
 					if (current.isMissing(i))
-					{	
+					{
 						countWeightResults[i][((countWeightResults[i]).length)-1]+=instanceWeight;
 						countResults[i][((countResults[i]).length)-1]++;
 					}
 					else
-					{	
+					{
 						countWeightResults[i][current.getValue(i)]+=instanceWeight;
 						countResults[i][current.getValue(i)]++;
-					}						
+					}
 				}
 			}
 			for (int i=0;i<numAttributes;i++)
@@ -473,12 +473,12 @@ public class InstanceSet
 					}
 				}
 				else
-				{	
+				{
 					for (int j = 0; j < tempAtt.numValues(); j++)
 					{
 						attributeStats[i].addDistinct(Float.parseFloat(tempAtt.value(j)),j,countResults[i][j],countWeightResults[i][j]);
 					}
-				}		
+				}
 			}
 		}
 		return attributeStats;
@@ -545,6 +545,19 @@ public class InstanceSet
 	*/
 	public boolean checkNumericAttribute(Attribute att)
         {   if (getAttribute(att.getIndex()).isNumeric())
+            {   return true;
+            }
+            return false;
+        }
+
+        /**
+         * Verifies if an specific attribute is numeric
+         *
+         * @param attIndex An attribute index
+         * @return True if the attribute is numeric
+         */
+        public boolean checkNumericAttribute(int attIndex)
+        {   if (getAttribute(attIndex).isNumeric())
             {   return true;
             }
             return false;

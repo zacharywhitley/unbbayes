@@ -252,6 +252,10 @@ public class NeuralNetworkMain extends JInternalFrame {
     try{
       controller.learn();
     } catch (Exception ex){
+
+      ex.printStackTrace();
+      //////////////////
+
       statusBar.setText(/*resource.getString*/("exception") + " " + ex.getMessage());
       jTabbedPane1.setEnabledAt(0,true);
       jTabbedPane1.setEnabledAt(1,false);

@@ -9,7 +9,7 @@ import unbbayes.datamining.classifiers.NeuralNetwork;
 public class AdvancedOptionsPanel extends JPanel {
   private BorderLayout borderLayout1 = new BorderLayout();
   private JPanel advancedOptions = new JPanel();
-  private JPanel learningRate = new JPanel();
+  private JPanel learningRatePanel = new JPanel();
   private JPanel hiddenLayerPanel = new JPanel();
   private BorderLayout borderLayout2 = new BorderLayout();
   private JCheckBox learningRateCheckBox = new JCheckBox();
@@ -32,13 +32,13 @@ public class AdvancedOptionsPanel extends JPanel {
   private JPanel activationFunctionSteepPanel = new JPanel();
   private BorderLayout borderLayout7 = new BorderLayout();
   private JSpinner fuctionSteepSpinner = new JSpinner();
-  private GridBagLayout gridBagLayout1 = new GridBagLayout();
   private SpinnerNumberModel hiddenLayerSizeSpinnerModel = new SpinnerNumberModel(10, 2, 1000, 1);
   private SpinnerNumberModel trainningTimeSpinnerModel = new SpinnerNumberModel(400, 1, 10000, 1);
   private SpinnerNumberModel minimumErrorVariationSpinnerModel = new SpinnerNumberModel(0.1, 0.00001, 1, 0.001);
   private SpinnerNumberModel activationFunctionSteepSpinnerModel = new SpinnerNumberModel(1, 0.1, 2, 0.1);
 
   private boolean learningRateDecay = false;
+  private boolean numericalInputNormalization = false;
   private boolean autoHiddenLayerSize = true;
   private int hiddenLayerSize = 10;
   private int trainningTime = 400;
@@ -47,6 +47,7 @@ public class AdvancedOptionsPanel extends JPanel {
   private double activationFunctionSteep = 1;
 
   private boolean defaultLearningRateDecay = false;
+  private boolean defaultNumericalInputNormalization = false;
   private boolean defaultAutoHiddenLayerSize = true;
   private int defaultHiddenLayerSize = 10;
   private int defaultTrainningTime = 400;
@@ -62,7 +63,13 @@ public class AdvancedOptionsPanel extends JPanel {
   private TitledBorder titledBorder3;
   private Border border4;
   private TitledBorder titledBorder4;
+  private Border border5;
+  private TitledBorder titledBorder5;
   private JCheckBox errorVariationCheckBox = new JCheckBox();
+  private JPanel inputNormalizationPanel = new JPanel();
+  private BorderLayout borderLayout8 = new BorderLayout();
+  private JCheckBox normalizationCheckBox = new JCheckBox();
+  private GridBagLayout gridBagLayout1 = new GridBagLayout();
 
   public AdvancedOptionsPanel() {
     try {
@@ -89,11 +96,13 @@ public class AdvancedOptionsPanel extends JPanel {
     border4 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
     titledBorder4 = new TitledBorder(border4,"Learning Stop Condition:");
     titledBorder4.setTitleFont(new java.awt.Font("Dialog", 0, 12));
+    border5 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
+    titledBorder5 = new TitledBorder(border5,"Numeric Input:");
+    titledBorder5.setTitleFont(new java.awt.Font("Dialog", 0, 12));
     this.setLayout(borderLayout1);
     advancedOptions.setLayout(gridBagLayout1);
-    learningRate.setLayout(borderLayout2);
-    learningRate.setFont(new java.awt.Font("Dialog", 0, 12));
-    learningRate.setBorder(titledBorder1);
+    learningRatePanel.setLayout(borderLayout2);
+    learningRatePanel.setBorder(titledBorder1);
     learningRateCheckBox.setFont(new java.awt.Font("Dialog", 0, 12));
     learningRateCheckBox.setText("Learning Rate Decay");
     hiddenLayerPanel.setLayout(borderLayout3);
@@ -119,7 +128,6 @@ public class AdvancedOptionsPanel extends JPanel {
     labelTimeLimit.setText("Limit of Epochs:");
     activationFunctionSteepPanel.setBorder(titledBorder3);
     activationFunctionSteepPanel.setLayout(borderLayout7);
-    trainningTimePanel.setFont(new java.awt.Font("Dialog", 0, 12));
     trainningTimePanel.setBorder(titledBorder4);
     trainningTimePanel.setDebugGraphicsOptions(0);
     trainningTimeSpinner.setBorder(null);
@@ -133,33 +141,42 @@ public class AdvancedOptionsPanel extends JPanel {
         errorVariationCheckBox_actionPerformed(e);
       }
     });
+    inputNormalizationPanel.setLayout(borderLayout8);
+    inputNormalizationPanel.setBorder(titledBorder5);
+    normalizationCheckBox.setFont(new java.awt.Font("Dialog", 0, 12));
+    normalizationCheckBox.setText("Normalize Numeric Input");
     jPanel1.add(jPanel2, null);
     jPanel2.add(hiddenLayerCheckBox, BorderLayout.CENTER);
     jPanel1.add(jPanel3, null);
     jPanel3.add(hiddenSizeSpinner, BorderLayout.CENTER);
+    trainningTimePanel.add(jPanel4, BorderLayout.CENTER);
+    activationFunctionSteepPanel.add(fuctionSteepSpinner, BorderLayout.CENTER);
     hiddenLayerPanel.add(jPanel1, BorderLayout.CENTER);
-    learningRate.add(learningRateCheckBox, BorderLayout.CENTER);
+    learningRatePanel.add(learningRateCheckBox, BorderLayout.CENTER);
     this.add(advancedOptions,  BorderLayout.CENTER);
-    trainningTimePanel.add(jPanel4,  BorderLayout.CENTER);
     jPanel4.add(labelTimeLimit, null);
     jPanel4.add(trainningTimeSpinner, null);
     jPanel4.add(errorVariationCheckBox, null);
     jPanel4.add(errorVariationSpinner, null);
-    advancedOptions.add(learningRate,   new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0
-            ,GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 0), 61, 1));
-    advancedOptions.add(trainningTimePanel,     new GridBagConstraints(0, 2, 1, 1, 1.0, 1.0
-            ,GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 0), 57, 9));
-    advancedOptions.add(activationFunctionSteepPanel,            new GridBagConstraints(0, 3, 1, 1, 1.0, 1.0
-            ,GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 0), 162, 11));
-    advancedOptions.add(hiddenLayerPanel,          new GridBagConstraints(0, 1, 1, 1, 1.0, 1.0
-            ,GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 0), 99, 6));
-    activationFunctionSteepPanel.add(fuctionSteepSpinner,  BorderLayout.CENTER);
+    advancedOptions.add(learningRatePanel,   new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0
+            ,GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 127, 0));
+    advancedOptions.add(inputNormalizationPanel,   new GridBagConstraints(0, 1, 1, 1, 1.0, 1.0
+            ,GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 107, 0));
+    advancedOptions.add(hiddenLayerPanel,   new GridBagConstraints(0, 2, 1, 1, 1.0, 1.0
+            ,GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 193, 0));
+    advancedOptions.add(trainningTimePanel,   new GridBagConstraints(0, 3, 1, 1, 1.0, 1.0
+            ,GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 7, 0));
+    advancedOptions.add(activationFunctionSteepPanel,   new GridBagConstraints(0, 4, 1, 1, 1.0, 1.0
+            ,GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 2, 0), 237, 0));
+    inputNormalizationPanel.add(normalizationCheckBox, BorderLayout.CENTER);
+
     startDefaultValues();
 
   }
 
   public void updateValues(){
     learningRateDecay = learningRateCheckBox.isSelected();
+    numericalInputNormalization = normalizationCheckBox.isSelected();
     autoHiddenLayerSize = hiddenLayerCheckBox.isSelected();
     hiddenLayerSize = Integer.parseInt(hiddenSizeSpinner.getValue().toString());
     trainningTime = Integer.parseInt(trainningTimeSpinner.getValue().toString());
@@ -170,6 +187,7 @@ public class AdvancedOptionsPanel extends JPanel {
 
   public void startDefaultValues(){
     learningRateCheckBox.setSelected(defaultLearningRateDecay);
+    normalizationCheckBox.setSelected(defaultNumericalInputNormalization);
     hiddenLayerCheckBox.setSelected(defaultAutoHiddenLayerSize);
     hiddenSizeSpinner.setValue(new Integer(defaultHiddenLayerSize));
     trainningTimeSpinner.setValue(new Integer(defaultTrainningTime));
@@ -185,6 +203,10 @@ public class AdvancedOptionsPanel extends JPanel {
 
   public boolean getLearningRateDecayEnabled(){
     return learningRateDecay;
+  }
+
+  public boolean getNumericalInputNormalizationEnabled(){
+    return numericalInputNormalization;
   }
 
   public int getHiddenLayerSize(){
