@@ -44,8 +44,8 @@ public class BayesianNetwork extends BayesianLearning
 
 	private boolean compareClasses(Attribute classAttribute,ProbabilisticNode node)
 	{	boolean equals = false;
-		if (((classAttribute.getAttributeName().compareToIgnoreCase(node.getName())) == 0)/* &&
-                    (classAttribute.numValues() == node.getStatesSize())*/)
+		if (((classAttribute.getAttributeName().compareToIgnoreCase(node.getName())) == 0) &&
+                    (classAttribute.numValues() <= node.getStatesSize()))
                 {	classNode = node;
 			equals = true;
 		}

@@ -78,19 +78,19 @@ public class MetaphorTree extends JTree
         private NumberFormat nf;
 
 	protected MetaphorTree()
-        {   /*super(new DefaultMutableTreeNode());
-            root = (DefaultMutableTreeNode)getModel().getRoot();
+        {   //super();
+            /*super(new DefaultMutableTreeNode());
+            root = (DefaultMutableTreeNode)getModel().getRoot();*/
             setShowsRootHandles(true);
-            setSelectionModel(null);*/
+            setSelectionModel(null);
             setRootVisible(false);
-            //this.setAutoscrolls(true);
+            this.setAutoscrolls(true);
             setCellRenderer(new MetaphorTreeCellRenderer());
             addMouseListener(new MouseAdapter()
             {   public void mouseClicked(java.awt.event.MouseEvent evt)
                 {   methaphorTreeMouseClicked(evt);
                 }
             });
-
             nf = NumberFormat.getInstance(Locale.US);
             nf.setMaximumFractionDigits(4);
 	}

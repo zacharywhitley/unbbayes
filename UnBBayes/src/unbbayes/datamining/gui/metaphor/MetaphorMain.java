@@ -63,7 +63,6 @@ public class MetaphorMain extends JPanel
   private JScrollPane jScrollPane2 = new JScrollPane();
   private JTextArea jTextArea3 = new JTextArea();
   private JTextArea jTextArea4 = new JTextArea();
-  private JScrollPane jScrollPane3;
   private Border border1;
   private Border border2;
   private Border border3;
@@ -172,8 +171,6 @@ public class MetaphorMain extends JPanel
     jScrollPane2.getViewport().add(jTextArea4, null);
     descriptionScrollPane.getViewport().add(descriptionTextArea, null);
     jPanel1.add(jPanel3, BorderLayout.CENTER);
-    jScrollPane3 = new JScrollPane(metaphorTree);
-    jPanel3.add(jScrollPane3,  BorderLayout.CENTER);
     jPanel1.add(jPanel5,  BorderLayout.EAST);
   }
 
@@ -203,10 +200,14 @@ public class MetaphorMain extends JPanel
   {   try
       {   net = new NetIO().load(selectedFile);
           net.compile();
-          metaphorTree = new MetaphorTree(net,false);
+          //metaphorTree = new MetaphorTree(net,false);
+          metaphorTree = new MetaphorTree();
+          metaphorTree.setProbabilisticNetwork(net);
           metaphorTree.expandTree();
+          JScrollPane jScrollPane3 = new JScrollPane(metaphorTree);
           jPanel3.removeAll();
-          jPanel3.add(metaphorTree,  BorderLayout.CENTER);
+          jPanel3.add(jScrollPane3, BorderLayout.CENTER);
+          jPanel3.updateUI();
           statusBar.setText("File opened successfully");
       }
       catch (Exception e)

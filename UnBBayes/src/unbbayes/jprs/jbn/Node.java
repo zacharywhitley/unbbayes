@@ -359,6 +359,14 @@ public abstract class Node implements java.io.Serializable {
         states.set(index, estado);
     }
 
+    public boolean existState(String state)
+    {   int size = states.size();
+        for (int i=0; i<size; i++)
+        {   if (states.get(i).equals(state))
+                return true;
+        }
+        return false;
+    }
 
     /**
      *  Retorna o número de estados do nó.
