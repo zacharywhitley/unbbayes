@@ -1,4 +1,5 @@
 <%@page import="linfca.*, 
+		linfca.gerencia.usuario.*, 
 		java.sql.*,
 		javax.servlet.RequestDispatcher,
         org.jdom.Element" 
@@ -40,13 +41,13 @@
 				dispatcher.forward(request, response);
 			} else {
 				Element sair = outXML.getChild("sair");
-				String codLancamento = sair.getChildTextTrim("cod-lancamento");
-				request.setAttribute("cod-lancamento", codLancamento);
+				String codLancamento = sair.getChildTextTrim("cod-lancamento-uso");
+				request.setAttribute("cod-lancamento-uso", codLancamento);
 				
-				String codComputador = sair.getChildTextTrim("cod-computador");
-				request.setAttribute("cod-computador", codComputador);
+				String codEquipamento = sair.getChildTextTrim("cod-equipamento");
+				request.setAttribute("cod-equipamento", codEquipamento);
 
-				RequestDispatcher dispatcher = request.getRequestDispatcher("/controle/computador/lancar-computador-exec.jsp");
+				RequestDispatcher dispatcher = request.getRequestDispatcher("/gerencia/computador/lancar-computador-exec.jsp");
 				dispatcher.forward(request, response);
 			}
 		}

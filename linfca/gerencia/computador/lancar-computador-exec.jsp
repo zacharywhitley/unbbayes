@@ -1,4 +1,6 @@
 <%@page import="linfca.*, 
+		linfca.gerencia.lancamento.*, 
+		linfca.cadastro.tiposituacao.*, 
         java.sql.*, 
         org.jdom.Element, 
         java.util.Iterator" 
@@ -8,29 +10,30 @@
 
    String mensagem = "";
    String codUsuario = request.getParameter("cod-usuario");   
-   System.out.println("Foi : " + codUsuario);
+
    Element in = new Element("in");
    
    if (codUsuario != null)  {
       mensagem = "Lançamento de uso de máquina concluído com sucesso!";
-      String codComputador = request.getParameter("cod-computador");
-      System.out.println("Foi : " + codComputador);
+      String codEquipamento = request.getParameter("cod-equipamento");
+
 	  Element usuario = new Element("cod-usuario");
-	  Element computador = new Element("cod-computador");	   
+	  Element equipamento = new Element("cod-equipamento");	   	  
 	  usuario.setText(codUsuario);
-	  computador.setText(codComputador);
+	  equipamento.setText(codEquipamento);
       in.getChildren().add(usuario);
-      in.getChildren().add(computador);
-      in.getChildren().add(new Element("uso"));
+      in.getChildren().add(equipamento);      
    } else {
       mensagem = "Fechamento do lançamento de uso de máquina concluído com sucesso!";
-	  String codLancamento = request.getAttribute("cod-lancamento").toString();
-      Element lancamento = new Element("cod-lancamento");
+	  String codLancamento = request.getAttribute("cod-lancamento-uso").toString();
+      Element lancamento = new Element("cod-lancamento-uso");
+      Element descricao = new Element("desc-tipo-situacao");
       lancamento.setText(codLancamento);
+      descricao.setText(TipoSituacao.DISPONIVEL);
       in.getChildren().add(lancamento);   
    }
    
-   Feature  lancamentoF = new LancamentoFeature();
+   Feature  lancamentoF = new LancamentoUsoFeature();
    Element saida = lancamentoF.process(in);
    
    if (saida.getChild("ok") != null) {
