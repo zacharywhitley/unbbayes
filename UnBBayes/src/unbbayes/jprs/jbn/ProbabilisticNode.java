@@ -23,6 +23,7 @@ package unbbayes.jprs.jbn;
 import java.util.*;
 import java.awt.Color;
 
+import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -195,7 +196,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
         for (int c = 0; c < getChildren().size(); c++) {
             PotentialTable auxTab = ((ProbabilisticNode)getChildren().get(c)).getPotentialTable();
             int l = auxTab.indexOfVariable(this);
-            List auxList = (List) auxTab.cloneVariables();
+            NodeList auxList = auxTab.cloneVariables();
             for (int k = auxList.size() - 1; k >= l; k--) {
                 auxTab.removeVariable((ProbabilisticNode) auxList.get(k));
             }
