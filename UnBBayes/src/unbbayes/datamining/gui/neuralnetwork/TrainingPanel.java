@@ -9,7 +9,13 @@ import ptolemy.plot.*;
 import unbbayes.controller.*;
 import unbbayes.datamining.classifiers.neuralnetwork.*;
 
-public class TrainingPanel extends JPanel implements QuadraticAverageError{
+/**
+ *  Class that implements the panel used to plot the mean squared error.
+ *
+ *  @author Rafael Moraes Noivo
+ *  @version $1.0 $ (06/26/2003)
+ */
+public class TrainingPanel extends JPanel implements MeanSquaredError{
   private ResourceBundle resource;
   private ImageIcon fillIcon;
   private ImageIcon resetSizeIcon;
@@ -92,11 +98,24 @@ public class TrainingPanel extends JPanel implements QuadraticAverageError{
     chart.setXLabel(resource.getString("XAxisTitle"));
   }
 
-  public void setQuadraticAverageError(int epoch, double error){
-    addPoint(epoch, error);
+  /**
+   * Method that implements the interface MeanSquaredError so the neural network
+   * may output its mean squared error during training.
+   *
+   * @param epoch An epoch
+   * @param error The mean squared error of the epoch
+   */
+  public void setMeanSquaredError(int epoch, double meanSquaredError){
+    addPoint(epoch, meanSquaredError);
   }
 
-  public void addPoint(double x, double y){
+  /**
+   * Method used to plot a point in the chart
+   *
+   * @param x The x coordinate
+   * @param y The y coordinate
+   */
+  private void addPoint(double x, double y){
     if(firstPoint){
       chart.addPoint(0, x, y, false);
       firstPoint = false;
@@ -105,6 +124,9 @@ public class TrainingPanel extends JPanel implements QuadraticAverageError{
     }
   }
 
+  /**
+   * Method used to clear the chart
+   */
   public void clear(){
     chart.clear(true);
     firstPoint = true;
@@ -136,5 +158,4 @@ public class TrainingPanel extends JPanel implements QuadraticAverageError{
       }
     }
   }
-
 }

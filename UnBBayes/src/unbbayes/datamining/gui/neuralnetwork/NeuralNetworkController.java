@@ -9,10 +9,15 @@ import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.gui.*;
 
+/**
+ *  Class that implements the neural network framwork controller
+ *
+ *  @author Rafael Moraes Noivo
+ *  @version $1.0 $ (02/16/2003)
+ */
 public class NeuralNetworkController {
-
-  private NeuralNetwork bpn = null;
   private ResourceBundle resource;
+  private NeuralNetwork bpn = null;
   private NeuralNetworkMain mainScreen;
   private JFileChooser fileChooser;
   private InstanceSet instanceSet;
@@ -35,10 +40,20 @@ public class NeuralNetworkController {
     return mainScreen;
   }
 
+  /**
+   * Used to call the help.
+   *
+   * @throws Exception If the help files are not found
+   */
   public void help() throws Exception{
     FileController.getInstance().openHelp(mainScreen);
   }
 
+  /**
+   * Used to start the learn process
+   *
+   * @throws Exception If any erros occur during training
+   */
   public void learn() throws Exception{
     float learningRate;
     boolean learningRateDecay;
@@ -63,13 +78,19 @@ public class NeuralNetworkController {
       minimumErrorVariation = (float)mainScreen.advancedOptionsPanel.getMinimumErrorVariation();
 
       bpn = new NeuralNetwork(learningRate, learningRateDecay, momentum, hiddenSize, activationFunction, trainningTime, numerialInputNormalization, activationFunctionSteep, minimumErrorVariation);
-      bpn.setQuadraticErrorOutput(mainScreen.chartPanel);
+      bpn.setMeanSquaredErrorOutput(mainScreen.chartPanel);
       bpn.buildClassifier(instanceSet);
       mainScreen.inferencePanel.setNetwork(bpn);
     }
     mainScreen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
+  /**
+   * Used to open a new training file
+   *
+   * @return True if the file was successfully opened and false otherway.
+   * @throws Exception If any problem occur during file oppening
+   */
   public boolean openFile() throws Exception{
     mainScreen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
     String[] arff = {"ARFF"};
@@ -104,10 +125,20 @@ public class NeuralNetworkController {
     }
   }
 
+  /**
+   * Returns the hidden layer size
+   * @return The hidden layer size
+   */
   public int getHiddenLayerSize(){
     return hiddenLayerSize;
   }
 
+  /**
+   * Used to save the generated model
+   *
+   * @return True if the model was saved successfully and false other way
+   * @throws Exception If any problem occur during saving.
+   */
   public boolean saveModel() throws Exception{
     mainScreen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
     String[] bpnString = {"bpn"};   //backpropagation neural network
@@ -133,6 +164,12 @@ public class NeuralNetworkController {
     return success;
   }
 
+  /**
+   * Used to open a saved model
+   *
+   * @return True if the model was opened successfully and false otherway.
+   * @throws Exception If any problem occur during the openning processe.
+   */
   public boolean openModel() throws Exception{
     mainScreen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
     String[] neuralNetworkString = {"bpn"};

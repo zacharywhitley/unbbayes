@@ -1,10 +1,38 @@
 package unbbayes.datamining.classifiers.neuralnetwork;
 
+/**
+ *  Interface that defines the methods that an activationFunction must have.
+ *
+ *  @author Rafael Moraes Noivo
+ *  @version $1.0 $ (06/26/2003)
+ */
 public interface ActivationFunction{
 
+  /**
+   * Calculate the outputo of the activation function for a given value.
+   *
+   * @param v The value to be evaluated by the activation function
+   * @return The evaluated value
+   */
   public double functionValue(double v);
 
-  public double outputErrorTerm(double d, double o);  //sigma
+  /**
+   * Calculate the error term of an output neuron, given the expected value and
+   * the actual calculated value.
+   *
+   * @param desired The desired value.
+   * @param actualValue The actual calculated value.
+   * @return The error term.
+   */
+  public double outputErrorTerm(double desired, double actualValue);
 
-  public double hiddenErrorTerm(double y, double sum);  //sigma
+  /**
+   * Calculate the error term of a hidden neuron, given the actual calculated
+   * value and the sum of the error terms of all neuron of the next layer.
+   *
+   * @param y The actual output of the hidden neuron
+   * @param sum The sum of the error terms of all neuron of the next layer
+   * @return The error term.
+   */
+  public double hiddenErrorTerm(double y, double sum);
 }

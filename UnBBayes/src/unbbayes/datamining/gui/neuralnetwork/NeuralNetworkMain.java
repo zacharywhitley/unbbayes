@@ -9,6 +9,12 @@ import javax.swing.border.*;
 import unbbayes.controller.*;
 import unbbayes.datamining.gui.*;
 
+/**
+ *  Class that implements the main screen of the neural network framwork
+ *
+ *  @author Rafael Moraes Noivo
+ *  @version $1.0 $ (02/16/2003)
+ */
 public class NeuralNetworkMain extends JInternalFrame {
   private ResourceBundle resource;
   private JToolBar toolBar = new JToolBar();
@@ -227,7 +233,8 @@ public class NeuralNetworkMain extends JInternalFrame {
   /**
    * Used to set the controller of this class.
    *
-   * @param controllercontroller the controller.
+   * @param controller the controller.
+   * @see NeuralNetworkController
    */
   public void setController(NeuralNetworkController controller){
     this.controller = controller;

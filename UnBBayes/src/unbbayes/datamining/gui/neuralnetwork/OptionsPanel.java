@@ -5,6 +5,13 @@ import java.awt.*;
 import javax.swing.*;
 import unbbayes.datamining.classifiers.*;
 
+/**
+ * Class that implements a panel with the basic options used in a
+ * neural network using backpropagation algorithm.
+ *
+ * @author Rafael Moraes Noivo
+ * @version $1.0 $ (06/26/2003)
+ */
 public class OptionsPanel extends JPanel {
   private ResourceBundle resource;
   private BorderLayout borderLayout1 = new BorderLayout();
@@ -75,20 +82,42 @@ public class OptionsPanel extends JPanel {
     comboActivationFunction.setSelectedIndex(0);
   }
 
+  /**
+   * Enables or disables the panel.
+   *
+   * @param enable A boolean informing if the panel should be enabled or disabled
+   */
   public void setEnabled(boolean enable){
     spinnerLearningRate.setEnabled(enable);
     spinnerMomentum.setEnabled(enable);
     comboActivationFunction.setEnabled(enable);
   }
 
+  /**
+   * Method used to get the learning rate selected by the user
+   *
+   * @return The learning rate
+   * @throws NumberFormatException If the user typed an invalid number
+   */
   public float getLearningRate() throws NumberFormatException{
     return Float.parseFloat(spinnerLearningRate.getValue().toString());
   }
 
+  /**
+   * Method used to get the momentum selected by the user
+   *
+   * @return The momentum
+   * @throws NumberFormatException If the user typed an invalid number
+   */
   public float getMomentum() throws NumberFormatException{
     return Float.parseFloat(spinnerMomentum.getValue().toString());
   }
 
+  /**
+   * Method used to get the type of activation function selected by the user
+   *
+   * @return The selected type of activation function.
+   */
   public int getSelectedActivationFunction(){
     if(comboActivationFunction.getSelectedIndex() == NeuralNetwork.SIGMOID){
       return NeuralNetwork.SIGMOID;

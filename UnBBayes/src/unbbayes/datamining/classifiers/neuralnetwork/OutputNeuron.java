@@ -3,11 +3,28 @@ package unbbayes.datamining.classifiers.neuralnetwork;
 import java.util.*;
 import java.io.*;
 
+/**
+ *  Class that defines an output neuron.
+ *
+ *  @author Rafael Moraes Noivo
+ *  @version $1.0 $ (06/26/2003)
+ *  @see Neuron
+ */
 public class OutputNeuron extends Neuron implements Serializable{
 
+  /**The calculated value of the neuron output*/
   private float outputValue;
-  private float errorTerm;    //sigma
 
+  /**The calculated error term of the neuron*/
+  private float errorTerm;
+
+  /**
+   * The constructor of the OutputNeuron class
+   *
+   * @param activationFunction The activation function to be used by this neuron.
+   * @param numberOfInputs The number of inputs connected to this neuron.
+   * @see {@link ActivationFunction}
+   */
   public OutputNeuron(ActivationFunction activationFunction, int numberOfInputs) {
     this.activationFunction = activationFunction;
     weights = new float[numberOfInputs + 1];
@@ -16,10 +33,24 @@ public class OutputNeuron extends Neuron implements Serializable{
     Arrays.fill(deltaW, 0);
   }
 
+  /**
+   * Method that returns the output value calculated by the neruon.
+   *
+   * @return The calculated output value.
+   */
   public float outputValue(){
     return outputValue;
   }
 
+  /**
+   * Method used during the trainning phase of the network used to update
+   * the input connections weigths.
+   *
+   * @param learningRate The learning rate value
+   * @param momentum The momentum value
+   * @param hiddenLayer The network hidden layer
+   * @see {@link HiddenNeuron}
+   */
   public void updateWeights(float learningRate, float momentum, HiddenNeuron[] hiddenLayer){
     deltaW[0] = (momentum * deltaW[0]) + (learningRate * errorTerm);
     weights[0] = weights[0] + deltaW[0];  //bias
@@ -30,29 +61,50 @@ public class OutputNeuron extends Neuron implements Serializable{
     }
   }
 
-  public float getErrorTerm(){   //sigma
+  /**
+   * Method that returns the error term calculated by the neuron.
+   *
+   * @return The calculated error term.
+   */
+  public float getErrorTerm(){
     return errorTerm;
   }
 
+  /**
+   * Method that returns the weight associated to an specific input.
+   *
+   * @param weightIndex The index of the desired weight.
+   * @return The desired weight.
+   */
   public float getWeight(int weightIndex){
     return weights[weightIndex + 1];   //mais um para considerar o bias
   }
 
-  public float calculateOutputValue(HiddenNeuron[] inputs){
+  /**
+   * Method that calculate the output value of the neuron using the output
+   * values of the hidden neuron.
+   *
+   * @param inputValues An array with the inputs of the neuron.
+   */
+  public float calculateOutputValue(HiddenNeuron[] inputValues){
     float net = weights[0];  //bias value
-    for(int i=0; i<inputs.length; i++){
-      net = net + (inputs[i].outputValue() * weights[i + 1]);
+    for(int i=0; i<inputValues.length; i++){
+      net = net + (inputValues[i].outputValue() * weights[i + 1]);
     }
     outputValue = (float)activationFunction.functionValue(net);
     return outputValue;
   }
 
+   /**
+   * Method that calculate the error term of the neuron and returns the
+   * instantaneous calculated error.
+   *
+   * @param expectedOutput The expected ouptut value.
+   * @return The instantaneous error.
+   */
   public float calculateErrorTerm(float expectedOutput){
     float instantaneousError = expectedOutput - outputValue;
     errorTerm = (float)activationFunction.outputErrorTerm(expectedOutput, outputValue);  //calculo de sigma
     return instantaneousError;
   }
-
 }
-
-

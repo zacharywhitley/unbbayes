@@ -5,41 +5,148 @@ import java.util.*;
 import unbbayes.datamining.classifiers.neuralnetwork.*;
 import unbbayes.datamining.datamanipulation.*;
 
+/**
+ * Class that implements a multilayer neural network with backpropagation
+ * trainning algorithm.
+ *
+ * @author Rafael Moraes Noivo
+ * @version $1.0 $ (06/26/2003)
+ */
 public class NeuralNetwork extends DistributionClassifier implements Serializable{
 
+  /**
+   * Constant that defines that the size of the hidden layer is
+   * automatically defined. The number of hidden neurons will be the number of
+   * input attributes plus the number of output attributes divided by 2
+   */
   public static final int AUTO_HIDDEN_LAYER_SIZE = -1;
+
+  /**
+   * Constant that defines a value to indicate that the error variation
+   * stop criterion will not be used
+   */
   public static final int NO_ERROR_VARIATION_STOP_CRITERION = -2;
+
+  /**Constant that informs that the sigmoid (logistic) activation function is been used*/
   public static final int SIGMOID = 0;
+
+  /**Constant that informs that the hyperbolic tangent (tanh) activation function is been used*/
   public static final int TANH = 1;
+
+  /**Constant that indicates that no normalization will be used*/
   public static final int NO_NORMALIZATION = 0;
+
+  /**Constant that indicates that the linear normalization will be used*/
   public static final int LINEAR_NORMALIZATION = 1;
+
+  /**Constant that indicates that the mean 0 and standard deviation 1 normalization will be used*/
   public static final int MEAN_0_STANDARD_DEVIATION_1_NORMALIZATION = 2;
 
-  private float[] inputLayer;
-  private HiddenNeuron[] hiddenLayer;
-  private OutputNeuron[] outputLayer;
+
+  /**The actual learning rate*/
   private transient float learningRate;
+
+  /**The original leaning rate, used when the leaning rate decay is activated*/
   private transient float originalLearningRate;
+
+  /**The momenum value*/
   private transient float momentum;
+
+  /**The hidden layer size*/
   private transient int hiddenLayerSize;
+
+  /**
+   * The activation function been used
+   * @see {@link ActivationFunction}
+   */
   private transient ActivationFunction activationFunction = null;
+
+  /**The training time, expressed in the number of epochs*/
   private transient int trainingTime;
+
+  /**The minimum error variatio between epochs, this stop criterion may be disabled*/
   private transient float minimumErrorVariation;
+
+  /**
+   * Option that enable the learning rate to decay between epochs.
+   * The original learning rate is divide by the number of the epoch.
+   * */
   private transient boolean learningRateDecay = false;
-  private transient QuadraticAverageError quadraticAverageError;
+
+  /**
+   * The mean squared error
+   * @see {@link MeanSquaredError}
+   */
+  private transient MeanSquaredError meanSquaredError;
+
+  /**
+   * The isntance set used for training
+   * @see {@link InstanceSet}
+   */
   private transient InstanceSet instanceSet;
+
+  /**Array that definesthe input layer of the network*/
+  private float[] inputLayer;
+
+  /**
+   * Array of hidden neurons defining the hidden layer of the network
+   * @see {@link HiddenNeuron}
+   */
+  private HiddenNeuron[] hiddenLayer;
+
+  /**
+   * Array of output neurons defining the output layer of the network
+   * @see {@link OutputNeuron}
+   */
+  private OutputNeuron[] outputLayer;
+
+  /**The activation function type been used (sigmoid or tanh)*/
   private int activationFunctionType;
+
+  /**Variable that has tha number of attibutes of the instance set*/
   private int numOfAttributes;
+
+  /**Variable that informs if the input must normalized and the normalization method*/
   private int numericalInputNormalization = NO_NORMALIZATION;
+
+  /**Variable that informs if the class attribute is numeric*/
   private boolean numericOutput;
+
+  /**Array that contains the highest values of each attribute of the instance set*/
   private float[] highestValue;
+
+  /**Array that contains the lowest values of each attribute of the instance set*/
   private float[] lowestValue;
+
+  /**Array tha contains the number of possible values of each nominal attributes*/
   private int[] attNumOfValues;
+
+  /**Array of all the attributes in the instance set*/
   private Attribute[] attributeVector;
+
+  /**The attribute index of the class attribute*/
   private int classIndex;
+
+  /**Array that contains the mean of the values of all instances for each attribute*/
   private float[] attributeMean;
+
+  /**Array that contains the standard deviation of the values of all instances for each attribute*/
   private float[] attributeStandardDeviation;
 
+
+  /**
+   * Constructor of the neural network
+   *
+   * @param learningRate The learning rate
+   * @param learningRateDecay Sets if the learning rate should decay
+   * @param momentum The momentum
+   * @param hiddenLayerSize The hidden layer size
+   * @param activationFunction The activation function
+   * @param trainingTime The training time (in epochs)
+   * @param numericalInputNormalization Sets if the numerical input should be normalized
+   * @param activationFunctionSteep Sets the activation function steep
+   * @param minimumErrorVariation Sets the minimum error variation
+   */
   public NeuralNetwork(float learningRate,
                        boolean learningRateDecay,
                        float momentum,
@@ -66,6 +173,15 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     }
   }
 
+  /**
+   * Constructor of the neural network
+   *
+   * @param learningRate The learning rate
+   * @param momentum The momentum
+   * @param hiddenLayerSize The hidden layer size
+   * @param activationFunction The activation function
+   * @param trainingTime The training time (in epochs)
+   */
   public NeuralNetwork(float learningRate,
                        float momentum,
                        int hiddenLayerSize,
@@ -86,10 +202,10 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   }
 
   /**
-   *
+   * Method used to build and train the neural network classifier
    *
    * @param instanceSet The training data
-   * @exception Exception if classifier can't be built successfully
+   * @throws Exception if classifier can't be built successfully
    */
   public void buildClassifier(InstanceSet instanceSet) throws Exception{
     this.instanceSet = instanceSet;
@@ -212,9 +328,8 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       }
       quadraticError = quadraticError/instanceSet.numWeightedInstances();
 
-      if(quadraticAverageError != null){
-        quadraticAverageError.setQuadraticAverageError(epoch, quadraticError);
-//        System.out.println("Erro quadrado médio " + epoch + " :" + quadraticError);
+      if(meanSquaredError != null){
+        meanSquaredError.setMeanSquaredError(epoch, quadraticError);
       }
 
       if(minimumErrorVariation != NO_ERROR_VARIATION_STOP_CRITERION){
@@ -225,7 +340,14 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     }
   }
 
-  public float learn(Instance instance){
+  /**
+   * Learns an specific instance
+   *
+   * @param instance The instance to be learned
+   * @return The total error energy
+   * @see {@link Instance}
+   */
+  private float learn(Instance instance){
     float totalErrorEnergy = 0;
     float[] expectedOutput;
 
@@ -237,7 +359,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     }
 
     /////////calcula as saídas esperadas
-    expectedOutput = calculateExpectedOutput(instance);
+    expectedOutput = expectedOutput(instance);
 
     //////////calcula as saidas da camada de saída
     for(int i=0; i<outputLayer.length; i++){
@@ -265,6 +387,11 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     return (totalErrorEnergy / 2);
   }
 
+  /**
+   * Prepare the input layer for propagation acording to the received instance.
+   *
+   * @param instance The instance to prepare the input layer
+   */
   private void inputLayerSetUp(Instance instance){
     int counter = 0; //inicializa o contador de entradas
     Arrays.fill(inputLayer, -1);  //zera o vetor de entradas
@@ -297,7 +424,13 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     }
   }
 
-  private float[] calculateExpectedOutput(Instance instance){
+  /**
+   * Calculate the expected output value for the received instance
+   *
+   * @param instance The instance to calculate the exepected output
+   * @return An array with the expected output for the instance
+   */
+  private float[] expectedOutput(Instance instance){
     float[] expectedOutput;
     if(numericOutput){
       expectedOutput = new float[1];
@@ -341,7 +474,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       distribution[i] = outputLayer[i].calculateOutputValue(hiddenLayer);
     }
 
-////////////////////////////////// un-normalization
+    ///////// un-normalization
     if(numericOutput){
       if(activationFunctionType == SIGMOID){
         for(int i=0; i<distribution.length; i++){
@@ -353,21 +486,26 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
         }
       }
     }
-///////////////////////////////////
 
     return distribution;
   }
 
-
-  public void setQuadraticErrorOutput(QuadraticAverageError quadraticAverageError){
-    this.quadraticAverageError = quadraticAverageError;
+  /**
+   * Method used to set a class that implements the MeanSquaredError class so
+   * this class may outptu the mean squared error and the epoch of this error.
+   *
+   * @param meanSquaredError A class that implements MeanSquaredError
+   * @see {@link MeanSquaredError}
+   */
+  public void setMeanSquaredErrorOutput(MeanSquaredError meanSquaredError){
+    this.meanSquaredError = meanSquaredError;
   }
-
 
   /**
    * Outputs an array of attributes with the attributes of the training set.
    *
    * @return an attribute array.
+   * @see {@link Attribute}
    */
   public Attribute[] getAttributeVector(){
         return attributeVector;

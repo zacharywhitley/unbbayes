@@ -7,6 +7,12 @@ import javax.swing.border.*;
 import java.awt.event.*;
 import unbbayes.datamining.classifiers.NeuralNetwork;
 
+/**
+ *  Class that implements the the panel used to set advanced options.
+ *
+ *  @author Rafael Moraes Noivo
+ *  @version $1.0 $ (06/26/2003)
+ */
 public class AdvancedOptionsPanel extends JPanel {
   private ResourceBundle resource;
   private BorderLayout borderLayout1 = new BorderLayout();
@@ -211,6 +217,9 @@ public class AdvancedOptionsPanel extends JPanel {
 
   }
 
+  /**
+   * Method used to update the actual parameters by the new ones inserted.
+   */
   public void updateValues(){
     learningRateDecay = learningRateCheckBox.isSelected();
     if(normalizationCheckBox.isSelected()){
@@ -230,6 +239,9 @@ public class AdvancedOptionsPanel extends JPanel {
     activationFunctionSteep = Double.parseDouble(fuctionSteepSpinner.getValue().toString());
   }
 
+  /**
+   * Method that sets the defalt values
+   */
   public void startDefaultValues(){
     learningRateCheckBox.setSelected(defaultLearningRateDecay);
     normalizationCheckBox.setSelected(defaultNumericalInputNormalization);
@@ -242,20 +254,41 @@ public class AdvancedOptionsPanel extends JPanel {
     fuctionSteepSpinner.setValue(new Double(defaultActivationFunctionSteep));
   }
 
+  /**
+   * Method tha sets a hidden layer size.
+   *
+   * @param hiddenLayerSize The hidden layer size
+   */
   public void sethiddenLayerSize(int hiddenLayerSize){
       this.hiddenLayerSize = hiddenLayerSize;
       defaultHiddenLayerSize = hiddenLayerSize;
       hiddenSizeSpinner.setValue(new Integer(hiddenLayerSize));
   }
 
+  /**
+   * Method used to see if the learning rate decay was activated
+   *
+   * @return True if the learning rate decay is active an False otherway.
+   */
   public boolean getLearningRateDecayEnabled(){
     return learningRateDecay;
   }
 
+  /**
+   * Method used to see if the input normalizatio is active an what
+   * normalization method sould be used.
+   *
+   * @return The normalization method or a value indicating no normalization
+   */
   public int getNumericalInputNormalization(){
     return numericalInputNormalization;
   }
 
+  /**
+   * Method used to get the hidden layer size defined by the user
+   *
+   * @return The hidden layer size.
+   */
   public int getHiddenLayerSize(){
     if(hiddenLayerCheckBox.isSelected()){
       return NeuralNetwork.AUTO_HIDDEN_LAYER_SIZE;
@@ -264,10 +297,23 @@ public class AdvancedOptionsPanel extends JPanel {
     }
   }
 
+  /**
+   * Method used to get the training time specified by the user
+   *
+   * @return The training time (in epochs)
+   */
   public int getTrainningTime(){
     return trainningTime;
   }
 
+  /**
+   * Method that returns the minimum error variation or a value that
+   * indicates that the minimum error variation criterion should
+   * not be used.
+   *
+   * @return The minimum error variation or a value that indicates that the
+   * minimum error variation criterion should not be used.
+   */
   public double getMinimumErrorVariation(){
     if(errorVariationCheckBox.isSelected()){
       return minimumErrorVariation;
@@ -276,6 +322,11 @@ public class AdvancedOptionsPanel extends JPanel {
     }
   }
 
+  /**
+   * Method that returns the activation function steep.
+   *
+   * @return The activation function steep
+   */
   public double getActivationFunctionSteep(){
     return activationFunctionSteep;
   }
