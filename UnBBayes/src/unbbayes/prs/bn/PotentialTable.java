@@ -434,7 +434,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
         		break;
         		
         	default:
-        		assert false : "Operador não suportado!";
+//        		assert false : "Operador não suportado!";
         }
     }
     

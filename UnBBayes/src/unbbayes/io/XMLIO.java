@@ -124,6 +124,7 @@ public class XMLIO implements BaseIO {
 	}
 	
 	public ProbabilisticNetwork load(Document doc) throws Exception {
+		xpath = new CachedXPathAPI();
 			ProbabilisticNetwork net = null;
 			org.w3c.dom.Node elNode = xpath.selectSingleNode(doc, NET_NAME);
 			net = new ProbabilisticNetwork(XMLUtil.getValue(elNode));
@@ -148,7 +149,7 @@ public class XMLIO implements BaseIO {
 	 * @see unbbayes.io.BaseIO#load(java.io.File)
 	 */
 	public ProbabilisticNetwork load(File input) throws LoadException, IOException {
-		xpath = new CachedXPathAPI();
+		
 		try {			
 			InputSource is = new InputSource(new BufferedReader(new FileReader(input)));
 			Document doc = XMLUtil.getDocument(is);			

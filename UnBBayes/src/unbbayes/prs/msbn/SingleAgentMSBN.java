@@ -56,6 +56,6 @@ public class SingleAgentMSBN extends AbstractMSBN {
 			activeNet = netAux;
 		}
 		
-		assert activeNet == net;
+//		assert activeNet == net;
 	}
 }

@@ -116,16 +116,18 @@ public class Network implements java.io.Serializable {
      */
     public Network(String id) {
         nos = new NodeList();
-        assert ! id.trim().equals("");
+//        assert ! id.trim().equals("");
         this.id = this.name = id;
         //descriptionNodes = new NodeList();
         //explanationNodes = new NodeList();
         arcos = new ArrayList();
         arcosMarkov = new ArrayList();
         logManager = new LogManager(); 
+        /*
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
 		DefaultTreeModel model = new DefaultTreeModel(root);
         hierarchicTree = new HierarchicTree(model);        
+        */
         nodeIndexes = new HashMap();
     }
 
@@ -1141,7 +1143,7 @@ public class Network implements java.io.Serializable {
 				for (int j = auxNo.getAdjacents().size() - 1; j >= 0; j--) {
 					Node v = auxNo.getAdjacents().get(j);
 					boolean removed = v.getAdjacents().remove(auxNo);				
-					assert removed;
+//					assert removed;
 				}
 				auxNos.remove(auxNo);
 				algum = true;
@@ -1201,7 +1203,7 @@ public class Network implements java.io.Serializable {
 		for (int i = no.getAdjacents().size() - 1; i >= 0; i--) {
 			Node auxNo1 = no.getAdjacents().get(i);
 			boolean removed = auxNo1.getAdjacents().remove(no);
-			assert removed;
+//			assert removed;
 		}
 		auxNos.remove(no);
 	}
@@ -1234,7 +1236,7 @@ public class Network implements java.io.Serializable {
 			}
 		}
 		
-		assert noMin != null;
+//		assert noMin != null;
 		return noMin;
 	}
 

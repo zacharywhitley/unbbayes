@@ -146,7 +146,7 @@ public abstract class AbstractMSBN {
 				return;
 			}
 		}
-		assert false : "Não podia chegar aqui";
+//		assert false : "Não podia chegar aqui";
 	}
 	
 	/**

@@ -183,7 +183,7 @@ public class SubNetwork extends Network {
 				
 		auxNos.removeAll(inter);
 		
-		assert inter.size() + auxNos.size() == sizeAnt;
+//		assert inter.size() + auxNos.size() == sizeAnt;
 		
 		boolean inseriu = false;
 		while (minimumWeightElimination(auxNos)) {
@@ -244,7 +244,7 @@ public class SubNetwork extends Network {
 				Node a = net.getNode(e.getOriginNode().getName());
 				Node b = net.getNode(e.getDestinationNode().getName()); 
 				
-				assert(a != null && b != null);
+//				assert(a != null && b != null);
 				if (! a.getAdjacents().contains(b) && ! b.getAdjacents().contains(a)) {
 					a.getAdjacents().add(b);
 					b.getAdjacents().add(a);

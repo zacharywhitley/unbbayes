@@ -244,7 +244,9 @@ public class NetIO implements BaseIO {
 			if (files[i].isFile()) {
 				String fileName = files[i].getName();
 				int index = fileName.lastIndexOf('.');
-				assert index >= 0;
+				if (index < 0) {
+					throw new RuntimeException();
+				}
 				if (fileName.substring(index+1).equalsIgnoreCase("net")) {
 					SubNetwork net = new SubNetwork(fileName.substring(0, index));
 					load(files[i], net);
