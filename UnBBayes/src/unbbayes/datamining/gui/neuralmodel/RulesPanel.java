@@ -7,7 +7,7 @@ import javax.swing.table.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.datamanipulation.neuralmodel.*;
 import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
-import unbbayes.datamining.datamanipulation.neuralmodel.util.*;
+//import unbbayes.datamining.datamanipulation.neuralmodel.util.*;
 
 public class RulesPanel extends JPanel {
   private BorderLayout borderLayout1 = new BorderLayout();
@@ -42,11 +42,11 @@ public class RulesPanel extends JPanel {
     this.instanceSet = instanceSet;
     this.createTableLines();
     RulesTableModel rulesTableModel = new RulesTableModel();
-    TableSorter sorter = new TableSorter(rulesTableModel);   //adicionada
+//    TableSorter sorter = new TableSorter(rulesTableModel);   //adicionada
 
-//    tableRules = new JTable(rulesTableModel);
-    tableRules = new JTable(sorter);    //adicionada
-    sorter.addMouseListenerToHeaderInTable(tableRules);   //adicionada
+    tableRules = new JTable(rulesTableModel);
+//    tableRules = new JTable(sorter);    //adicionada
+//    sorter.addMouseListenerToHeaderInTable(tableRules);   //adicionada
 
     initColumnSizes(tableRules, rulesTableModel);
     jScrollPane1.getViewport().add(tableRules, null);

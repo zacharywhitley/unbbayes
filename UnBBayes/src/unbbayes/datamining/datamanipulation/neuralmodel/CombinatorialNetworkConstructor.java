@@ -17,7 +17,7 @@ public class CombinatorialNetworkConstructor{
   private Hashtable inputLayer = new Hashtable();
   private Hashtable combinatorialLayer = new Hashtable();
   private Hashtable outputLayer = new Hashtable();
-  private Hashtable combinationsTable = new Hashtable();
+/**/  private Hashtable combinationsTable = new Hashtable();
   private InstanceSet instanceSet;
 
   public CombinatorialNetworkConstructor(InstanceSet instanceSet) {
@@ -30,7 +30,7 @@ public class CombinatorialNetworkConstructor{
     Enumeration outputEnum;
     int attributeNum = instanceSet.numAttributes();
     int classIndex = instanceSet.getClassIndex();
-    int maxOrder = /*maxOrder*/3;  //retirar isso, maxOrder será passado por parametro
+    int maxOrder = 3;  //retirar isso, maxOrder será passado por parametro
 
     while(instanceEnum.hasMoreElements()){
       instance = (Instance)instanceEnum.nextElement();
@@ -49,18 +49,6 @@ public class CombinatorialNetworkConstructor{
       output = (OutputNeuron)outputEnum.nextElement();
       output.calculateReliability();
     }
-
-//////////////////////////////////// impressao para teste
-    for(int i=0; i<instanceSet.numAttributes(); i++){
-      System.out.println("indice:" + i + " " + instanceSet.getAttribute(i).toString());
-    }
-    System.out.println("Classe:" + instanceSet.getClassAttribute().toString());
-
-    Enumeration enum = outputLayer.elements();
-    while(enum.hasMoreElements()){
-      ((OutputNeuron)enum.nextElement()).printClassValue();
-    }
-////////////////////////////////////////
 
     return new CombinatorialNetwork(inputLayer, combinatorialLayer, outputLayer);
   }
@@ -90,10 +78,12 @@ public class CombinatorialNetworkConstructor{
 
   private void createCombinatorialNeurons(Instance instance, int attributeNum, int classIndex, int maxOrder){
     short value;
+    int combinationsSize;
     InputNeuron[] inputList;                                    //lista de todos os neuronios de entrada da instancia
-    InputNeuron[] combInputList;                                //lista do neuronios de entrada da combinanção de ordem x
+    InputNeuron[] tempInputList;
     CombinatorialNeuron combNeuron;
     OutputNeuron outputNeuron = (OutputNeuron)outputLayer.get(generateOutputKey(classIndex, instance.classValue()));
+    ArrayList combinations;
     String key;
 
     int missingAttNum = 0;
@@ -118,47 +108,30 @@ public class CombinatorialNetworkConstructor{
       maxOrder = inputList.length;
     }
 
-    boolean[][][] combinations = makeCombinations(inputList.length, maxOrder);
+    combinations = makeCombinations(inputList, maxOrder);     //cria todas as combinações dos neuronios de entrada
+    combinationsSize = combinations.size();
 
-    for(int order=1; order<maxOrder+1; order++){                //faz as ligações de ordem 1
-      if(order==1){
-        for(int i=0; i<inputList.length; i++){
-          inputList[i].addCombNeuron(outputNeuron);
-          outputNeuron.addCombination(inputList[i]);
-          System.out.println("peso " + instance.getWeight());
+    for(int i=0; i<combinationsSize; i++){                    //para cada combinaçao
+      tempInputList = (InputNeuron[])combinations.get(i);
+      if(tempInputList.length == 1){                          //se combinação de ordem 1 então
+        tempInputList[0].addCombNeuron(outputNeuron);
+        outputNeuron.addCombination(tempInputList[0], instance.getWeight());
+      } else {                                                //se combinação de ordem maior q 1 então
+        key = generateCombKey(tempInputList);                 //gera a chave da combinação
+        if(!combinatorialLayer.containsKey(key)){             //se nao existe comb neuron com esta chave cria um novo
+          combNeuron = new CombinatorialNeuron(tempInputList, outputNeuron, key);
+          combinatorialLayer.put(key, combNeuron);
+          for(int j=0; j<tempInputList.length; j++){          // adiciona o comb neuron em todas as entradas da instancia
+            tempInputList[j].addCombNeuron(combNeuron);
+          }
+        } else {                                              //se já existir pega ele e adiciona a saida da instancia
+          combNeuron = (CombinatorialNeuron)combinatorialLayer.get(key);
+          combNeuron.addOutputNeuron(outputNeuron);
         }
-      } else {                                                  //faz combinações de ordem > 1
-        int combNum = combinations[order].length;
-        for(int comb=0; comb<combNum; comb++){                  //para cada combinação
-          combInputList = new InputNeuron[order];
-          position = 0;
-          for(int att=0; att<inputList.length; att++){          //para cada atributo
-            if(combinations[order][comb][att] == true){         //se atributo é verdadeiro
-              combInputList[position] = inputList[att];         //adiciona o atributo corresp da inputList na combList
-              position++;
-            }
-          }
-
-          key = generateCombKey(combInputList);                 //gera a chave da combinação
-
-          if(!combinatorialLayer.containsKey(key)){             //se nao existe comb neuron cria um novo
-            combNeuron = new CombinatorialNeuron(combInputList, outputNeuron, key);
-            combinatorialLayer.put(key, combNeuron);
-          } else {                                              //se já existir pega ele e adiciona uma saida
-            combNeuron = (CombinatorialNeuron)combinatorialLayer.get(key);
-            combNeuron.addOutputNeuron(outputNeuron);
-          }
-
-          outputNeuron.addCombination(combNeuron);              // adiciona o comb neuron no output da instancia
-
-          for(int i=0; i<order; i++){                           // adiciona o comb neuron em todas as entradas da instancia
-            combInputList[i].addCombNeuron(combNeuron);
-          }
-        }
+        outputNeuron.addCombination(combNeuron, instance.getWeight());  // adiciona o comb neuron no output da instancia
       }
     }
   }
-
 
   private String generateCombKey(InputNeuron[] inputList){
     int inputListSize = inputList.length;
@@ -177,90 +150,33 @@ public class CombinatorialNetworkConstructor{
     return new String("o" + attribute + value);
   }
 
-  private boolean[][][] makeCombinations(int numAttributes, int maxOrder){
-    if(combinationsTable.containsKey(new Integer(numAttributes))){      //verificaçao pra ver se já foi calculado para esse numero de atributos.
-      return (boolean[][][])combinationsTable.get(new Integer(numAttributes));
-    }
+  private ArrayList makeCombinations(InputNeuron[] inputArray, int maxOrder){
+    InputNeuron[] tempInputArray, temp;
+    ArrayList combinations = new ArrayList();
+    int inputSize = inputArray.length;
+    int combArraySize, tempSize;
 
-    boolean[][][] combTable = new boolean[maxOrder+1][][];              //primeira dimensão: ordem; segunda dimensão: quantidade de combinações; terceira dimensao: atributos
-    boolean[][] combinations;
+    for(int inputNum=0; inputNum<inputSize; inputNum++){      //para todos os neuronios de entrada
+      combArraySize = combinations.size();                    //pega o tamanho do array de combinações
 
-    for(int order=1; order<maxOrder+1; order++){
-      if(order == 1){                                                   //gera as combinações de ordem 1
-        combinations = new boolean[numAttributes][numAttributes];
-        for(int j=0; j<numAttributes; j++){
-          for(int i=0; i<numAttributes; i++){
-            if(i==j){
-              combinations[j][i] = true;
-            }else{
-              combinations[j][i] = false;
-            }
+      for(int j=0; j<combArraySize; j++){                     //para todas as combinações já existentes
+        temp = (InputNeuron[])combinations.get(j);
+        tempSize = temp.length;                               //pega o tamanho da combinação
+
+        if(tempSize < maxOrder){                              //se tamanho da combinação < ordem máxima
+          tempInputArray = new InputNeuron[tempSize + 1];     //cria nova combinação
+          tempInputArray[tempSize] = inputArray[inputNum];    //adiciona o neuronio de entrada atual
+          for(int k=0; k<tempSize; k++){                      //copia o resto da combinação atual
+            tempInputArray[k] = temp[k];
           }
+          combinations.add(tempInputArray);                   //adiciona nova combinação no array de combinacoes
         }
-        combTable[order] = combinations;
-      } else {                                                          //gera as combinações de ordem maior q 1
-        int prevCombNum = combTable[order-1].length;                    //numero de combinações da ordem anterior
-        int possibleComb = possibleCombinations(numAttributes, order);  //numero de possiveis combinações para esta ordem
-        combinations = new boolean[possibleComb][numAttributes];        //array de combinações para esta ordem
-        boolean finished = false;                                       //variavel de controle
-        int combCounter = 0;
-        int attCounter;
-        boolean repetition;
-
-        for(int att=0; att<numAttributes; att++){                  //para cada atributo
-          for(int i=0; i<prevCombNum; i++){                        //para cada combinação de ordem anterior
-            if(!combTable[order-1][i][att]){                       //se falso,
-              for(int k=0; k<numAttributes; k++){                  //cria uma nova combinação de ordem atual baseada na de ordem anterior
-                combinations[combCounter][k] = combTable[order-1][i][k];
-                combinations[combCounter][att] = true;
-              }
-
-              repetition = false;                                  //identificando repetição
-              for(int comb2=0; comb2<combCounter; comb2++){        //para cada combinação de ordem atual já existente
-                attCounter = 0;                                    //contador de atributos
-                for(int att2=0; att2<numAttributes; att2++){       //para cada atributo da nova combinacao compara com as combinações já existentes
-                  if(combinations[comb2][att2] == combinations[combCounter][att2]){
-                    attCounter++;                                  //soma o numero de atributos iguais entre duas combinações
-                  }
-                }
-                if(attCounter == numAttributes){                   //se o numero de atributos iguais for igual ao numero de atributos existentes
-                  repetition = true;                               //sai do loop e seta repetição
-                  break;
-                }
-              }
-              if(!repetition){                                     //se não for repetição vai pra proxima combinacao
-                combCounter++;
-                if(combCounter == possibleComb){                   // quando atingir o numero de combinaçóes possíveis para
-                  finished = true;
-                  break;
-                }
-              }
-            }
-          }
-          if(finished){                                            //se atingir o nr de comb possiveis pra esta ordem então para.
-            break;
-          }
-        }
-        combTable[order] = combinations;
       }
+      tempInputArray = new InputNeuron[1];                    //cria nova combinação de um elemento
+      tempInputArray[0] = inputArray[inputNum];               //coloca o neuronio de entrada atual nesta combinação
+      combinations.add(tempInputArray);                       //adiciona nova combinação no array de combinacoes
     }
-
-    combinationsTable.put(new Integer(numAttributes), combTable);
-    return combTable;
-  }
-
-  private int possibleCombinations(int numAttributes, int order){
-    int numerator = 1;
-    for (int i=numAttributes; i>order; i--){
-      numerator = numerator * i;
-    }
-
-    int denominator = 1;
-    for (int i=1; i<(numAttributes-order)+1; i++){
-      denominator = denominator * i;
-    }
-
-    return numerator/denominator;
+    return combinations;
   }
 
   private void punishment(){

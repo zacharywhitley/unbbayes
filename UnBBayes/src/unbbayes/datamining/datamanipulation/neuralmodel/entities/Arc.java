@@ -10,13 +10,19 @@ package unbbayes.datamining.datamanipulation.neuralmodel.entities;
  */
 
 public class Arc {
-  protected int accumulator = 1;
+  protected int accumulator;
   protected int weigth;
   protected float reliability;
   protected Neuron combinationNeuron;
 
   public Arc(Neuron combinationNeuron){
     this.combinationNeuron = combinationNeuron;
+    this.accumulator = 1;
+  }
+
+  public Arc(Neuron combinationNeuron, int accumulator){
+    this.combinationNeuron = combinationNeuron;
+    this.accumulator = accumulator;
   }
 
   public Neuron getCombinationNeuron(){

@@ -30,12 +30,13 @@ public class OutputNeuron extends Neuron{
     return value;
   }
 
-  public void addCombination(Neuron combination){
+  public void addCombination(Neuron combination, int weight){
     String combinationKey = combination.getKey();
     if(combinationsList.containsKey(combinationKey)){
-      ((Arc)combinationsList.get(combinationKey)).accumulator ++;
+      Arc tempArc = ((Arc)combinationsList.get(combinationKey));
+      tempArc.accumulator = tempArc.accumulator + weight;
     } else {
-      combinationsList.put(combinationKey, new Arc(combination));
+      combinationsList.put(combinationKey, new Arc(combination, weight));
     }
   }
 
@@ -105,26 +106,8 @@ public class OutputNeuron extends Neuron{
     }
   }
 
-
-//////////////////////////////
-  public void printClassValue(){
-    System.out.println("Classe: " + attributeIndex + "\nValor: " + value );
-    Enumeration enum = combinationsList.elements();
-    Arc tempNeuron;
-    while(enum.hasMoreElements()){
-      tempNeuron = (Arc)enum.nextElement();
-      if(tempNeuron.combinationNeuron instanceof InputNeuron){
-        System.out.println("input neuron: " + tempNeuron.combinationNeuron.getKey() + " acc:" + tempNeuron.accumulator + " weight:" + tempNeuron.weigth);
-      } else {
-        System.out.println("comb neuron: " + tempNeuron.combinationNeuron.getKey() + " acc:" + tempNeuron.accumulator + " weight:" + tempNeuron.weigth);
-      }
-    }
-  }
-
-//////////////////////////////
 /*  public void setSignal(int signal, Integer key){
     ((Arc)combinationsList.get(key)).
   }
 */
-
 }
