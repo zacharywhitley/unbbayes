@@ -18,7 +18,7 @@ public class OrdenationInterationController {
 	public OrdenationInterationController(NodeList variables, OrdenationWindow frame){
 		this.variables = variables;
 		this.frame = frame;				
-		pamp = new String[4];		
+		pamp = new String[4];			
 	}
 	
 	public void upEvent(){
@@ -43,15 +43,12 @@ public class OrdenationInterationController {
                      for (int k = i -1 ; k < variables.size() ; k++){
                           auxVector.add(variables.get(k));
                      }
-                     variables = auxVector;
-                     for (int g = 0 ;g < variables.size() ; g++ ){
-                          aux = (TVariavel)variables.get(g);
-                     }
+                     variables = auxVector;            
                      ordenationJL.setSelectedIndex(index);
                      break;
                  }
             }
-        }			
+        }			        
 	}
 	
 	public void downEvent(){
@@ -76,10 +73,7 @@ public class OrdenationInterationController {
                      for (int k = i +1 ; k < variables.size() ; k++){
                           auxVector.add(variables.get(k));
                      }
-                     variables = auxVector;
-                     for (int g = 0 ;g < variables.size() ; g++ ){
-                          aux = (TVariavel)variables.get(g);
-                     }
+                     variables = auxVector;    
                      ordenationJL.setSelectedIndex(index);
                      break;
                  }
@@ -97,7 +91,7 @@ public class OrdenationInterationController {
 		pamp[1] = a;
 		pamp[2] = m;
 		pamp[3] = param; 	
-		frame.dispose();					
+		frame.dispose();       
 	}
 	
 	public void relationsEvent(){
@@ -144,5 +138,9 @@ public class OrdenationInterationController {
 		    metricList.disable();
         }		
 	}	
+	
+	public NodeList getVariables(){
+		return this.variables;	
+	}
 
 }

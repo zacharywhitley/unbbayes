@@ -5,7 +5,7 @@ import unbbayes.util.NodeList;
 public class AlgorithmController{
 	
 	public AlgorithmController(NodeList variables,byte[][] matrix, int[] vector,
-	        long caseNumber, String[] pamp, boolean compacted){
+	        long caseNumber, String[] pamp, boolean compacted){	        	
 	        if(pamp[0].equalsIgnoreCase("Ponctuation")){
 	        	if(pamp[1].equalsIgnoreCase("k2")){
 	        		K2 k2 = new K2(variables, matrix, vector, caseNumber,pamp[2],pamp[3],compacted);	        		

@@ -1,4 +1,3 @@
-
 package unbbayes.aprendizagem;
 
 import unbbayes.controlador.*;
@@ -8,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.FileInputStream;
 import java.io.StreamTokenizer;
+import java.util.Date;
 
 public class ConstructionController {
 	 
@@ -41,12 +41,20 @@ public class ConstructionController {
         OrdenationWindow ordenationWindow = new OrdenationWindow(variables);	    	    	    	    
         OrdenationInterationController ordenationController = ordenationWindow.getController();                    
         String[] pamp = ordenationController.getPamp();
-        /*Constructs the topology of the net*/
+        variables = ordenationController.getVariables();
+        /*Constructs the topology of the net*/        
+        Date d = new Date();
+        long time = d.getTime();                
         AlgorithmController algorithmController = new AlgorithmController
                                        (variables,matrix,vector,caseNumber,pamp,compacted);                
+        Date d2 = new Date();
+        long time1 = d2.getTime();
+        long resul = time1 - time;
+        System.out.println("Resultado = "+ resul);                               
         /*Gives the probability of each node*/
         ProbabilisticController probabilisticController = new ProbabilisticController
                                 (variables,matrix, vector,caseNumber,controller, compacted);
+                     
     }
 	
 	private void setColsConstraints(StreamTokenizer cols){
@@ -105,6 +113,7 @@ public class ConstructionController {
 	}
 	
 	private void makeMatrix(StreamTokenizer cols, int rows){
+		boolean faltante = false;
 	    int position = 0;
         String stateName = "";     
         TVariavel aux;
@@ -118,7 +127,11 @@ public class ConstructionController {
                     	if(cols.sval != null){
                          	stateName = cols.sval;
                          	if(! aux.existeEstado(stateName)){
-                              	aux.adicionaEstado(stateName);
+                         		if(!stateName.equals(" ")){                         		
+                              	aux.adicionaEstado(stateName);                              	
+                         		} else {
+                         			faltante = true;
+                         		}
                          	}
                     	} else{
                          	stateName = String.valueOf(cols.nval);
@@ -126,7 +139,13 @@ public class ConstructionController {
                                	aux.adicionaEstado(stateName);
                          	}
                     	}
-                    	matrix[(int)caseNumber][aux.getPos()] = (byte)aux.getEstadoPosicao(stateName);
+                    	if(! faltante){
+                        	matrix[(int)caseNumber][aux.getPos()] = (byte)aux.getEstadoPosicao(stateName);
+                        	
+                    	} else{
+                    		matrix[(int)caseNumber][aux.getPos()] = -1;
+                    		faltante = true;                    		
+                    	}
                 	}
                 	cols.nextToken();
                 	position++;
@@ -141,4 +160,22 @@ public class ConstructionController {
         } catch(Exception e ){};        	
         System.out.println("NumeroCasos " + caseNumber);	
 	}
+	
+	private void normalize(TVariavel variable) {
+        for (int c = 0; c < variable.getPotentialTable().tableSize()/*.getDados().size()*/; c+=variable.getEstadoTamanho()/*.noEstados()*/){
+            double sum = 0.0;
+            for (int i = 0; i < variable.getEstadoTamanho()/*.noEstados()*/; i++){
+               sum += variable.getPotentialTable().getValue(c+i);
+            }
+            if (sum == 0){
+                for (int i = 0; i < variable.getEstadoTamanho()/*.noEstados()*/; i++){
+                    variable.getPotentialTable().setValue(c+i, 1.0/variable.getEstadoTamanho()/*.noEstados()*/);
+                }
+            } else{
+                 for (int i = 0; i < variable.getEstadoTamanho()/*.noEstados()*/; i++){
+                     variable.getPotentialTable().setValue(c+i, variable.getPotentialTable().getValue(c+i)/sum);
+                 }
+            }
+        }
+    }
 }
