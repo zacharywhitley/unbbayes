@@ -14,8 +14,7 @@ import linfca.util.Base64;
 import org.jdom.Element;
 import java.security.*;
 
-
-import java.util.Date;
+import java.sql.Date;
 
 public class SalvarUsuarioFeature implements Feature {
 
@@ -49,35 +48,25 @@ public class SalvarUsuarioFeature implements Feature {
 		
 		Connection con = Controller.getInstance().makeConnection();
 		
-		String codTipoUsuario  = in.getChild("cod-tipo-usuario").getTextTrim();
-		String codTipoSexo     = in.getChild("cod-tipo-sexo").getTextTrim();
-		String identificacao   = in.getChild("identificacao").getTextTrim();
-		String cpf             = in.getChild("cpf").getTextTrim();
-		String nome            = in.getChild("nome").getTextTrim();
-		String sobrenome       = in.getChild("sobrenome").getTextTrim();
-		String senha           = in.getChild("senha").getTextTrim();
-		String email           = in.getChild("email").getTextTrim();
-		String endereco        = in.getChild("endereco").getTextTrim();
-		String foto            = in.getChild("foto").getTextTrim();
-		String dia             = in.getChild("dia").getTextTrim();
-		String mes             = in.getChild("mes").getTextTrim();
-    	String ano             = in.getChild("ano").getTextTrim();
-		String dataNascimentoS = ano + '/' + mes + '/' + dia;
+		String codTipoUsuario  = in.getChildTextTrim("cod-tipo-usuario");
+		String codTipoSexo     = in.getChildTextTrim("cod-tipo-sexo");
+		String identificacao   = in.getChildTextTrim("identificacao");
+		String cpf             = in.getChildTextTrim("cpf");
+		String nome            = in.getChildTextTrim("nome");
+		String sobrenome       = in.getChildTextTrim("sobrenome");
+		String senha           = in.getChildTextTrim("senha");
+		String email           = in.getChildTextTrim("email");
+		String endereco        = in.getChildTextTrim("endereco");
+		String foto            = in.getChildTextTrim("foto");
+		String dia             = in.getChildTextTrim("dia");
+		String mes             = in.getChildTextTrim("mes");
+    	String ano             = in.getChildTextTrim("ano");
+		Date dataNascimento = Date.valueOf(ano + '/' + mes + '/' + dia);
 		
 		MessageDigest md = MessageDigest.getInstance("MD5");
 		byte [] senhaEncode = md.digest(senha.getBytes());
 		byte [] senhaEncode64 = Base64.encode(senhaEncode);
 
-		
-		Date dataNascimento = null;
-		DateFormat df = DateFormat.getDateInstance();
-	    try {
-	    	dataNascimento = df.parse(dataNascimentoS);
-	    } catch(ParseException e) {
-	    	throw new RuntimeException("Não foi capaz de criar a data: " + 
-										dataNascimento);
-	    }
-		
 		// cria o elemento de saída
 		Element out = new Element("out");
 		
@@ -149,7 +138,7 @@ public class SalvarUsuarioFeature implements Feature {
 		ps.setString(8, email);
 		ps.setString(9, endereco);
 		ps.setString(10, foto);
-		ps.setDate(11, new java.sql.Date(dataNascimento.getTime()));
+		ps.setDate(11, dataNascimento);
 
 		return (ps.executeUpdate() > 0);
 		
@@ -187,7 +176,7 @@ public class SalvarUsuarioFeature implements Feature {
 		ps.setString(8, email);
 		ps.setString(9, endereco);
 		ps.setString(10, foto);
-		ps.setDate(11, new java.sql.Date(dataNascimento.getTime()));
+		ps.setDate(11, dataNascimento);
 		ps.setString(12, codUsuario);
 
 		return (ps.executeUpdate() > 0);
