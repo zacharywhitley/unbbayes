@@ -26,7 +26,7 @@
               
                 <td width="30%">
                   <P>Computador</P></td>
-                <td width="70%"></td>
+                <td width="70%"><img src="<%=path%>/design/imagens/mapa_linf.gif" border="0" hspace="20" alt="Mapa do Linf"></td>
                 
 			  </tr>
 			  
