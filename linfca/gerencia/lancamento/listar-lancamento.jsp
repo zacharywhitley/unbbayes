@@ -2,15 +2,14 @@
 				linfca.*,
 				linfca.util.*,
 				java.io.*,
+				java.util.*,
 				org.jdom.Element" 
        errorPage="" %>
 	   
-<html>
-<head>
-<title>Listar Lançamentos</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-</head>
-<body>
+<%@include file="/util.jsp" %> 
+
+<%@include file =  "/design/cabecalho.jsp"%>
+
 <table width="75%" border="1">
   <tr> 
     <td width="22%">Usu&aacute;rio</td>
@@ -28,7 +27,7 @@
 		dataFim.setText(request.getParameter("data-hora-fim"));
 		in.getChildren().add(dataFim);
 		
-		if (request.getParameter("abertos")) {
+		if (request.getParameter("abertos") != null) {
 			in.getChildren().add("abertos");
 		}
 		
@@ -53,5 +52,4 @@
   </tr>
   <%     }  %>
 </table>
-</body>
-</html>
+<%@include file =  "/design/rodape.jsp"%>
