@@ -74,9 +74,11 @@ public class ListarLancamentoFeature implements Feature {
 			Element dataInicioXML = new Element("data-hora-inicio");
 			dataInicioXML.setText(inicio.toString());
 			
-			Element dataFimXML = new Element("data-hora-fim");
-			dataFimXML.setText(fim.toString());
-
+			if (fim != null) {
+				Element dataFimXML = new Element("data-hora-fim");
+				dataFimXML.setText(fim.toString());
+				lancamento.getChildren().add(dataFimXML);
+			}
 			Element nomeXML = new Element("nome-usuario");
 			nomeXML.setText(nome);
 			
@@ -85,7 +87,6 @@ public class ListarLancamentoFeature implements Feature {
 			
 			lancamento.getChildren().add(codigoXML);
 			lancamento.getChildren().add(dataInicioXML);
-			lancamento.getChildren().add(dataFimXML);
 			lancamento.getChildren().add(nomeXML);
 			lancamento.getChildren().add(fotoXML);
 			out.getChildren().add(lancamento);

@@ -38,7 +38,7 @@
 		in.getChildren().add(dataFim);
 		
 		if (request.getParameter("abertos") != null) {
-			in.getChildren().add("abertos");
+			in.getChildren().add(new Element("abertos"));
 		}
 		
 		Feature f = new ListarLancamentoFeature();
