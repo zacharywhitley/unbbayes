@@ -39,8 +39,6 @@
 	  Element element = new Element(name);
 	  element.setText(value);
 	  in.getChildren().add(element);
-      System.out.println(name + " = " + value);
-      
    }
 
    Feature  salvarSemestreF = new SalvarGenericoFeature();

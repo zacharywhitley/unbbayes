@@ -4,4 +4,4 @@
 
 <script language="JavaScript">
    location.href = "<%=path%>/cadastro/selecionar-generico.jsp?nome_tabela=usuario&campo=identificacao&campo=nome&campo=sobrenome";
-</script> 
+</script>   

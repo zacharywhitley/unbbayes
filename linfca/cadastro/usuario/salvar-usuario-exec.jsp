@@ -41,10 +41,7 @@
 	  }
 	        	  
 	  in.getChildren().add(element);
-      System.out.println(name + " = " + value);
-      
    }
-   System.out.println(multi.getParameter("ano") + "-" + multi.getParameter("mes") + "-" + multi.getParameter("dia"));
    Element data = new Element("date_data_nascimento");
    data.setText(multi.getParameter("ano") + "-" + multi.getParameter("mes") + "-" + multi.getParameter("dia"));   
    in.getChildren().add(data);
