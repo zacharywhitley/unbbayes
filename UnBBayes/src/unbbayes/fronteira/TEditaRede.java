@@ -88,8 +88,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
      *  utilizadas por essa classe para que se possa desenhar a rede Bayesiana.
      *
      */
-    public TEditaRede(TJanelaEdicao janel, NodeList variaveis, ProbabilisticNetwork net) {
-    //public TEditaRede(TJanelaEdicao janel, List variaveis) {
+    public TEditaRede(TJanelaEdicao janel, ProbabilisticNetwork net) {
         super();
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
@@ -121,12 +120,9 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         tamanhoRede = new Dimension(1500, 1500);
         tamanhoVisivel = new Dimension(0, 0);
 
-        //arco = new ArrayList();
 		arco = net.getArcos();
-        no = variaveis;
+        no = net.getNos();
         Node noAux;
-        Edge arcoAux;
-        Node noPai;
         int linha = 1;
         for (int i = 0; i < no.size(); i++) {
             noAux = no.get(i);
@@ -134,14 +130,6 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
                 linha++;
             }
             noAux.setPosicao((i + 1) * 3 * raio, 3 * raio * linha);
-            noAux.setName(noAux.getName());
-            for (int j = 0; j < noAux.getParents().size(); j++) {
-               //setar o filho
-               noPai = (Node)noAux.getParents().get(j);
-               noPai.getChildren().add(noAux);
-               arcoAux = new Edge(noPai, noAux);
-               arco.add(arcoAux);
-            }
         }
     }
 

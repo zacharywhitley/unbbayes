@@ -23,7 +23,7 @@ public class ProbabilisticController extends LearningToolkit{
     	int[][] arrayNijk;
     	PotentialTable table;
     	ProbabilisticNetwork net    = controller.makeNetwork(variables);
-    	TJanelaEdicao window = new TJanelaEdicao(variables, net);	
+    	TJanelaEdicao window = new TJanelaEdicao(net);
     	int length  = variables.size();    	
         for(int i = 0; i < length; i++) {
             variable  = (TVariavel)variables.get(i);

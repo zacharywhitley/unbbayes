@@ -38,7 +38,6 @@ public class TJanelaEdicao extends JDialog {
     private JToolBar jtb;
     private JViewport view;
     private TEditaRede rede;
-    private NodeList variaveis;
     private JButton insereArco;
     private JButton reaprende;
     private JScrollPane jspView;
@@ -46,21 +45,18 @@ public class TJanelaEdicao extends JDialog {
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.fronteira.resources.FronteiraResources");
 
-    public TJanelaEdicao(NodeList variaveis, ProbabilisticNetwork net) {
-    //public TJanelaEdicao(List variaveis) {
+    public TJanelaEdicao(ProbabilisticNetwork net) {
 		super(new Frame(), resource.getString("aprendizagemTitle"), true);
         Container contentPane = getContentPane();
 
         setSize(550, 470);
         setResizable(true);
 
-        this.variaveis = variaveis;
-
         insereArco = new JButton(new ImageIcon("icones/ferraarco.gif"));
         reaprende  = new JButton(new ImageIcon("icones/aprende.gif"));
         view       = new JViewport();
         jtb        = new JToolBar();
-        rede       = new TEditaRede(this, this.variaveis, net);
+        rede       = new TEditaRede(this, net);
         jspView    = new JScrollPane(view);
 
         view.setView(rede);

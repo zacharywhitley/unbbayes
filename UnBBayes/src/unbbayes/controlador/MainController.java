@@ -133,11 +133,16 @@ public class MainController {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 
         ProbabilisticNetwork net = new ProbabilisticNetwork();
+        Node noFilho = null;
+        Node noPai = null;
+        Edge arcoAux = null;
         for (int i = 0; i < variaveis.size(); i++) {
-            Node noAux = variaveis.get(i);
-            net.addNode(noAux);
-            for (int j = 0; j < noAux.getParents().size(); j++) {
-                Edge arcoAux = new Edge((Node)noAux.getParents().get(j), noAux);
+            noFilho = variaveis.get(i);
+            net.addNode(noFilho);
+            for (int j = 0; j < noFilho.getParents().size(); j++) {
+            	noPai = (Node)noFilho.getParents().get(j);
+            	noPai.getChildren().add(noFilho);
+                arcoAux = new Edge(noPai, noFilho);
                 net.getArcos().add(arcoAux);
             }
         }
