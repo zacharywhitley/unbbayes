@@ -52,7 +52,7 @@ public class Link {
 	 * First pass to absorb
 	 * @param naOrdem
 	 */
-	protected void absorveIn(boolean naOrdem) {
+	protected void absorbIn(boolean naOrdem) {
 		Clique c2 = (naOrdem) ? v1 : v0;
 		
 		originalLinkTable = (PotentialTable) clique.getPotentialTable().clone();
@@ -71,16 +71,21 @@ public class Link {
 		}
 	}
 	
+	/**
+	 * Second pass to absorb.
+	 * @param newRedTab the modified redundance table. (sepset in Linkage)
+	 * @param oldRedTab the old redundance table. (sepset in Linkage) 
+	 */
 	protected void removeRedundancy(PotentialTable newRedTab, PotentialTable oldRedTab) {
 		newLinkTable.opTab(newRedTab, PotentialTable.DIVISION_OPERATOR);
 		originalLinkTable.opTab(oldRedTab, PotentialTable.DIVISION_OPERATOR);
 	}
 	
 	/**
-	 * Second pass to absorb.
+	 * Third pass to absorb.
 	 * @param naOrdem
 	 */
-	protected void absorveOut(boolean naOrdem) {
+	protected void absorbOut(boolean naOrdem) {
 		Clique c1 = (naOrdem) ? v0 : v1;
 				
 		newLinkTable.directOpTab(originalLinkTable, PotentialTable.DIVISION_OPERATOR);
