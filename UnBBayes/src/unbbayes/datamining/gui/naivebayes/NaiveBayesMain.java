@@ -342,7 +342,6 @@ public class NaiveBayesMain extends JInternalFrame
           FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-
   }
 
   void helpButton_actionPerformed(ActionEvent e)
