@@ -1,5 +1,5 @@
 /*
- * Created on 08/05/2003
+ * Created on 03/06/2003
  *
  *  UnbBayes
  *  Copyright (C) 2002 Universidade de Brasília
@@ -31,13 +31,11 @@ import javax.ejb.EJBLocalObject;
  *
  * This classe is responsible for 
  */
-public interface LocalModel extends EJBLocalObject {
+public interface LocalDomain extends EJBLocalObject {
 
-	public int getModelId();
+	public int getDomainId();
 	public String getName();
-	public String getDefinition();
 	public String getDescription();
-	public LocalDomain getDomain();
-	public Collection getEvidences();
+	public Collection getModels();
 
 }

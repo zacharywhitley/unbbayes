@@ -1,5 +1,5 @@
 /*
- * Created on 08/05/2003
+ * Created on 03/06/2003
  *
  *  UnbBayes
  *  Copyright (C) 2002 Universidade de Brasília
@@ -24,20 +24,37 @@ package ubs.persistence.model;
 
 import java.util.Collection;
 
-import javax.ejb.EJBLocalObject;
+import javax.ejb.CreateException;
+import javax.ejb.EJBLocalHome;
+import javax.ejb.FinderException;
 
 /**
  * @author Rommel Carvalho
  *
  * This classe is responsible for 
  */
-public interface LocalModel extends EJBLocalObject {
+public interface LocalDomainHome extends EJBLocalHome {
 
-	public int getModelId();
-	public String getName();
-	public String getDefinition();
-	public String getDescription();
-	public LocalDomain getDomain();
-	public Collection getEvidences();
+	public LocalDomain create(
+		int id,
+		String name,
+		String description)
+		throws CreateException;
+
+	public LocalDomain findByPrimaryKey(int id) throws FinderException;
+
+	public LocalDomain findByModel(int modelId) throws FinderException;
+
+	public LocalDomain findByEvidence(int evidenceId) throws FinderException;
+
+	public Collection findByName(String name) throws FinderException;
+
+	public Collection findByDescription(String description)
+		throws FinderException;
+
+	public Collection findByNameAndDescription(String name, String description)
+		throws FinderException;
+
+	public Collection findAll() throws FinderException;
 
 }
