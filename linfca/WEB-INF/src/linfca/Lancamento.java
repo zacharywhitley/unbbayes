@@ -7,5 +7,5 @@ public class Lancamento {
 	static final String USO = "Uso";
 	static final String DEPOSITO = "Depósito";
 
-}
+} 
  

@@ -54,7 +54,7 @@ public class LancamentoFeature implements Feature {
 			sql.append(" dt_hora_fim_lancamento = ? ");
 			sql.append("WHERE ");
 			sql.append("  cod_lancamento = ? ");
-			
+			 
 			ps = con.prepareStatement(sql.toString());
 						
 			ps.setTimestamp(1, dtHora);
