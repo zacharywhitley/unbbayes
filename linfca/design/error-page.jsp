@@ -1,12 +1,31 @@
 <%@page isErrorPage="true" %>
-<html>
-<head>
-<title>Erro!</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-</head>
-<body>
-   O seguinte erro foi encontrado:<BR>
- <b><%= exception %></b>
- <% exception.printStackTrace(out); %>
-</body>
-</html>
+<%@include file="/util.jsp" %> 
+<%@include file =  "design/cabecalho.jsp"%>
+        <tr>
+          <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_sucesso.gif" width="174" border="0" hspace="20" alt="Log In / Log Out"></td>
+          <td>
+		  <BR>
+            <FORM name="login" action="<%=path%>/index.jsp" method="post">
+            <table width="100%" border="0" cellspacing="5" cellpadding="0" align="center">
+              <tr>
+                <td colspan=2>
+                  <P class="header">O seguinte erro foi encontrado:</P><br>
+				</td>
+			  </tr>
+			  <tr>
+                <td colspan=2>
+                  <b><%= exception %></b>
+                  <% exception.printStackTrace(out); %><br>
+				</td>
+			  </tr>
+              <tr>
+                <td colspan=2>
+                  <P><INPUT type="submit" value="Voltar">
+                  </P><br><br>				  
+				</td>
+				</form>
+			  </tr>
+			</table>
+		  </td>
+		</tr>
+<%@include file =  "design/rodape.jsp"%>

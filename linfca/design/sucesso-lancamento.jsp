@@ -1,16 +1,25 @@
 <%@page errorPage="" %>
-<html>
-<head>
-<title>Sucesso</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-</head>
-
-<body>
-<h2>Lançamento processado com sucesso!</h2>
-<form name="form1" method="post" action="<%=request.getContextPath()%>/index.jsp">
-  <input type="submit" name="Submit" value="Voltar">
-</form>
-<p>&nbsp;</p>
-
-</body>
-</html>
+<%@include file="/util.jsp" %> 
+<%@include file =  "design/cabecalho.jsp"%>
+        <tr>
+          <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_sucesso.gif" width="174" border="0" hspace="20" alt="Log In / Log Out"></td>
+          <td>
+		  <BR>
+            <FORM name="login" action="<%=path%>/index.jsp" method="post">
+            <table width="100%" border="0" cellspacing="5" cellpadding="0" align="center">
+              <tr>
+                <td colspan=2>
+                  <P class="header">Lançamento processado com sucesso!</P><br>
+				</td>
+			  </tr>
+              <tr>
+                <td colspan=2>
+                  <P><INPUT type="submit" value="Voltar">
+                  </P><br><br>				  
+				</td>
+				</form>
+			  </tr>
+			</table>
+		  </td>
+		</tr>
+<%@include file =  "design/rodape.jsp"%>
