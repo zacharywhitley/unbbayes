@@ -20,6 +20,8 @@
 		
 		Feature  detalharUsuario = new DetalharUsuarioFeature();
 		usuarioXML = detalharUsuario.process(in);
+		
+		System.out.println("Entrou onde nao devia");
 	
 	}
 
@@ -51,7 +53,7 @@
               <tr>
                 <td width="50%">
                 		<INPUT maxLength=35 name="identificacao" 
-                		 value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("identificacao").getTextTrim()%><% } %>">
+                		 value="<% if (usuarioXML != null) { %><%=usuarioXML.getChildTextTrim("identificacao")%><% } %>">
                 </td>
                 <td width="50%">
                   <select name="cod_tipo_usuario">
@@ -63,7 +65,7 @@
 		  	            Element tipo = (Element) tipos.next();
 		                %>
                      <option value="<%= ((Element)tipo.getChild("cod-tipo-usuario")).getText() %>" 
-                      <% if ( ((Element)tipo.getChild("cod-tipo-usuario")).getTextTrim().equals(usuarioXML.getChild("cod-tipo-usuario").getTextTrim()) ) { %> selected <% } %> > 
+                      <% if ( (usuarioXML != null) && (((Element)tipo.getChild("cod-tipo-usuario")).getTextTrim().equals(usuarioXML.getChildTextTrim("cod-tipo-usuario"))) ) { %> selected <% } %> > 
                      <%= ((Element)tipo.getChild("descricao-tipo-usuario")).getText() %> </option>
                   <% }	%>
                   </select>
@@ -98,15 +100,15 @@
               <tr>
                 <td width="50%">
                   <input maxLength=2 name="dia" type="text" size="2"
-                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("dia").getTextTrim()%><% } %>">
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChildTextTrim("dia")%><% } %>">
                    &nbsp;<font size=4>/</font>&nbsp;
                    
                   <input maxLength=2 name="mes" type="text" size="2"
-                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("mes").getTextTrim()%><% } %>">
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChildTextTrim("mes")%><% } %>">
                    &nbsp;<font size=4>/</font>&nbsp;
                    
                   <input maxLength=4 name="ano" type="text" size="4"
-                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("ano").getTextTrim()%><% } %>">
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChildTextTrim("ano")%><% } %>">
                 </td>
                 <td width="50%">                
                   <% 
@@ -117,7 +119,7 @@
 		  	            Element tipo = (Element) tipos.next();
 		          %>
                      <input type="radio" name="cod_tipo_sexo" value="<%= ((Element)tipo.getChild("cod-tipo-sexo")).getText() %>"
-                      <% if ( ((Element)tipo.getChild("cod-tipo-sexo")).getTextTrim().equals(usuarioXML.getChild("cod-tipo-sexo").getTextTrim()) ) { %> checked <% } %> >
+                      <% if ( (usuarioXML != null) && ((Element)tipo.getChild("cod-tipo-sexo")).getTextTrim().equals(usuarioXML.getChildTextTrim("cod-tipo-sexo")) ) { %> checked <% } %> >
                      <%= ((Element)tipo.getChild("descricao-tipo-sexo")).getText() %> 
                   <% }	%>                
                 </td>
@@ -129,11 +131,11 @@
               <tr>
                 <td width="50%">
                   <INPUT type=text maxLength=35 name="telefone"
-                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("telefone").getTextTrim()%><% } %>">
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChildTextTrim("telefone")%><% } %>">
                 </td>
                 <td width="50%">
                   <INPUT type=text maxLength=35 name="email"
-                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("email").getTextTrim()%><% } %>">
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChildTextTrim("email")%><% } %>">
                 </td>
               </tr>
               <tr>
@@ -144,7 +146,7 @@
                 <td width="50%"><INPUT type=file name="foto"></td>
                 <td width="50%">
                   <INPUT type=text maxLength=11 name="cpf"
-                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("cpf").getTextTrim()%><% } %>">
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChildTextTrim("cpf")%><% } %>">
                 </td>
               </tr>
               <tr>
@@ -153,7 +155,7 @@
               <tr>                
                 <td colspan=2>
                   <INPUT type=text maxLength=60 name="endereco" size=50
-                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("endereco").getTextTrim()%><% } %>">
+                   value="<% if (usuarioXML != null) { %><%=usuarioXML.getChildTextTrim("endereco")%><% } %>">
                 </td>
               </tr>
               <% if (usuarioXML != null) { %>
