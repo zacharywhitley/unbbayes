@@ -21,6 +21,7 @@
 
 package unbbayes.io;
 
+import unbbayes.prs.bn.Network;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import java.io.*;
 
@@ -32,5 +33,5 @@ import java.io.*;
  */
 public interface BaseIO {
     public ProbabilisticNetwork load(File input) throws LoadException, IOException;
-    public void save(File output, ProbabilisticNetwork net);
+    public void save(File output, Network net);
 }

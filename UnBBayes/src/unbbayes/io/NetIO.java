@@ -70,7 +70,7 @@ public class NetIO implements BaseIO {
 	 * @param  output arquivo onde a rede será salva.
 	 * @param net rede a ser salva.
 	 */
-	public void save(File output, ProbabilisticNetwork net) {
+	public void save(File output, Network net) {
 		try {
 			PrintStream arq = new PrintStream(new FileOutputStream(output));
 			arq.println("net");
