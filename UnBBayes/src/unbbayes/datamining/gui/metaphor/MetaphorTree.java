@@ -198,9 +198,7 @@ public class MetaphorTree extends JTree
                 net.updateEvidences();
             }
             catch (Exception e)
-            {   System.err.print(e.getMessage());
-                e.printStackTrace();
-            }
+            {}
 		/*if (showProbability)
                 {	ProbabilisticNetwork temp = net;
 			setProbabilisticNetwork(null);
