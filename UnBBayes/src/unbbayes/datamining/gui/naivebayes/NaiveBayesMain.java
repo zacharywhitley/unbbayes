@@ -251,7 +251,7 @@ public class NaiveBayesMain extends JInternalFrame
               // mostra a nova tela
               jPanel1.removeAll();
               jPanel1.setLayout(new BorderLayout());
-              jPanel1.add(netWindow,BorderLayout.CENTER);
+              jPanel1.add(netWindow.getContentPane(),BorderLayout.CENTER);
               statusBar.setText(resource.getString("learnSuccessful"));
           }
           catch (Exception ex)
