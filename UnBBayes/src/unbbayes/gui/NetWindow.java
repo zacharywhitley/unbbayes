@@ -36,7 +36,7 @@ import unbbayes.prs.bn.*;
  * @author Michael
  * @author Rommel
  */
-public class NetWindow extends JPanel {
+public class NetWindow extends JInternalFrame {
 
     private JViewport graphViewport;
     private final IGraph graph;
@@ -55,12 +55,11 @@ public class NetWindow extends JPanel {
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
     public NetWindow(Network net) {
-        //super(net.getName(), true, true, true, true);
-        //Container contentPane = getContentPane();
+        super(net.getName(), true, true, true, true);
+        Container contentPane = getContentPane();
 		carta = new CardLayout();
-		this.setLayout(carta);
-		//contentPane.setLayout(carta);
-        //setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+		contentPane.setLayout(carta);
+        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
 
         //instancia variáveis de instância
         graphViewport                     = new JViewport();
@@ -103,15 +102,13 @@ public class NetWindow extends JPanel {
 		netCompilation = new NetWindowCompilation(this, controller);
 		hierarchyPanel = new HierarchicDefinitionPanel(net, this);
 
-		//contentPane.add(netEdition, "netEdition");
-		//contentPane.add(netCompilation, "netCompilation");
-		add(netEdition, "netEdition");
-		add(netCompilation, "netCompilation");
-		add(hierarchyPanel,"hierarchy");
+		contentPane.add(netEdition, "netEdition");
+		contentPane.add(netCompilation, "netCompilation");
+		contentPane.add(hierarchyPanel,"hierarchy");
 
 		// inicia com a tela de edicao de rede(NetEdition)
 		netEdition.getCenterPanel().setBottomComponent(jspGraph);
-		carta.show(this, "netEdition");
+		carta.show(getContentPane(), "netEdition");
 
         //pack();
         setVisible(true);
@@ -277,7 +274,7 @@ public class NetWindow extends JPanel {
 
 		controller.getRede().setFirstInitialization(true);
 
-		carta.show(this, "netCompilation");
+		carta.show(getContentPane(), "netCompilation");
 		netCompilation.getEvidenceTree().updateTree();
 	}
 
@@ -296,7 +293,7 @@ public class NetWindow extends JPanel {
 
 		controller.getRede().setFirstInitialization(true);
 
-		carta.show(this, "netEdition");
+		carta.show(getContentPane(), "netEdition");
 	}
 
         /**

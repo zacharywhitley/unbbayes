@@ -122,7 +122,7 @@ public class WindowController implements KeyListener {
         this.rede = _rede;
         this.tela = _tela;
         df = NumberFormat.getInstance(Locale.US);
-        df.setMaximumFractionDigits(2);
+        df.setMaximumFractionDigits(4);
         copia = new ArrayList();
         copiados = new ArrayList();
     }

@@ -36,6 +36,10 @@ public class SubNetwork extends Network {
 		return adjacents.size();		
 	}
 	
+	public SubNetwork getAdjacentAt(int index) {
+		return (SubNetwork) adjacents.get(index);		
+	}
+	
 	protected void addAdjacent(SubNetwork net) {
 		adjacents.add(net);			
 	}

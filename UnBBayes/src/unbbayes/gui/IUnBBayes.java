@@ -22,6 +22,7 @@
 package unbbayes.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Event;
@@ -180,12 +181,8 @@ public class IUnBBayes extends JFrame {
 	 *
 	 * @return janela que está selecionada.
 	 */
-	public NetWindow getSelectedWindow() {
-		return (NetWindow) desktop
-			.getSelectedFrame()
-			.getContentPane()
-			.getComponent(
-			0);
+	public Component getSelectedWindow() {
+		return desktop.getSelectedFrame().getContentPane().getComponent(0);
 	}
 
 	/**
@@ -193,8 +190,7 @@ public class IUnBBayes extends JFrame {
 	 *
 	 * @param newWindow nova janela.
 	 */
-	public void addWindow(/*NetWindow*/
-	JInternalFrame newWindow) {
+	public void addWindow(JInternalFrame newWindow) {
 		desktop.add(newWindow);
 	}
 

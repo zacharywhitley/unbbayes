@@ -2,17 +2,23 @@ package unbbayes.gui;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Container;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 
+import javax.swing.AbstractListModel;
 import javax.swing.JButton;
+import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTree;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
+
+import unbbayes.prs.msbn.MSNetwork;
 
 /**
  * @author Michael Onishi
@@ -22,11 +28,24 @@ import javax.swing.ListSelectionModel;
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-public class MSBNWindow extends JPanel {
+public class MSBNWindow extends JInternalFrame {
 	public static String EDITION_PANE = "editionPane";
-	public static String COMPILED_PANE = "compiledPane";	
+	public static String COMPILED_PANE = "compiledPane";
 	
-	private JList netList;	
+	private class MSBNListModel extends AbstractListModel {
+		public int getSize() {
+			return msbn.getNetCount();
+		}
+
+		public Object getElementAt(int index) {
+			return msbn.getNetAt(index);
+		}
+	}
+	
+	private MSNetwork msbn;
+	
+	private JScrollPane netScroll;
+	private JList netList;
 	
 	private JButton compileBtn;
 	private JButton editionBtn;
@@ -36,15 +55,23 @@ public class MSBNWindow extends JPanel {
 	private CardLayout btnCard;
 	private JPanel btnPanel;
 	
-	public MSBNWindow(ListModel listModel) {		
-		initComponents(listModel);		
-		setLayout(new BorderLayout());
-		add(makeListPanel(), BorderLayout.WEST);
+	public MSBNWindow(MSNetwork msbn) {
+		super(msbn.getId(), true, true, true, true);
+		this.msbn = msbn;		
+        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+		Container pane = getContentPane();		
+		initComponents();
+		pane.setLayout(new BorderLayout());
+		pane.add(makeListPanel(), BorderLayout.WEST);
 		init();
 	}
 	
-	private void initComponents(ListModel listModel) {
-		netList = new JList(listModel);		
+	public MSNetwork getMSNet() {
+		return msbn;		
+	}
+	
+	private void initComponents() {
+		netList = new JList(new MSBNListModel());		
 		compileBtn = new JButton("Compile");
 		editionBtn = new JButton("Edit MSBN");
 		removeBtn = new JButton("Remove");
@@ -56,13 +83,13 @@ public class MSBNWindow extends JPanel {
 	}
 	
 	private JPanel makeListPanel() {
-		JPanel pane = new JPanel(new BorderLayout());
-		pane.add(new JLabel("Networks"), BorderLayout.NORTH);
-		JScrollPane jsp = new JScrollPane(netList);
-		pane.add(jsp, BorderLayout.CENTER);
+		JPanel netPanel = new JPanel(new BorderLayout());
+		netPanel.add(new JLabel("Networks"), BorderLayout.NORTH);
+		netScroll = new JScrollPane(netList);
+		netPanel.add(netScroll, BorderLayout.CENTER);
 		setupButtonsPanel();
-		pane.add(btnPanel, BorderLayout.SOUTH);		
-		return pane;
+		netPanel.add(btnPanel, BorderLayout.SOUTH);		
+		return netPanel;
 	}
 	
 	private void setupButtonsPanel() {
@@ -110,5 +137,13 @@ public class MSBNWindow extends JPanel {
 	 */
 	public JList getNetList() {
 		return netList;
+	}
+	
+	public void changeToTreeView(JTree tree) {		
+		netScroll.setViewportView(tree);
+	}
+	
+	public void changeToListView() {
+		netScroll.setViewportView(netList);
 	}
 }

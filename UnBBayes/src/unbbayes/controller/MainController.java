@@ -80,10 +80,7 @@ public class MainController {
         ProbabilisticNetwork net = new ProbabilisticNetwork("");
         //screen.addWindow(new NetWindow(net));
 		NetWindow netWindow = new NetWindow(net);
-		JInternalFrame jif = new JInternalFrame(net.getName(), true, true, true, true);
-		jif.getContentPane().add(netWindow);
-		jif.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-		screen.addWindow(jif);
+		screen.addWindow(netWindow);
     }
 
     /**
@@ -95,7 +92,14 @@ public class MainController {
     public void saveNet(File arquivo) {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         try {
-        	io.save(arquivo, screen.getSelectedWindow().getRede());        	
+        	Component window = screen.getSelectedWindow();
+        	if (window instanceof NetWindow) {
+        		io.save(arquivo, ((NetWindow) window).getRede());
+        	} else if (window instanceof MSBNWindow) {
+        		io.saveMSBN(arquivo, ((MSBNWindow) window).getMSNet());        		
+        	} else {
+        		assert false : "Não era pra chegar aqui";        		
+        	}
         } catch (FileNotFoundException e) {
             JOptionPane.showMessageDialog(screen, e.getMessage(), "saveNetException", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
@@ -114,23 +118,17 @@ public class MainController {
     public void loadNet(File file) {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));        
         try {
-        	JPanel window = null;
-        	String name = null;
+        	JInternalFrame window = null;
         	if (file.isDirectory()) { //MSBN
-        		MSNetwork msbn = io.loadMSBN(file);
-        		name = msbn.getId() + " (MSBN)";
+        		MSNetwork msbn = io.loadMSBN(file);        		
         		MSBNController controller = new MSBNController(msbn);
         		window = controller.getPanel();
         	} else {
 		        ProbabilisticNetwork net = io.load(file);
-		        name = net.getId();
 		        //screen.addWindow(new NetWindow(net));
 				window = new NetWindow(net);				
         	}
-        	JInternalFrame jif = new JInternalFrame(name, true, true, true, true);
-			jif.getContentPane().add(window);
-			jif.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-			screen.addWindow(jif);
+			screen.addWindow(window);
         } catch (Exception e){
             JOptionPane.showMessageDialog(screen, e.getMessage(), resource.getString("loadNetException"), JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();

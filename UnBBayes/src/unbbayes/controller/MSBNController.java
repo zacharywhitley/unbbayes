@@ -7,9 +7,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-import javax.swing.AbstractListModel;
+import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
 
 import unbbayes.gui.MSBNWindow;
 import unbbayes.gui.NetWindow;
@@ -25,30 +29,64 @@ import unbbayes.prs.msbn.SubNetwork;
  * Window>Preferences>Java>Code Generation.
  */
 public class MSBNController {
-	private class MSBNListModel extends AbstractListModel {
-		public int getSize() {
-			return msbn.getNetCount();
-		}
-
-		public Object getElementAt(int index) {
-			return msbn.getNetAt(index);
-		}
-	}
-	
 	private MSNetwork msbn;
 	private MSBNWindow window;
-	private boolean compiled;
 	private NetWindow active;
 	
 	public MSBNController(MSNetwork msbn) {
 		this.msbn = msbn;
-		window = new MSBNWindow(new MSBNListModel());
+		window = new MSBNWindow(msbn);
 		init();
 		addListeners();		
 	}
 	
-	public JPanel getPanel() {
-		return window;		
+	private JTree makeJTree() {		
+		TreeNode node = getTreeNode(msbn.getNetAt(0));
+		JTree tree = new JTree(node, true);
+		tree.setToggleClickCount(Integer.MAX_VALUE);
+		for (int i = 0; i < tree.getRowCount(); i++) {
+			tree.expandRow(i);
+		}
+		addTreeMouseListener(tree);		
+		return tree;
+	}
+	
+	private MutableTreeNode getTreeNode(SubNetwork net) {
+		DefaultMutableTreeNode node = new DefaultMutableTreeNode(net);
+		for (int i = net.getAdjacentsSize()-1; i>=0; i--) {
+			node.add(getTreeNode(net.getAdjacentAt(i)));						
+		}
+		return node;
+	}
+	
+	private void addTreeMouseListener(final JTree tree) {
+		MouseListener ml = new MouseAdapter() {
+		     public void mousePressed(MouseEvent e) {
+		         int selRow = tree.getRowForLocation(e.getX(), e.getY());
+		         if(selRow != -1) {
+					 if(e.getClickCount() == 2 && e.getModifiers() == MouseEvent.BUTTON1_MASK) {					 	
+					 	DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+					 	SubNetwork net = (SubNetwork) node.getUserObject();
+			            if (net == active.getRede() 
+			            	 || JOptionPane.showConfirmDialog(window, "Shift Attention?") != JOptionPane.OK_OPTION) {
+			            	return;		             	
+			            }  
+			            
+			           	NetWindow netWindow = new NetWindow(net);
+			            changeActive(netWindow);	            
+		            	msbn.shiftAttention(net);
+		            	netWindow.changeToNetCompilation();
+		            	tree.scrollRowToVisible(selRow);
+		             }
+		         }
+		     }
+		 };
+		 
+		 tree.addMouseListener(ml);	
+	}
+	
+	public JInternalFrame getPanel() {
+		return window;	
 	}
 	
 	private void init() {
@@ -58,14 +96,15 @@ public class MSBNController {
 	
 	private void changeActive(NetWindow newWindow) {
 		if (active != null) {
-			window.remove(active);
+			window.getContentPane().remove(active.getContentPane());
 		}
 		active = newWindow;
 		active.getNetWindowEdition().getCompile().setVisible(false);
 		active.getNetWindowCompilation().getEditMode().setVisible(false);
-		window.add(active, BorderLayout.CENTER);
+		window.getContentPane().add(active.getContentPane(), BorderLayout.CENTER);
 		window.updateUI();
 	}
+	
 	
 	public void addListeners() {
 		MouseListener mouseListener = new MouseAdapter() {
@@ -76,17 +115,8 @@ public class MSBNController {
 		            	return;		             	
 		            } 
 		            
-		            if (compiled  
-		            		&& JOptionPane.showConfirmDialog(window, "Shift Attention?") != JOptionPane.OK_OPTION) {
-		            			
-			          	return;		        
-		           	}
 		           	NetWindow netWindow = new NetWindow(msbn.getNetAt(index));
-		            changeActive(netWindow);		            
-		            if (compiled) {
-		            	msbn.shiftAttention(msbn.getNetAt(index));
-		            	netWindow.changeToNetCompilation();
-		            }
+		            changeActive(netWindow);	            
 		     	}
 		     }
 		};
@@ -97,7 +127,7 @@ public class MSBNController {
 			public void actionPerformed(ActionEvent e) {
 				active.changeToNetEdition();
 				window.showBtnPanel(MSBNWindow.EDITION_PANE);
-				compiled = false;			
+				window.changeToListView();
 			}
 		});
 		
@@ -124,8 +154,8 @@ public class MSBNController {
 				try {
 					msbn.compile();
 					active.changeToNetCompilation();
+					window.changeToTreeView(makeJTree());
 					window.showBtnPanel(MSBNWindow.COMPILED_PANE);
-					compiled = true;
 				} catch (Exception e) {
 					JOptionPane.showMessageDialog(window, e.getMessage(), "Compilation error", JOptionPane.ERROR_MESSAGE);
 					e.printStackTrace();			
