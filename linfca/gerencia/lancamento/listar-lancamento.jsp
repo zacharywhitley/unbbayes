@@ -5,7 +5,7 @@
 				java.util.*,
 				java.sql.*,				
 				org.jdom.Element" 
-       errorPage="" %>
+       errorPage="/design/erro.jsp" %>
 	   
 	   
 <script language="Javascript">
@@ -78,7 +78,17 @@ setTimeout("reload()", speed);
               </tr>
   
   <% 
-  		Element in = new Element("in");
+  
+   		File diretorio = new File(config.getServletContext().getRealPath("") + "/tmp");
+		File[] arquivos = diretorio.listFiles();
+		if (arquivos != null) {
+			for (int i = 0; i < arquivos.length; i++) {
+			    if (arquivos[i].lastModified() < System.currentTimeMillis() - 10000)		
+					arquivos[i].delete();		
+			}
+		}
+  
+ 		Element in = new Element("in");
 		Element dataInicio = new Element("data-hora-inicio");
 		String temp = request.getParameter("data-hora-inicio");
 		if (temp != null && ! temp.equals(""))  {
