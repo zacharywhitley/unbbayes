@@ -262,7 +262,7 @@ public final class NodeList implements java.io.Serializable {
      *          list; returns <tt>-1</tt> if the object is not found.
      * @see     Object#equals(Object)
      */
-    public final int indexOf(Object elem) {
+    public final int indexOf(Node elem) {
         for (int i = 0; i < size; i++)
 			if (elem.equals(data[i]))
 			    return i;
@@ -275,7 +275,7 @@ public final class NodeList implements java.io.Serializable {
      *
      * @param elem element whose presence in this List is to be tested.
      */
-    public final boolean contains(Object elem) {
+    public final boolean contains(Node elem) {
 		return indexOf(elem) >= 0;
     }
     

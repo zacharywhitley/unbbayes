@@ -47,14 +47,14 @@ public class Link {
 				if (c.getChildrenSize() == 0) {
 					// tree leaf
 					NodeList inter = SetToolkit.intersection(c.getNos(), nodes);
-					if (inter.size() == 0) {						 	
-						tree.remove(i);
+					if (inter.size() == 0) {
+						removeClique(c);
 						retirou = true;
 					} else {
 						for (int j = tree.size()-1; j>=0; j--) {
 							Clique c2 = (Clique) tree.get(j);
-							if (i != j && c2.getNos().contains(inter)) {
-								tree.remove(i);
+							if (i != j && c2.getNos().containsAll(inter)) {
+								removeClique(c);
 								retirou = true;
 								break;								
 							}
@@ -70,8 +70,8 @@ public class Link {
 			for (int j = tree.size()-1; j>=0; j--) {
 				if (i != j) {
 					Clique c2 = (Clique) tree.get(j);
-					if (c2.getNos().contains(c.getNos())) {
-						tree.remove(i);						
+					if (c2.getNos().containsAll(c.getNos())) {
+						removeClique(c);						
 					}					
 				}				
 			}
@@ -87,17 +87,30 @@ public class Link {
 			System.out.println();
 		}
 		System.out.println();
-		// DEBUG-------------------
+		// DEBUG-------------------	
+	}
+	
+	private void removeClique(Clique c) {
+		tree.remove(c);
+		if (c.getParent() != null) {
+			c.getParent().removeChild(c);
+			c.setParent(null);
+		}
 	}
 	
 	
 	/**
 	 * Makes the tree with DFS.
 	 */ 
-	private void makeCliqueList(Clique c) {
-		tree.add(c.clone());
+	private Clique makeCliqueList(Clique c) {
+		Clique cliqueClone = new Clique();
+		cliqueClone.getNos().addAll(c.getNos());
+		tree.add(cliqueClone);
 		for (int i = c.getChildrenSize()-1; i>=0; i--) {
-			makeCliqueList(c.getChildAt(i));			
-		}		
+			Clique c2 = makeCliqueList(c.getChildAt(i));
+			c2.setParent(cliqueClone);
+			cliqueClone.addChild(c2);
+		}
+		return cliqueClone;
 	}
 }

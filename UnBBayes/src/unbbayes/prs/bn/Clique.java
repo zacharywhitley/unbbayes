@@ -36,7 +36,7 @@ import unbbayes.util.SetToolkit;
  *@author    Michael e Rommel
  *@version   27 de Junho de 2001
  */
-public class Clique implements ITabledVariable, java.io.Serializable, Cloneable {
+public class Clique implements ITabledVariable, java.io.Serializable {
 	
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
@@ -269,7 +269,7 @@ public class Clique implements ITabledVariable, java.io.Serializable, Cloneable 
      * Remove the specified children
      * @param c the clique to remove from the children's list
      */
-    protected void removeChild(Clique c) {
+    public void removeChild(Clique c) {
     	children.remove(c);
     }
 
@@ -335,16 +335,6 @@ public class Clique implements ITabledVariable, java.io.Serializable, Cloneable 
 	 */
 	public Clique getParent() {
 		return parent;
-	}
-
-	/**
-	 * @see java.lang.Object#clone()
-	 */
-	public Object clone() {
-		Clique c = new Clique();
-		c.nos = SetToolkit.clone(nos);
-		c.index = index;
-		return c;
 	}
 
 }
