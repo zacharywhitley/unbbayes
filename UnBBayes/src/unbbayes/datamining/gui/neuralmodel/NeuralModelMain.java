@@ -66,7 +66,7 @@ public class NeuralModelMain extends JInternalFrame
    * */
   private void jbInit() throws Exception
   { openIcon = new ImageIcon(getClass().getResource("/icones/abrir.gif"));
-    compileIcon = new ImageIcon(getClass().getResource("/icones/compila.gif"));
+    compileIcon = new ImageIcon(getClass().getResource("/icones/aprende.gif"));
     helpIcon = new ImageIcon(getClass().getResource("/icones/help.gif"));
     saveIcon = new ImageIcon(getClass().getResource("/icones/salvar.gif"));
     contentPane = (JPanel) this.getContentPane();
