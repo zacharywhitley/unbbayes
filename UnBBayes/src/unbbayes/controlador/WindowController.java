@@ -206,8 +206,6 @@ public class WindowController implements KeyListener {
         	no.appendState(resource.getString("stateProbabilisticName") + no.getStatesSize());
     	} else if (no instanceof DecisionNode) {
     		no.appendState(resource.getString("stateDecisionName") + no.getStatesSize());
-    	}else {
-    		no.appendState(resource.getString("stateUtilityName") + no.getStatesSize());
     	}
         tela.setTable(retornarTabela(no));
     }
