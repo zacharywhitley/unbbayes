@@ -74,9 +74,8 @@ public class Tanh implements ActivationFunction, Serializable{
    * @param actualOutput the actual output
    * @return the value of the error term.
    */
-  public double outputErrorTerm(double d, double o){  //sigma
-    //return steep * (d - o) * (1 - o) * (1 + o);
-    return (steep * (d - o) * (1 - (o * o)));
+  public double outputErrorTerm(double desiredOutput, double actualOutput){  //sigma
+    return (steep * (desiredOutput - actualOutput) * (1 - (actualOutput * actualOutput)));
   }
 
   /**
@@ -88,7 +87,6 @@ public class Tanh implements ActivationFunction, Serializable{
    * @return the value of the error term.
    */
   public double hiddenErrorTerm(double y, double sum){   //sigma
-    //return steep * (1 - y) * (1 + y) * sum;
     return (steep * (1 - (y * y)) * sum);
   }
 

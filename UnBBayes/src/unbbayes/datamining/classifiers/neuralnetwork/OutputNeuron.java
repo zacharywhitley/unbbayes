@@ -13,22 +13,27 @@ import java.io.*;
 public class OutputNeuron extends Neuron implements Serializable{
 
   /**The calculated value of the neuron output*/
-  private float outputValue;
+  public transient float outputValue;
 
   /**The calculated error term of the neuron*/
-  private float errorTerm;
+  public transient float errorTerm;
+
+  /**The momentum factor*/
+  public transient float momentum;
 
   /**
    * The constructor of the OutputNeuron class
    *
    * @param activationFunction The activation function to be used by this neuron.
    * @param numberOfInputs The number of inputs connected to this neuron.
+   * @param momentum The momentum factor.
    * @see {@link ActivationFunction}
    */
-  public OutputNeuron(ActivationFunction activationFunction, int numberOfInputs) {
+  public OutputNeuron(ActivationFunction activationFunction, int numberOfInputs, float momentum) {
     this.activationFunction = activationFunction;
     weights = new float[numberOfInputs + 1];
     deltaW = new float[numberOfInputs + 1];
+    this.momentum = momentum;
     startWeights();
     Arrays.fill(deltaW, 0);
   }
@@ -47,17 +52,16 @@ public class OutputNeuron extends Neuron implements Serializable{
    * the input connections weigths.
    *
    * @param learningRate The learning rate value
-   * @param momentum The momentum value
    * @param hiddenLayer The network hidden layer
    * @see {@link HiddenNeuron}
    */
-  public void updateWeights(float learningRate, float momentum, HiddenNeuron[] hiddenLayer){
-  	float learningRateXErrorTerm = learningRate * errorTerm;
+  public void updateWeights(float learningRate, float[] inputValues){
+    float learningRateXErrorTerm = learningRate * errorTerm;
     deltaW[0] = (momentum * deltaW[0]) + learningRateXErrorTerm;
     weights[0] = weights[0] + deltaW[0];  //bias
 
     for(int i=1; i<weights.length; i++){
-      deltaW[i] = (momentum * deltaW[i]) + (learningRateXErrorTerm * hiddenLayer[i-1].outputValue());
+      deltaW[i] = (momentum * deltaW[i]) + (learningRateXErrorTerm * inputValues[i-1]);
       weights[i] = weights[i] + deltaW[i];
     }
   }
@@ -87,10 +91,10 @@ public class OutputNeuron extends Neuron implements Serializable{
    *
    * @param inputValues An array with the inputs of the neuron.
    */
-  public float calculateOutputValue(HiddenNeuron[] inputValues){
+  public float calculateOutputValue(float[] inputValues){
     float net = weights[0];  //bias value
     for(int i=0; i<inputValues.length; i++){
-      net = net + (inputValues[i].outputValue() * weights[i + 1]);
+      net = net + (inputValues[i] * weights[i + 1]);
     }
     outputValue = (float)activationFunction.functionValue(net);
     return outputValue;

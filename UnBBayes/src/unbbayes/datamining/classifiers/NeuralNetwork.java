@@ -85,7 +85,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
    */
   private transient InstanceSet instanceSet;
 
-  /**Array that definesthe input layer of the network*/
+  /**Array that defines the input layer of the network*/
   private float[] inputLayer;
 
   /**
@@ -103,7 +103,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   /**The activation function type been used (sigmoid or tanh)*/
   private int activationFunctionType;
 
-  /**Variable that has tha number of attibutes of the instance set*/
+  /**Variable that has the number of attibutes of the instance set*/
   private int numOfAttributes;
 
   /**Variable that informs if the input must normalized and the normalization method*/
@@ -119,7 +119,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   private float[] lowestValue;
 
   /**Array tha contains the number of possible values of each nominal attributes*/
-  private int[] attNumOfValues;
+  private int[] inputLayerIndexes;
 
   /**Array of all the attributes in the instance set*/
   private Attribute[] attributeVector;
@@ -142,10 +142,14 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   /**The number of possible values of the class attribute*/
   private transient int classAttNumOfValues;
 
+  /**The size of the input layer*/
+  private int inputLayerSize;
 
-  private float[][] expectedOutput;
+  /**Pre-processed expected outputs*/
+  private transient float[][] expectedOutput;
 
-
+  /**Calculate outputs of the hidden layer*/
+  private float[] hiddenLayerOutput;
 
   /**
    * Constructor of the neural network
@@ -214,44 +218,48 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
    * @throws Exception if classifier can't be built successfully
    */
   public void buildClassifier(InstanceSet instanceSet) throws Exception{
+
+    System.out.println("Inicio = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
+
     this.instanceSet = instanceSet;
     Instance instance;
-    Enumeration instanceEnum;
     numOfAttributes = instanceSet.numAttributes();
     numericOutput = instanceSet.getClassAttribute().isNumeric();
     float quadraticError = 0;
     float oldQuadraticError;
-    long numOfInstances = instanceSet.numWeightedInstances();
-
+    long numWeightedInstances = instanceSet.numWeightedInstances();
+    long numInstances = instanceSet.numInstances();
     attributeVector = instanceSet.getAttributes();      //cria um array com os atributos para serialização
-    this.classIndex = instanceSet.getClassIndex();      //guarda o indice da classe para serialização
-
-	classAttNumOfValues = attributeVector[classIndex].numValues();
-
+    classIndex = instanceSet.getClassIndex();      //guarda o indice da classe para serialização
+    classAttNumOfValues = attributeVector[classIndex].numValues();
     highestValue = new float[numOfAttributes];
     lowestValue = new float[numOfAttributes];
 
+    //seta os maiores e menores valores da classe
+    if(numericOutput){
+      highestValue[classIndex] = Float.MIN_VALUE;
+      lowestValue[classIndex] = Float.MAX_VALUE;
+      String[] values = instanceSet.getClassAttribute().getAttributeValues();
+      for(int j = 0; j<values.length; j++){
+        highestValue[classIndex] = Math.max(highestValue[classIndex], Float.parseFloat(values[j]));
+        lowestValue[classIndex] = Math.min(lowestValue[classIndex], Float.parseFloat(values[j]));
+      }
+    }
 
+    //Cria um array com as saídas esperadas pré-processadas
     expectedOutput = new float[classAttNumOfValues][0];
-    for (int i=0;i<classAttNumOfValues;i++)
-    {
-      if(numericOutput)
-      {
+    for(int i = 0; i<classAttNumOfValues; i++){
+      if(numericOutput){
         expectedOutput[i] = new float[1];
         float output = Float.parseFloat(attributeVector[classIndex].getAttributeValues()[i]);
         expectedOutput[i][0] = activationFunction.normalizeToFunctionInterval(output, highestValue[classIndex], lowestValue[classIndex]);
-      }
-      else
-      {
+      } else{
         expectedOutput[i] = new float[classAttNumOfValues];
-        //Arrays.fill(expectedOutput[i], 0);
-            //Arrays.fill(expectedOutput, -1);
-            ///////////////////////////////////ver com o mário
         expectedOutput[i][i] = 1;
       }
     }
 
-    //inicializa o tipo de normalização escolida
+    //inicializa o tipo de normalização escolhida
     if(numericalInputNormalization == NO_NORMALIZATION){
       normalizationFunction = new NoNormalization();
     } else if(numericalInputNormalization == LINEAR_NORMALIZATION){
@@ -260,45 +268,38 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       normalizationFunction = new Mean0StdDeviation1Normalization();
     }
 
-    //seta os maiores e menores valores da classe
-    if(numericOutput){
-      highestValue[classIndex] = Float.MIN_VALUE;
-      lowestValue[classIndex] = Float.MAX_VALUE;
-      String[] values = instanceSet.getClassAttribute().getAttributeValues();
-      for(int j=0; j<values.length; j++){
-        highestValue[classIndex] = Math.max(highestValue[classIndex], Float.parseFloat(values[j]));
-        lowestValue[classIndex] = Math.min(lowestValue[classIndex], Float.parseFloat(values[j]));
-      }
-    }
 
     //iniciliza numero de valores dos atributos
-    attNumOfValues = new int[numOfAttributes - 2];
-    Enumeration attEnum = instanceSet.enumerateAttributes();
-    int index = 0;
-    while (attEnum.hasMoreElements()){
-      Attribute att = (Attribute)attEnum.nextElement();
-      if(!attEnum.hasMoreElements()){
-        break;
-      }
-      if(att.isNumeric()){
-        attNumOfValues[index] = 1;
-      } else {
-        attNumOfValues[index] = att.numValues ();
-      }
-      index++;
-    }
-
-   //inicializa input layer
-    int inputLayerSize = 0;
-    for(int i=0; i<numOfAttributes; i++){
-      if(i != classIndex){
-        if(instanceSet.getAttribute(i).isNumeric()){
-          inputLayerSize++;
-        } else {
-          inputLayerSize = inputLayerSize + instanceSet.getAttribute(i).numValues();
+    inputLayerIndexes = new int[numOfAttributes-1];
+    int counter = 1;
+    Attribute att;
+    inputLayerIndexes[0] = 0;
+    for(int i = 0; i<(numOfAttributes-1); i++){
+      att = attributeVector[i];
+      if(i!=classIndex){
+        if(att.isNumeric()){
+          inputLayerIndexes[counter] = inputLayerIndexes[counter-1] + 1;
+        } else{
+          inputLayerIndexes[counter] = inputLayerIndexes[counter-1] + att.numValues();
+        }
+        counter++;
+        if(inputLayerIndexes.length==counter){
+          break;
         }
       }
     }
+
+    //calcula o tamanho da input layer
+    for(int i = 0; i<numOfAttributes; i++){
+      if(i!=classIndex){
+        if(instanceSet.getAttribute(i).isNumeric()){
+          inputLayerSize++;
+        } else{
+          inputLayerSize = inputLayerSize+instanceSet.getAttribute(i).numValues();
+        }
+      }
+    }
+
     inputLayer = new float[inputLayerSize];
 
     //verifica se o numero de hidden neurons deve ser automatico
@@ -311,31 +312,27 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 
     hiddenLayer = new HiddenNeuron[hiddenLayerSize];
     for(int i=0; i<hiddenLayer.length; i++){
-      hiddenLayer[i] = new HiddenNeuron(activationFunction, inputLayer.length);
+      hiddenLayer[i] = new HiddenNeuron(activationFunction, inputLayerSize, momentum);
     }
 
-    //output inicialization
+    hiddenLayerOutput = new float[hiddenLayerSize];  //used in the learn method.
+
+    //output layer inicialization
     if(numericOutput){
       outputLayer = new OutputNeuron[1];
-      outputLayer[0] = new OutputNeuron(activationFunction, hiddenLayer.length);
+      outputLayer[0] = new OutputNeuron(activationFunction, hiddenLayer.length, momentum);
     } else{
       outputLayer = new OutputNeuron[instanceSet.getClassAttribute().numValues()];
       for(int i = 0; i<outputLayer.length; i++){
-        outputLayer[i] = new OutputNeuron(activationFunction, hiddenLayer.length);
+        outputLayer[i] = new OutputNeuron(activationFunction, hiddenLayer.length, momentum);
       }
     }
 
-    int numInstances = instanceSet.numInstances();
-    int j;
+    int inst;
+    float instanceWeight;
 
     //Learning
-    System.out.println("Inicio = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
     for (int epoch=0; epoch<trainingTime; epoch++) {
-    	//teste
-    	System.out.println(epoch + " de " + trainingTime);
-
-
-      //instanceEnum = instanceSet.enumerateInstances();
       oldQuadraticError = quadraticError;
       quadraticError = 0;
 
@@ -343,25 +340,14 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
         learningRate = originalLearningRate / epoch;
       }
 
-      /*while (instanceEnum.hasMoreElements()) {
-        instance = (Instance) instanceEnum.nextElement();
-    	int instanceWeight = instance.getWeight();
-        for(int i=0; i<instanceWeight; i++){
-	      quadraticError = quadraticError + learn(instance);
-        }
-      }*/
-      for (j=0;j<numInstances;j++)
-      {
-        instance = instanceSet.getInstance(j);
-        //int instanceWeight = instance.getWeight();
-		float instanceWeight = instance.getWeight();
+      for (inst=0;inst<numInstances;inst++){
+        instance = instanceSet.getInstance(inst);
+        instanceWeight = instance.getWeight();
         for(int i=0; i<instanceWeight; i++){
           quadraticError = quadraticError + learn(instance);
         }
-        //System.out.println("instance = "+j+" ="+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
-
       }
-      quadraticError = quadraticError / numOfInstances;
+      quadraticError = quadraticError / numWeightedInstances;
 
       if(meanSquaredError != null){
         meanSquaredError.setMeanSquaredError(epoch, quadraticError);
@@ -374,8 +360,8 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
         }
       }
     }
-    System.out.println("Fim = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
 
+    System.out.println("Fim = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
   }
 
   /**
@@ -389,43 +375,35 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     float totalErrorEnergy = 0;
 
     inputLayerSetUp(instance);
-    //System.out.println("inputLayer = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
 
     ///////////calcula as saidas da hiddem
     for(int i=0; i<hiddenLayer.length; i++){
       hiddenLayer[i].calculateOutputValue(inputLayer);
+      hiddenLayerOutput[i] = hiddenLayer[i].outputValue;
     }
-    //System.out.println("hiddenLayer calculateOutputValue = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
-
-    /////////calcula as saídas esperadas
-    //expectedOutput2 = expectedOutput(instance);
 
     //////////calcula as saidas da camada de saída
     for(int i=0; i<outputLayer.length; i++){
       float instantaneousError;
-      outputLayer[i].calculateOutputValue(hiddenLayer);
+      outputLayer[i].calculateOutputValue(hiddenLayerOutput);
       instantaneousError = outputLayer[i].calculateErrorTerm(expectedOutput[instance.classValue()][i]);
       totalErrorEnergy = totalErrorEnergy + (instantaneousError * instantaneousError);
     }
-    //System.out.println("outputLayer calculateOutputValue = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
 
     ///////// UPDATE  dos pesos dos neuronios de saida
     for(int i=0; i<outputLayer.length; i++){
-      outputLayer[i].updateWeights(learningRate, momentum, hiddenLayer);
+      outputLayer[i].updateWeights(learningRate, hiddenLayerOutput);
     }
-    //System.out.println("outputLayer updateWeights = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
 
-    //////////calcula error terms  (SIGMA) da camada oculta, da saída já está calculado
+    //////////calcula error terms (SIGMA) da camada oculta, da saída já está calculado
     for(int i=0; i<hiddenLayer.length; i++){
       hiddenLayer[i].calculateErrorTerm(outputLayer, i);
     }
-    //System.out.println("hiddenLayer calculateErrorTerm = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
 
     /////////UPDATE dos pesos dos neuronios ocultos
     for(int i=0; i<hiddenLayer.length; i++){
-      hiddenLayer[i].updateWeights(learningRate, momentum, inputLayer);
+      hiddenLayer[i].updateWeights(learningRate, inputLayer);
     }
-    //System.out.println("hiddenLayer updateWeights = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
 
     return (totalErrorEnergy / 2);
   }
@@ -437,20 +415,18 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
    */
   private void inputLayerSetUp(Instance instance){
     int counter = 0; //inicializa o contador de entradas
-    Arrays.fill(inputLayer, -1);  //zera o vetor de entradas
+    int index;
+    Arrays.fill(inputLayer, -1);  //inicializa com -1 o vetor de entradas
 
-    for (int i=0; i<numOfAttributes; i++) {
-      if (i != classIndex) {
-        if (!instance.isMissing(i)) {
-          int index = 0;
-          for (int j=0; j<counter; j++) {
-            index = index + attNumOfValues[j];
-          }
+    for(int i = 0; i<numOfAttributes; i++){
+      if(i!=classIndex){
+        if(!instance.isMissing(i)){
+          index = inputLayerIndexes[counter];
           Attribute att = attributeVector[i];
-          if (att.isNumeric()) {
+          if(att.isNumeric()){
             float data = Float.parseFloat(att.getAttributeValues()[instance.getValue(att)]);
             inputLayer[index] = normalizationFunction.normalize(data, i);
-          } else {
+          } else{
             index = index + instance.getValue(i);
             inputLayer[index] = 1;
           }
@@ -460,28 +436,6 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     }
   }
 
-  /**
-   * Calculate the expected output value for the received instance
-   *
-   * @param instance The instance to calculate the exepected output
-   * @return An array with the expected output for the instance
-   */
-  /*private float[] expectedOutput(Instance instance){
-    float[] expectedOutput;
-
-    if(numericOutput){
-      expectedOutput = new float[1];
-      float output = Float.parseFloat(attributeVector[classIndex].getAttributeValues()[instance.classValue()]);
-      expectedOutput[0] = activationFunction.normalizeToFunctionInterval(output, highestValue[classIndex], lowestValue[classIndex]);
-    } else {
-      expectedOutput = new float[classAttNumOfValues];
-      Arrays.fill(expectedOutput, 0);
-	  //Arrays.fill(expectedOutput, -1);
-	  ///////////////////////////////////ver com o mário
-      expectedOutput[instance.classValue()] = 1;
-    }
-    return expectedOutput;
-  }*/
 
   /**
    * Make inference of an instance on the model.
@@ -492,19 +446,20 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
    */
   public float[] distributionForInstance(Instance instance) throws Exception {
     float[] distribution = new float[outputLayer.length];
-
     Arrays.fill(inputLayer, -1);  //zera o vetor de entradas
 
+    ////////prepara a camada de entrada
     inputLayerSetUp(instance);
 
     ///////////calcula as saidas da hiddem
     for(int i=0; i<hiddenLayer.length; i++){
       hiddenLayer[i].calculateOutputValue(inputLayer);
+      hiddenLayerOutput[i] = hiddenLayer[i].outputValue;
     }
 
     //////////calcula as saidas da camada oculta
     for(int i=0; i<outputLayer.length; i++){
-      distribution[i] = outputLayer[i].calculateOutputValue(hiddenLayer);
+      distribution[i] = outputLayer[i].calculateOutputValue(hiddenLayerOutput);
     }
 
     ///////// un-normalization
@@ -592,11 +547,18 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
            classAttribute;
   }
 
-
+  /**
+   * <p>Title: </p> INormalization
+   * <p>Description: </p> Interface that defines how a normalization method shoul be called.
+   */
   public interface INormalization{
     public float normalize(float data, int attributeIndex);
   }
 
+  /**
+   * <p>Title: </p> LinearNormalization
+   * <p>Description: </p> Class that implements a linear normalization (to an interval).
+   */
   public class LinearNormalization implements INormalization, Serializable{
     public LinearNormalization(){
       for(int i=0; i<numOfAttributes; i++){
@@ -611,11 +573,23 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
         }
       }
     }
+
+    /**
+     * Method that implements the normalization.
+     *
+     * @param data The data to be normalized.
+     * @param attributeIndex The index of the attribute been normalized.
+     * @return The normalized data.
+     */
     public float normalize(float data, int attributeIndex){
       return Utils.normalize(data, highestValue[attributeIndex], lowestValue[attributeIndex], 1, -1);
     }
   }
 
+  /**
+   * <p>Title: </p> Mean0StdDeviation1Normalization (Mean 0 and stadard deviation 1)
+   * <p>Description: </p> Class that implements the mean 0 and standard deviatio 1 normalization
+   */
   public class Mean0StdDeviation1Normalization implements INormalization, Serializable{
     public Mean0StdDeviation1Normalization() throws Exception{
       attributeMean = new float[numOfAttributes];
@@ -629,12 +603,31 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
         }
       }
     }
+
+    /**
+     * Method that implements the normalization.
+     *
+     * @param data The data to be normalized.
+     * @param attributeIndex The index of the attribute been normalized.
+     * @return The normalized data.
+     */
     public float normalize(float data, int attributeIndex){
       return (data - attributeMean[attributeIndex]) / attributeStandardDeviation[attributeIndex];
     }
   }
 
+  /**
+   * <p>Title: </p> NoNormalization (No normalization)
+   * <p>Description: </p> Class that implements no normalization, returning the original data.
+   */
   public class NoNormalization implements INormalization, Serializable{
+    /**
+     * Method that implements the normalization.
+     *
+     * @param data The data to be normalized.
+     * @param attributeIndex The index of the attribute been normalized.
+     * @return The original data not normalized.
+     */
     public float normalize(float data, int attributeIndex){
       return data;
     }

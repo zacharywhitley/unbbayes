@@ -20,7 +20,7 @@ public abstract class Neuron implements Serializable{
    * Array that contains the delta W of each input and the bias value
    * calculated for the previous instance.
    */
-  float[] deltaW;
+  transient float[] deltaW;
 
   /**
    * The activaiton function been used.

@@ -13,22 +13,27 @@ import java.io.*;
 public class HiddenNeuron extends Neuron implements Serializable{
 
   /**The calculated value of the neuron output*/
-  private float outputValue;
+  public transient float outputValue;
 
   /**The calculated error term of the neuron*/
-  private float errorTerm;
+  public transient float errorTerm;
+
+  /**The momentum been used*/
+  public transient float momentum;
 
   /**
    * The constructor of the HiddenNeuron class
    *
    * @param activationFunction The activation function to be used by this neuron.
    * @param numberOfInputs The number of inputs connected to this neuron.
+   * @param momentum The momentum factor to be used.
    * @see {@link ActivationFunction}
    */
-  public HiddenNeuron(ActivationFunction activationFunction, int numberOfInputs){
+  public HiddenNeuron(ActivationFunction activationFunction, int numberOfInputs, float momentum){
     this.activationFunction = activationFunction;
     weights = new float[numberOfInputs + 1];   //+1 for the bias value
     deltaW = new float[numberOfInputs + 1];
+    this.momentum = momentum;
     startWeights();
     Arrays.fill(deltaW, 0);   //initialize deltaW with 0
   }
@@ -47,11 +52,10 @@ public class HiddenNeuron extends Neuron implements Serializable{
    * the input connections weigths.
    *
    * @param learningRate The learning rate value
-   * @param momentum The momentum value
    * @param inputValues The input values of the neuron
    */
-  public void updateWeights(float learningRate, float momentum, float[] inputValues) {
-  	float learningRateXErrorTerm = learningRate * errorTerm;
+  public void updateWeights(float learningRate, float[] inputValues) {
+    float learningRateXErrorTerm = learningRate * errorTerm;
     deltaW[0] = (momentum * deltaW[0]) + learningRateXErrorTerm;
     weights[0] = weights[0] + deltaW[0]; //bias
 
@@ -93,7 +97,7 @@ public class HiddenNeuron extends Neuron implements Serializable{
   public void calculateErrorTerm(OutputNeuron[] outputLayer, int neuronIndex){
     float sum = 0;
     for(int i=0; i<outputLayer.length; i++){
-      sum = sum + (outputLayer[i].getErrorTerm() * outputLayer[i].getWeight(neuronIndex));
+      sum = sum + (outputLayer[i].errorTerm * outputLayer[i].getWeight(neuronIndex));
     }
     errorTerm = (float)activationFunction.hiddenErrorTerm(outputValue, sum);
   }
