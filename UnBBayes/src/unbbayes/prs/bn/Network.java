@@ -304,15 +304,16 @@ public class Network implements java.io.Serializable {
     protected void limpaArcos() {
         arcos.clear();
     }
-
-    /**
+    
+    
+    
+    /*
      *  Verificação através da eliminação dos nós que não são pais e filhos
      *  de alguém ao mesmo tempo. Há a necessidade de trabalhar com uma cópia
      *  da lista de nós da rede.
      *
      *@throws Exception se a rede possui ciclo.
-     */
-    public final void verifyCycles() throws Exception {
+    public final void vC1() throws Exception {
         Node auxNo1;
         Node auxNo2;
         boolean existeRetirada;
@@ -401,7 +402,56 @@ public class Network implements java.io.Serializable {
             }
         }
     }
-
+    */
+    
+    /**
+     *  Verify if this network has cycle.
+     *
+     *@throws Exception If this network has a cycle.
+     */
+    public final void verifyCycles() throws Exception {
+    	int nodeSize = nos.size();
+    	char[] visited = new char[nodeSize];
+    	int[] pi = new int[nodeSize];
+    	
+    	for (int i = 0; i < nodeSize; i++) {
+    		dfsCycle(i, visited, pi);
+    	}
+    }
+    
+    /**
+     * Depth first search to verify cycle.
+     */
+    private void dfsCycle(int nodeIndex, char[] visited, int[] pi) throws Exception {
+    	if (visited[nodeIndex] != 0) { 			
+ 			// Back edge. Has cycle!
+    		if (visited[nodeIndex] == 1) {
+                throw new Exception(resource.getString("CicleNetException") 
+                					 + " " + createPath(nodeIndex, nodeIndex, pi, true));
+    		}
+    		return;    		
+    	}
+    	
+    	visited[nodeIndex] = 1;    	
+    	Node node = nos.get(nodeIndex);    	
+    	for (int i = node.getChildren().size()-1; i >= 0; i--) {
+    		int newIndex = getNodeIndex(node.getChildren().get(i).getName());
+    		pi[newIndex] = nodeIndex; 
+    		dfsCycle(newIndex, visited, pi);
+    	}
+    	visited[nodeIndex] = 2;
+    }
+    
+    /**
+     * Auxiliary method for dfsCycle() to construct the path of the cycle detected. 
+     */
+    private String createPath(int currentIndex, int nodeIndex, int[] pi, boolean first) {
+    	if (currentIndex == nodeIndex && ! first) {
+			return nos.get(currentIndex).getName();
+    	}
+    	return createPath(pi[currentIndex], nodeIndex, pi, false) + " " + nos.get(currentIndex).getName();
+    }
+    
 
     /**
      *  Verifica a conectividade da rede.
@@ -414,7 +464,7 @@ public class Network implements java.io.Serializable {
             return;
         }
         montaAdjacentes();
-        percorre(nos.get(0), visitados);
+        dfsConnectivity(nos.get(0), visitados);
         desmontaAdjacentes();
         if (visitados.size() != nos.size()) {
             throw new Exception(resource.getString("DisconectedNetException"));
@@ -422,14 +472,14 @@ public class Network implements java.io.Serializable {
     }
 
     /**
-     * Percorrimento em profundidade.
+     * Depth first search to verify conectivity.
      */
-    private void percorre(Node no, List visitados) {
+    private void dfsConnectivity(Node no, List visitados) {
         visitados.add(no);
         for (int i = 0; i < no.getAdjacents().size(); i++) {
             Node aux = no.getAdjacents().get(i);
             if (! visitados.contains(aux)) {
-                percorre(aux, visitados);
+                dfsConnectivity(aux, visitados);
             }
         }
     }
