@@ -303,7 +303,7 @@ public class NetWindow extends JInternalFrame {
         public void changeToHierarchy() {
 
           hierarchyPanel.updateExplanationTree();
-          carta.show(this,"hierarchy");
+          carta.show(getContentPane(),"hierarchy");
 
         }
 
