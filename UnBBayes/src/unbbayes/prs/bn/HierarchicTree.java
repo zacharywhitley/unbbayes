@@ -32,13 +32,13 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
   private DropTarget dropTarget = null;
   /** enables this component to be a Drag Source */
   private DragSource dragSource = null;
-  protected IconController iconController = IconController.getInstance();
+  //protected IconController iconController = IconController.getInstance();
 
   public HierarchicTree(DefaultTreeModel model)
   {   super(model);
 
       // set up node icons
-      setCellRenderer(new HierarchicTreeCellRenderer());
+      //setCellRenderer(new HierarchicTreeCellRenderer());
 
       // initializes the DropTarget and DragSource.
       dropTarget = new DropTarget (this, this);
@@ -52,9 +52,9 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
   }
 
   private class HierarchicTreeCellRenderer extends DefaultTreeCellRenderer
-  {   private ImageIcon folderSmallIcon = iconController.getFolderSmallIcon();
-      private ImageIcon yellowBallIcon = iconController.getYellowBallIcon();
-      private ImageIcon greenBallIcon = iconController.getGreenBallIcon();
+  {   //private ImageIcon folderSmallIcon = iconController.getFolderSmallIcon();
+      //private ImageIcon yellowBallIcon = iconController.getYellowBallIcon();
+      //private ImageIcon greenBallIcon = iconController.getGreenBallIcon();
 
       public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus)
       {
@@ -67,22 +67,22 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
             Node node = (Node)obj;
             if (node.getInformationType()==Node.DESCRIPTION_TYPE)
             {
-              setIcon(yellowBallIcon);
+              //setIcon(yellowBallIcon);
             }
             else
             {
-              setIcon(greenBallIcon);
+              //setIcon(greenBallIcon);
             }
 
           }
           else
           {
-            setIcon(folderSmallIcon);
+            //setIcon(folderSmallIcon);
           }
         }
         else
-        {   this.setOpenIcon(folderSmallIcon);
-            this.setClosedIcon(folderSmallIcon);
+        {   //this.setOpenIcon(folderSmallIcon);
+            //this.setClosedIcon(folderSmallIcon);
         }
         return this;
       }
