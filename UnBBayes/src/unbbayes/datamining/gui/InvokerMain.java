@@ -56,6 +56,14 @@ public class InvokerMain extends JFrame
   private JMenuItem jMenuItem6 = new JMenuItem();
   private JMenuItem jMenuItem13 = new JMenuItem();
   private JMenuItem jMenuItem14 = new JMenuItem();
+  private JToolBar jToolBar1 = new JToolBar();
+  private JButton jButton1 = new JButton();
+  private JButton jButton2 = new JButton();
+  private JButton jButton3 = new JButton();
+  private JButton jButton5 = new JButton();
+  private JButton jButton6 = new JButton();
+  private JButton jButton7 = new JButton();
+  private JButton jButton4 = new JButton();
 
 
   //Construct the frame
@@ -213,6 +221,64 @@ public class InvokerMain extends JFrame
         jMenuItem14_actionPerformed(e);
       }
     });
+    jButton7.setIcon(metalIcon);
+    jButton7.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jButton7_actionPerformed(e);
+      }
+    });
+    jButton6.setIcon(motifIcon);
+    jButton6.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jButton6_actionPerformed(e);
+      }
+    });
+    jButton5.setIcon(windowsIcon);
+    jButton5.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jButton5_actionPerformed(e);
+      }
+    });
+    jButton3.setIcon(opcaoglobalIcon);
+    jButton3.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jButton3_actionPerformed(e);
+      }
+    });
+    jButton2.setIcon(cascadeIcon);
+    jButton2.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jButton2_actionPerformed(e);
+      }
+    });
+    jButton1.setIcon(tileIcon);
+    jButton1.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jButton1_actionPerformed(e);
+      }
+    });
+    jButton4.setIcon(helpIcon);
+    jButton4.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jButton4_actionPerformed(e);
+      }
+    });
+    jToolBar1.setBorder(null);
+    jToolBar1.setFloatable(false);
     contentPane.add(new JScrollPane(desktop), BorderLayout.CENTER);
     this.setJMenuBar(jMenuBar1);
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -247,6 +313,17 @@ public class InvokerMain extends JFrame
     jMenu4.add(jMenuItem12);
     jMenu4.addSeparator();
     jMenu6.add(jMenuItem5);
+    contentPane.add(jToolBar1, BorderLayout.NORTH);
+    jToolBar1.add(jButton7, null);
+    jToolBar1.add(jButton6, null);
+    jToolBar1.add(jButton5, null);
+    jToolBar1.addSeparator();
+    jToolBar1.add(jButton3, null);
+    jToolBar1.addSeparator();
+    jToolBar1.add(jButton2, null);
+    jToolBar1.add(jButton1, null);
+    jToolBar1.addSeparator();
+    jToolBar1.add(jButton4, null);
     Options.getInstance().setNumberStatesAllowed(defaultStates);
     Options.getInstance().setConfidenceLimit(confidenceLimit);
     if (defaultLaf.equals("Metal"))
@@ -439,5 +516,33 @@ public class InvokerMain extends JFrame
   void jMenuItem14_actionPerformed(ActionEvent e) {
       NeuralModelMain cnm = new NeuralModelMain();
       desktop.add(cnm);
+  }
+
+  void jButton7_actionPerformed(ActionEvent e)
+  {   jMenuItem8_actionPerformed(e);
+  }
+
+  void jButton6_actionPerformed(ActionEvent e)
+  {   jMenuItem9_actionPerformed(e);
+  }
+
+  void jButton5_actionPerformed(ActionEvent e)
+  {   jMenuItem10_actionPerformed(e);
+  }
+
+  void jButton3_actionPerformed(ActionEvent e)
+  {   jMenuItem5_actionPerformed(e);
+  }
+
+  void jButton2_actionPerformed(ActionEvent e)
+  {   desktop.cascadeFrames();
+  }
+
+  void jButton1_actionPerformed(ActionEvent e)
+  {   desktop.tileFrames();
+  }
+
+  void jButton4_actionPerformed(ActionEvent e)
+  {   jMenuItem7_actionPerformed(e);
   }
 }

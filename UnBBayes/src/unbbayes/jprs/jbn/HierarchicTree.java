@@ -28,4 +28,26 @@ public class HierarchicTree extends JTree
       this.setRootVisible(false);
       this.setEditable(true);
   }
+
+  /**
+     *  Expande todos os nós da árvore.
+     *
+     * @see            JTree
+     */
+    public void expandTree()
+    {   for (int i = 0; i < getRowCount(); i++)
+        {   expandRow(i);
+        }
+    }
+
+    /**
+     *  Retrai todos os nós da árvore.
+     *
+     * @see            JTree
+     */
+    public void collapseTree()
+    {   for (int i = 0; i < getRowCount(); i++)
+        {   collapseRow(i);
+        }
+    }
 }

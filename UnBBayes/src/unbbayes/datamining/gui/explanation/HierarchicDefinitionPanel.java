@@ -1,8 +1,9 @@
 package unbbayes.datamining.gui.explanation;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+
+import javax.swing.*;
 import javax.swing.tree.*;
 
 import unbbayes.jprs.jbn.*;
@@ -21,13 +22,20 @@ public class HierarchicDefinitionPanel extends JPanel
   private BorderLayout borderLayout3 = new BorderLayout();
   private BorderLayout borderLayout4 = new BorderLayout();
   private HierarchicTree hierarchicTree;
-  private JPanel jPanel4 = new JPanel();
-  private JButton applyButton = new JButton();
-  private JButton addChildButton = new JButton();
   private DefaultTreeModel model;
-  private JTextField jTextField1 = new JTextField();
-  private JList jList1 = new JList();
   private ProbabilisticNetwork net;
+  private JPanel jPanel5 = new JPanel();
+  private GridLayout gridLayout1 = new GridLayout();
+  private ImageIcon greenBallIcon;
+  private ImageIcon expandIcon;
+  private ImageIcon collapseIcon;
+  private JToolBar jToolBar1 = new JToolBar();
+  private JButton jButton1 = new JButton();
+  private JButton jButton2 = new JButton();
+  private JButton jButton3 = new JButton();
+  private JButton jButton4 = new JButton();
+  private JButton jButton5 = new JButton();
+  private JButton jButton6 = new JButton();
 
   public HierarchicDefinitionPanel()
   {
@@ -41,41 +49,86 @@ public class HierarchicDefinitionPanel extends JPanel
     }
   }
   private void jbInit() throws Exception
-  { this.setLayout(borderLayout1);
+  { greenBallIcon = new ImageIcon(getClass().getResource("/icones/green-ball.gif"));
+    expandIcon = new ImageIcon(getClass().getResource("/icones/expandir.gif"));
+    collapseIcon = new ImageIcon(getClass().getResource("/icones/contrair.gif"));
+    this.setLayout(borderLayout1);
     jPanel2.setLayout(borderLayout2);
     jPanel1.setLayout(borderLayout3);
     jPanel3.setLayout(borderLayout4);
-    applyButton.setText("Apply Changes");
-    applyButton.addActionListener(new java.awt.event.ActionListener()
+    jPanel5.setLayout(gridLayout1);
+    jPanel5.setBackground(new Color(255, 251, 240));
+    jToolBar1.setBorder(null);
+    jToolBar1.setFloatable(false);
+    jButton2.setToolTipText("Expand Tree");
+    jButton2.setIcon(expandIcon);
+    jButton2.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        applyButton_actionPerformed(e);
+        jButton2_actionPerformed(e);
       }
     });
-    addChildButton.setText("add child");
-    addChildButton.addActionListener(new java.awt.event.ActionListener()
+    jButton1.setToolTipText("Collapse Tree");
+    jButton1.setIcon(collapseIcon);
+    jButton1.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        addChildButton_actionPerformed(e);
+        jButton1_actionPerformed(e);
       }
     });
-    jTextField1.setColumns(11);
+    jButton3.setToolTipText("Add Top Folder");
+    jButton3.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jButton3_actionPerformed(e);
+      }
+    });
+    jButton4.setToolTipText("Add Child Folder");
+    jButton4.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jButton4_actionPerformed(e);
+      }
+    });
+    jButton5.setToolTipText("Rename Folder");
+    jButton5.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jButton5_actionPerformed(e);
+      }
+    });
+    jButton6.setToolTipText("Delete Folder");
+    jButton6.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jButton6_actionPerformed(e);
+      }
+    });
     this.add(jPanel2, BorderLayout.CENTER);
     jPanel2.add(jSplitPane1,  BorderLayout.CENTER);
     jSplitPane1.add(jPanel1, JSplitPane.TOP);
     jPanel1.add(jScrollPane1,  BorderLayout.CENTER);
     jSplitPane1.add(jPanel3, JSplitPane.BOTTOM);
     jPanel3.add(jScrollPane2,  BorderLayout.CENTER);
-    jScrollPane2.getViewport().add(jList1, null);
-    this.add(jPanel4, BorderLayout.NORTH);
-    jPanel4.add(jTextField1, null);
-    jPanel4.add(addChildButton, null);
-    jPanel4.add(applyButton, null);
+    jScrollPane2.getViewport().add(jPanel5, null);
+    this.add(jToolBar1, BorderLayout.NORTH);
+    jToolBar1.add(jButton1, null);
+    jToolBar1.add(jButton2, null);
+    jToolBar1.addSeparator();
+    jToolBar1.add(jButton3, null);
+    jToolBar1.add(jButton4, null);
+    jToolBar1.addSeparator();
+    jToolBar1.add(jButton5, null);
+    jToolBar1.add(jButton6, null);
   }
 
-  void addChildButton_actionPerformed(ActionEvent e)
+  /*void addChildButton_actionPerformed(ActionEvent e)
   {   DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)hierarchicTree.getLastSelectedPathComponent();
 
       if (selectedNode == null)
@@ -94,7 +147,7 @@ public class HierarchicDefinitionPanel extends JPanel
           TreePath path = new TreePath(nodes);
           hierarchicTree.scrollPathToVisible(path);
       }
-  }
+  }*/
 
 
   void applyButton_actionPerformed(ActionEvent e)
@@ -104,8 +157,80 @@ public class HierarchicDefinitionPanel extends JPanel
   public void setHierarchicTree(ProbabilisticNetwork net)
   {   this.net = net;
       this.hierarchicTree = net.getHierarchicTree();
-      model = new DefaultTreeModel((TreeNode)hierarchicTree.getModel().getRoot());
+      model = (DefaultTreeModel)hierarchicTree.getModel();
+      jScrollPane1.getViewport().removeAll();
       jScrollPane1.getViewport().add(hierarchicTree, null);
       jSplitPane1.setDividerLocation(0.5);
+      updateScreen();
+  }
+
+  private void updateScreen()
+  {   int size = net.getExplanationNodes().size();
+      if (size != 0)
+          gridLayout1.setRows(size);
+      jPanel5.removeAll();
+      for(int i=0;i<size;i++)
+      {   JRadioButton radio = new JRadioButton(net.getExplanationNodes().get(i).getDescription(),greenBallIcon);
+          radio.setBackground(new Color(255,251,240));
+          jPanel5.add(radio);
+      }
+  }
+
+  void jButton2_actionPerformed(ActionEvent e)
+  {   hierarchicTree.expandTree();
+  }
+
+  void jButton1_actionPerformed(ActionEvent e)
+  {   hierarchicTree.collapseTree();
+  }
+
+  void jButton3_actionPerformed(ActionEvent e)
+  {   String result = JOptionPane.showInternalInputDialog(this,"","Add Top Folder",JOptionPane.QUESTION_MESSAGE);
+      if ((result != null)&&(!result.equals("")))
+      {   DefaultMutableTreeNode root = ((DefaultMutableTreeNode)model.getRoot());
+          DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(result);
+          model.insertNodeInto(newNode,root,root.getChildCount());
+          showNewNode(newNode);
+      }
+  }
+
+  private void showNewNode(DefaultMutableTreeNode newNode)
+  {   TreeNode[] nodes = model.getPathToRoot(newNode);
+      TreePath path = new TreePath(nodes);
+      hierarchicTree.scrollPathToVisible(path);
+  }
+
+  void jButton6_actionPerformed(ActionEvent e)
+  {   DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)hierarchicTree.getLastSelectedPathComponent();
+      if (selectedNode == null)
+          return;
+      else
+      {   model.removeNodeFromParent(selectedNode);
+      }
+  }
+
+  void jButton5_actionPerformed(ActionEvent e)
+  {   DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)hierarchicTree.getLastSelectedPathComponent();
+      if (selectedNode == null)
+          return;
+      else
+      {   String result = JOptionPane.showInternalInputDialog(this,"","New Folder Name",JOptionPane.QUESTION_MESSAGE);
+          selectedNode.setUserObject(result);
+          model.reload(selectedNode);
+      }
+  }
+
+  void jButton4_actionPerformed(ActionEvent e)
+  {   DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)hierarchicTree.getLastSelectedPathComponent();
+      if (selectedNode == null)
+          return;
+      else
+      {   String result = JOptionPane.showInternalInputDialog(this,"","Add Child Folder",JOptionPane.QUESTION_MESSAGE);
+          if ((result != null)&&(!result.equals("")))
+          {   DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(result);
+              model.insertNodeInto(newNode,selectedNode,selectedNode.getChildCount());
+              showNewNode(newNode);
+          }
+      }
   }
 }
