@@ -384,7 +384,7 @@ public class NetIO implements BaseIO {
 			for (int c1 = 0; c1 < net.noVariaveis(); c1++) {
 				auxNo1 = (Node) net.getNodeAt(c1);
 
-				NodeList auxListVa = auxNo1.getParents();
+				NodeList auxListVa = auxNo1.getParents();				
 
 				arq.print("potential (" + auxNo1.getName());
 
@@ -400,26 +400,17 @@ public class NetIO implements BaseIO {
 				arq.println("{");
 				if (auxNo1 instanceof ITabledVariable) {
 					PotentialTable auxTabPot =
-						((ITabledVariable) auxNo1).getPotentialTable();
-					auxListVa.clear();
-					for (int i = 0; i < auxTabPot.variableCount(); i++) {
-						auxListVa.add(auxTabPot.getVariableAt(i));
-					}
-					/*
-					if (auxNo1 instanceof UtilityNode) {
-					   auxListVa.remove(0);
-					}
-					*/
-
+						((ITabledVariable) auxNo1).getPotentialTable();										
+					int sizeVa1 = auxTabPot.variableCount();					
+						
 					arq.print(" data = ");
-					int[] coord = new int[auxListVa.size()];
-					boolean[] paren = new boolean[auxListVa.size()];
+					int[] coord;
+					boolean[] paren = new boolean[sizeVa1];
 
 					int sizeDados = auxTabPot.tableSize();
 					for (int c2 = 0; c2 < sizeDados; c2++) {
 						coord = auxTabPot.voltaCoord(c2);
-
-						int sizeVa1 = auxListVa.size();
+						
 						for (int c3 = 0; c3 < sizeVa1; c3++) {
 							if ((coord[c3] == 0) && (!paren[c3])) {
 								arq.print("(");
@@ -434,14 +425,13 @@ public class NetIO implements BaseIO {
 
 						int celulas = 1;
 
-						int sizeVa2 = auxListVa.size();
 						Node auxNo2;
-						for (int c3 = 0; c3 < sizeVa2; c3++) {
-							auxNo2 = (Node) auxListVa.get(c3);
+						for (int c3 = 0; c3 < sizeVa1; c3++) {
+							auxNo2 = auxTabPot.getVariableAt(c3);
 							celulas *= auxNo2.getStatesSize();
 							if (((c2 + 1) % celulas) == 0) {
 								arq.print(")");
-								if (c3 == auxListVa.size() - 1) {
+								if (c3 == sizeVa1 - 1) {
 									arq.print(";");
 								}
 								paren[c3] = false;
@@ -449,7 +439,6 @@ public class NetIO implements BaseIO {
 						}
 
 						if (((c2 + 1) % auxNo1.getStatesSize()) == 0) {
-							//                            arq.println("\t%");
 							arq.println();
 						}
 					}
@@ -462,7 +451,6 @@ public class NetIO implements BaseIO {
 		} catch (FileNotFoundException e) {
 			System.err.println(resource.getString("FileNotFoundException"));
 		}
-
 	}
 
 	private int proximo(StreamTokenizer st) throws IOException {
