@@ -3,9 +3,11 @@ package linfca.gerencia.lancamento;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.jdom.Element;
+import java.sql.Timestamp;
 
-import linfca.*;
+import linfca.Controller;
+import linfca.Feature;
+import org.jdom.Element;
 
 public class ListarLancamentoFeature implements Feature {
 	
@@ -40,19 +42,38 @@ public class ListarLancamentoFeature implements Feature {
 					" AND l.dt_hora_fim_lancamento < ?" +
 					" order by l.dt_hora_inicio_lancamento desc"
 			   );
+		Timestamp inicioIn = Timestamp.valueOf(in.getChildTextTrim("data-hora-inicio"));
+		Timestamp fimIn = Timestamp.valueOf(in.getChildTextTrim("data-hora-fim"));
+		
+		ps.setTimestamp(1, inicioIn);
+		ps.setTimestamp(2, fimIn);
+	
 		ResultSet rs = ps.executeQuery();
 		Element out = new Element("out");
 		while (rs.next()) {
-			Element tipoSexo = new Element("tipo-sexo");
-			int codigo = rs.getInt("cod_tipo_sexo");
-			String descricao = rs.getString("desc_tipo_sexo");
-			Element codigoXML = new Element("cod-tipo-sexo");
-			codigoXML.setText("" +codigo);			
-			tipoSexo.getChildren().add(codigoXML);
-			Element descricaoXML = new Element("descricao-tipo-sexo");
-			descricaoXML.setText(descricao);
-			tipoSexo.getChildren().add(descricaoXML);
-			out.getChildren().add(tipoSexo);
+			Element lancamento = new Element("lancamento");
+			int codigo = rs.getInt("l.cod_lancamento");
+			Timestamp inicio = rs.getTimestamp("l.dt_hora_inicio_lancamento");
+			String nome = rs.getString("u.nome");
+			String foto = rs.getString("u.foto");
+
+			Element codigoXML = new Element("cod-lancamento");
+			codigoXML.setText("" +codigo);
+
+			Element dataInicioXML = new Element("data-hora-inicio");
+			dataInicioXML.setText(inicio.toString());
+			
+			Element nomeXML = new Element("nome-usuario");
+			nomeXML.setText(nome);
+			
+			Element fotoXML = new Element("foto-usuario");
+			fotoXML.setText(foto);
+			
+			lancamento.getChildren().add(codigoXML);
+			lancamento.getChildren().add(dataInicioXML);
+			lancamento.getChildren().add(nomeXML);
+			lancamento.getChildren().add(fotoXML);
+			out.getChildren().add(lancamento);
 		}
 		rs.close();
 		ps.close();
