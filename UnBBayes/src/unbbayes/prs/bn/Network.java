@@ -846,6 +846,7 @@ public class Network implements java.io.Serializable {
 	 */
 	protected void sortCliqueNodes() {
 		List listaCliques = junctionTree.getCliques();
+		boolean isID = isID();
 		for (int k = 0; k < listaCliques.size(); k++) {
 			Clique clique = (Clique) listaCliques.get(k);
 			NodeList nosClique = clique.getNodes();
@@ -855,18 +856,19 @@ public class Network implements java.io.Serializable {
 				for (int i = 0; i < nosClique.size() - 1; i++) {
 					Node node1 = nosClique.get(i);
 					Node node2 = nosClique.get(i + 1);
-					if (node1.getName().compareToIgnoreCase(node2.getName()) > 0 ) {
-						nosClique.set(i + 1, node1);
-						nosClique.set(i, node2);
-						haTroca = true;
+					if (isID) {
+						if (oe.indexOf(node1) > oe.indexOf(node2)) {
+							nosClique.set(i + 1, node1);
+							nosClique.set(i, node2);
+							haTroca = true;
+						}
+					} else { 
+						if (node1.getName().compareToIgnoreCase(node2.getName()) > 0 ) {
+							nosClique.set(i + 1, node1);
+							nosClique.set(i, node2);
+							haTroca = true;
+						}	
 					}
-					/*
-					if (oe.indexOf(node1) > oe.indexOf(node2)) {
-						nosClique.set(i + 1, node1);
-						nosClique.set(i, node2);
-						haTroca = true;
-					}
-					*/
 				}
 			}
 		}

@@ -29,7 +29,7 @@ import java.util.ResourceBundle;
  * @author Michael
  * @author Rommel
  */
-public final class DoubleCollection implements java.io.Serializable {
+public final class FloatCollection implements java.io.Serializable {
     public static final int DEFAULT_SIZE = 30;
 
     public float data[];
@@ -38,14 +38,14 @@ public final class DoubleCollection implements java.io.Serializable {
     /** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.util.resources.UtilResources");
 
-    public DoubleCollection(int initialCapacity) {
+    public FloatCollection(int initialCapacity) {
         if (initialCapacity < 0)
             throw new IllegalArgumentException(resource.getString("IllegalCapacityException") +
                                                initialCapacity);
         this.data = new float[initialCapacity];
     }
 
-    public DoubleCollection() {
+    public FloatCollection() {
        this(DEFAULT_SIZE);
     }
 

@@ -29,7 +29,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
 import unbbayes.prs.*;
-import unbbayes.util.DoubleCollection;
+import unbbayes.util.FloatCollection;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 import java.util.ResourceBundle;
@@ -61,12 +61,12 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
     /**
      * Dados armazenados em forma de lista do tipo primitivo float
      */
-    protected DoubleCollection dados;
+    protected FloatCollection dados;
     
     /**
      * Copy of the table data
      */
-    private DoubleCollection dataCopy;
+    private FloatCollection dataCopy;
 
     /**
      * Fatores utilizados para converter coordenadas lineares em multidimensionais.
@@ -78,8 +78,8 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      */
     public PotentialTable() {
         modified = true;
-        dados = new DoubleCollection();
-        dataCopy = new DoubleCollection();
+        dados = new FloatCollection();
+        dataCopy = new FloatCollection();
         variaveis = new NodeList();
     }
     
