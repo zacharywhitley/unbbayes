@@ -50,9 +50,8 @@ public class LancamentoFeature implements Feature {
 			StringBuffer sql = new StringBuffer();
 			sql.append("UPDATE ");
 			sql.append("  Lancamento ");
-			sql.append("  (dt_hora_fim_lancamento) ");
-			sql.append("VALUES ");
-			sql.append("  (?) ");			
+			sql.append(" SET ");
+			sql.append(" dt_hora_fim_lancamento = ? ");
 			sql.append("WHERE ");
 			sql.append("  cod_lancamento = ? ");
 			

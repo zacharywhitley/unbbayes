@@ -6,24 +6,23 @@
         
 <%
 
-   String codUsuario = request.getParameter("cod-usuario");
-   String codComputador = request.getParameter("cod_computador_disponivel");
-   String codLancamento = request.getAttribute("cod-lancamento").toString();
+   String codUsuario = request.getParameter("cod-usuario");   
    
    Element in = new Element("in");
-   Element usuario = new Element("cod-usuario");
-   Element computador = new Element("cod-computador");
-   Element lancamento = new Element("cod-lancamento");
-   
-   usuario.setText(codUsuario);
-   computador.setText(codComputador);
-   lancamento.setText(codLancamento);
    
    if (codUsuario != null)  {
+      String codComputador = request.getParameter("cod_computador_disponivel"); 
+	  Element usuario = new Element("cod-usuario");
+	  Element computador = new Element("cod-computador");	   
+	  usuario.setText(codUsuario);
+	  computador.setText(codComputador);
       in.getChildren().add(usuario);
       in.getChildren().add(computador);
       in.getChildren().add(new Element("uso"));
    } else {
+	  String codLancamento = request.getAttribute("cod-lancamento").toString();
+      Element lancamento = new Element("cod-lancamento");
+      lancamento.setText(codLancamento);
       in.getChildren().add(lancamento);   
    }
    
