@@ -19,6 +19,7 @@ public class InferenceTree extends JTree{
   private ArrayMap objectsMap = new ArrayMap();
   private Attribute[] attributeVector;
   private int classIndex;
+  private InferencePanel inferencePanel;
 
   protected InferenceTree(){
     setShowsRootHandles(true);
@@ -36,6 +37,10 @@ public class InferenceTree extends JTree{
   public InferenceTree(Attribute[] attributeVector, int classIndex){
     this();
     setAttributes(attributeVector, classIndex);
+  }
+
+  public void setController(InferencePanel inferencePanel){
+    this.inferencePanel = inferencePanel;
   }
 
   public void setAttributes(Attribute[] attributeVector, int classIndex){
@@ -157,6 +162,7 @@ public class InferenceTree extends JTree{
             }
           }
           repaint();
+          inferencePanel.printRule(this);
         }
       }
     }
