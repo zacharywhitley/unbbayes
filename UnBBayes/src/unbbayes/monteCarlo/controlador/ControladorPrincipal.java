@@ -15,12 +15,9 @@ import unbbayes.monteCarlo.simulacao.SimulacaoMonteCarlo;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
 /**
+ * Classe que controla as ações relativas a geração de amostras pelo algoritimo de montecarlo
+ * 
  * @author Danilo
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
  */
 public class ControladorPrincipal {
 	

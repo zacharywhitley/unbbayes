@@ -11,12 +11,14 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.util.NodeList;
 
 /**
+ * 
+ * Classe que implementa o método de simulação de Monte Carlo
+ * Por este método são gerados números aleatórios entre 0 e 1. Cada valor sorteado vai estar associada a uma
+ * instancia dentro do universo representado pela rede bayseana. Esta associação é feito com base em um função
+ * de densidade acumulada que representa a rede.
+ * 
  * @author Danilo
  *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
  */
 public class SimulacaoMonteCarlo {
 	
@@ -24,6 +26,12 @@ public class SimulacaoMonteCarlo {
 	private int nCasos;
 	private NodeList fila;
 	
+	
+	/**
+	 * Método que gera a simulação de Monte Carlo
+	 * @param pn Rede a partir da qual serão gerados os casos
+	 * @param nCasos numero de casos que seráo gerados
+	 */
 	public SimulacaoMonteCarlo(ProbabilisticNetwork pn , int nCasos){		
 		this.pn = pn;
 		this.nCasos = nCasos;	

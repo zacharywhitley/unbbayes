@@ -12,12 +12,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
+ * 
+ * Classe que constroi a tela de interação com o usuáirio, relativo á Geração de amostra pelo método de montecarlo
  * @author Danilo
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
  */
 public class TelaParametros extends JFrame {
 	
