@@ -1,5 +1,5 @@
 <%@page import="linfca.*, 
-        java.sql.*, 
+		linfca.cadastro.tiposituacao.TipoSituacao,
         org.jdom.Element, 
         java.util.Iterator" 
         errorPage="" %> 
@@ -13,24 +13,23 @@
    
    if (codUsuario != null)  {
       mensagem = "Lançamento de uso de máquina concluído com sucesso!";
-      String codComputador = request.getParameter("cod-computador");
+      String codComputador = request.getParameter("cod-equipamento");
       System.out.println("Foi : " + codComputador);
 	  Element usuario = new Element("cod-usuario");
-	  Element computador = new Element("cod-computador");	   
+	  Element computador = new Element("cod-equipamento");	   
 	  usuario.setText(codUsuario);
 	  computador.setText(codComputador);
       in.getChildren().add(usuario);
       in.getChildren().add(computador);
-      in.getChildren().add(new Element("uso"));
    } else {
       mensagem = "Fechamento do lançamento de uso de máquina concluído com sucesso!";
-	  String codLancamento = request.getAttribute("cod-lancamento").toString();
-      Element lancamento = new Element("cod-lancamento");
+	  String codLancamento = request.getAttribute("cod-lancamento-uso").toString();
+      Element lancamento = new Element("cod-lancamento-uso");
       lancamento.setText(codLancamento);
       in.getChildren().add(lancamento);   
    }
    
-   Feature  lancamentoF = new LancamentoFeature();
+   Feature  lancamentoF = new LancamentoUsoFeature();
    Element saida = lancamentoF.process(in);
    
    if (saida.getChild("ok") != null) {
