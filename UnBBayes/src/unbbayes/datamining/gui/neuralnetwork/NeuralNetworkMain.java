@@ -158,7 +158,7 @@ public class NeuralNetworkMain extends JInternalFrame {
       success = controller.openFile();
       if(success){
 //        jTabbedPane1.setEnabledAt(0,false);
-//        optionsPanel.enableCombos(true);
+        optionsPanel.setEnabled(true);
 //        jTabbedPane1.setEnabledAt(0,true);
 //        jTabbedPane1.setSelectedIndex(0);
 //        jTabbedPane1.setEnabledAt(1,false);

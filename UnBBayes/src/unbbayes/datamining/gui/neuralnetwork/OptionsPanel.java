@@ -18,6 +18,15 @@ public class OptionsPanel extends JPanel {
   JTextField fieldMomentum = new JTextField();
   JPanel jPanel2 = new JPanel();
   JLabel labelLearningRate = new JLabel();
+  JPanel panelLearningRate = new JPanel();
+  JPanel panelMomentum = new JPanel();
+  JPanel panelHiddenSize = new JPanel();
+  JPanel panelTrainningTime = new JPanel();
+  JPanel panelActivationFunction = new JPanel();
+  FlowLayout flowLayout1 = new FlowLayout();
+  FlowLayout flowLayout2 = new FlowLayout();
+  FlowLayout flowLayout3 = new FlowLayout();
+  FlowLayout flowLayout4 = new FlowLayout();
 
   public OptionsPanel() {
     try {
@@ -31,10 +40,13 @@ public class OptionsPanel extends JPanel {
     jPanel2.setBorder(BorderFactory.createEtchedBorder());
     jPanel2.setLayout(gridLayout1);
     fieldMomentum.setText("");
+    fieldMomentum.setColumns(15);
     labelActivationFunction.setText("Activation Function:");
     labelActivationFunction.setVerticalAlignment(SwingConstants.BOTTOM);
     fieldHiddenSize.setText("");
+    fieldHiddenSize.setColumns(15);
     fieldTrainningTime.setText("");
+    fieldTrainningTime.setColumns(15);
     labelMomentum.setText("Momentum:");
     labelMomentum.setVerticalAlignment(SwingConstants.BOTTOM);
     labelTrainningTime.setText("Trainning Time:");
@@ -49,24 +61,52 @@ public class OptionsPanel extends JPanel {
     labelLearningRate.setVerifyInputWhenFocusTarget(true);
     labelLearningRate.setText("Learning Rate:");
     labelLearningRate.setVerticalAlignment(SwingConstants.BOTTOM);
+    fieldLearningRate.setColumns(15);
+    fieldLearningRate.setHorizontalAlignment(SwingConstants.LEADING);
+    panelLearningRate.setLayout(flowLayout1);
+    flowLayout1.setAlignment(FlowLayout.LEFT);
+    flowLayout1.setHgap(1);
+    panelMomentum.setLayout(flowLayout2);
+    flowLayout2.setAlignment(FlowLayout.LEFT);
+    flowLayout2.setHgap(1);
+    flowLayout2.setVgap(5);
+    panelHiddenSize.setLayout(flowLayout3);
+    flowLayout3.setAlignment(FlowLayout.LEFT);
+    flowLayout3.setHgap(1);
+    flowLayout3.setVgap(5);
+    panelTrainningTime.setLayout(flowLayout4);
+    flowLayout4.setAlignment(FlowLayout.LEFT);
+    flowLayout4.setHgap(1);
+    borderLayout1.setHgap(3);
+    borderLayout1.setVgap(0);
     jPanel2.add(labelLearningRate, null);
-    jPanel2.add(fieldLearningRate, null);
+    jPanel2.add(panelLearningRate, null);
+    panelLearningRate.add(fieldLearningRate, null);
     jPanel2.add(labelMomentum, null);
-    jPanel2.add(fieldMomentum, null);
+    jPanel2.add(panelMomentum, null);
+    panelMomentum.add(fieldMomentum, null);
     jPanel2.add(LabelHiddenSize, null);
-    jPanel2.add(fieldHiddenSize, null);
+    jPanel2.add(panelHiddenSize, null);
+    panelHiddenSize.add(fieldHiddenSize, null);
     jPanel2.add(labelTrainningTime, null);
-    jPanel2.add(fieldTrainningTime, null);
+    jPanel2.add(panelTrainningTime, null);
+    panelTrainningTime.add(fieldTrainningTime, null);
     jPanel2.add(labelActivationFunction, null);
-    jPanel2.add(comboActivationFunction, null);
+    jPanel2.add(panelActivationFunction, null);
+    panelActivationFunction.add(comboActivationFunction, null);
     this.add(jPanel2,  BorderLayout.CENTER);
-
     comboActivationFunction.insertItemAt("Sigmoid", NeuralNetwork.SIGMOID);
     comboActivationFunction.insertItemAt("Tanh", NeuralNetwork.TANH);
+    comboActivationFunction.setSelectedIndex(0);
+    this.setEnabled(false);
   }
 
-  public void enable(boolean enable){
-    this.setEnabled(enable);
+  public void setEnabled(boolean enable){
+    fieldLearningRate.setEnabled(enable);
+    fieldMomentum.setEnabled(enable);
+    fieldTrainningTime.setEnabled(enable);
+    fieldHiddenSize.setEnabled(enable);
+    comboActivationFunction.setEnabled(enable);
   }
 
   public float getLearningRate() throws NumberFormatException{

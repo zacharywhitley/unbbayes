@@ -70,20 +70,20 @@ public class NeuralNetworkController {
     String[] txt = {"TXT"};
     boolean fileOpenSuccess = false;
     fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
-//    fileChooser.setDialogTitle(resource.getString("openFile2"));
+    fileChooser.setDialogTitle(/*resource.getString*/("openFile2"));
     fileChooser.setMultiSelectionEnabled(false);
     fileChooser.setFileView(new FileIcon(mainScreen));
     fileChooser.addChoosableFileFilter(new SimpleFileFilter(txt, "TxtFiles (*.txt)"));
     fileChooser.addChoosableFileFilter(new SimpleFileFilter(arff, "ArffFiles (*.arff)"));
     int returnValue = fileChooser.showOpenDialog(mainScreen);
-    if (returnValue == JFileChooser.APPROVE_OPTION) {
+/*    if (returnValue == JFileChooser.APPROVE_OPTION) {
       File selectedFile = fileChooser.getSelectedFile();
       openSelectedFile(selectedFile);
       file = selectedFile;
       FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       fileOpenSuccess = true;
     }
-    mainScreen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+  */  mainScreen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     return fileOpenSuccess;
   }
 
@@ -110,7 +110,7 @@ public class NeuralNetworkController {
     fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
 //    fileChooser.setDialogTitle(resource.getString("saveModel2"));
     fileChooser.setMultiSelectionEnabled(false);
-    fileChooser.setFileView(new FileIcon(mainScreen));
+//    fileChooser.setFileView(new FileIcon(mainScreen));
     fileChooser.addChoosableFileFilter(new SimpleFileFilter(annString, "Neural Network (*.ann)"));
     int returnVal = fileChooser.showSaveDialog(mainScreen);
     if (returnVal == JFileChooser.APPROVE_OPTION) {
