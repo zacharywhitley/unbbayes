@@ -185,7 +185,8 @@ public class Linkage {
 	
 	
 	protected void absorve(boolean naOrdem) {
-		for (int i = tree.size()-1; i>=0; i--) {
+		int treeSize = tree.size();
+		for (int i = 0; i < treeSize; i++) {
 			Link l = (Link) tree.get(i);
 			if (naOrdem) {
 				absorve(l.getV0(), l.getClique(), l.getV1());				
