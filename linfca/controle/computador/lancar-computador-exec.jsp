@@ -11,7 +11,7 @@
    Element in = new Element("in");
    
    if (codUsuario != null)  {
-      String codComputador = request.getParameter("cod_computador_disponivel"); 
+      String codComputador = request.getParameter("cod-computador"); 
 	  Element usuario = new Element("cod-usuario");
 	  Element computador = new Element("cod-computador");	   
 	  usuario.setText(codUsuario);

@@ -67,7 +67,7 @@ function MM_swapImage() { //v3.0
 <body bgcolor="#6CA66C" text="#000000" link="#000000" vlink="#000000" alink="#000000" style="margin: 0px" marginheight="0" marginwidth="0" border="0" onLoad="MM_preloadImages('images/homeON.gif', ,'images/contactON.gif','images/privacy.policyON.gif','design/imagens/nome_unbON.gif','design/imagens/nome_cicON.gif','design/imagens/nome_linfcaON.gif','design/imagens/nome_nossa_equipeON.gif','design/imagens/nome_eventosON.gif','design/imagens/nome_downloadsON.gif')">
 <table width="100%" border="0" cellspacing="0" cellpadding="0" align="left" bgcolor="#6CA66C">
   <tr>
-    <td bgcolor="#6CA66C" colspan="2"><a href="www.unb.br"><img src="design/imagens/logo_unb.gif" height="32" width="210" vspace="10" hspace="10" border="0" alt="Universidade de Brasília."></a></td>
+    <td bgcolor="#6CA66C" colspan="2"><a href="http://www.unb.br"><img src="<%=path%>/design/imagens/logo_unb.gif" height="32" width="210" vspace="10" hspace="10" border="0" alt="Universidade de Brasília."></a></td>
   </tr>
   <tr>
 	<td height="1" colspan="2" bgcolor="#3C783C"><img src="images/spacer.gif" width=1 height=1></td>

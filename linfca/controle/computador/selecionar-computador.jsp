@@ -3,57 +3,63 @@
         org.jdom.Element, 
         java.util.Iterator" 
         errorPage="" %> 
-<html>
-<head>
-<title>LinfCA - Selecionar Computador</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-</head>
-<body bgcolor="#FFFFFF" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
-<br>
-<form name="form1" method="post" action="<%=request.getContextPath()%>/controle/computador/lancar-computador-exec.jsp">
-  <table width="100%" border="0" cellspacing="0" cellpadding="1" bgcolor="#000000">
-  
-    <tr valign="top"> 
-    
-      <td> <table width="100%" border="0" cellspacing="0" cellpadding="4" bgcolor="#CCCCCC">
-          <font color="#FFFFFF">
-             <%= "Olá " + request.getAttribute("nome-usuario") %>
-          </font>
-        </table></td>
-        
-    </tr>  
-    
-    <tr valign="middle">
-    
-      <td> <table width="100%" border="0" cellspacing="0" cellpadding="4" bgcolor="#FFFFFF">
-          <select name="cod_computador_disponivel" id="tipo_computador_disponivel">
-          <% 
-		     Feature  listarComputadorDisponivel = new ListarComputadorDisponivelFeature();
-			 Element tiposXML = listarComputadorDisponivel.process(null);
-			 Iterator tipos = tiposXML.getChildren().iterator();
-			 while (tipos.hasNext()) {
-		  	    Element tipo = (Element) tipos.next();
-		  %>
-          <option value="<%= ((Element)tipo.getChild("cod-computador")).getText() %>"> 
-          <%= ((Element)tipo.getChild("nome-sala")).getText() + " - " + 
-              ((Element)tipo.getChild("descricao-computador")).getText() %> </option>
-          <% }	%>
-        </table></td>
-         
-    </tr>
-    
-    <tr valign="bottom">
-    
-      <td> <table width="100%" border="0" cellspacing="0" cellpadding="4" bgcolor="#FFFFFF">
-          <input type="submit" name="prosseguir" value="Prosseguir">
-        </table></td>
-             
-    </tr>
-    
-  </table>
-  
-  <input type="hidden" name="cod-usuario" value="<%=request.getAttribute("cod-usuario")%>">
-  
-</form>
-</body>
-</html>
+<%@include file="/util.jsp" %> 
+<%@include file =  "/design/cabecalho.jsp"%>
+
+        <tr>
+          <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_computador.gif" width="174" border="0" hspace="20" alt="Seleção de Computador"></td>
+          <td>
+		  <BR>
+            <FORM name="selecionar" action="<%=path%>/controle/computador/lancar-computador-exec.jsp" method="post">
+            
+            <table width="100%" border="0" cellspacing="5" cellpadding="0" align="center">
+            
+              <tr>
+              
+                <td colspan=2>
+                  <P class="header">Escolha o computador que irá utilizar:</P><br>
+				</td>
+				
+			  </tr>
+			  
+              <tr>
+              
+                <td width="30%">
+                  <P>Computador</P></td>
+                <td width="70%"></td>
+                
+			  </tr>
+			  
+              <tr>
+              
+                <td width="30%">                
+                  <select name="cod-computador" id="tipo_computador_disponivel" size="15">
+                  <% 
+		             Feature  listarComputadorDisponivel = new ListarComputadorDisponivelFeature();
+			         Element tiposXML = listarComputadorDisponivel.process(null);
+			         Iterator tipos = tiposXML.getChildren().iterator();
+			         while (tipos.hasNext()) {
+		  	            Element tipo = (Element) tipos.next();
+		          %>
+                  <option value="<%= ((Element)tipo.getChild("cod-computador")).getText() %>"> 
+                  <%= ((Element)tipo.getChild("nome-sala")).getText() + " - " + 
+                      ((Element)tipo.getChild("descricao-computador")).getText() %> </option>
+                  <% }	%>
+                </td>
+                  
+                <td width="70%"></td>
+                
+              </tr>
+                
+              <tr>
+                <td colspan=2>
+                  <P><INPUT type="submit" value="Processar">
+                  </P><br><br>				  
+				</td>
+				</form>
+			  </tr>
+			</table>
+		  </td>
+		</tr>
+		
+<%@include file =  "/design/rodape.jsp"%>
