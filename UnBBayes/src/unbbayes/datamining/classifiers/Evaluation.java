@@ -63,6 +63,7 @@ public class Evaluation implements IProgress
   private Classifier classifier;
 
   private float[][] propagationResults;
+  private byte[][] propagation;
 
   /**
    * Initializes all the counters for the evaluation.
@@ -73,183 +74,179 @@ public class Evaluation implements IProgress
    */
   public Evaluation(InstanceSet data) throws Exception
   {
-    this.data = data;
-    numClasses = data.numClasses();
-    numInstances = data.numInstances();
-    counter=0;
-    classIsNominal = data.getClassAttribute().isNominal();
-    confidenceLimit = Options.getInstance().getConfidenceLimit();
-    if (classIsNominal)
-    {
-      confusionMatrix = new int [numClasses][numClasses];
-      classNames = new String [numClasses];
-      for(int i = 0; i < numClasses; i++)
-      {
-        classNames[i] = data.getClassAttribute().value(i);
-      }
-    }
+	this.data = data;
+	numClasses = data.numClasses();
+	numInstances = data.numInstances();
+	counter=0;
+	classIsNominal = data.getClassAttribute().isNominal();
+	confidenceLimit = Options.getInstance().getConfidenceLimit();
+	if (classIsNominal)
+	{
+	  confusionMatrix = new int [numClasses][numClasses];
+	  classNames = new String [numClasses];
+	  for(int i = 0; i < numClasses; i++)
+	  {
+		classNames[i] = data.getClassAttribute().value(i);
+	  }
+	}
   }
 
-    public Evaluation(InstanceSet data,Classifier classifier) throws Exception
-    {
-    	this(data);
-    	this.classifier = classifier;
-    	if (classifier instanceof DistributionClassifier)
-    	{
+	public Evaluation(InstanceSet data,Classifier classifier) throws Exception
+	{
+		this(data);
+		this.classifier = classifier;
+		if (classifier instanceof DistributionClassifier)
+		{
 			propagationResults = new float[numInstances][numClasses];
-    	}
-    }
+			propagation = new byte[numInstances][2];
+		}
+	}
 
-    /**
-   	* Evaluates the classifier on a given set of instances.
-   	*
-   	* @param classifier machine learning classifier
-   	* @exception Exception if model could not be evaluated
-   	* successfully
-   	*/
-  	public void evaluateModel(Classifier classifier) throws Exception
+	/**
+	* Evaluates the classifier on a given set of instances.
+	*
+	* @param classifier machine learning classifier
+	* @exception Exception if model could not be evaluated
+	* successfully
+	*/
+	public void evaluateModel(Classifier classifier) throws Exception
 	{
 		if (classifier instanceof DistributionClassifier)
 		{
 			propagationResults = new float[numInstances][numClasses];
+			propagation = new byte[numInstances][2];
 		}	
 		for	(int i = 0; i < numInstances; i++)
-            {   if ((i%50000)==0)
-                {   String currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
-                    System.out.println("instância = "+i+" hora = "+currentHour);
-                }
-                evaluateModelOnce(classifier,data.getInstance(i));
-            }
-  	}
+			{   if ((i%50000)==0)
+				{   String currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
+					System.out.println("instância = "+i+" hora = "+currentHour);
+				}
+				evaluateModelOnce(classifier,data.getInstance(i));
+			}
+	}
 
 	/**
-   	* Evaluates the classifier on a given set of instances.
-   	*
-   	* @param classifier machine learning classifier
-   	* @param testData set of test instances for evaluation
-   	* @exception Exception if model could not be evaluated
-   	* successfully
-   	*/
-  	public void evaluateModel(Classifier classifier,InstanceSet testData) throws Exception
+	* Evaluates the classifier on a given set of instances.
+	*
+	* @param classifier machine learning classifier
+	* @param testData set of test instances for evaluation
+	* @exception Exception if model could not be evaluated
+	* successfully
+	*/
+	public void evaluateModel(Classifier classifier,InstanceSet testData) throws Exception
 	{	
 		if (classifier instanceof DistributionClassifier)
 		{
 			propagationResults = new float[numInstances][numClasses];
+			propagation = new byte[numInstances][2];
 		}
 		int numInstances = testData.numInstances();
 		for (int i = 0; i < numInstances; i++)
 		{	evaluateModelOnce(classifier,testData.getInstance(i));
-    	}
-  	}
+		}
+	}
 
 	/**
-   	* Evaluates the classifier on a single instance.
-   	*
-   	* @param classifier machine learning classifier
-   	* @param instance the test instance to be classified
-   	* @return the prediction made by the clasifier
-   	* @exception Exception if model could not be evaluated
-   	* successfully
-   	*/
-  	public byte evaluateModelOnce(Classifier classifier,Instance instance) throws Exception
+	* Evaluates the classifier on a single instance.
+	*
+	* @param classifier machine learning classifier
+	* @param instance the test instance to be classified
+	* @return the prediction made by the clasifier
+	* @exception Exception if model could not be evaluated
+	* successfully
+	*/
+	public byte evaluateModelOnce(Classifier classifier,Instance instance) throws Exception
 	{   Instance classMissing = instance;
-    	    byte pred=0;
-            if (classIsNominal)
-            {   
-            	if (classifier instanceof DistributionClassifier)
+			byte pred=0;
+			if (classIsNominal)
+			{   
+				if (classifier instanceof DistributionClassifier)
 				{	
 					float[] dist = ((DistributionClassifier)classifier).distributionForInstance(classMissing);
 					propagationResults[counter] = dist;
 					
 					pred = ((DistributionClassifier)classifier).classifyInstance(dist);
 					updateStatsForClassifier(pred,instance);
-      			}
+				}
 				else
 				{	
 					pred = classifier.classifyInstance(classMissing);
 					updateStatsForClassifier(pred,instance);
-      			}
-    	    }
-            else
-            {   //Class is numeric
-                System.out.println("numeric class");
-    	    }
-    	    return pred;
-  	}
-
-  	/**
-  	 * Convert a single prediction into a probability distribution
-  	 * with all zero probabilities except the predicted value which
-  	 * has probability 1.0;
-  	 *
-  	 * @param predictedClass the index of the predicted class
-  	 * @return the probability distribution
-  	 */
-  	private float[] makeDistribution(byte predictedClass)
-	{	float[] result = new float[numClasses];
-  	  	if (Instance.isMissingValue(predictedClass))
-		{	return result;
-  	  	}
-  	  	if (classIsNominal)
-		{	result[(int)predictedClass] = 1.0f;
-  	  	}
-		else
-		{	result[0] = predictedClass;
-  	  	}
-  	  	return result;
-  	}
+				}
+			}
+			else
+			{   //Class is numeric
+				System.out.println("numeric class");
+			}
+			return pred;
+	}
 
 	/**
-   	* Outputs the performance statistics in summary form. Lists
-   	* number (and percentage) of instances classified correctly,
-   	* incorrectly and unclassified. Outputs the total number of
-   	* instances classified, and the number of instances (if any)
-   	* that had no class value provided.
-   	*
-   	* @return the summary as a String
-   	*/
-  	public String toString()
+	 * Convert a single prediction into a probability distribution
+	 * with all zero probabilities except the predicted value which
+	 * has probability 1.0;
+	 *
+	 * @param predictedClass the index of the predicted class
+	 * @return the probability distribution
+	 */
+	private float[] makeDistribution(byte predictedClass)
+	{	float[] result = new float[numClasses];
+		if (Instance.isMissingValue(predictedClass))
+		{	return result;
+		}
+		if (classIsNominal)
+		{	result[(int)predictedClass] = 1.0f;
+		}
+		else
+		{	result[0] = predictedClass;
+		}
+		return result;
+	}
+
+	/**
+	* Outputs the performance statistics in summary form. Lists
+	* number (and percentage) of instances classified correctly,
+	* incorrectly and unclassified. Outputs the total number of
+	* instances classified, and the number of instances (if any)
+	* that had no class value provided.
+	*
+	* @return the summary as a String
+	*/
+	public String toString()
 	{	StringBuffer text = new StringBuffer(resource.getString("summary"));
 
-		for (int i=0;i<numInstances;i++)
-		{
-			for (int j=0;j<numClasses;j++)
-			{
-				System.out.println("j = "+propagationResults[i][j]);
-			}
-			System.out.println("i = "+i);
-		}
+		computeROCCurve();
 		
-    	try
+		try
 		{	text.append(resource.getString("correctly"));
-	  		text.append(Utils.doubleToString(correct(), 12, 4) + " " + Utils.doubleToString(pctCorrect(),12, 4) + " %\n");
-	  		if (withClass >= confidenceLimit)
+			text.append(Utils.doubleToString(correct(), 12, 4) + " " + Utils.doubleToString(pctCorrect(),12, 4) + " %\n");
+			if (withClass >= confidenceLimit)
 				text.append(correctConfidence());
 			text.append(resource.getString("incorrectly"));
-	  		text.append(Utils.doubleToString(incorrect(), 12, 4) + " " + Utils.doubleToString(pctIncorrect(),12, 4) +" %\n");
+			text.append(Utils.doubleToString(incorrect(), 12, 4) + " " + Utils.doubleToString(pctIncorrect(),12, 4) +" %\n");
 			if (withClass >= confidenceLimit)
 				text.append(incorrectConfidence());
 			text.append("Quadratic loss function\t\t\t\t"+Utils.doubleToString((sumSqrErr/withClass), 17, 4)+"\n");
 
-      		if (Utils.gr(unclassified(), 0))
+			if (Utils.gr(unclassified(), 0))
 			{	text.append(resource.getString("unclassified"));
 				text.append(Utils.doubleToString(unclassified(), 12,4) + " " + Utils.doubleToString(pctUnclassified(),12, 4) + "%\n");
-      		}
+			}
 
-	  		text.append(resource.getString("totalNumber"));
-      		text.append(Utils.doubleToString(withClass, 12, 4) + "\n");
+			text.append(resource.getString("totalNumber"));
+			text.append(Utils.doubleToString(withClass, 12, 4) + "\n");
 
 			if (missingClass > 0)
 			{	text.append(resource.getString("unknownInstances"));
 				text.append(Utils.doubleToString(missingClass, 12, 4) + "\n");
-      		}
-    	}
+			}
+		}
 		catch (Exception ex)
 		{	// Should never occur since the class is known to be nominal here
-      		System.err.println("A bug in Evaluation class");
-    	}
+			System.err.println("A bug in Evaluation class");
+		}
 
-    return text.toString();
+	return text.toString();
   }
 
   /**
@@ -264,12 +261,12 @@ public class Evaluation implements IProgress
    */
   private void updateNumericScores(float[] predicted,float[] actual,float weight)
   {   float diff;
-      double partialSumSqrErr = 0;
-      for(int i = 0; i < numClasses; i++)
-      {   diff = predicted[i] - actual[i];
-          partialSumSqrErr += diff * diff;
-      }
-      sumSqrErr += weight * partialSumSqrErr;
+	  double partialSumSqrErr = 0;
+	  for(int i = 0; i < numClasses; i++)
+	  {   diff = predicted[i] - actual[i];
+		  partialSumSqrErr += diff * diff;
+	  }
+	  sumSqrErr += weight * partialSumSqrErr;
   }
 
   private String correctConfidence()
@@ -278,8 +275,8 @@ public class Evaluation implements IProgress
 	double n = (double)(numInstances());
 	double finalTerm,mediumTerm,initialTerm;
 	StringBuffer sb = new StringBuffer("Correct confidence limits\nPr[c]\t   z\n");
-  	for (int i=0;i<confidenceLimits.length;i++)
-  	{	z = confidenceLimits[i];
+	for (int i=0;i<confidenceLimits.length;i++)
+	{	z = confidenceLimits[i];
 		initialTerm = initialTerm(f,z,n);
 		mediumTerm = mediumTerm(f,z,n);
 		finalTerm = finalTerm(z,n);
@@ -296,8 +293,8 @@ public class Evaluation implements IProgress
 	double n = (double)(numInstances());
 	double finalTerm,mediumTerm,initialTerm;
 	StringBuffer sb = new StringBuffer("Incorrect confidence limits\nPr[c]\t   z\n");
-  	for (int i=0;i<confidenceLimits.length;i++)
-  	{	z = confidenceLimits[i];
+	for (int i=0;i<confidenceLimits.length;i++)
+	{	z = confidenceLimits[i];
 		initialTerm = initialTerm(f,z,n);
 		mediumTerm = mediumTerm(f,z,n);
 		finalTerm = finalTerm(z,n);
@@ -403,51 +400,54 @@ public class Evaluation implements IProgress
   private void updateStatsForClassifier(byte predictedClass/*float[] predictedDistribution*/,Instance instance) throws Exception
   {	if (!instance.classIsMissing())
 	{	/*float[] result = new float[numClasses];
-  	  	if (Instance.isMissingValue(predictedClass))
+		if (Instance.isMissingValue(predictedClass))
 		{	return result;
-  	  	}
-  	  	if (classIsNominal)
+		}
+		if (classIsNominal)
 		{	result[(int)predictedClass] = 1.0f;
-  	  	}
+		}
 		else
 		{	result[0] = predictedClass;
-  	  	}
-  	  	return result;*/
+		}
+		return result;*/
 
-                // Determine the predicted class (doesn't detect multiple classifications)
-      	        /*int predictedClass = -1;
-      	        float bestProb = 0.0f;
+				// Determine the predicted class (doesn't detect multiple classifications)
+				/*int predictedClass = -1;
+				float bestProb = 0.0f;
 		for(int i = 0; i < numClasses; i++)
 		{	if (predictedDistribution[i] > bestProb)
 			{	predictedClass = i;
-	  			bestProb = predictedDistribution[i];
+				bestProb = predictedDistribution[i];
 			}
-      	        }*/
+				}*/
 
-      	        withClass += instance.getWeight();
+				withClass += instance.getWeight();
 
-      	        // Update counts when no class was predicted
-      	        if (predictedClass < 0)
+				// Update counts when no class was predicted
+				if (predictedClass < 0)
 		{	unclassified += instance.getWeight();
 			return;
-      	        }
+				}
 
 		byte actualClass = instance.classValue();
-                updateNumericScores(makeDistribution(predictedClass)/*predictedDistribution*/,makeDistribution(actualClass),instance.getWeight());
+				updateNumericScores(makeDistribution(predictedClass)/*predictedDistribution*/,makeDistribution(actualClass),instance.getWeight());
 
+		propagation[counter][0] = actualClass;
+		propagation[counter][1] = predictedClass;
+		
 		// Update other stats
 		confusionMatrix[actualClass][predictedClass] += instance.getWeight();
 
 		if (predictedClass != actualClass)
-	  	{	incorrect += instance.getWeight();
-      	        }
-	  	else
-	  	{	correct += instance.getWeight();
-      	        }
-        }
+		{	incorrect += instance.getWeight();
+				}
+		else
+		{	correct += instance.getWeight();
+				}
+		}
 	else
 	{	missingClass += instance.getWeight();
-        }
+		}
   }
 
   /**
@@ -461,31 +461,31 @@ public class Evaluation implements IProgress
    */
   public void crossValidateModel(Classifier classifier,int numFolds) throws Exception
   {   // Make a copy of the data we can reorder
-      InstanceSet instances = new InstanceSet(data,data.numInstances());
-      int numInstances = data.numInstances();
-      for (int i=0;i<numInstances;i++)
-      {   Instance inst = data.getInstance(i);
-          int originalWeight = inst.getWeight();
-          inst.setWeight(1);
-          for (int j=0;j<originalWeight;j++)
-              instances.add(inst);
-      }
-      data = new InstanceSet(instances);
+	  InstanceSet instances = new InstanceSet(data,data.numInstances());
+	  int numInstances = data.numInstances();
+	  for (int i=0;i<numInstances;i++)
+	  {   Instance inst = data.getInstance(i);
+		  int originalWeight = inst.getWeight();
+		  inst.setWeight(1);
+		  for (int j=0;j<originalWeight;j++)
+			  instances.add(inst);
+	  }
+	  data = new InstanceSet(instances);
 
-      instances.randomize(new Random(42));
-      if (instances.getClassAttribute().isNominal())
-      {   stratify(instances,numFolds);
-      }
-    // Do the folds
-    for (int i = 0; i < numFolds; i++)
+	  instances.randomize(new Random(42));
+	  if (instances.getClassAttribute().isNominal())
+	  {   stratify(instances,numFolds);
+	  }
+	// Do the folds
+	for (int i = 0; i < numFolds; i++)
 	{	InstanceSet train = trainCV(instances,numFolds, i);
-      	classifier.buildClassifier(train);
-      	InstanceSet test = testCV(instances,numFolds, i);
-      	evaluateModel(classifier, test);
-    }
+		classifier.buildClassifier(train);
+		InstanceSet test = testCV(instances,numFolds, i);
+		evaluateModel(classifier, test);
+	}
   }
 
-    /**
+	/**
    * Creates the training set for one fold of a cross-validation
    * on the dataset.
    *
@@ -500,31 +500,31 @@ public class Evaluation implements IProgress
   public InstanceSet trainCV(InstanceSet instances, int numFolds, int numFold)
   {	int numInstForFold, first, offset;
 	int numInstances = instances.numInstances();
-    InstanceSet train;
+	InstanceSet train;
 
 	if (numFolds < 2)
 	{	throw new IllegalArgumentException(resource.getString("folds2"));
-    }
-    if (numFolds > numInstances)
+	}
+	if (numFolds > numInstances)
 	{	throw new IllegalArgumentException(resource.getString("moreFolds"));
-    }
-    numInstForFold = numInstances / numFolds;
-    if (numFold < numInstances % numFolds)
+	}
+	numInstForFold = numInstances / numFolds;
+	if (numFold < numInstances % numFolds)
 	{	numInstForFold++;
-      	offset = numFold;
-    }
+		offset = numFold;
+	}
 	else
-    {  offset = numInstances % numFolds;
-    }
-    train = new InstanceSet(instances, (numInstances - numInstForFold));
-    first = numFold * (numInstances / numFolds) + offset;
-    instances.copyInstances(0, train, first);
-    instances.copyInstances(first + numInstForFold, train, numInstances - first - numInstForFold);
+	{  offset = numInstances % numFolds;
+	}
+	train = new InstanceSet(instances, (numInstances - numInstForFold));
+	first = numFold * (numInstances / numFolds) + offset;
+	instances.copyInstances(0, train, first);
+	instances.copyInstances(first + numInstForFold, train, numInstances - first - numInstForFold);
 
-    return train;
+	return train;
   }
 
-    /**
+	/**
    * Creates the test set for one fold of a cross-validation on
    * the dataset.
    *
@@ -538,29 +538,29 @@ public class Evaluation implements IProgress
    */
   public InstanceSet testCV(InstanceSet instances,int numFolds, int numFold)
   { int numInstForFold, first, offset;
-    int numInstances = instances.numInstances();
+	int numInstances = instances.numInstances();
 	InstanceSet test;
 
-    if (numFolds < 2)
+	if (numFolds < 2)
 	{ throw new IllegalArgumentException(resource.getString("folds2"));
-    }
-    if (numFolds > numInstances)
+	}
+	if (numFolds > numInstances)
 	{ throw new IllegalArgumentException(resource.getString("moreFolds"));
-    }
-    numInstForFold = numInstances / numFolds;
-    if (numFold < numInstances % numFolds)
+	}
+	numInstForFold = numInstances / numFolds;
+	if (numFold < numInstances % numFolds)
 	{ numInstForFold++;
-      offset = numFold;
-    }
+	  offset = numFold;
+	}
 	else
-      offset = numInstances % numFolds;
-    test = new InstanceSet(instances, numInstForFold);
-    first = numFold * (numInstances / numFolds) + offset;
-    instances.copyInstances(first, test, numInstForFold);
-    return test;
+	  offset = numInstances % numFolds;
+	test = new InstanceSet(instances, numInstForFold);
+	first = numFold * (numInstances / numFolds) + offset;
+	instances.copyInstances(first, test, numInstForFold);
+	return test;
   }
 
-    /**
+	/**
    * Stratifies a set of instances according to its class values
    * if the class attribute is nominal (so that afterwards a
    * stratified cross-validation can be performed).
@@ -571,32 +571,32 @@ public class Evaluation implements IProgress
    */
   public final void stratify(InstanceSet instances, int numFolds)
   { if (numFolds <= 0)
-  	{ throw new IllegalArgumentException(resource.getString("folds1"));
-    }
-    if (instances.getClassIndex() < 0)
+	{ throw new IllegalArgumentException(resource.getString("folds1"));
+	}
+	if (instances.getClassIndex() < 0)
 	{ throw new UnassignedClassException(resource.getString("classNegative"));
-    }
-    if (instances.getClassAttribute().isNominal())
+	}
+	if (instances.getClassAttribute().isNominal())
 	{ // sort by class
-      int index = 1;
-      int numInstances = instances.numInstances();
-      while (index < numInstances)
+	  int index = 1;
+	  int numInstances = instances.numInstances();
+	  while (index < numInstances)
 	  {	Instance instance1 = instances.getInstance(index - 1);
 		for (int j = index; j < numInstances; j++)
 		{	Instance instance2 = instances.getInstance(j);
-	  		if ((instance1.classValue() == instance2.classValue()) ||
-	      		(instance1.classIsMissing() && instance2.classIsMissing()))
+			if ((instance1.classValue() == instance2.classValue()) ||
+				(instance1.classIsMissing() && instance2.classIsMissing()))
 			{	instances.swap(index,j);
-	    		index++;
-	  		}
+				index++;
+			}
 		}
 		index++;
-      }
-      stratStep(instances,numFolds);
-    }
+	  }
+	  stratStep(instances,numFolds);
+	}
   }
 
-    /**
+	/**
    * Help function needed for stratification of set.
    *
    * @param instances set of training instances
@@ -605,19 +605,19 @@ public class Evaluation implements IProgress
   private void stratStep (InstanceSet instances, int numFolds)
   { int numInstances = instances.numInstances();
 	Instance[] newVec = new Instance[numInstances];
-    int start = 0, j, i=0;
+	int start = 0, j, i=0;
 
-    // create stratified batch
-    while (newVec.length < numInstances)
+	// create stratified batch
+	while (newVec.length < numInstances)
 	{	j = start;
-      	while (j < numInstances)
+		while (j < numInstances)
 		{	newVec[i]= instances.getInstance(j);
 			j += numFolds;
-      	}
-      	start++;
-      	i++;
-    }
-    instances.setInstances(newVec);
+		}
+		start++;
+		i++;
+	}
+	instances.setInstances(newVec);
   }
 
   /**
@@ -628,12 +628,12 @@ public class Evaluation implements IProgress
   public double[][] confusionMatrix()
   { double[][] newMatrix = new double[confusionMatrix.length][0];
 
-    for (int i = 0; i < confusionMatrix.length; i++)
+	for (int i = 0; i < confusionMatrix.length; i++)
 	{ newMatrix[i] = new double[confusionMatrix[i].length];
-      System.arraycopy(confusionMatrix[i], 0, newMatrix[i], 0,
-		       confusionMatrix[i].length);
-    }
-    return newMatrix;
+	  System.arraycopy(confusionMatrix[i], 0, newMatrix[i], 0,
+			   confusionMatrix[i].length);
+	}
+	return newMatrix;
   }
 
   /**
@@ -647,18 +647,18 @@ public class Evaluation implements IProgress
    */
   public String toClassDetailsString() throws Exception
   { if (!classIsNominal)
-  	{ throw new Exception(resource.getString("noMatrix"));
-    }
-    StringBuffer text = new StringBuffer(resource.getString("accuracy"));
+	{ throw new Exception(resource.getString("noMatrix"));
+	}
+	StringBuffer text = new StringBuffer(resource.getString("accuracy"));
 	text.append("\nTP Rate   FP Rate   TN Rate   FN Rate   Class\n");
-    for(int i = 0; i < numClasses; i++)
+	for(int i = 0; i < numClasses; i++)
 	{ text.append(Utils.doubleToString(truePositiveRate(i), 7, 3)).append("   ");
-      text.append(Utils.doubleToString(falsePositiveRate(i), 7, 3)).append("    ");
-      text.append(Utils.doubleToString(trueNegativeRate(i), 7, 3)).append("   ");
-      text.append(Utils.doubleToString(falseNegativeRate(i), 7, 3)).append("    ");
-      text.append(classNames[i]).append('\n');
-    }
-    return text.toString();
+	  text.append(Utils.doubleToString(falsePositiveRate(i), 7, 3)).append("    ");
+	  text.append(Utils.doubleToString(trueNegativeRate(i), 7, 3)).append("   ");
+	  text.append(Utils.doubleToString(falseNegativeRate(i), 7, 3)).append("    ");
+	  text.append(classNames[i]).append('\n');
+	}
+	return text.toString();
   }
 
   /**
@@ -670,12 +670,12 @@ public class Evaluation implements IProgress
    */
   public int numTruePositives(int classIndex)
   { int correct = 0;
-    for (int j = 0; j < numClasses; j++)
+	for (int j = 0; j < numClasses; j++)
 	{ 	if (j == classIndex)
 		{	correct += confusionMatrix[classIndex][j];
-      	}
-    }
-    return correct;
+		}
+	}
+	return correct;
   }
 
   /**
@@ -687,16 +687,16 @@ public class Evaluation implements IProgress
    */
   public double truePositiveRate(int classIndex)
   { double correct = 0, total = 0;
-    for (int j = 0; j < numClasses; j++)
+	for (int j = 0; j < numClasses; j++)
 	{ 	if (j == classIndex)
 		{	correct += confusionMatrix[classIndex][j];
-      	}
-      	total += confusionMatrix[classIndex][j];
-    }
-    if (total == 0)
+		}
+		total += confusionMatrix[classIndex][j];
+	}
+	if (total == 0)
 	{ return 0;
-    }
-    return correct / total;
+	}
+	return correct / total;
   }
 
   /**
@@ -708,16 +708,16 @@ public class Evaluation implements IProgress
    */
   public int numTrueNegatives(int classIndex)
   { int correct = 0;
-    for (int i = 0; i < numClasses; i++)
+	for (int i = 0; i < numClasses; i++)
 	{ 	if (i != classIndex)
 		{	for (int j = 0; j < numClasses; j++)
 			{	if (j != classIndex)
 				{	correct += confusionMatrix[i][j];
-	  			}
+				}
 			}
-      	}
-    }
-    return correct;
+		}
+	}
+	return correct;
   }
 
   /**
@@ -729,20 +729,20 @@ public class Evaluation implements IProgress
    */
   public double trueNegativeRate(int classIndex)
   { double correct = 0, total = 0;
-    for (int i = 0; i < numClasses; i++)
+	for (int i = 0; i < numClasses; i++)
 	{ 	if (i != classIndex)
 		{	for (int j = 0; j < numClasses; j++)
 			{	if (j != classIndex)
 				{	correct += confusionMatrix[i][j];
-	  			}
-	  			total += confusionMatrix[i][j];
+				}
+				total += confusionMatrix[i][j];
 			}
-      	}
-    }
-    if (total == 0)
+		}
+	}
+	if (total == 0)
 	{ return 0;
-    }
-    return correct / total;
+	}
+	return correct / total;
   }
 
   /**
@@ -754,16 +754,16 @@ public class Evaluation implements IProgress
    */
   public int numFalsePositives(int classIndex)
   { int incorrect = 0;
-    for (int i = 0; i < numClasses; i++)
+	for (int i = 0; i < numClasses; i++)
 	{ 	if (i != classIndex)
 		{	for (int j = 0; j < numClasses; j++)
 			{	if (j == classIndex)
 				{	incorrect += confusionMatrix[i][j];
-	  			}
+				}
 			}
-      	}
-    }
-    return incorrect;
+		}
+	}
+	return incorrect;
   }
 
   /**
@@ -775,20 +775,20 @@ public class Evaluation implements IProgress
    */
   public double falsePositiveRate(int classIndex)
   { double incorrect = 0, total = 0;
-    for (int i = 0; i < numClasses; i++)
+	for (int i = 0; i < numClasses; i++)
 	{	if (i != classIndex)
 		{	for (int j = 0; j < numClasses; j++)
 			{	if (j == classIndex)
 				{	incorrect += confusionMatrix[i][j];
-	  			}
-	  			total += confusionMatrix[i][j];
+				}
+				total += confusionMatrix[i][j];
 			}
-      	}
-    }
-    if (total == 0)
+		}
+	}
+	if (total == 0)
 	{ return 0;
-    }
-    return incorrect / total;
+	}
+	return incorrect / total;
   }
 
   /**
@@ -800,16 +800,16 @@ public class Evaluation implements IProgress
    */
   public int numFalseNegatives(int classIndex)
   { int incorrect = 0;
-    for (int i = 0; i < numClasses; i++)
+	for (int i = 0; i < numClasses; i++)
 	{	if (i == classIndex)
 		{	for (int j = 0; j < numClasses; j++)
 			{	if (j != classIndex)
 				{	incorrect += confusionMatrix[i][j];
-	  			}
+				}
 			}
-      	}
-    }
-    return incorrect;
+		}
+	}
+	return incorrect;
   }
 
   /**
@@ -821,20 +821,20 @@ public class Evaluation implements IProgress
    */
   public double falseNegativeRate(int classIndex)
   { double incorrect = 0, total = 0;
-    for (int i = 0; i < numClasses; i++)
+	for (int i = 0; i < numClasses; i++)
 	{	if (i == classIndex)
 		{	for (int j = 0; j < numClasses; j++)
 			{	if (j != classIndex)
 				{	incorrect += confusionMatrix[i][j];
-	  			}
-	  			total += confusionMatrix[i][j];
+				}
+				total += confusionMatrix[i][j];
 			}
-      	}
-    }
-    if (total == 0)
+		}
+	}
+	if (total == 0)
 	{ return 0;
-    }
-    return incorrect / total;
+	}
+	return incorrect / total;
   }
 
   /**
@@ -847,25 +847,25 @@ public class Evaluation implements IProgress
    */
   public String toMatrixString() throws Exception
   { StringBuffer text = new StringBuffer(resource.getString("matrix"));
-    if (!classIsNominal)
+	if (!classIsNominal)
 	{ throw new Exception(resource.getString("noMatrix"));
-    }
+	}
 
 	char[] IDChars = {'a','b','c','d','e','f','g','h','i','j',
-		       		  'k','l','m','n','o','p','q','r','s','t',
-		       		  'u','v','w','x','y','z'};
-    int IDWidth;
-    boolean fractional = false;
+					  'k','l','m','n','o','p','q','r','s','t',
+					  'u','v','w','x','y','z'};
+	int IDWidth;
+	boolean fractional = false;
 
-    // Find the maximum value in the matrix
-    // and check for fractional display requirement
-    double maxval = 0;
-    for(int i = 0; i < numClasses; i++)
+	// Find the maximum value in the matrix
+	// and check for fractional display requirement
+	double maxval = 0;
+	for(int i = 0; i < numClasses; i++)
 	{	for(int j = 0; j < numClasses; j++)
 		{	double current = confusionMatrix[i][j];
-        	if (current < 0)
+			if (current < 0)
 			{	current *= -10;
-        	}
+			}
 			if (current > maxval)
 			{	maxval = current;
 			}
@@ -873,27 +873,27 @@ public class Evaluation implements IProgress
 			if (!fractional && ((Math.log(fract) / Math.log(10)) >= -2))
 			{	fractional = true;
 			}
-     	}
-    }
+		}
+	}
 
-    IDWidth = 1 + Math.max((int)(Math.log(maxval)/Math.log(10)+(fractional ? 3 : 0)),(int)(Math.log(numClasses) / Math.log(IDChars.length)));
-    for(int i = 0; i < numClasses; i++)
+	IDWidth = 1 + Math.max((int)(Math.log(maxval)/Math.log(10)+(fractional ? 3 : 0)),(int)(Math.log(numClasses) / Math.log(IDChars.length)));
+	for(int i = 0; i < numClasses; i++)
 	{	if (fractional)
 		{	text.append(" ").append(num2ByteID(i,IDChars,IDWidth - 3)).append("   ");
-      	}
+		}
 		else
 		{	text.append(" ").append(num2ByteID(i,IDChars,IDWidth));
-      	}
-    }
-    text.append("   <-- classified as\n");
-    for(int i = 0; i< numClasses; i++)
+		}
+	}
+	text.append("   <-- classified as\n");
+	for(int i = 0; i< numClasses; i++)
 	{	for(int j = 0; j < numClasses; j++)
 		{	text.append(" ").append(Utils.doubleToString(confusionMatrix[i][j],IDWidth,(fractional ? 2 : 0)));
-      	}
-      	text.append(" | ").append(num2ByteID(i,IDChars,IDWidth)).append(" = ").append(classNames[i]).append("\n");
-    }
+		}
+		text.append(" | ").append(num2ByteID(i,IDChars,IDWidth)).append(" = ").append(classNames[i]).append("\n");
+	}
 
-    return text.toString();
+	return text.toString();
   }
 
   /**
@@ -906,19 +906,19 @@ public class Evaluation implements IProgress
    */
   private String num2ByteID(int num,char [] IDChars,int IDWidth)
   {	char ID [] = new char [IDWidth];
-    int i;
+	int i;
 
-    for(i = IDWidth - 1; i >=0; i--)
+	for(i = IDWidth - 1; i >=0; i--)
 	{	ID[i] = IDChars[num % IDChars.length];
-      	num = num / IDChars.length - 1;
-      	if (num < 0)
+		num = num / IDChars.length - 1;
+		if (num < 0)
 		{	break;
-      	}
-    }
-    for(i--; i >= 0; i--)
+		}
+	}
+	for(i--; i >= 0; i--)
 	{	ID[i] = ' ';
-    }
-    return new String(ID);
+	}
+	return new String(ID);
   }
 
   public int maxCount()
@@ -934,22 +934,88 @@ public class Evaluation implements IProgress
 		}
 		else
 		{
-        	try
-        	{
-        		evaluateModelOnce(classifier,data.getInstance(counter));
-            	counter++;
-            	return true;
-        	}
-        	catch(Exception e)
-        	{
-        		return false;
-        	}
-        }
+			try
+			{
+				evaluateModelOnce(classifier,data.getInstance(counter));
+				counter++;
+				return true;
+			}
+			catch(Exception e)
+			{
+				return false;
+			}
+		}
 	}
 
 	public void cancel()
 	{
 		counter=0;
+	}
+	
+	public void computeROCCurve()
+	{
+		/*for (int i=0;i<numInstances;i++)
+		{
+			for (int j=0;j<numClasses;j++)
+			{
+				System.out.println("j = "+propagationResults[i][j]);
+			}
+			System.out.println("actualClass = "+propagation[i][0]);
+			System.out.println("predictedClass = "+propagation[i][1]);
+			System.out.println("i = "+i);
+		}*/
+		ArrayList[] vet1 = new ArrayList[numClasses];//float
+		ArrayList[] vet2 = new ArrayList[numClasses];//boolean
+		for (int j=0;j<numClasses;j++)
+		{
+			vet1[j] = new ArrayList();
+			vet2[j] = new ArrayList();
+		}
+		for (int i=0;i<numInstances;i++)
+		{
+			vet1[propagation[i][1]].add(new Float(propagationResults[i][propagation[i][1]]));
+			vet2[propagation[i][1]].add(new Boolean(propagation[i][0]==propagation[i][1]));
+		}
+		double[][] v3 = new double[numClasses][];
+		boolean[][] v4 = new boolean[numClasses][];
+		boolean[][] v5 = new boolean[numClasses][];
+		for (int j=0;j<numClasses;j++)
+		{
+			/*System.out.println("class = "+j);
+			for(int i=0;i<vet1[j].size();i++)
+			{
+				System.out.println("Valor = "+vet1[j].get(i));
+				System.out.println("Flag = "+vet2[j].get(i));
+			}*/
+			v3[j] = new double[vet1[j].size()];
+			v4[j] = new boolean[vet1[j].size()];
+			v5[j] = new boolean[vet1[j].size()];
+		}
+		for (int j=0;j<numClasses;j++)
+		{
+			for(int i=0;i<v3[j].length;i++)
+			{
+				v3[j][i] = ((Float)vet1[j].get(i)).floatValue();
+				v4[j][i] = ((Boolean)vet2[j].get(i)).booleanValue();
+			}
+		}				
+		/*for (int j=0;j<numClasses;j++)
+		{
+			int[] res = Utils.sort(v3[j]);
+			for (int i=0;i<res.length;i++)
+			{
+				v5[i] = v4[res[i]];	
+			}
+		}				
+		for (int j=0;j<numClasses;j++)
+		{
+			System.out.println("Class = "+j);
+			for(int i=0;i<v3[j].length;i++)
+			{
+				System.out.println("Valor = "+v3[j][i]);
+				System.out.println("Flag = "+v5[j][i]);
+			}
+		}*/				
 	}
 
 }

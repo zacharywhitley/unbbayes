@@ -17,13 +17,13 @@ public class NaiveBayes extends DistributionClassifier
 	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.classifiers.resources.ClassifiersResource");
 
 	/** All the counts for nominal attributes. */
-  	private float[][][] counts;
+	private float[][][] counts;
 
-  	/** The prior probabilities of the classes. */
-  	private float[] priors;
+	/** The prior probabilities of the classes. */
+	private float[] priors;
 
-  	/** The instances used for training. */
-  	private InstanceSet instances;
+	/** The instances used for training. */
+	private InstanceSet instances;
   	
 	private ProbabilisticNode classAtt;
 	private int width = 50;
@@ -39,12 +39,12 @@ public class NaiveBayes extends DistributionClassifier
 	private int attIndex;
 
 	/**
-   	* Generates the classifier.
-   	*
-   	* @param instances Set of instances serving as training data
-   	* @exception Exception if the classifier has not been generated successfully
-   	*/
-  	public void buildClassifier(InstanceSet inst) throws Exception
+	* Generates the classifier.
+	*
+	* @param instances Set of instances serving as training data
+	* @exception Exception if the classifier has not been generated successfully
+	*/
+	public void buildClassifier(InstanceSet inst) throws Exception
 	{	
 		instances = inst;
 		numAtt = inst.numAttributes();
@@ -61,8 +61,8 @@ public class NaiveBayes extends DistributionClassifier
 
 		
 		// Reserve space
-    	counts = new float[numClasses][numAtt - 1][0];
-    	priors = new float[numClasses];
+		counts = new float[numClasses][numAtt - 1][0];
+		priors = new float[numClasses];
 		for (i = 0; i < numAtt; i++)
 		{
 			if (attributes[i].getIndex() != classIndex)
@@ -95,7 +95,7 @@ public class NaiveBayes extends DistributionClassifier
 		}
 		
 		attIndex=0;
-    	// Normalize counts
+		// Normalize counts
 		for (k = 0; k < numAtt; k++)
 		{
 			if (attributes[k].getIndex() != classIndex)
@@ -113,13 +113,13 @@ public class NaiveBayes extends DistributionClassifier
 		}
     		
 
-    	// Normalize priors
-    	sum = Utils.sum(priors);
+		// Normalize priors
+		sum = Utils.sum(priors);
 		for (j = 0; j < numClasses; j++)
 		{	priors[j] = (priors[j] + 1)	/ (sum + (float)numClasses);      	
 		}
       	
-      	// compute bayesian network
+		// compute bayesian network
 		createProbabilisticNodeClass(attributes[classIndex]);
 		k=0;
 		for(int counter=0; counter<numAtt; counter++)
@@ -128,7 +128,7 @@ public class NaiveBayes extends DistributionClassifier
 				createProbabilisticNode(attributes[counter]);											
 			}
 		}      	
-  	}
+	}
   	
 	/** Cria o nó classe */
 	private void createProbabilisticNodeClass(Attribute att)
@@ -189,17 +189,17 @@ public class NaiveBayes extends DistributionClassifier
 	}
 
 
-  	/**
-  	 * Calculates the class membership probabilities for the given test instance.
-  	 *
-  	 * @param instance the instance to be classified
-  	 * @return predicted class probability distribution
-  	 * @exception Exception if distribution can't be computed
-  	 */
-  	public float[] distributionForInstance(Instance instance) throws Exception
+	/**
+	 * Calculates the class membership probabilities for the given test instance.
+	 *
+	 * @param instance the instance to be classified
+	 * @return predicted class probability distribution
+	 * @exception Exception if distribution can't be computed
+	 */
+	public float[] distributionForInstance(Instance instance) throws Exception
 	{	float[] probs = new float[numClasses];
 
-  	  	for (j = 0; j < numClasses; j++)
+		for (j = 0; j < numClasses; j++)
 		{	probs[j] = 1;
   	    	
 			for (i = 0; i < numAtt; i++)
@@ -209,29 +209,29 @@ public class NaiveBayes extends DistributionClassifier
 					probs[j] *= counts[j][i][(int)instance.getValue(attributes[i])];
 				}
 			}
-  	    	probs[j] *= priors[j];
-  	  	}
+			probs[j] *= priors[j];
+		}
 
-  	  	// Normalize probabilities
-  	  	Utils.normalize(probs);
+		// Normalize probabilities
+		Utils.normalize(probs);
 
-  	  	return probs;
-  	}
+		return probs;
+	}
 
 	/**
-   	* Returns a description of the classifier.
-   	*
-   	* @return a description of the classifier as a string.
-   	*/
-  	public String toString()
+	* Returns a description of the classifier.
+	*
+	* @return a description of the classifier as a string.
+	*/
+	public String toString()
 	{	if (instances == null)
 		{	//return "Naive Bayes : "+resource.getString("exception4");
 			return nullInstancesString();
-    	}
-    	try
+		}
+		try
 		{	StringBuffer text = new StringBuffer("Naive Bayes");
       		
-      		for (i = 0; i < numClasses; i++)
+			for (i = 0; i < numClasses; i++)
 			{	text.append("\n\n"+resource.getString("class") + " " + instances.getClassAttribute().value(i) + ": P(C) = " + Utils.doubleToString(priors[i], 10, 8) + "\n\n");
 				
 				for (k = 0; k < numAtt; k++)
@@ -249,37 +249,37 @@ public class NaiveBayes extends DistributionClassifier
 						text.append("\n\n");
 					}					
 				}
-      		}
-      		return text.toString();
-    	}
+			}
+			return text.toString();
+		}
 		catch (Exception e)
 		{	return resource.getString("exception5");
-    	}
-  	}
+		}
+	}
 
 	private String nullInstancesString()
 	{	try
 		{	StringBuffer text = new StringBuffer("Naive Bayes");
-      		for (i = 0; i < priors.length; i++)
+			for (i = 0; i < priors.length; i++)
 			{	text.append("\n\n"+resource.getString("class") + " " + i + ": P(C) = " + Utils.doubleToString(priors[i], 10, 8) + "\n\n");
 				if (counts != null)
 				{	for (int attIndex=0; attIndex<counts[i].length; attIndex++)
 					{	text.append(resource.getString("attribute")+" " + attIndex + "\n");
 						for (j = 0; j < counts[i][attIndex].length; j++)
 						{	text.append(j + "\t");
-	    				}
-	    				text.append("\n");
-	    				for (j = 0; j < counts[i][attIndex].length; j++)
-	      					text.append(Utils.doubleToString(counts[i][attIndex][j], 10, 8) + "\t");
+						}
+						text.append("\n");
+						for (j = 0; j < counts[i][attIndex].length; j++)
+							text.append(Utils.doubleToString(counts[i][attIndex][j], 10, 8) + "\t");
 						text.append("\n\n");
 					}
 				}
-      		}
-      		return text.toString();
-    	}
+			}
+			return text.toString();
+		}
 		catch (Exception e)
 		{	return resource.getString("exception5");
-    	}
+		}
 	}
 	
 	/** Retorna a rede bayesiana ProbabilisticNetwork
@@ -291,7 +291,7 @@ public class NaiveBayes extends DistributionClassifier
 
 	/** Returns the computed priors
 
-	    @return the computed priors.
+		@return the computed priors.
 	*/
 	public float[] getPriors()
 	{	return priors;
@@ -303,7 +303,7 @@ public class NaiveBayes extends DistributionClassifier
 
 	/** Returns the computed counts for nominal attributes
 
-	    @return the computed counts.
+		@return the computed counts.
 	*/
 	public float[][][] getCounts()
 	{	return counts;
