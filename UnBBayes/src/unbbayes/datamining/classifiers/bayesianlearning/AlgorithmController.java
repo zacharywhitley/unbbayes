@@ -26,35 +26,82 @@ public class AlgorithmController {
 
     //testes
     ParametricLearning x = new ParametricLearning(instanceSet);
-    /*int[] pai = new int[2];
-    pai[0]=1;
-    pai[1]=2;
-    int [][] xibungo = x.computeNijk(0,pai);*/
 
-    int[] array = new int[1];
+	K2 k2 = new K2(x);    
+    double ghReturn = 0;
+    
+    int[] array = new int[2];
+    array[0]=1;
+    array[1]=3;
+    ghReturn = k2.gh(instanceSet.getAttribute(4),array);
+    System.out.println("gh = "+ghReturn);
+    array = new int[2];
+    array[0]=3;
+    array[1]=1;
+    ghReturn = k2.gh(instanceSet.getAttribute(4),array);
+    System.out.println("gh = "+ghReturn);
+    array = new int[1];
+    array[0]=3;
+    ghReturn = k2.gh(instanceSet.getAttribute(4),array);
+    System.out.println("gh = "+ghReturn);
+    array = new int[1];
+    array[0]=1;
+    ghReturn = k2.gh(instanceSet.getAttribute(4),array);
+    System.out.println("gh = "+ghReturn);
+    array = new int[2];
+    array[0]=3;
+    array[1]=6;
+    ghReturn = k2.gh(instanceSet.getAttribute(4),array);
+    System.out.println("gh = "+ghReturn);
+    array = new int[2];
+    array[0]=6;
+    array[1]=3;
+    ghReturn = k2.gh(instanceSet.getAttribute(4),array);
+    System.out.println("gh = "+ghReturn);
+    array = new int[2];
+    array[0]=1;
+    array[1]=6;
+    ghReturn = k2.gh(instanceSet.getAttribute(4),array);
+    System.out.println("gh = "+ghReturn);
+    array = new int[2];
+    array[0]=6;
+    array[1]=1;
+    ghReturn = k2.gh(instanceSet.getAttribute(4),array);
+    System.out.println("gh = "+ghReturn);
+        
+    // weather
+    /*array = new int[1];
     array[0]=4;
     ArrayList xumbrega = new ArrayList();
-    //xumbrega.add(new int[0]);   //pa[0]
     xumbrega.add(array);   //pa[0]
     xumbrega.add(array);   //pa[1]
     xumbrega.add(array);   //pa[2]
     xumbrega.add(array);        //pa[3]
-    xumbrega.add(new int[0]);        //pa[4]
-    //xumbrega = x.prob(xumbrega);
+    xumbrega.add(new int[0]);        //pa[4]*/
+    ArrayList xumbrega = new ArrayList();
+    xumbrega.add(new int[0]);   //pa[0] asias
+    array = new int[1];
+    array[0]=0;
+    xumbrega.add(array);   //pa[1] tuber
+    xumbrega.add(new int[0]);   //pa[2] fumante
+    array = new int[1];
+    array[0]=2;
+    xumbrega.add(array);        //pa[3] cancer
+    array = new int[2];
+    array[0]=1;
+    array[1]=3;
+    xumbrega.add(array);  //pa[4] tborca
+    array = new int[1];
+    array[0]=4;
+    xumbrega.add(array);        //pa[5] xray
+    array = new int[1];
+    array[0]=2;
+    xumbrega.add(array);        //pa[6] bronq
+    array = new int[2];
+    array[0]=6;
+    array[1]=4;
+    xumbrega.add(array);        //pa[7] disp    
     
-    /*for (int i=0;i<xumbrega.size();i++)
-    {
-    	float[][] pjk = (float[][])xumbrega.get(i);
-    	System.out.println("variável i");
-    	for (int j=0;j<pjk.length;j++)
-    	{
-    		for (int k=0;k<pjk[j].length;k++)
-    		{
-    			System.out.println(pjk[j][k]);
-    		}
-    		System.out.println("mais");    		
-    	}    	
-    }*/
 
     ProbabilisticNetwork net = x.getProbabilisticNetwork(xumbrega);
 
