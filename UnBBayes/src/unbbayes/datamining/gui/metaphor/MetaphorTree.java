@@ -1,5 +1,6 @@
 package unbbayes.datamining.gui.metaphor;
 
+import java.util.*;
 import javax.swing.*;
 import javax.swing.tree.*;
 import unbbayes.jprs.jbn.*;
@@ -9,18 +10,17 @@ import unbbayes.util.*;
  * @author Paulo F. Duarte
  */
 public class MetaphorTree extends JTree {
+    public static final int CHECK_YES = 1;
+    public static final int CHECK_NO = -1;
+    public static final int CHECK_EMPTY = 0;
+
 	private class StateObject {
 	    private int stateIndex = -1;
-	    private int check = 0;
-	    
-	    public StateObject() {
-	    }
+	    private int check = CHECK_EMPTY;
 	
-	    public StateObject(Node node, int stateIndex, int check, boolean showProbability) {
-	        this.node = node;
+	    public StateObject(int stateIndex, int check) {
 	        this.stateIndex = stateIndex;
 	        this.check = check;
-	        this.showProbability = showProbability;
 	    }
 
 	    public int getStateIndex() {
@@ -38,26 +38,12 @@ public class MetaphorTree extends JTree {
 	    public void setCheck(int check) {
 	        this.check = check;
 	    }
-	    
-	    public String toString() {
-	        if (node != null && stateIndex > -1) {
-	            String result = node.getStateAt(stateIndex);
-	            if (showProbability) {
-	                result += ": " + NumberFormat.getInstance(Locale.US).format(((TreeVariable)node).getMarginalAt(stateIndex) * 100.0) + "%";
-	            }
-	            return result;
-	        }
-	        return "";
-	    }
 	}
-
-    public static final int CHECK_YES = 1;
-    public static final int CHECK_NO = -1;
-    public static final int CHECK_EMPTY = 0;
 
 	private DefaultMutableTreeNode root = null;
 	private ProbabilisticNetwork net = null;
-    boolean showProbability = false;
+    private boolean showProbability = false;
+    private ArrayList rowObjectsList = new ArrayList();
 
 	public MetaphorTree() {
 		super(new DefaultMutableTreeNode(null));
@@ -75,13 +61,14 @@ public class MetaphorTree extends JTree {
 	public void setProbabilisticNetwork(ProbabilisticNetwork net) {
 		if (net != null && net.equals(this.net)) {
 			this.net = net;
+			int row = 1;
 	        NodeList nos = net.getCopiaNos();
 	        root.removeAllChildren();
 	        for (int i = 0; i < nos.size(); i++) {
 	            Node node = (Node) nos.get(i);
 	            DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(node);
 	            for (int j = 0; j < node.getStatesSize(); j++) {
-	                treeNode.add(new DefaultMutableTreeNode(new StateObject(node, j, CHECK_EMPTY, true)));
+	                treeNode.add(new DefaultMutableTreeNode(new StateObject(j, CHECK_EMPTY)));
 	            }
 	            root.add(treeNode);
 	        }
