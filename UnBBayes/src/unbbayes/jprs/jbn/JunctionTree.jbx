@@ -1,0 +1,11 @@
+[PropertyInfo]
+cliques,List,false,false, , ,true,<default>
+coordSep,int[][][],false,false, , ,false,<default>
+n,double,false,false, , ,true,<default>
+separators,List,false,false, , ,false,<default>
+separatorsSize,int,false,false, , ,true,<default>
+[IconNames]
+
+
+
+
