@@ -22,8 +22,6 @@ public class CBLA extends CBLToolkit{
 	public CBLA(NodeList variables, byte[][] dataBase, int[] vector,
 	             long caseNumber, String param, boolean compacted){
 	    this.variablesVector = variables;
-	    double epsilon;
-	    TVariavel variable;
         this.separators = new ArrayList();	    
 	    this.es = new ArrayList();	    	    
 	    this.variablesVector = variables;

@@ -82,9 +82,9 @@ public class TextMode {
 			System.exit(1);
 		}
 
-		double likelihood[] = new double[auxVP.getStatesSize()];
-		likelihood[0] = 1.0;
-		likelihood[1] = 0.8;
+		float likelihood[] = new float[auxVP.getStatesSize()];
+		likelihood[0] = 1;
+		likelihood[1] = 0.8f;
 
 		auxVP.addLikeliHood(likelihood);
 

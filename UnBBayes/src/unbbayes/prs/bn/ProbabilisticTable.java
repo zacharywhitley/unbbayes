@@ -62,11 +62,11 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
             noCol *= auxNo.getStatesSize();
         }
 
-        double soma;
+        float soma;
         for (int j = 0; j < noCol; j++) {
-            soma = 0.0;
+            soma = 0;
             for (int i = 0; i < noLin; i++) {
-                soma += dados.data[j * noLin + i] * 100.0;
+                soma += dados.data[j * noLin + i] * 100;
             }
 
             if (Math.abs(soma - 100.0) > 0.01) {

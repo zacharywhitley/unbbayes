@@ -59,7 +59,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
     protected NodeList variaveis;
 
     /**
-     * Dados armazenados em forma de lista do tipo primitivo double
+     * Dados armazenados em forma de lista do tipo primitivo float
      */
     protected DoubleCollection dados;
     
@@ -380,7 +380,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      * @param tab table to operate.
      * @param operator operator to use, defined in this class constants.
      */
-    public void directOpTab(PotentialTable tab, int operator) {
+    public final void directOpTab(PotentialTable tab, int operator) {
         if (tableSize() != tab.tableSize()) {
             throw new RuntimeException(resource.getString("TableSizeException"));
         }
@@ -418,7 +418,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      *@param  operator  operador a ser utilizado, definido pelas
      *                  constantes desta classe.
      */
-    public void opTab(PotentialTable tab, int operator) {    	
+    public final void opTab(PotentialTable tab, int operator) {    	
         int[] index = new int[variaveis.size()];
         for (int c = variaveis.size()-1; c >= 0; c--) {
         	index[c] = tab.variaveis.indexOf(variaveis.get(c));

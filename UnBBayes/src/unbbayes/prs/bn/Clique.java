@@ -101,7 +101,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
      *@param  ok      vetor boolean de tamanho 1 para passar parametro por referência.
      *@return         constante de normalização.
      */
-    protected double normalize() throws Exception {
+    protected float normalize() throws Exception {
         boolean fixo[] = new boolean[nos.size()];
         NodeList decisoes = new NodeList();
         for (int i = 0; i < nos.size(); i++) {        	
@@ -121,7 +121,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
         }
         normalizeID(0, decisoes, fixo, index, new int[nos.size()]);
         /** @todo retornar a constante de normalizacao correta */
-        return 0.0;
+        return 0;
     }
 
     private float normalizeBN() throws Exception {

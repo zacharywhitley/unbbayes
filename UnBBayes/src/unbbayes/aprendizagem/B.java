@@ -41,11 +41,10 @@ public class B extends BToolkit{
   public B(NodeList variables, byte[][] dataBase, int[] vector, long caseNumber,
                 String metric, String param, boolean compacted){  
     TVariavel variable;
-    TVariavel aux;
     NodeList parentsAux;
     double gi;
     double gj;
-    double variation;
+//    double variation;
     this.compacted = compacted;
     this.dataBase = dataBase;
     this.vector = vector;
@@ -56,7 +55,7 @@ public class B extends BToolkit{
     int IJVector[] = new int[2];    
     try{
         setMetric(metric);
-        variation = Math.pow(10,Integer.parseInt(param));       
+//        variation = Math.pow(10,Integer.parseInt(param));       
         gMatrix = getGMatrix();
         constructGMatrix();                
         IJVector = maxMatrix();

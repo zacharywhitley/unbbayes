@@ -298,7 +298,7 @@ public class ProbabilisticNetwork
 	/**
 	 *  Faz o processo de moralização da rede.
 	 */
-	private void moraliza() {
+	public void moraliza() {
 		Node auxNo;
 		Node auxPai1;
 		Node auxPai2;
@@ -509,7 +509,7 @@ public class ProbabilisticNetwork
 	 *
 	 *@return    probabilidade estimada total da árvore de junção associada.
 	 */
-	public double PET() {
+	public float PET() {
 		return junctionTree.getN();
 	}
 

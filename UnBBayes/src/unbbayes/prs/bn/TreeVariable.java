@@ -33,9 +33,9 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     protected ITabledVariable cliqueAssociado;
 
     // Armazena marginais e evidências.
-    protected double[] marginais;
+    protected float[] marginais;
     
-    private double[] marginalCopy;
+    private float[] marginalCopy;
 
     private int evidence = -1;
 
@@ -47,7 +47,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     
     void copyMarginal() {
     	int size = marginais.length;
-    	marginalCopy = new double[size];
+    	marginalCopy = new float[size];
     	System.arraycopy(marginais, 0, marginalCopy, 0, size);
     }
     
@@ -62,11 +62,11 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      *@param index returna a marginal do estado especificado pelo parâmetro <code>index</code>
      *@return    valor da marginal de determinado índice.
      */
-    public double getMarginalAt(int index) {
+    public float getMarginalAt(int index) {
         return marginais[index];
     }
 
-    void setMarginalAt(int index, double value) {
+    void setMarginalAt(int index, float value) {
         marginais[index] = value;
     }
 
@@ -99,9 +99,9 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      * @param stateNo índice do estado a ser adicionado o finding.
      */
     public void addFinding(int stateNo) {
-        double[] likelihood = new double[getStatesSize()];
+        float[] likelihood = new float[getStatesSize()];
         evidence = stateNo;
-        likelihood[stateNo] = 1.0;
+        likelihood[stateNo] = 1;
         addLikeliHood(likelihood);
     }
 
@@ -110,7 +110,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      *
      * @param valores array contendo o likelihood de cada estado da variável.
      */
-    public void addLikeliHood(double valores[]) {
+    public void addLikeliHood(float valores[]) {
         for (int i = 0; i < getStatesSize(); i++) {
             setMarginalAt(i, valores[i]);
         }

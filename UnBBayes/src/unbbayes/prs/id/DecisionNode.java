@@ -59,7 +59,7 @@ public class DecisionNode extends TreeVariable implements java.io.Serializable {
         cloned.setExplanationDescription(this.getExplanationDescription());
         cloned.setPhrasesMap(this.getPhrasesMap());
         cloned.setInformationType(this.getInformationType());
-        double[] marginais = new double[super.marginais.length];
+        float[] marginais = new float[super.marginais.length];
         System.arraycopy(super.marginais, 0, marginais, 0, marginais.length);
         cloned.marginais = marginais;
         
@@ -80,7 +80,7 @@ public class DecisionNode extends TreeVariable implements java.io.Serializable {
     }
 
     protected void marginal() {
-        marginais = new double[getStatesSize()];
+        marginais = new float[getStatesSize()];
         PotentialTable auxTab = (PotentialTable)((Clique)cliqueAssociado).getUtilityTable().clone();
         auxTab.directOpTab(cliqueAssociado.getPotentialTable(), PotentialTable.PRODUCT_OPERATOR);
         int index = auxTab.indexOfVariable(this);

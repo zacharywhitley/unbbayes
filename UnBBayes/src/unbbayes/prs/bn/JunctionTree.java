@@ -40,7 +40,7 @@ public class JunctionTree implements java.io.Serializable {
 	/**
 	 *  Probabilidade total estimada.
 	 */
-	private double n;
+	private float n;
 
 	/**
 	 *  Lista de Cliques Associados.
@@ -72,7 +72,7 @@ public class JunctionTree implements java.io.Serializable {
 	 *
 	 * @return probabilidade total estimada
 	 */
-	public double getN() {
+	public float getN() {
 		return n;
 	}
 	
@@ -115,7 +115,7 @@ public class JunctionTree implements java.io.Serializable {
 	 *  Aplica o algoritmo Colete seguido do Distribua no clique raiz da árvore.
 	 */
 	void consistencia() throws Exception {
-		n = 1.0;
+		n = 1;
 		Clique raiz = (Clique) cliques.get(0);
 		coleteEvidencia(raiz);
 		distribuaEvidencia(raiz);
@@ -179,63 +179,8 @@ public class JunctionTree implements java.io.Serializable {
 			originalSeparatorTable,
 			PotentialTable.DIVISION_OPERATOR);
 		clique1.getPotentialTable().opTab(dummyTable, PotentialTable.PRODUCT_OPERATOR);
-
-		/*
-		Separator separator = getSeparator(clique1, clique2);
-		int indSep = separators.indexOf(separator);
-		PotentialTable originalSeparatorPotentialTable = (PotentialTable) separator.getTabelaPot().clone();
-		int sizeDados = originalSeparatorPotentialTable.tableSize();
-		int sizeNosSeparator = separator.getNos().size();
-		List toDie = SetToolkit.clone(clique2.getNos());
-		toDie.removeAll(separator.getNos());
-		
-		int divisor = 1;
-		for (int i = 0 ; i < toDie.size(); i++) {
-		    Node node = toDie.get(i);
-		    if (node instanceof DecisionNode) {
-		        divisor *= node.getStatesSize();
-		    }
-		}
-		
-		int indexList[] = new int[sizeNosSeparator];
-		for (int k = 0; k < sizeNosSeparator; k++) {
-		    int index = clique2.getNos().indexOf(separator.getNos().get(k));
-		    indexList[k] = index;
-		}
-		
-		int coordAux[] = new int[clique2.getNos().size()];
-		for (int i = 0; i < sizeDados; i++) {
-		    for (int k = 0; k < sizeNosSeparator; k++) {
-		        coordAux[indexList[k]] = coordSep[indSep][i][k];
-		    }
-		
-		    double soma = calcularSoma(0, coordAux, toDie, clique2.getTabelaPot()) / divisor;
-		    separator.getTabelaPot().setValue(i, soma);
-		}
-		
-		PotentialTable dummyTable = (PotentialTable) separator.getTabelaPot().clone();
-		dummyTable.directOpTab(originalSeparatorPotentialTable, PotentialTable.DIVISION_OPERATOR);
-		clique1.getTabelaPot().opTab(dummyTable, PotentialTable.PRODUCT_OPERATOR);
-		*/
 	}
 
-	/*
-	private double calcularSoma(int index, int coord[], List toDie, PotentialTable potTable) {
-	    if (index >= toDie.size()) {
-	        return potTable.getValue(coord);
-	    }
-	
-	    double retorno = 0.0;
-	
-	    Node node = toDie.get(index);
-	    int indexVariable = potTable.indexOfVariable(node);
-	    for (int i = node.getStatesSize()-1; i >= 0; i--) {
-	        coord[indexVariable] = i;
-	        retorno += calcularSoma(index+1, coord, toDie, potTable);
-	    }
-	    return retorno;
-	}
-	*/
 
 	/**
 	 *  Inicia crenças da árvore.
@@ -371,7 +316,7 @@ public class JunctionTree implements java.io.Serializable {
 	 * Sets the n.
 	 * @param n The n to set
 	 */
-	public void setN(double n) {
+	public void setN(float n) {
 		this.n = n;
 	}
 
