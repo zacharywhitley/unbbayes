@@ -157,30 +157,6 @@ public class NeuralModelMain extends JInternalFrame{
         combinatorialNetwork = netConstructor.generateNetwork();
 
 
-/*//////////////////////
-        Hashtable comb = combinatorialNetwork.getCombinatorialLayer();
-        Enumeration combEnum = comb.elements();
-        CombinatorialNeuron combNeuron;
-        InputNeuron[] inputList;
-
-        String out;
-
-        while(combEnum.hasMoreElements()){
-          combNeuron = (CombinatorialNeuron)combEnum.nextElement();
-          inputList = combNeuron.getInputList();
-
-          out = new String("chave: " + combNeuron.getKey() + "entradas: ");
-
-          for(int i=0; i<inputList.length; i++){
-            out = out + "input " + i + ": att = " + inputList[i].getAttributeIndex() + " valor = " + inputList[i].getValue();
-            System.out.println(out);
-            out = new String("chave: " + combNeuron.getKey() + "entradas: ");
-          }
-        }
-
-*///////////////////////
-
-
         rulesPanel.setRulesPanel(combinatorialNetwork, inst);
         jTabbedPane1.setEnabledAt(1,true);
         jTabbedPane1.setSelectedIndex(1);
