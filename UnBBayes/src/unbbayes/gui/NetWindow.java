@@ -49,6 +49,7 @@ public class NetWindow extends JPanel {
 	private CardLayout carta;
 	private NetWindowEdition netEdition;
 	private NetWindowCompilation netCompilation;
+        private HierarchicDefinitionPanel hierarchyPanel;
 
     private static NetWindow singleton = null;
 
@@ -100,11 +101,13 @@ public class NetWindow extends JPanel {
 
 		netEdition = new NetWindowEdition(net, this, controller);
 		netCompilation = new NetWindowCompilation(net, this, controller);
+                hierarchyPanel = new HierarchicDefinitionPanel(net, this);
 
 		//contentPane.add(netEdition, "netEdition");
 		//contentPane.add(netCompilation, "netCompilation");
 		add(netEdition, "netEdition");
 		add(netCompilation, "netCompilation");
+                add(hierarchyPanel,"hierarchy");
 
 		// inicia com a tela de edicao de rede(NetEdition)
 		netEdition.getCenterPanel().setBottomComponent(jspGraph);
@@ -282,7 +285,7 @@ public class NetWindow extends JPanel {
 		netCompilation.getEvidenceTree().setRootVisible(false);
 
 		bCompiled = true;
-		
+
 		controller.changeToNetCompilation();
 
 		carta.show(this, "netCompilation");
@@ -302,13 +305,24 @@ public class NetWindow extends JPanel {
 		netEdition.setStatus(status.getText());
 
 		bCompiled = false;
-		
+
 		controller.changeToNetEdition();
 
 		carta.show(this, "netEdition");
 
 
 	}
+
+        /**
+         * Método responsável por fazer as alterações necessárias para a mudar da
+         * tela de edição para a tela de definição da hierarquia.
+         */
+        public void changeToHierarchy() {
+
+          hierarchyPanel.updateExplanationTree();
+          carta.show(this,"hierarchy");
+
+        }
 
 	/**
 	 * Retorna se a janela que esta aparecendo esta em modo de edicao(false)
@@ -339,9 +353,9 @@ public class NetWindow extends JPanel {
 	public NetWindowCompilation getNetWindowCompilation() {
 		return this.netCompilation;
 	}
-	
+
 	public WindowController getWindowController(){
-		return controller;				
+		return controller;
 	}
 
 }

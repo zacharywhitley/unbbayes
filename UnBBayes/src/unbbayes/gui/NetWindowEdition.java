@@ -56,6 +56,7 @@ public class NetWindowEdition extends JPanel {
     private final JButton saveNetImage;
     private final JButton saveTableImage;
     private final JButton globalOption;
+    private final JButton hierarchy;
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
@@ -99,10 +100,10 @@ public class NetWindowEdition extends JPanel {
         saveNetImage      = new JButton(new ImageIcon(getClass().getResource("/icons/save-net.gif")));
         saveTableImage    = new JButton(new ImageIcon(getClass().getResource("/icons/save-table.gif")));
         globalOption      = new JButton(new ImageIcon(getClass().getResource("/icons/global-options.gif")));
-
+        hierarchy         = new JButton(new ImageIcon(getClass().getResource("/icons/hierarchy.gif")));
 
         //setar tooltip para esses botões
-		compile.setToolTipText(resource.getString("compileToolTip"));
+        compile.setToolTipText(resource.getString("compileToolTip"));
         more.setToolTipText(resource.getString("moreToolTip"));
         less.setToolTipText(resource.getString("lessToolTip"));
         arc.setToolTipText(resource.getString("arcToolTip"));
@@ -117,6 +118,7 @@ public class NetWindowEdition extends JPanel {
         saveNetImage.setToolTipText(resource.getString("saveNetImageToolTip"));
         saveTableImage.setToolTipText(resource.getString("saveTableImageToolTip"));
         globalOption.setToolTipText(resource.getString("globalOptionTitle"));
+        hierarchy.setToolTipText(resource.getString("hierarchyToolTip"));
 
         //ao clicar no botão globalOption, mostra-se o menu para escolha das opções
         globalOption.addActionListener(new ActionListener() {
@@ -126,6 +128,13 @@ public class NetWindowEdition extends JPanel {
                 go.setVisible(true);
                 netWindow.getIGraph().update();
                 setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
+
+        //ao clicar no botão hierarchy, chama-se a tela para definição de hierarquia
+        hierarchy.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                netWindow.changeToHierarchy();
             }
         });
 
@@ -331,6 +340,7 @@ public class NetWindowEdition extends JPanel {
         jtbEdition.addSeparator();
 
         jtbEdition.add(globalOption);
+        jtbEdition.add(hierarchy);
 
         topPanel.add(jtbEdition);
 
