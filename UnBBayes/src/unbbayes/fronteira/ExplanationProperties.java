@@ -98,6 +98,8 @@ public class ExplanationProperties extends JDialog
   private BorderLayout borderLayout19 = new BorderLayout();
   private JTextArea jTextArea2 = new JTextArea();
   private NetWindow netWindow;
+  private ProbabilisticNode node;
+  private JButton jButton2 = new JButton();
 
   public ExplanationProperties(NetWindow netWindow)
   { this.netWindow = netWindow;
@@ -120,6 +122,9 @@ public class ExplanationProperties extends JDialog
     this.setResizable(false);
     this.setTitle("Propriedades da Variável de Explicação");
     jPanel1.setLayout(borderLayout1);
+    jButton1.setMaximumSize(new Dimension(85, 27));
+    jButton1.setMinimumSize(new Dimension(85, 27));
+    jButton1.setPreferredSize(new Dimension(85, 27));
     jButton1.setText("OK");
     jButton1.addActionListener(new java.awt.event.ActionListener()
     {
@@ -171,6 +176,14 @@ public class ExplanationProperties extends JDialog
     jPanel15.setLayout(borderLayout19);
     borderLayout10.setVgap(5);
     borderLayout9.setVgap(10);
+    jButton2.setText("Cancelar");
+    jButton2.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jButton2_actionPerformed(e);
+      }
+    });
     this.getContentPane().add(jPanel1,  BorderLayout.CENTER);
     jPanel1.add(jTabbedPane1,  BorderLayout.CENTER);
     jTabbedPane1.add(descriptionPanel, "Descrição");
@@ -188,6 +201,7 @@ public class ExplanationProperties extends JDialog
     jTabbedPane1.add(explanationPanel, "Explanação");
     jPanel1.add(jPanel2,  BorderLayout.SOUTH);
     jPanel2.add(jButton1, null);
+    jPanel2.add(jButton2, null);
     explanationPanel.add(jPanel3,  BorderLayout.CENTER);
     jPanel3.add(jPanel12, null);
     jPanel12.add(jPanel13, BorderLayout.CENTER);
@@ -219,10 +233,17 @@ public class ExplanationProperties extends JDialog
   }
 
   public void setProbabilisticNode(ProbabilisticNode node)
-  {
+  {   this.node = node;
+      jTextArea1.setText(node.getExplanationDescription());
   }
 
   void jButton1_actionPerformed(ActionEvent e)
+  {   System.out.println(jTextArea1.getText());
+      node.setExplanationDescription(jTextArea1.getText());
+      dispose();
+  }
+
+  void jButton2_actionPerformed(ActionEvent e)
   {   dispose();
   }
 }

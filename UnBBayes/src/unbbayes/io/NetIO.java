@@ -66,7 +66,7 @@ public class NetIO implements BaseIO {
 
 		st.wordChars('A', 'Z');
 		st.wordChars('a', '}');
-		st.wordChars('\u00A0', '\u00FF');
+		st.wordChars('\u00A0', '\u00FF'); // letras com acentos
                 st.wordChars('_', '_');
 		st.wordChars('-', '-');
 		st.wordChars('0', '9');
@@ -264,7 +264,9 @@ public class NetIO implements BaseIO {
 					+ (int) net.getRadius()
 					+ ");");
 			arq.println("     name = \"" + net.getName() + "\";");
-                        arq.println("     tree = \"" + saveHierarchicTree(net.getHierarchicTree()) + "\";");
+                        String tree = saveHierarchicTree(net.getHierarchicTree());
+                        if (tree != null)
+                            arq.println("     tree = \"" + tree + "\";");
                         arq.println("     HR_Color_Utility = \"" + 10 + "\";");
 			arq.println("     HR_Color_Decision = \"" + 30 + "\";");
 			arq.println("}");
@@ -304,6 +306,9 @@ public class NetIO implements BaseIO {
 					arq.println(
 						"     states = (" + auxString.toString() + ");");
 				}
+                                if (!auxNo1.getExplanationDescription().equals(""))
+                                {   arq.println("     %descricao \"" + auxNo1.getExplanationDescription() + "\"");
+                                }
 
 				arq.println("}");
 				arq.println();

@@ -35,17 +35,8 @@ import unbbayes.util.*;
  *@author     Michael e Rommel
  */
 public abstract class Node implements java.io.Serializable {
-        /*public static final int EXPLANATION_NODE = 0;
-    public static final int INFORMATION_NODE = 1;
-    public static final int TRIGGER_TYPE = 2;
-    public static final int EXCLUSIVE_TYPE = 3;
-    public static final int COMPLEMENTARY_TYPE = 4;
-    public static final int NECESSARY_TYPE = 5;
-    public static final int NA_TYPE = 6;
-    private int nodeType;
-    private int evidenceType; */
 
-    public static class ExplanationPhrase implements java.io.Serializable {
+    /*public static class ExplanationPhrase implements java.io.Serializable {
         public static final String TRIGGER_TYPE = "TRI";
         public static final String COMPLEMENTARY_TYPE = "COM";
         public static final String NA_TYPE = "N/A";
@@ -62,7 +53,7 @@ public abstract class Node implements java.io.Serializable {
             this.strPhrase = strPhrase;
             this.type = type;
         }
-    }
+    }*/
     public class SerializablePoint2D extends Point2D.Double implements java.io.Serializable {
     	private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
     		out.writeDouble(x);
