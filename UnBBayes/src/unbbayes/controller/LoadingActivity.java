@@ -16,9 +16,10 @@ public class LoadingActivity extends Thread
 	private int target;
 	/** Data used for the loadings */
 	private IProgress progress;
+	/** Says if the progress was cancelled by the user */
 	private boolean cancel;
 	
-	//---------------------------------------------------------------------//
+	//--------------------------------------------------------------------//
 	
 	/**
    	* Creates a new instance of this class based on a loader
@@ -33,7 +34,7 @@ public class LoadingActivity extends Thread
 		cancel=false;
 	}
 	
-	//---------------------------------------------------------------------//
+	//--------------------------------------------------------------------//
 	
 	/**
    	* Gets the position of the last instance loaded
@@ -59,12 +60,25 @@ public class LoadingActivity extends Thread
 	
 	//-------------------------------------------------------------------//
 	
+	/**
+   	* Changes the status of the activity to cancelled by user
+   	*/
 	public void requestCancel()
 	{
 		cancel=true;
 	}
 	
-	//	-------------------------------------------------------------------//
+	//-------------------------------------------------------------------//
+	
+	/**
+   	* Returns if the the activity was cancelled by user or not
+   	*/
+	public boolean wasActivityCancelled()
+	{
+		return cancel;
+	}
+	
+	//-------------------------------------------------------------------//
 	
 	/**
    	* Starts the loading

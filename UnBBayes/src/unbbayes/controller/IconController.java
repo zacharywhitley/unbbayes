@@ -14,59 +14,59 @@ import javax.swing.ImageIcon;
 public class IconController
 {
   private static IconController singleton;
-  protected ImageIcon metalIcon = new ImageIcon(getClass().getResource("/icons/metal.gif"));
-  protected ImageIcon motifIcon = new ImageIcon(getClass().getResource("/icons/motif.gif"));
-  protected ImageIcon windowsIcon = new ImageIcon(getClass().getResource("/icons/windows.gif"));
-  protected ImageIcon cascadeIcon = new ImageIcon(getClass().getResource("/icons/cascade.gif"));
-  protected ImageIcon tileIcon = new ImageIcon(getClass().getResource("/icons/tile.gif"));
-  protected ImageIcon helpIcon = new ImageIcon(getClass().getResource("/icons/help.gif"));
-  protected ImageIcon globalOptionIcon = new ImageIcon(getClass().getResource("/icons/global-options.gif"));
-  protected ImageIcon printIcon = new ImageIcon(getClass().getResource("/icons/print.gif"));
-  protected ImageIcon visualizeIcon = new ImageIcon(getClass().getResource("/icons/visualize.gif"));
-  protected ImageIcon openIcon = new ImageIcon(getClass().getResource("/icons/open.gif"));
-  protected ImageIcon compileIcon = new ImageIcon(getClass().getResource("/icons/learn.gif"));
-  protected ImageIcon saveIcon = new ImageIcon(getClass().getResource("/icons/save.gif"));
-  protected ImageIcon returnIcon = new ImageIcon(getClass().getResource("/icons/return.gif"));
-  protected ImageIcon openMetaphorIcon = new ImageIcon(getClass().getResource("/icons/open-metaphor.gif"));
-  protected ImageIcon saveMetaphorIcon = new ImageIcon(getClass().getResource("/icons/save-metaphor.gif"));
-  protected ImageIcon diagnosticMetaphorIcon = new ImageIcon(getClass().getResource("/icons/diagnostic-metaphor.gif"));
-  protected ImageIcon openMetaphorRollOverIcon = new ImageIcon(getClass().getResource("/icons/opens-metaphor.gif"));
-  protected ImageIcon saveMetaphorRollOverIcon = new ImageIcon(getClass().getResource("/icons/saves-metaphor.gif"));
-  protected ImageIcon diagnosticMetaphorRollOverIcon = new ImageIcon(getClass().getResource("/icons/diagnostics-metaphor.gif"));
-  protected ImageIcon yesStateIcon = new ImageIcon(getClass().getResource("/icons/yes-state.gif"));
-  protected ImageIcon noStateIcon = new ImageIcon(getClass().getResource("/icons/no-state.gif"));
-  protected ImageIcon emptyStateIcon = new ImageIcon(getClass().getResource("/icons/empty-state.gif"));
-  protected ImageIcon moreIcon = new ImageIcon(getClass().getResource("/icons/more.gif"));
-  protected ImageIcon lessIcon = new ImageIcon(getClass().getResource("/icons/less.gif"));
-  protected ImageIcon folderSmallIcon = new ImageIcon(getClass().getResource("/icons/folder-small.gif"));
-  protected ImageIcon colapseIcon = new ImageIcon(getClass().getResource("/icons/contract-nodes.gif"));
-  protected ImageIcon expandIcon = new ImageIcon(getClass().getResource("/icons/expand-nodes.gif"));
-  protected ImageIcon propagateIcon = new ImageIcon(getClass().getResource("/icons/propagate.gif"));
-  protected ImageIcon printTableIcon = new ImageIcon(getClass().getResource("/icons/print-table.gif"));
-  protected ImageIcon printPreviewTableIcon = new ImageIcon(getClass().getResource("/icons/preview-table.gif"));
-  protected ImageIcon arcIcon = new ImageIcon(getClass().getResource("/icons/arc.gif"));
-  protected ImageIcon printNetIcon = new ImageIcon(getClass().getResource("/icons/print-net.gif"));
-  protected ImageIcon printPreviewNetIcon = new ImageIcon(getClass().getResource("/icons/preview-print.gif"));
-  protected ImageIcon saveNetIcon = new ImageIcon(getClass().getResource("/icons/save-net.gif"));
-  protected ImageIcon folderSmallDisabledIcon = new ImageIcon(getClass().getResource("/icons/folder-small-disabled.gif"));
-  protected ImageIcon yellowBallIcon = new ImageIcon(getClass().getResource("/icons/yellow-ball.gif"));
-  protected ImageIcon greenBallIcon = new ImageIcon(getClass().getResource("/icons/green-ball.gif"));
-  protected ImageIcon arffFileIcon = new ImageIcon(getClass().getResource("/icons/arff-file.gif"));
-  protected ImageIcon txtFileIcon = new ImageIcon(getClass().getResource("/icons/txt-file.gif"));
-  protected ImageIcon netFileIcon = new ImageIcon(getClass().getResource("/icons/net-file.gif"));
-  protected ImageIcon deleteFolderIcon = new ImageIcon(getClass().getResource("/icons/delete-folder.gif"));
-  protected ImageIcon renameFolderIcon = new ImageIcon(getClass().getResource("/icons/rename-folder.gif"));
-  protected ImageIcon addFolderIcon = new ImageIcon(getClass().getResource("/icons/add-folder.gif"));
-  protected ImageIcon editIcon = new ImageIcon(getClass().getResource("/icons/edit.gif"));
-  protected ImageIcon newIcon = new ImageIcon(getClass().getResource("/icons/new.gif"));
-  protected ImageIcon informationIcon = new ImageIcon(getClass().getResource("/icons/information.gif"));
-  protected ImageIcon initializeIcon = new ImageIcon(getClass().getResource("/icons/initialize.gif"));
-  protected ImageIcon ellipsisIcon = new ImageIcon(getClass().getResource("/icons/ellipsis.gif"));
-  protected ImageIcon decisionNodeIcon = new ImageIcon(getClass().getResource("/icons/decision-node.gif"));
-  protected ImageIcon utilityNodeIcon = new ImageIcon(getClass().getResource("/icons/utility-node.gif"));
-  protected ImageIcon selectionIcon = new ImageIcon(getClass().getResource("/icons/selection.gif"));
-  protected ImageIcon saveTableIcon = new ImageIcon(getClass().getResource("/icons/save-table.gif"));
-  protected ImageIcon hierarchyIcon = new ImageIcon(getClass().getResource("/icons/hierarchy.gif"));
+  protected ImageIcon metalIcon;
+  protected ImageIcon motifIcon;
+  protected ImageIcon windowsIcon;
+  protected ImageIcon cascadeIcon;
+  protected ImageIcon tileIcon;
+  protected ImageIcon helpIcon;
+  protected ImageIcon globalOptionIcon;
+  protected ImageIcon printIcon;
+  protected ImageIcon visualizeIcon;
+  protected ImageIcon openIcon;
+  protected ImageIcon compileIcon;
+  protected ImageIcon saveIcon;
+  protected ImageIcon returnIcon;
+  protected ImageIcon openMetaphorIcon;
+  protected ImageIcon saveMetaphorIcon;
+  protected ImageIcon diagnosticMetaphorIcon;
+  protected ImageIcon openMetaphorRollOverIcon;
+  protected ImageIcon saveMetaphorRollOverIcon;
+  protected ImageIcon diagnosticMetaphorRollOverIcon;
+  protected ImageIcon yesStateIcon;
+  protected ImageIcon noStateIcon;
+  protected ImageIcon emptyStateIcon;
+  protected ImageIcon moreIcon;
+  protected ImageIcon lessIcon;
+  protected ImageIcon folderSmallIcon;
+  protected ImageIcon colapseIcon;
+  protected ImageIcon expandIcon;
+  protected ImageIcon propagateIcon;
+  protected ImageIcon printTableIcon;
+  protected ImageIcon printPreviewTableIcon;
+  protected ImageIcon arcIcon;
+  protected ImageIcon printNetIcon;
+  protected ImageIcon printPreviewNetIcon;
+  protected ImageIcon saveNetIcon;
+  protected ImageIcon folderSmallDisabledIcon;
+  protected ImageIcon yellowBallIcon;
+  protected ImageIcon greenBallIcon;
+  protected ImageIcon arffFileIcon;
+  protected ImageIcon txtFileIcon;
+  protected ImageIcon netFileIcon;
+  protected ImageIcon deleteFolderIcon;
+  protected ImageIcon renameFolderIcon;
+  protected ImageIcon addFolderIcon;
+  protected ImageIcon editIcon;
+  protected ImageIcon newIcon;
+  protected ImageIcon informationIcon;
+  protected ImageIcon initializeIcon;
+  protected ImageIcon ellipsisIcon;
+  protected ImageIcon decisionNodeIcon;
+  protected ImageIcon utilityNodeIcon;
+  protected ImageIcon selectionIcon;
+  protected ImageIcon saveTableIcon;
+  protected ImageIcon hierarchyIcon;
 
   public static IconController getInstance()
     {   if (singleton == null)
@@ -79,146 +79,597 @@ public class IconController
   protected IconController() {
   }
 
-  public ImageIcon getMetalIcon(){ return metalIcon;}
-  public ImageIcon getMotifIcon(){ return motifIcon;}
-  public ImageIcon getWindowsIcon(){ return windowsIcon;}
-  public ImageIcon getCascadeIcon(){ return cascadeIcon;}
-  public ImageIcon getTileIcon(){ return tileIcon;}
-  public ImageIcon getHelpIcon(){ return helpIcon;}
-  public ImageIcon getGlobalOptionIcon(){ return globalOptionIcon;}
-  public ImageIcon getPrintIcon(){ return printIcon;}
-  public ImageIcon getVisualizeIcon() { return visualizeIcon;}
+  public ImageIcon getMetalIcon()
+  {
+    if (metalIcon!=null)
+    {
+      return metalIcon;
+    }
+    else
+    {
+      metalIcon = new ImageIcon(getClass().getResource("/icons/metal.gif"));
+      return metalIcon;
+    }
+  }
+  public ImageIcon getMotifIcon()
+  {
+    if (motifIcon!=null)
+    {
+      return motifIcon;
+    }
+    else
+    {
+      motifIcon = new ImageIcon(getClass().getResource("/icons/motif.gif"));
+      return motifIcon;
+    }
+  }
+  public ImageIcon getWindowsIcon()
+  {
+    if (windowsIcon!=null)
+    {
+      return windowsIcon;
+    }
+    else
+    {
+      windowsIcon = new ImageIcon(getClass().getResource("/icons/windows.gif"));
+      return windowsIcon;
+    }
+  }
+  public ImageIcon getCascadeIcon()
+  {
+    if (cascadeIcon!=null)
+    {
+      return cascadeIcon;
+    }
+    else
+    {
+      cascadeIcon = new ImageIcon(getClass().getResource("/icons/cascade.gif"));
+      return cascadeIcon;
+    }
+  }
+  public ImageIcon getTileIcon()
+  {
+    if (tileIcon!=null)
+    {
+      return tileIcon;
+    }
+    else
+    {
+      tileIcon = new ImageIcon(getClass().getResource("/icons/tile.gif"));
+      return tileIcon;
+    }
+  }
+  public ImageIcon getHelpIcon()
+  {
+    if (helpIcon!=null)
+    {
+      return helpIcon;
+    }
+    else
+    {
+      helpIcon = new ImageIcon(getClass().getResource("/icons/help.gif"));
+      return helpIcon;
+    }
+  }
+  public ImageIcon getGlobalOptionIcon()
+  {
+    if (globalOptionIcon!=null)
+    {
+      return globalOptionIcon;
+    }
+    else
+    {
+      globalOptionIcon = new ImageIcon(getClass().getResource("/icons/global-options.gif"));
+      return globalOptionIcon;
+    }
+  }
+  public ImageIcon getPrintIcon()
+  {
+    if (printIcon!=null)
+    {
+      return printIcon;
+    }
+    else
+    {
+      printIcon = new ImageIcon(getClass().getResource("/icons/print.gif"));
+      return printIcon;
+    }
+  }
+  public ImageIcon getVisualizeIcon()
+  {
+    if (visualizeIcon!=null)
+    {
+      return visualizeIcon;
+    }
+    else
+    {
+      visualizeIcon = new ImageIcon(getClass().getResource("/icons/visualize.gif"));
+      return visualizeIcon;
+    }
+  }
   public ImageIcon getCompileIcon() {
-    return compileIcon;
+    if (compileIcon!=null)
+    {
+      return compileIcon;
+    }
+    else
+    {
+      compileIcon = new ImageIcon(getClass().getResource("/icons/learn.gif"));
+      return compileIcon;
+    }
   }
   public ImageIcon getOpenIcon() {
-    return openIcon;
+    if (openIcon!=null)
+    {
+      return openIcon;
+    }
+    else
+    {
+      openIcon = new ImageIcon(getClass().getResource("/icons/open.gif"));
+      return openIcon;
+    }
   }
   public ImageIcon getSaveIcon() {
-    return saveIcon;
+    if (saveIcon!=null)
+    {
+      return saveIcon;
+    }
+    else
+    {
+      saveIcon = new ImageIcon(getClass().getResource("/icons/save.gif"));
+      return saveIcon;
+    }
   }
   public ImageIcon getReturnIcon() {
-    return returnIcon;
+    if (returnIcon!=null)
+    {
+      return returnIcon;
+    }
+    else
+    {
+      returnIcon = new ImageIcon(getClass().getResource("/icons/return.gif"));
+      return returnIcon;
+    }
   }
   public ImageIcon getDiagnosticMetaphorIcon() {
-    return diagnosticMetaphorIcon;
+    if (diagnosticMetaphorIcon!=null)
+    {
+      return diagnosticMetaphorIcon;
+    }
+    else
+    {
+      diagnosticMetaphorIcon = new ImageIcon(getClass().getResource("/icons/diagnostic-metaphor.gif"));
+      return diagnosticMetaphorIcon;
+    }
   }
   public ImageIcon getDiagnosticMetaphorRollOverIcon() {
-    return diagnosticMetaphorRollOverIcon;
+    if (diagnosticMetaphorRollOverIcon!=null)
+    {
+      return diagnosticMetaphorRollOverIcon;
+    }
+    else
+    {
+      diagnosticMetaphorRollOverIcon = new ImageIcon(getClass().getResource("/icons/diagnostics-metaphor.gif"));
+      return diagnosticMetaphorRollOverIcon;
+    }
   }
   public ImageIcon getOpenMetaphorIcon() {
-    return openMetaphorIcon;
+    if (openMetaphorIcon!=null)
+    {
+      return openMetaphorIcon;
+    }
+    else
+    {
+      openMetaphorIcon = new ImageIcon(getClass().getResource("/icons/open-metaphor.gif"));
+      return openMetaphorIcon;
+    }
   }
   public ImageIcon getOpenMetaphorRollOverIcon() {
-    return openMetaphorRollOverIcon;
+    if (openMetaphorRollOverIcon!=null)
+    {
+      return openMetaphorRollOverIcon;
+    }
+    else
+    {
+      openMetaphorRollOverIcon = new ImageIcon(getClass().getResource("/icons/opens-metaphor.gif"));
+      return openMetaphorRollOverIcon;
+    }
   }
   public ImageIcon getSaveMetaphorIcon() {
-    return saveMetaphorIcon;
+    if (saveMetaphorIcon!=null)
+    {
+      return saveMetaphorIcon;
+    }
+    else
+    {
+      saveMetaphorIcon = new ImageIcon(getClass().getResource("/icons/save-metaphor.gif"));
+      return saveMetaphorIcon;
+    }
   }
   public ImageIcon getSaveMetaphorRollOverIcon() {
-    return saveMetaphorRollOverIcon;
+    if (saveMetaphorRollOverIcon!=null)
+    {
+      return saveMetaphorRollOverIcon;
+    }
+    else
+    {
+      saveMetaphorRollOverIcon = new ImageIcon(getClass().getResource("/icons/saves-metaphor.gif"));
+      return saveMetaphorRollOverIcon;
+    }
   }
   public ImageIcon getEmptyStateIcon() {
-    return emptyStateIcon;
+    if (emptyStateIcon!=null)
+    {
+      return emptyStateIcon;
+    }
+    else
+    {
+      emptyStateIcon = new ImageIcon(getClass().getResource("/icons/empty-state.gif"));
+      return emptyStateIcon;
+    }
   }
   public ImageIcon getFolderSmallIcon() {
-    return folderSmallIcon;
+    if (folderSmallIcon!=null)
+    {
+      return folderSmallIcon;
+    }
+    else
+    {
+      folderSmallIcon = new ImageIcon(getClass().getResource("/icons/folder-small.gif"));
+      return folderSmallIcon;
+    }
   }
   public ImageIcon getMoreIcon() {
-    return moreIcon;
+    if (moreIcon!=null)
+    {
+      return moreIcon;
+    }
+    else
+    {
+      moreIcon = new ImageIcon(getClass().getResource("/icons/more.gif"));
+      return moreIcon;
+    }
   }
   public ImageIcon getNoStateIcon() {
-    return noStateIcon;
+    if (noStateIcon!=null)
+    {
+      return noStateIcon;
+    }
+    else
+    {
+      noStateIcon = new ImageIcon(getClass().getResource("/icons/no-state.gif"));
+      return noStateIcon;
+    }
   }
   public ImageIcon getYesStateIcon() {
-    return yesStateIcon;
+    if (yesStateIcon!=null)
+    {
+      return yesStateIcon;
+    }
+    else
+    {
+      yesStateIcon = new ImageIcon(getClass().getResource("/icons/yes-state.gif"));
+      return yesStateIcon;
+    }
   }
   public ImageIcon getColapseIcon() {
-    return colapseIcon;
+    if (colapseIcon!=null)
+    {
+      return colapseIcon;
+    }
+    else
+    {
+      colapseIcon = new ImageIcon(getClass().getResource("/icons/contract-nodes.gif"));
+      return colapseIcon;
+    }
   }
   public ImageIcon getExpandIcon() {
-    return expandIcon;
+    if (expandIcon!=null)
+    {
+      return expandIcon;
+    }
+    else
+    {
+      expandIcon = new ImageIcon(getClass().getResource("/icons/expand-nodes.gif"));
+      return expandIcon;
+    }
   }
   public ImageIcon getPropagateIcon() {
-    return propagateIcon;
+    if (propagateIcon!=null)
+    {
+      return propagateIcon;
+    }
+    else
+    {
+      propagateIcon = new ImageIcon(getClass().getResource("/icons/propagate.gif"));
+      return propagateIcon;
+    }
   }
   public ImageIcon getPrintPreviewTableIcon() {
-    return printPreviewTableIcon;
+    if (printPreviewTableIcon!=null)
+    {
+      return printPreviewTableIcon;
+    }
+    else
+    {
+      printPreviewTableIcon = new ImageIcon(getClass().getResource("/icons/preview-table.gif"));
+      return printPreviewTableIcon;
+    }
   }
   public ImageIcon getPrintTableIcon() {
-    return printTableIcon;
+    if (printTableIcon!=null)
+    {
+      return printTableIcon;
+    }
+    else
+    {
+      printTableIcon = new ImageIcon(getClass().getResource("/icons/print-table.gif"));
+      return printTableIcon;
+    }
   }
   public ImageIcon getArcIcon() {
-    return arcIcon;
+    if (arcIcon!=null)
+    {
+      return arcIcon;
+    }
+    else
+    {
+      arcIcon = new ImageIcon(getClass().getResource("/icons/arc.gif"));
+      return arcIcon;
+    }
   }
   public ImageIcon getPrintNetIcon() {
-    return printNetIcon;
+    if (printNetIcon!=null)
+    {
+      return printNetIcon;
+    }
+    else
+    {
+      printNetIcon = new ImageIcon(getClass().getResource("/icons/print-net.gif"));
+      return printNetIcon;
+    }
   }
   public ImageIcon getPrintPreviewNetIcon() {
-    return printPreviewNetIcon;
+    if (printPreviewNetIcon!=null)
+    {
+      return printPreviewNetIcon;
+    }
+    else
+    {
+      printPreviewNetIcon = new ImageIcon(getClass().getResource("/icons/preview-print.gif"));
+      return printPreviewNetIcon;
+    }
   }
   public ImageIcon getSaveNetIcon() {
-    return saveNetIcon;
+    if (saveNetIcon!=null)
+    {
+      return saveNetIcon;
+    }
+    else
+    {
+      saveNetIcon = new ImageIcon(getClass().getResource("/icons/save-net.gif"));
+      return saveNetIcon;
+    }
   }
   public ImageIcon getFolderSmallDisabledIcon() {
-    return folderSmallDisabledIcon;
+    if (folderSmallDisabledIcon!=null)
+    {
+      return folderSmallDisabledIcon;
+    }
+    else
+    {
+      folderSmallDisabledIcon = new ImageIcon(getClass().getResource("/icons/folder-small-disabled.gif"));
+      return folderSmallDisabledIcon;
+    }
   }
   public ImageIcon getGreenBallIcon() {
-    return greenBallIcon;
+    if (greenBallIcon!=null)
+    {
+      return greenBallIcon;
+    }
+    else
+    {
+      greenBallIcon = new ImageIcon(getClass().getResource("/icons/green-ball.gif"));
+      return greenBallIcon;
+    }
   }
   public ImageIcon getYellowBallIcon() {
-    return yellowBallIcon;
+    if (yellowBallIcon!=null)
+    {
+      return yellowBallIcon;
+    }
+    else
+    {
+      yellowBallIcon = new ImageIcon(getClass().getResource("/icons/yellow-ball.gif"));
+      return yellowBallIcon;
+    }
   }
   public ImageIcon getNetFileIcon() {
-    return netFileIcon;
+    if (netFileIcon!=null)
+    {
+      return netFileIcon;
+    }
+    else
+    {
+      netFileIcon = new ImageIcon(getClass().getResource("/icons/net-file.gif"));
+      return netFileIcon;
+    }
   }
   public ImageIcon getTxtFileIcon() {
-    return txtFileIcon;
+    if (txtFileIcon!=null)
+    {
+      return txtFileIcon;
+    }
+    else
+    {
+      txtFileIcon = new ImageIcon(getClass().getResource("/icons/txt-file.gif"));
+      return txtFileIcon;
+    }
   }
   public ImageIcon getArffFileIcon() {
-    return arffFileIcon;
+    if (arffFileIcon!=null)
+    {
+      return arffFileIcon;
+    }
+    else
+    {
+      arffFileIcon = new ImageIcon(getClass().getResource("/icons/arff-file.gif"));
+      return arffFileIcon;
+    }
   }
   public ImageIcon getAddFolderIcon() {
-    return addFolderIcon;
+    if (addFolderIcon!=null)
+    {
+      return addFolderIcon;
+    }
+    else
+    {
+      addFolderIcon = new ImageIcon(getClass().getResource("/icons/add-folder.gif"));
+      return addFolderIcon;
+    }
   }
   public ImageIcon getDeleteFolderIcon() {
-    return deleteFolderIcon;
+    if (deleteFolderIcon!=null)
+    {
+      return deleteFolderIcon;
+    }
+    else
+    {
+      deleteFolderIcon = new ImageIcon(getClass().getResource("/icons/delete-folder.gif"));
+      return deleteFolderIcon;
+    }
   }
   public ImageIcon getEditIcon() {
-    return editIcon;
+    if (editIcon!=null)
+    {
+      return editIcon;
+    }
+    else
+    {
+      editIcon = new ImageIcon(getClass().getResource("/icons/edit.gif"));
+      return editIcon;
+    }
   }
   public ImageIcon getRenameFolderIcon() {
-    return renameFolderIcon;
+    if (renameFolderIcon!=null)
+    {
+      return renameFolderIcon;
+    }
+    else
+    {
+      renameFolderIcon = new ImageIcon(getClass().getResource("/icons/rename-folder.gif"));
+      return renameFolderIcon;
+    }
   }
   public ImageIcon getNewIcon() {
-    return newIcon;
+    if (newIcon!=null)
+    {
+      return newIcon;
+    }
+    else
+    {
+      newIcon = new ImageIcon(getClass().getResource("/icons/new.gif"));
+      return newIcon;
+    }
+
   }
   public ImageIcon getLessIcon() {
-    return lessIcon;
+    if (lessIcon!=null)
+    {
+      return lessIcon;
+    }
+    else
+    {
+      lessIcon = new ImageIcon(getClass().getResource("/icons/less.gif"));
+      return lessIcon;
+    }
   }
   public ImageIcon getInformationIcon() {
-    return informationIcon;
+    if (informationIcon!=null)
+    {
+      return informationIcon;
+    }
+    else
+    {
+      informationIcon = new ImageIcon(getClass().getResource("/icons/information.gif"));
+      return informationIcon;
+    }
   }
   public ImageIcon getInitializeIcon() {
-    return initializeIcon;
+    if (initializeIcon!=null)
+    {
+      return initializeIcon;
+    }
+    else
+    {
+      initializeIcon = new ImageIcon(getClass().getResource("/icons/initialize.gif"));
+      return initializeIcon;
+    }
   }
   public ImageIcon getDecisionNodeIcon() {
-    return decisionNodeIcon;
+    if (decisionNodeIcon!=null)
+    {
+      return decisionNodeIcon;
+    }
+    else
+    {
+      decisionNodeIcon = new ImageIcon(getClass().getResource("/icons/decision-node.gif"));
+      return decisionNodeIcon;
+    }
   }
   public ImageIcon getEllipsisIcon() {
-    return ellipsisIcon;
+    if (ellipsisIcon!=null)
+    {
+      return ellipsisIcon;
+    }
+    else
+    {
+      ellipsisIcon = new ImageIcon(getClass().getResource("/icons/ellipsis.gif"));
+      return ellipsisIcon;
+    }
   }
   public ImageIcon getHierarchyIcon() {
-    return hierarchyIcon;
+    if (hierarchyIcon!=null)
+    {
+      return hierarchyIcon;
+    }
+    else
+    {
+      hierarchyIcon = new ImageIcon(getClass().getResource("/icons/hierarchy.gif"));
+      return hierarchyIcon;
+    }
   }
   public ImageIcon getSaveTableIcon() {
-    return saveTableIcon;
+    if (saveTableIcon!=null)
+    {
+      return saveTableIcon;
+    }
+    else
+    {
+      saveTableIcon = new ImageIcon(getClass().getResource("/icons/save-table.gif"));
+      return saveTableIcon;
+    }
   }
   public ImageIcon getSelectionIcon() {
-    return selectionIcon;
+    if (selectionIcon!=null)
+    {
+      return selectionIcon;
+    }
+    else
+    {
+      selectionIcon = new ImageIcon(getClass().getResource("/icons/selection.gif"));
+      return selectionIcon;
+    }
   }
   public ImageIcon getUtilityNodeIcon() {
-    return utilityNodeIcon;
+    if (utilityNodeIcon!=null)
+    {
+      return utilityNodeIcon;
+    }
+    else
+    {
+      utilityNodeIcon = new ImageIcon(getClass().getResource("/icons/utility-node.gif"));
+      return utilityNodeIcon;
+    }
   }
-
 }

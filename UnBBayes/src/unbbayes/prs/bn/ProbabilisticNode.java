@@ -64,10 +64,10 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
         for (int i = 0; i < getStatesSize(); i++) {
             no.appendState(getStateAt(i));
         }
-        no.setHeight(this.getHeight());
-        no.setDescriptionColor(this.getDescriptionColor().getRGB());
-        no.setExplanationColor(this.getExplanationColor().getRGB());
-        no.setWidth(this.getWidth());
+		ProbabilisticNode.setHeight(ProbabilisticNode.getHeight());
+		ProbabilisticNode.setDescriptionColor(ProbabilisticNode.getDescriptionColor().getRGB());
+		ProbabilisticNode.setExplanationColor(ProbabilisticNode.getExplanationColor().getRGB());
+		ProbabilisticNode.setWidth(ProbabilisticNode.getWidth());
         no.setPosition(this.getPosition().getX() + 1.3 * raio, this.getPosition().getY() + 1.3 * raio);
         no.setName(resource.getString("copyName") + this.getName());
         no.setDescription(resource.getString("copyName") + this.getDescription());
@@ -78,8 +78,8 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
     public Object clone() {
     	ProbabilisticNode cloned = new ProbabilisticNode();
     	cloned.tabelaPot = (ProbabilisticTable)this.tabelaPot.clone();
-		cloned.setDescriptionColor(this.getDescriptionColor().getRGB());
-		cloned.setExplanationColor(this.getExplanationColor().getRGB());
+		ProbabilisticNode.setDescriptionColor(ProbabilisticNode.getDescriptionColor().getRGB());
+		ProbabilisticNode.setExplanationColor(ProbabilisticNode.getExplanationColor().getRGB());
 		cloned.setDescription(this.getDescription());
 		cloned.setName(this.getName());
 		cloned.setPosition(this.getPosition().getX(), this.getPosition().getY());
@@ -88,8 +88,8 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
 		cloned.setStates(SetToolkit.clone(states));
 		cloned.setAdjacents(SetToolkit.clone(this.getAdjacents()));
 		cloned.setSelected(this.isSelected());
-		cloned.setHeight(this.getHeight());
-        cloned.setWidth(this.getWidth());
+		ProbabilisticNode.setHeight(ProbabilisticNode.getHeight());
+		ProbabilisticNode.setWidth(ProbabilisticNode.getWidth());
         cloned.setExplanationDescription(this.getExplanationDescription());
         cloned.setPhrasesMap(this.getPhrasesMap());
         cloned.setInformationType(this.getInformationType());

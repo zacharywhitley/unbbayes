@@ -1,6 +1,7 @@
 package unbbayes.test;
 
 import junit.framework.*;
+import junit.swingui.*;
 
 import unbbayes.datamining.datamanipulation.test.*;
 import unbbayes.prs.bn.test.*;
@@ -24,6 +25,6 @@ public class ProjectSuite extends TestCase {
 
   public static void main(String[] args)
   {
-    new junit.swingui.TestRunner().run(ProjectSuite.class);
+    TestRunner.run(ProjectSuite.class);
   }
 }

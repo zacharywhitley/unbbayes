@@ -284,7 +284,7 @@ public class InvokerMain extends JFrame
     this.setJMenuBar(jMenuBar1);
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     this.setSize(screenSize);
-    this.setTitle("Data Mining");
+    this.setTitle("UnBMiner");
     jMenu1.setText(resource.getString("selectProgram"));
     jMenuItem1.setText(resource.getString("instancesPreprocessor"));
     jMenuItem1.addActionListener(new java.awt.event.ActionListener()

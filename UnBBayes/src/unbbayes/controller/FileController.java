@@ -90,7 +90,7 @@ public class FileController
         
 		//starts loading and shows a status screen
 		ProgressDialog progressDialog = new ProgressDialog (f, loader);
-		progressDialog.start();
+		progressDialog.load();
 		
 		InstanceSet inst = loader.getInstances();
         

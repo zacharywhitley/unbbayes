@@ -48,6 +48,7 @@ public class ProgressDialog extends JDialog
 		///////////
 		min = 0;
 		max = progress.maxCount();
+		this.progress = progress;
 		///////////
 		progressBar = new JProgressBar(min,max);
 		panelProgress.add(progressBar);
@@ -91,14 +92,29 @@ public class ProgressDialog extends JDialog
 			});
 	}
 	
-	/** start the loading */
-	public void start()
+	/** start the loading 
+	 * @return boolean value indication if activity was terminated successfully or not
+	 * */
+	public boolean load()
 	{
-		activity.start();
-		activityMonitor.start();
-		show();
+		if(max>NEED_DIALOG_VALUE)
+		{
+			activity.start();
+			activityMonitor.start();
+			show();
+			return !activity.wasActivityCancelled();
+		}
+		else
+		{
+			while (progress.next());
+			return true;
+		}
 	}
-		
+	
+	//--------------------------------------------------------------------//
+	
+	public final int NEED_DIALOG_VALUE = 1000;
+	private IProgress progress;	
 	private Timer activityMonitor;
 	private LoadingActivity activity;
 	private JProgressBar progressBar;

@@ -76,7 +76,11 @@ public class Id3 extends DecisionTreeLearning implements Serializable
    	* @exception Exception if decision tree can't be built successfully
    	*/
   	protected void makeTree(InstanceSet data) throws Exception
-	{	// Check if no instances have reached this node.
+	{	
+		// Contains methods to compute information gain and related actions
+		Id3Utils utils = new Id3Utils();
+		
+		// Check if no instances have reached this node.
     	if (data.numInstances() == 0)
 		{	splitAttribute = null;
       		classValue = Instance.missingValue();
@@ -89,7 +93,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable
     	Enumeration attEnum = data.enumerateAttributes();
     	while (attEnum.hasMoreElements())
 		{	Attribute att = (Attribute) attEnum.nextElement();
-      		infoGains[att.getIndex()] = Utils.computeInfoGain(data, att);
+      		infoGains[att.getIndex()] = utils.computeInfoGain(data, att);
 		}
 
 		// Compute the information gain mean
@@ -98,7 +102,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable
 		for (int i=0; i<data.numAttributes(); i++)
 			if (infoGains[i] > meanInfoGains)
 			{	Attribute att = (Attribute) data.getAttribute(i);
-				infoGains[att.getIndex()] = Utils.computeGainRatio(data, att);
+				infoGains[att.getIndex()] = utils.computeGainRatio(data, att);
 			}
 
 		splitAttribute = data.getAttribute(Utils.maxIndex(infoGains));
@@ -120,7 +124,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable
       		classAttribute = data.getClassAttribute();
     	}
 		else
-		{	InstanceSet[] splitData = Utils.splitData(data, splitAttribute);
+		{	InstanceSet[] splitData = Id3Utils.splitData(data, splitAttribute);
       		successors = new Id3[splitAttribute.numValues()];
       		for (int j = 0; j < splitAttribute.numValues(); j++)
 			{	successors[j] = new Id3();

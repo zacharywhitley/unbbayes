@@ -9,10 +9,7 @@ import java.util.*;
  *  @version $1.0 $ (16/02/2002)
  */
 public final class Utils
-{ /** The natural logarithm of 2. */
-  public static double LOG2 = Math.log(2);
-
-  /** The small deviation allowed in double comparisons */
+{ /** The small deviation allowed in double comparisons */
   public static double SMALL = 1e-6;
 
   /** Load resource file from this package */
@@ -45,19 +42,6 @@ public final class Utils
    */
   public static boolean gr(double a,double b)
   {	return (a-b > SMALL);
-  }
-
-  /**
-   * Returns the logarithm for base 2 of a double value. Special cases:
-   * If the argument is NaN or less than zero, then the result is NaN.
-   * If the argument is positive infinity, then the result is positive infinity.
-   * If the argument is positive zero or negative zero, then the result is negative infinity.
-   *
-   * @param a - a number greater than 0.0.
-   * @return The value log2 a, the natural logarithm of a.
-   */
-  public static double log2(double a)
-  {	return Math.log(a) / LOG2;
   }
 
   /**
@@ -650,153 +634,6 @@ private static void quickSort(short[] array, int [] index, int lo0, int hi0)
       float[] resultArray2 = new float[j + 1];
       System.arraycopy(resultArray,0,resultArray2,0,resultArray2.length);
       return resultArray2;
-  }
-
-  /**
-   * Computes information gain for an attribute.
-   *
-   * @param data Data for which info gain is to be computed
-   * @param att Attribute
-   * @return Information gain for the given attribute and data
-   */
-  public static double computeInfoGain(InstanceSet data, Attribute att) throws Exception
-  {	int numInstances = data.numWeightedInstances();
-  	double infoGain = computeEntropy(data);
-	if (att.isNominal())
-	{	InstanceSet[] splitData = splitData(data, att);
-    	int numValues = att.numValues();
-		for (int j = 0; j < numValues; j++)
-  		{	int numInstancesSplit = splitData[j].numWeightedInstances();
-			if (numInstancesSplit > 0)
-  			{	infoGain -= ((double) numInstancesSplit / (double) numInstances) * computeEntropy(splitData[j]);
-			}
-    	}
-	}
-	else
-	{	//Get values and classes from numeric attribute
-		float[] values = new float[numInstances];
-        short[] classes = new short[numInstances];
-		Enumeration enumInst = data.enumerateInstances();
-        int i=0,j=0;
-        while (enumInst.hasMoreElements())
-        {   Instance instance = (Instance)enumInst.nextElement();
-           	values[i] = Float.parseFloat(instance.stringValue(att));
-			classes[i] = instance.classValue();
-       		i++;
-        }
-		//Sort values and classes
-		insertionSortInc(values,classes);
-
-		//Detect number of class changes
-		int numChanged = 0;
-		for(i=0; i<(values.length - 1); i++)
-			if (classes[i] != classes[i + 1])
-				numChanged++;
-
-		//Detect which is the class change
-		float[] changed = new float[numChanged];
-		for(i=0; i<(values.length - 1); i++)
-			if (classes[i] != classes[i + 1])
-			{	changed[j] = (values[i] + values[i + 1])/2;
-				j++;
-			}
-
-		//Compute entropy
-		double[] entropy = new double[numChanged];
-		for (j = 0; j < numChanged; j++)
-  		{	InstanceSet splitDataG = new InstanceSet(data, numInstances);
-			InstanceSet splitDataS = new InstanceSet(data, numInstances);
-			Enumeration instEnum = data.enumerateInstances();
-    		int numDataG=0,numDataS=0;
-			while (instEnum.hasMoreElements())
-  			{	Instance inst = (Instance) instEnum.nextElement();
-	      		float instanceValue = Float.parseFloat(inst.stringValue(att));
-				if (changed[j] > instanceValue)
-				{	splitDataG.add(inst);
-					numDataG++;
-				}
-				else
-				{	splitDataS.add(inst);
-					numDataS++;
-				}
-    		}
-			entropy[j] = (((double)numDataG / numInstances * computeEntropy(splitDataG)) + ((double)numDataS / numInstances * computeEntropy(splitDataS)));
-    	}
-		//Return original infoGain less minimum entropy
-		infoGain -= min(entropy);
-	}
-    return infoGain;
-  }
-
-  public static double computeGainRatio(InstanceSet data, Attribute att) throws Exception
-  {	// Compute split info
-  	int numInstances = data.numWeightedInstances();
-  	double splitInfo = 0;
-	if (att.isNominal())
-	{	InstanceSet[] splitData = splitData(data, att);
-    	int numValues = att.numValues();
-		for (int j = 0; j < numValues; j++)
-  		{	int numInstancesSplit = splitData[j].numWeightedInstances();
-			if (numInstancesSplit > 0)
-  			{	splitInfo += (-1 * ((double)numInstancesSplit/(double)numInstances) * log2((double)numInstancesSplit/(double)numInstances));
-			}
-    	}
-	}
-	// Compute gain ratio
-	double gainRatio;
-	if (splitInfo != 0)
-		gainRatio = computeInfoGain(data,att)/splitInfo;
-	else
-		gainRatio = computeInfoGain(data,att);
-	return gainRatio;
-  }
-
-  /**
-  * Computes the entropy of a dataset.
-  *
-  * @param data Data for which entropy is to be computed
-  * @return Entropy of the data's class distribution
-  */
-  public static double computeEntropy(InstanceSet data) throws Exception
-  {	double [] classCounts = new double[data.numClasses()];
-    Enumeration instEnum = data.enumerateInstances();
-    while (instEnum.hasMoreElements())
-  	{	Instance inst = (Instance) instEnum.nextElement();
-      	classCounts[(int) inst.classValue()] += inst.getWeight();
-    }
-    double entropy = 0;
-  	int numClasses = data.numClasses();
-    for (int j = 0; j < numClasses; j++)
-  	{	if (classCounts[j] > 0)
-  		{	entropy -= classCounts[j] * log2(classCounts[j]);
-      	}
-    }
-    int numWeightedInstances = data.numWeightedInstances();
-	entropy /= (double) numWeightedInstances;
-	return entropy + log2(numWeightedInstances);
-  }
-
-  /**
-   * Splits a dataset according to the values of an attribute.
-   *
-   * @param data Data which is to be split
-   * @param att Attribute to be used for splitting
-   * @return The sets of instances produced by the split
-   */
-  public static InstanceSet[] splitData(InstanceSet data, Attribute att)
-  {	int numInstances = data.numInstances();
-	InstanceSet[] splitData;
-  	int numValues = att.numValues();
-	splitData = new InstanceSet[numValues];
-	for (int j = 0; j < numValues; j++)
-  	{	splitData[j] = new InstanceSet(data, numInstances);
-  	}
-    Enumeration instEnum = data.enumerateInstances();
-    while (instEnum.hasMoreElements())
-  	{	Instance inst = (Instance) instEnum.nextElement();
-    	splitData[(int) inst.getValue(att)].add(inst);
-    }
-	return splitData;
   }
 
   /** Insertion sort incremental of an array of float. An array of short
