@@ -152,10 +152,11 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         arcColor = Color.black;
         selectionColor = Color.red;
         backColor = Color.white;
+        System.out.println(controller.getRede().getRadius());
 		if (controller.getRede().getRadius() > 40) {
             radius = 40;
 		} else if (controller.getRede().getRadius() < 10) {
-			radius = 10;
+			radius = 20;
 		} else {
 		    radius = controller.getRede().getRadius();
 		}
