@@ -17,7 +17,7 @@
     
       <td> <table width="100%" border="0" cellspacing="0" cellpadding="4" bgcolor="#CCCCCC">
           <font color="#FFFFFF">
-             <%= "Olá " + request.getAttribute("nome-usuario").trim() %>
+             <%= "Olá " + request.getAttribute("nome-usuario") %>
           </font>
         </table></td>
         
