@@ -58,7 +58,7 @@ public class GlobalOptions extends JDialog {
 	private JPanel northControllerSizePanel = new JPanel();
     private JPanel flowControllerColorPanel1;
     private JPanel flowControllerColorPanel2;
-    private JPanel decimalPatternPanel;
+//    private JPanel decimalPatternPanel;
     private JPanel radiusPanel;
     private JPanel netPanel;
     private JPanel confirmationPanel;
@@ -68,6 +68,7 @@ public class GlobalOptions extends JDialog {
     private JButton confirm;
     private JButton restore;
     private JButton cancel;
+    /*
     private ButtonGroup decimalGroup;
     private JRadioButtonMenuItem usa;
     private JRadioButtonMenuItem china;
@@ -77,6 +78,7 @@ public class GlobalOptions extends JDialog {
     private JRadioButtonMenuItem italy;
     private JRadioButtonMenuItem brazil;
     private JRadioButtonMenuItem korea;
+    */
     private Color probabilisticDescriptionNodeColor;
     private Color probabilisticExplanationNodeColor;
 	private Color decisionNodeColor;
@@ -109,7 +111,8 @@ public class GlobalOptions extends JDialog {
         setResizable(true);
         this.graph = gra;
         this.controller = con;
-
+		
+		/*
         decimalGroup = new ButtonGroup();
         usa          = new JRadioButtonMenuItem(resource.getString("usaName"));
         china        = new JRadioButtonMenuItem(resource.getString("chinaName"));
@@ -119,6 +122,7 @@ public class GlobalOptions extends JDialog {
         italy        = new JRadioButtonMenuItem(resource.getString("italyName"));
         brazil       = new JRadioButtonMenuItem(resource.getString("brazilName"));
         korea        = new JRadioButtonMenuItem(resource.getString("koreaName"));
+        */
         
         createLog = new JCheckBox(resource.getString("createLogLabel"));
 
@@ -157,7 +161,7 @@ public class GlobalOptions extends JDialog {
 		jtp                       = new JTabbedPane();
         radiusPanel               = new JPanel(gbl);
         netPanel                  = new JPanel(gbl);
-        decimalPatternPanel       = new JPanel(new GridLayout(4, 2));
+//        decimalPatternPanel       = new JPanel(new GridLayout(4, 2));
         confirmationPanel         = new JPanel(new FlowLayout(FlowLayout.CENTER));
         flowControllerColorPanel1 = new JPanel();
         flowControllerColorPanel2 = new JPanel();
@@ -383,6 +387,7 @@ public class GlobalOptions extends JDialog {
         radiusPanel.add(radiusSlider);
         netPanel.add(net);
         netPanel.add(netSlider);
+        /*
         decimalGroup.add(usa);
         decimalGroup.add(canada);
         decimalGroup.add(japan);
@@ -399,6 +404,7 @@ public class GlobalOptions extends JDialog {
         decimalPatternPanel.add(korea);
         decimalPatternPanel.add(uk);
         decimalPatternPanel.add(italy);
+        */
         flowControllerColorPanel1.add(probabilisticDescriptionNode);
         flowControllerColorPanel1.add(probabilisticExplanationNode);
 		flowControllerColorPanel1.add(decisionNode);
@@ -415,7 +421,8 @@ public class GlobalOptions extends JDialog {
 		controllerSizePanel.add(northControllerSizePanel,  BorderLayout.NORTH);
 		controllerSizePanel.add(new Preview(this),  BorderLayout.CENTER);
 		logPanel.add(createLog);
-		jtp.addTab(resource.getString("decimalPatternTab"), decimalPatternPanel);
+		
+//		jtp.addTab(resource.getString("decimalPatternTab"), decimalPatternPanel);
 		jtp.addTab(resource.getString("colorControllerTab"), controllerColorPanel);
 		jtp.addTab(resource.getString("sizeControllerTab"), controllerSizePanel);
 		jtp.addTab(resource.getString("logTab"), logPanel);
