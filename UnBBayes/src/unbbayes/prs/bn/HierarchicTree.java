@@ -17,6 +17,8 @@ import unbbayes.util.*;
 public class HierarchicTree extends JTree
 { private ProbabilisticNetwork net;
   private ArrayMap objectsMap = new ArrayMap();
+  public static final boolean EXPLANATION_TYPE = true;
+  public static final boolean DESCRIPTION_TYPE = false;
 
   public HierarchicTree(DefaultTreeModel model)
   {   super(model);
@@ -25,7 +27,7 @@ public class HierarchicTree extends JTree
       setCellRenderer(new HierarchicTreeCellRenderer());
 
       this.setRootVisible(false);
-      this.setEditable(true);
+      this.setEditable(false);
       this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
   }
 
@@ -53,30 +55,40 @@ public class HierarchicTree extends JTree
       }
   }
 
-  public void setProbabilisticNetwork(ProbabilisticNetwork net)
+  public void setProbabilisticNetwork(ProbabilisticNetwork net,boolean nodeType)
   {   DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
 
       if (net != null)
-      {   if (!net.equals(this.net))
-          {   this.net = net;
-              objectsMap.clear();
-              NodeList nos = net.getDescriptionNodes();
-              int size = nos.size();
-              for (int i = 0; i < size; i++)
-              {   Node node = (Node) nos.get(i);
-                  DefaultMutableTreeNode treeNode = findUserObject(node.getDescription(),root);
-                  if (treeNode != null)
-                  {   objectsMap.put(treeNode, node);
-                  }
-                  else
-                  {   DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(node.getDescription());
-                      objectsMap.put(newNode, node);
-                      root.add(newNode);
-                  }
-              }
+      {
+        this.net = net;
+        objectsMap.clear();
+        NodeList nos;
+        if (nodeType == EXPLANATION_TYPE)
+        {
+          nos = net.getExplanationNodes();
+        }
+        else
+        {
+          nos = net.getDescriptionNodes();
+        }
+        int size = nos.size();
+        for (int i = 0; i < size; i++)
+        {
+          Node node = (Node) nos.get(i);
+          DefaultMutableTreeNode treeNode = findUserObject(node.getDescription(),root);
+          if (treeNode != null)
+          {
+            objectsMap.put(treeNode, node);
           }
+          else
+          {
+            DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(node.getDescription());
+            objectsMap.put(newNode, node);
+            root.add(newNode);
+          }
+        }
+        ((DefaultTreeModel)getModel()).reload(root);
       }
-      ((DefaultTreeModel)getModel()).reload(root);
   }
 
   private DefaultMutableTreeNode findUserObject(String treeNode,DefaultMutableTreeNode root)

@@ -11,7 +11,6 @@ import unbbayes.controller.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.gui.decisiontree.*;
 import unbbayes.datamining.gui.evaluation.*;
-import unbbayes.datamining.gui.explanation.*;
 import unbbayes.datamining.gui.metaphor.*;
 import unbbayes.datamining.gui.naivebayes.*;
 import unbbayes.datamining.gui.preprocessor.*;
@@ -53,7 +52,6 @@ public class InvokerMain extends JFrame
   private String defaultLaf = "Windows";
   /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
-  private JMenuItem jMenuItem6 = new JMenuItem();
   private JMenuItem jMenuItem13 = new JMenuItem();
   private JMenuItem jMenuItem14 = new JMenuItem();
   private JToolBar jToolBar1 = new JToolBar();
@@ -199,14 +197,6 @@ public class InvokerMain extends JFrame
         jMenuItem5_actionPerformed(e);
       }
     });
-    jMenuItem6.setText("Explanation");
-    jMenuItem6.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jMenuItem6_actionPerformed(e);
-      }
-    });
     jMenuItem13.setText("Metaphor");
     jMenuItem13.addActionListener(new java.awt.event.ActionListener()
     {
@@ -302,7 +292,6 @@ public class InvokerMain extends JFrame
     jMenu1.add(jMenuItem2);
     jMenu1.add(jMenuItem3);
     jMenu1.add(jMenuItem4);
-    jMenu1.add(jMenuItem6);
     jMenu1.add(jMenuItem13);
     jMenu1.add(jMenuItem14);
     jMenu5.add(jMenuItem7);
@@ -497,13 +486,6 @@ public class InvokerMain extends JFrame
   {   GlobalOptions options = new GlobalOptions();
       options.setDefaultOptions(Options.getInstance().getNumberStatesAllowed(),Options.getInstance().getConfidenceLimit(),defaultLanguage,defaultLaf);
       desktop.add(options);
-  }
-
-  void jMenuItem6_actionPerformed(ActionEvent e)
-  {   ExplanationMain metaphor = new ExplanationMain();
-      JInternalFrame jif = new JInternalFrame("Explanation", true, true, true, true);
-      jif.getContentPane().add(metaphor);
-      desktop.add(jif);
   }
 
   void jMenuItem13_actionPerformed(ActionEvent e)
