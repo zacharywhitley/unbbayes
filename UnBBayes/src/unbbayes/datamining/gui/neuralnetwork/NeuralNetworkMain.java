@@ -4,12 +4,12 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.awt.*;
 
-import java.util.*;
+//import java.util.*;
 import java.io.*;
 import javax.swing.border.*;
 import unbbayes.controller.IconController;
 import unbbayes.datamining.gui.*;
-import unbbayes.datamining.classifiers.*;
+//import unbbayes.datamining.classifiers.*;
 
 
 public class NeuralNetworkMain extends JInternalFrame {
@@ -35,7 +35,7 @@ public class NeuralNetworkMain extends JInternalFrame {
   private JPanel settingsPanel = new JPanel();
   private BorderLayout borderLayout1 = new BorderLayout();
   private BorderLayout borderLayout2 = new BorderLayout();
-  protected JPanel optionsPanel = new OptionsPanel();
+  protected OptionsPanel optionsPanel = new OptionsPanel();
   private NeuralNetworkController controller;
   protected AttributePanel attributePanel;
 
@@ -144,6 +144,7 @@ public class NeuralNetworkMain extends JInternalFrame {
       controller.learn();
     } catch (Exception ex){
       statusBar.setText(/*resource.getString*/("exception") + " " + ex.getMessage());
+      ex.printStackTrace();//////////////////////////////////////////////////////////////////////
     }
 
 //    jTabbedPane1.setEnabledAt(1,true);

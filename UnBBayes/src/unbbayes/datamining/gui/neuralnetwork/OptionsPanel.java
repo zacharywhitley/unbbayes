@@ -117,8 +117,8 @@ public class OptionsPanel extends JPanel {
     return Float.parseFloat(fieldMomentum.getText());
   }
 
-  public float getTrainingTime() throws NumberFormatException{
-    return Float.parseFloat(fieldTrainningTime.getText());
+  public String getTrainingTime(){
+    return fieldTrainningTime.getText();
   }
 
   public int getHiddenLayerSize() throws NumberFormatException{

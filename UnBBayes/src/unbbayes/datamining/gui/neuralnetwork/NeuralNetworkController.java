@@ -3,7 +3,7 @@ package unbbayes.datamining.gui.neuralnetwork;
 
 import java.awt.*;
 import java.io.*;
-import java.util.*;
+//import java.util.*;
 //import java.awt.print.*;
 import javax.swing.*;
 import unbbayes.controller.*;
@@ -14,7 +14,7 @@ import unbbayes.gui.*;
 
 public class NeuralNetworkController {
 
-//  private CombinatorialNeuralModel cnm = null;
+  private NeuralNetwork bpn = null;
 //  private ResourceBundle resource;
   private NeuralNetworkMain mainScreen;
   private JFileChooser fileChooser;
@@ -48,17 +48,21 @@ public class NeuralNetworkController {
 
 
   public void learn() throws Exception{
-    int maxOrder;
-    int confidence;
-    int support;
+    float learningRate;
+    float momentum;
+    int hiddenSize;
+    String trainningTime;  // não usado por enquanto
+    int activationFunction;
 
     mainScreen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
     if(instanceSet != null){
-//      maxOrder = mainScreen.optionsPanel.getMaxOrder();
-//      confidence = mainScreen.optionsPanel.getConfidence();
-//      support = mainScreen.optionsPanel.getSupport();
-//      cnm = new CombinatorialNeuralModel(maxOrder);
-//      cnm.buildClassifier(instanceSet);
+      learningRate = mainScreen.optionsPanel.getLearningRate();
+      momentum = mainScreen.optionsPanel.getMomentum();
+      hiddenSize = mainScreen.optionsPanel.getHiddenLayerSize();
+      trainningTime = mainScreen.optionsPanel.getTrainingTime();
+      activationFunction = mainScreen.optionsPanel.getSelectedActivationFunction();
+      bpn = new NeuralNetwork(learningRate, momentum, hiddenSize, activationFunction);
+      bpn.buildClassifier(instanceSet);
     }
     mainScreen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
@@ -105,19 +109,19 @@ public class NeuralNetworkController {
 
   public boolean saveModel() throws Exception{
     mainScreen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-    String[] annString = {"ann"};   //artificial neural network
+    String[] bpnString = {"bpn"};   //artificial neural network
     boolean success = false;
     fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
 //    fileChooser.setDialogTitle(resource.getString("saveModel2"));
     fileChooser.setMultiSelectionEnabled(false);
-    fileChooser.setFileView(new FileIcon(mainScreen));
-    fileChooser.addChoosableFileFilter(new SimpleFileFilter(annString, "Neural Network (*.ann)"));
+//    fileChooser.setFileView(new FileIcon(mainScreen));
+    fileChooser.addChoosableFileFilter(new SimpleFileFilter(bpnString, "Neural Network (*.bpn)"));
     int returnVal = fileChooser.showSaveDialog(mainScreen);
     if (returnVal == JFileChooser.APPROVE_OPTION) {
       File selectedFile = fileChooser.getSelectedFile();
       String fileName = selectedFile.getName();
-      if (!fileName.regionMatches(true, fileName.length() - 4, ".ann", 0, 4)) {
-        selectedFile = new File(selectedFile.getAbsolutePath() + ".ann");
+      if (!fileName.regionMatches(true, fileName.length() - 4, ".bpn", 0, 4)) {
+        selectedFile = new File(selectedFile.getAbsolutePath() + ".bpn");
       }
       ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(selectedFile));
 //      out.writeObject(cnm);           precisa arumar para salvar o modelo.
@@ -130,13 +134,13 @@ public class NeuralNetworkController {
 
   public boolean openModel() throws Exception{
     mainScreen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-    String[] neuralNetworkString = {"ann"};
+    String[] neuralNetworkString = {"bpn"};
     boolean success = false;
     fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
 //    fileChooser.setDialogTitle(resource.getString("openModel2"));
     fileChooser.setMultiSelectionEnabled(false);
     fileChooser.setFileView(new FileIcon(mainScreen));
-    fileChooser.addChoosableFileFilter(new SimpleFileFilter(neuralNetworkString, "Neural Network (*.ann)"));
+    fileChooser.addChoosableFileFilter(new SimpleFileFilter(neuralNetworkString, "Neural Network (*.bpn)"));
     int returnVal = fileChooser.showOpenDialog(mainScreen);
     if (returnVal == JFileChooser.APPROVE_OPTION) {
       File selectedFile = fileChooser.getSelectedFile();
