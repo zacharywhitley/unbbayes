@@ -12,7 +12,7 @@
 
    <mapID target="Data_Mining" url="HTML/Data_Mining.htm"/>
    <mapID target="Data_Mining_User_Interface" url="HTML/Data_Mining_User_Interface.htm"/>
-   <mapID target="Documentation" url="HTML/Documentation.htm"/>
+   <mapID target="Documentation" url="../documentacao/index.html"/>
 
 <!-- Index Bookmarks -->
 
