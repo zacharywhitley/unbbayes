@@ -11,6 +11,13 @@
 
 <%@include file =  "/design/cabecalho.jsp"%>
 
+<form action="listar-lancamento.jsp" method="post">
+		Data Hora Início: <input name="data-hora-inicio" type="text">
+		Data Hora Fim: <input name="data-hora-fim" type="text">
+		Abertos: <input name="abertos" type="checkbox" value="">
+		<input value="Processar" type="submit">
+</form>
+
         <tr>
           <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_lancamento.gif" width="174" border="0" hspace="20" alt="Histórico de Lançamentos"></td>
           <td>
