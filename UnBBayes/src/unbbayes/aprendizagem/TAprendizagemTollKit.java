@@ -1,6 +1,8 @@
 package unbbayes.aprendizagem;
 
 import java.util.*;
+
+import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -18,7 +20,7 @@ public abstract class TAprendizagemTollKit {
     protected byte[][] BaseDados;
     protected int[] vetor;
     protected int numeroCaso;
-    protected List vetorVariaveis;
+    protected NodeList vetorVariaveis;
 
     /**
      * Funçao de qualidade : Comparando essa função que é possivel decidir
@@ -31,7 +33,7 @@ public abstract class TAprendizagemTollKit {
      *@return double - Resultado da aplicaçào da função de qualidade
      *@see TVariavel
      */
-    public abstract double g(TVariavel variavel, List pais);
+    public abstract double g(TVariavel variavel, NodeList pais);
 
 
     /**
@@ -84,12 +86,12 @@ public abstract class TAprendizagemTollKit {
      *
      * @param variavel
      */
-    protected  int[][] calculaFrequencias(TVariavel variavel, List pais){
+    protected  int[][] calculaFrequencias(TVariavel variavel, NodeList pais){
         TVariavel variavelAux;
         int[][] ArrayNijk;
         int tamanhoPais, posicao;
         if(pais == null){
-           pais = new ArrayList();
+           pais = new NodeList();
         }
         tamanhoPais = (short)pais.size();
         if(tamanhoPais == 0){
@@ -152,7 +154,7 @@ public abstract class TAprendizagemTollKit {
         return ArrayNijk;
     }
 
-    protected List montaInstancias(List pais){
+    protected List montaInstancias(NodeList pais){
         List instancias = new ArrayList();
         List aux = new ArrayList();;
         TVariavel variavelAux;
@@ -199,7 +201,7 @@ public abstract class TAprendizagemTollKit {
     * @return int - Número de permutações
     * @see TVariavel
     */
-    protected int calculaQi(List pais){
+    protected int calculaQi(NodeList pais) {
         TVariavel variavel;
         int qi = 1;
         if(pais != null){
@@ -221,7 +223,7 @@ public abstract class TAprendizagemTollKit {
      * @return List - Vetor da diferença entre predecesores e pais
      * @see TVariavel
      */
-     protected List diferenca(List predecessores, List pais){
+     protected NodeList diferenca(NodeList predecessores, NodeList pais){
         TVariavel variavelAux;
         TVariavel variavelAux2;
         for (int i = 0 ;  i < predecessores.size(); i++ ){
@@ -244,9 +246,9 @@ public abstract class TAprendizagemTollKit {
      *  @return List - Vetor com a variável concatenada
      *  @see TVariavel
      */
-    protected List concatena(List pais, TVariavel z){
+    protected NodeList concatena(NodeList pais, TVariavel z){
         if (pais == null){
-            pais = new ArrayList();
+            pais = new NodeList();
         }
         pais.add(z);
         return pais;
@@ -269,7 +271,7 @@ public abstract class TAprendizagemTollKit {
      * @param vetor - Lista de variaveis (<code>List<code>)
      * @see TVariavel
      */
-    protected void montaEstruturaPredecessores(List vetor){
+    protected void montaEstruturaPredecessores(NodeList vetor){
         TVariavel variavelAux;
         int tamanho = vetor.size();
         for(int i = tamanho - 1; i > 0  ; i--){

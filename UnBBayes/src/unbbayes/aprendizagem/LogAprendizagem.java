@@ -1,6 +1,7 @@
 package unbbayes.aprendizagem;
 
 import javax.swing.*;
+import unbbayes.util.NodeList;
 import java.util.*;
 import java.awt.*;
 
@@ -22,7 +23,7 @@ public class LogAprendizagem extends JDialog{
         for(int i = 0 ; i < tamanho; i++){
                 TVariavel variavel = (TVariavel)variaveis.get(i);
                 caixaLog.append("Variável : "+variavel.getName()+"\n");
-                java.util.List pais = variavel.getPais();
+                NodeList pais = variavel.getPais();
                 for(int j = 0 ; j < pais.size(); j++){
                     TVariavel variavel2 = (TVariavel)pais.get(j);
                     int k = j+1;

@@ -22,6 +22,8 @@ package unbbayes.jprs.jbn;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -149,7 +151,7 @@ public class JunctionTree {
 
 	protected void absorve(Clique clique1, Clique clique2) {
 		Separator separator = getSeparator(clique1, clique2);
-		List toDie = SetToolkit.clone(clique2.getNos());
+		NodeList toDie = SetToolkit.clone(clique2.getNos());
 		toDie.removeAll(separator.getNos());
 
 		PotentialTable originalSeparatorTable =
@@ -157,7 +159,7 @@ public class JunctionTree {
 		PotentialTable dummyTable =
 			(PotentialTable) clique2.getPotentialTable().clone();
 		for (int i = 0; i < toDie.size(); i++) {
-			dummyTable.removeVariable((Node) toDie.get(i));
+			dummyTable.removeVariable(toDie.get(i));
 		}
 
 		for (int i = separator.getPotentialTable().tableSize() - 1; i >= 0; i--) {

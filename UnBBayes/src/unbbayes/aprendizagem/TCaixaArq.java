@@ -3,6 +3,8 @@ package unbbayes.aprendizagem;
 import java.awt.*;
 import java.util.*;
 import javax.swing.*;
+import unbbayes.util.NodeList;
+
 import java.awt.event.*;
 
 /**
@@ -15,7 +17,7 @@ import java.awt.event.*;
 
 public class TCaixaArq extends JDialog
 {
-    private java.util.List vetorVariaveis;
+    private NodeList vetorVariaveis;
     private JPanel painelCentro;
     private JButton ok;
     private JButton cancelar;
@@ -31,7 +33,7 @@ public class TCaixaArq extends JDialog
      * @see TVariavel
      * @see Container
      */
-    TCaixaArq(java.util.List vetorVariaveis){
+    TCaixaArq(NodeList vetorVariaveis){
         super(new Frame(), "", true);
         Container container = getContentPane();
         this.vetorVariaveis = vetorVariaveis;

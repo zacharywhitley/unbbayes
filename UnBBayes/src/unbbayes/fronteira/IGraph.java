@@ -31,6 +31,7 @@ import java.util.List;
 import javax.swing.*;
 import unbbayes.controlador.*;
 import unbbayes.jprs.jbn.*;
+import unbbayes.util.NodeList;
 
 /**
  *  Essa classe é responsável por desenhar a rede Bayesiana na tela. Ela extende a classe
@@ -47,7 +48,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
 
     private WindowController controller;
     private List arc;
-    private List node;
+    private NodeList node;
     private List selectedGroup;
     private Node presentNode;
     private Node movingNode;
@@ -100,7 +101,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         this.setSize(800, 600);
 
         arc = new ArrayList();
-        node = new ArrayList();
+        node = new NodeList();
         selectedGroup = new ArrayList();
         presentBeginArc = new Point2D.Double();
         presentEndArc = new Point2D.Double();
@@ -210,7 +211,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
      *@param  node  O novo valor para o no (<code>List</code>)
      *@see List
      */
-    public void setNode(List node) {
+    public void setNode(NodeList node) {
         this.node = node;
     }
 
@@ -384,7 +385,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         double y1;
 
         for (int i = 0; i < node.size(); i++) {
-            Node nodeAux = (Node) node.get(i);
+            Node nodeAux = node.get(i);
             x1 = nodeAux.getPosicao().getX();
             y1 = nodeAux.getPosicao().getY();
 

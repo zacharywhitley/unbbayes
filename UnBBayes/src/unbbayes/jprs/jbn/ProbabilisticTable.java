@@ -42,7 +42,7 @@ public class ProbabilisticTable extends PotentialTable {
      *                   qualquer configuração de estados dos pais.
      */
     public void verificaConsistencia() throws Exception {
-        Node auxNo = (Node) variaveis.get(0);
+        Node auxNo = variaveis.get(0);
         int noLin = auxNo.getStatesSize();
         int noCol = 1;
         int sizeVariaveis = variaveis.size();

@@ -3,6 +3,7 @@ package unbbayes.aprendizagem;
 import java.util.*;
 import unbbayes.controlador.MainController;
 import unbbayes.jprs.jbn.ProbabilisticNetwork;
+import unbbayes.util.NodeList;
 
 /**
  * Classe que implementa a métrica GHS para o algoritmo K2.
@@ -18,7 +19,7 @@ public class TAlgoritmoK2_GHS extends TAlgoritmoK2{
      * @see TAprendizagemTollKit
      */
 
-    TAlgoritmoK2_GHS(List variaveis, byte[][] BaseDados, int numeroCasos, int vetor[], int delta, ProbabilisticNetwork net){
+    TAlgoritmoK2_GHS(NodeList variaveis, byte[][] BaseDados, int numeroCasos, int vetor[], int delta, ProbabilisticNetwork net){
         CalculaAlgoritmoK2(variaveis,BaseDados,numeroCasos,vetor, delta, net);
     }
 	/*
@@ -30,7 +31,7 @@ public class TAlgoritmoK2_GHS extends TAlgoritmoK2{
     /**
      * @see TAprendizagemTollKit
      */
-    public double g(TVariavel variavel, List pais){/*
+    public double g(TVariavel variavel, NodeList pais){/*
         montarTabelaStirling();
         double somatorioRi = 0;
         double somatorioQi = 0;

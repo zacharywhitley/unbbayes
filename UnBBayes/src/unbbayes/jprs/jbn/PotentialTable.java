@@ -21,9 +21,16 @@
 
 package unbbayes.jprs.jbn;
 
-import java.util.*;
-import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JDialog;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import unbbayes.util.DoubleCollection;
+import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
+
 
 /**
  * Tabela de Potencial.
@@ -43,7 +50,7 @@ public abstract class PotentialTable implements Cloneable {
     /**
      * Variáveis que pertencem à tabela
      */
-    protected List variaveis;
+    protected NodeList variaveis;
 
     /**
      * Dados armazenados em forma de lista do tipo primitivo double
@@ -61,7 +68,7 @@ public abstract class PotentialTable implements Cloneable {
     public PotentialTable() {
         modified = true;
         dados = new DoubleCollection();
-        variaveis = new ArrayList();
+        variaveis = new NodeList();
     }
 
     /**
@@ -76,7 +83,7 @@ public abstract class PotentialTable implements Cloneable {
      *
      *@return    COPIA da lista de variaveis desta tabela.
      */
-    public List cloneVariables() {
+    public NodeList cloneVariables() {
         return SetToolkit.clone(variaveis);
     }
 
@@ -94,7 +101,7 @@ public abstract class PotentialTable implements Cloneable {
     }
 
     public Node getVariableAt(int index) {
-        return (Node)variaveis.get(index);
+        return variaveis.get(index);
     }
 
     public void addValueAt(int index, double value) {

@@ -3,6 +3,8 @@ package unbbayes.aprendizagem;
 import java.awt.*;
 import java.util.*;
 import javax.swing.*;
+import unbbayes.util.NodeList;
+
 import java.awt.event.*;
 
 /**
@@ -14,7 +16,7 @@ import java.awt.event.*;
  */
 public class TArq extends JDialog
 {
-    private java.util.List vetorVariaveis;
+    private NodeList vetorVariaveis;
     private JPanel painelCentro;
     private JButton sim;
     private JButton nao;
@@ -29,7 +31,7 @@ public class TArq extends JDialog
      * @see Container
      * @see JDialog
      */
-    TArq(java.util.List vetorVariaveis){
+    TArq(NodeList vetorVariaveis){
         super(new Frame(), "", true);
         Container container = getContentPane();
         this.vetorVariaveis = vetorVariaveis;

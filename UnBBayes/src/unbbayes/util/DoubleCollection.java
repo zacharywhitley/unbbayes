@@ -19,7 +19,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package unbbayes.jprs.jbn;
+package unbbayes.util;
 
 /**
  * Classe que representa um array dinâmico do tipo <code>double</code>.

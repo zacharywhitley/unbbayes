@@ -52,6 +52,26 @@ public class SetToolkit {
 
 
     /**
+     *  Realiza a união entre dois conjuntos.
+     *
+     *@param  conjuntoA  conjunto A
+     *@param  conjuntoB  conjunto B
+     *@return            A união B
+     */
+    public static NodeList union(NodeList conjuntoA, NodeList conjuntoB) {
+        NodeList result = new NodeList(conjuntoA.size() + conjuntoB.size());
+        result.addAll(conjuntoA);
+        for (int c1 = 0; c1 < conjuntoB.size(); c1++) {
+            if (! conjuntoA.contains(conjuntoB.get(c1))) {
+                result.add(conjuntoB.get(c1));
+            }
+        }
+
+        return result;
+    }
+
+
+    /**
      *  Realiza a interseção entre dois conjuntos.
      *
      *@param  conjuntoA  conjunto A
@@ -60,6 +80,20 @@ public class SetToolkit {
      */
     public static List intersection(List conjuntoA, List conjuntoB) {
         List result = clone(conjuntoA);
+        result.retainAll(conjuntoB);
+        return result;
+    }
+    
+    
+	/**
+     *  Realiza a interseção entre dois conjuntos.
+     *
+     *@param  conjuntoA  conjunto A
+     *@param  conjuntoB  conjunto B
+     *@return            A interseção B
+     */
+    public static NodeList intersection(NodeList conjuntoA, NodeList conjuntoB) {
+        NodeList result = clone(conjuntoA);
         result.retainAll(conjuntoB);
         return result;
     }
@@ -75,6 +109,13 @@ public class SetToolkit {
         } catch (InstantiationException e) {
             throw new RuntimeException("erro na rotina clone. instanciacao");
         }
+    }
+    
+    
+    public static NodeList clone(NodeList conjunto) {
+    	NodeList result = new NodeList(conjunto.size());
+    	result.addAll(conjunto);
+    	return result;
     }
 }
 

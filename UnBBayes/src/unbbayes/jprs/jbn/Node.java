@@ -26,20 +26,22 @@ import java.awt.geom.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.util.NodeList;
+
 
 /**
  *  Classe que representa um nó genérico.
  *
  *@author     Michael e Rommel
  */
-public abstract class Node implements Comparable {
+public abstract class Node {
     private String description = "";
     protected String name;
     private Point2D.Double posicao;
-    protected List parents;
-    private List children;
+    protected NodeList parents;
+    private NodeList children;
     protected List states;
-    private List adjacents;
+    private NodeList adjacents;
     private boolean selecionado;
     private static int altura;
     private static int largura;
@@ -49,9 +51,9 @@ public abstract class Node implements Comparable {
      *  Constrói um novo nó e faz as devidas inicializações.
      */
     public Node() {
-        adjacents = new ArrayList();
-        parents = new ArrayList();
-        children = new ArrayList();
+        adjacents = new NodeList();
+        parents = new NodeList();
+        children = new NodeList();
         states = new ArrayList();
         altura = 35;
         largura = 35;
@@ -85,7 +87,7 @@ public abstract class Node implements Comparable {
      *
      *@param  filhos  List de nós que representam os filhos.
      */
-    public void setChildren(List filhos) {
+    public void setChildren(NodeList filhos) {
         this.children = filhos;
     }
 
@@ -95,7 +97,7 @@ public abstract class Node implements Comparable {
      *
      *@param  pais  List de nós que representam os pais.
      */
-    public void setParents(List pais) {
+    public void setParents(NodeList pais) {
         this.parents = pais;
     }
 
@@ -155,7 +157,7 @@ public abstract class Node implements Comparable {
      *
      *@return    Referência para os adjacentes do nó.
      */
-    public List getAdjacents() {
+    public NodeList getAdjacents() {
         return adjacents;
     }
 
@@ -175,7 +177,7 @@ public abstract class Node implements Comparable {
      *
      *@return    Lista de filhos.
      */
-    public List getChildren() {
+    public NodeList getChildren() {
         return children;
     }
 
@@ -185,7 +187,7 @@ public abstract class Node implements Comparable {
      *
      *@return    Lista de Pais.
      */
-    public List getParents() {
+    public NodeList getParents() {
         return parents;
     }
 
@@ -318,14 +320,6 @@ public abstract class Node implements Comparable {
      */
     protected void adicionaPai(Node pai) {
         parents.add(pai);
-    }
-
-    /**
-     * Método utilizado para a ordenação dos nós por Descrição.
-     */
-    public int compareTo(Object o) {
-        Node no = (Node)o;
-        return description.compareToIgnoreCase(no.getDescription());
     }
 
 

@@ -2,6 +2,7 @@ package unbbayes.aprendizagem;
 
 
 import javax.swing.*;
+import unbbayes.util.NodeList;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -12,10 +13,10 @@ public class TTelaEscolhaVariaveis extends JDialog{
     private JScrollPane scrollPane;
     private JPanel painelCentro;
     private JPanel painelBotao;
-    private java.util.List vetorVariaveis;
+    private NodeList vetorVariaveis;
     private JButton ok;
 
-    public TTelaEscolhaVariaveis(java.util.List variaveis){
+    public TTelaEscolhaVariaveis(NodeList variaveis){
         super(new Frame(),"",true);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         Container container = getContentPane();

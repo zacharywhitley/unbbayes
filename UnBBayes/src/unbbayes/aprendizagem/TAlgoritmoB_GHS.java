@@ -3,6 +3,7 @@ package unbbayes.aprendizagem;
 import java.util.*;
 import unbbayes.controlador.MainController;
 import unbbayes.jprs.jbn.ProbabilisticNetwork;
+import unbbayes.util.NodeList;
 
 /**
  * Classe que implementa métrica GHS no algoritmo B.
@@ -18,7 +19,7 @@ public class TAlgoritmoB_GHS extends TAlgoritmoB{
      * @see TAprendizagemTollKit
      */
 
-    TAlgoritmoB_GHS(List variaveis, byte[][] BaseDados, int numeroCasos, int vetor[], ProbabilisticNetwork net){
+    TAlgoritmoB_GHS(NodeList variaveis, byte[][] BaseDados, int numeroCasos, int vetor[], ProbabilisticNetwork net){
         calculaAlgoritmoB(variaveis,BaseDados,numeroCasos,vetor,net);
     }
 	/*
@@ -30,7 +31,7 @@ public class TAlgoritmoB_GHS extends TAlgoritmoB{
     /**
      * @see TAprendizagemTollKit
      */
-    public double g(TVariavel variavel, List pais){
+    public double g(TVariavel variavel, NodeList pais){
         /*
         montarTabelaStirling();
         double somatorioRi = 0;

@@ -22,6 +22,8 @@
 package unbbayes.io;
 
 import unbbayes.jprs.jbn.*;
+import unbbayes.util.NodeList;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -261,7 +263,7 @@ public class NetIO implements BaseIO {
             for (int c1 = 0; c1 < net.noVariaveis(); c1++) {
                 auxNo1 = (Node) net.getNodeAt(c1);
 
-                List auxListVa = auxNo1.getParents();
+                NodeList auxListVa = auxNo1.getParents();
 
                 arq.print("potential (" + auxNo1.getName());
 

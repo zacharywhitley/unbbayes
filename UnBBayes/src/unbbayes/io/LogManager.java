@@ -23,6 +23,8 @@ package unbbayes.io;
 
 import java.io.*;
 import unbbayes.jprs.jbn.*;
+import unbbayes.util.NodeList;
+
 import java.text.DecimalFormat;
 import java.util.List;
 
@@ -75,7 +77,7 @@ public class LogManager {
         out.close();
     }
 
-    public void finishLog(JunctionTree tree, List nodes) {
+    public void finishLog(JunctionTree tree, NodeList nodes) {
         List clicks = tree.getCliques();
         Clique auxClique;
         Node node;
@@ -92,7 +94,7 @@ public class LogManager {
             int sizenodes1 = auxClique.getNos().size();
             append("Clique " + c + "\n");
             for (int c2 = 0; c2 < sizenodes1; c2++) {
-                append(((Node)auxClique.getNos().get(c2)).getName() + "-");
+                append((auxClique.getNos().get(c2)).getName() + "-");
             }
 
             append("\nPotential Table\n");

@@ -41,6 +41,7 @@ import javax.swing.tree.*;
 import org.shetline.io.*;
 import unbbayes.fronteira.*;
 import unbbayes.jprs.jbn.*;
+import unbbayes.util.NodeList;
 
 /**
  *  Essa classe implementa o <code>KeyListener</code> e o <code>
@@ -485,9 +486,22 @@ public class WindowController implements KeyListener {
         }
 
         // Ordenar pela descricao do nó apenas para facilitar a visualização da árvore.
-        Collections.sort(rede.getCopiaNos());
+        NodeList nos = rede.getCopiaNos();
+        boolean haTroca = true;
+        while (haTroca) {
+            haTroca = false;
+            for (int i = 0; i < nos.size() - 1; i++) {
+                Node node1 = nos.get(i);
+                Node node2 = nos.get(i + 1);
+                if (node1.getDescription().compareToIgnoreCase(node2.getDescription()) > 0) {
+                    nos.set(i + 1, node1);
+                    nos.set(i, node2);
+                    haTroca = true;
+                }
+            }
+        }
 
-        situacaoArvore = new boolean[rede.getCopiaNos().size()];
+        situacaoArvore = new boolean[nos.size()];
 
         for (int i = 0; i < situacaoArvore.length; i++) {
             situacaoArvore[i] = false;
@@ -695,7 +709,7 @@ public class WindowController implements KeyListener {
             for (int i = 0; i < copia.size(); i++) {
                 if (copia.get(i) instanceof Node) {
                     ProbabilisticNode noAux = (ProbabilisticNode)copia.get(i);
-                    List nos = rede.getNos();
+                    NodeList nos = rede.getNos();
                     ProbabilisticNode noAux2 = new ProbabilisticNode();
                     noAux2 = (ProbabilisticNode)noAux.clone(tela.getIGraph().getRadius());
                     nos.add(noAux2);
@@ -975,7 +989,7 @@ public class WindowController implements KeyListener {
      */
     private void updateTree() {
         JTree arvore = tela.getEvidenceTree();
-        List nos = rede.getCopiaNos();
+        NodeList nos = rede.getCopiaNos();
         DefaultMutableTreeNode root = (DefaultMutableTreeNode) arvore.getModel().getRoot();
 
         root.removeAllChildren();
@@ -1029,16 +1043,16 @@ public class WindowController implements KeyListener {
      * Caso contrario, a rede toda é levada em conta.
      */
     public Rectangle calcularBordasRede() {
-        List nos;
+        NodeList nos;
         List vetorAux = tela.getIGraph().getSelectedGroup();
 
         if (vetorAux.size() == 0) {
             nos = rede.getNos();
         } else {
-            nos = new ArrayList();
+            nos = new NodeList();
             for (int i = 0; i < vetorAux.size(); i++) {
                 if (vetorAux.get(i) instanceof Node) {
-                    nos.add(vetorAux.get(i));
+                    nos.add((Node)vetorAux.get(i));
                 }
             }
         }

@@ -22,6 +22,8 @@
 package unbbayes.jprs.jbn;
 
 import java.util.*;
+
+import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -35,7 +37,7 @@ public class Network {
     /**
      *  Lista de nós que compõem o grafo.
      */
-    protected List nos;
+    protected NodeList nos;
 
     /**
      *  Lista de arcos que compõem o grafo.
@@ -47,7 +49,7 @@ public class Network {
      *  Constrói um novo grafo sem nós nem arcos.
      */
     public Network() {
-        nos = new ArrayList();
+        nos = new NodeList();
         arcos = new ArrayList();
     }
 
@@ -67,7 +69,7 @@ public class Network {
      *
      *@return    nós do grafo.
      */
-    public List getNos() {
+    public NodeList getNos() {
         return this.nos;
     }
 
@@ -79,7 +81,7 @@ public class Network {
      *@return	nó com respectivo índice no List.
      */
     public Node getNodeAt(int index) {
-        return (Node) (nos.get(index));
+        return nos.get(index);
     }
 
 
@@ -244,9 +246,9 @@ public class Network {
         int m;
         List listaPais = new ArrayList();
         List listaFilhos = new ArrayList();
-        List listaCloneNos = SetToolkit.clone(nos);
+        NodeList listaCloneNos = SetToolkit.clone(nos);
 
-        if (! listaCloneNos.isEmpty()) {
+        if (listaCloneNos.size() != 0) {
             for (i = 0; i < listaCloneNos.size(); i++) {
                 auxNo1 = (Node) listaCloneNos.get(i);
                 listaPais.add(SetToolkit.clone(auxNo1.getParents()));
@@ -307,13 +309,13 @@ public class Network {
 
             for (i = 0; i < nos.size(); i++) {
                 auxNo1 = (Node) nos.get(i);
-                auxNo1.setParents((List) listaPais.get(i));
-                auxNo1.setChildren((List) listaFilhos.get(i));
+                auxNo1.setParents((NodeList) listaPais.get(i));
+                auxNo1.setChildren((NodeList) listaFilhos.get(i));
             }
             listaPais.clear();
             listaFilhos.clear();
 
-            if (! listaCloneNos.isEmpty()) {
+            if (listaCloneNos.size() != 0) {
                 StringBuffer sb = new StringBuffer("Rede com ciclo:");
                 for (i = 0; i < listaCloneNos.size(); i++) {
                    auxNo1 = (Node)listaCloneNos.get(i);

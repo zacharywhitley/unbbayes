@@ -49,7 +49,7 @@ public class UtilityTable extends PotentialTable {
         }
 
         int fim = (index == control) ? 1 : 0;
-        Node node = (Node)variaveis.get(control);
+        Node node = variaveis.get(control);
         for (int i = node.getStatesSize()-1; i >= fim; i--) {
             coord[control] = i;
             argMax(control-1, index, coord);

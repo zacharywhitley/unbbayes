@@ -23,6 +23,8 @@ package unbbayes.jprs.jbn;
 
 import java.util.*;
 
+import unbbayes.util.NodeList;
+
 /**
  *  Classe que representa um Clique na Árvore de Junção (JunctionTree).
  *
@@ -59,17 +61,17 @@ public class Clique implements ITabledVariable {
     /**
      *  Lista de Nós Clusterizados.
      */
-    private List nos;
+    private NodeList nos;
 
     /**
      *  Lista de Nós Probabilísticos associados ao Clique.
      */
-    private List nosAssociados;
+    private NodeList nosAssociados;
 
     /**
      *  Lista de Nós de Utilidade associados ao Clique.
      */
-    private List associatedUtilNodes;
+    private NodeList associatedUtilNodes;
 
 
     /**
@@ -78,9 +80,9 @@ public class Clique implements ITabledVariable {
      */
     public Clique() {
         children = new ArrayList();
-        nos = new ArrayList();
-        nosAssociados = new ArrayList();
-        associatedUtilNodes = new ArrayList();
+        nos = new NodeList();
+        nosAssociados = new NodeList();
+        associatedUtilNodes = new NodeList();
         tabelaPot = new ProbabilisticTable();
         utilityTable = new UtilityTable();
     }
@@ -95,7 +97,7 @@ public class Clique implements ITabledVariable {
     protected double normalize(boolean[] ok) {
         ok[0] = true;
         boolean fixo[] = new boolean[nos.size()];
-        List decisoes = new ArrayList();
+        NodeList decisoes = new NodeList();
         for (int i = 0; i < nos.size(); i++) {
             if (nos.get(i) instanceof DecisionNode) {
                 decisoes.add(nos.get(i));
@@ -141,7 +143,7 @@ public class Clique implements ITabledVariable {
 
 
     private void normalizeID (int control,
-                             List decisoes,
+                             NodeList decisoes,
                              boolean fixo[],
                              int index[],
                              int coord[],
@@ -157,7 +159,7 @@ public class Clique implements ITabledVariable {
             return;
         }
 
-        Node node = (Node) decisoes.get(control);
+        Node node = decisoes.get(control);
         for (int i = 0; i < node.getStatesSize(); i++) {
             coord[index[control]] = i;
             normalizeID(control+1, decisoes, fixo, index, coord, ok);
@@ -173,7 +175,7 @@ public class Clique implements ITabledVariable {
             return sum(control+1, fixo, coord);
         }
 
-        Node node = (Node) nos.get(control);
+        Node node = nos.get(control);
         double retorno = 0.0;
         for (int i = 0; i < node.getStatesSize(); i++) {
             coord[control] = i;
@@ -264,7 +266,7 @@ public class Clique implements ITabledVariable {
      *
      *@return    vetor de nós clusterizados.
      */
-    public List getNos() {
+    public NodeList getNos() {
         return nos;
     }
 
@@ -274,7 +276,7 @@ public class Clique implements ITabledVariable {
      *
      *@return    vetor de nós probabilísticos associados.
      */
-    public List getAssociatedProbabilisticNodes() {
+    public NodeList getAssociatedProbabilisticNodes() {
         return nosAssociados;
     }
 
@@ -283,7 +285,7 @@ public class Clique implements ITabledVariable {
      *
      *@return    vetor de nós de utilidade associados.
      */
-    public List getAssociatedUtilityNodes() {
+    public NodeList getAssociatedUtilityNodes() {
         return associatedUtilNodes;
     }
 

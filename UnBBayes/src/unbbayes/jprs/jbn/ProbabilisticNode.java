@@ -81,7 +81,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable {
         int index = auxTab.indexOfVariable(this);
         for (int i = 0; i < cliqueAssociado.getPotentialTable().variableCount(); i++) {
             if (i != index) {
-                auxTab.removeVariable((Node)cliqueAssociado.getPotentialTable().getVariableAt(i));
+                auxTab.removeVariable(cliqueAssociado.getPotentialTable().getVariableAt(i));
             }
         }
 

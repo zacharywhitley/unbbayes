@@ -3,6 +3,7 @@ package unbbayes.aprendizagem;
 import javax.swing.*;
 import unbbayes.fronteira.SimpleFileFilter;
 import unbbayes.jprs.jbn.*;
+import unbbayes.util.NodeList;
 import unbbayes.controlador.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -27,8 +28,8 @@ public class TOrdenacao1 extends JDialog
     private TAprendizagemTollKit Alg;
     private MainController controlador;
     private java.util.List vetorHorizontalBase;
-    private java.util.List vetorVariaveis;
-    private java.util.List variaveis;
+    private NodeList vetorVariaveis;
+    private NodeList variaveis;
     private JPanel painelSul;
     private JPanel painelCentro;
     private JPanel pBotao;
@@ -90,8 +91,8 @@ public class TOrdenacao1 extends JDialog
            colunas.quoteChar('\t');
            colunas.commentChar('%');
            colunas.eolIsSignificant(true);
-           vetorVariaveis = new ArrayList();
-           variaveis = new ArrayList();
+           vetorVariaveis = new NodeList();
+           variaveis = new NodeList();
            int posicao = 0;
 
            /*Montagem do vetor de variáveis*/
@@ -234,7 +235,7 @@ public class TOrdenacao1 extends JDialog
     /*Listener mudar a ordenacao de uma variável para cima*/
     ActionListener cimaEvento = new ActionListener(){
         public void actionPerformed(ActionEvent ae){
-            java.util.List vetorAux = new ArrayList();
+            NodeList vetorAux = new NodeList();
             String nomeAux = (String)JLOrdenacao.getSelectedValue();
             TVariavel variavelAux = null;
             int index = JLOrdenacao.getSelectedIndex();
@@ -275,7 +276,7 @@ public class TOrdenacao1 extends JDialog
                 modeloLista.remove(index);
                 index++;
                 modeloLista.add(index, nomeAux);
-                java.util.List vetorAux = new ArrayList();
+                NodeList vetorAux = new NodeList();
                 for (int i = 0 ; i < vetorVariaveis.size() ; i++ ){
                     variavelAux = (TVariavel)vetorVariaveis.get(i);
                     if (variavelAux.getName().equals(nomeAux)){

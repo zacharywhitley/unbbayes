@@ -5,6 +5,7 @@ import java.util.List;
 
 import unbbayes.fronteira.TJanelaEdicao;
 import unbbayes.jprs.jbn.ProbabilisticNetwork;
+import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -39,10 +40,10 @@ public abstract class TAlgoritmoB extends TAprendizagemTollKit{
     * @see Tnij
     * @see TAprendizagemTollKit
     */
-  public void calculaAlgoritmoB(List variaveis, byte[][] BaseDados, int numeroCasos, int vetor[], ProbabilisticNetwork net) {
+  public void calculaAlgoritmoB(NodeList variaveis, byte[][] BaseDados, int numeroCasos, int vetor[], ProbabilisticNetwork net) {
   //public void calculaAlgoritmoB(List variaveis, byte[][] BaseDados, int numeroCasos, int vetor[], MainController controller) {
     TVariavel variavel;
-    List vetorPaisAux;
+    NodeList vetorPaisAux;
     double gi;
     double gk;
     double gj;
@@ -62,7 +63,7 @@ public abstract class TAlgoritmoB extends TAprendizagemTollKit{
     arranjo = criaArranjo(vetorVariaveis);
     for(int i = 0; i < vetorVariaveis.size(); i++){
        variavel = (TVariavel)vetorVariaveis.get(i);
-       vetorPaisAux = SetToolkit.clone((List)variavel.getPais());
+       vetorPaisAux = SetToolkit.clone(variavel.getPais());
        if (vetorPaisAux.size() == 0){
           vetorPaisAux = null;
        }
@@ -73,7 +74,7 @@ public abstract class TAlgoritmoB extends TAprendizagemTollKit{
             if(membro(variavelAux, variavel.getPais())){
                arranjo[i][j]  = 0;
             }else{
-                 vetorPaisAux = SetToolkit.clone((List)variavel.getPais());
+                 vetorPaisAux = SetToolkit.clone(variavel.getPais());
                  vetorPaisAux.add(variavelAux);
                  gk = g(variavel,vetorPaisAux);
                  arranjo[i][j] = gk - gi;
@@ -88,7 +89,7 @@ public abstract class TAlgoritmoB extends TAprendizagemTollKit{
     while(arranjo[vetorIJ[0]][vetorIJ[1]] > 0){
        if(arranjo[vetorIJ[0]][vetorIJ[1]] > 0){
            variavel = (TVariavel)vetorVariaveis.get(vetorIJ[0]);
-           vetorPaisAux = (List)variavel.getPais();
+           vetorPaisAux = variavel.getPais();
            vetorPaisAux.add(vetorVariaveis.get(vetorIJ[1]));
            gi = g(variavel,vetorPaisAux);
            achaAncestrais(variavel);
@@ -105,7 +106,7 @@ public abstract class TAlgoritmoB extends TAprendizagemTollKit{
                     if(membro((TVariavel)vetorVariaveis.get(i),variavel.getPais())){
                         arranjo[vetorIJ[0]][i] = 0;
                     } else{
-                        vetorPaisAux = SetToolkit.clone((List)variavel.getPais());
+                        vetorPaisAux = SetToolkit.clone(variavel.getPais());
                         vetorPaisAux.add(vetorVariaveis.get(i));
                         gj = g(variavel,vetorPaisAux);
                         arranjo[vetorIJ[0]][i] = gj - gi;
@@ -192,12 +193,12 @@ public abstract class TAlgoritmoB extends TAprendizagemTollKit{
      return vetor;
   }
 
-  private double[][] criaArranjo(List vetorVariaveis){
+  private double[][] criaArranjo(NodeList vetorVariaveis){
       arranjo = new double[vetorVariaveis.size()][vetorVariaveis.size()];
       return arranjo;
   }
 
-  private boolean membro(TVariavel variavel, List pais){
+  private boolean membro(TVariavel variavel, NodeList pais){
       for(int i = 0 ; i < pais.size(); i++){
         if(variavel.getName().equals(((TVariavel)pais.get(i)).getName())){
            return true;

@@ -6,6 +6,7 @@ import java.util.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
+import unbbayes.util.NodeList;
 
 /**
  * Classe para a construção de uma tela que possui
@@ -31,7 +32,7 @@ public class TCaixaRelacionamentos extends JDialog{
     private JButton adiciona;
     private JButton remove;
     private JButton continua;
-    private java.util.List vetorGrafo;
+    private NodeList vetorGrafo;
 
     /**
      * Método para a construção da tela onde são definidos
@@ -46,7 +47,7 @@ public class TCaixaRelacionamentos extends JDialog{
      * @see DefaultListModel
      * @see JScrollPane
      */
-    public  TCaixaRelacionamentos(java.util.List vetor){
+    public  TCaixaRelacionamentos(NodeList vetor){
        super(new Frame(), "", true);
        vetorGrafo = vetor;
        Container painelPrincipal = getContentPane();

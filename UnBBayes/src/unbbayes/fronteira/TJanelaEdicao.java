@@ -24,6 +24,7 @@ import java.util.ResourceBundle;
 import java.awt.*;
 import java.awt.event.*;
 import unbbayes.jprs.jbn.ProbabilisticNetwork;
+import unbbayes.util.NodeList;
 
 /**
  * Title:
@@ -37,7 +38,7 @@ public class TJanelaEdicao extends JDialog {
     private JToolBar jtb;
     private JViewport view;
     private TEditaRede rede;
-    private List variaveis;
+    private NodeList variaveis;
     private JButton insereArco;
     private JButton reaprende;
     private JScrollPane jspView;
@@ -45,7 +46,7 @@ public class TJanelaEdicao extends JDialog {
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.fronteira.resources.FronteiraResources");
 
-    public TJanelaEdicao(List variaveis, ProbabilisticNetwork net) {
+    public TJanelaEdicao(NodeList variaveis, ProbabilisticNetwork net) {
     //public TJanelaEdicao(List variaveis) {
 		super(new Frame(), resource.getString("aprendizagemTitle"), true);
         Container contentPane = getContentPane();
@@ -76,8 +77,6 @@ public class TJanelaEdicao extends JDialog {
         //ao clicar no botão reaprende, mostra-se o menu para escolha do arquivo para o aprendizado.
         reaprende.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-            	rede.deselecionaArco();
-            	rede.deselecionaNo();
                 setVisible(false);
                 dispose();
             }

@@ -23,6 +23,8 @@ package unbbayes.jprs.jbn;
 
 import java.util.*;
 
+import unbbayes.util.NodeList;
+
 /**
  *  Representa um separador na Árvore de Junção (JunctionTree) entre cliques.
  *
@@ -32,7 +34,7 @@ public class Separator implements ITabledVariable {
 
     private PotentialTable tabelaPot;
     private PotentialTable utilityTable;
-    private List nos;
+    private NodeList nos;
 
     /**
      *  Guarda o primeiro clique, quando há orientação assume semântica como origem.
@@ -52,7 +54,7 @@ public class Separator implements ITabledVariable {
      * @param clique2 the destination clique
      */
     public Separator(Clique clique1, Clique clique2) {
-        nos = new ArrayList();
+        nos = new NodeList();
         tabelaPot = new ProbabilisticTable();
         utilityTable = new UtilityTable();
         this.clique1 = clique1;
@@ -90,7 +92,7 @@ public class Separator implements ITabledVariable {
      *
      *@param  nos  lista de nós clusterizados.
      */
-    public void setNos(List nos) {
+    public void setNos(NodeList nos) {
         this.nos = nos;
     }
 
@@ -119,7 +121,7 @@ public class Separator implements ITabledVariable {
      *
      *@return    nós clusterizados
      */
-    public List getNos() {
+    public NodeList getNos() {
         return nos;
     }
 

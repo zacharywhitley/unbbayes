@@ -7,6 +7,7 @@ import unbbayes.fronteira.TJanelaEdicao;
 import unbbayes.jprs.jbn.Node;
 import unbbayes.jprs.jbn.PotentialTable;
 import unbbayes.jprs.jbn.ProbabilisticNetwork;
+import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -50,7 +51,7 @@ public abstract class TAlgoritmoK2 extends TAprendizagemTollKit {
      * @see Tnij
      * @see TAprendizagemTollKit
      */
-    protected void CalculaAlgoritmoK2(List variaveis, byte[][] BaseDados, int numeroCasos, int vetor[], int delta, ProbabilisticNetwork net){
+    protected void CalculaAlgoritmoK2(NodeList variaveis, byte[][] BaseDados, int numeroCasos, int vetor[], int delta, ProbabilisticNetwork net){
 	//protected void CalculaAlgoritmoK2(List variaveis, byte[][] BaseDados, int numeroCasos, int vetor[], int delta, MainController controller){
         PotentialTable tabela;
         TVariavel z;
@@ -137,7 +138,7 @@ public abstract class TAlgoritmoK2 extends TAprendizagemTollKit {
             tabela.addVariable(variavel);
             int tamanhoPais = variavel.getTamanhoPais();
             for (int i = 0; i < tamanhoPais; i++) {
-                tabela.addVariable((Node)variavel.getPais().get(i));
+                tabela.addVariable(variavel.getPais().get(i));
             }
             calculaProbabilidade(arrayNijk, variavel);
         }
@@ -156,15 +157,15 @@ public abstract class TAlgoritmoK2 extends TAprendizagemTollKit {
      */
     protected TVariavel calculaZ(TVariavel variavel){
         TVariavel z = null;
-        List vetorPais;
-        List vetorZ;
+        NodeList vetorPais;
+        NodeList vetorZ;
         double maxAux;
         maxAux = 0.0;
         max = -1*Double.MAX_VALUE;
-        vetorZ = diferenca(SetToolkit.clone((List)variavel.getPredecessores()), variavel.getPais());
+        vetorZ = diferenca(SetToolkit.clone(variavel.getPredecessores()), variavel.getPais());
         int tamanho = vetorZ.size();
         for (int numeroCandidatos = 0 ; numeroCandidatos < tamanho; numeroCandidatos ++ ){
-            vetorPais = concatena(SetToolkit.clone((List)variavel.getPais()), (TVariavel)vetorZ.get(numeroCandidatos));
+            vetorPais = concatena(SetToolkit.clone(variavel.getPais()), (TVariavel)vetorZ.get(numeroCandidatos));
             maxAux = g(variavel,vetorPais);
             if (max < maxAux){
                 max = maxAux;

@@ -31,6 +31,7 @@ import javax.swing.*;
 import unbbayes.fronteira.*;
 import unbbayes.io.*;
 import unbbayes.jprs.jbn.*;
+import unbbayes.util.NodeList;
 
 /**
  *  Essa classe implementa o <code>KeyListener</code> e o <code>
@@ -128,12 +129,12 @@ public class MainController {
      *
      * @param variaveis lista das variáveis.
      */
-    public ProbabilisticNetwork makeNetwork(List variaveis) {
+    public ProbabilisticNetwork makeNetwork(NodeList variaveis) {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 
         ProbabilisticNetwork net = new ProbabilisticNetwork();
         for (int i = 0; i < variaveis.size(); i++) {
-            Node noAux = (Node)variaveis.get(i);
+            Node noAux = variaveis.get(i);
             net.addNode(noAux);
             for (int j = 0; j < noAux.getParents().size(); j++) {
                 Edge arcoAux = new Edge((Node)noAux.getParents().get(j), noAux);

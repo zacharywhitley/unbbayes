@@ -2,6 +2,7 @@ package unbbayes.aprendizagem;
 
 import java.util.*;
 import unbbayes.jprs.jbn.*;
+import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -17,7 +18,7 @@ import unbbayes.util.SetToolkit;
 
 class TVariavel extends ProbabilisticNode implements Cloneable {
 
-    private List predecessores;
+    private NodeList predecessores;
     private TVariavel variavelAux;
     private int numeroMaximoPais;
     private int pos;
@@ -34,7 +35,7 @@ class TVariavel extends ProbabilisticNode implements Cloneable {
     TVariavel(String nome, int pos){
         super();
         setName(nome);
-        predecessores = new ArrayList();
+        predecessores = new NodeList();
         numeroMaximoPais = 10;
         participa = true;
         this.pos = pos;
@@ -129,7 +130,7 @@ class TVariavel extends ProbabilisticNode implements Cloneable {
      * @return List - Array de predecessores da variável
      * @see List
      */
-    public List getPredecessores(){
+    public NodeList getPredecessores(){
         return predecessores;
     }
 
@@ -138,7 +139,7 @@ class TVariavel extends ProbabilisticNode implements Cloneable {
      * @return List - Array de pais da variável
      * @see List
      */
-    public List getPais(){
+    public NodeList getPais(){
         return parents;
     }
 
@@ -171,7 +172,7 @@ class TVariavel extends ProbabilisticNode implements Cloneable {
      */
     public int getTamanhoPais(){
         if (parents == null){
-            parents = new ArrayList();
+            parents = new NodeList();
         }
         return parents.size();
     }
@@ -299,7 +300,7 @@ class TVariavel extends ProbabilisticNode implements Cloneable {
      * @see Clone()
      */
     private void setPais(Object parents){
-        this.parents = (List)parents;
+        this.parents = (NodeList)parents;
     }
 
     /**
@@ -319,6 +320,6 @@ class TVariavel extends ProbabilisticNode implements Cloneable {
      * @see Clone()
      */
     private void setPredecessores(Object predecessores){
-        this.predecessores = (List)predecessores;
+        this.predecessores = (NodeList)predecessores;
     }
 }

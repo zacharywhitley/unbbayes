@@ -3,6 +3,7 @@ package unbbayes.aprendizagem;
 import java.util.*;
 import unbbayes.controlador.MainController;
 import unbbayes.jprs.jbn.ProbabilisticNetwork;
+import unbbayes.util.NodeList;
 
 /**
  * Classe que implementa métrica GH no algoritmo B.
@@ -15,7 +16,7 @@ public class TAlgoritmoB_GH extends TAlgoritmoB {
      * @see TAlgoritmoB
      * @see TAprendizagemTollKit
      */
-    TAlgoritmoB_GH(List variaveis, byte[][] BaseDados, int numeroCasos, int vetor[], ProbabilisticNetwork net){
+    TAlgoritmoB_GH(NodeList variaveis, byte[][] BaseDados, int numeroCasos, int vetor[], ProbabilisticNetwork net){
         calculaAlgoritmoB(variaveis,BaseDados,numeroCasos,vetor, net);
     }
 	/*
@@ -26,7 +27,7 @@ public class TAlgoritmoB_GH extends TAlgoritmoB {
     /**
      * @see TAprendizagemTollKit
      */
-    public double g(TVariavel variavel , List pais){
+    public double g(TVariavel variavel , NodeList pais){
         /*
         double somatorioR;
         double somatorioS;

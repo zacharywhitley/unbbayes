@@ -19,6 +19,8 @@
 package unbbayes.fronteira;
 
 import unbbayes.jprs.jbn.*;
+import unbbayes.util.NodeList;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.*;
@@ -45,7 +47,7 @@ import java.text.*;
 public class TEditaRede extends JPanel implements MouseListener, MouseMotionListener, KeyListener {
 
     private List arco;
-    private List no;
+    private NodeList no;
     private Node noAtual;
     private Node noMover;
     private Object selecionado;
@@ -83,7 +85,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
      *  utilizadas por essa classe para que se possa desenhar a rede Bayesiana.
      *
      */
-    public TEditaRede(TJanelaEdicao janel, List variaveis, ProbabilisticNetwork net) {
+    public TEditaRede(TJanelaEdicao janel, NodeList variaveis, ProbabilisticNetwork net) {
     //public TEditaRede(TJanelaEdicao janel, List variaveis) {
         super();
         this.addMouseListener(this);
@@ -124,7 +126,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         Node noPai;
         int linha = 1;
         for (int i = 0; i < no.size(); i++) {
-            noAux = (Node)no.get(i);
+            noAux = no.get(i);
             if ((i + 1) * raio >= this.getSize().getWidth()) {
                 linha++;
             }
