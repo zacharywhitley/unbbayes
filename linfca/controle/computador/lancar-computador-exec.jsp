@@ -18,10 +18,7 @@
    
    in.getChildren().add(usuario);
    in.getChildren().add(computador);
-   
-
-   out.println(request.getParameter("cod-usuario"));
-   out.println(request.getParameter("cod_computador_disponivel"));
+   in.getChildren().add(new Element("uso"));
    
    Feature  lancamento = new LancamentoFeature();
    Element tiposXML = lancamento.process(in);
