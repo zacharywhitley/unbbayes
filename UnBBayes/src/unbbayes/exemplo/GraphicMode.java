@@ -108,7 +108,11 @@ public class GraphicMode {
                 likelihood[1] = 0.8;
 
                 auxVP.addLikeliHood(likelihood);
-                rede.updateEvidences();
+                try {
+                	rede.updateEvidences();
+                } catch (Exception exc) {
+                	System.out.println(exc.getMessage());               	
+                }
             }
         });
 
