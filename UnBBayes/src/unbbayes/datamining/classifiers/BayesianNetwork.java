@@ -120,8 +120,12 @@ public class BayesianNetwork extends BayesianLearning
 	}
 
 	public Attribute getClassAttribute()
-	{	return classAttribute;
+	{   return classAttribute;
 	}
+
+        public ProbabilisticNode getClassNode()
+        {   return classNode;
+        }
 
 	public void setClassAttribute(Attribute classAttribute) throws Exception
 	{	int i;
@@ -135,6 +139,9 @@ public class BayesianNetwork extends BayesianLearning
 
                                 int numClasses = classNode.getStatesSize();
                                 originalDistribution = new float[numClasses];
+                                for (int j=0; j < numClasses; j++)
+                                {   originalDistribution[j] = (float)classNode.getMarginalAt(j);
+                                }
                                 break;
 			}
 		}

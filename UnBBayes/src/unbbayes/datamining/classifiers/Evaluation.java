@@ -187,7 +187,7 @@ public class Evaluation
 	  		text.append(Utils.doubleToString(incorrect(), 12, 4) + " " + Utils.doubleToString(pctIncorrect(),12, 4) +" %\n");
 			if (withClass >= confidenceLimit)
 				text.append(incorrectConfidence());
-			text.append("Quadratic loss function\t"+Utils.doubleToString((sumSqrErr/withClass), 12, 4)+"\n");
+			text.append("Quadratic loss function\t\t\t\t"+Utils.doubleToString((sumSqrErr/withClass), 17, 4)+"\n");
 
       		if (Utils.gr(unclassified(), 0))
 			{	text.append(resource.getString("unclassified"));

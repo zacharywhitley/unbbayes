@@ -38,6 +38,10 @@ public abstract class BayesianLearning extends Classifier
         public static final int ABSOLUTE_FREQUENCY_CLASSIFICATION = 2;
         private int classificationType = 0;
 
+        public float[] getOriginalDistribution()
+        {   return originalDistribution;
+        }
+
         /**
    	* Classifies the given test instance. The instance has to belong to a
    	* dataset when it's being classified.

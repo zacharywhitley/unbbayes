@@ -9,9 +9,9 @@ public class GuiResource_pt extends ListResourceBundle {
 	}
 	static final Object[][] contents = {
 	// Invoker Main
-	{"id3Classifier","Classificador ID3"},
-	{"naiveBayesClassifier","Classificador Naive Bayes"},
-	{"evaluation","Avaliação"},
+	{"id3Classifier","ID3 Classifier"},
+	{"naiveBayesClassifier","Naive Bayes Classifier"},
+	{"evaluation","Evaluation"},
 	{"language","Linguagem"},
 	{"lookAndFeel","Look and Feel"},
 	{"window","Janela"},
@@ -40,7 +40,7 @@ public class GuiResource_pt extends ListResourceBundle {
 	{"cascadeMnemonic",new Character('C')},
 	{"tileMnemonic",new Character('T')},
 	{"selectProgram","Selecione Programa"},
-	{"instancesPreprocessor","Preprocessor de Instâncias"},
+	{"instancesPreprocessor","Preprocessor"},
 	{"unsupportedLookAndFeelException","Não suporta esse LookAndFeel: "},
 	{"classNotFoundException","A classe do LookAndFeel não foi encontrada: "},
 	{"instanciationException","Não foi possível carregar esse LookAndFeel: "},

@@ -424,7 +424,7 @@ public class InvokerMain extends JFrame
 
   void jMenuItem6_actionPerformed(ActionEvent e)
   {   ExplanationMain metaphor = new ExplanationMain();
-      JInternalFrame jif = new JInternalFrame("Explanação", true, true, true, true);
+      JInternalFrame jif = new JInternalFrame("Explanation", true, true, true, true);
       jif.getContentPane().add(metaphor);
       desktop.add(jif);
   }

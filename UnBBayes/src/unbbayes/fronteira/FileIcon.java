@@ -86,6 +86,9 @@ public class FileIcon extends FileView {
          * }
          */
         String name = f.getName();
+        if (name.endsWith(".arff")) {
+            return new ImageIcon(getClass().getResource("/icones/weka.gif"));
+        }
         if (name.endsWith(".avi")) {
             return new ImageIcon(getClass().getResource("/icones/avi.gif"));
         }

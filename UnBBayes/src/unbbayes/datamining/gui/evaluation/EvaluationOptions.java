@@ -4,117 +4,159 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
-import unbbayes.datamining.classifiers.*;
+import unbbayes.jprs.jbn.*;
 
-public class EvaluationOptions extends JDialog
-{
-  private BorderLayout borderLayout1 = new BorderLayout();
-  private JPanel jPanel1 = new JPanel();
-  private BorderLayout borderLayout2 = new BorderLayout();
-  private JPanel jPanel2 = new JPanel();
-  private JPanel jPanel3 = new JPanel();
-  private JButton jButton1 = new JButton();
-  private JButton jButton2 = new JButton();
-  private ButtonGroup buttonGroup1 = new ButtonGroup();
-  private GridLayout gridLayout1 = new GridLayout();
-  private JPanel jPanel4 = new JPanel();
-  private JPanel jPanel5 = new JPanel();
-  private GridLayout gridLayout2 = new GridLayout();
-  private JRadioButton jRadioButton1 = new JRadioButton();
-  private JRadioButton jRadioButton2 = new JRadioButton();
-  private JRadioButton jRadioButton3 = new JRadioButton();
-  private JScrollPane jScrollPane1 = new JScrollPane();
-  private BorderLayout borderLayout3 = new BorderLayout();
-  private JTable jTable1 = new JTable();
-  private BayesianNetwork classifier;
+public class EvaluationOptions
+{ private JTable statesTable = new JTable();
+  private JLabel statesLabel = new JLabel("Enter new Values: ");
+  private JPanel statesPanel = new JPanel(new BorderLayout());
+  private ProbabilisticNode classNode;
 
-  public EvaluationOptions(Classifier classifier)
-  { if (classifier instanceof BayesianNetwork)
-        this.classifier = (BayesianNetwork)classifier;
-    try
-    {
-      jbInit();
+  public EvaluationOptions(ProbabilisticNode classNode,Component parent)
+  {   this.classNode = classNode;
+      statesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+      statesTable.getTableHeader().setReorderingAllowed(false);
+      statesTable.getTableHeader().setResizingAllowed(false);
+      statesTable.setColumnSelectionAllowed(false);
+      statesTable.setRowSelectionAllowed(false);
+      StatesTableModel model = new StatesTableModel(classNode);
+      statesTable.setModel(model);
+      JComboBox comboBox = new JComboBox();
+      int size = classNode.getStatesSize();
+      for (int i=0;i<size;i++)
+      {   comboBox.addItem(new Integer(i));
+      }
+      TableColumnModel columnModel = statesTable.getColumnModel();
+      TableColumn priorityColumn = columnModel.getColumn(0);
+      priorityColumn.setCellEditor(new DefaultCellEditor(comboBox));
+
+      statesPanel.add(statesLabel,BorderLayout.NORTH);
+      statesPanel.add(statesTable,BorderLayout.CENTER);
+
+      if ((JOptionPane.showInternalConfirmDialog(parent, statesPanel, "", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION))
+      {   System.out.println("mario");
+      }
+  }
+
+  /**
+   * A table model that looks at the names of attributes and maintains
+   * a list of attributes that have been "selected".
+   */
+  private class StatesTableModel extends AbstractTableModel
+  {   private ProbabilisticNode classNode;
+      private String[] columnNames = {"Priority","State","Probability" };
+      private Object[][] cells;
+      private int statesSize = 1;
+
+      /**
+      * Creates the tablemodel with the given set of instances.
+      * @param instances the initial set of Instances
+      */
+      public StatesTableModel(ProbabilisticNode classNode)
+      {   this.classNode = classNode;
+          statesSize = classNode.getStatesSize();
+          cells = new Object[statesSize][3];
+          for (int row = 0; row < statesSize; row++)
+          {   cells [row][0] = new Integer(row);
+              cells [row][1] = classNode.getStateAt(row);
+              cells [row][2] = ""+classNode.getMarginalAt(row);
+          }
+      }
+
+      /**
+      * Gets the number of attributes.
+      * @return the number of attributes.
+      */
+      public int getRowCount()
+      {   return statesSize;
+      }
+
+      /**
+      * Gets the number of columns: 3
+      * @return 3
+      */
+      public int getColumnCount()
+      {   return 3;
+      }
+
+      /**
+      * Gets a table cell
+      * @param row the row index
+      * @param column the column index
+      * @return the value at row, column
+      */
+      public Object getValueAt(int row, int col)
+      {   /*switch (column)
+          {   case 0:   return new Integer(row);
+              case 1:   return classNode.getStateAt(row);
+              case 2:   return ""+classNode.getMarginalAt(row);
+              default:  return null;
+          }*/
+          return cells[row][col];
+      }
+
+      /**
+      * Gets the name for a column.
+      * @param column the column index.
+      * @return the name of the column.
+      */
+      public String getColumnName(int column)
+      {   /*switch (column)
+          {   case 0:   return new String("Priority");
+              case 1:   return new String("State");
+              case 2:   return new String("Probability");
+              default:  return null;
+          }*/
+          return columnNames[column];
+      }
+
+    /**
+     * Sets the value at a cell.
+     * @param value the new value.
+     * @param row the row index.
+     * @param col the column index.
+     */
+    public void setValueAt(Object value, int row, int col)
+    {   cells[row][col] = value;
     }
-    catch(Exception e)
-    {
-      e.printStackTrace();
-    }
-  }
-  private void jbInit() throws Exception
-  {
-    this.getContentPane().setLayout(borderLayout1);
-    jPanel1.setLayout(borderLayout2);
-    jButton1.setText("Cancel");
-    jButton1.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jButton1_actionPerformed(e);
-      }
-    });
-    jButton2.setText("OK");
-    jButton2.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jButton2_actionPerformed(e);
-      }
-    });
-    jPanel2.setLayout(gridLayout1);
-    gridLayout1.setColumns(1);
-    gridLayout1.setRows(2);
-    jPanel4.setLayout(gridLayout2);
-    gridLayout2.setColumns(1);
-    gridLayout2.setRows(3);
-    jRadioButton1.setSelected(true);
-    jRadioButton1.setText("Normal Classification");
-    jRadioButton2.setText("Absolute Frequency Classification");
-    jRadioButton3.setText("Relative Frequency Classification");
-    jPanel5.setLayout(borderLayout3);
-    this.getContentPane().add(jPanel1,  BorderLayout.CENTER);
-    jPanel1.add(jPanel2, BorderLayout.CENTER);
-    jPanel2.add(jPanel4, null);
-    jPanel4.add(jRadioButton1, null);
-    jPanel4.add(jRadioButton3, null);
-    jPanel4.add(jRadioButton2, null);
-    jPanel2.add(jPanel5, null);
-    jPanel5.add(jScrollPane1,  BorderLayout.CENTER);
-    jScrollPane1.getViewport().add(jTable1, null);
-    jPanel1.add(jPanel3,  BorderLayout.SOUTH);
-    jPanel3.add(jButton2, null);
-    jPanel3.add(jButton1, null);
-    Object [] colNames = {"Priority","Class Value","Probability"};
-    Object [][] data = new Object [3][3];
-    jTable1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    jTable1.getTableHeader().setReorderingAllowed(false);
-    jTable1.getTableHeader().setResizingAllowed(false);
-    jTable1.setColumnSelectionAllowed(false);
-    jTable1.setRowSelectionAllowed(false);
-    jTable1.setModel(new ValuesTableModel(data, colNames));
-    buttonGroup1.add(jRadioButton1);
-    buttonGroup1.add(jRadioButton3);
-    buttonGroup1.add(jRadioButton2);
-  }
 
-  private class ValuesTableModel extends DefaultTableModel
-  {   public boolean isCellEditable(int row, int col)
-      {   return false;
+      /**
+      * Gets the class of elements in a column.
+      * @param col the column index.
+      * @return the class of elements in the column.
+      */
+      public Class getColumnClass(int col)
+      {   return getValueAt(0, col).getClass();
       }
 
-      public ValuesTableModel()
-      {   super();
+      /**
+      * Returns true if the column is the "selected" column.
+      * @param row ignored
+      * @param col the column index.
+      * @return true if col == 1.
+      */
+      public boolean isCellEditable(int row, int col)
+      {   if ((col == 2) || (col == 0))
+          {   return true;
+          }
+          return false;
       }
 
-      public ValuesTableModel(Object[][] data,Object[] colNames)
-      {   super(data,colNames);
+    /**
+     * Gets an array containing the indices of all selected attributes.
+     * @return the array of selected indices.
+     */
+    /*public int [] getSelectedAttributes()
+    { int [] r1 = new int[getRowCount()];
+      int selCount = 0;
+      for (int i = 0; i < getRowCount(); i++)
+      {   if (m_Selected[i])
+          {   r1[selCount++] = i;
+	  }
       }
-  }
-
-  void jButton2_actionPerformed(ActionEvent e)
-  {   dispose();
-  }
-
-  void jButton1_actionPerformed(ActionEvent e)
-  {   dispose();
+      int [] result = new int[selCount];
+      System.arraycopy(r1, 0, result, 0, selCount);
+      return result;
+    }*/
   }
 }

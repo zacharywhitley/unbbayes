@@ -20,7 +20,6 @@ public class EvaluationMain extends JInternalFrame
   private ResourceBundle resource;
   private ImageIcon abrirIcon;
   private ImageIcon helpIcon;
-  private ImageIcon opcaoglobalIcon;
   private JPanel contentPane;
   private JMenuBar jMenuBar1 = new JMenuBar();
   private JMenu jMenuFile = new JMenu();
@@ -42,7 +41,6 @@ public class EvaluationMain extends JInternalFrame
   private JFileChooser fileChooser;
   private JToolBar jToolBar1 = new JToolBar();
   private JMenuItem jMenuItem2 = new JMenuItem();
-  private JButton optionsButton = new JButton();
   private JButton helpButton = new JButton();
   private JButton openButton = new JButton();
 
@@ -66,7 +64,6 @@ public class EvaluationMain extends JInternalFrame
   private void jbInit() throws Exception
   { abrirIcon = new ImageIcon(getClass().getResource("/icones/abrir.gif"));
     helpIcon = new ImageIcon(getClass().getResource("/icones/help.gif"));
-    opcaoglobalIcon = new ImageIcon(getClass().getResource("/icones/opcaoglobal.gif"));
     contentPane = (JPanel) this.getContentPane();
     titledBorder5 = new TitledBorder(border5,resource.getString("selectProgram"));
     border5 = BorderFactory.createLineBorder(new Color(153, 153, 153),1);
@@ -110,13 +107,6 @@ public class EvaluationMain extends JInternalFrame
         jMenuItem2_actionPerformed(e);
       }
     });
-    optionsButton.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        optionsButton_actionPerformed(e);
-      }
-    });
     helpButton.setIcon(helpIcon);
     helpButton.addActionListener(new java.awt.event.ActionListener()
     {
@@ -134,8 +124,6 @@ public class EvaluationMain extends JInternalFrame
         openButton_actionPerformed(e);
       }
     });
-    optionsButton.setEnabled(false);
-    optionsButton.setIcon(opcaoglobalIcon);
     jMenuFile.add(jMenuItem2);
     jMenuFile.add(jMenuFileExit);
     jMenuHelp.add(jMenuHelpAbout);
@@ -148,7 +136,6 @@ public class EvaluationMain extends JInternalFrame
     contentPane.add(jToolBar1, BorderLayout.NORTH);
     jToolBar1.add(openButton, null);
     jToolBar1.add(helpButton, null);
-    jToolBar1.add(optionsButton, null);
   }
   /**File | Exit action performed
    * @param e One ActionEvent
@@ -188,6 +175,7 @@ public class EvaluationMain extends JInternalFrame
       if (returnVal == JFileChooser.APPROVE_OPTION)
       {   selectedFile = fileChooser.getSelectedFile();
           openFile(selectedFile);
+          statusBar.setText("Test Instance Set opened successfully");
           FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
       else
@@ -230,7 +218,9 @@ public class EvaluationMain extends JInternalFrame
 
   void jMenuItem2_actionPerformed(ActionEvent evt)
   {   openModel();
-      openTest();
+      if (instOK)
+      {   openTest();
+      }
       if (instOK)
       {   try
           {   BayesianNetwork bayesianNetwork = new BayesianNetwork(net,inst);
@@ -241,30 +231,29 @@ public class EvaluationMain extends JInternalFrame
               instOK = false;
           }
       }
-      optionsButton.setEnabled(false);
       if (instOK)
       {   jPanel2.setModel(classifier,inst);
-          statusBar.setText(resource.getString("modelOpened"));
-          optionsButton.setEnabled(true);
-          this.setTitle("Evaluation - "+resource.getString("model")+selectedFile.getName());
+          this.setTitle("Evaluation - "+selectedFile.getName());
       }
   }
 
   private void openModel()
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
       String[] s2 = {"NET"};
-      String[] s1 = {"ID3"};
+      //String[] s1 = {"ID3"};
       fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setDialogTitle("Open model");
       fileChooser.setMultiSelectionEnabled(false);
       //adicionar FileView no FileChooser para desenhar ícones de arquivos
       fileChooser.setFileView(new FileIcon(EvaluationMain.this));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "Networks (*.net)"));
-      fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ID3 Models (*.id3)"));
+      //fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ID3 Models (*.id3)"));
       int returnVal = fileChooser.showOpenDialog(this);
       if (returnVal == JFileChooser.APPROVE_OPTION)
       {   selectedFile = fileChooser.getSelectedFile();
           setModelFromFile(selectedFile);
+          instOK = true;
+          statusBar.setText(resource.getString("modelOpened"));
           FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
       else
@@ -304,15 +293,6 @@ public class EvaluationMain extends JInternalFrame
       }
   }
 
-  void optionsButton_actionPerformed(ActionEvent e)
-  {   /*if (classifier instanceof BayesianLearning)
-      {   int[] classValues = {1,0};
-          float[] probabilities = {0.2f,0.8f};
-          ((BayesianLearning)classifier).setAbsoluteClassification(classValues,probabilities);
-      }*/
-      EvaluationOptions options = new EvaluationOptions(classifier);
-      options.show();
-  }
 
 
 }

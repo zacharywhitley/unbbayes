@@ -370,7 +370,7 @@ public class DecisionTreeMain extends JInternalFrame
       //adicionar FileView no FileChooser para desenhar ícones de arquivos
       fileChooser.setFileView(new FileIcon(DecisionTreeMain.this));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ID3 Models (*.id3)"));
-      int returnVal = fileChooser.showOpenDialog(this);
+      int returnVal = fileChooser.showSaveDialog(this);
       if (returnVal == JFileChooser.APPROVE_OPTION)
       {   File selectedFile = fileChooser.getSelectedFile();
           try
