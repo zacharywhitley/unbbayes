@@ -45,6 +45,7 @@ public class JbnResources extends ListResourceBundle {
 		{"copyName","Copy of "},
 		{"variableTableName","Variable Table "},
 		{"inconsistencyName"," inconsistency -> "},
-		{"utilityName","Utility"}
+		{"utilityName","Utility"},
+		{"InconsistencyUnderflowException","Inconsistency or Underflow found."}
 	};
 }

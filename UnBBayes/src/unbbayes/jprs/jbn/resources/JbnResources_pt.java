@@ -44,6 +44,7 @@ public class JbnResources_pt extends ListResourceBundle {
 		{"copyName","Cópia do "},
 		{"variableTableName","Tabela da variável "},
 		{"inconsistencyName"," inconsistente -> "},
-		{"utilityName","Utilidade"}
+		{"utilityName","Utilidade"},
+		{"InconsistencyUnderflowException","Encontrado erro numérico ou inconsistência."}
 	};
 }

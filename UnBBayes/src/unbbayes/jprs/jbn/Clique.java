@@ -32,6 +32,9 @@ import unbbayes.util.NodeList;
  *@version   27 de Junho de 2001
  */
 public class Clique implements ITabledVariable {
+	
+	/** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.jprs.jbn.resources.JbnResources");
 
     /**
      *  Identifica unicamente o nó.
@@ -129,7 +132,7 @@ public class Clique implements ITabledVariable {
             for (int c = 0; c < sizeDados; c++) {
                 valor = tabelaPot.getValue(c);
                 if (n == 0.0) {
-                    throw new Exception("Inconsistency or Underflow found");
+                    throw new Exception(resource.getString("InconsistencyUnderflowException"));
                 }
                 valor /= n;
                 tabelaPot.setValue(c, valor);
@@ -148,7 +151,11 @@ public class Clique implements ITabledVariable {
         if (control == decisoes.size()) {
             double soma = sum(0, fixo, coord);
             if (soma == 0.0) {
-                throw new Exception("Inconsistency or Underflow found");
+            	for (int k = 0; k < decisoes.size(); k++) {
+					System.out.println(decisoes.get(k) + " - " + decisoes.get(k).getStateAt(coord[index[k]]));
+            	}
+            	return;
+//                throw new Exception(resource.getString("InconsistencyUnderflowException"));
             }
             div(0, fixo, coord, soma);            
             return;
