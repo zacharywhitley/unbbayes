@@ -26,8 +26,8 @@ public class UtilityTable extends PotentialTable implements java.io.Serializable
     	calcularFatores();
         int index = variaveis.indexOf(variavel);
         if (variavel.getType() == Node.PROBABILISTIC_NODE_TYPE) {
-//            sum(variaveis.size()-1, index, new int[variaveis.size()]);
-			sum(variaveis.size()-1, index, 0, 0);			
+//			sum(variaveis.size()-1, index, 0, 0);			
+			sum(index);
         } else {        	
             DecisionNode decision = (DecisionNode) variavel;
             if (decision.hasEvidence()) {

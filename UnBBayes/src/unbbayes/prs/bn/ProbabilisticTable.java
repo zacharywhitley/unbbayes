@@ -28,15 +28,15 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
             if (decision.hasEvidence()) {
                 finding(variaveis.size()-1, index, new int[variaveis.size()], decision.getEvidence());
             } else {
-//                sum(variaveis.size()-1, index, new int[variaveis.size()]);				
-                sum(variaveis.size()-1, index, 0, 0);
+//                sum(variaveis.size()-1, index, 0, 0);
+                sum(index);
                 for (int i = dados.size-1; i >= 0; i--) {
                     dados.data[i] = dados.data[i] / statesSize;
                 }
             }
         } else {
-//            sum(variaveis.size()-1, index, new int[variaveis.size()]);
-            sum(variaveis.size()-1, index, 0, 0);
+//          sum(variaveis.size()-1, index, 0, 0);
+          sum(index);
         }
         variableModified();
         variaveis.remove(index);

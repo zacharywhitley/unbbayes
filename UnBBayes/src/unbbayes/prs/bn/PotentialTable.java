@@ -246,6 +246,8 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
     public abstract PotentialTable newInstance();
 
 
+
+	/*
     protected void sum(int control, int index, int coord, int base) {
         if (control == -1) {            
             int linearCoordDestination = coord - base;
@@ -266,6 +268,55 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	        }
 		}
     }
+    */
+    
+    
+    protected void sum(int index) {
+    	boolean marked[]  = new boolean[dados.size]; 
+    	sumAux(variaveis.size() - 1, index, 0, 0, marked);
+    	
+    	int j = 0;
+    	for (int i = 0; i < dados.size; i++) {
+    		if (marked[i]) {
+    			continue;    			
+    		}
+    		dados.data[j++] = dados.data[i];
+    	}
+    	
+    	dados.size = j;
+    }
+    
+    
+    /**
+     * Auxiliary method for sum() 
+     * 
+     * @param control Control index for the recursion. Call with the value 'variaveis.size - 1'
+     * @param index Index of the variable to delete from the table
+     * @param coord Call with 0
+     * @param base  Call with 0
+     * @param marked Call with an array of falses.
+     */
+    private void sumAux(int control, int index, int coord, int base, boolean[] marked) {
+        if (control == -1) {            
+            int linearCoordDestination = coord - base;
+            float value = dados.data[linearCoordDestination] + dados.data[coord];
+            dados.data[linearCoordDestination] = value;
+            marked[coord] = true;
+            return;
+        }
+		
+		Node node = variaveis.get(control);
+		if (control == index) {	
+	        for (int i = node.getStatesSize()-1; i >= 1; i--) {
+	            sumAux(control-1, index, coord + i*fatores[control], i*fatores[index], marked);
+	        }	
+		} else {
+	        for (int i = node.getStatesSize()-1; i >= 0; i--) {
+	            sumAux(control-1, index, coord + i*fatores[control], base, marked);
+	        }
+		}
+    }
+    
 
 /*
     protected void sum(int control, int index, int coord[]) {
@@ -378,11 +429,29 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
         if (tableSize() != tab.tableSize()) {
             throw new RuntimeException(resource.getString("TableSizeException"));
         }
-
-        for (int k = tableSize()-1; k >= 0; k--) {
-            float b = tab.dados.data[k];
-            float a = dados.data[k];
-            dados.data[k] = operate(a, b, operator);
+        
+        switch (operator) {
+        	case PRODUCT_OPERATOR:
+		        for (int k = tableSize()-1; k >= 0; k--) {
+		            dados.data[k] *= tab.dados.data[k];
+		        }
+		        break;
+		     
+		    case DIVISION_OPERATOR:
+		        for (int k = tableSize()-1; k >= 0; k--) {
+		        	if (tab.dados.data[k] != 0) {
+		            	dados.data[k] /= tab.dados.data[k];
+		        	} else {
+		        		dados.data[k] = 0;		        		
+		        	}
+		        }
+		        break;
+		    
+		    case MINUS_OPERATOR:
+		        for (int k = tableSize()-1; k >= 0; k--) {
+		            dados.data[k] -= tab.dados.data[k];
+		        }
+		        break;
         }
     }
 
@@ -445,6 +514,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
     	}
     }
 
+	/*
     private float operate(float a, float b, int operator) {
         switch (operator) {
             case MINUS_OPERATOR:
@@ -462,6 +532,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
                 throw new RuntimeException(resource.getString("OperatorException"));
         }
     }
+    */
 
 
     /**
