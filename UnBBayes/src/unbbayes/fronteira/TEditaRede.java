@@ -874,11 +874,9 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
     public void insereArco(double x1, double y1, double x2, double y2) {
         Node no1 = getNo(x1, y1);
         Node no2 = getNo(x2, y2);
-        no1.getChildren().add(no2);
-        no2.getParents().add(no1);
-
         Edge arcoInserir = new Edge(no1, no2);
-
+        net.addEdge(arcoInserir);
+/*
 		arcoInserir.getOriginNode().getChildren().add(arcoInserir.getDestinationNode());
         arcoInserir.getDestinationNode().getParents().add(arcoInserir.getOriginNode());
         arco.add(arcoInserir);
@@ -888,7 +886,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
             PotentialTable auxTab = v2.getPotentialTable();
             auxTab.addVariable(arcoInserir.getOriginNode());
         }
-
+*/
         repintar();
     }
 

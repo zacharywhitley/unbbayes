@@ -136,13 +136,24 @@ public class MainController {
         Node noFilho = null;
         Node noPai = null;
         Edge arcoAux = null;
+        Node aux;
+        boolean direction = true;
         for (int i = 0; i < variaveis.size(); i++) {
             noFilho = variaveis.get(i);
             net.addNode(noFilho);
             for (int j = 0; j < noFilho.getParents().size(); j++) {
             	noPai = (Node)noFilho.getParents().get(j);
             	noPai.getChildren().add(noFilho);
-                arcoAux = new Edge(noPai, noFilho);
+            	for(int k = 0 ; k < noPai.getParents().size() && direction; k++){
+            	    aux = (Node)noPai.getParents().get(k);
+            	    if(aux == noFilho){
+            	        noPai.getParents().remove(k);
+            	        direction = false;
+            	    }                      		
+            	}                 
+                arcoAux = new Edge(noPai, noFilho);                
+              	arcoAux.setDirection(direction);                	
+              	direction = true;
                 net.getArcos().add(arcoAux);
             }
         }
