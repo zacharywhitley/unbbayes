@@ -109,7 +109,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"saveNetImageToolTip","Salvar o grafo como imagem gif"},
 		{"siglaLabel","Sigla:"},
 		{"descriptionLabel","Descrição:"},
-		{"compileToolTip","Compilar árovre de junção"},
+		{"compileToolTip","Compilar árvore de junção"},
 		{"moreToolTip","Adicionar estado"},
 		{"lessToolTip","Remover estado"},
 		{"arcToolTip","Inserir arco"},
