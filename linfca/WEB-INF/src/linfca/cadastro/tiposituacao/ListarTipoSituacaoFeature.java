@@ -1,9 +1,10 @@
 
-package linfca;
+package linfca.cadastro.tiposituacao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import linfca.*;
 
 import org.jdom.Element;
 

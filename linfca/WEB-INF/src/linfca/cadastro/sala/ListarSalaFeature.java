@@ -1,10 +1,10 @@
 
-package linfca;
+package linfca.cadastro.sala;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-
+import linfca.*;
 import org.jdom.Element;
 
 public class ListarSalaFeature implements Feature {
