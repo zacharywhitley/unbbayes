@@ -119,7 +119,7 @@ public class NeuralModelController {
   private void modelPrunnig(){
     int minSupport = mainScreen.rulesPanel.getSupport();
     int minConfidence = mainScreen.rulesPanel.getConfidence();
-    cnm.prunning(minSupport, minConfidence);
+//    cnm.prunning(minSupport, minConfidence);
   }
 
   /**
