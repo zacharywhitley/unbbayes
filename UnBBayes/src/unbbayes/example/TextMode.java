@@ -54,7 +54,7 @@ public class TextMode {
 
 		try {
 			BaseIO io = new NetIO();
-			rede = io.load(new File("./exemplos/asia.net"));
+			rede = io.load(new File("./examples/asia.net"));
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -93,6 +93,5 @@ public class TextMode {
         } catch (Exception exc) {
         	System.out.println(exc.getMessage());               	
         }
-
 	}
 }
