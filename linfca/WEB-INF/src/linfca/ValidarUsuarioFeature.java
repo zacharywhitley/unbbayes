@@ -25,6 +25,7 @@ public class ValidarUsuarioFeature implements Feature {
 	 *      | 
 	 * 	  <sair>
 	 * 		 <cod-lancamento>4</cod-lancamento>
+	 * 		 <cod-computador>3></cod-computador>	
 	 *    </sair>
 	 *      |
 	 *    <false/>
