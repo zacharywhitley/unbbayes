@@ -24,8 +24,8 @@
 		usuarioXML = detalharUsuario.process(in);	
 		
 		if (usuarioXML != null) {
-			byte[] buffer = Base64.decode(Base64.getBinaryBytes(usuarioXML.getChildTextTrim("foto"))); 			
-			foto = File.createTempFile("usuario", null, new File("C:/eclipse/workspace/Linf/tmp/"));
+			byte[] buffer = Base64.decode(Base64.getBinaryBytes(usuarioXML.getChildTextTrim("foto")));
+			foto = File.createTempFile("usuario", null, new File(config.getServletContext().getRealPath("") + "/tmp"));
 			FileOutputStream fos = new FileOutputStream(foto);
 			fos.write(buffer);
 			fos.close();
