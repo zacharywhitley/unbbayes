@@ -67,19 +67,19 @@ public class FileController
         String className = component.getClass().getName();
         HelpSet set = null;
         if (className.equals("unbbayes.datamining.gui.InvokerMain"))
-        {   set = new HelpSet(null, getClass().getResource("/ajuda/DataMiningHelp/Data_Mining.hs"));
+        {   set = new HelpSet(null, getClass().getResource("/help/DataMiningHelp/Data_Mining.hs"));
         }
         else if (className.equals("unbbayes.datamining.gui.decisiontree.DecisionTreeMain"))
-        {   set = new HelpSet(null, getClass().getResource("/ajuda/DataMiningHelp/Decision_Tree.hs"));
+        {   set = new HelpSet(null, getClass().getResource("/help/DataMiningHelp/Decision_Tree.hs"));
         }
         else if (className.equals("unbbayes.datamining.gui.evaluation.EvaluationMain"))
-        {   set = new HelpSet(null, getClass().getResource("/ajuda/DataMiningHelp/Evaluation.hs"));
+        {   set = new HelpSet(null, getClass().getResource("/help/DataMiningHelp/Evaluation.hs"));
         }
         else if (className.equals("unbbayes.datamining.gui.naivebayes.NaiveBayesMain"))
-        {   set = new HelpSet(null, getClass().getResource("/ajuda/DataMiningHelp/Naive_Bayes.hs"));
+        {   set = new HelpSet(null, getClass().getResource("/help/DataMiningHelp/Naive_Bayes.hs"));
         }
         else if (className.equals("unbbayes.datamining.gui.preprocessor.PreprocessorMain"))
-        {   set = new HelpSet(null, getClass().getResource("/ajuda/DataMiningHelp/Preprocessor.hs"));
+        {   set = new HelpSet(null, getClass().getResource("/help/DataMiningHelp/Preprocessor.hs"));
         }
         else
         {   component.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));

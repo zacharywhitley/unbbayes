@@ -173,7 +173,7 @@ public class IUnBBayes extends JFrame {
                 public void actionPerformed(ActionEvent ae) {
                     setCursor(new Cursor(Cursor.WAIT_CURSOR));
                         try {
-                                set        = new HelpSet(null, getClass().getResource("/ajuda/JUnBBayes.hs"));
+                                set        = new HelpSet(null, getClass().getResource("/help/JUnBBayes.hs"));
                                 jHelp      = new JHelp(set);
                                 JFrame f   = new JFrame();
                                 f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
