@@ -41,8 +41,6 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
      */
     public ProbabilisticNode() {
         tabelaPot = new ProbabilisticTable();
-        /*nodeType = EXPLANATION_NODE;
-        evidenceType = NA_TYPE;*/
     }
 
 

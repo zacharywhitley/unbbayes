@@ -78,11 +78,21 @@ public abstract class Node implements java.io.Serializable {
     private static int largura;
     private String explanationDescription = "";
     private ArrayMap phrasesMap = new ArrayMap();
+    private int informationType;
+    private int evidenceType;
 
     public static final int PROBABILISTIC_NODE_TYPE = 0;
     public static final int UTILITY_NODE_TYPE = 1;
     public static final int DECISION_NODE_TYPE = 2;
 
+    public static final int DESCRIPTION_TYPE = 3;
+    public static final int EXPLANATION_TYPE = 4;
+
+    public static final int TRIGGER_EVIDENCE_TYPE = 5;
+    public static final int COMPLEMENTARY_EVIDENCE_TYPE = 6;
+    public static final int NA_EVIDENCE_TYPE = 7;
+    public static final int NECESSARY_EVIDENCE_TYPE = 8;
+    public static final int EXCLUSIVE_EVIDENCE_TYPE = 9;
 
     /**
      *  Constrói um novo nó e faz as devidas inicializações.
@@ -96,10 +106,68 @@ public abstract class Node implements java.io.Serializable {
         largura = 35;
         posicao = new SerializablePoint2D();
         selecionado = false;
+        informationType = EXPLANATION_TYPE;
+        evidenceType = NA_EVIDENCE_TYPE;
     }
 
     public abstract int getType();
 
+    /** Retorna o tipo de informação do nó.
+     *  @return Tipo de informação do nó.
+     */
+    public int getInformationType()
+    {   return informationType;
+    }
+
+    /** Altera o tipo de informação do nó.
+     *  Os tipos de informação podem ser:
+     *  -   DESCRIPTION_TYPE : nó de descrição
+     *  -   EXPLANATION_TYPE : nó de explicação
+     *  @param informationType Tipo de informação
+     *  @throws Exception se o tipo de informação for inválida
+     */
+    public void setInformationType(int informationType) throws Exception
+    {   if ((informationType > 2) && (informationType < 5))
+            this.informationType = informationType;
+        else
+        {   throw new Exception("Valor de infromação inválido");
+        }
+    }
+
+    /** Retorna o tipo de evidência de um nó de explicação.
+     *  É retornado 0 se este for um nó de informação.
+     *  @return Tipo de evidência de um nó.
+     */
+    public int getEvidenceType()
+    {   if (informationType == EXPLANATION_TYPE)
+        {   return evidenceType;
+        }
+        else
+        {   return 0;
+        }
+    }
+
+    /** Altera o tipo de evidência do nó de explicação.
+     *  Os tipos de evidência podem ser:
+     *  -   TRIGGER_EVIDENCE_TYPE : nó trigger
+     *  -   COMPLEMENTARY_EVIDENCE_TYPE : nó complementar
+     *  -   NA_EVIDENCE_TYPE : nó na
+     *  -   NECESSARY_EVIDENCE_TYPE : nó necessário
+     *  -   EXCLUSIVE_EVIDENCE_TYPE : nó exclusivo
+     *  @param evidenceType Tipo de evidência
+     *  @throws Exception se o nó for de descrição ou for dada uma evidência inválida
+     */
+    public void setEvidenceType(int evidenceType) throws Exception
+    {   if (informationType == EXPLANATION_TYPE && (evidenceType > 4) && (evidenceType < 10))
+        {   this.evidenceType = evidenceType;
+        }
+        else if (informationType == DESCRIPTION_TYPE)
+        {   throw new Exception("Nó de descrição");
+        }
+        else
+        {   throw new Exception("Valor de evidência inválido");
+        }
+    }
 
     /**
      *  Modifica o nome do nó.
