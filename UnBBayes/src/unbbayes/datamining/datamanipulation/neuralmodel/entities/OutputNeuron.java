@@ -118,13 +118,22 @@ public class OutputNeuron extends Neuron implements Serializable{
     Iterator outputEnum = combinationsList.values().iterator();
     Arc tempArc;
 
+    System.out.println(combinationsList.size() + " combinações");
+
     while(outputEnum.hasNext()){
       tempArc = (Arc)outputEnum.next();
       if(tempArc.support < minSupport || tempArc.confidence < minConfidence){
-        tempArc.combinationNeuron.prunning(this.key);
-        combinationsList.remove(tempArc.combinationNeuron.key);
+//        tempArc.combinationNeuron.prunning(this.key);
+        if(combinationsList.remove(tempArc.combinationNeuron.key) != null){
+          System.out.println("nao null");
+        } else  {
+          System.out.println("null");
+        }
       }
+      System.out.println("teste");
     }
+
+    System.out.println("ponto1");
   }
 
   /**

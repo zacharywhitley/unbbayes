@@ -78,13 +78,26 @@ public class CombinatorialNeuron extends Neuron implements Serializable{
    *         <code>false</code> otherwise.
    */
   public boolean getSignal(){                 //implementação do AND
-    int inputSize = inputList.length;
+/*    int inputSize = inputList.length;
     boolean signal = true;
     for(int i=0; i<inputSize; i++){
       signal = signal && inputList[i].getSignal();
     }
-    return signal;
+*/    return signal;
+
   }
+
+///////////////////////////////////////////
+  private boolean signal = false;
+
+  public void setSignal(){
+    int inputSize = inputList.length;
+    signal = true;
+    for(int i=0; i<inputSize; i++){
+      signal = signal && inputList[i].getSignal();
+    }
+  }
+/////////////////////////////////////////////
 
   /**
    * Returns an enumeration with the output neurons associated to this
