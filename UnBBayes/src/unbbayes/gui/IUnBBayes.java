@@ -92,11 +92,11 @@ public class IUnBBayes extends JFrame {
 	private ActionListener alOpen;
 	private ActionListener alSave;
 	private ActionListener alExit;
-    private ActionListener alTbFile;
-    private ActionListener alTbView;
-    private ActionListener alTbTools;
-    private ActionListener alTbWindow;
-    private ActionListener alTbHelp;
+	private ActionListener alTbFile;
+	private ActionListener alTbView;
+	private ActionListener alTbTools;
+	private ActionListener alTbWindow;
+	private ActionListener alTbHelp;
 	private ActionListener alMetal;
 	private ActionListener alMotif;
 	private ActionListener alWindows;
@@ -110,8 +110,7 @@ public class IUnBBayes extends JFrame {
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource =
-		ResourceBundle.getBundle(
-			"unbbayes.gui.resources.GuiResources");
+		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
 	/**
 	 *  Constrói a tela principal do programa, ajustando os Layouts e criando
@@ -297,91 +296,91 @@ public class IUnBBayes extends JFrame {
 				}
 			}
 		};
-        
-        // create an ActionListener for showing the File Tool Bar
-        alTbFile = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                if (((JCheckBoxMenuItem)e.getSource()).getState()) {
-                    topPanel.add(jtbFile);
-                } else {
-                    topPanel.remove(jtbFile);
-                }
-                // lay out its subcomponents again after an container has been 
-                // added, removed or modified
-                validate();
-                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            }
 
-        };
-        
-        // create an ActionListener for showing the View Tool Bar
-        alTbView = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                if (((JCheckBoxMenuItem)e.getSource()).getState()) {
-                    topPanel.add(jtbView);
-                } else {
-                    topPanel.remove(jtbView);
-                }
-                // lay out its subcomponents again after an container has been 
-                // added, removed or modified
-                validate();
-                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            }
+		// create an ActionListener for showing the File Tool Bar
+		alTbFile = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setCursor(new Cursor(Cursor.WAIT_CURSOR));
+				if (((JCheckBoxMenuItem) e.getSource()).getState()) {
+					topPanel.add(jtbFile);
+				} else {
+					topPanel.remove(jtbFile);
+				}
+				// lay out its subcomponents again after an container has been 
+				// added, removed or modified
+				validate();
+				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
 
-        };
-        
-        // create an ActionListener for showing the Tools Tool Bar
-        alTbTools = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                if (((JCheckBoxMenuItem)e.getSource()).getState()) {
-                    topPanel.add(jtbTools);
-                } else {
-                    topPanel.remove(jtbTools);
-                }
-                // lay out its subcomponents again after an container has been 
-                // added, removed or modified
-                validate();
-                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            }
+		};
 
-        };
-        
-        // create an ActionListener for showing the Window Tool Bar
-        alTbWindow = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                if (((JCheckBoxMenuItem)e.getSource()).getState()) {
-                    topPanel.add(jtbWindow);
-                } else {
-                    topPanel.remove(jtbWindow);
-                }
-                // lay out its subcomponents again after an container has been 
-                // added, removed or modified
-                validate();
-                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            }
+		// create an ActionListener for showing the View Tool Bar
+		alTbView = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setCursor(new Cursor(Cursor.WAIT_CURSOR));
+				if (((JCheckBoxMenuItem) e.getSource()).getState()) {
+					topPanel.add(jtbView);
+				} else {
+					topPanel.remove(jtbView);
+				}
+				// lay out its subcomponents again after an container has been 
+				// added, removed or modified
+				validate();
+				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
 
-        };
-        
-        // create an ActionListener for showing the Help Tool Bar
-        alTbHelp = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                if (((JCheckBoxMenuItem)e.getSource()).getState()) {
-                    topPanel.add(jtbHelp);
-                } else {
-                    topPanel.remove(jtbHelp);
-                }
-                // lay out its subcomponents again after an container has been 
-                // added, removed or modified
-                validate();
-                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            }
+		};
 
-        };
+		// create an ActionListener for showing the Tools Tool Bar
+		alTbTools = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setCursor(new Cursor(Cursor.WAIT_CURSOR));
+				if (((JCheckBoxMenuItem) e.getSource()).getState()) {
+					topPanel.add(jtbTools);
+				} else {
+					topPanel.remove(jtbTools);
+				}
+				// lay out its subcomponents again after an container has been 
+				// added, removed or modified
+				validate();
+				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+
+		};
+
+		// create an ActionListener for showing the Window Tool Bar
+		alTbWindow = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setCursor(new Cursor(Cursor.WAIT_CURSOR));
+				if (((JCheckBoxMenuItem) e.getSource()).getState()) {
+					topPanel.add(jtbWindow);
+				} else {
+					topPanel.remove(jtbWindow);
+				}
+				// lay out its subcomponents again after an container has been 
+				// added, removed or modified
+				validate();
+				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+
+		};
+
+		// create an ActionListener for showing the Help Tool Bar
+		alTbHelp = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setCursor(new Cursor(Cursor.WAIT_CURSOR));
+				if (((JCheckBoxMenuItem) e.getSource()).getState()) {
+					topPanel.add(jtbHelp);
+				} else {
+					topPanel.remove(jtbHelp);
+				}
+				// lay out its subcomponents again after an container has been 
+				// added, removed or modified
+				validate();
+				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+
+		};
 
 		// create an ActionListener for choosing Metal Look and Feel
 		alMetal = new ActionListener() {
@@ -460,110 +459,110 @@ public class IUnBBayes extends JFrame {
 		JMenuBar menu = new JMenuBar();
 
 		// create menus and set their mnemonic
-		JMenu fileMenu = new JMenu("File");
-		JMenu lafMenu = new JMenu("Look and Feel");
-		JMenu viewMenu = new JMenu("View");
-		JMenu toolsMenu = new JMenu("Tools");
-		JMenu windowMenu = new JMenu("Window");
-		JMenu helpMenu = new JMenu("Help");
-		fileMenu.setMnemonic('F');
-		viewMenu.setMnemonic('V');
-		toolsMenu.setMnemonic('T');
-		windowMenu.setMnemonic('W');
-		helpMenu.setMnemonic('H');
+		JMenu fileMenu = new JMenu(resource.getString("fileMenu"));
+		JMenu lafMenu = new JMenu(resource.getString("lafMenu"));
+		JMenu viewMenu = new JMenu(resource.getString("viewMenu"));
+		JMenu tbMenu = new JMenu(resource.getString("tbMenu"));
+		JMenu toolsMenu = new JMenu(resource.getString("toolsMenu"));
+		JMenu windowMenu = new JMenu(resource.getString("windowMenu"));
+		JMenu helpMenu = new JMenu(resource.getString("helpMenu"));
+		fileMenu.setMnemonic(resource.getString("fileMenuMn").charAt(0));
+        lafMenu.setMnemonic(resource.getString("lafMenuMn").charAt(0));
+		viewMenu.setMnemonic(resource.getString("viewMenuMn").charAt(0));
+		tbMenu.setMnemonic(resource.getString("tbMenuMn").charAt(0));
+		toolsMenu.setMnemonic(resource.getString("toolsMenuMn").charAt(0));
+		windowMenu.setMnemonic(resource.getString("windowMenuMn").charAt(0));
+		helpMenu.setMnemonic(resource.getString("helpMenuMn").charAt(0));
 
 		// create menu items, set their mnemonic and their key accelerator		
 		JMenuItem newItem =
 			new JMenuItem(
-				"New", new ImageIcon(getClass().getResource("/icons/new.gif")));
+				resource.getString("newItem"),
+				new ImageIcon(getClass().getResource("/icons/new.gif")));
 		JMenuItem openItem =
 			new JMenuItem(
-				"Open",
-					new ImageIcon(getClass().getResource("/icons/open.gif")));
+				resource.getString("openItem"),
+				new ImageIcon(getClass().getResource("/icons/open.gif")));
 		JMenuItem saveItem =
 			new JMenuItem(
-				"Save",
-					new ImageIcon(getClass().getResource("/icons/save.gif")));
-		JMenuItem exitItem = new JMenuItem("Exit", 'X');
-        JMenuItem tbFile = new JCheckBoxMenuItem("File Tool Bar", true);
-        JMenuItem tbView = new JCheckBoxMenuItem("View Tool Bar", true);
-        JMenuItem tbTools = new JCheckBoxMenuItem("Tools Tool Bar", true);
-        JMenuItem tbWindow = new JCheckBoxMenuItem("Window Tool Bar", true);
-        JMenuItem tbHelp = new JCheckBoxMenuItem("Help Tool Bar", true);
+				resource.getString("saveItem"),
+				new ImageIcon(getClass().getResource("/icons/save.gif")));
+		JMenuItem exitItem = new JMenuItem(resource.getString("exitItem"), 'X');
+		JMenuItem tbFile =
+			new JCheckBoxMenuItem(resource.getString("tbFile"), true);
+		JMenuItem tbView =
+			new JCheckBoxMenuItem(resource.getString("tbView"), true);
+		JMenuItem tbTools =
+			new JCheckBoxMenuItem(resource.getString("tbTools"), true);
+		JMenuItem tbWindow =
+			new JCheckBoxMenuItem(resource.getString("tbWindow"), true);
+		JMenuItem tbHelp =
+			new JCheckBoxMenuItem(resource.getString("tbHelp"), true);
 		JMenuItem metalItem =
 			new JMenuItem(
-				"Metal",
-					new ImageIcon(getClass().getResource("/icons/metal.gif")));
+				resource.getString("metalItem"),
+				new ImageIcon(getClass().getResource("/icons/metal.gif")));
 		JMenuItem motifItem =
 			new JMenuItem(
-				"Motif",
-					new ImageIcon(getClass().getResource("/icons/motif.gif")));
+				resource.getString("motifItem"),
+				new ImageIcon(getClass().getResource("/icons/motif.gif")));
 		JMenuItem windowsItem =
 			new JMenuItem(
-				"Windows",
-					new ImageIcon(getClass().getResource("/icons/windows.gif")));
+				resource.getString("windowsItem"),
+				new ImageIcon(getClass().getResource("/icons/windows.gif")));
 		JMenuItem learningItem =
 			new JMenuItem(
-				"Learning",
-					new ImageIcon(getClass().getResource("/icons/learn.gif")));
+				resource.getString("learningItem"),
+				new ImageIcon(getClass().getResource("/icons/learn.gif")));
 		JMenuItem cascadeItem =
 			new JMenuItem(
-				"Cascade",
-					new ImageIcon(getClass().getResource("/icons/cascade.gif")));
+				resource.getString("cascadeItem"),
+				new ImageIcon(getClass().getResource("/icons/cascade.gif")));
 		JMenuItem tileItem =
 			new JMenuItem(
-				"Tile",
-					new ImageIcon(getClass().getResource("/icons/tile.gif")));
+				resource.getString("tileItem"),
+				new ImageIcon(getClass().getResource("/icons/tile.gif")));
 		JMenuItem helpItem =
 			new JMenuItem(
-				"Help",
-					new ImageIcon(getClass().getResource("/icons/help.gif")));
-		JMenuItem aboutItem = new JMenuItem("About", 'A');
-        newItem.setMnemonic('N');
-        openItem.setMnemonic('O');
-        saveItem.setMnemonic('S');
-        metalItem.setMnemonic('M');
-        motifItem.setMnemonic('O');
-        windowsItem.setMnemonic('W');
-        learningItem.setMnemonic('L');
-        cascadeItem.setMnemonic('C');
-        tileItem.setMnemonic('T');
-        helpItem.setMnemonic('H');
+				resource.getString("helpItem"),
+				new ImageIcon(getClass().getResource("/icons/help.gif")));
+		JMenuItem aboutItem =
+			new JMenuItem(resource.getString("aboutItem"));
+
+		newItem.setMnemonic(resource.getString("newItemMn").charAt(0));
+		openItem.setMnemonic(resource.getString("openItemMn").charAt(0));
+		saveItem.setMnemonic(resource.getString("saveItemMn").charAt(0));
+        exitItem.setMnemonic(resource.getString("exitItemMn").charAt(0));
+		metalItem.setMnemonic(resource.getString("metalItemMn").charAt(0));
+		motifItem.setMnemonic(resource.getString("motifItemMn").charAt(0));
+		windowsItem.setMnemonic(resource.getString("windowsItemMn").charAt(0));
+		learningItem.setMnemonic(resource.getString("learningItemMn").charAt(0));
+		cascadeItem.setMnemonic(resource.getString("cascadeItemMn").charAt(0));
+		tileItem.setMnemonic(resource.getString("tileItemMn").charAt(0));
+		helpItem.setMnemonic(resource.getString("helpItemMn").charAt(0));
+        aboutItem.setMnemonic(resource.getString("aboutItemMn").charAt(0));
+
 		newItem.setAccelerator(
-			KeyStroke.getKeyStroke('N', Event.CTRL_MASK, false));
+			KeyStroke.getKeyStroke(resource.getString("newItemMn").charAt(0), Event.CTRL_MASK, false));
 		openItem.setAccelerator(
-			KeyStroke.getKeyStroke('O', Event.CTRL_MASK, false));
+			KeyStroke.getKeyStroke(resource.getString("openItemMn").charAt(0), Event.CTRL_MASK, false));
 		saveItem.setAccelerator(
-			KeyStroke.getKeyStroke('S', Event.CTRL_MASK, false));
-		exitItem.setAccelerator(
-			KeyStroke.getKeyStroke('X', Event.CTRL_MASK, false));
-		metalItem.setAccelerator(
-			KeyStroke.getKeyStroke('M', Event.CTRL_MASK, false));
-		motifItem.setAccelerator(
-			KeyStroke.getKeyStroke('O', Event.CTRL_MASK, false));
-		windowsItem.setAccelerator(
-			KeyStroke.getKeyStroke('W', Event.CTRL_MASK, false));
+			KeyStroke.getKeyStroke(resource.getString("saveItemMn").charAt(0), Event.CTRL_MASK, false));
 		learningItem.setAccelerator(
-			KeyStroke.getKeyStroke('L', Event.CTRL_MASK, false));
-		cascadeItem.setAccelerator(
-			KeyStroke.getKeyStroke('C', Event.CTRL_MASK, false));
-		tileItem.setAccelerator(
-			KeyStroke.getKeyStroke('T', Event.CTRL_MASK, false));
+			KeyStroke.getKeyStroke(resource.getString("learningItemMn").charAt(0), Event.CTRL_MASK, false));
 		helpItem.setAccelerator(
-			KeyStroke.getKeyStroke('H', Event.CTRL_MASK, false));
-		aboutItem.setAccelerator(
-			KeyStroke.getKeyStroke('A', Event.CTRL_MASK, false));
+			KeyStroke.getKeyStroke(resource.getString("helpItemMn").charAt(0), Event.CTRL_MASK, false));
 
 		// add ActionListener to all menu items
 		newItem.addActionListener(alNew);
 		openItem.addActionListener(alOpen);
 		saveItem.addActionListener(alSave);
 		exitItem.addActionListener(alExit);
-        tbFile.addActionListener(alTbFile);
-        tbView.addActionListener(alTbView);
-        tbTools.addActionListener(alTbTools);
-        tbWindow.addActionListener(alTbWindow);
-        tbHelp.addActionListener(alTbHelp);
+		tbFile.addActionListener(alTbFile);
+		tbView.addActionListener(alTbView);
+		tbTools.addActionListener(alTbTools);
+		tbWindow.addActionListener(alTbWindow);
+		tbHelp.addActionListener(alTbHelp);
 		metalItem.addActionListener(alMetal);
 		motifItem.addActionListener(alMotif);
 		windowsItem.addActionListener(alWindows);
@@ -577,17 +576,18 @@ public class IUnBBayes extends JFrame {
 		fileMenu.add(newItem);
 		fileMenu.add(openItem);
 		fileMenu.add(saveItem);
-        fileMenu.addSeparator();
+		fileMenu.addSeparator();
 		fileMenu.add(exitItem);
 		lafMenu.add(metalItem);
 		lafMenu.add(motifItem);
 		lafMenu.add(windowsItem);
-        viewMenu.add(tbFile);
-        viewMenu.add(tbView);
-        viewMenu.add(tbTools);
-        viewMenu.add(tbWindow);
-        viewMenu.add(tbHelp);
-        viewMenu.addSeparator();
+		tbMenu.add(tbFile);
+		tbMenu.add(tbView);
+		tbMenu.add(tbTools);
+		tbMenu.add(tbWindow);
+		tbMenu.add(tbHelp);
+		viewMenu.add(tbMenu);
+		viewMenu.addSeparator();
 		viewMenu.add(lafMenu);
 		toolsMenu.add(learningItem);
 		windowMenu.add(cascadeItem);
@@ -627,8 +627,8 @@ public class IUnBBayes extends JFrame {
 		jtbView.add(metal);
 		jtbView.add(motif);
 		jtbView.add(windows);
-		jtbWindow.add(tile);
 		jtbWindow.add(cascade);
+		jtbWindow.add(tile);
 		jtbHelp.add(help);
 
 		// add the tool bars to the topPanel
