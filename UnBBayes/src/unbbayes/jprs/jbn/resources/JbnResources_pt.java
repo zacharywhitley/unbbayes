@@ -31,7 +31,7 @@ public class JbnResources_pt extends ListResourceBundle {
 	 */
 	static final Object[][] contents =
 	{	{"CicleNetException","Rede com ciclo:"},
-		{"DesconectedNetException","Rede desconexa"},
+		{"DisconectedNetException","Rede desconexa"},
 		{"TableSizeException","Tamanho das tabelas diferem"},
 		{"OperatorException","Operador desconhecido"},
 		{"moralizeLabel","Moralizados com os arcos:\n"},
