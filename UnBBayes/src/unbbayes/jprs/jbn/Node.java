@@ -36,24 +36,6 @@ import unbbayes.util.*;
  */
 public abstract class Node implements java.io.Serializable {
 
-    /*public static class ExplanationPhrase implements java.io.Serializable {
-        public static final String TRIGGER_TYPE = "TRI";
-        public static final String COMPLEMENTARY_TYPE = "COM";
-        public static final String NA_TYPE = "N/A";
-        public static final String NECESSARY_TYPE = "NEC";
-        public static final String EXCLUSIVE_TYPE = "EXC";
-        public String strPhrase, type;
-
-        public ExplanationPhrase() {
-            this.strPhrase = "";
-            this.type = NA_TYPE;
-        }
-
-        public ExplanationPhrase(String strPhrase, String type) {
-            this.strPhrase = strPhrase;
-            this.type = type;
-        }
-    }*/
     public class SerializablePoint2D extends Point2D.Double implements java.io.Serializable {
     	private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
     		out.writeDouble(x);
@@ -79,7 +61,6 @@ public abstract class Node implements java.io.Serializable {
     private String explanationDescription = "";
     private ArrayMap phrasesMap = new ArrayMap();
     private int informationType;
-    private int evidenceType;
 
     public static final int PROBABILISTIC_NODE_TYPE = 0;
     public static final int UTILITY_NODE_TYPE = 1;
@@ -87,12 +68,6 @@ public abstract class Node implements java.io.Serializable {
 
     public static final int DESCRIPTION_TYPE = 3;
     public static final int EXPLANATION_TYPE = 4;
-
-    public static final int TRIGGER_EVIDENCE_TYPE = 5;
-    public static final int COMPLEMENTARY_EVIDENCE_TYPE = 6;
-    public static final int NA_EVIDENCE_TYPE = 7;
-    public static final int NECESSARY_EVIDENCE_TYPE = 8;
-    public static final int EXCLUSIVE_EVIDENCE_TYPE = 9;
 
     /**
      *  Constrói um novo nó e faz as devidas inicializações.
@@ -106,8 +81,7 @@ public abstract class Node implements java.io.Serializable {
         largura = 35;
         posicao = new SerializablePoint2D();
         selecionado = false;
-        informationType = EXPLANATION_TYPE;
-        evidenceType = NA_EVIDENCE_TYPE;
+        informationType = DESCRIPTION_TYPE;
     }
 
     public abstract int getType();
@@ -126,46 +100,25 @@ public abstract class Node implements java.io.Serializable {
      *  @param informationType Tipo de informação
      *  @throws Exception se o tipo de informação for inválida
      */
-    public void setInformationType(int informationType) throws Exception
+    public void setInformationType(int informationType) /*throws Exception*/
     {   if ((informationType > 2) && (informationType < 5))
             this.informationType = informationType;
-        else
+        /*else
         {   throw new Exception("Valor de infromação inválido");
-        }
+        }*/
     }
 
-    /** Retorna o tipo de evidência de um nó de explicação.
-     *  É retornado 0 se este for um nó de informação.
-     *  @return Tipo de evidência de um nó.
-     */
-    public int getEvidenceType()
-    {   if (informationType == EXPLANATION_TYPE)
-        {   return evidenceType;
-        }
-        else
-        {   return 0;
-        }
+    public void addExplanationPhrase(ExplanationPhrase explanationPhrase)
+    {   phrasesMap.put(explanationPhrase.getNode(),explanationPhrase);
     }
 
-    /** Altera o tipo de evidência do nó de explicação.
-     *  Os tipos de evidência podem ser:
-     *  -   TRIGGER_EVIDENCE_TYPE : nó trigger
-     *  -   COMPLEMENTARY_EVIDENCE_TYPE : nó complementar
-     *  -   NA_EVIDENCE_TYPE : nó na
-     *  -   NECESSARY_EVIDENCE_TYPE : nó necessário
-     *  -   EXCLUSIVE_EVIDENCE_TYPE : nó exclusivo
-     *  @param evidenceType Tipo de evidência
-     *  @throws Exception se o nó for de descrição ou for dada uma evidência inválida
-     */
-    public void setEvidenceType(int evidenceType) throws Exception
-    {   if (informationType == EXPLANATION_TYPE && (evidenceType > 4) && (evidenceType < 10))
-        {   this.evidenceType = evidenceType;
-        }
-        else if (informationType == DESCRIPTION_TYPE)
-        {   throw new Exception("Nó de descrição");
+    public ExplanationPhrase getExplanationPhrase(String node) throws Exception
+    {   Object obj = phrasesMap.get(node);
+        if (obj == null)
+        {   throw new Exception("Nó não encontrado.");
         }
         else
-        {   throw new Exception("Valor de evidência inválido");
+        {   return (ExplanationPhrase)obj;
         }
     }
 

@@ -1097,7 +1097,7 @@ public class WindowController implements KeyListener {
 
     public void showExplanationProperties(ProbabilisticNode node)
     {   tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        ExplanationProperties explanation = new ExplanationProperties(tela);
+        ExplanationProperties explanation = new ExplanationProperties(tela,rede);
         explanation.setProbabilisticNode(node);
         explanation.setVisible(true);
         tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));

@@ -21,20 +21,20 @@
 
 package unbbayes.io;
 
-import unbbayes.jprs.jbn.*;
-import unbbayes.util.*;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import javax.swing.*;
 import javax.swing.tree.*;
+
+import unbbayes.jprs.jbn.*;
+import unbbayes.util.*;
 
 /**
  * Classe que manipula a entrada e saída de arquivos NET.
  * @author Rommel N. Carvalho
  * @author Michael S. Onishi
+ * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
  * @version 1.0
  */
 public class NetIO implements BaseIO {
@@ -74,7 +74,7 @@ public class NetIO implements BaseIO {
 		st.ordinaryChars('(', ')');
 		st.eolIsSignificant(false);
 		st.quoteChar('"');
-		st.commentChar('%');
+		//st.commentChar('%');
 
 		proximo(st);
 		if (st.sval.equals("net")) {
@@ -157,20 +157,35 @@ public class NetIO implements BaseIO {
 								auxNo.appendState(st.sval);
 							}
 						}
-                                                /*else if (st.sval.equals("%descricao"))
+                                                else if (st.sval.equals("%descricao"))
                                                 {	proximo(st);
-							auxNo.setExplanationDescription(st.sval);
+							auxNo.setExplanationDescription(unformatString(st.sval));
+                                                        auxNo.setInformationType(Node.EXPLANATION_TYPE);
+                                                        readTillEOL(st);
                                                         proximo(st);
 						}
                                                 else if (st.sval.equals("%frase"))
                                                 {	proximo(st);
-							System.out.println(st.sval);
+							ExplanationPhrase explanationPhrase = new ExplanationPhrase();
+                                                        explanationPhrase.setNode(st.sval);
                                                         proximo(st);
-							System.out.println(st.sval);
+							try
+                                                        {   explanationPhrase.setEvidenceType(Integer.parseInt(st.sval));
+                                                        }
+                                                        catch (Exception ex)
+                                                        {   throw new LoadException(
+								ERROR_NET
+									+ " l."
+									+ st.lineno()
+									+ resource.getString("LoadException2")
+									+ st.sval);
+                                                        }
                                                         proximo(st);
-							System.out.println(st.sval);
+                                                        explanationPhrase.setPhrase(unformatString(st.sval));
+							auxNo.addExplanationPhrase(explanationPhrase);
+                                                        readTillEOL(st);
                                                         proximo(st);
-						}*/
+						}
                                                 else {
 							throw new LoadException(
 								ERROR_NET
@@ -321,13 +336,20 @@ public class NetIO implements BaseIO {
 					arq.println(
 						"     states = (" + auxString.toString() + ");");
 				}
-                                /*if (!auxNo1.getExplanationDescription().equals(""))
-                                {   arq.println("     %descricao \"" + auxNo1.getExplanationDescription() + "\"");
+                                if ((!auxNo1.getExplanationDescription().equals("")) && (auxNo1.getInformationType() == Node.EXPLANATION_TYPE))
+                                {   String explanationDescription = formatString(auxNo1.getExplanationDescription());
+                                    arq.println("     %descricao \"" + explanationDescription + "\"");
                                 }
                                 if (auxNo1.getInformationType() == Node.EXPLANATION_TYPE)
-                                {   //  inserir código para salvar as frases
-                                    //arq.println("     %frase \"" + "" + "\"" + "\"" + "" + "\"" + "\"" + "" + "\"");
-                                }*/
+                                {   ArrayMap arrayMap = auxNo1.getPhrasesMap();
+                                    int size = arrayMap.size();
+                                    ArrayList keys = arrayMap.getKeys();
+                                    for (int i=0; i<size; i++)
+                                    {   Object key = keys.get(i);
+                                        ExplanationPhrase explanationPhrase = (ExplanationPhrase)arrayMap.get(key);
+                                        arq.println("     %frase \"" + explanationPhrase.getNode() + "\" " + "\"" + explanationPhrase.getEvidenceType() + "\" " + "\"" + formatString(explanationPhrase.getPhrase()) + "\"");
+                                    }
+                                }
 
 				arq.println("}");
 				arq.println();
@@ -438,13 +460,13 @@ public class NetIO implements BaseIO {
         {   char c = sb.charAt(i);
             if (c == '(')
             {   if (nextRoot != null)
-                {   stack.add(root);
+                {   stack.push(root);
                     root = nextRoot;
                 }
             }
             else if (c == ')')
             {   if (stack.size() > 0)
-                {   root = (DefaultMutableTreeNode)stack.remove();
+                {   root = (DefaultMutableTreeNode)stack.pop();
                 }
             }
             else if (c == ',')
@@ -499,5 +521,25 @@ public class NetIO implements BaseIO {
             }
             sb.append(')');
         }
+    }
+
+    /**
+    * Reads and skips all tokens before next end of line token.
+    *
+    * @param tokenizer Stream tokenizer
+    * @throws IOException EOF not found
+    */
+    private void readTillEOL(StreamTokenizer tokenizer) throws IOException
+    {	while (tokenizer.nextToken() != StreamTokenizer.TT_EOL)
+        {};
+    	tokenizer.pushBack();
+    }
+
+    private String formatString(String string)
+    {   return string.replace('\n','#');
+    }
+
+    private String unformatString(String string)
+    {   return string.replace('#','\n');
     }
 }

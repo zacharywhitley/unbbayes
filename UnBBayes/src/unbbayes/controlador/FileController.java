@@ -116,7 +116,10 @@ public class FileController
         // start timer
         //activityMonitor.start();
 
-        Thread.yield();
+        //Thread.yield();
+        while (loader.getInstance())
+        {}
+
         inst = loader.getInstances();
         return inst;
     }

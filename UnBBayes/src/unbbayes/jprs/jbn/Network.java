@@ -33,7 +33,7 @@ import unbbayes.util.SetToolkit;
  *@version    21 de Setembro de 2001
  */
 public class Network implements java.io.Serializable {
-	
+
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.jprs.jbn.resources.JbnResources");
 
@@ -41,6 +41,8 @@ public class Network implements java.io.Serializable {
      *  Lista de nós que compõem o grafo.
      */
     protected NodeList nos;
+    protected NodeList descriptionNodes;
+    protected NodeList explanationNodes;
 
     /**
      *  Lista de arcos que compõem o grafo.
@@ -53,6 +55,8 @@ public class Network implements java.io.Serializable {
      */
     public Network() {
         nos = new NodeList();
+        descriptionNodes = new NodeList();
+        explanationNodes = new NodeList();
         arcos = new ArrayList();
     }
 
@@ -87,6 +91,14 @@ public class Network implements java.io.Serializable {
         return nos.get(index);
     }
 
+
+    public NodeList getDescriptionNodes()
+    {   return descriptionNodes;
+    }
+
+    public NodeList getExplanationNodes()
+    {   return explanationNodes;
+    }
 
     /**
      *  Retorna o nó do grafo com a respectiva sigla.
@@ -123,6 +135,12 @@ public class Network implements java.io.Serializable {
      */
     public void addNode(Node no) {
         nos.add(no);
+        if (no.getInformationType() == Node.EXPLANATION_TYPE)
+        {   explanationNodes.add(no);
+        }
+        else
+        {   descriptionNodes.add(no);
+        }
     }
 
 
@@ -149,6 +167,12 @@ public class Network implements java.io.Serializable {
         Edge auxArco;
 
         nos.remove(elemento);
+        if (elemento.getInformationType() == Node.EXPLANATION_TYPE)
+        {   explanationNodes.remove(elemento);
+        }
+        else
+        {   descriptionNodes.remove(elemento);
+        }
         for (c = 0; c < nos.size(); c++) {
             auxNo = nos.get(c);
             auxNo.getParents().remove(elemento);
@@ -221,6 +245,8 @@ public class Network implements java.io.Serializable {
      */
     protected void limpaNos() {
         nos.clear();
+        explanationNodes.clear();
+        descriptionNodes.clear();
     }
 
 

@@ -879,10 +879,6 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
                 {   popup.setEnabled(true);
                     popup.show(e.getComponent(),e.getX(),e.getY());
                 }
-                else
-                {   popup.setEnabled(false);
-                    popup.show(e.getComponent(),e.getX(),e.getY());
-                }
             }
         }
     }
