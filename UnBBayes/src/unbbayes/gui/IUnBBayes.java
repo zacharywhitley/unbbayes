@@ -181,8 +181,8 @@ public class IUnBBayes extends JFrame {
 	 *
 	 * @return janela que está selecionada.
 	 */
-	public Component getSelectedWindow() {
-		return desktop.getSelectedFrame().getContentPane().getComponent(0);
+	public JInternalFrame getSelectedWindow() {
+		return desktop.getSelectedFrame();
 	}
 
 	/**
@@ -243,6 +243,7 @@ public class IUnBBayes extends JFrame {
 				String[] nets = new String[] { "net" };
 				JFileChooser chooser = new JFileChooser();
 				chooser.setMultiSelectionEnabled(false);
+				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
 				// adicionar FileView no FileChooser para desenhar ícones de 
 				// arquivos
@@ -254,13 +255,16 @@ public class IUnBBayes extends JFrame {
 						resource.getString("netFileFilter")));
 				int option = chooser.showSaveDialog(null);
 				if (option == JFileChooser.APPROVE_OPTION) {
-					//                    File a;
-					controller.saveNet(
-						((chooser.getSelectedFile() != null)
-							? new File(
-								chooser.getSelectedFile().getAbsolutePath()
-									+ ".net")
-							: new File(resource.getString("fileUntitled"))));
+					File file = chooser.getSelectedFile();
+					if (file != null) {
+						if (file.isFile()) {
+							String name = file.getName();
+							if (! name.endsWith(".net")) {
+								file = new File(file.getAbsoluteFile() + ".net");	
+							}
+						}
+						controller.saveNet(file);
+					}
 				}
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}

@@ -4,6 +4,7 @@ import junit.framework.*;
 
 import unbbayes.datamining.datamanipulation.test.*;
 import unbbayes.prs.bn.test.*;
+import unbbayes.prs.msbn.test.TestCompiled;
 import unbbayes.prs.msbn.test.TestTopologicalTransformation;
 
 public class ProjectSuite extends TestCase {
@@ -16,7 +17,8 @@ public class ProjectSuite extends TestCase {
     TestSuite suite = new TestSuite();
     suite.addTestSuite(TestProbabilisticNetwork.class);
     suite.addTestSuite(TestTopologicalTransformation.class);
-    suite.addTestSuite(TestUtils.class);    
+    suite.addTestSuite(TestCompiled.class);
+    suite.addTestSuite(TestUtils.class); 
     return suite;
   }
 

@@ -91,12 +91,12 @@ public class MainController {
      */
     public void saveNet(File arquivo) {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        try {
-        	Component window = screen.getSelectedWindow();
+        try {        	
+        	JInternalFrame window = screen.getSelectedWindow();
         	if (window instanceof NetWindow) {
         		io.save(arquivo, ((NetWindow) window).getRede());
         	} else if (window instanceof MSBNWindow) {
-        		io.saveMSBN(arquivo, ((MSBNWindow) window).getMSNet());        		
+        		io.saveMSBN(arquivo, ((MSBNWindow) window).getMSNet());
         	} else {
         		assert false : "Não era pra chegar aqui";        		
         	}

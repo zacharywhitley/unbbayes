@@ -761,22 +761,24 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
     public void mouseClicked(MouseEvent e) {
 
         Node node = getNode(e.getX(), e.getY());
-        if ((node != null) && (e.getModifiers() == e.BUTTON1_MASK) && (e.getClickCount() == 2)) {
-            controller.getTela().setTable(controller.retornarTabela(node));
-            controller.getTela().setTableOwner(node);
-            if (controller.getTela().isCompiled()) {
-                for (int i = 0; i < controller.getTela().getEvidenceTree().getRowCount(); i++) {
-                    if (controller.getTela().getEvidenceTree().getPathForRow(i).getLastPathComponent().toString().equals(selected.toString())) {
-                        if (controller.getTela().getEvidenceTree().isExpanded(controller.getTela().getEvidenceTree().getPathForRow(i))) {
-                            controller.getTela().getEvidenceTree().collapsePath(controller.getTela().getEvidenceTree().getPathForRow(i));
-                        }
-                        else {
-                            controller.getTela().getEvidenceTree().expandPath(controller.getTela().getEvidenceTree().getPathForRow(i));
-                        }
-                        break;
-                    }
-                }
-            }
+        if (node != null) {
+        	if (e.getModifiers() == e.BUTTON1_MASK) {
+	            controller.getTela().setTable(controller.retornarTabela(node));
+	            controller.getTela().setTableOwner(node);
+	            if (controller.getTela().isCompiled()) {
+	                for (int i = 0; i < controller.getTela().getEvidenceTree().getRowCount(); i++) {
+	                    if (controller.getTela().getEvidenceTree().getPathForRow(i).getLastPathComponent().toString().equals(selected.toString())) {
+	                        if (controller.getTela().getEvidenceTree().isExpanded(controller.getTela().getEvidenceTree().getPathForRow(i))) {
+	                            controller.getTela().getEvidenceTree().collapsePath(controller.getTela().getEvidenceTree().getPathForRow(i));
+	                        }
+	                        else {
+	                            controller.getTela().getEvidenceTree().expandPath(controller.getTela().getEvidenceTree().getPathForRow(i));
+	                        }
+	                        break;
+	                    }
+	                }
+	            }
+        	}
         } else {
 	        Edge edge = getArc(e.getX(), e.getY());
 	        if ((edge != null) && (e.getModifiers() == e.BUTTON1_MASK) && (e.getClickCount() == 2)) {
