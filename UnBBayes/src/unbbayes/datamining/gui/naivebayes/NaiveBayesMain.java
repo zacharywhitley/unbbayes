@@ -8,12 +8,12 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
-import unbbayes.controlador.*;
+import unbbayes.controller.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.gui.*;
-import unbbayes.fronteira.*;
+import unbbayes.gui.*;
 import unbbayes.io.*;
-import unbbayes.jprs.jbn.*;
+import unbbayes.prs.bn.*;
 
 public class NaiveBayesMain extends JInternalFrame
 {

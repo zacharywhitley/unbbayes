@@ -7,7 +7,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.tree.*;
 
-import unbbayes.jprs.jbn.*;
+import unbbayes.prs.bn.*;
 import unbbayes.util.*;
 
 public class HierarchicDefinitionPanel extends JPanel

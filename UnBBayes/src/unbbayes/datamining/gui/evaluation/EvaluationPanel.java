@@ -10,12 +10,12 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.text.*;
 
-import unbbayes.controlador.*;
+import unbbayes.controller.*;
 import unbbayes.datamining.classifiers.*;
 //import unbbayes.datamining.controller.*;
 import unbbayes.datamining.datamanipulation.*;
-import unbbayes.fronteira.*;
-import unbbayes.jprs.jbn.*;
+import unbbayes.gui.*;
+import unbbayes.prs.bn.*;
 
 public class EvaluationPanel extends JPanel
 {

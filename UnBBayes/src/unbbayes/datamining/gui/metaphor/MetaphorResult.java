@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import javax.swing.*;
 
 import unbbayes.datamining.datamanipulation.Utils;
-import unbbayes.jprs.jbn.*;
+import unbbayes.prs.bn.*;
 import unbbayes.util.*;
 import javax.swing.event.*;
 

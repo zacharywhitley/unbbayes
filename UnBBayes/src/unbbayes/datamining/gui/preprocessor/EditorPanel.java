@@ -8,8 +8,8 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.*;
 
-import unbbayes.controlador.*;
-import unbbayes.fronteira.*;
+import unbbayes.controller.*;
+import unbbayes.gui.*;
 
 public class EditorPanel extends JPanel
 { private ImageIcon image1;

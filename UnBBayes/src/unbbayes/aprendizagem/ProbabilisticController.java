@@ -2,11 +2,11 @@
 package unbbayes.aprendizagem;
 
 import unbbayes.util.NodeList;
-import unbbayes.controlador.MainController;
-import unbbayes.jprs.jbn.Node;
-import unbbayes.jprs.jbn.ProbabilisticNetwork;
-import unbbayes.jprs.jbn.PotentialTable;
-import unbbayes.fronteira.TJanelaEdicao;
+import unbbayes.controller.MainController;
+import unbbayes.prs.bn.Node;
+import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.PotentialTable;
+import unbbayes.gui.TJanelaEdicao;
 
 
 public class ProbabilisticController extends LearningToolkit{

@@ -2,7 +2,7 @@
 package unbbayes.test;
 
 import junit.framework.*;
-import unbbayes.jprs.jbn.test.*;
+import unbbayes.prs.bn.test.*;
 
 public class ProjectSuite extends TestCase {
 

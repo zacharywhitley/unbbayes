@@ -23,10 +23,10 @@ package unbbayes.util;
 
 import java.util.ResourceBundle;
 
-import unbbayes.jprs.jbn.DecisionNode;
-import unbbayes.jprs.jbn.Node;
-import unbbayes.jprs.jbn.ProbabilisticNode;
-import unbbayes.jprs.jbn.TreeVariable;
+import unbbayes.prs.bn.DecisionNode;
+import unbbayes.prs.bn.Node;
+import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.TreeVariable;
 
 /**
  * Classe que representa um array dinâmico do tipo <code>Node</code>.

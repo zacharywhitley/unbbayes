@@ -1,6 +1,6 @@
 package unbbayes.aprendizagem;
 
-import unbbayes.controlador.*;
+import unbbayes.controller.*;
 import unbbayes.util.NodeList;
 import java.io.File;
 import java.io.BufferedReader;

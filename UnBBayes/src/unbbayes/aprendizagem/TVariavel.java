@@ -1,7 +1,7 @@
 package unbbayes.aprendizagem;
 
 import java.util.*;
-import unbbayes.jprs.jbn.*;
+import unbbayes.prs.bn.*;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 

@@ -8,9 +8,9 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
-import unbbayes.controlador.*;
+import unbbayes.controller.*;
 import unbbayes.datamining.datamanipulation.*;
-import unbbayes.fronteira.*;
+import unbbayes.gui.*;
 
 public class PreprocessorMain extends JInternalFrame
 {

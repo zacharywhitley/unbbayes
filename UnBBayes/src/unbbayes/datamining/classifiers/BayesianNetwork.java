@@ -3,7 +3,7 @@ package unbbayes.datamining.classifiers;
 import java.util.Enumeration;
 
 import unbbayes.datamining.datamanipulation.*;
-import unbbayes.jprs.jbn.*;
+import unbbayes.prs.bn.*;
 import unbbayes.util.*;
 
 /**

@@ -7,7 +7,7 @@ import java.util.*;
 
 import javax.swing.*;
 
-import unbbayes.controlador.*;
+import unbbayes.controller.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.gui.decisiontree.*;
 import unbbayes.datamining.gui.evaluation.*;
@@ -16,7 +16,7 @@ import unbbayes.datamining.gui.metaphor.*;
 import unbbayes.datamining.gui.naivebayes.*;
 import unbbayes.datamining.gui.preprocessor.*;
 import unbbayes.datamining.gui.neuralmodel.*;
-import unbbayes.fronteira.*;
+import unbbayes.gui.*;
 
 public class InvokerMain extends JFrame
 {

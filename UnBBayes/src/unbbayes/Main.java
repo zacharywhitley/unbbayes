@@ -21,7 +21,7 @@
 
 package unbbayes;
 
-import unbbayes.controlador.MainController;
+import unbbayes.controller.MainController;
 
 /**
  *  Inicia-se o programa por esta Classe.

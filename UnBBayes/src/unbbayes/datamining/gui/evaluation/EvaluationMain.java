@@ -8,12 +8,12 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
-import unbbayes.controlador.*;
+import unbbayes.controller.*;
 import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
-import unbbayes.fronteira.*;
+import unbbayes.gui.*;
 import unbbayes.io.*;
-import unbbayes.jprs.jbn.*;
+import unbbayes.prs.bn.*;
 
 public class EvaluationMain extends JInternalFrame
 { /** Carrega o arquivo de recursos para internacionalização da localidade padrão */

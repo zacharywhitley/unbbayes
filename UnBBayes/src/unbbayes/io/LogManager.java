@@ -22,7 +22,7 @@
 package unbbayes.io;
 
 import java.io.*;
-import unbbayes.jprs.jbn.*;
+import unbbayes.prs.bn.*;
 import unbbayes.util.NodeList;
 
 import java.text.DecimalFormat;

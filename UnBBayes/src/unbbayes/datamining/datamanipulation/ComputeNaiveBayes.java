@@ -1,7 +1,7 @@
 package unbbayes.datamining.datamanipulation;
 
 import unbbayes.datamining.classifiers.*;
-import unbbayes.jprs.jbn.*;
+import unbbayes.prs.bn.*;
 
 public class ComputeNaiveBayes
 {	public void setProbabilisticNetwork(ProbabilisticNetwork net) throws Exception

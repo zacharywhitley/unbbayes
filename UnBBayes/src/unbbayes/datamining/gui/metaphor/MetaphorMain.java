@@ -7,10 +7,10 @@ import java.io.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
-import unbbayes.controlador.*;
-import unbbayes.fronteira.*;
+import unbbayes.controller.*;
+import unbbayes.gui.*;
 import unbbayes.io.*;
-import unbbayes.jprs.jbn.*;
+import unbbayes.prs.bn.*;
 import unbbayes.util.*;
 
 /**

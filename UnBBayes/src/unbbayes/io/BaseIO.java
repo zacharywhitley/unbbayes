@@ -21,7 +21,7 @@
 
 package unbbayes.io;
 
-import unbbayes.jprs.jbn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 import java.io.*;
 
 /**

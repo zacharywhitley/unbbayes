@@ -4,8 +4,8 @@ import java.awt.SystemColor;
 import java.util.Date;
 import java.util.List;
 
-import unbbayes.fronteira.TJanelaEdicao;
-import unbbayes.jprs.jbn.ProbabilisticNetwork;
+import unbbayes.gui.TJanelaEdicao;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit; 
 

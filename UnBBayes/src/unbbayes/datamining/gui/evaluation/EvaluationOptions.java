@@ -4,7 +4,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
-import unbbayes.jprs.jbn.*;
+import unbbayes.prs.bn.*;
 
 public class EvaluationOptions
 { private JTable statesTable = new JTable();

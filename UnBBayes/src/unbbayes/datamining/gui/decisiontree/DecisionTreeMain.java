@@ -8,11 +8,11 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
-import unbbayes.controlador.*;
+import unbbayes.controller.*;
 import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.gui.*;
-import unbbayes.fronteira.*;
+import unbbayes.gui.*;
 
 public class DecisionTreeMain extends JInternalFrame
 {
