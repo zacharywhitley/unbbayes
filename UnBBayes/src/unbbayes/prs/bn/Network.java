@@ -581,8 +581,7 @@ public class Network implements java.io.Serializable {
 					for (int k = j + 1; k < sizePais; k++) {
 						auxPai2 = auxNo.getParents().get(k);
 						if ((existeArco(auxPai1, auxPai2, copiaArcos) == -1)
-							&& (existeArco(auxPai1, auxPai2, arcosMarkov)
-								== -1)) {
+							&& (existeArco(auxPai1, auxPai2, arcosMarkov) == -1)) {
 							auxArco = new Edge(auxPai1, auxPai2);
 							if (createLog) {
 								logManager.append(
@@ -600,8 +599,7 @@ public class Network implements java.io.Serializable {
 	
 		desmontaAdjacentes();
 	
-		int sizeMarkov = arcosMarkov.size() - 1;
-		for (int z = sizeMarkov; z >= 0; z--) {
+		for (int z = arcosMarkov.size() - 1; z >= 0; z--) {
 			auxArco = (Edge) arcosMarkov.get(z);
 			auxArco.getOriginNode().getAdjacents().add(
 				auxArco.getDestinationNode());
@@ -609,8 +607,7 @@ public class Network implements java.io.Serializable {
 				auxArco.getOriginNode());
 		}
 	
-		int sizeArcos1 = copiaArcos.size();
-		for (int z = sizeArcos1 - 1; z >= 0; z--) {
+		for (int z = copiaArcos.size() - 1; z >= 0; z--) {
 			auxArco = (Edge) copiaArcos.get(z);
 			if (auxArco.getDestinationNode().getType()
 				== Node.UTILITY_NODE_TYPE) {
@@ -1111,8 +1108,7 @@ public class Network implements java.io.Serializable {
 		while (algum) {
 			algum = false;
 	
-			int sizeNos = auxNos.size();
-			for (int i = 0; i < sizeNos; i++) {
+			for (int i = auxNos.size() - 1; i >= 0; i--) {
 				auxNo = auxNos.get(i);
 	
 				if (cordas(auxNo)) {
@@ -1120,8 +1116,7 @@ public class Network implements java.io.Serializable {
 					continue;
 				}
 	
-				int sizeAdjacentes = auxNo.getAdjacents().size();
-				for (int j = 0; j < sizeAdjacentes; j++) {
+				for (int j = auxNo.getAdjacents().size() - 1; j >= 0; j--) {
 					v = auxNo.getAdjacents().get(j);
 					v.getAdjacents().remove(auxNo);
 				}
@@ -1162,14 +1157,13 @@ public class Network implements java.io.Serializable {
 		Node auxNo2;
 		Edge auxArco;
 	
-		int sizeAdjacentes = no.getAdjacents().size();
-	
+		int sizeAdjacentes = no.getAdjacents().size();	
 		for (int i = 0; i < sizeAdjacentes - 1; i++) {
 			auxNo1 = no.getAdjacents().get(i);
 	
 			for (int j = i + 1; j < sizeAdjacentes; j++) {
 				auxNo2 = no.getAdjacents().get(j);
-				if (!auxNo2.getAdjacents().contains(auxNo1)) {
+				if (! auxNo2.getAdjacents().contains(auxNo1)) {
 					auxArco = new Edge(auxNo1, auxNo2);
 					if (createLog) {
 						logManager.append(
@@ -1181,12 +1175,13 @@ public class Network implements java.io.Serializable {
 					arcosMarkov.add(auxArco);
 					auxNo1.getAdjacents().add(auxNo2);
 					auxNo2.getAdjacents().add(auxNo1);
+					
+					System.out.println(auxArco);
 				}
 			}
 		}
 	
-		int sizeAdjacentes1 = no.getAdjacents().size();
-		for (int i = 0; i < sizeAdjacentes1; i++) {
+		for (int i = no.getAdjacents().size() - 1; i >= 0; i--) {
 			auxNo1 = no.getAdjacents().get(i);
 			auxNo1.getAdjacents().remove(no);
 		}
@@ -1207,19 +1202,16 @@ public class Network implements java.io.Serializable {
 		Node noMin = auxNos.get(0);
 		double pmin = Math.log(noMin.getStatesSize());
 	
-		int sizeAdjacentes = noMin.getAdjacents().size();
-		for (int i = 0; i < sizeAdjacentes; i++) {
+		for (int i = noMin.getAdjacents().size()-1; i >= 0; i--) {
 			v = noMin.getAdjacents().get(i);
 			pmin += Math.log(v.getStatesSize());
 		}
 	
-		int sizeNos = auxNos.size();
-		for (int i = 1; i < sizeNos; i++) {
+		for (int i = auxNos.size()-1; i > 0; i--) {
 			auxNo = auxNos.get(i);
 			p = Math.log(auxNo.getStatesSize());
 	
-			int sizeAdjacentes1 = auxNo.getAdjacents().size();
-			for (int j = 0; j < sizeAdjacentes1; j++) {
+			for (int j = auxNo.getAdjacents().size()-1; j >= 0; j--) {
 				v = auxNo.getAdjacents().get(j);
 				p += Math.log(v.getStatesSize());
 			}
@@ -1249,7 +1241,7 @@ public class Network implements java.io.Serializable {
 	
 			for (int j = i + 1; j < sizeAdjacentes; j++) {
 				Node auxNo2 = no.getAdjacents().get(j);
-				if (!auxNo2.getAdjacents().contains(auxNo1)) {
+				if (! auxNo2.getAdjacents().contains(auxNo1)) {
 					return true;
 				}
 			}

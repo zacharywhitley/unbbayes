@@ -45,7 +45,7 @@ public class SubNetwork extends Network {
 	}
 	
 	protected void moralize() {
-		super.moraliza();		
+		super.moraliza();				
 	}
 	
 	protected void compilaAJ() throws Exception {
@@ -73,7 +73,8 @@ public class SubNetwork extends Network {
 	 * @param adj		  Rede adjacente a esta para basear a ordem de eliminação. 		 
 	 * @return boolean   true se inseriu algum arco, false caso contrário.
 	 */	
-	protected boolean elimine(SubNetwork adj) {
+	protected boolean elimine(SubNetwork adj) {		
+		
 		oe.clear();
 		NodeList inter = SetToolkit.intersection(nos, adj.nos);				
 		NodeList auxNos = SetToolkit.clone(nos);		
@@ -89,6 +90,20 @@ public class SubNetwork extends Network {
 		
 		return inseriu;
 	}
+	
+	//----------------------------
+	private void teste() {
+		for (int i = 0; i < nos.size(); i++) {
+			Node a = nos.get(i);
+			for (int j = 0; j < a.getAdjacents().size(); j++) {
+				Node b = a.getAdjacents().get(j);
+				if (! b.getAdjacents().contains(a)) {
+					System.err.println("erro");
+				}								
+			}			
+		}		
+	}	
+	//---------------------------- 
 	
 	protected void elimineProfundidade(SubNetwork caller) {
 		for (int i = adjacents.size()-1; i >= 0; i--) {
@@ -111,11 +126,12 @@ public class SubNetwork extends Network {
 			SubNetwork net = (SubNetwork) adjacents.get(i);
 			updateArcs(net);
 			net.distributeArcs();
-		}				
+		}
 	}
 	
 	
 	private void updateArcs(SubNetwork net) {
+		teste();	
 		NodeList dsepset = SetToolkit.intersection(nos, net.nos);
 		for (int i = arcosMarkov.size()-1; i>=0; i--) {
 			Edge e = (Edge) arcosMarkov.get(i);
@@ -129,13 +145,16 @@ public class SubNetwork extends Network {
 						a = net.getNodeAt(j);
 					} else if (net.getNodeAt(j).equals(e.getDestinationNode())) {
 						b = net.getNodeAt(j);
-					}			
+					}		
 				}
 				assert(a != null && b != null);
-				if (! a.getAdjacents().contains(b) && ! b.getAdjacents().contains(a)) {				
+				if (! a.getAdjacents().contains(b) && ! b.getAdjacents().contains(a)) {
 					a.getAdjacents().add(b);
 					b.getAdjacents().add(a);
-					net.arcosMarkov.add(new Edge(a,b));
+					Edge newEdge = new Edge(a,b);
+					net.arcosMarkov.add(newEdge);
+					
+					System.out.println(newEdge);
 				}					
 			}
 		}
@@ -149,17 +168,20 @@ public class SubNetwork extends Network {
 				a = b = null;
 				for (int j = getNodeCount()-1; j >= 0; j--) {
 					if (getNodeAt(j).equals(e.getOriginNode())) {
-						a = net.getNodeAt(j);
+						a = getNodeAt(j);
 					} else if (getNodeAt(j).equals(e.getDestinationNode())) {
-						b = net.getNodeAt(j);
-					}							
+						b = getNodeAt(j);
+					}			
 				}
 				assert(a != null && b != null);
 				
 				if (! a.getAdjacents().contains(b) && ! b.getAdjacents().contains(a)) {				
 					a.getAdjacents().add(b);
-					b.getAdjacents().add(a);
-					arcosMarkov.add(new Edge(a,b));
+					b.getAdjacents().add(a);					
+					Edge newEdge = new Edge(a,b);
+					arcosMarkov.add(newEdge);
+					
+					System.out.println(newEdge);
 				}
 			}
 		}
@@ -171,40 +193,51 @@ public class SubNetwork extends Network {
 	
 	protected void distributedCycle() throws Exception {
 		for (int i = nos.size()-1; i>=0; i--) {
-			dfsCycle(i);
+			dfsCycle(i, null);
 		}		
 	}
 	
 	/**
      * Depth first search to verify cycle.
      */
-    private void dfsCycle(int nodeIndex) throws Exception {
-    	if (visited[nodeIndex] != 0) { 			
- 			// Back edge. Has cycle!
+    private void dfsCycle(int nodeIndex, Node caller) throws Exception {
+    	if (visited[nodeIndex] != 0) {
     		if (visited[nodeIndex] == 1) {
+    			// Back edge. Has cycle!
                 throw new Exception("CicleNetException");
     		}
     		return;    		
     	}
     	
+    	Node node = nos.get(nodeIndex);    	
     	visited[nodeIndex] = 1;
-    	Node node = nos.get(nodeIndex);
+    	
+//    	System.out.println(node);
+    	
     	for (int i = node.getChildren().size()-1; i >= 0; i--) {
     		int newIndex = getNodeIndex(node.getChildren().get(i).getName());
-    		dfsCycle(newIndex);
+    		dfsCycle(newIndex, node);
     	}
     	
-    	int index = parent.getNodeIndex(node.getName());    	
-    	if (index != -1) {
-    		parent.dfsCycle(index);    		    		
+    	if (parent != null) {    		
+	    	int index = parent.getNodeIndex(node.getName());
+	    	if (index != -1) {
+	    		Node next = parent.getNodeAt(index);
+	    		if (caller == null || (caller != null && ! next.equals(caller))) {
+	    			parent.dfsCycle(index, node);
+	    		}
+	    	}
     	}
     	
-    	for (int i = adjacents.size(); i>=0; i--) {
+    	for (int i = adjacents.size()-1; i>=0; i--) {
     		SubNetwork net = (SubNetwork) adjacents.get(i);
-    		index = net.getNodeIndex(node.getName());
+    		int index = net.getNodeIndex(node.getName());
     		if (index != -1) {
-    			net.dfsCycle(index);    		    		
-    		}    		
+    			Node next = net.getNodeAt(index);
+	    		if (caller == null || (caller != null && ! next.equals(caller))) {
+    				net.dfsCycle(index, node);
+	    		}
+    		}
     	}
     	
     	visited[nodeIndex] = 2;

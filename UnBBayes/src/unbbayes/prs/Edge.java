@@ -21,7 +21,6 @@
 
 package unbbayes.prs;
 
-import unbbayes.prs.*;
 
 /**
  *  Classe que representa um arco entre nós.
@@ -59,6 +58,10 @@ public class Edge implements java.io.Serializable {
     public Edge(Node no1, Node no2) {
         this.no1 = no1;
         this.no2 = no2;
+        
+        if (no1 == no2) {
+        	System.err.println("arco malfeito");        	
+        }
         direction = true;
     }
 
@@ -135,5 +138,14 @@ public class Edge implements java.io.Serializable {
     	no1 = no2;
     	no2 = aux;
     }
+        
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		return "Edge: " + no1.toString() + " -> " + no2.toString();
+	}
+
 }
 

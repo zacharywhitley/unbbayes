@@ -3,6 +3,8 @@ package unbbayes.prs.msbn;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.Assert;
+
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
@@ -39,13 +41,13 @@ public class MSNetwork {
 		
 		verifyCycles();
 		
-		distributedMoralization();
-		
+		distributedMoralization();	
+				
 		cooperativeTriangulation();
 		
 		for (int i = nets.size()-1; i>=0; i--) {
 			SubNetwork net = (SubNetwork) nets.get(i);
-			net.compilaAJ();		
+			net.compilaAJ();
 		}
 	}
 	
@@ -56,10 +58,10 @@ public class MSNetwork {
 		}
 		
 		SubNetwork raiz = (SubNetwork) nets.get(0);
-		raiz.distributeArcs();		
+		raiz.distributeArcs();
 	}
 	
-	private void hyperTree() throws Exception {
+	protected void hyperTree() throws Exception {
 		int netsSize = nets.size();
 		
 		if (netsSize < 2) {
@@ -77,7 +79,7 @@ public class MSNetwork {
 	
 	private NodeList[][] makeIntersection() {
 		int netsSize = nets.size();
-		NodeList interseccoes[][] = new NodeList[netsSize][netsSize];				
+		NodeList interseccoes[][] = new NodeList[netsSize][netsSize];			
 		
 		for (int i = 0; i < netsSize - 1; i++) {
 			SubNetwork n1 = (SubNetwork) nets.get(i);
@@ -92,7 +94,9 @@ public class MSNetwork {
 	
 	private void insertLink(NodeList inters[][], boolean naArvore[]) throws Exception {
 		int netsSize = nets.size();
-		int iMax = 0, kMax = 1;
+		int max = 0;
+		int iMax, kMax;
+		iMax = kMax = -1;
 		
 		for (int i = 0; i < netsSize; i++) {
 			if (! naArvore[i]) {
@@ -103,14 +107,17 @@ public class MSNetwork {
 					continue;						
 				}
 				
-				if (inters[i][k].size() > inters[iMax][kMax].size()) {
+				if (inters[i][k].size() > max) {
 					iMax = i;
-					kMax = k;												
+					kMax = k;
+					max = inters[iMax][kMax].size();
 				}
-			}						
+			}				
 		}
 		
-		for (int j = 0; j < netsSize; j++) {
+		assert (max == 0) : "Não forma Hiperárvore";
+		
+	 	for (int j = 0; j < netsSize; j++) {
 			if (naArvore[j] && ! isDSepSet(j, kMax, inters[j][kMax])) {
 				throw new Exception("Erro na contrução da HyperÁrvore");					
 			}
@@ -143,13 +150,14 @@ public class MSNetwork {
      *
      *@throws Exception If this network has a cycle.
      */
-    public final void verifyCycles() throws Exception {
-    	for (int i = nets.size(); i>=0; i--) {
+    protected final void verifyCycles() throws Exception {
+    	
+    	for (int i = nets.size()-1; i>=0; i--) {
     		SubNetwork net = (SubNetwork) nets.get(i);    		
-    		net.initVisited();    		
+    		net.initVisited();	
     	}
     	
-    	for (int i = nets.size(); i>=0; i--) {
+    	for (int i = nets.size()-1; i>=0; i--) {
     		SubNetwork net = (SubNetwork) nets.get(i);    		
     		net.distributedCycle();    		
     	}

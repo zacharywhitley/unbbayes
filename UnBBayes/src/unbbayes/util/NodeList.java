@@ -52,45 +52,8 @@ public final class NodeList implements java.io.Serializable {
 
     public NodeList() {
        this(DEFAULT_SIZE);
-    }
+    } 
     
-    public Object clone() {
-    	NodeList cloned = new NodeList();
-    	Node [] clonedData = new Node[size];
-    	for (int i = 0; i < clonedData.length; i++) {
-    		if (data[i] instanceof ProbabilisticNode) {
-    			clonedData[i] = (ProbabilisticNode)((ProbabilisticNode)data[i]).clone();
-    		} else if (data[i] instanceof DecisionNode) {
-    			clonedData[i] = (DecisionNode)((DecisionNode)data[i]).clone();
-    		} else {
-    			System.out.println("IDIDIDIDID");
-    		}
-    	}
-    	//System.arraycopy(data, 0, clonedData, 0, size);
-    	//cloned = SetToolkit.clone(this);
-    	//Node [] clonedData = cloned.getData();
-    	//System.out.println(data.toString());
-    	//System.out.println(clonedData.toString());
-    	//double[] marginais;
-    	//for (int i = 0; i < size; i++) {
-    		//marginais = new double[((TreeVariable)clonedData[i]).getMarginais().length];
-    		//System.arraycopy(((TreeVariable)clonedData[i]).getMarginais(), 0, marginais, 0, marginais.length);
-    		//for (int j = 0; j < ((TreeVariable)clonedData[i]).getMarginais().length; j++) {
-    		//	double teste = ((TreeVariable)clonedData[i]).getMarginais()[j];
-    		//	marginais[j] = teste;
-    		//}
-    		//marginais[0] = .33;
-    		//((TreeVariable)clonedData[i]).setMarginais(marginais);
-    		//System.out.println(((TreeVariable)data[i]).toString());
-    		//System.out.println(((TreeVariable)clonedData[i]).toString());
-    		//System.out.println(((TreeVariable)data[i]).getMarginais().toString());
-    		//System.out.println(((TreeVariable)clonedData[i]).getMarginais().toString());
-    		//System.out.println(((TreeVariable)data[i]).getMarginais()[0]);
-    	//}
-    	cloned.setData(clonedData);
-    	cloned.setSize(size);
-    	return cloned;
-    }
 
 
     /**
@@ -266,7 +229,7 @@ public final class NodeList implements java.io.Serializable {
      */
    
     public final boolean remove(Object o) {
-    	for (int i = 0; i < data.length; i++) {
+    	for (int i = 0; i < size; i++) {
 			if (o.equals(data[i])) {
 			    remove(i);
 			    return true;
@@ -315,6 +278,7 @@ public final class NodeList implements java.io.Serializable {
     public final boolean contains(Object elem) {
 		return indexOf(elem) >= 0;
     }
+    
 	/**
 	 * Sets the data.
 	 * @param data The data to set
