@@ -123,11 +123,9 @@ public class Network implements java.io.Serializable {
         arcos = new ArrayList();
         arcosMarkov = new ArrayList();
         logManager = new LogManager(); 
-        /*
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
 		DefaultTreeModel model = new DefaultTreeModel(root);
         hierarchicTree = new HierarchicTree(model);        
-        */
         nodeIndexes = new HashMap();
     }
 
@@ -404,106 +402,8 @@ public class Network implements java.io.Serializable {
      */
     protected void clearEdges() {
         arcos.clear();
-    }
+    }    
     
-    
-    
-    /*
-     *  Verificação através da eliminação dos nós que não são pais e filhos
-     *  de alguém ao mesmo tempo. Há a necessidade de trabalhar com uma cópia
-     *  da lista de nós da rede.
-     *
-     *@throws Exception se a rede possui ciclo.
-    public final void vC1() throws Exception {
-        Node auxNo1;
-        Node auxNo2;
-        boolean existeRetirada;
-        int i;
-        int j;
-        int n;
-        int l;
-        int m;
-        List listaPais = new ArrayList();
-        List listaFilhos = new ArrayList();
-        NodeList listaCloneNos = SetToolkit.clone(nos);
-
-        if (listaCloneNos.size() != 0) {
-            for (i = 0; i < listaCloneNos.size(); i++) {
-                auxNo1 = listaCloneNos.get(i);
-                listaPais.add(SetToolkit.clone(auxNo1.getParents()));
-                listaFilhos.add(SetToolkit.clone(auxNo1.getChildren()));
-            }
-            auxNo1 = listaCloneNos.get(0);
-            existeRetirada = false;
-            if (auxNo1 != null) {
-                existeRetirada = true;
-            }
-            while (existeRetirada) {
-                l = 0;
-                m = 0;
-                while (auxNo1 != null) {
-                    existeRetirada = false;
-                    if ((auxNo1.getParents().size() == 0) || (auxNo1.getChildren().size() == 0)) {
-                        listaCloneNos.remove(auxNo1);
-                        existeRetirada = true;
-                        for (j = 0; j < listaCloneNos.size(); j++) {
-                            auxNo2 = listaCloneNos.get(j);
-                            if (auxNo2.getParents().contains(auxNo1)) {
-                                auxNo2.getParents().remove(auxNo1);
-                                auxNo1.getChildren().remove(auxNo2);
-                            }
-                            if (auxNo2.getChildren().contains(auxNo1)) {
-                                auxNo2.getChildren().remove(auxNo1);
-                                auxNo1.getParents().remove(auxNo2);
-                            }
-                        }
-                    }
-                    n = listaCloneNos.size();
-                    if (!existeRetirada) {
-                        m++;
-                    } else {
-                        m = 0;
-                    }
-                    if (m > n) {
-                        auxNo1 = null;
-                        existeRetirada = false;
-                        break;
-                    }
-                    if (l < n - 1) {
-                        l++;
-                    }
-                    else {
-                        l = 0;
-                    }
-                    if (n > 0) {
-                        auxNo1 = listaCloneNos.get(l);
-                    }
-                    else {
-                        auxNo1 = null;
-                        existeRetirada = false;
-                    }
-                }
-            }
-
-            for (i = 0; i < nos.size(); i++) {
-                auxNo1 = nos.get(i);
-                auxNo1.setParents((NodeList) listaPais.get(i));
-                auxNo1.setChildren((NodeList) listaFilhos.get(i));
-            }
-            listaPais.clear();
-            listaFilhos.clear();
-
-            if (listaCloneNos.size() != 0) {
-                StringBuffer sb = new StringBuffer(resource.getString("CicleNetException"));
-                for (i = 0; i < listaCloneNos.size(); i++) {
-                   auxNo1 = listaCloneNos.get(i);
-                   sb.append(" " + auxNo1.getName());
-                }
-                throw new Exception(sb.toString());
-            }
-        }
-    }
-    */
     
     /**
      *  Verify if this network has cycle.
