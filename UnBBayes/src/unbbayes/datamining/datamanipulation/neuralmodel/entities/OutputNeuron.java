@@ -94,4 +94,22 @@ public class OutputNeuron extends Neuron{
       }
     }
   }*/
+
+  public boolean getSignal(){return false;}  //??????????????????????
+
+  public int classify(){
+    Arc tempArc;
+    Enumeration combEnum = combinationsList.elements();
+    boolean signal;
+    int result = 0;
+
+    while(combEnum.hasMoreElements()){
+      tempArc = (Arc)combEnum.nextElement();
+      signal = tempArc.getCombinationNeuron().getSignal();
+      if(signal){                           //implementacao do OR, max(weight*sinal)
+        result = Math.max(result, tempArc.getNetWeigth());
+      }
+    }
+    return result;
+  }
 }

@@ -1,21 +1,21 @@
 package unbbayes.datamining.gui.neuralmodel;
 
 import java.awt.*;
+import java.text.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
+import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.datamanipulation.neuralmodel.*;
 import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
 //import unbbayes.datamining.datamanipulation.neuralmodel.util.*;
-import java.text.*;
 
 public class RulesPanel extends JPanel {
   private BorderLayout borderLayout1 = new BorderLayout();
   private JScrollPane jScrollPane1 = new JScrollPane();
   private JTable tableRules;
   private InstanceSet instanceSet;
-  private CombinatorialNetwork combinatorialNetwork;
+  private CombinatorialNeuralModel combinatorialNetwork;
   private ArrayList tableLinesArray = new ArrayList();
   private Object[] longValues = new Object[6];
 
@@ -38,7 +38,7 @@ public class RulesPanel extends JPanel {
     longValues[5] = new String("100,0%");
   }
 
-  public void setRulesPanel(CombinatorialNetwork combinatorialNetwork, InstanceSet instanceSet, int confidence, int support){
+  public void setRulesPanel(CombinatorialNeuralModel combinatorialNetwork, InstanceSet instanceSet, int confidence, int support){
     this.combinatorialNetwork = combinatorialNetwork;
     this.instanceSet = instanceSet;
     this.createTableLines(support, confidence);

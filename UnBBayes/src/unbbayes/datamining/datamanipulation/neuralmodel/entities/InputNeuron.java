@@ -15,6 +15,7 @@ public class InputNeuron extends Neuron {
   private int attributeIndex;
   private short value;
   private Hashtable combinationsList = new Hashtable();
+  private boolean enabled;
 
   public InputNeuron(int attributeIndex, short value, String key) {
     this.attributeIndex = attributeIndex;
@@ -49,11 +50,11 @@ public class InputNeuron extends Neuron {
     return combinationsList.size();
   }
 
-/*  public void propagate(int signal){
-    int size = combinatorialList.size();
-    for(int i=0; i<size; i++){
-      ((CombinatorialNeuron)combinatorialList.get(i)).setSignal(signal, key);
-    }
+  public void setEnabled(boolean enable){
+    this.enabled = enable;
   }
-*/
+
+  public boolean getSignal(){
+    return enabled;
+  }
 }

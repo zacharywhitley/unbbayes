@@ -17,4 +17,6 @@ public abstract class Neuron {
   }
 
   public abstract void prunning(String key);
+
+  public abstract boolean getSignal();
 }

@@ -3,15 +3,13 @@ package unbbayes.datamining.gui.neuralmodel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.*;
 
 import javax.swing.*;
 import javax.swing.border.*;
 
-import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
 import unbbayes.controller.*;
+import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.datamanipulation.neuralmodel.*;
 import unbbayes.datamining.gui.*;
 import unbbayes.gui.*;
 
@@ -36,18 +34,38 @@ public class NeuralModelMain extends JInternalFrame{
   private JFileChooser fileChooser;
   private JPanel jPanel2 = new JPanel();
   private JPanel jPanel3 = new JPanel();
+  private JPanel tabbedPaneAttributes = new JPanel();
   private BorderLayout borderLayout5 = new BorderLayout();
   private JLabel statusBar = new JLabel();
   private Border border1;
   private TitledBorder titledBorder1;
-  private ThresholdPanel thresholdPanel/* = new ThresholdPanel()*/;
-  private JOptionPane paneThreshold = new JOptionPane();
+  private OptionsPanel optionsPanel;
+  private OptionsPanel optionsPanel2;
+//  private JOptionPane paneThreshold = new JOptionPane();
   private JPanel tabbedPaneRules = new JPanel();
   private BorderLayout borderLayout2 = new BorderLayout();
   private AttributePanel attributePanel;
   private RulesPanel rulesPanel = new RulesPanel();
-  private CombinatorialNetwork combinatorialNetwork;
+  private CombinatorialNeuralModel combinatorialNetwork;
   private InstanceSet instanceSet;
+  private BorderLayout borderLayout7 = new BorderLayout();
+  private JPanel panelOptions = new JPanel();
+  private BorderLayout borderLayout8 = new BorderLayout();
+  private Border border2;
+  private TitledBorder titledBorder2;
+  private JPanel panelOptions2 = new JPanel();
+  private BorderLayout borderLayout9 = new BorderLayout();
+  private JPanel internalPanelOptions2 = new JPanel();
+  private JPanel jPanel1 = new JPanel();
+  private Border border3;
+  private TitledBorder titledBorder3;
+  private GridLayout gridLayout2 = new GridLayout();
+  private JButton buttonApply = new JButton();
+  private JButton buttonRestore = new JButton();
+  private BorderLayout borderLayout10 = new BorderLayout();
+  private JPanel tabbedPanelClassify = new JPanel();
+  private BorderLayout borderLayout11 = new BorderLayout();
+  private InferencePanel inferencePanel = new InferencePanel();
 
   /**Construct the frame*/
   public NeuralModelMain(){
@@ -71,7 +89,11 @@ public class NeuralModelMain extends JInternalFrame{
     saveIcon = new ImageIcon(getClass().getResource("/icons/save.gif"));
     contentPane = (JPanel) this.getContentPane();
     titledBorder1 = new TitledBorder(border1,"Status");
-    this.setSize(new Dimension(640,480));
+    border2 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
+    titledBorder2 = new TitledBorder(border2,"Opções");
+    border3 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
+    titledBorder3 = new TitledBorder(border3,"Opções");
+    this.setSize(new Dimension(640, 521));
 //    openButton.setToolTipText(resource.getString("openFileTooltip"));
     openButton.setIcon(openIcon);
     openButton.addActionListener(new java.awt.event.ActionListener(){
@@ -108,6 +130,37 @@ public class NeuralModelMain extends JInternalFrame{
     statusBar.setText("Bem vindo."/*resource.getString("welcome")*/);
     jPanel2.setBorder(titledBorder1);
     tabbedPaneRules.setLayout(borderLayout2);
+    tabbedPaneAttributes.setLayout(borderLayout7);
+    panelOptions.setLayout(borderLayout8);
+    optionsPanel = new OptionsPanel();
+    optionsPanel.setBorder(titledBorder2);
+    panelOptions2.setLayout(borderLayout9);
+    internalPanelOptions2.setLayout(borderLayout10);
+    optionsPanel2 = new OptionsPanel();
+    internalPanelOptions2.setBorder(titledBorder3);
+    jPanel1.setLayout(gridLayout2);
+    gridLayout2.setHgap(5);
+    gridLayout2.setRows(2);
+    gridLayout2.setVgap(5);
+    buttonApply.setText("Aplicar");
+    buttonApply.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        buttonApply_actionPerformed(e);
+      }
+    });
+    buttonRestore.setText("Restaurar");
+    buttonRestore.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        buttonRestore_actionPerformed(e);
+      }
+    });
+    borderLayout10.setHgap(5);
+    borderLayout10.setVgap(5);
+    tabbedPanelClassify.setLayout(borderLayout11);
+    internalPanelOptions2.add(optionsPanel2, BorderLayout.WEST);
+    internalPanelOptions2.add(jPanel1, BorderLayout.EAST);
+    jPanel1.add(buttonApply, null);
+    jPanel1.add(buttonRestore, null);
     contentPane.add(jToolBar1, BorderLayout.NORTH);
     jToolBar1.add(openButton, null);
     jToolBar1.add(saveButton, null);
@@ -116,13 +169,22 @@ public class NeuralModelMain extends JInternalFrame{
     contentPane.add(jPanel3, BorderLayout.CENTER);
     jPanel3.add(jTabbedPane1,BorderLayout.CENTER);
     attributePanel = new AttributePanel();
-    jTabbedPane1.add(attributePanel, /*resource.getString*/( "Atributos"));
+    tabbedPaneAttributes.add(attributePanel,  BorderLayout.CENTER);
+    jTabbedPane1.add(tabbedPaneAttributes, /*resource.getString*/( "Atributos"));
     jTabbedPane1.add(tabbedPaneRules,   "Regras");
+    jTabbedPane1.add(tabbedPanelClassify,  "Classificar");
+    tabbedPanelClassify.add(inferencePanel);
     tabbedPaneRules.add(rulesPanel, BorderLayout.CENTER);
+    tabbedPaneRules.add(panelOptions2,  BorderLayout.SOUTH);
+    panelOptions2.add(internalPanelOptions2, BorderLayout.WEST);
     contentPane.add(jPanel2,  BorderLayout.SOUTH);
     jPanel2.add(statusBar,  BorderLayout.CENTER);
+    panelOptions.add(optionsPanel,  BorderLayout.WEST);
+    tabbedPaneAttributes.add(panelOptions,  BorderLayout.SOUTH);
     jTabbedPane1.setEnabledAt(1,false);
     jTabbedPane1.setEnabledAt(0,false);
+
+    inferencePanel.setMainController(this);
   }
 
   void helpButton_actionPerformed(ActionEvent e){
@@ -139,16 +201,15 @@ public class NeuralModelMain extends JInternalFrame{
     int support;
 
     if (instanceSet != null){
-      thresholdPanel = new ThresholdPanel();
-      paneThreshold.showInternalMessageDialog(this, thresholdPanel, "CNM", JOptionPane.QUESTION_MESSAGE);
-      maxOrder = thresholdPanel.getMaxOrder();
-      confidence = thresholdPanel.getConfidence();
-      support = thresholdPanel.getSupport();
+//      optionsPanel = new OptionsPanel();
+//      paneThreshold.showInternalMessageDialog(this, optionsPanel, "CNM", JOptionPane.QUESTION_MESSAGE);
+      maxOrder = optionsPanel.getMaxOrder();
+      confidence = optionsPanel.getConfidence();
+      support = optionsPanel.getSupport();
 
       try{
-        CombinatorialNetworkConstructor netConstructor = new CombinatorialNetworkConstructor(instanceSet);
-        combinatorialNetwork = netConstructor.generateNetwork(maxOrder);
-
+        combinatorialNetwork = new CombinatorialNeuralModel(maxOrder);
+        combinatorialNetwork.buildClassifier(instanceSet);
 
         rulesPanel.setRulesPanel(combinatorialNetwork, instanceSet, confidence, support);
         jTabbedPane1.setEnabledAt(1,true);
@@ -253,5 +314,26 @@ public class NeuralModelMain extends JInternalFrame{
           FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
     */    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+  }
+
+  void buttonRestore_actionPerformed(ActionEvent e) {
+
+  }
+
+  void buttonApply_actionPerformed(ActionEvent e) {
+
+  }
+
+  public float[] classify(Instance instance){
+    try{
+      instance = instanceSet.getInstance(13);
+      System.out.println(instance + " " + instanceSet.getClassAttribute().toString());
+
+      float[] r = combinatorialNetwork.distributionForInstance(instance);
+      return r;
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+    return null;
   }
 }

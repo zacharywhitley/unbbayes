@@ -43,6 +43,15 @@ public class CombinatorialNeuron extends Neuron{
     }
   }
 
+  public boolean getSignal(){                 //implementação do AND
+    int inputSize = inputList.length;
+    boolean signal = true;
+    for(int i=0; i<inputSize; i++){
+      signal = signal && inputList[i].getSignal();
+    }
+    return signal;
+  }
+
   /** Retorna uma enumeracao com os neuronios de saida associados a este neuronio combinatorial */
   public Enumeration getOutputList(){
     return outputList.elements();
