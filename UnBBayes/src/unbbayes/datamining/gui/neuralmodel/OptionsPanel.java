@@ -17,6 +17,12 @@ public class OptionsPanel extends JPanel{
   private JComboBox jComboBoxMaxOrder = new JComboBox();
   private JComboBox jComboBoxSupport = new JComboBox();
   private JComboBox jComboBoxConfidence = new JComboBox();
+  private JPanel jPanel2 = new JPanel();
+  private GridLayout gridLayout2 = new GridLayout();
+  private JPanel jPanel3 = new JPanel();
+  private GridLayout gridLayout3 = new GridLayout();
+  private JPanel jPanel4 = new JPanel();
+  private GridLayout gridLayout4 = new GridLayout();
 
   public OptionsPanel() {
     try {
@@ -34,16 +40,28 @@ public class OptionsPanel extends JPanel{
     this.setLayout(borderLayout1);
     labelConfidence.setText("Confiança mínima:");
     jPanel1.setLayout(gridLayout1);
-    gridLayout1.setColumns(2);
-    gridLayout1.setRows(3);
+    gridLayout1.setColumns(6);
+    gridLayout1.setHgap(15);
     labelSupport.setText("Suporte mínimo:");
+    jPanel2.setLayout(gridLayout2);
+    gridLayout2.setColumns(1);
+    gridLayout2.setRows(2);
+    jPanel3.setLayout(gridLayout3);
+    gridLayout3.setColumns(1);
+    gridLayout3.setRows(2);
+    jPanel4.setLayout(gridLayout4);
+    gridLayout4.setColumns(1);
+    gridLayout4.setRows(2);
     this.add(jPanel1,  BorderLayout.CENTER);
-    jPanel1.add(labelMaxOrder, null);
-    jPanel1.add(jComboBoxMaxOrder, null);
-    jPanel1.add(labelSupport, null);
-    jPanel1.add(jComboBoxSupport, null);
-    jPanel1.add(labelConfidence, null);
-    jPanel1.add(jComboBoxConfidence, null);
+    jPanel1.add(jPanel2, null);
+    jPanel2.add(labelMaxOrder, null);
+    jPanel2.add(jComboBoxMaxOrder, null);
+    jPanel1.add(jPanel3, null);
+    jPanel3.add(labelSupport, null);
+    jPanel3.add(jComboBoxSupport, null);
+    jPanel1.add(jPanel4, null);
+    jPanel4.add(labelConfidence, null);
+    jPanel4.add(jComboBoxConfidence, null);
 
     for(int i=1; i<12; i++){
       jComboBoxMaxOrder.addItem(new Integer(i));
