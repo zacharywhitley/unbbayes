@@ -22,16 +22,21 @@ import java.util.List;
  * 
  * 	  <CAMPOS A SEREM SALVOS>*
  * 
+ *    <where>
+ *       <CAMPOS A SEREM USADOS NO WHERE>*
+ *    </where>?
+ * 
  * </NOME DA TABELA NO BANCO DE DADOS>
  * 
- * O formato dos campos a serem salvos tem que respeitar a seguinte forma:
+ * O formato dos campos a serem salvos e os a serem usados no where 
+ * tem que respeitar a seguinte forma:
  * 
  * "[PREFIXO]_[CAMPO]"
  * 
  * [PREFIXO] é o tipo do Java do campo.
  * [CAMPO] é o campo escrito de forma identica do banco de dados.
  * 
- * ex de campo:
+ * ex de campos:
  * 
  * <string_nome>Fulano</string_nome>
  * <int_idade>30</int_idade>
@@ -57,12 +62,11 @@ public class SalvarGenericoFeature implements Feature {
 			return inserir(in);
 		} else if (in.getChild("atualizar") != null) {
 			in.removeChild("atualizar");
-//			return atualizar(in);			
+			return alterar(in);			
 		} else {
-			throw new RuntimeException("Sem instrucoes de inserir ou atualizar!");			
+			throw new RuntimeException("Não possui instrução nem de inserir nem de atualizar!");			
 		}
 		
-		return null;		
 	}
 	
 	private Element inserir(Element in) throws Exception {
@@ -70,29 +74,116 @@ public class SalvarGenericoFeature implements Feature {
 		StringBuffer sb = new StringBuffer();
 		sb.append("INSERT INTO ");
 		sb.append(nomeTabela);
-		sb.append(" (");
-		sb.append(((Element)campos.get(0)).getName());		
+		sb.append(" ( ");
+		
+		String nomeCampo = ((Element)campos.get(0)).getName();
+		int inicio = nomeCampo.indexOf('_') + 1;		
+		sb.append(nomeCampo.substring(inicio));				
 		for (int i = 1; i < campos.size(); i++) {
-			String nomeCampo = ((Element)campos.get(i)).getName();
-			int inicio = nomeCampo.indexOf(')') + 1;
+			nomeCampo = ((Element)campos.get(i)).getName();
+			inicio = nomeCampo.indexOf('_') + 1;
 			sb.append(", " + nomeCampo.substring(inicio));
 		}
-		sb.append(") VALUES (");
-		for (int i = 1; i < campos.size(); i++) {
-			sb.append("? ");
-		}				
-		sb.append(")");
+		
+		sb.append(" ) VALUES (");
+		for (int i = 0; i < campos.size() - 1; i++) {			
+			sb.append(" ?,");
+		}
+		sb.append(" ? ) ");			
+		
+		System.out.println(sb.toString());
 
 
-		Connection con = Controller.getInstance().makeConnection();		
+		Connection con = Controller.getInstance().makeConnection();
 		PreparedStatement ps = con.prepareStatement(sb.toString());
-		prepare(ps, campos);		
-		return null;		
+		prepare(ps, campos, 0);
+		
+		Element out = new Element("out");
+		
+		if (ps.executeUpdate() > 0) {
+			out.getChildren().add(new Element("ok"));
+		}
+		
+		return out;		
 	}
 	
-	private void prepare(PreparedStatement ps, List campos) {
+	private Element alterar(Element in) throws Exception {
+		List camposWhere = in.getChild("where").getChildren();
+		in.removeChild("where");
+		List campos = in.getChildren();
+		
+				
+		StringBuffer sb = new StringBuffer();
+		sb.append("UPDATE ");
+		sb.append(nomeTabela);
+		sb.append(" SET ");
+		
+		String nomeCampo = ((Element)campos.get(0)).getName();
+		int inicio = nomeCampo.indexOf('_') + 1;		
+		sb.append(nomeCampo.substring(inicio) + " = ? ");				
+		for (int i = 1; i < campos.size(); i++) {
+			nomeCampo = ((Element)campos.get(i)).getName();
+			inicio = nomeCampo.indexOf('_') + 1;
+			sb.append(", " + nomeCampo.substring(inicio) + " = ? ");
+		}
+		
+		sb.append(" WHERE ");
+		nomeCampo = ((Element)camposWhere.get(0)).getName();
+		inicio = nomeCampo.indexOf('_') + 1;		
+		sb.append(nomeCampo.substring(inicio) + " = ? ");				
+		for (int i = 1; i < camposWhere.size(); i++) {
+			nomeCampo = ((Element)camposWhere.get(i)).getName();
+			inicio = nomeCampo.indexOf('_') + 1;
+			sb.append("AND " + nomeCampo.substring(inicio) + " = ? ");
+		}
+		
+		System.out.println(sb.toString());
+
+		Connection con = Controller.getInstance().makeConnection();
+		PreparedStatement ps = con.prepareStatement(sb.toString());		
+		prepare(ps, campos, camposWhere);
+		
+		Element out = new Element("out");
+		
+		if (ps.executeUpdate() > 0) {
+			out.getChildren().add(new Element("ok"));
+		}
+		
+		return out;		
+	}
+	
+	private void prepare(PreparedStatement ps, List campos, int indiceInicial) throws SQLException {
+		
+		String nomeCampo = null;
+		String nomeTipo = null;
+		int fim = 0;
 		for (int i = 0; i < campos.size(); i++) {
-		}		
+			nomeCampo = ((Element)campos.get(i)).getName();
+			fim = nomeCampo.indexOf('_');
+			nomeTipo = nomeCampo.substring(0, fim);
+			System.out.println(nomeTipo);
+			
+			if (nomeTipo.equals("string")) {
+				ps.setString(i + 1 + indiceInicial, ((Element)campos.get(i)).getTextTrim());
+			}
+			
+			if (nomeTipo.equals("int")) {
+				ps.setInt(i + 1 + indiceInicial, Integer.parseInt(((Element)campos.get(i)).getTextTrim()));
+			}
+			
+			if (nomeTipo.equals("date")) {
+				ps.setDate(i + 1 + indiceInicial, Date.valueOf(((Element)campos.get(i)).getTextTrim()));
+			}						
+			
+		}
+			
+	}
+	
+	private void prepare(PreparedStatement ps, List campos, List camposWhere) throws SQLException {
+		
+		prepare(ps, campos, 0);
+		prepare(ps, camposWhere, campos.size());
+			
 	}
 			
 }
