@@ -1,17 +1,15 @@
 package unbbayes.datamining.gui.decisiontree.resources;
 
 import java.util.*;
-import javax.swing.KeyStroke;
 
-public class DecisiontreeResource extends ListResourceBundle { 
-	
-	public Object[][] getContents() { 
+import javax.swing.*;
+
+public class DecisiontreeResource extends ListResourceBundle {
+
+	public Object[][] getContents() {
 		return contents;
 	}
 	static final Object[][] contents = {
-	// Attribute Panel
-	{"class","Class = "},
-	{"attributes","Attributes"},  
 	// Decision Tree Main
 	{"open","Open ..."},
 	{"build","Learn Decision Tree"},
@@ -29,7 +27,7 @@ public class DecisiontreeResource extends ListResourceBundle {
 	{"result2","Instances number:\t"},
 	{"result3","Attributes number:\t"},
 	{"result4","Attributes:\t"},
-	{"result5","Class:\t\t"}, 
+	{"result5","Class:\t\t"},
 	{"fileMnemonic",new Character('F')},
 	{"openMnemonic",new Character('O')},
 	{"helpMnemonic",new Character('H')},
@@ -38,10 +36,12 @@ public class DecisiontreeResource extends ListResourceBundle {
 	{"buildMnemonic",new Character('D')},
 	{"helpTopicsMnemonic",new Character('E')},
 	{"learnMnemonic",new Character('L')},
-	{"openAccelerator", KeyStroke.getKeyStroke(79, java.awt.event.KeyEvent.CTRL_MASK, false)},
+	{"saveModelMnemonic",new Character('S')},
+	{"openModelMnemonic",new Character('M')},
+        {"openAccelerator", KeyStroke.getKeyStroke(79, java.awt.event.KeyEvent.CTRL_MASK, false)},
 	{"buildAccelerator", KeyStroke.getKeyStroke(66, java.awt.event.KeyEvent.CTRL_MASK, false)},
 	{"helpTopics","Help Topics"},
-	{"numericAttributes","Can't manipulate numeric attributes - Discretization needed"},
+	{"numericAttributesException","Can't handle numeric attributes - Discretization needed"},
 	{"saveModel","Save Model ..."},
 	{"learn","Learning"},
 	{"openModel","Open Model ..."},
@@ -49,6 +49,7 @@ public class DecisiontreeResource extends ListResourceBundle {
 	{"openAModel","Open a model"},
 	{"saveAModel","Save a model"},
 	{"inference","Inference"},
+        {"attributes","Attributes"},
 	{"error1","Error= "},
 	{"openFile","Open File"},
 	{"fileExtensionNotKnown"," File extension not known."},
@@ -60,11 +61,11 @@ public class DecisiontreeResource extends ListResourceBundle {
 	{"modelOpenedSuccessfully","Model opened successfully"},
 	{"errorWritingFile","Error writing file "},
 	//Induction Panel
-	{"messages","Messages"},	
+	{"messages","Messages"},
 	{"selectedNode","Selected node: "},
 	{"leaf","\tReached leaf: "},
 	{"back","Back"},
 	{"backMnemonic",new Character('B')},
 	{"return","\nUser returns a level in the tree\nLast option was "},
-	}; 
-} 
+	};
+}

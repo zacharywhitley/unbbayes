@@ -3,17 +3,18 @@ package unbbayes.datamining.gui.decisiontree;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.net.URL;
 import java.util.*;
-import javax.help.*;
+
 import javax.swing.*;
-import javax.swing.event.*;
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.classifiers.Id3;
-import unbbayes.fronteira.*;
 import javax.swing.border.*;
 
-public class DecisionTreeMain extends /*JFrame*/JInternalFrame
+import unbbayes.controlador.*;
+import unbbayes.datamining.classifiers.*;
+import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.gui.*;
+import unbbayes.fronteira.*;
+
+public class DecisionTreeMain extends JInternalFrame
 {
   private JPanel contentPane;
   private JMenuBar jMenuBar = new JMenuBar();
@@ -21,36 +22,37 @@ public class DecisionTreeMain extends /*JFrame*/JInternalFrame
   private JMenu jMenuHelp = new JMenu();
   private JMenuItem jMenuHelpAbout = new JMenuItem();
   private JToolBar jToolBar = new JToolBar();
-  private JButton jButtonOpen = new JButton();
-  private JButton jButtonBuild = new JButton();
+  private JButton openFileButton = new JButton();
+  private JButton learnButton = new JButton();
   private BorderLayout borderLayout1 = new BorderLayout();
-  private JTabbedPane jTabbedPane = new JTabbedPane();
   private JMenuItem jMenuFileOpen = new JMenuItem();
   private JMenuItem jMenuFileExit = new JMenuItem();
   private JMenuItem jMenuFileBuild = new JMenuItem();
   private InstanceSet inst;
-  private AttributePanel attributeFrame;
-  private InductionPanel inductionFrame;
-  private File selectedFile;
   private ResourceBundle resource;
   private JTree id3tree;
-  private ImageIcon image1;
-  private ImageIcon image2;
-  private ImageIcon image3;
-  private ImageIcon image4;
+  private ImageIcon abrirIcon;
+  private ImageIcon compilaIcon;
+  private ImageIcon helpIcon;
+  private ImageIcon salvarIcon;
   private JMenuItem jMenuItem2 = new JMenuItem();
   private JMenu jMenu1 = new JMenu();
   private JMenuItem jMenuItem1 = new JMenuItem();
   private Id3 id3;
-  private JButton jButton1 = new JButton();
-  private JButton jButton2 = new JButton();
-  private JButton jButton4 = new JButton();
+  private JButton saveModelButton = new JButton();
+  private JButton openModelButton = new JButton();
+  private JButton helpButton = new JButton();
   private JPanel jPanel1 = new JPanel();
   private JLabel statusBar = new JLabel();
   private BorderLayout borderLayout2 = new BorderLayout();
   private Border border1;
   private TitledBorder titledBorder1;
-  private JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
+  private JFileChooser fileChooser;
+  private JPanel jPanel2 = new JPanel();
+  private InductionPanel inductionFrame;
+  private JTabbedPane jTabbedPane = new JTabbedPane();
+  private AttributePanel attributeFrame;
+  private BorderLayout borderLayout3 = new BorderLayout();
 
   /**Construct the frame*/
   public DecisionTreeMain()
@@ -68,21 +70,20 @@ public class DecisionTreeMain extends /*JFrame*/JInternalFrame
   }
   /**Component initialization*/
   private void jbInit() throws Exception
-  { image1 = new ImageIcon("icones/abrir.gif");
-    image2 = new ImageIcon("icones/compila.gif");
-    image3 = new ImageIcon("icones/help.gif");
-    image4 = new ImageIcon("icones/salvar.gif");
+  { abrirIcon = new ImageIcon(getClass().getResource("/icones/abrir.gif"));
+    compilaIcon = new ImageIcon(getClass().getResource("/icones/compila.gif"));
+    helpIcon = new ImageIcon(getClass().getResource("/icones/help.gif"));
+    salvarIcon = new ImageIcon(getClass().getResource("/icones/salvar.gif"));
     contentPane = (JPanel) this.getContentPane();
-    border1 = BorderFactory.createLineBorder(new Color(153, 153, 153),1);
     titledBorder1 = new TitledBorder(border1,"Status");
-    contentPane.setLayout(borderLayout1);
-    jTabbedPane.setOpaque(true);
+    inductionFrame = new InductionPanel();
+    attributeFrame = new AttributePanel();
     this.setSize(new Dimension(640, 480));
     jMenuFile.setMnemonic(((Character)resource.getObject("fileMnemonic")).charValue());
     jMenuFile.setText(resource.getString("file"));
     jMenuHelp.setMnemonic(((Character)resource.getObject("helpMnemonic")).charValue());
     jMenuHelp.setText(resource.getString("help"));
-    jMenuHelpAbout.setIcon(image3);
+    jMenuHelpAbout.setIcon(helpIcon);
     jMenuHelpAbout.setMnemonic(((Character)resource.getObject("helpTopicsMnemonic")).charValue());
     jMenuHelpAbout.setText(resource.getString("helpTopics"));
     jMenuHelpAbout.addActionListener(new ActionListener()
@@ -92,27 +93,27 @@ public class DecisionTreeMain extends /*JFrame*/JInternalFrame
         jMenuHelpAbout_actionPerformed(e);
       }
     });
-    jButtonOpen.setIcon(image1);
-    jButtonOpen.addActionListener(new java.awt.event.ActionListener()
+    openFileButton.setIcon(abrirIcon);
+    openFileButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jButtonOpen_actionPerformed(e);
+        openFileButton_actionPerformed(e);
       }
     });
-    jButtonOpen.setToolTipText(resource.getString("openTooltip"));
-    jButtonBuild.addActionListener(new java.awt.event.ActionListener()
+    openFileButton.setToolTipText(resource.getString("openTooltip"));
+    learnButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jButtonBuild_actionPerformed(e);
+        learnButton_actionPerformed(e);
       }
     });
-    jButtonBuild.setEnabled(false);
-    jButtonBuild.setToolTipText(resource.getString("buildTooltip"));
-    jButtonBuild.setIcon(image2);
+    learnButton.setEnabled(false);
+    learnButton.setToolTipText(resource.getString("buildTooltip"));
+    learnButton.setIcon(compilaIcon);
     jMenuFileOpen.setText(resource.getString("open"));
-    jMenuFileOpen.setIcon(image1);
+    jMenuFileOpen.setIcon(abrirIcon);
     jMenuFileOpen.setMnemonic(((Character)resource.getObject("openMnemonic")).charValue());
     jMenuFileOpen.addActionListener(new java.awt.event.ActionListener()
     {
@@ -132,7 +133,7 @@ public class DecisionTreeMain extends /*JFrame*/JInternalFrame
     });
     jMenuFileBuild.setText(resource.getString("build"));
     jMenuFileBuild.setEnabled(false);
-    jMenuFileBuild.setIcon(image2);
+    jMenuFileBuild.setIcon(compilaIcon);
     jMenuFileBuild.setMnemonic(((Character)resource.getObject("buildMnemonic")).charValue());
     jMenuFileBuild.addActionListener(new java.awt.event.ActionListener()
     {
@@ -143,7 +144,8 @@ public class DecisionTreeMain extends /*JFrame*/JInternalFrame
     });
     jToolBar.setFloatable(false);
     jMenuItem2.setEnabled(false);
-    jMenuItem2.setIcon(image4);
+    jMenuItem2.setIcon(salvarIcon);
+    jMenuItem2.setMnemonic(((Character)resource.getObject("saveModelMnemonic")).charValue());
     jMenuItem2.setText(resource.getString("saveModel"));
     jMenuItem2.addActionListener(new java.awt.event.ActionListener()
     {
@@ -154,7 +156,8 @@ public class DecisionTreeMain extends /*JFrame*/JInternalFrame
     });
     jMenu1.setMnemonic(((Character)resource.getObject("learnMnemonic")).charValue());
     jMenu1.setText(resource.getString("learn"));
-    jMenuItem1.setIcon(image1);
+    jMenuItem1.setIcon(abrirIcon);
+    jMenuItem1.setMnemonic(((Character)resource.getObject("openModelMnemonic")).charValue());
     jMenuItem1.setText(resource.getString("openModel"));
     jMenuItem1.addActionListener(new java.awt.event.ActionListener()
     {
@@ -163,43 +166,44 @@ public class DecisionTreeMain extends /*JFrame*/JInternalFrame
         jMenuItem1_actionPerformed(e);
       }
     });
-    jButton4.setToolTipText(resource.getString("callHelpFile"));
-    jButton4.setIcon(image3);
-    jButton4.addActionListener(new java.awt.event.ActionListener()
+    helpButton.setToolTipText(resource.getString("callHelpFile"));
+    helpButton.setIcon(helpIcon);
+    helpButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jButton4_actionPerformed(e);
+        helpButton_actionPerformed(e);
       }
     });
-    jButton2.setToolTipText(resource.getString("openAModel"));
-    jButton2.setIcon(image1);
-    jButton2.addActionListener(new java.awt.event.ActionListener()
+    openModelButton.setToolTipText(resource.getString("openAModel"));
+    openModelButton.setIcon(abrirIcon);
+    openModelButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jButton2_actionPerformed(e);
+        openModelButton_actionPerformed(e);
       }
     });
-    jButton1.setEnabled(false);
-    jButton1.setToolTipText(resource.getString("saveAModel"));
-    jButton1.setIcon(image4);
-    jButton1.addActionListener(new java.awt.event.ActionListener()
+    saveModelButton.setEnabled(false);
+    saveModelButton.setToolTipText(resource.getString("saveAModel"));
+    saveModelButton.setIcon(salvarIcon);
+    saveModelButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jButton1_actionPerformed(e);
+        saveModelButton_actionPerformed(e);
       }
     });
     statusBar.setBorder(titledBorder1);
     statusBar.setText(resource.getString("welcome"));
     jPanel1.setLayout(borderLayout2);
-    jToolBar.add(jButtonOpen);
-    jToolBar.add(jButtonBuild);
-    jToolBar.add(jButton4, null);
+    jPanel2.setLayout(borderLayout3);
+    jToolBar.add(openFileButton);
+    jToolBar.add(learnButton);
+    jToolBar.add(helpButton, null);
     jToolBar.addSeparator();
-    jToolBar.add(jButton2, null);
-    jToolBar.add(jButton1, null);
+    jToolBar.add(openModelButton, null);
+    jToolBar.add(saveModelButton, null);
     jMenuFile.add(jMenuFileOpen);
     jMenuFile.addSeparator();
     jMenuFile.add(jMenuItem1);
@@ -212,13 +216,16 @@ public class DecisionTreeMain extends /*JFrame*/JInternalFrame
     jMenuBar.add(jMenuHelp);
     this.setJMenuBar(jMenuBar);
     contentPane.add(jToolBar,  BorderLayout.NORTH);
-    contentPane.add(jTabbedPane, BorderLayout.CENTER);
-    attributeFrame = new AttributePanel();
-    jTabbedPane.add(attributeFrame,resource.getString("attributes"));
-    inductionFrame = new InductionPanel();
-    jTabbedPane.add(inductionFrame,resource.getString("inference"));
     contentPane.add(jPanel1,  BorderLayout.SOUTH);
     jPanel1.add(statusBar, BorderLayout.CENTER);
+    contentPane.add(jPanel2, BorderLayout.CENTER);
+    jPanel2.add(jTabbedPane, BorderLayout.CENTER);
+    //jTabbedPane.add(attributeFrame, "attributeFrame");
+    //jTabbedPane.add(inductionFrame, "inductionFrame");
+    //jTabbedPane.add(attributeFrame, resource.getString("attributes"));
+    //jTabbedPane.add(inductionFrame, resource.getString("inference"));
+    jTabbedPane.add(attributeFrame, resource.getString("attributes"));
+    jTabbedPane.add(inductionFrame, resource.getString("inference"));
     jMenu1.add(jMenuFileBuild);
     for(int i=0; i<2; i++)
         jTabbedPane.setEnabledAt(i,false);
@@ -232,95 +239,72 @@ public class DecisionTreeMain extends /*JFrame*/JInternalFrame
 
   /**Help | About action performed*/
   public void jMenuHelpAbout_actionPerformed(ActionEvent e)
-  {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
-      try
-      {   URL helpSetURL = new URL("file:./help/Decision_Tree.hs");
-          HelpSet set = new HelpSet(null, helpSetURL);
-          JHelp help = new JHelp(set);
-          JFrame f = new JFrame();
-          f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-          f.setContentPane(help);
-          f.setSize(500,400);
-          f.setVisible(true);
+  {   try
+      {   FileController.getInstance().openHelp(this);
       }
       catch (Exception evt)
-      {   evt.printStackTrace();
-          statusBar.setText(resource.getString("error1")+evt.getMessage());
+      {   statusBar.setText("Error= "+evt.getMessage()+" "+this.getClass().getName());
       }
-      setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
   /**File | Open action performed*/
-  void jButtonOpen_actionPerformed(ActionEvent e)
+  void openFileButton_actionPerformed(ActionEvent e)
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
       String[] s1 = {"ARFF"};
       String[] s2 = {"TXT"};
-      fileChooser = new JFileChooser(fileChooser.getCurrentDirectory());
-      fileChooser.setDialogTitle(resource.getString("openFile"));
+      fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setMultiSelectionEnabled(false);
       //adicionar FileView no FileChooser para desenhar ícones de arquivos
-      fileChooser.setFileView(new FileIcon(DecisionTreeMain.this));
+      fileChooser.setFileView(new FileIcon(this));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "TxtFiles (*.txt)"));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ArffFiles (*.arff)"));
       int returnVal = fileChooser.showOpenDialog(this);
       if (returnVal == JFileChooser.APPROVE_OPTION)
       {   File selectedFile = fileChooser.getSelectedFile();
-          setBaseInstancesFromFile(selectedFile);
+          openFile(selectedFile);
+          FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
-  private void setBaseInstancesFromFile(File f)
+  private void openFile(File selectedFile)
   {   try
-      {   Reader r = new BufferedReader(new FileReader(f));
-	  Loader loader;
-          String fileName = f.getName();
-          if (fileName.regionMatches(true,fileName.length() - 5,".arff",0,5))
-          {   loader = new ArffLoader(r,this);
-          }
-          else if (fileName.regionMatches(true,fileName.length() - 4,".txt",0,4))
-          {   loader = new TxtLoader(r,this);
-          }
-          else
-          {   throw new IOException(resource.getString("fileExtensionNotKnown"));
-          }
-          boolean bool = loader.getInstances().checkNumericAttributes();
+      {   inst = FileController.getInstance().setBaseInstancesFromFile(selectedFile,this);
+          boolean bool = inst.checkNumericAttributes();
           if (bool == true)
-              throw new Exception(resource.getString("numericAttributes"));
-          inst = loader.getInstances();
+              throw new Exception(resource.getString("numericAttributesException"));
           for(int i=0; i<2; i++)
               jTabbedPane.setEnabledAt(i,false);
-          jButtonBuild.setEnabled(false);
+          learnButton.setEnabled(false);
           jMenuFileBuild.setEnabled(false);
-          this.setTitle("ID3 Decision Tree - "+f.getName());
+          this.setTitle("ID3 Decision Tree - "+selectedFile.getName());
           jTabbedPane.setEnabledAt(0,true);
           jTabbedPane.setSelectedIndex(0);
           attributeFrame.setInstances(inst);
           attributeFrame.enableComboBox(true);
-          jButtonBuild.setEnabled(true);
+          learnButton.setEnabled(true);
           jMenuFileBuild.setEnabled(true);
           statusBar.setText(resource.getString("fileOpenedSuccessfully"));
-          r.close();
       }
       catch (NullPointerException npe)
-      {   statusBar.setText(resource.getString("nullPointerException") + f.getName());
+      {   statusBar.setText(resource.getString("nullPointerException") + selectedFile.getName());
       }
       catch (FileNotFoundException fnfe)
-      {   statusBar.setText(resource.getString("fileNotFoundException") + f.getName());
+      {   statusBar.setText(resource.getString("fileNotFoundException") + selectedFile.getName());
       }
       catch (IOException ioe)
-      {   statusBar.setText(resource.getString("ioException1") + f.getName() + resource.getString("ioException2"));
+      {   statusBar.setText(resource.getString("ioException1") + selectedFile.getName() + resource.getString("ioException2"));
       }
-      catch(Exception e)
-      {   statusBar.setText(resource.getString("exception")+e.getMessage());
+      catch(Exception ex)
+      {   statusBar.setText(resource.getString("exception")+ex.getMessage());
       }
   }
 
   void jMenuFileOpen_actionPerformed(ActionEvent e)
-  {   jButtonOpen_actionPerformed(e);
+  {   openFileButton_actionPerformed(e);
   }
 
-  void jButtonBuild_actionPerformed(ActionEvent evt)
+  void learnButton_actionPerformed(ActionEvent evt)
   {   jTabbedPane.setSelectedIndex(0);
       try
       {   id3 = new Id3();
@@ -330,7 +314,7 @@ public class DecisionTreeMain extends /*JFrame*/JInternalFrame
           id3tree = id3.getTree();
           jTabbedPane.setSelectedIndex(1);
           jMenuItem2.setEnabled(true);
-          jButton1.setEnabled(true);
+          saveModelButton.setEnabled(true);
           statusBar.setText(resource.getString("id3Learn"));
       }
       catch(Exception e)
@@ -339,13 +323,13 @@ public class DecisionTreeMain extends /*JFrame*/JInternalFrame
   }
 
   void jMenuFileBuild_actionPerformed(ActionEvent e)
-  {   jButtonBuild_actionPerformed(e);
+  {   learnButton_actionPerformed(e);
   }
 
   void jMenuItem1_actionPerformed(ActionEvent e)
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
       String[] s1 = {"id3"};
-      fileChooser = new JFileChooser(fileChooser.getCurrentDirectory());
+      fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setDialogTitle(resource.getString("openModel2"));
       fileChooser.setMultiSelectionEnabled(false);
       //adicionar FileView no FileChooser para desenhar ícones de arquivos
@@ -360,7 +344,7 @@ public class DecisionTreeMain extends /*JFrame*/JInternalFrame
               id3tree = id3.getTree();
               jTabbedPane.setEnabledAt(1,true);
               jTabbedPane.setEnabledAt(0,false);
-              jButtonBuild.setEnabled(false);
+              learnButton.setEnabled(false);
               jMenuFileBuild.setEnabled(false);
               this.setTitle("ID3 Decision Tree - Model "+selectedFile.getName());
               statusBar.setText(resource.getString("modelOpenedSuccessfully"));
@@ -373,6 +357,7 @@ public class DecisionTreeMain extends /*JFrame*/JInternalFrame
           catch (ClassNotFoundException cnfe)
           {   statusBar.setText(cnfe.getMessage());
           }
+          FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
@@ -380,7 +365,7 @@ public class DecisionTreeMain extends /*JFrame*/JInternalFrame
   void jMenuItem2_actionPerformed(ActionEvent e)
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
       String[] s1 = {"id3"};
-      fileChooser = new JFileChooser(fileChooser.getCurrentDirectory());
+      fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setMultiSelectionEnabled(false);
       //adicionar FileView no FileChooser para desenhar ícones de arquivos
       fileChooser.setFileView(new FileIcon(DecisionTreeMain.this));
@@ -399,19 +384,20 @@ public class DecisionTreeMain extends /*JFrame*/JInternalFrame
           catch (IOException ioe)
           {   statusBar.setText(resource.getString("errorWritingFile")+selectedFile.getName()+" "+ioe.getMessage());
           }
+          FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
-  void jButton4_actionPerformed(ActionEvent e)
+  void helpButton_actionPerformed(ActionEvent e)
   {   jMenuHelpAbout_actionPerformed(e);
   }
 
-  void jButton2_actionPerformed(ActionEvent e)
+  void openModelButton_actionPerformed(ActionEvent e)
   {   jMenuItem1_actionPerformed(e);
   }
 
-  void jButton1_actionPerformed(ActionEvent e)
+  void saveModelButton_actionPerformed(ActionEvent e)
   {   jMenuItem2_actionPerformed(e);
   }
 }

@@ -3,10 +3,12 @@ package unbbayes.datamining.gui.decisiontree;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
-import unbbayes.datamining.classifiers.Id3;
+
+import unbbayes.datamining.classifiers.*;
 
 public class InductionPanel extends JPanel
 {
@@ -151,7 +153,7 @@ public class InductionPanel extends JPanel
       if (buttonName.equals(resource.getString("back")))
       {   jRadioButton.setMnemonic(((Character)resource.getObject("backMnemonic")).charValue());
           try
-          {   jRadioButton.setIcon(new ImageIcon("icones/RETORNAR.GIF"));
+          {   jRadioButton.setIcon(new ImageIcon(getClass().getResource("/icones/RETORNAR.GIF")));
           }
           catch (Exception e)
           {}
