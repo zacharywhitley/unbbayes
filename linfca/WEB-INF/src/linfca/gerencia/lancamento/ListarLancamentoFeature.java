@@ -15,7 +15,8 @@ public class ListarLancamentoFeature implements Feature {
 	 * <pre>
 	 * <in>
 	 *     <data-hora-inicio>data</data-hora-inicio>
-	 *     <data-hora-fim>data</data-hora-fim>	
+	 *     <data-hora-fim>data</data-hora-fim>
+	 *     ?<abertos/>
 	 * </in>
 	 * 
 	 * 
@@ -24,24 +25,32 @@ public class ListarLancamentoFeature implements Feature {
 	 * 		<cod-lancamento>1</cod-lancamento>
 	 *      <nome-usuario>Fulano</nome-usuario>
 	 *      <foto-usuario>AFEW$GD#%...</foto-usuario>
-	 * 		<data-hora-inicio>data e hora</data-hora-inicio> 
+	 * 		<data-hora-inicio>data e hora</data-hora-inicio>
+	 *      <data-hora-fim> data </data-hora-fim>
 	 * 	  </lancamento>*
 	 * </out> 
 	 * </pre>
-
 	 * @see Feature#process(Element)
 	 */
 	public Element process(Element in) throws Exception {
+		boolean aberto = (in.getChild("abertos") != null);
+		
 		Connection con = Controller.getInstance().makeConnection();
-		PreparedStatement ps = 
-		       con.prepareStatement(
-					"select l.cod_lancamento, l.dt_hora_inicio_lancamento, " +
-					" u.nome, u.foto" +
-					" from lancamento l, usuario u" +
-					" where l.dt_hora_inicio_lancamento > ?" +
-					" AND l.dt_hora_fim_lancamento < ?" +
-					" order by l.dt_hora_inicio_lancamento desc"
-			   );
+		
+		StringBuffer sql = new StringBuffer();
+		sql.append("select l.cod_lancamento, l.dt_hora_inicio_lancamento,");
+		sql.append(" l.dt_hora_fim_lancamento, u.nome, u.foto");
+		sql.append(" from lancamento l, usuario u");
+		sql.append(" where l.dt_hora_inicio_lancamento > ?");
+		sql.append(" AND (l.dt_hora_fim_lancamento < ?");
+		if (aberto) {
+			sql.append(" OR l.dt_hora_fim_lancamento IS NULL)");
+		} else {
+			sql.append(")");			
+		}		
+		sql.append(" order by l.dt_hora_inicio_lancamento desc");
+		
+		PreparedStatement ps = con.prepareStatement(sql.toString());					
 		Timestamp inicioIn = Timestamp.valueOf(in.getChildTextTrim("data-hora-inicio"));
 		Timestamp fimIn = Timestamp.valueOf(in.getChildTextTrim("data-hora-fim"));
 		
@@ -54,6 +63,7 @@ public class ListarLancamentoFeature implements Feature {
 			Element lancamento = new Element("lancamento");
 			int codigo = rs.getInt("l.cod_lancamento");
 			Timestamp inicio = rs.getTimestamp("l.dt_hora_inicio_lancamento");
+			Timestamp fim = rs.getTimestamp("l.dt_hora_fim_lancamento");
 			String nome = rs.getString("u.nome");
 			String foto = rs.getString("u.foto");
 
@@ -63,6 +73,9 @@ public class ListarLancamentoFeature implements Feature {
 			Element dataInicioXML = new Element("data-hora-inicio");
 			dataInicioXML.setText(inicio.toString());
 			
+			Element dataFimXML = new Element("data-hora-fim");
+			dataFimXML.setText(fim.toString());
+
 			Element nomeXML = new Element("nome-usuario");
 			nomeXML.setText(nome);
 			
