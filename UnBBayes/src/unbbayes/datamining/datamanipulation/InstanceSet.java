@@ -95,6 +95,7 @@ public class InstanceSet
 			while(i<newAttributes.length)
 			{
 				newAttributes[i]=attributes[i+1];
+				newAttributes[i].setIndex(i);
 				newAttributeStats[i] = attributeStats[i+1];
 				i++;
 			}
@@ -428,15 +429,16 @@ public class InstanceSet
 				{	
 					attributeStats[i] = new AttributeStats(AttributeStats.NUMERIC,0);
 				}
-				attributeStats[i].setTotalCount(numWeightedInstances);
 			}
 		}
 		if (attFlag)
 		{
 			int numAttributes = numAttributes();
+			int[][] countWeightResults = new int[numAttributes][];
 			int[][] countResults = new int[numAttributes][];
 			for (int i=0;i<numAttributes;i++)
 			{
+				countWeightResults[i] = new int[getAttribute(i).numValues()+1];
 				countResults[i] = new int[getAttribute(i).numValues()+1];
 			}
 			int numInstances = numInstances();
@@ -448,30 +450,33 @@ public class InstanceSet
 				{
 					if (current.isMissing(i))
 					{	
-						countResults[i][((countResults[i]).length)-1]+=instanceWeight;
+						countWeightResults[i][((countWeightResults[i]).length)-1]+=instanceWeight;
+						countResults[i][((countResults[i]).length)-1]++;
 					}
 					else
 					{	
-						countResults[i][current.getValue(i)]+=instanceWeight;
+						countWeightResults[i][current.getValue(i)]+=instanceWeight;
+						countResults[i][current.getValue(i)]++;
 					}						
 				}
 			}
 			for (int i=0;i<numAttributes;i++)
 			{
 				attributeStats[i].setMissingCount(countResults[i][((countResults[i]).length)-1]);
+				attributeStats[i].setMissingCountWeighted(countWeightResults[i][((countWeightResults[i]).length)-1]);
 				Attribute tempAtt = getAttribute(i);
 				if (tempAtt.isNominal())
 				{
 					for (int j = 0; j < tempAtt.numValues(); j++)
 					{
-						attributeStats[i].addDistinct(j,countResults[i][j]);
+						attributeStats[i].addDistinct(j,countResults[i][j],countWeightResults[i][j]);
 					}
 				}
 				else
 				{	
 					for (int j = 0; j < tempAtt.numValues(); j++)
 					{
-						attributeStats[i].addDistinct(Float.parseFloat(tempAtt.value(j)),countResults[i][j]);
+						attributeStats[i].addDistinct(Float.parseFloat(tempAtt.value(j)),j,countResults[i][j],countWeightResults[i][j]);
 					}
 				}		
 			}
