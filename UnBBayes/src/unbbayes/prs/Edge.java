@@ -59,9 +59,7 @@ public class Edge implements java.io.Serializable {
         this.no1 = no1;
         this.no2 = no2;
         
-        if (no1 == no2) {
-        	System.err.println("arco malfeito");        	
-        }
+        assert no1 != no2 : "arco malfeito";
         direction = true;
     }
 
