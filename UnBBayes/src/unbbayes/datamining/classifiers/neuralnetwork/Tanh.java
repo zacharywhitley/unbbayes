@@ -1,6 +1,7 @@
 package unbbayes.datamining.classifiers.neuralnetwork;
 
 import java.io.*;
+import unbbayes.datamining.datamanipulation.*;
 
 /**
  *  Class that implements the hyperbolic tangent (tanh) activation function
@@ -88,4 +89,17 @@ public class Tanh implements ActivationFunction, Serializable{
   public double hiddenErrorTerm(double y, double sum){   //sigma
     return steep * (1 - y) * (1 + y) * sum;
   }
+
+  /**
+   * Method that normalizes a number to the activation function range
+   *
+   * @param data The number to be normalized to the activation function interval.
+   * @param dataHighestValue The maximum value that the original data may assume.
+   * @param dataLowestValue The minimum value that the original data may assume.
+   * @return The normalized data.
+   */
+  public float normalizeToFunctionInterval(float data, float dataHighestValue, float dataLowestValue){
+    return Utils.normalize(data, dataHighestValue, dataLowestValue, 1, -1);
+  }
+
 }

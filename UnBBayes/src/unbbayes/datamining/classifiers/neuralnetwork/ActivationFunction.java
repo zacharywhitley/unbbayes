@@ -35,4 +35,14 @@ public interface ActivationFunction{
    * @return The error term.
    */
   public double hiddenErrorTerm(double y, double sum);
+
+  /**
+   * Method that normalizes a number to the activation function range
+   *
+   * @param data The number to be normalized to the activation function interval.
+   * @param dataHighestValue The maximum value that the original data may assume.
+   * @param dataLowestValue The minimum value that the original data may assume.
+   * @return The normalized data.
+   */
+  public float normalizeToFunctionInterval(float data, float dataHighestValue, float dataLowestValue);
 }

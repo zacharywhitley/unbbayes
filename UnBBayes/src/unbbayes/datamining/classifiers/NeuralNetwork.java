@@ -47,10 +47,10 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   private transient float learningRate;
 
   /**The original leaning rate, used when the leaning rate decay is activated*/
-  private transient float originalLearningRate;
+  private float originalLearningRate;
 
   /**The momenum value*/
-  private transient float momentum;
+  private float momentum;
 
   /**The hidden layer size*/
   private transient int hiddenLayerSize;
@@ -62,7 +62,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   private transient ActivationFunction activationFunction = null;
 
   /**The training time, expressed in the number of epochs*/
-  private transient int trainingTime;
+  private int trainingTime;
 
   /**The minimum error variatio between epochs, this stop criterion may be disabled*/
   private transient float minimumErrorVariation;
@@ -71,7 +71,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
    * Option that enable the learning rate to decay between epochs.
    * The original learning rate is divide by the number of the epoch.
    * */
-  private transient boolean learningRateDecay = false;
+  private boolean learningRateDecay = false;
 
   /**
    * The mean squared error
@@ -133,6 +133,11 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   /**Array that contains the standard deviation of the values of all instances for each attribute*/
   private float[] attributeStandardDeviation;
 
+  /**The normalization function choosed by the user*/
+  private INormalization normalizationFunction;
+
+  /**The activation function steep*/
+  private float activationFunctionSteep;
 
   /**
    * Constructor of the neural network
@@ -165,6 +170,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     this.numericalInputNormalization = numericalInputNormalization;
     this.minimumErrorVariation = minimumErrorVariation;
     activationFunctionType = activationFunction;
+    this.activationFunctionSteep = activationFunctionSteep;
 
     if(activationFunction == NeuralNetwork.SIGMOID){
       this.activationFunction = new Sigmoid(activationFunctionSteep);
@@ -187,18 +193,10 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
                        int hiddenLayerSize,
                        int activationFunction,
                        int trainingTime) {
-    this.learningRate = learningRate;
-    this.originalLearningRate = learningRate;
-    this.momentum = momentum;
-    this.hiddenLayerSize = hiddenLayerSize;
-    this.trainingTime = trainingTime;
-    activationFunctionType = activationFunction;
 
-    if(activationFunction == NeuralNetwork.SIGMOID){
-      this.activationFunction = new Sigmoid();
-    } else if(activationFunction == NeuralNetwork.TANH){
-      this.activationFunction = new Tanh();
-    }
+    this(learningRate, false, momentum, hiddenLayerSize,
+         activationFunction, trainingTime, NO_NORMALIZATION,
+         1, NO_ERROR_VARIATION_STOP_CRITERION);
   }
 
   /**
@@ -215,36 +213,21 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     numericOutput = instanceSet.getClassAttribute().isNumeric();
     float quadraticError = 0;
     float oldQuadraticError;
+    long numOfInstances = instanceSet.numWeightedInstances();
 
     attributeVector = instanceSet.getAttributes();      //cria um array com os atributos para serialização
     this.classIndex = instanceSet.getClassIndex();      //guarda o indice da classe para serialização
 
     highestValue = new float[numOfAttributes];
     lowestValue = new float[numOfAttributes];
-    //Se normaliza por media 0 e desvio padrao 1 então calcula estes valores antes
-    if(numericalInputNormalization == MEAN_0_STANDARD_DEVIATION_1_NORMALIZATION){
-      attributeMean = new float[numOfAttributes];
-      attributeStandardDeviation = new float[numOfAttributes];
 
-      for(int i=0; i<numOfAttributes; i++){
-        Attribute att = instanceSet.getAttribute(i);
-        if(att.isNumeric() && i!=classIndex){
-          attributeMean[i] = (float)Utils.mean(instanceSet, i);
-          attributeStandardDeviation[i] = (float)Utils.standardDeviation(instanceSet, i, attributeMean[i]);
-        }
-      }
-    } else if(numericalInputNormalization == LINEAR_NORMALIZATION){ //seta os maiores e menores valores dos atributos do instanceSet
-      for(int i=0; i<numOfAttributes; i++){
-        if(i!=classIndex && instanceSet.getAttribute(i).isNumeric()){
-          highestValue[i] = Float.MIN_VALUE;
-          lowestValue[i] = Float.MAX_VALUE;
-          String[] values = instanceSet.getAttribute(i).getAttributeValues();
-          for(int j=0; j<values.length; j++){
-            highestValue[i] = Math.max(highestValue[i], Float.parseFloat(values[j]));
-            lowestValue[i] = Math.min(lowestValue[i], Float.parseFloat(values[j]));
-          }
-        }
-      }
+    //inicializa o tipo de normalização escolida
+    if(numericalInputNormalization == NO_NORMALIZATION){
+      normalizationFunction = new NoNormalization();
+    } else if(numericalInputNormalization == LINEAR_NORMALIZATION){
+      normalizationFunction = new LinearNormalization();
+    } else if(numericalInputNormalization == MEAN_0_STANDARD_DEVIATION_1_NORMALIZATION){
+      normalizationFunction = new Mean0StdDeviation1Normalization();
     }
 
     //seta os maiores e menores valores da classe
@@ -290,7 +273,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 
     //verifica se o numero de hidden neurons deve ser automatico
     if(hiddenLayerSize == AUTO_HIDDEN_LAYER_SIZE){
-      hiddenLayerSize = (instanceSet.numAttributes() + instanceSet.numClasses()) / 2;
+      hiddenLayerSize = (instanceSet.numAttributes() + 1/*class attribute*/) / 2;
       if(hiddenLayerSize < 3){
         hiddenLayerSize = 3;
       }
@@ -313,7 +296,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     }
 
     //Learning
-    for (int epoch = 1; epoch < (trainingTime+1); epoch++) {
+    for (int epoch=0; epoch<trainingTime; epoch++) {
       instanceEnum = instanceSet.enumerateInstances();
       oldQuadraticError = quadraticError;
       quadraticError = 0;
@@ -326,7 +309,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
         instance = (Instance) instanceEnum.nextElement();
         quadraticError = quadraticError + learn(instance);
       }
-      quadraticError = quadraticError/instanceSet.numWeightedInstances();
+      quadraticError = quadraticError / numOfInstances;
 
       if(meanSquaredError != null){
         meanSquaredError.setMeanSquaredError(epoch, quadraticError);
@@ -334,6 +317,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 
       if(minimumErrorVariation != NO_ERROR_VARIATION_STOP_CRITERION){
         if(Math.abs((oldQuadraticError - quadraticError) * 100 / oldQuadraticError) < minimumErrorVariation){
+          trainingTime = epoch;
           break;
         }
       }
@@ -396,7 +380,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     int counter = 0; //inicializa o contador de entradas
     Arrays.fill(inputLayer, -1);  //zera o vetor de entradas
 
-    for (int i = 0; i < numOfAttributes; i++) {
+    for (int i=0; i<numOfAttributes; i++) {
       if (i != classIndex) {
         if (!instance.isMissing(i)) {
           int index = 0;
@@ -404,16 +388,9 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
             index = index + attNumOfValues[j];
           }
           Attribute att = attributeVector[i];
-
           if (att.isNumeric()) {
-            int value = instance.getValue (att);
-            if(numericalInputNormalization == LINEAR_NORMALIZATION){
-              inputLayer[index] = Utils.normalize(Float.parseFloat(att.getAttributeValues()[value]), highestValue[i], lowestValue[i], 1, -1);
-            } else if(numericalInputNormalization == MEAN_0_STANDARD_DEVIATION_1_NORMALIZATION) {
-              inputLayer[index] = (Float.parseFloat(att.getAttributeValues()[value]) - attributeMean[i]) / attributeStandardDeviation[i];
-            } else {  //numericalInputNormalization == NO_NORMALIZATION
-              inputLayer[index] = Float.parseFloat(att.getAttributeValues()[value]);
-            }
+            float data = Float.parseFloat(att.getAttributeValues()[instance.getValue(att)]);
+            inputLayer[index] = normalizationFunction.normalize(data, i);
           } else {
             index = index + instance.getValue (i);
             inputLayer[index] = 1;
@@ -432,18 +409,13 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
    */
   private float[] expectedOutput(Instance instance){
     float[] expectedOutput;
+
     if(numericOutput){
       expectedOutput = new float[1];
-                           //sugestão pra melhorar, instanceSet.getClassAttribute().getAttributeValues() pode ser atribuido a uma variavel global.
-      float output = Float.parseFloat(instanceSet.getClassAttribute().getAttributeValues()[instance.classValue()]);
-      if(activationFunctionType == SIGMOID){
-                           //sugestão, pode usar fórmulas mais otimizadas para intervalo [0,1] e [-1,1] que tem no FAQ
-        expectedOutput[0] = Utils.normalize(output, highestValue[classIndex], lowestValue[classIndex], 1, 0);
-      } else if(activationFunctionType == TANH){
-        expectedOutput[0] = Utils.normalize(output, highestValue[classIndex], lowestValue[classIndex], 1, -1);
-      }
+      float output = Float.parseFloat(attributeVector[classIndex].getAttributeValues()[instance.classValue()]);
+      expectedOutput[0] = activationFunction.normalizeToFunctionInterval(output, highestValue[classIndex], lowestValue[classIndex]);
     } else {
-      expectedOutput = new float[instanceSet.getClassAttribute().numValues()];
+      expectedOutput = new float[attributeVector[classIndex].numValues()];
       Arrays.fill(expectedOutput, 0);
       expectedOutput[instance.classValue()] = 1;
     }
@@ -460,7 +432,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   public float[] distributionForInstance(Instance instance) throws Exception {
     float[] distribution = new float[outputLayer.length];
 
-    Arrays.fill(inputLayer, 0);  //zera o vetor de entradas
+    Arrays.fill(inputLayer, -1);  //zera o vetor de entradas
 
     inputLayerSetUp(instance);
 
@@ -486,7 +458,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
         }
       }
     }
-
+// Falar com mário sobre o unnormalize
     return distribution;
   }
 
@@ -508,7 +480,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
    * @see {@link Attribute}
    */
   public Attribute[] getAttributeVector(){
-        return attributeVector;
+    return attributeVector;
   }
 
   /**
@@ -517,6 +489,90 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
    * @return the index of the class attribute
    */
   public int getClassIndex(){
-        return classIndex;
+    return classIndex;
+  }
+
+  /**
+   * Method that outputs the model parameters as a string.
+   *
+   * @return A string with the model parameters.
+   */
+  public String toString(){
+    String learningRateStr = "Learning Rate: " + originalLearningRate;
+    String momentumStr = "Momentum: " + momentum;
+    String hiddenSizeStr = "Hidden Layer Size: " + hiddenLayer.length;
+    String actFunctionSteepStr = "Activation Function Steep: " + activationFunctionSteep;
+    String learningRateDecayStr = "Learning Rate Decay: " + learningRateDecay;
+    String trainingTimeStr =  "Training Time: " + trainingTime;
+    String activationFunctionStr = "Activation Function: ";
+    if(activationFunctionType == SIGMOID){
+      activationFunctionStr = activationFunctionStr + "Sigmoid";
+    } else if(activationFunctionType == TANH){
+      activationFunctionStr = activationFunctionStr + "Tanh";
+    }
+    String inputNormalization = "Numerical Input Normalization: ";
+    if(numericalInputNormalization == NO_NORMALIZATION){
+      inputNormalization = inputNormalization + "No normalization";
+    } else if(numericalInputNormalization == LINEAR_NORMALIZATION){
+      inputNormalization = inputNormalization + "Linear normalization";
+    } else if(numericalInputNormalization == MEAN_0_STANDARD_DEVIATION_1_NORMALIZATION){
+      inputNormalization = inputNormalization + "Mean 0 and standard deviation 1 normalization";
+    }
+    return learningRateStr + "\n" +
+           momentumStr + "\n" +
+           hiddenSizeStr + "\n" +
+           trainingTimeStr + "\n" +
+           activationFunctionStr + "\n" +
+           learningRateDecayStr + "\n" +
+           inputNormalization + "\n" +
+           actFunctionSteepStr + "\n";
+  }
+
+
+  public interface INormalization{
+    public float normalize(float data, int attributeIndex);
+  }
+
+  public class LinearNormalization implements INormalization, Serializable{
+    public LinearNormalization(){
+      for(int i=0; i<numOfAttributes; i++){
+        if(i!=classIndex && instanceSet.getAttribute(i).isNumeric()){
+          highestValue[i] = Float.MIN_VALUE;
+          lowestValue[i] = Float.MAX_VALUE;
+          String[] values = instanceSet.getAttribute(i).getAttributeValues();
+          for(int j=0; j<values.length; j++){
+            highestValue[i] = Math.max(highestValue[i], Float.parseFloat(values[j]));
+            lowestValue[i] = Math.min(lowestValue[i], Float.parseFloat(values[j]));
+          }
+        }
+      }
+    }
+    public float normalize(float data, int attributeIndex){
+      return Utils.normalize(data, highestValue[attributeIndex], lowestValue[attributeIndex], 1, -1);
+    }
+  }
+
+  public class Mean0StdDeviation1Normalization implements INormalization, Serializable{
+    public Mean0StdDeviation1Normalization() throws Exception{
+      attributeMean = new float[numOfAttributes];
+      attributeStandardDeviation = new float[numOfAttributes];
+
+      for(int i=0; i<numOfAttributes; i++){
+        Attribute att = instanceSet.getAttribute(i);
+        if(att.isNumeric() && i!=classIndex){
+          attributeMean[i] = (float)Utils.mean(instanceSet, i);
+          attributeStandardDeviation[i] = (float)Utils.standardDeviation(instanceSet, i, attributeMean[i]);
+        }
+      }
+    }
+    public float normalize(float data, int attributeIndex){
+      return (data - attributeMean[attributeIndex]) / attributeStandardDeviation[attributeIndex];
+    }
+  }
+
+  public class NoNormalization implements INormalization, Serializable{
+    public float normalize(float data, int attributeIndex){
+      return data;
+    }
   }
 }
