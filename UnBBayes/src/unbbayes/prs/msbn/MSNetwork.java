@@ -23,7 +23,7 @@ public class MSNetwork {
 	public MSNetwork(String id) {
 		this.id = id;
 		nets = new ArrayList();
-		links = new ArrayList();				
+		links = new ArrayList();
 	}
 	
 	/**
@@ -101,7 +101,7 @@ public class MSNetwork {
 		
 		for (int i = links.size()-1; i>=0; i--) {
 			Linkage link = (Linkage) links.get(i);
-			link.makeLinkageTree();			
+			link.makeLinkageTree();
 		}
 	
 		SubNetwork raiz = (SubNetwork) nets.get(0);
