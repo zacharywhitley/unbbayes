@@ -25,10 +25,8 @@ public class AlgorithmController {
     System.out.println("cheguei");
 
     //testes
-    ParametricLearning x = new ParametricLearning(instanceSet);
-
-	K2 k2 = new K2(x);    
-    double ghReturn = 0;
+    K2 k2 = new K2(instanceSet,new ParametricLearning(instanceSet));    
+    /*double ghReturn = 0;
     
     int[] array = new int[2];
     array[0]=1;
@@ -78,7 +76,7 @@ public class AlgorithmController {
     xumbrega.add(array);   //pa[2]
     xumbrega.add(array);        //pa[3]
     xumbrega.add(new int[0]);        //pa[4]*/
-    ArrayList xumbrega = new ArrayList();
+    /*ArrayList xumbrega = new ArrayList();
     xumbrega.add(new int[0]);   //pa[0] asias
     array = new int[1];
     array[0]=0;
@@ -100,10 +98,10 @@ public class AlgorithmController {
     array = new int[2];
     array[0]=6;
     array[1]=4;
-    xumbrega.add(array);        //pa[7] disp    
+    xumbrega.add(array);*/        //pa[7] disp    
     
 
-    ProbabilisticNetwork net = x.getProbabilisticNetwork(xumbrega);
+    ProbabilisticNetwork net = k2.getProbabilisticNetwork();
 
     netWindow = new NetWindow(net);
     NetWindowEdition edition = netWindow.getNetWindowEdition();

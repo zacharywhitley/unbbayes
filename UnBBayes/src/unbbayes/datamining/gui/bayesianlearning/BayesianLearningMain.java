@@ -298,40 +298,8 @@ public class BayesianLearningMain extends JInternalFrame
   }
 
   void jMenuItem4_actionPerformed(ActionEvent e)
-  {   /*if (inst != null)
-      {   ComputeProbabilisticNetwork trp = new ComputeProbabilisticNetwork();
-          try
-          {   trp.setInstances(inst);
-              net = trp.getProbabilisticNetwork();
-              jMenuItem5.setEnabled(true);
-              jTabbedPane1.setEnabledAt(1,true);
-              jTabbedPane1.setSelectedIndex(1);
-              saveButton.setEnabled(true);
-
-              NetWindow netWindow = new NetWindow(net);
-              NetWindowEdition edition = netWindow.getNetWindowEdition();
-              edition.getCenterPanel().setBottomComponent(netWindow.getJspGraph());
-
-              // deixa invisíveis alguns botões do unbbayes
-              edition.getMore().setVisible(false);
-              edition.getLess().setVisible(false);
-              edition.getArc().setVisible(false);
-              edition.getDecisionNode().setVisible(false);
-              edition.getProbabilisticNode().setVisible(false);
-              edition.getUtilityNode().setVisible(false);
-              edition.getSelect().setVisible(false);
-
-              // mostra a nova tela
-              jPanel1.removeAll();
-              jPanel1.setLayout(new BorderLayout());
-              jPanel1.add(netWindow.getContentPane(),BorderLayout.CENTER);
-              statusBar.setText(resource.getString("learnSuccessful"));
-          }
-          catch (Exception ex)
-          {   statusBar.setText(resource.getString("exception")+ex.getMessage());
-          }
-      }*/
-      AlgorithmController algorithmController = new AlgorithmController(inst,""+jComboBox2.getSelectedItem(),""+jComboBox3.getSelectedItem());
+  {         
+  	  AlgorithmController algorithmController = new AlgorithmController(inst,""+jComboBox2.getSelectedItem(),""+jComboBox3.getSelectedItem());
       // mostra a nova tela
 
       jPanel1.removeAll();
@@ -340,6 +308,8 @@ public class BayesianLearningMain extends JInternalFrame
       statusBar.setText("Estrutura Aprendida");
       jTabbedPane1.setEnabledAt(1,true);
       jTabbedPane1.setSelectedIndex(1);
+      net = (ProbabilisticNetwork)algorithmController.getNetWindow().getRede();
+      saveButton.setEnabled(true);
   }
 
   void jMenuItem2_actionPerformed(ActionEvent e)

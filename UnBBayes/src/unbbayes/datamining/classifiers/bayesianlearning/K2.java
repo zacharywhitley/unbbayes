@@ -1,6 +1,7 @@
 package unbbayes.datamining.classifiers.bayesianlearning;
 
-import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.*;
+import unbbayes.prs.bn.*;
 import java.util.*;
 import java.lang.Math;
 
@@ -8,13 +9,90 @@ public class K2
 {
     // Data
     private ParametricLearning m_pl;
+    private ArrayList finalConfiguration = new ArrayList();
+    private InstanceSet instanceSet;
 
     // Construtor
-    public K2(ParametricLearning pl)
+    public K2(InstanceSet instanceSet, ParametricLearning pl)
     {
         m_pl = pl;
+        this.instanceSet = instanceSet;
+        int numAttributes = instanceSet.numAttributes();
+        Attribute[] attributes = new Attribute[numAttributes];
+        int[][] parents = new int [numAttributes][0];
+        for (int i=0;i<numAttributes;i++)
+        {
+        	attributes[i] = instanceSet.getAttribute(i);	
+        	if (i>0/*&& não tiver mais pais que predecessores*/)
+        	{
+        		double g = gh(attributes[i],parents[i]);
+        		System.out.println("attribute = "+attributes[i]+" g = "+g);
+        		boolean flag = true;
+        		int numPredessors = attributes[i].getIndex();
+        		while (flag && (parents[i].length<=numPredessors))
+        		{
+        			Object[] results = maxGh(attributes[i],parents[i]);
+        			Attribute z = (Attribute)results[0];
+        			double gx = ((Double)results[1]).doubleValue();
+        			System.out.println("attribute = "+z+" gx = "+gx);
+        			double dif = gx - g;
+        			if (dif>0)
+        			{
+        				int[] parentsTemp = new int[parents[i].length+1];
+        				System.arraycopy(parents[i],0,parentsTemp,0,parents[i].length);
+        				parentsTemp[parents[i].length] = z.getIndex();
+        				parents[i] = parentsTemp;	
+        			}
+        			else
+        			{
+        				flag = false;
+        				System.out.println("false");        			
+        			}
+        		}
+        	}
+        	finalConfiguration.add(parents[i]);
+        }        
+    }
+    
+    private Object[] maxGh(Attribute attribute,int[] actualParents)
+    {
+    	Attribute z = null;
+    	double max = -1*Double.MAX_VALUE;       
+        double maxAux = 0.0;
+        for (int i = 0 ; i < attribute.getIndex(); i++ )
+        {
+        	int[] newParents = union(actualParents,i);
+        	maxAux  = gh(attribute,newParents);
+            System.out.println("attribute = "+attribute+" i = "+i+" maxAux "+maxAux);
+        	if (max < maxAux)
+            {
+                max = maxAux;
+                z = instanceSet.getAttribute(i);
+            }
+       
+        }
+        System.out.println("retorno = "+z+" max = "+max);
+        return new Object[]{z,new Double(max)};
+    }
+    
+    private int[] union(int[] actualParents,int i)
+    {	
+    	for (int j=0;j<actualParents.length;j++)
+    	{
+    		if (actualParents[j]==i)
+    			return actualParents;
+    	}
+    	int[] parentsTemp = new int[actualParents.length+1];
+        System.arraycopy(actualParents,0,parentsTemp,0,actualParents.length);
+       	parentsTemp[actualParents.length] = i;
+       	return parentsTemp;        				
     }
 
+    public ProbabilisticNetwork getProbabilisticNetwork()
+    {
+    	return m_pl.getProbabilisticNetwork(finalConfiguration);
+    }
+    
     // Métodos
     double gh(Attribute i, int[] pais)
     {
