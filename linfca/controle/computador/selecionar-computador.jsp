@@ -5,12 +5,12 @@
         errorPage="" %> 
 <html>
 <head>
-<title>Login / Logout</title>
+<title>LinfCA - Selecionar Computador</title>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
 <body bgcolor="#FFFFFF" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
 <br>
-<form name="form1" method="post" action="lancar-computador-exec.jsp">
+<form name="form1" method="post" action="<%=request.getContextPath()%>/controle/computador/lancar-computador-exec.jsp">
   <table width="100%" border="0" cellspacing="0" cellpadding="1" bgcolor="#000000">
   
     <tr valign="top"> 
