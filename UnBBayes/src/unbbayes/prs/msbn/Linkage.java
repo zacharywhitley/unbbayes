@@ -53,7 +53,9 @@ public class Linkage {
 		
 		// DEBUG-------------------
 		for (int i = tree.size()-1; i >=0; i--) {
+			System.out.println("-------");			
 			System.out.println(tree.get(i));
+			System.out.println("-------");			
 		}
 		System.out.println();
 		// DEBUG-------------------	

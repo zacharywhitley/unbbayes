@@ -76,11 +76,17 @@ public class MainController {
         io = new NetIO();
     }
 
-    public void newNet() {
-        ProbabilisticNetwork net = new ProbabilisticNetwork("");
+    public void newBN() {
+        ProbabilisticNetwork net = new ProbabilisticNetwork("New BN");
         //screen.addWindow(new NetWindow(net));
 		NetWindow netWindow = new NetWindow(net);
 		screen.addWindow(netWindow);
+    }
+    
+    public void newMSBN() {
+    	MSNetwork msbn = new MSNetwork("New MSBN");
+    	MSBNController controller = new MSBNController(msbn);
+    	screen.addWindow(controller.getPanel());
     }
 
     /**

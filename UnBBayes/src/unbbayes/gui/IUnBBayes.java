@@ -89,7 +89,8 @@ public class IUnBBayes extends JFrame {
 	private URL helpSetURL;
 	private HelpSet set;
 	private JHelp jHelp;
-	private ActionListener alNew;
+	private ActionListener alNewBN;
+	private ActionListener alNewMSBN;
 	private ActionListener alOpen;
 	private ActionListener alSave;
 	private ActionListener alExit;
@@ -200,11 +201,20 @@ public class IUnBBayes extends JFrame {
 	 */
 	public void createActionListeners() {
 
-		// create an ActionListener for opening new window		
-		alNew = new ActionListener() {
+		// create an ActionListener for opening new window for BN	
+		alNewBN = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				controller.newNet();
+				controller.newBN();
+				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+		};
+		
+		// create an ActionListener for opening new window for MSBN
+		alNewMSBN = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				setCursor(new Cursor(Cursor.WAIT_CURSOR));
+				controller.newMSBN();
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		};
@@ -464,6 +474,7 @@ public class IUnBBayes extends JFrame {
 		JMenu lafMenu = new JMenu(resource.getString("lafMenu"));
 		JMenu viewMenu = new JMenu(resource.getString("viewMenu"));
 		JMenu tbMenu = new JMenu(resource.getString("tbMenu"));
+		JMenu newMenu = new JMenu(resource.getString("newMenu"));
 		JMenu toolsMenu = new JMenu(resource.getString("toolsMenu"));
 		JMenu windowMenu = new JMenu(resource.getString("windowMenu"));
 		JMenu helpMenu = new JMenu(resource.getString("helpMenu"));
@@ -476,10 +487,17 @@ public class IUnBBayes extends JFrame {
 		helpMenu.setMnemonic(resource.getString("helpMenuMn").charAt(0));
 
 		// create menu items, set their mnemonic and their key accelerator		
-		JMenuItem newItem =
+		JMenuItem newBN =
 			new JMenuItem(
-				resource.getString("newItem"),
+				resource.getString("newBN"),
 				new ImageIcon(getClass().getResource("/icons/new.gif")));
+				
+		
+		JMenuItem newMSBN =
+			new JMenuItem(
+				resource.getString("newMSBN"),
+				new ImageIcon(getClass().getResource("/icons/new.gif")));
+				
 		JMenuItem openItem =
 			new JMenuItem(
 				resource.getString("openItem"),
@@ -528,9 +546,10 @@ public class IUnBBayes extends JFrame {
 				resource.getString("helpItem"),
 				new ImageIcon(getClass().getResource("/icons/help.gif")));
 		JMenuItem aboutItem =
-			new JMenuItem(resource.getString("aboutItem"));
+			new JMenuItem(resource.getString("aboutItem"));		
+		
 
-		newItem.setMnemonic(resource.getString("newItemMn").charAt(0));
+		newBN.setMnemonic(resource.getString("newItemMn").charAt(0));
 		openItem.setMnemonic(resource.getString("openItemMn").charAt(0));
 		saveItem.setMnemonic(resource.getString("saveItemMn").charAt(0));
         exitItem.setMnemonic(resource.getString("exitItemMn").charAt(0));
@@ -543,7 +562,7 @@ public class IUnBBayes extends JFrame {
 		helpItem.setMnemonic(resource.getString("helpItemMn").charAt(0));
         aboutItem.setMnemonic(resource.getString("aboutItemMn").charAt(0));
 
-		newItem.setAccelerator(
+		newBN.setAccelerator(
 			KeyStroke.getKeyStroke(resource.getString("newItemMn").charAt(0), Event.CTRL_MASK, false));
 		openItem.setAccelerator(
 			KeyStroke.getKeyStroke(resource.getString("openItemMn").charAt(0), Event.CTRL_MASK, false));
@@ -555,7 +574,8 @@ public class IUnBBayes extends JFrame {
 			KeyStroke.getKeyStroke(resource.getString("helpItemMn").charAt(0), Event.CTRL_MASK, false));
 
 		// add ActionListener to all menu items
-		newItem.addActionListener(alNew);
+		newBN.addActionListener(alNewBN);
+		newMSBN.addActionListener(alNewMSBN);
 		openItem.addActionListener(alOpen);
 		saveItem.addActionListener(alSave);
 		exitItem.addActionListener(alExit);
@@ -574,7 +594,9 @@ public class IUnBBayes extends JFrame {
 		// aboutItem.addActionListener(alAbout);
 
 		// add menu items to their respective menu
-		fileMenu.add(newItem);
+		newMenu.add(newBN);
+		newMenu.add(newMSBN);
+		fileMenu.add(newMenu);
 		fileMenu.add(openItem);
 		fileMenu.add(saveItem);
 		fileMenu.addSeparator();
@@ -696,7 +718,7 @@ public class IUnBBayes extends JFrame {
 	 */
 	public void assignActionListeners() {
 
-		newNet.addActionListener(alNew);
+		newNet.addActionListener(alNewBN);
 		openNet.addActionListener(alOpen);
 		saveNet.addActionListener(alSave);
 		metal.addActionListener(alMetal);

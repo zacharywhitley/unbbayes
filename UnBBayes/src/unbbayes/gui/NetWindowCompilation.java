@@ -130,7 +130,7 @@ public class NetWindowCompilation extends JPanel {
         expand.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                     setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                    evidenceTree.expandTree();
+                    evidenceTree.expandTree();                    
                     setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 }
         });

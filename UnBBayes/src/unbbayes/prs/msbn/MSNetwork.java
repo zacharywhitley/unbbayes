@@ -233,7 +233,7 @@ public class MSNetwork {
 					kMax = k;
 					max = inters[iMax][kMax].size();
 				}
-			}		
+			}
 		}
 		
 		if (max == 0) {
