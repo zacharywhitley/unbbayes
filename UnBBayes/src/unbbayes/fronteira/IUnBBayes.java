@@ -135,7 +135,7 @@ public class IUnBBayes extends JFrame {
 
 		// instantiate panels
 		desktop = new MDIDesktopPane();
-		topPanel = new JPanel(new GridLayout(1, 0));
+		topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 1));
 
 		createActionListeners();
