@@ -66,11 +66,11 @@ public class NetIO implements BaseIO {
 		st.wordChars('A', 'Z');
 		st.wordChars('a', '}');
 		st.wordChars('\u00A0', '\u00FF'); // letras com acentos
-                st.wordChars('_', '_');
+		st.wordChars('_', '_');
 		st.wordChars('-', '-');
 		st.wordChars('0', '9');
 		st.wordChars('.', '.');
-                st.wordChars('%','%');
+		st.wordChars('%', '%');
 		st.ordinaryChars('(', ')');
 		st.eolIsSignificant(false);
 		st.quoteChar('"');
@@ -90,18 +90,20 @@ public class NetIO implements BaseIO {
 						proximo(st);
 						proximo(st);
 						net.setRadius(Double.parseDouble(st.sval) / 2);
-					} else if (st.sval.equals("tree"))
-                                        {   proximo(st);
-                                            StringBuffer sb = new StringBuffer(st.sval);
-                                            DefaultMutableTreeNode root = new DefaultMutableTreeNode("Variáveis de Informação");
-                                            loadHierarchicTree(sb,root);
+					} else if (st.sval.equals("tree")) {
+						proximo(st);
+						StringBuffer sb = new StringBuffer(st.sval);
+						DefaultMutableTreeNode root =
+							new DefaultMutableTreeNode("Variáveis de Informação");
+						loadHierarchicTree(sb, root);
 
-                                            // construct tree
-                                            DefaultTreeModel model = new DefaultTreeModel(root);
-                                            HierarchicTree hierarchicTree = new HierarchicTree(model);
+						// construct tree
+						DefaultTreeModel model = new DefaultTreeModel(root);
+						HierarchicTree hierarchicTree =
+							new HierarchicTree(model);
 
-                                            net.setHierarchicTree(hierarchicTree);
-                                        } else if (st.sval.equals("HR_Color_Utility")) {
+						net.setHierarchicTree(hierarchicTree);
+					} else if (st.sval.equals("HR_Color_Utility")) {
 						proximo(st);
 						UtilityNode.setColor(Integer.parseInt(st.sval));
 					} else if (st.sval.equals("HR_Color_Decision")) {
@@ -156,37 +158,37 @@ public class NetIO implements BaseIO {
 							while (proximo(st) == '"') {
 								auxNo.appendState(st.sval);
 							}
-						}
-                                                else if (st.sval.equals("%descricao"))
-                                                {	proximo(st);
-							auxNo.setExplanationDescription(unformatString(st.sval));
-                                                        auxNo.setInformationType(Node.EXPLANATION_TYPE);
-                                                        readTillEOL(st);
-                                                        proximo(st);
-						}
-                                                else if (st.sval.equals("%frase"))
-                                                {	proximo(st);
-							ExplanationPhrase explanationPhrase = new ExplanationPhrase();
-                                                        explanationPhrase.setNode(st.sval);
-                                                        proximo(st);
-							try
-                                                        {   explanationPhrase.setEvidenceType(Integer.parseInt(st.sval));
-                                                        }
-                                                        catch (Exception ex)
-                                                        {   throw new LoadException(
-								ERROR_NET
-									+ " l."
-									+ st.lineno()
-									+ resource.getString("LoadException2")
-									+ st.sval);
-                                                        }
-                                                        proximo(st);
-                                                        explanationPhrase.setPhrase(unformatString(st.sval));
+						} else if (st.sval.equals("%descricao")) {
+							proximo(st);
+							auxNo.setExplanationDescription(
+								unformatString(st.sval));
+							auxNo.setInformationType(Node.EXPLANATION_TYPE);
+							readTillEOL(st);
+							proximo(st);
+						} else if (st.sval.equals("%frase")) {
+							proximo(st);
+							ExplanationPhrase explanationPhrase =
+								new ExplanationPhrase();
+							explanationPhrase.setNode(st.sval);
+							proximo(st);
+							try {
+								explanationPhrase.setEvidenceType(
+									Integer.parseInt(st.sval));
+							} catch (Exception ex) {
+								throw new LoadException(
+									ERROR_NET
+										+ " l."
+										+ st.lineno()
+										+ resource.getString("LoadException2")
+										+ st.sval);
+							}
+							proximo(st);
+							explanationPhrase.setPhrase(
+								unformatString(st.sval));
 							auxNo.addExplanationPhrase(explanationPhrase);
-                                                        readTillEOL(st);
-                                                        proximo(st);
-						}
-                                                else {
+							readTillEOL(st);
+							proximo(st);
+						} else {
 							throw new LoadException(
 								ERROR_NET
 									+ " l."
@@ -256,14 +258,15 @@ public class NetIO implements BaseIO {
 									+ resource.getString("LoadException4"));
 						}
 						proximo(st);
-						while (!st.sval.equals("}"))
-                                                {	if (st.sval.equals("%"))
-                                                        {   readTillEOL(st);
-                                                        }
-                                                        else
-                                                        {   auxTabPot.setValueAt(nDim++,Double.parseDouble(st.sval));
-                                                        }
-                                                        proximo(st);
+						while (!st.sval.equals("}")) {
+							if (st.sval.equals("%")) {
+								readTillEOL(st);
+							} else {
+								auxTabPot.setValueAt(
+									nDim++,
+									Double.parseDouble(st.sval));
+							}
+							proximo(st);
 						}
 					} else {
 						throw new LoadException(
@@ -276,10 +279,10 @@ public class NetIO implements BaseIO {
 			}
 		}
 		r.close();
-                HierarchicTree tree = net.getHierarchicTree();
-                if (tree != null)
-                {   tree.setProbabilisticNetwork(net);
-                }
+		HierarchicTree tree = net.getHierarchicTree();
+		if (tree != null) {
+			tree.setProbabilisticNetwork(net);
+		}
 		return net;
 	}
 
@@ -301,10 +304,10 @@ public class NetIO implements BaseIO {
 					+ (int) net.getRadius()
 					+ ");");
 			arq.println("     name = \"" + net.getName() + "\";");
-                        String tree = saveHierarchicTree(net.getHierarchicTree());
-                        if (tree != null)
-                            arq.println("     tree = \"" + tree + "\";");
-                        arq.println("     HR_Color_Utility = \"" + 10 + "\";");
+			String tree = saveHierarchicTree(net.getHierarchicTree());
+			if (tree != null)
+				arq.println("     tree = \"" + tree + "\";");
+			arq.println("     HR_Color_Utility = \"" + 10 + "\";");
 			arq.println("     HR_Color_Decision = \"" + 30 + "\";");
 			arq.println("}");
 			arq.println();
@@ -343,20 +346,33 @@ public class NetIO implements BaseIO {
 					arq.println(
 						"     states = (" + auxString.toString() + ");");
 				}
-                                if ((!auxNo1.getExplanationDescription().equals("")) && (auxNo1.getInformationType() == Node.EXPLANATION_TYPE))
-                                {   String explanationDescription = formatString(auxNo1.getExplanationDescription());
-                                    arq.println("     %descricao \"" + explanationDescription + "\"");
-                                }
-                                if (auxNo1.getInformationType() == Node.EXPLANATION_TYPE)
-                                {   ArrayMap arrayMap = auxNo1.getPhrasesMap();
-                                    int size = arrayMap.size();
-                                    ArrayList keys = arrayMap.getKeys();
-                                    for (int i=0; i<size; i++)
-                                    {   Object key = keys.get(i);
-                                        ExplanationPhrase explanationPhrase = (ExplanationPhrase)arrayMap.get(key);
-                                        arq.println("     %frase \"" + explanationPhrase.getNode() + "\" " + "\"" + explanationPhrase.getEvidenceType() + "\" " + "\"" + formatString(explanationPhrase.getPhrase()) + "\"");
-                                    }
-                                }
+				if ((!auxNo1.getExplanationDescription().equals(""))
+					&& (auxNo1.getInformationType() == Node.EXPLANATION_TYPE)) {
+					String explanationDescription =
+						formatString(auxNo1.getExplanationDescription());
+					arq.println(
+						"     %descricao \"" + explanationDescription + "\"");
+				}
+				if (auxNo1.getInformationType() == Node.EXPLANATION_TYPE) {
+					ArrayMap arrayMap = auxNo1.getPhrasesMap();
+					int size = arrayMap.size();
+					ArrayList keys = arrayMap.getKeys();
+					for (int i = 0; i < size; i++) {
+						Object key = keys.get(i);
+						ExplanationPhrase explanationPhrase =
+							(ExplanationPhrase) arrayMap.get(key);
+						arq.println(
+							"     %frase \""
+								+ explanationPhrase.getNode()
+								+ "\" "
+								+ "\""
+								+ explanationPhrase.getEvidenceType()
+								+ "\" "
+								+ "\""
+								+ formatString(explanationPhrase.getPhrase())
+								+ "\"");
+					}
+				}
 
 				arq.println("}");
 				arq.println();
@@ -459,94 +475,95 @@ public class NetIO implements BaseIO {
 		return st.ttype;
 	}
 
-    private void loadHierarchicTree(StringBuffer sb,DefaultMutableTreeNode root)
-    {   int size = sb.length();
-        DefaultMutableTreeNode nextRoot = null;
-        Stack stack = new Stack();
-        for (int i=0;i<size;i++)
-        {   char c = sb.charAt(i);
-            if (c == '(')
-            {   if (nextRoot != null)
-                {   stack.push(root);
-                    root = nextRoot;
-                }
-            }
-            else if (c == ')')
-            {   if (stack.size() > 0)
-                {   root = (DefaultMutableTreeNode)stack.pop();
-                }
-            }
-            else if (c == ',')
-            {
-            }
-            else
-            {   StringBuffer newWord = new StringBuffer();
-                while ((c != '(')&&(c != ')')&&(c != ','))
-                {   newWord.append(c);
-                    i++;
-                    c = sb.charAt(i);
-                }
-                i--;
-                DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(newWord);
-                nextRoot = newNode;
-                root.add(newNode);
-            }
-        }
-    }
+	private void loadHierarchicTree(
+		StringBuffer sb,
+		DefaultMutableTreeNode root) {
+		int size = sb.length();
+		DefaultMutableTreeNode nextRoot = null;
+		Stack stack = new Stack();
+		for (int i = 0; i < size; i++) {
+			char c = sb.charAt(i);
+			if (c == '(') {
+				if (nextRoot != null) {
+					stack.push(root);
+					root = nextRoot;
+				}
+			} else if (c == ')') {
+				if (stack.size() > 0) {
+					root = (DefaultMutableTreeNode) stack.pop();
+				}
+			} else if (c == ',') {
+			} else {
+				StringBuffer newWord = new StringBuffer();
+				while ((c != '(') && (c != ')') && (c != ',')) {
+					newWord.append(c);
+					i++;
+					c = sb.charAt(i);
+				}
+				i--;
+				DefaultMutableTreeNode newNode =
+					new DefaultMutableTreeNode(newWord);
+				nextRoot = newNode;
+				root.add(newNode);
+			}
+		}
+	}
 
-    private String saveHierarchicTree(HierarchicTree hierarchicTree)
-    {   TreeModel model = hierarchicTree.getModel();
-        StringBuffer sb = new StringBuffer();
-        TreeNode root = (TreeNode)model.getRoot();
-        int childCount = model.getChildCount(root);
-        if (childCount == 0)
-        {   return null;
-        }
-        else
-        {   sb.append('(');
-            for (int i=0; i<childCount; i++)
-            {   processTreeNode((TreeNode)model.getChild(root,i),sb,model);
-                if (i != (childCount-1))
-                {   sb.append(',');
-                }
-            }
-            sb.append(')');
-            return sb.toString();
-        }
-    }
+	private String saveHierarchicTree(HierarchicTree hierarchicTree) {
+		TreeModel model = hierarchicTree.getModel();
+		StringBuffer sb = new StringBuffer();
+		TreeNode root = (TreeNode) model.getRoot();
+		int childCount = model.getChildCount(root);
+		if (childCount == 0) {
+			return null;
+		} else {
+			sb.append('(');
+			for (int i = 0; i < childCount; i++) {
+				processTreeNode((TreeNode) model.getChild(root, i), sb, model);
+				if (i != (childCount - 1)) {
+					sb.append(',');
+				}
+			}
+			sb.append(')');
+			return sb.toString();
+		}
+	}
 
-    private void processTreeNode(TreeNode node,StringBuffer sb,TreeModel model)
-    {   sb.append(node.toString());
-        if (!node.isLeaf())
-        {   sb.append('(');
-            int childCount = model.getChildCount(node);
-            for (int i=0; i<childCount; i++)
-            {   processTreeNode((TreeNode)model.getChild(node,i),sb,model);
-                if (i != (childCount-1))
-                {   sb.append(',');
-                }
-            }
-            sb.append(')');
-        }
-    }
+	private void processTreeNode(
+		TreeNode node,
+		StringBuffer sb,
+		TreeModel model) {
+		sb.append(node.toString());
+		if (!node.isLeaf()) {
+			sb.append('(');
+			int childCount = model.getChildCount(node);
+			for (int i = 0; i < childCount; i++) {
+				processTreeNode((TreeNode) model.getChild(node, i), sb, model);
+				if (i != (childCount - 1)) {
+					sb.append(',');
+				}
+			}
+			sb.append(')');
+		}
+	}
 
-    /**
-    * Reads and skips all tokens before next end of line token.
-    *
-    * @param tokenizer Stream tokenizer
-    * @throws IOException EOF not found
-    */
-    private void readTillEOL(StreamTokenizer tokenizer) throws IOException
-    {	while (tokenizer.nextToken() != StreamTokenizer.TT_EOL)
-        {};
-    	tokenizer.pushBack();
-    }
+	/**
+	* Reads and skips all tokens before next end of line token.
+	*
+	* @param tokenizer Stream tokenizer
+	* @throws IOException EOF not found
+	*/
+	private void readTillEOL(StreamTokenizer tokenizer) throws IOException {
+		while (tokenizer.nextToken() != StreamTokenizer.TT_EOL) {
+		};
+		tokenizer.pushBack();
+	}
 
-    private String formatString(String string)
-    {   return string.replace('\n','#');
-    }
+	private String formatString(String string) {
+		return string.replace('\n', '#');
+	}
 
-    private String unformatString(String string)
-    {   return string.replace('#','\n');
-    }
+	private String unformatString(String string) {
+		return string.replace('#', '\n');
+	}
 }
