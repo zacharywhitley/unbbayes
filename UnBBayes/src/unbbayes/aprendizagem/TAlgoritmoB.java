@@ -1,9 +1,11 @@
 package unbbayes.aprendizagem;
 
-import java.util.*;
-import unbbayes.fronteira.*;
-import unbbayes.jprs.jbn.*;
-import unbbayes.controlador.MainController;
+import java.util.Date;
+import java.util.List;
+
+import unbbayes.fronteira.TJanelaEdicao;
+import unbbayes.jprs.jbn.ProbabilisticNetwork;
+import unbbayes.util.SetToolkit;
 
 /**
  *   Essa classe implementa os métodos necessários para que

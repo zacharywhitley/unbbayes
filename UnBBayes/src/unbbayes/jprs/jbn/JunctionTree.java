@@ -22,6 +22,7 @@ package unbbayes.jprs.jbn;
 
 import java.util.ArrayList;
 import java.util.List;
+import unbbayes.util.SetToolkit;
 
 /**
  *  Classe que representa uma Árvore de Junção para Redes Bayesianas.

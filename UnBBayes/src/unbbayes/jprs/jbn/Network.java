@@ -22,6 +22,7 @@
 package unbbayes.jprs.jbn;
 
 import java.util.*;
+import unbbayes.util.SetToolkit;
 
 /**
  *  Classe que representa um Grafo genérico.

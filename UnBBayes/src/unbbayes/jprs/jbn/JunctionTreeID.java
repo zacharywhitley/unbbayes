@@ -22,6 +22,7 @@
 package unbbayes.jprs.jbn;
 
 import java.util.List;
+import unbbayes.util.SetToolkit;
 
 /**
  *  Classe que representa uma Árvore de Junção para Diagramas de Influencias.

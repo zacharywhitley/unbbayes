@@ -23,6 +23,7 @@ package unbbayes.jprs.jbn;
 
 import java.util.*;
 import unbbayes.io.LogManager;
+import unbbayes.util.SetToolkit;
 
 /**
  *  Representa uma rede probabilística.

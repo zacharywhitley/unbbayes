@@ -2,6 +2,7 @@ package unbbayes.aprendizagem;
 
 import java.util.*;
 import unbbayes.jprs.jbn.*;
+import unbbayes.util.SetToolkit;
 
 /**
  * Classe que define um variável de um banco de casos, as variáveis

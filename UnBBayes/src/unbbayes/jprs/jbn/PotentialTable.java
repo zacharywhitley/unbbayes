@@ -22,8 +22,8 @@
 package unbbayes.jprs.jbn;
 
 import java.util.*;
-
 import javax.swing.*;
+import unbbayes.util.SetToolkit;
 
 /**
  * Tabela de Potencial.
