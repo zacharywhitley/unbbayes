@@ -61,10 +61,12 @@ public class LancamentoFeature implements Feature {
 			ps.setTimestamp(1, dtHora);
 			ps.setInt(2, Integer.parseInt(codLancamento));	
 			
-		} else {
-			
+		} else {			
 			String codUsuario = in.getChild("cod-usuario").getTextTrim();
 			String codComputador = in.getChild("cod-computador").getTextTrim();
+			System.out.println("codusuario = " + codUsuario);
+			System.out.println("codcomputador = " + codComputador);
+			
 			int codTipoLancamento = 0;
 			if ( in.getChild("manutencao") != null ) {
 				codTipoLancamento = 
@@ -87,7 +89,7 @@ public class LancamentoFeature implements Feature {
 			sql.append("  (?, ?, ?, ?) ");
 			
 			ps = con.prepareStatement(sql.toString());
-			System.out.println(codTipoLancamento);						
+			System.out.println(codTipoLancamento);
 			ps.setLong(1, Long.parseLong(codUsuario));
 			ps.setLong(2, Long.parseLong(codComputador));
 			ps.setInt(3, codTipoLancamento);
