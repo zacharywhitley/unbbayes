@@ -1,98 +1,53 @@
 <%@page import="linfca.*, 
 		linfca.cadastro.usuario.*, 
-		linfca.util.Base64, 
+		com.oreilly.servlet.*,
+		linfca.util.*, 
+		java.io.*,
+		java.util.Enumeration,
         java.sql.*, 
-        org.jdom.Element, 
-        java.util.Iterator" 
+        org.jdom.Element" 
         errorPage="" %> 
         
 <%
 
-   String menssagem = "";
-   
-   String codUsuario       = request.getParameter("cod_usuario");         
-   String codTipoUsuario   = request.getParameter("cod_tipo_usuario");   
-   String codTipoSexo      = request.getParameter("cod_tipo_sexo");   
-   String identificacao    = request.getParameter("identificacao");   
-   String cpf              = request.getParameter("cpf");
-   String nome             = request.getParameter("nome");   
-   String sobrenome        = request.getParameter("sobrenome");   
-   String senha            = request.getParameter("senha");
-   String confirmacaoSenha = request.getParameter("confirmacao_senha");   
-   String email            = request.getParameter("email");   
-   String endereco         = request.getParameter("endereco");   
-   String foto             = request.getParameter("foto");   
-   String dia              = request.getParameter("dia");
-   String mes              = request.getParameter("mes");
-   String ano              = request.getParameter("ano");
-   String dataNascimento   = ano + "/" + mes + "/" + dia;
-   
-   String foto64 = Base64.encode(foto);
-      
+   boolean inserir = true;
    Element in = new Element("in");
-   
-   Element codTipoUsuarioE   = new Element("cod-tipo-usuario");
-   Element codTipoSexoE      = new Element("cod-tipo-sexo");
-   Element identificacaoE    = new Element("identificacao");   
-   Element cpfE              = new Element("cpf");
-   Element nomeE             = new Element("nome");
-   Element sobrenomeE        = new Element("sobrenome");
-   Element senhaE            = new Element("senha");
-   Element confirmacaoSenhaE = new Element("confirmacao-senha");
-   Element emailE            = new Element("email");
-   Element enderecoE         = new Element("endereco");
-   Element fotoE             = new Element("foto");
-   Element dataNascimentoE   = new Element("data-nascimento");
-   
-   codTipoUsuarioE.setText(codTipoUsuario);
-   codTipoSexoE.setText(codTipoSexo);
-   identificacaoE.setText(identificacao);
-   cpfE.setText(cpf);
-   nomeE.setText(nome);
-   sobrenomeE.setText(sobrenome);
-   senhaE.setText(senha);
-   confirmacaoSenhaE.setText(confirmacaoSenha);
-   emailE.setText(email);
-   enderecoE.setText(endereco);
-   fotoE.setText(foto64);
-   dataNascimentoE.setText(dataNascimento);
-   
-   in.getChildren().add(codTipoUsuarioE);
-   in.getChildren().add(codTipoSexoE);
-   in.getChildren().add(identificacaoE);
-   in.getChildren().add(cpfE);
-   in.getChildren().add(nomeE);
-   in.getChildren().add(sobrenomeE);
-   in.getChildren().add(senhaE);
-   in.getChildren().add(confirmacaoSenhaE);
-   in.getChildren().add(emailE);
-   in.getChildren().add(enderecoE);
-   in.getChildren().add(fotoE);
-   in.getChildren().add(dataNascimentoE);
-   
-   if (codUsuario != null)  {
-   
-      menssagem = "Os dados do usuário foram alterados com sucesso!";
-            
-	  Element codUsuarioE = new Element("cod-usuario");
-	  
-	  codUsuarioE.setText(codUsuario);
-	  
-      in.getChildren().add(codUsuarioE);
-      
-   } else {
-   
-      menssagem = "O usuário foi incluído com sucesso!";
-      
-   }
-   
+   MultipartRequest multi = new MultipartRequest(request, ".");   
+   Enumeration params = multi.getParameterNames();
+   while (params.hasMoreElements()) {
+      String name = (String)params.nextElement();
+	  if (name.equals("cod_usuario")) {
+	     inserir = false;	  	  
+	  }
+      String value = multi.getParameter(name);
+	  Element element = new Element(name.replace('_', '-'));
+	  element.setText(value);	  
+	  in.getChildren().add(element);
+      System.out.println(name + " = " + value);
+   }   
+   String foto64 = null;   
+   Enumeration files = multi.getFileNames();
+   if (files.hasMoreElements()) {
+      String name = (String)files.nextElement();
+	  File f = multi.getFile(name);
+	  FileInputStream fis = new FileInputStream(f);
+	  byte buffer[] = new byte[(int)f.length()];
+	  fis.read(buffer);
+	  foto64 = Base64.getString(Base64.encode(buffer));
+	  Element element = new Element("foto");
+	  element.setText(foto64);
+	  in.getChildren().add(element);
+	  fis.close();
+   }  
+    
    Feature  salvarUsuarioF = new SalvarUsuarioFeature();
    Element saida = salvarUsuarioF.process(in);
-   
+   String mensagem = null;
    if (saida.getChild("ok") != null) {
-   
+      mensagem = (inserir) ? "O usuário foi incluído com sucesso!"
+	   						: "Os dados do usuário foram alterados com sucesso!";	
    } else {
-   
+      mensagem = "Ocorreu um erro!";   
    }
 %>
 
@@ -102,7 +57,7 @@
 
 <body onLoad="javascript:document.form1.submit()">
   <form name="form1" method="post" action="<%=request.getContextPath()%>/design/sucesso.jsp">
-    <input type="hidden" name="menssagem" value="<%=menssagem%>">
+    <input type="hidden" name="menssagem" value="<%=mensagem%>">
   </form>
 </body>
 </html>

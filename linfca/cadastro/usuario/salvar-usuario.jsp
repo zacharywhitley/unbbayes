@@ -5,7 +5,7 @@
           <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_usuario.gif" width="174" border="0" hspace="20" alt="Log In / Log Out"></td>
           <td>
 		  <BR>
-            <FORM name="login" action="<%=path%>/cadastro/usuario/salvar-usuario-exec.jsp" method="post">
+            <FORM name="login" action="<%=path%>/cadastro/usuario/salvar-usuario-exec.jsp" METHOD="post" ENCTYPE="multipart/form-data">
             <table width="100%" border="0" cellspacing="5" cellpadding="0" align="center">
               <tr>
                 <td colspan=2>

@@ -12,13 +12,10 @@ import linfca.Controller;
 import linfca.Feature;
 import linfca.util.Base64;
 import org.jdom.Element;
-import sun.misc.BASE64Encoder;
-
-import java.util.Date;
-
 import java.security.*;
 
-import com.oreilly.servlet.Base64Encoder;
+
+import java.util.Date;
 
 public class SalvarUsuarioFeature implements Feature {
 
@@ -34,7 +31,9 @@ public class SalvarUsuarioFeature implements Feature {
 	 *    <sobrenome>Peregrino</sobrenome>
 	 *    <senha>supersecreta</senha>
 	 *    <confirmacao-senha>supersecreta</confirmacao-senha>
-	 *    <data-nascimento>1980/04/20</data-nascimento>
+	 *    <dia>20</dia>
+	 *    <mes>04</mes>
+	 * 	  <ano>1980</ano>
 	 *    <email>mp@provedor.com.br</email>
 	 *    <endereco>SQN 410 Bl. B Apto. 101</endereco>
 	 *    <foto>LÇKHÇAOFOHASFOHWQOHQWRLKÇHJLÇJA...</foto>
@@ -60,18 +59,22 @@ public class SalvarUsuarioFeature implements Feature {
 		String email           = in.getChild("email").getTextTrim();
 		String endereco        = in.getChild("endereco").getTextTrim();
 		String foto            = in.getChild("foto").getTextTrim();
-		String dataNascimentoS = in.getChild("data-nascimento").getTextTrim();
+		String dia             = in.getChild("dia").getTextTrim();
+		String mes             = in.getChild("mes").getTextTrim();
+    	String ano             = in.getChild("ano").getTextTrim();
+		String dataNascimentoS = ano + '/' + mes + '/' + dia;
 		
 		MessageDigest md = MessageDigest.getInstance("MD5");
 		byte [] senhaEncode = md.digest(senha.getBytes());
 		byte [] senhaEncode64 = Base64.encode(senhaEncode);
+
 		
 		Date dataNascimento = null;
 		DateFormat df = DateFormat.getDateInstance();
 	    try {
 	    	dataNascimento = df.parse(dataNascimentoS);
 	    } catch(ParseException e) {
-	    	throw new RuntimeException("Não foi possível criar a data: " + 
+	    	throw new RuntimeException("Não foi capaz de criar a data: " + 
 										dataNascimento);
 	    }
 		
@@ -118,7 +121,7 @@ public class SalvarUsuarioFeature implements Feature {
 		
 	private boolean inserirUsuario(String codTipoUsuario, String codTipoSexo, 
 			String identificacao, String cpf, String nome, String sobrenome, 
-			byte [] senha, String email, String endereco, String foto, 
+			byte[] senha, String email, String endereco, String foto, 
 			Date dataNascimento, Connection con) throws SQLException {
 		
 		PreparedStatement ps = null;

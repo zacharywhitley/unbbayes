@@ -102,7 +102,7 @@ public class Base64
         return(getBinaryBytes(ret.toString()));
     }
 
-    private static String getString(byte[] arr)
+    public static String getString(byte[] arr)
     {
         StringBuffer buf = new StringBuffer();
         for (int i = 0; i < arr.length; ++i)
@@ -111,7 +111,7 @@ public class Base64
         return(buf.toString());
     }
 
-    private static byte[] getBinaryBytes(String str)
+    public static byte[] getBinaryBytes(String str)
     {
         byte[] b = new byte[str.length()];
         for (int i = 0; i < b.length; ++i)

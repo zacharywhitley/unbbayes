@@ -6,7 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-
 import org.jdom.Element;
 
 public class LancamentoFeature implements Feature {
@@ -42,8 +41,7 @@ public class LancamentoFeature implements Feature {
 		PreparedStatement ps = null;		
 		Timestamp dtHora = new Timestamp(System.currentTimeMillis());
 		
-		if ( in.getChild("cod-lancamento") != null ) {
-			
+		if ( in.getChild("cod-lancamento") != null ) {			
 			String codLancamento = in.getChild("cod-lancamento").getTextTrim();			
 			System.out.println("codlancamento = " + codLancamento);
 			
