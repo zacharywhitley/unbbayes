@@ -64,8 +64,8 @@ public class LancamentoFeature implements Feature {
 			String codUsuario = in.getChild("cod-usuario").getTextTrim();
 			String codComputador = in.getChild("cod-computador").getTextTrim();
 
-//			System.out.println("codusuario = " + codUsuario);
-//			System.out.println("codcomputador = " + codComputador);
+			System.out.println("codusuario = " + codUsuario);
+			System.out.println("codcomputador = " + codComputador);
 			
 			int codTipoLancamento = 0;
 			if ( in.getChild("manutencao") != null ) {
@@ -88,7 +88,7 @@ public class LancamentoFeature implements Feature {
 			sql.append("  (?, ?, ?, ?) ");
 			
 			ps = con.prepareStatement(sql.toString());
-//			System.out.println(codTipoLancamento);
+			System.out.println("codtipolancamento = " + codTipoLancamento);
 			ps.setLong(1, Long.parseLong(codUsuario));
 			ps.setLong(2, Long.parseLong(codComputador));
 			ps.setInt(3, codTipoLancamento);
@@ -101,7 +101,7 @@ public class LancamentoFeature implements Feature {
 		if ( ps.executeUpdate() > 0 ) {
 			out.getChildren().add(new Element("ok"));
 		} else {
-			throw new RuntimeException("Nao foi possível processar o lançamento!");
+			throw new RuntimeException("Não foi possível processar o lançamento!");
 		}	
 		ps.close();		
 		con.close();
@@ -129,15 +129,12 @@ public class LancamentoFeature implements Feature {
 		ps.setString(1, desc);
 		
 		rs = ps.executeQuery();
-		
-		/*
+				
 		if (rs.next()) {
 			System.out.println("deu");	
 		} else {
 			System.out.println("nao deu");
-		}
-		*/	
-		
+		}				
 		
 		return rs.getInt("cod_tipo_lancamento");
 		

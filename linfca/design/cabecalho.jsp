@@ -64,19 +64,19 @@ function MM_swapImage() { //v3.0
 </script>
 </head>
 
-<body bgcolor="#6CA66C" text="#000000" link="#000000" vlink="#000000" alink="#000000" style="margin: 0px" marginheight="0" marginwidth="0" border="0" onLoad="MM_preloadImages('images/homeON.gif', ,'images/contactON.gif','images/privacy.policyON.gif','design/imagens/nome_unbON.gif','design/imagens/nome_cicON.gif','design/imagens/nome_linfcaON.gif','design/imagens/nome_nossa_equipeON.gif','design/imagens/nome_eventosON.gif','design/imagens/nome_downloadsON.gif')">
+<body bgcolor="#6CA66C" text="#000000" link="#000000" vlink="#000000" alink="#000000" style="margin: 0px" marginheight="0" marginwidth="0" border="0" onLoad="MM_preloadImages('design/imagens/nome_unbON.gif','design/imagens/nome_cicON.gif','design/imagens/nome_linfcaON.gif','design/imagens/nome_nossa_equipeON.gif','design/imagens/nome_eventosON.gif','design/imagens/nome_downloadsON.gif')">
 <table width="100%" border="0" cellspacing="0" cellpadding="0" align="left" bgcolor="#6CA66C">
   <tr>
     <td bgcolor="#6CA66C" colspan="2"><a href="http://www.unb.br"><img src="<%=path%>/design/imagens/logo_unb.gif" height="32" width="210" vspace="10" hspace="10" border="0" alt="Universidade de Brasília."></a></td>
   </tr>
   <tr>
-	<td height="1" colspan="2" bgcolor="#3C783C"><img src="images/spacer.gif" width=1 height=1></td>
+	<td height="1" colspan="2" bgcolor="#3C783C"><img src="#" width=1 height=1></td>
   </tr>
   <tr>
-	<td height="2" colspan="2" bgcolor="#6CA66C"><img src="images/spacer.gif" width=1 height=2></td>
+	<td height="2" colspan="2" bgcolor="#6CA66C"><img src="#" width=1 height=2></td>
   </tr>
   <tr>
-	<td height="3" colspan="2" bgcolor="#3C783C"><img src="images/spacer.gif" width=1 height=3></td>
+	<td height="3" colspan="2" bgcolor="#3C783C"><img src="#" width=1 height=3></td>
   </tr>
   <tr>
     <td colspan="2" bgcolor="#336633">
@@ -95,16 +95,16 @@ function MM_swapImage() { //v3.0
   </tr>
   <tr>
     <td width="248" bgcolor="#FFFFFF"><img  src="<%=path%>/design/imagens/logo_linfca.jpg" width="181" border="0"></td>
-    <td bgcolor="#FFFFFF"><img src="<%=path%>/design/imagens/nome_logo_linfca.gif" border="0" alt="Partnership in Business"></td>
+    <td bgcolor="#FFFFFF"><img src="<%=path%>/design/imagens/nome_logo_linfca.gif" border="0" alt="Controle de "></td>
   </tr>
   <tr>
-	<td height="8" colspan="2" bgcolor="#336633"><img src="images/spacer.gif" width="1" height="8" border="0"></td>
+	<td height="8" colspan="2" bgcolor="#336633"><img src="#" width="1" height="8" border="0"></td>
   </tr>
   <tr>
-	<td height="2" colspan="2" bgcolor="#6CA66C"><img src="images/spacer.gif" width="1" height="2" border="0"></td>
+	<td height="2" colspan="2" bgcolor="#6CA66C"><img src="#" width="1" height="2" border="0"></td>
   </tr>
   <tr>
-	<td height="1" colspan="2" bgcolor="#336633"><img src="images/spacer.gif" width="1" height="1" border="0"></td>
+	<td height="1" colspan="2" bgcolor="#336633"><img src="#" width="1" height="1" border="0"></td>
   </tr>
   <tr>
     <td colspan="2" align="center">
