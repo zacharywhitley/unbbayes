@@ -23,7 +23,6 @@ package unbbayes.io;
 
 import unbbayes.jprs.jbn.*;
 import unbbayes.util.NodeList;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -221,8 +220,8 @@ public class NetIO implements BaseIO {
             arq.println("{");
             arq.println("     node_size = (" + (int)net.getRadius() + " " + (int)net.getRadius() + ");");
             arq.println("     name = \"" + net.getName() + "\";");
-            arq.println("     HR_Color_Utility = \"" + 10 + ";");
-            arq.println("     HR_Color_Decision = \"" + 30 + ";");
+            arq.println("     HR_Color_Utility = \"" + 10 + "\";");
+            arq.println("     HR_Color_Decision = \"" + 30 + "\";");
             arq.println("}");
             arq.println();
 
