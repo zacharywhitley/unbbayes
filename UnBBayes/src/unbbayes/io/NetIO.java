@@ -15,8 +15,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with UnbBaye
- * s; if not, write to the Free Software
+ *  along with UnbBayes; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
@@ -71,10 +70,11 @@ public class NetIO implements BaseIO {
 		st.wordChars('-', '-');
 		st.wordChars('0', '9');
 		st.wordChars('.', '.');
+                st.wordChars('%','%');
 		st.ordinaryChars('(', ')');
 		st.eolIsSignificant(false);
 		st.quoteChar('"');
-		st.commentChar('%');
+		//st.commentChar('%');
 
 		proximo(st);
 		if (st.sval.equals("net")) {
@@ -156,7 +156,22 @@ public class NetIO implements BaseIO {
 							while (proximo(st) == '"') {
 								auxNo.appendState(st.sval);
 							}
-						} else {
+						}
+                                                else if (st.sval.equals("%descricao"))
+                                                {	proximo(st);
+							auxNo.setExplanationDescription(st.sval);
+                                                        proximo(st);
+						}
+                                                else if (st.sval.equals("%frase"))
+                                                {	proximo(st);
+							System.out.println(st.sval);
+                                                        proximo(st);
+							System.out.println(st.sval);
+                                                        proximo(st);
+							System.out.println(st.sval);
+                                                        proximo(st);
+						}
+                                                else {
 							throw new LoadException(
 								ERROR_NET
 									+ " l."
@@ -308,6 +323,10 @@ public class NetIO implements BaseIO {
 				}
                                 if (!auxNo1.getExplanationDescription().equals(""))
                                 {   arq.println("     %descricao \"" + auxNo1.getExplanationDescription() + "\"");
+                                }
+                                if (auxNo1.getInformationType() == Node.EXPLANATION_TYPE)
+                                {   //  inserir código para salvar as frases
+                                    //arq.println("     %frase \"" + "" + "\"" + "\"" + "" + "\"" + "\"" + "" + "\"");
                                 }
 
 				arq.println("}");

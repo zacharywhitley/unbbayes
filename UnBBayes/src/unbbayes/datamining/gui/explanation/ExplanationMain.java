@@ -44,8 +44,6 @@ public class ExplanationMain extends JInternalFrame
     private ImageIcon helpIcon;
     private ImageIcon expandirIcon;
     private ImageIcon compilaIcon;
-    private Node selectedNode = null, nodeClass = null;
-    private ArrayMap phrasesMap = null;
     private JButton treeButton = new JButton();
     private JTabbedPane jTabbedPane1 = new JTabbedPane();
   private NetWindowEdition edition;
@@ -274,7 +272,7 @@ public class ExplanationMain extends JInternalFrame
             jTabbedPane1.setEnabledAt(1,false);
         }
         catch (Exception e)
-        {   net = null; nodeClass = null; phrasesMap = null;
+        {   net = null;
             System.err.print(e.getMessage());
             statusLabel.setText(e.getMessage());
         }
