@@ -33,7 +33,7 @@ public class UtilityNode extends Node implements ITabledVariable, java.io.Serial
 
     private PotentialTable utilTable;
 
-    private static Color color = new Color(Color.green.getRGB());
+    private static Color color = new Color(Color.cyan.getRGB());
     
     /** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.jprs.jbn.resources.JbnResources");

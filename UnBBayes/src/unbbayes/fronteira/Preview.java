@@ -162,7 +162,7 @@ public class Preview extends JPanel {
 		double radius = og.getRadius();
 
         //desenha os nós na cor escolhida
-        g2.setColor(og.getPropabilisticNodeColor());
+        g2.setColor(og.getPropabilisticDescriptionNodeColor());
         g2.fill(new Ellipse2D.Double(getWidth() / 2 - radius, getHeight() / 5 - radius + 10, radius * 2, radius * 2));
         g2.fill(new Ellipse2D.Double(getWidth() / 4 - radius, getHeight() * 2 / 5 - radius + 10, radius * 2, radius * 2));
 		g2.setColor(og.getUtilityNodeColor());
@@ -187,11 +187,11 @@ public class Preview extends JPanel {
         g2.fill(drawArrow(getWidth() / 2 - radius, getHeight() / 5 - radius + 10, getWidth() * 3 / 4 - radius, getHeight() * 2 / 5 - radius + 10));
 
         //desenha os nós na cor escolhida
-        g2.setColor(og.getPropabilisticNodeColor());
+        g2.setColor(og.getPropabilisticExplanationNodeColor());
         g2.fill(new Ellipse2D.Double(getWidth() / 2 - radius, getHeight() * 3 / 5 - radius, radius * 2, radius * 2));
 		g2.setColor(og.getDecisionNodeColor());
         g2.fillRect((int)(getWidth() / 4 - radius), (int)(getHeight() * 4 / 5 - radius), (int)(radius * 2), (int)(radius * 2));
-		g2.setColor(og.getPropabilisticNodeColor());
+		g2.setColor(og.getPropabilisticDescriptionNodeColor());
         g2.fill(new Ellipse2D.Double(getWidth() * 3 / 4 - radius, getHeight() * 4 / 5 - radius, radius * 2, radius * 2));
 
         //desenha as bordas dos nós na cor do arco

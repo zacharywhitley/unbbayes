@@ -33,7 +33,8 @@ import unbbayes.util.SetToolkit;
 public class ProbabilisticNode extends TreeVariable implements ITabledVariable, java.io.Serializable {
 
     private ProbabilisticTable tabelaPot;
-    private static Color color = new Color(Color.yellow.getRGB());
+    private static Color descriptionColor = new Color(Color.yellow.getRGB());
+    private static Color explanationColor = new Color(Color.green.getRGB());
 
     /** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.jprs.jbn.resources.JbnResources");
@@ -62,7 +63,8 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
             no.appendState(getStateAt(i));
         }
         no.setAltura(this.getAltura());
-        no.setColor(this.getColor().getRGB());
+        no.setDescriptionColor(this.getDescriptionColor().getRGB());
+        no.setExplanationColor(this.getExplanationColor().getRGB());
         no.setLargura(this.getLargura());
         no.setPosicao(this.getPosicao().getX() + 1.3 * raio, this.getPosicao().getY() + 1.3 * raio);
         no.setName(resource.getString("copyName") + this.getName());
@@ -74,7 +76,8 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
     public Object clone() {
     	ProbabilisticNode cloned = new ProbabilisticNode();
     	cloned.tabelaPot = (ProbabilisticTable)this.tabelaPot.clone();
-		cloned.setColor(this.getColor().getRGB());
+		cloned.setDescriptionColor(this.getDescriptionColor().getRGB());
+		cloned.setExplanationColor(this.getExplanationColor().getRGB());
 		cloned.setDescription(this.getDescription());
 		cloned.setName(this.getName());
 		cloned.setPosicao(this.getPosicao().getX(), this.getPosicao().getY());
@@ -208,17 +211,35 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
      *
      * @return cor dos nós probabilísticos.
      */
-    public static Color getColor() {
-        return color;
+    public static Color getDescriptionColor() {
+        return descriptionColor;
     }
 
     /**
-     *  Modifica a cor do nó.
+     *  Modifica a cor do nó de descrição.
      *
      *@param c O novo RGB da cor do nó.
      */
-    public static void setColor(int c) {
-        color = new Color(c);
+    public static void setDescriptionColor(int c) {
+        descriptionColor = new Color(c);
     }
+    
+    /**
+     *  Modifica a cor do nó de explanação.
+     *
+     *@param c O novo RGB da cor do nó.
+     */
+    public static void setExplanationColor(int c) {
+        explanationColor = new Color(c);
+    }
+    
+
+	/**
+	 * Gets the explanationColor.
+	 * @return Returns a Color
+	 */
+	public static Color getExplanationColor() {
+		return explanationColor;
+	}
 
 }

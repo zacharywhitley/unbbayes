@@ -1465,7 +1465,11 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         for (int i = 0; i < node.size(); i++) {
             Node nodeAux = (Node) node.get(i);
             if (nodeAux instanceof ProbabilisticNode) {
-                view.setColor(ProbabilisticNode.getColor());
+            	if (nodeAux.getInformationType() == Node.DESCRIPTION_TYPE) {
+                	view.setColor(ProbabilisticNode.getDescriptionColor());
+            	} else if (nodeAux.getInformationType() == Node.EXPLANATION_TYPE) {
+            		view.setColor(ProbabilisticNode.getExplanationColor());
+            	}
                 view.fill(new Ellipse2D.Double(nodeAux.getPosicao().x - radius, nodeAux.getPosicao().y - radius, radius * 2, radius * 2));
             } else if (nodeAux instanceof DecisionNode) {
                 view.setColor(DecisionNode.getColor());
