@@ -49,14 +49,12 @@ public class NetWindow extends JPanel {
 	private CardLayout carta;
 	private NetWindowEdition netEdition;
 	private NetWindowCompilation netCompilation;
-        private HierarchicDefinitionPanel hierarchyPanel;
-
-    private static NetWindow singleton = null;
+    private HierarchicDefinitionPanel hierarchyPanel;
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
-    public NetWindow(ProbabilisticNetwork net) {
+    public NetWindow(Network net) {
         //super(net.getName(), true, true, true, true);
         //Container contentPane = getContentPane();
 		carta = new CardLayout();
@@ -101,15 +99,15 @@ public class NetWindow extends JPanel {
         jspGraph.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         jspGraph.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
-		netEdition = new NetWindowEdition(net, this, controller);
-		netCompilation = new NetWindowCompilation(net, this, controller);
-                hierarchyPanel = new HierarchicDefinitionPanel(net, this);
+		netEdition = new NetWindowEdition(this, controller);
+		netCompilation = new NetWindowCompilation(this, controller);
+		hierarchyPanel = new HierarchicDefinitionPanel(net, this);
 
 		//contentPane.add(netEdition, "netEdition");
 		//contentPane.add(netCompilation, "netCompilation");
 		add(netEdition, "netEdition");
 		add(netCompilation, "netCompilation");
-                add(hierarchyPanel,"hierarchy");
+		add(hierarchyPanel,"hierarchy");
 
 		// inicia com a tela de edicao de rede(NetEdition)
 		netEdition.getCenterPanel().setBottomComponent(jspGraph);
@@ -118,8 +116,6 @@ public class NetWindow extends JPanel {
         //pack();
         setVisible(true);
         graph.update();
-
-        singleton = this;
     }
 
 
@@ -241,17 +237,8 @@ public class NetWindow extends JPanel {
      * @return a rede probabilística
      * @see ProbabilisticNetwork
      */
-    public ProbabilisticNetwork getRede() {
+    public Network getRede() {
         return controller.getRede();
-    }
-
-    /**
-     * Retorna uma instância dessa janela (NetWindow)
-	 *
-     * @return uma instancia de NetWindow
-     */
-    public static NetWindow getInstance() {
-        return singleton;
     }
 
     /**
@@ -277,8 +264,8 @@ public class NetWindow extends JPanel {
         graph.setbUtilityNode(false);
         graph.setbSelect(false);
         graph.removeKeyListener(controller);
-        graph.removeKeyListener(controller);
-        graph.removeKeyListener(controller);
+//        graph.removeKeyListener(controller);
+//        graph.removeKeyListener(controller);
 
 		netCompilation.getCenterPanel().setRightComponent(jspGraph);
 		netCompilation.setStatus(status.getText());
@@ -286,13 +273,12 @@ public class NetWindow extends JPanel {
 		netCompilation.getEvidenceTree().expandRow(0);
 		netCompilation.getEvidenceTree().setRootVisible(false);
 
-		bCompiled = true;
+		bCompiled = true;		
 
-		controller.changeToNetCompilation();
+		controller.getRede().setFirstInitialization(true);
 
 		carta.show(this, "netCompilation");
-
-
+		netCompilation.getEvidenceTree().updateTree();
 	}
 
 	/**
@@ -308,11 +294,9 @@ public class NetWindow extends JPanel {
 
 		bCompiled = false;
 
-		controller.changeToNetEdition();
+		controller.getRede().setFirstInitialization(true);
 
 		carta.show(this, "netEdition");
-
-
 	}
 
         /**

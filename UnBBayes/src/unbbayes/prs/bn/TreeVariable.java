@@ -132,7 +132,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
      */
     protected void setAssociatedClique(ITabledVariable clique) {
         this.cliqueAssociado = clique;
-    }    
+    }
 	
 
 	void updateEvidences() {

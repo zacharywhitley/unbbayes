@@ -38,7 +38,7 @@ public class MetaphorMain extends JPanel
   private ImageIcon openMetaphorRollOverIcon;
   private ImageIcon saveMetaphorRollOverIcon;
   private ImageIcon diagnosticMetaphorRollOverIcon;
-  private ProbabilisticNetwork net = new ProbabilisticNetwork();
+  private ProbabilisticNetwork net = null;
   private JFileChooser fileChooser;
   private TitledBorder titledBorder1;
   private Border border1;

@@ -27,8 +27,8 @@ public class SubNetwork extends Network {
 	protected SubNetwork parent;
 	
 	
-	public SubNetwork() {
-		super();
+	public SubNetwork(String id) {
+		super(id);
 		adjacents = new ArrayList();		
 	}
 	
@@ -49,7 +49,7 @@ public class SubNetwork extends Network {
 	}
 	
 	protected void compilaAJ() throws Exception {
-		super.compilaAJ(new MSJunctionTree(this));
+		super.compilaAJ(new MSJunctionTree());
 	}
 	
 	protected MSJunctionTree getJunctionTree() {
@@ -67,17 +67,16 @@ public class SubNetwork extends Network {
 	
 	protected List makePath(SubNetwork net) {
 		List path = new ArrayList();
-		makePath(net, path, new ArrayList());
-		return path;				
+		makePath(net, path);
+		return path;			
 	}
 	
-	private boolean makePath(SubNetwork net, List path, List visited) {
-		path.add(this);
-		
-		if (visited.contains(this)) {
+	private boolean makePath(SubNetwork net, List path) {
+		if (path.contains(this)) {
 			return false;
 		}
-		visited.add(this);
+		
+		path.add(this);
 		
 		if (this.equals(net)) {
 			return true;
@@ -85,12 +84,12 @@ public class SubNetwork extends Network {
 		
 		for (int i = adjacents.size()-1; i>=0; i--) {
 			SubNetwork netAux = (SubNetwork) adjacents.get(i);
-			if (netAux.makePath(net, path, visited)) {
+			if (netAux.makePath(net, path)) {
 				return true;				
 			}			
 		}
 		
-		if (parent.makePath(net, path, visited)) {
+		if (parent.makePath(net, path)) {
 			return true;			
 		}	
 		

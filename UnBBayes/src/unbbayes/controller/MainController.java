@@ -77,7 +77,7 @@ public class MainController {
     }
 
     public void newNet() {
-        ProbabilisticNetwork net = new ProbabilisticNetwork();
+        ProbabilisticNetwork net = new ProbabilisticNetwork("");
         //screen.addWindow(new NetWindow(net));
 		NetWindow netWindow = new NetWindow(net);
 		JInternalFrame jif = new JInternalFrame(net.getName(), true, true, true, true);
@@ -94,8 +94,14 @@ public class MainController {
      */
     public void saveNet(File arquivo) {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        io.save(arquivo, screen.getSelectedWindow().getRede());
-        screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        try {
+        	io.save(arquivo, screen.getSelectedWindow().getRede());        	
+        } catch (FileNotFoundException e) {
+            JOptionPane.showMessageDialog(screen, e.getMessage(), "saveNetException", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        } finally {
+        	screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        }
     }
 
 
@@ -108,24 +114,25 @@ public class MainController {
     public void loadNet(File file) {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));        
         try {
+        	JPanel window = null;
+        	String name = null;
         	if (file.isDirectory()) { //MSBN
-        		/*
-        		NetIO loader = new NetIO();
-        		MSNetwork msbn = loader.loadMSBN(file);
-        		*/
+        		MSNetwork msbn = io.loadMSBN(file);
+        		name = msbn.getId() + " (MSBN)";
+        		window = new MSBNWindow(msbn);
         	} else {
 		        ProbabilisticNetwork net = io.load(file);
+		        name = net.getId();
 		        //screen.addWindow(new NetWindow(net));
-				NetWindow netWindow = new NetWindow(net);
-				JInternalFrame jif = new JInternalFrame(net.getName(), true, true, true, true);
-				jif.getContentPane().add(netWindow);
-				jif.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-				screen.addWindow(jif);
+				window = new NetWindow(net);				
         	}
+        	JInternalFrame jif = new JInternalFrame(name, true, true, true, true);
+			jif.getContentPane().add(window);
+			jif.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+			screen.addWindow(jif);
         } catch (Exception e){
             JOptionPane.showMessageDialog(screen, e.getMessage(), resource.getString("loadNetException"), JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
-            screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));            
         } finally {
         	screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
@@ -140,7 +147,7 @@ public class MainController {
      */
     public ProbabilisticNetwork makeNetwork(NodeList variaveis) {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        ProbabilisticNetwork net = new ProbabilisticNetwork();
+        ProbabilisticNetwork net = new ProbabilisticNetwork("learned net");
         Node noFilho = null;
         Node noPai = null;
         Edge arcoAux = null;

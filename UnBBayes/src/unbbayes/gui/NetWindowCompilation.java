@@ -22,8 +22,7 @@ import unbbayes.prs.bn.*;
 
 public class NetWindowCompilation extends JPanel {
 
-    private final ProbabilisticNetwork net;
-    private final NetWindow netWindow;
+	private final NetWindow netWindow;
 
     private EvidenceTree evidenceTree;
     private final WindowController controller;
@@ -47,10 +46,9 @@ public class NetWindowCompilation extends JPanel {
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
-    public NetWindowCompilation(ProbabilisticNetwork _net, NetWindow _netWindow,
+    public NetWindowCompilation(NetWindow _netWindow,
                           WindowController _controller) {
         super();
-        this.net           = _net;
         this.netWindow     = _netWindow;
         this.controller    = _controller;
         this.setLayout(new BorderLayout());
@@ -59,7 +57,7 @@ public class NetWindowCompilation extends JPanel {
         topPanel       = new JPanel(new GridLayout(0,1));
         jtbCompilation = new JToolBar();
         centerPanel    = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        evidenceTree   = new EvidenceTree(this,netWindow);
+        evidenceTree   = new EvidenceTree(netWindow);
         jspTree        = new JScrollPane(evidenceTree);
         bottomPanel    = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 1));
         status         = new JLabel(resource.getString("statusReadyLabel"));

@@ -61,7 +61,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import org.shetline.io.GIFOutputStream;
-import sun.security.krb5.internal.crypto.e;
 import unbbayes.gui.EvidenceTree;
 import unbbayes.gui.ExplanationProperties;
 import unbbayes.gui.FileIcon;
@@ -70,6 +69,7 @@ import unbbayes.gui.SimpleFileFilter;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.Network;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -93,10 +93,9 @@ import unbbayes.util.NodeList;
 public class WindowController implements KeyListener {
 
     private NetWindow tela;
-    private ProbabilisticNetwork rede;
+    private Network rede;
 
     private NumberFormat df;
-    private EvidenceTree evidenceTree;
 
     private List copia;
     private List copiados;
@@ -120,11 +119,11 @@ public class WindowController implements KeyListener {
      * @since
      * @see      KeyListener
      */
-    public WindowController(ProbabilisticNetwork _rede, NetWindow _tela) {
+    public WindowController(Network _rede, NetWindow _tela) {
         this.rede = _rede;
         this.tela = _tela;
         df = NumberFormat.getInstance(Locale.US);
-        df.setMaximumFractionDigits(4);
+        df.setMaximumFractionDigits(2);
         copia = new ArrayList();
         copiados = new ArrayList();
     }
@@ -169,7 +168,7 @@ public class WindowController implements KeyListener {
      *
      * @return    retorna a rede <code>TRP</code>
      */
-    public ProbabilisticNetwork getRede() {
+    public Network getRede() {
         return this.rede;
     }
 
@@ -262,7 +261,7 @@ public class WindowController implements KeyListener {
     public void initialize() {
     	try {
 	        rede.initialize();
-       		evidenceTree.updateTree();
+       		tela.getEvidenceTree().updateTree();
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
@@ -280,12 +279,12 @@ public class WindowController implements KeyListener {
         try {
         	rede.updateEvidences();
             if (! temLikeliHood) {
-                NetWindow.getInstance().setStatus(resource.getString("statusEvidenceProbabilistic") + rede.PET() * 100.0);
+                tela.setStatus(resource.getString("statusEvidenceProbabilistic") + df.format(rede.PET() * 100.0));
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(tela, resource.getString("statusEvidenceException"), resource.getString("statusError"), JOptionPane.ERROR_MESSAGE);
         }
-        evidenceTree.updateTree();
+        tela.getEvidenceTree().updateTree();
         tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
@@ -368,12 +367,12 @@ public class WindowController implements KeyListener {
      *      problema na compilação
      * @since
      * @see       JOptionPane
-     */
+     */ 
     public boolean compileNetwork() {
         long ini = System.currentTimeMillis();
         tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         try {
-            rede.compile();
+            ((ProbabilisticNetwork) rede).compile();
         } catch (Exception e){
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, e.getMessage(), resource.getString("statusError"), JOptionPane.ERROR_MESSAGE);
@@ -396,12 +395,12 @@ public class WindowController implements KeyListener {
                 }
             }
         }
-
-        evidenceTree = tela.getEvidenceTree();
-        evidenceTree.setProbabilisticNetwork(rede);
+        
+        tela.getEvidenceTree().updateTree();
+        
         tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 
-        NetWindow.getInstance().setStatus(resource.getString("statusTotalTime") + (((double)(System.currentTimeMillis() - ini))/1000) + resource.getString("statusSeconds"));
+        tela.setStatus(resource.getString("statusTotalTime") + df.format(((System.currentTimeMillis() - ini))/1000.0) + resource.getString("statusSeconds"));
         return true;
     }
 
@@ -999,13 +998,5 @@ public class WindowController implements KeyListener {
         explanation.setProbabilisticNode(node);
         explanation.setVisible(true);
         tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-    }
-
-    public void changeToNetEdition() {
-    	rede.setFirstInitialization(true);
-    }
-
-    public void changeToNetCompilation() {
-        rede.setFirstInitialization(true);
     }
 }

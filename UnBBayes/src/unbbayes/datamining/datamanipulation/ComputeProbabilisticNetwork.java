@@ -111,6 +111,6 @@ public class ComputeProbabilisticNetwork
   private int width = 50;
   private int numAtt;
   private int k = 0;
-  private ProbabilisticNetwork net = new ProbabilisticNetwork();
+  private ProbabilisticNetwork net = new ProbabilisticNetwork("net");
   private InstanceSet inst;
 }

@@ -39,7 +39,6 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 
 public class NetWindowEdition extends JPanel {
 
-    private final ProbabilisticNetwork net;
     private final NetWindow netWindow;
 
     private GlobalOptions go;
@@ -82,10 +81,9 @@ public class NetWindowEdition extends JPanel {
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
-    public NetWindowEdition(ProbabilisticNetwork _net, NetWindow _netWindow,
+    public NetWindowEdition(NetWindow _netWindow,
                             WindowController _controller) {
         super();
-        this.net           = _net;
         this.netWindow     = _netWindow;
         this.controller    = _controller;
         this.setLayout(new BorderLayout());

@@ -20,20 +20,39 @@ import unbbayes.util.SetToolkit;
 public class MSNetwork {
 	protected List nets;
 	protected List links;
-	protected SubNetwork activeNet;	
+	protected SubNetwork activeNet;
+	protected String id;
 	
-	public MSNetwork() {
+	public MSNetwork(String id) {
+		this.id = id;
 		nets = new ArrayList();
 		links = new ArrayList();				
+	}
+	
+	public int getNetCount() {
+		return nets.size();				
+	}
+	
+	public SubNetwork getNetAt(int index) {
+		return (SubNetwork) nets.get(index);		
 	}
 	
 	public void addNetwork(SubNetwork net) {
 		nets.add(net);
 	}
 	
+	public void remove(int index) {
+		nets.remove(index);		
+	}
+	
 	public void compile() throws Exception {
+		links.clear();
+		
 		for (int i = nets.size()-1; i>=0; i--) {
 			SubNetwork net = (SubNetwork) nets.get(i);
+			net.adjacents.clear();
+			net.parent = null;
+			
 			net.verifyConsistency();		
 		}
 		
@@ -41,7 +60,7 @@ public class MSNetwork {
 		
 		verifyCycles();
 		
-		distributedMoralization();	
+		distributedMoralization();
 				
 		cooperativeTriangulation();
 		
@@ -56,8 +75,8 @@ public class MSNetwork {
 		}
 		
 		
-		SubNetwork raiz = (SubNetwork) nets.get(0);
-		distribuaCrencas(raiz);
+		activeNet = (SubNetwork) nets.get(0);
+		distribuaCrencas(activeNet);
 	}
 	
 	protected void distribuaCrencas(SubNetwork net) {
@@ -68,7 +87,11 @@ public class MSNetwork {
 		}
 	}
 	
-	public void desviaAtencao(SubNetwork net) {
+	public SubNetwork getActiveNet() {
+		return activeNet;		
+	}
+	
+	public void shiftAttention(SubNetwork net) {
 		List caminho = activeNet.makePath(net);		
 		for (int i = 1; i < caminho.size(); i++) {
 			SubNetwork netAux = (SubNetwork) caminho.get(i);
@@ -94,9 +117,9 @@ public class MSNetwork {
 		}
 	}
 	
-	private void distributedMoralization() {
+	private void distributedMoralization() {		
 		for (int i = nets.size()-1; i >= 0; i--) {
-			SubNetwork net = (SubNetwork) nets.get(i);
+			SubNetwork net = (SubNetwork) nets.get(i);			
 			net.moralize();			
 		}
 		
@@ -243,4 +266,12 @@ public class MSNetwork {
 			net.initTriangulation();
 		}		
 	}
+	/**
+	 * Returns the id.
+	 * @return String
+	 */
+	public String getId() {
+		return id;
+	}
+
 }

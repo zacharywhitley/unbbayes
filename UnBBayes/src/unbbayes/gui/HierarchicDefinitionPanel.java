@@ -23,7 +23,7 @@ public class HierarchicDefinitionPanel extends JPanel
   private JScrollPane explanationScrollPane;
   private HierarchicTree hierarchicTree;
   private DefaultTreeModel model;
-  private ProbabilisticNetwork net;
+  private Network net;
   private HierarchicTree explanationTree;
   private NetWindow netWindow;
   private JPanel bottomPanel;
@@ -41,7 +41,7 @@ public class HierarchicDefinitionPanel extends JPanel
   /** Load resource file from this package */
   private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
-  public HierarchicDefinitionPanel(ProbabilisticNetwork net, NetWindow netWindow)
+  public HierarchicDefinitionPanel(Network net, NetWindow netWindow)
   {
     super();
     this.net = net;

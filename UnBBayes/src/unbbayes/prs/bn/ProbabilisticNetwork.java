@@ -52,7 +52,8 @@ public class ProbabilisticNetwork
 	 *  Cria uma nova rede probabilística. Limpa o arquivo de log e inicializa o
 	 *  vetor da ordem de eliminação.
 	 */
-	public ProbabilisticNetwork() {								
+	public ProbabilisticNetwork(String id) {
+		super(id);							
 		oe = new NodeList();
 		firstInitialization = true;
 	}

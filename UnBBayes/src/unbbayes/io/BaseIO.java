@@ -23,6 +23,8 @@ package unbbayes.io;
 
 import unbbayes.prs.bn.Network;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.msbn.MSNetwork;
+
 import java.io.*;
 
 /**
@@ -32,6 +34,36 @@ import java.io.*;
  * @version 1.0
  */
 public interface BaseIO {
+	/**
+	 * Loads a new Probabilistic network from the input file.
+	 * 
+	 * @param input the input file for the network
+	 * @return The loaded network
+	 * @throws LoadException If the file doesn't describes a network.
+	 * @throws IOException	If an IO error occurs
+	 */
     public ProbabilisticNetwork load(File input) throws LoadException, IOException;
-    public void save(File output, Network net);
+    
+    /**
+     * Loads a new MSBN from the input DIRECTORY
+     * @param input	Input directory for the MSBN
+     * @return The loaded MSBN
+     * @throws LoadException If the directory doesn't describes a MSBN.
+     * @throws IOException	 If an IO error occurs
+     */
+    public MSNetwork loadMSBN(File input) throws LoadException, IOException;
+    
+    /**
+     * Saves a network to the output file.
+     * @param output	The output file to save
+     * @param net		The network to save.
+     */
+    public void save(File output, Network net) throws FileNotFoundException;
+    
+    /**
+     * Saves a MSBN to the output directory.
+     * @param output The output file to save
+     * @param net		The MSBN to save.
+     */
+    public void saveMSBN(File output, MSNetwork net) throws FileNotFoundException;
 }

@@ -596,7 +596,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         double menorX;
         double menorY;
 
-        if (bMoveNode)
+        if (bMoveNode && selected instanceof Node)
         {
             Node noAux = (Node) selected;
             maiorX = noAux.getPosicao().getX();

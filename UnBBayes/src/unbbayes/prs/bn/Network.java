@@ -54,9 +54,11 @@ public class Network implements java.io.Serializable {
   	/**
 	 * Nós de decisão utilizado no processo de transformação.
 	 */
-	protected NodeList decisionNodes;	
+	protected NodeList decisionNodes;
+	
+	protected String id;
 
-	protected String name = "";
+	protected String name;
 
 	protected double radius;
 
@@ -112,8 +114,10 @@ public class Network implements java.io.Serializable {
     /**
      *  Constrói um novo grafo sem nós nem arcos.
      */
-    public Network() {
+    public Network(String id) {
         nos = new NodeList();
+        assert ! id.trim().equals("");
+        this.id = id;
         //descriptionNodes = new NodeList();
         //explanationNodes = new NodeList();
         arcos = new ArrayList();
@@ -587,6 +591,8 @@ public class Network implements java.io.Serializable {
 		Node auxPai1;
 		Node auxPai2;
 		Edge auxArco;
+		
+		desmontaAdjacentes();
 	
 		if (createLog) {
 			logManager.append(resource.getString("moralizeLabel"));
@@ -1523,9 +1529,20 @@ public class Network implements java.io.Serializable {
 	public float PET() {
 		return junctionTree.getN();
 	}
+	
+	/**
+	 * Returns the id.
+	 * @return String
+	 */
+	public String getId() {
+		return id;
+	}
 
-
-
-
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		return name + '(' + id + ')';
+	}
 }
 

@@ -59,7 +59,10 @@ public class NetIO implements BaseIO {
 	 */
 	public ProbabilisticNetwork load(File input)
 		throws LoadException, IOException {
-		ProbabilisticNetwork net = new ProbabilisticNetwork();
+		
+		int index = input.getName().lastIndexOf('.');
+		String id = input.getName().substring(0, index);
+		ProbabilisticNetwork net = new ProbabilisticNetwork(id);
 		load(input, net);
 		return net;		
 	}
@@ -70,170 +73,180 @@ public class NetIO implements BaseIO {
 	 * @param  output arquivo onde a rede será salva.
 	 * @param net rede a ser salva.
 	 */
-	public void save(File output, Network net) {
-		try {
-			PrintStream arq = new PrintStream(new FileOutputStream(output));
-			arq.println("net");
+	public void save(File output, Network net) throws FileNotFoundException {
+		PrintStream arq = new PrintStream(new FileOutputStream(output));
+		arq.println("net");
+		arq.println("{");
+		arq.println(
+			"     node_size = ("
+				+ (int) (net.getRadius() * 2)
+				+ " "
+				+ (int) (net.getRadius() * 2)
+				+ ");");
+		arq.println("     name = \"" + net.getName() + "\";");
+		String tree = saveHierarchicTree(net.getHierarchicTree());
+		if (tree != null)
+			arq.println("     tree = \"" + tree + "\";");
+        arq.println("     UnBBayes_Color_Probabilistic_Description = \"" + ProbabilisticNode.getDescriptionColor().getRGB() + "\";");
+        arq.println("     UnBBayes_Color_Probabilistic_Explanation = \"" + ProbabilisticNode.getExplanationColor().getRGB() + "\";");
+		arq.println("     UnBBayes_Color_Utility = \"" + UtilityNode.getColor().getRGB() + "\";");
+		arq.println("     UnBBayes_Color_Decision = \"" + DecisionNode.getColor().getRGB() + "\";");
+		arq.println("}");
+		arq.println();
+
+		int sizeNos = net.getNodeCount();
+		Node auxNo1;
+		for (int c1 = 0; c1 < sizeNos; c1++) {
+			auxNo1 = (Node) net.getNodeAt(c1);
+			if (auxNo1.getType() == Node.PROBABILISTIC_NODE_TYPE) {
+				arq.print("node");
+			} else if (auxNo1.getType() == Node.DECISION_NODE_TYPE) {
+				arq.print("decision");
+			} else { // TVU
+				arq.print("utility");
+			}
+
+			arq.println(" " + auxNo1.getName());
 			arq.println("{");
 			arq.println(
-				"     node_size = ("
-					+ (int) (net.getRadius() * 2)
+				"     label = \"" + auxNo1.getDescription() + "\";");
+			arq.println(
+				"     position = ("
+					+ (int) auxNo1.getPosicao().getX()
 					+ " "
-					+ (int) (net.getRadius() * 2)
+					+ (int) auxNo1.getPosicao().getY()
 					+ ");");
-			arq.println("     name = \"" + net.getName() + "\";");
-			String tree = saveHierarchicTree(net.getHierarchicTree());
-			if (tree != null)
-				arq.println("     tree = \"" + tree + "\";");
-            arq.println("     UnBBayes_Color_Probabilistic_Description = \"" + ProbabilisticNode.getDescriptionColor().getRGB() + "\";");
-            arq.println("     UnBBayes_Color_Probabilistic_Explanation = \"" + ProbabilisticNode.getExplanationColor().getRGB() + "\";");
-			arq.println("     UnBBayes_Color_Utility = \"" + UtilityNode.getColor().getRGB() + "\";");
-			arq.println("     UnBBayes_Color_Decision = \"" + DecisionNode.getColor().getRGB() + "\";");
+
+			if (!(auxNo1.getType() == Node.UTILITY_NODE_TYPE)) {
+				StringBuffer auxString =
+					new StringBuffer("\"" + auxNo1.getStateAt(0) + "\"");
+
+				int sizeEstados = auxNo1.getStatesSize();
+				for (int c2 = 1; c2 < sizeEstados; c2++) {
+					auxString.append(" \"" + auxNo1.getStateAt(c2) + "\"");
+				}
+				arq.println(
+					"     states = (" + auxString.toString() + ");");
+			}
+			if (auxNo1.getInformationType() == Node.EXPLANATION_TYPE)
+                            {
+                              String explanationDescription = formatString(auxNo1.getExplanationDescription());
+                              arq.println("     %descricao \"" + explanationDescription + "\"");
+                              ArrayMap arrayMap = auxNo1.getPhrasesMap();
+                              int size = arrayMap.size();
+                              ArrayList keys = arrayMap.getKeys();
+                              for (int i = 0; i < size; i++)
+                              {
+                                Object key = keys.get(i);
+                                ExplanationPhrase explanationPhrase = (ExplanationPhrase) arrayMap.get(key);
+                                arq.println("     %frase \""+ explanationPhrase.getNode()+ "\" "+ "\""
+                                    + explanationPhrase.getEvidenceType()+ "\" "+ "\""
+                                    + formatString(explanationPhrase.getPhrase())+ "\"");
+                              }
+			}
 			arq.println("}");
 			arq.println();
-
-			int sizeNos = net.getNodeCount();
-			Node auxNo1;
-			for (int c1 = 0; c1 < sizeNos; c1++) {
-				auxNo1 = (Node) net.getNodeAt(c1);
-				if (auxNo1.getType() == Node.PROBABILISTIC_NODE_TYPE) {
-					arq.print("node");
-				} else if (auxNo1.getType() == Node.DECISION_NODE_TYPE) {
-					arq.print("decision");
-				} else { // TVU
-					arq.print("utility");
-				}
-
-				arq.println(" " + auxNo1.getName());
-				arq.println("{");
-				arq.println(
-					"     label = \"" + auxNo1.getDescription() + "\";");
-				arq.println(
-					"     position = ("
-						+ (int) auxNo1.getPosicao().getX()
-						+ " "
-						+ (int) auxNo1.getPosicao().getY()
-						+ ");");
-
-				if (!(auxNo1.getType() == Node.UTILITY_NODE_TYPE)) {
-					StringBuffer auxString =
-						new StringBuffer("\"" + auxNo1.getStateAt(0) + "\"");
-
-					int sizeEstados = auxNo1.getStatesSize();
-					for (int c2 = 1; c2 < sizeEstados; c2++) {
-						auxString.append(" \"" + auxNo1.getStateAt(c2) + "\"");
-					}
-					arq.println(
-						"     states = (" + auxString.toString() + ");");
-				}
-				if (auxNo1.getInformationType() == Node.EXPLANATION_TYPE)
-                                {
-                                  String explanationDescription = formatString(auxNo1.getExplanationDescription());
-                                  arq.println("     %descricao \"" + explanationDescription + "\"");
-                                  ArrayMap arrayMap = auxNo1.getPhrasesMap();
-                                  int size = arrayMap.size();
-                                  ArrayList keys = arrayMap.getKeys();
-                                  for (int i = 0; i < size; i++)
-                                  {
-                                    Object key = keys.get(i);
-                                    ExplanationPhrase explanationPhrase = (ExplanationPhrase) arrayMap.get(key);
-                                    arq.println("     %frase \""+ explanationPhrase.getNode()+ "\" "+ "\""
-                                        + explanationPhrase.getEvidenceType()+ "\" "+ "\""
-                                        + formatString(explanationPhrase.getPhrase())+ "\"");
-                                  }
-				}
-				arq.println("}");
-				arq.println();
-			}
-			/*
-			 * fim da escrita das variaveis!
-			 * agora vamos à escrita dos potenciais!
-			 */
-			for (int c1 = 0; c1 < net.getNodeCount(); c1++) {
-				auxNo1 = (Node) net.getNodeAt(c1);
-
-				NodeList auxListVa = auxNo1.getParents();
-
-				arq.print("potential (" + auxNo1.getName());
-
-				int sizeVa = auxListVa.size();
-				if (sizeVa > 0) {
-					arq.print(" |");
-				}
-				for (int c2 = 0; c2 < sizeVa; c2++) {
-					Node auxNo2 = (Node) auxListVa.get(c2);
-					arq.print(" " + auxNo2.getName());
-				}
-				arq.println(")");
-				arq.println("{");
-				if (auxNo1 instanceof ITabledVariable) {
-					PotentialTable auxTabPot =
-						((ITabledVariable) auxNo1).getPotentialTable();
-					int sizeVa1 = auxTabPot.variableCount();
-
-					arq.print(" data = ");
-					int[] coord;
-					boolean[] paren = new boolean[sizeVa1];
-
-					int sizeDados = auxTabPot.tableSize();
-					for (int c2 = 0; c2 < sizeDados; c2++) {
-						coord = auxTabPot.voltaCoord(c2);
-
-						for (int c3 = 0; c3 < sizeVa1; c3++) {
-							if ((coord[c3] == 0) && (!paren[c3])) {
-								arq.print("(");
-								paren[c3] = true;
-							}
-						}
-						arq.print(" " + auxTabPot.getValue(c2));
-						if ((c2 % auxNo1.getStatesSize())
-							== auxNo1.getStatesSize() - 1) {
-							arq.print(" ");
-						}
-
-						int celulas = 1;
-
-						Node auxNo2;
-						for (int c3 = 0; c3 < sizeVa1; c3++) {
-							auxNo2 = auxTabPot.getVariableAt(c3);
-							celulas *= auxNo2.getStatesSize();
-							if (((c2 + 1) % celulas) == 0) {
-								arq.print(")");
-								if (c3 == sizeVa1 - 1) {
-									arq.print(";");
-								}
-								paren[c3] = false;
-							}
-						}
-
-						if (((c2 + 1) % auxNo1.getStatesSize()) == 0) {
-							arq.println();
-						}
-					}
-				}
-
-				arq.println("}");
-				arq.println();
-			}
-			arq.close();
-		} catch (FileNotFoundException e) {
-			System.err.println(resource.getString("FileNotFoundException"));
 		}
+		/*
+		 * fim da escrita das variaveis!
+		 * agora vamos à escrita dos potenciais!
+		 */
+		for (int c1 = 0; c1 < net.getNodeCount(); c1++) {
+			auxNo1 = (Node) net.getNodeAt(c1);
+
+			NodeList auxListVa = auxNo1.getParents();
+
+			arq.print("potential (" + auxNo1.getName());
+
+			int sizeVa = auxListVa.size();
+			if (sizeVa > 0) {
+				arq.print(" |");
+			}
+			for (int c2 = 0; c2 < sizeVa; c2++) {
+				Node auxNo2 = (Node) auxListVa.get(c2);
+				arq.print(" " + auxNo2.getName());
+			}
+			arq.println(")");
+			arq.println("{");
+			if (auxNo1 instanceof ITabledVariable) {
+				PotentialTable auxTabPot =
+					((ITabledVariable) auxNo1).getPotentialTable();
+				int sizeVa1 = auxTabPot.variableCount();
+
+				arq.print(" data = ");
+				int[] coord;
+				boolean[] paren = new boolean[sizeVa1];
+
+				int sizeDados = auxTabPot.tableSize();
+				for (int c2 = 0; c2 < sizeDados; c2++) {
+					coord = auxTabPot.voltaCoord(c2);
+
+					for (int c3 = 0; c3 < sizeVa1; c3++) {
+						if ((coord[c3] == 0) && (!paren[c3])) {
+							arq.print("(");
+							paren[c3] = true;
+						}
+					}
+					arq.print(" " + auxTabPot.getValue(c2));
+					if ((c2 % auxNo1.getStatesSize())
+						== auxNo1.getStatesSize() - 1) {
+						arq.print(" ");
+					}
+
+					int celulas = 1;
+
+					Node auxNo2;
+					for (int c3 = 0; c3 < sizeVa1; c3++) {
+						auxNo2 = auxTabPot.getVariableAt(c3);
+						celulas *= auxNo2.getStatesSize();
+						if (((c2 + 1) % celulas) == 0) {
+							arq.print(")");
+							if (c3 == sizeVa1 - 1) {
+								arq.print(";");
+							}
+							paren[c3] = false;
+						}
+					}
+
+					if (((c2 + 1) % auxNo1.getStatesSize()) == 0) {
+						arq.println();
+					}
+				}
+			}
+
+			arq.println("}");
+			arq.println();
+		}
+		arq.close();
 	}
 	
+	public void saveMSBN(File output, MSNetwork msbn) throws FileNotFoundException {
+		if (! output.isDirectory()) {
+			System.err.println(resource.getString("IsNotDirectoryException"));
+			return;			
+		}
+		
+		for (int i = msbn.getNetCount()-1; i>=0; i--) {
+			Network net = msbn.getNetAt(i);
+			File out = new File(output, net.getId() + ".net");
+			save(out, net);
+		}
+	}
+
 	
 	public MSNetwork loadMSBN(File input) throws IOException,LoadException {
 		if (! input.isDirectory()) {
 			throw new LoadException(resource.getString("IsNotDirectoryException"));
 		}
-		MSNetwork msbn = new MSNetwork();
+		MSNetwork msbn = new MSNetwork(input.getName());
 		File files[] = input.listFiles();
 		for (int i = 0; i < files.length; i++) {			
 			if (files[i].isFile()) {
 				String fileName = files[i].getName();
 				int index = fileName.lastIndexOf('.');
+				assert index >= 0;
 				if (fileName.substring(index+1).equalsIgnoreCase("net")) {
-					SubNetwork net = new SubNetwork();
+					SubNetwork net = new SubNetwork(fileName.substring(0, index));
 					load(files[i], net);
 					msbn.addNetwork(net);
 				}

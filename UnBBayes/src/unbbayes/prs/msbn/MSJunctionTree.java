@@ -12,12 +12,6 @@ import unbbayes.prs.bn.JunctionTree;
  * Window>Preferences>Java>Code Generation.
  */
 public class MSJunctionTree extends JunctionTree {
-	private SubNetwork owner;
-	
-	public MSJunctionTree(SubNetwork owner) {
-		this.owner = owner;		
-	}
-	
 	protected void distribuaEvidencia(Clique c) {
 		super.distribuaEvidencia(c);
 	}	
