@@ -417,9 +417,9 @@ public class WindowController implements KeyListener {
         jspTexto.setPreferredSize(new Dimension(450, 400));
 
         JPanel panel = new JPanel(new BorderLayout());
-        JButton botaoImprimir = new JButton(new ImageIcon("icones/IMPRIMIR.gif"));
+        JButton botaoImprimir = new JButton(new ImageIcon(getClass().getResource("/icones/IMPRIMIR.gif")));
         botaoImprimir.setToolTipText(resource.getString("printLogToolTip"));
-        JButton botaoVisualizar = new JButton(new ImageIcon("icones/VISUALIZAR.gif"));
+        JButton botaoVisualizar = new JButton(new ImageIcon(getClass().getResource("icones/VISUALIZAR.gif")));
         botaoVisualizar.setToolTipText(resource.getString("previewLogToolTip"));
         botaoImprimir.addActionListener(
             new ActionListener() {
