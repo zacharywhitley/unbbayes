@@ -27,6 +27,7 @@ public class NeuralModelMain extends JInternalFrame{
   private ImageIcon compileIcon;
   private ImageIcon helpIcon;
   private ImageIcon saveIcon;
+  private ImageIcon returnIcon;
   private JTabbedPane jTabbedPane1 = new JTabbedPane();
   private BorderLayout borderLayout3 = new BorderLayout();
   private BorderLayout borderLayout4 = new BorderLayout();
@@ -59,13 +60,14 @@ public class NeuralModelMain extends JInternalFrame{
   private JPanel jPanel1 = new JPanel();
   private Border border3;
   private TitledBorder titledBorder3;
-  private GridLayout gridLayout2 = new GridLayout();
-  private JButton buttonApply = new JButton();
   private JButton buttonRestore = new JButton();
   private BorderLayout borderLayout10 = new BorderLayout();
   private JPanel tabbedPanelClassify = new JPanel();
   private BorderLayout borderLayout11 = new BorderLayout();
   private InferencePanel inferencePanel = new InferencePanel();
+  private FlowLayout flowLayout1 = new FlowLayout();
+  private JLabel jLabel1 = new JLabel();
+  private JButton openModelButton = new JButton();
 
   /**Construct the frame*/
   public NeuralModelMain(){
@@ -87,6 +89,7 @@ public class NeuralModelMain extends JInternalFrame{
     compileIcon = new ImageIcon(getClass().getResource("/icons/learn.gif"));
     helpIcon = new ImageIcon(getClass().getResource("/icons/help.gif"));
     saveIcon = new ImageIcon(getClass().getResource("/icons/save.gif"));
+    returnIcon = new ImageIcon(getClass().getResource("/icons/initialize.gif"));
     contentPane = (JPanel) this.getContentPane();
     titledBorder1 = new TitledBorder(border1,"Status");
     border2 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
@@ -133,22 +136,11 @@ public class NeuralModelMain extends JInternalFrame{
     tabbedPaneAttributes.setLayout(borderLayout7);
     panelOptions.setLayout(borderLayout8);
     optionsPanel = new OptionsPanel();
-    optionsPanel.setBorder(titledBorder2);
+    optionsPanel2 = new OptionsPanel();
     panelOptions2.setLayout(borderLayout9);
     internalPanelOptions2.setLayout(borderLayout10);
-    optionsPanel2 = new OptionsPanel();
-    internalPanelOptions2.setBorder(titledBorder3);
-    jPanel1.setLayout(gridLayout2);
-    gridLayout2.setHgap(5);
-    gridLayout2.setRows(2);
-    gridLayout2.setVgap(5);
-    buttonApply.setText("Aplicar");
-    buttonApply.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        buttonApply_actionPerformed(e);
-      }
-    });
-    buttonRestore.setText("Restaurar");
+    jPanel1.setLayout(flowLayout1);
+    buttonRestore.setIcon(returnIcon);
     buttonRestore.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
         buttonRestore_actionPerformed(e);
@@ -157,15 +149,26 @@ public class NeuralModelMain extends JInternalFrame{
     borderLayout10.setHgap(5);
     borderLayout10.setVgap(5);
     tabbedPanelClassify.setLayout(borderLayout11);
-    internalPanelOptions2.add(optionsPanel2, BorderLayout.WEST);
+    flowLayout1.setHgap(0);
+    flowLayout1.setVgap(0);
+    jLabel1.setToolTipText("");
+    jLabel1.setText("   ");
+    openModelButton.setIcon(openIcon);
+    openModelButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        openModelButton_actionPerformed(e);
+      }
+    });
+    internalPanelOptions2.add(optionsPanel2,  BorderLayout.CENTER);
     internalPanelOptions2.add(jPanel1, BorderLayout.EAST);
-    jPanel1.add(buttonApply, null);
     jPanel1.add(buttonRestore, null);
     contentPane.add(jToolBar1, BorderLayout.NORTH);
     jToolBar1.add(openButton, null);
-    jToolBar1.add(saveButton, null);
     jToolBar1.add(learnButton, null);
     jToolBar1.add(helpButton, null);
+    jToolBar1.add(jLabel1, null);
+    jToolBar1.add(openModelButton, null);
+    jToolBar1.add(saveButton, null);
     contentPane.add(jPanel3, BorderLayout.CENTER);
     jPanel3.add(jTabbedPane1,BorderLayout.CENTER);
     attributePanel = new AttributePanel();
@@ -175,11 +178,11 @@ public class NeuralModelMain extends JInternalFrame{
     jTabbedPane1.add(tabbedPanelClassify,  "Classificar");
     tabbedPanelClassify.add(inferencePanel);
     tabbedPaneRules.add(rulesPanel, BorderLayout.CENTER);
-    tabbedPaneRules.add(panelOptions2,  BorderLayout.SOUTH);
-    panelOptions2.add(internalPanelOptions2, BorderLayout.WEST);
+    tabbedPaneRules.add(panelOptions2,  BorderLayout.NORTH);
+    panelOptions2.add(internalPanelOptions2,  BorderLayout.CENTER);
     contentPane.add(jPanel2,  BorderLayout.SOUTH);
     jPanel2.add(statusBar,  BorderLayout.CENTER);
-    panelOptions.add(optionsPanel,  BorderLayout.WEST);
+    panelOptions.add(optionsPanel,  BorderLayout.CENTER);
     tabbedPaneAttributes.add(panelOptions,  BorderLayout.SOUTH);
     jTabbedPane1.setEnabledAt(1,false);
     jTabbedPane1.setEnabledAt(0,false);
@@ -200,7 +203,7 @@ public class NeuralModelMain extends JInternalFrame{
     int confidence;
     int support;
 
-    if (instanceSet != null){
+    if(instanceSet != null){
 //      optionsPanel = new OptionsPanel();
 //      paneThreshold.showInternalMessageDialog(this, optionsPanel, "CNM", JOptionPane.QUESTION_MESSAGE);
       maxOrder = optionsPanel.getMaxOrder();
@@ -211,11 +214,12 @@ public class NeuralModelMain extends JInternalFrame{
         combinatorialNetwork = new CombinatorialNeuralModel(maxOrder);
         combinatorialNetwork.buildClassifier(instanceSet);
 
-        rulesPanel.setRulesPanel(combinatorialNetwork, instanceSet, confidence, support);
+        rulesPanel.setRulesPanel(combinatorialNetwork, confidence, support);
         jTabbedPane1.setEnabledAt(1,true);
         jTabbedPane1.setSelectedIndex(1);
-/*              saveButton.setEnabled(true);
 
+        saveButton.setEnabled(true);
+/*
               NetWindow netWindow = new NetWindow(net);
               NetWindowEdition edition = netWindow.getNetWindowEdition();
               edition.getCenterPanel().setBottomComponent(netWindow.getJspGraph());
@@ -290,37 +294,34 @@ public class NeuralModelMain extends JInternalFrame{
 
   void saveButton_actionPerformed(ActionEvent e){
     setCursor(new Cursor(Cursor.WAIT_CURSOR));
-/*      String[] s2 = {"net"};
-      fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
-      fileChooser.setMultiSelectionEnabled(false);
+    String[] s2 = {"cnm"};
+    fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+    fileChooser.setMultiSelectionEnabled(false);
     //adicionar FileView no FileChooser para desenhar ícones de arquivos
-      fileChooser.setFileView(new FileIcon(NaiveBayesMain.this));
-      fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "Networks (*.net)"));
-      int returnVal = fileChooser.showSaveDialog(this);
-      if (returnVal == JFileChooser.APPROVE_OPTION)
-      {   File selectedFile = fileChooser.getSelectedFile();
-          try
-          {   String fileName = selectedFile.getName();
-              if (!fileName.regionMatches(true,fileName.length() - 4,".net",0,4))
-              {   selectedFile = new File(selectedFile.getAbsolutePath()+".net");
-              }
-              BaseIO io = new NetIO();
-              io.save(selectedFile,net);
-              statusBar.setText(resource.getString("saveModel"));
-          }
-          catch (Exception ioe)
-          {   statusBar.setText(resource.getString("errorWritingFileException")+selectedFile.getName()+" "+ioe.getMessage());
-          }
-          FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
+    fileChooser.setFileView(new FileIcon(NeuralModelMain.this));
+    fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "Modelo Neural Combinatório (*.cnm)"));
+    int returnVal = fileChooser.showSaveDialog(this);
+    if (returnVal == JFileChooser.APPROVE_OPTION){
+      File selectedFile = fileChooser.getSelectedFile();
+      try{
+        String fileName = selectedFile.getName();
+        if (!fileName.regionMatches(true,fileName.length() - 4,".cnm",0,4)){
+          selectedFile = new File(selectedFile.getAbsolutePath()+".cnm");
+        }
+
+        ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(selectedFile));
+        out.writeObject(combinatorialNetwork);
+
+        statusBar.setText(/*resource.getString*/("saveModel"));
+      } catch (Exception ioe) {
+        statusBar.setText(/*resource.getString*/("errorWritingFileException")+selectedFile.getName()+" "+ioe.getMessage());
       }
-    */    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+      FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
+    }
+    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
   void buttonRestore_actionPerformed(ActionEvent e) {
-
-  }
-
-  void buttonApply_actionPerformed(ActionEvent e) {
 
   }
 
@@ -335,5 +336,41 @@ public class NeuralModelMain extends JInternalFrame{
       System.out.println(e);
     }
     return null;
+  }
+
+  void openModelButton_actionPerformed(ActionEvent e) {
+    setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    String[] s1 = {"cnm"};
+    fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+    fileChooser.setDialogTitle(/*resource.getString("openModel2")*/"Abrir modelo");
+    fileChooser.setMultiSelectionEnabled(false);
+    //adicionar FileView no FileChooser para desenhar ícones de arquivos
+    fileChooser.setFileView(new FileIcon(this));
+    fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "Modelo Neural Combinatóri (*.cnm)"));
+    int returnVal = fileChooser.showOpenDialog(this);
+    if (returnVal == JFileChooser.APPROVE_OPTION){
+      File selectedFile = fileChooser.getSelectedFile();
+      try{
+        ObjectInputStream in = new ObjectInputStream(new FileInputStream(selectedFile));
+        combinatorialNetwork = (CombinatorialNeuralModel)in.readObject();
+
+        rulesPanel.setRulesPanel(combinatorialNetwork, /*confidence, support*/ 60,7);
+
+        jTabbedPane1.setEnabledAt(1,true);
+        jTabbedPane1.setEnabledAt(2,true);
+        jTabbedPane1.setEnabledAt(0,false);
+        learnButton.setEnabled(false);
+//        jMenuFileBuild.setEnabled(false);
+        this.setTitle("CNM - Model "+selectedFile.getName());
+        statusBar.setText(/*resource.getString("modelOpenedSuccessfully")*/"Modelo carregado com sucesso.");
+        jTabbedPane1.setSelectedIndex(1);
+      } catch (IOException ioe) {
+        statusBar.setText(/*resource.getString("errorWritingFile")+*/selectedFile.getName()+" "+ioe.getMessage());
+      } catch (ClassNotFoundException cnfe) {
+        statusBar.setText(cnfe.getMessage());
+      }
+      FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
+    }
+    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 }

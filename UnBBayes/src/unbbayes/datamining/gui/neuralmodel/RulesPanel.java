@@ -14,10 +14,13 @@ public class RulesPanel extends JPanel {
   private BorderLayout borderLayout1 = new BorderLayout();
   private JScrollPane jScrollPane1 = new JScrollPane();
   private JTable tableRules;
-  private InstanceSet instanceSet;
   private CombinatorialNeuralModel combinatorialNetwork;
-  private ArrayList tableLinesArray = new ArrayList();
+  private ArrayList tableLinesArray;
+  private Attribute[] attributeVector;
+  private int classIndex;
   private Object[] longValues = new Object[6];
+  private RulesTableModel rulesTableModel;
+
 
   public RulesPanel() {
     try {
@@ -38,19 +41,23 @@ public class RulesPanel extends JPanel {
     longValues[5] = new String("100,0%");
   }
 
-  public void setRulesPanel(CombinatorialNeuralModel combinatorialNetwork, InstanceSet instanceSet, int confidence, int support){
+  public void setRulesPanel(CombinatorialNeuralModel combinatorialNetwork, int confidence, int support){
     this.combinatorialNetwork = combinatorialNetwork;
-    this.instanceSet = instanceSet;
-    this.createTableLines(support, confidence);
-    RulesTableModel rulesTableModel = new RulesTableModel();
-//    TableSorter sorter = new TableSorter(rulesTableModel);   //adicionada
+    attributeVector = combinatorialNetwork.getAttributeVector();
+    classIndex = combinatorialNetwork.getClassIndex();
 
-    tableRules = new JTable(rulesTableModel);
+    createTableLines(support, confidence);
+
+      rulesTableModel = new RulesTableModel();
+      //    TableSorter sorter = new TableSorter(rulesTableModel);   //adicionada
+
+      tableRules = new JTable(rulesTableModel);
+
 //    tableRules = new JTable(sorter);    //adicionada
 //    sorter.addMouseListenerToHeaderInTable(tableRules);   //adicionada
 
-    initColumnSizes(tableRules, rulesTableModel);
-    jScrollPane1.getViewport().add(tableRules, null);
+      initColumnSizes(tableRules, rulesTableModel);
+      jScrollPane1.getViewport().add(tableRules, null);
   }
 
   private void createTableLines(int minSupport, int minConfidence){
@@ -64,6 +71,7 @@ public class RulesPanel extends JPanel {
     String inputCell, outputCell, confidence, support;
     Integer numberOfCases;
     DecimalFormat numFormat = new DecimalFormat("##0.0");
+    tableLinesArray = new ArrayList();
 
     while(outputEnum.hasMoreElements()){                   // para todos os neuronios de saida
       tempOutputNeuron = (OutputNeuron)outputEnum.nextElement();
@@ -71,7 +79,7 @@ public class RulesPanel extends JPanel {
 
       while(arcEnum.hasMoreElements()){                    // para todos os arcos dos neuronios de saida
         tempArc = (Arc)arcEnum.nextElement();
-        if(tempArc.getConfidence() > minConfidence && tempArc.getSupport() > minSupport && tempArc.getAccumulator() > 1){
+        if(tempArc.getConfidence() > minConfidence && tempArc.getSupport() > minSupport && tempArc.getAccumulator() > 0){
 
           if(tempArc.getCombinationNeuron() instanceof InputNeuron){ // se o neuronio de combinaçao for de entrada
             inputList = new InputNeuron[1];
@@ -83,7 +91,9 @@ public class RulesPanel extends JPanel {
           //constroi a string da entrada "SE"
           inputCell = new String("SE ");
           for(int i=0; i<inputList.length; i++){
-            att = instanceSet.getAttribute((inputList[i]).getAttributeIndex());
+//            att = instanceSet.getAttribute((inputList[i]).getAttributeIndex());
+            att = attributeVector[(inputList[i]).getAttributeIndex()];
+
             inputCell = inputCell + att.getAttributeName() + " = " + att.value(inputList[i].getValue()) + " ";
             if(i < (inputList.length - 1)){
               inputCell = inputCell + " E ";
@@ -95,7 +105,9 @@ public class RulesPanel extends JPanel {
 
           //constroi a string de saida "ENTAO"
           outputCell = new String("ENTÃO ");
-          att = instanceSet.getClassAttribute();
+//          att = instanceSet.getClassAttribute();
+          att = attributeVector[classIndex];
+
           outputCell = outputCell + att.getAttributeName() + " = " + att.value(tempOutputNeuron.getValue());
 
           if(((String)longValues[2]).length() < outputCell.length()){  //atualiza o array que contém a maior string formada
