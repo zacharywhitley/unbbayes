@@ -678,8 +678,9 @@ public class WindowController implements KeyListener {
                         }
                     } else {
                         try {
-                            String temp = tabela.getValueAt(e.getLastRow(), e.getColumn()).toString();
-                            double valor = df.parse(temp).doubleValue();
+                            String temp = tabela.getValueAt(e.getLastRow(), e.getColumn()).toString().replace(',', '.');
+//                            double valor = df.parse(temp).doubleValue();
+							double valor = Double.parseDouble(temp);
                             /*
                             if (valor > 1.0) {
                                 valor = 1.0;
