@@ -1,7 +1,8 @@
 package unbbayes.datamining.gui;
 
-import javax.swing.UIManager;
 import java.awt.*;
+
+import javax.swing.*;
 
 public class InvokerTest
 {

@@ -3,16 +3,18 @@ package unbbayes.datamining.gui;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.net.URL;
 import java.util.*;
-import javax.help.*;
+
 import javax.swing.*;
-import unbbayes.datamining.gui.decisiontree.DecisionTreeMain;
-import unbbayes.datamining.gui.naivebayes.NaiveBayesMain;
-import unbbayes.datamining.gui.evaluation.EvaluationMain;
-import unbbayes.datamining.gui.preprocessor.PreprocessorMain;
-import unbbayes.datamining.datamanipulation.Options;
-import unbbayes.fronteira.MDIDesktopPane;
+
+import unbbayes.controlador.*;
+import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.gui.decisiontree.*;
+import unbbayes.datamining.gui.evaluation.*;
+import unbbayes.datamining.gui.explanation.*;
+import unbbayes.datamining.gui.naivebayes.*;
+import unbbayes.datamining.gui.preprocessor.*;
+import unbbayes.fronteira.*;
 
 public class InvokerMain extends JFrame
 {
@@ -35,12 +37,13 @@ public class InvokerMain extends JFrame
   private JMenuItem jMenuItem10 = new JMenuItem();
   private JMenuItem jMenuItem11 = new JMenuItem();
   private JMenuItem jMenuItem12 = new JMenuItem();
-  private ImageIcon image1;
-  private ImageIcon image2;
-  private ImageIcon image3;
-  private ImageIcon image4;
-  private ImageIcon image5;
-  private ImageIcon image6;
+  private ImageIcon metalIcon;
+  private ImageIcon motifIcon;
+  private ImageIcon windowsIcon;
+  private ImageIcon cascadeIcon;
+  private ImageIcon tileIcon;
+  private ImageIcon helpIcon;
+  private ImageIcon opcaoglobalIcon;
   private JRadioButtonMenuItem jRadioButtonMenuItem3 = new JRadioButtonMenuItem();
   private JRadioButtonMenuItem jRadioButtonMenuItem4 = new JRadioButtonMenuItem();
   private JMenu jMenu6 = new JMenu();
@@ -51,6 +54,7 @@ public class InvokerMain extends JFrame
   private String defaultLaf = "Windows";
   /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
+  private JMenuItem jMenuItem6 = new JMenuItem();
 
 
   //Construct the frame
@@ -67,14 +71,19 @@ public class InvokerMain extends JFrame
   }
   //Component initialization
   private void jbInit() throws Exception
-  { openDefaultOptions();
+  { if (Locale.US == Locale.getDefault())
+        jRadioButtonMenuItem3.setSelected(true);
+    else
+        jRadioButtonMenuItem4.setSelected(true);
+    openDefaultOptions();
     resource = ResourceBundle.getBundle("unbbayes.datamining.gui.resources.GuiResource");
-    image1 = new ImageIcon(getClass().getResource("/icones/metal.gif"));
-    image2 = new ImageIcon(getClass().getResource("/icones/motif.gif"));
-    image3 = new ImageIcon(getClass().getResource("/icones/windows.gif"));
-    image4 = new ImageIcon(getClass().getResource("/icones/cascade.gif"));
-    image5 = new ImageIcon(getClass().getResource("/icones/tile.gif"));
-    image6 = new ImageIcon(getClass().getResource("/icones/help.gif"));
+    metalIcon = new ImageIcon(getClass().getResource("/icones/metal.gif"));
+    motifIcon = new ImageIcon(getClass().getResource("/icones/motif.gif"));
+    windowsIcon = new ImageIcon(getClass().getResource("/icones/windows.gif"));
+    cascadeIcon = new ImageIcon(getClass().getResource("/icones/cascade.gif"));
+    tileIcon = new ImageIcon(getClass().getResource("/icones/tile.gif"));
+    helpIcon = new ImageIcon(getClass().getResource("/icones/help.gif"));
+    opcaoglobalIcon = new ImageIcon(getClass().getResource("/icones/opcaoglobal.gif"));
     contentPane = (JPanel) this.getContentPane();
     contentPane.setLayout(borderLayout1);
     jMenuItem2.setMnemonic(((Character)resource.getObject("id3Mnemonic")).charValue());
@@ -112,7 +121,7 @@ public class InvokerMain extends JFrame
     jMenu4.setText(resource.getString("window"));
     jMenu5.setMnemonic(((Character)resource.getObject("helpMnemonic")).charValue());
     jMenu5.setText(resource.getString("help"));
-    jMenuItem7.setIcon(image6);
+    jMenuItem7.setIcon(helpIcon);
     jMenuItem7.setMnemonic(((Character)resource.getObject("helpTopicsMnemonic")).charValue());
     jMenuItem7.setText(resource.getString("helpTopics"));
     jMenuItem7.addActionListener(new java.awt.event.ActionListener()
@@ -122,7 +131,7 @@ public class InvokerMain extends JFrame
         jMenuItem7_actionPerformed(e);
       }
     });
-    jMenuItem8.setIcon(image1);
+    jMenuItem8.setIcon(metalIcon);
     jMenuItem8.setMnemonic('M');
     jMenuItem8.setText("Metal");
     jMenuItem8.addActionListener(new java.awt.event.ActionListener()
@@ -132,7 +141,7 @@ public class InvokerMain extends JFrame
         jMenuItem8_actionPerformed(e);
       }
     });
-    jMenuItem9.setIcon(image2);
+    jMenuItem9.setIcon(motifIcon);
     jMenuItem9.setMnemonic('O');
     jMenuItem9.setText("Motif");
     jMenuItem9.addActionListener(new java.awt.event.ActionListener()
@@ -142,7 +151,7 @@ public class InvokerMain extends JFrame
         jMenuItem9_actionPerformed(e);
       }
     });
-    jMenuItem10.setIcon(image3);
+    jMenuItem10.setIcon(windowsIcon);
     jMenuItem10.setMnemonic('W');
     jMenuItem10.setText("Windows");
     jMenuItem10.addActionListener(new java.awt.event.ActionListener()
@@ -152,7 +161,7 @@ public class InvokerMain extends JFrame
         jMenuItem10_actionPerformed(e);
       }
     });
-    jMenuItem11.setIcon(image4);
+    jMenuItem11.setIcon(cascadeIcon);
     jMenuItem11.setMnemonic(((Character)resource.getObject("cascadeMnemonic")).charValue());
     jMenuItem11.setText(resource.getString("cascade"));
     jMenuItem11.addActionListener(new java.awt.event.ActionListener()
@@ -162,7 +171,7 @@ public class InvokerMain extends JFrame
         jMenuItem11_actionPerformed(e);
       }
     });
-    jMenuItem12.setIcon(image5);
+    jMenuItem12.setIcon(tileIcon);
     jMenuItem12.setMnemonic(((Character)resource.getObject("tileMnemonic")).charValue());
     jMenuItem12.setText(resource.getString("tile"));
     jMenuItem12.addActionListener(new java.awt.event.ActionListener()
@@ -195,6 +204,7 @@ public class InvokerMain extends JFrame
     });
     jMenu6.setMnemonic(((Character)resource.getObject("globalOptionsMnemonic")).charValue());
     jMenu6.setText(resource.getString("globalOptions"));
+    jMenuItem5.setIcon(opcaoglobalIcon);
     jMenuItem5.setMnemonic(((Character)resource.getObject("preferencesMnemonic")).charValue());
     jMenuItem5.setText(resource.getString("preferences"));
     jMenuItem5.addActionListener(new java.awt.event.ActionListener()
@@ -202,6 +212,14 @@ public class InvokerMain extends JFrame
       public void actionPerformed(ActionEvent e)
       {
         jMenuItem5_actionPerformed(e);
+      }
+    });
+    jMenuItem6.setText("Explanation");
+    jMenuItem6.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        jMenuItem6_actionPerformed(e);
       }
     });
     contentPane.add(new JScrollPane(desktop), BorderLayout.CENTER);
@@ -228,6 +246,7 @@ public class InvokerMain extends JFrame
     jMenu1.add(jMenuItem2);
     jMenu1.add(jMenuItem3);
     jMenu1.add(jMenuItem4);
+    jMenu1.add(jMenuItem6);
     jMenu2.add(jRadioButtonMenuItem3);
     jMenu2.add(jRadioButtonMenuItem4);
     jMenu5.add(jMenuItem7);
@@ -240,6 +259,15 @@ public class InvokerMain extends JFrame
     jMenu6.add(jMenuItem5);
     Options.getInstance().setNumberStatesAllowed(defaultStates);
     Options.getInstance().setConfidenceLimit(confidenceLimit);
+    if (defaultLaf.equals("Metal"))
+    {   setLnF("javax.swing.plaf.metal.MetalLookAndFeel");
+    }
+    else if (defaultLaf.equals("Motif"))
+    {   setLnF("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+    }
+    else if (defaultLaf.equals("Windows"))
+    {   setLnF("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+    }
   }
   //Overridden so we can exit when window is closed
   protected void processWindowEvent(WindowEvent e)
@@ -288,16 +316,13 @@ public class InvokerMain extends JFrame
             if ((laf.substring(0,16)).equals("Look and Feel = "))
             {   laf = laf.substring(16);
                 if (laf.equals("Metal"))
-                {   setLnF("javax.swing.plaf.metal.MetalLookAndFeel");
-                    defaultLaf = laf;
+                {   defaultLaf = laf;
                 }
                 else if (laf.equals("Motif"))
-                {   setLnF("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
-                    defaultLaf = laf;
+                {   defaultLaf = laf;
                 }
                 else if (laf.equals("Windows"))
-                {   setLnF("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-                    defaultLaf = laf;
+                {   defaultLaf = laf;
                 }
             }
         }
@@ -360,21 +385,12 @@ public class InvokerMain extends JFrame
   }
 
   void jMenuItem7_actionPerformed(ActionEvent e)
-  {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
-      try
-      {   URL helpSetURL = new URL("file:./help/Data_Mining.hs");
-          HelpSet set = new HelpSet(null, helpSetURL);
-          JHelp help = new JHelp(set);
-          JFrame f = new JFrame();
-          f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-          f.setContentPane(help);
-          f.setSize(500,400);
-          f.setVisible(true);
+  {   try
+      {   FileController.getInstance().openHelp(this);
       }
       catch (Exception evt)
-      {   evt.printStackTrace();
+      {   System.out.println("Error= "+evt.getMessage()+" "+this.getClass().getName());
       }
-      setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
   void jMenuItem2_actionPerformed(ActionEvent e)
@@ -422,5 +438,10 @@ public class InvokerMain extends JFrame
   {   GlobalOptions options = new GlobalOptions();
       options.setDefaultOptions(Options.getInstance().getNumberStatesAllowed(),Options.getInstance().getConfidenceLimit(),defaultLanguage,defaultLaf);
       desktop.add(options);
+  }
+
+  void jMenuItem6_actionPerformed(ActionEvent e)
+  {   ExplanationMain explanation = new ExplanationMain();
+      desktop.add(explanation);
   }
 }

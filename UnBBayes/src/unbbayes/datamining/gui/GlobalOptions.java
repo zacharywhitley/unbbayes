@@ -1,10 +1,12 @@
 package unbbayes.datamining.gui;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import unbbayes.datamining.datamanipulation.Options;
+
+import javax.swing.*;
+
+import unbbayes.datamining.datamanipulation.*;
 
 public class GlobalOptions extends JInternalFrame
 { private JPanel contentPane;
