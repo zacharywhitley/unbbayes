@@ -316,7 +316,10 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 
       while (instanceEnum.hasMoreElements()) {
         instance = (Instance) instanceEnum.nextElement();
-        quadraticError = quadraticError + learn(instance);
+    	int instanceWeight = instance.getWeight(); 
+        for(int i=0; i<instanceWeight; i++){
+	      quadraticError = quadraticError + learn(instance);
+        }
       }
       quadraticError = quadraticError / numOfInstances;
 
