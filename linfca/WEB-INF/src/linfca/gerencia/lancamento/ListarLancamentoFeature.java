@@ -15,7 +15,7 @@ public class ListarLancamentoFeature implements Feature {
 	 * <pre>
 	 * <in>
 	 *     <data-hora-inicio>data</data-hora-inicio>
-	 *     <data-hora-fim>data</data-hora-fim>
+	 *     ?<data-hora-fim>data</data-hora-fim>
 	 *     ?<abertos/>
 	 * </in>
 	 * 
@@ -43,12 +43,11 @@ public class ListarLancamentoFeature implements Feature {
 		sql.append(" from lancamento l, usuario u");		
 		sql.append(" where l.dt_hora_inicio_lancamento > ?");
 		sql.append(" AND l.cod_usuario = u.cod_usuario");
-		sql.append(" AND (l.dt_hora_fim_lancamento < ?");
 		if (aberto) {
-			sql.append(" OR l.dt_hora_fim_lancamento IS NULL)");
+			sql.append(" AND (l.dt_hora_fim_lancamento IS NULL");
 		} else {
-			sql.append(")");			
-		}		
+			sql.append(" AND l.dt_hora_fim_lancamento < ?");
+		}
 		sql.append(" order by l.dt_hora_inicio_lancamento desc");
 		
 		PreparedStatement ps = con.prepareStatement(sql.toString());					
@@ -56,7 +55,9 @@ public class ListarLancamentoFeature implements Feature {
 		Timestamp fimIn = Timestamp.valueOf(in.getChildTextTrim("data-hora-fim"));
 		
 		ps.setTimestamp(1, inicioIn);
-		ps.setTimestamp(2, fimIn);
+		if (! aberto) {
+			ps.setTimestamp(2, fimIn);
+		}
 	
 		ResultSet rs = ps.executeQuery();
 		Element out = new Element("out");
