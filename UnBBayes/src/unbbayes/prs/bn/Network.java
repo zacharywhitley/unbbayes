@@ -1101,15 +1101,13 @@ public class Network implements java.io.Serializable {
 	 */
 	protected boolean pesoMinimo(NodeList auxNos) {
 		boolean algum;
-		Node auxNo;
-		Node v;
-	
+		
 		algum = true;
 		while (algum) {
 			algum = false;
 	
 			for (int i = auxNos.size() - 1; i >= 0; i--) {
-				auxNo = auxNos.get(i);
+				Node auxNo = auxNos.get(i);
 	
 				if (cordas(auxNo)) {
 					//Não tem cordas necessárias:teste próximo.
@@ -1117,8 +1115,9 @@ public class Network implements java.io.Serializable {
 				}
 	
 				for (int j = auxNo.getAdjacents().size() - 1; j >= 0; j--) {
-					v = auxNo.getAdjacents().get(j);
-					v.getAdjacents().remove(auxNo);
+					Node v = auxNo.getAdjacents().get(j);
+					boolean removed = v.getAdjacents().remove(auxNo);				
+					assert removed;
 				}
 				auxNos.remove(auxNo);
 				algum = true;
@@ -1127,12 +1126,11 @@ public class Network implements java.io.Serializable {
 					logManager.append(
 						"\t" + oe.size() + " " + auxNo.getName() + "\n");
 				}
-				break;
 			}
 		}
 	
 		if (auxNos.size() > 0) {
-			auxNo = peso(auxNos); //auxNo: clique de peso mínimo.
+			Node auxNo = peso(auxNos); //auxNo: clique de peso mínimo.
 			oe.add(auxNo);
 			if (createLog) {
 				logManager.append(
@@ -1157,11 +1155,10 @@ public class Network implements java.io.Serializable {
 		Node auxNo2;
 		Edge auxArco;
 	
-		int sizeAdjacentes = no.getAdjacents().size();	
-		for (int i = 0; i < sizeAdjacentes - 1; i++) {
+		for (int i = no.getAdjacents().size()-1; i > 0; i--) {
 			auxNo1 = no.getAdjacents().get(i);
 	
-			for (int j = i + 1; j < sizeAdjacentes; j++) {
+			for (int j = i - 1; j >= 0; j--) {
 				auxNo2 = no.getAdjacents().get(j);
 				if (! auxNo2.getAdjacents().contains(auxNo1)) {
 					auxArco = new Edge(auxNo1, auxNo2);
@@ -1174,7 +1171,7 @@ public class Network implements java.io.Serializable {
 					}
 					arcosMarkov.add(auxArco);
 					auxNo1.getAdjacents().add(auxNo2);
-					auxNo2.getAdjacents().add(auxNo1);
+					auxNo2.getAdjacents().add(auxNo1);				
 					
 					System.out.println(auxArco);
 				}
@@ -1183,7 +1180,8 @@ public class Network implements java.io.Serializable {
 	
 		for (int i = no.getAdjacents().size() - 1; i >= 0; i--) {
 			auxNo1 = no.getAdjacents().get(i);
-			auxNo1.getAdjacents().remove(no);
+			boolean removed = auxNo1.getAdjacents().remove(no);
+			assert removed;
 		}
 		auxNos.remove(no);
 	}

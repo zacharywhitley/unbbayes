@@ -115,7 +115,7 @@ public class MSNetwork {
 			}				
 		}
 		
-		assert (max == 0) : "Não forma Hiperárvore";
+		assert (max != 0) : "Não forma Hiperárvore";
 		
 	 	for (int j = 0; j < netsSize; j++) {
 			if (naArvore[j] && ! isDSepSet(j, kMax, inters[j][kMax])) {
@@ -185,6 +185,8 @@ public class MSNetwork {
 	}
 	
 	private void coTriag() {
+		System.out.println("coTriag");
+		
 		SubNetwork a1 = (SubNetwork) nets.get(0);
 		a1.elimineProfundidade(null);
 		a1.distributeArcs();

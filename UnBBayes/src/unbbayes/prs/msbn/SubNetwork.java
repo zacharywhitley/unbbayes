@@ -73,15 +73,16 @@ public class SubNetwork extends Network {
 	 * @param adj		  Rede adjacente a esta para basear a ordem de eliminação. 		 
 	 * @return boolean   true se inseriu algum arco, false caso contrário.
 	 */	
-	protected boolean elimine(SubNetwork adj) {		
+	protected boolean elimine(SubNetwork adj) {
+		System.out.println("Elimine");	
 		
 		oe.clear();
-		NodeList inter = SetToolkit.intersection(nos, adj.nos);				
-		NodeList auxNos = SetToolkit.clone(nos);		
+		NodeList inter = SetToolkit.intersection(copiaNos, adj.nos);				
+		NodeList auxNos = SetToolkit.clone(copiaNos);		
 		auxNos.removeAll(inter);
 		boolean inseriu = false;		
 		while (pesoMinimo(auxNos)) {
-			inseriu = true;			
+			inseriu = true;		
 		}
 		
 		while (pesoMinimo(inter)) {
@@ -106,6 +107,8 @@ public class SubNetwork extends Network {
 	//---------------------------- 
 	
 	protected void elimineProfundidade(SubNetwork caller) {
+		System.out.println("Elimine profundidade");
+		
 		for (int i = adjacents.size()-1; i >= 0; i--) {
 			SubNetwork ai = (SubNetwork) adjacents.get(i);			
 			if (elimine(ai)) {
@@ -122,6 +125,8 @@ public class SubNetwork extends Network {
 	}
 	
 	protected void distributeArcs() {
+		System.out.println("DistributeArcs");
+		
 		for (int i = adjacents.size()-1; i>=0; i--) {
 			SubNetwork net = (SubNetwork) adjacents.get(i);
 			updateArcs(net);
@@ -129,9 +134,9 @@ public class SubNetwork extends Network {
 		}
 	}
 	
-	
 	private void updateArcs(SubNetwork net) {
-		teste();	
+		System.out.println("updateArcs");
+		
 		NodeList dsepset = SetToolkit.intersection(nos, net.nos);
 		for (int i = arcosMarkov.size()-1; i>=0; i--) {
 			Edge e = (Edge) arcosMarkov.get(i);
@@ -153,7 +158,7 @@ public class SubNetwork extends Network {
 					b.getAdjacents().add(a);
 					Edge newEdge = new Edge(a,b);
 					net.arcosMarkov.add(newEdge);
-					
+
 					System.out.println(newEdge);
 				}					
 			}
@@ -185,6 +190,7 @@ public class SubNetwork extends Network {
 				}
 			}
 		}
+		teste();
 	}
 	
 	protected void initVisited() {
