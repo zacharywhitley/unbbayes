@@ -5,7 +5,7 @@ import java.sql.*;
 public class Controller {
 	private static Controller instance;
 		
-    private static final String DB_URL = "jdbc:mysql://localhost/linf";
+    private static final String DB_URL = "jdbc:mysql://localhost/linfca";
 	private static final String USER_NAME = "";
 	private static final String PASSWORD = "";
 	
