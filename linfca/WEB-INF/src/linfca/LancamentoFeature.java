@@ -4,6 +4,9 @@ package linfca;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+
 import org.jdom.Element;
 
 public class LancamentoFeature implements Feature {
@@ -11,15 +14,16 @@ public class LancamentoFeature implements Feature {
 	/**
 	 * <pre>
 	 * <in>
-	 *    <cod-usuario>1</cod-usuario>
-	 * 
-	 *    (<cod-computador>7</cod-computador>
+	 *    <cod-lancamento>1</cod-lancamento>
+	 *       |
+	 *    (<cod-usuario>1</cod-usuario>
+	 *     <cod-computador>7</cod-computador>
 	 * 
 	 *     </manutencao>
-	 *       |
+	 *        |
 	 *     </uso>
-	 *       |
-	 *     </deposito>)?
+	 *        |
+	 *     </deposito>)
 	 * 
 	 * </in>   
 	 * 
@@ -33,11 +37,14 @@ public class LancamentoFeature implements Feature {
 	 */
 	public Element process(Element in) throws Exception {
 		
-		Connection con = Controller.getInstance().makeConnection();
+		Connection con = Controller.getInstance().makeConnection();		
 		
-		String codUsuario = in.getChild("cod-usuario").getTextTrim();		
+		PreparedStatement ps = null;		
+		Timestamp dtHora = new Timestamp(System.currentTimeMillis());
 		
-		if ( in.getChild("cod-computador") != null ) {
+		if ( in.getChild("cod-lancamento") != null ) {
+			
+			String codLancamento = in.getChild("cod-lancamento").getTextTrim();			
 			
 			StringBuffer sql = new StringBuffer();
 			sql.append("UPDATE ");
@@ -47,36 +54,46 @@ public class LancamentoFeature implements Feature {
 			sql.append("VALUES ");
 			sql.append("  (?) ");			
 			sql.append("WHERE ");
-			sql.append("  L.cod_computador = ? AND ");
-			sql.append("  L.dt_hora_fim_lancamento IS NULL ");
+			sql.append("  L.cod_lancamento = ? ");
+			
+			ps = con.prepareStatement(sql.toString());
+						
+			ps.setTimestamp(1, dtHora);
+			ps.setInt(2, Integer.parseInt(codLancamento));	
 			
 		} else {
 			
+			String codUsuario = in.getChild("cod-usuario").getTextTrim();
+			String codComputador = in.getChild("cod-computador").getTextTrim();
+			int codTipoLancamento = 0;
+			if ( in.getChild("manutencao") != null ) {
+				codTipoLancamento = 
+				retornarCodTipoLancamento(Lancamento.MANUTENCAO, con);
+			} else if ( in.getChild("uso") != null ) {
+				codTipoLancamento = 
+				retornarCodTipoLancamento(Lancamento.USO, con);
+			} else if ( in.getChild("deposito") != null ) {
+				codTipoLancamento = 
+				retornarCodTipoLancamento(Lancamento.DEPOSITO, con);
+			}
 			
+			
+			StringBuffer sql = new StringBuffer();
+			sql.append("INSERT INTO ");
+			sql.append("  Lancamento AS L ");
+			sql.append("  (cod_usuario, cod_computador, cod_tipo_lacamento, ");
+			sql.append("   dt_hora_inicio_lancamento) ");
+			sql.append("VALUES ");
+			sql.append("  (?, ?, ?, ?) ");			
+			
+			ps = con.prepareStatement(sql.toString());
+									
+			ps.setInt(1, Integer.parseInt(codUsuario));
+			ps.setInt(2, Integer.parseInt(codComputador));
+			ps.setInt(3, codTipoLancamento);
+			ps.setTimestamp(4, dtHora);
 			
 		}
-		
-		if ( in.getChild("manutencao") != null ) {
-			
-			
-			
-		}
-		
-		StringBuffer sql = new StringBuffer();
-		sql.append("SELECT ");
-		sql.append("  S.nome_sala, C.cod_computador, C.desc_computador ");
-		sql.append("FROM ");
-		sql.append("  Computador AS C, Sala S, Tipo_Situacao AS TS ");
-		sql.append("WHERE ");
-		sql.append("  C.cod_sala = S.cod_sala AND ");
-		sql.append("  C.cod_tipo_situacao = TS.cod_tipo_situacao AND ");
-		sql.append("  TS.desc_tipo_situacao = ? ");
-		sql.append("ORDER BY ");
-		sql.append("  C.cod_sala, C.desc_computador ");
-		
-		PreparedStatement ps = con.prepareStatement(sql.toString());
-		
-		ps.setString(1, Computador.DISPONIVEL);
 		
 		// cria o elemento de saída
 		Element out = new Element("out");
@@ -92,6 +109,30 @@ public class LancamentoFeature implements Feature {
 		
 		// retorna o elemento de saída
 		return out;
+	}
+		
+	private int retornarCodTipoLancamento(String desc, Connection con) 
+				throws SQLException {
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		
+		StringBuffer sql = new StringBuffer();
+		sql.append("SELECT ");
+		sql.append("  cod_tipo_lancamento ");
+		sql.append("FROM ");
+		sql.append("  Lancamento AS L ");
+		sql.append("WHERE ");
+		sql.append("  L.desc_tipo_lancamento = ? ");
+		
+		ps = con.prepareStatement(sql.toString());
+		
+		ps.setString(1, desc);
+		
+		rs = ps.executeQuery();
+		
+		return rs.getInt("cod_tipo_lancamento");
+		
 	}
 
 }
