@@ -62,12 +62,6 @@ public class ListarUsuarioFeature implements Feature {
 			nomeXML.setText(nome + " " + sobrenome);			
 			usuario.getChildren().add(nomeXML);
 			
-			/*
-			Element sobrenomeXML = new Element("sobrenome");
-			nomeXML.setText(sobrenome);			
-			usuario.getChildren().add(sobrenomeXML);			
-			*/
-			
 			out.getChildren().add(usuario);
 			
 		}

@@ -64,20 +64,14 @@ public class DetalharUsuarioFeature implements Feature {
 			String sobrenome = rs.getString("sobrenome");
 			Date dtNascimento = rs.getDate("data_nascimento");
 			String telefone = rs.getString("telefone");
-			System.out.println("asdfsdasdafdsasdf " + telefone);
 			String email = rs.getString("email");
 			String endereco = rs.getString("endereco");
-			//byte [] foto = rs.getBytes("foto");
 			String foto = rs.getString("foto");
 			
-			System.out.println(dtNascimento.toString());
 			StringTokenizer st = new StringTokenizer(dtNascimento.toString(), "-");			
 			String ano = st.nextToken();
-			System.out.println("ano " + ano);
 			String mes = st.nextToken();
-			System.out.println("mes " + mes);
-			String dia = st.nextToken();	
-			System.out.println("dia " + dia);					
+			String dia = st.nextToken();
 			
 			Element codUsuarioXML = new Element("cod-usuario");
 			Element codTipoUsuarioXML = new Element("cod-tipo-usuario");
@@ -126,16 +120,6 @@ public class DetalharUsuarioFeature implements Feature {
 			out.getChildren().add(fotoXML);
 			
 		}
-		/*
-		Iterator usuarios = out.getChildren().iterator();
-		while (usuarios.hasNext()) {
-			Element usuario = (Element) usuarios.next();
-			System.out.println("CodUsuarioF: " + ((Element)usuario.getChild("cod-usuario")).getText());
-			System.out.println("IdentificacaoF: " + ((Element)usuario.getChild("identificacao")).getText());
-			System.out.println("NomeF: " + ((Element)usuario.getChild("nome-completo")).getText());
-			//System.out.println("SobreNomeF: " + ((Element)usuario.getChild("sobrenome")).getText());
-		}
-		*/
 		
 		rs.close();
 		ps.close();

@@ -37,8 +37,8 @@ public class ValidarUsuarioFeature implements Feature {
 	 */
 	public Element process(Element in) throws Exception {
 		Connection con = Controller.getInstance().makeConnection();
-		String login = in.getChild("identificacao").getTextTrim();
-		String senha = in.getChild("senha").getTextTrim();		
+		String login = in.getChildTextTrim("identificacao");
+		String senha = in.getChildTextTrim("senha");
 		Element out = new Element("out");
 		
 		PreparedStatement ps = con.prepareStatement("SELECT * FROM usuario WHERE identificacao = ? OR cpf = ?");
@@ -53,22 +53,22 @@ public class ValidarUsuarioFeature implements Feature {
 			if (md.isEqual(md.digest(senha.getBytes()), Base64.decode(rs.getBytes("senha")))) {
 				
 				ps = con.prepareStatement(
-					"SELECT cod_lancamento, cod_computador" +
-					" FROM lancamento" +
-					" WHERE cod_usuario = ? AND dt_hora_fim_lancamento IS NULL"
+					"SELECT cod_lancamento_uso, cod_equipamento" +
+					" FROM lancamento_uso " +
+					" WHERE cod_usuario = ? AND dt_hora_fim_lancamento_uso IS NULL"
 				);
 				long codUsuario = rs.getLong("cod_usuario");
 				ps.setLong(1, codUsuario);
 				rs = ps.executeQuery();
 				if (rs.next()) {
 					Element sair = new Element("sair");
-					Element codLancamento = new Element("cod-lancamento");
-					codLancamento.setText("" + rs.getLong("cod_lancamento"));
+					Element codLancamento = new Element("cod-lancamento-uso");
+					codLancamento.setText("" + rs.getLong("cod_lancamento_uso"));
 					sair.getChildren().add(codLancamento);
 
-					Element codComputador = new Element("cod-computador");
-					codComputador.setText("" + rs.getLong("cod_computador"));
-					sair.getChildren().add(codComputador);
+					Element codEquipamento = new Element("cod-equipamento");
+					codEquipamento.setText("" + rs.getLong("cod_equipamento"));
+					sair.getChildren().add(codEquipamento);
 
 					out.getChildren().add(sair);
 				} else {
@@ -87,7 +87,8 @@ public class ValidarUsuarioFeature implements Feature {
 		
 		ps.close();		
 		rs.close();		
-		con.close();		
+		con.close();
+			
 		return out;
 	}
 }
