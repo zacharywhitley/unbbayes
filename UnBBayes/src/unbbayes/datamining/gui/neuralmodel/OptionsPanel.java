@@ -1,15 +1,14 @@
 package unbbayes.datamining.gui.neuralmodel;
 
 import java.awt.*;
+import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
 public class OptionsPanel extends JPanel{
+  private ResourceBundle resource;
   private JLabel labelMaxOrder = new JLabel();
   private JLabel labelConfidence = new JLabel();
-  private Border border1;
-  private TitledBorder titledBorder1;
-  private Border border2;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JPanel jPanel1 = new JPanel();
   private GridLayout gridLayout1 = new GridLayout();
@@ -26,6 +25,7 @@ public class OptionsPanel extends JPanel{
 
   public OptionsPanel() {
     try {
+      resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralmodel.resources.NeuralModelResource");
       jbInit();
     }
     catch(Exception e) {
@@ -33,16 +33,13 @@ public class OptionsPanel extends JPanel{
     }
   }
   private void jbInit() throws Exception {
-    border1 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
-    titledBorder1 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Opções");
-    border2 = BorderFactory.createCompoundBorder(titledBorder1,BorderFactory.createEmptyBorder(5,5,5,5));
-    labelMaxOrder.setText("Ordem Máxima:");
+    labelMaxOrder.setText(resource.getString("maximumOrder"));
     this.setLayout(borderLayout1);
-    labelConfidence.setText("Confiança mínima:");
+    labelConfidence.setText(resource.getString("minimumConfidence"));
     jPanel1.setLayout(gridLayout1);
     gridLayout1.setColumns(6);
     gridLayout1.setHgap(15);
-    labelSupport.setText("Suporte mínimo:");
+    labelSupport.setText(resource.getString("minimumSupport"));
     jPanel2.setLayout(gridLayout2);
     jPanel3.setLayout(gridLayout3);
     gridLayout3.setColumns(2);
@@ -68,7 +65,7 @@ public class OptionsPanel extends JPanel{
       jComboBoxConfidence.addItem(new String(i + "%"));
     }
 
-    jComboBoxMaxOrder.setSelectedIndex(5);
+    jComboBoxMaxOrder.setSelectedIndex(2);
     jComboBoxSupport.setSelectedIndex(7);
     jComboBoxConfidence.setSelectedIndex(60);
 

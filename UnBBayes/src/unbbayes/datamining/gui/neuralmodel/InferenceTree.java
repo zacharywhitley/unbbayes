@@ -23,7 +23,7 @@ public class InferenceTree extends JTree{
   protected InferenceTree(){
     setShowsRootHandles(true);
     setSelectionModel(null);      //null = nós não selecionaveis
-    setRootVisible(true);        //raiz visivel?
+    setRootVisible(true);         //raiz visivel?
     this.setAutoscrolls(true);
     setCellRenderer(new CnmTreeCellRenderer());
     addMouseListener(new MouseAdapter(){

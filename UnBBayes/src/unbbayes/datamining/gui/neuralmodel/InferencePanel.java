@@ -1,15 +1,19 @@
 package unbbayes.datamining.gui.neuralmodel;
 
 import java.awt.*;
-import javax.swing.*;
 import java.awt.event.*;
+import java.text.*;
+import java.util.*;
+
+import javax.swing.*;
 import javax.swing.text.*;
 
-import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.classifiers.*;
+import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
 
 public class InferencePanel extends JPanel {
+  private ResourceBundle resource;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JPanel jPanel1 = new JPanel();
   private JPanel jPanel2 = new JPanel();
@@ -27,18 +31,21 @@ public class InferencePanel extends JPanel {
   private JSplitPane jSplitPane1 = new JSplitPane();
   private BorderLayout borderLayout5 = new BorderLayout();
   private JToolBar jToolBar1 = new JToolBar();
-  private JButton jButton1 = new JButton();
-  private JButton jButton2 = new JButton();
-  private JButton buttonClassify = new JButton();
+  private JButton expandButton = new JButton();
+  private JButton colapseButton = new JButton();
+  private JButton classifyButton = new JButton();
   private Icon colapseIcon;
   private Icon expandIcon;
   private Icon propagateIcon;
   private JTextArea textAreaResults = new JTextArea();
   private JTextPane textPaneResults = new JTextPane();
   private BorderLayout borderLayout6 = new BorderLayout();
+  DecimalFormat numFormat = new DecimalFormat("##0.0");
+
 
   public InferencePanel() {
     try {
+          resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralmodel.resources.NeuralModelResource");
       jbInit();
     }
     catch(Exception ex) {
@@ -49,28 +56,30 @@ public class InferencePanel extends JPanel {
     colapseIcon = new ImageIcon(getClass().getResource("/icons/contract-nodes.gif"));
     expandIcon = new ImageIcon(getClass().getResource("/icons/expand-nodes.gif"));
     propagateIcon = new ImageIcon(getClass().getResource("/icons/propagate.gif"));
-
     this.setLayout(borderLayout1);
     jPanel1.setLayout(borderLayout5);
     jPanel2.setLayout(borderLayout2);
     panelMessages.setLayout(borderLayout3);
     jPanel3.setLayout(borderLayout4);
-    jButton1.setIcon(expandIcon);
-    jButton1.addActionListener(new java.awt.event.ActionListener() {
+    expandButton.setToolTipText(resource.getString("expandToolTip"));
+    expandButton.setIcon(expandIcon);
+    expandButton.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        jButton1_actionPerformed(e);
+        expandButton_actionPerformed(e);
       }
     });
-    jButton2.setIcon(colapseIcon);
-    jButton2.addActionListener(new java.awt.event.ActionListener() {
+    colapseButton.setToolTipText(resource.getString("collapseToolTip"));
+    colapseButton.setIcon(colapseIcon);
+    colapseButton.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        jButton2_actionPerformed(e);
+        colapseButton_actionPerformed(e);
       }
     });
-    buttonClassify.setIcon(propagateIcon);
-    buttonClassify.addActionListener(new java.awt.event.ActionListener() {
+    classifyButton.setToolTipText(resource.getString("inference"));
+    classifyButton.setIcon(propagateIcon);
+    classifyButton.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        buttonClassify_actionPerformed(e);
+        classifyButton_actionPerformed(e);
       }
     });
     textAreaResults.setEditable(false);
@@ -88,9 +97,9 @@ public class InferencePanel extends JPanel {
     panelMessages.add(jScrollPane1, BorderLayout.CENTER);
     jScrollPane1.getViewport().add(textAreaResults, null);
     this.add(jToolBar1, BorderLayout.NORTH);
-    jToolBar1.add(jButton2, null);
-    jToolBar1.add(jButton1, null);
-    jToolBar1.add(buttonClassify, null);
+    jToolBar1.add(colapseButton, null);
+    jToolBar1.add(expandButton, null);
+    jToolBar1.add(classifyButton, null);
     jToolBar1.setFloatable(false);
     jSplitPane1.setDividerLocation(20);
   }
@@ -111,71 +120,6 @@ public class InferencePanel extends JPanel {
     textPaneResults.setText("");
     textAreaResults.setText("");
   }
-/*
-  private void printResults(float[] results, Instance instance){
-    float[] distributionNormalized = new float[results.length];
-    System.arraycopy(results, 0, distributionNormalized, 0, results.length);
-    Utils.normalize(distributionNormalized);
-
-    Attribute classAtt = (combinatorialNetwork.getAttributeVector())[combinatorialNetwork.getClassIndex()];
-
-    String[] initString = new String[results.length + 1];
-    initString[0] = "Classe: " + classAtt.getAttributeName() + "\n\n";
-    for(int i=0; i<results.length; i++){
-      initString[i+1] = "- " + classAtt.value(i) +
-                        ":  " + results[i] +
-                        "    " + distributionNormalized[i] * 100 + "%\n\n";
-    }
-
-    String[] initStyles = new String[initString.length];
-    initStyles[0] = "largeBold";
-    int maxValue = Utils.maxIndex(results);
-    for(int i=0; i<results.length; i++){
-      if(i == maxValue){
-        initStyles[i+1] = "bold";
-      } else {
-        initStyles[i+1] = "regular";
-      }
-    }
-
-    initStylesForTextPane(textPaneResults);
-    Document doc = textPaneResults.getDocument();
-    try {
-      doc.remove(0, doc.getLength());
-      for (int i=0; i<initString.length; i++) {
-        doc.insertString(doc.getLength(), initString[i], textPaneResults.getStyle(initStyles[i]));
-      }
-    } catch (BadLocationException ble) {
-      System.err.println("Couldn't insert initial text.");
-    }
-
-    //parte de impressão do text area
-
-    String attributeValues = new String();
-    Attribute[] attVector = combinatorialNetwork.getAttributeVector();
-    int classIndex = combinatorialNetwork.getClassIndex();
-    int numAtt = attVector.length;
-    for(int i=0; i<numAtt; i++){
-      if(i!=classIndex && !instance.isMissing(i)){
-        Attribute att = attVector[i];
-        short value = instance.getValue(i);
-        attributeValues = attributeValues + att.getAttributeName() + ": " + att.value(value) + "    ";
-//        if(i != numAtt-1){
-//          attributeValues = attributeValues + ", ";
-//        }
-      }
-    }
-
-    String classValue = "Classe: " + classAtt.getAttributeName();
-    for(int i=0; i<results.length; i++){
-      if(i==maxValue){
-        classValue = classValue + " = " + classAtt.value(i);
-      }
-    }
-
-    textAreaResults.append(attributeValues + "\n" + classValue + "\n");
-  }
-*/
 
   private void printResults(Arc[] results, Instance instance){
     float[] distributionNormalized = new float[results.length];
@@ -187,11 +131,11 @@ public class InferencePanel extends JPanel {
     Attribute classAtt = (combinatorialNetwork.getAttributeVector())[combinatorialNetwork.getClassIndex()];
 
     String[] initString = new String[results.length + 1];
-    initString[0] = "Classe: " + classAtt.getAttributeName() + "\n\n";
+    initString[0] = resource.getString("class") + ": " + classAtt.getAttributeName() + "\n\n";
     for(int i=0; i<results.length; i++){
       initString[i+1] = "- " + classAtt.value(i) +
-                        ":  " + results[i].getNetWeigth() +
-                        "    " + distributionNormalized[i] * 100 + "%\n\n";
+                        ":  " + numFormat.format(results[i].getNetWeigth()) +
+                        "    " + numFormat.format(distributionNormalized[i] * 100) + "%\n\n";
     }
 
     String[] initStyles = new String[initString.length];
@@ -213,7 +157,7 @@ public class InferencePanel extends JPanel {
         doc.insertString(doc.getLength(), initString[i], textPaneResults.getStyle(initStyles[i]));
       }
     } catch (BadLocationException ble) {
-      System.err.println("Couldn't insert initial text.");
+      System.out.println("InferencePanel - Couldn't insert initial text.");
     }
 
     //parte de impressão do text area
@@ -227,13 +171,10 @@ public class InferencePanel extends JPanel {
         Attribute att = attVector[i];
         short value = instance.getValue(i);
         attributeValues = attributeValues + att.getAttributeName() + ": " + att.value(value) + "    ";
-//        if(i != numAtt-1){
-//          attributeValues = attributeValues + ", ";
-//        }
       }
     }
 
-    String classValue = "Classe: " + classAtt.getAttributeName();
+    String classValue = resource.getString("class") + ": " + classAtt.getAttributeName();
     for(int i=0; i<results.length; i++){
       if(i == maxValue){
         classValue = classValue + " = " + classAtt.value(i);
@@ -251,24 +192,27 @@ public class InferencePanel extends JPanel {
       inputList = ((CombinatorialNeuron)results[maxValue].getCombinationNeuron()).getInputList();
     }
 
-    String rule = new String("Regra: SE ");
+//    String rule = new String("Regra: SE ");
+    String rule = resource.getString("rule") + ": " + resource.getString("if") + " ";
     for(int i=0; i<inputList.length; i++){
       att = attVector[inputList[i].getAttributeIndex()];
 
       rule = rule + att.getAttributeName() + " = " + att.value(inputList[i].getValue()) + " ";
       if(i < (inputList.length - 1)){
-        rule = rule + " E ";
+        rule = rule + " " + resource.getString("and") + " ";
       }
     }
 
-    rule = rule + " ENTÃO " + classAtt.getAttributeName() + " = " + classAtt.value(maxValue);
+    rule = rule + " " + resource.getString("then") + " " + classAtt.getAttributeName() + " = " + classAtt.value(maxValue);
 
     //codigo para escrever suporte e confianca
     String supportAndConfidence = new String();
-    supportAndConfidence = supportAndConfidence + "Confiança: " + results[maxValue].getConfidence()
-                           + "  Suporte: " + results[maxValue].getSupport();
+    supportAndConfidence = supportAndConfidence + resource.getString("confidence") + ": "
+                           + numFormat.format(results[maxValue].getConfidence()) + "%  "
+                           + resource.getString("support") + ": "
+                           + numFormat.format(results[maxValue].getSupport()) + "%";
 
-    textAreaResults.append(attributeValues + "\n" + classValue + "\n" + rule + "\n" + supportAndConfidence);
+    textAreaResults./*append*/setText(attributeValues + "\n" + classValue + "\n" + rule + "\n" + supportAndConfidence);
   }
 
 
@@ -292,21 +236,7 @@ public class InferencePanel extends JPanel {
       StyleConstants.setBold(s, true);
   }
 
-/*
-    void buttonClassify_actionPerformed(ActionEvent e) {
-    float[] distribution;
-    try{
-      Instance instance = inferenceTree.getInstance();
-      distribution = combinatorialNetwork.distributionForInstance(instance);
-      printResults(distribution, instance);
-
-    } catch(Exception exception){
-      System.out.println(exception);
-    }
-  }
-  */
-
-  void buttonClassify_actionPerformed(ActionEvent e) {
+  void classifyButton_actionPerformed(ActionEvent e) {
     Arc[] arcVector;
     try{
       Instance instance = inferenceTree.getInstance();
@@ -318,12 +248,12 @@ public class InferencePanel extends JPanel {
     }
   }
 
-  void jButton1_actionPerformed(ActionEvent e) {
+  void expandButton_actionPerformed(ActionEvent e) {
     inferenceTree.expandTree();
     repaint();
   }
 
-  void jButton2_actionPerformed(ActionEvent e) {
+  void colapseButton_actionPerformed(ActionEvent e) {
     inferenceTree.collapseTree();
   }
 }

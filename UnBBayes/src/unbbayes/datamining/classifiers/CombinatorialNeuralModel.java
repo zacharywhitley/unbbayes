@@ -11,6 +11,7 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
   private Hashtable outputLayer = new Hashtable();
   private Attribute[] attributeVector;
   private int classIndex;
+  private int support, confidence;
   private transient int maxOrder;
   private transient InstanceSet instanceSet;
 
@@ -242,6 +243,41 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
       }
     }
   }
+
+  public void prunning(int minSupport, int minConfidence){
+    Enumeration outputEnum;
+    Enumeration combEnum;
+    Enumeration inputEnum;
+    OutputNeuron tempOutput;
+    CombinatorialNeuron tempComb;
+    InputNeuron tempInput;
+
+    outputEnum = outputLayer.elements();
+    while(outputEnum.hasMoreElements()){
+      tempOutput = (OutputNeuron)outputEnum.nextElement();
+      tempOutput.prunning(minConfidence, minSupport);
+    }
+
+    combEnum = combinatorialLayer.elements();
+    while(combEnum.hasMoreElements()){
+      tempComb = (CombinatorialNeuron)combEnum.nextElement();
+      if(tempComb.getInputCombinationsNum() == 0){
+        combinatorialLayer.remove(tempComb.getKey());
+      }
+    }
+
+    inputEnum = inputLayer.elements();
+    while(inputEnum.hasMoreElements()){
+      tempInput = (InputNeuron)inputEnum.nextElement();
+      if(tempInput.getCombinationsNum() == 0){
+        inputLayer.remove(tempInput.getKey());
+      }
+    }
+
+    this.support = minSupport;
+    this.confidence = confidence;
+  }
+
 /*
   public float[] distributionForInstance(Instance instance) throws Exception{
     Enumeration inputEnum, outputEnum;
@@ -345,5 +381,13 @@ public class CombinatorialNeuralModel extends BayesianLearning implements Serial
 
   public int getClassIndex(){
     return classIndex;
+  }
+
+  public int getConfidence(){
+    return confidence;
+  }
+
+  public int getSupport(){
+    return support;
   }
 }

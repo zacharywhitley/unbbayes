@@ -64,6 +64,19 @@ public class OutputNeuron extends Neuron implements Serializable{
     }
   }
 
+  public void prunning(int minConfidence, int minSupport){
+    Enumeration outputEnum = combinationsList.elements();
+    Arc tempArc;
+
+    while(outputEnum.hasMoreElements()){
+      tempArc = (Arc)outputEnum.nextElement();
+      if(tempArc.support < minSupport || tempArc.confidence < minConfidence){
+        tempArc.combinationNeuron.prunning(this.key);
+        combinationsList.remove(tempArc.combinationNeuron.key);
+      }
+    }
+  }
+
   public void calculateSupport(int numOfInstances){
     Enumeration outputEnum;
     Arc tempArc;
@@ -113,8 +126,8 @@ public class OutputNeuron extends Neuron implements Serializable{
       if(signal && tempArc.getNetWeigth() >= result){                           //implementacao do OR, max(weight*sinal)
         result = tempArc.getNetWeigth();
         returnArc = tempArc;
-      } else if(!signal && result < 0){
-        result = 0;
+      } else if(!signal && returnArc == null && result < 0 && tempArc.getNetWeigth() > -1){   //conferir como o hércules
+        result = 0;                //RETIRAR ISSO E RETORNA NULL
         returnArc = tempArc;
       }
     }

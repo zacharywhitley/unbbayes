@@ -1,17 +1,22 @@
 package unbbayes.datamining.gui.neuralmodel;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.text.*;
 import java.util.*;
+
 import javax.swing.*;
 import javax.swing.table.*;
+
 import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
-import java.awt.event.*;
 //import unbbayes.datamining.datamanipulation.neuralmodel.util.*;
 
 public class RulesPanel extends JPanel {
+  private ImageIcon printIcon;
+  private ImageIcon printPreviewIcon;
+  private ResourceBundle resource;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JScrollPane jScrollPane1 = new JScrollPane();
   private JTable tableRules;
@@ -29,9 +34,20 @@ public class RulesPanel extends JPanel {
   private JComboBox comboMinConfidence = new JComboBox();
   private JLabel labelMinConfidence = new JLabel();
   private JComboBox comboMinSupport = new JComboBox();
+  private JPanel jPanel3 = new JPanel();
+  private JButton printButton = new JButton();
+  private JButton previewButton = new JButton();
+  private GridLayout gridLayout2 = new GridLayout();
+  private NeuralModelController controller;
 
-  public RulesPanel() {
+  public RulesPanel(NeuralModelController controller){
+    this();
+    setController(controller);
+  }
+
+  private RulesPanel() {
     try {
+      resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralmodel.resources.NeuralModelResource");
       jbInit();
     }
     catch(Exception ex) {
@@ -39,14 +55,15 @@ public class RulesPanel extends JPanel {
     }
   }
   void jbInit() throws Exception {
+    printIcon = new ImageIcon(getClass().getResource("/icons/print-table.gif"));
+    printPreviewIcon = new ImageIcon(getClass().getResource("/icons/preview-table.gif"));
     this.setLayout(borderLayout1);
     jPanel1.setLayout(borderLayout2);
     jPanel2.setLayout(gridLayout1);
-    gridLayout1.setColumns(6);
+    gridLayout1.setColumns(5);
     gridLayout1.setHgap(5);
-    labelMinSupport.setText("Suporte mínimo:");
-    labelMinConfidence.setToolTipText("");
-    labelMinConfidence.setText("Confiança mínima:");
+    labelMinSupport.setText(resource.getString("minimumSupport"));
+    labelMinConfidence.setText(resource.getString("minimumConfidence"));
     jPanel2.setBorder(BorderFactory.createEtchedBorder());
     comboMinSupport.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -58,6 +75,23 @@ public class RulesPanel extends JPanel {
         combo_actionPerformed(e);
       }
     });
+    printButton.setIcon(printIcon);
+    printButton.setToolTipText(resource.getString("printTableToolTip"));
+    printButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        printButton_actionPerformed(e);
+      }
+    });
+    previewButton.setIcon(printPreviewIcon);
+    previewButton.setToolTipText(resource.getString("previewTableToolTip"));
+    previewButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        previewButton_actionPerformed(e);
+      }
+    });
+    jPanel3.setLayout(gridLayout2);
+    gridLayout2.setColumns(2);
+    gridLayout2.setHgap(4);
     this.add(jScrollPane1,  BorderLayout.CENTER);
     this.add(jPanel1, BorderLayout.NORTH);
     jPanel1.add(jPanel2,  BorderLayout.CENTER);
@@ -65,6 +99,9 @@ public class RulesPanel extends JPanel {
     jPanel2.add(comboMinSupport, null);
     jPanel2.add(labelMinConfidence, null);
     jPanel2.add(comboMinConfidence, null);
+    jPanel2.add(jPanel3, null);
+    jPanel3.add(previewButton, null);
+    jPanel3.add(printButton, null);
 
     for(int i=0; i<101; i++){
       comboMinSupport.addItem(new String(i + "%"));
@@ -77,6 +114,10 @@ public class RulesPanel extends JPanel {
     longValues[3] = new String("100,0%");
     longValues[4] = new Integer(999);
     longValues[5] = new String("100,0%");
+  }
+
+  public void setController(NeuralModelController controller){
+    this.controller = controller;
   }
 
   public void setRulesPanel(CombinatorialNeuralModel combinatorialNetwork){
@@ -135,13 +176,13 @@ public class RulesPanel extends JPanel {
           }
 
           //constroi a string da entrada "SE"
-          inputCell = new String("SE ");
+          inputCell = resource.getString("if") + " ";
           for(int i=0; i<inputList.length; i++){
             att = attributeVector[(inputList[i]).getAttributeIndex()];
 
             inputCell = inputCell + att.getAttributeName() + " = " + att.value(inputList[i].getValue()) + " ";
             if(i < (inputList.length - 1)){
-              inputCell = inputCell + " E ";
+              inputCell = inputCell + " " + resource.getString("and") + " ";
             }
           }
           if(((String)longValues[1]).length() < inputCell.length()){  //atualiza o array que contém a maior string formada
@@ -149,7 +190,7 @@ public class RulesPanel extends JPanel {
           }
 
           //constroi a string de saida "ENTAO"
-          outputCell = new String("ENTÃO ");
+          outputCell = resource.getString("then") + " "; //new String("ENTÃO ");
           att = attributeVector[classIndex];
 
           outputCell = outputCell + att.getAttributeName() + " = " + att.value(tempOutputNeuron.getValue());
@@ -199,11 +240,45 @@ public class RulesPanel extends JPanel {
     }
   }
 
+  void combo_actionPerformed(ActionEvent e) {
+    if(rulesTableModel != null){
+      int minConfidence = comboMinConfidence.getSelectedIndex();
+      int minSupport = comboMinSupport.getSelectedIndex();
+      createTableLines(minSupport, minConfidence);
+      rulesTableModel.fireTableDataChanged();
+    }
+  }
+
+  void printButton_actionPerformed(ActionEvent e) {
+    setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    controller.printTable(tableRules);
+    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+  }
+
+  void previewButton_actionPerformed(ActionEvent e) {
+    setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    controller.printPreviewer(tableRules);
+    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+  }
+
+  public int getSupport(){
+    return comboMinSupport.getSelectedIndex();
+  }
+
+  public int getConfidence(){
+    return comboMinConfidence.getSelectedIndex();
+  }
 
   class RulesTableModel extends AbstractTableModel{
-
     public String getColumnName(int col) {
-      String[] columnNames = {"Indice", "SE", "ENTÃO", "Confiança", "Casos", "Suporte"};
+//      String[] columnNames = {"Indice", "SE", "ENTÃO", "Confiança", "Casos", "Suporte"};
+      String[] columnNames = {resource.getString("index"),
+                              resource.getString("if"),
+                              resource.getString("then"),
+                              resource.getString("confidence"),
+                              resource.getString("cases"),
+                              resource.getString("support")
+        };
       return columnNames[col].toString();
     }
 
@@ -252,15 +327,4 @@ public class RulesPanel extends JPanel {
       this.support = support;
     }
   }
-
-  void combo_actionPerformed(ActionEvent e) {
-    if(rulesTableModel != null){
-      int minConfidence = comboMinConfidence.getSelectedIndex();
-      int minSupport = comboMinSupport.getSelectedIndex();
-
-      createTableLines(minSupport, minConfidence);
-      rulesTableModel.fireTableDataChanged();
-    }
-  }
-
 }
