@@ -26,7 +26,7 @@ import java.awt.geom.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.util.NodeList;
+import unbbayes.util.*;
 
 
 /**
@@ -35,6 +35,25 @@ import unbbayes.util.NodeList;
  *@author     Michael e Rommel
  */
 public abstract class Node {
+    public static class ExplanationPhrase {
+        public static final String TRIGGER_TYPE = "TRI";
+        public static final String COMPLEMENTARY_TYPE = "COM";
+        public static final String NA_TYPE = "N/A";
+        public static final String NECESSARY_TYPE = "NEC";
+        public static final String EXCLUSIVE_TYPE = "EXC";
+        public String strPhrase, type;
+        
+        public ExplanationPhrase() {
+            this.strPhrase = "";
+            this.type = NA_TYPE;
+        }
+        
+        public ExplanationPhrase(String strPhrase, String type) {
+            this.strPhrase = strPhrase;
+            this.type = type;
+        }
+    }
+    
     private String description = "";
     protected String name;
     private Point2D.Double posicao;
@@ -45,6 +64,8 @@ public abstract class Node {
     private boolean selecionado;
     private static int altura;
     private static int largura;
+    private String explanationDescription = "";
+    private ArrayMap phrasesMap = new ArrayMap();
     
     public static final int PROBABILISTIC_NODE_TYPE = 0;
     public static final int UTILITY_NODE_TYPE = 1;
@@ -76,7 +97,6 @@ public abstract class Node {
     public void setDescription(String texto) {
         this.description = texto;
     }
-
 
     /**
      *  Modifica a sigla do nó.
@@ -147,6 +167,26 @@ public abstract class Node {
         selecionado = b;
     }
 
+    /**
+     *  Modifica a descrição da explanação do nó.
+     *
+     *@param  texto  descrição da explanação do nó.
+     */
+    public void setExplanationDescription(String texto) {
+        this.explanationDescription = texto;
+    }
+
+    /**
+     *  Modifica o ArrayMap com as frases.
+     *
+     *@param phrasesMap novo ArrayMap a ser setado
+     *@return	phrasesMap	anterior.
+     */
+    public ArrayMap setPhrasesMap(ArrayMap phrasesMap) {
+        ArrayMap old = this.phrasesMap;
+        this.phrasesMap = phrasesMap;
+        return old;
+    }
 
     /**
      *  Retorna o nome do nó.
@@ -231,10 +271,27 @@ public abstract class Node {
      *
      *@return    Status de seleção do nó.
      */
+
     public boolean isSelecionado() {
         return selecionado;
     }
+    /**
+     *  Retorna a descrição de explanação do nó.
+     *
+     *@return    descrição de explanação do nó.
+     */
+    public String getExplanationDescription() {
+        return explanationDescription;
+    }
 
+    /**
+     *  Retorna o ArrayMap com as frases.
+     *
+     *@return    ArrayMap com as frases.
+     */
+    public ArrayMap getPhrasesMap() {
+        return this.phrasesMap;
+    }
 
     /**
      *  Insere um estado com o nome especificado no final da lista.

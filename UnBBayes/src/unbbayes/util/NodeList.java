@@ -22,7 +22,9 @@
 package unbbayes.util;
 
 import unbbayes.jprs.jbn.Node;
+
 import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * Classe que representa um array dinâmico do tipo <code>Node</code>.
