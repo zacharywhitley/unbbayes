@@ -3,7 +3,7 @@ package unbbayes.prs.msbn.test;
 import java.io.File;
 
 import unbbayes.io.NetIO;
-import unbbayes.prs.msbn.MSNetwork;
+import unbbayes.prs.msbn.SingleAgentMSBN;
 
 import junit.framework.TestCase;
 
@@ -25,7 +25,7 @@ public class TestTopologicalTransformation extends TestCase {
 	
 	public void testCycle() throws Exception {
 		NetIO loader = new NetIO();
-		MSNetwork msbn =  loader.loadMSBN(CYCLE_FILE);
+		SingleAgentMSBN msbn =  loader.loadMSBN(CYCLE_FILE);
 		boolean cycleDetected = false;		
 		try {
 			msbn.compile();
@@ -37,7 +37,7 @@ public class TestTopologicalTransformation extends TestCase {
 	
 	public void testTopological() throws Exception {
 		NetIO loader = new NetIO();
-		MSNetwork msbn =  loader.loadMSBN(TOPOLOGICAL_FILE);
+		SingleAgentMSBN msbn =  loader.loadMSBN(TOPOLOGICAL_FILE);
 		msbn.compile();	
 	}
 }

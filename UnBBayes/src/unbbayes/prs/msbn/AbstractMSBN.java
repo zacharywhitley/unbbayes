@@ -1,23 +1,3 @@
-/*
- *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
- *
- *  This file is part of UnbBayes.
- *
- *  UnbBayes is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  UnbBayes is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with UnbBayes; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 package unbbayes.prs.msbn;
 
 import java.util.ArrayList;
@@ -27,20 +7,23 @@ import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
- * A multi-sectioned network. 
- * @author Michael S. Onishi
+ * @author michael
+ *
+ * To change this generated comment edit the template variable "typecomment":
+ * Window>Preferences>Java>Templates.
+ * To enable and disable the creation of type comments go to
+ * Window>Preferences>Java>Code Generation.
  */
-public class MSNetwork {
+public abstract class AbstractMSBN {
 	protected List nets;
 	protected List links;
-	protected SubNetwork activeNet;
 	protected String id;
 	
 	/**
 	 * Creates a new multi-sectioned network with the specified id.
 	 * @param id	the id of this multi-sectioned network
 	 */
-	public MSNetwork(String id) {
+	public AbstractMSBN(String id) {
 		this.id = id;
 		nets = new ArrayList();
 		links = new ArrayList();				
@@ -88,6 +71,7 @@ public class MSNetwork {
 		compile((SubNetwork) nets.get(0));		
 	}
 	
+
 	/**
 	 * Compile this multi-sectioned network. The active Network is
 	 * specified by the user.
@@ -96,8 +80,7 @@ public class MSNetwork {
 	 */
 	public void compile(SubNetwork activeNet) throws Exception {		
 		links.clear();
-		this.activeNet = activeNet;
-		
+	
 		for (int i = nets.size()-1; i>=0; i--) {
 			SubNetwork net = (SubNetwork) nets.get(i);
 			net.adjacents.clear();
@@ -123,11 +106,11 @@ public class MSNetwork {
 			Linkage link = (Linkage) links.get(i);
 			link.makeLinkageTree();			
 		}
-	
-		SubNetwork raiz = (SubNetwork) nets.get(0);		
-		coletBeliefs(raiz);
-		distributeBelief(raiz);
+		
+		initBeliefs();
 	}
+	
+	protected abstract void initBeliefs() throws Exception;
 	
 	protected void coletBeliefs(SubNetwork net) throws Exception {
 		for (int i = net.adjacents.size()-1; i>=0; i--) {
@@ -149,21 +132,7 @@ public class MSNetwork {
 		}
 	}
 	
-	/**
-	 * Shifts attention from the active sub-network to the specified sub-network.
-	 * @param net	the subnetwork to shift attention.
-	 */
-	public void shiftAttention(SubNetwork net) throws Exception {
-		List caminho = activeNet.makePath(net);		
-		for (int i = 1; i < caminho.size(); i++) {
-			SubNetwork netAux = (SubNetwork) caminho.get(i);
-			updateBelief(netAux, activeNet);
-			activeNet = netAux;
-		}
-		
-		assert activeNet == net;
-	}
-	
+
 	protected void updateBelief(SubNetwork net1, SubNetwork net2) throws Exception {				
 		for (int i = links.size()-1; i>=0; i--) {
 			Linkage l = (Linkage) links.get(i);
@@ -337,7 +306,7 @@ public class MSNetwork {
 		for (int i = nets.size()-1; i>=0; i--) {
 			SubNetwork net = (SubNetwork) nets.get(i);
 			net.initTriangulation();
-		}		
+		}
 	}
 	
 	/**
@@ -347,5 +316,4 @@ public class MSNetwork {
 	public String getId() {
 		return id;
 	}
-
 }

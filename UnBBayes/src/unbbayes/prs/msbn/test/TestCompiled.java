@@ -5,7 +5,7 @@ import java.io.File;
 import unbbayes.io.NetIO;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
-import unbbayes.prs.msbn.MSNetwork;
+import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.msbn.SubNetwork;
 
 import junit.framework.TestCase;
@@ -29,7 +29,7 @@ public class TestCompiled extends TestCase {
 	
 	public void testTopological() throws Exception {
 		NetIO loader = new NetIO();
-		MSNetwork msbn =  loader.loadMSBN(FILE_5PARTC);
+		SingleAgentMSBN msbn =  loader.loadMSBN(FILE_5PARTC);
 		ProbabilisticNetwork net = loader.load(FILE_5PARTCMONO);
 		net.compile(); 
 		msbn.compile();
