@@ -96,10 +96,10 @@ public class MetaphorMain extends JPanel
   private void jbInit() throws Exception
   { openMetaphorIcon = new ImageIcon(getClass().getResource("/icones/openMetaphor.gif"));
     saveMetaphorIcon = new ImageIcon(getClass().getResource("/icones/saveMetaphor.gif"));
-    diagnosticMetaphorIcon = new ImageIcon(getClass().getResource("/icones/diagnosticMetaphor.gif"));
+    diagnosticMetaphorIcon = new ImageIcon(getClass().getResource("/icones/diagnosticMetaphor2.gif"));
     openMetaphorRollOverIcon = new ImageIcon(getClass().getResource("/icones/openSMetaphor.gif"));
     saveMetaphorRollOverIcon = new ImageIcon(getClass().getResource("/icones/saveSMetaphor.gif"));
-    diagnosticMetaphorRollOverIcon = new ImageIcon(getClass().getResource("/icones/diagnosticSMetaphor.gif"));
+    diagnosticMetaphorRollOverIcon = new ImageIcon(getClass().getResource("/icones/diagnosticSMetaphor2.gif"));
     titledBorder1 = new TitledBorder("");
     border1 = BorderFactory.createEmptyBorder(5,5,5,5);
     border2 = BorderFactory.createEmptyBorder(5,5,5,5);

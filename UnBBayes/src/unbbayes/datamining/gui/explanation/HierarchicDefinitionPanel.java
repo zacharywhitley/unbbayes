@@ -26,11 +26,13 @@ public class HierarchicDefinitionPanel extends JPanel
   private HierarchicTree hierarchicTree;
   private DefaultTreeModel model;
   private ProbabilisticNetwork net;
-  private JPanel jPanel5 = new JPanel();
   private GridLayout gridLayout1 = new GridLayout();
   private ImageIcon greenBallIcon;
   private ImageIcon expandIcon;
   private ImageIcon collapseIcon;
+  private ImageIcon addFolderIcon;
+  private ImageIcon deleteFolderIcon;
+  private ImageIcon renameFolderIcon;
   private JToolBar jToolBar1 = new JToolBar();
   private JButton jButton1 = new JButton();
   private JButton jButton2 = new JButton();
@@ -55,12 +57,13 @@ public class HierarchicDefinitionPanel extends JPanel
   { greenBallIcon = new ImageIcon(getClass().getResource("/icones/green-ball.gif"));
     expandIcon = new ImageIcon(getClass().getResource("/icones/expandir.gif"));
     collapseIcon = new ImageIcon(getClass().getResource("/icones/contrair.gif"));
+    addFolderIcon = new ImageIcon(getClass().getResource("/icones/addFolder.gif"));
+    deleteFolderIcon = new ImageIcon(getClass().getResource("/icones/deleteFolder.gif"));
+    renameFolderIcon = new ImageIcon(getClass().getResource("/icones/renameFolder.gif"));
     this.setLayout(borderLayout1);
     jPanel2.setLayout(borderLayout2);
     jPanel1.setLayout(borderLayout3);
     jPanel3.setLayout(borderLayout4);
-    jPanel5.setLayout(gridLayout1);
-    jPanel5.setBackground(new Color(255, 251, 240));
     jToolBar1.setBorder(null);
     jToolBar1.setFloatable(false);
     jButton2.setToolTipText("Expand Tree");
@@ -82,6 +85,7 @@ public class HierarchicDefinitionPanel extends JPanel
       }
     });
     jButton4.setToolTipText("Add Folder");
+    jButton4.setIcon(addFolderIcon);
     jButton4.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -90,6 +94,7 @@ public class HierarchicDefinitionPanel extends JPanel
       }
     });
     jButton5.setToolTipText("Rename Folder");
+    jButton5.setIcon(renameFolderIcon);
     jButton5.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -98,6 +103,7 @@ public class HierarchicDefinitionPanel extends JPanel
       }
     });
     jButton6.setToolTipText("Delete Folder");
+    jButton6.setIcon(deleteFolderIcon);
     jButton6.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
