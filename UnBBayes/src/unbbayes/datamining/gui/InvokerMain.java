@@ -507,8 +507,8 @@ public class InvokerMain extends JFrame
   }
 
   void jMenuItem14_actionPerformed(ActionEvent e) {
-      NeuralModelMain cnm = new NeuralModelMain();
-      desktop.add(cnm);
+      NeuralModelController cnm = new NeuralModelController();
+      desktop.add(cnm.getCnmFrame());
   }
 
   void jButton7_actionPerformed(ActionEvent e)
