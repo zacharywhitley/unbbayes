@@ -288,12 +288,13 @@ public class EvaluationMain extends JInternalFrame
           fileName.toLowerCase();
           if (fileName.regionMatches(true,fileName.length() - 4,".id3",0,4))
           {   ObjectInputStream in = new ObjectInputStream(new FileInputStream(f));
-              classifier = (Id3)in.readObject();
+              classifier = (DecisionTreeLearning)in.readObject();
           }
           else if (fileName.regionMatches(true,fileName.length() - 4,".net",0,4))
           {   BaseIO io = new NetIO();
               net = io.load(f);
           }
+/////////
           else if (fileName.regionMatches(true,fileName.length() - 4,".cnm",0,4))
           {   ObjectInputStream in = new ObjectInputStream(new FileInputStream(f));
               classifier = (CombinatorialNeuralModel)in.readObject();

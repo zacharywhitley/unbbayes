@@ -1,8 +1,9 @@
 package unbbayes.datamining.classifiers;
 
+import java.io.Serializable;
 import unbbayes.datamining.datamanipulation.*;
 
-public class Leaf
+public class Leaf implements Serializable
 {
 	/** Leaf's class value */
 	private byte classValue;

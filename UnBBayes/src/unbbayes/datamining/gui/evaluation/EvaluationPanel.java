@@ -337,6 +337,7 @@ public class EvaluationPanel extends JPanel
                   catch (Exception e)
                   {   setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                       JOptionPane.showConfirmDialog(EvaluationPanel.this,"Exception "+e.getMessage(),"Error",JOptionPane.CLOSED_OPTION,JOptionPane.ERROR_MESSAGE);
+                      e.printStackTrace();
                   }
 
                   thread = null;  // Termina a thread.
