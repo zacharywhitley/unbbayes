@@ -1,4 +1,4 @@
-package unbbayes.datamining.classifiers;
+package unbbayes.datamining.classifiers.decisiontree;
 
 import java.io.Serializable;
 import unbbayes.datamining.datamanipulation.*;

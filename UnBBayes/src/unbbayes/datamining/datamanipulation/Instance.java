@@ -361,5 +361,20 @@ public class Instance
   	public final void setValue(Attribute att, byte newValue)
 	{	attValues[att.getIndex()] = newValue;
 	}
+	
+	public final void removeAttribute(int index)
+	{
+		byte[] newValues = new byte[attValues.length-1];
+		int j=0;
+		for (int i=0;i<attValues.length;i++)
+		{
+			if(index!=i)
+			{
+				newValues[j]=attValues[i];
+				j++;
+			}
+		}
+		attValues = newValues;
+	}
 
 }

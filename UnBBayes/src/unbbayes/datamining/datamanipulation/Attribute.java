@@ -33,7 +33,7 @@ public class Attribute implements Serializable
   	private int attributeType;
 
   	/** The attribute's values */
-  	private String[] attributeValues;//mudei3
+  	private String[] attributeValues;
 
 	/** Mapping of values to indices */
   	private Hashtable hashtable;
@@ -52,16 +52,16 @@ public class Attribute implements Serializable
    	* attribute values.
 	* @param attributeType Type of this attribute (Nominal or Numeric)
 	*/
-  	public Attribute(String attributeName,String[] attributeValues,int attributeType)//mudei3
+  	public Attribute(String attributeName,String[] attributeValues,int attributeType)
 	{	this.attributeName = attributeName;
     	index = -1;
     	this.attributeValues = attributeValues;
       	if (attributeValues != null)
 		{
 			int numValues = numValues();
-			hashtable = new Hashtable(numValues);//mudei3
-      		for (int i = 0; i < numValues; i++)//mudei3
-			{	hashtable.put(attributeValues[i], new Integer(i));//mudei3
+			hashtable = new Hashtable(numValues);
+      		for (int i = 0; i < numValues; i++)
+			{	hashtable.put(attributeValues[i], new Integer(i));
       		}
 		}
 		else
@@ -78,7 +78,7 @@ public class Attribute implements Serializable
    	* @param attributeType Type of this attribute (Nominal or Numeric)
 	* @param index The attribute's index
 	*/
-  	public Attribute(String attributeName,String[] attributeValues,int attributeType,int index)//mudei3
+  	public Attribute(String attributeName,String[] attributeValues,int attributeType,int index)
 	{	this(attributeName, attributeValues, attributeType);
 		this.index = index;
 	}
@@ -127,11 +127,11 @@ public class Attribute implements Serializable
     	if (attributeType != att.attributeType)
 		{	return false;
     	}
-    	if (numValues() != att.numValues())//mudei3
+    	if (numValues() != att.numValues())
 		{	return false;
     	}
-    	for (int i = 0; i < numValues(); i++)//mudei3
-		{	if (!attributeValues[i].equals(att.attributeValues[i]))//mudei3
+    	for (int i = 0; i < numValues(); i++)
+		{	if (!attributeValues[i].equals(att.attributeValues[i]))
 			{	return false;
       		}
     	}
@@ -205,7 +205,7 @@ public class Attribute implements Serializable
 		{	return 0;
     	}
 		else
-		{	return attributeValues.length;//mudei3
+		{	return attributeValues.length;
     	}
   	}
 
@@ -259,8 +259,8 @@ public class Attribute implements Serializable
    	* @return the attribute's value as a string. If value is not found returns ""
    	*/
   	public final String value(int valIndex)
-	{	if (attributeValues != null && valIndex >= 0 && valIndex <= numValues())//mudei3
-		{	String val = attributeValues[valIndex];//mudei3
+	{	if (attributeValues != null && valIndex >= 0 && valIndex <= numValues())
+		{	String val = attributeValues[valIndex];
       		return val;
 		}
 		else
@@ -273,14 +273,14 @@ public class Attribute implements Serializable
    	*
    	* @param value The attribute value
    	*/
-  	public final void addValue(String value)//mudei3
+  	public final void addValue(String value)
 	{
           if (hashtable == null)
           {
             hashtable = new Hashtable();
-			//mudei3
+			
           }
-		//mudei3
+		
           String[] newValues = new String[numValues()+1];
           if (attributeValues!=null)
           {
@@ -288,7 +288,7 @@ public class Attribute implements Serializable
           }
           newValues[numValues()] = value;
           attributeValues = newValues;
-          hashtable.put(value, new Integer(numValues() - 1));//mudei3
+          hashtable.put(value, new Integer(numValues() - 1));
 	}
 
   	/**
@@ -317,7 +317,7 @@ public class Attribute implements Serializable
    	*
    	* @param index The value's index
    	*/
-  	//public final void delete(int index)//mudei3
+  	//public final void delete(int index)
 	//{	attributeValues.remove(index);
     //  	Hashtable hash = new Hashtable(hashtable.size());
     //  	Enumeration enum = hashtable.keys();
@@ -350,7 +350,7 @@ public class Attribute implements Serializable
    	* @param index The value's index
    	* @param string The value
    	*/
-  	//public final void setValue(int index, String string)//mudei3
+  	//public final void setValue(int index, String string)
 	//{	if (attributeType == NUMERIC)
 	//	{	try
 	//		{	Float.parseFloat(string);
@@ -359,9 +359,9 @@ public class Attribute implements Serializable
 	//		{	throw new RuntimeException(resource.getString("setValueException"));
 	//		}
 	//	}
-	//	String store = string;//mudei3
-    //	hashtable.remove(attributeValues[index]);//mudei3
-    //  	attributeValues[index] = store;//mudei3
+	//	String store = string;
+    //	hashtable.remove(attributeValues[index]);
+    //  	attributeValues[index] = store;
     //  	hashtable.put(store, new Integer(index));
   	//}
 

@@ -9,7 +9,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 import unbbayes.controller.*;
-import unbbayes.datamining.classifiers.*;
+import unbbayes.datamining.classifiers.decisiontree.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.gui.*;
 import unbbayes.gui.*;
@@ -355,7 +355,7 @@ public class DecisionTreeMain extends JInternalFrame
           jMenuItem2.setEnabled(true);
           saveModelButton.setEnabled(true);
           statusBar.setText(resource.getString("id3Learn"));
-          //verbosityFrame.writeVerbosityText(id3);
+          verbosityFrame.writeVerbosityText(id3,inst);
       }
       catch(Exception e)
       {   statusBar.setText(e.getMessage());

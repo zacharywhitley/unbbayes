@@ -10,6 +10,7 @@ import javax.swing.border.*;
 
 import unbbayes.controller.*;
 import unbbayes.datamining.classifiers.*;
+import unbbayes.datamining.classifiers.decisiontree.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.gui.*;
 import unbbayes.io.*;

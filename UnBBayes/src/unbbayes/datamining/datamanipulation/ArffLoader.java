@@ -88,7 +88,7 @@ public class ArffLoader extends Loader
           String attributeName;
           String relationName = "";
           ArrayList attributeValues;
-          ArrayList attributes = new ArrayList();//mudei;
+          ArrayList attributes = new ArrayList();
           int i;
 
           // Get name of relation.
@@ -126,7 +126,7 @@ public class ArffLoader extends Loader
               // Attribute is real, or integer.
               if (tokenizer.sval.equalsIgnoreCase("real") || tokenizer.sval.equalsIgnoreCase("integer") || tokenizer.sval.equalsIgnoreCase("numeric"))
               {
-                attributes.add(new Attribute(attributeName,null,Attribute.NUMERIC,attributes.size()));//mudei
+                attributes.add(new Attribute(attributeName,null,Attribute.NUMERIC,attributes.size()));
                 readTillEOL();
               }
               else
@@ -166,7 +166,7 @@ public class ArffLoader extends Loader
               {
                 attributeValuesArray[i] = (String)attributeValues.get(i);
               }
-              attributes.add(new Attribute(attributeName, attributeValuesArray, Attribute.NOMINAL,attributes.size()));//mudei3
+              attributes.add(new Attribute(attributeName, attributeValuesArray, Attribute.NOMINAL,attributes.size()));
             }
             getLastToken(false);
             getFirstToken();
@@ -180,7 +180,7 @@ public class ArffLoader extends Loader
           {
             attributesArray[i] = (Attribute)attributes.get(i);
           }
-          instances = new InstanceSet(initialInstances, attributesArray);//mudei
+          instances = new InstanceSet(initialInstances, attributesArray);
           instances.setRelationName(relationName);
 
           // Check if data part follows. We can't easily check for EOL.

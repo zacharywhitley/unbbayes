@@ -1,6 +1,6 @@
 package unbbayes.datamining.datamanipulation;
 
-import java.util.*;//mudei
+import java.util.*;
 
 /**
  *  Class for enumerating the ArrayList's elements.
@@ -13,7 +13,7 @@ public class ArrayListEnumeration implements Enumeration
    	private int counter;
 
    	/** The array */
-   	private Object[] array;//mudei - mudar para Object
+   	private Object[] array;
 
     /** Special element. Skipped during enumeration. */
     private int specialElement;
@@ -23,9 +23,9 @@ public class ArrayListEnumeration implements Enumeration
      *
      * 	@param arrayList Vector which is to be enumerated
      */
-    public ArrayListEnumeration(Object[] array)//mudei
+    public ArrayListEnumeration(Object[] array)
 	{	counter = 0;
-      	this.array = array;//mudei
+      	this.array = array;
       	specialElement = -1;
     }
 
@@ -36,8 +36,8 @@ public class ArrayListEnumeration implements Enumeration
      * @param arrayList the vector which is to be enumerated
      * @param special the index of the special element
      */
-    public ArrayListEnumeration(Object[] array, int special)//mudei
-	{	this.array = array;//mudei
+    public ArrayListEnumeration(Object[] array, int special)
+	{	this.array = array;
       	specialElement = special;
       	if (special == 0)
 		{	counter = 1;
@@ -54,7 +54,7 @@ public class ArrayListEnumeration implements Enumeration
      * @return true If there are some elements left
      */
     public final boolean hasMoreElements()
-	{	if (counter < array.length)//mudei
+	{	if (counter < array.length)
 		{	return true;
       	}
       	return false;
@@ -66,7 +66,7 @@ public class ArrayListEnumeration implements Enumeration
      * @return the next element to be enumerated
      */
     public final Object nextElement()
-	{	Object result = array[counter];//mudei
+	{	Object result = array[counter];
 
       	counter++;
 		if (counter == specialElement)

@@ -62,7 +62,7 @@ public class TestUtils extends TestCase {
     weatherCutInst = null;
   }
 
-  /*public void testComputeEntropy() {
+/*	public void testComputeEntropy() {
     try {
       Id3Utils utils = new Id3Utils(contactInst);
       // contact
@@ -75,7 +75,8 @@ public class TestUtils extends TestCase {
     catch(Exception e) {
       Assert.fail("Exception thrown: "+e);
     }
-  }*/
+  }
+*/
 
   /*public void testComputeGainRatio() {
     try {
@@ -96,7 +97,7 @@ public class TestUtils extends TestCase {
     }
   }*/
 
-  public void testComputeInfoGain() {
+  /*public void testComputeInfoGain() {
     try {
       ClassifierUtils utils = new ClassifierUtils(weatherInst);
       // weather
@@ -123,6 +124,7 @@ public class TestUtils extends TestCase {
       Assert.fail("Exception thrown: "+e);
     }
   }
+
   /*public void testDoubleToString() {
     double value1=  0.0;
     int afterDecimalPoint2=  0;

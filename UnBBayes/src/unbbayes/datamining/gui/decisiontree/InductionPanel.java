@@ -9,7 +9,7 @@ import javax.swing.event.*;
 import javax.swing.tree.*;
 
 import unbbayes.controller.IconController;
-import unbbayes.datamining.classifiers.*;
+import unbbayes.datamining.classifiers.decisiontree.*;
 
 public class InductionPanel extends JPanel
 {

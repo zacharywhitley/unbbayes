@@ -28,7 +28,7 @@ public class TxtLoader extends Loader
   	{	// Count instances
                 countInstancesFromFile(file);
                 //Memory initialization
-                //mudei
+                
                 Reader reader = new BufferedReader(new FileReader(file));
                 tokenizer = new StreamTokenizer(reader);
                 initTokenizer();
@@ -61,16 +61,16 @@ public class TxtLoader extends Loader
    	* successfully
    	*/
   	protected void readHeader() throws IOException
-	{	String[] attributeValues = null;//mudei3
-		ArrayList attributes = new ArrayList();//mudei
+	{	String[] attributeValues = null;
+		ArrayList attributes = new ArrayList();
 		//Insert attributes in the new dataset
 		getNextToken();
 		while (tokenizer.ttype != StreamTokenizer.TT_EOL)
 		{	if(tokenizer.sval != null)
-			{	attributes.add(new Attribute(tokenizer.sval,attributeValues,Attribute.NOMINAL,attributes.size()));//mudei3
+			{	attributes.add(new Attribute(tokenizer.sval,attributeValues,Attribute.NOMINAL,attributes.size()));
                 	}
 			else
-			{	attributes.add(new Attribute(String.valueOf(tokenizer.nval),attributeValues,Attribute.NUMERIC,attributes.size()));//mudei3
+			{	attributes.add(new Attribute(String.valueOf(tokenizer.nval),attributeValues,Attribute.NUMERIC,attributes.size()));
                 	}
 			tokenizer.nextToken();
 		}
@@ -81,7 +81,7 @@ public class TxtLoader extends Loader
                   attributesArray[i] = (Attribute)attributes.get(i);
                 }
                 initialInstances--;// Number of lines - header
-                instances = new InstanceSet(initialInstances, attributesArray);//mudei
+                instances = new InstanceSet(initialInstances, attributesArray);
 	}
 
 	/**

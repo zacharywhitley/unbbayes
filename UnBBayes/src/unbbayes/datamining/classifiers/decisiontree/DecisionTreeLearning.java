@@ -1,7 +1,8 @@
-package unbbayes.datamining.classifiers;
+package unbbayes.datamining.classifiers.decisiontree;
 
 import javax.swing.*;
 
+import unbbayes.datamining.classifiers.Classifier;
 import unbbayes.datamining.datamanipulation.*;
 
 /**
