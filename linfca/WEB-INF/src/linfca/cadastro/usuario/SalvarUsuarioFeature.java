@@ -10,7 +10,6 @@ import java.text.ParseException;
 
 import linfca.Controller;
 import linfca.Feature;
-import linfca.util.Base64;
 import org.jdom.Element;
 
 import java.util.Date;
@@ -113,7 +112,7 @@ public class SalvarUsuarioFeature implements Feature {
 			Date dataNascimento, Connection con) throws SQLException {
 		
 		PreparedStatement ps = null;
-		ResultSet rs = null;
+//		ResultSet rs = null;
 		
 		StringBuffer sql = new StringBuffer();
 		sql.append("INSERT INTO ");
@@ -136,7 +135,7 @@ public class SalvarUsuarioFeature implements Feature {
 		ps.setString(7, senha);
 		ps.setString(8, email);
 		ps.setString(9, endereco);
-		ps.setBytes(10, Base64.decode(foto).getBytes());
+		ps.setString(10, foto);
 		ps.setDate(11, new java.sql.Date(dataNascimento.getTime()));
 
 		return (ps.executeUpdate() > 0);
@@ -150,7 +149,7 @@ public class SalvarUsuarioFeature implements Feature {
 			throws SQLException {
 		
 		PreparedStatement ps = null;
-		ResultSet rs = null;
+//		ResultSet rs = null;
 		
 		StringBuffer sql = new StringBuffer();
 		sql.append("UPDATE ");
@@ -174,7 +173,7 @@ public class SalvarUsuarioFeature implements Feature {
 		ps.setString(7, senha);
 		ps.setString(8, email);
 		ps.setString(9, endereco);
-		ps.setBytes(10, Base64.decode(foto).getBytes());
+		ps.setString(10, foto);
 		ps.setDate(11, new java.sql.Date(dataNascimento.getTime()));
 		ps.setString(12, codUsuario);
 
