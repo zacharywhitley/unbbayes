@@ -12,7 +12,7 @@ public class Controller {
 	public static Controller getInstance() throws Exception {
 		if (instance == null) {
 			instance = new Controller();			
-		}
+		} 
 		return instance;
 	}
 	

@@ -8,3 +8,4 @@ public class Lancamento {
 	static final String DEPOSITO = "Depósito";
 
 }
+ 
