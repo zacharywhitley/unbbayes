@@ -299,7 +299,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
 	  }
 	}
 
-	instanceKeys = new String[numAtt - missingAttNum];   // - 1 do attributo classe
+	instanceKeys = new String[numAtt - missingAttNum - 1];   // - 1 do attributo classe
 	int keyIndex = 0;
 	for(int att=0; att<numAtt; att++){                  //gera um array com as chaves da instancia atual
 	  if(att != classIndex && !instance.isMissing(att)){
@@ -326,7 +326,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
 	  }
 	}
 	for(int i=0; i<combArray.length; i++){
-	  if(combArray[i].getOutputNeuron(i) == null){
+	  if(combArray[i] != null && combArray[i].getOutputNeuron(i) == null){
 		combArray[i] = null;
 	  }
 	}

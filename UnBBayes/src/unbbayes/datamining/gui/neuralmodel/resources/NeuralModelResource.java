@@ -34,6 +34,20 @@ public class NeuralModelResource extends ListResourceBundle{
     {"exception","Exception"},
     {"model","Model"},
     {"printException","Print error: "},
+    {"tabbedPaneAttributes","Attributes"},
+    {"tabbedPaneRules","Rules"},
+    {"tabbedPanelClassify","Inference"},
+
+    //Menu
+    {"fileMenu","File"},
+    {"openMenu","Open..."},
+    {"openModelMenu","Open Model..."},
+    {"saveModelMenu","Save Model..."},
+    {"exitMenu","Exit"},
+    {"learnMenu","Learning"},
+    {"learnModelMenu","Learn Model"},
+    {"helpMenu","Help"},
+    {"helpTopicsMenu","Help Topics..."},
 
     //RulesPanel & OptionsPanel
     {"minimumSupport","Minimum support:"},
