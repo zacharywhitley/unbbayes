@@ -102,9 +102,8 @@ public class MSNetwork {
 		assert activeNet == net;				
 	}
 	
-	protected void atualizaCrenca(SubNetwork net1, SubNetwork net2) {
-		int i;
-		for (i = links.size()-1; i>=0; i--) {
+	protected void atualizaCrenca(SubNetwork net1, SubNetwork net2) {		
+		for (int i = links.size()-1; i>=0; i--) {
 			Linkage l = (Linkage) links.get(i);
 			if (l.getN1() == net1 && l.getN2() == net2) {
 				l.absorve(true);
@@ -116,7 +115,7 @@ public class MSNetwork {
 				return;
 			}
 		}
-		assert i>=0;
+		assert false : "Não podia chegar aqui";
 	}
 	
 	private void distributedMoralization() {		

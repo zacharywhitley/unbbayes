@@ -3,24 +3,16 @@ package unbbayes.gui;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-import javax.swing.AbstractListModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.ListDataListener;
-
-import unbbayes.prs.msbn.MSNetwork;
-import unbbayes.prs.msbn.SubNetwork;
 
 /**
  * @author Michael Onishi
@@ -31,38 +23,36 @@ import unbbayes.prs.msbn.SubNetwork;
  * Window>Preferences>Java>Code Generation.
  */
 public class MSBNWindow extends JPanel {
+	public static String EDITION_PANE = "editionPane";
+	public static String COMPILED_PANE = "compiledPane";	
 	
-	private class MSBNListModel extends AbstractListModel {
-		public int getSize() {
-			return msbn.getNetCount();
-		}
-
-		public Object getElementAt(int index) {
-			return msbn.getNetAt(index);
-		}
-	}
+	private JList netList;	
 	
-	private boolean compiled;
-	private MSNetwork msbn;
-	private NetWindow active;
-	private JList netList;
+	private JButton compileBtn;
+	private JButton editionBtn;
+	private JButton removeBtn;
+	private JButton newBtn;
 	
-	public MSBNWindow(MSNetwork msbn) {
-		this.msbn = msbn;		
-		netList = new JList(new MSBNListModel());
+	private CardLayout btnCard;
+	private JPanel btnPanel;
+	
+	public MSBNWindow(ListModel listModel) {		
+		initComponents(listModel);		
 		setLayout(new BorderLayout());
 		add(makeListPanel(), BorderLayout.WEST);
-		addListeners();
 		init();
+	}
+	
+	private void initComponents(ListModel listModel) {
+		netList = new JList(listModel);		
+		compileBtn = new JButton("Compile");
+		editionBtn = new JButton("Edit MSBN");
+		removeBtn = new JButton("Remove");
+		newBtn = new JButton("New");
 	}
 	
 	private void init() {
 		netList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		netList.setSelectedIndex(0);
-		active = new NetWindow(msbn.getNetAt(0));
-		active.getNetWindowEdition().getCompile().setVisible(false);
-		active.getNetWindowCompilation().getEditMode().setVisible(false);
-		add(active, BorderLayout.CENTER);
 	}
 	
 	private JPanel makeListPanel() {
@@ -70,102 +60,55 @@ public class MSBNWindow extends JPanel {
 		pane.add(new JLabel("Networks"), BorderLayout.NORTH);
 		JScrollPane jsp = new JScrollPane(netList);
 		pane.add(jsp, BorderLayout.CENTER);
-		pane.add(makeButtons(), BorderLayout.SOUTH);		
-		
+		setupButtonsPanel();
+		pane.add(btnPanel, BorderLayout.SOUTH);		
 		return pane;
 	}
 	
-	private JPanel makeButtons() {
-		final CardLayout card = new CardLayout();
-		final JPanel pane = new JPanel(card);
-		
+	private void setupButtonsPanel() {
+		btnCard = new CardLayout();
+		btnPanel = new JPanel(btnCard);
 		JPanel editionPane = new JPanel(new GridLayout(0,1));
-		pane.add(editionPane, "editionPane");
-		JButton novo = new JButton("New");				
-		editionPane.add(novo);
+		btnPanel.add(editionPane, EDITION_PANE);				
+		editionPane.add(newBtn);
+		editionPane.add(removeBtn);
+		editionPane.add(compileBtn);
 		
-		JButton remove = new JButton("Remove");		
-		editionPane.add(remove);
-				
-		JButton compile = new JButton("Compile");		
-		editionPane.add(compile);
-		
-		JPanel compiledPane = new JPanel();
-		JButton editionBtn = new JButton("Edit MSBN");
+		JPanel compiledPane = new JPanel();		
 		compiledPane.add(editionBtn);
-		pane.add(compiledPane, "compiledPane");
-		
-		editionBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				active.changeToNetEdition();
-				card.show(pane, "editionPane");
-				compiled = false;			
-			}
-		});
-		
-		novo.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				msbn.addNetwork(new SubNetwork("new net " + msbn.getNetCount()));
-				netList.updateUI();
-			}
-		});
-		
-		remove.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				int index = netList.getSelectedIndex();
-				if (index < 0) {
-					return;
-				}
-				msbn.remove(index);
-				netList.repaint();
-			}
-		});
-		
-		compile.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ev) {
-				try {
-					msbn.compile();
-					active.changeToNetCompilation();
-					card.show(pane, "compiledPane");
-					compiled = true;
-				} catch (Exception e) {
-					e.printStackTrace();			
-				}
-			}
-		});
-		
-		
-		card.show(pane, "editionPane");
-		return pane;
+		btnPanel.add(compiledPane, COMPILED_PANE);
+		showBtnPanel(EDITION_PANE);
 	}
 	
-	private void addListeners() {
-		MouseListener mouseListener = new MouseAdapter() {
-		     public void mouseClicked(MouseEvent e) {
-		     	if (e.getClickCount() == 2 && e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-		     		int index = netList.locationToIndex(e.getPoint());
-		            if (index < 0 || netList.getModel().getElementAt(index) == active.getRede()) {
-		            	return;		             	
-		            }	            
-		            
-		            if (compiled  
-		            		&& JOptionPane.showConfirmDialog(netList, "Shift Attention?") != JOptionPane.OK_OPTION) {
-		            			
-			          	return;		        
-		           	}
-		            remove(active);
-		            active = new NetWindow(msbn.getNetAt(index));
-		            active.getNetWindowEdition().getCompile().setVisible(false);
-					active.getNetWindowCompilation().getEditMode().setVisible(false);
-		            add(active, BorderLayout.CENTER);
-		            updateUI();
-		            if (compiled) {
-		            	msbn.shiftAttention(msbn.getNetAt(index));
-		            	active.changeToNetCompilation();
-		            }
-		     	}
-		     }
-		};
-		netList.addMouseListener(mouseListener);
+	public void addCompileBtnActionListener(ActionListener a) {
+		compileBtn.addActionListener(a);
+	}
+	
+	public void addRemoveBtnActionListener(ActionListener a) {
+		removeBtn.addActionListener(a);
+	}
+	
+	public void addNewBtnActionListener(ActionListener a) {
+		newBtn.addActionListener(a);
+	}
+	
+	public void addEditionActionListener(ActionListener a) {
+		editionBtn.addActionListener(a);
+	}
+	
+	public void addListMouseListener(MouseListener l) {
+		netList.addMouseListener(l);
+	}
+	
+	public void showBtnPanel(String paneName) {
+		btnCard.show(btnPanel, paneName);		
+	}
+	
+	/**
+	 * Returns the netList.
+	 * @return JList
+	 */
+	public JList getNetList() {
+		return netList;
 	}
 }

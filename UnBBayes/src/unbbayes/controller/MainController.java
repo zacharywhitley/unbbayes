@@ -119,7 +119,8 @@ public class MainController {
         	if (file.isDirectory()) { //MSBN
         		MSNetwork msbn = io.loadMSBN(file);
         		name = msbn.getId() + " (MSBN)";
-        		window = new MSBNWindow(msbn);
+        		MSBNController controller = new MSBNController(msbn);
+        		window = controller.getPanel();
         	} else {
 		        ProbabilisticNetwork net = io.load(file);
 		        name = net.getId();

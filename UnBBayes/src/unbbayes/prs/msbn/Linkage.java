@@ -188,16 +188,15 @@ public class Linkage {
 		int treeSize = tree.size();
 		for (int i = 0; i < treeSize; i++) {
 			Link l = (Link) tree.get(i);
-			l.absorve(naOrdem);
-			/*
+			l.absorve(naOrdem);			
 			if (naOrdem) {
 				n1.getJunctionTree().distribuaEvidencia(l.getV0());
 			} else {				
 				n2.getJunctionTree().distribuaEvidencia(l.getV1());
 			}
-			*/
+			
 		}
-		
+		/*
 		try {
 			if (naOrdem) {
 				((MSJunctionTree) n1.getJunctionTree()).unificaCrencas();	
@@ -207,5 +206,6 @@ public class Linkage {
 		} catch (Exception e) {
 			
 		}
+		*/		
 	}
 }

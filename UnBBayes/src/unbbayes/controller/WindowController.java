@@ -61,7 +61,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import org.shetline.io.GIFOutputStream;
-import unbbayes.gui.EvidenceTree;
 import unbbayes.gui.ExplanationProperties;
 import unbbayes.gui.FileIcon;
 import unbbayes.gui.NetWindow;
