@@ -50,6 +50,9 @@ public class TOrdenacao1 extends JDialog
     private int numeroCaso;
     private int linhas;
     private int delta;
+    
+    /*teste*/
+    private double eps;
 
     /**
      * Método construtor que monta a tela, adiciona os
@@ -208,6 +211,7 @@ public class TOrdenacao1 extends JDialog
         baixo           = new JButton("Baixo");
         continua        = new JButton("Continuar");
         relacionamentos = new JButton("Relacionamentos");
+        listaAlgoritmos.addItem("CBL");
         listaAlgoritmos.addItem("K2_MDL");
         listaAlgoritmos.addItem("B_MDL");
         listaAlgoritmos.addItem("K2_GHS");
@@ -312,7 +316,8 @@ public class TOrdenacao1 extends JDialog
     ActionListener continuaEvento = new ActionListener(){
         public void actionPerformed(ActionEvent ae){
             try {
-                delta = Integer.parseInt(txtDelta.getText());
+                //delta = Integer.parseInt(txtDelta.getText());
+                eps = Double.parseDouble(txtDelta.getText());
                 System.out.println("Delta = " +delta);
                 System.out.println("Tamanho Variaveis = " + variaveis.size());
                 Thread t = new Thread(new Runnable(){
@@ -323,7 +328,6 @@ public class TOrdenacao1 extends JDialog
                         }
                         dispose();
                         ProbabilisticNetwork net = controlador.makeNetwork(variaveis);
-
                         if(listaAlgoritmos.getSelectedItem().equals("K2_GH")){
                             Alg = new TAlgoritmoK2_GH(variaveis,matriz,numeroCaso,vetor,delta,net);
 							//Alg = new TAlgoritmoK2_GH(variaveis,matriz,numeroCaso,vetor,delta,controlador);
@@ -342,6 +346,8 @@ public class TOrdenacao1 extends JDialog
                         } else if(listaAlgoritmos.getSelectedItem().equals("B_GH")){
                             Alg  = new TAlgoritmoB_GHS(variaveis,matriz,numeroCaso,vetor,net);
 							//Alg  = new TAlgoritmoB_GHS(variaveis,matriz,numeroCaso,vetor,controlador);
+                        } else{
+                            TCBL Alg1 = new TCBL(variaveis,matriz,numeroCaso,vetor,eps,net);                    	
                         }
                     }
                 });

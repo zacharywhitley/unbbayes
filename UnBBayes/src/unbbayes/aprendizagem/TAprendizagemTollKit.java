@@ -10,7 +10,7 @@ import unbbayes.util.SetToolkit;
  * Description:
  * Copyright:    Copyright (c) 2001
  * Company:
- * @author
+ * @author    Danilo Custodio da Silva
  * @version 1.0
  */
 
@@ -18,7 +18,7 @@ public abstract class TAprendizagemTollKit {
 
     public static boolean compactado;
     protected byte[][] BaseDados;
-    protected int[] vetor;
+    protected int[] vetor;    
     protected int numeroCaso;
     protected NodeList vetorVariaveis;
 
@@ -35,6 +35,127 @@ public abstract class TAprendizagemTollKit {
      */
     public abstract double g(TVariavel variavel, NodeList pais);
 
+    protected double informacaoMutuaCond(int v1, int v2, ArrayList sep){
+    	int qj = calculaQj(sep);
+    	if(qj == 0 ){
+    		return informacaoMutua((TVariavel)vetorVariaveis.get(v1),
+    		                        (TVariavel)vetorVariaveis.get(v2));    		
+    	}
+    	int ri = ((TVariavel)vetorVariaveis.get(v1)).getEstadoTamanho();
+    	int rk = ((TVariavel)vetorVariaveis.get(v2)).getEstadoTamanho();
+    	double pjik;
+    	double cpjik;
+    	double im = 0.0;
+    	int[] nj = new int[qj];
+    	int[][][] njik = new int[qj][ri][rk];
+    	int[][] nji = new int[qj][ri];
+    	int[][] njk = new int[qj][rk];
+    	double[][] pji = new double[qj][ri];
+    	double[][] pjk = new double[qj][rk];
+    	int[] mult = multiplicadores(sep); 
+    	int j  = 0 ; 
+    	int f; 
+    	int il;
+    	int kl;
+    	int nt =0;  	
+    	for(int id = 0 ; id < numeroCaso; id ++){
+    		f = TAprendizagemTollKit.compactado?vetor[id]:1;
+    		j = achaJ(sep,id,mult);
+    		il = BaseDados[id][v1];    		
+    		kl = BaseDados[id][v2];
+    		njik[j][il][kl] += f;
+    		nji[j][il] += f;
+    		njk[j][kl] += f;
+    		nj[j] += f;
+    		nt += f;    		
+    	}
+    	for(j = 0 ; j < qj; j++){
+    		for(il = 0 ; il < ri; il++){
+    			pji[j][il] = (1+nji[j][il])/(double)(ri+nj[j]);   			
+    		}
+    		for(kl = 0 ; kl < rk ; kl++){
+    		    pjk[j][kl] = (1+njk[j][kl])/(double)(rk+nj[j]);   			   
+    		}
+    		for(il = 0; il < ri; il ++){
+                for(kl = 0 ; kl < rk; kl++){
+                    pjik =  (1+njik[j][il][kl])/(double)(ri*rk*qj+nt);
+                    cpjik =  (1+njik[j][il][kl])/(double)(ri*rk+nj[j]);
+                    im += pjik*(log(cpjik) - log(pji[j][il]) - log(pjk[j][kl]));
+                }
+    		}                       		
+    	}
+    	return im;
+    }     
+    
+    protected int achaJ(ArrayList cc, int id, int[] mult){
+    	int j = 0; 
+    	int im = 0;
+    	for(int i = 0 ; i < cc.size(); i++){
+    		j += BaseDados[id][((Integer)cc.get(i)).intValue()]*mult[im];
+    		im++;
+    	} 
+    	return j;   	    	
+    }
+    
+    protected int[] multiplicadores(ArrayList a){
+    	TVariavel varAux;
+    	int np = a.size();
+    	int m = np==0?1:np;
+    	int[] mult = new int[m];
+    	mult[m-1] = 1;
+    	for(int i = m-2; i >= 0; i--){
+    	    varAux = (TVariavel)vetorVariaveis.get(((Integer)a.get(i+1)).intValue());
+    	    mult[i] = varAux.getEstadoTamanho() * mult[i+1];	    		
+    	}
+    	return mult;
+    }	
+    
+    protected double informacaoMutua(TVariavel xi,TVariavel xk){    	
+    	int nt = 0;
+    	int il = 0;    	
+    	int kl = 0;
+    	double im = 0;    	
+    	double pik = 0;
+        int ri = xi.getEstadoTamanho();
+        int rk = xk.getEstadoTamanho();
+        int nik[][] = new int[ri][rk];
+        int ni[] = new int[ri];
+        int nk[] = new int[rk];
+        double pi[] = new double[ri];
+        double pk[] = new double[rk];
+        int f = 0;
+        for(int ic = 0; ic < numeroCaso; ic++){
+    		f = TAprendizagemTollKit.compactado?vetor[ic]:1;
+        	il = BaseDados[ic][xi.getPos()];
+        	kl = BaseDados[ic][xk.getPos()];        	        	
+        	nik[il][kl] += f;
+        	ni[il] += f;
+        	nk[kl] += f;    
+        	nt += f;    	
+        }
+        for(il = 0 ; il < ri; il++){
+        	pi[il] = (1+ni[il])/((double)ri+nt);
+        	for(kl = 0 ; kl < rk; kl++){
+        		pk[kl] = (1+nk[kl])/((double)rk+nt);
+        		pik = (1+nik[il][kl])/((double)(ri*rk)+nt);        			
+        		im += pik*(log(pik) - log(pi[il]) - log(pk[kl]));
+        	}        		
+        }        
+        return im;    	
+    }
+    
+    protected int calculaQj(ArrayList cc){
+    	TVariavel varAux;
+    	int ac = 1;
+    	for(int i = 0 ; i < cc.size(); i++){
+    		varAux = (TVariavel)vetorVariaveis.get(((Integer)cc.get(i)).intValue());    		
+    		ac *= varAux.getEstadoTamanho();
+    	}
+    	if(cc.size() == 0){
+    	    return 0;	
+    	} 
+    	return ac;    	
+    }
 
     /**
      *  Esse método calcula as probabilidades dos nós da rede
@@ -152,7 +273,7 @@ public abstract class TAprendizagemTollKit {
             vetorEstadosNij.clear();
         }
         return ArrayNijk;
-    }
+    }       
 
     protected List montaInstancias(NodeList pais){
         List instancias = new ArrayList();
