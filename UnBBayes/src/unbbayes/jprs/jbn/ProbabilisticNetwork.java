@@ -81,6 +81,12 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
     private NodeList oe;
 
     private HierarchicTree hierarchicTree;
+    
+    /**
+     * Indica se o log deve ser criado ou não.
+     */
+    private boolean createLog;
+    
     /**
      *  Cria uma nova rede probabilística. Limpa o arquivo de log e inicializa o
      *  vetor da ordem de eliminação.
@@ -244,14 +250,16 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
 
         updateMarginais();
 
-        Thread t = new Thread(new Runnable() {
-          public void run() {
-              makeLog();
-              System.out.println("**Log ended**");
-          }
-        });
-        t.setPriority(Thread.MIN_PRIORITY);
-        t.start();
+		if (createLog) {
+	        Thread t = new Thread(new Runnable() {
+	          public void run() {
+	              makeLog();
+	              System.out.println("**Log ended**");
+	          }
+	        });
+	        t.setPriority(Thread.MIN_PRIORITY);
+	        t.start();
+		}
     }
 
 
@@ -280,8 +288,10 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
         Node auxPai2;
         Edge auxArco;
         List copiaArcos;
-
-        logManager.append(resource.getString("moralizeLabel"));
+		
+		if (createLog) {
+        	logManager.append(resource.getString("moralizeLabel"));
+		}
         arcosMarkov.clear();
         copiaArcos = SetToolkit.clone(arcos);
 
@@ -305,7 +315,9 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
                         auxPai2 = auxNo.getParents().get(k);
                         if ((existeArco(auxPai1, auxPai2, copiaArcos) == -1) && (existeArco(auxPai1, auxPai2, arcosMarkov) == -1)) {
                             auxArco = new Edge(auxPai1, auxPai2);
-                            logManager.append(auxPai1.getName() + " - " + auxPai2.getName() + "\n");
+                            if (createLog) {
+                            	logManager.append(auxPai1.getName() + " - " + auxPai2.getName() + "\n");
+                            }
                             arcosMarkov.add(auxArco);
                         }
                     }
@@ -333,7 +345,9 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
             }
         }
         arcosMarkov = SetToolkit.union(arcosMarkov, copiaArcos);
-        logManager.append("\n");
+        if (createLog) {
+        	logManager.append("\n");
+        }
     }
 
 
@@ -344,7 +358,9 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
         Node aux;
         NodeList auxNos;
 
-        logManager.append(resource.getString("triangulateLabel"));
+		if (createLog) {
+			logManager.append(resource.getString("triangulateLabel"));
+		}
         auxNos = SetToolkit.clone (nos);
         removeUtilityNodes(auxNos);
         copiaNos = SetToolkit.clone(auxNos);
@@ -370,7 +386,9 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
                 Node v = aux.getAdjacents().get(j);
                 v.getAdjacents().remove(aux);
             }
-            logManager.append("\t" + oe.size() + " " + aux.getName() + "\n");
+            if (createLog) {
+            	logManager.append("\t" + oe.size() + " " + aux.getName() + "\n");
+            }
 
             auxNos = SetToolkit.clone(aux.getParents());
             auxNos.removeAll(decisionNodes);
@@ -483,7 +501,9 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
         if (nos.size() == 0) {
             throw new Exception(resource.getString("EmptyNetException"));
         }
-        logManager.reset();
+        if (createLog) {
+        	logManager.reset();
+        }
         verificaConsistencia();
         moraliza();
         triangula();
@@ -1047,7 +1067,9 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
                 auxNo2 =  no.getAdjacents().get(j);
                 if (! auxNo2.getAdjacents().contains(auxNo1)) {
                     auxArco = new Edge(auxNo1, auxNo2);
-                    logManager.append(auxNo1.getName() + resource.getString("linkedName") + auxNo2.getName() + "\n");
+                    if (createLog) {
+                    	logManager.append(auxNo1.getName() + resource.getString("linkedName") + auxNo2.getName() + "\n");
+                    }
                     arcosMarkov.add(auxArco);
                     auxNo1.getAdjacents().add(auxNo2);
                     auxNo2.getAdjacents().add(auxNo1);
@@ -1099,7 +1121,9 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
                 auxNos.remove(auxNo);
                 algum = true;
                 oe.add(auxNo);
-                logManager.append("\t" + oe.size() + " " + auxNo.getName() + "\n");
+                if (createLog) {
+                	logManager.append("\t" + oe.size() + " " + auxNo.getName() + "\n");
+                }
                 break;
             }
         }
@@ -1107,7 +1131,9 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
         if (auxNos.size() > 0) {
             auxNo = peso(auxNos); //auxNo: clique de peso mínimo.
             oe.add(auxNo);
-            logManager.append("\t" + oe.size() + " " + auxNo.getName() + "\n");
+            if (createLog) {
+            	logManager.append("\t" + oe.size() + " " + auxNo.getName() + "\n");
+            }
             elimine(auxNo, auxNos); //Elimine no e reduza grafo.
         }
     }
@@ -1134,4 +1160,20 @@ public class ProbabilisticNetwork extends Network implements java.io.Serializabl
         }
         return false;
     }
+	/**
+	 * Sets the createLog.
+	 * @param createLog The createLog to set
+	 */
+	public void setCreateLog(boolean createLog) {
+		this.createLog = createLog;
+	}
+
+	/**
+	 * Gets the createLog.
+	 * @return Returns a boolean
+	 */
+	public boolean isCreateLog() {
+		return createLog;
+	}
+
 }

@@ -84,6 +84,8 @@ public class FronteiraResources extends ListResourceBundle {
 		{"decimalPatternTab","Decimal Pattern"},
 		{"colorControllerTab","Color Controller"},
 		{"sizeControllerTab","Size Controller"},
+		{"logTab","Log"},
+		{"createLogLabel","Create Log"},
 		{"nodeGraphName","Node"},
 		{"LookAndFeelUnsupportedException","It does not support this LookAndFeel: "},
 		{"LookAndFeelClassNotFoundException","This LookAndFeel class was not found: "},

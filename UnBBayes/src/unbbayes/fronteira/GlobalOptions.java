@@ -61,6 +61,7 @@ public class GlobalOptions extends JDialog {
     private JPanel radiusPanel;
     private JPanel netPanel;
     private JPanel confirmationPanel;
+    private JPanel logPanel;
     private GridBagLayout gbl;
     private GridBagConstraints gbc;
     private JButton confirm;
@@ -85,6 +86,8 @@ public class GlobalOptions extends JDialog {
     private JLabel net;
     private JSlider radiusSlider;
     private JSlider netSlider;
+    private JCheckBox createLog;
+    private boolean createLogBoolean;
     private Preview preview;
     private final IGraph graph;
 
@@ -114,18 +117,21 @@ public class GlobalOptions extends JDialog {
         italy        = new JRadioButtonMenuItem(resource.getString("italyName"));
         brazil       = new JRadioButtonMenuItem(resource.getString("brazilName"));
         korea        = new JRadioButtonMenuItem(resource.getString("koreaName"));
+        
+        createLog = new JCheckBox(resource.getString("createLogLabel"));
 
         gbl     = new GridBagLayout();
         gbc     = new GridBagConstraints();
         preview = new Preview(this);
 
-        //setar cores padrões do nó, arco e de seleção
+        //setar cores padrões do nó, arco e de seleção e boolean de criar log
         probabilisticNodeColor = ProbabilisticNode.getColor();
 		decisionNodeColor      = DecisionNode.getColor();
 		utilityNodeColor       = UtilityNode.getColor();
         arcColor               = graph.getArcColor();
         selectionColor         = graph.getSelectionColor();
         backColor              = graph.getBackColor();
+        createLogBoolean       = controller.getRede().isCreateLog();
 
         radius = new JLabel(resource.getString("radiusLabel"));
         radius.setToolTipText(resource.getString("radiusToolTip"));
@@ -152,6 +158,7 @@ public class GlobalOptions extends JDialog {
         confirmationPanel         = new JPanel(new FlowLayout(FlowLayout.CENTER));
         flowControllerColorPanel1 = new JPanel();
         flowControllerColorPanel2 = new JPanel();
+        logPanel                  = new JPanel();
 
 		probabilisticNode = new JButton(resource.getString("probabilisticNodeColorLabel"));
 		probabilisticNode.setToolTipText(resource.getString("probabilisticNodeColorToolTip"));
@@ -227,6 +234,7 @@ public class GlobalOptions extends JDialog {
                     graph.setBackColor(backColor);
                     graph.setRadius(radiusSlider.getValue());
                     graph.setGraphDimension(new Dimension((int) netSlider.getValue(), (int) netSlider.getValue()));
+                    controller.getRede().setCreateLog(createLog.isSelected());
                     setVisible(false);
                     dispose();
                     graph.update();
@@ -247,6 +255,7 @@ public class GlobalOptions extends JDialog {
                     backColor = graph.getBackColor();
                     netSlider.setValue((int) graph.getGraphDimension().getWidth());
                     radiusSlider.setValue((int) graph.getRadius());
+                    controller.getRede().setCreateLog(createLogBoolean);
                     repaint();
                 }
             });
@@ -389,9 +398,11 @@ public class GlobalOptions extends JDialog {
 		northControllerSizePanel.add(radiusPanel);
 		controllerSizePanel.add(northControllerSizePanel,  BorderLayout.NORTH);
 		controllerSizePanel.add(new Preview(this),  BorderLayout.CENTER);
+		logPanel.add(createLog);
 		jtp.addTab(resource.getString("decimalPatternTab"), decimalPatternPanel);
 		jtp.addTab(resource.getString("colorControllerTab"), controllerColorPanel);
 		jtp.addTab(resource.getString("sizeControllerTab"), controllerSizePanel);
+		jtp.addTab(resource.getString("logTab"), logPanel);
         contentPane.add(jtp, BorderLayout.CENTER);
         contentPane.add(confirmationPanel, BorderLayout.SOUTH);
     }
