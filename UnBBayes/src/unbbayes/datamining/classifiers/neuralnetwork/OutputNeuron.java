@@ -1,8 +1,9 @@
 package unbbayes.datamining.classifiers.neuralnetwork;
 
 import java.util.*;
+import java.io.*;
 
-public class OutputNeuron extends Neuron{
+public class OutputNeuron extends Neuron implements Serializable{
 
   private float outputValue;
   private float errorTerm;    //sigma
@@ -37,17 +38,21 @@ public class OutputNeuron extends Neuron{
     return weights[weightIndex + 1];   //mais um para considerar o bias
   }
 
-  public float calculateOutputValue(HiddenNeuron[] inputs, int expectedOutput){
-    float instantaneousError;
+  public float calculateOutputValue(HiddenNeuron[] inputs){
     float net = weights[0];  //bias value
     for(int i=0; i<inputs.length; i++){
       net = net + (inputs[i].outputValue() * weights[i + 1]);
     }
     outputValue = (float)activationFunction.functionValue(net);
-    instantaneousError = expectedOutput - outputValue;
+    return outputValue;
+  }
+
+  public float calculateErrorTerm(int expectedOutput){
+    float instantaneousError = expectedOutput - outputValue;
     errorTerm = (float)activationFunction.outputErrorTerm(expectedOutput, outputValue);  //calculo de sigma
     return instantaneousError;
   }
+
 }
 
 

@@ -1,13 +1,30 @@
 package unbbayes.datamining.classifiers.neuralnetwork;
 
-public class Sigmoid implements ActivationFunction{
+import java.io.*;
 
-  private double a;  //constant (determining the steepness of the sigmoid)
+public class Sigmoid implements ActivationFunction, Serializable{
 
-  public Sigmoid(double a) {
-    this.a = a;
+  public static final double MIN_BETA = 0.0;
+  public static final double DEF_BETA = 1.0;
+
+  private double beta;  //constant (determining the steepness of the sigmoid)
+
+  public Sigmoid(){
+    beta = DEF_BETA;
   }
 
+  public Sigmoid(double beta) {
+    this.beta = beta;
+  }
+
+  public void setBeta(float beta) {
+    if (beta > MIN_BETA)
+      beta = beta;
+  }
+
+  public double getBeta(){
+    return beta;
+  }
 
   /**
    *
@@ -15,7 +32,7 @@ public class Sigmoid implements ActivationFunction{
    * @return the ouput of the sigomid funciton
    */
   public double functionValue(double v){
-    return 1 / (1 + Math.exp(- a * v));
+    return 1 / (1 + Math.exp(- beta * v));
   }
 
   /**
@@ -25,11 +42,11 @@ public class Sigmoid implements ActivationFunction{
    * @return the value of sigma
    */
   public double outputErrorTerm(double desiredOutput, double actualOutput){   //sigma
-    return a * (desiredOutput - actualOutput) * actualOutput * (1 - actualOutput);
+    return beta * (desiredOutput - actualOutput) * actualOutput * (1 - actualOutput);
   }
 
   public double hiddenErrorTerm(double y, double sum){   //sigma
-    return a * y * (1 - y) * sum;
+    return beta * y * (1 - y) * sum;
   }
 
 }

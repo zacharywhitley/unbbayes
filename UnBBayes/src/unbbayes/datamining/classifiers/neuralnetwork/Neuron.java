@@ -1,6 +1,8 @@
 package unbbayes.datamining.classifiers.neuralnetwork;
 
-public abstract class Neuron {
+import java.io.*;
+
+public abstract class Neuron implements Serializable{
 
   float[] weights;
   float[] deltaW;
@@ -17,15 +19,4 @@ public abstract class Neuron {
       weights[i] = (float)(weight - 0.5);
     }
   }
-
-
-  //////////////////////////////////
-  public void printWeights(){
-    for(int i=0; i<weights.length; i++){
-      System.out.println(i + " :" + weights[i]);
-    }
-
-  }
-  ////////////////////////////////
-
 }

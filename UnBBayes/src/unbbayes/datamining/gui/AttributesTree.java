@@ -1,4 +1,4 @@
-package unbbayes.datamining.gui.neuralmodel;
+package unbbayes.datamining.gui;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -11,6 +11,8 @@ import unbbayes.util.*;
 
 import unbbayes.controller.IconController;
 import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.gui.neuralnetwork.*;
+import unbbayes.datamining.gui.neuralmodel.*;
 
 /**
  *  Class that implements a tree used to insert a new instance for classification.
@@ -18,7 +20,7 @@ import unbbayes.datamining.datamanipulation.*;
  *  @author Rafael Moraes Noivo
  *  @version $1.0 $ (02/16/2003)
  */
-public class InferenceTree extends JTree{
+public class AttributesTree extends JTree{
   public static final int CHECK_YES = 1;
   public static final int CHECK_NO = -1;
   public static final int CHECK_EMPTY = 0;
@@ -26,10 +28,10 @@ public class InferenceTree extends JTree{
   private ArrayMap objectsMap = new ArrayMap();
   private Attribute[] attributeVector;
   private int classIndex;
-  private InferencePanel inferencePanel;
+  private IInferencePanel inferencePanel;
   protected IconController iconController = IconController.getInstance();
 
-  protected InferenceTree(){
+  public AttributesTree(){
     setShowsRootHandles(true);
     setSelectionModel(null);      //null = nós não selecionaveis
     setRootVisible(true);         //raiz visivel?
@@ -48,7 +50,7 @@ public class InferenceTree extends JTree{
    * @param attributeVector an array with all the attributes of the trainning set.
    * @param classIndex the index of the class attribute.
    */
-  public InferenceTree(Attribute[] attributeVector, int classIndex){
+  public AttributesTree(Attribute[] attributeVector, int classIndex){
     this();
     setAttributes(attributeVector, classIndex);
   }
@@ -58,7 +60,7 @@ public class InferenceTree extends JTree{
    *
    * @param inferencePanel the controller.
    */
-  public void setController(InferencePanel inferencePanel){
+  public void setController(IInferencePanel inferencePanel){
     this.inferencePanel = inferencePanel;
   }
 
@@ -192,7 +194,7 @@ public class InferenceTree extends JTree{
             }
           }
           repaint();
-          inferencePanel.printRule(this);
+          inferencePanel.printSelectedAttributes(this.getInstance());
         }
       }
     }

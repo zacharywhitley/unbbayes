@@ -1,4 +1,4 @@
-package unbbayes.datamining.gui.neuralmodel;
+package unbbayes.datamining.gui.neuralnetwork;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -11,7 +11,7 @@ import javax.swing.text.*;
 import unbbayes.controller.IconController;
 import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.classifiers.cnmentities.*;
+import unbbayes.datamining.gui.neuralmodel.*;
 import unbbayes.datamining.gui.*;
 
 /**
@@ -31,7 +31,6 @@ public class InferencePanel extends JPanel implements IInferencePanel{
   private JPanel panelMessages = new JPanel();
   private JScrollPane jScrollPane1 = new JScrollPane();
   private BorderLayout borderLayout3 = new BorderLayout();
-  private CombinatorialNeuralModel combinatorialNetwork;
   private JScrollPane treeScrollPane/* = new JScrollPane()*/;
   private BorderLayout borderLayout4 = new BorderLayout();
   private AttributesTree attributesTree;
@@ -44,7 +43,6 @@ public class InferencePanel extends JPanel implements IInferencePanel{
   private Icon colapseIcon;
   private Icon expandIcon;
   private Icon propagateIcon;
-  private JTextArea textAreaResults = new JTextArea();
   private DecimalFormat numFormat = new DecimalFormat("##0.0");
   private BorderLayout borderLayout6 = new BorderLayout();
   private JSplitPane splitPane2 = new JSplitPane();
@@ -52,6 +50,7 @@ public class InferencePanel extends JPanel implements IInferencePanel{
   private JScrollPane jScrollPane3 = new JScrollPane();
   private JTextPane textPaneResults = new JTextPane();
   private JTextPane textPaneRules = new JTextPane();
+  private NeuralNetwork neuralNetwork;
   protected IconController iconController = IconController.getInstance();
 
   public InferencePanel() {
@@ -93,8 +92,6 @@ public class InferencePanel extends JPanel implements IInferencePanel{
         classifyButton_actionPerformed(e);
       }
     });
-    textAreaResults.setEditable(false);
-    textAreaResults.setRows(3);
     jPanel4.setLayout(borderLayout6);
     splitPane2.setOrientation(JSplitPane.VERTICAL_SPLIT);
     textPaneResults.setEditable(false);
@@ -107,8 +104,6 @@ public class InferencePanel extends JPanel implements IInferencePanel{
     jPanel1.add(splitPane1, BorderLayout.CENTER);
     splitPane1.add(jPanel2, JSplitPane.LEFT);
     this.add(panelMessages,  BorderLayout.SOUTH);
-    panelMessages.add(jScrollPane1, BorderLayout.CENTER);
-    jScrollPane1.getViewport().add(textAreaResults, null);
     this.add(jToolBar1, BorderLayout.NORTH);
     jToolBar1.add(colapseButton, null);
     jToolBar1.add(expandButton, null);
@@ -126,10 +121,10 @@ public class InferencePanel extends JPanel implements IInferencePanel{
    *
    * @param combinatorialNetwork the model that will be used to make the inferences.
    */
-  public void setNetwork(CombinatorialNeuralModel combinatorialNetwork){
-    this.combinatorialNetwork = combinatorialNetwork;
+  public void setNetwork(NeuralNetwork neuralNetwork){
+    this.neuralNetwork = neuralNetwork;
     attributesTree = new AttributesTree();
-    attributesTree.setAttributes(combinatorialNetwork.getAttributeVector(), combinatorialNetwork.getClassIndex());
+    attributesTree.setAttributes(neuralNetwork.getAttributeVector(), neuralNetwork.getClassIndex());
     attributesTree.expandTree();
     attributesTree.setController(this);
 
@@ -142,45 +137,34 @@ public class InferencePanel extends JPanel implements IInferencePanel{
 
     textPaneResults.setText("");
     textPaneRules.setText("");
-    textAreaResults.setText("");
   }
 
-  private void printResults(Combination[] results, Instance instance){
+  private void printResults(float[] results, Instance instance){
     float[] distributionNormalized = new float[results.length];
-    Attribute[] attributeArray = combinatorialNetwork.getAttributeVector();
+    Attribute[] attributeVector = neuralNetwork.getAttributeVector();
     Attribute classAtt, att;
     String[] initString, initStyles;
     int maxValue;
     Document docResults;
-    ArrayList inputList;
-    String rule;
-    OutputNeuron selectedOutput;
-    DecimalFormat numFormat = new DecimalFormat("##0.0");
-    Combination selectedCombination;
+//    ArrayList inputList;
+//    String rule;
+//    OutputNeuron selectedOutput;
+    DecimalFormat numFormat = new DecimalFormat("##0.000");
+//    Combination selectedCombination;
 
     for(int i=0; i<results.length; i++){
-      if(results[i] != null){
-        distributionNormalized[i] = results[i].getOutputNeuron(i).getNetWeight();
-      } else {
-        distributionNormalized[i] = 0;
-      }
+      distributionNormalized[i] = results[i];
     }
     Utils.normalize(distributionNormalized);
 
-    classAtt = (combinatorialNetwork.getAttributeVector())[combinatorialNetwork.getClassIndex()];
+    classAtt = attributeVector[neuralNetwork.getClassIndex()];
 
     initString = new String[results.length + 1];
     initString[0] = resource.getString("class") + ": " + classAtt.getAttributeName() + "\n";
     for(int i=0; i<results.length; i++){
-      if(results[i] != null){
-        initString[i + 1] = "- " + classAtt.value(i) +
-            ":  " + numFormat.format(results[i].getOutputNeuron(i).getNetWeight()) +
-            "    " + numFormat.format(distributionNormalized[i] * 100) + "%\n";
-      } else {
-        initString[i + 1] = "- " + classAtt.value(i) +
-            ":  " + numFormat.format(0) +
-            "    " + numFormat.format(0) + "%\n";
-      }
+      initString[i + 1] = "- " + classAtt.value(i) +
+          ":  " + numFormat.format(results[i]) +
+          "    " + numFormat.format(distributionNormalized[i] * 100) + "%\n";
     }
 
     initStyles = new String[initString.length];
@@ -204,51 +188,6 @@ public class InferencePanel extends JPanel implements IInferencePanel{
     } catch (BadLocationException ble) {
       System.out.println("InferencePanel - Couldn't insert initial text.");
     }
-
-    selectedCombination = results[maxValue];
-    selectedOutput = selectedCombination.getOutputNeuron(maxValue);
-    inputList = extractInputs(selectedCombination);
-
-    //constroi a string da entrada "SE"
-    rule = resource.getString("rule") + ": " + resource.getString("if") + " ";
-    for (int j = 0; j < inputList.size(); j++) {
-      int[] input = (int[]) inputList.get(j);
-      att = attributeArray[input[0]];
-      rule = rule + att.getAttributeName() + " = " +
-          att.value(input[1]) + " ";
-      if (j < (inputList.size() - 1)) {
-        rule = rule + " " + resource.getString("and") + " ";
-      }
-    }
-
-    //constroi a string de saida "ENTAO"
-    rule = rule + resource.getString("then") + " "; //new String("ENTÃO ");
-    rule = rule + classAtt.getAttributeName() + " = " + classAtt.value(maxValue);
-
-    // constroi o valor da confiança
-    rule = rule + "\n" + resource.getString("confidence") + ": " + numFormat.format(selectedOutput.getConfidence()) + "%";
-
-    // constroi o valor do suporte
-    rule = rule + "\n" + resource.getString("support") + ": " + numFormat.format(selectedOutput.getSupport()) + "%";
-
-    textAreaResults.setText( rule);
-  }
-
-  private ArrayList extractInputs(Combination combination) {
-    String key = combination.getKey();
-    StringTokenizer strTokenizer = new StringTokenizer(key, " ");
-    int[] input;
-    int numOfTokens = strTokenizer.countTokens();
-    ArrayList inputArray = new ArrayList();
-
-    for (int i = 0; i < numOfTokens; i++) {
-      input = new int[2];
-      input[0] = Integer.parseInt(strTokenizer.nextToken());
-      i++;
-      input[1] = Integer.parseInt(strTokenizer.nextToken());
-      inputArray.add(input);
-    }
-    return inputArray;
   }
 
   private void initStylesForTextPane(JTextPane textPane) {
@@ -277,9 +216,9 @@ public class InferencePanel extends JPanel implements IInferencePanel{
    * @param tree the tree used to insert a new instance for classification.
    */
   public void printSelectedAttributes(Instance instance){
-    Attribute[] attArray = combinatorialNetwork.getAttributeVector();
+    Attribute[] attArray = neuralNetwork.getAttributeVector();
     String rule = new String();
-    int classIndex = combinatorialNetwork.getClassIndex();
+    int classIndex = neuralNetwork.getClassIndex();
     int numAtt = attArray.length;
     Document docRules = textPaneRules.getDocument();
     initStylesForTextPane(textPaneRules);
@@ -304,7 +243,7 @@ public class InferencePanel extends JPanel implements IInferencePanel{
   private void classifyButton_actionPerformed(ActionEvent e) {
     try{
       Instance instance = attributesTree.getInstance();
-      printResults(combinatorialNetwork.inference(instance), instance);
+      printResults(neuralNetwork.distributionForInstance(instance), instance);
     } catch(Exception exception){
       System.out.println(exception);
       exception.printStackTrace();

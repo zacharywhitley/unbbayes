@@ -1,8 +1,9 @@
 package unbbayes.datamining.classifiers.neuralnetwork;
 
 import java.util.*;
+import java.io.*;
 
-public class HiddenNeuron extends Neuron{
+public class HiddenNeuron extends Neuron implements Serializable{
 
   private float outputValue;
   private float errorTerm;   //sigma

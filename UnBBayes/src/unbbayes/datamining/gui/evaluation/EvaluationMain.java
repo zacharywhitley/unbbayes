@@ -255,7 +255,8 @@ public class EvaluationMain extends JInternalFrame
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
       String[] s2 = {"NET"};
       String[] s1 = {"ID3"};
-      /**/String[] s3 = {"CNM"};
+      String[] s3 = {"CNM"};
+      String[] s4 = {"BPN"};
       fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setDialogTitle("Open model");
       fileChooser.setMultiSelectionEnabled(false);
@@ -263,7 +264,8 @@ public class EvaluationMain extends JInternalFrame
       fileChooser.setFileView(new FileIcon(EvaluationMain.this));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "Networks (*.net)"));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ID3 Models (*.id3)"));
-      /**/fileChooser.addChoosableFileFilter(new SimpleFileFilter(s3, "CNM Models (*.cnm)"));
+      fileChooser.addChoosableFileFilter(new SimpleFileFilter(s3, "CNM Models (*.cnm)"));
+      fileChooser.addChoosableFileFilter(new SimpleFileFilter(s4, "BPN Models (*.bpn)"));
 
       int returnVal = fileChooser.showOpenDialog(this);
       if (returnVal == JFileChooser.APPROVE_OPTION)
@@ -292,12 +294,14 @@ public class EvaluationMain extends JInternalFrame
           {   BaseIO io = new NetIO();
               net = io.load(f);
           }
-/////////
           else if (fileName.regionMatches(true,fileName.length() - 4,".cnm",0,4))
           {   ObjectInputStream in = new ObjectInputStream(new FileInputStream(f));
               classifier = (CombinatorialNeuralModel)in.readObject();
           }
-///////////
+          else if(fileName.regionMatches(true,fileName.length() - 4,".bpn",0,4))
+          {   ObjectInputStream in = new ObjectInputStream(new FileInputStream(f));
+              classifier = (NeuralNetwork)in.readObject();
+          }
           else
           {   throw new IOException(resource.getString("fileExtensionNotKnown"));
           }

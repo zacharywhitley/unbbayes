@@ -1,6 +1,8 @@
 package unbbayes.datamining.classifiers.neuralnetwork;
 
-public class Tanh implements ActivationFunction{
+import java.io.*;
+
+public class Tanh implements ActivationFunction, Serializable{
 
   private double a;
   private double b;
@@ -13,7 +15,8 @@ public class Tanh implements ActivationFunction{
   }
 
   public double functionValue(double v){
-    return (1 - Math.exp(-2 * v))/(1 + Math.exp(-2 * v));
+    //return (1 - Math.exp(-2 * v))/(1 + Math.exp(-2 * v));
+    return a * (1 - Math.exp(-2 * b * v))/(1 + Math.exp(-2 * b * v));
   }
 
   public double outputErrorTerm(double d, double o){  //sigma

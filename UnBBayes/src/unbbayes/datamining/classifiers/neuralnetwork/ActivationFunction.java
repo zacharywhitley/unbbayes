@@ -1,7 +1,6 @@
 package unbbayes.datamining.classifiers.neuralnetwork;
 
-public interface ActivationFunction {
-
+public interface ActivationFunction{
 
   public double functionValue(double v);
 

@@ -17,7 +17,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   private transient float momentum;
   private transient int hiddenLayerSize;
   private transient ActivationFunction activationFunction;
-  private transient int numOfAttributes;
+  private int numOfAttributes;
   private transient int trainningTime;
 
   private int[] attNumOfValues;
@@ -38,9 +38,9 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     this.trainningTime = trainningTime;
 
     if(activationFunction == NeuralNetwork.SIGMOID){
-      this.activationFunction = new Sigmoid(0.5);   //valores default   pode modificar?????
+      this.activationFunction = new Sigmoid(1.0);   //valores default   pode modificar?????
     } else if(activationFunction == NeuralNetwork.TANH){
-      this.activationFunction = new Tanh(1.7159, 2/3);
+      this.activationFunction = new Tanh(/*1.7159, 2/3*/1 ,1);
     }
   }
 
@@ -92,43 +92,13 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       outputLayer[i] = new OutputNeuron(activationFunction, hiddenLayer.length);
     }
 
-/*////////////////////////////////////////
-    for (int j = 0; j < hiddenLayer.length; j++) {
-      System.out.println("peso inicial - neuronio escondido " + j + ":");
-      hiddenLayer[j].printWeights();
-    }
-
-    for (int j = 0; j < outputLayer.length; j++) {
-      System.out.println("peso inicial - neuronio de saida " + j + ":");
-      outputLayer[j].printWeights();
-    }
-*//////////////////////////////////////
-
-    for (int i = 0; i < 1000/*trainningTime*/; i++) {
+    for (int i = 0; i < 5/*trainningTime*/; i++) {
       quadraticAverageError = 0;
       instanceEnum = instanceSet.enumerateInstances();
 
       while (instanceEnum.hasMoreElements()) {
         instance = (Instance) instanceEnum.nextElement();
         quadraticAverageError = quadraticAverageError + learn(instance);
-
-
-/*        System.out.println("--------------");
-        ////////////////////////////////////////// teste para ver os valores dos pesos
- System.out.println("SOMATÓRIO DE Erro quadrado médio " + i + " :" + quadraticAverageError);
-/////////////////////////////////////////
- for (int j = 0; j < hiddenLayer.length; j++) {
-   System.out.println("instancia " + i + " neuronio escondido " + j + ":");
-   hiddenLayer[j].printWeights();
- }
-
- for (int j = 0; j < outputLayer.length; j++) {
-   System.out.println("instancia " + i + " neuronio de saida " + j + ":");
-   outputLayer[j].printWeights();
- }
- /*//////////////////////////////////////////
-
-
       }
       quadraticAverageError = quadraticAverageError/instanceSet.numWeightedInstances();
 
@@ -136,26 +106,13 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
      ////////////////////////////////////////// teste para ver os valores dos pesos
       System.out.println("Erro quadrado médio " + i + " :" + quadraticAverageError);
      /////////////////////////////////////////
-/*      for (int j = 0; j < hiddenLayer.length; j++) {
-
-        System.out.println("iteração " + i + " neuronio escondido " + j + ":");
-        hiddenLayer[j].printWeights();
-      }
-
-      for (int j = 0; j < outputLayer.length; j++) {
-        System.out.println("iteração " + i + " neuronio de saida " + j + ":");
-        outputLayer[j].printWeights();
-      }
-  */    ///////////////////////////////////////////
     }
   }
 
   public float learn(Instance instance){
     float totalErrorEnergy = 0;
 
-    for(int i=0; i<inputLayer.length; i++){
-      inputLayer[i] = 0;
-    }
+    Arrays.fill(inputLayer, 0);  //zera o vetor de entradas
 
     int counter = 0;           //inicializa o vetor de entradas
     for(int i=0; i<numOfAttributes; i++){
@@ -185,10 +142,11 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     //////////calcula as saidas da camada oculta
     for(int i=0; i<outputLayer.length; i++){
       float instantaneousError;
-      instantaneousError = outputLayer[i].calculateOutputValue(hiddenLayer, expectedOutput[i]);
+      outputLayer[i].calculateOutputValue(hiddenLayer);
+      instantaneousError = outputLayer[i].calculateErrorTerm(expectedOutput[i]);
       totalErrorEnergy = totalErrorEnergy + (instantaneousError * instantaneousError);
 
-//teste      System.out.println("saida " + i + ": " + outputLayer[i].outputValue() );
+/*teste*/  //    System.out.println("saida " + i + ": " + outputLayer[i].outputValue() );
     }
 
     ///////// UPDATE  dos pesos dos neuronios de saida
@@ -209,17 +167,6 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     return (totalErrorEnergy / 2);
   }
 
-
-  /**
-   * Make inference of an instance on the model.
-   *
-   * @param instance the instance to make the inference
-   * @return an array that contains the arc with greater weight of each
-   *         output neuron.
-   */
-//  public Combination[] inference(Instance instance){
-//  }
-
   /**
    * Make inference of an instance on the model.
    *
@@ -227,18 +174,37 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
    * @return an array of floats with the distribution of values for the given instance.
    * @throws Exception if classifier can't carry through the inference successfully
    */
-  public float[] distributionForInstance(Instance instance) throws Exception{
-        float[] distribution = {0,1};// null;
-/*        Combination[] outputArray = inference(instance);
-        distribution = new float[outputArray.length];
-        for(int i=0; i<distribution.length; i++){
-          if(outputArray[i] != null){
-                distribution[i] = outputArray[i].getOutputNeuron(i).getNetWeight();
-          } else {
-                distribution[i] = 0;
+  public float[] distributionForInstance(Instance instance) throws Exception {
+    float[] distribution = new float[outputLayer.length];
+
+    Arrays.fill(inputLayer, 0);  //zera o vetor de entradas
+
+    int counter = 0; //inicializa o vetor de entradas
+    for (int i = 0; i < numOfAttributes; i++) {
+      if (i != classIndex) {
+        if (!instance.isMissing(i)) {
+          int index = 0;
+          for (int j = 0; j < counter; j++) {
+            index = index + attNumOfValues[j];
           }
+          index = index + instance.getValue(i);
+          inputLayer[index] = 1;
         }
-  */      return distribution;
+        counter++;
+      }
+    }
+
+    ///////////calcula as saidas da hiddem
+    for(int i=0; i<hiddenLayer.length; i++){
+      hiddenLayer[i].calculateOutputValue(inputLayer);
+    }
+
+    //////////calcula as saidas da camada oculta
+    for(int i=0; i<outputLayer.length; i++){
+      distribution[i] = outputLayer[i].calculateOutputValue(hiddenLayer);
+    }
+
+    return distribution;
   }
 
   /**
@@ -258,14 +224,4 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   public int getClassIndex(){
         return classIndex;
   }
-
-  /**
-   * Retuns an iterator conataining the objects that represents
-   * the combinatorial neural model, that is, the combinations.
-   *
-   * @return an iterator of combinations.
-   */
-//  public Iterator getModel(){
-  //      return model.values().iterator();
-  //}
 }

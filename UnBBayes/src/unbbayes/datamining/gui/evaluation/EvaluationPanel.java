@@ -371,7 +371,7 @@ public class EvaluationPanel extends JPanel
    *  */
   public void setModel(Classifier classifier,InstanceSet inst)
   {   jTextArea2.setText("");
-      if (classifier instanceof DistributionClassifier && !(classifier instanceof CombinatorialNeuralModel))
+      if (classifier instanceof BayesianNetwork)
       {   jLabel2.setText("Model - Bayesian Network");
       }
       else if (classifier instanceof DecisionTreeLearning)
@@ -380,6 +380,10 @@ public class EvaluationPanel extends JPanel
       else if (classifier instanceof CombinatorialNeuralModel)
       {   jLabel2.setText("Model - Combinatorial Neural Model");
       }
+      else if (classifier instanceof NeuralNetwork)
+      {   jLabel2.setText("Model - Backpropagation Neural Network");
+      }
+
       this.classifier = classifier;
       this.instances = inst;
       int numAtt = instances.numAttributes();
@@ -392,7 +396,7 @@ public class EvaluationPanel extends JPanel
               jComboBox2.setSelectedItem(instances.getAttribute(i).getAttributeName());
       }
       instances.setClassIndex(jComboBox2.getSelectedIndex());
-      if (classifier instanceof DistributionClassifier && !(classifier instanceof CombinatorialNeuralModel))
+      if (classifier instanceof BayesianNetwork)
       {   jRadioButton1.setEnabled(true);
           jRadioButton2.setEnabled(true);
           jRadioButton3.setEnabled(true);
@@ -411,7 +415,7 @@ public class EvaluationPanel extends JPanel
           {   reference.setStatusBar(ex.getMessage());
           }
       }
-      else if (classifier instanceof DecisionTreeLearning || classifier instanceof CombinatorialNeuralModel)
+      else if (classifier instanceof DecisionTreeLearning || classifier instanceof CombinatorialNeuralModel || classifier instanceof NeuralNetwork)
       {   jRadioButton1.setEnabled(true);
           jRadioButton2.setEnabled(false);
           jRadioButton3.setEnabled(false);
