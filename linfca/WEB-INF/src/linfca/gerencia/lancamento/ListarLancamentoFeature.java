@@ -85,6 +85,7 @@ public class ListarLancamentoFeature implements Feature {
 			
 			lancamento.getChildren().add(codigoXML);
 			lancamento.getChildren().add(dataInicioXML);
+			lancamento.getChildren().add(dataFimXML);
 			lancamento.getChildren().add(nomeXML);
 			lancamento.getChildren().add(fotoXML);
 			out.getChildren().add(lancamento);
