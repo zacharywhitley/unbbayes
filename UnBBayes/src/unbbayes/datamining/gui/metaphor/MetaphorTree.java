@@ -42,7 +42,7 @@ public class MetaphorTree extends JTree
 	    }
 	}
 
-	public class MetaphorTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer
+	private class MetaphorTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer
         {   ImageIcon yesIcon = new ImageIcon(getClass().getResource("/icones/yesState.gif"));
 	    ImageIcon noIcon = new ImageIcon(getClass().getResource("/icones/noState.gif"));
 	    ImageIcon emptyIcon = new ImageIcon(getClass().getResource("/icones/emptyState.gif"));
@@ -132,8 +132,7 @@ public class MetaphorTree extends JTree
                 {	this.net = null;
 	                root.removeAllChildren();
 	                objectsMap.clear();
-                        System.out.println("problem");
-		}
+                }
                 ((DefaultTreeModel)getModel()).reload(root);
 	}
 
