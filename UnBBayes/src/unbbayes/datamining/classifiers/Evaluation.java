@@ -62,8 +62,8 @@ public class Evaluation implements IProgress
 
   private Classifier classifier;
 
-  private float[][] propagationResults;
-  private byte[][] propagation;
+  //private float[][] propagationResults;
+  //private byte[][] propagation;
 
   /**
    * Initializes all the counters for the evaluation.
@@ -95,11 +95,11 @@ public class Evaluation implements IProgress
 	{
 		this(data);
 		this.classifier = classifier;
-		if (classifier instanceof DistributionClassifier)
+		/*if (classifier instanceof DistributionClassifier)
 		{
 			propagationResults = new float[numInstances][numClasses];
 			propagation = new byte[numInstances][2];
-		}
+		}*/
 	}
 
 	/**
@@ -111,11 +111,11 @@ public class Evaluation implements IProgress
 	*/
 	public void evaluateModel(Classifier classifier) throws Exception
 	{
-		if (classifier instanceof DistributionClassifier)
+		/*if (classifier instanceof DistributionClassifier)
 		{
 			propagationResults = new float[numInstances][numClasses];
 			propagation = new byte[numInstances][2];
-		}	
+		}*/	
 		for	(int i = 0; i < numInstances; i++)
 			{   if ((i%50000)==0)
 				{   String currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
@@ -135,11 +135,11 @@ public class Evaluation implements IProgress
 	*/
 	public void evaluateModel(Classifier classifier,InstanceSet testData) throws Exception
 	{	
-		if (classifier instanceof DistributionClassifier)
+		/*if (classifier instanceof DistributionClassifier)
 		{
 			propagationResults = new float[numInstances][numClasses];
 			propagation = new byte[numInstances][2];
-		}
+		}*/
 		int numInstances = testData.numInstances();
 		for (int i = 0; i < numInstances; i++)
 		{	evaluateModelOnce(classifier,testData.getInstance(i));
@@ -163,7 +163,7 @@ public class Evaluation implements IProgress
 				if (classifier instanceof DistributionClassifier)
 				{	
 					float[] dist = ((DistributionClassifier)classifier).distributionForInstance(classMissing);
-					propagationResults[counter] = dist;
+					//propagationResults[counter] = dist;
 					
 					pred = ((DistributionClassifier)classifier).classifyInstance(dist);
 					updateStatsForClassifier(pred,instance);
@@ -215,7 +215,7 @@ public class Evaluation implements IProgress
 	public String toString()
 	{	StringBuffer text = new StringBuffer(resource.getString("summary"));
 
-		computeROCCurve();
+		//computeROCCurve();
 		
 		try
 		{	text.append(resource.getString("correctly"));
@@ -432,8 +432,8 @@ public class Evaluation implements IProgress
 		byte actualClass = instance.classValue();
 				updateNumericScores(makeDistribution(predictedClass)/*predictedDistribution*/,makeDistribution(actualClass),instance.getWeight());
 
-		propagation[counter][0] = actualClass;
-		propagation[counter][1] = predictedClass;
+		//propagation[counter][0] = actualClass;
+		//propagation[counter][1] = predictedClass;
 		
 		// Update other stats
 		confusionMatrix[actualClass][predictedClass] += instance.getWeight();
@@ -973,8 +973,8 @@ public class Evaluation implements IProgress
 		}
 		for (int i=0;i<numInstances;i++)
 		{
-			vet1[propagation[i][1]].add(new Float(propagationResults[i][propagation[i][1]]));
-			vet2[propagation[i][1]].add(new Boolean(propagation[i][0]==propagation[i][1]));
+			//vet1[propagation[i][1]].add(new Float(propagationResults[i][propagation[i][1]]));
+			//vet2[propagation[i][1]].add(new Boolean(propagation[i][0]==propagation[i][1]));
 		}
 		double[][] v3 = new double[numClasses][];
 		boolean[][] v4 = new boolean[numClasses][];
