@@ -1,4 +1,5 @@
 <%@page import="linfca.*, 
+		linfca.cadastro.equipamento.*,
         java.sql.*, 
         org.jdom.Element, 
         java.util.Iterator" 
@@ -37,8 +38,16 @@
               
                 <td width="30%"> <h3> 
                     <% 
-		             Feature  listarComputadorDisponivel = new ListarComputadorDisponivelFeature();
-			         Element tiposXML = listarComputadorDisponivel.process(null);
+		             Feature  listarComputadorDisponivel = new ListarEquipamentoFeature();
+					 Element in = new Element("in");
+					 Element descTipo = new Element("desc-tipo-equipamento");
+					 descTipo.setText("Computador");					 
+					 in.getChildren().add(descTipo);
+					
+					 descTipo = new Element("desc-tipo-situacao");
+					 descTipo.setText("Disponível");					 
+					 in.getChildren().add(descTipo);					 
+			         Element tiposXML = listarComputadorDisponivel.process(in);
 			         Iterator tipos = tiposXML.getChildren().iterator();
 					 if (! tipos.hasNext()) {
 					 %>
@@ -55,7 +64,7 @@
 			          %>
 					   <tr>
 					      <td><%= tipo.getChildTextTrim("nome-sala") %></td>
-					      <td><a href="<%= destino %>?cod-usuario=<%=request.getAttribute("cod-usuario")%>&cod-computador=<%= tipo.getChildTextTrim("cod-computador") %>"><%= tipo.getChildTextTrim("descricao-computador") %></a></td>
+					      <td><a href="<%= destino %>?cod-usuario=<%=request.getAttribute("cod-usuario")%>&cod-equipamento=<%= tipo.getChildTextTrim("cod-equipamento") %>"><%= tipo.getChildTextTrim("nome-equipamento") %></a></td>
 					   </tr>						
                       <% }	%>
 					</table>

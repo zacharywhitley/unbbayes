@@ -59,7 +59,7 @@ public class ListarEquipamentoFeature implements Feature {
 		}
 		
 		if (descTipoEquipamento != null) {
-			sql.append("  AND E.cod_tipo_equipamento = TS.cod_tipo_equipamento ");
+			sql.append("  AND E.cod_tipo_equipamento = TE.cod_tipo_equipamento ");
 			sql.append("  AND TE.desc_tipo_equipamento = ? ");
 		}
 		
