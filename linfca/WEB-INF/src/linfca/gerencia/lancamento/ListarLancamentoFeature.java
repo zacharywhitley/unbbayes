@@ -40,8 +40,9 @@ public class ListarLancamentoFeature implements Feature {
 		StringBuffer sql = new StringBuffer();
 		sql.append("select l.cod_lancamento, l.dt_hora_inicio_lancamento,");
 		sql.append(" l.dt_hora_fim_lancamento, u.nome, u.foto");
-		sql.append(" from lancamento l, usuario u");
+		sql.append(" from lancamento l, usuario u");		
 		sql.append(" where l.dt_hora_inicio_lancamento > ?");
+		sql.append(" AND l.cod_usuario = u.cod_usuario");
 		sql.append(" AND (l.dt_hora_fim_lancamento < ?");
 		if (aberto) {
 			sql.append(" OR l.dt_hora_fim_lancamento IS NULL)");
