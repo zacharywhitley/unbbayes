@@ -8,6 +8,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.tree.*;
 
+import unbbayes.controller.IconController;
 import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
 import unbbayes.util.*;
@@ -51,11 +52,12 @@ public class MetaphorTree extends JTree
         }
 
 	private class MetaphorTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer
-        {   ImageIcon yesIcon = new ImageIcon(getClass().getResource("/icons/yes-state.gif"));
-	    ImageIcon noIcon = new ImageIcon(getClass().getResource("/icons/no-state.gif"));
-	    ImageIcon emptyIcon = new ImageIcon(getClass().getResource("/icons/empty-state.gif"));
-            ImageIcon evidenciasIcon = new ImageIcon(getClass().getResource("/icons/more.gif"));
-            ImageIcon folderSmallIcon = new ImageIcon(getClass().getResource("/icons/folder-small.gif"));
+        {
+          ImageIcon yesIcon = iconController.getYesStateIcon();
+	    ImageIcon noIcon = iconController.getNoStateIcon();
+	    ImageIcon emptyIcon = iconController.getEmptyStateIcon();
+            ImageIcon evidenciasIcon = iconController.getMoreIcon();
+            ImageIcon folderSmallIcon = iconController.getFolderSmallIcon();
 
 	    public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus)
             {   super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
@@ -88,6 +90,7 @@ public class MetaphorTree extends JTree
         private boolean showProbability = false;
         private ArrayMap objectsMap = new ArrayMap();
         private NumberFormat nf;
+        protected IconController iconController = IconController.getInstance();
 
 	protected MetaphorTree()
         {   setShowsRootHandles(true);

@@ -9,7 +9,6 @@ import java.awt.event.MouseListener;
 import java.util.ResourceBundle;
 
 import javax.swing.AbstractListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JInternalFrame;
 
@@ -21,6 +20,7 @@ import javax.swing.JTree;
 
 import javax.swing.ListSelectionModel;
 
+import unbbayes.controller.IconController;
 import unbbayes.prs.msbn.MSNetwork;
 
 /**
@@ -34,11 +34,11 @@ import unbbayes.prs.msbn.MSNetwork;
 public class MSBNWindow extends JInternalFrame {
 	public static String EDITION_PANE = "editionPane";
 	public static String COMPILED_PANE = "compiledPane";
-	
+
 	/** Load resource file from this package */
 	private static ResourceBundle resource =
 		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
-	
+
 	private class MSBNListModel extends AbstractListModel {
 		public int getSize() {
 			return msbn.getNetCount();
@@ -48,97 +48,99 @@ public class MSBNWindow extends JInternalFrame {
 			return msbn.getNetAt(index);
 		}
 	}
-	
+
 	private MSNetwork msbn;
-	
+
 	private JScrollPane netScroll;
 	private JList netList;
-	
+
 	private JButton compileBtn;
 	private JButton editionBtn;
 	private JButton removeBtn;
 	private JButton newBtn;
-	
+
 	private CardLayout btnCard;
 	private JToolBar jtbBtns;
-	
+
+        protected IconController iconController = IconController.getInstance();
+
 	public MSBNWindow(MSNetwork msbn) {
 		super(msbn.getId(), true, true, true, true);
-		this.msbn = msbn;		
+		this.msbn = msbn;
         setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-		Container pane = getContentPane();		
+		Container pane = getContentPane();
 		initComponents();
 		pane.setLayout(new BorderLayout());
 		pane.add(makeListPanel(), BorderLayout.WEST);
 		init();
 	}
-	
+
 	public MSNetwork getMSNet() {
-		return msbn;		
+		return msbn;
 	}
-	
+
 	private void initComponents() {
-		netList = new JList(new MSBNListModel());		
-		compileBtn = new JButton(new ImageIcon(getClass().getResource("/icons/compile.gif")));
+		netList = new JList(new MSBNListModel());
+		compileBtn = new JButton(iconController.getCompileIcon());
 		compileBtn.setToolTipText(resource.getString("compileToolTip"));
-		editionBtn = new JButton(new ImageIcon(getClass().getResource("/icons/edit.gif")));
-		removeBtn = new JButton(new ImageIcon(getClass().getResource("/icons/less.gif")));
-		newBtn = new JButton(new ImageIcon(getClass().getResource("/icons/more.gif")));
+		editionBtn = new JButton(iconController.getEditIcon());
+		removeBtn = new JButton(iconController.getLessIcon());
+		newBtn = new JButton(iconController.getMoreIcon());
 	}
-	
+
 	private void init() {
 		netList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	}
-	
+
 	private JPanel makeListPanel() {
 		JPanel netPanel = new JPanel(new BorderLayout());
 		netScroll = new JScrollPane(netList);
 		netPanel.add(netScroll, BorderLayout.CENTER);
 		setupButtonsPanel();
-		netPanel.add(jtbBtns, BorderLayout.NORTH);		
+		netPanel.add(jtbBtns, BorderLayout.NORTH);
 		return netPanel;
 	}
-	
+
 	private void setupButtonsPanel() {
 		btnCard = new CardLayout();
 		jtbBtns = new JToolBar();
 		jtbBtns.setLayout(btnCard);
 		JPanel editionPane = new JPanel();
-		jtbBtns.add(editionPane, EDITION_PANE);		
+		jtbBtns.add(editionPane, EDITION_PANE);
 		editionPane.add(newBtn);
 		editionPane.add(removeBtn);
 		editionPane.add(compileBtn);
-		
-		JPanel compiledPane = new JPanel();		
+
+		JPanel compiledPane = new JPanel();
 		compiledPane.add(editionBtn);
 		jtbBtns.add(compiledPane, COMPILED_PANE);
 		showBtnPanel(EDITION_PANE);
 	}
-	
+
 	public void addCompileBtnActionListener(ActionListener a) {
 		compileBtn.addActionListener(a);
 	}
-	
+
 	public void addRemoveBtnActionListener(ActionListener a) {
 		removeBtn.addActionListener(a);
 	}
-	
+
 	public void addNewBtnActionListener(ActionListener a) {
 		newBtn.addActionListener(a);
 	}
-	
+
 	public void addEditionActionListener(ActionListener a) {
 		editionBtn.addActionListener(a);
 	}
-	
+
 	public void addListMouseListener(MouseListener l) {
 		netList.addMouseListener(l);
 	}
-	
+
 	public void showBtnPanel(String paneName) {
-		btnCard.show(jtbBtns, paneName);		
+		btnCard.show(jtbBtns, paneName);
 	}
-	
+
 	/**
 	 * Returns the netList.
 	 * @return JList
@@ -146,11 +148,11 @@ public class MSBNWindow extends JInternalFrame {
 	public JList getNetList() {
 		return netList;
 	}
-	
-	public void changeToTreeView(JTree tree) {		
+
+	public void changeToTreeView(JTree tree) {
 		netScroll.setViewportView(tree);
 	}
-	
+
 	public void changeToListView() {
 		netScroll.setViewportView(netList);
 	}

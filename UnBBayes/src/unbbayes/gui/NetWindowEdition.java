@@ -13,7 +13,6 @@ import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -24,7 +23,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
-import unbbayes.controller.WindowController;
+import unbbayes.controller.*;
 import unbbayes.prs.Node;
 
 
@@ -78,6 +77,8 @@ public class NetWindowEdition extends JPanel {
     private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
     private Matcher matcher;
 
+    private final IconController iconController = IconController.getInstance();
+
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
@@ -104,22 +105,22 @@ public class NetWindowEdition extends JPanel {
         txtDescription     = new JTextField(15);
 
         //criar botões que serão usados nos toolbars
-        compile           = new JButton(new ImageIcon(getClass().getResource("/icons/compile.gif")));
-        more              = new JButton(new ImageIcon(getClass().getResource("/icons/more.gif")));
-        less              = new JButton(new ImageIcon(getClass().getResource("/icons/less.gif")));
-        arc               = new JButton(new ImageIcon(getClass().getResource("/icons/arc.gif")));
-        probabilisticNode = new JButton(new ImageIcon(getClass().getResource("/icons/ellipsis.gif")));
-        decisionNode      = new JButton(new ImageIcon(getClass().getResource("/icons/decision-node.gif")));
-        utilityNode       = new JButton(new ImageIcon(getClass().getResource("/icons/utility-node.gif")));
-        select            = new JButton(new ImageIcon(getClass().getResource("/icons/selection.gif")));
-        printNet          = new JButton(new ImageIcon(getClass().getResource("/icons/print-net.gif")));
-        printTable        = new JButton(new ImageIcon(getClass().getResource("/icons/print-table.gif")));
-        previewNet        = new JButton(new ImageIcon(getClass().getResource("/icons/preview-print.gif")));
-        previewTable      = new JButton(new ImageIcon(getClass().getResource("/icons/preview-table.gif")));
-        saveNetImage      = new JButton(new ImageIcon(getClass().getResource("/icons/save-net.gif")));
-        saveTableImage    = new JButton(new ImageIcon(getClass().getResource("/icons/save-table.gif")));
-        globalOption      = new JButton(new ImageIcon(getClass().getResource("/icons/global-options.gif")));
-        hierarchy         = new JButton(new ImageIcon(getClass().getResource("/icons/hierarchy.gif")));
+        compile           = new JButton(iconController.getCompileIcon());
+        more              = new JButton(iconController.getMoreIcon());
+        less              = new JButton(iconController.getLessIcon());
+        arc               = new JButton(iconController.getArcIcon());
+        probabilisticNode = new JButton(iconController.getEllipsisIcon());
+        decisionNode      = new JButton(iconController.getDecisionNodeIcon());
+        utilityNode       = new JButton(iconController.getUtilityNodeIcon());
+        select            = new JButton(iconController.getSelectionIcon());
+        printNet          = new JButton(iconController.getPrintNetIcon());
+        printTable        = new JButton(iconController.getPrintTableIcon());
+        previewNet        = new JButton(iconController.getPrintPreviewNetIcon());
+        previewTable      = new JButton(iconController.getPrintPreviewTableIcon());
+        saveNetImage      = new JButton(iconController.getSaveNetIcon());
+        saveTableImage    = new JButton(iconController.getSaveTableIcon());
+        globalOption      = new JButton(iconController.getGlobalOptionIcon());
+        hierarchy         = new JButton(iconController.getHierarchyIcon());
 
         //setar tooltip para esses botões
         compile.setToolTipText(resource.getString("compileToolTip"));
@@ -225,10 +226,10 @@ public class NetWindowEdition extends JPanel {
             }
         });
         /*
-        // listener responsável pela entrada de 
+        // listener responsável pela entrada de
         table.addKeyListener(new KeyAdapter() {
           public void keyPressed(KeyEvent e) {
-            
+
               if ((e.getKeyCode() == e.VK_ENTER) && (txtSigla.getText().length()>1)) {
                 try {
                     String name = txtSigla.getText(0,txtSigla.getText().length());
@@ -244,8 +245,8 @@ public class NetWindowEdition extends JPanel {
                 catch (javax.swing.text.BadLocationException ble) {
                     System.out.println(ble.getMessage());
                 }
-              }     
-          
+              }
+
           }
         });
 */

@@ -12,8 +12,8 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.tree.*;
 
+import unbbayes.controller.IconController;
 import unbbayes.prs.*;
-
 import unbbayes.util.*;
 
 /**
@@ -32,6 +32,7 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
   private DropTarget dropTarget = null;
   /** enables this component to be a Drag Source */
   private DragSource dragSource = null;
+  protected IconController iconController = IconController.getInstance();
 
   public HierarchicTree(DefaultTreeModel model)
   {   super(model);
@@ -51,9 +52,9 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
   }
 
   private class HierarchicTreeCellRenderer extends DefaultTreeCellRenderer
-  {   private ImageIcon folderSmallIcon = new ImageIcon(getClass().getResource("/icons/folder-small.gif"));
-      private ImageIcon yellowBallIcon = new ImageIcon(getClass().getResource("/icons/yellow-ball.gif"));
-      private ImageIcon greenBallIcon = new ImageIcon(getClass().getResource("/icons/green-ball.gif"));
+  {   private ImageIcon folderSmallIcon = iconController.getFolderSmallIcon();
+      private ImageIcon yellowBallIcon = iconController.getYellowBallIcon();
+      private ImageIcon greenBallIcon = iconController.getGreenBallIcon();
 
       public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus)
       {

@@ -7,6 +7,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.tree.*;
 
+import unbbayes.controller.IconController;
 import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
 
@@ -37,6 +38,7 @@ public class HierarchicDefinitionPanel extends JPanel
   private JButton collapse;
   private JLabel statusBar;
   private DefaultMutableTreeNode selectedNode;
+  protected IconController iconController = IconController.getInstance();
 
   /** Load resource file from this package */
   private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
@@ -58,12 +60,12 @@ public class HierarchicDefinitionPanel extends JPanel
     hierarchicTree = net.getHierarchicTree();
 
     //cria botões que serão usados nos toolbars
-    deleteButton        = new JButton(new ImageIcon(getClass().getResource("/icons/delete-folder.gif")));
-    renameButton        = new JButton(new ImageIcon(getClass().getResource("/icons/rename-folder.gif")));
-    addFolderButton     = new JButton(new ImageIcon(getClass().getResource("/icons/add-folder.gif")));
-    expand              = new JButton(new ImageIcon(getClass().getResource("/icons/expand-nodes.gif")));
-    edit                = new JButton(new ImageIcon(getClass().getResource("/icons/edit.gif")));
-    collapse            = new JButton(new ImageIcon(getClass().getResource("/icons/contract-nodes.gif")));
+    deleteButton        = new JButton(iconController.getDeleteFolderIcon());
+    renameButton        = new JButton(iconController.getRenameFolderIcon());
+    addFolderButton     = new JButton(iconController.getAddFolderIcon());
+    expand              = new JButton(iconController.getExpandIcon());
+    edit                = new JButton(iconController.getEditIcon());
+    collapse            = new JButton(iconController.getColapseIcon());
 
     //seta tooltip para esses botões
     deleteButton.setToolTipText("Delete Folder");

@@ -6,6 +6,7 @@ import java.util.*;
 import java.io.*;
 import javax.swing.*;
 import javax.swing.border.*;
+import unbbayes.controller.IconController;
 import unbbayes.datamining.gui.*;
 
 /**
@@ -53,6 +54,7 @@ public class NeuralModelMain extends JInternalFrame{
   protected AttributePanel attributePanel;
   protected RulesPanel rulesPanel;
   protected InferencePanel inferencePanel = new InferencePanel();
+  protected IconController iconController = IconController.getInstance();
 
   /**
    * Construct the frame.
@@ -72,10 +74,10 @@ public class NeuralModelMain extends JInternalFrame{
   }
 
   private void jbInit() throws Exception{
-    openIcon = new ImageIcon(getClass().getResource("/icons/open.gif"));
-    compileIcon = new ImageIcon(getClass().getResource("/icons/learn.gif"));
-    helpIcon = new ImageIcon(getClass().getResource("/icons/help.gif"));
-    saveIcon = new ImageIcon(getClass().getResource("/icons/save.gif"));
+    openIcon = iconController.getOpenIcon();
+    compileIcon = iconController.getCompileIcon();
+    helpIcon = iconController.getHelpIcon();
+    saveIcon = iconController.getSaveIcon();
     contentPane = (JPanel) this.getContentPane();
     titledBorder1 = new TitledBorder(border1,"Status");
     this.setSize(new Dimension(640, 521));

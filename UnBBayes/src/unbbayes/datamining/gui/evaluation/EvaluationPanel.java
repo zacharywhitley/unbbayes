@@ -91,7 +91,8 @@ public class EvaluationPanel extends JPanel
     }
   }
   private void jbInit() throws Exception
-  { salvarIcon = new ImageIcon(getClass().getResource("/icons/save.gif"));
+  {
+    salvarIcon = IconController.getInstance().getSaveIcon();
     titledBorder10 = new TitledBorder(border10,"Classifier output");
     titledBorder9 = new TitledBorder(border10,"Select Class");
     titledBorder8 = new TitledBorder(border10,"Log");

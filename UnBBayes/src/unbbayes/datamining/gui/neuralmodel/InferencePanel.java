@@ -8,6 +8,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
+import unbbayes.controller.IconController;
 import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
@@ -50,6 +51,7 @@ public class InferencePanel extends JPanel {
   private JScrollPane jScrollPane3 = new JScrollPane();
   private JTextPane textPaneResults = new JTextPane();
   private JTextPane textPaneRules = new JTextPane();
+  protected IconController iconController = IconController.getInstance();
 
   public InferencePanel() {
     try {
@@ -61,9 +63,9 @@ public class InferencePanel extends JPanel {
     }
   }
   void jbInit() throws Exception {
-    colapseIcon = new ImageIcon(getClass().getResource("/icons/contract-nodes.gif"));
-    expandIcon = new ImageIcon(getClass().getResource("/icons/expand-nodes.gif"));
-    propagateIcon = new ImageIcon(getClass().getResource("/icons/propagate.gif"));
+    colapseIcon = iconController.getColapseIcon();
+    expandIcon = iconController.getExpandIcon();
+    propagateIcon = iconController.getPropagateIcon();
     this.setLayout(borderLayout1);
     jPanel1.setLayout(borderLayout5);
     jPanel2.setLayout(borderLayout2);

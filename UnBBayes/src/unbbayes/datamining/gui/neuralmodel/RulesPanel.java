@@ -8,6 +8,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.table.*;
 
+import unbbayes.controller.IconController;
 import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
@@ -45,6 +46,7 @@ public class RulesPanel extends JPanel {
   private JButton previewButton = new JButton();
   private GridLayout gridLayout2 = new GridLayout();
   private NeuralModelController controller;
+  protected IconController iconController = IconController.getInstance();
 
   /**
    * Builds a new panel.
@@ -66,8 +68,8 @@ public class RulesPanel extends JPanel {
     }
   }
   void jbInit() throws Exception {
-    printIcon = new ImageIcon(getClass().getResource("/icons/print-table.gif"));
-    printPreviewIcon = new ImageIcon(getClass().getResource("/icons/preview-table.gif"));
+    printIcon = iconController.getPrintTableIcon();
+    printPreviewIcon = iconController.getPrintPreviewTableIcon();
     this.setLayout(borderLayout1);
     jPanel1.setLayout(borderLayout2);
     jPanel2.setLayout(gridLayout1);

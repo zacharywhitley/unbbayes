@@ -25,6 +25,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.filechooser.*;
 
+import unbbayes.controller.IconController;
 /**
  *  Essa classe extende o <code>FileView</code> que é o responsável por
  *  mostrar os ícones correspondentes para cada tipo de aquivo e pasta.
@@ -38,6 +39,7 @@ public class FileIcon extends FileView {
 
     private JFileChooser fc;
     private Component observer;
+    protected IconController iconController = IconController.getInstance();
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
@@ -87,13 +89,13 @@ public class FileIcon extends FileView {
          */
         String name = f.getName();
         if (name.endsWith(".arff")) {
-            return new ImageIcon(getClass().getResource("/icons/arff-file.gif"));
+            return iconController.getArffFileIcon();
         }
         if (name.toLowerCase().endsWith(".txt")) {
-            return new ImageIcon(getClass().getResource("/icons/txt-file.gif"));
+            return iconController.getTxtFileIcon();
         }
         if (name.toLowerCase().endsWith(".net")) {
-            return new ImageIcon(getClass().getResource("/icons/net-file.gif"));
+            return iconController.getNetFileIcon();
         }
         return fc.getIcon(f);
     }

@@ -8,6 +8,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.tree.*;
 
+import unbbayes.controller.IconController;
 import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
 import unbbayes.util.*;
@@ -21,6 +22,7 @@ public class EvidenceTree extends JTree {
 	private NumberFormat nf;
 	private boolean[] expandedNodes;
 	private ArrayMap objectsMap = new ArrayMap();
+        protected IconController iconController = IconController.getInstance();
 
 	public EvidenceTree(final NetWindow netWindow) {
 		net = netWindow.getRede();
@@ -64,7 +66,7 @@ public class EvidenceTree extends JTree {
 					} else if (e.getClickCount() == 2) {
 						DefaultMutableTreeNode root = (DefaultMutableTreeNode)getModel().getRoot();
 						int index = root.getIndex(node);
-						expandedNodes[index] = ! expandedNodes[index];						
+						expandedNodes[index] = ! expandedNodes[index];
 						/*
 						Node newNode = getNodeMap(node);
 						if (newNode != null) {
@@ -81,15 +83,10 @@ public class EvidenceTree extends JTree {
 	}
 
 	private class EvidenceTreeCellRenderer extends DefaultTreeCellRenderer {
-		private ImageIcon folderSmallIcon =
-			new ImageIcon(getClass().getResource("/icons/folder-small.gif"));
-		private ImageIcon folderSmallDisabledIcon =
-			new ImageIcon(
-				getClass().getResource("/icons/folder-small-disabled.gif"));
-		private ImageIcon yellowBallIcon =
-			new ImageIcon(getClass().getResource("/icons/yellow-ball.gif"));
-		private ImageIcon greenBallIcon =
-			new ImageIcon(getClass().getResource("/icons/green-ball.gif"));
+		private ImageIcon folderSmallIcon = iconController.getFolderSmallIcon();
+		private ImageIcon folderSmallDisabledIcon = iconController.getFolderSmallDisabledIcon();
+		private ImageIcon yellowBallIcon = iconController.getYellowBallIcon();
+		private ImageIcon greenBallIcon = iconController.getGreenBallIcon();
 
 		public Component getTreeCellRendererComponent(
 			JTree tree,
@@ -180,9 +177,9 @@ public class EvidenceTree extends JTree {
 			expandedNodes[i] = true;
 		}
 	}
-	
+
 	private void restoreTree() {
-		for (int i = expandedNodes.length-1; i >= 0; i--) {			
+		for (int i = expandedNodes.length-1; i >= 0; i--) {
 			if (expandedNodes[i]) {
 				expandRow(i);
 			} else {
@@ -206,7 +203,7 @@ public class EvidenceTree extends JTree {
 				expandedNodes[i] = false;
 			}
 		}
-		
+
 		DefaultMutableTreeNode root =
 			(DefaultMutableTreeNode) getModel().getRoot();
 		root.removeAllChildren();
@@ -249,7 +246,7 @@ public class EvidenceTree extends JTree {
 				treeNode.add(new DefaultMutableTreeNode(label));
 			}
 		}
-		restoreTree();		
+		restoreTree();
 		((DefaultTreeModel) getModel()).reload(root);
 		restoreTree();
 	}

@@ -41,6 +41,8 @@ public class NetWindowCompilation extends JPanel {
     private final JButton previewNet;
     private final JButton saveNetImage;
 
+    private final IconController iconController = IconController.getInstance();
+
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
@@ -61,15 +63,15 @@ public class NetWindowCompilation extends JPanel {
         status         = new JLabel(resource.getString("statusReadyLabel"));
 
         //criar botões que serão usados nos toolbars
-        propagate         = new JButton(new ImageIcon(getClass().getResource("/icons/propagate.gif")));
-        expand            = new JButton(new ImageIcon(getClass().getResource("/icons/expand-nodes.gif")));
-        collapse          = new JButton(new ImageIcon(getClass().getResource("/icons/contract-nodes.gif")));
-        editMode          = new JButton(new ImageIcon(getClass().getResource("/icons/edit.gif")));
-        log               = new JButton(new ImageIcon(getClass().getResource("/icons/information.gif")));
-        reset             = new JButton(new ImageIcon(getClass().getResource("/icons/initialize.gif")));
-        printNet          = new JButton(new ImageIcon(getClass().getResource("/icons/print-net.gif")));
-        previewNet        = new JButton(new ImageIcon(getClass().getResource("/icons/preview-print.gif")));
-        saveNetImage      = new JButton(new ImageIcon(getClass().getResource("/icons/save-net.gif")));
+        propagate         = new JButton(iconController.getPropagateIcon());
+        expand            = new JButton(iconController.getExpandIcon());
+        collapse          = new JButton(iconController.getColapseIcon());
+        editMode          = new JButton(iconController.getEditIcon());
+        log               = new JButton(iconController.getInformationIcon());
+        reset             = new JButton(iconController.getInitializeIcon());
+        printNet          = new JButton(iconController.getPrintNetIcon());
+        previewNet        = new JButton(iconController.getPrintPreviewNetIcon());
+        saveNetImage      = new JButton(iconController.getSaveNetIcon());
 
 
         //setar tooltip para esses botões
@@ -128,7 +130,7 @@ public class NetWindowCompilation extends JPanel {
         expand.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                     setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                    evidenceTree.expandTree();                    
+                    evidenceTree.expandTree();
                     setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 }
         });

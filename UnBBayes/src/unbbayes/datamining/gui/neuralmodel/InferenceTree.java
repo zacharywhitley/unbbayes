@@ -9,6 +9,7 @@ import javax.swing.tree.*;
 
 import unbbayes.util.*;
 
+import unbbayes.controller.IconController;
 import unbbayes.datamining.datamanipulation.*;
 
 /**
@@ -26,6 +27,7 @@ public class InferenceTree extends JTree{
   private Attribute[] attributeVector;
   private int classIndex;
   private InferencePanel inferencePanel;
+  protected IconController iconController = IconController.getInstance();
 
   protected InferenceTree(){
     setShowsRootHandles(true);
@@ -251,11 +253,11 @@ public class InferenceTree extends JTree{
   }
 
   private class CnmTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer{
-    ImageIcon yesIcon = new ImageIcon(getClass().getResource("/icons/yes-state.gif"));
-    ImageIcon noIcon = new ImageIcon(getClass().getResource("/icons/no-state.gif"));
-    ImageIcon emptyIcon = new ImageIcon(getClass().getResource("/icons/empty-state.gif"));
-    ImageIcon evidenciasIcon = new ImageIcon(getClass().getResource("/icons/more.gif"));
-    ImageIcon folderSmallIcon = new ImageIcon(getClass().getResource("/icons/folder-small.gif"));
+    ImageIcon yesIcon = iconController.getYesStateIcon();
+    ImageIcon noIcon = iconController.getNoStateIcon();
+    ImageIcon emptyIcon = iconController.getEmptyStateIcon();
+    ImageIcon evidenciasIcon = iconController.getMoreIcon();
+    ImageIcon folderSmallIcon = iconController.getFolderSmallIcon();
 
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus){
       super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);

@@ -1,5 +1,5 @@
 package unbbayes.datamining.gui.bayesianlearning;
- 
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -107,10 +107,12 @@ public class BayesianLearningMain extends JInternalFrame
    * @throws Exception
    * */
   private void jbInit() throws Exception
-  { abrirIcon = new ImageIcon(getClass().getResource("/icons/open.gif"));
-    compilaIcon = new ImageIcon(getClass().getResource("/icons/learn.gif"));
-    helpIcon = new ImageIcon(getClass().getResource("/icons/help.gif"));
-    salvarIcon = new ImageIcon(getClass().getResource("/icons/save.gif"));
+  {
+    IconController iconController = IconController.getInstance();
+    abrirIcon = iconController.getOpenIcon();
+    compilaIcon = iconController.getCompileIcon();
+    helpIcon = iconController.getHelpIcon();
+    salvarIcon = iconController.getSaveIcon();
     contentPane = (JPanel) this.getContentPane();
     titledBorder1 = new TitledBorder(border1,"Status");
     titledBorder2 = new TitledBorder(border1,"Main Settings");
@@ -297,7 +299,7 @@ public class BayesianLearningMain extends JInternalFrame
   }
 
   void jMenuItem4_actionPerformed(ActionEvent e)
-  {         
+  {
   	  AlgorithmController algorithmController = new AlgorithmController(inst,""+jComboBox2.getSelectedItem(),""+jComboBox3.getSelectedItem());
       // mostra a nova tela
 

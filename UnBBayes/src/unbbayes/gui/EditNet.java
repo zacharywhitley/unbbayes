@@ -8,7 +8,6 @@ import java.awt.event.ActionListener;
 
 import java.util.ResourceBundle;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
 import javax.swing.JPanel;
@@ -17,7 +16,7 @@ import javax.swing.JSplitPane;
 
 import javax.swing.JToolBar;
 
-import unbbayes.controller.WindowController;
+import unbbayes.controller.*;
 
 
 /**
@@ -34,6 +33,7 @@ public class EditNet extends JPanel {
     private final NetWindow netWindow;
 
     private final WindowController controller;
+    private final IconController iconController = IconController.getInstance();
     private final JSplitPane centerPanel;
 
     private final JPanel topPanel;
@@ -60,11 +60,11 @@ public class EditNet extends JPanel {
         centerPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
         //criar botões que serão usados nos toolbars
-        compile           = new JButton(new ImageIcon(getClass().getResource("/icons/compile.gif")));
-        arc               = new JButton(new ImageIcon(getClass().getResource("/icons/arc.gif")));
-        printNet          = new JButton(new ImageIcon(getClass().getResource("/icons/print-net.gif")));
-        previewNet        = new JButton(new ImageIcon(getClass().getResource("/icons/preview-print.gif")));
-        saveNetImage      = new JButton(new ImageIcon(getClass().getResource("/icons/save-net.gif")));
+        compile           = new JButton(iconController.getCompileIcon());
+        arc               = new JButton(iconController.getArcIcon());
+        printNet          = new JButton(iconController.getPrintNetIcon());
+        previewNet        = new JButton(iconController.getPrintPreviewNetIcon());
+        saveNetImage      = new JButton(iconController.getSaveNetIcon());
 
         //setar tooltip para esses botões
         compile.setToolTipText(resource.getString("compileToolTip"));

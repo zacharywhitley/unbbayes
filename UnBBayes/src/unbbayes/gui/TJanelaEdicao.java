@@ -28,7 +28,6 @@ import java.awt.event.WindowEvent;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -36,6 +35,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JViewport;
 
+import unbbayes.controller.IconController;
 import unbbayes.prs.*;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
@@ -57,6 +57,8 @@ public class TJanelaEdicao extends JDialog {
     private JScrollPane jspView;
     private ProbabilisticNetwork net;
 
+    protected IconController iconController = IconController.getInstance();
+
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
@@ -68,8 +70,8 @@ public class TJanelaEdicao extends JDialog {
         setSize(550, 470);
         setResizable(true);
 
-        insereArco = new JButton(new ImageIcon(getClass().getResource("/icons/arc.gif")));
-        reaprende  = new JButton(new ImageIcon(getClass().getResource("/icons/learn.gif")));
+        insereArco = new JButton(iconController.getArcIcon());
+        reaprende  = new JButton(iconController.getCompileIcon());
         view       = new JViewport();
         jtb        = new JToolBar();
         rede       = new TEditaRede(this, net);
@@ -88,27 +90,27 @@ public class TJanelaEdicao extends JDialog {
 
         //ao clicar no botão reaprende, mostra-se o menu para escolha do arquivo para o aprendizado.
         reaprende.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {            	
-            	List edgeList = net.getEdges();            	
-            	Edge edge;       
-            	Node node;	            	
+            public void actionPerformed(ActionEvent ae) {
+            	List edgeList = net.getEdges();
+            	Edge edge;
+            	Node node;
             	boolean close = true;
             	for(int i = 0; i < edgeList.size() && close; i++){
                      edge = (Edge)edgeList.get(i);
                     if(!edge.hasDirection()){
-                    	JOptionPane.showMessageDialog(null,"Todos os arcos tem que ter uma direção.","ERROR",JOptionPane.ERROR_MESSAGE);                 
+                    	JOptionPane.showMessageDialog(null,"Todos os arcos tem que ter uma direção.","ERROR",JOptionPane.ERROR_MESSAGE);
                     	return;
                     }
                	}
                	for(int i = 0; i < net.getNodeCount() && close; i++){
                      node = net.getNodeAt(i);
                     if(node.getChildren().size() == 0 && node.getParents().size() == 0){
-                    	JOptionPane.showMessageDialog(null,"Todo nó deve tem que ter pelo menos um adjacente.","ERROR",JOptionPane.ERROR_MESSAGE);                    	
+                    	JOptionPane.showMessageDialog(null,"Todo nó deve tem que ter pelo menos um adjacente.","ERROR",JOptionPane.ERROR_MESSAGE);
                     	return;
                     }
-               	}               	
+               	}
                 setVisible(false);
-                dispose();               	
+                dispose();
             }
         });
 

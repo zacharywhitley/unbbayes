@@ -62,8 +62,10 @@ public class EvaluationMain extends JInternalFrame
    * @throws Exception if any error
    * */
   private void jbInit() throws Exception
-  { abrirIcon = new ImageIcon(getClass().getResource("/icons/open.gif"));
-    helpIcon = new ImageIcon(getClass().getResource("/icons/help.gif"));
+  {
+    IconController iconController = IconController.getInstance();
+    abrirIcon = iconController.getOpenIcon();
+    helpIcon = iconController.getHelpIcon();
     contentPane = (JPanel) this.getContentPane();
     titledBorder5 = new TitledBorder(border5,resource.getString("selectProgram"));
     border5 = BorderFactory.createLineBorder(new Color(153, 153, 153),1);

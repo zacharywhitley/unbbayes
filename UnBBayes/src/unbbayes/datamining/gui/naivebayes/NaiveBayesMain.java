@@ -76,10 +76,12 @@ public class NaiveBayesMain extends JInternalFrame
    * @throws Exception
    * */
   private void jbInit() throws Exception
-  { abrirIcon = new ImageIcon(getClass().getResource("/icons/open.gif"));
-    compilaIcon = new ImageIcon(getClass().getResource("/icons/learn.gif"));
-    helpIcon = new ImageIcon(getClass().getResource("/icons/help.gif"));
-    salvarIcon = new ImageIcon(getClass().getResource("/icons/save.gif"));
+  {
+    IconController iconController = IconController.getInstance();
+    abrirIcon = iconController.getOpenIcon();
+    compilaIcon = iconController.getCompileIcon();
+    helpIcon = iconController.getHelpIcon();
+    salvarIcon = iconController.getSaveIcon();
     contentPane = (JPanel) this.getContentPane();
     jPanel1 = new JPanel();
     titledBorder1 = new TitledBorder(border1,"Status");

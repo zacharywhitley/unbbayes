@@ -47,7 +47,6 @@ import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -100,7 +99,7 @@ public class WindowController implements KeyListener {
     private List copiados;
 
     private boolean bColou;
-    
+
     private final Pattern decimalPattern = Pattern.compile("[0-9]*([.|,][0-9]+)?");
     private Matcher matcher;
 
@@ -313,10 +312,11 @@ public class WindowController implements KeyListener {
         JScrollPane jspTexto = new JScrollPane(texto);
         jspTexto.setPreferredSize(new Dimension(450, 400));
 
+        IconController iconController = IconController.getInstance();
         JPanel panel = new JPanel(new BorderLayout());
-        JButton botaoImprimir = new JButton(new ImageIcon(getClass().getResource("/icons/print.gif")));
+        JButton botaoImprimir = new JButton(iconController.getPrintIcon());
         botaoImprimir.setToolTipText(resource.getString("printLogToolTip"));
-        JButton botaoVisualizar = new JButton(new ImageIcon(getClass().getResource("/icons/visualize.gif")));
+        JButton botaoVisualizar = new JButton(iconController.getVisualizeIcon());
         botaoVisualizar.setToolTipText(resource.getString("previewLogToolTip"));
         botaoImprimir.addActionListener(
             new ActionListener() {
@@ -366,7 +366,7 @@ public class WindowController implements KeyListener {
      *      problema na compilação
      * @since
      * @see       JOptionPane
-     */ 
+     */
     public boolean compileNetwork() {
         long ini = System.currentTimeMillis();
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -394,9 +394,9 @@ public class WindowController implements KeyListener {
                 }
             }
         }
-        
+
         screen.getEvidenceTree().updateTree();
-        
+
         screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 
         screen.setStatus(resource.getString("statusTotalTime") + df.format(((System.currentTimeMillis() - ini))/1000.0) + resource.getString("statusSeconds"));
@@ -492,7 +492,7 @@ public class WindowController implements KeyListener {
             int states = 1;
             variables = potTab.variableCount();
 
-            // calculate the number of states by multiplying the number of 
+            // calculate the number of states by multiplying the number of
             // states that each father (variables) has. Where variable 0 is the
             // node itself. That is why it starts at 1.
             /* Ex: states = 2 * 2;
@@ -509,42 +509,42 @@ public class WindowController implements KeyListener {
             for (int count = 1; count < variables; count++) {
                 states *= potTab.getVariableAt(count).getStatesSize();
             }
-            
+
             // the number of rows is the number of states the node has plus the
-            // number of fathers (variables - 1, because one of the variables 
+            // number of fathers (variables - 1, because one of the variables
             // is the node itself).
             int rows = node.getStatesSize() + variables - 1;
-            
+
             // the number of columns is the number of states that we calculate
-            // before plus one that is the column where the fathers names and 
+            // before plus one that is the column where the fathers names and
             // the states of the node itself will be placed.
             int columns = states + 1;
-            
+
 
             table = new JTable(rows, columns);
 
-            // put the name of the states of the node in the first column 
-            // starting in the (variables - 1)th row (number of fathers). That 
-            // is because on the rows before that there will be placed the 
+            // put the name of the states of the node in the first column
+            // starting in the (variables - 1)th row (number of fathers). That
+            // is because on the rows before that there will be placed the
             // name of the fathers.
             for (int k = variables - 1, l = 0; k < table.getRowCount(); k++, l++) {
                 table.setValueAt(node.getStateAt(l), k, 0);
             }
 
-            // put the name of the father and its states' name in the right 
+            // put the name of the father and its states' name in the right
             // place.
             for (int k = variables - 1, l = 0; k >= 1; k--, l++) {
                 Node variable = potTab.getVariableAt(k);
-                
+
                 // the number of states is the multiplication of the number of
                 // states of the other fathers above this one.
                 states /= variable.getStatesSize();
-                
+
                 // put the name of the father in the first column.
                 table.setValueAt(variable.getName(), l, 0);
-                
-                // put the name of the states of this father in the lth row 
-                // and ith column, repeating the name if necessary (for each 
+
+                // put the name of the states of this father in the lth row
+                // and ith column, repeating the name if necessary (for each
                 // state of the father above).
                 for (int i = 0; i < table.getColumnCount() - 1; i++) {
                     table.setValueAt(variable.getStateAt((i / states) % variable.getStatesSize()), l, i + 1);
@@ -553,7 +553,7 @@ public class WindowController implements KeyListener {
 
             // now states is the number of states that the node has.
             states = node.getStatesSize();
-            
+
             // put the values of the probabilistic table in the jth row and ith
             // column, picking up the values in a double collection in potTab.
             for (int i = 1, k = 0; i < table.getColumnCount(); i++, k += states) {
@@ -561,16 +561,16 @@ public class WindowController implements KeyListener {
                     table.setValueAt("" + df.format(potTab.getValue(k + l)), j, i);
                 }
             }
-            
+
         } else {
             // decision
-            
-            // the number of rows in this case is the number of states of the 
+
+            // the number of rows in this case is the number of states of the
             // node and the number of columns is always 1.
             int rows = node.getStatesSize();
             int columns = 1;
-            
-            // there is no potential table and the number of variables is the 
+
+            // there is no potential table and the number of variables is the
             // number of parents this node has.
             potTab = null;
             variables = node.getParents().size();
@@ -580,9 +580,9 @@ public class WindowController implements KeyListener {
             for (int i = 0; i < node.getStatesSize(); i++) {
                 table.setValueAt(node.getStateAt(i), i, 0);
             }
-            
+
         }
-        
+
         table.setTableHeader(null);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.getModel().addTableModelListener(
@@ -613,7 +613,7 @@ public class WindowController implements KeyListener {
                     }
                 }
             });
-            
+
             //table = new unbbayes.gui.table.ProbabilisticTable(node, new ProbabilisticTableModel(node));
             //table = new JTable(new ProbabilisticTableModel(node));
             //System.out.println(table.toString());

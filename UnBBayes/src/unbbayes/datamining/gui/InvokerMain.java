@@ -82,13 +82,14 @@ public class InvokerMain extends JFrame
   private void jbInit() throws Exception
   { openDefaultOptions();
     resource = ResourceBundle.getBundle("unbbayes.datamining.gui.resources.GuiResource");
-    metalIcon = new ImageIcon(getClass().getResource("/icons/metal.gif"));
-    motifIcon = new ImageIcon(getClass().getResource("/icons/motif.gif"));
-    windowsIcon = new ImageIcon(getClass().getResource("/icons/windows.gif"));
-    cascadeIcon = new ImageIcon(getClass().getResource("/icons/cascade.gif"));
-    tileIcon = new ImageIcon(getClass().getResource("/icons/tile.gif"));
-    helpIcon = new ImageIcon(getClass().getResource("/icons/help.gif"));
-    opcaoglobalIcon = new ImageIcon(getClass().getResource("/icons/global-options.gif"));
+    IconController iconController = IconController.getInstance();
+    metalIcon = iconController.getMetalIcon();
+    motifIcon = iconController.getMotifIcon();
+    windowsIcon = iconController.getWindowsIcon();
+    cascadeIcon = iconController.getCascadeIcon();
+    tileIcon = iconController.getTileIcon();
+    helpIcon = iconController.getHelpIcon();
+    opcaoglobalIcon = iconController.getGlobalOptionIcon();
     contentPane = (JPanel) this.getContentPane();
     contentPane.setLayout(borderLayout1);
     jMenuItem2.setMnemonic(((Character)resource.getObject("id3Mnemonic")).charValue());

@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
 
+import unbbayes.controller.IconController;
 import unbbayes.datamining.classifiers.*;
 
 public class InductionPanel extends JPanel
@@ -153,7 +154,7 @@ public class InductionPanel extends JPanel
       if (buttonName.equals(resource.getString("back")))
       {   jRadioButton.setMnemonic(((Character)resource.getObject("backMnemonic")).charValue());
           try
-          {   jRadioButton.setIcon(new ImageIcon(getClass().getResource("/icons/return.gif")));
+          {   jRadioButton.setIcon(IconController.getInstance().getReturnIcon());
           }
           catch (Exception e)
           {}

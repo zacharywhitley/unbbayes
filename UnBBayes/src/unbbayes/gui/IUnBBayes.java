@@ -36,7 +36,6 @@ import java.util.ResourceBundle;
 
 import javax.help.HelpSet;
 import javax.help.JHelp;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
@@ -54,7 +53,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import unbbayes.aprendizagem.ConstructionController;
-import unbbayes.controller.MainController;
+import unbbayes.controller.*;
 
 /**
  *  Essa classe extende o <code>JFrame</code> e é responsável pela interface
@@ -66,7 +65,7 @@ import unbbayes.controller.MainController;
  *@version    1.0 06/07/2001
  */
 public class IUnBBayes extends JFrame {
-		
+
 	private MDIDesktopPane desktop;
 	private JPanel topPanel;
 	private JPanel bottomPanel;
@@ -106,7 +105,9 @@ public class IUnBBayes extends JFrame {
 	private ActionListener alCascade;
 	private ActionListener alTile;
 	private ActionListener alHelp;
-	private ActionListener alAbout;		 
+	private ActionListener alAbout;
+
+        protected IconController iconController = IconController.getInstance();
 
 	private static IUnBBayes singleton = null;
 
@@ -201,7 +202,7 @@ public class IUnBBayes extends JFrame {
 	 */
 	public void createActionListeners() {
 
-		// create an ActionListener for opening new window for BN	
+		// create an ActionListener for opening new window for BN
 		alNewBN = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -209,7 +210,7 @@ public class IUnBBayes extends JFrame {
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		};
-		
+
 		// create an ActionListener for opening new window for MSBN
 		alNewMSBN = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
@@ -228,7 +229,7 @@ public class IUnBBayes extends JFrame {
 				chooser.setMultiSelectionEnabled(false);
 				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
-				// adicionar FileView no FileChooser para desenhar ícones de 
+				// adicionar FileView no FileChooser para desenhar ícones de
 				// arquivos
 				chooser.setFileView(new FileIcon(IUnBBayes.this));
 
@@ -255,7 +256,7 @@ public class IUnBBayes extends JFrame {
 				chooser.setMultiSelectionEnabled(false);
 				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
-				// adicionar FileView no FileChooser para desenhar ícones de 
+				// adicionar FileView no FileChooser para desenhar ícones de
 				// arquivos
 				chooser.setFileView(new FileIcon(IUnBBayes.this));
 				chooser.setCurrentDirectory(new File("."));
@@ -270,7 +271,7 @@ public class IUnBBayes extends JFrame {
 						if (file.isFile()) {
 							String name = file.getName();
 							if (! name.endsWith(".net")) {
-								file = new File(file.getAbsoluteFile() + ".net");	
+								file = new File(file.getAbsoluteFile() + ".net");
 							}
 						}
 						controller.saveNet(file);
@@ -317,7 +318,7 @@ public class IUnBBayes extends JFrame {
 				} else {
 					topPanel.remove(jtbFile);
 				}
-				// lay out its subcomponents again after an container has been 
+				// lay out its subcomponents again after an container has been
 				// added, removed or modified
 				validate();
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -334,7 +335,7 @@ public class IUnBBayes extends JFrame {
 				} else {
 					topPanel.remove(jtbView);
 				}
-				// lay out its subcomponents again after an container has been 
+				// lay out its subcomponents again after an container has been
 				// added, removed or modified
 				validate();
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -351,7 +352,7 @@ public class IUnBBayes extends JFrame {
 				} else {
 					topPanel.remove(jtbTools);
 				}
-				// lay out its subcomponents again after an container has been 
+				// lay out its subcomponents again after an container has been
 				// added, removed or modified
 				validate();
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -368,7 +369,7 @@ public class IUnBBayes extends JFrame {
 				} else {
 					topPanel.remove(jtbWindow);
 				}
-				// lay out its subcomponents again after an container has been 
+				// lay out its subcomponents again after an container has been
 				// added, removed or modified
 				validate();
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -385,7 +386,7 @@ public class IUnBBayes extends JFrame {
 				} else {
 					topPanel.remove(jtbHelp);
 				}
-				// lay out its subcomponents again after an container has been 
+				// lay out its subcomponents again after an container has been
 				// added, removed or modified
 				validate();
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -486,26 +487,22 @@ public class IUnBBayes extends JFrame {
 		windowMenu.setMnemonic(resource.getString("windowMenuMn").charAt(0));
 		helpMenu.setMnemonic(resource.getString("helpMenuMn").charAt(0));
 
-		// create menu items, set their mnemonic and their key accelerator		
+		// create menu items, set their mnemonic and their key accelerator
 		JMenuItem newBN =
 			new JMenuItem(
-				resource.getString("newBN"),
-				new ImageIcon(getClass().getResource("/icons/new.gif")));
-				
-		
+				resource.getString("newBN"),iconController.getNewIcon());
+
+
 		JMenuItem newMSBN =
 			new JMenuItem(
-				resource.getString("newMSBN"),
-				new ImageIcon(getClass().getResource("/icons/new.gif")));
-				
+				resource.getString("newMSBN"),iconController.getNewIcon());
+
 		JMenuItem openItem =
 			new JMenuItem(
-				resource.getString("openItem"),
-				new ImageIcon(getClass().getResource("/icons/open.gif")));
+				resource.getString("openItem"),iconController.getOpenIcon());
 		JMenuItem saveItem =
 			new JMenuItem(
-				resource.getString("saveItem"),
-				new ImageIcon(getClass().getResource("/icons/save.gif")));
+				resource.getString("saveItem"),iconController.getSaveIcon());
 		JMenuItem exitItem = new JMenuItem(resource.getString("exitItem"), 'X');
 		JMenuItem tbFile =
 			new JCheckBoxMenuItem(resource.getString("tbFile"), true);
@@ -519,35 +516,28 @@ public class IUnBBayes extends JFrame {
 			new JCheckBoxMenuItem(resource.getString("tbHelp"), true);
 		JMenuItem metalItem =
 			new JMenuItem(
-				resource.getString("metalItem"),
-				new ImageIcon(getClass().getResource("/icons/metal.gif")));
+				resource.getString("metalItem"),iconController.getMetalIcon());
 		JMenuItem motifItem =
 			new JMenuItem(
-				resource.getString("motifItem"),
-				new ImageIcon(getClass().getResource("/icons/motif.gif")));
+				resource.getString("motifItem"),iconController.getMotifIcon());
 		JMenuItem windowsItem =
 			new JMenuItem(
-				resource.getString("windowsItem"),
-				new ImageIcon(getClass().getResource("/icons/windows.gif")));
+				resource.getString("windowsItem"),iconController.getWindowsIcon());
 		JMenuItem learningItem =
 			new JMenuItem(
-				resource.getString("learningItem"),
-				new ImageIcon(getClass().getResource("/icons/learn.gif")));
+				resource.getString("learningItem"),iconController.getCompileIcon());
 		JMenuItem cascadeItem =
 			new JMenuItem(
-				resource.getString("cascadeItem"),
-				new ImageIcon(getClass().getResource("/icons/cascade.gif")));
+				resource.getString("cascadeItem"),iconController.getCascadeIcon());
 		JMenuItem tileItem =
 			new JMenuItem(
-				resource.getString("tileItem"),
-				new ImageIcon(getClass().getResource("/icons/tile.gif")));
+				resource.getString("tileItem"),iconController.getTileIcon());
 		JMenuItem helpItem =
 			new JMenuItem(
-				resource.getString("helpItem"),
-				new ImageIcon(getClass().getResource("/icons/help.gif")));
+				resource.getString("helpItem"),iconController.getHelpIcon());
 		JMenuItem aboutItem =
-			new JMenuItem(resource.getString("aboutItem"));		
-		
+			new JMenuItem(resource.getString("aboutItem"));
+
 
 		newBN.setMnemonic(resource.getString("newItemMn").charAt(0));
 		openItem.setMnemonic(resource.getString("openItemMn").charAt(0));
@@ -628,7 +618,7 @@ public class IUnBBayes extends JFrame {
 	}
 
 	/**
-	 * Call the method for creating the needed buttons and then create the 
+	 * Call the method for creating the needed buttons and then create the
 	 * tool bars and add the buttons to them and finally to the topPanel.
 	 */
 	public void createToolBars() {
@@ -669,35 +659,25 @@ public class IUnBBayes extends JFrame {
 
 		// create the buttons
 		newNet =
-			new JButton(
-				new ImageIcon(getClass().getResource("/icons/new.gif")));
+			new JButton(iconController.getNewIcon());
 		openNet =
-			new JButton(
-				new ImageIcon(getClass().getResource("/icons/open.gif")));
+			new JButton(iconController.getOpenIcon());
 		saveNet =
-			new JButton(
-				new ImageIcon(getClass().getResource("/icons/save.gif")));
+			new JButton(iconController.getSaveIcon());
 		learn =
-			new JButton(
-				new ImageIcon(getClass().getResource("/icons/learn.gif")));
+			new JButton(iconController.getCompileIcon());
 		metal =
-			new JButton(
-				new ImageIcon(getClass().getResource("/icons/metal.gif")));
+			new JButton(iconController.getMetalIcon());
 		motif =
-			new JButton(
-				new ImageIcon(getClass().getResource("/icons/motif.gif")));
+			new JButton(iconController.getMotifIcon());
 		windows =
-			new JButton(
-				new ImageIcon(getClass().getResource("/icons/windows.gif")));
+			new JButton(iconController.getWindowsIcon());
 		tile =
-			new JButton(
-				new ImageIcon(getClass().getResource("/icons/tile.gif")));
+			new JButton(iconController.getTileIcon());
 		cascade =
-			new JButton(
-				new ImageIcon(getClass().getResource("/icons/cascade.gif")));
+			new JButton(iconController.getCascadeIcon());
 		help =
-			new JButton(
-				new ImageIcon(getClass().getResource("/icons/help.gif")));
+			new JButton(iconController.getHelpIcon());
 
 		// add their tool tip
 		help.setToolTipText(resource.getString("helpToolTip"));
@@ -730,9 +710,9 @@ public class IUnBBayes extends JFrame {
 		help.addActionListener(alHelp);
 
 	}
-	
+
 	public static IUnBBayes getIUnBBayes(){
-		return IUnBBayes.singleton;		
+		return IUnBBayes.singleton;
 	}
-	
+
 }

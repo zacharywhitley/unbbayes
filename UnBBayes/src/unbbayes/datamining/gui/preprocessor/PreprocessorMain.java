@@ -44,6 +44,7 @@ public class PreprocessorMain extends JInternalFrame
   private int fileExtension = 2;
   private JPanel jPanel3 = new JPanel();
   private BorderLayout borderLayout3 = new BorderLayout();
+  protected IconController iconController = IconController.getInstance();
 
   /**Construct the frame*/
   public PreprocessorMain()
@@ -61,8 +62,8 @@ public class PreprocessorMain extends JInternalFrame
   }
   /**Component initialization*/
   private void jbInit() throws Exception
-  { abrirIcon = new ImageIcon(getClass().getResource("/icons/open.gif"));
-    helpIcon = new ImageIcon(getClass().getResource("/icons/help.gif"));
+  { abrirIcon = iconController.getOpenIcon();
+    helpIcon = iconController.getHelpIcon();
     jPanel2 = new EditorPanel(this);
     contentPane = (JPanel) this.getContentPane();
     titledBorder5 = new TitledBorder(border5,resource.getString("selectProgram"));
