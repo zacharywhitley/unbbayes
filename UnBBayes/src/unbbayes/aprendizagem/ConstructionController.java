@@ -2,12 +2,16 @@ package unbbayes.aprendizagem;
 
 import unbbayes.controller.*;
 import unbbayes.util.NodeList;
+import unbbayes.gui.IUnBBayes;
 import java.io.File;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.FileInputStream;
 import java.io.StreamTokenizer;
 import java.util.Date;
+import java.awt.*;
+import javax.swing.*;
+
 
 public class ConstructionController {
 	 
@@ -16,9 +20,9 @@ public class ConstructionController {
 	private int[] vector;
 	private byte[][] matrix;
 	private long caseNumber; 
-	private boolean compacted;
+	private boolean compacted;	 
 	
-	public ConstructionController(File file, MainController controller){		
+	public ConstructionController(File file, MainController controller){				
 	    try{
            InputStreamReader isr = new InputStreamReader(new FileInputStream(file));
            BufferedReader  br    = new BufferedReader(isr);
@@ -33,8 +37,10 @@ public class ConstructionController {
            new ChooseVariablesWindow(variablesVector);
            new CompactFileWindow(variablesVector);    
            filterVariablesVector(rows);
-           matrix = new byte[rows][variables.size()];
+           matrix = new byte[rows][variables.size()];      
+           IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));                
            makeMatrix(cols, rows);           
+           IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
            br.close();          
 	    }
 	    catch(Exception e){};
@@ -44,9 +50,11 @@ public class ConstructionController {
         variables = ordenationController.getVariables();
         /*Constructs the topology of the net*/        
         Date d = new Date();
-        long time = d.getTime();                
+        long time = d.getTime();
+        IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));
         AlgorithmController algorithmController = new AlgorithmController
-                                       (variables,matrix,vector,caseNumber,pamp,compacted);                
+                                       (variables,matrix,vector,caseNumber,pamp,compacted);
+        IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));                
         Date d2 = new Date();
         long time1 = d2.getTime();
         long resul = time1 - time;

@@ -65,7 +65,7 @@ import unbbayes.controller.MainController;
  *@version    1.0 06/07/2001
  */
 public class IUnBBayes extends JFrame {
-
+		
 	private MDIDesktopPane desktop;
 	private JPanel topPanel;
 	private JPanel bottomPanel;
@@ -104,7 +104,7 @@ public class IUnBBayes extends JFrame {
 	private ActionListener alCascade;
 	private ActionListener alTile;
 	private ActionListener alHelp;
-	private ActionListener alAbout;
+	private ActionListener alAbout;		 
 
 	private static IUnBBayes singleton = null;
 
@@ -707,5 +707,9 @@ public class IUnBBayes extends JFrame {
 		help.addActionListener(alHelp);
 
 	}
-
+	
+	public static IUnBBayes getIUnBBayes(){
+		return IUnBBayes.singleton;		
+	}
+	
 }
