@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.StringTokenizer;
 
-import org.apache.xpath.XPathAPI;
+import org.apache.xpath.CachedXPathAPI;
 import org.w3c.dom.Document;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.InputSource;
@@ -44,20 +44,22 @@ public class XMLIO implements BaseIO {
 							ARCS = "/BIF/NETWORK/STRUCTURE/ARC",
 							POTENTIALS = "/BIF/NETWORK/POTENTIAL/POT";
 							
+	private static CachedXPathAPI xpath;
+							
 	private static Node makeNode(org.w3c.dom.Node elNode) throws Exception {
 		// TODO Load Decision and Utility node!
 		ProbabilisticNode node = null;
 		node = new ProbabilisticNode();		
-		node.setName(XPathAPI.selectSingleNode(elNode, "@NAME").getNodeValue());
-		org.w3c.dom.Node tmpNode = XPathAPI.selectSingleNode(elNode, "LABEL");
+		node.setName(xpath.selectSingleNode(elNode, "@NAME").getNodeValue());
+		org.w3c.dom.Node tmpNode = xpath.selectSingleNode(elNode, "LABEL");
 		if (tmpNode != null) {
 			node.setDescription(XMLUtil.getValue(tmpNode));
 		}
-		int xPos = Integer.parseInt(XPathAPI.selectSingleNode(elNode, "@XPOS").getNodeValue());
-		int yPos = Integer.parseInt(XPathAPI.selectSingleNode(elNode, "@YPOS").getNodeValue());
+		int xPos = Integer.parseInt(xpath.selectSingleNode(elNode, "@XPOS").getNodeValue());
+		int yPos = Integer.parseInt(xpath.selectSingleNode(elNode, "@YPOS").getNodeValue());
 		node.getPosition().setLocation(xPos, yPos);
 		
-		NodeIterator states = XPathAPI.selectNodeIterator(elNode, "STATENAME");
+		NodeIterator states = xpath.selectNodeIterator(elNode, "STATENAME");
 		while ((elNode = states.nextNode()) != null) {
 			node.appendState(XMLUtil.getValue(elNode));
 		}
@@ -71,8 +73,8 @@ public class XMLIO implements BaseIO {
 	private static void makeStructure(ProbabilisticNetwork net, NodeIterator arcs) throws Exception {
 		org.w3c.dom.Node node;
 		while ((node = arcs.nextNode()) != null) {
-			String parent = XPathAPI.selectSingleNode(node, "@PARENT").getNodeValue();
-			String child = XPathAPI.selectSingleNode(node, "@CHILD").getNodeValue();
+			String parent = xpath.selectSingleNode(node, "@PARENT").getNodeValue();
+			String child = xpath.selectSingleNode(node, "@CHILD").getNodeValue();
 			Node parentNode = net.getNode(parent);
 			Node childNode = net.getNode(child);
 			Edge auxEdge = new Edge(parentNode, childNode);
@@ -84,7 +86,7 @@ public class XMLIO implements BaseIO {
 	private static void readCondSet(Node childNode, ProbabilisticNetwork net, NodeIterator condSet) throws Exception {
 		org.w3c.dom.Node node;
 		while ((node = condSet.nextNode()) != null) {
-			String parent = XPathAPI.selectSingleNode(node, "@NAME").getNodeValue();
+			String parent = xpath.selectSingleNode(node, "@NAME").getNodeValue();
 			Node parentNode = net.getNode(parent);
 			Edge auxEdge = new Edge(parentNode, childNode);
 			net.addEdge(auxEdge);
@@ -108,35 +110,35 @@ public class XMLIO implements BaseIO {
 	private static void assignPotentials(ProbabilisticNetwork net, NodeIterator potentials) throws Exception {
 		org.w3c.dom.Node node;
 		while ((node = potentials.nextNode()) != null) {
-			org.w3c.dom.Node tmp = XPathAPI.selectSingleNode(node, "PRIVATE");
-			String nodeName = XPathAPI.selectSingleNode(tmp, "@NAME").getNodeValue();
+			org.w3c.dom.Node tmp = xpath.selectSingleNode(node, "PRIVATE");
+			String nodeName = xpath.selectSingleNode(tmp, "@NAME").getNodeValue();
 			Node childNode = net.getNode(nodeName);
 			
-			NodeIterator condSet = XPathAPI.selectNodeIterator(node, "CONDSET/CONDLEM");
+			NodeIterator condSet = xpath.selectNodeIterator(node, "CONDSET/CONDLEM");
 			readCondSet(childNode, net, condSet);
 						
 			PotentialTable table = ((ITabledVariable)childNode).getPotentialTable();			
-			NodeIterator dpis = XPathAPI.selectNodeIterator(node, "DPIS/DPI");
+			NodeIterator dpis = xpath.selectNodeIterator(node, "DPIS/DPI");
 			fillTable(table, dpis);
 		}
 	}
 	
 	public ProbabilisticNetwork load(Document doc) throws Exception {
 			ProbabilisticNetwork net = null;
-			org.w3c.dom.Node elNode = XPathAPI.selectSingleNode(doc, NET_NAME);
+			org.w3c.dom.Node elNode = xpath.selectSingleNode(doc, NET_NAME);
 			net = new ProbabilisticNetwork(XMLUtil.getValue(elNode));
 			
-			NodeIterator nodeIterator = XPathAPI.selectNodeIterator(doc, VARIABLES);
+			NodeIterator nodeIterator = xpath.selectNodeIterator(doc, VARIABLES);
 			while ((elNode = nodeIterator.nextNode()) != null) {
 				net.addNode(makeNode(elNode));
 			}
 			
 			/*
-			nodeIterator = XPathAPI.selectNodeIterator(doc, ARCS);
+			nodeIterator = xpath.selectNodeIterator(doc, ARCS);
 			makeStructure(net, nodeIterator);
 			*/
 			
-			nodeIterator = XPathAPI.selectNodeIterator(doc, POTENTIALS);
+			nodeIterator = xpath.selectNodeIterator(doc, POTENTIALS);
 			assignPotentials(net, nodeIterator);
 			return net;
 	}
@@ -146,13 +148,16 @@ public class XMLIO implements BaseIO {
 	 * @see unbbayes.io.BaseIO#load(java.io.File)
 	 */
 	public ProbabilisticNetwork load(File input) throws LoadException, IOException {
+		xpath = new CachedXPathAPI();
 		try {			
 			InputSource is = new InputSource(new BufferedReader(new FileReader(input)));
-			Document doc = XMLUtil.getDocument(is);
+			Document doc = XMLUtil.getDocument(is);			
 			return load(doc);
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new LoadException("Load Error");			
+			throw new LoadException("Load Error: " + e.getMessage());			
+		} finally {
+			xpath = null;
 		}
 	}
 
