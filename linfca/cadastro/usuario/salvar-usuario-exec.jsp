@@ -87,8 +87,8 @@
 </head>
 
 <body onLoad="javascript:document.form1.submit()">
-  <form name="form1" method="post" action="<%=request.getContextPath()%>/design/sucesso.jsp">
-    <input type="hidden" name="menssagem" value="<%=mensagem%>">
+  <form name="form1" method="post" action="<%=request.getContextPath()%>/login.jsp">
+    <input type="hidden" name="mensagem" value="<%=mensagem%>">
   </form>
 </body>
 </html>

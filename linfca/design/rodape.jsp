@@ -31,5 +31,14 @@
     <td colspan="2" bgcolor="#6CA66C" align="center"><br>Content &copy; 2002 Rommel & Michael<br>All Rights Reserved<br></td>
   </tr>
 </table>
+ <% 
+   String mensagem = request.getParameter("mensagem");
+   if (mensagem != null) {
+ %>
+	 <script language="JavaScript">
+		top.window.status='<%= mensagem %>';
+	 </script>
+<% } %>
+
 </body>
 </html>
