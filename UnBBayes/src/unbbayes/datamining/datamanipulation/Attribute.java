@@ -380,7 +380,10 @@ public class Attribute implements Serializable
     * @return the attribute's values.
     */
     public String[] getAttributeValues()
-    {	return attributeValues;
+    {	
+    	String[] values = new String[attributeValues.length];
+    	System.arraycopy(attributeValues,0,values,0,attributeValues.length);    	
+    	return values;
     }
 }
 

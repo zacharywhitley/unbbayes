@@ -16,8 +16,7 @@ import unbbayes.datamining.datamanipulation.*;
  * trees</i>. Machine Learning. Vol.1, No.1, pp. 81-106.<p>
  *
  * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
- * @author Danilo Balby 
- * @version $2.0 $ (08/05/2003)
+ * @version $1.0 $ (24/12/2001)
  */
 
 public class Id3 extends DecisionTreeLearning implements Serializable
@@ -50,10 +49,10 @@ public class Id3 extends DecisionTreeLearning implements Serializable
           while (enumAtt.hasMoreElements())
           {
             Attribute attr = (Attribute) enumAtt.nextElement();
-            if (!attr.isNominal())
-            {
-              throw new Exception(resource.getString("exception2"));
-            }
+            //if (!attr.isNominal())
+            //{
+            //     throw new Exception(resource.getString("exception2"));
+            //}
             Enumeration enum = data.enumerateInstances();
             while (enum.hasMoreElements())
             {
@@ -64,6 +63,10 @@ public class Id3 extends DecisionTreeLearning implements Serializable
             }
           }
           
+          //preparing the data to generate a tree based on it
+          data = new InstanceSet(data);
+		  data.deleteWithMissingClass();
+		  
 		  //tree generation
           makeTree(data);
   	}
@@ -80,7 +83,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable
 	{
           //Contains methods to compute information gain and related actions
           ClassifierUtils utils;
-          //Queue to use this function recursively,keeping queue components (see below)
+          //Stack to use this function recursively,keeping stack components (see below)
           ArrayList queue = new ArrayList();
 		  //Intance set variable used to keep the current one
 		  InstanceSet instances;
@@ -99,6 +102,8 @@ public class Id3 extends DecisionTreeLearning implements Serializable
           InstanceSet[] splitData;
           DefaultMutableTreeNode treeNodeNew;
           QueueComponent stackComponent;
+		  int attributeIndex;
+		  double splitValue;
         
           //start stack with the initial data
           queue.add(new QueueComponent(treeNode,data));
@@ -138,7 +143,8 @@ public class Id3 extends DecisionTreeLearning implements Serializable
           		}*/
 
           		//gets attribute with maximum gain
-          		splitAttribute = instances.getAttribute(Utils.maxIndex(infoGains));
+          		attributeIndex = Utils.maxIndex(infoGains);
+          		splitAttribute = instances.getAttribute(attributeIndex);
 
           		//make leaf if information gain is zero....
           		if (Utils.eq(infoGains[splitAttribute.getIndex()], 0))
@@ -159,13 +165,29 @@ public class Id3 extends DecisionTreeLearning implements Serializable
           		//...Otherwise create successors.
           		else
           		{
-					splitData = ClassifierUtils.splitData(instances, splitAttribute);
-            		for (int j=0;j<splitAttribute.numValues();j++)
-            		{
-						treeNodeNew = new DefaultMutableTreeNode(new Node(splitAttribute,j));
+					if(splitAttribute.isNominal())
+					{
+						splitData = ClassifierUtils.splitData(instances, splitAttribute);
+            			for (int j=0;j<splitAttribute.numValues();j++)
+            			{
+							treeNodeNew = new DefaultMutableTreeNode(new Node(splitAttribute,j));
+							treeNode.add(treeNodeNew);
+							queue.add(new QueueComponent(treeNodeNew,splitData[j]));
+               			}
+					}
+					else
+					{
+						splitValue = utils.getSplitValue(attributeIndex);
+						splitData = ClassifierUtils.splitData(instances,splitAttribute,utils.getSplitValue(attributeIndex));
+						
+						treeNodeNew = new DefaultMutableTreeNode(new Node(splitAttribute,splitValue,true));
 						treeNode.add(treeNodeNew);
-						queue.add(new QueueComponent(treeNodeNew,splitData[j]));
-               		}
+						queue.add(new QueueComponent(treeNodeNew,splitData[0]));
+						
+						treeNodeNew = new DefaultMutableTreeNode(new Node(splitAttribute,splitValue,false));
+						treeNode.add(treeNodeNew);
+						queue.add(new QueueComponent(treeNodeNew,splitData[1]));
+					}
         		}
        		}
         }
@@ -181,7 +203,8 @@ public class Id3 extends DecisionTreeLearning implements Serializable
        		node = (Node)treeNode.getUserObject();
        		root.setUserObject(node.getAttributeName());
        }
-       tree = new JTree(root);
+       tree = new JTree(root);System.out.println(toString());
+       byte[] values = {0,0,0}; System.out.println(classifyInstance(new Instance(values)));
     }
    
   //-----------------------------------------------------------------------//
@@ -196,6 +219,9 @@ public class Id3 extends DecisionTreeLearning implements Serializable
   {		
 	Leaf leaf;
 	Node node;
+	Attribute att;
+	double splitValue;
+	String[] attValues;
 	DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)tree.getModel().getRoot();
 	DefaultMutableTreeNode treeNodeTemp;
 		
@@ -208,7 +234,25 @@ public class Id3 extends DecisionTreeLearning implements Serializable
 	{
 		treeNodeTemp = (DefaultMutableTreeNode)treeNode.getFirstChild();
 		node = (Node)treeNodeTemp.getUserObject();
-		treeNode = (DefaultMutableTreeNode)treeNode.getChildAt(instance.getValue(node.getAttribute()));
+		att = node.getAttribute();
+		if (att.isNominal())
+		{
+			treeNode = (DefaultMutableTreeNode)treeNode.getChildAt(instance.getValue(node.getAttribute()));
+		}
+		else
+		{
+			attValues = att.getAttributeValues();
+			splitValue = node.getAttributeValue();
+			
+			if(Double.parseDouble(attValues[instance.getValue(att.getIndex())])>=splitValue)
+			{
+				treeNode = (DefaultMutableTreeNode)treeNode.getChildAt(0);
+			}
+			else
+			{
+				treeNode = (DefaultMutableTreeNode)treeNode.getChildAt(1);
+			}
+		}
     }
     
 	treeNode = (DefaultMutableTreeNode)treeNode.getFirstChild();
@@ -274,6 +318,37 @@ public class Id3 extends DecisionTreeLearning implements Serializable
   //-----------------------------------------------------------------------//
 
   /**
+   * Outputs a tree at a certain level.
+   *
+   * @param level Level at which the tree is to be printed
+   */
+  /*private String toString(int level)
+    { 	
+
+    if (splitAttribute == null)
+	{	if (Instance.isMissingValue(classValue))
+		{	text.append(": "+resource.getString("null"));
+      	}
+		else
+		{	text.append(": "+classAttribute.getAttributeName()+" = "+classAttribute.value((int) classValue)+" ( "+numeroInstClass+" ) ");
+      	}
+    }
+	else
+	{	for (int j = 0; j < splitAttribute.numValues(); j++)
+		{	text.append("\n");
+        	for (int i = 0; i < level; i++)
+			{	text.append("|  ");
+			}
+        	text.append(splitAttribute.getAttributeName() + " = " + splitAttribute.value(j));
+        	text.append(successors[j].toString(level + 1));
+      	}
+    }
+    return text.toString();
+  }*/
+
+   //----------------------------------------------------------------------//
+
+  /**
    * Get the tree build by id3 classifier using the private getTree method from below.
    *
    * @return a JTree object build by id3
@@ -307,3 +382,6 @@ class QueueComponent
 		return parent;
 	}
 }
+
+
+

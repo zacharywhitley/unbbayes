@@ -17,16 +17,25 @@ public class ClassifierUtils
 	private ResourceBundle resource;
 	/** value of ln(2) to be used in the log2 function*/
 	private static final double LN2 = Math.log(2);
+	/** values used to split numeric attributes, should be 0 for nominal attributes*/
+	private double[] splitValues;
 
-        private int[][][] counts;
-        private int[] priors;
+    private int[][][] counts;
+    private int[] priors;
+    private InstanceSet instances;
 
 	//--------------------------------------------------------------------//
 
 	/** ID3Utils constructor */
 	public ClassifierUtils(InstanceSet inst)
 	{
+		instances = inst;
 		logmap = new HashMap();
+        Double zeroDouble = new Double(0);
+        if(logmap.containsKey(zeroDouble))
+        	logmap.put(zeroDouble,zeroDouble);
+        if(logmap.containsKey(zeroDouble))
+            logmap.put(new Double(-0),zeroDouble);
 		resource = ResourceBundle.getBundle("unbbayes.datamining.classifiers.resources.ClassifiersResource");
 
 
@@ -73,25 +82,30 @@ public class ClassifierUtils
                     priors[(int)instance.classValue()] += instance.getWeight();
                   }
                 }
+                splitValues = new double[instances.getAttributes().length];
 	}
+	
+	//--------------------------------------------------------------------//
 
-        /** Returns the computed priors
+    /** Returns the computed priors
+       @return the computed priors.
+    */
+    public int[] getPriors()
+    {	
+    	return priors;
+    }
+        
+    //--------------------------------------------------------------------//
 
-            @return the computed priors.
-        */
-        public int[] getPriors()
-        {	return priors;
-        }
+    /** Returns the computed counts for nominal attributes
+        @return the computed counts.
+    */
+    public int[][][] getCounts()
+    {	
+    	return counts;
+    }
 
-        /** Returns the computed counts for nominal attributes
-
-            @return the computed counts.
-        */
-        public int[][][] getCounts()
-        {	return counts;
-        }
-
-        //--------------------------------------------------------------------//
+    //--------------------------------------------------------------------//
 
 	/**
    	* Computes information gain for an attribute.
@@ -103,17 +117,89 @@ public class ClassifierUtils
       public double[] computeInfoGain()
       {
         int totalSum = Utils.sum(priors);
-        double infoGain = computeEntropy(priors,totalSum);			//Entropy(S)
+        double infoGain = computeEntropy(priors,totalSum);	//entropy(S)		
         double[] resultGain = new double[counts.length];
         Arrays.fill(resultGain,infoGain);
+        
+        //for each attribute...
         for (int i=0;i<counts.length;i++)
         {
-
-          for (int j=0;j<counts[i].length;j++)
-          {
-            double temp = computeEntropy(counts[i][j],totalSum);
-            resultGain[i] -= temp;
-          }
+        	//if attribute is nominal...
+        	if (instances.getAttribute(i).isNominal())
+        	{
+        		for (int j=0;j<counts[i].length;j++)
+          		{
+            		resultGain[i] -= computeEntropy(counts[i][j],totalSum);
+          		}
+        	}
+        	
+        	//if attribute is numeric...
+        	else
+        	{
+        		//array with possible values
+				String[] values;
+				//array with classes distribution for each value,
+				int[][] classesDistribution;;
+				
+				//makes arrays sorted 	
+				values = instances.getAttribute(i).getAttributeValues();
+				int numClasses = counts[i][0].length; 
+				classesDistribution = new int[values.length][numClasses];
+				HashMap classesDistributionMap = new HashMap();
+				for(int x=0;x<values.length;x++)
+				{
+					classesDistributionMap.put(values[x],counts[i][x]);
+				}
+				Arrays.sort(values);
+				for(int x=0;x<values.length;x++)
+				{
+					classesDistribution[x] = (int[])classesDistributionMap.get(values[x]);
+				}
+			        						
+				//search for the minimum entropy
+				String value1 = values[0], value2;
+				int[] distribution1, distribution2;
+				double minimumEntropy = Integer.MAX_VALUE;
+				double entropy; 
+				double minimumValue = Integer.MAX_VALUE;
+				int[] sumPart1, sumPart2; 
+				//for each attribute value...
+				for(int x=1;x<values.length;x++)
+				{
+					value2 = values[x];
+					distribution1 = classesDistribution[x-1];
+					distribution2 = classesDistribution[x];
+					sumPart1 = new int[numClasses]; 
+					sumPart2 = new int[numClasses];
+					entropy = 0; 
+										
+					//if two values has the same class, there is no evaluation
+					if(!ClassifierUtils.hasSameClass(distribution1,distribution2))
+					{
+						for(int y=0;y<x;y++)
+						{
+							sumPart1 = ClassifierUtils.arraysSum(sumPart1,classesDistribution[y]);							
+						}
+						for(int y=x;y<values.length;y++)
+						{
+							sumPart2 = ClassifierUtils.arraysSum(sumPart2,classesDistribution[y]);
+						}
+						
+						entropy = computeEntropy(sumPart1,totalSum) + computeEntropy(sumPart2,totalSum);
+						
+						if (minimumEntropy>entropy)
+						{
+							minimumEntropy = entropy;
+							minimumValue = (Double.parseDouble(values[x-1])+Double.parseDouble(values[x]))/2.0d;
+						}
+					}
+										
+					value1 = value2;					
+				}
+				
+				resultGain[i] -= minimumEntropy;
+				splitValues[i] = minimumValue;
+	       	}
         }
         return resultGain;
       }
@@ -175,7 +261,6 @@ public class ClassifierUtils
 
   	//--------------------------------------------------------------------//
 
-
   	/**
    	* Returns the logarithm for base 2 of a double value. Special cases:
    	* If the argument is NaN or less than zero, then the result is NaN.
@@ -189,17 +274,18 @@ public class ClassifierUtils
   	{
   		return Math.log(a)/LN2;
   	}
+  	
+  	//--------------------------------------------------------------------//
 
 	public double xlog2(double a)
 	{
+		Double aDouble = new Double(a);
+		
 		if(a==0)
 		{
 			return 0;
 		}
-		
-		Double aDouble = new Double(a);
-		
-		if(logmap.containsKey(aDouble))
+		else if(logmap.containsKey(aDouble))
 		{
 			return ((Double)(logmap.get(aDouble))).doubleValue();
 		}
@@ -213,7 +299,7 @@ public class ClassifierUtils
   	//--------------------------------------------------------------------//
 
   	/**
-  	* Splits a dataset according to the values of an attribute.
+  	* Splits a dataset according to the values of a nominal attribute.
   	*
   	* @param data Data which is to be split
   	* @param att Attribute to be used for splitting
@@ -221,8 +307,7 @@ public class ClassifierUtils
   	*/
   	public static InstanceSet[] splitData(InstanceSet data, Attribute att)
   	{
-  		int numInstances = data.numInstances();
-		int numValues = att.numValues();
+  		int numValues = att.numValues();
 		InstanceSet[] splitData = new InstanceSet[numValues];
   		AttributeStats attributeStats = (data.getAllAttributeStats())[att.getIndex()];
 		for (int j = 0; j < numValues; j++)
@@ -237,4 +322,120 @@ public class ClassifierUtils
     	}
 		return splitData;
   	}
+  	
+  	//---------------------------------------------------------------------//
+  	
+	/**Checks if two classes distributions refers to the same class
+	 * @param distribution1: one of the distributions to be evaluated
+	 * @param distribution2: one of the distributions to be evaluated
+	 * @return boolean value indicating if distributions refers to the same class or not 
+	 */
+	public static boolean hasSameClass(int[] distribution1, int[] distribution2)
+	{
+		if(distribution1.length!=distribution2.length)
+		{
+			return false;
+		}
+		
+		for(int i=0;i<distribution1.length;i++)
+		{
+			if((distribution1[i]==0)&(distribution2[i]!=0))
+			{
+				return false;
+			}
+			if((distribution1[i]!=0)&(distribution1[i]==0))
+			{
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	//---------------------------------------------------------------------//
+	
+	/** applies a two arrays sum
+	 * 	@param array1: one of the arrays to apply the sum
+	 *  @param array2: one of the arrays to apply the sum
+	 *  @return result of the sum, null if the arrays if of different sizes
+	 */
+	public static int[] arraysSum(int[] array1, int[] array2)
+	{
+		if (array1.length!=array2.length)
+		{
+			return null;
+		}
+		
+		int[] newArray = new int[array1.length];
+		for(int i=0;i<array1.length;i++)
+		{
+			newArray[i] = array1[i]+array2[i]; 
+		}
+		
+		return newArray;
+	}
+	
+	//---------------------------------------------------------------------//
+	
+	/**
+	* Splits a dataset according to the values of a numeric attribute.
+	*
+	* @param data Data which is to be split
+	* @param att Attribute to be used for splitting
+	* @param splitValue attribute value used to split data 
+	* @return The sets of instances produced by the split
+	*/
+	public static InstanceSet[] splitData(InstanceSet data, Attribute att, double splitValue)
+	{
+		InstanceSet[] splitData = new InstanceSet[2];
+		int numInstancesMoreThan = 0,numInstancesLessThan = 0;
+		int attIndex = att.getIndex();
+		String[] values = att.getAttributeValues();
+		Instance instance;
+				
+		//counts number of instances for each instance set
+		for(int i=0;i<data.numInstances();i++)
+		{
+			instance = data.getInstance(i);
+			if(Double.parseDouble(values[instance.getValue(attIndex)])>=splitValue)
+			{
+				numInstancesMoreThan++;								
+			}
+			else
+			{
+				numInstancesLessThan++;
+			}
+		}
+		
+		//initiates splitData
+		splitData[0] = new InstanceSet(data, numInstancesMoreThan);
+		splitData[1] = new InstanceSet(data, numInstancesLessThan);
+		
+		//fill splitData with apropriate instances in each part
+		for(int i=0;i<data.numInstances();i++)
+		{
+			instance = data.getInstance(i);
+			if(Double.parseDouble(values[instance.getValue(attIndex)])>=splitValue)
+			{
+				splitData[0].add(instance);								
+			}
+			else
+			{
+				splitData[1].add(instance);
+			}
+		}
+		
+		return splitData;	
+	}
+	
+	//---------------------------------------------------------------------//
+	
+	/**gets the attribute at index position's split value. Valid for numeric attributes
+	 * @param index attribute's index
+	 * @return attribute's split value
+	 */
+	public double getSplitValue(int index)
+	{
+		return splitValues[index];
+	}
 }

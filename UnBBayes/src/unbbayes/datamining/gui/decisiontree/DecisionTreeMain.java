@@ -275,9 +275,6 @@ public class DecisionTreeMain extends JInternalFrame
         inst = FileController.getInstance().getInstanceSet(selectedFile,this);
         if (inst!=null)
         {
-          boolean bool = inst.checkNumericAttributes();
-          if (bool == true)
-              throw new Exception(resource.getString("numericAttributesException"));
           for(int i=0; i<2; i++)
               jTabbedPane.setEnabledAt(i,false);
           learnButton.setEnabled(false);

@@ -114,12 +114,12 @@ public class FileController
 		boolean successStatus = progressDialog.load();
 
 		InstanceSet inst = loader.getInstances();
-
+		
         if ((loader instanceof TxtLoader)&&(inst!=null))
         {
         	((TxtLoader)loader).checkNumericAttributes();
         }
-
+        
         if(successStatus)
         {
         	return inst;
