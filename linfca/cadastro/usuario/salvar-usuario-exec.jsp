@@ -36,8 +36,7 @@
    String foto64 = null;   
    Enumeration files = multi.getFileNames();
    
-   if (files.hasMoreElements()) {
-   
+   if (files.hasMoreElements()) {   
       String name = (String)files.nextElement();
 	  File f = multi.getFile(name);
 	  

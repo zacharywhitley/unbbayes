@@ -1,5 +1,7 @@
 <%@page import="linfca.*, 
 		linfca.cadastro.usuario.*, 
+		linfca.util.*,
+		java.io.*,
 		java.sql.*, 
 		org.jdom.Element, 
 		java.util.Iterator" 
@@ -9,8 +11,8 @@
 <%
 
 	String codUsuario = request.getParameter("cod_usuario");
+	String nomeFoto = null;
 	Element usuarioXML = null;
-
 	if (codUsuario != null) {
 	
 		Element in = new Element("in");
@@ -19,7 +21,18 @@
 		in.getChildren().add(codUsuarioXML);
 		
 		Feature  detalharUsuario = new DetalharUsuarioFeature();
-		usuarioXML = detalharUsuario.process(in);
+		usuarioXML = detalharUsuario.process(in);	
+		
+		if (usuarioXML != null) {
+			byte[] buffer = Base64.decode(Base64.getBinaryBytes(usuarioXML.getChildTextTrim("foto"))); 
+			nomeFoto = "" + System.currentTimeMillis();
+//			nomeFoto = "FOTO_USUARIO";
+			File foto = new File("C:/eclipse/workspace/Linf/tmp/" + nomeFoto);
+			FileOutputStream fos = new FileOutputStream(foto);
+			fos.write(buffer);
+			fos.close();
+			foto.deleteOnExit();
+		}
 		
 	}
 
@@ -35,7 +48,7 @@
               <% if (usuarioXML != null) { %>
                 <tr>
                   <td colspan=2>
-                    <P><img height="86" src="<%=usuarioXML.getChildTextTrim("foto")%>" width="174" border="0" hspace="20" alt="Foto do Usuário"><br>
+                    <P><img src="<%=path + "/tmp/" + nomeFoto%>" border="0" hspace="20" alt="Foto do Usuário"><br>
 				  </td>
 			    </tr>
 			  <% } %>
