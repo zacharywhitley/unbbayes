@@ -2,9 +2,9 @@ package unbbayes.datamining.gui.resources;
 
 import java.util.*;
 
-public class GuiResource extends ListResourceBundle { 
-	
-	public Object[][] getContents() { 
+public class GuiResource extends ListResourceBundle {
+
+	public Object[][] getContents() {
 		return contents;
 	}
 	static final Object[][] contents = {
@@ -51,5 +51,9 @@ public class GuiResource extends ListResourceBundle {
 	{"defaultLookAndFeel","Default Look and Feel"},
 	{"maximumNumber","Maximum number of states allowed"},
 	{"cancel","Cancel"},
-	}; 
+	// Attribute Panel
+	{"selectClass","Select Class ="},
+	{"class","Class = "},
+	{"attributes","Attributes = "},
+	};
 }

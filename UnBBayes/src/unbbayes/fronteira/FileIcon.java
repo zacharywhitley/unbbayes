@@ -18,12 +18,12 @@
 
 package unbbayes.fronteira;
 
-import java.io.File;
 import java.awt.*;
+import java.io.*;
+import java.util.*;
+
 import javax.swing.*;
 import javax.swing.filechooser.*;
-import javax.swing.plaf.metal.MetalIconFactory;
-import java.util.ResourceBundle;
 
 /**
  *  Essa classe extende o <code>FileView</code> que é o responsável por
@@ -87,142 +87,142 @@ public class FileIcon extends FileView {
          */
         String name = f.getName();
         if (name.endsWith(".avi")) {
-            return new ImageIcon("icones/avi.gif");
+            return new ImageIcon(getClass().getResource("/icones/avi.gif"));
         }
         if (name.toLowerCase().endsWith(".bat")) {
-            return new ImageIcon("icones/bat.gif");
+            return new ImageIcon(getClass().getResource("/icones/bat.gif"));
         }
         if (name.toLowerCase().endsWith(".bmp")) {
-            return new ImageIcon("icones/bmp.gif");
+            return new ImageIcon(getClass().getResource("/icones/bmp.gif"));
         }
         if (name.toLowerCase().endsWith(".cdr")) {
-            return new ImageIcon("icones/cdr.gif");
+            return new ImageIcon(getClass().getResource("/icones/cdr.gif"));
         }
         if (name.toLowerCase().endsWith(".dcx")) {
-            return new ImageIcon("icones/dcx.gif");
+            return new ImageIcon(getClass().getResource("/icones/dcx.gif"));
         }
         if (name.toLowerCase().endsWith(".doc")) {
-            return new ImageIcon("icones/doc.gif");
+            return new ImageIcon(getClass().getResource("/icones/doc.gif"));
         }
         if (name.toLowerCase().equals("command.pif")) {
-            return new ImageIcon("icones/dos.gif");
+            return new ImageIcon(getClass().getResource("/icones/dos.gif"));
         }
         if (name.toLowerCase().endsWith(".dot")) {
-            return new ImageIcon("icones/dot.gif");
+            return new ImageIcon(getClass().getResource("/icones/dot.gif"));
         }
         if (name.toLowerCase().endsWith(".dun")) {
-            return new ImageIcon("icones/dun.gif");
+            return new ImageIcon(getClass().getResource("/icones/dun.gif"));
         }
         if (name.toLowerCase().endsWith(".exe")) {
-            return new ImageIcon("icones/exe.gif");
+            return new ImageIcon(getClass().getResource("/icones/exe.gif"));
         }
         if (name.toLowerCase().endsWith(".fon")) {
-            return new ImageIcon("icones/fon.gif");
+            return new ImageIcon(getClass().getResource("/icones/fon.gif"));
         }
         if (name.toLowerCase().endsWith(".gif")) {
-            return new ImageIcon("icones/gif.gif");
+            return new ImageIcon(getClass().getResource("/icones/gif.gif"));
         }
         if (name.toLowerCase().endsWith(".hlp")) {
-            return new ImageIcon("icones/help.gif");
+            return new ImageIcon(getClass().getResource("/icones/help.gif"));
         }
         if ((name.toLowerCase().endsWith(".htm")) || (name.endsWith(".html"))) {
-            return new ImageIcon("icones/html.gif");
+            return new ImageIcon(getClass().getResource("/icones/html.gif"));
         }
         if (name.toLowerCase().endsWith(".idf")) {
-            return new ImageIcon("icones/idf.gif");
+            return new ImageIcon(getClass().getResource("/icones/idf.gif"));
         }
         if (name.toLowerCase().endsWith(".mdb")) {
-            return new ImageIcon("icones/mdb.gif");
+            return new ImageIcon(getClass().getResource("/icones/mdb.gif"));
         }
         if (name.toLowerCase().endsWith(".mde")) {
-            return new ImageIcon("icones/mde.gif");
+            return new ImageIcon(getClass().getResource("/icones/mde.gif"));
         }
         if (name.toLowerCase().endsWith(".mdn")) {
-            return new ImageIcon("icones/mdn.gif");
+            return new ImageIcon(getClass().getResource("/icones/mdn.gif"));
         }
         if (name.toLowerCase().endsWith(".mdz")) {
-            return new ImageIcon("icones/mdz.gif");
+            return new ImageIcon(getClass().getResource("/icones/mdz.gif"));
         }
         if (name.toLowerCase().endsWith(".mid")) {
-            return new ImageIcon("icones/mid.gif");
+            return new ImageIcon(getClass().getResource("/icones/mid.gif"));
         }
         if (name.toLowerCase().endsWith(".mpg")) {
-            return new ImageIcon("icones/mpeg.gif");
+            return new ImageIcon(getClass().getResource("/icones/mpeg.gif"));
         }
         if (name.toLowerCase().endsWith(".obt")) {
-            return new ImageIcon("icones/obt.gif");
+            return new ImageIcon(getClass().getResource("/icones/obt.gif"));
         }
         if (name.toLowerCase().endsWith(".obz")) {
-            return new ImageIcon("icones/obz.gif");
+            return new ImageIcon(getClass().getResource("/icones/obz.gif"));
         }
         if (name.toLowerCase().endsWith(".pot")) {
-            return new ImageIcon("icones/pot.gif");
+            return new ImageIcon(getClass().getResource("/icones/pot.gif"));
         }
         if (name.toLowerCase().endsWith(".pps")) {
-            return new ImageIcon("icones/pps.gif");
+            return new ImageIcon(getClass().getResource("/icones/pps.gif"));
         }
         if (name.toLowerCase().endsWith(".ppt")) {
-            return new ImageIcon("icones/ppt.gif");
+            return new ImageIcon(getClass().getResource("/icones/ppt.gif"));
         }
         if (name.toLowerCase().endsWith(".pwz")) {
-            return new ImageIcon("icones/pwz.gif");
+            return new ImageIcon(getClass().getResource("/icones/pwz.gif"));
         }
         if (name.toLowerCase().endsWith(".sch")) {
-            return new ImageIcon("icones/sch.gif");
+            return new ImageIcon(getClass().getResource("/icones/sch.gif"));
         }
         if (name.toLowerCase().endsWith(".pot")) {
-            return new ImageIcon("icones/pot.gif");
+            return new ImageIcon(getClass().getResource("/icones/pot.gif"));
         }
         if (name.toLowerCase().endsWith(".the")) {
-            return new ImageIcon("icones/theme.gif");
+            return new ImageIcon(getClass().getResource("/icones/theme.gif"));
         }
         if (name.toLowerCase().endsWith(".ttf")) {
-            return new ImageIcon("icones/ttf.gif");
+            return new ImageIcon(getClass().getResource("/icones/ttf.gif"));
         }
         if (name.toLowerCase().endsWith(".txt")) {
-            return new ImageIcon("icones/txt.gif");
+            return new ImageIcon(getClass().getResource("/icones/txt.gif"));
         }
         if (name.toLowerCase().endsWith(".wav")) {
-            return new ImageIcon("icones/wav.gif");
+            return new ImageIcon(getClass().getResource("/icones/wav.gif"));
         }
         if (name.toLowerCase().endsWith(".wbk")) {
-            return new ImageIcon("icones/wbk.gif");
+            return new ImageIcon(getClass().getResource("/icones/wbk.gif"));
         }
         if (name.toLowerCase().endsWith(".wiz")) {
-            return new ImageIcon("icones/wiz.gif");
+            return new ImageIcon(getClass().getResource("/icones/wiz.gif"));
         }
         if (name.toLowerCase().endsWith(".wri")) {
-            return new ImageIcon("icones/wri.gif");
+            return new ImageIcon(getClass().getResource("/icones/wri.gif"));
         }
         if (name.toLowerCase().endsWith(".wri")) {
-            return new ImageIcon("icones/wri.gif");
+            return new ImageIcon(getClass().getResource("/icones/wri.gif"));
         }
         if (name.toLowerCase().endsWith(".xlk")) {
-            return new ImageIcon("icones/xlk.gif");
+            return new ImageIcon(getClass().getResource("/icones/xlk.gif"));
         }
         if (name.toLowerCase().endsWith(".xls")) {
-            return new ImageIcon("icones/xls.gif");
+            return new ImageIcon(getClass().getResource("/icones/xls.gif"));
         }
         if (name.toLowerCase().endsWith(".xlt")) {
-            return new ImageIcon("icones/xlt.gif");
+            return new ImageIcon(getClass().getResource("/icones/xlt.gif"));
         }
         if (name.toLowerCase().endsWith(".xlw")) {
-            return new ImageIcon("icones/xlw.gif");
+            return new ImageIcon(getClass().getResource("/icones/xlw.gif"));
         }
         if (name.toLowerCase().endsWith(".zip")) {
-            return new ImageIcon("icones/zip.gif");
+            return new ImageIcon(getClass().getResource("/icones/zip.gif"));
         }
         if (name.toLowerCase().endsWith(".pdf")) {
-            return new ImageIcon("icones/pdf.gif");
+            return new ImageIcon(getClass().getResource("/icones/pdf.gif"));
         }
         if (name.toLowerCase().endsWith(".class")) {
-            return new ImageIcon("icones/class.gif");
+            return new ImageIcon(getClass().getResource("/icones/class.gif"));
         }
         if (name.toLowerCase().endsWith(".java")) {
-            return new ImageIcon("icones/java.gif");
+            return new ImageIcon(getClass().getResource("/icones/java.gif"));
         }
         if (name.toLowerCase().endsWith(".net")) {
-            return new ImageIcon("icones/net.gif");
+            return new ImageIcon(getClass().getResource("/icones/net.gif"));
         }
         return fc.getIcon(f);
     }

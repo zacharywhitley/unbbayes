@@ -2,9 +2,9 @@ package unbbayes.datamining.gui.resources;
 
 import java.util.*;
 
-public class GuiResource_pt extends ListResourceBundle { 
-	
-	public Object[][] getContents() { 
+public class GuiResource_pt extends ListResourceBundle {
+
+	public Object[][] getContents() {
 		return contents;
 	}
 	static final Object[][] contents = {
@@ -14,7 +14,7 @@ public class GuiResource_pt extends ListResourceBundle {
 	{"evaluation","Avaliação"},
 	{"language","Linguagem"},
 	{"lookAndFeel","Look and Feel"},
-	{"window","Window"},
+	{"window","Janela"},
 	{"help","Ajuda"},
 	{"helpTopics","Tópicos de ajuda"},
 	{"cascade","Cascade"},
@@ -28,7 +28,7 @@ public class GuiResource_pt extends ListResourceBundle {
 	{"evaluationMnemonic",new Character('A')},
 	{"languageMnemonic",new Character('L')},
 	{"lafMnemonic",new Character('F')},
-	{"windowMnemonic",new Character('W')},
+	{"windowMnemonic",new Character('J')},
 	{"helpMnemonic",new Character('A')},
 	{"helpTopicsMnemonic",new Character('T')},
 	{"preferencesMnemonic",new Character('P')},
@@ -50,5 +50,9 @@ public class GuiResource_pt extends ListResourceBundle {
 	{"defaultLookAndFeel","Look and Feel Default"},
 	{"maximumNumber","Número Máximo de estados permitidos"},
 	{"cancel","Cancelar"},
-	}; 
+	// Attribute Panel
+	{"selectClass","Selecione Classe ="},
+	{"class","Classe = "},
+	{"attributes","Attributos = "},
+	};
 }
