@@ -140,11 +140,11 @@ public class ConstructionController {
 	    catch(Exception e){
 	    	String msg = "Não foi possível abrir o arquivo solicitado. Verifique o formato do arquivo.";
 	    	JOptionPane.showMessageDialog(null,msg,"ERROR",JOptionPane.ERROR_MESSAGE);                    	
-	    };
-        OrdenationWindow ordenationWindow = new OrdenationWindow(variables);	    	    	    	    
+	    };		
+        OrdenationWindow ordenationWindow = new OrdenationWindow(variables);        	    	    	    	    
         OrdenationInterationController ordenationController = ordenationWindow.getController();                    
-        String[] pamp = ordenationController.getPamp();
-        //variables = ordenationController.getVariables();
+        String[] pamp = ordenationController.getPamp();		
+        variables = ordenationController.getVariables();				
         /*Constructs the topology of the net*/        
         Date d = new Date();
         long time = d.getTime();
@@ -347,4 +347,11 @@ public class ConstructionController {
     	return this.variables;
     }
     
+    public int[] getVector(){
+    	return this.vector;    	    	
+    }    
+    
+    public long getCaseNumber(){
+    	return caseNumber;    	
+    }
 }
