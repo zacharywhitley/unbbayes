@@ -97,15 +97,20 @@ public class OptionsPanel extends JPanel {
     this.add(jPanel2,  BorderLayout.CENTER);
     comboActivationFunction.insertItemAt("Sigmoid", NeuralNetwork.SIGMOID);
     comboActivationFunction.insertItemAt("Tanh", NeuralNetwork.TANH);
-    comboActivationFunction.setSelectedIndex(0);
     this.setEnabled(false);
+
+    fieldLearningRate.setText("0.3");
+    fieldMomentum.setText("0.2");
+    fieldTrainningTime.setText("400");
+    fieldHiddenSize.setText("3");
+    comboActivationFunction.setSelectedIndex(0);
   }
 
   public void setEnabled(boolean enable){
-    fieldLearningRate.setEnabled(enable);
-    fieldMomentum.setEnabled(enable);
-    fieldTrainningTime.setEnabled(enable);
-    fieldHiddenSize.setEnabled(enable);
+    fieldLearningRate.setEditable(enable);
+    fieldMomentum.setEditable(enable);
+    fieldTrainningTime.setEditable(enable);
+    fieldHiddenSize.setEditable(enable);
     comboActivationFunction.setEnabled(enable);
   }
 
@@ -117,7 +122,7 @@ public class OptionsPanel extends JPanel {
     return Float.parseFloat(fieldMomentum.getText());
   }
 
-  public String getTrainingTime(){
+  public String getTrainningTime(){
     return fieldTrainningTime.getText();
   }
 
@@ -134,4 +139,19 @@ public class OptionsPanel extends JPanel {
     return NeuralNetwork.SIGMOID;
   }
 
+  public void setLearningRate(String value){
+    fieldLearningRate.setText(value);
+  }
+
+  public void setMomentum(String value){
+    fieldMomentum.setText(value);
+  }
+
+  public void getTrainningTime(String value){
+    fieldTrainningTime.setText(value);
+  }
+
+  public void setHiddenLayerSize(int value){
+    fieldHiddenSize.setText("" + value);
+  }
 }

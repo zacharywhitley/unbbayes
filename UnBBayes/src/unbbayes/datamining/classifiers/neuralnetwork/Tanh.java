@@ -16,11 +16,11 @@ public class Tanh implements ActivationFunction{
     return (1 - Math.exp(-2 * v))/(1 + Math.exp(-2 * v));
   }
 
-  public double sigmaOutput(double d, double o){
+  public double outputErrorTerm(double d, double o){  //sigma
     return ba * (d - o) * (a - o) * (a + o);
   }
 
-  public double sigmaHidden(double y, double sum){
+  public double hiddenErrorTerm(double y, double sum){   //sigma
     return ba * (a - y) * (a + y) * sum;
   }
 }

@@ -5,7 +5,7 @@ public interface ActivationFunction {
 
   public double functionValue(double v);
 
-  public double sigmaOutput(double d, double o);
+  public double outputErrorTerm(double d, double o);  //sigma
 
-  public double sigmaHidden(double y, double sum);
+  public double hiddenErrorTerm(double y, double sum);  //sigma
 }

@@ -54,6 +54,7 @@ public class NeuralNetwork extends BayesianLearning implements Serializable{
     Instance instance;
     Enumeration instanceEnum = instanceSet.enumerateInstances();
     numOfAttributes = instanceSet.numAttributes();
+    float quadraticAverageError = 0;
 
     attributeVector = instanceSet.getAttributes();      //cria um array com os atributos para serialização
     this.classIndex = instanceSet.getClassIndex();      //guarda o indice da classa para serialização
@@ -72,7 +73,6 @@ public class NeuralNetwork extends BayesianLearning implements Serializable{
       index++;
     }
 
-
    /////////////////////////////////////
     int inputLayerSize = 0;
     for(int i=0; i<numOfAttributes; i++){
@@ -81,22 +81,6 @@ public class NeuralNetwork extends BayesianLearning implements Serializable{
       }
     }
     inputLayer = new int[inputLayerSize];
-
-/*    ArrayList inputArray = new ArrayList();
-    for(int i=0; i<numOfAttributes; i++){
-      if(i != classIndex){
-        Attribute att = instanceSet.getAttribute(i);
-        for(int j=0; j<att.numValues(); j++){
-          inputArray.add(new InputNeuron(i, j));
-        }
-      }
-    }
-
-
-    for(int i=0; i<inputLayerSize; i++){
-      inputLayer[i] = (InputNeuron)inputArray.get(i);
-    }
-*////////////////////////////////////
 
     hiddenLayer = new HiddenNeuron[hiddenLayerSize];
     for(int i=0; i<hiddenLayer.length; i++){
@@ -110,16 +94,22 @@ public class NeuralNetwork extends BayesianLearning implements Serializable{
 
     while(instanceEnum.hasMoreElements()){
       instance = (Instance)instanceEnum.nextElement();
-      learn(instance);
+      quadraticAverageError = quadraticAverageError + learn(instance);
     }
+    quadraticAverageError = quadraticAverageError / instanceSet.numWeightedInstances();
+
+
+
   }
 
-  public void learn(Instance instance){
+  public float learn(Instance instance){
+    float totalErrorEnergy = 0;
+
     for(int i=0; i<inputLayer.length; i++){
       inputLayer[i] = 0;
     }
 
-    int counter = 0;
+    int counter = 0;           //inicializa o vetor de entradas
     for(int i=0; i<numOfAttributes; i++){
       if(i != classIndex){
         if(!instance.isMissing(i)){
@@ -134,10 +124,43 @@ public class NeuralNetwork extends BayesianLearning implements Serializable{
       }
     }
 
-    for(int i=0; i<inputLayer.length; i++){
-      System.out.println(inputLayer[i]);
+
+    ///////////calcula as saidas da hiddem
+    for(int i=0; i<hiddenLayer.length; i++){
+      hiddenLayer[i].calculateOutputValue(inputLayer);
     }
-    System.out.println("  ");
+
+    //////////create expected output
+    int[] expectedOutput = new int[instanceSet.getClassAttribute().numValues()];
+    Arrays.fill(expectedOutput, 0);
+    expectedOutput[instance.classValue()] = 1;
+
+    //////////calcula as saidas da camada oculta
+    for(int i=0; i<outputLayer.length; i++){
+      float instantaneousError;
+      instantaneousError = outputLayer[i].calculateOutputValue(hiddenLayer, expectedOutput[i]);
+      totalErrorEnergy = totalErrorEnergy + (instantaneousError * instantaneousError);
+    }
+
+    //////////calcula error terms  (SIGMA) da camada oculta, da saída já está calculado
+    for(int i=0; i<hiddenLayer.length; i++){
+      hiddenLayer[i].calculateErrorTerm(outputLayer, i);
+    }
+
+    ///////// UPDATE  dos pesos dos neuronios de saida
+    for(int i=0; i<outputLayer.length; i++){
+      outputLayer[i].updateWeights(learningRate, hiddenLayer);
+    }
+
+    /////////UPDATE dos pesos dos neuronios ocultos
+    for(int i=0; i<hiddenLayer.length; i++){
+      hiddenLayer[i].updateWeights(learningRate, inputLayer);
+    }
+
+
+
+    return (totalErrorEnergy / 2);
+
   }
 
 

@@ -7,8 +7,15 @@ public abstract class Neuron {
 
   public abstract float outputValue();
 
-  public abstract void updateWeights();
+//  public abstract void updateWeights(float learningRate);
 
-  public abstract float getSigma();
+  public abstract float getErrorTerm();
 
+  void startWeights(){
+    double weight;
+    for(int i=0; i<weights.length; i++){
+      weight = Math.random();
+      weights[i] = (float)(weight - 0.5);
+    }
+  }
 }

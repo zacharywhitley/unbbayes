@@ -59,7 +59,7 @@ public class NeuralNetworkController {
       learningRate = mainScreen.optionsPanel.getLearningRate();
       momentum = mainScreen.optionsPanel.getMomentum();
       hiddenSize = mainScreen.optionsPanel.getHiddenLayerSize();
-      trainningTime = mainScreen.optionsPanel.getTrainingTime();
+      trainningTime = mainScreen.optionsPanel.getTrainningTime();
       activationFunction = mainScreen.optionsPanel.getSelectedActivationFunction();
       bpn = new NeuralNetwork(learningRate, momentum, hiddenSize, activationFunction);
       bpn.buildClassifier(instanceSet);

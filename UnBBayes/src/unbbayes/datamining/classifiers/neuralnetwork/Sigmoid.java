@@ -24,11 +24,11 @@ public class Sigmoid implements ActivationFunction{
    * @param o the actual output
    * @return the value of sigma
    */
-  public double sigmaOutput(double d, double o){
-    return a * (d - o) * o * (1 - o);
+  public double outputErrorTerm(double desiredOutput, double actualOutput){   //sigma
+    return a * (desiredOutput - actualOutput) * actualOutput * (1 - actualOutput);
   }
 
-  public double sigmaHidden(double y, double sum){
+  public double hiddenErrorTerm(double y, double sum){   //sigma
     return a * y * (1 - y) * sum;
   }
 
