@@ -33,7 +33,7 @@ public abstract class TAprendizagemTollKit {
      *@return double - Resultado da aplicaçào da função de qualidade
      *@see TVariavel
      */
-    public abstract double g(TVariavel variavel, NodeList pais);
+    //public abstract double g(TVariavel variavel, NodeList pais);
 
     protected double informacaoMutuaCond(int v1, int v2, ArrayList sep){
     	int qj = calculaQj(sep);
@@ -144,18 +144,6 @@ public abstract class TAprendizagemTollKit {
         return im;    	
     }
     
-    protected int calculaQj(ArrayList cc){
-    	TVariavel varAux;
-    	int ac = 1;
-    	for(int i = 0 ; i < cc.size(); i++){
-    		varAux = (TVariavel)vetorVariaveis.get(((Integer)cc.get(i)).intValue());    		
-    		ac *= varAux.getEstadoTamanho();
-    	}
-    	if(cc.size() == 0){
-    	    return 0;	
-    	} 
-    	return ac;    	
-    }
 
     /**
      *  Esse método calcula as probabilidades dos nós da rede
@@ -383,7 +371,8 @@ public abstract class TAprendizagemTollKit {
     */
     protected double log(double numero){
         return Math.log(numero)/Math.log(10);
-    }
+    }   
+
 
     /**
      * Método para montar os predecessores de todos os nós. Prede

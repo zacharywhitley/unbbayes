@@ -67,6 +67,7 @@ public class TOrdenacao1 extends JDialog
      * @see java.util.List
      */
     public  TOrdenacao1(File arquivo, MainController controlador){
+    	
        super(new Frame(), "", true);
        Container painelPrincipal = getContentPane();
        this.controlador = controlador;
@@ -107,8 +108,8 @@ public class TOrdenacao1 extends JDialog
                }
                posicao++;
            }
-           new TTelaEscolhaVariaveis(vetorVariaveis);
-           new TArq(vetorVariaveis);
+           new ChooseVariablesWindow(vetorVariaveis);
+           new CompactFileWindow(vetorVariaveis);
            int cont = 0;
            for (int i = 0; i < vetorVariaveis.size();i++){
              TVariavel aux = (TVariavel)vetorVariaveis.get(i);
