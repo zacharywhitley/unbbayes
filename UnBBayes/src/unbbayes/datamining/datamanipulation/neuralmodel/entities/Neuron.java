@@ -10,7 +10,6 @@ package unbbayes.datamining.datamanipulation.neuralmodel.entities;
  */
 
 public abstract class Neuron {
-
   protected String key;
 
   public String getKey(){

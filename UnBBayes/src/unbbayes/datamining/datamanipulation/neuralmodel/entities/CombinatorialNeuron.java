@@ -12,11 +12,10 @@ import java.util.*;
  */
 
 public class CombinatorialNeuron extends Neuron{
-
   private InputNeuron[] inputList;
   private Hashtable outputList = new Hashtable();
-  private int signalValue = 1;
-  private int inputCounter = 0;
+//  private int signalValue = 1;
+//  private int inputCounter = 0;
 
   public CombinatorialNeuron(InputNeuron[] inputList, OutputNeuron outputNeuron, String key) {
     this.inputList = inputList;
@@ -26,6 +25,7 @@ public class CombinatorialNeuron extends Neuron{
 
   public void addOutputNeuron(OutputNeuron outputNeuron){
     String outputKey = outputNeuron.getKey();
+
     if(!outputList.containsKey(outputKey)){
       outputList.put(outputKey, outputNeuron);
     }
@@ -40,13 +40,29 @@ public class CombinatorialNeuron extends Neuron{
     if(outputList.size() == 0){
       int inputListSize = inputList.length;
       for(int i=0; i<inputListSize; i++){
-        inputList[i].prunning(this.getKey());
+        inputList[i].prunning(this.key);
       }
     }
   }
 
-  public int getCombinationsNum(){
+  /** Retorna uma enumeracao com os neuronios de saida associados a este neuronio combinatorial */
+  public Enumeration getOutputList(){
+    return outputList.elements();
+  }
+
+  /** Retorn a lista de neuronios de entrada */
+  public InputNeuron[] getInputList(){
+    return inputList;
+  }
+
+  /** Retorna a quantidade de neuronios de entrada que são combinados por este neuronio */
+  public int getInputCombinationsNum(){
     return inputList.length;
+  }
+
+  /** Retorna a quantidade de neuronios de saida apontados por este neuronio */
+  public int getOutputCombinationsNum(){
+    return outputList.size();
   }
 
 /*  public void setSignal(int signalValue, Integer originKey){

@@ -2,8 +2,6 @@ package unbbayes.datamining.datamanipulation.neuralmodel.entities;
 
 import java.util.*;
 
-import unbbayes.datamining.datamanipulation.*;
-
 /**
  * <p>Title: </p>
  * <p>Description: </p>
@@ -14,7 +12,6 @@ import unbbayes.datamining.datamanipulation.*;
  */
 
 public class InputNeuron extends Neuron {
-
   private int attributeIndex;
   private short value;
   private Hashtable combinationsList = new Hashtable();
@@ -25,7 +22,7 @@ public class InputNeuron extends Neuron {
     this.key = key;
   }
 
-  public void addNeuron(Neuron neuron){
+  public void addCombNeuron(Neuron neuron){   //adiciona um neuronio combinatorial
     String neuronKey = neuron.getKey();
     if(!combinationsList.containsKey(neuronKey)){
       combinationsList.put(neuronKey, neuron);
@@ -38,6 +35,14 @@ public class InputNeuron extends Neuron {
 
   public void removeCombNeuron(String combKey){
     combinationsList.remove(combKey);
+  }
+
+  public int getAttributeIndex(){
+    return attributeIndex;
+  }
+
+  public short getValue(){
+    return value;
   }
 
   public int getCombinationsNum(){

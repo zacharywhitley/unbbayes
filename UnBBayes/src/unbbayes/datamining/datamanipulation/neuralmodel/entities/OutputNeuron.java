@@ -1,7 +1,7 @@
 package unbbayes.datamining.datamanipulation.neuralmodel.entities;
 
 import java.util.*;
-import unbbayes.datamining.datamanipulation.*;
+
 /**
  * <p>Title: </p>
  * <p>Description: </p>
@@ -12,15 +12,22 @@ import unbbayes.datamining.datamanipulation.*;
  */
 
 public class OutputNeuron extends Neuron{
-
-  private Hashtable combinationsList = new Hashtable();
   private int attributeIndex;
   private short value;
+  private Hashtable combinationsList = new Hashtable();
 
   public OutputNeuron(int attributeIndex, short value, String key) {
     this.attributeIndex = attributeIndex;
     this.value = value;
     this.key = key;
+  }
+
+  public int getAttributeIndex(){
+    return attributeIndex;
+  }
+
+  public short getValue(){
+    return value;
   }
 
   public void addCombination(Neuron combination){
@@ -36,7 +43,12 @@ public class OutputNeuron extends Neuron{
     return combinationsList;
   }
 
+  public Enumeration getCombinationsEnum(){
+    return combinationsList.elements();
+  }
+
   public void prunning(String key){}  //metodo declarado para satisfazer a classe abstrata pai
+
   public void prunning(int threshold){
     Enumeration outputEnum = combinationsList.elements();
     Arc tempArc;
@@ -44,11 +56,55 @@ public class OutputNeuron extends Neuron{
     while(outputEnum.hasMoreElements()){
       tempArc = (Arc)outputEnum.nextElement();
       if(tempArc.weigth < threshold){
-        tempArc.combinationNeuron.prunning(this.getKey());
+        tempArc.combinationNeuron.prunning(this.key);
         combinationsList.remove(tempArc.combinationNeuron.key);
       }
     }
   }
+
+  public int maxAccumulator(){
+    Enumeration outputEnum = combinationsList.elements();
+    Arc tempArc;
+    int maxAccumulator = 0;
+
+    while(outputEnum.hasMoreElements()){
+      tempArc = (Arc)outputEnum.nextElement();
+      maxAccumulator = Math.max(maxAccumulator, tempArc.accumulator);
+    }
+    return maxAccumulator;
+  }
+
+  public int minAccumulator(){
+    Enumeration outputEnum = combinationsList.elements();
+    Arc tempArc;
+    int minAccumulator = 0;
+
+    while(outputEnum.hasMoreElements()){
+      tempArc = (Arc)outputEnum.nextElement();
+      minAccumulator = Math.min(minAccumulator, tempArc.accumulator);
+    }
+    return minAccumulator;
+  }
+
+  public void calculateReliability(){
+    Enumeration outputEnum = combinationsList.elements();
+    Arc tempArc;
+    long accumulatorsSum = 0;
+
+    while(outputEnum.hasMoreElements()){
+      tempArc = (Arc)outputEnum.nextElement();
+      if(tempArc.accumulator > 0){
+        accumulatorsSum = accumulatorsSum + tempArc.accumulator;
+      }
+    }
+
+    outputEnum = combinationsList.elements();
+    while(outputEnum.hasMoreElements()){
+      tempArc = (Arc)outputEnum.nextElement();
+      tempArc.reliability = tempArc.accumulator / accumulatorsSum;
+    }
+  }
+
 
 //////////////////////////////
   public void printClassValue(){
