@@ -300,13 +300,13 @@ public class WindowController implements KeyListener {
      * Inicia as crenças da árvore de junção.
      */
     public void initialize() {
-    	try {
+    	/*try {
 	        rede.initialize();
        		evidenceTree.updateTree();
     	} catch (Exception e) {
     		e.printStackTrace();
-    	}
-        /*try {
+    	}*/
+        try {
 	        long start = System.currentTimeMillis();
                 for (int i=0;i<250;i++)
                 {   rede.initialize();
@@ -322,7 +322,7 @@ public class WindowController implements KeyListener {
                 System.out.println(end-start);
     	} catch (Exception e) {
     		e.printStackTrace();
-    	}*/
+    	}
     }
 
 
