@@ -53,8 +53,8 @@ public class LancamentoUsoFeature implements Feature {
 			StringBuffer sql = new StringBuffer();
 			sql.append("UPDATE ");
 			sql.append("  Lancamento_Uso ");
-			sql.append(" SET ");
-			sql.append(" dt_hora_fim_lancamento_uso = ? ");
+			sql.append("SET ");
+			sql.append("  dt_hora_fim_lancamento_uso = ? ");
 			sql.append("WHERE ");
 			sql.append("  cod_lancamento_uso = ? ");
 			 
@@ -68,6 +68,10 @@ public class LancamentoUsoFeature implements Feature {
 			descTipoSituacao = TipoSituacao.USO;
 			
 			String codUsuario = in.getChildTextTrim("cod-usuario");
+			
+			if (! situacaoOK(codEquipamento, con)) {
+				throw new RuntimeException("Esse computador já está em uso!");
+			}
 			
 			StringBuffer sql = new StringBuffer();
 			sql.append("INSERT INTO ");
@@ -103,6 +107,50 @@ public class LancamentoUsoFeature implements Feature {
 		return out;
 	}
 	
+	
+	private boolean situacaoOK(String codEquipamento, Connection con) 
+					  throws SQLException {
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		
+		StringBuffer sql = new StringBuffer();
+		sql.append("SELECT ");
+		sql.append("  cod_tipo_situacao ");
+		sql.append("FROM ");
+		sql.append("  Tipo_Situacao ");
+		sql.append("WHERE ");
+		sql.append("  desc_tipo_situacao = ? ");
+		
+		ps = con.prepareStatement(sql.toString());
+		
+		ps.setString(1, TipoSituacao.DISPONIVEL);
+		
+		rs = ps.executeQuery();
+		
+		if (! rs.next()) {
+			throw new RuntimeException("Descrição Tipo Situação Não Encontrada no BD - " + TipoSituacao.DISPONIVEL);
+		}
+		
+		sql.delete(0, sql.length());
+		sql.append("SELECT ");
+		sql.append("  * ");
+		sql.append("FROM ");
+		sql.append("  Equipamento ");
+		sql.append("WHERE ");
+		sql.append("  cod_tipo_situacao = ? AND cod_equipamento = ? ");
+		
+		ps = con.prepareStatement(sql.toString());
+		
+		ps.setInt(1, rs.getInt("cod_tipo_situacao"));
+		ps.setInt(2, Integer.parseInt(codEquipamento));
+		
+		rs = ps.executeQuery();
+		
+		return rs.next();
+		
+	}
+	
 	private void atualizarSituacaoComputador(String codEquipamento, 
 				String descTipoSituacao, Connection con) throws SQLException {
 		
@@ -115,7 +163,7 @@ public class LancamentoUsoFeature implements Feature {
 		sql.append("FROM ");
 		sql.append("  Tipo_Situacao ");
 		sql.append("WHERE ");
-		sql.append(" desc_tipo_situacao = ? ");
+		sql.append("  desc_tipo_situacao = ? ");
 		
 		ps = con.prepareStatement(sql.toString());
 		
@@ -133,7 +181,7 @@ public class LancamentoUsoFeature implements Feature {
 		sql.append("SET ");
 		sql.append("  cod_tipo_situacao = ? ");
 		sql.append("WHERE ");
-		sql.append(" cod_equipamento = ? ");
+		sql.append("  cod_equipamento = ? ");
 		
 		ps = con.prepareStatement(sql.toString());
 		
