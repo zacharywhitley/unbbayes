@@ -66,8 +66,8 @@ public class TextMode {
 		auxVP.appendState(resource.getString("stateName1"));
 		PotentialTable auxTabPot = auxVP.getPotentialTable();
 		auxTabPot.addVariable(auxVP);
-		auxTabPot.addValueAt(0, 0.99);
-		auxTabPot.addValueAt(1, 0.01);
+		auxTabPot.addValueAt(0, 0.99f);
+		auxTabPot.addValueAt(1, 0.01f);
 		rede.addNode(auxVP);
 
 		ProbabilisticNode auxVP2 = (ProbabilisticNode) rede.getNode(resource.getString("nodeName2"));

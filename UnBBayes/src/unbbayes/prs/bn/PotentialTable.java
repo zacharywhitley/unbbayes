@@ -128,11 +128,11 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
         return variaveis.get(index);
     }
 
-    public void addValueAt(int index, double value) {
+    public void addValueAt(int index, float value) {
         dados.add(index, value);
     }
     
-    public final void setValueAt(int index, double value) {
+    public final void setValueAt(int index, float value) {
     	dados.data[index] = value;
     }
 
@@ -167,7 +167,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      *@param  coordenadas  Coordenada na tabela.
      *@param  valor Valor a ser colocado na coordenada especificada
      */
-    public void setValue(int[] coordenadas, double valor) {
+    public void setValue(int[] coordenadas, float valor) {
         dados.data[getLinearCoord(coordenadas)] = valor;
     }
 
@@ -178,7 +178,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      *@param  index  posicao linear onde o valor entrará
      *@param  valor  valor a ser colocado na posicao especificada.
      */
-    public final void setValue(int index, double valor) {
+    public final void setValue(int index, float valor) {
         dados.data[index] = valor;
     }
 
@@ -189,7 +189,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      *@param  index  índice linear do valor na tabela a ser retornado.
      *@return        valor na tabela correspondente ao indice linear especificado.
      */
-    public final double getValue(int index) {
+    public final float getValue(int index) {
         return dados.data[index];
     }
 
@@ -200,7 +200,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      *@param  coordenadas  coordenadas do valor a ser pego.
      *@return              valor na tabela especificada pelas coordenadas.
      */
-    public final double getValue(int[] coordenadas) {
+    public final float getValue(int[] coordenadas) {
         return dados.data[getLinearCoord(coordenadas)];
     }
 
@@ -217,7 +217,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
         int noCelBasica = this.dados.size;
         if (variaveis.size() == 0) {
             for (int i = 0; i < noEstados; i++) {
-                dados.add(0.0);
+                dados.add(0);
             }
         }
         else {
@@ -249,7 +249,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
     protected void sum(int control, int index, int coord, int base) {
         if (control == -1) {            
             int linearCoordDestination = coord - base;
-            double value = dados.data[linearCoordDestination] + dados.data[coord];
+            float value = dados.data[linearCoordDestination] + dados.data[coord];
             dados.data[linearCoordDestination] = value;
             dados.remove(coord);
             return;
@@ -293,7 +293,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
             int linearCoordToKill = getLinearCoord(coord);
             if (coord[index] == state) {
                 int linearCoordDestination = linearCoordToKill - coord[index]*fatores[index];
-                double value = dados.data[linearCoordToKill];
+                float value = dados.data[linearCoordToKill];
                 dados.data[linearCoordDestination] = value;
             }
             dados.remove(linearCoordToKill);
@@ -380,8 +380,8 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
         }
 
         for (int k = tableSize()-1; k >= 0; k--) {
-            double b = tab.dados.data[k];
-            double a = dados.data[k];
+            float b = tab.dados.data[k];
+            float a = dados.data[k];
             dados.data[k] = operate(a, b, operator);
         }
     }
@@ -401,27 +401,51 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
         }
         calcularFatores();
         tab.calcularFatores();
-        fastOpTab(0, 0, 0, index, tab, operator);
+        
+        switch (operator) {
+        	case PRODUCT_OPERATOR:
+        		fastOpTabProd(0, 0, 0, index, tab);
+        		break;
+        	case PLUS_OPERATOR:
+        		fastOpTabPlus(0, 0, 0, index, tab);
+        		break;
+        }
     }
     
     
-    private void fastOpTab(int c, int linearA, int linearB, int index[], PotentialTable tab, int operator) {
-    	if (c >= variaveis.size()) {
-    		dados.data[linearA] = operate(dados.data[linearA], tab.dados.data[linearB],operator);
+    private void fastOpTabPlus(int c, int linearA, int linearB, int index[], PotentialTable tab) {
+    	if (c >= variaveis.size()) {    		
+    		dados.data[linearA] += tab.dados.data[linearB];
     		return;    		    		
     	}
     	if (index[c] == -1) {
     		for (int i = variaveis.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
-	    		fastOpTab(c+1, linearA + i*fatores[c] , linearB, index, tab, operator);
+	    		fastOpTabPlus(c+1, linearA + i*fatores[c] , linearB, index, tab);
     		}
     	} else {
 	    	for (int i = variaveis.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
-	    		fastOpTab(c+1, linearA + i*fatores[c] , linearB + i*tab.fatores[index[c]], index, tab, operator);
+	    		fastOpTabPlus(c+1, linearA + i*fatores[c] , linearB + i*tab.fatores[index[c]], index, tab);
     		}
     	}
     }
 
-    private double operate(double a, double b, int operator) {
+    private void fastOpTabProd(int c, int linearA, int linearB, int index[], PotentialTable tab) {
+    	if (c >= variaveis.size()) {
+    		dados.data[linearA] *= tab.dados.data[linearB];
+    		return;    		    		
+    	}
+    	if (index[c] == -1) {
+    		for (int i = variaveis.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
+	    		fastOpTabProd(c+1, linearA + i*fatores[c] , linearB, index, tab);
+    		}
+    	} else {
+	    	for (int i = variaveis.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
+	    		fastOpTabProd(c+1, linearA + i*fatores[c] , linearB + i*tab.fatores[index[c]], index, tab);
+    		}
+    	}
+    }
+
+    private float operate(float a, float b, int operator) {
         switch (operator) {
             case MINUS_OPERATOR:
                 b = -b;
@@ -429,7 +453,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
                 return a + b;
             case DIVISION_OPERATOR:
                 if (b == 0.0) {
-                    return 0.0;
+                    return 0;
                 }
                 b = 1 / b;
             case PRODUCT_OPERATOR:

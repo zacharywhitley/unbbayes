@@ -159,7 +159,7 @@ public abstract class Node implements java.io.Serializable {
 	 */
 	public void setParents(NodeList pais) {
 		this.parents = pais;
-	}
+	}	
 
 	/**
 	 *  Modifica a posicao do nó.
@@ -404,14 +404,6 @@ public abstract class Node implements java.io.Serializable {
 		adjacents.clear();
 	}
 
-	/**
-	 *  Adiciona um nó na lista de pais.
-	 *
-	 *@param  pai  pai a ser inserido
-	 */
-	protected void adicionaPai(Node pai) {
-		parents.add(pai);
-	}
 
 	/**
 	 * Utilizado para notificar as tabelas de que esta variável faz parte de que houve uma

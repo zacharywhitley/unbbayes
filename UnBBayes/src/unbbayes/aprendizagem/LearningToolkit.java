@@ -18,7 +18,7 @@ public abstract class LearningToolkit{
 	protected void getProbability(int[][] arrayNijk, TVariavel variable){
         List instanceVector;
         List instance = new ArrayList();
-        double probability;
+        float probability;
         int nij;
         int ri = variable.getEstadoTamanho();
         int nijLength  = getQ(variable.getPais());
@@ -32,7 +32,7 @@ public abstract class LearningToolkit{
                 instance = (List)instanceVector.get(i);
              }
              for(int j = 0; j < ri; j++){             	              	  
-                  probability = (double)(1+ arrayNijk[j][i])/(ri+nij);                                    
+                  probability = (float)(1+ arrayNijk[j][i])/(ri+nij);                                    
                   int coord[];
                   coord = new int[nijLength+1];
                   coord[0] = j;

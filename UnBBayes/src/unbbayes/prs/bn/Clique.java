@@ -122,9 +122,9 @@ public class Clique implements ITabledVariable, java.io.Serializable {
         return 0.0;
     }
 
-    private double normalizeBN() throws Exception {
-        double n = 0.0;
-        double valor;
+    private float normalizeBN() throws Exception {
+        float n = 0;
+        float valor;
 
         int sizeDados = potentialTable.tableSize();
         for (int c = 0; c < sizeDados; c++) {
@@ -151,7 +151,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
                              int coord[]) throws Exception {
 
         if (control == decisoes.size()) {
-            double soma = sum(0, fixo, coord);
+            float soma = sum(0, fixo, coord);
             if (soma == 0.0) {
             	for (int k = 0; k < decisoes.size(); k++) {
 					System.out.println(decisoes.get(k) + " - " + decisoes.get(k).getStateAt(coord[index[k]]));
@@ -177,7 +177,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
         }
     }
 
-    private double sum(int control, boolean fixo[], int coord[]) {
+    private float sum(int control, boolean fixo[], int coord[]) {
         if (control == nos.size()) {
             return potentialTable.getValue(coord);
         }
@@ -187,7 +187,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
         }
 
         Node node = nos.get(control);
-        double retorno = 0.0;
+        float retorno = 0;
         for (int i = 0; i < node.getStatesSize(); i++) {
             coord[control] = i;
             retorno += sum(control+1, fixo, coord);
@@ -195,7 +195,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
         return retorno;
     }
 
-    private void div(int control, boolean fixo[], int coord[], double soma) {
+    private void div(int control, boolean fixo[], int coord[], float soma) {
         if (control == nos.size()) {
             int cLinear = potentialTable.getLinearCoord(coord);
             potentialTable.setValue(cLinear, potentialTable.getValue(cLinear) / soma);

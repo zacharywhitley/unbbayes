@@ -104,8 +104,8 @@ public class ComputeProbabilisticNetwork
       k++;
   }
 
-  private double[] priors;
-  private double[][][] counts;
+  private float[] priors;
+  private float[][][] counts;
   private ProbabilisticNode classAtt;
   private int width = 50;
   private int numAtt;

@@ -88,8 +88,8 @@ public class GraphicMode {
                 PotentialTable auxTabPot = auxVP.getPotentialTable();
 
                 auxTabPot.addVariable(auxVP);
-                auxTabPot.addValueAt(0, 0.30);
-                auxTabPot.addValueAt(1, 0.70);
+                auxTabPot.addValueAt(0, 0.3f);
+                auxTabPot.addValueAt(1, 0.7f);
                 rede.addNode(auxVP);
 
                 ProbabilisticNode auxVP2 = (ProbabilisticNode)rede.getNode("A");

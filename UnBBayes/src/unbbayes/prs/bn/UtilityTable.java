@@ -44,7 +44,7 @@ public class UtilityTable extends PotentialTable implements java.io.Serializable
         if (control == -1) {
             int linearCoordToKill = getLinearCoord(coord);
             int linearCoordDestination = linearCoordToKill - coord[index]*fatores[index];
-            double value = Math.max(dados.data[linearCoordDestination], dados.data[linearCoordToKill]);
+            float value = Math.max(dados.data[linearCoordDestination], dados.data[linearCoordToKill]);
             dados.data[linearCoordDestination] = value;
             dados.remove(linearCoordToKill);
             return;

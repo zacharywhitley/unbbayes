@@ -24,7 +24,7 @@ package unbbayes.util;
 import java.util.ResourceBundle;
 
 /**
- * Classe que representa um array dinâmico do tipo <code>double</code>.
+ * Classe que representa um array dinâmico do tipo <code>float</code>.
  *
  * @author Michael
  * @author Rommel
@@ -32,7 +32,7 @@ import java.util.ResourceBundle;
 public final class DoubleCollection implements java.io.Serializable {
     public static final int DEFAULT_SIZE = 30;
 
-    public double data[];
+    public float data[];
     public int size;
     
     /** Load resource file from this package */
@@ -42,7 +42,7 @@ public final class DoubleCollection implements java.io.Serializable {
         if (initialCapacity < 0)
             throw new IllegalArgumentException(resource.getString("IllegalCapacityException") +
                                                initialCapacity);
-        this.data = new double[initialCapacity];
+        this.data = new float[initialCapacity];
     }
 
     public DoubleCollection() {
@@ -51,7 +51,7 @@ public final class DoubleCollection implements java.io.Serializable {
 
 
     /**
-     * Increases the capacity of this <tt>DoubleCollection</tt> instance, if
+     * Increases the capacity of this <tt>floatCollection</tt> instance, if
      * necessary, to ensure  that it can hold at least the number of elements
      * specified by the minimum capacity argument.
      *
@@ -60,12 +60,12 @@ public final class DoubleCollection implements java.io.Serializable {
     public final void ensureCapacity(int minCapacity) {
         int oldCapacity = data.length;
         if (minCapacity > oldCapacity) {
-            double oldData[] = data;
+            float oldData[] = data;
             int newCapacity = (oldCapacity * 3)/2 + 1;
             if (newCapacity < minCapacity) {
                newCapacity = minCapacity;
             }
-            data = new double[newCapacity];
+            data = new float[newCapacity];
             System.arraycopy(oldData, 0, data, 0, size);
         }
     }
@@ -85,7 +85,7 @@ public final class DoubleCollection implements java.io.Serializable {
      * @param  index index of element to return.
      * @return the element at the specified position in this list.
      */
-    public final double get(int index) {
+    public final float get(int index) {
         return data[index];
     }
 
@@ -97,8 +97,8 @@ public final class DoubleCollection implements java.io.Serializable {
      * @param element element to be stored at the specified position.
      * @return the element previously at the specified position.
      */
-    public final double set(int index, double element) {
-        double oldValue = data[index];
+    public final float set(int index, float element) {
+        float oldValue = data[index];
         data[index] = element;
         return oldValue;
     }
@@ -109,7 +109,7 @@ public final class DoubleCollection implements java.io.Serializable {
      * @param o element to be appended to this list.
      * @return <tt>true</tt>
      */
-    public final boolean add(double newElement) {
+    public final boolean add(float newElement) {
         ensureCapacity(size + 1);
         data[size++] = newElement;
         return true;
@@ -125,7 +125,7 @@ public final class DoubleCollection implements java.io.Serializable {
      * @throws    IndexOutOfBoundsException if index is out of range
      *		  <tt>(index &lt; 0 || index &gt; size())</tt>.
      */
-    public final void add(int index, double element) {
+    public final void add(int index, float element) {
         /*
         if (index > size || index < 0) {
            throw new IndexOutOfBoundsException("Index: "+index+", Size: "+size);
@@ -152,7 +152,7 @@ public final class DoubleCollection implements java.io.Serializable {
             System.arraycopy(data, index+1, data, index,
                      numMoved);
         if (size > 0) {        
-	        data[--size] = 0.0;
+	        data[--size] = 0;
         }
     }
 }

@@ -171,13 +171,13 @@ public class ConstructionController {
 	
 	private void normalize(TVariavel variable) {
         for (int c = 0; c < variable.getPotentialTable().tableSize()/*.getDados().size()*/; c+=variable.getEstadoTamanho()/*.noEstados()*/){
-            double sum = 0.0;
+            float sum = 0;
             for (int i = 0; i < variable.getEstadoTamanho()/*.noEstados()*/; i++){
                sum += variable.getPotentialTable().getValue(c+i);
             }
             if (sum == 0){
                 for (int i = 0; i < variable.getEstadoTamanho()/*.noEstados()*/; i++){
-                    variable.getPotentialTable().setValue(c+i, 1.0/variable.getEstadoTamanho()/*.noEstados()*/);
+                    variable.getPotentialTable().setValue(c+i, 1/variable.getEstadoTamanho()/*.noEstados()*/);
                 }
             } else{
                  for (int i = 0; i < variable.getEstadoTamanho()/*.noEstados()*/; i++){

@@ -254,7 +254,7 @@ public class JunctionTree implements java.io.Serializable {
 	
 				int tableSize = auxTabPot.tableSize();
 				for (int c = 0; c < tableSize; c++) {
-					auxTabPot.setValue(c, 1.0);
+					auxTabPot.setValue(c, 1);
 				}
 	
 				ProbabilisticNode auxVP;
@@ -266,7 +266,7 @@ public class JunctionTree implements java.io.Serializable {
 	
 				tableSize = auxUtilTab.tableSize();
 				for (int i = 0; i < tableSize; i++) {
-					auxUtilTab.setValue(i, 0.0);
+					auxUtilTab.setValue(i, 0);
 				}
 				UtilityNode utilNode;
 				sizeAssociados = auxClique.getAssociatedUtilityNodes().size();
@@ -283,13 +283,13 @@ public class JunctionTree implements java.io.Serializable {
 				auxTabPot = auxSep.getPotentialTable();
 				int sizeDados = auxTabPot.tableSize();
 				for (int c = 0; c < sizeDados; c++) {
-					auxTabPot.setValue(c, 1.0);
+					auxTabPot.setValue(c, 1);
 				}
 	
 				auxUtilTab = auxSep.getUtilityTable();
 				sizeDados = auxUtilTab.tableSize();
 				for (int i = 0; i < sizeDados; i++) {
-					auxUtilTab.setValue(i, 0.0);
+					auxUtilTab.setValue(i, 0);
 				}
 			}
 			

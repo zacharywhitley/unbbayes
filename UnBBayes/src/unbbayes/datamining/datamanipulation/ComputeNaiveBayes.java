@@ -15,7 +15,7 @@ public class ComputeNaiveBayes
 			}
 		}
 		numClasses = classNode.getStatesSize();
-		counts = new double[numClasses][numNodes-1][1];
+		counts = new float[numClasses][numNodes-1][1];
 		for (int i=0; i<numNodes; i++)
 		{	ProbabilisticNode node = (ProbabilisticNode)net.getNodeAt(i);
 			if (node.getParents().size() != 0)
@@ -28,7 +28,7 @@ public class ComputeNaiveBayes
 	private void createPriors(ProbabilisticNode classNode)
 	{	PotentialTable tab = classNode.getPotentialTable();
 		int num = classNode.getStatesSize();
-		double[] priors = new double[num];
+		float[] priors = new float[num];
       	for (int i=0;i<num;i++)
       	{	priors[i] = tab.getValue(i);
       	}
@@ -41,7 +41,7 @@ public class ComputeNaiveBayes
 
 		int i=0,j=0;
       	for (j=0;j<numClasses;j++)
-      	{	counts[j][k] = new double[num];
+      	{	counts[j][k] = new float[num];
       	}
 
 		int[] coord = new int[numClasses];
@@ -61,7 +61,7 @@ public class ComputeNaiveBayes
 
 	private NaiveBayes naiveBayes = new NaiveBayes();
 	private ProbabilisticNode classNode;
-	private double[][][] counts;
+	private float[][][] counts;
 	private int numClasses;
 	private int k = 0;
 }

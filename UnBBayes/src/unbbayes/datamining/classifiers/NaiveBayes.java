@@ -15,16 +15,16 @@ public class NaiveBayes extends BayesianLearning
 	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.classifiers.resources.ClassifiersResource");
 
 	/** All the counts for nominal attributes. */
-  	private double [][][] counts;
+  	private float [][][] counts;
 
   	/** The means for numeric attributes. */
-  	private double [][] means;
+  	private float [][] means;
 
   	/** The standard deviations for numeric attributes. */
-  	private double [][] devs;
+  	private float [][] devs;
 
   	/** The prior probabilities of the classes. */
-  	private double [] priors;
+  	private float [] priors;
 
   	/** The instances used for training. */
   	private InstanceSet instances;
@@ -32,7 +32,7 @@ public class NaiveBayes extends BayesianLearning
   	private Attribute classAttribute;
 
 	/** Constant for normal distribution. */
-  	private static double NORM_CONST = Math.sqrt(2 * Math.PI);
+  	private static float NORM_CONST = (float)Math.sqrt(2 * Math.PI);
 
 	/**
    	* Generates the classifier.
@@ -42,7 +42,7 @@ public class NaiveBayes extends BayesianLearning
    	*/
   	public void buildClassifier(InstanceSet inst) throws Exception
 	{	int attIndex = 0;
-    	double sum;
+    	float sum;
 
     	if (inst.getClassAttribute().isNumeric())
 		{	throw new Exception(resource.getString("exception1"));
@@ -52,21 +52,21 @@ public class NaiveBayes extends BayesianLearning
 		classAttribute = instances.getClassAttribute();
 
 		// Reserve space
-    	counts = new double[instances.numClasses()][instances.numAttributes() - 1][0];
-    	means = new double[instances.numClasses()][instances.numAttributes() - 1];
-    	devs = new double[instances.numClasses()][instances.numAttributes() - 1];
-    	priors = new double[instances.numClasses()];
+    	counts = new float[instances.numClasses()][instances.numAttributes() - 1][0];
+    	means = new float[instances.numClasses()][instances.numAttributes() - 1];
+    	devs = new float[instances.numClasses()][instances.numAttributes() - 1];
+    	priors = new float[instances.numClasses()];
     	Enumeration enum = instances.enumerateAttributes();
     	while (enum.hasMoreElements())
 		{	Attribute attribute = (Attribute) enum.nextElement();
       		if (attribute.isNominal())
 			{	for (int j = 0; j < instances.numClasses(); j++)
-				{	counts[j][attIndex] = new double[attribute.numValues()];
+				{	counts[j][attIndex] = new float[attribute.numValues()];
 				}
       		}
 			else
 			{	for (int j = 0; j < instances.numClasses(); j++)
-				{	counts[j][attIndex] = new double[1];
+				{	counts[j][attIndex] = new float[1];
 				}
       		}
       		attIndex++;
@@ -141,8 +141,8 @@ public class NaiveBayes extends BayesianLearning
 					{	throw new Exception(resource.getString("attribute") + attribute.getAttributeName() + resource.getString("exception3") + instances.getClassAttribute().value(j));
 	  				}
 	  				else
-					{	devs[j][attIndex] /= counts[j][attIndex][0] - 1;
-	    				devs[j][attIndex] = Math.sqrt(devs[j][attIndex]);
+					{	devs[j][attIndex] /= counts[j][attIndex][0] - 1;						
+	    				devs[j][attIndex] = (float)Math.sqrt(devs[j][attIndex]);
 	  				}
 				}
       		}
@@ -158,7 +158,7 @@ public class NaiveBayes extends BayesianLearning
 			{	for (int j = 0; j < instances.numClasses(); j++)
 				{	sum = Utils.sum(counts[j][attIndex]);
 	  				for (int i = 0; i < attribute.numValues(); i++)
-					{	counts[j][attIndex][i] = (counts[j][attIndex][i] + 1) / (sum + (double)attribute.numValues());
+					{	counts[j][attIndex][i] = (counts[j][attIndex][i] + 1) / (sum + (float)attribute.numValues());
 	  				}
 				}
       		}
@@ -168,7 +168,7 @@ public class NaiveBayes extends BayesianLearning
     	// Normalize priors
     	sum = Utils.sum(priors);
 		for (int j = 0; j < instances.numClasses(); j++)
-      		priors[j] = (priors[j] + 1)	/ (sum + (double)instances.numClasses());
+      		priors[j] = (priors[j] + 1)	/ (sum + (float)instances.numClasses());
   	}
 
   	/**
@@ -282,11 +282,11 @@ public class NaiveBayes extends BayesianLearning
 
 	    @return the computed priors.
 	*/
-	public double[] getPriors()
+	public float[] getPriors()
 	{	return priors;
 	}
 
-	public void setPriors(double[] priors)
+	public void setPriors(float[] priors)
 	{	this.priors = priors;
 	}
 
@@ -294,11 +294,11 @@ public class NaiveBayes extends BayesianLearning
 
 	    @return the computed counts.
 	*/
-	public double[][][] getCounts()
+	public float[][][] getCounts()
 	{	return counts;
 	}
 
-	public void setCounts(double[][][] counts)
+	public void setCounts(float[][][] counts)
 	{	this.counts = counts;
 	}
 
@@ -313,10 +313,10 @@ public class NaiveBayes extends BayesianLearning
 	/**
 	 * Density function of normal distribution.
 	 */
-	private double normalDens(double x, double mean, double stdDev)
-	{	double diff = x - mean;
+	private float normalDens(float x, float mean, float stdDev)
+	{	float diff = x - mean;
 
-	  	return (1 / (NORM_CONST * stdDev)) * Math.exp(-(diff * diff / (2 * stdDev * stdDev)));
+	  	return (float) ((1 / (NORM_CONST * stdDev)) * Math.exp(-(diff * diff / (2 * stdDev * stdDev))));
 	}
 
 }

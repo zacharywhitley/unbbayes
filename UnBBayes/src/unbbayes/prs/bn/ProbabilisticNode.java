@@ -182,7 +182,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
         if (d > 0) {
             while (d <= tabelaPot.tableSize()) {
                 if (insere) {
-                    tabelaPot.addValueAt(d++, 0.0);
+                    tabelaPot.addValueAt(d++, 0);
                 } else {
                     tabelaPot.removeValueAt(d);
                 }
