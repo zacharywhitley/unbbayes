@@ -2,7 +2,6 @@ package unbbayes.controller;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
 import java.awt.event.*;
 
 /** This class shows a screen that initializes a loading and shows

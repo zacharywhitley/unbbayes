@@ -51,9 +51,9 @@ public class IconController
   protected ImageIcon folderSmallDisabledIcon;
   protected ImageIcon yellowBallIcon;
   protected ImageIcon greenBallIcon;
-  protected ImageIcon arffFileIcon;
-  protected ImageIcon txtFileIcon;
-  protected ImageIcon netFileIcon;
+  protected ImageIcon arffFileIcon = new ImageIcon(getClass().getResource("/icons/arff-file.gif"));
+  protected ImageIcon txtFileIcon = new ImageIcon(getClass().getResource("/icons/txt-file.gif"));
+  protected ImageIcon netFileIcon = new ImageIcon(getClass().getResource("/icons/net-file.gif"));
   protected ImageIcon deleteFolderIcon;
   protected ImageIcon renameFolderIcon;
   protected ImageIcon addFolderIcon;
@@ -485,37 +485,13 @@ public class IconController
     }
   }
   public ImageIcon getNetFileIcon() {
-    if (netFileIcon!=null)
-    {
-      return netFileIcon;
-    }
-    else
-    {
-      netFileIcon = new ImageIcon(getClass().getResource("/icons/net-file.gif"));
-      return netFileIcon;
-    }
+    return netFileIcon;
   }
   public ImageIcon getTxtFileIcon() {
-    if (txtFileIcon!=null)
-    {
-      return txtFileIcon;
-    }
-    else
-    {
-      txtFileIcon = new ImageIcon(getClass().getResource("/icons/txt-file.gif"));
-      return txtFileIcon;
-    }
+    return txtFileIcon;
   }
   public ImageIcon getArffFileIcon() {
-    if (arffFileIcon!=null)
-    {
-      return arffFileIcon;
-    }
-    else
-    {
-      arffFileIcon = new ImageIcon(getClass().getResource("/icons/arff-file.gif"));
-      return arffFileIcon;
-    }
+    return arffFileIcon;
   }
   public ImageIcon getAddFolderIcon() {
     if (addFolderIcon!=null)

@@ -1,6 +1,6 @@
 package unbbayes.datamining.datamanipulation;
 
-import java.util.*;
+import java.util.*;//mudei
 
 /**
  *  Class for enumerating the ArrayList's elements.
@@ -12,8 +12,8 @@ public class ArrayListEnumeration implements Enumeration
 {	/** The counter. */
    	private int counter;
 
-   	/** The arrayList. */
-   	private ArrayList arrayList;
+   	/** The array */
+   	private Object[] array;//mudei - mudar para Object
 
     /** Special element. Skipped during enumeration. */
     private int specialElement;
@@ -23,9 +23,9 @@ public class ArrayListEnumeration implements Enumeration
      *
      * 	@param arrayList Vector which is to be enumerated
      */
-    public ArrayListEnumeration(ArrayList arrayList)
+    public ArrayListEnumeration(Object[] array)//mudei
 	{	counter = 0;
-      	this.arrayList = arrayList;
+      	this.array = array;//mudei
       	specialElement = -1;
     }
 
@@ -36,8 +36,8 @@ public class ArrayListEnumeration implements Enumeration
      * @param arrayList the vector which is to be enumerated
      * @param special the index of the special element
      */
-    public ArrayListEnumeration(ArrayList arrayList, int special)
-	{	this.arrayList = arrayList;
+    public ArrayListEnumeration(Object[] array, int special)//mudei
+	{	this.array = array;//mudei
       	specialElement = special;
       	if (special == 0)
 		{	counter = 1;
@@ -54,7 +54,7 @@ public class ArrayListEnumeration implements Enumeration
      * @return true If there are some elements left
      */
     public final boolean hasMoreElements()
-	{	if (counter < arrayList.size())
+	{	if (counter < array.length)//mudei
 		{	return true;
       	}
       	return false;
@@ -66,10 +66,10 @@ public class ArrayListEnumeration implements Enumeration
      * @return the next element to be enumerated
      */
     public final Object nextElement()
-	{	Object result = arrayList.get(counter);
+	{	Object result = array[counter];//mudei
 
       	counter++;
-      	if (counter == specialElement)
+		if (counter == specialElement)
 		{	counter++;
       	}
       	return result;

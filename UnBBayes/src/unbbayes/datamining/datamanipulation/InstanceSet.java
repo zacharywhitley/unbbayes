@@ -13,10 +13,11 @@ public class InstanceSet
   	private String relationName;
 
 	/** The attribute information. */
-  	private ArrayList attributes;
+  	private Attribute[] attributes;
+  	private AttributeStats[] attributeStats;
 
 	/** The instances. */
-  	private ArrayList instanceSet;
+  	private Instance[] instanceSet;
 
 	/** The class attribute's index
 	* -1 let the index of the class
@@ -26,6 +27,9 @@ public class InstanceSet
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.datamanipulation.resources.DataManipulationResource");
+
+  	/** Position of the next instance to be inserted */
+  	private int nextInstancePosition = 0;
 
   	/**
    	* Returns the relation's name.
@@ -51,7 +55,7 @@ public class InstanceSet
 	*
 	* @param newInstances New instance set
 	*/
-	public final void setInstances(ArrayList newInstances)
+	public final void setInstances(Instance[] newInstances)
     {   instanceSet = newInstances;
     }
 
@@ -61,11 +65,43 @@ public class InstanceSet
    	* @return The number of attributes as an integer
    	*/
   	public final int numAttributes()
-	{	return attributes.size();
+	{	return attributes.length;
+  	}
+  	
+  	public Attribute[] getAttributes()
+  	{
+  		return attributes;
   	}
 
 	public final void removeAttribute(int index)
-	{	attributes.remove(index);
+	{
+		int numAttributes = numAttributes();
+		if((index>=0)&&(index<numAttributes))
+		{
+			//new attributes without index attribute
+			Attribute[] newAttributes = new Attribute[numAttributes-1];
+			AttributeStats[] newAttributeStats = new AttributeStats[numAttributes-1];
+
+
+			// attributes before index
+			int i;
+			for(i=0;i<index;i++)
+			{
+				newAttributes[i] = attributes[i];
+				newAttributeStats[i] = attributeStats[i];
+			}
+
+			//attributes after index
+			while(i<newAttributes.length)
+			{
+				newAttributes[i]=attributes[i+1];
+				newAttributeStats[i] = attributeStats[i+1];
+				i++;
+			}
+
+			attributes = newAttributes;
+			attributeStats = newAttributeStats;
+		}
 	}
 
 	/**
@@ -92,14 +128,14 @@ public class InstanceSet
    	* @return The number of instances in the dataset as an integer
    	*/
   	public final int numInstances()
-	{	return instanceSet.size();
+	{	return instanceSet.length;
   	}
 
 	public final int numWeightedInstances()
 	{	int numInstances = numInstances();
 		int result = 0;
 		for (int i=0;i<numInstances;i++)
-		{	Instance instance = (Instance)getInstance(i);
+		{	Instance instance = getInstance(i);
 			result += instance.getWeight();
 		}
 		return result;
@@ -112,7 +148,7 @@ public class InstanceSet
    	* @return The attribute at the given position
    	*/
   	public final Attribute getAttribute(int index)
-	{	return (Attribute) attributes.get(index);
+	{	return attributes[index];
   	}
 
 	/**
@@ -121,7 +157,8 @@ public class InstanceSet
    	* @return Enumeration of all the attributes.
    	*/
   	public final Enumeration enumerateAttributes()
-	{	return new ArrayListEnumeration(attributes, classIndex);
+	{	
+		return new ArrayListEnumeration(attributes, classIndex);
   	}
 
 	/**
@@ -130,7 +167,8 @@ public class InstanceSet
    	* @return Enumeration of all instances in the dataset
    	*/
   	public final Enumeration enumerateInstances()
-	{	return new ArrayListEnumeration(instanceSet);
+	{	
+		return new ArrayListEnumeration(instanceSet);
   	}
 
 	/**
@@ -140,17 +178,8 @@ public class InstanceSet
    	* @return The instance at the given position
    	*/
   	public final Instance getInstance(int index)
-	{	return (Instance)instanceSet.get(index);
+	{	return instanceSet[index];
   	}
-
-	/**
-	*	Insert an attribute to current Dataset
-	*
-	*	@param att Attribute
-	*/
-	public void insertAttribute(Attribute att)
-	{	attributes.add(att);
-	}
 
 	/**
    	* Inserts an attribute at the given position (0 to
@@ -160,10 +189,11 @@ public class InstanceSet
    	* @param position The attribute's position
    	*/
   	public void setAttributeAt(Attribute att, int position)
-	{	if ((position < 0) || (position > attributes.size()))
+	{	if ((position < 0) || (position > numAttributes()))
 		{	throw new IllegalArgumentException(resource.getString("setAttributeAtException"));
     	}
-    	attributes.set(position, att);
+    	attributes[position] = att;
+    	attributeStats[position] = null;
 		int numInstances = numInstances();
     	for (int i = 0; i < numInstances; i++)
 		{	getInstance(i).setValue(att,Instance.MISSING_VALUE);
@@ -176,16 +206,10 @@ public class InstanceSet
 	*	@param newInstance New instance
 	*/
 	public void insertInstance(Instance newInstance)
-	{	instanceSet.add(newInstance);
+	{
+		instanceSet[nextInstancePosition] = newInstance;
+		nextInstancePosition++;
 	}
-
-	/**
-   	* 	Compactifies the set of instances. Decreases the capacity of
-   	* 	the set so that it matches the number of instances in the set.
-   	*/
-  	public final void compactify()
-	{	instanceSet.trimToSize();
-  	}
 
 	/**
    	* Sets the class attribute.
@@ -245,30 +269,27 @@ public class InstanceSet
    	*/
   	public final void add(Instance instance)
 	{	instance.setDataset(this);
-    	instanceSet.add(instance);
+    	instanceSet[nextInstancePosition] = instance;//mudei2
+    	nextInstancePosition++;//mudei2
   	}
-
-	/** Default constructor. Set class index to be undefined. */
-	public InstanceSet()
-	{	attributes = new ArrayList();
-		instanceSet = new ArrayList(50);
-		classIndex = -1;
-	}
 
 	/**
    	* Constructor creating an empty set of instances.
-        * Set class index to be undefined. Sets
+    * Set class index to be undefined. Sets
    	* the capacity of the set of instances to 0 if it's negative.
 	*
    	* @param capacity The capacity of the new dataset
    	*/
-  	public InstanceSet(int capacity)
-	{   if (capacity < 0)
-            {   capacity = 0;
-            }
-            attributes = new ArrayList();
-            instanceSet = new ArrayList(capacity);
-            classIndex = -1;
+  	public InstanceSet(int capacity, Attribute[] newAttributes)
+	{
+          if (capacity < 0)
+          {
+            capacity = 0;
+          }
+          attributes = newAttributes;
+		  attributeStats = new AttributeStats[attributes.length];
+          instanceSet = new Instance[capacity];
+          classIndex = -1;
   	}
 
   	/**
@@ -299,8 +320,10 @@ public class InstanceSet
 
 		classIndex = dataset.classIndex;
     	relationName = dataset.relationName;
-    	attributes = (ArrayList)(dataset.attributes.clone());
-    	instanceSet = new ArrayList(capacity);
+    	attributes = new Attribute[dataset.numAttributes()];
+    	System.arraycopy(dataset.attributes, 0, attributes, 0, numAttributes());
+    	attributeStats = new AttributeStats[attributes.length];
+    	instanceSet = new Instance[capacity];
   	}
 
   	/**
@@ -342,15 +365,18 @@ public class InstanceSet
    	* @param attIndex Attribute's index
    	*/
   	public final void deleteWithMissing(int attIndex)
-	{	int numInstances = numInstances();
-		ArrayList newInstances = new ArrayList(numInstances);
-
-    	for (int i = 0; i < numInstances; i++)
+	{	ArrayList newInstances = new ArrayList();
+		for (int i = 0; i < numInstances(); i++)
 		{	if (!getInstance(i).isMissing(attIndex))
 			{	newInstances.add(getInstance(i));
-      		}
+			}
     	}
-    	instanceSet = newInstances;
+    	Instance[] newInst = new Instance[newInstances.size()];
+    	for (int i=0;i<newInst.length;i++)
+    	{
+    		newInst[i]=(Instance)newInstances.get(i);
+    	}
+    	instanceSet = newInst;
   	}
 
 	/**
@@ -363,7 +389,7 @@ public class InstanceSet
    	*/
   	public void copyInstances(int from, InstanceSet dest, int num)
 	{	for (int j = 0; j < num; j++)
-		{	short[] by = new short[numAttributes()];
+		{	byte[] by = new byte[numAttributes()];
 			for (int i=0; i<numAttributes(); i++)
 			{	by[i] = getInstance(j).getValue(i);
 			}
@@ -381,54 +407,77 @@ public class InstanceSet
    	* @return An AttributeStats object with it's fields calculated.
    	*/
   	public AttributeStats getAttributeStats(int index)
-  	{	AttributeStats result;
-    	if (getAttribute(index).isNominal())
-		{	result = new AttributeStats(AttributeStats.NOMINAL,getAttribute(index).numValues());
-    	}
-    	else
-		{	result = new AttributeStats(AttributeStats.NUMERIC,0);
-    	}
+  	{	
+  		return attributeStats[index];
+  	}
+  	
+	public AttributeStats[] getAllAttributeStats()
+	{
 		int numWeightedInstances = numWeightedInstances();
-    	result.setTotalCount(numWeightedInstances);
-		int numInstances = numInstances();
-
-		short[] attVals = attributeToShortArray(index);
-		int[] sorted = Utils.sort(attVals);
-
-		int currentCount = 0;
-		float currentValue = Instance.missingValue();
-		for (int j = 0; j < numInstances; j++)
-		{	Instance current = getInstance(sorted[j]);
-			if (current.isMissing(index))
-	  		{	result.setMissingCount(result.getMissingCount()+current.getWeight());
+		boolean attFlag = false;
+		for (int i=0;i<attributeStats.length;i++)
+		{
+			if (attributeStats[i]==null)
+			{
+				attFlag = true;
+				if (getAttribute(i).isNominal())
+				{	
+					attributeStats[i] = new AttributeStats(AttributeStats.NOMINAL,getAttribute(i).numValues());
+				}
+				else
+				{	
+					attributeStats[i] = new AttributeStats(AttributeStats.NUMERIC,0);
+				}
+				attributeStats[i].setTotalCount(numWeightedInstances);
 			}
-			else
-			{	if (getAttribute(index).isNominal())
-				{	if (Utils.eq(current.getValue(index), currentValue))
-	  				{	currentCount += current.getWeight();
+		}
+		if (attFlag)
+		{
+			int numAttributes = numAttributes();
+			int[][] countResults = new int[numAttributes][];
+			for (int i=0;i<numAttributes;i++)
+			{
+				countResults[i] = new int[getAttribute(i).numValues()+1];
+			}
+			int numInstances = numInstances();
+			for (int j = 0; j < numInstances; j++)
+			{
+				Instance current = getInstance(j);
+				int instanceWeight = current.getWeight();
+				for (int i=0;i<numAttributes;i++)
+				{
+					if (current.isMissing(i))
+					{	
+						countResults[i][((countResults[i]).length)-1]+=instanceWeight;
 					}
-	  				else
-	  				{	result.addDistinct(currentValue, currentCount);
-						currentCount = current.getWeight();
-						currentValue = current.getValue(index);
+					else
+					{	
+						countResults[i][current.getValue(i)]+=instanceWeight;
+					}						
+				}
+			}
+			for (int i=0;i<numAttributes;i++)
+			{
+				attributeStats[i].setMissingCount(countResults[i][((countResults[i]).length)-1]);
+				Attribute tempAtt = getAttribute(i);
+				if (tempAtt.isNominal())
+				{
+					for (int j = 0; j < tempAtt.numValues(); j++)
+					{
+						attributeStats[i].addDistinct(j,countResults[i][j]);
 					}
 				}
 				else
-				{	if (Utils.eq(Float.parseFloat(current.stringValue(index)), currentValue))
-	  				{	currentCount += current.getWeight();
+				{	
+					for (int j = 0; j < tempAtt.numValues(); j++)
+					{
+						attributeStats[i].addDistinct(Float.parseFloat(tempAtt.value(j)),countResults[i][j]);
 					}
-	  				else
-	  				{	result.addDistinct(currentValue, currentCount);
-						currentCount = current.getWeight();
-						currentValue = Float.parseFloat(current.stringValue(index));
-      				}
-				}
+				}		
 			}
 		}
-		result.addDistinct(currentValue, currentCount);
-		result.setDistinctCount(result.getDistinctCount() - 1); // So we don't count "missing" as a value
-		return result;
-  	}
+		return attributeStats;
+	}
 
 	/**
    	* Gets the value of all instances in this dataset for a particular
@@ -439,8 +488,8 @@ public class InstanceSet
    	* @return An array containing the value of the desired attribute for
    	* each instance in the dataset.
    	*/
-  	public short[] attributeToShortArray(int index)
-	{	short [] result = new short[numInstances()];
+  	public byte[] attributeToByteArray(int index)
+	{	byte[] result = new byte[numInstances()];
     	for (int i = 0; i < result.length; i++)
 		{	result[i] = getInstance(i).getValue(index);
     	}
@@ -466,10 +515,9 @@ public class InstanceSet
   	 * @param second Index of the second element
   	 */
   	public final void swap(int first, int second)
-	{	Object temp = instanceSet.get(first);
-
-  	  	instanceSet.set(first,instanceSet.get(second));
-		instanceSet.set(second,temp);
+	{	Instance temp = instanceSet[first];
+  	  	instanceSet[first] = instanceSet[second];
+		instanceSet[second] = temp;
   	}
 
 	/** Verifies if there is any numeric attribute in the dataset.

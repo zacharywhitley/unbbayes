@@ -29,7 +29,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable
   	private Attribute splitAttribute;
 
   	/** Class value if node is leaf. */
-  	private short classValue;
+  	private byte classValue;
 
   	/** Class distribution if node is leaf. */
   	private double[] distribution;
@@ -47,26 +47,32 @@ public class Id3 extends DecisionTreeLearning implements Serializable
    	* @exception Exception if classifier can't be built successfully
    	*/
   	public void buildClassifier(InstanceSet data) throws Exception
-	{	resource = ResourceBundle.getBundle("unbbayes.datamining.classifiers.resources.ClassifiersResource");
-		if (!data.getClassAttribute().isNominal())
-		{	throw new Exception(resource.getString("exception1"));
-    	}
-    	Enumeration enumAtt = data.enumerateAttributes();
-    	while (enumAtt.hasMoreElements())
-		{	Attribute attr = (Attribute) enumAtt.nextElement();
-      		if (!attr.isNominal())
-			{	throw new Exception(resource.getString("exception2"));
-      		}
-      		Enumeration enum = data.enumerateInstances();
-      		while (enum.hasMoreElements())
-			{	if (((Instance) enum.nextElement()).isMissing(attr))
-				{	throw new Exception(resource.getString("exception3"));
-				}
-      		}
-    	}
-    	data = new InstanceSet(data);
-    	data.deleteWithMissingClass();
-    	makeTree(data);
+	{
+          resource = ResourceBundle.getBundle("unbbayes.datamining.classifiers.resources.ClassifiersResource");
+          if (!data.getClassAttribute().isNominal())
+          {
+            throw new Exception(resource.getString("exception1"));
+          }
+          Enumeration enumAtt = data.enumerateAttributes();
+          while (enumAtt.hasMoreElements())
+          {
+            Attribute attr = (Attribute) enumAtt.nextElement();
+            if (!attr.isNominal())
+            {
+              throw new Exception(resource.getString("exception2"));
+            }
+            Enumeration enum = data.enumerateInstances();
+            while (enum.hasMoreElements())
+            {
+              if (((Instance) enum.nextElement()).isMissing(attr))
+              {
+                throw new Exception(resource.getString("exception3"));
+              }
+            }
+          }
+          data = new InstanceSet(data);
+		  data.deleteWithMissingClass();
+          makeTree(data);
   	}
 
 	/**
@@ -76,62 +82,65 @@ public class Id3 extends DecisionTreeLearning implements Serializable
    	* @exception Exception if decision tree can't be built successfully
    	*/
   	protected void makeTree(InstanceSet data) throws Exception
-	{	
-		// Contains methods to compute information gain and related actions
-		Id3Utils utils = new Id3Utils();
-		
-		// Check if no instances have reached this node.
-    	if (data.numInstances() == 0)
-		{	splitAttribute = null;
-      		classValue = Instance.missingValue();
-      		distribution = new double[data.numClasses()];
-      		return;
-    	}
+	{
+          // Contains methods to compute information gain and related actions
+          ClassifierUtils utils = new ClassifierUtils(data);
 
-    	// Compute attribute with maximum information gain.
-    	double[] infoGains = new double[data.numAttributes()];
-    	Enumeration attEnum = data.enumerateAttributes();
-    	while (attEnum.hasMoreElements())
-		{	Attribute att = (Attribute) attEnum.nextElement();
-      		infoGains[att.getIndex()] = utils.computeInfoGain(data, att);
-		}
+          // Check if no instances have reached this node.
+          if (data.numInstances() == 0)
+          {
+            splitAttribute = null;
+            classValue = Instance.missingValue();
+            distribution = new double[data.numClasses()];
+            return;
+          }
 
-		// Compute the information gain mean
-		double meanInfoGains = Utils.sum(infoGains)/(double)(infoGains.length);
+          // Compute attribute with maximum information gain.
+          double[] infoGains = utils.computeInfoGain();
 
-		for (int i=0; i<data.numAttributes(); i++)
-			if (infoGains[i] > meanInfoGains)
-			{	Attribute att = (Attribute) data.getAttribute(i);
-				infoGains[att.getIndex()] = utils.computeGainRatio(data, att);
-			}
+          // Compute the information gain mean
+          double meanInfoGains = Utils.sum(infoGains)/(double)(infoGains.length);
 
-		splitAttribute = data.getAttribute(Utils.maxIndex(infoGains));
+          /*for (int i=0; i<data.numAttributes(); i++)
+          {
+            if (infoGains[i] > meanInfoGains)
+            {
+              Attribute att = (Attribute) data.getAttribute(i);
+              infoGains[att.getIndex()] = utils.computeGainRatio(data, att);
+            }
+          }*/
 
-    	// Make leaf if information gain is zero.
-    	// Otherwise create successors.
-    	if (Utils.eq(infoGains[splitAttribute.getIndex()], 0))
-		{	splitAttribute = null;
-      		distribution = new double[data.numClasses()];
-      		Enumeration instEnum = data.enumerateInstances();
-      		while (instEnum.hasMoreElements())
-			{	Instance inst = (Instance) instEnum.nextElement();
-				distribution[(int) inst.classValue()] += inst.getWeight();
-      		}
-      		int m = Utils.maxIndex(distribution);
-			numeroInstClass=(int)distribution[m];
-			Utils.normalize(distribution);
-      		classValue = (short)Utils.maxIndex(distribution);
-      		classAttribute = data.getClassAttribute();
-    	}
-		else
-		{	InstanceSet[] splitData = Id3Utils.splitData(data, splitAttribute);
-      		successors = new Id3[splitAttribute.numValues()];
-      		for (int j = 0; j < splitAttribute.numValues(); j++)
-			{	successors[j] = new Id3();
-				successors[j].buildClassifier(splitData[j]);
-      		}
-    	}
-  }
+          splitAttribute = data.getAttribute(Utils.maxIndex(infoGains));
+
+          // Make leaf if information gain is zero.
+          // Otherwise create successors.
+          if (Utils.eq(infoGains[splitAttribute.getIndex()], 0))
+          {
+            splitAttribute = null;
+            distribution = new double[data.numClasses()];
+            Enumeration instEnum = data.enumerateInstances();
+            while (instEnum.hasMoreElements())
+            {
+              Instance inst = (Instance) instEnum.nextElement();
+              distribution[(int) inst.classValue()] += inst.getWeight();
+            }
+            int m = Utils.maxIndex(distribution);
+            numeroInstClass=(int)distribution[m];
+            Utils.normalize(distribution);
+            classValue = (byte)Utils.maxIndex(distribution);
+            classAttribute = data.getClassAttribute();
+          }
+          else
+          {
+            InstanceSet[] splitData = ClassifierUtils.splitData(data, splitAttribute);
+            successors = new Id3[splitAttribute.numValues()];
+            for (int j = 0; j < splitAttribute.numValues(); j++)
+            {
+              successors[j] = new Id3();
+              successors[j].buildClassifier(splitData[j]);
+            }
+          }
+        }
 
   /**
    * Classifies a given test instance using the decision tree.
@@ -139,7 +148,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable
    * @param instance the instance to be classified
    * @return the classification
    */
-  public short classifyInstance(Instance instance)
+  public byte classifyInstance(Instance instance)
   {	if (splitAttribute == null)
   	{	return classValue;
     }

@@ -9,6 +9,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 import unbbayes.controller.*;
+import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.gui.*;
 import unbbayes.gui.*;
@@ -228,11 +229,12 @@ public class NaiveBayesMain extends JInternalFrame
 
   void jMenuItem4_actionPerformed(ActionEvent e)
   {   if (inst != null)
-      {   ComputeProbabilisticNetwork trp = new ComputeProbabilisticNetwork();
-          try
-          {   trp.setInstances(inst);
-              net = trp.getProbabilisticNetwork();
-              jMenuItem5.setEnabled(true);
+      {   try
+          {   
+          	  NaiveBayes naiveBayes = new NaiveBayes();
+          	  naiveBayes.buildClassifier(inst);
+          	  net = naiveBayes.getProbabilisticNetwork();
+          	  jMenuItem5.setEnabled(true);
               jTabbedPane1.setEnabledAt(1,true);
               jTabbedPane1.setSelectedIndex(1);
               saveButton.setEnabled(true);
@@ -258,6 +260,7 @@ public class NaiveBayesMain extends JInternalFrame
           }
           catch (Exception ex)
           {   statusBar.setText(resource.getString("exception")+ex.getMessage());
+          	ex.printStackTrace();
           }
       }
   }

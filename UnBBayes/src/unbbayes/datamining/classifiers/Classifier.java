@@ -24,5 +24,5 @@ public abstract class Classifier
   	* @return the classification
 	* @exception Exception if an error occurred during the prediction
   	*/
-  	public abstract short classifyInstance(Instance instance) throws Exception;
+  	public abstract byte classifyInstance(Instance instance) throws Exception;
 }

@@ -13,7 +13,7 @@ public abstract class Loader implements IProgress
 	protected InstanceSet instances;
 
 	protected int counterAttribute = -1;
-        protected int initialInstances = 50;
+        protected int initialInstances = 0;
         protected StreamTokenizer tokenizer;
 
 	public void setCounterAttribute(int counterAttribute)
@@ -113,7 +113,7 @@ public abstract class Loader implements IProgress
         public int getInitialInstancesCount()
         {   return initialInstances;
         }
-    
+
 	public boolean next()
 	{
 		boolean result = false;
@@ -124,17 +124,17 @@ public abstract class Loader implements IProgress
 		catch(IOException ioe)
 		{
 			result = false;
-		}		
+		}
 		return result;
 	}
-	
+
 	public void cancel()
 	{
 		instances=null;
 	}
 	public int maxCount()
 	{
-		return initialInstances;	
+		return initialInstances;
 	}
 
         protected void countInstancesFromFile(File file) throws IOException
@@ -145,7 +145,7 @@ public abstract class Loader implements IProgress
             // read file and count lines
             int count = 0;
             String line;
-            while ((line = in.readLine()) != null)
+            while (((line = in.readLine()) != null) && (!line.startsWith("%")))
                 count++;
             initialInstances = count;
             fileIn.close();

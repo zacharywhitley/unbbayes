@@ -12,7 +12,6 @@ import javax.swing.text.*;
 
 import unbbayes.controller.*;
 import unbbayes.datamining.classifiers.*;
-//import unbbayes.datamining.controller.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.gui.*;
 import unbbayes.prs.bn.*;
@@ -55,7 +54,7 @@ public class EvaluationPanel extends JPanel
   private JPanel jPanel1 = new JPanel();
   private JComboBox jComboBox2 = new JComboBox();
   private JPanel jPanel49 = new JPanel();
-  private JButton jButton8 = new JButton();
+  //private JButton jButton8 = new JButton();
   private JPanel jPanel50 = new JPanel();
   private BorderLayout borderLayout43 = new BorderLayout();
   private JPanel jPanel3 = new JPanel();
@@ -142,15 +141,15 @@ public class EvaluationPanel extends JPanel
     jPanel49.setLayout(gridLayout1);
     jPanel49.setBorder(titledBorder9);
     jPanel49.setMinimumSize(new Dimension(148, 104));
-    jButton8.setEnabled(false);
-    jButton8.setText("Stop");
-    jButton8.addActionListener(new java.awt.event.ActionListener()
+    //jButton8.setEnabled(false);
+    //jButton8.setText("Stop");
+    /*jButton8.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
         jButton8_actionPerformed(e);
       }
-    });
+    });*/
     jPanel50.setLayout(borderLayout43);
     jPanel50.setBorder(titledBorder8);
     jPanel3.setLayout(gridLayout3);
@@ -213,7 +212,7 @@ public class EvaluationPanel extends JPanel
     jPanel49.add(jComboBox2, null);
     jPanel49.add(jPanel1, null);
     jPanel1.add(jButton7, null);
-    jPanel1.add(jButton8, null);
+    //jPanel1.add(jButton8, null);
     jPanel50.add(jScrollPane1,  BorderLayout.CENTER);
     jScrollPane1.getViewport().add(jTextArea1, null);
     jPanel2.add(jPanel46, new Rectangle(0,0,4,1));
@@ -275,11 +274,11 @@ public class EvaluationPanel extends JPanel
   void jButton7_actionPerformed(ActionEvent e)
   {   if (thread == null)
       {   jButton7.setEnabled(false);
-          jButton8.setEnabled(true);
+          //jButton8.setEnabled(true);
           thread = new Thread()
           {   public void run()
               {   //Classifier classifier;
-                  int numAttributes = /*numAttributes = */instances.numAttributes();
+                  int numAttributes = instances.numAttributes();
                   if (classifier instanceof BayesianLearning)
                   {   if (jRadioButton1.isSelected())
                       {   ((BayesianLearning)classifier).setNormalClassification();
@@ -319,18 +318,18 @@ public class EvaluationPanel extends JPanel
                          outBuff.append("=== Classifier model ===\n\n");
                       outBuff.append(classifier.toString() + "\n\n");
                       Evaluation eval;
-                      
+
                                 eval = new Evaluation(instances,classifier);
                                 ProgressDialog progressDialog = new ProgressDialog (null, eval);
 								boolean successStatus = progressDialog.load();
-								
+
                                 //eval.evaluateModel(classifier);
                                     outBuff.append(eval.toString());
                                     outBuff.append("\n");
                                     outBuff.append(eval.toClassDetailsString());
                                     outBuff.append("\n");
                                     outBuff.append(eval.toMatrixString());
-                      
+
                       jTextArea2.setText(outBuff.toString());
                       currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
 	              jTextArea1.append("Finished "+currentHour+classifierName+/*" "+jComboBox3.getSelectedItem()+*/"\n");
@@ -344,7 +343,7 @@ public class EvaluationPanel extends JPanel
 
                   thread = null;  // Termina a thread.
                   jButton7.setEnabled(true);
-                  jButton8.setEnabled(false);
+                  //jButton8.setEnabled(false);
               }
           };
           thread.start();
@@ -356,7 +355,7 @@ public class EvaluationPanel extends JPanel
   /** Interrompe a thread
    *  @param e One ActionEvent
    *  */
-  void jButton8_actionPerformed(ActionEvent e)
+  /*void jButton8_actionPerformed(ActionEvent e)
   {   if (thread != null)
       {   thread.interrupt();
           String classifierName = classifier.getClass().getName().substring("unbbayes.datamining.classifiers.".length());
@@ -366,7 +365,7 @@ public class EvaluationPanel extends JPanel
       jButton7.setEnabled(true);
       jButton8.setEnabled(false);
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-  }
+  }*/
 
   /** Altera um modelo
    *  @param classifier A classifier

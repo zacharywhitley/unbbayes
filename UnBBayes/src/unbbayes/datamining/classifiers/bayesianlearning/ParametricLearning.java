@@ -20,7 +20,9 @@ public class ParametricLearning
     {
       attrib = set.getAttribute(i);
       x[i] = attrib.getAttributeName();
-      dx[i] = attrib.getAttributeValues();
+      ArrayList temp = new ArrayList();
+      temp.add(attrib.getAttributeValues());
+      dx[i] = temp;
     }
 
     // inicializar freq e dataTemp com as amostras condensadas
@@ -58,7 +60,7 @@ public class ParametricLearning
     }
 
     //inicializar d com base no dataTemp
-    d = new short[dataTemp.size()][x.length];
+    d = new byte[dataTemp.size()][x.length];
     for(i=0;i<dataTemp.size();i++)
     {
       inst = (Instance)dataTemp.get(i);
@@ -189,7 +191,7 @@ public ProbabilisticNetwork getProbabilisticNetwork(ArrayList pa)
    	for(int i=0; i<x.length; i++)
     {
     	// Criação do nó
-    	ProbabilisticNode node = new ProbabilisticNode(); 
+    	ProbabilisticNode node = new ProbabilisticNode();
       	node.setDescription(x[i]);
       	node.setName(x[i]);
       	node.setPosition(width,100);
@@ -199,21 +201,21 @@ public ProbabilisticNetwork getProbabilisticNetwork(ArrayList pa)
       	{   node.appendState(""+states.get(j));
       	}
       	// Criação do Tabela de probabilidades
-      	PotentialTable tab = node.getPotentialTable();  
+      	PotentialTable tab = node.getPotentialTable();
       	tab.addVariable(node);
 		net.addNode(node);
     }
    	for(int i=0; i<x.length; i++)
     {
-    	ProbabilisticNode node = (ProbabilisticNode)net.getNodeAt(i); 
-      	PotentialTable tab = node.getPotentialTable();  
+    	ProbabilisticNode node = (ProbabilisticNode)net.getNodeAt(i);
+      	PotentialTable tab = node.getPotentialTable();
       	int[] parents = (int[])pa.get(i);
       	for (int j=0;j<parents.length;j++)
       	{
       		Edge arco = new Edge(net.getNodeAt(parents[j]),node);
-      		net.addEdge(arco);      		
-      	}      	
-      	
+      		net.addEdge(arco);
+      	}
+
       	ArrayList probs = prob(pa);
       	float[][] pjk = (float[][])probs.get(i);
     	// Inserção dos valores na tabela de probabilidades
@@ -224,11 +226,11 @@ public ProbabilisticNetwork getProbabilisticNetwork(ArrayList pa)
     		{
     			tab.setValue(counter,pjk[j][k]);
     			counter++;
-    		}    		
-    	}    	
+    		}
+    	}
 
     }
-    
+
     return net;
 }
 //----------------------------------------------------------------------------//
@@ -244,7 +246,7 @@ public ProbabilisticNetwork getProbabilisticNetwork(ArrayList pa)
   /** amostra condensada
    * d[ic,i]=v, sendo 'ic' a linha, 'i' o índice da variável e 'v' o valor da
    * variável na linha (representado pelo seu índice no domínio da variável)) */
-  private short[][] d;
+  private byte[][] d;
 
   /** frequencias das instâncias de d
    * freq[i]: frequência da linha(ou instancia) i */

@@ -133,13 +133,13 @@ public class Evaluation implements IProgress
    	* @exception Exception if model could not be evaluated
    	* successfully
    	*/
-  	public short evaluateModelOnce(Classifier classifier,Instance instance) throws Exception
+  	public byte evaluateModelOnce(Classifier classifier,Instance instance) throws Exception
 	{   Instance classMissing = instance;
-    	    short pred=0;
+    	    byte pred=0;
             if (classIsNominal)
             {   /*if (classifier instanceof BayesianLearning)
 			{	//float[] dist = ((BayesianLearning)classifier).distributionForInstance(classMissing);
-				//pred = (short)Utils.maxIndex(dist);
+				//pred = (byte)Utils.maxIndex(dist);
 				//updateStatsForClassifier(dist,instance);
                                 pred = classifier.classifyInstance(classMissing);
 				updateStatsForClassifier(makeDistribution(pred),instance);
@@ -168,7 +168,7 @@ public class Evaluation implements IProgress
   	 * @param predictedClass the index of the predicted class
   	 * @return the probability distribution
   	 */
-  	private float[] makeDistribution(short predictedClass)
+  	private float[] makeDistribution(byte predictedClass)
 	{	float[] result = new float[numClasses];
   	  	if (Instance.isMissingValue(predictedClass))
 		{	return result;
@@ -374,7 +374,7 @@ public class Evaluation implements IProgress
    * @exception Exception if the class of the instance is not
    * set
    */
-  private void updateStatsForClassifier(short predictedClass/*float[] predictedDistribution*/,Instance instance) throws Exception
+  private void updateStatsForClassifier(byte predictedClass/*float[] predictedDistribution*/,Instance instance) throws Exception
   {	if (!instance.classIsMissing())
 	{	/*float[] result = new float[numClasses];
   	  	if (Instance.isMissingValue(predictedClass))
@@ -406,7 +406,7 @@ public class Evaluation implements IProgress
 			return;
       	        }
 
-		short actualClass = instance.classValue();
+		byte actualClass = instance.classValue();
                 updateNumericScores(makeDistribution(predictedClass)/*predictedDistribution*/,makeDistribution(actualClass),instance.getWeight());
 
 		// Update other stats
@@ -578,17 +578,18 @@ public class Evaluation implements IProgress
    */
   private void stratStep (InstanceSet instances, int numFolds)
   { int numInstances = instances.numInstances();
-	ArrayList newVec = new ArrayList(numInstances);
-    int start = 0, j;
+	Instance[] newVec = new Instance[numInstances];
+    int start = 0, j, i=0;
 
     // create stratified batch
-    while (newVec.size() < numInstances)
+    while (newVec.length < numInstances)
 	{	j = start;
       	while (j < numInstances)
-		{	newVec.add(instances.getInstance(j));
+		{	newVec[i]= instances.getInstance(j);
 			j += numFolds;
       	}
       	start++;
+      	i++;
     }
     instances.setInstances(newVec);
   }
@@ -852,10 +853,10 @@ public class Evaluation implements IProgress
     IDWidth = 1 + Math.max((int)(Math.log(maxval)/Math.log(10)+(fractional ? 3 : 0)),(int)(Math.log(numClasses) / Math.log(IDChars.length)));
     for(int i = 0; i < numClasses; i++)
 	{	if (fractional)
-		{	text.append(" ").append(num2ShortID(i,IDChars,IDWidth - 3)).append("   ");
+		{	text.append(" ").append(num2ByteID(i,IDChars,IDWidth - 3)).append("   ");
       	}
 		else
-		{	text.append(" ").append(num2ShortID(i,IDChars,IDWidth));
+		{	text.append(" ").append(num2ByteID(i,IDChars,IDWidth));
       	}
     }
     text.append("   <-- classified as\n");
@@ -863,7 +864,7 @@ public class Evaluation implements IProgress
 	{	for(int j = 0; j < numClasses; j++)
 		{	text.append(" ").append(Utils.doubleToString(confusionMatrix[i][j],IDWidth,(fractional ? 2 : 0)));
       	}
-      	text.append(" | ").append(num2ShortID(i,IDChars,IDWidth)).append(" = ").append(classNames[i]).append("\n");
+      	text.append(" | ").append(num2ByteID(i,IDChars,IDWidth)).append(" = ").append(classNames[i]).append("\n");
     }
 
     return text.toString();
@@ -877,7 +878,7 @@ public class Evaluation implements IProgress
    * @param IDWidth The width of the new String
    * @return the formatted integer as a string
    */
-  private String num2ShortID(int num,char [] IDChars,int IDWidth)
+  private String num2ByteID(int num,char [] IDChars,int IDWidth)
   {	char ID [] = new char [IDWidth];
     int i;
 

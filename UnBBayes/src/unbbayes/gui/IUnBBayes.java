@@ -106,6 +106,8 @@ public class IUnBBayes extends JFrame {
 	private ActionListener alTile;
 	private ActionListener alHelp;
 	private ActionListener alAbout;
+        private JFileChooser chooser;
+        private FileController fileController;
 
         protected IconController iconController = IconController.getInstance();
 
@@ -132,6 +134,7 @@ public class IUnBBayes extends JFrame {
 		setSize(650, 480);
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                fileController = FileController.getInstance();
 
 		Container contentPane = getContentPane();
 
@@ -225,7 +228,7 @@ public class IUnBBayes extends JFrame {
 			public void actionPerformed(ActionEvent ae) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				String[] nets = new String[] { "net" };
-				JFileChooser chooser = new JFileChooser(".");
+				chooser = new JFileChooser(fileController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
 				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
@@ -241,6 +244,7 @@ public class IUnBBayes extends JFrame {
 				if (option == JFileChooser.APPROVE_OPTION) {
 					if (chooser.getSelectedFile() != null) {
 						controller.loadNet(chooser.getSelectedFile());
+                                                fileController.setCurrentDirectory(chooser.getCurrentDirectory());
 					}
 				}
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -252,14 +256,13 @@ public class IUnBBayes extends JFrame {
 			public void actionPerformed(ActionEvent ae) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				String[] nets = new String[] { "net" };
-				JFileChooser chooser = new JFileChooser();
+				chooser = new JFileChooser(fileController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
 				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
 				// adicionar FileView no FileChooser para desenhar ícones de
 				// arquivos
 				chooser.setFileView(new FileIcon(IUnBBayes.this));
-				chooser.setCurrentDirectory(new File("."));
 				chooser.addChoosableFileFilter(
 					new SimpleFileFilter(
 						nets,
@@ -272,6 +275,7 @@ public class IUnBBayes extends JFrame {
 							String name = file.getName();
 							if (! name.endsWith(".net")) {
 								file = new File(file.getAbsoluteFile() + ".net");
+                                                                fileController.setCurrentDirectory(chooser.getCurrentDirectory());
 							}
 						}
 						controller.saveNet(file);
@@ -294,7 +298,7 @@ public class IUnBBayes extends JFrame {
 		alLearn = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				String[] nets = new String[] { "txt" };
-				JFileChooser chooser = new JFileChooser(".");
+				chooser = new JFileChooser(fileController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
 				chooser.addChoosableFileFilter(
 					new SimpleFileFilter(
@@ -304,6 +308,7 @@ public class IUnBBayes extends JFrame {
 				File file;
 				if (option == JFileChooser.APPROVE_OPTION) {
 					file = chooser.getSelectedFile();
+                                        fileController.setCurrentDirectory(chooser.getCurrentDirectory());
 					new ConstructionController(file, controller);
 				}
 			}
@@ -440,25 +445,18 @@ public class IUnBBayes extends JFrame {
 
 		// create an ActionListener for opening the Help window
 		alHelp = new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				try {
-					set =
-						new HelpSet(
-							null,
-							getClass().getResource("/help/JUnBBayes.hs"));
-					jHelp = new JHelp(set);
-					JFrame f = new JFrame();
-					f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-					f.setContentPane(jHelp);
-					f.setSize(500, 400);
-					f.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-			}
-
+			public void actionPerformed(ActionEvent ae)
+                        {
+                          try
+                          {
+                            FileController.getInstance().openHelp(singleton);
+                          }
+                          catch (Exception evt)
+                          {
+                            System.out.println("Error= "+evt.getMessage()+" "+this.getClass().getName());
+                            evt.printStackTrace();
+                          }
+                        }
 		};
 
 	}

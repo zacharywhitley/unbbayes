@@ -25,33 +25,14 @@ public class TxtLoader extends Loader
    	* successfully
    	*/
         public TxtLoader(File file) throws IOException
-  	{	/*BufferedReader file = new BufferedReader(reader);
-                int linesQuantity = 0;
-                String line = file.readLine();
-                while( line != null)
-                {   line = file.readLine();
-                    linesQuantity++;
-                }
-                System.out.println("número de llinhas = "+linesQuantity);
-
-                reader.reset();*/
-                /*Reader r = new BufferedReader(new FileReader(reader));
-                //StreamTokenizer tokenizer = new StreamTokenizer(reader);
-		StreamTokenizer tokenizer = new StreamTokenizer(r);
-                instances = new InstanceSet(initialInstances);
-		initTokenizer(tokenizer);
-    	        readHeader(tokenizer);
-		while (getInstance(tokenizer)) {};
-		checkNumericAttributes();*/
-
-                // Count instances
+  	{	// Count instances
                 countInstancesFromFile(file);
                 //Memory initialization
-                instances = new InstanceSet(initialInstances);
+                //mudei
                 Reader reader = new BufferedReader(new FileReader(file));
                 tokenizer = new StreamTokenizer(reader);
                 initTokenizer();
-    	        readHeader();
+                readHeader();
                 maximumStatesAllowed = Options.getInstance().getNumberStatesAllowed();
 	}
 
@@ -80,18 +61,27 @@ public class TxtLoader extends Loader
    	* successfully
    	*/
   	protected void readHeader() throws IOException
-	{	ArrayList attributeValues = null;
+	{	String[] attributeValues = null;//mudei3
+		ArrayList attributes = new ArrayList();//mudei
 		//Insert attributes in the new dataset
 		getNextToken();
 		while (tokenizer.ttype != StreamTokenizer.TT_EOL)
 		{	if(tokenizer.sval != null)
-			{	instances.insertAttribute(new Attribute(tokenizer.sval,attributeValues,Attribute.NOMINAL,instances.numAttributes()));
-	  		}
+			{	attributes.add(new Attribute(tokenizer.sval,attributeValues,Attribute.NOMINAL,attributes.size()));//mudei3
+                	}
 			else
-			{	instances.insertAttribute(new Attribute(String.valueOf(tokenizer.nval),attributeValues,Attribute.NUMERIC,instances.numAttributes()));
-			}
+			{	attributes.add(new Attribute(String.valueOf(tokenizer.nval),attributeValues,Attribute.NUMERIC,attributes.size()));//mudei3
+                	}
 			tokenizer.nextToken();
 		}
+		int size = attributes.size();
+                Attribute[] attributesArray = new Attribute[size];
+                for (int i=0;i<size;i++)
+                {
+                  attributesArray[i] = (Attribute)attributes.get(i);
+                }
+                initialInstances--;// Number of lines - header
+                instances = new InstanceSet(initialInstances, attributesArray);//mudei
 	}
 
 	/**
@@ -105,8 +95,9 @@ public class TxtLoader extends Loader
    	* successfully
    	*/
   	public boolean getInstance() throws IOException
-	{   // Check if any attributes have been declared.
-    	    if (instances.numAttributes() == 0)
+	{
+          // Check if any attributes have been declared.
+    	  if (instances.numAttributes() == 0)
             {   errms(resource.getString("getInstanceTXT"));
     	    }
 
@@ -130,8 +121,9 @@ public class TxtLoader extends Loader
    	* successfully
    	*/
   	protected boolean getInstanceFull() throws IOException
-	{   int numAttributes = instances.numAttributes();
-            short[] instance = new short[numAttributes];
+	{
+          int numAttributes = instances.numAttributes();
+            byte[] instance = new byte[numAttributes];
             int instanceWeight = 1;
             int position = 0,index = 0;
             int attributeNumber = -1;
@@ -155,7 +147,8 @@ public class TxtLoader extends Loader
                     }
                 }
                 else
-                {   attributeNumber++;
+                {
+                  attributeNumber++;
                     Attribute att = instances.getAttribute(attributeNumber);
                     //Insert new value for attribute if number of values is 0 or this value isn't inserted
                     if(tokenizer.sval != null)
@@ -180,14 +173,14 @@ public class TxtLoader extends Loader
                     {	if (instances.getAttribute(attributeNumber).isNominal())
                         {   // Check if value appears in header.
                             index = att.indexOfValue(tokenizer.sval);
-                            instance[attributeNumber] = (short)index;
+                            instance[attributeNumber] = (byte)index;
                         }
                     }
                     else if (tokenizer.ttype == StreamTokenizer.TT_NUMBER)
                     {	if (instances.getAttribute(attributeNumber).isNominal())
                         {   // Check if value appears in header.
                             index = att.indexOfValue(tokenizer.nval+"");
-                            instance[attributeNumber] = (short)index;
+                            instance[attributeNumber] = (byte)index;
                         }
                     }
                 }

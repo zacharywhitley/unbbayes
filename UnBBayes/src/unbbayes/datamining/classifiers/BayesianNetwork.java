@@ -90,7 +90,7 @@ public class BayesianNetwork extends BayesianLearning
   	public float[] distributionForInstance(Instance instance) throws Exception
 	{
             float[] probs = new float[numClasses];
-            short instanceValue;
+            byte instanceValue;
 
             if (classNodeIndex < 0)
             {

@@ -20,11 +20,7 @@
  */
 package unbbayes.prs.msbn;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import unbbayes.util.NodeList;
-import unbbayes.util.SetToolkit;
 
 /**
  * A multi-sectioned network. 

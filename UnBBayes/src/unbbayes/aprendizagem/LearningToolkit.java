@@ -8,12 +8,12 @@ import unbbayes.util.SetToolkit;
 
 
 public abstract class LearningToolkit{
-	
+
 	    protected long caseNumber;
 	    protected byte[][] dataBase;
 	    protected int[] vector;
-	    protected boolean compacted; 
-	    
+	    protected boolean compacted;
+
 
 	protected void getProbability(int[][] arrayNijk, TVariavel variable){
         List instanceVector;
@@ -31,8 +31,8 @@ public abstract class LearningToolkit{
              if(instanceVector.size() > 0 ){
                 instance = (List)instanceVector.get(i);
              }
-             for(int j = 0; j < ri; j++){             	              	  
-                  probability = (float)(1+ arrayNijk[j][i])/(ri+nij);                                    
+             for(int j = 0; j < ri; j++){
+                  probability = (float)(1+ arrayNijk[j][i])/(ri+nij);
                   int coord[];
                   coord = new int[nijLength+1];
                   coord[0] = j;
@@ -58,15 +58,15 @@ public abstract class LearningToolkit{
         }else{
             ArrayNijk = new int[variable.getEstadoTamanho()][getQ(parents)];
         }
-        short positionVector[] = new short[parentsLength];
-        short maxVector[]      = new short[parentsLength];
+        byte positionVector[] = new byte[parentsLength];
+        byte maxVector[]      = new byte[parentsLength];
         for (int i = 0; i < parentsLength; i++ ){
             aux = (TVariavel)parents.get(i);
-            positionVector[i] = (short)aux.getPos();
-            maxVector[i] = (short)aux.getEstadoTamanho();
+            positionVector[i] = (byte)aux.getPos();
+            maxVector[i] = (byte)aux.getEstadoTamanho();
 
         }
-        int positionLength = positionVector.length;        
+        int positionLength = positionVector.length;
         int pos = variable.getPos();
         int index =0;
         for (int i = 0 ; i < caseNumber ; i++){
@@ -93,11 +93,11 @@ public abstract class LearningToolkit{
                   }else{
                        ArrayNijk[dataBase[i][pos]][index] += vector[i];
                   }
-            }            
-        }        
+            }
+        }
         return ArrayNijk;
-    }   
-    
+    }
+
     protected List getInstances(NodeList list){
         List instances = new ArrayList();
         List listAux = new ArrayList();;
@@ -135,8 +135,8 @@ public abstract class LearningToolkit{
             }
         }
         return instances;
-    }    
-    
+    }
+
     protected int getQ(NodeList list) {
         TVariavel variable;
         int qi = 1;
@@ -150,14 +150,14 @@ public abstract class LearningToolkit{
         return qi;
     }
 
-    
+
     protected double log(double number){
         return Math.log(number)/Math.log(10);
-    }		
-    
+    }
+
     protected double log2(double numero){
         return Math.log(numero)/Math.log(2);
     }
-    
+
 
 }

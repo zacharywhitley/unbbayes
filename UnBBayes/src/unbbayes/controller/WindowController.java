@@ -175,7 +175,7 @@ public class WindowController implements KeyListener {
      */
     public void saveNetImage() {
         String gif[] = { "GIF" };
-        JFileChooser chooser = new JFileChooser(".");
+        JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
         chooser.setMultiSelectionEnabled(false);
 
         //adicionar FileView no FileChooser para desenhar ícones de arquivos
@@ -190,6 +190,7 @@ public class WindowController implements KeyListener {
                 out.write(graphicsToImage(screen.getIGraph().getGraphViewport(), r));
                 out.flush();
                 out.close();
+                FileController.getInstance().setCurrentDirectory(chooser.getCurrentDirectory());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -201,7 +202,7 @@ public class WindowController implements KeyListener {
      */
     public void saveTableImage() {
         String gif[] = { "GIF" };
-        JFileChooser chooser = new JFileChooser(".");
+        JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
         chooser.setMultiSelectionEnabled(false);
 
 
@@ -216,6 +217,7 @@ public class WindowController implements KeyListener {
                 out.write(graphicsToImage(screen.getTable(), null));
                 out.flush();
                 out.close();
+                FileController.getInstance().setCurrentDirectory(chooser.getCurrentDirectory());
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -105,6 +105,7 @@ public class PreprocessPanel extends JPanel
   private int selectedAttribute;
   private GridLayout gridLayout6 = new GridLayout();
   private GraphPaperLayout gridLayout1 = new GraphPaperLayout(new Dimension(6,6));
+  private AttributeStats[] attributeStats;
 
   public PreprocessPanel(PreprocessorMain reference)
   { this.reference = reference;
@@ -254,10 +255,10 @@ public class PreprocessPanel extends JPanel
         {   jPanel8_valueChanged(e);
 	}
     });
-    this.add(jPanel2, new Rectangle(0,0,3,1));
-    this.add(jPanel9, new Rectangle(0,1,3,5));
-    this.add(jPanel7, new Rectangle(3,0,3,1));
-    this.add(jPanel6, new Rectangle(3,1,3,5));
+    this.add(jPanel7, new Rectangle(0,0,3,1));
+    this.add(jPanel6, new Rectangle(0,1,3,5));
+    this.add(jPanel2, new Rectangle(3,0,3,1));
+    this.add(jPanel9, new Rectangle(3,1,3,5));
   }
 
   public void setBaseInstances(InstanceSet inst)
@@ -266,6 +267,7 @@ public class PreprocessPanel extends JPanel
       jLabel4.setText(inst.getRelationName());
       jLabel2.setText(inst.numWeightedInstances()+"");
       jLabel3.setText(inst.numAttributes()+"");
+      attributeStats = inst.getAllAttributeStats();
       jPanel8.setInstances(instances);
       jButton2.setEnabled(true);
   }
@@ -392,7 +394,7 @@ public class PreprocessPanel extends JPanel
                           jButton1.setEnabled(true);
                       }
                       jLabel10.setText(att.getAttributeName());
-                      AttributeStats attStats = instances.getAttributeStats(selectedAttribute);
+                      AttributeStats attStats = attributeStats[selectedAttribute];
                       long percent = Math.round(100.0 * attStats.getMissingCount() / attStats.getTotalCount());
                       jLabel13.setText("" + attStats.getMissingCount() + " (" + percent + "%)");
                       jLabel15.setText("" + attStats.getDistinctCount());

@@ -74,8 +74,8 @@ public class EntropyDiscretization implements IDiscretization
 					newValue--;
 				inst.getInstance(i).setValue(position,newValue);
 			}*/
-			Id3Utils utils = new Id3Utils();
-			System.out.println(utils.computeInfoGain(inst,att));
+			/*Id3Utils utils = new Id3Utils();
+			System.out.println(utils.computeInfoGain(inst,att));*/
 		}
 		catch (Exception e)
 		{	throw new IllegalArgumentException("Attribute not found in InstanceSet");

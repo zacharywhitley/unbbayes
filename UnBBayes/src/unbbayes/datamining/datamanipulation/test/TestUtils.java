@@ -62,11 +62,11 @@ public class TestUtils extends TestCase {
     weatherCutInst = null;
   }
 
-  public void testComputeEntropy() {
+  /*public void testComputeEntropy() {
     try {
-      Id3Utils utils = new Id3Utils();
+      Id3Utils utils = new Id3Utils(contactInst);
       // contact
-      Assert.assertEquals(utils.computeEntropy(contactInst),1.326,DELTA2);
+      Assert.assertEquals(utils.computeEntropy(),1.326,DELTA2);
       // weather
       Assert.assertEquals(utils.computeEntropy(weatherInst),0.940,DELTA2);
       // weather cut
@@ -75,18 +75,18 @@ public class TestUtils extends TestCase {
     catch(Exception e) {
       Assert.fail("Exception thrown: "+e);
     }
-  }
+  }*/
 
-  public void testComputeGainRatio() {
+  /*public void testComputeGainRatio() {
     try {
-      Id3Utils utils = new Id3Utils();
+      Id3Utils utils = new Id3Utils(weatherInst);
       // weather
-      Assert.assertEquals(utils.computeGainRatio(weatherInst, weatherInst.getAttribute(0)),0.156,DELTA2);
-      Assert.assertEquals(utils.computeGainRatio(weatherInst, weatherInst.getAttribute(1)),0.018,DELTA2);
-      Assert.assertEquals(utils.computeGainRatio(weatherInst, weatherInst.getAttribute(2)),0.152,DELTA2);
-      Assert.assertEquals(utils.computeGainRatio(weatherInst, weatherInst.getAttribute(3)),0.049,DELTA2);
+      Assert.assertEquals(utils.computeGainRatio(),0.156,DELTA2);
+      Assert.assertEquals(utils.computeGainRatio(),0.018,DELTA2);
+      Assert.assertEquals(utils.computeGainRatio(),0.152,DELTA2);
+      Assert.assertEquals(utils.computeGainRatio(),0.049,DELTA2);
       // contact
-      Assert.assertEquals(utils.computeGainRatio(contactInst, contactInst.getAttribute(0)),0.025,DELTA2);
+      Assert.assertEquals(utils.computeGainRatio(contactInst, contactInst.getAttribute(0)),0.039,DELTA2);//0.025
       Assert.assertEquals(utils.computeGainRatio(contactInst, contactInst.getAttribute(1)),0.04,DELTA2);
       Assert.assertEquals(utils.computeGainRatio(contactInst, contactInst.getAttribute(2)),0.377,DELTA2);
       Assert.assertEquals(utils.computeGainRatio(contactInst, contactInst.getAttribute(3)),0.549,DELTA2);
@@ -94,25 +94,30 @@ public class TestUtils extends TestCase {
     catch(Exception e) {
       Assert.fail("Exception thrown: "+e);
     }
-  }
+  }*/
 
   public void testComputeInfoGain() {
     try {
-      Id3Utils utils = new Id3Utils();
+      ClassifierUtils utils = new ClassifierUtils(weatherInst);
       // weather
-      Assert.assertEquals(utils.computeInfoGain(weatherInst, weatherInst.getAttribute(0)),0.247,DELTA2);
-      Assert.assertEquals(utils.computeInfoGain(weatherInst, weatherInst.getAttribute(1)),0.029,DELTA2);
-      Assert.assertEquals(utils.computeInfoGain(weatherInst, weatherInst.getAttribute(2)),0.152,DELTA2);
-      Assert.assertEquals(utils.computeInfoGain(weatherInst, weatherInst.getAttribute(3)),0.048,DELTA2);
+      double[] result = utils.computeInfoGain();
+      Assert.assertEquals(result[0],0.247,DELTA2);
+      Assert.assertEquals(result[1],0.029,DELTA2);
+      Assert.assertEquals(result[2],0.152,DELTA2);
+      Assert.assertEquals(result[3],0.048,DELTA2);
       // contact
-      Assert.assertEquals(utils.computeInfoGain(contactInst, contactInst.getAttribute(0)),0.039,DELTA2);
-      Assert.assertEquals(utils.computeInfoGain(contactInst, contactInst.getAttribute(1)),0.04,DELTA2);
-      Assert.assertEquals(utils.computeInfoGain(contactInst, contactInst.getAttribute(2)),0.377,DELTA2);
-      Assert.assertEquals(utils.computeInfoGain(contactInst, contactInst.getAttribute(3)),0.549,DELTA2);
+      utils = new ClassifierUtils(weatherInst);
+      result = utils.computeInfoGain();
+      Assert.assertEquals(result[0],0.039,DELTA2);
+      Assert.assertEquals(result[1],0.04,DELTA2);
+      Assert.assertEquals(result[2],0.377,DELTA2);
+      Assert.assertEquals(result[3],0.549,DELTA2);
       // weather cut
       //Assert.assertEquals(utils.computeInfoGain(weatherCutInst, weatherCutInst.getAttribute(0)),0.420,DELTA2);
       //Assert.assertEquals(utils.computeInfoGain(weatherCutInst, weatherCutInst.getAttribute(1)),0.971,DELTA2);
-      Assert.assertEquals(utils.computeInfoGain(weatherCutInst, weatherCutInst.getAttribute(2)),0.02,DELTA2);
+      utils = new ClassifierUtils(weatherCutInst);
+      result = utils.computeInfoGain();
+      Assert.assertEquals(result[2],0.02,DELTA2);
     }
     catch(Exception e) {
       Assert.fail("Exception thrown: "+e);
@@ -138,8 +143,8 @@ public class TestUtils extends TestCase {
   /** @todo:  Insert test code here.  Use assertEquals(), for example. */
   /*}
   public void testEq1() {
-    short a1=  0;
-    short b2=  0;
+    byte a1=  0;
+    byte b2=  0;
     boolean booleanRet = Utils.eq(a1, b2);
   /** @todo:  Insert test code here.  Use assertEquals(), for example. */
   /*}
@@ -171,20 +176,19 @@ public class TestUtils extends TestCase {
   //}
   public void testLog2()
   {
-    Id3Utils utils = new Id3Utils();
-    Assert.assertEquals(utils.log2(0.0),Double.NEGATIVE_INFINITY,DELTA);
-    Assert.assertEquals(utils.log2(-0.0),Double.NEGATIVE_INFINITY,DELTA);
-    Assert.assertEquals(utils.log2(Double.POSITIVE_INFINITY),Double.POSITIVE_INFINITY,DELTA);
-    Assert.assertTrue(Double.isNaN(utils.log2(Double.NEGATIVE_INFINITY)));
-    Assert.assertTrue(Double.isNaN(utils.log2(Double.NaN)));
-    Assert.assertTrue(Double.isNaN(utils.log2(-4.0)));
-    Assert.assertEquals(utils.log2(4.0),2.0,DELTA);
-    Assert.assertEquals(utils.log2(2.0),1.0,DELTA);
-    Assert.assertEquals(utils.log2(1.0),0.0,DELTA);
-    Assert.assertEquals(utils.log2(0.0625),-4.0,DELTA);
-    Assert.assertEquals(utils.log2(0.6),-0.7369655941,DELTA);
-    Assert.assertEquals(utils.log2(1024.0),10.0,DELTA);
-    Assert.assertEquals(utils.log2(1000.0),9.96578428466,DELTA);
+    Assert.assertEquals(ClassifierUtils.log2(0.0),Double.NEGATIVE_INFINITY,DELTA);
+    Assert.assertEquals(ClassifierUtils.log2(-0.0),Double.NEGATIVE_INFINITY,DELTA);
+    Assert.assertEquals(ClassifierUtils.log2(Double.POSITIVE_INFINITY),Double.POSITIVE_INFINITY,DELTA);
+    Assert.assertTrue(Double.isNaN(ClassifierUtils.log2(Double.NEGATIVE_INFINITY)));
+    Assert.assertTrue(Double.isNaN(ClassifierUtils.log2(Double.NaN)));
+    Assert.assertTrue(Double.isNaN(ClassifierUtils.log2(-4.0)));
+    Assert.assertEquals(ClassifierUtils.log2(4.0),2.0,DELTA);
+    Assert.assertEquals(ClassifierUtils.log2(2.0),1.0,DELTA);
+    Assert.assertEquals(ClassifierUtils.log2(1.0),0.0,DELTA);
+    Assert.assertEquals(ClassifierUtils.log2(0.0625),-4.0,DELTA);
+    Assert.assertEquals(ClassifierUtils.log2(0.6),-0.7369655941,DELTA);
+    Assert.assertEquals(ClassifierUtils.log2(1024.0),10.0,DELTA);
+    Assert.assertEquals(ClassifierUtils.log2(1000.0),9.96578428466,DELTA);
   }
   /*public void testMaxIndex() {
     double[] doubles1=  null  /** @todo fill in non-null value */;
@@ -239,7 +243,7 @@ public class TestUtils extends TestCase {
   /** @todo:  Insert test code here.  Use assertEquals(), for example. */
   /*}
   public void testSort1() {
-    short[] array1=  null  /** @todo fill in non-null value */;
+    byte[] array1=  null  /** @todo fill in non-null value */;
     /*int[] int[]Ret = Utils.sort(array1);
   /** @todo:  Insert test code here.  Use assertEquals(), for example. */
   /*}

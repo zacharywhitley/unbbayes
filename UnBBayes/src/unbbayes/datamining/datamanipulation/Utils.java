@@ -25,7 +25,7 @@ public final class Utils
   {	return (a - b < SMALL) && (b - a < SMALL);
   }
 
-  public static boolean eq(short a, short b)
+  public static boolean eq(byte a, byte b)
   {	if (a == b)
   	{	return true;
 	}
@@ -397,7 +397,7 @@ public final class Utils
   }
 
   /**
-   * Sorts a given array of shorts in ascending order and returns an
+   * Sorts a given array of bytes in ascending order and returns an
    * array of integers with the positions of the elements of the
    * original array in the sorted array. It doesn't use safe floating-point
    * comparisons.
@@ -406,9 +406,9 @@ public final class Utils
    * @return An array of integers with the positions in the sorted
    * array.
    */
-  public static int[] sort(short[] array)
+  public static int[] sort(byte[] array)
   {	int [] index = new int[array.length];
-    array = (short[])array.clone();
+    array = (byte[])array.clone();
     for (int i = 0; i < index.length; i++)
 	{	index[i] = i;
     }
@@ -477,16 +477,16 @@ public final class Utils
 	/**
    * Implements unsafe quicksort for an array of indices.
    *
-   * @param array The array of shorts to be sorted
+   * @param array The array of bytes to be sorted
    * @param index The index which should contain the positions in the
    * sorted array
    * @param lo0 The first index of the subset to be sorted
    * @param hi0 The last index of the subset to be sorted
    */
-private static void quickSort(short[] array, int [] index, int lo0, int hi0)
+private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
 {   int lo = lo0;
     int hi = hi0;
-    short mid;
+    byte mid;
     int help;
 
     if (hi0 > lo0)
@@ -636,15 +636,15 @@ private static void quickSort(short[] array, int [] index, int lo0, int hi0)
       return resultArray2;
   }
 
-  /** Insertion sort incremental of an array of float. An array of short
+  /** Insertion sort incremental of an array of float. An array of byte
   	is sort in the same points that the array of float
 	@param a An array of float
-	@param b An array of short
+	@param b An array of byte
   */
-  	private static void insertionSortInc(float[] a,short[] b)
+  	private static void insertionSortInc(float[] a,byte[] b)
 	{	int i;
 		float key;
-		short temp;
+		byte temp;
 		for(int j=1; j<a.length; j++)
 		{	key = a[j];
 			temp = b[j];

@@ -33,7 +33,7 @@ public class Attribute implements Serializable
   	private int attributeType;
 
   	/** The attribute's values */
-  	private ArrayList attributeValues;
+  	private String[] attributeValues;//mudei3
 
 	/** Mapping of values to indices */
   	private Hashtable hashtable;
@@ -52,18 +52,20 @@ public class Attribute implements Serializable
    	* attribute values.
 	* @param attributeType Type of this attribute (Nominal or Numeric)
 	*/
-  	public Attribute(String attributeName,ArrayList attributeValues,int attributeType)
+  	public Attribute(String attributeName,String[] attributeValues,int attributeType)//mudei3
 	{	this.attributeName = attributeName;
     	index = -1;
     	this.attributeValues = attributeValues;
       	if (attributeValues != null)
-		{	hashtable = new Hashtable(attributeValues.size());
-      		for (int i = 0; i < attributeValues.size(); i++)
-			{	hashtable.put(attributeValues.get(i), new Integer(i));
+		{
+			int numValues = numValues();
+			hashtable = new Hashtable(numValues);//mudei3
+      		for (int i = 0; i < numValues; i++)//mudei3
+			{	hashtable.put(attributeValues[i], new Integer(i));//mudei3
       		}
 		}
 		else
-		{	hashtable =null;
+		{	hashtable = null;
 		}
 		this.attributeType = attributeType;
   	}
@@ -76,7 +78,7 @@ public class Attribute implements Serializable
    	* @param attributeType Type of this attribute (Nominal or Numeric)
 	* @param index The attribute's index
 	*/
-  	public Attribute(String attributeName,ArrayList attributeValues,int attributeType,int index)
+  	public Attribute(String attributeName,String[] attributeValues,int attributeType,int index)//mudei3
 	{	this(attributeName, attributeValues, attributeType);
 		this.index = index;
 	}
@@ -87,22 +89,25 @@ public class Attribute implements Serializable
    	* @return Enumeration of all the attribute's values
    	*/
   	public final Enumeration enumerateValues()
-	{	if (attributeValues != null)
-		{	final ArrayListEnumeration ale = new ArrayListEnumeration(attributeValues);
+	{
+          if (attributeValues != null)
+          {
+            final ArrayListEnumeration ale = new ArrayListEnumeration(attributeValues);
+            return new Enumeration ()
+            {
+                public boolean hasMoreElements()
+                {
+                  return ale.hasMoreElements();
+                }
 
-			return new Enumeration ()
-			{	public boolean hasMoreElements()
-				{	return ale.hasMoreElements();
-          		}
-
-				public Object nextElement()
-				{	Object oo = ale.nextElement();
-            		return oo;
+                public Object nextElement()
+                {
+                  Object oo = ale.nextElement();
+                  return oo;
             	}
-        	};
-
-    	}
-    	return null;
+            };
+          }
+          return null;
   	}
 
   	/**
@@ -122,11 +127,11 @@ public class Attribute implements Serializable
     	if (attributeType != att.attributeType)
 		{	return false;
     	}
-    	if (attributeValues.size() != att.attributeValues.size())
+    	if (numValues() != att.numValues())//mudei3
 		{	return false;
     	}
-    	for (int i = 0; i < attributeValues.size(); i++)
-		{	if (!attributeValues.get(i).equals(att.attributeValues.get(i)))
+    	for (int i = 0; i < numValues(); i++)//mudei3
+		{	if (!attributeValues[i].equals(att.attributeValues[i]))//mudei3
 			{	return false;
       		}
     	}
@@ -200,7 +205,7 @@ public class Attribute implements Serializable
 		{	return 0;
     	}
 		else
-		{	return attributeValues.size();
+		{	return attributeValues.length;//mudei3
     	}
   	}
 
@@ -210,25 +215,32 @@ public class Attribute implements Serializable
    	* @return a description of this attribute as a string
    	*/
   	public final String toString()
-	{	StringBuffer text = new StringBuffer();
-
-    	text.append("@attribute " + attributeName + " ");
-    	if (isNominal())
-		{	text.append('{');
-      		Enumeration enum = enumerateValues();
-      		while (enum.hasMoreElements())
-			{	text.append(enum.nextElement());
-				if (enum.hasMoreElements())
-	  				text.append(',');
-      		}
-      		text.append('}');
-    	}
-		else
-		{	if (isNumeric())
-			{	text.append("numeric");
-      		}
-		}
-    	return text.toString();
+	{
+          StringBuffer text = new StringBuffer();
+          text.append("@attribute " + attributeName + " ");
+          if (isNominal())
+          {
+            text.append('{');
+            Enumeration enum = enumerateValues();
+            if (enum!=null)
+            {
+              while (enum.hasMoreElements())
+              {
+                text.append(enum.nextElement());
+                if (enum.hasMoreElements())
+                  text.append(',');
+              }
+            }
+            text.append('}');
+          }
+          else
+          {
+            if (isNumeric())
+            {
+              text.append("numeric");
+            }
+          }
+          return text.toString();
   	}
 
 	/**
@@ -247,9 +259,9 @@ public class Attribute implements Serializable
    	* @return the attribute's value as a string. If value is not found returns ""
    	*/
   	public final String value(int valIndex)
-	{	if (attributeValues != null && valIndex >= 0 && valIndex <= attributeValues.size())
-		{	Object val = attributeValues.get(valIndex);
-      		return (String) val;
+	{	if (attributeValues != null && valIndex >= 0 && valIndex <= numValues())//mudei3
+		{	String val = attributeValues[valIndex];//mudei3
+      		return val;
 		}
 		else
 		{	return "";
@@ -261,13 +273,22 @@ public class Attribute implements Serializable
    	*
    	* @param value The attribute value
    	*/
-  	public final void addValue(String value)
-	{	if (hashtable == null)
-		{	hashtable = new Hashtable();
-			attributeValues = new ArrayList();
-		}
-		attributeValues.add(value);
-    	hashtable.put(value, new Integer(attributeValues.size() - 1));
+  	public final void addValue(String value)//mudei3
+	{
+          if (hashtable == null)
+          {
+            hashtable = new Hashtable();
+			//mudei3
+          }
+		//mudei3
+          String[] newValues = new String[numValues()+1];
+          if (attributeValues!=null)
+          {
+            System.arraycopy(attributeValues,0,newValues,0,numValues());
+          }
+          newValues[numValues()] = value;
+          attributeValues = newValues;
+          hashtable.put(value, new Integer(numValues() - 1));//mudei3
 	}
 
   	/**
@@ -296,23 +317,23 @@ public class Attribute implements Serializable
    	*
    	* @param index The value's index
    	*/
-  	public final void delete(int index)
-	{	attributeValues.remove(index);
-      	Hashtable hash = new Hashtable(hashtable.size());
-      	Enumeration enum = hashtable.keys();
-      	while (enum.hasMoreElements())
-		{	String string = (String)enum.nextElement();
-			Integer valIndexObject = (Integer)hashtable.get(string);
-			int valIndex = valIndexObject.intValue();
-			if (valIndex > index)
-			{	hash.put(string, new Integer(valIndex - 1));
-			}
-			else if (valIndex < index)
-			{	hash.put(string, valIndexObject);
-			}
-      	}
-      	hashtable = hash;
-  	}
+  	//public final void delete(int index)//mudei3
+	//{	attributeValues.remove(index);
+    //  	Hashtable hash = new Hashtable(hashtable.size());
+    //  	Enumeration enum = hashtable.keys();
+    //  	while (enum.hasMoreElements())
+	//	{	String string = (String)enum.nextElement();
+	//		Integer valIndexObject = (Integer)hashtable.get(string);
+	//		int valIndex = valIndexObject.intValue();
+	//		if (valIndex > index)
+	//		{	hash.put(string, new Integer(valIndex - 1));
+	//		}
+	//		else if (valIndex < index)
+	//		{	hash.put(string, valIndexObject);
+	//		}
+    //	}
+    //  	hashtable = hash;
+  	//}
 
   	/**
    	* Sets the index of this attribute.
@@ -329,20 +350,20 @@ public class Attribute implements Serializable
    	* @param index The value's index
    	* @param string The value
    	*/
-  	public final void setValue(int index, String string)
-	{	if (attributeType == NUMERIC)
-		{	try
-			{	Float.parseFloat(string);
-			}
-			catch (NumberFormatException nfe)
-			{	throw new RuntimeException(resource.getString("setValueException"));
-			}
-		}
-		Object store = string;
-      	hashtable.remove(attributeValues.get(index));
-      	attributeValues.set(index, store);
-      	hashtable.put(store, new Integer(index));
-  	}
+  	//public final void setValue(int index, String string)//mudei3
+	//{	if (attributeType == NUMERIC)
+	//	{	try
+	//		{	Float.parseFloat(string);
+	//		}
+	//		catch (NumberFormatException nfe)
+	//		{	throw new RuntimeException(resource.getString("setValueException"));
+	//		}
+	//	}
+	//	String store = string;//mudei3
+    //	hashtable.remove(attributeValues[index]);//mudei3
+    //  	attributeValues[index] = store;//mudei3
+    //  	hashtable.put(store, new Integer(index));
+  	//}
 
 	/**
    	* Changes the type of an attribute.
@@ -352,14 +373,14 @@ public class Attribute implements Serializable
   	public void setAttributeType(int attributeType)
 	{	this.attributeType = attributeType;
 	}
-	
+
 	/**
     * Returns the attribute's values.
     *
     * @return the attribute's values.
     */
-    public ArrayList getAttributeValues()
-    {	return (ArrayList)attributeValues.clone();
+    public String[] getAttributeValues()
+    {	return attributeValues;
     }
 }
 

@@ -91,7 +91,7 @@ public class InferenceTree extends JTree{
 
             //definição dos nós dos valores dos atributos
             int numStates = attribute.numValues();
-            for (short j=0; j<numStates; j++){
+            for (byte j=0; j<numStates; j++){
               DefaultMutableTreeNode stateNode = new DefaultMutableTreeNode(attribute.value(j));
               treeNode.add(stateNode);
               objectsMap.put(stateNode, new StateObject(attribute, j, CHECK_EMPTY));
@@ -114,7 +114,7 @@ public class InferenceTree extends JTree{
   public Instance getInstance(){
     ArrayList keys = objectsMap.getKeys();
     int keysSize = keys.size();
-    Instance instance = new Instance(new short[attributeVector.length]);
+    Instance instance = new Instance(new byte[attributeVector.length]);
 
     for(int i=0; i<attributeVector.length; i++){
       instance.setMissing(i);
@@ -222,16 +222,16 @@ public class InferenceTree extends JTree{
 
   private class StateObject{
     private Attribute attribute;
-    private short attributeValue = -1;
+    private byte attributeValue = -1;
     private int check = CHECK_EMPTY;
 
-    public StateObject(Attribute attribute, short attributeValue, int check){
+    public StateObject(Attribute attribute, byte attributeValue, int check){
       this.attribute = attribute;
       this.attributeValue = attributeValue;
       this.check = check;
     }
 
-    public void setAttributeValue(short attributeValue){
+    public void setAttributeValue(byte attributeValue){
       this.attributeValue = attributeValue;
     }
 
@@ -239,7 +239,7 @@ public class InferenceTree extends JTree{
       this.check = check;
     }
 
-    public short getAttributeValue(){
+    public byte getAttributeValue(){
       return attributeValue;
     }
 

@@ -1,7 +1,6 @@
 package unbbayes.datamining.classifiers.cnmentities;
 
 import java.io.*;
-import java.util.*;
 
 /**
  * <p>Title: </p>
@@ -89,7 +88,7 @@ public class Combination implements Serializable{
     return true;
   }
 
-  public void increaseAccumulator(short classValue, int weight){  // classValue, para selecionar qual classe deve ser incrementado o acumulador
+  public void increaseAccumulator(byte classValue, int weight){  // classValue, para selecionar qual classe deve ser incrementado o acumulador
     if(outputArray[classValue] != null){                          // e o peso para incrementar
       outputArray[classValue].increaseAccumulator(weight);
     } else {

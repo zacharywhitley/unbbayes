@@ -3,6 +3,8 @@ package unbbayes.datamining.classifiers;
 import java.util.*;
 
 import unbbayes.datamining.datamanipulation.*;
+import unbbayes.prs.*;
+import unbbayes.prs.bn.*;
 
 /**
  * Class implementing an Naive Bayes classifier.
@@ -15,24 +17,26 @@ public class NaiveBayes extends BayesianLearning
 	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.classifiers.resources.ClassifiersResource");
 
 	/** All the counts for nominal attributes. */
-  	private float [][][] counts;
-
-  	/** The means for numeric attributes. */
-  	private float [][] means;
-
-  	/** The standard deviations for numeric attributes. */
-  	private float [][] devs;
+  	private float[][][] counts;
 
   	/** The prior probabilities of the classes. */
-  	private float [] priors;
+  	private float[] priors;
 
   	/** The instances used for training. */
   	private InstanceSet instances;
-
-  	private Attribute classAttribute;
-
-	/** Constant for normal distribution. */
-  	private static float NORM_CONST = (float)Math.sqrt(2 * Math.PI);
+  	
+	private ProbabilisticNode classAtt;
+	private int width = 50;
+	private int k = 0,i=0,j=0;
+	private ProbabilisticNetwork net = new ProbabilisticNetwork("NaiveBayes");
+	
+	private int numAtt;
+	private int numClasses;
+	private int numInstances;
+	private int numValues;
+	private int classIndex;
+	private Attribute[] attributes;
+	private int attIndex;
 
 	/**
    	* Generates the classifier.
@@ -41,135 +45,149 @@ public class NaiveBayes extends BayesianLearning
    	* @exception Exception if the classifier has not been generated successfully
    	*/
   	public void buildClassifier(InstanceSet inst) throws Exception
-	{	int attIndex = 0;
-    	float sum;
+	{	
+		instances = inst;
+		numAtt = inst.numAttributes();
+		numClasses = instances.numClasses();
+		numInstances = instances.numInstances();
+		attributes = instances.getAttributes();
+		classIndex = inst.getClassAttribute().getIndex();
+		attIndex=0;
+		float sum;
 
-    	if (inst.getClassAttribute().isNumeric())
-		{	throw new Exception(resource.getString("exception1"));
-    	}
+		boolean bool = inst.checkNumericAttributes();
+		if (bool == true)
+			throw new Exception(resource.getString("numericAttributesException"));
 
-		instances = new InstanceSet(inst);
-		classAttribute = instances.getClassAttribute();
-
+		
 		// Reserve space
-    	counts = new float[instances.numClasses()][instances.numAttributes() - 1][0];
-    	means = new float[instances.numClasses()][instances.numAttributes() - 1];
-    	devs = new float[instances.numClasses()][instances.numAttributes() - 1];
-    	priors = new float[instances.numClasses()];
-    	Enumeration enum = instances.enumerateAttributes();
-    	while (enum.hasMoreElements())
-		{	Attribute attribute = (Attribute) enum.nextElement();
-      		if (attribute.isNominal())
-			{	for (int j = 0; j < instances.numClasses(); j++)
-				{	counts[j][attIndex] = new float[attribute.numValues()];
+    	counts = new float[numClasses][numAtt - 1][0];
+    	priors = new float[numClasses];
+		for (i = 0; i < numAtt; i++)
+		{
+			if (attributes[i].getIndex() != classIndex)
+			{
+				for (j = 0; j < numClasses; j++)
+				{	counts[j][attIndex] = new float[attributes[i].numValues()];
 				}
-      		}
-			else
-			{	for (int j = 0; j < instances.numClasses(); j++)
-				{	counts[j][attIndex] = new float[1];
-				}
-      		}
-      		attIndex++;
-    	}
+				attIndex++;
+			}
+		}
 
 		// Compute counts and sums
-    	Enumeration enumInsts = instances.enumerateInstances();
-    	while (enumInsts.hasMoreElements())
-		{	Instance instance = (Instance) enumInsts.nextElement();
-      		if (!instance.classIsMissing())
-			{	Enumeration enumAtts = instances.enumerateAttributes();
-				attIndex = 0;
-				while (enumAtts.hasMoreElements())
-				{	Attribute attribute = (Attribute) enumAtts.nextElement();
-	  				if (!instance.isMissing(attribute))
-					{	if (attribute.isNominal())
-						{	counts[(int)instance.classValue()][attIndex][(int)instance.getValue(attribute)] += instance.getWeight();
-	    				}
-						else
-						{	means[(int)instance.classValue()][attIndex] += (Float.parseFloat(instance.stringValue(attribute))*instance.getWeight());
-	      					counts[(int)instance.classValue()][attIndex][0] += instance.getWeight();
-	    				}
-	  				}
-	  				attIndex++;
-				}
+		for (i = 0; i < numInstances; i++)
+		{
+			Instance instance = (Instance) instances.getInstance(i);
+			if (!instance.classIsMissing())
+			{	
+				attIndex=0;
+				for (j = 0; j < numAtt; j++)
+				{
+					if ((attributes[j].getIndex() != classIndex)&&(!instance.isMissing(attributes[j])))
+					{
+						counts[(int)instance.classValue()][attIndex][(int)instance.getValue(attributes[j])] += instance.getWeight();
+						attIndex++;
+					}
+
+				}															
 				priors[(int)instance.classValue()] += instance.getWeight();
-      		}
-    	}
-
-    	// Compute means
-    	Enumeration enumAtts = instances.enumerateAttributes();
-    	attIndex = 0;
-    	while (enumAtts.hasMoreElements())
-		{	Attribute attribute = (Attribute) enumAtts.nextElement();
-      		if (attribute.isNumeric())
-			{	for (int j = 0; j < instances.numClasses(); j++)
-				{	if (counts[j][attIndex][0] < 2)
-					{	throw new Exception(resource.getString("attribute") + attribute.getAttributeName() + resource.getString("exception2") +	instances.getClassAttribute().value(j));
-	  				}
-	  				means[j][attIndex] /= counts[j][attIndex][0];
-				}
-      		}
-      		attIndex++;
-    	}
-
-    	// Compute standard deviations
-    	enumInsts = instances.enumerateInstances();
-    	while (enumInsts.hasMoreElements())
-		{	Instance instance = (Instance) enumInsts.nextElement();
-      		if (!instance.classIsMissing())
-			{	enumAtts = instances.enumerateAttributes();
-				attIndex = 0;
-				while (enumAtts.hasMoreElements())
-				{	Attribute attribute = (Attribute) enumAtts.nextElement();
-	  				if (!instance.isMissing(attribute))
-					{	if (attribute.isNumeric())
-						{	float value = Float.parseFloat(instance.stringValue(attribute));
-							devs[(int)instance.classValue()][attIndex] += (means[(int)instance.classValue()][attIndex] - value) * (means[(int)instance.classValue()][attIndex] - value);
-	    				}
-	  				}
-	  				attIndex++;
-				}
-      		}
-    	}
-    	enumAtts = instances.enumerateAttributes();
-    	attIndex = 0;
-    	while (enumAtts.hasMoreElements())
-		{	Attribute attribute = (Attribute) enumAtts.nextElement();
-      		if (attribute.isNumeric())
-			{	for (int j = 0; j < instances.numClasses(); j++)
-				{	if (devs[j][attIndex] <= 0)
-					{	throw new Exception(resource.getString("attribute") + attribute.getAttributeName() + resource.getString("exception3") + instances.getClassAttribute().value(j));
-	  				}
-	  				else
-					{	devs[j][attIndex] /= counts[j][attIndex][0] - 1;						
-	    				devs[j][attIndex] = (float)Math.sqrt(devs[j][attIndex]);
-	  				}
-				}
-      		}
-      		attIndex++;
-    	}
-
+			}
+		}
+		
+		attIndex=0;
     	// Normalize counts
-    	enumAtts = instances.enumerateAttributes();
-    	attIndex = 0;
-    	while (enumAtts.hasMoreElements())
-		{	Attribute attribute = (Attribute) enumAtts.nextElement();
-      		if (attribute.isNominal())
-			{	for (int j = 0; j < instances.numClasses(); j++)
+		for (k = 0; k < numAtt; k++)
+		{
+			if (attributes[k].getIndex() != classIndex)
+			{
+				for (j = 0; j < numClasses; j++)
 				{	sum = Utils.sum(counts[j][attIndex]);
-	  				for (int i = 0; i < attribute.numValues(); i++)
-					{	counts[j][attIndex][i] = (counts[j][attIndex][i] + 1) / (sum + (float)attribute.numValues());
-	  				}
+					numValues = attributes[k].numValues();
+					for (i = 0; i < numValues; i++)
+					{	counts[j][attIndex][i] = (counts[j][attIndex][i] + 1) / (sum + (float)numValues);
+					}
 				}
-      		}
-      		attIndex++;
-    	}
+				attIndex++;
+			}
+			      	
+		}
+    		
 
     	// Normalize priors
     	sum = Utils.sum(priors);
-		for (int j = 0; j < instances.numClasses(); j++)
-      		priors[j] = (priors[j] + 1)	/ (sum + (float)instances.numClasses());
+		for (j = 0; j < numClasses; j++)
+		{	priors[j] = (priors[j] + 1)	/ (sum + (float)numClasses);      	
+		}
+      	
+      	// compute bayesian network
+		createProbabilisticNodeClass(attributes[classIndex]);
+		k=0;
+		for(int counter=0; counter<numAtt; counter++)
+		{   if (attributes[counter].getIndex() != classIndex)
+			{   	
+				createProbabilisticNode(attributes[counter]);											
+			}
+		}      	
   	}
+  	
+	/** Cria o nó classe */
+	private void createProbabilisticNodeClass(Attribute att)
+	{   ProbabilisticNode no = new ProbabilisticNode();
+		no.setDescription(att.getAttributeName());
+		no.setName(att.getAttributeName());
+		numValues = att.numValues();
+		for (i=0;i<numValues;i++)
+		{   
+			no.appendState(""+att.value(i));
+		}
+		if (numAtt == 1)
+		{   no.setPosition(50,30);
+		}
+		else
+		{   no.setPosition(50 + ((numAtt-2) * 50),30);
+		}
+		PotentialTable tab = no.getPotentialTable();
+		tab.addVariable(no);
+		for (i=0;i<numValues;i++)
+		{   
+			tab.setValue(i,priors[i]);
+		}
+		net.addNode(no);
+		classAtt = no;
+	}
+
+	/** Cria os nós filhos */
+	private void createProbabilisticNode(Attribute att)
+	{   ProbabilisticNode no = new ProbabilisticNode(); // Criação do nó
+		no.setDescription(att.getAttributeName());
+		no.setName(att.getAttributeName());
+
+		numValues = att.numValues();
+		for (i=0;i<numValues;i++)
+		{   
+			no.appendState(""+att.value(i));
+		}
+
+		PotentialTable tab = no.getPotentialTable();  // Criação do Tabela de probabilidades
+		tab.addVariable(no);
+		no.setPosition(width,100);
+		width += 100;
+		net.addNode(no);
+		Edge arco = new Edge(classAtt,no);
+		net.addEdge(arco);
+
+		// Inserção dos valores na tabela de probabilidades
+		int[] coord = new int[numClasses];
+		for (j=0;j<numClasses;j++)
+		{   for (i=0;i<numValues;i++)
+			{   coord[0] = i;
+				coord[1] = j;
+				tab.setValue(coord,counts[j][k][i]);
+			}
+		}
+		k++;
+	}
+
 
   	/**
   	 * Calculates the class membership probabilities for the given test instance.
@@ -179,27 +197,18 @@ public class NaiveBayes extends BayesianLearning
   	 * @exception Exception if distribution can't be computed
   	 */
   	public float[] distributionForInstance(Instance instance) throws Exception
-	{	int numClasses = instances.numClasses();
-		float[] probs = new float[numClasses];
-  	  	int attIndex;
+	{	float[] probs = new float[numClasses];
 
-  	  	for (int j = 0; j < numClasses; j++)
+  	  	for (j = 0; j < numClasses; j++)
 		{	probs[j] = 1;
-  	    	Enumeration enumAtts = instances.enumerateAttributes();
-  	    	attIndex = 0;
-  	    	while (enumAtts.hasMoreElements())
-			{	Attribute attribute = (Attribute) enumAtts.nextElement();
-  				if (!instance.isMissing(attribute))
-				{	if (attribute.isNominal())
-					{	probs[j] *= counts[j][attIndex][(int)instance.getValue(attribute)];
-  	  				}
-					else
-					{	float value = Float.parseFloat(instance.stringValue(attribute));
-						probs[j] *= normalDens(value,means[j][attIndex],devs[j][attIndex]);
-					}
-  				}
-  				attIndex++;
-  	    	}
+  	    	
+			for (i = 0; i < numAtt; i++)
+			{
+				if ((attributes[i].getIndex() != classIndex)&&(!instance.isMissing(attributes[i])))
+				{
+					probs[j] *= counts[j][i][(int)instance.getValue(attributes[i])];
+				}
+			}
   	    	probs[j] *= priors[j];
   	  	}
 
@@ -221,29 +230,24 @@ public class NaiveBayes extends BayesianLearning
     	}
     	try
 		{	StringBuffer text = new StringBuffer("Naive Bayes");
-      		int attIndex;
-
-      		for (int i = 0; i < instances.numClasses(); i++)
+      		
+      		for (i = 0; i < numClasses; i++)
 			{	text.append("\n\n"+resource.getString("class") + " " + instances.getClassAttribute().value(i) + ": P(C) = " + Utils.doubleToString(priors[i], 10, 8) + "\n\n");
-				Enumeration enumAtts = instances.enumerateAttributes();
-				attIndex = 0;
-				while (enumAtts.hasMoreElements())
-				{	Attribute attribute = (Attribute) enumAtts.nextElement();
-	  				text.append(resource.getString("attribute")+" " + attribute.getAttributeName() + "\n");
-	  				if (attribute.isNominal())
-					{	for (int j = 0; j < attribute.numValues(); j++)
-						{	text.append(attribute.value(j) + "\t");
-	    				}
-	    				text.append("\n");
-	    				for (int j = 0; j < attribute.numValues(); j++)
-	      					text.append(Utils.doubleToString(counts[i][attIndex][j], 10, 8) + "\t");
-	  				}
-					else
-					{	text.append(resource.getString("mean")+": "+ Utils.doubleToString(means[i][attIndex], 10, 8) + "\t");
-	    				text.append(resource.getString("stdev")+": "+ Utils.doubleToString(devs[i][attIndex], 10, 8));
-	  				}
-	  				text.append("\n\n");
-	  				attIndex++;
+				
+				for (k = 0; k < numAtt; k++)
+				{
+					if (attributes[k].getIndex() != classIndex)
+					{
+						text.append(resource.getString("attribute")+" " + attributes[k].getAttributeName() + "\n");
+						numValues = attributes[k].numValues();
+						for (j = 0; j < numValues; j++)
+						{	text.append(attributes[k].value(j) + "\t");
+						}
+						text.append("\n");
+						for (j = 0; j < numValues; j++)
+							text.append(Utils.doubleToString(counts[i][k][j], 10, 8) + "\t");
+						text.append("\n\n");
+					}					
 				}
       		}
       		return text.toString();
@@ -256,16 +260,16 @@ public class NaiveBayes extends BayesianLearning
 	private String nullInstancesString()
 	{	try
 		{	StringBuffer text = new StringBuffer("Naive Bayes");
-      		for (int i = 0; i < priors.length; i++)
+      		for (i = 0; i < priors.length; i++)
 			{	text.append("\n\n"+resource.getString("class") + " " + i + ": P(C) = " + Utils.doubleToString(priors[i], 10, 8) + "\n\n");
 				if (counts != null)
 				{	for (int attIndex=0; attIndex<counts[i].length; attIndex++)
 					{	text.append(resource.getString("attribute")+" " + attIndex + "\n");
-						for (int j = 0; j < counts[i][attIndex].length; j++)
+						for (j = 0; j < counts[i][attIndex].length; j++)
 						{	text.append(j + "\t");
 	    				}
 	    				text.append("\n");
-	    				for (int j = 0; j < counts[i][attIndex].length; j++)
+	    				for (j = 0; j < counts[i][attIndex].length; j++)
 	      					text.append(Utils.doubleToString(counts[i][attIndex][j], 10, 8) + "\t");
 						text.append("\n\n");
 					}
@@ -276,6 +280,13 @@ public class NaiveBayes extends BayesianLearning
 		catch (Exception e)
 		{	return resource.getString("exception5");
     	}
+	}
+	
+	/** Retorna a rede bayesiana ProbabilisticNetwork
+	  @return Um rede ProbabilisticNetwork
+	*/
+	public ProbabilisticNetwork getProbabilisticNetwork()
+	{	  return net;
 	}
 
 	/** Returns the computed priors
@@ -301,22 +312,4 @@ public class NaiveBayes extends BayesianLearning
 	public void setCounts(float[][][] counts)
 	{	this.counts = counts;
 	}
-
-	public Attribute getClassAttribute()
-	{	return classAttribute;
-	}
-
-	public void setClassAttribute(Attribute classAttribute)
-	{	this.classAttribute = classAttribute;
-	}
-
-	/**
-	 * Density function of normal distribution.
-	 */
-	private float normalDens(float x, float mean, float stdDev)
-	{	float diff = x - mean;
-
-	  	return (float) ((1 / (NORM_CONST * stdDev)) * Math.exp(-(diff * diff / (2 * stdDev * stdDev))));
-	}
-
 }
