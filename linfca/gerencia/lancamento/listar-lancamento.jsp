@@ -24,7 +24,7 @@
 		if (request.getParameter("data-hora-inicio") != null)  {
 			dataInicio.setText(request.getParameter("data-hora-inicio"));
 		} else {
-			dataInicio.setText(new Timestamp(System.currentTimeMillis() - 100000L).toString());
+			dataInicio.setText(new Timestamp(System.currentTimeMillis() - 1000000L).toString());
 		}
 	
 		in.getChildren().add(dataInicio);
