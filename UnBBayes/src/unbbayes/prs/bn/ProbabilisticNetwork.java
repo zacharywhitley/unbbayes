@@ -48,113 +48,17 @@ public class ProbabilisticNetwork
 	extends Network
 	implements java.io.Serializable {
 
-	/** Load resource file from this package */
-	private static ResourceBundle resource =
-		ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
-
-	private double radius;
-
-	/**
-	 * Nós de decisão utilizado no processo de transformação.
-	 */
-	private NodeList decisionNodes;
-
-	private String nome = "";
-
-	private HierarchicTree hierarchicTree;
-
 	private boolean firstInitialization;
 
 	/**
 	 *  Cria uma nova rede probabilística. Limpa o arquivo de log e inicializa o
 	 *  vetor da ordem de eliminação.
 	 */
-	public ProbabilisticNetwork() {
-		DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
-		DefaultTreeModel model = new DefaultTreeModel(root);
-		hierarchicTree = new HierarchicTree(model);				
+	public ProbabilisticNetwork() {								
 		oe = new NodeList();
 		firstInitialization = true;
 	}
-
-	/**
-	 * Seta o nome da rede.
-	 *
-	 * @param name nome da rede.
-	 */
-	public void setName(String name) {
-		this.nome = name;
-	}
-
-	/**
-	 * Retorna o nome da rede.
-	 *
-	 * @return nome da rede.
-	 */
-	public String getName() {
-		return nome;
-	}
-
-	public void setHierarchicTree(HierarchicTree hierarchicTree) {
-		this.hierarchicTree = hierarchicTree;
-	}
-
-	public HierarchicTree getHierarchicTree() {
-		return hierarchicTree;
-	}
 	
-	/*
-	public int size() {
-		return nos.size();
-	}
-	*/
-
-	/**
-	 *  Verifica integridade como grafo direcionado acíclico / conexo e coesão.
-	 *  Com a saída é possível saber quais erros especificamente ocorreram caso algum ocorra.
-	 */
-	protected void verificaConsistencia() throws Exception {
-		if (nos.size() != 0) {
-			boolean erro = false;
-
-			StringBuffer sb = new StringBuffer();
-
-			try {
-				verificaUtilidade();
-			} catch (Exception e) {
-				erro = true;
-				sb.append(e.getMessage());
-			}
-			try {
-				verifyCycles();
-			} catch (Exception e) {
-				erro = true;
-				sb.append('\n' + e.getMessage());
-			}
-			try {
-				verifyConectivity();
-			} catch (Exception e) {
-				erro = true;
-				sb.append('\n' + e.getMessage());
-			}
-			try {
-				verificaTabelasPot();
-			} catch (Exception e) {
-				erro = true;
-				sb.append('\n' + e.getMessage());
-			}
-			try {
-				sortDecisions();
-			} catch (Exception e) {
-				erro = true;
-				sb.append('\n' + e.getMessage());
-			}
-
-			if (erro) {
-				throw new Exception(sb.toString());
-			}
-		}
-	}
 
 	public String getLog() {
 		return logManager.getLog();
@@ -268,7 +172,7 @@ public class ProbabilisticNetwork
 		if (createLog) {
 			logManager.reset();
 		}
-		verificaConsistencia();
+		verifyConsistency();
 		moraliza();
 		triangula();
 		compilaAJ();
@@ -322,130 +226,6 @@ public class ProbabilisticNetwork
 			TreeVariable node = (TreeVariable) copiaNos.get(i);
 			node.restoreMarginal();
 		}
-	}
-
-	/**
-	 *  SUB-FUNÇÃO do método verificaConsistência que verifica se
-	 *  existe uma ordenação total das decisões. Isto é, se existe
-	 *  um caminho orientado entre as decisões.
-	 */
-	private void sortDecisions() throws Exception {
-		decisionNodes = new NodeList();
-		int sizeNos = nos.size();
-		for (int i = 0; i < sizeNos; i++) {
-			if (nos.get(i).getType() == Node.DECISION_NODE_TYPE) {
-				decisionNodes.add(nos.get(i));
-			}
-		}
-
-		NodeList fila = new NodeList(nos.size());
-		Node aux, aux2, aux3;
-
-		int sizeDecisao = decisionNodes.size();
-		for (int i = 0; i < sizeDecisao; i++) {
-			boolean visitados[] = new boolean[nos.size()];
-			aux = (Node) decisionNodes.get(i);
-			fila.clear();
-			fila.add(aux);
-
-			while (fila.size() != 0) {
-				aux2 = fila.remove(0);
-				visitados[nos.indexOf(aux2)] = true;
-
-				int sizeFilhos = aux2.getChildren().size();
-				for (int k = 0; k < sizeFilhos; k++) {
-					aux3 = (Node) aux2.getChildren().get(k);
-					if (!visitados[nos.indexOf(aux3)]) {
-						if (aux3.getType() == Node.DECISION_NODE_TYPE
-							&& !aux.getAdjacents().contains(aux3)) {
-							aux.getAdjacents().add(aux3);
-						}
-						fila.add(aux3);
-					}
-				}
-			}
-		}
-
-		boolean haTroca = true;
-		while (haTroca) {
-			haTroca = false;
-			for (int i = 0; i < decisionNodes.size() - 1; i++) {
-				Node node1 = decisionNodes.get(i);
-				Node node2 = decisionNodes.get(i + 1);
-				if (node1.getAdjacents().size()
-					< node2.getAdjacents().size()) {
-					decisionNodes.set(i + 1, node1);
-					decisionNodes.set(i, node2);
-					haTroca = true;
-				}
-			}
-		}
-
-		int sizeDecisao1 = decisionNodes.size();
-		for (int i = 0; i < sizeDecisao1; i++) {
-			System.out.print(decisionNodes.get(i) + " ");
-		}
-		System.out.println();
-
-		for (int i = 0; i < decisionNodes.size(); i++) {
-			aux = decisionNodes.get(i);
-			//            System.out.print(aux.getAdjacents().size() + " ");
-			if (aux.getAdjacents().size() != decisionNodes.size() - i - 1) {
-				throw new Exception(
-					resource.getString("DecisionOrderException"));
-			}
-		}
-
-		desmontaAdjacentes();
-	}
-
-	/**
-	 *  SUB-FUNÇÃO do método verificaConsistência que verifica se todos os
-	 *  nós de utilidade não contém filhos.
-	 */
-	private void verificaUtilidade() throws Exception {
-		Node aux;
-
-		int sizeNos = nos.size();
-		for (int i = 0; i < sizeNos; i++) {
-			aux = (Node) nos.get(i);
-			if (aux.getType() == Node.UTILITY_NODE_TYPE
-				&& aux.getChildren().size() != 0) {
-				throw new Exception(
-					resource.getString("variableName")
-						+ aux
-						+ resource.getString("hasChildName"));
-			}
-		}
-	}
-
-	/**
-	 *  SUB-FUNÇÃO do método verificaConsistência que verifica a consistencia
-	 *  das tabelas de potenciais dos nós do grafo.
-	 */
-	private void verificaTabelasPot() throws Exception {
-		ProbabilisticTable auxTabPot;
-		int c;
-		Node auxNo;
-		ProbabilisticNode auxVP;
-
-		int sizeNos = nos.size();
-		for (c = 0; c < sizeNos; c++) {
-			auxNo = nos.get(c);
-			if (auxNo.getType() == Node.PROBABILISTIC_NODE_TYPE) {
-				auxVP = (ProbabilisticNode) auxNo;
-				auxTabPot = (ProbabilisticTable) auxVP.getPotentialTable();
-				auxTabPot.verificaConsistencia();
-			}
-		}
-	}
-
-	public double getRadius() {
-		return radius;
-	}
-
-	public void setRadius(double radius) {
-		this.radius = radius;
 	}
 
 	/**

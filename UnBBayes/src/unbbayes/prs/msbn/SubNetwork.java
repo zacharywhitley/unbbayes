@@ -34,7 +34,7 @@ public class SubNetwork extends Network {
 	
 	public int getAdjacentsSize() {
 		return adjacents.size();		
-	}		
+	}
 	
 	protected void addAdjacent(SubNetwork net) {
 		adjacents.add(net);			
@@ -60,6 +60,10 @@ public class SubNetwork extends Network {
 	protected void initTriangulation() {
 		copiaNos = SetToolkit.clone(nos);
 		oe = new NodeList(copiaNos.size());
+	}
+	
+	protected void verifyConsistency() throws Exception {
+		super.verifyConsistency();		
 	}
 	
 	/**

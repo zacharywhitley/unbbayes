@@ -23,7 +23,7 @@ import unbbayes.util.*;
 
 public class HierarchicTree extends JTree implements DropTargetListener, DragSourceListener, DragGestureListener
 {
-  private ProbabilisticNetwork net;
+  private Network net;
   private NodeList nodes;
   private ArrayMap objectsMap = new ArrayMap();
   public static final boolean EXPLANATION_TYPE = true;
@@ -87,7 +87,7 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
       }
   }
 
-  public void setProbabilisticNetwork(ProbabilisticNetwork net,boolean nodeType)
+  public void setProbabilisticNetwork(Network net,boolean nodeType)
   {   DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
 
       if (net != null)

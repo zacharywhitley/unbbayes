@@ -220,6 +220,7 @@ public class IUnBBayes extends JFrame {
 				String[] nets = new String[] { "net" };
 				JFileChooser chooser = new JFileChooser(".");
 				chooser.setMultiSelectionEnabled(false);
+				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
 				// adicionar FileView no FileChooser para desenhar ícones de 
 				// arquivos

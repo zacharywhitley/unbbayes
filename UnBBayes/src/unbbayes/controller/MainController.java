@@ -32,6 +32,7 @@ import unbbayes.gui.*;
 import unbbayes.io.*;
 import unbbayes.prs.*;
 import unbbayes.prs.bn.*;
+import unbbayes.prs.msbn.MSNetwork;
 import unbbayes.util.*;
 
 /**
@@ -105,22 +106,29 @@ public class MainController {
      * @see             String
      */
     public void loadNet(File file) {
-        screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));        
         try {
-            ProbabilisticNetwork net = io.load(file);
-            //screen.addWindow(new NetWindow(net));
-			NetWindow netWindow = new NetWindow(net);
-			JInternalFrame jif = new JInternalFrame(net.getName(), true, true, true, true);
-			jif.getContentPane().add(netWindow);
-			jif.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-			screen.addWindow(jif);
+        	if (file.isDirectory()) { //MSBN
+        		/*
+        		NetIO loader = new NetIO();
+        		MSNetwork msbn = loader.loadMSBN(file);
+        		*/
+        	} else {
+		        ProbabilisticNetwork net = io.load(file);
+		        //screen.addWindow(new NetWindow(net));
+				NetWindow netWindow = new NetWindow(net);
+				JInternalFrame jif = new JInternalFrame(net.getName(), true, true, true, true);
+				jif.getContentPane().add(netWindow);
+				jif.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+				screen.addWindow(jif);
+        	}
         } catch (Exception e){
             JOptionPane.showMessageDialog(screen, e.getMessage(), resource.getString("loadNetException"), JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
-            screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            return;
+            screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));            
+        } finally {
+        	screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
-        screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
 

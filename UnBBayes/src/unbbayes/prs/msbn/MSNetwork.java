@@ -30,6 +30,11 @@ public class MSNetwork {
 	}
 	
 	public void compile() throws Exception {
+		for (int i = nets.size()-1; i>=0; i--) {
+			SubNetwork net = (SubNetwork) nets.get(i);
+			net.verifyConsistency();		
+		}
+		
 		hyperTree();
 		
 		verifyCycles();
