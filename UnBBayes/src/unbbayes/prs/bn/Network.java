@@ -122,7 +122,7 @@ public class Network implements java.io.Serializable {
         //explanationNodes = new NodeList();
         arcos = new ArrayList();
         arcosMarkov = new ArrayList();
-        logManager = new LogManager();
+        logManager = new LogManager(); 
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
 		DefaultTreeModel model = new DefaultTreeModel(root);
         hierarchicTree = new HierarchicTree(model);        
@@ -901,7 +901,11 @@ public class Network implements java.io.Serializable {
 		long in = System.currentTimeMillis();
 		try {
 			logManager.finishLog(junctionTree, nos);
-			logManager.writeToDisk(LogManager.DEFAULT_FILENAME, false);
+			if (id != null) {
+				logManager.writeToDisk(id + ".txt", false);
+			} else {
+				logManager.writeToDisk(LogManager.DEFAULT_FILENAME, false);				
+			}
 		} catch (java.io.IOException ioe) {
 			System.err.println(ioe.getMessage());
 		}
