@@ -3,12 +3,12 @@ package unbbayes.monteCarlo;
 import unbbayes.monteCarlo.controlador.ControladorPrincipal;
 
 /**
+ * 	Classe que que gera amostras baseadas em uma rede bayseana
+ * 	È feito o carregamento de um arquivo contendo a descrição de uma rede e de uma distribuição de probabilidade
+ *  Associada a ela
+ *  São então gerados um conjunto de casos baseado nesta rede e nessa distribuição de probabilidade. Este conjunto de
+ *  Casos representa a rede. 
  * @author Danilo
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
  */
 public class StartMonteCarlo {
 

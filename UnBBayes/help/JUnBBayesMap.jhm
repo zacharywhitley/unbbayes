@@ -9,6 +9,16 @@
 	<mapID target="inserirarco" url="./html/inserirarco.htm"/>
 	<mapID target="compilarrede" url="./html/compilarrede.htm"/>
 	<mapID target="aprendizagem" url="./html/aprendizagem.htm"/>
+	<mapID target="algoritmob" url="./html/algoritmoB.htm" />
+	<mapID target="algoritmok2" url="./html/algoritmok2.htm" />
+	<mapID target="variaveis" url="./html/variaveis.htm" />
+	<mapID target="compactados" url="./html/compactados.htm" />
+	<mapID target="pontuacao" url="./html/pontuacao.htm" />
+	<mapID target="metricagh" url="./html/metricagh.htm" />
+	<mapID target="ic" url="./html/ic.htm" />
+	<mapID target="algoritmocbla" url="./html/algoritmocbla.htm" />
+	<mapID target="algoritmocblb" url="./html/algoritmocblb.htm" />
+	<mapID target="parametro" url="./html/parametro.htm" />
 	<mapID target="opcoesglobais" url="./html/opcoesglobais.htm"/>
 	<mapID target="metal" url="./html/metal.htm"/>
 	<mapID target="motif" url="./html/motif.htm"/>
@@ -23,6 +33,7 @@
 	<mapID target="propagarevidencias" url="./html/propagarevidencias.htm"/>
 	<mapID target="selecionar" url="./html/selecionar.htm"/>
 	<mapID target="copiar" url="./html/copiar.htm"/>
+
 	<mapID target="colar" url="./html/colar.htm"/>
 	<mapID target="imprimir" url="./html/imprimir.htm"/>
 	<mapID target="visualisar" url="./html/visualisar.htm"/>

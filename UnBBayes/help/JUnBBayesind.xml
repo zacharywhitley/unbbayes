@@ -3,7 +3,30 @@
 	<indexitem image="iunbbayes" text="Ajuda do UnBBayes" target="branco">
 		<indexitem image="iintroduction" text="Introdu&ccedil;&atilde;o ao UnBBayes" target="introducao"/>
 		<indexitem image="icomponents" text="Componentes" target="controles">
-			<indexitem image="iaprendizagem" text="Aprendizagem" target="aprendizagem"/>
+			<indexitem image="iaprendizagem" text="Aprendizagem" target="aprendizagem" >
+				<indexitem text="Escolha das Variaveis" target="variaveis" />
+				<indexitem text="Arquivos compactados" target="compactados" />
+				<indexitem text="Escolha de Paradigma" target="paradigma">
+					<indexitem text="Pontuacao" target="pontuacao" >
+						<indexitem text="Escolha do Algoritmo" target="algoritmo" >
+							<indexitem text="Algoritmo K2" target="algoritmok2" />
+							<indexitem text="Algoritmo B" target="algoritmob" />
+						</indexitem>
+						<indexitem text="Escolha dA Metrica" target="metrica" >
+							<indexitem text="Metrica GH" target="metricagh" />
+							<indexitem text="Metrica GHS" target="metricaghs" />
+							<indexitem text="Metrica MDL" target="metricamdl" />
+						</indexitem>
+					</indexitem>
+					<indexitem text="Independencia Condicional" target="ic" >
+						<indexitem text="Algoritimo CBL-A" target="algoritmocbla" />
+						<indexitem text="Algoritimo CBL-b" target="algoritmocblb" />	
+					</indexitem>
+				</indexitem>
+				<indexitem text="Ordenacao das Variaveis" target="ordenacao" />
+				<indexitem text="Atribuicao de relacionamentos" target="relacionamentos" />
+				<indexitem text="Parametro" target="parametro" />
+			</indexitem>
 			<indexitem image="iacao" text="Comandos da Rede" target="branco">
 				<indexitem image="iabrir" text="Abrir Rede" target="abrirrede"/>
 				<indexitem image="icompilar" text="Compilar Rede" target="compilarrede"/>
