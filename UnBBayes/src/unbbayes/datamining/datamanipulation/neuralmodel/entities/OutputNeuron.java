@@ -84,6 +84,7 @@ public class OutputNeuron extends Neuron implements Serializable{
 
   public boolean getSignal(){return false;}  //??????????????????????
 
+/*
   public int classify(){
     Arc tempArc;
     Enumeration combEnum = combinationsList.elements();
@@ -99,4 +100,22 @@ public class OutputNeuron extends Neuron implements Serializable{
     }
     return result;
   }
+*/
+  public Arc classify(){
+    Arc tempArc, returnArc = null;
+    Enumeration combEnum = combinationsList.elements();
+    boolean signal;
+    int result = 0;
+
+    while(combEnum.hasMoreElements()){
+      tempArc = (Arc)combEnum.nextElement();
+      signal = tempArc.getCombinationNeuron().getSignal();
+      if(signal && tempArc.getNetWeigth() > result){                           //implementacao do OR, max(weight*sinal)
+        result = tempArc.getNetWeigth();
+        returnArc = tempArc;
+      }
+    }
+    return returnArc;
+  }
+
 }

@@ -41,8 +41,6 @@ public class NeuralModelMain extends JInternalFrame{
   private Border border1;
   private TitledBorder titledBorder1;
   private OptionsPanel optionsPanel;
-  private OptionsPanel optionsPanel2;
-//  private JOptionPane paneThreshold = new JOptionPane();
   private JPanel tabbedPaneRules = new JPanel();
   private BorderLayout borderLayout2 = new BorderLayout();
   private AttributePanel attributePanel;
@@ -54,18 +52,11 @@ public class NeuralModelMain extends JInternalFrame{
   private BorderLayout borderLayout8 = new BorderLayout();
   private Border border2;
   private TitledBorder titledBorder2;
-  private JPanel panelOptions2 = new JPanel();
-  private BorderLayout borderLayout9 = new BorderLayout();
-  private JPanel internalPanelOptions2 = new JPanel();
-  private JPanel jPanel1 = new JPanel();
   private Border border3;
   private TitledBorder titledBorder3;
-  private JButton buttonRestore = new JButton();
-  private BorderLayout borderLayout10 = new BorderLayout();
   private JPanel tabbedPanelClassify = new JPanel();
   private BorderLayout borderLayout11 = new BorderLayout();
   private InferencePanel inferencePanel = new InferencePanel();
-  private FlowLayout flowLayout1 = new FlowLayout();
   private JLabel jLabel1 = new JLabel();
   private JButton openModelButton = new JButton();
 
@@ -136,21 +127,7 @@ public class NeuralModelMain extends JInternalFrame{
     tabbedPaneAttributes.setLayout(borderLayout7);
     panelOptions.setLayout(borderLayout8);
     optionsPanel = new OptionsPanel();
-    optionsPanel2 = new OptionsPanel();
-    panelOptions2.setLayout(borderLayout9);
-    internalPanelOptions2.setLayout(borderLayout10);
-    jPanel1.setLayout(flowLayout1);
-    buttonRestore.setIcon(returnIcon);
-    buttonRestore.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        buttonRestore_actionPerformed(e);
-      }
-    });
-    borderLayout10.setHgap(5);
-    borderLayout10.setVgap(5);
     tabbedPanelClassify.setLayout(borderLayout11);
-    flowLayout1.setHgap(0);
-    flowLayout1.setVgap(0);
     jLabel1.setToolTipText("");
     jLabel1.setText("   ");
     openModelButton.setIcon(openIcon);
@@ -159,9 +136,6 @@ public class NeuralModelMain extends JInternalFrame{
         openModelButton_actionPerformed(e);
       }
     });
-    internalPanelOptions2.add(optionsPanel2,  BorderLayout.CENTER);
-    internalPanelOptions2.add(jPanel1, BorderLayout.EAST);
-    jPanel1.add(buttonRestore, null);
     contentPane.add(jToolBar1, BorderLayout.NORTH);
     jToolBar1.add(openButton, null);
     jToolBar1.add(learnButton, null);
@@ -178,8 +152,6 @@ public class NeuralModelMain extends JInternalFrame{
     jTabbedPane1.add(tabbedPanelClassify,  "Classificar");
     tabbedPanelClassify.add(inferencePanel);
     tabbedPaneRules.add(rulesPanel, BorderLayout.CENTER);
-    tabbedPaneRules.add(panelOptions2,  BorderLayout.NORTH);
-    panelOptions2.add(internalPanelOptions2,  BorderLayout.CENTER);
     contentPane.add(jPanel2,  BorderLayout.SOUTH);
     jPanel2.add(statusBar,  BorderLayout.CENTER);
     panelOptions.add(optionsPanel,  BorderLayout.CENTER);
@@ -187,7 +159,7 @@ public class NeuralModelMain extends JInternalFrame{
     jTabbedPane1.setEnabledAt(1,false);
     jTabbedPane1.setEnabledAt(0,false);
 
-    inferencePanel.setMainController(this);
+//    inferencePanel.setMainController(this);
   }
 
   void helpButton_actionPerformed(ActionEvent e){
@@ -204,8 +176,6 @@ public class NeuralModelMain extends JInternalFrame{
     int support;
 
     if(instanceSet != null){
-//      optionsPanel = new OptionsPanel();
-//      paneThreshold.showInternalMessageDialog(this, optionsPanel, "CNM", JOptionPane.QUESTION_MESSAGE);
       maxOrder = optionsPanel.getMaxOrder();
       confidence = optionsPanel.getConfidence();
       support = optionsPanel.getSupport();
@@ -215,6 +185,8 @@ public class NeuralModelMain extends JInternalFrame{
         combinatorialNetwork.buildClassifier(instanceSet);
 
         rulesPanel.setRulesPanel(combinatorialNetwork, confidence, support);
+        inferencePanel.setNetwork(combinatorialNetwork);
+
         jTabbedPane1.setEnabledAt(1,true);
         jTabbedPane1.setSelectedIndex(1);
 
@@ -319,23 +291,6 @@ public class NeuralModelMain extends JInternalFrame{
       FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
     }
     setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-  }
-
-  void buttonRestore_actionPerformed(ActionEvent e) {
-
-  }
-
-  public float[] classify(Instance instance){
-    try{
-      instance = instanceSet.getInstance(13);
-      System.out.println(instance + " " + instanceSet.getClassAttribute().toString());
-
-      float[] r = combinatorialNetwork.distributionForInstance(instance);
-      return r;
-    } catch (Exception e) {
-      System.out.println(e);
-    }
-    return null;
   }
 
   void openModelButton_actionPerformed(ActionEvent e) {

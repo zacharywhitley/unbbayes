@@ -8,6 +8,7 @@ import javax.swing.table.*;
 import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.datamanipulation.neuralmodel.entities.*;
+import java.awt.event.*;
 //import unbbayes.datamining.datamanipulation.neuralmodel.util.*;
 
 public class RulesPanel extends JPanel {
@@ -20,7 +21,14 @@ public class RulesPanel extends JPanel {
   private int classIndex;
   private Object[] longValues = new Object[6];
   private RulesTableModel rulesTableModel;
-
+  private JPanel jPanel1 = new JPanel();
+  private BorderLayout borderLayout2 = new BorderLayout();
+  private JPanel jPanel2 = new JPanel();
+  private GridLayout gridLayout1 = new GridLayout();
+  private JLabel labelMinSupport = new JLabel();
+  private JComboBox comboMinConfidence = new JComboBox();
+  private JLabel labelMinConfidence = new JLabel();
+  private JComboBox comboMinSupport = new JComboBox();
 
   public RulesPanel() {
     try {
@@ -32,7 +40,37 @@ public class RulesPanel extends JPanel {
   }
   void jbInit() throws Exception {
     this.setLayout(borderLayout1);
+    jPanel1.setLayout(borderLayout2);
+    jPanel2.setLayout(gridLayout1);
+    gridLayout1.setColumns(6);
+    gridLayout1.setHgap(5);
+    labelMinSupport.setText("Suporte mínimo:");
+    labelMinConfidence.setToolTipText("");
+    labelMinConfidence.setText("Confiança mínima:");
+    jPanel2.setBorder(BorderFactory.createEtchedBorder());
+    comboMinSupport.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        combo_actionPerformed(e);
+      }
+    });
+    comboMinConfidence.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        combo_actionPerformed(e);
+      }
+    });
     this.add(jScrollPane1,  BorderLayout.CENTER);
+    this.add(jPanel1, BorderLayout.NORTH);
+    jPanel1.add(jPanel2,  BorderLayout.CENTER);
+    jPanel2.add(labelMinSupport, null);
+    jPanel2.add(comboMinSupport, null);
+    jPanel2.add(labelMinConfidence, null);
+    jPanel2.add(comboMinConfidence, null);
+
+    for(int i=0; i<101; i++){
+      comboMinSupport.addItem(new String(i + "%"));
+      comboMinConfidence.addItem(new String(i + "%"));
+    }
+
     longValues[0] = new Integer(999);
     longValues[1] = new String();
     longValues[2] = new String();
@@ -43,10 +81,14 @@ public class RulesPanel extends JPanel {
 
   public void setRulesPanel(CombinatorialNeuralModel combinatorialNetwork, int confidence, int support){
     this.combinatorialNetwork = combinatorialNetwork;
+
+    comboMinSupport.setSelectedIndex(support);
+    comboMinConfidence.setSelectedIndex(confidence);
+
     attributeVector = combinatorialNetwork.getAttributeVector();
     classIndex = combinatorialNetwork.getClassIndex();
 
-    createTableLines(support, confidence);
+    createTableLines(support, confidence);    //valor zero é passado por default
 
       rulesTableModel = new RulesTableModel();
       //    TableSorter sorter = new TableSorter(rulesTableModel);   //adicionada
@@ -79,7 +121,7 @@ public class RulesPanel extends JPanel {
 
       while(arcEnum.hasMoreElements()){                    // para todos os arcos dos neuronios de saida
         tempArc = (Arc)arcEnum.nextElement();
-        if(tempArc.getConfidence() > minConfidence && tempArc.getSupport() > minSupport && tempArc.getAccumulator() > 0){
+        if(tempArc.getConfidence() > minConfidence && tempArc.getSupport() > minSupport){
 
           if(tempArc.getCombinationNeuron() instanceof InputNeuron){ // se o neuronio de combinaçao for de entrada
             inputList = new InputNeuron[1];
@@ -91,7 +133,6 @@ public class RulesPanel extends JPanel {
           //constroi a string da entrada "SE"
           inputCell = new String("SE ");
           for(int i=0; i<inputList.length; i++){
-//            att = instanceSet.getAttribute((inputList[i]).getAttributeIndex());
             att = attributeVector[(inputList[i]).getAttributeIndex()];
 
             inputCell = inputCell + att.getAttributeName() + " = " + att.value(inputList[i].getValue()) + " ";
@@ -105,7 +146,6 @@ public class RulesPanel extends JPanel {
 
           //constroi a string de saida "ENTAO"
           outputCell = new String("ENTÃO ");
-//          att = instanceSet.getClassAttribute();
           att = attributeVector[classIndex];
 
           outputCell = outputCell + att.getAttributeName() + " = " + att.value(tempOutputNeuron.getValue());
@@ -208,4 +248,15 @@ public class RulesPanel extends JPanel {
       this.support = support;
     }
   }
+
+  void combo_actionPerformed(ActionEvent e) {
+    if(rulesTableModel != null){
+      int minConfidence = comboMinConfidence.getSelectedIndex();
+      int minSupport = comboMinSupport.getSelectedIndex();
+
+      createTableLines(minSupport, minConfidence);
+      rulesTableModel.fireTableDataChanged();
+    }
+  }
+
 }
