@@ -88,11 +88,10 @@ public class LancamentoFeature implements Feature {
 			
 			ps = con.prepareStatement(sql.toString());
 			System.out.println(codTipoLancamento);						
-			ps.setInt(1, Integer.parseInt(codUsuario));
-			ps.setInt(2, Integer.parseInt(codComputador));
+			ps.setLong(1, Long.parseLong(codUsuario));
+			ps.setLong(2, Long.parseLong(codComputador));
 			ps.setInt(3, codTipoLancamento);
 			ps.setTimestamp(4, dtHora);
-			
 		}
 		
 		// cria o elemento de saída
