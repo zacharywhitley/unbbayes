@@ -3,6 +3,7 @@ package unbbayes.datamining.classifiers;
 import java.util.*;
 import java.text.*;//SimpleDateFormat
 
+import unbbayes.controller.*;
 import unbbayes.datamining.datamanipulation.*;
 
 /**
@@ -11,7 +12,7 @@ import unbbayes.datamining.datamanipulation.*;
  *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @version $1.0 $ (17/02/2002)
  */
-public class Evaluation
+public class Evaluation implements IProgress
 { /** Load resource file from this package */
   private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.classifiers.resources.ClassifiersResource");
 
@@ -55,6 +56,11 @@ public class Evaluation
   private String[] confidenceProbs = {"99.8%","99%","98%","90%","80%","60%","20%"};
 
   private int confidenceLimit = 100;
+  
+  private int numInstances;
+  private int counter;
+  
+  private Classifier classifier;
 
   	/**
 	* Initializes all the counters for the evaluation.
@@ -66,6 +72,8 @@ public class Evaluation
   	public Evaluation(InstanceSet data) throws Exception
 	{	this.data = data;
 		numClasses = data.numClasses();
+		numInstances = data.numInstances();
+		counter=0;
     	classIsNominal = data.getClassAttribute().isNominal();
 		confidenceLimit = Options.getInstance().getConfidenceLimit();
 		if (classIsNominal)
@@ -76,8 +84,14 @@ public class Evaluation
       		}
 		}
     }
-
-	/**
+    
+    public Evaluation(InstanceSet data,Classifier classifier) throws Exception
+    {
+    	this(data);
+    	this.classifier = classifier;
+    }
+    
+    /**
    	* Evaluates the classifier on a given set of instances.
    	*
    	* @param classifier machine learning classifier
@@ -85,7 +99,7 @@ public class Evaluation
    	* successfully
    	*/
   	public void evaluateModel(Classifier classifier) throws Exception
-	{   int numInstances = data.numInstances();
+	{   
             for (int i = 0; i < numInstances; i++)
             {   if ((i%50000)==0)
                 {   String currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
@@ -879,5 +893,36 @@ public class Evaluation
     }
     return new String(ID);
   }
+  
+  public int maxCount()
+	{
+		return numInstances;	
+	}
+
+	public boolean next()
+	{
+		if (counter==numInstances)
+		{
+			return false;	
+		}
+		else
+		{   
+        	try
+        	{
+        		evaluateModelOnce(classifier,data.getInstance(counter));
+            	counter++;
+            	return true;
+        	}
+        	catch(Exception e)
+        	{
+        		return false;
+        	}    	
+        }        
+	}
+	
+	public void cancel()
+	{
+		counter=0;
+	}
 
 }

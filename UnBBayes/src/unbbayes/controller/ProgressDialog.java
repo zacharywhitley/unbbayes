@@ -14,7 +14,7 @@ import java.awt.event.*;
 public class ProgressDialog extends JDialog
 {
 	/** Create an instance of this class  */
-	public ProgressDialog(File file, IProgress progress)
+	public ProgressDialog(String message, IProgress progress)
 	{
 		setTitle("Loading...");
 		setSize(280,130);
@@ -39,8 +39,12 @@ public class ProgressDialog extends JDialog
 		//label
 		JPanel panelLabel = new JPanel();
 		contentPane.add(panelLabel, "North");
-		JLabel label = new JLabel("Carregando "+file.getName());
-		panelLabel.add(label);
+		if (message != null)
+		{
+			JLabel label = new JLabel("Carregando "+message);		
+			panelLabel.add(label);
+		}
+		
 		
 		//progress bar
 		JPanel panelProgress = new JPanel();

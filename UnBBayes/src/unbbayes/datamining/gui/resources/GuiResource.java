@@ -15,6 +15,8 @@ public class GuiResource extends ListResourceBundle {
 	{"language","Language"},
 	{"lookAndFeel","Look and Feel"},
 	{"window","Window"},
+	{"view","View"},
+	{"toolsbar","Tools Bar"},	
 	{"help","Help"},
 	{"helpTopics","Help Topics"},
 	{"cascade","Cascade"},
@@ -23,6 +25,13 @@ public class GuiResource extends ListResourceBundle {
 	{"portuguese","Portuguese"},
 	{"globalOptions","Global Options"},
 	{"preferences","Preferences..."},
+	
+	{"tbPreferences","Global Options Tools Bar"},
+	{"tbView","View Tools Bar"},
+	{"tbWindow","Window Tools Bar"},
+	{"tbHelp","Help Tools Bar"},	
+
+	
 	{"id3Mnemonic",new Character('I')},
 	{"naiveBayesMnemonic",new Character('N')},
 	{"evaluationMnemonic",new Character('E')},
@@ -39,6 +48,14 @@ public class GuiResource extends ListResourceBundle {
 	{"preprocessorMnemonic",new Character('P')},
 	{"cascadeMnemonic",new Character('C')},
 	{"tileMnemonic",new Character('T')},
+	{"viewMnemonic",new Character('V')},
+	{"tbMenuMnemonic",new Character('B')},
+	
+	{"tbPreferencesMnemonic",new Character('G')},
+	{"tbViewMnemonic",new Character('V')},
+	{"tbWindowMnemonic",new Character('W')},
+	{"tbHelpMnemonic",new Character('H')},
+	
 	{"selectProgram","Select Program"},
 	{"instancesPreprocessor","Instances Preprocessor"},
 	{"unsupportedLookAndFeelException","LookAndFeel not supported: "},

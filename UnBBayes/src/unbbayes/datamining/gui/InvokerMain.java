@@ -442,8 +442,8 @@ public class InvokerMain extends JFrame
         // create menus and set their mnemonic
         JMenu programMenu = new JMenu(resource.getString("selectProgram"));
         JMenu lafMenu = new JMenu(resource.getString("lookAndFeel"));
-        JMenu viewMenu = new JMenu("View");
-        JMenu tbMenu = new JMenu("tbMenu");
+        JMenu viewMenu = new JMenu(resource.getString("view"));
+        JMenu tbMenu = new JMenu(resource.getString("toolsbar"));
         JMenu preferencesMenu = new JMenu(resource.getString("globalOptions"));
         JMenu windowMenu = new JMenu(resource.getString("window"));
         JMenu helpMenu = new JMenu(resource.getString("help"));
@@ -451,11 +451,10 @@ public class InvokerMain extends JFrame
         programMenu.setMnemonic(((Character)resource.getObject("selectMnemonic")).charValue());
         lafMenu.setMnemonic(((Character)resource.getObject("lafMnemonic")).charValue());
         preferencesMenu.setMnemonic(((Character)resource.getObject("globalOptionsMnemonic")).charValue());
-        //////////
-        viewMenu.setMnemonic('V');
-        ///////////
+        viewMenu.setMnemonic(((Character)resource.getObject("viewMnemonic")).charValue());
         windowMenu.setMnemonic(((Character)resource.getObject("windowMnemonic")).charValue());
         helpMenu.setMnemonic(((Character)resource.getObject("helpMnemonic")).charValue());
+        tbMenu.setMnemonic(((Character)resource.getObject("tbMenuMnemonic")).charValue());
 
         // create menu items, set their mnemonic and their key accelerator
         JMenuItem preprocessorItem = new JMenuItem(resource.getString("instancesPreprocessor")/*, icon*/ );
@@ -476,10 +475,10 @@ public class InvokerMain extends JFrame
         JMenuItem tileItem = new JMenuItem(resource.getString("tile"),tileIcon);
         JMenuItem helpItem = new JMenuItem(resource.getString("helpTopics"),helpIcon);
 
-        JMenuItem tbPreferences = new JCheckBoxMenuItem("tbPreferences", true);
-        JMenuItem tbView = new JCheckBoxMenuItem("tbView", true);
-        JMenuItem tbWindow = new JCheckBoxMenuItem("tbWindow", true);
-        JMenuItem tbHelp = new JCheckBoxMenuItem("tbHelp", true);
+        JMenuItem tbPreferences = new JCheckBoxMenuItem(resource.getString("tbPreferences"), true);
+        JMenuItem tbView = new JCheckBoxMenuItem(resource.getString("tbView"), true);
+        JMenuItem tbWindow = new JCheckBoxMenuItem(resource.getString("tbWindow"), true);
+        JMenuItem tbHelp = new JCheckBoxMenuItem(resource.getString("tbHelp"), true);
 
         preprocessorItem.setMnemonic(((Character)resource.getObject("preprocessorMnemonic")).charValue());
         id3Item.setMnemonic(((Character)resource.getObject("id3Mnemonic")).charValue());
@@ -499,6 +498,10 @@ public class InvokerMain extends JFrame
         tileItem.setMnemonic(((Character)resource.getObject("tileMnemonic")).charValue());
         helpItem.setMnemonic(((Character)resource.getObject("helpTopicsMnemonic")).charValue());
 
+		tbPreferences.setMnemonic(((Character)resource.getObject("tbPreferencesMnemonic")).charValue());
+		tbView.setMnemonic(((Character)resource.getObject("tbViewMnemonic")).charValue());
+		tbWindow.setMnemonic(((Character)resource.getObject("tbWindowMnemonic")).charValue());
+		tbHelp.setMnemonic(((Character)resource.getObject("tbHelpMnemonic")).charValue());
 /*      newBN.setAccelerator(
                 KeyStroke.getKeyStroke(resource.getString("newItemMn").charAt(0), Event.CTRL_MASK, false));
         openItem.setAccelerator(

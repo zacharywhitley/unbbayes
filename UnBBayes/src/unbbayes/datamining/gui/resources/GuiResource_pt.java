@@ -15,6 +15,8 @@ public class GuiResource_pt extends ListResourceBundle {
 	{"language","Linguagem"},
 	{"lookAndFeel","Look and Feel"},
 	{"window","Janela"},
+	{"view","Exibir"},
+	{"toolsbar","Barras de Ferramentas"},	
 	{"help","Ajuda"},
 	{"helpTopics","Tópicos de ajuda"},
 	{"cascade","Cascade"},
@@ -23,6 +25,12 @@ public class GuiResource_pt extends ListResourceBundle {
 	{"portuguese","Português"},
 	{"globalOptions","Opções globais"},
 	{"preferences","Preferências..."},
+	
+	{"tbPreferences","Barra de Ferramentas de Opções Globais"},
+	{"tbView","Barra de Ferramentas de Exibir"},
+	{"tbWindow","Barra de Ferramentas de Janela"},
+	{"tbHelp","Barra de Ferramentas de Ajuda"},	
+	
 	{"id3Mnemonic",new Character('I')},
 	{"naiveBayesMnemonic",new Character('N')},
 	{"evaluationMnemonic",new Character('A')},
@@ -39,6 +47,14 @@ public class GuiResource_pt extends ListResourceBundle {
 	{"preprocessorMnemonic",new Character('P')},
 	{"cascadeMnemonic",new Character('C')},
 	{"tileMnemonic",new Character('T')},
+	{"viewMnemonic",new Character('E')},
+	{"tbMenuMnemonic",new Character('B')},
+	
+	{"tbPreferencesMnemonic",new Character('G')},
+	{"tbViewMnemonic",new Character('E')},
+	{"tbWindowMnemonic",new Character('J')},
+	{"tbHelpMnemonic",new Character('A')},	
+	
 	{"selectProgram","Selecione Programa"},
 	{"instancesPreprocessor","Preprocessor"},
 	{"unsupportedLookAndFeelException","Não suporta esse LookAndFeel: "},

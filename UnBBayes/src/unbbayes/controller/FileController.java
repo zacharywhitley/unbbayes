@@ -103,7 +103,7 @@ public class FileController
         new CompactFileDialog(loader,component);
         
 		//starts loading and shows a status screen
-		ProgressDialog progressDialog = new ProgressDialog (f, loader);
+		ProgressDialog progressDialog = new ProgressDialog (f.getName(), loader);
 		boolean successStatus = progressDialog.load();
 		
 		InstanceSet inst = loader.getInstances();
