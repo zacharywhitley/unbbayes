@@ -48,7 +48,6 @@ import java.text.*;
 public class TEditaRede extends JPanel implements MouseListener, MouseMotionListener, KeyListener {
 
     private List arco;
-    private NodeList no;
     private Node noAtual;
     private Node noMover;
     private Object selecionado;
@@ -122,7 +121,6 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         tamanhoVisivel = new Dimension(0, 0);
 
 		arco = net.getArcos();
-        no = net.getNos();
         Node noAux;
         int linha = 1;
         for (int i = 0; i < net.getNodeCount(); i++) {
@@ -162,8 +160,8 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         double x1;
         double y1;
 
-        for (int i = 0; i < no.size(); i++) {
-            Node noPegar = (Node) no.get(i);
+        for (int i = 0; i < net.getNodeCount(); i++) {
+            Node noPegar = net.getNodeAt(i);
             x1 = noPegar.getPosicao().getX();
             y1 = noPegar.getPosicao().getY();
 
@@ -991,8 +989,8 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         view.setStroke(new BasicStroke(1));
 
         //desenha todos os nós
-        for (int i = 0; i < no.size(); i++) {
-            Node noAux = (Node) no.get(i);
+        for (int i = 0; i < net.getNodeCount(); i++) {
+            Node noAux = (Node) net.getNodeAt(i);
             view.fill(new Ellipse2D.Double(noAux.getPosicao().x - raio, noAux.getPosicao().y - raio, raio * 2, raio * 2));
             if (noAux.getName() == null) {
                 noAux.setName(resource.getString("nodeGraphName") + i);
@@ -1059,8 +1057,8 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
             view.draw(new Ellipse2D.Double(noAtual.getPosicao().getX() - raio, noAtual.getPosicao().getY() - raio, raio * 2, raio * 2));
         }
 
-        for (int i = 0; i < no.size(); i++) {
-            Node noAux = (Node) no.get(i);
+        for (int i = 0; i < net.getNodeCount(); i++) {
+            Node noAux = (Node) net.getNodeAt(i);
             if (noAux.isSelecionado()) {
                 view.setColor(corSelecao);
                 view.setStroke(new BasicStroke(2));

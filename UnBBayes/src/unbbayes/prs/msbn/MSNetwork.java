@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.util.NodeList;
+import unbbayes.util.SetToolkit;
 
 /**
  * @author Michael S. Onishi
@@ -14,7 +16,8 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  * Window>Preferences>Java>Code Generation.
  */
 public class MSNetwork {
-	protected List nets;	
+	protected List nets;
+	
 	
 	public MSNetwork() {
 		nets = new ArrayList();				
@@ -25,21 +28,27 @@ public class MSNetwork {
 	}
 	
 	public void compile() {
+		hyperTree();
 		verifyCycle();				
 	}
 	
-	public void verifyCycle() {
+	private void hyperTree() {
+		NodeList interseccoes[][] = new NodeList[nets.size()][nets.size()];
 				
+		int netsSize = nets.size();
+		for (int i = 0; i < netsSize - 1; i++) {
+			SubNetwork n1 = (SubNetwork) nets.get(i);
+			for (int j = i+1; j < netsSize; j++) {
+				SubNetwork n2 = (SubNetwork) nets.get(j);
+				NodeList inter = SetToolkit.intersection(n1.getNos(), n2.getNos());
+				if (inter.size() > 0) {
+					interseccoes[i][j] = inter;					
+				}
+			}						
+		}
 	}
 	
-	private void distributedMoralization() {
-		ProbabilisticNetwork net = null;
-		for (int i = nets.size() - 1; i >= 0; i--) {
-			net = (ProbabilisticNetwork) nets.get(i);
-			net.moraliza();
-		}
-		
-		// assumed to be the root hyper-node
-//		net.distributeArc();
+	private void verifyCycle() {
+				
 	}	
 }

@@ -27,12 +27,15 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.swing.JTree;
-import javax.swing.tree.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 
 import unbbayes.io.LogManager;
-import unbbayes.prs.*;
-import unbbayes.prs.id.*;
+import unbbayes.prs.Edge;
+import unbbayes.prs.Network;
+import unbbayes.prs.Node;
+import unbbayes.prs.id.DecisionNode;
+import unbbayes.prs.id.JunctionTreeID;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
@@ -51,19 +54,9 @@ public class ProbabilisticNetwork
 		ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
 
 	/**
-	 * Faz o processamento do log de compilação.
-	 */
-	private LogManager logManager;
-
-	/**
 	 *  Armazena handle do objeto Árvore de Junção associado ao Grafo.
 	 */
 	private JunctionTree junctionTree;
-
-	/**
-	 *  Lista de arcos utilizada no processo de transformação.
-	 */
-	private List arcosMarkov;
 
 	private double radius;
 
@@ -87,11 +80,6 @@ public class ProbabilisticNetwork
 
 	private HierarchicTree hierarchicTree;
 
-	/**
-	 * Indica se o log deve ser criado ou não.
-	 */
-	private boolean createLog;
-
 	private boolean firstInitialization;
 
 	/**
@@ -101,9 +89,7 @@ public class ProbabilisticNetwork
 	public ProbabilisticNetwork() {
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
 		DefaultTreeModel model = new DefaultTreeModel(root);
-		hierarchicTree = new HierarchicTree(model);
-		logManager = new LogManager();
-		arcosMarkov = new ArrayList();
+		hierarchicTree = new HierarchicTree(model);				
 		oe = new NodeList();
 		firstInitialization = true;
 	}
@@ -133,10 +119,12 @@ public class ProbabilisticNetwork
 	public HierarchicTree getHierarchicTree() {
 		return hierarchicTree;
 	}
-
+	
+	/*
 	public int size() {
 		return nos.size();
 	}
+	*/
 
 	/**
 	 *  Verifica integridade como grafo direcionado acíclico / conexo e coesão.
@@ -296,90 +284,6 @@ public class ProbabilisticNetwork
 	}
 
 	/**
-	 *  Faz o processo de moralização da rede.
-	 */
-	public void moraliza() {
-		Node auxNo;
-		Node auxPai1;
-		Node auxPai2;
-		Edge auxArco;
-		List copiaArcos;
-
-		if (createLog) {
-			logManager.append(resource.getString("moralizeLabel"));
-		}
-		arcosMarkov.clear();
-		copiaArcos = SetToolkit.clone(arcos);
-
-		//retira os arcos de informação
-		int sizeArcos = copiaArcos.size() - 1;
-		for (int i = sizeArcos; i >= 0; i--) {
-			auxArco = (Edge) copiaArcos.get(i);
-			if (auxArco.getDestinationNode().getType()
-				== Node.DECISION_NODE_TYPE) {
-				copiaArcos.remove(i);
-			}
-		}
-
-		int sizeNos = nos.size();
-		for (int n = 0; n < sizeNos; n++) {
-			auxNo = nos.get(n);
-			if (!(auxNo.getType() == Node.DECISION_NODE_TYPE)
-				&& auxNo.getParents().size() > 1) {
-				int sizePais = auxNo.getParents().size();
-				for (int j = 0; j < sizePais - 1; j++) {
-					auxPai1 = auxNo.getParents().get(j);
-					for (int k = j + 1; k < sizePais; k++) {
-						auxPai2 = auxNo.getParents().get(k);
-						if ((existeArco(auxPai1, auxPai2, copiaArcos) == -1)
-							&& (existeArco(auxPai1, auxPai2, arcosMarkov)
-								== -1)) {
-							auxArco = new Edge(auxPai1, auxPai2);
-							if (createLog) {
-								logManager.append(
-									auxPai1.getName()
-										+ " - "
-										+ auxPai2.getName()
-										+ "\n");
-							}
-							arcosMarkov.add(auxArco);
-						}
-					}
-				}
-			}
-		}
-
-		desmontaAdjacentes();
-
-		int sizeMarkov = arcosMarkov.size() - 1;
-		for (int z = sizeMarkov; z >= 0; z--) {
-			auxArco = (Edge) arcosMarkov.get(z);
-			auxArco.getOriginNode().getAdjacents().add(
-				auxArco.getDestinationNode());
-			auxArco.getDestinationNode().getAdjacents().add(
-				auxArco.getOriginNode());
-		}
-
-		int sizeArcos1 = copiaArcos.size();
-		for (int z = sizeArcos1 - 1; z >= 0; z--) {
-			auxArco = (Edge) copiaArcos.get(z);
-			if (auxArco.getDestinationNode().getType()
-				== Node.UTILITY_NODE_TYPE) {
-				copiaArcos.remove(z);
-			} else {
-				auxArco.getOriginNode().getAdjacents().add(
-					auxArco.getDestinationNode());
-				auxArco.getDestinationNode().getAdjacents().add(
-					auxArco.getOriginNode());
-			}
-		}
-		arcosMarkov = SetToolkit.union(arcosMarkov, copiaArcos);
-		if (createLog) {
-			logManager.append("\n");
-		}
-	}
-
-	/**
 	 *  Faz o processo de triangulação da rede.
 	 */
 	private void triangula() {
@@ -472,36 +376,6 @@ public class ProbabilisticNetwork
 	 */
 	public NodeList getCopiaNos() {
 		return copiaNos;
-	}
-
-	private int existeArco(Node no1, Node no2, List vetArcos) {
-		if (no1 == no2) {
-			return 1;
-		}
-
-		int sizeArcos = vetArcos.size();
-		Edge auxA;
-		for (int i = 0; i < sizeArcos; i++) {
-			auxA = (Edge) vetArcos.get(i);
-			if ((auxA.getOriginNode() == no1)
-				&& (auxA.getDestinationNode() == no2)
-				|| (auxA.getOriginNode() == no2)
-				&& (auxA.getDestinationNode() == no1)) {
-				return i;
-			}
-		}
-		return -1;
-	}
-
-	/**
-	 *  Verifica existência de determinado arco.
-	 *
-	 *@param  no1  nó origem.
-	 *@param  no2  nó destino.
-	 *@return      posição do arco no vetor ou -1 caso não exista tal arco.
-	 */
-	public int existeArco(Node no1, Node no2) {
-		return existeArco(no1, no2, arcos);
 	}
 
 	/**
@@ -1189,14 +1063,7 @@ public class ProbabilisticNetwork
 		}
 		return false;
 	}
-	/**
-	 * Sets the createLog.
-	 * @param createLog The createLog to set
-	 */
-	public void setCreateLog(boolean createLog) {
-		this.createLog = createLog;
-	}
-
+	
 	/**
 	 * Gets the createLog.
 	 * @return Returns a boolean

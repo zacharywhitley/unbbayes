@@ -51,6 +51,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
+
 import unbbayes.controller.WindowController;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -121,7 +122,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
      *@param  controlador  o controlador (<code>TControladorTelaPrincipal</code>)
      *@param  graphViewport a tela, (<code>TViewport</code>), onde será inserida essa classe
      */
-    public IGraph(final WindowController controlador, JViewport graphViewport) {
+    public IGraph(final WindowController controlador, JViewport graphViewport) {    	
         super();
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
@@ -131,8 +132,8 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         this.graphViewport = graphViewport;
         this.setSize(800, 600);
 
-        arc = new ArrayList();
-        node = new NodeList();
+        arc = controlador.getRede().getArcos();
+        node = controlador.getRede().getNos();
         selectedGroup = new ArrayList();
         presentBeginArc = new Point2D.Double();
         presentEndArc = new Point2D.Double();
@@ -243,27 +244,6 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         this.graphDimension = graphDimension;
     }
 
-
-    /**
-     *  Seta o atributo no do objeto da classe IGraph
-     *
-     *@param  node  O novo valor para o no (<code>List</code>)
-     *@see List
-     */
-    public void setNode(NodeList node) {
-        this.node = node;
-    }
-
-
-    /**
-     *  Seta o atributo arco do objeto da classe IGraph
-     *
-     *@param  arc  O novo valor para o arco (<code>List</code>)
-     *@see List
-     */
-    public void setArc(List arc) {
-        this.arc = arc;
-    }
 
     /**
      *  Seta o valor de bSelecionar (valor booleano para selecionar) do objeto da classe IGraph

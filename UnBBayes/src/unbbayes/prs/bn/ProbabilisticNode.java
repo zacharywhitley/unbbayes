@@ -148,7 +148,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
      */
     public void removeLastState() {
         if (states.size() > 1) {
-            super.removeLastState();
+//            super.removeLastState();
             atualizaEstado(null, false);
         }
     }
@@ -171,22 +171,39 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
                 }
                 d += getStatesSize();
             }
+        }        
+        
+		NodeList clones[] = new NodeList[getChildren().size()];
+		int indexes[] = new int[getChildren().size()];
+        for (int i = 0; i < getChildren().size(); i++) {
+        	PotentialTable auxTab = ((ProbabilisticNode)getChildren().get(i)).getPotentialTable();           
+            clones[i] = auxTab.cloneVariables();
+            indexes[i] = auxTab.indexOfVariable(this);     
         }
-        if (insere) {
-            super.appendState(estado);
-        }
-
+        
         for (int c = 0; c < getChildren().size(); c++) {
             PotentialTable auxTab = ((ProbabilisticNode)getChildren().get(c)).getPotentialTable();
-            int l = auxTab.indexOfVariable(this);
-            NodeList auxList = auxTab.cloneVariables();
+            int l = indexes[c];
+            NodeList auxList = clones[c];            
             for (int k = auxList.size() - 1; k >= l; k--) {
-                auxTab.removeVariable((ProbabilisticNode) auxList.get(k));
+                auxTab.removeVariable(auxList.get(k));
             }
+        }
+        
+        if (insere) {
+          	super.appendState(estado);
+        } else {
+        	super.removeLastState();        	
+        }
+       
+        
+        for (int c = 0; c < getChildren().size(); c++) {
+            PotentialTable auxTab = ((ProbabilisticNode)getChildren().get(c)).getPotentialTable();
+            int l = indexes[c];
+            NodeList auxList = clones[c];         
             for (int k = l; k < auxList.size(); k++) {
-                auxTab.addVariable((ProbabilisticNode) auxList.get(k));
+                auxTab.addVariable(auxList.get(k));
             }
-            auxList.clear();
         }
     }
 

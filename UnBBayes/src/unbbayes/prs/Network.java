@@ -23,6 +23,9 @@ package unbbayes.prs;
 
 import java.util.*;
 
+import javax.swing.JTree;
+
+import unbbayes.io.LogManager;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.util.NodeList;
@@ -52,6 +55,22 @@ public class Network implements java.io.Serializable {
     protected List arcos;
     
     
+    /**
+	 * Faz o processamento do log de compilação.
+	 */
+	protected LogManager logManager;
+
+	/**
+	 *  Lista de arcos utilizada no processo de transformação.
+	 */
+	protected List arcosMarkov;
+	
+	/**
+	 * Indica se o log deve ser criado ou não.
+	 */
+	protected boolean createLog;
+       
+    
     private Map nodeIndexes;
 
 
@@ -63,6 +82,8 @@ public class Network implements java.io.Serializable {
         //descriptionNodes = new NodeList();
         //explanationNodes = new NodeList();
         arcos = new ArrayList();
+        arcosMarkov = new ArrayList();
+        logManager = new LogManager();
         
         nodeIndexes = new HashMap();
     }
@@ -485,5 +506,127 @@ public class Network implements java.io.Serializable {
             }
         }
     }
+
+	/**
+	 *  Faz o processo de moralização da rede.
+	 */
+	protected void moraliza() {
+		Node auxNo;
+		Node auxPai1;
+		Node auxPai2;
+		Edge auxArco;
+		List copiaArcos;
+	
+		if (createLog) {
+			logManager.append(resource.getString("moralizeLabel"));
+		}
+		arcosMarkov.clear();
+		copiaArcos = SetToolkit.clone(arcos);
+	
+		//retira os arcos de informação
+		int sizeArcos = copiaArcos.size() - 1;
+		for (int i = sizeArcos; i >= 0; i--) {
+			auxArco = (Edge) copiaArcos.get(i);
+			if (auxArco.getDestinationNode().getType()
+				== Node.DECISION_NODE_TYPE) {
+				copiaArcos.remove(i);
+			}
+		}
+	
+		int sizeNos = nos.size();
+		for (int n = 0; n < sizeNos; n++) {
+			auxNo = nos.get(n);
+			if (!(auxNo.getType() == Node.DECISION_NODE_TYPE)
+				&& auxNo.getParents().size() > 1) {
+				int sizePais = auxNo.getParents().size();
+				for (int j = 0; j < sizePais - 1; j++) {
+					auxPai1 = auxNo.getParents().get(j);
+					for (int k = j + 1; k < sizePais; k++) {
+						auxPai2 = auxNo.getParents().get(k);
+						if ((existeArco(auxPai1, auxPai2, copiaArcos) == -1)
+							&& (existeArco(auxPai1, auxPai2, arcosMarkov)
+								== -1)) {
+							auxArco = new Edge(auxPai1, auxPai2);
+							if (createLog) {
+								logManager.append(
+									auxPai1.getName()
+										+ " - "
+										+ auxPai2.getName()
+										+ "\n");
+							}
+							arcosMarkov.add(auxArco);
+						}
+					}
+				}
+			}
+		}
+	
+		desmontaAdjacentes();
+	
+		int sizeMarkov = arcosMarkov.size() - 1;
+		for (int z = sizeMarkov; z >= 0; z--) {
+			auxArco = (Edge) arcosMarkov.get(z);
+			auxArco.getOriginNode().getAdjacents().add(
+				auxArco.getDestinationNode());
+			auxArco.getDestinationNode().getAdjacents().add(
+				auxArco.getOriginNode());
+		}
+	
+		int sizeArcos1 = copiaArcos.size();
+		for (int z = sizeArcos1 - 1; z >= 0; z--) {
+			auxArco = (Edge) copiaArcos.get(z);
+			if (auxArco.getDestinationNode().getType()
+				== Node.UTILITY_NODE_TYPE) {
+				copiaArcos.remove(z);
+			} else {
+				auxArco.getOriginNode().getAdjacents().add(
+					auxArco.getDestinationNode());
+				auxArco.getDestinationNode().getAdjacents().add(
+					auxArco.getOriginNode());
+			}
+		}
+		arcosMarkov = SetToolkit.union(arcosMarkov, copiaArcos);
+		if (createLog) {
+			logManager.append("\n");
+		}
+	}
+
+	/**
+	 *  Verifica existência de determinado arco.
+	 *
+	 *@param  no1  nó origem.
+	 *@param  no2  nó destino.
+	 *@return      posição do arco no vetor ou -1 caso não exista tal arco.
+	 */
+	public int existeArco(Node no1, Node no2) {
+		return existeArco(no1, no2, arcos);
+	}
+
+	private int existeArco(Node no1, Node no2, List vetArcos) {
+		if (no1 == no2) {
+			return 1;
+		}
+	
+		int sizeArcos = vetArcos.size();
+		Edge auxA;
+		for (int i = 0; i < sizeArcos; i++) {
+			auxA = (Edge) vetArcos.get(i);
+			if ((auxA.getOriginNode() == no1)
+				&& (auxA.getDestinationNode() == no2)
+				|| (auxA.getOriginNode() == no2)
+				&& (auxA.getDestinationNode() == no1)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	/**
+	 * Sets the createLog.
+	 * @param createLog The createLog to set
+	 */
+	public void setCreateLog(boolean createLog) {
+		this.createLog = createLog;
+	}		
 }
 

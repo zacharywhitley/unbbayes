@@ -90,9 +90,8 @@ public class TJanelaEdicao extends JDialog {
         //ao clicar no botão reaprende, mostra-se o menu para escolha do arquivo para o aprendizado.
         reaprende.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {            	
-            	List edgeList = net.getArcos();
-            	NodeList nodeList = net.getNos();
-            	Edge edge;            
+            	List edgeList = net.getArcos();            	
+            	Edge edge;       
             	Node node;	            	
             	boolean close = true;
             	for(int i = 0; i < edgeList.size() && close; i++){
@@ -102,8 +101,8 @@ public class TJanelaEdicao extends JDialog {
                     	return;
                     }
                	}
-               	for(int i = 0; i < nodeList.size() && close; i++){
-                     node = (Node)nodeList.get(i);
+               	for(int i = 0; i < net.getNodeCount() && close; i++){
+                     node = net.getNodeAt(i);
                     if(node.getChildren().size() == 0 && node.getParents().size() == 0){
                     	JOptionPane.showMessageDialog(null,"Todo nó deve tem que ter pelo menos um adjacente.","ERROR",JOptionPane.ERROR_MESSAGE);                    	
                     	return;

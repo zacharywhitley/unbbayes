@@ -44,7 +44,7 @@ public class BayesianNetwork extends BayesianLearning
           this.net = net;
           this.instanceSet = instanceSet;
           this.net.compile();
-          numNodes = net.size();
+          numNodes = net.getNodeCount();
           multipliers = new int[numNodes-1];
           indexAttributes = new int[instanceSet.numAttributes()];
           Enumeration enum = instanceSet.enumerateAttributes();

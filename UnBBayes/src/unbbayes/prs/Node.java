@@ -441,4 +441,16 @@ public abstract class Node implements java.io.Serializable {
 		this.states = states;
 	}
 
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		
+		Node node = (Node) obj;
+		return (node.name.equals(this.name));		
+	}
+
 }

@@ -68,8 +68,10 @@ public class NetWindow extends JPanel {
         graphViewport                     = new JViewport();
         controller                        = new WindowController(net, this);
         graph                             = new IGraph(controller, graphViewport);
+        /*
 		graph.setNode(net.getNos());
         graph.setArc(net.getArcos());
+        */
 		jspGraph                          = new JScrollPane(graphViewport);
 		status                            = new JLabel(resource.getString("statusReadyLabel"));
 		bCompiled                         = false;

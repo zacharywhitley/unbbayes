@@ -248,7 +248,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
     public abstract PotentialTable newInstance();
 
     protected void sum(int index) {
-    	boolean marked[]  = new boolean[dados.size]; 
+    	boolean marked[]  = new boolean[dados.size];    	
     	sumAux(variaveis.size() - 1, index, 0, 0, marked);
     	
     	int j = 0;
@@ -273,7 +273,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      * @param marked Call with an array of falses.
      */
     private void sumAux(int control, int index, int coord, int base, boolean[] marked) {
-        if (control == -1) {            
+        if (control == -1) {
             int linearCoordDestination = coord - base;
             float value = dados.data[linearCoordDestination] + dados.data[coord];
             dados.data[linearCoordDestination] = value;
