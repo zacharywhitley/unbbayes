@@ -44,7 +44,7 @@ public class NeuralNetworkController {
     float momentum;
     int hiddenSize;
     int trainningTime;
-    boolean numerialInputNormalization;
+    int numerialInputNormalization;
     int activationFunction;
     float activationFunctionSteep;
     float minimumErrorVariation;
@@ -57,7 +57,7 @@ public class NeuralNetworkController {
       hiddenSize = mainScreen.advancedOptionsPanel.getHiddenLayerSize();
       activationFunction = mainScreen.optionsPanel.getSelectedActivationFunction();
       trainningTime = mainScreen.advancedOptionsPanel.getTrainningTime();
-      numerialInputNormalization = mainScreen.advancedOptionsPanel.getNumericalInputNormalizationEnabled();
+      numerialInputNormalization = mainScreen.advancedOptionsPanel.getNumericalInputNormalization();
       activationFunctionSteep = (float)mainScreen.advancedOptionsPanel.getActivationFunctionSteep();
       minimumErrorVariation = (float)mainScreen.advancedOptionsPanel.getMinimumErrorVariation();
 
@@ -153,9 +153,6 @@ public class NeuralNetworkController {
       ObjectInputStream in = new ObjectInputStream(new FileInputStream(selectedFile));
       bpn = null;
       bpn = (NeuralNetwork)in.readObject();
-//      mainScreen.rulesPanel = new RulesPanel(this);
-//      mainScreen.rulesPanel.setRulesPanel(cnm, cnm.getConfidence(), cnm.getSupport());
-//      mainScreen.tabbedPaneRules.add(mainScreen.rulesPanel, BorderLayout.CENTER);
       mainScreen.inferencePanel.setNetwork(bpn);
       mainScreen.setTitle("Backpropagation Neural Network - " + /*resource.getString*/("model") + " " + selectedFile.getName());
       FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());

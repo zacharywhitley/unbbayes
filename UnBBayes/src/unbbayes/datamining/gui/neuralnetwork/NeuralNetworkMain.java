@@ -285,6 +285,8 @@ public class NeuralNetworkMain extends JInternalFrame {
         optionsMenu.setEnabled(true);
         saveButton.setEnabled(false);
         saveModelMenu.setEnabled(false);
+        inferencePanel = new InferencePanel();
+        chartPanel = new TrainingPanel();
         statusBar.setText(/*resource.getString*/("openFile"));
       }
  //   }catch (NullPointerException npe){
@@ -327,6 +329,8 @@ public class NeuralNetworkMain extends JInternalFrame {
         saveModelMenu.setEnabled(false);
         statusBar.setText(/*resource.getString*/("modelOpenedSuccessfully"));
         jTabbedPane1.setSelectedIndex(2);
+        inferencePanel = new InferencePanel();
+        chartPanel = new TrainingPanel();
       }
     } catch (IOException ioe) {
       statusBar.setText(/*resource.getString*/("errorWritingFileException") + " " + ioe.getMessage());

@@ -11,6 +11,9 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   public static final int NO_ERROR_VARIATION_STOP_CRITERION = -2;
   public static final int SIGMOID = 0;
   public static final int TANH = 1;
+  public static final int NO_NORMALIZATION = 0;
+  public static final int LINEAR_NORMALIZATION = 1;
+  public static final int MEAN_0_STANDARD_DEVIATION_1_NORMALIZATION = 2;
 
   private float[] inputLayer;
   private HiddenNeuron[] hiddenLayer;
@@ -25,7 +28,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
   private transient int trainingTime;
   private transient float minimumErrorVariation;
   private transient boolean learningRateDecay = false;
-  private boolean numericalInputNormalization = true;
+  private int numericalInputNormalization = NO_NORMALIZATION;
   private boolean numericOutput;
   private float[] highestValue;
   private float[] lowestValue;
@@ -49,7 +52,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
                        int hiddenLayerSize,
                        int activationFunction,
                        int trainingTime,
-                       boolean numericalInputNormalization,
+                       int numericalInputNormalization,
                        float activationFunctionSteep,
                        float minimumErrorVariation) {
     this.learningRate = learningRate;
@@ -109,7 +112,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     //seta os maiores e menores valores dos atributos do instanceSet
     highestValue = new float[numOfAttributes];
     lowestValue = new float[numOfAttributes];
-    if(numericalInputNormalization){
+    if(numericalInputNormalization != NO_NORMALIZATION){
       for(int i=0; i<numOfAttributes; i++){
         if(i!=classIndex && instanceSet.getAttribute(i).isNumeric()){
           highestValue[i] = Float.MIN_VALUE;
@@ -268,11 +271,23 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
           for (int j=0; j<counter; j++) {
             index = index + attNumOfValues[j];
           }
-          Attribute att = instanceSet.getAttribute(i);
+          Attribute att = attributeVector[i];
+
           if (att.isNumeric()) {
             int value = instance.getValue (att);
-            if(numericalInputNormalization){
+            if(numericalInputNormalization == LINEAR_NORMALIZATION){
               inputLayer[index] = Utils.normalize(Float.parseFloat(att.getAttributeValues()[value]), highestValue[i], lowestValue[i], 1, -1);
+            } else if(numericalInputNormalization == MEAN_0_STANDARD_DEVIATION_1_NORMALIZATION) {
+              ////////////////////////////normalização
+              /////////////////////////////falta
+              ///////////////////////////
+              ////////////////////////////
+              ////////////////////////////
+              ////////////////////////////
+              //////////////////////////////
+              ////////////////////////////////
+              ////////////////////////////
+              
             } else {
               inputLayer[index] = Float.parseFloat(att.getAttributeValues()[value]);
             }

@@ -38,7 +38,7 @@ public class AdvancedOptionsPanel extends JPanel {
   private SpinnerNumberModel activationFunctionSteepSpinnerModel = new SpinnerNumberModel(1, 0.1, 2, 0.1);
 
   private boolean learningRateDecay = false;
-  private boolean numericalInputNormalization = false;
+  private int numericalInputNormalization = NeuralNetwork.NO_NORMALIZATION;
   private boolean autoHiddenLayerSize = true;
   private int hiddenLayerSize = 10;
   private int trainningTime = 400;
@@ -70,6 +70,15 @@ public class AdvancedOptionsPanel extends JPanel {
   private BorderLayout borderLayout8 = new BorderLayout();
   private JCheckBox normalizationCheckBox = new JCheckBox();
   private GridBagLayout gridBagLayout1 = new GridBagLayout();
+  private JPanel normalizationPanel = new JPanel();
+  private Border border6;
+  private TitledBorder titledBorder6;
+  private BorderLayout borderLayout9 = new BorderLayout();
+  private JPanel jPanel6 = new JPanel();
+  private GridLayout gridLayout1 = new GridLayout();
+  private JRadioButton radioLinearNormalization = new JRadioButton();
+  private JRadioButton radioMean0SD1 = new JRadioButton();
+  private ButtonGroup normalizationGroup = new ButtonGroup();
 
   public AdvancedOptionsPanel() {
     try {
@@ -99,6 +108,9 @@ public class AdvancedOptionsPanel extends JPanel {
     border5 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
     titledBorder5 = new TitledBorder(border5,"Numeric Input:");
     titledBorder5.setTitleFont(new java.awt.Font("Dialog", 0, 12));
+    border6 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
+    titledBorder6 = new TitledBorder(border6,"Normalization Algorithm:");
+    titledBorder6.setTitleFont(new java.awt.Font("Dialog", 0, 12));
     this.setLayout(borderLayout1);
     advancedOptions.setLayout(gridBagLayout1);
     learningRatePanel.setLayout(borderLayout2);
@@ -145,6 +157,22 @@ public class AdvancedOptionsPanel extends JPanel {
     inputNormalizationPanel.setBorder(titledBorder5);
     normalizationCheckBox.setFont(new java.awt.Font("Dialog", 0, 12));
     normalizationCheckBox.setText("Normalize Numeric Input");
+    normalizationCheckBox.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        normalizationCheckBox_actionPerformed(e);
+      }
+    });
+    normalizationPanel.setBorder(titledBorder6);
+    normalizationPanel.setLayout(borderLayout9);
+    jPanel6.setLayout(gridLayout1);
+    gridLayout1.setRows(2);
+    radioLinearNormalization.setEnabled(false);
+    radioLinearNormalization.setFont(new java.awt.Font("Dialog", 0, 12));
+    radioLinearNormalization.setSelectedIcon(null);
+    radioLinearNormalization.setText("Linear Normalization");
+    radioMean0SD1.setEnabled(false);
+    radioMean0SD1.setFont(new java.awt.Font("Dialog", 0, 12));
+    radioMean0SD1.setText("Mean 0 and Standard Deviation 1");
     jPanel1.add(jPanel2, null);
     jPanel2.add(hiddenLayerCheckBox, BorderLayout.CENTER);
     jPanel1.add(jPanel3, null);
@@ -168,15 +196,29 @@ public class AdvancedOptionsPanel extends JPanel {
             ,GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 7, 0));
     advancedOptions.add(activationFunctionSteepPanel,   new GridBagConstraints(0, 4, 1, 1, 1.0, 1.0
             ,GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 2, 0), 237, 0));
-    inputNormalizationPanel.add(normalizationCheckBox, BorderLayout.CENTER);
+    inputNormalizationPanel.add(normalizationCheckBox, BorderLayout.NORTH);
+    inputNormalizationPanel.add(normalizationPanel,  BorderLayout.CENTER);
+    normalizationPanel.add(jPanel6,  BorderLayout.CENTER);
+    jPanel6.add(radioLinearNormalization, null);
+    jPanel6.add(radioMean0SD1, null);
 
     startDefaultValues();
+    normalizationGroup.add(radioLinearNormalization);
+    normalizationGroup.add(radioMean0SD1);
 
   }
 
   public void updateValues(){
     learningRateDecay = learningRateCheckBox.isSelected();
-    numericalInputNormalization = normalizationCheckBox.isSelected();
+    if(normalizationCheckBox.isSelected()){
+      if(radioLinearNormalization.isSelected()){
+        numericalInputNormalization = NeuralNetwork.LINEAR_NORMALIZATION;
+      } else {
+        numericalInputNormalization = NeuralNetwork.MEAN_0_STANDARD_DEVIATION_1_NORMALIZATION;
+      }
+    } else {
+      numericalInputNormalization = NeuralNetwork.NO_NORMALIZATION;
+    }
     autoHiddenLayerSize = hiddenLayerCheckBox.isSelected();
     hiddenLayerSize = Integer.parseInt(hiddenSizeSpinner.getValue().toString());
     trainningTime = Integer.parseInt(trainningTimeSpinner.getValue().toString());
@@ -188,6 +230,7 @@ public class AdvancedOptionsPanel extends JPanel {
   public void startDefaultValues(){
     learningRateCheckBox.setSelected(defaultLearningRateDecay);
     normalizationCheckBox.setSelected(defaultNumericalInputNormalization);
+    radioLinearNormalization.setSelected(true);
     hiddenLayerCheckBox.setSelected(defaultAutoHiddenLayerSize);
     hiddenSizeSpinner.setValue(new Integer(defaultHiddenLayerSize));
     trainningTimeSpinner.setValue(new Integer(defaultTrainningTime));
@@ -198,6 +241,7 @@ public class AdvancedOptionsPanel extends JPanel {
 
   public void sethiddenLayerSize(int hiddenLayerSize){
       this.hiddenLayerSize = hiddenLayerSize;
+      defaultHiddenLayerSize = hiddenLayerSize;
       hiddenSizeSpinner.setValue(new Integer(hiddenLayerSize));
   }
 
@@ -205,7 +249,7 @@ public class AdvancedOptionsPanel extends JPanel {
     return learningRateDecay;
   }
 
-  public boolean getNumericalInputNormalizationEnabled(){
+  public int getNumericalInputNormalization(){
     return numericalInputNormalization;
   }
 
@@ -235,9 +279,15 @@ public class AdvancedOptionsPanel extends JPanel {
 
   void hiddenLayerCheckBox_actionPerformed(ActionEvent e) {
     hiddenSizeSpinner.setEnabled(!hiddenLayerCheckBox.isSelected());
+    hiddenSizeSpinner.setValue(new Integer(defaultHiddenLayerSize));
   }
 
   void errorVariationCheckBox_actionPerformed(ActionEvent e) {
     errorVariationSpinner.setEnabled(errorVariationCheckBox.isSelected());
+  }
+
+  void normalizationCheckBox_actionPerformed(ActionEvent e) {
+    radioLinearNormalization.setEnabled(normalizationCheckBox.isSelected());
+    radioMean0SD1.setEnabled(normalizationCheckBox.isSelected());
   }
 }
