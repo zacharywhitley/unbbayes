@@ -6,8 +6,26 @@
         
 <%
 
+   String codUsuario = request.getParameter("cod-usuario");
+   String codComputador = request.getParameter("cod_computador_disponivel");
+   
+   Element in = new Element("in");
+   Element usuario = new Element("cod-usuario");
+   Element computador = new Element("cod-computador");
+   
+   usuario.setText(codUsuario);
+   computador.setText(codComputador);
+   
+   in.getChildren().add(usuario);
+   in.getChildren().add(computador);
+   
+
    out.println(request.getParameter("cod-usuario"));
-   out.println(request.getParameter("cod-computador"));
+   out.println(request.getParameter("cod_computador_disponivel"));
+   
+   Feature  lancamento = new LancamentoFeature();
+   Element tiposXML = lancamento.process(in);
+   
 
 %>
 
@@ -16,6 +34,6 @@
 </head>
 
 <body onLoad="javascript:document.form1.submit()">
-  <form name="form1" method="post" action="log.jsp">
+  <form name="form1" method="post" action="<%=request.getContextPath()%>/log.jsp">
 </body>
 </html>

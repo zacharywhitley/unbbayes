@@ -84,7 +84,9 @@ public class LancamentoFeature implements Feature {
 			sql.append("  (cod_usuario, cod_computador, cod_tipo_lacamento, ");
 			sql.append("   dt_hora_inicio_lancamento) ");
 			sql.append("VALUES ");
-			sql.append("  (?, ?, ?, ?) ");			
+			sql.append("  (?, ?, ?, ?) ");
+			
+			System.out.println(sql.toString());
 			
 			ps = con.prepareStatement(sql.toString());
 									
