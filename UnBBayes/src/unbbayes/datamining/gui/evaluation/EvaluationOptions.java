@@ -45,8 +45,8 @@ public class EvaluationOptions
           float[] priorityProbabilities = new float[ints.length];
           for (int i=0;i<ints.length;i++)
           {   for (int j=0;j<ints.length;j++)
-              {   if (ints[i] == j)
-                  {   priorityClassValues[i] = ints[j];
+              {   if (ints[j] == i)
+                  {   priorityClassValues[i] = j;
                       priorityProbabilities[i] = floats[j];
                   }
               }
