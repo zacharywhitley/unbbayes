@@ -20,6 +20,7 @@ public class EvaluationMain extends JInternalFrame
   private ResourceBundle resource;
   private ImageIcon abrirIcon;
   private ImageIcon helpIcon;
+  private ImageIcon opcaoglobalIcon;
   private JPanel contentPane;
   private JMenuBar jMenuBar1 = new JMenuBar();
   private JMenu jMenuFile = new JMenu();
@@ -41,9 +42,9 @@ public class EvaluationMain extends JInternalFrame
   private JFileChooser fileChooser;
   private JToolBar jToolBar1 = new JToolBar();
   private JMenuItem jMenuItem2 = new JMenuItem();
-  private JButton jButton1 = new JButton();
-  private JButton openButton = new JButton();
+  private JButton optionsButton = new JButton();
   private JButton helpButton = new JButton();
+  private JButton openButton = new JButton();
 
   /**Construct the frame*/
   public EvaluationMain()
@@ -65,6 +66,7 @@ public class EvaluationMain extends JInternalFrame
   private void jbInit() throws Exception
   { abrirIcon = new ImageIcon(getClass().getResource("/icones/abrir.gif"));
     helpIcon = new ImageIcon(getClass().getResource("/icones/help.gif"));
+    opcaoglobalIcon = new ImageIcon(getClass().getResource("/icones/opcaoglobal.gif"));
     contentPane = (JPanel) this.getContentPane();
     titledBorder5 = new TitledBorder(border5,resource.getString("selectProgram"));
     border5 = BorderFactory.createLineBorder(new Color(153, 153, 153),1);
@@ -108,12 +110,19 @@ public class EvaluationMain extends JInternalFrame
         jMenuItem2_actionPerformed(e);
       }
     });
-    jButton1.setText("jButton1");
-    jButton1.addActionListener(new java.awt.event.ActionListener()
+    optionsButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
       {
-        jButton1_actionPerformed(e);
+        optionsButton_actionPerformed(e);
+      }
+    });
+    helpButton.setIcon(helpIcon);
+    helpButton.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        helpButton_actionPerformed(e);
       }
     });
     openButton.setToolTipText(resource.getString("openModel"));
@@ -125,14 +134,8 @@ public class EvaluationMain extends JInternalFrame
         openButton_actionPerformed(e);
       }
     });
-    helpButton.setIcon(helpIcon);
-    helpButton.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        helpButton_actionPerformed(e);
-      }
-    });
+    optionsButton.setEnabled(false);
+    optionsButton.setIcon(opcaoglobalIcon);
     jMenuFile.add(jMenuItem2);
     jMenuFile.add(jMenuFileExit);
     jMenuHelp.add(jMenuHelpAbout);
@@ -143,9 +146,9 @@ public class EvaluationMain extends JInternalFrame
     jPanel41.add(statusBar, BorderLayout.CENTER);
     contentPane.add(jPanel2,BorderLayout.CENTER);
     contentPane.add(jToolBar1, BorderLayout.NORTH);
-    jToolBar1.add(helpButton, null);
     jToolBar1.add(openButton, null);
-    jToolBar1.add(jButton1, null);
+    jToolBar1.add(helpButton, null);
+    jToolBar1.add(optionsButton, null);
   }
   /**File | Exit action performed
    * @param e One ActionEvent
@@ -238,9 +241,11 @@ public class EvaluationMain extends JInternalFrame
               instOK = false;
           }
       }
+      optionsButton.setEnabled(false);
       if (instOK)
       {   jPanel2.setModel(classifier,inst);
           statusBar.setText(resource.getString("modelOpened"));
+          optionsButton.setEnabled(true);
           this.setTitle("Evaluation - "+resource.getString("model")+selectedFile.getName());
       }
   }
@@ -299,12 +304,14 @@ public class EvaluationMain extends JInternalFrame
       }
   }
 
-  void jButton1_actionPerformed(ActionEvent e)
-  {   if (classifier instanceof BayesianLearning)
+  void optionsButton_actionPerformed(ActionEvent e)
+  {   /*if (classifier instanceof BayesianLearning)
       {   int[] classValues = {1,0};
           float[] probabilities = {0.2f,0.8f};
           ((BayesianLearning)classifier).setAbsoluteClassification(classValues,probabilities);
-      }
+      }*/
+      EvaluationOptions options = new EvaluationOptions(classifier);
+      options.show();
   }
 
 
