@@ -1,8 +1,7 @@
 net
 {
      node_size = (0 0);
-     name = "null";
-     tree = "(C0,C1,C2,C3,C4,C5,C6)";
+     name = "5part2c";
      UnBBayes_Color_Probabilistic_Description = "-256";
      UnBBayes_Color_Probabilistic_Explanation = "-16711936";
      UnBBayes_Color_Utility = "-16711681";

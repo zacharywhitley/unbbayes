@@ -3,6 +3,7 @@ package unbbayes.prs.msbn;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.PotentialTable;
@@ -126,12 +127,13 @@ public class Linkage {
 		}
 	}
 	
-	private void initTables() {
+	private void initTables() {		
+		
 		for (int i = tree.size()-1; i >=0; i--) {
 			Link link = (Link) tree.get(i);
 			Clique c = link.getClique();
 			PotentialTable tab = c.getPotentialTable();
-			for (int j = c.getNos().size()-1; j>=0; j--) {
+			for (int j = 0; j < c.getNos().size(); j++) {
 				tab.addVariable(c.getNos().get(j));
 			}
 			
@@ -191,23 +193,15 @@ public class Linkage {
 		for (int i = 0; i < treeSize; i++) {
 			Link l = (Link) tree.get(i);
 			l.absorve(naOrdem);			
-			if (naOrdem) {
-				n1.getJunctionTree().distribuaEvidencia(l.getV0());
-			} else {				
-				n2.getJunctionTree().distribuaEvidencia(l.getV1());
-			}
-			
 		}
-		/*
 		try {
 			if (naOrdem) {
-				((MSJunctionTree) n1.getJunctionTree()).unificaCrencas();	
+				n1.updateEvidences();	
 			} else {
-				((MSJunctionTree) n2.getJunctionTree()).unificaCrencas();
+				n2.updateEvidences();
 			}
 		} catch (Exception e) {
-			
+			e.printStackTrace();			
 		}
-		*/		
 	}
 }

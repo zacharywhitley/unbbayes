@@ -6,14 +6,17 @@ import java.awt.Container;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
+import java.util.ResourceBundle;
 
 import javax.swing.AbstractListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
@@ -31,6 +34,10 @@ import unbbayes.prs.msbn.MSNetwork;
 public class MSBNWindow extends JInternalFrame {
 	public static String EDITION_PANE = "editionPane";
 	public static String COMPILED_PANE = "compiledPane";
+	
+	/** Load resource file from this package */
+	private static ResourceBundle resource =
+		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 	
 	private class MSBNListModel extends AbstractListModel {
 		public int getSize() {
@@ -53,7 +60,7 @@ public class MSBNWindow extends JInternalFrame {
 	private JButton newBtn;
 	
 	private CardLayout btnCard;
-	private JPanel btnPanel;
+	private JToolBar jtbBtns;
 	
 	public MSBNWindow(MSNetwork msbn) {
 		super(msbn.getId(), true, true, true, true);
@@ -72,10 +79,10 @@ public class MSBNWindow extends JInternalFrame {
 	
 	private void initComponents() {
 		netList = new JList(new MSBNListModel());		
-		compileBtn = new JButton("Compile");
-		editionBtn = new JButton("Edit MSBN");
-		removeBtn = new JButton("Remove");
-		newBtn = new JButton("New");
+		compileBtn = new JButton(new ImageIcon(getClass().getResource("/icons/compile.gif")));
+		editionBtn = new JButton(new ImageIcon(getClass().getResource("/icons/edit.gif")));
+		removeBtn = new JButton("R");
+		newBtn = new JButton(new ImageIcon(getClass().getResource("/icons/new.gif")));
 	}
 	
 	private void init() {
@@ -84,26 +91,26 @@ public class MSBNWindow extends JInternalFrame {
 	
 	private JPanel makeListPanel() {
 		JPanel netPanel = new JPanel(new BorderLayout());
-		netPanel.add(new JLabel("Networks"), BorderLayout.NORTH);
 		netScroll = new JScrollPane(netList);
 		netPanel.add(netScroll, BorderLayout.CENTER);
 		setupButtonsPanel();
-		netPanel.add(btnPanel, BorderLayout.SOUTH);		
+		netPanel.add(jtbBtns, BorderLayout.NORTH);		
 		return netPanel;
 	}
 	
 	private void setupButtonsPanel() {
 		btnCard = new CardLayout();
-		btnPanel = new JPanel(btnCard);
-		JPanel editionPane = new JPanel(new GridLayout(0,1));
-		btnPanel.add(editionPane, EDITION_PANE);				
+		jtbBtns = new JToolBar();
+		jtbBtns.setLayout(btnCard);
+		JPanel editionPane = new JPanel();
+		jtbBtns.add(editionPane, EDITION_PANE);		
 		editionPane.add(newBtn);
 		editionPane.add(removeBtn);
 		editionPane.add(compileBtn);
 		
 		JPanel compiledPane = new JPanel();		
 		compiledPane.add(editionBtn);
-		btnPanel.add(compiledPane, COMPILED_PANE);
+		jtbBtns.add(compiledPane, COMPILED_PANE);
 		showBtnPanel(EDITION_PANE);
 	}
 	
@@ -128,7 +135,7 @@ public class MSBNWindow extends JInternalFrame {
 	}
 	
 	public void showBtnPanel(String paneName) {
-		btnCard.show(btnPanel, paneName);		
+		btnCard.show(jtbBtns, paneName);		
 	}
 	
 	/**

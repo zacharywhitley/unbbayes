@@ -64,16 +64,20 @@ public class MSBNController {
 		     public void mousePressed(MouseEvent e) {
 		         int selRow = tree.getRowForLocation(e.getX(), e.getY());
 		         if(selRow != -1) {
-					 if(e.getClickCount() == 2 && e.getModifiers() == MouseEvent.BUTTON1_MASK) {					 	
+					 if(e.getModifiers() == MouseEvent.BUTTON1_MASK) {					 	
 					 	DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
 					 	SubNetwork net = (SubNetwork) node.getUserObject();
 			            if (net == active.getRede() 
 			            	 || JOptionPane.showConfirmDialog(window, "Shift Attention?") != JOptionPane.OK_OPTION) {
-			            	return;		             	
-			            }  
+			            	return;
+			            }
+			            
+			            for (int i = 0; i < net.getNodeCount(); i++) {
+			            	net.getNodeAt(i).setSelected(false);			            	
+			            }
 			            
 			           	NetWindow netWindow = new NetWindow(net);
-			            changeActive(netWindow);	            
+			            changeActive(netWindow);            
 		            	msbn.shiftAttention(net);
 		            	netWindow.changeToNetCompilation();
 		            	tree.scrollRowToVisible(selRow);
@@ -109,7 +113,7 @@ public class MSBNController {
 	public void addListeners() {
 		MouseListener mouseListener = new MouseAdapter() {
 		     public void mouseClicked(MouseEvent e) {
-		     	if (e.getClickCount() == 2 && e.getModifiers() == MouseEvent.BUTTON1_MASK) {
+		     	if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 		     		int index = window.getNetList().locationToIndex(e.getPoint());
 		            if (index < 0 || window.getNetList().getModel().getElementAt(index) == active.getRede()) {
 		            	return;		             	

@@ -135,7 +135,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     }
 	
 
-	void updateEvidences() {
+	protected void updateEvidences() {
 		if (evidence != -1) {						
 			PotentialTable auxTab = cliqueAssociado.getPotentialTable();
 			int index = auxTab.indexOfVariable(this);

@@ -1562,7 +1562,7 @@ public class Network implements java.io.Serializable {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		return name + '(' + id + ')';
+		return ((name != null) ? name : "") + '(' + id + ')';
 	}
 }
 

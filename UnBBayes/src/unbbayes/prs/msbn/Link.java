@@ -48,32 +48,18 @@ public class Link {
 			tB.removeVariable(toDie.get(i));
 		}
 		
-		
+		// DEBUG-------------
 		for (int i = 0; i < tB.variableCount(); i++) {
 			if (! clique.getPotentialTable().getVariableAt(i).equals(tB.getVariableAt(i))) {
-				System.err.println("merda");				
+				System.err.println("variáveis fora de ordem");				
 			}						
 		}
+		//---------
 		
 		for (int i = clique.getPotentialTable().tableSize() - 1; i >= 0; i--) {
 			clique.getPotentialTable().setValue(i, tB.getValue(i));
 		}
-		tB = (PotentialTable) clique.getPotentialTable().clone();
 		tB.directOpTab(originalLinkTable, PotentialTable.DIVISION_OPERATOR);
-		
-		/*	
-		toDie = SetToolkit.clone(c1.getNos());
-		toDie.removeAll(clique.getNos());
-
-		PotentialTable tA = (PotentialTable) c1.getPotentialTable().clone();
-		
-		for (int i = 0; i < toDie.size(); i++) {
-			tA.removeVariable(toDie.get(i));
-		}
-		
-		tB.opTab(tA, PotentialTable.DIVISION_OPERATOR);
-		*/		
-		
 		c1.getPotentialTable().opTab(tB, PotentialTable.PRODUCT_OPERATOR);
 	}
 	

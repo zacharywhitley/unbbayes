@@ -32,8 +32,7 @@ net
     UnBBayes_Color_Utility = "-16711681";
     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
     UnBBayes_Color_Probabilistic_Description = "-256";
-    tree = "(C0,C1,C2,C3)";
-    name = "null";
+    name = "5part1c";
 }
 
 node var_0

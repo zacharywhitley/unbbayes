@@ -162,7 +162,7 @@ public class JunctionTree implements java.io.Serializable {
 		for (int i = separator.getPotentialTable().tableSize() - 1; i >= 0; i--) {
 			separator.getPotentialTable().setValue(i, dummyTable.getValue(i));
 		}
-		dummyTable = (PotentialTable) separator.getPotentialTable().clone();
+//		dummyTable = (PotentialTable) separator.getPotentialTable().clone();
 		dummyTable.directOpTab(
 			originalSeparatorTable,
 			PotentialTable.DIVISION_OPERATOR);
