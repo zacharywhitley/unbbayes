@@ -30,7 +30,10 @@ public class Link {
 	 * Must be called after the Junction Tree creation
 	 */
 	protected void makeLinkageTree() {
+		
+		// tem que montar a árvore com referencias diferentes aos cliques.
 		tree = (JunctionTree) n1.getJunctionTree().clone();
+		
 		boolean retirou = true;
 		while (retirou) {
 			retirou = false;
@@ -38,9 +41,22 @@ public class Link {
 				Clique c = (Clique) tree.getCliques().get(i);
 				if (c.getChildrenSize() == 0) {
 					NodeList inter = SetToolkit.intersection(c.getNos(), nodes);
-										
-				}		
+					if (inter.size() == 0 ||
+					    	 (c.getParent() != null &&
+							  c.getParent().getNos().contains(inter))) {
+						 	
+						tree.removeClique(c);
+						retirou = true;
+					}									
+				}
 			}			
 		}
+		
+		for (int i = tree.getCliques().size()-1; i >=0; i--) {
+			Clique c = (Clique) tree.getCliques().get(i);
+			c.getNos().removeAll(nodes);						
+		}
+		
+		// fazer as unioes entre cliques contidos em outros	
 	}
 }

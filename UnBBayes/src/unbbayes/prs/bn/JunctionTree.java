@@ -78,7 +78,7 @@ public class JunctionTree implements java.io.Serializable {
 	
 	public Object clone() {
 		JunctionTree cloned = new JunctionTree();
-		cloned.setSeparators(SetToolkit.clone(separators));
+		cloned.setSeparators(SetToolkit.clone(separators));		
 		cloned.setCliques(SetToolkit.clone(cliques));
 		cloned.setN(n);
 		cloned.initialized = initialized;
@@ -88,6 +88,18 @@ public class JunctionTree implements java.io.Serializable {
 			cloned.setCoordSep(coordSep1);
 		}
 		return cloned;
+	}
+	
+	/**
+	 * Remove the specified clique
+	 * 
+	 * @param c the clique to remove
+	 */
+	public void removeClique(Clique c) {
+		if (c.getParent() != null) {
+			c.getParent().removeChild(c);				
+		}
+		cliques.remove(c);				
 	}
 
 	public void addSeparator(Separator sep) {
@@ -110,6 +122,7 @@ public class JunctionTree implements java.io.Serializable {
 	public List getCliques() {
 		return cliques;
 	}
+	
 
 	/**
 	 *  Verifica a consistência global.
@@ -186,7 +199,7 @@ public class JunctionTree implements java.io.Serializable {
 	/**
 	 *  Inicia crenças da árvore.
 	 */
-	void iniciaCrencas() throws Exception {
+	protected void iniciaCrencas() throws Exception {
 		
 		if (! initialized) {
 			Clique auxClique;
@@ -261,7 +274,7 @@ public class JunctionTree implements java.io.Serializable {
 			Separator auxSep = (Separator) separators.get(k);
 			auxSep.getPotentialTable().restoreData();
 		}
-	}	
+	}
 	
 	private void copyTableData() {
 		int sizeCliques = cliques.size();

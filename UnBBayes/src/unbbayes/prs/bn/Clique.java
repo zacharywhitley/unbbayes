@@ -78,7 +78,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
     /**
      *  Lista de Nós de Utilidade associados ao Clique.
      */
-    private NodeList associatedUtilNodes;
+    private NodeList associatedUtilNodes;    
 
 
     /**
@@ -93,7 +93,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
         potentialTable = new ProbabilisticTable();
         utilityTable = new UtilityTable();
     }
-
+    
 
     /**
      *  Normaliza um clique da árvore.
@@ -263,6 +263,14 @@ public class Clique implements ITabledVariable, java.io.Serializable {
     public void addChild(Clique child) {
         children.add(child);
     }
+    
+    /**
+     * Remove the specified children
+     * @param c the clique to remove from the children's list
+     */
+    protected void removeChild(Clique c) {
+    	children.remove(c);
+    }
 
     /**
      *  Retorna o filho na posição especificada.
@@ -319,4 +327,13 @@ public class Clique implements ITabledVariable, java.io.Serializable {
     public PotentialTable getUtilityTable() {
         return utilityTable;
     }
+    
+	/**
+	 * Returns the parent.
+	 * @return Clique
+	 */
+	public Clique getParent() {
+		return parent;
+	}
+
 }
