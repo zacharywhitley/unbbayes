@@ -3,6 +3,7 @@
 				linfca.util.*,
 				java.io.*,
 				java.util.*,
+				java.sql.*,				
 				org.jdom.Element" 
        errorPage="" %>
 	   
@@ -20,11 +21,20 @@
   <% 
   		Element in = new Element("in");
 		Element dataInicio = new Element("data-hora-inicio");
-		dataInicio.setText(request.getParameter("data-hora-inicio"));
+		if (request.getParameter("data-hora-inicio") != null)  {
+			dataInicio.setText(request.getParameter("data-hora-inicio"));
+		} else {
+			dataInicio.setText(new Timestamp(System.currentTimeMillis() - 100000L).toString());
+		}
+	
 		in.getChildren().add(dataInicio);
 		
 		Element dataFim = new Element("data-hora-fim");		
-		dataFim.setText(request.getParameter("data-hora-fim"));
+		if (request.getParameter("data-hora-fim") != null)  {
+			dataFim.setText(request.getParameter("data-hora-fim"));
+		} else {
+			dataFim.setText(new Timestamp(System.currentTimeMillis()).toString());
+		}
 		in.getChildren().add(dataFim);
 		
 		if (request.getParameter("abertos") != null) {
