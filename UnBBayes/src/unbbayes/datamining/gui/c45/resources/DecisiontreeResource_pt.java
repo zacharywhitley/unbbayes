@@ -73,9 +73,12 @@ public class DecisiontreeResource_pt extends ListResourceBundle
 		{"return","\nUsuário retorna um nível na árvore\nÚltima opção foi "},
 		//Decision Tree Options
 		{"cancel","Cancelar"},
-		{"gainRatio","Usar taxa de ganho no aprendizado"},
-		{"prunning","Podar a árvore"},
-		{"verbosityLevel","Nível de log:"},
+		{"gainRatio1","Taxa de ganho"},
+		{"gainRatio2","Usar taxa de ganho no aprendizado"},
+		{"prunning1","Poda"},
+		{"prunning2","Podar a árvore"},
+		{"verbosity1","Log"},
+		{"verbosity2","Nível de log:"},
 		{"confidenceLevel","Nível de confiança:"},
 	};
 }

@@ -262,7 +262,7 @@ public class InvokerMain extends JFrame
         alC45 = new ActionListener() {
           public void actionPerformed(ActionEvent ae) {
             setCursor(new Cursor(Cursor.WAIT_CURSOR));
-            unbbayes.datamining.gui.c45.DecisionTreeMain c45 = new unbbayes.datamining.gui.c45.DecisionTreeMain();
+            unbbayes.datamining.gui.c45.DecisionTreeMain c45 = new unbbayes.datamining.gui.c45.DecisionTreeMain(desktop);
             addWindow(c45);
             setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
           }

@@ -70,6 +70,7 @@ public class IconController
   protected ImageIcon gridIcon;
   protected ImageIcon fillIcon;
   protected ImageIcon resetSizeIcon;
+  protected ImageIcon openModelIcon;
 
   public static IconController getInstance()
     {   if (singleton == null)
@@ -685,6 +686,17 @@ public class IconController
     {
       gridIcon = new ImageIcon(getClass().getResource("/icons/grid.gif"));
       return gridIcon;
+    }
+  }
+  public ImageIcon getOpenModelIcon() {
+    if (openModelIcon!=null)
+    {
+      return openModelIcon;
+    }
+    else
+    {
+      openModelIcon = new ImageIcon(getClass().getResource("/icons/open4.gif"));
+      return openModelIcon;
     }
   }
 

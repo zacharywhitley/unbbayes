@@ -34,6 +34,7 @@ public class DecisionTreeMain extends JInternalFrame
   private ResourceBundle resource;
   private JTree id3tree;
   private ImageIcon abrirIcon;
+  private ImageIcon openModelIcon;
   private ImageIcon compilaIcon;
   private ImageIcon helpIcon;
   private ImageIcon salvarIcon;
@@ -57,10 +58,12 @@ public class DecisionTreeMain extends JInternalFrame
   private AttributePanel attributeFrame;
   private VerbosityPanel verbosityFrame;
   private BorderLayout borderLayout3 = new BorderLayout();
+  private MDIDesktopPane desktop;
 
   /**Construct the frame*/
-  public DecisionTreeMain()
+  public DecisionTreeMain(MDIDesktopPane desktop)
   { super("C45 Classifier",true,true,true,true);
+  	this.desktop = desktop;
     resource = ResourceBundle.getBundle("unbbayes.datamining.gui.c45.resources.DecisiontreeResource");
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     try
@@ -77,6 +80,7 @@ public class DecisionTreeMain extends JInternalFrame
   {
     IconController iconController = IconController.getInstance();
     abrirIcon = iconController.getOpenIcon();
+    openModelIcon = iconController.getOpenModelIcon();
     compilaIcon = iconController.getCompileIcon();
     helpIcon = iconController.getHelpIcon();
     salvarIcon = iconController.getSaveIcon();
@@ -120,7 +124,7 @@ public class DecisionTreeMain extends JInternalFrame
     learnButton.setEnabled(false);
     learnButton.setToolTipText(resource.getString("buildTooltip"));
     learnButton.setIcon(compilaIcon);
-	
+
 	preferencesButton.addActionListener(new java.awt.event.ActionListener()
 		{
 		  	public void actionPerformed(ActionEvent e)
@@ -130,7 +134,7 @@ public class DecisionTreeMain extends JInternalFrame
 		});
 	preferencesButton.setToolTipText(resource.getString("preferences"));
 	preferencesButton.setIcon(opcaoglobalIcon);
-	
+
     jMenuFileOpen.setText(resource.getString("open"));
     jMenuFileOpen.setIcon(abrirIcon);
     jMenuFileOpen.setMnemonic(((Character)resource.getObject("openMnemonic")).charValue());
@@ -170,7 +174,7 @@ public class DecisionTreeMain extends JInternalFrame
 			jMenuFilePreferences_actionPerformed(e);
 	  	}
 	});
-    
+
     jToolBar.setFloatable(false);
     jMenuItem2.setEnabled(false);
     jMenuItem2.setIcon(salvarIcon);
@@ -185,7 +189,7 @@ public class DecisionTreeMain extends JInternalFrame
     });
     jMenu1.setMnemonic(((Character)resource.getObject("learnMnemonic")).charValue());
     jMenu1.setText(resource.getString("learn"));
-    jMenuItem1.setIcon(abrirIcon);
+    jMenuItem1.setIcon(openModelIcon);
     jMenuItem1.setMnemonic(((Character)resource.getObject("openModelMnemonic")).charValue());
     jMenuItem1.setText(resource.getString("openModel"));
     jMenuItem1.addActionListener(new java.awt.event.ActionListener()
@@ -205,7 +209,7 @@ public class DecisionTreeMain extends JInternalFrame
       }
     });
     openModelButton.setToolTipText(resource.getString("openAModel"));
-    openModelButton.setIcon(abrirIcon);
+    openModelButton.setIcon(openModelIcon);
     openModelButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -227,7 +231,7 @@ public class DecisionTreeMain extends JInternalFrame
     statusBar.setText(resource.getString("welcome"));
     jPanel1.setLayout(borderLayout2);
     jPanel2.setLayout(borderLayout3);
-    
+
     Dimension separador = new Dimension(5,0);
     jToolBar.add(openFileButton);
     jToolBar.add(learnButton);
@@ -238,7 +242,7 @@ public class DecisionTreeMain extends JInternalFrame
     jToolBar.add(saveModelButton);
 	jToolBar.addSeparator(separador);
 	jToolBar.add(helpButton);
-	
+
     jMenuFile.add(jMenuFileOpen);
     jMenuFile.addSeparator();
     jMenuFile.add(jMenuItem1);
@@ -257,7 +261,7 @@ public class DecisionTreeMain extends JInternalFrame
     jPanel2.add(jTabbedPane, BorderLayout.CENTER);
     jTabbedPane.add(attributeFrame, resource.getString("attributes"));
     jTabbedPane.add(inductionFrame, resource.getString("inference"));
-    jTabbedPane.add(verbosityFrame, "verbosity");
+    jTabbedPane.add(verbosityFrame, resource.getString("verbosity1"));
     jMenu1.add(jMenuFileBuild);
 	jMenu1.add(jMenuFilePreferences);
     for(int i=0; i<3; i++)
@@ -366,11 +370,11 @@ public class DecisionTreeMain extends JInternalFrame
   void jMenuFileBuild_actionPerformed(ActionEvent e)
   {   learnButton_actionPerformed(e);
   }
-  
+
   void jMenuFilePreferences_actionPerformed(ActionEvent e)
-	{   
+	{
 		DecisionTreeOptions id3optionsFrame = new DecisionTreeOptions();
-		id3optionsFrame.show();
+		desktop.add(id3optionsFrame);
 	}
 
   void jMenuItem1_actionPerformed(ActionEvent e)

@@ -431,7 +431,8 @@ public class InstanceSet
 			for (int i=0; i<numAttributes(); i++)
 			{	by[i] = getInstance(j).getValue(i);
 			}
-			Instance ins = new Instance(getInstance(j).getWeight(),by);
+			//Instance ins = new Instance(getInstance(j).getWeight(),by);
+			Instance ins = new Instance((int)getInstance(j).getWeight(),by);
 			dest.add(ins);
     	}
 
@@ -482,7 +483,7 @@ public class InstanceSet
 			for (int j = 0; j < numInstances; j++)
 			{
 				Instance current = getInstance(j);
-				int instanceWeight = current.getWeight();
+				int instanceWeight = (int)current.getWeight();
 				for (int i=0;i<numAttributes;i++)
 				{
 					if (current.isMissing(i))

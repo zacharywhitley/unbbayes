@@ -28,7 +28,7 @@ public class Instance
   	protected byte[] attValues;
 
 	/** The instance's weight. */
-  	protected int weight;
+  	protected float weight;
 
   	/**
    	* Constructor that copies the attribute values from
@@ -78,7 +78,7 @@ public class Instance
    	*
    	* @param weight the weight
    	*/
-  	public final void setWeight(int weight)
+  	public final void setWeight(float weight)
 	{	this.weight = weight;
   	}
 
@@ -87,7 +87,7 @@ public class Instance
    	*
    	* @return the instance's weight as a double
    	*/
-  	public final int getWeight()
+  	public final float getWeight()
 	{	return weight;
   	}
 

@@ -1,16 +1,24 @@
 package unbbayes.datamining.gui.c45;
 
 import javax.swing.*;
-import javax.swing.tree.*;
 import java.util.*;
 
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.classifiers.decisiontree.*;
 
+/**
+ * Class implementing a window to show data about a decision tree
+ * 
+ * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com) 
+ */
 public class VerbosityPanel extends JScrollPane
 {
+	/** text area where data is written */
 	private JTextArea textArea;
 	
+	//--------------------------------------------------------------------//
+	
+	/** Default constructor */
 	public VerbosityPanel()
 	{
 		textArea = new JTextArea();
@@ -18,6 +26,14 @@ public class VerbosityPanel extends JScrollPane
 		textArea.setEditable(false);
 	}
 	
+	//-------------------------------------------------------------------//
+	
+	/** 
+	 * Writes data about a decision tree on textArea
+	 * 
+	 * @param c45 object storing the decision tree
+	 * @param data instance set used to create the decision tree  
+	 */
 	public void writeVerbosityText(C45 c45,InstanceSet data)
 	{
 		Node node;
@@ -26,20 +42,21 @@ public class VerbosityPanel extends JScrollPane
 		NominalNode nominalNode;
 		Leaf leaf;
 		int treeLevel;
-		DefaultMutableTreeNode treeNodeTemp;
 		String space;
-		double[][] distribution;
+		float[][] distribution;
+		float[] missingDistribution;
 		int attIndex;
 		int gainIndex;
+		float numInstances;
 						
-		//verbosity level
+		//options
 		int verbosityLevel = Options.getInstance().getVerbosityLevel();
+		boolean prunned = Options.getInstance().getIfUsingPrunning();
 				
 		//start tree and stack with root
-		JTree tree = c45.getTree();
-		DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)tree.getModel().getRoot();
+		node = c45.getInfoRootNode();
 		Stack stack = new Stack();
-		stack.add(treeNode);
+		stack.add(node);
 		
 		//data relative to node
 		SplitObject splitData;
@@ -50,10 +67,10 @@ public class VerbosityPanel extends JScrollPane
 		NumericData numericData;
 		Integer[] attIndexes;
 		ArrayList instIndexes;
+		ArrayList children;
 		double cut;
 								
 		//data relative to instance set
-		//InstanceSet instances = c45.getInstances();
 		InstanceSet instances = data;
 		Attribute[] attributes = instances.getAttributes();
 		Attribute classAttribute = instances.getClassAttribute();
@@ -62,23 +79,32 @@ public class VerbosityPanel extends JScrollPane
 		String[] attributeValues;
 		String[] classValues = classAttribute.getAttributeValues();
 		int classSize = classValues.length;
-		
-						
+								
 		//start string buffer
 		StringBuffer text = new StringBuffer();
+		text.append("DECISION TREE:");
 		text.append(c45.toString());
-		text.append("\nTOTAL: "+instances.numWeightedInstances()+" cases\n");
-		if(verbosityLevel>1) text.append("\nSPLIT DETAILS:\n");
-			
+		if(prunned)
+		{
+			text.append("\n\nDECISION TREE BEFORE PRUNNING:");
+			text.append(c45.getStringInfoTree()+"\n");
+		}
+		text.append("\nTOTAL: "+instances.numWeightedInstances()+" instances\n");
+		if(verbosityLevel>1) 
+		{
+			text.append("\nSPLIT DETAILS:\n");
+		}
+		
+		//for each node...					
 		while (!stack.empty())
 		{
-			treeNode = (DefaultMutableTreeNode)stack.pop();
-										
-			if(!treeNode.isLeaf()&&(!treeNode.getFirstChild().isLeaf()))
+			node = (Node)stack.pop();
+			children = node.getChildren();					
+			if(!(children.get(0) instanceof Leaf))
 			{
 				if(verbosityLevel>1)
 				{
-					node = (Node)treeNode.getUserObject();
+					//get instrumentation data
 					infoGains = node.getInfoGains();
 					splitData = node.getSplitData();
 					attIndexes = splitData.getAttributes();
@@ -86,7 +112,7 @@ public class VerbosityPanel extends JScrollPane
 					numericDataList = node.getNumericDataList();
 										
 					//computes space
-					treeLevel = treeNode.getLevel();
+					treeLevel = attributes.length-attIndexes.length;
 					space = "";
 					for(int i=0;i<treeLevel;i++)
 					{
@@ -97,8 +123,25 @@ public class VerbosityPanel extends JScrollPane
 					if(treeLevel>0)
 					{
 						text.append(space+node.toString().toUpperCase()+"\n");
-					}					
-					text.append(space+instIndexes.size()+" instances\n");
+					}
+					
+					//gets number of instances 
+					numInstances = 0;
+					for(int i=0;i<instIndexes.size();i++)
+					{
+						//gets the next instance
+						if(instIndexes.get(i) instanceof Integer)
+						{
+							instance = instances.getInstance(((Integer)instIndexes.get(i)).intValue());
+						}
+						else
+						{
+							instance = (Instance)instIndexes.get(i); 
+						}
+						numInstances += instance.getWeight();
+					}
+										
+					text.append(space+Utils.keep2DigitsAfterDot(numInstances)+" instances\n");
 										
 					if(verbosityLevel>2)
 					{
@@ -139,16 +182,27 @@ public class VerbosityPanel extends JScrollPane
 								if(attribute.isNominal())
 								{
 									//computes the distribution
-									distribution = new double[attribute.getAttributeValues().length][classSize];
+									distribution = new float[attribute.getAttributeValues().length][classSize];
+									missingDistribution = new float[classSize];
 									for(int x=0;x<instIndexes.size();x++)
 									{
-										instance = instances.getInstance(((Integer)instIndexes.get(x)).intValue());
-										for(int y=0;y<attribute.getAttributeValues().length;y++)
+										//gets the next instance
+										if(instIndexes.get(x) instanceof Integer)
 										{
-											if(instance.getValue(attribute)==y)
-											{
-												distribution[y][instance.getValue(instance.getClassIndex())]+=instance.getWeight();
-											}
+											instance = instances.getInstance(((Integer)instIndexes.get(x)).intValue());
+										}
+										else
+										{
+											instance = (Instance)instIndexes.get(x); 
+										}
+										
+										if(instance.isMissing(attribute))
+										{
+											missingDistribution[instance.getValue(instance.getClassIndex())]+=instance.getWeight();
+										}
+										else
+										{
+											distribution[instance.getValue(attribute)][instance.getValue(instance.getClassIndex())]+=instance.getWeight();
 										}
 									}
 																  
@@ -173,10 +227,19 @@ public class VerbosityPanel extends JScrollPane
 										
 										for(int y=0; y<classSize; y++)
 										{
-											text.append("	"+distribution[x][y]);
+											text.append("	"+Utils.keep2DigitsAfterDot(distribution[x][y]));
 										}
 										text.append("]\n");
 									}
+									
+									//unknown values
+									text.append(space+"[unkn.:");
+									for(int x=0; x<classSize; x++)
+									{
+										text.append("	"+Utils.keep2DigitsAfterDot(missingDistribution[x]));
+									}
+									text.append("]\n");
+									
 									text.append(space);
 								}
 								else
@@ -194,14 +257,21 @@ public class VerbosityPanel extends JScrollPane
 										text.append(space+"[below:");
 										for(int y=0; y<classSize; y++)
 										{
-											text.append("	"+(double)numericData.getInstancesBelow(x)[y]);
+											text.append("	"+Utils.keep2DigitsAfterDot(numericData.getInstancesBelow(x)[y]));
 										}
 										text.append("]\n");
 										
 										text.append(space+"[above:");
 										for(int y=0; y<classSize; y++)
 										{
-											text.append("	"+(double)numericData.getInstancesAbove(x)[y]);
+											text.append("	"+Utils.keep2DigitsAfterDot(numericData.getInstancesAbove(x)[y]));
+										}
+										text.append("]\n");
+										
+										text.append(space+"[unkn.:");
+										for(int y=0; y<classSize; y++)
+										{
+											text.append("	"+Utils.keep2DigitsAfterDot(numericData.getMissingValuesDistribution()[y]));
 										}
 										text.append("]\n");
 										
@@ -219,8 +289,7 @@ public class VerbosityPanel extends JScrollPane
 					}
 					
 					//print best attribute
-					treeNodeTemp = (DefaultMutableTreeNode)treeNode.getNextNode();
-					childNode = (Node)treeNodeTemp.getUserObject();
+					childNode = (Node)children.get(0);
 					attIndex = childNode.getAttribute().getIndex();
 					gainIndex = Utils.maxIndex(infoGains);
 					if(childNode instanceof NominalNode)
@@ -240,10 +309,11 @@ public class VerbosityPanel extends JScrollPane
 					}
 					
 				}
-										
-				for(int i=treeNode.getChildCount()-1;i>=0;i--)
+				
+				//add children on stack						
+				for(int i=children.size()-1;i>=0;i--)
 				{
-					stack.add(treeNode.getChildAt(i));
+					stack.add(children.get(i));
 				}
 			}
 		}

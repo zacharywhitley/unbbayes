@@ -14,10 +14,13 @@ public class NumericData
 	private ArrayList cuts;
 	/** list of double values representing the gains obtained */
 	private ArrayList gains;
-	/** list of int arrays representing the distributions above of each cut  */
+	/** list of float arrays representing the distributions above of each cut  */
 	private ArrayList instancesAbove;
-	/** list of int arrays representing the distributions below of each cut  */
+	/** list of float arrays representing the distributions below of each cut  */
 	private ArrayList instancesBelow;
+	/** the missing values distribution */
+	private float[] missingValuesDistribution;
+
 	
 	//OBS: 	the elements on the same position on the four 
 	//		ArrayLists relates to the same cut evaluation 
@@ -28,15 +31,18 @@ public class NumericData
 	 * Default constructor
 	 * 
 	 * @param index attribute index
+	 * @param missingValuesDistribution the missing values distribution
 	 */
-	public NumericData(int index)
+	public NumericData(int index, float[] missingValuesDistribution)
 	{
 		this.index = index;
+		this.missingValuesDistribution = missingValuesDistribution;
 		cuts = new ArrayList();
 		gains = new ArrayList();
 		instancesAbove = new ArrayList();
 		instancesBelow = new ArrayList();
 	}
+
 	
 	//---------------------------------SETS-------------------------------//
 	
@@ -48,7 +54,7 @@ public class NumericData
 	 * @param instancesBelow distribution of the instances whose value is below the cut  
 	 * @param instancesAbove distribution of the instances whose value is above the cut
 	 */
-	public void addData(double cut, double gain, int[] instancesBelow, int[] instancesAbove)
+	public void addData(double cut, double gain, float[] instancesBelow, float[] instancesAbove)
 	{
 		cuts.add(new Double(cut));
 		gains.add(new Double(gain));
@@ -77,6 +83,17 @@ public class NumericData
 	{
 		return index;
 	}
+	
+	/**
+	 * Returns the missing values distribution
+	 * 
+	 * @return the missing values distribution
+	 */
+	public float[] getMissingValuesDistribution()
+	{
+		return missingValuesDistribution;
+	}
+
 		
 	/**
 	 * Returns the cut on a given position
@@ -123,7 +140,7 @@ public class NumericData
 	 * @return the distribution below the cut on the given position, null 
 	 * if there isn't a cut on the position specified.   
 	 */	
-	public int[] getInstancesBelow(int index)
+	public float[] getInstancesBelow(int index)
 	{
 		if(index>getNumberOfCuts())
 		{
@@ -131,7 +148,7 @@ public class NumericData
 		}
 		else
 		{
-			return ((int[])instancesBelow.get(index));
+			return ((float[])instancesBelow.get(index));
 		}
 	}
 	
@@ -142,7 +159,7 @@ public class NumericData
 	 * @return the distribution above the cut on the given position, null 
 	 * if there isn't a cut on the position specified.   
 	 */
-	public int[] getInstancesAbove(int index)
+	public float[] getInstancesAbove(int index)
 	{
 		if(index>getNumberOfCuts())
 		{
@@ -150,7 +167,7 @@ public class NumericData
 		}
 		else
 		{
-			return ((int[])instancesAbove.get(index));
+			return ((float[])instancesAbove.get(index));
 		}
 	}
 }

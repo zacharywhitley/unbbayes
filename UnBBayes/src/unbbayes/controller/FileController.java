@@ -63,7 +63,10 @@ public class FileController
 		else if (className.equals("unbbayes.datamining.gui.id3.DecisionTreeMain"))
 		{   set = new HelpSet(null, getClass().getResource("/help/DataMiningHelp/Decision_Tree.hs"));
 		}
-		else if (className.equals("unbbayes.datamining.gui.evaluation.EvaluationMain"))
+                else if (className.equals("unbbayes.datamining.gui.c45.DecisionTreeMain"))
+                {   set = new HelpSet(null, getClass().getResource("/help/C45Help/C45.hs"));
+                }
+                else if (className.equals("unbbayes.datamining.gui.evaluation.EvaluationMain"))
 		{   set = new HelpSet(null, getClass().getResource("/help/DataMiningHelp/Evaluation.hs"));
 		}
 		else if (className.equals("unbbayes.datamining.gui.naivebayes.NaiveBayesMain"))

@@ -32,6 +32,7 @@ public class DecisionTreeMain extends JInternalFrame
   private ResourceBundle resource;
   private JTree id3tree;
   private ImageIcon abrirIcon;
+  private ImageIcon openModelIcon;
   private ImageIcon compilaIcon;
   private ImageIcon helpIcon;
   private ImageIcon salvarIcon;
@@ -73,6 +74,7 @@ public class DecisionTreeMain extends JInternalFrame
   {
     IconController iconController = IconController.getInstance();
     abrirIcon = iconController.getOpenIcon();
+	openModelIcon = iconController.getOpenModelIcon();
     compilaIcon = iconController.getCompileIcon();
     helpIcon = iconController.getHelpIcon();
     salvarIcon = iconController.getSaveIcon();
@@ -159,7 +161,7 @@ public class DecisionTreeMain extends JInternalFrame
     });
     jMenu1.setMnemonic(((Character)resource.getObject("learnMnemonic")).charValue());
     jMenu1.setText(resource.getString("learn"));
-    jMenuItem1.setIcon(abrirIcon);
+    jMenuItem1.setIcon(openModelIcon);
     jMenuItem1.setMnemonic(((Character)resource.getObject("openModelMnemonic")).charValue());
     jMenuItem1.setText(resource.getString("openModel"));
     jMenuItem1.addActionListener(new java.awt.event.ActionListener()
@@ -179,7 +181,7 @@ public class DecisionTreeMain extends JInternalFrame
       }
     });
     openModelButton.setToolTipText(resource.getString("openAModel"));
-    openModelButton.setIcon(abrirIcon);
+    openModelButton.setIcon(openModelIcon);
     openModelButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)

@@ -325,14 +325,17 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       }
     }
 
+    int numInstances = instanceSet.numInstances();
+    int j;
+
     //Learning
-    System.out.println((new java.text.SimpleDateFormat("HH:mm:ss - ")).format(new Date()));
+    System.out.println("Inicio = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
     for (int epoch=0; epoch<trainingTime; epoch++) {
     	//teste
-    	//System.out.println(epoch + " de " + trainingTime);
+    	System.out.println(epoch + " de " + trainingTime);
 
 
-      instanceEnum = instanceSet.enumerateInstances();
+      //instanceEnum = instanceSet.enumerateInstances();
       oldQuadraticError = quadraticError;
       quadraticError = 0;
 
@@ -340,12 +343,23 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
         learningRate = originalLearningRate / epoch;
       }
 
-      while (instanceEnum.hasMoreElements()) {
+      /*while (instanceEnum.hasMoreElements()) {
         instance = (Instance) instanceEnum.nextElement();
     	int instanceWeight = instance.getWeight();
         for(int i=0; i<instanceWeight; i++){
 	      quadraticError = quadraticError + learn(instance);
         }
+      }*/
+      for (j=0;j<numInstances;j++)
+      {
+        instance = instanceSet.getInstance(j);
+        //int instanceWeight = instance.getWeight();
+		float instanceWeight = instance.getWeight();
+        for(int i=0; i<instanceWeight; i++){
+          quadraticError = quadraticError + learn(instance);
+        }
+        //System.out.println("instance = "+j+" ="+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
+
       }
       quadraticError = quadraticError / numOfInstances;
 
@@ -360,7 +374,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
         }
       }
     }
-    System.out.println((new java.text.SimpleDateFormat("HH:mm:ss - ")).format(new Date()));
+    System.out.println("Fim = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
 
   }
 
@@ -375,11 +389,13 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
     float totalErrorEnergy = 0;
 
     inputLayerSetUp(instance);
+    //System.out.println("inputLayer = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
 
     ///////////calcula as saidas da hiddem
     for(int i=0; i<hiddenLayer.length; i++){
       hiddenLayer[i].calculateOutputValue(inputLayer);
     }
+    //System.out.println("hiddenLayer calculateOutputValue = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
 
     /////////calcula as saídas esperadas
     //expectedOutput2 = expectedOutput(instance);
@@ -391,21 +407,25 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
       instantaneousError = outputLayer[i].calculateErrorTerm(expectedOutput[instance.classValue()][i]);
       totalErrorEnergy = totalErrorEnergy + (instantaneousError * instantaneousError);
     }
+    //System.out.println("outputLayer calculateOutputValue = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
 
     ///////// UPDATE  dos pesos dos neuronios de saida
     for(int i=0; i<outputLayer.length; i++){
       outputLayer[i].updateWeights(learningRate, momentum, hiddenLayer);
     }
+    //System.out.println("outputLayer updateWeights = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
 
     //////////calcula error terms  (SIGMA) da camada oculta, da saída já está calculado
     for(int i=0; i<hiddenLayer.length; i++){
       hiddenLayer[i].calculateErrorTerm(outputLayer, i);
     }
+    //System.out.println("hiddenLayer calculateErrorTerm = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
 
     /////////UPDATE dos pesos dos neuronios ocultos
     for(int i=0; i<hiddenLayer.length; i++){
       hiddenLayer[i].updateWeights(learningRate, momentum, inputLayer);
     }
+    //System.out.println("hiddenLayer updateWeights = "+(new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
 
     return (totalErrorEnergy / 2);
   }

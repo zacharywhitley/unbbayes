@@ -135,11 +135,19 @@ public class PrunningUtils
 		{
 			Leaf leaf = (Leaf)grandChildren.get(0);
 			float[] leafDistribution = leaf.getDistribution();
-			System.arraycopy(leafDistribution,0,distribution,0,distribution.length);
-			
-			e = sumNonClassDistribution(leafDistribution,leaf.getClassValue());
-			N = e + distribution[leaf.getClassValue()];
-			return this.addErrs(N, e, confidence);		
+			if(leafDistribution==null)
+			{
+				e = 0;
+				N = 0;
+				return addErrs(N, e, confidence);				
+			}
+			else
+			{
+				System.arraycopy(leafDistribution,0,distribution,0,distribution.length);
+				e = ClassifierUtils.sumNonClassDistribution(leafDistribution,leaf.getClassValue());
+				N = e + distribution[leaf.getClassValue()];
+				return addErrs(N, e, confidence);
+			}		
 		}
 		
 		//otherwise...
@@ -165,7 +173,7 @@ public class PrunningUtils
 			
 			//compute the prunning error
 			classValue = Utils.maxIndex(distributionSum);
-			e = sumNonClassDistribution(distributionSum,classValue);
+			e = ClassifierUtils.sumNonClassDistribution(distributionSum,classValue);
 			N = e + distributionSum[classValue];
 			prunningError = addErrs(N,e,confidence);
 			
@@ -206,7 +214,14 @@ public class PrunningUtils
 		if(children.get(0) instanceof Leaf)
 		{
 		  	leaf = (Leaf)children.get(0);
-		  	newChildren.add(new Leaf(classAttribute,leaf.getDistribution()));
+		  	if(leaf.getDistribution()==null)
+		  	{
+		  		newChildren.add(new Leaf());
+		  	}
+		  	else
+		  	{
+				newChildren.add(new Leaf(classAttribute,leaf.getDistribution()));
+		  	}
 		}
 		//node
 		else
@@ -240,28 +255,6 @@ public class PrunningUtils
 		
 	//-------------------------------------------------------------------------//
 	
-	/**
-	 * Returns the number of non class distribution components 
-	 * 
-	 * @param distribution distribution to be evaluated
-	 * @param classIndex index of class value
-	 * @return number of non class distribution components 
-	 */
-	private double sumNonClassDistribution(float[] distribution, int classIndex)
-	{
-		int sum = 0;
-		for(int i=0;i<distribution.length;i++)
-		{
-			if(i!=classIndex)
-			{
-				sum += distribution[i];
-			}
-		}
-		return sum;
-	}
-	
-	//-------------------------------------------------------------------------//
-		
 	/**
 	 * Computes estimated extra error for given total number of instances
 	 * and error using normal approximation to binomial distribution

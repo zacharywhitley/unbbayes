@@ -58,9 +58,16 @@ public class Leaf implements Serializable
 	 */
 	public float[] getDistribution()
 	{
-		float[] arrayCopy = new float[weightDistribution.length];
-		System.arraycopy(weightDistribution,0,arrayCopy,0,weightDistribution.length);
-		return arrayCopy;
+		if(weightDistribution==null)
+		{
+			return null;
+		}
+		else
+		{
+			float[] arrayCopy = new float[weightDistribution.length];
+			System.arraycopy(weightDistribution,0,arrayCopy,0,weightDistribution.length);
+			return arrayCopy;
+		}
 	}
 	
 	/**

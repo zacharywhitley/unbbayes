@@ -26,6 +26,7 @@ public class NeuralModelMain extends JInternalFrame{
   private JButton saveButton = new JButton();
   private JButton openButton = new JButton();
   private ImageIcon openIcon;
+  private ImageIcon openModelIcon;
   private ImageIcon compileIcon;
   private ImageIcon helpIcon;
   private ImageIcon saveIcon;
@@ -75,6 +76,7 @@ public class NeuralModelMain extends JInternalFrame{
 
   private void jbInit() throws Exception{
     openIcon = iconController.getOpenIcon();
+	openModelIcon = iconController.getOpenModelIcon();
     compileIcon = iconController.getCompileIcon();
     helpIcon = iconController.getHelpIcon();
     saveIcon = iconController.getSaveIcon();
@@ -112,7 +114,7 @@ public class NeuralModelMain extends JInternalFrame{
       }
     });
     openModelButton.setToolTipText(resource.getString("openModelToolTip"));
-    openModelButton.setIcon(openIcon);
+    openModelButton.setIcon(openModelIcon);
     openModelButton.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
         openModelButton_actionPerformed(e);

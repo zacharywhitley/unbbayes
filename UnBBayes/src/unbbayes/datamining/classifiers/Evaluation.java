@@ -465,7 +465,8 @@ public class Evaluation implements IProgress
 	  int numInstances = data.numInstances();
 	  for (int i=0;i<numInstances;i++)
 	  {   Instance inst = data.getInstance(i);
-		  int originalWeight = inst.getWeight();
+		  //int originalWeight = inst.getWeight();
+		float originalWeight = inst.getWeight();
 		  inst.setWeight(1);
 		  for (int j=0;j<originalWeight;j++)
 			  instances.add(inst);

@@ -9,9 +9,10 @@ import unbbayes.datamining.classifiers.decisiontree.*;
  *
  *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
- *  @version $1.0 $ (16/02/2002)
+ *
  */
-public class ClassifierUtils {
+public class ClassifierUtils 
+{
 	/** stores the calculated logs */
 	private HashMap logmap;
 	/** value of ln(2) to be used in the log2 function*/
@@ -21,6 +22,11 @@ public class ClassifierUtils {
 	
 	//----------------------------------------------------------------------//
 
+	/**
+	 * Default constructor
+	 * 
+	 * @param inst instance set used for the classification functions
+	 */
 	public ClassifierUtils(InstanceSet inst)
 	{
 		instances = inst;
@@ -32,24 +38,14 @@ public class ClassifierUtils {
 			logmap.put(new Double(-0),zeroDouble);		
 	}
 	
-	//----------------------------------------------------------------------//
-
-	/**
-	* Returns the logarithm for base 2 of a double value. Special cases:
-	* If the argument is NaN or less than zero, then the result is NaN.
-	* If the argument is positive infinity, then the result is positive infinity.
-	* If the argument is positive zero or negative zero, then the result is negative infinity.
-	*
-	* @param a - a number greater than 0.0.
-	* @return The value log2 a, the natural logarithm of a.
-	*/
-	public static double log2(double a)
-	{
-		return Math.log(a)/LN2;
-	}
-  	
 	//--------------------------------------------------------------------//
 
+	/**
+	 * Calculates a*log(a) base 2
+	 * 
+	 * @param a a number greater than 0.0
+	 * @return a*log(a) base 2
+	 */
 	public double xlog2(double a)
 	{
 		Double aDouble = new Double(a);
@@ -69,8 +65,16 @@ public class ClassifierUtils {
 			return newLog;
 		}
 	}
+	
 	//--------------------------------------------------------------------//
 
+	/**
+	 * Splits an instance set based on an attribute
+	 * 
+	 * @param split object representing an instance set
+	 * @param attIndex attribute index relative to the split 
+	 * @return objects representing each instance set part
+	 */
 	public SplitObject[] splitData(SplitObject split,int attIndex)
 	{
 		//old attributes' indexes
@@ -93,25 +97,53 @@ public class ClassifierUtils {
 				j++;
 			}
 		}
-				
+			
 		//create ArrayList of ArrayLists, one for each split atribute value 
 		ArrayList[] data = new ArrayList[numValues];
 		for (int i=0;i<numValues;i++)
 		{
-			data[i] = new ArrayList();
+			 data[i] = new ArrayList();
 		}
 				
 		//puts an instance in each arrayList, depending of this value for the split attribute
 		Instance instance;
 		int numDataset;
 		int numInst = inst.size();
+		float[] numInstancesPerValue = new float[numValues];
+		ArrayList missingValueInstances = new ArrayList(); 
 		for (int i=0;i<numInst;i++)
 		{
-			instance = instances.getInstance(((Integer)inst.get(i)).intValue());
-			numDataset = (int)instance.getValue(att[attIndex].intValue());
-			data[numDataset].add(inst.get(i));
+		  instance = getInstance(inst,i); 
+		  if(!instance.isMissing(att[attIndex].intValue()))
+		  {
+			  numDataset = (int)instance.getValue(att[attIndex].intValue());
+			  data[numDataset].add(inst.get(i));
+			  numInstancesPerValue[numDataset] += instance.getWeight();
+		  }
+		  else
+		  {
+			missingValueInstances.add(instance);
+		  }
 		}
 		
+		//put every instance with missing value in every split data arraylist
+		Instance newInstance;
+		float completeInstancesSum = Utils.sum(numInstancesPerValue);
+		for(int i=0;i<numValues;i++)
+		{
+			for(int j=0;j<missingValueInstances.size();j++)
+			{
+				if(numInstancesPerValue[i]!=0)
+				{
+					instance = (Instance)missingValueInstances.get(j);
+					newInstance = new Instance(instance);
+					newInstance.setDataset(instance.getDataset());
+					newInstance.setWeight(instance.getWeight()*numInstancesPerValue[i]/completeInstancesSum); 
+					data[i].add(newInstance);
+				}
+			}
+		}
+				
 		//create the split objects with the new attributes and an arraylist relative to a value
 		SplitObject[] splitObject = new SplitObject[numValues];
 		for (int i=0;i<numValues;i++)
@@ -121,13 +153,98 @@ public class ClassifierUtils {
 		
 		return splitObject;
 	}
+	
+	//---------------------------------------------------------------------//
+	
+	/**
+	 * Splits a dataset according to the values of a numeric attribute.
+	 *
+	 * @param split index for data which is to be split
+	 * @param attIndex index for the attribute
+	 * @param splitValue attribute value used to split data 
+	 * @return The instance sets produced by the split
+	 */
+	public SplitObject[] splitNumericData(SplitObject split,int attIndex, double splitValue)
+	{
+		Instance instance;
+		Integer[] actualAtt = split.getAttributes();
+		ArrayList actualInst = split.getInstances();
+		SplitObject[] splitData = new SplitObject[2];
+		Attribute att = instances.getAttribute(actualAtt[attIndex].intValue());
+		String[] values = att.getAttributeValues();
+		
+		//take off the split attribute from the new attributes
+		Integer[] newAttributes = new Integer[actualAtt.length-1];
+		for(int i=0, j=0;i<actualAtt.length;i++)
+		{
+			if (attIndex!=i)
+			{
+				newAttributes[j]=actualAtt[i];
+				j++;
+			}
+		}
+			
+		//arrange instances according to split value
+		ArrayList instancesMoreThan = new ArrayList();
+		ArrayList instancesLessThan = new ArrayList();
+		ArrayList missingValueInstances = new ArrayList();
+		float[] numInstancesPerValue = new float[2];
+		for(int i=0;i<actualInst.size();i++)
+		{
+			instance = getInstance(actualInst,i);
+			if(!instance.isMissing(actualAtt[attIndex].intValue()))
+			{
+				if(Double.parseDouble(values[instance.getValue(actualAtt[attIndex].intValue())])>=splitValue)
+				{
+					instancesMoreThan.add(actualInst.get(i));
+					numInstancesPerValue[0] += instance.getWeight(); 								
+				}
+				else
+				{
+					instancesLessThan.add(actualInst.get(i));
+					numInstancesPerValue[1] += instance.getWeight();
+				}
+			}
+			else
+			{
+				missingValueInstances.add(instance);
+			}
+		}
+		
+		//put every instance with missing value in every split data arraylist
+		Instance newInstance;
+		float completeInstancesSum = Utils.sum(numInstancesPerValue);
+		for(int i=0;i<missingValueInstances.size();i++)
+		{
+			instance = (Instance)missingValueInstances.get(i);
+			if(numInstancesPerValue[0]!=0)
+			{
+				newInstance = new Instance(instance);
+				newInstance.setDataset(instance.getDataset());
+				newInstance.setWeight(instance.getWeight()*numInstancesPerValue[0]/completeInstancesSum); 
+				instancesMoreThan.add(newInstance);
+			}
+			if(numInstancesPerValue[1]!=0)
+			{
+				newInstance = new Instance(instance);
+				newInstance.setDataset(instance.getDataset());
+				newInstance.setWeight(instance.getWeight()*numInstancesPerValue[1]/completeInstancesSum); 
+				instancesLessThan.add(newInstance);
+			}
+		}
+			
+		splitData[0] = new SplitObject(instancesMoreThan,newAttributes);
+		splitData[1] = new SplitObject(instancesLessThan,newAttributes);
+		
+		return splitData;	
+	} 
 
 	//--------------------------------------------------------------------//
 
 	/**
-	* Computes information gain for an attribute.
+	* Computes information gain for the instance set attributes.
 	*
-	* @param split set of indexes used for the computation
+	* @param split object representing an instance set
 	* @return Information gain for the given attribute and data
 	*/
 	  public double[] computeInfoGain(SplitObject split)
@@ -136,14 +253,14 @@ public class ClassifierUtils {
 	  }
 	  
 	//------------------------------------------------------------------//
+	
 	/**
-	 * Computes information gain for an attribute.
+	 * Computes information gain for the instance set attributes.
 	 *
-	 * @param split set of indexes used for the computation
-	 * @param att Attribute
+	 * @param split object representing an instance set
 	 * @param splitValues cut values obtained in computation
 	 * @param numericDataList numeric data obtained in the computation of numeric attributes 
-	 * @return Information gain for the given attribute and data
+	 * @return Information gains for the split attributes
 	 */
 	  public double[] computeInfoGain(SplitObject split, double[] splitValues, ArrayList numericDataList)
 	  {
@@ -158,53 +275,92 @@ public class ClassifierUtils {
 		//class attribute's index
 		int classIndex = instances.getClassIndex();
 		//class values distribution for each value of each attribute 
-		int[][][] counts = new int[att.length - 1][][];
-		//total class values distribution   
-		int[] priors = new int[numClassValues];
+		float[][][] counts = new float[att.length - 1][][];
+		//number of instances without missing values for each attribute
+		float[] totalSums = new float[att.length-1];
+		//total class distribution without considering missing values
+		float[] totalCounts = new float[numClassValues];
+		//infoGains obtained
+		double[] resultGain = new double[att.length-1];
+		//stores if the attributes has missing values or not
+		boolean[] hasMissingValues = new boolean[att.length-1];
 		
-		//splitValues = new double[att.length];
-		//numericDataList = new ArrayList();
-		   
 		//initialize counts  
-		int attIndex = 0;
 		//for each attribute...
-		for(int i=0;i<att.length;i++)
+		for(int i=0,attIndex=0;i<att.length;i++)
 		{
 			if (att[i].intValue()!=classIndex)
 			{
-				counts[attIndex] = new int[instances.getAttribute(att[i].intValue()).numValues()][numClassValues];
+				counts[attIndex] = new float[instances.getAttribute(att[i].intValue()).numValues()][numClassValues];
 				attIndex++;				
 			}
 		}
 		
-		//Compute counts and priors
+		//Compute counts
 		//for each instance...
 		Instance instance;
 		int attributeIndex;
+		Arrays.fill(hasMissingValues,false);
+		//for each instance...
 		for (int i=0;i<numInst;i++)
 		{
-			instance = instances.getInstance(((Integer)inst.get(i)).intValue());
+			instance = getInstance(inst,i); 
 			if (!instance.classIsMissing())
 			{
-				attIndex = 0;
 				//for each attribute...
-				for (int j=0;j<att.length;j++)
+				for (int j=0,attIndex=0;j<att.length;j++)
 				{
 					attributeIndex = att[j].intValue();
-					if (attributeIndex!=classIndex && !instance.isMissing(attributeIndex))
+					if (attributeIndex!=classIndex)
 					{
-						counts[attIndex][(int)instance.getValue(attributeIndex)][(int)instance.classValue()] += instance.getWeight();	
+						if (!instance.isMissing(attributeIndex))
+						{
+							counts[attIndex][(int)instance.getValue(attributeIndex)][(int)instance.classValue()] += instance.getWeight();
+						}
+						else
+						{
+							hasMissingValues[attIndex]=true;
+						}
+													
 						attIndex++;
 					}					
 				}
-				priors[(int)instance.classValue()] += instance.getWeight();
+				totalCounts[instance.classValue()] += instance.getWeight();
 			}
 		}
 		
-		int totalSum = Utils.sum(priors);
-		double infoGain = computeEntropy(priors,totalSum);	//entropy(S)
-		double[] resultGain = new double[counts.length];
-		Arrays.fill(resultGain,infoGain);
+		//data for attributes without missing values
+		float totalSum = Utils.sum(totalCounts);
+		double totalInfoGain = computeEntropy(totalCounts,totalSum);
+		
+		//computes entropy(S) for each attribute
+		//different for each attribute because of the possibility of missing values
+		float[] attributeCounts = new float[numClassValues];
+		double infoGain;
+		        
+		for(int i=0;i<counts.length;i++)
+		{
+			if(hasMissingValues[i])
+			{
+				Arrays.fill(attributeCounts,0);
+				for(int j=0;j<counts[i].length;j++)
+				{
+					for(int k=0;k<counts[i][j].length;k++)
+					{
+						attributeCounts[k] += counts[i][j][k];
+					}
+				}
+				totalSums[i] = Utils.sum(attributeCounts);
+				infoGain = computeEntropy(attributeCounts,totalSums[i]);
+			}
+			else
+			{
+				totalSums[i] = totalSum;
+				infoGain = totalInfoGain;
+			}
+			
+			resultGain[i] = infoGain;
+		}
 		
 		if (counts.length==0)
 		{
@@ -220,7 +376,7 @@ public class ClassifierUtils {
 			{
 				for (int j=0;j<counts[i].length;j++)
 				{
-					resultGain[i] -= computeEntropy(counts[i][j],totalSum);	
+					resultGain[i] -= computeEntropy(counts[i][j],totalSums[i]);	
 				}
 			}
 			
@@ -230,17 +386,20 @@ public class ClassifierUtils {
 				//array with possible values
 				double[] values; 
 				//array with classes distribution for each attribute value,
-				int[][] classesDistribution;
+				float[][] classesDistribution;
 				
 				//gets values effectively used sorted
 				String[] oldValues = instances.getAttribute(att[i].intValue()).getAttributeValues();
 				ArrayList valuesTemp = new ArrayList();
 				for(int x=0;x<inst.size();x++)
 				{
-					instance = instances.getInstance(((Integer)inst.get(x)).intValue());
-					if(!valuesTemp.contains(oldValues[instance.getValue(att[i].intValue())]))
+					instance = getInstance(inst,x);
+					if(!instance.isMissing(att[i].intValue()))
 					{
-						valuesTemp.add(oldValues[instance.getValue(att[i].intValue())]);
+						if(!valuesTemp.contains(oldValues[instance.getValue(att[i].intValue())]))
+						{
+							valuesTemp.add(oldValues[instance.getValue(att[i].intValue())]);
+						}
 					}
 				}
 				values = new double[valuesTemp.size()];
@@ -250,14 +409,15 @@ public class ClassifierUtils {
 				}
 				Arrays.sort(values);
 				
-				classesDistribution = new int[values.length][numClassValues];
+				classesDistribution = new float[values.length][numClassValues];
+				float[] missingValuesDistribution = new float[numClassValues];
 				
 				//fill classes distribution
 				//for each instance...
 				for(int x=0;x<inst.size();x++)
 				{
-					instance = instances.getInstance(((Integer)inst.get(x)).intValue());
-					if ((!instance.classIsMissing())&&!instance.isMissing(att[i].intValue()))
+					instance = getInstance(inst,x);
+					if (!instance.isMissing(att[i].intValue()))
 					{
 						//for each value...
 						for(int y=0;y<values.length;y++)
@@ -269,25 +429,29 @@ public class ClassifierUtils {
 							}
 						}
 					}
+					else
+					{
+						missingValuesDistribution[(int)instance.classValue()] += instance.getWeight();
+					}
 				}					
 							        						
 				//search for the minimum entropy
 				double value1 = values[0], value2;
-				int[] distribution1, distribution2;
+				float[] distribution1, distribution2;
 				double minimumEntropy = Integer.MAX_VALUE;
 				double entropy; 
 				double minimumValue = Integer.MAX_VALUE;
-				int[] sumPart1, sumPart2;
+				float[] sumPart1, sumPart2;
 				double actualValue;
-				NumericData numericData = new NumericData(i); 
+				NumericData numericData = new NumericData(i,missingValuesDistribution); 
 				//for each attribute value...
 				for(int x=1;x<values.length;x++)
 				{
 					value2 = values[x];
 					distribution1 = classesDistribution[x-1];
 					distribution2 = classesDistribution[x];
-					sumPart1 = new int[numClassValues]; 
-					sumPart2 = new int[numClassValues];
+					sumPart1 = new float[numClassValues]; 
+					sumPart2 = new float[numClassValues];
 					entropy = 0; 
 										
 					//if two values has the same class, there is no evaluation
@@ -302,7 +466,7 @@ public class ClassifierUtils {
 							sumPart2 = Utils.arraysSum(sumPart2,classesDistribution[y]);
 						}
 						
-						entropy = computeEntropy(sumPart1,totalSum) + computeEntropy(sumPart2,totalSum);
+						entropy = computeEntropy(sumPart1,totalSums[i]) + computeEntropy(sumPart2,totalSums[i]);
 						
 						actualValue = (double)(values[x-1]+values[x])/2.0d;
 						
@@ -334,22 +498,24 @@ public class ClassifierUtils {
 		return resultGain;
 	  }
 
+
 	//--------------------------------------------------------------------//
 
 	/**
-	* Computes the entropy of a dataset.
+	* Computes the entropy of a distribution.
 	*
-	* @param data Data for which entropy is to be computed
-	* @return Entropy of the data's class distribution
+	* @param classValues classes distribution used to compute the entropy
+	* @param totalSum total number of instances from the instance set 
+	* @return Entropy of the classes distribution
 	*/
-	public double computeEntropy(int[] classValues,int totalSum)
+	public double computeEntropy(float[] classValues,float totalSum)
 	{
-	  double entropy=0;
-	  int sum=0;
+	  double entropy = 0;
+	  float sum = 0;
 	  for (int i=0;i<classValues.length;i++)
 	  {
-		entropy-=xlog2(classValues[i]);
-		sum+=classValues[i];
+		entropy -= xlog2(classValues[i]);
+		sum += classValues[i];
 	  }
 	  return (entropy + xlog2(sum))/totalSum;
 	}
@@ -374,19 +540,28 @@ public class ClassifierUtils {
 		int numValues = splitAtt.numValues();
 		
 		//gets the number of instances
-		int numInstances = getNumberOfInstances(split); 
-		double splitInfo = xlog2(numInstances);
-    	
+		float numInstances = getNumberOfInstances(split); 
+		    	
 		//for each value...
-		int numInstancesSplit;
-		for (int i = 0; i < numValues; i++)
+		float numInstancesSplit;
+		float totalNumInstancesSplit = 0;
+		double splitInfo = xlog2(numInstances);
+		for (int i=0; i < numValues; i++)
 		{	
 			numInstancesSplit = getNumberOfInstances(splitData[i]);
 			if (numInstancesSplit > 0)
 			{
 				splitInfo -= xlog2(numInstancesSplit);
 			}
+			totalNumInstancesSplit += numInstancesSplit;
 		}
+		
+		//work with missing values
+		if(totalNumInstancesSplit<numInstances)
+		{
+			splitInfo -= xlog2(numInstances-totalNumInstancesSplit);
+		}
+				
 		splitInfo /= numInstances;
 		
 		if (splitInfo != 0)
@@ -401,28 +576,56 @@ public class ClassifierUtils {
 	
 	//---------------------------------------------------------------------//
 	
-	public int getNumberOfInstances(SplitObject split)
+	/**
+	 * Returns the number of instances from a split object
+	 * 
+	 * @param split object representing an instance set
+	 * @return number of instances from split
+	 */
+	public float getNumberOfInstances(SplitObject split)
 	{
-		int numInstances = 0;
+		float numInstances = 0;
 		ArrayList actualInst = split.getInstances();
-		int instIndex;
+		Instance instance;
 		for(int i=0;i<actualInst.size();i++)
 		{
-			instIndex = ((Integer)actualInst.get(i)).intValue(); 
-			numInstances += instances.getInstance(instIndex).getWeight();	
+			instance = getInstance(actualInst,i);
+			numInstances += instance.getWeight();	
 		}
 		
 		return numInstances;
 	}
 	
 	//---------------------------------------------------------------------//
+	
+	/**
+	  * Gets the instance from an index relative to a list of indexes
+	  * 
+	  * @param inst list of instances
+	  * @param i instance index
+	  * @return instance from index i
+	  */
+	public Instance getInstance(ArrayList inst, int i)
+	{
+		if(inst.get(i) instanceof Integer)
+		{
+			return instances.getInstance(((Integer)inst.get(i)).intValue());
+		}
+		else
+		{
+			return (Instance)inst.get(i);
+		}
+	}
+	
+	//---------------------------------------------------------------------//
   	
-	/**Checks if two classes distributions refers to the same class
+	/**
+	 * Checks if two classes distributions refers to the same class
 	 * @param distribution1: one of the distributions to be evaluated
 	 * @param distribution2: one of the distributions to be evaluated
 	 * @return boolean value indicating if distributions refers to the same class or not 
 	 */
-	public static boolean hasSameClass(int[] distribution1, int[] distribution2)
+	public static boolean hasSameClass(float[] distribution1, float[] distribution2)
 	{
 		if(distribution1.length!=distribution2.length)
 		{
@@ -444,55 +647,41 @@ public class ClassifierUtils {
 		 return true;
 	}
 	
-	//---------------------------------------------------------------------//
+	//----------------------------------------------------------------------//
+
+	/**
+	 * Returns the logarithm for base 2 of a double value. Special cases:
+	 * If the argument is NaN or less than zero, then the result is NaN.
+	 * If the argument is positive infinity, then the result is positive infinity.
+	 * If the argument is positive zero or negative zero, then the result is negative infinity.
+	 *
+	 * @param a a number greater than 0.0.
+	 * @return The value log2 a, the natural logarithm of a.
+	 */
+	public static double log2(double a)
+	{
+	  return Math.log(a)/LN2;
+	}
+	
+	//-------------------------------------------------------------------------//
 	
 	/**
-	* Splits a dataset according to the values of a numeric attribute.
-	*
-	* @param split index for data which is to be split
-	* @param attIndex index for the attribute
-	* @param splitValue attribute value used to split data 
-	* @return The sets of instances produced by the split
-	*/
-	public SplitObject[] splitNumericData(SplitObject split,int attIndex, double splitValue)
+	 * Returns the number of non class distribution components 
+	 * 
+	 * @param distribution distribution to be evaluated
+	 * @param classIndex index of class value
+	 * @return number of non class distribution components 
+	 */
+	public static double sumNonClassDistribution(float[] distribution, int classIndex)
 	{
-		Instance instance;
-		Integer[] actualAtt = split.getAttributes();
-		ArrayList actualInst = split.getInstances();
-		SplitObject[] splitData = new SplitObject[2];
-		Attribute att = instances.getAttribute(actualAtt[attIndex].intValue());
-		String[] values = att.getAttributeValues();
-		
-		//take off the split attribute from the new attributes
-		Integer[] newAttributes = new Integer[actualAtt.length-1];
-		for(int i=0, j=0;i<actualAtt.length;i++)
+		int sum = 0;
+		for(int i=0;i<distribution.length;i++)
 		{
-			if (attIndex!=i)
+			if(i!=classIndex)
 			{
-				newAttributes[j]=actualAtt[i];
-				j++;
+				sum += distribution[i];
 			}
 		}
-			
-		ArrayList instancesMoreThan = new ArrayList();
-		ArrayList instancesLessThan = new ArrayList();
-		
-		for(int i=0;i<actualInst.size();i++)
-		{
-			instance = instances.getInstance(((Integer)actualInst.get(i)).intValue());
-			if(Double.parseDouble(values[instance.getValue(actualAtt[attIndex].intValue())])>=splitValue)
-			{
-				instancesMoreThan.add(actualInst.get(i));								
-			}
-			else
-			{
-				instancesLessThan.add(actualInst.get(i));
-			}
-		}
-			
-		splitData[0] = new SplitObject(instancesMoreThan,newAttributes);
-		splitData[1] = new SplitObject(instancesLessThan,newAttributes);
-		
-		return splitData;	
+		return sum;
 	}
 }

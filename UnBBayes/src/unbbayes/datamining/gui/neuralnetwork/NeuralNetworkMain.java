@@ -27,6 +27,7 @@ public class NeuralNetworkMain extends JInternalFrame {
   private JButton helpButton = new JButton();
   private JButton learnButton = new JButton();
   private ImageIcon openIcon;
+  private ImageIcon openModelIcon;
   private ImageIcon compileIcon;
   private ImageIcon helpIcon;
   private ImageIcon saveIcon;
@@ -74,6 +75,7 @@ public class NeuralNetworkMain extends JInternalFrame {
   private void jbInit() throws Exception {
     resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource");
     openIcon = iconController.getOpenIcon();
+	openModelIcon = iconController.getOpenModelIcon();
     compileIcon = iconController.getCompileIcon();
     helpIcon = iconController.getHelpIcon();
     saveIcon = iconController.getSaveIcon();
@@ -82,7 +84,7 @@ public class NeuralNetworkMain extends JInternalFrame {
     titledBorder1 = new TitledBorder(border1,"Status");
     openButton.setIcon(openIcon);
     saveButton.setIcon(saveIcon);
-    openModelButton.setIcon(openIcon);
+    openModelButton.setIcon(openModelIcon);
     helpButton.setIcon(helpIcon);
     learnButton.setIcon(compileIcon);
     toolBar.setFloatable(false);
@@ -136,7 +138,7 @@ public class NeuralNetworkMain extends JInternalFrame {
         open_actionPerformed(e);
       }
     });
-    openModelMenu.setIcon(openIcon);
+    openModelMenu.setIcon(openModelIcon);
     openModelMenu.setText(resource.getString("openModelMenu"));
     openModelMenu.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(ActionEvent e) {
