@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.*;
 
 import linfca.Controller;
 import linfca.Feature;
@@ -68,7 +69,13 @@ public class ListarLancamentoUsoFeature implements Feature {
 			Element lancamento = new Element("lancamento");
 			int codigo = rs.getInt("l.cod_lancamento_uso");
 			Timestamp inicio = rs.getTimestamp("l.dt_hora_inicio_lancamento_uso");
-			Timestamp fim = rs.getTimestamp("l.dt_hora_fim_lancamento_uso");
+			Calendar calInicio = Calendar.getInstance();
+			calInicio.setTime(inicio);
+						
+			Timestamp fim = rs.getTimestamp("l.dt_hora_fim_lancamento_uso");			
+			Calendar calFim = Calendar.getInstance();
+			calFim.setTime(fim);
+			
 			String nome = rs.getString("u.nome");
 			String foto = rs.getString("u.foto");
 
@@ -76,14 +83,14 @@ public class ListarLancamentoUsoFeature implements Feature {
 			codigoXML.setText("" +codigo);
 
 			Element dataInicioXML = new Element("data-hora-inicio-uso");
-			dataInicioXML.setText(inicio.getDay() + "/" + inicio.getMonth() + 
-					"/" + inicio.getYear() + " " + inicio.getHours() + ":" + 
-					inicio.getMinutes());
+			dataInicioXML.setText(calInicio.get(Calendar.DAY_OF_MONTH) + "/" + (calInicio.get(Calendar.MONTH)+1) + 
+					"/" + calInicio.get(Calendar.YEAR) + " " + calInicio.get(Calendar.HOUR_OF_DAY) + ":" + 
+					calInicio.get(Calendar.MINUTE));
 			
 			if (fim != null) {
 				Element dataFimXML = new Element("data-hora-fim-uso");
-				dataFimXML.setText(fim.getDay() + "/" + fim.getMonth() + "/" + 
-					fim.getYear() + " " + fim.getHours() + ":" + fim.getMinutes());
+				dataFimXML.setText(calFim.get(Calendar.DAY_OF_MONTH) + "/" + (calFim.get(Calendar.MONTH)+1) + "/" + 
+					calFim.get(Calendar.YEAR) + " " + calFim.get(Calendar.HOUR_OF_DAY) + ":" + calFim.get(Calendar.MINUTE));
 				lancamento.getChildren().add(dataFimXML);
 			}
 			Element nomeXML = new Element("nome-usuario");
