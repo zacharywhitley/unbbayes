@@ -26,6 +26,8 @@
    String mes              = request.getParameter("mes");
    String ano              = request.getParameter("ano");
    String dataNascimento   = ano + "/" + mes + "/" + dia;
+   
+   String foto64 = Base64.encode(foto);
       
    Element in = new Element("in");
    
@@ -52,7 +54,7 @@
    confirmacaoSenhaE.setText(confirmacaoSenha);
    emailE.setText(email);
    enderecoE.setText(endereco);
-   fotoE.setText(foto);
+   fotoE.setText(foto64);
    dataNascimentoE.setText(dataNascimento);
    
    in.getChildren().add(codTipoUsuarioE);
