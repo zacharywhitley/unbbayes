@@ -66,8 +66,6 @@ public class WindowController implements KeyListener {
     private NumberFormat df;
     private EvidenceTree evidenceTree;
 
-    //private boolean[] situacaoArvore;
-
     private List copia;
     private List copiados;
 
@@ -139,11 +137,6 @@ public class WindowController implements KeyListener {
     public ProbabilisticNetwork getRede() {
         return this.rede;
     }
-
-    /*public boolean[] getSituacaoArvore() {
-      return this.situacaoArvore;
-    }*/
-
 
     /**
      * Salva a imagem da rede para um arquivo.
@@ -229,76 +222,6 @@ public class WindowController implements KeyListener {
 
 
     /**
-     *  Abre uma nova janela modal para inserir os dados para serem usados no
-     *  likelihood.
-     *
-     * @param  caminho  um <code>TreePath <code>dizendo a posição do mouse.
-     * @since
-     * @see             TreePath
-     */
-    public void mostrarLikelihood(DefaultMutableTreeNode node) {
-        ProbabilisticNode auxVP = (ProbabilisticNode) node.getUserObject();
-        int i;
-        JPanel panel = new JPanel();
-        JTable tabela = new JTable(auxVP.getStatesSize(), 2);
-        for (i = 0; i < auxVP.getStatesSize(); i++) {
-            tabela.setValueAt(auxVP.getStateAt(i), i, 0);
-            tabela.setValueAt("100", i, 1);
-        }
-        JLabel label = new JLabel(auxVP.toString());
-        panel.add(label);
-        panel.add(tabela);
-        if (JOptionPane.showConfirmDialog(tela, panel, resource.getString("likelihoodName"), JOptionPane.OK_CANCEL_OPTION) ==
-                JOptionPane.OK_OPTION) {
-
-            DefaultMutableTreeNode auxNode;
-
-            float[] valores = new float[auxVP.getStatesSize()];
-
-            try {
-                for (i = 0; i < auxVP.getStatesSize(); i++) {
-                    valores[i] = df.parse((String) tabela.getValueAt(i, 1)).floatValue();
-                }
-            } catch (ParseException e) {
-                System.err.println(e.getMessage());
-                return;
-            }
-
-            float valorMax = valores[0];
-            for (i = 1; i < auxVP.getStatesSize(); i++) {
-                if (valorMax < valores[i]) {
-                    valorMax = valores[i];
-                }
-            }
-
-            if (valorMax == 0.0) {
-                System.err.println(resource.getString("likelihoodException"));
-                return;
-            }
-
-            for (i = 0; i < auxVP.getStatesSize(); i++) {
-                valores[i] /= valorMax;
-            }
-
-            for (i = 0; i < valores.length && valores[i] == 1; i++)
-                ;
-            if (i == valores.length) {
-                return;
-            }
-
-            String str;
-            auxVP.addLikeliHood(valores);
-            for (i = 0; i < node.getChildCount(); i++) {
-                auxNode = (DefaultMutableTreeNode) node.getChildAt(i);
-                str = (String) auxNode.getUserObject();
-                auxNode.setUserObject(str.substring(0, str.lastIndexOf(':') + 1) + df.format(valores[i] * 100));
-            }
-            ((DefaultTreeModel) evidenceTree.getModel()).reload(node);
-        }
-    }
-
-
-    /**
      * Inicia as crenças da árvore de junção.
      */
     public void initialize() {
@@ -330,50 +253,6 @@ public class WindowController implements KeyListener {
         evidenceTree.updateTree();
         tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
-
-
-    /**
-     *  Retrai todos os nós da árvore desejada.
-     *
-     * @param  arvore  uma <code>JTree</code> que representa a rede Bayesiana em
-     *      forma de árvore.
-     * @since
-     * @see            JTree
-     */
-    /*public void collapseTree(JTree arvore) {
-        tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        for (int i = 0; i < arvore.getRowCount(); i++) {
-            arvore.collapseRow(i);
-        }
-
-        for (int i = 0; i < situacaoArvore.length; i++) {
-          situacaoArvore[i] = false;
-        }
-
-        tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-    }*/
-
-
-    /**
-     *  Expande todos os nós da árvore desejada.
-     *
-     * @param  arvore  uma <code>JTree</code> que representa a rede Bayesiana em
-     *      forma de árvore.
-     * @since
-     * @see            JTree
-     */
-    /*public void expandTree(JTree arvore) {
-        tela.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        for (int i = 0; i < arvore.getRowCount(); i++) {
-            arvore.expandRow(i);
-        }
-
-        for (int i = 0; i < situacaoArvore.length; i++) {
-          situacaoArvore[i] = true;
-        }
-
-        tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-    }*/
 
 
     /**
@@ -447,32 +326,6 @@ public class WindowController implements KeyListener {
 
 
     /**
-     *  Adiciona uma evidencia no estado especificado.
-     *
-     * @param  caminho  caminho do estado a ser setado para 100%;
-     * @see             TreePath
-     */
-    public void arvoreDuploClick(DefaultMutableTreeNode treeNode) {
-        DefaultMutableTreeNode pai = ((DefaultMutableTreeNode) treeNode.getParent());
-        TreeVariable node = (TreeVariable) pai.getUserObject();
-
-
-        for (int i = 0; i < pai.getChildCount(); i++) {
-            DefaultMutableTreeNode auxNode = (DefaultMutableTreeNode) pai.getChildAt(i);
-            auxNode.setUserObject(node.getStateAt(i) + ": 0");
-        }
-
-        if (node instanceof ProbabilisticNode) {
-            treeNode.setUserObject(node.getStateAt(pai.getIndex(treeNode)) + ": 100");
-        } else {
-            treeNode.setUserObject(node.getStateAt(pai.getIndex(treeNode)) + ": **");
-        }
-        node.addFinding(pai.getIndex(treeNode));
-        ((DefaultTreeModel) evidenceTree.getModel()).reload(pai);
-    }
-
-
-    /**
      *  Compila a rede Bayesiana. Caso haja algum problema na compilação, mostra-se
      *  o erro em um <code>JOptionPane</code> .
      *
@@ -509,13 +362,6 @@ public class WindowController implements KeyListener {
             }
         }
 
-        //situacaoArvore = new boolean[nos.size()];
-
-/*        for (int i = 0; i < situacaoArvore.length; i++) {
-            situacaoArvore[i] = false;
-        }
-
-        updateTree();*/
         evidenceTree = tela.getEvidenceTree();
         evidenceTree.setProbabilisticNetwork(rede);
         tela.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -987,53 +833,6 @@ public class WindowController implements KeyListener {
         });
         t.start();
     }
-
-
-    /**
-     *  Atualiza as marginais na árvore desejada.
-     *
-     * @param  arvore  uma <code>JTree</code> que representa a árvore a ser
-     *      atualizada
-     * @since
-     * @see            JTree
-     */
-    /*private void updateTree() {
-        JTree arvore = tela.getEvidenceTree();
-        NodeList nos = rede.getCopiaNos();
-        DefaultMutableTreeNode root = (DefaultMutableTreeNode) arvore.getModel().getRoot();
-
-        root.removeAllChildren();
-
-        for (int c = 0; c < nos.size(); c++) {
-            Node node = (Node) nos.get(c);
-            TreeVariable treeVariable = (TreeVariable) node;
-            DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(node);
-
-            for (int i = 0; i < node.getStatesSize(); i++) {
-                String label;
-                if (treeVariable instanceof ProbabilisticNode) {
-                    label = node.getStateAt(i) + ": " + df.format(treeVariable.getMarginalAt(i) * 100.0);
-                } else {
-                    label = node.getStateAt(i) + ": " + df.format(treeVariable.getMarginalAt(i));
-                }
-                treeNode.add(new DefaultMutableTreeNode(label));
-            }
-            root.add(treeNode);
-        }
-
-        ((DefaultTreeModel) arvore.getModel()).reload(root);
-
-        int temp = 0;
-        for (int i = 0; i < situacaoArvore.length; i++) {
-          if (situacaoArvore[i]) {
-            arvore.expandRow(temp);
-            Node node = (Node) nos.get(i);
-            temp += node.getStatesSize();
-          }
-          temp++;
-        }
-    }*/
-
 
 
     /**
