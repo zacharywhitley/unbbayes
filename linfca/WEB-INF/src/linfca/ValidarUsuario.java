@@ -35,11 +35,15 @@ public class ValidarUsuario extends HttpServlet {
 				ps.setString(1, idStr);
 				ResultSet rs = ps.executeQuery();
 				rs.next();
-				req.setAttribute("cod-usuario", "" + rs.getLong("cod_usuario"));
 				req.setAttribute("nome-usuario", rs.getString("nome"));
-				RequestDispatcher dispatcher = req.getRequestDispatcher(req.getContextPath() + 
-										"/controle/computador/selecionar-computador.jsp");
-				dispatcher.forward(req, res);				
+				if (out.getChild("entrar") != null) {
+					req.setAttribute("cod-usuario", "" + rs.getLong("cod_usuario"));
+					RequestDispatcher dispatcher = req.getRequestDispatcher(req.getContextPath() + 
+											"/controle/computador/selecionar-computador.jsp");
+					dispatcher.forward(req, res);				
+				} else {
+																				
+				}
 			}
 		} catch (Exception e) {
 			throw new ServletException(e);
