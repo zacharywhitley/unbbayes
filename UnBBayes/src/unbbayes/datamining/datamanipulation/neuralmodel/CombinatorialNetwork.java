@@ -34,7 +34,7 @@ public class CombinatorialNetwork {
     int classIndex = instanceSet.getClassIndex();
 
 
-    int maxOrder = attributeNum-1;  //retirar isso, maxOrder será passado por parametro
+    int maxOrder = /*attributeNum-1*/3;  //retirar isso, maxOrder será passado por parametro
     /**/combinations = makeCombinations(attributeNum-1, maxOrder);
 
     while(instanceEnum.hasMoreElements()){
