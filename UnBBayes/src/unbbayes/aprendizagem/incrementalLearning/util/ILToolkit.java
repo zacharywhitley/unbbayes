@@ -2,15 +2,9 @@ package unbbayes.aprendizagem.incrementalLearning.util;
 
 
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.StreamTokenizer;
 
 import unbbayes.aprendizagem.LearningToolkit;
 import unbbayes.aprendizagem.TVariavel;
-import unbbayes.prs.Node;
 import unbbayes.util.NodeList;
 
 /**
@@ -52,76 +46,10 @@ public class ILToolkit extends LearningToolkit {
 		}
 		
 		public void updateFrequencies(int[][] news, int[][]old){			
-		  	//Discutir com o Ladeira
+		  	for(int i = 0 ; i < news.length; i++){
+		  		for(int j = 0 ; j < news[0].length;j++){
+		  			news[i][j] += old[i][j];
+		  		}
+		  	}
 		}
-		
-		public void load(File input) throws IOException{
-			BufferedReader r = new BufferedReader(new FileReader(input));
-			StreamTokenizer st = new StreamTokenizer(r);
-			st.resetSyntax();
-	
-			st.wordChars('A', 'Z');
-			st.wordChars('a', '}');
-			st.wordChars('\u00A0', '\u00FF'); // letras com acentos
-			st.wordChars('_', '_');
-			st.wordChars('-', '-');
-			st.wordChars('0', '9');
-			st.wordChars('.', '.');
-			st.wordChars('%', '%');
-			st.ordinaryChars('(', ')');
-			st.eolIsSignificant(false);
-			st.quoteChar('"');
-			//st.commentChar('%');
-		 if (st.sval.equals("potential")) {
-			  proximo(st);
-			  //Node auxNo1 = net.getNode(st.sval);	
-			  proximo(st);
-			  if (st.sval.equals("|")) {
-				  proximo(st);
-			  }		  
-			  while (!st.sval.startsWith("{")) {			  
-				  proximo(st);
-			  }			  
-			  if (st.sval.length() == 1) {
-				  proximo(st);
-			  }	
-			  int nDim = 0;	
-			  while (!st.sval.endsWith("}")) {
-				  if (st.sval.equals("data")) {					  
-					  proximo(st);
-					  while (!st.sval.equals("}")) {
-						  if (st.sval.equals("%")) {
-							  readTillEOL(st);
-						  } else {
-							  //Construcao da tabelas nijk
-						  }
-						  proximo(st);
-					  }
-				  } else {
-					  /*throw new LoadException(
-						  ERROR_NET
-							  + " l."
-							  + st.lineno()
-							  + resource.getString("LoadException5"));*/
-				  }
-			  }
-		  }
-		}
-		
-	private int proximo(StreamTokenizer st) throws IOException {
-		do {
-			st.nextToken();
-		} while (
-			(st.ttype != StreamTokenizer.TT_WORD)
-				&& (st.ttype != '"')
-				&& (st.ttype != StreamTokenizer.TT_EOF));
-		return st.ttype;
-	}
-	
-	private void readTillEOL(StreamTokenizer tokenizer) throws IOException {
-		while (tokenizer.nextToken() != StreamTokenizer.TT_EOL) {
-		};
-		tokenizer.pushBack();
-	}
-
 }
