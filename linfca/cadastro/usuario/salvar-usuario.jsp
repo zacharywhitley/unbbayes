@@ -14,7 +14,7 @@
 			  </tr>
               <tr>
                 <td width="50%"><P>Identificação</P></td>
-                <td width="50%"><P>Tipo de Usuário</P></td>
+                <td width="50%"><P>Tipo de Usuário</P></td> 
 			  </tr>
               <tr>
                 <td width="50%"><INPUT maxLength=35 name="identificacao"></td>
