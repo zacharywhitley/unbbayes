@@ -87,7 +87,6 @@ public abstract class TAprendizagemTollKit {
     protected  int[][] calculaFrequencias(TVariavel variavel, List pais){
         TVariavel variavelAux;
         int[][] ArrayNijk;
-        List instancia;
         int tamanhoPais, posicao;
         if(pais == null){
            pais = new ArrayList();
@@ -272,8 +271,6 @@ public abstract class TAprendizagemTollKit {
      */
     protected void montaEstruturaPredecessores(List vetor){
         TVariavel variavelAux;
-        TVariavel variavelAux2;
-        List pred;
         int tamanho = vetor.size();
         for(int i = tamanho - 1; i > 0  ; i--){
             variavelAux = (TVariavel)vetor.get(i);

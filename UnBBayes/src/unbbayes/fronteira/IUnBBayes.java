@@ -235,7 +235,7 @@ public class IUnBBayes extends JFrame {
                                                  resource.getString("netFileFilter")));
                 int option = chooser.showSaveDialog(null);
                 if (option == JFileChooser.APPROVE_OPTION) {
-                    File a;
+//                    File a;
                     controller.saveNet(((chooser.getSelectedFile()!=null)?
                                 new File(chooser.getSelectedFile().getAbsolutePath() + ".net"):
                                 new File(resource.getString("fileUntitled"))));
@@ -253,12 +253,10 @@ public class IUnBBayes extends JFrame {
                 chooser.setMultiSelectionEnabled(false);
                 chooser.addChoosableFileFilter(new SimpleFileFilter(nets, resource.getString("netFileFilter")));
                 int option = chooser.showOpenDialog(IUnBBayes.this);
-                String fileName;
                 File file;
                 if (option == JFileChooser.APPROVE_OPTION) {
-                    fileName = chooser.getSelectedFile().getName();
                     file = chooser.getSelectedFile();
-                    TOrdenacao1 caixaRelacionamentos = new TOrdenacao1(file, controller);
+                    new TOrdenacao1(file, controller);
                 }
             }
         });

@@ -94,8 +94,8 @@ public class PrintTable implements Printable, Pageable {
     Rectangle rect;
     int printWidth;
     int printHeight;
-    int firstCol = table.columnAtPoint(new Point(positionX, positionY));
-    int firstRow = table.rowAtPoint(new Point(positionX, positionY));
+//    int firstCol = table.columnAtPoint(new Point(positionX, positionY));
+//    int firstRow = table.rowAtPoint(new Point(positionX, positionY));
     int maxWidth = (int)(pageFormat.getImageableWidth());
     int maxHeight = (int)(pageFormat.getImageableHeight()-(SIZE+10));
 

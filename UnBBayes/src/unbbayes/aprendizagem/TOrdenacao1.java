@@ -103,8 +103,8 @@ public class TOrdenacao1 extends JDialog
                }
                posicao++;
            }
-           TTelaEscolhaVariaveis escolha = new TTelaEscolhaVariaveis(vetorVariaveis);
-           TArq arq = new TArq(vetorVariaveis);
+           new TTelaEscolhaVariaveis(vetorVariaveis);
+           new TArq(vetorVariaveis);
            int cont = 0;
            for (int i = 0; i < vetorVariaveis.size();i++){
              TVariavel aux = (TVariavel)vetorVariaveis.get(i);
@@ -304,15 +304,13 @@ public class TOrdenacao1 extends JDialog
       definir com certeza quais os pais de uma determinada variável*/
     ActionListener relacionamentoEvento = new ActionListener(){
         public void actionPerformed(ActionEvent ae){
-            TCaixaRelacionamentos trelacionamento = new TCaixaRelacionamentos(vetorVariaveis);
+            new TCaixaRelacionamentos(vetorVariaveis);
         }
     };
 
     /*Esse listener apenas continua o processo, chamando o procedimento K2*/
     ActionListener continuaEvento = new ActionListener(){
         public void actionPerformed(ActionEvent ae){
-            java.util.List vetorAux = null;
-            java.util.List vetorAux1 = null;
             try {
                 delta = Integer.parseInt(txtDelta.getText());
                 System.out.println("Delta = " +delta);
@@ -370,7 +368,7 @@ public class TOrdenacao1 extends JDialog
                             break;
                         }
                     }
-                    TTelaOpcoesVariavel telaVariavel = new TTelaOpcoesVariavel(variavelLista);
+                    new TTelaOpcoesVariavel(variavelLista);
                 }
             }
         }

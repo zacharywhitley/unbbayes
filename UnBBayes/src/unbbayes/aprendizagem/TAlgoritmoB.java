@@ -44,7 +44,6 @@ public abstract class TAlgoritmoB extends TAprendizagemTollKit{
     double gi;
     double gk;
     double gj;
-    double variacao;
     long tempo;
     long tempoFinal;
 

@@ -74,7 +74,7 @@ public class NetWindow extends JPanel {
 		bCompiled                         = false;
 		graph.getGraphViewport().reshape(0, 0, (int) (graph.getBiggestPoint().getX() + 2 * graph.getRadius()), (int) (graph.getBiggestPoint().getY() + 2 * graph.getRadius()));
         graph.getGraphViewport().setViewSize(new Dimension((int) (graph.getBiggestPoint().getX() + 2 * graph.getRadius()), (int) (graph.getBiggestPoint().getY() + 2 * graph.getRadius())));
-        Rectangle repintar = new Rectangle(graph.getGraphViewport().getViewRect());
+//        Rectangle repintar = new Rectangle(graph.getGraphViewport().getViewRect());
 
         //setar o conteúdo e o tamanho do graphViewport
         graphViewport.setView(graph);

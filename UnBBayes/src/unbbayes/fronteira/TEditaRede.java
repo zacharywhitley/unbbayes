@@ -477,7 +477,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
     public void mouseReleased(MouseEvent e) {
         Node noDestino = getNo(e.getX(), e.getY());
         if ((bArco) && (e.getModifiers() == e.BUTTON1_MASK)) {
-            Node noOrigem = getNo(arcoInicioAtual.getX(), arcoInicioAtual.getY());
+//            Node noOrigem = getNo(arcoInicioAtual.getX(), arcoInicioAtual.getY());
             if ((noDestino != null)/* && (controlador.getRede().existeArco(noOrigem, noDestino) == -1)*/) {
                 insereArco(arcoInicioAtual.getX(), arcoInicioAtual.getY(), arcoFimAtual.getX(), arcoFimAtual.getY());
             }
@@ -834,7 +834,6 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
      */
     public void atualizaArcoAtual(double x, double y) {
         Point2D.Double ponto = new Point2D.Double();
-        Node noAux = (Node) no.get(0);
         ponto = getPonto(arcoInicioAtual, arcoFimAtual, raio);
 
         arcoAtual.setLine(ponto.getX(), ponto.getY(), x, y);

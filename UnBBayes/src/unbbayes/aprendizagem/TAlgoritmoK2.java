@@ -89,7 +89,6 @@ public abstract class TAlgoritmoK2 extends TAprendizagemTollKit {
             }
         });
         */
-        int cont1 = 0;
         for(int numeroVariaveis = 0; numeroVariaveis < tamanho; numeroVariaveis++){
             pOld = 0.0;
             continuar = true;
@@ -163,7 +162,6 @@ public abstract class TAlgoritmoK2 extends TAprendizagemTollKit {
         int tamanho = vetorZ.size();
         for (int numeroCandidatos = 0 ; numeroCandidatos < tamanho; numeroCandidatos ++ ){
             vetorPais = concatena(SetToolkit.clone((List)variavel.getPais()), (TVariavel)vetorZ.get(numeroCandidatos));
-            Date data2 = new Date();
             maxAux = g(variavel,vetorPais);
             if (max < maxAux){
                 max = maxAux;

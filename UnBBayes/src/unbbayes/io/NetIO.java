@@ -93,7 +93,6 @@ public class NetIO implements BaseIO {
             throw new LoadException(ERROR_NET + " Missing 'net'");
         }
 
-        int type;
 
         while (proximo(st) != StreamTokenizer.TT_EOF) {
             if (st.sval.equals("node") || st.sval.equals("decision") || st.sval.equals("utility")) {

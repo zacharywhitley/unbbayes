@@ -53,7 +53,7 @@ public class TArq extends JDialog
     ActionListener ActionSim = new ActionListener(){
         public void actionPerformed(ActionEvent ae){
             dispose();
-            TCaixaArq caixa = new TCaixaArq(vetorVariaveis);
+            new TCaixaArq(vetorVariaveis);
         }
     };
 

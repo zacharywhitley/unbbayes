@@ -340,7 +340,7 @@ public class ProbabilisticNetwork extends Network {
             pesoMinimo(auxNos);
         }
 
-        int index;
+//        int index;
         for (int i = decisionNodes.size()-1; i >= 0; i--) {
             aux = (Node) decisionNodes.get(i);
             oe.add(aux);
@@ -643,7 +643,6 @@ public class ProbabilisticNetwork extends Network {
     private void cliques() {
         int i;
         int j;
-        int k;
         Node auxNo;
         Node auxNo2;
         int e;
@@ -764,7 +763,6 @@ public class ProbabilisticNetwork extends Network {
         List auxList;
         List listaNos;
         Separator sep;
-        Node auxNo;
         List alpha = new ArrayList();
 
         for (int i = oe.size() - 1; i >= 0; i--) {
@@ -884,7 +882,6 @@ public class ProbabilisticNetwork extends Network {
     private void associaCliques() {
         int min;
         Node auxNo;
-        Node auxNo2;
         PotentialTable auxTabPot, auxUtilTab;
         Clique auxClique;
         Clique cliqueMin = null;

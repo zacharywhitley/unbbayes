@@ -44,7 +44,7 @@ public class PrintText implements Printable, Pageable {
     if ((texto.getWidth() == 0) || (texto.getHeight() == 0)) {
       texto.setSize(texto.getPreferredSize());
     }
-    int textWidth = texto.getWidth();
+//    int textWidth = texto.getWidth();
     int textHeight = texto.getHeight();
 
     int positionX = 0;
@@ -99,7 +99,6 @@ public class PrintText implements Printable, Pageable {
    */
   public int getNumberOfPages() {
     Dimension size = new Dimension();
-    int textWidth = texto.getWidth();
     int textHeight = texto.getHeight();
     int positionX = 0;
     int positionY = 0;

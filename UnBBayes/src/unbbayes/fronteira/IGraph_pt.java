@@ -1153,7 +1153,7 @@ public class IGraph_pt extends JPanel implements MouseListener, MouseMotionListe
      */
     public void updatePresentArc(double x, double y) {
         Point2D.Double point = new Point2D.Double();
-        Node nodeAux = (Node) node.get(0);
+//        Node nodeAux = (Node) node.get(0);
         point = getPoint(presentBeginArc, presentEndArc, radius);
 
         presentArc.setLine(point.getX(), point.getY(), x, y);
@@ -1313,7 +1313,7 @@ public class IGraph_pt extends JPanel implements MouseListener, MouseMotionListe
         }
         for (int i = 0; i < arc.size(); i++) {
             Edge arcAux = (Edge)arc.get(i);
-            Node nodeAux1 = arcAux.getOriginNode();
+//            Node nodeAux1 = arcAux.getOriginNode();
             Node nodeAux2 = arcAux.getDestinationNode();
             //comentamos uma parte do if abaixo, pois queremos manter a relação dos arcos com os pais originais ou os
             //novos que serão copiados. Para isso temos que selecionar todos os arcos que um nó selecionado possui.

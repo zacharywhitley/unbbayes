@@ -28,7 +28,6 @@ public class UtilityTable extends PotentialTable {
             sum(variaveis.size()-1, index, new int[variaveis.size()]);
         } else {
             DecisionNode decision = (DecisionNode) variavel;
-            int statesSize = variavel.getStatesSize();
             if (decision.hasEvidence()) {
                 finding(variaveis.size()-1, index, new int[variaveis.size()], decision.getEvidence());
             } else {

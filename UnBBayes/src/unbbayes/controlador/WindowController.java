@@ -730,7 +730,6 @@ public class WindowController implements KeyListener {
                 if (copia.get(i) instanceof Edge) {
 
                     Edge arcoAux = (Edge)copia.get(i);
-                    List arcos = rede.getArcos();
                     Node no1 = null;
                     Node no2 = null;
                     Node noAux;

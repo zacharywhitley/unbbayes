@@ -65,8 +65,8 @@ public class PrintNet implements Printable, Pageable {
 
     int x = (int)(pageFormat.getImageableX());
     int y = (int)(pageFormat.getImageableY());
-    int w = (int)(pageFormat.getImageableWidth());
-    int h = (int)(pageFormat.getImageableHeight());
+//    int w = (int)(pageFormat.getImageableWidth());
+//    int h = (int)(pageFormat.getImageableHeight());
 
     g.drawString(title,x,y+15);
     g2.translate(x - rect.getX(), y - rect.getY() + 30);
