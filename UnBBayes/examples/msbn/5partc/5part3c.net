@@ -2,6 +2,7 @@ net
 {
      node_size = (0 0);
      name = "5part3c";
+     tree = "(C0,C1,C2,C3,C4,C5,C6,C7)";
      UnBBayes_Color_Probabilistic_Description = "-256";
      UnBBayes_Color_Probabilistic_Explanation = "-16711936";
      UnBBayes_Color_Utility = "-16711681";
@@ -71,8 +72,8 @@ potential (D)
 
 potential (C | E)
 {
- data = (( 0.2 0.8 )
-( 0.1 0.9 ));
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
 }
 
 potential (var_5 | D E)
@@ -116,7 +117,7 @@ potential (G | var_6)
 
 potential (H | G)
 {
- data = (( 0.4 0.6 )
-( 0.6 0.4 ));
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
 }
 
