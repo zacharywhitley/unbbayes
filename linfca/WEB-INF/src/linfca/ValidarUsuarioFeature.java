@@ -38,8 +38,9 @@ public class ValidarUsuarioFeature implements Feature {
 		String senha = in.getChild("senha").getTextTrim();		
 		Element out = new Element("out");
 		
-		PreparedStatement ps = con.prepareStatement("SELECT * FROM usuario WHERE identificacao = ?");
+		PreparedStatement ps = con.prepareStatement("SELECT * FROM usuario WHERE identificacao = ? OR cpf = ?");
 		ps.setString(1,login);
+		ps.setString(2,login);
 		
 		ResultSet rs = ps.executeQuery();
 	
@@ -48,14 +49,11 @@ public class ValidarUsuarioFeature implements Feature {
 			MessageDigest md = MessageDigest.getInstance("MD5");
 			if (md.isEqual(md.digest(senha.getBytes()), Base64.decode(rs.getBytes("senha")))) {
 				
-				System.out.println("Senha confere!!!");
-				
 				ps = con.prepareStatement(
 					"SELECT cod_lancamento" +
 					" FROM lancamento" +
 					" WHERE cod_usuario = ? AND dt_hora_fim_lancamento IS NULL"
 				);
-				
 				long codUsuario = rs.getLong("cod_usuario");
 				ps.setLong(1, codUsuario);
 				rs = ps.executeQuery();

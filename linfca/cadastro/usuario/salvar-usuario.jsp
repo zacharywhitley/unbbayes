@@ -61,11 +61,11 @@
 			  </tr>
               <tr>
                 <td width="50%">
-                		<INPUT maxLength=35 name="identificacao" 
+                		<INPUT maxLength=35 name="string_identificacao" 
                 		 value="<% if (usuarioXML != null) { %><%=usuarioXML.getChildTextTrim("identificacao")%><% } %>">
                 </td>
                 <td width="50%">
-                  <select name="cod_tipo_usuario">
+                  <select name="int_cod_tipo_usuario">
                   <% 
 		             Feature  listarTipos = new ListarTipoUsuarioFeature();
 			         Element tiposXML = listarTipos.process(null);
@@ -85,7 +85,7 @@
                 <td width="50%"><P>Redigite a Senha</P></td>
               </tr> 
               <tr>
-                <td width="50%"><INPUT type=password maxLength=35 name="senha"></td>
+                <td width="50%"><INPUT type=password maxLength=35 name="password_senha"></td>
                 <td width="50%"><INPUT type=password maxLength=35 name="confirmacao_senha"></td>
               </tr>
               <tr>
@@ -94,11 +94,11 @@
               </tr> 
               <tr>
                 <td width="50%">
-                  <INPUT type=text maxLength=35 name="nome"
+                  <INPUT type=text maxLength=35 name="string_nome"
                    value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("nome").getTextTrim()%><% } %>">
                 </td>
                 <td width="50%">
-                  <INPUT type=text maxLength=35 name="sobrenome"
+                  <INPUT type=text maxLength=35 name="string_sobrenome"
                    value="<% if (usuarioXML != null) { %><%=usuarioXML.getChild("sobrenome").getTextTrim()%><% } %>">
                 </td>
               </tr>
@@ -127,7 +127,7 @@
 			         while (tipos.hasNext()) {
 		  	            Element tipo = (Element) tipos.next();
 		          %>
-                     <input type="radio" name="cod_tipo_sexo" value="<%= ((Element)tipo.getChild("cod-tipo-sexo")).getText() %>"
+                     <input type="radio" name="int_cod_tipo_sexo" value="<%= ((Element)tipo.getChild("cod-tipo-sexo")).getText() %>"
                       <% if ( (usuarioXML != null) && ((Element)tipo.getChild("cod-tipo-sexo")).getTextTrim().equals(usuarioXML.getChildTextTrim("cod-tipo-sexo")) ) { %> checked <% } %> >
                      <%= ((Element)tipo.getChild("descricao-tipo-sexo")).getText() %> 
                   <% }	%>                
@@ -139,11 +139,11 @@
               </tr> 
               <tr>
                 <td width="50%">
-                  <INPUT type=text maxLength=35 name="telefone"
+                  <INPUT type=text maxLength=35 name="string_telefone"
                    value="<% if (usuarioXML != null) { %><%=usuarioXML.getChildTextTrim("telefone")%><% } %>">
                 </td>
                 <td width="50%">
-                  <INPUT type=text maxLength=35 name="email"
+                  <INPUT type=text maxLength=35 name="string_email"
                    value="<% if (usuarioXML != null) { %><%=usuarioXML.getChildTextTrim("email")%><% } %>">
                 </td>
               </tr>
@@ -154,7 +154,7 @@
               <tr>                                
                 <td width="50%"><INPUT type=file name="foto"></td>
                 <td width="50%">
-                  <INPUT type=text maxLength=11 name="cpf"
+                  <INPUT type=text maxLength=11 name="string_cpf"
                    value="<% if (usuarioXML != null) { %><%=usuarioXML.getChildTextTrim("cpf")%><% } %>">
                 </td>
               </tr>
@@ -163,12 +163,12 @@
               </tr> 
               <tr>                
                 <td colspan=2>
-                  <INPUT type=text maxLength=60 name="endereco" size=50
+                  <INPUT type=text maxLength=60 name="string_endereco" size=50
                    value="<% if (usuarioXML != null) { %><%=usuarioXML.getChildTextTrim("endereco")%><% } %>">
                 </td>
               </tr>
               <% if (usuarioXML != null) { %>
-                    <INPUT type="hidden" name="cod_usuario" value="<%=codUsuario%>">
+                    <INPUT type="hidden" name="int_cod_usuario" value="<%=codUsuario%>">
               <% } %>
               <tr>
                 <td colspan=2>

@@ -1,5 +1,5 @@
 <%@page import="linfca.*, 
-		linfca.cadastro.usuario.*, 
+		linfca.cadastro.*, 
 		com.oreilly.servlet.*,
 		linfca.util.*, 
 		java.io.*,
@@ -12,7 +12,7 @@
 
    boolean inserir = true;
    
-   Element in = new Element("in");
+   Element in = new Element("usuario");
    
    MultipartRequest multi = new MultipartRequest(request, ".");   
    Enumeration params = multi.getParameterNames();
@@ -21,39 +21,56 @@
    
       String name = (String)params.nextElement();
       
-	  if (name.equals("cod_usuario")) {
-	     inserir = false;	  	  
-	  }
-	  
       String value = multi.getParameter(name);
-	  Element element = new Element(name.replace('_', '-'));
-	  element.setText(value);	  
+	  Element element = new Element(name);
+	  element.setText(value);
+	  
+	  if ((value.equals("")) || (name.equals("dia")) || (name.equals("mes")) || (name.equals("ano")) || (name.equals("foto")) || (name.equals("confirmacao_senha"))) {
+	     continue;
+	  }
+      
+	  if (name.equals("int_cod_usuario")) {
+	     inserir = false;
+	     
+	     Element where = new Element("where");
+	     where.getChildren().add(element);	     
+	     in.getChildren().add(where);
+	     
+	     continue;
+	  }
+	        	  
 	  in.getChildren().add(element);
       System.out.println(name + " = " + value);
       
    }
+   System.out.println(multi.getParameter("ano") + "-" + multi.getParameter("mes") + "-" + multi.getParameter("dia"));
+   Element data = new Element("date_data_nascimento");
+   data.setText(multi.getParameter("ano") + "-" + multi.getParameter("mes") + "-" + multi.getParameter("dia"));   
+   in.getChildren().add(data);
    
    String foto64 = null;   
    Enumeration files = multi.getFileNames();
    
-   if (files.hasMoreElements()) {   
+   if (files.hasMoreElements()) {
       String name = (String)files.nextElement();
 	  File f = multi.getFile(name);
 	  
-	  FileInputStream fis = new FileInputStream(f);
-	  byte buffer[] = new byte[(int)f.length()];
-	  fis.read(buffer);
-	  foto64 = Base64.getString(Base64.encode(buffer));
+	  if (f != null) {
+	     FileInputStream fis = new FileInputStream(f);
+	     byte buffer[] = new byte[(int)f.length()];
+	     fis.read(buffer);
+	     foto64 = Base64.getString(Base64.encode(buffer));
 	  
-	  Element element = new Element("foto");
-	  element.setText(foto64);
-	  in.getChildren().add(element);
+	     Element element = new Element("string_foto");
+	     element.setText(foto64);
+	     in.getChildren().add(element);
 	  
-	  fis.close();
+	     fis.close();
+	  }
 	  
    }  
     
-   Feature  salvarUsuarioF = new SalvarUsuarioFeature();
+   Feature  salvarUsuarioF = new SalvarGenericoFeature();
    Element saida = salvarUsuarioF.process(in);
    
    String mensagem = null;

@@ -32,16 +32,17 @@ public class ValidarUsuario extends HttpServlet {
 				Connection con = Controller.getInstance().makeConnection();
 				PreparedStatement ps = con.prepareStatement(
 										"select cod_usuario, nome from usuario" +
-										" where identificacao = ?"
+										" where identificacao = ? or cpf = ?"
 										);
 				ps.setString(1, idStr);
+				ps.setString(2, idStr);
 				ResultSet rs = ps.executeQuery();
 				rs.next();				
 				if (out.getChild("entrar") != null) {
 					req.setAttribute("nome-usuario", rs.getString("nome"));
 					req.setAttribute("cod-usuario", "" + rs.getLong("cod_usuario"));
-					RequestDispatcher dispatcher = req.getRequestDispatcher("/controle/computador/selecionar-computador.jsp");
-					dispatcher.forward(req, res);					
+					RequestDispatcher dispatcher = req.getRequestDispatcher("/controle/computador/selecionar-computador.jsp");					
+					dispatcher.forward(req, res);
 				} else {
 					Element sair = out.getChild("sair");
 					String codLancamento = ((Element)sair.getChild("cod-lancamento")).getTextTrim();

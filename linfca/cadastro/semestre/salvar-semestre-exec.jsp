@@ -42,13 +42,7 @@
       System.out.println(name + " = " + value);
       
    }
-   
-   if (inserir) {
-      in.getChildren().add(new Element("inserir"));
-   } else {
-      in.getChildren().add(new Element("atualizar"));
-   }
-    
+
    Feature  salvarSemestreF = new SalvarGenericoFeature();
    Element saida = salvarSemestreF.process(in);
    
