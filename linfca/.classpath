@@ -10,5 +10,6 @@
     <classpathentry kind="lib" path="WEB-INF/lib/servlet.jar"/>
     <classpathentry kind="lib" path="WEB-INF/lib/xerces.jar"/>
     <classpathentry kind="lib" path="C:/eclipse/plugins/org.junit/junit.jar"/>
+    <classpathentry kind="lib" path="WEB-INF/lib/cos.jar"/>
     <classpathentry kind="output" path="WEB-INF\classes"/>
 </classpath>
