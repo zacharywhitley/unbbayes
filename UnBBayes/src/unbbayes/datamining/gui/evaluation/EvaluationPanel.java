@@ -491,7 +491,9 @@ public class EvaluationPanel extends JPanel
       {   instances.setClassIndex(jComboBox2.getSelectedIndex());
           if (classifier instanceof BayesianNetwork)
           {   try
-              {   ((BayesianNetwork)classifier).setClassAttribute(instances.getClassAttribute());
+              {   Attribute classAttribute = instances.getClassAttribute();
+                  ((BayesianNetwork)classifier).setClassAttribute(classAttribute);
+                  reference.setStatusBar("Class Attribute "+classAttribute.getAttributeName()+" Set");
               }
               catch (Exception ex)
               {   reference.setStatusBar("Error "+ex.getMessage());

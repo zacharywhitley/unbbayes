@@ -71,6 +71,7 @@ public class BayesianNetwork extends BayesianLearning
   	public float[] distributionForInstance(Instance instance) throws Exception
 	{	int numClasses = classNode.getStatesSize();
 		float[] probs = new float[numClasses];
+                short instanceValue;
 
 		if (classIndex < 0)
                 {   throw new Exception("Classe não definida.");
@@ -78,13 +79,15 @@ public class BayesianNetwork extends BayesianLearning
 
                 net.initialize();
 
-		        NodeList nodes = net.getNos();
+                NodeList nodes = net.getNos();
                 int size = nodes.size();
                 int j;
                 for (j=0; j<size; j++)
                 {   int actualNode = indexAttributes[j];
                     if (actualNode != classIndex)
-                    {   ((TreeVariable)nodes.get(actualNode)).addFinding(instance.getValue(j));
+                    {   instanceValue = instance.getValue(j);
+                        if (instanceValue != Instance.MISSING_VALUE)
+                            ((TreeVariable)nodes.get(actualNode)).addFinding(instanceValue);
                     }
                 }
 

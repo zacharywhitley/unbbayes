@@ -70,7 +70,7 @@ public class NetWindowCompilation extends JPanel {
         editMode          = new JButton(new ImageIcon(getClass().getResource("/icones/editar.gif")));
         log               = new JButton(new ImageIcon(getClass().getResource("/icones/informacao.gif")));
         reset             = new JButton(new ImageIcon(getClass().getResource("/icones/initialize.gif")));
-        printNet          = new JButton(new ImageIcon(getClass().getResource("/icones/IMPRIMIRREDE.gif")));
+        printNet          = new JButton(new ImageIcon(getClass().getResource("/icones/imprimirrede.gif")));
         previewNet        = new JButton(new ImageIcon(getClass().getResource("/icones/previewimpressao.gif")));
         saveNetImage      = new JButton(new ImageIcon(getClass().getResource("/icones/salvargrafo.gif")));
 

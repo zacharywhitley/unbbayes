@@ -92,8 +92,8 @@ public class NetWindowEdition extends JPanel {
         decisionNode      = new JButton(new ImageIcon(getClass().getResource("/icones/decisionNode.gif")));
         utilityNode       = new JButton(new ImageIcon(getClass().getResource("/icones/utilityNode.gif")));
         select            = new JButton(new ImageIcon(getClass().getResource("/icones/selecao.gif")));
-        printNet          = new JButton(new ImageIcon(getClass().getResource("/icones/IMPRIMIRREDE.gif")));
-        printTable        = new JButton(new ImageIcon(getClass().getResource("/icones/IMPRIMIRTABELA.gif")));
+        printNet          = new JButton(new ImageIcon(getClass().getResource("/icones/imprimirrede.gif")));
+        printTable        = new JButton(new ImageIcon(getClass().getResource("/icones/imprimirtabela.gif")));
         previewNet        = new JButton(new ImageIcon(getClass().getResource("/icones/previewimpressao.gif")));
         previewTable      = new JButton(new ImageIcon(getClass().getResource("/icones/previewtabela.gif")));
         saveNetImage      = new JButton(new ImageIcon(getClass().getResource("/icones/salvargrafo.gif")));

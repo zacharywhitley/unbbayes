@@ -33,7 +33,7 @@ public abstract class BayesianLearning extends Classifier
 	protected float[] originalDistribution;
         public static int NORMAL_CLASSIFICATION = 0;
         public static int ADV_CLASSIFICATION = 1;
-        private int classificationType = 1;
+        private int classificationType = 0;
         /**
    	* Classifies the given test instance. The instance has to belong to a
    	* dataset when it's being classified.
@@ -44,48 +44,47 @@ public abstract class BayesianLearning extends Classifier
    	* @exception Exception if an error occurred during the prediction
    	*/
   	public short classifyInstance(Instance instance) throws Exception
-	{   //System.out.println("mario");
-            if (classificationType == NORMAL_CLASSIFICATION){
-
-        float[] dist = distributionForInstance(instance);
-    	if (dist == null)
-		{	throw new Exception(resource.getString("nullPrediction"));
-    	}
-    	switch (instance.getDataset().getClassAttribute().getAttributeType())
-		{	case Attribute.NOMINAL: float max = 0;
-      								short maxIndex = 0;
-      								for (int i = 0; i < dist.length; i++)
-									{	if (dist[i] > max)
-										{	maxIndex = (short)i;
-	  										max = dist[i];
-										}
-      								}
-      								if (max > 0)
-									{	return maxIndex;
-      								}
-									else
-									{	return Instance.missingValue();
-      								}
-
-			case Attribute.NUMERIC: return (short)Utils.maxIndex(dist);
-
-			default:				return Instance.missingValue();
-    	                }}
-            else //if (classificationType == ADV_CLASSIFICATION)
-            {   float[] dist = distributionForInstance(instance);
-                int i,maxIndex = -1;
-                float max = Float.MIN_VALUE;
-                float local;
-                for (i=0;i<dist.length;i++)
-                {   local = dist[i]/originalDistribution[i];
-                    //System.out.println(""+local);
-                    if (local > max)
-                    {   max = local;
-                        maxIndex = i;
-                    }
-                }
-                //System.out.println(""+maxIndex);
-                return (short)maxIndex;
+	{   float[] dist = distributionForInstance(instance);
+            if (dist == null)
+            {	throw new Exception(resource.getString("nullPrediction"));
             }
-  	}
+            else
+            {   if (classificationType == NORMAL_CLASSIFICATION)
+                {   /*switch (instance.getDataset().getClassAttribute().getAttributeType())
+		    {   case Attribute.NOMINAL:   float max = 0;
+                                                  short maxIndex = 0;
+                                                  for (int i = 0; i < dist.length; i++)
+                                                  {   if (dist[i] > max)
+                                                      {   maxIndex = (short)i;
+                                                          max = dist[i];
+                                                      }
+                                                  }
+                                                  if (max > 0)
+                                              {   return maxIndex;
+                                              }
+                                              else
+                                              {   return Instance.missingValue();
+                                              }
+                    case Attribute.NUMERIC:   return (short)Utils.maxIndex(dist);
+                    default:		      return Instance.missingValue();*/
+                    short maxIndex = (short)Utils.maxIndex(dist);
+                    return maxIndex;
+                }
+                else //if (classificationType == ADV_CLASSIFICATION)
+                {   int i,maxIndex = -1;
+                    float max = Float.MIN_VALUE;
+                    float local;
+                    for (i=0;i<dist.length;i++)
+                    {   local = dist[i]/originalDistribution[i];
+                        //System.out.println(""+local);
+                        if (local > max)
+                        {   max = local;
+                            maxIndex = i;
+                        }
+                    }
+                    //System.out.println(""+maxIndex);
+                    return (short)maxIndex;
+                }
+            }
+      }
 }

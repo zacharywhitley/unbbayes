@@ -85,7 +85,8 @@ public class Evaluation
    	* successfully
    	*/
   	public void evaluateModel(Classifier classifier) throws Exception
-	{   for (int i = 0; i < data.numInstances(); i++)
+	{   int numInstances = data.numInstances();
+            for (int i = 0; i < numInstances; i++)
             {   if ((i%50000)==0)
                 {   String currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
                     System.out.println("instância = "+i+" hora = "+currentHour);
@@ -104,9 +105,6 @@ public class Evaluation
    	*/
   	public void evaluateModel(Classifier classifier,InstanceSet testData) throws Exception
 	{	int numInstances = testData.numInstances();
-		/*if (modelEvaluation == true)
-		{	numClasses = testData.numInstances();
-		}*/
 		for (int i = 0; i < numInstances; i++)
 		{	evaluateModelOnce(classifier,testData.getInstance(i));
     	}
@@ -122,10 +120,10 @@ public class Evaluation
    	* successfully
    	*/
   	public short evaluateModelOnce(Classifier classifier,Instance instance) throws Exception
-	{	Instance classMissing = instance;
-    	short pred=0;
-		if (classIsNominal)
-		{	if (classifier instanceof BayesianLearning)
+	{   Instance classMissing = instance;
+    	    short pred=0;
+            if (classIsNominal)
+            {   /*if (classifier instanceof BayesianLearning)
 			{	//float[] dist = ((BayesianLearning)classifier).distributionForInstance(classMissing);
 				//pred = (short)Utils.maxIndex(dist);
 				//updateStatsForClassifier(dist,instance);
@@ -135,13 +133,15 @@ public class Evaluation
 			else
 			{	pred = classifier.classifyInstance(classMissing);
 				updateStatsForClassifier(makeDistribution(pred),instance);
-      		}
-    	}
-		else
-		{	//Class is numeric
-			System.out.println("numeric class");
-    	}
-    	return pred;
+      		}*/
+                pred = classifier.classifyInstance(classMissing);
+                updateStatsForClassifier(pred,instance);
+    	    }
+            else
+            {   //Class is numeric
+                System.out.println("numeric class");
+    	    }
+    	    return pred;
   	}
 
   	/**
@@ -221,13 +221,13 @@ public class Evaluation
    * @param weight the weight associated with this prediction
    */
   private void updateNumericScores(float[] predicted,float[] actual,float weight)
-  { float diff;
-    double partialSumSqrErr = 0;
-    for(int i = 0; i < numClasses; i++)
-	{	diff = predicted[i] - actual[i];
-      	partialSumSqrErr += diff * diff;
-    }
-    sumSqrErr += weight * partialSumSqrErr;
+  {   float diff;
+      double partialSumSqrErr = 0;
+      for(int i = 0; i < numClasses; i++)
+      {   diff = predicted[i] - actual[i];
+          partialSumSqrErr += diff * diff;
+      }
+      sumSqrErr += weight * partialSumSqrErr;
   }
 
   private String correctConfidence()
@@ -358,46 +358,54 @@ public class Evaluation
    * @exception Exception if the class of the instance is not
    * set
    */
-  private void updateStatsForClassifier(float[] predictedDistribution,Instance instance) throws Exception
-  {	int actualClass = (int)instance.classValue();
+  private void updateStatsForClassifier(short predictedClass/*float[] predictedDistribution*/,Instance instance) throws Exception
+  {	if (!instance.classIsMissing())
+	{	/*float[] result = new float[numClasses];
+  	  	if (Instance.isMissingValue(predictedClass))
+		{	return result;
+  	  	}
+  	  	if (classIsNominal)
+		{	result[(int)predictedClass] = 1.0f;
+  	  	}
+		else
+		{	result[0] = predictedClass;
+  	  	}
+  	  	return result;*/
 
-    if (!instance.classIsMissing())
-	{	// Determine the predicted class (doesn't detect multiple classifications)
-      	int predictedClass = -1;
-      	float bestProb = 0.0f;
+                // Determine the predicted class (doesn't detect multiple classifications)
+      	        /*int predictedClass = -1;
+      	        float bestProb = 0.0f;
 		for(int i = 0; i < numClasses; i++)
 		{	if (predictedDistribution[i] > bestProb)
 			{	predictedClass = i;
 	  			bestProb = predictedDistribution[i];
 			}
-      	}
+      	        }*/
 
-      	withClass += instance.getWeight();
+      	        withClass += instance.getWeight();
 
-      	// Update counts when no class was predicted
-      	if (predictedClass < 0)
+      	        // Update counts when no class was predicted
+      	        if (predictedClass < 0)
 		{	unclassified += instance.getWeight();
 			return;
-      	}
+      	        }
 
-		updateNumericScores(predictedDistribution,makeDistribution(instance.classValue()),instance.getWeight());
+		short actualClass = instance.classValue();
+                updateNumericScores(makeDistribution(predictedClass)/*predictedDistribution*/,makeDistribution(actualClass),instance.getWeight());
 
 		// Update other stats
-		/*if (modelEvaluation == false)
-		{	confusionMatrix[actualClass][predictedClass] += instance.getWeight();
-		}*/
 		confusionMatrix[actualClass][predictedClass] += instance.getWeight();
 
 		if (predictedClass != actualClass)
 	  	{	incorrect += instance.getWeight();
-      	}
+      	        }
 	  	else
 	  	{	correct += instance.getWeight();
-      	}
-    }
+      	        }
+        }
 	else
 	{	missingClass += instance.getWeight();
-    }
+        }
   }
 
   /**
@@ -800,13 +808,6 @@ public class Evaluation
     if (!classIsNominal)
 	{ throw new Exception(resource.getString("noMatrix"));
     }
-
-    /*for(int i = 0; i< numClasses; i++)
-	{	for(int j = 0; j < numClasses; j++)
-		{	text.append(" ").append("  "+confusionMatrix[i][j]);
-      	}
-      	text.append("   =   ").append(classNames[i]).append("\n");
-    }*/
 
 	char[] IDChars = {'a','b','c','d','e','f','g','h','i','j',
 		       		  'k','l','m','n','o','p','q','r','s','t',

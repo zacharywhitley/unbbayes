@@ -27,6 +27,7 @@ public final class Utils
   public static boolean eq(double a, double b)
   {	return (a - b < SMALL) && (b - a < SMALL);
   }
+
   public static boolean eq(short a, short b)
   {	if (a == b)
   	{	return true;
@@ -59,93 +60,100 @@ public final class Utils
    * Returns index of maximum element in a given
    * array of doubles. First maximum is returned.
    *
-   * @param doubles The array of doubles
+   * @param doubles The array of doubles not null
    * @return The index of the maximum element
    */
-  public static int maxIndex(double [] doubles)
-  {	double maximum = 0;
-    int maxIndex = 0;
+  public static int maxIndex(double[] doubles)
+  {   double maximum = doubles[0];
+      int maxIndex = 0;
 
-    for (int i = 0; i < doubles.length; i++)
-	{	if ((i == 0) || (doubles[i] > maximum))
-		{	maxIndex = i;
-			maximum = doubles[i];
-      	}
-    }
+      for (int i = 0; i < doubles.length; i++)
+      {   if (doubles[i] > maximum)
+          {   maxIndex = i;
+              maximum = doubles[i];
+          }
+      }
 
-    return maxIndex;
+      return maxIndex;
   }
 
   /**
    * Returns index of maximum element in a given
    * array of floats. First maximum is returned.
    *
-   * @param floats The array of floats
+   * @param floats The array of floats not null
    * @return The index of the maximum element
    */
   public static int maxIndex(float[] floats)
-  {	float maximum = 0;
-    int maxIndex = 0;
+  {	float maximum = floats[0];
+        int maxIndex = 0;
+        int i;
 
-    for (int i = 0; i < floats.length; i++)
-  	{	if ((i == 0) || (floats[i] > maximum))
-  		{	maxIndex = i;
-  			maximum = floats[i];
-      	}
-    }
+        for (i = 0; i < floats.length; i++)
+  	{   if (floats[i] > maximum)
+            {   maxIndex = i;
+                maximum = floats[i];
+            }
+        }
 
-    return maxIndex;
+        return maxIndex;
   }
 
   /**
    * Returns index of maximum element in a given
    * array of integers. First maximum is returned.
    *
-   * @param ints The array of integers
+   * @param ints The array of integers not null
    * @return The index of the maximum element
    */
   public static int maxIndex(int [] ints)
-  { int maximum = 0;
-    int maxIndex = 0;
+  {   int maximum = ints[0];
+      int maxIndex = 0;
 
-    for (int i = 0; i < ints.length; i++)
-	{	if ((i == 0) || (ints[i] > maximum))
-		{	maxIndex = i;
-			maximum = ints[i];
-      	}
-    }
+      for (int i = 0; i < ints.length; i++)
+      {   if (ints[i] > maximum)
+          {   maxIndex = i;
+              maximum = ints[i];
+      	  }
+      }
 
-    return maxIndex;
+      return maxIndex;
   }
 
   /**
    * Returns minimum element in a given array of doubles.
    *
-   * @param doubles The array of doubles
+   * @param doubles The array of doubles not null
    * @return Minimum element
    */
-  public static double min(double [] doubles)
-  {	double minimum = Double.MAX_VALUE;
+  public static double min(double[] doubles)
+  {   double minimum = doubles[0];
 
-    for (int i = 0; i < doubles.length; i++)
-	{	if (doubles[i] < minimum)
-		{	minimum = doubles[i];
-      	}
-    }
+      for (int i = 0; i < doubles.length; i++)
+      {   if (doubles[i] < minimum)
+          {   minimum = doubles[i];
+      	  }
+      }
 
-    return minimum;
+      return minimum;
   }
 
+  /**
+   * Returns minimum element in a given array of floats.
+   *
+   * @param doubles The array of floats not null
+   * @return Minimum element
+   */
   public static float min(float[] floats)
-  {	float minimum = Float.MAX_VALUE;
+  {   float minimum = floats[0];
 
-    for (int i = 0; i < floats.length; i++)
-	{	if (floats[i] < minimum)
-		{	minimum = floats[i];
-      	}
-    }
+      for (int i = 0; i < floats.length; i++)
+      {   if (floats[i] < minimum)
+          {   minimum = floats[i];
+          }
+      }
 
-    return minimum;
+      return minimum;
   }
 
   /**

@@ -165,6 +165,7 @@ public class EvaluationMain extends JInternalFrame
       String[] s1 = {"ARFF"};
       String[] s2 = {"TXT"};
       fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+      fileChooser.setDialogTitle("Open Test Instance Set");
       fileChooser.setMultiSelectionEnabled(false);
       //adicionar FileView no FileChooser para desenhar ícones de arquivos
       fileChooser.setFileView(new FileIcon(this));
@@ -175,6 +176,10 @@ public class EvaluationMain extends JInternalFrame
       {   selectedFile = fileChooser.getSelectedFile();
           openFile(selectedFile);
           FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
+      }
+      else
+      {   statusBar.setText("Open Test Instance Set canceled");
+          instOK = false;
       }
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
@@ -213,13 +218,15 @@ public class EvaluationMain extends JInternalFrame
   void jMenuItem2_actionPerformed(ActionEvent evt)
   {   openModel();
       openTest();
-      try
-      {   BayesianNetwork bayesianNetwork = new BayesianNetwork(net,inst);
-          classifier = bayesianNetwork;
-      }
-      catch (Exception e)
-      {   statusBar.setText(e.getMessage());
-          instOK = false;
+      if (instOK)
+      {   try
+          {   BayesianNetwork bayesianNetwork = new BayesianNetwork(net,inst);
+              classifier = bayesianNetwork;
+          }
+          catch (Exception e)
+          {   statusBar.setText(e.getMessage());
+              instOK = false;
+          }
       }
       if (instOK)
       {   jPanel2.setModel(classifier,inst);
@@ -230,9 +237,10 @@ public class EvaluationMain extends JInternalFrame
 
   private void openModel()
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
-      String[] s1 = {"ID3"};
       String[] s2 = {"NET"};
+      String[] s1 = {"ID3"};
       fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+      fileChooser.setDialogTitle("Open model");
       fileChooser.setMultiSelectionEnabled(false);
       //adicionar FileView no FileChooser para desenhar ícones de arquivos
       fileChooser.setFileView(new FileIcon(EvaluationMain.this));
@@ -243,6 +251,10 @@ public class EvaluationMain extends JInternalFrame
       {   selectedFile = fileChooser.getSelectedFile();
           setModelFromFile(selectedFile);
           FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
+      }
+      else
+      {   statusBar.setText("Open model canceled");
+          instOK = false;
       }
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
