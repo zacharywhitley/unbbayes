@@ -138,7 +138,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
      * @param estado estado a ser adicionado
      */
     public void appendState(String estado) {
-        atualizaEstado(estado, true);
+        updateState(estado, true);
     }
 
     /**
@@ -149,7 +149,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
     public void removeLastState() {
         if (states.size() > 1) {
 //            super.removeLastState();
-            atualizaEstado(null, false);
+            updateState(null, false);
         }
     }
 
@@ -160,7 +160,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
      *@param  estado  estado a ser inserido / removido.
      *@param  insere  true se for para inserir e false se for para remover.
      */
-    private void atualizaEstado(String estado, boolean insere) {
+    private void updateState(String estado, boolean insere) {
         int d = getStatesSize();
         if (d > 0) {
             while (d <= tabelaPot.tableSize()) {

@@ -57,8 +57,8 @@ public class Link {
 		
 		originalLinkTable = (PotentialTable) clique.getPotentialTable().clone();
 				
-		NodeList toDie = SetToolkit.clone(c2.getNos());
-		toDie.removeAll(clique.getNos());
+		NodeList toDie = SetToolkit.clone(c2.getNodes());
+		toDie.removeAll(clique.getNodes());
 		newLinkTable = 
 			(PotentialTable) c2.getPotentialTable().clone();
 			
@@ -97,7 +97,7 @@ public class Link {
 	 * Sets the host clique on the first.sub-network.
 	 * @param v0 The host clique on the first.sub-network
 	 */
-	public void setV0(Clique v0) {
+	public void setHost0(Clique v0) {
 		this.v0 = v0;
 	}
 
@@ -105,7 +105,7 @@ public class Link {
 	 * Sets the host clique on the second.sub-network.
 	 * @param v1 the host clique on the second.sub-network.
 	 */
-	public void setV1(Clique v1) {
+	public void setHost1(Clique v1) {
 		this.v1 = v1;
 	}
 
@@ -121,7 +121,7 @@ public class Link {
 	 * Returns the host clique on the first.sub-network.
 	 * @return Clique the host clique on the first.sub-network.
 	 */
-	public Clique getV0() {
+	public Clique getHost0() {
 		return v0;
 	}
 
@@ -129,7 +129,7 @@ public class Link {
 	 * Returns the host clique on the second.sub-network.
 	 * @return Clique the host clique on the second.sub-network.
 	 */
-	public Clique getV1() {
+	public Clique getHost1() {
 		return v1;
 	}
 

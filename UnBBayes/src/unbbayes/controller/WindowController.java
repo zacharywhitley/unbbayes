@@ -380,7 +380,7 @@ public class WindowController implements KeyListener {
         }
 
         // Ordenar pela descricao do nó apenas para facilitar a visualização da árvore.
-        NodeList nos = net.getCopiaNos();
+        NodeList nos = net.getNodesCopy();
         boolean haTroca = true;
         while (haTroca) {
             haTroca = false;
@@ -689,7 +689,7 @@ public class WindowController implements KeyListener {
                     }
                     no2.getParents().add(no1);
                     no1.getChildren().add(no2);
-                    net.getArcos().add(new Edge(no1, no2));
+                    net.getEdges().add(new Edge(no1, no2));
                 }
             }
             bColou = true;

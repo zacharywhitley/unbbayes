@@ -102,11 +102,11 @@ public class JunctionTree implements java.io.Serializable {
 	 *  Verifica a consistência global.
 	 *  Aplica o algoritmo Colete seguido do Distribua no clique raiz da árvore.
 	 */
-	public void consistencia() throws Exception {
+	public void consistency() throws Exception {
 		n = 1;
 		Clique raiz = (Clique) cliques.get(0);
 		coleteEvidencia(raiz);
-		distribuaEvidencia(raiz);
+		distributeEvidences(raiz);
 	}
 
 	/**
@@ -124,8 +124,9 @@ public class JunctionTree implements java.io.Serializable {
 				this.coleteEvidencia(auxClique);
 			}
 			
-			Separator sep = getSeparator(clique, auxClique); 
-			clique.absorb(auxClique, sep.getPotentialTable());
+//			Separator sep = getSeparator(clique, auxClique); 
+//			clique.absorb(auxClique, sep.getPotentialTable());
+			absorb(clique, auxClique);
 		}
 
 		n *= clique.normalize();
@@ -136,20 +137,49 @@ public class JunctionTree implements java.io.Serializable {
 	 *
 	 *@param  clique  clique.
 	 */
-	protected void distribuaEvidencia(Clique clique) {
+	protected void distributeEvidences(Clique clique) {
 		Clique auxClique;
 		int sizeFilhos = clique.getChildrenSize();
 		for (int c = 0; c < sizeFilhos; c++) {
 			auxClique = clique.getChildAt(c);
 			
-			Separator sep = getSeparator(clique, auxClique); 
-			auxClique.absorb(clique, sep.getPotentialTable());
-//			absorve(auxClique, clique);
+//			Separator sep = getSeparator(clique, auxClique); 
+//			auxClique.absorb(clique, sep.getPotentialTable());
+			absorb(auxClique, clique);
 			if (auxClique.getChildrenSize() != 0) {
-				distribuaEvidencia(auxClique);
+				distributeEvidences(auxClique);
 			}
 		}
 	}
+	
+	protected void absorb(Clique clique1, Clique clique2) {
+		PotentialTable sepTab = getSeparator(clique1, clique2).getPotentialTable();
+		NodeList toDie = SetToolkit.clone(clique2.getNodes());
+		
+		for (int i = 0; i < sepTab.variableCount(); i++) {
+			toDie.remove(sepTab.getVariableAt(i));			
+		}
+
+		PotentialTable dummyTable =
+			(PotentialTable) clique2.getPotentialTable().clone();
+			
+		for (int i = 0; i < toDie.size(); i++) {
+			dummyTable.removeVariable(toDie.get(i));
+		}
+
+		PotentialTable originalSeparatorTable =
+			(PotentialTable) sepTab.clone();
+
+		for (int i = sepTab.tableSize() - 1; i >= 0; i--) {
+			sepTab.setValue(i, dummyTable.getValue(i));
+		}
+
+		dummyTable.directOpTab(
+			originalSeparatorTable,
+			PotentialTable.DIVISION_OPERATOR);
+
+		clique1.getPotentialTable().opTab(dummyTable, PotentialTable.PRODUCT_OPERATOR);
+    }
 
 	/**
 	 *  Inicia crenças da árvore.
@@ -207,7 +237,7 @@ public class JunctionTree implements java.io.Serializable {
 				}
 			}
 			
-			consistencia();
+			consistency();
 			copyTableData();
 			initialized = true;
 		} else {
@@ -256,8 +286,8 @@ public class JunctionTree implements java.io.Serializable {
 		int sizeSeparadores = separators.size();
 		for (int indSep = 0; indSep < sizeSeparadores; indSep++) {
 			Separator separator = (Separator) separators.get(indSep);
-			if (((separator.getNo1() == clique1) && (separator.getNo2() == clique2))
-				|| ((separator.getNo2() == clique1) && (separator.getNo1() == clique2))) {
+			if (((separator.getClique1() == clique1) && (separator.getClique2() == clique2))
+				|| ((separator.getClique2() == clique1) && (separator.getClique1() == clique2))) {
 				return separator;
 			}
 		}

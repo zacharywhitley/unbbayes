@@ -132,8 +132,8 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         this.graphViewport = graphViewport;
         this.setSize(800, 600);
 
-        arc = controlador.getNet().getArcos();
-        node = controlador.getNet().getNos();
+        arc = controlador.getNet().getEdges();
+        node = controlador.getNet().getNodes();
         selectedGroup = new ArrayList();
         presentBeginArc = new Point2D.Double();
         presentEndArc = new Point2D.Double();
@@ -805,7 +805,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         Node endNode = getNode(e.getX(), e.getY());
         if ((bArc) && (e.getModifiers() == e.BUTTON1_MASK)) {
             Node beginNode = getNode(presentBeginArc.getX(), presentBeginArc.getY());
-            if ((endNode != null) && (controller.getNet().existeArco(beginNode, endNode) == -1)) {
+            if ((endNode != null) && (controller.getNet().hasEdge(beginNode, endNode) == -1)) {
                 insertArc(presentBeginArc.getX(), presentBeginArc.getY(), presentEndArc.getX(), presentEndArc.getY());
             }
 

@@ -52,7 +52,7 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
      * @throws Exception se a tabela não soma 100 para todos os estados fixada
      *                   qualquer configuração de estados dos pais.
      */
-    public void verificaConsistencia() throws Exception {
+    public void verifyConsistency() throws Exception {
         Node auxNo = variaveis.get(0);
         int noLin = auxNo.getStatesSize();
         int noCol = 1;

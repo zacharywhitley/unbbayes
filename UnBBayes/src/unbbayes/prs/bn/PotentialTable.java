@@ -494,7 +494,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      *
      * @param title Título da janela que será mostrada
      */
-    public void mostrarTabela(String title) {
+    public void showTable(String title) {
         JTable tabela;
         int noVariaveis;
         Node no = getVariableAt(0);

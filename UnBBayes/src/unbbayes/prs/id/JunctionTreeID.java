@@ -45,11 +45,12 @@ public class JunctionTreeID extends JunctionTree implements java.io.Serializable
     * @param clique1
     * @param clique2
     */
-    protected void absorve(Clique clique1, Clique clique2) {    	
+    protected void absorb(Clique clique1, Clique clique2) {    	
         Separator separator = getSeparator(clique1, clique2);
-        clique1.absorb(clique2, separator.getPotentialTable());
-        NodeList toDie = SetToolkit.clone(clique2.getNos());
-        toDie.removeAll(separator.getNos());
+        super.absorb(clique1, clique2);
+//        clique1.absorb(clique2, separator.getPotentialTable());
+        NodeList toDie = SetToolkit.clone(clique2.getNodes());
+        toDie.removeAll(separator.getNodes());
 
         PotentialTable originalSeparatorUtilityTable = (PotentialTable) separator.getUtilityTable().clone();
 

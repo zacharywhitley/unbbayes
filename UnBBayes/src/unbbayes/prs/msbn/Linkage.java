@@ -53,7 +53,7 @@ public class Linkage {
 		linkList = new ArrayList();
 		n1.addAdjacent(n2);
 		n2.setParent(n1);
-		nodes = SetToolkit.intersection(n1.getNos(), n2.getNos());		
+		nodes = SetToolkit.intersection(n1.getNodes(), n2.getNodes());		
 	}
 	
 	/**
@@ -100,11 +100,11 @@ public class Linkage {
 				Clique c = link.getClique();
 				if (c.getChildrenSize() == 0) {
 					// c is tree leaf					
-					if (c.getNos().size() == 0) {
+					if (c.getNodes().size() == 0) {
 						removeLink(link);
 						retirou = true;
 					} else {
-						if (c.getParent() != null && c.getParent().getNos().containsAll(c.getNos())) {
+						if (c.getParent() != null && c.getParent().getNodes().containsAll(c.getNodes())) {
 							removeLink(link);
 							retirou = true;
 						}	
@@ -118,14 +118,14 @@ public class Linkage {
 		for (int i = linkList.size()-1; i >=0; i--) {
 			Link link = (Link) linkList.get(i);
 			Clique c = link.getClique();
-			if (c.getParent() != null && c.getParent().getNos().containsAll(c.getNos())) {
+			if (c.getParent() != null && c.getParent().getNodes().containsAll(c.getNodes())) {
 				removeLink(link);
 				continue;																
 			}
 			
 			for (int j = c.getChildrenSize()-1; j>=0; j--) {
 				Clique c2 = c.getChildAt(j);
-				if (c2.getNos().containsAll(c.getNos())) {
+				if (c2.getNodes().containsAll(c.getNodes())) {
 					removeLink(link);
 					break;					
 				}					
@@ -140,8 +140,8 @@ public class Linkage {
 			Clique c = link.getClique();
 			for (int j = cliquesN2.size()-1; j>=0; j--) {
 				Clique c2 = (Clique) cliquesN2.get(j);
-				if (c2.getNos().containsAll(c.getNos())) {
-					link.setV1(c2);
+				if (c2.getNodes().containsAll(c.getNodes())) {
+					link.setHost1(c2);
 					break;
 				}
 			}
@@ -155,8 +155,8 @@ public class Linkage {
 			Link l = (Link) linkList.get(i);
 			Clique c = l.getClique();
 			PotentialTable tab = c.getPotentialTable();
-			for (int j = 0; j < c.getNos().size(); j++) {
-				tab.addVariable(c.getNos().get(j));
+			for (int j = 0; j < c.getNodes().size(); j++) {
+				tab.addVariable(c.getNodes().get(j));
 			}
 			for (int j = tab.tableSize()-1; j>=0; j--) {
 				tab.setValue(j, 1);				
@@ -167,8 +167,8 @@ public class Linkage {
 		for (int k = jt.getSeparatorsSize() - 1; k >= 0; k--) {
 			Separator auxSep = (Separator) jt.getSeparatorAt(k);
 			PotentialTable tab = auxSep.getPotentialTable();
-			for (int c = 0; c < auxSep.getNos().size(); c++) {
-				tab.addVariable(auxSep.getNos().get(c));
+			for (int c = 0; c < auxSep.getNodes().size(); c++) {
+				tab.addVariable(auxSep.getNodes().get(c));
 			}
 			for (int j = tab.tableSize()-1; j>=0; j--) {
 				tab.setValue(j, 1);				
@@ -181,7 +181,7 @@ public class Linkage {
 			Clique c = (Clique) jt.getCliques().get(i);
 			for (int j = c.getChildrenSize()-1; j>=0; j--) {			
 				Separator sep = new Separator(c, c.getChildAt(j), false);
-				sep.setNos(SetToolkit.intersection(c.getNos(), c.getChildAt(j).getNos()));
+				sep.setNodes(SetToolkit.intersection(c.getNodes(), c.getChildAt(j).getNodes()));
 				jt.addSeparator(sep);
 			} 
 		}
@@ -208,9 +208,9 @@ public class Linkage {
 	 */ 
 	private Clique makeCliqueList(Clique c) {
 		Clique cliqueClone = new Clique();
-		cliqueClone.getNos().addAll(SetToolkit.intersection(c.getNos(), nodes));
+		cliqueClone.getNodes().addAll(SetToolkit.intersection(c.getNodes(), nodes));
 		Link l = new Link(cliqueClone);
-		l.setV0(c);
+		l.setHost0(c);
 		linkList.add(l);
 		jt.getCliques().add(cliqueClone);
 		for (int i = c.getChildrenSize()-1; i>=0; i--) {
@@ -226,7 +226,7 @@ public class Linkage {
 	 * Returns the parent subnetwork of this Linkage.
 	 * @return the parent subnetwork of this Linkage.
 	 */
-	public SubNetwork getN1() {
+	public SubNetwork getNet1() {
 		return n1;
 	}
 
@@ -234,7 +234,7 @@ public class Linkage {
 	 * Returns the child subnetwork of this Linkage.
 	 * @return the child subnetwork of this Linkage.
 	 */
-	public SubNetwork getN2() {
+	public SubNetwork getNet2() {
 		return n2;
 	}
 	
@@ -255,7 +255,7 @@ public class Linkage {
 		}
 		
 		SubNetwork net = (naOrdem) ? n1 : n2;
-		net.getJunctionTree().consistencia();
+		net.getJunctionTree().consistency();
 		net.updateMarginais();
 	}
 
@@ -264,10 +264,10 @@ public class Linkage {
 			Separator sep = jt.getSeparatorAt(i);
 			PotentialTable oldRedTab = (PotentialTable) sep.getPotentialTable().clone();
 			
-			NodeList toDie = SetToolkit.clone(sep.getNo2().getNos());
-			toDie.removeAll(sep.getNos());
+			NodeList toDie = SetToolkit.clone(sep.getClique2().getNodes());
+			toDie.removeAll(sep.getNodes());
 			PotentialTable tA =
-				(PotentialTable) sep.getNo2().getPotentialTable().clone();
+				(PotentialTable) sep.getClique2().getPotentialTable().clone();
 				
 			for (int j = toDie.size()-1; j >= 0; j--) {
 				tA.removeVariable(toDie.get(i));
@@ -279,7 +279,7 @@ public class Linkage {
 			
 			for (int j = linkList.size()-1; j>=0; j--) {
 				Link l = (Link) linkList.get(j);
-				if (l.getClique() == sep.getNo2()) {
+				if (l.getClique() == sep.getClique2()) {
 					l.removeRedundancy(tA, oldRedTab);					
 					break;					
 				}

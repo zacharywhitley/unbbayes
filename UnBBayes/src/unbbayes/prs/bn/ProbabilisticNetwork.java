@@ -81,7 +81,7 @@ public class ProbabilisticNetwork
 
 		oe = new NodeList(copiaNos.size());
 
-		while (pesoMinimo(auxNos))
+		while (minimumWeightElimination(auxNos))
 			;
 
 		//        int index;
@@ -106,7 +106,7 @@ public class ProbabilisticNetwork
 				auxNos.removeAll(decision.getParents());
 			}
 
-			while (pesoMinimo(auxNos)) 
+			while (minimumWeightElimination(auxNos)) 
 				;
 		}
 		
@@ -138,13 +138,13 @@ public class ProbabilisticNetwork
 			logManager.reset();
 		}
 		verifyConsistency();
-		moraliza();
+		moralize();
 		triangula();		
 		
 		if (isID()) {
-			compilaAJ(new JunctionTreeID());
+			compileJT(new JunctionTreeID());
 		} else {
-			compilaAJ(new JunctionTree());
+			compileJT(new JunctionTree());
 		}
 	}
 

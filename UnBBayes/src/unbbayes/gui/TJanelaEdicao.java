@@ -90,7 +90,7 @@ public class TJanelaEdicao extends JDialog {
         //ao clicar no botão reaprende, mostra-se o menu para escolha do arquivo para o aprendizado.
         reaprende.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {            	
-            	List edgeList = net.getArcos();            	
+            	List edgeList = net.getEdges();            	
             	Edge edge;       
             	Node node;	            	
             	boolean close = true;

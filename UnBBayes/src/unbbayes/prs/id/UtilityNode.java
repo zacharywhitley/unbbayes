@@ -59,7 +59,7 @@ public class UtilityNode extends Node implements ITabledVariable, java.io.Serial
      * Não faz nada ao se tentar inserir um estado, pois
      * variáveis de utilidade só aceitam 1 estado.
      */
-    public void insereEstado() { }
+    public void appendState(String state) { }
 
     /**
      * Não faz nada ao se tentar inserir um estado, pois

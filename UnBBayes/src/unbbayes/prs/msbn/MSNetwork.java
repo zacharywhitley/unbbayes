@@ -125,15 +125,15 @@ public class MSNetwork {
 		}
 	
 		SubNetwork raiz = (SubNetwork) nets.get(0);		
-		coleteCrencas(raiz);
+		coletBeliefs(raiz);
 		distributeBelief(raiz);
 	}
 	
-	protected void coleteCrencas(SubNetwork net) throws Exception {
+	protected void coletBeliefs(SubNetwork net) throws Exception {
 		for (int i = net.adjacents.size()-1; i>=0; i--) {
 			SubNetwork netAdj = (SubNetwork) net.adjacents.get(i);
 			if (netAdj.getAdjacentsSize() > 0) { 
-				coleteCrencas(netAdj);
+				coletBeliefs(netAdj);
 			}			
 			updateBelief(net, netAdj);
 		}
@@ -167,12 +167,12 @@ public class MSNetwork {
 	protected void updateBelief(SubNetwork net1, SubNetwork net2) throws Exception {				
 		for (int i = links.size()-1; i>=0; i--) {
 			Linkage l = (Linkage) links.get(i);
-			if (l.getN1() == net1 && l.getN2() == net2) {
+			if (l.getNet1() == net1 && l.getNet2() == net2) {
 				l.absorb(true);
 				return;											
 			}
 			
-			if (l.getN2() == net1 && l.getN1() == net2) {
+			if (l.getNet2() == net1 && l.getNet1() == net2) {
 				l.absorb(false);
 				return;
 			}
@@ -221,7 +221,7 @@ public class MSNetwork {
 			SubNetwork n1 = (SubNetwork) nets.get(i);
 			for (int j = i+1; j < netsSize; j++) {
 				SubNetwork n2 = (SubNetwork) nets.get(j);
-				NodeList inter = SetToolkit.intersection(n1.getNos(), n2.getNos());				
+				NodeList inter = SetToolkit.intersection(n1.getNodes(), n2.getNodes());				
 				interseccoes[i][j] = interseccoes[j][i] = inter;				
 			}
 		}
@@ -272,8 +272,8 @@ public class MSNetwork {
 		SubNetwork nk = (SubNetwork) nets.get(k);
 		for (int i = 0; i < inter.size(); i++) {
 			NodeList pais = inter.get(i).getParents();			
-			if (! nj.getNos().containsAll(pais) &&
-				! nk.getNos().containsAll(pais)) {
+			if (! nj.getNodes().containsAll(pais) &&
+				! nk.getNodes().containsAll(pais)) {
 				
 				return false;
 			}

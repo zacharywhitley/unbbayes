@@ -201,7 +201,7 @@ public class EvidenceTree extends JTree {
 	 */
 	public void updateTree() {
 		if (expandedNodes == null) {
-			expandedNodes = new boolean[net.getCopiaNos().size()];
+			expandedNodes = new boolean[net.getNodesCopy().size()];
 			for (int i = 0; i < expandedNodes.length; i++) {
 				expandedNodes[i] = false;
 			}
@@ -220,7 +220,7 @@ public class EvidenceTree extends JTree {
 					.getRoot());
 		this.setModel(model);
 		root = (DefaultMutableTreeNode) getModel().getRoot();
-		NodeList nodes = net.getCopiaNos();
+		NodeList nodes = net.getNodesCopy();
 		int size = nodes.size();
 		for (int i = 0; i < size; i++) {
 			Node node = (Node) nodes.get(i);

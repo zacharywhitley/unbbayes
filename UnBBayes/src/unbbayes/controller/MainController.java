@@ -175,7 +175,7 @@ public class MainController {
                 arcoAux = new Edge(noPai, noFilho);                
               	arcoAux.setDirection(direction);                	
               	direction = true;
-                net.getArcos().add(arcoAux);
+                net.getEdges().add(arcoAux);
             }
         }        		
 		return net;

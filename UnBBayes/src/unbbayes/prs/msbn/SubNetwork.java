@@ -96,7 +96,7 @@ public class SubNetwork extends Network {
 	 *	Local version of the moralize method.
 	 */
 	protected void localMoralize() {
-		super.moraliza();				
+		super.moralize();				
 	}
 	
 	/**
@@ -104,7 +104,7 @@ public class SubNetwork extends Network {
 	 * @throws Exception	If a junction tree cannot be constructed.
 	 */
 	protected void compileJunctionTree() throws Exception {
-		super.compilaAJ(new JunctionTree());
+		super.compileJT(new JunctionTree());
 	}
 	
 	/**
@@ -186,11 +186,11 @@ public class SubNetwork extends Network {
 		assert inter.size() + auxNos.size() == sizeAnt;
 		
 		boolean inseriu = false;
-		while (pesoMinimo(auxNos)) {
+		while (minimumWeightElimination(auxNos)) {
 			inseriu = true;
 		}
 		
-		while (pesoMinimo(inter)) {
+		while (minimumWeightElimination(inter)) {
 			inseriu = true;			
 		}
 		
@@ -332,6 +332,7 @@ public class SubNetwork extends Network {
 		super.updateMarginais();
 	}
 	
+	/*
 	public void normalize() {
 		for (int i = 0 ; i < junctionTree.getCliques().size(); i++) {
 			Clique c1 = (Clique) junctionTree.getCliques().get(i);
@@ -342,4 +343,5 @@ public class SubNetwork extends Network {
 			}
 		}
 	}
+	*/
 }

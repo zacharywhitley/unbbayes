@@ -281,35 +281,6 @@ public class Clique implements ITabledVariable, java.io.Serializable {
     public Clique getChildAt(int index) {
         return (Clique)children.get(index);
     }
-    
-    
-    public void absorb(Clique clique, PotentialTable sepTab) {
-		NodeList toDie = SetToolkit.clone(clique.getNos());
-		
-		for (int i = 0; i < sepTab.variableCount(); i++) {
-			toDie.remove(sepTab.getVariableAt(i));			
-		}
-
-		PotentialTable dummyTable =
-			(PotentialTable) clique.getPotentialTable().clone();
-			
-		for (int i = 0; i < toDie.size(); i++) {
-			dummyTable.removeVariable(toDie.get(i));
-		}
-
-		PotentialTable originalSeparatorTable =
-			(PotentialTable) sepTab.clone();
-
-		for (int i = sepTab.tableSize() - 1; i >= 0; i--) {
-			sepTab.setValue(i, dummyTable.getValue(i));
-		}
-
-		dummyTable.directOpTab(
-			originalSeparatorTable,
-			PotentialTable.DIVISION_OPERATOR);
-
-		potentialTable.opTab(dummyTable, PotentialTable.PRODUCT_OPERATOR);
-    }       
 
 
     /**
@@ -317,7 +288,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
      *
      *@return    vetor de nós clusterizados.
      */
-    public NodeList getNos() {
+    public NodeList getNodes() {
         return nos;
     }
 

@@ -135,7 +135,7 @@ public class Network implements java.io.Serializable {
      *
      *@return    arcos do grafo.
      */
-    public List getArcos() {
+    public List getEdges() {
         return this.arcos;
     }
 
@@ -147,7 +147,7 @@ public class Network implements java.io.Serializable {
      * 
      * @todo Eliminar esse metodo! eh utilizado na classe NetWindow
      */
-    public NodeList getNos() {
+    public NodeList getNodes() {
         return this.nos;
     }
     
@@ -343,7 +343,7 @@ public class Network implements java.io.Serializable {
      *  filhos para uma lista de adjacentes do nó.
      */
     protected void montaAdjacentes() {
-        this.desmontaAdjacentes();
+        this.clearAdjacents();
         for (int qnos = 0; qnos < nos.size(); qnos++) {
             nos.get(qnos).makeAdjacents();
         }
@@ -351,7 +351,7 @@ public class Network implements java.io.Serializable {
     
     
     protected void makeAdjacents() {
-    	desmontaAdjacentes();
+    	clearAdjacents();
     	for (int z = arcosMarkov.size() - 1; z >= 0; z--) {
 			Edge auxArco = (Edge) arcosMarkov.get(z);
 			auxArco.getOriginNode().getAdjacents().add(
@@ -379,7 +379,7 @@ public class Network implements java.io.Serializable {
     /**
      *  Destrói a lista de adjacentes de cada nó do grafo.
      */
-    protected void desmontaAdjacentes() {
+    protected void clearAdjacents() {
     	int size = nos.size();
         for (int qnos = 0; qnos < size; qnos++) {
             nos.get(qnos).clearAdjacents();
@@ -390,7 +390,7 @@ public class Network implements java.io.Serializable {
     /**
      *  Limpa a lista de nós.
      */
-    protected void limpaNos() {
+    protected void clearNodes() {
         nos.clear();
         //explanationNodes.clear();
         //descriptionNodes.clear();
@@ -400,7 +400,7 @@ public class Network implements java.io.Serializable {
     /**
      *  Limpa a lista de arcos.
      */
-    protected void limpaArcos() {
+    protected void clearEdges() {
         arcos.clear();
     }
     
@@ -564,7 +564,7 @@ public class Network implements java.io.Serializable {
         }
         montaAdjacentes();
         dfsConnectivity(nos.get(0), visitados);
-        desmontaAdjacentes();
+        clearAdjacents();
         if (visitados.size() != nos.size()) {
             throw new Exception(resource.getString("DisconectedNetException"));
         }
@@ -586,13 +586,13 @@ public class Network implements java.io.Serializable {
 	/**
 	 *  Faz o processo de moralização da rede.
 	 */
-	protected void moraliza() {
+	protected void moralize() {
 		Node auxNo;
 		Node auxPai1;
 		Node auxPai2;
 		Edge auxArco;
 		
-		desmontaAdjacentes();
+		clearAdjacents();
 	
 		if (createLog) {
 			logManager.append(resource.getString("moralizeLabel"));
@@ -620,8 +620,8 @@ public class Network implements java.io.Serializable {
 					auxPai1 = auxNo.getParents().get(j);
 					for (int k = j + 1; k < sizePais; k++) {
 						auxPai2 = auxNo.getParents().get(k);
-						if ((existeArco(auxPai1, auxPai2, copiaArcos) == -1)
-							&& (existeArco(auxPai1, auxPai2, arcosMarkov) == -1)) {
+						if ((hasEdge(auxPai1, auxPai2, copiaArcos) == -1)
+							&& (hasEdge(auxPai1, auxPai2, arcosMarkov) == -1)) {
 							auxArco = new Edge(auxPai1, auxPai2);
 							if (createLog) {
 								logManager.append(
@@ -651,11 +651,11 @@ public class Network implements java.io.Serializable {
 	 *@param  no2  nó destino.
 	 *@return      posição do arco no vetor ou -1 caso não exista tal arco.
 	 */
-	public int existeArco(Node no1, Node no2) {
-		return existeArco(no1, no2, arcos);
+	public int hasEdge(Node no1, Node no2) {
+		return hasEdge(no1, no2, arcos);
 	}
 
-	private int existeArco(Node no1, Node no2, List vetArcos) {
+	private int hasEdge(Node no1, Node no2, List vetArcos) {
 		if (no1 == no2) {
 			return 1;
 		}
@@ -685,7 +685,7 @@ public class Network implements java.io.Serializable {
 	/**
 	 *  Monta árvore de junção a partir do grafo.
 	 */
-	protected void compilaAJ(JunctionTree jt) throws Exception {
+	protected void compileJT(JunctionTree jt) throws Exception {
 		int menor;
 		Clique auxClique;
 		Separator auxSep;
@@ -697,7 +697,7 @@ public class Network implements java.io.Serializable {
 		this.cliques();
 		this.arvoreForte();
 		this.sortCliqueNodes();
-		this.associaCliques();
+		this.associateCliques();
 		junctionTree.initBeliefs();
 	
 		int sizeNos = copiaNos.size();
@@ -708,7 +708,7 @@ public class Network implements java.io.Serializable {
 				int sizeSeparadores = junctionTree.getSeparatorsSize();
 				for (int c2 = 0; c2 < sizeSeparadores; c2++) {
 					auxSep = (Separator) junctionTree.getSeparatorAt(c2);
-					if (auxSep.getNos().contains(auxNode)
+					if (auxSep.getNodes().contains(auxNode)
 						&& (auxSep.getPotentialTable().tableSize() < menor)) {
 						((ProbabilisticNode) auxNode).setAssociatedClique(
 							auxSep);
@@ -721,7 +721,7 @@ public class Network implements java.io.Serializable {
 				int sizeCliques = junctionTree.getCliques().size();
 				for (int c2 = 0; c2 < sizeCliques; c2++) {
 					auxClique = (Clique) junctionTree.getCliques().get(c2);
-					if (auxClique.getNos().contains(auxNode)
+					if (auxClique.getNodes().contains(auxNode)
 						&& (auxClique.getPotentialTable().tableSize() < menor)) {
 						if (auxNode.getType()
 							== Node.PROBABILISTIC_NODE_TYPE) {
@@ -799,13 +799,13 @@ public class Network implements java.io.Serializable {
 			auxNo = copiaNos.get(i);
 			e = oe.indexOf(auxNo);
 			auxClique = new Clique();
-			auxClique.getNos().add(auxNo);
+			auxClique.getNodes().add(auxNo);
 	
 			int sizeAdjacentes = auxNo.getAdjacents().size();
 			for (j = 0; j < sizeAdjacentes; j++) {
 				auxNo2 = auxNo.getAdjacents().get(j);
 				if (oe.indexOf(auxNo2) > e) {
-					auxClique.getNos().add(auxNo2);
+					auxClique.getNodes().add(auxNo2);
 				}
 			}
 			listaCliques.add(auxClique);
@@ -817,7 +817,7 @@ public class Network implements java.io.Serializable {
 			for (i = 0; i < listaCliques.size() - 1; i++) {
 				auxClique = (Clique) listaCliques.get(i);
 				auxClique2 = (Clique) listaCliques.get(i + 1);
-				if (auxClique.getNos().size() > auxClique2.getNos().size()) {
+				if (auxClique.getNodes().size() > auxClique2.getNodes().size()) {
 					listaCliques.set(i + 1, auxClique);
 					listaCliques.set(i, auxClique2);
 					haTroca = true;
@@ -832,7 +832,7 @@ public class Network implements java.io.Serializable {
 			for (j = i + 1; j < sizeCliques; j++) {
 				auxClique2 = (Clique) listaCliques.get(j);
 	
-				if (auxClique2.getNos().containsAll(auxClique.getNos())) {
+				if (auxClique2.getNodes().containsAll(auxClique.getNodes())) {
 					continue for1;
 				}
 			}
@@ -848,7 +848,7 @@ public class Network implements java.io.Serializable {
 		List listaCliques = junctionTree.getCliques();
 		for (int k = 0; k < listaCliques.size(); k++) {
 			Clique clique = (Clique) listaCliques.get(k);
-			NodeList nosClique = clique.getNos();
+			NodeList nosClique = clique.getNodes();
 			boolean haTroca = true;
 			while (haTroca) {
 				haTroca = false;
@@ -873,7 +873,7 @@ public class Network implements java.io.Serializable {
 	
 		for (int k = junctionTree.getSeparatorsSize() - 1; k >= 0; k--) {
 			Separator separator = (Separator) junctionTree.getSeparatorAt(k);
-			NodeList nosSeparator = separator.getNos();
+			NodeList nosSeparator = separator.getNodes();
 			boolean haTroca = true;
 			while (haTroca) {
 				haTroca = false;
@@ -919,7 +919,7 @@ public class Network implements java.io.Serializable {
 	 *  Faz a associação dos Nós a um único clique com menos espaço de est. que
 	 *  contenha sua família
 	 */
-	protected void associaCliques() {
+	protected void associateCliques() {
 		int min;
 		Node auxNo;
 		PotentialTable auxTabPot, auxUtilTab;
@@ -931,10 +931,10 @@ public class Network implements java.io.Serializable {
 			auxTabPot = auxClique.getPotentialTable();
 			auxUtilTab = auxClique.getUtilityTable();
 	
-			int sizeNos = auxClique.getNos().size();
+			int sizeNos = auxClique.getNodes().size();
 			for (int c = 0; c < sizeNos; c++) {
-				auxTabPot.addVariable(auxClique.getNos().get(c));
-				auxUtilTab.addVariable(auxClique.getNos().get(c));
+				auxTabPot.addVariable(auxClique.getNodes().get(c));
+				auxUtilTab.addVariable(auxClique.getNodes().get(c));
 			}
 		}
 	
@@ -942,10 +942,10 @@ public class Network implements java.io.Serializable {
 			Separator auxSep = (Separator) junctionTree.getSeparatorAt(k);
 			auxTabPot = auxSep.getPotentialTable();
 			auxUtilTab = auxSep.getUtilityTable();
-			int sizeNos = auxSep.getNos().size();
+			int sizeNos = auxSep.getNodes().size();
 			for (int c = 0; c < sizeNos; c++) {
-				auxTabPot.addVariable(auxSep.getNos().get(c));
-				auxUtilTab.addVariable(auxSep.getNos().get(c));
+				auxTabPot.addVariable(auxSep.getNodes().get(c));
+				auxUtilTab.addVariable(auxSep.getNodes().get(c));
 			}
 		}
 	
@@ -963,9 +963,9 @@ public class Network implements java.io.Serializable {
 				auxClique = (Clique) junctionTree.getCliques().get(c);
 	
 				if (auxClique.getPotentialTable().tableSize() < min
-					&& auxClique.getNos().containsAll(auxNo.getParents())) {
+					&& auxClique.getNodes().containsAll(auxNo.getParents())) {
 					if (auxNo.getType() == Node.PROBABILISTIC_NODE_TYPE
-						&& !auxClique.getNos().contains(auxNo)) {
+						&& !auxClique.getNodes().contains(auxNo)) {
 						continue;
 					}
 					cliqueMin = auxClique;
@@ -1003,10 +1003,10 @@ public class Network implements java.io.Serializable {
 			int sizeCliques = junctionTree.getCliques().size();
 			for (int i = 0; i < sizeCliques; i++) {
 				auxClique = (Clique) junctionTree.getCliques().get(i);
-				listaNos = SetToolkit.clone(auxClique.getNos());
+				listaNos = SetToolkit.clone(auxClique.getNodes());
 	
 				//calcula o índice
-				while ((ndx = indice(listaNos, alpha)) <= 0
+				while ((ndx = getCliqueIndex(listaNos, alpha)) <= 0
 					&& listaNos.size() > 1);
 				if (ndx < 0) {
 					ndx = 0;
@@ -1033,25 +1033,25 @@ public class Network implements java.io.Serializable {
 			Collections.sort(junctionTree.getCliques(), comparador);
 	
 			auxClique = (Clique) junctionTree.getCliques().get(0);
-			uni = SetToolkit.clone(auxClique.getNos());
+			uni = SetToolkit.clone(auxClique.getNodes());
 	
 			int sizeCliques1 = junctionTree.getCliques().size();
 			for (int i = 1; i < sizeCliques1; i++) {
 				auxClique = (Clique) junctionTree.getCliques().get(i);
-				inter = SetToolkit.intersection(auxClique.getNos(), uni);
+				inter = SetToolkit.intersection(auxClique.getNodes(), uni);
 	
 				for (int j = 0; j < i; j++) {
 					auxClique2 = (Clique) junctionTree.getCliques().get(j);
 	
-					if (!auxClique2.getNos().containsAll(inter)) {
+					if (!auxClique2.getNodes().containsAll(inter)) {
 						continue;
 					}
 	
 					sep = new Separator(auxClique2, auxClique);
-					sep.setNos(inter);
+					sep.setNodes(inter);
 					junctionTree.addSeparator(sep);
 	
-					auxList = SetToolkit.union(auxClique.getNos(), uni);
+					auxList = SetToolkit.union(auxClique.getNodes(), uni);
 					uni.clear();
 					uni = auxList;
 					break;
@@ -1063,7 +1063,7 @@ public class Network implements java.io.Serializable {
 	/**
 	 *  SUB-FUNÇÃO do método arvoreForte
 	 */
-	protected int indice(NodeList listaNos, NodeList alpha) {
+	protected int getCliqueIndex(NodeList listaNos, NodeList alpha) {
 		int ndx;
 		int mx;
 		Node auxNo;
@@ -1121,7 +1121,7 @@ public class Network implements java.io.Serializable {
 	 *
 	 * @param  auxNos  Vetor de nós.
 	 */
-	protected boolean pesoMinimo(NodeList auxNos) {
+	protected boolean minimumWeightElimination(NodeList auxNos) {
 		boolean algum;
 		
 		algum = true;
@@ -1152,7 +1152,7 @@ public class Network implements java.io.Serializable {
 		}
 	
 		if (auxNos.size() > 0) {
-			Node auxNo = peso(auxNos); //auxNo: clique de peso mínimo.
+			Node auxNo = weight(auxNos); //auxNo: clique de peso mínimo.
 			oe.add(auxNo);
 			if (createLog) {
 				logManager.append(
@@ -1210,7 +1210,7 @@ public class Network implements java.io.Serializable {
 	 * @param  auxNos  nós.
 	 * @return         nó cujo conjunto formado por adjacentes possui peso mínimo.
 	 */
-	private Node peso(NodeList auxNos) {
+	private Node weight(NodeList auxNos) {
 		Node v;
 		Node auxNo;
 		double p;
@@ -1279,7 +1279,7 @@ public class Network implements java.io.Serializable {
 			StringBuffer sb = new StringBuffer();
 
 			try {
-				verificaUtilidade();
+				verifyUtility();
 			} catch (Exception e) {
 				erro = true;
 				sb.append(e.getMessage());
@@ -1297,7 +1297,7 @@ public class Network implements java.io.Serializable {
 				sb.append('\n' + e.getMessage());
 			}
 			try {
-				verificaTabelasPot();
+				verifyPotentialTables();
 			} catch (Exception e) {
 				erro = true;
 				sb.append('\n' + e.getMessage());
@@ -1353,7 +1353,7 @@ public class Network implements java.io.Serializable {
 	 *  SUB-FUNÇÃO do método verificaConsistência que verifica a consistencia
 	 *  das tabelas de potenciais dos nós do grafo.
 	 */
-	protected void verificaTabelasPot() throws Exception {
+	protected void verifyPotentialTables() throws Exception {
 		ProbabilisticTable auxTabPot;
 		int c;
 		Node auxNo;
@@ -1365,7 +1365,7 @@ public class Network implements java.io.Serializable {
 			if (auxNo.getType() == Node.PROBABILISTIC_NODE_TYPE) {
 				auxVP = (ProbabilisticNode) auxNo;
 				auxTabPot = (ProbabilisticTable) auxVP.getPotentialTable();
-				auxTabPot.verificaConsistencia();
+				auxTabPot.verifyConsistency();
 			}
 		}
 	}
@@ -1374,7 +1374,7 @@ public class Network implements java.io.Serializable {
 	 *  SUB-FUNÇÃO do método verificaConsistência que verifica se todos os
 	 *  nós de utilidade não contém filhos.
 	 */
-	protected void verificaUtilidade() throws Exception {
+	protected void verifyUtility() throws Exception {
 		Node aux;
 	
 		int sizeNos = nos.size();
@@ -1462,7 +1462,7 @@ public class Network implements java.io.Serializable {
 			}
 		}
 	
-		desmontaAdjacentes();
+		clearAdjacents();
 	}
 
 	/**
@@ -1471,7 +1471,7 @@ public class Network implements java.io.Serializable {
 	 *
 	 * @return vetor de cópia dos nós sem as variáveis de utilidade.
 	 */
-	public NodeList getCopiaNos() {
+	public NodeList getNodesCopy() {
 		return copiaNos;
 	}
 
@@ -1499,7 +1499,7 @@ public class Network implements java.io.Serializable {
 		}
 
 		try {
-			junctionTree.consistencia();
+			junctionTree.consistency();
 		} catch (Exception e) {
 			initialize();
 			throw e;

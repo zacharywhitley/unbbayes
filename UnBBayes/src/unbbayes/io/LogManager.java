@@ -97,10 +97,10 @@ public class LogManager implements java.io.Serializable {
         for (int c = 0; c < sizeclicks1; c++) {
             auxClique = (Clique) clicks.get(c);
 
-            int sizenodes1 = auxClique.getNos().size();
+            int sizenodes1 = auxClique.getNodes().size();
             append(resource.getString("cliqueName") + c + "\n");
             for (int c2 = 0; c2 < sizenodes1; c2++) {
-                append((auxClique.getNos().get(c2)).getName() + "-");
+                append((auxClique.getNodes().get(c2)).getName() + "-");
             }
 
             append(resource.getString("potentialTableName"));
@@ -125,12 +125,12 @@ public class LogManager implements java.io.Serializable {
         for (int c = 0; c < sizeseparators; c++) {
             auxSep = tree.getSeparatorAt(c);
             append(resource.getString("separatorName") + c + " ");
-            append(resource.getString("betweenName") + clicks.indexOf(auxSep.getNo1()) + 
-            		resource.getString("andName") + clicks.indexOf(auxSep.getNo2()) + "\n");
+            append(resource.getString("betweenName") + clicks.indexOf(auxSep.getClique1()) + 
+            		resource.getString("andName") + clicks.indexOf(auxSep.getClique2()) + "\n");
             append(resource.getString("nodeName"));
-            int sizenodes2 = auxSep.getNos().size();
+            int sizenodes2 = auxSep.getNodes().size();
             for (int c2 = 0; c2 < sizenodes2; c2++) {
-                node = (Node) auxSep.getNos().get(c2);
+                node = (Node) auxSep.getNodes().get(c2);
                 append(node.getName() + "-");
             }
             append("\n");

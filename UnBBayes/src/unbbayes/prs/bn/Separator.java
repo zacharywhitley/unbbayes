@@ -88,7 +88,7 @@ public class Separator implements ITabledVariable, java.io.Serializable {
      *
      *@param  nos  lista de nós clusterizados.
      */
-    public void setNos(NodeList nos) {
+    public void setNodes(NodeList nos) {
         this.nos = nos;
     }
 
@@ -117,7 +117,7 @@ public class Separator implements ITabledVariable, java.io.Serializable {
      *
      *@return    nós clusterizados
      */
-    public NodeList getNos() {
+    public NodeList getNodes() {
         return nos;
     }
 
@@ -127,7 +127,7 @@ public class Separator implements ITabledVariable, java.io.Serializable {
      *
      *@return    nó 1
      */
-    public Clique getNo1() {
+    public Clique getClique1() {
         return clique1;
     }
 
@@ -137,7 +137,7 @@ public class Separator implements ITabledVariable, java.io.Serializable {
      *
      *@return    nó 2
      */
-    public Clique getNo2() {
+    public Clique getClique2() {
         return clique2;
     }
 
