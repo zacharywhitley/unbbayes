@@ -10,9 +10,15 @@ import java.text.ParseException;
 
 import linfca.Controller;
 import linfca.Feature;
+import linfca.util.Base64;
 import org.jdom.Element;
+import sun.misc.BASE64Encoder;
 
 import java.util.Date;
+
+import java.security.*;
+
+import com.oreilly.servlet.Base64Encoder;
 
 public class SalvarUsuarioFeature implements Feature {
 
@@ -56,12 +62,16 @@ public class SalvarUsuarioFeature implements Feature {
 		String foto            = in.getChild("foto").getTextTrim();
 		String dataNascimentoS = in.getChild("data-nascimento").getTextTrim();
 		
+		MessageDigest md = MessageDigest.getInstance("MD5");
+		byte [] senhaEncode = md.digest(senha.getBytes());
+		byte [] senhaEncode64 = Base64.encode(senhaEncode);
+		
 		Date dataNascimento = null;
 		DateFormat df = DateFormat.getDateInstance();
 	    try {
 	    	dataNascimento = df.parse(dataNascimentoS);
 	    } catch(ParseException e) {
-	    	throw new RuntimeException("Não foi capaz de criar a data: " + 
+	    	throw new RuntimeException("Não foi possível criar a data: " + 
 										dataNascimento);
 	    }
 		
@@ -74,7 +84,7 @@ public class SalvarUsuarioFeature implements Feature {
 			System.out.println("codUsuario = " + codUsuario);						
 			
 			if (atualizarUsuario(codUsuario, codTipoUsuario, codTipoSexo, 
-					identificacao, cpf, nome, sobrenome, senha, email, 
+					identificacao, cpf, nome, sobrenome, senhaEncode64, email, 
 					endereco, foto, dataNascimento, con)) {
 				System.out.println("Atualizou Usuário: " + nome);
 				out.getChildren().add(new Element("ok"));
@@ -88,7 +98,7 @@ public class SalvarUsuarioFeature implements Feature {
 		} else {			
 			
 			if (inserirUsuario(codTipoUsuario, codTipoSexo, identificacao, cpf,
-					nome, sobrenome, senha, email, endereco, foto, 
+					nome, sobrenome, senhaEncode64, email, endereco, foto, 
 					dataNascimento, con)) {
 				System.out.println("Inseriu Usuário: " + nome);
 				out.getChildren().add(new Element("ok"));
@@ -108,7 +118,7 @@ public class SalvarUsuarioFeature implements Feature {
 		
 	private boolean inserirUsuario(String codTipoUsuario, String codTipoSexo, 
 			String identificacao, String cpf, String nome, String sobrenome, 
-			String senha, String email, String endereco, String foto, 
+			byte [] senha, String email, String endereco, String foto, 
 			Date dataNascimento, Connection con) throws SQLException {
 		
 		PreparedStatement ps = null;
@@ -132,7 +142,7 @@ public class SalvarUsuarioFeature implements Feature {
 		ps.setString(4, cpf);
 		ps.setString(5, nome);
 		ps.setString(6, sobrenome);
-		ps.setString(7, senha);
+		ps.setBytes(7, senha);
 		ps.setString(8, email);
 		ps.setString(9, endereco);
 		ps.setString(10, foto);
@@ -144,7 +154,7 @@ public class SalvarUsuarioFeature implements Feature {
 	
 	private boolean atualizarUsuario(String codUsuario, String codTipoUsuario,
 			String codTipoSexo, String identificacao, String cpf, String nome, 
-			String sobrenome, String senha, String email, String endereco, 
+			String sobrenome, byte [] senha, String email, String endereco, 
 			String foto, Date dataNascimento, Connection con) 
 			throws SQLException {
 		
@@ -170,7 +180,7 @@ public class SalvarUsuarioFeature implements Feature {
 		ps.setString(4, cpf);
 		ps.setString(5, nome);
 		ps.setString(6, sobrenome);
-		ps.setString(7, senha);
+		ps.setBytes(7, senha);
 		ps.setString(8, email);
 		ps.setString(9, endereco);
 		ps.setString(10, foto);

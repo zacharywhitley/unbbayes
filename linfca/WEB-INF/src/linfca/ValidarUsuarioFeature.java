@@ -7,6 +7,10 @@ import java.util.Date;
 
 import org.jdom.Element;
 
+import java.security.*;
+
+import linfca.util.Base64;
+
 public class ValidarUsuarioFeature implements Feature {
 	
 	/**
@@ -34,31 +38,43 @@ public class ValidarUsuarioFeature implements Feature {
 		String senha = in.getChild("senha").getTextTrim();		
 		Element out = new Element("out");
 		
-		PreparedStatement ps = con.prepareStatement("SELECT * FROM usuario WHERE identificacao = ? AND senha = ?");
+		PreparedStatement ps = con.prepareStatement("SELECT * FROM usuario WHERE identificacao = ?");
 		ps.setString(1,login);
-		ps.setString(2, senha);
+		
 		ResultSet rs = ps.executeQuery();
 	
 		if (rs.next()) {
-			ps = con.prepareStatement(
-				"SELECT cod_lancamento" +
-				" FROM lancamento" +
-				" WHERE cod_usuario = ? AND dt_hora_fim_lancamento IS NULL"
-			);
 			
-			long codUsuario = rs.getLong("cod_usuario");
-			ps.setLong(1, codUsuario);
-			rs = ps.executeQuery();
-			if (rs.next()) {
-				Element sair = new Element("sair");
-				Element codLancamento = new Element("cod-lancamento");
-				codLancamento.setText("" + rs.getLong("cod_lancamento"));
-				sair.getChildren().add(codLancamento);
-				out.getChildren().add(sair);
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			if (md.isEqual(md.digest(senha.getBytes()), Base64.decode(rs.getBytes("senha")))) {
+				
+				System.out.println("Senha confere!!!");
+				
+				ps = con.prepareStatement(
+					"SELECT cod_lancamento" +
+					" FROM lancamento" +
+					" WHERE cod_usuario = ? AND dt_hora_fim_lancamento IS NULL"
+				);
+				
+				long codUsuario = rs.getLong("cod_usuario");
+				ps.setLong(1, codUsuario);
+				rs = ps.executeQuery();
+				if (rs.next()) {
+					Element sair = new Element("sair");
+					Element codLancamento = new Element("cod-lancamento");
+					codLancamento.setText("" + rs.getLong("cod_lancamento"));
+					sair.getChildren().add(codLancamento);
+					out.getChildren().add(sair);
+				} else {
+					Element entrar = new Element("entrar");
+					out.getChildren().add(entrar);
+				}
+				
 			} else {
-				Element entrar = new Element("entrar");
-				out.getChildren().add(entrar);
+				System.out.println("Senha não confere!!!");
+				out.getChildren().add(new Element("false"));
 			}
+			
 		} else {
 			out.getChildren().add(new Element("false"));
 		}
