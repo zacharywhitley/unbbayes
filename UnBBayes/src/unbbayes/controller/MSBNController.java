@@ -92,7 +92,9 @@ public class MSBNController {
 	
 	private void init() {
 		window.getNetList().setSelectedIndex(0);
-		changeActive(new NetWindow(msbn.getNetAt(0)));	
+		if (msbn.getNetCount() > 0) {
+			changeActive(new NetWindow(msbn.getNetAt(0)));
+		}	
 	}
 	
 	private void changeActive(NetWindow newWindow) {				
@@ -141,8 +143,11 @@ public class MSBNController {
 		});
 		
 		final ActionListener newBtnAction = new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) {				
 				msbn.addNetwork(new SubNetwork("new net " + msbn.getNetCount()));
+				if (msbn.getNetCount() == 1) {
+					changeActive(new NetWindow(msbn.getNetAt(0)));					
+				}
 				window.getNetList().updateUI();
 			}
 		};		
