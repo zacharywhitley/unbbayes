@@ -86,7 +86,6 @@ public class CBLB extends CBLToolkit{
 			                        (TVariavel)variablesVector.get(k));   					    
 			    if( imAux > epsilon){
 			    	ls.add(new double[]{imAux,i,k});			    				    				    	
-			    	System.out.println(""+i+ ", "+ k+ " = " +imAux);
 			    }						
 			}				
 		}

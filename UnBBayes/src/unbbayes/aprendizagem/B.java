@@ -94,16 +94,6 @@ public class B extends BToolkit{
     	}    
     }catch (NumberFormatException e){
     	System.err.println(e.getMessage());    	
-    }    
-    for(int i = 0 ; i < variables.size(); i++){
-    	TVariavel aux1 = (TVariavel)variables.get(i);
-    	NodeList list = aux1.getPais();
-    	System.out.println(aux1.getName());
-    	for(int j = 0 ; j < list.size();j ++){
-    		TVariavel aux2 = (TVariavel)list.get(j);
-    		System.out.print("(" + aux2.getName() + ") ");      		
-    	}   
-    	System.out.println(""); 	
-    }
+    }        
   }        
 }

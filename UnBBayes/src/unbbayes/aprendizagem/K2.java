@@ -58,12 +58,7 @@ public class K2 extends K2Toolkit{
                 	} else{
                     	continueFlag = false;
                 	}
-            	}
-            	System.out.println("Variavel " + variable.getName());
-            	for (int j = 0; j < variable.getPais().size(); j++) {
-                	System.out.print(variable.getPais().get(j) + " ");
-            	}
-            	System.out.println();
+            	}            	
         	}
         } catch(NumberFormatException e){
         	System.err.println(e.getMessage());        	

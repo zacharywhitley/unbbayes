@@ -106,16 +106,13 @@ public class CBLA extends CBLToolkit{
 	
 	
 	private void expand(ArrayList ls){
-		double[] peace;
-        System.out.println("Size = " + ls.size());				
+		double[] peace;        
 		for(int i = 0 ; i < ls.size(); i++){
 			peace = (double[])ls.get(i);
-			System.out.println("I = " + i);
 			if(needConnect((int)peace[1],(int)peace[2],es,0)){				
 			    es.add(new int[]{(int)peace[1],(int)peace[2]});		
 			}			
 		}		
-	}				    	 
-     		
+	}				    	      		
 			
 }
