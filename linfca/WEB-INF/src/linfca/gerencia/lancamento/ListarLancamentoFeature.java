@@ -44,7 +44,7 @@ public class ListarLancamentoFeature implements Feature {
 		sql.append(" where l.dt_hora_inicio_lancamento > ?");
 		sql.append(" AND l.cod_usuario = u.cod_usuario");
 		if (aberto) {
-			sql.append(" AND (l.dt_hora_fim_lancamento IS NULL");
+			sql.append(" AND l.dt_hora_fim_lancamento IS NULL");
 		} else {
 			sql.append(" AND l.dt_hora_fim_lancamento < ?");
 		}
