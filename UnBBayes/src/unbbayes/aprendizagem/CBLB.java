@@ -110,10 +110,11 @@ public class CBLB extends CBLToolkit{
 		double[] peace;        
 		for(int i = 0 ; i < ls.size(); i++){
 			peace = (double[])ls.get(i);
+			System.out.println("Tentativa = " + (int)peace[1]+ ", "+ (int)peace[2]);
 			if(needConnect((int)peace[1],(int)peace[2],es,1)){				
 			    es.add(new int[]{(int)peace[1],(int)peace[2]});		
 			}			
-		}				
+		}		
 	}
 	
 	private void findVStructures(){

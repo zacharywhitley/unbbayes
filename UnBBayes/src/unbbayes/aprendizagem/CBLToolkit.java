@@ -131,11 +131,16 @@ public abstract class CBLToolkit extends LearningToolkit{
 	}
 	
 	protected boolean needConnect(int v1, int v2,ArrayList esx, int type){
+		//System.out.println("Inicia precisa conectar");
 		int n = this.variablesVector.size();
 		ArrayList Z;
 		double m;		
+		//System.out.println("Inicia Separador");
 		Z = separator(v1,v2,esx,n,type);		
+		//System.out.println("Acaba Separador");
+		System.out.println("Inicia IMC");
 		m = conditionalMutualInformation(v1,v2,Z);		
+		System.out.println("Acaba IMC");
 		if( m < epsilon){			
 			Object[] sep = new Object[2];
 			sep[0] = new int[]{v1,v2};
@@ -172,16 +177,23 @@ public abstract class CBLToolkit extends LearningToolkit{
 				Z.remove(k);				
 			}
 		}		
+     	System.out.println("Acaba precisa conectar");
 		return true;		
 	}
 	
 	protected ArrayList separator(int v1, int v2,ArrayList esx, int n,int type){
 		ArrayList esAnc;
 		ArrayList esAncMor;
-		if(type == 0){			
-	        esAnc =  findForeSubgraph(v1,v2,esx);
-	        esAncMor =  moralize(esAnc);
-		} else{ 
+		if(type == 0){				
+	        esAnc =  findForeSubgraph(v1,v2,esx);	            
+	        esAncMor = esAnc;
+	        //esAncMor =  moralize(esAnc);
+	        /*int[] peace;
+    			for(int i = 0 ; i < esAncMor.size(); i++){
+    				peace = (int[])esAncMor.get(i);
+    				System.out.println("Nó 1 = "+ peace[0] + " Nó 2 = "+ peace[1]);    				
+    			}*/
+		} else{ 			
 			esAncMor = (ArrayList)esx.clone();			
 		}					    
 	    return getSep(esAncMor, v1, v2);	
@@ -235,7 +247,7 @@ public abstract class CBLToolkit extends LearningToolkit{
 		return esAncMor;				
 	}
 	
-	protected ArrayList getSep(ArrayList esAncMor, int v1, int v2){
+	protected ArrayList getSep(ArrayList esAncMor, int v1, int v2){	    
     	ArrayList sep = new ArrayList();   
     	ArrayList sep2 = new ArrayList();
     	/*É usada uma estrutura de Set para que não aja elementos
@@ -243,12 +255,15 @@ public abstract class CBLToolkit extends LearningToolkit{
     	TreeSet nn1 = new TreeSet();
     	TreeSet nn2 = new TreeSet();
     	ArrayList nnAux;
-    	ArrayList ways  = findWays(v1,v2,esAncMor);  	    	   	    	
+    	//System.out.println("Inicia pegar os separadores");
+    	//System.out.println("Inicia Achar caminhos");
+    	ArrayList ways  = findWays(v1,v2,esAncMor); 
+    	//System.out.println("Acaba Achar caminhos"); 	    	   	    	
     	ArrayList neighbors1 = findNeighbors(v1, esAncMor);
     	ArrayList neighbors2 = findNeighbors(v2, esAncMor);    	
     	//neighborsFilter(neighbors1, ways);    	        	
     	//neighborsFilter(neighbors2, ways);    	    	
- 	    /*Acha os vizinhos dos vizinhos*/
+ 	    /*Acha os vizinhos dos vizinhos*/ 	    
     	for(int i = 0; i < neighbors1.size(); i++){
     		nnAux = findNeighbors(((Integer)neighbors1.get(i)).intValue(),esAncMor);
     		for(int j = 0 ; j < nnAux.size(); j++){
@@ -303,7 +318,8 @@ public abstract class CBLToolkit extends LearningToolkit{
        			sep2.add(neighbors2.get(i));       			
        		}     		
        		flag = false;
-    	}    	    	
+    	}   
+ 	    //System.out.println("Acaba pegar os separadores"); 	    	
     	if(sep.size() < sep2.size()){    		    		
     		return sep;    	
     	} else {     		
@@ -319,14 +335,14 @@ public abstract class CBLToolkit extends LearningToolkit{
     	cs.add(new Integer(v2));
     	queue.add(cs.clone());
     	Integer last;
-    	while(queue.size() > 0){
+    	while(queue.size() > 0){    		 		    		
     	    cs = (ArrayList)queue.get(0); 
     	    queue.remove(0);        		
     	    last = (Integer)cs.get(cs.size() -1);
-    	    if( last.intValue() == v1){
+    	    if( last.intValue() == v1){    	    	
     	    	rs.add(cs);    	    	
     	    } else{
-    	    	fs = expand(cs, esAncMor);    	    	
+    	    	fs = expand(cs, esAncMor);    	    	    	    	
     	    	for(int j = 0;  j < fs.size(); j++){
     	    		queue.add(fs.get(j));    	    		
     	    	}
@@ -353,7 +369,7 @@ public abstract class CBLToolkit extends LearningToolkit{
     		                  	csClone.add(new Integer(peace[0]));
     		                  	fs.add(csClone);
     		}
-    	}    	
+    	}    	    	
     	return fs;    	
     }
     
@@ -411,18 +427,20 @@ public abstract class CBLToolkit extends LearningToolkit{
     protected double conditionalMutualInformation(int v1, int v2, ArrayList sep){
     	int qj = getQ(sep);
     	if(qj == 0 ){
+		    System.out.println("SAIIIIIIIIII");
     		return mutualInformation((TVariavel)variablesVector.get(v1),
     		                        (TVariavel)variablesVector.get(v2));    		
-    	}
+    	}    	;
     	int ri = ((TVariavel)variablesVector.get(v1)).getEstadoTamanho();
     	int rk = ((TVariavel)variablesVector.get(v2)).getEstadoTamanho();
     	double pjik;
     	double cpjik;
-    	double im = 0.0;
+    	double im = 0.0;    	
     	int[] nj = new int[qj];
     	int[][][] njik = new int[qj][ri][rk];
-    	int[][] nji = new int[qj][ri];
+    	int[][] nji = new int[qj][ri];    	
     	int[][] njk = new int[qj][rk];
+    	System.out.println("ENTROUUUUUUUUUU = "+ qj + "   SIZE =  "+ sep.size());
     	double[][] pji = new double[qj][ri];
     	double[][] pjk = new double[qj][rk];
     	int[] mult = multipliers(sep); 
@@ -442,6 +460,7 @@ public abstract class CBLToolkit extends LearningToolkit{
     		nj[j] += f;
     		nt += f;    		
     	}
+    	System.out.println("SAIIIIIIIIII");
     	for(j = 0 ; j < qj; j++){
     		for(il = 0 ; il < ri; il++){
     			pji[j][il] = (1+nji[j][il])/(double)(ri+nj[j]);   			
@@ -457,6 +476,13 @@ public abstract class CBLToolkit extends LearningToolkit{
                 }
     		}                       		
     	}
+    	nj = null;
+    	njk = null;
+    	nji = null;
+    	njik = null;
+    	mult = null;
+    	pji = null;
+    	pjk = null;    	
     	return im;
     }
     

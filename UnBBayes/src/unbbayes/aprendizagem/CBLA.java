@@ -72,6 +72,7 @@ public class CBLA extends CBLToolkit{
 	
 	/*Coloca os primeiros arcos da estrutura*/
 	private ArrayList scketch(){
+		System.out.println("Inicia o esboçar");
 		int n = this.variablesVector.size();
 		/* imAux recebe as informações mutuas auxiliares*/
 		double imAux;
@@ -96,23 +97,28 @@ public class CBLA extends CBLToolkit{
 			peace =(double[])ls.get(i);
 			if(!(isOpenWays((int)peace[1],(int)peace[2],es))){
 				es.add(new int[]{(int)peace[1],(int)peace[2]});	
+                System.out.println("Arco inserido = " + (int)peace[1]+ ", "+ (int)peace[2]);
 				ls.remove(i);							
 				i--;
 			}			
-		}   
-		mapStructure();					            
-       	return ls;					
+		}   	
+      	System.out.println("Acaba o esboçar");
+       	return ls;					       	
 	}
 	
 	
-	private void expand(ArrayList ls){
-		double[] peace;        
+	private void expand(ArrayList ls){		
+		double[] peace;        		
+		System.out.println("Inicia Alargar");
 		for(int i = 0 ; i < ls.size(); i++){
 			peace = (double[])ls.get(i);
+			System.out.println("Tentativa = " + (int)peace[1]+ ", "+ (int)peace[2]);
 			if(needConnect((int)peace[1],(int)peace[2],es,0)){				
 			    es.add(new int[]{(int)peace[1],(int)peace[2]});		
+			    System.out.println("Arco inserido = " + (int)peace[1]+ ", "+ (int)peace[2]);			    
 			}			
-		}		
+		}			
+		System.out.println("Inicia Alargar");
 	}				    	      		
 			
 }

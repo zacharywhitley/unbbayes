@@ -121,7 +121,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         tamanhoVisivel = new Dimension(0, 0);
 
 		arco = net.getArcos();
-//        no = net.getNos();
+        no = net.getNos();
         Node noAux;
         int linha = 1;
         for (int i = 0; i < net.getNodeCount(); i++) {
@@ -132,8 +132,6 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
             noAux.setPosicao((i + 1) * 3 * raio, 3 * raio * linha);
         }
     }
-
-
 
     /**
      *  Esse método seta o valor do bArco (valor booleano para desenhar o arco)
