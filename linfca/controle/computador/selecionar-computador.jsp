@@ -32,20 +32,27 @@
 			  
               <tr>
               
-                <td width="30%">                
-                  <select name="cod-computador" id="cod-computador" size="25">
-                  <% 
+                <td width="30%"> <h3> 
+                    <% 
 		             Feature  listarComputadorDisponivel = new ListarComputadorDisponivelFeature();
 			         Element tiposXML = listarComputadorDisponivel.process(null);
 			         Iterator tipos = tiposXML.getChildren().iterator();
+					 if (! tipos.hasNext()) {
+					 %>
+                    Nenhum computador disponível 
+                    <% } else {  %>
+                    <select name="cod-computador" id="cod-computador" size="25">
+                      <%
 			         while (tipos.hasNext()) {
 		  	            Element tipo = (Element) tipos.next();
 		          %>
-                  <option value="<%= ((Element)tipo.getChild("cod-computador")).getText() %>"> 
-                  <%= ((Element)tipo.getChild("nome-sala")).getText() + " - " + 
+                      <option value="<%= ((Element)tipo.getChild("cod-computador")).getText() %>"> 
+                      <%= ((Element)tipo.getChild("nome-sala")).getText() + " - " + 
                       ((Element)tipo.getChild("descricao-computador")).getText() %> </option>
-                  <% }	%>
-                </td>
+                      <% }	%>
+                    </select>
+                    <% } %>
+                  </h3></td>
                   
                 <td width="70%"><img src="<%=path%>/design/imagens/mapa_linf.gif" border="0" hspace="20" alt="Mapa do Linf"></td>
                 
