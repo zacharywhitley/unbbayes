@@ -103,7 +103,8 @@ public class MSNetwork {
 	}
 	
 	protected void atualizaCrenca(SubNetwork net1, SubNetwork net2) {
-		for (int i = 0; i<links.size(); i++) {
+		int i;
+		for (i = links.size()-1; i>=0; i--) {
 			Linkage l = (Linkage) links.get(i);
 			if (l.getN1() == net1 && l.getN2() == net2) {
 				l.absorve(true);
@@ -111,10 +112,11 @@ public class MSNetwork {
 			}
 			
 			if (l.getN2() == net1 && l.getN1() == net2) {
-				l.absorve(false);								
+				l.absorve(false);
 				return;
 			}
 		}
+		assert i>=0;
 	}
 	
 	private void distributedMoralization() {		

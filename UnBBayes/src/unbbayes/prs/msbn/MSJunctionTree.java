@@ -14,5 +14,9 @@ import unbbayes.prs.bn.JunctionTree;
 public class MSJunctionTree extends JunctionTree {
 	protected void distribuaEvidencia(Clique c) {
 		super.distribuaEvidencia(c);
-	}	
+	}
+	
+	protected void unificaCrencas() throws Exception {
+		consistencia();		
+	}
 }

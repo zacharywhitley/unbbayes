@@ -1250,6 +1250,12 @@ public class Network implements java.io.Serializable {
 	 */
 	protected void verifyConsistency() throws Exception {
 		if (nos.size() != 0) {
+			
+			nodeIndexes.clear();
+			for (int i = nos.size()-1; i>=0; i--) {
+				nodeIndexes.put(nos.get(i).getName(), new Integer(i));				
+			}
+			
 			boolean erro = false;
 
 			StringBuffer sb = new StringBuffer();

@@ -60,7 +60,9 @@ public class MSBNWindow extends JPanel {
 		netList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		netList.setSelectedIndex(0);
 		active = new NetWindow(msbn.getNetAt(0));
-		add(active, BorderLayout.CENTER);	
+		active.getNetWindowEdition().getCompile().setVisible(false);
+		active.getNetWindowCompilation().getEditMode().setVisible(false);
+		add(active, BorderLayout.CENTER);
 	}
 	
 	private JPanel makeListPanel() {
@@ -122,12 +124,12 @@ public class MSBNWindow extends JPanel {
 		compile.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 				try {
-					msbn.compile();					
+					msbn.compile();
 					active.changeToNetCompilation();
 					card.show(pane, "compiledPane");
 					compiled = true;
 				} catch (Exception e) {
-					e.printStackTrace();					
+					e.printStackTrace();			
 				}
 			}
 		});
@@ -153,6 +155,8 @@ public class MSBNWindow extends JPanel {
 		           	}
 		            remove(active);
 		            active = new NetWindow(msbn.getNetAt(index));
+		            active.getNetWindowEdition().getCompile().setVisible(false);
+					active.getNetWindowCompilation().getEditMode().setVisible(false);
 		            add(active, BorderLayout.CENTER);
 		            updateUI();
 		            if (compiled) {

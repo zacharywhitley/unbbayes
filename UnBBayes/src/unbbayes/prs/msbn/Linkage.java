@@ -189,11 +189,23 @@ public class Linkage {
 		for (int i = 0; i < treeSize; i++) {
 			Link l = (Link) tree.get(i);
 			l.absorve(naOrdem);
+			/*
 			if (naOrdem) {
 				n1.getJunctionTree().distribuaEvidencia(l.getV0());
 			} else {				
 				n2.getJunctionTree().distribuaEvidencia(l.getV1());
 			}
+			*/
+		}
+		
+		try {
+			if (naOrdem) {
+				((MSJunctionTree) n1.getJunctionTree()).unificaCrencas();	
+			} else {
+				((MSJunctionTree) n2.getJunctionTree()).unificaCrencas();
+			}
+		} catch (Exception e) {
+			
 		}
 	}
 }

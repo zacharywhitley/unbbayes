@@ -39,7 +39,7 @@ public class Link {
 			
 		for (int i = 0; i < toDie.size(); i++) {
 			tB.removeVariable(toDie.get(i));
-		}	
+		}
 
 		toDie = SetToolkit.clone(c1.getNos());
 		toDie.removeAll(clique.getNos());
