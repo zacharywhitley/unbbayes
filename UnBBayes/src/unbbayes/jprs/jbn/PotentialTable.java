@@ -370,17 +370,15 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
      *@param  operator  operador a ser utilizado, definido pelas
      *                  constantes desta classe.
      */
-    protected void opTab(PotentialTable tab, int operator) {
+    protected void opTab(PotentialTable tab, int operator) {    	
         double a, b;
         int[] coordA;
         int[] coordB = new int[tab.variaveis.size()];
         int[] index = new int[tab.variaveis.size()];
-        int[] numEstados = new int[tab.variaveis.size()];
-
+        
         int sizeVariaveis = tab.variaveis.size();
         for (int c = sizeVariaveis-1; c >= 0; c--) {
-           index[c] = variaveis.indexOf(tab.variaveis.get(c));
-           numEstados[c] = tab.variaveis.get(c).getStatesSize();
+        	index[c] = variaveis.indexOf(tab.variaveis.get(c));
         }
 
         for (int k = dados.size()-1; k >= 0; k--) {
@@ -388,9 +386,10 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
             for (int c = 0; c < sizeVariaveis; c++) {
                 if (index[c] != -1) {
                     coordB[c] = coordA[index[c]];
-                } else {
-                    coordB[c] = (coordB[c]+1) % numEstados[c];
                 }
+                /* else {
+                    coordB[c] = (coordB[c]+1) % numEstados[c];
+                }*/
             }
 
             b = tab.getValue(coordB);

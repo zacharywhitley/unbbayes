@@ -34,7 +34,7 @@ import unbbayes.jprs.jbn.TreeVariable;
  * @author Michael
  * @author Rommel
  */
-public class NodeList implements java.io.Serializable {
+public final class NodeList implements java.io.Serializable {
     public static final int DEFAULT_SIZE = 30;
 
     private Node data[];
@@ -100,7 +100,7 @@ public class NodeList implements java.io.Serializable {
      *
      * @param   minCapacity   the desired minimum capacity.
      */
-    public void ensureCapacity(int minCapacity) {
+    public final void ensureCapacity(int minCapacity) {
         int oldCapacity = data.length;
         if (minCapacity > oldCapacity) {
             Node oldData[] = data;
@@ -118,7 +118,7 @@ public class NodeList implements java.io.Serializable {
      *
      * @return  the number of elements in this list.
      */
-    public int size() {
+    public final int size() {
         return size;
     }
 
@@ -128,7 +128,7 @@ public class NodeList implements java.io.Serializable {
      * @param  index index of element to return.
      * @return the element at the specified position in this list.
      */
-    public Node get(int index) {
+    public final Node get(int index) {
         return data[index];
     }
 
@@ -140,7 +140,7 @@ public class NodeList implements java.io.Serializable {
      * @param element element to be stored at the specified position.
      * @return the element previously at the specified position.
      */
-    public Node set(int index, Node element) {
+    public final Node set(int index, Node element) {
         Node oldValue = data[index];
         data[index] = element;
         return oldValue;
@@ -152,7 +152,7 @@ public class NodeList implements java.io.Serializable {
      * @param o element to be appended to this list.
      * @return <tt>true</tt>
      */
-    public boolean add(Node newElement) {
+    public final boolean add(Node newElement) {
         ensureCapacity(size + 1);
         data[size++] = newElement;
         return true;
@@ -168,7 +168,7 @@ public class NodeList implements java.io.Serializable {
      * @throws    IndexOutOfBoundsException if index is out of range
      *		  <tt>(index &lt; 0 || index &gt; size())</tt>.
      */
-    public void add(int index, Node element) {
+    public final void add(int index, Node element) {
         /*
         if (index > size || index < 0) {
            throw new IndexOutOfBoundsException("Index: "+index+", Size: "+size);
@@ -194,7 +194,7 @@ public class NodeList implements java.io.Serializable {
      * @throws    IndexOutOfBoundsException if index out of range <tt>(index
      *		  &lt; 0 || index &gt; size())</tt>.
      */
-    public boolean addAll(NodeList c) {
+    public final boolean addAll(NodeList c) {
 		int numNew = c.size();
 		ensureCapacity(size + numNew);
 	
@@ -208,7 +208,7 @@ public class NodeList implements java.io.Serializable {
      * Removes all of the elements from this list.  The list will
      * be empty after this call returns.
      */
-    public void clear() {
+    public final void clear() {
 		// Let gc do its work
 		for (int i = 0; i < size; i++)
 		    data[i] = null;
@@ -216,7 +216,7 @@ public class NodeList implements java.io.Serializable {
 		size = 0;
     }
     
-    public boolean removeAll(NodeList c) {
+    public final boolean removeAll(NodeList c) {
 		boolean modified = false;
 		for (int i = size-1; i >= 0; i--) {
 		    if (c.contains(data[i])) {
@@ -227,7 +227,7 @@ public class NodeList implements java.io.Serializable {
 		return modified;
     }
     
-    public boolean containsAll(NodeList c) {    	
+    public final boolean containsAll(NodeList c) {    	
     	for (int i = 0; i < c.size; i++) {
 		    if(! contains(c.data[i]))
 				return false;	
@@ -243,7 +243,7 @@ public class NodeList implements java.io.Serializable {
      * @param index the index of the element to removed.
      * @return the element that was removed from the list.
      */
-    public Node remove(int index) {
+    public final Node remove(int index) {
         Node oldValue = data[index];
         int numMoved = size - index - 1;
         if (numMoved > 0)
@@ -265,7 +265,7 @@ public class NodeList implements java.io.Serializable {
      *         element.
      */
    
-    public boolean remove(Object o) {
+    public final boolean remove(Object o) {
     	for (int i = 0; i < data.length; i++) {
 			if (o.equals(data[i])) {
 			    remove(i);
@@ -276,7 +276,7 @@ public class NodeList implements java.io.Serializable {
     }
     
     
-    public boolean retainAll(NodeList c) {
+    public final boolean retainAll(NodeList c) {
     	boolean modified = false;
     	for (int i = size-1; i >= 0; i--) {
     		if (! c.contains(data[i])) {
@@ -299,7 +299,7 @@ public class NodeList implements java.io.Serializable {
      *          list; returns <tt>-1</tt> if the object is not found.
      * @see     Object#equals(Object)
      */
-    public int indexOf(Object elem) {
+    public final int indexOf(Object elem) {
         for (int i = 0; i < size; i++)
 			if (elem.equals(data[i]))
 			    return i;
@@ -312,14 +312,14 @@ public class NodeList implements java.io.Serializable {
      *
      * @param elem element whose presence in this List is to be tested.
      */
-    public boolean contains(Object elem) {
+    public final boolean contains(Object elem) {
 		return indexOf(elem) >= 0;
     }
 	/**
 	 * Sets the data.
 	 * @param data The data to set
 	 */
-	public void setData(Node[] data) {
+	public final void setData(Node[] data) {
 		this.data = data;
 	}
 
@@ -327,7 +327,7 @@ public class NodeList implements java.io.Serializable {
 	 * Sets the size.
 	 * @param size The size to set
 	 */
-	public void setSize(int size) {
+	public final void setSize(int size) {
 		this.size = size;
 	}
 
@@ -335,7 +335,7 @@ public class NodeList implements java.io.Serializable {
 	 * Gets the data.
 	 * @return Returns a Node[]
 	 */
-	public Node[] getData() {
+	public final Node[] getData() {
 		return data;
 	}
 

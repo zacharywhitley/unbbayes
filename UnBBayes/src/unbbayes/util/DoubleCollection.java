@@ -29,7 +29,7 @@ import java.util.ResourceBundle;
  * @author Michael
  * @author Rommel
  */
-public class DoubleCollection implements java.io.Serializable {
+public final class DoubleCollection implements java.io.Serializable {
     public static final int DEFAULT_SIZE = 30;
 
     private double data[];
@@ -57,7 +57,7 @@ public class DoubleCollection implements java.io.Serializable {
      *
      * @param   minCapacity   the desired minimum capacity.
      */
-    public void ensureCapacity(int minCapacity) {
+    public final void ensureCapacity(int minCapacity) {
         int oldCapacity = data.length;
         if (minCapacity > oldCapacity) {
             double oldData[] = data;
@@ -75,7 +75,7 @@ public class DoubleCollection implements java.io.Serializable {
      *
      * @return  the number of elements in this list.
      */
-    public int size() {
+    public final int size() {
         return size;
     }
 
@@ -85,7 +85,7 @@ public class DoubleCollection implements java.io.Serializable {
      * @param  index index of element to return.
      * @return the element at the specified position in this list.
      */
-    public double get(int index) {
+    public final double get(int index) {
         return data[index];
     }
 
@@ -97,7 +97,7 @@ public class DoubleCollection implements java.io.Serializable {
      * @param element element to be stored at the specified position.
      * @return the element previously at the specified position.
      */
-    public double set(int index, double element) {
+    public final double set(int index, double element) {
         double oldValue = data[index];
         data[index] = element;
         return oldValue;
@@ -109,7 +109,7 @@ public class DoubleCollection implements java.io.Serializable {
      * @param o element to be appended to this list.
      * @return <tt>true</tt>
      */
-    public boolean add(double newElement) {
+    public final boolean add(double newElement) {
         ensureCapacity(size + 1);
         data[size++] = newElement;
         return true;
@@ -125,7 +125,7 @@ public class DoubleCollection implements java.io.Serializable {
      * @throws    IndexOutOfBoundsException if index is out of range
      *		  <tt>(index &lt; 0 || index &gt; size())</tt>.
      */
-    public void add(int index, double element) {
+    public final void add(int index, double element) {
         /*
         if (index > size || index < 0) {
            throw new IndexOutOfBoundsException("Index: "+index+", Size: "+size);
@@ -146,7 +146,7 @@ public class DoubleCollection implements java.io.Serializable {
      * @param index the index of the element to removed.
      * @return the element that was removed from the list.
      */
-    public double remove(int index) {
+    public final double remove(int index) {
         double oldValue = data[index];
         int numMoved = size - index - 1;
         if (numMoved > 0)
