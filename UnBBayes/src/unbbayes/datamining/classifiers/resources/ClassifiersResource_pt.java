@@ -49,7 +49,7 @@ public class ClassifiersResource_pt extends ListResourceBundle implements Serial
 		{ "exception2","Árvore de decisão: Não é aceito atributos numéricos!"	},
 		{ "exception3","Árvore de decisão: Não são aceitos missing values!" 	},
 		{ "toStringException1","Árvore de decisão: O modelo ainda não foi construído. Tente de novo!"	},
-		{ "toStringException2","Árvore de decisão\n\n"	},
+		{ "id3ToString","ÁRVORE DE DECISÃO:"	},
 		{ "null","null"	},
 		{ "NULL","NULL"	},
 	};

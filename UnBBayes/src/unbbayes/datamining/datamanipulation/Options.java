@@ -7,7 +7,9 @@ public class Options
 	private int numberStatesAllowed;
 	private int confidenceLimit;
 	private boolean compactedFile = false;
-	private boolean usingGainRatio = false;		//id3 option
+	//id3 options
+	private boolean usingGainRatio = false;
+	private int verbosityLevel = 1;		
 	//private int counterAttribute = -1;
 	
 	/** Construtor padrão. Só pode ser instanciado pelo método getInstance. */
@@ -57,6 +59,27 @@ public class Options
   	{
   		return usingGainRatio;  
   	}
+  	
+	public void setVerbosityLevel(int verbosityLevel)
+	{
+		if (verbosityLevel<1)
+		{
+			this.verbosityLevel = 1;
+		}
+		else if (verbosityLevel>4)
+		{
+			this.verbosityLevel = 4;
+		}
+		else
+		{
+			this.verbosityLevel = verbosityLevel;
+		}
+	}
+  	
+	public int getVerbosityLevel()
+	{
+		return verbosityLevel;  
+	}
 	
 	/*public void setCounterAttribute(int counterAttribute)
 	{	this.counterAttribute = counterAttribute;

@@ -41,7 +41,7 @@ public class DecisionTreeMain extends JInternalFrame
   private JMenuItem jMenuItem2 = new JMenuItem();
   private JMenu jMenu1 = new JMenu();
   private JMenuItem jMenuItem1 = new JMenuItem();
-  private Id3 id3;
+  private C45 id3;
   private JButton saveModelButton = new JButton();
   private JButton openModelButton = new JButton();
   private JButton helpButton = new JButton();
@@ -55,11 +55,12 @@ public class DecisionTreeMain extends JInternalFrame
   private InductionPanel inductionFrame;
   private JTabbedPane jTabbedPane = new JTabbedPane();
   private AttributePanel attributeFrame;
+  private VerbosityPanel verbosityFrame;
   private BorderLayout borderLayout3 = new BorderLayout();
 
   /**Construct the frame*/
   public DecisionTreeMain()
-  { super("ID3 Classifier",true,true,true,true);
+  { super("C45 Classifier",true,true,true,true);
     resource = ResourceBundle.getBundle("unbbayes.datamining.gui.decisiontree.resources.DecisiontreeResource");
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     try
@@ -84,6 +85,7 @@ public class DecisionTreeMain extends JInternalFrame
     titledBorder1 = new TitledBorder(border1,"Status");
     inductionFrame = new InductionPanel();
     attributeFrame = new AttributePanel();
+    verbosityFrame = new VerbosityPanel();
     this.setSize(new Dimension(640, 480));
     jMenuFile.setMnemonic(((Character)resource.getObject("fileMnemonic")).charValue());
     jMenuFile.setText(resource.getString("file"));
@@ -253,15 +255,12 @@ public class DecisionTreeMain extends JInternalFrame
     jPanel1.add(statusBar, BorderLayout.CENTER);
     contentPane.add(jPanel2, BorderLayout.CENTER);
     jPanel2.add(jTabbedPane, BorderLayout.CENTER);
-    //jTabbedPane.add(attributeFrame, "attributeFrame");
-    //jTabbedPane.add(inductionFrame, "inductionFrame");
-    //jTabbedPane.add(attributeFrame, resource.getString("attributes"));
-    //jTabbedPane.add(inductionFrame, resource.getString("inference"));
     jTabbedPane.add(attributeFrame, resource.getString("attributes"));
     jTabbedPane.add(inductionFrame, resource.getString("inference"));
+    jTabbedPane.add(verbosityFrame, "verbosity");
     jMenu1.add(jMenuFileBuild);
 	jMenu1.add(jMenuFilePreferences);
-    for(int i=0; i<2; i++)
+    for(int i=0; i<3; i++)
         jTabbedPane.setEnabledAt(i,false);
   }
 
@@ -307,11 +306,11 @@ public class DecisionTreeMain extends JInternalFrame
         inst = FileController.getInstance().getInstanceSet(selectedFile,this);
         if (inst!=null)
         {
-          for(int i=0; i<2; i++)
+          for(int i=0; i<3; i++)
               jTabbedPane.setEnabledAt(i,false);
           learnButton.setEnabled(false);
           jMenuFileBuild.setEnabled(false);
-          this.setTitle("ID3 Decision Tree - "+selectedFile.getName());
+          this.setTitle("C45 Decision Tree - "+selectedFile.getName());
           jTabbedPane.setEnabledAt(0,true);
           jTabbedPane.setSelectedIndex(0);
           attributeFrame.setInstances(inst);
@@ -346,18 +345,21 @@ public class DecisionTreeMain extends JInternalFrame
   void learnButton_actionPerformed(ActionEvent evt)
   {   jTabbedPane.setSelectedIndex(0);
       try
-      {   id3 = new Id3();
+      {   id3 = new C45();
           id3.buildClassifier(inst);
           jTabbedPane.setEnabledAt(1,true);
+		  jTabbedPane.setEnabledAt(2,true);
           inductionFrame.setInstances(id3);
           id3tree = id3.getTree();
           jTabbedPane.setSelectedIndex(1);
           jMenuItem2.setEnabled(true);
           saveModelButton.setEnabled(true);
           statusBar.setText(resource.getString("id3Learn"));
+          //verbosityFrame.writeVerbosityText(id3);
       }
       catch(Exception e)
       {   statusBar.setText(e.getMessage());
+      	e.printStackTrace();
       }
   }
 
@@ -385,7 +387,7 @@ public class DecisionTreeMain extends JInternalFrame
       {   File selectedFile = fileChooser.getSelectedFile();
           try
           {   ObjectInputStream in = new ObjectInputStream(new FileInputStream(selectedFile));
-              id3 = (Id3)in.readObject();
+              id3 = (C45)in.readObject();
               id3tree = id3.getTree();
               jTabbedPane.setEnabledAt(1,true);
               jTabbedPane.setEnabledAt(0,false);

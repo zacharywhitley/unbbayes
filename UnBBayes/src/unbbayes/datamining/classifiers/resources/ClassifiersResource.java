@@ -49,7 +49,7 @@ public class ClassifiersResource extends ListResourceBundle implements Serializa
 		{ "exception2","Decision tree: Only nominal attributes, please."	},
 		{ "exception3","Decision tree: No missing values, please."	},
 		{ "toStringException1","Decision tree: No model built yet. Try again!"	},
-		{ "toStringException2","Decision tree: \n\n"	},
+		{ "id3ToString","DECISION TREE:"	},
 		{ "null","null"	},
 		{ "NULL","NULL"	},
 	};

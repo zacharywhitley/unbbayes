@@ -10,16 +10,15 @@ public class Leaf
 	/** Leaf's class distribution. */
 	private double[] distribution;
   	
-	/** Counts the classified instances??? */
-	private int numeroInstClass;
+	/** Counts the classified instances */
+	private int numberInstClass;
 	
-	/** Class attribute of dataset.??? */
+	/** Class attribute of dataset. */
 	private Attribute classAttribute;
   	
 	/** Constructor used in the case of there is no instances */
 	public Leaf(byte newClassValue, double[] newDistribution)
 	{
-		//internacionalization
 		classValue = newClassValue;
 		distribution = newDistribution;
 	}
@@ -27,11 +26,10 @@ public class Leaf
 	/** General use constructor */
 	public Leaf(Attribute newClassAttribute,double[] newDistribution)
 	{
-		//internacionalization
 		classAttribute = newClassAttribute;
 		distribution = newDistribution;
-		numeroInstClass=(int)distribution[Utils.maxIndex(distribution)];
-		Utils.normalize(distribution);
+		numberInstClass=(int)distribution[Utils.maxIndex(distribution)];
+		//Utils.normalize(distribution);
 		classValue = (byte)Utils.maxIndex(distribution);
 	}
   	
@@ -48,8 +46,15 @@ public class Leaf
 		}
 		else
 		{	
-			return classAttribute.getAttributeName()+" = "+classAttribute.value((int) classValue);
+			return classAttribute.getAttributeName()+" = "+classAttribute.value((int) classValue)+" ("+numberInstClass+")";
 		}
+	}
+	
+	public double[] getDistribution()
+	{
+		double[] arrayCopy = new double[distribution.length];
+		System.arraycopy(distribution,0,arrayCopy,0,distribution.length);
+		return arrayCopy;
 	}
 }
 

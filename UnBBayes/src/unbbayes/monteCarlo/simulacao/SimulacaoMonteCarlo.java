@@ -3,7 +3,6 @@ package unbbayes.monteCarlo.simulacao;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;

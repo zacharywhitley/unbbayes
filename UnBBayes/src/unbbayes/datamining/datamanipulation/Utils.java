@@ -52,7 +52,8 @@ public final class Utils
    * @return The index of the maximum element
    */
   public static int maxIndex(double[] doubles)
-  {   double maximum = doubles[0];
+  {   
+  	double maximum = doubles[0];
       int maxIndex = 0;
 
       for (int i = 0; i < doubles.length; i++)
@@ -658,6 +659,49 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
 			a[i + 1] = key;
 			b[i + 1] = temp;
 		}
+	}
+	
+	/** applies a two arrays sum
+	 * 	@param array1: one of the arrays to apply the sum
+	 *  @param array2: one of the arrays to apply the sum
+	 *  @return result of the sum, null if the arrays if of different sizes
+	 */
+	public static int[] arraysSum(int[] array1, int[] array2)
+	{
+		if (array1.length!=array2.length)
+		{
+			return null;
+		}
+		
+		int[] newArray = new int[array1.length];
+		for(int i=0;i<array1.length;i++)
+		{
+			newArray[i] = array1[i]+array2[i]; 
+		}
+	
+		return newArray;
+	}
+
+
+	/** applies a two arrays sum
+	* 	@param array1: one of the arrays to apply the sum
+	*  @param array2: one of the arrays to apply the sum
+	*  @return result of the sum, null if the arrays if of different sizes
+	*/
+	public static double[] arraysSum(double[] array1, double[] array2)
+	{
+		if (array1.length!=array2.length)
+		{
+			return null;
+		}
+		
+		double[] newArray = new double[array1.length];
+		for(int i=0;i<array1.length;i++)
+		{
+			newArray[i] = array1[i]+array2[i]; 
+		}
+	
+		return newArray;
 	}
 }
 

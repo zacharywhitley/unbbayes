@@ -87,7 +87,7 @@ public class InductionPanel extends JPanel
     messageTitlePanel.add(messageLabel, null);
   }
 
-  public void setInstances(Id3 id3)
+  public void setInstances(C45 id3)
   {   jTree = id3.getTree();
       expand(jTree);
       jTree.addTreeWillExpandListener(new javax.swing.event.TreeWillExpandListener()

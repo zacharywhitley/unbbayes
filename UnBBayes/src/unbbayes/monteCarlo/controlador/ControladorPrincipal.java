@@ -6,9 +6,6 @@ import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
-import unbbayes.controller.MainController;
-import unbbayes.gui.FileIcon;
-import unbbayes.gui.IUnBBayes;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
 import unbbayes.io.LoadException;
