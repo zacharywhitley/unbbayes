@@ -20,8 +20,7 @@ public class ValidarUsuarioFeature implements Feature {
 	 *    <entrar/> 
 	 *      | 
 	 * 	  <sair>
-	 * 		 <data-hora-inicio>12/03/2002 13:45:50</data-hora-inicio>
-	 * 		 <data-hora-fim>12/03/2002 14:10:50</data-hora-fim>
+	 * 		 <cod-lancamento>4</cod-lancamento>
 	 *    </sair>
 	 *      |
 	 *    <false/>
@@ -42,7 +41,7 @@ public class ValidarUsuarioFeature implements Feature {
 	
 		if (rs.next()) {
 			ps = con.prepareStatement(
-				"SELECT dt_hora_inicio_lancamento" +
+				"SELECT cod_lancamento" +
 				" FROM lancamento" +
 				" WHERE cod_usuario = ? AND dt_hora_fim_lancamento IS NULL"
 			);
@@ -52,12 +51,9 @@ public class ValidarUsuarioFeature implements Feature {
 			rs = ps.executeQuery();
 			if (rs.next()) {
 				Element sair = new Element("sair");
-				Element dtHoraInicio = new Element("data-hora-inicio");
-				dtHoraInicio.setText(rs.getDate(1).toString());				
-				Element dtHoraFim = new Element("data-hora-fim");
-				dtHoraFim.setText(new Date(System.currentTimeMillis()).toString());								
-				sair.getChildren().add(dtHoraInicio);
-				sair.getChildren().add(dtHoraFim);
+				Element codLancamento = new Element("cod-lancamento");
+				codLancamento.setText("" + rs.getLong("cod_lancamento"));
+				sair.getChildren().add(codLancamento);
 				out.getChildren().add(sair);
 			} else {
 				Element entrar = new Element("entrar");
