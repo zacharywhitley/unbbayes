@@ -171,7 +171,7 @@ public class NetIO implements BaseIO {
                     proximo(st);
                 }
 
-                if (auxIVTab != null) {
+                if (auxNo1 instanceof ITabledVariable) {
                     int sizeVetor = auxTabPot.variableCount() / 2;
 	                for (int k = 1; k <= sizeVetor; k++) {
 	                    Object temp = auxTabPot.getVariableAt(k);
