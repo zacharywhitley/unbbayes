@@ -15,6 +15,7 @@ import unbbayes.datamining.gui.explanation.*;
 import unbbayes.datamining.gui.metaphor.*;
 import unbbayes.datamining.gui.naivebayes.*;
 import unbbayes.datamining.gui.preprocessor.*;
+import unbbayes.datamining.gui.neuralmodel.*;
 import unbbayes.fronteira.*;
 
 public class InvokerMain extends JFrame
@@ -54,6 +55,7 @@ public class InvokerMain extends JFrame
   private ResourceBundle resource;
   private JMenuItem jMenuItem6 = new JMenuItem();
   private JMenuItem jMenuItem13 = new JMenuItem();
+  private JMenuItem jMenuItem14 = new JMenuItem();
 
 
   //Construct the frame
@@ -205,6 +207,12 @@ public class InvokerMain extends JFrame
         jMenuItem13_actionPerformed(e);
       }
     });
+    jMenuItem14.setText("Combinatorial Neural Model");
+    jMenuItem14.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        jMenuItem14_actionPerformed(e);
+      }
+    });
     contentPane.add(new JScrollPane(desktop), BorderLayout.CENTER);
     this.setJMenuBar(jMenuBar1);
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -230,6 +238,7 @@ public class InvokerMain extends JFrame
     jMenu1.add(jMenuItem4);
     jMenu1.add(jMenuItem6);
     jMenu1.add(jMenuItem13);
+    jMenu1.add(jMenuItem14);
     jMenu5.add(jMenuItem7);
     jMenu3.add(jMenuItem8);
     jMenu3.add(jMenuItem9);
@@ -425,5 +434,10 @@ public class InvokerMain extends JFrame
       JInternalFrame jif = new JInternalFrame("Metáfora Médica", true, true, true, true);
       jif.getContentPane().add(metaphor);
       desktop.add(jif);
+  }
+
+  void jMenuItem14_actionPerformed(ActionEvent e) {
+      NeuralModelMain cnm = new NeuralModelMain();
+      desktop.add(cnm);
   }
 }

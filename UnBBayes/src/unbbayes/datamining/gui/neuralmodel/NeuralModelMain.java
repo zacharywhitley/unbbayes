@@ -12,6 +12,7 @@ import unbbayes.controlador.*;
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.gui.*;
 import unbbayes.fronteira.*;
+import unbbayes.datamining.datamanipulation.neuralmodel.*;
 
 public class NeuralModelMain extends JInternalFrame
 {
@@ -142,10 +143,14 @@ public class NeuralModelMain extends JInternalFrame
       }
   }
 
-  void learnButton_actionPerformed(ActionEvent e)
-  {   if (inst != null)
-      {
-            Instance instancia;
+  void learnButton_actionPerformed(ActionEvent e){
+    if (inst != null){
+      CombinatorialNetwork net = new CombinatorialNetwork(inst);
+
+
+
+
+/*    Instance instancia;
             Enumeration enum = inst.enumerateInstances();
 
             int numAttrib = inst.numAttributes();
@@ -162,6 +167,9 @@ public class NeuralModelMain extends JInternalFrame
               }
               System.out.println("");
             }
+*/
+
+
 
      /*    ComputeProbabilisticNetwork trp = new ComputeProbabilisticNetwork();
           try
