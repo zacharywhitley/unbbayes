@@ -27,7 +27,7 @@
 
 <%@include file =  "/design/cabecalho.jsp"%>
         <tr>
-          <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_usuario.gif" width="174" border="0" hspace="20" alt="Salvar Semestre"></td>
+          <td align="right" valign="top"><img height="86" src="<%=path%>/design/imagens/logo_semestre.gif" width="174" border="0" hspace="20" alt="Salvar Semestre"></td>
           <td>
 		  <BR>
             <FORM name="login" action="<%=path%>/cadastro/semestre/salvar-semestre-exec.jsp" METHOD="post" ENCTYPE="multipart/form-data">
