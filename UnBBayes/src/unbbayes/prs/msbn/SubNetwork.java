@@ -11,51 +11,85 @@ import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
+ * SubNetwork of a multi-sectioned network.
  * @author Michael S. Onishi
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
  */
 public class SubNetwork extends Network {
 	
 	private char[] visited;
 	
+	/**
+	 * Child subnetworks. 
+	 */
 	protected List adjacents;
 	
+	/**
+	 * Parent subnetwork.
+	 */
 	protected SubNetwork parent;
 	
-	
+	/**
+	 * Creates a new subnetwork with the specified id.
+	 * @param id	The subnetwork's id.		
+	 * @see unbbayes.prs.bn.Network#Network(String)
+	 */
 	public SubNetwork(String id) {
 		super(id);
 		adjacents = new ArrayList();		
 	}
 	
+	/**
+	 * Returns the number of adjacents.
+	 * @return the number of adjacents.
+	 */
 	public int getAdjacentsSize() {
 		return adjacents.size();		
 	}
 	
+	/**
+	 * Returns the adjacent subnetwork in the specified index.
+	 * @param index		the index of the adjacent subnetwork.
+	 * @return SubNetwork	the adjacent subnetwork in the specified index.
+	 */
 	public SubNetwork getAdjacentAt(int index) {
 		return (SubNetwork) adjacents.get(index);		
 	}
 	
-	protected void addAdjacent(SubNetwork net) {
+	/**
+	 * Adds the specified subnetwork in the adjacents list.
+	 * @param net	
+	 */
+	public void addAdjacent(SubNetwork net) {
 		adjacents.add(net);			
 	}
 	
-	protected void setParent(SubNetwork parent) {
+	/**
+	 * Sets the parent of this subnetwork
+	 * @param the parent of this subnetwork
+	 */
+	public void setParent(SubNetwork parent) {
 		this.parent = parent;		
 	}
 	
-	protected void moralize() {
+	/**
+	 *	Local version of the moralize method.
+	 */
+	protected void localMoralize() {
 		super.moraliza();				
 	}
 	
-	protected void compilaAJ() throws Exception {
+	/**
+	 * Compiles this subnetwork in a junction tree structure.
+	 * @throws Exception	If a junction tree cannot be constructed.
+	 */
+	protected void compileJunctionTree() throws Exception {
 		super.compilaAJ(new MSJunctionTree());
 	}
 	
+	/**
+	 * Returns the junctiontree.
+	 * @return the junctiontree.
+	 */
 	protected MSJunctionTree getJunctionTree() {
 		return (MSJunctionTree) junctionTree;
 	}
@@ -64,11 +98,20 @@ public class SubNetwork extends Network {
 		copiaNos = SetToolkit.clone(nos);
 		oe = new NodeList(copiaNos.size());
 	}
-	
+
+	/**
+	 * Verify the local consistency.
+	 * @see unbbayes.prs.bn.Network#verifyConsistency()
+	 */
 	protected void verifyConsistency() throws Exception {
 		super.verifyConsistency();		
 	}
 	
+	/**
+	 * Makes the path from this subnetwork to the specified subnetwork
+	 * @param net		The final subnetwork of the path to create.
+	 * @return List	The path from this subnetwork to the specified subnetwork
+	 */
 	protected List makePath(SubNetwork net) {
 		List path = new ArrayList();
 		makePath(net, path);
@@ -102,17 +145,17 @@ public class SubNetwork extends Network {
 	}
 	
 	/**
-	 * 
-	 * Triangulacao com peso minimo primeiro só os não d-sepnodes e depois só os d-sep-nodes;	 * 
+	 * Minimum weight triangulation.
+	 * First, the not d-sepnodes are eliminated, and after, the d-sepnodes. 
 	 *
-	 * @param adj		  Rede adjacente a esta para basear a ordem de eliminação. 		 
-	 * @return boolean   true se inseriu algum arco, false caso contrário.
+	 * @param adj		  Adjacent subnetwork to make the d-sepnodes list and eliminate in the correct order.
+	 * @return boolean   true if any edge was inserted, false otherwise.
 	 */	
 	protected boolean elimine(SubNetwork adj) {
 		System.out.println("Elimine");
 		
 		oe.clear();
-		NodeList inter = SetToolkit.intersection(copiaNos, adj.nos);				
+		NodeList inter = SetToolkit.intersection(copiaNos, adj.copiaNos);				
 		NodeList auxNos = SetToolkit.clone(copiaNos);
 		
 		int sizeAnt = auxNos.size();
@@ -121,9 +164,9 @@ public class SubNetwork extends Network {
 		
 		assert inter.size() + auxNos.size() == sizeAnt;
 		
-		boolean inseriu = false;		
+		boolean inseriu = false;
 		while (pesoMinimo(auxNos)) {
-			inseriu = true;		
+			inseriu = true;
 		}
 		
 		while (pesoMinimo(inter)) {
@@ -135,38 +178,31 @@ public class SubNetwork extends Network {
 		return inseriu;
 	}
 	
-	//---------------------------- DEBUG
-	public void teste() {
-		for (int i = 0; i < nos.size(); i++) {
-			Node a = nos.get(i);
-			for (int j = 0; j < a.getAdjacents().size(); j++) {
-				Node b = a.getAdjacents().get(j);
-				if (! b.getAdjacents().contains(a)) {
-					System.out.println("erro - " + a + " nao adj de " + b);
-				}								
-			}			
-		}		
-	}	
-	//---------------------------- DEBUG
-	
+	/**
+	 * Depth-first eliminate
+	 * @param caller
+	 */
 	protected void elimineProfundidade(SubNetwork caller) {
 		System.out.println("Elimine profundidade");
 		
 		for (int i = adjacents.size()-1; i >= 0; i--) {
 			SubNetwork ai = (SubNetwork) adjacents.get(i);			
 			if (elimine(ai)) {
-				updateArcs(this, ai);
+				updateArcsAux(ai);
 			}
 			ai.elimineProfundidade(this);
 		}
 		
 		if (caller != null) {			
 			if (elimine(caller)) {				
-				updateArcs(this, caller);
+				updateArcsAux(caller);
 			}
 		}	
 	}
 	
+	/**
+	 * Distribute the edges inserted in this subnetwork to the adjacents.
+	 */
 	protected void distributeArcs() {
 		System.out.println("DistributeArcs");
 		
@@ -177,22 +213,22 @@ public class SubNetwork extends Network {
 		}
 	}
 	
-	private static void updateArcs(SubNetwork net1, SubNetwork net2) {
-		NodeList dsepset = SetToolkit.intersection(net1.nos, net2.nos);
-		for (int i = net1.arcosMarkov.size()-1; i>=0; i--) {
-			Edge e = (Edge) net1.arcosMarkov.get(i);
+	private void updateArcsAux(SubNetwork net) {
+		NodeList dsepset = SetToolkit.intersection(nos, net.nos);
+		for (int i = arcosMarkov.size()-1; i>=0; i--) {
+			Edge e = (Edge) arcosMarkov.get(i);
 			if (dsepset.contains(e.getOriginNode()) 
 				&& dsepset.contains(e.getDestinationNode())) {
 				
-				Node a = net2.getNode(e.getOriginNode().getName());
-				Node b = net2.getNode(e.getDestinationNode().getName()); 
+				Node a = net.getNode(e.getOriginNode().getName());
+				Node b = net.getNode(e.getDestinationNode().getName()); 
 				
 				assert(a != null && b != null);
 				if (! a.getAdjacents().contains(b) && ! b.getAdjacents().contains(a)) {
 					a.getAdjacents().add(b);
 					b.getAdjacents().add(a);
 					Edge newEdge = new Edge(a,b);
-					net2.arcosMarkov.add(newEdge);
+					net.arcosMarkov.add(newEdge);
 
 					System.out.println(newEdge);
 				}
@@ -202,14 +238,21 @@ public class SubNetwork extends Network {
 	
 	private void updateArcs(SubNetwork net) {
 		System.out.println("updateArcs");
-		updateArcs(this, net);
-		updateArcs(net, this);		
+		updateArcsAux(net);
+		net.updateArcsAux(this);		
 	}
 	
+	/**
+	 * Initialize the visited array for the cycle detection.
+	 */
 	protected void initVisited() {
 		visited = new char[nos.size()];	
 	}
 	
+	/**
+	 * Method used to verify cycles in the union graph of sub-networks.
+	 * @throws Exception	If the union graph has cycle.
+	 */
 	protected void distributedCycle() throws Exception {
 		for (int i = nos.size()-1; i>=0; i--) {
 			dfsCycle(i, null);

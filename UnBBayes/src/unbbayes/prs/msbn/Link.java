@@ -6,16 +6,22 @@ import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
+ * Link representing one Clique in the linkage tree.
+ * It has references to the host cliques on the two adjacents
+ * Sub-Networks.
+ * Used by the Linkage class.
+ * 
  * @author michael
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
  */
 public class Link {	
 	private Clique clique, v0, v1;
 	
+	/**
+	 * Constructs a new Link with the parameter clique as the 
+	 * clique of this new link.
+	 * 
+	 * @param clique clique of this new link.	
+	 */
 	public Link(Clique clique) {
 		this.clique = clique;
 	}
@@ -69,40 +75,40 @@ public class Link {
 	
 	
 	/**
-	 * Sets the v0.
-	 * @param v0 The v0 to set
+	 * Sets the host clique on the first.sub-network.
+	 * @param v0 The host clique on the first.sub-network
 	 */
 	public void setV0(Clique v0) {
 		this.v0 = v0;
 	}
 
 	/**
-	 * Sets the v1.
-	 * @param v1 The v1 to set
+	 * Sets the host clique on the second.sub-network.
+	 * @param v1 the host clique on the second.sub-network.
 	 */
 	public void setV1(Clique v1) {
 		this.v1 = v1;
 	}
 
 	/**
-	 * Returns the clique.
-	 * @return Clique
+	 * Returns the clique of this Link.
+	 * @return Clique the clique of this Link.
 	 */
 	public Clique getClique() {
 		return clique;
 	}
 
 	/**
-	 * Returns the v0.
-	 * @return Clique
+	 * Returns the host clique on the first.sub-network.
+	 * @return Clique the host clique on the first.sub-network.
 	 */
 	public Clique getV0() {
 		return v0;
 	}
 
 	/**
-	 * Returns the v1.
-	 * @return Clique
+	 * Returns the host clique on the second.sub-network.
+	 * @return Clique the host clique on the second.sub-network.
 	 */
 	public Clique getV1() {
 		return v1;

@@ -3,19 +3,12 @@ package unbbayes.prs.msbn;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
-import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
+ * A multi-sectioned network. 
  * @author Michael S. Onishi
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
  */
 public class MSNetwork {
 	protected List nets;
@@ -23,28 +16,53 @@ public class MSNetwork {
 	protected SubNetwork activeNet;
 	protected String id;
 	
+	/**
+	 * Creates a new multi-sectioned network with the specified id.
+	 * @param id	the id of this multi-sectioned network
+	 */
 	public MSNetwork(String id) {
 		this.id = id;
 		nets = new ArrayList();
 		links = new ArrayList();				
 	}
 	
+	/**
+	 * Returns the number of subnetworks.
+	 * @return the number of subnetworks.
+	 */
 	public int getNetCount() {
 		return nets.size();				
 	}
 	
+	/**
+	 * Gets the subnetwork of the specified index.
+	 * @param index 		the index of subnetwork to get
+	 * @return SubNetwork	the subnetwork of the specified index.
+	 */
 	public SubNetwork getNetAt(int index) {
 		return (SubNetwork) nets.get(index);		
 	}
 	
+	/**
+	 * Adds the specified subnetwork to this multi-sectioned network.
+	 * @param net	the subnetwork to add.
+	 */
 	public void addNetwork(SubNetwork net) {
 		nets.add(net);
 	}
 	
+	/**
+	 * Removes the subnetwork in the specified index.
+	 * @param index	the index of the subnetwork to remove.
+	 */
 	public void remove(int index) {
 		nets.remove(index);		
 	}
 	
+	/**
+	 * Compile this multi-sectioned network.
+	 * @throws Exception	if a compilation error occurs.
+	 */
 	public void compile() throws Exception {
 		links.clear();
 		
@@ -66,7 +84,7 @@ public class MSNetwork {
 		
 		for (int i = nets.size()-1; i>=0; i--) {
 			SubNetwork net = (SubNetwork) nets.get(i);
-			net.compilaAJ();
+			net.compileJunctionTree();
 		}
 		
 		for (int i = links.size()-1; i>=0; i--) {
@@ -87,10 +105,18 @@ public class MSNetwork {
 		}
 	}
 	
+	/**
+	 * Gets the active sub-network.
+	 * @return the active sub-network.
+	 */
 	public SubNetwork getActiveNet() {
 		return activeNet;		
 	}
 	
+	/**
+	 * Shifts attention from the active sub-network to the specified sub-network.
+	 * @param net	the subnetwork to shift attention.
+	 */
 	public void shiftAttention(SubNetwork net) {
 		List caminho = activeNet.makePath(net);		
 		for (int i = 1; i < caminho.size(); i++) {
@@ -118,16 +144,23 @@ public class MSNetwork {
 		assert false : "Não podia chegar aqui";
 	}
 	
-	private void distributedMoralization() {		
+	/**
+	 * Moralizes this multi-sectioned network.
+	 */
+	protected void distributedMoralization() {		
 		for (int i = nets.size()-1; i >= 0; i--) {
 			SubNetwork net = (SubNetwork) nets.get(i);			
-			net.moralize();			
+			net.localMoralize();			
 		}
 		
 		SubNetwork raiz = (SubNetwork) nets.get(0);
 		raiz.distributeArcs();
 	}
 	
+	/**
+	 * Makes a hypertree structure from this multi-sectioned network.
+	 * @throws Exception	if this multi-sectioned network can't construct a hypertree structure.
+	 */	
 	protected void hyperTree() throws Exception {
 		int netsSize = nets.size();
 		
@@ -215,9 +248,9 @@ public class MSNetwork {
 	
 	
 	/**
-     *  Verify if this network has cycle.
+     *  Verify if this multi-sectioned network has cycle.
      *
-     *@throws Exception If this network has a cycle.
+     *@throws Exception If this multi-sectioned network has a cycle.
      */
     protected final void verifyCycles() throws Exception {
     	
@@ -232,7 +265,10 @@ public class MSNetwork {
     	}
     }
 	
-	
+	/**
+	 * Triangulates this multi-sectioned network.
+	 * Must be called after the distributedMoralization method. 
+	 */
 	protected void cooperativeTriangulation() {
 		initTriangulation();			
 		coTriag();
@@ -267,9 +303,10 @@ public class MSNetwork {
 			net.initTriangulation();
 		}		
 	}
+	
 	/**
-	 * Returns the id.
-	 * @return String
+	 * Returns the id of this multi-sectioned network.
+	 * @return the id of this multi-sectioned network.
 	 */
 	public String getId() {
 		return id;

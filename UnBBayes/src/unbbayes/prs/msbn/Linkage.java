@@ -10,18 +10,20 @@ import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
+ * Linkage tree separating two adjacents sub-networks.
  * @author Michael S. Onishi
- *
- * To change this generated comment edit the template variable "typecomment":
- * Window>Preferences>Java>Templates.
- * To enable and disable the creation of type comments go to
- * Window>Preferences>Java>Code Generation.
  */
 public class Linkage {
 	private SubNetwork n1, n2;
 	private NodeList nodes;
 	private List tree;
 	
+	/**
+	 * Creates a new Linkage separating the two subnetworks.
+	 * 
+	 * @param n1 The parent sub-network.
+	 * @param n2 The child sub-network
+	 */
 	public Linkage(SubNetwork n1, SubNetwork n2) {
 		this.n1 = n1;
 		this.n2 = n2;
@@ -168,16 +170,16 @@ public class Linkage {
 	
 	
 	/**
-	 * Returns the n1.
-	 * @return SubNetwork
+	 * Returns the parent subnetwork of this Linkage.
+	 * @return the parent subnetwork of this Linkage.
 	 */
 	public SubNetwork getN1() {
 		return n1;
 	}
 
 	/**
-	 * Returns the n2.
-	 * @return SubNetwork
+	 * Returns the child subnetwork of this Linkage.
+	 * @return the child subnetwork of this Linkage.
 	 */
 	public SubNetwork getN2() {
 		return n2;
