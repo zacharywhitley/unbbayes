@@ -1,7 +1,7 @@
 package linfca;
 import org.jdom.*;
 import java.sql.*;
-
+ 
 public class Controller {
 	private static Controller instance;
 		
