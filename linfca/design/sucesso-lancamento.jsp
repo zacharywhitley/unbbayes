@@ -7,7 +7,7 @@
 
 <body>
 <h2>Lançamento processado com sucesso!</h2>
-<form name="form1" method="post" action="<%=request.getContextPath()%>/log.jsp">
+<form name="form1" method="post" action="<%=request.getContextPath()%>/index.jsp">
   <input type="submit" name="Submit" value="Voltar">
 </form>
 <p>&nbsp;</p>

@@ -33,7 +33,7 @@
               <tr>
               
                 <td width="30%">                
-                  <select name="cod-computador" id="tipo_computador_disponivel" size="25">
+                  <select name="cod-computador" id="cod-computador" size="25">
                   <% 
 		             Feature  listarComputadorDisponivel = new ListarComputadorDisponivelFeature();
 			         Element tiposXML = listarComputadorDisponivel.process(null);
@@ -50,6 +50,8 @@
                 <td width="70%"><img src="<%=path%>/design/imagens/mapa_linf.gif" border="0" hspace="20" alt="Mapa do Linf"></td>
                 
               </tr>
+              
+              <input type="hidden" name="cod-usuario" value="<%=request.getAttribute("cod-usuario")%>">
                 
               <tr>
                 <td colspan=2>

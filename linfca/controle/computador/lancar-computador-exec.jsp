@@ -7,11 +7,12 @@
 <%
 
    String codUsuario = request.getParameter("cod-usuario");   
-   
+   System.out.println("Foi : " + codUsuario);
    Element in = new Element("in");
    
    if (codUsuario != null)  {
-      String codComputador = request.getParameter("cod-computador"); 
+      String codComputador = request.getParameter("cod-computador");
+      System.out.println("Foi : " + codComputador);
 	  Element usuario = new Element("cod-usuario");
 	  Element computador = new Element("cod-computador");	   
 	  usuario.setText(codUsuario);
@@ -41,6 +42,6 @@
 </head>
 
 <body onLoad="javascript:document.form1.submit()">
-  <form name="form1" method="post" action="<%=request.getContextPath()%>/lancamento-sucesso.jsp">
+  <form name="form1" method="post" action="<%=request.getContextPath()%>/design/sucesso-lancamento.jsp">
 </body>
 </html>
