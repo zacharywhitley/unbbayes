@@ -80,6 +80,7 @@ public class MSBNWindow extends JInternalFrame {
 	private void initComponents() {
 		netList = new JList(new MSBNListModel());		
 		compileBtn = new JButton(new ImageIcon(getClass().getResource("/icons/compile.gif")));
+		compileBtn.setToolTipText(resource.getString("compileToolTip"));
 		editionBtn = new JButton(new ImageIcon(getClass().getResource("/icons/edit.gif")));
 		removeBtn = new JButton(new ImageIcon(getClass().getResource("/icons/less.gif")));
 		newBtn = new JButton(new ImageIcon(getClass().getResource("/icons/more.gif")));
