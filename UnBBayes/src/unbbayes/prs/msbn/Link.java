@@ -36,6 +36,7 @@ import unbbayes.util.SetToolkit;
 public class Link {	
 	private Clique clique, v0, v1;
 	private PotentialTable originalLinkTable;
+	private PotentialTable newLinkTable;
 	
 	/**
 	 * Constructs a new Link with the parameter clique as the 
@@ -58,16 +59,21 @@ public class Link {
 				
 		NodeList toDie = SetToolkit.clone(c2.getNos());
 		toDie.removeAll(clique.getNos());
-		PotentialTable tB =
+		newLinkTable = 
 			(PotentialTable) c2.getPotentialTable().clone();
 			
 		for (int i = toDie.size()-1; i >= 0; i--) {
-			tB.removeVariable(toDie.get(i));
+			newLinkTable.removeVariable(toDie.get(i));
 		}
 		
 		for (int i = clique.getPotentialTable().tableSize() - 1; i >= 0; i--) {
-			clique.getPotentialTable().setValue(i, tB.getValue(i));
+			clique.getPotentialTable().setValue(i, newLinkTable.getValue(i));
 		}
+	}
+	
+	protected void removeRedundancy(PotentialTable newRedTab, PotentialTable oldRedTab) {
+		newLinkTable.opTab(newRedTab, PotentialTable.DIVISION_OPERATOR);
+		originalLinkTable.opTab(oldRedTab, PotentialTable.DIVISION_OPERATOR);
 	}
 	
 	/**
@@ -76,12 +82,10 @@ public class Link {
 	 */
 	protected void absorveOut(boolean naOrdem) {
 		Clique c1 = (naOrdem) ? v0 : v1;
+				
+		newLinkTable.directOpTab(originalLinkTable, PotentialTable.DIVISION_OPERATOR);
 		
-		PotentialTable tB = (PotentialTable) clique.getPotentialTable().clone();
-		
-		tB.directOpTab(originalLinkTable, PotentialTable.DIVISION_OPERATOR);
-		
-		c1.getPotentialTable().opTab(tB, PotentialTable.PRODUCT_OPERATOR);		
+		c1.getPotentialTable().opTab(newLinkTable, PotentialTable.PRODUCT_OPERATOR);		
 	}
 	
 	/**

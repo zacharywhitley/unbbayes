@@ -62,14 +62,18 @@ public class Linkage {
 	protected void makeLinkageTree() throws Exception {
 		linkList.clear();
 		jt = new JunctionTree();
-		Clique raiz = (Clique) n1.getJunctionTree().getCliques().get(0);
-		makeCliqueList(raiz);
+		Clique root = (Clique) n1.getJunctionTree().getCliques().get(0);
+		makeCliqueList(root);
 		
 		remove1stPass();
 		
 		remove2ndPass();
 		
-		assert ((Clique) jt.getCliques().get(0)).getParent() == null;
+		/*
+		root = (Clique) jt.getCliques().get(0);
+		assert root.getParent() == null;
+		*/
+		
 		
 		assignV1();	
 			
@@ -84,7 +88,6 @@ public class Linkage {
 		// DEBUG-------------------
 		
 		initTables();
-		System.out.println();
 	}
 	
 	
@@ -148,8 +151,9 @@ public class Linkage {
 	private void initTables() throws Exception {
 		insertSeparators();
 				
-		for (int i = jt.getCliques().size()-1; i >=0; i--) {
-			Clique c = (Clique) jt.getCliques().get(i);
+		for (int i = linkList.size()-1; i >=0; i--) {
+			Link l = (Link) linkList.get(i);
+			Clique c = l.getClique();
 			PotentialTable tab = c.getPotentialTable();
 			for (int j = 0; j < c.getNos().size(); j++) {
 				tab.addVariable(c.getNos().get(j));
@@ -238,39 +242,36 @@ public class Linkage {
 	protected void absorb(boolean naOrdem) throws Exception {
 		int treeSize = linkList.size();
 		
-		for (int i = jt.getSeparatorsSize()-1; i >=0; i--) {
-			Separator sep = jt.getSeparatorAt(i);
-			NodeList toDie = SetToolkit.clone(sep.getNo1().getNos());
-			toDie.removeAll(sep.getNos());
-			PotentialTable tA =
-				(PotentialTable) sep.getNo1().getPotentialTable().clone();
-				
-			for (int j = toDie.size()-1; j >= 0; j--) {
-				tA.removeVariable(toDie.get(i));
-			}
-			
-			sep.getNo2().getPotentialTable().opTab(tA, PotentialTable.DIVISION_OPERATOR);
-		}
-		
-		for (int i = 0; i < treeSize; i++) {		
+		for (int i = 0; i < treeSize; i++) {
 			Link l = (Link) linkList.get(i);
 			l.absorveIn(naOrdem);
 		}
 		
-		//jt.consistencia();
-		
 		for (int i = jt.getSeparatorsSize()-1; i >=0; i--) {
 			Separator sep = jt.getSeparatorAt(i);
-			NodeList toDie = SetToolkit.clone(sep.getNo1().getNos());
+			PotentialTable oldRedTab = (PotentialTable) sep.getPotentialTable().clone();
+			
+			NodeList toDie = SetToolkit.clone(sep.getNo2().getNos());
 			toDie.removeAll(sep.getNos());
 			PotentialTable tA =
-				(PotentialTable) sep.getNo1().getPotentialTable().clone();
+				(PotentialTable) sep.getNo2().getPotentialTable().clone();
 				
 			for (int j = toDie.size()-1; j >= 0; j--) {
 				tA.removeVariable(toDie.get(i));
 			}
 			
-			sep.getNo2().getPotentialTable().opTab(tA, PotentialTable.DIVISION_OPERATOR);
+			for (int j = tA.tableSize()-1; j>=0; j--) {
+				sep.getPotentialTable().setValue(j, tA.getValue(j));								
+			}
+			
+			for (int j = linkList.size()-1; j>=0; j--) {
+				Link l = (Link) linkList.get(j);
+				if (l.getClique() == sep.getNo2()) {
+					System.out.println("Entrou");
+					l.removeRedundancy(tA, oldRedTab);					
+					break;					
+				}
+			}
 		}
 		
 		for (int i = 0; i < treeSize; i++) {		

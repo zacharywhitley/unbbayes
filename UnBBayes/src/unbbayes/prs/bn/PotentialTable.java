@@ -426,9 +426,17 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
         	case PRODUCT_OPERATOR:
         		fastOpTabProd(0, 0, 0, index, tab);
         		break;
+        		
         	case PLUS_OPERATOR:
         		fastOpTabPlus(0, 0, 0, index, tab);
         		break;
+        	
+        	case DIVISION_OPERATOR:
+        		fastOpTabDiv(0, 0, 0, index, tab);
+        		break;
+        		
+        	default:
+        		assert false : "Operador não suportado!";
         }
     }
     
@@ -461,6 +469,22 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
     	} else {
 	    	for (int i = variaveis.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
 	    		fastOpTabProd(c+1, linearA + i*fatores[c] , linearB + i*tab.fatores[index[c]], index, tab);
+    		}
+    	}
+    }
+    
+    private void fastOpTabDiv(int c, int linearA, int linearB, int index[], PotentialTable tab) {
+    	if (c >= variaveis.size()) {
+    		dados.data[linearA] /= tab.dados.data[linearB];
+    		return;    		    		
+    	}
+    	if (index[c] == -1) {
+    		for (int i = variaveis.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
+	    		fastOpTabDiv(c+1, linearA + i*fatores[c] , linearB, index, tab);
+    		}
+    	} else {
+	    	for (int i = variaveis.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
+	    		fastOpTabDiv(c+1, linearA + i*fatores[c] , linearB + i*tab.fatores[index[c]], index, tab);
     		}
     	}
     }
