@@ -1,9 +1,4 @@
-/*
- * Created on 19/07/2003
- *
- * To change this generated comment go to 
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
+
 package unbbayes.aprendizagem.Gibbs.controller;
 
 import java.util.ArrayList;
