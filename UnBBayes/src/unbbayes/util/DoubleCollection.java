@@ -146,8 +146,7 @@ public final class DoubleCollection implements java.io.Serializable {
      * @param index the index of the element to removed.
      * @return the element that was removed from the list.
      */
-    public final double remove(int index) {
-        double oldValue = data[index];
+    public final void remove(int index) {
         int numMoved = size - index - 1;
         if (numMoved > 0)
             System.arraycopy(data, index+1, data, index,
@@ -155,6 +154,5 @@ public final class DoubleCollection implements java.io.Serializable {
         if (size > 0) {        
 	        data[--size] = 0.0;
         }
-        return oldValue;
     }
 }
