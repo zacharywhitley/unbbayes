@@ -96,6 +96,8 @@ public class TrainingPanel extends JPanel implements MeanSquaredError{
     chart.setXRange(0, 1000);
     chart.setYLabel(resource.getString("YAxisTitle"));
     chart.setXLabel(resource.getString("XAxisTitle"));
+
+    chart.fillPlot();
   }
 
   /**
