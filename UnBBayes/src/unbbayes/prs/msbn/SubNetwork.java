@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.Edge;
-import unbbayes.prs.Network;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.JunctionTree;
+import unbbayes.prs.bn.Network;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
@@ -44,6 +45,14 @@ public class SubNetwork extends Network {
 	
 	protected void moralize() {
 		super.moraliza();		
+	}
+	
+	protected void compilaAJ() throws Exception {
+		super.compilaAJ();		
+	}
+	
+	protected JunctionTree getJunctionTree() {
+		return junctionTree;		
 	}
 	
 	protected List elimine(int adj) {
@@ -155,5 +164,6 @@ public class SubNetwork extends Network {
     	}
     	
     	visited[nodeIndex] = 2;
-    }
+    }   
+    
 }

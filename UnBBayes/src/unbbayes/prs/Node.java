@@ -394,7 +394,7 @@ public abstract class Node implements java.io.Serializable {
 	/**
 	 *  Monta lista de nós adjacentes.
 	 */
-	protected void montaAdjacentes() {
+	public void montaAdjacentes() {
 		adjacents.addAll(parents);
 		adjacents.addAll(children);
 	}
@@ -402,7 +402,7 @@ public abstract class Node implements java.io.Serializable {
 	/**
 	 *  Desmonta a lista de nós adjacentes.
 	 */
-	protected void desmontaAdjacentes() {
+	public void desmontaAdjacentes() {
 		adjacents.clear();
 	}
 

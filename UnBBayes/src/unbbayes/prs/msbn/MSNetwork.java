@@ -31,17 +31,27 @@ public class MSNetwork {
 	
 	public void compile() throws Exception {
 		hyperTree();
+		
 		verifyCycles();
 		
+		distributedMoralization();
+		
+		cooperativeTriangulation();
+		
+		for (int i = nets.size()-1; i>=0; i--) {
+			SubNetwork net = (SubNetwork) nets.get(i);
+			net.compilaAJ();		
+		}
+	}
+	
+	private void distributedMoralization() {
 		for (int i = nets.size()-1; i >= 0; i--) {
 			SubNetwork net = (SubNetwork) nets.get(i);
 			net.moralize();			
 		}
 		
 		SubNetwork raiz = (SubNetwork) nets.get(0);
-		raiz.distributeArcs();
-		
-		cooperativeTriangulation();						
+		raiz.distributeArcs();		
 	}
 	
 	private void hyperTree() throws Exception {

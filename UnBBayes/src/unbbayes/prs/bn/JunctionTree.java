@@ -81,6 +81,7 @@ public class JunctionTree implements java.io.Serializable {
 		cloned.setSeparators(SetToolkit.clone(separators));
 		cloned.setCliques(SetToolkit.clone(cliques));
 		cloned.setN(n);
+		cloned.initialized = initialized;
 		if (coordSep != null) {
 			int [][][] coordSep1 = new int[coordSep.length][coordSep[0].length][coordSep[0][0].length];
 			System.arraycopy(coordSep, 0, coordSep1, 0, coordSep.length);
@@ -327,5 +328,4 @@ public class JunctionTree implements java.io.Serializable {
 	public void setSeparators(List separators) {
 		this.separators = separators;
 	}
-
 }

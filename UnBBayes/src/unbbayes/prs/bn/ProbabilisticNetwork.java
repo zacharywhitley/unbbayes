@@ -32,7 +32,6 @@ import javax.swing.tree.DefaultTreeModel;
 
 import unbbayes.io.LogManager;
 import unbbayes.prs.Edge;
-import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.JunctionTreeID;
@@ -53,11 +52,6 @@ public class ProbabilisticNetwork
 	private static ResourceBundle resource =
 		ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
 
-	/**
-	 *  Armazena handle do objeto Árvore de Junção associado ao Grafo.
-	 */
-	private JunctionTree junctionTree;
-
 	private double radius;
 
 	/**
@@ -65,18 +59,7 @@ public class ProbabilisticNetwork
 	 */
 	private NodeList decisionNodes;
 
-	/**
-	 * Cópia dos nós sem os nós de utilidade. Utilizado no processo
-	 * de transformação.
-	 */
-	private NodeList copiaNos;
-
 	private String nome = "";
-
-	/**
-	 *  Ordem de eliminação dos nós.
-	 */
-	private NodeList oe;
 
 	private HierarchicTree hierarchicTree;
 
@@ -171,112 +154,6 @@ public class ProbabilisticNetwork
 				throw new Exception(sb.toString());
 			}
 		}
-	}
-
-	private void resetEvidences() {
-		int size = copiaNos.size();
-		for (int i = 0; i < size; i++) {
-			((TreeVariable) copiaNos.get(i)).resetEvidence();
-		}
-	}
-
-	/**
-	 *  Monta árvore de junção a partir do grafo.
-	 */
-	private void compilaAJ() throws Exception {
-		Edge auxArc;
-		int menor;
-		Clique auxClique;
-		Separator auxSep;
-
-		resetEvidences();
-
-		if (isID()) {
-			junctionTree = new JunctionTreeID();
-		} else {
-			junctionTree = new JunctionTree();
-		}
-		desmontaAdjacentes();
-
-		int sizeMarkov = arcosMarkov.size();
-		for (int c = 0; c < sizeMarkov; c++) {
-			auxArc = (Edge) arcosMarkov.get(c);
-			auxArc.getOriginNode().getAdjacents().add(
-				auxArc.getDestinationNode());
-			auxArc.getDestinationNode().getAdjacents().add(
-				auxArc.getOriginNode());
-		}
-
-		this.cliques();
-		this.arvoreForte();
-		this.sortCliqueNodes();
-		this.associaCliques();
-		junctionTree.iniciaCrencas();
-
-		int sizeNos = copiaNos.size();
-		for (int c = 0; c < sizeNos; c++) {
-			Node auxNode = copiaNos.get(c);
-			menor = Integer.MAX_VALUE;
-			if (auxNode.getType() == Node.PROBABILISTIC_NODE_TYPE) {
-				int sizeSeparadores = junctionTree.getSeparatorsSize();
-				for (int c2 = 0; c2 < sizeSeparadores; c2++) {
-					auxSep = (Separator) junctionTree.getSeparatorAt(c2);
-					if (auxSep.getNos().contains(auxNode)
-						&& (auxSep.getPotentialTable().tableSize() < menor)) {
-						((ProbabilisticNode) auxNode).setAssociatedClique(
-							auxSep);
-						menor = auxSep.getPotentialTable().tableSize();
-					}
-				}
-			}
-
-			if (menor == Integer.MAX_VALUE) {
-				int sizeCliques = junctionTree.getCliques().size();
-				for (int c2 = 0; c2 < sizeCliques; c2++) {
-					auxClique = (Clique) junctionTree.getCliques().get(c2);
-					if (auxClique.getNos().contains(auxNode)
-						&& (auxClique.getPotentialTable().tableSize() < menor)) {
-						if (auxNode.getType()
-							== Node.PROBABILISTIC_NODE_TYPE) {
-							((ProbabilisticNode) auxNode).setAssociatedClique(
-								auxClique);
-						} else {
-							((DecisionNode) auxNode).setAssociatedClique(
-								auxClique);
-							break;
-						}
-						menor = auxClique.getPotentialTable().tableSize();
-					}
-				}
-			}
-		}
-
-		updateMarginais();
-
-		if (createLog) {
-			Thread t = new Thread(new Runnable() {
-				public void run() {
-					makeLog();
-					System.out.println("**Log ended**");
-				}
-			});
-			t.setPriority(Thread.MIN_PRIORITY);
-			t.start();
-		}
-	}
-
-	private void makeLog() {
-		long in = System.currentTimeMillis();
-		try {
-			logManager.finishLog(junctionTree, nos);
-			logManager.writeToDisk(LogManager.DEFAULT_FILENAME, false);
-		} catch (java.io.IOException ioe) {
-			System.err.println(ioe.getMessage());
-		}
-		System.out.println(
-			"GERACAO DO ARQUIVO LOG em "
-				+ (System.currentTimeMillis() - in)
-				+ " ms");
 	}
 
 	public String getLog() {
@@ -406,13 +283,6 @@ public class ProbabilisticNetwork
 		moraliza();
 		triangula();
 		compilaAJ();
-	}
-
-	private void updateMarginais() {
-		for (int i = 0; i < copiaNos.size(); i++) {
-			TreeVariable node = (TreeVariable) copiaNos.get(i);
-			node.marginal();
-		}
 	}
 
 	/**
@@ -577,305 +447,6 @@ public class ProbabilisticNetwork
 				auxVP = (ProbabilisticNode) auxNo;
 				auxTabPot = (ProbabilisticTable) auxVP.getPotentialTable();
 				auxTabPot.verificaConsistencia();
-			}
-		}
-	}
-
-	/**
-	 *  Faz o processo de identificação dos Cliques
-	 */
-	private void cliques() {
-		int i;
-		int j;
-		Node auxNo;
-		Node auxNo2;
-		int e;
-		Clique auxClique;
-		Clique auxClique2;
-		List listaCliques = new ArrayList();
-
-		int sizeNos = copiaNos.size();
-		for (i = 0; i < sizeNos; i++) {
-			auxNo = copiaNos.get(i);
-			e = oe.indexOf(auxNo);
-			auxClique = new Clique();
-			auxClique.getNos().add(auxNo);
-
-			int sizeAdjacentes = auxNo.getAdjacents().size();
-			for (j = 0; j < sizeAdjacentes; j++) {
-				auxNo2 = auxNo.getAdjacents().get(j);
-				if (oe.indexOf(auxNo2) > e) {
-					auxClique.getNos().add(auxNo2);
-				}
-			}
-			listaCliques.add(auxClique);
-		}
-
-		boolean haTroca = true;
-		while (haTroca) {
-			haTroca = false;
-			for (i = 0; i < listaCliques.size() - 1; i++) {
-				auxClique = (Clique) listaCliques.get(i);
-				auxClique2 = (Clique) listaCliques.get(i + 1);
-				if (auxClique.getNos().size() > auxClique2.getNos().size()) {
-					listaCliques.set(i + 1, auxClique);
-					listaCliques.set(i, auxClique2);
-					haTroca = true;
-				}
-			}
-		}
-
-		int sizeCliques = listaCliques.size();
-
-		for1 : for (i = 0; i < sizeCliques; i++) {
-			auxClique = (Clique) listaCliques.get(i);
-			for (j = i + 1; j < sizeCliques; j++) {
-				auxClique2 = (Clique) listaCliques.get(j);
-
-				if (auxClique2.getNos().containsAll(auxClique.getNos())) {
-					continue for1;
-				}
-			}
-			junctionTree.getCliques().add(auxClique);
-		}
-		listaCliques.clear();
-	}
-
-	/**
-	 *  SUB-FUNÇÃO do método arvoreForte
-	 */
-	private int indice(NodeList listaNos, NodeList alpha) {
-		int ndx;
-		int mx;
-		Node auxNo;
-		Node noMax = null;
-		NodeList auxList = null;
-		NodeList vizinhos;
-
-		// pega o nó de índice máximo na ordem alpha (inverso da ordem de eliminição)
-		mx = -1;
-		int sizeNos = listaNos.size();
-		for (int i = 0; i < sizeNos; i++) {
-			auxNo = listaNos.get(i);
-			ndx = alpha.indexOf(auxNo);
-			if (mx < ndx) {
-				mx = ndx;
-				noMax = auxNo;
-			}
-		}
-
-		// Retira esse nó do clique
-		listaNos.remove(noMax);
-
-		// Monta uma lista de vizinhos do clique
-		auxNo = listaNos.get(0);
-		vizinhos = SetToolkit.clone(auxNo.getAdjacents());
-		int sizeNos1 = listaNos.size();
-		for (int i = 1; i < sizeNos1; i++) {
-			auxNo = listaNos.get(i);
-			auxList = SetToolkit.intersection(vizinhos, auxNo.getAdjacents());
-			vizinhos.clear();
-			vizinhos = auxList;
-		}
-		vizinhos.remove(noMax);
-
-		ndx = 0;
-		int sizeVizinhos = vizinhos.size();
-		for (int i = 0; i < sizeVizinhos; i++) {
-			auxNo = vizinhos.get(i);
-			if (listaNos.contains(auxNo) || (alpha.indexOf(auxNo) > mx)) {
-				continue;
-			}
-			ndx = mx;
-			break;
-		}
-
-		return ndx;
-	}
-
-	/**
-	 *  Faz o processo de constituição da árvore de junção - Frank Jensen
-	 */
-	private void arvoreForte() {
-		int ndx;
-		Clique auxClique;
-		Clique auxClique2;
-		NodeList uni;
-		NodeList inter;
-		NodeList auxList;
-		NodeList listaNos;
-		Separator sep;
-		NodeList alpha = new NodeList();
-
-		for (int i = oe.size() - 1; i >= 0; i--) {
-			alpha.add(oe.get(i));
-		}
-
-		if (copiaNos.size() > 1) {
-			int sizeCliques = junctionTree.getCliques().size();
-			for (int i = 0; i < sizeCliques; i++) {
-				auxClique = (Clique) junctionTree.getCliques().get(i);
-				listaNos = SetToolkit.clone(auxClique.getNos());
-
-				//calcula o índice
-				while ((ndx = indice(listaNos, alpha)) <= 0
-					&& listaNos.size() > 1);
-				if (ndx < 0) {
-					ndx = 0;
-				}
-				auxClique.setIndex(ndx);
-				listaNos.clear();
-			}
-			alpha.clear();
-
-			Comparator comparador = new Comparator() {
-				public int compare(Object o1, Object o2) {
-					Clique c1 = (Clique) o1;
-					Clique c2 = (Clique) o2;
-					if (c1.getIndex() > c2.getIndex()) {
-						return 1;
-					}
-					if (c1.getIndex() < c2.getIndex()) {
-						return -1;
-					}
-					return 0;
-				}
-			};
-
-			Collections.sort(junctionTree.getCliques(), comparador);
-
-			auxClique = (Clique) junctionTree.getCliques().get(0);
-			uni = SetToolkit.clone(auxClique.getNos());
-
-			int sizeCliques1 = junctionTree.getCliques().size();
-			for (int i = 1; i < sizeCliques1; i++) {
-				auxClique = (Clique) junctionTree.getCliques().get(i);
-				inter = SetToolkit.intersection(auxClique.getNos(), uni);
-
-				for (int j = 0; j < i; j++) {
-					auxClique2 = (Clique) junctionTree.getCliques().get(j);
-
-					if (!auxClique2.getNos().containsAll(inter)) {
-						continue;
-					}
-
-					sep = new Separator(auxClique2, auxClique);
-					sep.setNos(inter);
-					junctionTree.addSeparator(sep);
-
-					auxList = SetToolkit.union(auxClique.getNos(), uni);
-					uni.clear();
-					uni = auxList;
-					break;
-				}
-			}
-		}
-	}
-
-	/**
-	 * Ordena os nós dos cliques e dos separadores de acordo com a ordem de eliminação.
-	 */
-	private void sortCliqueNodes() {
-		List listaCliques = junctionTree.getCliques();
-		for (int k = 0; k < listaCliques.size(); k++) {
-			Clique clique = (Clique) listaCliques.get(k);
-			NodeList nosClique = clique.getNos();
-			boolean haTroca = true;
-			while (haTroca) {
-				haTroca = false;
-				for (int i = 0; i < nosClique.size() - 1; i++) {
-					Node node1 = nosClique.get(i);
-					Node node2 = nosClique.get(i + 1);
-					if (oe.indexOf(node1) > oe.indexOf(node2)) {
-						nosClique.set(i + 1, node1);
-						nosClique.set(i, node2);
-						haTroca = true;
-					}
-				}
-			}
-		}
-
-		for (int k = junctionTree.getSeparatorsSize() - 1; k >= 0; k--) {
-			Separator separator = (Separator) junctionTree.getSeparatorAt(k);
-			NodeList nosSeparator = separator.getNos();
-			boolean haTroca = true;
-			while (haTroca) {
-				haTroca = false;
-				for (int i = 0; i < nosSeparator.size() - 1; i++) {
-					Node node1 = nosSeparator.get(i);
-					Node node2 = nosSeparator.get(i + 1);
-					if (oe.indexOf(node1) > oe.indexOf(node2)) {
-						nosSeparator.set(i + 1, node1);
-						nosSeparator.set(i, node2);
-						haTroca = true;
-					}
-				}
-			}
-		}
-	}
-
-	/**
-	 *  Faz a associação dos Nós a um único clique com menos espaço de est. que
-	 *  contenha sua família
-	 */
-	private void associaCliques() {
-		int min;
-		Node auxNo;
-		PotentialTable auxTabPot, auxUtilTab;
-		Clique auxClique;
-		Clique cliqueMin = null;
-
-		for (int i = junctionTree.getCliques().size() - 1; i >= 0; i--) {
-			auxClique = (Clique) junctionTree.getCliques().get(i);
-			auxTabPot = auxClique.getPotentialTable();
-			auxUtilTab = auxClique.getUtilityTable();
-
-			int sizeNos = auxClique.getNos().size();
-			for (int c = 0; c < sizeNos; c++) {
-				auxTabPot.addVariable(auxClique.getNos().get(c));
-				auxUtilTab.addVariable(auxClique.getNos().get(c));
-			}
-		}
-
-		for (int k = junctionTree.getSeparatorsSize() - 1; k >= 0; k--) {
-			Separator auxSep = (Separator) junctionTree.getSeparatorAt(k);
-			auxTabPot = auxSep.getPotentialTable();
-			auxUtilTab = auxSep.getUtilityTable();
-			int sizeNos = auxSep.getNos().size();
-			for (int c = 0; c < sizeNos; c++) {
-				auxTabPot.addVariable(auxSep.getNos().get(c));
-				auxUtilTab.addVariable(auxSep.getNos().get(c));
-			}
-		}
-
-		int sizeNos = nos.size();
-		for (int n = 0; n < sizeNos; n++) {
-			if (nos.get(n).getType() == Node.DECISION_NODE_TYPE) {
-				continue;
-			}
-
-			min = Integer.MAX_VALUE;
-			auxNo = nos.get(n);
-
-			int sizeCliques = junctionTree.getCliques().size();
-			for (int c = 0; c < sizeCliques; c++) {
-				auxClique = (Clique) junctionTree.getCliques().get(c);
-
-				if (auxClique.getPotentialTable().tableSize() < min
-					&& auxClique.getNos().containsAll(auxNo.getParents())) {
-					if (auxNo.getType() == Node.PROBABILISTIC_NODE_TYPE
-						&& !auxClique.getNos().contains(auxNo)) {
-						continue;
-					}
-					cliqueMin = auxClique;
-					min = cliqueMin.getPotentialTable().tableSize();
-				}
-			}
-
-			if (auxNo.getType() == Node.PROBABILISTIC_NODE_TYPE) {
-				cliqueMin.getAssociatedProbabilisticNodes().add(auxNo);
-			} else {
-				cliqueMin.getAssociatedUtilityNodes().add(auxNo);
 			}
 		}
 	}
@@ -1049,21 +620,6 @@ public class ProbabilisticNetwork
 		this.radius = radius;
 	}
 
-	/**
-	 * Returns true if this network is a Influence Diagram
-	 * @return Returns true if this network is a Influence Diagram, false otherwise.
-	 */
-	public boolean isID() {
-		for (int i = 0; i < nos.size(); i++) {
-			if (nos.get(i).getType() == Node.DECISION_NODE_TYPE
-				|| nos.get(i).getType() == Node.UTILITY_NODE_TYPE) {
-
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	/**
 	 * Gets the createLog.
 	 * @return Returns a boolean
