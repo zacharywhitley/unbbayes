@@ -23,14 +23,8 @@ import unbbayes.util.*;
  * @author  Mário Henrique Paes Vieira (mariohpv@bol.com.br)
  * @version $1.0 $ (01/07/2002)
  */
-public class ExplanationMain extends JInternalFrame
-{   private JMenuBar explanationMenuBar = new JMenuBar();
-    private JMenu fileMenu = new JMenu();
-    private JMenuItem openMenuItem = new JMenuItem();
-    private JMenuItem saveMenuItem = new JMenuItem();
-    private JMenuItem exitMenuItem = new JMenuItem();
-    private JMenu helpMenu = new JMenu();
-    private JMenuItem topicsMenuItem = new JMenuItem();
+public class ExplanationMain extends JPanel
+{
     private ButtonGroup typeButtonGroup = new ButtonGroup();
     private JToolBar explanationToolBar = new JToolBar();
     private JButton openButton = new JButton();
@@ -52,11 +46,11 @@ public class ExplanationMain extends JInternalFrame
   private JPanel networkPanel = new JPanel();
   private HierarchicDefinitionPanel definitionPanel = new HierarchicDefinitionPanel();
   private JFileChooser fileChooser;
+  private BorderLayout borderLayout1 = new BorderLayout();
 
     /** Creates new form ExplanationMain */
     public ExplanationMain()
-    {   super("Explanation",true,true,true,true);
-        //resource = ResourceBundle.getBundle("unbbayes.datamining.gui.decisiontree.resources.DecisiontreeResource");
+    {   //resource = ResourceBundle.getBundle("unbbayes.datamining.gui.decisiontree.resources.DecisiontreeResource");
         enableEvents(AWTEvent.WINDOW_EVENT_MASK);
         try
         {   jbInit();
@@ -72,16 +66,6 @@ public class ExplanationMain extends JInternalFrame
         helpIcon = new ImageIcon(getClass().getResource("/icones/help.gif"));
         expandirIcon = new ImageIcon(getClass().getResource("/icones/hierarquia.gif"));
         compilaIcon = new ImageIcon(getClass().getResource("/icones/compila.gif"));
-        fileMenu.setMnemonic('F');
-        fileMenu.setText("File");
-        openMenuItem.setMnemonic('O');
-        openMenuItem.setText("Open...");
-        openMenuItem.setIcon(abrirIcon);
-        openMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openMenuItemActionPerformed(evt);
-            }
-        });
 
     treeButton.setToolTipText("");
     treeButton.setIcon(expandirIcon);
@@ -95,43 +79,11 @@ public class ExplanationMain extends JInternalFrame
     jTabbedPane1.setOpaque(true);
     openButton.setIcon(abrirIcon);
     networkPanel.setLayout(new BorderLayout());
-    fileMenu.add(openMenuItem);
-        saveMenuItem.setMnemonic('S');
-        saveMenuItem.setText("Save Network...");
-        saveMenuItem.setIcon(salvarIcon);
-        saveMenuItem.setEnabled(false);
-        saveMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveMenuItemActionPerformed(evt);
-            }
-        });
+    this.setLayout(borderLayout1);
 
-        fileMenu.add(saveMenuItem);
-        exitMenuItem.setMnemonic('E');
-        exitMenuItem.setText("Exit");
-        exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exitMenuItemActionPerformed(evt);
-            }
-        });
 
-        fileMenu.add(exitMenuItem);
-        explanationMenuBar.add(fileMenu);
-        helpMenu.setMnemonic('H');
-        helpMenu.setText("Help");
-        topicsMenuItem.setMnemonic('E');
-        topicsMenuItem.setText("Help topics...");
-        topicsMenuItem.setIcon(helpIcon);
-        topicsMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                helpButtonActionPerformed(evt);
-            }
-        });
 
-        helpMenu.add(topicsMenuItem);
-        explanationMenuBar.add(helpMenu);
 
-        setMaximizable(true);
         explanationToolBar.setFloatable(false);
         openButton.setToolTipText("Open a file");
         openButton.addActionListener(new java.awt.event.ActionListener() {
@@ -164,16 +116,16 @@ public class ExplanationMain extends JInternalFrame
         explanationToolBar.add(helpButton);
         explanationToolBar.add(treeButton, null);
 
-        getContentPane().add(explanationToolBar, BorderLayout.NORTH);
+        add(explanationToolBar, BorderLayout.NORTH);
 
         statusPanel.setLayout(new java.awt.BorderLayout());
 
         statusPanel.setBorder(new javax.swing.border.TitledBorder("Status"));
         statusBar.setText("Welcome");
         statusPanel.add(statusBar, java.awt.BorderLayout.CENTER);
-    this.getContentPane().add(jTabbedPane1, BorderLayout.CENTER);
+    add(jTabbedPane1, BorderLayout.CENTER);
 
-        getContentPane().add(statusPanel, java.awt.BorderLayout.SOUTH);
+    add(statusPanel, BorderLayout.SOUTH);
     jTabbedPane1.add(jScrollPane1, "networkPanel");
     jTabbedPane1.add(definitionPanel,  "definitionPanel");
     jScrollPane1.getViewport().add(networkPanel, null);
@@ -202,10 +154,6 @@ public class ExplanationMain extends JInternalFrame
 
     private void openButtonActionPerformed(java.awt.event.ActionEvent evt)
     {   openMenuItemActionPerformed(evt);
-    }
-
-    private void exitMenuItemActionPerformed(java.awt.event.ActionEvent evt)
-    {   dispose();
     }
 
     private void saveMenuItemActionPerformed(java.awt.event.ActionEvent evt)
@@ -249,7 +197,6 @@ public class ExplanationMain extends JInternalFrame
             File selectedFile = fileChooser.getSelectedFile();
             openNetFile(selectedFile);
             saveButton.setEnabled(true);
-            saveMenuItem.setEnabled(true);
             FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
         }
         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));

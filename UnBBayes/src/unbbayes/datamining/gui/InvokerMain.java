@@ -28,7 +28,6 @@ public class InvokerMain extends JFrame
   private JMenuItem jMenuItem2 = new JMenuItem();
   private JMenuItem jMenuItem3 = new JMenuItem();
   private JMenuItem jMenuItem4 = new JMenuItem();
-  private JMenu jMenu2 = new JMenu();
   private JMenu jMenu3 = new JMenu();
   private JMenu jMenu4 = new JMenu();
   private JMenu jMenu5 = new JMenu();
@@ -45,8 +44,6 @@ public class InvokerMain extends JFrame
   private ImageIcon tileIcon;
   private ImageIcon helpIcon;
   private ImageIcon opcaoglobalIcon;
-  private JRadioButtonMenuItem jRadioButtonMenuItem3 = new JRadioButtonMenuItem();
-  private JRadioButtonMenuItem jRadioButtonMenuItem4 = new JRadioButtonMenuItem();
   private JMenu jMenu6 = new JMenu();
   private JMenuItem jMenuItem5 = new JMenuItem();
   private int defaultStates = 40;
@@ -73,11 +70,7 @@ public class InvokerMain extends JFrame
   }
   //Component initialization
   private void jbInit() throws Exception
-  { if (Locale.US == Locale.getDefault())
-        jRadioButtonMenuItem3.setSelected(true);
-    else
-        jRadioButtonMenuItem4.setSelected(true);
-    openDefaultOptions();
+  { openDefaultOptions();
     resource = ResourceBundle.getBundle("unbbayes.datamining.gui.resources.GuiResource");
     metalIcon = new ImageIcon(getClass().getResource("/icones/metal.gif"));
     motifIcon = new ImageIcon(getClass().getResource("/icones/motif.gif"));
@@ -115,8 +108,6 @@ public class InvokerMain extends JFrame
         jMenuItem4_actionPerformed(e);
       }
     });
-    jMenu2.setMnemonic(((Character)resource.getObject("languageMnemonic")).charValue());
-    jMenu2.setText(resource.getString("language"));
     jMenu3.setMnemonic(((Character)resource.getObject("lafMnemonic")).charValue());
     jMenu3.setText(resource.getString("lookAndFeel"));
     jMenu4.setMnemonic(((Character)resource.getObject("windowMnemonic")).charValue());
@@ -185,25 +176,7 @@ public class InvokerMain extends JFrame
     });
     jMenu1.setMnemonic(((Character)resource.getObject("selectMnemonic")).charValue());
     jMenuItem1.setMnemonic(((Character)resource.getObject("preprocessorMnemonic")).charValue());
-    jRadioButtonMenuItem3.setText(resource.getString("english"));
-    jRadioButtonMenuItem3.setMnemonic(((Character)resource.getObject("englishMnemonic")).charValue());
-    jRadioButtonMenuItem3.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jRadioButtonMenuItem3_actionPerformed(e);
-      }
-    });
-    jRadioButtonMenuItem4.setText(resource.getString("portuguese"));
     //jRadioButtonMenuItem4.setSelected(true);
-    jRadioButtonMenuItem4.setMnemonic(((Character)resource.getObject("portugueseMnemonic")).charValue());
-    jRadioButtonMenuItem4.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-        jRadioButtonMenuItem4_actionPerformed(e);
-      }
-    });
     jMenu6.setMnemonic(((Character)resource.getObject("globalOptionsMnemonic")).charValue());
     jMenu6.setText(resource.getString("globalOptions"));
     jMenuItem5.setIcon(opcaoglobalIcon);
@@ -247,7 +220,6 @@ public class InvokerMain extends JFrame
       }
     });
     jMenuBar1.add(jMenu1);
-    jMenuBar1.add(jMenu2);
     jMenuBar1.add(jMenu3);
     jMenuBar1.add(jMenu6);
     jMenuBar1.add(jMenu4);
@@ -258,8 +230,6 @@ public class InvokerMain extends JFrame
     jMenu1.add(jMenuItem4);
     jMenu1.add(jMenuItem6);
     jMenu1.add(jMenuItem13);
-    jMenu2.add(jRadioButtonMenuItem3);
-    jMenu2.add(jRadioButtonMenuItem4);
     jMenu5.add(jMenuItem7);
     jMenu3.add(jMenuItem8);
     jMenu3.add(jMenuItem9);
@@ -310,15 +280,11 @@ public class InvokerMain extends JFrame
             if ((language.substring(0,11)).equals("Language = "))
             {   language = language.substring(11);
                 if (language.equals("English"))
-                {   jRadioButtonMenuItem4.setSelected(false);
-                    jRadioButtonMenuItem3.setSelected(true);
-                    Locale.setDefault(new Locale("en",""));
+                {   Locale.setDefault(new Locale("en",""));
                     defaultLanguage = language;
                 }
                 else if (language.equals("Potuguese"))
-                {   jRadioButtonMenuItem4.setSelected(true);
-                    jRadioButtonMenuItem3.setSelected(false);
-                    Locale.setDefault(new Locale("pt",""));
+                {   Locale.setDefault(new Locale("pt",""));
                     defaultLanguage = language;
                 }
             }
@@ -430,14 +396,10 @@ public class InvokerMain extends JFrame
 
   void jRadioButtonMenuItem3_actionPerformed(ActionEvent e)
   {   Locale.setDefault(new Locale("en",""));
-      jRadioButtonMenuItem3.setSelected(true);
-      jRadioButtonMenuItem4.setSelected(false);
   }
 
   void jRadioButtonMenuItem4_actionPerformed(ActionEvent e)
   {   Locale.setDefault(new Locale("pt",""));
-      jRadioButtonMenuItem3.setSelected(false);
-      jRadioButtonMenuItem4.setSelected(true);
   }
 
   void jMenuItem4_actionPerformed(ActionEvent e)
@@ -452,8 +414,10 @@ public class InvokerMain extends JFrame
   }
 
   void jMenuItem6_actionPerformed(ActionEvent e)
-  {   ExplanationMain explanation = new ExplanationMain();
-      desktop.add(explanation);
+  {   ExplanationMain metaphor = new ExplanationMain();
+      JInternalFrame jif = new JInternalFrame("Explanação", true, true, true, true);
+      jif.getContentPane().add(metaphor);
+      desktop.add(jif);
   }
 
   void jMenuItem13_actionPerformed(ActionEvent e)

@@ -21,12 +21,20 @@
 
 package unbbayes.fronteira;
 
-import javax.swing.*;
 import java.awt.*;
-import javax.swing.border.*;
-import unbbayes.jprs.jbn.*;
 import java.awt.event.*;
 
+import javax.swing.*;
+import javax.swing.border.*;
+
+import unbbayes.jprs.jbn.*;
+import unbbayes.util.*;
+
+/**
+ *
+ * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ * @version 1.0
+ */
 public class ExplanationProperties extends JDialog
 {
   private JPanel jPanel1 = new JPanel();
@@ -59,30 +67,30 @@ public class ExplanationProperties extends JDialog
   private BorderLayout borderLayout8 = new BorderLayout();
   private JPanel jPanel3 = new JPanel();
   private GridLayout gridLayout2 = new GridLayout();
-  private JPanel jPanel4 = new JPanel();
+  private JPanel evidencePhrasePanel = new JPanel();
   private JPanel jPanel12 = new JPanel();
   private BorderLayout borderLayout9 = new BorderLayout();
   private BorderLayout borderLayout10 = new BorderLayout();
-  private JPanel jPanel13 = new JPanel();
-  private JPanel jPanel14 = new JPanel();
+  private JPanel evidenceTypePanel = new JPanel();
+  private JPanel evidenceNodePanel = new JPanel();
   private JPanel jPanel15 = new JPanel();
-  private JLabel jLabel3 = new JLabel();
-  private JComboBox jComboBox1 = new JComboBox();
+  private JLabel evidenceNodeLabel = new JLabel();
+  private JComboBox evidenceNodeComboBox = new JComboBox();
   private BorderLayout borderLayout11 = new BorderLayout();
   private Border border3;
   private TitledBorder titledBorder1;
   private GridLayout gridLayout3 = new GridLayout();
   private JPanel jPanel17 = new JPanel();
-  private JPanel jPanel18 = new JPanel();
-  private JPanel jPanel19 = new JPanel();
-  private JPanel jPanel20 = new JPanel();
-  private JPanel jPanel21 = new JPanel();
-  private JPanel jPanel22 = new JPanel();
-  private JRadioButton jRadioButton1 = new JRadioButton();
-  private JRadioButton jRadioButton2 = new JRadioButton();
-  private JRadioButton jRadioButton3 = new JRadioButton();
-  private JRadioButton jRadioButton4 = new JRadioButton();
-  private JRadioButton jRadioButton5 = new JRadioButton();
+  private JPanel exclusivePanel = new JPanel();
+  private JPanel necessaryPanel = new JPanel();
+  private JPanel naPanel = new JPanel();
+  private JPanel complementaryPanel = new JPanel();
+  private JPanel triggerPanel = new JPanel();
+  private JRadioButton triggerRadioButton = new JRadioButton();
+  private JRadioButton complementaryRadioButton = new JRadioButton();
+  private JRadioButton naRadioButton = new JRadioButton();
+  private JRadioButton necessaryRadioButton = new JRadioButton();
+  private JRadioButton exclusiveRadioButton = new JRadioButton();
   private BorderLayout borderLayout12 = new BorderLayout();
   private BorderLayout borderLayout13 = new BorderLayout();
   private BorderLayout borderLayout14 = new BorderLayout();
@@ -90,19 +98,22 @@ public class ExplanationProperties extends JDialog
   private BorderLayout borderLayout16 = new BorderLayout();
   private BorderLayout borderLayout17 = new BorderLayout();
   private ButtonGroup buttonGroup1 = new ButtonGroup();
-  private Border border4;
+  private Border evidenceTypeBorder;
   private JPanel jPanel24 = new JPanel();
   private JLabel jLabel4 = new JLabel();
   private BorderLayout borderLayout18 = new BorderLayout();
-  private JScrollPane jScrollPane2 = new JScrollPane();
+  private JScrollPane evidencePhraseScrollPane = new JScrollPane();
   private BorderLayout borderLayout19 = new BorderLayout();
-  private JTextArea jTextArea2 = new JTextArea();
+  private JTextArea evidencePhraseTextArea = new JTextArea();
   private NetWindow netWindow;
   private ProbabilisticNode node;
+  private ProbabilisticNetwork net;
   private JButton jButton2 = new JButton();
+  private JLabel nodeNameLabel = new JLabel();
 
-  public ExplanationProperties(NetWindow netWindow)
+  public ExplanationProperties(NetWindow netWindow,ProbabilisticNetwork net)
   { this.netWindow = netWindow;
+    this.net = net;
     try
     {
       jbInit();
@@ -118,7 +129,7 @@ public class ExplanationProperties extends JDialog
     border2 = BorderFactory.createEmptyBorder(20,20,20,20);
     border3 = BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140));
     titledBorder1 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de Evidência:");
-    border4 = BorderFactory.createCompoundBorder(new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de Evidência:"),BorderFactory.createEmptyBorder(0,10,0,0));
+    evidenceTypeBorder = BorderFactory.createCompoundBorder(new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de Evidência:"),BorderFactory.createEmptyBorder(0,10,0,0));
     this.setResizable(false);
     this.setTitle("Propriedades da Variável de Explicação");
     jPanel1.setLayout(borderLayout1);
@@ -152,24 +163,59 @@ public class ExplanationProperties extends JDialog
     gridLayout2.setRows(2);
     gridLayout2.setVgap(10);
     jPanel12.setLayout(borderLayout9);
-    jPanel4.setLayout(borderLayout10);
-    jLabel3.setText("Evidencia : ");
-    jPanel14.setLayout(borderLayout11);
-    jPanel13.setBorder(border4);
-    jPanel13.setLayout(gridLayout3);
+    evidencePhrasePanel.setLayout(borderLayout10);
+    evidenceNodeLabel.setText("Evidencia : ");
+    evidenceNodePanel.setLayout(borderLayout11);
+    evidenceTypePanel.setBorder(evidenceTypeBorder);
+    evidenceTypePanel.setLayout(gridLayout3);
     gridLayout3.setColumns(3);
     gridLayout3.setHgap(10);
     gridLayout3.setRows(2);
-    jRadioButton1.setText("Trigger");
-    jRadioButton2.setText("Complementar");
-    jRadioButton3.setText("N/A");
-    jRadioButton4.setText("Essencial");
-    jRadioButton5.setText("Excludente");
-    jPanel22.setLayout(borderLayout12);
-    jPanel21.setLayout(borderLayout13);
-    jPanel20.setLayout(borderLayout14);
-    jPanel19.setLayout(borderLayout15);
-    jPanel18.setLayout(borderLayout16);
+    triggerRadioButton.setText("Trigger");
+    triggerRadioButton.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        evidenceRadioButton_actionPerformed(e);
+      }
+    });
+    complementaryRadioButton.setText("Complementar");
+    complementaryRadioButton.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        evidenceRadioButton_actionPerformed(e);
+      }
+    });
+    naRadioButton.setText("N/A");
+    naRadioButton.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        evidenceRadioButton_actionPerformed(e);
+      }
+    });
+    necessaryRadioButton.setText("Essencial");
+    necessaryRadioButton.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        evidenceRadioButton_actionPerformed(e);
+      }
+    });
+    exclusiveRadioButton.setText("Excludente");
+    exclusiveRadioButton.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        evidenceRadioButton_actionPerformed(e);
+      }
+    });
+    triggerPanel.setLayout(borderLayout12);
+    complementaryPanel.setLayout(borderLayout13);
+    naPanel.setLayout(borderLayout14);
+    necessaryPanel.setLayout(borderLayout15);
+    exclusivePanel.setLayout(borderLayout16);
     jPanel17.setLayout(borderLayout17);
     jLabel4.setText("Texto para Explanação :");
     jPanel24.setLayout(borderLayout18);
@@ -184,6 +230,20 @@ public class ExplanationProperties extends JDialog
         jButton2_actionPerformed(e);
       }
     });
+    evidenceNodeComboBox.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+        evidenceNodeComboBox_actionPerformed(e);
+      }
+    });
+    evidencePhraseTextArea.addFocusListener(new java.awt.event.FocusAdapter()
+    {
+      public void focusLost(FocusEvent e)
+      {
+        evidencePhraseTextArea_focusLost(e);
+      }
+    });
     this.getContentPane().add(jPanel1,  BorderLayout.CENTER);
     jPanel1.add(jTabbedPane1,  BorderLayout.CENTER);
     jTabbedPane1.add(descriptionPanel, "Descrição");
@@ -191,7 +251,8 @@ public class ExplanationProperties extends JDialog
     jPanel5.add(jPanel7,  BorderLayout.CENTER);
     jPanel7.add(jPanel8, BorderLayout.NORTH);
     jPanel8.add(jPanel9, null);
-    jPanel9.add(jLabel1, BorderLayout.CENTER);
+    jPanel9.add(jLabel1,  BorderLayout.WEST);
+    jPanel9.add(nodeNameLabel,  BorderLayout.CENTER);
     jPanel8.add(jPanel11, null);
     jPanel8.add(jPanel10, null);
     jPanel10.add(jLabel2, BorderLayout.CENTER);
@@ -204,46 +265,112 @@ public class ExplanationProperties extends JDialog
     jPanel2.add(jButton2, null);
     explanationPanel.add(jPanel3,  BorderLayout.CENTER);
     jPanel3.add(jPanel12, null);
-    jPanel12.add(jPanel13, BorderLayout.CENTER);
-    jPanel13.add(jPanel22, null);
-    jPanel22.add(jRadioButton1, BorderLayout.CENTER);
-    jPanel13.add(jPanel21, null);
-    jPanel21.add(jRadioButton2, BorderLayout.CENTER);
-    jPanel13.add(jPanel20, null);
-    jPanel20.add(jRadioButton3, BorderLayout.CENTER);
-    jPanel13.add(jPanel19, null);
-    jPanel19.add(jRadioButton4, BorderLayout.CENTER);
-    jPanel13.add(jPanel18, null);
-    jPanel18.add(jRadioButton5, BorderLayout.CENTER);
-    jPanel13.add(jPanel17, null);
-    jPanel12.add(jPanel14, BorderLayout.NORTH);
-    jPanel14.add(jLabel3, BorderLayout.WEST);
-    jPanel14.add(jComboBox1, BorderLayout.CENTER);
-    jPanel3.add(jPanel4, null);
-    jPanel4.add(jPanel15, BorderLayout.CENTER);
-    jPanel15.add(jScrollPane2,  BorderLayout.CENTER);
-    jScrollPane2.getViewport().add(jTextArea2, null);
-    jPanel4.add(jPanel24, BorderLayout.NORTH);
+    jPanel12.add(evidenceTypePanel, BorderLayout.CENTER);
+    evidenceTypePanel.add(triggerPanel, null);
+    triggerPanel.add(triggerRadioButton, BorderLayout.CENTER);
+    evidenceTypePanel.add(complementaryPanel, null);
+    complementaryPanel.add(complementaryRadioButton, BorderLayout.CENTER);
+    evidenceTypePanel.add(naPanel, null);
+    naPanel.add(naRadioButton, BorderLayout.CENTER);
+    evidenceTypePanel.add(necessaryPanel, null);
+    necessaryPanel.add(necessaryRadioButton, BorderLayout.CENTER);
+    evidenceTypePanel.add(exclusivePanel, null);
+    exclusivePanel.add(exclusiveRadioButton, BorderLayout.CENTER);
+    evidenceTypePanel.add(jPanel17, null);
+    jPanel12.add(evidenceNodePanel, BorderLayout.NORTH);
+    evidenceNodePanel.add(evidenceNodeLabel, BorderLayout.WEST);
+    evidenceNodePanel.add(evidenceNodeComboBox, BorderLayout.CENTER);
+    jPanel3.add(evidencePhrasePanel, null);
+    evidencePhrasePanel.add(jPanel15, BorderLayout.CENTER);
+    jPanel15.add(evidencePhraseScrollPane,  BorderLayout.CENTER);
+    evidencePhraseScrollPane.getViewport().add(evidencePhraseTextArea, null);
+    evidencePhrasePanel.add(jPanel24, BorderLayout.NORTH);
     jPanel24.add(jLabel4, BorderLayout.CENTER);
-    buttonGroup1.add(jRadioButton1);
-    buttonGroup1.add(jRadioButton2);
-    buttonGroup1.add(jRadioButton3);
-    buttonGroup1.add(jRadioButton4);
-    buttonGroup1.add(jRadioButton5);
+    buttonGroup1.add(triggerRadioButton);
+    buttonGroup1.add(complementaryRadioButton);
+    buttonGroup1.add(naRadioButton);
+    buttonGroup1.add(necessaryRadioButton);
+    buttonGroup1.add(exclusiveRadioButton);
+    NodeList nodes = net.getDescriptionNodes();
+    int size = nodes.size();
+    for (int i=0; i<size; i++)
+    {   evidenceNodeComboBox.addItem(nodes.get(i).getName());
+    }
   }
 
   public void setProbabilisticNode(ProbabilisticNode node)
   {   this.node = node;
       jTextArea1.setText(node.getExplanationDescription());
+      if (evidenceNodeComboBox.getItemCount() != 0)
+        updateExplanationInformation(evidenceNodeComboBox.getItemAt(0).toString());
+      nodeNameLabel.setText(node.getName());
   }
 
   void jButton1_actionPerformed(ActionEvent e)
-  {   System.out.println(jTextArea1.getText());
-      node.setExplanationDescription(jTextArea1.getText());
+  {   node.setExplanationDescription(jTextArea1.getText());
       dispose();
   }
 
   void jButton2_actionPerformed(ActionEvent e)
   {   dispose();
+  }
+
+  void evidenceNodeComboBox_actionPerformed(ActionEvent evt)
+  {   JComboBox source = (JComboBox)evt.getSource();
+      String item = (String)source.getSelectedItem();
+      updateExplanationInformation(item);
+  }
+
+  private void updateExplanationInformation(String item)
+  {   try
+      {   ExplanationPhrase explanationPhrase = node.getExplanationPhrase(item);
+          int evidenceType = explanationPhrase.getEvidenceType();
+          switch (evidenceType)
+          {   case (ExplanationPhrase.TRIGGER_EVIDENCE_TYPE) :        triggerRadioButton.setSelected(true);
+                                                                      break;
+              case (ExplanationPhrase.NECESSARY_EVIDENCE_TYPE) :      necessaryRadioButton.setSelected(true);
+                                                                      break;
+              case (ExplanationPhrase.COMPLEMENTARY_EVIDENCE_TYPE) :  complementaryRadioButton.setSelected(true);
+                                                                      break;
+              case (ExplanationPhrase.EXCLUSIVE_EVIDENCE_TYPE) :      exclusiveRadioButton.setSelected(true);
+                                                                      break;
+              default : naRadioButton.setSelected(true);
+          }
+          evidencePhraseTextArea.setText(explanationPhrase.getPhrase());
+      }
+      catch (Exception e)
+      {   naRadioButton.setSelected(true);
+          evidencePhraseTextArea.setText("");
+      }
+  }
+
+  void evidenceRadioButton_actionPerformed(ActionEvent e)
+  {   addEvidence(e);
+  }
+
+  void evidencePhraseTextArea_focusLost(FocusEvent e)
+  {   addEvidence(e);
+  }
+
+  private void addEvidence(AWTEvent e)
+  {   ExplanationPhrase explanationPhrase = new ExplanationPhrase();
+      explanationPhrase.setNode(evidenceNodeComboBox.getSelectedItem().toString());
+      if (triggerRadioButton.isSelected())
+      {   explanationPhrase.setEvidenceType(ExplanationPhrase.TRIGGER_EVIDENCE_TYPE);
+      }
+      else if (necessaryRadioButton.isSelected())
+      {   explanationPhrase.setEvidenceType(ExplanationPhrase.NECESSARY_EVIDENCE_TYPE);
+      }
+      else if (complementaryRadioButton.isSelected())
+      {   explanationPhrase.setEvidenceType(ExplanationPhrase.COMPLEMENTARY_EVIDENCE_TYPE);
+      }
+      else if (exclusiveRadioButton.isSelected())
+      {   explanationPhrase.setEvidenceType(ExplanationPhrase.EXCLUSIVE_EVIDENCE_TYPE);
+      }
+      else
+      {   explanationPhrase.setEvidenceType(ExplanationPhrase.NA_EVIDENCE_TYPE);
+      }
+      explanationPhrase.setPhrase(evidencePhraseTextArea.getText());
+      node.addExplanationPhrase(explanationPhrase);
   }
 }
