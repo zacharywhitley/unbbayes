@@ -26,14 +26,14 @@
               
                 <td width="30%">
                   <P>Computador</P></td>
-                <td width="70%"><img src="<%=path%>/design/imagens/mapa_linf.gif" border="0" hspace="20" alt="Mapa do Linf"></td>
+                <td width="70%"></td>
                 
 			  </tr>
 			  
               <tr>
               
                 <td width="30%">                
-                  <select name="cod-computador" id="tipo_computador_disponivel" size="15">
+                  <select name="cod-computador" id="tipo_computador_disponivel" size="25">
                   <% 
 		             Feature  listarComputadorDisponivel = new ListarComputadorDisponivelFeature();
 			         Element tiposXML = listarComputadorDisponivel.process(null);
@@ -47,7 +47,7 @@
                   <% }	%>
                 </td>
                   
-                <td width="70%"></td>
+                <td width="70%"><img src="<%=path%>/design/imagens/mapa_linf.gif" border="0" hspace="20" alt="Mapa do Linf"></td>
                 
               </tr>
                 
