@@ -261,8 +261,11 @@ public class PreprocessPanel extends JPanel
     jPanel5.add(jPanel9, BorderLayout.CENTER);
     this.add(jPanel1, BorderLayout.CENTER);
     jPanel1.add(jPanel3, BorderLayout.CENTER);
+    jTable1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     jTable1.getTableHeader().setReorderingAllowed(false);
     jTable1.getTableHeader().setResizingAllowed(false);
+    jTable1.setColumnSelectionAllowed(false);
+    jTable1.setRowSelectionAllowed(false);
     jPanel8.getSelectionModel().addListSelectionListener(new ListSelectionListener()
     {   public void valueChanged(ListSelectionEvent e)
         {   jPanel8_valueChanged(e);
@@ -285,7 +288,7 @@ public class PreprocessPanel extends JPanel
    */
   protected void setTable(AttributeStats as, int index)
   {   if (as == null)
-      {   jTable1.setModel(new DefaultTableModel());
+      {   jTable1.setModel(new ValuesTableModel());
       }
       else if (as.getNominalCounts() != null)
       {   Attribute att = instances.getAttribute(index);
@@ -295,7 +298,7 @@ public class PreprocessPanel extends JPanel
           {   data[i][0] = att.value(i);
               data[i][1] = new Integer(as.getNominalCounts()[i]);
       	  }
-      	  jTable1.setModel(new DefaultTableModel(data, colNames));
+      	  jTable1.setModel(new ValuesTableModel(data, colNames));
       }
       else if (as.getNumericStats() != null)
       {   Object [] colNames = {resource.getString("statistic"),resource.getString("value")};
@@ -305,12 +308,84 @@ public class PreprocessPanel extends JPanel
       	  data[1][0] = resource.getString("maximum"); data[1][1] = new Float((float)stats.getMax());
       	  data[2][0] = resource.getString("mean");    data[2][1] = new Float((float)stats.getMean());
       	  data[3][0] = resource.getString("stdDev");  data[3][1] = new Float((float)stats.getStdDev());
-      	  jTable1.setModel(new DefaultTableModel(data, colNames));
+      	  jTable1.setModel(new ValuesTableModel(data, colNames));
       }
       else
-      {   jTable1.setModel(new DefaultTableModel());
+      {   jTable1.setModel(new ValuesTableModel());
       }
   }
+
+  private class ValuesTableModel extends DefaultTableModel
+  {   public boolean isCellEditable(int row, int col)
+      {   return false;
+      }
+
+      public ValuesTableModel()
+      {   super();
+      }
+
+      public ValuesTableModel(Object[][] data,Object[] colNames)
+      {   super(data,colNames);
+      }
+  }
+
+  /*private class ValuesTableModel extends AbstractTableModel
+  {   public ValuesTableModel(AttributeStats as, int index,InstanceSet instances)
+      {   if (as == null)
+          {}
+          if (as.getNominalCounts() != null)
+          {   colNames = new String[2];
+              colNames[0] = resource.getString("label");
+              colNames[1] = resource.getString("count");
+              Attribute att = instances.getAttribute(index);
+              data = new Object [as.getNominalCounts().length][2];
+      	      for (int i = 0; i < as.getNominalCounts().length; i++)
+              {   data[i][0] = att.value(i);
+                  data[i][1] = new Integer(as.getNominalCounts()[i]);
+      	      }
+          }
+          else if (as.getNumericStats() != null)
+          {   colNames = new String[2];
+              colNames[0] = resource.getString("statistic");
+              colNames[1] = resource.getString("value");
+              Object [][] data = new Object [4][2];
+              Stats stats = as.getNumericStats();
+      	      data[0][0] = resource.getString("minimum"); data[0][1] = new Float((float)stats.getMin());
+      	      data[1][0] = resource.getString("maximum"); data[1][1] = new Float((float)stats.getMax());
+      	      data[2][0] = resource.getString("mean");    data[2][1] = new Float((float)stats.getMean());
+      	      data[3][0] = resource.getString("stdDev");  data[3][1] = new Float((float)stats.getStdDev());
+          }
+      }
+
+      public ValuesTableModel()
+      {}
+
+      public int getRowCount()
+      {   return rowCount;
+      }
+
+      public int getColumnCount()
+      {   return columnCount;
+      }
+
+      public Object getValueAt(int row, int column)
+      {   return data[row][column];
+
+      }
+
+      public boolean isCellEditable(int row, int col)
+      {   return false;
+      }
+
+      public String getColumnName(int c)
+      {   return colNames[c];
+      }
+
+      private int rowCount = 0;
+      private int columnCount = 0;
+      private String[] colNames;
+      private Object[][] data;
+  }*/
 
   void jPanel8_valueChanged(ListSelectionEvent e)
   {   if (!e.getValueIsAdjusting())

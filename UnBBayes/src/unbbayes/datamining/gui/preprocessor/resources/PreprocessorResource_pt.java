@@ -60,7 +60,7 @@ public class PreprocessorResource_pt extends ListResourceBundle {
 	{"numeric","Numérico"},
 	{"noAttributeSelected","Nenhum atributo selecionado"},
         // AttributeSelectionPanel
-        {"name","Nome"},
+        {"name2","Nome"},
 	{"selectedAttributes","Só os atributos selecionados serão utilizados pelo editor de instâncias"},
         };
 }

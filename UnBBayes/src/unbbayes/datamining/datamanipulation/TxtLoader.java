@@ -62,15 +62,15 @@ public class TxtLoader extends Loader
    	* @param tokenizer Stream tokenizer
    	*/
   	protected void initTokenizer()
-	{	tokenizer.wordChars('a', '}');
-		tokenizer.wordChars('_', '_');
-		tokenizer.wordChars('-', '-');
-		tokenizer.wordChars('0', '9');
-		tokenizer.wordChars('.', '.');
-		tokenizer.wordChars('A', 'Z');
-		tokenizer.commentChar('%');
-    	tokenizer.quoteChar('\t');
-    	tokenizer.eolIsSignificant(true);
+	{   tokenizer.resetSyntax();
+    	    tokenizer.wordChars(' '+1,'\u00FF');
+    	    tokenizer.wordChars('_', '_');
+            tokenizer.wordChars('-', '-');
+            tokenizer.whitespaceChars(0, ' ');
+    	    tokenizer.whitespaceChars('\t','\t');
+    	    tokenizer.commentChar('%');
+    	    tokenizer.quoteChar('"');
+    	    tokenizer.eolIsSignificant(true);
   	}
 
 	/**

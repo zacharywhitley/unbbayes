@@ -88,7 +88,7 @@ public class AttributeSelectionPanel extends JPanel
     { switch (column)
       {   case 0:   return new String("No.");
           case 1:   return new String("");
-          case 2:   return new String(resource.getString("name"));
+          case 2:   return new String(resource.getString("name2"));
           default:  return null;
       }
     }
