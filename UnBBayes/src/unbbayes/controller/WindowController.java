@@ -100,7 +100,7 @@ public class WindowController implements KeyListener {
 
     private boolean bColou;
 
-    private final Pattern decimalPattern = Pattern.compile("[0-9]*([.|,][0-9]+)?");
+    private final Pattern decimalPattern = Pattern.compile("-?[0-9]*([.|,][0-9]+)?");
     private Matcher matcher;
 
     /** Load resource file from this package */
