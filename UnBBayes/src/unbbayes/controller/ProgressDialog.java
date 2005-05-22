@@ -72,7 +72,8 @@ public class ProgressDialog extends JDialog
 					activity.requestCancel();
 					activity.interrupt();
 					activityMonitor.stop();
-					hide();		
+					//hide();		
+					setVisible(false);
 				}
 			});
 		
@@ -92,7 +93,8 @@ public class ProgressDialog extends JDialog
 					if(current==activity.getTarget())
 					{	
 						activityMonitor.stop();
-						hide();
+						//hide();
+						setVisible(false);
 					}
 				}
 			});
@@ -107,7 +109,8 @@ public class ProgressDialog extends JDialog
 		{
 			activity.start();
 			activityMonitor.start();
-			show();
+			//show();
+			setVisible(true);
 			return !activity.wasActivityCancelled();
 		}
 		else
