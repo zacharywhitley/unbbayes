@@ -221,13 +221,13 @@ public class Attribute implements Serializable
           if (isNominal())
           {
             text.append('{');
-            Enumeration enum = enumerateValues();
-            if (enum!=null)
+            Enumeration enumeration = enumerateValues();
+            if (enumeration!=null)
             {
-              while (enum.hasMoreElements())
+              while (enumeration.hasMoreElements())
               {
-                text.append(enum.nextElement());
-                if (enum.hasMoreElements())
+                text.append(enumeration.nextElement());
+                if (enumeration.hasMoreElements())
                   text.append(',');
               }
             }
@@ -278,9 +278,9 @@ public class Attribute implements Serializable
           if (hashtable == null)
           {
             hashtable = new Hashtable();
-			
+
           }
-		
+
           String[] newValues = new String[numValues()+1];
           if (attributeValues!=null)
           {
@@ -380,9 +380,9 @@ public class Attribute implements Serializable
     * @return the attribute's values.
     */
     public String[] getAttributeValues()
-    {	
+    {
     	String[] values = new String[attributeValues.length];
-    	System.arraycopy(attributeValues,0,values,0,attributeValues.length);    	
+    	System.arraycopy(attributeValues,0,values,0,attributeValues.length);
     	return values;
     }
 }
