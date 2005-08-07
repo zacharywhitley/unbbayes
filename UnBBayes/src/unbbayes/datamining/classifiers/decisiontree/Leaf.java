@@ -10,11 +10,14 @@ import unbbayes.datamining.datamanipulation.*;
  */
 public class Leaf implements Serializable
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
 	/** Class attribute of dataset */
 	private Attribute classAttribute;
 	
 	/** Leaf's class value */
-	private short classValue;
+	private int classValue;
 
 	/** Leaf's weight class distribution. */
 	private float[] weightDistribution;
@@ -36,7 +39,7 @@ public class Leaf implements Serializable
 	{
 		this.classAttribute = classAttribute;
 		this.weightDistribution = weightDistribution;
-		classValue = (byte)Utils.maxIndex(weightDistribution);
+		classValue = Utils.maxIndex(weightDistribution);
 	}
 	
 	//---------------------------BASIC FUNCIONS---------------------------//
@@ -46,7 +49,7 @@ public class Leaf implements Serializable
   	 * 
   	 * @return the leaf's class value
   	 */
-	public short getClassValue()
+	public int getClassValue()
 	{
 		return classValue;
 	}

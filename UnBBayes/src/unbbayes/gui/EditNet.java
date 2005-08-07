@@ -30,6 +30,9 @@ import unbbayes.controller.*;
 
 public class EditNet extends JPanel {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
     private final NetWindow netWindow;
 
     private final WindowController controller;

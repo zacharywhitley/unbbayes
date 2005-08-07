@@ -123,7 +123,7 @@ public class TxtLoader extends Loader
   	protected boolean getInstanceFull() throws IOException
 	{
           int numAttributes = instances.numAttributes();
-            short[] instance = new short[numAttributes];
+            int[] instance = new int[numAttributes];
             int instanceWeight = 1;
             int position = 0,index = 0;
             int attributeNumber = -1;
@@ -173,14 +173,14 @@ public class TxtLoader extends Loader
                     {	if (instances.getAttribute(attributeNumber).isNominal())
                         {   // Check if value appears in header.
                             index = att.indexOfValue(tokenizer.sval);
-                            instance[attributeNumber] = (byte)index;
+                            instance[attributeNumber] = index;
                         }
                     }
                     else if (tokenizer.ttype == StreamTokenizer.TT_NUMBER)
                     {	if (instances.getAttribute(attributeNumber).isNominal())
                         {   // Check if value appears in header.
                             index = att.indexOfValue(tokenizer.nval+"");
-                            instance[attributeNumber] = (byte)index;
+                            instance[attributeNumber] = index;
                         }
                     }
                 }

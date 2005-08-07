@@ -40,6 +40,9 @@ public abstract class Node implements java.io.Serializable {
 	public class SerializablePoint2D
 		extends Point2D.Double
 		implements java.io.Serializable {
+		/** Serialization runtime version number */
+		private static final long serialVersionUID = 0;
+
 		private void writeObject(java.io.ObjectOutputStream out)
 			throws java.io.IOException {
 			out.writeDouble(x);

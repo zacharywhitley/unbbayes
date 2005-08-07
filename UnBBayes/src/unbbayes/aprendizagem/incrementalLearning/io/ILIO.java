@@ -27,12 +27,6 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  */
 public class ILIO {
 
-   /**
-    * 
-    */
-
-   private File file;
-
    public ILIO() {
       super();
 

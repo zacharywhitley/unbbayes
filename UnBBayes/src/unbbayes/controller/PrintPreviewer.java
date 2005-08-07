@@ -31,6 +31,9 @@ import java.util.ResourceBundle;
  */
 public class PrintPreviewer extends JPanel {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   protected Pageable pageable;
   protected PrintComponent printComponent;
   protected int pageIndex;

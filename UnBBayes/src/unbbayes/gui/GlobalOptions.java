@@ -43,6 +43,9 @@ import javax.swing.event.*;
  *@see JDialog
  */
 public class GlobalOptions extends JDialog {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
     final JButton probabilisticDescriptionNode;
     final JButton probabilisticExplanationNode;
 	final JButton decisionNode;
@@ -69,17 +72,6 @@ public class GlobalOptions extends JDialog {
     private JButton confirm;
     private JButton restore;
     private JButton cancel;
-    /*
-    private ButtonGroup decimalGroup;
-    private JRadioButtonMenuItem usa;
-    private JRadioButtonMenuItem china;
-    private JRadioButtonMenuItem japan;
-    private JRadioButtonMenuItem canada;
-    private JRadioButtonMenuItem uk;
-    private JRadioButtonMenuItem italy;
-    private JRadioButtonMenuItem brazil;
-    private JRadioButtonMenuItem korea;
-    */
     private Color probabilisticDescriptionNodeColor;
     private Color probabilisticExplanationNodeColor;
 	private Color decisionNodeColor;
@@ -93,7 +85,6 @@ public class GlobalOptions extends JDialog {
     private JSlider netSlider;
     private JCheckBox createLog;
     private boolean createLogBoolean;
-    private Preview preview;
     private final IGraph graph;
 
 	/** Load resource file from this package */
@@ -129,7 +120,7 @@ public class GlobalOptions extends JDialog {
 
         gbl     = new GridBagLayout();
         gbc     = new GridBagConstraints();
-        preview = new Preview(this);
+        new Preview(this);
 
         //setar cores padrões do nó, arco e de seleção e boolean de criar log
         probabilisticDescriptionNodeColor = ProbabilisticNode.getDescriptionColor();

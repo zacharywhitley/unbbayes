@@ -60,7 +60,7 @@ public class ParametricLearning
     }
 
     //inicializar d com base no dataTemp
-    d = new short[dataTemp.size()][x.length];
+    d = new int[dataTemp.size()][x.length];
     for(i=0;i<dataTemp.size();i++)
     {
       inst = (Instance)dataTemp.get(i);
@@ -115,7 +115,6 @@ public class ParametricLearning
     int ri = dx[i].size();         //quantidade de estados da variável 'i'
     int[] mult = multiplies(pai);  //multiplicadores - para linearizar arranjo
     int[][] njk = new int[qi][ri]; //frequência do estado k com pais no estado j
-    int n = x.length;              //número de variáveis de 'x'
     int nd = d.length;             //observações distintas na amostra condensada
 
     //para cada linha, computa o j-esimo estado do pai, computa o k-esimo estado
@@ -246,7 +245,7 @@ public ProbabilisticNetwork getProbabilisticNetwork(ArrayList pa)
   /** amostra condensada
    * d[ic,i]=v, sendo 'ic' a linha, 'i' o índice da variável e 'v' o valor da
    * variável na linha (representado pelo seu índice no domínio da variável)) */
-  private short[][] d;
+  private int[][] d;
 
   /** frequencias das instâncias de d
    * freq[i]: frequência da linha(ou instancia) i */

@@ -39,9 +39,7 @@ import unbbayes.prs.msbn.SingleAgentMSBN;
 public class XMLIO implements BaseIO {
 	
 	private static String NET_NAME = "/BIF/HEADER/NAME",
-							NODE_SIZE = "/BIF/STATICPROPERTY/NODESIZE",
 							VARIABLES = "/BIF/NETWORK/VARIABLES/VAR",
-							ARCS = "/BIF/NETWORK/STRUCTURE/ARC",
 							POTENTIALS = "/BIF/NETWORK/POTENTIAL/POT";
 							
 	private static CachedXPathAPI xpath;

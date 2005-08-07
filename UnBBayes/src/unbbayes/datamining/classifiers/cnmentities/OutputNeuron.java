@@ -11,7 +11,10 @@ import java.io.*;
  */
 public class OutputNeuron implements Serializable{
 
-  /**Value of the accumulator*/
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
+	/**Value of the accumulator*/
   protected int accumulator;
 
   /**Value of the final weight*/

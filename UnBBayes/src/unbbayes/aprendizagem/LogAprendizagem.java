@@ -29,7 +29,10 @@ import java.awt.*;
 
 public class LogAprendizagem extends JDialog{
 
-    private JTextArea caixaLog;
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
+	private JTextArea caixaLog;
     private JScrollPane painel;
 
 

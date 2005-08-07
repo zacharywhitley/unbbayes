@@ -44,6 +44,9 @@ import unbbayes.util.SetToolkit;
  */
 public class Network implements java.io.Serializable {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
 	/** Load resource file from this package */
   	protected static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
   	
@@ -1042,8 +1045,7 @@ public class Network implements java.io.Serializable {
 	
 				for (int j = auxNo.getAdjacents().size() - 1; j >= 0; j--) {
 					Node v = auxNo.getAdjacents().get(j);
-					boolean removed = v.getAdjacents().remove(auxNo);				
-//					assert removed;
+					v.getAdjacents().remove(auxNo);				
 				}
 				auxNos.remove(auxNo);
 				algum = true;
@@ -1102,8 +1104,7 @@ public class Network implements java.io.Serializable {
 	
 		for (int i = no.getAdjacents().size() - 1; i >= 0; i--) {
 			Node auxNo1 = no.getAdjacents().get(i);
-			boolean removed = auxNo1.getAdjacents().remove(no);
-//			assert removed;
+			auxNo1.getAdjacents().remove(no);
 		}
 		auxNos.remove(no);
 	}

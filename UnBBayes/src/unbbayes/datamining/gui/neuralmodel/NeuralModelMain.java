@@ -16,8 +16,10 @@ import unbbayes.datamining.gui.*;
  *  @version $1.0 $ (02/16/2003)
  */
 public class NeuralModelMain extends JInternalFrame{
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   private JPanel contentPane;
-  private BorderLayout borderLayout1 = new BorderLayout();
   /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
   private JToolBar jToolBar1 = new JToolBar();
@@ -31,8 +33,6 @@ public class NeuralModelMain extends JInternalFrame{
   private ImageIcon helpIcon;
   private ImageIcon saveIcon;
   private JTabbedPane jTabbedPane1 = new JTabbedPane();
-  private BorderLayout borderLayout3 = new BorderLayout();
-  private BorderLayout borderLayout4 = new BorderLayout();
   private BorderLayout borderLayout6 = new BorderLayout();
   private JPanel jPanel2 = new JPanel();
   private JPanel jPanel3 = new JPanel();

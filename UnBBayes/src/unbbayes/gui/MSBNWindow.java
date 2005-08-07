@@ -32,6 +32,9 @@ import unbbayes.prs.msbn.SingleAgentMSBN;
  * Window>Preferences>Java>Code Generation.
  */
 public class MSBNWindow extends JInternalFrame {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
 	public static String EDITION_PANE = "editionPane";
 	public static String COMPILED_PANE = "compiledPane";
 
@@ -40,6 +43,9 @@ public class MSBNWindow extends JInternalFrame {
 		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
 	private class MSBNListModel extends AbstractListModel {
+		/** Serialization runtime version number */
+		private static final long serialVersionUID = 0;
+
 		public int getSize() {
 			return msbn.getNetCount();
 		}

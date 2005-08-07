@@ -14,6 +14,9 @@ import unbbayes.datamining.classifiers.NeuralNetwork;
  *  @version $1.0 $ (06/26/2003)
  */
 public class AdvancedOptionsPanel extends JPanel {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   private ResourceBundle resource;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JPanel advancedOptions = new JPanel();
@@ -47,10 +50,8 @@ public class AdvancedOptionsPanel extends JPanel {
 
   private boolean learningRateDecay = false;
   private int numericalInputNormalization = NeuralNetwork.NO_NORMALIZATION;
-  private boolean autoHiddenLayerSize = true;
   private int hiddenLayerSize = 10;
   private int trainningTime = 400;
-  private boolean minimumError = false;
   private double minimumErrorVariation = 0.1;
   private double activationFunctionSteep = 1;
 
@@ -231,10 +232,10 @@ public class AdvancedOptionsPanel extends JPanel {
     } else {
       numericalInputNormalization = NeuralNetwork.NO_NORMALIZATION;
     }
-    autoHiddenLayerSize = hiddenLayerCheckBox.isSelected();
+    hiddenLayerCheckBox.isSelected();
     hiddenLayerSize = Integer.parseInt(hiddenSizeSpinner.getValue().toString());
     trainningTime = Integer.parseInt(trainningTimeSpinner.getValue().toString());
-    minimumError = errorVariationCheckBox.isSelected();
+    errorVariationCheckBox.isSelected();
     minimumErrorVariation = Double.parseDouble(errorVariationSpinner.getValue().toString());
     activationFunctionSteep = Double.parseDouble(fuctionSteepSpinner.getValue().toString());
   }

@@ -568,13 +568,6 @@ public class WindowController implements KeyListener {
             }
 
         } else {
-            // decision
-
-            // the number of rows in this case is the number of states of the
-            // node and the number of columns is always 1.
-            int rows = node.getStatesSize();
-            int columns = 1;
-
             // there is no potential table and the number of variables is the
             // number of parents this node has.
             potTab = null;

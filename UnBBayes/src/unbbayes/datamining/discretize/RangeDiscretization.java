@@ -7,7 +7,7 @@ import unbbayes.datamining.datamanipulation.*;
 
 /** Faz discretizacao por alcance*/
 public class RangeDiscretization implements IDiscretization
-{	private int numThresholds;
+{	
 	private InstanceSet inst;
 
 	public RangeDiscretization(InstanceSet inst)
@@ -34,7 +34,7 @@ public class RangeDiscretization implements IDiscretization
 			//pega os valores do atributo
 			float[] values = new float[numInstances];
           	Enumeration enumInst = inst.enumerateInstances();
-          	int i=0,j=0;
+          	int i=0;
           	while (enumInst.hasMoreElements())
           	{   Instance instance = (Instance)enumInst.nextElement();
               	values[i] = Float.parseFloat(instance.stringValue(att));
@@ -55,7 +55,7 @@ public class RangeDiscretization implements IDiscretization
 			inst.setAttributeAt(newAttribute,position);
 			//seta os valores das instancias com o novo atributo
 			for (i=0; i<numInstances; i++)
-			{	byte newValue = (byte)Math.abs((values[i]-min) / ranges);
+			{	int newValue = (int)Math.abs((values[i]-min) / ranges);
 				if (newValue == numThresholds)
 					newValue--;
 				inst.getInstance(i).setValue(position,newValue);

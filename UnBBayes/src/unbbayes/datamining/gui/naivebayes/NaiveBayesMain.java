@@ -18,8 +18,10 @@ import unbbayes.prs.bn.*;
 
 public class NaiveBayesMain extends JInternalFrame
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   private JPanel contentPane;
-  private BorderLayout borderLayout1 = new BorderLayout();
   private InstanceSet inst;
   /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
@@ -44,8 +46,6 @@ public class NaiveBayesMain extends JInternalFrame
   private ImageIcon salvarIcon;
   private JTabbedPane jTabbedPane1 = new JTabbedPane();
   private AttributePanel jPanel4;
-  private BorderLayout borderLayout3 = new BorderLayout();
-  private BorderLayout borderLayout4 = new BorderLayout();
   private BorderLayout borderLayout6 = new BorderLayout();
   private JScrollPane jScrollPane1 = new JScrollPane();
   private JPanel jPanel1;

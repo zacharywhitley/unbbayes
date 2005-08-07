@@ -51,14 +51,14 @@ public abstract class DistributionClassifier extends Classifier
    	* Instance.missingValue() if no prediction is made
    	* @exception Exception if an error occurred during the prediction
    	*/
-  	public short classifyInstance(Instance instance) throws Exception
+  	public int classifyInstance(Instance instance) throws Exception
 	{   float[] dist = distributionForInstance(instance);
             if (dist == null)
             {	throw new Exception(resource.getString("nullPrediction"));
             }
             else
             {   switch (classificationType)
-                {   case NORMAL_CLASSIFICATION :              return (byte)Utils.maxIndex(dist);
+                {   case NORMAL_CLASSIFICATION :              return Utils.maxIndex(dist);
                     case RELATIVE_FREQUENCY_CLASSIFICATION :  int i,maxIndex = -1;
                                                               float max = Float.MIN_VALUE;
                                                               float local;
@@ -69,7 +69,7 @@ public abstract class DistributionClassifier extends Classifier
                                                                       maxIndex = i;
                                                                   }
                                                               }
-                                                              return (byte)maxIndex;
+                                                              return maxIndex;
                     case ABSOLUTE_FREQUENCY_CLASSIFICATION :  int j;
                                                               for (j=0; j<classValues.length; j++)
                                                               {   int actualValue = classValues[j];
@@ -77,7 +77,7 @@ public abstract class DistributionClassifier extends Classifier
                                                                   if (dist[actualValue] >= probabilities[j])
                                                                   {   //System.out.println("Predic "+dist[actualValue]);
                                                                       //System.out.println("User "+probabilities[j]);
-                                                                  return (byte)actualValue;
+                                                                  return actualValue;
                                                                   }
                                                               }
                                                               return Instance.MISSING_VALUE;
@@ -86,7 +86,7 @@ public abstract class DistributionClassifier extends Classifier
             }
       }
 
-	public byte classifyInstance(float[] dist) throws Exception
+	public int classifyInstance(float[] dist) throws Exception
 	{   
 		if (dist == null)
 		{	
@@ -96,7 +96,7 @@ public abstract class DistributionClassifier extends Classifier
 		{   
 			switch (classificationType)
 			{   
-				case NORMAL_CLASSIFICATION :              	return (byte)Utils.maxIndex(dist);
+				case NORMAL_CLASSIFICATION :              	return Utils.maxIndex(dist);
 				case RELATIVE_FREQUENCY_CLASSIFICATION :  	int i,maxIndex = -1;
 															float max = Float.MIN_VALUE;
 															float local;
@@ -109,14 +109,14 @@ public abstract class DistributionClassifier extends Classifier
 																	maxIndex = i;
 																}
 															}
-															return (byte)maxIndex;
+															return maxIndex;
 				case ABSOLUTE_FREQUENCY_CLASSIFICATION :  	int j;
 															for (j=0; j<classValues.length; j++)
 															{   
 																int actualValue = classValues[j];
 																if (dist[actualValue] >= probabilities[j])
 																{
-																	return (byte)actualValue;
+																	return actualValue;
 																}
 															}
 															return Instance.MISSING_VALUE;

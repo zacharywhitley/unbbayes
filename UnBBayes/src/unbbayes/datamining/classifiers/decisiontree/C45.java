@@ -20,6 +20,9 @@ import unbbayes.datamining.datamanipulation.*;
  */
 public class C45 extends DecisionTreeLearning implements Serializable
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
 	/** Load resources file for internacionalization */
 	private transient ResourceBundle resource;
 
@@ -105,7 +108,6 @@ public class C45 extends DecisionTreeLearning implements Serializable
 		float[] distribution;
 		Instance inst;
 		SplitObject[] splitData;
-		Node node;
 		Attribute att;
 		double meanInfoGains;
 		Attribute splitAttribute;
@@ -397,7 +399,7 @@ public class C45 extends DecisionTreeLearning implements Serializable
 	 * @param instance the instance to be classified
 	 * @return the classification
 	 */
-	public short classifyInstance(Instance instance)
+	public int classifyInstance(Instance instance)
 	{
           Leaf leaf;
           Node node;

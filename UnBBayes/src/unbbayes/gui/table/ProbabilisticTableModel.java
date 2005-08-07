@@ -18,6 +18,9 @@ import unbbayes.prs.bn.PotentialTable;
  */
 public class ProbabilisticTableModel extends AbstractTableModel {
     
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
     private PotentialTable potTab;
     private final NumberFormat df;
     private final Node node;

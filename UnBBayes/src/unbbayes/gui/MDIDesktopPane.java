@@ -32,6 +32,9 @@ import java.beans.*;
  * bottom, providing the MDIDesktopPane is in a ScrollPane.
  */
 public class MDIDesktopPane extends JDesktopPane {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
     private static int FRAME_OFFSET=20;
     private MDIDesktopManager manager;
 
@@ -167,6 +170,9 @@ public class MDIDesktopPane extends JDesktopPane {
  * Used to provide scrollbar functionality.
  */
 class MDIDesktopManager extends DefaultDesktopManager {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
     private MDIDesktopPane desktop;
 
     /**

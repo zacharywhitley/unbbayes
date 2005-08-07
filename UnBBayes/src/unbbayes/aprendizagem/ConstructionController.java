@@ -149,8 +149,7 @@ public class ConstructionController {
         Date d = new Date();
         long time = d.getTime();
         IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        AlgorithmController algorithmController = new AlgorithmController
-                                       (variables,matrix,vector,caseNumber,pamp,compacted);
+        new AlgorithmController(variables,matrix,vector,caseNumber,pamp,compacted);
         IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));                
         Date d2 = new Date();
         long time1 = d2.getTime();
@@ -158,8 +157,7 @@ public class ConstructionController {
         /*Efeito de debug*/
         System.out.println("Resultado = "+ resul);                               
         /*Gives the probability of each node*/
-        ProbabilisticController probabilisticController = new ProbabilisticController
-                                (variables,matrix, vector,caseNumber,controller, compacted);                     
+        new ProbabilisticController(variables,matrix, vector,caseNumber,controller, compacted);                     
     }
 	
 	/**
@@ -316,29 +314,6 @@ public class ConstructionController {
         System.out.println("NumeroCasos " + caseNumber);	
 	}
 
-	/**
-	 * Normalizes the probabilities of a variable.
-	 * 
-	 *@param variable - A TVariavel object.
-	 */
-	private void normalize(TVariavel variable) {
-        for (int c = 0; c < variable.getPotentialTable().tableSize()/*.getDados().size()*/; c+=variable.getEstadoTamanho()/*.noEstados()*/){
-            float sum = 0;
-            for (int i = 0; i < variable.getEstadoTamanho(); i++){
-               sum += variable.getPotentialTable().getValue(c+i);
-            }
-            if (sum == 0){
-                for (int i = 0; i < variable.getEstadoTamanho()/*.noEstados()*/; i++){
-                    variable.getPotentialTable().setValue(c+i, 1/variable.getEstadoTamanho());
-                }
-            } else{
-                 for (int i = 0; i < variable.getEstadoTamanho()/*.noEstados()*/; i++){
-                     variable.getPotentialTable().setValue(c+i, variable.getPotentialTable().getValue(c+i)/sum);
-                 }
-            }
-        }
-    }
-    
     public byte[][] getMatrix(){
     	return this.matrix;    	
     }

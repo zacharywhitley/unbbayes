@@ -13,6 +13,9 @@ import java.util.ResourceBundle;
  */
 public class ProgressDialog extends JDialog
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
 	/** Create an instance of this class  */
 	public ProgressDialog(String message, IProgress progress)
 	{

@@ -9,11 +9,10 @@ public class EvaluationOptions
 { private JTable statesTable = new JTable();
   private JLabel statesLabel = new JLabel("Enter new Values: ");
   private JPanel statesPanel = new JPanel(new BorderLayout());
-  private ProbabilisticNode classNode;
 
   public EvaluationOptions(ProbabilisticNode classNode,EvaluationPanel parent)
-  {   this.classNode = classNode;
-      statesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+  {   
+	  statesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
       statesTable.getTableHeader().setReorderingAllowed(false);
       statesTable.getTableHeader().setResizingAllowed(false);
       statesTable.setColumnSelectionAllowed(false);
@@ -59,7 +58,10 @@ public class EvaluationOptions
    * a list of attributes that have been "selected".
    */
   private class StatesTableModel extends AbstractTableModel
-  {   private ProbabilisticNode classNode;
+  {   
+		/** Serialization runtime version number */
+		private static final long serialVersionUID = 0;
+
       private String[] columnNames = {"Priority","State","Probability" };
       private Object[][] cells;
       private int statesSize = 1;
@@ -69,8 +71,8 @@ public class EvaluationOptions
       * @param instances the initial set of Instances
       */
       public StatesTableModel(ProbabilisticNode classNode)
-      {   this.classNode = classNode;
-          statesSize = classNode.getStatesSize();
+      {   
+    	  statesSize = classNode.getStatesSize();
           cells = new Object[statesSize][3];
           for (int row = 0; row < statesSize; row++)
           {   cells [row][0] = new Integer(row);

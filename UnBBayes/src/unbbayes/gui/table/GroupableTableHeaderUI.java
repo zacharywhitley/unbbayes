@@ -31,6 +31,9 @@ public class GroupableTableHeaderUI extends BasicTableHeaderUI {
 
 	public static final TableCellRenderer defaultRender =
 		new DefaultTableCellRenderer() {
+		/** Serialization runtime version number */
+		private static final long serialVersionUID = 0;
+
     		public Component getTableCellRendererComponent(
     			JTable table, Object value, boolean isSelected,
                 boolean hasFocus, int row, int column) {
@@ -57,8 +60,7 @@ public class GroupableTableHeaderUI extends BasicTableHeaderUI {
 		Dimension size = header.getSize();
 		Rectangle cellRect = new Rectangle(0, 0, size.width, size.height);
 		Hashtable h = new Hashtable();
-		int columnMargin = header.getColumnModel().getColumnMargin();
-
+		
 		Enumeration enumeration = header.getColumnModel().getColumns();
 		while (enumeration.hasMoreElements()) {
 			cellRect.height = size.height;
@@ -163,11 +165,11 @@ public class GroupableTableHeaderUI extends BasicTableHeaderUI {
 					-1,
 					column);
 			int cHeight = comp.getPreferredSize().height;
-			Enumeration enum =
+			Enumeration enumeration =
 				((GroupableTableHeader) header).getColumnGroups(aColumn);
-			if (enum != null) {
-				while (enum.hasMoreElements()) {
-					ColumnGroup cGroup = (ColumnGroup) enum.nextElement();
+			if (enumeration != null) {
+				while (enumeration.hasMoreElements()) {
+					ColumnGroup cGroup = (ColumnGroup) enumeration.nextElement();
 					cHeight += cGroup.getSize(header.getTable()).height;
 				}
 			}

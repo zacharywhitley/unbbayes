@@ -28,6 +28,9 @@ package unbbayes.prs;
  *@author     Michael e Rommel
  */
 public class Edge implements java.io.Serializable {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
     /**
      *  Guarda o primeiro nó. Quando há orientação assume semântica como origem.
      */

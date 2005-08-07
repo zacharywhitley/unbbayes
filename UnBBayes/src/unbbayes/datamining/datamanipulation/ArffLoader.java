@@ -309,7 +309,7 @@ public class ArffLoader extends Loader
   	protected boolean getInstanceFull() throws IOException
 	{
           int numAttributes = instances.numAttributes();
-          short[] instance = new short[numAttributes];
+          int[] instance = new int[numAttributes];
           int index;
           int instanceWeight = 1;
 
@@ -358,7 +358,7 @@ public class ArffLoader extends Loader
                             if (index == -1)
                             {   errms(resource.getString("getInstanceFullException2"));
                             }
-                            instance[attributeNumber] = (byte)index;
+                            instance[attributeNumber] = index;
                         }
                         else if (instances.getAttribute(attributeNumber).isNumeric())
                         {   // Check if value is really a number.
@@ -374,7 +374,7 @@ public class ArffLoader extends Loader
                                 if (index == -1)
                                 {   errms(resource.getString("getInstanceFullException2"));
                                 }
-                                instance[attributeNumber] = (byte)index;
+                                instance[attributeNumber] = index;
                             }
                             catch (NumberFormatException e)
                             {   errms(resource.getString("getInstanceFullException3"));

@@ -13,7 +13,11 @@ import unbbayes.datamining.datamanipulation.*;
 import unbbayes.util.GraphPaperLayout;
 
 public class PreprocessPanel extends JPanel
-{ /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+{ 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
+	/** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
   private JPanel filePanel = new JPanel();
   private AttributeSelectionPanel attributePanel = new AttributeSelectionPanel();
@@ -28,7 +32,6 @@ public class PreprocessPanel extends JPanel
   private BorderLayout borderLayout7 = new BorderLayout();
   private BorderLayout borderLayout6 = new BorderLayout();
   private BorderLayout borderLayout5 = new BorderLayout();
-  private BorderLayout borderLayout2 = new BorderLayout();
   private BorderLayout borderLayout13 = new BorderLayout();
   private BorderLayout borderLayout12 = new BorderLayout();
   private BorderLayout borderLayout11 = new BorderLayout();
@@ -82,7 +85,6 @@ public class PreprocessPanel extends JPanel
   private JLabel jLabel11 = new JLabel();
   private JLabel jLabel10 = new JLabel();
   private GridLayout gridLayout5 = new GridLayout();
-  private ButtonGroup buttonGroup2 = new ButtonGroup();
   private TitledBorder titledBorder4;
   private TitledBorder titledBorder3;
   private TitledBorder titledBorder2;
@@ -286,7 +288,11 @@ public class PreprocessPanel extends JPanel
   }
 
   private class ValuesTableModel extends DefaultTableModel
-  {   public boolean isCellEditable(int row, int col)
+  {   
+		/** Serialization runtime version number */
+		private static final long serialVersionUID = 0;
+
+	  public boolean isCellEditable(int row, int col)
       {   return false;
       }
 

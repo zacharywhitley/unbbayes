@@ -19,6 +19,9 @@ import unbbayes.util.*;
  */
 public class MetaphorTree extends JTree
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
         private class StateObject
         {   private ProbabilisticNode node;
             private int stateIndex = -1;
@@ -53,6 +56,9 @@ public class MetaphorTree extends JTree
 
 	private class MetaphorTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer
         {
+		/** Serialization runtime version number */
+		private static final long serialVersionUID = 0;
+
           ImageIcon yesIcon = iconController.getYesStateIcon();
 	    ImageIcon noIcon = iconController.getNoStateIcon();
 	    ImageIcon emptyIcon = iconController.getEmptyStateIcon();

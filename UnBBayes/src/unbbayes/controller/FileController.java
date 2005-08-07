@@ -13,11 +13,8 @@ import unbbayes.datamining.datamanipulation.*;
 public class FileController
 {   /** Uma instância deste objeto */
     private static FileController singleton;
-    private File selectedFile;
     private ResourceBundle resource;
     private JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
-    private Timer activityMonitor;
-    private ProgressMonitor progressDialog;
 
     //--------------------------------------------------------------//
 
@@ -165,7 +162,7 @@ public class FileController
 
         public void saveInstanceSet(File output, InstanceSet instanceSet, int[] selectedAttributes) throws IOException
         {
-          Saver saver;
+          Saver saver = null;
           String fileName = output.getName();
           if (fileName.regionMatches(true,fileName.length() - 5,".arff",0,5))
           {
@@ -194,9 +191,7 @@ public class FileController
             throw new IOException(resource.getString("fileExtensionException"));
           }
 
-          //starts loading and shows a status screen
-          ProgressDialog progressDialog = new ProgressDialog (output.getName(), saver);
-          boolean successStatus = progressDialog.load();
+          new ProgressDialog (output.getName(), saver);
         }
 
 }

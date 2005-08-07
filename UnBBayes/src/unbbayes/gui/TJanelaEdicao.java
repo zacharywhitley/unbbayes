@@ -49,6 +49,9 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  */
 public class TJanelaEdicao extends JDialog {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
     private JToolBar jtb;
     private JViewport view;
     private TEditaRede rede;

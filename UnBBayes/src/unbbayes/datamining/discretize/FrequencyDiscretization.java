@@ -7,7 +7,7 @@ import unbbayes.datamining.datamanipulation.*;
 
 /** faz discretizacao por frequencia */
 public class FrequencyDiscretization implements IDiscretization
-{	private int numThresholds;
+{	
 	private InstanceSet inst;
 
 	public FrequencyDiscretization(InstanceSet inst)
@@ -90,10 +90,10 @@ public class FrequencyDiscretization implements IDiscretization
 			inst.setAttributeAt(newAttribute,position);
 			// insere os novos valores
 			for (i=0; i<numInstances; i++)
-			{	byte newValue = (byte)0;
+			{	int newValue = 0;
 				for (j=0; j<breakPoint.length; j++)
 					if (values2[i] <= breakPoint[j])
-					{	newValue = (byte)j;
+					{	newValue = j;
 						break;
 					}
 				inst.getInstance(i).setValue(position,newValue);

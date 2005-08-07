@@ -41,7 +41,10 @@ import java.awt.event.*;
 
 public class OrdenationWindow extends JDialog {	
     
-    private String[] metrics = {"MDL","GH", "GHS"};		
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
+	private String[] metrics = {"MDL","GH", "GHS"};		
 	private String[] paradigms = {"Ponctuation","IC"};	
 	private String[] ponctuationAlgorithms = {"K2","B"};
 	private String[] icAlgorithms = {"CBL-A","CBL-B"};     

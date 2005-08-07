@@ -13,6 +13,9 @@ import unbbayes.datamining.classifiers.*;
  * @version $1.0 $ (06/26/2003)
  */
 public class OptionsPanel extends JPanel {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   private ResourceBundle resource;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JLabel labelMomentum = new JLabel();

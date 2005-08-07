@@ -54,9 +54,9 @@ public class ColumnGroup {
 		g.addElement(this);
 		if (v.contains(c))
 			return g;
-		Enumeration enum = v.elements();
-		while (enum.hasMoreElements()) {
-			Object obj = enum.nextElement();
+		Enumeration enumeration = v.elements();
+		while (enumeration.hasMoreElements()) {
+			Object obj = enumeration.nextElement();
 			if (obj instanceof ColumnGroup) {
 				Vector groups =
 					(Vector) ((ColumnGroup) obj).getColumnGroups(
@@ -94,9 +94,9 @@ public class ColumnGroup {
 				-1);
 		int height = comp.getPreferredSize().height;
 		int width = 0;
-		Enumeration enum = v.elements();
-		while (enum.hasMoreElements()) {
-			Object obj = enum.nextElement();
+		Enumeration enumeration = v.elements();
+		while (enumeration.hasMoreElements()) {
+			Object obj = enumeration.nextElement();
 			if (obj instanceof TableColumn) {
 				TableColumn aColumn = (TableColumn) obj;
 				width += aColumn.getWidth();
@@ -110,9 +110,9 @@ public class ColumnGroup {
 
 	public void setColumnMargin(int margin) {
 		this.margin = margin;
-		Enumeration enum = v.elements();
-		while (enum.hasMoreElements()) {
-			Object obj = enum.nextElement();
+		Enumeration enumeration = v.elements();
+		while (enumeration.hasMoreElements()) {
+			Object obj = enumeration.nextElement();
 			if (obj instanceof ColumnGroup) {
 				((ColumnGroup) obj).setColumnMargin(margin);
 			}

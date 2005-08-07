@@ -16,6 +16,9 @@ import unbbayes.datamining.classifiers.neuralnetwork.*;
  *  @version $1.0 $ (06/26/2003)
  */
 public class TrainingPanel extends JPanel implements MeanSquaredError{
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   private ResourceBundle resource;
   private ImageIcon fillIcon;
   private ImageIcon resetSizeIcon;

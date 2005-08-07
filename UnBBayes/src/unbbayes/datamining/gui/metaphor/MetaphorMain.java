@@ -18,6 +18,9 @@ import unbbayes.prs.bn.*;
  */
 public class MetaphorMain extends JPanel
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   private BorderLayout borderLayout1 = new BorderLayout();
   private JToolBar metaphorToolBar = new JToolBar();
   private JTabbedPane jTabbedPane1 = new JTabbedPane();
@@ -39,7 +42,6 @@ public class MetaphorMain extends JPanel
   private ImageIcon diagnosticMetaphorRollOverIcon;
   private ProbabilisticNetwork net = null;
   private JFileChooser fileChooser;
-  private TitledBorder titledBorder1;
   private Border border1;
   private Border border2;
   private Border border3;
@@ -81,7 +83,6 @@ public class MetaphorMain extends JPanel
     openMetaphorRollOverIcon = iconController.getOpenMetaphorRollOverIcon();
     saveMetaphorRollOverIcon = iconController.getSaveMetaphorRollOverIcon();
     diagnosticMetaphorRollOverIcon = iconController.getDiagnosticMetaphorRollOverIcon();
-    titledBorder1 = new TitledBorder("");
     border1 = BorderFactory.createEmptyBorder(5,5,5,5);
     border2 = BorderFactory.createEmptyBorder(5,5,5,5);
     border3 = BorderFactory.createEmptyBorder(5,5,5,5);

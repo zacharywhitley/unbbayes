@@ -276,7 +276,6 @@ public abstract class CBLToolkit extends LearningToolkit{
     	ArrayList nnAux;
     	//System.out.println("Inicia pegar os separadores");
     	//System.out.println("Inicia Achar caminhos");
-    	ArrayList ways  = findWays(v1,v2,esAncMor); 
     	//System.out.println("Acaba Achar caminhos"); 	    	   	    	
     	ArrayList neighbors1 = findNeighbors(v1, esAncMor);
     	ArrayList neighbors2 = findNeighbors(v2, esAncMor);    	
@@ -373,8 +372,6 @@ public abstract class CBLToolkit extends LearningToolkit{
     protected ArrayList expand(ArrayList cs, ArrayList esAncMor){
     	ArrayList fs = new ArrayList();
     	int[] peace;
-    	Integer x;
-    	Integer y;
     	for(int i = 0 ; i < esAncMor.size(); i++){
     		peace = (int[])esAncMor.get(i);
     		if( peace[0] == ((Integer)cs.get(cs.size() -1)).intValue()
@@ -422,7 +419,6 @@ public abstract class CBLToolkit extends LearningToolkit{
     	Integer step;
     	Integer nei;
     	boolean flag = false;;
-    	ArrayList neighborAux = new ArrayList();
     	boolean[] neighbor = new boolean[neighbors.size()];   
     	for(int i = 0 ; i < neighbors.size(); i++){
     		nei = (Integer)neighbors.get(i);    		    		

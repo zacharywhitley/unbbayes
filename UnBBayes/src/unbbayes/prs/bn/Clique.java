@@ -38,6 +38,9 @@ import unbbayes.util.NodeList;
  */
 public class Clique implements ITabledVariable, java.io.Serializable {
 	
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
 

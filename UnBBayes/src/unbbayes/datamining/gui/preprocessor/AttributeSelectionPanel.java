@@ -15,14 +15,22 @@ import unbbayes.datamining.datamanipulation.*;
  * classification).
  */
 public class AttributeSelectionPanel extends JPanel
-{ /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+{ 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
+	/** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
   /**
    * A table model that looks at the names of attributes and maintains
    * a list of attributes that have been "selected".
    */
   private class AttributeTableModel extends AbstractTableModel
-  { /** The instances who's attribute structure we are reporting */
+  { 
+		/** Serialization runtime version number */
+		private static final long serialVersionUID = 0;
+
+	  /** The instances who's attribute structure we are reporting */
     protected InstanceSet m_Instances;
 
     /** The flag for whether the instance will be included */

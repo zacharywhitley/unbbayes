@@ -16,6 +16,9 @@ import unbbayes.datamining.gui.*;
  *  @version $1.0 $ (02/16/2003)
  */
 public class NeuralNetworkMain extends JInternalFrame {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   private ResourceBundle resource;
   private JToolBar toolBar = new JToolBar();
   private JLabel label1 = new JLabel();

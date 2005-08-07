@@ -63,7 +63,6 @@ public class Evaluation implements IProgress
   private Classifier classifier;
 
   //private float[][] propagationResults;
-  //private byte[][] propagation;
 
   /**
    * Initializes all the counters for the evaluation.
@@ -95,11 +94,6 @@ public class Evaluation implements IProgress
 	{
 		this(data);
 		this.classifier = classifier;
-		/*if (classifier instanceof DistributionClassifier)
-		{
-			propagationResults = new float[numInstances][numClasses];
-			propagation = new byte[numInstances][2];
-		}*/
 	}
 
 	/**
@@ -111,11 +105,6 @@ public class Evaluation implements IProgress
 	*/
 	public void evaluateModel(Classifier classifier) throws Exception
 	{
-		/*if (classifier instanceof DistributionClassifier)
-		{
-			propagationResults = new float[numInstances][numClasses];
-			propagation = new byte[numInstances][2];
-		}*/	
 		for	(int i = 0; i < numInstances; i++)
 			{   if ((i%50000)==0)
 				{   String currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
@@ -135,11 +124,6 @@ public class Evaluation implements IProgress
 	*/
 	public void evaluateModel(Classifier classifier,InstanceSet testData) throws Exception
 	{	
-		/*if (classifier instanceof DistributionClassifier)
-		{
-			propagationResults = new float[numInstances][numClasses];
-			propagation = new byte[numInstances][2];
-		}*/
 		int numInstances = testData.numInstances();
 		for (int i = 0; i < numInstances; i++)
 		{	evaluateModelOnce(classifier,testData.getInstance(i));
@@ -155,9 +139,9 @@ public class Evaluation implements IProgress
 	* @exception Exception if model could not be evaluated
 	* successfully
 	*/
-	public short evaluateModelOnce(Classifier classifier,Instance instance) throws Exception
+	public int evaluateModelOnce(Classifier classifier,Instance instance) throws Exception
 	{   Instance classMissing = instance;
-			short pred=0;
+			int pred=0;
 			if (classIsNominal)
 			{   
 				if (classifier instanceof DistributionClassifier)
@@ -189,7 +173,7 @@ public class Evaluation implements IProgress
 	 * @param predictedClass the index of the predicted class
 	 * @return the probability distribution
 	 */
-	private float[] makeDistribution(short predictedClass)
+	private float[] makeDistribution(int predictedClass)
 	{	float[] result = new float[numClasses];
 		if (Instance.isMissingValue(predictedClass))
 		{	return result;
@@ -273,13 +257,12 @@ public class Evaluation implements IProgress
   {	double lowerBound,upperBound,z;
 	double f = (double)correct/(double)withClass;
 	double n = (double)(numInstances());
-	double finalTerm,mediumTerm,initialTerm;
+	double mediumTerm,initialTerm;
 	StringBuffer sb = new StringBuffer("Correct confidence limits\nPr[c]\t   z\n");
 	for (int i=0;i<confidenceLimits.length;i++)
 	{	z = confidenceLimits[i];
 		initialTerm = initialTerm(f,z,n);
 		mediumTerm = mediumTerm(f,z,n);
-		finalTerm = finalTerm(z,n);
 		lowerBound = (initialTerm-mediumTerm)/finalTerm(z,n);
 		upperBound = (initialTerm+mediumTerm)/finalTerm(z,n);
 		sb.append(confidenceProbs[i]+"\t["+Utils.doubleToString(lowerBound, 4, 4)+" , "+Utils.doubleToString(upperBound, 4, 4)+"]\n");
@@ -291,13 +274,12 @@ public class Evaluation implements IProgress
   {	double lowerBound,upperBound,z;
 	double f = (double)incorrect/(double)withClass;
 	double n = (double)(numInstances());
-	double finalTerm,mediumTerm,initialTerm;
+	double mediumTerm,initialTerm;
 	StringBuffer sb = new StringBuffer("Incorrect confidence limits\nPr[c]\t   z\n");
 	for (int i=0;i<confidenceLimits.length;i++)
 	{	z = confidenceLimits[i];
 		initialTerm = initialTerm(f,z,n);
 		mediumTerm = mediumTerm(f,z,n);
-		finalTerm = finalTerm(z,n);
 		lowerBound = (initialTerm-mediumTerm)/finalTerm(z,n);
 		upperBound = (initialTerm+mediumTerm)/finalTerm(z,n);
 		sb.append(confidenceProbs[i]+"\t["+Utils.doubleToString(lowerBound, 4, 4)+" , "+Utils.doubleToString(upperBound, 4, 4)+"]\n");
@@ -397,7 +379,7 @@ public class Evaluation implements IProgress
    * @exception Exception if the class of the instance is not
    * set
    */
-  private void updateStatsForClassifier(short predictedClass/*float[] predictedDistribution*/,Instance instance) throws Exception
+  private void updateStatsForClassifier(int predictedClass/*float[] predictedDistribution*/,Instance instance) throws Exception
   {	if (!instance.classIsMissing())
 	{	/*float[] result = new float[numClasses];
 		if (Instance.isMissingValue(predictedClass))
@@ -429,7 +411,7 @@ public class Evaluation implements IProgress
 			return;
 				}
 
-		short actualClass = instance.classValue();
+		int actualClass = instance.classValue();
 				updateNumericScores(makeDistribution(predictedClass)/*predictedDistribution*/,makeDistribution(actualClass),instance.getWeight());
 
 		//propagation[counter][0] = actualClass;

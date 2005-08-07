@@ -12,7 +12,10 @@ import unbbayes.datamining.datamanipulation.*;
  */
 public class Sigmoid implements ActivationFunction, Serializable{
 
-  /**Constant that defines the minimum steep of the activation function*/
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
+	/**Constant that defines the minimum steep of the activation function*/
   public static final double MIN_STEEP = 0.0;
 
   /**Constant that defines the default steep of the activation function*/

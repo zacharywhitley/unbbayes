@@ -14,6 +14,6 @@ import unbbayes.monteCarlo.controlador.ControladorPrincipal;
 public class StartMonteCarlo {
 
 	public static void main(String[] args){
-		ControladorPrincipal cp = new ControladorPrincipal();		
+		new ControladorPrincipal();		
 	}
 }

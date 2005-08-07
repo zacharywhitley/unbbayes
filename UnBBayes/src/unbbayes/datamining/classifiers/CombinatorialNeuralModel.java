@@ -13,6 +13,9 @@ import unbbayes.datamining.datamanipulation.*;
  */
 public class CombinatorialNeuralModel extends DistributionClassifier implements Serializable{
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   /**The model's combinations.*/
   private HashMap model = new HashMap();
 
@@ -125,7 +128,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
 	}
   }
 
-  private void addCombination(String key, short classValue, int weight){
+  private void addCombination(String key, int classValue, int weight){
 	Combination combination;
 
 	if(!model.containsKey(key)){
@@ -166,7 +169,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
    * @param value the value of the attribute
    * @return the generated key
    */
-  private String generateInputKey(int attribute, short value){
+  private String generateInputKey(int attribute, int value){
 	return new String(attribute + " " + value);
   }
 
@@ -285,7 +288,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
    */
   public Combination[] inference(Instance instance){
 	int numAtt = attributeVector.length;
-	short value;
+	int value;
 	String[] instanceKeys;
 	String[] combKeys;
 	Combination[] combArray = new Combination[attributeVector[classIndex].numValues()];   //array que conterá os arcos de maior peso de cada neuronio

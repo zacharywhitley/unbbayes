@@ -40,7 +40,10 @@ import java.awt.event.*;
  */
 public class OptionsWindow extends JDialog
 {
-    private TVariavel variable;
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
+	private TVariavel variable;
     private JTextField txtMaxParents;
     private JTextField txtName;
     private JLabel lMaxParents;

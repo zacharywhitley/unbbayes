@@ -20,6 +20,9 @@ import unbbayes.util.GraphPaperLayout;
 
 public class EvaluationPanel extends JPanel
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   private JPanel jPanel63 = new JPanel();
   private BorderLayout borderLayout45 = new BorderLayout();
   private JPanel jPanel62 = new JPanel();
@@ -33,7 +36,6 @@ public class EvaluationPanel extends JPanel
   private TitledBorder titledBorder10;
   private TitledBorder titledBorder9;
   private TitledBorder titledBorder8;
-  private TitledBorder titledBorder7;
   private TitledBorder titledBorder6;
   private ImageIcon salvarIcon;
   private Border border10;
@@ -42,9 +44,6 @@ public class EvaluationPanel extends JPanel
 //  private EvaluationThread thread;
   private Thread thread; //fasffsafsasfafsafasfa vai ser removido depois
   private JTextArea jTextArea2 = new JTextArea();
-  private JTextField jTextField1 = new JTextField();
-  private InstanceSet userTest;
-  private JLabel jLabel1 = new JLabel();
   private EvaluationMain reference;
   private JFileChooser fileChooser;
   private JLabel jLabel2 = new JLabel();
@@ -94,7 +93,6 @@ public class EvaluationPanel extends JPanel
     titledBorder10 = new TitledBorder(border10,"Classifier output");
     titledBorder9 = new TitledBorder(border10,"Select Class");
     titledBorder8 = new TitledBorder(border10,"Log");
-    titledBorder7 = new TitledBorder(border10,"Test Options");
     titledBorder6 = new TitledBorder(border10,"Model");
     titledBorder1 = new TitledBorder(border10,"Evaluation Type");
     jPanel62.setLayout(borderLayout45);
@@ -320,7 +318,7 @@ public class EvaluationPanel extends JPanel
 
                                 eval = new Evaluation(instances,classifier);
                                 ProgressDialog progressDialog = new ProgressDialog (null, eval);
-								boolean successStatus = progressDialog.load();
+								progressDialog.load();
 
                                 //eval.evaluateModel(classifier);
                                     outBuff.append(eval.toString());

@@ -35,6 +35,9 @@ import unbbayes.util.SetToolkit;
  */
 public class DecisionNode extends TreeVariable implements java.io.Serializable {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
     private static Color color = new Color(Color.orange.getRGB());
 
     /**

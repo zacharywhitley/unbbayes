@@ -73,6 +73,9 @@ import unbbayes.util.NodeList;
  */
 public class IGraph extends JPanel implements MouseListener, MouseMotionListener {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
     private WindowController controller;
     private List arc;
     private NodeList node;
@@ -93,15 +96,11 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
     private boolean bNodeMoved;
     private boolean bMoveArc;
     private boolean bMoveNode;
-    private boolean bScroll;
     private boolean bSelect;
-    private boolean bFirstTime;
     private Color arcColor;
     private Color selectionColor;
     private Color backColor;
     private double radius;
-    private int scrollX;
-    private int scrollY;
     private JViewport graphViewport;
     private Dimension visibleDimension;
     private Dimension graphDimension;
@@ -147,9 +146,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
         bNodeMoved = false;
         bMoveArc = false;
         bMoveNode = false;
-        bScroll = false;
         bSelect = false;
-        bFirstTime = true;
         arcColor = Color.black;
         selectionColor = Color.red;
         backColor = Color.white;
@@ -161,8 +158,6 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
 		} else {
 		    radius = r;
 		}
-        scrollX = 0;
-        scrollY = 0;
         graphDimension = new Dimension(1500, 1500);
         visibleDimension = new Dimension(0, 0);
 

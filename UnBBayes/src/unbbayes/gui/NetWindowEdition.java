@@ -40,7 +40,11 @@ import unbbayes.prs.Node;
 
 public class NetWindowEdition extends JPanel {
 
-    private final NetWindow netWindow;
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
+
+	private final NetWindow netWindow;
 
     private GlobalOptions go;
     private JTable table;

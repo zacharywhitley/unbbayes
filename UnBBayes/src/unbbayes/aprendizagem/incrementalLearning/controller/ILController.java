@@ -46,7 +46,6 @@ public class ILController extends ILToolkit {
 
    private BaseIO io;
    private ProbabilisticNetwork pn;
-   private ArrayList nijks;
    private File file;
    private ILIO ilio;
    private List ssList;
@@ -166,7 +165,6 @@ public class ILController extends ILToolkit {
    }
 
    private void chooseBetterNet() {
-      float betterValue = Float.MIN_VALUE;
       Object[] frontierObject = (Object[]) ssList.get(0);
       Object[] betterFrontier = null;
       double g = Double.MIN_VALUE;
@@ -230,7 +228,6 @@ public class ILController extends ILToolkit {
 
    private void paramRecalc() {
       for (int i = 0; i < pn.getNodeCount(); i++) {
-         int[][] old = (int[][]) nijks.get(i);
          TVariavel node = (TVariavel) pn.getNodeAt(i);
          int[][] news = getFrequencies((TVariavel) node, node.getParents());
          getProbability(news, (TVariavel) node);
@@ -267,9 +264,8 @@ public class ILController extends ILToolkit {
          chooser.setMultiSelectionEnabled(false);
          chooser.addChoosableFileFilter(new SimpleFileFilter(nets, "txt"));
          int option = chooser.showOpenDialog(null);
-         File file;
          if (option == JFileChooser.APPROVE_OPTION) {
-            file = chooser.getSelectedFile();
+            chooser.getSelectedFile();
          }
       } catch (Exception e) {
          e.printStackTrace();

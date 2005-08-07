@@ -19,6 +19,9 @@ import unbbayes.prs.bn.*;
 
 public class HierarchicDefinitionPanel extends JPanel
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   private JSplitPane centerPanel;
   private JScrollPane descriptionScrollPane;
   private JScrollPane explanationScrollPane;

@@ -8,11 +8,8 @@ import unbbayes.datamining.datamanipulation.*;
 
 public class TestUtils extends TestCase {
 
-  /** The natural logarithm of 2. */
-  private final double LOG2 = Math.log(2);
   /** The small deviation allowed in double comparisons */
   private final double DELTA = 1e-6;
-  private final double DELTA2 = 1e-3;
   public static File CONTACT_LENCES_FILE = new File("examples/contact-lenses.txt");
   public static File WEATHER_NOMINAL_FILE = new File("examples/weather.nominal.arff");
   public static File WEATHER_NUMERIC_CUT_FILE = new File("examples/weather.cut.txt");
@@ -144,12 +141,7 @@ public class TestUtils extends TestCase {
     boolean booleanRet = Utils.eq(a1, b2);
   /** @todo:  Insert test code here.  Use assertEquals(), for example. */
   /*}
-  public void testEq1() {
-    byte a1=  0;
-    byte b2=  0;
-    boolean booleanRet = Utils.eq(a1, b2);
-  /** @todo:  Insert test code here.  Use assertEquals(), for example. */
-  /*}
+  /*
   public void testGetDistribution() {
     double[] values1=  null  /** @todo fill in non-null value */;
     /*double[] double[]Ret = Utils.getDistribution(values1);
@@ -244,11 +236,7 @@ public class TestUtils extends TestCase {
     /*int[] int[]Ret = Utils.sort(array1);
   /** @todo:  Insert test code here.  Use assertEquals(), for example. */
   /*}
-  public void testSort1() {
-    byte[] array1=  null  /** @todo fill in non-null value */;
-    /*int[] int[]Ret = Utils.sort(array1);
-  /** @todo:  Insert test code here.  Use assertEquals(), for example. */
-  /*}
+  /*
   public void testSplitData() {
     InstanceSet data1=  null  /** @todo fill in non-null value */;
     /*Attribute att2=  null  /** @todo fill in non-null value */;

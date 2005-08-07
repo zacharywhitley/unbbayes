@@ -1,11 +1,9 @@
 package unbbayes.monteCarlo.simulacao;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.util.NodeList;
@@ -85,7 +83,6 @@ public class SimulacaoMonteCarlo {
 	
 	private void simular(byte[][] matrizFila, int caso){
 		List indicesAnteriores = new ArrayList();
-		double numero = Math.random();		
 		double[] coluna;
 		int[] estado = new int[fila.size()];
 		for(int i = 0 ; i < fila.size(); i++){			
@@ -150,22 +147,7 @@ public class SimulacaoMonteCarlo {
 		return faixa;
 	}
 	
-	private double[] ordenar(double[] coluna){		
-		List lista = new ArrayList();
-		double[] colunaOrdenada = new double[coluna.length];	
-		for(int i = 0 ; i < coluna.length; i++){
-			lista.add(new Double(coluna[i]));				
-		}
-		Collections.sort(lista);
-		for(int i = 0 ; i < lista.size(); i++){
-			colunaOrdenada[i] = ((Double)lista.get(i)).doubleValue();				
-		}				
-		return colunaOrdenada;		
-	}
-	
 	private double[]  getColuna(int[] estado,List indicesAnteriores, ProbabilisticNode n){
-		PotentialTable pt = n.getPotentialTable();
-		//System.out.println("Nomde Nó = "+ n.getDescription());
 		int numeroEstados = n.getStatesSize();
 		int indice;
 		double[] coluna = new double[numeroEstados];

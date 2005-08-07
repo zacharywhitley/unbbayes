@@ -20,7 +20,11 @@ import java.util.*;
  *  @version $1.0 $ (16/02/2002)
  */
 public class Attribute implements Serializable
-{	/** Constant set for numeric attributes. */
+{	
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
+	/** Constant set for numeric attributes. */
   	public final static int NUMERIC = 0;
 
   	/** Constant set for nominal attributes. */
@@ -40,9 +44,6 @@ public class Attribute implements Serializable
 
   	/** The attribute's index. */
   	private int index;
-
-  	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.datamanipulation.resources.DataManipulationResource");
 
   	/**
    	* Constructor for attributes.

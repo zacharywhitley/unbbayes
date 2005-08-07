@@ -21,6 +21,8 @@ import unbbayes.datamining.datamanipulation.*;
  */
 public class Id3 extends DecisionTreeLearning implements Serializable{
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
 	/** Load resources file for internacionalization */
 	private transient ResourceBundle resource;
 
@@ -56,10 +58,10 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 		}
 
 		// Test if there are missing values
-		Enumeration enum = data.enumerateInstances();
-		while (enum.hasMoreElements())
+		Enumeration enumeration = data.enumerateInstances();
+		while (enumeration.hasMoreElements())
 		{
-			Instance instance = (Instance)enum.nextElement();
+			Instance instance = (Instance)enumeration.nextElement();
 			enumAtt = data.enumerateAttributes();
 			while (enumAtt.hasMoreElements())
 			{
@@ -124,11 +126,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 		float[] distribution;
 		Instance inst;
 		SplitObject[] splitData;
-		Node node;
-		Attribute att;
-		double meanInfoGains;
 		Attribute splitAttribute;
-		double splitValue;
 
 		double[] splitValues;
 		ArrayList numericDataList = new ArrayList();
@@ -336,19 +334,15 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 	 * @param instance the instance to be classified
 	 * @return the classification
 	 */
-	public short classifyInstance(Instance instance)
+	public int classifyInstance(Instance instance)
 	{
           Leaf leaf;
           NominalNode node;
-          Attribute att;
-          double splitValue;
-          String[] attValues;
           Node treeNode = xRootNode;
 
           while (!(treeNode.children.get(0) instanceof Leaf))
           {
             node = (NominalNode)treeNode.children.get(0);
-            att = node.getAttribute();
             // Atributo nominal
             treeNode = (NominalNode)treeNode.children.get(instance.getValue(node.getAttribute()));
           }

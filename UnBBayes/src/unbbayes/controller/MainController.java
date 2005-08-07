@@ -24,7 +24,6 @@ package unbbayes.controller;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
-import java.util.List;
 
 import javax.swing.*;
 
@@ -51,9 +50,6 @@ import unbbayes.util.*;
 public class MainController {
 
     private IUnBBayes screen;
-    private List copia;
-    private List copiados;
-    private boolean bColou;
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.controller.resources.ControllerResources");
@@ -69,8 +65,6 @@ public class MainController {
      */
     public MainController() {
         screen = new IUnBBayes(this);
-        copia = new ArrayList();
-        copiados = new ArrayList();
     }
 
     public void newBN() {

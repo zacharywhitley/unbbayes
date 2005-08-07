@@ -23,6 +23,9 @@ import javax.swing.table.*;
  */
 public class GroupableHeaderExample extends JFrame {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
 	GroupableHeaderExample() {
 		super("Groupable Header Example");
 
@@ -35,6 +38,9 @@ public class GroupableHeaderExample extends JFrame {
 		}, new Object[] { "SNo.", "1", "2", "Native", "2", "3" });
 
 		JTable table = new JTable(dm) {
+			/** Serialization runtime version number */
+			private static final long serialVersionUID = 0;
+
 			protected JTableHeader createDefaultTableHeader() {
 				return new GroupableTableHeader(columnModel);
 			}

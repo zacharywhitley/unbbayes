@@ -436,7 +436,6 @@ public class ClassifierUtils
 				}					
 							        						
 				//search for the minimum entropy
-				double value1 = values[0], value2;
 				float[] distribution1, distribution2;
 				double minimumEntropy = Integer.MAX_VALUE;
 				double entropy; 
@@ -447,7 +446,6 @@ public class ClassifierUtils
 				//for each attribute value...
 				for(int x=1;x<values.length;x++)
 				{
-					value2 = values[x];
 					distribution1 = classesDistribution[x-1];
 					distribution2 = classesDistribution[x];
 					sumPart1 = new float[numClassValues]; 
@@ -478,8 +476,6 @@ public class ClassifierUtils
 							minimumValue = actualValue;
 						}
 					}
-					
-					value1 = value2;					
 				}
 				
 				if(minimumEntropy==Integer.MAX_VALUE)

@@ -13,6 +13,9 @@ import unbbayes.datamining.classifiers.decisiontree.*;
  */
 public class VerbosityPanel extends JScrollPane
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
 	/** text area where data is written */
 	private JTextArea textArea;
 	
@@ -39,13 +42,10 @@ public class VerbosityPanel extends JScrollPane
 		Node node;
 		Node childNode;
 		NumericNode numericNode;
-		NominalNode nominalNode;
-		Leaf leaf;
 		int treeLevel;
 		String space;
 		float[][] distribution;
 		float[] missingDistribution;
-		int attIndex;
 		int gainIndex;
 		float numInstances;
 						
@@ -60,8 +60,6 @@ public class VerbosityPanel extends JScrollPane
 		
 		//data relative to node
 		SplitObject splitData;
-		ArrayList instancesIndexes;
-		Integer attributesIndexes;
 		double[] infoGains;
 		ArrayList numericDataList;
 		NumericData numericData;
@@ -290,7 +288,7 @@ public class VerbosityPanel extends JScrollPane
 					
 					//print best attribute
 					childNode = (Node)children.get(0);
-					attIndex = childNode.getAttribute().getIndex();
+					childNode.getAttribute().getIndex();
 					gainIndex = Utils.maxIndex(infoGains);
 					if(childNode instanceof NominalNode)
 					{

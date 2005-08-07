@@ -17,7 +17,11 @@ import unbbayes.io.*;
 import unbbayes.prs.bn.*;
 
 public class EvaluationMain extends JInternalFrame
-{ /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+{ 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
+	/** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
   private ImageIcon abrirIcon;
   private ImageIcon helpIcon;

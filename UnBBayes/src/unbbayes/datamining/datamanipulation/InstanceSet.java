@@ -427,7 +427,7 @@ public class InstanceSet
    	*/
   	public void copyInstances(int from, InstanceSet dest, int num)
 	{	for (int j = 0; j < num; j++)
-		{	short[] by = new short[numAttributes()];
+		{	int[] by = new int[numAttributes()];
 			for (int i=0; i<numAttributes(); i++)
 			{	by[i] = getInstance(j).getValue(i);
 			}
@@ -452,7 +452,6 @@ public class InstanceSet
 
 	public AttributeStats[] getAllAttributeStats()
 	{
-		int numWeightedInstances = numWeightedInstances();
 		boolean attFlag = false;
 		for (int i=0;i<attributeStats.length;i++)
 		{
@@ -531,8 +530,8 @@ public class InstanceSet
    	* @return An array containing the value of the desired attribute for
    	* each instance in the dataset.
    	*/
-  	public short[] attributeToByteArray(int index)
-	{	short[] result = new short[numInstances()];
+  	public int[] attributeToByteArray(int index)
+	{	int[] result = new int[numInstances()];
     	for (int i = 0; i < result.length; i++)
 		{	result[i] = getInstance(i).getValue(index);
     	}

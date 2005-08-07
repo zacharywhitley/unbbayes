@@ -16,6 +16,9 @@ import unbbayes.gui.*;
 
 public class DecisionTreeMain extends JInternalFrame
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   private JPanel contentPane;
   private JMenuBar jMenuBar = new JMenuBar();
   private JMenu jMenuFile = new JMenu();
@@ -25,14 +28,12 @@ public class DecisionTreeMain extends JInternalFrame
   private JButton openFileButton = new JButton();
   private JButton learnButton = new JButton();
   private JButton preferencesButton = new JButton();
-  private BorderLayout borderLayout1 = new BorderLayout();
   private JMenuItem jMenuFileOpen = new JMenuItem();
   private JMenuItem jMenuFileExit = new JMenuItem();
   private JMenuItem jMenuFileBuild = new JMenuItem();
   private JMenuItem jMenuFilePreferences = new JMenuItem();
   private InstanceSet inst;
   private ResourceBundle resource;
-  private JTree id3tree;
   private ImageIcon abrirIcon;
   private ImageIcon openModelIcon;
   private ImageIcon compilaIcon;
@@ -354,7 +355,7 @@ public class DecisionTreeMain extends JInternalFrame
           jTabbedPane.setEnabledAt(1,true);
 		  jTabbedPane.setEnabledAt(2,true);
           inductionFrame.setInstances(id3);
-          id3tree = id3.getTree();
+          id3.getTree();
           jTabbedPane.setSelectedIndex(1);
           jMenuItem2.setEnabled(true);
           saveModelButton.setEnabled(true);
@@ -392,7 +393,7 @@ public class DecisionTreeMain extends JInternalFrame
           try
           {   ObjectInputStream in = new ObjectInputStream(new FileInputStream(selectedFile));
               id3 = (C45)in.readObject();
-              id3tree = id3.getTree();
+              id3.getTree();
               jTabbedPane.setEnabledAt(1,true);
               jTabbedPane.setEnabledAt(0,false);
               learnButton.setEnabled(false);

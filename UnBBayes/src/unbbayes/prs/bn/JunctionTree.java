@@ -35,7 +35,8 @@ import unbbayes.util.SetToolkit;
  */
 public class JunctionTree implements java.io.Serializable {
 	
-	private boolean initialized;
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
 
 	/**
 	 *  Probabilidade total estimada.
@@ -51,12 +52,6 @@ public class JunctionTree implements java.io.Serializable {
 	 *  Lista de Separadores Associados.
 	 */
 	private List separators;
-
-	/**
-	 * Coordenadas pré-calculadas para otimização
-	 * no método absorve.
-	 */
-	private int coordSep[][][];
 
 	/**
 	 *  Contrói uma nova árvore de junção. Inicializa a lista de separadores e
@@ -240,27 +235,6 @@ public class JunctionTree implements java.io.Serializable {
 			
 			consistency();
 			copyTableData();
-			initialized = true;
-//		} else {
-//			restoreTableData();						
-//		}
-	}
-	
-	// TODO fix this method because it is not working all times (see bug fix 
-	// sent by Ladeira)
-	private void restoreTableData() {
-		int sizeCliques = cliques.size();
-		for (int k = 0; k < sizeCliques; k++) {
-			Clique auxClique = (Clique) cliques.get(k);
-			auxClique.getPotentialTable().restoreData();
-			auxClique.getUtilityTable().restoreData();
-		}
-		
-		int sizeSeparadores = separators.size();
-		for (int k = 0; k < sizeSeparadores; k++) {
-			Separator auxSep = (Separator) separators.get(k);
-			auxSep.getPotentialTable().restoreData();
-		}
 	}
 	
 	private void copyTableData() {

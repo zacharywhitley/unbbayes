@@ -31,8 +31,6 @@ public class CBLB extends CBLToolkit{
 	public CBLB(NodeList variables, byte[][] dataBase, int[] vector,
 	             long caseNumber, String param, boolean compacted){
 	    this.variablesVector = variables;
-	    double epsilon;
-	    TVariavel variable;
 	    esFinal = new ArrayList();
         this.separators = new ArrayList();	    
 	    this.es = new ArrayList();	    	    
@@ -190,9 +188,6 @@ public class CBLB extends CBLToolkit{
 	}
 	
 	private void ruleCBL1(){
-		boolean flag;
-		ArrayList sep;
-		ArrayList aux;
 		int[] vars;
 		int[] vars1;
 		for(int i = 0 ;i < variablesVector.size(); i++){

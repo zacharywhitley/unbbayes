@@ -23,13 +23,13 @@ import unbbayes.util.*;
 
 public class HierarchicTree extends JTree implements DropTargetListener, DragSourceListener, DragGestureListener
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   private Network net;
-  private NodeList nodes;
   private ArrayMap objectsMap = new ArrayMap();
   public static final boolean EXPLANATION_TYPE = true;
   public static final boolean DESCRIPTION_TYPE = false;
-  /** enables this component to be a dropTarget */
-  private DropTarget dropTarget = null;
   /** enables this component to be a Drag Source */
   private DragSource dragSource = null;
   protected IconController iconController = IconController.getInstance();
@@ -41,7 +41,7 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
       setCellRenderer(new HierarchicTreeCellRenderer());
 
       // initializes the DropTarget and DragSource.
-      dropTarget = new DropTarget (this, this);
+      new DropTarget (this, this);
       dragSource = new DragSource();
       dragSource.createDefaultDragGestureRecognizer( this, DnDConstants.ACTION_MOVE, this);
 
@@ -52,7 +52,11 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
   }
 
   private class HierarchicTreeCellRenderer extends DefaultTreeCellRenderer
-  {   private ImageIcon folderSmallIcon = iconController.getFolderSmallIcon();
+  {   
+		/** Serialization runtime version number */
+		private static final long serialVersionUID = 0;
+
+	  private ImageIcon folderSmallIcon = iconController.getFolderSmallIcon();
       private ImageIcon yellowBallIcon = iconController.getYellowBallIcon();
       private ImageIcon greenBallIcon = iconController.getGreenBallIcon();
 

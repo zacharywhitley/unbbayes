@@ -31,11 +31,8 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.net.URL;
 import java.util.ResourceBundle;
 
-import javax.help.HelpSet;
-import javax.help.JHelp;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
@@ -67,6 +64,9 @@ import unbbayes.monteCarlo.controlador.ControladorPrincipal;
  */
 public class IUnBBayes extends JFrame {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
 	private MDIDesktopPane desktop;
 	private JPanel topPanel;
 	private JPanel bottomPanel;
@@ -86,9 +86,6 @@ public class IUnBBayes extends JFrame {
 	private JButton tile;
 	private JButton cascade;
 	private JButton help;
-	private URL helpSetURL;
-	private HelpSet set;
-	private JHelp jHelp;
 	private ActionListener alNewBN;
 	private ActionListener alNewMSBN;
 	private ActionListener alOpen;
@@ -106,7 +103,6 @@ public class IUnBBayes extends JFrame {
 	private ActionListener alCascade;
 	private ActionListener alTile;
 	private ActionListener alHelp;
-	private ActionListener alAbout;
 	private ActionListener alMonteCarlo;
 	private ActionListener alGibbs;
 	
@@ -275,15 +271,6 @@ public class IUnBBayes extends JFrame {
 				if (option == JFileChooser.APPROVE_OPTION) {
 					File file = chooser.getSelectedFile();
 					if (file != null) {
-						if (file.isFile()) {
-							String name = file.getName();
-							/*							
-							if (! name.endsWith(".net")) {
-								file = new File(file.getAbsoluteFile() + ".net");
-                                                                fileController.setCurrentDirectory(chooser.getCurrentDirectory());
-							}
-							*/
-						}
 						controller.saveNet(file);
 					}
 				}
@@ -322,7 +309,7 @@ public class IUnBBayes extends JFrame {
 		
 		alMonteCarlo = new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				ControladorPrincipal cp = new ControladorPrincipal();				
+				new ControladorPrincipal();				
 			}
 		};
 		

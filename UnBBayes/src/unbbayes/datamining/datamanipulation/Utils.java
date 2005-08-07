@@ -28,22 +28,6 @@ public final class Utils
   }
 
   /**
-   * Tests if a is equal to b.
-   *
-   * @param a A byte
-   * @param b A byte
-   */
-  public static boolean eq(byte a, byte b)
-  {	
-  	if (a == b)
-  	{	return true;
-	}
-	else
-	{	return false;
-	}
-  }
-
-  /**
    * Tests if a is smaller than b.
    *
    * @param a A double
@@ -326,7 +310,7 @@ public final class Utils
   public static String doubleToString(double value, int afterDecimalPoint)
   {	StringBuffer stringBuffer;
     double temp;
-    int i,dotPosition;
+    int dotPosition;
     long precisionValue;
 
     temp = value * Math.pow(10.0, afterDecimalPoint);
@@ -457,26 +441,6 @@ public final class Utils
   }
 
   /**
-   * Sorts a given array of bytes in ascending order and returns an
-   * array of integers with the positions of the elements of the
-   * original array in the sorted array. It doesn't use safe floating-point
-   * comparisons.
-   *
-   * @param array This array is not changed by the method!
-   * @return An array of integers with the positions in the sorted
-   * array.
-   */
-  public static int[] sort(byte[] array)
-  {	int [] index = new int[array.length];
-    array = (byte[])array.clone();
-    for (int i = 0; i < index.length; i++)
-	{	index[i] = i;
-    }
-    quickSort(array, index, 0, array.length - 1);
-    return index;
-  }
-
-  /**
    * Implements unsafe quicksort for an array of indices.
    *
    * @param array The array of doubles to be sorted
@@ -533,64 +497,6 @@ public final class Utils
       }
     }
   }
-
-	/**
-   * Implements unsafe quicksort for an array of indices.
-   *
-   * @param array The array of bytes to be sorted
-   * @param index The index which should contain the positions in the
-   * sorted array
-   * @param lo0 The first index of the subset to be sorted
-   * @param hi0 The last index of the subset to be sorted
-   */
-private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
-{   int lo = lo0;
-    int hi = hi0;
-    byte mid;
-    int help;
-
-    if (hi0 > lo0)
-	{ // Arbitrarily establishing partition element as the midpoint of
-      // the array.
-      mid = array[index[(lo0 + hi0) / 2]];
-
-      // loop through the array until indices cross
-      while (lo <= hi)
-	  {	// find the first element that is greater than or equal to
-		// the partition element starting from the left Index.
-		while ((array[index[lo]] < mid) && (lo < hi0))
-		{	++lo;
-		}
-
-		// find an element that is smaller than or equal to
-		// the partition element starting from the right Index.
-		while ((array[index[hi]] > mid) && (hi > lo0))
-		{	--hi;
-		}
-
-		// if the indexes have not crossed, swap
-		if (lo <= hi)
-		{	help = index[lo];
-	  		index[lo] = index[hi];
-	  		index[hi] = help;
-	  		++lo;
-	  		--hi;
-		}
-      }
-
-      // If the right index has not reached the left side of array
-      // must now sort the left partition.
-      if (lo0 < hi)
-	  {	quickSort(array, index, lo0, hi);
-      }
-
-      // If the left index has not reached the right side of array
-      // must now sort the right partition.
-      if (lo < hi0)
-	  {	quickSort(array, index, lo, hi0);
-      }
-    }
-}
 
   /** Sort values in a array of doubles and returns an array of doubles
   	with the sum of equal values. Original array will be modified
@@ -696,30 +602,6 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
       return resultArray2;
   }
 
-  /** Insertion sort incremental of an array of float. An array of byte
-  	is sort in the same points that the array of float
-	@param a An array of float
-	@param b An array of byte
-  */
-  	private static void insertionSortInc(float[] a,byte[] b)
-	{	int i;
-		float key;
-		byte temp;
-		for(int j=1; j<a.length; j++)
-		{	key = a[j];
-			temp = b[j];
-			//Insert a[j] into the sorted sequence a[1 .. j-1]
-			i = j - 1;
-			while ((i > -1) && (a[i] > key))
-			{	a[i + 1] = a[i];
-				b[i + 1] = b[i];
-				i--;
-			}
-			a[i + 1] = key;
-			b[i + 1] = temp;
-		}
-	}
-
 	/** applies a two arrays sum
 	 * 	@param array1 one of the arrays to apply the sum
 	 *  @param array2 one of the arrays to apply the sum
@@ -798,7 +680,6 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
 		  Instance instance;
           Attribute att = instanceSet.getAttribute(attribute);
           double sigma = 0;
-          double mean = 0;
           double sqrSum = 0;
           double sum = 0;
           double temp;
@@ -818,7 +699,6 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
             sqrSum = sqrSum + (temp * temp);
           }
 
-          mean = sum / numOfInstances;
           sigma = Math.sqrt( ((numOfInstances * sqrSum) - (sum * sum)) / (numOfInstances * (numOfInstances - 1)) );
 
           return sigma;

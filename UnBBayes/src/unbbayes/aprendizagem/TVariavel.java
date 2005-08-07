@@ -38,7 +38,10 @@ import unbbayes.util.SetToolkit;
 
 public class TVariavel extends ProbabilisticNode implements Cloneable {
 
-    private NodeList predecessores;
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
+	private NodeList predecessores;
     private TVariavel variavelAux;
     private int numeroMaximoPais;
     private int pos;

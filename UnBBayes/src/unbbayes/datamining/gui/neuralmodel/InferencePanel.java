@@ -21,6 +21,9 @@ import unbbayes.datamining.gui.*;
  *  @version $1.0 $ (02/16/2003)
  */
 public class InferencePanel extends JPanel implements IInferencePanel{
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   private ResourceBundle resource;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JPanel jPanel1 = new JPanel();
@@ -45,7 +48,6 @@ public class InferencePanel extends JPanel implements IInferencePanel{
   private Icon expandIcon;
   private Icon propagateIcon;
   private JTextArea textAreaResults = new JTextArea();
-  private DecimalFormat numFormat = new DecimalFormat("##0.0");
   private BorderLayout borderLayout6 = new BorderLayout();
   private JSplitPane splitPane2 = new JSplitPane();
   private JScrollPane jScrollPane2 = new JScrollPane();
@@ -287,7 +289,7 @@ public class InferencePanel extends JPanel implements IInferencePanel{
     for (int i = 0; i < numAtt; i++) {
       if (i != classIndex && !instance.isMissing(i)) {
         Attribute att = attArray[i];
-        short value = instance.getValue(i);
+        int value = instance.getValue(i);
         rule = rule + att.getAttributeName() + ": " + att.value(value) + "\n";
       }
     }

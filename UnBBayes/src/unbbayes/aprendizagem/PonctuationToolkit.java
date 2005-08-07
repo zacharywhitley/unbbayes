@@ -24,10 +24,6 @@ import unbbayes.util.NodeList;
 
 public abstract class PonctuationToolkit extends LearningToolkit{
   	
-    private final int GH  = 0;
-    private final int MDL = 1;
-    private final int GHS = 2;    
-
     private int metric;    
     
     

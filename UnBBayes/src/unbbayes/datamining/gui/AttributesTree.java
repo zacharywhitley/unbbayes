@@ -19,13 +19,16 @@ import unbbayes.datamining.datamanipulation.*;
  *  @version $1.0 $ (02/16/2003)
  */
 public class AttributesTree extends JTree{
-  public static final int CHECK_YES = 1;
+
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
+	public static final int CHECK_YES = 1;
   public static final int CHECK_NO = -1;
   public static final int CHECK_EMPTY = 0;
 
   private ArrayMap objectsMap = new ArrayMap();
   private Attribute[] attributeVector;
-  private int classIndex;
   private IInferencePanel inferencePanel;
   protected IconController iconController = IconController.getInstance();
 
@@ -73,7 +76,6 @@ public class AttributesTree extends JTree{
     if (attributeVector != null){
       if (!attributeVector.equals(this.attributeVector)){
         this.attributeVector = attributeVector;
-        this.classIndex = classIndex;
         root.removeAllChildren();
         objectsMap.clear();
         DefaultTreeModel model = new DefaultTreeModel(new DefaultMutableTreeNode());
@@ -91,7 +93,7 @@ public class AttributesTree extends JTree{
 
             //definição dos nós dos valores dos atributos
             int numStates = attribute.numValues();
-            for (byte j=0; j<numStates; j++){
+            for (int j=0; j<numStates; j++){
               DefaultMutableTreeNode stateNode = new DefaultMutableTreeNode(attribute.value(j));
               treeNode.add(stateNode);
               objectsMap.put(stateNode, new StateObject(attribute, j, CHECK_EMPTY));
@@ -114,7 +116,7 @@ public class AttributesTree extends JTree{
   public Instance getInstance(){
     ArrayList keys = objectsMap.getKeys();
     int keysSize = keys.size();
-    Instance instance = new Instance(new short[attributeVector.length]);
+    Instance instance = new Instance(new int[attributeVector.length]);
 
     for(int i=0; i<attributeVector.length; i++){
       instance.setMissing(i);
@@ -222,16 +224,16 @@ public class AttributesTree extends JTree{
 
   private class StateObject{
     private Attribute attribute;
-    private byte attributeValue = -1;
+    private int attributeValue = -1;
     private int check = CHECK_EMPTY;
 
-    public StateObject(Attribute attribute, byte attributeValue, int check){
+    public StateObject(Attribute attribute, int attributeValue, int check){
       this.attribute = attribute;
       this.attributeValue = attributeValue;
       this.check = check;
     }
 
-    public void setAttributeValue(byte attributeValue){
+    public void setAttributeValue(int attributeValue){
       this.attributeValue = attributeValue;
     }
 
@@ -239,7 +241,7 @@ public class AttributesTree extends JTree{
       this.check = check;
     }
 
-    public byte getAttributeValue(){
+    public int getAttributeValue(){
       return attributeValue;
     }
 
@@ -253,6 +255,9 @@ public class AttributesTree extends JTree{
   }
 
   private class CnmTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer{
+		/** Serialization runtime version number */
+		private static final long serialVersionUID = 0;
+
     ImageIcon yesIcon = iconController.getYesStateIcon();
     ImageIcon noIcon = iconController.getNoStateIcon();
     ImageIcon emptyIcon = iconController.getEmptyStateIcon();

@@ -15,6 +15,9 @@ import unbbayes.datamining.datamanipulation.*;
  */
 public class DecisionTreeOptions extends JInternalFrame
 { 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   /** Internacionalization resource */
   private ResourceBundle resource;
   /** Check box to set if gain ratio is used or not */

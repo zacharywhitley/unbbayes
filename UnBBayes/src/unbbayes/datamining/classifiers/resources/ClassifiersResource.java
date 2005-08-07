@@ -9,7 +9,11 @@ import java.util.*;
  *  @version $1.0 $ (17/02/2002)
  */
 public class ClassifiersResource extends ListResourceBundle implements Serializable
-{	/** Override getContents and provide an array, where each item in the array is a pair
+{
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
+	/** Override getContents and provide an array, where each item in the array is a pair
 		of objects. The first element of each pair is a String key,
 		and the second is the value associated with that key.
 	*/

@@ -18,6 +18,9 @@ import unbbayes.datamining.gui.*;
  *  @version $1.0 $ (02/16/2003)
  */
 public class InferencePanel extends JPanel implements IInferencePanel{
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   private ResourceBundle resource;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JPanel jPanel1 = new JPanel();
@@ -26,7 +29,6 @@ public class InferencePanel extends JPanel implements IInferencePanel{
   private JPanel jPanel3 = new JPanel();
   private JPanel jPanel4 = new JPanel();
   private JPanel panelMessages = new JPanel();
-  private JScrollPane jScrollPane1 = new JScrollPane();
   private BorderLayout borderLayout3 = new BorderLayout();
   private JScrollPane treeScrollPane/* = new JScrollPane()*/;
   private BorderLayout borderLayout4 = new BorderLayout();
@@ -40,7 +42,6 @@ public class InferencePanel extends JPanel implements IInferencePanel{
   private Icon colapseIcon;
   private Icon expandIcon;
   private Icon propagateIcon;
-  private DecimalFormat numFormat = new DecimalFormat("##0.0");
   private BorderLayout borderLayout6 = new BorderLayout();
   private JSplitPane splitPane2 = new JSplitPane();
   private JScrollPane jScrollPane2 = new JScrollPane();
@@ -138,7 +139,7 @@ public class InferencePanel extends JPanel implements IInferencePanel{
   private void printResults(float[] results, Instance instance){
 //    float[] distributionNormalized = new float[results.length];
     Attribute[] attributeVector = neuralNetwork.getAttributeVector();
-    Attribute classAtt, att;
+    Attribute classAtt;
     String[] initString, initStyles;
     int maxValue;
     Document docResults;
@@ -218,7 +219,7 @@ public class InferencePanel extends JPanel implements IInferencePanel{
     for (int i = 0; i < numAtt; i++) {
       if (i != classIndex && !instance.isMissing(i)) {
         Attribute att = attArray[i];
-        short value = instance.getValue(i);
+        int value = instance.getValue(i);
         rule = rule + att.getAttributeName() + ": " + att.value(value) + "\n";
       }
     }

@@ -9,7 +9,11 @@ import javax.swing.*;
 import unbbayes.datamining.datamanipulation.*;
 
 public class GlobalOptions extends JInternalFrame
-{ private JPanel contentPane;
+{ 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
+	private JPanel contentPane;
   private JPanel jPanel1 = new JPanel();
   private GridLayout gridLayout2 = new GridLayout();
   private BorderLayout borderLayout1 = new BorderLayout();

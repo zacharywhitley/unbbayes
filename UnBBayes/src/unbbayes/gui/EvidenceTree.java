@@ -18,6 +18,9 @@ import unbbayes.util.*;
  * @version 1.0
  */
 public class EvidenceTree extends JTree {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
 	private Network net;
 	private NumberFormat nf;
 	private boolean[] expandedNodes;
@@ -83,6 +86,9 @@ public class EvidenceTree extends JTree {
 	}
 
 	private class EvidenceTreeCellRenderer extends DefaultTreeCellRenderer {
+		/** Serialization runtime version number */
+		private static final long serialVersionUID = 0;
+
 		private ImageIcon folderSmallIcon = iconController.getFolderSmallIcon();
 		private ImageIcon folderSmallDisabledIcon = iconController.getFolderSmallDisabledIcon();
 		private ImageIcon yellowBallIcon = iconController.getYellowBallIcon();

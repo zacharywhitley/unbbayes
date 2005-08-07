@@ -28,7 +28,10 @@ import java.awt.event.*;
 
 public class ChooseVariablesWindow extends JDialog{
 
-    private JPanel choosePanel;
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
+	private JPanel choosePanel;
     private JScrollPane scrollPane;
     private JPanel centerPanel;
     private JPanel buttonPanel;

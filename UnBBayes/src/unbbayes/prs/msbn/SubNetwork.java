@@ -37,6 +37,9 @@ import unbbayes.util.SetToolkit;
  */
 public class SubNetwork extends Network {
 	
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
 	private char[] visited;
 	
 	/**
@@ -179,8 +182,6 @@ public class SubNetwork extends Network {
 		NodeList inter = SetToolkit.intersection(copiaNos, adj.copiaNos);				
 		NodeList auxNos = SetToolkit.clone(copiaNos);
 		
-		int sizeAnt = auxNos.size();
-				
 		auxNos.removeAll(inter);
 		
 //		assert inter.size() + auxNos.size() == sizeAnt;

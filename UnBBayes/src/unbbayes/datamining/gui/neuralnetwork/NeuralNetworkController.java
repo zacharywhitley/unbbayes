@@ -21,7 +21,6 @@ public class NeuralNetworkController {
   private NeuralNetworkMain mainScreen;
   private JFileChooser fileChooser;
   private InstanceSet instanceSet;
-  private File file;
   private int hiddenLayerSize;
 
   public NeuralNetworkController() {
@@ -106,7 +105,6 @@ public class NeuralNetworkController {
     if (returnValue == JFileChooser.APPROVE_OPTION) {
       File selectedFile = fileChooser.getSelectedFile();
       openSelectedFile(selectedFile);
-      file = selectedFile;
       FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       fileOpenSuccess = true;
     }
@@ -188,7 +186,6 @@ public class NeuralNetworkController {
       mainScreen.inferencePanel.setNetwork(bpn);
       mainScreen.setTitle("Backpropagation Neural Network - " + resource.getString("model") + " " + selectedFile.getName());
       FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
-      file = selectedFile;
       success = true;
     }
     mainScreen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));

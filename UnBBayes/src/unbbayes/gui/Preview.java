@@ -36,6 +36,9 @@ import java.text.AttributedString;
  */
 public class Preview extends JPanel {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
     private GlobalOptions og;
 
 	/** Load resource file from this package */

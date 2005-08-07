@@ -14,6 +14,9 @@ import unbbayes.gui.*;
 
 public class PreprocessorMain extends JInternalFrame
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
   private JPanel contentPane;
@@ -258,9 +261,7 @@ public class PreprocessorMain extends JInternalFrame
 		inst = FileController.getInstance().getInstanceSet(selectedFile,this);
         if (inst != null)
         {
-          String fileName = selectedFile.getName();
-          //jTabbedPane1.setSelectedIndex(0);
-		  jPanel1.setBaseInstances(inst);
+          jPanel1.setBaseInstances(inst);
 		  statusBar.setText(resource.getString("fileOpened"));
           this.setTitle(resource.getString("preprocessorTitle")+selectedFile.getName());
 		  saveButton.setEnabled(true);

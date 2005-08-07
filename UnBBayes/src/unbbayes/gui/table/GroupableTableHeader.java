@@ -16,7 +16,9 @@ import javax.swing.table.*;
   */
 
 public class GroupableTableHeader extends JTableHeader {
-	private static final String uiClassID = "GroupableTableHeaderUI";
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
 	protected Vector columnGroups = null;
 
 	public GroupableTableHeader(TableColumnModel model) {
@@ -39,9 +41,9 @@ public class GroupableTableHeader extends JTableHeader {
 	public Enumeration getColumnGroups(TableColumn col) {
 		if (columnGroups == null)
 			return null;
-		Enumeration enum = columnGroups.elements();
-		while (enum.hasMoreElements()) {
-			ColumnGroup cGroup = (ColumnGroup) enum.nextElement();
+		Enumeration enumeration = columnGroups.elements();
+		while (enumeration.hasMoreElements()) {
+			ColumnGroup cGroup = (ColumnGroup) enumeration.nextElement();
 			Vector v_ret = (Vector) cGroup.getColumnGroups(col, new Vector());
 			if (v_ret != null) {
 				return v_ret.elements();
@@ -54,9 +56,9 @@ public class GroupableTableHeader extends JTableHeader {
 		if (columnGroups == null)
 			return;
 		int columnMargin = getColumnModel().getColumnMargin();
-		Enumeration enum = columnGroups.elements();
-		while (enum.hasMoreElements()) {
-			ColumnGroup cGroup = (ColumnGroup) enum.nextElement();
+		Enumeration enumeration = columnGroups.elements();
+		while (enumeration.hasMoreElements()) {
+			ColumnGroup cGroup = (ColumnGroup) enumeration.nextElement();
 			cGroup.setColumnMargin(columnMargin);
 		}
 	}

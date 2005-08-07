@@ -38,6 +38,9 @@ import unbbayes.util.*;
  */
 public class ExplanationProperties extends JDialog
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   private JTabbedPane jTabbedPane = new JTabbedPane();
   private JPanel southPanel = new JPanel();
   private JPanel descriptionPanel = new JPanel();
@@ -52,7 +55,6 @@ public class ExplanationProperties extends JDialog
   private JPanel evidencePhraseBottomPanel = new JPanel();
   private JLabel evidenceNodeLabel = new JLabel();
   private JComboBox evidenceNodeComboBox = new JComboBox();
-  private TitledBorder titledBorder1;
   private JPanel notUsedPanel = new JPanel();
   private JPanel exclusivePanel = new JPanel();
   private JPanel necessaryPanel = new JPanel();
@@ -70,7 +72,6 @@ public class ExplanationProperties extends JDialog
   private JLabel evidencePhraseLabel = new JLabel();
   private JScrollPane evidencePhraseScrollPane = new JScrollPane();
   private JTextArea evidencePhraseTextArea = new JTextArea();
-  private NetWindow netWindow;
   private ProbabilisticNode node;
   private Network net;
   private JButton cancelButton = new JButton();
@@ -86,8 +87,8 @@ public class ExplanationProperties extends JDialog
   private JTextArea explanationNodeTextArea = new JTextArea();
 
   public ExplanationProperties(NetWindow netWindow,Network net)
-  { this.netWindow = netWindow;
-    this.net = net;
+  { 
+	  this.net = net;
     try
     {
       jbInit();
@@ -106,7 +107,6 @@ public class ExplanationProperties extends JDialog
     // Cria bordas
     border1 = BorderFactory.createEmptyBorder(0,10,0,10);
     border2 = BorderFactory.createEmptyBorder(20,20,20,20);
-    titledBorder1 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de Evidência:");
     evidenceTypeBorder = BorderFactory.createCompoundBorder(new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de Evidência:"),BorderFactory.createEmptyBorder(0,10,0,0));
 
     // Muda propriedades do botão ok

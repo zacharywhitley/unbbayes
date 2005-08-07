@@ -35,7 +35,10 @@ import java.awt.event.*;
  */
 public class CompactFileWindow extends JDialog
 {
-    private NodeList variablesVector;
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
+	private NodeList variablesVector;
     private JPanel centerPanel;
     private JButton yes;
     private JButton no;

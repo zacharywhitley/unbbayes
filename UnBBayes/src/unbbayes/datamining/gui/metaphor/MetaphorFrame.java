@@ -6,6 +6,9 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class MetaphorFrame extends JFrame{
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   MetaphorMain jPanel1 = new MetaphorMain();
   BorderLayout borderLayout1 = new BorderLayout();
   public MetaphorFrame() {

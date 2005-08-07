@@ -46,12 +46,12 @@ public class BayesianNetwork extends DistributionClassifier
           numNodes = net.getNodeCount();
           multipliers = new int[numNodes-1];
           indexAttributes = new int[instanceSet.numAttributes()];
-          Enumeration enum = instanceSet.enumerateAttributes();
+          Enumeration enumeration = instanceSet.enumerateAttributes();
           int i = 0;
           String attributeName;
-          while (enum.hasMoreElements())
+          while (enumeration.hasMoreElements())
           {
-            attributeName = ((Attribute)enum.nextElement()).getAttributeName();
+            attributeName = ((Attribute)enumeration.nextElement()).getAttributeName();
             indexAttributes[i] = net.getNodeIndex(attributeName);
             if (indexAttributes[i] == -1)
             {
@@ -90,7 +90,7 @@ public class BayesianNetwork extends DistributionClassifier
   	public float[] distributionForInstance(Instance instance) throws Exception
 	{
             float[] probs = new float[numClasses];
-            short instanceValue;
+            int instanceValue;
 
             if (classNodeIndex < 0)
             {
@@ -98,7 +98,7 @@ public class BayesianNetwork extends DistributionClassifier
             }
 
             // Calcula um hashCode para a instância
-            int j,i=1,hashCode=0,k=0;
+            int j,hashCode=0,k=0;
             for (j=0; j<numNodes; j++)
             {
               if (j != classAttributeIndex)

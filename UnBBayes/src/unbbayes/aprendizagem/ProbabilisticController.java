@@ -30,8 +30,6 @@ import unbbayes.gui.TJanelaEdicao;
 
 public class ProbabilisticController extends LearningToolkit{
 
-    private boolean ok; 
-    
     public ProbabilisticController(NodeList variables,byte[][] matrix,
                        int[] vector,long caseNumber, MainController controller, boolean compacted){
         this.compacted = compacted;
@@ -49,7 +47,7 @@ public class ProbabilisticController extends LearningToolkit{
             table     = variable.getProbabilidades();
             table.addVariable(variable);
         }
-    	TJanelaEdicao window = new TJanelaEdicao(net);
+    	new TJanelaEdicao(net);
         for(int i = 0; i < length; i++) {
             variable  = (TVariavel)variables.get(i);
             arrayNijk = getFrequencies(variable,variable.getPais());                        

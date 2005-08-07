@@ -22,7 +22,9 @@ import unbbayes.prs.bn.PotentialTable;
  */
 public class ProbabilisticTable extends JTable {
 
-    private JTable tabela;
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
 	private PotentialTable potTab;
 	private Node node;
 	private int columns;

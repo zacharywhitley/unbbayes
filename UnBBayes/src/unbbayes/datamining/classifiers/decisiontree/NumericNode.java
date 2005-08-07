@@ -11,6 +11,8 @@ import java.util.*;
  */
 public class NumericNode extends Node 
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
 	/** value used to split attribute values */
 	private double splitValue;
 	

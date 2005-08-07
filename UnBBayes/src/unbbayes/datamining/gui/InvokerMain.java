@@ -20,6 +20,9 @@ import unbbayes.gui.*;
 
 public class InvokerMain extends JFrame
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
   private JPanel contentPane;
   private MDIDesktopPane desktop = new MDIDesktopPane();
 

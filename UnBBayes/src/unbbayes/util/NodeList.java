@@ -33,6 +33,9 @@ import unbbayes.prs.Node;
  * @author Rommel
  */
 public final class NodeList implements java.io.Serializable {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
     public static final int DEFAULT_SIZE = 30;
 
     private Node data[];
