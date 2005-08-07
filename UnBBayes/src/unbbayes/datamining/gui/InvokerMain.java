@@ -2,7 +2,6 @@ package unbbayes.datamining.gui;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 import java.util.*;
 
 import javax.swing.*;
@@ -23,7 +22,10 @@ public class InvokerMain extends JFrame
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
 
-  private JPanel contentPane;
+	  /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+	  private ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.gui.resources.GuiResource");
+
+	  private JPanel contentPane;
   private MDIDesktopPane desktop = new MDIDesktopPane();
 
   private ImageIcon metalIcon;
@@ -34,13 +36,9 @@ public class InvokerMain extends JFrame
   private ImageIcon helpIcon;
   private ImageIcon opcaoglobalIcon;
 
-  private int defaultStates = 40;
-  private int confidenceLimit = 100;
   private String defaultLanguage = "Portuguese";
   private String defaultLaf = "Windows";
 
-  /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
-  private ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.gui.resources.GuiResource");
   private InvokerMain reference = this;
   private IconController iconController = IconController.getInstance();
 
@@ -81,10 +79,11 @@ public class InvokerMain extends JFrame
   private ActionListener alNeuralNetwork;
 
   //Construct the frame
-  public InvokerMain()
+  public InvokerMain(int defaultStates,int confidenceLimit,String defaultLanguage,String defaultLaf)
   {
-    openDefaultOptions();
-
+	  this.defaultLanguage = defaultLanguage;
+	  this.defaultLaf = defaultLaf;
+	  
     metalIcon = iconController.getMetalIcon();
     motifIcon = iconController.getMotifIcon();
     windowsIcon = iconController.getWindowsIcon();
@@ -127,54 +126,6 @@ public class InvokerMain extends JFrame
     {
       System.exit(0);
     }
-  }
-
-  private void openDefaultOptions()
-  { try
-    {   BufferedReader r = new BufferedReader(new FileReader(new File("DataMining.ini")));
-        String header = r.readLine();
-        if (header.equals("[data mining]"))
-        {   // Número de estados permitidos
-            String states = r.readLine();
-            if ((states.substring(0,17)).equals("Maximum states = "))
-            {   defaultStates = Integer.parseInt(states.substring(17));
-            }
-            // Intervalo de confiança
-            String confidence = r.readLine();
-            if ((confidence.substring(0,19)).equals("Confidence limit = "))
-            {   confidenceLimit = Integer.parseInt(confidence.substring(19));
-            }
-            // Opção de língua
-            String language = r.readLine();
-            if ((language.substring(0,11)).equals("Language = "))
-            {   language = language.substring(11);
-                if (language.equals("English"))
-                {   Locale.setDefault(new Locale("en",""));
-                    defaultLanguage = language;
-                }
-                else if (language.equals("Potuguese"))
-                {   Locale.setDefault(new Locale("pt",""));
-                    defaultLanguage = language;
-                }
-            }
-            // Opção de look and feel
-            String laf = r.readLine();
-            if ((laf.substring(0,16)).equals("Look and Feel = "))
-            {   laf = laf.substring(16);
-                if (laf.equals("Metal"))
-                {   defaultLaf = laf;
-                }
-                else if (laf.equals("Motif"))
-                {   defaultLaf = laf;
-                }
-                else if (laf.equals("Windows"))
-                {   defaultLaf = laf;
-                }
-            }
-        }
-    }
-    catch (Exception e)
-    {}
   }
 
   private void setLnF(String lnfName)
