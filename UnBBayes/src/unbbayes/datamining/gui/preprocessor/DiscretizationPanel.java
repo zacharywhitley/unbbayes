@@ -1,13 +1,14 @@
 package unbbayes.datamining.gui.preprocessor;
 
 import java.awt.*;
+import java.awt.event.*;
 
 import javax.swing.*;
 
 import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.discretize.*;
 
-public class DiscretizationPanel
+public class DiscretizationPanel implements ActionListener
 { private JComboBox numberStatesComboBox;
   private JComboBox discretizationTypeComboBox;
 
@@ -15,7 +16,8 @@ public class DiscretizationPanel
   {   if ((JOptionPane.showInternalConfirmDialog(parent, buildPanel(), "Discretization "+selectedAttribute.getAttributeName(),
            JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION))
       {   if (discretizationTypeComboBox.getSelectedIndex() == 0)
-          {   RangeDiscretization range = new RangeDiscretization(inst);
+          {   
+    	  	RangeDiscretization range = new RangeDiscretization(inst);
               try
               {   range.discretizeAttribute(selectedAttribute,(numberStatesComboBox.getSelectedIndex()+1));
                   parent.updateInstances(range.getInstances());
@@ -26,7 +28,8 @@ public class DiscretizationPanel
               }
           }
           else if (discretizationTypeComboBox.getSelectedIndex() == 1)
-          {   FrequencyDiscretization freq = new FrequencyDiscretization(inst);
+          {   
+        	  FrequencyDiscretization freq = new FrequencyDiscretization(inst);
               try
               {   freq.discretizeAttribute(selectedAttribute,(numberStatesComboBox.getSelectedIndex()+1));
                   parent.updateInstances(freq.getInstances());
@@ -36,9 +39,30 @@ public class DiscretizationPanel
               {   parent.setStatusBar(ex.getMessage());
               }
           }
+          else if (discretizationTypeComboBox.getSelectedIndex() == 2)
+          {   
+        	  EntropyDiscretization entropy = new EntropyDiscretization(inst);
+              /*try
+              {   entropy.discretizeAttribute(selectedAttribute,(numberStatesComboBox.getSelectedIndex()+1));
+                  parent.updateInstances(entropy.getInstances());
+                  parent.setStatusBar("Frequency discretization successful");
+              }
+              catch (Exception ex)
+              {   parent.setStatusBar(ex.getMessage());
+              }*/
+          }      		
       }
   }
-
+  
+  public void actionPerformed(ActionEvent evt){
+	  JComboBox source = (JComboBox)evt.getSource();
+	  if (source.getSelectedIndex() == 2) {
+		numberStatesComboBox.setEnabled(false);    	  		  
+	  } else {
+		numberStatesComboBox.setEnabled(true);    	  		  
+	  }
+  }
+  
   private JPanel buildPanel()
   {   JPanel jPanel5 = new JPanel(new BorderLayout());
       JLabel numberStatesLabel = new JLabel("Number of States :");
@@ -60,7 +84,9 @@ public class DiscretizationPanel
       discretizationTypeComboBox = new JComboBox();
       discretizationTypeComboBox.addItem("Range");
       discretizationTypeComboBox.addItem("Frequency");
+      discretizationTypeComboBox.addItem("Entropy");
       jPanel2.add(discretizationTypeComboBox,  BorderLayout.CENTER);
+      discretizationTypeComboBox.addActionListener(this);
 
       JPanel discretizationPanel = new JPanel(new GridLayout(2,2,5,5));
       discretizationPanel.add(jPanel3, null);

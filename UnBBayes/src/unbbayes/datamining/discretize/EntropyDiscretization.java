@@ -9,6 +9,7 @@ public class EntropyDiscretization implements IDiscretization
 
 	public EntropyDiscretization(InstanceSet inst)
 	{	this.inst = new InstanceSet(inst);
+		System.out.println("entropy");
 	}
 
 	public void discretizeAttribute(Attribute att)
