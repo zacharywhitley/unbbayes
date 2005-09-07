@@ -229,7 +229,7 @@ public class NaiveBayes extends DistributionClassifier
 			return nullInstancesString();
 		}
 		try
-		{	StringBuffer text = new StringBuffer("Naive Bayes");
+		{	StringBuilder text = new StringBuilder("Naive Bayes");
       		
 			for (i = 0; i < numClasses; i++)
 			{	text.append("\n\n"+resource.getString("class") + " " + instances.getClassAttribute().value(i) + ": P(C) = " + Utils.doubleToString(priors[i], 10, 8) + "\n\n");
@@ -259,7 +259,7 @@ public class NaiveBayes extends DistributionClassifier
 
 	private String nullInstancesString()
 	{	try
-		{	StringBuffer text = new StringBuffer("Naive Bayes");
+		{	StringBuilder text = new StringBuilder("Naive Bayes");
 			for (i = 0; i < priors.length; i++)
 			{	text.append("\n\n"+resource.getString("class") + " " + i + ": P(C) = " + Utils.doubleToString(priors[i], 10, 8) + "\n\n");
 				if (counts != null)

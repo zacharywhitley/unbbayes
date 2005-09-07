@@ -79,7 +79,7 @@ public class VerbosityPanel extends JScrollPane
 		int classSize = classValues.length;
 								
 		//start string buffer
-		StringBuffer text = new StringBuffer();
+		StringBuilder text = new StringBuilder();
 		text.append("DECISION TREE:");
 		text.append(c45.toString());
 		if(prunned)

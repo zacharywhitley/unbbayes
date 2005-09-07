@@ -197,7 +197,7 @@ public class Evaluation implements IProgress
 	* @return the summary as a String
 	*/
 	public String toString()
-	{	StringBuffer text = new StringBuffer(resource.getString("summary"));
+	{	StringBuilder text = new StringBuilder(resource.getString("summary"));
 
 		//computeROCCurve();
 		
@@ -258,7 +258,7 @@ public class Evaluation implements IProgress
 	double f = (double)correct/(double)withClass;
 	double n = (double)(numInstances());
 	double mediumTerm,initialTerm;
-	StringBuffer sb = new StringBuffer("Correct confidence limits\nPr[c]\t   z\n");
+	StringBuilder sb = new StringBuilder("Correct confidence limits\nPr[c]\t   z\n");
 	for (int i=0;i<confidenceLimits.length;i++)
 	{	z = confidenceLimits[i];
 		initialTerm = initialTerm(f,z,n);
@@ -275,7 +275,7 @@ public class Evaluation implements IProgress
 	double f = (double)incorrect/(double)withClass;
 	double n = (double)(numInstances());
 	double mediumTerm,initialTerm;
-	StringBuffer sb = new StringBuffer("Incorrect confidence limits\nPr[c]\t   z\n");
+	StringBuilder sb = new StringBuilder("Incorrect confidence limits\nPr[c]\t   z\n");
 	for (int i=0;i<confidenceLimits.length;i++)
 	{	z = confidenceLimits[i];
 		initialTerm = initialTerm(f,z,n);
@@ -632,7 +632,7 @@ public class Evaluation implements IProgress
   { if (!classIsNominal)
 	{ throw new Exception(resource.getString("noMatrix"));
 	}
-	StringBuffer text = new StringBuffer(resource.getString("accuracy"));
+  StringBuilder text = new StringBuilder(resource.getString("accuracy"));
 	text.append("\nTP Rate   FP Rate   TN Rate   FN Rate   Class\n");
 	for(int i = 0; i < numClasses; i++)
 	{ text.append(Utils.doubleToString(truePositiveRate(i), 7, 3)).append("   ");
@@ -829,7 +829,7 @@ public class Evaluation implements IProgress
    * @exception Exception if the class is numeric
    */
   public String toMatrixString() throws Exception
-  { StringBuffer text = new StringBuffer(resource.getString("matrix"));
+  { StringBuilder text = new StringBuilder(resource.getString("matrix"));
 	if (!classIsNominal)
 	{ throw new Exception(resource.getString("noMatrix"));
 	}

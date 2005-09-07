@@ -344,7 +344,7 @@ public class C45 extends DecisionTreeLearning implements Serializable
 		Integer level;
 		Stack stackObj = new Stack();
 		Stack stackLevel = new Stack();
-		StringBuffer text = new StringBuffer();
+		StringBuilder text = new StringBuilder();
 
 		ArrayList root = rootNode.children;
 		int size = root.size();

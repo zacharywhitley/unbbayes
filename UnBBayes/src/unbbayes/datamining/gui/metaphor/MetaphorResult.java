@@ -189,7 +189,7 @@ public class MetaphorResult extends JPanel
                                                                         break;
               }
           }
-          StringBuffer sb = new StringBuffer();
+          StringBuilder sb = new StringBuilder();
           sb.append("(Frase Trigger)\n\n");
           addPhrases(sb,trigger);
           sb.append("(Frase Essencial)\n\n");
@@ -199,7 +199,7 @@ public class MetaphorResult extends JPanel
           diagnostic=sb.toString();
       }
 
-      private void addPhrases(StringBuffer sb,ArrayList evidence)
+      private void addPhrases(StringBuilder sb,ArrayList evidence)
       {   ExplanationPhrase explanationPhrase;
           int size = evidence.size();
           if (size>0)
@@ -221,7 +221,7 @@ public class MetaphorResult extends JPanel
               {   exclusive.add(explanationPhrase);
               }
           }
-          StringBuffer sb = new StringBuffer();
+          StringBuilder sb = new StringBuilder();
           sb.append("(Frase Excludente)\n\n");
           addPhrases(sb,exclusive);
           diagnostic=sb.toString();

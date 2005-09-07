@@ -217,7 +217,7 @@ public class Attribute implements Serializable
    	*/
   	public final String toString()
 	{
-          StringBuffer text = new StringBuffer();
+  		StringBuilder text = new StringBuilder();
           text.append("@attribute " + attributeName + " ");
           if (isNominal())
           {

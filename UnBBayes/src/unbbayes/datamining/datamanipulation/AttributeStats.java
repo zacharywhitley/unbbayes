@@ -148,7 +148,7 @@ public class AttributeStats
    */
   public String toString() 
   {	
-  	StringBuffer result = new StringBuffer();
+	  StringBuilder result = new StringBuilder();
     result.append("Missing Count " + missingCount + '\n');
 	result.append("Missing Count Weighted " + missingCountWeighted + '\n');
 	result.append("Distinct Count " + distinctCount + '\n');

@@ -41,7 +41,8 @@ public class DiscretizationPanel implements ActionListener
           }
           else if (discretizationTypeComboBox.getSelectedIndex() == 2)
           {   
-        	  EntropyDiscretization entropy = new EntropyDiscretization(inst);
+        	  //EntropyDiscretization entropy = 
+        	  new EntropyDiscretization(inst);
               /*try
               {   entropy.discretizeAttribute(selectedAttribute,(numberStatesComboBox.getSelectedIndex()+1));
                   parent.updateInstances(entropy.getInstances());

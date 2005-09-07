@@ -44,13 +44,13 @@ public class LogManager implements java.io.Serializable {
     public static final int DEFAULT_BUFFER_SIZE = 10 * 1024;
     public static final String DEFAULT_FILENAME = "aj.txt";
 
-    private StringBuffer log;
+    private StringBuilder log;
     
     /** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.io.resources.IoResources");
 
     public LogManager(int bufferSize) {
-        log = new StringBuffer(bufferSize);
+        log = new StringBuilder(bufferSize);
         reset();
     }
 

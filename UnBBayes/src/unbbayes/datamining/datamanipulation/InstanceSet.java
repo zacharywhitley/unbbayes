@@ -629,7 +629,7 @@ public class InstanceSet
    	* @return the dataset in ARFF format as a string
    	*/
   	public final String toString()
-	{	StringBuffer text = new StringBuffer();
+	{	StringBuilder text = new StringBuilder();
 
     	text.append("@relation " + relationName + "\n\n");
     	for (int i = 0; i < numAttributes(); i++)

@@ -292,7 +292,7 @@ public class EvaluationPanel extends JPanel
                   }
                   setCursor(new Cursor(Cursor.WAIT_CURSOR));
                   try
-                  {   StringBuffer outBuff = new StringBuffer();
+                  {   StringBuilder outBuff = new StringBuilder();
 	              String currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
 	              String classifierName = classifier.getClass().getName().substring("unbbayes.datamining.classifiers.".length());
                       jTextArea1.append("Started  "+currentHour+classifierName+/*" "+jComboBox3.getSelectedItem()+*/"\n");

@@ -343,7 +343,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int j = nos.size()-1; j>=0;j--) {
 			sb.append(nos.get(j) + " ");				
 		}

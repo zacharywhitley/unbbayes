@@ -272,7 +272,7 @@ public class Instance
    	* @return The instance's description as a string
    	*/
   	public String toString()
-	{	StringBuffer text = new StringBuffer();
+	{	StringBuilder text = new StringBuilder();
 
     	for (int i = 0; i < attValues.length; i++)
 		{	if (i > 0) text.append(",");
@@ -291,7 +291,7 @@ public class Instance
    	* @return The value's description as a string
    	*/
   	public String toString(int attIndex)
-	{	StringBuffer text = new StringBuffer();
+	{	StringBuilder text = new StringBuilder();
 
    		if (isMissing(attIndex))
 		{	text.append("?");

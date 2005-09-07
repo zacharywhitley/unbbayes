@@ -1181,7 +1181,7 @@ public class Network implements java.io.Serializable {
 			
 			boolean erro = false;
 
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 
 			try {
 				verifyUtility();

@@ -117,8 +117,8 @@ public class NetIO implements BaseIO {
 					+ ");");
 
 			if (!(auxNo1.getType() == Node.UTILITY_NODE_TYPE)) {
-				StringBuffer auxString =
-					new StringBuffer("\"" + auxNo1.getStateAt(0) + "\"");
+				StringBuilder auxString =
+					new StringBuilder("\"" + auxNo1.getStateAt(0) + "\"");
 
 				int sizeEstados = auxNo1.getStatesSize();
 				for (int c2 = 1; c2 < sizeEstados; c2++) {
@@ -294,7 +294,7 @@ public class NetIO implements BaseIO {
 						net.setRadius(Double.parseDouble(st.sval) / 2);
 					} else if (st.sval.equals("tree")) {
 						proximo(st);
-						StringBuffer sb = new StringBuffer(st.sval);
+						StringBuilder sb = new StringBuilder(st.sval);
 						DefaultMutableTreeNode root =
 							new DefaultMutableTreeNode("Variáveis de Informação");
 						loadHierarchicTree(sb, root);
@@ -510,7 +510,7 @@ public class NetIO implements BaseIO {
 	}
 
 	private void loadHierarchicTree(
-		StringBuffer sb,
+			StringBuilder sb,
 		DefaultMutableTreeNode root) {
 		int size = sb.length();
 		DefaultMutableTreeNode nextRoot = null;
@@ -528,7 +528,7 @@ public class NetIO implements BaseIO {
 				}
 			} else if (c == ',') {
 			} else {
-				StringBuffer newWord = new StringBuffer();
+				StringBuilder newWord = new StringBuilder();
 				while ((c != '(') && (c != ')') && (c != ',')) {
 					newWord.append(c);
 					i++;
@@ -545,7 +545,7 @@ public class NetIO implements BaseIO {
 
 	private String saveHierarchicTree(HierarchicTree hierarchicTree) {
 		TreeModel model = hierarchicTree.getModel();
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		TreeNode root = (TreeNode) model.getRoot();
 		int childCount = model.getChildCount(root);
 		if (childCount == 0) {
@@ -565,7 +565,7 @@ public class NetIO implements BaseIO {
 
 	private void processTreeNode(
 		TreeNode node,
-		StringBuffer sb,
+		StringBuilder sb,
 		TreeModel model) {
 		sb.append(node.toString());
 		if (!node.isLeaf()) {

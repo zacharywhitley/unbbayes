@@ -308,7 +308,7 @@ public final class Utils
    * @return The double as a formatted string
    */
   public static String doubleToString(double value, int afterDecimalPoint)
-  {	StringBuffer stringBuffer;
+  {	StringBuilder stringBuffer;
     double temp;
     int dotPosition;
     long precisionValue;
@@ -317,10 +317,10 @@ public final class Utils
     if (Math.abs(temp) < Long.MAX_VALUE)
 	{	precisionValue = (temp > 0) ? (long)(temp + 0.5) : -(long)(Math.abs(temp) + 0.5);
       	if (precisionValue == 0)
-		{	stringBuffer = new StringBuffer(String.valueOf(0));
+		{	stringBuffer = new StringBuilder(String.valueOf(0));
       	}
 		else
-		{	stringBuffer = new StringBuffer(String.valueOf(precisionValue));
+		{	stringBuffer = new StringBuilder(String.valueOf(precisionValue));
       	}
       	if (afterDecimalPoint == 0)
 		{	return stringBuffer.toString();

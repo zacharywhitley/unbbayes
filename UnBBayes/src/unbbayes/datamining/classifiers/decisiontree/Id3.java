@@ -280,7 +280,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
           Integer level;
           Stack stackObj = new Stack();
           Stack stackLevel = new Stack();
-          StringBuffer text = new StringBuffer();
+          StringBuilder text = new StringBuilder();
 
           ArrayList root = xRootNode.children;
           int size = root.size();
