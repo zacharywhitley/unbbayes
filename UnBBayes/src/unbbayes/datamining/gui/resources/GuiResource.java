@@ -11,6 +11,11 @@ public class GuiResource extends ListResourceBundle {
 	// Invoker Main
 	{"id3Classifier","ID3 Classifier"},
 	{"naiveBayesClassifier","Naive Bayes Classifier"},
+	{"tanClassifier","TAN Classifier"},
+	{"banClassifier","BAN Classifier"},
+	
+	// inserir aqui?
+	
 	{"evaluation","Evaluation"},
 	{"language","Language"},
 	{"lookAndFeel","Look and Feel"},

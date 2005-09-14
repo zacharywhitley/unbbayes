@@ -11,6 +11,8 @@ import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.gui.evaluation.*;
 import unbbayes.datamining.gui.metaphor.*;
 import unbbayes.datamining.gui.naivebayes.*;
+import unbbayes.datamining.gui.tan.*;
+import unbbayes.datamining.gui.ban.*;
 import unbbayes.datamining.gui.preprocessor.*;
 import unbbayes.datamining.gui.neuralmodel.*;
 import unbbayes.datamining.gui.bayesianlearning.*;
@@ -58,6 +60,8 @@ public class InvokerMain extends JFrame
   private JButton preferences = new JButton();
 
   private ActionListener alNaiveBayes;
+  private ActionListener alTan;
+  private ActionListener alBan;
   private ActionListener alPreProcessor;
   private ActionListener alId3;
   private ActionListener alEvaluation;
@@ -181,6 +185,28 @@ public class InvokerMain extends JFrame
                 }
         };
 
+        // create an ActionListener for opening new window for TAN
+        alTan = new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                    setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                    TanMain tan = new TanMain();
+                    addWindow(tan);
+                    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+        };
+        
+        // create an ActionListener for opening new window for Naive BAN
+        alBan = new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                    setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                    BanMain ban = new BanMain();
+                    addWindow(ban);
+                    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+        };
+
+        // inserir aqui?
+                
         // create an ActionListener for opening new window for Naive Bayes
         alPreferences = new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
@@ -435,6 +461,11 @@ public class InvokerMain extends JFrame
         JMenuItem preprocessorItem = new JMenuItem(resource.getString("instancesPreprocessor")/*, icon*/ );
         JMenuItem id3Item = new JMenuItem(resource.getString("id3Classifier")/*, icon*/ );
         JMenuItem naiveBayesItem = new JMenuItem(resource.getString("naiveBayesClassifier")/*, icon*/ );
+        JMenuItem tanItem = new JMenuItem(resource.getString("tanClassifier")/*, icon*/ );
+        JMenuItem banItem = new JMenuItem(resource.getString("banClassifier")/*, icon*/ );
+        
+        //inserir aqui?
+        
         JMenuItem evaluationItem = new JMenuItem(resource.getString("evaluation")/*, icon*/ );
         JMenuItem optionsItem = new JMenuItem(resource.getString("preferences"),opcaoglobalIcon);
         /////////////
@@ -459,6 +490,9 @@ public class InvokerMain extends JFrame
         preprocessorItem.setMnemonic(((Character)resource.getObject("preprocessorMnemonic")).charValue());
         id3Item.setMnemonic(((Character)resource.getObject("id3Mnemonic")).charValue());
         naiveBayesItem.setMnemonic(((Character)resource.getObject("naiveBayesMnemonic")).charValue());
+        
+        //inserir aqui?
+        
         evaluationItem.setMnemonic(((Character)resource.getObject("evaluationMnemonic")).charValue());
         optionsItem.setMnemonic(((Character)resource.getObject("preferencesMnemonic")).charValue());
         ///////////////
@@ -498,6 +532,11 @@ public class InvokerMain extends JFrame
         id3Item.addActionListener(alId3);
         c45Item.addActionListener(alC45);
         naiveBayesItem.addActionListener(alNaiveBayes);
+        tanItem.addActionListener(alTan);
+        banItem.addActionListener(alBan);
+        
+        //inserir aqui?
+        
         evaluationItem.addActionListener(alEvaluation);
         metaphorItem.addActionListener(alMetaphor);
         cnmItem.addActionListener(alCnm);
@@ -516,7 +555,12 @@ public class InvokerMain extends JFrame
         programMenu.add(id3Item);
 		programMenu.add(c45Item);//
         programMenu.add(naiveBayesItem);
-		programMenu.add(bayesianItem);//
+		programMenu.add(tanItem);
+		programMenu.add(banItem);
+		
+        //inserir aqui?
+        
+        programMenu.add(bayesianItem);//
         programMenu.add(cnmItem);
         programMenu.add(neuralNetworkItem);//
 		programMenu.add(metaphorItem);//
