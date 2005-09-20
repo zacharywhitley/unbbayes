@@ -11,9 +11,13 @@ import unbbayes.datamining.discretize.*;
 public class DiscretizationPanel implements ActionListener
 { private JComboBox numberStatesComboBox;
   private JComboBox discretizationTypeComboBox;
+  private JLabel numberStatesLabel;
+  private InstanceSet inst;
 
   public DiscretizationPanel(PreprocessorMain parent,InstanceSet inst,Attribute selectedAttribute)
-  {   if ((JOptionPane.showInternalConfirmDialog(parent, buildPanel(), "Discretization "+selectedAttribute.getAttributeName(),
+  {   
+	  this.inst = inst;
+	  if ((JOptionPane.showInternalConfirmDialog(parent, buildPanel(), "Discretization "+selectedAttribute.getAttributeName(),
            JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION))
       {   if (discretizationTypeComboBox.getSelectedIndex() == 0)
           {   
@@ -41,16 +45,18 @@ public class DiscretizationPanel implements ActionListener
           }
           else if (discretizationTypeComboBox.getSelectedIndex() == 2)
           {   
-        	  //EntropyDiscretization entropy = 
+        	  EntropyDiscretization entropy = 
         	  new EntropyDiscretization(inst);
-              /*try
-              {   entropy.discretizeAttribute(selectedAttribute,(numberStatesComboBox.getSelectedIndex()+1));
-                  parent.updateInstances(entropy.getInstances());
+              try
+              {   
+            	  //entropy.discretizeAttribute(selectedAttribute,(numberStatesComboBox.getSelectedIndex()+1));
+                  entropy.discretizeAttribute(selectedAttribute);
+            	  parent.updateInstances(entropy.getInstances());
                   parent.setStatusBar("Frequency discretization successful");
               }
               catch (Exception ex)
               {   parent.setStatusBar(ex.getMessage());
-              }*/
+              }
           }      		
       }
   }
@@ -58,15 +64,26 @@ public class DiscretizationPanel implements ActionListener
   public void actionPerformed(ActionEvent evt){
 	  JComboBox source = (JComboBox)evt.getSource();
 	  if (source.getSelectedIndex() == 2) {
-		numberStatesComboBox.setEnabled(false);    	  		  
+		numberStatesLabel.setText("Select Class :");
+		numberStatesComboBox.removeAllItems();
+	    int numAtt = inst.numAttributes();
+	      for(int i=0; i<numAtt; i++)
+	      {   numberStatesComboBox.addItem(inst.getAttribute(i).getAttributeName());
+	          if(i == (numAtt - 1))
+	        	  numberStatesComboBox.setSelectedItem(inst.getAttribute(i).getAttributeName());
+	      }	  
 	  } else {
-		numberStatesComboBox.setEnabled(true);    	  		  
+		numberStatesLabel.setText("Number of States :");
+		numberStatesComboBox.removeAllItems();
+	      for (int i=0; i<100; i++)
+	      {   numberStatesComboBox.addItem((i+1)+"");
+	      }
 	  }
   }
   
   private JPanel buildPanel()
   {   JPanel jPanel5 = new JPanel(new BorderLayout());
-      JLabel numberStatesLabel = new JLabel("Number of States :");
+      numberStatesLabel = new JLabel("Number of States :");
       jPanel5.add(numberStatesLabel,  BorderLayout.CENTER);
 
       JPanel jPanel4 = new JPanel(new BorderLayout());
