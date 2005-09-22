@@ -253,6 +253,10 @@ public class PreprocessPanel extends JPanel
       attributeStats = inst.getAllAttributeStats();
       attributePanel.setInstances(instances);
   }
+  
+  public InstanceSet getBaseInstances() {
+	  return instances;
+  }
 
   /**
    * Creates a tablemodel for the attribute being displayed

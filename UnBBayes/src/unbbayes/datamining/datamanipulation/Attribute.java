@@ -386,5 +386,11 @@ public class Attribute implements Serializable
     	System.arraycopy(attributeValues,0,values,0,attributeValues.length);
     	return values;
     }
+    
+    public void dispose() {
+      	attributeName = null;
+      	attributeValues = null;
+      	hashtable = null;    	
+    }
 }
 

@@ -166,5 +166,11 @@ public class AttributeStats
 	result.append("\n");
     return result.toString();
   }
+  
+  public void dispose() {
+	  numericStats = null;
+	  nominalCounts = null;
+	  nominalCountsWeighted = null;
+  }
 
 }

@@ -12,7 +12,7 @@ public class InstanceSet
 {	/** The dataset's name. */
   	private String relationName;
 
-        private String counterAttributeName;
+    private String counterAttributeName;
 
 	/** The attribute information. */
   	private Attribute[] attributes;
@@ -643,6 +643,33 @@ public class InstanceSet
       		}
     	}
     	return text.toString();
+  	}
+
+  	public void dispose() {
+  	  	relationName = null;
+  	    counterAttributeName = null;
+  	  	if (attributes!=null) {
+  	  		for (int i=0;i<attributes.length;i++) {
+  	  			attributes[i].dispose();
+  	  			attributes[i] = null;
+  	  		}
+  	  	}
+  	    attributes = null;
+  	  	if (attributeStats!=null) {
+  	  		for (int i=0;i<attributeStats.length;i++) {
+  	  			attributeStats[i].dispose();
+  	  			attributeStats[i] = null;
+  	  		}
+  	  	}
+  	  	attributeStats = null;
+  	  	if (instanceSet!=null) {
+  	  		for (int i=0;i<instanceSet.length;i++) {
+  	  			instanceSet[i].dispose();
+  	  			instanceSet[i] = null;
+  	  		}
+  	  	}
+  	  	instanceSet = null;
+  	  	resource = null;
   	}
 }
 

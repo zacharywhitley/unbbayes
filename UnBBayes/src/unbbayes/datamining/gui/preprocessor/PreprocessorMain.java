@@ -172,6 +172,8 @@ public class PreprocessorMain extends JInternalFrame
   public void jMenuFileExit_actionPerformed(ActionEvent e)
   {
     dispose();
+    jPanel1.getBaseInstances().dispose();
+    System.gc();
   }
   /**Help | About action performed*/
   public void jMenuHelpAbout_actionPerformed(ActionEvent e)
@@ -288,8 +290,10 @@ public class PreprocessorMain extends JInternalFrame
   }
 
   public void updateInstances(InstanceSet inst)
-  {   //jTabbedPane1.setSelectedIndex(0);
-      this.inst = inst;
+  {   
+	    jPanel1.getBaseInstances().dispose();
+	    System.gc();
+	  this.inst = inst;
       jPanel1.setBaseInstances(inst);
   }
 

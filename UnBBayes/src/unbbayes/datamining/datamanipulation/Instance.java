@@ -376,5 +376,11 @@ public class Instance
 		}
 		attValues = newValues;
 	}
+	
+	public void dispose() {
+	  	resource = null;
+	  	dataset = null;
+	  	attValues = null;		
+	}
 
 }
