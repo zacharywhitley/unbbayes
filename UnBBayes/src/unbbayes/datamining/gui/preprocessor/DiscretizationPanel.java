@@ -16,7 +16,7 @@ public class DiscretizationPanel implements ActionListener
 
   public DiscretizationPanel(PreprocessorMain parent,InstanceSet inst,Attribute selectedAttribute)
   {   
-	  this.inst = inst;
+  		this.inst = inst;
 	  if ((JOptionPane.showInternalConfirmDialog(parent, buildPanel(), "Discretization "+selectedAttribute.getAttributeName(),
            JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION))
       {   if (discretizationTypeComboBox.getSelectedIndex() == 0)
@@ -49,8 +49,8 @@ public class DiscretizationPanel implements ActionListener
         	  new EntropyDiscretization(inst);
               try
               {   
-            	  //entropy.discretizeAttribute(selectedAttribute,(numberStatesComboBox.getSelectedIndex()+1));
-                  entropy.discretizeAttribute(selectedAttribute);
+            	  entropy.discretizeAttribute(selectedAttribute,(numberStatesComboBox.getSelectedIndex()));
+                  //entropy.discretizeAttribute(selectedAttribute);
             	  parent.updateInstances(entropy.getInstances());
                   parent.setStatusBar("Frequency discretization successful");
               }

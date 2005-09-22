@@ -1,5 +1,6 @@
 package unbbayes.datamining.discretize;
 
+import java.util.*;
 import unbbayes.datamining.datamanipulation.*;
 
 /** Faz discretizacao por alcance*/
@@ -27,11 +28,40 @@ public class EntropyDiscretization implements IDiscretization
 		if (numThresholds < 1)
 			numThresholds = 1;
 		try
-		{	/*int position = att.getIndex();
+		{	
+			inst.setClassIndex(numThresholds);
+			Enumeration enumInst = inst.enumerateInstances();
+			DiscretizationGroup dg = new DiscretizationGroup();
+			int i=0;
+          	while (enumInst.hasMoreElements())
+          	{   Instance instance = (Instance)enumInst.nextElement();
+              	DiscretizationValue dv = new DiscretizationValue();
+              	dv.setValue(Float.parseFloat(instance.stringValue(att)));
+              	dv.addClassValue(instance.classValue());
+              	dg.addValue(dv);
+              	i++;
+          	}
+          	
+          	List<DiscretizationValue> sortedValues = dg.sortValuesAsc();
+          	
+          	List<Float> infoPoints = dg.computeInfoPoints(sortedValues);
+          	
+          	int numClasses = inst.numClasses();
+          	for (float infoPoint : infoPoints) {
+              	System.out.println(infoPoint);
+          		float[] before = dg.countClassesBefore(infoPoint,sortedValues,numClasses);
+              	System.out.println(before);
+          		float[] after = dg.countClassesAfter(infoPoint,sortedValues,numClasses);
+              	System.out.println(after);
+              	ClassifierUtils utils = new ClassifierUtils(null);
+              	System.out.println(utils.computeNumericInfo(before,after));
+          	}
+          	
+          	System.out.println("teste");
+			
+			/*int position = att.getIndex();
 			Attribute newAttribute = new Attribute(att.getAttributeName(),null,Attribute.NOMINAL,position);
 			//pega os valores do atributo
-			float[] values = new float[numInstances];
-          	int[] classes = new int[numInstances];
 			Enumeration enumInst = inst.enumerateInstances();
           	int i=0,j=0;
           	while (enumInst.hasMoreElements())

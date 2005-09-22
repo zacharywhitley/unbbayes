@@ -10,6 +10,7 @@ public class TestUtils extends TestCase {
 
   /** The small deviation allowed in double comparisons */
   private final double DELTA = 1e-6;
+  private final double DELTA2 = 1e-3;
   public static File CONTACT_LENCES_FILE = new File("examples/contact-lenses.txt");
   public static File WEATHER_NOMINAL_FILE = new File("examples/weather.nominal.arff");
   public static File WEATHER_NUMERIC_CUT_FILE = new File("examples/weather.cut.txt");
@@ -59,6 +60,17 @@ public class TestUtils extends TestCase {
     weatherCutInst = null;
   }
 
+  public void testNumericInfo() {
+	  try {
+		  ClassifierUtils cu = new ClassifierUtils(null);
+		  double result = cu.computeNumericInfo(new float[]{4,2},new float[]{5,3});
+		  Assert.assertEquals(result,0.939,DELTA2);
+	  } catch (Exception e) {
+		  Assert.fail("Exception thrown: "+e);
+	  }
+  }
+  
+  
 /*	public void testComputeEntropy() {
     try {
       Id3Utils utils = new Id3Utils(contactInst);

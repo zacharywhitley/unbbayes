@@ -14,7 +14,7 @@ import unbbayes.datamining.classifiers.decisiontree.*;
 public class ClassifierUtils 
 {
 	/** stores the calculated logs */
-	private HashMap logmap;
+	private HashMap<Double,Double> logmap;
 	/** value of ln(2) to be used in the log2 function*/
 	private static final double LN2 = Math.log(2);
 	/** instance set used in the methods */
@@ -30,7 +30,7 @@ public class ClassifierUtils
 	public ClassifierUtils(InstanceSet inst)
 	{
 		instances = inst;
-		logmap = new HashMap();
+		logmap = new HashMap<Double,Double>();
 		Double zeroDouble = new Double(0);
 		if(logmap.containsKey(zeroDouble))
 			logmap.put(zeroDouble,zeroDouble);
@@ -657,6 +657,35 @@ public class ClassifierUtils
 	public static double log2(double a)
 	{
 	  return Math.log(a)/LN2;
+	}
+	
+
+	//----------------------------------------------------------------------//
+
+	/**
+	 * Returns the information gain for one possible position for the breakpoint in a discretization procedure
+	 * 
+	 * @param beforeInfoPoint the values for all classes before the breakpoint.
+	 * @param afterInfoPoint the values for all classes after the breakpoint.
+	 * @return A value between 0 and 1, the information gain generated.
+	 */
+	public double computeNumericInfo(float[] beforeInfoPoint,float[] afterInfoPoint)
+	{
+		float sum = 0;
+		float beforeSum = 0;
+		float afterSum = 0;
+		for (float i : beforeInfoPoint) {
+			beforeSum += i;
+		}
+		for (float i : afterInfoPoint) {
+			afterSum += i;
+		}
+		sum = beforeSum + afterSum;
+		
+		double beforeEntropy = computeEntropy(beforeInfoPoint,beforeSum);
+		double afterEntropy = computeEntropy(afterInfoPoint,afterSum);
+		
+		return (beforeSum / sum * beforeEntropy) + (afterSum / sum * afterEntropy);
 	}
 	
 	//-------------------------------------------------------------------------//
