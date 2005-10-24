@@ -62,15 +62,15 @@ public class TxtLoader extends Loader
    	*/
   	protected void readHeader() throws IOException
 	{	String[] attributeValues = null;
-		ArrayList attributes = new ArrayList();
+		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
 		//Insert attributes in the new dataset
 		getNextToken();
 		while (tokenizer.ttype != StreamTokenizer.TT_EOL)
 		{	if(tokenizer.sval != null)
-			{	attributes.add(new Attribute(tokenizer.sval,attributeValues,Attribute.NOMINAL,attributes.size()));
+			{	attributes.add(new Attribute(tokenizer.sval,attributeValues,Attribute.Type.NOMINAL,attributes.size()));
                 	}
 			else
-			{	attributes.add(new Attribute(String.valueOf(tokenizer.nval),attributeValues,Attribute.NUMERIC,attributes.size()));
+			{	attributes.add(new Attribute(String.valueOf(tokenizer.nval),attributeValues,Attribute.Type.NUMERIC,attributes.size()));
                 	}
 			tokenizer.nextToken();
 		}
@@ -123,7 +123,7 @@ public class TxtLoader extends Loader
   	protected boolean getInstanceFull() throws IOException
 	{
           int numAttributes = instances.numAttributes();
-            int[] instance = new int[numAttributes];
+            byte[] instance = new byte[numAttributes];
             int instanceWeight = 1;
             int position = 0,index = 0;
             int attributeNumber = -1;
@@ -173,14 +173,14 @@ public class TxtLoader extends Loader
                     {	if (instances.getAttribute(attributeNumber).isNominal())
                         {   // Check if value appears in header.
                             index = att.indexOfValue(tokenizer.sval);
-                            instance[attributeNumber] = index;
+                            instance[attributeNumber] = (byte)index;
                         }
                     }
                     else if (tokenizer.ttype == StreamTokenizer.TT_NUMBER)
                     {	if (instances.getAttribute(attributeNumber).isNominal())
                         {   // Check if value appears in header.
                             index = att.indexOfValue(tokenizer.nval+"");
-                            instance[attributeNumber] = index;
+                            instance[attributeNumber] = (byte)index;
                         }
                     }
                 }
@@ -189,7 +189,8 @@ public class TxtLoader extends Loader
             }
 
             // Add instance to dataset
-    	    add(new Instance(instanceWeight,instance));
+    	    //Instance newInstance = new Instance(instanceWeight,instance,instances);
+            //instances.insertInstance(newInstance);    	    
     	    return true;
 	}
 
@@ -228,7 +229,7 @@ public class TxtLoader extends Loader
 			if (att.numValues() > maximumStatesAllowed)
 			{	boolean bool = checkNominal(att);
                                 if (bool == false)
-					att.setAttributeType(Attribute.NUMERIC);
+					att.setAttributeType(Attribute.Type.NUMERIC);
 			}
     	}
 

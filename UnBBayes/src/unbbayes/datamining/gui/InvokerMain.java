@@ -459,21 +459,19 @@ public class InvokerMain extends JFrame
 
         // create menu items, set their mnemonic and their key accelerator
         JMenuItem preprocessorItem = new JMenuItem(resource.getString("instancesPreprocessor")/*, icon*/ );
-        JMenuItem id3Item = new JMenuItem(resource.getString("id3Classifier")/*, icon*/ );
-        JMenuItem naiveBayesItem = new JMenuItem(resource.getString("naiveBayesClassifier")/*, icon*/ );
-        JMenuItem tanItem = new JMenuItem(resource.getString("tanClassifier")/*, icon*/ );
-        JMenuItem banItem = new JMenuItem(resource.getString("banClassifier")/*, icon*/ );
+        //JMenuItem id3Item = new JMenuItem(resource.getString("id3Classifier")/*, icon*/ );
+        //JMenuItem naiveBayesItem = new JMenuItem(resource.getString("naiveBayesClassifier")/*, icon*/ );
+        //JMenuItem tanItem = new JMenuItem(resource.getString("tanClassifier")/*, icon*/ );
+        //JMenuItem banItem = new JMenuItem(resource.getString("banClassifier")/*, icon*/ );
         
-        //inserir aqui?
-        
-        JMenuItem evaluationItem = new JMenuItem(resource.getString("evaluation")/*, icon*/ );
+        //JMenuItem evaluationItem = new JMenuItem(resource.getString("evaluation")/*, icon*/ );
         JMenuItem optionsItem = new JMenuItem(resource.getString("preferences"),opcaoglobalIcon);
         /////////////
-        JMenuItem metaphorItem = new JMenuItem("Metaphor"/*, icon*/ );
-        JMenuItem cnmItem = new JMenuItem("Combinatorial Neural Model"/*, icon*/ );
-        JMenuItem c45Item = new JMenuItem("C4.5 Classifier"/*, icon*/ );
-        JMenuItem bayesianItem = new JMenuItem("Bayesian Learning"/*, icon*/ );
-        JMenuItem neuralNetworkItem = new JMenuItem("Neural Network"/*, icon*/);
+        //JMenuItem metaphorItem = new JMenuItem("Metaphor"/*, icon*/ );
+        //JMenuItem cnmItem = new JMenuItem("Combinatorial Neural Model"/*, icon*/ );
+        //JMenuItem c45Item = new JMenuItem("C4.5 Classifier"/*, icon*/ );
+        //JMenuItem bayesianItem = new JMenuItem("Bayesian Learning"/*, icon*/ );
+        //JMenuItem neuralNetworkItem = new JMenuItem("Neural Network"/*, icon*/);
         ///////////
         JMenuItem metalItem = new JMenuItem("Metal",metalIcon);
         JMenuItem motifItem = new JMenuItem("Motif",motifIcon);
@@ -488,18 +486,18 @@ public class InvokerMain extends JFrame
         JMenuItem tbHelp = new JCheckBoxMenuItem(resource.getString("tbHelp"), true);
 
         preprocessorItem.setMnemonic(((Character)resource.getObject("preprocessorMnemonic")).charValue());
-        id3Item.setMnemonic(((Character)resource.getObject("id3Mnemonic")).charValue());
-        naiveBayesItem.setMnemonic(((Character)resource.getObject("naiveBayesMnemonic")).charValue());
+        //id3Item.setMnemonic(((Character)resource.getObject("id3Mnemonic")).charValue());
+        //naiveBayesItem.setMnemonic(((Character)resource.getObject("naiveBayesMnemonic")).charValue());
         
         //inserir aqui?
         
-        evaluationItem.setMnemonic(((Character)resource.getObject("evaluationMnemonic")).charValue());
+        //evaluationItem.setMnemonic(((Character)resource.getObject("evaluationMnemonic")).charValue());
         optionsItem.setMnemonic(((Character)resource.getObject("preferencesMnemonic")).charValue());
         ///////////////
-        metaphorItem.setMnemonic('M');
-        cnmItem.setMnemonic('N');
-        c45Item.setMnemonic('C');
-        bayesianItem.setMnemonic('B');
+        //metaphorItem.setMnemonic('M');
+        //cnmItem.setMnemonic('N');
+        //c45Item.setMnemonic('C');
+        //bayesianItem.setMnemonic('B');
         //////////////
         metalItem.setMnemonic('M');
         motifItem.setMnemonic('O');
@@ -529,19 +527,19 @@ public class InvokerMain extends JFrame
         tbWindow.addActionListener(alTbWindow);
         tbHelp.addActionListener(alTbHelp);
         preprocessorItem.addActionListener(alPreProcessor);
-        id3Item.addActionListener(alId3);
-        c45Item.addActionListener(alC45);
-        naiveBayesItem.addActionListener(alNaiveBayes);
-        tanItem.addActionListener(alTan);
-        banItem.addActionListener(alBan);
+        //id3Item.addActionListener(alId3);
+        //c45Item.addActionListener(alC45);
+        //naiveBayesItem.addActionListener(alNaiveBayes);
+        //tanItem.addActionListener(alTan);
+        //banItem.addActionListener(alBan);
         
         //inserir aqui?
         
-        evaluationItem.addActionListener(alEvaluation);
-        metaphorItem.addActionListener(alMetaphor);
-        cnmItem.addActionListener(alCnm);
-        neuralNetworkItem.addActionListener(alNeuralNetwork);
-        bayesianItem.addActionListener(alBayesianLearning);
+        //evaluationItem.addActionListener(alEvaluation);
+        //metaphorItem.addActionListener(alMetaphor);
+        //cnmItem.addActionListener(alCnm);
+        //neuralNetworkItem.addActionListener(alNeuralNetwork);
+        //bayesianItem.addActionListener(alBayesianLearning);
         metalItem.addActionListener(alMetal);
         motifItem.addActionListener(alMotif);
         windowsItem.addActionListener(alWindows);
@@ -552,19 +550,16 @@ public class InvokerMain extends JFrame
 
         // add menu items to their respective menu
         programMenu.add(preprocessorItem);
-        programMenu.add(id3Item);
-		programMenu.add(c45Item);//
-        programMenu.add(naiveBayesItem);
-		programMenu.add(tanItem);
-		programMenu.add(banItem);
-		
-        //inserir aqui?
-        
-        programMenu.add(bayesianItem);//
-        programMenu.add(cnmItem);
-        programMenu.add(neuralNetworkItem);//
-		programMenu.add(metaphorItem);//
-        programMenu.add(evaluationItem);
+        //programMenu.add(id3Item);
+		//programMenu.add(c45Item);//
+        //programMenu.add(naiveBayesItem);
+		//programMenu.add(tanItem);
+		//programMenu.add(banItem);
+        //programMenu.add(bayesianItem);//
+        //programMenu.add(cnmItem);
+        //programMenu.add(neuralNetworkItem);//
+		//programMenu.add(metaphorItem);//
+        //programMenu.add(evaluationItem);
 		lafMenu.add(metalItem);
         lafMenu.add(motifItem);
         lafMenu.add(windowsItem);

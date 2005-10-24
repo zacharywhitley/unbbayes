@@ -291,8 +291,6 @@ public class PreprocessorMain extends JInternalFrame
 
   public void updateInstances(InstanceSet inst)
   {   
-	    jPanel1.getBaseInstances().dispose();
-	    System.gc();
 	  this.inst = inst;
       jPanel1.setBaseInstances(inst);
   }

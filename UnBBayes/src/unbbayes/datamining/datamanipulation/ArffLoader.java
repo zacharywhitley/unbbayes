@@ -87,8 +87,8 @@ public class ArffLoader extends Loader
 	{
           String attributeName;
           String relationName = "";
-          ArrayList attributeValues;
-          ArrayList attributes = new ArrayList();
+          ArrayList<String> attributeValues;
+          ArrayList<Attribute> attributes = new ArrayList<Attribute>();
           int i;
 
           // Get name of relation.
@@ -126,7 +126,7 @@ public class ArffLoader extends Loader
               // Attribute is real, or integer.
               if (tokenizer.sval.equalsIgnoreCase("real") || tokenizer.sval.equalsIgnoreCase("integer") || tokenizer.sval.equalsIgnoreCase("numeric"))
               {
-                attributes.add(new Attribute(attributeName,null,Attribute.NUMERIC,attributes.size()));
+                attributes.add(new Attribute(attributeName,null,Attribute.Type.NUMERIC,attributes.size()));
                 readTillEOL();
               }
               else
@@ -137,7 +137,7 @@ public class ArffLoader extends Loader
             else
             {
               // Attribute is nominal.
-              attributeValues = new ArrayList();
+              attributeValues = new ArrayList<String>();
               tokenizer.pushBack();
 
               // Get values for nominal attribute.
@@ -166,7 +166,7 @@ public class ArffLoader extends Loader
               {
                 attributeValuesArray[i] = (String)attributeValues.get(i);
               }
-              attributes.add(new Attribute(attributeName, attributeValuesArray, Attribute.NOMINAL,attributes.size()));
+              attributes.add(new Attribute(attributeName, attributeValuesArray, Attribute.Type.NOMINAL,attributes.size()));
             }
             getLastToken(false);
             getFirstToken();
@@ -308,8 +308,11 @@ public class ArffLoader extends Loader
    	*/
   	protected boolean getInstanceFull() throws IOException
 	{
-          int numAttributes = instances.numAttributes();
-          int[] instance = new int[numAttributes];
+  		// count which instance will be updated
+  		counterInstance++;
+
+  		int numAttributes = instances.numAttributes();
+          Object[] instance = new Object[numAttributes];
           int index;
           int instanceWeight = 1;
 
@@ -358,23 +361,23 @@ public class ArffLoader extends Loader
                             if (index == -1)
                             {   errms(resource.getString("getInstanceFullException2"));
                             }
-                            instance[attributeNumber] = index;
+                            instance[attributeNumber] = (byte)index;
                         }
                         else if (instances.getAttribute(attributeNumber).isNumeric())
                         {   // Check if value is really a number.
                             try
-                            {   Attribute att = instances.getAttribute(attributeNumber);
+                            {   //Attribute att = instances.getAttribute(attributeNumber);
                                 float newValue = Float.valueOf(tokenizer.sval).floatValue();
-                                String nomeEstado = newValue + "";
-                                if (att.numValues()==0 || att.indexOfValue(nomeEstado) == -1)
+                                //String nomeEstado = newValue + "";
+                                /*if (att.numValues()==0 || att.indexOfValue(nomeEstado) == -1)
                                 {   att.addValue(nomeEstado);
                                 }
                                 // Check if value appears in header.
                                 index = att.indexOfValue(nomeEstado);
                                 if (index == -1)
                                 {   errms(resource.getString("getInstanceFullException2"));
-                                }
-                                instance[attributeNumber] = index;
+                                }*/
+                                instance[attributeNumber] = newValue;
                             }
                             catch (NumberFormatException e)
                             {   errms(resource.getString("getInstanceFullException3"));
@@ -384,9 +387,11 @@ public class ArffLoader extends Loader
                 }
     	    }
     	    getLastToken(true);
+    	    
     	    // Add instance to dataset
-    	    add(new Instance(instanceWeight,instance));
-            return true;
+    	    Instance newInstance = new Instance(instanceWeight,instance,instances,counterInstance);
+            instances.insertInstance(newInstance);    	    
+        	return true;
         }
 
 }

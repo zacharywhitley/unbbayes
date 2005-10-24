@@ -12,7 +12,7 @@ import java.util.*;
  */
 public class Instance
 {	/** Constant representing a missing value. */
-  	public final static int MISSING_VALUE = -1;
+  	public final static byte MISSING_VALUE = -1;
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.datamanipulation.resources.DataManipulationResource");
@@ -25,10 +25,20 @@ public class Instance
   	protected InstanceSet dataset;
 
   	/** The instance's attribute values. */
-  	protected int[] attValues;
+  	//protected int[] attValues;
 
 	/** The instance's weight. */
   	protected float weight;
+  	
+  	private int index;
+  	
+  	public int getIndex() {
+  		return index;
+  	}
+  	
+  	public void setIndex(int index) {
+  		this.index = index;
+  	}
 
   	/**
    	* Constructor that copies the attribute values from
@@ -40,7 +50,7 @@ public class Instance
 	* values are to be copied
    	*/
   	public Instance(Instance instance)
-	{	attValues = instance.attValues;
+	{	//attValues = instance.attValues;
 		weight = instance.weight;
     	dataset = null;
   	}
@@ -53,11 +63,11 @@ public class Instance
 	*
    	* @param attValues An array of attribute values
    	*/
-  	public Instance(int[] attValues)
+  	/*public Instance(int[] attValues)
 	{	this.attValues = attValues;
 		weight = 1;
     	dataset = null;
-  	}
+  	}*/
 
 	/**
    	* Constructor that inititalizes instance variable with given
@@ -67,10 +77,22 @@ public class Instance
    	* @param weight the instance's weight
    	* @param attValues a vector of attribute values
    	*/
-  	public Instance(int weight, int[] attValues)
-  	{	this.attValues = attValues;
-		this.weight = weight;
-    	dataset = null;
+  	public Instance(int weight, Object[] attValues,InstanceSet dataset, int index)
+  	{	
+  		int size = dataset.getAttributes().length;
+  		for (int i=0;i<size;i++) {
+  	  		Attribute att = dataset.getAttribute(i);
+  			if (att.attributeType == Attribute.Type.NOMINAL) {
+  	  			dataset.getAttribute(i).byteValues[index] = ((Byte)attValues[i]).byteValue();  				
+  			} else if (att.attributeType == Attribute.Type.NUMERIC) {
+  	  			dataset.getAttribute(i).floatValues[index] = ((Float)attValues[i]).floatValue();  				  				
+  			} else {
+  				assert false : "Tipo de atribute não existente";
+  			}
+  		}
+		this.dataset = dataset;
+  		this.weight = weight;
+  		this.index = index;
   	}
 
 	/**
@@ -127,11 +149,11 @@ public class Instance
    	* @exception UnassignedClassException if the class is not set or the instance doesn't
    	* have access to a dataset
    	*/
-  	public final int classValue()
+  	public final byte classValue()
 	{	if (getClassIndex() < 0)
 		{	throw new UnassignedClassException(resource.getString("runtimeException2"));
     	}
-    	return getValue(getClassIndex());
+    	return getByteValue(getClassIndex());
   	}
 
   	/**
@@ -154,10 +176,18 @@ public class Instance
    	* @param attIndex Attribute's index
    	*/
   	public final boolean isMissing(int attIndex)
-	{	if (MISSING_VALUE == attValues[attIndex])
-		{	return true;
-    	}
-    	return false;
+	{	
+  		if (dataset.getAttribute(attIndex).attributeType == Attribute.Type.NOMINAL) {
+  	  		if (MISSING_VALUE == dataset.getAttribute(attIndex).byteValues[0])
+  			{	return true;
+  	    	}
+  	    	return false;  			
+  		} else {
+  	  		if (MISSING_VALUE == (byte)dataset.getAttribute(attIndex).floatValues[0])
+  			{	return true;
+  	    	}
+  	    	return false;  			  			
+  		}
   	}
 
   	/**
@@ -189,7 +219,7 @@ public class Instance
    	*
    	* @return the int that codes "missing"
    	*/
-  	public static final int missingValue()
+  	public static final byte missingValue()
 	{	return MISSING_VALUE;
   	}
 
@@ -213,7 +243,12 @@ public class Instance
   	 * @param attIndex the attribute's index
   	 */
   	public void setMissing(int attIndex)
-	{	setValue(attIndex, MISSING_VALUE);
+	{	
+  		if (this.dataset.getAttribute(attIndex).isNominal()) {
+  	  		setByteValue(attIndex, MISSING_VALUE);  			
+  		} else {
+  			setFloatValue(attIndex, MISSING_VALUE);  			
+  		}
   	}
 
   	/**
@@ -249,7 +284,12 @@ public class Instance
 	{	if (dataset == null)
 		{	throw new UnassignedDatasetException(resource.getString("runtimeException1"));
     	}
-    	return dataset.getAttribute(attIndex).value((int) getValue(attIndex));
+		Attribute att = dataset.getAttribute(attIndex);
+		if (att.isNominal()) {
+	    	return att.value(getByteValue(attIndex));			
+		} else {
+			return att.floatValues[index]+"";
+		}
   	}
 
   	/**
@@ -273,8 +313,8 @@ public class Instance
    	*/
   	public String toString()
 	{	StringBuilder text = new StringBuilder();
-
-    	for (int i = 0; i < attValues.length; i++)
+		int size = dataset.getAttributes().length;
+    	for (int i = 0; i < size; i++)
 		{	if (i > 0) text.append(",");
       			text.append(toString(i));
     	}
@@ -298,7 +338,12 @@ public class Instance
    		}
 		else
 		{	if (dataset == null)
-			{	text.append(attValues[attIndex]);
+			{	
+				if (dataset.getAttribute(attIndex).attributeType == Attribute.Type.NOMINAL) {
+					text.append(dataset.getAttribute(attIndex).byteValues[index]);
+				} else {
+					text.append(dataset.getAttribute(attIndex).floatValues[index]);					
+				}
      		}
 			else
 			{	text.append(stringValue(attIndex));
@@ -326,8 +371,12 @@ public class Instance
    	* @param attIndex Attribute's index
    	* @return The specified value as a int
    	*/
-  	public final int getValue(int attIndex)
-	{	return attValues[attIndex];
+  	public final byte getByteValue(int attIndex)
+	{	return dataset.getAttribute(attIndex).byteValues[index];
+  	}
+  	
+  	public final float getFloatValue(int attIndex) {
+  		return dataset.getAttribute(attIndex).floatValues[index];
   	}
 
 	/**
@@ -336,8 +385,12 @@ public class Instance
    	* @param attIndex Attribute's index
 	* @param newValue New value as a int
    	*/
-  	public final void setValue(int attIndex, int newValue)
-	{	attValues[attIndex] = newValue;
+  	public final void setByteValue(int attIndex, byte newValue)
+	{	dataset.getAttribute(attIndex).byteValues[index] = newValue;
+	}
+
+  	public final void setFloatValue(int attIndex, float newValue)
+	{	dataset.getAttribute(attIndex).floatValues[index] = newValue;
 	}
 
   	/**
@@ -347,8 +400,8 @@ public class Instance
    	* @param att Attribute
    	* @return The specified value as a int
    	*/
-  	public final int getValue(Attribute att)
-	{	return getValue(att.getIndex());
+  	public final byte getByteValue(Attribute att)
+	{	return getByteValue(att.getIndex());
   	}
 
 	/**
@@ -358,29 +411,17 @@ public class Instance
    	* @param att Attribute
 	* @param newValue New value as a int
    	*/
-  	public final void setValue(Attribute att, int newValue)
-	{	attValues[att.getIndex()] = newValue;
+  	public final void setByteValue(Attribute att, byte newValue)
+	{	att.byteValues[index] = newValue;
 	}
 	
-	public final void removeAttribute(int index)
-	{
-		int[] newValues = new int[attValues.length-1];
-		int j=0;
-		for (int i=0;i<attValues.length;i++)
-		{
-			if(index!=i)
-			{
-				newValues[j]=attValues[i];
-				j++;
-			}
-		}
-		attValues = newValues;
+  	public final void setByteValue(Attribute att, float newValue)
+	{	att.floatValues[index] = newValue;
 	}
-	
-	public void dispose() {
+
+  	public void dispose() {
 	  	resource = null;
 	  	dataset = null;
-	  	attValues = null;		
 	}
 
 }

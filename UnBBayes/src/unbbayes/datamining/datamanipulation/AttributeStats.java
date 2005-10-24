@@ -1,5 +1,7 @@
 package unbbayes.datamining.datamanipulation;
 
+import java.util.*;
+
 /**
  * A Utility class that contains summary information on an
  * the values that appear in a dataset for a particular attribute.
@@ -29,6 +31,8 @@ public class AttributeStats
   /** Constant set for nominal attributes. */
   public final static int NOMINAL = 1;
 
+  private Map<Float,Float> valuesMap;
+  
   /** Constructor that defines the type of Attribute will be manipulated and the number
   	of values associated with this Attribute. If Attribute is numeric numValues will not 
 	be considerated.
@@ -41,6 +45,7 @@ public class AttributeStats
 	nominalCountsWeighted = new int [numValues];
 	if (attributeType == NUMERIC)
 	{	numericStats = new Stats();
+		valuesMap = new HashMap<Float,Float>();
 	}
   }
   
@@ -128,16 +133,17 @@ public class AttributeStats
 		distinctCount++;
     }		
   }
-  protected void addDistinct(float value, int internalValue,int count, int countWeighted) 
+  protected void addDistinct(float value, int count) 
   {	if (count > 0) 
 	{	
-		nominalCounts[internalValue] = count;
-		nominalCountsWeighted[internalValue] = countWeighted;
 		if (numericStats != null) 
 		{	numericStats.add(value, count);
 			numericStats.calculateDerived();
 		}
-		distinctCount++;
+		if (!valuesMap.containsKey(value)) {
+			valuesMap.put(value,value);
+			distinctCount++;			
+		}
 	}		
   }
   

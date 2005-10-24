@@ -11,7 +11,8 @@ public class FrequencyDiscretization implements IDiscretization
 	private InstanceSet inst;
 
 	public FrequencyDiscretization(InstanceSet inst)
-	{	this.inst = new InstanceSet(inst);
+	{	//this.inst = new InstanceSet(inst);
+		this.inst = inst;
 	}
 
 	public void discretizeAttribute(Attribute att) throws Exception
@@ -30,7 +31,7 @@ public class FrequencyDiscretization implements IDiscretization
 			numThresholds = 1;
 		try
 		{	int position = att.getIndex();//cria um novo atributo nominal
-			Attribute newAttribute = new Attribute(att.getAttributeName(),null,Attribute.NOMINAL,position);
+			Attribute newAttribute = new Attribute(att.getAttributeName(),null,Attribute.Type.NOMINAL,position);
 			// encontra todos os valores do atributo antigo
 			float[] values = new float[numInstances];
           	Enumeration enumInst = inst.enumerateInstances();
@@ -90,13 +91,13 @@ public class FrequencyDiscretization implements IDiscretization
 			inst.setAttributeAt(newAttribute,position);
 			// insere os novos valores
 			for (i=0; i<numInstances; i++)
-			{	int newValue = 0;
+			{	byte newValue = 0;
 				for (j=0; j<breakPoint.length; j++)
 					if (values2[i] <= breakPoint[j])
-					{	newValue = j;
+					{	newValue = (byte)j;
 						break;
 					}
-				inst.getInstance(i).setValue(position,newValue);
+				inst.getInstance(i).setByteValue(position,newValue);
 			}
 		}
 		catch (Exception e)

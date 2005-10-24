@@ -11,7 +11,8 @@ public class RangeDiscretization implements IDiscretization
 	private InstanceSet inst;
 
 	public RangeDiscretization(InstanceSet inst)
-	{	this.inst = new InstanceSet(inst);
+	{	//this.inst = new InstanceSet(inst);
+		this.inst = inst;
 	}
 
 	public void discretizeAttribute(Attribute att) throws Exception
@@ -30,7 +31,7 @@ public class RangeDiscretization implements IDiscretization
 			numThresholds = 1;
 		try
 		{	int position = att.getIndex();
-			Attribute newAttribute = new Attribute(att.getAttributeName(),null,Attribute.NOMINAL,position);
+			Attribute newAttribute = new Attribute(att.getAttributeName(),null,Attribute.Type.NOMINAL,position);
 			//pega os valores do atributo
 			float[] values = new float[numInstances];
           	Enumeration enumInst = inst.enumerateInstances();
@@ -55,10 +56,10 @@ public class RangeDiscretization implements IDiscretization
 			inst.setAttributeAt(newAttribute,position);
 			//seta os valores das instancias com o novo atributo
 			for (i=0; i<numInstances; i++)
-			{	int newValue = (int)Math.abs((values[i]-min) / ranges);
+			{	byte newValue = (byte)Math.abs((values[i]-min) / ranges);
 				if (newValue == numThresholds)
 					newValue--;
-				inst.getInstance(i).setValue(position,newValue);
+				inst.getInstance(i).setByteValue(position,newValue);
 			}
 		}
 		catch (Exception e)

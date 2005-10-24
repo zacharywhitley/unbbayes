@@ -4,8 +4,8 @@
 	<classpathentry exported="true" sourcepath="JRE_SRC" kind="var" path="JRE_LIB"/>
 	<classpathentry exported="true" kind="lib" path="lib/GIFOutput.jar"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
-	<classpathentry kind="lib" path="lib/jh.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/plot.jar"/>
 	<classpathentry kind="lib" path="lib/xalan.jar"/>
+	<classpathentry kind="lib" path="lib/jh.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

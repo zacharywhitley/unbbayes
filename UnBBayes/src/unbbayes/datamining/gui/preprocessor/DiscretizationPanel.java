@@ -52,7 +52,7 @@ public class DiscretizationPanel implements ActionListener
             	  entropy.discretizeAttribute(selectedAttribute,(numberStatesComboBox.getSelectedIndex()));
                   //entropy.discretizeAttribute(selectedAttribute);
             	  parent.updateInstances(entropy.getInstances());
-                  parent.setStatusBar("Frequency discretization successful");
+                  parent.setStatusBar("Entropy discretization successful");
               }
               catch (Exception ex)
               {   parent.setStatusBar(ex.getMessage());

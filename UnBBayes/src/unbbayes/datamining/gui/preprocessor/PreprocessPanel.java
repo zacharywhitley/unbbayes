@@ -375,8 +375,8 @@ public class PreprocessPanel extends JPanel
               {   try
                   {   selectedAttribute = i;
                       Attribute att = instances.getAttribute(selectedAttribute);
-                      int type = att.getAttributeType();
-                      if (type == Attribute.NOMINAL)
+                      Attribute.Type type = att.getAttributeType();
+                      if (type == Attribute.Type.NOMINAL)
                       {   jLabel12.setText(resource.getString("nominal"));
                           discretizeButton.setEnabled(false);
                       }

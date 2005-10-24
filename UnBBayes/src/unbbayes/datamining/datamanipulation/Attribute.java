@@ -24,26 +24,34 @@ public class Attribute implements Serializable
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
 
-	/** Constant set for numeric attributes. */
-  	public final static int NUMERIC = 0;
-
-  	/** Constant set for nominal attributes. */
-  	public final static int NOMINAL = 1;
-
+	public enum Type{NUMERIC,NOMINAL}
+	
   	/** The attribute's name. */
   	private String attributeName;
 
   	/** The attribute's type. */
-  	private int attributeType;
+  	public Type attributeType;
 
   	/** The attribute's values */
   	private String[] attributeValues;
 
 	/** Mapping of values to indices */
-  	private Hashtable hashtable;
+  	private Hashtable<String,Integer> hashtable;
 
   	/** The attribute's index. */
   	private int index;
+  	
+  	public byte[] byteValues;
+  	
+  	public float[] floatValues;
+  	
+  	public void setByteValues(byte[] byteValues) {
+  		this.byteValues = byteValues;
+  	}
+
+  	public void setFloatValues(float[] floatValues) {
+  		this.floatValues = floatValues;
+  	}
 
   	/**
    	* Constructor for attributes.
@@ -53,14 +61,15 @@ public class Attribute implements Serializable
    	* attribute values.
 	* @param attributeType Type of this attribute (Nominal or Numeric)
 	*/
-  	public Attribute(String attributeName,String[] attributeValues,int attributeType)
+  	public Attribute(String attributeName,String[] attributeValues,Attribute.Type attributeType)
 	{	this.attributeName = attributeName;
+		this.attributeType = attributeType;
     	index = -1;
     	this.attributeValues = attributeValues;
       	if (attributeValues != null)
 		{
 			int numValues = numValues();
-			hashtable = new Hashtable(numValues);
+			hashtable = new Hashtable<String,Integer>(numValues);
       		for (int i = 0; i < numValues; i++)
 			{	hashtable.put(attributeValues[i], new Integer(i));
       		}
@@ -68,7 +77,6 @@ public class Attribute implements Serializable
 		else
 		{	hashtable = null;
 		}
-		this.attributeType = attributeType;
   	}
 
   	/**
@@ -79,7 +87,7 @@ public class Attribute implements Serializable
    	* @param attributeType Type of this attribute (Nominal or Numeric)
 	* @param index The attribute's index
 	*/
-  	public Attribute(String attributeName,String[] attributeValues,int attributeType,int index)
+  	public Attribute(String attributeName,String[] attributeValues,Attribute.Type attributeType,int index)
 	{	this(attributeName, attributeValues, attributeType);
 		this.index = index;
 	}
@@ -175,7 +183,7 @@ public class Attribute implements Serializable
    	* @return true if the attribute is nominal
    	*/
   	public final boolean isNominal()
-	{	return (attributeType == NOMINAL);
+	{	return (attributeType == Type.NOMINAL);
   	}
 
   	/**
@@ -184,7 +192,7 @@ public class Attribute implements Serializable
    	* @return true if the attribute is numeric
    	*/
   	public final boolean isNumeric()
-	{	return (attributeType == NUMERIC);
+	{	return (attributeType == Type.NUMERIC);
   	}
 
   	/**
@@ -202,12 +210,21 @@ public class Attribute implements Serializable
    	* @return the number of attribute values
    	*/
   	public final int numValues()
-	{	if (attributeValues == null)
-		{	return 0;
-    	}
-		else
-		{	return attributeValues.length;
-    	}
+	{	
+  		if (attributeType == Type.NOMINAL) {
+  	  		if (attributeValues == null)
+  			{	return 0;
+  	    	}
+  			else
+  			{	return attributeValues.length;
+  	    	}  			
+  		} else {
+  			if (this.floatValues == null) {
+  				return 0;
+  			} else {
+  				return this.floatValues.length;
+  			}
+  		}
   	}
 
   	/**
@@ -249,7 +266,7 @@ public class Attribute implements Serializable
    	*
    	* @return the attribute's type.
    	*/
-  	public final int getAttributeType()
+  	public final Type getAttributeType()
 	{	return attributeType;
   	}
 
@@ -278,18 +295,20 @@ public class Attribute implements Serializable
 	{
           if (hashtable == null)
           {
-            hashtable = new Hashtable();
+            hashtable = new Hashtable<String,Integer>();
 
           }
 
-          String[] newValues = new String[numValues()+1];
+          int numValues = numValues();
+          String[] newValues = new String[numValues+1];
           if (attributeValues!=null)
           {
-            System.arraycopy(attributeValues,0,newValues,0,numValues());
+            System.arraycopy(attributeValues,0,newValues,0,numValues);
           }
-          newValues[numValues()] = value;
+          newValues[numValues] = value;
+          byteValues = new byte[numValues];
           attributeValues = newValues;
-          hashtable.put(value, new Integer(numValues() - 1));
+          hashtable.put(value, new Integer(numValues - 1));
 	}
 
   	/**
@@ -371,7 +390,7 @@ public class Attribute implements Serializable
    	*
    	* @param attributeType New attribute type
    	*/
-  	public void setAttributeType(int attributeType)
+  	public void setAttributeType(Type attributeType)
 	{	this.attributeType = attributeType;
 	}
 

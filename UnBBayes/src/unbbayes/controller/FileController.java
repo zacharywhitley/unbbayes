@@ -191,7 +191,8 @@ public class FileController
             throw new IOException(resource.getString("fileExtensionException"));
           }
 
-          new ProgressDialog (output.getName(), saver);
+  			ProgressDialog progressDialog = new ProgressDialog (output.getName(), saver);
+  			progressDialog.load();
         }
 
 }

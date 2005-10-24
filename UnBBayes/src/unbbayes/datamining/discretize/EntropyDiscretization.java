@@ -9,7 +9,8 @@ public class EntropyDiscretization implements IDiscretization
 	private InstanceSet inst;
 
 	public EntropyDiscretization(InstanceSet inst)
-	{	this.inst = new InstanceSet(inst);
+	{	//this.inst = new InstanceSet(inst);
+		this.inst = inst;
 		System.out.println("entropy");
 	}
 
@@ -41,21 +42,16 @@ public class EntropyDiscretization implements IDiscretization
               	dg.addValue(dv);
               	i++;
           	}
-          	
-          	List<DiscretizationValue> sortedValues = dg.sortValuesAsc();
-          	
-          	List<Float> infoPoints = dg.computeInfoPoints(sortedValues);
-          	
           	int numClasses = inst.numClasses();
-          	for (float infoPoint : infoPoints) {
-              	System.out.println(infoPoint);
-          		float[] before = dg.countClassesBefore(infoPoint,sortedValues,numClasses);
-              	System.out.println(before);
-          		float[] after = dg.countClassesAfter(infoPoint,sortedValues,numClasses);
-              	System.out.println(after);
-              	ClassifierUtils utils = new ClassifierUtils(null);
-              	System.out.println(utils.computeNumericInfo(before,after));
-          	}
+          	
+          	float value = getLowerInfoPoint(dg, numClasses);
+          	System.out.println(value);
+          	dg.removeValue(value);
+          	value = getLowerInfoPoint(dg, numClasses);
+          	System.out.println(value);
+          	dg.removeValue(value);
+          	value = getLowerInfoPoint(dg, numClasses);
+          	System.out.println(value);
           	
           	System.out.println("teste");
 			
@@ -126,6 +122,23 @@ public class EntropyDiscretization implements IDiscretization
 			{	discretizeAttribute(att,numThresholds);
 			}
 		}
+	}
+	
+	protected float getLowerInfoPoint(DiscretizationGroup dg, int numClasses) {
+      	List<DiscretizationValue> sortedValues = dg.sortValuesAsc();
+      	List<Float> infoPoints = dg.computeInfoPoints(sortedValues);
+      	double lowerNumericInfo = 1;
+      	float lowerInfoPoint = infoPoints.get(0);
+      	for (float infoPoint : infoPoints) {
+      		float[] before = dg.countClassesBefore(infoPoint,sortedValues,numClasses);
+      		float[] after = dg.countClassesAfter(infoPoint,sortedValues,numClasses);
+          	ClassifierUtils utils = new ClassifierUtils(null);
+          	double numericInfo = utils.computeNumericInfo(before,after);
+          	if (numericInfo < lowerNumericInfo) {
+          		lowerInfoPoint = infoPoint;
+          	}
+      	}
+		return lowerInfoPoint;
 	}
 
 	public InstanceSet getInstances()

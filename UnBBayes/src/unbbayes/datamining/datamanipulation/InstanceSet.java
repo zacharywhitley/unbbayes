@@ -232,10 +232,11 @@ public class InstanceSet
     	}
     	attributes[position] = att;
     	attributeStats[position] = null;
+    	// Set all instances as Missing values
 		int numInstances = numInstances();
-    	for (int i = 0; i < numInstances; i++)
-		{	getInstance(i).setValue(att,Instance.MISSING_VALUE);
-		}
+    	byte[] byteValues = new byte[numInstances];
+    	Arrays.fill(byteValues,Instance.MISSING_VALUE);
+		att.setByteValues(byteValues);
   	}
 
 	/**
@@ -325,7 +326,18 @@ public class InstanceSet
             capacity = 0;
           }
           attributes = newAttributes;
-		  attributeStats = new AttributeStats[attributes.length];
+		  for (Attribute att : newAttributes) {
+			  if (att.attributeType == Attribute.Type.NOMINAL) {
+				  att.setByteValues(new byte[capacity]);
+				  Arrays.fill(att.byteValues,Instance.MISSING_VALUE);
+			  } else if (att.attributeType == Attribute.Type.NUMERIC) {
+				  att.setFloatValues(new float[capacity]);				  
+				  Arrays.fill(att.floatValues,Instance.MISSING_VALUE);
+			  } else {
+				  assert false : "Tipo de atribute inválido";
+			  }			  
+		  }
+          attributeStats = new AttributeStats[attributes.length];
           instanceSet = new Instance[capacity];
           classIndex = -1;
   	}
@@ -337,10 +349,10 @@ public class InstanceSet
    	*
    	* @param dataset Set to be copied
    	*/
-  	public InstanceSet(InstanceSet dataset)
+  	/*public InstanceSet(InstanceSet dataset)
 	{	this(dataset, dataset.numInstances());
 		dataset.copyInstances(0, this, dataset.numInstances());
-  	}
+  	}*/
 
 	/**
    	* Constructor creating an empty set of instances. Copies references
@@ -374,14 +386,14 @@ public class InstanceSet
   	 * @param toCopy The number of instances to be copied
   	 * @exception IllegalArgumentException if first and toCopy are out of range
   	 */
-  	public InstanceSet(InstanceSet source, int first, int toCopy)
+  	/*public InstanceSet(InstanceSet source, int first, int toCopy)
 	{ this(source, toCopy);
 
   	  if ((first < 0) || ((first + toCopy) > source.numInstances()))
 	  { throw new IllegalArgumentException(resource.getString("outOfRange"));
   	  }
   	  source.copyInstances(first, this, toCopy);
-  	}
+  	}*/
 
 	/**
    	* Removes all instances with a missing class value
@@ -403,7 +415,7 @@ public class InstanceSet
    	* @param attIndex Attribute's index
    	*/
   	public final void deleteWithMissing(int attIndex)
-	{	ArrayList newInstances = new ArrayList();
+	{	ArrayList<Instance> newInstances = new ArrayList<Instance>();
 		for (int i = 0; i < numInstances(); i++)
 		{	if (!getInstance(i).isMissing(attIndex))
 			{	newInstances.add(getInstance(i));
@@ -425,7 +437,7 @@ public class InstanceSet
    	* @param dest Destination for the instances
    	* @param num Number of instances to be copied
    	*/
-  	public void copyInstances(int from, InstanceSet dest, int num)
+  	/*public void copyInstances(int from, InstanceSet dest, int num)
 	{	for (int j = 0; j < num; j++)
 		{	int[] by = new int[numAttributes()];
 			for (int i=0; i<numAttributes(); i++)
@@ -436,7 +448,7 @@ public class InstanceSet
 			dest.add(ins);
     	}
 
-  	}
+  	}*/
 
   	/**
    	* Calculates summary statistics on the values that appear in this
@@ -466,6 +478,10 @@ public class InstanceSet
 				{
 					attributeStats[i] = new AttributeStats(AttributeStats.NUMERIC,getAttribute(i).numValues());
 				}
+			} else {
+				if (getAttribute(i).isNominal()) {
+					attributeStats[i].setDistinctCount(0);					
+				}
 			}
 		}
 		if (attFlag)
@@ -476,7 +492,7 @@ public class InstanceSet
 			for (int i=0;i<numAttributes;i++)
 			{
 				countWeightResults[i] = new int[getAttribute(i).numValues()+1];
-				countResults[i] = new int[getAttribute(i).numValues()+1];
+				countResults[i] = new int[getAttribute(i).numValues()+1];					
 			}
 			int numInstances = numInstances();
 			for (int j = 0; j < numInstances; j++)
@@ -485,6 +501,7 @@ public class InstanceSet
 				int instanceWeight = (int)current.getWeight();
 				for (int i=0;i<numAttributes;i++)
 				{
+					Attribute tempAtt = getAttribute(i);
 					if (current.isMissing(i))
 					{
 						countWeightResults[i][((countWeightResults[i]).length)-1]+=instanceWeight;
@@ -492,8 +509,13 @@ public class InstanceSet
 					}
 					else
 					{
-						countWeightResults[i][current.getValue(i)]+=instanceWeight;
-						countResults[i][current.getValue(i)]++;
+						if (tempAtt.isNominal()) {
+							countWeightResults[i][current.getByteValue(i)]+=instanceWeight;
+							countResults[i][current.getByteValue(i)]++;
+						} else {
+							attributeStats[i].addDistinct(current.getFloatValue(i),1);
+						}
+
 					}
 				}
 			}
@@ -507,13 +529,6 @@ public class InstanceSet
 					for (int j = 0; j < tempAtt.numValues(); j++)
 					{
 						attributeStats[i].addDistinct(j,countResults[i][j],countWeightResults[i][j]);
-					}
-				}
-				else
-				{
-					for (int j = 0; j < tempAtt.numValues(); j++)
-					{
-						attributeStats[i].addDistinct(Float.parseFloat(tempAtt.value(j)),j,countResults[i][j],countWeightResults[i][j]);
 					}
 				}
 			}
@@ -530,12 +545,13 @@ public class InstanceSet
    	* @return An array containing the value of the desired attribute for
    	* each instance in the dataset.
    	*/
-  	public int[] attributeToByteArray(int index)
-	{	int[] result = new int[numInstances()];
-    	for (int i = 0; i < result.length; i++)
-		{	result[i] = getInstance(i).getValue(index);
-    	}
-    	return result;
+  	public byte[] attributeToByteArray(int index)
+	{	
+  		if (getAttribute(index).attributeType == Attribute.Type.NOMINAL) {
+  			return getAttribute(index).byteValues;
+  		} else {
+  			return null;
+  		}
   	}
 
 	/**
@@ -544,7 +560,7 @@ public class InstanceSet
    	*
    	* @param random A random number generator
    	*/
-  	public final void randomize(Random random)
+  	/*public final void randomize(Random random)
 	{	int numInstances = numInstances();
 		for (int j = numInstances - 1; j > 0; j--)
       		swap(j,(int)(random.nextDouble()*(double)j));
@@ -563,14 +579,14 @@ public class InstanceSet
             {
               Instance key = instanceSet[j];
               i = j-1;
-              while (i>-1 && (instanceSet[i].getValue(attIndex)>key.getValue(attIndex)))
+              while (i>-1 && (instanceSet[i].getByteValue(attIndex)>key.getByteValue(attIndex)))
               {
                 instanceSet[i+1] = instanceSet[i];
                 i--;
               }
               instanceSet[i+1] = key;
             }
-          }
+          }*/
 
 
   	/**
