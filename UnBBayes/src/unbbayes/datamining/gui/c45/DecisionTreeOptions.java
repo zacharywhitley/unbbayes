@@ -8,13 +8,13 @@ import javax.swing.border.*;
 
 import unbbayes.datamining.datamanipulation.*;
 
-/** 
+/**
  * Dialog window where C4.5 options are set.
- * 
+ *
  * 	@author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  */
 public class DecisionTreeOptions extends JInternalFrame
-{ 
+{
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
 
@@ -30,11 +30,11 @@ public class DecisionTreeOptions extends JInternalFrame
   private JScrollBar verbosityScroll;
   /** Text field where confidence value is typed */
   private JTextField confidenceValueLabel;
-  /** buttons to change confidence value */ 
+  /** buttons to change confidence value */
   private JScrollBar confidenceScroll;
-  
+
   //----------------------------------------------------------------------//
-  
+
   /** Default constructor. */
   public DecisionTreeOptions()
   {
@@ -45,7 +45,7 @@ public class DecisionTreeOptions extends JInternalFrame
 	this.setResizable(false);
 	JPanel contentPane = (JPanel) this.getContentPane();
 	contentPane.setLayout(new BorderLayout());
-	
+
 	//customized layouts and borders
 	FlowLayout leftFlowLayout = new FlowLayout();
 	leftFlowLayout.setAlignment(FlowLayout.LEFT);
@@ -58,13 +58,13 @@ public class DecisionTreeOptions extends JInternalFrame
 	twoRowsLayout.setColumns(1);
 	twoRowsLayout.setRows(2);
 	Border border = BorderFactory.createEtchedBorder(Color.white,new Color(165, 163, 151));
-			
+
 	//NORTH PANEL: PRUNNING PANEL
 	JPanel northPanel = new JPanel();
 	northPanel.setLayout(twoRowsLayout);
 	northPanel.setBorder(new TitledBorder(border,resource.getString("prunning1")));
 	contentPane.add(northPanel,"North");
-	
+
 	//prunning check box
 	JPanel prunningCheckBoxPanel = new JPanel();
 	prunningCheckBoxPanel.setLayout(leftFlowLayout);
@@ -80,20 +80,20 @@ public class DecisionTreeOptions extends JInternalFrame
 	});
 	prunningCheckBoxPanel.add(prunningCheckBox);
 	northPanel.add(prunningCheckBoxPanel);
-	
+
 	//confidence panel
 	JPanel confidencePanel = new JPanel();
 	confidencePanel.setLayout(twoColumsLayout);
 	northPanel.add(confidencePanel);
-		
+
 	//confidence option label
 	JPanel confidenceLabelPanel = new JPanel();
-	confidenceLabelPanel.setLayout(leftFlowLayout);	
+	confidenceLabelPanel.setLayout(leftFlowLayout);
 	JLabel confidenceLabel = new JLabel(resource.getString("confidenceLevel"));
 	confidenceLabel.setPreferredSize(new Dimension(100,20));
 	confidenceLabelPanel.add(confidenceLabel);
 	confidencePanel.add(confidenceLabelPanel);
-	
+
 	//confidence option text field
 	int confidenceValue = (int)(Options.getInstance().getConfidenceLevel()*100);
 	JPanel confidenceFieldPanel = new JPanel();
@@ -114,7 +114,7 @@ public class DecisionTreeOptions extends JInternalFrame
 			fixConfidenceValues();
 		}
 	});
-	
+
 	//confidence scroll
 	confidenceScroll = new JScrollBar();
 	confidenceScroll.setMinimum(1);
@@ -134,12 +134,12 @@ public class DecisionTreeOptions extends JInternalFrame
 	confidenceFieldPanel.add(confidenceScroll);
 	confidenceFieldPanel.add(new JLabel("%"));
 	confidencePanel.add(confidenceFieldPanel);
-	
+
 	//CENTER PANEL: PANEL WITH THE OTHER OPTIONS
 	JPanel centerPanel = new JPanel();
 	centerPanel.setLayout(twoRowsLayout);
 	contentPane.add(centerPanel,"Center");
-	
+
 	//gain ratio check box
 	JPanel gainRatioPanel = new JPanel();
 	gainRatioPanel.setLayout(leftFlowLayout);
@@ -148,21 +148,21 @@ public class DecisionTreeOptions extends JInternalFrame
 	gainRatioCheckBox.setSelected(Options.getInstance().getIfUsingGainRatio());
 	gainRatioPanel.add(gainRatioCheckBox);
 	centerPanel.add(gainRatioPanel);
-	
+
 	//confidence panel
 	JPanel verbosityPanel = new JPanel();
 	verbosityPanel.setLayout(twoColumsLayout);
 	verbosityPanel.setBorder(new TitledBorder(border,resource.getString("verbosity1")));
 	centerPanel.add(verbosityPanel);
-		
+
 	//verbosity option label
 	JPanel verbosityLabelPanel = new JPanel();
-	verbosityLabelPanel.setLayout(leftFlowLayout);	
+	verbosityLabelPanel.setLayout(leftFlowLayout);
 	JLabel verbosityLabel = new JLabel(resource.getString("verbosity2"));
 	verbosityLabel.setPreferredSize(new Dimension(100,20));
 	verbosityLabelPanel.add(verbosityLabel);
 	verbosityPanel.add(verbosityLabelPanel);
-	
+
 	//verbosity option text field
 	int verbosityValue = Options.getInstance().getVerbosityLevel();
 	JPanel verbosityFieldPanel = new JPanel();
@@ -182,7 +182,7 @@ public class DecisionTreeOptions extends JInternalFrame
 		fixVerbosityValues();
 	  }
 	});
-	
+
 	//verbosity scroll
 	verbosityScroll = new JScrollBar();
 	verbosityScroll.setMinimum(1);
@@ -200,16 +200,16 @@ public class DecisionTreeOptions extends JInternalFrame
 	verbosityFieldPanel.add(verbosityValueLabel);
 	verbosityFieldPanel.add(verbosityScroll);
 	verbosityPanel.add(verbosityFieldPanel);
-	
-	//SOUTH PANEL: PANEL WITH BUTTONS 
+
+	//SOUTH PANEL: PANEL WITH BUTTONS
 	JPanel southPanel = new JPanel();
 	southPanel.setLayout(new FlowLayout());
 	contentPane.add(southPanel,"South");
-	
+
 	//button ok
 	JButton buttonOK = new JButton("OK");
 	buttonOK.setMnemonic('O');
-	buttonOK.setPreferredSize(new Dimension(80,25));	
+	buttonOK.setPreferredSize(new Dimension(80,25));
 	buttonOK.addActionListener(new java.awt.event.ActionListener()
 	{
 	  public void actionPerformed(ActionEvent e)
@@ -218,12 +218,12 @@ public class DecisionTreeOptions extends JInternalFrame
 		Options.getInstance().setIfUsingPrunning(prunningCheckBox.isSelected());
 		Options.getInstance().setVerbosityLevel(Integer.parseInt(verbosityValueLabel.getText().trim()));
 		Options.getInstance().setConfidenceLevel(Float.parseFloat(confidenceValueLabel.getText().trim())/100f);
-		
+
 		dispose();
 	  }
 	});
 	southPanel.add(buttonOK);
-	
+
 	//button cancel
 	JButton buttonCancel = new JButton(resource.getString("cancel"));
 	buttonCancel.setMnemonic('C');
@@ -236,25 +236,30 @@ public class DecisionTreeOptions extends JInternalFrame
 	  }
 	});
 	southPanel.add(buttonCancel);
-	  	
-	/*
+        try {
+            jbInit();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        /*
 	//center screen
 	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	Dimension frameSize = this.getSize();
-	if (frameSize.height > screenSize.height) 
+	if (frameSize.height > screenSize.height)
 	{
 		frameSize.height = screenSize.height;
 	}
-	if (frameSize.width > screenSize.width) 
+	if (frameSize.width > screenSize.width)
 	{
 		 frameSize.width = screenSize.width;
 	}
 	this.setLocation((screenSize.width - frameSize.width) / 2, (screenSize.height - frameSize.height) / 2);
 	*/
   }
-  
+
   //-----------------------------------------------------------------------------//
-  
+
   /** updates verbosity scroll when verbosity text field is set */
   private void fixVerbosityValues()
   {
@@ -267,13 +272,13 @@ public class DecisionTreeOptions extends JInternalFrame
 			break;
 		}
 	}
-	
+
 	//if text field was set incorrectly, it is rewritten
 	if((text.length()!=i)||(text.length()==0))
 	{
 		verbosityValueLabel.setText((5-verbosityScroll.getValue())+"    ");
 	}
-	else 
+	else
 	{
 		int value = Integer.parseInt(text);
 		verbosityScroll.setValue(5-value);
@@ -281,7 +286,7 @@ public class DecisionTreeOptions extends JInternalFrame
   }
 
   //-----------------------------------------------------------------------------//
-	
+
   /** updates confidence scroll when confidence text field is set */
   private void fixConfidenceValues()
   {
@@ -294,16 +299,19 @@ public class DecisionTreeOptions extends JInternalFrame
 		   break;
 		}
 	}
-	
-	//if text field was set incorrectly, it is rewritten	
+
+	//if text field was set incorrectly, it is rewritten
 	if((text.length()!=i)||(text.length()==0))
 	{
 	   	confidenceValueLabel.setText((100-confidenceScroll.getValue())+"    ");
 	}
-	else 
+	else
 	{
 		int value = Integer.parseInt(text);
 		confidenceScroll.setValue(100-value);
 	}
   }
+
+    private void jbInit() throws Exception {
+    }
 }

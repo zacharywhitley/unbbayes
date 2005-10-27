@@ -4,21 +4,28 @@ import java.util.*;
 
 public class DiscretizationGroup {
 
-	private Map<DiscretizationValue,DiscretizationValue> map = new HashMap<DiscretizationValue,DiscretizationValue>();
+	private Map<Float,DiscretizationValue> map = new HashMap<Float,DiscretizationValue>();
 
 	public void addValue(DiscretizationValue dv) {
 		if (!map.containsKey(dv.getValue())) {
-			map.put(dv,dv);			
+			map.put(dv.getValue(),dv);			
 		} else {
 			map.get(dv.getValue()).getClassValue().add(dv.getClassValue().get(0));
 		}
 	}
 	
-	public void removeValue(float value) {
-		DiscretizationValue v = new DiscretizationValue();
-		v.setValue(value);
-		DiscretizationValue value2 = map.remove(v);		
-		System.out.println(value2+"");		
+	public List<Float> removeValue(float value) {
+		Set<Float> set = map.keySet();
+		List<Float> dumpList = new ArrayList<Float>();
+		for (Float f : set) {
+			if (f > value) {
+				dumpList.add(f);
+			}
+		}
+		for (float f : dumpList) {
+			map.remove(f);
+		}
+		return dumpList;
 	}
 	
 	public Collection<DiscretizationValue> getCollection() {

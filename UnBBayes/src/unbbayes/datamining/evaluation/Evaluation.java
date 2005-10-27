@@ -1,9 +1,11 @@
-package unbbayes.datamining.classifiers;
+package unbbayes.datamining.evaluation;
 
 import java.util.*;
 import java.text.*;//SimpleDateFormat
 
 import unbbayes.controller.*;
+import unbbayes.datamining.classifiers.Classifier;
+import unbbayes.datamining.classifiers.DistributionClassifier;
 import unbbayes.datamining.datamanipulation.*;
 
 /**

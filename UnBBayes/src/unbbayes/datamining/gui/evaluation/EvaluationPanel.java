@@ -14,6 +14,7 @@ import unbbayes.controller.*;
 import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.classifiers.decisiontree.*;
 import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.evaluation.Evaluation;
 import unbbayes.gui.*;
 import unbbayes.prs.bn.*;
 import unbbayes.util.GraphPaperLayout;
