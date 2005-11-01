@@ -15,7 +15,6 @@ import unbbayes.datamining.gui.tan.*;
 import unbbayes.datamining.gui.ban.*;
 import unbbayes.datamining.gui.preprocessor.*;
 import unbbayes.datamining.gui.neuralmodel.*;
-import unbbayes.datamining.gui.bayesianlearning.*;
 import unbbayes.datamining.gui.neuralnetwork.*;
 import unbbayes.gui.*;
 
@@ -68,7 +67,7 @@ public class InvokerMain extends JFrame
   private ActionListener alMetaphor;
   private ActionListener alCnm;
   private ActionListener alC45;
-  private ActionListener alBayesianLearning;
+  //private ActionListener alBayesianLearning;
   private ActionListener alPreferences;
   private ActionListener alTbPreferences;
   private ActionListener alTbView;
@@ -232,7 +231,7 @@ public class InvokerMain extends JFrame
         alId3 = new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                         setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                        unbbayes.datamining.gui.id3.DecisionTreeMain id3 = new unbbayes.datamining.gui.id3.DecisionTreeMain();
+                        unbbayes.datamining.gui.id3.DecisionTreeMain id3 = new unbbayes.datamining.gui.id3.DecisionTreeMain(desktop);
                         addWindow(id3);
                         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 }
@@ -274,7 +273,7 @@ public class InvokerMain extends JFrame
         alCnm = new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                         setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                        NeuralModelController cnm = new NeuralModelController();
+                        NeuralModelController cnm = new NeuralModelController(desktop);
                         addWindow(cnm.getCnmFrame());
                         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 }
@@ -284,21 +283,21 @@ public class InvokerMain extends JFrame
         alNeuralNetwork = new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                         setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                        NeuralNetworkController neuralNetworkContoller = new NeuralNetworkController();
+                        NeuralNetworkController neuralNetworkContoller = new NeuralNetworkController(desktop);
                         addWindow(neuralNetworkContoller.getMainFrame());
                         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 }
         };
 
         // create an ActionListener for opening new window for Bayesian Learning
-        alBayesianLearning = new ActionListener() {
+        /*alBayesianLearning = new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                         setCursor(new Cursor(Cursor.WAIT_CURSOR));
                         BayesianLearningMain bayesianLearning = new BayesianLearningMain();
                         addWindow(bayesianLearning);
                         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 }
-        };
+        };*/
 
         // create an ActionListener for showing the View Tool Bar
         alTbView = new ActionListener() {
@@ -470,7 +469,7 @@ public class InvokerMain extends JFrame
         JMenuItem metaphorItem = new JMenuItem("Metaphor"/*, icon*/ );
         JMenuItem cnmItem = new JMenuItem("Combinatorial Neural Model"/*, icon*/ );
         JMenuItem c45Item = new JMenuItem("C4.5 Classifier"/*, icon*/ );
-        JMenuItem bayesianItem = new JMenuItem("Bayesian Learning"/*, icon*/ );
+        //JMenuItem bayesianItem = new JMenuItem("Bayesian Learning"/*, icon*/ );
         JMenuItem neuralNetworkItem = new JMenuItem("Neural Network"/*, icon*/);
         ///////////
         JMenuItem metalItem = new JMenuItem("Metal",metalIcon);
@@ -497,7 +496,7 @@ public class InvokerMain extends JFrame
         metaphorItem.setMnemonic('M');
         cnmItem.setMnemonic('N');
         c45Item.setMnemonic('C');
-        bayesianItem.setMnemonic('B');
+        //bayesianItem.setMnemonic('B');
         //////////////
         metalItem.setMnemonic('M');
         motifItem.setMnemonic('O');
@@ -536,7 +535,7 @@ public class InvokerMain extends JFrame
         metaphorItem.addActionListener(alMetaphor);
         cnmItem.addActionListener(alCnm);
         neuralNetworkItem.addActionListener(alNeuralNetwork);
-        bayesianItem.addActionListener(alBayesianLearning);
+        //bayesianItem.addActionListener(alBayesianLearning);
         metalItem.addActionListener(alMetal);
         motifItem.addActionListener(alMotif);
         windowsItem.addActionListener(alWindows);
@@ -552,7 +551,7 @@ public class InvokerMain extends JFrame
         programMenu.add(naiveBayesItem);
 		programMenu.add(tanItem);
 		programMenu.add(banItem);
-        programMenu.add(bayesianItem);//
+        //programMenu.add(bayesianItem);//
         programMenu.add(cnmItem);
         programMenu.add(neuralNetworkItem);//
 		programMenu.add(metaphorItem);//

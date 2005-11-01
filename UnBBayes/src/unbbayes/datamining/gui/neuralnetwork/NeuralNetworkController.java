@@ -23,9 +23,9 @@ public class NeuralNetworkController {
   private InstanceSet instanceSet;
   private int hiddenLayerSize;
 
-  public NeuralNetworkController() {
+  public NeuralNetworkController(MDIDesktopPane desktop) {
     resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralnetwork.resources.NeuralNetworkResource");
-    mainScreen = new NeuralNetworkMain();
+    mainScreen = new NeuralNetworkMain(desktop);
     mainScreen.setController(this);
   }
 

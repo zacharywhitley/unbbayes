@@ -16,7 +16,7 @@ public class DecisiontreeResource_pt extends ListResourceBundle
 		// Decision Tree Main
 		{"open","Abrir ..."},
 		{"build","Construir Árvore de Decisão"},
-		{"preferences","Preferências"},	
+		{"preferences","Preferências..."},	
 		{"file","Arquivo"},
 		{"help","Ajuda"},
 		{"about","Sobre ..."},

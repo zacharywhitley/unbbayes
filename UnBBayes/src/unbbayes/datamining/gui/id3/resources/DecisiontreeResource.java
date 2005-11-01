@@ -13,7 +13,7 @@ public class DecisiontreeResource extends ListResourceBundle {
 	// Decision Tree Main
 	{"open","Open ..."},
 	{"build","Learn Decision Tree"},
-	{"preferences","Preferences"},
+	{"preferences","Preferences..."},
 	{"file","File"},
 	{"help","Help"},
 	{"about","About ..."},

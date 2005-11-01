@@ -11,10 +11,11 @@ import javax.swing.border.*;
 import unbbayes.controller.*;
 import unbbayes.datamining.classifiers.decisiontree.*;
 import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.evaluation.ITrainingMode;
 import unbbayes.datamining.gui.*;
 import unbbayes.gui.*;
 
-public class DecisionTreeMain extends JInternalFrame
+public class DecisionTreeMain extends JInternalFrame implements IUnBMinerInternalFrame
 {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
@@ -27,6 +28,7 @@ public class DecisionTreeMain extends JInternalFrame
   private JToolBar jToolBar = new JToolBar();
   private JButton openFileButton = new JButton();
   private JButton learnButton = new JButton();
+  private JButton optionsButton = new JButton();
   private JMenuItem jMenuFileOpen = new JMenuItem();
   private JMenuItem jMenuFileExit = new JMenuItem();
   private JMenuItem jMenuFileBuild = new JMenuItem();
@@ -37,7 +39,10 @@ public class DecisionTreeMain extends JInternalFrame
   private ImageIcon compilaIcon;
   private ImageIcon helpIcon;
   private ImageIcon salvarIcon;
+  private ImageIcon opcoesIcon;
   private JMenuItem jMenuItem2 = new JMenuItem();
+  private JMenuItem jMenuItem6 = new JMenuItem();
+  private JMenu jMenuOption = new JMenu();
   private JMenu jMenu1 = new JMenu();
   private JMenuItem jMenuItem1 = new JMenuItem();
   private DecisionTreeLearning id3;
@@ -55,11 +60,14 @@ public class DecisionTreeMain extends JInternalFrame
   private JTabbedPane jTabbedPane = new JTabbedPane();
   private AttributePanel attributeFrame;
   private BorderLayout borderLayout3 = new BorderLayout();
+  private MDIDesktopPane desktop;
+  private ITrainingMode trainingMode;
 
   /**Construct the frame*/
-  public DecisionTreeMain()
+  public DecisionTreeMain(MDIDesktopPane desktop)
   { super("Id3 Classifier",true,true,true,true);
     resource = ResourceBundle.getBundle("unbbayes.datamining.gui.id3.resources.DecisiontreeResource");
+    this.desktop = desktop;
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     try
     {
@@ -79,6 +87,7 @@ public class DecisionTreeMain extends JInternalFrame
     compilaIcon = iconController.getCompileIcon();
     helpIcon = iconController.getHelpIcon();
     salvarIcon = iconController.getSaveIcon();
+    opcoesIcon = iconController.getGlobalOptionIcon();
     contentPane = (JPanel) this.getContentPane();
     titledBorder1 = new TitledBorder(border1,"Status");
     inductionFrame = new InductionPanel();
@@ -200,6 +209,27 @@ public class DecisionTreeMain extends JInternalFrame
         saveModelButton_actionPerformed(e);
       }
     });
+    optionsButton.setToolTipText("Training Mode");
+    optionsButton.setIcon(opcoesIcon);
+    optionsButton.addActionListener(new java.awt.event.ActionListener()
+    	    {
+    	      public void actionPerformed(ActionEvent e)
+    	      {
+    	    	  optionsButton_actionPerformed(e);
+    	      }
+    	    });
+    jMenuItem6.setIcon(opcoesIcon);
+    jMenuItem6.setMnemonic('m');
+    jMenuItem6.setText("Training Mode...");
+    jMenuItem6.addActionListener(new java.awt.event.ActionListener()
+    {
+      public void actionPerformed(ActionEvent e)
+      {
+    	  optionsButton_actionPerformed(e);
+      }
+    });
+    jMenuOption.setMnemonic('o');
+    jMenuOption.setText("Options");
     statusBar.setBorder(titledBorder1);
     statusBar.setText(resource.getString("welcome"));
     jPanel1.setLayout(borderLayout2);
@@ -211,6 +241,8 @@ public class DecisionTreeMain extends JInternalFrame
 	jToolBar.addSeparator(separador);
     jToolBar.add(openModelButton);
     jToolBar.add(saveModelButton);
+    jToolBar.addSeparator(separador);
+    jToolBar.add(optionsButton, null);
 	jToolBar.addSeparator(separador);
 	jToolBar.add(helpButton);
 
@@ -220,9 +252,11 @@ public class DecisionTreeMain extends JInternalFrame
     jMenuFile.add(jMenuItem2);
     jMenuFile.addSeparator();
     jMenuFile.add(jMenuFileExit);
+    jMenuOption.add(jMenuItem6);
     jMenuHelp.add(jMenuHelpAbout);
     jMenuBar.add(jMenuFile);
     jMenuBar.add(jMenu1);
+    jMenuBar.add(jMenuOption);
     jMenuBar.add(jMenuHelp);
     this.setJMenuBar(jMenuBar);
     contentPane.add(jToolBar,  BorderLayout.NORTH);
@@ -414,5 +448,18 @@ public class DecisionTreeMain extends JInternalFrame
 
   void saveModelButton_actionPerformed(ActionEvent e)
   {   jMenuItem2_actionPerformed(e);
+  }
+
+  /**
+   * Open training mode internal frame
+   * @param e
+   */
+  void optionsButton_actionPerformed(ActionEvent e) {
+		TrainingModeInternalFrame iFrame = new TrainingModeInternalFrame(this);
+		desktop.add(iFrame);
+  }
+
+  public void setTrainingMode(ITrainingMode mode) {
+	  trainingMode = mode;
   }
 }
