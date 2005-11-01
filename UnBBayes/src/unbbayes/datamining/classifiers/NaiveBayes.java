@@ -28,7 +28,7 @@ public class NaiveBayes extends DistributionClassifier
 	private ProbabilisticNode classAtt;
 	private int width = 50;
 	private int k = 0,i=0,j=0;
-	private ProbabilisticNetwork net = new ProbabilisticNetwork("NaiveBayes");
+	private ProbabilisticNetwork net;
 	
 	private int numAtt;
 	private int numClasses;
@@ -52,6 +52,8 @@ public class NaiveBayes extends DistributionClassifier
 		numInstances = instances.numInstances();
 		attributes = instances.getAttributes();
 		classIndex = inst.getClassAttribute().getIndex();
+		net = new ProbabilisticNetwork("NaiveBayes");
+		width = 50;
 		attIndex=0;
 		float sum;
 
