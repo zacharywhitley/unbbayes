@@ -68,6 +68,7 @@ public class TrainingModeInternalFrame extends JInternalFrame {
         for (int i=2;i<31;i++) {
             crossValidationComboBox.addItem(i);        	
         }
+        crossValidationComboBox.setSelectedIndex(8);
         centerPanel.add(trainingSetRadioButton);
         
         JPanel crossValidationPanel = new JPanel();

@@ -32,7 +32,7 @@ public class InstanceSet
 
   	/** Position of the next instance to be inserted */
   	private int nextInstancePosition = 0;
-
+  	
   	/**
    	* Returns the relation's name.
    	*
@@ -408,7 +408,23 @@ public class InstanceSet
     	deleteWithMissing(classIndex);
   	}
 
-	/**
+    /**
+     * Returns a random number generator. The initial seed of the random
+     * number generator depends on the given seed and the hash code of
+     * a string representation of a instances chosen based on the given
+     * seed. 
+     *
+     * @param seed the given seed
+     * @return the random number generator
+     */
+    public Random getRandomNumberGenerator(long seed) {
+
+      Random r = new Random(seed);
+      r.setSeed(getInstance(r.nextInt(numInstances())).toString().hashCode() + seed);
+      return r;
+    }
+    
+    /**
    	* Removes all instances with missing values for a particular
    	* attribute from the dataset.
    	*
@@ -437,18 +453,16 @@ public class InstanceSet
    	* @param dest Destination for the instances
    	* @param num Number of instances to be copied
    	*/
-  	/*public void copyInstances(int from, InstanceSet dest, int num)
-	{	for (int j = 0; j < num; j++)
-		{	int[] by = new int[numAttributes()];
-			for (int i=0; i<numAttributes(); i++)
-			{	by[i] = getInstance(j).getValue(i);
-			}
-			//Instance ins = new Instance(getInstance(j).getWeight(),by);
-			Instance ins = new Instance((int)getInstance(j).getWeight(),by);
-			dest.add(ins);
-    	}
-
-  	}*/
+  	public void copyInstances(int from, InstanceSet dest, int fromDest,int num)
+	{	
+  		Instance[] destInstances = dest.instanceSet;
+  		System.arraycopy(this.instanceSet,from,destInstances,fromDest,num);
+  		for (int i=0;i<destInstances.length;i++) {
+  			if (destInstances[i]!=null) {
+  	  			destInstances[i].setDataset(dest);  				
+  			}
+  		}
+  	}
 
   	/**
    	* Calculates summary statistics on the values that appear in this
@@ -560,13 +574,51 @@ public class InstanceSet
    	*
    	* @param random A random number generator
    	*/
-  	/*public final void randomize(Random random)
+  	public final void randomize(Random random)
 	{	int numInstances = numInstances();
 		for (int j = numInstances - 1; j > 0; j--)
       		swap(j,(int)(random.nextDouble()*(double)j));
   	}
+  	
+  	public final void sortInstancesByClassValue() {
+  	    if (getClassAttribute().isNominal()) {
+  	      // sort by class
+  	      int index = 1;
+  	      while (index < numInstances()) {
+  		Instance instance1 = getInstance(index - 1);
+  		for (int j = index; j < numInstances(); j++) {
+  		  Instance instance2 = getInstance(j);
+  		  if ((instance1.classValue() == instance2.classValue()) ||
+  		      (instance1.classIsMissing() && 
+  		       instance2.classIsMissing())) {
+  		    swap(index,j);
+  		    index++;
+  		  }
+  		}
+  		index++;
+  	      }  		
+  	    }
+  	}
+  	
+  	public final void stratify() {
+  		sortInstancesByClassValue();
+  		int start = 0, j,i=0;
+  		int numInstances = numInstances();
+  		int numClasses = numClasses();
+  	  	Instance[] newInstanceSet = new Instance[numInstances];
+  		while (i < numInstances) {
+  			j = start;
+  			while (j < numInstances) {
+  				newInstanceSet[i]= getInstance(j);
+		  		i++;
+		  		j = j + numClasses;
+  			}
+  			start++;
+  		}
+  	    instanceSet = newInstanceSet;
+  	}
 
-          public final void sortInstancesByAttribute(Attribute att)
+          /*public final void sortInstancesByAttribute(Attribute att)
           {
             sortInstancesByAttribute(att.getIndex());
           }

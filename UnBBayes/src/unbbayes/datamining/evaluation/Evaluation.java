@@ -444,28 +444,16 @@ public class Evaluation implements IProgress
    * successfully or the class is not defined
    */
   public void crossValidateModel(Classifier classifier,int numFolds) throws Exception
-  {   // Make a copy of the data we can reorder
-	  InstanceSet instances = new InstanceSet(data,data.numInstances());
-	  int numInstances = data.numInstances();
-	  for (int i=0;i<numInstances;i++)
-	  {   Instance inst = data.getInstance(i);
-		  //int originalWeight = inst.getWeight();
-		float originalWeight = inst.getWeight();
-		  inst.setWeight(1);
-		  for (int j=0;j<originalWeight;j++)
-			  instances.add(inst);
-	  }
-	  data = new InstanceSet(instances);
-
-	  instances.randomize(new Random(42));
-	  if (instances.getClassAttribute().isNominal())
-	  {   stratify(instances,numFolds);
+  {   	  
+	  data.randomize(new Random(42));
+	  if (data.getClassAttribute().isNominal())
+	  {   data.stratify();
 	  }
 	// Do the folds
 	for (int i = 0; i < numFolds; i++)
-	{	InstanceSet train = trainCV(instances,numFolds, i);
+	{	InstanceSet train = trainCV(data,numFolds, i);
 		classifier.buildClassifier(train);
-		InstanceSet test = testCV(instances,numFolds, i);
+		InstanceSet test = testCV(data,numFolds, i);
 		evaluateModel(classifier, test);
 	}
   }
@@ -503,8 +491,8 @@ public class Evaluation implements IProgress
 	}
 	train = new InstanceSet(instances, (numInstances - numInstForFold));
 	first = numFold * (numInstances / numFolds) + offset;
-	instances.copyInstances(0, train, first);
-	instances.copyInstances(first + numInstForFold, train, numInstances - first - numInstForFold);
+	instances.copyInstances(0, train, 0, first);
+	instances.copyInstances(first + numInstForFold, train, train.numInstances(), numInstances - first - numInstForFold);
 
 	return train;
   }
@@ -541,68 +529,8 @@ public class Evaluation implements IProgress
 	  offset = numInstances % numFolds;
 	test = new InstanceSet(instances, numInstForFold);
 	first = numFold * (numInstances / numFolds) + offset;
-	instances.copyInstances(first, test, numInstForFold);
+	instances.copyInstances(first, test, 0, numInstForFold);
 	return test;
-  }
-
-	/**
-   * Stratifies a set of instances according to its class values
-   * if the class attribute is nominal (so that afterwards a
-   * stratified cross-validation can be performed).
-   *
-   * @param instances set of training instances
-   * @param numFolds the number of folds in the cross-validation
-   * @exception UnassignedClassException if the class is not set
-   */
-  public final void stratify(InstanceSet instances, int numFolds)
-  { if (numFolds <= 0)
-	{ throw new IllegalArgumentException(resource.getString("folds1"));
-	}
-	if (instances.getClassIndex() < 0)
-	{ throw new UnassignedClassException(resource.getString("classNegative"));
-	}
-	if (instances.getClassAttribute().isNominal())
-	{ // sort by class
-	  int index = 1;
-	  int numInstances = instances.numInstances();
-	  while (index < numInstances)
-	  {	Instance instance1 = instances.getInstance(index - 1);
-		for (int j = index; j < numInstances; j++)
-		{	Instance instance2 = instances.getInstance(j);
-			if ((instance1.classValue() == instance2.classValue()) ||
-				(instance1.classIsMissing() && instance2.classIsMissing()))
-			{	instances.swap(index,j);
-				index++;
-			}
-		}
-		index++;
-	  }
-	  stratStep(instances,numFolds);
-	}
-  }
-
-	/**
-   * Help function needed for stratification of set.
-   *
-   * @param instances set of training instances
-   * @param numFolds the number of folds for the stratification
-   */
-  private void stratStep (InstanceSet instances, int numFolds)
-  { int numInstances = instances.numInstances();
-	Instance[] newVec = new Instance[numInstances];
-	int start = 0, j, i=0;
-
-	// create stratified batch
-	while (newVec.length < numInstances)
-	{	j = start;
-		while (j < numInstances)
-		{	newVec[i]= instances.getInstance(j);
-			j += numFolds;
-		}
-		start++;
-		i++;
-	}
-	instances.setInstances(newVec);
   }
 
   /**
