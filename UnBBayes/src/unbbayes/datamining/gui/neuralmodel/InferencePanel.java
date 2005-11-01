@@ -289,7 +289,7 @@ public class InferencePanel extends JPanel implements IInferencePanel{
     for (int i = 0; i < numAtt; i++) {
       if (i != classIndex && !instance.isMissing(i)) {
         Attribute att = attArray[i];
-        int value = instance.getValue(i);
+        int value = instance.getByteValue(i);
         rule = rule + att.getAttributeName() + ": " + att.value(value) + "\n";
       }
     }

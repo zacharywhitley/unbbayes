@@ -694,7 +694,7 @@ public final class Utils
 
           while(instancesEnum.hasMoreElements()){
             instance = (Instance)instancesEnum.nextElement();
-            temp = Double.parseDouble(att.value(instance.getValue(attribute)));
+            temp = Double.parseDouble(att.value(instance.getByteValue(attribute)));
             sum = sum + temp;
             sqrSum = sqrSum + (temp * temp);
           }
@@ -731,7 +731,7 @@ public final class Utils
 
           while(instancesEnum.hasMoreElements()){
             instance = (Instance)instancesEnum.nextElement();
-            temp = Double.parseDouble(att.value(instance.getValue(attribute)));
+            temp = Double.parseDouble(att.value(instance.getByteValue(attribute)));
             temp = temp-mean;
             sqrSum = sqrSum+(temp*temp);
           }
@@ -765,7 +765,7 @@ public final class Utils
 
           while(instancesEnum.hasMoreElements()){
             instance = (Instance)instancesEnum.nextElement();
-            sum = sum + Double.parseDouble(att.value(instance.getValue(attribute)));
+            sum = sum + Double.parseDouble(att.value(instance.getByteValue(attribute)));
           }
 
           return sum / numOfInstances;

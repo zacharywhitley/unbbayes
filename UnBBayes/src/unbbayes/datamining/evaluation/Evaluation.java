@@ -54,7 +54,6 @@ public class Evaluation implements IProgress
   /** Confidence limits for the normal distribution */
   private double[] confidenceLimits = {3.09,2.58,2.33,1.65,1.28,0.84,0.25};
 
-  //private String[] confidenceProbs = {"0.1%","0.5%","1%","5%","10%","20%","40%"};
   private String[] confidenceProbs = {"99.8%","99%","98%","90%","80%","60%","20%"};
 
   private int confidenceLimit = 100;

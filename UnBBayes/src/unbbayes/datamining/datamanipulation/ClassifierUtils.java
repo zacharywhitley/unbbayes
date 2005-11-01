@@ -116,7 +116,7 @@ public class ClassifierUtils
 		  instance = getInstance(inst,i); 
 		  if(!instance.isMissing(att[attIndex].intValue()))
 		  {
-			  numDataset = (int)instance.getValue(att[attIndex].intValue());
+			  numDataset = (int)instance.getByteValue(att[attIndex].intValue());
 			  data[numDataset].add(inst.get(i));
 			  numInstancesPerValue[numDataset] += instance.getWeight();
 		  }
@@ -194,7 +194,7 @@ public class ClassifierUtils
 			instance = getInstance(actualInst,i);
 			if(!instance.isMissing(actualAtt[attIndex].intValue()))
 			{
-				if(Double.parseDouble(values[instance.getValue(actualAtt[attIndex].intValue())])>=splitValue)
+				if(Double.parseDouble(values[instance.getByteValue(actualAtt[attIndex].intValue())])>=splitValue)
 				{
 					instancesMoreThan.add(actualInst.get(i));
 					numInstancesPerValue[0] += instance.getWeight(); 								
@@ -315,7 +315,7 @@ public class ClassifierUtils
 					{
 						if (!instance.isMissing(attributeIndex))
 						{
-							counts[attIndex][(int)instance.getValue(attributeIndex)][(int)instance.classValue()] += instance.getWeight();
+							counts[attIndex][(int)instance.getByteValue(attributeIndex)][(int)instance.classValue()] += instance.getWeight();
 						}
 						else
 						{
@@ -396,9 +396,9 @@ public class ClassifierUtils
 					instance = getInstance(inst,x);
 					if(!instance.isMissing(att[i].intValue()))
 					{
-						if(!valuesTemp.contains(oldValues[instance.getValue(att[i].intValue())]))
+						if(!valuesTemp.contains(oldValues[instance.getByteValue(att[i].intValue())]))
 						{
-							valuesTemp.add(oldValues[instance.getValue(att[i].intValue())]);
+							valuesTemp.add(oldValues[instance.getByteValue(att[i].intValue())]);
 						}
 					}
 				}
@@ -422,7 +422,7 @@ public class ClassifierUtils
 						//for each value...
 						for(int y=0;y<values.length;y++)
 						{
-							if(values[y]==Double.parseDouble(oldValues[instance.getValue(att[i].intValue())]))
+							if(values[y]==Double.parseDouble(oldValues[instance.getByteValue(att[i].intValue())]))
 							{
 								classesDistribution[y][(int)instance.classValue()] += instance.getWeight();
 								break;

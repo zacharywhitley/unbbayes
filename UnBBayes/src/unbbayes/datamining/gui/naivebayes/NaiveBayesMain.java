@@ -63,6 +63,7 @@ public class NaiveBayesMain extends JInternalFrame implements IUnBMinerInternalF
   private Border border1;
   private TitledBorder titledBorder1;
   private MDIDesktopPane desktop;
+  private ITrainingMode trainingMode;
 
   /**Construct the frame*/
   public NaiveBayesMain(MDIDesktopPane desktop)
@@ -275,7 +276,7 @@ public class NaiveBayesMain extends JInternalFrame implements IUnBMinerInternalF
       {   try
           {
           	  NaiveBayes naiveBayes = new NaiveBayes();
-          	  naiveBayes.buildClassifier(inst);
+          	  naiveBayes.buildClassifier(inst,trainingMode);
           	  net = naiveBayes.getProbabilisticNetwork();
           	  jMenuItem5.setEnabled(true);
               jTabbedPane1.setEnabledAt(1,true);
@@ -418,11 +419,7 @@ public class NaiveBayesMain extends JInternalFrame implements IUnBMinerInternalF
   }
 
   public void setTrainingMode(ITrainingMode mode) {
-	  if (mode instanceof CrossValidation) {
-		  System.out.println("xval");
-	  } else {
-		  System.out.println("terainign");
-	  }
+	  trainingMode = mode;
   }
 
 }

@@ -196,11 +196,11 @@ public class VerbosityPanel extends JScrollPane
 										
 										if(instance.isMissing(attribute))
 										{
-											missingDistribution[instance.getValue(instance.getClassIndex())]+=instance.getWeight();
+											missingDistribution[instance.getByteValue(instance.getClassIndex())]+=instance.getWeight();
 										}
 										else
 										{
-											distribution[instance.getValue(attribute)][instance.getValue(instance.getClassIndex())]+=instance.getWeight();
+											distribution[instance.getByteValue(attribute)][instance.getByteValue(instance.getClassIndex())]+=instance.getWeight();
 										}
 									}
 																  

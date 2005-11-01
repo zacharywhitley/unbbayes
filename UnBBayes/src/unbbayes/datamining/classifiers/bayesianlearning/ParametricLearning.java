@@ -38,7 +38,7 @@ public class ParametricLearning
         inst2 = (Instance)dataTemp.get(j);
         for(k=0;k<x.length;k++)
         {
-          if(inst.getValue(k)!=inst2.getValue(k))
+          if(inst.getByteValue(k)!=inst2.getByteValue(k))
           {
             break;
           }
@@ -66,7 +66,7 @@ public class ParametricLearning
       inst = (Instance)dataTemp.get(i);
       for(j=0;j<x.length;j++)
       {
-        d[i][j]=inst.getValue(j);
+        d[i][j]=inst.getByteValue(j);
       }
     }
   }

@@ -114,7 +114,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
 	int keyIndex = 0;
 	for(int att=0; att<attributeNum; att++){
 	  if(!instance.isMissing(att) && (att != classIndex)){
-		inputKeys[keyIndex] = generateInputKey(att, instance.getValue(att));
+		inputKeys[keyIndex] = generateInputKey(att, instance.getByteValue(att));
 		keyIndex ++;
 	  }
 	}
@@ -306,7 +306,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
 	int keyIndex = 0;
 	for(int att=0; att<numAtt; att++){                  //gera um array com as chaves da instancia atual
 	  if(att != classIndex && !instance.isMissing(att)){
-		value = instance.getValue(att);
+		value = instance.getByteValue(att);
 		instanceKeys[keyIndex] = generateInputKey(att, value); //cria a chave atributo-valor da entrada
 		keyIndex++;
 	  }

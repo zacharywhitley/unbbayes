@@ -426,10 +426,10 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
           index = inputLayerIndexes[counter];
           Attribute att = attributeVector[i];
           if(att.isNumeric()){
-            float data = Float.parseFloat(att.getAttributeValues()[instance.getValue(att)]);
+            float data = Float.parseFloat(att.getAttributeValues()[instance.getByteValue(att)]);
             inputLayer[index] = normalizationFunction.normalize(data, i);
           } else{
-            index = index + instance.getValue(i);
+            index = index + instance.getByteValue(i);
             inputLayer[index] = 1;
           }
         }

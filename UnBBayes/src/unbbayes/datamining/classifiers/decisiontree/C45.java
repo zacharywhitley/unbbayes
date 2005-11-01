@@ -415,7 +415,7 @@ public class C45 extends DecisionTreeLearning implements Serializable
             if (att.isNominal())
             {
               // Atributo nominal
-              treeNode = (NominalNode)treeNode.children.get(instance.getValue(node.getAttribute()));
+              treeNode = (NominalNode)treeNode.children.get(instance.getByteValue(node.getAttribute()));
             }
             else
             {
@@ -423,7 +423,7 @@ public class C45 extends DecisionTreeLearning implements Serializable
               attValues = att.getAttributeValues();
               splitValue = ((NumericNode)node).getSplitValue();
 
-              if(Double.parseDouble(attValues[instance.getValue(att.getIndex())])>=splitValue)
+              if(Double.parseDouble(attValues[instance.getByteValue(att.getIndex())])>=splitValue)
               {
                 treeNode = (NumericNode)treeNode.children.get(0);
               }

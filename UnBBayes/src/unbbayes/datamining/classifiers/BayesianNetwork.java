@@ -103,7 +103,7 @@ public class BayesianNetwork extends DistributionClassifier
             {
               if (j != classAttributeIndex)
               {
-                 instanceValue = instance.getValue(j);
+                 instanceValue = instance.getByteValue(j);
                  if (instanceValue != Instance.MISSING_VALUE)
                  {
                    hashCode+=instanceValue*multipliers[k];
@@ -137,7 +137,7 @@ public class BayesianNetwork extends DistributionClassifier
                 int actualNode = indexAttributes[j];
                 if (actualNode != classNodeIndex)
                 {
-                  instanceValue = instance.getValue(j);
+                  instanceValue = instance.getByteValue(j);
                   if (instanceValue != Instance.MISSING_VALUE)
                   {
                     ((TreeVariable)net.getNodeAt(actualNode)).addFinding(instanceValue);

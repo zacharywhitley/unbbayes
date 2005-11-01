@@ -344,7 +344,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
           {
             node = (NominalNode)treeNode.children.get(0);
             // Atributo nominal
-            treeNode = (NominalNode)treeNode.children.get(instance.getValue(node.getAttribute()));
+            treeNode = (NominalNode)treeNode.children.get(instance.getByteValue(node.getAttribute()));
           }
 
           leaf = (Leaf)treeNode.children.get(0);

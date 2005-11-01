@@ -85,7 +85,7 @@ public class NaiveBayes extends DistributionClassifier
 				{
 					if ((attributes[j].getIndex() != classIndex)&&(!instance.isMissing(attributes[j])))
 					{
-						counts[(int)instance.classValue()][attIndex][(int)instance.getValue(attributes[j])] += instance.getWeight();
+						counts[(int)instance.classValue()][attIndex][(int)instance.getByteValue(attributes[j])] += instance.getWeight();
 						attIndex++;
 					}
 
@@ -206,7 +206,7 @@ public class NaiveBayes extends DistributionClassifier
 			{
 				if ((attributes[i].getIndex() != classIndex)&&(!instance.isMissing(attributes[i])))
 				{
-					probs[j] *= counts[j][i][(int)instance.getValue(attributes[i])];
+					probs[j] *= counts[j][i][(int)instance.getByteValue(attributes[i])];
 				}
 			}
 			probs[j] *= priors[j];
