@@ -39,7 +39,9 @@ public class CrossValidation implements ITrainingMode {
 			Evaluation eval = new Evaluation(test);
 			eval.evaluateModel(classifier);
 			if (eval.pctCorrect() > bestPctCorrect) {
+				bestPctCorrect = eval.pctCorrect();
 				bestModel = i;
+				System.out.println("best model="+i);
 			}
 		  }
 		  // train again the best model to be used 

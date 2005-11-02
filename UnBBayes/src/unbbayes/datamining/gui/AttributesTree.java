@@ -116,7 +116,7 @@ public class AttributesTree extends JTree{
   public Instance getInstance(){
     ArrayList keys = objectsMap.getKeys();
     int keysSize = keys.size();
-    Instance instance = new Instance(new int[attributeVector.length]);
+    Instance instance = new Instance();
 
     for(int i=0; i<attributeVector.length; i++){
       instance.setMissing(i);
@@ -128,7 +128,7 @@ public class AttributesTree extends JTree{
         StateObject state = (StateObject)obj;
         int check = state.getCheck();
         if(check == CHECK_YES){
-          instance.setValue(state.getAttribute().getIndex(), state.getAttributeValue());
+          instance.setByteValue(state.getAttribute().getIndex(), (byte)state.getAttributeValue());
         }
       }
     }

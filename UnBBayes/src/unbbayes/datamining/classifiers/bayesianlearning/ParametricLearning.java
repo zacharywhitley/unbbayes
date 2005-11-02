@@ -20,7 +20,7 @@ public class ParametricLearning
     {
       attrib = set.getAttribute(i);
       x[i] = attrib.getAttributeName();
-      ArrayList temp = new ArrayList();
+      ArrayList<String[]> temp = new ArrayList<String[]>();
       temp.add(attrib.getAttributeValues());
       dx[i] = temp;
     }
@@ -29,7 +29,7 @@ public class ParametricLearning
     Instance inst, inst2;
     int numInstances = set.numInstances();
     freq = new int[numInstances];
-    ArrayList dataTemp = new ArrayList();
+    ArrayList<Instance> dataTemp = new ArrayList<Instance>();
     for(i=0;i<numInstances;i++)
     {
       inst = set.getInstance(i);

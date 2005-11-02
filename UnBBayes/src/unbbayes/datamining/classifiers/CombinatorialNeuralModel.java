@@ -17,7 +17,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
 	private static final long serialVersionUID = 0;
 
   /**The model's combinations.*/
-  private HashMap model = new HashMap();
+  private HashMap<String,Combination> model = new HashMap<String,Combination>();
 
   /**Vector that contains the attributes of the training set.*/
   private Attribute[] attributeVector;
@@ -183,7 +183,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
   private String[] makeCombinations(String[] inputKeys){
 	String[] keysArray, tempArray;
 	String[] combinationsArray;
-	ArrayList combinations = new ArrayList();
+	ArrayList<String[]> combinations = new ArrayList<String[]>();
 	int inputKeysNum = inputKeys.length;
 	int combArraySize, tempSize;
 
@@ -238,7 +238,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
   public void prunning(int threshold){
 	Iterator iterator = model.values().iterator();
 	Combination tempCombination;
-	ArrayList keysArray = new ArrayList();
+	ArrayList<String> keysArray = new ArrayList<String>();
 
 	while(iterator.hasNext()){
 	  tempCombination = (Combination)iterator.next();
@@ -264,7 +264,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
   public void prunning(int minSupport, int minConfidence){
 	Iterator iterator = model.values().iterator();
 	Combination tempCombination;
-	ArrayList keysArray = new ArrayList();
+	ArrayList<String> keysArray = new ArrayList<String>();
 
 	while(iterator.hasNext()){
 	  tempCombination = (Combination)iterator.next();

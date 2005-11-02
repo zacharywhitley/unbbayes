@@ -357,7 +357,7 @@ public class DecisionTreeMain extends JInternalFrame {
   {   jTabbedPane.setSelectedIndex(0);
       try
       {   id3 = new Id3();
-          id3.buildClassifier(inst);
+          id3.buildClassifier(inst,trainingMode);
           jTabbedPane.setEnabledAt(1,true);
           inductionFrame.setInstances(id3);
           id3.getTree();

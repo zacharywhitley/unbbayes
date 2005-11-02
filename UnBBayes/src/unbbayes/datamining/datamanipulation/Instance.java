@@ -63,11 +63,10 @@ public class Instance
 	*
    	* @param attValues An array of attribute values
    	*/
-  	/*public Instance(int[] attValues)
-	{	this.attValues = attValues;
-		weight = 1;
+  	public Instance()
+	{	weight = 1;
     	dataset = null;
-  	}*/
+  	}
 
 	/**
    	* Constructor that inititalizes instance variable with given

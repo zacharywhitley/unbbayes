@@ -110,7 +110,7 @@ public class ClassifierUtils
 		int numDataset;
 		int numInst = inst.size();
 		float[] numInstancesPerValue = new float[numValues];
-		ArrayList missingValueInstances = new ArrayList(); 
+		ArrayList<Instance> missingValueInstances = new ArrayList<Instance>(); 
 		for (int i=0;i<numInst;i++)
 		{
 		  instance = getInstance(inst,i); 
@@ -187,7 +187,7 @@ public class ClassifierUtils
 		//arrange instances according to split value
 		ArrayList instancesMoreThan = new ArrayList();
 		ArrayList instancesLessThan = new ArrayList();
-		ArrayList missingValueInstances = new ArrayList();
+		ArrayList<Instance> missingValueInstances = new ArrayList<Instance>();
 		float[] numInstancesPerValue = new float[2];
 		for(int i=0;i<actualInst.size();i++)
 		{
@@ -249,7 +249,7 @@ public class ClassifierUtils
 	*/
 	  public double[] computeInfoGain(SplitObject split)
 	  {
-		return computeInfoGain(split, new double[split.getAttributes().length], new ArrayList());  	
+		return computeInfoGain(split, new double[split.getAttributes().length], new ArrayList<NumericData>());  	
 	  }
 	  
 	//------------------------------------------------------------------//
@@ -262,7 +262,7 @@ public class ClassifierUtils
 	 * @param numericDataList numeric data obtained in the computation of numeric attributes 
 	 * @return Information gains for the split attributes
 	 */
-	  public double[] computeInfoGain(SplitObject split, double[] splitValues, ArrayList numericDataList)
+	  public double[] computeInfoGain(SplitObject split, double[] splitValues, ArrayList<NumericData> numericDataList)
 	  {
 	  	//attributes' indexes
 		Integer[] att = split.getAttributes();
@@ -390,7 +390,7 @@ public class ClassifierUtils
 				
 				//gets values effectively used sorted
 				String[] oldValues = instances.getAttribute(att[i].intValue()).getAttributeValues();
-				ArrayList valuesTemp = new ArrayList();
+				ArrayList<String> valuesTemp = new ArrayList<String>();
 				for(int x=0;x<inst.size();x++)
 				{
 					instance = getInstance(inst,x);
