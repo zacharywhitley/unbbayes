@@ -178,7 +178,7 @@ public class InvokerMain extends JFrame
         alNaiveBayes = new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                         setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                        NaiveBayesMain naive = new NaiveBayesMain(desktop);
+                        NaiveBayesMain naive = new NaiveBayesMain();
                         addWindow(naive);
                         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 }
@@ -231,7 +231,7 @@ public class InvokerMain extends JFrame
         alId3 = new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                         setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                        unbbayes.datamining.gui.id3.DecisionTreeMain id3 = new unbbayes.datamining.gui.id3.DecisionTreeMain(desktop);
+                        unbbayes.datamining.gui.id3.DecisionTreeMain id3 = new unbbayes.datamining.gui.id3.DecisionTreeMain();
                         addWindow(id3);
                         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 }
@@ -273,7 +273,7 @@ public class InvokerMain extends JFrame
         alCnm = new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                         setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                        NeuralModelController cnm = new NeuralModelController(desktop);
+                        NeuralModelController cnm = new NeuralModelController();
                         addWindow(cnm.getCnmFrame());
                         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 }
@@ -283,7 +283,7 @@ public class InvokerMain extends JFrame
         alNeuralNetwork = new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                         setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                        NeuralNetworkController neuralNetworkContoller = new NeuralNetworkController(desktop);
+                        NeuralNetworkController neuralNetworkContoller = new NeuralNetworkController();
                         addWindow(neuralNetworkContoller.getMainFrame());
                         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 }

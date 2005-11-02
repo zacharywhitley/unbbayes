@@ -7,7 +7,9 @@ import java.io.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import unbbayes.controller.IconController;
+import unbbayes.datamining.evaluation.CrossValidation;
 import unbbayes.datamining.evaluation.ITrainingMode;
+import unbbayes.datamining.evaluation.TrainingSet;
 import unbbayes.datamining.gui.*;
 import unbbayes.gui.MDIDesktopPane;
 
@@ -17,7 +19,7 @@ import unbbayes.gui.MDIDesktopPane;
  *  @author Rafael Moraes Noivo
  *  @version $1.0 $ (02/16/2003)
  */
-public class NeuralModelMain extends JInternalFrame implements IUnBMinerInternalFrame{
+public class NeuralModelMain extends JInternalFrame {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
 
@@ -73,18 +75,18 @@ public class NeuralModelMain extends JInternalFrame implements IUnBMinerInternal
   JLabel jLabel2 = new JLabel();
   private JMenuItem jMenuOptionTraining = new JMenuItem();
   protected JMenu jMenuOption = new JMenu();
-  private MDIDesktopPane desktop;
   private ITrainingMode trainingMode;
+
+  protected TrainingModePanel trainingModePanel = new TrainingModePanel();
 
   /**
    * Construct the frame.
    *
    * @param controller the behaviour controller of the framework.
    */
-  public NeuralModelMain(NeuralModelController controller,MDIDesktopPane desktop){
+  public NeuralModelMain(NeuralModelController controller){
     super("Combinatorial Neural Model",true,true,true,true);
     this.controller = controller;
-    this.desktop = desktop;
     resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralmodel.resources.NeuralModelResource");
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     try{
@@ -368,11 +370,15 @@ public class NeuralModelMain extends JInternalFrame implements IUnBMinerInternal
    * @param e
    */
   void optionsButton_actionPerformed(ActionEvent e) {
-		TrainingModeInternalFrame iFrame = new TrainingModeInternalFrame(this);
-		desktop.add(iFrame);
+	    int options = JOptionPane.showInternalOptionDialog(this, trainingModePanel, "Training Mode", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+	    if(options == JOptionPane.OK_OPTION){
+      	  if (trainingModePanel.isTrainingSetRadioButtonSelected()) {
+      		trainingMode = new TrainingSet();
+    	  } else {
+    		trainingMode = new CrossValidation(trainingModePanel.getNumSelectedFolds());
+    	  }
+	    }
+	    this.show();
   }
 
-  public void setTrainingMode(ITrainingMode mode) {
-	  trainingMode = mode;
-  }
 }

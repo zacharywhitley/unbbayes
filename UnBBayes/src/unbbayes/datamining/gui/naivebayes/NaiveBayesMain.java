@@ -17,8 +17,7 @@ import unbbayes.gui.*;
 import unbbayes.io.*;
 import unbbayes.prs.bn.*;
 
-public class NaiveBayesMain extends JInternalFrame implements IUnBMinerInternalFrame
-{
+public class NaiveBayesMain extends JInternalFrame {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
 
@@ -62,14 +61,14 @@ public class NaiveBayesMain extends JInternalFrame implements IUnBMinerInternalF
   private JLabel statusBar = new JLabel();
   private Border border1;
   private TitledBorder titledBorder1;
-  private MDIDesktopPane desktop;
   private ITrainingMode trainingMode;
 
+  protected TrainingModePanel trainingModePanel = new TrainingModePanel();
+
   /**Construct the frame*/
-  public NaiveBayesMain(MDIDesktopPane desktop)
-  { super("Naive Bayes Classifier",true,true,true,true);
+  public NaiveBayesMain() { 
+	super("Naive Bayes Classifier",true,true,true,true);
     resource = ResourceBundle.getBundle("unbbayes.datamining.gui.naivebayes.resources.NaiveBayesResource");
-    this.desktop = desktop;
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     try
     {
@@ -267,8 +266,15 @@ public class NaiveBayesMain extends JInternalFrame implements IUnBMinerInternalF
    * @param e
    */
   void optionsButton_actionPerformed(ActionEvent e) {
-		TrainingModeInternalFrame iFrame = new TrainingModeInternalFrame(this);
-		desktop.add(iFrame);
+	    int options = JOptionPane.showInternalOptionDialog(this, trainingModePanel, "Training Mode", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+	    if(options == JOptionPane.OK_OPTION){
+      	  if (trainingModePanel.isTrainingSetRadioButtonSelected()) {
+      		trainingMode = new TrainingSet();
+    	  } else {
+    		trainingMode = new CrossValidation(trainingModePanel.getNumSelectedFolds());
+    	  }
+	    }
+	    this.show();
   }
   
   void jMenuItem4_actionPerformed(ActionEvent e)
@@ -416,10 +422,6 @@ public class NaiveBayesMain extends JInternalFrame implements IUnBMinerInternalF
 
   void learnButton_actionPerformed(ActionEvent e)
   {   jMenuItem4_actionPerformed(e);
-  }
-
-  public void setTrainingMode(ITrainingMode mode) {
-	  trainingMode = mode;
   }
 
 }

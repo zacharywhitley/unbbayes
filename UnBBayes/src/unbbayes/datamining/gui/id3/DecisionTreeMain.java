@@ -11,12 +11,13 @@ import javax.swing.border.*;
 import unbbayes.controller.*;
 import unbbayes.datamining.classifiers.decisiontree.*;
 import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.evaluation.CrossValidation;
 import unbbayes.datamining.evaluation.ITrainingMode;
+import unbbayes.datamining.evaluation.TrainingSet;
 import unbbayes.datamining.gui.*;
 import unbbayes.gui.*;
 
-public class DecisionTreeMain extends JInternalFrame implements IUnBMinerInternalFrame
-{
+public class DecisionTreeMain extends JInternalFrame {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
 
@@ -60,14 +61,14 @@ public class DecisionTreeMain extends JInternalFrame implements IUnBMinerInterna
   private JTabbedPane jTabbedPane = new JTabbedPane();
   private AttributePanel attributeFrame;
   private BorderLayout borderLayout3 = new BorderLayout();
-  private MDIDesktopPane desktop;
   private ITrainingMode trainingMode;
 
+  protected TrainingModePanel trainingModePanel = new TrainingModePanel();
+
   /**Construct the frame*/
-  public DecisionTreeMain(MDIDesktopPane desktop)
+  public DecisionTreeMain()
   { super("Id3 Classifier",true,true,true,true);
     resource = ResourceBundle.getBundle("unbbayes.datamining.gui.id3.resources.DecisiontreeResource");
-    this.desktop = desktop;
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     try
     {
@@ -455,11 +456,15 @@ public class DecisionTreeMain extends JInternalFrame implements IUnBMinerInterna
    * @param e
    */
   void optionsButton_actionPerformed(ActionEvent e) {
-		TrainingModeInternalFrame iFrame = new TrainingModeInternalFrame(this);
-		desktop.add(iFrame);
+	    int options = JOptionPane.showInternalOptionDialog(this, trainingModePanel, "Training Mode", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+	    if(options == JOptionPane.OK_OPTION){
+      	  if (trainingModePanel.isTrainingSetRadioButtonSelected()) {
+      		trainingMode = new TrainingSet();
+    	  } else {
+    		trainingMode = new CrossValidation(trainingModePanel.getNumSelectedFolds());
+    	  }
+	    }
+	    this.show();
   }
 
-  public void setTrainingMode(ITrainingMode mode) {
-	  trainingMode = mode;
-  }
 }

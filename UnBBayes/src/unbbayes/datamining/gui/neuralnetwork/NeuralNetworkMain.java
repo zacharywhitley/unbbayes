@@ -8,7 +8,9 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import unbbayes.controller.*;
+import unbbayes.datamining.evaluation.CrossValidation;
 import unbbayes.datamining.evaluation.ITrainingMode;
+import unbbayes.datamining.evaluation.TrainingSet;
 import unbbayes.datamining.gui.*;
 import unbbayes.gui.MDIDesktopPane;
 
@@ -18,7 +20,7 @@ import unbbayes.gui.MDIDesktopPane;
  *  @author Rafael Moraes Noivo
  *  @version $1.0 $ (02/16/2003)
  */
-public class NeuralNetworkMain extends JInternalFrame implements IUnBMinerInternalFrame {
+public class NeuralNetworkMain extends JInternalFrame {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
 
@@ -72,13 +74,12 @@ public class NeuralNetworkMain extends JInternalFrame implements IUnBMinerIntern
   protected InferencePanel inferencePanel = new InferencePanel();
   protected OptionsPanel optionsPanel = new OptionsPanel();
   protected AdvancedOptionsPanel advancedOptionsPanel = new AdvancedOptionsPanel();
+  protected TrainingModePanel trainingModePanel = new TrainingModePanel();
 
-  protected MDIDesktopPane desktop;
   protected ITrainingMode trainingMode;
 
-  public NeuralNetworkMain(MDIDesktopPane desktop) {
+  public NeuralNetworkMain() {
     super("Neural Network",true,true,true,true);
-    this.desktop = desktop;
     try {
       jbInit();
     }
@@ -267,6 +268,8 @@ public class NeuralNetworkMain extends JInternalFrame implements IUnBMinerIntern
     optionsMenu.add(jMenuOptionTraining);
     helpMenu.add(helpTopicsMenu);
     this.setJMenuBar(jMenuBar1);
+    learnMenu.setEnabled(false);
+    advancedOptionsMenu.setEnabled(false);
     jTabbedPane1.setEnabledAt(1,false);
     jTabbedPane1.setEnabledAt(2,false);
     jTabbedPane1.setSelectedIndex(0);
@@ -299,7 +302,8 @@ public class NeuralNetworkMain extends JInternalFrame implements IUnBMinerIntern
     saveModelMenu.setEnabled(true);
     learnButton.setEnabled(false);
     advancedOptionsButton.setEnabled(false);
-    optionsMenu.setEnabled(false);
+    learnMenu.setEnabled(false);
+    advancedOptionsMenu.setEnabled(false);    
 
     try{
       controller.learn();
@@ -317,7 +321,8 @@ public class NeuralNetworkMain extends JInternalFrame implements IUnBMinerIntern
       saveModelMenu.setEnabled(false);
       learnButton.setEnabled(true);
       advancedOptionsButton.setEnabled(true);
-      optionsMenu.setEnabled(true);
+      learnMenu.setEnabled(true);
+      advancedOptionsMenu.setEnabled(true);
     }
   }
 
@@ -334,7 +339,8 @@ public class NeuralNetworkMain extends JInternalFrame implements IUnBMinerIntern
         jTabbedPane1.setEnabledAt(2,false);
         learnButton.setEnabled(true);
         advancedOptionsButton.setEnabled(true);
-        optionsMenu.setEnabled(true);
+        learnMenu.setEnabled(true);
+        advancedOptionsMenu.setEnabled(true);
         saveButton.setEnabled(false);
         saveModelMenu.setEnabled(false);
         statusBar.setText(resource.getString("openFileSuccess"));
@@ -375,7 +381,8 @@ public class NeuralNetworkMain extends JInternalFrame implements IUnBMinerIntern
         jTabbedPane1.setSelectedIndex(2);
         learnButton.setEnabled(false);
         advancedOptionsButton.setEnabled(false);
-        optionsMenu.setEnabled(false);
+        learnMenu.setEnabled(false); 
+        advancedOptionsMenu.setEnabled(false);
         saveButton.setEnabled(false);
         saveModelMenu.setEnabled(false);
         statusBar.setText(resource.getString("modelOpenSuccess"));
@@ -397,7 +404,6 @@ public class NeuralNetworkMain extends JInternalFrame implements IUnBMinerIntern
 
   void advancedOptions_actionPerformed(ActionEvent e) {
     advancedOptionsPanel.sethiddenLayerSize(controller.getHiddenLayerSize());
-    this.hide();
     int options = JOptionPane.showInternalOptionDialog(this, advancedOptionsPanel, resource.getString("advancedOptionsTitle"), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
     if(options == JOptionPane.OK_OPTION){
       advancedOptionsPanel.updateValues();
@@ -410,11 +416,15 @@ public class NeuralNetworkMain extends JInternalFrame implements IUnBMinerIntern
    * @param e
    */
   void optionsButton_actionPerformed(ActionEvent e) {
-		TrainingModeInternalFrame iFrame = new TrainingModeInternalFrame(this);
-		desktop.add(iFrame);
+	    int options = JOptionPane.showInternalOptionDialog(this, trainingModePanel, "Training Mode", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+	    if(options == JOptionPane.OK_OPTION){
+      	  if (trainingModePanel.isTrainingSetRadioButtonSelected()) {
+      		trainingMode = new TrainingSet();
+    	  } else {
+    		trainingMode = new CrossValidation(trainingModePanel.getNumSelectedFolds());
+    	  }
+	    }
+	    this.show();
   }
 
-  public void setTrainingMode(ITrainingMode mode) {
-	  trainingMode = mode;
-  }
 }

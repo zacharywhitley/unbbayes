@@ -27,9 +27,9 @@ public class NeuralModelController {
   /**
    * Builds a new controller.
    */
-  public NeuralModelController(MDIDesktopPane desktop){
+  public NeuralModelController(){
     resource = ResourceBundle.getBundle("unbbayes.datamining.gui.neuralmodel.resources.NeuralModelResource");
-    mainScreen = new NeuralModelMain(this,desktop);
+    mainScreen = new NeuralModelMain(this);
     mainScreen.setController(this);
   }
 
