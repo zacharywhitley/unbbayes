@@ -8,6 +8,7 @@ import javax.swing.*;
 import unbbayes.controller.*;
 import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.evaluation.ITrainingMode;
 import unbbayes.gui.*;
 
 /**
@@ -23,6 +24,7 @@ public class NeuralModelController {
   private InstanceSet instanceSet;
   private ResourceBundle resource;
   private File file;
+  private ITrainingMode trainingMode;
 
   /**
    * Builds a new controller.
@@ -162,7 +164,11 @@ public class NeuralModelController {
     mainScreen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     return success;
   }
-
+  
+  public void setTrainingMode(ITrainingMode mode) {
+	  this.trainingMode = mode;
+  }
+  
   /**
    * Used to call the help files.
    */
@@ -186,7 +192,7 @@ public class NeuralModelController {
       confidence = mainScreen.optionsPanel.getConfidence();
       support = mainScreen.optionsPanel.getSupport();
       cnm = new CombinatorialNeuralModel(maxOrder);
-      cnm.buildClassifier(instanceSet);
+      cnm.buildClassifier(instanceSet,trainingMode);
       mainScreen.rulesPanel.setRulesPanel(cnm, confidence, support);
       mainScreen.inferencePanel.setNetwork(cnm);
     }
@@ -201,7 +207,7 @@ public class NeuralModelController {
   public void printTable(final JTable table) {
     Thread t = new Thread(new Runnable() {
       public void run() {
-        ArrayList tables = new ArrayList();
+        ArrayList<JTable> tables = new ArrayList<JTable>();
         tables.add(table);
         PageFormat pageFormat = new PageFormat();
         pageFormat.setOrientation(PageFormat.LANDSCAPE);
@@ -225,7 +231,7 @@ public class NeuralModelController {
   public void printPreviewer(final JTable table) {
     Thread t = new Thread(new Runnable() {
       public void run() {
-        ArrayList tables = new ArrayList();
+        ArrayList<JTable> tables = new ArrayList<JTable>();
         tables.add(table);
         PageFormat pageFormat = new PageFormat();
         pageFormat.setOrientation(PageFormat.LANDSCAPE);

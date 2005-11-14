@@ -8,10 +8,8 @@ import javax.swing.*;
 import javax.swing.border.*;
 import unbbayes.controller.IconController;
 import unbbayes.datamining.evaluation.CrossValidation;
-import unbbayes.datamining.evaluation.ITrainingMode;
 import unbbayes.datamining.evaluation.TrainingSet;
 import unbbayes.datamining.gui.*;
-import unbbayes.gui.MDIDesktopPane;
 
 /**
  *  Class that implements the CNM framework start screen.
@@ -75,7 +73,6 @@ public class NeuralModelMain extends JInternalFrame {
   JLabel jLabel2 = new JLabel();
   private JMenuItem jMenuOptionTraining = new JMenuItem();
   protected JMenu jMenuOption = new JMenu();
-  private ITrainingMode trainingMode;
 
   protected TrainingModePanel trainingModePanel = new TrainingModePanel();
 
@@ -373,9 +370,9 @@ public class NeuralModelMain extends JInternalFrame {
 	    int options = JOptionPane.showInternalOptionDialog(this, trainingModePanel, "Training Mode", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
 	    if(options == JOptionPane.OK_OPTION){
       	  if (trainingModePanel.isTrainingSetRadioButtonSelected()) {
-      		trainingMode = new TrainingSet();
+      		controller.setTrainingMode(new TrainingSet());
     	  } else {
-    		trainingMode = new CrossValidation(trainingModePanel.getNumSelectedFolds());
+       		controller.setTrainingMode(new CrossValidation(trainingModePanel.getNumSelectedFolds()));
     	  }
 	    }
 	    this.show();

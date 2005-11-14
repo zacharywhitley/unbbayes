@@ -129,7 +129,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 		Attribute splitAttribute;
 
 		double[] splitValues;
-		ArrayList numericDataList = new ArrayList();
+		ArrayList<NumericData> numericDataList = new ArrayList<NumericData>();
 
 		//start recursive code
 		while ((!queue.isEmpty()))
