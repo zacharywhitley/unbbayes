@@ -51,9 +51,9 @@ public class IconController
   protected ImageIcon folderSmallDisabledIcon;
   protected ImageIcon yellowBallIcon;
   protected ImageIcon greenBallIcon;
-  protected ImageIcon arffFileIcon = new ImageIcon(getClass().getResource("/icons/arff-file.gif"));
-  protected ImageIcon txtFileIcon = new ImageIcon(getClass().getResource("/icons/txt-file.gif"));
-  protected ImageIcon netFileIcon = new ImageIcon(getClass().getResource("/icons/net-file.gif"));
+  protected ImageIcon arffFileIcon;// = new ImageIcon(getClass().getResource("/icons/arff-file.gif"));
+  protected ImageIcon txtFileIcon;// = new ImageIcon(getClass().getResource("/icons/txt-file.gif"));
+  protected ImageIcon netFileIcon;// = new ImageIcon(getClass().getResource("/icons/net-file.gif"));
   protected ImageIcon deleteFolderIcon;
   protected ImageIcon renameFolderIcon;
   protected ImageIcon addFolderIcon;
@@ -91,7 +91,9 @@ public class IconController
     }
     else
     {
-      metalIcon = new ImageIcon(getClass().getResource("/icons/metal.gif"));
+    	try{
+      metalIcon = new ImageIcon(getClass().getResource("icons/metal.gif"));}
+    	catch (NullPointerException e){}
       return metalIcon;
     }
   }
@@ -102,8 +104,9 @@ public class IconController
       return motifIcon;
     }
     else
-    {
-      motifIcon = new ImageIcon(getClass().getResource("/icons/motif.gif"));
+    {try{
+      motifIcon = new ImageIcon(getClass().getResource("/icons/motif.gif"));}
+    catch (NullPointerException e){}
       return motifIcon;
     }
   }
@@ -114,8 +117,9 @@ public class IconController
       return windowsIcon;
     }
     else
-    {
-      windowsIcon = new ImageIcon(getClass().getResource("/icons/windows.gif"));
+    {try{
+      windowsIcon = new ImageIcon(getClass().getResource("/icons/windows.gif"));}
+    catch (NullPointerException e){}
       return windowsIcon;
     }
   }
@@ -126,8 +130,9 @@ public class IconController
       return cascadeIcon;
     }
     else
-    {
-      cascadeIcon = new ImageIcon(getClass().getResource("/icons/cascade.gif"));
+    {try{
+      cascadeIcon = new ImageIcon(getClass().getResource("/icons/cascade.gif"));}
+    catch (NullPointerException e){}
       return cascadeIcon;
     }
   }
@@ -138,8 +143,9 @@ public class IconController
       return tileIcon;
     }
     else
-    {
-      tileIcon = new ImageIcon(getClass().getResource("/icons/tile.gif"));
+    {try{
+      tileIcon = new ImageIcon(getClass().getResource("/icons/tile.gif"));}
+    catch (NullPointerException e){}
       return tileIcon;
     }
   }
@@ -150,8 +156,9 @@ public class IconController
       return helpIcon;
     }
     else
-    {
-      helpIcon = new ImageIcon(getClass().getResource("/icons/help.gif"));
+    {try{
+      helpIcon = new ImageIcon(getClass().getResource("/icons/help.gif"));}
+    catch (NullPointerException e){}
       return helpIcon;
     }
   }
@@ -198,7 +205,9 @@ public class IconController
     }
     else
     {
-      compileIcon = new ImageIcon(getClass().getResource("/icons/learn.gif"));
+    	try{
+      compileIcon = new ImageIcon(getClass().getResource("/icons/learn.gif"));}
+    	catch (NullPointerException e){}
       return compileIcon;
     }
   }
@@ -209,7 +218,10 @@ public class IconController
     }
     else
     {
+    	try{
       openIcon = new ImageIcon(getClass().getResource("/icons/open.gif"));
+    	}
+    	catch (NullPointerException e){}
       return openIcon;
     }
   }
@@ -219,10 +231,12 @@ public class IconController
       return saveIcon;
     }
     else
-    {
-      saveIcon = new ImageIcon(getClass().getResource("/icons/save.gif"));
+    {try{
+      saveIcon = new ImageIcon(getClass().getResource("/icons/save.gif"));}
+      catch (NullPointerException e){}
       return saveIcon;
     }
+  
   }
   public ImageIcon getReturnIcon() {
     if (returnIcon!=null)
@@ -489,12 +503,15 @@ public class IconController
     }
   }
   public ImageIcon getNetFileIcon() {
+	  netFileIcon= new ImageIcon(getClass().getResource("/icons/net-file.gif"));
     return netFileIcon;
   }
   public ImageIcon getTxtFileIcon() {
+	  txtFileIcon= new ImageIcon(getClass().getResource("/icons/txt-file.gif"));
     return txtFileIcon;
   }
   public ImageIcon getArffFileIcon() {
+	  arffFileIcon=new ImageIcon(getClass().getResource("/icons/arff-file.gif"));
     return arffFileIcon;
   }
   public ImageIcon getAddFolderIcon() {
@@ -548,7 +565,10 @@ public class IconController
     }
     else
     {
+    	try {
       newIcon = new ImageIcon(getClass().getResource("/icons/new.gif"));
+    	}
+    	catch (NullPointerException e){}
       return newIcon;
     }
 

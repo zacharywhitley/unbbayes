@@ -8,6 +8,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
+import unbbayes.aprendizagem.ConstructionController;
 import unbbayes.controller.*;
 import unbbayes.datamining.classifiers.*;
 import unbbayes.datamining.datamanipulation.*;
@@ -15,7 +16,10 @@ import unbbayes.datamining.gui.*;
 import unbbayes.datamining.gui.naivebayes.NaiveBayesMain;
 import unbbayes.gui.*;
 import unbbayes.io.*;
+import unbbayes.prs.Edge;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.*;
+import unbbayes.util.NodeList;
 
 public class BanMain extends JInternalFrame
 {
@@ -24,7 +28,11 @@ public class BanMain extends JInternalFrame
 	private static final long serialVersionUID = 0;
 
   private JPanel contentPane;
+  private MDIDesktopPane desktop;
   private InstanceSet inst;
+  public File selectedFile;
+  private ConstructionController cc;
+  private int classec;
   /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
   private ProbabilisticNetwork net;
@@ -63,7 +71,7 @@ public class BanMain extends JInternalFrame
   /**Construct the frame*/
   public BanMain()
   { super("BAN Classifier",true,true,true,true);
-    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.naivebayes.resources.NaiveBayesResource");
+    resource = ResourceBundle.getBundle("unbbayes.datamining.gui.ban.resources.BanResource");
 
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     try
@@ -90,6 +98,8 @@ public class BanMain extends JInternalFrame
     titledBorder1 = new TitledBorder(border1,"Status");
     this.setJMenuBar(jMenuBar1);
     this.setSize(new Dimension(640,480));
+    desktop = new MDIDesktopPane();
+    contentPane.add(new JScrollPane(desktop), BorderLayout.CENTER);
     jMenu1.setMnemonic(((Character)resource.getObject("fileMnemonic")).charValue());
     jMenu1.setText(resource.getString("fileMenu"));
     jMenuItem1.setIcon(abrirIcon);
@@ -235,15 +245,24 @@ public class BanMain extends JInternalFrame
   {   if (inst != null)
       {   try
           {
-          	  NaiveBayes naiveBayes = new NaiveBayes();
+    	  
+    	  		
+    	   	  /*NaiveBayes naiveBayes = new NaiveBayes();
           	  naiveBayes.buildClassifier(inst);
           	  net = naiveBayes.getProbabilisticNetwork();
           	  jMenuItem5.setEnabled(true);
               jTabbedPane1.setEnabledAt(1,true);
               jTabbedPane1.setSelectedIndex(1);
-              saveButton.setEnabled(true);
+              saveButton.setEnabled(true);*/
+              /*Edge arco;
+              NodeList pais;
+              pais.a
+              pais.remove()
+              net.getNodeAt(1).setParents()
+              net.addEdge()*/
+              
 
-              NetWindow netWindow = new NetWindow(net);
+              /*NetWindow netWindow = new NetWindow(net);
               NetWindowEdition edition = netWindow.getNetWindowEdition();
               edition.getCenterPanel().setBottomComponent(netWindow.getJspGraph());
 
@@ -255,12 +274,14 @@ public class BanMain extends JInternalFrame
               edition.getProbabilisticNode().setVisible(false);
               edition.getUtilityNode().setVisible(false);
               edition.getSelect().setVisible(false);
-              edition.getHierarchy().setVisible(false);
-
+              edition.getHierarchy().setVisible(false);*/
+    	  classec=inst.getClassIndex();
+    	  cc= new ConstructionController(selectedFile,inst.getClassIndex(),this);
               // mostra a nova tela
               jPanel1.removeAll();
               jPanel1.setLayout(new BorderLayout());
-              jPanel1.add(netWindow.getContentPane(),BorderLayout.CENTER);
+              //
+              //jPanel1.add(netWindow.getContentPane(),BorderLayout.CENTER);
               statusBar.setText(resource.getString("learnSuccessful"));
           }
           catch (Exception ex)
@@ -286,7 +307,7 @@ public class BanMain extends JInternalFrame
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ArffFiles (*.arff)"));
       int returnVal = fileChooser.showOpenDialog(this);
       if (returnVal == JFileChooser.APPROVE_OPTION)
-      {   File selectedFile = fileChooser.getSelectedFile();
+      {   selectedFile = fileChooser.getSelectedFile();
           openFile(selectedFile);
           FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
@@ -302,8 +323,9 @@ public class BanMain extends JInternalFrame
           boolean bool = inst.checkNumericAttributes();
           if (bool == true)
               throw new Exception(resource.getString("numericAttributesException"));
+          //cc= new ConstructionController(selectedFile,0);
           jTabbedPane1.setEnabledAt(0,false);
-          setTitle("Naive Bayes - "+selectedFile.getName());
+          setTitle("BAN - "+selectedFile.getName());
           jPanel4.enableComboBox(true);
           jPanel4.setInstances(inst);
           jTabbedPane1.setEnabledAt(0,true);
@@ -378,6 +400,102 @@ public class BanMain extends JInternalFrame
   {   jMenuItem4_actionPerformed(e);
   }
 
+  public void addWindow(JInternalFrame newWindow) {
+		desktop.add(newWindow);
+		}
+  
+  public ProbabilisticNetwork makeNetwork(NodeList variaveis) {
+     
+      ProbabilisticNetwork net = new ProbabilisticNetwork("learned net");
+      Node noFilho = null;
+      Node noPai = null;
+      Edge arcoAux = null;
+      Node aux;
+      boolean japai;
+      boolean direction = true;
+      for (int i = 0; i < variaveis.size(); i++) {
+          noFilho = variaveis.get(i);
+          japai=false;
+          for(int k=0;k<noFilho.getParents().size();k++){
+          if(noFilho.getParents().get(k).getName()==variaveis.get(classec).getName()){
+        	japai=true;  
+          }
+          if(japai=false){
+        	  NodeList ppais=noFilho.getParents();
+        	  ppais.add(variaveis.get(classec));
+        	  noFilho.setParents(ppais);
+          }
+          }
+          japai=false;
+          for(int k=0;k<noFilho.getChildren().size();k++){
+              if(noFilho.getChildren().get(k).getName()==variaveis.get(classec).getName()){
+            	japai=true;  
+              }
+              if(japai=true){
+            	  NodeList ppais=noFilho.getChildren();
+            	  for(int l=0;l<ppais.size();l++){
+            		  if(ppais.get(l).getName()==variaveis.get(classec).getName()){
+            	  ppais.remove(l);
+            		  }
+            	  }
+            	  noFilho.setChildren(ppais);
+              }
+              }
+          net.addNode(noFilho);
+          for (int j = 0; j < noFilho.getParents().size(); j++) {
+          	noPai = (Node)noFilho.getParents().get(j);
+          	noPai.getChildren().add(noFilho);
+              arcoAux = new Edge(noPai, noFilho);
+          	for(int k = 0 ; k < noPai.getParents().size() && direction; k++){
+          	    aux = (Node)noPai.getParents().get(k);
+          	    if(aux == noFilho){
+          	        noPai.getParents().remove(k);
+          	        direction = false;
+          	    }                      		
+          	}                 
+              arcoAux = new Edge(noPai, noFilho);                
+            	arcoAux.setDirection(direction);                	
+            	direction = true;
+              net.getEdges().add(arcoAux);
+          }
+      }        		
+		return net;
+  }
+  
+ 
+  public void showNetwork(ProbabilisticNetwork net){
 
+  	NetWindow netWindow = new NetWindow(net);
+	/*	if (! netWindow.getWindowController().compileNetwork()) {
+          netWindow.changeToNetEdition();            
+          
+      } else{
+          netWindow.changeToNetCompilation();		
+		}*/
+		//
+		//NetWindow netWindow = new NetWindow(net);
+        NetWindowEdition edition = netWindow.getNetWindowEdition();
+        edition.getCenterPanel().setBottomComponent(netWindow.getJspGraph());
+
+        // deixa invisíveis alguns botões do unbbayes
+        edition.getMore().setVisible(false);
+        edition.getLess().setVisible(false);
+        edition.getArc().setVisible(false);
+        edition.getDecisionNode().setVisible(false);
+        edition.getProbabilisticNode().setVisible(false);
+        edition.getUtilityNode().setVisible(false);
+        edition.getSelect().setVisible(false);
+        edition.getHierarchy().setVisible(false);
+
+		//
+		//netWindow.show();
+		//this.addWindow(netWindow);
+		jPanel1.removeAll();
+        jPanel1.setLayout(new BorderLayout());
+        
+        jPanel1.add(netWindow.getContentPane(),BorderLayout.CENTER);
+		//jPanel1.add(netWindow.getContentPane(),BorderLayout.CENTER);
+		    	
+  }
 	
 }

@@ -1,0 +1,452 @@
+package unbbayes.gui;
+
+import java.awt.BorderLayout;
+
+import javax.swing.JFileChooser;
+import javax.swing.JPanel;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import java.awt.FlowLayout;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.RandomAccessFile;
+import java.util.ResourceBundle;
+
+import javax.swing.JLabel;
+import javax.swing.JComboBox;
+import javax.swing.JButton;
+
+import unbbayes.aprendizagem.ConstructionController;
+import unbbayes.controller.FileController;
+import unbbayes.io.*;
+import unbbayes.util.NodeList;
+import unbbayes.controller.MainController;
+import unbbayes.aprendizagem.TVariavel;
+import javax.swing.JList;
+import javax.swing.JTextPane;
+import javax.swing.JCheckBox;
+import java.awt.GridLayout;
+import java.awt.Dimension;
+import javax.swing.JProgressBar;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.CardLayout;
+
+public class janeladiscret extends JFrame {
+
+	private JPanel jContentPane = null;
+	private FileController fileController;
+	private MainController controller;
+	public byte[][] matriz;
+	public dalgo discretizador;
+	 
+	public NodeList variaveis;
+	public int[] vetor;
+
+	private static ResourceBundle resource =
+		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+	private JPanel jPanel3 = null;
+	private JButton jButton2 = null;
+	private JButton jButton = null;
+	private JButton jButton5 = null;
+	private JPanel jPanel = null;
+	private JLabel jLabel = null;
+	private JComboBox listavar = null;
+	private JLabel jLabel1 = null;
+	private JComboBox discretlist = null;
+	private JPanel jPanel1 = null;
+	private JCheckBox peso = null;
+	private JCheckBox qui2 = null;
+	private JPanel jPanel2 = null;
+	private JLabel jLabel2 = null;
+	private JButton jButton3 = null;
+	private JProgressBar jProgressBar = null;
+	private JButton jButton4 = null;
+	private JPanel jPanel4 = null;
+	/**
+	 * This is the default constructor
+	 */
+	public janeladiscret() {
+		super();
+		initialize();
+		fileController = FileController.getInstance();
+	}
+
+	/**
+	 * This method initializes this
+	 * 
+	 * @return void
+	 */
+	private void initialize() {
+		this.setSize(594, 248);
+		this.setContentPane(getJContentPane());
+		this.setTitle("Discret");
+	}
+
+	/**
+	 * This method initializes jContentPane
+	 * 
+	 * @return javax.swing.JPanel
+	 */
+	private JPanel getJContentPane() {
+		if (jContentPane == null) {
+			GridLayout gridLayout = new GridLayout();
+			gridLayout.setRows(5);
+			gridLayout.setColumns(1);
+			jContentPane = new JPanel();
+			jContentPane.setLayout(gridLayout);
+			jContentPane.add(getJPanel(), null);
+			jContentPane.add(getJPanel1(), null);
+			jContentPane.add(getJPanel2(), null);
+			jContentPane.add(getJPanel3(), null);
+			jContentPane.add(getJPanel4(), null);
+		}
+		return jContentPane;
+	}
+
+	private Object makeObj(final String item)  {
+	     return new Object() { public String toString() { return item; } };
+	   }
+
+	/**
+	 * This method initializes jPanel3	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getJPanel3() {
+		if (jPanel3 == null) {
+			jPanel3 = new JPanel();
+			jPanel3.setName("");
+			jPanel3.setPreferredSize(new java.awt.Dimension(100,22));
+			jPanel3.add(getJButton2(), null);
+			jPanel3.add(getJButton(), null);
+			jPanel3.add(getJButton5(), null);
+		}
+		return jPanel3;
+	}
+
+	/**
+	 * This method initializes jButton	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getJButton2() {
+		if (jButton2 == null) {
+			jButton2 = new JButton();
+			jButton2.setText("Escolher arquivo");
+			jButton2.addActionListener(new java.awt.event.ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {
+					String[] nets = new String[] { "txt" };
+					JFileChooser chooser = new JFileChooser(fileController.getCurrentDirectory());
+					chooser.setMultiSelectionEnabled(false);
+					chooser.addChoosableFileFilter(
+						new SimpleFileFilter(
+							nets,
+							resource.getString("textFileFilter")));
+					int option = chooser.showOpenDialog(janeladiscret.this);
+					File file;
+					if (option == JFileChooser.APPROVE_OPTION) {
+						file = chooser.getSelectedFile();
+	                                        fileController.setCurrentDirectory(chooser.getCurrentDirectory());
+						//new ConstructionController(file, controller);
+	                    ConstructionController construtor = new ConstructionController(file);
+	                    int ln=construtor.getMatrix().length;
+	                    int cl=construtor.getMatrix()[1].length;
+	                    matriz = new byte[ln][cl];
+	                    matriz=construtor.getMatrix();
+	                    variaveis=construtor.variablesVector;
+	                    jButton.setEnabled(true);
+	                    jButton5.setEnabled(true);
+	                    listavar.setEnabled(true);
+	                    discretlist.setEnabled(true);
+	                    int i;
+						int j=variaveis.size()-1;
+						for(i=0;i<j;i++){
+							//if variaveis.get(i).getType()
+						listavar.addItem(makeObj(variaveis.get(i).getDescription()));	
+							
+						}//for
+						discretlist.addItem(makeObj("Multipla"));
+						//discretlist.addItem(makeObj("ChiMerge"));
+						//discretlist.addItem(makeObj("MDL"));
+						//discretlist.addItem(makeObj("Intervalos iguais"));
+						peso.setSelected(true);
+						qui2.setSelected(true);
+						
+					}//mouse ev
+				}//jbutt
+			}
+			
+			);//get jbutt;
+		
+			//return jButton2;
+	}
+		return jButton2;
+}
+
+
+	/**
+	 * This method initializes jButton1	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getJButton() {
+		if (jButton == null) {
+			jButton = new JButton();
+			jButton.setEnabled(false);
+			jButton.setText("Discretizar");
+			jButton.addActionListener(new java.awt.event.ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {
+					//discretizador.Setmatrix(matriz);
+					dalgo discretizador= new dalgo();
+					discretizador.Setmatrix(matriz);
+					discretizador.Setvariables(variaveis);
+					discretizador.alfa=5/100;
+					discretizador.dochi2=false;
+					discretizador.dowh=true;
+					discretizador.limiteperda=jProgressBar.getValue();
+					//discretizador.doall();
+					int rr=discretizador.doonce();
+					variaveis=discretizador.variables;
+					matriz=discretizador.originalmatrix;
+					//int resp=1;
+					//while(resp>0){
+						//resp=discretizador.doonce();
+						
+					//}
+					
+				}
+			});
+		}
+		return jButton;
+	}
+
+	/**
+	 * This method initializes jButton2	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getJButton5() {
+		if (jButton5 == null) {
+			jButton5 = new JButton();
+			jButton5.setEnabled(false);
+			jButton5.setText("Salvar arquivo novo..");
+			jButton5.addActionListener(new java.awt.event.ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {
+					JFileChooser chooser = new JFileChooser(fileController.getCurrentDirectory());
+					chooser.setMultiSelectionEnabled(false);
+					
+					int option = chooser.showSaveDialog(janeladiscret.this);
+					File file;
+					if (option == JFileChooser.APPROVE_OPTION) {
+					try{
+						file= new File(chooser.getName());
+						RandomAccessFile file2 = new RandomAccessFile(file, "rw" );
+						String linha="";
+						int nv=variaveis.size();
+						int i,j;
+						
+						for(i=0;i<nv-1;i++){
+						linha=linha+variaveis.get(i).getName();
+						}
+						linha=linha+variaveis.get(nv-1).getName();
+						file2.writeBytes(linha+"\n");
+						
+						int linhas=discretizador.mlines;
+						for (i=0;i<linhas-1;i++){
+							linha="";
+							for(j=0;j<nv-1;j++){
+								linha=linha+variaveis.get(j).getStateAt((discretizador.originalmatrix[i][j]))+" ";
+							}
+							linha=linha+variaveis.get(j).getStateAt(discretizador.originalmatrix[linhas-1][nv-1]);
+							file2.writeBytes(linha+"\n");
+							}
+						
+						file2.close();
+						}
+					catch(Exception ee){
+						System.out.println("erro"+e.toString());
+					}
+					}
+					
+				}
+			});
+		}
+		return jButton5;
+	}
+
+	/**
+	 * This method initializes jPanel	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getJPanel() {
+		if (jPanel == null) {
+			jLabel1 = new JLabel();
+			jLabel1.setText("Tipo de discretização");
+			jLabel = new JLabel();
+			jLabel.setText("Variável dependente");
+			jPanel = new JPanel();
+			jPanel.setComponentOrientation(java.awt.ComponentOrientation.LEFT_TO_RIGHT);
+			jPanel.setPreferredSize(new java.awt.Dimension(121,35));
+			jPanel.add(jLabel, null);
+			jPanel.add(getListavar(), null);
+			jPanel.add(jLabel1, null);
+			jPanel.add(getDiscretlist(), null);
+		}
+		return jPanel;
+	}
+
+	/**
+	 * This method initializes jComboBox	
+	 * 	
+	 * @return javax.swing.JComboBox	
+	 */
+	private JComboBox getListavar() {
+		if (listavar == null) {
+			listavar = new JComboBox();
+			listavar.setEnabled(false);
+			listavar.setToolTipText("");
+			listavar.setPreferredSize(new Dimension(100, 25));
+		}
+		return listavar;
+	}
+
+	/**
+	 * This method initializes jComboBox1	
+	 * 	
+	 * @return javax.swing.JComboBox	
+	 */
+	private JComboBox getDiscretlist() {
+		if (discretlist == null) {
+			discretlist = new JComboBox();
+			discretlist.setEnabled(false);
+			discretlist.setToolTipText("Escolha o tipo de discretização a ser aplicada");
+			discretlist.setPreferredSize(new Dimension(100, 25));
+		}
+		return discretlist;
+	}
+
+	/**
+	 * This method initializes jPanel1	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getJPanel1() {
+		if (jPanel1 == null) {
+			jPanel1 = new JPanel();
+			jPanel1.add(getPeso(), null);
+			jPanel1.add(getQui2(), null);
+		}
+		return jPanel1;
+	}
+
+	/**
+	 * This method initializes jCheckBox	
+	 * 	
+	 * @return javax.swing.JCheckBox	
+	 */
+	private JCheckBox getPeso() {
+		if (peso == null) {
+			peso = new JCheckBox();
+			peso.setText("Considerar peso");
+		}
+		return peso;
+	}
+
+	/**
+	 * This method initializes jCheckBox1	
+	 * 	
+	 * @return javax.swing.JCheckBox	
+	 */
+	private JCheckBox getQui2() {
+		if (qui2 == null) {
+			qui2 = new JCheckBox();
+			qui2.setText("Exigir X²");
+		}
+		return qui2;
+	}
+
+	/**
+	 * This method initializes jPanel2	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getJPanel2() {
+		if (jPanel2 == null) {
+			jLabel2 = new JLabel();
+			jLabel2.setText("Aceitar perda de até");
+			jPanel2 = new JPanel();
+			jPanel2.add(jLabel2, null);
+			jPanel2.add(getJButton3(), null);
+			jPanel2.add(getJProgressBar(), null);
+			jPanel2.add(getJButton4(), null);
+		}
+		return jPanel2;
+	}
+
+	/**
+	 * This method initializes jButton3	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getJButton3() {
+		if (jButton3 == null) {
+			jButton3 = new JButton();
+			jButton3.setText("<");
+			jButton3.addActionListener(new java.awt.event.ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {
+					jProgressBar.setValue(jProgressBar.getValue()-1);
+				}
+			});
+		}
+		return jButton3;
+	}
+
+	/**
+	 * This method initializes jProgressBar	
+	 * 	
+	 * @return javax.swing.JProgressBar	
+	 */
+	private JProgressBar getJProgressBar() {
+		if (jProgressBar == null) {
+			jProgressBar = new JProgressBar();
+			jProgressBar.setStringPainted(true);
+			jProgressBar.setValue(5);
+		}
+		return jProgressBar;
+	}
+
+	/**
+	 * This method initializes jButton4	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getJButton4() {
+		if (jButton4 == null) {
+			jButton4 = new JButton();
+			jButton4.setText(">");
+			jButton4.addActionListener(new java.awt.event.ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {
+					jProgressBar.setValue(jProgressBar.getValue()+1);
+				}
+			});
+		}
+		return jButton4;
+	}
+
+	/**
+	 * This method initializes jPanel4	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getJPanel4() {
+		if (jPanel4 == null) {
+			jPanel4 = new JPanel();
+		}
+		return jPanel4;
+	}
+
+	}  //  @jve:decl-index=0:visual-constraint="24,0"

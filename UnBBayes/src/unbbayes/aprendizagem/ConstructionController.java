@@ -21,6 +21,7 @@
  package unbbayes.aprendizagem;
 
 import unbbayes.controller.*;
+import unbbayes.datamining.gui.ban.BanMain;
 import unbbayes.util.*;
 import unbbayes.gui.*;
 import java.io.*;
@@ -59,7 +60,8 @@ import java.util.*;
 
 public class ConstructionController {
      	 
-	private NodeList variablesVector; 
+	public NodeList variablesVector;
+	public NodeList variablesVector2;
 	private NodeList variables;
 	private int[] vector;
 	private byte[][] matrix;
@@ -159,7 +161,64 @@ public class ConstructionController {
         /*Gives the probability of each node*/
         new ProbabilisticController(variables,matrix, vector,caseNumber,controller, compacted);                     
     }
-	
+	public ConstructionController(File file, int classe, BanMain controller){				
+	    try{
+           InputStreamReader isr = new InputStreamReader(new FileInputStream(file));
+           BufferedReader  br    = new BufferedReader(isr);
+           int rows = getRowCount(br);           
+           isr = new InputStreamReader(new FileInputStream(file));
+           br  = new BufferedReader(isr);
+           StreamTokenizer cols = new StreamTokenizer(br);
+           setColsConstraints(cols);
+           variablesVector = new NodeList();           
+           variables = new NodeList();                      
+           makeVariablesVector(cols);
+           ((TVariavel)variablesVector.get(classe)).setParticipa(false);
+           variablesVector.get(classe).setSelected(false);
+           new ChooseVariablesWindow(variablesVector);
+           //new ChooseVariablesWindow(variablesVector,classe);
+           new CompactFileWindow(variablesVector);               
+           filterVariablesVector(rows);
+           matrix = new byte[rows][variables.size()];      
+           //IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));                
+           makeMatrix(cols, rows);           
+           //IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+           br.close();          
+	    }
+	    catch(Exception e){
+	    	String msg = "Não foi possível abrir o arquivo solicitado. Verifique o formato do arquivo.";
+	    	JOptionPane.showMessageDialog(null,msg,"ERROR",JOptionPane.ERROR_MESSAGE);                    	
+	    };
+	    
+        OrdenationWindow ordenationWindow = new OrdenationWindow(variables);        	    	    	    	    
+        OrdenationInterationController ordenationController = ordenationWindow.getController();                    
+        String[] pamp = ordenationController.getPamp();		
+        variables = ordenationController.getVariables();				
+        new AlgorithmController(variables,matrix,vector,caseNumber,pamp,compacted);
+        int i,j;
+        j=variables.size();
+        for(i=0;i<j;i++){
+        	if(i!=classe)((TVariavel)variables.get(i)).adicionaPai((TVariavel)variables.get(classe));
+        }
+        new ProbabilisticController(variables,matrix, vector,caseNumber,controller, compacted);                     
+    }
+	/*public void BAN(int classe, BanMain controller){
+		((TVariavel)variablesVector.get(classe)).setParticipa(false);
+	    new ChooseVariablesWindow(variablesVector);
+        OrdenationWindow ordenationWindow = new OrdenationWindow(variables);        	    	    	    	    
+        OrdenationInterationController ordenationController = ordenationWindow.getController();                    
+        String[] pamp = ordenationController.getPamp();		
+        variables = ordenationController.getVariables();				
+        new AlgorithmController(variables,matrix,vector,caseNumber,pamp,compacted);
+        int i,j;
+        j=variables.size();
+        
+        for(i=0;i<j;i++){
+        	if(i!=classe)((TVariavel)variables.get(i)).adicionaPai((TVariavel)variables.get(classe));
+        }
+     
+      new ProbabilisticController(variables,matrix, vector,caseNumber,controller, compacted);                     
+    }*/
 	/**
 	 * Sets the constraints of the StreamTokenizer.
 	 * These constraint separates the tokens
@@ -315,7 +374,7 @@ public class ConstructionController {
 	}
 
     public byte[][] getMatrix(){
-    	return this.matrix;    	
+    	return matrix;    	
     }
     
     public NodeList getVariables(){

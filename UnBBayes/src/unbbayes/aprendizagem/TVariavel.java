@@ -241,6 +241,9 @@ public class TVariavel extends ProbabilisticNode implements Cloneable {
     public void adicionaEstado(String estado){
         states.add(estado);
     }
+    public void retiraestado(String estado){
+    	states.remove(estado);
+    }
 
     /**
      * Método que retorna o nome do Ancestral da váriavel

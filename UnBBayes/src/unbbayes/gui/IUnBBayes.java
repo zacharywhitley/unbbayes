@@ -87,6 +87,7 @@ public class IUnBBayes extends JFrame {
 	private JButton cascade;
 	private JButton help;
 	private ActionListener alNewBN;
+	private ActionListener alDiscretize;
 	private ActionListener alNewMSBN;
 	private ActionListener alOpen;
 	private ActionListener alSave;
@@ -197,7 +198,7 @@ public class IUnBBayes extends JFrame {
 	 */
 	public void addWindow(JInternalFrame newWindow) {
 		desktop.add(newWindow);
-	}
+		}
 
 	/**
 	 * Method responsible for creating all ActionListeners
@@ -251,6 +252,45 @@ public class IUnBBayes extends JFrame {
 			}
 		};
 
+		//alDiscretize inicio
+		//Discretização de variáveis contínuas
+		alDiscretize = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				//setCursor(new Cursor(Cursor.WAIT_CURSOR));
+				janeladiscret janeld= new janeladiscret();
+				janeld.show();				
+				/*String[] nets = new String[] { "txt", "arff" };
+				chooser = new JFileChooser(fileController.getCurrentDirectory());
+				chooser.setMultiSelectionEnabled(false);
+				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+
+				// adicionar FileView no FileChooser para desenhar ícones de
+				// arquivos
+				chooser.setFileView(new FileIcon(IUnBBayes.this));
+
+				chooser.addChoosableFileFilter(
+					new SimpleFileFilter(
+						nets,
+						""));
+				int option = chooser.showOpenDialog(null);
+				if (option == JFileChooser.APPROVE_OPTION) {
+					if (chooser.getSelectedFile() != null) {
+//até agora o código era semelhante ao do comando abrir
+						
+
+						
+//agora o final do codigo é igual ao do comando abrir
+					}
+				}
+				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));*/
+			}
+		};
+		
+		
+		
+	
+		
+		//alDiscretize fim
 		// create an ActionListener for saving
 		alSave = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
@@ -516,6 +556,7 @@ public class IUnBBayes extends JFrame {
 			new JCheckBoxMenuItem(resource.getString("tbWindow"), true);
 		JMenuItem tbHelp =
 			new JCheckBoxMenuItem(resource.getString("tbHelp"), true);
+		JMenuItem discretize = new JMenuItem("Discret");
 		JMenuItem metalItem =
 			new JMenuItem(
 				resource.getString("metalItem"),iconController.getMetalIcon());
@@ -570,6 +611,7 @@ public class IUnBBayes extends JFrame {
 			KeyStroke.getKeyStroke(resource.getString("helpItemMn").charAt(0), Event.CTRL_MASK, false));
 
 		// add ActionListener to all menu items
+		discretize.addActionListener(alDiscretize);
 		newBN.addActionListener(alNewBN);
 		newMSBN.addActionListener(alNewMSBN);
 		openItem.addActionListener(alOpen);
@@ -613,6 +655,7 @@ public class IUnBBayes extends JFrame {
 		toolsMenu.add(learningItem);
 		toolsMenu.add(monteCarloItem);
 		toolsMenu.add(gibbsItem);
+		toolsMenu.add(discretize);
 		windowMenu.add(cascadeItem);
 		windowMenu.add(tileItem);
 		helpMenu.add(helpItem);

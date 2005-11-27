@@ -343,6 +343,9 @@ public abstract class Node implements java.io.Serializable {
 			states.remove(states.size() - 1);
 		}
 	}
+	public void removestate(int num){
+		states.remove(num);
+	}
 
 	/**
 	 *  Substitui o estado da posição especificada pelo estado especificado.
