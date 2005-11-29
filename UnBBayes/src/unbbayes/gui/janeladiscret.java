@@ -41,7 +41,6 @@ public class janeladiscret extends JFrame {
 	private MainController controller;
 	public byte[][] matriz;
 	public dalgo discretizador;
-	 
 	public NodeList variaveis;
 	public int[] vetor;
 
@@ -65,6 +64,7 @@ public class janeladiscret extends JFrame {
 	private JProgressBar jProgressBar = null;
 	private JButton jButton4 = null;
 	private JPanel jPanel4 = null;
+	private JLabel jLabel3 = null;
 	/**
 	 * This is the default constructor
 	 */
@@ -79,10 +79,14 @@ public class janeladiscret extends JFrame {
 	 * 
 	 * @return void
 	 */
+	private janeladiscret geti(){
+		return this;
+	}
 	private void initialize() {
 		this.setSize(594, 248);
 		this.setContentPane(getJContentPane());
 		this.setTitle("Discret");
+		
 	}
 
 	/**
@@ -199,23 +203,19 @@ public class janeladiscret extends JFrame {
 			jButton.setText("Discretizar");
 			jButton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
-					//discretizador.Setmatrix(matriz);
+					
 					dalgo discretizador= new dalgo();
 					discretizador.Setmatrix(matriz);
 					discretizador.Setvariables(variaveis);
 					discretizador.alfa=5/100;
-					discretizador.dochi2=false;
-					discretizador.dowh=true;
-					discretizador.limiteperda=jProgressBar.getValue();
-					//discretizador.doall();
-					int rr=discretizador.doonce();
-					variaveis=discretizador.variables;
-					matriz=discretizador.originalmatrix;
-					//int resp=1;
-					//while(resp>0){
-						//resp=discretizador.doonce();
-						
-					//}
+					discretizador.dochi2=qui2.isSelected();;
+					discretizador.dowh=peso.isSelected();
+					discretizador.SetController(geti());
+					discretizador.limiteperda=jProgressBar.getValue()/100;
+					
+					discretizador.setPriority(Thread.MIN_PRIORITY);
+					discretizador.start();
+					
 					
 				}
 			});
@@ -249,10 +249,10 @@ public class janeladiscret extends JFrame {
 						int i,j;
 						
 						for(i=0;i<nv-1;i++){
-						linha=linha+variaveis.get(i).getName();
+						linha=linha+variaveis.get(i).getName()+" ";
 						}
-						linha=linha+variaveis.get(nv-1).getName();
-						file2.writeBytes(linha+"\n");
+						linha=linha+variaveis.get(nv-1).getName()+"\n";
+						file2.writeBytes(linha);
 						
 						int linhas=discretizador.mlines;
 						for (i=0;i<linhas-1;i++){
@@ -260,14 +260,14 @@ public class janeladiscret extends JFrame {
 							for(j=0;j<nv-1;j++){
 								linha=linha+variaveis.get(j).getStateAt((discretizador.originalmatrix[i][j]))+" ";
 							}
-							linha=linha+variaveis.get(j).getStateAt(discretizador.originalmatrix[linhas-1][nv-1]);
-							file2.writeBytes(linha+"\n");
+							linha=linha+variaveis.get(j).getStateAt(discretizador.originalmatrix[linhas-1][nv-1])+"\n";
+							file2.writeBytes(linha);
 							}
 						
 						file2.close();
 						}
 					catch(Exception ee){
-						System.out.println("erro"+e.toString());
+						System.out.println("erro "+ee.getMessage());
 					}
 					}
 					
@@ -424,6 +424,10 @@ public class janeladiscret extends JFrame {
 	 * 	
 	 * @return javax.swing.JButton	
 	 */
+	public synchronized void mensagem(String msg){
+		 		jLabel3.setText(msg);
+		notify();
+	}
 	private JButton getJButton4() {
 		if (jButton4 == null) {
 			jButton4 = new JButton();
@@ -444,7 +448,10 @@ public class janeladiscret extends JFrame {
 	 */
 	private JPanel getJPanel4() {
 		if (jPanel4 == null) {
+			jLabel3 = new JLabel();
+			jLabel3.setText("parado");
 			jPanel4 = new JPanel();
+			jPanel4.add(jLabel3, null);
 		}
 		return jPanel4;
 	}

@@ -2,8 +2,10 @@ package unbbayes.gui;
 
 import unbbayes.aprendizagem.TVariavel;
 import unbbayes.util.NodeList;
+import unbbayes.util.SwingWorker;
+import unbbayes.gui.janeladiscret;
 
-public class dalgo {
+public class dalgo extends Thread {
 public NodeList variables;
 public byte[][] originalmatrix;
 public int[][] matrix1;
@@ -17,7 +19,14 @@ public float limiteperda;
 public double alfa;
 public boolean dochi2;
 public boolean dowh;
-	
+public janeladiscret controlador;
+private int var1,var2,e1,e2,nv1,nv2,nvar,resultado,totalciclos,progresso;
+private boolean continua;
+
+public void SetController(janeladiscret wc){
+	this.controlador=wc;
+}
+
 public void Setmatrix(byte[][] tempmatrix){
 	 mlines=lines(tempmatrix);
 	 mcolumns=columns(tempmatrix);
@@ -85,13 +94,13 @@ public int columns(byte[][] tempmatrix){
   * @param evar2
   * @return
   */
-public int countc(int var1,int e1,int e2, int var2, int evar2){
+public int countc(int lvar1,int le1,int le2, int lvar2, int levar2){
 		int i,counter;
 		counter=0;
 		for(i=0;i<mlines;i++){
 			boolean found=false;
-			if ((originalmatrix[i][var1]==e1)||(originalmatrix[i][var1]==e2)){
-				if (originalmatrix[i][var2]==evar2)found=true;
+			if ((originalmatrix[i][lvar1]==le1)||(originalmatrix[i][lvar1]==le2)){
+				if (originalmatrix[i][lvar2]==levar2)found=true;
 			}
 			if(found)counter++;
 		}
@@ -181,19 +190,38 @@ public double c2(){
 	
 	return result;
 }
-public int doonce(){
-int nvar;
-int resultado=0;
-boolean continua=true;
-nvar=variables.size();
-	int var1,var2,e1,e2,nv1,nv2;
+public void contaciclos(){
+	totalciclos=0;
+	nvar=variables.size();
+	var2=0;
 for(var1=0;var1<nvar-1;var1++){
 	nv1=variables.get(var1).getStatesSize();
+ for(e1=0;e1<nv1-1;e1++){
+	var2=var1+1;
+	nv2=variables.get(var2).getStatesSize();
+	totalciclos++;
+ }
+ 
+}
+	
+}
+public int doonce(){
+//int nvar;
+//int resultado=0;
+//boolean continua=true;
+	progresso=0;
+nvar=variables.size();
+//	int var1,var2,e1,e2,nv1,nv2;
+	var2=0;
+for(var1=0;var1<nvar-1;var1++){
+	nv1=variables.get(var1).getStatesSize();
+
  for(e1=0;e1<nv1-1;e1++){
 	 e2=e1+1;
 	 continua=true;
 	var2=var1+1;
 	nv2=variables.get(var2).getStatesSize();
+	progresso++;
 	while ((var2<nvar) && (continua)){
 		//para cada combinação de duas variáveis
 		//fazer: para cada tentativa de aglomerar e1,e2
@@ -209,7 +237,7 @@ for(var1=0;var1<nvar-1;var1++){
 		//calcula escore de e12,v2
 		score12=this.score(var1,e1,e2,var2,nv2);
 		//calcula perda pela concatenação
-		if(this.dowh)perda=((score1+score2)-score12)/this.total;
+		if(this.dowh)perda=(score1+score2-score12)/this.total;
 		else perda=(score1/this.total+score2/this.total-score12/this.total);
 		if(perda>this.limiteperda){
 			continua=false;
@@ -232,8 +260,9 @@ for(var1=0;var1<nvar-1;var1++){
 		}//dochi2
 			
 		}//else perda
-		
 				
+		controlador.mensagem(String.valueOf(progresso)+"/"+String.valueOf(totalciclos)+" Concatenadas: "+String.valueOf(this.resultado));
+		controlador.repaint();
 		var2++;
 	}//while v2
     
@@ -255,6 +284,7 @@ int i;
 String novonome;
 novonome=String.valueOf(variables.get(var).getStateAt(estado))+"_"+String.valueOf(variables.get(var).getStateAt(estado+1));
 variables.get(var).setStateAt(novonome,estado);
+System.out.println(variables.get(var).getName()+": "+novonome);
 for(i=0;i<mlines;i++){
 	if(this.originalmatrix[i][var]==(estado+1))this.originalmatrix[i][var]=estado;
 }
@@ -272,12 +302,24 @@ catch (IndexOutOfBoundsException ee){
 }
 
 }
-public void doall(){
-	int resp=1;
-	while(resp>0){
-		resp=this.doonce();
+public void start(){
+	int resp=1; 
+//	while(resp>0){
+	contaciclos();
+		final SwingWorker worker = new SwingWorker() {
+	        public Object construct() {
+	        	int resp2;
+	            resp2=doonce();
+	            return 0;
+	        }
+	    };
+	    worker.start();
 		
-	}
+		
+		controlador.matriz=this.originalmatrix;
+		controlador.variaveis=this.variables;
+//	}
+	
 }
 
 }//obj
