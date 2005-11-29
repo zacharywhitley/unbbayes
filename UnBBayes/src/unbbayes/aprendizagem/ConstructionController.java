@@ -67,6 +67,7 @@ public class ConstructionController {
 	private byte[][] matrix;
 	private long caseNumber; 
 	private boolean compacted;	 
+	public boolean[] VariavelNumerica;
 
     /**
      * Starts the process of read the file, construct
@@ -106,9 +107,11 @@ public class ConstructionController {
 		  variables = new NodeList();                      
 		  makeVariablesVector(cols);		                 
 		  filterVariablesVector(rows);
-		  matrix = new byte[rows][variables.size()];      
-		  IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));                
-		  makeMatrix(cols, rows);           
+	  matrix = new byte[rows][variables.size()];
+	  	  IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));                
+		  makeMatrix(cols, rows);
+		  ordenatevector();
+		  makeMatrix(cols, rows);
 		  IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		  br.close();          
 		 }
@@ -161,6 +164,11 @@ public class ConstructionController {
         /*Gives the probability of each node*/
         new ProbabilisticController(variables,matrix, vector,caseNumber,controller, compacted);                     
     }
+	/**
+	 * Construction controller usado pelo BAN
+	 * @author gabriel guimaraes - Aluno de IC 2005-2006
+	 * @Orientador Marcelo Ladeira
+	 */
 	public ConstructionController(File file, int classe, BanMain controller){				
 	    try{
            InputStreamReader isr = new InputStreamReader(new FileInputStream(file));
@@ -179,10 +187,10 @@ public class ConstructionController {
            //new ChooseVariablesWindow(variablesVector,classe);
            new CompactFileWindow(variablesVector);               
            filterVariablesVector(rows);
-           matrix = new byte[rows][variables.size()];      
-           //IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));                
+           matrix = new byte[rows][variables.size()]; 
            makeMatrix(cols, rows);           
-           //IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+           //ordenatevector();
+           //makeMatrix(cols, rows);
            br.close();          
 	    }
 	    catch(Exception e){
@@ -202,23 +210,6 @@ public class ConstructionController {
         }
         new ProbabilisticController(variables,matrix, vector,caseNumber,controller, compacted);                     
     }
-	/*public void BAN(int classe, BanMain controller){
-		((TVariavel)variablesVector.get(classe)).setParticipa(false);
-	    new ChooseVariablesWindow(variablesVector);
-        OrdenationWindow ordenationWindow = new OrdenationWindow(variables);        	    	    	    	    
-        OrdenationInterationController ordenationController = ordenationWindow.getController();                    
-        String[] pamp = ordenationController.getPamp();		
-        variables = ordenationController.getVariables();				
-        new AlgorithmController(variables,matrix,vector,caseNumber,pamp,compacted);
-        int i,j;
-        j=variables.size();
-        
-        for(i=0;i<j;i++){
-        	if(i!=classe)((TVariavel)variables.get(i)).adicionaPai((TVariavel)variables.get(classe));
-        }
-     
-      new ProbabilisticController(variables,matrix, vector,caseNumber,controller, compacted);                     
-    }*/
 	/**
 	 * Sets the constraints of the StreamTokenizer.
 	 * These constraint separates the tokens
@@ -284,6 +275,45 @@ public class ConstructionController {
         } catch(Exception e){}
         return rows;           		
 	}
+	/**
+	 * Ordena as variáveis numéricas do vetor
+	 * @author gabriel guimaraes - Aluno de IC 2005-2006
+	 * @Orientador Marcelo Ladeira
+	 */
+	private void ordenatevector(){
+		int j=variablesVector.size();
+		int pos;
+		VariavelNumerica =new boolean[j];
+		VariavelNumerica=checavariaveis(variablesVector);
+		NodeList temp=new NodeList();
+		temp.ensureCapacity(j);
+		temp=variablesVector;
+		
+		boolean continua=false;
+int m;
+for(int l=0;l<j;l++){
+	if(VariavelNumerica[l]){
+	m=temp.get(l).getStatesSize();
+	for(int i=0;i<m;i++){
+		pos=0;
+		for(int k=0;k<m;k++){
+			try{
+				continua=true;
+				if(Double.parseDouble(temp.get(l).getStateAt(i))<(Double.parseDouble(temp.get(l).getStateAt(k)))){
+					pos++;}
+				if((Double.parseDouble(temp.get(l).getStateAt(i))==(Double.parseDouble(temp.get(l).getStateAt(k)))) && (k<i)){
+					pos++;}
+			}
+			catch (Exception e){
+				continua=false;
+			}
+		}//for k
+		if(continua)variablesVector.get(l).setStateAt(temp.get(l).getStateAt(i),pos);
+	}//for i
+}//se numerica
+}//for l
+		
+	}//proc
 	
 	/**
 	 * Filtes the variables that will participate of the 
@@ -371,6 +401,24 @@ public class ConstructionController {
         };        	
         /*Tirar isso. Só pra debug*/
         System.out.println("NumeroCasos " + caseNumber);	
+	}
+	
+	public boolean[] checavariaveis(NodeList temp){
+		boolean[] result= new boolean[temp.size()];
+		double teste;
+		for(int i=0;i<temp.size();i++){
+			try{
+				result[i]=true;
+				for(int j=0;j<temp.get(i).getStatesSize();j++){
+				teste= Double.parseDouble(temp.get(i).getStateAt(j));				
+				}
+			}
+			catch (Exception e){
+				result[i]=false;
+			}
+		}
+		
+		return result;
 	}
 
     public byte[][] getMatrix(){

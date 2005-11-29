@@ -1,16 +1,15 @@
 package unbbayes.gui;
 
-import java.awt.BorderLayout;
+/**
+ * Janela para discretização múltipla
+ * @author gabriel guimaraes - Aluno de IC 2005-2006
+ * @Orientador Marcelo Ladeira
+ */
 
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import java.awt.FlowLayout;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.RandomAccessFile;
 import java.util.ResourceBundle;
 
@@ -20,19 +19,12 @@ import javax.swing.JButton;
 
 import unbbayes.aprendizagem.ConstructionController;
 import unbbayes.controller.FileController;
-import unbbayes.io.*;
 import unbbayes.util.NodeList;
 import unbbayes.controller.MainController;
-import unbbayes.aprendizagem.TVariavel;
-import javax.swing.JList;
-import javax.swing.JTextPane;
 import javax.swing.JCheckBox;
 import java.awt.GridLayout;
 import java.awt.Dimension;
 import javax.swing.JProgressBar;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.CardLayout;
 
 public class janeladiscret extends JFrame {
 

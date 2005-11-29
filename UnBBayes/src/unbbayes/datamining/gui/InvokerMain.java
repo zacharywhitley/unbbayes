@@ -93,7 +93,10 @@ public class InvokerMain extends JFrame
     cascadeIcon = iconController.getCascadeIcon();
     tileIcon = iconController.getTileIcon();
     helpIcon = iconController.getHelpIcon();
+    try{
     opcaoglobalIcon = iconController.getGlobalOptionIcon();
+    }
+    catch (Exception ee){}
 
     createActionListeners();
     createToolBars();

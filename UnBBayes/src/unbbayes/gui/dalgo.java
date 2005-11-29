@@ -1,5 +1,11 @@
 package unbbayes.gui;
 
+/**
+ * Thread para discretização múltipla
+ * @author gabriel guimaraes - Aluno de IC 2005-2006
+ * @Orientador Marcelo Ladeira
+ */
+
 import unbbayes.aprendizagem.TVariavel;
 import unbbayes.util.NodeList;
 import unbbayes.util.SwingWorker;
