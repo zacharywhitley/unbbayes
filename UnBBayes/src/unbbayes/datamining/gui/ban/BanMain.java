@@ -275,8 +275,8 @@ public class BanMain extends JInternalFrame
               edition.getUtilityNode().setVisible(false);
               edition.getSelect().setVisible(false);
               edition.getHierarchy().setVisible(false);*/
-    	  classec=inst.getClassIndex();
-    	  cc= new ConstructionController(selectedFile,inst.getClassIndex(),this);
+    	  classec=inst.getClassIndex()-1;
+    	  cc= new ConstructionController(selectedFile,classec,this);
               // mostra a nova tela
               jPanel1.removeAll();
               jPanel1.setLayout(new BorderLayout());
@@ -405,8 +405,34 @@ public class BanMain extends JInternalFrame
 		}
   
   public ProbabilisticNetwork makeNetwork(NodeList variaveis) {
-     
-      ProbabilisticNetwork net = new ProbabilisticNetwork("learned net");
+	  ProbabilisticNetwork net = new ProbabilisticNetwork("learned net");
+      Node noFilho = null;
+      Node noPai = null;
+      Edge arcoAux = null;
+      Node aux;
+      boolean direction = true;
+      for (int i = 0; i < variaveis.size(); i++) {
+          noFilho = variaveis.get(i);
+          net.addNode(noFilho);
+          for (int j = 0; j < noFilho.getParents().size(); j++) {
+          	noPai = (Node)noFilho.getParents().get(j);
+          	noPai.getChildren().add(noFilho);
+              arcoAux = new Edge(noPai, noFilho);
+          	for(int k = 0 ; k < noPai.getParents().size() && direction; k++){
+          	    aux = (Node)noPai.getParents().get(k);
+          	    if(aux == noFilho){
+          	        noPai.getParents().remove(k);
+          	        direction = false;
+          	    }                      		
+          	}                 
+              arcoAux = new Edge(noPai, noFilho);                
+            	arcoAux.setDirection(direction);                	
+            	direction = true;
+              net.getEdges().add(arcoAux);
+          }
+      }        		
+		return net;
+      /*ProbabilisticNetwork net = new ProbabilisticNetwork("learned net");
       Node noFilho = null;
       Node noPai = null;
       Edge arcoAux = null;
@@ -459,7 +485,7 @@ public class BanMain extends JInternalFrame
               net.getEdges().add(arcoAux);
           }
       }        		
-		return net;
+		return net;*/
   }
   
  

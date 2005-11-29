@@ -86,7 +86,7 @@ public class FileIcon extends FileView {
          * {
          * return directoryIcon;
          * }
-         */
+         */ try{
         String name = f.getName();
         if (name.endsWith(".arff")) {
             return iconController.getArffFileIcon();
@@ -96,7 +96,8 @@ public class FileIcon extends FileView {
         }
         if (name.toLowerCase().endsWith(".net")) {
             return iconController.getNetFileIcon();
-        }
+        }}
+         catch (Exception ee){}
         return fc.getIcon(f);
     }
 

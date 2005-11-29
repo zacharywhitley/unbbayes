@@ -198,16 +198,44 @@ public class ConstructionController {
 	    	JOptionPane.showMessageDialog(null,msg,"ERROR",JOptionPane.ERROR_MESSAGE);                    	
 	    };
 	    
-        OrdenationWindow ordenationWindow = new OrdenationWindow(variables);        	    	    	    	    
-        OrdenationInterationController ordenationController = ordenationWindow.getController();                    
-        String[] pamp = ordenationController.getPamp();		
-        variables = ordenationController.getVariables();				
-        new AlgorithmController(variables,matrix,vector,caseNumber,pamp,compacted);
+        //OrdenationWindow ordenationWindow = new OrdenationWindow(variables);        	    	    	    	    
+        //OrdenationInterationController ordenationController = ordenationWindow.getController();                    
+        //String[] pamp = ordenationController.getPamp();
+	    //variables = ordenationController.getVariables();				
+        //new AlgorithmController(variables,matrix,vector,caseNumber,pamp,compacted);
+        //new CBLA(variables,matrix,vector,caseNumber,"MDL",compacted);
+	    new B(variables, matrix, vector,caseNumber,"MDL", "",compacted);
         int i,j;
+        NodeList filhos= new NodeList();
+        filhos.ensureCapacity(variables.size());
+        NodeList filhos2= new NodeList();
         j=variables.size();
         for(i=0;i<j;i++){
-        	if(i!=classe)((TVariavel)variables.get(i)).adicionaPai((TVariavel)variables.get(classe));
-        }
+        	if(i!=classe){
+        	 
+        	 filhos2= new NodeList();
+        	 filhos2.ensureCapacity(variables.get(i).getChildren().size());
+        	 filhos2=variables.get(i).getChildren();
+        	 for(j=0;j<filhos2.size();j++){
+        		 if(filhos2.get(j).getName()==variables.get(classe).getName())filhos2.remove(j);
+        	 }
+        	 variables.get(i).setChildren(filhos2);
+        		((TVariavel)variables.get(i)).adicionaPai((TVariavel)variables.get(classe));
+        	}//se nao for a classe
+        	}//for i
+        filhos.ensureCapacity(variables.size());
+        filhos=variables;
+        filhos.remove(classe);
+        
+                variables.get(classe).setChildren(filhos);
+                //filhos.removeAll(filhos);
+                //filhos.add(variables.get(classe));
+                for(int ok=0;ok<filhos.size();ok++){
+                	if(ok<filhos.size()){
+                	if(filhos.get(ok).getName()!=variables.get(classe).getName())filhos.remove(ok);
+                }}
+                variables.get(classe).setParents(filhos);
+        
         new ProbabilisticController(variables,matrix, vector,caseNumber,controller, compacted);                     
     }
 	/**
