@@ -95,6 +95,24 @@ public final class NodeList implements java.io.Serializable {
     public final Node get(int index) {
         return data[index];
     }
+    public final void RemoveParentFrom(int parent,int from){
+    	data[from].removeParent(parent);
+    }
+    public final void RemoveChildFrom(int child,int from){
+    	data[from].removeChild(child);
+    }
+    public final void ClearChildenFrom(int from){
+    	data[from].removeChildren();
+    }
+    public final void ClearParentsFrom(int from){
+    	data[from].removeParents();
+    }
+    public final void AddChildTo(int to, Node filho){
+    	data[to].AddChild(filho);
+    }
+    public final void AddParentTo(int to, Node pai){
+    	data[to].AddParent(pai);
+    }
 
     /**
      * Replaces the element at the specified position in this list with
@@ -215,6 +233,14 @@ public final class NodeList implements java.io.Serializable {
                      numMoved);
         data[--size] = null;
         return oldValue;
+    }
+    public final void remove2(int index) {
+        for(int i=index;i<size;i++){
+        	data[i-1]=data[i+1];
+        }
+        if(size>0){
+        data[size-1]=null;
+        size--;}
     }
     
     

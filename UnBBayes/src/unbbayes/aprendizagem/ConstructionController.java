@@ -189,8 +189,8 @@ public class ConstructionController {
            filterVariablesVector(rows);
            matrix = new byte[rows][variables.size()]; 
            makeMatrix(cols, rows);           
-           //ordenatevector();
-           //makeMatrix(cols, rows);
+           ordenatevector();
+           makeMatrix(cols, rows);
            br.close();          
 	    }
 	    catch(Exception e){
@@ -206,35 +206,18 @@ public class ConstructionController {
         //new CBLA(variables,matrix,vector,caseNumber,"MDL",compacted);
 	    new B(variables, matrix, vector,caseNumber,"MDL", "",compacted);
         int i,j;
-        NodeList filhos= new NodeList();
-        filhos.ensureCapacity(variables.size());
-        NodeList filhos2= new NodeList();
         j=variables.size();
+        //adiciona todas as variáveis como filhos da classe
         for(i=0;i<j;i++){
-        	if(i!=classe){
-        	 
-        	 filhos2= new NodeList();
-        	 filhos2.ensureCapacity(variables.get(i).getChildren().size());
-        	 filhos2=variables.get(i).getChildren();
-        	 for(j=0;j<filhos2.size();j++){
-        		 if(filhos2.get(j).getName()==variables.get(classe).getName())filhos2.remove(j);
-        	 }
-        	 variables.get(i).setChildren(filhos2);
-        		((TVariavel)variables.get(i)).adicionaPai((TVariavel)variables.get(classe));
-        	}//se nao for a classe
-        	}//for i
-        filhos.ensureCapacity(variables.size());
-        filhos=variables;
-        filhos.remove(classe);
-        
-                variables.get(classe).setChildren(filhos);
-                //filhos.removeAll(filhos);
-                //filhos.add(variables.get(classe));
-                for(int ok=0;ok<filhos.size();ok++){
-                	if(ok<filhos.size()){
-                	if(filhos.get(ok).getName()!=variables.get(classe).getName())filhos.remove(ok);
-                }}
-                variables.get(classe).setParents(filhos);
+        	//se alguma variavel não é filha da classe então passa a ser!
+        	if((i!=classe)&&(!(variables.get(classe).isParentOf(variables.get(i)))))variables.AddChildTo(classe,variables.get(i));
+        	//se alguma variável tem como filho a classe--> retirar!
+        	if((variables.get(i).isParentOf(variables.get(classe))))variables.RemoveParentFrom(classe,i);
+//        	se alguma variavel não tem a classe como pai entao passa a ter
+        	if((!(variables.get(i).isChildOf(variables.get(classe)))))variables.AddParentTo(i,variables.get(classe));        	
+        }       
+                variables.ClearParentsFrom(classe);
+                
         
         new ProbabilisticController(variables,matrix, vector,caseNumber,controller, compacted);                     
     }
@@ -309,13 +292,13 @@ public class ConstructionController {
 	 * @Orientador Marcelo Ladeira
 	 */
 	private void ordenatevector(){
-		int j=variablesVector.size();
+		int j=variables.size();
 		int pos;
 		VariavelNumerica =new boolean[j];
-		VariavelNumerica=checavariaveis(variablesVector);
+		VariavelNumerica=checavariaveis(variables);
 		NodeList temp=new NodeList();
 		temp.ensureCapacity(j);
-		temp=variablesVector;
+		temp=variables;
 		
 		boolean continua=false;
 int m;
@@ -336,7 +319,7 @@ for(int l=0;l<j;l++){
 				continua=false;
 			}
 		}//for k
-		if(continua)variablesVector.get(l).setStateAt(temp.get(l).getStateAt(i),pos);
+		if(continua)variables.get(l).setStateAt(temp.get(l).getStateAt(i),pos);
 	}//for i
 }//se numerica
 }//for l

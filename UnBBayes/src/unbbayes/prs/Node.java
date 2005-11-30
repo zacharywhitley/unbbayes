@@ -156,6 +156,30 @@ public abstract class Node implements java.io.Serializable {
 	public void setChildren(NodeList filhos) {
 		this.children = filhos;
 	}
+	public void AddChild(Node filho){
+		this.children.add(filho);
+	}
+	public void AddParent(Node parent){
+		this.parents.add(parent);
+	}
+	public boolean isParentOf(Node child){
+		//boolean result=children.contains(child);
+		boolean result=false;
+		int j=children.size();
+		for(int i=0;i<j;i++){
+			result=((result)||((child.getName())==(children.get(i).getName())));
+		}
+		return result;
+		}
+	public boolean isChildOf(Node parent){
+		//boolean result=parents.contains(parent);
+		boolean result=false;
+		int j=parents.size();
+		for(int i=0;i<j;i++){
+			result=((result)||((parent.getName())==(parents.get(i).getName())));
+		}
+		return result;
+	}
 
 	/**
 	 *  Insere nova lista de pais.
@@ -259,6 +283,12 @@ public abstract class Node implements java.io.Serializable {
 	public final NodeList getChildren() {
 		return children;
 	}
+	public final void removeChildren() {
+		children.clear();
+	}
+	public final void removeChild(int child) {
+		children.remove2(child);
+	}
 
 	/**
 	 *  Retorna a lista de pais.
@@ -267,6 +297,12 @@ public abstract class Node implements java.io.Serializable {
 	 */
 	public final NodeList getParents() {
 		return parents;
+	}
+	public final void removeParents() {
+		parents.clear();
+	}
+	public final void removeParent(int parent) {
+		parents.remove2(parent);
 	}
 
 	/**

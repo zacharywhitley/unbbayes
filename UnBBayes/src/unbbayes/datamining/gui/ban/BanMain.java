@@ -30,6 +30,7 @@ public class BanMain extends JInternalFrame
   private JPanel contentPane;
   private MDIDesktopPane desktop;
   private InstanceSet inst;
+  private NodeList bnvariaveis;
   public File selectedFile;
   private ConstructionController cc;
   private int classec;
@@ -245,43 +246,11 @@ public class BanMain extends JInternalFrame
   {   if (inst != null)
       {   try
           {
-    	  
-    	  		
-    	   	  /*NaiveBayes naiveBayes = new NaiveBayes();
-          	  naiveBayes.buildClassifier(inst);
-          	  net = naiveBayes.getProbabilisticNetwork();
-          	  jMenuItem5.setEnabled(true);
-              jTabbedPane1.setEnabledAt(1,true);
-              jTabbedPane1.setSelectedIndex(1);
-              saveButton.setEnabled(true);*/
-              /*Edge arco;
-              NodeList pais;
-              pais.a
-              pais.remove()
-              net.getNodeAt(1).setParents()
-              net.addEdge()*/
-              
-
-              /*NetWindow netWindow = new NetWindow(net);
-              NetWindowEdition edition = netWindow.getNetWindowEdition();
-              edition.getCenterPanel().setBottomComponent(netWindow.getJspGraph());
-
-              // deixa invisíveis alguns botões do unbbayes
-              edition.getMore().setVisible(false);
-              edition.getLess().setVisible(false);
-              edition.getArc().setVisible(false);
-              edition.getDecisionNode().setVisible(false);
-              edition.getProbabilisticNode().setVisible(false);
-              edition.getUtilityNode().setVisible(false);
-              edition.getSelect().setVisible(false);
-              edition.getHierarchy().setVisible(false);*/
-    	  classec=inst.getClassIndex()-1;
-    	  cc= new ConstructionController(selectedFile,classec,this);
+    	      	  classec=inst.getClassIndex();
+    	      	  cc= new ConstructionController(selectedFile,classec,this);
               // mostra a nova tela
               jPanel1.removeAll();
               jPanel1.setLayout(new BorderLayout());
-              //
-              //jPanel1.add(netWindow.getContentPane(),BorderLayout.CENTER);
               statusBar.setText(resource.getString("learnSuccessful"));
           }
           catch (Exception ex)
@@ -320,9 +289,9 @@ public class BanMain extends JInternalFrame
         inst = FileController.getInstance().getInstanceSet(selectedFile,this);
         if (inst!=null)
         {
-          boolean bool = inst.checkNumericAttributes();
-          if (bool == true)
-              throw new Exception(resource.getString("numericAttributesException"));
+         // boolean bool = inst.checkNumericAttributes();
+         // if (bool == true)
+         //     throw new Exception(resource.getString("numericAttributesException"));
           //cc= new ConstructionController(selectedFile,0);
           jTabbedPane1.setEnabledAt(0,false);
           setTitle("BAN - "+selectedFile.getName());
@@ -405,16 +374,23 @@ public class BanMain extends JInternalFrame
 		}
   
   public ProbabilisticNetwork makeNetwork(NodeList variaveis) {
-	  ProbabilisticNetwork net = new ProbabilisticNetwork("learned net");
+	  int i,j,classe;
+	  classe=classec;
+      j=variaveis.size();
+      
+	  ProbabilisticNetwork net = new ProbabilisticNetwork("ban");
       Node noFilho = null;
       Node noPai = null;
       Edge arcoAux = null;
       Node aux;
+      bnvariaveis= new NodeList();
+      bnvariaveis.ensureCapacity(j);
+      bnvariaveis=variaveis;
       boolean direction = true;
-      for (int i = 0; i < variaveis.size(); i++) {
+      for (i = 0; i < variaveis.size(); i++) {
           noFilho = variaveis.get(i);
           net.addNode(noFilho);
-          for (int j = 0; j < noFilho.getParents().size(); j++) {
+          for (j = 0; j < noFilho.getParents().size(); j++) {
           	noPai = (Node)noFilho.getParents().get(j);
           	noPai.getChildren().add(noFilho);
               arcoAux = new Edge(noPai, noFilho);
@@ -432,74 +408,18 @@ public class BanMain extends JInternalFrame
           }
       }        		
 		return net;
-      /*ProbabilisticNetwork net = new ProbabilisticNetwork("learned net");
-      Node noFilho = null;
-      Node noPai = null;
-      Edge arcoAux = null;
-      Node aux;
-      boolean japai;
-      boolean direction = true;
-      for (int i = 0; i < variaveis.size(); i++) {
-          noFilho = variaveis.get(i);
-          japai=false;
-          for(int k=0;k<noFilho.getParents().size();k++){
-          if(noFilho.getParents().get(k).getName()==variaveis.get(classec).getName()){
-        	japai=true;  
-          }
-          if(japai=false){
-        	  NodeList ppais=noFilho.getParents();
-        	  ppais.add(variaveis.get(classec));
-        	  noFilho.setParents(ppais);
-          }
-          }
-          japai=false;
-          for(int k=0;k<noFilho.getChildren().size();k++){
-              if(noFilho.getChildren().get(k).getName()==variaveis.get(classec).getName()){
-            	japai=true;  
-              }
-              if(japai=true){
-            	  NodeList ppais=noFilho.getChildren();
-            	  for(int l=0;l<ppais.size();l++){
-            		  if(ppais.get(l).getName()==variaveis.get(classec).getName()){
-            	  ppais.remove(l);
-            		  }
-            	  }
-            	  noFilho.setChildren(ppais);
-              }
-              }
-          net.addNode(noFilho);
-          for (int j = 0; j < noFilho.getParents().size(); j++) {
-          	noPai = (Node)noFilho.getParents().get(j);
-          	noPai.getChildren().add(noFilho);
-              arcoAux = new Edge(noPai, noFilho);
-          	for(int k = 0 ; k < noPai.getParents().size() && direction; k++){
-          	    aux = (Node)noPai.getParents().get(k);
-          	    if(aux == noFilho){
-          	        noPai.getParents().remove(k);
-          	        direction = false;
-          	    }                      		
-          	}                 
-              arcoAux = new Edge(noPai, noFilho);                
-            	arcoAux.setDirection(direction);                	
-            	direction = true;
-              net.getEdges().add(arcoAux);
-          }
-      }        		
-		return net;*/
+      
   }
   
  
   public void showNetwork(ProbabilisticNetwork net){
-
-  	NetWindow netWindow = new NetWindow(net);
-	/*	if (! netWindow.getWindowController().compileNetwork()) {
-          netWindow.changeToNetEdition();            
-          
-      } else{
-          netWindow.changeToNetCompilation();		
-		}*/
-		//
-		//NetWindow netWindow = new NetWindow(net);
+  
+	  ProbabilisticNetwork net2=new ProbabilisticNetwork("BAN");
+  		Ban BAN = new Ban();
+  		BAN.SetBNNet(bnvariaveis);
+  		BAN.buildClassifier(inst);
+  		 net2 = BAN.getProbabilisticNetwork();
+		NetWindow netWindow = new NetWindow(net2);
         NetWindowEdition edition = netWindow.getNetWindowEdition();
         edition.getCenterPanel().setBottomComponent(netWindow.getJspGraph());
 

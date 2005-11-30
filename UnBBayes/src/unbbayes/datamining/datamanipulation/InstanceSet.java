@@ -268,7 +268,7 @@ public class InstanceSet
   	public final int getClassIndex()
 	{	return classIndex;
   	}
-
+  	
   	/**
    	* Sets the class index of the set.
    	* If the class index is negative there is assumed to be no class.
