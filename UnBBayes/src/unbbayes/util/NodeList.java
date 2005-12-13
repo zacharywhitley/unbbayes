@@ -95,6 +95,12 @@ public final class NodeList implements java.io.Serializable {
     public final Node get(int index) {
         return data[index];
     }
+    public void setnodestateat(int node,String state, int numstate){
+    	data[node].setStateAt(state,numstate);
+    }
+    public void removestateat(int node, int state){
+    	data[node].removestate(state);
+    	}
     public final void RemoveParentFrom(int parent,int from){
     	data[from].removeParent(parent);
     }

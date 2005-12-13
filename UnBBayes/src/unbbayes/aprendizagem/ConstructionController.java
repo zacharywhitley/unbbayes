@@ -107,12 +107,11 @@ public class ConstructionController {
 		  variables = new NodeList();                      
 		  makeVariablesVector(cols);		                 
 		  filterVariablesVector(rows);
-	  matrix = new byte[rows][variables.size()];
-	  	  IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));                
+		  matrix = new byte[rows][variables.size()];
+	  	  IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));
+	  	  //ordenatevector();
 		  makeMatrix(cols, rows);
-		  ordenatevector();
-		  makeMatrix(cols, rows);
-		  IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		 IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		  br.close();          
 		 }
 		 catch(Exception e){
@@ -138,7 +137,7 @@ public class ConstructionController {
            filterVariablesVector(rows);
            matrix = new byte[rows][variables.size()];      
            IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));                
-           makeMatrix(cols, rows);           
+           makeMatrix(cols, rows);          
            IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
            br.close();          
 	    }
@@ -188,9 +187,9 @@ public class ConstructionController {
            new CompactFileWindow(variablesVector);               
            filterVariablesVector(rows);
            matrix = new byte[rows][variables.size()]; 
-           makeMatrix(cols, rows);           
-           ordenatevector();
+           //ordenatevector();
            makeMatrix(cols, rows);
+           		  
            br.close();          
 	    }
 	    catch(Exception e){
@@ -253,10 +252,12 @@ public class ConstructionController {
                      variablesVector.add(new TVariavel(cols.sval, position));
                      ((TVariavel)variablesVector.get(variablesVector.size()-1)).setDescription(cols.sval);
 					 ((TVariavel)variablesVector.get(variablesVector.size()-1)).setParticipa(true);
+					// ((TVariavel)variablesVector.get(variablesVector.size()-1)).setNumerico(false);
                 } else{
                      variablesVector.add(new TVariavel(String.valueOf(cols.nval),position));
                      ((TVariavel)variablesVector.get(variablesVector.size()-1)).setDescription(String.valueOf(cols.nval));
 					 ((TVariavel)variablesVector.get(variablesVector.size()-1)).setParticipa(true);
+					 //((TVariavel)variablesVector.get(variablesVector.size()-1)).setNumerico(true);
                 }
                 position++;
             }            
@@ -286,45 +287,6 @@ public class ConstructionController {
         } catch(Exception e){}
         return rows;           		
 	}
-	/**
-	 * Ordena as variáveis numéricas do vetor
-	 * @author gabriel guimaraes - Aluno de IC 2005-2006
-	 * @Orientador Marcelo Ladeira
-	 */
-	private void ordenatevector(){
-		int j=variables.size();
-		int pos;
-		VariavelNumerica =new boolean[j];
-		VariavelNumerica=checavariaveis(variables);
-		NodeList temp=new NodeList();
-		temp.ensureCapacity(j);
-		temp=variables;
-		
-		boolean continua=false;
-int m;
-for(int l=0;l<j;l++){
-	if(VariavelNumerica[l]){
-	m=temp.get(l).getStatesSize();
-	for(int i=0;i<m;i++){
-		pos=0;
-		for(int k=0;k<m;k++){
-			try{
-				continua=true;
-				if(Double.parseDouble(temp.get(l).getStateAt(i))<(Double.parseDouble(temp.get(l).getStateAt(k)))){
-					pos++;}
-				if((Double.parseDouble(temp.get(l).getStateAt(i))==(Double.parseDouble(temp.get(l).getStateAt(k)))) && (k<i)){
-					pos++;}
-			}
-			catch (Exception e){
-				continua=false;
-			}
-		}//for k
-		if(continua)variables.get(l).setStateAt(temp.get(l).getStateAt(i),pos);
-	}//for i
-}//se numerica
-}//for l
-		
-	}//proc
 	
 	/**
 	 * Filtes the variables that will participate of the 
@@ -366,15 +328,18 @@ for(int l=0;l<j;l++){
 	    int position = 0;
         String stateName = "";     
         TVariavel aux;
+        
         try{
             while (cols.ttype != StreamTokenizer.TT_EOF && caseNumber <= rows){
                 while(cols.ttype != StreamTokenizer.TT_EOL && position < variablesVector.size() && caseNumber <= rows){
                     aux = (TVariavel)variablesVector.get(position);
+                    aux.setNumerico(false);
                 	if (aux.getRep()){
                     	vector[(int)caseNumber] = (int)cols.nval;
                 	} else if(aux.getParticipa()){
                     	if(cols.sval != null){
                          	stateName = cols.sval;
+                         	                         	
                          	if(! aux.existeEstado(stateName)){
                          		if(!stateName.equals("?")){                         		
                               		aux.adicionaEstado(stateName);                              	
@@ -383,10 +348,14 @@ for(int l=0;l<j;l++){
                          		}
                          	}
                     	} else{
-                         	stateName = String.valueOf(cols.nval);
-                         	if (! aux.existeEstado(stateName)){
-                               	aux.adicionaEstado(stateName);
-                         	}
+                    		 stateName = String.valueOf(cols.nval);
+                    		if((stateName!=null)&&(stateName!="")){
+                    			if(!aux.existeEstado(stateName)){
+                    		aux.setNumerico(true);
+                    		aux.adicionaEstado(stateName);
+                    			}
+                    		}
+                         	
                     	}
                     	if(! missing){
                         	matrix[(int)caseNumber][aux.getPos()] = (byte)aux.getEstadoPosicao(stateName);
@@ -416,7 +385,8 @@ for(int l=0;l<j;l++){
 	
 	public boolean[] checavariaveis(NodeList temp){
 		boolean[] result= new boolean[temp.size()];
-		double teste;
+		double teste=0;
+		this.caseNumber=this.caseNumber+0*(long)teste;
 		for(int i=0;i<temp.size();i++){
 			try{
 				result[i]=true;

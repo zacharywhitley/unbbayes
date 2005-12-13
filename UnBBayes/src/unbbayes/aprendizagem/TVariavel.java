@@ -21,6 +21,7 @@
  package unbbayes.aprendizagem;
 
 import java.util.*;
+
 import unbbayes.prs.bn.*;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
@@ -239,8 +240,34 @@ public class TVariavel extends ProbabilisticNode implements Cloneable {
      * @see List
      */
     public void adicionaEstado(String estado){
-        states.add(estado);
-    }
+        if(this.getNumerico()){
+    	int tamanho = states.size();
+        List states2=new ArrayList();
+        int posf=0; int i;
+        //if(tamanho==1)posf
+        for(int tamanhoEstado = 0; tamanhoEstado < tamanho; tamanhoEstado++){
+            if(Double.parseDouble((String)(states.get(tamanhoEstado)))<Double.parseDouble(estado)){
+                posf++;
+            }
+            
+        }
+        for(i=0;i<posf;i++){
+        	states2.add(states.get(i));	
+        }
+        states2.add(estado);
+        for(i=posf;i<tamanho;i++){
+        	states2.add(states.get(i));	
+        }
+        states=states2;
+        }//numerico
+        else{
+           states.add(estado);
+        }
+        
+        
+        
+}
+  
     public void retiraestado(String estado){
     	states.remove(estado);
     }

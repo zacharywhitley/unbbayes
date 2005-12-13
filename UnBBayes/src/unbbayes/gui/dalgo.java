@@ -10,7 +10,11 @@ import unbbayes.aprendizagem.TVariavel;
 import unbbayes.util.NodeList;
 import unbbayes.util.SwingWorker;
 import unbbayes.gui.janeladiscret;
-
+/**
+ * Algoritimo para discretização múltipla
+ * @author gabriel guimaraes - Aluno de IC 2005/2006
+ * @orientador Marcelo Ladeira
+ */
 public class dalgo extends Thread {
 public NodeList variables;
 public byte[][] originalmatrix;
@@ -288,15 +292,17 @@ for(var1=0;var1<nvar-1;var1++){
 public void concatena(int var, byte estado){
 int i;
 String novonome;
-novonome=String.valueOf(variables.get(var).getStateAt(estado))+"_"+String.valueOf(variables.get(var).getStateAt(estado+1));
-variables.get(var).setStateAt(novonome,estado);
+novonome=variables.get(var).getStateAt(estado)+"_"+variables.get(var).getStateAt(estado+1);
+//variables.get(var).setStateAt(novonome,estado);
+variables.setnodestateat(var,novonome,estado);
 System.out.println(variables.get(var).getName()+": "+novonome);
 for(i=0;i<mlines;i++){
 	if(this.originalmatrix[i][var]==(estado+1))this.originalmatrix[i][var]=estado;
 }
 try{
 	if(variables.get(var).getStatesSize()>2){
-		((TVariavel)variables.get(var)).removestate(estado);
+		variables.removestateat(var,estado+1);
+		//((TVariavel)variables.get(var)).removestate(estado);
 	}
 	else{
 	//	variables.remove(var);
@@ -318,6 +324,11 @@ public void start(){
 	            resp2=doonce();
 	            return 0;
 	        }
+	        public void finished(){
+	        	controlador.mensagem("acabou");
+	        	controlador.repaint();
+	    		controlador.setdalgoresp(variables,mlines,originalmatrix);
+	        }
 	    };
 	    worker.start();
 		
@@ -327,5 +338,7 @@ public void start(){
 //	}
 	
 }
+
+//public void finished
 
 }//obj

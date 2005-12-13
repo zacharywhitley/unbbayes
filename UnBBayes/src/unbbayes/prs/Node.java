@@ -58,6 +58,7 @@ public abstract class Node implements java.io.Serializable {
 
 	private String description = "";
 	protected String name;
+	private boolean numerico=true;
 	private SerializablePoint2D posicao;
 	protected NodeList parents;
 	private NodeList children;
@@ -493,6 +494,12 @@ public abstract class Node implements java.io.Serializable {
 		
 		Node node = (Node) obj;
 		return (node.name.equals(this.name));		
+	}
+	public void setNumerico(boolean sn){
+		numerico=sn;
+	}
+	public boolean getNumerico(){
+		return numerico;
 	}
 
 }
