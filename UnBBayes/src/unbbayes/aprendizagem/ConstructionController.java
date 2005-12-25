@@ -196,28 +196,53 @@ public class ConstructionController {
 	    	String msg = "Não foi possível abrir o arquivo solicitado. Verifique o formato do arquivo.";
 	    	JOptionPane.showMessageDialog(null,msg,"ERROR",JOptionPane.ERROR_MESSAGE);                    	
 	    };
-	    
+	    //copia inicio
+	    //variablesVector =  variables;
+	    variables.remove(classe);	    
+	    OrdenationWindow ordenationWindow = new OrdenationWindow(variables,classe);        	    	    	    	    
+        OrdenationInterationController ordenationController = ordenationWindow.getController();                    
+        String[] pamp = ordenationController.getPamp();
+        variables = ordenationController.getVariables();				
+        
+        /*Constructs the topology of the net*/        
+        new AlgorithmController(variables,matrix,vector,caseNumber,pamp,compacted);
+        
+	    //copia fim
         //OrdenationWindow ordenationWindow = new OrdenationWindow(variables);        	    	    	    	    
         //OrdenationInterationController ordenationController = ordenationWindow.getController();                    
         //String[] pamp = ordenationController.getPamp();
 	    //variables = ordenationController.getVariables();				
         //new AlgorithmController(variables,matrix,vector,caseNumber,pamp,compacted);
         //new CBLA(variables,matrix,vector,caseNumber,"MDL",compacted);
-	    new B(variables, matrix, vector,caseNumber,"MDL", "",compacted);
+	    //new B(variables, matrix, vector,caseNumber,"MDL", "",compacted);
         int i,j;
         j=variables.size();
+        NodeList variaveis=new NodeList();
+        for(i=0;i<classe;i++)variaveis.add(variables.get(i));
+        variaveis.add(variablesVector.get(classe));
+        for(i=classe;i<j;i++)variaveis.add(variables.get(i));
+        variables=variaveis;
+        j=j+1;
+      //  variables.get(j-1).setSelected(true);       
         //adiciona todas as variáveis como filhos da classe
+        int debug3=0;
+        try{
         for(i=0;i<j;i++){
+        	debug3=i;
         	//se alguma variavel não é filha da classe então passa a ser!
         	if((i!=classe)&&(!(variables.get(classe).isParentOf(variables.get(i)))))variables.AddChildTo(classe,variables.get(i));
         	//se alguma variável tem como filho a classe--> retirar!
         	if((variables.get(i).isParentOf(variables.get(classe))))variables.RemoveParentFrom(classe,i);
-//        	se alguma variavel não tem a classe como pai entao passa a ter
+        	//se alguma variavel não tem a classe como pai entao passa a ter
         	if((!(variables.get(i).isChildOf(variables.get(classe)))))variables.AddParentTo(i,variables.get(classe));        	
         }       
                 variables.ClearParentsFrom(classe);
                 
-        
+        }
+        catch (Exception ee){
+        	int debug=0;
+        	int debug2=debug;
+        }
         new ProbabilisticController(variables,matrix, vector,caseNumber,controller, compacted);                     
     }
 	/**

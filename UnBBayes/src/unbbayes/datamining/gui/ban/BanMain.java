@@ -29,7 +29,9 @@ public class BanMain extends JInternalFrame
 
   private JPanel contentPane;
   private MDIDesktopPane desktop;
+  private JFrame invoker;
   private InstanceSet inst;
+  private MainController controller;
   private NodeList bnvariaveis;
   public File selectedFile;
   private ConstructionController cc;
@@ -71,7 +73,8 @@ public class BanMain extends JInternalFrame
 
   /**Construct the frame*/
   public BanMain()
-  { super("BAN Classifier",true,true,true,true);
+  { //super("BAN Classifier",true,true,true,true);
+	  super("BAN");	  
     resource = ResourceBundle.getBundle("unbbayes.datamining.gui.ban.resources.BanResource");
 
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
@@ -387,6 +390,7 @@ public class BanMain extends JInternalFrame
       bnvariaveis.ensureCapacity(j);
       bnvariaveis=variaveis;
       boolean direction = true;
+      try{
       for (i = 0; i < variaveis.size(); i++) {
           noFilho = variaveis.get(i);
           net.addNode(noFilho);
@@ -406,7 +410,11 @@ public class BanMain extends JInternalFrame
             	direction = true;
               net.getEdges().add(arcoAux);
           }
-      }        		
+      }   
+      } catch (Exception ee){
+    	  int debug=0;
+    	  int debug2=debug;
+      }
 		return net;
       
   }
@@ -414,34 +422,48 @@ public class BanMain extends JInternalFrame
  
   public void showNetwork(ProbabilisticNetwork net){
   
-	  ProbabilisticNetwork net2=new ProbabilisticNetwork("BAN");
-  		Ban BAN = new Ban();
-  		BAN.SetBNNet(bnvariaveis);
-  		BAN.buildClassifier(inst);
-  		 net2 = BAN.getProbabilisticNetwork();
-		NetWindow netWindow = new NetWindow(net2);
-        NetWindowEdition edition = netWindow.getNetWindowEdition();
-        edition.getCenterPanel().setBottomComponent(netWindow.getJspGraph());
+	    try
+	  {
+	  jMenuItem5.setEnabled(true);
+      jTabbedPane1.setEnabledAt(1,true);
+      jTabbedPane1.setSelectedIndex(1);
+      saveButton.setEnabled(true);
 
-        // deixa invisíveis alguns botões do unbbayes
-        edition.getMore().setVisible(false);
-        edition.getLess().setVisible(false);
-        edition.getArc().setVisible(false);
-        edition.getDecisionNode().setVisible(false);
-        edition.getProbabilisticNode().setVisible(false);
-        edition.getUtilityNode().setVisible(false);
-        edition.getSelect().setVisible(false);
-        edition.getHierarchy().setVisible(false);
+      NetWindow netWindow = new NetWindow(net);
+      if (! netWindow.getWindowController().compileNetwork()) {
+          netWindow.changeToNetEdition();            
+          
+      } else{
+          netWindow.changeToNetCompilation();		
+		}	
+      NetWindowEdition edition = netWindow.getNetWindowEdition();
+      edition.getCenterPanel().setBottomComponent(netWindow.getJspGraph());
+     
+      // deixa invisíveis alguns botões do unbbayes
+     /* edition.getMore().setVisible(false);
+      edition.getLess().setVisible(false);
+      edition.getArc().setVisible(false);
+      edition.getDecisionNode().setVisible(false);
+      edition.getProbabilisticNode().setVisible(false);
+      edition.getUtilityNode().setVisible(false);
+      edition.getSelect().setVisible(false);
+      edition.getHierarchy().setVisible(false);*/
 
-		//
-		//netWindow.show();
-		//this.addWindow(netWindow);
-		jPanel1.removeAll();
-        jPanel1.setLayout(new BorderLayout());
-        
-        jPanel1.add(netWindow.getContentPane(),BorderLayout.CENTER);
-		//jPanel1.add(netWindow.getContentPane(),BorderLayout.CENTER);
-		    	
+      // mostra a nova tela
+      jPanel1.removeAll();
+      jPanel1.setLayout(new BorderLayout());
+      jPanel1.add(netWindow.getContentPane(),BorderLayout.CENTER);
+      jPanel1.add(edition.getCenterPanel(),BorderLayout.CENTER);
+      statusBar.setText(resource.getString("learnSuccessful"));
+	  }
+      catch (Exception ex)
+      {   statusBar.setText(resource.getString("exception")+ex.getMessage());
+      	ex.printStackTrace();
+      }
+      	
+  }
+  public void adicionacompilacao(){
+	  
   }
 	
 }

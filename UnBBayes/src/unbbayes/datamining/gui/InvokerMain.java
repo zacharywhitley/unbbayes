@@ -203,6 +203,7 @@ public class InvokerMain extends JFrame
                     setCursor(new Cursor(Cursor.WAIT_CURSOR));
                     BanMain ban = new BanMain();
                     addWindow(ban);
+                    //ban.setVisible(true);
                     setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
         };

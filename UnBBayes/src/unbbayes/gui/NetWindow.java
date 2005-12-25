@@ -283,6 +283,32 @@ public class NetWindow extends JInternalFrame {
 		carta.show(getContentPane(), "netCompilation");
 		netCompilation.getEvidenceTree().updateTree();
 	}
+	
+	public void changeToNetCompilation2() {
+
+        graph.setbArc(false);
+        graph.setbProbabilisticNode(false);
+        graph.setbDecisionNode(false);
+        graph.setbUtilityNode(false);
+        graph.setbSelect(false);
+        graph.removeKeyListener(controller);
+//        graph.removeKeyListener(controller);
+//        graph.removeKeyListener(controller);
+
+		netCompilation.getCenterPanel().setRightComponent(jspGraph);
+		netCompilation.setStatus(status.getText());
+		netCompilation.getEvidenceTree().setRootVisible(true);
+		netCompilation.getEvidenceTree().expandRow(0);
+		netCompilation.getEvidenceTree().setRootVisible(false);
+
+		bCompiled = true;
+
+		controller.getNet().setFirstInitialization(true);
+
+		carta.show(getContentPane(), "netCompilation");
+		netCompilation.getEvidenceTree().updateTree();
+	}
+
 
 	/**
 	 * Método responsável por fazer as alterações necessárias para a mudar da

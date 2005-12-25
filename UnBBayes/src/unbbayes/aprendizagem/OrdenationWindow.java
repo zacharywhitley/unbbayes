@@ -68,10 +68,24 @@ public class OrdenationWindow extends JDialog {
     private JComboBox metricList;
 	private NodeList variables;
 	private OrdenationInterationController ordenationController;
+	private int classe;
 	
 	public OrdenationWindow(NodeList variables){
 	    super(new Frame(),"UnBBayes - Learning Module",true);	    
 	    this.variables = variables;
+	    Container container = getContentPane();	    
+        container.add(getCenterPanel(), BorderLayout.CENTER);                
+        container.add(getSouthPanel(),BorderLayout.SOUTH);
+        ordenationController = new OrdenationInterationController(variables,this);   
+        setResizable(false);
+        pack();
+        setVisible(true); 
+        
+	}
+	public OrdenationWindow(NodeList variables, int classex){
+	    super(new Frame(),"UnBBayes - Learning Module",true);	    
+	    this.variables = variables;
+	    this.classe=classex;
 	    Container container = getContentPane();	    
         container.add(getCenterPanel(), BorderLayout.CENTER);                
         container.add(getSouthPanel(),BorderLayout.SOUTH);
@@ -197,7 +211,8 @@ public class OrdenationWindow extends JDialog {
 	
 	private void insertList(){
 		TVariavel aux;
-		for(int i = 0 ; i< variables.size(); i++){			
+		for(int i = 0 ; i< variables.size(); i++){
+			
 			aux = (TVariavel)variables.get(i);
 			listModel.addElement(aux.getName());
 		}				

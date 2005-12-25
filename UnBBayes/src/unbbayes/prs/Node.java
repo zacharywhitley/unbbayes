@@ -167,8 +167,14 @@ public abstract class Node implements java.io.Serializable {
 		//boolean result=children.contains(child);
 		boolean result=false;
 		int j=children.size();
+		try{
 		for(int i=0;i<j;i++){
 			result=((result)||((child.getName())==(children.get(i).getName())));
+		}
+		}
+		catch (Exception ee){
+			int debug=0;
+			int debug2=debug;
 		}
 		return result;
 		}
