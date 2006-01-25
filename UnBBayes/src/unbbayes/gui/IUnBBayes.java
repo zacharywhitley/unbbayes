@@ -88,6 +88,8 @@ public class IUnBBayes extends JFrame {
 	private JButton help;
 	private ActionListener alNewBN;
 	private ActionListener alDiscretize;
+	private ActionListener alTAN;
+	private ActionListener alBAN;
 	private ActionListener alNewMSBN;
 	private ActionListener alOpen;
 	private ActionListener alSave;
@@ -254,11 +256,52 @@ public class IUnBBayes extends JFrame {
 
 		//alDiscretize inicio
 		//Discretização de variáveis contínuas
+		alTAN = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				String[] nets = new String[] { "txt" };
+				int classe=0;
+				chooser = new JFileChooser(fileController.getCurrentDirectory());
+				chooser.setMultiSelectionEnabled(false);
+				chooser.addChoosableFileFilter(
+					new SimpleFileFilter(
+						nets,
+						resource.getString("textFileFilter")));
+				int option = chooser.showOpenDialog(IUnBBayes.this);
+				File file;
+				if (option == JFileChooser.APPROVE_OPTION) {
+					file = chooser.getSelectedFile();
+                                        fileController.setCurrentDirectory(chooser.getCurrentDirectory());
+					new ConstructionController(file, controller,classe);
+				}
+		
+			}};
+		alBAN = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				String[] nets = new String[] { "txt" };
+				int classe=0;
+				chooser = new JFileChooser(fileController.getCurrentDirectory());
+				chooser.setMultiSelectionEnabled(false);
+				chooser.addChoosableFileFilter(
+					new SimpleFileFilter(
+						nets,
+						resource.getString("textFileFilter")));
+				int option = chooser.showOpenDialog(IUnBBayes.this);
+				File file;
+				if (option == JFileChooser.APPROVE_OPTION) {
+					file = chooser.getSelectedFile();
+                                        fileController.setCurrentDirectory(chooser.getCurrentDirectory());
+					new ConstructionController(file, controller,classe,classe);
+				}
+		
+				
+			}};
+		
+		
 		alDiscretize = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				//setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				janeladiscret janeld= new janeladiscret();
-				janeld.show();				
+				janeld.setVisible(true);				
 				/*String[] nets = new String[] { "txt", "arff" };
 				chooser = new JFileChooser(fileController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
@@ -556,7 +599,9 @@ public class IUnBBayes extends JFrame {
 			new JCheckBoxMenuItem(resource.getString("tbWindow"), true);
 		JMenuItem tbHelp =
 			new JCheckBoxMenuItem(resource.getString("tbHelp"), true);
-		JMenuItem discretize = new JMenuItem("Discret");
+		JMenuItem discretize = new JMenuItem("Discretizar");
+		JMenuItem TAN = new JMenuItem("TAN");
+		JMenuItem BAN = new JMenuItem("BAN");
 		JMenuItem metalItem =
 			new JMenuItem(
 				resource.getString("metalItem"),iconController.getMetalIcon());
@@ -612,6 +657,8 @@ public class IUnBBayes extends JFrame {
 
 		// add ActionListener to all menu items
 		discretize.addActionListener(alDiscretize);
+		TAN.addActionListener(alTAN);
+		BAN.addActionListener(alBAN);
 		newBN.addActionListener(alNewBN);
 		newMSBN.addActionListener(alNewMSBN);
 		openItem.addActionListener(alOpen);
@@ -653,6 +700,8 @@ public class IUnBBayes extends JFrame {
 		viewMenu.addSeparator();
 		viewMenu.add(lafMenu);
 		toolsMenu.add(learningItem);
+		toolsMenu.add(TAN);
+		toolsMenu.add(BAN);
 		toolsMenu.add(monteCarloItem);
 		toolsMenu.add(gibbsItem);
 		toolsMenu.add(discretize);

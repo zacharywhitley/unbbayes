@@ -21,6 +21,7 @@
 
 
 import javax.swing.*;
+
 import unbbayes.util.NodeList;
 
 import java.awt.*;
@@ -38,6 +39,7 @@ public class ChooseVariablesWindow extends JDialog{
     private NodeList variablesVector;
     private JButton ok;
     private ChooseInterationController chooseController;
+    public int classei=-1;
     
     /**
      * Constructs the frame where the user decides which variables
@@ -77,22 +79,22 @@ public class ChooseVariablesWindow extends JDialog{
         setVisible(true);       
     }
     public ChooseVariablesWindow(NodeList variables, int classe){
-        super(new Frame(),"UnBBayes - Learning Module",true);
+        super(new Frame(),"",true);
+        classei=-1;
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         Container container = getContentPane();
         variablesVector  = variables;
         choosePanel = new JPanel();
         int length =  variables.size();
         choosePanel.setLayout(new GridLayout(variables.size(),1,3,3));
-
-        /*Construct the checkboxes*/
+   
         TVariavel variable;        
         for(int i = 0;  i < length ; i++){
-        	if(i!=classe){
-            variable = (TVariavel)variables.get(i);
-            choosePanel.add(new JCheckBox(variable.getName(),true));
+        	variable = (TVariavel)variables.get(i);
+            //choosePanel.add(new JCheckBox(variable.getName(),true));
+            choosePanel.add(new JRadioButton(variable.getName(), false) );
         	}
-        }
+       
         ok           = new JButton("Ok");
         centerPanel  = new JPanel(new GridLayout(1,2,10,10));
         scrollPane   = new JScrollPane(choosePanel);
@@ -100,8 +102,8 @@ public class ChooseVariablesWindow extends JDialog{
         centerPanel.add(scrollPane);
         buttonPanel.add(ok);
         centerPanel.add(buttonPanel);
-        container.add(new JLabel("Check the fields to include on the believe network"),BorderLayout.NORTH);
-        ok.addActionListener(okListener);        
+        container.add(new JLabel("Escolha a variável de Classe"),BorderLayout.NORTH);
+        ok.addActionListener(okListener2);        
         container.add(centerPanel,BorderLayout.CENTER);
         chooseController = new ChooseInterationController(this);
         setResizable(false);
@@ -121,6 +123,18 @@ public class ChooseVariablesWindow extends JDialog{
     ActionListener okListener = new ActionListener(){
         public void actionPerformed(ActionEvent ae){
         	chooseController.setVariablesState();         	
+        }        
+    };
+    ActionListener okListener2 = new ActionListener(){
+        public void actionPerformed(ActionEvent ae){
+        	classei=chooseController.setVariablesState(0);
+        	if (classei!=-1){
+        		dispose();
+        	}
+        	else{
+        		String msg = "Escolha a variável a ser predita!";
+    	    	JOptionPane.showMessageDialog(null,msg,"ERROR",JOptionPane.ERROR_MESSAGE);
+        	}
         }        
     };
 }

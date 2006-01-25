@@ -32,7 +32,7 @@ public abstract class CBLToolkit extends LearningToolkit{
 	protected ArrayList es;
 	protected ArrayList separators;    
 	
-	protected double mutualInformation(TVariavel xi,TVariavel xk){    	
+	public double mutualInformation(TVariavel xi,TVariavel xk){    	
     	int nt = 0;
     	int il = 0;    	
     	int kl = 0;
