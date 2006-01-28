@@ -3,7 +3,13 @@ package unbbayes.aprendizagem;
 import unbbayes.aprendizagem.ConstructionController;
 import unbbayes.util.NodeList;
 
-
+/**
+ * TAN
+ * @version 1.0
+ * @author Gabriel Guimarães - aluno de IC 2005-2006
+ * @author Marcelo Ladeira - Orientador
+ * @author Patricia Marinho
+ */
 public class CL {
 	/**
 	 * Variaveis do objeto CL
@@ -46,48 +52,11 @@ public class CL {
 		vector=vetor;
 		dataBase=dados;
 		compacted=comp;
-		//preparar vetor auxiliar
-		enderecos=new int[nvar-1];
-		int h=0;
-		for(i=0;i<nvar;i++){
-			if((i==classe)||(i==raiz)){
-				
-			if(i==raiz)enderecos[nvar-2]=i;
-			}
-			else{
-				enderecos[h]=i;
-				h++;
-			}
+		
+		prepara_memoria();
+		detecta_arvore();
+		desenharede();
 		}
-		//reservar memoria
-		matrizinfo=new double[nvar][nvar];
-		calculainformacoes();
-		calculaRaiz();
-		arvore=new int[nvar-1];
-		melhorarvore=new int[nvar-1];
-		melhorinfo=0;
-		//procurar a melhor arvore
-		for(i=0;i<nvar-2;i++)arvore[i]=0;
-		double ii;
-		while (proxima()){
-			ii=infoatual();
-			if(ii>melhorinfo){
-				melhorinfo=ii;
-				melhorarvore=arvore;
-			}}
-		for(i=0;i<nvar;i++){
-			variaveis.ClearChildenFrom(i);
-			variaveis.ClearParentsFrom(i);
-		}
-		//desenhar a rede
-		int aux=0;
-		for(i=0;i<nvar;i++){
-		if((i!=classe)&&(i!=raiz)){
-			aux++;
-		variaveis.AddParentTo(enderecos[aux],variaveis.get(enderecos[arvore[aux]]));
-		variaveis.AddChildTo(enderecos[arvore[aux]],variaveis.get(enderecos[aux]));}
-		}		
-	}
 	/**
 	 * log na base 2
 	 * @param numero
@@ -214,4 +183,49 @@ public class CL {
 		if((!fim)&&(!houveciclo))valida_ramo(arvore[no]);
 		return houveciclo;}
 
+	private void desenharede(){
+		for(int i=0;i<nvar;i++){
+			variaveis.ClearChildenFrom(i);
+			variaveis.ClearParentsFrom(i);
+		}
+		//desenhar a rede
+		int aux=0;
+		for(int i=0;i<nvar;i++){
+		if((i!=classe)&&(i!=raiz)){
+			aux++;
+		variaveis.AddParentTo(enderecos[aux],variaveis.get(enderecos[arvore[aux]]));
+		variaveis.AddChildTo(enderecos[arvore[aux]],variaveis.get(enderecos[aux]));}
+		}
+	}
+	private void detecta_arvore(){
+		for(int i=0;i<nvar-2;i++)arvore[i]=0;
+		double ii;
+		while (proxima()){
+			ii=infoatual();
+			if(ii>melhorinfo){
+				melhorinfo=ii;
+				melhorarvore=arvore;
+			}}
+	}
+	private void prepara_memoria(){
+		int h=0;
+		enderecos=new int[nvar-1];
+		matrizinfo=new double[nvar][nvar];
+		calculainformacoes();
+		calculaRaiz();
+		arvore=new int[nvar-1];
+		melhorarvore=new int[nvar-1];
+		melhorinfo=0;
+		for(int i=0;i<nvar;i++){
+			if((i==classe)||(i==raiz)){
+				
+			if(i==raiz)enderecos[nvar-2]=i;
+			}
+			else{
+				enderecos[h]=i;
+				h++;
+			}
+		}
+		//reservar memoria		
+	}
 }//objeto

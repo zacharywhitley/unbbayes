@@ -163,11 +163,10 @@ public class ConstructionController {
         new ProbabilisticController(variables,matrix, vector,caseNumber,controller, compacted);                     
     }
 	/**
-	 * Do BAN
-	 * @param classei
-	 * @param inutil para diferenciar do TAN
-	 * @author Gabriel Guimarães
-	 * @author Patricia
+	 * @version 1.0
+	 * @author Gabriel Guimarães - aluno de IC 2005-2006
+	 * @author Marcelo Ladeira - Orientador
+	 * @author Patricia Marinho
 	 */
 	public ConstructionController(File file, MainController controller, int classei, int inutil){				
 		int classex=0;
