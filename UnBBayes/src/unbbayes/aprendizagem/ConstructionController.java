@@ -260,15 +260,7 @@ public class ConstructionController {
 	    	String msg = "Não foi possível abrir o arquivo solicitado. Verifique o formato do arquivo.";
 	    	JOptionPane.showMessageDialog(null,msg,"ERROR",JOptionPane.ERROR_MESSAGE);                    	
 	    };
-	    OrdenationWindow ordenationWindow = new OrdenationWindow(variables);        	    	    	    	    
-        OrdenationInterationController ordenationController = ordenationWindow.getController();                    
-        String[] pamp = ordenationController.getPamp();		
-        variables = ordenationController.getVariables();
-	    //String[] pamp=new String[2];// = ordenationController.getPamp();
-        //pamp[1]="B";
-        //pamp[0]="Ponctuation";
-        
-        new AlgorithmController(variables,matrix,vector,caseNumber,pamp,compacted);
+	    new B(variables, matrix, vector,caseNumber,"MDL", "",compacted);	
         CL chowliu=new CL();
         chowliu.preparar(variables,classex,(int)caseNumber,vector,compacted,matrix);
 	    variables=chowliu.variaveis;
