@@ -22,7 +22,6 @@ package unbbayes.aprendizagem;
 
 import unbbayes.util.NodeList;
 import unbbayes.controller.MainController;
-import unbbayes.datamining.gui.ban.BanMain;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.PotentialTable;
@@ -67,40 +66,4 @@ for2:       for (int j = 0; j < parentsLength; j++) {
         }                
         controller.showNetwork(net);
     }
-    public ProbabilisticController(NodeList variables,byte[][] matrix,
-            int[] vector,long caseNumber, BanMain controller, boolean compacted){
-this.compacted = compacted;
-this.dataBase = matrix;
-this.vector = vector;
-this.caseNumber = caseNumber;
-TVariavel variable;
-int parentsLength;
-int[][] arrayNijk;
-PotentialTable table;
-ProbabilisticNetwork net    = controller.makeNetwork(variables);
-int length  = variables.size();    	
-for(int i = 0; i < length; i++) {
- variable  = (TVariavel)variables.get(i);
- table     = variable.getProbabilidades();
- table.addVariable(variable);
-}
-new TJanelaEdicao(net);
-for(int i = 0; i < length; i++) {
- variable  = (TVariavel)variables.get(i);
- arrayNijk = getFrequencies(variable,variable.getPais());                        
- table     = variable.getProbabilidades();
- parentsLength = variable.getTamanhoPais();
-for2:       for (int j = 0; j < parentsLength; j++) {
- 	Node pai = variable.getPais().get(j);
- 	for (int k = 0; k < table.variableCount(); k++) {
- 		if (pai == table.getVariableAt(k)) {
- 			continue for2;
- 		}            		
- 	}
-     table.addVariable(pai);
- }
- getProbability(arrayNijk, variable); 
-}                
-controller.showNetwork(net);
-}
 }

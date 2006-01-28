@@ -21,7 +21,6 @@
  package unbbayes.aprendizagem;
 
 import unbbayes.controller.*;
-import unbbayes.datamining.gui.ban.BanMain;
 import unbbayes.util.*;
 import unbbayes.gui.*;
 import java.io.*;
@@ -285,75 +284,6 @@ public class ConstructionController {
 	
 	
 	
-	/**
-	 * Construction controller usado pelo BAN
-	 * @author gabriel guimaraes - Aluno de IC 2005-2006
-	 * @Orientador Marcelo Ladeira
-	 */
-	public ConstructionController(File file, int classe, BanMain controller){				
-	    try{
-           InputStreamReader isr = new InputStreamReader(new FileInputStream(file));
-           BufferedReader  br    = new BufferedReader(isr);
-           int rows = getRowCount(br);           
-           isr = new InputStreamReader(new FileInputStream(file));
-           br  = new BufferedReader(isr);
-           StreamTokenizer cols = new StreamTokenizer(br);
-           setColsConstraints(cols);
-           variablesVector = new NodeList();           
-           variables = new NodeList();                      
-           makeVariablesVector(cols);
-           ((TVariavel)variablesVector.get(classe)).setParticipa(false);
-           variablesVector.get(classe).setSelected(false);
-           new ChooseVariablesWindow(variablesVector);
-           new CompactFileWindow(variablesVector);               
-           filterVariablesVector(rows);
-           matrix = new byte[rows][variables.size()]; 
-           makeMatrix(cols, rows);
-           		  
-           br.close();          
-	    }
-	    catch(Exception e){
-	    	String msg = "Não foi possível abrir o arquivo solicitado. Verifique o formato do arquivo.";
-	    	JOptionPane.showMessageDialog(null,msg,"ERROR",JOptionPane.ERROR_MESSAGE);                    	
-	    };
-	    variables.remove(classe);	    
-	    OrdenationWindow ordenationWindow = new OrdenationWindow(variables,classe);        	    	    	    	    
-        OrdenationInterationController ordenationController = ordenationWindow.getController();                    
-        String[] pamp = ordenationController.getPamp();
-        variables = ordenationController.getVariables();				
-        
-        new AlgorithmController(variables,matrix,vector,caseNumber,pamp,compacted);
-        
-	    int i,j;
-        j=variables.size();
-        NodeList variaveis=new NodeList();
-        for(i=0;i<classe;i++)variaveis.add(variables.get(i));
-        variaveis.add(variablesVector.get(classe));
-        for(i=classe;i<j;i++)variaveis.add(variables.get(i));
-        variables=variaveis;
-        j=j+1;
-      //  variables.get(j-1).setSelected(true);       
-        //adiciona todas as variáveis como filhos da classe
-       // int debug3=0;
-        //try{
-        for(i=0;i<j;i++){
-//        	debug3=i;
-        	//se alguma variavel não é filha da classe então passa a ser!
-        	if((i!=classe)&&(!(variables.get(classe).isParentOf(variables.get(i)))))variables.AddChildTo(classe,variables.get(i));
-        	//se alguma variável tem como filho a classe--> retirar!
-        	if((variables.get(i).isParentOf(variables.get(classe))))variables.RemoveParentFrom(classe,i);
-        	//se alguma variavel não tem a classe como pai entao passa a ter
-        	if((!(variables.get(i).isChildOf(variables.get(classe)))))variables.AddParentTo(i,variables.get(classe));        	
-        }       
-                variables.ClearParentsFrom(classe);
-                
-  /*      }
-        catch (Exception ee){
-        	int debug=0;
-        	int debug2=debug;
-        }*/
-        new ProbabilisticController(variables,matrix, vector,caseNumber,controller, compacted);                     
-    }
 	/**
 	 * Sets the constraints of the StreamTokenizer.
 	 * These constraint separates the tokens

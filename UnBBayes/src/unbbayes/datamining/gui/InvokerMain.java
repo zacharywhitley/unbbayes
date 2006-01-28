@@ -11,8 +11,6 @@ import unbbayes.datamining.datamanipulation.*;
 import unbbayes.datamining.gui.evaluation.*;
 import unbbayes.datamining.gui.metaphor.*;
 import unbbayes.datamining.gui.naivebayes.*;
-import unbbayes.datamining.gui.tan.*;
-import unbbayes.datamining.gui.ban.*;
 import unbbayes.datamining.gui.preprocessor.*;
 import unbbayes.datamining.gui.neuralmodel.*;
 import unbbayes.datamining.gui.neuralnetwork.*;
@@ -59,8 +57,6 @@ public class InvokerMain extends JFrame
   private JButton preferences = new JButton();
 
   private ActionListener alNaiveBayes;
-  private ActionListener alTan;
-  private ActionListener alBan;
   private ActionListener alPreProcessor;
   private ActionListener alId3;
   private ActionListener alEvaluation;
@@ -187,30 +183,6 @@ public class InvokerMain extends JFrame
                 }
         };
 
-        // create an ActionListener for opening new window for TAN
-        alTan = new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                    setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                    TanMain tan = new TanMain();
-                    addWindow(tan);
-                    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            }
-        };
-        
-        // create an ActionListener for opening new window for Naive BAN
-        alBan = new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                    setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                    BanMain ban = new BanMain();
-                    addWindow(ban);
-                    //ban.setVisible(true);
-                    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            }
-        };
-
-        // inserir aqui?
-                
-        // create an ActionListener for opening new window for Naive Bayes
         alPreferences = new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                         setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -533,8 +505,6 @@ public class InvokerMain extends JFrame
         id3Item.addActionListener(alId3);
         c45Item.addActionListener(alC45);
         naiveBayesItem.addActionListener(alNaiveBayes);
-        tanItem.addActionListener(alTan);
-        banItem.addActionListener(alBan);
         evaluationItem.addActionListener(alEvaluation);
         metaphorItem.addActionListener(alMetaphor);
         cnmItem.addActionListener(alCnm);
