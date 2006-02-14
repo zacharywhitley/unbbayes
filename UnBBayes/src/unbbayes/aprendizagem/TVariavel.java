@@ -239,14 +239,17 @@ public class TVariavel extends ProbabilisticNode implements Cloneable {
      * vetor de estados(<code>String<code>)
      * @see List
      */
-    public void adicionaEstado(String estado){
-        if(this.getNumerico()){
+    public int adicionaEstado(String estado){
+        int posf=states.size();
+    	if(this.getNumerico()){
     	int tamanho = states.size();
         List states2=new ArrayList();
-        int posf=0; int i;
+        posf=0;int i;
+        String b1,b2=estado;
         //if(tamanho==1)posf
-        for(int tamanhoEstado = 0; tamanhoEstado < tamanho; tamanhoEstado++){
-            if(Double.parseDouble((String)(states.get(tamanhoEstado)))<Double.parseDouble(estado)){
+for(i = 0; i < tamanho; i++){
+	b1=(String)states.get(i);
+if(Double.parseDouble(b1)<Double.parseDouble(b2)){
                 posf++;
             }
             
@@ -264,7 +267,7 @@ public class TVariavel extends ProbabilisticNode implements Cloneable {
            states.add(estado);
         }
         
-        
+        return posf;
         
 }
   
@@ -330,9 +333,9 @@ public class TVariavel extends ProbabilisticNode implements Cloneable {
      */
     public int getEstadoPosicao(String nomeEstado){
         int tamanho = states.size();
-        for(int tamanhoEstado = 0; tamanhoEstado < tamanho; tamanhoEstado++){
-            if(states.get(tamanhoEstado).equals(nomeEstado)){
-                return tamanhoEstado;
+        for(int i = 0; i < tamanho; i++){
+            if(((String)states.get(i)).equals(nomeEstado)){
+                return i;
             }
         }
         return 0;

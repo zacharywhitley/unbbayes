@@ -70,6 +70,7 @@ public abstract class Node implements java.io.Serializable {
 	private String explanationDescription = "";
 	private ArrayMap phrasesMap = new ArrayMap();
 	private int informationType;
+	public int infoestados[];
 
 	public static final int PROBABILISTIC_NODE_TYPE = 0;
 	public static final int UTILITY_NODE_TYPE = 1;
@@ -366,6 +367,13 @@ public abstract class Node implements java.io.Serializable {
 		return this.phrasesMap;
 	}
 
+	public void atualizatamanhoinfoestados(){
+		int i=states.size();
+		infoestados=new int[i];
+		for(int j=0;j<i;j++)infoestados[j]=0;
+		}
+
+	
 	/**
 	 *  Insere um estado com o nome especificado no final da lista.
 	 *
@@ -374,8 +382,50 @@ public abstract class Node implements java.io.Serializable {
 	public void appendState(String estado) {
 		updateTables();
 		states.add(estado);
+		this.atualizatamanhoinfoestados();
+		}
+	
+	 public boolean existeEstado(String nomeEstado){
+	        int tamanho = states.size();
+	        for(int tamanhoEstado = 0; tamanhoEstado < tamanho; tamanhoEstado++){
+	            if(states.get(tamanhoEstado).equals(nomeEstado)){
+	                return true;
+	            }
+	        }
+	        return false;
+	    }
+	 
+	 public int addEstado(String estado){
+		 int posf=states.size();
+		 if(this.getNumerico()){
+	    	int tamanho = states.size();
+	        List states2=new ArrayList();
+	        int i;
+	        posf=0;
+	        String b1,b2=estado;
+	        //if(tamanho==1)posf
+	for(i = 0; i < tamanho; i++){
+		b1=(String)states.get(i);
+	if(Double.parseDouble(b1)<Double.parseDouble(b2)){
+	                posf++;
+	            }
+	            
+	        }
+	        for(i=0;i<posf;i++){
+	        	states2.add(states.get(i));	
+	        }
+	        states2.add(estado);
+	        for(i=posf;i<tamanho;i++){
+	        	states2.add(states.get(i));	
+	        }
+	        states=states2;        
+	        }		 
+	        return posf;
+	        
 	}
-
+	 
+	
+	
 	/**
 	 *  Retira o estado criado mais recentemente.
 	 *  Isto é, o último estado da lista.
@@ -385,9 +435,11 @@ public abstract class Node implements java.io.Serializable {
 			updateTables();
 			states.remove(states.size() - 1);
 		}
+		this.atualizatamanhoinfoestados();
 	}
 	public void removestate(int num){
 		states.remove(num);
+		this.atualizatamanhoinfoestados();
 	}
 
 	/**

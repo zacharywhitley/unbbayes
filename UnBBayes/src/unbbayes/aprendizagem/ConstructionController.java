@@ -97,7 +97,7 @@ public class ConstructionController {
 		try{
 		  InputStreamReader isr = new InputStreamReader(new FileInputStream(file));
 		  BufferedReader  br    = new BufferedReader(isr);
-		  int rows = getRowCount(br);           
+		  int rows = getRowCount(br)-1;           
 		  isr = new InputStreamReader(new FileInputStream(file));
 		  br  = new BufferedReader(isr);
 		  StreamTokenizer cols = new StreamTokenizer(br);
@@ -312,11 +312,13 @@ public class ConstructionController {
 		try{
             while (cols.nextToken() != StreamTokenizer.TT_EOL){
                 if(cols.sval != null){
+                	//variablesVector.adicionarC(new TVariavel(String.valueOf(cols.nval),position));
                      variablesVector.add(new TVariavel(cols.sval, position));
                      ((TVariavel)variablesVector.get(variablesVector.size()-1)).setDescription(cols.sval);
 					 ((TVariavel)variablesVector.get(variablesVector.size()-1)).setParticipa(true);
 					// ((TVariavel)variablesVector.get(variablesVector.size()-1)).setNumerico(false);
                 } else{
+                	//variablesVector.adicionarN(new TVariavel(String.valueOf(cols.nval),position));
                      variablesVector.add(new TVariavel(String.valueOf(cols.nval),position));
                      ((TVariavel)variablesVector.get(variablesVector.size()-1)).setDescription(String.valueOf(cols.nval));
 					 ((TVariavel)variablesVector.get(variablesVector.size()-1)).setParticipa(true);
@@ -391,40 +393,55 @@ public class ConstructionController {
 	    int position = 0;
         String stateName = "";     
         TVariavel aux;
-        
+        for(int i=0;i<rows;i++){
+        	for(int j=0;j<variables.size();j++){
+        		matrix[i][j]=-1;
+        	}
+        	
+        }
         try{
-            while (cols.ttype != StreamTokenizer.TT_EOF && caseNumber <= rows){
-                while(cols.ttype != StreamTokenizer.TT_EOL && position < variablesVector.size() && caseNumber <= rows){
+        	caseNumber=0;
+            while (cols.ttype != StreamTokenizer.TT_EOF && caseNumber < rows+1){
+                while(cols.ttype != StreamTokenizer.TT_EOL && position < variablesVector.size() && caseNumber < rows+1){
                     aux = (TVariavel)variablesVector.get(position);
                     aux.setNumerico(false);
                 	if (aux.getRep()){
                     	vector[(int)caseNumber] = (int)cols.nval;
                 	} else if(aux.getParticipa()){
                     	if(cols.sval != null){
+                    		
                          	stateName = cols.sval;
-                         	                         	
                          	if(! aux.existeEstado(stateName)){
-                         		if(!stateName.equals("?")){                         		
-                              		aux.adicionaEstado(stateName);                              	
+                         		if(!stateName.equals("?")){
+                         	
+                         			//variablesVector.get(position).addEstado(stateName);
+                         			aux.adicionaEstado(stateName);                              	
                          		} else {
                          			missing = true;
                          		}
                          	}
                     	} else{
-                    		 stateName = String.valueOf(cols.nval);
+                    		 stateName = String.valueOf(cols.nval);                    		
                     		if((stateName!=null)&&(stateName!="")){
                     			if(!aux.existeEstado(stateName)){
+                    		
                     		aux.setNumerico(true);
-                    		aux.adicionaEstado(stateName);
+                    		int pant = aux.adicionaEstado(stateName);//variablesVector.get(position).addEstado(stateName);
+                    		
+                    		for(int i=0;i<(int)caseNumber;i++){
+                    		if(matrix[i][aux.getPos()]>pant-1)
+                    			matrix[i][aux.getPos()]++;
+                    		}
+                    		//aux.adicionaEstado(stateName);
                     			}
                     		}
                          	
                     	}
                     	if(! missing){
-                        	matrix[(int)caseNumber][aux.getPos()] = (byte)aux.getEstadoPosicao(stateName);
+                        	matrix[(int)caseNumber-1][aux.getPos()] = (byte)aux.getEstadoPosicao(stateName);
                         	
                     	} else{
-                    		matrix[(int)caseNumber][aux.getPos()] = -1;
+                    		matrix[(int)caseNumber-1][aux.getPos()] = -1;
                     		missing = true;                    		
                     	}
                 	}
@@ -443,7 +460,7 @@ public class ConstructionController {
         	JOptionPane.showMessageDialog(null,msg,"ERROR",JOptionPane.ERROR_MESSAGE);                    	        
         };        	
         /*Tirar isso. Só pra debug*/
-        System.out.println("NumeroCasos " + caseNumber);	
+                
 	}
 	
 	public boolean[] checavariaveis(NodeList temp){

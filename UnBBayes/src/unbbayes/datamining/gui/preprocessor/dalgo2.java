@@ -1,20 +1,19 @@
-package unbbayes.gui;
+package unbbayes.datamining.gui.preprocessor;
 
-/**
- * Thread para discretização múltipla
- * @author gabriel guimaraes - Aluno de IC 2005-2006
- * @Orientador Marcelo Ladeira
- */
+/** Thread para discretização múltipla
+* @author gabriel guimaraes - Aluno de IC 2005-2006
+* @Orientador Marcelo Ladeira
+*/
 
 import unbbayes.util.NodeList;
 import unbbayes.util.SwingWorker;
 import unbbayes.gui.janeladiscret;
 /**
- * Algoritimo para discretização múltipla
- * @author gabriel guimaraes - Aluno de IC 2005/2006
- * @orientador Marcelo Ladeira
- */
-public class dalgo extends Thread {
+* Algoritimo para discretização múltipla
+* @author gabriel guimaraes - Aluno de IC 2005/2006
+* @orientador Marcelo Ladeira
+*/
+public class dalgo2 extends Thread {
 public NodeList variables;
 public byte[][] originalmatrix;
 public int[][] matrix1;
@@ -28,6 +27,7 @@ public float limiteperda;
 public double alfa;
 public boolean dochi2;
 public boolean dowh;
+public boolean pesogeral;
 public janeladiscret controlador;
 private int var1,var2,e1,e2,nv1,nv2,nvar,resultado,totalciclos,progresso;
 private boolean continua;
@@ -49,9 +49,10 @@ public void Setvariables(NodeList vari){
 	variables.addAll(vari);
 	//variables=vari;
 	}
-public dalgo(){
+public dalgo2(){
 	this.dowh=true;
 	this.dochi2=true;
+	this.pesogeral=true;
 
 }
 
@@ -88,21 +89,21 @@ public int lines(byte[][] tempmatrix){
 	 int i;
 	 i=tempmatrix.length;
 	 return i;
- }
+}
 public int columns(byte[][] tempmatrix){
 	 int i;
 	 i=tempmatrix[0].length;
 	 return i;
- }
- /** Contagem condicional: se uma linha tem o estado e1 ou e2 de var 1 e
-  * evar2 de var2 então uma unidade é acrescida ao somatório.
-  * @param var1
-  * @param e1
-  * @param e2
-  * @param var2
-  * @param evar2
-  * @return
-  */
+}
+/** Contagem condicional: se uma linha tem o estado e1 ou e2 de var 1 e
+ * evar2 de var2 então uma unidade é acrescida ao somatório.
+ * @param var1
+ * @param e1
+ * @param e2
+ * @param var2
+ * @param evar2
+ * @return
+ */
 public int countc(int lvar1,int le1,int le2, int lvar2, int levar2){
 		int i,counter;
 		counter=0;
@@ -116,21 +117,25 @@ public int countc(int lvar1,int le1,int le2, int lvar2, int levar2){
 		
 		return counter;
 	}
+public void setLimitePerda(float lim){
+	this.limiteperda=lim;
+}
+
 /**
- * 
- * @param number
- * @return zero se o numero nao é impar, 1 se for.
- */
+* 
+* @param number
+* @return zero se o numero nao é impar, 1 se for.
+*/
 public int odd(int number)
 {int isodd=0;
 if (Math.round(number/2+0.00001)==number/2)  isodd=1;
 return isodd;}
 /**
- * Transforma o valor do qui-quadrado em probabilidade de rejeição de H0
- * @param chi2 -valor do qui-quadrado
- * @param df - graus de liberdade
- * @return valor do p
- */
+* Transforma o valor do qui-quadrado em probabilidade de rejeição de H0
+* @param chi2 -valor do qui-quadrado
+* @param df - graus de liberdade
+* @return valor do p
+*/
 public double c2prob(double chi2,int df){
 	double pval=0;
 
@@ -203,14 +208,14 @@ public void contaciclos(){
 	totalciclos=0;
 	nvar=variables.size();
 	var2=0;
-for(var1=0;var1<nvar-1;var1++){
+for(var1=0;var1<nvar;var1++){
 	nv1=variables.get(var1).getStatesSize();
- for(e1=0;e1<nv1-1;e1++){
-	var2=var1+1;
-	nv2=variables.get(var2).getStatesSize();
-	totalciclos++;
- }
- 
+for(e1=0;e1<nv1-1;e1++){
+	for(var2=0;var2<nvar;var2++){
+		if(var2!=var1)totalciclos++;
+	}
+}
+
 }
 	
 }
@@ -218,106 +223,115 @@ public int doonce(){
 	progresso=0;
 nvar=variables.size();
 	var2=0;
-for(var1=0;var1<nvar-1;var1++){
+	for(int i=0,k=0;i<nvar;i++){
+		variables.get(i).atualizatamanhoinfoestados();
+		k=variables.get(i).getStatesSize();
+		for(int j=0;j<k;j++){
+			k=k+0;
+		variables.get(i).infoestados[j]=0;}
+	}
+	
+for(var1=0;var1<nvar;var1++){
 	nv1=variables.get(var1).getStatesSize();
 
- for(e1=0;e1<nv1-1;e1++){
-	 e2=e1+1;
-	 continua=true;
-	var2=0;
-	if(var2==var1)var2++;
-	nv2=variables.get(var2).getStatesSize();
+for(e1=0;e1<nv1-1;e1++){
+	e2=e1+1;
+	continua=true;
+for(var2=0;var2<nvar;var2++){
+
+	if(var2==var1){
+		var2++;
+		progresso++;
+	}
 	progresso++;
-	while ((var2<nvar) && (continua)){
-		//para cada combinação de duas variáveis
-		//fazer: para cada tentativa de aglomerar e1,e2
-		//verificar se há perda de informação significante
-		if(var2==var1)var2++;
+if(var2<nvar && continua){
+		//if(var2==var1)var2++;
+		
+		nv2=variables.get(var2).getStatesSize();
+		
+		//if(var2==var1)var2++;
 		matrix1 = new int[2][nv2];
 		matrix1=getcrosstable2(var1,e1,e2,var2,nv2);
 		float score1,score2,score12,perda;
-		//calcula escore de e1,v2
 		score1=score(var1,e1,e1,var2,nv2);
-		//calcula escore de e2,v2
 		score2=score(var1,e2,e2,var2,nv2);
-		//calcula escore de e12,v2
 		score12=score(var1,e1,e2,var2,nv2);
-		//calcula perda pela concatenação
-		if(dowh)perda=(score1+score2-score12)/total;
-		else perda=(score1/total+score2/total-score12/total);
+		
+		if(dowh){
+			if(!pesogeral){
+				perda=(score1+score2-score12)/new Float(total*(total-1));
+				}
+			else{
+				perda=(score1+score2-score12)/new Float(total*mlines*(total-1));
+			
+			}
+		}
+		else perda=score1/(new Float(total*(total-1)))+score2/(new Float(total*(total-1)))-score12/(new Float(total*(total-1)));
 		if(perda>limiteperda){
 			continua=false;
+			if(variables.get(var1).infoestados[e1]==0)
+			variables.get(var1).infoestados[e1]=1;
 		}
 		else {
-		
-		//verifica se houve perda significante (p<alfa) de informação
-		//calcula qui² das tabelas: se p < alfa continua=falso
-		if (dochi2){	
-		matrix1 = new int[2][nv2];
-		matrix1=this.getcrosstable2(var1,e1,e2,var2,nv2);
-		c2();
-		double c1=c2p;
-		matrix1=getcrosstable2(var1,e2,e1,var2,nv2);
-		c2();
-		double c2=c2p;
-		if (c2<=alfa || c1<=alfa){
-		continua=false;
-		}
-		}//dochi2
-			
+					
 		}//else perda
 				
 		controlador.mensagem(String.valueOf(progresso)+"/"+String.valueOf(totalciclos)+" Concatenadas: "+String.valueOf(this.resultado));
 		controlador.repaint();
-		var2++;
 	}//while v2
-    
-	//todas as variáveis já foram consideradas por var1
-	if (continua){
-		concatena(var1,(byte)e1);
-		resultado=resultado+1;
-		}
-	//se continua entao concatena e1,e2
-	  // e resultado=verdadeiro
-	nv1=variables.get(var1).getStatesSize();
- }//todos os estados de var1 já foram aglomerados, quando possivel
+	
+}
+}//todos os estados de var1 já foram aglomerados, quando possivel
 }//for var1
- return resultado;
+concatena2();
+System.out.println("Limite de perda = "+limiteperda);
+return resultado;
 }//doonce
-
+public void concatena2(){
+	nvar=variables.size();int j;int nest;
+	
+	for(int i=0;i<nvar;i++){
+		j=0;
+		nest=variables.get(i).getStatesSize()-2;
+		while(j<nest){
+		if(variables.get(i).infoestados[j]==0){
+			concatena(i,(byte)j);
+			nest--;
+			}
+			j++;
+		}
+		
+	}
+		
+	
+}
 public void concatena(int var, byte estado){
 int i;
 String novonome;
+if(estado<variables.get(var).getStatesSize()-1){
 novonome=variables.get(var).getStateAt(estado)+"_"+variables.get(var).getStateAt(estado+1);
 //variables.get(var).setStateAt(novonome,estado);
 variables.setnodestateat(var,novonome,estado);
 System.out.println(variables.get(var).getName()+": "+novonome);
+
 for(i=0;i<mlines;i++){
-	if(this.originalmatrix[i][var]==(estado+1))this.originalmatrix[i][var]=estado;
+	if(originalmatrix[i][var]>(estado))originalmatrix[i][var]--;
 }
-try{
-	if(variables.get(var).getStatesSize()>2){
+//	if(variables.get(var).getStatesSize()>2){
 		variables.removestateat(var,estado+1);
-		//((TVariavel)variables.get(var)).removestate(estado);
-	}
-	else{
-	//	variables.remove(var);
-	}
-}
-catch (IndexOutOfBoundsException ee){
-	System.out.println(ee.toString());
+	//((TVariavel)variables.get(var)).removestate(estado);
 		
 }
 
 }
 public void start(){
-	int resp=1; 
+	//int resp=1; 
 //	while(resp>0){
 	contaciclos();
 		final SwingWorker worker = new SwingWorker() {
 	        public Object construct() {
-	        	int resp2;
-	            resp2=doonce();
+	        	//int resp2;
+	            doonce();
 	            return 0;
 	        }
 	        public void finished(){

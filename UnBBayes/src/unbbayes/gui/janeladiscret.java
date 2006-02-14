@@ -13,9 +13,8 @@ import javax.swing.JFrame;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.io.RandomAccessFile;
 import java.util.ResourceBundle;
+import unbbayes.datamining.gui.preprocessor.dalgo2;
 
 import javax.swing.JLabel;
 import javax.swing.JComboBox;
@@ -24,19 +23,19 @@ import javax.swing.JButton;
 import unbbayes.aprendizagem.ConstructionController;
 import unbbayes.controller.FileController;
 import unbbayes.util.NodeList;
-import unbbayes.controller.MainController;
 import javax.swing.JCheckBox;
 import java.awt.GridLayout;
 import java.awt.Dimension;
 import javax.swing.JProgressBar;
 
+
 public class janeladiscret extends JFrame {
 
 	private JPanel jContentPane = null;
+	public static final long serialVersionUID=1;
 	private FileController fileController;
-	private MainController controller;
 	public byte[][] matriz;
-	public dalgo discretizador;
+	public dalgo2 discretizador;
 	public NodeList variaveis;
 	public int[] vetor;
 	int linhas;
@@ -164,7 +163,7 @@ public class janeladiscret extends JFrame {
 	                    discretlist.setEnabled(true);
 	                    int i;
 						int j=variaveis.size()-1;
-						for(i=0;i<j;i++){
+						for(i=0;i<j+1;i++){
 							//if variaveis.get(i).getType()
 						listavar.addItem(makeObj(variaveis.get(i).getDescription()));	
 							
@@ -200,16 +199,13 @@ public class janeladiscret extends JFrame {
 			jButton.setText("Discretizar");
 			jButton.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
-					
-					dalgo discretizador= new dalgo();
+					discretizador=new dalgo2();
 					discretizador.Setmatrix(matriz);
 					discretizador.Setvariables(variaveis);
-					discretizador.alfa=5/100;
-					discretizador.dochi2=qui2.isSelected();;
+					discretizador.pesogeral=qui2.isSelected();;
 					discretizador.dowh=peso.isSelected();
 					discretizador.SetController(geti());
-					discretizador.limiteperda=jProgressBar.getValue()/100;
-					
+					discretizador.setLimitePerda(new Float(jProgressBar.getValue())/(new Float(100)));
 					discretizador.setPriority(Thread.MIN_PRIORITY);
 					discretizador.start();
 					
@@ -234,38 +230,38 @@ public class janeladiscret extends JFrame {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
 					JFileChooser chooser = new JFileChooser(fileController.getCurrentDirectory());
 					chooser.setMultiSelectionEnabled(false);
-					
+					//int tt=discretizador.variables.size();
+					//matriz=discretizador.originalmatrix;
 					int option = chooser.showSaveDialog(janeladiscret.this);
-					File file;
 					if (option == JFileChooser.APPROVE_OPTION) {
 					try{
-						file= chooser.getSelectedFile();						
-						//RandomAccessFile file2 = new RandomAccessFile(file, "rw" );
-						PrintWriter file2 = new PrintWriter(new FileWriter(file),true);
+						BufferedWriter arq = new BufferedWriter(new FileWriter(chooser.getSelectedFile().getPath()));
 						String linha="";
-						int nv=variaveis.size();
+						int nv=discretizador.variables.size();
 						int i,j;
-						
 						for(i=0;i<nv-1;i++){
-						linha=linha+variaveis.get(i).getName()+" ";
-						}
-						linha=linha+variaveis.get(nv-1).getName();
-						file2.write(linha);
-						file2.println();
+						linha=linha+discretizador.variables.get(i).getName()+" ";}
+						linha=linha+discretizador.variables.get(nv-1).getName();
+						arq.write(linha);
+						arq.newLine();
 						
-						//linhas=discretizador.mlines;
-						for (i=0;i<linhas-2;i++){
+						for (i=0;i<linhas-1;i++){
 							linha="";
-							for(j=0;j<nv-1;j++){
-								linha=linha+variaveis.get(j).getStateAt((matriz[i][j]))+" ";
+							for(j=0;j<nv;j++){
+								linha=linha+discretizador.variables.get(j).getStateAt((discretizador.originalmatrix[i][j]))+" ";
 							}
-							//linha=linha+variaveis.get(j).getStateAt(discretizador.originalmatrix[linhas-1][nv-1]);
-							file2.write(linha);
-							file2.println();
-							
+							arq.write(linha);
+							arq.newLine();
 							}
+						linha="";
+						for(j=0;j<nv-1;j++){
+							linha=linha+discretizador.variables.get(j).getStateAt((discretizador.originalmatrix[linhas-1][j]))+" ";
+						}
+						linha=linha+discretizador.variables.get(nv-1).getStateAt((discretizador.originalmatrix[linhas-1][nv-1]));
 						
-						file2.close();
+						arq.write(linha);
+						arq.newLine();
+						arq.close();
 						}
 					catch(Exception ee){
 						System.out.println("erro "+ee.getMessage());
@@ -371,7 +367,7 @@ public class janeladiscret extends JFrame {
 	private JCheckBox getQui2() {
 		if (qui2 == null) {
 			qui2 = new JCheckBox();
-			qui2.setText("Exigir X²");
+			qui2.setText("Peso Geral");
 		}
 		return qui2;
 	}

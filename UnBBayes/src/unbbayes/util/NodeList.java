@@ -23,6 +23,7 @@ package unbbayes.util;
 
 import java.util.ResourceBundle;
 
+import unbbayes.aprendizagem.TVariavel;
 import unbbayes.prs.Node;
 
 
@@ -145,6 +146,35 @@ public final class NodeList implements java.io.Serializable {
         data[size++] = newElement;
         return true;
     }
+    
+    public final void adicionarN(Node novono) {
+        ensureCapacity(size + 1);
+        //data[size++] = novono;
+        size++;
+        int flag=0;
+        for(int i=size;i>-1;i--){
+        	if(Double.parseDouble(data[i].getName())>Double.parseDouble(novono.getName()))
+        	{data[i+1]=data[i];
+        		flag=0;
+        	}
+        	if((Double.parseDouble(data[i].getName())<Double.parseDouble(novono.getName()))&&(flag==0))
+        		{
+        		flag=1;
+        		((TVariavel)novono).setDescription(novono.getName());
+				 ((TVariavel)novono).setParticipa(true);
+        		data[i+1]=novono;
+        		}
+        }
+        	
+        }
+    public final void adicionarC(Node novono) {
+            ensureCapacity(size + 1);
+            ((TVariavel)novono).setDescription(novono.getName());
+			 ((TVariavel)novono).setParticipa(true);
+           data[size++] = novono;
+    }
+    
+    
 
     /**
      * Inserts the specified element at the specified position in this
