@@ -436,8 +436,6 @@ public class InvokerMain extends JFrame
         JMenuItem preprocessorItem = new JMenuItem(resource.getString("instancesPreprocessor")/*, icon*/ );
         JMenuItem id3Item = new JMenuItem(resource.getString("id3Classifier")/*, icon*/ );
         JMenuItem naiveBayesItem = new JMenuItem(resource.getString("naiveBayesClassifier")/*, icon*/ );
-        JMenuItem tanItem = new JMenuItem(resource.getString("tanClassifier")/*, icon*/ );
-        JMenuItem banItem = new JMenuItem(resource.getString("banClassifier")/*, icon*/ );
         
         JMenuItem evaluationItem = new JMenuItem(resource.getString("evaluation")/*, icon*/ );
         JMenuItem optionsItem = new JMenuItem(resource.getString("preferences"),opcaoglobalIcon);
@@ -523,10 +521,7 @@ public class InvokerMain extends JFrame
         programMenu.add(id3Item);
 		programMenu.add(c45Item);//
         programMenu.add(naiveBayesItem);
-		programMenu.add(tanItem);
-		programMenu.add(banItem);
-        //programMenu.add(bayesianItem);//
-        programMenu.add(cnmItem);
+		programMenu.add(cnmItem);
         programMenu.add(neuralNetworkItem);//
 		programMenu.add(metaphorItem);//
         programMenu.add(evaluationItem);
