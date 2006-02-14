@@ -30,7 +30,7 @@ import unbbayes.gui.TJanelaEdicao;
 
 public class ProbabilisticController extends LearningToolkit{
 
-    public ProbabilisticController(NodeList variables,byte[][] matrix,
+    public ProbabilisticController(NodeList variables,int[][] matrix,
                        int[] vector,long caseNumber, MainController controller, boolean compacted){
         this.compacted = compacted;
         this.dataBase = matrix;

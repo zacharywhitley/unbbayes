@@ -63,7 +63,7 @@ public class ConstructionController {
 	public NodeList variablesVector2;
 	private NodeList variables;
 	private int[] vector;
-	private byte[][] matrix;
+	private int[][] matrix;
 	private long caseNumber; 
 	private boolean compacted;	 
 	public boolean[] VariavelNumerica;
@@ -97,7 +97,7 @@ public class ConstructionController {
 		try{
 		  InputStreamReader isr = new InputStreamReader(new FileInputStream(file));
 		  BufferedReader  br    = new BufferedReader(isr);
-		  int rows = getRowCount(br)-1;           
+		  int rows = getRowCount(br);           
 		  isr = new InputStreamReader(new FileInputStream(file));
 		  br  = new BufferedReader(isr);
 		  StreamTokenizer cols = new StreamTokenizer(br);
@@ -106,7 +106,7 @@ public class ConstructionController {
 		  variables = new NodeList();                      
 		  makeVariablesVector(cols);		                 
 		  filterVariablesVector(rows);
-		  matrix = new byte[rows][variables.size()];
+		  matrix = new int[rows][variables.size()];
 	  	  IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));
 	  	  //ordenatevector();
 		  makeMatrix(cols, rows);
@@ -134,7 +134,7 @@ public class ConstructionController {
            new ChooseVariablesWindow(variablesVector);
            new CompactFileWindow(variablesVector);               
            filterVariablesVector(rows);
-           matrix = new byte[rows][variables.size()];      
+           matrix = new int[rows][variables.size()];      
            IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));                
            makeMatrix(cols, rows);          
            IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -186,7 +186,7 @@ public class ConstructionController {
            new ChooseVariablesWindow(variablesVector);
            new CompactFileWindow(variablesVector);               
            filterVariablesVector(rows);
-           matrix = new byte[rows][variables.size()]; 
+           matrix = new int[rows][variables.size()]; 
            makeMatrix(cols, rows);
            		  
            br.close();          
@@ -249,7 +249,7 @@ public class ConstructionController {
            new ChooseVariablesWindow(variablesVector);
            new CompactFileWindow(variablesVector);               
            filterVariablesVector(rows);
-           matrix = new byte[rows][variables.size()]; 
+           matrix = new int[rows][variables.size()]; 
            makeMatrix(cols, rows);
            		  
            br.close();          
@@ -350,7 +350,7 @@ public class ConstructionController {
                 rows++;;
 		    }
         } catch(Exception e){}
-        return rows;           		
+        return rows-1;           		
 	}
 	
 	/**
@@ -404,15 +404,18 @@ public class ConstructionController {
             while (cols.ttype != StreamTokenizer.TT_EOF && caseNumber < rows+1){
                 while(cols.ttype != StreamTokenizer.TT_EOL && position < variablesVector.size() && caseNumber < rows+1){
                     aux = (TVariavel)variablesVector.get(position);
-                    aux.setNumerico(false);
-                	if (aux.getRep()){
+                     if (aux.getRep()){
                     	vector[(int)caseNumber] = (int)cols.nval;
                 	} else if(aux.getParticipa()){
+                		if(caseNumber==rows){
+                	//		System.out.println("pp");
+                		}
                     	if(cols.sval != null){
                     		
                          	stateName = cols.sval;
                          	if(! aux.existeEstado(stateName)){
                          		if(!stateName.equals("?")){
+                         		aux.setNumerico(false);
                          	
                          			//variablesVector.get(position).addEstado(stateName);
                          			aux.adicionaEstado(stateName);                              	
@@ -438,7 +441,7 @@ public class ConstructionController {
                          	
                     	}
                     	if(! missing){
-                        	matrix[(int)caseNumber-1][aux.getPos()] = (byte)aux.getEstadoPosicao(stateName);
+                        	matrix[(int)caseNumber-1][aux.getPos()] = aux.getEstadoPosicao(stateName);
                         	
                     	} else{
                     		matrix[(int)caseNumber-1][aux.getPos()] = -1;
@@ -449,6 +452,9 @@ public class ConstructionController {
                 	position++;
             	}
             	caseNumber++;
+            	if(caseNumber==rows-3){
+        			System.out.println("pp");
+        		}
             	while (cols.ttype != StreamTokenizer.TT_EOL && caseNumber < rows){
                 	cols.nextToken();
             	}
@@ -460,7 +466,8 @@ public class ConstructionController {
         	JOptionPane.showMessageDialog(null,msg,"ERROR",JOptionPane.ERROR_MESSAGE);                    	        
         };        	
         /*Tirar isso. Só pra debug*/
-                
+            System.out.println(String.valueOf(caseNumber));  
+            caseNumber--;
 	}
 	
 	public boolean[] checavariaveis(NodeList temp){
@@ -482,7 +489,7 @@ public class ConstructionController {
 		return result;
 	}
 
-    public byte[][] getMatrix(){
+    public int[][] getMatrix(){
     	return matrix;    	
     }
     

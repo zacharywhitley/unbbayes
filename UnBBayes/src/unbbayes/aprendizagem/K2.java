@@ -37,7 +37,7 @@ public class K2 extends K2Toolkit{
     private NodeList variablesVector;  
     
     
-    public K2(NodeList variables, byte[][] dataBase, int vector[], long 
+    public K2(NodeList variables, int[][] dataBase, int vector[], long 
             caseNumber, String metric, String param, boolean compacted){    	
     	Object[]  zMax;
     	TVariavel z;

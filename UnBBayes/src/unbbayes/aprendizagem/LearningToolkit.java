@@ -29,7 +29,7 @@ import unbbayes.util.SetToolkit;
 public abstract class LearningToolkit{
 
 	    protected long caseNumber;
-	    protected byte[][] dataBase;
+	    protected int[][] dataBase;
 	    protected int[] vector;
 	    protected boolean compacted;
 
@@ -77,12 +77,12 @@ public abstract class LearningToolkit{
         }else{
             ArrayNijk = new int[variable.getEstadoTamanho()][getQ(parents)];
         }
-        byte positionVector[] = new byte[parentsLength];
-        byte maxVector[]      = new byte[parentsLength];
+        int positionVector[] = new int[parentsLength];
+        int maxVector[]      = new int[parentsLength];
         for (int i = 0; i < parentsLength; i++ ){
             aux = (TVariavel)parents.get(i);
-            positionVector[i] = (byte)aux.getPos();
-            maxVector[i] = (byte)aux.getEstadoTamanho();
+            positionVector[i] = aux.getPos();
+            maxVector[i] = aux.getEstadoTamanho();
 
         }
         int positionLength = positionVector.length;
@@ -108,7 +108,11 @@ public abstract class LearningToolkit{
                     }
             }else{
                   if(! compacted){
-                       ArrayNijk[dataBase[i][pos]][index]++;
+                	  try{
+                       ArrayNijk[dataBase[i][pos]][index]++;}
+                	  catch (java.lang.ArrayIndexOutOfBoundsException ee){
+                		  System.out.println("");
+                	  }
                   }else{
                        ArrayNijk[dataBase[i][pos]][index] += vector[i];
                   }

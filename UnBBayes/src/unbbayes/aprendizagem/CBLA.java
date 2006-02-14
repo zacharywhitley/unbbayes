@@ -30,7 +30,7 @@ public class CBLA extends CBLToolkit{
 	
 	
 	
-	public CBLA(NodeList variables, byte[][] dataBase, int[] vector,
+	public CBLA(NodeList variables, int[][] dataBase, int[] vector,
 	             long caseNumber, String param, boolean compacted){
 	    this.variablesVector = variables;
         this.separators = new ArrayList();	    

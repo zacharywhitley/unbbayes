@@ -52,7 +52,7 @@ public class B extends BToolkit{
     * @see Tnij
     * @see TAprendizagemTollKit
     */
-  public B(NodeList variables, byte[][] dataBase, int[] vector, long caseNumber,
+  public B(NodeList variables, int[][] dataBase, int[] vector, long caseNumber,
                 String metric, String param, boolean compacted){  
     TVariavel variable;
     NodeList parentsAux;

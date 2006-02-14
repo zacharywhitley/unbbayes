@@ -15,7 +15,7 @@ import unbbayes.gui.janeladiscret;
 */
 public class dalgo2 extends Thread {
 public NodeList variables;
-public byte[][] originalmatrix;
+public int[][] originalmatrix;
 public int[][] matrix1;
 public int mlines;
 public int mcolumns;
@@ -36,11 +36,11 @@ public void SetController(janeladiscret wc){
 	this.controlador=wc;
 }
 
-public void Setmatrix(byte[][] tempmatrix){
+public void Setmatrix(int[][] tempmatrix){
 	 mlines=lines(tempmatrix);
 	 mcolumns=columns(tempmatrix);
 	 
-	originalmatrix = new byte[mlines][mcolumns];
+	originalmatrix = new int[mlines][mcolumns];
 	originalmatrix=tempmatrix;
 	 	  }
 public void Setvariables(NodeList vari){
@@ -85,12 +85,12 @@ public int[][] getcrosstable2(int var1, int ei, int e12, int var2, int estadosv2
 		
 	return resultado;
 }
-public int lines(byte[][] tempmatrix){
+public int lines(int[][] tempmatrix){
 	 int i;
 	 i=tempmatrix.length;
 	 return i;
 }
-public int columns(byte[][] tempmatrix){
+public int columns(int[][] tempmatrix){
 	 int i;
 	 i=tempmatrix[0].length;
 	 return i;
@@ -259,14 +259,15 @@ if(var2<nvar && continua){
 		
 		if(dowh){
 			if(!pesogeral){
-				perda=(score1+score2-score12)/new Float(total*(total-1));
+				perda=(score1+score2-score12)/new Float(total);
+				
 				}
 			else{
-				perda=(score1+score2-score12)/new Float(total*mlines*(total-1));
+				perda=(score1+score2-score12)/new Float(total);
 			
 			}
 		}
-		else perda=score1/(new Float(total*(total-1)))+score2/(new Float(total*(total-1)))-score12/(new Float(total*(total-1)));
+		else perda=score1/(new Float(total))+score2/(new Float(total))-score12/(new Float(total));
 		if(perda>limiteperda){
 			continua=false;
 			if(variables.get(var1).infoestados[e1]==0)
@@ -285,6 +286,11 @@ if(var2<nvar && continua){
 }//for var1
 concatena2();
 System.out.println("Limite de perda = "+limiteperda);
+for(int i=0;i<nvar;i++){
+	for(int j=0;j<variables.get(i).getStatesSize();j++){
+		System.out.println(variables.get(i).getName()+": "+variables.get(i).getStateAt(j));
+	}
+}
 return resultado;
 }//doonce
 public void concatena2(){
@@ -292,7 +298,7 @@ public void concatena2(){
 	
 	for(int i=0;i<nvar;i++){
 		j=0;
-		nest=variables.get(i).getStatesSize()-2;
+		nest=variables.get(i).getStatesSize()-1;
 		while(j<nest){
 		if(variables.get(i).infoestados[j]==0){
 			concatena(i,(byte)j);
@@ -309,21 +315,49 @@ public void concatena(int var, byte estado){
 int i;
 String novonome;
 if(estado<variables.get(var).getStatesSize()-1){
-novonome=variables.get(var).getStateAt(estado)+"_"+variables.get(var).getStateAt(estado+1);
-//variables.get(var).setStateAt(novonome,estado);
+novonome=parte(variables.get(var).getStateAt(estado),0)+"_"+parte(variables.get(var).getStateAt(estado+1),1);
 variables.setnodestateat(var,novonome,estado);
 System.out.println(variables.get(var).getName()+": "+novonome);
 
 for(i=0;i<mlines;i++){
 	if(originalmatrix[i][var]>(estado))originalmatrix[i][var]--;
 }
-//	if(variables.get(var).getStatesSize()>2){
-		variables.removestateat(var,estado+1);
-	//((TVariavel)variables.get(var)).removestate(estado);
-		
+		variables.removestateat(var,estado+1);		
 }
 
 }
+
+public String parte(String nome,int p){
+	int tam=nome.length();
+	int enc=0,pos=0;
+	String resultado="";
+	if(p==0){
+		for(int i=0;i<tam;i++){
+			if((enc==0)&&(nome.charAt(i)=='_')){
+				enc=1;
+				pos=i;
+			}
+		}
+		if(enc==1){
+		for(int i=0;i<pos;i++)resultado=resultado+nome.charAt(i);}
+		else {resultado=nome;}
+		
+	}
+	else{
+		for(int i=tam-1;i>-1;i--){
+			if((enc==0)&&(nome.charAt(i)=='_')){
+				enc=1;
+				pos=i;
+			}
+		}
+		if(enc==1){
+		for(int i=pos+1;i<tam;i++)resultado=resultado+nome.charAt(i);}
+		else resultado=nome;
+		
+	}
+	return resultado;
+}
+
 public void start(){
 	//int resp=1; 
 //	while(resp>0){
