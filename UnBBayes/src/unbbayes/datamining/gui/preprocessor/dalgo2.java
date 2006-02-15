@@ -7,6 +7,7 @@ package unbbayes.datamining.gui.preprocessor;
 
 import unbbayes.util.NodeList;
 import unbbayes.util.SwingWorker;
+import unbbayes.aprendizagem.TVariavel;
 import unbbayes.gui.janeladiscret;
 /**
 * Algoritimo para discretização múltipla
@@ -286,10 +287,19 @@ if(var2<nvar && continua){
 }//for var1
 concatena2();
 System.out.println("Limite de perda = "+limiteperda);
+String bbuf="";
+TVariavel auxx;
 for(int i=0;i<nvar;i++){
+	auxx=(TVariavel)variables.get(i);
+	if(!auxx.getRep()){
 	for(int j=0;j<variables.get(i).getStatesSize();j++){
+		bbuf=variables.get(i).getStateAt(j);
+		if((bbuf.charAt(0)!='D')||(bbuf.charAt(1)!='_')){
+			bbuf="D_"+bbuf;
+		variables.get(i).setStateAt(bbuf,j);
+		}
 		System.out.println(variables.get(i).getName()+": "+variables.get(i).getStateAt(j));
-	}
+	}}
 }
 return resultado;
 }//doonce
