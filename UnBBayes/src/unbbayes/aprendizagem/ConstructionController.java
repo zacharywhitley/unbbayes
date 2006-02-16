@@ -371,7 +371,7 @@ public class ConstructionController {
                      variables.add(aux);
                      nCols++;
                 } else{
-                     vector = new int[rows];
+                     vector = new int[rows+1];
                      compacted = true;
                 }
             }

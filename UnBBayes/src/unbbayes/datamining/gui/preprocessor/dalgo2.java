@@ -294,8 +294,8 @@ for(int i=0;i<nvar;i++){
 	if(!auxx.getRep()){
 	for(int j=0;j<variables.get(i).getStatesSize();j++){
 		bbuf=variables.get(i).getStateAt(j);
-		if((bbuf.charAt(0)!='D')||(bbuf.charAt(1)!='_')){
-			bbuf="D_"+bbuf;
+		if((bbuf.charAt(0)!='D')||(bbuf.charAt(1)!='e')){
+			bbuf="De"+bbuf;
 		variables.get(i).setStateAt(bbuf,j);
 		}
 		System.out.println(variables.get(i).getName()+": "+variables.get(i).getStateAt(j));
