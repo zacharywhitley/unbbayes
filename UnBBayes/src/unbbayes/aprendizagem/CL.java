@@ -22,10 +22,10 @@ public class CL {
     protected int[] vector;
     protected boolean compacted;
     protected double [][] matrizinfo;
-    protected int[] arvore,ramo;
-    protected int[] enderecos;
-    protected int[] melhorarvore;
-    protected double melhorinfo;
+    public int[] arvore,ramo;
+    public int[] enderecos;
+    public int[] melhorarvore;
+    public double melhorinfo;
     protected int notestado,posicao;
     protected int nvar;
     protected boolean houveciclo;
@@ -105,8 +105,11 @@ public class CL {
 	 */	
 	public void calculainformacoes() {
 	for(int i=0;i<nvar;i++){
-	for(int j=i+1;j<nvar;j++){
-		if (i!=j){matrizinfo[i][j]=mutualInformation((TVariavel)variaveis.get(i),(TVariavel)variaveis.get(j));}}}
+	for(int j=0;j<nvar;j++){
+		if (i!=j){matrizinfo[i][j]=mutualInformation((TVariavel)variaveis.get(i),(TVariavel)variaveis.get(j));
+	//	System.out.println(variaveis.get(i).getName()+" e "+variaveis.get(j).getName()+" = "+String.valueOf(matrizinfo[i][j]));
+		}}
+	}
 	}
 	/*
 	 * Seleciona melhor variavel independente para raiz da arvore
@@ -117,6 +120,7 @@ public class CL {
 		for(int i=0;i<nvar;i++){
 			if(i!=classe){
 				resultado=matrizinfo[classe][i];
+				//System.out.println(variaveis.get(i).getName()+" = "+String.valueOf(matrizinfo[classe][i]));
 				if(resultado>maiorResultadoAtual){
 					maiorResultadoAtual=resultado;
 					posicao=i;					
@@ -132,20 +136,23 @@ public class CL {
 		else if((arvore[i]!=nvar-2)&&(k==0)){k++;arvore[i]++;}		
 	}
 	valida_arvore();
-	//Numero maximo=[nvar-2,nvar-2,nvar-2,nvar-2...]. Ele+1=[0,0,0..]
-	//if(l==nvar-3)fimbusca=true;
-	return (l==nvar-3);}
+	
+	return (l!=nvar-3);}
 	/*
 	 * Valida ou não uma árvore
 	 */
 	protected boolean valida_arvore(){
 		int i;
-		houveciclo=false;
+		houveciclo=true;
 		for(i=0;i<nvar-3;i++){
 			posicao=0;
 			ramo[0]=i;
-			houveciclo=houveciclo||valida_ramo(i);
+			houveciclo=houveciclo&&valida_ramo(i);
 			}
+		if(houveciclo){
+		//	for(int d=0;d<nvar-2;d++)System.out.print(String.valueOf(arvore[d])+" ");
+		//	System.out.println();
+		}
 		return !houveciclo;
 		}
 	/*
@@ -154,11 +161,12 @@ public class CL {
 	protected double infoatual(){
 		double resultado=0;
 		int j=0;
-		for(int i=0;i<nvar;i++){
-		 if((i!=classe)&&(i!=raiz))
+		//for(int i=0;i<nvar;i++){
+		for(int i=0;i<nvar-3;i++){
+		// if((i!=classe)&&(i!=raiz))
 			 try{
-			resultado=resultado+matrizinfo[enderecos[j]][enderecos[arvore[j]]];
-		 j++;
+			resultado=resultado+matrizinfo[enderecos[arvore[i]]][enderecos[i]];
+		 //j++;
 			 }
 		 catch (java.lang.ArrayIndexOutOfBoundsException ee){
 			 j--;
@@ -167,21 +175,29 @@ public class CL {
 		}
 		return resultado;
 	}
+	
+	
 	/*
 	 * Para verificar ciclos nos ramos
 	 */
 	protected boolean valida_ramo(int no){
 		boolean fim=false;
 		posicao++;
+		boolean naoteveciclo=true;
+		try{
 		ramo[posicao]=arvore[no];
 		if(arvore[no]!=nvar-2){
-		for(int i=0;i<posicao-1;i++){
+		for(int i=0;i<posicao;i++){
 			for(int j=i+1;j<posicao;j++){
-				houveciclo=houveciclo||(ramo[i]==ramo[j]);}}
+				naoteveciclo=naoteveciclo&&(!(ramo[i]==ramo[j]));}}
 		}
 		else fim=true;
-		if((!fim)&&(!houveciclo))valida_ramo(arvore[no]);
-		return houveciclo;}
+		if((!fim)&&(naoteveciclo))valida_ramo(arvore[no]);
+		}
+		catch (Exception ee){
+			System.out.println("");
+		}
+		return naoteveciclo;}
 
 	private void desenharede(){
 		for(int i=0;i<nvar;i++){
@@ -193,19 +209,25 @@ public class CL {
 		for(int i=0;i<nvar;i++){
 		if((i!=classe)&&(i!=raiz)){
 			aux++;
-		variaveis.AddParentTo(enderecos[aux],variaveis.get(enderecos[arvore[aux]]));
-		variaveis.AddChildTo(enderecos[arvore[aux]],variaveis.get(enderecos[aux]));}
+		variaveis.AddParentTo(enderecos[aux],variaveis.get(enderecos[melhorarvore[aux]]));
+		variaveis.AddChildTo(enderecos[melhorarvore[aux]],variaveis.get(enderecos[aux]));}
 		}
 	}
 	private void detecta_arvore(){
+		melhorinfo=0;
 		for(int i=0;i<nvar-2;i++)arvore[i]=0;
 		double ii;
 		while (proxima()){
 			ii=infoatual();
 			if(ii>melhorinfo){
 				melhorinfo=ii;
-				melhorarvore=arvore;
+				//this.melhorarvore=arvore;
+				for(int d=0;d<nvar-2;d++)this.melhorarvore[d]=arvore[d];
+				//System.out.println(String.valueOf(melhorinfo)+":");
+				//for(int d=0;d<nvar-3;d++)System.out.println(variaveis.get(enderecos[d])+" pai = "+variaveis.get(enderecos[melhorarvore[d]])+ " ");				
 			}}
+		
+		ii=infoatual();
 	}
 	private void prepara_memoria(){
 		int h=0;
