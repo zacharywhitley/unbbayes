@@ -7,6 +7,7 @@ import java.util.*;
 
 public class ParametricLearning
 {
+		
   public ParametricLearning(InstanceSet set)
   {
     int i,j,k;
@@ -23,6 +24,7 @@ public class ParametricLearning
       ArrayList<String[]> temp = new ArrayList<String[]>();
       temp.add(attrib.getAttributeValues());
       dx[i] = temp;
+      
     }
 
     // inicializar freq e dataTemp com as amostras condensadas
@@ -73,7 +75,7 @@ public class ParametricLearning
 
 //----------------------------------------------------------------------------//
 
-  public int [] multiplies (int [] pai)
+   public int [] multiplies (int [] pai)
   {
     int ip;                     //índice do pai da interação atual
     int np = pai.length;        //número de elementos do pai
@@ -232,6 +234,7 @@ public ProbabilisticNetwork getProbabilisticNetwork(ArrayList pa)
 
     return net;
 }
+
 //----------------------------------------------------------------------------//
 
   /** variáveis do problema */
@@ -250,5 +253,6 @@ public ProbabilisticNetwork getProbabilisticNetwork(ArrayList pa)
   /** frequencias das instâncias de d
    * freq[i]: frequência da linha(ou instancia) i */
   private int[] freq;
-
+   
+  
 }

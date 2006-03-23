@@ -1,5 +1,7 @@
 package unbbayes.aprendizagem;
 
+import java.util.ArrayList;
+
 import unbbayes.aprendizagem.ConstructionController;
 import unbbayes.util.NodeList;
 
@@ -10,7 +12,7 @@ import unbbayes.util.NodeList;
  * @author Marcelo Ladeira - Orientador
  * @author Patricia Marinho
  */
-public class CL {
+public class CL extends CBLToolkit{
 	/**
 	 * Variaveis do objeto CL
 	 */
@@ -29,6 +31,7 @@ public class CL {
     protected int notestado,posicao;
     protected int nvar;
     protected boolean houveciclo;
+    public ArrayList ls;
 	public ConstructionController controller;
 	/**
 	 * Construtor
@@ -100,13 +103,75 @@ public class CL {
         }                
         return im;    	
     }
+	
+	protected double conditionalMutualInformation(int v1, int v2, int classe){
+    	
+		//int qj = getQ(sep);
+		this.classe = classe;
+		int qj = classe;
+    	if(qj == 0 ){
+		   return mutualInformation((TVariavel)variaveis.get(v1),
+    		                        (TVariavel)variaveis.get(v2));    		
+    	}    	;
+    	
+    	int ri = ((TVariavel)variaveis.get(v1)).getEstadoTamanho();
+    	int rk = ((TVariavel)variaveis.get(v2)).getEstadoTamanho();
+    	double pjik;
+    	double cpjik;
+    	double im = 0.0;    	
+    	int[] nj = new int[qj];
+    	int[][][] njik = new int[qj][ri][rk];
+    	int[][] nji = new int[qj][ri];    	
+    	int[][] njk = new int[qj][rk];
+    	double[][] pji = new double[qj][ri];
+    	double[][] pjk = new double[qj][rk];
+    	int j  = 0 ; 
+    	int f; 
+    	int il;
+    	int kl;
+    	int nt =0;  	
+    	for(int id = 0 ; id < caseNumber; id ++){
+    		f = compacted?vector[id]:1;
+    		il = dataBase[id][v1];    		
+    		kl = dataBase[id][v2];
+    		njik[j][il][kl] += f;
+    		nji[j][il] += f;
+    		njk[j][kl] += f;
+    		nj[j] += f;
+    		nt += f;    		
+    	}
+    	for(j = 0 ; j < qj; j++){
+    		for(il = 0 ; il < ri; il++){
+    			pji[j][il] = (1+nji[j][il])/(double)(ri+nj[j]);   			
+    		}
+    		for(kl = 0 ; kl < rk ; kl++){
+    		    pjk[j][kl] = (1+njk[j][kl])/(double)(rk+nj[j]);   			   
+    		}
+    		for(il = 0; il < ri; il ++){
+                for(kl = 0 ; kl < rk; kl++){
+                    pjik =  (1+njik[j][il][kl])/(double)(ri*rk*qj+nt);
+                    cpjik =  (1+njik[j][il][kl])/(double)(ri*rk+nj[j]);
+                    im += pjik*(log2(cpjik) - log2(pji[j][il]) - log2(pjk[j][kl]));
+                }
+    		}                       		
+    	}
+    	nj = null;
+    	njk = null;
+    	nji = null;
+    	njik = null;
+    	pji = null;
+    	pjk = null;    	
+    	return im;
+    }
+    
+	
 	/*
 	 * Cria matriz de informações mutuas
 	 */	
 	public void calculainformacoes() {
 	for(int i=0;i<nvar;i++){
 	for(int j=0;j<nvar;j++){
-		if (i!=j){matrizinfo[i][j]=mutualInformation((TVariavel)variaveis.get(i),(TVariavel)variaveis.get(j));
+		if (i!=j){matrizinfo[i][j]=conditionalMutualInformation(i ,j, classe);
 	//	System.out.println(variaveis.get(i).getName()+" e "+variaveis.get(j).getName()+" = "+String.valueOf(matrizinfo[i][j]));
 		}}
 	}
@@ -250,4 +315,6 @@ public class CL {
 		}
 		//reservar memoria		
 	}
+	
+	
 }//objeto
