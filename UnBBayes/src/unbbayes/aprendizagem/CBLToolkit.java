@@ -200,6 +200,58 @@ public abstract class CBLToolkit extends LearningToolkit{
 		return true;		
 	}
 	
+	protected boolean needConnect(int v1, int v2,ArrayList esx, int type,int classex){
+		//System.out.println("Inicia precisa conectar");
+		int n = this.variablesVector.size();
+		ArrayList Z;
+		double m;		
+		//System.out.println("Inicia Separador");
+		Z = separator(v1,v2,esx,n,type);		
+		//System.out.println("Acaba Separador");
+		System.out.println("Inicia IMC");
+		m = conditionalMutualInformation(v1,v2,Z,classex);		
+		System.out.println("Acaba IMC");
+		if( m < epsilon){			
+			Object[] sep = new Object[2];
+			sep[0] = new int[]{v1,v2};
+			sep[1] = Z;			
+			separators.add(sep);			    
+			return false;						
+		}				
+		while( Z.size() > 1 ){
+			int k = 0;
+			double arrayM[] = new double[Z.size()];
+			double min = Double.MAX_VALUE;			
+			for(int i = 0 ; i < Z.size(); i++){	
+				ArrayList ZAux = (ArrayList)Z.clone();
+				ZAux.remove(i);				
+			    m = conditionalMutualInformation(v1,v2,ZAux,classex);			    			    
+			    arrayM[i] = m;			    					
+			    if(m < min){
+			        min = m;
+			        k = i;	
+			    }			    
+			}			
+			if(min < epsilon){
+				Object[] sep = new Object[2];
+			    sep[0] = new int[]{v1,v2};
+			    Z.remove(k);
+			    sep[1] = Z;
+			    separators.add(sep);			    
+			    return false;										
+			}
+			if(min > epsilon){							    
+				return true;								
+			} else {
+				m = arrayM[k];
+				Z.remove(k);				
+			}
+		}		
+     	System.out.println("Acaba precisa conectar");
+		return true;		
+	}
+	
+	
 	protected ArrayList separator(int v1, int v2,ArrayList esx, int n,int type){
 		ArrayList esAnc;
 		ArrayList esAncMor;
@@ -220,17 +272,20 @@ public abstract class CBLToolkit extends LearningToolkit{
 	
 	protected ArrayList findForeSubgraph(int v1,int v2, ArrayList esx){
 		ArrayList esAnc = new ArrayList();
-        boolean[] fore1 = new boolean[this.variablesVector.size()]; 
-        boolean[] fore2 = new boolean[this.variablesVector.size()]; 
+		int tambuf=variablesVector.size();
+        boolean[] fore1 = new boolean[tambuf]; 
+        boolean[] fore2 = new boolean[tambuf]; 
         int[] peace;
 		findForefathers(v1,fore1);
 		findForefathers(v2,fore2);
-		for(int i = 0 ; i < fore1.length; i++){
+		tambuf=fore1.length;
+		for(int i = 0 ; i < tambuf; i++){
 			if(fore1[i] || fore2[i]){
 				fore1[i] = true;				
 			}			
 		}
-		for(int j = 0 ; j < esx.size(); j++){
+		tambuf=esx.size();
+		for(int j = 0 ; j < tambuf; j++){
 			peace = (int[])esx.get(j);
 			if(fore1[peace[0]] &&  fore1[peace[1]]){				
 				esAnc.add(new int[]{peace[0],peace[1]});
@@ -242,7 +297,8 @@ public abstract class CBLToolkit extends LearningToolkit{
 	protected void findForefathers(int v,boolean[] fore){		
 		fore[v] = true;
 		int[] peace;
-		for(int i = 0 ; i < es.size() ; i++){
+		int tambuf=es.size();
+		for(int i = 0 ; i < tambuf ; i++){
 			peace = (int[])es.get(i);
 			if(peace[1] == v){				
 				findForefathers(peace[0],fore);											
@@ -254,9 +310,10 @@ public abstract class CBLToolkit extends LearningToolkit{
 		ArrayList esAncMor = (ArrayList)esAnc.clone();
 		int[] peace;
 		int[] peace2;
-		for(int i = 0 ; i < esAnc.size(); i++){
+		int tambuf=esAnc.size();
+		for(int i = 0 ; i < tambuf; i++){
 			peace = (int[])esAnc.get(i);
-			for(int j = 0; j < esAnc.size() && j != i;j++){
+			for(int j = 0; j < tambuf && j != i;j++){
 			    peace2 = (int[])esAnc.get(j);
 			    if(peace2[1] == peace[1]){
     				esAncMor.add(new int[]{peace2[0],peace[0]});
@@ -439,6 +496,63 @@ public abstract class CBLToolkit extends LearningToolkit{
     	}
     }
     
+    protected double MutualInformation(int v1, int v2, int classe){
+    	
+       	
+    	int ri = ((TVariavel)variablesVector.get(v1)).getEstadoTamanho();
+    	int rk = ((TVariavel)variablesVector.get(v2)).getEstadoTamanho();
+    	int rj = ((TVariavel)variablesVector.get(classe)).getEstadoTamanho();
+    	double pjik;
+    	double cpjik;
+    	double im = 0.0;    	
+    	int[] nj = new int[rj];
+    	int[][][] njik = new int[rj][ri][rk];
+    	int[][] nji = new int[rj][ri];    	
+    	int[][] njk = new int[rj][rk];
+    	double[][] pji = new double[rj][ri];
+    	double[][] pjk = new double[rj][rk];
+    	int j  = 0 ; 
+    	int f; 
+    	int il;
+    	int kl;
+    	int nt =0;  	
+    	for(int id = 0 ; id < caseNumber; id ++){
+    		f = compacted?vector[id]:1;
+    		il = dataBase[id][v1];    		
+    		kl = dataBase[id][v2];
+    		j=dataBase[id][classe];
+    		njik[j][il][kl] += f;
+    		nji[j][il] += f;
+    		njk[j][kl] += f;
+    		nj[j] += f;
+    		nt += f;    		
+    	}
+    	for(j = 0 ; j < rj; j++){
+    		for(il = 0 ; il < ri; il++){
+    			pji[j][il] = (1+nji[j][il])/(double)(ri+nj[j]);   			
+    		}
+    		for(kl = 0 ; kl < rk ; kl++){
+    		    pjk[j][kl] = (1+njk[j][kl])/(double)(rk+nj[j]);   			   
+    		}
+    		for(il = 0; il < ri; il ++){
+                for(kl = 0 ; kl < rk; kl++){
+                    pjik =  (1+njik[j][il][kl])/(double)(ri*rk*rj+nt);
+                    cpjik =  (1+njik[j][il][kl])/(double)(ri*rk+nj[j]);
+                    im += pjik*(log2(cpjik) - log2(pji[j][il]) - log2(pjk[j][kl]));
+                }
+    		}                       		
+    	}
+    	nj = null;
+    	njk = null;
+    	nji = null;
+    	njik = null;
+    	pji = null;
+    	pjk = null;    	
+    	return im;
+    }
+    
+
+    
     protected double conditionalMutualInformation(int v1, int v2, ArrayList sep){
     	int qj = getQ(sep);
     	if(qj == 0 ){
@@ -500,6 +614,68 @@ public abstract class CBLToolkit extends LearningToolkit{
     	pjk = null;    	
     	return im;
     }
+    
+    protected double conditionalMutualInformation(int v1, int v2, ArrayList sep,int classex){
+    	int qj = getQ(sep);
+    	if(qj == 0 ){
+		    System.out.println("SAIIIIIIIIII");
+    		return MutualInformation(v1,v2,classex);    		
+    	}    	;
+    	int ri = ((TVariavel)variablesVector.get(v1)).getEstadoTamanho();
+    	int rk = ((TVariavel)variablesVector.get(v2)).getEstadoTamanho();
+    	double pjik;
+    	double cpjik;
+    	double im = 0.0;    	
+    	int[] nj = new int[qj];
+    	int[][][] njik = new int[qj][ri][rk];
+    	int[][] nji = new int[qj][ri];    	
+    	int[][] njk = new int[qj][rk];
+    	System.out.println("ENTROUUUUUUUUUU = "+ qj + "   SIZE =  "+ sep.size());
+    	double[][] pji = new double[qj][ri];
+    	double[][] pjk = new double[qj][rk];
+    	int[] mult = multipliers(sep); 
+    	int j  = 0 ; 
+    	int f; 
+    	int il;
+    	int kl;
+    	int nt =0;  	
+    	for(int id = 0 ; id < caseNumber; id ++){
+    		f = compacted?vector[id]:1;
+    		j = findJ(sep,id,mult);
+    		il = dataBase[id][v1];    		
+    		kl = dataBase[id][v2];
+    		njik[j][il][kl] += f;
+    		nji[j][il] += f;
+    		njk[j][kl] += f;
+    		nj[j] += f;
+    		nt += f;    		
+    	}
+    	System.out.println("SAIIIIIIIIII");
+    	for(j = 0 ; j < qj; j++){
+    		for(il = 0 ; il < ri; il++){
+    			pji[j][il] = (1+nji[j][il])/(double)(ri+nj[j]);   			
+    		}
+    		for(kl = 0 ; kl < rk ; kl++){
+    		    pjk[j][kl] = (1+njk[j][kl])/(double)(rk+nj[j]);   			   
+    		}
+    		for(il = 0; il < ri; il ++){
+                for(kl = 0 ; kl < rk; kl++){
+                    pjik =  (1+njik[j][il][kl])/(double)(ri*rk*qj+nt);
+                    cpjik =  (1+njik[j][il][kl])/(double)(ri*rk+nj[j]);
+                    im += pjik*(log2(cpjik) - log2(pji[j][il]) - log2(pjk[j][kl]));
+                }
+    		}                       		
+    	}
+    	nj = null;
+    	njk = null;
+    	nji = null;
+    	njik = null;
+    	mult = null;
+    	pji = null;
+    	pjk = null;    	
+    	return im;
+    }
+    
     
     protected int getQ(ArrayList cc){
     	TVariavel aux;

@@ -107,24 +107,25 @@ public class CL extends CBLToolkit{
 	protected double conditionalMutualInformation(int v1, int v2, int classe){
     	
 		//int qj = getQ(sep);
-		this.classe = classe;
-		int qj = classe;
-    	if(qj == 0 ){
-		   return mutualInformation((TVariavel)variaveis.get(v1),
-    		                        (TVariavel)variaveis.get(v2));    		
-    	}    	;
+		//this.classe = classe;
+		//int qj = classe;
+    	//if(qj == 0 ){
+		  //return mutualInformation((TVariavel)variaveis.get(v1),
+    		//                        (TVariavel)variaveis.get(v2));    		
+    	//}    	;
     	
     	int ri = ((TVariavel)variaveis.get(v1)).getEstadoTamanho();
     	int rk = ((TVariavel)variaveis.get(v2)).getEstadoTamanho();
+    	int rj = ((TVariavel)variaveis.get(classe)).getEstadoTamanho();
     	double pjik;
     	double cpjik;
     	double im = 0.0;    	
-    	int[] nj = new int[qj];
-    	int[][][] njik = new int[qj][ri][rk];
-    	int[][] nji = new int[qj][ri];    	
-    	int[][] njk = new int[qj][rk];
-    	double[][] pji = new double[qj][ri];
-    	double[][] pjk = new double[qj][rk];
+    	int[] nj = new int[rj];
+    	int[][][] njik = new int[rj][ri][rk];
+    	int[][] nji = new int[rj][ri];    	
+    	int[][] njk = new int[rj][rk];
+    	double[][] pji = new double[rj][ri];
+    	double[][] pjk = new double[rj][rk];
     	int j  = 0 ; 
     	int f; 
     	int il;
@@ -134,13 +135,14 @@ public class CL extends CBLToolkit{
     		f = compacted?vector[id]:1;
     		il = dataBase[id][v1];    		
     		kl = dataBase[id][v2];
+    		j=dataBase[id][classe];
     		njik[j][il][kl] += f;
     		nji[j][il] += f;
     		njk[j][kl] += f;
     		nj[j] += f;
     		nt += f;    		
     	}
-    	for(j = 0 ; j < qj; j++){
+    	for(j = 0 ; j < rj; j++){
     		for(il = 0 ; il < ri; il++){
     			pji[j][il] = (1+nji[j][il])/(double)(ri+nj[j]);   			
     		}
@@ -149,7 +151,7 @@ public class CL extends CBLToolkit{
     		}
     		for(il = 0; il < ri; il ++){
                 for(kl = 0 ; kl < rk; kl++){
-                    pjik =  (1+njik[j][il][kl])/(double)(ri*rk*qj+nt);
+                    pjik =  (1+njik[j][il][kl])/(double)(ri*rk*rj+nt);
                     cpjik =  (1+njik[j][il][kl])/(double)(ri*rk+nj[j]);
                     im += pjik*(log2(cpjik) - log2(pji[j][il]) - log2(pjk[j][kl]));
                 }

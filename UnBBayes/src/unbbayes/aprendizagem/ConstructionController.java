@@ -224,6 +224,67 @@ public class ConstructionController {
 	
 	
 	/**
+	 * @version 1.0
+	 * @author Gabriel Guimarães - aluno de IC 2005-2006
+	 * @author Marcelo Ladeira - Orientador
+	 * @author Patricia Marinho
+	 */
+	public ConstructionController(File file, MainController controller, int classei,boolean cbg){				
+		int classex=0;
+		try{
+           InputStreamReader isr = new InputStreamReader(new FileInputStream(file));
+           BufferedReader  br    = new BufferedReader(isr);
+           int rows = getRowCount(br);
+           isr = new InputStreamReader(new FileInputStream(file));
+           br  = new BufferedReader(isr);
+           StreamTokenizer cols = new StreamTokenizer(br);
+           setColsConstraints(cols);
+           variablesVector = new NodeList();           
+           variables = new NodeList();                      
+           makeVariablesVector(cols);
+           ChooseVariablesWindow cvw= new ChooseVariablesWindow(variablesVector,0);
+           classex=cvw.classei;
+           new ChooseVariablesWindow(variablesVector);
+           new CompactFileWindow(variablesVector);               
+           filterVariablesVector(rows);
+           matrix = new int[rows][variables.size()]; 
+           makeMatrix(cols, rows);
+           		  
+           br.close();          
+	    }
+	    catch(Exception e){
+	    	String msg = "Não foi possível abrir o arquivo solicitado. Verifique o formato do arquivo.";
+	    	JOptionPane.showMessageDialog(null,msg,"ERROR",JOptionPane.ERROR_MESSAGE);                    	
+	    };
+	  	OrdenationWindow ordenationWindow = new OrdenationWindow(variables);
+        OrdenationInterationController ordenationController = ordenationWindow.getController();                    
+        String[] pamp = ordenationController.getPamp();
+        variables = ordenationController.getVariables();				
+        new AlgorithmController(variables,matrix,vector,caseNumber,pamp,compacted,classex);
+        
+	    int i,j;
+        j=variables.size();
+        NodeList variaveis=new NodeList();
+        variaveis.ensureCapacity(j+1);
+        
+        for(i=0;i<classex;i++)variaveis.add(variables.get(i));
+        for(i=classex;i<j;i++)variaveis.add(variables.get(i));
+        
+          for(i=0;i<j;i++){
+        	//se alguma variavel não é filha da classe então passa a ser!
+        	if((i!=classex)&&(!(variaveis.get(classex).isParentOf(variaveis.get(i)))))variaveis.AddChildTo(classex,variaveis.get(i));
+        	//se alguma variável tem como filho a classe--> retirar!
+        	if((variaveis.get(i).isParentOf(variaveis.get(classex))))variaveis.RemoveParentFrom(classex,i);
+        	//se alguma variavel não tem a classe como pai entao passa a ter
+        	if((!(variaveis.get(i).isChildOf(variaveis.get(classex)))))variaveis.AddParentTo(i,variaveis.get(classex));        	
+        }       
+                variaveis.ClearParentsFrom(classex);
+                                
+        new ProbabilisticController(variaveis,matrix, vector,caseNumber,controller, compacted);                     
+    }
+	
+	
+	/**
 	 * Para o TAN
 	 * @param file
 	 * @param controller

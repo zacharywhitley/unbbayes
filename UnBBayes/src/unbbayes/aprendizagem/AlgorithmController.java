@@ -51,4 +51,23 @@ public class AlgorithmController{
 	        }	        
 	} 
 
+	
+	public AlgorithmController(NodeList variables,int[][] matrix, int[] vector,
+	        long caseNumber, String[] pamp, boolean compacted, int classex){	        	
+	        if(pamp[0].equalsIgnoreCase("Ponctuation")){
+	        	if(pamp[1].equalsIgnoreCase("k2")){
+	        		new K2(variables, matrix, vector, caseNumber,pamp[2],pamp[3],compacted);	        		
+	        	}
+	        	else if(pamp[1].equalsIgnoreCase("B")){
+	        		new B(variables, matrix, vector,caseNumber,pamp[2], pamp[3],compacted);	        			
+	        	}        		        		        	
+	        } else if (pamp[0].equalsIgnoreCase("IC")){ 
+	        	if(pamp[1].equalsIgnoreCase("CBL-A")){
+	        		new CBLA(variables,matrix,vector,caseNumber,pamp[3],compacted);	        		
+	        	} else if(pamp[1].equalsIgnoreCase("CBL-B")){
+	        		new CBLB(variables,matrix,vector,caseNumber,pamp[3],compacted,classex);	        		
+	        	}	        	
+	        }	        
+	} 
+
 }

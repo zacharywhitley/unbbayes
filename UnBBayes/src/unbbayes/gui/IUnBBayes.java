@@ -90,6 +90,7 @@ public class IUnBBayes extends JFrame {
 	private ActionListener alDiscretize;
 	private ActionListener alTAN;
 	private ActionListener alBAN;
+	private ActionListener alCBG;
 	private ActionListener alNewMSBN;
 	private ActionListener alOpen;
 	private ActionListener alSave;
@@ -295,7 +296,27 @@ public class IUnBBayes extends JFrame {
 		
 				
 			}};
-		
+			alCBG = new ActionListener() {
+				public void actionPerformed(ActionEvent ae) {
+					String[] nets = new String[] { "txt" };
+					int classe=0;
+					chooser = new JFileChooser(fileController.getCurrentDirectory());
+					chooser.setMultiSelectionEnabled(false);
+					chooser.addChoosableFileFilter(
+						new SimpleFileFilter(
+							nets,
+							resource.getString("textFileFilter")));
+					int option = chooser.showOpenDialog(IUnBBayes.this);
+					File file;
+					if (option == JFileChooser.APPROVE_OPTION) {
+						file = chooser.getSelectedFile();
+	                                        fileController.setCurrentDirectory(chooser.getCurrentDirectory());
+						new ConstructionController(file, controller,classe,true);
+					}
+			
+					
+				}};
+			
 		
 		alDiscretize = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
@@ -602,6 +623,7 @@ public class IUnBBayes extends JFrame {
 		JMenuItem discretize = new JMenuItem("Discretizar");
 		JMenuItem TAN = new JMenuItem("TAN");
 		JMenuItem BAN = new JMenuItem("BAN");
+		JMenuItem CBG = new JMenuItem("CBG");
 		JMenuItem metalItem =
 			new JMenuItem(
 				resource.getString("metalItem"),iconController.getMetalIcon());
@@ -659,6 +681,7 @@ public class IUnBBayes extends JFrame {
 		discretize.addActionListener(alDiscretize);
 		TAN.addActionListener(alTAN);
 		BAN.addActionListener(alBAN);
+		CBG.addActionListener(alCBG);
 		newBN.addActionListener(alNewBN);
 		newMSBN.addActionListener(alNewMSBN);
 		openItem.addActionListener(alOpen);
@@ -702,6 +725,7 @@ public class IUnBBayes extends JFrame {
 		toolsMenu.add(learningItem);
 		toolsMenu.add(TAN);
 		toolsMenu.add(BAN);
+		toolsMenu.add(CBG);
 		toolsMenu.add(monteCarloItem);
 		toolsMenu.add(gibbsItem);
 		toolsMenu.add(discretize);
