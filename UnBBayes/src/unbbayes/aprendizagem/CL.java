@@ -173,7 +173,7 @@ public class CL extends CBLToolkit{
 	public void calculainformacoes() {
 	for(int i=0;i<nvar;i++){
 	for(int j=0;j<nvar;j++){
-		if (i!=j){matrizinfo[i][j]=conditionalMutualInformation(i ,j, classe);
+		if (i!=j){matrizinfo[i][j]=conditionalMutualInformation(i, j, classe);
 	//	System.out.println(variaveis.get(i).getName()+" e "+variaveis.get(j).getName()+" = "+String.valueOf(matrizinfo[i][j]));
 		}}
 	}
