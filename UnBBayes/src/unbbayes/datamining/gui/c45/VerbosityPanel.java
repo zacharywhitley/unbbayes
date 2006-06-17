@@ -1,10 +1,23 @@
 package unbbayes.datamining.gui.c45;
 
-import javax.swing.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Stack;
 
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.classifiers.decisiontree.*;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+import unbbayes.datamining.classifiers.decisiontree.C45;
+import unbbayes.datamining.classifiers.decisiontree.Leaf;
+import unbbayes.datamining.classifiers.decisiontree.Node;
+import unbbayes.datamining.classifiers.decisiontree.NominalNode;
+import unbbayes.datamining.classifiers.decisiontree.NumericNode;
+import unbbayes.datamining.classifiers.decisiontree.SplitObject;
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.Instance;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.NumericData;
+import unbbayes.datamining.datamanipulation.Options;
+import unbbayes.datamining.datamanipulation.Utils;
 
 /**
  * Class implementing a window to show data about a decision tree
@@ -13,9 +26,6 @@ import unbbayes.datamining.classifiers.decisiontree.*;
  */
 public class VerbosityPanel extends JScrollPane
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
 	/** text area where data is written */
 	private JTextArea textArea;
 	
@@ -42,10 +52,13 @@ public class VerbosityPanel extends JScrollPane
 		Node node;
 		Node childNode;
 		NumericNode numericNode;
+		NominalNode nominalNode;
+		Leaf leaf;
 		int treeLevel;
 		String space;
 		float[][] distribution;
 		float[] missingDistribution;
+		int attIndex;
 		int gainIndex;
 		float numInstances;
 						
@@ -60,6 +73,8 @@ public class VerbosityPanel extends JScrollPane
 		
 		//data relative to node
 		SplitObject splitData;
+		ArrayList instancesIndexes;
+		Integer attributesIndexes;
 		double[] infoGains;
 		ArrayList numericDataList;
 		NumericData numericData;
@@ -79,7 +94,7 @@ public class VerbosityPanel extends JScrollPane
 		int classSize = classValues.length;
 								
 		//start string buffer
-		StringBuilder text = new StringBuilder();
+		StringBuffer text = new StringBuffer();
 		text.append("DECISION TREE:");
 		text.append(c45.toString());
 		if(prunned)
@@ -196,11 +211,11 @@ public class VerbosityPanel extends JScrollPane
 										
 										if(instance.isMissing(attribute))
 										{
-											missingDistribution[instance.getByteValue(instance.getClassIndex())]+=instance.getWeight();
+											missingDistribution[instance.getValue(instance.getClassIndex())]+=instance.getWeight();
 										}
 										else
 										{
-											distribution[instance.getByteValue(attribute)][instance.getByteValue(instance.getClassIndex())]+=instance.getWeight();
+											distribution[instance.getValue(attribute)][instance.getValue(instance.getClassIndex())]+=instance.getWeight();
 										}
 									}
 																  
@@ -288,7 +303,7 @@ public class VerbosityPanel extends JScrollPane
 					
 					//print best attribute
 					childNode = (Node)children.get(0);
-					childNode.getAttribute().getIndex();
+					attIndex = childNode.getAttribute().getIndex();
 					gainIndex = Utils.maxIndex(infoGains);
 					if(childNode instanceof NominalNode)
 					{

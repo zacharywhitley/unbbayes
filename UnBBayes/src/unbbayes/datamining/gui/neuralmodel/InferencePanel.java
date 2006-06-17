@@ -1,18 +1,35 @@
 package unbbayes.datamining.gui.neuralmodel;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.text.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 
-import javax.swing.*;
-import javax.swing.text.*;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.JToolBar;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 
 import unbbayes.controller.IconController;
-import unbbayes.datamining.classifiers.*;
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.classifiers.cnmentities.*;
-import unbbayes.datamining.gui.*;
+import unbbayes.datamining.classifiers.CombinatorialNeuralModel;
+import unbbayes.datamining.classifiers.cnmentities.Combination;
+import unbbayes.datamining.classifiers.cnmentities.OutputNeuron;
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.Instance;
+import unbbayes.datamining.datamanipulation.Utils;
+import unbbayes.datamining.gui.AttributesTree;
+import unbbayes.datamining.gui.IInferencePanel;
 
 /**
  *  Class that implements the the panel used to make inferences on the model.
@@ -21,9 +38,6 @@ import unbbayes.datamining.gui.*;
  *  @version $1.0 $ (02/16/2003)
  */
 public class InferencePanel extends JPanel implements IInferencePanel{
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   private ResourceBundle resource;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JPanel jPanel1 = new JPanel();
@@ -48,6 +62,7 @@ public class InferencePanel extends JPanel implements IInferencePanel{
   private Icon expandIcon;
   private Icon propagateIcon;
   private JTextArea textAreaResults = new JTextArea();
+  private DecimalFormat numFormat = new DecimalFormat("##0.0");
   private BorderLayout borderLayout6 = new BorderLayout();
   private JSplitPane splitPane2 = new JSplitPane();
   private JScrollPane jScrollPane2 = new JScrollPane();
@@ -289,7 +304,7 @@ public class InferencePanel extends JPanel implements IInferencePanel{
     for (int i = 0; i < numAtt; i++) {
       if (i != classIndex && !instance.isMissing(i)) {
         Attribute att = attArray[i];
-        int value = instance.getByteValue(i);
+        short value = instance.getValue(i);
         rule = rule + att.getAttributeName() + ": " + att.value(value) + "\n";
       }
     }

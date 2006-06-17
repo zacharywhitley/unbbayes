@@ -1,8 +1,12 @@
 package unbbayes.gui.table;
 
 
-import javax.swing.*;
-import javax.swing.table.*;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
 
 /* (swing1.1beta3)
  *
@@ -23,9 +27,6 @@ import javax.swing.table.*;
  */
 public class GroupableHeaderExample extends JFrame {
 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
 	GroupableHeaderExample() {
 		super("Groupable Header Example");
 
@@ -38,9 +39,6 @@ public class GroupableHeaderExample extends JFrame {
 		}, new Object[] { "SNo.", "1", "2", "Native", "2", "3" });
 
 		JTable table = new JTable(dm) {
-			/** Serialization runtime version number */
-			private static final long serialVersionUID = 0;
-
 			protected JTableHeader createDefaultTableHeader() {
 				return new GroupableTableHeader(columnModel);
 			}

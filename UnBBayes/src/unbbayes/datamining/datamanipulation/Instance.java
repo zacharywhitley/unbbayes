@@ -1,10 +1,10 @@
 package unbbayes.datamining.datamanipulation;
 
-import java.util.*;
+import java.util.ResourceBundle;
 
 /**
  * Class for handling an instance. All values (numeric or nominal) are internally
- * stored as int numbers. The stored value is the index of the
+ * stored as short numbers. The stored value is the index of the
  * corresponding nominal value in the attribute's definition.
  *
  *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
@@ -12,7 +12,7 @@ import java.util.*;
  */
 public class Instance
 {	/** Constant representing a missing value. */
-  	public final static byte MISSING_VALUE = -1;
+  	public final static short MISSING_VALUE = -1;
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.datamanipulation.resources.DataManipulationResource");
@@ -25,20 +25,10 @@ public class Instance
   	protected InstanceSet dataset;
 
   	/** The instance's attribute values. */
-  	//protected int[] attValues;
+  	protected short[] attValues;
 
 	/** The instance's weight. */
   	protected float weight;
-  	
-  	private int index;
-  	
-  	public int getIndex() {
-  		return index;
-  	}
-  	
-  	public void setIndex(int index) {
-  		this.index = index;
-  	}
 
   	/**
    	* Constructor that copies the attribute values from
@@ -50,7 +40,7 @@ public class Instance
 	* values are to be copied
    	*/
   	public Instance(Instance instance)
-	{	//attValues = instance.attValues;
+	{	attValues = instance.attValues;
 		weight = instance.weight;
     	dataset = null;
   	}
@@ -63,8 +53,9 @@ public class Instance
 	*
    	* @param attValues An array of attribute values
    	*/
-  	public Instance()
-	{	weight = 1;
+  	public Instance(short[] attValues)
+	{	this.attValues = attValues;
+		weight = 1;
     	dataset = null;
   	}
 
@@ -76,22 +67,10 @@ public class Instance
    	* @param weight the instance's weight
    	* @param attValues a vector of attribute values
    	*/
-  	public Instance(int weight, Object[] attValues,InstanceSet dataset, int index)
-  	{	
-  		int size = dataset.getAttributes().length;
-  		for (int i=0;i<size;i++) {
-  	  		Attribute att = dataset.getAttribute(i);
-  			if (att.attributeType == Attribute.Type.NOMINAL) {
-  	  			dataset.getAttribute(i).byteValues[index] = ((Byte)attValues[i]).byteValue();  				
-  			} else if (att.attributeType == Attribute.Type.NUMERIC) {
-  	  			dataset.getAttribute(i).floatValues[index] = ((Float)attValues[i]).floatValue();  				  				
-  			} else {
-  				assert false : "Tipo de atribute não existente";
-  			}
-  		}
-		this.dataset = dataset;
-  		this.weight = weight;
-  		this.index = index;
+  	public Instance(int weight, short[] attValues)
+  	{	this.attValues = attValues;
+		this.weight = weight;
+    	dataset = null;
   	}
 
 	/**
@@ -141,18 +120,18 @@ public class Instance
 
   	/**
    	* Returns an instance's class value in internal format. (ie. as a
-   	* itn number)
+   	* short number)
    	*
-   	* @return The corresponding value as a int (It returns the
-   	* value's index as a int).
+   	* @return The corresponding value as a short (It returns the
+   	* value's index as a short).
    	* @exception UnassignedClassException if the class is not set or the instance doesn't
    	* have access to a dataset
    	*/
-  	public final byte classValue()
+  	public final short classValue()
 	{	if (getClassIndex() < 0)
 		{	throw new UnassignedClassException(resource.getString("runtimeException2"));
     	}
-    	return getByteValue(getClassIndex());
+    	return getValue(getClassIndex());
   	}
 
   	/**
@@ -175,18 +154,10 @@ public class Instance
    	* @param attIndex Attribute's index
    	*/
   	public final boolean isMissing(int attIndex)
-	{	
-  		if (dataset.getAttribute(attIndex).attributeType == Attribute.Type.NOMINAL) {
-  	  		if (MISSING_VALUE == dataset.getAttribute(attIndex).byteValues[0])
-  			{	return true;
-  	    	}
-  	    	return false;  			
-  		} else {
-  	  		if (MISSING_VALUE == (byte)dataset.getAttribute(attIndex).floatValues[0])
-  			{	return true;
-  	    	}
-  	    	return false;  			  			
-  		}
+	{	if (MISSING_VALUE == attValues[attIndex])
+		{	return true;
+    	}
+    	return false;
   	}
 
   	/**
@@ -205,7 +176,7 @@ public class Instance
    	* @param val Value to be tested
    	* @return true if val codes "missing"
    	*/
-  	public static final boolean isMissingValue(int val)
+  	public static final boolean isMissingValue(short val)
 	{	if (MISSING_VALUE == val)
 		{	return true;
     	}
@@ -214,11 +185,11 @@ public class Instance
 
 
   	/**
-   	* Returns the int that codes "missing".
+   	* Returns the short that codes "missing".
    	*
-   	* @return the int that codes "missing"
+   	* @return the short that codes "missing"
    	*/
-  	public static final byte missingValue()
+  	public static final short missingValue()
 	{	return MISSING_VALUE;
   	}
 
@@ -242,12 +213,7 @@ public class Instance
   	 * @param attIndex the attribute's index
   	 */
   	public void setMissing(int attIndex)
-	{	
-  		if (this.dataset.getAttribute(attIndex).isNominal()) {
-  	  		setByteValue(attIndex, MISSING_VALUE);  			
-  		} else {
-  			setFloatValue(attIndex, MISSING_VALUE);  			
-  		}
+	{	setValue(attIndex, MISSING_VALUE);
   	}
 
   	/**
@@ -283,12 +249,7 @@ public class Instance
 	{	if (dataset == null)
 		{	throw new UnassignedDatasetException(resource.getString("runtimeException1"));
     	}
-		Attribute att = dataset.getAttribute(attIndex);
-		if (att.isNominal()) {
-	    	return att.value(getByteValue(attIndex));			
-		} else {
-			return att.floatValues[index]+"";
-		}
+    	return dataset.getAttribute(attIndex).value((int) getValue(attIndex));
   	}
 
   	/**
@@ -306,14 +267,14 @@ public class Instance
   	/**
    	* Returns the description of one instance. If the instance
    	* doesn't have access to a dataset, it returns the internal
-   	* int values.
+   	* short values.
    	*
    	* @return The instance's description as a string
    	*/
   	public String toString()
-	{	StringBuilder text = new StringBuilder();
-		int size = dataset.getAttributes().length;
-    	for (int i = 0; i < size; i++)
+	{	StringBuffer text = new StringBuffer();
+
+    	for (int i = 0; i < attValues.length; i++)
 		{	if (i > 0) text.append(",");
       			text.append(toString(i));
     	}
@@ -324,25 +285,20 @@ public class Instance
   	/**
    	* Returns the description of one value of the instance as a
    	* string. If the instance doesn't have access to a dataset, it
-   	* returns The internal int value.
+   	* returns The internal short value.
    	*
    	* @param attIndex Attribute's index
    	* @return The value's description as a string
    	*/
   	public String toString(int attIndex)
-	{	StringBuilder text = new StringBuilder();
+	{	StringBuffer text = new StringBuffer();
 
    		if (isMissing(attIndex))
 		{	text.append("?");
    		}
 		else
 		{	if (dataset == null)
-			{	
-				if (dataset.getAttribute(attIndex).attributeType == Attribute.Type.NOMINAL) {
-					text.append(dataset.getAttribute(attIndex).byteValues[index]);
-				} else {
-					text.append(dataset.getAttribute(attIndex).floatValues[index]);					
-				}
+			{	text.append(attValues[attIndex]);
      		}
 			else
 			{	text.append(stringValue(attIndex));
@@ -354,7 +310,7 @@ public class Instance
   	/**
    	* Returns the description of one value of the instance as a
    	* string. If the instance doesn't have access to a dataset it
-   	* returns the internal int value.
+   	* returns the internal short value.
    	* The given attribute has to belong to a dataset.
    	*
    	* @param att Attribute
@@ -368,28 +324,20 @@ public class Instance
    	* Returns an instance's attribute value in internal format.
    	*
    	* @param attIndex Attribute's index
-   	* @return The specified value as a int
+   	* @return The specified value as a short
    	*/
-  	public final byte getByteValue(int attIndex)
-	{	return dataset.getAttribute(attIndex).byteValues[index];
-  	}
-  	
-  	public final float getFloatValue(int attIndex) {
-  		return dataset.getAttribute(attIndex).floatValues[index];
+  	public final short getValue(int attIndex)
+	{	return attValues[attIndex];
   	}
 
 	/**
    	* Sets an instance's attribute value in internal format.
    	*
    	* @param attIndex Attribute's index
-	* @param newValue New value as a int
+	* @param newValue New value as a short
    	*/
-  	public final void setByteValue(int attIndex, byte newValue)
-	{	dataset.getAttribute(attIndex).byteValues[index] = newValue;
-	}
-
-  	public final void setFloatValue(int attIndex, float newValue)
-	{	dataset.getAttribute(attIndex).floatValues[index] = newValue;
+  	public final void setValue(int attIndex, short newValue)
+	{	attValues[attIndex] = newValue;
 	}
 
   	/**
@@ -397,10 +345,10 @@ public class Instance
    	* The given attribute has to belong to a dataset.
    	*
    	* @param att Attribute
-   	* @return The specified value as a int
+   	* @return The specified value as a short
    	*/
-  	public final byte getByteValue(Attribute att)
-	{	return getByteValue(att.getIndex());
+  	public final short getValue(Attribute att)
+	{	return getValue(att.getIndex());
   	}
 
 	/**
@@ -408,19 +356,25 @@ public class Instance
    	* The given attribute has to belong to a dataset.
 	*
    	* @param att Attribute
-	* @param newValue New value as a int
+	* @param newValue New value as a short
    	*/
-  	public final void setByteValue(Attribute att, byte newValue)
-	{	att.byteValues[index] = newValue;
+  	public final void setValue(Attribute att, short newValue)
+	{	attValues[att.getIndex()] = newValue;
 	}
 	
-  	public final void setByteValue(Attribute att, float newValue)
-	{	att.floatValues[index] = newValue;
-	}
-
-  	public void dispose() {
-	  	resource = null;
-	  	dataset = null;
+	public final void removeAttribute(int index)
+	{
+		short[] newValues = new short[attValues.length-1];
+		int j=0;
+		for (int i=0;i<attValues.length;i++)
+		{
+			if(index!=i)
+			{
+				newValues[j]=attValues[i];
+				j++;
+			}
+		}
+		attValues = newValues;
 	}
 
 }

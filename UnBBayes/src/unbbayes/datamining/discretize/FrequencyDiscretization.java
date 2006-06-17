@@ -1,18 +1,21 @@
 package unbbayes.datamining.discretize;
 
-import java.text.*;
-import java.util.*;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Enumeration;
 
-import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.Instance;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.Utils;
 
 /** faz discretizacao por frequencia */
 public class FrequencyDiscretization implements IDiscretization
-{	
+{	private int numThresholds;
 	private InstanceSet inst;
 
 	public FrequencyDiscretization(InstanceSet inst)
-	{	//this.inst = new InstanceSet(inst);
-		this.inst = inst;
+	{	this.inst = new InstanceSet(inst);
 	}
 
 	public void discretizeAttribute(Attribute att) throws Exception
@@ -31,7 +34,7 @@ public class FrequencyDiscretization implements IDiscretization
 			numThresholds = 1;
 		try
 		{	int position = att.getIndex();//cria um novo atributo nominal
-			Attribute newAttribute = new Attribute(att.getAttributeName(),null,Attribute.Type.NOMINAL,position);
+			Attribute newAttribute = new Attribute(att.getAttributeName(),null,Attribute.NOMINAL,position);
 			// encontra todos os valores do atributo antigo
 			float[] values = new float[numInstances];
           	Enumeration enumInst = inst.enumerateInstances();
@@ -91,13 +94,13 @@ public class FrequencyDiscretization implements IDiscretization
 			inst.setAttributeAt(newAttribute,position);
 			// insere os novos valores
 			for (i=0; i<numInstances; i++)
-			{	byte newValue = 0;
+			{	byte newValue = (byte)0;
 				for (j=0; j<breakPoint.length; j++)
 					if (values2[i] <= breakPoint[j])
 					{	newValue = (byte)j;
 						break;
 					}
-				inst.getInstance(i).setByteValue(position,newValue);
+				inst.getInstance(i).setValue(position,newValue);
 			}
 		}
 		catch (Exception e)

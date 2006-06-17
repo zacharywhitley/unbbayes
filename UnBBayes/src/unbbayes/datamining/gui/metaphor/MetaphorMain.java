@@ -1,16 +1,33 @@
 package unbbayes.datamining.gui.metaphor;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.io.File;
 
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 
-import unbbayes.controller.*;
-import unbbayes.gui.*;
-import unbbayes.io.*;
-import unbbayes.prs.bn.*;
+import unbbayes.controller.FileController;
+import unbbayes.controller.IconController;
+import unbbayes.gui.FileIcon;
+import unbbayes.gui.SimpleFileFilter;
+import unbbayes.io.NetIO;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 
 /**
  * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
@@ -18,9 +35,6 @@ import unbbayes.prs.bn.*;
  */
 public class MetaphorMain extends JPanel
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   private BorderLayout borderLayout1 = new BorderLayout();
   private JToolBar metaphorToolBar = new JToolBar();
   private JTabbedPane jTabbedPane1 = new JTabbedPane();
@@ -42,6 +56,7 @@ public class MetaphorMain extends JPanel
   private ImageIcon diagnosticMetaphorRollOverIcon;
   private ProbabilisticNetwork net = null;
   private JFileChooser fileChooser;
+  private TitledBorder titledBorder1;
   private Border border1;
   private Border border2;
   private Border border3;
@@ -83,6 +98,7 @@ public class MetaphorMain extends JPanel
     openMetaphorRollOverIcon = iconController.getOpenMetaphorRollOverIcon();
     saveMetaphorRollOverIcon = iconController.getSaveMetaphorRollOverIcon();
     diagnosticMetaphorRollOverIcon = iconController.getDiagnosticMetaphorRollOverIcon();
+    titledBorder1 = new TitledBorder("");
     border1 = BorderFactory.createEmptyBorder(5,5,5,5);
     border2 = BorderFactory.createEmptyBorder(5,5,5,5);
     border3 = BorderFactory.createEmptyBorder(5,5,5,5);

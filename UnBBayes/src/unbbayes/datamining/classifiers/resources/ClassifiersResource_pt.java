@@ -1,7 +1,7 @@
 package unbbayes.datamining.classifiers.resources;
 
-import java.io.*;
-import java.util.*;
+import java.io.Serializable;
+import java.util.ListResourceBundle;
 
 /** Resources file for classifiers package. Localization = portuguese.
  *
@@ -9,11 +9,7 @@ import java.util.*;
  *  @version $1.0 $ (16/02/2002)
  */
 public class ClassifiersResource_pt extends ListResourceBundle implements Serializable
-{	
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-	/** Override getContents and provide an array, where each item in the array is a pair
+{	/** Override getContents and provide an array, where each item in the array is a pair
 		of objects. The first element of each pair is a String key,
 		and the second is the value associated with that key.
 	*/

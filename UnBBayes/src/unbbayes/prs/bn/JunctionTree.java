@@ -23,7 +23,7 @@ package unbbayes.prs.bn;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.prs.id.*;
+import unbbayes.prs.id.UtilityNode;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
@@ -35,8 +35,7 @@ import unbbayes.util.SetToolkit;
  */
 public class JunctionTree implements java.io.Serializable {
 	
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
+	private boolean initialized;
 
 	/**
 	 *  Probabilidade total estimada.
@@ -52,6 +51,12 @@ public class JunctionTree implements java.io.Serializable {
 	 *  Lista de Separadores Associados.
 	 */
 	private List separators;
+
+	/**
+	 * Coordenadas pré-calculadas para otimização
+	 * no método absorve.
+	 */
+	private int coordSep[][][];
 
 	/**
 	 *  Contrói uma nova árvore de junção. Inicializa a lista de separadores e
@@ -179,9 +184,8 @@ public class JunctionTree implements java.io.Serializable {
 	/**
 	 *  Inicia crenças da árvore.
 	 */
-	public void initBeliefs() throws Exception {
-		// TODO Unconment the if else code below after fixing restoreTableData()
-//		if (! initialized) {
+	public void initBeliefs() throws Exception {		
+		if (! initialized) {
 			Clique auxClique;
 			PotentialTable auxTabPot;
 			PotentialTable auxUtilTab;
@@ -235,6 +239,25 @@ public class JunctionTree implements java.io.Serializable {
 			
 			consistency();
 			copyTableData();
+			initialized = true;
+		} else {
+			restoreTableData();						
+		}
+	}
+	
+	private void restoreTableData() {
+		int sizeCliques = cliques.size();
+		for (int k = 0; k < sizeCliques; k++) {
+			Clique auxClique = (Clique) cliques.get(k);
+			auxClique.getPotentialTable().restoreData();
+			auxClique.getUtilityTable().restoreData();
+		}
+		
+		int sizeSeparadores = separators.size();
+		for (int k = 0; k < sizeSeparadores; k++) {
+			Separator auxSep = (Separator) separators.get(k);
+			auxSep.getPotentialTable().restoreData();
+		}
 	}
 	
 	private void copyTableData() {

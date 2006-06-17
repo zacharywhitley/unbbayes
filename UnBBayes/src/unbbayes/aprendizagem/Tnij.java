@@ -20,7 +20,8 @@
  */
  package unbbayes.aprendizagem;
 
-import java.util.*;
+import java.util.List;
+
 import unbbayes.util.SetToolkit;
 
 
@@ -37,6 +38,7 @@ public class Tnij implements Cloneable
 {
     private List estados;
     private int repeticoes;
+    private byte[] b = new byte[4];
 
     /**
      * Método construtor do objeto,constroi o objeto passando

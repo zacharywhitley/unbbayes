@@ -1,6 +1,6 @@
 package unbbayes.datamining.classifiers.cnmentities;
 
-import java.io.*;
+import java.io.Serializable;
 
 /**
  *  Class that implements the combinations tha compound the
@@ -11,10 +11,7 @@ import java.io.*;
  */
 public class Combination implements Serializable{
 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-	private String key;
+  private String key;
   private OutputNeuron[] outputArray;
 
   /**
@@ -142,7 +139,7 @@ public class Combination implements Serializable{
    * @param classValue the class value that specify the output neuron.
    * @param weight the weight to increase the accumulator.
    */
-  public void increaseAccumulator(int classValue, int weight){  // classValue, para selecionar qual classe deve ser incrementado o acumulador
+  public void increaseAccumulator(short classValue, int weight){  // classValue, para selecionar qual classe deve ser incrementado o acumulador
     if(outputArray[classValue] != null){                          // e o peso para incrementar
       outputArray[classValue].increaseAccumulator(weight);
     } else {

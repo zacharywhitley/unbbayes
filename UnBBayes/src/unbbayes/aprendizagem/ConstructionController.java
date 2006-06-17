@@ -20,13 +20,21 @@
  */
  package unbbayes.aprendizagem;
 
-import unbbayes.controller.*;
-import unbbayes.util.*;
-import unbbayes.gui.*;
-import java.io.*;
-import java.awt.*;
-import javax.swing.*;
-import java.util.*;
+import java.awt.Cursor;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.StreamTokenizer;
+import java.util.Date;
+
+import javax.swing.JOptionPane;
+
+import unbbayes.controller.MainController;
+import unbbayes.gui.IUnBBayes;
+import unbbayes.prs.Node;
+import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.util.NodeList;
 
 /*
  *  UnbBayes
@@ -59,14 +67,12 @@ import java.util.*;
 
 public class ConstructionController {
      	 
-	public NodeList variablesVector;
-	public NodeList variablesVector2;
+	private NodeList variablesVector; 
 	private NodeList variables;
 	private int[] vector;
-	private int[][] matrix;
+	private byte[][] matrix;
 	private long caseNumber; 
 	private boolean compacted;	 
-	public boolean[] VariavelNumerica;
 
     /**
      * Starts the process of read the file, construct
@@ -93,7 +99,7 @@ public class ConstructionController {
      * @see ProbabilisticController
      */
     
-	public ConstructionController(File file){
+	public ConstructionController(File file, ProbabilisticNetwork pn){
 		try{
 		  InputStreamReader isr = new InputStreamReader(new FileInputStream(file));
 		  BufferedReader  br    = new BufferedReader(isr);
@@ -104,19 +110,30 @@ public class ConstructionController {
 		  setColsConstraints(cols);
 		  variablesVector = new NodeList();           
 		  variables = new NodeList();                      
-		  makeVariablesVector(cols);		                 
+		  makeVariablesVector(cols);		
+		  new ChooseVariablesWindow(variablesVector);
+          new CompactFileWindow(variablesVector);
 		  filterVariablesVector(rows);
-		  matrix = new int[rows][variables.size()];
-	  	  IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));
-	  	  //ordenatevector();
+		  verificarConsistencia(pn);
+		  matrix = new byte[rows][variables.size()];
 		  makeMatrix(cols, rows);
-		 IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-		  br.close();          
+		  br.close();
 		 }
 		 catch(Exception e){
 			String msg = "Não foi possível abrir o arquivo solicitado. Verifique o formato do arquivo.";
 			JOptionPane.showMessageDialog(null,msg,"ERROR",JOptionPane.ERROR_MESSAGE);                    	
-		 };		 		 		
+		 }
+	}
+	
+	private void verificarConsistencia(ProbabilisticNetwork pn){
+	    for(int i =0; i < variables.size(); i++){
+	        TVariavel variavel = (TVariavel)variables.get(i);
+	        Node no = pn.getNode(variavel.getName());
+	        for(int j = 0 ; j < no.getStatesSize(); j++){
+	            String estado = no.getStateAt(j);
+	            variavel.adicionaEstado(estado);
+	        }
+	    }
 	}
     
 	public ConstructionController(File file, MainController controller){				
@@ -134,9 +151,9 @@ public class ConstructionController {
            new ChooseVariablesWindow(variablesVector);
            new CompactFileWindow(variablesVector);               
            filterVariablesVector(rows);
-           matrix = new int[rows][variables.size()];      
+           matrix = new byte[rows][variables.size()];      
            IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));                
-           makeMatrix(cols, rows);          
+           makeMatrix(cols, rows);           
            IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
            br.close();          
 	    }
@@ -152,7 +169,8 @@ public class ConstructionController {
         Date d = new Date();
         long time = d.getTime();
         IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        new AlgorithmController(variables,matrix,vector,caseNumber,pamp,compacted);
+        AlgorithmController algorithmController = new AlgorithmController
+                                       (variables,matrix,vector,caseNumber,pamp,compacted);
         IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));                
         Date d2 = new Date();
         long time1 = d2.getTime();
@@ -160,189 +178,9 @@ public class ConstructionController {
         /*Efeito de debug*/
         System.out.println("Resultado = "+ resul);                               
         /*Gives the probability of each node*/
-        new ProbabilisticController(variables,matrix, vector,caseNumber,controller, compacted);                     
+        ProbabilisticController probabilisticController = new ProbabilisticController
+                                (variables,matrix, vector,caseNumber,controller, compacted);                     
     }
-	/**
-	 * @version 1.0
-	 * @author Gabriel Guimarães - aluno de IC 2005-2006
-	 * @author Marcelo Ladeira - Orientador
-	 * @author Patricia Marinho
-	 */
-	public ConstructionController(File file, MainController controller, int classei, int inutil){				
-		int classex=0;
-		try{
-           InputStreamReader isr = new InputStreamReader(new FileInputStream(file));
-           BufferedReader  br    = new BufferedReader(isr);
-           int rows = getRowCount(br);
-           isr = new InputStreamReader(new FileInputStream(file));
-           br  = new BufferedReader(isr);
-           StreamTokenizer cols = new StreamTokenizer(br);
-           setColsConstraints(cols);
-           variablesVector = new NodeList();           
-           variables = new NodeList();                      
-           makeVariablesVector(cols);
-           ChooseVariablesWindow cvw= new ChooseVariablesWindow(variablesVector,0);
-           classex=cvw.classei;
-           new ChooseVariablesWindow(variablesVector);
-           new CompactFileWindow(variablesVector);               
-           filterVariablesVector(rows);
-           matrix = new int[rows][variables.size()]; 
-           makeMatrix(cols, rows);
-           		  
-           br.close();          
-	    }
-	    catch(Exception e){
-	    	String msg = "Não foi possível abrir o arquivo solicitado. Verifique o formato do arquivo.";
-	    	JOptionPane.showMessageDialog(null,msg,"ERROR",JOptionPane.ERROR_MESSAGE);                    	
-	    };
-	  	OrdenationWindow ordenationWindow = new OrdenationWindow(variables);
-        OrdenationInterationController ordenationController = ordenationWindow.getController();                    
-        String[] pamp = ordenationController.getPamp();
-        variables = ordenationController.getVariables();				
-        new AlgorithmController(variables,matrix,vector,caseNumber,pamp,compacted);
-        
-	    int i,j;
-        j=variables.size();
-        NodeList variaveis=new NodeList();
-        variaveis.ensureCapacity(j+1);
-        
-        for(i=0;i<classex;i++)variaveis.add(variables.get(i));
-        for(i=classex;i<j;i++)variaveis.add(variables.get(i));
-        
-          for(i=0;i<j;i++){
-        	//se alguma variavel não é filha da classe então passa a ser!
-        	if((i!=classex)&&(!(variaveis.get(classex).isParentOf(variaveis.get(i)))))variaveis.AddChildTo(classex,variaveis.get(i));
-        	//se alguma variável tem como filho a classe--> retirar!
-        	if((variaveis.get(i).isParentOf(variaveis.get(classex))))variaveis.RemoveParentFrom(classex,i);
-        	//se alguma variavel não tem a classe como pai entao passa a ter
-        	if((!(variaveis.get(i).isChildOf(variaveis.get(classex)))))variaveis.AddParentTo(i,variaveis.get(classex));        	
-        }       
-                variaveis.ClearParentsFrom(classex);
-                                
-        new ProbabilisticController(variaveis,matrix, vector,caseNumber,controller, compacted);                     
-    }
-	
-	
-	/**
-	 * @version 1.0
-	 * @author Gabriel Guimarães - aluno de IC 2005-2006
-	 * @author Marcelo Ladeira - Orientador
-	 * @author Patricia Marinho
-	 */
-	public ConstructionController(File file, MainController controller, int classei,boolean cbg){				
-		int classex=0;
-		try{
-           InputStreamReader isr = new InputStreamReader(new FileInputStream(file));
-           BufferedReader  br    = new BufferedReader(isr);
-           int rows = getRowCount(br);
-           isr = new InputStreamReader(new FileInputStream(file));
-           br  = new BufferedReader(isr);
-           StreamTokenizer cols = new StreamTokenizer(br);
-           setColsConstraints(cols);
-           variablesVector = new NodeList();           
-           variables = new NodeList();                      
-           makeVariablesVector(cols);
-           ChooseVariablesWindow cvw= new ChooseVariablesWindow(variablesVector,0);
-           classex=cvw.classei;
-           new ChooseVariablesWindow(variablesVector);
-           new CompactFileWindow(variablesVector);               
-           filterVariablesVector(rows);
-           matrix = new int[rows][variables.size()]; 
-           makeMatrix(cols, rows);
-           		  
-           br.close();          
-	    }
-	    catch(Exception e){
-	    	String msg = "Não foi possível abrir o arquivo solicitado. Verifique o formato do arquivo.";
-	    	JOptionPane.showMessageDialog(null,msg,"ERROR",JOptionPane.ERROR_MESSAGE);                    	
-	    };
-	  	OrdenationWindow ordenationWindow = new OrdenationWindow(variables);
-        OrdenationInterationController ordenationController = ordenationWindow.getController();                    
-        String[] pamp = ordenationController.getPamp();
-        variables = ordenationController.getVariables();				
-        new AlgorithmController(variables,matrix,vector,caseNumber,pamp,compacted,classex);
-        
-	    int i,j;
-        j=variables.size();
-        NodeList variaveis=new NodeList();
-        variaveis.ensureCapacity(j+1);
-        
-        for(i=0;i<classex;i++)variaveis.add(variables.get(i));
-        for(i=classex;i<j;i++)variaveis.add(variables.get(i));
-        
-          for(i=0;i<j;i++){
-        	//se alguma variavel não é filha da classe então passa a ser!
-        	if((i!=classex)&&(!(variaveis.get(classex).isParentOf(variaveis.get(i)))))variaveis.AddChildTo(classex,variaveis.get(i));
-        	//se alguma variável tem como filho a classe--> retirar!
-        	if((variaveis.get(i).isParentOf(variaveis.get(classex))))variaveis.RemoveParentFrom(classex,i);
-        	//se alguma variavel não tem a classe como pai entao passa a ter
-        	if((!(variaveis.get(i).isChildOf(variaveis.get(classex)))))variaveis.AddParentTo(i,variaveis.get(classex));        	
-        }       
-                variaveis.ClearParentsFrom(classex);
-                                
-        new ProbabilisticController(variaveis,matrix, vector,caseNumber,controller, compacted);                     
-    }
-	
-	
-	/**
-	 * Para o TAN
-	 * @param file
-	 * @param controller
-	 * @param classe
-	 * @author Gabriel Guimarães
-	 * @author Patricia
-	 */
-	public ConstructionController(File file, MainController controller, int classei){				
-	int classex=0;
-		try{
-           InputStreamReader isr = new InputStreamReader(new FileInputStream(file));
-           BufferedReader  br    = new BufferedReader(isr);
-           int rows = getRowCount(br);
-           isr = new InputStreamReader(new FileInputStream(file));
-           br  = new BufferedReader(isr);
-           StreamTokenizer cols = new StreamTokenizer(br);
-           setColsConstraints(cols);
-           variablesVector = new NodeList();           
-           variables = new NodeList();                      
-           makeVariablesVector(cols);
-           ChooseVariablesWindow cvw= new ChooseVariablesWindow(variablesVector,0);
-           classex=cvw.classei;
-           new ChooseVariablesWindow(variablesVector);
-           new CompactFileWindow(variablesVector);               
-           filterVariablesVector(rows);
-           matrix = new int[rows][variables.size()]; 
-           makeMatrix(cols, rows);
-           		  
-           br.close();          
-	    }
-	    catch(Exception e){
-	    	String msg = "Não foi possível abrir o arquivo solicitado. Verifique o formato do arquivo.";
-	    	JOptionPane.showMessageDialog(null,msg,"ERROR",JOptionPane.ERROR_MESSAGE);                    	
-	    };
-	    new B(variables, matrix, vector,caseNumber,"MDL", "",compacted);	
-        CL chowliu=new CL();
-        chowliu.preparar(variables,classex,(int)caseNumber,vector,compacted,matrix);
-	    variables=chowliu.variaveis;
-	    int i,j;
-	    j=variables.size();
-        
-	    //Adicionar a variavel de classe como pai de todas
-	    
-        for(i=0;i<j;i++){
-        	//se alguma variavel não é filha da classe então passa a ser!
-        	if((i!=classex)&&(!(variables.get(classex).isParentOf(variables.get(i)))))variables.AddChildTo(classex,variables.get(i));
-        	//se alguma variável tem como filho a classe--> retirar!
-        	if((variables.get(i).isParentOf(variables.get(classex))))variables.RemoveParentFrom(classex,i);
-        	//se alguma variavel não tem a classe como pai entao passa a ter
-        	if((!(variables.get(i).isChildOf(variables.get(classex)))))variables.AddParentTo(i,variables.get(classex));        	
-        }       
-                variables.ClearParentsFrom(classex);
-                
-        new ProbabilisticController(variables,matrix, vector,caseNumber,controller, compacted);                     
-    }
-	
-	
-	
 	
 	/**
 	 * Sets the constraints of the StreamTokenizer.
@@ -373,17 +211,13 @@ public class ConstructionController {
 		try{
             while (cols.nextToken() != StreamTokenizer.TT_EOL){
                 if(cols.sval != null){
-                	//variablesVector.adicionarC(new TVariavel(String.valueOf(cols.nval),position));
                      variablesVector.add(new TVariavel(cols.sval, position));
                      ((TVariavel)variablesVector.get(variablesVector.size()-1)).setDescription(cols.sval);
 					 ((TVariavel)variablesVector.get(variablesVector.size()-1)).setParticipa(true);
-					// ((TVariavel)variablesVector.get(variablesVector.size()-1)).setNumerico(false);
                 } else{
-                	//variablesVector.adicionarN(new TVariavel(String.valueOf(cols.nval),position));
                      variablesVector.add(new TVariavel(String.valueOf(cols.nval),position));
                      ((TVariavel)variablesVector.get(variablesVector.size()-1)).setDescription(String.valueOf(cols.nval));
 					 ((TVariavel)variablesVector.get(variablesVector.size()-1)).setParticipa(true);
-					 //((TVariavel)variablesVector.get(variablesVector.size()-1)).setNumerico(true);
                 }
                 position++;
             }            
@@ -411,7 +245,7 @@ public class ConstructionController {
                 rows++;;
 		    }
         } catch(Exception e){}
-        return rows-1;           		
+        return rows;           		
 	}
 	
 	/**
@@ -432,7 +266,7 @@ public class ConstructionController {
                      variables.add(aux);
                      nCols++;
                 } else{
-                     vector = new int[rows+1];
+                     vector = new int[rows];
                      compacted = true;
                 }
             }
@@ -454,72 +288,48 @@ public class ConstructionController {
 	    int position = 0;
         String stateName = "";     
         TVariavel aux;
-        for(int i=0;i<rows;i++){
-        	for(int j=0;j<variables.size();j++){
-        		matrix[i][j]=-1;
-        	}
-        	
-        }
         try{
-        	caseNumber=0;
-            while (cols.ttype != StreamTokenizer.TT_EOF && caseNumber < rows+1){
-                while(cols.ttype != StreamTokenizer.TT_EOL && position < variablesVector.size() && caseNumber < rows+1){
+            while (cols.ttype != StreamTokenizer.TT_EOF && caseNumber <= rows){
+                while(cols.ttype != StreamTokenizer.TT_EOL && position < variablesVector.size() && caseNumber <= rows){
                     aux = (TVariavel)variablesVector.get(position);
-                     if (aux.getRep()){
-                    	vector[(int)caseNumber] = (int)cols.nval;
+                	if (aux.getRep()){
+                	    /*if(cols.nval > 0.0){
+                	        vector[(int)caseNumber] = (int)cols.nval;
+                	    }else{*/
+                	        vector[(int)caseNumber] = Integer.parseInt(cols.sval);
+                	    //}
                 	} else if(aux.getParticipa()){
-                		if(caseNumber==rows){
-                	//		System.out.println("pp");
-                		}
                     	if(cols.sval != null){
-                    		
                          	stateName = cols.sval;
                          	if(! aux.existeEstado(stateName)){
-                         		if(!stateName.equals("?")){
-                         		aux.setNumerico(false);
-                         	
-                         			//variablesVector.get(position).addEstado(stateName);
-                         			aux.adicionaEstado(stateName);                              	
+                         		if(!stateName.equals("?")){                         		
+                              		aux.adicionaEstado(stateName);                              	
                          		} else {
                          			missing = true;
                          		}
                          	}
                     	} else{
-                    		 stateName = String.valueOf(cols.nval);                    		
-                    		if((stateName!=null)&&(stateName!="")){
-                    			if(!aux.existeEstado(stateName)){
-                    		
-                    		aux.setNumerico(true);
-                    		int pant = aux.adicionaEstado(stateName);//variablesVector.get(position).addEstado(stateName);
-                    		
-                    		for(int i=0;i<(int)caseNumber;i++){
-                    		if(matrix[i][aux.getPos()]>pant-1)
-                    			matrix[i][aux.getPos()]++;
-                    		}
-                    		//aux.adicionaEstado(stateName);
-                    			}
-                    		}
-                         	
+                         	stateName = String.valueOf(cols.nval);
+                         	if (! aux.existeEstado(stateName)){
+                               	aux.adicionaEstado(stateName);
+                         	}
                     	}
                     	if(! missing){
-                        	matrix[(int)caseNumber-1][aux.getPos()] = aux.getEstadoPosicao(stateName);
+                        	matrix[(int)caseNumber][aux.getPos()] = (byte)aux.getEstadoPosicao(stateName);
                         	
                     	} else{
-                    		matrix[(int)caseNumber-1][aux.getPos()] = -1;
+                    		matrix[(int)caseNumber][aux.getPos()] = -1;
                     		missing = true;                    		
                     	}
                 	}
                 	cols.nextToken();
-                	position++;
+                	position++;                	
             	}
             	caseNumber++;
-            	if(caseNumber==rows-3){
-        			System.out.println("pp");
-        		}
             	while (cols.ttype != StreamTokenizer.TT_EOL && caseNumber < rows){
                 	cols.nextToken();
             	}
-            	position = 0;
+            	position = 0;            	
             	cols.nextToken();	
             }
         } catch(Exception e ){
@@ -527,31 +337,34 @@ public class ConstructionController {
         	JOptionPane.showMessageDialog(null,msg,"ERROR",JOptionPane.ERROR_MESSAGE);                    	        
         };        	
         /*Tirar isso. Só pra debug*/
-            System.out.println(String.valueOf(caseNumber));  
-            caseNumber--;
-	}
-	
-	public boolean[] checavariaveis(NodeList temp){
-		boolean[] result= new boolean[temp.size()];
-		double teste=0;
-		this.caseNumber=this.caseNumber+0*(long)teste;
-		for(int i=0;i<temp.size();i++){
-			try{
-				result[i]=true;
-				for(int j=0;j<temp.get(i).getStatesSize();j++){
-				teste= Double.parseDouble(temp.get(i).getStateAt(j));				
-				}
-			}
-			catch (Exception e){
-				result[i]=false;
-			}
-		}
-		
-		return result;
+        System.out.println("NumeroCasos " + caseNumber);	
 	}
 
-    public int[][] getMatrix(){
-    	return matrix;    	
+	/**
+	 * Normalizes the probabilities of a variable.
+	 * 
+	 *@param variable - A TVariavel object.
+	 */
+	private void normalize(TVariavel variable) {
+        for (int c = 0; c < variable.getPotentialTable().tableSize()/*.getDados().size()*/; c+=variable.getEstadoTamanho()/*.noEstados()*/){
+            float sum = 0;
+            for (int i = 0; i < variable.getEstadoTamanho(); i++){
+               sum += variable.getPotentialTable().getValue(c+i);
+            }
+            if (sum == 0){
+                for (int i = 0; i < variable.getEstadoTamanho()/*.noEstados()*/; i++){
+                    variable.getPotentialTable().setValue(c+i, 1/variable.getEstadoTamanho());
+                }
+            } else{
+                 for (int i = 0; i < variable.getEstadoTamanho()/*.noEstados()*/; i++){
+                     variable.getPotentialTable().setValue(c+i, variable.getPotentialTable().getValue(c+i)/sum);
+                 }
+            }
+        }
+    }
+    
+    public byte[][] getMatrix(){
+    	return this.matrix;    	
     }
     
     public NodeList getVariables(){
@@ -564,5 +377,9 @@ public class ConstructionController {
     
     public long getCaseNumber(){
     	return caseNumber;    	
+    }
+    
+    public boolean isCompacted(){
+        return compacted;
     }
 }

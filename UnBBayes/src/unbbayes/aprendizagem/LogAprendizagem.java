@@ -20,19 +20,20 @@
  */
  package unbbayes.aprendizagem;
 
-import javax.swing.*;
-import unbbayes.util.NodeList;
+import java.awt.Container;
+import java.awt.Frame;
 
-import java.awt.*;
+import javax.swing.JDialog;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+import unbbayes.util.NodeList;
 
 
 
 public class LogAprendizagem extends JDialog{
 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-	private JTextArea caixaLog;
+    private JTextArea caixaLog;
     private JScrollPane painel;
 
 

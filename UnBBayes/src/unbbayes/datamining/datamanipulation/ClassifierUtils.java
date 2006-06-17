@@ -1,8 +1,10 @@
 package unbbayes.datamining.datamanipulation;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
-import unbbayes.datamining.classifiers.decisiontree.*;
+import unbbayes.datamining.classifiers.decisiontree.SplitObject;
 
 /**
  * Class implementing information gain method and other related actions
@@ -14,7 +16,7 @@ import unbbayes.datamining.classifiers.decisiontree.*;
 public class ClassifierUtils 
 {
 	/** stores the calculated logs */
-	private HashMap<Double,Double> logmap;
+	private HashMap logmap;
 	/** value of ln(2) to be used in the log2 function*/
 	private static final double LN2 = Math.log(2);
 	/** instance set used in the methods */
@@ -30,7 +32,7 @@ public class ClassifierUtils
 	public ClassifierUtils(InstanceSet inst)
 	{
 		instances = inst;
-		logmap = new HashMap<Double,Double>();
+		logmap = new HashMap();
 		Double zeroDouble = new Double(0);
 		if(logmap.containsKey(zeroDouble))
 			logmap.put(zeroDouble,zeroDouble);
@@ -110,13 +112,13 @@ public class ClassifierUtils
 		int numDataset;
 		int numInst = inst.size();
 		float[] numInstancesPerValue = new float[numValues];
-		ArrayList<Instance> missingValueInstances = new ArrayList<Instance>(); 
+		ArrayList missingValueInstances = new ArrayList(); 
 		for (int i=0;i<numInst;i++)
 		{
 		  instance = getInstance(inst,i); 
 		  if(!instance.isMissing(att[attIndex].intValue()))
 		  {
-			  numDataset = (int)instance.getByteValue(att[attIndex].intValue());
+			  numDataset = (int)instance.getValue(att[attIndex].intValue());
 			  data[numDataset].add(inst.get(i));
 			  numInstancesPerValue[numDataset] += instance.getWeight();
 		  }
@@ -187,14 +189,14 @@ public class ClassifierUtils
 		//arrange instances according to split value
 		ArrayList instancesMoreThan = new ArrayList();
 		ArrayList instancesLessThan = new ArrayList();
-		ArrayList<Instance> missingValueInstances = new ArrayList<Instance>();
+		ArrayList missingValueInstances = new ArrayList();
 		float[] numInstancesPerValue = new float[2];
 		for(int i=0;i<actualInst.size();i++)
 		{
 			instance = getInstance(actualInst,i);
 			if(!instance.isMissing(actualAtt[attIndex].intValue()))
 			{
-				if(Double.parseDouble(values[instance.getByteValue(actualAtt[attIndex].intValue())])>=splitValue)
+				if(Double.parseDouble(values[instance.getValue(actualAtt[attIndex].intValue())])>=splitValue)
 				{
 					instancesMoreThan.add(actualInst.get(i));
 					numInstancesPerValue[0] += instance.getWeight(); 								
@@ -249,7 +251,7 @@ public class ClassifierUtils
 	*/
 	  public double[] computeInfoGain(SplitObject split)
 	  {
-		return computeInfoGain(split, new double[split.getAttributes().length], new ArrayList<NumericData>());  	
+		return computeInfoGain(split, new double[split.getAttributes().length], new ArrayList());  	
 	  }
 	  
 	//------------------------------------------------------------------//
@@ -262,7 +264,7 @@ public class ClassifierUtils
 	 * @param numericDataList numeric data obtained in the computation of numeric attributes 
 	 * @return Information gains for the split attributes
 	 */
-	  public double[] computeInfoGain(SplitObject split, double[] splitValues, ArrayList<NumericData> numericDataList)
+	  public double[] computeInfoGain(SplitObject split, double[] splitValues, ArrayList numericDataList)
 	  {
 	  	//attributes' indexes
 		Integer[] att = split.getAttributes();
@@ -315,7 +317,7 @@ public class ClassifierUtils
 					{
 						if (!instance.isMissing(attributeIndex))
 						{
-							counts[attIndex][(int)instance.getByteValue(attributeIndex)][(int)instance.classValue()] += instance.getWeight();
+							counts[attIndex][(int)instance.getValue(attributeIndex)][(int)instance.classValue()] += instance.getWeight();
 						}
 						else
 						{
@@ -390,15 +392,15 @@ public class ClassifierUtils
 				
 				//gets values effectively used sorted
 				String[] oldValues = instances.getAttribute(att[i].intValue()).getAttributeValues();
-				ArrayList<String> valuesTemp = new ArrayList<String>();
+				ArrayList valuesTemp = new ArrayList();
 				for(int x=0;x<inst.size();x++)
 				{
 					instance = getInstance(inst,x);
 					if(!instance.isMissing(att[i].intValue()))
 					{
-						if(!valuesTemp.contains(oldValues[instance.getByteValue(att[i].intValue())]))
+						if(!valuesTemp.contains(oldValues[instance.getValue(att[i].intValue())]))
 						{
-							valuesTemp.add(oldValues[instance.getByteValue(att[i].intValue())]);
+							valuesTemp.add(oldValues[instance.getValue(att[i].intValue())]);
 						}
 					}
 				}
@@ -422,7 +424,7 @@ public class ClassifierUtils
 						//for each value...
 						for(int y=0;y<values.length;y++)
 						{
-							if(values[y]==Double.parseDouble(oldValues[instance.getByteValue(att[i].intValue())]))
+							if(values[y]==Double.parseDouble(oldValues[instance.getValue(att[i].intValue())]))
 							{
 								classesDistribution[y][(int)instance.classValue()] += instance.getWeight();
 								break;
@@ -436,6 +438,7 @@ public class ClassifierUtils
 				}					
 							        						
 				//search for the minimum entropy
+				double value1 = values[0], value2;
 				float[] distribution1, distribution2;
 				double minimumEntropy = Integer.MAX_VALUE;
 				double entropy; 
@@ -446,6 +449,7 @@ public class ClassifierUtils
 				//for each attribute value...
 				for(int x=1;x<values.length;x++)
 				{
+					value2 = values[x];
 					distribution1 = classesDistribution[x-1];
 					distribution2 = classesDistribution[x];
 					sumPart1 = new float[numClassValues]; 
@@ -476,6 +480,8 @@ public class ClassifierUtils
 							minimumValue = actualValue;
 						}
 					}
+					
+					value1 = value2;					
 				}
 				
 				if(minimumEntropy==Integer.MAX_VALUE)
@@ -657,35 +663,6 @@ public class ClassifierUtils
 	public static double log2(double a)
 	{
 	  return Math.log(a)/LN2;
-	}
-	
-
-	//----------------------------------------------------------------------//
-
-	/**
-	 * Returns the information gain for one possible position for the breakpoint in a discretization procedure
-	 * 
-	 * @param beforeInfoPoint the values for all classes before the breakpoint.
-	 * @param afterInfoPoint the values for all classes after the breakpoint.
-	 * @return A value between 0 and 1, the information gain generated.
-	 */
-	public double computeNumericInfo(float[] beforeInfoPoint,float[] afterInfoPoint)
-	{
-		float sum = 0;
-		float beforeSum = 0;
-		float afterSum = 0;
-		for (float i : beforeInfoPoint) {
-			beforeSum += i;
-		}
-		for (float i : afterInfoPoint) {
-			afterSum += i;
-		}
-		sum = beforeSum + afterSum;
-		
-		double beforeEntropy = computeEntropy(beforeInfoPoint,beforeSum);
-		double afterEntropy = computeEntropy(afterInfoPoint,afterSum);
-		
-		return (beforeSum / sum * beforeEntropy) + (afterSum / sum * afterEntropy);
 	}
 	
 	//-------------------------------------------------------------------------//

@@ -1,22 +1,18 @@
 package unbbayes.gui;
 
 import java.awt.BorderLayout;
-
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import java.util.ResourceBundle;
 
 import javax.swing.JButton;
-
 import javax.swing.JPanel;
-
 import javax.swing.JSplitPane;
-
 import javax.swing.JToolBar;
 
-import unbbayes.controller.*;
+import unbbayes.controller.IconController;
+import unbbayes.controller.WindowController;
 
 
 /**
@@ -29,9 +25,6 @@ import unbbayes.controller.*;
  */
 
 public class EditNet extends JPanel {
-
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 
     private final NetWindow netWindow;
 

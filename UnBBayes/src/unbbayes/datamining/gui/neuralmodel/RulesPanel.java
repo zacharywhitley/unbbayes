@@ -1,17 +1,34 @@
 package unbbayes.datamining.gui.neuralmodel;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.text.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 
-import javax.swing.*;
-import javax.swing.table.*;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 import unbbayes.controller.IconController;
-import unbbayes.datamining.classifiers.*;
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.classifiers.cnmentities.*;
+import unbbayes.datamining.classifiers.CombinatorialNeuralModel;
+import unbbayes.datamining.classifiers.cnmentities.Combination;
+import unbbayes.datamining.classifiers.cnmentities.OutputNeuron;
+import unbbayes.datamining.datamanipulation.Attribute;
 
 /**
  *  Class that implements a panel that shows the rules extracted from the model.
@@ -20,9 +37,6 @@ import unbbayes.datamining.classifiers.cnmentities.*;
  *  @version $1.0 $ (02/16/2003)
  */
 public class RulesPanel extends JPanel {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   private ImageIcon printIcon;
   private ImageIcon printPreviewIcon;
   private ResourceBundle resource;
@@ -30,7 +44,7 @@ public class RulesPanel extends JPanel {
   private JScrollPane jScrollPane1 = new JScrollPane();
   private JTable tableRules;
   private CombinatorialNeuralModel combinatorialNetwork;
-  private ArrayList<TableLine> tableLinesArray;
+  private ArrayList tableLinesArray;
   private Attribute[] attributeVector;
   private int classIndex;
   private Object[] longValues = new Object[6];
@@ -191,7 +205,7 @@ public class RulesPanel extends JPanel {
     OutputNeuron[] outputArray;
     OutputNeuron tempOutput;
     DecimalFormat numFormat = new DecimalFormat("##0.0");
-    tableLinesArray = new ArrayList<TableLine>();
+    tableLinesArray = new ArrayList();
 
     while(combinations.hasNext()){                   // para todos os neuronios de saida
       Combination combination = (Combination)combinations.next();
@@ -324,9 +338,6 @@ public class RulesPanel extends JPanel {
   }
 
   class RulesTableModel extends AbstractTableModel{
-		/** Serialization runtime version number */
-		private static final long serialVersionUID = 0;
-
     public String getColumnName(int col) {
       String[] columnNames = {resource.getString("index"),
                               resource.getString("if"),

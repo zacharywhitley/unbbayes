@@ -1,9 +1,18 @@
 package unbbayes.controller;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.Timer;
 
 /** This class shows a screen that initializes a loading and shows
  *  it's status for the FileController instance
@@ -13,9 +22,6 @@ import java.util.ResourceBundle;
  */
 public class ProgressDialog extends JDialog
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
 	/** Create an instance of this class  */
 	public ProgressDialog(String message, IProgress progress)
 	{
@@ -75,8 +81,7 @@ public class ProgressDialog extends JDialog
 					activity.requestCancel();
 					activity.interrupt();
 					activityMonitor.stop();
-					//hide();		
-					setVisible(false);
+					hide();		
 				}
 			});
 		
@@ -96,8 +101,7 @@ public class ProgressDialog extends JDialog
 					if(current==activity.getTarget())
 					{	
 						activityMonitor.stop();
-						//hide();
-						setVisible(false);
+						hide();
 					}
 				}
 			});
@@ -112,8 +116,7 @@ public class ProgressDialog extends JDialog
 		{
 			activity.start();
 			activityMonitor.start();
-			//show();
-			setVisible(true);
+			show();
 			return !activity.wasActivityCancelled();
 		}
 		else

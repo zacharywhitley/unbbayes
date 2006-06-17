@@ -22,13 +22,14 @@
 package unbbayes.prs;
 
 
-import java.awt.geom.*;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.ITabledVariable;
-import unbbayes.util.*;
+import unbbayes.util.ArrayMap;
+import unbbayes.util.NodeList;
 
 /**
  *  Classe que representa um nó genérico.
@@ -40,9 +41,6 @@ public abstract class Node implements java.io.Serializable {
 	public class SerializablePoint2D
 		extends Point2D.Double
 		implements java.io.Serializable {
-		/** Serialization runtime version number */
-		private static final long serialVersionUID = 0;
-
 		private void writeObject(java.io.ObjectOutputStream out)
 			throws java.io.IOException {
 			out.writeDouble(x);
@@ -58,7 +56,6 @@ public abstract class Node implements java.io.Serializable {
 
 	private String description = "";
 	protected String name;
-	private boolean numerico=true;
 	private SerializablePoint2D posicao;
 	protected NodeList parents;
 	private NodeList children;
@@ -70,7 +67,6 @@ public abstract class Node implements java.io.Serializable {
 	private String explanationDescription = "";
 	private ArrayMap phrasesMap = new ArrayMap();
 	private int informationType;
-	public int infoestados[];
 
 	public static final int PROBABILISTIC_NODE_TYPE = 0;
 	public static final int UTILITY_NODE_TYPE = 1;
@@ -157,36 +153,6 @@ public abstract class Node implements java.io.Serializable {
 	 */
 	public void setChildren(NodeList filhos) {
 		this.children = filhos;
-	}
-	public void AddChild(Node filho){
-		this.children.add(filho);
-	}
-	public void AddParent(Node parent){
-		this.parents.add(parent);
-	}
-	public boolean isParentOf(Node child){
-		//boolean result=children.contains(child);
-		boolean result=false;
-		int j=children.size();
-		try{
-		for(int i=0;i<j;i++){
-			result=((result)||((child.getName())==(children.get(i).getName())));
-		}
-		}
-		catch (Exception ee){
-			int debug=0;
-			int debug2=debug;
-		}
-		return result;
-		}
-	public boolean isChildOf(Node parent){
-		//boolean result=parents.contains(parent);
-		boolean result=false;
-		int j=parents.size();
-		for(int i=0;i<j;i++){
-			result=((result)||((parent.getName())==(parents.get(i).getName())));
-		}
-		return result;
 	}
 
 	/**
@@ -291,12 +257,6 @@ public abstract class Node implements java.io.Serializable {
 	public final NodeList getChildren() {
 		return children;
 	}
-	public final void removeChildren() {
-		children.clear();
-	}
-	public final void removeChild(int child) {
-		children.remove2(child);
-	}
 
 	/**
 	 *  Retorna a lista de pais.
@@ -305,12 +265,6 @@ public abstract class Node implements java.io.Serializable {
 	 */
 	public final NodeList getParents() {
 		return parents;
-	}
-	public final void removeParents() {
-		parents.clear();
-	}
-	public final void removeParent(int parent) {
-		parents.remove2(parent);
 	}
 
 	/**
@@ -367,13 +321,6 @@ public abstract class Node implements java.io.Serializable {
 		return this.phrasesMap;
 	}
 
-	public void atualizatamanhoinfoestados(){
-		int i=states.size();
-		infoestados=new int[i];
-		for(int j=0;j<i;j++)infoestados[j]=0;
-		}
-
-	
 	/**
 	 *  Insere um estado com o nome especificado no final da lista.
 	 *
@@ -382,50 +329,8 @@ public abstract class Node implements java.io.Serializable {
 	public void appendState(String estado) {
 		updateTables();
 		states.add(estado);
-		this.atualizatamanhoinfoestados();
-		}
-	
-	 public boolean existeEstado(String nomeEstado){
-	        int tamanho = states.size();
-	        for(int tamanhoEstado = 0; tamanhoEstado < tamanho; tamanhoEstado++){
-	            if(states.get(tamanhoEstado).equals(nomeEstado)){
-	                return true;
-	            }
-	        }
-	        return false;
-	    }
-	 
-	 public int addEstado(String estado){
-		 int posf=states.size();
-		 if(this.getNumerico()){
-	    	int tamanho = states.size();
-	        List states2=new ArrayList();
-	        int i;
-	        posf=0;
-	        String b1,b2=estado;
-	        //if(tamanho==1)posf
-	for(i = 0; i < tamanho; i++){
-		b1=(String)states.get(i);
-	if(Double.parseDouble(b1)<Double.parseDouble(b2)){
-	                posf++;
-	            }
-	            
-	        }
-	        for(i=0;i<posf;i++){
-	        	states2.add(states.get(i));	
-	        }
-	        states2.add(estado);
-	        for(i=posf;i<tamanho;i++){
-	        	states2.add(states.get(i));	
-	        }
-	        states=states2;        
-	        }		 
-	        return posf;
-	        
 	}
-	 
-	
-	
+
 	/**
 	 *  Retira o estado criado mais recentemente.
 	 *  Isto é, o último estado da lista.
@@ -435,11 +340,6 @@ public abstract class Node implements java.io.Serializable {
 			updateTables();
 			states.remove(states.size() - 1);
 		}
-		this.atualizatamanhoinfoestados();
-	}
-	public void removestate(int num){
-		states.remove(num);
-		this.atualizatamanhoinfoestados();
 	}
 
 	/**
@@ -552,12 +452,6 @@ public abstract class Node implements java.io.Serializable {
 		
 		Node node = (Node) obj;
 		return (node.name.equals(this.name));		
-	}
-	public void setNumerico(boolean sn){
-		numerico=sn;
-	}
-	public boolean getNumerico(){
-		return numerico;
 	}
 
 }

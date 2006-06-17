@@ -1,21 +1,35 @@
 package unbbayes.datamining.gui.c45;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.util.Enumeration;
+import java.util.ResourceBundle;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
+import javax.swing.ButtonGroup;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.JTree;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.ExpandVetoException;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import unbbayes.controller.IconController;
-import unbbayes.datamining.classifiers.decisiontree.*;
+import unbbayes.datamining.classifiers.decisiontree.C45;
 
 public class InductionPanel extends JPanel
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   BorderLayout borderLayout1 = new BorderLayout();
   JSplitPane jSplitPane = new JSplitPane();
   JPanel messagesPanel = new JPanel();

@@ -1,8 +1,8 @@
 package unbbayes.datamining.gui.c45.resources;
 
-import java.util.*;
+import java.util.ListResourceBundle;
 
-import javax.swing.*;
+import javax.swing.KeyStroke;
 
 public class DecisiontreeResource_pt extends ListResourceBundle 
 {
@@ -16,7 +16,7 @@ public class DecisiontreeResource_pt extends ListResourceBundle
 		// Decision Tree Main
 		{"open","Abrir ..."},
 		{"build","Construir Árvore de Decisão"},
-		{"preferences","Preferências..."},	
+		{"preferences","Preferências"},	
 		{"file","Arquivo"},
 		{"help","Ajuda"},
 		{"about","Sobre ..."},

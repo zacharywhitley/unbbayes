@@ -1,7 +1,10 @@
 package unbbayes.datamining.classifiers.decisiontree;
 
 import java.io.Serializable;
-import unbbayes.datamining.datamanipulation.*;
+
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.Instance;
+import unbbayes.datamining.datamanipulation.Utils;
 
 /**
  * Class representing the leaf of the decision tree
@@ -10,14 +13,11 @@ import unbbayes.datamining.datamanipulation.*;
  */
 public class Leaf implements Serializable
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
 	/** Class attribute of dataset */
 	private Attribute classAttribute;
 	
 	/** Leaf's class value */
-	private int classValue;
+	private short classValue;
 
 	/** Leaf's weight class distribution. */
 	private float[] weightDistribution;
@@ -39,7 +39,7 @@ public class Leaf implements Serializable
 	{
 		this.classAttribute = classAttribute;
 		this.weightDistribution = weightDistribution;
-		classValue = Utils.maxIndex(weightDistribution);
+		classValue = (byte)Utils.maxIndex(weightDistribution);
 	}
 	
 	//---------------------------BASIC FUNCIONS---------------------------//
@@ -49,7 +49,7 @@ public class Leaf implements Serializable
   	 * 
   	 * @return the leaf's class value
   	 */
-	public int getClassValue()
+	public short getClassValue()
 	{
 		return classValue;
 	}

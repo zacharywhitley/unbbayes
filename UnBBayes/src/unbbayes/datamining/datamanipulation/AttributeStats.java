@@ -1,7 +1,5 @@
 package unbbayes.datamining.datamanipulation;
 
-import java.util.*;
-
 /**
  * A Utility class that contains summary information on an
  * the values that appear in a dataset for a particular attribute.
@@ -31,8 +29,6 @@ public class AttributeStats
   /** Constant set for nominal attributes. */
   public final static int NOMINAL = 1;
 
-  private Map<Float,Float> valuesMap;
-  
   /** Constructor that defines the type of Attribute will be manipulated and the number
   	of values associated with this Attribute. If Attribute is numeric numValues will not 
 	be considerated.
@@ -45,7 +41,6 @@ public class AttributeStats
 	nominalCountsWeighted = new int [numValues];
 	if (attributeType == NUMERIC)
 	{	numericStats = new Stats();
-		valuesMap = new HashMap<Float,Float>();
 	}
   }
   
@@ -133,17 +128,16 @@ public class AttributeStats
 		distinctCount++;
     }		
   }
-  protected void addDistinct(float value, int count) 
+  protected void addDistinct(float value, int internalValue,int count, int countWeighted) 
   {	if (count > 0) 
 	{	
+		nominalCounts[internalValue] = count;
+		nominalCountsWeighted[internalValue] = countWeighted;
 		if (numericStats != null) 
 		{	numericStats.add(value, count);
 			numericStats.calculateDerived();
 		}
-		if (!valuesMap.containsKey(value)) {
-			valuesMap.put(value,value);
-			distinctCount++;			
-		}
+		distinctCount++;
 	}		
   }
   
@@ -154,7 +148,7 @@ public class AttributeStats
    */
   public String toString() 
   {	
-	  StringBuilder result = new StringBuilder();
+  	StringBuffer result = new StringBuffer();
     result.append("Missing Count " + missingCount + '\n');
 	result.append("Missing Count Weighted " + missingCountWeighted + '\n');
 	result.append("Distinct Count " + distinctCount + '\n');
@@ -171,12 +165,6 @@ public class AttributeStats
 	}
 	result.append("\n");
     return result.toString();
-  }
-  
-  public void dispose() {
-	  numericStats = null;
-	  nominalCounts = null;
-	  nominalCountsWeighted = null;
   }
 
 }

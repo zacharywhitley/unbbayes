@@ -1,8 +1,9 @@
 package unbbayes.datamining.classifiers.decisiontree;
 
-import unbbayes.datamining.datamanipulation.*;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+
+import unbbayes.datamining.datamanipulation.Attribute;
 
 /**
  * Class representing the node of the decision tree
@@ -12,8 +13,6 @@ import java.util.*;
  */
 public class Node implements Serializable
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 	/** Attribute used for splitting. */
 	protected Attribute splitAttribute;
 	/** Node children on the tree */

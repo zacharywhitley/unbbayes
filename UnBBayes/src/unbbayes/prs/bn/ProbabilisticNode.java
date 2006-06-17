@@ -20,8 +20,8 @@
  */
 package unbbayes.prs.bn;
 
-import java.util.*;
 import java.awt.Color;
+import java.util.ResourceBundle;
 
 import unbbayes.prs.Node;
 import unbbayes.util.NodeList;
@@ -33,9 +33,6 @@ import unbbayes.util.SetToolkit;
  *@author     Michael e Rommel
  */
 public class ProbabilisticNode extends TreeVariable implements ITabledVariable, java.io.Serializable {
-
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 
     private ProbabilisticTable tabelaPot;
     private static Color descriptionColor = new Color(Color.yellow.getRGB());

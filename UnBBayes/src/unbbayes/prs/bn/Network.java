@@ -22,8 +22,13 @@
 package unbbayes.prs.bn;
 
 
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -32,7 +37,6 @@ import unbbayes.io.LogManager;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.id.DecisionNode;
-
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
@@ -43,9 +47,6 @@ import unbbayes.util.SetToolkit;
  *@version    21 de Setembro de 2001
  */
 public class Network implements java.io.Serializable {
-
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 
 	/** Load resource file from this package */
   	protected static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
@@ -1045,7 +1046,8 @@ public class Network implements java.io.Serializable {
 	
 				for (int j = auxNo.getAdjacents().size() - 1; j >= 0; j--) {
 					Node v = auxNo.getAdjacents().get(j);
-					v.getAdjacents().remove(auxNo);				
+					boolean removed = v.getAdjacents().remove(auxNo);				
+//					assert removed;
 				}
 				auxNos.remove(auxNo);
 				algum = true;
@@ -1104,7 +1106,8 @@ public class Network implements java.io.Serializable {
 	
 		for (int i = no.getAdjacents().size() - 1; i >= 0; i--) {
 			Node auxNo1 = no.getAdjacents().get(i);
-			auxNo1.getAdjacents().remove(no);
+			boolean removed = auxNo1.getAdjacents().remove(no);
+//			assert removed;
 		}
 		auxNos.remove(no);
 	}
@@ -1181,7 +1184,7 @@ public class Network implements java.io.Serializable {
 			
 			boolean erro = false;
 
-			StringBuilder sb = new StringBuilder();
+			StringBuffer sb = new StringBuffer();
 
 			try {
 				verifyUtility();

@@ -1,27 +1,49 @@
 package unbbayes.datamining.gui.evaluation;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.ResourceBundle;
 
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JToolBar;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 
-import unbbayes.controller.*;
-import unbbayes.datamining.classifiers.*;
-import unbbayes.datamining.classifiers.decisiontree.*;
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.gui.*;
-import unbbayes.io.*;
-import unbbayes.prs.bn.*;
+import unbbayes.controller.FileController;
+import unbbayes.controller.IconController;
+import unbbayes.datamining.classifiers.BayesianNetwork;
+import unbbayes.datamining.classifiers.Classifier;
+import unbbayes.datamining.classifiers.CombinatorialNeuralModel;
+import unbbayes.datamining.classifiers.NeuralNetwork;
+import unbbayes.datamining.classifiers.decisiontree.DecisionTreeLearning;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.gui.FileIcon;
+import unbbayes.gui.SimpleFileFilter;
+import unbbayes.io.BaseIO;
+import unbbayes.io.NetIO;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 
 public class EvaluationMain extends JInternalFrame
-{ 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-	/** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+{ /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
   private ImageIcon abrirIcon;
   private ImageIcon helpIcon;

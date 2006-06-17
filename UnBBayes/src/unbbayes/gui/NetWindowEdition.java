@@ -7,8 +7,6 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ResourceBundle;
@@ -25,7 +23,8 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
-import unbbayes.controller.*;
+import unbbayes.controller.IconController;
+import unbbayes.controller.WindowController;
 import unbbayes.prs.Node;
 
 
@@ -40,11 +39,7 @@ import unbbayes.prs.Node;
 
 public class NetWindowEdition extends JPanel {
 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-
-	private final NetWindow netWindow;
+    private final NetWindow netWindow;
 
     private GlobalOptions go;
     private JTable table;
@@ -80,7 +75,7 @@ public class NetWindowEdition extends JPanel {
     private final JButton saveTableImage;
     private final JButton globalOption;
     private final JButton hierarchy;
-    private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9 ]*");
+    private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
     private Matcher matcher;
 
     private final IconController iconController = IconController.getInstance();
@@ -283,34 +278,7 @@ public class NetWindowEdition extends JPanel {
           }
         });
 
-        // listener responsible for setting the sigla node text when focus 
-        // is lost 
-        txtSigla.addFocusListener(new FocusAdapter() {
-			public void focusLost(FocusEvent e) {
-				Object selected = netWindow.getIGraph().getSelected();
-				if (selected instanceof Node) {
-					Node nodeAux = (Node) selected;
-					try {
-						String name = txtSigla.getText(0, txtSigla.getText()
-								.length());
-						matcher = wordPattern.matcher(name);
-						if (matcher.matches()) {
-							nodeAux.setName(name);
-							repaint();
-						} else {
-							JOptionPane.showMessageDialog(netWindow, resource
-									.getString("siglaError"), resource
-									.getString("nameException"),
-									JOptionPane.ERROR_MESSAGE);
-							txtSigla.selectAll();
-						}
-					} catch (javax.swing.text.BadLocationException ble) {
-						System.out.println(ble.getMessage());
-					}
-				}
-			}
-		});
-        
+
         // listener responsável pela atualização do texo da descrição do nó
         txtDescription.addKeyListener(new KeyAdapter() {
           public void keyPressed(KeyEvent e) {
@@ -337,32 +305,6 @@ public class NetWindowEdition extends JPanel {
             }
           }
         });
-        
-        // listener responsible for setting the description node text when focus 
-        // is lost
-        txtDescription.addFocusListener(new FocusAdapter() {
-			public void focusLost(FocusEvent e) {
-				Object selected = netWindow.getIGraph().getSelected();
-	            if (selected instanceof Node)
-	            {
-	              Node nodeAux = (Node)selected;
-	                try {
-	                    String name = txtDescription.getText(0,txtDescription.getText().length());
-	                    matcher = wordPattern.matcher(name);
-	                    if (matcher.matches()) {
-	                      nodeAux.setDescription(name);
-	                      repaint();
-	                    } else {
-	                        JOptionPane.showMessageDialog(netWindow, resource.getString("descriptionError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
-	                        txtDescription.selectAll();
-	                    }
-	                }
-	                catch (javax.swing.text.BadLocationException ble) {
-	                    System.out.println(ble.getMessage());
-	                }
-	              }
-	            }
-	          });
 
         //ao clicar no botão less, chama-se o metodo removerEstado do controller
         //para que esse remova um estado do nó

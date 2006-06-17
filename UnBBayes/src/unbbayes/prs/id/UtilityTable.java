@@ -1,6 +1,6 @@
 package unbbayes.prs.id;
 
-import unbbayes.prs.*;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 
 /**
@@ -8,9 +8,6 @@ import unbbayes.prs.bn.PotentialTable;
  * @author Michael
  */
 public class UtilityTable extends PotentialTable implements java.io.Serializable {
-
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 
     public UtilityTable() {
     }

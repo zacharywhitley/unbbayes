@@ -1,12 +1,20 @@
 package unbbayes.datamining.classifiers.decisiontree;
 
-import java.io.*;
-import java.util.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
+import java.util.Stack;
 
-import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
 
-import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.ClassifierUtils;
+import unbbayes.datamining.datamanipulation.Instance;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.Options;
+import unbbayes.datamining.datamanipulation.PrunningUtils;
+import unbbayes.datamining.datamanipulation.Utils;
 
 /**
  * Class implementing an C4.5 decision tree classifier. For more
@@ -20,9 +28,6 @@ import unbbayes.datamining.datamanipulation.*;
  */
 public class C45 extends DecisionTreeLearning implements Serializable
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
 	/** Load resources file for internacionalization */
 	private transient ResourceBundle resource;
 
@@ -73,9 +78,9 @@ public class C45 extends DecisionTreeLearning implements Serializable
 		//Contains methods to compute information gain and related actions
 		ClassifierUtils utils = new ClassifierUtils(data);
 		//Queue to use this function recursively,keeping stack components (see below)
-		ArrayList<QueueComponent> queue = new ArrayList<QueueComponent>();
+		ArrayList queue = new ArrayList();
 		//list containing indexes of all the current instances
-		ArrayList<Integer> actualInst = new ArrayList<Integer>(numInstances);
+		ArrayList actualInst = new ArrayList(numInstances);
 		//array containing indexes of attributes used currently
 		Integer[] actualAtt = new Integer[numAttributes];
 
@@ -108,13 +113,14 @@ public class C45 extends DecisionTreeLearning implements Serializable
 		float[] distribution;
 		Instance inst;
 		SplitObject[] splitData;
+		Node node;
 		Attribute att;
 		double meanInfoGains;
 		Attribute splitAttribute;
 		double splitValue;
 
 		double[] splitValues;
-		ArrayList<NumericData> numericDataList;
+		ArrayList numericDataList;
 
 		//start recursive code
 		while ((!queue.isEmpty()))
@@ -139,7 +145,7 @@ public class C45 extends DecisionTreeLearning implements Serializable
 				// compute array with the gain of each attribute.
 				// splitValues and numericDataList are initialized here
 				splitValues = new double[actualAtt.length];
-				numericDataList = new ArrayList<NumericData>();
+				numericDataList = new ArrayList();
 				infoGains = utils.computeInfoGain(split, splitValues, numericDataList);
 
 				//applies gain ratio if user chooses it
@@ -261,7 +267,7 @@ public class C45 extends DecisionTreeLearning implements Serializable
           Node node;
           Object obj;
           Stack stackObj = new Stack();
-          Stack<DefaultMutableTreeNode> stackTree = new Stack<DefaultMutableTreeNode>();
+          Stack stackTree = new Stack();
           DefaultMutableTreeNode text2 = new DefaultMutableTreeNode("root");
           DefaultMutableTreeNode treeNode = text2;
 
@@ -343,8 +349,8 @@ public class C45 extends DecisionTreeLearning implements Serializable
 		Object obj;
 		Integer level;
 		Stack stackObj = new Stack();
-		Stack<Integer> stackLevel = new Stack<Integer>();
-		StringBuilder text = new StringBuilder();
+		Stack stackLevel = new Stack();
+		StringBuffer text = new StringBuffer();
 
 		ArrayList root = rootNode.children;
 		int size = root.size();
@@ -399,7 +405,7 @@ public class C45 extends DecisionTreeLearning implements Serializable
 	 * @param instance the instance to be classified
 	 * @return the classification
 	 */
-	public int classifyInstance(Instance instance)
+	public short classifyInstance(Instance instance)
 	{
           Leaf leaf;
           Node node;
@@ -415,7 +421,7 @@ public class C45 extends DecisionTreeLearning implements Serializable
             if (att.isNominal())
             {
               // Atributo nominal
-              treeNode = (NominalNode)treeNode.children.get(instance.getByteValue(node.getAttribute()));
+              treeNode = (NominalNode)treeNode.children.get(instance.getValue(node.getAttribute()));
             }
             else
             {
@@ -423,7 +429,7 @@ public class C45 extends DecisionTreeLearning implements Serializable
               attValues = att.getAttributeValues();
               splitValue = ((NumericNode)node).getSplitValue();
 
-              if(Double.parseDouble(attValues[instance.getByteValue(att.getIndex())])>=splitValue)
+              if(Double.parseDouble(attValues[instance.getValue(att.getIndex())])>=splitValue)
               {
                 treeNode = (NumericNode)treeNode.children.get(0);
               }

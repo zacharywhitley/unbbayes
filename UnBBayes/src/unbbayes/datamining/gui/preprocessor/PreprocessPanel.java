@@ -1,23 +1,35 @@
 package unbbayes.datamining.gui.preprocessor;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.util.ResourceBundle;
 
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
 
-import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.AttributeStats;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.Stats;
 import unbbayes.util.GraphPaperLayout;
 
 public class PreprocessPanel extends JPanel
-{ 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-	/** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+{ /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
   private JPanel filePanel = new JPanel();
   private AttributeSelectionPanel attributePanel = new AttributeSelectionPanel();
@@ -32,6 +44,7 @@ public class PreprocessPanel extends JPanel
   private BorderLayout borderLayout7 = new BorderLayout();
   private BorderLayout borderLayout6 = new BorderLayout();
   private BorderLayout borderLayout5 = new BorderLayout();
+  private BorderLayout borderLayout2 = new BorderLayout();
   private BorderLayout borderLayout13 = new BorderLayout();
   private BorderLayout borderLayout12 = new BorderLayout();
   private BorderLayout borderLayout11 = new BorderLayout();
@@ -85,6 +98,7 @@ public class PreprocessPanel extends JPanel
   private JLabel jLabel11 = new JLabel();
   private JLabel jLabel10 = new JLabel();
   private GridLayout gridLayout5 = new GridLayout();
+  private ButtonGroup buttonGroup2 = new ButtonGroup();
   private TitledBorder titledBorder4;
   private TitledBorder titledBorder3;
   private TitledBorder titledBorder2;
@@ -253,10 +267,6 @@ public class PreprocessPanel extends JPanel
       attributeStats = inst.getAllAttributeStats();
       attributePanel.setInstances(instances);
   }
-  
-  public InstanceSet getBaseInstances() {
-	  return instances;
-  }
 
   /**
    * Creates a tablemodel for the attribute being displayed
@@ -292,11 +302,7 @@ public class PreprocessPanel extends JPanel
   }
 
   private class ValuesTableModel extends DefaultTableModel
-  {   
-		/** Serialization runtime version number */
-		private static final long serialVersionUID = 0;
-
-	  public boolean isCellEditable(int row, int col)
+  {   public boolean isCellEditable(int row, int col)
       {   return false;
       }
 
@@ -375,8 +381,8 @@ public class PreprocessPanel extends JPanel
               {   try
                   {   selectedAttribute = i;
                       Attribute att = instances.getAttribute(selectedAttribute);
-                      Attribute.Type type = att.getAttributeType();
-                      if (type == Attribute.Type.NOMINAL)
+                      int type = att.getAttributeType();
+                      if (type == Attribute.NOMINAL)
                       {   jLabel12.setText(resource.getString("nominal"));
                           discretizeButton.setEnabled(false);
                       }

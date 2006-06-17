@@ -46,6 +46,7 @@ public class IOGibbs {
 	public void makeFile(){
 			makeFirstLine();
 			Node node;
+			byte index;
 			for(int i = 0 ; i < data.length; i++){
 				for(int j = 0 ; j < variables.size(); j++){
 					node = variables.get(j);

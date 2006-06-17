@@ -1,7 +1,8 @@
 package unbbayes.datamining.classifiers.neuralnetwork;
 
-import java.io.*;
-import unbbayes.datamining.datamanipulation.*;
+import java.io.Serializable;
+
+import unbbayes.datamining.datamanipulation.Utils;
 
 /**
  *  Class that implements the logistic (sigmoid) activation function
@@ -12,10 +13,7 @@ import unbbayes.datamining.datamanipulation.*;
  */
 public class Sigmoid implements ActivationFunction, Serializable{
 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-	/**Constant that defines the minimum steep of the activation function*/
+  /**Constant that defines the minimum steep of the activation function*/
   public static final double MIN_STEEP = 0.0;
 
   /**Constant that defines the default steep of the activation function*/

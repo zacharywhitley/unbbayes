@@ -1,6 +1,6 @@
 package unbbayes.datamining.gui.resources;
 
-import java.util.*;
+import java.util.ListResourceBundle;
 
 public class GuiResource_pt extends ListResourceBundle {
 
@@ -11,11 +11,6 @@ public class GuiResource_pt extends ListResourceBundle {
 	// Invoker Main
 	{"id3Classifier","ID3 Classifier"},
 	{"naiveBayesClassifier","Naive Bayes Classifier"},
-	{"tanClassifier","TAN Classifier"},
-	{"banClassifier","BAN Classifier"},
-	
-	// inserir aqui?
-	
 	{"evaluation","Evaluation"},
 	{"language","Linguagem"},
 	{"lookAndFeel","Look and Feel"},

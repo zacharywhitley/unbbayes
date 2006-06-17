@@ -30,9 +30,6 @@ package unbbayes.io;
 
 public class LoadException extends Exception {
 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
     public LoadException(String a) {
         super(a);
     }

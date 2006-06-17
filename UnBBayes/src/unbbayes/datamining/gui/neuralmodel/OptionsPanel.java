@@ -1,8 +1,13 @@
 package unbbayes.datamining.gui.neuralmodel;
 
-import java.awt.*;
-import java.util.*;
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.util.ResourceBundle;
+
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 
 /**
@@ -12,9 +17,6 @@ import javax.swing.*;
  *  @version $1.0 $ (02/16/2003)
  */
 public class OptionsPanel extends JPanel{
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   private ResourceBundle resource;
   private JLabel labelMaxOrder = new JLabel();
   private JLabel labelConfidence = new JLabel();

@@ -20,8 +20,9 @@
  */
 package unbbayes.aprendizagem;
 
+import unbbayes.gui.TJanelaEdicao;
 import unbbayes.util.NodeList;
-import unbbayes.util.SetToolkit; 
+import unbbayes.util.SetToolkit;
 
 /**
  *   Essa classe implementa os métodos necessários para que
@@ -52,7 +53,7 @@ public class B extends BToolkit{
     * @see Tnij
     * @see TAprendizagemTollKit
     */
-  public B(NodeList variables, int[][] dataBase, int[] vector, long caseNumber,
+  public B(NodeList variables, byte[][] dataBase, int[] vector, long caseNumber,
                 String metric, String param, boolean compacted){  
     TVariavel variable;
     NodeList parentsAux;

@@ -23,7 +23,6 @@ package unbbayes.util;
 
 import java.util.ResourceBundle;
 
-import unbbayes.aprendizagem.TVariavel;
 import unbbayes.prs.Node;
 
 
@@ -34,9 +33,6 @@ import unbbayes.prs.Node;
  * @author Rommel
  */
 public final class NodeList implements java.io.Serializable {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
     public static final int DEFAULT_SIZE = 30;
 
     private Node data[];
@@ -96,30 +92,6 @@ public final class NodeList implements java.io.Serializable {
     public final Node get(int index) {
         return data[index];
     }
-    public void setnodestateat(int node,String state, int numstate){
-    	data[node].setStateAt(state,numstate);
-    }
-    public void removestateat(int node, int state){
-    	data[node].removestate(state);
-    	}
-    public final void RemoveParentFrom(int parent,int from){
-    	data[from].removeParent(parent);
-    }
-    public final void RemoveChildFrom(int child,int from){
-    	data[from].removeChild(child);
-    }
-    public final void ClearChildenFrom(int from){
-    	data[from].removeChildren();
-    }
-    public final void ClearParentsFrom(int from){
-    	data[from].removeParents();
-    }
-    public final void AddChildTo(int to, Node filho){
-    	data[to].AddChild(filho);
-    }
-    public final void AddParentTo(int to, Node pai){
-    	data[to].AddParent(pai);
-    }
 
     /**
      * Replaces the element at the specified position in this list with
@@ -146,35 +118,6 @@ public final class NodeList implements java.io.Serializable {
         data[size++] = newElement;
         return true;
     }
-    
-    public final void adicionarN(Node novono) {
-        ensureCapacity(size + 1);
-        //data[size++] = novono;
-        size++;
-        int flag=0;
-        for(int i=size;i>-1;i--){
-        	if(Double.parseDouble(data[i].getName())>Double.parseDouble(novono.getName()))
-        	{data[i+1]=data[i];
-        		flag=0;
-        	}
-        	if((Double.parseDouble(data[i].getName())<Double.parseDouble(novono.getName()))&&(flag==0))
-        		{
-        		flag=1;
-        		((TVariavel)novono).setDescription(novono.getName());
-				 ((TVariavel)novono).setParticipa(true);
-        		data[i+1]=novono;
-        		}
-        }
-        	
-        }
-    public final void adicionarC(Node novono) {
-            ensureCapacity(size + 1);
-            ((TVariavel)novono).setDescription(novono.getName());
-			 ((TVariavel)novono).setParticipa(true);
-           data[size++] = novono;
-    }
-    
-    
 
     /**
      * Inserts the specified element at the specified position in this
@@ -269,14 +212,6 @@ public final class NodeList implements java.io.Serializable {
                      numMoved);
         data[--size] = null;
         return oldValue;
-    }
-    public final void remove2(int index) {
-        for(int i=index;i<size;i++){
-        	data[i-1]=data[i+1];
-        }
-        if(size>0){
-        data[size-1]=null;
-        size--;}
     }
     
     

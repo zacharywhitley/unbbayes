@@ -19,12 +19,19 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */package unbbayes.aprendizagem;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Frame;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 import unbbayes.util.NodeList;
-
-import java.awt.event.*;
 
 /**
  * Classe que constroi uma tela onde usuário devera
@@ -35,10 +42,7 @@ import java.awt.event.*;
  */
 public class CompactFileWindow extends JDialog
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-	private NodeList variablesVector;
+    private NodeList variablesVector;
     private JPanel centerPanel;
     private JButton yes;
     private JButton no;

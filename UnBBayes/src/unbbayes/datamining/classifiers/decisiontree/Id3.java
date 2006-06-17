@@ -1,12 +1,19 @@
 package unbbayes.datamining.classifiers.decisiontree;
 
-import java.io.*;
-import java.util.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.ResourceBundle;
+import java.util.Stack;
 
-import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
 
-import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.ClassifierUtils;
+import unbbayes.datamining.datamanipulation.Instance;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.Utils;
 
 /**
  * Class implementing an Id3 decision tree classifier. For more
@@ -21,8 +28,6 @@ import unbbayes.datamining.datamanipulation.*;
  */
 public class Id3 extends DecisionTreeLearning implements Serializable{
 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 	/** Load resources file for internacionalization */
 	private transient ResourceBundle resource;
 
@@ -58,10 +63,10 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 		}
 
 		// Test if there are missing values
-		Enumeration enumeration = data.enumerateInstances();
-		while (enumeration.hasMoreElements())
+		Enumeration enum = data.enumerateInstances();
+		while (enum.hasMoreElements())
 		{
-			Instance instance = (Instance)enumeration.nextElement();
+			Instance instance = (Instance)enum.nextElement();
 			enumAtt = data.enumerateAttributes();
 			while (enumAtt.hasMoreElements())
 			{
@@ -94,16 +99,16 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 		//Contains methods to compute information gain and related actions
 		ClassifierUtils utils = new ClassifierUtils(data);
 		//Queue to use this function recursively,keeping stack components (see below)
-		ArrayList<QueueComponent> queue = new ArrayList<QueueComponent>();
+		ArrayList queue = new ArrayList();
 		//list containing indexes of all the current instances
-		ArrayList<Integer> actualInst = new ArrayList<Integer>(numInstances);
+		ArrayList actualInst = new ArrayList(numInstances);
 		//array containing indexes of attributes used currently
 		Integer[] actualAtt = new Integer[numAttributes];
 
 		//starts lists of indexes with indexes of entire instanceSet
 		for (int i=0;i<numInstances;i++)
 		{
-			actualInst.add(i);
+			actualInst.add(new Integer(i));
 		}
 		for (int i=0;i<numAttributes;i++)
 		{
@@ -126,10 +131,14 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 		float[] distribution;
 		Instance inst;
 		SplitObject[] splitData;
+		Node node;
+		Attribute att;
+		double meanInfoGains;
 		Attribute splitAttribute;
+		double splitValue;
 
 		double[] splitValues;
-		ArrayList<NumericData> numericDataList = new ArrayList<NumericData>();
+		ArrayList numericDataList = new ArrayList();
 
 		//start recursive code
 		while ((!queue.isEmpty()))
@@ -223,7 +232,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
           Node node;
           Object obj;
           Stack stackObj = new Stack();
-          Stack<DefaultMutableTreeNode> stackTree = new Stack<DefaultMutableTreeNode>();
+          Stack stackTree = new Stack();
           DefaultMutableTreeNode text2 = new DefaultMutableTreeNode("root");
           DefaultMutableTreeNode treeNode = text2;
 
@@ -279,15 +288,15 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
           Object obj;
           Integer level;
           Stack stackObj = new Stack();
-          Stack<Integer> stackLevel = new Stack<Integer>();
-          StringBuilder text = new StringBuilder();
+          Stack stackLevel = new Stack();
+          StringBuffer text = new StringBuffer();
 
           ArrayList root = xRootNode.children;
           int size = root.size();
           for (int i=0;i<size;i++)
           {
             stackObj.push(root.get(i));
-            stackLevel.push(1);
+            stackLevel.push(new Integer(1));
           }
 
           while (!stackObj.empty())
@@ -319,7 +328,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
               for (int i=0;i<size;i++)
               {
                 stackObj.push(children.get(i));
-                stackLevel.push(level.intValue()+1);
+                stackLevel.push(new Integer(level.intValue()+1));
               }
             }
           }
@@ -334,17 +343,21 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 	 * @param instance the instance to be classified
 	 * @return the classification
 	 */
-	public int classifyInstance(Instance instance)
+	public short classifyInstance(Instance instance)
 	{
           Leaf leaf;
           NominalNode node;
+          Attribute att;
+          double splitValue;
+          String[] attValues;
           Node treeNode = xRootNode;
 
           while (!(treeNode.children.get(0) instanceof Leaf))
           {
             node = (NominalNode)treeNode.children.get(0);
+            att = node.getAttribute();
             // Atributo nominal
-            treeNode = (NominalNode)treeNode.children.get(instance.getByteValue(node.getAttribute()));
+            treeNode = (NominalNode)treeNode.children.get(instance.getValue(node.getAttribute()));
           }
 
           leaf = (Leaf)treeNode.children.get(0);

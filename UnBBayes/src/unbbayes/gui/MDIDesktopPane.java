@@ -21,10 +21,18 @@
 
 package unbbayes.gui;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.Point;
+import java.beans.PropertyVetoException;
 
-import java.beans.*;
+import javax.swing.DefaultDesktopManager;
+import javax.swing.JComponent;
+import javax.swing.JDesktopPane;
+import javax.swing.JInternalFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 
 /**
  * An extension of JDesktopPane that supports often used MDI functionality. This
@@ -32,9 +40,6 @@ import java.beans.*;
  * bottom, providing the MDIDesktopPane is in a ScrollPane.
  */
 public class MDIDesktopPane extends JDesktopPane {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
     private static int FRAME_OFFSET=20;
     private MDIDesktopManager manager;
 
@@ -170,9 +175,6 @@ public class MDIDesktopPane extends JDesktopPane {
  * Used to provide scrollbar functionality.
  */
 class MDIDesktopManager extends DefaultDesktopManager {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
     private MDIDesktopPane desktop;
 
     /**

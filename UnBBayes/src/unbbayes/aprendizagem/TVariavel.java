@@ -20,9 +20,10 @@
  */
  package unbbayes.aprendizagem;
 
-import java.util.*;
+import java.util.List;
 
-import unbbayes.prs.bn.*;
+import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
@@ -39,10 +40,7 @@ import unbbayes.util.SetToolkit;
 
 public class TVariavel extends ProbabilisticNode implements Cloneable {
 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-	private NodeList predecessores;
+    private NodeList predecessores;
     private TVariavel variavelAux;
     private int numeroMaximoPais;
     private int pos;
@@ -239,40 +237,8 @@ public class TVariavel extends ProbabilisticNode implements Cloneable {
      * vetor de estados(<code>String<code>)
      * @see List
      */
-    public int adicionaEstado(String estado){
-        int posf=states.size();
-    	if(this.getNumerico()){
-    	int tamanho = states.size();
-        List states2=new ArrayList();
-        posf=0;int i;
-        String b1,b2=estado;
-        //if(tamanho==1)posf
-for(i = 0; i < tamanho; i++){
-	b1=(String)states.get(i);
-if(Double.parseDouble(b1)<Double.parseDouble(b2)){
-                posf++;
-            }
-            
-        }
-        for(i=0;i<posf;i++){
-        	states2.add(states.get(i));	
-        }
-        states2.add(estado);
-        for(i=posf;i<tamanho;i++){
-        	states2.add(states.get(i));	
-        }
-        states=states2;
-        }//numerico
-        else{
-           states.add(estado);
-        }
-        
-        return posf;
-        
-}
-  
-    public void retiraestado(String estado){
-    	states.remove(estado);
+    public void adicionaEstado(String estado){
+        states.add(estado);
     }
 
     /**
@@ -333,9 +299,9 @@ if(Double.parseDouble(b1)<Double.parseDouble(b2)){
      */
     public int getEstadoPosicao(String nomeEstado){
         int tamanho = states.size();
-        for(int i = 0; i < tamanho; i++){
-            if(((String)states.get(i)).equals(nomeEstado)){
-                return i;
+        for(int tamanhoEstado = 0; tamanhoEstado < tamanho; tamanhoEstado++){
+            if(states.get(tamanhoEstado).equals(nomeEstado)){
+                return tamanhoEstado;
             }
         }
         return 0;

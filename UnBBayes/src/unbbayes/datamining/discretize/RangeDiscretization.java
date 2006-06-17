@@ -1,18 +1,21 @@
 package unbbayes.datamining.discretize;
 
-import java.text.*;
-import java.util.*;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Enumeration;
 
-import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.Instance;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.Utils;
 
 /** Faz discretizacao por alcance*/
 public class RangeDiscretization implements IDiscretization
-{	
+{	private int numThresholds;
 	private InstanceSet inst;
 
 	public RangeDiscretization(InstanceSet inst)
-	{	//this.inst = new InstanceSet(inst);
-		this.inst = inst;
+	{	this.inst = new InstanceSet(inst);
 	}
 
 	public void discretizeAttribute(Attribute att) throws Exception
@@ -31,11 +34,11 @@ public class RangeDiscretization implements IDiscretization
 			numThresholds = 1;
 		try
 		{	int position = att.getIndex();
-			Attribute newAttribute = new Attribute(att.getAttributeName(),null,Attribute.Type.NOMINAL,position);
+			Attribute newAttribute = new Attribute(att.getAttributeName(),null,Attribute.NOMINAL,position);
 			//pega os valores do atributo
 			float[] values = new float[numInstances];
           	Enumeration enumInst = inst.enumerateInstances();
-          	int i=0;
+          	int i=0,j=0;
           	while (enumInst.hasMoreElements())
           	{   Instance instance = (Instance)enumInst.nextElement();
               	values[i] = Float.parseFloat(instance.stringValue(att));
@@ -59,7 +62,7 @@ public class RangeDiscretization implements IDiscretization
 			{	byte newValue = (byte)Math.abs((values[i]-min) / ranges);
 				if (newValue == numThresholds)
 					newValue--;
-				inst.getInstance(i).setByteValue(position,newValue);
+				inst.getInstance(i).setValue(position,newValue);
 			}
 		}
 		catch (Exception e)

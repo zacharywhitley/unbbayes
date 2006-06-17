@@ -1,9 +1,20 @@
 package unbbayes.datamining.gui.neuralnetwork;
 
-import java.util.*;
-import java.awt.*;
-import javax.swing.*;
-import unbbayes.datamining.classifiers.*;
+import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.util.ResourceBundle;
+
+import javax.swing.BorderFactory;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
+
+import unbbayes.datamining.classifiers.NeuralNetwork;
 
 /**
  * Class that implements a panel with the basic options used in a
@@ -13,9 +24,6 @@ import unbbayes.datamining.classifiers.*;
  * @version $1.0 $ (06/26/2003)
  */
 public class OptionsPanel extends JPanel {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   private ResourceBundle resource;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JLabel labelMomentum = new JLabel();

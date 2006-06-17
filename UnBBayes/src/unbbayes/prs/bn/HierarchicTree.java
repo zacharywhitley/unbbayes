@@ -1,20 +1,41 @@
 package unbbayes.prs.bn;
 
-import java.awt.*;
 import java.awt.Component;
-import java.awt.dnd.*;
-import java.awt.datatransfer.*;
-
+import java.awt.Point;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragSource;
+import java.awt.dnd.DragSourceDragEvent;
+import java.awt.dnd.DragSourceDropEvent;
+import java.awt.dnd.DragSourceEvent;
+import java.awt.dnd.DragSourceListener;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Stack;
 
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.ImageIcon;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import unbbayes.controller.IconController;
-import unbbayes.prs.*;
-import unbbayes.util.*;
+import unbbayes.prs.Node;
+import unbbayes.util.ArrayMap;
+import unbbayes.util.NodeList;
 
 /**
  * @author Mário Henrique Paes Vieira
@@ -23,13 +44,13 @@ import unbbayes.util.*;
 
 public class HierarchicTree extends JTree implements DropTargetListener, DragSourceListener, DragGestureListener
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   private Network net;
+  private NodeList nodes;
   private ArrayMap objectsMap = new ArrayMap();
   public static final boolean EXPLANATION_TYPE = true;
   public static final boolean DESCRIPTION_TYPE = false;
+  /** enables this component to be a dropTarget */
+  private DropTarget dropTarget = null;
   /** enables this component to be a Drag Source */
   private DragSource dragSource = null;
   protected IconController iconController = IconController.getInstance();
@@ -41,7 +62,7 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
       setCellRenderer(new HierarchicTreeCellRenderer());
 
       // initializes the DropTarget and DragSource.
-      new DropTarget (this, this);
+      dropTarget = new DropTarget (this, this);
       dragSource = new DragSource();
       dragSource.createDefaultDragGestureRecognizer( this, DnDConstants.ACTION_MOVE, this);
 
@@ -52,11 +73,7 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
   }
 
   private class HierarchicTreeCellRenderer extends DefaultTreeCellRenderer
-  {   
-		/** Serialization runtime version number */
-		private static final long serialVersionUID = 0;
-
-	  private ImageIcon folderSmallIcon = iconController.getFolderSmallIcon();
+  {   private ImageIcon folderSmallIcon = iconController.getFolderSmallIcon();
       private ImageIcon yellowBallIcon = iconController.getYellowBallIcon();
       private ImageIcon greenBallIcon = iconController.getGreenBallIcon();
 

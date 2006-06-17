@@ -1,7 +1,9 @@
 package unbbayes.datamining.datamanipulation;
 
-import java.io.*;
-import java.util.*;
+import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.ResourceBundle;
 
 /**
  * Class for handling an attribute. <p>
@@ -20,38 +22,29 @@ import java.util.*;
  *  @version $1.0 $ (16/02/2002)
  */
 public class Attribute implements Serializable
-{	
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
+{	/** Constant set for numeric attributes. */
+  	public final static int NUMERIC = 0;
 
-	public enum Type{NUMERIC,NOMINAL}
-	
+  	/** Constant set for nominal attributes. */
+  	public final static int NOMINAL = 1;
+
   	/** The attribute's name. */
   	private String attributeName;
 
   	/** The attribute's type. */
-  	public Type attributeType;
+  	private int attributeType;
 
   	/** The attribute's values */
   	private String[] attributeValues;
 
 	/** Mapping of values to indices */
-  	private Hashtable<String,Integer> hashtable;
+  	private Hashtable hashtable;
 
   	/** The attribute's index. */
   	private int index;
-  	
-  	public byte[] byteValues;
-  	
-  	public float[] floatValues;
-  	
-  	public void setByteValues(byte[] byteValues) {
-  		this.byteValues = byteValues;
-  	}
 
-  	public void setFloatValues(float[] floatValues) {
-  		this.floatValues = floatValues;
-  	}
+  	/** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.datamanipulation.resources.DataManipulationResource");
 
   	/**
    	* Constructor for attributes.
@@ -61,15 +54,14 @@ public class Attribute implements Serializable
    	* attribute values.
 	* @param attributeType Type of this attribute (Nominal or Numeric)
 	*/
-  	public Attribute(String attributeName,String[] attributeValues,Attribute.Type attributeType)
+  	public Attribute(String attributeName,String[] attributeValues,int attributeType)
 	{	this.attributeName = attributeName;
-		this.attributeType = attributeType;
     	index = -1;
     	this.attributeValues = attributeValues;
       	if (attributeValues != null)
 		{
 			int numValues = numValues();
-			hashtable = new Hashtable<String,Integer>(numValues);
+			hashtable = new Hashtable(numValues);
       		for (int i = 0; i < numValues; i++)
 			{	hashtable.put(attributeValues[i], new Integer(i));
       		}
@@ -77,6 +69,7 @@ public class Attribute implements Serializable
 		else
 		{	hashtable = null;
 		}
+		this.attributeType = attributeType;
   	}
 
   	/**
@@ -87,7 +80,7 @@ public class Attribute implements Serializable
    	* @param attributeType Type of this attribute (Nominal or Numeric)
 	* @param index The attribute's index
 	*/
-  	public Attribute(String attributeName,String[] attributeValues,Attribute.Type attributeType,int index)
+  	public Attribute(String attributeName,String[] attributeValues,int attributeType,int index)
 	{	this(attributeName, attributeValues, attributeType);
 		this.index = index;
 	}
@@ -183,7 +176,7 @@ public class Attribute implements Serializable
    	* @return true if the attribute is nominal
    	*/
   	public final boolean isNominal()
-	{	return (attributeType == Type.NOMINAL);
+	{	return (attributeType == NOMINAL);
   	}
 
   	/**
@@ -192,7 +185,7 @@ public class Attribute implements Serializable
    	* @return true if the attribute is numeric
    	*/
   	public final boolean isNumeric()
-	{	return (attributeType == Type.NUMERIC);
+	{	return (attributeType == NUMERIC);
   	}
 
   	/**
@@ -210,21 +203,12 @@ public class Attribute implements Serializable
    	* @return the number of attribute values
    	*/
   	public final int numValues()
-	{	
-  		if (attributeType == Type.NOMINAL) {
-  	  		if (attributeValues == null)
-  			{	return 0;
-  	    	}
-  			else
-  			{	return attributeValues.length;
-  	    	}  			
-  		} else {
-  			if (this.floatValues == null) {
-  				return 0;
-  			} else {
-  				return this.floatValues.length;
-  			}
-  		}
+	{	if (attributeValues == null)
+		{	return 0;
+    	}
+		else
+		{	return attributeValues.length;
+    	}
   	}
 
   	/**
@@ -234,7 +218,7 @@ public class Attribute implements Serializable
    	*/
   	public final String toString()
 	{
-  		StringBuilder text = new StringBuilder();
+          StringBuffer text = new StringBuffer();
           text.append("@attribute " + attributeName + " ");
           if (isNominal())
           {
@@ -266,7 +250,7 @@ public class Attribute implements Serializable
    	*
    	* @return the attribute's type.
    	*/
-  	public final Type getAttributeType()
+  	public final int getAttributeType()
 	{	return attributeType;
   	}
 
@@ -295,20 +279,18 @@ public class Attribute implements Serializable
 	{
           if (hashtable == null)
           {
-            hashtable = new Hashtable<String,Integer>();
+            hashtable = new Hashtable();
 
           }
 
-          int numValues = numValues();
-          String[] newValues = new String[numValues+1];
+          String[] newValues = new String[numValues()+1];
           if (attributeValues!=null)
           {
-            System.arraycopy(attributeValues,0,newValues,0,numValues);
+            System.arraycopy(attributeValues,0,newValues,0,numValues());
           }
-          newValues[numValues] = value;
-          byteValues = new byte[numValues];
+          newValues[numValues()] = value;
           attributeValues = newValues;
-          hashtable.put(value, new Integer(numValues - 1));
+          hashtable.put(value, new Integer(numValues() - 1));
 	}
 
   	/**
@@ -390,7 +372,7 @@ public class Attribute implements Serializable
    	*
    	* @param attributeType New attribute type
    	*/
-  	public void setAttributeType(Type attributeType)
+  	public void setAttributeType(int attributeType)
 	{	this.attributeType = attributeType;
 	}
 
@@ -404,12 +386,6 @@ public class Attribute implements Serializable
     	String[] values = new String[attributeValues.length];
     	System.arraycopy(attributeValues,0,values,0,attributeValues.length);
     	return values;
-    }
-    
-    public void dispose() {
-      	attributeName = null;
-      	attributeValues = null;
-      	hashtable = null;    	
     }
 }
 

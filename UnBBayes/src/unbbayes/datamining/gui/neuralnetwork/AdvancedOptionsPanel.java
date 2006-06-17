@@ -1,10 +1,25 @@
 package unbbayes.datamining.gui.neuralnetwork;
 
-import java.awt.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.border.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.util.ResourceBundle;
+
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
+
 import unbbayes.datamining.classifiers.NeuralNetwork;
 
 /**
@@ -14,9 +29,6 @@ import unbbayes.datamining.classifiers.NeuralNetwork;
  *  @version $1.0 $ (06/26/2003)
  */
 public class AdvancedOptionsPanel extends JPanel {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   private ResourceBundle resource;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JPanel advancedOptions = new JPanel();
@@ -50,8 +62,10 @@ public class AdvancedOptionsPanel extends JPanel {
 
   private boolean learningRateDecay = false;
   private int numericalInputNormalization = NeuralNetwork.NO_NORMALIZATION;
+  private boolean autoHiddenLayerSize = true;
   private int hiddenLayerSize = 10;
   private int trainningTime = 400;
+  private boolean minimumError = false;
   private double minimumErrorVariation = 0.1;
   private double activationFunctionSteep = 1;
 
@@ -232,10 +246,10 @@ public class AdvancedOptionsPanel extends JPanel {
     } else {
       numericalInputNormalization = NeuralNetwork.NO_NORMALIZATION;
     }
-    hiddenLayerCheckBox.isSelected();
+    autoHiddenLayerSize = hiddenLayerCheckBox.isSelected();
     hiddenLayerSize = Integer.parseInt(hiddenSizeSpinner.getValue().toString());
     trainningTime = Integer.parseInt(trainningTimeSpinner.getValue().toString());
-    errorVariationCheckBox.isSelected();
+    minimumError = errorVariationCheckBox.isSelected();
     minimumErrorVariation = Double.parseDouble(errorVariationSpinner.getValue().toString());
     activationFunctionSteep = Double.parseDouble(fuctionSteepSpinner.getValue().toString());
   }

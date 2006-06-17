@@ -2,8 +2,8 @@ package unbbayes.prs.bn;
 
 import java.util.ResourceBundle;
 
-import unbbayes.prs.*;
-import unbbayes.prs.id.*;
+import unbbayes.prs.Node;
+import unbbayes.prs.id.DecisionNode;
 
 /**
  * Probabilistic Potential Table
@@ -11,9 +11,6 @@ import unbbayes.prs.id.*;
  */
 public class ProbabilisticTable extends PotentialTable implements java.io.Serializable {
 	
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
 

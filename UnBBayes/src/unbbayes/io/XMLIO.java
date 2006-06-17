@@ -20,15 +20,15 @@ import org.w3c.dom.Document;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.InputSource;
 
-import unbbayes.util.*;
+import unbbayes.prs.Edge;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.Network;
 import unbbayes.prs.bn.PotentialTable;
-import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.Edge;
-import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.msbn.SingleAgentMSBN;
+import unbbayes.util.XMLUtil;
 
 /**
  * @author Shigeki
@@ -39,7 +39,9 @@ import unbbayes.prs.msbn.SingleAgentMSBN;
 public class XMLIO implements BaseIO {
 	
 	private static String NET_NAME = "/BIF/HEADER/NAME",
+							NODE_SIZE = "/BIF/STATICPROPERTY/NODESIZE",
 							VARIABLES = "/BIF/NETWORK/VARIABLES/VAR",
+							ARCS = "/BIF/NETWORK/STRUCTURE/ARC",
 							POTENTIALS = "/BIF/NETWORK/POTENTIAL/POT";
 							
 	private static CachedXPathAPI xpath;

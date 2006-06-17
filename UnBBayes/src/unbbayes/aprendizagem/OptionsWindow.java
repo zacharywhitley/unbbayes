@@ -21,10 +21,22 @@
  
  package unbbayes.aprendizagem;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Frame;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import javax.swing.*;
-import java.awt.event.*;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 
 
 
@@ -40,10 +52,7 @@ import java.awt.event.*;
  */
 public class OptionsWindow extends JDialog
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-	private TVariavel variable;
+    private TVariavel variable;
     private JTextField txtMaxParents;
     private JTextField txtName;
     private JLabel lMaxParents;

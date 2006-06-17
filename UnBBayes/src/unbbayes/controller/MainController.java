@@ -21,18 +21,29 @@
 
 package unbbayes.controller;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
+import java.awt.Cursor;
+import java.awt.event.AdjustmentListener;
+import java.awt.event.KeyListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ResourceBundle;
 
-import javax.swing.*;
+import javax.swing.JInternalFrame;
+import javax.swing.JOptionPane;
 
-import unbbayes.gui.*;
-import unbbayes.io.*;
-import unbbayes.prs.*;
-import unbbayes.prs.bn.*;
+import unbbayes.gui.IUnBBayes;
+import unbbayes.gui.MSBNWindow;
+import unbbayes.gui.NetWindow;
+import unbbayes.io.BaseIO;
+import unbbayes.io.NetIO;
+import unbbayes.io.XMLIO;
+import unbbayes.prs.Edge;
+import unbbayes.prs.Node;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.msbn.SingleAgentMSBN;
-import unbbayes.util.*;
+import unbbayes.util.NodeList;
 
 /**
  *  Essa classe implementa o <code>KeyListener</code> e o <code>
@@ -50,6 +61,9 @@ import unbbayes.util.*;
 public class MainController {
 
     private IUnBBayes screen;
+    private List copia;
+    private List copiados;
+    private boolean bColou;
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.controller.resources.ControllerResources");
@@ -65,6 +79,8 @@ public class MainController {
      */
     public MainController() {
         screen = new IUnBBayes(this);
+        copia = new ArrayList();
+        copiados = new ArrayList();
     }
 
     public void newBN() {

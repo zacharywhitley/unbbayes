@@ -1,13 +1,23 @@
 package unbbayes.datamining.gui.neuralnetwork;
 
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.print.*;
-import javax.swing.*;
-import ptolemy.plot.*;
-import unbbayes.controller.*;
-import unbbayes.datamining.classifiers.neuralnetwork.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.print.PageFormat;
+import java.awt.print.PrinterJob;
+import java.util.ResourceBundle;
+
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JToolBar;
+
+import ptolemy.plot.Plot;
+import unbbayes.controller.IconController;
+import unbbayes.datamining.classifiers.neuralnetwork.MeanSquaredError;
 
 /**
  *  Class that implements the panel used to plot the mean squared error.
@@ -16,9 +26,6 @@ import unbbayes.datamining.classifiers.neuralnetwork.*;
  *  @version $1.0 $ (06/26/2003)
  */
 public class TrainingPanel extends JPanel implements MeanSquaredError{
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   private ResourceBundle resource;
   private ImageIcon fillIcon;
   private ImageIcon resetSizeIcon;

@@ -1,13 +1,17 @@
 package unbbayes.datamining.classifiers.bayesianlearning;
 
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.prs.bn.*;
-import unbbayes.prs.*;
-import java.util.*;
+import java.util.ArrayList;
+
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.Instance;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.prs.Edge;
+import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
 
 public class ParametricLearning
 {
-		
   public ParametricLearning(InstanceSet set)
   {
     int i,j,k;
@@ -21,17 +25,16 @@ public class ParametricLearning
     {
       attrib = set.getAttribute(i);
       x[i] = attrib.getAttributeName();
-      ArrayList<String[]> temp = new ArrayList<String[]>();
+      ArrayList temp = new ArrayList();
       temp.add(attrib.getAttributeValues());
       dx[i] = temp;
-      
     }
 
     // inicializar freq e dataTemp com as amostras condensadas
     Instance inst, inst2;
     int numInstances = set.numInstances();
     freq = new int[numInstances];
-    ArrayList<Instance> dataTemp = new ArrayList<Instance>();
+    ArrayList dataTemp = new ArrayList();
     for(i=0;i<numInstances;i++)
     {
       inst = set.getInstance(i);
@@ -40,7 +43,7 @@ public class ParametricLearning
         inst2 = (Instance)dataTemp.get(j);
         for(k=0;k<x.length;k++)
         {
-          if(inst.getByteValue(k)!=inst2.getByteValue(k))
+          if(inst.getValue(k)!=inst2.getValue(k))
           {
             break;
           }
@@ -62,20 +65,20 @@ public class ParametricLearning
     }
 
     //inicializar d com base no dataTemp
-    d = new int[dataTemp.size()][x.length];
+    d = new short[dataTemp.size()][x.length];
     for(i=0;i<dataTemp.size();i++)
     {
       inst = (Instance)dataTemp.get(i);
       for(j=0;j<x.length;j++)
       {
-        d[i][j]=inst.getByteValue(j);
+        d[i][j]=inst.getValue(j);
       }
     }
   }
 
 //----------------------------------------------------------------------------//
 
-   public int [] multiplies (int [] pai)
+  public int [] multiplies (int [] pai)
   {
     int ip;                     //índice do pai da interação atual
     int np = pai.length;        //número de elementos do pai
@@ -117,6 +120,7 @@ public class ParametricLearning
     int ri = dx[i].size();         //quantidade de estados da variável 'i'
     int[] mult = multiplies(pai);  //multiplicadores - para linearizar arranjo
     int[][] njk = new int[qi][ri]; //frequência do estado k com pais no estado j
+    int n = x.length;              //número de variáveis de 'x'
     int nd = d.length;             //observações distintas na amostra condensada
 
     //para cada linha, computa o j-esimo estado do pai, computa o k-esimo estado
@@ -234,7 +238,6 @@ public ProbabilisticNetwork getProbabilisticNetwork(ArrayList pa)
 
     return net;
 }
-
 //----------------------------------------------------------------------------//
 
   /** variáveis do problema */
@@ -248,11 +251,10 @@ public ProbabilisticNetwork getProbabilisticNetwork(ArrayList pa)
   /** amostra condensada
    * d[ic,i]=v, sendo 'ic' a linha, 'i' o índice da variável e 'v' o valor da
    * variável na linha (representado pelo seu índice no domínio da variável)) */
-  private int[][] d;
+  private short[][] d;
 
   /** frequencias das instâncias de d
    * freq[i]: frequência da linha(ou instancia) i */
   private int[] freq;
-   
-  
+
 }

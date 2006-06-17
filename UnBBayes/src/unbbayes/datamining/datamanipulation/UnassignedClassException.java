@@ -10,11 +10,7 @@ package unbbayes.datamining.datamanipulation;
  *  @version $1.0 $ (16/02/2002)
  */
 public class UnassignedClassException extends RuntimeException 
-{ 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-	/**
+{ /**
    * Creates a new <code>UnassignedClassException</code> instance
    * with no detail message.
    */

@@ -25,8 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import unbbayes.prs.*;
-import unbbayes.prs.id.*;
+import unbbayes.prs.Node;
+import unbbayes.prs.id.DecisionNode;
+import unbbayes.prs.id.UtilityTable;
 import unbbayes.util.NodeList;
 
 
@@ -38,9 +39,6 @@ import unbbayes.util.NodeList;
  */
 public class Clique implements ITabledVariable, java.io.Serializable {
 	
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
 
@@ -343,7 +341,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
+		StringBuffer sb = new StringBuffer();
 		for (int j = nos.size()-1; j>=0;j--) {
 			sb.append(nos.get(j) + " ");				
 		}

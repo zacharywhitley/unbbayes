@@ -1,6 +1,6 @@
 package unbbayes.datamining.classifiers.cnmentities;
 
-import java.io.*;
+import java.io.Serializable;
 
 /**
  *  Class that implements the output neurons that compound the
@@ -11,10 +11,7 @@ import java.io.*;
  */
 public class OutputNeuron implements Serializable{
 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-	/**Value of the accumulator*/
+  /**Value of the accumulator*/
   protected int accumulator;
 
   /**Value of the final weight*/

@@ -18,12 +18,16 @@
 
 package unbbayes.gui;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.io.File;
+import java.util.ResourceBundle;
 
-import javax.swing.*;
-import javax.swing.filechooser.*;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileView;
 
 import unbbayes.controller.IconController;
 /**
@@ -86,7 +90,7 @@ public class FileIcon extends FileView {
          * {
          * return directoryIcon;
          * }
-         */ try{
+         */
         String name = f.getName();
         if (name.endsWith(".arff")) {
             return iconController.getArffFileIcon();
@@ -96,8 +100,7 @@ public class FileIcon extends FileView {
         }
         if (name.toLowerCase().endsWith(".net")) {
             return iconController.getNetFileIcon();
-        }}
-         catch (Exception ee){}
+        }
         return fc.getIcon(f);
     }
 
@@ -167,9 +170,6 @@ public class FileIcon extends FileView {
      *@see        ImageIcon
      */
     public class Icon16 extends ImageIcon {
-    	/** Serialization runtime version number */
-    	private static final long serialVersionUID = 0;
-
         /**
          *  Cria e desenha um ícone para o arquivo desejado.
          *

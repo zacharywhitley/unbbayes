@@ -19,9 +19,10 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package unbbayes.aprendizagem;
-import unbbayes.util.NodeList;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
+
+import unbbayes.util.NodeList;
 
 
 public class RelationInterationController {

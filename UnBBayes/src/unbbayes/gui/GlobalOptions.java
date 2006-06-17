@@ -22,17 +22,35 @@
 package unbbayes.gui;
 
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
+
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 import unbbayes.controller.WindowController;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
-
-import java.awt.*;
-
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
 
 /**
  *  Classe responsável pelas configurações básicas da rede Bayesiana. Ela extende
@@ -43,9 +61,6 @@ import javax.swing.event.*;
  *@see JDialog
  */
 public class GlobalOptions extends JDialog {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
     final JButton probabilisticDescriptionNode;
     final JButton probabilisticExplanationNode;
 	final JButton decisionNode;
@@ -72,6 +87,17 @@ public class GlobalOptions extends JDialog {
     private JButton confirm;
     private JButton restore;
     private JButton cancel;
+    /*
+    private ButtonGroup decimalGroup;
+    private JRadioButtonMenuItem usa;
+    private JRadioButtonMenuItem china;
+    private JRadioButtonMenuItem japan;
+    private JRadioButtonMenuItem canada;
+    private JRadioButtonMenuItem uk;
+    private JRadioButtonMenuItem italy;
+    private JRadioButtonMenuItem brazil;
+    private JRadioButtonMenuItem korea;
+    */
     private Color probabilisticDescriptionNodeColor;
     private Color probabilisticExplanationNodeColor;
 	private Color decisionNodeColor;
@@ -85,6 +111,7 @@ public class GlobalOptions extends JDialog {
     private JSlider netSlider;
     private JCheckBox createLog;
     private boolean createLogBoolean;
+    private Preview preview;
     private final IGraph graph;
 
 	/** Load resource file from this package */
@@ -120,7 +147,7 @@ public class GlobalOptions extends JDialog {
 
         gbl     = new GridBagLayout();
         gbc     = new GridBagConstraints();
-        new Preview(this);
+        preview = new Preview(this);
 
         //setar cores padrões do nó, arco e de seleção e boolean de criar log
         probabilisticDescriptionNodeColor = ProbabilisticNode.getDescriptionColor();

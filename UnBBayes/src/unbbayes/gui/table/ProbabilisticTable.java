@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
-
 import javax.swing.table.JTableHeader;
 
 import unbbayes.prs.Node;
@@ -22,9 +21,7 @@ import unbbayes.prs.bn.PotentialTable;
  */
 public class ProbabilisticTable extends JTable {
 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
+    private JTable tabela;
 	private PotentialTable potTab;
 	private Node node;
 	private int columns;

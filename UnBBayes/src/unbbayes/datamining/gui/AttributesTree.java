@@ -1,16 +1,21 @@
 package unbbayes.datamining.gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.util.ArrayList;
+import java.util.Enumeration;
 
-import javax.swing.*;
-import javax.swing.tree.*;
-
-import unbbayes.util.*;
+import javax.swing.ImageIcon;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
-import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.Instance;
+import unbbayes.util.ArrayMap;
 
 /**
  *  Class that implements a tree used to insert a new instance for classification.
@@ -19,16 +24,13 @@ import unbbayes.datamining.datamanipulation.*;
  *  @version $1.0 $ (02/16/2003)
  */
 public class AttributesTree extends JTree{
-
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-	public static final int CHECK_YES = 1;
+  public static final int CHECK_YES = 1;
   public static final int CHECK_NO = -1;
   public static final int CHECK_EMPTY = 0;
 
   private ArrayMap objectsMap = new ArrayMap();
   private Attribute[] attributeVector;
+  private int classIndex;
   private IInferencePanel inferencePanel;
   protected IconController iconController = IconController.getInstance();
 
@@ -76,6 +78,7 @@ public class AttributesTree extends JTree{
     if (attributeVector != null){
       if (!attributeVector.equals(this.attributeVector)){
         this.attributeVector = attributeVector;
+        this.classIndex = classIndex;
         root.removeAllChildren();
         objectsMap.clear();
         DefaultTreeModel model = new DefaultTreeModel(new DefaultMutableTreeNode());
@@ -93,7 +96,7 @@ public class AttributesTree extends JTree{
 
             //definição dos nós dos valores dos atributos
             int numStates = attribute.numValues();
-            for (int j=0; j<numStates; j++){
+            for (byte j=0; j<numStates; j++){
               DefaultMutableTreeNode stateNode = new DefaultMutableTreeNode(attribute.value(j));
               treeNode.add(stateNode);
               objectsMap.put(stateNode, new StateObject(attribute, j, CHECK_EMPTY));
@@ -116,7 +119,7 @@ public class AttributesTree extends JTree{
   public Instance getInstance(){
     ArrayList keys = objectsMap.getKeys();
     int keysSize = keys.size();
-    Instance instance = new Instance();
+    Instance instance = new Instance(new short[attributeVector.length]);
 
     for(int i=0; i<attributeVector.length; i++){
       instance.setMissing(i);
@@ -128,7 +131,7 @@ public class AttributesTree extends JTree{
         StateObject state = (StateObject)obj;
         int check = state.getCheck();
         if(check == CHECK_YES){
-          instance.setByteValue(state.getAttribute().getIndex(), (byte)state.getAttributeValue());
+          instance.setValue(state.getAttribute().getIndex(), state.getAttributeValue());
         }
       }
     }
@@ -224,16 +227,16 @@ public class AttributesTree extends JTree{
 
   private class StateObject{
     private Attribute attribute;
-    private int attributeValue = -1;
+    private byte attributeValue = -1;
     private int check = CHECK_EMPTY;
 
-    public StateObject(Attribute attribute, int attributeValue, int check){
+    public StateObject(Attribute attribute, byte attributeValue, int check){
       this.attribute = attribute;
       this.attributeValue = attributeValue;
       this.check = check;
     }
 
-    public void setAttributeValue(int attributeValue){
+    public void setAttributeValue(byte attributeValue){
       this.attributeValue = attributeValue;
     }
 
@@ -241,7 +244,7 @@ public class AttributesTree extends JTree{
       this.check = check;
     }
 
-    public int getAttributeValue(){
+    public byte getAttributeValue(){
       return attributeValue;
     }
 
@@ -255,9 +258,6 @@ public class AttributesTree extends JTree{
   }
 
   private class CnmTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer{
-		/** Serialization runtime version number */
-		private static final long serialVersionUID = 0;
-
     ImageIcon yesIcon = iconController.getYesStateIcon();
     ImageIcon noIcon = iconController.getNoStateIcon();
     ImageIcon emptyIcon = iconController.getEmptyStateIcon();

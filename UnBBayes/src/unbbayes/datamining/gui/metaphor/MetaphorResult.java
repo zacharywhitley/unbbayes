@@ -1,14 +1,24 @@
 package unbbayes.datamining.gui.metaphor;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GridLayout;
 import java.util.ArrayList;
 
-import javax.swing.*;
+import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
 
 import unbbayes.datamining.datamanipulation.Utils;
-import unbbayes.prs.bn.*;
-import unbbayes.util.*;
-import javax.swing.event.*;
+import unbbayes.prs.bn.ExplanationPhrase;
+import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.util.NodeList;
 
 /**
  * <p>Title: </p>
@@ -21,9 +31,6 @@ import javax.swing.event.*;
 
 public class MetaphorResult extends JPanel
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   private JPanel jPanel1 = new JPanel();
   private JPanel jPanel2 = new JPanel();
   private BorderLayout borderLayout2 = new BorderLayout();
@@ -189,7 +196,7 @@ public class MetaphorResult extends JPanel
                                                                         break;
               }
           }
-          StringBuilder sb = new StringBuilder();
+          StringBuffer sb = new StringBuffer();
           sb.append("(Frase Trigger)\n\n");
           addPhrases(sb,trigger);
           sb.append("(Frase Essencial)\n\n");
@@ -199,7 +206,7 @@ public class MetaphorResult extends JPanel
           diagnostic=sb.toString();
       }
 
-      private void addPhrases(StringBuilder sb,ArrayList evidence)
+      private void addPhrases(StringBuffer sb,ArrayList evidence)
       {   ExplanationPhrase explanationPhrase;
           int size = evidence.size();
           if (size>0)
@@ -221,7 +228,7 @@ public class MetaphorResult extends JPanel
               {   exclusive.add(explanationPhrase);
               }
           }
-          StringBuilder sb = new StringBuilder();
+          StringBuffer sb = new StringBuffer();
           sb.append("(Frase Excludente)\n\n");
           addPhrases(sb,exclusive);
           diagnostic=sb.toString();

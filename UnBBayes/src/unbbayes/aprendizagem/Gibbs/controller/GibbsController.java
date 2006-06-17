@@ -3,6 +3,9 @@ package unbbayes.aprendizagem.Gibbs.controller;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import javax.swing.JFileChooser;
 
@@ -26,6 +29,7 @@ import unbbayes.util.NodeList;
 public class GibbsController extends LearningToolkit {
 
    private byte[][] data;
+   private int[] vector;
    private NodeList variables;
    private GibbsFrame gf;
    private BaseIO io;
@@ -148,6 +152,7 @@ public class GibbsController extends LearningToolkit {
 
    private double[][] criarFaixasIntervalo(double[] coluna) {
       double[][] faixa = new double[coluna.length][2];
+      double[] colunaOrdenada = ordenar(coluna);
       double atual = 0.0d;
       for (int i = 0; i < coluna.length; i++) {
          faixa[i][0] = atual;
@@ -155,6 +160,19 @@ public class GibbsController extends LearningToolkit {
          atual = faixa[i][1];
       }
       return faixa;
+   }
+
+   private double[] ordenar(double[] coluna) {
+      List lista = new ArrayList();
+      double[] colunaOrdenada = new double[coluna.length];
+      for (int i = 0; i < coluna.length; i++) {
+         lista.add(new Double(coluna[i]));
+      }
+      Collections.sort(lista);
+      for (int i = 0; i < lista.size(); i++) {
+         colunaOrdenada[i] = ((Double) lista.get(i)).doubleValue();
+      }
+      return colunaOrdenada;
    }
 
    ActionListener cancelListener = new ActionListener() {

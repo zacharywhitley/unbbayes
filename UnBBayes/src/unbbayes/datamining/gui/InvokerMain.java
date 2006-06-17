@@ -1,30 +1,49 @@
 package unbbayes.datamining.gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
-import javax.swing.*;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
-import unbbayes.controller.*;
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.gui.evaluation.*;
-import unbbayes.datamining.gui.metaphor.*;
-import unbbayes.datamining.gui.naivebayes.*;
-import unbbayes.datamining.gui.preprocessor.*;
-import unbbayes.datamining.gui.neuralmodel.*;
-import unbbayes.datamining.gui.neuralnetwork.*;
-import unbbayes.gui.*;
+import unbbayes.controller.FileController;
+import unbbayes.controller.IconController;
+import unbbayes.datamining.datamanipulation.Options;
+import unbbayes.datamining.gui.bayesianlearning.BayesianLearningMain;
+import unbbayes.datamining.gui.evaluation.EvaluationMain;
+import unbbayes.datamining.gui.metaphor.MetaphorMain;
+import unbbayes.datamining.gui.naivebayes.NaiveBayesMain;
+import unbbayes.datamining.gui.neuralmodel.NeuralModelController;
+import unbbayes.datamining.gui.neuralnetwork.NeuralNetworkController;
+import unbbayes.datamining.gui.preprocessor.PreprocessorMain;
+import unbbayes.gui.MDIDesktopPane;
 
 public class InvokerMain extends JFrame
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-	  /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
-	  private ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.gui.resources.GuiResource");
-
-	  private JPanel contentPane;
+  private JPanel contentPane;
   private MDIDesktopPane desktop = new MDIDesktopPane();
 
   private ImageIcon metalIcon;
@@ -35,9 +54,13 @@ public class InvokerMain extends JFrame
   private ImageIcon helpIcon;
   private ImageIcon opcaoglobalIcon;
 
+  private int defaultStates = 40;
+  private int confidenceLimit = 100;
   private String defaultLanguage = "Portuguese";
   private String defaultLaf = "Windows";
 
+  /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+  private ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.gui.resources.GuiResource");
   private InvokerMain reference = this;
   private IconController iconController = IconController.getInstance();
 
@@ -63,7 +86,7 @@ public class InvokerMain extends JFrame
   private ActionListener alMetaphor;
   private ActionListener alCnm;
   private ActionListener alC45;
-  //private ActionListener alBayesianLearning;
+  private ActionListener alBayesianLearning;
   private ActionListener alPreferences;
   private ActionListener alTbPreferences;
   private ActionListener alTbView;
@@ -78,21 +101,17 @@ public class InvokerMain extends JFrame
   private ActionListener alNeuralNetwork;
 
   //Construct the frame
-  public InvokerMain(int defaultStates,int confidenceLimit,String defaultLanguage,String defaultLaf)
+  public InvokerMain()
   {
-	  this.defaultLanguage = defaultLanguage;
-	  this.defaultLaf = defaultLaf;
-	  
+    openDefaultOptions();
+
     metalIcon = iconController.getMetalIcon();
     motifIcon = iconController.getMotifIcon();
     windowsIcon = iconController.getWindowsIcon();
     cascadeIcon = iconController.getCascadeIcon();
     tileIcon = iconController.getTileIcon();
     helpIcon = iconController.getHelpIcon();
-    try{
     opcaoglobalIcon = iconController.getGlobalOptionIcon();
-    }
-    catch (Exception ee){}
 
     createActionListeners();
     createToolBars();
@@ -128,6 +147,54 @@ public class InvokerMain extends JFrame
     {
       System.exit(0);
     }
+  }
+
+  private void openDefaultOptions()
+  { try
+    {   BufferedReader r = new BufferedReader(new FileReader(new File("DataMining.ini")));
+        String header = r.readLine();
+        if (header.equals("[data mining]"))
+        {   // Número de estados permitidos
+            String states = r.readLine();
+            if ((states.substring(0,17)).equals("Maximum states = "))
+            {   defaultStates = Integer.parseInt(states.substring(17));
+            }
+            // Intervalo de confiança
+            String confidence = r.readLine();
+            if ((confidence.substring(0,19)).equals("Confidence limit = "))
+            {   confidenceLimit = Integer.parseInt(confidence.substring(19));
+            }
+            // Opção de língua
+            String language = r.readLine();
+            if ((language.substring(0,11)).equals("Language = "))
+            {   language = language.substring(11);
+                if (language.equals("English"))
+                {   Locale.setDefault(new Locale("en",""));
+                    defaultLanguage = language;
+                }
+                else if (language.equals("Potuguese"))
+                {   Locale.setDefault(new Locale("pt",""));
+                    defaultLanguage = language;
+                }
+            }
+            // Opção de look and feel
+            String laf = r.readLine();
+            if ((laf.substring(0,16)).equals("Look and Feel = "))
+            {   laf = laf.substring(16);
+                if (laf.equals("Metal"))
+                {   defaultLaf = laf;
+                }
+                else if (laf.equals("Motif"))
+                {   defaultLaf = laf;
+                }
+                else if (laf.equals("Windows"))
+                {   defaultLaf = laf;
+                }
+            }
+        }
+    }
+    catch (Exception e)
+    {}
   }
 
   private void setLnF(String lnfName)
@@ -183,6 +250,7 @@ public class InvokerMain extends JFrame
                 }
         };
 
+        // create an ActionListener for opening new window for Naive Bayes
         alPreferences = new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                         setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -266,14 +334,14 @@ public class InvokerMain extends JFrame
         };
 
         // create an ActionListener for opening new window for Bayesian Learning
-        /*alBayesianLearning = new ActionListener() {
+        alBayesianLearning = new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                         setCursor(new Cursor(Cursor.WAIT_CURSOR));
                         BayesianLearningMain bayesianLearning = new BayesianLearningMain();
                         addWindow(bayesianLearning);
                         setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 }
-        };*/
+        };
 
         // create an ActionListener for showing the View Tool Bar
         alTbView = new ActionListener() {
@@ -436,14 +504,13 @@ public class InvokerMain extends JFrame
         JMenuItem preprocessorItem = new JMenuItem(resource.getString("instancesPreprocessor")/*, icon*/ );
         JMenuItem id3Item = new JMenuItem(resource.getString("id3Classifier")/*, icon*/ );
         JMenuItem naiveBayesItem = new JMenuItem(resource.getString("naiveBayesClassifier")/*, icon*/ );
-        
         JMenuItem evaluationItem = new JMenuItem(resource.getString("evaluation")/*, icon*/ );
         JMenuItem optionsItem = new JMenuItem(resource.getString("preferences"),opcaoglobalIcon);
         /////////////
         JMenuItem metaphorItem = new JMenuItem("Metaphor"/*, icon*/ );
         JMenuItem cnmItem = new JMenuItem("Combinatorial Neural Model"/*, icon*/ );
         JMenuItem c45Item = new JMenuItem("C4.5 Classifier"/*, icon*/ );
-        //JMenuItem bayesianItem = new JMenuItem("Bayesian Learning"/*, icon*/ );
+        JMenuItem bayesianItem = new JMenuItem("Bayesian Learning"/*, icon*/ );
         JMenuItem neuralNetworkItem = new JMenuItem("Neural Network"/*, icon*/);
         ///////////
         JMenuItem metalItem = new JMenuItem("Metal",metalIcon);
@@ -461,16 +528,13 @@ public class InvokerMain extends JFrame
         preprocessorItem.setMnemonic(((Character)resource.getObject("preprocessorMnemonic")).charValue());
         id3Item.setMnemonic(((Character)resource.getObject("id3Mnemonic")).charValue());
         naiveBayesItem.setMnemonic(((Character)resource.getObject("naiveBayesMnemonic")).charValue());
-        
-        //inserir aqui?
-        
         evaluationItem.setMnemonic(((Character)resource.getObject("evaluationMnemonic")).charValue());
         optionsItem.setMnemonic(((Character)resource.getObject("preferencesMnemonic")).charValue());
         ///////////////
         metaphorItem.setMnemonic('M');
         cnmItem.setMnemonic('N');
         c45Item.setMnemonic('C');
-        //bayesianItem.setMnemonic('B');
+        bayesianItem.setMnemonic('B');
         //////////////
         metalItem.setMnemonic('M');
         motifItem.setMnemonic('O');
@@ -507,7 +571,7 @@ public class InvokerMain extends JFrame
         metaphorItem.addActionListener(alMetaphor);
         cnmItem.addActionListener(alCnm);
         neuralNetworkItem.addActionListener(alNeuralNetwork);
-        //bayesianItem.addActionListener(alBayesianLearning);
+        bayesianItem.addActionListener(alBayesianLearning);
         metalItem.addActionListener(alMetal);
         motifItem.addActionListener(alMotif);
         windowsItem.addActionListener(alWindows);
@@ -521,7 +585,8 @@ public class InvokerMain extends JFrame
         programMenu.add(id3Item);
 		programMenu.add(c45Item);//
         programMenu.add(naiveBayesItem);
-		programMenu.add(cnmItem);
+		programMenu.add(bayesianItem);//
+        programMenu.add(cnmItem);
         programMenu.add(neuralNetworkItem);//
 		programMenu.add(metaphorItem);//
         programMenu.add(evaluationItem);

@@ -41,6 +41,7 @@ public class IOMonteCarlo {
    public void makeFile(int[] positions, ProbabilisticNetwork pn){
    		makeFirstLine(pn);
    		Node node;
+   		byte index;
    		for(int i = 0 ; i < matrix.length; i++){
    			for(int j = 0 ; j < pn.getNodeCount(); j++){
    				node = pn.getNodeAt(j);

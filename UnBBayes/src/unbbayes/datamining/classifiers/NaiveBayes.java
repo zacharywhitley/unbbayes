@@ -1,10 +1,15 @@
 package unbbayes.datamining.classifiers;
 
-import java.util.*;
+import java.util.ResourceBundle;
 
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.prs.*;
-import unbbayes.prs.bn.*;
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.Instance;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.Utils;
+import unbbayes.prs.Edge;
+import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
 
 /**
  * Class implementing an Naive Bayes classifier.
@@ -28,7 +33,7 @@ public class NaiveBayes extends DistributionClassifier
 	private ProbabilisticNode classAtt;
 	private int width = 50;
 	private int k = 0,i=0,j=0;
-	private ProbabilisticNetwork net;
+	private ProbabilisticNetwork net = new ProbabilisticNetwork("NaiveBayes");
 	
 	private int numAtt;
 	private int numClasses;
@@ -52,8 +57,6 @@ public class NaiveBayes extends DistributionClassifier
 		numInstances = instances.numInstances();
 		attributes = instances.getAttributes();
 		classIndex = inst.getClassAttribute().getIndex();
-		net = new ProbabilisticNetwork("NaiveBayes");
-		width = 50;
 		attIndex=0;
 		float sum;
 
@@ -87,7 +90,7 @@ public class NaiveBayes extends DistributionClassifier
 				{
 					if ((attributes[j].getIndex() != classIndex)&&(!instance.isMissing(attributes[j])))
 					{
-						counts[(int)instance.classValue()][attIndex][(int)instance.getByteValue(attributes[j])] += instance.getWeight();
+						counts[(int)instance.classValue()][attIndex][(int)instance.getValue(attributes[j])] += instance.getWeight();
 						attIndex++;
 					}
 
@@ -208,7 +211,7 @@ public class NaiveBayes extends DistributionClassifier
 			{
 				if ((attributes[i].getIndex() != classIndex)&&(!instance.isMissing(attributes[i])))
 				{
-					probs[j] *= counts[j][i][(int)instance.getByteValue(attributes[i])];
+					probs[j] *= counts[j][i][(int)instance.getValue(attributes[i])];
 				}
 			}
 			probs[j] *= priors[j];
@@ -231,7 +234,7 @@ public class NaiveBayes extends DistributionClassifier
 			return nullInstancesString();
 		}
 		try
-		{	StringBuilder text = new StringBuilder("Naive Bayes");
+		{	StringBuffer text = new StringBuffer("Naive Bayes");
       		
 			for (i = 0; i < numClasses; i++)
 			{	text.append("\n\n"+resource.getString("class") + " " + instances.getClassAttribute().value(i) + ": P(C) = " + Utils.doubleToString(priors[i], 10, 8) + "\n\n");
@@ -261,7 +264,7 @@ public class NaiveBayes extends DistributionClassifier
 
 	private String nullInstancesString()
 	{	try
-		{	StringBuilder text = new StringBuilder("Naive Bayes");
+		{	StringBuffer text = new StringBuffer("Naive Bayes");
 			for (i = 0; i < priors.length; i++)
 			{	text.append("\n\n"+resource.getString("class") + " " + i + ": P(C) = " + Utils.doubleToString(priors[i], 10, 8) + "\n\n");
 				if (counts != null)

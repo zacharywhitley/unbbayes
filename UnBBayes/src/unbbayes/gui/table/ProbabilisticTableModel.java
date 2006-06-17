@@ -3,7 +3,6 @@ package unbbayes.gui.table;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
 
@@ -18,9 +17,6 @@ import unbbayes.prs.bn.PotentialTable;
  */
 public class ProbabilisticTableModel extends AbstractTableModel {
     
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
     private PotentialTable potTab;
     private final NumberFormat df;
     private final Node node;

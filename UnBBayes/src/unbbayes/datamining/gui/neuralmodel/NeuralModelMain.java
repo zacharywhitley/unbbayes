@@ -1,15 +1,28 @@
 package unbbayes.datamining.gui.neuralmodel;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.io.*;
-import javax.swing.*;
-import javax.swing.border.*;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ResourceBundle;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.JToolBar;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
+
 import unbbayes.controller.IconController;
-import unbbayes.datamining.evaluation.CrossValidation;
-import unbbayes.datamining.evaluation.TrainingSet;
-import unbbayes.datamining.gui.*;
+import unbbayes.datamining.gui.AttributePanel;
 
 /**
  *  Class that implements the CNM framework start screen.
@@ -17,11 +30,9 @@ import unbbayes.datamining.gui.*;
  *  @author Rafael Moraes Noivo
  *  @version $1.0 $ (02/16/2003)
  */
-public class NeuralModelMain extends JInternalFrame {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
+public class NeuralModelMain extends JInternalFrame{
   private JPanel contentPane;
+  private BorderLayout borderLayout1 = new BorderLayout();
   /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
   private JToolBar jToolBar1 = new JToolBar();
@@ -29,14 +40,14 @@ public class NeuralModelMain extends JInternalFrame {
   private JButton learnButton = new JButton();
   private JButton saveButton = new JButton();
   private JButton openButton = new JButton();
-  private JButton optionsButton = new JButton();
   private ImageIcon openIcon;
   private ImageIcon openModelIcon;
   private ImageIcon compileIcon;
   private ImageIcon helpIcon;
   private ImageIcon saveIcon;
-  private ImageIcon opcoesIcon;
   private JTabbedPane jTabbedPane1 = new JTabbedPane();
+  private BorderLayout borderLayout3 = new BorderLayout();
+  private BorderLayout borderLayout4 = new BorderLayout();
   private BorderLayout borderLayout6 = new BorderLayout();
   private JPanel jPanel2 = new JPanel();
   private JPanel jPanel3 = new JPanel();
@@ -71,10 +82,6 @@ public class NeuralModelMain extends JInternalFrame {
   JMenu helpMenu = new JMenu();
   JMenuItem helpTopicsMenu = new JMenuItem();
   JLabel jLabel2 = new JLabel();
-  private JMenuItem jMenuOptionTraining = new JMenuItem();
-  protected JMenu jMenuOption = new JMenu();
-
-  protected TrainingModePanel trainingModePanel = new TrainingModePanel();
 
   /**
    * Construct the frame.
@@ -99,7 +106,6 @@ public class NeuralModelMain extends JInternalFrame {
     compileIcon = iconController.getCompileIcon();
     helpIcon = iconController.getHelpIcon();
     saveIcon = iconController.getSaveIcon();
-    opcoesIcon = iconController.getGlobalOptionIcon();
     contentPane = (JPanel) this.getContentPane();
     titledBorder1 = new TitledBorder(border1,"Status");
     this.setSize(new Dimension(640, 521));
@@ -190,27 +196,6 @@ public class NeuralModelMain extends JInternalFrame {
         learn_actionPerformed(e);
       }
     });
-    optionsButton.setToolTipText("Training Mode");
-    optionsButton.setIcon(opcoesIcon);
-    optionsButton.addActionListener(new java.awt.event.ActionListener()
-    	    {
-    	      public void actionPerformed(ActionEvent e)
-    	      {
-    	    	  optionsButton_actionPerformed(e);
-    	      }
-    	    });
-    jMenuOptionTraining.setIcon(opcoesIcon);
-    jMenuOptionTraining.setMnemonic('m');
-    jMenuOptionTraining.setText("Training Mode...");
-    jMenuOptionTraining.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-    	  optionsButton_actionPerformed(e);
-      }
-    });
-    jMenuOption.setMnemonic('o');
-    jMenuOption.setText("Options");
     helpMenu.setText(resource.getString("helpMenu"));
     helpTopicsMenu.setText(resource.getString("helpTopicsMenu"));
     helpTopicsMenu.setIcon(helpIcon);
@@ -228,8 +213,6 @@ public class NeuralModelMain extends JInternalFrame {
     jToolBar1.add(openModelButton, null);
     jToolBar1.add(saveButton, null);
     jToolBar1.add(jLabel2, null);
-    jToolBar1.add(optionsButton, null);
-    jToolBar1.add(jLabel1, null);
     jToolBar1.add(helpButton, null);
     contentPane.add(jPanel3, BorderLayout.CENTER);
     jPanel3.add(jTabbedPane1,BorderLayout.CENTER);
@@ -249,7 +232,6 @@ public class NeuralModelMain extends JInternalFrame {
     tabbedPaneAttributes.add(panelOptions,  BorderLayout.SOUTH);
     jMenuBar1.add(fileMenu);
     jMenuBar1.add(learnMenu);
-    jMenuBar1.add(jMenuOption);
     jMenuBar1.add(helpMenu);
     fileMenu.add(openMenu);
     fileMenu.addSeparator();
@@ -258,7 +240,6 @@ public class NeuralModelMain extends JInternalFrame {
     fileMenu.addSeparator();
     fileMenu.add(exitMenu);
     learnMenu.add(learnModelMenu);
-    jMenuOption.add(jMenuOptionTraining);
     helpMenu.add(helpTopicsMenu);
     jTabbedPane1.setEnabledAt(0,false);
     jTabbedPane1.setEnabledAt(1,false);
@@ -360,22 +341,6 @@ public class NeuralModelMain extends JInternalFrame {
 
   void exitMenu_actionPerformed(ActionEvent e) {
     dispose();
-  }
-
-  /**
-   * Open training mode internal frame
-   * @param e
-   */
-  void optionsButton_actionPerformed(ActionEvent e) {
-	    int options = JOptionPane.showInternalOptionDialog(this, trainingModePanel, "Training Mode", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
-	    if(options == JOptionPane.OK_OPTION){
-      	  if (trainingModePanel.isTrainingSetRadioButtonSelected()) {
-      		controller.setTrainingMode(new TrainingSet());
-    	  } else {
-       		controller.setTrainingMode(new CrossValidation(trainingModePanel.getNumSelectedFolds()));
-    	  }
-	    }
-	    this.show();
   }
 
 }

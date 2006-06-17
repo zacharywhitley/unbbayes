@@ -1,20 +1,35 @@
 package unbbayes.controller;
 
-import java.awt.Cursor;
 import java.awt.Component;
-import java.io.*;
+import java.awt.Cursor;
+import java.io.File;
+import java.io.IOException;
 import java.util.ResourceBundle;
 
-import javax.help.*;
-import javax.swing.*;
+import javax.help.HelpSet;
+import javax.help.JHelp;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.ProgressMonitor;
+import javax.swing.Timer;
 
-import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.datamanipulation.ArffLoader;
+import unbbayes.datamining.datamanipulation.ArffSaver;
+import unbbayes.datamining.datamanipulation.CompactFileDialog;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.Loader;
+import unbbayes.datamining.datamanipulation.Saver;
+import unbbayes.datamining.datamanipulation.TxtLoader;
+import unbbayes.datamining.datamanipulation.TxtSaver;
 
 public class FileController
 {   /** Uma instância deste objeto */
     private static FileController singleton;
+    private File selectedFile;
     private ResourceBundle resource;
     private JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
+    private Timer activityMonitor;
+    private ProgressMonitor progressDialog;
 
     //--------------------------------------------------------------//
 
@@ -162,7 +177,7 @@ public class FileController
 
         public void saveInstanceSet(File output, InstanceSet instanceSet, int[] selectedAttributes) throws IOException
         {
-          Saver saver = null;
+          Saver saver;
           String fileName = output.getName();
           if (fileName.regionMatches(true,fileName.length() - 5,".arff",0,5))
           {
@@ -191,8 +206,9 @@ public class FileController
             throw new IOException(resource.getString("fileExtensionException"));
           }
 
-  			ProgressDialog progressDialog = new ProgressDialog (output.getName(), saver);
-  			progressDialog.load();
+          //starts loading and shows a status screen
+          ProgressDialog progressDialog = new ProgressDialog (output.getName(), saver);
+          boolean successStatus = progressDialog.load();
         }
 
 }

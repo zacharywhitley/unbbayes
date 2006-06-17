@@ -21,15 +21,33 @@
 
 package unbbayes.gui;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
 import java.util.Arrays;
 
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 
-import unbbayes.prs.bn.*;
-import unbbayes.util.*;
+import unbbayes.prs.bn.ExplanationPhrase;
+import unbbayes.prs.bn.Network;
+import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.util.NodeList;
 
 /**
  *
@@ -38,9 +56,6 @@ import unbbayes.util.*;
  */
 public class ExplanationProperties extends JDialog
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   private JTabbedPane jTabbedPane = new JTabbedPane();
   private JPanel southPanel = new JPanel();
   private JPanel descriptionPanel = new JPanel();
@@ -55,6 +70,7 @@ public class ExplanationProperties extends JDialog
   private JPanel evidencePhraseBottomPanel = new JPanel();
   private JLabel evidenceNodeLabel = new JLabel();
   private JComboBox evidenceNodeComboBox = new JComboBox();
+  private TitledBorder titledBorder1;
   private JPanel notUsedPanel = new JPanel();
   private JPanel exclusivePanel = new JPanel();
   private JPanel necessaryPanel = new JPanel();
@@ -72,6 +88,7 @@ public class ExplanationProperties extends JDialog
   private JLabel evidencePhraseLabel = new JLabel();
   private JScrollPane evidencePhraseScrollPane = new JScrollPane();
   private JTextArea evidencePhraseTextArea = new JTextArea();
+  private NetWindow netWindow;
   private ProbabilisticNode node;
   private Network net;
   private JButton cancelButton = new JButton();
@@ -87,8 +104,8 @@ public class ExplanationProperties extends JDialog
   private JTextArea explanationNodeTextArea = new JTextArea();
 
   public ExplanationProperties(NetWindow netWindow,Network net)
-  { 
-	  this.net = net;
+  { this.netWindow = netWindow;
+    this.net = net;
     try
     {
       jbInit();
@@ -107,6 +124,7 @@ public class ExplanationProperties extends JDialog
     // Cria bordas
     border1 = BorderFactory.createEmptyBorder(0,10,0,10);
     border2 = BorderFactory.createEmptyBorder(20,20,20,20);
+    titledBorder1 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de Evidência:");
     evidenceTypeBorder = BorderFactory.createCompoundBorder(new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de Evidência:"),BorderFactory.createEmptyBorder(0,10,0,0));
 
     // Muda propriedades do botão ok

@@ -23,7 +23,6 @@ package unbbayes.prs.bn;
 
 
 import unbbayes.prs.Node;
-
 import unbbayes.prs.id.JunctionTreeID;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
@@ -37,9 +36,6 @@ import unbbayes.util.SetToolkit;
 public class ProbabilisticNetwork
 	extends Network
 	implements java.io.Serializable {
-
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 
 	/**
 	 *  Cria uma nova rede probabilística. Limpa o arquivo de log e inicializa o

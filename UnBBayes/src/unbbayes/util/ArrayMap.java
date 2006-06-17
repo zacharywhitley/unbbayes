@@ -21,7 +21,9 @@
 
 package unbbayes.util;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Set;
 
 /**
  *
@@ -32,9 +34,6 @@ import java.util.*;
  * Classe que implementa um Map baseado em ArrayList.
  */
 public class ArrayMap extends AbstractMap implements java.io.Serializable {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
     private ArrayList 
         keys = new ArrayList(),
         values = new ArrayList();

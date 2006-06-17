@@ -1,26 +1,46 @@
 package unbbayes.datamining.gui.bayesianlearning;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ResourceBundle;
 
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JToolBar;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 
-import unbbayes.controller.*;
-import unbbayes.datamining.classifiers.bayesianlearning.*;
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.gui.*;
-import unbbayes.io.*;
-import unbbayes.prs.bn.*;
+import unbbayes.controller.FileController;
+import unbbayes.controller.IconController;
+import unbbayes.datamining.classifiers.bayesianlearning.AlgorithmController;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.gui.FileIcon;
+import unbbayes.gui.SimpleFileFilter;
+import unbbayes.io.BaseIO;
+import unbbayes.io.NetIO;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 
 public class BayesianLearningMain extends JInternalFrame
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   private JPanel contentPane;
+  private BorderLayout borderLayout1 = new BorderLayout();
   private InstanceSet inst;
   /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
@@ -44,6 +64,8 @@ public class BayesianLearningMain extends JInternalFrame
   private ImageIcon helpIcon;
   private ImageIcon salvarIcon;
   private JTabbedPane jTabbedPane1 = new JTabbedPane();
+  private BorderLayout borderLayout3 = new BorderLayout();
+  private BorderLayout borderLayout4 = new BorderLayout();
   private BorderLayout borderLayout6 = new BorderLayout();
   private JFileChooser fileChooser;
   private JPanel jPanel2 = new JPanel();

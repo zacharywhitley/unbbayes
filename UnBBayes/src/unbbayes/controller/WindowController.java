@@ -30,6 +30,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.geom.Point2D;
@@ -60,6 +61,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import org.shetline.io.GIFOutputStream;
+
 import unbbayes.gui.ExplanationProperties;
 import unbbayes.gui.FileIcon;
 import unbbayes.gui.NetWindow;
@@ -100,7 +102,7 @@ public class WindowController implements KeyListener {
 
     private boolean bColou;
 
-    private final Pattern decimalPattern = Pattern.compile("-?[0-9]*([.|,][0-9]+)?");
+    private final Pattern decimalPattern = Pattern.compile("[0-9]*([.|,][0-9]+)?");
     private Matcher matcher;
 
     /** Load resource file from this package */
@@ -568,6 +570,13 @@ public class WindowController implements KeyListener {
             }
 
         } else {
+            // decision
+
+            // the number of rows in this case is the number of states of the
+            // node and the number of columns is always 1.
+            int rows = node.getStatesSize();
+            int columns = 1;
+
             // there is no potential table and the number of variables is the
             // number of parents this node has.
             potTab = null;

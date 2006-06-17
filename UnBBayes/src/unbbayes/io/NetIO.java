@@ -21,17 +21,38 @@
 
 package unbbayes.io;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.StreamTokenizer;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
+import java.util.Stack;
 
-import javax.swing.tree.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
 
-import unbbayes.prs.*;
-import unbbayes.prs.bn.*;
-import unbbayes.prs.id.*;
+import unbbayes.prs.Edge;
+import unbbayes.prs.Node;
+import unbbayes.prs.bn.ExplanationPhrase;
+import unbbayes.prs.bn.HierarchicTree;
+import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.Network;
+import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.id.DecisionNode;
+import unbbayes.prs.id.UtilityNode;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.msbn.SubNetwork;
-import unbbayes.util.*;
+import unbbayes.util.ArrayMap;
+import unbbayes.util.NodeList;
 
 /**
  * Classe que manipula a entrada e saída de arquivos NET.
@@ -117,8 +138,8 @@ public class NetIO implements BaseIO {
 					+ ");");
 
 			if (!(auxNo1.getType() == Node.UTILITY_NODE_TYPE)) {
-				StringBuilder auxString =
-					new StringBuilder("\"" + auxNo1.getStateAt(0) + "\"");
+				StringBuffer auxString =
+					new StringBuffer("\"" + auxNo1.getStateAt(0) + "\"");
 
 				int sizeEstados = auxNo1.getStatesSize();
 				for (int c2 = 1; c2 < sizeEstados; c2++) {
@@ -294,7 +315,7 @@ public class NetIO implements BaseIO {
 						net.setRadius(Double.parseDouble(st.sval) / 2);
 					} else if (st.sval.equals("tree")) {
 						proximo(st);
-						StringBuilder sb = new StringBuilder(st.sval);
+						StringBuffer sb = new StringBuffer(st.sval);
 						DefaultMutableTreeNode root =
 							new DefaultMutableTreeNode("Variáveis de Informação");
 						loadHierarchicTree(sb, root);
@@ -510,7 +531,7 @@ public class NetIO implements BaseIO {
 	}
 
 	private void loadHierarchicTree(
-			StringBuilder sb,
+		StringBuffer sb,
 		DefaultMutableTreeNode root) {
 		int size = sb.length();
 		DefaultMutableTreeNode nextRoot = null;
@@ -528,7 +549,7 @@ public class NetIO implements BaseIO {
 				}
 			} else if (c == ',') {
 			} else {
-				StringBuilder newWord = new StringBuilder();
+				StringBuffer newWord = new StringBuffer();
 				while ((c != '(') && (c != ')') && (c != ',')) {
 					newWord.append(c);
 					i++;
@@ -545,7 +566,7 @@ public class NetIO implements BaseIO {
 
 	private String saveHierarchicTree(HierarchicTree hierarchicTree) {
 		TreeModel model = hierarchicTree.getModel();
-		StringBuilder sb = new StringBuilder();
+		StringBuffer sb = new StringBuffer();
 		TreeNode root = (TreeNode) model.getRoot();
 		int childCount = model.getChildCount(root);
 		if (childCount == 0) {
@@ -565,7 +586,7 @@ public class NetIO implements BaseIO {
 
 	private void processTreeNode(
 		TreeNode node,
-		StringBuilder sb,
+		StringBuffer sb,
 		TreeModel model) {
 		sb.append(node.toString());
 		if (!node.isLeaf()) {

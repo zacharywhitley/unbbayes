@@ -1,9 +1,19 @@
 package unbbayes.datamining.classifiers;
 
-import java.io.*;
-import java.util.*;
-import unbbayes.datamining.classifiers.neuralnetwork.*;
-import unbbayes.datamining.datamanipulation.*;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Date;
+
+import unbbayes.datamining.classifiers.neuralnetwork.ActivationFunction;
+import unbbayes.datamining.classifiers.neuralnetwork.HiddenNeuron;
+import unbbayes.datamining.classifiers.neuralnetwork.MeanSquaredError;
+import unbbayes.datamining.classifiers.neuralnetwork.OutputNeuron;
+import unbbayes.datamining.classifiers.neuralnetwork.Sigmoid;
+import unbbayes.datamining.classifiers.neuralnetwork.Tanh;
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.Instance;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.Utils;
 
 /**
  * Class that implements a multilayer neural network with backpropagation
@@ -14,8 +24,6 @@ import unbbayes.datamining.datamanipulation.*;
  */
 public class NeuralNetwork extends DistributionClassifier implements Serializable{
 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
   /**
    * Constant that defines that the size of the hidden layer is
    * automatically defined. The number of hidden neurons will be the number of
@@ -426,10 +434,10 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
           index = inputLayerIndexes[counter];
           Attribute att = attributeVector[i];
           if(att.isNumeric()){
-            float data = Float.parseFloat(att.getAttributeValues()[instance.getByteValue(att)]);
+            float data = Float.parseFloat(att.getAttributeValues()[instance.getValue(att)]);
             inputLayer[index] = normalizationFunction.normalize(data, i);
           } else{
-            index = index + instance.getByteValue(i);
+            index = index + instance.getValue(i);
             inputLayer[index] = 1;
           }
         }
@@ -562,11 +570,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
    * <p>Description: </p> Class that implements a linear normalization (to an interval).
    */
   public class LinearNormalization implements INormalization, Serializable{
-
-		/** Serialization runtime version number */
-		private static final long serialVersionUID = 0;
-	  
-	  public LinearNormalization(){
+    public LinearNormalization(){
       for(int i=0; i<numOfAttributes; i++){
         if(i!=classIndex && instanceSet.getAttribute(i).isNumeric()){
           highestValue[i] = Float.MIN_VALUE;
@@ -597,11 +601,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
    * <p>Description: </p> Class that implements the mean 0 and standard deviatio 1 normalization
    */
   public class Mean0StdDeviation1Normalization implements INormalization, Serializable{
-
-		/** Serialization runtime version number */
-		private static final long serialVersionUID = 0;
-	  
-  public Mean0StdDeviation1Normalization() throws Exception{
+    public Mean0StdDeviation1Normalization() throws Exception{
       attributeMean = new float[numOfAttributes];
       attributeStandardDeviation = new float[numOfAttributes];
 
@@ -631,8 +631,6 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
    * <p>Description: </p> Class that implements no normalization, returning the original data.
    */
   public class NoNormalization implements INormalization, Serializable{
-		/** Serialization runtime version number */
-		private static final long serialVersionUID = 0;
     /**
      * Method that implements the normalization.
      *

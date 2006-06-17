@@ -1,19 +1,28 @@
 package unbbayes.datamining.gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
-import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.datamanipulation.Options;
 
 public class GlobalOptions extends JInternalFrame
-{ 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-	private JPanel contentPane;
+{ private JPanel contentPane;
   private JPanel jPanel1 = new JPanel();
   private GridLayout gridLayout2 = new GridLayout();
   private BorderLayout borderLayout1 = new BorderLayout();

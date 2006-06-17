@@ -18,12 +18,20 @@
 
 package unbbayes.gui;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.font.TextAttribute;
-import java.awt.geom.*;
-import java.util.ResourceBundle;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.text.AttributedString;
+import java.util.ResourceBundle;
+
+import javax.swing.JPanel;
 
 
 /**
@@ -35,9 +43,6 @@ import java.text.AttributedString;
  *@see JPanel
  */
 public class Preview extends JPanel {
-
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 
     private GlobalOptions og;
 

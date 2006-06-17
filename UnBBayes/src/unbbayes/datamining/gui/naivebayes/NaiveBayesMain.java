@@ -1,27 +1,47 @@
 package unbbayes.datamining.gui.naivebayes;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ResourceBundle;
 
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JToolBar;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 
-import unbbayes.controller.*;
-import unbbayes.datamining.classifiers.*;
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.evaluation.*;
-import unbbayes.datamining.gui.*;
-import unbbayes.gui.*;
-import unbbayes.io.*;
-import unbbayes.prs.bn.*;
+import unbbayes.controller.FileController;
+import unbbayes.controller.IconController;
+import unbbayes.datamining.classifiers.NaiveBayes;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.gui.AttributePanel;
+import unbbayes.gui.FileIcon;
+import unbbayes.gui.NetWindow;
+import unbbayes.gui.NetWindowEdition;
+import unbbayes.gui.SimpleFileFilter;
+import unbbayes.io.BaseIO;
+import unbbayes.io.NetIO;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 
-public class NaiveBayesMain extends JInternalFrame {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
+public class NaiveBayesMain extends JInternalFrame
+{
   private JPanel contentPane;
+  private BorderLayout borderLayout1 = new BorderLayout();
   private InstanceSet inst;
   /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
@@ -36,20 +56,18 @@ public class NaiveBayesMain extends JInternalFrame {
   private JMenu jMenu3 = new JMenu();
   private JMenuItem jMenuItem4 = new JMenuItem();
   private JMenuItem jMenuItem5 = new JMenuItem();
-  private JMenu jMenu4 = new JMenu();
-  private JMenuItem jMenuItem6 = new JMenuItem();
   private JButton helpButton = new JButton();
   private JButton learnButton = new JButton();
   private JButton saveButton = new JButton();
   private JButton openButton = new JButton();
-  private JButton optionsButton = new JButton();
   private ImageIcon abrirIcon;
   private ImageIcon compilaIcon;
   private ImageIcon helpIcon;
   private ImageIcon salvarIcon;
-  private ImageIcon opcoesIcon;
   private JTabbedPane jTabbedPane1 = new JTabbedPane();
   private AttributePanel jPanel4;
+  private BorderLayout borderLayout3 = new BorderLayout();
+  private BorderLayout borderLayout4 = new BorderLayout();
   private BorderLayout borderLayout6 = new BorderLayout();
   private JScrollPane jScrollPane1 = new JScrollPane();
   private JPanel jPanel1;
@@ -61,14 +79,12 @@ public class NaiveBayesMain extends JInternalFrame {
   private JLabel statusBar = new JLabel();
   private Border border1;
   private TitledBorder titledBorder1;
-  private ITrainingMode trainingMode;
-
-  protected TrainingModePanel trainingModePanel = new TrainingModePanel();
 
   /**Construct the frame*/
-  public NaiveBayesMain() { 
-	super("Naive Bayes Classifier",true,true,true,true);
+  public NaiveBayesMain()
+  { super("Naive Bayes Classifier",true,true,true,true);
     resource = ResourceBundle.getBundle("unbbayes.datamining.gui.naivebayes.resources.NaiveBayesResource");
+
     enableEvents(AWTEvent.WINDOW_EVENT_MASK);
     try
     {
@@ -89,7 +105,6 @@ public class NaiveBayesMain extends JInternalFrame {
     compilaIcon = iconController.getCompileIcon();
     helpIcon = iconController.getHelpIcon();
     salvarIcon = iconController.getSaveIcon();
-    opcoesIcon = iconController.getGlobalOptionIcon();
     contentPane = (JPanel) this.getContentPane();
     jPanel1 = new JPanel();
     titledBorder1 = new TitledBorder(border1,"Status");
@@ -141,8 +156,6 @@ public class NaiveBayesMain extends JInternalFrame {
         jMenuItem4_actionPerformed(e);
       }
     });
-    jMenu4.setMnemonic('o');
-    jMenu4.setText("Options");
     jMenuItem5.setEnabled(false);
     jMenuItem5.setIcon(salvarIcon);
     jMenuItem5.setMnemonic(((Character)resource.getObject("saveNetworkMnemonic")).charValue());
@@ -192,25 +205,6 @@ public class NaiveBayesMain extends JInternalFrame {
         helpButton_actionPerformed(e);
       }
     });
-    optionsButton.setToolTipText("Training Mode");
-    optionsButton.setIcon(opcoesIcon);
-    optionsButton.addActionListener(new java.awt.event.ActionListener()
-    	    {
-    	      public void actionPerformed(ActionEvent e)
-    	      {
-    	    	  optionsButton_actionPerformed(e);
-    	      }
-    	    });
-    jMenuItem6.setIcon(opcoesIcon);
-    jMenuItem6.setMnemonic('m');
-    jMenuItem6.setText("Training Mode...");
-    jMenuItem6.addActionListener(new java.awt.event.ActionListener()
-    {
-      public void actionPerformed(ActionEvent e)
-      {
-    	  optionsButton_actionPerformed(e);
-      }
-    });
     jToolBar1.setFloatable(false);
     jPanel1.setLayout(borderLayout2);
     jPanel2.setLayout(borderLayout5);
@@ -222,8 +216,6 @@ public class NaiveBayesMain extends JInternalFrame {
     jToolBar1.add(saveButton, null);
     jToolBar1.addSeparator();
     jToolBar1.add(learnButton, null);
-    jToolBar1.addSeparator();
-    jToolBar1.add(optionsButton, null);
     jToolBar1.addSeparator();
     jToolBar1.add(helpButton, null);
     contentPane.add(jPanel3, BorderLayout.CENTER);
@@ -242,14 +234,12 @@ public class NaiveBayesMain extends JInternalFrame {
     jTabbedPane1.setEnabledAt(0,false);
     jMenuBar1.add(jMenu1);
     jMenuBar1.add(jMenu3);
-    jMenuBar1.add(jMenu4);
     jMenuBar1.add(jMenu2);
     jMenu1.add(jMenuItem1);
     jMenu1.add(jMenuItem5);
     jMenu1.add(jMenuItem2);
     jMenu2.add(jMenuItem3);
     jMenu3.add(jMenuItem4);
-    jMenu4.add(jMenuItem6);
   }
 
   void jMenuItem3_actionPerformed(ActionEvent e)
@@ -261,28 +251,12 @@ public class NaiveBayesMain extends JInternalFrame {
       }
   }
 
-  /**
-   * Open training mode internal frame
-   * @param e
-   */
-  void optionsButton_actionPerformed(ActionEvent e) {
-	    int options = JOptionPane.showInternalOptionDialog(this, trainingModePanel, "Training Mode", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
-	    if(options == JOptionPane.OK_OPTION){
-      	  if (trainingModePanel.isTrainingSetRadioButtonSelected()) {
-      		trainingMode = new TrainingSet();
-    	  } else {
-    		trainingMode = new CrossValidation(trainingModePanel.getNumSelectedFolds());
-    	  }
-	    }
-	    this.show();
-  }
-  
   void jMenuItem4_actionPerformed(ActionEvent e)
   {   if (inst != null)
       {   try
           {
           	  NaiveBayes naiveBayes = new NaiveBayes();
-          	  naiveBayes.buildClassifier(inst,trainingMode);
+          	  naiveBayes.buildClassifier(inst);
           	  net = naiveBayes.getProbabilisticNetwork();
           	  jMenuItem5.setEnabled(true);
               jTabbedPane1.setEnabledAt(1,true);
@@ -423,5 +397,6 @@ public class NaiveBayesMain extends JInternalFrame {
   void learnButton_actionPerformed(ActionEvent e)
   {   jMenuItem4_actionPerformed(e);
   }
+
 
 }

@@ -24,7 +24,7 @@ package unbbayes.prs.id;
 import java.awt.Color;
 import java.util.ResourceBundle;
 
-import unbbayes.prs.*;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
 
@@ -34,9 +34,6 @@ import unbbayes.prs.bn.PotentialTable;
  *@author     Michael e Rommel
  */
 public class UtilityNode extends Node implements ITabledVariable, java.io.Serializable {
-
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 
     private PotentialTable utilTable;
 

@@ -20,31 +20,34 @@
  */
 package unbbayes.aprendizagem;
 
-import javax.swing.ListSelectionModel;
-import java.awt.Container;
 import java.awt.BorderLayout;
-import javax.swing.JDialog;
+import java.awt.Container;
 import java.awt.Frame;
 import java.awt.GridLayout;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JList;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
 import javax.swing.DefaultListModel;
-import javax.swing.JProgressBar;
-import javax.swing.JLabel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 
 import unbbayes.util.NodeList;
-import java.awt.event.*;
 
 public class OrdenationWindow extends JDialog {	
     
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-	private String[] metrics = {"MDL","GH", "GHS"};		
+    private String[] metrics = {"MDL","GH", "GHS"};		
 	private String[] paradigms = {"Ponctuation","IC"};	
 	private String[] ponctuationAlgorithms = {"K2","B"};
 	private String[] icAlgorithms = {"CBL-A","CBL-B"};     
@@ -68,24 +71,10 @@ public class OrdenationWindow extends JDialog {
     private JComboBox metricList;
 	private NodeList variables;
 	private OrdenationInterationController ordenationController;
-	private int classe;
 	
 	public OrdenationWindow(NodeList variables){
 	    super(new Frame(),"UnBBayes - Learning Module",true);	    
 	    this.variables = variables;
-	    Container container = getContentPane();	    
-        container.add(getCenterPanel(), BorderLayout.CENTER);                
-        container.add(getSouthPanel(),BorderLayout.SOUTH);
-        ordenationController = new OrdenationInterationController(variables,this);   
-        setResizable(false);
-        pack();
-        setVisible(true); 
-        
-	}
-	public OrdenationWindow(NodeList variables, int classex){
-	    super(new Frame(),"UnBBayes - Learning Module",true);	    
-	    this.variables = variables;
-	    this.classe=classex;
 	    Container container = getContentPane();	    
         container.add(getCenterPanel(), BorderLayout.CENTER);                
         container.add(getSouthPanel(),BorderLayout.SOUTH);
@@ -211,8 +200,7 @@ public class OrdenationWindow extends JDialog {
 	
 	private void insertList(){
 		TVariavel aux;
-		for(int i = 0 ; i< variables.size(); i++){
-			
+		for(int i = 0 ; i< variables.size(); i++){			
 			aux = (TVariavel)variables.get(i);
 			listModel.addElement(aux.getName());
 		}				

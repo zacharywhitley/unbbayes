@@ -4,10 +4,14 @@ package unbbayes.gui.table;
  * (swing1.1beta3)
  * 
  */
-import java.util.*;
-import java.awt.*;
-import javax.swing.*;
-import javax.swing.table.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.util.Enumeration;
+import java.util.Vector;
+
+import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 /**
   * ColumnGroup
@@ -54,9 +58,9 @@ public class ColumnGroup {
 		g.addElement(this);
 		if (v.contains(c))
 			return g;
-		Enumeration enumeration = v.elements();
-		while (enumeration.hasMoreElements()) {
-			Object obj = enumeration.nextElement();
+		Enumeration enum = v.elements();
+		while (enum.hasMoreElements()) {
+			Object obj = enum.nextElement();
 			if (obj instanceof ColumnGroup) {
 				Vector groups =
 					(Vector) ((ColumnGroup) obj).getColumnGroups(
@@ -94,9 +98,9 @@ public class ColumnGroup {
 				-1);
 		int height = comp.getPreferredSize().height;
 		int width = 0;
-		Enumeration enumeration = v.elements();
-		while (enumeration.hasMoreElements()) {
-			Object obj = enumeration.nextElement();
+		Enumeration enum = v.elements();
+		while (enum.hasMoreElements()) {
+			Object obj = enum.nextElement();
 			if (obj instanceof TableColumn) {
 				TableColumn aColumn = (TableColumn) obj;
 				width += aColumn.getWidth();
@@ -110,9 +114,9 @@ public class ColumnGroup {
 
 	public void setColumnMargin(int margin) {
 		this.margin = margin;
-		Enumeration enumeration = v.elements();
-		while (enumeration.hasMoreElements()) {
-			Object obj = enumeration.nextElement();
+		Enumeration enum = v.elements();
+		while (enum.hasMoreElements()) {
+			Object obj = enum.nextElement();
 			if (obj instanceof ColumnGroup) {
 				((ColumnGroup) obj).setColumnMargin(margin);
 			}

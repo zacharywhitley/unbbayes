@@ -1,15 +1,32 @@
 package unbbayes.datamining.gui.neuralmodel;
 
-import java.awt.*;
-import java.io.*;
-import java.util.*;
-import java.awt.print.*;
-import javax.swing.*;
-import unbbayes.controller.*;
-import unbbayes.datamining.classifiers.*;
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.evaluation.ITrainingMode;
-import unbbayes.gui.*;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.print.PageFormat;
+import java.awt.print.PrinterException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
+
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JInternalFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
+
+import unbbayes.controller.FileController;
+import unbbayes.controller.PrintMonitor;
+import unbbayes.controller.PrintPreviewer;
+import unbbayes.controller.PrintTable;
+import unbbayes.datamining.classifiers.CombinatorialNeuralModel;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.gui.FileIcon;
+import unbbayes.gui.SimpleFileFilter;
 
 /**
  *  Class that implements a controller of the program behavior.
@@ -24,7 +41,6 @@ public class NeuralModelController {
   private InstanceSet instanceSet;
   private ResourceBundle resource;
   private File file;
-  private ITrainingMode trainingMode;
 
   /**
    * Builds a new controller.
@@ -164,11 +180,7 @@ public class NeuralModelController {
     mainScreen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     return success;
   }
-  
-  public void setTrainingMode(ITrainingMode mode) {
-	  this.trainingMode = mode;
-  }
-  
+
   /**
    * Used to call the help files.
    */
@@ -192,7 +204,7 @@ public class NeuralModelController {
       confidence = mainScreen.optionsPanel.getConfidence();
       support = mainScreen.optionsPanel.getSupport();
       cnm = new CombinatorialNeuralModel(maxOrder);
-      cnm.buildClassifier(instanceSet,trainingMode);
+      cnm.buildClassifier(instanceSet);
       mainScreen.rulesPanel.setRulesPanel(cnm, confidence, support);
       mainScreen.inferencePanel.setNetwork(cnm);
     }
@@ -207,7 +219,7 @@ public class NeuralModelController {
   public void printTable(final JTable table) {
     Thread t = new Thread(new Runnable() {
       public void run() {
-        ArrayList<JTable> tables = new ArrayList<JTable>();
+        ArrayList tables = new ArrayList();
         tables.add(table);
         PageFormat pageFormat = new PageFormat();
         pageFormat.setOrientation(PageFormat.LANDSCAPE);
@@ -231,7 +243,7 @@ public class NeuralModelController {
   public void printPreviewer(final JTable table) {
     Thread t = new Thread(new Runnable() {
       public void run() {
-        ArrayList<JTable> tables = new ArrayList<JTable>();
+        ArrayList tables = new ArrayList();
         tables.add(table);
         PageFormat pageFormat = new PageFormat();
         pageFormat.setOrientation(PageFormat.LANDSCAPE);

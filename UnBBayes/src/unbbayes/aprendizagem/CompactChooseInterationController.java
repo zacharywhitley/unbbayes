@@ -21,6 +21,7 @@
 package unbbayes.aprendizagem;
 
 import javax.swing.JComboBox;
+
 import unbbayes.util.NodeList;
 public class CompactChooseInterationController {
 	

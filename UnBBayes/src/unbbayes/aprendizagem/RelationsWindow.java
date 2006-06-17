@@ -20,11 +20,21 @@
  */
  package unbbayes.aprendizagem;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Frame;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-
-import java.awt.event.*;
-import javax.swing.*;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
 
 import unbbayes.util.NodeList;
 
@@ -38,9 +48,7 @@ import unbbayes.util.NodeList;
  */
 public class RelationsWindow extends JDialog{
 	
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
+    private JPanel rolBox;
     private JPanel relationBox;
     private JPanel relationPanel;
     private JPanel buttonPanel;

@@ -22,7 +22,7 @@
 package unbbayes.prs.bn;
 
 
-import unbbayes.prs.id.*;
+import unbbayes.prs.id.UtilityTable;
 import unbbayes.util.NodeList;
 
 /**
@@ -31,9 +31,6 @@ import unbbayes.util.NodeList;
  *@author     Michael e Rommel
  */
 public class Separator implements ITabledVariable, java.io.Serializable {
-
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 
     private PotentialTable tabelaPot;
     private PotentialTable utilityTable;

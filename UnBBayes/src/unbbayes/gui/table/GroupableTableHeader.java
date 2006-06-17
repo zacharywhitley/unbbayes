@@ -4,9 +4,12 @@ package unbbayes.gui.table;
  * 
  */
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Vector;
 
-import javax.swing.table.*;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 /**
   * GroupableTableHeader
@@ -16,9 +19,7 @@ import javax.swing.table.*;
   */
 
 public class GroupableTableHeader extends JTableHeader {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
+	private static final String uiClassID = "GroupableTableHeaderUI";
 	protected Vector columnGroups = null;
 
 	public GroupableTableHeader(TableColumnModel model) {
@@ -41,9 +42,9 @@ public class GroupableTableHeader extends JTableHeader {
 	public Enumeration getColumnGroups(TableColumn col) {
 		if (columnGroups == null)
 			return null;
-		Enumeration enumeration = columnGroups.elements();
-		while (enumeration.hasMoreElements()) {
-			ColumnGroup cGroup = (ColumnGroup) enumeration.nextElement();
+		Enumeration enum = columnGroups.elements();
+		while (enum.hasMoreElements()) {
+			ColumnGroup cGroup = (ColumnGroup) enum.nextElement();
 			Vector v_ret = (Vector) cGroup.getColumnGroups(col, new Vector());
 			if (v_ret != null) {
 				return v_ret.elements();
@@ -56,9 +57,9 @@ public class GroupableTableHeader extends JTableHeader {
 		if (columnGroups == null)
 			return;
 		int columnMargin = getColumnModel().getColumnMargin();
-		Enumeration enumeration = columnGroups.elements();
-		while (enumeration.hasMoreElements()) {
-			ColumnGroup cGroup = (ColumnGroup) enumeration.nextElement();
+		Enumeration enum = columnGroups.elements();
+		while (enum.hasMoreElements()) {
+			ColumnGroup cGroup = (ColumnGroup) enum.nextElement();
 			cGroup.setColumnMargin(columnMargin);
 		}
 	}

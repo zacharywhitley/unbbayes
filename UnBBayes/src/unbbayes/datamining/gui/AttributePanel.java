@@ -1,19 +1,25 @@
 package unbbayes.datamining.gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.util.Enumeration;
+import java.util.ResourceBundle;
 
-import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 
-import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.InstanceSet;
 
 public class AttributePanel extends JPanel
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   private BorderLayout borderLayout1 = new BorderLayout();
   private JTree leftTree;
   private JTree rightTree;
@@ -122,10 +128,10 @@ public class AttributePanel extends JPanel
           node.add(leaf);
       }
       else
-      {   Enumeration enumeration = att.enumerateValues();
+      {   Enumeration enum = att.enumerateValues();
           DefaultMutableTreeNode leaf;
-          while (enumeration.hasMoreElements())
-          {	leaf = new DefaultMutableTreeNode(enumeration.nextElement());
+          while (enum.hasMoreElements())
+          {	leaf = new DefaultMutableTreeNode(enum.nextElement());
                 node.add(leaf);
           }
       }

@@ -36,7 +36,8 @@ import javax.swing.JToolBar;
 import javax.swing.JViewport;
 
 import unbbayes.controller.IconController;
-import unbbayes.prs.*;
+import unbbayes.prs.Edge;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
 
@@ -48,9 +49,6 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  * @version 1.0
  */
 public class TJanelaEdicao extends JDialog {
-
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 
     private JToolBar jtb;
     private JViewport view;

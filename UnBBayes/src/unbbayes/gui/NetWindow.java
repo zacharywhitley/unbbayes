@@ -21,14 +21,25 @@
 
 package unbbayes.gui;
 
-import javax.swing.*;
-
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.CardLayout;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.util.ResourceBundle;
-import unbbayes.controller.*;
-import unbbayes.prs.*;
-import unbbayes.prs.bn.*;
+
+import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.JTree;
+import javax.swing.JViewport;
+
+import unbbayes.controller.WindowController;
+import unbbayes.prs.Node;
+import unbbayes.prs.bn.Network;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 
 /**
  * Janela de uma rede.
@@ -37,9 +48,6 @@ import unbbayes.prs.bn.*;
  * @author Rommel
  */
 public class NetWindow extends JInternalFrame {
-
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 
     private JViewport graphViewport;
     private final IGraph graph;
@@ -283,32 +291,6 @@ public class NetWindow extends JInternalFrame {
 		carta.show(getContentPane(), "netCompilation");
 		netCompilation.getEvidenceTree().updateTree();
 	}
-	
-	public void changeToNetCompilation2() {
-
-        graph.setbArc(false);
-        graph.setbProbabilisticNode(false);
-        graph.setbDecisionNode(false);
-        graph.setbUtilityNode(false);
-        graph.setbSelect(false);
-        graph.removeKeyListener(controller);
-//        graph.removeKeyListener(controller);
-//        graph.removeKeyListener(controller);
-
-		netCompilation.getCenterPanel().setRightComponent(jspGraph);
-		netCompilation.setStatus(status.getText());
-		netCompilation.getEvidenceTree().setRootVisible(true);
-		netCompilation.getEvidenceTree().expandRow(0);
-		netCompilation.getEvidenceTree().setRootVisible(false);
-
-		bCompiled = true;
-
-		controller.getNet().setFirstInitialization(true);
-
-		carta.show(getContentPane(), "netCompilation");
-		netCompilation.getEvidenceTree().updateTree();
-	}
-
 
 	/**
 	 * Método responsável por fazer as alterações necessárias para a mudar da

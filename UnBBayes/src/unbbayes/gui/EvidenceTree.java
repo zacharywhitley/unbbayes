@@ -1,26 +1,37 @@
 package unbbayes.gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.text.*;
-import java.util.*;
+import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.Enumeration;
+import java.util.Locale;
 
-import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
-import unbbayes.prs.*;
-import unbbayes.prs.bn.*;
-import unbbayes.util.*;
+import unbbayes.prs.Node;
+import unbbayes.prs.bn.Network;
+import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.TreeVariable;
+import unbbayes.util.ArrayMap;
+import unbbayes.util.NodeList;
 
 /**
  * @author Mário Henrique Paes Vieira
  * @version 1.0
  */
 public class EvidenceTree extends JTree {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
 	private Network net;
 	private NumberFormat nf;
 	private boolean[] expandedNodes;
@@ -86,9 +97,6 @@ public class EvidenceTree extends JTree {
 	}
 
 	private class EvidenceTreeCellRenderer extends DefaultTreeCellRenderer {
-		/** Serialization runtime version number */
-		private static final long serialVersionUID = 0;
-
 		private ImageIcon folderSmallIcon = iconController.getFolderSmallIcon();
 		private ImageIcon folderSmallDisabledIcon = iconController.getFolderSmallDisabledIcon();
 		private ImageIcon yellowBallIcon = iconController.getYellowBallIcon();

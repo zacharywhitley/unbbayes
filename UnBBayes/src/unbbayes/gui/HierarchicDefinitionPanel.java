@@ -1,15 +1,31 @@
 package unbbayes.gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Enumeration;
+import java.util.ResourceBundle;
 
-import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JToolBar;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
-import unbbayes.prs.*;
-import unbbayes.prs.bn.*;
+import unbbayes.prs.Node;
+import unbbayes.prs.bn.HierarchicTree;
+import unbbayes.prs.bn.Network;
 
 
 /**
@@ -19,9 +35,6 @@ import unbbayes.prs.bn.*;
 
 public class HierarchicDefinitionPanel extends JPanel
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   private JSplitPane centerPanel;
   private JScrollPane descriptionScrollPane;
   private JScrollPane explanationScrollPane;
@@ -248,10 +261,10 @@ public class HierarchicDefinitionPanel extends JPanel
     selectedNode = (DefaultMutableTreeNode)hierarchicTree.getLastSelectedPathComponent();
     if (selectedNode != null)
     {
-      Enumeration enumeration = selectedNode.breadthFirstEnumeration();
-      while (enumeration.hasMoreElements())
+      Enumeration enum = selectedNode.breadthFirstEnumeration();
+      while (enum.hasMoreElements())
       {
-        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)enumeration.nextElement();
+        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)enum.nextElement();
         System.out.println(treeNode);
         Node node = hierarchicTree.getNodeInformation(treeNode);
         if (node == null)

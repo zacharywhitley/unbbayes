@@ -20,16 +20,17 @@
  */
 package unbbayes.aprendizagem;
 
-import unbbayes.util.NodeList;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 
 public abstract class LearningToolkit{
 
 	    protected long caseNumber;
-	    protected int[][] dataBase;
+	    protected byte[][] dataBase;
 	    protected int[] vector;
 	    protected boolean compacted;
 
@@ -77,11 +78,11 @@ public abstract class LearningToolkit{
         }else{
             ArrayNijk = new int[variable.getEstadoTamanho()][getQ(parents)];
         }
-        int positionVector[] = new int[parentsLength];
+        byte positionVector[] = new byte[parentsLength];
         int maxVector[]      = new int[parentsLength];
         for (int i = 0; i < parentsLength; i++ ){
             aux = (TVariavel)parents.get(i);
-            positionVector[i] = aux.getPos();
+            positionVector[i] = (byte)aux.getPos();
             maxVector[i] = aux.getEstadoTamanho();
 
         }
@@ -94,7 +95,11 @@ public abstract class LearningToolkit{
                 if(j != positionLength -1){
                     index += dataBase[i][position]*maxVector[j+1];
                     if(i == 0){
+                        if(maxVector[j] < 0){
+                            System.currentTimeMillis();
+                        }
                         maxVector[j] *= maxVector[j+1];
+                        
                     }
                 }else{
                     index = dataBase[i][position];
@@ -108,13 +113,12 @@ public abstract class LearningToolkit{
                     }
             }else{
                   if(! compacted){
-                	  try{
-                       ArrayNijk[dataBase[i][pos]][index]++;}
-                	  catch (java.lang.ArrayIndexOutOfBoundsException ee){
-                		  System.out.println("");
-                	  }
-                  }else{
-                       ArrayNijk[dataBase[i][pos]][index] += vector[i];
+                       ArrayNijk[dataBase[i][pos]][index]++;
+                  }else{                  	
+                  	if(dataBase[i][pos] == -39 || index == -39){
+                  		System.out.println("Break");
+                  	}
+                    ArrayNijk[dataBase[i][pos]][index] += vector[i];
                   }
             }
         }

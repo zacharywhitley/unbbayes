@@ -21,11 +21,13 @@
 package unbbayes.aprendizagem;
 
 
-import unbbayes.util.NodeList;
+import java.awt.event.MouseEvent;
+
+import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import javax.swing.JList;
-import javax.swing.DefaultListModel;
-import java.awt.event.MouseEvent;
+
+import unbbayes.util.NodeList;
 
 public class OrdenationInterationController {
 	

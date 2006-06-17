@@ -1,17 +1,26 @@
 package unbbayes.datamining.gui.metaphor;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Component;
+import java.awt.event.MouseAdapter;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Locale;
 
-import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.ImageIcon;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
-import unbbayes.prs.*;
-import unbbayes.prs.bn.*;
-import unbbayes.util.*;
+import unbbayes.prs.Node;
+import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.TreeVariable;
+import unbbayes.util.ArrayMap;
+import unbbayes.util.NodeList;
 
 /**
  * @author Mário Henrique Paes Vieira
@@ -19,9 +28,6 @@ import unbbayes.util.*;
  */
 public class MetaphorTree extends JTree
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
         private class StateObject
         {   private ProbabilisticNode node;
             private int stateIndex = -1;
@@ -56,9 +62,6 @@ public class MetaphorTree extends JTree
 
 	private class MetaphorTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer
         {
-		/** Serialization runtime version number */
-		private static final long serialVersionUID = 0;
-
           ImageIcon yesIcon = iconController.getYesStateIcon();
 	    ImageIcon noIcon = iconController.getNoStateIcon();
 	    ImageIcon emptyIcon = iconController.getEmptyStateIcon();

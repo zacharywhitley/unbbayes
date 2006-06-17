@@ -1,13 +1,21 @@
 package unbbayes.datamining.gui.neuralnetwork;
 
-import java.io.*;
-import java.awt.*;
-import javax.swing.*;
-import java.util.*;
-import unbbayes.controller.*;
-import unbbayes.datamining.classifiers.*;
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.gui.*;
+import java.awt.Cursor;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ResourceBundle;
+
+import javax.swing.JFileChooser;
+import javax.swing.JInternalFrame;
+
+import unbbayes.controller.FileController;
+import unbbayes.datamining.classifiers.NeuralNetwork;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.gui.FileIcon;
+import unbbayes.gui.SimpleFileFilter;
 
 /**
  *  Class that implements the neural network framwork controller
@@ -21,6 +29,7 @@ public class NeuralNetworkController {
   private NeuralNetworkMain mainScreen;
   private JFileChooser fileChooser;
   private InstanceSet instanceSet;
+  private File file;
   private int hiddenLayerSize;
 
   public NeuralNetworkController() {
@@ -105,6 +114,7 @@ public class NeuralNetworkController {
     if (returnValue == JFileChooser.APPROVE_OPTION) {
       File selectedFile = fileChooser.getSelectedFile();
       openSelectedFile(selectedFile);
+      file = selectedFile;
       FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       fileOpenSuccess = true;
     }
@@ -186,6 +196,7 @@ public class NeuralNetworkController {
       mainScreen.inferencePanel.setNetwork(bpn);
       mainScreen.setTitle("Backpropagation Neural Network - " + resource.getString("model") + " " + selectedFile.getName());
       FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
+      file = selectedFile;
       success = true;
     }
     mainScreen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));

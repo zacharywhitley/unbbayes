@@ -1,7 +1,13 @@
 package unbbayes.datamining.datamanipulation;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StreamTokenizer;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
 
 /** This class opens a txt file building an InstanceSet object
  *
@@ -33,7 +39,7 @@ public class TxtLoader extends Loader
                 tokenizer = new StreamTokenizer(reader);
                 initTokenizer();
                 readHeader();
-              //  maximumStatesAllowed = Options.getInstance().getNumberStatesAllowed();
+                maximumStatesAllowed = Options.getInstance().getNumberStatesAllowed();
 	}
 
 	/**
@@ -62,15 +68,15 @@ public class TxtLoader extends Loader
    	*/
   	protected void readHeader() throws IOException
 	{	String[] attributeValues = null;
-		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+		ArrayList attributes = new ArrayList();
 		//Insert attributes in the new dataset
 		getNextToken();
 		while (tokenizer.ttype != StreamTokenizer.TT_EOL)
 		{	if(tokenizer.sval != null)
-			{	attributes.add(new Attribute(tokenizer.sval,attributeValues,Attribute.Type.NOMINAL,attributes.size()));
+			{	attributes.add(new Attribute(tokenizer.sval,attributeValues,Attribute.NOMINAL,attributes.size()));
                 	}
 			else
-			{	attributes.add(new Attribute(String.valueOf(tokenizer.nval),attributeValues,Attribute.Type.NUMERIC,attributes.size()));
+			{	attributes.add(new Attribute(String.valueOf(tokenizer.nval),attributeValues,Attribute.NUMERIC,attributes.size()));
                 	}
 			tokenizer.nextToken();
 		}
@@ -82,7 +88,6 @@ public class TxtLoader extends Loader
                 }
                 initialInstances--;// Number of lines - header
                 instances = new InstanceSet(initialInstances, attributesArray);
-                //instances.setRelationName(relationName);
 	}
 
 	/**
@@ -123,14 +128,13 @@ public class TxtLoader extends Loader
    	*/
   	protected boolean getInstanceFull() throws IOException
 	{
-  		/*counterInstance++;
           int numAttributes = instances.numAttributes();
-            byte[] instance = new byte[numAttributes];
+            short[] instance = new short[numAttributes];
             int instanceWeight = 1;
             int position = 0,index = 0;
             int attributeNumber = -1;
             String stateName = "";
-            
+
             int instanceSize = 0;
             if (counterAttribute >= 0)
             {   instanceSize = numAttributes + 1;
@@ -191,98 +195,10 @@ public class TxtLoader extends Loader
             }
 
             // Add instance to dataset
-            Instance newInstance = new Instance(instanceWeight,instance,instances,counterInstance);
-            instances.insertInstance(newInstance);  	    
-    	    return true;*/
-//  	 count which instance will be updated
-  		counterInstance++;
-
-  		int numAttributes = instances.numAttributes();
-          Object[] instance = new Object[numAttributes];
-          int index;
-          int instanceWeight = 1;
-
-          // Get values for all attributes.
-          int instanceSize = 0;
-          if (counterAttribute >= 0)
-          {
-            instanceSize = numAttributes + 1;
-          }
-          else
-          {
-            instanceSize = numAttributes;
-          }
-          int attributeNumber = -1;
-          for (int i = 0; i < instanceSize; i++)
-          {
-            // Get next token
-            if (i > 0)
-              getNextToken();
-            if (counterAttribute == i)
-            {
-              try
-              {
-                instanceWeight = Integer.valueOf(tokenizer.sval).intValue();
-              }
-              catch(NumberFormatException nfe)
-              {
-                errms("Atributo de contagem inválido");
-              }
-            }
-            else
-            {
-              attributeNumber++;
-                    // Check if value is missing.
-                    if  (tokenizer.ttype == '?')
-                    {	instance[attributeNumber] = Instance.missingValue();
-                    }
-                    else
-                    {	// Check if token is valid.
-                        if (tokenizer.ttype != StreamTokenizer.TT_WORD)
-                        {   errms(resource.getString("getInstanceFullException1"));
-                        }
-                        if (instances.getAttribute(attributeNumber).isNominal())
-                        {   // Check if value appears in header.
-                            index = instances.getAttribute(attributeNumber).indexOfValue(tokenizer.sval);
-                            if (index == -1)
-                            {   errms(resource.getString("getInstanceFullException2"));
-                            }
-                            instance[attributeNumber] = (byte)index;
-                        }
-                        else if (instances.getAttribute(attributeNumber).isNumeric())
-                        {   // Check if value is really a number.
-                            try
-                            {   //Attribute att = instances.getAttribute(attributeNumber);
-                                float newValue = Float.valueOf(tokenizer.sval).floatValue();
-                                //String nomeEstado = newValue + "";
-                                /*if (att.numValues()==0 || att.indexOfValue(nomeEstado) == -1)
-                                {   att.addValue(nomeEstado);
-                                }
-                                // Check if value appears in header.
-                                index = att.indexOfValue(nomeEstado);
-                                if (index == -1)
-                                {   errms(resource.getString("getInstanceFullException2"));
-                                }*/
-                                instance[attributeNumber] = newValue;
-                            }
-                            catch (NumberFormatException e)
-                            {   errms(resource.getString("getInstanceFullException3"));
-                            }
-                        }
-                    }
-                }
-    	    }
-    	    getLastToken(true);
-    	    
-    	    // Add instance to dataset
-    	    Instance newInstance = new Instance(instanceWeight,instance,instances,counterInstance);
-            instances.insertInstance(newInstance);    	    
-        	return true;
+    	    add(new Instance(instanceWeight,instance));
+    	    return true;
 	}
-  	protected void getLastToken(boolean endOfFileOk) throws IOException
-	{	if ((tokenizer.nextToken() != StreamTokenizer.TT_EOL) && ((tokenizer.nextToken() != StreamTokenizer.TT_EOF) || !endOfFileOk))
-			errms(resource.getString("getLastTokenException1"));
-  	}
+
 	/**
    	* Gets next token, skipping empty lines.
    	*
@@ -318,7 +234,7 @@ public class TxtLoader extends Loader
 			if (att.numValues() > maximumStatesAllowed)
 			{	boolean bool = checkNominal(att);
                                 if (bool == false)
-					att.setAttributeType(Attribute.Type.NUMERIC);
+					att.setAttributeType(Attribute.NUMERIC);
 			}
     	}
 

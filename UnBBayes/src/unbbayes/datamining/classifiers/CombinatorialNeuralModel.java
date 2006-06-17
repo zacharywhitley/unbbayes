@@ -1,9 +1,16 @@
 package unbbayes.datamining.classifiers;
 
-import java.io.*;
-import java.util.*;
-import unbbayes.datamining.classifiers.cnmentities.*;
-import unbbayes.datamining.datamanipulation.*;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+
+import unbbayes.datamining.classifiers.cnmentities.Combination;
+import unbbayes.datamining.classifiers.cnmentities.OutputNeuron;
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.Instance;
+import unbbayes.datamining.datamanipulation.InstanceSet;
 
 /**
  *  Class that implements the Combinatorial Neural Model (CNM).
@@ -13,11 +20,8 @@ import unbbayes.datamining.datamanipulation.*;
  */
 public class CombinatorialNeuralModel extends DistributionClassifier implements Serializable{
 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   /**The model's combinations.*/
-  private HashMap<String,Combination> model = new HashMap<String,Combination>();
+  private HashMap model = new HashMap();
 
   /**Vector that contains the attributes of the training set.*/
   private Attribute[] attributeVector;
@@ -114,7 +118,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
 	int keyIndex = 0;
 	for(int att=0; att<attributeNum; att++){
 	  if(!instance.isMissing(att) && (att != classIndex)){
-		inputKeys[keyIndex] = generateInputKey(att, instance.getByteValue(att));
+		inputKeys[keyIndex] = generateInputKey(att, instance.getValue(att));
 		keyIndex ++;
 	  }
 	}
@@ -128,7 +132,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
 	}
   }
 
-  private void addCombination(String key, int classValue, int weight){
+  private void addCombination(String key, short classValue, int weight){
 	Combination combination;
 
 	if(!model.containsKey(key)){
@@ -169,7 +173,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
    * @param value the value of the attribute
    * @return the generated key
    */
-  private String generateInputKey(int attribute, int value){
+  private String generateInputKey(int attribute, short value){
 	return new String(attribute + " " + value);
   }
 
@@ -183,7 +187,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
   private String[] makeCombinations(String[] inputKeys){
 	String[] keysArray, tempArray;
 	String[] combinationsArray;
-	ArrayList<String[]> combinations = new ArrayList<String[]>();
+	ArrayList combinations = new ArrayList();
 	int inputKeysNum = inputKeys.length;
 	int combArraySize, tempSize;
 
@@ -238,7 +242,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
   public void prunning(int threshold){
 	Iterator iterator = model.values().iterator();
 	Combination tempCombination;
-	ArrayList<String> keysArray = new ArrayList<String>();
+	ArrayList keysArray = new ArrayList();
 
 	while(iterator.hasNext()){
 	  tempCombination = (Combination)iterator.next();
@@ -264,7 +268,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
   public void prunning(int minSupport, int minConfidence){
 	Iterator iterator = model.values().iterator();
 	Combination tempCombination;
-	ArrayList<String> keysArray = new ArrayList<String>();
+	ArrayList keysArray = new ArrayList();
 
 	while(iterator.hasNext()){
 	  tempCombination = (Combination)iterator.next();
@@ -288,7 +292,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
    */
   public Combination[] inference(Instance instance){
 	int numAtt = attributeVector.length;
-	int value;
+	short value;
 	String[] instanceKeys;
 	String[] combKeys;
 	Combination[] combArray = new Combination[attributeVector[classIndex].numValues()];   //array que conterá os arcos de maior peso de cada neuronio
@@ -306,7 +310,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
 	int keyIndex = 0;
 	for(int att=0; att<numAtt; att++){                  //gera um array com as chaves da instancia atual
 	  if(att != classIndex && !instance.isMissing(att)){
-		value = instance.getByteValue(att);
+		value = instance.getValue(att);
 		instanceKeys[keyIndex] = generateInputKey(att, value); //cria a chave atributo-valor da entrada
 		keyIndex++;
 	  }

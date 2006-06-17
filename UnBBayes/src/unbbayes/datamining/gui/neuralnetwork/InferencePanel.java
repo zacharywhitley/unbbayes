@@ -1,15 +1,30 @@
 package unbbayes.datamining.gui.neuralnetwork;
 
-import java.text.*;
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.text.*;
-import unbbayes.controller.*;
-import unbbayes.datamining.classifiers.*;
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.gui.*;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.text.DecimalFormat;
+import java.util.ResourceBundle;
+
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextPane;
+import javax.swing.JToolBar;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
+
+import unbbayes.controller.IconController;
+import unbbayes.datamining.classifiers.NeuralNetwork;
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.Instance;
+import unbbayes.datamining.datamanipulation.Utils;
+import unbbayes.datamining.gui.AttributesTree;
+import unbbayes.datamining.gui.IInferencePanel;
 
 /**
  *  Class that implements the the panel used to make inferences on the model.
@@ -18,9 +33,6 @@ import unbbayes.datamining.gui.*;
  *  @version $1.0 $ (02/16/2003)
  */
 public class InferencePanel extends JPanel implements IInferencePanel{
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   private ResourceBundle resource;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JPanel jPanel1 = new JPanel();
@@ -29,6 +41,7 @@ public class InferencePanel extends JPanel implements IInferencePanel{
   private JPanel jPanel3 = new JPanel();
   private JPanel jPanel4 = new JPanel();
   private JPanel panelMessages = new JPanel();
+  private JScrollPane jScrollPane1 = new JScrollPane();
   private BorderLayout borderLayout3 = new BorderLayout();
   private JScrollPane treeScrollPane/* = new JScrollPane()*/;
   private BorderLayout borderLayout4 = new BorderLayout();
@@ -42,6 +55,7 @@ public class InferencePanel extends JPanel implements IInferencePanel{
   private Icon colapseIcon;
   private Icon expandIcon;
   private Icon propagateIcon;
+  private DecimalFormat numFormat = new DecimalFormat("##0.0");
   private BorderLayout borderLayout6 = new BorderLayout();
   private JSplitPane splitPane2 = new JSplitPane();
   private JScrollPane jScrollPane2 = new JScrollPane();
@@ -139,7 +153,7 @@ public class InferencePanel extends JPanel implements IInferencePanel{
   private void printResults(float[] results, Instance instance){
 //    float[] distributionNormalized = new float[results.length];
     Attribute[] attributeVector = neuralNetwork.getAttributeVector();
-    Attribute classAtt;
+    Attribute classAtt, att;
     String[] initString, initStyles;
     int maxValue;
     Document docResults;
@@ -219,7 +233,7 @@ public class InferencePanel extends JPanel implements IInferencePanel{
     for (int i = 0; i < numAtt; i++) {
       if (i != classIndex && !instance.isMissing(i)) {
         Attribute att = attArray[i];
-        int value = instance.getByteValue(i);
+        short value = instance.getValue(i);
         rule = rule + att.getAttributeName() + ": " + att.value(value) + "\n";
       }
     }

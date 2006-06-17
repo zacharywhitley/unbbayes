@@ -18,20 +18,38 @@
 
 package unbbayes.gui;
 
-import unbbayes.prs.*;
-import unbbayes.prs.bn.*;
-
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.geom.*;
-import java.awt.event.*;
-import java.awt.font.TextAttribute;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.font.FontRenderContext;
-import java.util.List;
-
-import java.util.ResourceBundle;
+import java.awt.font.TextAttribute;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.text.AttributedString;
+import java.util.List;
+import java.util.ResourceBundle;
+
+import javax.swing.JPanel;
+import javax.swing.JViewport;
+
+import unbbayes.prs.Edge;
+import unbbayes.prs.Node;
+import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
 
 /**
  *  Essa classe é responsável por desenhar a rede Bayesiana na tela. Ela extende a classe
@@ -46,9 +64,6 @@ import java.text.AttributedString;
  */
 public class TEditaRede extends JPanel implements MouseListener, MouseMotionListener, KeyListener {
 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
     private List arco;
     private Node noAtual;
     private Node noMover;
@@ -56,16 +71,22 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
     private Graphics2D view;
     private Point2D.Double arcoInicioAtual;
     private Point2D.Double arcoFimAtual;
+    private Point2D.Double pontoSelecaoInicial;
+    private Point2D.Double pontoSelecaoFinal;
     private Line2D.Double arcoAtual;
     private boolean bArco;
     private boolean bArrastouNo;
     private boolean bMoverArco;
     private boolean bMoverNo;
+    private boolean bScroll;
+    private boolean bPrimeiraVez;
     private Color corNo;
     private Color corArco;
     private Color corSelecao;
     private Color corFundo;
     private double raio;
+    private int scrollX;
+    private int scrollY;
     private JViewport desenho;
     private Dimension tamanhoVisivel;
     private Dimension tamanhoRede;
@@ -98,15 +119,21 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         arcoInicioAtual = new Point2D.Double();
         arcoFimAtual = new Point2D.Double();
         arcoAtual = new Line2D.Double();
+        pontoSelecaoFinal = new Point2D.Double();
+        pontoSelecaoInicial = new Point2D.Double();
         bArco = false;
         bArrastouNo = false;
         bMoverArco = false;
         bMoverNo = false;
+        bScroll = false;
+        bPrimeiraVez = true;
         corNo = Color.yellow;
         corArco = Color.black;
         corSelecao = Color.red;
         corFundo = Color.white;
         raio = 18;
+        scrollX = 0;
+        scrollY = 0;
         tamanhoRede = new Dimension(1500, 1500);
         tamanhoVisivel = new Dimension(0, 0);
 

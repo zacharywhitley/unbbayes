@@ -1,10 +1,11 @@
 package unbbayes.test;
 
-import junit.framework.*;
-import junit.swingui.*;
-
-import unbbayes.datamining.datamanipulation.test.*;
-import unbbayes.prs.bn.test.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+import junit.swingui.TestRunner;
+import unbbayes.datamining.datamanipulation.test.TestUtils;
+import unbbayes.prs.bn.test.TestProbabilisticNetwork;
 import unbbayes.prs.msbn.test.TestCompiled;
 import unbbayes.prs.msbn.test.TestTopologicalTransformation;
 
@@ -16,9 +17,9 @@ public class ProjectSuite extends TestCase {
 
   public static Test suite() {
     TestSuite suite = new TestSuite();
-    //suite.addTestSuite(TestProbabilisticNetwork.class);
-    //suite.addTestSuite(TestTopologicalTransformation.class);
-    //suite.addTestSuite(TestCompiled.class);
+    suite.addTestSuite(TestProbabilisticNetwork.class);
+    suite.addTestSuite(TestTopologicalTransformation.class);
+    suite.addTestSuite(TestCompiled.class);
     suite.addTestSuite(TestUtils.class); 
     return suite;
   }

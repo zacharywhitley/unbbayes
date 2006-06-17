@@ -1,12 +1,17 @@
 package unbbayes.datamining.gui.preprocessor;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.util.ResourceBundle;
 
-import javax.swing.*;
-import javax.swing.table.*;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumnModel;
 
-import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.datamanipulation.InstanceSet;
 
 /**
  * Creates a panel that displays the attributes contained in a set of
@@ -15,22 +20,14 @@ import unbbayes.datamining.datamanipulation.*;
  * classification).
  */
 public class AttributeSelectionPanel extends JPanel
-{ 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-	/** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+{ /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
   /**
    * A table model that looks at the names of attributes and maintains
    * a list of attributes that have been "selected".
    */
   private class AttributeTableModel extends AbstractTableModel
-  { 
-		/** Serialization runtime version number */
-		private static final long serialVersionUID = 0;
-
-	  /** The instances who's attribute structure we are reporting */
+  { /** The instances who's attribute structure we are reporting */
     protected InstanceSet m_Instances;
 
     /** The flag for whether the instance will be included */

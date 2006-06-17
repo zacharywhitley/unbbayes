@@ -21,15 +21,19 @@
 
 package unbbayes.io;
 
-import java.io.*;
-
-import unbbayes.prs.*;
-import unbbayes.prs.bn.*;
-import unbbayes.util.NodeList;
-
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import unbbayes.prs.Node;
+import unbbayes.prs.bn.Clique;
+import unbbayes.prs.bn.JunctionTree;
+import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.Separator;
+import unbbayes.util.NodeList;
 
 /**
  * Responsável por gerar o log de compilação da rede.
@@ -38,19 +42,16 @@ import java.util.ResourceBundle;
  * @version 1.0
  */
 public class LogManager implements java.io.Serializable {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
     public static final int DEFAULT_BUFFER_SIZE = 10 * 1024;
     public static final String DEFAULT_FILENAME = "aj.txt";
 
-    private StringBuilder log;
+    private StringBuffer log;
     
     /** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.io.resources.IoResources");
 
     public LogManager(int bufferSize) {
-        log = new StringBuilder(bufferSize);
+        log = new StringBuffer(bufferSize);
         reset();
     }
 

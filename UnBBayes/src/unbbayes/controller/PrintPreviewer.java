@@ -18,21 +18,27 @@
 
 package unbbayes.controller;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.print.*;
-import javax.swing.*;
-import javax.swing.border.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.print.Pageable;
 import java.util.ResourceBundle;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.border.BevelBorder;
 
 /**
  * Faz a visualização de impressão
  *
  */
 public class PrintPreviewer extends JPanel {
-
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 
   protected Pageable pageable;
   protected PrintComponent printComponent;

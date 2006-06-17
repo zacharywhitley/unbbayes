@@ -1,7 +1,7 @@
 package unbbayes.datamining.classifiers;
 
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.evaluation.*;
+import unbbayes.datamining.datamanipulation.Instance;
+import unbbayes.datamining.datamanipulation.InstanceSet;
 
 /**
  *  Abstract classifier. All schemes for numeric or nominal prediction extends this class.
@@ -18,17 +18,6 @@ public abstract class Classifier
    	*/
   	public abstract void buildClassifier(InstanceSet data) throws Exception;
 
-  	public void buildClassifier(InstanceSet data,ITrainingMode mode) throws Exception {
-  		if (mode == null || mode instanceof TrainingSet) {
-  			this.buildClassifier(data);
-  		} else if (mode instanceof CrossValidation) {
-  			CrossValidation xval = (CrossValidation)mode;
-  			xval.crossValidateModel(data,this);
-  		} else {
-  			assert false : "Training Mode not used"; 
-  		}
-  	}
-
   	/**
   	* Classifies a given test instance.
   	*
@@ -36,5 +25,5 @@ public abstract class Classifier
   	* @return the classification
 	* @exception Exception if an error occurred during the prediction
   	*/
-  	public abstract int classifyInstance(Instance instance) throws Exception;
+  	public abstract short classifyInstance(Instance instance) throws Exception;
 }

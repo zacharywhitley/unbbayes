@@ -1,6 +1,12 @@
 package unbbayes.datamining.datamanipulation;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StreamTokenizer;
+
 import unbbayes.controller.IProgress;
 
 /** This class defines abstracs methods for open a file building an InstanceSet object
@@ -15,7 +21,6 @@ public abstract class Loader implements IProgress
 	protected int counterAttribute = -1;
         protected int initialInstances = 0;
         protected StreamTokenizer tokenizer;
-    	protected int counterInstance = -1;
 
 	public void setCounterAttribute(int counterAttribute)
 	{   if (counterAttribute >= 0)
@@ -71,6 +76,18 @@ public abstract class Loader implements IProgress
    	* successfully
    	*/
 	protected abstract boolean getInstanceFull() throws IOException;
+
+	/**
+	* Adds one instance to the end of the set.
+	* Increases the size of the dataset if it is not large enough. Does not
+	* check if the instance is compatible with the dataset.
+	*
+	* @param newInstance Instance to be added
+	*/
+	public void add(Instance newInstance)
+	{	newInstance.setDataset(instances);
+    	instances.insertInstance(newInstance);
+  	}
 
 	/**
    	* Gets next token, skipping empty lines.

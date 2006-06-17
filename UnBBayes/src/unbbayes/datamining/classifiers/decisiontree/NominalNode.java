@@ -1,7 +1,8 @@
 package unbbayes.datamining.classifiers.decisiontree;
 
-import unbbayes.datamining.datamanipulation.*;
-import java.util.*;
+import java.util.ArrayList;
+
+import unbbayes.datamining.datamanipulation.Attribute;
 
 /**
  * Class representing a nominal node of the decision tree
@@ -11,8 +12,6 @@ import java.util.*;
  */
 public class NominalNode extends Node
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 	/** value position on splitAttribute */
 	private int attributeValue;
 	

@@ -1,9 +1,14 @@
 package unbbayes.datamining.classifiers;
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.HashMap;
 
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.prs.bn.*;
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.Instance;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.TreeVariable;
 
 /**
  * Class implementing a Bayesian Network.
@@ -46,12 +51,12 @@ public class BayesianNetwork extends DistributionClassifier
           numNodes = net.getNodeCount();
           multipliers = new int[numNodes-1];
           indexAttributes = new int[instanceSet.numAttributes()];
-          Enumeration enumeration = instanceSet.enumerateAttributes();
+          Enumeration enum = instanceSet.enumerateAttributes();
           int i = 0;
           String attributeName;
-          while (enumeration.hasMoreElements())
+          while (enum.hasMoreElements())
           {
-            attributeName = ((Attribute)enumeration.nextElement()).getAttributeName();
+            attributeName = ((Attribute)enum.nextElement()).getAttributeName();
             indexAttributes[i] = net.getNodeIndex(attributeName);
             if (indexAttributes[i] == -1)
             {
@@ -90,7 +95,7 @@ public class BayesianNetwork extends DistributionClassifier
   	public float[] distributionForInstance(Instance instance) throws Exception
 	{
             float[] probs = new float[numClasses];
-            int instanceValue;
+            short instanceValue;
 
             if (classNodeIndex < 0)
             {
@@ -98,12 +103,12 @@ public class BayesianNetwork extends DistributionClassifier
             }
 
             // Calcula um hashCode para a instância
-            int j,hashCode=0,k=0;
+            int j,i=1,hashCode=0,k=0;
             for (j=0; j<numNodes; j++)
             {
               if (j != classAttributeIndex)
               {
-                 instanceValue = instance.getByteValue(j);
+                 instanceValue = instance.getValue(j);
                  if (instanceValue != Instance.MISSING_VALUE)
                  {
                    hashCode+=instanceValue*multipliers[k];
@@ -137,7 +142,7 @@ public class BayesianNetwork extends DistributionClassifier
                 int actualNode = indexAttributes[j];
                 if (actualNode != classNodeIndex)
                 {
-                  instanceValue = instance.getByteValue(j);
+                  instanceValue = instance.getValue(j);
                   if (instanceValue != Instance.MISSING_VALUE)
                   {
                     ((TreeVariable)net.getNodeAt(actualNode)).addFinding(instanceValue);
@@ -161,7 +166,7 @@ public class BayesianNetwork extends DistributionClassifier
    	*/
 	public String toString()
 	{	try
-		{	StringBuilder text = new StringBuilder("Bayesian Network\n");
+		{	StringBuffer text = new StringBuffer("Bayesian Network\n");
       		        for (int i=0; i<numNodes; i++)
 			{	ProbabilisticNode node = (ProbabilisticNode)net.getNodeAt(i);
 				text.append(node+"\n");

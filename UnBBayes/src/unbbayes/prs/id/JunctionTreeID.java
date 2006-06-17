@@ -38,8 +38,6 @@ import unbbayes.util.SetToolkit;
  */
 public class JunctionTreeID extends JunctionTree implements java.io.Serializable {
 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 
    /**
     * Overrides the method in JunctionTree.

@@ -1,29 +1,55 @@
 package unbbayes.datamining.gui.evaluation;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.text.*;
+import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
+import javax.swing.text.BadLocationException;
 
-import unbbayes.controller.*;
-import unbbayes.datamining.classifiers.*;
-import unbbayes.datamining.classifiers.decisiontree.*;
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.datamining.evaluation.Evaluation;
-import unbbayes.gui.*;
-import unbbayes.prs.bn.*;
+import unbbayes.controller.FileController;
+import unbbayes.controller.IconController;
+import unbbayes.controller.ProgressDialog;
+import unbbayes.datamining.classifiers.BayesianNetwork;
+import unbbayes.datamining.classifiers.Classifier;
+import unbbayes.datamining.classifiers.CombinatorialNeuralModel;
+import unbbayes.datamining.classifiers.DistributionClassifier;
+import unbbayes.datamining.classifiers.Evaluation;
+import unbbayes.datamining.classifiers.NeuralNetwork;
+import unbbayes.datamining.classifiers.decisiontree.DecisionTreeLearning;
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.gui.FileIcon;
+import unbbayes.gui.SimpleFileFilter;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.util.GraphPaperLayout;
 
 public class EvaluationPanel extends JPanel
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   private JPanel jPanel63 = new JPanel();
   private BorderLayout borderLayout45 = new BorderLayout();
   private JPanel jPanel62 = new JPanel();
@@ -37,6 +63,7 @@ public class EvaluationPanel extends JPanel
   private TitledBorder titledBorder10;
   private TitledBorder titledBorder9;
   private TitledBorder titledBorder8;
+  private TitledBorder titledBorder7;
   private TitledBorder titledBorder6;
   private ImageIcon salvarIcon;
   private Border border10;
@@ -45,6 +72,9 @@ public class EvaluationPanel extends JPanel
 //  private EvaluationThread thread;
   private Thread thread; //fasffsafsasfafsafasfa vai ser removido depois
   private JTextArea jTextArea2 = new JTextArea();
+  private JTextField jTextField1 = new JTextField();
+  private InstanceSet userTest;
+  private JLabel jLabel1 = new JLabel();
   private EvaluationMain reference;
   private JFileChooser fileChooser;
   private JLabel jLabel2 = new JLabel();
@@ -94,6 +124,7 @@ public class EvaluationPanel extends JPanel
     titledBorder10 = new TitledBorder(border10,"Classifier output");
     titledBorder9 = new TitledBorder(border10,"Select Class");
     titledBorder8 = new TitledBorder(border10,"Log");
+    titledBorder7 = new TitledBorder(border10,"Test Options");
     titledBorder6 = new TitledBorder(border10,"Model");
     titledBorder1 = new TitledBorder(border10,"Evaluation Type");
     jPanel62.setLayout(borderLayout45);
@@ -293,7 +324,7 @@ public class EvaluationPanel extends JPanel
                   }
                   setCursor(new Cursor(Cursor.WAIT_CURSOR));
                   try
-                  {   StringBuilder outBuff = new StringBuilder();
+                  {   StringBuffer outBuff = new StringBuffer();
 	              String currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
 	              String classifierName = classifier.getClass().getName().substring("unbbayes.datamining.classifiers.".length());
                       jTextArea1.append("Started  "+currentHour+classifierName+/*" "+jComboBox3.getSelectedItem()+*/"\n");
@@ -319,7 +350,7 @@ public class EvaluationPanel extends JPanel
 
                                 eval = new Evaluation(instances,classifier);
                                 ProgressDialog progressDialog = new ProgressDialog (null, eval);
-								progressDialog.load();
+								boolean successStatus = progressDialog.load();
 
                                 //eval.evaluateModel(classifier);
                                     outBuff.append(eval.toString());

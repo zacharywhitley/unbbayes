@@ -1,22 +1,39 @@
 package unbbayes.datamining.gui.preprocessor;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
+import java.awt.AWTEvent;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ResourceBundle;
 
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JToolBar;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 
-import unbbayes.controller.*;
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.gui.*;
+import unbbayes.controller.FileController;
+import unbbayes.controller.IconController;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.gui.FileIcon;
+import unbbayes.gui.SimpleFileFilter;
 
 public class PreprocessorMain extends JInternalFrame
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
   /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
   private JPanel contentPane;
@@ -172,8 +189,6 @@ public class PreprocessorMain extends JInternalFrame
   public void jMenuFileExit_actionPerformed(ActionEvent e)
   {
     dispose();
-    jPanel1.getBaseInstances().dispose();
-    System.gc();
   }
   /**Help | About action performed*/
   public void jMenuHelpAbout_actionPerformed(ActionEvent e)
@@ -263,7 +278,9 @@ public class PreprocessorMain extends JInternalFrame
 		inst = FileController.getInstance().getInstanceSet(selectedFile,this);
         if (inst != null)
         {
-          jPanel1.setBaseInstances(inst);
+          String fileName = selectedFile.getName();
+          //jTabbedPane1.setSelectedIndex(0);
+		  jPanel1.setBaseInstances(inst);
 		  statusBar.setText(resource.getString("fileOpened"));
           this.setTitle(resource.getString("preprocessorTitle")+selectedFile.getName());
 		  saveButton.setEnabled(true);
@@ -290,8 +307,8 @@ public class PreprocessorMain extends JInternalFrame
   }
 
   public void updateInstances(InstanceSet inst)
-  {   
-	  this.inst = inst;
+  {   //jTabbedPane1.setSelectedIndex(0);
+      this.inst = inst;
       jPanel1.setBaseInstances(inst);
   }
 

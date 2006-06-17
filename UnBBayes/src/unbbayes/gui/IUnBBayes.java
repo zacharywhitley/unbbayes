@@ -22,17 +22,20 @@
 package unbbayes.gui;
 
 import java.awt.BorderLayout;
-
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Event;
 import java.awt.FlowLayout;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseListener;
 import java.io.File;
+import java.net.URL;
 import java.util.ResourceBundle;
 
+import javax.help.HelpSet;
+import javax.help.JHelp;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
@@ -50,7 +53,10 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import unbbayes.aprendizagem.ConstructionController;
-import unbbayes.controller.*;
+import unbbayes.aprendizagem.incrementalLearning.controller.ILController;
+import unbbayes.controller.FileController;
+import unbbayes.controller.IconController;
+import unbbayes.controller.MainController;
 import unbbayes.monteCarlo.controlador.ControladorPrincipal;
 
 /**
@@ -63,9 +69,6 @@ import unbbayes.monteCarlo.controlador.ControladorPrincipal;
  *@version    1.0 06/07/2001
  */
 public class IUnBBayes extends JFrame {
-
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 
 	private MDIDesktopPane desktop;
 	private JPanel topPanel;
@@ -86,11 +89,10 @@ public class IUnBBayes extends JFrame {
 	private JButton tile;
 	private JButton cascade;
 	private JButton help;
+	private URL helpSetURL;
+	private HelpSet set;
+	private JHelp jHelp;
 	private ActionListener alNewBN;
-	private ActionListener alDiscretize;
-	private ActionListener alTAN;
-	private ActionListener alBAN;
-	private ActionListener alCBG;
 	private ActionListener alNewMSBN;
 	private ActionListener alOpen;
 	private ActionListener alSave;
@@ -107,8 +109,10 @@ public class IUnBBayes extends JFrame {
 	private ActionListener alCascade;
 	private ActionListener alTile;
 	private ActionListener alHelp;
+	private ActionListener alAbout;
 	private ActionListener alMonteCarlo;
 	private ActionListener alGibbs;
+	private ActionListener alIL;
 	
         private JFileChooser chooser;
         private FileController fileController;
@@ -201,7 +205,7 @@ public class IUnBBayes extends JFrame {
 	 */
 	public void addWindow(JInternalFrame newWindow) {
 		desktop.add(newWindow);
-		}
+	}
 
 	/**
 	 * Method responsible for creating all ActionListeners
@@ -255,106 +259,6 @@ public class IUnBBayes extends JFrame {
 			}
 		};
 
-		//alDiscretize inicio
-		//Discretização de variáveis contínuas
-		alTAN = new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				String[] nets = new String[] { "txt" };
-				int classe=0;
-				chooser = new JFileChooser(fileController.getCurrentDirectory());
-				chooser.setMultiSelectionEnabled(false);
-				chooser.addChoosableFileFilter(
-					new SimpleFileFilter(
-						nets,
-						resource.getString("textFileFilter")));
-				int option = chooser.showOpenDialog(IUnBBayes.this);
-				File file;
-				if (option == JFileChooser.APPROVE_OPTION) {
-					file = chooser.getSelectedFile();
-                                        fileController.setCurrentDirectory(chooser.getCurrentDirectory());
-					new ConstructionController(file, controller,classe);
-				}
-		
-			}};
-		alBAN = new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				String[] nets = new String[] { "txt" };
-				int classe=0;
-				chooser = new JFileChooser(fileController.getCurrentDirectory());
-				chooser.setMultiSelectionEnabled(false);
-				chooser.addChoosableFileFilter(
-					new SimpleFileFilter(
-						nets,
-						resource.getString("textFileFilter")));
-				int option = chooser.showOpenDialog(IUnBBayes.this);
-				File file;
-				if (option == JFileChooser.APPROVE_OPTION) {
-					file = chooser.getSelectedFile();
-                                        fileController.setCurrentDirectory(chooser.getCurrentDirectory());
-					new ConstructionController(file, controller,classe,classe);
-				}
-		
-				
-			}};
-			alCBG = new ActionListener() {
-				public void actionPerformed(ActionEvent ae) {
-					String[] nets = new String[] { "txt" };
-					int classe=0;
-					chooser = new JFileChooser(fileController.getCurrentDirectory());
-					chooser.setMultiSelectionEnabled(false);
-					chooser.addChoosableFileFilter(
-						new SimpleFileFilter(
-							nets,
-							resource.getString("textFileFilter")));
-					int option = chooser.showOpenDialog(IUnBBayes.this);
-					File file;
-					if (option == JFileChooser.APPROVE_OPTION) {
-						file = chooser.getSelectedFile();
-	                                        fileController.setCurrentDirectory(chooser.getCurrentDirectory());
-						new ConstructionController(file, controller,classe,true);
-					}
-			
-					
-				}};
-			
-		
-		alDiscretize = new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				//setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				janeladiscret janeld= new janeladiscret();
-				janeld.setVisible(true);				
-				/*String[] nets = new String[] { "txt", "arff" };
-				chooser = new JFileChooser(fileController.getCurrentDirectory());
-				chooser.setMultiSelectionEnabled(false);
-				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-
-				// adicionar FileView no FileChooser para desenhar ícones de
-				// arquivos
-				chooser.setFileView(new FileIcon(IUnBBayes.this));
-
-				chooser.addChoosableFileFilter(
-					new SimpleFileFilter(
-						nets,
-						""));
-				int option = chooser.showOpenDialog(null);
-				if (option == JFileChooser.APPROVE_OPTION) {
-					if (chooser.getSelectedFile() != null) {
-//até agora o código era semelhante ao do comando abrir
-						
-
-						
-//agora o final do codigo é igual ao do comando abrir
-					}
-				}
-				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));*/
-			}
-		};
-		
-		
-		
-	
-		
-		//alDiscretize fim
 		// create an ActionListener for saving
 		alSave = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
@@ -375,6 +279,15 @@ public class IUnBBayes extends JFrame {
 				if (option == JFileChooser.APPROVE_OPTION) {
 					File file = chooser.getSelectedFile();
 					if (file != null) {
+						if (file.isFile()) {
+							String name = file.getName();
+							/*							
+							if (! name.endsWith(".net")) {
+								file = new File(file.getAbsoluteFile() + ".net");
+                                                                fileController.setCurrentDirectory(chooser.getCurrentDirectory());
+							}
+							*/
+						}
 						controller.saveNet(file);
 					}
 				}
@@ -411,9 +324,15 @@ public class IUnBBayes extends JFrame {
 			}
 		};
 		
+		alIL = new ActionListener(){
+		    public void actionPerformed(ActionEvent ae){
+				new ILController(controller);				
+			}
+		};
+		
 		alMonteCarlo = new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				new ControladorPrincipal();				
+				ControladorPrincipal cp = new ControladorPrincipal();				
 			}
 		};
 		
@@ -620,10 +539,6 @@ public class IUnBBayes extends JFrame {
 			new JCheckBoxMenuItem(resource.getString("tbWindow"), true);
 		JMenuItem tbHelp =
 			new JCheckBoxMenuItem(resource.getString("tbHelp"), true);
-		JMenuItem discretize = new JMenuItem("Discretizar");
-		JMenuItem TAN = new JMenuItem("TAN");
-		JMenuItem BAN = new JMenuItem("BAN");
-		JMenuItem CBG = new JMenuItem("CBG");
 		JMenuItem metalItem =
 			new JMenuItem(
 				resource.getString("metalItem"),iconController.getMetalIcon());
@@ -638,6 +553,8 @@ public class IUnBBayes extends JFrame {
 				resource.getString("learningItem"),iconController.getCompileIcon());
 		JMenuItem monteCarloItem = 
 			new JMenuItem("Monte Carlo");
+		JMenuItem ILItem = 
+			new JMenuItem("Incremental Learning");
 		JMenuItem gibbsItem = 
 					new JMenuItem("Gibbs");
 		JMenuItem cascadeItem =
@@ -678,10 +595,6 @@ public class IUnBBayes extends JFrame {
 			KeyStroke.getKeyStroke(resource.getString("helpItemMn").charAt(0), Event.CTRL_MASK, false));
 
 		// add ActionListener to all menu items
-		discretize.addActionListener(alDiscretize);
-		TAN.addActionListener(alTAN);
-		BAN.addActionListener(alBAN);
-		CBG.addActionListener(alCBG);
 		newBN.addActionListener(alNewBN);
 		newMSBN.addActionListener(alNewMSBN);
 		openItem.addActionListener(alOpen);
@@ -700,6 +613,7 @@ public class IUnBBayes extends JFrame {
 		tileItem.addActionListener(alTile);
 		helpItem.addActionListener(alHelp);
 		monteCarloItem.addActionListener(alMonteCarlo);
+		ILItem.addActionListener(alIL);
 		gibbsItem.addActionListener(alGibbs);
 		// aboutItem.addActionListener(alAbout);
 
@@ -723,12 +637,9 @@ public class IUnBBayes extends JFrame {
 		viewMenu.addSeparator();
 		viewMenu.add(lafMenu);
 		toolsMenu.add(learningItem);
-		toolsMenu.add(TAN);
-		toolsMenu.add(BAN);
-		toolsMenu.add(CBG);
-		toolsMenu.add(monteCarloItem);
+		toolsMenu.add(monteCarloItem);		
 		toolsMenu.add(gibbsItem);
-		toolsMenu.add(discretize);
+		toolsMenu.add(ILItem);
 		windowMenu.add(cascadeItem);
 		windowMenu.add(tileItem);
 		helpMenu.add(helpItem);

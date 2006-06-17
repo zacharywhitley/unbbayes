@@ -1,13 +1,19 @@
 package unbbayes.datamining.datamanipulation.test;
 
-import java.io.*;
+import java.io.File;
 
-import junit.framework.*;
-
-import unbbayes.datamining.datamanipulation.*;
+import junit.framework.Assert;
+import junit.framework.TestCase;
+import unbbayes.datamining.datamanipulation.ArffLoader;
+import unbbayes.datamining.datamanipulation.ClassifierUtils;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.Loader;
+import unbbayes.datamining.datamanipulation.TxtLoader;
 
 public class TestUtils extends TestCase {
 
+  /** The natural logarithm of 2. */
+  private final double LOG2 = Math.log(2);
   /** The small deviation allowed in double comparisons */
   private final double DELTA = 1e-6;
   private final double DELTA2 = 1e-3;
@@ -60,17 +66,6 @@ public class TestUtils extends TestCase {
     weatherCutInst = null;
   }
 
-  public void testNumericInfo() {
-	  try {
-		  ClassifierUtils cu = new ClassifierUtils(null);
-		  double result = cu.computeNumericInfo(new float[]{4,2},new float[]{5,3});
-		  Assert.assertEquals(result,0.939,DELTA2);
-	  } catch (Exception e) {
-		  Assert.fail("Exception thrown: "+e);
-	  }
-  }
-  
-  
 /*	public void testComputeEntropy() {
     try {
       Id3Utils utils = new Id3Utils(contactInst);
@@ -153,7 +148,12 @@ public class TestUtils extends TestCase {
     boolean booleanRet = Utils.eq(a1, b2);
   /** @todo:  Insert test code here.  Use assertEquals(), for example. */
   /*}
-  /*
+  public void testEq1() {
+    byte a1=  0;
+    byte b2=  0;
+    boolean booleanRet = Utils.eq(a1, b2);
+  /** @todo:  Insert test code here.  Use assertEquals(), for example. */
+  /*}
   public void testGetDistribution() {
     double[] values1=  null  /** @todo fill in non-null value */;
     /*double[] double[]Ret = Utils.getDistribution(values1);
@@ -248,7 +248,11 @@ public class TestUtils extends TestCase {
     /*int[] int[]Ret = Utils.sort(array1);
   /** @todo:  Insert test code here.  Use assertEquals(), for example. */
   /*}
-  /*
+  public void testSort1() {
+    byte[] array1=  null  /** @todo fill in non-null value */;
+    /*int[] int[]Ret = Utils.sort(array1);
+  /** @todo:  Insert test code here.  Use assertEquals(), for example. */
+  /*}
   public void testSplitData() {
     InstanceSet data1=  null  /** @todo fill in non-null value */;
     /*Attribute att2=  null  /** @todo fill in non-null value */;

@@ -1,7 +1,7 @@
 package unbbayes.datamining.classifiers.decisiontree;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
 
 /**
  * Encapsulates data relative to splitted instance set
@@ -10,10 +10,8 @@ import java.util.*;
  */
 public class SplitObject implements Serializable
 {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 	/** indexes for instances of an instance set */
-	private ArrayList<Integer> instances;
+	private ArrayList instances;
 	/** indexes for attributes of an instance set */
 	private Integer[] attributes;
 	
@@ -25,7 +23,7 @@ public class SplitObject implements Serializable
 	 * @param instances indexes for instances of an instance set
 	 * @param attributes indexes for attributes of an instance set
 	 */
-	public SplitObject(ArrayList<Integer> instances, Integer[] attributes)
+	public SplitObject(ArrayList instances, Integer[] attributes)
 	{
 		this.instances = instances;
 		this.attributes = attributes;
@@ -45,7 +43,7 @@ public class SplitObject implements Serializable
 	 * Returns the indexes for instances of an instance set
 	 * @return indexes for instances of an instance set
 	 */
-	public ArrayList<Integer> getInstances() {
+	public ArrayList getInstances() {
 		return instances;
 	}
 	
@@ -63,7 +61,7 @@ public class SplitObject implements Serializable
 	 * Sets the indexes for instances of an instance set
 	 * @param instances indexes for instances of an instance set
 	 */
-	public void setInstances(ArrayList<Integer> instances) {
+	public void setInstances(ArrayList instances) {
 		this.instances = instances;
 	}
 }

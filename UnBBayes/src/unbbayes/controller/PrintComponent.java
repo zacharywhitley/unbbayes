@@ -17,10 +17,18 @@
  */
 package unbbayes.controller;
 
-import java.awt.*;
-import java.awt.geom.*;
-import java.awt.print.*;
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+
+import javax.swing.JPanel;
 
 
 /**
@@ -28,10 +36,7 @@ import javax.swing.*;
  */
 public class PrintComponent extends JPanel {
 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
-	/**
+  /**
    * The item to be printed
    */
   protected Printable printable;

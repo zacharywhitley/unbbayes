@@ -1,7 +1,7 @@
 package unbbayes.datamining.classifiers.neuralnetwork;
 
-import java.util.*;
-import java.io.*;
+import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  *  Class that defines an output neuron.
@@ -12,8 +12,6 @@ import java.io.*;
  */
 public class OutputNeuron extends Neuron implements Serializable{
 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
   /**The calculated value of the neuron output*/
   public transient float outputValue;
 

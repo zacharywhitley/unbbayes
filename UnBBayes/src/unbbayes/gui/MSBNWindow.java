@@ -3,7 +3,6 @@ package unbbayes.gui;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Container;
-
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 import java.util.ResourceBundle;
@@ -11,13 +10,11 @@ import java.util.ResourceBundle;
 import javax.swing.AbstractListModel;
 import javax.swing.JButton;
 import javax.swing.JInternalFrame;
-
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
-
 import javax.swing.ListSelectionModel;
 
 import unbbayes.controller.IconController;
@@ -32,9 +29,6 @@ import unbbayes.prs.msbn.SingleAgentMSBN;
  * Window>Preferences>Java>Code Generation.
  */
 public class MSBNWindow extends JInternalFrame {
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
-
 	public static String EDITION_PANE = "editionPane";
 	public static String COMPILED_PANE = "compiledPane";
 
@@ -43,9 +37,6 @@ public class MSBNWindow extends JInternalFrame {
 		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
 	private class MSBNListModel extends AbstractListModel {
-		/** Serialization runtime version number */
-		private static final long serialVersionUID = 0;
-
 		public int getSize() {
 			return msbn.getNetCount();
 		}

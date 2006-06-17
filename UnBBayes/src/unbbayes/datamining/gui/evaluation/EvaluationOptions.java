@@ -1,18 +1,29 @@
 package unbbayes.datamining.gui.evaluation;
 
-import javax.swing.*;
-import javax.swing.table.*;
-import java.awt.*;
-import unbbayes.prs.bn.*;
+import java.awt.BorderLayout;
+
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+
+import unbbayes.prs.bn.ProbabilisticNode;
 
 public class EvaluationOptions
 { private JTable statesTable = new JTable();
   private JLabel statesLabel = new JLabel("Enter new Values: ");
   private JPanel statesPanel = new JPanel(new BorderLayout());
+  private ProbabilisticNode classNode;
 
   public EvaluationOptions(ProbabilisticNode classNode,EvaluationPanel parent)
-  {   
-	  statesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+  {   this.classNode = classNode;
+      statesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
       statesTable.getTableHeader().setReorderingAllowed(false);
       statesTable.getTableHeader().setResizingAllowed(false);
       statesTable.setColumnSelectionAllowed(false);
@@ -58,10 +69,7 @@ public class EvaluationOptions
    * a list of attributes that have been "selected".
    */
   private class StatesTableModel extends AbstractTableModel
-  {   
-		/** Serialization runtime version number */
-		private static final long serialVersionUID = 0;
-
+  {   private ProbabilisticNode classNode;
       private String[] columnNames = {"Priority","State","Probability" };
       private Object[][] cells;
       private int statesSize = 1;
@@ -71,8 +79,8 @@ public class EvaluationOptions
       * @param instances the initial set of Instances
       */
       public StatesTableModel(ProbabilisticNode classNode)
-      {   
-    	  statesSize = classNode.getStatesSize();
+      {   this.classNode = classNode;
+          statesSize = classNode.getStatesSize();
           cells = new Object[statesSize][3];
           for (int row = 0; row < statesSize; row++)
           {   cells [row][0] = new Integer(row);

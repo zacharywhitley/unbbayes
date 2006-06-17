@@ -1,13 +1,23 @@
 package unbbayes.gui;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ResourceBundle;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JToolBar;
+import javax.swing.JTree;
 
-
-import unbbayes.controller.*;
+import unbbayes.controller.IconController;
+import unbbayes.controller.WindowController;
 
 /**
  * <p>Title: UnBBayes</p>
@@ -19,9 +29,6 @@ import unbbayes.controller.*;
  */
 
 public class NetWindowCompilation extends JPanel {
-
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 
 	private final NetWindow netWindow;
 
