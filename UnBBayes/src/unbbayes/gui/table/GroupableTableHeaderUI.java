@@ -163,11 +163,11 @@ public class GroupableTableHeaderUI extends BasicTableHeaderUI {
 					-1,
 					column);
 			int cHeight = comp.getPreferredSize().height;
-			Enumeration enum =
+			Enumeration enumeration =
 				((GroupableTableHeader) header).getColumnGroups(aColumn);
-			if (enum != null) {
-				while (enum.hasMoreElements()) {
-					ColumnGroup cGroup = (ColumnGroup) enum.nextElement();
+			if (enumeration != null) {
+				while (enumeration.hasMoreElements()) {
+					ColumnGroup cGroup = (ColumnGroup) enumeration.nextElement();
 					cHeight += cGroup.getSize(header.getTable()).height;
 				}
 			}

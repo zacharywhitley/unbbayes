@@ -261,10 +261,10 @@ public class HierarchicDefinitionPanel extends JPanel
     selectedNode = (DefaultMutableTreeNode)hierarchicTree.getLastSelectedPathComponent();
     if (selectedNode != null)
     {
-      Enumeration enum = selectedNode.breadthFirstEnumeration();
-      while (enum.hasMoreElements())
+      Enumeration enumeration = selectedNode.breadthFirstEnumeration();
+      while (enumeration.hasMoreElements())
       {
-        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)enum.nextElement();
+        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)enumeration.nextElement();
         System.out.println(treeNode);
         Node node = hierarchicTree.getNodeInformation(treeNode);
         if (node == null)

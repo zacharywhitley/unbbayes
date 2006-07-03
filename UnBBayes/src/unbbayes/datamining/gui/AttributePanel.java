@@ -128,10 +128,10 @@ public class AttributePanel extends JPanel
           node.add(leaf);
       }
       else
-      {   Enumeration enum = att.enumerateValues();
+      {   Enumeration enumeration = att.enumerateValues();
           DefaultMutableTreeNode leaf;
-          while (enum.hasMoreElements())
-          {	leaf = new DefaultMutableTreeNode(enum.nextElement());
+          while (enumeration.hasMoreElements())
+          {	leaf = new DefaultMutableTreeNode(enumeration.nextElement());
                 node.add(leaf);
           }
       }

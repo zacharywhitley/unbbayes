@@ -51,12 +51,12 @@ public class BayesianNetwork extends DistributionClassifier
           numNodes = net.getNodeCount();
           multipliers = new int[numNodes-1];
           indexAttributes = new int[instanceSet.numAttributes()];
-          Enumeration enum = instanceSet.enumerateAttributes();
+          Enumeration enumeration = instanceSet.enumerateAttributes();
           int i = 0;
           String attributeName;
-          while (enum.hasMoreElements())
+          while (enumeration.hasMoreElements())
           {
-            attributeName = ((Attribute)enum.nextElement()).getAttributeName();
+            attributeName = ((Attribute)enumeration.nextElement()).getAttributeName();
             indexAttributes[i] = net.getNodeIndex(attributeName);
             if (indexAttributes[i] == -1)
             {

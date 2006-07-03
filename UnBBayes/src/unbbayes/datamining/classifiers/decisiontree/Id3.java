@@ -63,10 +63,10 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 		}
 
 		// Test if there are missing values
-		Enumeration enum = data.enumerateInstances();
-		while (enum.hasMoreElements())
+		Enumeration enumeration = data.enumerateInstances();
+		while (enumeration.hasMoreElements())
 		{
-			Instance instance = (Instance)enum.nextElement();
+			Instance instance = (Instance)enumeration.nextElement();
 			enumAtt = data.enumerateAttributes();
 			while (enumAtt.hasMoreElements())
 			{
