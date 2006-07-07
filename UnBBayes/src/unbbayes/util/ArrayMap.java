@@ -33,10 +33,10 @@ import java.util.Set;
 /**
  * Classe que implementa um Map baseado em ArrayList.
  */
-public class ArrayMap<K,V> extends AbstractMap implements java.io.Serializable {
-    
-    private ArrayList<K> keys = new ArrayList<K>();
-    private ArrayList<V> values = new ArrayList<V>();
+public class ArrayMap extends AbstractMap implements java.io.Serializable {
+    private ArrayList 
+        keys = new ArrayList(),
+        values = new ArrayList();
 
     /**
      *  Insere no ArrayMap um par chave/valor.
@@ -45,8 +45,8 @@ public class ArrayMap<K,V> extends AbstractMap implements java.io.Serializable {
      * @param value valor a ser inserida.
      * @return null se key não foi anteriormente inserida, senão o valor anterior.
      */
-    public V put(K key, V value) {
-        V result = get(key);
+    public Object put(Object key, Object value) {
+        Object result = get(key);
         if(result == null) {
             keys.add(key);
             values.add(value);
@@ -61,7 +61,7 @@ public class ArrayMap<K,V> extends AbstractMap implements java.io.Serializable {
      * @param key chave qual se deseja recuperar o valor.
      * @return valor associado a key.
      */
-    public V get(Object key) {
+    public Object get(Object key) {
         return keys.contains(key) ? values.get(keys.indexOf(key)) : null;
     }
     
@@ -70,8 +70,8 @@ public class ArrayMap<K,V> extends AbstractMap implements java.io.Serializable {
      *
      * @return array de chaves.
      */
-    public ArrayList<K> getKeys() {
-        ArrayList<K> keysArrayList = new ArrayList<K>();
+    public ArrayList getKeys() {
+        ArrayList keysArrayList = new ArrayList();
         keysArrayList.addAll(keys);
         return keysArrayList;
     }
@@ -91,8 +91,8 @@ public class ArrayMap<K,V> extends AbstractMap implements java.io.Serializable {
      *@param key
      *@return antigo valor associado a key.
      */
-    public V remove(Object key) {
-        V value = get(key);
+    public Object remove(Object key) {
+        Object value = get(key);
         if (value != null) {
             keys.remove(key);
             values.remove(value);
@@ -108,5 +108,5 @@ public class ArrayMap<K,V> extends AbstractMap implements java.io.Serializable {
         values.clear();
     }
 
-    public Set<Map.Entry<K,V>> entrySet() {return null;}
+    public Set entrySet() {return null;}
 }
