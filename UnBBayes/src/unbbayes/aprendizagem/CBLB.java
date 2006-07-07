@@ -27,16 +27,16 @@ import unbbayes.util.NodeList;
 
 public class CBLB extends CBLToolkit{
 	
-	private ArrayList esFinal; 
+	private ArrayList<int[]> esFinal; 
 	
 	public CBLB(NodeList variables, byte[][] dataBase, int[] vector,
 	             long caseNumber, String param, boolean compacted){
 	    this.variablesVector = variables;
 	    double epsilon;
 	    TVariavel variable;
-	    esFinal = new ArrayList();
+	    esFinal = new ArrayList<int[]>();
         this.separators = new ArrayList();	    
-	    this.es = new ArrayList();	    	    
+	    this.es = new ArrayList<int[]>();	    	    
 	    this.variablesVector = variables;
 	    this.dataBase = dataBase;
 	    this.vector   = vector;
@@ -57,9 +57,9 @@ public class CBLB extends CBLToolkit{
 	
 	private void refine(){
 		int[] peace;
-		ArrayList esx;
+		ArrayList<int[]> esx;
 		for(int i = 0 ; i < es.size(); i++){
-			peace = (int[])es.get(i);
+			peace = es.get(i);
 			esx = (ArrayList)es.clone();
 			esx.remove(i);			
 			if(findWays(peace[0],peace[1],esx).size() >0
@@ -83,7 +83,7 @@ public class CBLB extends CBLToolkit{
 			var2.adicionaPai(var1);
 		}        
 		for(int i = 0 ; i < esFinal.size();i++){
-			peace = (int[])esFinal.get(i);
+			peace = esFinal.get(i);
 			var1 = (TVariavel)variablesVector.get(peace[1]);
 			var2 = (TVariavel)variablesVector.get(peace[0]);			
 			var1.adicionaPai(var2);			
@@ -97,7 +97,7 @@ public class CBLB extends CBLToolkit{
 		int n = this.variablesVector.size();
 		/* imAux recebe as informações mutuas auxiliares*/
 		double imAux;
-		ArrayList ls = new ArrayList(); 		
+		ArrayList<double[]> ls = new ArrayList<double[]>(); 		
 		/*Seta as informações mutuas de cada par, a informcao mutua de ab é 
 		 * a mesma de ba*/		
 		for(int i = 0 ; i < n; i++){
@@ -191,9 +191,6 @@ public class CBLB extends CBLToolkit{
 	}
 	
 	private void ruleCBL1(){
-		boolean flag;
-		ArrayList sep;
-		ArrayList aux;
 		int[] vars;
 		int[] vars1;
 		for(int i = 0 ;i < variablesVector.size(); i++){

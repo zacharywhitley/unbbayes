@@ -30,8 +30,8 @@ public abstract class CBLToolkit extends LearningToolkit{
 	
 	protected NodeList variablesVector;
 	protected double epsilon;	
-	protected ArrayList es;
-	protected ArrayList separators;    
+	protected ArrayList<int[]> es;
+	protected ArrayList<Object> separators;    
 	
 	protected double mutualInformation(TVariavel xi,TVariavel xk){    	
     	int nt = 0;
@@ -66,7 +66,7 @@ public abstract class CBLToolkit extends LearningToolkit{
         return im;    	
     }
     
-    protected void sort(ArrayList ls){		
+    protected void sort(ArrayList<double[]> ls){		
 		double[] peace;
 		double[] peace2;   									
 		for(int i = 0 ; i < ls.size(); i++){			
@@ -86,17 +86,17 @@ public abstract class CBLToolkit extends LearningToolkit{
 	}
 	
 	protected boolean isOpenWays(int v1, int v2, ArrayList esx){		
-		Stack stack = new Stack();
-		ArrayList peace = new ArrayList();
+		Stack<ArrayList<Integer>> stack = new Stack<ArrayList<Integer>>();
+		ArrayList<Integer> peace = new ArrayList<Integer>();
 		/*Inicializa o primeiro elemento da pilha [-1,v1]*/
 		peace.add(new Integer(-1));
 		peace.add(new Integer(v1));
 		stack.push(peace);
-		ArrayList parents;
-		ArrayList list;
+		ArrayList<Integer> parents;
+		ArrayList<ArrayList<Integer>> list;
 		int u;			
 		while(! stack.empty()){			
-		    parents  = (ArrayList)stack.pop();		    
+		    parents  = stack.pop();		    
 		    u = ((Integer)head(tail(parents))).intValue();		    
 		    if(u == v2){ 
 		    	return true;		    	
@@ -120,13 +120,13 @@ public abstract class CBLToolkit extends LearningToolkit{
 		return auxList;				
 	}
 	
-	protected ArrayList expandOpens(ArrayList parents, ArrayList esx){
+	protected ArrayList<ArrayList<Integer>> expandOpens(ArrayList<Integer> parents, ArrayList<int[]> esx){
         Integer direction = (Integer)parents.get(0);
         parents.remove(0);
         Integer u = (Integer)head(parents);
         ArrayList as = (ArrayList)esx.clone();
-        ArrayList fs = new ArrayList();
-        ArrayList way = new ArrayList();
+        ArrayList<ArrayList<Integer>> fs = new ArrayList<ArrayList<Integer>>();
+        ArrayList<Integer> way = new ArrayList<Integer>();
         while(as.size() > 0 ){
         	int[] ab = (int[])as.get(0); 
         	as.remove(0);
@@ -136,21 +136,21 @@ public abstract class CBLToolkit extends LearningToolkit{
         		for(int i = 0 ; i < parents.size(); i++){
         			way.add(parents.get(i));        			
         		}
-        		fs.add(way.clone());				
+        		fs.add((ArrayList<Integer>)way.clone());				
         	} else if(ab[1] == u.intValue() && direction.intValue() < 0) {
         		way.add(new Integer(-1));
         		way.add(new Integer(ab[0]));
         		for(int i = 0 ; i < parents.size(); i++){
         			way.add(parents.get(i));        			
         		}
-        		fs.add(way.clone());				
+        		fs.add((ArrayList<Integer>)way.clone());				
         	}      	        	
         	way.clear();
         }
         return fs;        
 	}
 	
-	protected boolean needConnect(int v1, int v2,ArrayList esx, int type){
+	protected boolean needConnect(int v1, int v2,ArrayList<int[]> esx, int type){
 		//System.out.println("Inicia precisa conectar");
 		int n = this.variablesVector.size();
 		ArrayList Z;
@@ -202,10 +202,10 @@ public abstract class CBLToolkit extends LearningToolkit{
 	}
 	
 	protected ArrayList separator(int v1, int v2,ArrayList esx, int n,int type){
-		ArrayList esAnc;
-		ArrayList esAncMor;
+		ArrayList<int[]> esAnc;
+		ArrayList<int[]> esAncMor;
 		if(type == 0){				
-	        esAnc =  findForeSubgraph(v1,v2,esx);	            
+	        esAnc =  (ArrayList<int[]>)findForeSubgraph(v1,v2,esx);	            
 	        esAncMor = esAnc;
 	        //esAncMor =  moralize(esAnc);
 	        /*int[] peace;
@@ -219,8 +219,8 @@ public abstract class CBLToolkit extends LearningToolkit{
 	    return getSep(esAncMor, v1, v2);	
 	}
 	
-	protected ArrayList findForeSubgraph(int v1,int v2, ArrayList esx){
-		ArrayList esAnc = new ArrayList();
+	protected ArrayList<int[]> findForeSubgraph(int v1,int v2, ArrayList<int[]> esx){
+		ArrayList<int[]> esAnc = new ArrayList<int[]>();
         boolean[] fore1 = new boolean[this.variablesVector.size()]; 
         boolean[] fore2 = new boolean[this.variablesVector.size()]; 
         int[] peace;
@@ -251,8 +251,8 @@ public abstract class CBLToolkit extends LearningToolkit{
 		}		
 	}
 	
-	protected ArrayList moralize(ArrayList esAnc){
-		ArrayList esAncMor = (ArrayList)esAnc.clone();
+	protected ArrayList<int[]> moralize(ArrayList<int[]> esAnc){
+		ArrayList<int[]> esAncMor = (ArrayList)esAnc.clone();
 		int[] peace;
 		int[] peace2;
 		for(int i = 0 ; i < esAnc.size(); i++){
@@ -267,20 +267,20 @@ public abstract class CBLToolkit extends LearningToolkit{
 		return esAncMor;				
 	}
 	
-	protected ArrayList getSep(ArrayList esAncMor, int v1, int v2){	    
-    	ArrayList sep = new ArrayList();   
-    	ArrayList sep2 = new ArrayList();
+	protected ArrayList getSep(ArrayList<int[]> esAncMor, int v1, int v2){	    
+    	ArrayList<Object> sep = new ArrayList<Object>();   
+    	ArrayList<Object> sep2 = new ArrayList<Object>();
     	/*É usada uma estrutura de Set para que não aja elementos
     	 * repetidos*/
-    	TreeSet nn1 = new TreeSet();
-    	TreeSet nn2 = new TreeSet();
-    	ArrayList nnAux;
+    	TreeSet<Integer> nn1 = new TreeSet<Integer>();
+    	TreeSet<Integer> nn2 = new TreeSet<Integer>();
+    	ArrayList<Integer> nnAux;
     	//System.out.println("Inicia pegar os separadores");
     	//System.out.println("Inicia Achar caminhos");
     	ArrayList ways  = findWays(v1,v2,esAncMor); 
     	//System.out.println("Acaba Achar caminhos"); 	    	   	    	
-    	ArrayList neighbors1 = findNeighbors(v1, esAncMor);
-    	ArrayList neighbors2 = findNeighbors(v2, esAncMor);    	
+    	ArrayList<Integer> neighbors1 = findNeighbors(v1, esAncMor);
+    	ArrayList<Integer> neighbors2 = findNeighbors(v2, esAncMor);    	
     	//neighborsFilter(neighbors1, ways);    	        	
     	//neighborsFilter(neighbors2, ways);    	    	
  	    /*Acha os vizinhos dos vizinhos*/ 	    
@@ -347,11 +347,11 @@ public abstract class CBLToolkit extends LearningToolkit{
     	}    	
     }
     
-    protected ArrayList findWays(int v1, int v2, ArrayList esAncMor){
-        ArrayList rs = new ArrayList();
-    	ArrayList cs = new ArrayList();
-    	ArrayList queue = new ArrayList();
-    	ArrayList fs;
+    protected ArrayList<ArrayList<Integer>> findWays(int v1, int v2, ArrayList<int[]> esAncMor){
+        ArrayList<ArrayList<Integer>> rs = new ArrayList<ArrayList<Integer>>();
+    	ArrayList<Integer> cs = new ArrayList<Integer>();
+    	ArrayList<Object> queue = new ArrayList<Object>();
+    	ArrayList<ArrayList<Integer>> fs;
     	cs.add(new Integer(v2));
     	queue.add(cs.clone());
     	Integer last;
@@ -371,8 +371,8 @@ public abstract class CBLToolkit extends LearningToolkit{
     	return rs;     	
     }
     
-    protected ArrayList expand(ArrayList cs, ArrayList esAncMor){
-    	ArrayList fs = new ArrayList();
+    protected ArrayList<ArrayList<Integer>> expand(ArrayList<Integer> cs, ArrayList<int[]> esAncMor){
+    	ArrayList<ArrayList<Integer>> fs = new ArrayList<ArrayList<Integer>>();
     	int[] peace;
     	Integer x;
     	Integer y;
@@ -380,12 +380,12 @@ public abstract class CBLToolkit extends LearningToolkit{
     		peace = (int[])esAncMor.get(i);
     		if( peace[0] == ((Integer)cs.get(cs.size() -1)).intValue()
     		                  && ! isMember(cs,peace[1])){
-    		                  	ArrayList csClone = (ArrayList)cs.clone();
+    		                  	ArrayList<Integer> csClone = (ArrayList)cs.clone();
     		                  	csClone.add(new Integer(peace[1]));
     		                  	fs.add(csClone);
     		} else if( peace[1] == ((Integer)cs.get(cs.size() -1)).intValue()
     		                  && ! isMember(cs,peace[0])){
-                                ArrayList csClone = (ArrayList)cs.clone();
+                                ArrayList<Integer> csClone = (ArrayList)cs.clone();
     		                  	csClone.add(new Integer(peace[0]));
     		                  	fs.add(csClone);
     		}
@@ -404,8 +404,8 @@ public abstract class CBLToolkit extends LearningToolkit{
     	return false;    	
     }
     
-    protected ArrayList findNeighbors(int v1, ArrayList esAncMor){
-    	ArrayList neighbors = new ArrayList();
+    protected ArrayList<Integer> findNeighbors(int v1, ArrayList<int[]> esAncMor){
+    	ArrayList<Integer> neighbors = new ArrayList<Integer>();
     	int[] peace;
     	for(int i = 0 ; i < esAncMor.size(); i++){    		
     		peace = (int[])esAncMor.get(i);    		

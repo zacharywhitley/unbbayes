@@ -33,8 +33,8 @@ public class CBLA extends CBLToolkit{
 	public CBLA(NodeList variables, byte[][] dataBase, int[] vector,
 	             long caseNumber, String param, boolean compacted){
 	    this.variablesVector = variables;
-        this.separators = new ArrayList();	    
-	    this.es = new ArrayList();	    	    
+        this.separators = new ArrayList<Object>();	    
+	    this.es = new ArrayList<int[]>();	    	    
 	    this.variablesVector = variables;
 	    this.dataBase = dataBase;
 	    this.vector   = vector;
@@ -52,7 +52,7 @@ public class CBLA extends CBLToolkit{
 	
 	private void refine(){
 		int[] peace;
-		ArrayList esx;
+		ArrayList<int[]> esx;
 		for(int i = 0 ; i < es.size(); i++){
 			peace = (int[])es.get(i);
 			esx = (ArrayList)es.clone();
