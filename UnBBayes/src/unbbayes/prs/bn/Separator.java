@@ -32,6 +32,9 @@ import unbbayes.util.NodeList;
  */
 public class Separator implements ITabledVariable, java.io.Serializable {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+	
     private PotentialTable tabelaPot;
     private PotentialTable utilityTable;
     private NodeList nos;

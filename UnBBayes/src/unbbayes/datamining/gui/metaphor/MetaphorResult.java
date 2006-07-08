@@ -182,9 +182,9 @@ public class MetaphorResult extends JPanel
       private void calculatePositives(ExplanationPhrase[] phrases)
       {   int size = phrases.length;
           ExplanationPhrase explanationPhrase;
-          ArrayList trigger = new ArrayList();
-          ArrayList complementary = new ArrayList();
-          ArrayList necessary = new ArrayList();
+          ArrayList<ExplanationPhrase> trigger = new ArrayList<ExplanationPhrase>();
+          ArrayList<ExplanationPhrase> complementary = new ArrayList<ExplanationPhrase>();
+          ArrayList<ExplanationPhrase> necessary = new ArrayList<ExplanationPhrase>();
           for (int i=0;i<size;i++)
           {   explanationPhrase = phrases[i];
               switch(explanationPhrase.getEvidenceType())
@@ -221,7 +221,7 @@ public class MetaphorResult extends JPanel
       private void calculateNegatives(ExplanationPhrase[] phrases)
       {   int size = phrases.length;
           ExplanationPhrase explanationPhrase;
-          ArrayList exclusive = new ArrayList();
+          ArrayList<ExplanationPhrase> exclusive = new ArrayList<ExplanationPhrase>();
           for (int i=0;i<size;i++)
           {   explanationPhrase = phrases[i];
               if (explanationPhrase.getEvidenceType()==ExplanationPhrase.EXCLUSIVE_EVIDENCE_TYPE)

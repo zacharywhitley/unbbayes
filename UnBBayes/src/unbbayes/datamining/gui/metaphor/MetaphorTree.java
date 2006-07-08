@@ -97,7 +97,7 @@ public class MetaphorTree extends JTree
 
 	private ProbabilisticNetwork net = null;
         private boolean showProbability = false;
-        private ArrayMap objectsMap = new ArrayMap();
+        private ArrayMap<DefaultMutableTreeNode, Object> objectsMap = new ArrayMap<DefaultMutableTreeNode, Object>();
         private NumberFormat nf;
         protected IconController iconController = IconController.getInstance();
 
@@ -229,8 +229,8 @@ public class MetaphorTree extends JTree
                     DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode)clickedNode.getParent();
                     Enumeration childrenEnum = parentNode.children();
                     StateObject yesChecked = null;
-                    ArrayList noCheckeds = new ArrayList(),
-                              emptyCheckeds = new ArrayList();
+                    ArrayList<StateObject> noCheckeds = new ArrayList<StateObject>(),
+                              emptyCheckeds = new ArrayList<StateObject>();
                     while (childrenEnum.hasMoreElements()) {
                         DefaultMutableTreeNode child = (DefaultMutableTreeNode)childrenEnum.nextElement();
                         if (!child.equals(clickedNode)) {
@@ -238,10 +238,10 @@ public class MetaphorTree extends JTree
                                 yesChecked = (StateObject)objectsMap.get(child);
                             }
                             else if (((StateObject)objectsMap.get(child)).getCheck() == CHECK_NO) {
-                                noCheckeds.add(objectsMap.get(child));
+                                noCheckeds.add((StateObject)objectsMap.get(child));
                             }
                             else {
-                                emptyCheckeds.add(objectsMap.get(child));
+                                emptyCheckeds.add((StateObject)objectsMap.get(child));
                             }
                         }
                     }

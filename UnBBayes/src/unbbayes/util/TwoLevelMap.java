@@ -12,14 +12,20 @@ import java.util.*;
  *
  * @author  Paulo F. Duarte
  */
-public class TwoLevelMap {
-    private ArrayMap mainMap = new ArrayMap();
+public class TwoLevelMap<P,K,V> {
+    private ArrayMap<P,ArrayMap<K,V>> mainMap = new ArrayMap<P,ArrayMap<K,V>>();
 
-    public Object put(Object mainKey, Object subKey, Object value) {
-        ArrayMap subMap = (ArrayMap)mainMap.get(mainKey);
+	/*
+	 * P -> chave principal
+	 * K -> chave secundária
+	 * V -> valor
+	 */    
+    
+    public Object put(P mainKey, K subKey, V value) {
+        ArrayMap<K,V> subMap = mainMap.get(mainKey);
         Object oldValue;
         if (subMap == null) {
-            subMap = new ArrayMap();
+            subMap = new ArrayMap<K,V>();
             mainMap.put(mainKey, subMap);
             subMap.put(subKey, value);
             return null;
@@ -29,18 +35,18 @@ public class TwoLevelMap {
         return oldValue;
     }
     public Object get(String mainKey, String subKey) {
-        ArrayMap subMap = (ArrayMap)mainMap.get(mainKey);
+        ArrayMap<K,V> subMap = mainMap.get(mainKey);
         if (subMap == null)
             return null;
         return subMap.get(subKey);
     }
 
-    public ArrayList getMainKeys() {
+    public ArrayList<P> getMainKeys() {
         return mainMap.getKeys();
     }
 
-    public ArrayList getSubKeys(String mainKey) {
-        ArrayMap subMap = (ArrayMap)mainMap.get(mainKey);
+    public ArrayList<K> getSubKeys(String mainKey) {
+        ArrayMap<K,V> subMap = mainMap.get(mainKey);
         if (subMap == null)
             return null;
         return subMap.getKeys();

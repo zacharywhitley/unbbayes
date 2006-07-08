@@ -9,7 +9,7 @@ public class K2
 {
     // Data
     private ParametricLearning m_pl;
-    private ArrayList finalConfiguration = new ArrayList();
+    private ArrayList<int[]> finalConfiguration = new ArrayList<int[]>();
     private InstanceSet instanceSet;
 
     // Construtor

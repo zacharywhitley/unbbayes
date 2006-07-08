@@ -84,7 +84,7 @@ public class SimulacaoMonteCarlo {
 	}
 	
 	private void simular(byte[][] matrizFila, int caso){
-		List indicesAnteriores = new ArrayList();
+		List<Integer> indicesAnteriores = new ArrayList<Integer>();
 		double numero = Math.random();		
 		double[] coluna;
 		int[] estado = new int[fila.size()];
@@ -98,8 +98,8 @@ public class SimulacaoMonteCarlo {
 		}				
 	}
 	
-	private List getIndices(ProbabilisticNode n){
-		List indices = new ArrayList();
+	private List<Integer> getIndices(ProbabilisticNode n){
+		List<Integer> indices = new ArrayList<Integer>();
 		NodeList pais = n.getParents();		
 		for(int i = 0 ; i < pais.size();i++){
 			Node n1 = pais.get(i);
@@ -151,14 +151,14 @@ public class SimulacaoMonteCarlo {
 	}
 	
 	private double[] ordenar(double[] coluna){		
-		List lista = new ArrayList();
+		List<Double> lista = new ArrayList<Double>();
 		double[] colunaOrdenada = new double[coluna.length];	
 		for(int i = 0 ; i < coluna.length; i++){
 			lista.add(new Double(coluna[i]));				
 		}
 		Collections.sort(lista);
 		for(int i = 0 ; i < lista.size(); i++){
-			colunaOrdenada[i] = ((Double)lista.get(i)).doubleValue();				
+			colunaOrdenada[i] = (lista.get(i)).doubleValue();				
 		}				
 		return colunaOrdenada;		
 	}

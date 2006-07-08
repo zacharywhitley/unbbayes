@@ -38,7 +38,7 @@ public class Attribute implements Serializable
   	private String[] attributeValues;
 
 	/** Mapping of values to indices */
-  	private Hashtable hashtable;
+  	private Hashtable<String,Integer> hashtable;
 
   	/** The attribute's index. */
   	private int index;
@@ -61,7 +61,7 @@ public class Attribute implements Serializable
       	if (attributeValues != null)
 		{
 			int numValues = numValues();
-			hashtable = new Hashtable(numValues);
+			hashtable = new Hashtable<String,Integer>(numValues);
       		for (int i = 0; i < numValues; i++)
 			{	hashtable.put(attributeValues[i], new Integer(i));
       		}
@@ -279,7 +279,7 @@ public class Attribute implements Serializable
 	{
           if (hashtable == null)
           {
-            hashtable = new Hashtable();
+            hashtable = new Hashtable<String,Integer>();
 
           }
 

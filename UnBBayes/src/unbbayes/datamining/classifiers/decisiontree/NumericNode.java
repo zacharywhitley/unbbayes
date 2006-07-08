@@ -44,7 +44,7 @@ public class NumericNode extends Node
 	 * to values more than the split value
 	 * @param children list of children (Node or Leaf type)
 	 */
-	public NumericNode(Attribute splitAttribute, double splitValue, boolean isMoreThanAttributeValue, ArrayList children)
+	public NumericNode(Attribute splitAttribute, double splitValue, boolean isMoreThanAttributeValue, ArrayList<Object> children)
 	{
 		this(splitAttribute,splitValue,isMoreThanAttributeValue);
 		this.children = children;

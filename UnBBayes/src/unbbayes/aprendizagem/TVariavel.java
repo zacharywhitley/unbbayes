@@ -142,7 +142,7 @@ public class TVariavel extends ProbabilisticNode implements Cloneable {
      * @return List - Array de estados da variável
      * @see List
      */
-    public List getEstados(){
+    public List<String> getEstados(){
         return states;
     }
 
@@ -331,8 +331,8 @@ public class TVariavel extends ProbabilisticNode implements Cloneable {
      * @param states - Lista de states(<code>Object<code>)
      * @see Clone()
      */
-    private void setEstados(Object states){
-        this.states = (List)states;
+    private void setEstados(List<String> states){
+        this.states = states;
     }
 
     /**

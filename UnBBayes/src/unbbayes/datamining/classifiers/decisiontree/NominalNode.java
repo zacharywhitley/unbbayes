@@ -36,7 +36,7 @@ public class NominalNode extends Node
 	 * @param attributeValue value position of splitAttribute
 	 * @param children list of children (Node or Leaf type)
 	 */
-	public NominalNode(Attribute splitAttribute, int attributeValue, ArrayList children)
+	public NominalNode(Attribute splitAttribute, int attributeValue, ArrayList<Object> children)
 	{
 		this(splitAttribute, attributeValue);
 		this.children = children;

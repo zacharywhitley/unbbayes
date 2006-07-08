@@ -25,7 +25,7 @@ public class ParametricLearning
     {
       attrib = set.getAttribute(i);
       x[i] = attrib.getAttributeName();
-      ArrayList temp = new ArrayList();
+      ArrayList<String[]> temp = new ArrayList<String[]>();
       temp.add(attrib.getAttributeValues());
       dx[i] = temp;
     }
@@ -34,7 +34,7 @@ public class ParametricLearning
     Instance inst, inst2;
     int numInstances = set.numInstances();
     freq = new int[numInstances];
-    ArrayList dataTemp = new ArrayList();
+    ArrayList<Instance> dataTemp = new ArrayList<Instance>();
     for(i=0;i<numInstances;i++)
     {
       inst = set.getInstance(i);
@@ -146,31 +146,31 @@ public class ParametricLearning
 
 //parâmetro pa: ArrayList de arrays de inteiros
 //retorno: ArrayList de arrays bidimensionais de float
-public ArrayList prob(ArrayList pa)
+public ArrayList<float[][]> prob(ArrayList<int[]> pa)
 {
-  ArrayList nijk;	//ocorrência dos estados das variáveis relativos aos estados dos pais
+  ArrayList<int[][]> nijk;	//ocorrência dos estados das variáveis relativos aos estados dos pais
   int n = x.length;	//número de variáveis
   int ri;		//número de estados da variável atual
   int qi;		//número de estados dos pais da variável atual
   int nij;		//número total de ocorrências da variável em determinado estado dos pais
-  ArrayList p;		//distribuição condicional das famílias	(ArrayList de arrays bidimensionais)
+  ArrayList<float[][]> p;		//distribuição condicional das famílias	(ArrayList de arrays bidimensionais)
   float[][] pjk;	//distribuição condicional da variável atual
   int[][] njk;		//nijk para variável atual(i)
 
   //calcular nijk
-  nijk = new ArrayList();
+  nijk = new ArrayList<int[][]>();
   for (int i=0;i<n;i++)
   {
     nijk.add(computeNijk(i, (int[])pa.get(i)));
   }
 
-  p = new ArrayList();
+  p = new ArrayList<float[][]>();
   for(int i=0;i<n;i++)
   {
     ri = dx[i].size();
     qi = computeQ((int[])pa.get(i));
     pjk = new float[qi][ri];
-    njk = (int[][])nijk.get(i);
+    njk = nijk.get(i);
 
     for(int j=0;j<qi;j++)
     {
@@ -189,7 +189,7 @@ public ArrayList prob(ArrayList pa)
   return p;
 }
 //----------------------------------------------------------------------------//
-public ProbabilisticNetwork getProbabilisticNetwork(ArrayList pa)
+public ProbabilisticNetwork getProbabilisticNetwork(ArrayList<int[]> pa)
 {
 	ProbabilisticNetwork net = new ProbabilisticNetwork("net");
     int width = 50;
@@ -221,8 +221,8 @@ public ProbabilisticNetwork getProbabilisticNetwork(ArrayList pa)
       		net.addEdge(arco);
       	}
 
-      	ArrayList probs = prob(pa);
-      	float[][] pjk = (float[][])probs.get(i);
+      	ArrayList<float[][]> probs = prob(pa);
+      	float[][] pjk = probs.get(i);
     	// Inserção dos valores na tabela de probabilidades
       	int counter = 0;
         for (int j=0;j<pjk.length;j++)

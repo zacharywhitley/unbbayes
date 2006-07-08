@@ -48,6 +48,9 @@ import unbbayes.util.SetToolkit;
  */
 public class Network implements java.io.Serializable {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;	
+	
 	/** Load resource file from this package */
   	protected static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
   	
@@ -76,7 +79,7 @@ public class Network implements java.io.Serializable {
     /**
      *  Lista de arcos que compõem o grafo.
      */
-    protected List arcos;
+    protected List<Edge> arcos;
     
     
     /**
@@ -87,7 +90,7 @@ public class Network implements java.io.Serializable {
 	/**
 	 *  Lista de arcos utilizada no processo de transformação.
 	 */
-	protected List arcosMarkov;
+	protected List<Edge> arcosMarkov;
 	
 	/**
 	 * Indica se o log deve ser criado ou não.
@@ -105,14 +108,14 @@ public class Network implements java.io.Serializable {
 	 */
 	protected NodeList copiaNos;
 	
-	protected List copiaArcos;
+	protected List<Edge> copiaArcos;
 
 	/**
 	 *  Armazena handle do objeto Árvore de Junção associado ao Grafo.
 	 */
 	protected JunctionTree junctionTree;	
     
-    private Map nodeIndexes;
+    private Map<String,Integer> nodeIndexes;
 
 
     /**
@@ -124,13 +127,13 @@ public class Network implements java.io.Serializable {
         this.id = this.name = id;
         //descriptionNodes = new NodeList();
         //explanationNodes = new NodeList();
-        arcos = new ArrayList();
-        arcosMarkov = new ArrayList();
+        arcos = new ArrayList<Edge>();
+        arcosMarkov = new ArrayList<Edge>();
         logManager = new LogManager(); 
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
 		DefaultTreeModel model = new DefaultTreeModel(root);
         hierarchicTree = new HierarchicTree(model);        
-        nodeIndexes = new HashMap();
+        nodeIndexes = new HashMap<String,Integer>();
     }
 
 
@@ -139,7 +142,7 @@ public class Network implements java.io.Serializable {
      *
      *@return    arcos do grafo.
      */
-    public List getEdges() {
+    public List<Edge> getEdges() {
         return this.arcos;
     }
 
@@ -217,11 +220,11 @@ public class Network implements java.io.Serializable {
      */
 
     public int getNodeIndex(String name) {
-    	Object index = nodeIndexes.get(name);
+    	Integer index = nodeIndexes.get(name);
     	if (index == null) {
     		return -1;    		
     	}
-    	return ((Integer) index).intValue();
+    	return index.intValue();
     	/*
     	int size = nos.size();
         for (int qnos = 0; qnos < size; qnos++) {
@@ -303,7 +306,7 @@ public class Network implements java.io.Serializable {
             auxNo.getChildren().remove(elemento);
         }
         if (!arcos.isEmpty()) {
-            auxArco = (Edge) arcos.get(0);
+            auxArco = arcos.get(0);
             c = 0;
             while (auxArco != arcos.get(arcos.size() - 1)) {
                 if ((auxArco.getOriginNode() == elemento) || (auxArco.getDestinationNode() == elemento)) {
@@ -312,7 +315,7 @@ public class Network implements java.io.Serializable {
                 else {
                     c++;
                 }
-                auxArco = (Edge) arcos.get(c);
+                auxArco = arcos.get(c);
             }
             if ((auxArco.getOriginNode() == elemento) || (auxArco.getDestinationNode() == elemento)) {
                 removeArco(auxArco);
@@ -357,7 +360,7 @@ public class Network implements java.io.Serializable {
     protected void makeAdjacents() {
     	clearAdjacents();
     	for (int z = arcosMarkov.size() - 1; z >= 0; z--) {
-			Edge auxArco = (Edge) arcosMarkov.get(z);
+			Edge auxArco = arcosMarkov.get(z);
 			auxArco.getOriginNode().getAdjacents().add(
 				auxArco.getDestinationNode());
 			auxArco.getDestinationNode().getAdjacents().add(
@@ -365,7 +368,7 @@ public class Network implements java.io.Serializable {
 		}
 	
 		for (int z = copiaArcos.size() - 1; z >= 0; z--) {
-			Edge auxArco = (Edge) copiaArcos.get(z);
+			Edge auxArco = copiaArcos.get(z);
 			if (auxArco.getDestinationNode().getType()
 				== Node.UTILITY_NODE_TYPE) {
 				copiaArcos.remove(z);
@@ -464,7 +467,7 @@ public class Network implements java.io.Serializable {
      *  @throws Exception se a rede for disconexa.
      */
     public final void verifyConectivity() throws Exception {
-        List visitados = new ArrayList(nos.size());
+        List<Node> visitados = new ArrayList<Node>(nos.size());
         if (nos.size() <= 1) {
             return;
         }
@@ -479,7 +482,7 @@ public class Network implements java.io.Serializable {
     /**
      * Depth first search to verify conectivity.
      */
-    private void dfsConnectivity(Node no, List visitados) {
+    private void dfsConnectivity(Node no, List<Node> visitados) {
         visitados.add(no);
         for (int i = 0; i < no.getAdjacents().size(); i++) {
             Node aux = no.getAdjacents().get(i);
@@ -504,12 +507,12 @@ public class Network implements java.io.Serializable {
 			logManager.append(resource.getString("moralizeLabel"));
 		}
 		arcosMarkov.clear();
-		copiaArcos = SetToolkit.clone(arcos);
+		copiaArcos = (ArrayList<Edge>)SetToolkit.clone(arcos);
 	
 		//retira os arcos de informação
 		int sizeArcos = copiaArcos.size() - 1;
 		for (int i = sizeArcos; i >= 0; i--) {
-			auxArco = (Edge) copiaArcos.get(i);
+			auxArco = copiaArcos.get(i);
 			if (auxArco.getDestinationNode().getType()
 				== Node.DECISION_NODE_TYPE) {
 				copiaArcos.remove(i);
@@ -561,7 +564,7 @@ public class Network implements java.io.Serializable {
 		return hasEdge(no1, no2, arcos);
 	}
 
-	private int hasEdge(Node no1, Node no2, List vetArcos) {
+	private int hasEdge(Node no1, Node no2, List<Edge> vetArcos) {
 		if (no1 == no2) {
 			return 1;
 		}
@@ -698,7 +701,7 @@ public class Network implements java.io.Serializable {
 		int e;
 		Clique auxClique;
 		Clique auxClique2;
-		List listaCliques = new ArrayList();
+		List<Clique> listaCliques = new ArrayList<Clique>();
 	
 		int sizeNos = copiaNos.size();
 		for (i = 0; i < sizeNos; i++) {
@@ -721,8 +724,8 @@ public class Network implements java.io.Serializable {
 		while (haTroca) {
 			haTroca = false;
 			for (i = 0; i < listaCliques.size() - 1; i++) {
-				auxClique = (Clique) listaCliques.get(i);
-				auxClique2 = (Clique) listaCliques.get(i + 1);
+				auxClique = listaCliques.get(i);
+				auxClique2 = listaCliques.get(i + 1);
 				if (auxClique.getNodes().size() > auxClique2.getNodes().size()) {
 					listaCliques.set(i + 1, auxClique);
 					listaCliques.set(i, auxClique2);
@@ -734,9 +737,9 @@ public class Network implements java.io.Serializable {
 		int sizeCliques = listaCliques.size();
 	
 		for1 : for (i = 0; i < sizeCliques; i++) {
-			auxClique = (Clique) listaCliques.get(i);
+			auxClique = listaCliques.get(i);
 			for (j = i + 1; j < sizeCliques; j++) {
-				auxClique2 = (Clique) listaCliques.get(j);
+				auxClique2 = listaCliques.get(j);
 	
 				if (auxClique2.getNodes().containsAll(auxClique.getNodes())) {
 					continue for1;
@@ -924,10 +927,10 @@ public class Network implements java.io.Serializable {
 			}
 			alpha.clear();
 	
-			Comparator comparador = new Comparator() {
-				public int compare(Object o1, Object o2) {
-					Clique c1 = (Clique) o1;
-					Clique c2 = (Clique) o2;
+			Comparator<Clique> comparador = new Comparator<Clique>() {
+				public int compare(Clique o1, Clique o2) {
+					Clique c1 = o1;
+					Clique c2 = o2;
 					if (c1.getIndex() > c2.getIndex()) {
 						return 1;
 					}

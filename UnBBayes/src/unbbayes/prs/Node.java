@@ -41,6 +41,11 @@ public abstract class Node implements java.io.Serializable {
 	public class SerializablePoint2D
 		extends Point2D.Double
 		implements java.io.Serializable {
+
+		/** Serialization runtime version number */
+		private static final long serialVersionUID = 0;
+
+		
 		private void writeObject(java.io.ObjectOutputStream out)
 			throws java.io.IOException {
 			out.writeDouble(x);
@@ -59,13 +64,13 @@ public abstract class Node implements java.io.Serializable {
 	private SerializablePoint2D posicao;
 	protected NodeList parents;
 	private NodeList children;
-	protected List states;
+	protected List<String> states;
 	private NodeList adjacents;
 	private boolean selecionado;
 	private static int altura;
 	private static int largura;
 	private String explanationDescription = "";
-	private ArrayMap phrasesMap = new ArrayMap();
+	private ArrayMap<String,ExplanationPhrase> phrasesMap = new ArrayMap<String,ExplanationPhrase>();
 	private int informationType;
 
 	public static final int PROBABILISTIC_NODE_TYPE = 0;
@@ -82,7 +87,7 @@ public abstract class Node implements java.io.Serializable {
 		adjacents = new NodeList();
 		parents = new NodeList();
 		children = new NodeList();
-		states = new ArrayList();
+		states = new ArrayList<String>();
 		altura = 35;
 		largura = 35;
 		posicao = new SerializablePoint2D();
@@ -120,11 +125,11 @@ public abstract class Node implements java.io.Serializable {
 
 	public ExplanationPhrase getExplanationPhrase(String node)
 		throws Exception {
-		Object obj = phrasesMap.get(node);
-		if (obj == null) {
+		ExplanationPhrase ep = phrasesMap.get(node);
+		if (ep == null) {
 			throw new Exception("Nó não encontrado.");
 		} else {
-			return (ExplanationPhrase) obj;
+			return (ExplanationPhrase) ep;
 		}
 	}
 
@@ -216,8 +221,8 @@ public abstract class Node implements java.io.Serializable {
 	 *@param phrasesMap novo ArrayMap a ser setado
 	 *@return	phrasesMap	anterior.
 	 */
-	public ArrayMap setPhrasesMap(ArrayMap phrasesMap) {
-		ArrayMap old = this.phrasesMap;
+	public ArrayMap<String,ExplanationPhrase> setPhrasesMap(ArrayMap<String,ExplanationPhrase> phrasesMap) {
+		ArrayMap<String,ExplanationPhrase> old = this.phrasesMap;
 		this.phrasesMap = phrasesMap;
 		return old;
 	}
@@ -317,7 +322,7 @@ public abstract class Node implements java.io.Serializable {
 	 *
 	 *@return    ArrayMap com as frases.
 	 */
-	public ArrayMap getPhrasesMap() {
+	public ArrayMap<String,ExplanationPhrase> getPhrasesMap() {
 		return this.phrasesMap;
 	}
 
@@ -438,7 +443,7 @@ public abstract class Node implements java.io.Serializable {
 	 * Sets the states.
 	 * @param states The states to set
 	 */
-	public void setStates(List states) {
+	public void setStates(List<String> states) {
 		this.states = states;
 	}
 

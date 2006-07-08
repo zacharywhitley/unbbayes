@@ -28,7 +28,7 @@ public class AttributesTree extends JTree{
   public static final int CHECK_NO = -1;
   public static final int CHECK_EMPTY = 0;
 
-  private ArrayMap objectsMap = new ArrayMap();
+  private ArrayMap<Object, Object> objectsMap = new ArrayMap<Object, Object>();
   private Attribute[] attributeVector;
   private int classIndex;
   private IInferencePanel inferencePanel;
@@ -149,8 +149,8 @@ public class AttributesTree extends JTree{
           DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode)clickedNode.getParent();
           Enumeration childrenEnum = parentNode.children();
           StateObject yesChecked = null;
-          ArrayList noCheckeds = new ArrayList(),
-          emptyCheckeds = new ArrayList();
+          ArrayList<Object> noCheckeds = new ArrayList<Object>(),
+          emptyCheckeds = new ArrayList<Object>();
           while (childrenEnum.hasMoreElements()) {
             DefaultMutableTreeNode child = (DefaultMutableTreeNode)childrenEnum.nextElement();
             if (!child.equals(clickedNode)) {

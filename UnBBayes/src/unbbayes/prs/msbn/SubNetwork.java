@@ -41,7 +41,7 @@ public class SubNetwork extends Network {
 	/**
 	 * Child subnetworks. 
 	 */
-	protected List adjacents;
+	protected List<SubNetwork> adjacents;
 	
 	/**
 	 * Parent subnetwork.
@@ -55,7 +55,7 @@ public class SubNetwork extends Network {
 	 */
 	public SubNetwork(String id) {
 		super(id);
-		adjacents = new ArrayList();		
+		adjacents = new ArrayList<SubNetwork>();		
 	}
 	
 	/**
@@ -133,12 +133,12 @@ public class SubNetwork extends Network {
 	 * @return List	The path from this subnetwork to the specified subnetwork
 	 */
 	protected List makePath(SubNetwork net) {
-		List path = new ArrayList();
+		List<SubNetwork> path = new ArrayList<SubNetwork>();
 		makePath(net, path);
 		return path;			
 	}
 	
-	private boolean makePath(SubNetwork net, List path) {
+	private boolean makePath(SubNetwork net, List<SubNetwork> path) {
 		if (path.contains(this)) {
 			return false;
 		}

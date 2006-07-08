@@ -81,8 +81,8 @@ public class ProbabilisticTable extends JTable {
                 // the states of the node itself will be placed.
                 columns = states + 1;
 
-                Vector cgv = new Vector(variables - 2);
-                Vector cgf = new Vector(variables - 1);
+                Vector<Vector<ColumnGroup>> cgv = new Vector<Vector<ColumnGroup>>(variables - 2);
+                Vector<ColumnGroup> cgf = new Vector<ColumnGroup>(variables - 1);
                 ColumnGroup cg;
     
                 // put the name of the father and its states' name in the right 
@@ -91,7 +91,7 @@ public class ProbabilisticTable extends JTable {
                 for (int k = variables - 2, l = 0; k >= 1; k--, l++) {
                     Node variable = potTab.getVariableAt(k);
                     
-                    cgv.add(new Vector(states));
+                    cgv.add(new Vector<ColumnGroup>(states));
                     
                     // the number of states is the multiplication of the number of
                     // states of the other fathers above this one.
@@ -114,7 +114,7 @@ public class ProbabilisticTable extends JTable {
                         String name = variable.getStateAt((i / states) % variable.getStatesSize());
                         System.out.println(name);
                         cg = new ColumnGroup(name);
-                        ((Vector)cgv.get(l)).add(cg);
+                        ((Vector<ColumnGroup>)cgv.get(l)).add(cg);
                         int temp = potTab.getVariableAt(k + 1).getStatesSize();
                         for (int t = i * temp; t < (i + 1) * temp; t++) {
                         //for (int t = i; t < columns; t += temp) {

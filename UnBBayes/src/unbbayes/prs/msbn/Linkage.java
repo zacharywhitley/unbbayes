@@ -39,7 +39,7 @@ public class Linkage {
 	private NodeList nodes;
 	
 	private JunctionTree jt;
-	private ArrayList linkList;
+	private ArrayList<Link> linkList;
 	
 	/**
 	 * Creates a new Linkage separating the two subnetworks.
@@ -50,7 +50,7 @@ public class Linkage {
 	public Linkage(SubNetwork n1, SubNetwork n2) {
 		this.n1 = n1;
 		this.n2 = n2;
-		linkList = new ArrayList();
+		linkList = new ArrayList<Link>();
 		n1.addAdjacent(n2);
 		n2.setParent(n1);
 		nodes = SetToolkit.intersection(n1.getNodes(), n2.getNodes());		
@@ -96,7 +96,7 @@ public class Linkage {
 		while (retirou) {
 			retirou = false;
 			for (int i = linkList.size()-1; i>=0; i--) {
-				Link link = (Link) linkList.get(i);
+				Link link = linkList.get(i);
 				Clique c = link.getClique();
 				if (c.getChildrenSize() == 0) {
 					// c is tree leaf					
@@ -116,7 +116,7 @@ public class Linkage {
 	
 	private void remove2ndPass() {
 		for (int i = linkList.size()-1; i >=0; i--) {
-			Link link = (Link) linkList.get(i);
+			Link link = linkList.get(i);
 			Clique c = link.getClique();
 			if (c.getParent() != null && c.getParent().getNodes().containsAll(c.getNodes())) {
 				removeLink(link);
@@ -136,7 +136,7 @@ public class Linkage {
 	private void assignV1() {
 		List cliquesN2 = n2.getJunctionTree().getCliques();
 		for (int i = linkList.size()-1; i >=0; i--) {
-			Link link = (Link) linkList.get(i);
+			Link link = linkList.get(i);
 			Clique c = link.getClique();
 			for (int j = cliquesN2.size()-1; j>=0; j--) {
 				Clique c2 = (Clique) cliquesN2.get(j);
@@ -152,7 +152,7 @@ public class Linkage {
 		insertSeparators();
 				
 		for (int i = linkList.size()-1; i >=0; i--) {
-			Link l = (Link) linkList.get(i);
+			Link l = linkList.get(i);
 			Clique c = l.getClique();
 			PotentialTable tab = c.getPotentialTable();
 			for (int j = 0; j < c.getNodes().size(); j++) {
@@ -243,14 +243,14 @@ public class Linkage {
 		int treeSize = linkList.size();
 		
 		for (int i = 0; i < treeSize; i++) {
-			Link l = (Link) linkList.get(i);
+			Link l = linkList.get(i);
 			l.absorbIn(naOrdem);
 		}
 		
 		removeRedundance();
 		
 		for (int i = 0; i < treeSize; i++) {		
-			Link l = (Link) linkList.get(i);
+			Link l = linkList.get(i);
 			l.absorbOut(naOrdem);
 		}
 		
@@ -278,7 +278,7 @@ public class Linkage {
 			}
 			
 			for (int j = linkList.size()-1; j>=0; j--) {
-				Link l = (Link) linkList.get(j);
+				Link l = linkList.get(j);
 				if (l.getClique() == sep.getClique2()) {
 					l.removeRedundancy(tA, oldRedTab);					
 					break;					

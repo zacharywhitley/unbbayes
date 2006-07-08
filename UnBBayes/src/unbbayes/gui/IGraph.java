@@ -76,7 +76,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
     private WindowController controller;
     private List arc;
     private NodeList node;
-    private List selectedGroup;
+    private List<Object> selectedGroup;
     private Node presentNode;
     private Node movingNode;
     private Object selected;
@@ -134,7 +134,7 @@ public class IGraph extends JPanel implements MouseListener, MouseMotionListener
 
         arc = controlador.getNet().getEdges();
         node = controlador.getNet().getNodes();
-        selectedGroup = new ArrayList();
+        selectedGroup = new ArrayList<Object>();
         presentBeginArc = new Point2D.Double();
         presentEndArc = new Point2D.Double();
         presentArc = new Line2D.Double();

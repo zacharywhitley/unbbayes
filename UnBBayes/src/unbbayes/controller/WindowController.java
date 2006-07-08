@@ -98,7 +98,7 @@ public class WindowController implements KeyListener {
     private NumberFormat df;
 
     private List copia;
-    private List copiados;
+    private List<ProbabilisticNode> copiados;
 
     private boolean bColou;
 
@@ -125,7 +125,7 @@ public class WindowController implements KeyListener {
         df = NumberFormat.getInstance(Locale.US);
         df.setMaximumFractionDigits(4);
         copia = new ArrayList();
-        copiados = new ArrayList();
+        copiados = new ArrayList<ProbabilisticNode>();
     }
 
 
@@ -780,8 +780,8 @@ public class WindowController implements KeyListener {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         Thread t = new Thread(new Runnable() {
           public void run() {
-            List tabelas = new ArrayList();
-            List donos = new ArrayList();
+            List<JTable> tabelas = new ArrayList<JTable>();
+            List<Object> donos = new ArrayList<Object>();
             List temp = screen.getIGraph().getSelectedGroup();
             if (temp.size() == 0) {
                tabelas.add(screen.getTable());
@@ -875,8 +875,8 @@ public class WindowController implements KeyListener {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         Thread t = new Thread(new Runnable() {
           public void run() {
-            List tabelas = new ArrayList();
-            List donos = new ArrayList();
+            List<JTable> tabelas = new ArrayList<JTable>();
+            List<Object> donos = new ArrayList<Object>();
             List temp = screen.getIGraph().getSelectedGroup();
             if (temp.size() == 0) {
                tabelas.add(screen.getTable());

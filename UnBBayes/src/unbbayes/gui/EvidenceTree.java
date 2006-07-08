@@ -35,7 +35,7 @@ public class EvidenceTree extends JTree {
 	private Network net;
 	private NumberFormat nf;
 	private boolean[] expandedNodes;
-	private ArrayMap objectsMap = new ArrayMap();
+	private ArrayMap<Object, Node> objectsMap = new ArrayMap<Object, Node>();
         protected IconController iconController = IconController.getInstance();
 
 	public EvidenceTree(final NetWindow netWindow) {

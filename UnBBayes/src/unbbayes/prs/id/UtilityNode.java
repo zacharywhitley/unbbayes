@@ -35,6 +35,10 @@ import unbbayes.prs.bn.PotentialTable;
  */
 public class UtilityNode extends Node implements ITabledVariable, java.io.Serializable {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+
+	
     private PotentialTable utilTable;
 
     private static Color color = new Color(Color.cyan.getRGB());

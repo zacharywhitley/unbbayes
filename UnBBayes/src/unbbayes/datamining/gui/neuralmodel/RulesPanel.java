@@ -44,7 +44,7 @@ public class RulesPanel extends JPanel {
   private JScrollPane jScrollPane1 = new JScrollPane();
   private JTable tableRules;
   private CombinatorialNeuralModel combinatorialNetwork;
-  private ArrayList tableLinesArray;
+  private ArrayList<TableLine> tableLinesArray;
   private Attribute[] attributeVector;
   private int classIndex;
   private Object[] longValues = new Object[6];
@@ -205,7 +205,7 @@ public class RulesPanel extends JPanel {
     OutputNeuron[] outputArray;
     OutputNeuron tempOutput;
     DecimalFormat numFormat = new DecimalFormat("##0.0");
-    tableLinesArray = new ArrayList();
+    tableLinesArray = new ArrayList<TableLine>();
 
     while(combinations.hasNext()){                   // para todos os neuronios de saida
       Combination combination = (Combination)combinations.next();
@@ -261,7 +261,7 @@ public class RulesPanel extends JPanel {
     StringTokenizer strTokenizer = new StringTokenizer(key, " ");
     int[] input;
     int numOfTokens = strTokenizer.countTokens();
-    ArrayList inputArray = new ArrayList();
+    ArrayList<int[]> inputArray = new ArrayList<int[]>();
 
     for(int i=0; i<numOfTokens; i++){
       input = new int[2];

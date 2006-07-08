@@ -22,7 +22,7 @@ import javax.swing.table.TableColumn;
   */
 public class ColumnGroup {
 	protected TableCellRenderer renderer;
-	protected Vector v;
+	protected Vector<Object> v;
 	protected String text;
 	protected int margin = 0;
 
@@ -37,7 +37,7 @@ public class ColumnGroup {
 			this.renderer = renderer;
 		}
 		this.text = text;
-		v = new Vector();
+		v = new Vector<Object>();
 	}
 
 	/**
@@ -54,7 +54,7 @@ public class ColumnGroup {
 	 * @param c    TableColumn
 	 * @param v    ColumnGroups
 	 */
-	public Vector getColumnGroups(TableColumn c, Vector g) {
+	public Vector getColumnGroups(TableColumn c, Vector<Object> g) {
 		g.addElement(this);
 		if (v.contains(c))
 			return g;
@@ -65,7 +65,7 @@ public class ColumnGroup {
 				Vector groups =
 					(Vector) ((ColumnGroup) obj).getColumnGroups(
 						c,
-						(Vector) g.clone());
+						(Vector<Object>)g.clone());
 				if (groups != null)
 					return groups;
 			}

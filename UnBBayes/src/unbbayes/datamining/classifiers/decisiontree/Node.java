@@ -16,7 +16,7 @@ public class Node implements Serializable
 	/** Attribute used for splitting. */
 	protected Attribute splitAttribute;
 	/** Node children on the tree */
-	protected ArrayList children = new ArrayList();
+	protected ArrayList<Object> children = new ArrayList<Object>();
 
 	//instrumentation data
 	/** keep attributes and instances used */
@@ -46,7 +46,7 @@ public class Node implements Serializable
 	 * @param splitAttribute attribute used for splitting
 	 * @param children list of children (Node or Leaf type)
 	 */
-	public Node(Attribute splitAttribute, ArrayList children)
+	public Node(Attribute splitAttribute, ArrayList<Object> children)
 	{
 		this.splitAttribute = splitAttribute;
 		this.children = children;
@@ -151,7 +151,7 @@ public class Node implements Serializable
 	/** Removes all the children */
 	public void removeChildren()
 	{
-		children = new ArrayList();
+		children = new ArrayList<Object>();
 	}
 	
 	/** 

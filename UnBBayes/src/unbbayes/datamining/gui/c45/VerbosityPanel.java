@@ -68,7 +68,7 @@ public class VerbosityPanel extends JScrollPane
 				
 		//start tree and stack with root
 		node = c45.getInfoRootNode();
-		Stack stack = new Stack();
+		Stack<Object> stack = new Stack<Object>();
 		stack.add(node);
 		
 		//data relative to node

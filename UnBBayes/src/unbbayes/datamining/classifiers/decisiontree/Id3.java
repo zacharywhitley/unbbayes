@@ -13,6 +13,7 @@ import unbbayes.datamining.datamanipulation.Attribute;
 import unbbayes.datamining.datamanipulation.ClassifierUtils;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.NumericData;
 import unbbayes.datamining.datamanipulation.Utils;
 
 /**
@@ -99,16 +100,16 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 		//Contains methods to compute information gain and related actions
 		ClassifierUtils utils = new ClassifierUtils(data);
 		//Queue to use this function recursively,keeping stack components (see below)
-		ArrayList queue = new ArrayList();
+		ArrayList<QueueComponent> queue = new ArrayList<QueueComponent>();
 		//list containing indexes of all the current instances
-		ArrayList actualInst = new ArrayList(numInstances);
+		ArrayList<Integer> actualInst = new ArrayList<Integer>(numInstances);
 		//array containing indexes of attributes used currently
 		Integer[] actualAtt = new Integer[numAttributes];
 
 		//starts lists of indexes with indexes of entire instanceSet
 		for (int i=0;i<numInstances;i++)
 		{
-			actualInst.add(new Integer(i));
+			actualInst.add(i);
 		}
 		for (int i=0;i<numAttributes;i++)
 		{
@@ -138,7 +139,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 		double splitValue;
 
 		double[] splitValues;
-		ArrayList numericDataList = new ArrayList();
+		ArrayList<NumericData> numericDataList = new ArrayList<NumericData>();
 
 		//start recursive code
 		while ((!queue.isEmpty()))
@@ -231,8 +232,8 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
           Leaf leaf;
           Node node;
           Object obj;
-          Stack stackObj = new Stack();
-          Stack stackTree = new Stack();
+          Stack<Object> stackObj = new Stack<Object>();
+          Stack<DefaultMutableTreeNode> stackTree = new Stack<DefaultMutableTreeNode>();
           DefaultMutableTreeNode text2 = new DefaultMutableTreeNode("root");
           DefaultMutableTreeNode treeNode = text2;
 
@@ -287,8 +288,8 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
           Node node;
           Object obj;
           Integer level;
-          Stack stackObj = new Stack();
-          Stack stackLevel = new Stack();
+          Stack<Object> stackObj = new Stack<Object>();
+          Stack<Integer> stackLevel = new Stack<Integer>();
           StringBuffer text = new StringBuffer();
 
           ArrayList root = xRootNode.children;
@@ -296,7 +297,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
           for (int i=0;i<size;i++)
           {
             stackObj.push(root.get(i));
-            stackLevel.push(new Integer(1));
+            stackLevel.push(1);
           }
 
           while (!stackObj.empty())
@@ -328,7 +329,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
               for (int i=0;i<size;i++)
               {
                 stackObj.push(children.get(i));
-                stackLevel.push(new Integer(level.intValue()+1));
+                stackLevel.push(level.intValue()+1);
               }
             }
           }

@@ -16,7 +16,7 @@ import unbbayes.datamining.classifiers.decisiontree.SplitObject;
 public class ClassifierUtils 
 {
 	/** stores the calculated logs */
-	private HashMap logmap;
+	private HashMap<Double,Double> logmap;
 	/** value of ln(2) to be used in the log2 function*/
 	private static final double LN2 = Math.log(2);
 	/** instance set used in the methods */
@@ -32,7 +32,7 @@ public class ClassifierUtils
 	public ClassifierUtils(InstanceSet inst)
 	{
 		instances = inst;
-		logmap = new HashMap();
+		logmap = new HashMap<Double,Double>();
 		Double zeroDouble = new Double(0);
 		if(logmap.containsKey(zeroDouble))
 			logmap.put(zeroDouble,zeroDouble);
@@ -86,7 +86,7 @@ public class ClassifierUtils
 		//new attributes' indexes
 		Integer[] newAttributes = new Integer[numAtt-1];
 		//old instances' indexes
-		ArrayList inst = split.getInstances();
+		ArrayList<Integer> inst = split.getInstances();
 		//number of values from split attribute
 		int numValues = instances.getAttribute(att[attIndex].intValue()).numValues();
 				
@@ -112,7 +112,7 @@ public class ClassifierUtils
 		int numDataset;
 		int numInst = inst.size();
 		float[] numInstancesPerValue = new float[numValues];
-		ArrayList missingValueInstances = new ArrayList(); 
+		ArrayList<Instance> missingValueInstances = new ArrayList<Instance>(); 
 		for (int i=0;i<numInst;i++)
 		{
 		  instance = getInstance(inst,i); 
@@ -170,7 +170,7 @@ public class ClassifierUtils
 	{
 		Instance instance;
 		Integer[] actualAtt = split.getAttributes();
-		ArrayList actualInst = split.getInstances();
+		ArrayList<Integer> actualInst = split.getInstances();
 		SplitObject[] splitData = new SplitObject[2];
 		Attribute att = instances.getAttribute(actualAtt[attIndex].intValue());
 		String[] values = att.getAttributeValues();
@@ -187,9 +187,9 @@ public class ClassifierUtils
 		}
 			
 		//arrange instances according to split value
-		ArrayList instancesMoreThan = new ArrayList();
-		ArrayList instancesLessThan = new ArrayList();
-		ArrayList missingValueInstances = new ArrayList();
+		ArrayList<Object> instancesMoreThan = new ArrayList<Object>();
+		ArrayList<Object> instancesLessThan = new ArrayList<Object>();
+		ArrayList<Instance> missingValueInstances = new ArrayList<Instance>();
 		float[] numInstancesPerValue = new float[2];
 		for(int i=0;i<actualInst.size();i++)
 		{
@@ -392,7 +392,7 @@ public class ClassifierUtils
 				
 				//gets values effectively used sorted
 				String[] oldValues = instances.getAttribute(att[i].intValue()).getAttributeValues();
-				ArrayList valuesTemp = new ArrayList();
+				ArrayList<String> valuesTemp = new ArrayList<String>();
 				for(int x=0;x<inst.size();x++)
 				{
 					instance = getInstance(inst,x);

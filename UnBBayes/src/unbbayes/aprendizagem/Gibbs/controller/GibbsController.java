@@ -163,14 +163,14 @@ public class GibbsController extends LearningToolkit {
    }
 
    private double[] ordenar(double[] coluna) {
-      List lista = new ArrayList();
+      List<Double> lista = new ArrayList<Double>();
       double[] colunaOrdenada = new double[coluna.length];
       for (int i = 0; i < coluna.length; i++) {
          lista.add(new Double(coluna[i]));
       }
       Collections.sort(lista);
       for (int i = 0; i < lista.size(); i++) {
-         colunaOrdenada[i] = ((Double) lista.get(i)).doubleValue();
+         colunaOrdenada[i] = (lista.get(i)).doubleValue();
       }
       return colunaOrdenada;
    }

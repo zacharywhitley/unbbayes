@@ -126,24 +126,24 @@ public abstract class LearningToolkit{
     }
 
     protected List getInstances(NodeList list){
-        List instances = new ArrayList();
-        List listAux = new ArrayList();;
+        List<List<Integer>> instances = new ArrayList<List<Integer>>();
+        List<List<Integer>> listAux = new ArrayList<List<Integer>>();;
         TVariavel aux;
-        List array;
-        List arrayAux;
+        List<Integer> array;
+        List<Integer> arrayAux;
         if(list.size() == 0){
             return instances;
         }
         for(int i = 0; i < list.size(); i++){
             aux = (TVariavel)list.get(i);
             for(int k = 0 ; k < instances.size(); k++){
-                     array = (List)instances.get(k);
+                     array = (List<Integer>)instances.get(k);
                 for(int h = 0 ; h < aux.getEstadoTamanho(); h++){
                      if(h == 0){
                         array.add(new Integer(h));
                         listAux.add(array);
                      }else{
-                        arrayAux = SetToolkit.clone((List)array);
+                        arrayAux = (ArrayList<Integer>)SetToolkit.clone((List)array);
                         arrayAux.remove(array.size()-1);
                         arrayAux.add(new Integer(h));
                         listAux.add(arrayAux);
@@ -151,11 +151,11 @@ public abstract class LearningToolkit{
                 }
             }
             instances.clear();
-            instances = SetToolkit.clone((List)listAux);
+            instances = (ArrayList<List<Integer>>)SetToolkit.clone((List)listAux);
             listAux.clear();
             if(instances.size() == 0){
                  for(int j = 0 ; j < aux.getEstadoTamanho(); j++){
-                         array = new ArrayList();
+                         array = new ArrayList<Integer>();
                          array.add(new Integer(j));
                          instances.add(array);
                  }

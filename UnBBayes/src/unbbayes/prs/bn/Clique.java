@@ -38,6 +38,9 @@ import unbbayes.util.NodeList;
  *@version   27 de Junho de 2001
  */
 public class Clique implements ITabledVariable, java.io.Serializable {
+
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;	
 	
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
@@ -55,7 +58,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
     /**
      *  Lista de nós filhos.
      */
-    private List children;
+    private List<Clique> children;
 
     /**
      *  Tabela de Potencial Associada ao Clique.
@@ -88,7 +91,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
      *  e de nós associados. Inicializa o status associado para false.
      */
     public Clique() {
-        children = new ArrayList();
+        children = new ArrayList<Clique>();
         nos = new NodeList();
         nosAssociados = new NodeList();
         associatedUtilNodes = new NodeList();
@@ -280,7 +283,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
      *@return    filho na posição especificada
      */
     public Clique getChildAt(int index) {
-        return (Clique)children.get(index);
+        return children.get(index);
     }
 
 

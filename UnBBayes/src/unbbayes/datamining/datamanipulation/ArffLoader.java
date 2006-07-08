@@ -95,8 +95,8 @@ public class ArffLoader extends Loader
 	{
           String attributeName;
           String relationName = "";
-          ArrayList attributeValues;
-          ArrayList attributes = new ArrayList();
+          ArrayList<String> attributeValues;
+          ArrayList<Attribute>  attributes = new ArrayList<Attribute>();
           int i;
 
           // Get name of relation.
@@ -145,7 +145,7 @@ public class ArffLoader extends Loader
             else
             {
               // Attribute is nominal.
-              attributeValues = new ArrayList();
+              attributeValues = new ArrayList<String>();
               tokenizer.pushBack();
 
               // Get values for nominal attribute.

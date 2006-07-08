@@ -68,7 +68,7 @@ public class TxtLoader extends Loader
    	*/
   	protected void readHeader() throws IOException
 	{	String[] attributeValues = null;
-		ArrayList attributes = new ArrayList();
+		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
 		//Insert attributes in the new dataset
 		getNextToken();
 		while (tokenizer.ttype != StreamTokenizer.TT_EOL)

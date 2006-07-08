@@ -55,7 +55,7 @@ public class ILController extends ILToolkit {
 
     private ILIO ilio;
 
-    private List ssList = new ArrayList();
+    private List  ssList = new ArrayList ();
 
     ConstructionController constructionController;
 

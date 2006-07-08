@@ -11,13 +11,13 @@ public class NumericData
 	/** attribute index relative to a splitObject's attributes */
 	private int index;
 	/** list of double values representing the values tested */
-	private ArrayList cuts;
+	private ArrayList<Double> cuts;
 	/** list of double values representing the gains obtained */
-	private ArrayList gains;
+	private ArrayList<Double> gains;
 	/** list of float arrays representing the distributions above of each cut  */
-	private ArrayList instancesAbove;
+	private ArrayList<float[]> instancesAbove;
 	/** list of float arrays representing the distributions below of each cut  */
-	private ArrayList instancesBelow;
+	private ArrayList<float[]> instancesBelow;
 	/** the missing values distribution */
 	private float[] missingValuesDistribution;
 
@@ -37,10 +37,10 @@ public class NumericData
 	{
 		this.index = index;
 		this.missingValuesDistribution = missingValuesDistribution;
-		cuts = new ArrayList();
-		gains = new ArrayList();
-		instancesAbove = new ArrayList();
-		instancesBelow = new ArrayList();
+		cuts = new ArrayList<Double>();
+		gains = new ArrayList<Double>();
+		instancesAbove = new ArrayList<float[]>();
+		instancesBelow = new ArrayList<float[]>();
 	}
 
 	
@@ -110,7 +110,7 @@ public class NumericData
 		}
 		else
 		{
-			return ((Double)cuts.get(index)).doubleValue();
+			return (cuts.get(index)).doubleValue();
 		}
 	}
 	
@@ -129,7 +129,7 @@ public class NumericData
 		}
 		else
 		{
-			return ((Double)gains.get(index)).doubleValue();
+			return (gains.get(index)).doubleValue();
 		}
 	}
 	
@@ -148,7 +148,7 @@ public class NumericData
 		}
 		else
 		{
-			return ((float[])instancesBelow.get(index));
+			return (instancesBelow.get(index));
 		}
 	}
 	
@@ -167,7 +167,7 @@ public class NumericData
 		}
 		else
 		{
-			return ((float[])instancesAbove.get(index));
+			return (instancesAbove.get(index));
 		}
 	}
 }

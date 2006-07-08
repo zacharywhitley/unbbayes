@@ -219,7 +219,7 @@ public class NeuralModelController {
   public void printTable(final JTable table) {
     Thread t = new Thread(new Runnable() {
       public void run() {
-        ArrayList tables = new ArrayList();
+        ArrayList<JTable> tables = new ArrayList<JTable>();
         tables.add(table);
         PageFormat pageFormat = new PageFormat();
         pageFormat.setOrientation(PageFormat.LANDSCAPE);
@@ -243,7 +243,7 @@ public class NeuralModelController {
   public void printPreviewer(final JTable table) {
     Thread t = new Thread(new Runnable() {
       public void run() {
-        ArrayList tables = new ArrayList();
+        ArrayList<JTable> tables = new ArrayList<JTable>();
         tables.add(table);
         PageFormat pageFormat = new PageFormat();
         pageFormat.setOrientation(PageFormat.LANDSCAPE);

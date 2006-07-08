@@ -34,6 +34,10 @@ import unbbayes.util.SetToolkit;
  *@author     Rommel
  */
 public class JunctionTree implements java.io.Serializable {
+
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+	
 	
 	private boolean initialized;
 
@@ -45,12 +49,12 @@ public class JunctionTree implements java.io.Serializable {
 	/**
 	 *  Lista de Cliques Associados.
 	 */
-	private List cliques;
+	private List<Clique> cliques;
 
 	/**
 	 *  Lista de Separadores Associados.
 	 */
-	private List separators;
+	private List<Separator> separators;
 
 	/**
 	 * Coordenadas pré-calculadas para otimização
@@ -63,8 +67,8 @@ public class JunctionTree implements java.io.Serializable {
 	 *  cliques.
 	 */
 	public JunctionTree() {
-		separators = new ArrayList();
-		cliques = new ArrayList();
+		separators = new ArrayList<Separator>();
+		cliques = new ArrayList<Clique>();
 	}
 
 	/**
@@ -85,7 +89,7 @@ public class JunctionTree implements java.io.Serializable {
 	}
 
 	public Separator getSeparatorAt(int index) {
-		return (Separator) separators.get(index);
+		return separators.get(index);
 	}
 
 	/**
@@ -93,7 +97,7 @@ public class JunctionTree implements java.io.Serializable {
 	 *
 	 *@return    Vetor com os cliques associados.
 	 */
-	public List getCliques() {
+	public List<Clique> getCliques() {
 		return cliques;
 	}
 	
@@ -104,7 +108,7 @@ public class JunctionTree implements java.io.Serializable {
 	 */
 	public void consistency() throws Exception {
 		n = 1;
-		Clique raiz = (Clique) cliques.get(0);
+		Clique raiz = cliques.get(0);
 		coleteEvidencia(raiz);
 		distributeEvidences(raiz);
 	}
@@ -192,7 +196,7 @@ public class JunctionTree implements java.io.Serializable {
 	
 			int sizeCliques = cliques.size();
 			for (int k = 0; k < sizeCliques; k++) {
-				auxClique = (Clique) cliques.get(k);
+				auxClique = cliques.get(k);
 				auxTabPot = auxClique.getPotentialTable();
 				auxUtilTab = auxClique.getUtilityTable();
 	

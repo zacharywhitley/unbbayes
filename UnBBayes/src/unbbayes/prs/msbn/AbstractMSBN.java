@@ -15,8 +15,8 @@ import unbbayes.util.SetToolkit;
  * Window>Preferences>Java>Code Generation.
  */
 public abstract class AbstractMSBN {
-	protected List nets;
-	protected List links;
+	protected List<SubNetwork> nets;
+	protected List<Linkage> links;
 	protected String id;
 	
 	/**
@@ -25,8 +25,8 @@ public abstract class AbstractMSBN {
 	 */
 	public AbstractMSBN(String id) {
 		this.id = id;
-		nets = new ArrayList();
-		links = new ArrayList();				
+		nets = new ArrayList<SubNetwork>();
+		links = new ArrayList<Linkage>();				
 	}
 	
 	/**
@@ -43,7 +43,7 @@ public abstract class AbstractMSBN {
 	 * @return SubNetwork	the subnetwork of the specified index.
 	 */
 	public SubNetwork getNetAt(int index) {
-		return (SubNetwork) nets.get(index);		
+		return nets.get(index);		
 	}
 	
 	/**
@@ -68,7 +68,7 @@ public abstract class AbstractMSBN {
 	 * @throws Exception
 	 */
 	public void compile() throws Exception {
-		compile((SubNetwork) nets.get(0));		
+		compile(nets.get(0));		
 	}
 	
 
@@ -82,7 +82,7 @@ public abstract class AbstractMSBN {
 		links.clear();
 	
 		for (int i = nets.size()-1; i>=0; i--) {
-			SubNetwork net = (SubNetwork) nets.get(i);
+			SubNetwork net = nets.get(i);
 			net.adjacents.clear();
 			net.parent = null;
 			
@@ -98,12 +98,12 @@ public abstract class AbstractMSBN {
 		cooperativeTriangulation();
 		
 		for (int i = nets.size()-1; i>=0; i--) {
-			SubNetwork net = (SubNetwork) nets.get(i);
+			SubNetwork net = nets.get(i);
 			net.compileJunctionTree();
 		}
 		
 		for (int i = links.size()-1; i>=0; i--) {
-			Linkage link = (Linkage) links.get(i);
+			Linkage link = links.get(i);
 			link.makeLinkageTree();			
 		}
 		
@@ -135,7 +135,7 @@ public abstract class AbstractMSBN {
 
 	protected void updateBelief(SubNetwork net1, SubNetwork net2) throws Exception {				
 		for (int i = links.size()-1; i>=0; i--) {
-			Linkage l = (Linkage) links.get(i);
+			Linkage l = links.get(i);
 			if (l.getNet1() == net1 && l.getNet2() == net2) {
 				l.absorb(true);
 				return;											
@@ -154,11 +154,11 @@ public abstract class AbstractMSBN {
 	 */
 	protected void distributedMoralization() {		
 		for (int i = nets.size()-1; i >= 0; i--) {
-			SubNetwork net = (SubNetwork) nets.get(i);			
+			SubNetwork net = nets.get(i);			
 			net.localMoralize();			
 		}
 		
-		SubNetwork raiz = (SubNetwork) nets.get(0);
+		SubNetwork raiz = nets.get(0);
 		raiz.distributeArcs();
 	}
 	
@@ -187,9 +187,9 @@ public abstract class AbstractMSBN {
 		NodeList interseccoes[][] = new NodeList[netsSize][netsSize];			
 		
 		for (int i = 0; i < netsSize - 1; i++) {
-			SubNetwork n1 = (SubNetwork) nets.get(i);
+			SubNetwork n1 = nets.get(i);
 			for (int j = i+1; j < netsSize; j++) {
-				SubNetwork n2 = (SubNetwork) nets.get(j);
+				SubNetwork n2 = nets.get(j);
 				NodeList inter = SetToolkit.intersection(n1.getNodes(), n2.getNodes());				
 				interseccoes[i][j] = interseccoes[j][i] = inter;				
 			}
@@ -230,15 +230,15 @@ public abstract class AbstractMSBN {
 			}
 		}
 		
-		SubNetwork ni = (SubNetwork) nets.get(iMax);
-		SubNetwork nk = (SubNetwork) nets.get(kMax);
+		SubNetwork ni = nets.get(iMax);
+		SubNetwork nk = nets.get(kMax);
 		naArvore[kMax] = true;
 		links.add(new Linkage(ni,nk));
 	}
 	
 	private boolean isDSepSet(int j, int k, NodeList inter) {
-		SubNetwork nj = (SubNetwork) nets.get(j);
-		SubNetwork nk = (SubNetwork) nets.get(k);
+		SubNetwork nj = nets.get(j);
+		SubNetwork nk = nets.get(k);
 		for (int i = 0; i < inter.size(); i++) {
 			NodeList pais = inter.get(i).getParents();			
 			if (! nj.getNodes().containsAll(pais) &&
@@ -260,12 +260,12 @@ public abstract class AbstractMSBN {
     protected final void verifyCycles() throws Exception {
     	
     	for (int i = nets.size()-1; i>=0; i--) {
-    		SubNetwork net = (SubNetwork) nets.get(i);    		
+    		SubNetwork net = nets.get(i);    		
     		net.initVisited();	
     	}
     	
     	for (int i = nets.size()-1; i>=0; i--) {
-    		SubNetwork net = (SubNetwork) nets.get(i);    		
+    		SubNetwork net = nets.get(i);    		
     		net.distributedCycle();    		
     	}
     }
@@ -280,7 +280,7 @@ public abstract class AbstractMSBN {
 		
 		boolean inseriu = false;
 		for (int i = nets.size()-1; i>=0; i--) {
-			SubNetwork net = (SubNetwork) nets.get(i);
+			SubNetwork net = nets.get(i);
 			for (int j = net.getAdjacentsSize()-1; j>=0; j--) {
 				SubNetwork net2 = (SubNetwork) net.adjacents.get(j);
 				if (net.elimine(net2)) {
@@ -297,14 +297,14 @@ public abstract class AbstractMSBN {
 	private void coTriag() {
 		System.out.println("coTriag");
 		
-		SubNetwork a1 = (SubNetwork) nets.get(0);
+		SubNetwork a1 = nets.get(0);
 		a1.elimineProfundidade(null);		
 		a1.distributeArcs();
 	}
 	
 	private void initTriangulation() {
 		for (int i = nets.size()-1; i>=0; i--) {
-			SubNetwork net = (SubNetwork) nets.get(i);
+			SubNetwork net = nets.get(i);
 			net.initTriangulation();
 		}
 	}

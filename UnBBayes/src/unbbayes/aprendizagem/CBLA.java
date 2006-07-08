@@ -33,7 +33,7 @@ public class CBLA extends CBLToolkit{
 	public CBLA(NodeList variables, byte[][] dataBase, int[] vector,
 	             long caseNumber, String param, boolean compacted){
 	    this.variablesVector = variables;
-        this.separators = new ArrayList<Object>();	    
+        this.separators = new ArrayList<Object[]>();	    
 	    this.es = new ArrayList<int[]>();	    	    
 	    this.variablesVector = variables;
 	    this.dataBase = dataBase;
@@ -80,12 +80,12 @@ public class CBLA extends CBLToolkit{
 	
 	
 	/*Coloca os primeiros arcos da estrutura*/
-	private ArrayList scketch(){
+	private ArrayList<double[]> scketch(){
 		System.out.println("Inicia o esboçar");
 		int n = this.variablesVector.size();
 		/* imAux recebe as informações mutuas auxiliares*/
 		double imAux;
-		ArrayList ls = new ArrayList(); 		
+		ArrayList<double[]> ls = new ArrayList<double[]>(); 		
 		/*Seta as informações mutuas de cada par, a informcao mutua de ab é 
 		 * a mesma de ba*/		
 		for(int i = 0 ; i < n; i++){

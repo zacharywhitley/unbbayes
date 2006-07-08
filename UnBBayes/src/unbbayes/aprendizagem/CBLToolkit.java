@@ -31,7 +31,7 @@ public abstract class CBLToolkit extends LearningToolkit{
 	protected NodeList variablesVector;
 	protected double epsilon;	
 	protected ArrayList<int[]> es;
-	protected ArrayList<Object> separators;    
+	protected ArrayList<Object[]> separators;    
 	
 	protected double mutualInformation(TVariavel xi,TVariavel xk){    	
     	int nt = 0;
@@ -85,7 +85,7 @@ public abstract class CBLToolkit extends LearningToolkit{
 		}
 	}
 	
-	protected boolean isOpenWays(int v1, int v2, ArrayList esx){		
+	protected boolean isOpenWays(int v1, int v2, ArrayList<int[]> esx){		
 		Stack<ArrayList<Integer>> stack = new Stack<ArrayList<Integer>>();
 		ArrayList<Integer> peace = new ArrayList<Integer>();
 		/*Inicializa o primeiro elemento da pilha [-1,v1]*/
@@ -201,11 +201,11 @@ public abstract class CBLToolkit extends LearningToolkit{
 		return true;		
 	}
 	
-	protected ArrayList separator(int v1, int v2,ArrayList esx, int n,int type){
+	protected ArrayList separator(int v1, int v2,ArrayList<int[]> esx, int n,int type){
 		ArrayList<int[]> esAnc;
 		ArrayList<int[]> esAncMor;
 		if(type == 0){				
-	        esAnc =  (ArrayList<int[]>)findForeSubgraph(v1,v2,esx);	            
+	        esAnc =  findForeSubgraph(v1,v2,esx);	            
 	        esAncMor = esAnc;
 	        //esAncMor =  moralize(esAnc);
 	        /*int[] peace;
@@ -380,12 +380,12 @@ public abstract class CBLToolkit extends LearningToolkit{
     		peace = (int[])esAncMor.get(i);
     		if( peace[0] == ((Integer)cs.get(cs.size() -1)).intValue()
     		                  && ! isMember(cs,peace[1])){
-    		                  	ArrayList<Integer> csClone = (ArrayList)cs.clone();
+    		                  	ArrayList<Integer> csClone = (ArrayList<Integer>)cs.clone();
     		                  	csClone.add(new Integer(peace[1]));
     		                  	fs.add(csClone);
     		} else if( peace[1] == ((Integer)cs.get(cs.size() -1)).intValue()
     		                  && ! isMember(cs,peace[0])){
-                                ArrayList<Integer> csClone = (ArrayList)cs.clone();
+                                ArrayList<Integer> csClone = (ArrayList<Integer>)cs.clone();
     		                  	csClone.add(new Integer(peace[0]));
     		                  	fs.add(csClone);
     		}

@@ -37,7 +37,7 @@ public class BayesianNetwork extends DistributionClassifier
   /** Guarda as distribuições de probabilidades já calculadas.
    * Usado para otimização.
    */
-  private HashMap hashMap;
+  private HashMap<Integer, float[]> hashMap;
   /** Multiplicadores para otimização com hashMap */
   private int[] multipliers;
   /** Guarda o número de classes */
@@ -129,7 +129,7 @@ public class BayesianNetwork extends DistributionClassifier
             if (hashMap.containsKey(hashInt))
             {
               //float[] hashProbs = (float[])hashMap.get(hashInt);
-              probs = (float[])hashMap.get(hashInt);
+              probs = hashMap.get(hashInt);
               //System.arraycopy(hashProbs,0,probs,0,hashProbs.length);
             }
             /** Senão a instância é propagada e inserida no HashMap*/
@@ -217,7 +217,7 @@ public class BayesianNetwork extends DistributionClassifier
           else
           {
             // Inicializa com a capacidade inicial 1500 para conter pelo menos 1000 elementos sem precisar fazer o rehash().
-            hashMap = new HashMap(1500);
+            hashMap = new HashMap<Integer, float[]>(1500);
             // Calcula os multiplicadores para calcular o hashCode
             int k=0;
             i=1;

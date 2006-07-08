@@ -56,7 +56,7 @@ public class GroupableTableHeaderUI extends BasicTableHeaderUI {
 		int column = 0;
 		Dimension size = header.getSize();
 		Rectangle cellRect = new Rectangle(0, 0, size.width, size.height);
-		Hashtable h = new Hashtable();
+		Hashtable<ColumnGroup, Rectangle> h = new Hashtable<ColumnGroup, Rectangle>();
 		int columnMargin = header.getColumnModel().getColumnMargin();
 
 		Enumeration enumeration = header.getColumnModel().getColumns();

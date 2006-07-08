@@ -34,6 +34,9 @@ import unbbayes.util.SetToolkit;
  */
 public class ProbabilisticNode extends TreeVariable implements ITabledVariable, java.io.Serializable {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+			
     private ProbabilisticTable tabelaPot;
     private static Color descriptionColor = new Color(Color.yellow.getRGB());
     private static Color explanationColor = new Color(Color.green.getRGB());

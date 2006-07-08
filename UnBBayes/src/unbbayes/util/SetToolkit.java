@@ -42,8 +42,8 @@ public class SetToolkit {
      *@param  conjuntoB  conjunto B
      *@return            A união B
      */
-    public static List union(List conjuntoA, List conjuntoB) {
-        List result = clone(conjuntoA);
+    public static List union(List<?> conjuntoA, List<?> conjuntoB) {
+        List<Object> result = (ArrayList<Object>)clone(conjuntoA);
         for (int c1 = 0; c1 < conjuntoB.size(); c1++) {
             if (! conjuntoA.contains(conjuntoB.get(c1))) {
                 result.add(conjuntoB.get(c1));
@@ -81,8 +81,8 @@ public class SetToolkit {
      *@param  conjuntoB  conjunto B
      *@return            A interseção B
      */
-    public static List intersection(List conjuntoA, List conjuntoB) {
-        List result = clone(conjuntoA);
+    public static List intersection(List<?> conjuntoA, List<?> conjuntoB) {
+        List<Object> result = (ArrayList<Object>)clone(conjuntoA);
         result.retainAll(conjuntoB);
         return result;
     }

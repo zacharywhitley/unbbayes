@@ -406,7 +406,7 @@ public class InstanceSet
    	* @param attIndex Attribute's index
    	*/
   	public final void deleteWithMissing(int attIndex)
-	{	ArrayList newInstances = new ArrayList();
+	{	ArrayList<Instance> newInstances = new ArrayList<Instance>();
 		for (int i = 0; i < numInstances(); i++)
 		{	if (!getInstance(i).isMissing(attIndex))
 			{	newInstances.add(getInstance(i));

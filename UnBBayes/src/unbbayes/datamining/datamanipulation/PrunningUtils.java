@@ -208,7 +208,7 @@ public class PrunningUtils
 	  	NumericNode numericNode;
 	  	NominalNode nominalNode;
 		ArrayList children = parent.getChildren();
-		ArrayList newChildren = new ArrayList();
+		ArrayList<Object> newChildren = new ArrayList<Object>();
 		
 		//leaf
 		if(children.get(0) instanceof Leaf)

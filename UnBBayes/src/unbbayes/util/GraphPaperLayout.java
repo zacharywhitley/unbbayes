@@ -40,7 +40,7 @@ public class GraphPaperLayout implements LayoutManager2 {
     int hgap;            //horizontal gap
     int vgap;            //vertical gap
     Dimension gridSize;  //grid size in logical units (n x m)
-    Hashtable compTable; //constraints (Rectangles)
+    Hashtable<Component, Rectangle> compTable; //constraints (Rectangles)
 
     /**
      * Creates a graph paper layout with a default of a 1 x 1 graph, with no
@@ -72,7 +72,7 @@ public class GraphPaperLayout implements LayoutManager2 {
         this.gridSize = new Dimension(gridSize);
         this.hgap = hgap;
         this.vgap = vgap;
-        compTable = new Hashtable();
+        compTable = new Hashtable<Component, Rectangle>();
     }
 
     /**
@@ -186,7 +186,7 @@ public class GraphPaperLayout implements LayoutManager2 {
         Dimension maxCellSize = new Dimension(0,0);
         for ( int i = 0; i < ncomponents; i++ ) {
             Component c = parent.getComponent(i);
-            Rectangle rect = (Rectangle)compTable.get(c);
+            Rectangle rect = compTable.get(c);
             if ( c != null && rect != null ) {
                 Dimension componentSize;
                 if ( isPreferred ) {
@@ -235,7 +235,7 @@ public class GraphPaperLayout implements LayoutManager2 {
 
             for ( int i = 0; i < ncomponents; i++ ) {
                 Component c = parent.getComponent(i);
-                Rectangle rect = (Rectangle)compTable.get(c);
+                Rectangle rect = compTable.get(c);
                 if ( rect != null ) {
                     int x = insets.left + ( totalCellW * rect.x ) + hgap;
                     int y = insets.top + ( totalCellH * rect.y ) + vgap;

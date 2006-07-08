@@ -535,7 +535,7 @@ public class NetIO implements BaseIO {
 		DefaultMutableTreeNode root) {
 		int size = sb.length();
 		DefaultMutableTreeNode nextRoot = null;
-		Stack stack = new Stack();
+		Stack<DefaultMutableTreeNode> stack = new Stack<DefaultMutableTreeNode>();
 		for (int i = 0; i < size; i++) {
 			char c = sb.charAt(i);
 			if (c == '(') {

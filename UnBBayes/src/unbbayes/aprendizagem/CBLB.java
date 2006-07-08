@@ -35,7 +35,7 @@ public class CBLB extends CBLToolkit{
 	    double epsilon;
 	    TVariavel variable;
 	    esFinal = new ArrayList<int[]>();
-        this.separators = new ArrayList();	    
+        this.separators = new ArrayList<Object[]>();	    
 	    this.es = new ArrayList<int[]>();	    	    
 	    this.variablesVector = variables;
 	    this.dataBase = dataBase;

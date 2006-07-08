@@ -44,9 +44,12 @@ import unbbayes.util.NodeList;
 
 public class HierarchicTree extends JTree implements DropTargetListener, DragSourceListener, DragGestureListener
 {
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;
+	
   private Network net;
   private NodeList nodes;
-  private ArrayMap objectsMap = new ArrayMap();
+  private ArrayMap<DefaultMutableTreeNode, Node> objectsMap = new ArrayMap<DefaultMutableTreeNode, Node>();
   public static final boolean EXPLANATION_TYPE = true;
   public static final boolean DESCRIPTION_TYPE = false;
   /** enables this component to be a dropTarget */
@@ -73,19 +76,22 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
   }
 
   private class HierarchicTreeCellRenderer extends DefaultTreeCellRenderer
-  {   private ImageIcon folderSmallIcon = iconController.getFolderSmallIcon();
+  {   
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;
+	  
+	  private ImageIcon folderSmallIcon = iconController.getFolderSmallIcon();
       private ImageIcon yellowBallIcon = iconController.getYellowBallIcon();
       private ImageIcon greenBallIcon = iconController.getGreenBallIcon();
 
-      public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus)
+      public Component getTreeCellRendererComponent(JTree tree, DefaultMutableTreeNode value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus)
       {
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
         if (leaf)
         {
-          Object obj = objectsMap.get((DefaultMutableTreeNode)value);
-          if (obj != null)
+          Node node = objectsMap.get((DefaultMutableTreeNode)value);
+          if (node != null)
           {
-            Node node = (Node)obj;
             if (node.getInformationType()==Node.DESCRIPTION_TYPE)
             {
               setIcon(yellowBallIcon);
@@ -179,7 +185,7 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
 
     public JTree copyTree()
     {
-      Stack stack = new Stack();
+      Stack<TreeNode> stack = new Stack<TreeNode>();
       DefaultMutableTreeNode root = (DefaultMutableTreeNode)getModel().getRoot();
       DefaultMutableTreeNode newRoot = new DefaultMutableTreeNode(root.toString());
       JTree jTree = new JTree(newRoot);
@@ -203,7 +209,7 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
     }
 
     public Node getNodeInformation(DefaultMutableTreeNode treeNode)
-    {   return (Node)objectsMap.get(treeNode);
+    {   return objectsMap.get(treeNode);
     }
 
     /** is invoked when you are dragging over the DropSite */
