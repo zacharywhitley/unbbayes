@@ -7,12 +7,12 @@
 	<classpathentry exported="true" kind="lib" path="lib/plot.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/xalan.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jh.jar"/>
-	<classpathentry kind="lib" path="C:/UnBBayes_/UnBBayes/lib/xml-apis.jar"/>
-	<classpathentry kind="lib" path="C:/UnBBayes_/UnBBayes/lib/jaxme/jaxmexs-0.5.1.jar"/>
-	<classpathentry kind="lib" path="C:/UnBBayes_/UnBBayes/lib/jaxme/jaxme2-0.5.1.jar"/>
-	<classpathentry kind="lib" path="C:/UnBBayes_/UnBBayes/lib/jaxme/jaxme2-rt-0.5.1.jar"/>
-	<classpathentry kind="lib" path="C:/UnBBayes_/UnBBayes/lib/jaxme/jaxmeapi-0.5.1.jar"/>
-	<classpathentry kind="lib" path="C:/UnBBayes_/UnBBayes/lib/jaxme/jaxmejs-0.5.1.jar"/>
-	<classpathentry kind="lib" path="C:/UnBBayes_/UnBBayes/lib/jaxme/jaxmepm-0.5.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/UnBBayes_/UnBBayes/lib/xml-apis.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/UnBBayes_/UnBBayes/lib/jaxme/jaxmexs-0.5.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/UnBBayes_/UnBBayes/lib/jaxme/jaxme2-0.5.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/UnBBayes_/UnBBayes/lib/jaxme/jaxme2-rt-0.5.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/UnBBayes_/UnBBayes/lib/jaxme/jaxmeapi-0.5.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/UnBBayes_/UnBBayes/lib/jaxme/jaxmejs-0.5.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/UnBBayes_/UnBBayes/lib/jaxme/jaxmepm-0.5.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
