@@ -39,6 +39,9 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 
 public class BayesianLearningMain extends JInternalFrame
 {
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;		
+	
   private JPanel contentPane;
   private BorderLayout borderLayout1 = new BorderLayout();
   private InstanceSet inst;

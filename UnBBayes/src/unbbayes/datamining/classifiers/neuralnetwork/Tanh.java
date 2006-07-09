@@ -13,6 +13,9 @@ import unbbayes.datamining.datamanipulation.Utils;
  */
 public class Tanh implements ActivationFunction, Serializable{
 
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;		
+	
   /**Constant that defines the minimum steep of the activation function*/
   public static final double MIN_STEEP = 0.0;
 

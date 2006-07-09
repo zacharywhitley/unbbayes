@@ -73,6 +73,9 @@ import unbbayes.util.NodeList;
  */
 public class IGraph extends JPanel implements MouseListener, MouseMotionListener {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
+	
     private WindowController controller;
     private List arc;
     private NodeList node;

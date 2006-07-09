@@ -47,6 +47,9 @@ import unbbayes.util.NodeList;
 
 public class OrdenationWindow extends JDialog {	
     
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
+	
     private String[] metrics = {"MDL","GH", "GHS"};		
 	private String[] paradigms = {"Ponctuation","IC"};	
 	private String[] ponctuationAlgorithms = {"K2","B"};

@@ -11,6 +11,9 @@ import java.io.Serializable;
  */
 public class OutputNeuron implements Serializable{
 
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;		
+	
   /**Value of the accumulator*/
   protected int accumulator;
 

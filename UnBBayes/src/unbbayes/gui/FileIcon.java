@@ -170,7 +170,11 @@ public class FileIcon extends FileView {
      *@see        ImageIcon
      */
     public class Icon16 extends ImageIcon {
-        /**
+        
+    	/** Serialization runtime version number */
+    	private static final long serialVersionUID = 0;	
+    	
+    	/**
          *  Cria e desenha um ícone para o arquivo desejado.
          *
          *@param  f  o arquivo (<code>String</code>) que deseja-se criar um ícone

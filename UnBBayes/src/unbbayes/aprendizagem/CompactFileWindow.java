@@ -42,6 +42,9 @@ import unbbayes.util.NodeList;
  */
 public class CompactFileWindow extends JDialog
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
+	
     private NodeList variablesVector;
     private JPanel centerPanel;
     private JButton yes;

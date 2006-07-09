@@ -30,6 +30,9 @@ import unbbayes.datamining.classifiers.decisiontree.C45;
 
 public class InductionPanel extends JPanel
 {
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;		
+	
   BorderLayout borderLayout1 = new BorderLayout();
   JSplitPane jSplitPane = new JSplitPane();
   JPanel messagesPanel = new JPanel();

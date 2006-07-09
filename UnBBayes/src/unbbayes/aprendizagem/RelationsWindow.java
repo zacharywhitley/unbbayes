@@ -47,6 +47,9 @@ import unbbayes.util.NodeList;
  * @version 1.0
  */
 public class RelationsWindow extends JDialog{
+
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
 	
     private JPanel rolBox;
     private JPanel relationBox;

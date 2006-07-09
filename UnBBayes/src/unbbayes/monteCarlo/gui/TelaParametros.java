@@ -17,6 +17,9 @@ import javax.swing.JTextField;
  * @author Danilo
  */
 public class TelaParametros extends JFrame {
+
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
 	
 	private JPanel painelPrincipal; 
 	private JPanel painelNCasos;

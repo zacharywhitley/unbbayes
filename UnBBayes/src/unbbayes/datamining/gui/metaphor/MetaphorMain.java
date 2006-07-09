@@ -35,6 +35,9 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  */
 public class MetaphorMain extends JPanel
 {
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;		
+	
   private BorderLayout borderLayout1 = new BorderLayout();
   private JToolBar metaphorToolBar = new JToolBar();
   private JTabbedPane jTabbedPane1 = new JTabbedPane();

@@ -10,6 +10,9 @@ import java.util.ArrayList;
  */
 public class SplitObject implements Serializable
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
+	
 	/** indexes for instances of an instance set */
 	private ArrayList instances;
 	/** indexes for attributes of an instance set */

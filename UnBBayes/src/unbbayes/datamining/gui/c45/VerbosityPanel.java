@@ -26,6 +26,9 @@ import unbbayes.datamining.datamanipulation.Utils;
  */
 public class VerbosityPanel extends JScrollPane
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
+	
 	/** text area where data is written */
 	private JTextArea textArea;
 	

@@ -29,6 +29,10 @@ import unbbayes.datamining.classifiers.NeuralNetwork;
  *  @version $1.0 $ (06/26/2003)
  */
 public class AdvancedOptionsPanel extends JPanel {
+	
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;	
+	
   private ResourceBundle resource;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JPanel advancedOptions = new JPanel();

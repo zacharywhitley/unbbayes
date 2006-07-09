@@ -22,6 +22,9 @@ import javax.swing.JPanel;
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 public class GibbsFrame extends JFrame {
+
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
 	
 	public Container container;
 	public JPanel gibbsPanel;

@@ -30,6 +30,9 @@ import unbbayes.controller.WindowController;
 
 public class NetWindowCompilation extends JPanel {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
+	
 	private final NetWindow netWindow;
 
     private EvidenceTree evidenceTree;

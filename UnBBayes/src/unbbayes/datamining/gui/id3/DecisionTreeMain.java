@@ -41,6 +41,9 @@ import unbbayes.gui.SimpleFileFilter;
 
 public class DecisionTreeMain extends JInternalFrame
 {
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;		
+	
   private JPanel contentPane;
   private JMenuBar jMenuBar = new JMenuBar();
   private JMenu jMenuFile = new JMenu();

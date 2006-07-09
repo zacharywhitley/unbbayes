@@ -45,6 +45,9 @@ import unbbayes.util.NodeList;
 
 public class CompactChooseWindow extends JDialog{
 	
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
+	
     private NodeList variablesVector;
     private JPanel centerPanel;
     private JButton ok;

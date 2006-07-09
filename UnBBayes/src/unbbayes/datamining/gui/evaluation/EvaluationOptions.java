@@ -69,7 +69,11 @@ public class EvaluationOptions
    * a list of attributes that have been "selected".
    */
   private class StatesTableModel extends AbstractTableModel
-  {   private ProbabilisticNode classNode;
+  {   
+	  /** Serialization runtime version number */
+	  private static final long serialVersionUID = 0;		  
+	  
+	  private ProbabilisticNode classNode;
       private String[] columnNames = {"Priority","State","Probability" };
       private Object[][] cells;
       private int statesSize = 1;
@@ -151,7 +155,7 @@ public class EvaluationOptions
       * @param col the column index.
       * @return the class of elements in the column.
       */
-      public Class getColumnClass(int col)
+      public Class<?> getColumnClass(int col)
       {   return getValueAt(0, col).getClass();
       }
 

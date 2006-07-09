@@ -20,6 +20,10 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
 
 public class AttributePanel extends JPanel
 {
+	
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;		
+	
   private BorderLayout borderLayout1 = new BorderLayout();
   private JTree leftTree;
   private JTree rightTree;

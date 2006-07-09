@@ -38,6 +38,10 @@ import unbbayes.datamining.gui.IInferencePanel;
  *  @version $1.0 $ (02/16/2003)
  */
 public class InferencePanel extends JPanel implements IInferencePanel{
+
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;	
+	
   private ResourceBundle resource;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JPanel jPanel1 = new JPanel();
@@ -251,12 +255,12 @@ public class InferencePanel extends JPanel implements IInferencePanel{
     textAreaResults.setText( rule);
   }
 
-  private ArrayList extractInputs(Combination combination) {
+  private ArrayList<int[]> extractInputs(Combination combination) {
     String key = combination.getKey();
     StringTokenizer strTokenizer = new StringTokenizer(key, " ");
     int[] input;
     int numOfTokens = strTokenizer.countTokens();
-    ArrayList inputArray = new ArrayList();
+    ArrayList<int[]> inputArray = new ArrayList<int[]>();
 
     for (int i = 0; i < numOfTokens; i++) {
       input = new int[2];

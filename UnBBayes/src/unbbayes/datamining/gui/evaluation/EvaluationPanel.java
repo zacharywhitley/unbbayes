@@ -50,6 +50,9 @@ import unbbayes.util.GraphPaperLayout;
 
 public class EvaluationPanel extends JPanel
 {
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;		
+	
   private JPanel jPanel63 = new JPanel();
   private BorderLayout borderLayout45 = new BorderLayout();
   private JPanel jPanel62 = new JPanel();

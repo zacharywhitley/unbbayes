@@ -13,6 +13,9 @@ import unbbayes.datamining.datamanipulation.Utils;
  */
 public class Leaf implements Serializable
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
+	
 	/** Class attribute of dataset */
 	private Attribute classAttribute;
 	

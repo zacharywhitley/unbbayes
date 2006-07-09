@@ -20,6 +20,9 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
  */
 public class CombinatorialNeuralModel extends DistributionClassifier implements Serializable{
 
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;		
+	
   /**The model's combinations.*/
   private HashMap<String,Combination> model = new HashMap<String,Combination>();
 

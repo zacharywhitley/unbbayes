@@ -61,7 +61,11 @@ import unbbayes.prs.id.UtilityNode;
  *@see JDialog
  */
 public class GlobalOptions extends JDialog {
-    final JButton probabilisticDescriptionNode;
+
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;	
+	
+	final JButton probabilisticDescriptionNode;
     final JButton probabilisticExplanationNode;
 	final JButton decisionNode;
 	final JButton utilityNode;

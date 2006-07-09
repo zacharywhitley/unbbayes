@@ -12,6 +12,9 @@ import unbbayes.datamining.datamanipulation.Attribute;
  */
 public class NominalNode extends Node
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
+	
 	/** value position on splitAttribute */
 	private int attributeValue;
 	

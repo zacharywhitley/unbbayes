@@ -49,6 +49,9 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  */
 public class NetWindow extends JInternalFrame {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
+	
     private JViewport graphViewport;
     private final IGraph graph;
     private final WindowController controller;

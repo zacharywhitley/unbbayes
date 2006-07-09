@@ -29,7 +29,12 @@ import unbbayes.datamining.datamanipulation.Stats;
 import unbbayes.util.GraphPaperLayout;
 
 public class PreprocessPanel extends JPanel
-{ /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+{ 
+	
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;	
+	
+  /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
   private JPanel filePanel = new JPanel();
   private AttributeSelectionPanel attributePanel = new AttributeSelectionPanel();
@@ -302,7 +307,11 @@ public class PreprocessPanel extends JPanel
   }
 
   private class ValuesTableModel extends DefaultTableModel
-  {   public boolean isCellEditable(int row, int col)
+  {   
+	 /** Serialization runtime version number */
+	 private static final long serialVersionUID = 0;	
+	  
+	  public boolean isCellEditable(int row, int col)
       {   return false;
       }
 

@@ -35,6 +35,9 @@ import unbbayes.util.SetToolkit;
  * @author Michael S. Onishi
  */
 public class SubNetwork extends Network {
+
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
 	
 	private char[] visited;
 	

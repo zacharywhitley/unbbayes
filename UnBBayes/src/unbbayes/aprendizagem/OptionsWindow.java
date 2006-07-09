@@ -52,6 +52,9 @@ import javax.swing.ListSelectionModel;
  */
 public class OptionsWindow extends JDialog
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
+	
     private TVariavel variable;
     private JTextField txtMaxParents;
     private JTextField txtName;

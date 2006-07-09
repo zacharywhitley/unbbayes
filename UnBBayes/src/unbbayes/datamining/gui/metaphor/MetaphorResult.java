@@ -31,6 +31,9 @@ import unbbayes.util.NodeList;
 
 public class MetaphorResult extends JPanel
 {
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;		
+	
   private JPanel jPanel1 = new JPanel();
   private JPanel jPanel2 = new JPanel();
   private BorderLayout borderLayout2 = new BorderLayout();

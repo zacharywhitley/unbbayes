@@ -36,6 +36,9 @@ import javax.swing.JPanel;
  */
 public class PrintComponent extends JPanel {
 
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;		
+	
   /**
    * The item to be printed
    */

@@ -33,6 +33,9 @@ import unbbayes.util.NodeList;
 
 public class LogAprendizagem extends JDialog{
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
+	
     private JTextArea caixaLog;
     private JScrollPane painel;
 

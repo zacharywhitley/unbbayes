@@ -38,6 +38,9 @@ import unbbayes.util.NodeList;
 
 public class ChooseVariablesWindow extends JDialog{
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
+	
     private JPanel choosePanel;
     private JScrollPane scrollPane;
     private JPanel centerPanel;

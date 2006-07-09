@@ -31,6 +31,10 @@ import unbbayes.datamining.gui.AttributePanel;
  *  @version $1.0 $ (02/16/2003)
  */
 public class NeuralModelMain extends JInternalFrame{
+  
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;	
+	
   private JPanel contentPane;
   private BorderLayout borderLayout1 = new BorderLayout();
   /** Carrega o arquivo de recursos para internacionalização da localidade padrão */

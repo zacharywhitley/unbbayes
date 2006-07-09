@@ -70,6 +70,9 @@ import unbbayes.monteCarlo.controlador.ControladorPrincipal;
  */
 public class IUnBBayes extends JFrame {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
+	
 	private MDIDesktopPane desktop;
 	private JPanel topPanel;
 	private JPanel bottomPanel;

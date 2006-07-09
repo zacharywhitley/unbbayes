@@ -34,6 +34,10 @@ import unbbayes.gui.SimpleFileFilter;
 
 public class PreprocessorMain extends JInternalFrame
 {
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;	
+	
+	
   /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
   private ResourceBundle resource;
   private JPanel contentPane;

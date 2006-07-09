@@ -55,7 +55,7 @@ public class ILController extends ILToolkit {
 
     private ILIO ilio;
 
-    private List  ssList = new ArrayList ();
+    private List<Object>  ssList = new ArrayList<Object> ();
 
     ConstructionController constructionController;
 
@@ -72,7 +72,7 @@ public class ILController extends ILToolkit {
          */
         file = chooseFile(new String[] { "obj" }, "Choose the frontier set.");
         if (file != null) {
-            ssList = ilio.getSuficStatistics(file);
+            ssList = (ArrayList<Object>)ilio.getSuficStatistics(file);
         }
         file = chooseFile(new String[] { "txt" }, "Choose the training set.");
         constructionController = new ConstructionController(file,pn);
@@ -118,14 +118,14 @@ public class ILController extends ILToolkit {
     }
 
     private void makeNodeFrontier(Node node) {
-        List lista = new ArrayList();
+        List<Object[]> lista = new ArrayList<Object[]>();
         makeNullFrontier(node, lista);
-        makeAddFrontier(node, lista);
-        makeRemoveFrontier(node, lista);
+        makeAddFrontier(node, lista);   
+        makeRemoveFrontier(node, lista); 
         ssList.add(lista);
     }
 
-    private void makeNullFrontier(Node node, List lista) {
+    private void makeNullFrontier(Node node, List<Object[]> lista) {
         Object[] frontier = new Object[3];
         frontier[0] = node.getName();
         frontier[1] = makeAddParentsStructure(node, null);
@@ -133,7 +133,7 @@ public class ILController extends ILToolkit {
         lista.add(frontier);
     }
 
-    private void makeAddFrontier(Node node, List lista) {
+    private void makeAddFrontier(Node node, List<Object[]> lista) {
         for (int i = 0; i < pn.getNodeCount(); i++) {
             if (!node.getDescription().equals(pn.getNodeAt(i).getDescription())
                     && !isParent(node, pn.getNodeAt(i)) && !isDescendent(node,pn.getNodeAt(i)) ){
@@ -146,7 +146,7 @@ public class ILController extends ILToolkit {
         }
     }
 
-    private void makeRemoveFrontier(Node node, List lista) {
+    private void makeRemoveFrontier(Node node, List<Object[]> lista) {
         for (int i = 0; i < pn.getNodeCount(); i++) {
             if (isParent(node, pn.getNodeAt(i))) {
                 Object[] frontier = new Object[3];
@@ -158,8 +158,8 @@ public class ILController extends ILToolkit {
         }
     }
 
-    private List makeRemoveParentsStructure(Node node, Node lastParent) {
-        List parentsName = new ArrayList();
+    private List<String> makeRemoveParentsStructure(Node node, Node lastParent) {
+        List<String> parentsName = new ArrayList<String>();
         for (int i = 0; i < node.getParents().size(); i++) {
             String parentName = ((Node) node.getParents().get(i))
                     .getDescription();
@@ -185,8 +185,8 @@ public class ILController extends ILToolkit {
         return nijk;
     }
 
-    private List makeAddParentsStructure(Node node, Node lastParent) {
-        List parentsName = new ArrayList();
+    private List<String> makeAddParentsStructure(Node node, Node lastParent) {
+        List<String> parentsName = new ArrayList<String>();
         for (int i = 0; i < node.getParents().size(); i++) {
             String parentName = ((Node) node.getParents().get(i))
                     .getDescription();

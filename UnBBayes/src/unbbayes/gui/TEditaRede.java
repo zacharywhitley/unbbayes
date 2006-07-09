@@ -64,6 +64,9 @@ import unbbayes.prs.bn.ProbabilisticNode;
  */
 public class TEditaRede extends JPanel implements MouseListener, MouseMotionListener, KeyListener {
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
+	
     private List arco;
     private Node noAtual;
     private Node noMover;

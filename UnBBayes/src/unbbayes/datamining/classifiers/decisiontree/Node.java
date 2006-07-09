@@ -13,6 +13,9 @@ import unbbayes.datamining.datamanipulation.Attribute;
  */
 public class Node implements Serializable
 {
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
+	
 	/** Attribute used for splitting. */
 	protected Attribute splitAttribute;
 	/** Node children on the tree */

@@ -19,6 +19,10 @@ import javax.swing.table.TableColumnModel;
   */
 
 public class GroupableTableHeader extends JTableHeader {
+
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;	
+	
 	private static final String uiClassID = "GroupableTableHeaderUI";
 	protected Vector columnGroups = null;
 
@@ -45,7 +49,7 @@ public class GroupableTableHeader extends JTableHeader {
 		Enumeration enumeration = columnGroups.elements();
 		while (enumeration.hasMoreElements()) {
 			ColumnGroup cGroup = (ColumnGroup) enumeration.nextElement();
-			Vector v_ret = (Vector) cGroup.getColumnGroups(col, new Vector());
+			Vector v_ret = (Vector) cGroup.getColumnGroups(col, new Vector<Object>());
 			if (v_ret != null) {
 				return v_ret.elements();
 			}

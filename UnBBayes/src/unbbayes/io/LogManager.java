@@ -42,7 +42,11 @@ import unbbayes.util.NodeList;
  * @version 1.0
  */
 public class LogManager implements java.io.Serializable {
-    public static final int DEFAULT_BUFFER_SIZE = 10 * 1024;
+    
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;	
+	
+	public static final int DEFAULT_BUFFER_SIZE = 10 * 1024;
     public static final String DEFAULT_FILENAME = "aj.txt";
 
     private StringBuffer log;

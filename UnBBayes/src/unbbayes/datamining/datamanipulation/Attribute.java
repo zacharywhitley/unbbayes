@@ -22,7 +22,11 @@ import java.util.ResourceBundle;
  *  @version $1.0 $ (16/02/2002)
  */
 public class Attribute implements Serializable
-{	/** Constant set for numeric attributes. */
+{	
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;	
+	
+	/** Constant set for numeric attributes. */
   	public final static int NUMERIC = 0;
 
   	/** Constant set for nominal attributes. */

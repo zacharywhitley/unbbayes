@@ -11,6 +11,9 @@ import java.io.Serializable;
  */
 public class Combination implements Serializable{
 
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;		
+	
   private String key;
   private OutputNeuron[] outputArray;
 

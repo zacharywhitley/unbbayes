@@ -29,6 +29,9 @@ import unbbayes.datamining.datamanipulation.Utils;
  */
 public class Id3 extends DecisionTreeLearning implements Serializable{
 
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;		
+	
 	/** Load resources file for internacionalization */
 	private transient ResourceBundle resource;
 

@@ -95,7 +95,7 @@ public final class NodeList implements java.io.Serializable {
      */
     public final Node get(int index) {
         return data[index];
-    }
+    }    
 
     /**
      * Replaces the element at the specified position in this list with

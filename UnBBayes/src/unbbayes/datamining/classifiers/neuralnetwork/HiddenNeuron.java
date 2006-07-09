@@ -12,6 +12,9 @@ import java.util.Arrays;
  */
 public class HiddenNeuron extends Neuron implements Serializable{
 
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;		
+	
   /**The calculated value of the neuron output*/
   public transient float outputValue;
 

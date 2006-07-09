@@ -31,7 +31,10 @@ public class GroupableTableHeaderUI extends BasicTableHeaderUI {
 
 	public static final TableCellRenderer defaultRender =
 		new DefaultTableCellRenderer() {
-    		public Component getTableCellRendererComponent(
+		    /** Serialization runtime version number */
+		    private static final long serialVersionUID = 0;	
+    		
+		    public Component getTableCellRendererComponent(
     			JTable table, Object value, boolean isSelected,
                 boolean hasFocus, int row, int column) {
                     

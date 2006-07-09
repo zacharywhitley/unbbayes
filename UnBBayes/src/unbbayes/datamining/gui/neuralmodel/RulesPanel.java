@@ -37,6 +37,10 @@ import unbbayes.datamining.datamanipulation.Attribute;
  *  @version $1.0 $ (02/16/2003)
  */
 public class RulesPanel extends JPanel {
+	
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;		
+	
   private ImageIcon printIcon;
   private ImageIcon printPreviewIcon;
   private ResourceBundle resource;
@@ -338,7 +342,11 @@ public class RulesPanel extends JPanel {
   }
 
   class RulesTableModel extends AbstractTableModel{
-    public String getColumnName(int col) {
+    
+	  /** Serialization runtime version number */
+	  private static final long serialVersionUID = 0;	
+		
+	  public String getColumnName(int col) {
       String[] columnNames = {resource.getString("index"),
                               resource.getString("if"),
                               resource.getString("then"),

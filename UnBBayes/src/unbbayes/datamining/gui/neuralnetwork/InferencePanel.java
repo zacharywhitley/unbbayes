@@ -33,6 +33,10 @@ import unbbayes.datamining.gui.IInferencePanel;
  *  @version $1.0 $ (02/16/2003)
  */
 public class InferencePanel extends JPanel implements IInferencePanel{
+
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;	
+	
   private ResourceBundle resource;
   private BorderLayout borderLayout1 = new BorderLayout();
   private JPanel jPanel1 = new JPanel();

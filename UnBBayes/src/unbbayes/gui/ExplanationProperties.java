@@ -56,6 +56,9 @@ import unbbayes.util.NodeList;
  */
 public class ExplanationProperties extends JDialog
 {
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;		
+	
   private JTabbedPane jTabbedPane = new JTabbedPane();
   private JPanel southPanel = new JPanel();
   private JPanel descriptionPanel = new JPanel();

@@ -24,6 +24,10 @@ import unbbayes.util.ArrayMap;
  *  @version $1.0 $ (02/16/2003)
  */
 public class AttributesTree extends JTree{
+	
+  /** Serialization runtime version number */
+  private static final long serialVersionUID = 0;	
+	
   public static final int CHECK_YES = 1;
   public static final int CHECK_NO = -1;
   public static final int CHECK_EMPTY = 0;
@@ -258,7 +262,11 @@ public class AttributesTree extends JTree{
   }
 
   private class CnmTreeCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer{
-    ImageIcon yesIcon = iconController.getYesStateIcon();
+    
+	/** Serialization runtime version number */
+	private static final long serialVersionUID = 0;	
+		
+	ImageIcon yesIcon = iconController.getYesStateIcon();
     ImageIcon noIcon = iconController.getNoStateIcon();
     ImageIcon emptyIcon = iconController.getEmptyStateIcon();
     ImageIcon evidenciasIcon = iconController.getMoreIcon();
