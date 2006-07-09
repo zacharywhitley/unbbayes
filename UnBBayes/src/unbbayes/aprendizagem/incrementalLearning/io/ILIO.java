@@ -15,6 +15,8 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.JAXBException;
+
 import unbbayes.io.BaseIO;
 import unbbayes.io.LoadException;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -45,6 +47,8 @@ public class ILIO {
          e.printStackTrace();
       } catch (IOException e) {
          e.printStackTrace();
+      } catch (JAXBException je){
+      	je.printStackTrace(); 
       }
       return null;
    }
@@ -69,6 +73,8 @@ public class ILIO {
          io.save(file, pn);
       } catch (IOException e) {
          e.printStackTrace();
+      } catch (JAXBException je){
+      	je.printStackTrace(); 
       }
    }
 

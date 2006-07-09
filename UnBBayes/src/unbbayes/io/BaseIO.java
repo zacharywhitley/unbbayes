@@ -21,11 +21,15 @@
 
 package unbbayes.io;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import javax.xml.bind.JAXBException;
+
 import unbbayes.prs.bn.Network;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.msbn.SingleAgentMSBN;
-
-import java.io.*;
 
 /**
  * Interface de io de uma rede.
@@ -43,7 +47,7 @@ public interface BaseIO {
 	 * @throws LoadException If the file doesn't describes a network.
 	 * @throws IOException	If an IO error occurs
 	 */
-    public ProbabilisticNetwork load(File input) throws LoadException, IOException;
+    public ProbabilisticNetwork load(File input) throws LoadException, IOException, JAXBException;
     
     /**
      * Loads a new MSBN from the input DIRECTORY
@@ -52,19 +56,19 @@ public interface BaseIO {
      * @throws LoadException If the directory doesn't describes a MSBN.
      * @throws IOException	 If an IO error occurs
      */
-    public SingleAgentMSBN loadMSBN(File input) throws LoadException, IOException;
+    public SingleAgentMSBN loadMSBN(File input) throws LoadException, IOException, JAXBException;
     
     /**
      * Saves a network to the output file.
      * @param output	The output file to save
      * @param net		The network to save.
      */
-    public void save(File output, Network net) throws IOException;
+    public void save(File output, Network net) throws IOException, JAXBException;
     
     /**
      * Saves a MSBN to the output directory.
      * @param output The output file to save
      * @param net		The MSBN to save.
      */
-    public void saveMSBN(File output, SingleAgentMSBN net) throws FileNotFoundException;
+    public void saveMSBN(File output, SingleAgentMSBN net) throws FileNotFoundException,IOException,  JAXBException;
 }

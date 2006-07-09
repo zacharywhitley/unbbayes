@@ -32,6 +32,7 @@ import java.util.ResourceBundle;
 
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
+import javax.xml.bind.JAXBException;
 
 import unbbayes.gui.IUnBBayes;
 import unbbayes.gui.MSBNWindow;
@@ -122,6 +123,8 @@ public class MainController {
         } catch (IOException e) {
             JOptionPane.showMessageDialog(screen, e.getMessage(), "saveNetException", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
+        } catch (JAXBException je){
+        	je.printStackTrace(); 
         } finally {
         	screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }

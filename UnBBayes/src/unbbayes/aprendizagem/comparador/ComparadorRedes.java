@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.swing.JFileChooser;
+import javax.xml.bind.JAXBException;
 
 import unbbayes.controller.FileController;
 import unbbayes.gui.SimpleFileFilter;
@@ -53,6 +54,8 @@ public class ComparadorRedes {
             le.printStackTrace();            
         }catch(IOException ioe){
             ioe.printStackTrace();
+        } catch (JAXBException je){
+        	je.printStackTrace(); 
         }
     }
     

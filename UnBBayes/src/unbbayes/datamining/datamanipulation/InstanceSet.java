@@ -15,7 +15,7 @@ public class InstanceSet
 {	/** The dataset's name. */
   	private String relationName;
 
-        private String counterAttributeName;
+    private String counterAttributeName;
 
 	/** The attribute information. */
   	private Attribute[] attributes;
@@ -429,7 +429,8 @@ public class InstanceSet
    	* @param num Number of instances to be copied
    	*/
   	public void copyInstances(int from, InstanceSet dest, int num)
-	{	for (int j = 0; j < num; j++)
+	{	
+  		for (int j = 0; j < num; j++)
 		{	short[] by = new short[numAttributes()];
 			for (int i=0; i<numAttributes(); i++)
 			{	by[i] = getInstance(j).getValue(i);

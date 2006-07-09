@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.xml.bind.JAXBException;
 
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
@@ -49,7 +50,9 @@ public class ControladorPrincipal {
 			le.printStackTrace();
 		}catch(IOException ie){
 			ie.printStackTrace();
-		}
+		} catch (JAXBException je){
+        	je.printStackTrace(); 
+        }
 	}
 	
 	public void adicionarListeners(){
