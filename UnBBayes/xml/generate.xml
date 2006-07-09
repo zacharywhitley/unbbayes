@@ -1,0 +1,45 @@
+<project name="UnbBayes" default="generate">
+  <!--
+  Set up the classpath for the generation task.
+  Include all the standard jaxme jars.
+  -->
+  <path id="generate.class.path">
+    <pathelement location="lib/jaxme/jaxme2-0.5.1.jar"/>
+    <pathelement location="lib/jaxme/jaxmejs-0.5.1.jar"/>
+    <pathelement location="lib/jaxme/jaxmexs-0.5.1.jar"/>
+    <pathelement location="lib/jaxme/jaxmeapi-0.5.1.jar"/>
+  </path>
+	
+  <!--
+  Defines the generation task using that classpath.
+  -->
+  <taskdef name="xjc"
+    classname="org.apache.ws.jaxme.generator.XJCTask"
+    classpathref= "generate.class.path" />
+	
+	
+  <!--
+  Generate source code.
+  The 'schema' attribute gives the path to the schema the sources
+  will be generated from.
+  The 'target' attribute specifies the base directory that the source
+  will be generated into. Sources will be created in subdirectories
+  corresponding to the package structure.
+  -->
+  <target name="generate">
+    <!--
+    The source files being created. The xjc task uses these for
+    a check, whether they are uptodate. If so, the generation is
+    skipped, for improved speed.
+    Specifying the package isn't necessary, unless you have other
+    files in the target directory as well, for example manually
+    written files or files created by another generator or xjc call.
+    If so, these need to be excluded from the uptodate check.
+    <produces 
+includes="org/apache/ws/jaxme/examples/misc/address/*.java"/>
+    -->
+    <xjc schema="xml/model.xsd" target="src" 
+    	package="unbbayes.io.xmlclasses">
+    </xjc>
+  </target>
+</project>
