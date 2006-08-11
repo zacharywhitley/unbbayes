@@ -78,7 +78,7 @@ public class EvidenceTree extends JTree {
 					if (e.getClickCount() == 1) {
 						Node newNode = getNodeMap(node);
 						if (newNode != null) {
-							netWindow.getIGraph().selectNode(newNode);
+							netWindow.getIGraph().selectObject(newNode);
 							netWindow.getIGraph().update();
 						}
 					} else if (e.getClickCount() == 2) {

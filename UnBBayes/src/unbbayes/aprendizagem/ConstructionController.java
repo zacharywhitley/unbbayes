@@ -31,7 +31,7 @@ import java.util.Date;
 import javax.swing.JOptionPane;
 
 import unbbayes.controller.MainController;
-import unbbayes.gui.IUnBBayes;
+import unbbayes.gui.UnBBayesFrame;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.util.NodeList;
@@ -152,9 +152,9 @@ public class ConstructionController {
            new CompactFileWindow(variablesVector);               
            filterVariablesVector(rows);
            matrix = new byte[rows][variables.size()];      
-           IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));                
+           UnBBayesFrame.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));                
            makeMatrix(cols, rows);           
-           IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+           UnBBayesFrame.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
            br.close();          
 	    }
 	    catch(Exception e){
@@ -168,10 +168,10 @@ public class ConstructionController {
         /*Constructs the topology of the net*/        
         Date d = new Date();
         long time = d.getTime();
-        IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        UnBBayesFrame.getIUnBBayes().setCursor(new Cursor(Cursor.WAIT_CURSOR));
         AlgorithmController algorithmController = new AlgorithmController
                                        (variables,matrix,vector,caseNumber,pamp,compacted);
-        IUnBBayes.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));                
+        UnBBayesFrame.getIUnBBayes().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));                
         Date d2 = new Date();
         long time1 = d2.getTime();
         long resul = time1 - time;

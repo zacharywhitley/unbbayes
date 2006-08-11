@@ -34,7 +34,7 @@ import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
-import unbbayes.gui.IUnBBayes;
+import unbbayes.gui.UnBBayesFrame;
 import unbbayes.gui.MSBNWindow;
 import unbbayes.gui.NetWindow;
 import unbbayes.io.BaseIO;
@@ -61,7 +61,7 @@ import unbbayes.util.NodeList;
  */
 public class MainController {
 
-    private IUnBBayes screen;
+    private UnBBayesFrame screen;
     private List copia;
     private List copiados;
     private boolean bColou;
@@ -71,7 +71,7 @@ public class MainController {
 
     /**
      *  Constrói o controlador responsável pela criação da rede Bayesiana ( <code>
-     *  TRP</code> ) e da tela principal ( <code>IUnBBayes</code> ). Além
+     *  TRP</code> ) e da tela principal ( <code>UnBBayesFrame</code> ). Além
      *  disso, este construtor também adiciona AdjustmentListener para os
      *  JScrollBars do <code>jspDesenho</code> .
      *
@@ -79,7 +79,7 @@ public class MainController {
      * @see      KeyListener
      */
     public MainController() {
-        screen = new IUnBBayes(this);
+        screen = new UnBBayesFrame(this);
         copia = new ArrayList();
         copiados = new ArrayList();
     }
@@ -216,7 +216,7 @@ public class MainController {
         screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));    	
     }
     
-    public IUnBBayes getScreen(){
+    public UnBBayesFrame getScreen(){
     	return screen;    	
     }
 

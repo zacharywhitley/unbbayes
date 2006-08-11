@@ -176,22 +176,24 @@ public class NetWindowEdition extends JPanel {
         //ao clicar no botão arc setamos as variáveis booleanas e os estados dos butões
         arc.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                netWindow.getIGraph().setbProbabilisticNode(false);
+                /*netWindow.getIGraph().setbProbabilisticNode(false);
                 netWindow.getIGraph().setbDecisionNode(false);
                 netWindow.getIGraph().setbUtilityNode(false);
                 netWindow.getIGraph().setbSelect(false);
-                netWindow.getIGraph().setbArc(true);
+                netWindow.getIGraph().setbArc(true);*/
+            	netWindow.getIGraph().setAction(GraphPane.CREATE_EDGE);
             }
         });
 
         //ao clicar no botão node setamos as variáveis booleanas e os estados dos butões
         probabilisticNode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                netWindow.getIGraph().setbArc(false);
+                /*netWindow.getIGraph().setbArc(false);
                 netWindow.getIGraph().setbSelect(false);
                 netWindow.getIGraph().setbDecisionNode(false);
                 netWindow.getIGraph().setbUtilityNode(false);
-                netWindow.getIGraph().setbProbabilisticNode(true);
+                netWindow.getIGraph().setbProbabilisticNode(true);*/
+            	netWindow.getIGraph().setAction(GraphPane.CREATE_PROBABILISTIC_NODE);
             }
         });
 
@@ -199,22 +201,24 @@ public class NetWindowEdition extends JPanel {
         //ao clicar no botão decisionNode setamos as variáveis booleanas e os estados dos butões
         decisionNode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                netWindow.getIGraph().setbArc(false);
+                /*netWindow.getIGraph().setbArc(false);
                 netWindow.getIGraph().setbSelect(false);
                 netWindow.getIGraph().setbUtilityNode(false);
                 netWindow.getIGraph().setbProbabilisticNode(false);
-                netWindow.getIGraph().setbDecisionNode(true);
+                netWindow.getIGraph().setbDecisionNode(true);*/
+            	netWindow.getIGraph().setAction(GraphPane.CREATE_DECISION_NODE);
             }
         });
 
         //ao clicar no botão utilityNode setamos as variáveis booleanas e os estados dos butões
         utilityNode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                netWindow.getIGraph().setbArc(false);
+                /*netWindow.getIGraph().setbArc(false);
                 netWindow.getIGraph().setbSelect(false);
                 netWindow.getIGraph().setbProbabilisticNode(false);
                 netWindow.getIGraph().setbDecisionNode(false);
-                netWindow.getIGraph().setbUtilityNode(true);
+                netWindow.getIGraph().setbUtilityNode(true);*/
+            	netWindow.getIGraph().setAction(GraphPane.CREATE_UTILITY_NODE);
             }
         });
 
@@ -222,11 +226,12 @@ public class NetWindowEdition extends JPanel {
         //ao clicar no botão node setamos as variáveis booleanas e os estados dos butões
         select.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                netWindow.getIGraph().setbArc(false);
+                /*netWindow.getIGraph().setbArc(false);
                 netWindow.getIGraph().setbProbabilisticNode(false);
                 netWindow.getIGraph().setbDecisionNode(false);
                 netWindow.getIGraph().setbUtilityNode(false);
-                netWindow.getIGraph().setbSelect(true);
+                netWindow.getIGraph().setbSelect(true);*/
+            	netWindow.getIGraph().setAction(GraphPane.SELECT_MANY_OBJECTS);
             }
         });
         /*

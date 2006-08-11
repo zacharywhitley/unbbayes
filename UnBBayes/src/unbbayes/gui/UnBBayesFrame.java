@@ -68,7 +68,7 @@ import unbbayes.monteCarlo.controlador.ControladorPrincipal;
  *@see        JFrame
  *@version    1.0 06/07/2001
  */
-public class IUnBBayes extends JFrame {
+public class UnBBayesFrame extends JFrame {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
@@ -122,7 +122,7 @@ public class IUnBBayes extends JFrame {
 
         protected IconController iconController = IconController.getInstance();
 
-	private static IUnBBayes singleton = null;
+	private static UnBBayesFrame singleton = null;
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource =
@@ -139,7 +139,7 @@ public class IUnBBayes extends JFrame {
 	 *@see    MouseListener
 	 *@see    KeyListener
 	 */
-	public IUnBBayes(MainController _controller) {
+	public UnBBayesFrame(MainController _controller) {
 		super(resource.getString("unbbayesTitle"));
 		this.controller = _controller;
 		setSize(650, 480);
@@ -245,7 +245,7 @@ public class IUnBBayes extends JFrame {
 
 				// adicionar FileView no FileChooser para desenhar ícones de
 				// arquivos
-				chooser.setFileView(new FileIcon(IUnBBayes.this));
+				chooser.setFileView(new FileIcon(UnBBayesFrame.this));
 
 				chooser.addChoosableFileFilter(
 					new SimpleFileFilter(
@@ -273,7 +273,7 @@ public class IUnBBayes extends JFrame {
 
 				// adicionar FileView no FileChooser para desenhar ícones de
 				// arquivos
-				chooser.setFileView(new FileIcon(IUnBBayes.this));
+				chooser.setFileView(new FileIcon(UnBBayesFrame.this));
 				chooser.addChoosableFileFilter(
 					new SimpleFileFilter(
 						nets,
@@ -317,7 +317,7 @@ public class IUnBBayes extends JFrame {
 					new SimpleFileFilter(
 						nets,
 						resource.getString("textFileFilter")));
-				int option = chooser.showOpenDialog(IUnBBayes.this);
+				int option = chooser.showOpenDialog(UnBBayesFrame.this);
 				File file;
 				if (option == JFileChooser.APPROVE_OPTION) {
 					file = chooser.getSelectedFile();
@@ -751,8 +751,8 @@ public class IUnBBayes extends JFrame {
 
 	}
 
-	public static IUnBBayes getIUnBBayes(){
-		return IUnBBayes.singleton;
+	public static UnBBayesFrame getIUnBBayes(){
+		return UnBBayesFrame.singleton;
 	}
 
 }

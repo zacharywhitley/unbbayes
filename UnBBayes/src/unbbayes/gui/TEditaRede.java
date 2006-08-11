@@ -801,7 +801,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
      */
     public void deselecionaArco() {
         if (selecionado instanceof Edge) {
-            ((Edge) selecionado).setSelecionado(false);
+            ((Edge) selecionado).setSelected(false);
         }
     }
 
@@ -846,7 +846,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         deselecionaArco();
 
         //seleciona o arco escolhido
-        arco.setSelecionado(true);
+        arco.setSelected(true);
         selecionado = arco;
     }
 

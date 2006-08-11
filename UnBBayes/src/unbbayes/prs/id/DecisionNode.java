@@ -22,7 +22,9 @@
 package unbbayes.prs.id;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
 
+import unbbayes.gui.draw.DrawRectangle;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.TreeVariable;
@@ -34,16 +36,25 @@ import unbbayes.util.SetToolkit;
  *@author     Michael e Rommel
  */
 public class DecisionNode extends TreeVariable implements java.io.Serializable {
-
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;	
 	
-    private static Color color = new Color(Color.orange.getRGB());
-
     /**
-     * Inicializa a cor do nó.
+	 * 
+	 */
+	private static final long serialVersionUID = -4746720812779139329L;
+	
+	private static Color color = Color.orange;
+	
+	private DrawRectangle drawRectangle;
+
+	/**
+     * Constructs a DecisionNode with an incremented DrawElement.
      */
     public DecisionNode() {
+    	// Here it is defined how this node is going to be drawn.
+        // In the superclass, Node, it was already definied to draw text, here
+        // we add the draw rectangle.
+        drawRectangle = new DrawRectangle(position, size);
+        drawElement.add(drawRectangle);
     }
     
     public Object clone() {
@@ -75,11 +86,33 @@ public class DecisionNode extends TreeVariable implements java.io.Serializable {
     }
 
     /**
-     *  Retorna a cor do nó.
-     *
+     *  Get the node's color.
+     *	@return The node's color.
      */
     public static Color getColor() {
         return color;
+    }
+    
+    /**
+     *  Set the node's color.
+     *
+     *@param rgb The node's RGB color.
+     */
+    public static void setColor(int rgb) {
+        color = new Color(rgb);
+    }
+    
+    @Override
+	public void setSelected(boolean b) {
+		// Update the DrawEllipse selection state
+		drawRectangle.setSelected(b);
+		super.setSelected(b);
+	}
+    
+    @Override
+    public void paint(Graphics2D graphics) {
+    	drawRectangle.setFillColor(getColor());
+    	super.paint(graphics);
     }
 
     protected void marginal() {
@@ -102,13 +135,5 @@ public class DecisionNode extends TreeVariable implements java.io.Serializable {
             }
         }
     }
-
-    /**
-     *  Modifica a cor do nó.
-     *
-     *@param c O novo RGB da cor do nó.
-     */
-    public static void setColor(int c) {
-        color = new Color(c);
-    }
+    
 }

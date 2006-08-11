@@ -86,8 +86,9 @@ public class EditNet extends JPanel {
         //ao clicar no botão arc setamos as variáveis booleanas e os estados dos butões
         arc.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                netWindow.getIGraph().setbSelect(false);
-                netWindow.getIGraph().setbArc(true);
+                //netWindow.getIGraph().setbSelect(false);
+                //netWindow.getIGraph().setbArc(true);
+            	netWindow.getIGraph().setAction(GraphPane.CREATE_EDGE);
             }
         });
 

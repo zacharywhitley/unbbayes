@@ -48,6 +48,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import unbbayes.controller.WindowController;
+import unbbayes.prs.Edge;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
@@ -106,7 +108,7 @@ public class GlobalOptions extends JDialog {
     private Color probabilisticExplanationNodeColor;
 	private Color decisionNodeColor;
 	private Color utilityNodeColor;
-    private Color arcColor;
+    private Color edgeColor;
     private Color selectionColor;
     private Color backColor;
     private JLabel radius;
@@ -115,8 +117,8 @@ public class GlobalOptions extends JDialog {
     private JSlider netSlider;
     private JCheckBox createLog;
     private boolean createLogBoolean;
-    private Preview preview;
-    private final IGraph graph;
+    //private Preview preview;
+    private final GraphPane graph;
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
@@ -127,7 +129,7 @@ public class GlobalOptions extends JDialog {
      *
      *@param  a rede a ser configurada (<code>TDesenhaRede</code>)
      */
-    public GlobalOptions(IGraph gra, WindowController con) {
+    public GlobalOptions(GraphPane gra, WindowController con) {
         super(new Frame(), resource.getString("globalOptionTitle"), true);
         Container contentPane = getContentPane();
         setSize(550, 470);
@@ -151,21 +153,22 @@ public class GlobalOptions extends JDialog {
 
         gbl     = new GridBagLayout();
         gbc     = new GridBagConstraints();
-        preview = new Preview(this);
+        //preview = new Preview(this);
 
         //setar cores padrões do nó, arco e de seleção e boolean de criar log
         probabilisticDescriptionNodeColor = ProbabilisticNode.getDescriptionColor();
         probabilisticExplanationNodeColor = ProbabilisticNode.getExplanationColor();
 		decisionNodeColor      = DecisionNode.getColor();
 		utilityNodeColor       = UtilityNode.getColor();
-        arcColor               = graph.getArcColor();
-        selectionColor         = graph.getSelectionColor();
+        edgeColor              = Edge.getColor();
+        selectionColor         = GraphPane.getSelectionColor();
         backColor              = graph.getBackColor();
         createLogBoolean       = controller.getNet().isCreateLog();
 
         radius = new JLabel(resource.getString("radiusLabel"));
         radius.setToolTipText(resource.getString("radiusToolTip"));
-        radiusSlider = new JSlider(JSlider.HORIZONTAL, 10, 40, (int) graph.getRadius());
+        // TODO Acrescentar possibilidade de alterar largura e altura.
+        radiusSlider = new JSlider(JSlider.HORIZONTAL, 10, 40, (int)Node.getWidth()/2);
         radiusSlider.setToolTipText(resource.getString("radiusToolTip"));
         radiusSlider.setMinorTickSpacing(1);
         radiusSlider.setMajorTickSpacing(10);
@@ -256,10 +259,10 @@ public class GlobalOptions extends JDialog {
             new ActionListener() {
                 public void actionPerformed(ActionEvent e)
                 {
-                  Color color = JColorChooser.showDialog(((Component) e.getSource()).getParent(), resource.getString("arcColor"), arcColor);
+                  Color color = JColorChooser.showDialog(((Component) e.getSource()).getParent(), resource.getString("edgeColor"), edgeColor);
                   if (color != null)
                   {
-                    arcColor = color;
+                    edgeColor = color;
                     repaint();
                   }
                 }
@@ -305,10 +308,11 @@ public class GlobalOptions extends JDialog {
                     ProbabilisticNode.setExplanationColor(probabilisticExplanationNodeColor.getRGB());
 					DecisionNode.setColor(decisionNodeColor.getRGB());
 					UtilityNode.setColor(utilityNodeColor.getRGB());
-                    graph.setArcColor(arcColor);
-                    graph.setSelectionColor(selectionColor);
+                    Edge.setColor(edgeColor.getRGB());
+                    GraphPane.setSelectionColor(selectionColor);
                     graph.setBackColor(backColor);
-                    graph.setRadius(radiusSlider.getValue());
+                    Node.setWidth(radiusSlider.getValue()*2);
+                    Node.setHeight(radiusSlider.getValue()*2);
                     graph.setGraphDimension(new Dimension((int) netSlider.getValue(), (int) netSlider.getValue()));
                     controller.getNet().setCreateLog(createLog.isSelected());
                     setVisible(false);
@@ -327,11 +331,11 @@ public class GlobalOptions extends JDialog {
                     probabilisticExplanationNodeColor = ProbabilisticNode.getExplanationColor();
 					decisionNodeColor = DecisionNode.getColor();
 					utilityNodeColor = UtilityNode.getColor();
-                    arcColor = graph.getArcColor();
-                    selectionColor = graph.getSelectionColor();
+                    edgeColor = Edge.getColor();
+                    selectionColor = GraphPane.getSelectionColor();
                     backColor = graph.getBackColor();
                     netSlider.setValue((int) graph.getGraphDimension().getWidth());
-                    radiusSlider.setValue((int) graph.getRadius());
+                    radiusSlider.setValue((int)Node.getWidth()/2);
                     controller.getNet().setCreateLog(createLogBoolean);
                     repaint();
                 }
@@ -547,7 +551,7 @@ public class GlobalOptions extends JDialog {
      *@see Color
      */
     public Color getArcColor() {
-        return this.arcColor;
+        return this.edgeColor;
     }
 
 

@@ -22,55 +22,40 @@
 package unbbayes.prs;
 
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.gui.draw.DrawElement;
+import unbbayes.gui.draw.DrawText;
+import unbbayes.gui.draw.IDrawable;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.util.ArrayMap;
 import unbbayes.util.NodeList;
+import unbbayes.util.SerializablePoint2D;
 
 /**
  *  Classe que representa um nó genérico.
  *
  *@author     Michael e Rommel
  */
-public abstract class Node implements java.io.Serializable {
+public abstract class Node implements Serializable, IDrawable {
 
-	public class SerializablePoint2D
-		extends Point2D.Double
-		implements java.io.Serializable {
-
-		/** Serialization runtime version number */
-		private static final long serialVersionUID = 0;
-
-		
-		private void writeObject(java.io.ObjectOutputStream out)
-			throws java.io.IOException {
-			out.writeDouble(x);
-			out.writeDouble(y);
-		}
-
-		private void readObject(java.io.ObjectInputStream in)
-			throws java.io.IOException, ClassNotFoundException {
-			x = in.readDouble();
-			y = in.readDouble();
-		}
-	}
-
-	private String description = "";
+	private String description;
 	protected String name;
-	private SerializablePoint2D posicao;
+	protected SerializablePoint2D position;
+	protected static SerializablePoint2D size = new SerializablePoint2D();
 	protected NodeList parents;
 	private NodeList children;
 	protected List<String> states;
 	private NodeList adjacents;
-	private boolean selecionado;
-	private static int altura;
-	private static int largura;
-	private String explanationDescription = "";
-	private ArrayMap<String,ExplanationPhrase> phrasesMap = new ArrayMap<String,ExplanationPhrase>();
+	private boolean bSelected;
+	private String explanationDescription;
+	private ArrayMap<String,ExplanationPhrase> phrasesMap;
 	private int informationType;
 
 	public static final int PROBABILISTIC_NODE_TYPE = 0;
@@ -79,19 +64,29 @@ public abstract class Node implements java.io.Serializable {
 
 	public static final int DESCRIPTION_TYPE = 3;
 	public static final int EXPLANATION_TYPE = 4;
+	
+	protected DrawElement drawElement;
 
 	/**
 	 *  Constrói um novo nó e faz as devidas inicializações.
 	 */
 	public Node() {
+		name = "";
+		description = "";
+		explanationDescription = "";
 		adjacents = new NodeList();
 		parents = new NodeList();
 		children = new NodeList();
 		states = new ArrayList<String>();
-		altura = 35;
-		largura = 35;
-		posicao = new SerializablePoint2D();
-		selecionado = false;
+		// width
+		size.x = 35;
+		// height
+		size.y = 35;
+		position = new SerializablePoint2D();
+		bSelected = false;
+		drawElement = new DrawText(name, position);
+		drawElement.setFillColor(Color.black);
+		phrasesMap = new ArrayMap<String,ExplanationPhrase>();
 		informationType = DESCRIPTION_TYPE;
 	}
 
@@ -143,12 +138,14 @@ public abstract class Node implements java.io.Serializable {
 	}
 
 	/**
-	 *  Modifica a sigla do nó.
+	 *  Set the node's name.
 	 *
-	 *@param  sigla sigla do nó.
+	 *@param  name Node's name.
 	 */
-	public void setName(String sigla) {
-		this.name = sigla;
+	public void setName(String name) {
+		this.name = name;
+		// It is necessary to update the name to be drawn by the DrawText class.
+		((DrawText)drawElement).setText(name);
 	}
 
 	/**
@@ -170,31 +167,31 @@ public abstract class Node implements java.io.Serializable {
 	}	
 
 	/**
-	 *  Modifica a posicao do nó.
+	 *  Modifica a position do nó.
 	 *
 	 *@param  x  Posição x do nó.
 	 *@param  y  Posição y do nó.
 	 */
 	public void setPosition(double x, double y) {
-		posicao.setLocation(x, y);
+		position.setLocation(x, y);
 	}
 
 	/**
-	 *  Modifica a largura do nó.
+	 *  Set the node's width.
 	 *
-	 *@param  l  Nova largura do nó.
+	 *@param  width  Node's width.
 	 */
-	public static void setWidth(int l) {
-		largura = l;
+	public static void setWidth(int width) {
+		size.x = width;
 	}
 
 	/**
-	 *  Modifica a altura do nó.
+	 *  Set the node's height.
 	 *
-	 *@param  a  A nova altura do nó.
+	 *@param  heigth  The node's height.
 	 */
-	public static void setHeight(int a) {
-		altura = a;
+	public static void setHeight(int height) {
+		size.y = height;
 	}
 
 	/**
@@ -203,7 +200,7 @@ public abstract class Node implements java.io.Serializable {
 	 *@param  b  Status de seleção.
 	 */
 	public void setSelected(boolean b) {
-		selecionado = b;
+		bSelected = b;
 	}
 
 	/**
@@ -278,25 +275,25 @@ public abstract class Node implements java.io.Serializable {
 	 *@return    Posição do nó.
 	 */
 	public Point2D.Double getPosition() {
-		return posicao;
+		return position;
 	}
 
 	/**
-	 *  Retorna a largura do nó.
+	 *  Get the node's width.
 	 *
-	 *@return    largura do nó.
+	 *@return Node's width.
 	 */
 	public static int getWidth() {
-		return largura;
+		return (int)size.x;
 	}
 
 	/**
-	 *  Retorna a altura do nó.
+	 *  Get the node's height.
 	 *
-	 *@return    Altura do nó.
+	 *@return The node's height.
 	 */
 	public static int getHeight() {
-		return altura;
+		return (int)size.y;
 	}
 
 	/**
@@ -306,7 +303,7 @@ public abstract class Node implements java.io.Serializable {
 	 */
 
 	public boolean isSelected() {
-		return selecionado;
+		return bSelected;
 	}
 	/**
 	 *  Retorna a descrição de explanação do nó.
@@ -457,6 +454,14 @@ public abstract class Node implements java.io.Serializable {
 		
 		Node node = (Node) obj;
 		return (node.name.equals(this.name));		
+	}
+	
+	public void paint(Graphics2D graphics) {
+		drawElement.paint(graphics);
+	}
+
+	public static SerializablePoint2D getSize() {
+		return size;
 	}
 
 }

@@ -21,31 +21,46 @@
 
 package unbbayes.prs;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.geom.Point2D.Double;
+
+import unbbayes.gui.draw.DrawArrow;
+import unbbayes.gui.draw.DrawLine;
+import unbbayes.gui.draw.IDrawable;
+
 
 /**
- *  Classe que representa um arco entre nós.
+ *  This class represents an edge between two nodes.
  *
- *@author     Michael e Rommel
+ *@author Michael Onishi
+ *@author Rommel Carvalho
  */
-public class Edge implements java.io.Serializable {
-
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
+public class Edge implements java.io.Serializable, IDrawable {
 	
+	private static Color color = Color.black;
+	private DrawLine drawLine;
+	private DrawArrow drawArrow;
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3912210617648282346L;
+
 	/**
      *  Guarda o primeiro nó. Quando há orientação assume semântica como origem.
      */
-    private Node no1;
+    private Node node1;
 
     /**
      *  Guarda o segundo nó. Quando há orientação assume semântica como destino.
      */
-    private Node no2;
+    private Node node2;
 
     /**
      *  Status de seleção. Utilizado pela interface.
      */
-    private boolean selecionado;
+    private boolean bSelected;
     
     /**
      *  Status que indica se existe ou não direção no arco. Utilizado pela interface.
@@ -54,27 +69,36 @@ public class Edge implements java.io.Serializable {
 
 
     /**
-     *  Constrói um arco que vai de no1 a no2.
+     *  Constrói um arco que vai de node1 a node2.
      *
-     *@param  no1  Nó origem
-     *@param  no2  Nó destino
+     *@param  node1  Nó origem
+     *@param  node2  Nó destino
      */
     public Edge(Node no1, Node no2) {
-        this.no1 = no1;
-        this.no2 = no2;
+        this.node1 = no1;
+        this.node2 = no2;
         
-//        assert no1 != no2 : "arco malfeito";
+        // assert node1 != node2 : "arco malfeito";
         direction = true;
+        
+        // Here it is defined how this edge is going to be drawn.
+        drawLine = new DrawLine(node1.getPosition(), node2.getPosition(), Node.getSize());
+        drawArrow = new DrawArrow(node1.getPosition(), node2.getPosition(), Node.getSize());
+        drawArrow.setNew(false);
+        drawLine.add(drawArrow);
     }
 
 
     /**
      *  Modifica o status de seleção do arco.
      *
-     *@param  selecionado  status de seleção desejado.
+     *@param  bSelected  status de seleção desejado.
      */
-    public void setSelecionado(boolean selecionado) {
-        this.selecionado = selecionado;
+    public void setSelected(boolean b) {
+    	// Update the DrawArrow and DrawLine selection state
+		drawArrow.setSelected(b);
+		drawLine.setSelected(b);
+        this.bSelected = b;
     }
     
     /**
@@ -93,7 +117,7 @@ public class Edge implements java.io.Serializable {
      *@return    o primeiro nó associado ao arco.
      */
     public Node getOriginNode() {
-        return no1;
+        return node1;
     }
 
 
@@ -103,7 +127,7 @@ public class Edge implements java.io.Serializable {
      *@return    o segundo nó associado ao arco.
      */
     public Node getDestinationNode() {
-        return no2;
+        return node2;
     }
 
 
@@ -113,7 +137,7 @@ public class Edge implements java.io.Serializable {
      *@return    status de seleção.
      */
     public boolean isSelected() {
-        return selecionado;
+        return bSelected;
     }
     
     /**
@@ -129,16 +153,16 @@ public class Edge implements java.io.Serializable {
  	 *  Muda a direção do arco. O pai vira filho e o filho vira pai
  	 */   
     public void changeDirection() {
-    	// Faz a troca na lista de pais e filhos de no1 e no2
-    	no1.getChildren().remove(no2);
-	    no2.getParents().remove(no1);
-	    no1.getParents().add(no2);
-	    no2.getChildren().add(no1);
+    	// Faz a troca na lista de pais e filhos de node1 e node2
+    	node1.getChildren().remove(node2);
+	    node2.getParents().remove(node1);
+	    node1.getParents().add(node2);
+	    node2.getChildren().add(node1);
 	    
 	    // Faz a troca no próprio Edge
-    	Node aux = no1;
-    	no1 = no2;
-    	no2 = aux;
+    	Node aux = node1;
+    	node1 = node2;
+    	node2 = aux;
     }
         
 
@@ -146,8 +170,48 @@ public class Edge implements java.io.Serializable {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		return "Edge: " + no1.toString() + " -> " + no2.toString();
+		return "Edge: " + node1.toString() + " -> " + node2.toString();
 	}
+
+
+	public Double getPosition() {return null;}
+	
+	public void setPosition(double x, double y) {}
+	
+	/**
+     *  Get the edge's color.
+     *	@return The edge's color.
+     */
+    public static Color getColor() {
+        return color;
+    }
+    
+    /**
+     *  Set the edge's color.
+     *
+     *@param rgb The edge's RGB color.
+     */
+    public static void setColor(int rgb) {
+        color = new Color(rgb);
+    }
+    
+	public void paint(Graphics2D graphics) {
+		drawLine.setFillColor(getColor());
+		drawArrow.setFillColor(getColor());
+		drawLine.paint(graphics);
+	}
+
+	/**
+	 * This method is responsible for telling the drawing class, DrawArrow, 
+	 * to tell if the edge being drawn is new or not. This vaies the destination 
+	 * point to draw the arrow.
+	 * @param bNew True if it is new and false otherwise.
+	 */
+	public void setDrawNew(boolean bNew) {
+		drawArrow.setNew(bNew);
+		drawLine.setNew(bNew);
+	}
+	
 
 }
 

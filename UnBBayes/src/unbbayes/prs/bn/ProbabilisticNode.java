@@ -21,8 +21,10 @@
 package unbbayes.prs.bn;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.util.ResourceBundle;
 
+import unbbayes.gui.draw.DrawEllipse;
 import unbbayes.prs.Node;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
@@ -30,25 +32,35 @@ import unbbayes.util.SetToolkit;
 /**
  *  Representa variável probabilística.
  *
- *@author     Michael e Rommel
+ *@author Michael Onishi
+ *@author Rommel Carvalho
  */
 public class ProbabilisticNode extends TreeVariable implements ITabledVariable, java.io.Serializable {
-
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;
 			
-    private ProbabilisticTable tabelaPot;
-    private static Color descriptionColor = new Color(Color.yellow.getRGB());
-    private static Color explanationColor = new Color(Color.green.getRGB());
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -8362313890037632119L;
+	
+	private ProbabilisticTable tabelaPot;
+    private static Color descriptionColor = Color.yellow;
+    private static Color explanationColor = Color.green;
+    private DrawEllipse drawEllipse;
 
     /** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
 
     /**
-     * Inicializa a tabela de potenciais.
+     * Constructs a ProbabilisticNode with an initialized table and 
+     * an incremented DrawElement.
      */
     public ProbabilisticNode() {
         tabelaPot = new ProbabilisticTable();
+        // Here it is defined how this node is going to be drawn.
+        // In the superclass, Node, it was already definied to draw text, here
+        // we add the draw ellipse.
+        drawEllipse = new DrawEllipse(position, size);
+        drawElement.add(drawEllipse);
     }
 
 
@@ -62,6 +74,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
      *@return cópia do nó
      */
     public ProbabilisticNode clone(double raio) {
+    	// TODO Rever esse método para não precisar do raio.
         ProbabilisticNode no = new ProbabilisticNode();
 
         for (int i = 0; i < getStatesSize(); i++) {
@@ -254,6 +267,23 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
 	 */
 	public static Color getExplanationColor() {
 		return explanationColor;
+	}
+	
+	@Override
+	public void setSelected(boolean b) {
+		// Update the DrawEllipse selection state
+		drawEllipse.setSelected(b);
+		super.setSelected(b);
+	}
+	
+	@Override
+	public void paint(Graphics2D graphics) {
+		if (getInformationType() == Node.DESCRIPTION_TYPE) {
+			drawEllipse.setFillColor(getDescriptionColor());
+    	} else if (getInformationType() == Node.EXPLANATION_TYPE) {
+    		drawEllipse.setFillColor(getExplanationColor());
+    	}
+		super.paint(graphics);
 	}
 
 }

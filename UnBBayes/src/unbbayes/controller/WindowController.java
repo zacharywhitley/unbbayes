@@ -112,7 +112,7 @@ public class WindowController implements KeyListener {
 
     /**
      *  Constrói o controlador responsável pela criação da rede Bayesiana ( <code>
-     *  TRP</code> ) e da tela principal ( <code>IUnBBayes</code> ). Além
+     *  TRP</code> ) e da tela principal ( <code>UnBBayesFrame</code> ). Além
      *  disso, este construtor também adiciona AdjustmentListener para os
      *  JScrollBars do <code>jspDesenho</code> .
      *
@@ -130,11 +130,11 @@ public class WindowController implements KeyListener {
 
 
     /**
-     *  Retorna a tela principal ( <code>IUnBBayes</code> ).
+     *  Retorna a tela principal ( <code>UnBBayesFrame</code> ).
      *
-     * @return    retorna a tela <code>IUnBBayes</code>
+     * @return    retorna a tela <code>UnBBayesFrame</code>
      * @since
-     * @see       unbbayes.gui.IUnBBayes
+     * @see       unbbayes.gui.UnBBayesFrame
      */
     public NetWindow getScreen() {
         return this.screen;
@@ -574,8 +574,8 @@ public class WindowController implements KeyListener {
 
             // the number of rows in this case is the number of states of the
             // node and the number of columns is always 1.
-            int rows = node.getStatesSize();
-            int columns = 1;
+            //int rows = node.getStatesSize();
+            //int columns = 1;
 
             // there is no potential table and the number of variables is the
             // number of parents this node has.
@@ -663,7 +663,7 @@ public class WindowController implements KeyListener {
                 if (copia.get(i) instanceof Node) {
                     ProbabilisticNode noAux = (ProbabilisticNode)copia.get(i);
                     ProbabilisticNode noAux2 = new ProbabilisticNode();
-                    noAux2 = (ProbabilisticNode)noAux.clone(screen.getIGraph().getRadius());
+                    noAux2 = (ProbabilisticNode)noAux.clone(Node.getWidth()/2);
                     net.addNode(noAux2);
                     copiados.add(noAux2);
                 }
@@ -990,7 +990,7 @@ public class WindowController implements KeyListener {
                 menorY = yAux;
             }
         }
-        double raio = screen.getIGraph().getRadius();
+        double raio = Node.getWidth()/2;
         maiorX += raio;
         maiorY += raio;
         menorX -= raio;

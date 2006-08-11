@@ -22,36 +22,46 @@
 package unbbayes.prs.id;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
 import java.util.ResourceBundle;
 
+import unbbayes.gui.draw.DrawParallelogram;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
 
 /**
- *  Classe que representa variável de utilidade.
+ *  This class represents the utility node.
  *
- *@author     Michael e Rommel
+ *@author Michael Onishi 
+ *@author Rommel Carvalho
  */
 public class UtilityNode extends Node implements ITabledVariable, java.io.Serializable {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
-
 	
     private PotentialTable utilTable;
 
-    private static Color color = new Color(Color.cyan.getRGB());
+    private static Color color = Color.cyan;
+    
+    private DrawParallelogram drawParallelogram;
     
     /** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
 
-    /**
-     *  Construtor. Inicializa a tabela de potencial
+  	/**
+     * Constructs a UtilityNode with an initialized table and 
+     * an incremented DrawElement.
      */
     public UtilityNode() {
         utilTable = new UtilityTable();
         states.add(resource.getString("utilityName"));
+        // Here it is defined how this node is going to be drawn.
+        // In the superclass, Node, it was already definied to draw text, here
+        // we add the draw parallelogram.
+        drawParallelogram = new DrawParallelogram(position, size);
+        drawElement.add(drawParallelogram);
     }
     
     
@@ -81,19 +91,32 @@ public class UtilityNode extends Node implements ITabledVariable, java.io.Serial
     }
 
     /**
-     *  Retorna a cor do nó.
-     *
+     *  Get the node's color.
+     *	@return The node's color.
      */
     public static Color getColor() {
         return color;
     }
-
+    
     /**
-     *  Modifica a cor do nó.
+     *  Set the node's color.
      *
-     *@param c O novo RGB da cor do nó.
+     *@param rgb The node's RGB color.
      */
-    public static void setColor(int c) {
-        color = new Color(c);
+    public static void setColor(int rgb) {
+        color = new Color(rgb);
+    }
+    
+    @Override
+	public void setSelected(boolean b) {
+		// Update the DrawEllipse selection state
+    	drawParallelogram.setSelected(b);
+		super.setSelected(b);
+	}
+    
+    @Override
+    public void paint(Graphics2D graphics) {
+    	drawParallelogram.setFillColor(getColor());
+    	super.paint(graphics);
     }
 }

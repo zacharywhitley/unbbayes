@@ -53,7 +53,7 @@ public class NetWindow extends JInternalFrame {
 	private static final long serialVersionUID = 0;		
 	
     private JViewport graphViewport;
-    private final IGraph graph;
+    private final GraphPane graph;
     private final WindowController controller;
     private JScrollPane jspGraph;
     private JLabel status;
@@ -79,7 +79,7 @@ public class NetWindow extends JInternalFrame {
         //instancia variáveis de instância
         graphViewport                     = new JViewport();
         controller                        = new WindowController(net, this);
-        graph                             = new IGraph(controller, graphViewport);
+        graph                             = new GraphPane(controller, graphViewport);
         /*
 		graph.setNode(net.getNos());
         graph.setArc(net.getArcos());
@@ -87,8 +87,10 @@ public class NetWindow extends JInternalFrame {
 		jspGraph                          = new JScrollPane(graphViewport);
 		status                            = new JLabel(resource.getString("statusReadyLabel"));
 		bCompiled                         = false;
-		graph.getGraphViewport().reshape(0, 0, (int) (graph.getBiggestPoint().getX() + 2 * graph.getRadius()), (int) (graph.getBiggestPoint().getY() + 2 * graph.getRadius()));
-        graph.getGraphViewport().setViewSize(new Dimension((int) (graph.getBiggestPoint().getX() + 2 * graph.getRadius()), (int) (graph.getBiggestPoint().getY() + 2 * graph.getRadius())));
+		long width = Node.getWidth()/2;
+        long height = Node.getHeight()/2;
+		graph.getGraphViewport().reshape(0, 0, (int) (graph.getBiggestPoint().getX() + 2 * width), (int) (graph.getBiggestPoint().getY() + 2 * height));
+        graph.getGraphViewport().setViewSize(new Dimension((int) (graph.getBiggestPoint().getX() + 2 * width), (int) (graph.getBiggestPoint().getY() + 2 * height)));
 //        Rectangle repintar = new Rectangle(graph.getGraphViewport().getViewRect());
 
         //setar o conteúdo e o tamanho do graphViewport
@@ -136,10 +138,10 @@ public class NetWindow extends JInternalFrame {
     /**
      *  Retorna o grafo responsável pela representação gráfica da rede.
      *
-     *@return    retorna o (<code>IGraph</code>)
-     *@see       IGraph
+     *@return    retorna o (<code>GraphPane</code>)
+     *@see       GraphPane
      */
-    public IGraph getIGraph() {
+    public GraphPane getIGraph() {
         return this.graph;
     }
 
@@ -272,11 +274,12 @@ public class NetWindow extends JInternalFrame {
 	 */
 	public void changeToNetCompilation() {
 
-        graph.setbArc(false);
+        /*graph.setbArc(false);
         graph.setbProbabilisticNode(false);
         graph.setbDecisionNode(false);
         graph.setbUtilityNode(false);
-        graph.setbSelect(false);
+        graph.setbSelect(false);*/
+		graph.setAction(GraphPane.NONE);
         graph.removeKeyListener(controller);
 //        graph.removeKeyListener(controller);
 //        graph.removeKeyListener(controller);
