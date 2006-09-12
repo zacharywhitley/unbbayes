@@ -1,0 +1,12 @@
+package unbbayes.gui.graph;
+
+public enum GraphAction {
+	
+	NONE,
+	CREATE_EDGE,
+	CREATE_PROBABILISTIC_NODE,
+	CREATE_DECISION_NODE,
+	CREATE_UTILITY_NODE,
+	SELECT_MANY_OBJECTS
+
+}

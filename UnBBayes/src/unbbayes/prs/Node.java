@@ -31,7 +31,7 @@ import java.util.List;
 
 import unbbayes.gui.draw.DrawElement;
 import unbbayes.gui.draw.DrawText;
-import unbbayes.gui.draw.IDrawable;
+import unbbayes.gui.draw.IOnePositionDrawable;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.util.ArrayMap;
@@ -43,7 +43,7 @@ import unbbayes.util.SerializablePoint2D;
  *
  *@author     Michael e Rommel
  */
-public abstract class Node implements Serializable, IDrawable {
+public abstract class Node implements Serializable, IOnePositionDrawable {
 
 	private String description;
 	protected String name;
@@ -164,43 +164,6 @@ public abstract class Node implements Serializable, IDrawable {
 	 */
 	public void setParents(NodeList pais) {
 		this.parents = pais;
-	}	
-
-	/**
-	 *  Modifica a position do nó.
-	 *
-	 *@param  x  Posição x do nó.
-	 *@param  y  Posição y do nó.
-	 */
-	public void setPosition(double x, double y) {
-		position.setLocation(x, y);
-	}
-
-	/**
-	 *  Set the node's width.
-	 *
-	 *@param  width  Node's width.
-	 */
-	public static void setWidth(int width) {
-		size.x = width;
-	}
-
-	/**
-	 *  Set the node's height.
-	 *
-	 *@param  heigth  The node's height.
-	 */
-	public static void setHeight(int height) {
-		size.y = height;
-	}
-
-	/**
-	 *  Modifica o status de seleção do nó.
-	 *
-	 *@param  b  Status de seleção.
-	 */
-	public void setSelected(boolean b) {
-		bSelected = b;
 	}
 
 	/**
@@ -269,42 +232,6 @@ public abstract class Node implements Serializable, IDrawable {
 		return parents;
 	}
 
-	/**
-	 *  Retorna a posição gráfica do nó.
-	 *
-	 *@return    Posição do nó.
-	 */
-	public Point2D.Double getPosition() {
-		return position;
-	}
-
-	/**
-	 *  Get the node's width.
-	 *
-	 *@return Node's width.
-	 */
-	public static int getWidth() {
-		return (int)size.x;
-	}
-
-	/**
-	 *  Get the node's height.
-	 *
-	 *@return The node's height.
-	 */
-	public static int getHeight() {
-		return (int)size.y;
-	}
-
-	/**
-	 *  Retorna o status de seleção do nó.
-	 *
-	 *@return    Status de seleção do nó.
-	 */
-
-	public boolean isSelected() {
-		return bSelected;
-	}
 	/**
 	 *  Retorna a descrição de explanação do nó.
 	 *
@@ -385,16 +312,6 @@ public abstract class Node implements Serializable, IDrawable {
 	}
 
 	/**
-	 *  Imprime a descrição do nó no formato: "descrição (sigla)" (sem aspas)
-	     *  É utilizado no JTree da Interface quando a rede é compilada.
-	 *
-	 *@return    descrição do nó formatado.
-	 */
-	public String toString() {
-		return description + " (" + name + ")";
-	}
-
-	/**
 	 *  Monta lista de nós adjacentes.
 	 */
 	public void makeAdjacents() {
@@ -443,6 +360,16 @@ public abstract class Node implements Serializable, IDrawable {
 	public void setStates(List<String> states) {
 		this.states = states;
 	}
+	
+	/**
+	 *  Imprime a descrição do nó no formato: "descrição (sigla)" (sem aspas)
+	 *  É utilizado no JTree da Interface quando a rede é compilada.
+	 *
+	 *@return    descrição do nó formatado.
+	 */
+	public String toString() {
+		return description + " (" + name + ")";
+	}
 
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
@@ -459,9 +386,70 @@ public abstract class Node implements Serializable, IDrawable {
 	public void paint(Graphics2D graphics) {
 		drawElement.paint(graphics);
 	}
+	
+	public boolean isPointInDrawableArea(int x, int y) {
+		double x1 = position.x;
+        double y1 = position.y;
+        double width = size.x/2;
+        double height = size.y/2;
 
-	public static SerializablePoint2D getSize() {
+        if ((x >= x1 - width) && (x <= x1 + width) && (y >= y1 - height) && (y <= y1 + height)) {
+            return true;
+        }
+        
+		return false;
+	}
+
+	public boolean isSelected() {
+		return bSelected;
+	}
+
+	public void setSelected(boolean b) {
+		bSelected = b;
+	}
+	
+	public Point2D.Double getPosition() {
+		return position;
+	}
+	
+	public void setPosition(double x, double y) {
+		position.setLocation(x, y);
+	}
+	
+	/**
+	 *  Get the node's width.
+	 *
+	 *@return Node's width.
+	 */
+	public static int getWidth() {
+		return (int)size.x;
+	}
+
+	/**
+	 *  Get the node's height.
+	 *
+	 *@return The node's height.
+	 */
+	public static int getHeight() {
+		return (int)size.y;
+	}
+
+	/**
+	 * Returns the node's size (x,y) where x = width and y = height. 
+	 * @return The node's size.
+	 */
+	public static Point2D.Double getSize() {
 		return size;
+	}
+	
+	/**
+	 *  Set the node's size.
+	 *
+	 *@param  width  The node's width.
+	 *@param  height The node's height.
+	 */
+	public static void setSize(double width, double height) {
+		size.setLocation(width, height);
 	}
 
 }

@@ -45,14 +45,25 @@ import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
 
 import unbbayes.controller.WindowController;
+import unbbayes.gui.draw.DrawDashRectangle;
 import unbbayes.gui.draw.DrawElement;
 import unbbayes.gui.draw.IDrawable;
+//import unbbayes.gui.graph.GraphAction;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.util.GeometricUtil;
 import unbbayes.util.NodeList;
+ enum GraphAction {
+	
+	NONE,
+	CREATE_EDGE,
+	CREATE_PROBABILISTIC_NODE,
+	CREATE_DECISION_NODE,
+	CREATE_UTILITY_NODE,
+	SELECT_MANY_OBJECTS
 
+}
 /**
  *  Essa classe é responsável por desenhar a rede Bayesiana na tela. Ela extende a classe
  *  <code>JPanel</code>. Ela também implementa
@@ -73,26 +84,25 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
     private List<Edge> edgeList;
     private NodeList nodeList;
     private List<IDrawable> selectedGroup;
-    private Node presentNode;
-    private Node movingNode;
     private IDrawable selected;
-    private Graphics2D view;
-    private Point2D.Double beginSelectionPoint;
+    private Graphics2D graphBoard;
+    private Point2D.Double startSelectionPoint;
     private Point2D.Double endSelectionPoint;
-    private Edge newEdge;
-    private int action;
+    private DrawElement drawSelection;
+    private GraphAction action;
     public static final int NONE = 0;
     public static final int CREATE_EDGE = 1;
     public static final int CREATE_PROBABILISTIC_NODE = 2;
     public static final int CREATE_DECISION_NODE = 3;
     public static final int CREATE_UTILITY_NODE = 4;
     public static final int SELECT_MANY_OBJECTS = 5;
-    private boolean bNodeMoved;
-    private boolean bMoveArc;
+    private Node movingNode;
+    private Edge movingEdge;
+    private boolean bMoveEdge;
     private boolean bMoveNode;
-    private static Color selectionColor;    
+    private static Color selectionColor;
     private static Color backColor;
-    // TODO Substituir o uso de radius pelo tamanho do nó com largura e altura!!!
+    // TODO Fazer com que salve e carregue o tamanho do nó!!!
     private JViewport graphViewport;
     private Dimension visibleDimension;
     private Dimension graphDimension;
@@ -126,10 +136,10 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
         edgeList = controlador.getNet().getEdges();
         nodeList = controlador.getNet().getNodes();
         selectedGroup = new ArrayList<IDrawable>();
+        startSelectionPoint = new Point2D.Double();
         endSelectionPoint = new Point2D.Double();
-        beginSelectionPoint = new Point2D.Double();
-        bNodeMoved = false;
-        bMoveArc = false;
+        drawSelection = new DrawDashRectangle(startSelectionPoint, endSelectionPoint);
+        bMoveEdge = false;
         bMoveNode = false;
         selectionColor = Color.red;
         backColor = Color.white;
@@ -486,18 +496,18 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
     			
     		case GraphPane.CREATE_EDGE:
     			if (node != null) {
-                    bMoveArc = true;
+                    bMoveEdge = true;
                     ProbabilisticNode node2 = new ProbabilisticNode();
                     node2.setPosition(e.getX(), e.getY());
-                    newEdge = new Edge(node, node2);
+                    movingEdge = new Edge(node, node2);
                     // Inform that the edge is a new one, therefore it is not 
                     // part of the graph yet.
-                    newEdge.setDrawNew(true);
+                    movingEdge.setNew(true);
                 }
     			return;
     			
     		case GraphPane.SELECT_MANY_OBJECTS:
-    			beginSelectionPoint.setLocation(e.getX(), e.getY());
+    			startSelectionPoint.setLocation(e.getX(), e.getY());
                 endSelectionPoint.setLocation(e.getX(), e.getY());
     			return;
     		
@@ -590,39 +600,39 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
         Edge arc = getArc(e.getX(), e.getY());
         
         switch (action) {
-		case GraphPane.CREATE_PROBABILISTIC_NODE:
+		case CREATE_PROBABILISTIC_NODE:
 			
 			break;
 			
-		case GraphPane.CREATE_DECISION_NODE:
+		case CREATE_DECISION_NODE:
 			
 			break;
 			
-		case GraphPane.CREATE_UTILITY_NODE:
+		case CREATE_UTILITY_NODE:
 			
 			break;
 			
-		case GraphPane.CREATE_EDGE:
+		case CREATE_EDGE:
 			if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-	        	Node originNode = newEdge.getOriginNode();
+	        	Node originNode = movingEdge.getOriginNode();
 	            if ((destinationNode != null) && !originNode.equals(destinationNode) && (controller.getNet().hasEdge(originNode, destinationNode) == -1)) {
-	            	newEdge = new Edge(originNode, destinationNode);
-	            	insertEdge(newEdge);
+	            	movingEdge = new Edge(originNode, destinationNode);
+	            	insertEdge(movingEdge);
 	            }
 
 	            // As the edge has been inserted, there is no more new edge.
-	            newEdge = null;
+	            movingEdge = null;
 	        }
 			break;
 			
-		case GraphPane.SELECT_MANY_OBJECTS:
+		case SELECT_MANY_OBJECTS:
 			endSelectionPoint.setLocation(e.getX(), e.getY());
-            setSelectedGroup(beginSelectionPoint, endSelectionPoint);
-            beginSelectionPoint.setLocation(-1,-1);
+            setSelectedGroup(startSelectionPoint, endSelectionPoint);
+            startSelectionPoint.setLocation(-1,-1);
             endSelectionPoint.setLocation(-1,-1);
 			break;
 
-		case GraphPane.NONE:
+		case NONE:
 			bMoveNode = false;
             setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             if ((selected == null) || (destinationNode == null || !selected.equals(destinationNode)) && (arc == null || !selected.equals(arc))) {
@@ -631,14 +641,9 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 			break;
 		}
         
-        if (bMoveArc) {
+        if (bMoveEdge) {
             //seta para false para dizer que acabou o movimento
-            bMoveArc = false;
-        }
-        
-        if (bNodeMoved) {
-            //retorna o valor de bArrastouNo para false para futura comparação
-            bNodeMoved = false;
+            bMoveEdge = false;
         }
 
         if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
@@ -665,7 +670,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
      *@see MouseEvent
      */
     public void mouseEntered(MouseEvent e) {
-        if ((!bMoveNode) && (!bMoveArc)) {
+        if ((!bMoveNode) && (!bMoveEdge)) {
             //setar o tamanho visivel da rede como o tamanho o jspDesenho - raio
             visibleDimension = new Dimension((int) (controller.getScreen().getJspGraph().getSize().getWidth()), (int) (controller.getScreen().getJspGraph().getSize().getHeight()));
 			graphViewport.setOpaque(true);
@@ -778,12 +783,10 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 			}
         	
         	if (x != -1 && y != -1) {
-        		if (getAction() == GraphPane.CREATE_EDGE && bMoveArc) {
-        			updatePresentArc(x, y);
+        		if (getAction() == GraphPane.CREATE_EDGE && bMoveEdge) {
+        			updateMovingEdge(x, y);
         		} else if (bMoveNode) {
-        			presentNode = movingNode;
-                    updatePresentNode(x, y);
-                    bNodeMoved = true;
+                    updateMovingNode(x, y);
         		}
         	}
         }
@@ -813,9 +816,8 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
      *@param  y  Posição y (double) da ponta do arco
      *@see Edge
      */
-    public void updatePresentArc(double x, double y) {
-        newEdge.getDestinationNode().setPosition(x, y);
-        
+    public void updateMovingEdge(double x, double y) {
+        movingEdge.setDestinationPosition(x, y);
         update();
     }
 
@@ -826,8 +828,8 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
      *@param  y  Posição y (double) do centro do nó
      *@see Node
      */
-    public void updatePresentNode(double x, double y) {
-        presentNode.setPosition(x, y);
+    public void updateMovingNode(double x, double y) {
+    	movingNode.setPosition(x, y);
         update();
     }
 
@@ -847,7 +849,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
         controller.insertEdge(edge);
         // Inform that the edge has being inserted in the graph, therefore 
         // it is not new anymore.
-        edge.setDrawNew(false);
+        edge.setNew(false);
         update();
     }
 
@@ -867,7 +869,6 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
                || ((p2.getX() < p1.getX()) && (nodeAux.getPosition().getX() >= p2.getX()) && (nodeAux.getPosition().getX() <= p1.getX())) )
                && ( ((p1.getY() <= p2.getY()) && (nodeAux.getPosition().getY() >= p1.getY()) && (nodeAux.getPosition().getY() <= p2.getY()))
                || ((p2.getY() < p1.getY()) && (nodeAux.getPosition().getY() >= p2.getY()) && (nodeAux.getPosition().getY() <= p1.getY())) ) ) {
-                //if ((noAux.getPosicao().getX() >= p1.getX()) && (noAux.getPosicao().getX() <= p2.getX()) && (noAux.getPosicao().getY() >= p1.getY()) && (noAux.getPosicao().getY() <= p2.getY())) {
                     selectedGroup.add(nodeAux);
                     nodeAux.setSelected(true);
                 }
@@ -875,17 +876,10 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
         for (int i = 0; i < edgeList.size(); i++) {
             Edge arcAux = (Edge)edgeList.get(i);
             Node nodeAux2 = arcAux.getDestinationNode();
-            //comentamos uma parte do if abaixo, pois queremos manter a relação dos arcos com os pais originais ou os
-            //novos que serão copiados. Para isso temos que selecionar todos os arcos que um nó selecionado possui.
-            if ( /*( ( ((p1.getX() <= p2.getX()) && (noAux1.getPosicao().getX() >= p1.getX()) && (noAux1.getPosicao().getX() <= p2.getX()))
-               || ((p2.getX() < p1.getX()) && (noAux1.getPosicao().getX() >= p2.getX()) && (noAux1.getPosicao().getX() <= p1.getX())) )
-               && ( ((p1.getY() <= p2.getY()) && (noAux1.getPosicao().getY() >= p1.getY()) && (noAux1.getPosicao().getY() <= p2.getY()))
-               || ((p2.getY() < p1.getY()) && (noAux1.getPosicao().getY() >= p2.getY()) && (noAux1.getPosicao().getY() <= p1.getY())) ) )
-               && */( ( ((p1.getX() <= p2.getX()) && (nodeAux2.getPosition().getX() >= p1.getX()) && (nodeAux2.getPosition().getX() <= p2.getX()))
+            if (( ( ((p1.getX() <= p2.getX()) && (nodeAux2.getPosition().getX() >= p1.getX()) && (nodeAux2.getPosition().getX() <= p2.getX()))
                || ((p2.getX() < p1.getX()) && (nodeAux2.getPosition().getX() >= p2.getX()) && (nodeAux2.getPosition().getX() <= p1.getX())) )
                && ( ((p1.getY() <= p2.getY()) && (nodeAux2.getPosition().getY() >= p1.getY()) && (nodeAux2.getPosition().getY() <= p2.getY()))
                || ((p2.getY() < p1.getY()) && (nodeAux2.getPosition().getY() >= p2.getY()) && (nodeAux2.getPosition().getY() <= p1.getY())) ) ) ) {
-            //if (((noAux1.getPosicao().getX() >= p1.getX()) && (noAux1.getPosicao().getX() <= p2.getX()) && (noAux1.getPosicao().getY() >= p1.getY()) && (noAux1.getPosicao().getY() <= p2.getY())) && ((noAux2.getPosicao().getX() >= p1.getX()) && (noAux2.getPosicao().getX() <= p2.getX()) && (noAux2.getPosicao().getY() >= p1.getY()) && (noAux2.getPosicao().getY() <= p2.getY())))  {
                 selectedGroup.add(arcAux);
                 arcAux.setSelected(true);
             }
@@ -893,9 +887,8 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
     }
 
     /**
-     *  Seta o atributo selecionado (boolean) do nó (<code>Node</code>) e/ou arco (<code>Edge</code>) para falso, caso exista selecionado(s)
+     * Unselect all objects selected, from single and group selection.  
      *
-     * @see Node
      */
     public void unselectAll() {
     	// Unselect the single selection.
@@ -910,6 +903,10 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
         selectedGroup.clear();
     }
     
+    /**
+     * Set the action to be taken.
+     * @param action The action to be taken.
+     */
     public void setAction(int action) {
     	switch (action) {
 		case GraphPane.CREATE_PROBABILISTIC_NODE:
@@ -933,6 +930,10 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
     	this.action = action;
     }
     
+    /**
+     * Get the action to be taken.
+     * @return The action to be taken.
+     */
     public int getAction() {
     	return action;
     }
@@ -944,46 +945,31 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
      *@see Graphics
      */
     public void paint(Graphics g) {
-        view = (Graphics2D) g;
-        view.setBackground(getBackColor());
-        view.clearRect((int) controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue(), (int) controller.getScreen().getJspGraph().getVerticalScrollBar().getValue(), (int) (controller.getScreen().getJspGraph().getSize().getWidth()), (int) (controller.getScreen().getJspGraph().getSize().getHeight()));
-        view.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+        graphBoard = (Graphics2D) g;
+        graphBoard.setBackground(getBackColor());
+        graphBoard.clearRect((int) controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue(), (int) controller.getScreen().getJspGraph().getVerticalScrollBar().getValue(), (int) (controller.getScreen().getJspGraph().getSize().getWidth()), (int) (controller.getScreen().getJspGraph().getSize().getHeight()));
+        graphBoard.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 
-        //desenha area de selecao
+        // Draw the selection area, if asked to.
         if (getAction() == GraphPane.SELECT_MANY_OBJECTS) {
-            float [] dash = {10f, 10f};
-            view.setStroke(new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 10f, dash, 10f));
-            view.setColor(Color.black);
-            if ((beginSelectionPoint.getX() <= endSelectionPoint.getX()) && (beginSelectionPoint.getY() <= endSelectionPoint.getY())) {
-                view.drawRect((int)beginSelectionPoint.getX(), (int)beginSelectionPoint.getY(), (int)(endSelectionPoint.getX()-beginSelectionPoint.getX()), (int)(endSelectionPoint.getY()-beginSelectionPoint.getY()));
-            } else {
-                if ((beginSelectionPoint.getX() > endSelectionPoint.getX()) && (beginSelectionPoint.getY() <= endSelectionPoint.getY())) {
-                    view.drawRect((int)endSelectionPoint.getX(), (int)beginSelectionPoint.getY(), (int)(beginSelectionPoint.getX()-endSelectionPoint.getX()), (int)(endSelectionPoint.getY()-beginSelectionPoint.getY()));
-                } else {
-                    if ((beginSelectionPoint.getX() <= endSelectionPoint.getX()) && (beginSelectionPoint.getY() > endSelectionPoint.getY())) {
-                        view.drawRect((int)beginSelectionPoint.getX(), (int)endSelectionPoint.getY(), (int)(endSelectionPoint.getX()-beginSelectionPoint.getX()), (int)(beginSelectionPoint.getY()-endSelectionPoint.getY()));
-                    } else {
-                        view.drawRect((int)endSelectionPoint.getX(), (int)endSelectionPoint.getY(), (int)(beginSelectionPoint.getX()-endSelectionPoint.getX()), (int)(beginSelectionPoint.getY()-endSelectionPoint.getY()));
-                    }
-                }
-            }
+        	drawSelection.paint(graphBoard);
         }
 
-        view.setStroke(new BasicStroke(1));
+        graphBoard.setStroke(new BasicStroke(1));
 
         // Draw all nodes.
         for (int i = 0; i < nodeList.size(); i++) {
-        	nodeList.get(i).paint(view);
+        	nodeList.get(i).paint(graphBoard);
         }
 
         // Draw new edge (not part of the graph yet).
-        if (bMoveArc) {
-        	newEdge.paint(view);
+        if (bMoveEdge) {
+        	movingEdge.paint(graphBoard);
         }
 
         // Draw all edges.
         for (Edge edge : edgeList) {
-			edge.paint(view);
+			edge.paint(graphBoard);
 		}
     }
 

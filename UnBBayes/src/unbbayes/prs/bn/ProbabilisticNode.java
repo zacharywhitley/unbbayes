@@ -80,10 +80,8 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
         for (int i = 0; i < getStatesSize(); i++) {
             no.appendState(getStateAt(i));
         }
-		ProbabilisticNode.setHeight(ProbabilisticNode.getHeight());
 		ProbabilisticNode.setDescriptionColor(ProbabilisticNode.getDescriptionColor().getRGB());
 		ProbabilisticNode.setExplanationColor(ProbabilisticNode.getExplanationColor().getRGB());
-		ProbabilisticNode.setWidth(ProbabilisticNode.getWidth());
         no.setPosition(this.getPosition().getX() + 1.3 * raio, this.getPosition().getY() + 1.3 * raio);
         no.setName(resource.getString("copyName") + this.getName());
         no.setDescription(resource.getString("copyName") + this.getDescription());
@@ -104,8 +102,6 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
 		cloned.setStates(SetToolkit.clone(states));
 		cloned.setAdjacents(SetToolkit.clone(this.getAdjacents()));
 		cloned.setSelected(this.isSelected());
-		ProbabilisticNode.setHeight(ProbabilisticNode.getHeight());
-		ProbabilisticNode.setWidth(ProbabilisticNode.getWidth());
         cloned.setExplanationDescription(this.getExplanationDescription());
         cloned.setPhrasesMap(this.getPhrasesMap());
         cloned.setInformationType(this.getInformationType());

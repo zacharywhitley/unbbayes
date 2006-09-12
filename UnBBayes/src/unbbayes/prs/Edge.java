@@ -23,11 +23,12 @@ package unbbayes.prs;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.geom.Point2D.Double;
+import java.awt.geom.Point2D;
 
 import unbbayes.gui.draw.DrawArrow;
 import unbbayes.gui.draw.DrawLine;
-import unbbayes.gui.draw.IDrawable;
+import unbbayes.gui.draw.ITwoPositionDrawable;
+import unbbayes.util.GeometricUtil;
 
 
 /**
@@ -36,7 +37,7 @@ import unbbayes.gui.draw.IDrawable;
  *@author Michael Onishi
  *@author Rommel Carvalho
  */
-public class Edge implements java.io.Serializable, IDrawable {
+public class Edge implements java.io.Serializable, ITwoPositionDrawable {
 	
 	private static Color color = Color.black;
 	private DrawLine drawLine;
@@ -129,16 +130,6 @@ public class Edge implements java.io.Serializable, IDrawable {
     public Node getDestinationNode() {
         return node2;
     }
-
-
-    /**
-     *  Retorna o status de seleção do arco.
-     *
-     *@return    status de seleção.
-     */
-    public boolean isSelected() {
-        return bSelected;
-    }
     
     /**
      *  Retorna o status de direção do arco.
@@ -164,19 +155,13 @@ public class Edge implements java.io.Serializable, IDrawable {
     	node1 = node2;
     	node2 = aux;
     }
-        
-
-	/**
+       
+    /**
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
 		return "Edge: " + node1.toString() + " -> " + node2.toString();
 	}
-
-
-	public Double getPosition() {return null;}
-	
-	public void setPosition(double x, double y) {}
 	
 	/**
      *  Get the edge's color.
@@ -200,14 +185,72 @@ public class Edge implements java.io.Serializable, IDrawable {
 		drawArrow.setFillColor(getColor());
 		drawLine.paint(graphics);
 	}
+	
+	public boolean isPointInDrawableArea(int x, int y) {
+		double x1 = node1.getPosition().getX();
+        double y1 = node1.getPosition().getY();
+        double x2 = node2.getPosition().getX();
+        double y2 = node2.getPosition().getY();;
+        
+        double yTeste = ((y2 - y1) / (x2 - x1)) * x + (y1 - x1 * ((y2 - y1) / (x2 - x1)));
+        double xTeste = (y - (y1 - x1 * ((y2 - y1) / (x2 - x1)))) / ((y2 - y1) / (x2 - x1));
 
-	/**
-	 * This method is responsible for telling the drawing class, DrawArrow, 
-	 * to tell if the edge being drawn is new or not. This vaies the destination 
-	 * point to draw the arrow.
-	 * @param bNew True if it is new and false otherwise.
-	 */
-	public void setDrawNew(boolean bNew) {
+        Point2D.Double ponto1 = GeometricUtil.getCircunferenceTangentPoint(node1.getPosition(), node2.getPosition(), (Node.getWidth() + Node.getHeight())/4);
+        Point2D.Double ponto2 = GeometricUtil.getCircunferenceTangentPoint(node2.getPosition(), node1.getPosition(), (Node.getWidth() + Node.getHeight())/4);
+
+        if (ponto1.getX() < ponto2.getX()) {
+            if (((y <= yTeste + 5) && (y >= yTeste - 5)) || ((x <= xTeste + 5) && (x >= xTeste - 5))) {
+                if (ponto1.getY() < ponto2.getY()) {
+                    if ((y >= ponto1.getY() - 5) && (y <= ponto2.getY() + 5) && (x >= ponto1.getX() - 5) && (x <= ponto2.getX() + 5)) {
+                        return true;
+                    }
+                }
+                else {
+                    if ((y >= ponto2.getY() - 5) && (y <= ponto1.getY() + 5) && (x >= ponto1.getX() - 5) && (x <= ponto2.getX() + 5)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        else {
+            if (((y <= yTeste + 5) && (y >= yTeste - 5)) || ((x <= xTeste + 5) && (x >= xTeste - 5))) {
+                if (ponto1.getY() < ponto2.getY()) {
+                    if ((y >= ponto1.getY() - 5) && (y <= ponto2.getY() + 5) && (x >= ponto2.getX() - 5) && (x <= ponto1.getX() + 5)) {
+                        return true;
+                    }
+                }
+                else {
+                    if ((y >= ponto2.getY() - 5) && (y <= ponto1.getY() + 5) && (x >= ponto2.getX() - 5) && (x <= ponto1.getX() + 5)) {
+                        return true;
+                    }
+                }
+            }
+        }
+		return false;
+	}
+	
+	public boolean isSelected() {
+        return bSelected;
+    }
+	
+	public Point2D.Double getOriginPosition() {
+		return node1.getPosition();
+	}
+	
+	public void setOriginPosition(double x, double y) {
+		node1.setPosition(x, y);		
+	}
+	
+	public Point2D.Double getDestinationPosition() {
+		return node2.getPosition();
+	}
+	
+	public void setDestinationPosition(double x, double y) {
+		node2.setPosition(x, y);
+		
+	}
+
+	public void setNew(boolean bNew) {
 		drawArrow.setNew(bNew);
 		drawLine.setNew(bNew);
 	}

@@ -311,8 +311,7 @@ public class GlobalOptions extends JDialog {
                     Edge.setColor(edgeColor.getRGB());
                     GraphPane.setSelectionColor(selectionColor);
                     graph.setBackColor(backColor);
-                    Node.setWidth(radiusSlider.getValue()*2);
-                    Node.setHeight(radiusSlider.getValue()*2);
+                    Node.setSize(radiusSlider.getValue()*2, radiusSlider.getValue()*2);
                     graph.setGraphDimension(new Dimension((int) netSlider.getValue(), (int) netSlider.getValue()));
                     controller.getNet().setCreateLog(createLog.isSelected());
                     setVisible(false);

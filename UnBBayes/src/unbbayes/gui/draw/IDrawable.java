@@ -1,7 +1,6 @@
 package unbbayes.gui.draw;
 
 import java.awt.Graphics2D;
-import java.awt.geom.Point2D;
 
 /**
  * Every class that is going to be drawn in any way must implement this interface.
@@ -29,17 +28,13 @@ public interface IDrawable {
 	public boolean isSelected();
 	
 	/**
-	 * Set the center position of the object.
-	 * @param x The x position representing the center of the object.
-	 * @param y The y position representing the center of the object.
+	 * This method is responsible to verify if the given point is inside the 
+	 * drawable area of the drawable object.
+	 * @param x The position's x value.
+	 * @param y The position's y value.
+	 * @return True if the point is inside the drawable area and false otherwise.
 	 */
-	public void setPosition(double x, double y);
-	
-	/**
-	 * Get the center position of the object.
-	 * @return The center position of the object.
-	 */
-	public Point2D.Double getPosition();
+	public boolean isPointInDrawableArea(int x, int y);
 
 	
 }
