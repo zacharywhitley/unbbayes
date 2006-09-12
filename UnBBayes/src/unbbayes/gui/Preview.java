@@ -163,7 +163,7 @@ public class Preview extends JPanel {
      */
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
-        g2.setBackground(og.getBackColor());
+        g2.setBackground(og.getBackgroundColor());
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.clearRect(3, 17, getWidth() - 6, getHeight() - 20);
         //pontos do arco a inserir

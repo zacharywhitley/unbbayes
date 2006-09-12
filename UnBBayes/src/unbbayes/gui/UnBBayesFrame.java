@@ -31,11 +31,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.io.File;
-import java.net.URL;
 import java.util.ResourceBundle;
 
-import javax.help.HelpSet;
-import javax.help.JHelp;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
@@ -92,9 +89,9 @@ public class UnBBayesFrame extends JFrame {
 	private JButton tile;
 	private JButton cascade;
 	private JButton help;
-	private URL helpSetURL;
-	private HelpSet set;
-	private JHelp jHelp;
+	//private URL helpSetURL;
+	//private HelpSet set;
+	//private JHelp jHelp;
 	private ActionListener alNewBN;
 	private ActionListener alNewMSBN;
 	private ActionListener alOpen;
@@ -112,7 +109,8 @@ public class UnBBayesFrame extends JFrame {
 	private ActionListener alCascade;
 	private ActionListener alTile;
 	private ActionListener alHelp;
-	private ActionListener alAbout;
+	// TODO Criar uma tela de about!
+	//private ActionListener alAbout;
 	private ActionListener alMonteCarlo;
 	private ActionListener alGibbs;
 	private ActionListener alIL;
@@ -283,7 +281,7 @@ public class UnBBayesFrame extends JFrame {
 					File file = chooser.getSelectedFile();
 					if (file != null) {
 						if (file.isFile()) {
-							String name = file.getName();
+							//String name = file.getName();
 							/*							
 							if (! name.endsWith(".net")) {
 								file = new File(file.getAbsoluteFile() + ".net");
@@ -335,7 +333,8 @@ public class UnBBayesFrame extends JFrame {
 		
 		alMonteCarlo = new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				ControladorPrincipal cp = new ControladorPrincipal();				
+				//ControladorPrincipal cp = new ControladorPrincipal();
+				new ControladorPrincipal();
 			}
 		};
 		

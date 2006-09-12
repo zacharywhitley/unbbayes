@@ -110,7 +110,7 @@ public class GlobalOptions extends JDialog {
 	private Color utilityNodeColor;
     private Color edgeColor;
     private Color selectionColor;
-    private Color backColor;
+    private Color backgroundColor;
     private JLabel radius;
     private JLabel net;
     private JSlider radiusSlider;
@@ -162,7 +162,7 @@ public class GlobalOptions extends JDialog {
 		utilityNodeColor       = UtilityNode.getColor();
         edgeColor              = Edge.getColor();
         selectionColor         = GraphPane.getSelectionColor();
-        backColor              = graph.getBackColor();
+        backgroundColor              = graph.getBackgroundColor();
         createLogBoolean       = controller.getNet().isCreateLog();
 
         radius = new JLabel(resource.getString("radiusLabel"));
@@ -289,10 +289,10 @@ public class GlobalOptions extends JDialog {
             new ActionListener() {
                 public void actionPerformed(ActionEvent e)
                 {
-                  Color color = JColorChooser.showDialog(((Component) e.getSource()).getParent(), resource.getString("backGroundColor"), backColor);
+                  Color color = JColorChooser.showDialog(((Component) e.getSource()).getParent(), resource.getString("backGroundColor"), backgroundColor);
                   if (color != null)
                   {
-                    backColor = color;
+                    backgroundColor = color;
                     repaint();
                   }
                 }
@@ -310,7 +310,7 @@ public class GlobalOptions extends JDialog {
 					UtilityNode.setColor(utilityNodeColor.getRGB());
                     Edge.setColor(edgeColor.getRGB());
                     GraphPane.setSelectionColor(selectionColor);
-                    graph.setBackColor(backColor);
+                    graph.setBackgroundColor(backgroundColor);
                     Node.setSize(radiusSlider.getValue()*2, radiusSlider.getValue()*2);
                     graph.setGraphDimension(new Dimension((int) netSlider.getValue(), (int) netSlider.getValue()));
                     controller.getNet().setCreateLog(createLog.isSelected());
@@ -332,7 +332,7 @@ public class GlobalOptions extends JDialog {
 					utilityNodeColor = UtilityNode.getColor();
                     edgeColor = Edge.getColor();
                     selectionColor = GraphPane.getSelectionColor();
-                    backColor = graph.getBackColor();
+                    backgroundColor = graph.getBackgroundColor();
                     netSlider.setValue((int) graph.getGraphDimension().getWidth());
                     radiusSlider.setValue((int)Node.getWidth()/2);
                     controller.getNet().setCreateLog(createLogBoolean);
@@ -571,8 +571,8 @@ public class GlobalOptions extends JDialog {
      *@return    a cor de fundo (<code>Color<code>)
      *@see Color
      */
-    public Color getBackColor() {
-        return this.backColor;
+    public Color getBackgroundColor() {
+        return this.backgroundColor;
     }
 
 

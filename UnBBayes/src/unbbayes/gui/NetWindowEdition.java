@@ -181,7 +181,7 @@ public class NetWindowEdition extends JPanel {
                 netWindow.getIGraph().setbUtilityNode(false);
                 netWindow.getIGraph().setbSelect(false);
                 netWindow.getIGraph().setbArc(true);*/
-            	netWindow.getIGraph().setAction(GraphPane.CREATE_EDGE);
+            	netWindow.getIGraph().setAction(GraphAction.CREATE_EDGE);
             }
         });
 
@@ -193,7 +193,7 @@ public class NetWindowEdition extends JPanel {
                 netWindow.getIGraph().setbDecisionNode(false);
                 netWindow.getIGraph().setbUtilityNode(false);
                 netWindow.getIGraph().setbProbabilisticNode(true);*/
-            	netWindow.getIGraph().setAction(GraphPane.CREATE_PROBABILISTIC_NODE);
+            	netWindow.getIGraph().setAction(GraphAction.CREATE_PROBABILISTIC_NODE);
             }
         });
 
@@ -206,7 +206,7 @@ public class NetWindowEdition extends JPanel {
                 netWindow.getIGraph().setbUtilityNode(false);
                 netWindow.getIGraph().setbProbabilisticNode(false);
                 netWindow.getIGraph().setbDecisionNode(true);*/
-            	netWindow.getIGraph().setAction(GraphPane.CREATE_DECISION_NODE);
+            	netWindow.getIGraph().setAction(GraphAction.CREATE_DECISION_NODE);
             }
         });
 
@@ -218,7 +218,7 @@ public class NetWindowEdition extends JPanel {
                 netWindow.getIGraph().setbProbabilisticNode(false);
                 netWindow.getIGraph().setbDecisionNode(false);
                 netWindow.getIGraph().setbUtilityNode(true);*/
-            	netWindow.getIGraph().setAction(GraphPane.CREATE_UTILITY_NODE);
+            	netWindow.getIGraph().setAction(GraphAction.CREATE_UTILITY_NODE);
             }
         });
 
@@ -231,7 +231,7 @@ public class NetWindowEdition extends JPanel {
                 netWindow.getIGraph().setbDecisionNode(false);
                 netWindow.getIGraph().setbUtilityNode(false);
                 netWindow.getIGraph().setbSelect(true);*/
-            	netWindow.getIGraph().setAction(GraphPane.SELECT_MANY_OBJECTS);
+            	netWindow.getIGraph().setAction(GraphAction.SELECT_MANY_OBJECTS);
             }
         });
         /*

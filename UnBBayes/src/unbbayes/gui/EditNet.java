@@ -88,7 +88,7 @@ public class EditNet extends JPanel {
             public void actionPerformed(ActionEvent ae) {
                 //netWindow.getIGraph().setbSelect(false);
                 //netWindow.getIGraph().setbArc(true);
-            	netWindow.getIGraph().setAction(GraphPane.CREATE_EDGE);
+            	netWindow.getIGraph().setAction(GraphAction.CREATE_EDGE);
             }
         });
 
