@@ -45,7 +45,7 @@ public class HierarchicDefinitionPane extends JPanel
   private DefaultTreeModel model;
   private SingleEntityNetwork net;
   private HierarchicTree explanationTree;
-  private NetWindow netWindow;
+  private NetworkWindow netWindow;
   private JPanel bottomPanel;
   private JPanel topPanel;
   private JButton deleteButton;
@@ -62,7 +62,7 @@ public class HierarchicDefinitionPane extends JPanel
   /** Load resource file from this package */
   private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
-  public HierarchicDefinitionPane(SingleEntityNetwork net, NetWindow netWindow)
+  public HierarchicDefinitionPane(SingleEntityNetwork net, NetworkWindow netWindow)
   {
     super();
     this.net = net;

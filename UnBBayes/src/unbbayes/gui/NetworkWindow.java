@@ -36,7 +36,7 @@ import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.JViewport;
 
-import unbbayes.controller.WindowController;
+import unbbayes.controller.NetworkController;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -47,7 +47,7 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  * @author Michael
  * @author Rommel
  */
-public class NetWindow extends JInternalFrame {
+public class NetworkWindow extends JInternalFrame {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
@@ -56,7 +56,7 @@ public class NetWindow extends JInternalFrame {
 
 	private final GraphPane graph;
 
-	private final WindowController controller;
+	private final NetworkController controller;
 
 	private JScrollPane jspGraph;
 
@@ -78,7 +78,7 @@ public class NetWindow extends JInternalFrame {
 	private static ResourceBundle resource = ResourceBundle
 			.getBundle("unbbayes.gui.resources.GuiResources");
 
-	public NetWindow(SingleEntityNetwork net) {
+	public NetworkWindow(SingleEntityNetwork net) {
 		super(net.getName(), true, true, true, true);
 		Container contentPane = getContentPane();
 		carta = new CardLayout();
@@ -87,7 +87,7 @@ public class NetWindow extends JInternalFrame {
 
 		// instancia variáveis de instância
 		graphViewport = new JViewport();
-		controller = new WindowController(net, this);
+		controller = new NetworkController(net, this);
 		graph = new GraphPane(controller, graphViewport);
 		/*
 		 * graph.setNode(net.getNos()); graph.setArc(net.getArcos());
@@ -257,7 +257,7 @@ public class NetWindow extends JInternalFrame {
 	 * @see ProbabilisticNetwork
 	 */
 	public SingleEntityNetwork getRede() {
-		return controller.getNet();
+		return controller.getSingleEntityNetwork();
 	}
 
 	/**
@@ -289,7 +289,7 @@ public class NetWindow extends JInternalFrame {
 
 		bCompiled = true;
 
-		controller.getNet().setFirstInitialization(true);
+		controller.getSingleEntityNetwork().setFirstInitialization(true);
 
 		carta.show(getContentPane(), "netCompilation");
 		netCompilation.getEvidenceTree().updateTree();
@@ -308,7 +308,7 @@ public class NetWindow extends JInternalFrame {
 
 		bCompiled = false;
 
-		controller.getNet().setFirstInitialization(true);
+		controller.getSingleEntityNetwork().setFirstInitialization(true);
 
 		carta.show(getContentPane(), "netEdition");
 	}
@@ -362,7 +362,7 @@ public class NetWindow extends JInternalFrame {
 		return this.hierarchyPanel;
 	}
 
-	public WindowController getWindowController() {
+	public NetworkController getWindowController() {
 		return controller;
 	}
 

@@ -24,7 +24,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
 import unbbayes.controller.IconController;
-import unbbayes.controller.WindowController;
+import unbbayes.controller.NetworkController;
 import unbbayes.prs.Node;
 
 
@@ -42,13 +42,13 @@ public class PNEditionPane extends JPanel {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
-    private final NetWindow netWindow;
+    private final NetworkWindow netWindow;
 
     private GlobalOptionsDialog go;
     private JTable table;
     private final JTextField txtSigla;
     private final JTextField txtDescription;
-    private final WindowController controller;
+    private final NetworkController controller;
     private final JScrollPane jspTable;
     private final JSplitPane centerPanel;
     private Node tableOwner;
@@ -86,8 +86,8 @@ public class PNEditionPane extends JPanel {
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
-    public PNEditionPane(NetWindow _netWindow,
-                            WindowController _controller) {
+    public PNEditionPane(NetworkWindow _netWindow,
+                            NetworkController _controller) {
         super();
         this.netWindow     = _netWindow;
         this.controller    = _controller;

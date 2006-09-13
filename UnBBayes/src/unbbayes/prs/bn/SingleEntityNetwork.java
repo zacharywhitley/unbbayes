@@ -34,6 +34,7 @@ import javax.swing.tree.DefaultTreeModel;
 
 import unbbayes.io.LogManager;
 import unbbayes.prs.Edge;
+import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.util.NodeList;

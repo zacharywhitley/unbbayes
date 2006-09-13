@@ -47,7 +47,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import unbbayes.controller.WindowController;
+import unbbayes.controller.NetworkController;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -75,7 +75,7 @@ public class GlobalOptionsDialog extends JDialog {
     final JButton selection;
     final JButton back;
 
-    private WindowController controller;
+    private NetworkController controller;
 	private JTabbedPane jtp;
 	private JPanel controllerColorPanel = new JPanel(new BorderLayout());
 	private JPanel northControllerColorPanel = new JPanel(new GridLayout(2,1));
@@ -129,7 +129,7 @@ public class GlobalOptionsDialog extends JDialog {
      *
      *@param  a rede a ser configurada (<code>TDesenhaRede</code>)
      */
-    public GlobalOptionsDialog(GraphPane gra, WindowController con) {
+    public GlobalOptionsDialog(GraphPane gra, NetworkController con) {
         super(new Frame(), resource.getString("globalOptionTitle"), true);
         Container contentPane = getContentPane();
         setSize(550, 470);
@@ -163,7 +163,7 @@ public class GlobalOptionsDialog extends JDialog {
         edgeColor              = Edge.getColor();
         selectionColor         = GraphPane.getSelectionColor();
         backgroundColor              = graph.getBackgroundColor();
-        createLogBoolean       = controller.getNet().isCreateLog();
+        createLogBoolean       = controller.getSingleEntityNetwork().isCreateLog();
 
         radius = new JLabel(resource.getString("radiusLabel"));
         radius.setToolTipText(resource.getString("radiusToolTip"));
@@ -313,7 +313,7 @@ public class GlobalOptionsDialog extends JDialog {
                     graph.setBackgroundColor(backgroundColor);
                     Node.setSize(radiusSlider.getValue()*2, radiusSlider.getValue()*2);
                     graph.setGraphDimension(new Dimension((int) netSlider.getValue(), (int) netSlider.getValue()));
-                    controller.getNet().setCreateLog(createLog.isSelected());
+                    controller.getSingleEntityNetwork().setCreateLog(createLog.isSelected());
                     setVisible(false);
                     dispose();
                     graph.update();
@@ -335,7 +335,7 @@ public class GlobalOptionsDialog extends JDialog {
                     backgroundColor = graph.getBackgroundColor();
                     netSlider.setValue((int) graph.getGraphDimension().getWidth());
                     radiusSlider.setValue((int)Node.getWidth()/2);
-                    controller.getNet().setCreateLog(createLogBoolean);
+                    controller.getSingleEntityNetwork().setCreateLog(createLogBoolean);
                     repaint();
                 }
             });

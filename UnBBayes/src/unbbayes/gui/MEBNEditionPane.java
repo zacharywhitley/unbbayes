@@ -24,7 +24,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
 import unbbayes.controller.IconController;
-import unbbayes.controller.WindowController;
+import unbbayes.controller.NetworkController;
 import unbbayes.prs.Node;
 
 public class MEBNEditionPane extends JPanel {
@@ -36,13 +36,13 @@ public class MEBNEditionPane extends JPanel {
 	
 	
 	
-	private final NetWindow netWindow;
+	private final NetworkWindow netWindow;
 
     private GlobalOptionsDialog go;
     private JTable table;
     private final JTextField txtSigla;
     private final JTextField txtDescription;
-    private final WindowController controller;
+    private final NetworkController controller;
     private final JScrollPane jspTable;
     private final JSplitPane centerPanel;
     private Node tableOwner;
@@ -73,8 +73,8 @@ public class MEBNEditionPane extends JPanel {
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
-  	public MEBNEditionPane(NetWindow _netWindow,
-            WindowController _controller) {
+  	public MEBNEditionPane(NetworkWindow _netWindow,
+            NetworkController _controller) {
         this.netWindow     = _netWindow;
         this.controller    = _controller;
         this.setLayout(new BorderLayout());

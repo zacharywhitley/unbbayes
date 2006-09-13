@@ -14,7 +14,7 @@ import unbbayes.gui.*;
  */
 public class AlgorithmController {
 
-  private NetWindow netWindow;
+  private NetworkWindow netWindow;
 
   public AlgorithmController(InstanceSet instanceSet, String algorithm, String metric)
   {
@@ -99,7 +99,7 @@ public class AlgorithmController {
 
     ProbabilisticNetwork net = k2.getProbabilisticNetwork();
 
-    netWindow = new NetWindow(net);
+    netWindow = new NetworkWindow(net);
     PNEditionPane edition = netWindow.getNetWindowEdition();
     edition.getCenterPanel().setBottomComponent(netWindow.getJspGraph());
     /*EditNet editNet = netWindow.getEditNet();
@@ -108,7 +108,7 @@ public class AlgorithmController {
     //netWindow.changeToEditNet();
   }
 
-  public NetWindow getNetWindow()
+  public NetworkWindow getNetWindow()
   {
     return netWindow;
   }

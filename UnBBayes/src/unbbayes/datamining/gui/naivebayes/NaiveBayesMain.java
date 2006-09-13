@@ -31,7 +31,7 @@ import unbbayes.datamining.classifiers.NaiveBayes;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.gui.AttributePanel;
 import unbbayes.gui.FileIcon;
-import unbbayes.gui.NetWindow;
+import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.PNEditionPane;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
@@ -267,7 +267,7 @@ public class NaiveBayesMain extends JInternalFrame
               jTabbedPane1.setSelectedIndex(1);
               saveButton.setEnabled(true);
 
-              NetWindow netWindow = new NetWindow(net);
+              NetworkWindow netWindow = new NetworkWindow(net);
               PNEditionPane edition = netWindow.getNetWindowEdition();
               edition.getCenterPanel().setBottomComponent(netWindow.getJspGraph());
 

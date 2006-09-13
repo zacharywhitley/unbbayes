@@ -44,7 +44,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
 
-import unbbayes.controller.WindowController;
+import unbbayes.controller.NetworkController;
 import unbbayes.gui.draw.DrawDashRectangle;
 import unbbayes.gui.draw.DrawElement;
 import unbbayes.gui.draw.IDrawable;
@@ -84,7 +84,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
-    private WindowController controller;
+    private NetworkController controller;
     private List<Edge> edgeList;
     // TODO Substituir essa lista de nós por generics como está acima com a lista de Edge. Fazer isso em todo lugar que for necessário, até que se possa exluir o NodeList 
     private NodeList nodeList;
@@ -122,7 +122,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
      *@param  controlador  o controlador (<code>TControladorTelaPrincipal</code>)
      *@param  graphViewport a tela, (<code>TViewport</code>), onde será inserida essa classe
      */
-    public GraphPane(final WindowController controller, JViewport graphViewport) {    	
+    public GraphPane(final NetworkController controller, JViewport graphViewport) {    	
         super();
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
@@ -132,8 +132,8 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
         this.graphViewport = graphViewport;
         this.setSize(800, 600);
 
-        edgeList = controller.getNet().getEdges();
-        nodeList = controller.getNet().getNodes();
+        edgeList = controller.getSingleEntityNetwork().getEdges();
+        nodeList = controller.getSingleEntityNetwork().getNodes();
         selectedGroup = new ArrayList<IDrawable>();
         startSelectionPoint = new Point2D.Double();
         endSelectionPoint = new Point2D.Double();
@@ -614,7 +614,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 		case CREATE_EDGE:
 			if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 	        	Node originNode = movingEdge.getOriginNode();
-	            if ((destinationNode != null) && !originNode.equals(destinationNode) && (controller.getNet().hasEdge(originNode, destinationNode) == -1)) {
+	            if ((destinationNode != null) && !originNode.equals(destinationNode) && (controller.getSingleEntityNetwork().hasEdge(originNode, destinationNode) == -1)) {
 	            	movingEdge = new Edge(originNode, destinationNode);
 	            	insertEdge(movingEdge);
 	            }

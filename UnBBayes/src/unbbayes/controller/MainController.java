@@ -36,7 +36,7 @@ import javax.xml.bind.JAXBException;
 
 import unbbayes.gui.UnBBayesFrame;
 import unbbayes.gui.MSBNWindow;
-import unbbayes.gui.NetWindow;
+import unbbayes.gui.NetworkWindow;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLIO;
@@ -87,7 +87,7 @@ public class MainController {
     public void newBN() {
         ProbabilisticNetwork net = new ProbabilisticNetwork("New BN");
         //screen.addWindow(new NetWindow(net));
-		NetWindow netWindow = new NetWindow(net);
+		NetworkWindow netWindow = new NetworkWindow(net);
 		screen.addWindow(netWindow);
     }
     
@@ -118,7 +118,7 @@ public class MainController {
 				} else if (name.endsWith("xml")){
 					io = new XMLIO();
 				}
-				io.save(file, ((NetWindow) window).getRede());
+				io.save(file, ((NetworkWindow) window).getRede());
         	}
         } catch (IOException e) {
             JOptionPane.showMessageDialog(screen, e.getMessage(), "saveNetException", JOptionPane.ERROR_MESSAGE);
@@ -155,7 +155,7 @@ public class MainController {
 					io = new XMLIO();					
 				}
 				ProbabilisticNetwork net = io.load(file);
-				window = new NetWindow(net);
+				window = new NetworkWindow(net);
         	}
 			screen.addWindow(window);
         } catch (Exception e){
@@ -205,7 +205,7 @@ public class MainController {
     }
     
     public void showNetwork(ProbabilisticNetwork net){
-    	NetWindow netWindow = new NetWindow(net);
+    	NetworkWindow netWindow = new NetworkWindow(net);
 		if (! netWindow.getWindowController().compileNetwork()) {
             netWindow.changeToNetEdition();            
             

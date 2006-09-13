@@ -12,7 +12,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 
 import unbbayes.controller.IconController;
-import unbbayes.controller.WindowController;
+import unbbayes.controller.NetworkController;
 
 
 /**
@@ -29,9 +29,9 @@ public class EditNet extends JPanel {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
-    private final NetWindow netWindow;
+    private final NetworkWindow netWindow;
 
-    private final WindowController controller;
+    private final NetworkController controller;
     private final IconController iconController = IconController.getInstance();
     private final JSplitPane centerPanel;
 
@@ -47,8 +47,8 @@ public class EditNet extends JPanel {
         /** Load resource file from this package */
           private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
-    public EditNet(NetWindow _netWindow,
-                            WindowController _controller) {
+    public EditNet(NetworkWindow _netWindow,
+                            NetworkController _controller) {
         super();
         this.netWindow     = _netWindow;
         this.controller    = _controller;

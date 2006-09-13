@@ -17,7 +17,7 @@ import javax.swing.JToolBar;
 import javax.swing.JTree;
 
 import unbbayes.controller.IconController;
-import unbbayes.controller.WindowController;
+import unbbayes.controller.NetworkController;
 
 /**
  * <p>Title: UnBBayes</p>
@@ -33,10 +33,10 @@ public class PNCompilationPane extends JPanel {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
-	private final NetWindow netWindow;
+	private final NetworkWindow netWindow;
 
     private EvidenceTree evidenceTree;
-    private final WindowController controller;
+    private final NetworkController controller;
     private final JScrollPane jspTree;
     private final JSplitPane centerPanel;
     private final JLabel status;
@@ -59,8 +59,8 @@ public class PNCompilationPane extends JPanel {
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
-    public PNCompilationPane(NetWindow _netWindow,
-                          WindowController _controller) {
+    public PNCompilationPane(NetworkWindow _netWindow,
+                          NetworkController _controller) {
         super();
         this.netWindow     = _netWindow;
         this.controller    = _controller;

@@ -1,10 +1,10 @@
-package unbbayes.prs.bn;
+package unbbayes.prs;
 
 import java.util.List;
 import java.util.Map;
 
-import unbbayes.prs.Edge;
-import unbbayes.prs.Node;
+import unbbayes.prs.bn.ITabledVariable;
+import unbbayes.prs.bn.PotentialTable;
 import unbbayes.util.NodeList;
 
 public class Network {

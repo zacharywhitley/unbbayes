@@ -30,7 +30,6 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.geom.Point2D;
@@ -64,43 +63,44 @@ import org.shetline.io.GIFOutputStream;
 
 import unbbayes.gui.ExplanationProperties;
 import unbbayes.gui.FileIcon;
-import unbbayes.gui.NetWindow;
+import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ITabledVariable;
-import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
 import unbbayes.util.NodeList;
 
 /**
- *  Essa classe implementa o <code>KeyListener</code> e o <code>
- *  AdjustmentListener</code> para tratar eventos de tecla do <code>TDesenhaRede
- *  </code>e de ajuste do scroll do <code>jspDesenho</code> . Essa classe é
- *  responsável principalmente por fazer a ligação entre interface e lógica.
+ * This class is responsible for delegating instructions that is going to be 
+ * executed in a SingleEntityNetwork or MultiEntityBayesianNetwork. Insert node 
+ * and propagate evidences, for instance.
  *
  * @author     Rommel Novaes Carvalho
  * @author     Michael S. Onishi
  * @created    27 de Junho de 2001
- * @see        KeyListener
- * @see        AdjustmentListener
- * @version    1.0 24/06/2001
+ * @version    1.5 2006/09/12
  */
-public class WindowController implements KeyListener {
+public class NetworkController implements KeyListener {
 
-    private NetWindow screen;
-    private SingleEntityNetwork net;
+    private NetworkWindow screen;
+    private SingleEntityNetwork singleEntityNetwork;
+    //private MultiEntityBayesianNetwork multiEntityBayesianNetwork;
+    
+    private SEController seController;
+    private MEBNController mebnController;
 
     private NumberFormat df;
-
-    private List copia;
+    
+/*  private List copia;
     private List<ProbabilisticNode> copiados;
 
-    private boolean bColou;
+    private boolean bColou;*/
 
     private final Pattern decimalPattern = Pattern.compile("[0-9]*([.|,][0-9]+)?");
     private Matcher matcher;
@@ -108,24 +108,19 @@ public class WindowController implements KeyListener {
     /** Load resource file from this package */
     private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.controller.resources.ControllerResources");
 
-    private WindowController() {}
+    private NetworkController() {}
 
     /**
-     *  Constrói o controlador responsável pela criação da rede Bayesiana ( <code>
-     *  TRP</code> ) e da tela principal ( <code>UnBBayesFrame</code> ). Além
-     *  disso, este construtor também adiciona AdjustmentListener para os
-     *  JScrollBars do <code>jspDesenho</code> .
+     *  Constructs a controller for SingleEntityNetwork.
      *
-     * @since
-     * @see      KeyListener
      */
-    public WindowController(SingleEntityNetwork _rede, NetWindow _tela) {
-        this.net = _rede;
-        this.screen = _tela;
+    public NetworkController(SingleEntityNetwork singleEntityNetwork, NetworkWindow screen) {
+        this.singleEntityNetwork = singleEntityNetwork;
+        this.screen = screen;
         df = NumberFormat.getInstance(Locale.US);
         df.setMaximumFractionDigits(4);
-        copia = new ArrayList();
-        copiados = new ArrayList<ProbabilisticNode>();
+        /*copia = new ArrayList();
+        copiados = new ArrayList<ProbabilisticNode>();*/
     }
 
 
@@ -136,7 +131,7 @@ public class WindowController implements KeyListener {
      * @since
      * @see       unbbayes.gui.UnBBayesFrame
      */
-    public NetWindow getScreen() {
+    public NetworkWindow getScreen() {
         return this.screen;
     }
 
@@ -151,12 +146,6 @@ public class WindowController implements KeyListener {
         graf.setVisible(true);
         Graphics g = (Graphics)buffImg.createGraphics();
 
-       /*
-        if (r != null) {
-           graf.setSize(r.getSize());
-        }
-        */
-
         graf.paint(g);
         g.dispose();
         return(buffImg);
@@ -168,8 +157,8 @@ public class WindowController implements KeyListener {
      *
      * @return    retorna a rede <code>TRP</code>
      */
-    public SingleEntityNetwork getNet() {
-        return this.net;
+    public SingleEntityNetwork getSingleEntityNetwork() {
+        return this.singleEntityNetwork;
     }
 
     /**
@@ -262,7 +251,7 @@ public class WindowController implements KeyListener {
      */
     public void initialize() {
     	try {
-	        net.initialize();
+	        singleEntityNetwork.initialize();
        		screen.getEvidenceTree().updateTree();
     	} catch (Exception e) {
     		e.printStackTrace();
@@ -279,9 +268,9 @@ public class WindowController implements KeyListener {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         boolean temLikeliHood = false;
         try {
-        	net.updateEvidences();
+        	singleEntityNetwork.updateEvidences();
             if (! temLikeliHood) {
-                screen.setStatus(resource.getString("statusEvidenceProbabilistic") + df.format(net.PET() * 100.0));
+                screen.setStatus(resource.getString("statusEvidenceProbabilistic") + df.format(singleEntityNetwork.PET() * 100.0));
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(screen, resource.getString("statusEvidenceException"), resource.getString("statusError"), JOptionPane.ERROR_MESSAGE);
@@ -303,7 +292,7 @@ public class WindowController implements KeyListener {
         final JTextArea texto = new JTextArea();
 
         texto.setEditable(false);
-        texto.setText(net.getLog());
+        texto.setText(singleEntityNetwork.getLog());
         texto.moveCaretPosition(0);
         texto.setSelectionEnd(0);
 
@@ -375,7 +364,7 @@ public class WindowController implements KeyListener {
         long ini = System.currentTimeMillis();
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         try {
-            ((ProbabilisticNetwork) net).compile();
+            ((ProbabilisticNetwork) singleEntityNetwork).compile();
         } catch (Exception e){
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, e.getMessage(), resource.getString("statusError"), JOptionPane.ERROR_MESSAGE);
@@ -384,7 +373,7 @@ public class WindowController implements KeyListener {
         }
 
         // Ordenar pela descricao do nó apenas para facilitar a visualização da árvore.
-        NodeList nos = net.getNodesCopy();
+        NodeList nos = singleEntityNetwork.getNodesCopy();
         boolean haTroca = true;
         while (haTroca) {
             haTroca = false;
@@ -419,12 +408,12 @@ public class WindowController implements KeyListener {
         ProbabilisticNode node = new ProbabilisticNode();
         node.setPosition(x, y);
         node.appendState(resource.getString("firstStateProbabilisticName"));
-        node.setName(resource.getString("probabilisticNodeName") + net.getNodeCount());
+        node.setName(resource.getString("probabilisticNodeName") + singleEntityNetwork.getNodeCount());
         node.setDescription(node.getName());
         PotentialTable auxTabProb = ((ITabledVariable)node).getPotentialTable();
         auxTabProb.addVariable(node);
         auxTabProb.setValue(0, 1);
-        net.addNode(node);
+        singleEntityNetwork.addNode(node);
     }
 
 
@@ -439,9 +428,9 @@ public class WindowController implements KeyListener {
         DecisionNode node = new DecisionNode();
         node.setPosition(x, y);
         node.appendState(resource.getString("firstStateDecisionName"));
-        node.setName(resource.getString("decisionNodeName") + net.getNodeCount());
+        node.setName(resource.getString("decisionNodeName") + singleEntityNetwork.getNodeCount());
         node.setDescription(node.getName());
-        net.addNode(node);
+        singleEntityNetwork.addNode(node);
     }
 
     /**
@@ -454,11 +443,11 @@ public class WindowController implements KeyListener {
     public void insertUtilityNode(double x, double y) {
         UtilityNode node = new UtilityNode();
         node.setPosition(x, y);
-        node.setName(resource.getString("utilityNodeName") + net.getNodeCount());
+        node.setName(resource.getString("utilityNodeName") + singleEntityNetwork.getNodeCount());
         node.setDescription(node.getName());
         PotentialTable auxTab = ((ITabledVariable)node).getPotentialTable();
         auxTab.addVariable(node);
-        net.addNode(node);
+        singleEntityNetwork.addNode(node);
     }
 
 
@@ -469,7 +458,7 @@ public class WindowController implements KeyListener {
      * @since
      */
     public void insertEdge(Edge arco) {
-        net.addEdge(arco);
+        singleEntityNetwork.addEdge(arco);
     }
 
 
@@ -654,7 +643,7 @@ public class WindowController implements KeyListener {
      * @see       KeyListener
      */
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() ==  KeyEvent.VK_C) {
+       /* if (e.getKeyCode() ==  KeyEvent.VK_C) {
             copia = screen.getGraphPane().getSelectedGroup();
         }
 
@@ -701,7 +690,7 @@ public class WindowController implements KeyListener {
             }
             bColou = true;
         }
-        copiados.clear();
+        copiados.clear();*/
 
         if (e.getKeyCode() == KeyEvent.VK_DELETE) {
             Object selecionado = screen.getGraphPane().getSelected();
@@ -716,19 +705,9 @@ public class WindowController implements KeyListener {
 
     private void deleteSelected(Object selecionado) {
         if (selecionado instanceof Edge) {
-            net.removeEdge((Edge) selecionado);
-//            tela.getIGraph().apagaArco(selecionado);
+            singleEntityNetwork.removeEdge((Edge) selecionado);
         } else if (selecionado instanceof Node) {
-            /*
-            TArco arcoAux = tela.getIGraph().getArco((TVP) selecionado);
-            while (arcoAux != null) {
-
-                tela.getIGraph().apagaArco(arcoAux);
-                arcoAux = tela.getIGraph().getArco((TVP) selecionado);
-            }
-            tela.getIGraph().apagaNo(selecionado);
-            */
-            net.removeNode((Node) selecionado);
+            singleEntityNetwork.removeNode((Node) selecionado);
         }
     }
 
@@ -744,7 +723,7 @@ public class WindowController implements KeyListener {
      * @see       KeyListener
      */
     public void keyReleased(KeyEvent e) {
-        bColou = false;
+        /*bColou = false;*/
     }
 
 
@@ -953,8 +932,8 @@ public class WindowController implements KeyListener {
 
         if (vetorAux.size() == 0) {
             nos = new NodeList();
-            for (int i = 0; i < net.getNodeCount(); i++) {
-            	nos.add(i, net.getNodeAt(i));
+            for (int i = 0; i < singleEntityNetwork.getNodeCount(); i++) {
+            	nos.add(i, singleEntityNetwork.getNodeAt(i));
             }
         } else {
             nos = new NodeList();
@@ -1000,7 +979,7 @@ public class WindowController implements KeyListener {
 
     public void showExplanationProperties(ProbabilisticNode node)
     {   screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-        ExplanationProperties explanation = new ExplanationProperties(screen,net);
+        ExplanationProperties explanation = new ExplanationProperties(screen,singleEntityNetwork);
         explanation.setProbabilisticNode(node);
         explanation.setVisible(true);
         screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));

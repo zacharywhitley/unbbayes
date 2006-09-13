@@ -16,7 +16,7 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
 import unbbayes.gui.MSBNWindow;
-import unbbayes.gui.NetWindow;
+import unbbayes.gui.NetworkWindow;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.msbn.SubNetwork;
@@ -32,7 +32,7 @@ import unbbayes.prs.msbn.SubNetwork;
 public class MSBNController {
 	private SingleAgentMSBN msbn;
 	private MSBNWindow window;
-	private NetWindow active;
+	private NetworkWindow active;
 	
 	/**
 	 * Creates a controller that controls a MSBNWindow.
@@ -78,7 +78,7 @@ public class MSBNController {
 			            	return;
 			            }
 			            try {
-			           		NetWindow netWindow = new NetWindow(net);
+			           		NetworkWindow netWindow = new NetworkWindow(net);
 			            	changeActive(netWindow);
 		            		msbn.shiftAttention(net);
 			            	netWindow.changeToNetCompilation();
@@ -105,11 +105,11 @@ public class MSBNController {
 	private void init() {
 		window.getNetList().setSelectedIndex(0);
 		if (msbn.getNetCount() > 0) {
-			changeActive(new NetWindow(msbn.getNetAt(0)));
+			changeActive(new NetworkWindow(msbn.getNetAt(0)));
 		}	
 	}
 	
-	private void changeActive(NetWindow newWindow) {				
+	private void changeActive(NetworkWindow newWindow) {				
 		if (active != null) {
 			SingleEntityNetwork net = active.getRede();
 			for (int i = 0; i < net.getNodeCount(); i++) {
@@ -138,7 +138,7 @@ public class MSBNController {
 		            	return;		             	
 		            } 
 		            
-		           	NetWindow netWindow = new NetWindow(msbn.getNetAt(index));
+		           	NetworkWindow netWindow = new NetworkWindow(msbn.getNetAt(index));
 		            changeActive(netWindow);	            
 		     	}
 		     }
@@ -158,7 +158,7 @@ public class MSBNController {
 			public void actionPerformed(ActionEvent e) {				
 				msbn.addNetwork(new SubNetwork("new net " + msbn.getNetCount()));
 				if (msbn.getNetCount() == 1) {
-					changeActive(new NetWindow(msbn.getNetAt(0)));					
+					changeActive(new NetworkWindow(msbn.getNetAt(0)));					
 				}
 				window.getNetList().updateUI();
 			}
@@ -173,11 +173,11 @@ public class MSBNController {
 				}
 				msbn.remove(index);
 				if (msbn.getNetCount() > 0) {
-					NetWindow netWindow = new NetWindow(msbn.getNetAt(0));										
+					NetworkWindow netWindow = new NetworkWindow(msbn.getNetAt(0));										
 					changeActive(netWindow);
 				} else {
 					newBtnAction.actionPerformed(null);
-					changeActive(new NetWindow(msbn.getNetAt(0)));					
+					changeActive(new NetworkWindow(msbn.getNetAt(0)));					
 				}
 				window.getNetList().setSelectedIndex(0);
 				window.getNetList().repaint();

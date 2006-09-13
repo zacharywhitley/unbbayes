@@ -91,7 +91,7 @@ public class ExplanationProperties extends JDialog
   private JLabel evidencePhraseLabel = new JLabel();
   private JScrollPane evidencePhraseScrollPane = new JScrollPane();
   private JTextArea evidencePhraseTextArea = new JTextArea();
-  private NetWindow netWindow;
+  private NetworkWindow netWindow;
   private ProbabilisticNode node;
   private SingleEntityNetwork net;
   private JButton cancelButton = new JButton();
@@ -106,7 +106,7 @@ public class ExplanationProperties extends JDialog
   private JLabel descriptionLabel = new JLabel();
   private JTextArea explanationNodeTextArea = new JTextArea();
 
-  public ExplanationProperties(NetWindow netWindow,SingleEntityNetwork net)
+  public ExplanationProperties(NetworkWindow netWindow,SingleEntityNetwork net)
   { this.netWindow = netWindow;
     this.net = net;
     try
