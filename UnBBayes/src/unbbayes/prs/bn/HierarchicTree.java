@@ -47,7 +47,7 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
   /** Serialization runtime version number */
   private static final long serialVersionUID = 0;
 	
-  private Network net;
+  private SingleEntityNetwork net;
   private NodeList nodes;
   private ArrayMap<DefaultMutableTreeNode, Node> objectsMap = new ArrayMap<DefaultMutableTreeNode, Node>();
   public static final boolean EXPLANATION_TYPE = true;
@@ -115,7 +115,7 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
       }
   }
 
-  public void setProbabilisticNetwork(Network net,boolean nodeType)
+  public void setProbabilisticNetwork(SingleEntityNetwork net,boolean nodeType)
   {   DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
 
       if (net != null)

@@ -62,7 +62,7 @@ import unbbayes.prs.id.UtilityNode;
  *@created    27 de Junho de 2001
  *@see JDialog
  */
-public class GlobalOptions extends JDialog {
+public class GlobalOptionsDialog extends JDialog {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;	
@@ -117,7 +117,7 @@ public class GlobalOptions extends JDialog {
     private JSlider netSlider;
     private JCheckBox createLog;
     private boolean createLogBoolean;
-    //private Preview preview;
+    //private PreviewPane preview;
     private final GraphPane graph;
 
 	/** Load resource file from this package */
@@ -129,7 +129,7 @@ public class GlobalOptions extends JDialog {
      *
      *@param  a rede a ser configurada (<code>TDesenhaRede</code>)
      */
-    public GlobalOptions(GraphPane gra, WindowController con) {
+    public GlobalOptionsDialog(GraphPane gra, WindowController con) {
         super(new Frame(), resource.getString("globalOptionTitle"), true);
         Container contentPane = getContentPane();
         setSize(550, 470);
@@ -153,7 +153,7 @@ public class GlobalOptions extends JDialog {
 
         gbl     = new GridBagLayout();
         gbc     = new GridBagConstraints();
-        //preview = new Preview(this);
+        //preview = new PreviewPane(this);
 
         //setar cores padrões do nó, arco e de seleção e boolean de criar log
         probabilisticDescriptionNodeColor = ProbabilisticNode.getDescriptionColor();
@@ -476,11 +476,11 @@ public class GlobalOptions extends JDialog {
 		northControllerColorPanel.add(flowControllerColorPanel1);
 		northControllerColorPanel.add(flowControllerColorPanel2);
 		controllerColorPanel.add(northControllerColorPanel, BorderLayout.NORTH);
-		controllerColorPanel.add(new Preview(this), BorderLayout.CENTER);
+		controllerColorPanel.add(new PreviewPane(this), BorderLayout.CENTER);
         northControllerSizePanel.add(netPanel);
 		northControllerSizePanel.add(radiusPanel);
 		controllerSizePanel.add(northControllerSizePanel,  BorderLayout.NORTH);
-		controllerSizePanel.add(new Preview(this),  BorderLayout.CENTER);
+		controllerSizePanel.add(new PreviewPane(this),  BorderLayout.CENTER);
 		logPanel.add(createLog);
 
 //		jtp.addTab(resource.getString("decimalPatternTab"), decimalPatternPanel);

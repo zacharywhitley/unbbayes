@@ -28,7 +28,7 @@ import unbbayes.controller.WindowController;
  * @version 1.0
  */
 
-public class NetWindowCompilation extends JPanel {
+public class PNCompilationPane extends JPanel {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
@@ -59,7 +59,7 @@ public class NetWindowCompilation extends JPanel {
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
-    public NetWindowCompilation(NetWindow _netWindow,
+    public PNCompilationPane(NetWindow _netWindow,
                           WindowController _controller) {
         super();
         this.netWindow     = _netWindow;
@@ -75,7 +75,7 @@ public class NetWindowCompilation extends JPanel {
         bottomPanel    = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 1));
         status         = new JLabel(resource.getString("statusReadyLabel"));
 
-        //criar botões que serão usados nos toolbars
+        //criar botões que serão usados nodeList toolbars
         propagate         = new JButton(iconController.getPropagateIcon());
         expand            = new JButton(iconController.getExpandIcon());
         collapse          = new JButton(iconController.getColapseIcon());
@@ -102,7 +102,7 @@ public class NetWindowCompilation extends JPanel {
         log.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 controller.showLog();
-                netWindow.getIGraph().update();
+                netWindow.getGraphPane().update();
             }
         });
 
@@ -152,14 +152,14 @@ public class NetWindowCompilation extends JPanel {
         // action para imprimir a rede
         printNet.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                controller.printNet(netWindow.getIGraph(), controller.calculateNetRectangle());
+                controller.printNet(netWindow.getGraphPane(), controller.calculateNetRectangle());
             }
         });
 
         // action para visualizar a rede.
         previewNet.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                controller.previewPrintNet(netWindow.getIGraph(), controller.calculateNetRectangle());
+                controller.previewPrintNet(netWindow.getGraphPane(), controller.calculateNetRectangle());
             }
         });
 

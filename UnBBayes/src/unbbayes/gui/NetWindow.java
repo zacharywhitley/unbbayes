@@ -38,7 +38,7 @@ import javax.swing.JViewport;
 
 import unbbayes.controller.WindowController;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.Network;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
 /**
@@ -66,11 +66,11 @@ public class NetWindow extends JInternalFrame {
 
 	private CardLayout carta;
 
-	private NetWindowEdition netEdition;
+	private PNEditionPane netEdition;
 
-	private NetWindowCompilation netCompilation;
+	private PNCompilationPane netCompilation;
 
-	private HierarchicDefinitionPanel hierarchyPanel;
+	private HierarchicDefinitionPane hierarchyPanel;
 
 	private EditNet editNet;
 
@@ -78,7 +78,7 @@ public class NetWindow extends JInternalFrame {
 	private static ResourceBundle resource = ResourceBundle
 			.getBundle("unbbayes.gui.resources.GuiResources");
 
-	public NetWindow(Network net) {
+	public NetWindow(SingleEntityNetwork net) {
 		super(net.getName(), true, true, true, true);
 		Container contentPane = getContentPane();
 		carta = new CardLayout();
@@ -104,8 +104,6 @@ public class NetWindow extends JInternalFrame {
 				new Dimension(
 						(int) (graph.getBiggestPoint().getX() + 2 * width),
 						(int) (graph.getBiggestPoint().getY() + 2 * height)));
-		// Rectangle repintar = new
-		// Rectangle(graph.getGraphViewport().getViewRect());
 
 		// setar o conteúdo e o tamanho do graphViewport
 		graphViewport.setView(graph);
@@ -133,10 +131,10 @@ public class NetWindow extends JInternalFrame {
 		jspGraph
 				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
-		netEdition = new NetWindowEdition(this, controller);
+		netEdition = new PNEditionPane(this, controller);
 		editNet = new EditNet(this, controller);
-		netCompilation = new NetWindowCompilation(this, controller);
-		hierarchyPanel = new HierarchicDefinitionPanel(net, this);
+		netCompilation = new PNCompilationPane(this, controller);
+		hierarchyPanel = new HierarchicDefinitionPane(net, this);
 
 		contentPane.add(netEdition, "netEdition");
 		contentPane.add(editNet, "editNet");
@@ -158,7 +156,7 @@ public class NetWindow extends JInternalFrame {
 	 * @return retorna o (<code>GraphPane</code>)
 	 * @see GraphPane
 	 */
-	public GraphPane getIGraph() {
+	public GraphPane getGraphPane() {
 		return this.graph;
 	}
 
@@ -225,17 +223,6 @@ public class NetWindow extends JInternalFrame {
 	}
 
 	/**
-	 * Substitui a árvore existente pela desejada.
-	 * 
-	 * @parm tree a nova árvore (<code>JTree</code>) desejada.
-	 * @see JTree
-	 */
-	/*
-	 * public void setEvidenceTree(EvidenceTree tree) {
-	 * netCompilation.setEvidenceTree(tree); }
-	 */
-
-	/**
 	 * Retorna o painel do draw.
 	 * 
 	 * @return retorna o jspDraw (<code>JScrollPane</code>)
@@ -269,7 +256,7 @@ public class NetWindow extends JInternalFrame {
 	 * @return a rede probabilística
 	 * @see ProbabilisticNetwork
 	 */
-	public Network getRede() {
+	public SingleEntityNetwork getRede() {
 		return controller.getNet();
 	}
 
@@ -352,26 +339,26 @@ public class NetWindow extends JInternalFrame {
 	}
 
 	/**
-	 * Retorna a tela de edição (<code>NetWindowEdition</code>).
+	 * Retorna a tela de edição (<code>PNEditionPane</code>).
 	 * 
 	 * @return a tela de edição
-	 * @see NetWindowEdition
+	 * @see PNEditionPane
 	 */
-	public NetWindowEdition getNetWindowEdition() {
+	public PNEditionPane getNetWindowEdition() {
 		return this.netEdition;
 	}
 
 	/**
-	 * Retorna a tela de compilação (<code>NetWindowCompilation</code>).
+	 * Retorna a tela de compilação (<code>PNCompilationPane</code>).
 	 * 
 	 * @return a tela de compilação
-	 * @see NetWindowCompilation
+	 * @see PNCompilationPane
 	 */
-	public NetWindowCompilation getNetWindowCompilation() {
+	public PNCompilationPane getNetWindowCompilation() {
 		return this.netCompilation;
 	}
 
-	public HierarchicDefinitionPanel getHierarchicDefinitionPanel() {
+	public HierarchicDefinitionPane getHierarchicDefinitionPanel() {
 		return this.hierarchyPanel;
 	}
 

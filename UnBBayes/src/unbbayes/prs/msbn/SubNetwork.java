@@ -26,7 +26,7 @@ import java.util.List;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.JunctionTree;
-import unbbayes.prs.bn.Network;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
@@ -34,7 +34,7 @@ import unbbayes.util.SetToolkit;
  * SubNetwork of a multi-sectioned network.
  * @author Michael S. Onishi
  */
-public class SubNetwork extends Network {
+public class SubNetwork extends SingleEntityNetwork {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
@@ -54,7 +54,7 @@ public class SubNetwork extends Network {
 	/**
 	 * Creates a new subnetwork with the specified id.
 	 * @param id	The subnetwork's id.		
-	 * @see unbbayes.prs.bn.Network#Network(String)
+	 * @see unbbayes.prs.bn.SingleEntityNetwork#Network(String)
 	 */
 	public SubNetwork(String id) {
 		super(id);
@@ -118,13 +118,13 @@ public class SubNetwork extends Network {
 	}
 	
 	protected void initTriangulation() {
-		copiaNos = SetToolkit.clone(nos);
+		copiaNos = SetToolkit.clone(nodeList);
 		oe = new NodeList(copiaNos.size());
 	}
 
 	/**
 	 * Verify the local consistency.
-	 * @see unbbayes.prs.bn.Network#verifyConsistency()
+	 * @see unbbayes.prs.bn.SingleEntityNetwork#verifyConsistency()
 	 */
 	protected void verifyConsistency() throws Exception {
 		super.verifyConsistency();		
@@ -237,7 +237,7 @@ public class SubNetwork extends Network {
 	}
 	
 	private void updateArcsAux(SubNetwork net) {
-		NodeList dsepset = SetToolkit.intersection(nos, net.nos);
+		NodeList dsepset = SetToolkit.intersection(nodeList, net.nodeList);
 		for (int i = arcosMarkov.size()-1; i>=0; i--) {
 			Edge e = (Edge) arcosMarkov.get(i);
 			if (dsepset.contains(e.getOriginNode()) 
@@ -269,7 +269,7 @@ public class SubNetwork extends Network {
 	 * Initialize the visited array for the cycle detection.
 	 */
 	protected void initVisited() {
-		visited = new char[nos.size()];	
+		visited = new char[nodeList.size()];	
 	}
 	
 	/**
@@ -277,7 +277,7 @@ public class SubNetwork extends Network {
 	 * @throws Exception	If the union graph has cycle.
 	 */
 	protected void distributedCycle() throws Exception {
-		for (int i = nos.size()-1; i>=0; i--) {
+		for (int i = nodeList.size()-1; i>=0; i--) {
 			dfsCycle(i, null);
 		}
 	}
@@ -295,7 +295,7 @@ public class SubNetwork extends Network {
     		return;    		
     	}
     	
-    	Node node = nos.get(nodeIndex);    	
+    	Node node = nodeList.get(nodeIndex);    	
     	visited[nodeIndex] = 1;
     	
     	for (int i = node.getChildren().size()-1; i >= 0; i--) {
@@ -328,7 +328,7 @@ public class SubNetwork extends Network {
     }
     
 	/**
-	 * @see unbbayes.prs.bn.Network#updateMarginais()
+	 * @see unbbayes.prs.bn.SingleEntityNetwork#updateMarginais()
 	 */
 	protected void updateMarginais() {
 		super.updateMarginais();

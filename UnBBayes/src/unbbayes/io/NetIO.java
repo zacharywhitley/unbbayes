@@ -43,7 +43,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.HierarchicTree;
 import unbbayes.prs.bn.ITabledVariable;
-import unbbayes.prs.bn.Network;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -93,7 +93,7 @@ public class NetIO implements BaseIO {
 	 * @param  output arquivo onde a rede será salva.
 	 * @param net rede a ser salva.
 	 */
-	public void save(File output, Network net) throws FileNotFoundException {
+	public void save(File output, SingleEntityNetwork net) throws FileNotFoundException {
 		PrintStream arq = new PrintStream(new FileOutputStream(output));
 		arq.println("net");
 		arq.println("{");
@@ -248,7 +248,7 @@ public class NetIO implements BaseIO {
 		}
 		
 		for (int i = msbn.getNetCount()-1; i>=0; i--) {
-			Network net = msbn.getNetAt(i);
+			SingleEntityNetwork net = msbn.getNetAt(i);
 			File out = new File(output, net.getId() + ".net");
 			save(out, net);
 		}
@@ -278,7 +278,7 @@ public class NetIO implements BaseIO {
 		return msbn;
 	}
 	
-	private void load(File input, Network net) throws IOException, LoadException {
+	private void load(File input, SingleEntityNetwork net) throws IOException, LoadException {
 		ITabledVariable auxIVTab = null;
 		PotentialTable auxTabPot = null;
 

@@ -32,7 +32,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.HierarchicTree;
 import unbbayes.prs.bn.ITabledVariable;
-import unbbayes.prs.bn.Network;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -109,7 +109,7 @@ public class XMLIO implements BaseIO{
 	 * @param net		The network to save.
 	 */
 	
-	public void save(File output, Network net) throws IOException, JAXBException{
+	public void save(File output, SingleEntityNetwork net) throws IOException, JAXBException{
 		
 		FileWriter outputxml = new FileWriter(output);
 
@@ -131,7 +131,7 @@ public class XMLIO implements BaseIO{
 		}
 		
 		for (int i = msbn.getNetCount()-1; i>=0; i--) {
-			Network net = msbn.getNetAt(i);
+			SingleEntityNetwork net = msbn.getNetAt(i);
 			File out = new File(output, net.getId() + ".xml");
 			save(out, net);
 		}    
@@ -146,7 +146,7 @@ public class XMLIO implements BaseIO{
 	 * pn: rede onde será feito o load (nota: a rede já deve ter sido criada)
 	 * */ 
 	
-	private Network loadXML(File input, Network pn) throws LoadException, IOException, JAXBException{
+	private SingleEntityNetwork loadXML(File input, SingleEntityNetwork pn) throws LoadException, IOException, JAXBException{
 		
 		int i, j; 	
 		
@@ -269,7 +269,7 @@ public class XMLIO implements BaseIO{
 	 * net: rede a ser salva
 	 */
 	
-	private void saveXML(FileWriter arqoutput, Network net) throws JAXBException {
+	private void saveXML(FileWriter arqoutput, SingleEntityNetwork net) throws JAXBException {
 		
 		PrintWriter arq = new PrintWriter(arqoutput);
 		
@@ -330,7 +330,7 @@ public class XMLIO implements BaseIO{
 	}    
 	
 	
-	private static void writeBifNetwork(BIFType.NETWORKType bifNetwork, Network net) throws JAXBException{
+	private static void writeBifNetwork(BIFType.NETWORKType bifNetwork, SingleEntityNetwork net) throws JAXBException{
 		
 		ObjectFactory of = new ObjectFactory();
 		

@@ -88,7 +88,7 @@ public class Separator implements ITabledVariable, java.io.Serializable {
     /**
      *  Insere uma nova lista de nós clusterizados.
      *
-     *@param  nos  lista de nós clusterizados.
+     *@param  nodeList  lista de nós clusterizados.
      */
     public void setNodes(NodeList nos) {
         this.nos = nos;

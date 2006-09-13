@@ -37,14 +37,14 @@ import unbbayes.prs.Node;
  * @version 1.0
  */
 
-public class NetWindowEdition extends JPanel {
+public class PNEditionPane extends JPanel {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
     private final NetWindow netWindow;
 
-    private GlobalOptions go;
+    private GlobalOptionsDialog go;
     private JTable table;
     private final JTextField txtSigla;
     private final JTextField txtDescription;
@@ -62,22 +62,22 @@ public class NetWindowEdition extends JPanel {
     private final JLabel sigla;
     private final JLabel description;
 
-    private final JButton compile;
-    private final JButton more;
-    private final JButton less;
-    private final JButton arc;
-    private final JButton probabilisticNode;
-    private final JButton decisionNode;
-    private final JButton utilityNode;
-    private final JButton select;
-    private final JButton printNet;
-    private final JButton printTable;
-    private final JButton previewNet;
-    private final JButton previewTable;
-    private final JButton saveNetImage;
-    private final JButton saveTableImage;
-    private final JButton globalOption;
-    private final JButton hierarchy;
+    private final JButton btnCompile;
+    private final JButton btnAddState;
+    private final JButton btnRemoveState;
+    private final JButton btnAddEdge;
+    private final JButton btnAddProbabilisticNode;
+    private final JButton btnAddDecisionNode;
+    private final JButton btnAddUtilityNode;
+    private final JButton btnSelectObject;
+    private final JButton btnPrintNet;
+    private final JButton btnPrintTable;
+    private final JButton btnPreviewNet;
+    private final JButton btnPreviewTable;
+    private final JButton btnSaveNetImage;
+    private final JButton btnSaveTableImage;
+    private final JButton btnGlobalOption;
+    private final JButton btnHierarchy;
     private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
     private Matcher matcher;
 
@@ -86,7 +86,7 @@ public class NetWindowEdition extends JPanel {
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
-    public NetWindowEdition(NetWindow _netWindow,
+    public PNEditionPane(NetWindow _netWindow,
                             WindowController _controller) {
         super();
         this.netWindow     = _netWindow;
@@ -108,63 +108,63 @@ public class NetWindowEdition extends JPanel {
         txtSigla           = new JTextField(10);
         txtDescription     = new JTextField(15);
 
-        //criar botões que serão usados nos toolbars
-        compile           = new JButton(iconController.getCompileIcon());
-        more              = new JButton(iconController.getMoreIcon());
-        less              = new JButton(iconController.getLessIcon());
-        arc               = new JButton(iconController.getArcIcon());
-        probabilisticNode = new JButton(iconController.getEllipsisIcon());
-        decisionNode      = new JButton(iconController.getDecisionNodeIcon());
-        utilityNode       = new JButton(iconController.getUtilityNodeIcon());
-        select            = new JButton(iconController.getSelectionIcon());
-        printNet          = new JButton(iconController.getPrintNetIcon());
-        printTable        = new JButton(iconController.getPrintTableIcon());
-        previewNet        = new JButton(iconController.getPrintPreviewNetIcon());
-        previewTable      = new JButton(iconController.getPrintPreviewTableIcon());
-        saveNetImage      = new JButton(iconController.getSaveNetIcon());
-        saveTableImage    = new JButton(iconController.getSaveTableIcon());
-        globalOption      = new JButton(iconController.getGlobalOptionIcon());
-        hierarchy         = new JButton(iconController.getHierarchyIcon());
+        //criar botões que serão usados nodeList toolbars
+        btnCompile           = new JButton(iconController.getCompileIcon());
+        btnAddState              = new JButton(iconController.getMoreIcon());
+        btnRemoveState              = new JButton(iconController.getLessIcon());
+        btnAddEdge               = new JButton(iconController.getEdgeIcon());
+        btnAddProbabilisticNode = new JButton(iconController.getEllipsisIcon());
+        btnAddDecisionNode      = new JButton(iconController.getDecisionNodeIcon());
+        btnAddUtilityNode       = new JButton(iconController.getUtilityNodeIcon());
+        btnSelectObject            = new JButton(iconController.getSelectionIcon());
+        btnPrintNet          = new JButton(iconController.getPrintNetIcon());
+        btnPrintTable        = new JButton(iconController.getPrintTableIcon());
+        btnPreviewNet        = new JButton(iconController.getPrintPreviewNetIcon());
+        btnPreviewTable      = new JButton(iconController.getPrintPreviewTableIcon());
+        btnSaveNetImage      = new JButton(iconController.getSaveNetIcon());
+        btnSaveTableImage    = new JButton(iconController.getSaveTableIcon());
+        btnGlobalOption      = new JButton(iconController.getGlobalOptionIcon());
+        btnHierarchy         = new JButton(iconController.getHierarchyIcon());
 
         //setar tooltip para esses botões
-        compile.setToolTipText(resource.getString("compileToolTip"));
-        more.setToolTipText(resource.getString("moreToolTip"));
-        less.setToolTipText(resource.getString("lessToolTip"));
-        arc.setToolTipText(resource.getString("arcToolTip"));
-        probabilisticNode.setToolTipText(resource.getString("probabilisticNodeInsertToolTip"));
-        decisionNode.setToolTipText(resource.getString("decisionNodeInsertToolTip"));
-        utilityNode.setToolTipText(resource.getString("utilityNodeInsertToolTip"));;
-        select.setToolTipText(resource.getString("selectToolTip"));
-        printNet.setToolTipText(resource.getString("printNetToolTip"));
-        printTable.setToolTipText(resource.getString("printTableToolTip"));
-        previewNet.setToolTipText(resource.getString("previewNetToolTip"));
-        previewTable.setToolTipText(resource.getString("previewTableToolTip"));
-        saveNetImage.setToolTipText(resource.getString("saveNetImageToolTip"));
-        saveTableImage.setToolTipText(resource.getString("saveTableImageToolTip"));
-        globalOption.setToolTipText(resource.getString("globalOptionTitle"));
-        hierarchy.setToolTipText(resource.getString("hierarchyToolTip"));
+        btnCompile.setToolTipText(resource.getString("compileToolTip"));
+        btnAddState.setToolTipText(resource.getString("moreToolTip"));
+        btnRemoveState.setToolTipText(resource.getString("lessToolTip"));
+        btnAddEdge.setToolTipText(resource.getString("arcToolTip"));
+        btnAddProbabilisticNode.setToolTipText(resource.getString("probabilisticNodeInsertToolTip"));
+        btnAddDecisionNode.setToolTipText(resource.getString("decisionNodeInsertToolTip"));
+        btnAddUtilityNode.setToolTipText(resource.getString("utilityNodeInsertToolTip"));;
+        btnSelectObject.setToolTipText(resource.getString("selectToolTip"));
+        btnPrintNet.setToolTipText(resource.getString("printNetToolTip"));
+        btnPrintTable.setToolTipText(resource.getString("printTableToolTip"));
+        btnPreviewNet.setToolTipText(resource.getString("previewNetToolTip"));
+        btnPreviewTable.setToolTipText(resource.getString("previewTableToolTip"));
+        btnSaveNetImage.setToolTipText(resource.getString("saveNetImageToolTip"));
+        btnSaveTableImage.setToolTipText(resource.getString("saveTableImageToolTip"));
+        btnGlobalOption.setToolTipText(resource.getString("globalOptionTitle"));
+        btnHierarchy.setToolTipText(resource.getString("hierarchyToolTip"));
 
-        //ao clicar no botão globalOption, mostra-se o menu para escolha das opções
-        globalOption.addActionListener(new ActionListener() {
+        //ao clicar no botão btnGlobalOption, mostra-se o menu para escolha das opções
+        btnGlobalOption.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                go = new GlobalOptions(netWindow.getIGraph(), controller);
+                go = new GlobalOptionsDialog(netWindow.getGraphPane(), controller);
                 go.setVisible(true);
-                netWindow.getIGraph().update();
+                netWindow.getGraphPane().update();
                 setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
         });
 
-        //ao clicar no botão hierarchy, chama-se a tela para definição de hierarquia
-        hierarchy.addActionListener(new ActionListener() {
+        //ao clicar no botão btnHierarchy, chama-se a tela para definição de hierarquia
+        btnHierarchy.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 netWindow.changeToHierarchy();
             }
         });
 
-        //ao clicar no botão compile, chama-se o método de compilação da rede e
+        //ao clicar no botão btnCompile, chama-se o método de compilação da rede e
         //atualiza os toolbars
-        compile.addActionListener(new ActionListener() {
+        btnCompile.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 if (! controller.compileNetwork()) {
                     return;
@@ -173,65 +173,65 @@ public class NetWindowEdition extends JPanel {
             }
         });
 
-        //ao clicar no botão arc setamos as variáveis booleanas e os estados dos butões
-        arc.addActionListener(new ActionListener() {
+        //ao clicar no botão btnAddEdge setamos as variáveis booleanas e os estados dos butões
+        btnAddEdge.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 /*netWindow.getIGraph().setbProbabilisticNode(false);
                 netWindow.getIGraph().setbDecisionNode(false);
                 netWindow.getIGraph().setbUtilityNode(false);
                 netWindow.getIGraph().setbSelect(false);
                 netWindow.getIGraph().setbArc(true);*/
-            	netWindow.getIGraph().setAction(GraphAction.CREATE_EDGE);
+            	netWindow.getGraphPane().setAction(GraphAction.CREATE_EDGE);
             }
         });
 
         //ao clicar no botão node setamos as variáveis booleanas e os estados dos butões
-        probabilisticNode.addActionListener(new ActionListener() {
+        btnAddProbabilisticNode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 /*netWindow.getIGraph().setbArc(false);
                 netWindow.getIGraph().setbSelect(false);
                 netWindow.getIGraph().setbDecisionNode(false);
                 netWindow.getIGraph().setbUtilityNode(false);
                 netWindow.getIGraph().setbProbabilisticNode(true);*/
-            	netWindow.getIGraph().setAction(GraphAction.CREATE_PROBABILISTIC_NODE);
+            	netWindow.getGraphPane().setAction(GraphAction.CREATE_PROBABILISTIC_NODE);
             }
         });
 
 
-        //ao clicar no botão decisionNode setamos as variáveis booleanas e os estados dos butões
-        decisionNode.addActionListener(new ActionListener() {
+        //ao clicar no botão btnAddDecisionNode setamos as variáveis booleanas e os estados dos butões
+        btnAddDecisionNode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 /*netWindow.getIGraph().setbArc(false);
                 netWindow.getIGraph().setbSelect(false);
                 netWindow.getIGraph().setbUtilityNode(false);
                 netWindow.getIGraph().setbProbabilisticNode(false);
                 netWindow.getIGraph().setbDecisionNode(true);*/
-            	netWindow.getIGraph().setAction(GraphAction.CREATE_DECISION_NODE);
+            	netWindow.getGraphPane().setAction(GraphAction.CREATE_DECISION_NODE);
             }
         });
 
-        //ao clicar no botão utilityNode setamos as variáveis booleanas e os estados dos butões
-        utilityNode.addActionListener(new ActionListener() {
+        //ao clicar no botão btnAddUtilityNode setamos as variáveis booleanas e os estados dos butões
+        btnAddUtilityNode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 /*netWindow.getIGraph().setbArc(false);
                 netWindow.getIGraph().setbSelect(false);
                 netWindow.getIGraph().setbProbabilisticNode(false);
                 netWindow.getIGraph().setbDecisionNode(false);
                 netWindow.getIGraph().setbUtilityNode(true);*/
-            	netWindow.getIGraph().setAction(GraphAction.CREATE_UTILITY_NODE);
+            	netWindow.getGraphPane().setAction(GraphAction.CREATE_UTILITY_NODE);
             }
         });
 
 
         //ao clicar no botão node setamos as variáveis booleanas e os estados dos butões
-        select.addActionListener(new ActionListener() {
+        btnSelectObject.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 /*netWindow.getIGraph().setbArc(false);
                 netWindow.getIGraph().setbProbabilisticNode(false);
                 netWindow.getIGraph().setbDecisionNode(false);
                 netWindow.getIGraph().setbUtilityNode(false);
                 netWindow.getIGraph().setbSelect(true);*/
-            	netWindow.getIGraph().setAction(GraphAction.SELECT_MANY_OBJECTS);
+            	netWindow.getGraphPane().setAction(GraphAction.SELECT_MANY_OBJECTS);
             }
         });
         /*
@@ -263,7 +263,7 @@ public class NetWindowEdition extends JPanel {
         // listener responsável pela atualização do texo da sigla do nó
         txtSigla.addKeyListener(new KeyAdapter() {
           public void keyPressed(KeyEvent e) {
-            Object selected = netWindow.getIGraph().getSelected();
+            Object selected = netWindow.getGraphPane().getSelected();
             if (selected instanceof Node) {
               Node nodeAux = (Node)selected;
               if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtSigla.getText().length()>0)) {
@@ -290,7 +290,7 @@ public class NetWindowEdition extends JPanel {
         // listener responsável pela atualização do texo da descrição do nó
         txtDescription.addKeyListener(new KeyAdapter() {
           public void keyPressed(KeyEvent e) {
-            Object selected = netWindow.getIGraph().getSelected();
+            Object selected = netWindow.getGraphPane().getSelected();
             if (selected instanceof Node)
             {
               Node nodeAux = (Node)selected;
@@ -314,96 +314,96 @@ public class NetWindowEdition extends JPanel {
           }
         });
 
-        //ao clicar no botão less, chama-se o metodo removerEstado do controller
+        //ao clicar no botão btnRemoveState, chama-se o metodo removerEstado do controller
         //para que esse remova um estado do nó
-        less.addActionListener(new ActionListener() {
+        btnRemoveState.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent ae) {
-            if (netWindow.getIGraph().getSelected() instanceof Node) {
-               controller.removeState((Node)netWindow.getIGraph().getSelected());
+            if (netWindow.getGraphPane().getSelected() instanceof Node) {
+               controller.removeState((Node)netWindow.getGraphPane().getSelected());
             }
           }
         });
 
-        //ao clicar no botão less, chama-se o metodo inserirEstado do controller
+        //ao clicar no botão btnRemoveState, chama-se o metodo inserirEstado do controller
         //para que esse insira um novo estado no nó
-        more.addActionListener(new ActionListener() {
+        btnAddState.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent ae) {
-            if (netWindow.getIGraph().getSelected() instanceof Node) {
-               controller.insertState((Node)netWindow.getIGraph().getSelected());
+            if (netWindow.getGraphPane().getSelected() instanceof Node) {
+               controller.insertState((Node)netWindow.getGraphPane().getSelected());
             }
           }
         });
 
         // action para imprimir a rede
-        printNet.addActionListener(new ActionListener() {
+        btnPrintNet.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                controller.printNet(netWindow.getIGraph(), controller.calculateNetRectangle());
+                controller.printNet(netWindow.getGraphPane(), controller.calculateNetRectangle());
             }
         });
 
         // action para imprimir a tabela
-        printTable.addActionListener(new ActionListener() {
+        btnPrintTable.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 controller.printTable();
             }
         });
 
         // action para visualizar a tabela
-        previewTable.addActionListener(new ActionListener() {
+        btnPreviewTable.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 controller.previewPrintTable();
             }
         });
 
         // action para visualizar a rede.
-        previewNet.addActionListener(new ActionListener() {
+        btnPreviewNet.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                controller.previewPrintNet(netWindow.getIGraph(), controller.calculateNetRectangle());
+                controller.previewPrintNet(netWindow.getGraphPane(), controller.calculateNetRectangle());
             }
         });
 
 
-        saveNetImage.addActionListener(new ActionListener() {
+        btnSaveNetImage.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 controller.saveNetImage();
             }
         });
 
 
-        saveTableImage.addActionListener(new ActionListener() {
+        btnSaveTableImage.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 controller.saveTableImage();
             }
         });
 
         //colocar botões e controladores do look-and-feel no toolbar e esse no topPanel
-        jtbEdition.add(printNet);
-        jtbEdition.add(previewNet);
-        jtbEdition.add(saveNetImage);
-        jtbEdition.add(printTable);
-        jtbEdition.add(previewTable);
-        jtbEdition.add(saveTableImage);
+        jtbEdition.add(btnPrintNet);
+        jtbEdition.add(btnPreviewNet);
+        jtbEdition.add(btnSaveNetImage);
+        jtbEdition.add(btnPrintTable);
+        jtbEdition.add(btnPreviewTable);
+        jtbEdition.add(btnSaveTableImage);
 
         jtbEdition.addSeparator();
 
-        jtbEdition.add(probabilisticNode);
-        jtbEdition.add(decisionNode);
-        jtbEdition.add(utilityNode);
-        jtbEdition.add(arc);
-        jtbEdition.add(select);
-        jtbEdition.add(compile);
+        jtbEdition.add(btnAddProbabilisticNode);
+        jtbEdition.add(btnAddDecisionNode);
+        jtbEdition.add(btnAddUtilityNode);
+        jtbEdition.add(btnAddEdge);
+        jtbEdition.add(btnSelectObject);
+        jtbEdition.add(btnCompile);
 
         jtbEdition.addSeparator();
 
-        jtbEdition.add(globalOption);
-        jtbEdition.add(hierarchy);
+        jtbEdition.add(btnGlobalOption);
+        jtbEdition.add(btnHierarchy);
 
         topPanel.add(jtbEdition);
 
         //setar controladores de estados para false
         /*
-        more.setEnabled(false);
-        less.setEnabled(false);
+        btnAddState.setEnabled(false);
+        btnRemoveState.setEnabled(false);
         txtDescription.setEnabled(false);
         txtSigla.setEnabled(false);
         */
@@ -415,8 +415,8 @@ public class NetWindowEdition extends JPanel {
         jtbState.addSeparator();
         jtbState.addSeparator();
 
-        jtbState.add(more);
-        jtbState.add(less);
+        jtbState.add(btnAddState);
+        jtbState.add(btnRemoveState);
 
         jtbState.addSeparator();
         jtbState.addSeparator();
@@ -519,76 +519,76 @@ public class NetWindowEdition extends JPanel {
       return this.centerPanel;
     }
 
-    public JButton getArc() {
-        return this.arc;
+    public JButton getBtnAddEdge() {
+        return this.btnAddEdge;
     }
 
-    public JButton getCompile() {
-        return this.compile;
+    public JButton getBtnCompile() {
+        return this.btnCompile;
     }
 
-    public JButton getDecisionNode() {
-        return this.decisionNode;
+    public JButton getBtnAddDecisionNode() {
+        return this.btnAddDecisionNode;
     }
 
     public JLabel getDescription() {
         return this.description;
     }
 
-    public JButton getGlobalOption() {
-        return this.globalOption;
+    public JButton getBtnGlobalOption() {
+        return this.btnGlobalOption;
     }
 
-    public JButton getLess() {
-        return this.less;
+    public JButton getBtnRemoveState() {
+        return this.btnRemoveState;
     }
 
-    public JButton getMore() {
-        return this.more;
+    public JButton getBtnAddState() {
+        return this.btnAddState;
     }
 
-    public JButton getPreviewNet() {
-        return this.previewNet;
+    public JButton getBtnPreviewNet() {
+        return this.btnPreviewNet;
     }
 
-    public JButton getPreviewTable() {
-        return this.previewTable;
+    public JButton getBtnPreviewTable() {
+        return this.btnPreviewTable;
     }
 
-    public JButton getPrintNet() {
-        return this.printNet;
+    public JButton getBtnPrintNet() {
+        return this.btnPrintNet;
     }
 
-    public JButton getPrintTable() {
-        return this.printTable;
+    public JButton getBtnPrintTable() {
+        return this.btnPrintTable;
     }
 
-    public JButton getProbabilisticNode() {
-        return this.probabilisticNode;
+    public JButton getBtnAddProbabilisticNode() {
+        return this.btnAddProbabilisticNode;
     }
 
-    public JButton getSaveNetImage() {
-        return this.saveNetImage;
+    public JButton getBtnSaveNetImage() {
+        return this.btnSaveNetImage;
     }
 
-    public JButton getSaveTableImage() {
-        return this.saveTableImage;
+    public JButton getBtnSaveTableImage() {
+        return this.btnSaveTableImage;
     }
 
-    public JButton getSelect() {
-        return this.select;
+    public JButton getBtnSelectObject() {
+        return this.btnSelectObject;
     }
 
     public JLabel getSigla() {
         return this.sigla;
     }
 
-    public JButton getUtilityNode() {
-        return this.utilityNode;
+    public JButton getBtnAddUtilityNode() {
+        return this.btnAddUtilityNode;
     }
 
-    public JButton getHierarchy() {
-        return this.hierarchy;
+    public JButton getBtnHierarchy() {
+        return this.btnHierarchy;
     }
 
 }

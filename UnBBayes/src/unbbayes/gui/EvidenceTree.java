@@ -21,7 +21,7 @@ import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.Network;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.util.ArrayMap;
@@ -36,7 +36,7 @@ public class EvidenceTree extends JTree {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;	
 	
-	private Network net;
+	private SingleEntityNetwork net;
 	private NumberFormat nf;
 	private boolean[] expandedNodes;
 	private ArrayMap<Object, Node> objectsMap = new ArrayMap<Object, Node>();
@@ -78,8 +78,8 @@ public class EvidenceTree extends JTree {
 					if (e.getClickCount() == 1) {
 						Node newNode = getNodeMap(node);
 						if (newNode != null) {
-							netWindow.getIGraph().selectObject(newNode);
-							netWindow.getIGraph().update();
+							netWindow.getGraphPane().selectObject(newNode);
+							netWindow.getGraphPane().update();
 						}
 					} else if (e.getClickCount() == 2) {
 						DefaultMutableTreeNode root = (DefaultMutableTreeNode)getModel().getRoot();

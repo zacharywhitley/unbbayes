@@ -122,18 +122,18 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
      *@param  controlador  o controlador (<code>TControladorTelaPrincipal</code>)
      *@param  graphViewport a tela, (<code>TViewport</code>), onde será inserida essa classe
      */
-    public GraphPane(final WindowController controlador, JViewport graphViewport) {    	
+    public GraphPane(final WindowController controller, JViewport graphViewport) {    	
         super();
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
-        this.addKeyListener(controlador);
-        this.controller = controlador;
+        this.addKeyListener(controller);
+        this.controller = controller;
         this.setRequestFocusEnabled(true);
         this.graphViewport = graphViewport;
         this.setSize(800, 600);
 
-        edgeList = controlador.getNet().getEdges();
-        nodeList = controlador.getNet().getNodes();
+        edgeList = controller.getNet().getEdges();
+        nodeList = controller.getNet().getNodes();
         selectedGroup = new ArrayList<IDrawable>();
         startSelectionPoint = new Point2D.Double();
         endSelectionPoint = new Point2D.Double();
@@ -148,7 +148,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
         JMenuItem item = new JMenuItem(resource.getString("properties"));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae)
-            {   controlador.showExplanationProperties((ProbabilisticNode)getSelected());
+            {   controller.showExplanationProperties((ProbabilisticNode)getSelected());
             }
         });
         popup.add(item);

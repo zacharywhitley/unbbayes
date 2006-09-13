@@ -17,7 +17,7 @@ import javax.swing.tree.TreeNode;
 
 import unbbayes.gui.MSBNWindow;
 import unbbayes.gui.NetWindow;
-import unbbayes.prs.bn.Network;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.msbn.SubNetwork;
 
@@ -111,7 +111,7 @@ public class MSBNController {
 	
 	private void changeActive(NetWindow newWindow) {				
 		if (active != null) {
-			Network net = active.getRede();
+			SingleEntityNetwork net = active.getRede();
 			for (int i = 0; i < net.getNodeCount(); i++) {
 				net.getNodeAt(i).setSelected(false);			            	
 			}
@@ -122,7 +122,7 @@ public class MSBNController {
 		if (newWindow == null) {
 			return;			
 		}
-		active.getNetWindowEdition().getCompile().setVisible(false);
+		active.getNetWindowEdition().getBtnCompile().setVisible(false);
 		active.getNetWindowCompilation().getEditMode().setVisible(false);
 		window.getContentPane().add(active.getContentPane(), BorderLayout.CENTER);
 		window.updateUI();

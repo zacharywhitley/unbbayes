@@ -42,12 +42,12 @@ import javax.swing.JPanel;
  *@created    27 de Junho de 2001
  *@see JPanel
  */
-public class Preview extends JPanel {
+public class PreviewPane extends JPanel {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
-    private GlobalOptions og;
+    private GlobalOptionsDialog og;
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
@@ -58,7 +58,7 @@ public class Preview extends JPanel {
      *
      *@param  og  a opção global pai (<code>TOpçõesGlobais</code>)
      */
-    public Preview(GlobalOptions og) {
+    public PreviewPane(GlobalOptionsDialog og) {
         this.og = og;
     }
 

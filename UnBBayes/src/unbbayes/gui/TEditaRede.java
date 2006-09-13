@@ -63,7 +63,7 @@ import unbbayes.prs.bn.ProbabilisticNode;
  *@see        JPanel
  */
 public class TEditaRede extends JPanel implements MouseListener, MouseMotionListener, KeyListener {
-
+// TODO REMOVER ESSA CLASSE!!!
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
@@ -74,22 +74,22 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
     private Graphics2D view;
     private Point2D.Double arcoInicioAtual;
     private Point2D.Double arcoFimAtual;
-    private Point2D.Double pontoSelecaoInicial;
-    private Point2D.Double pontoSelecaoFinal;
+    //private Point2D.Double pontoSelecaoInicial;
+    //private Point2D.Double pontoSelecaoFinal;
     private Line2D.Double arcoAtual;
     private boolean bArco;
     private boolean bArrastouNo;
     private boolean bMoverArco;
     private boolean bMoverNo;
-    private boolean bScroll;
-    private boolean bPrimeiraVez;
+    //private boolean bScroll;
+    //private boolean bPrimeiraVez;
     private Color corNo;
     private Color corArco;
     private Color corSelecao;
     private Color corFundo;
     private double raio;
-    private int scrollX;
-    private int scrollY;
+    //private int scrollX;
+    //private int scrollY;
     private JViewport desenho;
     private Dimension tamanhoVisivel;
     private Dimension tamanhoRede;
@@ -122,21 +122,21 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
         arcoInicioAtual = new Point2D.Double();
         arcoFimAtual = new Point2D.Double();
         arcoAtual = new Line2D.Double();
-        pontoSelecaoFinal = new Point2D.Double();
-        pontoSelecaoInicial = new Point2D.Double();
+        //pontoSelecaoFinal = new Point2D.Double();
+        //pontoSelecaoInicial = new Point2D.Double();
         bArco = false;
         bArrastouNo = false;
         bMoverArco = false;
         bMoverNo = false;
-        bScroll = false;
-        bPrimeiraVez = true;
+        //bScroll = false;
+        //bPrimeiraVez = true;
         corNo = Color.yellow;
         corArco = Color.black;
         corSelecao = Color.red;
         corFundo = Color.white;
         raio = 18;
-        scrollX = 0;
-        scrollY = 0;
+        //scrollX = 0;
+        //scrollY = 0;
         tamanhoRede = new Dimension(1500, 1500);
         tamanhoVisivel = new Dimension(0, 0);
 

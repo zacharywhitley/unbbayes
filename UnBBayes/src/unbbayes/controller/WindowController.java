@@ -69,7 +69,7 @@ import unbbayes.gui.SimpleFileFilter;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ITabledVariable;
-import unbbayes.prs.bn.Network;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -93,7 +93,7 @@ import unbbayes.util.NodeList;
 public class WindowController implements KeyListener {
 
     private NetWindow screen;
-    private Network net;
+    private SingleEntityNetwork net;
 
     private NumberFormat df;
 
@@ -119,7 +119,7 @@ public class WindowController implements KeyListener {
      * @since
      * @see      KeyListener
      */
-    public WindowController(Network _rede, NetWindow _tela) {
+    public WindowController(SingleEntityNetwork _rede, NetWindow _tela) {
         this.net = _rede;
         this.screen = _tela;
         df = NumberFormat.getInstance(Locale.US);
@@ -168,7 +168,7 @@ public class WindowController implements KeyListener {
      *
      * @return    retorna a rede <code>TRP</code>
      */
-    public Network getNet() {
+    public SingleEntityNetwork getNet() {
         return this.net;
     }
 
@@ -189,7 +189,7 @@ public class WindowController implements KeyListener {
             try {
                 GIFOutputStream out = new GIFOutputStream(new BufferedOutputStream(new FileOutputStream(chooser.getSelectedFile().getPath() + ".gif")));
                 Rectangle r = calculateNetRectangle();
-                out.write(graphicsToImage(screen.getIGraph().getGraphViewport(), r));
+                out.write(graphicsToImage(screen.getGraphPane().getGraphViewport(), r));
                 out.flush();
                 out.close();
                 FileController.getInstance().setCurrentDirectory(chooser.getCurrentDirectory());
@@ -655,7 +655,7 @@ public class WindowController implements KeyListener {
      */
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() ==  KeyEvent.VK_C) {
-            copia = screen.getIGraph().getSelectedGroup();
+            copia = screen.getGraphPane().getSelectedGroup();
         }
 
         if ((e.getKeyCode() ==  KeyEvent.VK_P) && (!bColou)) {
@@ -704,14 +704,14 @@ public class WindowController implements KeyListener {
         copiados.clear();
 
         if (e.getKeyCode() == KeyEvent.VK_DELETE) {
-            Object selecionado = screen.getIGraph().getSelected();
+            Object selecionado = screen.getGraphPane().getSelected();
             deleteSelected(selecionado);
-            for (int i = 0; i < screen.getIGraph().getSelectedGroup().size(); i++) {
-                selecionado = screen.getIGraph().getSelectedGroup().get(i);
+            for (int i = 0; i < screen.getGraphPane().getSelectedGroup().size(); i++) {
+                selecionado = screen.getGraphPane().getSelectedGroup().get(i);
                 deleteSelected(selecionado);
             }
         }
-        screen.getIGraph().update();
+        screen.getGraphPane().update();
     }
 
     private void deleteSelected(Object selecionado) {
@@ -782,7 +782,7 @@ public class WindowController implements KeyListener {
           public void run() {
             List<JTable> tabelas = new ArrayList<JTable>();
             List<Object> donos = new ArrayList<Object>();
-            List temp = screen.getIGraph().getSelectedGroup();
+            List temp = screen.getGraphPane().getSelectedGroup();
             if (temp.size() == 0) {
                tabelas.add(screen.getTable());
                donos.add(screen.getTableOwner());
@@ -877,7 +877,7 @@ public class WindowController implements KeyListener {
           public void run() {
             List<JTable> tabelas = new ArrayList<JTable>();
             List<Object> donos = new ArrayList<Object>();
-            List temp = screen.getIGraph().getSelectedGroup();
+            List temp = screen.getGraphPane().getSelectedGroup();
             if (temp.size() == 0) {
                tabelas.add(screen.getTable());
                donos.add(screen.getTableOwner());
@@ -949,7 +949,7 @@ public class WindowController implements KeyListener {
      */
     public Rectangle calculateNetRectangle() {
         NodeList nos;
-        List vetorAux = screen.getIGraph().getSelectedGroup();
+        List vetorAux = screen.getGraphPane().getSelectedGroup();
 
         if (vetorAux.size() == 0) {
             nos = new NodeList();

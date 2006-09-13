@@ -49,7 +49,7 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  * @version 1.0
  */
 public class TJanelaEdicao extends JDialog {
-
+//TODO REMOVER ESSA CLASSE!!!
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
@@ -74,7 +74,7 @@ public class TJanelaEdicao extends JDialog {
         setSize(550, 470);
         setResizable(true);
 
-        insereArco = new JButton(iconController.getArcIcon());
+        insereArco = new JButton(iconController.getEdgeIcon());
         reaprende  = new JButton(iconController.getCompileIcon());
         view       = new JViewport();
         jtb        = new JToolBar();

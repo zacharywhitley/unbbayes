@@ -166,7 +166,7 @@ public class BayesianNetwork extends DistributionClassifier
    	*/
 	public String toString()
 	{	try
-		{	StringBuffer text = new StringBuffer("Bayesian Network\n");
+		{	StringBuffer text = new StringBuffer("Bayesian SingleEntityNetwork\n");
       		        for (int i=0; i<numNodes; i++)
 			{	ProbabilisticNode node = (ProbabilisticNode)net.getNodeAt(i);
 				text.append(node+"\n");

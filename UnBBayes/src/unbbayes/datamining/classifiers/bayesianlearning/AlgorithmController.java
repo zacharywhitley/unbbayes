@@ -100,7 +100,7 @@ public class AlgorithmController {
     ProbabilisticNetwork net = k2.getProbabilisticNetwork();
 
     netWindow = new NetWindow(net);
-    NetWindowEdition edition = netWindow.getNetWindowEdition();
+    PNEditionPane edition = netWindow.getNetWindowEdition();
     edition.getCenterPanel().setBottomComponent(netWindow.getJspGraph());
     /*EditNet editNet = netWindow.getEditNet();
     editNet.getCenterPanel().setBottomComponent(netWindow.getJspGraph());*/

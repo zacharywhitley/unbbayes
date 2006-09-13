@@ -25,7 +25,7 @@ import javax.swing.tree.TreePath;
 import unbbayes.controller.IconController;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.HierarchicTree;
-import unbbayes.prs.bn.Network;
+import unbbayes.prs.bn.SingleEntityNetwork;
 
 
 /**
@@ -33,7 +33,7 @@ import unbbayes.prs.bn.Network;
  * @version $1.0 $ (04/11/2002)
  */
 
-public class HierarchicDefinitionPanel extends JPanel
+public class HierarchicDefinitionPane extends JPanel
 {
   /** Serialization runtime version number */
   private static final long serialVersionUID = 0;	
@@ -43,7 +43,7 @@ public class HierarchicDefinitionPanel extends JPanel
   private JScrollPane explanationScrollPane;
   private HierarchicTree hierarchicTree;
   private DefaultTreeModel model;
-  private Network net;
+  private SingleEntityNetwork net;
   private HierarchicTree explanationTree;
   private NetWindow netWindow;
   private JPanel bottomPanel;
@@ -62,7 +62,7 @@ public class HierarchicDefinitionPanel extends JPanel
   /** Load resource file from this package */
   private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
-  public HierarchicDefinitionPanel(Network net, NetWindow netWindow)
+  public HierarchicDefinitionPane(SingleEntityNetwork net, NetWindow netWindow)
   {
     super();
     this.net = net;
@@ -78,7 +78,7 @@ public class HierarchicDefinitionPanel extends JPanel
     statusBar      = new JLabel("Definição da hierarquia");
     hierarchicTree = net.getHierarchicTree();
 
-    //cria botões que serão usados nos toolbars
+    //cria botões que serão usados nodeList toolbars
     deleteButton        = new JButton(iconController.getDeleteFolderIcon());
     renameButton        = new JButton(iconController.getRenameFolderIcon());
     addFolderButton     = new JButton(iconController.getAddFolderIcon());

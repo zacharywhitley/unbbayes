@@ -45,7 +45,7 @@ import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
 import unbbayes.prs.bn.ExplanationPhrase;
-import unbbayes.prs.bn.Network;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.util.NodeList;
 
@@ -93,7 +93,7 @@ public class ExplanationProperties extends JDialog
   private JTextArea evidencePhraseTextArea = new JTextArea();
   private NetWindow netWindow;
   private ProbabilisticNode node;
-  private Network net;
+  private SingleEntityNetwork net;
   private JButton cancelButton = new JButton();
   private JLabel nodeNameLabel = new JLabel();
   private JScrollPane explanationNodeScrollPane = new JScrollPane();
@@ -106,7 +106,7 @@ public class ExplanationProperties extends JDialog
   private JLabel descriptionLabel = new JLabel();
   private JTextArea explanationNodeTextArea = new JTextArea();
 
-  public ExplanationProperties(NetWindow netWindow,Network net)
+  public ExplanationProperties(NetWindow netWindow,SingleEntityNetwork net)
   { this.netWindow = netWindow;
     this.net = net;
     try

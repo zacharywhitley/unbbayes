@@ -245,7 +245,7 @@ public class CL extends CBLToolkit{
 	
 	
 	/*
-	 * Para verificar ciclos nos ramos
+	 * Para verificar ciclos nodeList ramos
 	 */
 	protected boolean valida_ramo(int no){
 		boolean fim=false;

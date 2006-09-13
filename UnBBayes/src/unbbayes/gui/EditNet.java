@@ -58,9 +58,9 @@ public class EditNet extends JPanel {
         jtbEdition  = new JToolBar();
         centerPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
-        //criar botões que serão usados nos toolbars
+        //criar botões que serão usados nodeList toolbars
         compile           = new JButton(iconController.getCompileIcon());
-        arc               = new JButton(iconController.getArcIcon());
+        arc               = new JButton(iconController.getEdgeIcon());
         printNet          = new JButton(iconController.getPrintNetIcon());
         previewNet        = new JButton(iconController.getPrintPreviewNetIcon());
         saveNetImage      = new JButton(iconController.getSaveNetIcon());
@@ -88,21 +88,21 @@ public class EditNet extends JPanel {
             public void actionPerformed(ActionEvent ae) {
                 //netWindow.getIGraph().setbSelect(false);
                 //netWindow.getIGraph().setbArc(true);
-            	netWindow.getIGraph().setAction(GraphAction.CREATE_EDGE);
+            	netWindow.getGraphPane().setAction(GraphAction.CREATE_EDGE);
             }
         });
 
         // action para imprimir a rede
         printNet.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                controller.printNet(netWindow.getIGraph(), controller.calculateNetRectangle());
+                controller.printNet(netWindow.getGraphPane(), controller.calculateNetRectangle());
             }
         });
 
         // action para visualizar a rede.
         previewNet.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                controller.previewPrintNet(netWindow.getIGraph(), controller.calculateNetRectangle());
+                controller.previewPrintNet(netWindow.getGraphPane(), controller.calculateNetRectangle());
             }
         });
 

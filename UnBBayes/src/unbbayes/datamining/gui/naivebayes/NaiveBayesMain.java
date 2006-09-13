@@ -32,7 +32,7 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.gui.AttributePanel;
 import unbbayes.gui.FileIcon;
 import unbbayes.gui.NetWindow;
-import unbbayes.gui.NetWindowEdition;
+import unbbayes.gui.PNEditionPane;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
@@ -268,18 +268,18 @@ public class NaiveBayesMain extends JInternalFrame
               saveButton.setEnabled(true);
 
               NetWindow netWindow = new NetWindow(net);
-              NetWindowEdition edition = netWindow.getNetWindowEdition();
+              PNEditionPane edition = netWindow.getNetWindowEdition();
               edition.getCenterPanel().setBottomComponent(netWindow.getJspGraph());
 
               // deixa invisíveis alguns botões do unbbayes
-              edition.getMore().setVisible(false);
-              edition.getLess().setVisible(false);
-              edition.getArc().setVisible(false);
-              edition.getDecisionNode().setVisible(false);
-              edition.getProbabilisticNode().setVisible(false);
-              edition.getUtilityNode().setVisible(false);
-              edition.getSelect().setVisible(false);
-              edition.getHierarchy().setVisible(false);
+              edition.getBtnAddState().setVisible(false);
+              edition.getBtnRemoveState().setVisible(false);
+              edition.getBtnAddEdge().setVisible(false);
+              edition.getBtnAddDecisionNode().setVisible(false);
+              edition.getBtnAddProbabilisticNode().setVisible(false);
+              edition.getBtnAddUtilityNode().setVisible(false);
+              edition.getBtnSelectObject().setVisible(false);
+              edition.getBtnHierarchy().setVisible(false);
 
               // mostra a nova tela
               jPanel1.removeAll();

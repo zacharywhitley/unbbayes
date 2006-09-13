@@ -34,7 +34,7 @@ import unbbayes.util.SetToolkit;
  *@author     rommel
  */
 public class ProbabilisticNetwork
-	extends Network
+	extends SingleEntityNetwork
 	implements java.io.Serializable {
 
 	  /** Serialization runtime version number */
@@ -62,7 +62,7 @@ public class ProbabilisticNetwork
 		if (createLog) {
 			logManager.append(resource.getString("triangulateLabel"));
 		}
-		auxNos = SetToolkit.clone(nos);
+		auxNos = SetToolkit.clone(nodeList);
 		removeUtilityNodes(auxNos);
 		copiaNos = SetToolkit.clone(auxNos);
 		int sizeDecisao = decisionNodes.size();
@@ -124,7 +124,7 @@ public class ProbabilisticNetwork
 	 * Compila Árvore de Junção.
 	 */
 	public void compile() throws Exception {
-		if (nos.size() == 0) {
+		if (nodeList.size() == 0) {
 			throw new Exception(resource.getString("EmptyNetException"));
 		}
 		if (createLog) {
