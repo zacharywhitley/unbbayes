@@ -62,8 +62,9 @@ import unbbayes.prs.bn.ProbabilisticNode;
  *@created    27 de Junho de 2001
  *@see        JPanel
  */
-public class TEditaRede extends JPanel implements MouseListener, MouseMotionListener, KeyListener {
+public class LearningPNEditionPane extends JPanel implements MouseListener, MouseMotionListener, KeyListener {
 // TODO REMOVER ESSA CLASSE!!!
+	
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
@@ -93,7 +94,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
     private JViewport desenho;
     private Dimension tamanhoVisivel;
     private Dimension tamanhoRede;
-    private TJanelaEdicao janela;
+    private LearningPNEditionDialog janela;
 	private ProbabilisticNetwork net;
 	
 	// se 0 e 1 mudar a direção do arco e se 2 deixar sem direção    
@@ -108,7 +109,7 @@ public class TEditaRede extends JPanel implements MouseListener, MouseMotionList
      *  utilizadas por essa classe para que se possa desenhar a rede Bayesiana.
      *
      */
-    public TEditaRede(TJanelaEdicao janel, ProbabilisticNetwork net) {
+    public LearningPNEditionPane(LearningPNEditionDialog janel, ProbabilisticNetwork net) {
         super();
         this.addMouseListener(this);
         this.addMouseMotionListener(this);

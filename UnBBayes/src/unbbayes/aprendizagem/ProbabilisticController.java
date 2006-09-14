@@ -21,7 +21,7 @@
 package unbbayes.aprendizagem;
 
 import unbbayes.controller.MainController;
-import unbbayes.gui.TJanelaEdicao;
+import unbbayes.gui.LearningPNEditionDialog;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -51,8 +51,8 @@ public class ProbabilisticController extends LearningToolkit{
             table     = variable.getProbabilidades();
             table.addVariable(variable);
         }
-    	//TJanelaEdicao window = new TJanelaEdicao(net);
-        new TJanelaEdicao(net);
+    	//LearningPNEditionDialog window = new LearningPNEditionDialog(net);
+        new LearningPNEditionDialog(net);
         for(int i = 0; i < length; i++) {
             variable  = (TVariavel)variables.get(i);
             arrayNijk = getFrequencies(variable,variable.getPais());                        

@@ -20,7 +20,7 @@
  */
 package unbbayes.aprendizagem;
 
-import unbbayes.gui.TJanelaEdicao;
+import unbbayes.gui.LearningPNEditionDialog;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
@@ -49,7 +49,7 @@ public class B extends BToolkit{
     * @param vetor     Vetor que indica quantas vezes uma linha do arquivo se repete
     * (<code>int[]<code>)
     * @see TVariavel
-    * @see TJanelaEdicao
+    * @see LearningPNEditionDialog
     * @see Tnij
     * @see TAprendizagemTollKit
     */

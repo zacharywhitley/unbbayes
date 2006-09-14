@@ -48,14 +48,15 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  * Company:
  * @version 1.0
  */
-public class TJanelaEdicao extends JDialog {
+public class LearningPNEditionDialog extends JDialog {
+	
 //TODO REMOVER ESSA CLASSE!!!
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
     private JToolBar jtb;
     private JViewport view;
-    private TEditaRede rede;
+    private LearningPNEditionPane rede;
     private JButton insereArco;
     private JButton reaprende;
     private JScrollPane jspView;
@@ -66,7 +67,7 @@ public class TJanelaEdicao extends JDialog {
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
-    public TJanelaEdicao(ProbabilisticNetwork _net) {
+    public LearningPNEditionDialog(ProbabilisticNetwork _net) {
 		super(new Frame(), resource.getString("aprendizagemTitle"), true);
         Container contentPane = getContentPane();
         net = _net;
@@ -78,7 +79,7 @@ public class TJanelaEdicao extends JDialog {
         reaprende  = new JButton(iconController.getCompileIcon());
         view       = new JViewport();
         jtb        = new JToolBar();
-        rede       = new TEditaRede(this, net);
+        rede       = new LearningPNEditionPane(this, net);
         jspView    = new JScrollPane(view);
 
         view.setView(rede);
