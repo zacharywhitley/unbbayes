@@ -116,7 +116,7 @@ public class PNCompilationPane extends JPanel {
         //volta para o modo de edição e construção da rede
         editMode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                netWindow.changeToNetEdition();
+                netWindow.changeToPNEditionPane();
             }
         });
 

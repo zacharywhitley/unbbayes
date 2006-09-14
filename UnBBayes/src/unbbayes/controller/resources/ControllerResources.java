@@ -49,6 +49,7 @@ public class ControllerResources extends ListResourceBundle {
 		{"probabilisticNodeName","C"},
 		{"decisionNodeName","D"},
 		{"utilityNodeName","U"},
+		{"contextNodeName","CX"},
 		{"potentialTableException","It is not a number!"},
 		{"copiedNodeName","Cópia do "},
 		{"askTitle","Type a title for the net"},

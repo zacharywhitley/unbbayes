@@ -1,5 +1,7 @@
 package unbbayes.prs;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,17 +14,21 @@ public class Network {
 	protected String id;
 	protected String name;
 	/**
-	 *  Lista de nós que compõem o grafo.
+	 *  List of nodes that this network has.
 	 */
 	protected NodeList nodeList;
 	/**
-	 *  Lista de edgeList que compõem o grafo.
+	 *  List of edges that this network has.
 	 */
 	protected List<Edge> edgeList;
+	
 	protected Map<String,Integer> nodeIndexes;
 
-	public Network() {
-		super();
+	public Network(String name) {
+		this.id = this.name = name;
+		nodeList = new NodeList();
+        edgeList = new ArrayList<Edge>();
+        nodeIndexes = new HashMap<String,Integer>();
 	}
 
 	/**

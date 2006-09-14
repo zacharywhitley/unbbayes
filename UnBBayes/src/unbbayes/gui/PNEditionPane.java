@@ -169,7 +169,7 @@ public class PNEditionPane extends JPanel {
                 if (! controller.compileNetwork()) {
                     return;
                 }
-                netWindow.changeToNetCompilation();
+                netWindow.changeToPNCompilationPane();
             }
         });
 

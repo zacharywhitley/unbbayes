@@ -132,8 +132,9 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
         this.graphViewport = graphViewport;
         this.setSize(800, 600);
 
-        edgeList = controller.getSingleEntityNetwork().getEdges();
-        nodeList = controller.getSingleEntityNetwork().getNodes();
+        //TODO RETIRAR A NECESSIDADE DE PEGAR A REDE, PEGAR DIRETO OS NÓS, ETC.
+        edgeList = controller.getNetwork().getEdges();
+        nodeList = controller.getNetwork().getNodes();
         selectedGroup = new ArrayList<IDrawable>();
         startSelectionPoint = new Point2D.Double();
         endSelectionPoint = new Point2D.Double();
@@ -144,6 +145,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
         backgroundColor = Color.white;
         graphDimension = new Dimension(1500, 1500);
         visibleDimension = new Dimension(0, 0);
+        action = GraphAction.NONE;
 
         JMenuItem item = new JMenuItem(resource.getString("properties"));
         item.addActionListener(new ActionListener() {
@@ -493,6 +495,9 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
     			controller.insertUtilityNode(e.getX(), e.getY());
     			return;
     			
+    		case CREATE_CONTEXT_NODE:
+    			controller.insertContextNode(e.getX(), e.getY());
+    			
     		case CREATE_EDGE:
     			if (node != null) {
                     bMoveEdge = true;
@@ -598,23 +603,13 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
         Node destinationNode = getNode(e.getX(), e.getY());
         Edge edge = getEdge(e.getX(), e.getY());
         
-        switch (action) {
-		case CREATE_PROBABILISTIC_NODE:
-			
-			break;
-			
-		case CREATE_DECISION_NODE:
-			
-			break;
-			
-		case CREATE_UTILITY_NODE:
-			
-			break;
+        switch (getAction()) {
 			
 		case CREATE_EDGE:
 			if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 	        	Node originNode = movingEdge.getOriginNode();
-	            if ((destinationNode != null) && !originNode.equals(destinationNode) && (controller.getSingleEntityNetwork().hasEdge(originNode, destinationNode) == -1)) {
+//	        	TODO RETIRAR A NECESSIDADE DE PEGAR A REDE, PEGAR DIRETO OS NÓS, ETC.
+	            if ((destinationNode != null) && !originNode.equals(destinationNode) && (controller.getNetwork().hasEdge(originNode, destinationNode) == -1)) {
 	            	movingEdge = new Edge(originNode, destinationNode);
 	            	insertEdge(movingEdge);
 	            }
@@ -913,6 +908,8 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 		case CREATE_DECISION_NODE:
 			
 		case CREATE_UTILITY_NODE:
+			
+		case CREATE_CONTEXT_NODE:
 			setCursor(new Cursor(Cursor.HAND_CURSOR));
 			break;
 			

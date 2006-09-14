@@ -384,6 +384,6 @@ public class HierarchicDefinitionPane extends JPanel
   }
 
   private void edit_actionPerformed(ActionEvent e)
-  {   netWindow.changeToNetEdition();
+  {   netWindow.changeToPNEditionPane();
   }
 }

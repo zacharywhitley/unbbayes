@@ -22,86 +22,84 @@
 package unbbayes.controller;
 
 import java.awt.Cursor;
-import java.awt.event.AdjustmentListener;
-import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
-import unbbayes.gui.UnBBayesFrame;
 import unbbayes.gui.MSBNWindow;
 import unbbayes.gui.NetworkWindow;
+import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLIO;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.util.NodeList;
 
 /**
- *  Essa classe implementa o <code>KeyListener</code> e o <code>
- *  AdjustmentListener</code> para tratar eventos de tecla do <code>TDesenhaRede
- *  </code>e de ajuste do scroll do <code>jspDesenho</code> . Essa classe é
- *  responsável principalmente por fazer a ligação entre interface e lógica.
+ *  This class is responsible for creating, loading and saving networks supported by UnBBayes.
  *
  * @author     Rommel Novaes Carvalho
  * @author     Michael S. Onishi
  * @created    27 de Junho de 2001
- * @see        KeyListener
- * @see        AdjustmentListener
- * @version    1.0 24/06/2001
+ * @version    1.5 2006/09/14
  */
 public class MainController {
 
     private UnBBayesFrame screen;
-    private List copia;
-    private List copiados;
-    private boolean bColou;
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.controller.resources.ControllerResources");
 
     /**
-     *  Constrói o controlador responsável pela criação da rede Bayesiana ( <code>
-     *  TRP</code> ) e da tela principal ( <code>UnBBayesFrame</code> ). Além
-     *  disso, este construtor também adiciona AdjustmentListener para os
-     *  JScrollBars do <code>jspDesenho</code> .
-     *
-     * @since
-     * @see      KeyListener
+     *  Contructs the main controller with the UnBBayes main frame.
      */
     public MainController() {
         screen = new UnBBayesFrame(this);
-        copia = new ArrayList();
-        copiados = new ArrayList();
     }
 
-    public void newBN() {
-        ProbabilisticNetwork net = new ProbabilisticNetwork("New BN");
-        //screen.addWindow(new NetWindow(net));
+    /**
+     * This method is responsible for creating a new probabilistic network.
+     *
+     */
+    public void newPN() {
+        ProbabilisticNetwork net = new ProbabilisticNetwork("New PN");
 		NetworkWindow netWindow = new NetworkWindow(net);
 		screen.addWindow(netWindow);
     }
     
+    /**
+     * This method is responsible for creating a new MSBN.
+     *
+     */
     public void newMSBN() {
     	SingleAgentMSBN msbn = new SingleAgentMSBN("New MSBN");
     	MSBNController controller = new MSBNController(msbn);
     	screen.addWindow(controller.getPanel());
     }
+    
+    /**
+     * This method is responsible for creating a new MEBN.
+     *
+     */
+    public void newMEBN() {
+    	MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork("New MEBN");
+    	NetworkWindow netWindow = new NetworkWindow(mebn);
+		screen.addWindow(netWindow);
+    }
 
     /**
-     *  Salva a rede Bayesiana desenhada no com o nome de arquivo desejado.
+     *  Saves the probabilistic network in both .net and .xml format, depending
+     *  on the file's extension, or saves the MSBN if the file given is a directory.
      *
-     * @param  arquivo  nome do aqruivo que representa a rede a ser salvada.
-     * @see             String
+     * @param file The file where to save the network.
      */
     public void saveNet(File file) {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -132,10 +130,8 @@ public class MainController {
 
 
     /**
-     *  Carrega a rede Bayesiana de um arquivo desejado.
-     *
-     * @param  arquivo  aqruivo que representa a rede a ser carregada.
-     * @see             String
+     *  Loads the probabilistic network from both .net and .xml format, depending
+     *  on the file's extension, or loads the MSBN if the file given is a directory.
      */
     public void loadNet(File file) {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));        
@@ -168,12 +164,12 @@ public class MainController {
 
 
     /**
-     * Método utilizado pelo módulo de aprendizagem, que monta e mostra a rede
-     * em uma nova janela.
+     * Method responsible for creating a network based on its variables.
      *
-     * @param variaveis lista das variáveis.
+     * @param nodeList List of nodes to create the network.
+     * @return The probabilistic network created.
      */
-    public ProbabilisticNetwork makeNetwork(NodeList variaveis) {
+    public ProbabilisticNetwork makeProbabilisticNetwork(NodeList nodeList) {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         ProbabilisticNetwork net = new ProbabilisticNetwork("learned net");
         Node noFilho = null;
@@ -181,8 +177,8 @@ public class MainController {
         Edge arcoAux = null;
         Node aux;
         boolean direction = true;
-        for (int i = 0; i < variaveis.size(); i++) {
-            noFilho = variaveis.get(i);
+        for (int i = 0; i < nodeList.size(); i++) {
+            noFilho = nodeList.get(i);
             net.addNode(noFilho);
             for (int j = 0; j < noFilho.getParents().size(); j++) {
             	noPai = (Node)noFilho.getParents().get(j);
@@ -204,20 +200,21 @@ public class MainController {
 		return net;
     }
     
-    public void showNetwork(ProbabilisticNetwork net){
+    /**
+     * Shows the given probabilistic network in edition or compilation mode.
+     *  
+     * @param net
+     */
+    public void showProbabilisticNetwork(ProbabilisticNetwork net){
     	NetworkWindow netWindow = new NetworkWindow(net);
-		if (! netWindow.getWindowController().compileNetwork()) {
-            netWindow.changeToNetEdition();            
+		if (! netWindow.getNetworkController().compileNetwork()) {
+            netWindow.changeToPNEditionPane();            
             
         } else{
-            netWindow.changeToNetCompilation();		
+            netWindow.changeToPNCompilationPane();		
 		}		
 		screen.addWindow(netWindow);
         screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));    	
-    }
-    
-    public UnBBayesFrame getScreen(){
-    	return screen;    	
     }
 
 }

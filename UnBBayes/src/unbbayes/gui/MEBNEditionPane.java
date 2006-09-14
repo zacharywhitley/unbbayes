@@ -99,9 +99,12 @@ public class MEBNEditionPane extends JPanel {
         btnAddState              = new JButton(iconController.getMoreIcon());
         btnRemoveState              = new JButton(iconController.getLessIcon());
         btnAddEdge               = new JButton(iconController.getEdgeIcon());
-        btnAddContextNode = new JButton(iconController.getContextNodeIcon());
+        /*btnAddContextNode = new JButton(iconController.getContextNodeIcon());
         btnAddInputNode      = new JButton(iconController.getInputNodeIcon());
-        btnAddResidentNode       = new JButton(iconController.getResidentNodeIcon());
+        btnAddResidentNode       = new JButton(iconController.getResidentNodeIcon());*/
+        btnAddContextNode = new JButton(iconController.getEllipsisIcon());
+        btnAddInputNode      = new JButton(iconController.getEllipsisIcon());
+        btnAddResidentNode       = new JButton(iconController.getEllipsisIcon());
         btnSelectObject            = new JButton(iconController.getSelectionIcon());
         btnGlobalOption      = new JButton(iconController.getGlobalOptionIcon());
 
@@ -134,7 +137,7 @@ public class MEBNEditionPane extends JPanel {
                 if (! controller.compileNetwork()) {
                     return;
                 }
-                netWindow.changeToNetCompilation();
+                netWindow.changeToPNCompilationPane();
             }
         });
 

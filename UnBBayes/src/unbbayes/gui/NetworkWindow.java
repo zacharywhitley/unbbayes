@@ -37,12 +37,14 @@ import javax.swing.JTree;
 import javax.swing.JViewport;
 
 import unbbayes.controller.NetworkController;
+import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 
 /**
- * Janela de uma rede.
+ * Class responsible for representing the network window.
  * 
  * @author Michael
  * @author Rommel
@@ -54,7 +56,7 @@ public class NetworkWindow extends JInternalFrame {
 
 	private JViewport graphViewport;
 
-	private final GraphPane graph;
+	private final GraphPane graphPane;
 
 	private final NetworkController controller;
 
@@ -64,62 +66,65 @@ public class NetworkWindow extends JInternalFrame {
 
 	private boolean bCompiled;
 
-	private CardLayout carta;
+	private CardLayout card;
 
-	private PNEditionPane netEdition;
+	private PNEditionPane pnEditionPane;
 
-	private PNCompilationPane netCompilation;
+	private PNCompilationPane pnCompilationPane;
 
 	private HierarchicDefinitionPane hierarchyPanel;
 
 	private EditNet editNet;
+	
+	private MEBNEditionPane mebnEditionPane;
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource = ResourceBundle
 			.getBundle("unbbayes.gui.resources.GuiResources");
 
-	public NetworkWindow(SingleEntityNetwork net) {
+	public NetworkWindow(Network net) {
 		super(net.getName(), true, true, true, true);
 		Container contentPane = getContentPane();
-		carta = new CardLayout();
-		contentPane.setLayout(carta);
+		card = new CardLayout();
+		contentPane.setLayout(card);
 		setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
 
 		// instancia variáveis de instância
 		graphViewport = new JViewport();
-		controller = new NetworkController(net, this);
-		graph = new GraphPane(controller, graphViewport);
-		/*
-		 * graph.setNode(net.getNos()); graph.setArc(net.getArcos());
-		 */
+		if (net instanceof SingleEntityNetwork)
+			controller = new NetworkController((SingleEntityNetwork)net, this);
+		else controller = new NetworkController((MultiEntityBayesianNetwork)net, this);
+			
+		graphPane = new GraphPane(controller, graphViewport);
+
 		jspGraph = new JScrollPane(graphViewport);
 		status = new JLabel(resource.getString("statusReadyLabel"));
 		bCompiled = false;
-		long width = Node.getWidth() / 2;
-		long height = Node.getHeight() / 2;
-		graph.getGraphViewport().reshape(0, 0,
-				(int) (graph.getBiggestPoint().getX() + 2 * width),
-				(int) (graph.getBiggestPoint().getY() + 2 * height));
-		graph.getGraphViewport().setViewSize(
+		long width = Node.getWidth();
+		long height = Node.getHeight();
+		graphPane.getGraphViewport().reshape(0, 0,
+				(int) (graphPane.getBiggestPoint().getX() + width),
+				(int) (graphPane.getBiggestPoint().getY() + height));
+		graphPane.getGraphViewport().setViewSize(
 				new Dimension(
-						(int) (graph.getBiggestPoint().getX() + 2 * width),
-						(int) (graph.getBiggestPoint().getY() + 2 * height)));
+						(int) (graphPane.getBiggestPoint().getX() + width),
+						(int) (graphPane.getBiggestPoint().getY() + height)));
 
 		// setar o conteúdo e o tamanho do graphViewport
-		graphViewport.setView(graph);
+		graphViewport.setView(graphPane);
 		graphViewport.setSize(800, 600);
 
 		jspGraph.getHorizontalScrollBar().addAdjustmentListener(
 				new AdjustmentListener() {
 					public void adjustmentValueChanged(AdjustmentEvent e) {
-						graph.update();
+						graphPane.update();
 					}
 				});
 
 		jspGraph.getVerticalScrollBar().addAdjustmentListener(
 				new AdjustmentListener() {
 					public void adjustmentValueChanged(AdjustmentEvent e) {
-						graph.update();
+						graphPane.update();
 					}
 				});
 
@@ -131,23 +136,32 @@ public class NetworkWindow extends JInternalFrame {
 		jspGraph
 				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
-		netEdition = new PNEditionPane(this, controller);
-		editNet = new EditNet(this, controller);
-		netCompilation = new PNCompilationPane(this, controller);
-		hierarchyPanel = new HierarchicDefinitionPane(net, this);
+		if (net instanceof SingleEntityNetwork) {
+			pnEditionPane = new PNEditionPane(this, controller);
+			editNet = new EditNet(this, controller);
+			pnCompilationPane = new PNCompilationPane(this, controller);
+			hierarchyPanel = new HierarchicDefinitionPane((SingleEntityNetwork)net, this);
+			
+			contentPane.add(pnEditionPane, "pnEditionPane");
+			contentPane.add(editNet, "editNet");
+			contentPane.add(pnCompilationPane, "pnCompilationPane");
+			contentPane.add(hierarchyPanel, "hierarchy");
 
-		contentPane.add(netEdition, "netEdition");
-		contentPane.add(editNet, "editNet");
-		contentPane.add(netCompilation, "netCompilation");
-		contentPane.add(hierarchyPanel, "hierarchy");
+			// inicia com a tela de edicao de rede(PNEditionPane)
+			pnEditionPane.getCenterPanel().setBottomComponent(jspGraph);
+			card.show(getContentPane(), "pnEditionPane");
+		} else {
+			mebnEditionPane = new MEBNEditionPane(this, controller);
+			
+			contentPane.add(mebnEditionPane, "mebnEditionPane");
 
-		// inicia com a tela de edicao de rede(NetEdition)
-		netEdition.getCenterPanel().setBottomComponent(jspGraph);
-		carta.show(getContentPane(), "netEdition");
+			// inicia com a tela de edicao de rede(PNEditionPane)
+			mebnEditionPane.getCenterPanel().setBottomComponent(jspGraph);
+			card.show(getContentPane(), "mebnEditionPane");
+		}
 
-		// pack();
 		setVisible(true);
-		graph.update();
+		graphPane.update();
 	}
 
 	/**
@@ -157,7 +171,7 @@ public class NetworkWindow extends JInternalFrame {
 	 * @see GraphPane
 	 */
 	public GraphPane getGraphPane() {
-		return this.graph;
+		return this.graphPane;
 	}
 
 	/**
@@ -167,7 +181,7 @@ public class NetworkWindow extends JInternalFrame {
 	 * @see JTree
 	 */
 	public EvidenceTree getEvidenceTree() {
-		return netCompilation.getEvidenceTree();
+		return pnCompilationPane.getEvidenceTree();
 	}
 
 	/**
@@ -188,7 +202,7 @@ public class NetworkWindow extends JInternalFrame {
 	 * @see JTable
 	 */
 	public JTable getTable() {
-		return netEdition.getTable();
+		return pnEditionPane.getTable();
 	}
 
 	/**
@@ -198,7 +212,7 @@ public class NetworkWindow extends JInternalFrame {
 	 * @see JTextField
 	 */
 	public JTextField getTxtDescription() {
-		return netEdition.getTxtDescription();
+		return pnEditionPane.getTxtDescription();
 	}
 
 	/**
@@ -208,7 +222,7 @@ public class NetworkWindow extends JInternalFrame {
 	 * @see JTextField
 	 */
 	public JTextField getTxtSigla() {
-		return netEdition.getTxtSigla();
+		return pnEditionPane.getTxtSigla();
 	}
 
 	/**
@@ -219,7 +233,7 @@ public class NetworkWindow extends JInternalFrame {
 	 * @see JTable
 	 */
 	public void setTable(JTable table) {
-		netEdition.setTable(table);
+		pnEditionPane.setTable(table);
 	}
 
 	/**
@@ -239,15 +253,15 @@ public class NetworkWindow extends JInternalFrame {
 	 * @see JScrollPane
 	 */
 	public JScrollPane getJspTree() {
-		return netCompilation.getJspTree();
+		return pnCompilationPane.getJspTree();
 	}
 
 	public Node getTableOwner() {
-		return netEdition.getTableOwner();
+		return pnEditionPane.getTableOwner();
 	}
 
 	public void setTableOwner(Node node) {
-		netEdition.setTableOwner(node);
+		pnEditionPane.setTableOwner(node);
 	}
 
 	/**
@@ -267,8 +281,8 @@ public class NetworkWindow extends JInternalFrame {
 	 *            mensagem de status.
 	 */
 	public void setStatus(String status) {
-		netCompilation.setStatus(status);
-		netEdition.setStatus(status);
+		pnCompilationPane.setStatus(status);
+		pnEditionPane.setStatus(status);
 		this.status.setText(status);
 	}
 
@@ -276,41 +290,41 @@ public class NetworkWindow extends JInternalFrame {
 	 * Método responsável por fazer as alterações necessárias para a mudar da
 	 * tela de edição para a de compilação.
 	 */
-	public void changeToNetCompilation() {
+	public void changeToPNCompilationPane() {
 
-		graph.setAction(GraphAction.NONE);
-		graph.removeKeyListener(controller);
+		graphPane.setAction(GraphAction.NONE);
+		graphPane.removeKeyListener(controller);
 
-		netCompilation.getCenterPanel().setRightComponent(jspGraph);
-		netCompilation.setStatus(status.getText());
-		netCompilation.getEvidenceTree().setRootVisible(true);
-		netCompilation.getEvidenceTree().expandRow(0);
-		netCompilation.getEvidenceTree().setRootVisible(false);
+		pnCompilationPane.getCenterPanel().setRightComponent(jspGraph);
+		pnCompilationPane.setStatus(status.getText());
+		pnCompilationPane.getEvidenceTree().setRootVisible(true);
+		pnCompilationPane.getEvidenceTree().expandRow(0);
+		pnCompilationPane.getEvidenceTree().setRootVisible(false);
 
 		bCompiled = true;
 
 		controller.getSingleEntityNetwork().setFirstInitialization(true);
 
-		carta.show(getContentPane(), "netCompilation");
-		netCompilation.getEvidenceTree().updateTree();
+		card.show(getContentPane(), "pnCompilationPane");
+		pnCompilationPane.getEvidenceTree().updateTree();
 	}
 
 	/**
 	 * Método responsável por fazer as alterações necessárias para a mudar da
 	 * tela de compilação para a de edição.
 	 */
-	public void changeToNetEdition() {
+	public void changeToPNEditionPane() {
 
-		graph.addKeyListener(controller);
+		graphPane.addKeyListener(controller);
 
-		netEdition.getCenterPanel().setBottomComponent(jspGraph);
-		netEdition.setStatus(status.getText());
+		pnEditionPane.getCenterPanel().setBottomComponent(jspGraph);
+		pnEditionPane.setStatus(status.getText());
 
 		bCompiled = false;
 
 		controller.getSingleEntityNetwork().setFirstInitialization(true);
 
-		carta.show(getContentPane(), "netEdition");
+		card.show(getContentPane(), "pnEditionPane");
 	}
 
 	/**
@@ -320,12 +334,12 @@ public class NetworkWindow extends JInternalFrame {
 	public void changeToHierarchy() {
 
 		hierarchyPanel.updateExplanationTree();
-		carta.show(getContentPane(), "hierarchy");
+		card.show(getContentPane(), "hierarchy");
 
 	}
 
 	public void changeToEditNet() {
-		carta.show(getContentPane(), "editNet");
+		card.show(getContentPane(), "editNet");
 	}
 
 	/**
@@ -345,7 +359,7 @@ public class NetworkWindow extends JInternalFrame {
 	 * @see PNEditionPane
 	 */
 	public PNEditionPane getNetWindowEdition() {
-		return this.netEdition;
+		return this.pnEditionPane;
 	}
 
 	/**
@@ -355,14 +369,14 @@ public class NetworkWindow extends JInternalFrame {
 	 * @see PNCompilationPane
 	 */
 	public PNCompilationPane getNetWindowCompilation() {
-		return this.netCompilation;
+		return this.pnCompilationPane;
 	}
 
 	public HierarchicDefinitionPane getHierarchicDefinitionPanel() {
 		return this.hierarchyPanel;
 	}
 
-	public NetworkController getWindowController() {
+	public NetworkController getNetworkController() {
 		return controller;
 	}
 

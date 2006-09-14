@@ -137,6 +137,7 @@ public class GuiResources_pt extends ListResourceBundle {
         {"newMenu","Novo..."},
         {"newBN","Nova BN"},
         {"newMSBN","Nova MSBN"},
+        {"newMEBN","Nova MEBN"},
         {"openItem","Abrir..."},
         {"saveItem","Salvar como..."},
         {"exitItem","Sair"},

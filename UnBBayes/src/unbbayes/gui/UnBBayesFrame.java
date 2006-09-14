@@ -94,6 +94,7 @@ public class UnBBayesFrame extends JFrame {
 	//private JHelp jHelp;
 	private ActionListener alNewBN;
 	private ActionListener alNewMSBN;
+	private ActionListener alNewMEBN;
 	private ActionListener alOpen;
 	private ActionListener alSave;
 	private ActionListener alExit;
@@ -228,6 +229,15 @@ public class UnBBayesFrame extends JFrame {
 			public void actionPerformed(ActionEvent ae) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				controller.newMSBN();
+				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+		};
+		
+		// create an ActionListener for opening new window for MEBN
+		alNewMEBN = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				setCursor(new Cursor(Cursor.WAIT_CURSOR));
+				controller.newMEBN();
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		};
@@ -523,6 +533,10 @@ public class UnBBayesFrame extends JFrame {
 		JMenuItem newMSBN =
 			new JMenuItem(
 				resource.getString("newMSBN"),iconController.getNewIcon());
+		
+		JMenuItem newMEBN =
+			new JMenuItem(
+				resource.getString("newMEBN"),iconController.getNewIcon());
 
 		JMenuItem openItem =
 			new JMenuItem(
@@ -599,6 +613,7 @@ public class UnBBayesFrame extends JFrame {
 		// add ActionListener to all menu items
 		newBN.addActionListener(alNewBN);
 		newMSBN.addActionListener(alNewMSBN);
+		newMEBN.addActionListener(alNewMEBN);
 		openItem.addActionListener(alOpen);
 		saveItem.addActionListener(alSave);
 		exitItem.addActionListener(alExit);
@@ -622,6 +637,7 @@ public class UnBBayesFrame extends JFrame {
 		// add menu items to their respective menu
 		newMenu.add(newBN);
 		newMenu.add(newMSBN);
+		newMenu.add(newMEBN);
 		fileMenu.add(newMenu);
 		fileMenu.add(openItem);
 		fileMenu.add(saveItem);

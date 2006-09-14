@@ -12,8 +12,6 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	 * 
 	 */
 	private static final long serialVersionUID = 8497908054569004909L;
-
-	private MFrag mFrag;
 	 
 	private List<InputNode> inputNodeFatherList;
 	 

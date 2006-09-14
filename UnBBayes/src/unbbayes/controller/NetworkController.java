@@ -59,9 +59,11 @@ import unbbayes.gui.FileIcon;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.prs.Edge;
+import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.util.NodeList;
 
 /**
@@ -78,7 +80,7 @@ public class NetworkController implements KeyListener {
 
     private NetworkWindow screen;
     private SingleEntityNetwork singleEntityNetwork;
-    //private MultiEntityBayesianNetwork multiEntityBayesianNetwork;
+    private MultiEntityBayesianNetwork multiEntityBayesianNetwork;
     
     private SENController senController;
     private MEBNController mebnController;
@@ -90,6 +92,41 @@ public class NetworkController implements KeyListener {
 
     /** Load resource file from this package */
     private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.controller.resources.ControllerResources");
+    
+    /***************** BEGIN CONTROLLING MULTI ENTTITY BAYESIAN NETWORK *********************/
+    
+    /**
+     *  Constructs a controller for SingleEntityNetwork.
+     *
+     */
+    public NetworkController(MultiEntityBayesianNetwork multiEntityBayesianNetwork, NetworkWindow screen) {
+        this.multiEntityBayesianNetwork = multiEntityBayesianNetwork;
+        this.screen = screen;
+        this.mebnController = new MEBNController(multiEntityBayesianNetwork, screen);
+        /*copia = new ArrayList();
+        copiados = new ArrayList<ProbabilisticNode>();*/
+    }
+    
+    /**
+     * Insert a new context node in the MultiEntityBayesianNetwork with 
+     * the standard label and descritpion.
+     *
+     * @param x The x position of the new node.
+     * @param y The y position of the new node.
+     */
+    public void insertContextNode(double x, double y) {
+    	if (mebnController != null)
+			try {
+				mebnController.insertContextNode(x,y);
+			} catch (Exception e) {
+				// TODO PEGAR ESSA EXCEÇÃO!! JOGAR PRO USUÁRIO!!
+				e.printStackTrace();
+			}
+    }
+    
+    /***************** END CONTROLLING MULTI ENTTITY BAYESIAN NETWORK *********************/
+    
+    
 
     /***************** BEGIN CONTROLLING SINGLE ENTTITY NETWORK *********************/
     
@@ -111,7 +148,22 @@ public class NetworkController implements KeyListener {
      * @return The single entity network.
      */
     public SingleEntityNetwork getSingleEntityNetwork() {
+    	//TODO VERIFICAR SE POSSO RETIRAR ESSE MÉTODO!!
         return this.singleEntityNetwork;
+    }
+    
+    /**
+     * Get the network being controlled.
+     * @return The network being controlled.
+     */
+    public Network getNetwork() {
+    	if (singleEntityNetwork != null) {
+    		return singleEntityNetwork;
+    	}
+    	if (multiEntityBayesianNetwork != null) {
+    		return multiEntityBayesianNetwork;
+    	}
+    	return null;
     }
 
     /**
@@ -226,10 +278,11 @@ public class NetworkController implements KeyListener {
 
     /**
      * Delete the selected object from the network.
-     * @param selected
+     * @param selected The selected object to delete.
      */
     private void deleteSelected(Object selected) {
     	if (senController != null) senController.deleteSelected(selected);
+    	else if (mebnController != null) mebnController.deleteSelected(selected);
     }
     
     /***************** END CONTROLLING BOTH *********************/

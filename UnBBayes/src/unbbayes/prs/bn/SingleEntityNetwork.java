@@ -102,19 +102,13 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
     /**
      *  Constrói um novo grafo sem nós nem edgeList.
      */
-    public SingleEntityNetwork(String id) {
-        nodeList = new NodeList();
-//        assert ! id.trim().equals("");
-        this.id = this.name = id;
-        //descriptionNodes = new NodeList();
-        //explanationNodes = new NodeList();
-        edgeList = new ArrayList<Edge>();
+    public SingleEntityNetwork(String name) {
+    	super(name);
         arcosMarkov = new ArrayList<Edge>();
         logManager = new LogManager(); 
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
 		DefaultTreeModel model = new DefaultTreeModel(root);
-        hierarchicTree = new HierarchicTree(model);        
-        nodeIndexes = new HashMap<String,Integer>();
+        hierarchicTree = new HierarchicTree(model);
     }
 
 

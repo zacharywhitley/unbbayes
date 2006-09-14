@@ -138,6 +138,7 @@ public class GuiResources extends ListResourceBundle {
         {"newMenu","New..."},
         {"newBN", "New BN"},
         {"newMSBN", "New MSBN"},
+        {"newMEBN","New MEBN"},
         {"openItem","Open..."},
         {"saveItem","Save as..."},
         {"exitItem","Exit"},

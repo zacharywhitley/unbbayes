@@ -81,7 +81,7 @@ public class MSBNController {
 			           		NetworkWindow netWindow = new NetworkWindow(net);
 			            	changeActive(netWindow);
 		            		msbn.shiftAttention(net);
-			            	netWindow.changeToNetCompilation();
+			            	netWindow.changeToPNCompilationPane();
 			            	tree.scrollRowToVisible(selRow);
 			            } catch (Exception ex) {
 			            	ex.printStackTrace();			            	
@@ -148,7 +148,7 @@ public class MSBNController {
 		
 		window.addEditionActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				active.changeToNetEdition();
+				active.changeToPNEditionPane();
 				window.showBtnPanel(MSBNWindow.EDITION_PANE);
 				window.changeToListView();
 			}
@@ -188,7 +188,7 @@ public class MSBNController {
 			public void actionPerformed(ActionEvent ev) {
 				try {
 					msbn.compile((SubNetwork) active.getRede());
-					active.changeToNetCompilation();
+					active.changeToPNCompilationPane();
 					window.changeToTreeView(makeJTree());
 					window.showBtnPanel(MSBNWindow.COMPILED_PANE);
 				} catch (Exception e) {

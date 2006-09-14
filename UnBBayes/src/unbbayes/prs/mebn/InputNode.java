@@ -4,8 +4,6 @@ import java.util.List;
 
 public class InputNode extends MultiEntityNode {
 
-	private MFrag mFrag;
-
 	private List<ResidentNode> residentNodeChildList;
 
 	/*
