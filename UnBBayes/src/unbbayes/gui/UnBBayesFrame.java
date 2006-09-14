@@ -218,7 +218,7 @@ public class UnBBayesFrame extends JFrame {
 		alNewBN = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				controller.newBN();
+				controller.newPN();
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		};
@@ -552,7 +552,7 @@ public class UnBBayesFrame extends JFrame {
 				resource.getString("windowsItem"),iconController.getWindowsIcon());
 		JMenuItem learningItem =
 			new JMenuItem(
-				resource.getString("learningItem"),iconController.getCompileIcon());
+				resource.getString("learningItem"),iconController.getLearningIcon());
 		JMenuItem monteCarloItem = 
 			new JMenuItem("Monte Carlo");
 		JMenuItem ILItem = 
@@ -704,7 +704,7 @@ public class UnBBayesFrame extends JFrame {
 		saveNet =
 			new JButton(iconController.getSaveIcon());
 		learn =
-			new JButton(iconController.getCompileIcon());
+			new JButton(iconController.getLearningIcon());
 		metal =
 			new JButton(iconController.getMetalIcon());
 		motif =

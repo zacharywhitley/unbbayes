@@ -145,6 +145,8 @@ public class IconController {
 	protected ImageIcon resetSizeIcon;
 
 	protected ImageIcon openModelIcon;
+	
+	protected ImageIcon learningIcon;
 
 	public static IconController getInstance() {
 		if (singleton == null) {
@@ -725,6 +727,16 @@ public class IconController {
 			openModelIcon = new ImageIcon(getClass().getResource(
 					"/icons/open4.gif"));
 			return openModelIcon;
+		}
+	}
+	
+	public ImageIcon getLearningIcon() {
+		if (learningIcon != null) {
+			return learningIcon;
+		} else {
+			learningIcon = new ImageIcon(getClass().getResource(
+					"/icons/learn.gif"));
+			return learningIcon;
 		}
 	}
 
