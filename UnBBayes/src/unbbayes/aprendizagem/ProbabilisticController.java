@@ -20,14 +20,8 @@
  */
 package unbbayes.aprendizagem;
 
-import java.io.File;
-import java.io.IOException;
-
 import unbbayes.controller.MainController;
 import unbbayes.gui.TJanelaEdicao;
-import unbbayes.io.BaseIO;
-import unbbayes.io.LoadException;
-import unbbayes.io.NetIO;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -36,7 +30,7 @@ import unbbayes.util.NodeList;
 
 public class ProbabilisticController extends LearningToolkit{
 
-    private boolean ok; 
+    //private boolean ok; 
     
     public ProbabilisticController(NodeList variables,byte[][] matrix,
                        int[] vector,long caseNumber, MainController controller, boolean compacted){
@@ -49,15 +43,16 @@ public class ProbabilisticController extends LearningToolkit{
     	int[][] arrayNijk;
     	PotentialTable table;
     	//ProbabilisticNetwork net    = controller.makeNetwork(variables);
-    	BaseIO base = new NetIO();
-    	ProbabilisticNetwork net = controller.makeNetwork(variables);
+    	//BaseIO base = new NetIO();
+    	ProbabilisticNetwork net = controller.makeProbabilisticNetwork(variables);
         int length  = variables.size();    	
         for(int i = 0; i < length; i++) {
             variable  = (TVariavel)variables.get(i);
             table     = variable.getProbabilidades();
             table.addVariable(variable);
         }
-    	TJanelaEdicao window = new TJanelaEdicao(net);
+    	//TJanelaEdicao window = new TJanelaEdicao(net);
+        new TJanelaEdicao(net);
         for(int i = 0; i < length; i++) {
             variable  = (TVariavel)variables.get(i);
             arrayNijk = getFrequencies(variable,variable.getPais());                        
@@ -74,6 +69,6 @@ for2:       for (int j = 0; j < parentsLength; j++) {
             }
             getProbability(arrayNijk, variable); 
         }                
-        controller.showNetwork(net);
+        controller.showProbabilisticNetwork(net);
     }
 }
