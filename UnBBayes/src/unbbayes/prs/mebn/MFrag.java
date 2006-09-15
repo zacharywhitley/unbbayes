@@ -43,8 +43,9 @@ public class MFrag {
 	 * Contructs a new MFrag with empty node's list.
 	 * @param name The name of the MFrag.
 	 */
-	protected MFrag(String name) {
+	protected MFrag(String name, MultiEntityBayesianNetwork mebn) {
 		this.name = name;
+		this.multiEntityBayesianNetwork = mebn;
 		residentNodeList = new ArrayList<ResidentNode>();
 		inputNodeList = new ArrayList<InputNode>();
 		nodeList = new NodeList();
@@ -133,6 +134,14 @@ public class MFrag {
 	 */
 	public NodeList getNodeList() {
 		return nodeList;
+	}
+
+	/**
+	 * Get the MFrag's name.
+	 * @return The MFrag's name.
+	 */
+	public String getName() {
+		return name;
 	}
 
 }

@@ -44,6 +44,14 @@ public class MultiEntityBayesianNetwork extends Network {
 	}
 	
 	/**
+	 * Get the MFrag list of this MEBN.
+	 * @return The MFrag list of this MEBN.
+	 */
+	public List<MFrag> getMFragList() {
+		return mFragList;
+	}
+	
+	/**
 	 * Get total number of MFrags.
 	 * @return The total number of MFrags.
 	 */

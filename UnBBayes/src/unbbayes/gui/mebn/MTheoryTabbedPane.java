@@ -3,6 +3,10 @@ package unbbayes.gui.mebn;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 
+import unbbayes.prs.mebn.DomainMFrag;
+import unbbayes.prs.mebn.FindingMFrag;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+
 public class MTheoryTabbedPane extends JTabbedPane {
 
 	/**
@@ -12,7 +16,17 @@ public class MTheoryTabbedPane extends JTabbedPane {
 
 	public MTheoryTabbedPane() {
 		super();
-		this.addTab("MTheory Tree", new MTheoryTree());
+		MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork("MTheory");
+		mebn.addMFrag(new DomainMFrag("DomainMFrag 01", mebn));
+		mebn.addMFrag(new DomainMFrag("DomainMFrag 02", mebn));
+		mebn.addMFrag(new FindingMFrag("FindingMFrag 01", mebn));
+		mebn.addMFrag(new DomainMFrag("DomainMFrag 03", mebn));
+		mebn.addMFrag(new DomainMFrag("DomainMFrag 04", mebn));
+		mebn.addMFrag(new FindingMFrag("FindingMFrag 02", mebn));
+		mebn.addMFrag(new FindingMFrag("FindingMFrag 03", mebn));
+		mebn.addMFrag(new FindingMFrag("FindingMFrag 04", mebn));
+		
+		this.addTab("MTheory Tree", new MTheoryTree(mebn));
 	}
 	
 	public static void main(String[] args) {

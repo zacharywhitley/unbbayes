@@ -73,7 +73,7 @@ public class MSBNController {
 					 if(e.getModifiers() == MouseEvent.BUTTON1_MASK) {					 	
 					 	DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
 					 	SubNetwork net = (SubNetwork) node.getUserObject();
-			            if (net == active.getRede() 
+			            if (net == active.getSingleEntityNetwork() 
 			            	 || JOptionPane.showConfirmDialog(window, "Shift Attention?") != JOptionPane.OK_OPTION) {
 			            	return;
 			            }
@@ -111,7 +111,7 @@ public class MSBNController {
 	
 	private void changeActive(NetworkWindow newWindow) {				
 		if (active != null) {
-			SingleEntityNetwork net = active.getRede();
+			SingleEntityNetwork net = active.getSingleEntityNetwork();
 			for (int i = 0; i < net.getNodeCount(); i++) {
 				net.getNodeAt(i).setSelected(false);			            	
 			}
@@ -134,7 +134,7 @@ public class MSBNController {
 		     public void mouseClicked(MouseEvent e) {
 		     	if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 		     		int index = window.getNetList().locationToIndex(e.getPoint());
-		            if (index < 0 || window.getNetList().getModel().getElementAt(index) == active.getRede()) {
+		            if (index < 0 || window.getNetList().getModel().getElementAt(index) == active.getSingleEntityNetwork()) {
 		            	return;		             	
 		            } 
 		            
@@ -187,7 +187,7 @@ public class MSBNController {
 		window.addCompileBtnActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 				try {
-					msbn.compile((SubNetwork) active.getRede());
+					msbn.compile((SubNetwork) active.getSingleEntityNetwork());
 					active.changeToPNCompilationPane();
 					window.changeToTreeView(makeJTree());
 					window.showBtnPanel(MSBNWindow.COMPILED_PANE);

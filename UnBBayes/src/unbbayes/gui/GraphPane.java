@@ -51,6 +51,7 @@ import unbbayes.gui.draw.IDrawable;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.util.GeometricUtil;
 import unbbayes.util.NodeList;
 
@@ -561,21 +562,23 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
         Node node = getNode(e.getX(), e.getY());
         if (node != null) {
         	if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-	            controller.getScreen().setTable(controller.makeTable(node));
-	            controller.getScreen().setTableOwner(node);
-	            if (controller.getScreen().isCompiled()) {
-	                for (int i = 0; i < controller.getScreen().getEvidenceTree().getRowCount(); i++) {
-	                    if (controller.getScreen().getEvidenceTree().getPathForRow(i).getLastPathComponent().toString().equals(selected.toString())) {
-	                        if (controller.getScreen().getEvidenceTree().isExpanded(controller.getScreen().getEvidenceTree().getPathForRow(i))) {
-	                            controller.getScreen().getEvidenceTree().collapsePath(controller.getScreen().getEvidenceTree().getPathForRow(i));
-	                        }
-	                        else {
-	                            controller.getScreen().getEvidenceTree().expandPath(controller.getScreen().getEvidenceTree().getPathForRow(i));
-	                        }
-	                        break;
-	                    }
-	                }
-	            }
+        		if (controller.getNetwork() instanceof SingleEntityNetwork) {
+		            controller.getScreen().setTable(controller.makeTable(node));
+		            controller.getScreen().setTableOwner(node);
+		            if (controller.getScreen().isCompiled()) {
+		                for (int i = 0; i < controller.getScreen().getEvidenceTree().getRowCount(); i++) {
+		                    if (controller.getScreen().getEvidenceTree().getPathForRow(i).getLastPathComponent().toString().equals(selected.toString())) {
+		                        if (controller.getScreen().getEvidenceTree().isExpanded(controller.getScreen().getEvidenceTree().getPathForRow(i))) {
+		                            controller.getScreen().getEvidenceTree().collapsePath(controller.getScreen().getEvidenceTree().getPathForRow(i));
+		                        }
+		                        else {
+		                            controller.getScreen().getEvidenceTree().expandPath(controller.getScreen().getEvidenceTree().getPathForRow(i));
+		                        }
+		                        break;
+		                    }
+		                }
+		            }
+        		}
         	}
         } else {
 	        Edge edge = getEdge(e.getX(), e.getY());

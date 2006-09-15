@@ -334,7 +334,7 @@ public class BayesianLearningMain extends JInternalFrame
       statusBar.setText("Estrutura Aprendida");
       jTabbedPane1.setEnabledAt(1,true);
       jTabbedPane1.setSelectedIndex(1);
-      net = (ProbabilisticNetwork)algorithmController.getNetWindow().getRede();
+      net = (ProbabilisticNetwork)algorithmController.getNetWindow().getSingleEntityNetwork();
       saveButton.setEnabled(true);
   }
 

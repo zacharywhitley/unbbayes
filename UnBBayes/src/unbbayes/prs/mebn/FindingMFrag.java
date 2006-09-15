@@ -6,8 +6,8 @@ public class FindingMFrag extends MFrag {
 	 
 	private FindingResidentNode findingResidentNode;
 	
-	public FindingMFrag(String name) {
-		super(name);
+	public FindingMFrag(String name, MultiEntityBayesianNetwork mebn) {
+		super(name, mebn);
 	}
 }
  

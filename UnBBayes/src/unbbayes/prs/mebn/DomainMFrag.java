@@ -15,8 +15,8 @@ public class DomainMFrag extends MFrag {
 	 * Contructs a new DomainMFrag with empty node's list.
 	 * @param name The name of the DomainMFrag.
 	 */
-	public DomainMFrag(String name) {
-		super(name);
+	public DomainMFrag(String name, MultiEntityBayesianNetwork mebn) {
+		super(name, mebn);
 		contextNodeList = new ArrayList<ContextNode>();
 		generativeInputNodeList = new ArrayList<GenerativeInputNode>();
 		domainResidentNodeList = new ArrayList<DomainResidentNode>();
@@ -32,6 +32,7 @@ public class DomainMFrag extends MFrag {
 	public void addContextNode(ContextNode contextNode) {
 		contextNodeList.add(contextNode);
 		addNode(contextNode);
+		contextNode.setMFrag(this);
 	}
 
 	/**

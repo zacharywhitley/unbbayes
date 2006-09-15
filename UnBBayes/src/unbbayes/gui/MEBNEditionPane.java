@@ -19,13 +19,16 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
+import unbbayes.gui.mebn.MTheoryTree;
 import unbbayes.prs.Node;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 
 public class MEBNEditionPane extends JPanel {
 
@@ -306,6 +309,10 @@ public class MEBNEditionPane extends JPanel {
         this.add(topPanel, BorderLayout.NORTH);
         this.add(centerPanel, BorderLayout.CENTER);
         this.add(bottomPanel, BorderLayout.SOUTH);
+        //TODO AJUSTAR ESSE CÓDIGO PARA FICAR BOM
+        JTabbedPane westTabPanel = new JTabbedPane();
+        westTabPanel.add("MTheory Tree", new MTheoryTree((MultiEntityBayesianNetwork)controller.getNetwork()));
+        this.add(westTabPanel, BorderLayout.WEST);
         setVisible(true);
 
     }

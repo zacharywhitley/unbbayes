@@ -270,8 +270,18 @@ public class NetworkWindow extends JInternalFrame {
 	 * @return a rede probabilística
 	 * @see ProbabilisticNetwork
 	 */
-	public SingleEntityNetwork getRede() {
-		return controller.getSingleEntityNetwork();
+	public SingleEntityNetwork getSingleEntityNetwork() {
+		return (SingleEntityNetwork)controller.getNetwork();
+	}
+	
+	/**
+	 * Retorna a rede probabilística <code>(ProbabilisticNetwork)</code>
+	 * 
+	 * @return a rede probabilística
+	 * @see ProbabilisticNetwork
+	 */
+	public MultiEntityBayesianNetwork getMultiEntityBayesianNetwork() {
+		return (MultiEntityBayesianNetwork)controller.getNetwork();
 	}
 
 	/**

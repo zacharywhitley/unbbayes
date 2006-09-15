@@ -2,6 +2,7 @@ package unbbayes.prs.mebn;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.gui.draw.DrawEllipse;
@@ -14,7 +15,7 @@ public class ContextNode extends MultiEntityNode {
 	private static final long serialVersionUID = 8186266877724939663L;
 
 	private DomainMFrag mFrag;
-	 
+	
 	/**
 	 * All innner terms of this node.
 	 */
@@ -29,6 +30,8 @@ public class ContextNode extends MultiEntityNode {
     private DrawEllipse drawEllipse;
     
     public ContextNode() {
+    	innerTermOfList = new ArrayList<ContextNode>();
+    	innerTermFromList = new ArrayList<ContextNode>();
     	// Here it is defined how this node is going to be drawn.
         // In the superclass, Node, it was already definied to draw text, here
         // we add the draw ellipse.
@@ -105,6 +108,14 @@ public class ContextNode extends MultiEntityNode {
 	public void paint(Graphics2D graphics) {
 		drawEllipse.setFillColor(getColor());
 		super.paint(graphics);
+	}
+
+	/**
+	 * Set the MFrag where this node resides.
+	 * @param frag The MFrag where this node resides.
+	 */
+	public void setMFrag(DomainMFrag frag) {
+		mFrag = frag;
 	}
 }
  

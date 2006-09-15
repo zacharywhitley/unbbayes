@@ -27,7 +27,7 @@ public class MEBNController {
 
 	public void insertDomainMFrag(String name) {
 		multiEntityBayesianNetwork.addMFrag(new DomainMFrag("DomainMFrag "
-				+ multiEntityBayesianNetwork.getMFragCount()));
+				+ multiEntityBayesianNetwork.getMFragCount(), multiEntityBayesianNetwork));
 	}
 	
 	public void removeDomainMFrag(DomainMFrag domainMFrag) {

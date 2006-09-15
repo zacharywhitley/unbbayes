@@ -43,7 +43,7 @@ public class EvidenceTree extends JTree {
         protected IconController iconController = IconController.getInstance();
 
 	public EvidenceTree(final NetworkWindow netWindow) {
-		net = netWindow.getRede();
+		net = netWindow.getSingleEntityNetwork();
 		nf = NumberFormat.getInstance(Locale.US);
 		nf.setMaximumFractionDigits(2);
 

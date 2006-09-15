@@ -116,7 +116,7 @@ public class MainController {
 				} else if (name.endsWith("xml")){
 					io = new XMLIO();
 				}
-				io.save(file, ((NetworkWindow) window).getRede());
+				io.save(file, ((NetworkWindow) window).getSingleEntityNetwork());
         	}
         } catch (IOException e) {
             JOptionPane.showMessageDialog(screen, e.getMessage(), "saveNetException", JOptionPane.ERROR_MESSAGE);
