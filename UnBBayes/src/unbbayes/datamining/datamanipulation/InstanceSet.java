@@ -649,6 +649,11 @@ public class InstanceSet
     	}
     	return text.toString();
   	}
+
+	public Instance find(short[] s) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
 
 

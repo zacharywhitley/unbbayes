@@ -391,5 +391,20 @@ public class Attribute implements Serializable
     	System.arraycopy(attributeValues,0,values,0,attributeValues.length);
     	return values;
     }
+
+	public boolean isCyclic() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public float getMinimumValue() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public float getMaximumValue() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }
 

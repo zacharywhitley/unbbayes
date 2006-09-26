@@ -377,4 +377,9 @@ public class Instance
 		attValues = newValues;
 	}
 
+	public void addWeight(float f) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
