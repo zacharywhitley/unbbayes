@@ -190,8 +190,7 @@ public class JunctionTree implements java.io.Serializable {
 	 *  Inicia crenças da árvore.
 	 */
 	public void initBeliefs() throws Exception {
-//		 TODO Unconment the if else code below after fixing restoreTableData()
-		//if (! initialized) {
+		if (! initialized) {
 			Clique auxClique;
 			PotentialTable auxTabPot;
 			PotentialTable auxUtilTab;
@@ -245,14 +244,12 @@ public class JunctionTree implements java.io.Serializable {
 			
 			consistency();
 			copyTableData();
-//			initialized = true;
-//		} else {
-//			restoreTableData();						
-//		}
+			initialized = true;
+		} else {
+			restoreTableData();						
+		}
 	}
 	
-//	 TODO fix this method because it is not working all times (see bug fix 
-	// sent by Ladeira)
 	private void restoreTableData() {
 		int sizeCliques = cliques.size();
 		for (int k = 0; k < sizeCliques; k++) {
@@ -265,6 +262,7 @@ public class JunctionTree implements java.io.Serializable {
 		for (int k = 0; k < sizeSeparadores; k++) {
 			Separator auxSep = (Separator) separators.get(k);
 			auxSep.getPotentialTable().restoreData();
+			auxSep.getUtilityTable().restoreData();
 		}
 	}
 	
@@ -280,6 +278,7 @@ public class JunctionTree implements java.io.Serializable {
 		for (int k = 0; k < sizeSeparadores; k++) {
 			Separator auxSep = (Separator) separators.get(k);
 			auxSep.getPotentialTable().copyData();
+			auxSep.getUtilityTable().copyData();
 		}
 	}
 
