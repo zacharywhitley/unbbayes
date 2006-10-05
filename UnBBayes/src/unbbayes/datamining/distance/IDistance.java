@@ -45,6 +45,6 @@ public interface IDistance {
 	 * 
 	 * @return The distance between first and second vectors.
 	 */
-	public double distanceValue(double[] vector1, double[] vector2);
+	public float distanceValue(float[] vector1, float[] vector2);
 
 } // IDistance()

@@ -37,16 +37,16 @@ package unbbayes.datamining.distance;
 public class Euclidean extends Distance {
 
 	/**
-	 * @see neuralnetworktoolkit.distances.IDistance#distanceValue(double[], double[])
+	 * @see neuralnetworktoolkit.distances.IDistance#distanceValue(float[], float[])
 	 */
-	public double distanceValue(double[] vector1, double[] vector2) {
-		double result = 0;
+	public float distanceValue(float[] vector1, float[] vector2) {
+		float result = 0;
 
 		for (int i = 0; i < vector1.length; i++) {
 			result += (vector1[i] - vector2[i]) * (vector1[i] - vector2[i]);
 
 		}
-		return Math.sqrt(result);
+		return (float) Math.sqrt(result);
 
 	} //distanceValue()
 
