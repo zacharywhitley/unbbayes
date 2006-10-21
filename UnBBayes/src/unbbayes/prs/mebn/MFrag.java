@@ -19,7 +19,20 @@ public class MFrag {
 	private String name;
 
 	private NodeList nodeList;
-	
+
+	/**
+	 * Contructs a new MFrag with empty node's list.
+	 * @param name The name of the MFrag.
+	 */
+	protected MFrag(String name, MultiEntityBayesianNetwork mebn) {
+		this.name = name;
+		this.multiEntityBayesianNetwork = mebn;
+		residentNodeList = new ArrayList<ResidentNode>();
+		inputNodeList = new ArrayList<InputNode>();
+		ordinaryVariableList = new ArrayList<OrdinaryVariable>();
+		nodeList = new NodeList();
+	}
+
 	/**
 	 * Method responsible for deleting this MFrag but not its nodes and 
 	 * variables. Only their relationship.
@@ -36,21 +49,8 @@ public class MFrag {
 		for (OrdinaryVariable variable : ordinaryVariableList) {
 			variable.removeFromMFrag();
 		}
-	}
-
-
-	/**
-	 * Contructs a new MFrag with empty node's list.
-	 * @param name The name of the MFrag.
-	 */
-	protected MFrag(String name, MultiEntityBayesianNetwork mebn) {
-		this.name = name;
-		this.multiEntityBayesianNetwork = mebn;
-		residentNodeList = new ArrayList<ResidentNode>();
-		inputNodeList = new ArrayList<InputNode>();
-		nodeList = new NodeList();
-	}
-
+	}	
+	
 	/**
 	 * Method responsible for adding the given node in its node list. This list
 	 * contains all resident and input nodes. Besides that, it contains all
@@ -126,7 +126,37 @@ public class MFrag {
 		inputNodeList.remove(inputNode);
 		removeNode(inputNode);
 	}
+	
+	/**
+	 * Method responsible for adding the given ordinary variable in its ordinary variable list.
+	 * 
+	 * @param ordinaryVariable
+	 *            The ordinary variable to be added in the ordinary variable list.
+	 */	
+	protected void addOrdinaryVariable(OrdinaryVariable ordinaryVariable){
+		ordinaryVariableList.add(ordinaryVariable); 
+	}
+	
+	/**
+	 * Method responsible for removing the given ordinary variable from its ordinary variable list.
+	 * 
+	 * @param ordinary variable
+	 *            The ordinary variable to be removed from the ordinary variable list.
+	 */	
+	protected void removeOrdinaryVariable(OrdinaryVariable ordinaryVariable){
+		ordinaryVariableList.remove(ordinaryVariable); 
+	}	
 
+	/**
+	 * Method responsible to tell if the ordinary variable list contains the given 
+	 * ordinary variable.
+	 * @param ordinaryVariable The ordinary variable to check.
+	 * @return True if the list contais this ordinary variable and false otherwise.
+	 */
+	public boolean containsOrdinaryVariable(OrdinaryVariable ordinaryVariable) {
+		return ordinaryVariableList.contains(ordinaryVariable);
+	}	
+	
 	/**
 	 * Gets the node list. List of all nodes in this MFrag.
 	 * 
@@ -135,6 +165,15 @@ public class MFrag {
 	public NodeList getNodeList() {
 		return nodeList;
 	}
+	
+	/**
+	 * Gets the ordinary variable list.
+	 * 
+	 * @return The list of all nodes in this MFrag.
+	 */
+	public List<OrdinaryVariable> getOrdinaryVariableList() {
+		return ordinaryVariableList;
+	}	
 
 	/**
 	 * Get the MFrag's name.
@@ -143,5 +182,15 @@ public class MFrag {
 	public String getName() {
 		return name;
 	}
+	
+	/**
+	 * Method responsible to tell if the node list contains the given node.
+	 * @param node The node to check.
+	 * @return True if the list contais this node and false otherwise.
+	 */
+	public boolean containsNode(Node node) {
+		return nodeList.contains(node);
+	}	
+		
 
 }

@@ -29,7 +29,13 @@ public class ContextNode extends MultiEntityNode {
 	private static Color color = Color.orange;
     private DrawEllipse drawEllipse;
     
-    public ContextNode() {
+    public ContextNode(String name, DomainMFrag mFrag) {
+    	
+    	super(); 
+    	
+    	this.name = name; 
+    	this.mFrag = mFrag; 
+    	
     	innerTermOfList = new ArrayList<ContextNode>();
     	innerTermFromList = new ArrayList<ContextNode>();
     	// Here it is defined how this node is going to be drawn.
@@ -80,6 +86,25 @@ public class ContextNode extends MultiEntityNode {
 	}
 	
 	/**
+	 * 
+	 */
+	public void addInnerTermOfList(ContextNode contextNode){
+		innerTermOfList.add(contextNode); 
+	}
+	
+	public void addInnerTermFromList(ContextNode contextNode){
+		innerTermFromList.add(contextNode); 
+	}
+	
+	//public List<ContextNode> getInnerTermOfList(){
+	//	return innerTermOfList; 
+	//}
+	
+	//public List<ContextNode> getInnerTermFromList(){
+	//	return innerTermFromList; 
+	//}	
+		
+	/**
      *  Gets all context node's color.
      *
      * @return The color of all context node's color.
@@ -116,6 +141,10 @@ public class ContextNode extends MultiEntityNode {
 	 */
 	public void setMFrag(DomainMFrag frag) {
 		mFrag = frag;
+	}
+	
+	public DomainMFrag getMFrag(){
+		return mFrag; 
 	}
 }
  

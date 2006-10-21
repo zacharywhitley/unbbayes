@@ -100,12 +100,57 @@ public class DomainMFrag extends MFrag {
 	}
 	
 	/**
+	 * Method responsible for adding the given ordinary variable in its ordinary variable list.
+	 * 
+	 * @param ordinaryVariable
+	 *            The ordinary variable to be added in the ordinary variable list.
+	 */	
+	public void addOrdinaryVariableDomain(OrdinaryVariable ordinaryVariable){
+		addOrdinaryVariable(ordinaryVariable);
+	}
+	
+	/**
+	 * Method responsible for removing the given ordinary variable from its ordinary variable list.
+	 * 
+	 * @param ordinary variable
+	 *            The ordinary variable to be removed from the ordinary variable list.
+	 */	
+	protected void removeOrdinaryVariableDomain(OrdinaryVariable ordinaryVariable){
+		removeOrdinaryVariable(ordinaryVariable); 
+	}		
+	
+	/**
+	 * Gets the list of generative input nodes in this DomainMFrag.
+	 * @return The list of generative input nodes in this DomainMFrag.
+	 */
+	public List<GenerativeInputNode> getGenerativeInputNodeList() {
+		return generativeInputNodeList;
+	}
+	
+	/**
+	 * Gets the list of domain resident nodes in this DomainMFrag.
+	 * @return The list of domain resident nodes in this DomainMFrag.
+	 */
+	public List<DomainResidentNode> getDomainResidentNodeList() {
+		return domainResidentNodeList;
+		
+	}
+	
+	/**
+	 * Gets the list of context nodes in this DomainMFrag.
+	 * @return The list of context nodes in this DomainMFrag.
+	 */
+	public List<ContextNode> getContextNodeList(){
+		return contextNodeList;
+	}
+	
+	/**
 	 * Gets the total number of context nodes in this DomainMFrag.
 	 * @return The total number of context nodes in this DomainMFrag.
 	 */
 	public int getContextNodeCount() {
 		return contextNodeList.size();
-	}
+	}	
 	
 	/**
 	 * Gets the total number of generative input nodes in this DomainMFrag.
@@ -122,7 +167,7 @@ public class DomainMFrag extends MFrag {
 	public int getDomainResidentNodeCount() {
 		return domainResidentNodeList.size();
 		
-	}
+	}	
 	
 	/**
 	 * Method responsible to tell if the context node list contains the given 
@@ -133,6 +178,36 @@ public class DomainMFrag extends MFrag {
 	public boolean containsContextNode(ContextNode contextNode) {
 		return contextNodeList.contains(contextNode);
 	}
+	
+	/**
+	 * Method responsible to tell if the domain resident node list contains the given 
+	 * context node.
+	 * @param residentNode The context node to check.
+	 * @return True if the list contais this node and false otherwise.
+	 */
+	public boolean containsDomainResidentNode(DomainResidentNode residentNode) {
+		return domainResidentNodeList.contains(residentNode);
+	}	
+	
+	/**
+	 * Method responsible to tell if the generative input node list contains the given 
+	 * generative input node.
+	 * @param generativeInputNode The generative input node to check.
+	 * @return True if the list contais this node and false otherwise.
+	 */
+	public boolean containsGenerativeInputNode(GenerativeInputNode generativeInputNode) {
+		return generativeInputNodeList.contains(generativeInputNode);
+	}	
+
+	/**
+	 * Method responsible to tell if the ordinary variable list contains the given 
+	 * ordinary variable.
+	 * @param ordinaryVariable The ordinary variable to check.
+	 * @return True if the list contais this ordinary variable and false otherwise.
+	 */
+	public boolean containsOrdinaryVariableDomain(OrdinaryVariable ordinaryVariable) {
+		return containsOrdinaryVariable(ordinaryVariable);
+	}			
 	
 	/**
 	 * Method responsible for deleting this DomainMFrag but not its nodes and 

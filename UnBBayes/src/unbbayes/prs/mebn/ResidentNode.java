@@ -23,12 +23,18 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	 
 	private List<ResidentNode> residentNodeChildList;
 	 
+	public ResidentNode(){
+		super(); 
+	}
+	
 	/**
 	 *@see unbbayes.prs.bn.ITabledVariable#getPotentialTable()
 	 */
 	public PotentialTable getPotentialTable() {
 		return null;
 	}
+	
+
 	 
 }
  
