@@ -40,12 +40,12 @@ package unbbayes.datamining.clustering;
 public abstract class Clustering {
 
 	/** A matrix containing in each row the coordinates of final clusters. */
-	protected double[][] clusters;
+	protected float[][] clusters;
 
 	/**
 	 * @see neuralnetworktoolkit.clustering.IClustering#getClusters()
 	 */
-	public int[][] getClusters() {
+	public float[][] getClusters() {
 		return clusters;
 		
 	} //getClusters()
@@ -53,7 +53,7 @@ public abstract class Clustering {
 	/**
 	 * @see neuralnetworktoolkit.clustering.IClustering#setClusters(double[][])
 	 */
-	public void setClusters(int[][] clusters) {
+	public void setClusters(float[][] clusters) {
 		this.clusters = clusters;
 		
 	} //setClusters()

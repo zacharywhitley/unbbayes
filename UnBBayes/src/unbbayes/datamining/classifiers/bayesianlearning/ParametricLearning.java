@@ -65,13 +65,13 @@ public class ParametricLearning
     }
 
     //inicializar d com base no dataTemp
-    d = new short[dataTemp.size()][x.length];
+    d = new int[dataTemp.size()][x.length];
     for(i=0;i<dataTemp.size();i++)
     {
       inst = (Instance)dataTemp.get(i);
       for(j=0;j<x.length;j++)
       {
-        d[i][j]=inst.getValue(j);
+        d[i][j]= (int) inst.getValue(j);
       }
     }
   }
@@ -251,7 +251,7 @@ public ProbabilisticNetwork getProbabilisticNetwork(ArrayList<int[]> pa)
   /** amostra condensada
    * d[ic,i]=v, sendo 'ic' a linha, 'i' o índice da variável e 'v' o valor da
    * variável na linha (representado pelo seu índice no domínio da variável)) */
-  private short[][] d;
+  private int[][] d;
 
   /** frequencias das instâncias de d
    * freq[i]: frequência da linha(ou instancia) i */

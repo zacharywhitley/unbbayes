@@ -323,9 +323,6 @@ public class NaiveBayesMain extends JInternalFrame
         inst = FileController.getInstance().getInstanceSet(selectedFile,this);
         if (inst!=null)
         {
-          boolean bool = inst.checkNumericAttributes();
-          if (bool == true)
-              throw new Exception(resource.getString("numericAttributesException"));
           jTabbedPane1.setEnabledAt(0,false);
           setTitle("Naive Bayes - "+selectedFile.getName());
           jPanel4.enableComboBox(true);

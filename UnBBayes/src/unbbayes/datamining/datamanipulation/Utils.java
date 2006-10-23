@@ -1,5 +1,6 @@
 package unbbayes.datamining.datamanipulation;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.ResourceBundle;
@@ -11,8 +12,7 @@ import java.util.ResourceBundle;
  *  @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  *  @version $1.0 $ (16/02/2002)
  */
-public final class Utils
-{ 
+public final class Utils { 
   /** The small deviation allowed in double comparisons */
   public static double SMALL = 1e-6;
   /** Load resource file from this package */
@@ -176,8 +176,8 @@ public final class Utils
    * @param floats The array of float
    * @exception IllegalArgumentException if sum is Zero or NaN
    */
-  public static void normalize(float[] floats)
-  { float sum = 0;
+  public static void normalize(float[] floats) {
+	  float sum = 0;
     for (int i = 0; i < floats.length; i++)
 	{	sum += floats[i];
     }
@@ -787,44 +787,106 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
 	}
 
 
-   /**
-    * Calculates the standard deviation of a specific attribute of an instance set.
-    *
-    * @param instanceSet The instanceSet that contains the attribute witch the standard deviation is to be calculated
-    * @param attribute The attributo to calculate the standard deviation
-    * @return The specified attribute standard deviation
-    * @throws Exception
-    */
-    public static double standardDeviation(InstanceSet instanceSet, int attribute) throws Exception{
-    	  Enumeration instancesEnum = instanceSet.enumerateInstances();
-		  Instance instance;
-          Attribute att = instanceSet.getAttribute(attribute);
-          double sigma = 0;
-          double mean = 0;
-          double sqrSum = 0;
-          double sum = 0;
-          double temp;
-          int numOfInstances = instanceSet.numInstances();
+	/**
+	 * Calculates the standard deviation and the mean of an array of numbers
+	 * per each class value of the instance set.
+	 * 
+	 * See Knuth's The Art Of Computer Programming Volume II: Seminumerical
+	 * Algorithms.
+	 * This algorithm is slower, but more resistant to error propagation.
+	 * The input dataset must contain at least two values.
+	 * M(1) = x(1), M(k) = M(k-1) + (x(k) - M(k-1) / k<br>
+	 * S(1) = 0, S(k) = S(k-1) + (x(k) - M(k-1)) * (x(k) - M(k))<br>
+	 * for 2 <= k <= n, then<br>
+	 * sigma = sqrt(S(n) / (n - 1))
+	 *
+	 * @param dataset Sample to compute the standard deviation of.
+	 * @param att The attribute's index of the sample.
+	 * @return An array list with two values containing:
+	 * <li> First: A vector of floats with the <b>standard deviation</b> 
+	 * per class.
+	 * <li> Second: A vector of floats with the <b>mean</b> per class.
+     * @throws Exception
+	 */
+	public static ArrayList<double[]> stdDevMeanPerClass(InstanceSet instanceSet,
+			int att) throws Exception {
+		int count = instanceSet.numInstances;
 
-          if(numOfInstances == 0){
+		if (count < 2) {
             throw new Exception(resource.getString("emptyInstanceSet"));
-          }
-          if(att.isNominal()){
-            throw new Exception(resource.getString("nominalAttribute"));
-          }
+		}
+		
+		if(instanceSet.attributeType[att] == InstanceSet.NOMINAL){
+		    throw new Exception(resource.getString("nominalAttribute"));
+		}
 
-          while(instancesEnum.hasMoreElements()){
-            instance = (Instance)instancesEnum.nextElement();
-            temp = Double.parseDouble(att.value(instance.getValue(attribute)));
-            sum = sum + temp;
-            sqrSum = sqrSum + (temp * temp);
-          }
+		double MISSING_VALUE = Instance.MISSING_VALUE;
+		int counterIndex = instanceSet.counterIndex;
+		int classIndex = instanceSet.classIndex;
+		int numClasses = instanceSet.numClasses();
+		double weight;
+		double value;
+		double temp;
+		int w;
+		int classValue;
+		double[] sumPerClass = new double[numClasses];
+		double[] avgPerClass = new double[numClasses];
+		double[] newavgPerClass = new double[numClasses];
+		double[] instPerClass = new double[numClasses];
+		double[] meanPerClass = new double[numClasses];
+		double[] stdDevPerClass = new double[numClasses];
 
-          mean = sum / numOfInstances;
-          sigma = Math.sqrt( ((numOfInstances * sqrSum) - (sum * sum)) / (numOfInstances * (numOfInstances - 1)) );
+		for (int k = 0; k < numClasses; k++) {
+			sumPerClass[k] = 0;
+			instPerClass[k] = 0;
+			meanPerClass[k] = 0;
+		}
+		
+		for (int i = 0; i < count; i++) {
+			value = instanceSet.instances[i].data[att];
+			classValue = (int) instanceSet.instances[i].data[classIndex];
+			weight = instanceSet.instances[i].data[counterIndex];
+			meanPerClass[classValue] += value * weight;
+			
+			/* Check if current value or class valus is a missing value */
+			if (classValue == MISSING_VALUE || value == MISSING_VALUE) {
+				/* Skip missing value and missing class value*/
+				continue;
+			}
+			
+			if (i == 0) {
+				/* First loop. Initiate 'avgPerClass' with first value */
+				avgPerClass[classValue] = value;
+				++instPerClass[classValue];
+				
+				/* Skip first value */
+				w = 1;
+			} else {
+				w = 0;
+			}
 
-          return sigma;
-        }
+			for (; w < weight; w++) {
+				newavgPerClass[classValue] = value - avgPerClass[classValue];
+				newavgPerClass[classValue] /= (instPerClass[classValue] + 1);
+				newavgPerClass[classValue] += avgPerClass[classValue];
+				temp = (value - avgPerClass[classValue]);
+				temp *= (value - newavgPerClass[classValue]);
+				sumPerClass[classValue] += temp;
+				avgPerClass[classValue] = newavgPerClass[classValue];
+				++instPerClass[classValue];
+			}
+		}
+		for (int k = 0; k < numClasses; k++) {
+			meanPerClass[k] = meanPerClass[k] / instPerClass[k];
+			temp = sumPerClass[k] / (instPerClass[k] - 1);
+			stdDevPerClass[k] = (double) Math.sqrt(temp);
+		}
+		
+		ArrayList<double[]> list = new ArrayList<double[]>(2);
+		list.add(0, stdDevPerClass);
+		list.add(1, meanPerClass);
+		return list;
+	}
 
 	/**
      * Calculates the standard deviation of a specific attribute of an instance set given the attribute mean.
@@ -853,7 +915,7 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
 
           while(instancesEnum.hasMoreElements()){
             instance = (Instance)instancesEnum.nextElement();
-            temp = Double.parseDouble(att.value(instance.getValue(attribute)));
+            temp = instance.data[attribute];
             temp = temp-mean;
             sqrSum = sqrSum+(temp*temp);
           }
@@ -887,7 +949,7 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
 
           while(instancesEnum.hasMoreElements()){
             instance = (Instance)instancesEnum.nextElement();
-            sum = sum + Double.parseDouble(att.value(instance.getValue(attribute)));
+            sum = sum + instance.data[attribute];
           }
 
           return sum / numOfInstances;
@@ -912,5 +974,114 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
 		
 		return stringValue;
 	}
-}
 
+	/**
+	 * Compute the necessary frequencies for a nominal attribute. 
+	 */
+	public static float[][] computeNominalDistribution(InstanceSet instanceSet,
+			int att) {
+		int numValues;
+		int classValue;
+		int instValue;
+		float weight;
+		int numInstances = instanceSet.numInstances;
+		int counterIndex = instanceSet.counterIndex;
+		int classIndex = instanceSet.classIndex;
+		int numClasses = instanceSet.numClasses();
+		float[][] distribution;
+
+		numValues = instanceSet.attributes[att].numValues();
+		distribution = new float[numValues][numClasses];
+		
+		/* Zero all distribution values */
+		for (int i = 0; i < numValues; i++) {
+			for (int j = 0; j < numClasses; j++) {
+				distribution[i][j] = 0;
+			}
+		}
+		
+		/* Compute distribution values */
+		for (int inst = 0; inst < numInstances; inst++) {
+			instValue = (int) instanceSet.instances[inst].data[att];
+			classValue = (int) instanceSet.instances[inst].data[classIndex];
+			weight = instanceSet.instances[inst].data[counterIndex];
+			distribution[instValue][classValue] += weight;
+		}
+			
+		return distribution;
+	}
+
+	/**
+	 * Compute the nominal distributions per class for all nominal attributes.
+	 * 
+	 * 
+	 * @param instanceSet The input instanceSet
+	 * @return A matrix with this positions: distribution[class][attribute][value]
+	 */
+	public static float[][][] computeNominalDistributions(InstanceSet instanceSet) 
+	 throws Exception {
+		int attIndex = 0;
+		int numValues;
+		int classValue;
+		int instValue;
+		float weight;
+		int numInstances = instanceSet.numInstances;
+		int counterIndex = instanceSet.counterIndex;
+		int classIndex = instanceSet.classIndex;
+		int numAttributes = instanceSet.numAttributes;
+		byte[] attributeType = instanceSet.attributeType;
+		int numClasses = instanceSet.numClasses();
+		int numNominalAttributes = instanceSet.numNominalAttributes;
+
+		/* The class is a nominal attribute as well. Must be not counted */
+		--numNominalAttributes;
+		
+		float[][][] distribution = new float[numClasses][numNominalAttributes][];
+
+		for (int att = 0; att < numAttributes; att++) {
+			/* Skip the class attribute */
+			if (att == classIndex) {
+				continue;
+			}
+
+			/* Check if the current attribute is nominal */
+			if (attributeType[att] == InstanceSet.NOMINAL) {
+				numValues = instanceSet.attributes[att].numValues();
+				for (int k = 0; k < numClasses; k++) {
+					distribution[k][attIndex] = new float[numValues];
+				}
+				
+				/* Zero all distribution values */
+				for (int k = 0; k < numClasses; k++) {
+					for (int v = 0; v < numValues; v++) {
+						distribution[k][attIndex][v] = 0;
+					}
+				}
+				
+				/* Compute distribution values */
+				for (int inst = 0; inst < numInstances; inst++) {
+					instValue = (int) instanceSet.instances[inst].data[att];
+					classValue = (int) instanceSet.instances[inst].data[classIndex];
+					weight = instanceSet.instances[inst].data[counterIndex];
+					distribution[classValue][attIndex][instValue] += weight;
+				}
+				
+				/* Next nominal attribute index */
+				++attIndex;
+			}
+		}
+		return distribution;
+	}
+
+	public static double normalDensityFunction(float value, float stdDev, float mean) {
+		double prob;
+		double e;
+		
+		prob = 1 / (float) Math.sqrt(2 * (float) Math.PI * stdDev);
+		e = (value - mean) * (value - mean) / (2 * mean * mean);
+		e = (float) Math.exp(-e);
+		prob = prob * e;
+		
+		return prob;
+	}
+}

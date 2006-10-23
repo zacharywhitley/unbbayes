@@ -25,6 +25,7 @@
 
 package unbbayes.datamining.distance;
 
+
 /**
  * Defines methods for calculating the distance between two vectors.
  * 
@@ -34,14 +35,11 @@ package unbbayes.datamining.distance;
  * @author <a href="mailto:rodbra@pop.com.br">Rodrigo C. M. Coimbra</a>
  */
 public interface IDistance {
-	
 	/**
 	 * Calculates the distance between two vectors.
 	 * 
-	 * @param vector1
-	 *            First vector.
-	 * @param vector2
-	 *            Second vector.
+	 * @param vector1 First vector.
+	 * @param vector2 Second vector.
 	 * 
 	 * @return The distance between first and second vectors.
 	 */

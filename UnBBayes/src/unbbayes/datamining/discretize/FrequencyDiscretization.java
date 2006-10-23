@@ -34,14 +34,19 @@ public class FrequencyDiscretization implements IDiscretization
 			numThresholds = 1;
 		try
 		{	int position = att.getIndex();//cria um novo atributo nominal
-			Attribute newAttribute = new Attribute(att.getAttributeName(),null,Attribute.NOMINAL,position);
+			Attribute newAttribute = new Attribute(att.getAttributeName(),
+					Attribute.NOMINAL,
+					false,
+					att.numValues(),
+					position
+					);
 			// encontra todos os valores do atributo antigo
 			float[] values = new float[numInstances];
           	Enumeration enumInst = inst.enumerateInstances();
           	int i=0,j=0;
           	while (enumInst.hasMoreElements())
           	{   Instance instance = (Instance)enumInst.nextElement();
-              	values[i] = Float.parseFloat(instance.stringValue(att));
+              	values[i] = instance.getValue(att);
 				i++;
           	}
 			// soma todos os valores

@@ -25,6 +25,8 @@
 
 package unbbayes.datamining.distance;
 
+import unbbayes.datamining.datamanipulation.InstanceSet;
+
 /**
  * Implements the <b>Euclidean</b> method for calculating the distance between
  * two vectors.
@@ -35,16 +37,26 @@ package unbbayes.datamining.distance;
  * @author <a href="mailto:rodbra@pop.com.br">Rodrigo C. M. Coimbra</a>
  */
 public class Euclidean extends Distance {
+	private int numAttributes;
 
 	/**
-	 * @see neuralnetworktoolkit.distances.IDistance#distanceValue(float[], float[])
+	 * 
+	 * @param instanceSet
+	 */
+	public Euclidean(InstanceSet instanceSet) {
+		numAttributes = instanceSet.numAttributes;
+	}
+	/**
+	 * Calculates the euclidian distance between two instances.
+	 * 
+	 * @param vector1 The first instance's values.
+	 * @param vector2 The second instance's values.
 	 */
 	public float distanceValue(float[] vector1, float[] vector2) {
 		float result = 0;
 
-		for (int i = 0; i < vector1.length; i++) {
+		for (int i = 0; i < numAttributes; i++) {
 			result += (vector1[i] - vector2[i]) * (vector1[i] - vector2[i]);
-
 		}
 		return (float) Math.sqrt(result);
 

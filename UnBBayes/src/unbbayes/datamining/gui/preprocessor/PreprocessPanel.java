@@ -269,7 +269,7 @@ public class PreprocessPanel extends JPanel
       jLabel4.setText(inst.getRelationName());
       jLabel2.setText(inst.numWeightedInstances()+"");
       jLabel3.setText(inst.numAttributes()+"");
-      attributeStats = inst.getAllAttributeStats();
+      attributeStats = inst.computeAttributeStats();
       attributePanel.setInstances(instances);
   }
 
@@ -297,7 +297,7 @@ public class PreprocessPanel extends JPanel
       	  Object [][] data = new Object [as.getNominalCounts().length][2];
       	  for (int i = 0; i < as.getNominalCountsWeighted().length; i++)
           {   data[i][0] = att.value(i);
-              data[i][1] = new Integer(as.getNominalCountsWeighted()[i]);
+              data[i][1] = new Float(as.getNominalCountsWeighted()[i]);
       	  }
       	  jTable1.setModel(new ValuesTableModel(data, colNames));
       }

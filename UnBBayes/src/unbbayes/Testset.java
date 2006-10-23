@@ -8,14 +8,14 @@ import unbbayes.datamining.classifiers.DistributionClassifier;
 import unbbayes.datamining.classifiers.Evaluation;
 import unbbayes.datamining.classifiers.NaiveBayes;
 import unbbayes.datamining.classifiers.decisiontree.C45;
-import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.TxtLoader;
 import unbbayes.datamining.preprocessor.imbalanceddataset.Sampling;
 import unbbayes.datamining.preprocessor.imbalanceddataset.Smote;
 
 /**
- *
+ * Class for testing the formalism Cluster-Based SMOTE.
+ * 
  * @author Emerson Lopes Machado - emersoft@conectanet.com.br
  * @date 24/08/2006
  */
@@ -36,55 +36,6 @@ public class Testset {
 		}
 	}
 	
-	private InstanceSet sample(InstanceSet trainData, int sampleID, int i,
-			int weightLimit, boolean discretize, int nominalOption) {
-		/* Limit the weigth */
-		if (weightLimit != 0) {
-			Sampling.limitWeight(trainData, weightLimit, 0);
-		}
-		
-		/* Get current class distribution  - Two class problem */
-		float originalDist[] = distribution(trainData);
-		float proportion = (((float) i * originalDist[0]) / ((10 - i) * originalDist[1]));
-		
-		switch (sampleID) {
-			case 0:
-				/* Undersampling */
-				Sampling.simpleSampling(trainData, (float) (1 / proportion), 0);
-				
-				break;
-			case 1:
-				/* Oversampling */
-				Sampling.simpleSampling(trainData, proportion, 1);
-				
-				break;
-			case 2:
-				/* Oversampling */
-				Sampling.simpleSampling(trainData, (float) Math.sqrt(proportion), 1);
-				
-				/* Undersampling */
-				Sampling.simpleSampling(trainData, (float) Math.sqrt((float) (1 / proportion)), 0);
-				
-				break;
-			case 3:
-				/* SMOTE */
-				trainData = smote.run(trainData, proportion, 1, discretize,
-						nominalOption);
-				
-				break;
-			case 4:
-				/* SMOTE */
-				trainData = smote.run(trainData, (float) Math.sqrt(proportion),
-						1, discretize, nominalOption);
-
-				/* Undersampling */
-				Sampling.simpleSampling(trainData, (float) Math.sqrt((float) (1 / proportion)), 0);
-
-				break;
-		}
-		return trainData;
-	}
-	
 	public void run() throws Exception {
 		/* Data set characteristics */
 		String trainFileName = "c:/m1t.txt";
@@ -93,29 +44,51 @@ public class Testset {
 		int counterIndex = 11;
 		
 		
-		/* Options for SMOTE - start *****************/
-		/* Used in the creation of new instances */
-		boolean discretize = true;
+		/* Options for SMOTE - START *****************/
 		
-		/* Used in SMOTE
+		/*
+		 * Set it <code>true</code> to optionDiscretize the synthetic value created for
+		 * the new instance. 
+		 */
+		boolean optionDiscretize = false;
+		
+		/* 
+		 * Used in SMOTE
 		 * 0: copy nominal attributes from the current instance
 		 * 1: copy from the nearest neighbors
 		 */
-		int nominalOption = 0;
+		byte optionNominal = 0;
 		
-		/* Distance function
+		/*
+		 * The gap is a random number between 0 and 1 wich tells how far from the
+		 * current instance and how near from its nearest neighbor the new instance
+		 * will be interpolated.
+		 * The optionFixedGap, if true, determines that the gap will be fix for all
+		 * attributes. If set to false, a new one will be drawn for each attribute.
+		 */
+		boolean optionFixedGap = true;
+		
+		/* 
+		 * Distance function
 		 * 0: Hamming
 		 * 1: HVDM
 		 */
-		int distanceFunction = 1;
+		byte optionDistanceFunction = 1;
 		
 		/* Computes the k nearest neighbors of each instance */
 		InstanceSet trainData = openFile(trainFileName, counterIndex);
 		trainData.setClassIndex(classIndex);
 		smote = new Smote(trainData, null);
-		smote.buildNN(5, 0, distanceFunction);
 		
-		/* Options for SMOTE - end *****************/
+		/* Set SMOTE options */
+		smote.setOptionDiscretize(optionDiscretize);
+		smote.setOptionDistanceFunction(optionDistanceFunction);
+		smote.setOptionFixedGap(optionFixedGap);
+		smote.setOptionNominal(optionNominal);
+		
+		smote.buildNN(5, 1);
+
+		/* Options for SMOTE - END *****************/
 
 		
 		/* Limit applied to the counter */
@@ -131,20 +104,21 @@ public class Testset {
 		 * 0 - Naive Bayes
 		 * 1 - C4.5
 		 */
-		int classifierID = 1;
+		int classifierID = 0;
 		
-		runAux(trainFileName, testFileName, classIndex, counterIndex, weightLimit,
-				relativeProb, sampleQtd, classifierID, discretize, nominalOption);
+		runAux(trainFileName, testFileName, classIndex, counterIndex,
+				weightLimit, relativeProb, sampleQtd, classifierID,
+				optionDiscretize, optionNominal);
 
 //		for (; weightLimit < 1000; weightLimit += 10) {
 //			runAux(trainFileName, testFileName, classIndex, counterIndex, weightLimit,
-//					relativeProb, sampleQtd, classifierID, discretize, nominalOption);
+//					relativeProb, sampleQtd, classifierID, optionDiscretize, optionNominal);
 //		}
 	}
 
 	private void runAux(String trainFileName, String testFileName, int classIndex,
 			int counterIndex, int weightLimit, boolean relativeProb, int sampleQtd,
-			int classifierID, boolean discretize, int nominalOption) throws Exception {
+			int classifierID, boolean optionDiscretize, int optionNominal) throws Exception {
 		
 		/* Opens the test set */
 		InstanceSet testData = openFile(testFileName, counterIndex);
@@ -162,7 +136,7 @@ public class Testset {
 			classifier = new C45();
 		}
 
-		/* Loop through all sample stategies */
+		/* Loop through all sample strategies */
 //		for (int sampleID = 0; sampleID < sampleQtd; sampleID++) {
 		for (int sampleID = 3; sampleID < 4; sampleID++) {
 			/* Print header */
@@ -173,14 +147,15 @@ public class Testset {
 				/* Opens the training set */
 				InstanceSet trainData = openFile(trainFileName, counterIndex);
 				if (trainData == null) {
-					String exceptionMsg = "Couldn't open train data " + testFileName;
+					String exceptionMsg = "Couldn't open training data " 
+						+ testFileName;
 					throw new Exception(exceptionMsg);
 				}
 				trainData.setClassIndex(classIndex);
 				
 				/* Sample training data */
-				trainData = sample(trainData, sampleID, i, weightLimit, discretize,
-						nominalOption);
+				trainData = sample(trainData, /*sampleID*/3, i, weightLimit,
+						optionDiscretize, optionNominal);
 				
 				/* Distribution of the training data */
 				float originalDist[] = distribution(trainData);
@@ -198,6 +173,60 @@ public class Testset {
 		System.out.println("\n\n");
 		System.out.println("Maximum SE: " + maxSE);
 		System.out.println("With:\n" + maxSEHeader);
+	}
+	
+	private InstanceSet sample(InstanceSet trainData, int sampleID, int i,
+			int weightLimit, boolean optionDiscretize, int optionNominal) {
+		/* Limit the weigth */
+		if (weightLimit != 0) {
+			Sampling.limitWeight(trainData, weightLimit, 0);
+		}
+		
+		/* Get current class distribution  - Two class problem */
+		float originalDist[] = distribution(trainData);
+		float proportion = originalDist[0] * (float) i;
+		proportion = proportion / (originalDist[1] * (float) (10 - i));
+		
+		switch (sampleID) {
+			case 0:
+				/* Undersampling */
+				Sampling.simpleSampling(trainData,
+						(float) (1 / proportion), 0);
+				
+				break;
+			case 1:
+				/* Oversampling */
+				Sampling.simpleSampling(trainData, proportion, 1);
+				
+				break;
+			case 2:
+				/* Oversampling */
+				Sampling.simpleSampling(trainData,
+						(float) Math.sqrt(proportion), 1);
+				
+				/* Undersampling */
+				Sampling.simpleSampling(trainData,
+						(float) Math.sqrt((float) (1 / proportion)), 0);
+				
+				break;
+			case 3:
+				/* SMOTE */
+				smote.setInstanceSet(trainData);
+				trainData = smote.run(proportion, 1);
+				
+				break;
+			case 4:
+				/* SMOTE */
+				smote.setInstanceSet(trainData);
+				trainData = smote.run((float) Math.sqrt(proportion), 1);
+
+				/* Undersampling */
+				Sampling.simpleSampling(trainData,
+						(float) Math.sqrt((float) (1 / proportion)), 0);
+
+				break;
+		}
+		return trainData;
 	}
 	
 	private void printHeader(int sampleID, int weightLimit,
@@ -237,9 +266,9 @@ public class Testset {
 	private Classifier buildModel(InstanceSet trainData, float originalDist[],
 			Classifier classifier) throws Exception {
 		/* Train the net */
-		if (classifier instanceof NaiveBayes) {
-			((NaiveBayes) classifier).setOriginalDistribution(originalDist);
-		}
+//		if (classifier instanceof NaiveBayes) {
+//			((NaiveBayes) classifier).setOriginalDistribution(originalDist);
+//		}
 		classifier.buildClassifier(trainData);
 		
 		return classifier;
@@ -248,20 +277,20 @@ public class Testset {
 	private float[] distribution(InstanceSet trainData) {
 		int numInstances = trainData.numInstances();
 		int numClasses = trainData.numClasses();
-		int classIndex;
+		int classIndex = trainData.classIndex;
+		int counterIndex = trainData.counterIndex;
 		float distribution[] = new float[numClasses];
-		float weight = 0;
-		Instance instance;
+//		float weight = 0;
+		int classValue;
 		
 		for (int i = 0; i < numClasses; i++) {
 			distribution[i] = 0;
 		}
 		
 		for (int i = 0; i < numInstances; i++) {
-			instance = trainData.getInstance(i);
-			classIndex = instance.classValue();
-			distribution[classIndex] += instance.getWeight();
-			weight += instance.getWeight();
+			classValue = (int) trainData.instances[i].data[classIndex];
+			distribution[classValue] += trainData.instances[i].data[counterIndex];
+//			weight += dataset[i][counterIndex];
 		}
 
 //		for (int i = 0; i < numClasses; i++) {

@@ -120,10 +120,10 @@ public class AttributesTree extends JTree{
    *
    * @return the instance inserted on the tree by the user.
    */
-  public Instance getInstance(){
+  public Instance getInstance() {
     ArrayList keys = objectsMap.getKeys();
     int keysSize = keys.size();
-    Instance instance = new Instance(new short[attributeVector.length]);
+    Instance instance = new Instance(attributeVector.length);
 
     for(int i=0; i<attributeVector.length; i++){
       instance.setMissing(i);

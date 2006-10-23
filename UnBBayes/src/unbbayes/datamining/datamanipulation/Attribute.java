@@ -1,6 +1,7 @@
 package unbbayes.datamining.datamanipulation;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.ResourceBundle;
@@ -10,401 +11,485 @@ import java.util.ResourceBundle;
  *
  * Two attribute types are supported:
  * <ul>
- *    <li> numeric: <ul>
- *         This type of attribute represents a floating-point number.
- *    </ul>
- *    <li> nominal: <ul>
- *         This type of attribute represents a fixed set of nominal values.
- *    </ul>
+ *		<li> numeric: <ul>
+ *				 This type of attribute represents a floating-point number.
+ *		</ul>
+ *		<li> nominal: <ul>
+ *				 This type of attribute represents a fixed set of nominal values.
+ *		</ul>
  * </ul>
  *
- *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
- *  @version $1.0 $ (16/02/2002)
- */
-public class Attribute implements Serializable
-{	
-	/** Serialization runtime version number */
+ *	@author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ *	@version $1.0 $ (16/02/2002)
+. */
+public class Attribute implements Serializable {	
+	/** Serialization runtime version number. */
 	private static final long serialVersionUID = 0;	
 	
 	/** Constant set for numeric attributes. */
-  	public final static int NUMERIC = 0;
+	public final static byte NUMERIC = 0;
 
-  	/** Constant set for nominal attributes. */
-  	public final static int NOMINAL = 1;
+	/** Constant set for nominal attributes. */
+	public final static byte NOMINAL = 1;
 
-  	/** The attribute's name. */
-  	private String attributeName;
+	/** Constant set for cyclic numeric attributes. */
+	public final static byte CYCLIC = 2;
 
-  	/** The attribute's type. */
-  	private int attributeType;
+	/** 
+	 * Stores the type of an attribute:
+	 * 0 - Numeric
+	 * 1 - Nominal
+	 * 2 - Cyclic numeric
+	 */
+	private byte attributeType;
 
-  	/** The attribute's values */
-  	private String[] attributeValues;
+	/** The attribute's name. */
+	private String attributeName;
 
-	/** Mapping of values to indices */
-  	private Hashtable<String,Integer> hashtable;
+	/** True if the values of this attribute are Strings. */
+	private boolean isString;
+								
+	/** The attribute's String values. */
+	private String[] stringValues;
+	
+	/** Used to temporarily store the String values of this attribute. */
+	private ArrayList<String> stringValuesTemp;
 
-  	/** The attribute's index. */
-  	private int index;
+	/** The attribute's number values. */
+	private float[] numberValues;
+	
+	/** Used to temporarily store the String values of this attribute. */
+	private ArrayList<Float> numberValuesTemp;
 
-  	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.datamanipulation.resources.DataManipulationResource");
+	/** The number of different values of this attribute. */
+	private int numValues;
 
-  	/**
-   	* Constructor for attributes.
-   	*
-   	* @param attributeName Name for the attribute
-   	* @param attributeValues A arrayList of strings denoting the
-   	* attribute values.
-	* @param attributeType Type of this attribute (Nominal or Numeric)
-	*/
-  	public Attribute(String attributeName,String[] attributeValues,int attributeType)
-	{	this.attributeName = attributeName;
-    	index = -1;
-    	this.attributeValues = attributeValues;
-      	if (attributeValues != null)
-		{
-			int numValues = numValues();
-			hashtable = new Hashtable<String,Integer>(numValues);
-      		for (int i = 0; i < numValues; i++)
-			{	hashtable.put(attributeValues[i], new Integer(i));
-      		}
+	/** The instanceSet this attribute is related to. */
+	protected InstanceSet instanceSet;
+
+	/** Mapping of String values to indices. */
+	private Hashtable<String, Integer> hashtableString;
+
+	/** Mapping of number values to indices. */
+	private Hashtable<Float, Integer> hashtableNumber;
+
+	/** The column attIndex of the dataset referenced by this attribute. */
+	private int attIndex;
+
+	/** Load resource file from this package. */
+	private static ResourceBundle resource = ResourceBundle.getBundle("" +
+			"unbbayes.datamining.datamanipulation.resources." +
+			"DataManipulationResource");
+
+	/**
+	 * Constructor for nominal attribute with String values.
+	 *
+	 * @param attributeName Name of this attribute.
+	 * @param stringValues ArrayList of Strings denoting the attribute values.
+	 * @param attIndex The attribute's position at the instanceSet.
+	 */
+	public Attribute(String attributeName, String[] stringValues, int attIndex) {
+		this.stringValues = stringValues;
+		this.attIndex = attIndex;
+		numValues = stringValues.length;
+		hashtableString = new Hashtable<String, Integer>(numValues);
+		for (int i = 0; i < numValues; i++) {
+			hashtableString.put(stringValues[i], new Integer(i));
 		}
-		else
-		{	hashtable = null;
+		this.attributeName = attributeName;
+		this.stringValues = stringValues;
+		attributeType = NOMINAL;
+		attIndex = -1;
+		isString = true;
+	}
+
+	/**
+	 * Constructor for nominal attribute with number values.
+	 *
+	 * @param attributeName Name of this attribute.
+	 * @param numberValues A arrayList of floats denoting the attribute values.
+	 * @param attIndex The attribute's position at the instanceSet.
+	 */
+	public Attribute(String attributeName, float[] numberValues, int attIndex) {
+		this.attIndex = attIndex;
+		this.numberValues = numberValues;
+		numValues = numberValues.length;
+		hashtableNumber = new Hashtable<Float, Integer>(numValues);
+		for (int i = 0; i < numValues; i++) {
+			hashtableNumber.put(numberValues[i], new Integer(i));
 		}
+		this.attributeName = attributeName;
+		this.numberValues = numberValues;
+		attributeType = NOMINAL;
+		attIndex = -1;
+		isString = false;
+	}
+
+	/**
+	 * Constructor for numeric or nominal attribute.
+	 * 
+	 * @param attributeName Name of this attribute.
+	 * @param attributeType Type of this attribute.
+	 * @param isString Set that attribute values are string values. 
+	 * @param numValues Maximum number of values added to this attribute.
+	 */
+	public Attribute(String attributeName, byte attributeType,
+			boolean isString, int numValues) {
+		this.attributeName = attributeName;
 		this.attributeType = attributeType;
-  	}
-
-  	/**
-   	* Constructor for attributes with a particular index.
-   	*
-   	* @param attributeName Name for the attribute
-   	* @param attributeValues ArrayList of strings denoting the attribute values.
-   	* @param attributeType Type of this attribute (Nominal or Numeric)
-	* @param index The attribute's index
-	*/
-  	public Attribute(String attributeName,String[] attributeValues,int attributeType,int index)
-	{	this(attributeName, attributeValues, attributeType);
-		this.index = index;
-	}
-
-  	/**
-   	* Returns an enumeration of all the attribute's values
-   	*
-   	* @return Enumeration of all the attribute's values
-   	*/
-  	public final Enumeration enumerateValues()
-	{
-          if (attributeValues != null)
-          {
-            final ArrayListEnumeration ale = new ArrayListEnumeration(attributeValues);
-            return new Enumeration ()
-            {
-                public boolean hasMoreElements()
-                {
-                  return ale.hasMoreElements();
-                }
-
-                public Object nextElement()
-                {
-                  Object oo = ale.nextElement();
-                  return oo;
-            	}
-            };
-          }
-          return null;
-  	}
-
-  	/**
-   	* Tests if given attribute is equal to this attribute.
-   	*
-   	* @param other The Object to be compared to this attribute
-   	* @return True if the given attribute is equal to this attribute
-   	*/
-  	public final boolean equals(Object other)
-	{	if ((other == null) || !(other.getClass().equals(this.getClass())))
-		{	return false;
-    	}
-    	Attribute att = (Attribute) other;
-    	if (!attributeName.equals(att.attributeName))
-		{	return false;
-    	}
-    	if (attributeType != att.attributeType)
-		{	return false;
-    	}
-    	if (numValues() != att.numValues())
-		{	return false;
-    	}
-    	for (int i = 0; i < numValues(); i++)
-		{	if (!attributeValues[i].equals(att.attributeValues[i]))
-			{	return false;
-      		}
-    	}
-    	return true;
-  	}
-
-  	/**
-   	* Returns the index of this attribute.
-   	*
-   	* @return The index of this attribute
-   	*/
-  	public final int getIndex()
-	{	return index;
-  	}
-
-	/**
-   	* Returns the index of a given attribute value. (The index of
-   	* the first occurence of this value.)
-   	*
-   	* @param value The value for which the index is to be returned
-   	* @return The index of the given attribute value, -1 if the value can't be found
-	*/
-  	public final int indexOfValue(String value)
-	{	if (hashtable == null)
-      		return -1;
-    	Object store = value;
-    	store = hashtable.get(store);
-		if (store == null)
-			return -1;
-		else
-		{	Integer integer = new Integer(store.toString());
-			return integer.intValue();
+		this.isString = isString;
+		attIndex = -1;
+		if (attributeType == NOMINAL) {
+			if (isString) {
+				hashtableString = new Hashtable<String, Integer>(numValues);
+				stringValuesTemp = new ArrayList<String>();
+			} else {
+				hashtableNumber = new Hashtable<Float, Integer>(numValues);
+				numberValuesTemp = new ArrayList<Float>();
+			}
 		}
-
-  	}
-
-  	/**
-   	* Test if the attribute is nominal.
-   	*
-   	* @return true if the attribute is nominal
-   	*/
-  	public final boolean isNominal()
-	{	return (attributeType == NOMINAL);
-  	}
-
-  	/**
-   	* Tests if the attribute is numeric.
-   	*
-   	* @return true if the attribute is numeric
-   	*/
-  	public final boolean isNumeric()
-	{	return (attributeType == NUMERIC);
-  	}
-
-  	/**
-   	* Returns the attribute's name.
-   	*
-   	* @return the attribute's name as a string
-   	*/
-  	public final String getAttributeName()
-	{	return attributeName;
-  	}
-
-  	/**
-   	* Returns the number of attribute values.
-   	*
-   	* @return the number of attribute values
-   	*/
-  	public final int numValues()
-	{	if (attributeValues == null)
-		{	return 0;
-    	}
-		else
-		{	return attributeValues.length;
-    	}
-  	}
-
-  	/**
-   	* Returns a description of this attribute in ARFF format.
-   	*
-   	* @return a description of this attribute as a string
-   	*/
-  	public final String toString()
-	{
-          StringBuffer text = new StringBuffer();
-          text.append("@attribute " + attributeName + " ");
-          if (isNominal())
-          {
-            text.append('{');
-            Enumeration enumeration = enumerateValues();
-            if (enumeration!=null)
-            {
-              while (enumeration.hasMoreElements())
-              {
-                text.append(enumeration.nextElement());
-                if (enumeration.hasMoreElements())
-                  text.append(',');
-              }
-            }
-            text.append('}');
-          }
-          else
-          {
-            if (isNumeric())
-            {
-              text.append("numeric");
-            }
-          }
-          return text.toString();
-  	}
+	}
 
 	/**
-   	* Returns the attribute's type as an integer.
-   	*
-   	* @return the attribute's type.
-   	*/
-  	public final int getAttributeType()
-	{	return attributeType;
-  	}
+	 * Constructor for numeric or nominal attribute with a particular attIndex.
+	 * 
+	 * @param attributeName Name of this attribute.
+	 * @param attributeType Type of this attribute.
+	 * @param attIndex The attribute's position at the instanceSet.
+	 * @param isString Set that attribute values are string values. 
+	 * @param numValues Maximum number of values added to this attribute.
+	 */
+	public Attribute(String attributeName, byte attributeType,
+			boolean isString, int numValues, int attIndex) {
+		this(attributeName, attributeType, isString, numValues);
+		this.attIndex = attIndex;
+	}
 
-  	/**
-   	* Returns a value of a attribute.
-   	*
-   	* @param valIndex The value's index
-   	* @return the attribute's value as a string. If value is not found returns ""
-   	*/
-  	public final String value(int valIndex)
-	{	if (attributeValues != null && valIndex >= 0 && valIndex <= numValues())
-		{	String val = attributeValues[valIndex];
-      		return val;
+	/**
+	 * Returns an enumeration of all the attribute's values
+	 *
+	 * @return Enumeration of all the attribute's values
+	 */
+	public final Enumeration enumerateValues() {
+		if (attributeType == NOMINAL) {
+			if (stringValues != null || numberValues != null) {
+				final ArrayListEnumeration ale;
+				String[] enumValues;
+				if (stringValues != null) {
+					enumValues = stringValues;
+				} else {
+					enumValues = new String[numValues];
+					for (int i = 0; i < numValues; i++) {
+						/* Check if the fraction part of the value can be ignored */
+						int auxValue = (int) numberValues[i];
+						if (numberValues[i] == (float) auxValue) {
+							/* The stored value is an integer value */
+							enumValues[i] = String.valueOf(auxValue);
+						} else {
+							enumValues[i] = String.valueOf(numberValues[i]);
+						}
+					}
+				}
+				ale = new ArrayListEnumeration(enumValues);
+				
+				return new Enumeration () {
+					public boolean hasMoreElements() {
+						return ale.hasMoreElements();
+					}
+	
+					public Object nextElement() {
+						Object oo = ale.nextElement();
+						return oo;
+					}
+				};
+			}
 		}
-		else
-		{	return "";
-    	}
-  	}
-
-	/**
-   	* Adds an attribute value.
-   	*
-   	* @param value The attribute value
-   	*/
-  	public final void addValue(String value)
-	{
-          if (hashtable == null)
-          {
-            hashtable = new Hashtable<String,Integer>();
-
-          }
-
-          String[] newValues = new String[numValues()+1];
-          if (attributeValues!=null)
-          {
-            System.arraycopy(attributeValues,0,newValues,0,numValues());
-          }
-          newValues[numValues()] = value;
-          attributeValues = newValues;
-          hashtable.put(value, new Integer(numValues() - 1));
-	}
-
-  	/**
-   	* Produces a shallow copy of this attribute.
-   	*
-   	* @return a copy of this attribute with the same index
-   	*/
-  	public Object copy()
-  	{	Attribute copy = new Attribute(attributeName,attributeValues,attributeType,index);
-    	return copy;
+		
+		return null;
 	}
 
 	/**
-   	* Produces a shallow copy of this attribute with a new name.
-   	*
-   	* @param newName Name of the new attribute
-   	* @return a copy of this attribute with the same index
-   	*/
-  	public final Attribute copy(String newName)
-	{	Attribute copy = new Attribute(newName,attributeValues,attributeType,index);
-    	return copy;
-  	}
-
-  	/**
-   	* Removes a value of a nominal attribute.
-   	*
-   	* @param index The value's index
-   	*/
-  	//public final void delete(int index)
-	//{	attributeValues.remove(index);
-    //  	Hashtable hash = new Hashtable(hashtable.size());
-    //  	Enumeration enum = hashtable.keys();
-    //  	while (enum.hasMoreElements())
-	//	{	String string = (String)enum.nextElement();
-	//		Integer valIndexObject = (Integer)hashtable.get(string);
-	//		int valIndex = valIndexObject.intValue();
-	//		if (valIndex > index)
-	//		{	hash.put(string, new Integer(valIndex - 1));
-	//		}
-	//		else if (valIndex < index)
-	//		{	hash.put(string, valIndexObject);
-	//		}
-    //	}
-    //  	hashtable = hash;
-  	//}
-
-  	/**
-   	* Sets the index of this attribute.
-   	*
-   	* @param index Index of this attribute
-   	*/
-  	public final void setIndex(int index)
-	{	this.index = index;
-  	}
-
-  	/**
-   	* Sets a value of an attribute.
-   	*
-   	* @param index The value's index
-   	* @param string The value
-   	*/
-  	//public final void setValue(int index, String string)
-	//{	if (attributeType == NUMERIC)
-	//	{	try
-	//		{	Float.parseFloat(string);
-	//		}
-	//		catch (NumberFormatException nfe)
-	//		{	throw new RuntimeException(resource.getString("setValueException"));
-	//		}
-	//	}
-	//	String store = string;
-    //	hashtable.remove(attributeValues[index]);
-    //  	attributeValues[index] = store;
-    //  	hashtable.put(store, new Integer(index));
-  	//}
-
-	/**
-   	* Changes the type of an attribute.
-   	*
-   	* @param attributeType New attribute type
-   	*/
-  	public void setAttributeType(int attributeType)
-	{	this.attributeType = attributeType;
+	 * Returns the attIndex of this attribute.
+	 *
+	 * @return The attIndex of this attribute
+	 */
+	public final int getIndex() {
+		return attIndex;
 	}
 
 	/**
-    * Returns the attribute's values.
-    *
-    * @return the attribute's values.
-    */
-    public String[] getAttributeValues()
-    {
-    	String[] values = new String[attributeValues.length];
-    	System.arraycopy(attributeValues,0,values,0,attributeValues.length);
-    	return values;
-    }
+	 * Returns the attIndex of a given attribute value. (The attIndex of
+	 * the first occurence of this value.)
+	 *
+	 * @param value The value for which the attIndex is to be returned
+	 * @return The attIndex of the given attribute value, -1 if the value
+	 * can't be found.
+	 */
+	public final int indexOfValue(String key) {
+		if (hashtableString != null) {
+			Integer attIndex = hashtableString.get(key);
+			if (attIndex != null) {
+				return attIndex.intValue();
+			}
+		}
+		return -1;
+	}
 
+	/**
+	 * Returns the attIndex of a given attribute value. (The attIndex of
+	 * the first occurence of this value.)
+	 *
+	 * @param value The value for which the attIndex is to be returned
+	 * @return The attIndex of the given attribute value, -1 if the value can't
+	 * be found.
+	 */
+	public final int indexOfValue(Float key) {
+		if (hashtableNumber != null) {
+			Integer attIndex = hashtableNumber.get(key);
+			if (attIndex != null) {
+				return attIndex.intValue();
+			}
+		}
+		return -1;
+	}
+
+	/**
+	 * Tests if the attribute is nominal.
+	 *
+	 * @return true if the attribute is nominal.
+	 */
+	public final boolean isNominal() {
+		return attributeType == NOMINAL;
+	}
+
+	/**
+	 * Tests if the attribute is numeric.
+	 *
+	 * @return true if the attribute is numeric.
+	 */
+	public final boolean isNumeric() {
+		return attributeType == NUMERIC;
+	}
+
+	/**
+	 * Tests if the attribute is cyclic numeric.
+	 *
+	 * @return true if the attribute is cyclic numeric.
+	 */
 	public boolean isCyclic() {
-		// TODO Auto-generated method stub
-		return false;
+		return attributeType == CYCLIC;
 	}
 
-	public float getMinimumValue() {
-		// TODO Auto-generated method stub
-		return 0;
+	/**
+	 * Tests if the attribute's values are Strings.
+	 *
+	 * @return true if the attribute's values are Strings.
+	 */
+	public boolean isString() {
+		return isString;
 	}
 
-	public float getMaximumValue() {
-		// TODO Auto-generated method stub
-		return 0;
+	/**
+	 * Returns the attribute's name.
+	 *
+	 * @return the attribute's name as a string
+	 */
+	public final String getAttributeName() {
+		return attributeName;
+	}
+
+	/**
+	 * Returns the number of attribute values.
+	 *
+	 * @return the number of attribute values
+	 */
+	public final int numValues() {
+		if (attributeType == NOMINAL) {
+			return numValues;
+		} else {
+			return instanceSet.numInstances;
+		}
+	}
+
+	/**
+	 * Returns a description of this attribute in ARFF format.
+	 *
+	 * @return a description of this attribute as a string
+	 */
+	public final String toString() {
+		StringBuffer text = new StringBuffer();
+		
+		text.append("@attribute " + attributeName + " ");
+		if (isNominal()) {
+			text.append('{');
+			Enumeration enumeration = enumerateValues();
+			if (enumeration!=null) {
+				while (enumeration.hasMoreElements()) {
+					text.append(enumeration.nextElement());
+					if (enumeration.hasMoreElements()) {
+						text.append(',');
+					}
+				}
+			}
+			text.append('}');
+		}
+		return text.toString();
+	}
+
+	/**
+	 * Returns a value of an attribute.
+	 *
+	 * @param valIndex The value's attIndex
+	 * @return the attribute's value as a string. If value is not found returns ""
+	 */
+	public final String value(int valIndex) {
+		if (attributeType == NOMINAL) {
+			if (valIndex >= 0 && valIndex <= numValues) {
+				if (stringValues != null) {
+					return stringValues[valIndex];
+				} else if (numberValues != null) {
+					/* Check if the fraction part of the value can be ignored */
+					int auxValue = (int) numberValues[valIndex];
+					if (numberValues[valIndex] == (float) auxValue) {
+						/* The stored value is an integer value */
+						return String.valueOf(auxValue);
+					}
+					/* The stored value is a float value */
+					return String.valueOf(numberValues[valIndex]);
+				}
+			}
+		} else {
+			/* The attribute is numeric. Get value from instanceSet */
+			return String.valueOf(instanceSet.instances[valIndex].data[attIndex]);
+		}
+		return "";
+	}
+
+	/**
+	 * Returns a float value of an attribute with number values.
+	 *
+	 * @param valIndex The value's attIndex
+	 * @return the attribute's value as a float. If value is not found returns
+	 * NaN
+	 */
+	public final float numberValue(int valIndex) {
+		if (valIndex >= 0 && valIndex <= numValues && numberValues != null) {
+			return numberValues[valIndex];				
+		}
+		return Float.NaN;
+	}
+
+	/**
+	 * Adds an nominal attribute value.
+	 *
+	 * @param value The nominal attribute value.
+	 */
+	public final int addValue(String value) {
+		int key = indexOfValue(value);
+		if (key == -1) {
+			/* The input value is new. */
+			key = numValues;
+			hashtableString.put(value, new Integer(key));
+			stringValuesTemp.add(value);
+			++numValues;
+		}
+		return key;
+	}
+
+	/**
+	 * Adds an nominal attribute value.
+	 *
+	 * @param value The nominal attribute value.
+	 */
+	public final int addValue(float value) {
+		int key = indexOfValue(value);
+		if (key == -1) {
+			/* The input value is new. */
+			key = numValues;
+			hashtableNumber.put(value, new Integer(key));
+			numberValuesTemp.add(value);
+			++numValues;
+		}
+		return key;
+	}
+
+	/**
+	 * Sets the attIndex of this attribute.
+	 *
+	 * @param attIndex Index of this attribute
+	 */
+	public final void setIndex(int attIndex) {
+		this.attIndex = attIndex;
+	}
+
+	/**
+	 * Returns the attribute's values.
+	 *
+	 * @return the attribute's values.
+	 */
+	public String[] getAttributeValues() {
+		if (!isString) {
+			String[] values = new String[stringValues.length];
+			for (int i = 0; i < numValues; i++) {
+				values[i] = String.valueOf(numberValues[i]);
+			}
+			return values;
+		}
+		return stringValues.clone();
+	}
+
+	/** 
+	 * Returns the type of this attribute:
+	 * 0 - Numeric
+	 * 1 - Nominal
+	 * 2 - Numeric Cyclic
+	 */
+	public byte getAttributeType() {
+		return attributeType;
+	}
+
+	/**
+	 * Binds this attribute to a specified instanceSet.
+	 * 
+	 * @param instanceSet
+	 */
+	public void setInstanceSet(InstanceSet instanceSet) {
+		this.instanceSet = instanceSet;
+	}
+	
+	/**
+	 * Finalize the construction of this attribute. All values stored in the
+	 * hashtable are destroyed. Only affects nominal attributes. 
+	 */
+	public void setFinal() {
+		if (isString) {
+			/* Construct the final String vector of values */
+			stringValues = new String[numValues];
+			for (int i = 0; i < numValues; i++) {
+				stringValues[i] = stringValuesTemp.get(i);
+			}
+			
+			/* Free up the auxiliar structures used in the construction of this
+			 * attribute.
+			 */
+			hashtableString.clear();
+			hashtableString = null;
+			stringValuesTemp.clear();
+			stringValuesTemp = null;
+		} else {
+			/* Construct the final float vector of values */
+			numberValues = new float[numValues];
+			for (int i = 0; i < numValues; i++) {
+				numberValues[i] = numberValuesTemp.get(i);
+			}
+			
+			/* Free up the auxiliar structures used in the construction of this
+			 * attribute.
+			 */
+			hashtableNumber.clear();
+			hashtableNumber = null;
+			numberValuesTemp.clear();
+			numberValuesTemp = null;
+		}
 	}
 }
-

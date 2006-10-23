@@ -437,10 +437,10 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
           index = inputLayerIndexes[counter];
           Attribute att = attributeVector[i];
           if(att.isNumeric()){
-            float data = Float.parseFloat(att.getAttributeValues()[instance.getValue(att)]);
+            float data = instance.getValue(att);
             inputLayer[index] = normalizationFunction.normalize(data, i);
           } else{
-            index = index + instance.getValue(i);
+            index = index + (int) instance.getValue(i);
             inputLayer[index] = 1;
           }
         }
@@ -577,15 +577,19 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;	
 		
-	public LinearNormalization(){
-      for(int i=0; i<numOfAttributes; i++){
-        if(i!=classIndex && instanceSet.getAttribute(i).isNumeric()){
-          highestValue[i] = Float.MIN_VALUE;
-          lowestValue[i] = Float.MAX_VALUE;
-          String[] values = instanceSet.getAttribute(i).getAttributeValues();
-          for(int j=0; j<values.length; j++){
-            highestValue[i] = Math.max(highestValue[i], Float.parseFloat(values[j]));
-            lowestValue[i] = Math.min(lowestValue[i], Float.parseFloat(values[j]));
+	public LinearNormalization() {
+	  int numInstances;
+	  float value;
+	  
+      for(int att = 0; att < numOfAttributes; att++){
+        if (att != classIndex && instanceSet.getAttribute(att).isNumeric()){
+          highestValue[att] = Float.MIN_VALUE;
+          lowestValue[att] = Float.MAX_VALUE;
+          numInstances = instanceSet.numInstances;
+          for (int inst = 0; inst < numInstances; inst++) {
+        	value = instanceSet.getInstance(inst).data[att];
+        	highestValue[att] = Math.max(highestValue[att], value);
+            lowestValue[att] = Math.min(lowestValue[att], value);
           }
         }
       }

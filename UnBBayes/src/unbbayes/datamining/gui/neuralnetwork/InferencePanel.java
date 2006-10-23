@@ -233,14 +233,20 @@ public class InferencePanel extends JPanel implements IInferencePanel{
     int numAtt = attArray.length;
     Document docRules = textPaneRules.getDocument();
     initStylesForTextPane(textPaneRules);
-
-    for (int i = 0; i < numAtt; i++) {
-      if (i != classIndex && !instance.isMissing(i)) {
-        Attribute att = attArray[i];
-        short value = instance.getValue(i);
-        rule = rule + att.getAttributeName() + ": " + att.value(value) + "\n";
-      }
-    }
+	Attribute att;
+	String value;
+	
+	for (int attIndex = 0; attIndex < numAtt; attIndex++) {
+		if (attIndex != classIndex && !instance.isMissing(attIndex)) {
+			att = attArray[attIndex];
+			if (att.isNominal()) {
+				value = att.value((int) instance.getValue(attIndex));
+			} else {
+				value = String.valueOf(instance.getValue(attIndex)) ;
+			}
+			rule = rule + att.getAttributeName() + ": " + value + "\n";
+		}
+	}
 
     try {
       docRules.remove(0, docRules.getLength());

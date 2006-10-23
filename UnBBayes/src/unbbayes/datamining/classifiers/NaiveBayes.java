@@ -1,8 +1,10 @@
 package unbbayes.datamining.classifiers;
 
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.AttributeStats;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Utils;
@@ -17,182 +19,234 @@ import unbbayes.prs.bn.ProbabilisticNode;
  * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
  * @version $1.0 $ (17/02/2002)
  */
-public class NaiveBayes extends DistributionClassifier
-{	/** Load resources file from this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.classifiers.resources.ClassifiersResource");
+public class NaiveBayes extends DistributionClassifier {
+	/** Load resources file from this package */
+	private static ResourceBundle resource = ResourceBundle.getBundle(
+			"unbbayes.datamining.classifiers.resources.ClassifiersResource");
 
-	/** All the counts for nominal attributes. */
-	private float[][][] counts;
+	/** All the nominalCounts for nominal attributes. */
+	private float[][][] nominalCounts;
 
 	/** The prior probabilities of the classes. */
 	private float[] priors;
 
-	/** The instances used for training. */
-	private InstanceSet instances;
+	private double[][] stdDevPerClass;
+	
+	private double[][] meanPerClass;
+
+	/** The instanceSet used for training. */
+	private InstanceSet instanceSet;
   	
 	private ProbabilisticNode classAtt;
 	private int width = 50;
-	private int k = 0,i=0,j=0;
+
 	private ProbabilisticNetwork net = new ProbabilisticNetwork("NaiveBayes");
 	
-	private int numAtt;
-	private int numClasses;
 	private int numInstances;
+	private int numAttributes;
+	private int numClasses;
 	private int numValues;
 	private int classIndex;
 	private Attribute[] attributes;
+	private byte[] attributeType;
 	private int attIndex;
-
+	private byte nominalCounter;
+	private byte numericCounter;
+	private float MISSING_VALUE;
+	
 	/**
 	* Generates the classifier.
 	*
-	* @param instances Set of instances serving as training data
+	* @param instanceSet Set of instanceSet serving as training data
 	* @exception Exception if the classifier has not been generated successfully
 	*/
-	public void buildClassifier(InstanceSet inst) throws Exception
-	{	
-		instances = inst;
-		numAtt = inst.numAttributes();
-		numClasses = instances.numClasses();
-		numInstances = instances.numInstances();
-		attributes = instances.getAttributes();
-		classIndex = inst.getClassAttribute().getIndex();
-		attIndex=0;
+	public void buildClassifier(InstanceSet instanceSet) throws Exception {
+		this.instanceSet = instanceSet;
+		numInstances = instanceSet.numInstances;
+		numClasses = instanceSet.numClasses();
+		attributes = instanceSet.attributes;
+		attributeType = instanceSet.attributeType;
+		classIndex = instanceSet.classIndex;
+		MISSING_VALUE = Instance.MISSING_VALUE;
+		byte[] attributeType = instanceSet.attributeType;
+		numAttributes = instanceSet.numAttributes;
+
+		/* Calculate the number of nominal attributes */
+		int numNominalAttributes = instanceSet.numNominalAttributes;
+		
+		/* Calculate the number of numeric attributes */
+		int numNumericAttributes = numAttributes - numNominalAttributes;
+
+		/*
+		 * The class attribute is also a nominal. Exclude the class from the
+		 * nominal attribute counting
+		 */
+		--numNominalAttributes;
+		
+		/* Get nominal distributions per class for all nominal attributes */
+		nominalCounts = Utils.computeNominalDistributions(instanceSet);
+		
+		/* Get mean and standard deviation per class for all numeric attributes */
+		attIndex = 0;
+		ArrayList<double[]> stdDevMeanPerClass;
+		stdDevPerClass = new double[numNumericAttributes][];
+		meanPerClass = new double[numNumericAttributes][];
+		for (int att = 0; att < numAttributes; att++) {
+			if (attributeType[att] != InstanceSet.NOMINAL) {
+				stdDevMeanPerClass = Utils.stdDevMeanPerClass(instanceSet, att);
+				stdDevPerClass[attIndex] = stdDevMeanPerClass.get(0);
+				meanPerClass[attIndex] = stdDevMeanPerClass.get(1);
+				attIndex++;
+			}
+		}
+
+		/* Get the class distribution */
+		AttributeStats[] attributeStats = instanceSet.computeAttributeStats();
+		priors = attributeStats[classIndex].getNominalCountsWeighted();
+		
+		/* Normalize nominal distribution */
 		float sum;
-
-		boolean bool = inst.checkNumericAttributes();
-		if (bool == true)
-			throw new Exception(resource.getString("numericAttributesException"));
-
-		
-		// Reserve space
-		counts = new float[numClasses][numAtt - 1][0];
-		priors = new float[numClasses];
-		for (i = 0; i < numAtt; i++)
-		{
-			if (attributes[i].getIndex() != classIndex)
-			{
-				for (j = 0; j < numClasses; j++)
-				{	counts[j][attIndex] = new float[attributes[i].numValues()];
+		float sumAux;
+		for (int att = 0; att < numNominalAttributes; att++) {
+			for (int k = 0; k < numClasses; k++) {
+				/* Sum of all counts of attribute 'att' values for the class 'k' */
+				sumAux = Utils.sum(nominalCounts[k][att]);
+				
+				numValues = nominalCounts[k][att].length;
+				for (int i = 0; i < numValues; i++) {
+					/* Laplace estimator: ensures always Prob > 0 */
+					++nominalCounts[k][att][i];
+					sum = sumAux + numValues;
+					
+					/* Normalize */
+					nominalCounts[k][att][i] /= sum ;
 				}
-				attIndex++;
 			}
-		}
-
-		// Compute counts and sums
-		for (i = 0; i < numInstances; i++)
-		{
-			Instance instance = (Instance) instances.getInstance(i);
-			if (!instance.classIsMissing())
-			{	
-				attIndex=0;
-				for (j = 0; j < numAtt; j++)
-				{
-					if ((attributes[j].getIndex() != classIndex)&&(!instance.isMissing(attributes[j])))
-					{
-						counts[(int)instance.classValue()][attIndex][(int)instance.getValue(attributes[j])] += instance.getWeight();
-						attIndex++;
-					}
-
-				}															
-				priors[(int)instance.classValue()] += instance.getWeight();
-			}
-		}
-		
-		attIndex=0;
-		// Normalize counts
-		for (k = 0; k < numAtt; k++)
-		{
-			if (attributes[k].getIndex() != classIndex)
-			{
-				for (j = 0; j < numClasses; j++)
-				{	sum = Utils.sum(counts[j][attIndex]);
-					numValues = attributes[k].numValues();
-					for (i = 0; i < numValues; i++)
-					{	counts[j][attIndex][i] = (counts[j][attIndex][i] + 1) / (sum + (float)numValues);
-					}
-				}
-				attIndex++;
-			}
-			      	
 		}
     		
+		/* Normalize class priors */
+		sumAux = Utils.sum(priors);
+		double aux;
+		for (int k = 0; k < numClasses; k++) {
+			/* Laplace estimator: ensures always Prob > 0 */
+			++priors[k];
+			sum = sumAux + numClasses;
 
-		// Normalize priors
-		sum = Utils.sum(priors);
-		for (j = 0; j < numClasses; j++)
-		{	priors[j] = (priors[j] + 1)	/ (sum + (float)numClasses);      	
+			/* Normalize */
+			aux = priors[k];
+			aux /= sum;
+			priors[k] = (float) aux;      	
 		}
       	
-		// compute bayesian network
-		createProbabilisticNodeClass(attributes[classIndex]);
-		k=0;
-		for(int counter=0; counter<numAtt; counter++)
-		{   if (attributes[counter].getIndex() != classIndex)
-			{   	
-				createProbabilisticNode(attributes[counter]);											
+		/* Set the original class distribution of the instance set */
+		originalDistribution = priors;
+		
+		/* 
+		 * Compute bayesian network
+		 */
+		
+		/* Create class node */
+		createProbabilisticNodeClass();
+		
+		/* Create attribute nodes (skip the class attribute) */
+		nominalCounter = 0;
+		numericCounter = 0;
+		for(int att = 0; att < numAttributes; att++) {
+			if (att != classIndex) {
+					createProbabilisticNode(att, attributeType[att]);											
 			}
-		}      	
+		}
+		sum = 0;
 	}
   	
-	/** Cria o nó classe */
-	private void createProbabilisticNodeClass(Attribute att)
-	{   ProbabilisticNode no = new ProbabilisticNode();
-		no.setDescription(att.getAttributeName());
-		no.setName(att.getAttributeName());
+	/**
+	 * Create the class node.
+	 * 
+	 * @param att attribute
+	 */
+	private void createProbabilisticNodeClass() {
+		Attribute att = attributes[classIndex];
+		ProbabilisticNode node = new ProbabilisticNode();
+		node.setDescription(att.getAttributeName());
+		node.setName(att.getAttributeName());
 		numValues = att.numValues();
-		for (i=0;i<numValues;i++)
-		{   
-			no.appendState(""+att.value(i));
+		
+		for (int i = 0; i < numValues; i++) {   
+			node.appendState(att.value(i));
 		}
-		if (numAtt == 1)
-		{   no.setPosition(50,30);
+		
+		if (numAttributes == 1) {
+			node.setPosition(50, 30);
+		} else {
+			node.setPosition(50 + ((numAttributes - 2) * 50), 30);
 		}
-		else
-		{   no.setPosition(50 + ((numAtt-2) * 50),30);
+		
+		PotentialTable tab = node.getPotentialTable();
+		tab.addVariable(node);
+		for (int i = 0; i < numValues; i++) {   
+			tab.setValue(i, priors[i]);
 		}
-		PotentialTable tab = no.getPotentialTable();
-		tab.addVariable(no);
-		for (i=0;i<numValues;i++)
-		{   
-			tab.setValue(i,priors[i]);
-		}
-		net.addNode(no);
-		classAtt = no;
+		net.addNode(node);
+		classAtt = node;
 	}
 
-	/** Cria os nós filhos */
-	private void createProbabilisticNode(Attribute att)
-	{   ProbabilisticNode no = new ProbabilisticNode(); // Criação do nó
-		no.setDescription(att.getAttributeName());
-		no.setName(att.getAttributeName());
+	/**
+	 * Creates an attribute node.
+	 * 
+	 * @param att attribute
+	 */
+	private void createProbabilisticNode(int att, byte attributeType) {
+		Attribute attribute = attributes[att];
+		ProbabilisticNode node = new ProbabilisticNode();
+		node.setDescription(attribute.getAttributeName());
+		node.setName(attribute.getAttributeName());
+		numValues = attribute.numValues();
 
-		numValues = att.numValues();
-		for (i=0;i<numValues;i++)
-		{   
-			no.appendState(""+att.value(i));
+		for (int i = 0; i < numValues; i++) {   
+			node.appendState(attribute.value(i));
 		}
 
-		PotentialTable tab = no.getPotentialTable();  // Criação do Tabela de probabilidades
-		tab.addVariable(no);
-		no.setPosition(width,100);
+		/* Criação do Tabela de probabilidades */
+		PotentialTable tab = node.getPotentialTable();
+		tab.addVariable(node);
+		node.setPosition(width, 100);
 		width += 100;
-		net.addNode(no);
-		Edge arco = new Edge(classAtt,no);
+		net.addNode(node);
+		Edge arco = new Edge(classAtt, node);
 		net.addEdge(arco);
 
-		// Inserção dos valores na tabela de probabilidades
-		int[] coord = new int[numClasses];
-		for (j=0;j<numClasses;j++)
-		{   for (i=0;i<numValues;i++)
-			{   coord[0] = i;
-				coord[1] = j;
-				tab.setValue(coord,counts[j][k][i]);
+		/* Inserção dos valores na tabela de probabilidades */
+		if (attributeType == InstanceSet.NOMINAL) {
+			/* The attribute is nominal. Get the nominal distribution */
+			int[] coord = new int[numClasses];
+			for (int k = 0; k < numClasses; k++) {
+				for (int i = 0; i < numValues; i++) {
+					coord[0] = i;
+					coord[1] = k;
+					tab.setValue(coord, nominalCounts[k][nominalCounter][i]);
+				}
 			}
+			++nominalCounter;
+		} else {
+//			/* Numeric attribute. Compute normal density function on the value */
+//			float stdDev;
+//			float mean;
+//			float value;
+//			int[] coord = new int[numClasses];
+//			for (int k = 0; k < numClasses; k++) {
+//				for (int inst = 0; inst < numInstances; inst++) {
+//					coord[0] = inst;
+//					coord[1] = k;
+//					stdDev = (float) stdDevPerClass[numericCounter][k];
+//					mean = (float) meanPerClass[numericCounter][k];
+//					value = dataset[inst][att];
+//					value = Utils.normalDensityFunction(value, stdDev, mean);
+//					tab.setValue(coord, value);
+//				}
+//			}
+//			++numericCounter;
 		}
-		k++;
 	}
-
 
 	/**
 	 * Calculates the class membership probabilities for the given test instance.
@@ -201,24 +255,48 @@ public class NaiveBayes extends DistributionClassifier
 	 * @return predicted class probability distribution
 	 * @exception Exception if distribution can't be computed
 	 */
-	public float[] distributionForInstance(Instance instance) throws Exception
-	{	float[] probs = new float[numClasses];
+	public float[] distributionForInstance(Instance instance) throws Exception {
+		float[] inst = instance.data;
+		float[] probs = new float[numClasses];
+		float stdDev;
+		float mean;
+		double aux;
 
-		for (j = 0; j < numClasses; j++)
-		{	probs[j] = 1;
-  	    	
-			for (i = 0; i < numAtt; i++)
-			{
-				if ((attributes[i].getIndex() != classIndex)&&(!instance.isMissing(attributes[i])))
-				{
-					probs[j] *= counts[j][i][(int)instance.getValue(attributes[i])];
+		for (int k = 0; k < numClasses; k++) {
+			probs[k] = 1;
+			numericCounter = 0;
+			nominalCounter = 0;
+			for (int att = 0; att < numAttributes; att++) {
+				/* Skip class attribute missing value */
+				if (att != classIndex && inst[att] != MISSING_VALUE) {
+					if (attributeType[att] == InstanceSet.NOMINAL) {
+						/* Nominal attribute */
+						probs[k] *= nominalCounts[k][att][(int) inst[att]];
+						++nominalCounter;
+					} else {
+						/* Numeric attribute */
+						stdDev = (float) stdDevPerClass[numericCounter][k];
+						mean = (float) meanPerClass[numericCounter][k];
+						aux = probs[k];
+						aux *= Utils.normalDensityFunction(inst[att], stdDev,
+								mean);
+						probs[k] = (float) aux;
+						++numericCounter;
+					}
 				}
 			}
-			probs[j] *= priors[j];
+			aux = probs[k] * priors[k];
+			probs[k] = (float) aux;
 		}
 
-		// Normalize probabilities
-		Utils.normalize(probs);
+		/* Normalize probabilities */
+		double sum = Utils.sum(probs);
+		float size = probs.length;
+		for (int att = 0; att < size; att++) {
+			aux = probs[att];
+			aux /= sum;
+			probs[att] = (float) aux;      	
+		}
 
 		return probs;
 	}
@@ -229,28 +307,28 @@ public class NaiveBayes extends DistributionClassifier
 	* @return a description of the classifier as a string.
 	*/
 	public String toString()
-	{	if (instances == null)
+	{	if (instanceSet == null)
 		{	//return "Naive Bayes : "+resource.getString("exception4");
 			return nullInstancesString();
 		}
 		try
 		{	StringBuffer text = new StringBuffer("Naive Bayes");
       		
-			for (i = 0; i < numClasses; i++)
-			{	text.append("\n\n"+resource.getString("class") + " " + instances.getClassAttribute().value(i) + ": P(C) = " + Utils.doubleToString(priors[i], 10, 8) + "\n\n");
+			for (int i = 0; i < numClasses; i++)
+			{	text.append("\n\n"+resource.getString("class") + " " + instanceSet.getClassAttribute().value(i) + ": P(C) = " + Utils.doubleToString(priors[i], 10, 8) + "\n\n");
 				
-				for (k = 0; k < numAtt; k++)
+				for (int k = 0; k < numAttributes; k++)
 				{
 					if (attributes[k].getIndex() != classIndex)
 					{
 						text.append(resource.getString("attribute")+" " + attributes[k].getAttributeName() + "\n");
 						numValues = attributes[k].numValues();
-						for (j = 0; j < numValues; j++)
+						for (int j = 0; j < numValues; j++)
 						{	text.append(attributes[k].value(j) + "\t");
 						}
 						text.append("\n");
-						for (j = 0; j < numValues; j++)
-							text.append(Utils.doubleToString(counts[i][k][j], 10, 8) + "\t");
+						for (int j = 0; j < numValues; j++)
+							text.append(Utils.doubleToString(nominalCounts[i][k][j], 10, 8) + "\t");
 						text.append("\n\n");
 					}					
 				}
@@ -265,17 +343,17 @@ public class NaiveBayes extends DistributionClassifier
 	private String nullInstancesString()
 	{	try
 		{	StringBuffer text = new StringBuffer("Naive Bayes");
-			for (i = 0; i < priors.length; i++)
+			for (int i = 0; i < priors.length; i++)
 			{	text.append("\n\n"+resource.getString("class") + " " + i + ": P(C) = " + Utils.doubleToString(priors[i], 10, 8) + "\n\n");
-				if (counts != null)
-				{	for (int attIndex=0; attIndex<counts[i].length; attIndex++)
+				if (nominalCounts != null)
+				{	for (int attIndex=0; attIndex<nominalCounts[i].length; attIndex++)
 					{	text.append(resource.getString("attribute")+" " + attIndex + "\n");
-						for (j = 0; j < counts[i][attIndex].length; j++)
+						for (int j = 0; j < nominalCounts[i][attIndex].length; j++)
 						{	text.append(j + "\t");
 						}
 						text.append("\n");
-						for (j = 0; j < counts[i][attIndex].length; j++)
-							text.append(Utils.doubleToString(counts[i][attIndex][j], 10, 8) + "\t");
+						for (int j = 0; j < nominalCounts[i][attIndex].length; j++)
+							text.append(Utils.doubleToString(nominalCounts[i][attIndex][j], 10, 8) + "\t");
 						text.append("\n\n");
 					}
 				}
@@ -306,15 +384,4 @@ public class NaiveBayes extends DistributionClassifier
 	{	this.priors = priors;
 	}
 
-	/** Returns the computed counts for nominal attributes
-
-		@return the computed counts.
-	*/
-	public float[][][] getCounts()
-	{	return counts;
-	}
-
-	public void setCounts(float[][][] counts)
-	{	this.counts = counts;
-	}
 }

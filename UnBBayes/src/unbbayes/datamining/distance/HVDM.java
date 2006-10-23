@@ -3,6 +3,7 @@ package unbbayes.datamining.distance;
 import unbbayes.datamining.datamanipulation.AttributeStats;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Stats;
+import unbbayes.datamining.datamanipulation.Utils;
 
 /**
  *
@@ -14,20 +15,16 @@ public class HVDM extends Distance {
 	/** The number of attributes of the dataset */
 	private int numAttributes;
 	
-	/** The current dataset */
-	private InstanceSet instanceSet;
-	
 	/** Number of instances in the instance set */
 	private int numInstances;
 
 	/** Number of classes in the instance set */
 	private int numClasses;
 
-	private float attNorm[];
+	private double attNorm[];
 	private float distribution[][][];
 	private AttributeStats attributeStats[];
 	private byte attributeType[];
-	private int numNominalAttribute;
 	
 	/** Range value of an attribute. Used for cyclic attributes */
 	private float attRangeValue[];
@@ -38,40 +35,55 @@ public class HVDM extends Distance {
 	 */
 	private float attHalfRangeValue[];
 	
-	/** The dataset values. */
-	private float[][] dataset;
-	
 	/** 
 	 * The index of the dataset's column that represents the class attribute.
 	 * Assume the value -1 in case there is no class attribute.
 	 */
-	public byte classIndex;
+	public int classIndex;
 
 	/** 
 	 * The index of the dataset's column that represents the counter attribute.
 	 * Assumes always the last column of the internal dataset as the counter
 	 * attribute.
 	 */
-	public byte counterIndex;
+	public int counterIndex;
 
-	public HVDM(InstanceSet instanceSet, int normFactor) {
-		this.instanceSet = instanceSet;
+	/** 
+	 * Distance function desired.
+	 * <ul>
+	 * <li> 0: Hamming
+	 * <li> 1: HVDM
+	 * </ul>
+	 */
+	private byte optionDistanceFunction;
+	private byte HAMMING = 0;
+	private byte HVDM = 1;
+	
+	/**
+	 * Constructor for this class. Set all pertinent fields and compute all
+	 * necessary statistic for HVDM distance calculation.
+	 * The parameter <code>normFactor</code> will be multiplied by the standard
+	 * deviation of each numeric attribute and the resulting value will be
+	 * utilized to normalizing the distance value of each numeric attribute.
+	 * 
+	 * @param instanceSet
+	 * @param normFactor The desired normalizer factor.
+	 */
+	public HVDM(InstanceSet instanceSet, int normFactor) throws Exception {
 		numAttributes = instanceSet.numAttributes();
 		numInstances = instanceSet.numInstances();
 		numClasses = instanceSet.numClasses();
-		dataset = instanceSet.dataset;
 		classIndex = instanceSet.classIndex;
 		attributeType = instanceSet.attributeType;
 		attributeStats = instanceSet.computeAttributeStats();
 		counterIndex = instanceSet.counterIndex;
 
-		attNorm = new float[numInstances];
+		attNorm = new double[numInstances];
 		attRangeValue = new float[numInstances];
 		attHalfRangeValue = new float[numInstances];
 
 		Stats stats;
 		
-		numNominalAttribute = 0;
 		for (int att = 0; att < numAttributes; att++) {
 			/* Skip the class attribute */
 			if (att == classIndex) {
@@ -84,69 +96,31 @@ public class HVDM extends Distance {
 				
 				/* Get standard deviation and compute normalization factor */
 				stats = attributeStats[att].getNumericStats();
-				attNorm[att] = stats.getStdDev() * (float) normFactor;
+				attNorm[att] = stats.getStdDev() * normFactor;
 			} else if (instanceSet.attributeType[att] == InstanceSet.CYCLIC) {
 				/* The attribute is cyclic */
 				
 				/* Get the min, max, range and half range values */
 				stats = attributeStats[att].getNumericStats();
+				attNorm[att] = stats.getStdDev() * normFactor;
 				attRangeValue[att] = stats.getMax() - stats.getMin() + 1;
 				attHalfRangeValue[att] = attRangeValue[att] / 2;
 			} else if (instanceSet.attributeType[att] == InstanceSet.NOMINAL) {
 				/* The attribute is nominal */
-				++numNominalAttribute;
 			}
 		}
-		computeNominalDistributions();
+		
+		/* Compute nominal distributions */
+		distribution = Utils.computeNominalDistributions(instanceSet);
 	}
 	
-	/**
-	 * Compute the necessary frequencies for all nominal attributes. 
-	 */
-	private void computeNominalDistributions() {
-		int attIndex = 0;
-		int numValues;
-		int classValue;
-		int instValue;
-		float weight;
-
-		distribution = new float[numNominalAttribute][][];
-
-		for (int att = 0; att < numAttributes; att++) {
-			/* Skip the class attribute */
-			if (att == classIndex) {
-				continue;
-			}
-
-			/* Check if the current attribute is nominal */
-			if (attributeType[att] == InstanceSet.NOMINAL) {
-				numValues = instanceSet.attributes[att].numValues();
-				distribution[attIndex] = new float[numValues][numClasses];
-				
-				/* Zero all distribution values */
-				for (int i = 0; i < numValues; i++) {
-					for (int j = 0; j < numClasses + 1; j++) {
-						distribution[attIndex][i][j] = 0;
-					}
-				}
-				
-				/* Compute distribution values */
-				for (int inst = 0; inst < numInstances; inst++) {
-					instValue = (int) dataset[inst][inst];
-					classValue = (int) dataset[inst][classIndex];
-					weight = dataset[inst][counterIndex];
-					distribution[attIndex][instValue][classValue] += weight;
-				}
-				
-				/* Next nominal attribute index */
-				++attIndex;
-			}
-		}
+	public void setOptionDistanceFunction(byte optionDistanceFunction) {
+		this.optionDistanceFunction = optionDistanceFunction;
 	}
-
+	
 	public float distanceValue(float[] vector1, float[] vector2) {
 		float distance = 0;
-		float dif;
+		double dif;
 		int attIndex = 0;
 		float aux1;
 		float aux2;
@@ -154,30 +128,48 @@ public class HVDM extends Distance {
 		AttributeStats attStats;
 
 		for (int att = 0; att < numAttributes; att++) {
+			dif = 0;
+
 			/* Skip the class attribute */
 			if (att == classIndex) {
 				continue;
 			}
 
-			dif = 0;
-			if (attributeType[att] == InstanceSet.NOMINAL) {
-				/* The attribute is nominal. Apply VDM distance */
-				attStats = attributeStats[att];
-				for (int i = 0; i < numClasses; i++) {
-					/* Get relative frequency for 'vector1' */
-					index = (int) vector1[att];
-					aux1 = distribution[attIndex][index][i];
-					aux1 = aux1 / attStats.nominalCountsWeighted[index];
-
-					/* Get relative frequency for 'vector2' */
-					index = (int) vector2[att];
-					aux2 = distribution[attIndex][index][i];
-					aux2 = aux2 / attStats.nominalCountsWeighted[index];
-					
-					/* Calculate the difference */
-					dif += (aux1 - aux2) * (aux1 - aux2);
+			/* Skip equal values */
+			if (vector1[att] == vector2[att]) {
+				if (attributeType[att] == InstanceSet.NOMINAL) {
+					/* Get next nominal attribute */
+					++attIndex;
 				}
-				
+				continue;
+			}
+
+			if (attributeType[att] == InstanceSet.NOMINAL) {
+				/* The attribute is nominal */
+				if (optionDistanceFunction == HVDM) {
+					/* Apply VDM distance */
+					attStats = attributeStats[att];
+					for (int k = 0; k < numClasses; k++) {
+						/* Get relative frequency for 'vector1' */
+						index = (int) vector1[att];
+						aux1 = distribution[k][attIndex][index];
+						aux1 = aux1 / attStats.nominalCountsWeighted[index];
+	
+						/* Get relative frequency for 'vector2' */
+						index = (int) vector2[att];
+						aux2 = distribution[k][attIndex][index];
+						aux2 = aux2 / attStats.nominalCountsWeighted[index];
+						
+						/* Calculate the difference */
+						dif += (aux1 - aux2) * (aux1 - aux2);
+					}
+				} else if (optionDistanceFunction == HAMMING) {
+					/* Apply Hamming distance */
+					if (vector1[att] != vector2[att]) {
+						dif = 1;
+					}
+				}
+
 				/* Get next nominal attribute */
 				++attIndex;
 			} else if (attributeType[att] == InstanceSet.NUMERIC) {

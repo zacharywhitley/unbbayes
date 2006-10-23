@@ -125,18 +125,13 @@ public class FileController
         {   throw new IOException(resource.getString("fileExtensionException"));
         }
 
-        new CompactFileDialog(loader,component);
+//        new CompactFileDialog(loader,component);
 
 		//starts loading and shows a status screen
 		ProgressDialog progressDialog = new ProgressDialog (f.getName(), loader);
 		boolean successStatus = progressDialog.load();
 
 		InstanceSet inst = loader.getInstances();
-
-        if ((loader instanceof TxtLoader)&&(inst!=null))
-        {
-        	((TxtLoader)loader).checkNumericAttributes();
-        }
 
         if(successStatus)
         {
@@ -165,10 +160,6 @@ public class FileController
 
 		  while (loader.getInstance())
 		  {}
-
-		  if (loader instanceof TxtLoader)
-		  {   ((TxtLoader)loader).checkNumericAttributes();
-		  }
 
 		  return loader.getInstances();
 	  }

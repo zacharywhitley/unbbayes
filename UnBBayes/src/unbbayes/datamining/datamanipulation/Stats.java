@@ -1,162 +1,268 @@
 package unbbayes.datamining.datamanipulation;
 
 /**
- * A class to store simple statistics
+ * A class to store and calculate simple statistics
  *
- *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
- *  @version $1.0 $ (16/02/2002)
+ * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ * @version $1.0 $ (16/02/2002)
+ * edited by Emerson Lopes Machado (emersoft@conectanet.com.br)
+ * (29/SEP/2006)
  */
-public class Stats 
-{ /** The number of values seen */
-  private double count = 0;
+public class Stats {
+	/** The number of values seen */
+	private float count;
 
-  /** The sum of values seen */
-  private double sum = 0;
+	/** The sum of values seen */
+	private double sum;
 
-  /** The sum of values squared seen */
-  private double sumSq = 0;
+	/** The sum of values squared seen */
+	private float sumSq;
 
-  /** The standard deviation of values at the last calculateDerived() call */    
-  private double stdDev = Double.NaN;
+	/** The standard deviation of values */		
+	private double stdDev;
 
-  /** The mean of values at the last calculateDerived() call */    
-  private double mean = Double.NaN;
+	/** The mean of values */		
+	private double mean;
 
-  /** The minimum value seen, or Double.NaN if no values seen */
-  private double min = Double.NaN;
+	/** The minimum value seen */
+	private float min;
 
-  /** The maximum value seen, or Double.NaN if no values seen */
-  private double max = Double.NaN;
-  
-  /** Returns the number of values seen
-  	@return Number of values seen
-  */	
-  public double getCount()
-  {	return count;
-  }
-  
-  /** Returns the sum of values seen
-  	@return Sum
-	*/
-  public double getSum()
-  {	return sum;
-  }
-  
-  /** Returns the sum of values squared seen
-  	@return Sum of values squared
-	*/
-  public double getSumSq()
-  {	return sumSq;
-  }
-  
-  /** Return the standard deviation of values at the last calculateDerived() call
-  	@return Standard deviation of values
-	*/
-  public double getStdDev()
-  {	return stdDev;
-  }
-  
-  /** Returns the mean of values at the last calculateDerived() call
-  	@return Mean of values
-	*/
-  public double getMean()
-  {	return mean;
-  }
-  
-  /** Returns the minimum value seen, or Double.NaN if no values seen 
-  	@return Minimum value seen
-  */
-  public double getMin()
-  {	return min;
-  }
-  
-  /** Returns the maximum value seen, or Double.NaN if no values seen 
-  	@return Maximum value seen
-  */
-  public double getMax()
-  {	return max;
-  }
-  
-  /**
-   * Adds a value to the observed values
-   *
-   * @param value the observed value
-   */
-  public void add(double value) 
-  {	add(value, 1);
-  }
+	/** The maximum value seen */
+	private float max;
+	
+	/** The current instanceSet */
+	private InstanceSet instanceSet;
+	
+	/** The current instanceSet */
+	private int attributeIndex;
+	
+	/**
+	 * Constructor for the Stats class.
+	 * 
+	 * @param instanceSet
+	 */
+	public Stats(InstanceSet instanceSet, int attributeIndex) {
+		this.instanceSet = instanceSet;
+		this.attributeIndex = attributeIndex;
+		
+		compute();
+	}
+	/**
+	 * Calculates the standard deviation of an array of numbers.
+	 * See Knuth's The Art Of Computer Programming Volume II: Seminumerical
+	 * Algorithms.
+	 * This algorithm is slower, but more resistant to error propagation.
+	 * The input dataset must contain at least two values. <br>
+	 * M(1) = x(1), M(k) = M(k-1) + (x(k) - M(k-1) / k<br>
+	 * S(1) = 0, S(k) = S(k-1) + (x(k) - M(k-1)) * (x(k) - M(k))<br>
+	 * for 2 <= k <= n, then<br>
+	 * sigma = sqrt(S(n) / (n - 1))
+	 *
+	 * @param dataset Sample to compute the standard deviation of.
+	 * @param att The attribute's index of the sample.
+	 * @return standard deviation estimate of the sample.
+	 */
+	private void compute() {
+		float MISSING_VALUE = Instance.MISSING_VALUE;
+		int counterIndex = instanceSet.counterIndex;
+		count = instanceSet.numInstances;
+		
+		if (count < 2) {
+			stdDev = Float.NaN;
+			return;
+		}
+		sum = 0;
+		sumSq = 0;
+		min = Float.MAX_VALUE;
+		max = -Float.MAX_VALUE;
+		double weight;
+		double avg = 0;
+		double aux = 0;
+		double newavg;
+		double value;
+		int inst = 0;
+		int w;
 
-  /**
-   * Adds a value that has been seen n times to the observed values
-   *
-   * @param value the observed value
-   * @param n the number of times to add value
-   */
-  public void add(double value, double n) 
-  {	sum += value * n;
-    sumSq += value * value * n;
-    count += n;
-    if (Double.isNaN(min)) 
-	{	min = max = value;
-    } 
-	else if (value < min) 
-	{	min = value;
-    } 
-	else if (value > max) 
-	{	max = value;
-    }
-  }
+		for (int i = 0; i < count; i++) {
+			value = instanceSet.instances[i].data[attributeIndex];
+			
+			/* Check if current value is a missing value */
+			if (value == MISSING_VALUE) {
+				/* Skip to the next value */
+				continue;
+			}
+			
+			if (i == 0) {
+				/* First loop. Initiate 'avg' with first value and skip it */
+				avg = instanceSet.instances[0].data[attributeIndex];
+				w = 1;
+			} else {
+				w = 0;
+			}
+			weight = instanceSet.instances[i].data[counterIndex];
+			for (; w < weight; w++) {
+				newavg = avg + (value - avg) / (inst + 1);
+				aux += (value - avg) * (value - newavg);
+				avg = newavg;
+				++inst;
+				
 
-  /**
-   * Removes a value to the observed values (no checking is done
-   * that the value being removed was actually added). 
-   *
-   * @param value the observed value
-   */
-  public void subtract(double value) 
-  { sum -= value;
-    sumSq -= value * value;
-    count --;
-  }
+				/* Others statistics */
+				if (value < min) {
+					min = (float) value;
+				}
+				if (value > max) {
+					max = (float) value;
+				}
+				sum += value;
+				sumSq += value * value;
+			}
+		}
+		mean = sum / inst;
+		stdDev = Math.sqrt(aux / (inst - 1));
+		count = inst;
+	}
 
-  /**
-   * Tells the object to calculate any statistics that don't have their
-   * values automatically updated during add. Currently updates the mean
-   * and standard deviation.
-   */
-  public void calculateDerived() 
-  { mean = Double.NaN;
-    stdDev = Double.NaN;
-    if (count > 0) 
-	{	mean = sum / count;
-      	stdDev = Double.POSITIVE_INFINITY;
-      	if (count > 1) 
-		{	stdDev = sumSq - (sum * sum) / count;
-			stdDev /= (count - 1);
-        	if (stdDev < 0) 
-			{	stdDev = 0;
-        	}
-			stdDev = Math.sqrt(stdDev);
-      	}
-    }
-  }
-    
-  /**
-   * Returns a string summarising the stats so far.
-   *
-   * @return The summary string
-   */
-  public String toString() 
-  {	calculateDerived();
-    return
-      "Count   " + Utils.doubleToString(count, 8) + '\n'
-      + "Min     " + Utils.doubleToString(min, 8) + '\n'
-      + "Max     " + Utils.doubleToString(max, 8) + '\n'
-      + "Sum     " + Utils.doubleToString(sum, 8) + '\n'
-      + "SumSq   " + Utils.doubleToString(sumSq, 8) + '\n'
-      + "Mean    " + Utils.doubleToString(mean, 8) + '\n'
-      + "StdDev  " + Utils.doubleToString(stdDev, 8) + '\n';
-  }
+	private void compute2() {
+		float MISSING_VALUE = Instance.MISSING_VALUE;
+		int counterIndex = instanceSet.counterIndex;
+		count = instanceSet.numInstances;
+		
+		if (count < 2) {
+			stdDev = Float.NaN;
+			return;
+		}
+		sum = 0;
+		sumSq = 0;
+		min = Float.MAX_VALUE;
+		max = -Float.MAX_VALUE;
+		float weight;
+		float value;
+		int inst = 0;
+		int w;
 
+		for (int i = 0; i < count; i++) {
+			value = instanceSet.instances[i].data[attributeIndex];
+			
+			/* Check if current value is a missing value */
+			if (value == MISSING_VALUE) {
+				/* Skip to the next value */
+				continue;
+			}
+			
+			weight = instanceSet.instances[i].data[counterIndex];
+			for (w = 0; w < weight; w++) {
+				sum += value;
+				sumSq += value * value;
+				++inst;
+			}
+		}
+		mean = sum / inst;
+		for (int i = 0; i < count; i++) {
+			value = instanceSet.instances[i].data[attributeIndex];
+			
+			/* Check if current value is a missing value */
+			if (value == MISSING_VALUE) {
+				/* Skip to the next value */
+				continue;
+			}
+			
+			weight = instanceSet.instances[i].data[counterIndex];
+			for (w = 0; w < weight; w++) {
+				stdDev += (value - mean) * (value - mean);
+				
+				/* Others statistics */
+				if (value < min) {
+					min = value;
+				}
+				if (value > max) {
+					max = value;
+				}
+			}
+		}
+		
+		stdDev = (float) Math.sqrt(stdDev / (inst - 1));
+		count = inst;
+	}
+
+
+	/** 
+	 * Returns the number of values seen
+	 * 
+	 * @return Number of values seen
+	 */
+	public float getCount() {
+		return count;
+	}
+	
+	/** 
+	 * Returns the sum of values seen
+	 * 
+	 * @return Sum
+	 */
+	public double getSum() {
+		return sum;
+	}
+	
+	/** 
+	 * Returns the sum of values squared seen
+	 * 
+	 * @return Sum of values squared
+	 */
+	public float getSumSq() {
+		return sumSq;
+	}
+	
+	/** 
+	 * Return the standard deviation of values
+	 * 
+	 * @return Standard deviation of values
+	 */
+	public double getStdDev() {
+		return stdDev;
+	}
+	
+	/** 
+	 * Returns the mean of values
+	 * 
+	 * @return Mean of values
+	 */
+	public double getMean() {
+		return mean;
+	}
+	
+	/** 
+	 * Returns the minimum value seen, or Double.NaN if no values seen
+	 * 
+	 * @return Minimum value seen
+	 */
+	public float getMin() {
+		return min;
+	}
+	
+	/** 
+	 * Returns the maximum value seen
+	 * 
+	 * @return Maximum value seen
+	 */
+	public float getMax() {
+		return max;
+	}
+	
+	/**
+	 * Returns a string summarising the stats so far.
+	 *
+	 * @return The summary string
+	 */
+	public String toString() {
+		return
+			"Count	 " + Utils.doubleToString(count, 8) + '\n'
+			+ "Min		 " + Utils.doubleToString(min, 8) + '\n'
+			+ "Max		 " + Utils.doubleToString(max, 8) + '\n'
+			+ "Sum		 " + Utils.doubleToString(sum, 8) + '\n'
+			+ "SumSq	 " + Utils.doubleToString(sumSq, 8) + '\n'
+			+ "Mean		" + Utils.doubleToString(mean, 8) + '\n'
+			+ "StdDev	" + Utils.doubleToString(stdDev, 8) + '\n';
+	}
 } 
 

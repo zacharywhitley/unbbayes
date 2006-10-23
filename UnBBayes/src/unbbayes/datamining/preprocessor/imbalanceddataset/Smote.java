@@ -1,5 +1,8 @@
 package unbbayes.datamining.preprocessor.imbalanceddataset;
 
+import java.io.File;
+import java.io.RandomAccessFile;
+
 import unbbayes.datamining.datamanipulation.AttributeStats;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
@@ -23,8 +26,11 @@ public class Smote {
 	/** The number of attributes of the dataset */
 	private int numAttributes;
 	
-	/** The current dataset that will be smoted */
+	/** The current instanceSet that will be smoted */
 	private InstanceSet instanceSet;
+
+	/** The set of instances of the current instanceSet that will be smoted */
+	private Instance[] instances;
 	
 	/** Number of instances in the instance set */
 	private int numInstances;
@@ -44,21 +50,18 @@ public class Smote {
 	/** The number of current created new instance */
 	private int newInstanceCounter;
 	
-	/** The dataset values. */
-	private float[][] dataset;
-	
 	/** 
 	 * The index of the dataset's column that represents the class attribute.
 	 * Assume the value -1 in case there is no class attribute.
 	 */
-	private byte classIndex;
+	private int classIndex;
 
 	/** 
 	 * The index of the dataset's column that represents the counter attribute.
 	 * Assumes always the last column of the internal dataset as the counter
 	 * attribute.
 	 */
-	private byte counterIndex;
+	private int counterIndex;
 
 	/** 
 	 * Stores the type of an attribute:
@@ -115,13 +118,15 @@ public class Smote {
 	 * </ul>
 	 */
 	private byte optionDistanceFunction;
+	private byte HAMMING = 0;
+	private byte HVDM = 1;
 	
 	/** 
 	 * The gap is a random number between 0 and 1 wich tells how far from the
 	 * current instance and how near from its nearest neighbor the new instance
 	 * will be interpolated.
 	 * The optionFixedGap, if true, determines that the gap will be fix for all
-	 * attributes. If set to false, a new one will be drawn each attribute
+	 * attributes. If set to false, a new one will be drawn for each attribute.
 	 */
 	private boolean optionFixedGap;
 	
@@ -136,14 +141,16 @@ public class Smote {
 	public Smote(InstanceSet instanceSet, MTree mTree) {
 		this.instanceSet = instanceSet;
 		this.mTree = mTree;
+		instances = instanceSet.instances;
 		numInstances = instanceSet.numInstances();
-		dataset = instanceSet.dataset;
 		counterIndex = instanceSet.counterIndex;
 		classIndex = instanceSet.classIndex;
+		optionDistanceFunction = HAMMING;
 	}
 
 	public void setInstanceSet(InstanceSet instanceSet) {
 		this.instanceSet = instanceSet;
+		instances = instanceSet.instances;
 	}
 	
 	public void setOptionDiscretize(boolean optionDiscretize) {
@@ -176,7 +183,7 @@ public class Smote {
 		int instancesIDsTmp[] = new int[numInstances];
 		
 		for (int inst = 0; inst < numInstances; inst++) {
-			if (dataset[inst][classIndex] == classValue) {
+			if (instances[inst].data[classIndex] == classValue) {
 				instancesIDsTmp[counter] = inst;
 				++counter;
 			}
@@ -253,7 +260,7 @@ public class Smote {
 		numInstancesIDs = instancesIDs.length;
 		
 		/* The number of synthetic created instances */
-		numNewInstances = 0;	// Java requires an initialization
+		numNewInstances = 0;	// Java requires initialization
 		
 		/* The number of created instances for each instace */
 		int numNewInstancesPerInstance;
@@ -283,7 +290,7 @@ public class Smote {
 		 */
 		for (int i = 0; i < numInstancesIDs; i++) {
 //			nearestNeighbors = mTree.nearestNeighborIDs(i, k, classValue);
-			nearestNeighbors = nearestNeighborIDs(i);
+			nearestNeighbors = nearestNeighborIDs(i, instancesIDs);
 			populate(instancesIDs[i], nearestNeighbors, numNewInstancesPerInstance);
 		}
 		
@@ -305,20 +312,20 @@ public class Smote {
 		 * Difference between an attribute of the current instance and its
 		 * nearest neighbor
 		 */
-		float dif;
+		double dif;
 		
 		/* Fractionary part of 'dif' */
-		float frac;
+		double frac;
 		
 		/* 
 		 * The gap is a random number between 0 and 1 wich tells how far from the
 		 * current instance (gap -> 1) and how near from its nearest neighbor
 		 * (gap -> 0) the new instance will be interpolated
 		 */
-		float gap;
+		double gap;
 		
 		/* Auxiliar variable for computing the values of the new instance */
-		float newAttValue;
+		double newAttValue;
 		
 		/* 
 		 * This loop creates 'numNewInstancesPerInstance' new instances based on the current
@@ -329,18 +336,21 @@ public class Smote {
 			float newInstance[] = new float[numAttributes + 1];
 
 			/* Chooses randomly one of the k nearest neighbor */
-			chosenNN = Math.round((float) (Math.random() * (k - 1)));
+			chosenNN = (int) Math.round((Math.random() * (double) (k - 1)));
 			nearestNeighborIndex = nearestNeighborsIDs[chosenNN];
 
-			gap = (float) Math.random();
+			gap = Math.random();
 			
 			/* 
 			 * This loop interpolates a new instance between the current
 			 * instance and its randomly chosen nearest neighbor
 			 */
 			for (int att = 0; att < numAttributes; att++) {
-				/* Skip the class attribute */
-				if (classIndex == att) {
+				/* Just copy the class value of the smoted instance */
+				if (att == classIndex) {
+					newInstance[att] = instances[inst].data[att];
+
+					/* Skip to the next attribute */
 					continue;
 				}
 				
@@ -352,13 +362,13 @@ public class Smote {
 				if (attributeType[att] == NOMINAL) {
 					if (optionNominal == 0) {
 						/* Copy nominal attributes from the smoted instance */
-						newInstance[att] = dataset[inst][att];
+						newInstance[att] = instances[inst].data[att];
 					} else if (optionNominal == 1) {
 						/* 
 						 * Copy nominal attributes from the chosen nearest
 						 * neighbor
 						 */
-						newInstance[att] = dataset[nearestNeighborIndex][att];
+						newInstance[att] = instances[nearestNeighborIndex].data[att];
 					}
 
 					/* Skip to the next attribute */
@@ -366,18 +376,15 @@ public class Smote {
 				} 
 				
 				/* Create the new instance's 'att' atribute's value */
-				attValue = dataset[inst][att];
-				dif = dataset[nearestNeighborIndex][att] - attValue;
+				attValue = instances[inst].data[att];
+				dif = instances[nearestNeighborIndex].data[att] - attValue;
 
-				/* 
-				 * If optionFixedGap is false choose a different gap to each
-				 * attribute
-				 */
-				if (!optionFixedGap) {
-					gap = (float) Math.random();
+				if (dif == 0) {
+					/* Just copy the value and skip */
+					newInstance[att] = instances[inst].data[att];
+					continue;
 				}
-				dif = dif * gap;
-
+				
 				/* If this attribute is cyclic we take special care */
 				if (attributeType[att] == CYCLIC) {
 					/* 
@@ -394,25 +401,18 @@ public class Smote {
 					}
 				}
 				
+				/* 
+				 * If optionFixedGap is false choose a different gap to each
+				 * attribute
+				 */
+				if (!optionFixedGap) {
+					gap = Math.random();
+				}
+				dif = dif * gap;
+
+				/* Set new value */
 				newAttValue = attValue + dif;
 
-				/* Discretize the fractionary part */
-				if (optionDiscretize) {
-					frac = newAttValue - (int) newAttValue;
-					if (frac >= 0 && frac < 0.125) {
-						frac = 0;
-					} else if (frac >= 0.125 && frac < 0.25) {
-						frac = (float) 0.25;
-					} else if (frac >= 0.25 && frac < 0.5) {
-						frac = (float) 0.5;
-					} else if (frac >= 0.5 && frac < 0.75) {
-						frac = (float) 0.75;
-					} else {
-						frac = 1;
-					}
-					newAttValue = frac + (int) newAttValue;
-				}
-				
 				/* Check if new value is inside the range of the cyclic attribute*/
 				if (attributeType[att] == CYCLIC) {
 					/* Check the upper bound */
@@ -420,8 +420,8 @@ public class Smote {
 						/* Get the distance from upper bound and add it to the
 						 * lower bound
 						 */
-						newAttValue = attMaxValue[att] - newAttValue;
-						newAttValue = newAttValue + attMinValue[att];
+						newAttValue = newAttValue - attMaxValue[att];
+						newAttValue = attMinValue[att] + newAttValue - 1;
 					}
 					
 					/* Check lower bound */
@@ -430,21 +430,31 @@ public class Smote {
 						 * amount from the upper bound
 						 */
 						newAttValue = attMinValue[att] - newAttValue;
-						newAttValue = attMaxValue[att] - newAttValue;
+						newAttValue = attMaxValue[att] - newAttValue + 1;
 					}
 				}
 				
+				/* Discretize the fractionary part */
+				if (optionDiscretize) {
+					frac = newAttValue - (int) newAttValue;
+					if (frac >= 0 && frac < 0.125) {
+						frac = 0;
+					} else if (frac >= 0.125 && frac < 0.25) {
+						frac = 0.25;
+					} else if (frac >= 0.25 && frac < 0.5) {
+						frac = 0.5;
+					} else {
+						frac = 0.75;
+					}
+					newAttValue = frac + (int) newAttValue;
+				}
+				
 				/* Stores the attribute's value of this new instance */
-				newInstance[att] = newAttValue;
-			}
-			
-			/* Set the class of the new instance if the instanceSet contains one */
-			if (classIndex != -1) {
-				newInstance[classIndex] = dataset[inst][classIndex];
+				newInstance[att] = (float) newAttValue;
 			}
 			
 			/* Copy the weight value of the smoted instance */
-			newInstance[counterIndex] = dataset[inst][counterIndex];
+			newInstance[counterIndex] = instances[inst].data[counterIndex];
 			
 			/* Add this new instance to the new instanceSet */
 			newInstanceSet[newInstanceCounter] = newInstance;
@@ -454,6 +464,7 @@ public class Smote {
 	 
 	/**
 	 * Randomly chooses a subset of input dataset and returns its indexes' array.
+	 * 
 	 * @param instancesIDs: The input dataset index
 	 * @param numNewInstances: The size of the subset created
 	 * @return
@@ -500,7 +511,7 @@ public class Smote {
 		
 		compactMatrix(newInstanceSet);
 
-		/* Computes the final instance set zise */
+		/* Computes the final instance set size */
 		newInstanceSize = 0;
 		for (int i = 0; i < newInstanceCounter; i++) {
 			if (newInstanceSet[i][counterIndex] != 0) {
@@ -525,24 +536,21 @@ public class Smote {
 			existIndex = instanceSet.find(newInstanceSet[i]);
 			if (existIndex != -1) {
 				weight = newInstanceSet[i][counterIndex];
-				dataset[existIndex][counterIndex] += weight;
+				instances[existIndex].data[counterIndex] += weight;
 			} else {
-				result.insertInstance(newInstanceSet[i]);
+				result.insertInstance(new Instance(newInstanceSet[i]));
 			}
 		}
 		return result;
 	}
 
 	private void compactMatrix(float[][] matrix) {
-		int index[] = sort(newInstanceSet, numAttributes);
+		sort(newInstanceSet);
 		int firstMatch;
 		int lastMatch;
-		int firstMatchIndex;
-		int lastMatchIndex;
 		boolean match;
 		boolean thereAreMatches;
 		int i;
-		int idx;
 		float weightSum;
 		
 		i = 0;
@@ -550,22 +558,19 @@ public class Smote {
 			match = true;
 			thereAreMatches = false;
 			firstMatch = i;
-			firstMatchIndex = index[firstMatch];
 			lastMatch = i;
-			weightSum = matrix[firstMatchIndex][counterIndex];
+			weightSum = matrix[firstMatch][counterIndex];
 			++i;
 			while (match && i < newInstanceCounter) {
-				idx = index[i];
 				for (int att = 0; att < numAttributes; att++) {
-					if (matrix[idx][att] != matrix[firstMatchIndex][att]) {
+					if (matrix[i][att] != matrix[firstMatch][att]) {
 						match = false;
 						break;
 					}
 				}
 				if (match) {
 					++lastMatch;
-					lastMatchIndex = index[lastMatch];
-					weightSum += matrix[lastMatchIndex][counterIndex];
+					weightSum += matrix[lastMatch][counterIndex];
 					thereAreMatches = true;
 				}
 				++i;
@@ -575,11 +580,10 @@ public class Smote {
 				/* The weight of the first element will receive the counter of
 				 * all elements
 				 */
-				matrix[firstMatchIndex][counterIndex] = weightSum;
+				matrix[firstMatch][counterIndex] = weightSum;
 				/* The weight of the others elements that match will be set to 0 */
 				for (int j = firstMatch + 1; j <= lastMatch; j++) {
-					idx = index[j];
-					matrix[idx][counterIndex] = 0;
+					matrix[i][counterIndex] = 0;
 				}
 			}
 		}
@@ -592,18 +596,18 @@ public class Smote {
 	 * @param instanceID The index of the input instance.
 	 * @return
 	 */
-	private int[] nearestNeighborIDs(int instanceID) {
+	private int[] nearestNeighborIDs(int instanceID, int[] instancesIDs) {
 		int nearestNeighborIDs[] = new int[k];
 		
+		int idx = instancesIDs[instanceID];
 		for (int i = 0; i < k; i++) {
-			nearestNeighborIDs[i] = (int) nearesNeighborsIDs[instanceID][2 * i];
+			nearestNeighborIDs[i] = (int) nearesNeighborsIDs[idx][2 * i];
 		}
 		return nearestNeighborIDs;
 	}
 
-	public void buildNN(int k, int classValue) {
+	public void buildNN(int k, int classValue) throws Exception {
 		this.k = k;
-		
 		/* 
 		 * 'nearesNeighborsIDs[i][j]' - j:
 		 * evens - nn ID
@@ -611,46 +615,77 @@ public class Smote {
 		 */
 		nearesNeighborsIDs = new float[numInstances][2 * k];
 		
+		File fileTest = new File("c:/nearest.idx");
+		RandomAccessFile file;
+		
+//		try {
+//			if(fileTest.exists()) {
+//				/* Initialize from existing file */
+//				file = new RandomAccessFile(fileTest, "r");
+//				for (int i = 0; i < numInstances; i++) {
+//					for (int d = 0; d < 2 * k; d += 2) {
+//						nearesNeighborsIDs[i][d] = file.readInt();
+//						nearesNeighborsIDs[i][d + 1] = file.readFloat();
+//					}
+//				}
+//				
+//				return;
+//			}
+//		} catch (Exception e) {
+//		}
+
 		/* Initialize 'nearesNeighborsIDs */
 		for (int i = 0; i < numInstances; i++) {
-			for (int j = 1; j < 2 * k; j += 2) {
-				nearesNeighborsIDs[i][j] = Float.POSITIVE_INFINITY;
+			for (int j = 0; j < 2 * k; j += 2) {
+				nearesNeighborsIDs[i][j] = 0;
+				nearesNeighborsIDs[i][j + 1] = Float.POSITIVE_INFINITY;
 			}
 		}
 		
 		/* Get distance function */
 		Distance distance;
-//		optionDistanceFunction;
 		int normFactor = 4;
 		distance = new HVDM(instanceSet, normFactor);
+		((HVDM) distance).setOptionDistanceFunction(optionDistanceFunction);
 		
 		float dist = 0;
 		int distGreaterID = 0;
-		float distGreater = 1000000;
-		float[] instanceI; 
-		float[] instanceJ; 
+		float distGreater = Float.POSITIVE_INFINITY;
 		for (int i = 0; i < numInstances; i++) {
-			instanceI = dataset[i];
-			if (instanceI[classIndex] == classValue) {
+			if (instances[i].data[classIndex] == classValue) {
 				for (int j = 0; j < numInstances; j++) {
-					instanceJ = dataset[j];
-					if (instanceJ[classIndex] == classValue) {
-						dist = distance.distanceValue(instanceI, instanceJ);
+					if (i != j && instances[j].data[classIndex] == classValue) {
+						dist = distance.distanceValue(instances[i].data, instances[j].data);
 						if (dist < distGreater) {
 							nearesNeighborsIDs[i][distGreaterID + 1] = dist;
 							nearesNeighborsIDs[i][distGreaterID] = j;
-						}
-						distGreater = 0;
-						for (int d = 0; d < 2 * k; d += 2) {
-							if (distGreater < nearesNeighborsIDs[i][d + 1]) {
-								distGreater = nearesNeighborsIDs[i][d + 1];
-								distGreaterID = d;
+							distGreater = 0;
+							
+							/* Find the greatest distance */
+							for (int d = 0; d < 2 * k; d += 2) {
+								if (distGreater < nearesNeighborsIDs[i][d + 1]) {
+									distGreater = nearesNeighborsIDs[i][d + 1];
+									distGreaterID = d;
+								}
 							}
 						}
 					}
 				}
 			}
 		}
+		
+//		/* Save nearestneighbors */
+//		try {
+//			/* Initialize from existing file */
+//			file = new RandomAccessFile(fileTest, "rw");
+//			for (int i = 0; i < numInstances; i++) {
+//				for (int d = 0; d < 2 * k; d += 2) {
+//					file.writeInt((int) nearesNeighborsIDs[i][d]);
+//					file.writeFloat(nearesNeighborsIDs[i][d + 1]);
+//				}
+//			}
+//		} catch (Exception e) {
+//		}
 	}
 
 	/**
@@ -659,42 +694,32 @@ public class Smote {
 	 * original matrix in the sorted matrix. It doesn't use safe floating-point
 	 * comparisons.
 	 *
-	 * @param matrix This matrix is not changed by the method!
-	 * @return An matrix of integers with the positions in the sorted
-	 * matrix.
+	 * @param matrix This matrix is changed by the method!
 	 */
-	public static int[] sort(float[][] matrix, int numAttributes) {
-		int[] index = new int[matrix.length];
-
-		for (int i = 0; i < index.length; i++) {
-			index[i] = i;
-		}
-		quickSort(matrix, index, 0, matrix.length - 1, numAttributes);
-		return index;
+	public static void sort(float[][] matrix) {
+		quickSort(matrix, 0, matrix.length - 1, matrix[0].length);
 	}
 
 	/**
-	 * Implements unsafe quicksort for an matrix of indices.
+	 * Implements unsafe quicksort for a data set.
 	 *
 	 * @param matrix The matrix of doubles to be sorted
-	 * @param index The index which should contain the positions in the
-	 * sorted matrix
 	 * @param lo0 The first index of the subset to be sorted
 	 * @param hi0 The last index of the subset to be sorted
+	 * @param num The number of columns of the input matrix
 	 */
-	private static void quickSort(float[][] matrix, int[] index, int lo0,
-			int hi0, int num) {
+	private static void quickSort(float[][] matrix, int lo0, int hi0, int num) {
 		int lo = lo0;
 		int hi = hi0;
 		float mid[];
-		int aux;
+		float aux[];
 
 		if (hi0 > lo0) {
 			/* 
 			 * Arbitrarily establishing partition element as the midpoint of
 			 * the matrix
 			 */
-			mid = matrix[index[(lo0 + hi0) / 2]];
+			mid = matrix[(lo0 + hi0) / 2];
 	
 			/* loop through the matrix until indices cross */
 			while (lo <= hi) {
@@ -702,7 +727,7 @@ public class Smote {
 				 * find the first element that is greater than or equal to
 				 * the partition element starting from the left Index
 				 */
-				while (lessThan(matrix[index[lo]], mid, num) && lo < hi0) {
+				while (lessThan(matrix[lo], mid, num) && lo < hi0) {
 					++lo;
 				}
 	
@@ -710,15 +735,15 @@ public class Smote {
 				 * find an element that is smaller than or equal to
 				 * the partition element starting from the right Index
 				 */
-				while (greaterThan(matrix[index[hi]], mid, num) && hi > lo0) {
+				while (greaterThan(matrix[hi], mid, num) && hi > lo0) {
 					--hi;			
 				}
 	
 				/* if the indexes have not crossed, swap */
 				if (lo <= hi) {
-					aux = index[lo];
-					index[lo] = index[hi];
-					index[hi] = aux;
+					aux = matrix[lo];
+					matrix[lo] = matrix[hi];
+					matrix[hi] = aux;
 					++lo;
 					--hi;
 				}
@@ -729,7 +754,7 @@ public class Smote {
 			 * must now sort the left partition
 			 */
 			if (lo0 < hi) {
-				quickSort(matrix, index, lo0, hi, num);
+				quickSort(matrix, lo0, hi, num);
 			}
 	
 			/* 
@@ -737,7 +762,7 @@ public class Smote {
 			 * must now sort the right partition
 			 */
 			if (lo < hi0) {
-				quickSort(matrix, index, lo, hi0, num);
+				quickSort(matrix, lo, hi0, num);
 			}
 		}
 	}

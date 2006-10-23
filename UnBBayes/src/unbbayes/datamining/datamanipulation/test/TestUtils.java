@@ -33,10 +33,6 @@ public class TestUtils extends TestCase {
       while (loader.getInstance())
       {}
 
-      if (loader instanceof TxtLoader)
-      {   ((TxtLoader)loader).checkNumericAttributes();
-      }
-
       contactInst = loader.getInstances();
       contactInst.setClass(contactInst.getAttribute(contactInst.numAttributes()-1));
 
@@ -50,10 +46,6 @@ public class TestUtils extends TestCase {
       loader = new TxtLoader(WEATHER_NUMERIC_CUT_FILE);
       while (loader.getInstance())
       {}
-
-      if (loader instanceof TxtLoader)
-      {   ((TxtLoader)loader).checkNumericAttributes();
-      }
 
       weatherCutInst = loader.getInstances();
       weatherCutInst.setClass(weatherCutInst.getAttribute(weatherCutInst.numAttributes()-1));

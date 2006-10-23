@@ -201,8 +201,8 @@ public class C45 extends DecisionTreeLearning implements Serializable
 				int distributionClass;
 				for (int i=0;i<numInstances;i++)
 				{
-					  inst = utils.getInstance(actualInst,i);
-					  distribution[(int) inst.classValue()] += inst.getWeight();
+						inst = utils.getInstance(actualInst,i);
+						distribution[(int) inst.classValue()] += inst.getWeight();
 				}
 				distributionClass = Utils.maxIndex(distribution);
 				
@@ -247,13 +247,13 @@ public class C45 extends DecisionTreeLearning implements Serializable
 			}
 		}
 
-             infoRootNode = xRootNode;
+			 infoRootNode = xRootNode;
 
          //prune tree if this option was enabled
          if(Options.getInstance().getIfUsingPrunning())
          {
-           PrunningUtils pruner = new PrunningUtils();
-           xRootNode = pruner.pruneTree(xRootNode, classAttribute);
+		 PrunningUtils pruner = new PrunningUtils();
+		 xRootNode = pruner.pruneTree(xRootNode, classAttribute);
          }
 
 	}
@@ -267,50 +267,50 @@ public class C45 extends DecisionTreeLearning implements Serializable
 	*/
 	public JTree getTree()
 	{
-          Leaf leaf;
-          Node node;
-          Object obj;
-          Stack<Object> stackObj = new Stack<Object>();
-          Stack<DefaultMutableTreeNode> stackTree = new Stack<DefaultMutableTreeNode>();
-          DefaultMutableTreeNode text2 = new DefaultMutableTreeNode("root");
-          DefaultMutableTreeNode treeNode = text2;
+		Leaf leaf;
+		Node node;
+		Object obj;
+		Stack<Object> stackObj = new Stack<Object>();
+		Stack<DefaultMutableTreeNode> stackTree = new Stack<DefaultMutableTreeNode>();
+		DefaultMutableTreeNode text2 = new DefaultMutableTreeNode("root");
+		DefaultMutableTreeNode treeNode = text2;
 
 
-          ArrayList root = xRootNode.children;
-          int size = root.size();
-          for (int i=0;i<size;i++)
-          {
-            stackObj.push(root.get(i));
-            stackTree.push(treeNode);
-          }
+		ArrayList root = xRootNode.children;
+		int size = root.size();
+		for (int i=0;i<size;i++)
+		{
+			stackObj.push(root.get(i));
+			stackTree.push(treeNode);
+		}
 
-          while (!stackObj.empty())
-          {
-            obj = stackObj.pop();
-            treeNode = (DefaultMutableTreeNode)stackTree.pop();
+		while (!stackObj.empty())
+		{
+			obj = stackObj.pop();
+			treeNode = (DefaultMutableTreeNode)stackTree.pop();
 
-            if(obj instanceof Leaf)
-            {
-              leaf = (Leaf)obj;
-              treeNode.add(new DefaultMutableTreeNode(leaf.toString()));
-            }
-            else
-            {
-              node = (Node)obj;
-              DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(node.toString());
-              treeNode.add(treeNodeChild);
-              treeNode = treeNodeChild;
+			if(obj instanceof Leaf)
+			{
+				leaf = (Leaf)obj;
+				treeNode.add(new DefaultMutableTreeNode(leaf.toString()));
+			}
+			else
+			{
+				node = (Node)obj;
+				DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(node.toString());
+				treeNode.add(treeNodeChild);
+				treeNode = treeNodeChild;
 
-              ArrayList children = node.children;
-              size = children.size();
-              for (int i=0;i<size;i++)
-              {
-                stackObj.push(children.get(i));
-                stackTree.push(treeNode);
-              }
-            }
-          }
-          return new JTree(text2);
+				ArrayList children = node.children;
+				size = children.size();
+				for (int i=0;i<size;i++)
+				{
+					stackObj.push(children.get(i));
+					stackTree.push(treeNode);
+				}
+			}
+		}
+		return new JTree(text2);
 	}
 
 	//-------------------------------------------------------------------------//
@@ -363,7 +363,7 @@ public class C45 extends DecisionTreeLearning implements Serializable
 			stackObj.push(root.get(i));
 			stackLevel.push(new Integer(1));
 		}
-          
+		
 		while (!stackObj.empty())
 		{
 			obj = stackObj.pop();
@@ -409,43 +409,35 @@ public class C45 extends DecisionTreeLearning implements Serializable
 	 * @param instance the instance to be classified
 	 * @return the classification
 	 */
-	public short classifyInstance(Instance instance)
-	{
-          Leaf leaf;
-          Node node;
-          Attribute att;
-          double splitValue;
-          String[] attValues;
-          Node treeNode = xRootNode;
+	public int classifyInstance(Instance instance) {
+		Leaf leaf;
+		Node node;
+		Attribute att;
+		double splitValue;
+		Node treeNode = xRootNode;
+		int index;
 
-          while (!(treeNode.children.get(0) instanceof Leaf))
-          {
-            node = (Node)treeNode.children.get(0);
-            att = node.getAttribute();
-            if (att.isNominal())
-            {
-              // Atributo nominal
-              treeNode = (NominalNode)treeNode.children.get(instance.getValue(node.getAttribute()));
-            }
-            else
-            {
-              // Atributo numérico
-              attValues = att.getAttributeValues();
-              splitValue = ((NumericNode)node).getSplitValue();
+		while (!(treeNode.children.get(0) instanceof Leaf)) {
+			node = (Node)treeNode.children.get(0);
+			att = node.getAttribute();
+			if (att.isNominal()) {
+				// Atributo nominal
+				index = (int) instance.getValue(node.getAttribute());
+				treeNode = (NominalNode) treeNode.children.get(index);
+			} else {
+				// Atributo numérico
+				splitValue = ((NumericNode) node).getSplitValue();
 
-              if(Double.parseDouble(attValues[instance.getValue(att.getIndex())])>=splitValue)
-              {
-                treeNode = (NumericNode)treeNode.children.get(0);
-              }
-              else
-              {
-                treeNode = (NumericNode)treeNode.children.get(1);
-              }
-            }
-          }
+				if (instance.getValue(att.getIndex()) >= splitValue) {
+					treeNode = (NumericNode) treeNode.children.get(0);
+				} else {
+					treeNode = (NumericNode) treeNode.children.get(1);
+				}
+			}
+		}
 
-          leaf = (Leaf)treeNode.children.get(0);
-          return leaf.getClassValue();
+		leaf = (Leaf)treeNode.children.get(0);
+		return leaf.getClassValue();
 	}
 	
 	//-----------------------------------------------------------------------//
@@ -483,45 +475,45 @@ public class C45 extends DecisionTreeLearning implements Serializable
 	 */
 	private class QueueComponent
 	{
-          /** data about an instance set */
-          private SplitObject splitObject;
-          /** tree node relative to the splitObject */
-          private Node nodeParent;
+		/** data about an instance set */
+		private SplitObject splitObject;
+		/** tree node relative to the splitObject */
+		private Node nodeParent;
 
-          //--------------------------CONSTRUCTORS--------------------------//
+		//--------------------------CONSTRUCTORS--------------------------//
 
-          /**
-           * Default constructor
-           *
-           * @param nodeParent node relative to the splitObject
-           * @param splitObject data about an instance set
-           */
-          public QueueComponent(Node newParent, SplitObject splitObject)
-          {
-            nodeParent = newParent;
-            this.splitObject = splitObject;
-          }
+		/**
+		 * Default constructor
+		 *
+		 * @param nodeParent node relative to the splitObject
+		 * @param splitObject data about an instance set
+		 */
+		public QueueComponent(Node newParent, SplitObject splitObject)
+		{
+			nodeParent = newParent;
+			this.splitObject = splitObject;
+		}
 
-          //-----------------------------GETS------------------------------//
+		//-----------------------------GETS------------------------------//
 
-          /**
-           * Returns the node set to the component
-           *
-           * @return node set to the component
-           */
-          public Node getNodeParent()
-          {
-            return nodeParent;
-          }
+		/**
+		 * Returns the node set to the component
+		 *
+		 * @return node set to the component
+		 */
+		public Node getNodeParent()
+		{
+			return nodeParent;
+		}
 
-          /**
-           * Returns the intance set data set to the component
-           *
-           * @return instance set data set to the component
-           */
-          public SplitObject getSplitObject()
-          {
-            return splitObject;
-          }
+		/**
+		 * Returns the intance set data set to the component
+		 *
+		 * @return instance set data set to the component
+		 */
+		public SplitObject getSplitObject()
+		{
+			return splitObject;
+		}
      }
 }

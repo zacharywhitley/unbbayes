@@ -95,7 +95,7 @@ public class BayesianNetwork extends DistributionClassifier
   	public float[] distributionForInstance(Instance instance) throws Exception
 	{
             float[] probs = new float[numClasses];
-            short instanceValue;
+            float instanceValue;
 
             if (classNodeIndex < 0)
             {
@@ -116,7 +116,7 @@ public class BayesianNetwork extends DistributionClassifier
                  }
                  else
                  {
-                   int numValues = instance.getDataset().getAttribute(j).numValues();
+                   int numValues = instance.getInstanceSet().getAttribute(j).numValues();
                    hashCode+=numValues*multipliers[k];
                    k++;
                  }
@@ -145,7 +145,7 @@ public class BayesianNetwork extends DistributionClassifier
                   instanceValue = instance.getValue(j);
                   if (instanceValue != Instance.MISSING_VALUE)
                   {
-                    ((TreeVariable)net.getNodeAt(actualNode)).addFinding(instanceValue);
+                    ((TreeVariable)net.getNodeAt(actualNode)).addFinding((int) instanceValue);
                   }
                 }
               }

@@ -34,14 +34,19 @@ public class RangeDiscretization implements IDiscretization
 			numThresholds = 1;
 		try
 		{	int position = att.getIndex();
-			Attribute newAttribute = new Attribute(att.getAttributeName(),null,Attribute.NOMINAL,position);
+		Attribute newAttribute = new Attribute(att.getAttributeName(),
+				Attribute.NOMINAL,
+				false,
+				att.numValues(),
+				position
+				);
 			//pega os valores do atributo
 			float[] values = new float[numInstances];
           	Enumeration enumInst = inst.enumerateInstances();
-          	int i=0,j=0;
+          	int i=0;
           	while (enumInst.hasMoreElements())
           	{   Instance instance = (Instance)enumInst.nextElement();
-              	values[i] = Float.parseFloat(instance.stringValue(att));
+              	values[i] = instance.getValue(att);
               	i++;
           	}
 			//divide o valor maximo pelo numero de thresholds e cria os valores do atributo

@@ -131,11 +131,11 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
 
 	for(int i=0; i<combinationsSize; i++){                    //para cada combinaçao gerada
 	  //addCombination(combinationsKeys[i], instance.classValue(), instance.getWeight());
-	  addCombination(combinationsKeys[i], instance.classValue(), (int)instance.getWeight());
+	  addCombination(combinationsKeys[i], (int) instance.classValue(), (int)instance.getWeight());
 	}
   }
 
-  private void addCombination(String key, short classValue, int weight){
+  private void addCombination(String key, int classValue, int weight){
 	Combination combination;
 
 	if(!model.containsKey(key)){
@@ -176,7 +176,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
    * @param value the value of the attribute
    * @return the generated key
    */
-  private String generateInputKey(int attribute, short value){
+  private String generateInputKey(int attribute, float value){
 	return new String(attribute + " " + value);
   }
 
@@ -295,7 +295,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
    */
   public Combination[] inference(Instance instance){
 	int numAtt = attributeVector.length;
-	short value;
+	float value;
 	String[] instanceKeys;
 	String[] combKeys;
 	Combination[] combArray = new Combination[attributeVector[classIndex].numValues()];   //array que conterá os arcos de maior peso de cada neuronio

@@ -40,14 +40,14 @@ import unbbayes.datamining.distance.IDistance;
  * 
  * @author <a href="mailto:hugoiver@yahoo.com.br">Hugo Iver V. Gon&ccedil;alves</a>
  * @author <a href="mailto:rodbra@pop.com.br">Rodrigo C. M. Coimbra</a>
- * 
- * modified by <a href="mailto:emersoft@conecttanet.com.br">Emerson Lopes Machado
- * for working with UnBMiner
+ * <br>
+ * modified by Emerson Lopes Machado (emersoft@conecttanet.com.br) for working
+ * with UnBMiner.
  */
 public class KmeansClassical  {
 	
 	/** A matrix containing in each row the coordinates of final clusters. */
-	private double[][] clusters;
+	private float[][] clusters;
 
 	/**
 	 * Distance matrix of data points to clusters. Each row is a cluster and
@@ -136,19 +136,19 @@ public class KmeansClassical  {
 	 * 
 	 * @return Clusters matrix with initial values.
 	 */
-	private double[][] initialize() {
+	private float[][] initialize() {
 		Random randomizer;
 		Hashtable<String, Integer> hash;
 		int filled;
 		int key;
-		double[][] result;
+		float[][] result;
 		int numAttributes = instanceSet.numAttributes();
 		Instance instance;
 		numAttributes = instanceSet.numAttributes();
 		
 		randomizer = new Random();
 		hash = new Hashtable<String, Integer>();
-		result = new double[k][numAttributes];
+		result = new float[k][numAttributes];
 		filled = 0;
 
 		while (filled < k) {
@@ -162,7 +162,7 @@ public class KmeansClassical  {
 				for (int att = 0; att < numAttributes; att++) {
 					if (instanceSet.getAttribute(att).isNumeric()) {
 						/* Get the float value */
-						result[filled][att] = instance.floatValue(att);
+						result[filled][att] = instance.data[att];
 					} else {
 						/* Get the internal representation value */
 						result[filled][att] = instance.getValue(att);
@@ -188,7 +188,7 @@ public class KmeansClassical  {
 	 */
 	private double[][] calculateDistanceMatrix() {
 		double[][] result = new double[k][numInstances];
-		double[][] input = new double[k][numInstances];
+		float[][] input = new float[k][numInstances];
 		Instance instance;
 		int numAttributes = instanceSet.numAttributes();
 
@@ -202,7 +202,7 @@ public class KmeansClassical  {
 						input[j][att] = instance.getValue(att);
 					} else {
 						/* Get the number value */
-						input[j][att] = instance.floatValue(att);
+						input[j][att] = instance.data[att];
 					}
 				}
 				/* Get the distance between the j instance and the k cluster */
@@ -251,9 +251,9 @@ public class KmeansClassical  {
 	 * 
 	 * @return New centroids values.
 	 */
-	private double[][] calculateCentroids() {
-		double[][] result = new double[assignmentMatrix.length][input[0].length];
-		double[] sum = new double[input[0].length];
+	private float[][] calculateCentroids() {
+		float[][] result = new float[assignmentMatrix.length][input[0].length];
+		float[] sum = new float[input[0].length];
 		int membersCounter;
 
 		for (int i = 0; i < assignmentMatrix.length; i++) {

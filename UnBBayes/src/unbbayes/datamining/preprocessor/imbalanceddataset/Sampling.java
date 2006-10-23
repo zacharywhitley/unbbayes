@@ -1,6 +1,5 @@
 package unbbayes.datamining.preprocessor.imbalanceddataset;
 
-import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 
 /**
@@ -14,36 +13,35 @@ public class Sampling {
 	
 	public static void simpleSampling(InstanceSet instanceSet, float proportion,
 			int classValue) {
-		Instance instance;
-		int numInstances;
-		float weight;
-
 		testParameters(instanceSet, proportion, classValue);
 
-		numInstances = instanceSet.numInstances();
+		int classIndex = instanceSet.classIndex;
+		int counterIndex = instanceSet.counterIndex;
+		int numInstances= instanceSet.numInstances();
+		float weight;
+
 		for (int i = 0; i < numInstances; i++) {
-			instance = instanceSet.getInstance(i);
-			if (instance.classValue() == classValue) {
-				weight = instance.getWeight();
+			if (instanceSet.instances[i].data[classIndex] == classValue) {
+				weight = instanceSet.instances[i].data[counterIndex];
 				weight = Math.round(weight * proportion);
-				instance.setWeight(weight);
+				instanceSet.instances[i].data[counterIndex] = weight;
 			}
 		}
 	}
 
 	public static void limitWeight(InstanceSet instanceSet, int limit,
 			int classValue) {
-		Instance instance;
-		int numInstances;
-
 		testParameters(instanceSet, limit, classValue);
+
+		int classIndex = instanceSet.classIndex;
+		int counterIndex = instanceSet.counterIndex;
+		int numInstances= instanceSet.numInstances();
 
 		numInstances = instanceSet.numInstances();
 		for (int i = 0; i < numInstances; i++) {
-			instance = instanceSet.getInstance(i);
-			if (instance.classValue() == classValue) {
-				if (instance.getWeight() > limit) {
-					instance.setWeight(limit);
+			if (instanceSet.instances[i].data[classIndex] == classValue) {
+				if (instanceSet.instances[i].data[counterIndex] > limit) {
+					instanceSet.instances[i].data[counterIndex] = limit;
 				}
 			}
 		}

@@ -135,12 +135,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 		float[] distribution;
 		Instance inst;
 		SplitObject[] splitData;
-		Node node;
-		Attribute att;
-		double meanInfoGains;
 		Attribute splitAttribute;
-		double splitValue;
-
 		double[] splitValues;
 		ArrayList<NumericData> numericDataList = new ArrayList<NumericData>();
 
@@ -214,7 +209,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 					splitData = utils.splitData(split, realIndex);
 					for (int j=0;j<splitData.length;j++)
 					{
-                                                NominalNode nominalNode = new NominalNode(splitAttribute,j);
+												NominalNode nominalNode = new NominalNode(splitAttribute,j);
 						xNode.add(nominalNode);
 						queue.add(new QueueComponent(nominalNode,splitData[j]));
 					}
@@ -225,57 +220,57 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 
         //--------------------------------------------------------------------//
 
-          /**
-           * Returns the decision tree created previously on JTree format
-           *
-           *  @return decision tree on a JTree format
+		/**
+		 * Returns the decision tree created previously on JTree format
+		 *
+		 *  @return decision tree on a JTree format
          */
 	public JTree getTree()
 	{
-          Leaf leaf;
-          Node node;
-          Object obj;
-          Stack<Object> stackObj = new Stack<Object>();
-          Stack<DefaultMutableTreeNode> stackTree = new Stack<DefaultMutableTreeNode>();
-          DefaultMutableTreeNode text2 = new DefaultMutableTreeNode("root");
-          DefaultMutableTreeNode treeNode = text2;
+		Leaf leaf;
+		Node node;
+		Object obj;
+		Stack<Object> stackObj = new Stack<Object>();
+		Stack<DefaultMutableTreeNode> stackTree = new Stack<DefaultMutableTreeNode>();
+		DefaultMutableTreeNode text2 = new DefaultMutableTreeNode("root");
+		DefaultMutableTreeNode treeNode = text2;
 
 
-          ArrayList root = xRootNode.children;
-          int size = root.size();
-          for (int i=0;i<size;i++)
-          {
-            stackObj.push(root.get(i));
-            stackTree.push(treeNode);
-          }
+		ArrayList root = xRootNode.children;
+		int size = root.size();
+		for (int i=0;i<size;i++)
+		{
+			stackObj.push(root.get(i));
+			stackTree.push(treeNode);
+		}
 
-          while (!stackObj.empty())
-          {
-            obj = stackObj.pop();
-            treeNode = (DefaultMutableTreeNode)stackTree.pop();
+		while (!stackObj.empty())
+		{
+			obj = stackObj.pop();
+			treeNode = (DefaultMutableTreeNode)stackTree.pop();
 
-            if(obj instanceof Leaf)
-            {
-              leaf = (Leaf)obj;
-              treeNode.add(new DefaultMutableTreeNode(leaf.toString()));
-            }
-            else
-            {
-              node = (Node)obj;
-              DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(node.toString());
-              treeNode.add(treeNodeChild);
-              treeNode = treeNodeChild;
+			if(obj instanceof Leaf)
+			{
+				leaf = (Leaf)obj;
+				treeNode.add(new DefaultMutableTreeNode(leaf.toString()));
+			}
+			else
+			{
+				node = (Node)obj;
+				DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(node.toString());
+				treeNode.add(treeNodeChild);
+				treeNode = treeNodeChild;
 
-              ArrayList children = node.children;
-              size = children.size();
-              for (int i=0;i<size;i++)
-              {
-                stackObj.push(children.get(i));
-                stackTree.push(treeNode);
-              }
-            }
-          }
-          return new JTree(text2);
+				ArrayList children = node.children;
+				size = children.size();
+				for (int i=0;i<size;i++)
+				{
+					stackObj.push(children.get(i));
+					stackTree.push(treeNode);
+				}
+			}
+		}
+		return new JTree(text2);
 	}
 
         //--------------------------------------------------------------------//
@@ -287,56 +282,56 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
          */
 	public String toString()
 	{
-          Leaf leaf;
-          Node node;
-          Object obj;
-          Integer level;
-          Stack<Object> stackObj = new Stack<Object>();
-          Stack<Integer> stackLevel = new Stack<Integer>();
-          StringBuffer text = new StringBuffer();
+		Leaf leaf;
+		Node node;
+		Object obj;
+		Integer level;
+		Stack<Object> stackObj = new Stack<Object>();
+		Stack<Integer> stackLevel = new Stack<Integer>();
+		StringBuffer text = new StringBuffer();
 
-          ArrayList root = xRootNode.children;
-          int size = root.size();
-          for (int i=0;i<size;i++)
-          {
-            stackObj.push(root.get(i));
-            stackLevel.push(1);
-          }
+		ArrayList root = xRootNode.children;
+		int size = root.size();
+		for (int i=0;i<size;i++)
+		{
+			stackObj.push(root.get(i));
+			stackLevel.push(1);
+		}
 
-          while (!stackObj.empty())
-          {
-            obj = stackObj.pop();
-            level = (Integer)stackLevel.pop();
+		while (!stackObj.empty())
+		{
+			obj = stackObj.pop();
+			level = (Integer)stackLevel.pop();
 
-            if(obj instanceof Leaf)
-            {
-              leaf = (Leaf)obj;
-              text.append(": "+leaf.toString());
-            }
-            else
-            {
-              node = (Node)obj;
+			if(obj instanceof Leaf)
+			{
+				leaf = (Leaf)obj;
+				text.append(": "+leaf.toString());
+			}
+			else
+			{
+				node = (Node)obj;
 
-              if(level.intValue()!=0)
-              {
-                text.append("\n");
-                for (int i=0;i<level.intValue()-1;i++)
-                {
-                  text.append("| ");
-                }
-                text.append(node.toString());
-              }
+				if(level.intValue()!=0)
+				{
+					text.append("\n");
+					for (int i=0;i<level.intValue()-1;i++)
+					{
+						text.append("| ");
+					}
+					text.append(node.toString());
+				}
 
-              ArrayList children = node.children;
-              size = children.size();
-              for (int i=0;i<size;i++)
-              {
-                stackObj.push(children.get(i));
-                stackLevel.push(level.intValue()+1);
-              }
-            }
-          }
-          return  text.toString();
+				ArrayList children = node.children;
+				size = children.size();
+				for (int i=0;i<size;i++)
+				{
+					stackObj.push(children.get(i));
+					stackLevel.push(level.intValue()+1);
+				}
+			}
+		}
+		return  text.toString();
         }
 
 	//-----------------------------------------------------------------------//
@@ -347,26 +342,22 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 	 * @param instance the instance to be classified
 	 * @return the classification
 	 */
-	public short classifyInstance(Instance instance)
-	{
-          Leaf leaf;
-          NominalNode node;
-          Attribute att;
-          double splitValue;
-          String[] attValues;
-          Node treeNode = xRootNode;
+	public int classifyInstance(Instance instance) {
+		Leaf leaf;
+		NominalNode node;
+		Node treeNode = xRootNode;
+		int index;
 
-          while (!(treeNode.children.get(0) instanceof Leaf))
-          {
-            node = (NominalNode)treeNode.children.get(0);
-            att = node.getAttribute();
-            // Atributo nominal
-            treeNode = (NominalNode)treeNode.children.get(instance.getValue(node.getAttribute()));
-          }
+		while (!(treeNode.children.get(0) instanceof Leaf)) {
+			node = (NominalNode)treeNode.children.get(0);
+			// Atributo nominal
+			index = (int) instance.getValue(node.getAttribute());
+			treeNode = (NominalNode)treeNode.children.get(index);
+		}
 
-          leaf = (Leaf)treeNode.children.get(0);
-          return leaf.getClassValue();
-        }
+		leaf = (Leaf)treeNode.children.get(0);
+		return leaf.getClassValue();
+	}
 
 	/*************************************************************************/
 
@@ -378,45 +369,45 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
          */
 	private class QueueComponent
 	{
-          /** data about an instance set */
-          private SplitObject splitObject;
-          /** tree node relative to the splitObject */
-          private Node nodeParent;
+		/** data about an instance set */
+		private SplitObject splitObject;
+		/** tree node relative to the splitObject */
+		private Node nodeParent;
 
-          //--------------------------CONSTRUCTORS--------------------------//
+		//--------------------------CONSTRUCTORS--------------------------//
 
-          /**
-           * Default constructor
-           *
-           * @param nodeParent node relative to the splitObject
-           * @param splitObject data about an instance set
-           */
-          public QueueComponent(Node newParent, SplitObject splitObject)
-          {
-            nodeParent = newParent;
-            this.splitObject = splitObject;
-          }
+		/**
+		 * Default constructor
+		 *
+		 * @param nodeParent node relative to the splitObject
+		 * @param splitObject data about an instance set
+		 */
+		public QueueComponent(Node newParent, SplitObject splitObject)
+		{
+			nodeParent = newParent;
+			this.splitObject = splitObject;
+		}
 
-          //-----------------------------GETS------------------------------//
+		//-----------------------------GETS------------------------------//
 
-          /**
-           * Returns the node set to the component
-           *
-           * @return node set to the component
-           */
-          public Node getNodeParent()
-          {
-            return nodeParent;
-          }
+		/**
+		 * Returns the node set to the component
+		 *
+		 * @return node set to the component
+		 */
+		public Node getNodeParent()
+		{
+			return nodeParent;
+		}
 
-          /**
-          * Returns the intance set data set to the component
-          *
-          * @return instance set data set to the component
-          */
+		/**
+		* Returns the intance set data set to the component
+		*
+		* @return instance set data set to the component
+		*/
          public SplitObject getSplitObject()
          {
-           return splitObject;
+		 return splitObject;
          }
        }
 }
