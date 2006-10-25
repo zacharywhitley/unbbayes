@@ -37,5 +37,13 @@ public class InputNode extends MultiEntityNode {
 			//TODO levantar excessao
 		}
 	}	
+	
+	public ResidentNode getInputInstanceOfNode(){
+		return inputInstanceOfNode; 
+	}		
+	
+	public BuiltInRV getInputInstanceOfRV(){
+		return inputInstanceOfRV; 
+	}	
 
 }

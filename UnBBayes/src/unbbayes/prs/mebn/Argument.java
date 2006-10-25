@@ -80,14 +80,5 @@ public class Argument {
 		}
 	}
 	
-	public boolean isComplexArgRelationship(){
-		if ( argumentTerm != null ){
-			return true; 
-		}
-		else{
-			return false; 
-		}		
-	}
-	
 }
  

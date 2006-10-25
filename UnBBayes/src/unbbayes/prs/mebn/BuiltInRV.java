@@ -17,6 +17,10 @@ public class BuiltInRV {
 		contextInstanceFromList = new ArrayList<ContextNode>();		
 	}
 	
+	public String getName(){
+		return name; 
+	}
+	
 	public void addInputInstance(GenerativeInputNode input){
 		inputInstanceFromList.add(input); 
 	}
@@ -24,5 +28,13 @@ public class BuiltInRV {
 	public void addContextInstance(ContextNode context){
 		contextInstanceFromList.add(context); 
 	}
+	
+	public List<GenerativeInputNode> getInputInstanceFromList(){
+		return inputInstanceFromList; 
+	}
+	
+	public List<ContextNode> getContextFromList(){
+		return contextInstanceFromList; 
+	}	
 }
  
