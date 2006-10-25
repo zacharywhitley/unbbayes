@@ -64,9 +64,6 @@ public class Attribute implements Serializable {
 	/** The number of different values of this attribute. */
 	private int numValues;
 
-	/** The instanceSet this attribute is related to. */
-//	protected InstanceSet instanceSet;
-
 	/** Mapping of String values to indices. */
 	private Hashtable<String, Integer> hashtableString;
 
