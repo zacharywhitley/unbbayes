@@ -1,0 +1,1149 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns="http://mason.gmu.edu/~pcosta/pr-owl/starship.owl#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:pr-owl="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#"
+    xmlns:daml="http://www.daml.org/2001/03/daml+oil#"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xml:base="http://mason.gmu.edu/~pcosta/pr-owl/starship.owl">
+  <owl:Ontology rdf:about="">
+    <owl:imports rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl"/>
+  </owl:Ontology>
+  <owl:Class rdf:ID="Zone">
+    <owl:disjointWith>
+      <owl:Class rdf:ID="TimeStep"/>
+    </owl:disjointWith>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >A zone can be either a deep space, a planetary system, or the boundary of a Black Hole.
+We assumed that a OwnStarship, when in operation (i.e. using its decision system), has 80% chance of being traveling in a Deep Space Zone, 15%  in a Planetary System and 5% in the Boundaries of a Black Hole.
+In our model, Black Hole Boundaries are prefered places for ambushes from attacking starships with cloaking devices, since the high magnetic turbulance generated in those zones makes it very hard to even the most advanced sensors to distinguish it from the magnetic disturbance created by a cloaking device.
+</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#ObjectEntity"/>
+    <owl:disjointWith>
+      <owl:Class rdf:ID="Starship"/>
+    </owl:disjointWith>
+    <owl:disjointWith>
+      <owl:Class rdf:ID="SensorReport"/>
+    </owl:disjointWith>
+  </owl:Class>
+  <owl:Class rdf:about="#TimeStep">
+    <rdfs:subClassOf rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#ObjectEntity"/>
+    <owl:disjointWith>
+      <owl:Class rdf:about="#Starship"/>
+    </owl:disjointWith>
+    <owl:disjointWith rdf:resource="#Zone"/>
+    <owl:disjointWith>
+      <owl:Class rdf:about="#SensorReport"/>
+    </owl:disjointWith>
+  </owl:Class>
+  <owl:Class rdf:about="#Starship">
+    <owl:disjointWith rdf:resource="#Zone"/>
+    <rdfs:subClassOf rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#ObjectEntity"/>
+    <owl:disjointWith rdf:resource="#TimeStep"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >according to the Treknology Encyclopedia L-Z
+# (http://www.ex-astris-scientia.org/treknology2.htm#s)
+Starship is the designation for a large type of space vessel with warp drive. A starship typically consists of more than one deck and has separate departments such as the bridge, engineering or sickbay.
+In our model, we use this word to designate any space vessel</rdfs:comment>
+    <owl:disjointWith>
+      <owl:Class rdf:about="#SensorReport"/>
+    </owl:disjointWith>
+  </owl:Class>
+  <owl:Class rdf:about="#SensorReport">
+    <owl:disjointWith rdf:resource="#Zone"/>
+    <owl:disjointWith rdf:resource="#TimeStep"/>
+    <owl:disjointWith rdf:resource="#Starship"/>
+    <rdfs:subClassOf rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#ObjectEntity"/>
+  </owl:Class>
+  <pr-owl:CategoricalRVStates rdf:ID="ZFS_2">
+    <pr-owl:isPossibleValueOf>
+      <pr-owl:Domain_Res rdf:ID="Z_ZoneFShips">
+        <pr-owl:hasPossibleValues>
+          <pr-owl:CategoricalRVStates rdf:ID="ZFS_3">
+            <pr-owl:hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+            >!ZFS_3</pr-owl:hasUID>
+            <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneFShips"/>
+          </pr-owl:CategoricalRVStates>
+        </pr-owl:hasPossibleValues>
+        <pr-owl:hasPossibleValues>
+          <pr-owl:CategoricalRVStates rdf:ID="ZFS_1">
+            <pr-owl:hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+            >!ZFS_1</pr-owl:hasUID>
+            <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneFShips"/>
+          </pr-owl:CategoricalRVStates>
+        </pr-owl:hasPossibleValues>
+        <pr-owl:hasProbDist>
+          <pr-owl:PR-OWLTable rdf:ID="Z_ZoneFShips_table">
+            <pr-owl:hasProbAssign>
+              <pr-owl:ProbAssign rdf:ID="Z_ZoneFShips_table_5.2">
+                <pr-owl:hasStateName>
+                  <pr-owl:CategoricalRVStates rdf:ID="ZFS_MoreThan3">
+                    <pr-owl:hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                    >!ZFS_MoreThan3</pr-owl:hasUID>
+                    <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneFShips"/>
+                  </pr-owl:CategoricalRVStates>
+                </pr-owl:hasStateName>
+                <pr-owl:hasStateProb rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal"
+                >.001</pr-owl:hasStateProb>
+                <pr-owl:isProbAssignIn rdf:resource="#Z_ZoneFShips_table"/>
+                <pr-owl:hasConditionant>
+                  <pr-owl:CondRelationship rdf:ID="Z_ZoneNature_cond_2.3">
+                    <pr-owl:isConditionantOf>
+                      <pr-owl:ProbAssign rdf:ID="Z_ZoneFShips_table_2.2">
+                        <pr-owl:hasConditionant rdf:resource="#Z_ZoneNature_cond_2.3"/>
+                        <pr-owl:isProbAssignIn rdf:resource="#Z_ZoneFShips_table"/>
+                        <pr-owl:hasStateProb rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal"
+                        >.01</pr-owl:hasStateProb>
+                        <pr-owl:hasStateName rdf:resource="#ZFS_1"/>
+                      </pr-owl:ProbAssign>
+                    </pr-owl:isConditionantOf>
+                    <pr-owl:isConditionantOf>
+                      <pr-owl:ProbAssign rdf:ID="Z_ZoneFShips_table_4.2">
+                        <pr-owl:hasConditionant rdf:resource="#Z_ZoneNature_cond_2.3"/>
+                        <pr-owl:isProbAssignIn rdf:resource="#Z_ZoneFShips_table"/>
+                        <pr-owl:hasStateProb rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal"
+                        >.002</pr-owl:hasStateProb>
+                        <pr-owl:hasStateName rdf:resource="#ZFS_3"/>
+                      </pr-owl:ProbAssign>
+                    </pr-owl:isConditionantOf>
+                    <pr-owl:isConditionantOf rdf:resource="#Z_ZoneFShips_table_5.2"/>
+                    <pr-owl:hasParentName>
+                      <pr-owl:Domain_Res rdf:ID="Z_ZoneNature">
+                        <pr-owl:isParentOf>
+                          <pr-owl:Domain_Res rdf:ID="Z_ZoneMD">
+                            <pr-owl:hasParent>
+                              <pr-owl:Generative_input rdf:ID="Z_ZoneMD_input">
+                                <pr-owl:hasPossibleValues>
+                                  <pr-owl:CategoricalRVStates rdf:ID="ZMD_Low">
+                                    <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneMD_input"/>
+                                    <pr-owl:hasUID rdf:datatype=
+                                    "http://www.w3.org/2001/XMLSchema#string"
+                                    >!ZMD_Low</pr-owl:hasUID>
+                                    <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneMD"/>
+                                  </pr-owl:CategoricalRVStates>
+                                </pr-owl:hasPossibleValues>
+                                <pr-owl:hasPossibleValues>
+                                  <pr-owl:CategoricalRVStates rdf:ID="ZMD_High">
+                                    <pr-owl:hasUID rdf:datatype=
+                                    "http://www.w3.org/2001/XMLSchema#string"
+                                    >!ZMD_High</pr-owl:hasUID>
+                                    <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneMD_input"/>
+                                    <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneMD"/>
+                                  </pr-owl:CategoricalRVStates>
+                                </pr-owl:hasPossibleValues>
+                                <pr-owl:isParentOf rdf:resource="#Z_ZoneMD"/>
+                                <pr-owl:hasArgument>
+                                  <pr-owl:SimpleArgRelationship rdf:ID="Z_ZoneMD_input_1.2">
+                                    <pr-owl:hasArgNumber rdf:datatype=
+                                    "http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+                                    >1</pr-owl:hasArgNumber>
+                                    <pr-owl:isArgumentOf rdf:resource="#Z_ZoneMD_input"/>
+                                    <pr-owl:hasArgTerm>
+                                      <pr-owl:OVariable rdf:ID="Z_z">
+                                        <pr-owl:isArgTermIn>
+                                          <pr-owl:SimpleArgRelationship rdf:ID="Z_ZoneEShips_1.1">
+                                            <pr-owl:hasArgNumber
+                                             rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+                                            >1</pr-owl:hasArgNumber>
+                                            <pr-owl:isArgumentOf>
+                                              <pr-owl:Domain_Res rdf:ID="Z_ZoneEShips">
+                                                <pr-owl:hasPossibleValues>
+                                                  <pr-owl:CategoricalRVStates rdf:ID="ZES_MoreThan3">
+                                                    <pr-owl:hasUID
+                                                     rdf:datatype=
+                                                    "http://www.w3.org/2001/XMLSchema#string"
+                                                    >!ZES_MoreThan3</pr-owl:hasUID>
+                                                    <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneEShips"/>
+                                                  </pr-owl:CategoricalRVStates>
+                                                </pr-owl:hasPossibleValues>
+                                                <pr-owl:isNodeFrom>
+                                                  <pr-owl:Domain_MFrag rdf:ID="Zone_MFrag">
+                                                    <pr-owl:hasContextNode>
+                                                      <pr-owl:Context rdf:ID="Z_TprevPrevT_context">
+                                                        <pr-owl:hasPossibleValues>
+                                                          <rdf:Description rdf:about="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#true">
+                                                            <pr-owl:isPossibleValueOf rdf:resource="#Z_TprevPrevT_context"/>
+                                                            <pr-owl:isPossibleValueOf>
+                                                              <pr-owl:Context rdf:ID="Z_ZSZoneST_context">
+    <pr-owl:isContextNodeIn rdf:resource="#Zone_MFrag"/>
+    <pr-owl:isContextInstanceOf>
+      <rdf:Description rdf:about="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#equalto">
+        <pr-owl:hasContextInstance rdf:resource="#Z_ZSZoneST_context"/>
+        <pr-owl:hasInputInstance>
+          <pr-owl:Generative_input rdf:ID="Z_TequalT0_input">
+            <pr-owl:hasArgument>
+              <pr-owl:SimpleArgRelationship rdf:ID="Z_TequalT0_input_1.2">
+                <pr-owl:hasArgNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+                >1</pr-owl:hasArgNumber>
+                <pr-owl:hasArgTerm>
+                  <pr-owl:OVariable rdf:ID="Z_t">
+                    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                    >This ordinary variable substitutes entities that have type !TimeStep, and was intended to comply with the context node IsA(TimeStep, t)</rdfs:comment>
+                    <pr-owl:isOVariableIn rdf:resource="#Zone_MFrag"/>
+                    <pr-owl:isArgTermIn>
+                      <pr-owl:SimpleArgRelationship rdf:ID="Z_ZoneMD_2.2">
+                        <pr-owl:hasArgNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+                        >2</pr-owl:hasArgNumber>
+                        <pr-owl:hasArgTerm rdf:resource="#Z_t"/>
+                        <pr-owl:isArgumentOf rdf:resource="#Z_ZoneMD"/>
+                      </pr-owl:SimpleArgRelationship>
+                    </pr-owl:isArgTermIn>
+                    <pr-owl:isArgTermIn>
+                      <pr-owl:SimpleArgRelationship rdf:ID="Z_TprevPrevT_inner_1.1">
+                        <pr-owl:isArgumentOf>
+                          <pr-owl:Context rdf:ID="Z_TprevPrevT_inner_prevT">
+                            <pr-owl:hasPossibleValues>
+                              <TimeStep rdf:ID="T0">
+                                <pr-owl:hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                                >!T0</pr-owl:hasUID>
+                                <pr-owl:isArgTermIn>
+                                  <pr-owl:ArgRelationship rdf:ID="Z_TequalT0_input_2.2">
+                                    <pr-owl:isArgumentOf rdf:resource="#Z_TequalT0_input"/>
+                                    <pr-owl:hasArgNumber rdf:datatype=
+                                    "http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+                                    >2</pr-owl:hasArgNumber>
+                                    <pr-owl:hasArgTerm rdf:resource="#T0"/>
+                                  </pr-owl:ArgRelationship>
+                                </pr-owl:isArgTermIn>
+                                <pr-owl:hasType>
+                                  <pr-owl:MetaEntity rdf:ID="TimeStep_Label">
+                                    <pr-owl:hasType>
+                                      <rdf:Description rdf:about="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#TypeLabel">
+                                        <pr-owl:isTypeOf>
+                                          <pr-owl:MetaEntity rdf:ID="Starship_Label">
+                                            <pr-owl:isTypeOf>
+                                              <Starship rdf:ID="ST2">
+                                                <pr-owl:hasType rdf:resource="#Starship_Label"/>
+                                                <pr-owl:hasUID
+                                                 rdf:datatype=
+                                                "http://www.w3.org/2001/XMLSchema#string"
+                                                >!ST2</pr-owl:hasUID>
+                                              </Starship>
+                                            </pr-owl:isTypeOf>
+                                            <pr-owl:isTypeOf>
+                                              <Starship rdf:ID="ST3">
+                                                <pr-owl:hasUID
+                                                 rdf:datatype=
+                                                "http://www.w3.org/2001/XMLSchema#string"
+                                                >!ST3</pr-owl:hasUID>
+                                                <pr-owl:hasType rdf:resource="#Starship_Label"/>
+                                              </Starship>
+                                            </pr-owl:isTypeOf>
+                                            <pr-owl:subsOVar>
+                                              <pr-owl:OVariable rdf:ID="Z_st">
+                                                <pr-owl:isArgTermIn>
+                                                  <pr-owl:SimpleArgRelationship rdf:ID="Z_ZSZone_inner_SZoneST_1.1">
+                                                    <pr-owl:isArgumentOf>
+                                                      <pr-owl:Context rdf:ID="Z_ZSZoneST_inner_SZoneST">
+                                                        <pr-owl:isContextInstanceOf>
+                                                          <pr-owl:Domain_Res rdf:ID="SD_StarshipZone">
+                                                            <pr-owl:isResidentNodeIn>
+                                                              <pr-owl:Domain_MFrag rdf:ID="StarshipData_MFrag">
+    <pr-owl:isMFragOf>
+      <pr-owl:MTheory rdf:ID="Starship_MTheory">
+        <pr-owl:hasMFrag>
+          <pr-owl:Domain_MFrag rdf:ID="TimeStep_MFrag">
+            <pr-owl:hasResidentNode>
+              <pr-owl:Domain_Res rdf:ID="T_Prev">
+                <pr-owl:isResidentNodeIn rdf:resource="#TimeStep_MFrag"/>
+                <pr-owl:hasContextInstance rdf:resource="#Z_TprevPrevT_inner_prevT"/>
+              </pr-owl:Domain_Res>
+            </pr-owl:hasResidentNode>
+            <pr-owl:isMFragOf rdf:resource="#Starship_MTheory"/>
+          </pr-owl:Domain_MFrag>
+        </pr-owl:hasMFrag>
+        <pr-owl:hasMFrag>
+          <pr-owl:Domain_MFrag rdf:ID="DangerToSelf_MFrag">
+            <pr-owl:isMFragOf rdf:resource="#Starship_MTheory"/>
+          </pr-owl:Domain_MFrag>
+        </pr-owl:hasMFrag>
+        <pr-owl:hasMFrag>
+          <pr-owl:Domain_MFrag rdf:ID="StarshipExistence_MFrag">
+            <pr-owl:isMFragOf rdf:resource="#Starship_MTheory"/>
+          </pr-owl:Domain_MFrag>
+        </pr-owl:hasMFrag>
+        <pr-owl:hasMFrag>
+          <pr-owl:Domain_MFrag rdf:ID="Starship_MFrag">
+            <pr-owl:isMFragOf rdf:resource="#Starship_MTheory"/>
+            <pr-owl:hasResidentNode>
+              <pr-owl:Domain_Res rdf:ID="S_CloakMode">
+                <pr-owl:hasInputInstance>
+                  <pr-owl:Generative_input rdf:ID="Z_CloakMode_input">
+                    <pr-owl:isParentOf rdf:resource="#Z_ZoneMD"/>
+                    <pr-owl:hasArgument>
+                      <pr-owl:SimpleArgRelationship rdf:ID="Z_CloakMode_input_1.1">
+                        <pr-owl:hasArgTerm rdf:resource="#Z_st"/>
+                        <pr-owl:hasArgNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+                        >1</pr-owl:hasArgNumber>
+                        <pr-owl:isArgumentOf rdf:resource="#Z_CloakMode_input"/>
+                      </pr-owl:SimpleArgRelationship>
+                    </pr-owl:hasArgument>
+                    <pr-owl:isInputInstanceOf rdf:resource="#S_CloakMode"/>
+                    <pr-owl:hasPossibleValues>
+                      <rdf:Description rdf:about="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#false">
+                        <pr-owl:isPossibleValueOf rdf:resource="#S_CloakMode"/>
+                        <pr-owl:isPossibleValueOf rdf:resource="#Z_ZSZoneST_context"/>
+                        <pr-owl:isPossibleValueOf rdf:resource="#Z_TprevPrevT_context"/>
+                        <pr-owl:isPossibleValueOf rdf:resource="#Z_CloakMode_input"/>
+                      </rdf:Description>
+                    </pr-owl:hasPossibleValues>
+                    <pr-owl:hasPossibleValues>
+                      <rdf:Description rdf:about="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#absurd">
+                        <pr-owl:isPossibleValueOf rdf:resource="#Z_CloakMode_input"/>
+                        <pr-owl:isPossibleValueOf rdf:resource="#Z_ZSZoneST_context"/>
+                        <pr-owl:isPossibleValueOf rdf:resource="#Z_TprevPrevT_context"/>
+                        <pr-owl:isPossibleValueOf rdf:resource="#S_CloakMode"/>
+                      </rdf:Description>
+                    </pr-owl:hasPossibleValues>
+                    <pr-owl:hasPossibleValues rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#true"/>
+                    <pr-owl:isInputNodeIn rdf:resource="#Zone_MFrag"/>
+                  </pr-owl:Generative_input>
+                </pr-owl:hasInputInstance>
+                <pr-owl:hasPossibleValues rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#false"/>
+                <pr-owl:hasPossibleValues rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#true"/>
+                <pr-owl:hasPossibleValues rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#absurd"/>
+                <pr-owl:isResidentNodeIn rdf:resource="#Starship_MFrag"/>
+              </pr-owl:Domain_Res>
+            </pr-owl:hasResidentNode>
+          </pr-owl:Domain_MFrag>
+        </pr-owl:hasMFrag>
+        <pr-owl:hasMFrag>
+          <pr-owl:Domain_MFrag rdf:ID="SensorReport_MFrag">
+            <pr-owl:isMFragOf rdf:resource="#Starship_MTheory"/>
+          </pr-owl:Domain_MFrag>
+        </pr-owl:hasMFrag>
+        <pr-owl:hasMFrag>
+          <pr-owl:Domain_MFrag rdf:ID="DangerToOthers_MFrag">
+            <pr-owl:isMFragOf rdf:resource="#Starship_MTheory"/>
+          </pr-owl:Domain_MFrag>
+        </pr-owl:hasMFrag>
+        <pr-owl:hasMFrag rdf:resource="#StarshipData_MFrag"/>
+        <pr-owl:hasMFrag>
+          <pr-owl:Domain_MFrag rdf:ID="SRData_MFrag">
+            <pr-owl:isMFragOf rdf:resource="#Starship_MTheory"/>
+          </pr-owl:Domain_MFrag>
+        </pr-owl:hasMFrag>
+        <pr-owl:hasMFrag rdf:resource="#Zone_MFrag"/>
+      </pr-owl:MTheory>
+    </pr-owl:isMFragOf>
+    <pr-owl:hasResidentNode rdf:resource="#SD_StarshipZone"/> </pr-owl:Domain_MFrag>
+                                                            </pr-owl:isResidentNodeIn>
+                                                            <pr-owl:hasContextInstance rdf:resource="#Z_ZSZoneST_inner_SZoneST"/>
+                                                          </pr-owl:Domain_Res>
+                                                        </pr-owl:isContextInstanceOf>
+                                                        <rdfs:comment
+                                                         rdf:datatype=
+                                                        "http://www.w3.org/2001/XMLSchema#string"
+                                                        >In MEBN models, this context node  its satisfied when the variable "z" is substituted by a unique identifier of an entity that has Type equal to "Zone".
+In a Quiddity model, this node is translated to a slot named "starshipZone" which has the Frame "Zone" as its domain and works as a "pointer" to slots from Frame "Zone" that are parents from slots in the current frame ("Starship").</rdfs:comment>
+                                                        <pr-owl:isInnerTermOf rdf:resource="#Z_ZSZoneST_context"/>
+                                                        <pr-owl:hasPossibleValues>
+                                                          <Zone rdf:ID="Z1">
+                                                            <pr-owl:hasUID
+                                                             rdf:datatype=
+                                                            "http://www.w3.org/2001/XMLSchema#string"
+                                                            >!Z1</pr-owl:hasUID>
+                                                            <pr-owl:hasType>
+                                                              <pr-owl:MetaEntity rdf:ID="Zone_Label">
+    <pr-owl:hasType rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#TypeLabel"/>
+    <pr-owl:isTypeOf rdf:resource="#Z1"/>
+    <pr-owl:isTypeOf>
+      <Zone rdf:ID="Z0">
+        <pr-owl:hasType rdf:resource="#Zone_Label"/>
+        <pr-owl:isPossibleValueOf rdf:resource="#Z_ZSZoneST_inner_SZoneST"/>
+        <pr-owl:hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+        >!Z0</pr-owl:hasUID>
+      </Zone>
+    </pr-owl:isTypeOf>
+    <pr-owl:subsOVar rdf:resource="#Z_z"/>
+    <pr-owl:hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >!Zone_Label</pr-owl:hasUID>                              </pr-owl:MetaEntity>
+                                                            </pr-owl:hasType>
+                                                            <pr-owl:isPossibleValueOf rdf:resource="#Z_ZSZoneST_inner_SZoneST"/>
+                                                          </Zone>
+                                                        </pr-owl:hasPossibleValues>
+                                                        <pr-owl:hasArgument rdf:resource="#Z_ZSZone_inner_SZoneST_1.1"/>
+                                                        <pr-owl:isContextNodeIn rdf:resource="#Zone_MFrag"/>
+                                                        <pr-owl:hasPossibleValues rdf:resource="#Z0"/>
+                                                      </pr-owl:Context>
+                                                    </pr-owl:isArgumentOf>
+                                                    <pr-owl:hasArgNumber
+                                                     rdf:datatype=
+                                                    "http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+                                                    >1</pr-owl:hasArgNumber>
+                                                    <pr-owl:hasArgTerm rdf:resource="#Z_st"/>
+                                                  </pr-owl:SimpleArgRelationship>
+                                                </pr-owl:isArgTermIn>
+                                                <pr-owl:isArgTermIn rdf:resource="#Z_CloakMode_input_1.1"/>
+                                                <pr-owl:isOVariableIn rdf:resource="#Zone_MFrag"/>
+                                                <pr-owl:isSubsBy rdf:resource="#Starship_Label"/>
+                                              </pr-owl:OVariable>
+                                            </pr-owl:subsOVar>
+                                            <pr-owl:isTypeOf>
+                                              <Starship rdf:ID="ST4">
+                                                <pr-owl:hasUID
+                                                 rdf:datatype=
+                                                "http://www.w3.org/2001/XMLSchema#string"
+                                                >!ST4</pr-owl:hasUID>
+                                                <pr-owl:hasType rdf:resource="#Starship_Label"/>
+                                              </Starship>
+                                            </pr-owl:isTypeOf>
+                                            <pr-owl:hasUID rdf:datatype=
+                                            "http://www.w3.org/2001/XMLSchema#string"
+                                            >!Starship_Label</pr-owl:hasUID>
+                                            <pr-owl:hasType rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#TypeLabel"/>
+                                            <pr-owl:isTypeOf>
+                                              <Starship rdf:ID="ST0">
+                                                <pr-owl:hasType rdf:resource="#Starship_Label"/>
+                                                <pr-owl:hasUID
+                                                 rdf:datatype=
+                                                "http://www.w3.org/2001/XMLSchema#string"
+                                                >!ST0</pr-owl:hasUID>
+                                                <rdfs:comment
+                                                 rdf:datatype=
+                                                "http://www.w3.org/2001/XMLSchema#string"
+                                                >That is the Enterprise</rdfs:comment>
+                                              </Starship>
+                                            </pr-owl:isTypeOf>
+                                            <pr-owl:isTypeOf>
+                                              <Starship rdf:ID="ST1">
+                                                <pr-owl:hasUID
+                                                 rdf:datatype=
+                                                "http://www.w3.org/2001/XMLSchema#string"
+                                                >!ST1</pr-owl:hasUID>
+                                                <pr-owl:hasType rdf:resource="#Starship_Label"/>
+                                              </Starship>
+                                            </pr-owl:isTypeOf>
+                                          </pr-owl:MetaEntity>
+                                        </pr-owl:isTypeOf>
+                                        <pr-owl:isTypeOf rdf:resource="#Zone_Label"/>
+                                        <pr-owl:isTypeOf rdf:resource="#TimeStep_Label"/>
+                                        <pr-owl:isTypeOf>
+                                          <pr-owl:MetaEntity rdf:ID="SensorReport_Label">
+                                            <pr-owl:hasType rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#TypeLabel"/>
+                                            <pr-owl:isTypeOf>
+                                              <SensorReport rdf:ID="SR0">
+                                                <pr-owl:hasUID
+                                                 rdf:datatype=
+                                                "http://www.w3.org/2001/XMLSchema#string"
+                                                >!SR0</pr-owl:hasUID>
+                                                <pr-owl:hasType rdf:resource="#SensorReport_Label"/>
+                                              </SensorReport>
+                                            </pr-owl:isTypeOf>
+                                            <pr-owl:hasUID rdf:datatype=
+                                            "http://www.w3.org/2001/XMLSchema#string"
+                                            >!SensorReport_Label</pr-owl:hasUID>
+                                            <pr-owl:isTypeOf>
+                                              <SensorReport rdf:ID="SR2">
+                                                <pr-owl:hasType rdf:resource="#SensorReport_Label"/>
+                                                <pr-owl:hasUID
+                                                 rdf:datatype=
+                                                "http://www.w3.org/2001/XMLSchema#string"
+                                                >!SR2</pr-owl:hasUID>
+                                              </SensorReport>
+                                            </pr-owl:isTypeOf>
+                                            <pr-owl:isTypeOf>
+                                              <SensorReport rdf:ID="SR1">
+                                                <pr-owl:hasType rdf:resource="#SensorReport_Label"/>
+                                                <pr-owl:hasUID
+                                                 rdf:datatype=
+                                                "http://www.w3.org/2001/XMLSchema#string"
+                                                >!SR1</pr-owl:hasUID>
+                                              </SensorReport>
+                                            </pr-owl:isTypeOf>
+                                            <pr-owl:isTypeOf>
+                                              <SensorReport rdf:ID="SR6">
+                                                <pr-owl:hasUID
+                                                 rdf:datatype=
+                                                "http://www.w3.org/2001/XMLSchema#string"
+                                                >!SR6</pr-owl:hasUID>
+                                                <pr-owl:hasType rdf:resource="#SensorReport_Label"/>
+                                              </SensorReport>
+                                            </pr-owl:isTypeOf>
+                                            <pr-owl:isTypeOf>
+                                              <SensorReport rdf:ID="SR7">
+                                                <pr-owl:hasUID
+                                                 rdf:datatype=
+                                                "http://www.w3.org/2001/XMLSchema#string"
+                                                >!SR7</pr-owl:hasUID>
+                                                <pr-owl:hasType rdf:resource="#SensorReport_Label"/>
+                                              </SensorReport>
+                                            </pr-owl:isTypeOf>
+                                            <pr-owl:isTypeOf>
+                                              <SensorReport rdf:ID="SR5">
+                                                <pr-owl:hasType rdf:resource="#SensorReport_Label"/>
+                                                <pr-owl:hasUID
+                                                 rdf:datatype=
+                                                "http://www.w3.org/2001/XMLSchema#string"
+                                                >!SR5</pr-owl:hasUID>
+                                              </SensorReport>
+                                            </pr-owl:isTypeOf>
+                                            <pr-owl:isTypeOf>
+                                              <SensorReport rdf:ID="SR3">
+                                                <pr-owl:hasUID
+                                                 rdf:datatype=
+                                                "http://www.w3.org/2001/XMLSchema#string"
+                                                >!SR3</pr-owl:hasUID>
+                                                <pr-owl:hasType rdf:resource="#SensorReport_Label"/>
+                                              </SensorReport>
+                                            </pr-owl:isTypeOf>
+                                            <pr-owl:isTypeOf>
+                                              <SensorReport rdf:ID="SR4">
+                                                <pr-owl:hasType rdf:resource="#SensorReport_Label"/>
+                                                <pr-owl:hasUID
+                                                 rdf:datatype=
+                                                "http://www.w3.org/2001/XMLSchema#string"
+                                                >!SR4</pr-owl:hasUID>
+                                              </SensorReport>
+                                            </pr-owl:isTypeOf>
+                                          </pr-owl:MetaEntity>
+                                        </pr-owl:isTypeOf>
+                                      </rdf:Description>
+                                    </pr-owl:hasType>
+                                    <pr-owl:subsOVar>
+                                      <pr-owl:OVariable rdf:ID="Z_tprev">
+                                        <rdfs:comment rdf:datatype=
+                                        "http://www.w3.org/2001/XMLSchema#string"
+                                        >This ordinary variable substitutes entities that have type !TimeStep, and was intended to comply with the context node IsA(TimeStep, tprev)</rdfs:comment>
+                                        <pr-owl:isOVariableIn rdf:resource="#Zone_MFrag"/>
+                                        <pr-owl:isSubsBy rdf:resource="#TimeStep_Label"/>
+                                        <pr-owl:isArgTermIn>
+                                          <pr-owl:SimpleArgRelationship rdf:ID="Z_TprevPrevT_context_1.2">
+                                            <pr-owl:hasArgTerm rdf:resource="#Z_tprev"/>
+                                            <pr-owl:hasArgNumber
+                                             rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+                                            >1</pr-owl:hasArgNumber>
+                                            <pr-owl:isArgumentOf rdf:resource="#Z_TprevPrevT_context"/>
+                                          </pr-owl:SimpleArgRelationship>
+                                        </pr-owl:isArgTermIn>
+                                        <pr-owl:isArgTermIn>
+                                          <pr-owl:SimpleArgRelationship rdf:ID="Z_ZoneMD_input_2.2">
+                                            <pr-owl:hasArgNumber
+                                             rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+                                            >2</pr-owl:hasArgNumber>
+                                            <pr-owl:hasArgTerm rdf:resource="#Z_tprev"/>
+                                            <pr-owl:isArgumentOf rdf:resource="#Z_ZoneMD_input"/>
+                                          </pr-owl:SimpleArgRelationship>
+                                        </pr-owl:isArgTermIn>
+                                      </pr-owl:OVariable>
+                                    </pr-owl:subsOVar>
+                                    <pr-owl:hasUID rdf:datatype=
+                                    "http://www.w3.org/2001/XMLSchema#string"
+                                    >!TimeStep_Label</pr-owl:hasUID>
+                                    <pr-owl:subsOVar rdf:resource="#Z_t"/>
+                                    <pr-owl:isTypeOf>
+                                      <TimeStep rdf:ID="T1">
+                                        <pr-owl:hasUID rdf:datatype=
+                                        "http://www.w3.org/2001/XMLSchema#string"
+                                        >!T1</pr-owl:hasUID>
+                                        <pr-owl:hasType rdf:resource="#TimeStep_Label"/>
+                                        <pr-owl:isPossibleValueOf rdf:resource="#Z_TprevPrevT_inner_prevT"/>
+                                      </TimeStep>
+                                    </pr-owl:isTypeOf>
+                                    <pr-owl:isTypeOf>
+                                      <TimeStep rdf:ID="T4">
+                                        <pr-owl:hasType rdf:resource="#TimeStep_Label"/>
+                                        <pr-owl:hasUID rdf:datatype=
+                                        "http://www.w3.org/2001/XMLSchema#string"
+                                        >!T4</pr-owl:hasUID>
+                                        <pr-owl:isPossibleValueOf rdf:resource="#Z_TprevPrevT_inner_prevT"/>
+                                      </TimeStep>
+                                    </pr-owl:isTypeOf>
+                                    <pr-owl:isTypeOf rdf:resource="#T0"/>
+                                    <pr-owl:isTypeOf>
+                                      <TimeStep rdf:ID="T2">
+                                        <pr-owl:isPossibleValueOf rdf:resource="#Z_TprevPrevT_inner_prevT"/>
+                                        <pr-owl:hasUID rdf:datatype=
+                                        "http://www.w3.org/2001/XMLSchema#string"
+                                        >!T2</pr-owl:hasUID>
+                                        <pr-owl:hasType rdf:resource="#TimeStep_Label"/>
+                                      </TimeStep>
+                                    </pr-owl:isTypeOf>
+                                    <pr-owl:isTypeOf>
+                                      <TimeStep rdf:ID="T3">
+                                        <pr-owl:hasUID rdf:datatype=
+                                        "http://www.w3.org/2001/XMLSchema#string"
+                                        >!T3</pr-owl:hasUID>
+                                        <pr-owl:hasType rdf:resource="#TimeStep_Label"/>
+                                        <pr-owl:isPossibleValueOf rdf:resource="#Z_TprevPrevT_inner_prevT"/>
+                                      </TimeStep>
+                                    </pr-owl:isTypeOf>
+                                  </pr-owl:MetaEntity>
+                                </pr-owl:hasType>
+                                <pr-owl:isPossibleValueOf rdf:resource="#Z_TprevPrevT_inner_prevT"/>
+                              </TimeStep>
+                            </pr-owl:hasPossibleValues>
+                            <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                            >Inner term of context node  tprev=Prev(t).</rdfs:comment>
+                            <pr-owl:hasPossibleValues rdf:resource="#T1"/>
+                            <pr-owl:hasArgument rdf:resource="#Z_TprevPrevT_inner_1.1"/>
+                            <pr-owl:hasPossibleValues rdf:resource="#T3"/>
+                            <pr-owl:hasPossibleValues rdf:resource="#T4"/>
+                            <pr-owl:hasPossibleValues rdf:resource="#T2"/>
+                            <pr-owl:isContextNodeIn rdf:resource="#Zone_MFrag"/>
+                            <pr-owl:isContextInstanceOf rdf:resource="#T_Prev"/>
+                            <pr-owl:isInnerTermOf rdf:resource="#Z_TprevPrevT_context"/>
+                          </pr-owl:Context>
+                        </pr-owl:isArgumentOf>
+                        <pr-owl:hasArgNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+                        >1</pr-owl:hasArgNumber>
+                        <pr-owl:hasArgTerm rdf:resource="#Z_t"/>
+                      </pr-owl:SimpleArgRelationship>
+                    </pr-owl:isArgTermIn>
+                    <pr-owl:isArgTermIn rdf:resource="#Z_TequalT0_input_1.2"/>
+                    <pr-owl:isSubsBy rdf:resource="#TimeStep_Label"/>
+                  </pr-owl:OVariable>
+                </pr-owl:hasArgTerm>
+                <pr-owl:isArgumentOf rdf:resource="#Z_TequalT0_input"/>
+              </pr-owl:SimpleArgRelationship>
+            </pr-owl:hasArgument>
+            <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+            >Original MEBN notation:
+t=!T0
+Decomposed to:
+EqualTo(t, !T0)</rdfs:comment>
+            <pr-owl:hasArgument rdf:resource="#Z_TequalT0_input_2.2"/>
+            <pr-owl:isParentOf rdf:resource="#Z_ZoneMD"/>
+            <pr-owl:isInputInstanceOf rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#equalto"/>
+            <pr-owl:isInputNodeIn rdf:resource="#Zone_MFrag"/>
+          </pr-owl:Generative_input>
+        </pr-owl:hasInputInstance>
+        <pr-owl:hasContextInstance rdf:resource="#Z_TprevPrevT_context"/>
+      </rdf:Description>
+    </pr-owl:isContextInstanceOf>
+    <pr-owl:hasPossibleValues rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#true"/>
+    <pr-owl:hasPossibleValues rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#absurd"/>
+    <pr-owl:hasArgument>
+      <pr-owl:ArgRelationship rdf:ID="Z_ZSZone_context_2.2">
+        <pr-owl:isArgumentOf rdf:resource="#Z_ZSZoneST_context"/>
+        <pr-owl:hasArgTerm rdf:resource="#Z_ZSZoneST_inner_SZoneST"/>
+        <pr-owl:hasArgNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+        >2</pr-owl:hasArgNumber>
+      </pr-owl:ArgRelationship>
+    </pr-owl:hasArgument>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >In MEBN models, this context node  its satisfied when the variable "z" is substituted by a unique identifier of an entity that has Type equal to "Zone".
+In a Quiddity model, this node is translated to a slot named "starshipZone" which has the Frame "Zone" as its domain and works as a "pointer" to slots from Frame "Zone" that are parents from slots in the current frame ("Starship").
+Original MEBN notation:
+z=StarshipZone(st)
+PR-OWL decomposition:
+equalto(z, StarshipZone(st))
+Inner terms:
+StarshipZone(st)</rdfs:comment>
+    <pr-owl:hasPossibleValues rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#false"/>
+    <pr-owl:hasArgument>
+      <pr-owl:SimpleArgRelationship rdf:ID="Z_ZSZone_context_1.2">
+        <pr-owl:hasArgTerm rdf:resource="#Z_z"/>
+        <pr-owl:isArgumentOf rdf:resource="#Z_ZSZoneST_context"/>
+        <pr-owl:hasArgNumber rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+        >1</pr-owl:hasArgNumber>
+      </pr-owl:SimpleArgRelationship>
+    </pr-owl:hasArgument>
+    <pr-owl:hasInnerTerm rdf:resource="#Z_ZSZoneST_inner_SZoneST"/>
+                                                              </pr-owl:Context>
+                                                            </pr-owl:isPossibleValueOf>
+                                                            <pr-owl:isPossibleValueOf rdf:resource="#Z_CloakMode_input"/>
+                                                            <pr-owl:isPossibleValueOf rdf:resource="#S_CloakMode"/>
+                                                          </rdf:Description>
+                                                        </pr-owl:hasPossibleValues>
+                                                        <pr-owl:hasArgument>
+                                                          <pr-owl:ArgRelationship rdf:ID="Z_TprevPrevT_context_2.2">
+                                                            <pr-owl:hasArgTerm rdf:resource="#Z_TprevPrevT_inner_prevT"/>
+                                                            <pr-owl:isArgumentOf rdf:resource="#Z_TprevPrevT_context"/>
+                                                            <pr-owl:hasArgNumber
+                                                             rdf:datatype=
+                                                            "http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+                                                            >2</pr-owl:hasArgNumber>
+                                                          </pr-owl:ArgRelationship>
+                                                        </pr-owl:hasArgument>
+                                                        <rdfs:comment
+                                                         rdf:datatype=
+                                                        "http://www.w3.org/2001/XMLSchema#string"
+                                                        >Original MEBN notation:
+tprev=Prev(t)
+PR-OWL decomposition:
+equalto(tprev, Prev(t))
+Inner term:
+Prev(t)</rdfs:comment>                                  <pr-owl:hasPossibleValues rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#false"/>
+                                                        <pr-owl:hasInnerTerm rdf:resource="#Z_TprevPrevT_inner_prevT"/>
+                                                        <pr-owl:isContextInstanceOf rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#equalto"/>
+                                                        <pr-owl:hasArgument rdf:resource="#Z_TprevPrevT_context_1.2"/>
+                                                        <pr-owl:hasPossibleValues rdf:resource="http://mason.gmu.edu/~pcosta/pr-owl/pr-owl.owl#absurd"/>
+                                                        <pr-owl:isContextNodeIn rdf:resource="#Zone_MFrag"/>
+                                                      </pr-owl:Context>
+                                                    </pr-owl:hasContextNode>
+                                                    <pr-owl:hasOVariable rdf:resource="#Z_st"/>
+                                                    <pr-owl:hasInputNode rdf:resource="#Z_TequalT0_input"/>
+                                                    <pr-owl:hasContextNode rdf:resource="#Z_ZSZoneST_context"/>
+                                                    <pr-owl:hasInputNode rdf:resource="#Z_ZoneMD_input"/>
+                                                    <pr-owl:hasResidentNode rdf:resource="#Z_ZoneNature"/>
+                                                    <pr-owl:hasOVariable rdf:resource="#Z_tprev"/>
+                                                    <pr-owl:hasContextNode rdf:resource="#Z_TprevPrevT_inner_prevT"/>
+                                                    <pr-owl:hasResidentNode rdf:resource="#Z_ZoneEShips"/>
+                                                    <pr-owl:hasOVariable rdf:resource="#Z_z"/>
+                                                    <pr-owl:hasResidentNode rdf:resource="#Z_ZoneFShips"/>
+                                                    <pr-owl:hasOVariable rdf:resource="#Z_t"/>
+                                                    <pr-owl:hasNode rdf:resource="#Z_ZoneEShips"/>
+                                                    <pr-owl:hasInputNode rdf:resource="#Z_CloakMode_input"/>
+                                                    <pr-owl:hasContextNode rdf:resource="#Z_ZSZoneST_inner_SZoneST"/>
+                                                    <pr-owl:hasResidentNode rdf:resource="#Z_ZoneMD"/>
+                                                    <pr-owl:isMFragOf rdf:resource="#Starship_MTheory"/>
+                                                  </pr-owl:Domain_MFrag>
+                                                </pr-owl:isNodeFrom>
+                                                <pr-owl:hasProbDist>
+                                                  <pr-owl:DeclarativeDist rdf:ID="Z_ZoneEShips_decl_Quiddity">
+                                                    <pr-owl:isRepresentedAs
+                                                     rdf:datatype=
+                                                    "http://www.w3.org/2001/XMLSchema#string"
+                                                    >Quiddity_SPI</pr-owl:isRepresentedAs>
+                                                    <pr-owl:hasDeclaration
+                                                     rdf:datatype=
+                                                    "http://www.w3.org/2001/XMLSchema#string"
+                                                    >slot zoneEShips
+    facet domain = [zES_0, zES_1, zES_2, zES_3, zES_MoreThan3]
+    facet parents = [zoneNature]
+    facet distribution = function zn {
+         zN_BlackHoleBoundary:	[.95, .03, .01, .007, .003];
+         zN_DeepSpace:	[.98, .01, .007, .002, .001];
+         zN_PlanetarySystem:	[.60, .15, .12, .08, .05];</pr-owl:hasDeclaration>
+                                                    <pr-owl:isProbDistOf rdf:resource="#Z_ZoneEShips"/>
+                                                    <pr-owl:isDefault
+                                                     rdf:datatype=
+                                                    "http://www.w3.org/2001/XMLSchema#boolean"
+                                                    >false</pr-owl:isDefault>
+                                                  </pr-owl:DeclarativeDist>
+                                                </pr-owl:hasProbDist>
+                                                <pr-owl:hasPossibleValues>
+                                                  <pr-owl:CategoricalRVStates rdf:ID="ZES_1">
+                                                    <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneEShips"/>
+                                                    <pr-owl:hasUID
+                                                     rdf:datatype=
+                                                    "http://www.w3.org/2001/XMLSchema#string"
+                                                    >!ZES_1</pr-owl:hasUID>
+                                                  </pr-owl:CategoricalRVStates>
+                                                </pr-owl:hasPossibleValues>
+                                                <pr-owl:hasPossibleValues>
+                                                  <pr-owl:CategoricalRVStates rdf:ID="ZES_2">
+                                                    <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneEShips"/>
+                                                    <pr-owl:hasUID
+                                                     rdf:datatype=
+                                                    "http://www.w3.org/2001/XMLSchema#string"
+                                                    >!ZES_2</pr-owl:hasUID>
+                                                  </pr-owl:CategoricalRVStates>
+                                                </pr-owl:hasPossibleValues>
+                                                <pr-owl:hasPossibleValues>
+                                                  <pr-owl:CategoricalRVStates rdf:ID="ZES_0">
+                                                    <pr-owl:hasUID
+                                                     rdf:datatype=
+                                                    "http://www.w3.org/2001/XMLSchema#string"
+                                                    >!ZES_0</pr-owl:hasUID>
+                                                    <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneEShips"/>
+                                                  </pr-owl:CategoricalRVStates>
+                                                </pr-owl:hasPossibleValues>
+                                                <pr-owl:hasProbDist>
+                                                  <pr-owl:DeclarativeDist rdf:ID="Z_ZoneEShips_ddecl_Netica">
+                                                    <pr-owl:hasDeclaration
+                                                     rdf:datatype=
+                                                    "http://www.w3.org/2001/XMLSchema#string"
+                                                    >node Z_ZoneEShips {
+	         kind = NATURE;
+	         discrete = TRUE;
+	         states = (absurd);
+	         parents = (PHarm1, OpSpecies);
+	         title = "ZoneEShips(z)";
+	         whenchanged = 1107474628;
+	         belief = (1);
+	         visual V2 {
+		center = (156, 258);
+		dispform = LABELBOX;
+		height = 3;
+		};</pr-owl:hasDeclaration>                        <pr-owl:isProbDistOf rdf:resource="#Z_ZoneEShips"/>
+                                                    <pr-owl:isRepresentedAs
+                                                     rdf:datatype=
+                                                    "http://www.w3.org/2001/XMLSchema#string"
+                                                    >Netica_DNE</pr-owl:isRepresentedAs>
+                                                    <pr-owl:isDefault
+                                                     rdf:datatype=
+                                                    "http://www.w3.org/2001/XMLSchema#boolean"
+                                                    >true</pr-owl:isDefault>
+                                                  </pr-owl:DeclarativeDist>
+                                                </pr-owl:hasProbDist>
+                                                <pr-owl:hasArgument rdf:resource="#Z_ZoneEShips_1.1"/>
+                                                <pr-owl:hasPossibleValues>
+                                                  <pr-owl:CategoricalRVStates rdf:ID="ZES_3">
+                                                    <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneEShips"/>
+                                                    <pr-owl:hasUID
+                                                     rdf:datatype=
+                                                    "http://www.w3.org/2001/XMLSchema#string"
+                                                    >!ZES_3</pr-owl:hasUID>
+                                                  </pr-owl:CategoricalRVStates>
+                                                </pr-owl:hasPossibleValues>
+                                                <rdfs:comment
+                                                 rdf:datatype=
+                                                "http://www.w3.org/2001/XMLSchema#string"
+                                                >This RV establishes the relationship between a given zone and the likelihood of having enemy starships within OwnStarship's sensor range.
+In other words, it is the probable number of enemy ships into sensor range we assume to find in a given zone. 
+This means we consider that exists a prior probability of finding an enemy starship given the nature of the zone in which OwnStarship is navigating through.
+In this model, we restrained the infinitely possible number of starships to only five states. That is, we assume that it is unlikely to find four or more hostile ships in that area, so most of the probability distribution mass for this RV will be restricted to the states None, One, Two, and Three, while the remaining probability will be restricted to the aggregating state MoreThan3.</rdfs:comment>
+                                                <pr-owl:hasParent rdf:resource="#Z_ZoneNature"/>
+                                                <pr-owl:isResidentNodeIn rdf:resource="#Zone_MFrag"/>
+                                              </pr-owl:Domain_Res>
+                                            </pr-owl:isArgumentOf>
+                                            <pr-owl:hasArgTerm rdf:resource="#Z_z"/>
+                                          </pr-owl:SimpleArgRelationship>
+                                        </pr-owl:isArgTermIn>
+                                        <pr-owl:isArgTermIn>
+                                          <pr-owl:SimpleArgRelationship rdf:ID="Z_ZoneNature_1.1">
+                                            <pr-owl:hasArgNumber
+                                             rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+                                            >1</pr-owl:hasArgNumber>
+                                            <pr-owl:isArgumentOf rdf:resource="#Z_ZoneNature"/>
+                                            <pr-owl:hasArgTerm rdf:resource="#Z_z"/>
+                                          </pr-owl:SimpleArgRelationship>
+                                        </pr-owl:isArgTermIn>
+                                        <pr-owl:isArgTermIn>
+                                          <pr-owl:SimpleArgRelationship rdf:ID="Z_ZoneFShips_1.1">
+                                            <pr-owl:isArgumentOf rdf:resource="#Z_ZoneFShips"/>
+                                            <pr-owl:hasArgTerm rdf:resource="#Z_z"/>
+                                            <pr-owl:hasArgNumber
+                                             rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+                                            >1</pr-owl:hasArgNumber>
+                                          </pr-owl:SimpleArgRelationship>
+                                        </pr-owl:isArgTermIn>
+                                        <pr-owl:isOVariableIn rdf:resource="#Zone_MFrag"/>
+                                        <pr-owl:isArgTermIn rdf:resource="#Z_ZSZone_context_1.2"/>
+                                        <pr-owl:isSubsBy rdf:resource="#Zone_Label"/>
+                                        <pr-owl:isArgTermIn>
+                                          <pr-owl:SimpleArgRelationship rdf:ID="Z_ZoneMD_1.2">
+                                            <pr-owl:hasArgNumber
+                                             rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+                                            >1</pr-owl:hasArgNumber>
+                                            <pr-owl:isArgumentOf rdf:resource="#Z_ZoneMD"/>
+                                            <pr-owl:hasArgTerm rdf:resource="#Z_z"/>
+                                          </pr-owl:SimpleArgRelationship>
+                                        </pr-owl:isArgTermIn>
+                                        <pr-owl:isArgTermIn rdf:resource="#Z_ZoneMD_input_1.2"/>
+                                      </pr-owl:OVariable>
+                                    </pr-owl:hasArgTerm>
+                                  </pr-owl:SimpleArgRelationship>
+                                </pr-owl:hasArgument>
+                                <pr-owl:hasPossibleValues>
+                                  <pr-owl:CategoricalRVStates rdf:ID="ZMD_Medium">
+                                    <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneMD"/>
+                                    <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneMD_input"/>
+                                    <pr-owl:hasUID rdf:datatype=
+                                    "http://www.w3.org/2001/XMLSchema#string"
+                                    >!ZMD_Medium</pr-owl:hasUID>
+                                  </pr-owl:CategoricalRVStates>
+                                </pr-owl:hasPossibleValues>
+                                <pr-owl:isInputInstanceOf rdf:resource="#Z_ZoneMD"/>
+                                <pr-owl:hasArgument rdf:resource="#Z_ZoneMD_input_2.2"/>
+                                <pr-owl:isInputNodeIn rdf:resource="#Zone_MFrag"/>
+                              </pr-owl:Generative_input>
+                            </pr-owl:hasParent>
+                            <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                            >ZoneMD(z, t) assesses the value of the magnetic disturbance in Zone "z" at the current TimeStep "t".
+This value is influenced by the MD in the previous TimeStep (tprev), the fact of whether there is or there is not a starship in cloak mode nearby, and the nature of the space zone in which the starship is located.
+The input node t=!T0 is used to "anchor" the time recursion.</rdfs:comment>
+                            <pr-owl:hasArgument rdf:resource="#Z_ZoneMD_2.2"/>
+                            <pr-owl:hasInputInstance rdf:resource="#Z_ZoneMD_input"/>
+                            <pr-owl:hasParent rdf:resource="#Z_ZoneNature"/>
+                            <pr-owl:hasPossibleValues rdf:resource="#ZMD_Low"/>
+                            <pr-owl:hasParent rdf:resource="#Z_TequalT0_input"/>
+                            <pr-owl:hasPossibleValues rdf:resource="#ZMD_Medium"/>
+                            <pr-owl:hasParent rdf:resource="#Z_CloakMode_input"/>
+                            <pr-owl:hasArgument rdf:resource="#Z_ZoneMD_1.2"/>
+                            <pr-owl:hasPossibleValues rdf:resource="#ZMD_High"/>
+                            <pr-owl:isResidentNodeIn rdf:resource="#Zone_MFrag"/>
+                            <pr-owl:hasProbDist>
+                              <pr-owl:DeclarativeDist rdf:ID="Z_ZoneMD_decl_Quiddity">
+                                <pr-owl:isProbDistOf rdf:resource="#Z_ZoneMD"/>
+                                <pr-owl:hasDeclaration rdf:datatype=
+                                "http://www.w3.org/2001/XMLSchema#string"
+                                >slot zoneMD
+    facet domain = [zMD_Low, zMD_Medium, zMD_High]
+    facet parents = [zoneNature, anyStInCloakMode, zoneMD.PREV]
+    facet initialState = [.70, .20, .10]
+    facet distribution = function zn, ascm, znp {
+        switch zn {
+             zN_BlackHoleBoundary:
+                   switch ascm{
+ 	true:
+ 	switch znp{
+ 	   zMD_Low:		[.02, .05, .93];
+ 	   zMD_Medium: 	[.08, .04, .88];
+ 	   zMD_High: 		[.12, .18, .70];
+ 	};
+ 	false:	[.07, .11, .82];
+                     };
+           zN_DeepSpace:
+                switch ascm{
+ 	true:
+ 	switch znp{
+ 	   zMD_Low: 		[.70, .18, .12];
+ 	   zMD_Medium: 	[.80, .05, .15];
+ 	   zMD_High: 		[.83, .15, .02];
+ 	};
+ 	false: 	[.85, .10, .05];
+                  };
+            zN_PlanetarySystem:
+                 switch ascm{
+ 	true:
+ 	switch znp{
+ 	   zMD_Low: 		[.15, .37, .48];
+ 	   zMD_Medium: 	[.30, .20, .50];
+ 	   zMD_High: 		[.26, .39, .35];
+ 	};
+ 	false:	[.25, .30, .45];
+                  };
+               }
+ }</pr-owl:hasDeclaration>      <pr-owl:isRepresentedAs rdf:datatype=
+                                "http://www.w3.org/2001/XMLSchema#string"
+                                >Quiddity_SPI</pr-owl:isRepresentedAs>
+                                <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                                >In a recursive MFrag it is necessary to have a way to ground out the recursion. This is similar to a recursive algorithm such as computing x!.  The definition of x! is:
+0! = 1
+x! = x(x-1)!  for x > 0
+Similarly, in a recursive node it is necessary  to define the initial distribution for the dynamic BN node and then define the next distribution as a function of the previous distribution.  Here is one way to do it:
+1. Prev(0) = 0 and Prev(t) = t-1 for t>0
+2. This creates a problem in this MFrag because now DistFromOwn(st,0) has itself as a parent!  But really this isn't a problem because t=0 is also a parent and we define the distribution so that it depends on the previous value only when t>0.
+In this case, we assigned to T0 the very same distribution we used in the other TimeSteps. Regarding the distribution itself, our intention was to make background disturbance a somewhat steady phenomena, thus the probabilities do not change with time. However, if cloack mode is true for any starship nearby Enterprise.
+Then, the next step will be more likely to change the intensity of the disturbance,  mimicking an unstable phenomena.</rdfs:comment>
+                                <pr-owl:isDefault rdf:datatype=
+                                "http://www.w3.org/2001/XMLSchema#boolean"
+                                >false</pr-owl:isDefault>
+                              </pr-owl:DeclarativeDist>
+                            </pr-owl:hasProbDist>
+                          </pr-owl:Domain_Res>
+                        </pr-owl:isParentOf>
+                        <pr-owl:hasArgument rdf:resource="#Z_ZoneNature_1.1"/>
+                        <pr-owl:isParentOf rdf:resource="#Z_ZoneEShips"/>
+                        <pr-owl:hasPossibleValues>
+                          <pr-owl:CategoricalRVStates rdf:ID="ZN_PlanetarySystem">
+                            <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneNature"/>
+                            <pr-owl:hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                            >!ZN_PlanetarySystem</pr-owl:hasUID>
+                          </pr-owl:CategoricalRVStates>
+                        </pr-owl:hasPossibleValues>
+                        <pr-owl:isResidentNodeIn rdf:resource="#Zone_MFrag"/>
+                        <pr-owl:hasPossibleValues>
+                          <pr-owl:CategoricalRVStates rdf:ID="ZN_BlackHoleBoundary">
+                            <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneNature"/>
+                            <pr-owl:hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                            >!ZN_BlackHoleBoundary</pr-owl:hasUID>
+                          </pr-owl:CategoricalRVStates>
+                        </pr-owl:hasPossibleValues>
+                        <pr-owl:hasPossibleValues>
+                          <pr-owl:CategoricalRVStates rdf:ID="ZN_DeepSpace">
+                            <pr-owl:hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                            >!ZN_DeepSpace</pr-owl:hasUID>
+                            <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneNature"/>
+                          </pr-owl:CategoricalRVStates>
+                        </pr-owl:hasPossibleValues>
+                        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                        >A zone can be either a deep space, a planetary system, or the boundary of a Black Hole.
+We assumed that a OwnStarship, when in operation (i.e. using its decision system), has 80% chance of being traveling in a Deep Space Zone, 15%  in a Planetary System and 5% in the Boundaries of a Black Hole.
+In our model, Black Hole Boundaries are prefered places for ambushes from attacking starships with cloaking devices, since the high magnetic turbulance generated in those zones makes it very hard to even the most advanced sensors to distinguish it from the magnetic disturbance created by a cloaking device.</rdfs:comment>
+                        <pr-owl:isParentOf rdf:resource="#Z_ZoneFShips"/>
+                      </pr-owl:Domain_Res>
+                    </pr-owl:hasParentName>
+                    <pr-owl:isConditionantOf>
+                      <pr-owl:ProbAssign rdf:ID="Z_ZoneFShips_table_1.2">
+                        <pr-owl:isProbAssignIn rdf:resource="#Z_ZoneFShips_table"/>
+                        <pr-owl:hasStateProb rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal"
+                        >.98</pr-owl:hasStateProb>
+                        <pr-owl:hasConditionant rdf:resource="#Z_ZoneNature_cond_2.3"/>
+                        <pr-owl:hasStateName>
+                          <pr-owl:CategoricalRVStates rdf:ID="ZFS_0">
+                            <pr-owl:hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                            >!ZFS_0</pr-owl:hasUID>
+                            <pr-owl:isPossibleValueOf rdf:resource="#Z_ZoneFShips"/>
+                          </pr-owl:CategoricalRVStates>
+                        </pr-owl:hasStateName>
+                      </pr-owl:ProbAssign>
+                    </pr-owl:isConditionantOf>
+                    <pr-owl:hasParentState rdf:resource="#ZN_DeepSpace"/>
+                    <pr-owl:isConditionantOf>
+                      <pr-owl:ProbAssign rdf:ID="Z_ZoneFShips_table_3.2">
+                        <pr-owl:isProbAssignIn rdf:resource="#Z_ZoneFShips_table"/>
+                        <pr-owl:hasStateProb rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal"
+                        >.007</pr-owl:hasStateProb>
+                        <pr-owl:hasStateName rdf:resource="#ZFS_2"/>
+                        <pr-owl:hasConditionant rdf:resource="#Z_ZoneNature_cond_2.3"/>
+                      </pr-owl:ProbAssign>
+                    </pr-owl:isConditionantOf>
+                  </pr-owl:CondRelationship>
+                </pr-owl:hasConditionant>
+              </pr-owl:ProbAssign>
+            </pr-owl:hasProbAssign>
+            <pr-owl:hasProbAssign>
+              <pr-owl:ProbAssign rdf:ID="Z_ZoneFShips_table_1.3">
+                <pr-owl:hasConditionant>
+                  <pr-owl:CondRelationship rdf:ID="Z_ZoneNature_cond_3.3">
+                    <pr-owl:hasParentState rdf:resource="#ZN_PlanetarySystem"/>
+                    <pr-owl:isConditionantOf>
+                      <pr-owl:ProbAssign rdf:ID="Z_ZoneFShips_table_2.3">
+                        <pr-owl:isProbAssignIn rdf:resource="#Z_ZoneFShips_table"/>
+                        <pr-owl:hasStateProb rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal"
+                        >.20</pr-owl:hasStateProb>
+                        <pr-owl:hasConditionant rdf:resource="#Z_ZoneNature_cond_3.3"/>
+                        <pr-owl:hasStateName rdf:resource="#ZFS_1"/>
+                      </pr-owl:ProbAssign>
+                    </pr-owl:isConditionantOf>
+                    <pr-owl:hasParentName rdf:resource="#Z_ZoneNature"/>
+                    <pr-owl:isConditionantOf>
+                      <pr-owl:ProbAssign rdf:ID="Z_ZoneFShips_table_5.3">
+                        <pr-owl:isProbAssignIn rdf:resource="#Z_ZoneFShips_table"/>
+                        <pr-owl:hasConditionant rdf:resource="#Z_ZoneNature_cond_3.3"/>
+                        <pr-owl:hasStateProb rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal"
+                        >.05</pr-owl:hasStateProb>
+                        <pr-owl:hasStateName rdf:resource="#ZFS_MoreThan3"/>
+                      </pr-owl:ProbAssign>
+                    </pr-owl:isConditionantOf>
+                    <pr-owl:isConditionantOf>
+                      <pr-owl:ProbAssign rdf:ID="Z_ZoneFShips_table_4.3">
+                        <pr-owl:hasStateProb rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal"
+                        >.10</pr-owl:hasStateProb>
+                        <pr-owl:isProbAssignIn rdf:resource="#Z_ZoneFShips_table"/>
+                        <pr-owl:hasStateName rdf:resource="#ZFS_3"/>
+                        <pr-owl:hasConditionant rdf:resource="#Z_ZoneNature_cond_3.3"/>
+                      </pr-owl:ProbAssign>
+                    </pr-owl:isConditionantOf>
+                    <pr-owl:isConditionantOf rdf:resource="#Z_ZoneFShips_table_1.3"/>
+                    <pr-owl:isConditionantOf>
+                      <pr-owl:ProbAssign rdf:ID="Z_ZoneFShips_table_3.3">
+                        <pr-owl:hasStateName rdf:resource="#ZFS_2"/>
+                        <pr-owl:hasConditionant rdf:resource="#Z_ZoneNature_cond_3.3"/>
+                        <pr-owl:hasStateProb rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal"
+                        >.15</pr-owl:hasStateProb>
+                        <pr-owl:isProbAssignIn rdf:resource="#Z_ZoneFShips_table"/>
+                      </pr-owl:ProbAssign>
+                    </pr-owl:isConditionantOf>
+                  </pr-owl:CondRelationship>
+                </pr-owl:hasConditionant>
+                <pr-owl:hasStateName rdf:resource="#ZFS_0"/>
+                <pr-owl:hasStateProb rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal"
+                >.50</pr-owl:hasStateProb>
+                <pr-owl:isProbAssignIn rdf:resource="#Z_ZoneFShips_table"/>
+              </pr-owl:ProbAssign>
+            </pr-owl:hasProbAssign>
+            <pr-owl:hasProbAssign rdf:resource="#Z_ZoneFShips_table_1.2"/>
+            <pr-owl:hasProbAssign rdf:resource="#Z_ZoneFShips_table_2.3"/>
+            <pr-owl:hasProbAssign rdf:resource="#Z_ZoneFShips_table_3.3"/>
+            <pr-owl:isProbDistOf rdf:resource="#Z_ZoneFShips"/>
+            <pr-owl:hasProbAssign rdf:resource="#Z_ZoneFShips_table_3.2"/>
+            <pr-owl:hasProbAssign rdf:resource="#Z_ZoneFShips_table_5.3"/>
+            <pr-owl:hasProbAssign>
+              <pr-owl:ProbAssign rdf:ID="Z_ZoneFShips_table_4.1">
+                <pr-owl:hasStateName rdf:resource="#ZFS_3"/>
+                <pr-owl:hasConditionant>
+                  <pr-owl:CondRelationship rdf:ID="Z_ZoneNature_cond_1.3">
+                    <pr-owl:isConditionantOf>
+                      <pr-owl:ProbAssign rdf:ID="Z_ZoneFShips_table_2.1">
+                        <pr-owl:hasStateName rdf:resource="#ZFS_1"/>
+                        <pr-owl:hasStateProb rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal"
+                        >.005</pr-owl:hasStateProb>
+                        <pr-owl:isProbAssignIn rdf:resource="#Z_ZoneFShips_table"/>
+                        <pr-owl:hasConditionant rdf:resource="#Z_ZoneNature_cond_1.3"/>
+                      </pr-owl:ProbAssign>
+                    </pr-owl:isConditionantOf>
+                    <pr-owl:isConditionantOf>
+                      <pr-owl:ProbAssign rdf:ID="Z_ZoneFShips_table_5.1">
+                        <pr-owl:hasStateName rdf:resource="#ZFS_MoreThan3"/>
+                        <pr-owl:hasStateProb rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal"
+                        >.0005</pr-owl:hasStateProb>
+                        <pr-owl:hasConditionant rdf:resource="#Z_ZoneNature_cond_1.3"/>
+                        <pr-owl:isProbAssignIn rdf:resource="#Z_ZoneFShips_table"/>
+                      </pr-owl:ProbAssign>
+                    </pr-owl:isConditionantOf>
+                    <pr-owl:hasParentName rdf:resource="#Z_ZoneNature"/>
+                    <pr-owl:isConditionantOf rdf:resource="#Z_ZoneFShips_table_4.1"/>
+                    <pr-owl:hasParentState rdf:resource="#ZN_BlackHoleBoundary"/>
+                    <pr-owl:isConditionantOf>
+                      <pr-owl:ProbAssign rdf:ID="Z_ZoneFShips_table_1.1">
+                        <pr-owl:hasStateProb rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal"
+                        >.99</pr-owl:hasStateProb>
+                        <pr-owl:isProbAssignIn rdf:resource="#Z_ZoneFShips_table"/>
+                        <pr-owl:hasConditionant rdf:resource="#Z_ZoneNature_cond_1.3"/>
+                        <pr-owl:hasStateName rdf:resource="#ZFS_0"/>
+                      </pr-owl:ProbAssign>
+                    </pr-owl:isConditionantOf>
+                    <pr-owl:isConditionantOf>
+                      <pr-owl:ProbAssign rdf:ID="Z_ZoneFShips_table_3.1">
+                        <pr-owl:hasStateProb rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal"
+                        >.0035</pr-owl:hasStateProb>
+                        <pr-owl:hasConditionant rdf:resource="#Z_ZoneNature_cond_1.3"/>
+                        <pr-owl:isProbAssignIn rdf:resource="#Z_ZoneFShips_table"/>
+                        <pr-owl:hasStateName rdf:resource="#ZFS_2"/>
+                      </pr-owl:ProbAssign>
+                    </pr-owl:isConditionantOf>
+                  </pr-owl:CondRelationship>
+                </pr-owl:hasConditionant>
+                <pr-owl:hasStateProb rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal"
+                >.001</pr-owl:hasStateProb>
+                <pr-owl:isProbAssignIn rdf:resource="#Z_ZoneFShips_table"/>
+              </pr-owl:ProbAssign>
+            </pr-owl:hasProbAssign>
+            <pr-owl:hasProbAssign rdf:resource="#Z_ZoneFShips_table_4.3"/>
+            <pr-owl:hasProbAssign rdf:resource="#Z_ZoneFShips_table_5.1"/>
+            <pr-owl:hasProbAssign rdf:resource="#Z_ZoneFShips_table_2.2"/>
+            <pr-owl:hasProbAssign rdf:resource="#Z_ZoneFShips_table_2.1"/>
+            <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+            >We assume that unlike enemies, friendly starships do not care about being in places suitable for an ambush. Therefore, its probability distribution will reflect this fact. As an example, in a Black Hole Boundary, the chances of finding at least one friendly starship are five times smaller than to find an ambushing enemy vessel.</rdfs:comment>
+            <pr-owl:hasProbAssign rdf:resource="#Z_ZoneFShips_table_3.1"/>
+            <pr-owl:isDefault rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean"
+            >false</pr-owl:isDefault>
+            <pr-owl:hasProbAssign rdf:resource="#Z_ZoneFShips_table_4.2"/>
+            <pr-owl:hasProbAssign rdf:resource="#Z_ZoneFShips_table_1.1"/>
+          </pr-owl:PR-OWLTable>
+        </pr-owl:hasProbDist>
+        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+        >This RV establishes the relationship between a given zone and the likelihood of having friendly starships within OwnStarship's sensor range. Following the very same rationale of node ZoneEShips, we assume that there is a prior probability in the number of friendly or neutral starships to appea into OwnStarship's sensor range given the nature of the zone it is navigating into.</rdfs:comment>
+        <pr-owl:hasProbDist>
+          <pr-owl:DeclarativeDist rdf:ID="Z_ZoneFShips_ddecl_PR-OWL">
+            <pr-owl:hasDeclaration rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+            >absurd</pr-owl:hasDeclaration>
+            <pr-owl:isRepresentedAs rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+            >PR-OWL_MEBN</pr-owl:isRepresentedAs>
+            <pr-owl:isProbDistOf rdf:resource="#Z_ZoneFShips"/>
+            <pr-owl:isDefault rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean"
+            >true</pr-owl:isDefault>
+          </pr-owl:DeclarativeDist>
+        </pr-owl:hasProbDist>
+        <pr-owl:hasPossibleValues rdf:resource="#ZFS_0"/>
+        <pr-owl:hasProbDist>
+          <pr-owl:DeclarativeDist rdf:ID="Z_ZoneFShips_decl_Quiddity">
+            <pr-owl:isDefault rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean"
+            >false</pr-owl:isDefault>
+            <pr-owl:hasDeclaration rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+            >slot zoneFShips
+    facet domain = [zFS_0, zFS_1, zFS_2, zFS_3, zFS_MoreThan3]
+    facet parents = [zoneNature]
+    facet distribution = function zn {
+        zN_BlackHoleBoundary:	[.99, .005, .0035, .001, .0005];
+        zN_DeepSpace:	[.98, .01, .007, .002, .001];
+        zN_PlanetarySystem:	[.50, .20, .15, .10, .05];
+ }</pr-owl:hasDeclaration>
+            <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+            >We assume that unlike enemies, friendly starships do not care about being in places suitable for an ambush. Therefore, its probability distribution will reflect this fact. As an example, in a Black Hole Boundary, the chances of finding at least one friendly starship are five times smaller than to find an ambushing enemy vessel.</rdfs:comment>
+            <pr-owl:isRepresentedAs rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+            >Quiddity_SPI</pr-owl:isRepresentedAs>
+            <pr-owl:isProbDistOf rdf:resource="#Z_ZoneFShips"/>
+          </pr-owl:DeclarativeDist>
+        </pr-owl:hasProbDist>
+        <pr-owl:isResidentNodeIn rdf:resource="#Zone_MFrag"/>
+        <pr-owl:hasArgument rdf:resource="#Z_ZoneFShips_1.1"/>
+        <pr-owl:hasPossibleValues rdf:resource="#ZFS_2"/>
+        <pr-owl:hasPossibleValues rdf:resource="#ZFS_MoreThan3"/>
+        <pr-owl:hasParent rdf:resource="#Z_ZoneNature"/>
+      </pr-owl:Domain_Res>
+    </pr-owl:isPossibleValueOf>
+    <pr-owl:hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >!ZFS_2</pr-owl:hasUID>
+  </pr-owl:CategoricalRVStates>
+</rdf:RDF>
+
+<!-- Created with Protege (with OWL Plugin 2.1, Build 284)  http://protege.stanford.edu -->
