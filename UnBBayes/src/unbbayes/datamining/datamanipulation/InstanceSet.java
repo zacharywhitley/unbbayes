@@ -104,7 +104,6 @@ public class InstanceSet {
 		numNominalAttributes = 0;
 		for (int att = 0; att < numAttributes; att++) {
 			attributeType[att] = newAttributes[att].getAttributeType();
-			newAttributes[att].setInstanceSet(this);
 			if (attributeType[att] == NOMINAL) {
 				++numNominalAttributes;
 			}
@@ -350,6 +349,7 @@ public class InstanceSet {
 			throw new IllegalArgumentException(exception);
 		}
 		attributes[position] = att;
+		att.setFinal();
 
 		for (int i = 0; i < numInstances; i++) {
 			instances[i].setMissing(att);
@@ -454,10 +454,8 @@ public class InstanceSet {
 	 * @param num Number of instances to be copied
 	 */
 	public void copyInstances(int start, InstanceSet destination, int end) {
-		int numInstancesDest = destination.numInstances;
-		
 		for (int inst = start; inst < end; inst++) {
-			destination.instances[numInstancesDest] = instances[inst].clone();
+			destination.instances[destination.numInstances] = instances[inst].clone();
 			destination.numInstances++;
 			destination.numWeightedInstances += 
 				instances[inst].data[counterIndex];

@@ -162,7 +162,7 @@ public class ClassifierUtils {
 	 * @param splitValue attribute value used to split data 
 	 * @return The instance sets produced by the split
 	 */
-	public SplitObject[] splitNumericData(SplitObject split,int attIndex,
+	public SplitObject[] splitNumericData(SplitObject split, int attIndex,
 			double splitValue) {
 		Instance instance;
 		Integer[] actualAtt = split.getAttributes();
@@ -268,7 +268,7 @@ public class ClassifierUtils {
 		int classIndex = instances.getClassIndex();
 		
 		//class values distribution for each value of each attribute 
-		float[][][] counts = new float[att.length - 1][][];
+		float[][][] counts = new float[att.length-1][][];
 		
 		//number of instances without missing values for each attribute
 		float[] totalSums = new float[att.length-1];
@@ -285,12 +285,12 @@ public class ClassifierUtils {
 		//initialize counts for each attribute...
 		int attAux;
 		int numValues;
-		for (int i = 0, attIndex = 0; i < att.length; i++) {
+		for (int i = 0; i < att.length; i++) {
 			attAux = att[i].intValue();
-			if (attAux != classIndex) {
+			if (instances.getAttribute(attAux).isNominal()
+					&& attAux != classIndex) {
 				numValues = instances.getAttribute(attAux).numValues();
-				counts[attIndex] = new float[numValues][numClassValues];
-				attIndex++;				
+				counts[i] = new float[numValues][numClassValues];
 			}
 		}
 		
@@ -307,26 +307,26 @@ public class ClassifierUtils {
 			if (!instance.classIsMissing()) {
 				//for each attribute...
 				weight = instance.getWeight();
-				for (int j = 0, attIndex = 0; j < att.length; j++) {
+				for (int j = 0; j < att.length; j++) {
 					attributeIndex = att[j].intValue();
-					if (attributeIndex != classIndex) {
+					if (instances.getAttribute(attributeIndex).isNominal()
+						&& attributeIndex != classIndex) {
 						if (!instance.isMissing(attributeIndex)) {
 							value = (int) instance.getValue(attributeIndex);
 							classValue = (int)instance.classValue();
-							counts[attIndex][value][classValue] += weight;
+							counts[j][value][classValue] += weight;
 						} else {
-							hasMissingValues[attIndex]=true;
+							hasMissingValues[j]=true;
 						}
-						attIndex++;
 					}					
 				}
-				totalCounts[instance.classValue()] += instance.getWeight();
+				totalCounts[instance.classValue()] += weight;
 			}
 		}
 		
 		//data for attributes without missing values
 		float totalSum = Utils.sum(totalCounts);
-		double totalInfoGain = computeEntropy(totalCounts,totalSum);
+		double totalInfoGain = computeEntropy(totalCounts, totalSum);
 		
 		//computes entropy(S) for each attribute
 		//different for each attribute because of the possibility of missing values
@@ -358,6 +358,10 @@ public class ClassifierUtils {
 		int attIndex;
 		for (int i = 0; i < counts.length; i++) {
 			attIndex = att[i].intValue();
+			if (attIndex == classIndex) {
+				/* Skip the class attribute */
+				continue;
+			}
 			if (instances.getAttribute(attIndex).isNominal()) {
 				/* The attribute is nominal */
 				for (int j = 0; j < counts[i].length; j++) {

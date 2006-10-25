@@ -65,7 +65,7 @@ public class Attribute implements Serializable {
 	private int numValues;
 
 	/** The instanceSet this attribute is related to. */
-	protected InstanceSet instanceSet;
+//	protected InstanceSet instanceSet;
 
 	/** Mapping of String values to indices. */
 	private Hashtable<String, Integer> hashtableString;
@@ -81,6 +81,12 @@ public class Attribute implements Serializable {
 			"unbbayes.datamining.datamanipulation.resources." +
 			"DataManipulationResource");
 
+	/**
+	 * True if this attribute has been finalized, ie, has been constructed.
+	 * False if this attribute is yet in the process of beeing build.
+	 */
+	private boolean finalized = false;
+	
 	/**
 	 * Constructor for nominal attribute with String values.
 	 *
@@ -155,9 +161,9 @@ public class Attribute implements Serializable {
 	 * 
 	 * @param attributeName Name of this attribute.
 	 * @param attributeType Type of this attribute.
-	 * @param attIndex The attribute's position at the instanceSet.
 	 * @param isString Set that attribute values are string values. 
 	 * @param numValues Maximum number of values added to this attribute.
+	 * @param attIndex The attribute's position at the instanceSet.
 	 */
 	public Attribute(String attributeName, byte attributeType,
 			boolean isString, int numValues, int attIndex) {
@@ -306,9 +312,8 @@ public class Attribute implements Serializable {
 	public final int numValues() {
 		if (attributeType == NOMINAL) {
 			return numValues;
-		} else {
-			return instanceSet.numInstances;
 		}
+		return 0;
 	}
 
 	/**
@@ -358,9 +363,6 @@ public class Attribute implements Serializable {
 					return String.valueOf(numberValues[valIndex]);
 				}
 			}
-		} else {
-			/* The attribute is numeric. Get value from instanceSet */
-			return String.valueOf(instanceSet.instances[valIndex].data[attIndex]);
 		}
 		return "";
 	}
@@ -449,19 +451,13 @@ public class Attribute implements Serializable {
 	}
 
 	/**
-	 * Binds this attribute to a specified instanceSet.
-	 * 
-	 * @param instanceSet
-	 */
-	public void setInstanceSet(InstanceSet instanceSet) {
-		this.instanceSet = instanceSet;
-	}
-	
-	/**
 	 * Finalize the construction of this attribute. All values stored in the
 	 * hashtable are destroyed. Only affects nominal attributes. 
 	 */
 	public void setFinal() {
+		if (finalized) {
+			return;
+		}
 		if (isString) {
 			/* Construct the final String vector of values */
 			stringValues = new String[numValues];
@@ -469,7 +465,8 @@ public class Attribute implements Serializable {
 				stringValues[i] = stringValuesTemp.get(i);
 			}
 			
-			/* Free up the auxiliar structures used in the construction of this
+			/* 
+			 * Free up the auxiliar structures used in the construction of this
 			 * attribute.
 			 */
 			hashtableString.clear();
@@ -483,7 +480,8 @@ public class Attribute implements Serializable {
 				numberValues[i] = numberValuesTemp.get(i);
 			}
 			
-			/* Free up the auxiliar structures used in the construction of this
+			/* 
+			 * Free up the auxiliar structures used in the construction of this
 			 * attribute.
 			 */
 			hashtableNumber.clear();
@@ -491,5 +489,6 @@ public class Attribute implements Serializable {
 			numberValuesTemp.clear();
 			numberValuesTemp = null;
 		}
+		finalized = true;
 	}
 }
