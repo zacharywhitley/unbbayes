@@ -5,77 +5,120 @@ import java.util.List;
 
 import unbbayes.prs.Network;
 
-
 /**
  * This class represents a MultiEntityBayesianNetwork
  * and here it is going to have the same semantics as a
  * MTheory.
  */
+
 public class MultiEntityBayesianNetwork extends Network {
  
+	private List<MFrag> mFragList; /* contains all Domain MFrags and Input MFrags */ 
+	
 	private List<DomainMFrag> domainMFragList;
 	
-	private DomainMFrag currentDomainMFrag;
+	private List<FindingMFrag> findingMFragList; 
+	
+	private MFrag currentMFrag;
 	
 	/**
-	 * Contructs a new MEBN with empty domainMFrag's list.
+	 * Contructs a new MEBN with empty mFrag's lists.
 	 * @param name The name of the MEBN.
 	 */
 	public MultiEntityBayesianNetwork(String name) {
 		super(name);
-		domainMFragList = new ArrayList<DomainMFrag>();
+		mFragList = new ArrayList<MFrag>();
+		domainMFragList = new ArrayList<DomainMFrag>(); 
+		findingMFragList = new ArrayList<FindingMFrag>(); 
 	}
 	
 	/**
-	 * Method responsible for adding a new DomainMFrag.
+	 * Method responsible for adding a new Domain MFrag.
 	 * @param domainMFrag The new DomainMFrag to be added.
 	 */
 	public void addDomainMFrag(DomainMFrag domainMFrag) {
-		domainMFragList.add(domainMFrag);
+		mFragList.add(domainMFrag);
+		domainMFragList.add(domainMFrag); 
 	}
 	
 	/**
-	 * Method responsible for removing the given DomainMFrag.
-	 * @param domainMFrag The DomainMFrag to be removed.
+	 * Method responsible for removing the given Domain MFrag.
+	 * @param mFrag The DomainMFrag to be removed.
 	 */
 	public void removeDomainMFrag(DomainMFrag domainMFrag) {
 		domainMFrag.delete();
-		domainMFragList.remove(domainMFrag);
+		mFragList.remove(domainMFrag);
+		domainMFragList.remove(domainMFrag); 
 	}
 	
 	/**
-	 * Get the DomainMFrag list of this MEBN.
-	 * @return The DomainMFrag list of this MEBN.
+	 * Method responsible for adding a new Finding MFrag.
+	 * @param findingMFrag The new FindingMFrag to be added.
+	 */
+	public void addFindingMFrag(FindingMFrag findingMFrag) {
+		mFragList.add(findingMFrag);
+		findingMFragList.add(findingMFrag); 
+	}
+	
+	/**
+	 * Method responsible for removing the given Finding MFrag.
+	 * @param mFrag The FindingMFrag to be removed.
+	 */
+	public void removeFindingMFrag(FindingMFrag findingMFrag) {
+		findingMFrag.delete();
+		mFragList.remove(findingMFrag);
+		domainMFragList.remove(findingMFrag); 
+	}	
+	
+	/**
+	 * Get the MFrag list of this MEBN.
+	 * @return The MFrag list of this MEBN.
+	 */
+	public List<MFrag> getMFragList() {
+		return mFragList;
+	}
+	
+	/**
+	 * Get the Domain MFrag list of this MEBN.
+	 * @return The MFrag list of this MEBN.
 	 */
 	public List<DomainMFrag> getDomainMFragList() {
 		return domainMFragList;
 	}
 	
 	/**
-	 * Get total number of DomainMFrags.
-	 * @return The total number of DomainMFrags.
+	 * Get the Finding MFrag list of this MEBN.
+	 * @return The MFrag list of this MEBN.
 	 */
-	public int getDomainMFragCount() {
-		return domainMFragList.size();
+	public List<FindingMFrag> getFindingMFragList() {
+		return findingMFragList;
+	}	
+	
+	/**
+	 * Get total number of MFrags.
+	 * @return The total number of MFrags.
+	 */
+	public int getMFragCount() {
+		return mFragList.size();
 	}
 	
 	/**
-	 * Gets the current DomainMFrag. In other words, 
-	 * the DomainMFrag being edited at the present moment.
-	 * @return The current DomainMFrag.
+	 * Gets the current MFrag. In other words, 
+	 * the MFrag being edited at the present moment.
+	 * @return The current MFrag.
 	 */
-	public DomainMFrag getCurrentDomainMFrag() {
-		return currentDomainMFrag;
+	public MFrag getCurrentMFrag() {
+		return currentMFrag;
 	}
 	
 	/**
-	 * Sets the current DomainMFrag. In other words, 
-	 * the DomainMFrag being edited at the present moment.
-	 * @param currentDomainMFrag The current DomainMFrag.
+	 * Sets the current MFrag. In other words, 
+	 * the MFrag being edited at the present moment.
+	 * @param currentMFrag The current MFrag.
 	 */
-	public void setCurrentDomainMFrag(DomainMFrag currentDomainMFrag) {
-		this.currentDomainMFrag = currentDomainMFrag; 
+	public void setCurrentMFrag(MFrag currentMFrag) {
+		this.currentMFrag = currentMFrag; 
 	}
+	
 	 
 }
- 
