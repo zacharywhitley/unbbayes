@@ -1,11 +1,11 @@
 package unbbayes.io.mebn.test;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.io.mebn.IOMebnException;
-import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.ContextNode;
@@ -18,7 +18,7 @@ import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.util.NodeList;
 
-public class TestLoadMebn {
+public class TestMebnIO {
 	
 	public static final String STARSHIP16FILEEXAMPLE = "examples/mebn/Starship16.owl"; 
 	public static final String STARSHIP16FILEEXAMPLESAVED = "examples/mebn/Starship16_RES.owl"; 
@@ -41,13 +41,15 @@ public class TestLoadMebn {
 		System.out.println("-----> MTheory: " + mebn.getName() + "\n");
 		
 		System.out.println("-> mFragList: "); 
-		List<DomainMFrag> listDomainMFrag = mebn.getDomainMFragList(); 
-		for(MFrag mFrag: listDomainMFrag){
+		List<MFrag> listMFrag = mebn.getMFragList(); 
+		for(MFrag mFrag: listMFrag){
 			System.out.println(mFrag.getName()); 
 		}
 		
 		/* trace MFrag */
-		for(DomainMFrag domainMFrag: listDomainMFrag){
+		for(MFrag mFrag: listMFrag){
+			
+			DomainMFrag domainMFrag = (DomainMFrag)mFrag; 
 			
 			System.out.println("\n\n-----> MFrag: " + domainMFrag.getName() + "\n");
 			
@@ -84,7 +86,9 @@ public class TestLoadMebn {
 		}
 		
 		/* trace inside MFrag */
-		for(DomainMFrag domainMFrag: listDomainMFrag){
+		for(MFrag mFrag: listMFrag){
+			
+			DomainMFrag domainMFrag = (DomainMFrag) mFrag;  
 			
 			/* trace context node */
 			List<ContextNode> listContextNode = domainMFrag.getContextNodeList(); 
@@ -260,8 +264,10 @@ public class TestLoadMebn {
 		
 		System.out.println("-----Load file test-----"); 
 		
+		File file = new File(STARSHIP16FILEEXAMPLE); 
+		
 		try{
-			mebn = prOwlIO.loadMebn(STARSHIP16FILEEXAMPLE); 
+			mebn = prOwlIO.loadMebn(file); 
 			System.out.println("Load concluido"); 
 		}
 		catch (IOMebnException e){

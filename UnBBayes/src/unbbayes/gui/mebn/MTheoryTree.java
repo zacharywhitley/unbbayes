@@ -43,6 +43,7 @@ public class MTheoryTree extends JTree {
 	/*public MTheoryTree(final NetworkWindow netWindow) {
 		net = netWindow.getMultiEntityBayesianNetwork();*/
 	public MTheoryTree(final MultiEntityBayesianNetwork net) {
+		
 		this.net = net;
 
 		// set up node icons
@@ -119,7 +120,7 @@ public class MTheoryTree extends JTree {
 		itemAddDomainMFrag.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae)
             {   
-            	net.addMFrag(new DomainMFrag("DomainMFrag " + net.getMFragCount(), net));
+            	net.addDomainMFrag(new DomainMFrag("DomainMFrag " + net.getMFragCount(), net));
             	updateTree();
             }
         });
@@ -127,7 +128,7 @@ public class MTheoryTree extends JTree {
 		itemAddFindingMFrag.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae)
             {   
-            	net.addMFrag(new DomainMFrag("FindingMFrag " + net.getMFragCount(), net));
+            	net.addDomainMFrag(new DomainMFrag("FindingMFrag " + net.getMFragCount(), net));
             	updateTree();
             }
         });

@@ -44,7 +44,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"windowsToolTip","Usa Windows Look And Feel"},
 		{"tileToolTip","Organizar as janelas em bloco"},
 		{"cascadeToolTip","Organizar as janelas em cascata"},
-		{"netFileFilter","Net (.net), XMLBIF (.xml)"},
+		{"netFileFilter","Net (.net), XMLBIF (.xml), PR-OWL (.owl)"},
 		{"textFileFilter","Text (.txt)"},
 		{"fileUntitled","SemNome.txt"},
 		{"globalOptionTitle","Opções Globais"},

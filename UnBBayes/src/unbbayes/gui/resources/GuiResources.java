@@ -44,7 +44,7 @@ public class GuiResources extends ListResourceBundle {
 		{"windowsToolTip","Windows Look And Feel"},
 		{"tileToolTip","Organize windows in tile"},
 		{"cascadeToolTip","Organize windows in cascade"},
-		{"netFileFilter","Net (.net), XMLBIF (.xml)"},
+		{"netFileFilter","Net (.net), XMLBIF (.xml), PR-OWL (.owl)"},
 		{"xmlBIFFileFilter", "XMLBIF (.xml)"},
 		{"textFileFilter","Text (.txt)"},
 		{"fileUntitled","Untitled.txt"},

@@ -1,5 +1,6 @@
 package unbbayes.io.mebn;
 
+import java.awt.Frame;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -11,7 +12,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import unbbayes.prs.mebn.*;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+
+import unbbayes.prs.mebn.Argument;
+import unbbayes.prs.mebn.BuiltInRV;
+import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.DomainMFrag;
+import unbbayes.prs.mebn.DomainResidentNode;
+import unbbayes.prs.mebn.GenerativeInputNode;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.MultiEntityNode;
+import unbbayes.prs.mebn.OrdinaryVariable;
 
 import com.hp.hpl.jena.util.FileUtils;
 
@@ -23,11 +36,17 @@ import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
 import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
 import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
 
+/**
+ * Make load/save in pr-owl.
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
+ * @version 1.0 2006/10/25
+ */
+
 public class PrOwlIO implements MebnIO {
 	
 	public static final String PROWLMODELFILE = "pr-owl/pr-owl.owl"; 
 	
-	public MultiEntityBayesianNetwork loadMebn(String nameFile) throws IOException, IOMebnException{
+	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException, IOMebnException{
 		
 		/* MEBN Structure */ 
 		
@@ -35,6 +54,12 @@ public class PrOwlIO implements MebnIO {
 		
 		Collection instances; 
 		Iterator itAux; 
+		
+		JProgressBar progress; 
+		progress = new JProgressBar(0, 100); 
+		progress.setValue(0); 
+		progress.setStringPainted(true); 
+		
 		
 		DomainMFrag domainMFrag; 
 		OrdinaryVariable oVariable; 
@@ -72,8 +97,6 @@ public class PrOwlIO implements MebnIO {
 		
 		URI uri = URIUtilities.createURI("file:///pr-owl.owl");
 		
-		File file = new File(PROWLMODELFILE);
-		
 		owlModel.getRepositoryManager().addProjectRepository(new LocalFileRepository(file, true));
 		
 		try{
@@ -87,7 +110,7 @@ public class PrOwlIO implements MebnIO {
 		
 		FileInputStream inputStream; 
 		
-		inputStream = new FileInputStream(nameFile); 
+		inputStream = new FileInputStream(file); 
 		
 		try{
 			owlModel.load(inputStream, FileUtils.langXMLAbbrev);   
@@ -594,6 +617,8 @@ public class PrOwlIO implements MebnIO {
 			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());					
 		}
 		
+		System.out.println("Load concluido com sucesso!"); 
+		
 		return mebn; 		
 	}
 	
@@ -874,7 +899,7 @@ public class PrOwlIO implements MebnIO {
 				generativeInputNodeIndividual.addPropertyValue(hasInnerTermProperty, innerTermIndividual);
 			}
 		}
-		
+		 
 		/* saving */
 		
 		Collection errors = new ArrayList();
