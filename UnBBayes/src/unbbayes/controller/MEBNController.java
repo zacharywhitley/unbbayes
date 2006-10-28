@@ -26,12 +26,12 @@ public class MEBNController {
 	}
 
 	public void insertDomainMFrag(String name) {
-		multiEntityBayesianNetwork.addMFrag(new DomainMFrag("DomainMFrag "
+		multiEntityBayesianNetwork.addDomainMFrag(new DomainMFrag("DomainMFrag "
 				+ multiEntityBayesianNetwork.getMFragCount(), multiEntityBayesianNetwork));
 	}
 	
 	public void removeDomainMFrag(DomainMFrag domainMFrag) {
-		multiEntityBayesianNetwork.removeMFrag(domainMFrag);
+		multiEntityBayesianNetwork.removeDomainMFrag(domainMFrag);
 	}
 
 	public void insertContextNode(double x, double y) throws Exception {
@@ -42,10 +42,8 @@ public class MEBNController {
 					"Context nodes must be added only in domain MFrags!");
 		}
 		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
-		ContextNode node = new ContextNode();
+		ContextNode node = new ContextNode(resource.getString("contextNodeName") + domainMFrag.getContextNodeCount(), domainMFrag);
 		node.setPosition(x, y);
-		node.setName(resource.getString("contextNodeName")
-				+ domainMFrag.getContextNodeCount());
 		node.setDescription(node.getName());
 		domainMFrag.addContextNode(node);
 	}

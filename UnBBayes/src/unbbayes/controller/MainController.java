@@ -36,6 +36,7 @@ import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLIO;
+import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -145,13 +146,20 @@ public class MainController {
         		window = controller.getPanel();
         	} else {
 				String name = file.getName().toLowerCase();				
+				
 				if (name.endsWith("net")) {
-					io = new NetIO();					
+					io = new NetIO();	
+					ProbabilisticNetwork net = io.load(file);
+					window = new NetworkWindow(net);					
 				} else if (name.endsWith("xml")){
-					io = new XMLIO();					
+					io = new XMLIO();	
+					ProbabilisticNetwork net = io.load(file);
+					window = new NetworkWindow(net);					
+				} else if (name.endsWith("owl")){
+					PrOwlIO prOwlIo = new PrOwlIO(); 
+			    	MultiEntityBayesianNetwork mebn = prOwlIo.loadMebn(file);
+			    	window = new NetworkWindow(mebn);					
 				}
-				ProbabilisticNetwork net = io.load(file);
-				window = new NetworkWindow(net);
         	}
 			screen.addWindow(window);
         } catch (Exception e){

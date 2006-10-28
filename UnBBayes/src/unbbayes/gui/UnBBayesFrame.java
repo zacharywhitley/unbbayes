@@ -246,7 +246,7 @@ public class UnBBayesFrame extends JFrame {
 		alOpen = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				String[] nets = new String[] { "net", "xml" };
+				String[] nets = new String[] { "net", "xml", "owl" };
 				chooser = new JFileChooser(fileController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
 				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
