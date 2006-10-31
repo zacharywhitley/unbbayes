@@ -41,6 +41,10 @@ public class MEBNEditionPane extends JPanel {
 	
 	private final NetworkWindow netWindow;
 
+
+    private JTabbedPane tabPanel;
+    private MTheoryTree mTheoryTree; 
+	
     private GlobalOptionsDialog go;
     private JTable table;
     private final JTextField txtSigla;
@@ -63,6 +67,7 @@ public class MEBNEditionPane extends JPanel {
     private final JButton btnAddState;
     private final JButton btnRemoveState;
     private final JButton btnAddEdge;
+    private final JButton btnAddMFrag; 
     private final JButton btnAddContextNode;
     private final JButton btnAddInputNode;
     private final JButton btnAddResidentNode;
@@ -102,12 +107,13 @@ public class MEBNEditionPane extends JPanel {
         btnAddState              = new JButton(iconController.getMoreIcon());
         btnRemoveState              = new JButton(iconController.getLessIcon());
         btnAddEdge               = new JButton(iconController.getEdgeIcon());
-        /*btnAddContextNode = new JButton(iconController.getContextNodeIcon());
-        btnAddInputNode      = new JButton(iconController.getInputNodeIcon());
-        btnAddResidentNode       = new JButton(iconController.getResidentNodeIcon());*/
+        //btnAddContextNode = new JButton(iconController.getContextNodeIcon());
+        //btnAddInputNode      = new JButton(iconController.getInputNodeIcon());
+        //btnAddResidentNode       = new JButton(iconController.getResidentNodeIcon());
         btnAddContextNode = new JButton(iconController.getEllipsisIcon());
         btnAddInputNode      = new JButton(iconController.getEllipsisIcon());
         btnAddResidentNode       = new JButton(iconController.getEllipsisIcon());
+        btnAddMFrag		= new JButton(iconController.getEllipsisIcon()); 
         btnSelectObject            = new JButton(iconController.getSelectionIcon());
         btnGlobalOption      = new JButton(iconController.getGlobalOptionIcon());
 
@@ -116,9 +122,13 @@ public class MEBNEditionPane extends JPanel {
         btnAddState.setToolTipText(resource.getString("moreToolTip"));
         btnRemoveState.setToolTipText(resource.getString("lessToolTip"));
         btnAddEdge.setToolTipText(resource.getString("arcToolTip"));
-        btnAddContextNode.setToolTipText(resource.getString("probabilisticNodeInsertToolTip"));
-        btnAddInputNode.setToolTipText(resource.getString("decisionNodeInsertToolTip"));
-        btnAddResidentNode.setToolTipText(resource.getString("utilityNodeInsertToolTip"));;
+        
+        btnAddMFrag.setToolTipText(resource.getString("mFragInsertToolTip")); 
+        btnAddContextNode.setToolTipText(resource.getString("contextNodeInsertToolTip"));
+        btnAddInputNode.setToolTipText(resource.getString("inputNodeInsertToolTip"));
+        btnAddResidentNode.setToolTipText(resource.getString("residentNodeInsertToolTip"));;
+       
+        
         btnSelectObject.setToolTipText(resource.getString("selectToolTip"));
         btnGlobalOption.setToolTipText(resource.getString("globalOptionTitle"));
 
@@ -151,6 +161,14 @@ public class MEBNEditionPane extends JPanel {
             }
         });
 
+        btnAddMFrag.addActionListener(new ActionListener(){
+        	public void actionPerformed(ActionEvent ae){
+            	//netWindow.getGraphPane().setAction(GraphAction.CREATE_DOMAIN_MFRAG);
+            	controller.insertDomainMFrag(); 
+            }
+        }); 
+        
+        
         //ao clicar no botão node setamos as variáveis booleanas e os estados dos butões
         btnAddContextNode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
@@ -257,6 +275,7 @@ public class MEBNEditionPane extends JPanel {
 
         //colocar botões e controladores do look-and-feel no toolbar e esse no topPanel
 
+        jtbEdition.add(btnAddMFrag); 
         jtbEdition.add(btnAddContextNode);
         jtbEdition.add(btnAddInputNode);
         jtbEdition.add(btnAddResidentNode);
@@ -309,12 +328,16 @@ public class MEBNEditionPane extends JPanel {
         this.add(topPanel, BorderLayout.NORTH);
         this.add(centerPanel, BorderLayout.CENTER);
         this.add(bottomPanel, BorderLayout.SOUTH);
-        //TODO AJUSTAR ESSE CÓDIGO PARA FICAR BOM
-        JTabbedPane westTabPanel = new JTabbedPane();
-        westTabPanel.add("MTheory Tree", new MTheoryTree((MultiEntityBayesianNetwork)controller.getNetwork()));
-        this.add(westTabPanel, BorderLayout.WEST);
+        
+        //Tab panel
+        tabPanel = new JTabbedPane(); 
+        
+        mTheoryTree = new MTheoryTree((MultiEntityBayesianNetwork)controller.getNetwork()); 
+        tabPanel.add("MTheory Tree", mTheoryTree);
+        this.add(tabPanel, BorderLayout.WEST);
+        
+        tabPanel.setSelectedComponent(mTheoryTree); 
         setVisible(true);
-
     }
 
     /**
@@ -427,6 +450,15 @@ public class MEBNEditionPane extends JPanel {
 
     public JButton getBtnAddResidentNode() {
         return this.btnAddResidentNode;
+    }
+    
+    
+    public MTheoryTree getMTheoryTree(){
+    	return mTheoryTree; 
+    }
+    
+    public void setMTheoryTreeActive(){
+    	tabPanel.setSelectedComponent(mTheoryTree); 
     }
 
 }

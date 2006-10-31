@@ -107,6 +107,16 @@ public class NetworkController implements KeyListener {
         copiados = new ArrayList<ProbabilisticNode>();*/
     }
     
+    public void insertDomainMFrag(){
+    	if(mebnController!= null){
+    		try{
+    			mebnController.insertDomainMFrag("MFragTeste"); 
+    		} catch (Exception e){
+    			e.printStackTrace(); 
+    		}
+    	}
+    }    
+    
     /**
      * Insert a new context node in the MultiEntityBayesianNetwork with 
      * the standard label and descritpion.
@@ -118,6 +128,26 @@ public class NetworkController implements KeyListener {
     	if (mebnController != null)
 			try {
 				mebnController.insertContextNode(x,y);
+			} catch (Exception e) {
+				// TODO PEGAR ESSA EXCEÇÃO!! JOGAR PRO USUÁRIO!!
+				e.printStackTrace();
+			}
+    }
+    
+    public void insertResidentNode(double x, double y) {
+    	if (mebnController != null)
+			try {
+				mebnController.insertResidentNode(x,y);
+			} catch (Exception e) {
+				// TODO PEGAR ESSA EXCEÇÃO!! JOGAR PRO USUÁRIO!!
+				e.printStackTrace();
+			}
+    }
+        
+    public void insertInputNode(double x, double y) {
+    	if (mebnController != null)
+			try {
+				mebnController.insertInputNode(x,y);
 			} catch (Exception e) {
 				// TODO PEGAR ESSA EXCEÇÃO!! JOGAR PRO USUÁRIO!!
 				e.printStackTrace();

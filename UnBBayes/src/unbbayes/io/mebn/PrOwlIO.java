@@ -1,6 +1,5 @@
 package unbbayes.io.mebn;
 
-import java.awt.Frame;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -12,8 +11,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
 import unbbayes.prs.mebn.Argument;

@@ -34,6 +34,7 @@ public class DrawEllipse extends DrawElement {
 		} else {
 			graphics.setColor(getOutlineColor());
 		}
+		
 		graphics.draw(new Ellipse2D.Double(position.x - size.x/2, position.y - size.y/2, size.x, size.y));
 		graphics.setStroke(new BasicStroke(1));
 		

@@ -39,8 +39,8 @@ import javax.swing.JViewport;
 import unbbayes.controller.NetworkController;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 
 /**
@@ -370,6 +370,10 @@ public class NetworkWindow extends JInternalFrame {
 	 */
 	public PNEditionPane getNetWindowEdition() {
 		return this.pnEditionPane;
+	}
+	
+	public MEBNEditionPane getMebnEditionPane(){
+		return this.mebnEditionPane; 
 	}
 
 	/**

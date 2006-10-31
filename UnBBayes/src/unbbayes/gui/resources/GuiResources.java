@@ -115,11 +115,14 @@ public class GuiResources extends ListResourceBundle {
 		{"lessToolTip","Remove state"},
 		{"arcToolTip","Insert arc"},
 		{"probabilisticNodeInsertToolTip","Insert probabilistic variable"},
+		
 		{"decisionNodeInsertToolTip","Insert decision variable"},
 		{"utilityNodeInsertToolTip","Insert utility variable"},
 		{"contextNodeInsertToolTip","Insert context variable"},
 		{"inputNodeInsertToolTip","Insert input variable"},
 		{"residentNodeInsertToolTip","Insert resident variable"},
+		{"mFragInsertToolTip","Insert MFrag"},
+		
 		{"selectToolTip","Select various nodes and arcs"},
 		{"printTableToolTip","Print table"},
 		{"previewTableToolTip","Print table preview"},

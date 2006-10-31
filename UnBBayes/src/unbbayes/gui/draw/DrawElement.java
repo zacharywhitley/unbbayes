@@ -25,7 +25,6 @@ public abstract class DrawElement {
 	 * @param graphics Where the element is going to be drawn.
 	 */	
 	public void paint(Graphics2D graphics) {
-		
 		for (DrawElement element : elements) {
 			element.paint(graphics);
 		}
