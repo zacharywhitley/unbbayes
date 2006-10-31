@@ -3,6 +3,9 @@ package unbbayes.prs.mebn;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.gui.draw.DrawEllipse;
+import unbbayes.gui.draw.DrawRectangle;
+
 public class DomainResidentNode extends ResidentNode {
  
 	private List<GenerativeInputNode> inputInstanceFromList;
@@ -15,6 +18,8 @@ public class DomainResidentNode extends ResidentNode {
 	 
 	private DomainMFrag mFrag;
 	
+	private DrawRectangle drawRectangle; 
+	
 	public DomainResidentNode(String name, DomainMFrag mFrag){
 		
 		super(); 
@@ -26,6 +31,11 @@ public class DomainResidentNode extends ResidentNode {
 		inputNodeFatherList = new ArrayList<GenerativeInputNode>();
 		residentNodeFatherList = new ArrayList<DomainResidentNode>();	
 		residentNodeChildList = new ArrayList<DomainResidentNode>();	
+	
+    	size.x = 100;
+    	size.y = 20; 
+    	drawRectangle = new DrawRectangle(position, size);
+        drawElement.add(drawRectangle);
 	}
 	
 	public void addResidentNodeFather(DomainResidentNode father){

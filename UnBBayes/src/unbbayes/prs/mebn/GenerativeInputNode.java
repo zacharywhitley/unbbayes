@@ -3,6 +3,8 @@ package unbbayes.prs.mebn;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.gui.draw.DrawEllipse;
+
 public class GenerativeInputNode extends InputNode {
 
 	/**
@@ -26,6 +28,8 @@ public class GenerativeInputNode extends InputNode {
 
 	private DomainMFrag mFrag;
 	
+	private DrawEllipse drawEllipse; 
+	
 	public GenerativeInputNode(String name, DomainMFrag mFrag){
 		
 	   super(); 
@@ -34,6 +38,11 @@ public class GenerativeInputNode extends InputNode {
 	   this.mFrag = mFrag;
 	   
 	   residentNodeChildList = new ArrayList<DomainResidentNode>(); 
+	
+	   size.x = 100;
+	   size.y = 20; 
+	   drawEllipse = new DrawEllipse(position, size);
+	   drawElement.add(drawEllipse);	
 	}
 	
 	public void addResidentNodeChild(DomainResidentNode resident){

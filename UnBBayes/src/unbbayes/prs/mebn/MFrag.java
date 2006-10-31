@@ -3,10 +3,11 @@ package unbbayes.prs.mebn;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.util.NodeList;
 
-public class MFrag {
+public class MFrag extends Network{
 
 	private MultiEntityBayesianNetwork multiEntityBayesianNetwork;
 
@@ -16,16 +17,16 @@ public class MFrag {
 
 	private List<OrdinaryVariable> ordinaryVariableList;
 
-	private String name;
+	//private String name;
 
-	private NodeList nodeList;
+	//private NodeList nodeList;
 
 	/**
 	 * Contructs a new MFrag with empty node's list.
 	 * @param name The name of the MFrag.
 	 */
 	protected MFrag(String name, MultiEntityBayesianNetwork mebn) {
-		this.name = name;
+		super(name); 
 		this.multiEntityBayesianNetwork = mebn;
 		residentNodeList = new ArrayList<ResidentNode>();
 		inputNodeList = new ArrayList<InputNode>();
@@ -60,7 +61,8 @@ public class MFrag {
 	 * @param node
 	 *            The node to be added in the node list.
 	 */
-	protected void addNode(Node node) {
+	
+	public void addNode(Node node) {
 		nodeList.add(node);
 		multiEntityBayesianNetwork.addNode(node);
 	}
@@ -98,7 +100,7 @@ public class MFrag {
 	 * @param node
 	 *            The node to be added in the node list.
 	 */
-	protected void removeNode(Node node) {
+	public void removeNode(Node node) {
 		nodeList.remove(node);
 		multiEntityBayesianNetwork.removeNode(node);
 	}

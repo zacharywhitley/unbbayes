@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.Network;
+import unbbayes.util.NodeList;
 
 /**
  * This class represents a MultiEntityBayesianNetwork
@@ -39,6 +40,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	public void addDomainMFrag(DomainMFrag domainMFrag) {
 		mFragList.add(domainMFrag);
 		domainMFragList.add(domainMFrag); 
+		currentMFrag = domainMFrag; 
 	}
 	
 	/**
@@ -49,6 +51,7 @@ public class MultiEntityBayesianNetwork extends Network {
 		domainMFrag.delete();
 		mFragList.remove(domainMFrag);
 		domainMFragList.remove(domainMFrag); 
+		currentMFrag = null; 
 	}
 	
 	/**
@@ -58,6 +61,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	public void addFindingMFrag(FindingMFrag findingMFrag) {
 		mFragList.add(findingMFrag);
 		findingMFragList.add(findingMFrag); 
+		currentMFrag = findingMFrag; 
 	}
 	
 	/**
@@ -68,6 +72,7 @@ public class MultiEntityBayesianNetwork extends Network {
 		findingMFrag.delete();
 		mFragList.remove(findingMFrag);
 		domainMFragList.remove(findingMFrag); 
+		currentMFrag = null; 
 	}	
 	
 	/**
@@ -119,6 +124,17 @@ public class MultiEntityBayesianNetwork extends Network {
 	public void setCurrentMFrag(MFrag currentMFrag) {
 		this.currentMFrag = currentMFrag; 
 	}
-	
+
+	/**
+	 * Returns the NodeList of the current MFrag
+	 */	
+	public NodeList getNodeList(){
+		if (currentMFrag != null){
+		    return this.currentMFrag.getNodeList();
+		}
+		else{
+			return null; 
+		}
+	}
 	 
 }

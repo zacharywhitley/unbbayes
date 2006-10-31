@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.gui.draw.DrawEllipse;
+import unbbayes.gui.draw.DrawRectangleTwo;
 
 public class ContextNode extends MultiEntityNode {
  
@@ -27,7 +28,7 @@ public class ContextNode extends MultiEntityNode {
 	private List<ContextNode> innerTermFromList;
 	
 	private static Color color = Color.orange;
-    private DrawEllipse drawEllipse;
+    private DrawRectangleTwo drawContextNode;
     
     public ContextNode(String name, DomainMFrag mFrag) {
     	
@@ -41,8 +42,11 @@ public class ContextNode extends MultiEntityNode {
     	// Here it is defined how this node is going to be drawn.
         // In the superclass, Node, it was already definied to draw text, here
         // we add the draw ellipse.
-        drawEllipse = new DrawEllipse(position, size);
-        drawElement.add(drawEllipse);
+    	size.x = 100;
+    	size.y = 20; 
+    	drawContextNode = new DrawRectangleTwo(position, size);
+        drawElement.add(drawContextNode);
+        
     }
 	
 	/**
@@ -125,13 +129,13 @@ public class ContextNode extends MultiEntityNode {
 	@Override
 	public void setSelected(boolean b) {
 		// Update the DrawEllipse selection state
-		drawEllipse.setSelected(b);
+		drawContextNode.setSelected(b);
 		super.setSelected(b);
 	}
 	
 	@Override
 	public void paint(Graphics2D graphics) {
-		drawEllipse.setFillColor(getColor());
+		drawContextNode.setFillColor(getColor());
 		super.paint(graphics);
 	}
 
