@@ -40,7 +40,7 @@ public class DrawText extends DrawElement {
         
         graphics.setColor(getFillColor());
         graphics.drawString(as.getIterator(), (int)(position.x - lar/2), (int)(position.y + alt/2));
-
+        
 	}
 	
 	/**

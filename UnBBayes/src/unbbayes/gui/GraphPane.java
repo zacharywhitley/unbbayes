@@ -986,6 +986,15 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 		visibleDimension = new Dimension(0, 0);
 		action = GraphAction.NONE;
 		
+		JMenuItem item = new JMenuItem(resource.getString("properties"));
+		item.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae)
+			{   
+				controller.showExplanationProperties((ProbabilisticNode)getSelected());
+			}
+		});
+		popup.add(item);		
+		
 		repaint(); 		
 	}
 	

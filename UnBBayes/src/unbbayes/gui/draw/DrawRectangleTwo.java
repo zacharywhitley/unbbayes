@@ -1,10 +1,15 @@
 package unbbayes.gui.draw;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
+
+/**
+ * Construct a rectangle stylized for the context node 
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
+ * @version 1.0 (06/10/31)
+ */
 
 public class DrawRectangleTwo extends DrawElement{
 	
@@ -12,13 +17,13 @@ public class DrawRectangleTwo extends DrawElement{
 	private Point2D.Double size;
 	
 	/**
-	 * 
+	 * @param position The (x,y) position representing the center of the rectangle.
+	 * @param size The width and height of the rectangle.
 	 */
 	
 	public DrawRectangleTwo(Point2D.Double position, Point2D.Double size) {
 		this.position = position;
 		this.size = size;
-		this.setFillColor(Color.YELLOW); 
 	}
 
 	@Override

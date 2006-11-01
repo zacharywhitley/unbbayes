@@ -60,7 +60,7 @@ public class MEBNController {
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
 		if (!(currentMFrag instanceof DomainMFrag)) {
 			// TODO Criar uma exception específica para isso...
-			throw new Exception("Context nodes must be added only in domain MFrags!");
+			throw new Exception("Resident nodes must be added only in domain MFrags!");
 		}
 		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
 		DomainResidentNode node = new DomainResidentNode(resource.getString("contextNodeName") + domainMFrag.getDomainResidentNodeCount(), domainMFrag);
@@ -73,7 +73,7 @@ public class MEBNController {
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
 		if (!(currentMFrag instanceof DomainMFrag)) {
 			// TODO Criar uma exception específica para isso...
-			throw new Exception("Context nodes must be added only in domain MFrags!");
+			throw new Exception("Input nodes must be added only in domain MFrags!");
 		}
 		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
 		GenerativeInputNode node = new GenerativeInputNode(resource.getString("contextNodeName") + domainMFrag.getGenerativeInputNodeCount(), domainMFrag);

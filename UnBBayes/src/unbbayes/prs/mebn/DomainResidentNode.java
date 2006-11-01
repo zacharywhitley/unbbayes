@@ -1,9 +1,10 @@
 package unbbayes.prs.mebn;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.gui.draw.DrawEllipse;
 import unbbayes.gui.draw.DrawRectangle;
 
 public class DomainResidentNode extends ResidentNode {
@@ -18,13 +19,15 @@ public class DomainResidentNode extends ResidentNode {
 	 
 	private DomainMFrag mFrag;
 	
-	private DrawRectangle drawRectangle; 
+	private DrawRectangle drawResidentNode; 
+	
+	private static Color color = new Color(150, 200, 200); 	
 	
 	public DomainResidentNode(String name, DomainMFrag mFrag){
 		
 		super(); 
+		setName(name); 
 		
-		this.name = name; 
 		this.mFrag = mFrag; 
 		
 		inputInstanceFromList = new ArrayList<GenerativeInputNode>(); 
@@ -34,10 +37,34 @@ public class DomainResidentNode extends ResidentNode {
 	
     	size.x = 100;
     	size.y = 20; 
-    	drawRectangle = new DrawRectangle(position, size);
-        drawElement.add(drawRectangle);
+    	drawResidentNode = new DrawRectangle(position, size);
+        drawElement.add(drawResidentNode);
 	}
 	
+	/**
+     *  Gets all domain resident node's color.
+     *
+     * @return The color of all domain resident node's color.
+     */
+    public static Color getColor() {
+        return color;
+    }
+
+    /**
+     *  Sets the new color for all domain resident node.
+     *
+     * @return The new color of all domain resident node in RGB.
+     */
+    public static void setColor(int c) {
+        color = new Color(c);
+    }	
+	
+	@Override
+	public void setSelected(boolean b) {
+		drawResidentNode.setSelected(b);
+		super.setSelected(b);
+	}    
+    
 	public void addResidentNodeFather(DomainResidentNode father){
 		residentNodeFatherList.add(father); 
 	}
@@ -71,7 +98,11 @@ public class DomainResidentNode extends ResidentNode {
 		return this.inputInstanceFromList; 
 	}	
 	
-	
+	@Override
+	public void paint(Graphics2D graphics) {
+		drawResidentNode.setFillColor(getColor());
+		super.paint(graphics);
+	}	
 	
 	
 }

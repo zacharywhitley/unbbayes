@@ -27,14 +27,17 @@ public class ContextNode extends MultiEntityNode {
 	 */
 	private List<ContextNode> innerTermFromList;
 	
-	private static Color color = Color.orange;
+	private static Color color = Color.yellow;
+	
     private DrawRectangleTwo drawContextNode;
     
     public ContextNode(String name, DomainMFrag mFrag) {
     	
     	super(); 
     	
+    	setName(name); 
     	this.name = name; 
+    	
     	this.mFrag = mFrag; 
     	
     	innerTermOfList = new ArrayList<ContextNode>();
@@ -46,7 +49,7 @@ public class ContextNode extends MultiEntityNode {
     	size.y = 20; 
     	drawContextNode = new DrawRectangleTwo(position, size);
         drawElement.add(drawContextNode);
-        
+
     }
 	
 	/**
@@ -128,7 +131,6 @@ public class ContextNode extends MultiEntityNode {
 	 
 	@Override
 	public void setSelected(boolean b) {
-		// Update the DrawEllipse selection state
 		drawContextNode.setSelected(b);
 		super.setSelected(b);
 	}

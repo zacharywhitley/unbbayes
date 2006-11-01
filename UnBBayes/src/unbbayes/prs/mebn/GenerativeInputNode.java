@@ -1,9 +1,11 @@
 package unbbayes.prs.mebn;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.gui.draw.DrawEllipse;
+import unbbayes.gui.draw.DrawRectangleThree;
 
 public class GenerativeInputNode extends InputNode {
 
@@ -28,22 +30,43 @@ public class GenerativeInputNode extends InputNode {
 
 	private DomainMFrag mFrag;
 	
-	private DrawEllipse drawEllipse; 
+	private DrawRectangleThree drawInputNode; 
+	
+	private static Color color = new Color(200, 200, 200); //gray 		
 	
 	public GenerativeInputNode(String name, DomainMFrag mFrag){
 		
 	   super(); 
+	   setName(name); 
 	   
-	   this.name = name;
 	   this.mFrag = mFrag;
 	   
 	   residentNodeChildList = new ArrayList<DomainResidentNode>(); 
 	
 	   size.x = 100;
 	   size.y = 20; 
-	   drawEllipse = new DrawEllipse(position, size);
-	   drawElement.add(drawEllipse);	
+	   drawInputNode = new DrawRectangleThree(position, size);
+	   drawElement.add(drawInputNode);	
 	}
+	
+	/**
+     *  Gets all generative input node node's color.
+     *
+     * @return The color of all generative input node's color.
+     */
+    public static Color getColor() {
+        return color;
+    }
+
+    /**
+     *  Sets the new color for all generative input node node.
+     *
+     * @return The new color of all generative input node in RGB.
+     */
+    public static void setColor(int c) {
+        color = new Color(c);
+    }		
+	
 	
 	public void addResidentNodeChild(DomainResidentNode resident){
 		residentNodeChildList.add(resident); 
@@ -61,4 +84,16 @@ public class GenerativeInputNode extends InputNode {
 		return mFrag; 
 	}
 
+	@Override
+	public void setSelected(boolean b) {
+		drawInputNode.setSelected(b);
+		super.setSelected(b);
+	}    	
+	
+	@Override
+	public void paint(Graphics2D graphics) {
+		drawInputNode.setFillColor(getColor());
+		super.paint(graphics);
+	}	
+	
 }

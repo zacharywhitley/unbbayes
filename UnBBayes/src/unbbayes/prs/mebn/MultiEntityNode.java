@@ -1,5 +1,6 @@
 package unbbayes.prs.mebn;
 
+import java.awt.Color;
 import java.util.List;
 import java.util.ArrayList; 
 
@@ -17,12 +18,17 @@ public class MultiEntityNode extends Node {
 	 
 	private List<MultiEntityNode> innerTermFromList;
 
+
+	private static Color color;
+	
 	/**
 	 * Constructs a MultiEntityNode
 	 */	
 	
 	public MultiEntityNode(){
-		super(); 
+		
+		super();
+		
 		argumentList = new ArrayList<Argument>(); 
 		innerTermOfList = new ArrayList<MultiEntityNode>();
 		innerTermFromList = new ArrayList<MultiEntityNode>(); 
@@ -37,6 +43,24 @@ public class MultiEntityNode extends Node {
 	public MFrag getMFrag(){
 		return mFrag; 
 	}
+	
+	/**
+     *  Gets all context node's color.
+     *
+     * @return The color of all context node's color.
+     */
+    public static Color getColor() {
+        return color;
+    }
+
+    /**
+     *  Sets the new color for all context node.
+     *
+     * @return The new color of all context node in RGB.
+     */
+    public static void setColor(int c) {
+        color = new Color(c);
+    }	
 	
 	/**
 	 * Method responsible for removing this node from its MFrag.
