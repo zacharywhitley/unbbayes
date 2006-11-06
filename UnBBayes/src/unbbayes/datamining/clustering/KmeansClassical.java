@@ -252,6 +252,9 @@ public class KmeansClassical  {
 	 * @return New centroids values.
 	 */
 	private float[][] calculateCentroids() {
+		// TODO RETIRAR A DEFINIÇÃO DE INPUT (FEITA DE FORMA ARBITRÁRIA PELO 
+		// ROMMEL) E CORRIGIR ERRO
+		float[][] input = new float[assignmentMatrix.length][assignmentMatrix.length];
 		float[][] result = new float[assignmentMatrix.length][input[0].length];
 		float[] sum = new float[input[0].length];
 		int membersCounter;
@@ -297,6 +300,9 @@ public class KmeansClassical  {
 	private double calculateError() {
 		double result = 0;
 
+		// TODO RETIRAR A DEFINIÇÃO DE INPUT (FEITA DE FORMA ARBITRÁRIA PELO 
+		// ROMMEL) E CORRIGIR ERRO
+		float[][] input = new float[assignmentMatrix.length][assignmentMatrix.length];
 		for (int i = 0; i < assignmentMatrix.length; i++) {
 			for (int j = 0; j < assignmentMatrix[0].length; j++) {
 				if (assignmentMatrix[i][j] == 1) {
