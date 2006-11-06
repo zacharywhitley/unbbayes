@@ -18,6 +18,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
+import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -37,14 +38,19 @@ public class MTheoryTree extends JTree {
 	private ArrayMap<Object, MFrag> mFragMap = new ArrayMap<Object, MFrag>();
 	
 	private JPopupMenu popup = new JPopupMenu();
+	
+	private JPopupMenu popupMFrag = new JPopupMenu(); 
 
 	protected IconController iconController = IconController.getInstance();
 
+    private final NetworkController controller;	
+	
 	/*public MTheoryTree(final NetworkWindow netWindow) {
 		net = netWindow.getMultiEntityBayesianNetwork();*/
-	public MTheoryTree(final MultiEntityBayesianNetwork net) {
+	public MTheoryTree(final MultiEntityBayesianNetwork net, NetworkController netController) {
 		
 		this.net = net;
+		this.controller = netController; 
 
 		// set up node icons
 		setCellRenderer(new MTheoryTreeCellRenderer());
@@ -56,9 +62,11 @@ public class MTheoryTree extends JTree {
 	    
 	    createTree();
 	    createPopupMenu();
+	    createPopupMenuMFrag(); 	    
 
 		// trata os eventos de mouse para a árvore de evidências
 		addMouseListener(new MouseAdapter() {
+			
 			public void mousePressed(MouseEvent e) {
 				int selRow = getRowForLocation(e.getX(), e.getY());
 				if (selRow == -1) {
@@ -74,12 +82,13 @@ public class MTheoryTree extends JTree {
 						// showLikelihood((DefaultMutableTreeNode)
 						// node.getParent());
 						// TODO BOTÃO DIREITO NA MFRAG FAZ NADA
+						
+						
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 						treeDoubleClick(node);
 					} else if (e.getClickCount() == 1) {
-						//DEVERIA SER FEITO PELO CONTROLLER TB, PARA ATUALIZAR A TELA TB...
-						net.setCurrentMFrag(mFragMap.get(node));
+						controller.getMebnController().setCurrentMFrag(mFragMap.get(node)); 
 					}
 				} else {
 					if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
@@ -113,17 +122,29 @@ public class MTheoryTree extends JTree {
 		expandTree();
 	}
 
+	private void createPopupMenuMFrag(){
+		JMenuItem itemRename = new JMenuItem("Rename"); 
+		itemRename.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				
+			}
+		}); 
+		
+		popupMFrag.add(itemRename); 
+	}
+	
 	private void createPopupMenu() {
 		//TODO USAR RESOURCE PARA STRING
 		//TODO USAR MÉTODO DE ADICIONAR DO CONTROLLER...
+		
 		JMenuItem itemAddDomainMFrag = new JMenuItem("Add DomainMFrag");
 		itemAddDomainMFrag.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae)
             {   
-            	net.addDomainMFrag(new DomainMFrag("DomainMFrag " + net.getMFragCount(), net));
-            	updateTree();
+            	controller.getMebnController().insertDomainMFrag("DomainMFrag " + net.getMFragCount()); 
             }
         });
+		
 		JMenuItem itemAddFindingMFrag = new JMenuItem("Add FindingMFrag");
 		itemAddFindingMFrag.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae)
@@ -132,6 +153,7 @@ public class MTheoryTree extends JTree {
             	updateTree();
             }
         });
+		
         popup.add(itemAddDomainMFrag);
         popup.add(itemAddFindingMFrag);
 	}

@@ -9,10 +9,11 @@ import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.util.NodeList;
 
-public class Network {
+public class Network implements Graph{
 
 	protected String id;
 	protected String name;
+	
 	/**
 	 *  List of nodes that this network has.
 	 */

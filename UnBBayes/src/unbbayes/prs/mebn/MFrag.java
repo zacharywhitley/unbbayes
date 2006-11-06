@@ -1,13 +1,18 @@
 package unbbayes.prs.mebn;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import unbbayes.prs.Network;
+import javax.swing.JOptionPane;
+
+import unbbayes.prs.Edge;
+import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.util.NodeList;
 
-public class MFrag extends Network{
+public class MFrag implements Graph{
 
 	private MultiEntityBayesianNetwork multiEntityBayesianNetwork;
 
@@ -16,6 +21,23 @@ public class MFrag extends Network{
 	private List<InputNode> inputNodeList;
 
 	private List<OrdinaryVariable> ordinaryVariableList;
+	
+	/**
+	 *  List of nodes that this MFrag has.
+	 */
+	private NodeList nodeList;
+	
+	/** 
+	 * List of edges that this MFrag has.
+	 */
+	
+	private ArrayList<Edge> edgeList;
+	
+	protected Map<String,Integer> nodeIndexes;	
+	
+	
+	private String name; 
+	
 
 	//private String name;
 
@@ -26,14 +48,36 @@ public class MFrag extends Network{
 	 * @param name The name of the MFrag.
 	 */
 	protected MFrag(String name, MultiEntityBayesianNetwork mebn) {
-		super(name); 
+
 		this.multiEntityBayesianNetwork = mebn;
 		residentNodeList = new ArrayList<ResidentNode>();
 		inputNodeList = new ArrayList<InputNode>();
 		ordinaryVariableList = new ArrayList<OrdinaryVariable>();
+		
+		setName(name); 
+		
 		nodeList = new NodeList();
+		edgeList = new ArrayList<Edge>(); 
+        nodeIndexes = new HashMap<String,Integer>();		
 	}
 
+	/**
+	 * Set the MFrag's name.
+	 * @argument name The MFrag's name.
+	 */
+	public void setName(String name){
+		this.name = name; 
+	}
+	
+	/**
+	 * Get the MFrag's name.
+	 * @return The MFrag's name.
+	 */
+	public String getName() {
+		return name;
+	}	
+	
+	
 	/**
 	 * Method responsible for deleting this MFrag but not its nodes and 
 	 * variables. Only their relationship.
@@ -177,13 +221,7 @@ public class MFrag extends Network{
 		return ordinaryVariableList;
 	}	
 
-	/**
-	 * Get the MFrag's name.
-	 * @return The MFrag's name.
-	 */
-	public String getName() {
-		return name;
-	}
+
 	
 	/**
 	 * Method responsible to tell if the node list contains the given node.
@@ -193,6 +231,111 @@ public class MFrag extends Network{
 	public boolean containsNode(Node node) {
 		return nodeList.contains(node);
 	}	
+	
+	
+	/**
+	 *  Retorna os edgeList do grafo.
+	 *
+	 *@return    edgeList do grafo.
+	 */
+	public List<Edge> getEdges(){
+		return edgeList; 
+	}
+
+	/**
+	 *  Retorna os nós do grafo.
+	 *
+	 *@return    nós do grafo.
+	 * 
+	 * @todo Eliminar esse metodo! eh utilizado na classe NetWindow
+	 */
+	public NodeList getNodes(){
+		return nodeList; 
+	}
+
+	/**
+	 *  Returna o número de variáveis da rede.
+	 *
+	 *@return    número de variáveis da rede.
+	 */
+	public int getNodeCount(){
+		return nodeList.size();		
+	}
+
+
+
+	/**
+	 *  Retira do grafo o arco especificado.
+	 *
+	 *@param  arco  arco a ser retirado.
+	 */
+	public void removeEdge(Edge arco) {
+	    arco.getOriginNode().getChildren().remove(arco.getDestinationNode());
+	    arco.getDestinationNode().getParents().remove(arco.getOriginNode());
+	    edgeList.remove(arco);	
+	}
+
+
+	/**
+	 *  Adciona um arco a rede se este for um arco valido. 
+	 *  Arcos Validos:
+	 *  - Input -> Resident
+	 *  - Resident -> Resident
+	 *  Levanta a excessao <> caso os nos nao sejam validos.  
+	 *
+	 *@param  arco  arco a ser inserido.
+	 */
+	public void addEdge(Edge arco){
 		
+		Node origin = arco.getOriginNode();
+		Node destination = arco.getDestinationNode();
+		
+		if (destination instanceof ResidentNode){
+			if (origin instanceof ResidentNode){
+			    origin.getChildren().add(arco.getDestinationNode());
+			    destination.getParents().add(arco.getOriginNode());
+			    edgeList.add(arco);
+			}
+			else{
+				if (origin instanceof InputNode){
+				    origin.getChildren().add(arco.getDestinationNode());
+				    destination.getParents().add(arco.getOriginNode());
+				    edgeList.add(arco);					
+				}
+				else{
+				    JOptionPane.showMessageDialog(null, "Arco Invalido!!!", "Alerta", JOptionPane.WARNING_MESSAGE); 
+				}
+			}
+		}
+		else{
+			 JOptionPane.showMessageDialog(null, "Arco Invalido!!!", "Alerta", JOptionPane.WARNING_MESSAGE); 
+		}
+	}
+
+	/**
+	 *  Verifica existência de determinado arco.
+	 *
+	 *@param  no1  nó origem.
+	 *@param  no2  nó destino.
+	 *@return      posição do arco no vetor ou -1 caso não exista tal arco.
+	 */
+	public int hasEdge(Node no1, Node no2){
+		if (no1 == no2) {
+			return 1;
+		}
+	
+		int sizeArcos = edgeList.size();
+		Edge auxA;
+		for (int i = 0; i < sizeArcos; i++) {
+			auxA = (Edge) edgeList.get(i);
+			if ((auxA.getOriginNode() == no1)
+				&& (auxA.getDestinationNode() == no2)
+				|| (auxA.getOriginNode() == no2)
+				&& (auxA.getDestinationNode() == no1)) {
+				return i;
+			}
+		}
+		return -1;		
+	}
 
 }

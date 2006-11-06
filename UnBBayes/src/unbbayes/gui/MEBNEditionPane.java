@@ -332,7 +332,7 @@ public class MEBNEditionPane extends JPanel {
         //Tab panel
         tabPanel = new JTabbedPane(); 
         
-        mTheoryTree = new MTheoryTree((MultiEntityBayesianNetwork)controller.getNetwork()); 
+        mTheoryTree = new MTheoryTree((MultiEntityBayesianNetwork)controller.getNetwork(), controller); 
         tabPanel.add("MTheory Tree", mTheoryTree);
         this.add(tabPanel, BorderLayout.WEST);
         

@@ -49,7 +49,6 @@ import unbbayes.gui.draw.DrawDashRectangle;
 import unbbayes.gui.draw.DrawElement;
 import unbbayes.gui.draw.IDrawable;
 import unbbayes.prs.Edge;
-import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
@@ -141,8 +140,8 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 		
 		//TODO RETIRAR A NECESSIDADE DE PEGAR A REDE, PEGAR DIRETO OS NÓS, ETC.
 
- 	    edgeList = controller.getNetwork().getEdges();
-	    nodeList = controller.getNetwork().getNodes();  
+ 	    edgeList = controller.getGraph().getEdges();
+	    nodeList = controller.getGraph().getNodes();
 		
 		selectedGroup = new ArrayList<IDrawable>();
 		startSelectionPoint = new Point2D.Double();
@@ -265,6 +264,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	 *@see Node
 	 */
 	public Node getNode(double x, double y) {
+		
 		double x1;
 		double y1;
 		long width = Node.getWidth()/2;
@@ -589,7 +589,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 		Node node = getNode(e.getX(), e.getY());
 		if (node != null) {
 			if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-				if (controller.getNetwork() instanceof SingleEntityNetwork) {
+				if (controller.getGraph() instanceof SingleEntityNetwork) {
 					controller.getScreen().setTable(controller.makeTable(node));
 					controller.getScreen().setTableOwner(node);
 					if (controller.getScreen().isCompiled()) {
@@ -605,6 +605,21 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 							}
 						}
 					}
+				}
+				else{
+					//TODO Acao quando for selecionado um no da MFrag...
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+					
 				}
 			}
 		} else {
@@ -630,6 +645,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	 *@see MouseEvent
 	 */
 	public void mouseReleased(MouseEvent e) {
+		
 		Node destinationNode = getNode(e.getX(), e.getY());
 		Edge edge = getEdge(e.getX(), e.getY());
 		
@@ -639,7 +655,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 			if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 				Node originNode = movingEdge.getOriginNode();
 //				TODO RETIRAR A NECESSIDADE DE PEGAR A REDE, PEGAR DIRETO OS NÓS, ETC.
-				if ((destinationNode != null) && !originNode.equals(destinationNode) && (controller.getNetwork().hasEdge(originNode, destinationNode) == -1)) {
+				if ((destinationNode != null) && !originNode.equals(destinationNode) && (controller.getGraph().hasEdge(originNode, destinationNode) == -1)) {
 					movingEdge = new Edge(originNode, destinationNode);
 					insertEdge(movingEdge);
 				}
@@ -970,10 +986,10 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 		return action;
 	}
 	
-	public void resetNetwork(Network network){
+	public void resetGraph(){
 		
-	    edgeList = network.getEdges();
-	    nodeList = network.getNodes();  
+	    edgeList = controller.getGraph().getEdges();
+	    nodeList = controller.getGraph().getNodes();  
 		
 		selectedGroup = new ArrayList<IDrawable>();
 		startSelectionPoint = new Point2D.Double();

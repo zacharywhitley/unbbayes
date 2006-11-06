@@ -3,6 +3,7 @@ package unbbayes.controller;
 import java.util.ResourceBundle;
 
 import unbbayes.gui.NetworkWindow;
+import unbbayes.prs.Edge;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
@@ -27,6 +28,25 @@ public class MEBNController {
 		this.screen = screen;
 	}
 
+	
+	/*---------------------------- Edge ---------------------------*/
+	
+    /**
+     *  Faz a ligacão do arco desejado entre pai e filho.
+     *
+     * @param  arco  um <code>TArco</code> que representa o arco a ser ligado
+     * @since
+     */
+    public void insertEdge(Edge arco) {
+    	
+    	MFrag mFragCurrent = multiEntityBayesianNetwork.getCurrentMFrag(); 
+    	mFragCurrent.addEdge(arco);
+    	
+    }
+	
+	
+	/*---------------------------- MFrag ----------------------------*/
+	
 	public void insertDomainMFrag(String name) {
 		
 		multiEntityBayesianNetwork.addDomainMFrag(new DomainMFrag("DomainMFrag "
@@ -35,14 +55,25 @@ public class MEBNController {
 		screen.getMebnEditionPane().getMTheoryTree().updateTree(); 
 	    screen.getMebnEditionPane().setMTheoryTreeActive(); 
 	    
-	    screen.getGraphPane().resetNetwork(multiEntityBayesianNetwork.getCurrentMFrag()); 
+	    screen.getGraphPane().resetGraph(); 
 	
 	}
 	
 	public void removeDomainMFrag(DomainMFrag domainMFrag) {
 		multiEntityBayesianNetwork.removeDomainMFrag(domainMFrag);
 	}
+	
+	public void setCurrentMFrag(MFrag mFrag){
+		
+		multiEntityBayesianNetwork.setCurrentMFrag(mFrag); 
+	    screen.getGraphPane().resetGraph(); 
+		
+	}	
 
+
+	
+	/*---------------------------- ContextNode ----------------------------*/	
+	
 	public void insertContextNode(double x, double y) throws Exception {
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
 		if (!(currentMFrag instanceof DomainMFrag)) {

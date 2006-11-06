@@ -13,6 +13,7 @@ public class ContextNode extends MultiEntityNode {
 	/**
 	 * 
 	 */
+	
 	private static final long serialVersionUID = 8186266877724939663L;
 
 	private DomainMFrag mFrag;

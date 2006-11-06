@@ -59,6 +59,7 @@ import unbbayes.gui.FileIcon;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.prs.Edge;
+import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -96,7 +97,7 @@ public class NetworkController implements KeyListener {
     /***************** BEGIN CONTROLLING MULTI ENTTITY BAYESIAN NETWORK *********************/
     
     /**
-     *  Constructs a controller for SingleEntityNetwork.
+     *  Constructs a controller for MultiEntityNetwork.
      *
      */
     public NetworkController(MultiEntityBayesianNetwork multiEntityBayesianNetwork, NetworkWindow screen) {
@@ -154,6 +155,11 @@ public class NetworkController implements KeyListener {
 			}
     }
     
+    public MEBNController getMebnController(){
+    	return mebnController; 
+    }
+    
+    
     /***************** END CONTROLLING MULTI ENTTITY BAYESIAN NETWORK *********************/
     
     
@@ -194,6 +200,24 @@ public class NetworkController implements KeyListener {
     		return multiEntityBayesianNetwork;
     	}
     	return null;
+    }
+    
+    public Graph getGraph(){
+    	
+    	if (singleEntityNetwork != null) {
+    		return singleEntityNetwork;
+    	}
+    	
+    	if (multiEntityBayesianNetwork != null) {
+    		if (multiEntityBayesianNetwork.getCurrentMFrag()!= null){
+    		   return multiEntityBayesianNetwork.getCurrentMFrag();
+    		}
+    		else{
+    			return multiEntityBayesianNetwork; 
+    		}
+    	}
+    	
+    	return null;   	
     }
 
     /**
@@ -285,7 +309,11 @@ public class NetworkController implements KeyListener {
      * @param edge The new edge to be inserted.
      */
     public void insertEdge(Edge edge) {
-    	if (senController != null) senController.insertEdge(edge);
+    	if (senController != null) senController.insertEdge(edge); 
+    	else{
+    		if (mebnController!= null) mebnController.insertEdge(edge); 
+    	}
+    	
     }
     
     /**
