@@ -1,71 +1,46 @@
 package unbbayes.gui.table;
-/*
- * (swing1.1beta3)
- * 
- */
 
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.Iterator;
 
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
+
 
 /**
-  * GroupableTableHeader
-  *
-  * @version 1.0 10/20/98
-  * @author Rommel N Carvalho
-  */
-
+ * This is the object which manages the header of the JTable and
+ * also provides functionality for groupable headers.
+ */
 public class GroupableTableHeader extends JTableHeader {
 
-	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;	
-	
-	private static final String uiClassID = "GroupableTableHeaderUI";
-	protected Vector columnGroups = null;
-
-	public GroupableTableHeader(TableColumnModel model) {
-		super(model);
-		setUI(new GroupableTableHeaderUI());
-		setReorderingAllowed(false);
-	}
-
-	public void setReorderingAllowed(boolean b) {
-		reorderingAllowed = false;
-	}
-
-	public void addColumnGroup(ColumnGroup g) {
-		if (columnGroups == null) {
-			columnGroups = new Vector();
-		}
-		columnGroups.addElement(g);
-	}
-
-	public Enumeration getColumnGroups(TableColumn col) {
-		if (columnGroups == null)
-			return null;
-		Enumeration enumeration = columnGroups.elements();
-		while (enumeration.hasMoreElements()) {
-			ColumnGroup cGroup = (ColumnGroup) enumeration.nextElement();
-			Vector v_ret = (Vector) cGroup.getColumnGroups(col, new Vector<Object>());
-			if (v_ret != null) {
-				return v_ret.elements();
-			}
-		}
-		return null;
-	}
-
-	public void setColumnMargin() {
-		if (columnGroups == null)
-			return;
-		int columnMargin = getColumnModel().getColumnMargin();
-		Enumeration enumeration = columnGroups.elements();
-		while (enumeration.hasMoreElements()) {
-			ColumnGroup cGroup = (ColumnGroup) enumeration.nextElement();
-			cGroup.setColumnMargin(columnMargin);
-		}
-	}
-
+    /**
+     * Identifies the UI class which draws the header.
+     */    
+    private static final String uiClassID = "GroupableTableHeaderUI";
+    
+    /**
+     * Constructs a GroupableTableHeader which is initialized with cm as the
+     * column model. If cm is null this method will initialize the table header
+     * with a default TableColumnModel.
+     * @param model the column model for the table
+     */    
+    public GroupableTableHeader(GroupableTableColumnModel model) {
+        super(model);
+        setUI(new GroupableTableHeaderUI());
+        setReorderingAllowed(false);
+    }
+    
+    
+    /**
+     * Sets the margins correctly for all groups within
+     * the header.
+     */    
+    public void setColumnMargin() {
+        int columnMargin = getColumnModel().getColumnMargin();
+        Iterator iter = ((GroupableTableColumnModel)columnModel).columnGroupIterator();
+        while (iter.hasNext()) {
+            ColumnGroup cGroup = (ColumnGroup)iter.next();
+            cGroup.setColumnMargin(columnMargin);
+        }
+    }
+    
 }
+

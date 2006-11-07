@@ -49,7 +49,7 @@ public class ProbabilisticTable extends JTable {
      * @see javax.swing.JTable#createDefaultTableHeader()
      */
     protected JTableHeader createDefaultTableHeader() {
-        GroupableTableHeader gth = new GroupableTableHeader(columnModel);
+        //GroupableTableHeader gth = new GroupableTableHeader(columnModel);
         
         if (node instanceof ITabledVariable) {
             potTab = ((ITabledVariable) node).getPotentialTable();
@@ -108,7 +108,7 @@ public class ProbabilisticTable extends JTable {
                         cg.add(cgf.get(l - 1));
                     }
                     cgf.add(cg);
-                    gth.addColumnGroup(cg);
+                   // gth.addColumnGroup(cg);
                     
                     // put the name of the states of this father in the lth vector 
                     // and tth position, repeating the name if necessary (for each 
@@ -127,7 +127,7 @@ public class ProbabilisticTable extends JTable {
                                 cg.add(((Vector)cgv.get(l - 1)).get(t));
                             }
                         }
-                        gth.addColumnGroup(cg);
+                        //gth.addColumnGroup(cg);
                     }
                     columns = states;
                 }
@@ -137,7 +137,7 @@ public class ProbabilisticTable extends JTable {
             return null;
         }
         
-        return gth;
+        return new JTableHeader();
     }
 
 	/**

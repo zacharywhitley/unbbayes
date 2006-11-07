@@ -22,15 +22,22 @@
 package unbbayes.prs.bn;
 
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ResourceBundle;
+
 import javax.swing.JDialog;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
-import unbbayes.prs.*;
+import unbbayes.gui.table.ColumnGroup;
+import unbbayes.gui.table.GroupableTableColumnModel;
+import unbbayes.gui.table.GroupableTableHeader;
+import unbbayes.prs.Node;
 import unbbayes.util.FloatCollection;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
-import java.util.ResourceBundle;
 
 
 /**
@@ -496,17 +503,110 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 			nEstados *= getVariableAt(count).getStatesSize();
 		}
 
-		tabela = new JTable(no.getStatesSize() + noVariaveis - 1, nEstados + 1);
+		// Constructing the data of the data model
+		Float[][] data = new Float[no.getStatesSize()][nEstados + 1];
+		/*tabela = new JTable(no.getStatesSize() + noVariaveis - 1, nEstados + 1);
 
 		for (int k = noVariaveis - 1, l = 0; k < tabela.getRowCount(); k++, l++) {
 			tabela.setValueAt(no.getStateAt(l), k, 0);
-		}
+		}*/
 
+		// Constructing the last header's row
+		String[] column = new String[data[0].length];
+		Node lastNode = getVariableAt(noVariaveis - 1);
+		nEstados /= lastNode.getStatesSize();
+		column[0] = lastNode.getName();
+		for (int i = 0; i < data[0].length - 1; i++) {
+			if (noVariaveis > 1) {
+			// Reapeats all states in the node until there are cells to fill
+			column[i + 1] = lastNode.getStateAt((i / nEstados) % lastNode.getStatesSize());
+			} else {
+				column[i + 1] = "State";
+			}
+		}		
+		
+		// Constructiong the Float[][] 
+		nEstados = no.getStatesSize();
+		for (int c = 1, n = 0; c < data[0].length; c++, n += nEstados) {
+			for (int r = 0; r < data.length; r++) {
+				data[r][c] = new Float(dados.data[n + r]);
+			}
+		}
+		
+		DefaultTableModel model = new DefaultTableModel();
+		model.setDataVector(data, column);
+		tabela = new JTable();
+		tabela.setColumnModel(new GroupableTableColumnModel());
+		tabela.setTableHeader(new GroupableTableHeader(
+				(GroupableTableColumnModel) tabela.getColumnModel()));
+		tabela.setModel(model);
+		
+		for (int count = 1; count < noVariaveis - 1; count++) {
+			nEstados *= getVariableAt(count).getStatesSize();
+		}
+		
+		// Setup Column Groups
+		GroupableTableColumnModel cModel = (GroupableTableColumnModel) tabela
+				.getColumnModel();
+		ColumnGroup cNodeGroup = null;
+		ColumnGroup cNodeTempGroup = null;
+		ColumnGroup cGroup = null;
+		List<ColumnGroup> cGroupList = null;
+		int columnIndex;
+		boolean firstNode = true;
+		for (int k = noVariaveis - 2; k >= 1; k--) {
+			Node auxNo = getVariableAt(k);
+			nEstados /= auxNo.getStatesSize();
+			// Set the node name as a header in the first column
+			if (!firstNode) {
+				cNodeTempGroup = cNodeGroup;
+				cNodeGroup = new ColumnGroup(auxNo.getName());
+				cNodeGroup.add(cNodeTempGroup);
+			} else {
+				cNodeGroup = new ColumnGroup(auxNo.getName());
+				cNodeGroup.add(cModel.getColumn(0));
+			}
+			columnIndex = 1;
+			cGroup = null;
+			cGroupList = new ArrayList<ColumnGroup>();
+			while (columnIndex <= nEstados) {
+				for (int i = 0; i < auxNo.getStatesSize(); i++) {
+					cGroup = new ColumnGroup(auxNo.getStateAt(i));
+					if (!firstNode) {
+						for (ColumnGroup group : cGroupList) {
+							columnIndex++;
+							cGroup.add(group);
+						}
+					} else {
+						Node previousNode = getVariableAt(k + 1);
+						for (int j = 0; j < previousNode.getStatesSize(); j++) {
+							cGroup.add(cModel.getColumn(columnIndex++));
+						}
+					}
+					cGroupList.add(cGroup);
+				}
+			}
+			firstNode = false;
+		}
+		if (cNodeGroup != null) {
+			cModel.addColumnGroup(cNodeGroup);
+		}
+		if (cGroupList != null) {
+			for (ColumnGroup group : cGroupList) {
+				cModel.addColumnGroup(group);
+			}
+		}
+		
+		
+		
+		/*// Fill the parent's node and it's states as 'header' labels
 		for (int k = noVariaveis - 1, l = 0; k >= 1; k--, l++) {
 			Node auxNo = getVariableAt(k);
 			nEstados /= auxNo.getStatesSize();
+			// Set the node name that is the row header
 			tabela.setValueAt(auxNo.getName(), l, 0);
 			for (int i = 0; i < tabela.getColumnCount() - 1; i++) {
+				// Reapeats all states in the node until there are cells to fill
 				tabela.setValueAt(auxNo.getStateAt((i / nEstados) % auxNo.getStatesSize()), l, i + 1);
 			}
 		}
@@ -516,9 +616,9 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 			for (int j = noVariaveis - 1, l = 0; j < tabela.getRowCount(); j++, l++) {
 				tabela.setValueAt("" + dados.data[k + l], j, i);
 			}
-		}
+		}*/
 
-		tabela.setTableHeader(null);
+		//tabela.setTableHeader(null);
 		tabela.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
 		JDialog diag = new JDialog();
@@ -529,4 +629,3 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 		diag.setTitle(title);
 	}
 }
-

@@ -320,6 +320,8 @@ public class SENController {
                     table.setValueAt("" + df.format(potTab.getValue(k + l)), j, i);
                 }
             }
+            
+            potTab.showTable("Rommel");
 
         } else {
             // decision
