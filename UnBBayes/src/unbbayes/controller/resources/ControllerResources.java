@@ -50,6 +50,8 @@ public class ControllerResources extends ListResourceBundle {
 		{"decisionNodeName","D"},
 		{"utilityNodeName","U"},
 		{"contextNodeName","CX"},
+		{"residentNodeName","RX"},
+		{"inputNodeName","IX"},		
 		{"potentialTableException","It is not a number!"},
 		{"copiedNodeName","Cópia do "},
 		{"askTitle","Type a title for the net"},

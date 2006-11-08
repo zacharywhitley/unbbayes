@@ -29,12 +29,15 @@ public class GuiResources extends ListResourceBundle {
 	 * The resources
 	 */
 	static final Object[][] contents =
-	{	{"fileDirectoryType","Directory"},
+	{	
+		{"fileDirectoryType","Directory"},
 		{"fileARFFType","Arquivo Arff"},
 		{"fileTXTType","Text File TXT"},
 		{"fileNETType","Baysian Netwotk File NET"},
 		{"fileGenericType","Generic File"},
+		
 		{"unbbayesTitle","UnBBayes"},
+		
 		{"newToolTip","New net"},
 		{"openToolTip","Open net"},
 		{"saveToolTip","Save net"},
@@ -44,13 +47,16 @@ public class GuiResources extends ListResourceBundle {
 		{"windowsToolTip","Windows Look And Feel"},
 		{"tileToolTip","Organize windows in tile"},
 		{"cascadeToolTip","Organize windows in cascade"},
+		
 		{"netFileFilter","Net (.net), XMLBIF (.xml), PR-OWL (.owl)"},
 		{"xmlBIFFileFilter", "XMLBIF (.xml)"},
 		{"textFileFilter","Text (.txt)"},
 		{"fileUntitled","Untitled.txt"},
+		
 		{"globalOptionTitle","Global Option"},
 		{"hierarchyToolTip","Hierarchy definition"},
-                {"usaName","USA"},
+        
+		{"usaName","USA"},
 		{"chinaName","China"},
 		{"japanName","Japan"},
 		{"ukName","UK"},
@@ -58,6 +64,7 @@ public class GuiResources extends ListResourceBundle {
 		{"italyName","Italy"},
 		{"canadaName","Canada"},
 		{"brazilName","Brazil"},
+		
 		{"nodeName","Node: "},
 		{"radiusLabel","Radius:"},
 		{"radiusToolTip","Node radius"},
@@ -81,6 +88,7 @@ public class GuiResources extends ListResourceBundle {
 		{"selectionColorToolTip","Select selection color"},
 		{"backgroundColorLabel","Background"},
 		{"backgroundColorToolTip","Select background color"},
+		
 		{"confirmLabel","Confirm"},
 		{"confirmToolTip","Corfim modifications"},
 		{"cancelLabel","Cancel"},
@@ -93,10 +101,13 @@ public class GuiResources extends ListResourceBundle {
 		{"logTab","Log"},
 		{"createLogLabel","Create Log"},
 		{"nodeGraphName","Node"},
+		
 		{"LookAndFeelUnsupportedException","It does not support this LookAndFeel: "},
 		{"LookAndFeelClassNotFoundException","This LookAndFeel class was not found: "},
 		{"LookAndFeelInstantiationException","It was not possible to load this LookAndFeel: "},
 		{"LookAndFeelIllegalAccessException","This LookAndFeel can not be used: "},
+		{"nameError","Nome don't acept"},		
+		
 		{"statusReadyLabel","Ready"},
 		{"helpToolTip","UnBBayes help"},
 		{"propagateToolTip","Propagate evidences"},
@@ -109,24 +120,32 @@ public class GuiResources extends ListResourceBundle {
 		{"previewNetToolTip","Print graph preview"},
 		{"saveNetImageToolTip","Save graph as a gif image"},
 		{"siglaLabel","Sigla:"},
+		{"nameLabel", "Name:"}, 
 		{"descriptionLabel","Description:"},
 		{"compileToolTip","Compile junction tree"},
 		{"moreToolTip","Add state"},
 		{"lessToolTip","Remove state"},
 		{"arcToolTip","Insert arc"},
 		{"probabilisticNodeInsertToolTip","Insert probabilistic variable"},
-		
 		{"decisionNodeInsertToolTip","Insert decision variable"},
 		{"utilityNodeInsertToolTip","Insert utility variable"},
 		{"contextNodeInsertToolTip","Insert context variable"},
 		{"inputNodeInsertToolTip","Insert input variable"},
 		{"residentNodeInsertToolTip","Insert resident variable"},
 		{"mFragInsertToolTip","Insert MFrag"},
-		
+		{"inputActiveToolTip","Input Node Selected"},  
+		{"mFragActiveToolTip","MFrag Selected"}, 		
+		{"contextActiveToolTip","Context Node Selected"}, 
+		{"residentActiveToolTip","Resident Node Selected"}, 		
+		{"addArgumentToolTip","Add argumment"}, 
+		{"editFormulaToolTip","Edit formula"},		
 		{"selectToolTip","Select various nodes and arcs"},
 		{"printTableToolTip","Print table"},
 		{"previewTableToolTip","Print table preview"},
 		{"saveTableImageToolTip","Save table as a gif image"},
+		{"formula","Formula:"},	
+		
+		{"whithotMFragActive","Don't have MFrag active"},			
 		{"previewTitle","Preview"},
 		{"filesText"," files"},
 		{"aprendizagemTitle","Net Learning Edition"},
@@ -158,6 +177,7 @@ public class GuiResources extends ListResourceBundle {
         {"tileItem","Tile"},
         {"helpItem","Help"},
         {"aboutItem","About UnBBayes"},
+        
         {"fileMenuMn","F"},
         {"lafMenuMn","L"},
         {"viewMenuMn","V"},
@@ -177,6 +197,7 @@ public class GuiResources extends ListResourceBundle {
         {"tileItemMn","T"},
         {"helpItemMn","H"},
         {"aboutItemMn","A"},
+        
         {"properties","Properties..."},
         {"nameException","Name Error"},
         {"siglaError","The sigla must have only letters and numbers."},

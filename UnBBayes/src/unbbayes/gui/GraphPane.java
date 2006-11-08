@@ -52,27 +52,10 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.util.GeometricUtil;
 import unbbayes.util.NodeList;
 
-enum GraphAction {
-	
-	NONE,
-	CREATE_EDGE,
-	
-	CREATE_PROBABILISTIC_NODE,
-	CREATE_DECISION_NODE,
-	CREATE_UTILITY_NODE,
-	
-	CREATE_CONTEXT_NODE,
-	CREATE_INPUT_NODE,
-	CREATE_RESIDENT_NODE,
-	
-	CREATE_DOMAIN_MFRAG, 
-	
-	SELECT_MANY_OBJECTS
-	
-}
 
 /**
  *  Essa classe é responsável por desenhar a rede Bayesiana na tela. Ela extende a classe
@@ -529,7 +512,16 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 			case CREATE_EDGE:
 				if (node != null) {
 					bMoveEdge = true;
-					ProbabilisticNode node2 = new ProbabilisticNode();
+					
+					Node node2; 
+					
+					//TODO resolver isto fazendo com que size em Node nao seja estatico!!!
+					if (controller.getMebnController() != null){
+					   node2 = new MultiEntityNode();
+					}
+					else{
+						node2 = new ProbabilisticNode(); 
+					}
 					node2.setPosition(e.getX(), e.getY());
 					movingEdge = new Edge(node, node2);
 					// Inform that the edge is a new one, therefore it is not 
@@ -547,6 +539,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 				if (node != null) {
 					if (!node.isSelected()) {
 						selectObject(node);
+						controller.selectNode(node); 
 						// Show the corresponding node in the compilation tree.
 						if (controller.getScreen().isCompiled()) {
 							for (int i = 0; i < controller.getScreen().getEvidenceTree().getRowCount(); i++) {
@@ -608,17 +601,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 				}
 				else{
 					//TODO Acao quando for selecionado um no da MFrag...
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
+					
 					
 				}
 			}
@@ -744,8 +727,11 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 			updateEndSelectionPoint(e.getX(), e.getY());
 		}
 		
-		long width = Node.getWidth()/2;
+		//long width = Node.getWidth()/2;
+		//long height = Node.getHeight()/2;
+ 		long width = Node.getWidth()/2;
 		long height = Node.getHeight()/2;
+		
 		
 		// Move the scroll with the arrow and/or node.
 		if ((e.getX() < graphDimension.getWidth()) && (e.getY() < graphDimension.getHeight()) && (e.getX() + 2 * width > visibleDimension.getWidth() + controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue()) && (e.getY() + 2 * height > visibleDimension.getHeight() + controller.getScreen().getJspGraph().getVerticalScrollBar().getValue())) {
@@ -847,6 +833,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 		unselectAll();
 		object.setSelected(true);
 		selected = object;
+		
 	}
 	
 	/**

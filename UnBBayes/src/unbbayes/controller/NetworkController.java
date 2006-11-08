@@ -829,5 +829,11 @@ public class NetworkController implements KeyListener {
         return new Rectangle(menorX, menorY, maiorX - menorX, maiorY - menorY);
     }
     
+    public void selectNode(Node node){
+    	if (multiEntityBayesianNetwork != null){
+    		mebnController.selectNode(node); 
+    	}
+    }
+    
     /****************** END GENERIC METHODS *********************/
 }

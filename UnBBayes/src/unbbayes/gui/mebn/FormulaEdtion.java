@@ -1,5 +1,11 @@
 package unbbayes.gui.mebn;
 
-public class FormulaEdtion {
+import javax.swing.JPanel;
 
+public class FormulaEdtion extends JPanel {
+
+	public FormulaEdtion(){
+		super(); 
+	}
+	
 }

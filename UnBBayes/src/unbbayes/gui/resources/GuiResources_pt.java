@@ -29,12 +29,15 @@ public class GuiResources_pt extends ListResourceBundle {
 	 * Os recursos
 	 */
 	static final Object[][] contents =
-	{	{"fileDirectoryType","Diretório"},
+	{	
+		{"fileDirectoryType","Diretório"},
 		{"fileARFFType","Arquivo Arff"},
 		{"fileTXTType","Arquivo Texto TXT"},
 		{"fileNETType","Arquivo de Rede Bayesiana NET"},
 		{"fileGenericType","Arquivo Genérico"},
+		
 		{"unbbayesTitle","UnBBayes"},
+		
 		{"newToolTip","Nova rede"},
 		{"openToolTip","Abrir rede"},
 		{"saveToolTip","Salvar rede"},
@@ -44,12 +47,16 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"windowsToolTip","Usa Windows Look And Feel"},
 		{"tileToolTip","Organizar as janelas em bloco"},
 		{"cascadeToolTip","Organizar as janelas em cascata"},
+		
 		{"netFileFilter","Net (.net), XMLBIF (.xml), PR-OWL (.owl)"},
+		{"xmlBIFFileFilter", "XMLBIF (.xml)"},		
 		{"textFileFilter","Text (.txt)"},
 		{"fileUntitled","SemNome.txt"},
+		
 		{"globalOptionTitle","Opções Globais"},
 		{"hierarchyToolTip","Definição de hierarquia"},
-                {"usaName","EUA"},
+        
+		{"usaName","EUA"},
 		{"chinaName","China"},
 		{"japanName","Japão"},
 		{"ukName","UK"},
@@ -57,6 +64,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"italyName","Itália"},
 		{"canadaName","Canada"},
 		{"brazilName","Brasil"},
+		
 		{"nodeName","Nó: "},
 		{"radiusLabel","Raio:"},
 		{"radiusToolTip","Raio do nó"},
@@ -80,6 +88,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"selectionColorToolTip","Selecionar a cor de seleção"},
 		{"backgroundColorLabel","Fundo"},
 		{"backgroundColorToolTip","Selecionar a cor de fundo"},
+		
 		{"confirmLabel","Confirmar"},
 		{"confirmToolTip","Corfimar as alterações"},
 		{"cancelLabel","Cancelar"},
@@ -92,10 +101,14 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"logTab","Log"},
 		{"createLogLabel","Gerar Log"},
 		{"nodeGraphName","Nó"},
+		
 		{"LookAndFeelUnsupportedException","Não suporta esse LookAndFeel: "},
 		{"LookAndFeelClassNotFoundException","A classe desse LookAndFeel não foi encontrada: "},
 		{"LookAndFeelInstantiationException","Não foi possível carregar esse LookAndFeel: "},
 		{"LookAndFeelIllegalAccessException","Esse LookAndFeel não pode ser usado: "},
+		{"nameError","Nome não aceito"},
+		
+		
 		{"statusReadyLabel","Pronto"},
 		{"helpToolTip","Ajuda do UnBBayes"},
 		{"propagateToolTip","Propagar as evidências"},
@@ -108,6 +121,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"previewNetToolTip","Visualizar a impressão do grafo"},
 		{"saveNetImageToolTip","Salvar o grafo como imagem gif"},
 		{"siglaLabel","Sigla:"},
+		{"nameLabel", "Nome:"}, 
 		{"descriptionLabel","Descrição:"},
 		{"compileToolTip","Compilar árvore de junção"},
 		{"moreToolTip","Adicionar estado"},
@@ -119,10 +133,20 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"contextNodeInsertToolTip","Inserir variável de contexto"},
 		{"inputNodeInsertToolTip","Inserir variável de entrada"},
 		{"residentNodeInsertToolTip","Inserir variável residente"},
+		{"mFragInsertToolTip","Inserir MFrag"},	
+		{"inputActiveToolTip","Input Node Selecionado"},  
+		{"mFragActiveToolTip","MFrag Selecionada"}, 		
+		{"contextActiveToolTip","Context Node Selecionado"}, 
+		{"residentActiveToolTip","Resident Node Selecionado"}, 		
+		{"addArgumentToolTip","Adicionar argumento"}, 
+		{"editFormulaToolTip","Editar formula"},		
 		{"selectToolTip","Selecionar vários nós e arcos"},
 		{"printTableToolTip","Imprimir a tabela"},
 		{"previewTableToolTip","Visualizar a impressão da tabela"},
 		{"saveTableImageToolTip","Salvar a tabela como imagem gif"},
+		{"formula","Formula:"},	
+		
+		{"whithotMFragActive","Não há MFrag ativa"},			
 		{"previewTitle","Pré Visualização"},
 		{"filesText"," arquivos"},
 		{"aprendizagemTitle","Edição da Rede de Aprendizagem"},
@@ -154,6 +178,7 @@ public class GuiResources_pt extends ListResourceBundle {
         {"tileItem","Lado a lado verticalmente"},
         {"helpItem","Ajuda"},
         {"aboutItem","Sobre o UnBBayes"},
+        
         {"fileMenuMn","A"},
         {"lafMenuMn","L"},
         {"viewMenuMn","X"},
@@ -173,6 +198,7 @@ public class GuiResources_pt extends ListResourceBundle {
         {"tileItemMn","V"},
         {"helpItemMn","U"},
         {"aboutItemMn","S"},
+       
         {"properties","Propriedades..."},
         {"nameException","Erro no Nome"},
         {"siglaError","A sigla só pode ter letras e números."},

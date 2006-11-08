@@ -23,6 +23,7 @@ import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.util.ArrayMap;
+import unbbayes.gui.GraphAction; 
 
 public class MTheoryTree extends JTree {
 
@@ -47,10 +48,10 @@ public class MTheoryTree extends JTree {
 	
 	/*public MTheoryTree(final NetworkWindow netWindow) {
 		net = netWindow.getMultiEntityBayesianNetwork();*/
-	public MTheoryTree(final MultiEntityBayesianNetwork net, NetworkController netController) {
+	public MTheoryTree(final NetworkController controller) {
 		
-		this.net = net;
-		this.controller = netController; 
+		this.controller = controller; 
+		this.net = (MultiEntityBayesianNetwork)controller.getNetwork();
 
 		// set up node icons
 		setCellRenderer(new MTheoryTreeCellRenderer());
@@ -68,6 +69,7 @@ public class MTheoryTree extends JTree {
 		addMouseListener(new MouseAdapter() {
 			
 			public void mousePressed(MouseEvent e) {
+				
 				int selRow = getRowForLocation(e.getX(), e.getY());
 				if (selRow == -1) {
 					return;
@@ -78,22 +80,32 @@ public class MTheoryTree extends JTree {
 						.getLastPathComponent();
 
 				if (node.isLeaf()) {
-					if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
-						// showLikelihood((DefaultMutableTreeNode)
-						// node.getParent());
-						// TODO BOTÃO DIREITO NA MFRAG FAZ NADA
-						
-						
-					} else if (e.getClickCount() == 2
-							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-						treeDoubleClick(node);
-					} else if (e.getClickCount() == 1) {
-						controller.getMebnController().setCurrentMFrag(mFragMap.get(node)); 
+					
+					MFrag mFrag = mFragMap.get(node); 
+					if (mFrag instanceof DomainMFrag){
+						if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
+							popupMFrag.setEnabled(true);
+							popupMFrag.show(e.getComponent(),e.getX(),e.getY());
+						} else if (e.getClickCount() == 2
+								&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
+							controller.getMebnController().setCurrentMFrag(mFragMap.get(node)); 
+						} else if (e.getClickCount() == 1) {
+							//TODO acao para clique simples na MFrag. 
+						}
+					}
+					else{
+						//TODO Findings possuem comportamentos diferentes... Analisar.  
 					}
 				} else {
 					if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
-						//showLikelihood(node);
-						//TODO COLOCAR POP UP PARA ADICIONAR MFRAG
+						
+						// PARECE NÃO ENTRAR AQUI... VERIFICAR...
+						//if (e.isPopupTrigger()) {
+						if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
+							popup.setEnabled(true);
+				            popup.show(e.getComponent(),e.getX(),e.getY());
+				        }
+						
 					}
 					if (e.getClickCount() == 1) {
 						/*Node newNode = getNodeMap(node);
@@ -110,12 +122,6 @@ public class MTheoryTree extends JTree {
 					}
 				}
 				
-				// PARECE NÃO ENTRAR AQUI... VERIFICAR...
-				//if (e.isPopupTrigger()) {
-				if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
-					popup.setEnabled(true);
-		            popup.show(e.getComponent(),e.getX(),e.getY());
-		        }
 			}
 		});
 		super.treeDidChange();
@@ -123,14 +129,40 @@ public class MTheoryTree extends JTree {
 	}
 
 	private void createPopupMenuMFrag(){
-		JMenuItem itemRename = new JMenuItem("Rename"); 
-		itemRename.addActionListener(new ActionListener(){
+		
+		JMenuItem itemDelete = new JMenuItem("Delete"); 
+		JMenuItem itemContext = new JMenuItem("AddContext");
+		JMenuItem itemInput = new JMenuItem("AddInput"); 
+		JMenuItem itemResident = new JMenuItem("AddResident");
+
+		itemDelete.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				
+				//TODO Action
+			}
+		}); 		
+		
+		itemContext.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				controller.getScreen().getGraphPane().setAction(GraphAction.CREATE_CONTEXT_NODE); 
 			}
 		}); 
 		
-		popupMFrag.add(itemRename); 
+		itemInput.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				controller.getScreen().getGraphPane().setAction(GraphAction.CREATE_INPUT_NODE); 				
+			}
+		}); 
+		
+		itemResident.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				controller.getScreen().getGraphPane().setAction(GraphAction.CREATE_RESIDENT_NODE); 								
+			}
+		}); 		
+		
+		popupMFrag.add(itemDelete); 
+		popupMFrag.add(itemContext); 
+		popupMFrag.add(itemResident); 
+		popupMFrag.add(itemInput); 
 	}
 	
 	private void createPopupMenu() {

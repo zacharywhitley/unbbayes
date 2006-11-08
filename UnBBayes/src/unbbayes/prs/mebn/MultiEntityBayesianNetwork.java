@@ -136,5 +136,6 @@ public class MultiEntityBayesianNetwork extends Network {
 			return null; 
 		}
 	}
+	
 	 
 }

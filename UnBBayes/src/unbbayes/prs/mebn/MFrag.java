@@ -12,6 +12,8 @@ import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.util.NodeList;
 
+import unbbayes.prs.mebn.*;
+
 public class MFrag implements Graph{
 
 	private MultiEntityBayesianNetwork multiEntityBayesianNetwork;

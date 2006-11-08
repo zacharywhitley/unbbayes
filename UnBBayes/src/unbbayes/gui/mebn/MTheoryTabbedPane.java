@@ -6,6 +6,7 @@ import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 
 import unbbayes.controller.NetworkController;
+import unbbayes.gui.NetworkWindow;
 import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 
@@ -18,10 +19,10 @@ public class MTheoryTabbedPane extends JTabbedPane {
 	
 	private static final long serialVersionUID = 7384250925715415144L;
 
-	public MTheoryTabbedPane(MultiEntityBayesianNetwork mebn, NetworkController controller) {
+	public MTheoryTabbedPane(final NetworkController controller) {
 		
 		super();	
-		this.addTab("MTheory Tree", new MTheoryTree(mebn, controller));
+		this.addTab("MTheory Tree", new MTheoryTree(controller));
 		
 	}
 	
@@ -29,7 +30,9 @@ public class MTheoryTabbedPane extends JTabbedPane {
 	
 	public static void main(String[] args) {
 		
-		MultiEntityBayesianNetwork mebn = null; 
+		MultiEntityBayesianNetwork mebn = null;  
+		NetworkController controller; 
+		NetworkWindow screen; 
 		
 		File file = new File("examples/mebn/Starship16.owl"); 
 
@@ -41,11 +44,15 @@ public class MTheoryTabbedPane extends JTabbedPane {
 			System.out.println("Exception Found!!!"); 
 		}
 		
+		screen = new NetworkWindow(mebn); 
+		controller = new NetworkController(mebn, screen); 
+		
 		JFrame frame = new JFrame("MTheory Tabbed Pane");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		//frame.add(new MTheoryTabbedPane(mebn));
+		frame.add(new MTheoryTabbedPane(controller));
 		frame.pack();
 		frame.setVisible(true);
 		
 	}
+	
 }
