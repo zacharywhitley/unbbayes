@@ -266,15 +266,13 @@ public class MTheoryTree extends JTree {
 		/** Serialization runtime version number */
 		private static final long serialVersionUID = 0;
 
-		private ImageIcon folderSmallIcon = iconController.getFolderSmallIcon();
-
-		/*private ImageIcon folderSmallDisabledIcon = iconController
-				.getFolderSmallDisabledIcon();*/
-
-		private ImageIcon yellowBallIcon = iconController.getYellowBallIcon();
-
-		private ImageIcon greenBallIcon = iconController.getGreenBallIcon();
-
+		private ImageIcon yellowNodeIcon = iconController.getYellowNodeIcon();
+		private ImageIcon greenNodeIcon = iconController.getGreenNodeIcon(); 
+		private ImageIcon blueNodeIcon = iconController.getBlueNodeIcon(); 
+		
+		private ImageIcon orangeNodeIcon = iconController.getOrangeNodeIcon(); 
+		private ImageIcon mTheoryNodeIcon = iconController.getMTheoryNodeIcon(); 
+		
 		public Component getTreeCellRendererComponent(JTree tree, Object value,
 				boolean sel, boolean expanded, boolean leaf, int row,
 				boolean hasFocus) {
@@ -292,28 +290,42 @@ public class MTheoryTree extends JTree {
 				if (obj != null) {
 					
 					if (obj instanceof ResidentNode){ 
-						setIcon(yellowBallIcon);
+						setIcon(greenNodeIcon);
 						}
 										
 					else{
 						if (obj instanceof InputNode){
-							setIcon(greenBallIcon); 
+							setIcon(blueNodeIcon); 
 						}
 						else{ 
 							if (obj instanceof ContextNode){
-						       setIcon(greenBallIcon);
+						       setIcon(yellowNodeIcon);
 							}
-							else{ //mFrag
-								setIcon(folderSmallIcon); 
+							else{ 
+                                if (obj instanceof MFrag){ 
+								   setIcon(orangeNodeIcon); 
+                                }
+                                else{
+                                	setIcon(mTheoryNodeIcon); 
+                                }
 							}
 						}
 					}
 				}
 				
 			} else {
-				setOpenIcon(folderSmallIcon);
-				setClosedIcon(folderSmallIcon);
-				setIcon(folderSmallIcon);
+                if (obj instanceof MFrag){ 
+    				setOpenIcon(orangeNodeIcon);
+    				setClosedIcon(orangeNodeIcon);
+    				setIcon(orangeNodeIcon);
+                 }
+                 else{
+     				setOpenIcon(mTheoryNodeIcon);
+    				setClosedIcon(mTheoryNodeIcon);                	 
+                 	setIcon(mTheoryNodeIcon); 
+                 }				
+				
+
 			}
 			return this;
 		}
@@ -371,6 +383,7 @@ public class MTheoryTree extends JTree {
 	 * 
 	 */
 	public void updateTree() {
+		
 		
 		if (expandedNodes == null) {
 			expandedNodes = new boolean[net.getMFragCount()];

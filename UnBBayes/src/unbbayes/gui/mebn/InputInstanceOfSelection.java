@@ -15,9 +15,11 @@ import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
+import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.GenerativeInputNode;
+import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ResidentNode;
@@ -145,7 +147,7 @@ public class InputInstanceOfSelection extends JTree{
 				DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(domainResidentNode.getName());
 				mFragTreeNode.add(treeNode);
 				residentNodeMap.put(treeNode, domainResidentNode);
-				nodeMap.put(mFragTreeNode, domainResidentNode); 				
+				nodeMap.put(treeNode, domainResidentNode); 				
 			}
 		}
 		
@@ -156,15 +158,13 @@ public class InputInstanceOfSelection extends JTree{
 		
 		/** Serialization runtime version number */
 		private static final long serialVersionUID = 0;
+
+		private ImageIcon yellowNodeIcon = iconController.getYellowNodeIcon();
+		private ImageIcon greenNodeIcon = iconController.getGreenNodeIcon(); 
+		private ImageIcon blueNodeIcon = iconController.getBlueNodeIcon(); 
 		
-		private ImageIcon folderSmallIcon = iconController.getFolderSmallIcon();
-		
-		/*private ImageIcon folderSmallDisabledIcon = iconController
-		 .getFolderSmallDisabledIcon();*/
-		
-		private ImageIcon yellowBallIcon = iconController.getYellowBallIcon();
-		
-		private ImageIcon greenBallIcon = iconController.getGreenBallIcon();
+		private ImageIcon orangeNodeIcon = iconController.getOrangeNodeIcon(); 
+		private ImageIcon mTheoryNodeIcon = iconController.getMTheoryNodeIcon(); 
 		
 		/**
 		 * Return a tree cell for the object value. 
@@ -173,32 +173,56 @@ public class InputInstanceOfSelection extends JTree{
 		public Component getTreeCellRendererComponent(JTree tree, Object value,
 				boolean sel, boolean expanded, boolean leaf, int row,
 				boolean hasFocus) {
-			
 			super.getTreeCellRendererComponent(tree, value, sel, expanded,
 					leaf, row, hasFocus);
 			
 			Object obj = nodeMap.get((DefaultMutableTreeNode) value);
 			
+			
 			if (leaf) {
+				/*DefaultMutableTreeNode parent = (DefaultMutableTreeNode) (((DefaultMutableTreeNode) value)
+						.getParent());
+				Object obj = mFragMap.get((DefaultMutableTreeNode) parent);*/
+
 				if (obj != null) {
 					
-					if (obj instanceof ResidentNode){
-						setIcon(yellowBallIcon);								
-					}
-					
-				}
-			}else {
-				if (obj != null){
-					if (obj instanceof DomainMFrag){
-						setIcon(greenBallIcon);					    	   
-					}
-					else{ //root 
-						setOpenIcon(folderSmallIcon);
-						setClosedIcon(folderSmallIcon);
-						setIcon(folderSmallIcon);			    	   
+					if (obj instanceof ResidentNode){ 
+						setIcon(greenNodeIcon);
+						}
+										
+					else{
+						if (obj instanceof InputNode){
+							setIcon(blueNodeIcon); 
+						}
+						else{ 
+							if (obj instanceof ContextNode){
+						       setIcon(yellowNodeIcon);
+							}
+							else{ 
+                                if (obj instanceof MFrag){ 
+								   setIcon(orangeNodeIcon); 
+                                }
+                                else{
+                                	setIcon(mTheoryNodeIcon); 
+                                }
+							}
+						}
 					}
 				}
 				
+			} else {
+                if (obj instanceof MFrag){ 
+    				setOpenIcon(orangeNodeIcon);
+    				setClosedIcon(orangeNodeIcon);
+    				setIcon(orangeNodeIcon);
+                 }
+                 else{
+     				setOpenIcon(mTheoryNodeIcon);
+    				setClosedIcon(mTheoryNodeIcon);                	 
+                 	setIcon(mTheoryNodeIcon); 
+                 }				
+				
+
 			}
 			return this;
 		}
@@ -267,6 +291,7 @@ public class InputInstanceOfSelection extends JTree{
 			root.removeAllChildren();
 			mFragMap.clear(); 
 			residentNodeMap.clear();
+			nodeMap.clear(); 
 			
 			List<DomainMFrag> domainMFragList = net.getDomainMFragList(); 
 			
@@ -284,7 +309,7 @@ public class InputInstanceOfSelection extends JTree{
 					DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(domainResidentNode.getName());
 					mFragTreeNode.add(treeNode);
 					residentNodeMap.put(treeNode, domainResidentNode);
-					nodeMap.put(mFragTreeNode, domainResidentNode); 				
+					nodeMap.put(treeNode, domainResidentNode); 				
 				}
 			}
 			

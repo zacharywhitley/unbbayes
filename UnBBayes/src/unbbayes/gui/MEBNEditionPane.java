@@ -32,6 +32,7 @@ import unbbayes.gui.mebn.FormulaEdtion;
 import unbbayes.gui.mebn.InputInstanceOfSelection;
 import unbbayes.gui.mebn.MTheoryTree;
 import unbbayes.prs.Node;
+import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.ResidentNode;
 
 public class MEBNEditionPane extends JPanel {
@@ -63,6 +64,7 @@ public class MEBNEditionPane extends JPanel {
     private GlobalOptionsDialog go;
     //private JTable table;
     private JTextField txtName;
+    private JTextField txtNameResident; 
     private JTextField txtDescription;
     private JTextField txtFormula;   
     private JTextField txtNameMFrag; 
@@ -145,8 +147,6 @@ public class MEBNEditionPane extends JPanel {
         this.controller    = _controller;
         this.setLayout(new BorderLayout());
 
-        
-        
         //table       = new JTable();
         //jspTable    = new JScrollPane(table);
         topPanel    = new JPanel(new GridLayout(0,1));
@@ -178,9 +178,10 @@ public class MEBNEditionPane extends JPanel {
         txtName           = new JTextField(10);
         txtDescription     = new JTextField(15);
         
-        txtNameMFrag = new JTextField(10); 
-        txtNameInput = new JTextField(10); 
-        txtNameContext = new JTextField(10); 
+        txtNameResident = new JTextField(5);         
+        txtNameMFrag = new JTextField(5); 
+        txtNameInput = new JTextField(5); 
+        txtNameContext = new JTextField(5); 
         txtInputOf = new JTextField(10); 
         txtArguments = new JTextField(10); 
     
@@ -208,22 +209,20 @@ public class MEBNEditionPane extends JPanel {
         btnSelectObject            = new JButton(iconController.getSelectionIcon());
         btnGlobalOption      = new JButton(iconController.getGlobalOptionIcon());
 
-        btnTabOption1 = new JButton(iconController.getEllipsisIcon());
-        btnTabOption2 = new JButton(iconController.getEllipsisIcon());
-        btnTabOption3 = new JButton(iconController.getEllipsisIcon());
-        btnTabOption4 = new JButton(iconController.getEllipsisIcon());   
-        btnTabOption5 = new JButton(iconController.getEllipsisIcon());   
-          
+        btnTabOption1 = new JButton(iconController.getEyeIcon());
+        btnTabOption2 = new JButton(iconController.getBoxXIcon());
+        btnTabOption3 = new JButton(iconController.getBoxXIcon());
+        btnTabOption4 = new JButton(iconController.getBoxXIcon());   
+        btnTabOption5 = new JButton(iconController.getBoxXIcon());   
         
-        btnResidentActive = new JButton(iconController.getEllipsisIcon()); 
-        btnInputActive = new JButton(iconController.getEllipsisIcon());  
-        btnInputOf = new JButton(iconController.getEllipsisIcon()); 
-        btnMFragActive = new JButton(iconController.getEllipsisIcon()); 
-        btnContextActive = new JButton(iconController.getEllipsisIcon()); 
-        btnAddArgument = new JButton(iconController.getEllipsisIcon());         
-        btnEditFormula = new JButton(iconController.getEllipsisIcon());         
+        btnResidentActive = new JButton(iconController.getBoxResidentIcon()); 
+        btnInputActive = new JButton(iconController.getBoxInputIcon());  
+        btnMFragActive = new JButton(iconController.getBoxMFragIcon()); 
+        btnContextActive = new JButton(iconController.getBoxContextIcon());
         
-        
+        btnAddArgument = new JButton(iconController.getGrayBoxBoxIcon());         
+        btnEditFormula = new JButton(iconController.getFunctIcon()); 
+        btnInputOf = new JButton(iconController.getBoxSetIcon());         
         
         
         //setar tooltip para esses botões
@@ -280,7 +279,7 @@ public class MEBNEditionPane extends JPanel {
         jtbResident.add(btnResidentActive); 
         jtbResident.addSeparator();         
         jtbResident.add(name);
-        jtbResident.add(txtName);
+        jtbResident.add(txtNameResident);
         jtbResident.addSeparator();
         jtbResident.addSeparator();
         jtbResident.add(btnAddState);
@@ -384,7 +383,7 @@ public class MEBNEditionPane extends JPanel {
         
         inputInstanceOfSelection = new InputInstanceOfSelection(controller); 
         inputInstanceOfSelectionScroll = new JScrollPane(inputInstanceOfSelection); 
-        tabPanel.add("InputInstance", inputInstanceOfSelection); 
+        tabPanel.add("InputInstance", inputInstanceOfSelectionScroll); 
         
         editArgumentsTab = new EditArgumentsTab(); 
         tabPanel.add("EditArgumentsTab", editArgumentsTab); 
@@ -516,6 +515,31 @@ public class MEBNEditionPane extends JPanel {
   			}
   		});
   		
+  		txtNameResident.addKeyListener(new KeyAdapter() {
+  			public void keyPressed(KeyEvent e) {
+  				Object selected = netWindow.getGraphPane().getSelected();
+  				if (selected instanceof Node) {
+  					Node nodeAux = (Node)selected;
+  					if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameResident.getText().length()>0)) {
+  						try {
+  							String name = txtNameResident.getText(0,txtNameResident.getText().length());
+  							matcher = wordPattern.matcher(name);
+  							if (matcher.matches()) {
+  								nodeAux.setName(name);
+  								repaint();
+  							}  else {
+  								JOptionPane.showMessageDialog(netWindow, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+  								txtNameResident.selectAll();
+  							}
+  						}
+  						catch (javax.swing.text.BadLocationException ble) {
+  							System.out.println(ble.getMessage());
+  						}
+  					}
+  				}
+  			}
+  		});  		
+  		
   		txtNameMFrag.addKeyListener(new KeyAdapter() {
   			public void keyPressed(KeyEvent e) {
   				
@@ -596,6 +620,14 @@ public class MEBNEditionPane extends JPanel {
   			
   		});
   		
+  		btnEditFormula.addActionListener(new ActionListener(){
+  			
+  			public void actionPerformed(ActionEvent ae){
+  				setFormulaEdtionActive(); 
+  			}
+  			
+  		});  		
+  		
   		//ao clicar no botão btnGlobalOption, mostra-se o menu para escolha das opções
   		btnTabOption1.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
@@ -633,8 +665,8 @@ public class MEBNEditionPane extends JPanel {
      *@return    retorna a txtName (<code>JTextField</code>)
      *@see       JTextField
      */
-    public JTextField getTxtName() {
-      return this.txtName;
+    public JTextField getTxtNameResident() {
+      return this.txtNameResident;
     }
 
     /**
@@ -754,6 +786,14 @@ public class MEBNEditionPane extends JPanel {
     public void setFormulaEdtionActive(){
         cardLayout.show(tabPanel, "FormulaEdtion");  
     }
+    
+    public void setFormulaEdtionActive(ContextNode context){
+    	   
+        tabPanel.remove(formulaEdtion);     	
+    	formulaEdtion = new FormulaEdtion(controller, context); 
+    	tabPanel.add("FormulaEdtion", formulaEdtion);         
+    	cardLayout.show(tabPanel, "FormulaEdtion"); 
+    }    
 
     public void setEntityTreeActive(){
         cardLayout.show(tabPanel, "EntityTree");  
@@ -805,8 +845,8 @@ public class MEBNEditionPane extends JPanel {
     
     /*---------------------------------------------------------*/
     
-    public void setTxtName(String name){
-    	txtName.setText(name); 
+    public void setTxtNameResident(String name){
+    	txtNameResident.setText(name); 
     }
     
     public void setTxtNameMFrag(String name){

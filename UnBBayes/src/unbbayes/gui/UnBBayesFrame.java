@@ -720,11 +720,11 @@ public class UnBBayesFrame extends JFrame {
 
 		// create the buttons
 		newNet =
-			new JButton(iconController.getNewIcon());
+			new JButton(iconController.getNewBNIcon());
 		newMsbn =
-			new JButton(iconController.getNewIcon());	
+			new JButton(iconController.getNewMSBNIcon());	
 		newMebn =
-			new JButton(iconController.getNewIcon());				
+			new JButton(iconController.getNewMEBNIcon());				
 		openNet =
 			new JButton(iconController.getOpenIcon());
 		saveNet =

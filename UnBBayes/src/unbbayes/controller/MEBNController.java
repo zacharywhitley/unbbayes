@@ -116,11 +116,11 @@ public class MEBNController {
 		node.addOrdinaryVariable(ov); 		
 		domainMFrag.addOrdinaryVariableDomain(ov);		
 		
-		
-		
 		screen.getMebnEditionPane().getInputInstanceOfSelection().updateTree(); 
-	    screen.getMebnEditionPane().setEditArgumentsTabActive(node); 
-		screen.getMebnEditionPane().setTxtName(((ResidentNode)node).getName()); 		    	
+		screen.getMebnEditionPane().setEditArgumentsTabActive(node); 
+		screen.getMebnEditionPane().setMTheoryTreeActive(); 
+	    screen.getMebnEditionPane().setResidentCardActive(); 
+		screen.getMebnEditionPane().setTxtNameResident(((ResidentNode)node).getName()); 		    	
 	}	
 	
 	/*---------------------------- Input Node ----------------------------*/		
@@ -139,7 +139,7 @@ public class MEBNController {
 		
 	    screen.getMebnEditionPane().setInputCardActive(); 	
 		screen.getMebnEditionPane().setTxtNameInput(((InputNode)node).getName()); 		    
-		screen.getMebnEditionPane().setInputInstanceOfActive();
+		screen.getMebnEditionPane().setMTheoryTreeActive(); 
 	}		
 	
 	public void setInputInstanceOf(GenerativeInputNode input, ResidentNode resident){
@@ -163,9 +163,11 @@ public class MEBNController {
 		node.setDescription(node.getName());
 		domainMFrag.addContextNode(node);
 		
-	    screen.getMebnEditionPane().setContextCardActive(); 
+	    screen.getMebnEditionPane().setContextCardActive();
+		screen.getMebnEditionPane().setFormulaEdtionActive(node); 
+		screen.getMebnEditionPane().setMTheoryTreeActive(); 		
 		screen.getMebnEditionPane().setTxtNameContext(((ContextNode)node).getName()); 		    
-		screen.getMebnEditionPane().setFormulaEdtionActive(); 
+		screen.getMebnEditionPane().setMTheoryTreeActive(); 
 	}	
 	
 	public void deleteSelected(Object selected) {
@@ -177,7 +179,7 @@ public class MEBNController {
 		if (node instanceof ResidentNode){
 			screen.getMebnEditionPane().setResidentCardActive(); 
 			screen.getMebnEditionPane().setEditArgumentsTabActive((ResidentNode)node); 
-			screen.getMebnEditionPane().setTxtName(((ResidentNode)node).getName()); 		  
+			screen.getMebnEditionPane().setTxtNameResident(((ResidentNode)node).getName()); 		  
 		}
 		else{
 			if(node instanceof InputNode){
@@ -187,6 +189,7 @@ public class MEBNController {
 			else{
 				if(node instanceof ContextNode){
 					screen.getMebnEditionPane().setContextCardActive(); 
+					screen.getMebnEditionPane().setFormulaEdtionActive((ContextNode)node); 					
 					screen.getMebnEditionPane().setTxtNameContext(((ContextNode)node).getName()); 					
 				}
 				else{
@@ -195,6 +198,7 @@ public class MEBNController {
 			}
 			
 		}
+		screen.getMebnEditionPane().setMTheoryTreeActive(); 		
 	}
 	
 	public void addOrdinaryVariableInResident(OrdinaryVariable ordinaryVariable){
