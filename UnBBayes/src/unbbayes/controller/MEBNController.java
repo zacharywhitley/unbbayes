@@ -12,6 +12,7 @@ import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 
 public class MEBNController {
@@ -57,14 +58,16 @@ public class MEBNController {
 		
 		multiEntityBayesianNetwork.addDomainMFrag(domainMFrag); 
 		
-		screen.getMebnEditionPane().getMTheoryTree().updateTree(); 
+		screen.getMebnEditionPane().getMTheoryTree().updateTree();
+		screen.getMebnEditionPane().getInputInstanceOfSelection().updateTree(); 
 	    screen.getMebnEditionPane().setMTheoryTreeActive(); 
 	    
 	    screen.getGraphPane().resetGraph(); 
 	    
 	    screen.getMebnEditionPane().setMFragCardActive(); 
 		screen.getMebnEditionPane().setTxtNameMFrag(domainMFrag.getName()); 	    
-	
+		screen.getMebnEditionPane().setMTheoryTreeActive(); 
+		
 	}
 	
 	public void removeDomainMFrag(DomainMFrag domainMFrag) {
@@ -78,7 +81,7 @@ public class MEBNController {
 	    
 	    screen.getMebnEditionPane().setMFragCardActive(); 
 		screen.getMebnEditionPane().setTxtNameMFrag(mFrag.getName()); 		    
-		
+		screen.getMebnEditionPane().setMTheoryTreeActive(); 
 	}
 	
 	public MFrag getCurrentMFrag(){
@@ -98,10 +101,26 @@ public class MEBNController {
 		node.setPosition(x, y);
 		node.setDescription(node.getName());
 		domainMFrag.addDomainResidentNode(node);
-		 
-	    screen.getMebnEditionPane().setResidentCardActive(); 
-		screen.getMebnEditionPane().setTxtName(((ResidentNode)node).getName()); 		    
 		
+		
+		
+		/* teste de ovariables... */
+		
+		String ovName1 = node.getName() + "_01"; 
+		String ovName2 = node.getName() + "_02"; 
+		OrdinaryVariable ov; 
+		ov = new OrdinaryVariable(ovName1, domainMFrag);
+		node.addOrdinaryVariable(ov); 
+		domainMFrag.addOrdinaryVariableDomain(ov);
+		ov = new OrdinaryVariable(ovName2, domainMFrag);
+		node.addOrdinaryVariable(ov); 		
+		domainMFrag.addOrdinaryVariableDomain(ov);		
+		
+		
+		
+		screen.getMebnEditionPane().getInputInstanceOfSelection().updateTree(); 
+	    screen.getMebnEditionPane().setEditArgumentsTabActive(node); 
+		screen.getMebnEditionPane().setTxtName(((ResidentNode)node).getName()); 		    	
 	}	
 	
 	/*---------------------------- Input Node ----------------------------*/		
@@ -120,8 +139,15 @@ public class MEBNController {
 		
 	    screen.getMebnEditionPane().setInputCardActive(); 	
 		screen.getMebnEditionPane().setTxtNameInput(((InputNode)node).getName()); 		    
-		//screen.getMebnEditionPane().setinputInstanceOfActive();
+		screen.getMebnEditionPane().setInputInstanceOfActive();
 	}		
+	
+	public void setInputInstanceOf(GenerativeInputNode input, ResidentNode resident){
+		
+		//TODO procurar qual é o nó de input selecionado e realizar operações necessárias neste...
+		screen.getMebnEditionPane().setTxtInputOf(resident.getName()); 
+	
+	}
 	
 	/*---------------------------- ContextNode ----------------------------*/	
 	
@@ -139,6 +165,7 @@ public class MEBNController {
 		
 	    screen.getMebnEditionPane().setContextCardActive(); 
 		screen.getMebnEditionPane().setTxtNameContext(((ContextNode)node).getName()); 		    
+		screen.getMebnEditionPane().setFormulaEdtionActive(); 
 	}	
 	
 	public void deleteSelected(Object selected) {
@@ -148,7 +175,8 @@ public class MEBNController {
 
 	public void selectNode(Node node){
 		if (node instanceof ResidentNode){
-			screen.getMebnEditionPane().setResidentCardActive();
+			screen.getMebnEditionPane().setResidentCardActive(); 
+			screen.getMebnEditionPane().setEditArgumentsTabActive((ResidentNode)node); 
 			screen.getMebnEditionPane().setTxtName(((ResidentNode)node).getName()); 		  
 		}
 		else{
@@ -168,5 +196,20 @@ public class MEBNController {
 			
 		}
 	}
+	
+	public void addOrdinaryVariableInResident(OrdinaryVariable ordinaryVariable){
+		
+		ResidentNode resident = (ResidentNode) screen.getGraphPane().getSelected(); 
+		resident.addOrdinaryVariable(ordinaryVariable);
+		screen.getMebnEditionPane().getEditArgumentsTab().update(); 		
+	}
+	
+	public void removeOrdinaryVariableInResident(OrdinaryVariable ordinaryVariable){
+		
+		ResidentNode resident = (ResidentNode) screen.getGraphPane().getSelected(); 
+		resident.removeOrdinaryVariable(ordinaryVariable);
+		screen.getMebnEditionPane().getEditArgumentsTab().update(); 
+		
+	}	
 	
 }

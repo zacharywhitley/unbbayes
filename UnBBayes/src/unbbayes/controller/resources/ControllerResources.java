@@ -67,6 +67,9 @@ public class ControllerResources extends ListResourceBundle {
 		{"fitToPageButtonLabel","Fit to Page"},
 		{"loading","Loading "},
 		{"cancel","Cancel"},
-		{"of"," of "}
+		{"of"," of "},
+
+		{"JAXBExceptionFound", "Sintaxe error..."}
+				
 	};
 }

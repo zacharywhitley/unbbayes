@@ -28,7 +28,7 @@ public class ContextNode extends MultiEntityNode {
 	 */
 	private List<ContextNode> innerTermFromList;
 	
-	private static Color color = Color.yellow;
+	private static Color color = new Color(254, 250, 158);
 	
     private DrawRectangleTwo drawContextNode;
     

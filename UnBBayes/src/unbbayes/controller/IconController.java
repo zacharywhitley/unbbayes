@@ -96,6 +96,8 @@ public class IconController {
 	protected ImageIcon yellowBallIcon;
 
 	protected ImageIcon greenBallIcon;
+	
+	protected ImageIcon grayBorderIcon; 
 
 	protected ImageIcon arffFileIcon = new ImageIcon(getClass().getResource(
 			"../icons/arff-file.gif"));
@@ -126,12 +128,6 @@ public class IconController {
 
 	protected ImageIcon utilityNodeIcon;
 
-	protected ImageIcon contextNodeIcon;
-
-	protected ImageIcon inputNodeIcon;
-	
-	protected ImageIcon residentNodeIcon;
-
 	protected ImageIcon selectionIcon;
 
 	protected ImageIcon saveTableIcon;
@@ -147,7 +143,27 @@ public class IconController {
 	protected ImageIcon openModelIcon;
 	
 	protected ImageIcon learningIcon;
+	
+	
+	/* ---------- MEBN Icons -------------- */
 
+	protected ImageIcon contextNodeIcon;
+
+	protected ImageIcon inputNodeIcon;
+	
+	protected ImageIcon residentNodeIcon;	
+	
+	protected ImageIcon mfragIcon; 
+	
+	protected ImageIcon borderResidentNodeIcon; 
+	
+	protected ImageIcon borderInputNodeIcon; 
+	
+	protected ImageIcon borderContextNodeIcon; 
+	
+	protected ImageIcon borderMfragIcon; 
+	
+	
 	public static IconController getInstance() {
 		if (singleton == null) {
 			singleton = new IconController();
@@ -622,36 +638,6 @@ public class IconController {
 		}
 	}
 
-	public ImageIcon getContextNodeIcon() {
-		if (contextNodeIcon != null) {
-			return contextNodeIcon;
-		} else {
-			contextNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/context-node.gif"));
-			return contextNodeIcon;
-		}
-	}
-	
-	public ImageIcon getInputNodeIcon() {
-		if (inputNodeIcon != null) {
-			return inputNodeIcon;
-		} else {
-			inputNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/input-node.gif"));
-			return inputNodeIcon;
-		}
-	}
-	
-	public ImageIcon getResidentNodeIcon() {
-		if (residentNodeIcon != null) {
-			return residentNodeIcon;
-		} else {
-			residentNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/resident-node.gif"));
-			return residentNodeIcon;
-		}
-	}
-
 	public ImageIcon getHierarchyIcon() {
 		if (hierarchyIcon != null) {
 			return hierarchyIcon;
@@ -739,5 +725,60 @@ public class IconController {
 			return learningIcon;
 		}
 	}
+	
+	public ImageIcon getGrayBorderBoxIcon() {
+		if (grayBorderIcon != null) {
+			return grayBorderIcon;
+		} else {
+			grayBorderIcon = new ImageIcon(getClass().getResource(
+					"../icons/gray-border-box.gif"));
+			return grayBorderIcon;
+		}
+	}	
+	
 
+	public ImageIcon getContextNodeIcon() {
+		if (contextNodeIcon != null) {
+			return contextNodeIcon;
+		} else {
+			contextNodeIcon = new ImageIcon(getClass().getResource(
+					"../icons/context-node.gif"));
+			return contextNodeIcon;
+		}
+	}
+	
+	public ImageIcon getInputNodeIcon() {
+		if (inputNodeIcon != null) {
+			return inputNodeIcon;
+		} else {
+			inputNodeIcon = new ImageIcon(getClass().getResource(
+					"../icons/input-node.gif"));
+			return inputNodeIcon;
+		}
+	}
+	
+	public ImageIcon getResidentNodeIcon() {
+		if (residentNodeIcon != null) {
+			return residentNodeIcon;
+		} else {
+			residentNodeIcon = new ImageIcon(getClass().getResource(
+					"../icons/resident-node.gif"));
+			return residentNodeIcon;
+		}
+	}
+	
+	public ImageIcon getMFragIcon() {
+		if (mfragIcon != null) {
+			return mfragIcon;
+		} else {
+			mfragIcon = new ImageIcon(getClass().getResource(
+					"../icons/mfrag.gif"));
+			return mfragIcon;
+		}
+	}
+	
+
+	
+	
+	
 }

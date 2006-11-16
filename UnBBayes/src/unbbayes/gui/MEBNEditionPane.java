@@ -26,11 +26,13 @@ import javax.swing.JToolBar;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
+import unbbayes.gui.mebn.EditArgumentsTab;
 import unbbayes.gui.mebn.EntityTree;
 import unbbayes.gui.mebn.FormulaEdtion;
 import unbbayes.gui.mebn.InputInstanceOfSelection;
 import unbbayes.gui.mebn.MTheoryTree;
 import unbbayes.prs.Node;
+import unbbayes.prs.mebn.ResidentNode;
 
 public class MEBNEditionPane extends JPanel {
 
@@ -51,7 +53,9 @@ public class MEBNEditionPane extends JPanel {
     private FormulaEdtion formulaEdtion;    
     private EntityTree entityTree;    
     private InputInstanceOfSelection inputInstanceOfSelection;    
-    private JScrollPane inputInstanceOfSelectionScroll;       
+    private JScrollPane inputInstanceOfSelectionScroll;    
+    
+    private EditArgumentsTab editArgumentsTab; 
 	
     private JPanel descriptionPanel; 
     
@@ -64,6 +68,9 @@ public class MEBNEditionPane extends JPanel {
     private JTextField txtNameMFrag; 
     private JTextField txtNameContext; 
     private JTextField txtNameInput;     
+    private JTextField txtInputOf; 
+    private JTextField txtArguments; 
+    
     
     private final NetworkController controller;
     //private final JScrollPane jspTable;
@@ -85,6 +92,9 @@ public class MEBNEditionPane extends JPanel {
 
     private final JLabel name;
     private final JLabel description;
+    private final JLabel arguments; 
+    
+    private final JLabel inputOf; 
     private final JLabel formula; 
     
     private final JLabel nameMFrag; 
@@ -118,6 +128,8 @@ public class MEBNEditionPane extends JPanel {
     private final JButton btnAddArgument; 
     
     private final JButton btnEditFormula; 
+    
+    private final JButton btnInputOf; 
     
     private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
     private Matcher matcher;
@@ -162,30 +174,37 @@ public class MEBNEditionPane extends JPanel {
         //criar labels e textfields que serão usados no jtbState
         name       = new JLabel(resource.getString("nameLabel"));
         description = new JLabel(resource.getString("descriptionLabel"));
+        arguments = new JLabel(resource.getString("arguments")); 
         txtName           = new JTextField(10);
         txtDescription     = new JTextField(15);
         
         txtNameMFrag = new JTextField(10); 
         txtNameInput = new JTextField(10); 
         txtNameContext = new JTextField(10); 
+        txtInputOf = new JTextField(10); 
+        txtArguments = new JTextField(10); 
     
         nameMFrag = new JLabel(resource.getString("nameLabel"));         
         nameInput = new JLabel(resource.getString("nameLabel")); 
         nameContext = new JLabel(resource.getString("nameLabel")); 
         
+        inputOf = new JLabel(resource.getString("inputOf")); 
+        
         formula = new JLabel(resource.getString("formula"));
         txtFormula = new JTextField(15); 
         
 
+        
+        
         //criar botões que serão usados nodeList toolbars
         btnCompile           = new JButton(iconController.getCompileIcon());
         btnAddState              = new JButton(iconController.getMoreIcon());
         btnRemoveState              = new JButton(iconController.getLessIcon());
         btnAddEdge               = new JButton(iconController.getEdgeIcon());
-        btnAddContextNode = new JButton(iconController.getEllipsisIcon());
-        btnAddInputNode      = new JButton(iconController.getEllipsisIcon());
-        btnAddResidentNode       = new JButton(iconController.getEllipsisIcon());
-        btnAddMFrag		= new JButton(iconController.getEllipsisIcon()); 
+        btnAddContextNode = new JButton(iconController.getContextNodeIcon());
+        btnAddInputNode      = new JButton(iconController.getInputNodeIcon());
+        btnAddResidentNode       = new JButton(iconController.getResidentNodeIcon());
+        btnAddMFrag		= new JButton(iconController.getMFragIcon()); 
         btnSelectObject            = new JButton(iconController.getSelectionIcon());
         btnGlobalOption      = new JButton(iconController.getGlobalOptionIcon());
 
@@ -198,10 +217,13 @@ public class MEBNEditionPane extends JPanel {
         
         btnResidentActive = new JButton(iconController.getEllipsisIcon()); 
         btnInputActive = new JButton(iconController.getEllipsisIcon());  
+        btnInputOf = new JButton(iconController.getEllipsisIcon()); 
         btnMFragActive = new JButton(iconController.getEllipsisIcon()); 
         btnContextActive = new JButton(iconController.getEllipsisIcon()); 
         btnAddArgument = new JButton(iconController.getEllipsisIcon());         
         btnEditFormula = new JButton(iconController.getEllipsisIcon());         
+        
+        
         
         
         //setar tooltip para esses botões
@@ -222,174 +244,11 @@ public class MEBNEditionPane extends JPanel {
         btnAddArgument.setToolTipText(resource.getString("addArgumentToolTip"));        
         btnEditFormula.setToolTipText(resource.getString("editFormulaToolTip"));        
         
-        
         btnSelectObject.setToolTipText(resource.getString("mFragInsertToolTip")); 
         btnGlobalOption.setToolTipText(resource.getString("mFragInsertToolTip")); 
 
-        //ao clicar no botão btnGlobalOption, mostra-se o menu para escolha das opções
-        btnGlobalOption.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                go = new GlobalOptionsDialog(netWindow.getGraphPane(), controller);
-                go.setVisible(true);
-                netWindow.getGraphPane().update();
-                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-            }
-        });
-
-        //ao clicar no botão btnCompile, chama-se o método de compilação da rede e
-        //atualiza os toolbars
-        btnCompile.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                if (! controller.compileNetwork()) {
-                    return;
-                }
-                netWindow.changeToPNCompilationPane();
-            }
-        });
-
-        //ao clicar no botão btnAddEdge setamos as variáveis booleanas e os estados dos butões
-        btnAddEdge.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-            	netWindow.getGraphPane().setAction(GraphAction.CREATE_EDGE);
-            }
-        });
-
-        btnAddMFrag.addActionListener(new ActionListener(){
-        	public void actionPerformed(ActionEvent ae){
-            	//netWindow.getGraphPane().setAction(GraphAction.CREATE_DOMAIN_MFRAG);
-            	controller.insertDomainMFrag(); 
-            }
-        }); 
+        addActionListeners(); 
         
-        
-        //ao clicar no botão node setamos as variáveis booleanas e os estados dos butões
-        btnAddContextNode.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-            	netWindow.getGraphPane().setAction(GraphAction.CREATE_CONTEXT_NODE);
-            }
-        });
-
-
-        //ao clicar no botão btnAddInputNode setamos as variáveis booleanas e os estados dos butões
-        btnAddInputNode.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-            	netWindow.getGraphPane().setAction(GraphAction.CREATE_INPUT_NODE);
-            }
-        });
-
-        //ao clicar no botão btnAddResidentNode setamos as variáveis booleanas e os estados dos butões
-        btnAddResidentNode.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-            	netWindow.getGraphPane().setAction(GraphAction.CREATE_RESIDENT_NODE);
-            }
-        });
-
-
-        //ao clicar no botão node setamos as variáveis booleanas e os estados dos butões
-        btnSelectObject.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-            	netWindow.getGraphPane().setAction(GraphAction.SELECT_MANY_OBJECTS);
-            }
-        });
-
-        // listener responsável pela atualização do texto da name do nó
-        txtName.addKeyListener(new KeyAdapter() {
-          public void keyPressed(KeyEvent e) {
-            Object selected = netWindow.getGraphPane().getSelected();
-            if (selected instanceof Node) {
-              Node nodeAux = (Node)selected;
-              if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtName.getText().length()>0)) {
-                try {
-                    String name = txtName.getText(0,txtName.getText().length());
-                    matcher = wordPattern.matcher(name);
-                    if (matcher.matches()) {
-                      nodeAux.setName(name);
-                      repaint();
-                    }  else {
-                        JOptionPane.showMessageDialog(netWindow, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
-                        txtName.selectAll();
-                    }
-                }
-                catch (javax.swing.text.BadLocationException ble) {
-                    System.out.println(ble.getMessage());
-                }
-              }
-            }
-          }
-        });
-
-        txtNameMFrag.addKeyListener(new KeyAdapter() {
-          public void keyPressed(KeyEvent e) {
-            
-              if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameMFrag.getText().length()>0)) {
-                try {
-                    String name = txtNameMFrag.getText(0,txtNameMFrag.getText().length());
-                    matcher = wordPattern.matcher(name);
-                    if (matcher.matches()) {
-                      controller.getMebnController().getCurrentMFrag().setName(name);
-                      mTheoryTree.updateTree(); 
-                    }  else {
-                        JOptionPane.showMessageDialog(netWindow, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
-                        txtNameMFrag.selectAll();
-                    }
-                }
-                catch (javax.swing.text.BadLocationException ble) {
-                    System.out.println(ble.getMessage());
-                }
-              }
-          }
-        });
-        
-        //TODO Verificação de atualização de nome para MFrag. 
-
-        // listener responsável pela atualização do texo da descrição do nó
-        txtDescription.addKeyListener(new KeyAdapter() {
-          public void keyPressed(KeyEvent e) {
-            Object selected = netWindow.getGraphPane().getSelected();
-            if (selected instanceof Node)
-            {
-              Node nodeAux = (Node)selected;
-              if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtDescription.getText().length()>0)) {
-                try {
-                    String name = txtDescription.getText(0,txtDescription.getText().length());
-                    matcher = wordPattern.matcher(name);
-                    if (matcher.matches()) {
-                      nodeAux.setDescription(name);
-                      repaint();
-                    } else {
-                        JOptionPane.showMessageDialog(netWindow, resource.getString("descriptionError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
-                        txtDescription.selectAll();
-                    }
-                }
-                catch (javax.swing.text.BadLocationException ble) {
-                    System.out.println(ble.getMessage());
-                }
-              }
-            }
-          }
-        });
-
-        //ao clicar no botão btnRemoveState, chama-se o metodo removerEstado do controller
-        //para que esse remova um estado do nó
-        btnRemoveState.addActionListener(new ActionListener() {
-          public void actionPerformed(ActionEvent ae) {
-            if (netWindow.getGraphPane().getSelected() instanceof Node) {
-               controller.removeState((Node)netWindow.getGraphPane().getSelected());
-            }
-          }
-        });
-
-        //ao clicar no botão btnRemoveState, chama-se o metodo inserirEstado do controller
-        //para que esse insira um novo estado no nó
-        btnAddState.addActionListener(new ActionListener() {
-          public void actionPerformed(ActionEvent ae) {
-            if (netWindow.getGraphPane().getSelected() instanceof Node) {
-               controller.insertState((Node)netWindow.getGraphPane().getSelected());
-            }
-          }
-        });
-
         //colocar botões e controladores do look-and-feel no toolbar e esse no topPanel
 
         jtbEdition.add(btnAddMFrag); 
@@ -408,12 +267,14 @@ public class MEBNEditionPane extends JPanel {
 
         topPanel.add(jtbEdition);
 
+        
         /*---- jtbMFrag ----*/
         
         jtbMFrag.add(btnMFragActive); 
         jtbMFrag.addSeparator();         
         jtbMFrag.add(nameMFrag);
         jtbMFrag.add(txtNameMFrag);        
+        
         
         /*---- jtbResident ----*/
         jtbResident.add(btnResidentActive); 
@@ -423,14 +284,23 @@ public class MEBNEditionPane extends JPanel {
         jtbResident.addSeparator();
         jtbResident.addSeparator();
         jtbResident.add(btnAddState);
+        jtbResident.addSeparator(); 
         jtbResident.add(btnAddArgument);
+        jtbResident.add(arguments); 
+        txtArguments.setEditable(false); 
+        jtbResident.add(txtArguments); 
 
         /*----- jtbInput ----*/
         jtbInput.add(btnInputActive); 
         jtbInput.addSeparator();
         jtbInput.add(nameInput);
         txtNameInput.setEditable(false); 
-        jtbInput.add(txtNameInput);        
+        jtbInput.add(txtNameInput);
+        jtbInput.addSeparator(); 
+        jtbInput.add(btnInputOf);         
+        jtbInput.add(inputOf);
+        txtInputOf.setEditable(false); 
+        jtbInput.add(txtInputOf); 
         
         /*----- jtbContext ----*/
         jtbContext.add(btnContextActive); 
@@ -516,6 +386,9 @@ public class MEBNEditionPane extends JPanel {
         inputInstanceOfSelectionScroll = new JScrollPane(inputInstanceOfSelection); 
         tabPanel.add("InputInstance", inputInstanceOfSelection); 
         
+        editArgumentsTab = new EditArgumentsTab(); 
+        tabPanel.add("EditArgumentsTab", editArgumentsTab); 
+        
         cardLayout.show(tabPanel, "MTheoryTree");  
         
         /*------------------ Description panel ---------------*/
@@ -541,6 +414,195 @@ public class MEBNEditionPane extends JPanel {
         
         setVisible(true);
     }
+  	
+  	private void addActionListeners(){
+  		
+  		//ao clicar no botão btnGlobalOption, mostra-se o menu para escolha das opções
+  		btnGlobalOption.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				setCursor(new Cursor(Cursor.WAIT_CURSOR));
+  				go = new GlobalOptionsDialog(netWindow.getGraphPane(), controller);
+  				go.setVisible(true);
+  				netWindow.getGraphPane().update();
+  				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+  			}
+  		});
+  		
+  		//ao clicar no botão btnCompile, chama-se o método de compilação da rede e
+  		//atualiza os toolbars
+  		btnCompile.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				if (! controller.compileNetwork()) {
+  					return;
+  				}
+  				netWindow.changeToPNCompilationPane();
+  			}
+  		});
+  		
+  		//ao clicar no botão btnAddEdge setamos as variáveis booleanas e os estados dos butões
+  		btnAddEdge.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				netWindow.getGraphPane().setAction(GraphAction.CREATE_EDGE);
+  			}
+  		});
+  		
+  		btnAddMFrag.addActionListener(new ActionListener(){
+  			public void actionPerformed(ActionEvent ae){
+  				//netWindow.getGraphPane().setAction(GraphAction.CREATE_DOMAIN_MFRAG);
+  				controller.insertDomainMFrag(); 
+  			}
+  		}); 
+  		
+  		
+  		//ao clicar no botão node setamos as variáveis booleanas e os estados dos butões
+  		btnAddContextNode.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				netWindow.getGraphPane().setAction(GraphAction.CREATE_CONTEXT_NODE);
+  			}
+  		});
+  		
+  		
+  		//ao clicar no botão btnAddInputNode setamos as variáveis booleanas e os estados dos butões
+  		btnAddInputNode.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				netWindow.getGraphPane().setAction(GraphAction.CREATE_INPUT_NODE);
+  			}
+  		});
+  		
+  		//ao clicar no botão btnAddResidentNode setamos as variáveis booleanas e os estados dos butões
+  		btnAddResidentNode.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				netWindow.getGraphPane().setAction(GraphAction.CREATE_RESIDENT_NODE);
+  			}
+  		});
+  		
+  		
+  		//ao clicar no botão node setamos as variáveis booleanas e os estados dos butões
+  		btnSelectObject.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				netWindow.getGraphPane().setAction(GraphAction.SELECT_MANY_OBJECTS);
+  			}
+  		});
+  		
+  		btnInputOf.addActionListener(new ActionListener(){
+  			public void actionPerformed(ActionEvent ae){
+  				setInputInstanceOfActive(); 
+  			}
+  		}); 
+  		
+  		// listener responsável pela atualização do texto da name do nó
+  		txtName.addKeyListener(new KeyAdapter() {
+  			public void keyPressed(KeyEvent e) {
+  				Object selected = netWindow.getGraphPane().getSelected();
+  				if (selected instanceof Node) {
+  					Node nodeAux = (Node)selected;
+  					if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtName.getText().length()>0)) {
+  						try {
+  							String name = txtName.getText(0,txtName.getText().length());
+  							matcher = wordPattern.matcher(name);
+  							if (matcher.matches()) {
+  								nodeAux.setName(name);
+  								repaint();
+  							}  else {
+  								JOptionPane.showMessageDialog(netWindow, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+  								txtName.selectAll();
+  							}
+  						}
+  						catch (javax.swing.text.BadLocationException ble) {
+  							System.out.println(ble.getMessage());
+  						}
+  					}
+  				}
+  			}
+  		});
+  		
+  		txtNameMFrag.addKeyListener(new KeyAdapter() {
+  			public void keyPressed(KeyEvent e) {
+  				
+  				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameMFrag.getText().length()>0)) {
+  					try {
+  						String name = txtNameMFrag.getText(0,txtNameMFrag.getText().length());
+  						matcher = wordPattern.matcher(name);
+  						if (matcher.matches()) {
+  							controller.getMebnController().getCurrentMFrag().setName(name);
+  							mTheoryTree.updateTree(); 
+  						}  else {
+  							JOptionPane.showMessageDialog(netWindow, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+  							txtNameMFrag.selectAll();
+  						}
+  					}
+  					catch (javax.swing.text.BadLocationException ble) {
+  						System.out.println(ble.getMessage());
+  					}
+  				}
+  			}
+  		});
+  		
+  		//TODO Verificação de atualização de nome para MFrag. 
+  		
+  		
+  		// listener responsável pela atualização do texo da descrição do nó
+  		txtDescription.addKeyListener(new KeyAdapter() {
+  			public void keyPressed(KeyEvent e) {
+  				Object selected = netWindow.getGraphPane().getSelected();
+  				if (selected instanceof Node)
+  				{
+  					Node nodeAux = (Node)selected;
+  					if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtDescription.getText().length()>0)) {
+  						try {
+  							String name = txtDescription.getText(0,txtDescription.getText().length());
+  							matcher = wordPattern.matcher(name);
+  							if (matcher.matches()) {
+  								nodeAux.setDescription(name);
+  								repaint();
+  							} else {
+  								JOptionPane.showMessageDialog(netWindow, resource.getString("descriptionError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+  								txtDescription.selectAll();
+  							}
+  						}
+  						catch (javax.swing.text.BadLocationException ble) {
+  							System.out.println(ble.getMessage());
+  						}
+  					}
+  				}
+  			}
+  		});
+  		
+  		//ao clicar no botão btnRemoveState, chama-se o metodo removerEstado do controller
+  		//para que esse remova um estado do nó
+  		btnRemoveState.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				if (netWindow.getGraphPane().getSelected() instanceof Node) {
+  					controller.removeState((Node)netWindow.getGraphPane().getSelected());
+  				}
+  			}
+  		});
+  		
+  		//ao clicar no botão btnRemoveState, chama-se o metodo inserirEstado do controller
+  		//para que esse insira um novo estado no nó
+  		btnAddState.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				if (netWindow.getGraphPane().getSelected() instanceof Node) {
+  					controller.insertState((Node)netWindow.getGraphPane().getSelected());
+  				}
+  			}
+  		});
+  		
+  		btnAddArgument.addActionListener(new ActionListener(){
+  			
+  			public void actionPerformed(ActionEvent ae){
+  				setEditArgumentsTabActive(); 
+  			}
+  			
+  		});
+  		
+  		//ao clicar no botão btnGlobalOption, mostra-se o menu para escolha das opções
+  		btnTabOption1.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				setMTheoryTreeActive(); 
+  			}
+  		});  		
+  	}  	
 
     /**
      *  Retorna a tabela de probabilidades.
@@ -669,14 +731,24 @@ public class MEBNEditionPane extends JPanel {
     }
     
     
+    
     public MTheoryTree getMTheoryTree(){
     	return mTheoryTree; 
+    }
+    
+    public InputInstanceOfSelection getInputInstanceOfSelection(){
+    	return inputInstanceOfSelection; 
+    }
+    
+    public EditArgumentsTab getEditArgumentsTab(){
+         return editArgumentsTab; 	
     }
     
     /* TabPanel */
     
     public void setMTheoryTreeActive(){
         cardLayout.show(tabPanel, "MTheoryTree");  
+        mTheoryTree.updateTree(); 
     }
     
     public void setFormulaEdtionActive(){
@@ -687,9 +759,27 @@ public class MEBNEditionPane extends JPanel {
         cardLayout.show(tabPanel, "EntityTree");  
     }    
     
-    public void setinputInstanceOfActive(){
+    public void setInputInstanceOfActive(){
         cardLayout.show(tabPanel, "InputInstance");  
     }
+    
+    public void setArgumentTabActive(){
+        cardLayout.show(tabPanel, "ArgumentTab"); 	
+    }
+    
+    public void setEditArgumentsTabActive(ResidentNode resident){
+   
+        tabPanel.remove(editArgumentsTab);     	
+    	editArgumentsTab = new EditArgumentsTab(controller, resident); 
+    	tabPanel.add("EditArgumentsTab", editArgumentsTab);         
+    	cardLayout.show(tabPanel, "EditArgumentsTab"); 
+    }
+    
+    public void setEditArgumentsTabActive(){
+    	   
+        cardLayout.show(tabPanel, "EditArgumentsTab"); 
+        
+    }    
     
     /* Panel Node Selected */
 
@@ -713,6 +803,8 @@ public class MEBNEditionPane extends JPanel {
         cardLayout.show(panelNodeSelected, "EmptyCard");  
     } 
     
+    /*---------------------------------------------------------*/
+    
     public void setTxtName(String name){
     	txtName.setText(name); 
     }
@@ -728,5 +820,13 @@ public class MEBNEditionPane extends JPanel {
     public void setTxtNameContext(String name){
     	txtNameContext.setText(name); 
     }   
+    
+    public void setTxtInputOf(String name){
+    	txtInputOf.setText(name); 
+    }
+    
+    public void setTxtArguments(String args){
+    	txtArguments.setText(args); 
+    }
 
 }

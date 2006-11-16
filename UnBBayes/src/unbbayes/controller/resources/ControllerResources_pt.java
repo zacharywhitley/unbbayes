@@ -67,6 +67,9 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"fitToPageButtonLabel","Ajustar para Página"},
 		{"loading","Carregando "},
 		{"cancel","Cancelar"},
-		{"of"," de "}
+		{"of"," de "},
+		
+		{"JAXBExceptionFound", "Erro de sintaxe..."}
+		
 	};
 }

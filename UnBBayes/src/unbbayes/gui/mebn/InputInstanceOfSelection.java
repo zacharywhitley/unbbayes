@@ -17,6 +17,7 @@ import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
+import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ResidentNode;
@@ -61,7 +62,15 @@ public class InputInstanceOfSelection extends JTree{
 		
 		createTree();	    
 		
-		// trata os eventos de mouse para a árvore de evidências
+		/* tratar os eventos de mouse, trocando o residente a qual o input
+		 * se refere. 
+		 */
+		
+		
+		
+		
+		
+		/*------------------ Adicionar listeners -----------------------*/
 		
 		addMouseListener(new MouseAdapter() {
 			
@@ -78,39 +87,39 @@ public class InputInstanceOfSelection extends JTree{
 				
 				if (node.isLeaf()) {
 					
-					MFrag mFrag = mFragMap.get(node); 
-					if (mFrag instanceof DomainMFrag){
-						if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
-							
-						} else if (e.getClickCount() == 2
-								&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-							
-						} else if (e.getClickCount() == 1) {
-							
-						}
-					}
-					else{
-						
-					}
-				} else {
+					ResidentNode residentNode = residentNodeMap.get(node); 
+					
 					if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
 						
+					} else if (e.getClickCount() == 2
+							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
+						//TODO preencher o generativeInput... 
+						GenerativeInputNode inputNode = (GenerativeInputNode)controller.getScreen().getGraphPane().getSelected(); 
+						controller.getMebnController().setInputInstanceOf(inputNode, residentNode); 
 						
+					} else if (e.getClickCount() == 1) {
 						
 					}
-					if (e.getClickCount() == 1) {
-						
-						
-					} else if (e.getClickCount() == 2) {
-						DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel()
-						.getRoot();
-						int index = root.getIndex(node);
-						expandedNodes[index] = !expandedNodes[index];
-					}
-				}
-				
+				} 
+				else {
+				   if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
+					
+					
+					
+				   }
+				   if (e.getClickCount() == 1) {
+					
+					
+				  } else if (e.getClickCount() == 2) {
+				  	DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel()
+					.getRoot();
+				  	int index = root.getIndex(node);
+					expandedNodes[index] = !expandedNodes[index];
+			 	}
 			}
-		});		
+			}
+		
+	});		
 		
 		super.treeDidChange();
 		expandTree();
@@ -128,13 +137,15 @@ public class InputInstanceOfSelection extends JTree{
 			mFragMap.put(mFragTreeNode, domainMFrag); 
 			nodeMap.put(mFragTreeNode, domainMFrag); 
 			
+			root.add(mFragTreeNode); 
+			
 			List<DomainResidentNode> residentNodeList = domainMFrag.getDomainResidentNodeList(); 
 			
 			for (DomainResidentNode domainResidentNode : residentNodeList) {
 				DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(domainResidentNode.getName());
 				mFragTreeNode.add(treeNode);
 				residentNodeMap.put(treeNode, domainResidentNode);
-				nodeMap.put(mFragTreeNode, domainMFrag); 				
+				nodeMap.put(mFragTreeNode, domainResidentNode); 				
 			}
 		}
 		
@@ -162,6 +173,7 @@ public class InputInstanceOfSelection extends JTree{
 		public Component getTreeCellRendererComponent(JTree tree, Object value,
 				boolean sel, boolean expanded, boolean leaf, int row,
 				boolean hasFocus) {
+			
 			super.getTreeCellRendererComponent(tree, value, sel, expanded,
 					leaf, row, hasFocus);
 			
@@ -170,16 +182,14 @@ public class InputInstanceOfSelection extends JTree{
 			if (leaf) {
 				if (obj != null) {
 					
-					if (obj instanceof DomainResidentNode){
-						DomainResidentNode resident = (DomainResidentNode)obj;
+					if (obj instanceof ResidentNode){
 						setIcon(yellowBallIcon);								
 					}
+					
 				}
 			}else {
-				
 				if (obj != null){
 					if (obj instanceof DomainMFrag){
-						DomainMFrag mFrag = (DomainMFrag)obj;
 						setIcon(greenBallIcon);					    	   
 					}
 					else{ //root 
@@ -253,8 +263,7 @@ public class InputInstanceOfSelection extends JTree{
 				}
 			}
 			
-			DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel()
-			.getRoot();
+			DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
 			root.removeAllChildren();
 			mFragMap.clear(); 
 			residentNodeMap.clear();
@@ -267,13 +276,15 @@ public class InputInstanceOfSelection extends JTree{
 				mFragMap.put(mFragTreeNode, domainMFrag); 
 				nodeMap.put(mFragTreeNode, domainMFrag); 
 				
+				root.add(mFragTreeNode); 
+				
 				List<DomainResidentNode> residentNodeList = domainMFrag.getDomainResidentNodeList(); 
 				
 				for (DomainResidentNode domainResidentNode : residentNodeList) {
 					DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(domainResidentNode.getName());
 					mFragTreeNode.add(treeNode);
 					residentNodeMap.put(treeNode, domainResidentNode);
-					nodeMap.put(mFragTreeNode, domainMFrag); 				
+					nodeMap.put(mFragTreeNode, domainResidentNode); 				
 				}
 			}
 			

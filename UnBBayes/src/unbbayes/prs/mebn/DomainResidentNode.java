@@ -21,7 +21,7 @@ public class DomainResidentNode extends ResidentNode {
 	
 	private DrawRectangle drawResidentNode; 
 	
-	private static Color color = new Color(150, 200, 200); 	
+	private static Color color = new Color(176, 252, 131); 	
 	
 	public DomainResidentNode(String name, DomainMFrag mFrag){
 		

@@ -32,7 +32,7 @@ public class GenerativeInputNode extends InputNode {
 	
 	private DrawRectangleThree drawInputNode; 
 	
-	private static Color color = new Color(200, 200, 200); //gray 		
+	private static Color color = new Color(187, 247, 253); 		
 	
 	public GenerativeInputNode(String name, DomainMFrag mFrag){
 		

@@ -38,7 +38,10 @@ public class GuiResources_pt extends ListResourceBundle {
 		
 		{"unbbayesTitle","UnBBayes"},
 		
+		//main toll bar tips 		
 		{"newToolTip","Nova rede"},
+		{"newMsbnToolTip", "Nova MSBN"}, 
+		{"newMebnToolTip", "Nova MEBN"}, 		
 		{"openToolTip","Abrir rede"},
 		{"saveToolTip","Salvar rede"},
 		{"learningToolTip","Modo de aprendizagem"},
@@ -108,7 +111,6 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"LookAndFeelIllegalAccessException","Esse LookAndFeel não pode ser usado: "},
 		{"nameError","Nome não aceito"},
 		
-		
 		{"statusReadyLabel","Pronto"},
 		{"helpToolTip","Ajuda do UnBBayes"},
 		{"propagateToolTip","Propagar as evidências"},
@@ -145,6 +147,16 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"previewTableToolTip","Visualizar a impressão da tabela"},
 		{"saveTableImageToolTip","Salvar a tabela como imagem gif"},
 		{"formula","Formula:"},	
+		{"inputOf","Input de:"},	
+		{"arguments", "Args: "}, 		
+		
+		//Menus MEBN
+		{"menuDelete", "Delete"}, 
+		{"menuAddContext", "Add Context"}, 
+		{"menuAddInput", "Add Input"},
+		{"menuAddResident", "Add Resident"}, 
+		{"menuAddDomainMFrag", "Add Domain MFrag"}, 
+		{"menuAddFindingMFrag", "Add Finding MFrag"}, 
 		
 		{"whithotMFragActive","Não há MFrag ativa"},			
 		{"previewTitle","Pré Visualização"},

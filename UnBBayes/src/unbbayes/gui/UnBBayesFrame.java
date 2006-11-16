@@ -79,9 +79,13 @@ public class UnBBayesFrame extends JFrame {
 	private JToolBar jtbWindow;
 	private JToolBar jtbHelp;
 	private MainController controller;
+	
 	private JButton newNet;
+	private JButton newMsbn; 
+	private JButton newMebn; 
 	private JButton openNet;
 	private JButton saveNet;
+	
 	private JButton learn;
 	private JButton metal;
 	private JButton motif;
@@ -689,6 +693,8 @@ public class UnBBayesFrame extends JFrame {
 
 		// add their buttons
 		jtbFile.add(newNet);
+		jtbFile.add(newMsbn); 
+		jtbFile.add(newMebn); 
 		jtbFile.add(openNet);
 		jtbFile.add(saveNet);
 		jtbTools.add(learn);
@@ -715,6 +721,10 @@ public class UnBBayesFrame extends JFrame {
 		// create the buttons
 		newNet =
 			new JButton(iconController.getNewIcon());
+		newMsbn =
+			new JButton(iconController.getNewIcon());	
+		newMebn =
+			new JButton(iconController.getNewIcon());				
 		openNet =
 			new JButton(iconController.getOpenIcon());
 		saveNet =
@@ -737,6 +747,8 @@ public class UnBBayesFrame extends JFrame {
 		// add their tool tip
 		help.setToolTipText(resource.getString("helpToolTip"));
 		newNet.setToolTipText(resource.getString("newToolTip"));
+		newMsbn.setToolTipText(resource.getString("newMsbnToolTip"));
+		newMebn.setToolTipText(resource.getString("newMebnToolTip"));		
 		openNet.setToolTipText(resource.getString("openToolTip"));
 		saveNet.setToolTipText(resource.getString("saveToolTip"));
 		learn.setToolTipText(resource.getString("learningToolTip"));
@@ -754,6 +766,8 @@ public class UnBBayesFrame extends JFrame {
 	public void assignActionListeners() {
 
 		newNet.addActionListener(alNewBN);
+		newMsbn.addActionListener(alNewMSBN); 
+		newMebn.addActionListener(alNewMEBN); 
 		openNet.addActionListener(alOpen);
 		saveNet.addActionListener(alSave);
 		metal.addActionListener(alMetal);

@@ -36,6 +36,7 @@ import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLIO;
+import unbbayes.io.mebn.IOMebnException;
 import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -106,6 +107,7 @@ public class MainController {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         try {
 			BaseIO io = null;
+			PrOwlIO prOwlIo = null; 
 			JInternalFrame window = screen.getSelectedWindow();
 			if (file.isDirectory()) {
 				io = new NetIO();
@@ -114,17 +116,30 @@ public class MainController {
 				String name = file.getName().toLowerCase();							
 				if (name.endsWith("net")) {
 					io = new NetIO();		
-				} else if (name.endsWith("xml")){
+				} 
+				else if (name.endsWith("xml")){
 					io = new XMLIO();
 				}
-				io.save(file, ((NetworkWindow) window).getSingleEntityNetwork());
-        	}
+				else if (name.endsWith("owl")){
+					prOwlIo = new PrOwlIO(); 
+				}
+				
+				if (io != null)
+				   io.save(file, ((NetworkWindow) window).getSingleEntityNetwork());
+				else
+					prOwlIo.saveMebn(name, ((NetworkWindow) window).getMultiEntityBayesianNetwork()); 
+			}
         } catch (IOException e) {
             JOptionPane.showMessageDialog(screen, e.getMessage(), "saveNetException", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         } catch (JAXBException je){
         	je.printStackTrace(); 
-        } finally {
+        } catch (IOMebnException me){
+            JOptionPane.showMessageDialog(screen, me.getMessage(), "saveNetException", JOptionPane.ERROR_MESSAGE);        	
+        	me.printStackTrace(); 
+        }
+        
+        finally {
         	screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
     }
@@ -162,7 +177,11 @@ public class MainController {
 				}
         	}
 			screen.addWindow(window);
-        } catch (Exception e){
+        }  catch (JAXBException je){
+            JOptionPane.showMessageDialog(screen, resource.getString("JAXBExceptionFound"), resource.getString("loadNetException"), JOptionPane.ERROR_MESSAGE);
+            je.printStackTrace();        	
+        }
+           catch (Exception e){
             JOptionPane.showMessageDialog(screen, e.getMessage(), resource.getString("loadNetException"), JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         } finally {

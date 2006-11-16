@@ -38,7 +38,10 @@ public class GuiResources extends ListResourceBundle {
 		
 		{"unbbayesTitle","UnBBayes"},
 		
+		//main toll bar tips 
 		{"newToolTip","New net"},
+		{"newMsbnToolTip", "New MSBN"}, 
+		{"newMebnToolTip", "New MEBN"}, 
 		{"openToolTip","Open net"},
 		{"saveToolTip","Save net"},
 		{"learningToolTip","Learning mode"},
@@ -144,6 +147,16 @@ public class GuiResources extends ListResourceBundle {
 		{"previewTableToolTip","Print table preview"},
 		{"saveTableImageToolTip","Save table as a gif image"},
 		{"formula","Formula:"},	
+		{"inputOf","Input of:"},	
+		{"arguments", "Args: "}, 
+		
+		//Menus MEBN
+		{"menuDelete", "Delete"}, 
+		{"menuAddContext", "Add Context"}, 
+		{"menuAddInput", "Add Input"},
+		{"menuAddResident", "Add Resident"}, 
+		{"menuAddDomainMFrag", "Add Domain MFrag"}, 
+		{"menuAddFindingMFrag", "Add Finding MFrag"}, 
 		
 		{"whithotMFragActive","Don't have MFrag active"},			
 		{"previewTitle","Preview"},

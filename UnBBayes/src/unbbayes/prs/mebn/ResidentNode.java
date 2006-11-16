@@ -1,10 +1,11 @@
 package unbbayes.prs.mebn;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.bn.ITabledVariable;
-import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticTable;
 
 public class ResidentNode extends MultiEntityNode implements ITabledVariable {
  
@@ -22,9 +23,14 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	private List<ResidentNode> residentNodeFatherList;
 	 
 	private List<ResidentNode> residentNodeChildList;
+	
+	private List<OrdinaryVariable> ordinaryVariableList; 
 	 
 	public ResidentNode(){
+		
 		super(); 
+		
+		ordinaryVariableList = new ArrayList<OrdinaryVariable>(); 
 	}
 	
 	/**
@@ -34,7 +40,22 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 		return null;
 	}
 	
-
+	
+	public void addOrdinaryVariable(OrdinaryVariable ov){
+		ordinaryVariableList.add(ov); 
+	}
+	
+	public void removeOrdinaryVariable(OrdinaryVariable ov){
+	    ordinaryVariableList.remove(ov); 	
+	}
+	
+	public boolean containsOrdinaryVariable(OrdinaryVariable ov){
+	  	return ordinaryVariableList.contains(ov); 
+	}
+	
+	public List<OrdinaryVariable> getOrdinaryVariableList(){
+		return ordinaryVariableList; 
+	}
 	 
 }
  

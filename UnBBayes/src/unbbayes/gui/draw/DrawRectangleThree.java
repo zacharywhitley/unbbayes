@@ -41,6 +41,8 @@ public class DrawRectangleThree extends DrawElement{
 		Area area = new Area(rectangle);
 		area.add(new Area(leftBorder));
 		area.add(new Area(rightBorder)); 
+
+		graphics.fill(area); 
 		
 		if (isSelected()) {
 			graphics.setColor(getSelectionColor());
