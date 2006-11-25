@@ -21,34 +21,6 @@ public class TxtLoader extends Loader {
 	/** Load resource file from this package */
 	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.datamanipulation.resources.DataManipulationResource");
 
-	/** 
-	 * Stores the type of an attribute:
-	 * 0 - Numeric
-	 * 1 - Nominal
-	 * 2 - Cyclic numeric
-	 */
-	private byte[] attType;
-
-	/** Constant set for numeric attributes. */
-	private final static byte NUMERIC = 0;
-
-	/** Constant set for nominal attributes. */
-	private final static byte NOMINAL = 1;
-
-	/** Constant set for cyclic numeric attributes. */
-	private final static byte CYCLIC = 2;
-
-    /** Stores the name of the counter attribute */
-	private String counterAttributeName;
-
-	/** Number of attributes */
-	protected int numAttributes;
-
-	/**
-	 * Used to ease the construction of an instance.
-	 */
-	private boolean[] attIsString;
-	
 	/**
 	 * Reads a TXT file from a reader.
 	 *
@@ -57,6 +29,8 @@ public class TxtLoader extends Loader {
 	 * successfully
 	 */
 	public TxtLoader(File file) throws IOException {
+		this.file = file;
+		
 		// Count instanceSet
 		countInstancesFromFile(file);
 		
@@ -64,7 +38,6 @@ public class TxtLoader extends Loader {
 		Reader reader = new BufferedReader(new FileReader(file));
 		tokenizer = new StreamTokenizer(reader);
 		initTokenizer();
-		readHeader();
 	}
 
 	/**
@@ -86,16 +59,78 @@ public class TxtLoader extends Loader {
 	}
 
 	/**
+	 * Temporarily constructs the header of a txt file. Used as a preprocessor 
+	 * step in the construction of the file's header. 
+	 *
+	 * @param tokenizer Stream tokenizer
+	 * @exception IOException if the information is not read
+	 * successfully
+	 */
+	public void buildHeader() throws IOException {
+		/* Create am arraylist for the attributes */
+		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+
+		/* Insert attributes in the new dataset */
+		getNextToken();
+		int attIndex = 0;
+		String attName;
+		
+		/* Update initialInstances excluding the header */
+		--initialInstances;
+		
+		while (tokenizer.ttype != StreamTokenizer.TT_EOL) {
+			attName = tokenizer.sval;
+
+			/* Check if the header is ok */
+			if (attName == null) {
+				attName = String.valueOf(tokenizer.nval);
+			}
+			if (attName == null) {
+				errms(resource.getString("Invalid header"));
+			}
+			
+			/* Check if the current attribute is the counter */
+			if (attIndex == counterIndex) {
+				/* Get counter's name and skip to the next attribute */
+				counterAttributeName = attName;
+				tokenizer.nextToken();
+				continue;
+			}
+			
+			/* Build attribute */
+			attributes.add(new Attribute(attName,(byte) 1, true,
+					initialInstances, attIndex));
+			tokenizer.nextToken();
+			++attIndex;
+		}
+		
+		int size = attributes.size();
+		Attribute[] attributesArray = new Attribute[size];
+		
+		for (int i = 0; i < size; i++) {
+			attributesArray[i] = (Attribute)attributes.get(i);
+		}
+		
+		/* Create the instanceSet */
+		instanceSet = new InstanceSet(initialInstances, attributesArray);
+		instanceSet.setCounterAttributeName(counterAttributeName);
+		
+		/* Set the current number of attributes */
+		numAttributes = attIndex;
+	}
+
+
+
+	/**
 	 * Reads and stores header of a TXT file.
 	 *
 	 * @param tokenizer Stream tokenizer
 	 * @exception IOException if the information is not read
 	 * successfully
 	 */
-	protected void readHeader() throws IOException {
+	public void readHeader() throws IOException {
 		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
 		
-		/* Ask the user for the types of each attribute */
 		ema();
 		
 		/* Insert attributes in the new dataset */
@@ -111,11 +146,14 @@ public class TxtLoader extends Loader {
 
 			/* Check if the header is ok */
 			if (attName == null) {
+				attName = String.valueOf(tokenizer.nval);
+			}
+			if (attName == null) {
 				errms(resource.getString("Invalid header"));
 			}
 			
 			/* Check if the current attribute is the counter */
-			if (attIndex == counterAttribute) {
+			if (attIndex == counterIndex) {
 				/* Get counter's name and skip to the next attribute */
 				counterAttributeName = attName;
 				tokenizer.nextToken();
@@ -124,8 +162,8 @@ public class TxtLoader extends Loader {
 			
 			/* Build attribute */
 			attributes.add(new Attribute(attName,
-										attType[attIndex],
-										attIsString[attIndex],
+										attributeType[attIndex],
+										attributeIsString[attIndex],
 										initialInstances,
 										attIndex
 										)
@@ -159,6 +197,11 @@ public class TxtLoader extends Loader {
 	 * @exception IOException if the information is not read successfully
 	 */
 	public boolean getInstance() throws IOException {
+		/* Check if the header has already been read */
+		if (instanceSet == null) {
+			readHeader();
+		}
+		
 		/* Check if any attributes have been declared */
 		if (instanceSet.numAttributes() == 0) {
 			errms(resource.getString("getInstanceTXT"));
@@ -196,7 +239,7 @@ public class TxtLoader extends Loader {
 		int columns = numAttributes;
 		
 		/* Check if the instanceSet file has a counter attribute */
-		if (counterAttribute != -1) {
+		if (counterIndex != -1) {
 			/* Read the counter attribute */
 			++columns;
 		}
@@ -207,7 +250,7 @@ public class TxtLoader extends Loader {
 		 */
 		for (int i = 0; i < columns; i++) {
 			/* Check if the current attribute is the counter attribute */
-			if (i == counterAttribute) {
+			if (i == counterIndex) {
 				try {
 					instanceWeight = (float) tokenizer.nval;
 					continue;
@@ -233,7 +276,7 @@ public class TxtLoader extends Loader {
 				/* The token is a number. Check if the attribute type was set
 				 * to nominal.
 				 */
-				if (attType[attIndex] == NOMINAL) {
+				if (attributeType[attIndex] == NOMINAL) {
 					/* Map the current nominal value to an internal value */
 					numberValue = (float) tokenizer.nval;
 					Attribute attribute = instanceSet.getAttribute(i);
@@ -283,61 +326,113 @@ public class TxtLoader extends Loader {
 	}
 
 //	private void ema() {
-//		attType = new byte[11];
-//		attIsString = new boolean[11];
-//		attType[0] = NOMINAL;
-//		attType[1] = NOMINAL;
-//		attType[2] = NOMINAL;
-//		attType[3] = NOMINAL;
-//		attType[4] = NOMINAL;
-//		attType[5] = NOMINAL;
-//		attType[6] = NOMINAL;
-//		attType[7] = NOMINAL;
-//		attType[8] = NOMINAL;
-//		attType[9] = CYCLIC;
-////		attType[9] = NOMINAL;
-//		attType[10] = NOMINAL;
-//		attIsString[0] = false;
-//		attIsString[1] = false;
-//		attIsString[2] = false;
-//		attIsString[3] = false;
-//		attIsString[4] = false;
-//		attIsString[5] = false;
-//		attIsString[6] = false;
-//		attIsString[7] = false;
-//		attIsString[8] = false;
-//		attIsString[9] = false;
-//		attIsString[10] = false;
-////		counterAttribute = 11;
+//		attributeType = new byte[6];
+//		attributeIsString = new boolean[6];
+//		attributeType[0] = NUMERIC;
+//		attributeType[1] = NUMERIC;
+//		attributeType[2] = NUMERIC;
+//		attributeType[3] = NUMERIC;
+//		attributeType[4] = NUMERIC;
+//		attributeType[5] = NUMERIC;
+//		attributeIsString[0] = false;
+//		attributeIsString[1] = false;
+//		attributeIsString[2] = false;
+//		attributeIsString[3] = false;
+//		attributeIsString[4] = false;
+//		attributeIsString[5] = false;
 //	}
 
 	private void ema() {
-		attType = new byte[11];
-		attIsString = new boolean[11];
-		attType[0] = NOMINAL;
-		attType[1] = NOMINAL;
-		attType[2] = NOMINAL;
-		attType[3] = NOMINAL;
-		attType[4] = NOMINAL;
-		attType[5] = NOMINAL;
-		attType[6] = NOMINAL;
-		attType[7] = NOMINAL;
-		attType[8] = NOMINAL;
-		attType[9] = CYCLIC;
-//		attType[9] = NOMINAL;
-		attType[10] = NOMINAL;
-		attIsString[0] = false;
-		attIsString[1] = false;
-		attIsString[2] = false;
-		attIsString[3] = false;
-		attIsString[4] = false;
-		attIsString[5] = false;
-		attIsString[6] = false;
-		attIsString[7] = false;
-		attIsString[8] = false;
-		attIsString[9] = false;
-		attIsString[10] = false;
-		counterAttribute = 11;
+		attributeType = new byte[11];
+		attributeIsString = new boolean[11];
+		attributeType[0] = NOMINAL;
+		attributeType[1] = NOMINAL;
+		attributeType[2] = NOMINAL;
+		attributeType[3] = NOMINAL;
+		attributeType[4] = NOMINAL;
+		attributeType[5] = NOMINAL;
+		attributeType[6] = NOMINAL;
+		attributeType[7] = NOMINAL;
+		attributeType[8] = NOMINAL;
+		attributeType[9] = CYCLIC;
+//		attributeType[9] = NOMINAL;
+//		attributeType[9] = NUMERIC;
+		attributeType[10] = NOMINAL;
+		attributeIsString[0] = false;
+		attributeIsString[1] = false;
+		attributeIsString[2] = false;
+		attributeIsString[3] = false;
+		attributeIsString[4] = false;
+		attributeIsString[5] = false;
+		attributeIsString[6] = false;
+		attributeIsString[7] = false;
+		attributeIsString[8] = false;
+		attributeIsString[9] = false;
+		attributeIsString[10] = false;
 	}
 
+//	private void ema() {
+//		// creditApproval
+//		attributeType = new byte[16];
+//		attributeIsString = new boolean[16];
+//		attributeType[0] = NOMINAL;
+//		attributeType[1] = NUMERIC;
+//		attributeType[2] = NUMERIC;
+//		attributeType[3] = NOMINAL;
+//		attributeType[4] = NOMINAL;
+//		attributeType[5] = NOMINAL;
+//		attributeType[6] = NOMINAL;
+//		attributeType[7] = NUMERIC;
+//		attributeType[8] = NOMINAL;
+//		attributeType[9] = NOMINAL;
+//		attributeType[9] = NOMINAL;
+//		attributeType[10] = NUMERIC;
+//		attributeType[11] = NOMINAL;
+//		attributeType[12] = NOMINAL;
+//		attributeType[13] = NUMERIC;
+//		attributeType[14] = NUMERIC;
+//		attributeType[15] = NOMINAL;
+//		attributeIsString[0] = true;
+//		attributeIsString[1] = true;
+//		attributeIsString[2] = true;
+//		attributeIsString[3] = true;
+//		attributeIsString[4] = true;
+//		attributeIsString[5] = true;
+//		attributeIsString[6] = true;
+//		attributeIsString[7] = true;
+//		attributeIsString[8] = true;
+//		attributeIsString[9] = true;
+//		attributeIsString[10] = true;
+//		attributeIsString[11] = true;
+//		attributeIsString[12] = true;
+//		attributeIsString[13] = true;
+//		attributeIsString[14] = true;
+//		attributeIsString[15] = false;
+//		counterIndex = -1;
+//	}
+
+
+//	private void ema() {
+//		attributeType = new byte[5];
+//		attributeIsString = new boolean[5];
+//		attributeType[0] = NOMINAL;
+//		attributeIsString[0] = true;
+//		attributeType[1] = NUMERIC;
+//		attributeIsString[1] = false;
+//		attributeType[2] = NUMERIC;
+//		attributeIsString[2] = false;
+//		attributeType[3] = NOMINAL;
+//		attributeIsString[3] = true;
+//		attributeType[4] = NOMINAL;
+//		attributeIsString[4] = true;
+//	}
+
+//	private void ema() {
+//		attributeType = new byte[23];
+//		attributeIsString = new boolean[23];
+//		for (int i = 0; i < 23; i++) {
+//			attributeType[i] = NOMINAL;
+//			attributeIsString[i] = true;
+//		}
+//	}
 }

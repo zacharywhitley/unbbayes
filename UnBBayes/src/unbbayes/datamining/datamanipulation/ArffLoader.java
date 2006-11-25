@@ -26,13 +26,14 @@ public class ArffLoader extends Loader {
 			"DataManipulationResource");
 
 	/**
-	 * Reads an ARFF file from a reader.
+	 * Reads a ARFF file from a reader.
 	 *
 	 * @param reader Reader
-	 * @exception IOException if the ARFF file is not read
-	 * successfully
+	 * @exception IOException if the ARFF file is not read successfully
 	 */
-	public ArffLoader(File file) throws IOException	{
+	public ArffLoader(File file) throws IOException {
+		this.file = file;
+
 		// Count instanceSet
         countInstancesFromFile(file);
         
@@ -41,7 +42,6 @@ public class ArffLoader extends Loader {
         
         tokenizer = new StreamTokenizer(reader);
         initTokenizer();
-        readHeader();
 	}
 
 	/**
@@ -93,8 +93,8 @@ public class ArffLoader extends Loader {
 	 * @exception IOException if the information is not read
 	 * successfully
 	 */
-	protected void readHeader() throws IOException {
-		String attributeName;
+	public void readHeader() throws IOException {
+        String attributeName;
 		String relationName = "";
 		ArrayList<String> stringValuesAux;
 		ArrayList<Float> numberValuesAux;
@@ -288,6 +288,11 @@ public class ArffLoader extends Loader {
 	 * successfully
 	 */
 	public boolean getInstance() throws IOException {
+		/* Check if the header has already been read */
+		if (instanceSet == null) {
+			readHeader();
+		}
+
 		// Check if any attributes have been declared.
 		if (instanceSet.numAttributes() == 0) {
 			errms(resource.getString("getInstanceException1"));
@@ -328,7 +333,7 @@ public class ArffLoader extends Loader {
 		int index;
 		
 		/* Check if the instanceSet file has a counter attribute */
-		if (counterAttribute != -1) {
+		if (counterIndex != -1) {
 			/* Read the counter attribute */
 			++numColumns;
 		}
@@ -339,7 +344,7 @@ public class ArffLoader extends Loader {
 		 */
 		for (int i = 0; i < numColumns; i++) {
 			/* Check if the current attribute is the counter attribute */
-			if (i == counterAttribute) {
+			if (i == counterIndex) {
 				try {
 					instanceWeight = (float) tokenizer.nval;
 					continue;

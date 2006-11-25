@@ -1,23 +1,28 @@
 package unbbayes.datamining.datamanipulation;
 
+import java.io.Serializable;
 import java.util.*;
 
 /** Encapsulates data obtained on a split value search for a numeric attribute 
  * 
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  * */
-public class NumericData
-{
+public class NumericData implements Serializable {
 	/** attribute index relative to a splitObject's attributes */
 	private int index;
+	
 	/** list of double values representing the values tested */
 	private ArrayList<Double> cuts;
+	
 	/** list of double values representing the gains obtained */
 	private ArrayList<Double> gains;
+	
 	/** list of float arrays representing the distributions above of each cut  */
 	private ArrayList<float[]> instancesAbove;
+	
 	/** list of float arrays representing the distributions below of each cut  */
 	private ArrayList<float[]> instancesBelow;
+	
 	/** the missing values distribution */
 	private float[] missingValuesDistribution;
 

@@ -458,6 +458,22 @@ public final class Utils {
     return index;
   }
 
+	/**
+	 * Sorts a given array of integers in ascending order and returns an
+	 * array of integers with the positions of the elements of the
+	 * original array in the sorted array.
+	 *
+	 * @param array This array is not changed by the method!
+	 * @return An array of integers with the positions in the sorted
+	 * array.
+	 */
+	public static int[] sort(int[] array) {
+		array = array.clone();
+	    quickSort(array, 0, array.length - 1);
+	    
+	    return array;
+	}
+
   /**
    * Sorts a given array of bytes in ascending order and returns an
    * array of integers with the positions of the elements of the
@@ -594,7 +610,74 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
     }
 }
 
-  /** Sort values in a array of doubles and returns an array of doubles
+	/**
+	 * Implements quicksort for a array of integers.
+	 *
+	 * @param matrix The matrix of floats to be sorted
+	 * @param lo0 The first index of the subset to be sorted
+	 * @param hi0 The last index of the subset to be sorted
+	 * @param num The number of columns of the input matrix
+	 */
+	private static void quickSort(int[] array, int lo0, int hi0) {
+		int lo = lo0;
+		int hi = hi0;
+		int mid;
+		int aux;
+	
+		if (hi0 > lo0) {
+			/* 
+			 * Arbitrarily establishing partition element as the midpoint of
+			 * the matrix
+			 */
+			mid = array[(lo0 + hi0) / 2];
+	
+			/* loop through the matrix until indices cross */
+			while (lo <= hi) {
+				/* 
+				 * find the first element that is greater than or equal to
+				 * the partition element starting from the left Index
+				 */
+				while (array[lo] < mid && lo < hi0) {
+					++lo;
+				}
+	
+				/* 
+				 * find an element that is smaller than or equal to
+				 * the partition element starting from the right Index
+				 */
+				while (array[hi] > mid && hi > lo0) {
+					--hi;			
+				}
+	
+				/* if the indexes have not crossed, swap */
+				if (lo <= hi) {
+					aux = array[lo];
+					array[lo] = array[hi];
+					array[hi] = aux;
+					++lo;
+					--hi;
+				}
+			}
+	
+			/* 
+			 * If the right index has not reached the left side of matrix
+			 * must now sort the left partition
+			 */
+			if (lo0 < hi) {
+				quickSort(array, lo0, hi);
+			}
+	
+			/* 
+			 * If the left index has not reached the right side of matrix
+			 * must now sort the right partition
+			 */
+			if (lo < hi0) {
+				quickSort(array, lo, hi0);
+			}
+		}
+	}
+
+	/** Sort values in a array of doubles and returns an array of doubles
   	with the sum of equal values. Original array will be modified
 	@param values The array of double
 	@return An array with the sum of equal values from original array

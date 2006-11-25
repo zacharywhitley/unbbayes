@@ -230,7 +230,10 @@ public class Instance {
 	 * @return The value as a string
 	 */
 	public String stringValue(int attIndex) {
-		return instanceSet.attributes[attIndex].value((int) data[attIndex]);
+		if (instanceSet.attributeType[attIndex] == instanceSet.NOMINAL) {
+			return instanceSet.attributes[attIndex].value((int) data[attIndex]);
+		}
+		return String.valueOf(data[attIndex]);
 	}
 
 	/**
@@ -254,7 +257,6 @@ public class Instance {
 		
 		/* Get the attributes' values */
 		if (numAttributes > 1) {
-			numAttributes = numAttributes - 1;
 			for (int i = 0; i < numAttributes; i++) {
 				if (i != 0) {
 					text.append(",");
@@ -316,7 +318,7 @@ public class Instance {
 	}
 	
 	/**
-	 * Add to the weight the specified value.
+	 * Increase the weight of this instance with the specified value.
 	 * 
 	 * @param weight: the desired amount to add to the weight of this instance.
 	 */

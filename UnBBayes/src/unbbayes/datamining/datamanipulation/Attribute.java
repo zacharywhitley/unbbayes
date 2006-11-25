@@ -334,6 +334,10 @@ public class Attribute implements Serializable {
 				}
 			}
 			text.append('}');
+		} else if (isNumeric()) {
+			text.append("numeric");
+		} else if (isCyclic()) {
+			text.append("cyclic");
 		}
 		return text.toString();
 	}

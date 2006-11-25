@@ -18,19 +18,76 @@ public abstract class Loader implements IProgress {
 	/** Database created from a file */
 	protected InstanceSet instanceSet;
 
-	protected int counterAttribute = -1;
+	protected int counterIndex = -1;
 	
 	protected int initialInstances = 0;
 	
 	protected StreamTokenizer tokenizer;
 
-	public void setCounterAttribute(int counterAttribute) {
-		if (counterAttribute >= 0) {
-			instanceSet.removeAttribute(counterAttribute);
-			this.counterAttribute = counterAttribute;
-		}
+	/** 
+	 * Stores the type of an attribute:
+	 * 0 - Numeric
+	 * 1 - Nominal
+	 * 2 - Cyclic numeric
+	 */
+	protected byte[] attributeType;
+
+	/** Constant set for numeric attributes. */
+	protected final static byte NUMERIC = InstanceSet.NUMERIC;
+
+	/** Constant set for nominal attributes. */
+	protected final static byte NOMINAL = InstanceSet.NOMINAL;
+
+	/** Constant set for cyclic numeric attributes. */
+	protected final static byte CYCLIC = InstanceSet.CYCLIC;
+
+    /** Stores the name of the counter attribute */
+	protected String counterAttributeName;
+
+	/** Number of attributes */
+	protected int numAttributes;
+	
+	public File file;
+
+	/**
+	 * Used to ease the construction of an instance.
+	 */
+	protected boolean[] attributeIsString;
+	
+	public void setAttributeType(byte[] attributeType) {
+		this.attributeType = attributeType;
+	}
+	
+	public void setAttributeIsString(boolean[] attributeIsString) {
+		this.attributeIsString = attributeIsString;
+	}
+	
+	public void setNumAttributes(int numAttributes) {
+		this.numAttributes = numAttributes;
+	}
+	
+	public void setCounterAttribute(int counterIndex) {
+		this.counterIndex = counterIndex;
 	}
 
+	
+	public byte[] getAttributeType() {
+		return attributeType;
+	}
+	
+	public boolean[] getAttributeIsString() {
+		return attributeIsString;
+	}
+	
+	public int getNumAttributes() {
+		return numAttributes;
+	}
+	
+	public int getCounterAttribute() {
+		return counterIndex;
+	}
+
+	
 	/** 
 	 * Returns instance set generated from reader
 	 * @return The instance set
@@ -56,7 +113,7 @@ public abstract class Loader implements IProgress {
 	 * @exception IOException if the information is not read
 	 * successfully
 	 */
-	protected abstract void readHeader() throws IOException;
+	public abstract void readHeader() throws IOException;
 
 	/**
 	 * Reads a single instance using the tokenizer and appends it

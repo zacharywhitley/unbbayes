@@ -1,5 +1,6 @@
 package unbbayes.datamining.datamanipulation;
 
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Random;
 import java.util.ResourceBundle;
@@ -47,7 +48,13 @@ public class InstanceSet {
 	/** Number of nominal attributes */
 	public int numNominalAttributes;
 
-	/** The collection of instances (compability purposes). */
+	/** Number of numeric attributes */
+	public int numNumericAttributes;
+	
+	/** Number of cyclic attributes */
+	public int numCyclicAttributes;
+	
+	/** The collection of instances */
 	public Instance[] instances;
 
 	/** 
@@ -75,14 +82,16 @@ public class InstanceSet {
 	public int numInstances = 0;
 
 	/** Total number of instances considering their weights */
-	private int numWeightedInstances;
+	public int numWeightedInstances;
 	
 	/**
 	 * Constructor creating an empty set of instances.
      * Set class index to be undefined. Sets
 	 * the capacity of the set of instances to 0 if it's negative.
 	 *
-	 * @param capacity The capacity of the new dataset
+	 * @param capacity The capacity of the new dataset.
+	 * @param newAttributes Array with the attributes.
+	 * @param counterIndex Index of the counter attribute.
 	 */
 	public InstanceSet(int capacity, Attribute[] newAttributes) {
 		/* Check capacity */
@@ -95,17 +104,30 @@ public class InstanceSet {
 		numInstances = 0;
 		numWeightedInstances = 0;
 		classIndex = -1;
+		
+		/* The counter attribute is always the last column */
 		counterIndex = numAttributes;
+		counterAttributeName = "Total";
 
 		instances = new Instance[capacity];
 		attributeType = new byte[numAttributes];
 		
 		/* Get information related to the attributes */
 		numNominalAttributes = 0;
+		numNumericAttributes = 0;
+		numCyclicAttributes = 0;
 		for (int att = 0; att < numAttributes; att++) {
 			attributeType[att] = newAttributes[att].getAttributeType();
-			if (attributeType[att] == NOMINAL) {
-				++numNominalAttributes;
+			switch (attributeType[att]) {
+				case NOMINAL:
+					++numNominalAttributes;
+					break;
+				case NUMERIC:
+					++numNumericAttributes;
+					break;
+				case CYCLIC:
+					++numCyclicAttributes;
+					break;
 			}
 		}
 	}
@@ -133,7 +155,7 @@ public class InstanceSet {
 	 * @param source Set to be copied
 	 */
 	public InstanceSet(InstanceSet source) {
-		this(source, source.numInstances);
+		this(source, source.numInstances, source.counterIndex);
 		source.copyInstances(0, this, source.numInstances);
 	}
 
@@ -185,7 +207,9 @@ public class InstanceSet {
 	}
 
 	public void setCounterAttributeName(String counterAttributeName) {
-		this.counterAttributeName = counterAttributeName;
+		if (counterAttributeName != null){
+			this.counterAttributeName = counterAttributeName;
+		}
 	}
 
 	/**
@@ -204,7 +228,8 @@ public class InstanceSet {
 	/**
 	 * Removes the instance specified by <code>index</code> from this 
 	 * instanceSet.
-	 * @param index
+	 * 
+	 * @param index The index of the instance to be removed.
 	 */
 	public final void removeInstance(int index) {
 		if (index >= 0 && index < numInstances) {
@@ -227,6 +252,48 @@ public class InstanceSet {
 			}
 			instances = newInstanceSet;
 		}
+	}
+
+	/**
+	 * Removes from this instanceSet those instances marked as <code>true
+	 * </code> in the input array of indexes <code>remove</code>.
+	 * 
+	 * @param remove The index of the instance to be removed.
+	 */
+	public final void removeInstances(boolean[] remove) {
+		/* Get the current size */
+		int currentSize = numInstances;
+		
+		/* Count the number of instances to be removed */
+		int numInstancesToBeRemoved = 0;
+		for (int inst = 0; inst < currentSize; inst++) {
+			if (remove[inst]) {
+				++numInstancesToBeRemoved;
+			}
+		}
+		
+		/* Create new instanceSet */
+		int newSize = currentSize - numInstancesToBeRemoved;
+		Instance[] newInstanceSet = new Instance[newSize];
+
+		/*
+		 * Make a new instanceSet with only the instances not marked for 
+		 * deletion.
+		 */
+		int newInstanceIndex = 0;
+		for (int inst = 0; inst < currentSize; inst++) {
+			if (remove[inst]) {
+				/* Remove instance */
+				--numInstances;
+				numWeightedInstances -= instances[inst].data[counterIndex];
+				continue;
+			}
+			newInstanceSet[newInstanceIndex] = instances[inst];
+			++newInstanceIndex;
+		}
+		
+		/* Set the current instanceSet to the new one just created */
+		instances = newInstanceSet;
 	}
 
 	/**
@@ -363,9 +430,9 @@ public class InstanceSet {
 	 */
 	public void insertInstance(Instance newInstance) {
 		instances[numInstances] = newInstance;
+		newInstance.setInstanceSet(this);
 		numInstances++;
 		numWeightedInstances += newInstance.data[counterIndex];
-		newInstance.setInstanceSet(this);
 	}
 	
 	/**
@@ -549,11 +616,11 @@ public class InstanceSet {
 
 	/**
 	 * Returns the index of the first instance of the dataset that matches the
-	 * input instance values.
+	 * input instance values. Returns -1 if no instance is found. 
 	 * 
 	 * @param instance The input instance.
 	 * @return The index of the first instance of the dataset that matches the
-	 * input instance.
+	 * input instance or -1 if none matches.
 	 */
 	public int find(float[] data) {
 		boolean equal = true;
@@ -636,4 +703,320 @@ public class InstanceSet {
 	public void setInstances(Instance[] newVec) {
 		instances = newVec;
 	}
+
+	/**
+	 *  Compacts this instanceSet. The idea is very simple and efficient: First
+	 *  we get a sorted index of this instanceSet (quicksort). A sorted index
+	 *  assures us that all equal instances (instances with equal attributes'
+	 *  values) are all packed together. With the sorted index, we identify
+	 *  all packs (subset with equal instances) and sum up their weight. Then
+	 *  for each pack, we set to its head (its first instance) the total pack's
+	 *  weight. All other instances are marked to be removed (and removed
+	 *  aterwards).
+	 */ 
+	public void compact() {
+		/* Gets array with the sorted index of the instanceSet */
+		int[] instancesIDs = sort();
+		
+		/* First instance of a pack */
+		int head;
+
+		/* Auxiliar that tells when a match occurs between two instances */
+		boolean match;
+		
+		/* The total weight of all instances inside a pack */
+		float packWeight;
+		
+		/* 
+		 * Array that tells which instances are not packs' head instances and
+		 * will be removed afterwards.
+		 */ 
+		boolean[] remove = new boolean[numInstances];
+		Arrays.fill(remove, false);
+		
+		int ema1 = 0;
+		
+		/* 
+		 * Loop through the sorted index finding each pack, computing its
+		 * weight (the sum of its instances), setting to its head (first
+		 * instance) the pack's weight and marking all other instances to be
+		 * removed.
+		 */ 
+		int inst = 0;
+		float[] headInstance;
+		float[] currentInstance;
+		while (inst < numInstances) {
+			/* Finds the tail (last instance) of the current pack */
+			match = true;
+			head = inst;
+			packWeight = instances[instancesIDs[head]].data[counterIndex];
+			++inst;
+			while (match && inst < numInstances) {
+				/* 
+				 * Compares the 'currentInstance' instance with the current
+				 * pack's head instance.
+				 */ 
+				currentInstance = instances[instancesIDs[head]].data;
+				for (int att = 0; att < numAttributes; att++) {
+					headInstance = instances[instancesIDs[inst]].data;
+					if (currentInstance[att] != headInstance[att]) {
+						match = false;
+						break;
+					}
+				}
+				
+				/* 
+				 * Check if the 'currentInstance' instance matches with the
+				 * current pack's first instance.
+				 */
+				if (match) {
+					/* Update the total pack's weight */
+					packWeight += currentInstance[counterIndex];
+					
+					/* Mark the current instance to be removed afterwards */
+					remove[inst] = true;
+					
+					++ema1;
+				}
+				
+				/* Get to next instance */
+				++inst;
+			}
+			
+			/* The pack's head gets the total pack's weight */
+			instances[instancesIDs[head]].data[counterIndex] = packWeight;
+		}
+		
+		/* Remove those instances marked to be removed */
+		removeInstances(remove);
+	}
+
+	/**
+	 * Builds a training and a test instanceSets from the current instanceSet.
+	 * The test instanceSet will be created with <code>testSize</code>
+	 * instances and the rest will remains for the training instanceSet. For
+	 * matters of space, the current instanceSet will become the training
+	 * instanceSet and <code>testSize</code> instances will be removed to the
+	 * the test instanceSet (randomly selected). Then it returns the test
+	 * instanceSet.
+	 * 
+	 * @param testSize The desired size of the new test instanceSet.
+	 * @return The test instanceSet just created.
+	 */
+	public InstanceSet buildTrainTestSet(int testSize) {
+		Random randomizer = new Random();
+
+		/* Create test instanceSet with no instances */
+		InstanceSet testSet = new InstanceSet (this, testSize);
+		testSet.setCounterAttributeName(counterAttributeName);
+
+		/* Auxiliary array: tells when an instance has not been chosen yet */
+		boolean[] notUsed = new boolean[numInstances];
+		Arrays.fill(notUsed, true);
+		
+		/* Array that tells which instance will pertain to the test set */ 
+		boolean[] testSetIndex = new boolean[numInstances];
+		Arrays.fill(testSetIndex, false);
+
+		/* Choose randomly the instances to the test set */
+		int counter = 0;
+		int inst;
+		while (counter < testSize) {
+			inst = randomizer.nextInt(numInstances);
+			if (notUsed[inst]) {
+				testSet.instances[counter] = instances[inst];
+				testSet.instances[counter].setInstanceSet(testSet);
+				testSet.numInstances++;
+				testSet.numWeightedInstances += 
+					instances[inst].data[counterIndex];
+				testSetIndex[inst] = true;
+				++counter;
+				
+				/* Discard the instance 'inst' */
+				notUsed[inst] = false;
+			}
+		}
+		
+		/* Remove all instances marked to be removed */
+		removeInstances(testSetIndex);
+		
+		/* Compact both training and test instanceSets */
+		compact();
+		testSet.compact();
+		
+		return testSet;
+	}
+
+	public void insertInstances(float[][] newInstanceSet) {
+		int increaseSize = newInstanceSet.length;
+		int newSize = increaseSize + numInstances;
+		Instance[] newInstances = new Instance[newSize];
+		int inst;
+		
+		/* First, copy the instances from the current instanceSet */
+		for (inst = 0; inst < numInstances; inst++) {
+			newInstances[inst] = instances[inst];
+		}
+
+		/* Next, copy the instances from the new instanceSet */
+		for (inst = 0; numInstances < newSize; numInstances++, inst++) {
+			Instance newInstance = new Instance(newInstanceSet[inst]);
+			newInstances[numInstances] = newInstance;
+			newInstance.setInstanceSet(this);
+			numWeightedInstances += newInstanceSet[inst][counterIndex];
+		}
+		
+		/* Now compact the instanceSet */
+		instances = newInstances;
+		compact();
+	}
+
+	/**
+	 * Sorts a given matrix of floats in ascending order and returns an
+	 * matrix of integers with the positions of the elements of the
+	 * original matrix in the sorted matrix. It doesn't use safe floating-point
+	 * comparisons.
+	 *
+	 * @param matrix This matrix is changed by the method!
+	 */
+	private int[] sort() {
+		int[] instancesIDs = new int[numInstances];
+		
+		for (int i = 0; i < numInstances; i++) {
+			instancesIDs[i] = i;
+		}
+		quickSort(instancesIDs, 0, numInstances - 1);
+		
+		return instancesIDs;
+	}
+
+	/**
+	 * Implements unsafe quicksort for a data set.
+	 *
+	 * @param matrix The matrix of floats to be sorted
+	 * @param lo0 The first index of the subset to be sorted
+	 * @param hi0 The last index of the subset to be sorted
+	 * @param num The number of columns of the input matrix
+	 */
+	private void quickSort(int[] instancesIDs, int lo0, int hi0) {
+		int lo = lo0;
+		int hi = hi0;
+		int mid;
+		int aux;
+
+		if (hi0 > lo0) {
+			/* 
+			 * Arbitrarily establishing partition element as the midpoint of
+			 * the matrix
+			 */
+			mid = instancesIDs[(lo0 + hi0) / 2];
+	
+			/* loop through the matrix until indices cross */
+			while (lo <= hi) {
+				/* 
+				 * find the first element that is greater than or equal to
+				 * the partition element starting from the left Index
+				 */
+				while (lessThan(instancesIDs[lo], mid) && lo < hi0) {
+					++lo;
+				}
+	
+				/* 
+				 * find an element that is smaller than or equal to
+				 * the partition element starting from the right Index
+				 */
+				while (greaterThan(instancesIDs[hi], mid) && hi > lo0) {
+					--hi;			
+				}
+	
+				/* if the indexes have not crossed, swap */
+				if (lo <= hi) {
+					aux = instancesIDs[lo];
+					instancesIDs[lo] = instancesIDs[hi];
+					instancesIDs[hi] = aux;
+					++lo;
+					--hi;
+				}
+			}
+	
+			/* 
+			 * If the right index has not reached the left side of matrix
+			 * must now sort the left partition
+			 */
+			if (lo0 < hi) {
+				quickSort(instancesIDs, lo0, hi);
+			}
+	
+			/* 
+			 * If the left index has not reached the right side of matrix
+			 * must now sort the right partition
+			 */
+			if (lo < hi0) {
+				quickSort(instancesIDs, lo, hi0);
+			}
+		}
+	}
+
+	/**
+	 * Compares two instances and returns true if the first is greater than the
+	 * second. If they are both equals they are tested by their indexes. If the
+	 * first instance has a index greater than the second it returns true.
+	 * Otherwise it returns false. 
+	 * 
+	 * @param v1 The first instance's index
+	 * @param v2 The second instance's index
+	 * @return
+	 * <li>true if v1 > v2
+	 * <li>false otherwise
+	 */
+	private boolean greaterThan(int inst1, int inst2) {
+		float[] v1 = instances[inst1].data;
+		float[] v2 = instances[inst2].data;
+		int num = numAttributes;
+
+		for (int i = 0; i < num; i++) {
+			if (v1[i] > v2 [i]) {
+				return true;
+			} else if (v1[i] < v2 [i]) {
+				return false;
+			}
+		}
+		if (inst1 > inst2) {
+			return true;
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Compares two instances and returns true if the first is less than the
+	 * second. If they are both equals they are tested by their indexes. If the
+	 * first instance has a index less than the second it returns true.
+	 * Otherwise it returns false. 
+	 * 
+	 * @param v1 The first instance's index
+	 * @param v2 The second instance's index
+	 * @return
+	 * <li>true if v1 < v2
+	 * <li>false otherwise
+	 */
+	private boolean lessThan(int inst1, int inst2) {
+		float[] v1 = instances[inst1].data;
+		float[] v2 = instances[inst2].data;
+		int num = numAttributes;
+
+		for (int i = 0; i < num; i++) {
+			if (v1[i] < v2 [i]) {
+				return true;
+			} else if (v1[i] < v2 [i]) {
+				return false;
+			}
+		}
+		if (inst1 < inst2) {
+			return true;
+		}
+		
+		return false;
+	}
+
 }
