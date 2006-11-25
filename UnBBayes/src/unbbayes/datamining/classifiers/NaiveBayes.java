@@ -42,7 +42,6 @@ public class NaiveBayes extends DistributionClassifier {
 
 	private ProbabilisticNetwork net = new ProbabilisticNetwork("NaiveBayes");
 	
-	private int numInstances;
 	private int numAttributes;
 	private int numClasses;
 	private int numValues;
@@ -62,7 +61,6 @@ public class NaiveBayes extends DistributionClassifier {
 	*/
 	public void buildClassifier(InstanceSet instanceSet) throws Exception {
 		this.instanceSet = instanceSet;
-		numInstances = instanceSet.numInstances;
 		numClasses = instanceSet.numClasses();
 		attributes = instanceSet.attributes;
 		attributeType = instanceSet.attributeType;
