@@ -25,7 +25,9 @@
 
 package unbbayes.datamining.distance;
 
+import unbbayes.datamining.datamanipulation.AttributeStats;
 import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.Stats;
 
 /**
  * Implements the <b>Euclidean</b> method for calculating the distance between
@@ -37,15 +39,44 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
  * @author <a href="mailto:rodbra@pop.com.br">Rodrigo C. M. Coimbra</a>
  */
 public class Euclidean extends Distance {
+	/** The current instanceSet */
+	private InstanceSet instanceSet;
+
+	/** Number of attributes in the instance set */
 	private int numAttributes;
+
+	private double attNorm[];
 
 	/**
 	 * 
 	 * @param instanceSet
 	 */
-	public Euclidean(InstanceSet instanceSet) {
+	public Euclidean(InstanceSet instanceSet, int normFactor) {
+		this.instanceSet = instanceSet;
 		numAttributes = instanceSet.numAttributes;
+		AttributeStats attributeStats[] = instanceSet.computeAttributeStats();
+
+		/* Get standard deviation and compute normalization factor */
+		Stats stats;
+		attNorm = new double[instanceSet.numNumericAttributes];
+		int attIndex = 0;
+		for (int att = 0; att < numAttributes; att++) {
+			/* Skip the class attribute */
+			if (att == instanceSet.classIndex) {
+				continue;
+			}
+
+			/* Skip not numeric attribute */
+			if (instanceSet.attributeType[att] != InstanceSet.NUMERIC) {
+				continue;
+			}
+			
+			stats = attributeStats[att].getNumericStats();
+			attNorm[attIndex] = stats.getStdDev() * normFactor;
+			++attIndex;
+		}
 	}
+	
 	/**
 	 * Calculates the euclidian distance between two instances.
 	 * 
@@ -53,13 +84,14 @@ public class Euclidean extends Distance {
 	 * @param vector2 The second instance's values.
 	 */
 	public float distanceValue(float[] vector1, float[] vector2) {
-		float result = 0;
+		double dist;
+		double result = 0;
 
-		for (int i = 0; i < numAttributes; i++) {
-			result += (vector1[i] - vector2[i]) * (vector1[i] - vector2[i]);
+		for (int att = 0; att < vector1.length; att++) {
+				dist = (vector1[att] - vector2[att]) / attNorm[att];
+				result += dist * dist;
 		}
 		return (float) Math.sqrt(result);
+	}
 
-	} //distanceValue()
-
-} //Euclidean
+}

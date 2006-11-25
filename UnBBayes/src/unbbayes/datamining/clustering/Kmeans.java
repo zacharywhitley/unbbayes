@@ -33,7 +33,10 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.distance.IDistance;
 
 /**
- * Implements </b>K-Means Classical</b> data clustering method.
+ * Implements </b>K-Means Classical</b> data clustering method that clusterize
+ * the instances in <code>numClusters</code> clusters. The algorithm converges when the
+ * distance of the clusters' centroids to its instances is reduced to less than
+ * <code>error%</code> in the last iteration.
  * 
  * @version $Revision$ $Date$
  * 
@@ -43,7 +46,7 @@ import unbbayes.datamining.distance.IDistance;
  * Adapted to UnBMiner by Emerson Lopes Machado (emersoft@conectanet.com.br) in
  * 2006/10/06.
  */
-public class Kmeans  {
+public class Kmeans extends Clustering {
 	
 	/** Matrix containing in each row the coordinates of final the clusters. */
 	private float[][] centroids;
@@ -56,123 +59,28 @@ public class Kmeans  {
 	private double[][] distanceMatrix;
 	
 	/**
-	 * Data assignment to clusters. Each position is a data point in the same
-	 * order as they appear in the input matrix. Its value is the cluster id.
-	 */
-	private int[] assignmentMatrix;
-	
-	/**
 	 * Method for calculating distance between two data points.
 	 */
 	private IDistance distance;
 	
-	/** The current instanceSet */
-	private InstanceSet instanceSet;
-
-	/** The current set of input instances */
-	private Instance[] instances;
-
-	/** Number of desired clusters */
-	private int k;
-	
-	/** Number of instances in the instance set */
-	private int numInstances;
-
-	/** Number of attributes in the instance set */
-	private int numAttributes;
-	
-	/** Number of attributes in the instance set */
-	private int numNumericAttributes;
-	
-	/** The index of the  counter attribute */
-	private int counterIndex;
-
-	/** Stores the IDs of the instances for clustering */
-	private int[] instancesIDs;
+	/** The minimum accepted % of change in each iteration */
+	private double error;
 
 	/**
+	 * Default constructor for this class.
 	 * 
 	 * @param instanceSet
 	 */
 	public Kmeans(InstanceSet instanceSet) {
 		this.instanceSet = instanceSet;
-		instances = instanceSet.instances;
-		numInstances = instanceSet.numInstances;
-		numAttributes = instanceSet.numAttributes;
-		numNumericAttributes = instanceSet.numNumericAttributes;
-		counterIndex = instanceSet.counterIndex;
 	}
 
-	/**
-	 * Clusterize the instances in <code>k</code> clusters. The algorithm
-	 * converges when the distance of the clusters' centroids to its instances
-	 * is reduced to less than <code>error%</code> in the last iteration.
-	 * 
-	 * @param k The desired number of clusters.
-	 * @param error The minimum accepted % of change in each iteration. 
-	 * @param classValue
-	 * @return The cluster ID of each instance in the order they appear in the
-	 * instanceSet.
-	 */
-	public int[] clusterize(int k, double error) {
-		this.k = k;
-
-		/* Choose all instances */
-		instancesIDs = new int[numInstances];
-		for (int i = 0; i < numInstances; i++) {
-			instancesIDs[i] = i;
-		}
-
-		return clusterizeAux(error);
-	}
-
-	/**
-	 * Clusterize the instances of the class <code>classValue</code> in
-	 * <code>k</code> clusters . The instances from other classes are set to
-	 * cluster -1. The algorithm converges when the distance of the clusters'
-	 * centroids to its instances is reduced to less than <code>error%</code>
-	 * in the last iteration.
-	 * 
-	 * @param k The desired number of clusters.
-	 * @param error The minimum accepted % of change in each iteration. 
-	 * @param classValue
-	 * @return The cluster ID of each instance in the order they appear in the
-	 * instanceSet.
-	 */
-	public int[] clusterize(int k, double error, int classValue) {
-		this.k = k;
-
-		/* Choose the instancesIDs for the clustering process */
-		int counter = 0;
-		int instancesIDsTmp[] = new int[numInstances];
-		int classIndex = instanceSet.classIndex;
-		for (int inst = 0; inst < numInstances; inst++) {
-			if (instances[inst].data[classIndex] == classValue) {
-				instancesIDsTmp[counter] = inst;
-				++counter;
-			}
-		}
-		instancesIDs = new int[counter];
-		for (int i = 0; i < counter; i++) {
-			instancesIDs[i] = instancesIDsTmp[i];
+	protected void run() throws Exception {
+		/* Check if there is at least one numeric attribute */
+		if (numNumericAttributes < 1) {
+			throw new Exception("K-means needs at least one numeric attribute");
 		}
 		
-		/* Set the total number of instances for the clustering process */
-		numInstances = counter;
-		
-		return clusterizeAux(error);
-	}
-	
-	/**
-	 * Clusterize the instances in <code>k</code> clusters. The algorithm
-	 * converges when the distance of the clusters' centroids to its instances
-	 * is reduced to less than <code>error%</code> in the last iteration.
-	 * 
-	 * @param error The minimum accepted % of change in each iteration. 
-	 * @return The cluster ID of each instance in the order they appear in the
-	 * instanceSet.
-	 */
-	private int[] clusterizeAux(double error) {
 		boolean go;
 		double localError = Double.MAX_VALUE;
 		double instantError = Double.MAX_VALUE;
@@ -198,10 +106,7 @@ public class Kmeans  {
 					go = true;
 				}
 			}
-
 		} while (go);
-
-		return assignmentMatrix;
 	}
 	
 	/**
@@ -210,7 +115,7 @@ public class Kmeans  {
 	 * @return Clusters matrix with initial values.
 	 */
 	private float[][] initialize() {
-		float[][] centroids = new float[k][numNumericAttributes];
+		float[][] centroids = new float[numClusters][numNumericAttributes];
 		float[] candidate = new float[numNumericAttributes];
 		Random randomizer = new Random();
 		int filled = 0;
@@ -218,13 +123,13 @@ public class Kmeans  {
 		int attIndex;
 		boolean exists;
 
-		while (filled < k) {
+		while (filled < numClusters) {
 			
 			/* Get the candidate */
 			inst = instancesIDs[randomizer.nextInt(numInstances)];
 			attIndex = 0;
 			for (int att = 0; att < numAttributes; att++) {
-				if (instanceSet.attributeType[att] == InstanceSet.NUMERIC) {
+				if (instanceSet.attributeType[att] == NUMERIC) {
 					candidate[attIndex] = instances[inst].data[att];
 					++attIndex;
 				}
@@ -232,10 +137,10 @@ public class Kmeans  {
 			
 			/* 
 			 * Test if the current <code>candidate</code> instance has been used.
-			 * If not, use this instance as a base for the initial k centroids
+			 * If not, use this instance as a base for the initial numClusters centroids
 			 */
 			exists = false;
-			for (int c = 0; c < k; c++) {
+			for (int c = 0; c < filled; c++) {
 				for (int att = 0; att < numNumericAttributes; att++) {
 					if (centroids[c][att] == candidate[att]) {
 						exists = true;
@@ -262,14 +167,14 @@ public class Kmeans  {
 	 * @return Distance matrix.
 	 */
 	private double[][] calculateDistanceMatrix() {
-		double[][] distanceMatrix = new double[k][numInstances];
+		double[][] distanceMatrix = new double[numClusters][numInstances];
 		float[] instance = new float[numNumericAttributes];
 		float[] centroid;
 		float dist;
 		int attIndex;
 		int inst;
 
-		for (int clusterIndex = 0; clusterIndex < k; clusterIndex++) {
+		for (int clusterIndex = 0; clusterIndex < numClusters; clusterIndex++) {
 			for (int i = 0; i < numInstances; i++) {
 				inst = instancesIDs[i];
 				/*
@@ -278,7 +183,7 @@ public class Kmeans  {
 				 */
 				attIndex = 0;
 				for (int att = 0; att < numAttributes; att++) {
-					if (instanceSet.attributeType[att] == InstanceSet.NUMERIC) {
+					if (attributeType[att] == NUMERIC) {
 						instance[attIndex] = instances[inst].data[att];
 						++attIndex;
 					}
@@ -297,22 +202,24 @@ public class Kmeans  {
 	 * @return Assign points.
 	 */
 	private int[] assignPoints() {
-		int[] assignmentMatrix = new int[numInstances];
+		int[] assignmentMatrix = new int[instanceSet.numInstances];
 		double least;
 		int selectedCluster = 0;
+		int inst;
 		
 		/* Initialize the assignment matrix */
 		Arrays.fill(assignmentMatrix, -1);
 		
 		for (int i = 0; i < numInstances; i++) {
+			inst = instancesIDs[i];
 			least = Double.MAX_VALUE;
-			for (int clusterIndex = 0; clusterIndex < k; clusterIndex++) {
+			for (int clusterIndex = 0; clusterIndex < numClusters; clusterIndex++) {
 				if (distanceMatrix[clusterIndex][i] < least) {
 					least = distanceMatrix[clusterIndex][i];
 					selectedCluster = clusterIndex;
 				}
 			}
-			assignmentMatrix[i] = selectedCluster;
+			assignmentMatrix[inst] = selectedCluster;
 		}
 		return assignmentMatrix;
 	}
@@ -323,26 +230,26 @@ public class Kmeans  {
 	 * @return New centroids values.
 	 */
 	private float[][] calculateCentroids() {
-		float[][] centroids = new float[k][numNumericAttributes];
+		float[][] centroids = new float[numClusters][numNumericAttributes];
 		float[] sum = new float[numNumericAttributes];
 		int membersCounter;
 		int attIndex;
 		float weight;
 		int inst;
 
-		for (int clusterIndex = 0; clusterIndex < k; clusterIndex++) {
+		for (int clusterIndex = 0; clusterIndex < numClusters; clusterIndex++) {
 			/* Fill up 'sum' with 0 */
 			Arrays.fill(sum, 0);
 			
 			membersCounter = 0;
 			for (int i = 0; i < numInstances; i++) {
-				if (assignmentMatrix[i] == clusterIndex) {
-					inst = instancesIDs[i];
+				inst = instancesIDs[i];
+				if (assignmentMatrix[inst] == clusterIndex) {
 					weight = instances[inst].data[counterIndex];
 					membersCounter += weight;
 					attIndex = 0;
 					for (int att = 0; att < numAttributes; att++) {
-						if (instanceSet.attributeType[att] == InstanceSet.NUMERIC) {
+						if (attributeType[att] == NUMERIC) {
 							sum[attIndex] += instances[inst].data[att] * weight;
 							++attIndex;
 						}
@@ -368,13 +275,13 @@ public class Kmeans  {
 		int attIndex;
 		int inst;
 
-		for (int clusterIndex = 0; clusterIndex < k; clusterIndex++) {
+		for (int clusterIndex = 0; clusterIndex < numClusters; clusterIndex++) {
 			for (int i = 0; i < numInstances; i++) {
 				inst = instancesIDs[i];
-				if (assignmentMatrix[clusterIndex] == clusterIndex) {
+				if (assignmentMatrix[inst] == clusterIndex) {
 					attIndex = 0;
 					for (int att = 0; att < numAttributes; att++) {
-						if (instanceSet.attributeType[att] == InstanceSet.NUMERIC) {
+						if (attributeType[att] == NUMERIC) {
 							instance[attIndex] = instances[inst].data[att];
 							++attIndex;
 						}
@@ -387,11 +294,16 @@ public class Kmeans  {
 		return result;
 	}
 
-	/**
-	 * 
-	 * @param distance
-	 */
+	public void setNumClusters(int numClusters) {
+		this.numClusters = numClusters;
+	}
+	
+	public void setError(double error) {
+		this.error = error;
+	}
+	
 	public void setOptionDistance(IDistance distance) {
 		this.distance = distance;
 	}
+
 }

@@ -114,21 +114,28 @@ public class HVDM extends Distance {
 		distribution = Utils.computeNominalDistributions(instanceSet);
 	}
 	
+	/** 
+	 * Set the distance function desired.
+	 * <ul>
+	 * <li> 0: Hamming
+	 * <li> 1: HVDM
+	 * </ul>
+	 */
 	public void setOptionDistanceFunction(byte optionDistanceFunction) {
 		this.optionDistanceFunction = optionDistanceFunction;
 	}
 	
 	public float distanceValue(float[] vector1, float[] vector2) {
-		float distance = 0;
-		double dif;
 		int attIndex = 0;
-		float aux1;
-		float aux2;
+		double aux1;
+		double aux2;
 		int index;
 		AttributeStats attStats;
+		double attDif;
+		double distance = 0;
 
 		for (int att = 0; att < numAttributes; att++) {
-			dif = 0;
+			attDif = 0;
 
 			/* Skip the class attribute */
 			if (att == classIndex) {
@@ -153,50 +160,50 @@ public class HVDM extends Distance {
 						/* Get relative frequency for 'vector1' */
 						index = (int) vector1[att];
 						aux1 = distribution[k][attIndex][index];
-						aux1 = aux1 / attStats.nominalCountsWeighted[index];
+						aux1 /= (double) attStats.nominalCountsWeighted[index];
 	
 						/* Get relative frequency for 'vector2' */
 						index = (int) vector2[att];
 						aux2 = distribution[k][attIndex][index];
-						aux2 = aux2 / attStats.nominalCountsWeighted[index];
+						aux2 /= (double) attStats.nominalCountsWeighted[index];
 						
 						/* Calculate the difference */
-						dif += (aux1 - aux2) * (aux1 - aux2);
+						attDif += (aux1 - aux2) * (aux1 - aux2);
 					}
 				} else if (optionDistanceFunction == HAMMING) {
 					/* Apply Hamming distance */
 					if (vector1[att] != vector2[att]) {
-						dif = 1;
+						attDif = 1;
 					}
 				}
-
 				/* Get next nominal attribute */
 				++attIndex;
 			} else if (attributeType[att] == InstanceSet.NUMERIC) {
 				/* The attribute is numeric. Apply Euclidian distance */
-				dif = (vector1[att] - vector2[att]);
+				attDif = (vector1[att] - vector2[att]);
 				
-				/* Normalize 'dif' */
-				dif = dif / attNorm[att];
+				/* Normalize 'attDif' */
+				attDif = attDif / attNorm[att];
 			} else if (attributeType[att] == InstanceSet.CYCLIC) {
 				/*
-				 *  The attribute is cyclic. If the absolute of 'dif' is greater
+				 * The attribute is cyclic. If the absolute of 'attDif' is greater
 				 * than half way between minimun and maximum value of this
 				 * attribute, we take its complementary.
 				 */
-				dif = Math.abs(vector1[att] - vector2[att]);
-				if (dif > attHalfRangeValue[att]) {
-					dif = dif - attRangeValue[att];
+				attDif = Math.abs(vector1[att] - vector2[att]);
+				if (attDif > attHalfRangeValue[att]) {
+					attDif = attRangeValue[att] - attDif;
 				}
 
-				/* Normalize 'dif' */
-				dif = dif / attNorm[att];
+				/* Normalize 'attDif' */
+				attDif = attDif / attNorm[att];
 				
 			}			
 			/* Add to 'distante' the square of the difference */
-			distance += dif * dif;
+			distance += attDif * attDif;
 		}
-		return (float) Math.sqrt(distance);
+		distance = Math.sqrt(distance);
+		return (float) distance;
 	}
 }
 

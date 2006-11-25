@@ -1,8 +1,6 @@
 package unbbayes.datamining.clustering;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
+import unbbayes.datamining.datamanipulation.Attribute;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 
@@ -20,45 +18,9 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
  * More info: http://arxiv.org/ftp/cs/papers/0509/0509011.pdf
  * 
  * @author Emerson Lopes Machado - emersoft@conectanet.com.br
- * @date 07/11/2006
+ * @date 2006/11/07
  */
-public class CEBMDC {
-	/** The current instanceSet */
-	private InstanceSet instanceSet;
-
-	/** The current set of input instances */
-	private Instance[] instances;
-
-	/** The current set of input instances */
-	private int[][] inputClusters;
-
-	/**
-	 * Data assignment to summaries. Each position is a data point in the same
-	 * order as they appear in the input matrix. Its value is the cluster id.
-	 */
-	private int[] assignmentMatrix;
-	
-	/** 
-	 * Stores the summaries. Each row is a summaries of a cluster. Each column
-	 * holds a VS for each nominal attribute. A VS is an array list of one
-	 * dimensional float vectors. Each one of these float vectors hold two
-	 * values: an attribute value and the frequency that it occurs in the
-	 * cluster.
-	 */
-	private ArrayList<float[]>[][] summaries;
-
-	/** Number of instances in the instance set */
-	private int numInstances;
-
-	/** The index of the  counter attribute */
-	private int counterIndex;
-
-	/** Number of clusters created */
-	private int numClusters = 0;
-
-	/** Size of each cluster created */
-	private double clusterSize[];
-	
+public class CEBMDC extends Clustering {
 	/** 
 	 * Weight of the attributes in the final cluster construction:
 	 * <ul>
@@ -66,36 +28,70 @@ public class CEBMDC {
 	 * <li><code>weight[1]</code>: number of nominal attributes.
 	 * </ul>
 	 */
-	float[] weight;
+	double[] weight;
+
+	/**
+	 * The similarity threshold, wich says how similar an <code>I</code>
+	 * instance and the mode of the <code>C</code> cluster must be in order
+	 * to the <code>I</code> instance be added to the <code>C</code> cluster.
+	 */
+	double s;
 	
 	/**
+	 * The assignment matrix from the clusterization of the numeric attributes.
+	 */ 
+	private int[] numericClusters;
+	
+	/**
+	 * The assignment matrix from the clusterization of the nominal attributes.
+	 */ 
+	private int[] nominalClusters;
+
+	/**
+	 * Set the similarity threshold automatically:
+	 * True - set automatically;
+	 * False - set manually.
+	 */
+	private boolean useAverageSimilarity;
+
+	/**
+	 * Default constructor for this class.
 	 * 
 	 * @param instanceSet
 	 */
 	public CEBMDC(InstanceSet instanceSet) {
 		this.instanceSet = instanceSet;
-		instances = instanceSet.instances;
-		numInstances = instanceSet.numInstances;
-		counterIndex = instanceSet.counterIndex;
 	}
 
-	/**
-	 * 
-	 * @param s
-	 * @return
-	 */
-	public int[] clusterize(int[] numericClusters, int[] nominalClusters,
-			float[] weight, float s) {
+	protected void run() throws Exception {
+		/* Merge the numeric and nominal cluster's results in one matrix */
+		InstanceSet mixedData = buildMixedMatrix();
+		
+		/* Clusterize the mixed attributes */
+		Squeezer squeezer = new Squeezer(mixedData);
+		squeezer.setS(s);
+		squeezer.setUseAverageSimilarity(useAverageSimilarity);
+		squeezer.setWeight(weight);
+		squeezer.clusterize(instancesIDs);
+		clusters = squeezer.clusters;
+		numClusters = squeezer.numClusters;
+		clustersSize = squeezer.clustersSize;
+		assignmentMatrix = squeezer.assignmentMatrix;
+	}
+	
+	private InstanceSet buildMixedMatrix() {
 		/* Message thrown as an exception in case of wrong arguments */
 		boolean exception = false;
 		String exceptionMsg = "The numeric and nominal clusters are not from" +
 				" the same instances!";
 
 		/* Check if numeric and nominal clusters are from the same instances */
-		if (numericClusters.length != nominalClusters.length) {
+		if (numericClusters.length != nominalClusters.length ||
+				numericClusters.length != numInstances ||
+				nominalClusters.length != numInstances ) {
 			exception = true;
 		} else {
-			for (int i = 0; i < numericClusters.length; i++) {
+			for (int i = 0; i < numInstances; i++) {
 				if (numericClusters[i] == -1 && nominalClusters[i] != -1) {
 					exception = true;
 				} 
@@ -108,150 +104,106 @@ public class CEBMDC {
 		/* Throw exception if there is problems with the parameters */
 		if (exception) throw new IllegalArgumentException(exceptionMsg);
 		
+		/* Count the number of instances to be clusterized */
+		int counter = 0;
+		for (int i = 0; i < numInstances; i++) {
+			if (numericClusters[i] != -1) {
+				++counter;
+			}
+		}
+		instancesIDs = new int[counter];
+
 		/* Merge numeric and nominal clusters together */
 		numInstances = numericClusters.length;
-		inputClusters = new int[numInstances][2];
+		int inst = 0;
 		for (int i = 0; i < numInstances; i++) {
-			inputClusters[i][0] = numericClusters[i];
-			inputClusters[i][1] = nominalClusters[i];
+			if (numericClusters[i] != -1) {
+				instancesIDs[inst] = i;
+				++inst;
+			}
 		}
+		
+		/* Build the mixedData InstanceSet */
+		Attribute[] newAttributes = new Attribute[2];
+		newAttributes[0] = new Attribute("", InstanceSet.NUMERIC, false, 0, 0);
+		newAttributes[1] = new Attribute("", InstanceSet.NUMERIC, false, 0, 1);
+		
+		InstanceSet mixedData = new InstanceSet(numInstances, newAttributes);
+		
+		/* Add the current instance to the mixedData InstanceSet */
+		for (int i = 0; i < numInstances; i++) {
+			float[] instance = new float[3];
+			instance[0] = numericClusters[i];
+			instance[1] = nominalClusters[i];
+			instance[2] = instances[i].data[counterIndex];
+			mixedData.insertInstance(new Instance(instance));
+		}
+		
+		/* 
+		 * The metacluster algorithm uses only nominal attributes. Then, we
+		 * must fake the mixedData InstanceSet to present two nominal 
+		 * attributes. 
+		 */
+		mixedData.numNominalAttributes = 2;
+		mixedData.attributeType[0] = InstanceSet.NOMINAL;
+		mixedData.attributeType[1] = InstanceSet.NOMINAL;
 
-		/* Create and initialize the necessary elements */
+		return mixedData;
+	}
+
+	/**
+	 * Set the weight that the numeric and nominal input assignment matrix will
+	 * have in this metaclusterizing process:
+	 * <ul>
+	 * <li><code>weight[0]</code>: number of numeric attributes.
+	 * <li><code>weight[1]</code>: number of nominal attributes.
+	 * </ul>
+	 * @param weight
+	 */
+	public void setWeight(double[] weight) {
 		this.weight = weight;
-		assignmentMatrix = new int[numInstances];
-		summaries = new ArrayList[numInstances][2];
-		clusterSize = new double[numInstances];
-		
-		/* Initialize the assignment matrix */
-		Arrays.fill(assignmentMatrix, -1);
-		
-		/* Add the first instance to the first cluster */
-		addNewClusterStructure(0);
-
-		/* For each instance */
-		float sim;
-		float simMax;
-		int simMaxIndex = 0;
-		for (int inst = 1; inst < numInstances; inst++) {
-			/* Check if the current instance is valid */
-			if (inputClusters[inst][0] == -1) {
-				/* Skip the current instance */
-				continue;
-			}
-			simMax = 0;
-			for (int clusterID = 0; clusterID < numClusters; clusterID++) {
-				sim = similarity(clusterID, inst);
-				if (sim > simMax) {
-					simMax = sim;
-					simMaxIndex = clusterID;
-				}
-			}
-		
-			/* Check the maximum similarity with the threshold 's' */
-			if (simMax >= s) {
-				/* Add the current instance to its nearest cluster */
-				addInstanceToCluster(inst, simMaxIndex );
-			} else {
-				/* Create a new cluster with the current instance */
-				addNewClusterStructure(inst);
-			}
-		}
-		
-		return assignmentMatrix;
 	}
 	
 	/**
-	 * 
-	 * @param i
-	 * @param simMaxIndex
+	 * Set the similarity threshold, wich says how similar an <code>I</code>
+	 * instance and the mode of the <code>C</code> cluster must be in order
+	 * to the <code>I</code> instance be added to the <code>C</code> cluster.
+	 *  
+	 * @param s
 	 */
-	private void addInstanceToCluster(int inst, int clusterID) {
-		ArrayList<float[]>[] vS = summaries[clusterID];
-		boolean newValue;
-		int numValues;
-		
-		for (int att = 0; att < 2; att++) {
-			numValues = vS[att].size();
-			newValue = true;
-			for (int v = 0; v < numValues; v++) {
-				if (inputClusters[inst][att] == vS[att].get(v)[0]) {
-					/* Just update the frequency of the attribute value */
-					vS[att].get(v)[1] += instances[inst].data[counterIndex];
-					newValue = false;
-					break;
-				}
-			}
-			if (newValue) {
-				/* Add this new attribute value to the summary */
-				float[] vSi = new float[2];
-				vSi[0] = inputClusters[inst][att];
-				vSi[1] = instances[inst].data[counterIndex];
-				vS[att].add(vSi);
-			}
-		}
-		
-		/* Update the cluster size */
-		clusterSize[clusterID] += instances[inst].data[counterIndex];
-		
-		/* Label the instance with this clusterID */
-		assignmentMatrix[inst] = clusterID;
+	public void setS(double s) {
+		this.s = s;
 	}
 
 	/**
+	 * Input with the assignment matrix from the clusterization of the numeric
+	 * attributes.
 	 * 
-	 * @param i
+	 * @param numericClusters
 	 */
-	private void addNewClusterStructure(int inst) {
-		for (int att = 0; att < 2; att++) {
-			float[] vSi = new float[2];
-			vSi[0] = inputClusters[inst][att];
-			vSi[1] = instances[inst].data[counterIndex];
-			ArrayList<float[]> vS = new ArrayList<float[]>();
-			vS.add(vSi);
-			summaries[numClusters][att] = vS;
-		}
-
-		/* Update the cluster size */
-		clusterSize[numClusters] = instances[inst].data[counterIndex];
-		
-		/* Label the instance with their respective clusterID */
-		assignmentMatrix[inst] = numClusters;
-		
-		++numClusters;
+	public void setNumericClustersInput(int[] numericClusters) {
+		this.numericClusters = numericClusters;
 	}
 
 	/**
+	 * Input with the assignment matrix from the clusterization of the nominal
+	 * attributes.
 	 * 
-	 * @param clusterID
-	 * @param i
-	 * @return
+	 * @param numericClusters
 	 */
-	private float similarity(int clusterID, int inst) {
-		ArrayList<float[]>[] vS = summaries[clusterID];
-		float sim = 0;
-		double match;
-		int numValues;
-		
-		for (int att = 0; att < 2; att++) {
-			match = 0;
-			numValues = vS[att].size();
-			for (int v = 0; v < numValues; v++) {
-				if (inputClusters[inst][att] == vS[att].get(v)[0]) {
-					match += weight[att] * vS[att].get(v)[1];
-				}
-			}
-			sim += (float) (match / (double) clusterSize[clusterID]);
-		}
-		
-		return sim;
+	public void setNominalClustersInput(int[] nominalClusters) {
+		this.nominalClusters = nominalClusters;
 	}
 
 	/**
-	 * Returns the number of clusters created.
+	 * Set the similarity threshold automatically:
+	 * True - set automatically;
+	 * False - set manually.
 	 * 
-	 * @return The number of clusters created.
+	 * @param useAverageSimilarity
 	 */
-	public int getNumClusters() {
-		return numClusters;
+	public void setUseAverageSimilarity(boolean useAverageSimilarity) {
+		this.useAverageSimilarity = useAverageSimilarity;
 	}
+	
 }

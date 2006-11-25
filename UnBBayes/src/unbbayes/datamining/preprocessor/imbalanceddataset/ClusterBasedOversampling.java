@@ -1,12 +1,7 @@
 package unbbayes.datamining.preprocessor.imbalanceddataset;
 
-import unbbayes.datamining.clustering.CEBMDC;
-import unbbayes.datamining.clustering.Kmeans;
-import unbbayes.datamining.clustering.Squeezer;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
-import unbbayes.datamining.distance.Euclidean;
-import unbbayes.datamining.distance.IDistance;
 
 /**
  *
@@ -37,11 +32,20 @@ public class ClusterBasedOversampling {
 	 */
 	private int classIndex;
 
-	/** Similarity threshold for the CEBMDC algorithm */
-	private float s;
+	/** Matrix of all clusters. Each row stores all instancesIDs of a cluster */
+	private int[][][] clusters;
+	
+	/** Number of clusters created */
+	private int[] numClusters;
+	
+	/** Weighted number of instances in each cluster created */
+	private double[][] clustersSize;
 
-	/** Similarity threshold for the Squeezer algorithm */
-	private float sSqueezer;
+	/**
+	 * Data assignment to clusters. Each position corresponds to the cluster id
+	 * of an instance in the same order it appears in the input instanceSet.
+	 */
+	private int[][] assignmentMatrix;
 
 	public ClusterBasedOversampling(InstanceSet instanceSet) {
 		this.instanceSet = instanceSet;
@@ -49,24 +53,23 @@ public class ClusterBasedOversampling {
 		numInstances = instanceSet.numInstances;
 		counterIndex = instanceSet.counterIndex;
 		classIndex = instanceSet.classIndex;
+		numClasses = instanceSet.getAttribute(classIndex).numValues();
 	}
 	
-	public void run() {
-		/* Make clusters of the instanceSet separate for each class value */
-		int numClasses = instanceSet.getAttribute(classIndex).numValues();
-		int[][] clusters = new int[numClasses][];
-		for (int classValue = 0; classValue < numClasses; classValue++) {
-			clusters[classValue] = clusterizeClass(classValue);
-		}
+	public void run(int[][][] clusters, int[] numClusters,
+			double[][] clustersSize, int[][] assignmentMatrix) {
+		this.clusters = clusters;
+		this.numClusters = numClusters;
+		this.clustersSize = clustersSize;
+		this.assignmentMatrix = assignmentMatrix;
 		
 		/* Discover the majority class */
-		float[] count = new float[numClasses];
-		int classValue;
-		for (int inst = 0; inst < numInstances; inst++) {
+		double[] count = new double[numClasses];
+		for (int classValue, inst = 0; inst < numInstances; inst++) {
 			classValue = (int) instances[inst].data[classIndex];
 			count[classValue] += instances[inst].data[counterIndex];
 		}
-		float majorityClassQtd = 0;
+		double majorityClassQtd = 0;
 		int majorityClass = 0;
 		for (int c = 0; c < numClasses; c++) {
 			if (count[c] > majorityClassQtd) {
@@ -76,47 +79,87 @@ public class ClusterBasedOversampling {
 		}
 		
 		/* Pick the biggest cluster of the majority class */
-		int[] majorityClassCluster = clusters[majorityClass];
-		int numClusters = majorityClassCluster.length;
-		count = new float[numClusters];
-		int clusterIndex;
-		for (int inst = 0; inst < numInstances; inst++) {
-			clusterIndex = majorityClassCluster[inst];
-			count[clusterIndex] += instances[inst].data[counterIndex];
-		}
 		int biggestClusterIndex = 0;
-		float biggestClusterQtd = 0;
-		for (clusterIndex = 0; clusterIndex < numClusters; clusterIndex++) {
-			if (biggestClusterQtd > count[clusterIndex]) {
-				biggestClusterQtd = count[clusterIndex];
-				biggestClusterIndex = clusterIndex;
+		double biggestClusterSize = 0;
+		int numClustersAux = numClusters[majorityClass];
+		for (int clusterID = 0; clusterID < numClustersAux; clusterID++) {
+			if (clustersSize[majorityClass][clusterID] > biggestClusterSize) {
+				biggestClusterSize = clustersSize[majorityClass][clusterID];
+				biggestClusterIndex = clusterID;
 			}
 		}
 		
 		/* 
-		 * Match the size of clusters of the other majority class with its
-		 * biggest cluster.
+		 * Oversample the clusters of the majority class to the same size of
+		 * its biggest cluster.
 		 */
+		double finalSize;
+		count = clustersSize[majorityClass];
+		numClustersAux = numClusters[majorityClass];
+		for (int clusterID = 0; clusterID < numClustersAux; clusterID++) {
+			if (clusterID != biggestClusterIndex) {
+				finalSize = biggestClusterSize / count[clusterID];
+				oversampleCluster(clusterID, finalSize, majorityClass);
+			}
+		}
 		
+		/* Compute the new size of the majority class */
+		double majorityClassSize = 0;
+		for (int inst = 0; inst < numInstances; inst++) {
+			if (instances[inst].data[classIndex] == majorityClass) {
+				majorityClassSize += instances[inst].data[counterIndex];
+			}
+		}
+		
+		/* Now we oversample the clusters of the other classes one by one */
+		double newSizePerCluster;
+		for (int classValue = 0; classValue < numClasses; classValue++) {
+			if (classValue != majorityClass) {
+				numClustersAux = numClusters[classValue];
+				newSizePerCluster = majorityClassSize / numClustersAux;
+				for (int clusterID = 0; clusterID < numClustersAux; clusterID++) {
+					finalSize = newSizePerCluster;
+					finalSize /= clustersSize[classValue][clusterID];
+					oversampleCluster(clusterID, finalSize, classValue);
+				}
+			}
+		}
+		clustersSize = new double[numClasses][];
+		for (int classValue = 0; classValue < numClasses; classValue++) {
+			clustersSize[classValue] = new double[numClusters[classValue]];
+			double clusterSize;
+			int inst;
+			int clusterQtd;
+			numClustersAux = numClusters[classValue];
+			for (int clusterID = 0; clusterID < numClustersAux; clusterID++) {
+				clusterQtd = clusters[classValue][clusterID].length;
+				clusterSize = 0;
+				for (int i = 0; i < clusterQtd; i++) {
+					inst = clusters[classValue][clusterID][i];
+					clusterSize += instances[inst].data[counterIndex];
+				}
+				clustersSize[classValue][clusterID] = clusterSize;
+			}
+		}
+		int ema = 0;
 	}
 	
-	private int[] clusterizeClass(int classValue) {
-		/* Clusterize the numeric attributes first */
-		int normFactor = 4;
-		IDistance distance = new Euclidean(instanceSet, normFactor);
-		Kmeans kmeans = new Kmeans(instanceSet);
-		kmeans.setOptionDistance(distance);
-		int[] numericClusters = kmeans.clusterize(5, 1.001f);
-		
-		Squeezer squeezer = new Squeezer(instanceSet);
-		int[] nominalClusters = squeezer.clusterize(sSqueezer);
-
-		float[] weight = {instanceSet.numNumericAttributes,
-				instanceSet.numNominalAttributes};
-
-		CEBMDC cebmdc = new CEBMDC(instanceSet);
-		
-		return cebmdc.clusterize(numericClusters, nominalClusters, weight, s);
+	private void oversampleCluster(int clusterIndex, double proportion,
+			int classValue) {
+		/* Choose the instancesIDs for the sampling process */
+		int counter = 0;
+		int instancesIDsTmp[] = new int[numInstances];
+		for (int inst = 0; inst < numInstances; inst++) {
+			if (assignmentMatrix[classValue][inst] == clusterIndex) {
+				instancesIDsTmp[counter] = inst;
+				++counter;
+			}
+		}
+		int[] instancesIDs = new int[counter];
+		for (int i = 0; i < counter; i++) {
+			instancesIDs[i] = instancesIDsTmp[i];
+		}
+		Sampling.oversampling(instanceSet, proportion, instancesIDs);
 	}
-}
 
+}

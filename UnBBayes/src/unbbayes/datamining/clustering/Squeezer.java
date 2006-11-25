@@ -2,8 +2,8 @@ package unbbayes.datamining.clustering;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 
-import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 
 /**
@@ -11,19 +11,7 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
  * @author Emerson Lopes Machado - emersoft@conectanet.com.br
  * @date 02/11/2006
  */
-public class Squeezer {
-	/** The current instanceSet */
-	private InstanceSet instanceSet;
-
-	/** The current set of input instances */
-	private Instance[] instances;
-
-	/**
-	 * Data assignment to summaries. Each position is a data point in the same
-	 * order as they appear in the input matrix. Its value is the cluster id.
-	 */
-	private int[] assignmentMatrix;
-	
+public class Squeezer extends Clustering {
 	/** 
 	 * Stores the summaries. Each row is a summaries of a cluster. Each column
 	 * holds a VS for each nominal attribute. A VS is an array list of one
@@ -33,93 +21,61 @@ public class Squeezer {
 	 */
 	private ArrayList<float[]>[][] summaries;
 
-	/** Number of instances in the instance set */
-	private int numInstances;
+	/** 
+	 * Set the weight of each nominal attribute. Each position refers to a an
+	 * attribute.
+	 */
+	double[] weight;
 
-	/** Number of attributes in the instance set */
-	private int numAttributes;
-	
-	/** The index of the  counter attribute */
-	private int counterIndex;
-
-	/** Stores the IDs of the instances for clustering */
-	private int[] instancesIDs;
-
-	/** Number of clusters created */
-	private int numClusters = 0;
-
-	/** Size of each cluster created */
-	private double clusterSize[];
+	private double s;
 
 	/**
+	 * Set the similarity threshold automatically:
+	 * True - set automatically;
+	 * False - set manually.
+	 */
+	private boolean useAverageSimilarity;
+
+	/**
+	 * Default constructor for this class.
 	 * 
 	 * @param instanceSet
 	 */
 	public Squeezer(InstanceSet instanceSet) {
 		this.instanceSet = instanceSet;
-		instances = instanceSet.instances;
-		numInstances = instanceSet.numInstances;
-		numAttributes = instanceSet.numAttributes;
-		counterIndex = instanceSet.counterIndex;
 	}
 
-	/**
-	 * 
-	 * @param s
-	 * @return
-	 */
-	public int[] clusterize(float s) {
-		/* Choose all instances */
-		instancesIDs = new int[numInstances];
-		for (int i = 0; i < numInstances; i++) {
-			instancesIDs[i] = i;
+	protected void run() throws Exception {
+		/* Check if there is at least one nominal attribute */
+		if (numNominalAttributes < 1 &&
+				numCyclicAttributes < 1) {
+			String exceptionMsg;
+			exceptionMsg = "Squeezer needs at least one nominal attribute";
+			throw new Exception(exceptionMsg);
 		}
-
-		return clusterizeAux(s);
-	}
-
-	/**
-	 * 
-	 * @param s
-	 * @param classValue
-	 * @return
-	 */
-	public int[] clusterize(float s, int classValue) {
-		/* Choose the instancesIDs for the clustering process */
-		int counter = 0;
-		int instancesIDsTmp[] = new int[numInstances];
-		int classIndex = instanceSet.classIndex;
-		for (int inst = 0; inst < numInstances; inst++) {
-			if (instances[inst].data[classIndex] == classValue) {
-				instancesIDsTmp[counter] = inst;
-				++counter;
+		
+		assignmentMatrix = new int[instanceSet.numInstances];
+		summaries = new ArrayList[numInstances][numNominalAttributes];
+		clustersSize = new double[numInstances];
+		
+		/* Check if the attributes' weight has been set */
+		if (weight == null) {
+			weight = new double[numNominalAttributes];
+			for (int att = 0; att < numNominalAttributes; att++) {
+				weight[att] = 1;
 			}
 		}
-		instancesIDs = new int[counter];
-		for (int i = 0; i < counter; i++) {
-			instancesIDs[i] = instancesIDsTmp[i];
+		
+		/* Check if the similarity threshold is to set automatically */
+		if (useAverageSimilarity) {
+			s = averageSimilarity(20) + 2;
 		}
-		
-		/* Set the total number of instances for the clustering process */
-		numInstances = counter;
-		
-		return clusterizeAux(s);
-	}
-	
-	/**
-	 * 
-	 * @param s
-	 * @return
-	 */
-	private int[] clusterizeAux(float s) {
-		assignmentMatrix = new int[instanceSet.numInstances];
-		summaries = new ArrayList[numInstances][instanceSet.numNominalAttributes];
-		clusterSize = new double[numInstances];
 		
 		/* Initialize the assignment matrix */
 		Arrays.fill(assignmentMatrix, -1);
 		
 		/* Add the first instance to the first cluster */
+		numClusters = 0;
 		addNewClusterStructure(0);
 
 		/* For each instance */
@@ -146,16 +102,10 @@ public class Squeezer {
 			}
 		}
 		
-//		// testes
-//		float[][] ema = new float[numClusters][2];
-//		float[][] emaTmp = new float[numClusters][2];
-//		int idx;
-//		for (int i = 0; i < numInstances; i++) {
-//			idx = assignmentMatrix[i];
-//			++ema[idx][(int) instances[i].data[instanceSet.classIndex]];
-//		}
-		
-		return assignmentMatrix;
+		/* Correct the clustersSize array */
+		double[] clustersSizeTmp = new double[numClusters];
+		System.arraycopy(clustersSize, 0, clustersSizeTmp, 0, numClusters);
+		clustersSize = clustersSizeTmp;
 	}
 	
 	/**
@@ -195,7 +145,7 @@ public class Squeezer {
 		}
 		
 		/* Update the cluster size */
-		clusterSize[clusterID] += instances[inst].data[counterIndex];
+		clustersSize[clusterID] += instances[inst].data[counterIndex];
 		
 		/* Label the instance with this clusterID */
 		assignmentMatrix[inst] = clusterID;
@@ -222,7 +172,7 @@ public class Squeezer {
 		}
 
 		/* Update the cluster size */
-		clusterSize[numClusters] = instances[inst].data[counterIndex];
+		clustersSize[numClusters] = instances[inst].data[counterIndex];
 		
 		/* Label the instance with their respective clusterID */
 		assignmentMatrix[inst] = numClusters;
@@ -250,15 +200,102 @@ public class Squeezer {
 				numValues = vS[attIndex].size();
 				for (int v = 0; v < numValues; v++) {
 					if (instances[inst].data[att] == vS[attIndex].get(v)[0]) {
-						match += vS[attIndex].get(v)[1];
+						match += weight[attIndex] * vS[attIndex].get(v)[1];
 					}
 				}
-				sim += (float) (match / (double) clusterSize[clusterID]);
+				sim += (float) (match / (double) clustersSize[clusterID]);
 				++attIndex;
 			}
 		}
 		
 		return sim;
 	}
-}
+	
+	/**
+	 * Computes the average similarity among a sample of the data. This value
+	 * can be used as guide for choosing the similarity threshold that will be
+	 * used in the clusterization of the instanceSet. The idea is very simple:
+	 * 1 - Get a sample of the instanceSet;
+	 * 2 - Compute the similarity between each pair of this subset;
+	 * 3 - Return the average of all similarities calculated in step 2.
+	 * 
+	 * @param percentage Desired percentage of the instanceSet utilized in this
+	 * calculation. 
+	 * @return Average similarity.
+	 */
+	public double averageSimilarity(int percentage) {
+		int numCandidates = Math.round(numInstances * percentage / 100);
+		int candidates[] = new int[numCandidates];
+		Random randomizer = new Random();
+		int counter = 0;
+		int inst;
+		boolean exists;
 
+		/* Randomly get a sample of the instanceSet */ 
+		while (counter < numCandidates) {
+			/* Get the candidate */
+			inst = instancesIDs[randomizer.nextInt(numInstances)];
+
+			/* Test if the current candidate instance has been used */
+			exists = false;
+			for (int i = 0; i < counter; i++) {
+				if (inst == candidates[i]) {
+					exists = true;
+					break;
+				}
+			}
+			
+			/* Add the current candidate */
+			if (!exists) {
+				candidates[counter] = inst;
+				counter++;
+			}
+		}
+		
+		/* Get the similarity average of each tuple of instances */
+		float[] instanceI;
+		float[] instanceJ;
+		int similarity = 0;
+		for (int i = 0; i < numCandidates; i++) {
+			instanceI = instances[candidates[i]].data;
+			for (int j = 0; j != i && j < numCandidates; j++) {
+				instanceJ = instances[candidates[j]].data;
+				for (int att = 0; att < numAttributes; att++) {
+					if (instanceSet.attributeType[att] == InstanceSet.NOMINAL
+							&& instanceI[att] == instanceJ[att]) {
+						++similarity;
+					}
+				}
+			}
+		}
+		double avgSimilarity = similarity;
+		avgSimilarity /= (double) numCandidates * (numCandidates - 1);
+		return avgSimilarity ;
+	}
+	
+	/**
+	 * Set the weight of each nominal attribute. Each position refers to a an
+	 * attribute.
+	 * 
+	 * @param weight
+	 */
+	public void setWeight(double[] weight) {
+		this.weight = weight;
+	}
+	
+	public void setS(double s) {
+		this.s = s;
+	}
+
+	/**
+	 * Set the similarity threshold automatically:
+	 * True - set automatically;
+	 * False - set manually.
+	 * 
+	 * @param useAverageSimilarity
+	 */
+	public void setUseAverageSimilarity(boolean useAverageSimilarity) {
+		this.useAverageSimilarity = useAverageSimilarity;
+	}
+	
+}
