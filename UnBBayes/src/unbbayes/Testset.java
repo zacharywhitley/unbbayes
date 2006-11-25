@@ -92,25 +92,26 @@ public class Testset {
 
 		
 		/* Limit applied to the counter */
-		int weightLimit = 404;
+		int weightLimit = 00000;
 		
 		/* Set relative probabilities - probabilistic models */
-		boolean relativeProb = true;
+		boolean relativeProb = false;
 		
 		/* Number of different sampling strategies */
 		int sampleQtd = 5;
 		
-		/* Type of classifier
+		/* 
+		 * Type of classifier
 		 * 0 - Naive Bayes
 		 * 1 - C4.5
 		 */
-		int classifierID = 0;
+		int classifierID = 1;
 		
 		runAux(trainFileName, testFileName, classIndex, counterIndex,
 				weightLimit, relativeProb, sampleQtd, classifierID,
 				optionDiscretize, optionNominal);
 
-//		for (; weightLimit < 1000; weightLimit += 10) {
+//		for (weightLimit = 4970; weightLimit < 10000; weightLimit += 100) {
 //			runAux(trainFileName, testFileName, classIndex, counterIndex, weightLimit,
 //					relativeProb, sampleQtd, classifierID, optionDiscretize, optionNominal);
 //		}
@@ -148,14 +149,19 @@ public class Testset {
 				InstanceSet trainData = openFile(trainFileName, counterIndex);
 				if (trainData == null) {
 					String exceptionMsg = "Couldn't open training data " 
-						+ testFileName;
+						+ trainFileName;
 					throw new Exception(exceptionMsg);
 				}
 				trainData.setClassIndex(classIndex);
 				
+				/* Limit the weigth */
+				if (weightLimit != 0) {
+					Sampling.limitWeight(trainData, weightLimit, 0);
+				}
+				
 				/* Sample training data */
-				trainData = sample(trainData, /*sampleID*/3, i, weightLimit,
-						optionDiscretize, optionNominal);
+				trainData = sample(trainData, /*sampleID*/4, i,	optionDiscretize,
+						optionNominal);
 				
 				/* Distribution of the training data */
 				float originalDist[] = distribution(trainData);
@@ -176,53 +182,47 @@ public class Testset {
 	}
 	
 	private InstanceSet sample(InstanceSet trainData, int sampleID, int i,
-			int weightLimit, boolean optionDiscretize, int optionNominal) {
-		/* Limit the weigth */
-		if (weightLimit != 0) {
-			Sampling.limitWeight(trainData, weightLimit, 0);
-		}
-		
+			boolean optionDiscretize, int optionNominal) {
 		/* Get current class distribution  - Two class problem */
 		float originalDist[] = distribution(trainData);
 		float proportion = originalDist[0] * (float) i;
 		proportion = proportion / (originalDist[1] * (float) (10 - i));
-		
 		switch (sampleID) {
 			case 0:
 				/* Undersampling */
 				Sampling.simpleSampling(trainData,
-						(float) (1 / proportion), 0);
+						(float) (1 / proportion), 0, false);
 				
 				break;
 			case 1:
 				/* Oversampling */
-				Sampling.simpleSampling(trainData, proportion, 1);
+				Sampling.simpleSampling(trainData, proportion, 1, false);
 				
 				break;
 			case 2:
 				/* Oversampling */
 				Sampling.simpleSampling(trainData,
-						(float) Math.sqrt(proportion), 1);
+						(float) Math.sqrt(proportion), 1, false);
 				
 				/* Undersampling */
 				Sampling.simpleSampling(trainData,
-						(float) Math.sqrt((float) (1 / proportion)), 0);
+						(float) Math.sqrt((float) (1 / proportion)), 0, false);
 				
 				break;
 			case 3:
 				/* SMOTE */
 				smote.setInstanceSet(trainData);
-				trainData = smote.run(proportion, 1);
+				smote.run(proportion, 1);
 				
 				break;
 			case 4:
-				/* SMOTE */
-				smote.setInstanceSet(trainData);
-				trainData = smote.run((float) Math.sqrt(proportion), 1);
-
 				/* Undersampling */
 				Sampling.simpleSampling(trainData,
-						(float) Math.sqrt((float) (1 / proportion)), 0);
+						(float) Math.sqrt((float) (1 / proportion)), 0, false);
+
+				/* SMOTE */
+				smote.setInstanceSet(trainData);
+				smote.run((float) Math.sqrt(proportion), 1);
 
 				break;
 		}
@@ -329,7 +329,7 @@ public class Testset {
 		
 		if (SE > maxSE) {
 			maxSE = SE;
-			maxSEHeader = header + "\ni: " + i + " - " + (int) percentage + "%";
+			maxSEHeader = header + "\nQuantity of fraud: "  + (int) percentage + "%" + "\nSE: " + maxSE;
 		}
 		
 		System.out.print(i + " - " + (int) percentage + "	");
