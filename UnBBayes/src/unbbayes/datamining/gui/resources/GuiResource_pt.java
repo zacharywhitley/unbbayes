@@ -70,5 +70,7 @@ public class GuiResource_pt extends ListResourceBundle {
 	{"selectClass","Selecione Classe ="},
 	{"class","Classe = "},
 	{"attributes","Attributos = "},
+	// AttributesTree
+	{"tripleClickToChange", "Clique aqui 3 vezes para entrar com um valor"},
 	};
 }
