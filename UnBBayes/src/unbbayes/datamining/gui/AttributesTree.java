@@ -143,7 +143,7 @@ public class AttributesTree extends JTree{
 					objectsMap.put(stateNode, new StateObject(attribute, j, CHECK_EMPTY));
 				}
 			} else {
-				String text = resource.getString("tripleClickToChange");
+				String text = resource.getString("clickToChange");
 				DefaultMutableTreeNode realNode;
 				realNode = new DefaultMutableTreeNode(text);
 				treeNode.add(realNode);
@@ -198,7 +198,11 @@ public class AttributesTree extends JTree{
 		
 		Object obj = objectsMap.get(clickedNode);
 		if ((obj instanceof StateObject)) {
+			/* The clicked node is a nominal attribute */
 			stateNodeClicked(evt, clickedNode, obj);
+		} else {
+			/* The clicked node is a numeric attribute. Start edition of it */
+			startEditingAtPath(clickedPath);
 		}
 	}
 	

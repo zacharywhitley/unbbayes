@@ -73,6 +73,6 @@ public class GuiResource extends ListResourceBundle {
 	{"class","Class = "},
 	{"attributes","Attributes = "},
 	// AttributesTree
-	{"tripleClickToChange", "Triple click here to enter a value"},
+	{"clickToChange", "Click here to enter a value"},
 	};
 }
