@@ -47,8 +47,15 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 
 	private String description;
 	protected String name;
+	protected String label; 
+	private boolean nameIsLabel = true; 
+	
 	protected SerializablePoint2D position;
 	protected static SerializablePoint2D size = new SerializablePoint2D();
+	
+	protected SerializablePoint2D sizeVariable = new SerializablePoint2D(); 
+	protected boolean sizeIsVariable = false;  
+	
 	protected NodeList parents;
 	private NodeList children;
 	protected List<String> states;
@@ -72,16 +79,19 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	 */
 	public Node() {
 		name = "";
+		label= ""; //o texto dentro do nó
 		description = "";
 		explanationDescription = "";
 		adjacents = new NodeList();
 		parents = new NodeList();
 		children = new NodeList();
 		states = new ArrayList<String>();
+		
 		// width
 		size.x = 35;
 		// height
 		size.y = 35;
+		
 		position = new SerializablePoint2D();
 		bSelected = false;
 		drawElement = new DrawText(name, position);
@@ -144,9 +154,30 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	 */
 	public void setName(String name) {
 		this.name = name;
-		// It is necessary to update the name to be drawn by the DrawText class.
-		((DrawText)drawElement).setText(name);
+		if(nameIsLabel == true){
+		   ((DrawText)drawElement).setText(name);
+		}
 	}
+
+	/**
+	 *  Set the node's label (text of the node).
+	 *
+	 *@param  label Node's label.
+	 */
+	public void setLabel(String label) {
+		this.label = label;
+		nameIsLabel = false; 
+		((DrawText)drawElement).setText(label);
+	}	
+	
+	/**
+	 *  Return the node's label (text of the node).
+	 *
+	 */
+	public String getLabel() {
+		return label; 
+	}		
+	
 
 	/**
 	 *  Insere nova lista de filhos.
@@ -439,7 +470,10 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	 * @return The node's size.
 	 */
 	public static Point2D.Double getSize() {
-		return size;
+      
+	      return size;
+	      
+
 	}
 	
 	/**
@@ -451,5 +485,12 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	public static void setSize(double width, double height) {
 		size.setLocation(width, height);
 	}
-
+	
+	public void setSizeVariable(double width, double height){
+		sizeVariable.setLocation(width, height); 
+	}
+	
+	public void setSizeIsVariable(boolean is){
+	   sizeIsVariable = is; 	
+	}
 }

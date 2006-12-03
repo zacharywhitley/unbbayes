@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
@@ -52,6 +53,7 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.mebn.MEBNConstructionException;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.util.GeometricUtil;
 import unbbayes.util.NodeList;
@@ -458,7 +460,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	/**
 	 *  Método responsável por repintar a rede Bayesiana
 	 */
-	public void update() {
+	public void update(){
 		this.repaint(getRectangleRepaint());
 	}
 	
@@ -498,15 +500,39 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 				return; 
 				
 			case CREATE_CONTEXT_NODE:
-				controller.insertContextNode(e.getX(), e.getY());
+				try{
+				   controller.insertContextNode(e.getX(), e.getY());
+				}
+				catch(MEBNConstructionException exception){
+					JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
+						    exception.getMessage(),
+						    "MEBN Construction Error",
+						    JOptionPane.WARNING_MESSAGE);
+				}
 			    return; 
 				
 			case CREATE_RESIDENT_NODE:
+				try{
 				controller.insertResidentNode(e.getX(), e.getY());
+				}
+				catch(MEBNConstructionException exception){
+					JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
+						    exception.getMessage(),
+						    "MEBN Construction Error",
+						    JOptionPane.WARNING_MESSAGE);
+				}				
 				return; 
 				
 			case CREATE_INPUT_NODE:
+                try{
 				controller.insertInputNode(e.getX(), e.getY());
+                }
+				catch(MEBNConstructionException exception){
+					JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
+						    exception.getMessage(),
+						    "MEBN Construction Error",
+						    JOptionPane.WARNING_MESSAGE);
+				}
 				return; 				
 				
 			case CREATE_EDGE:
@@ -873,7 +899,16 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	public void insertEdge(Edge edge) {
 		// Ask the controller to insert the following edge
-		controller.insertEdge(edge);
+		try{
+		   controller.insertEdge(edge);
+		}
+		catch(MEBNConstructionException me){
+			JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
+					me.getMessage(),
+				    "MEBN Construction Error",
+				    JOptionPane.WARNING_MESSAGE);			
+		}
+		
 		// Inform that the edge has being inserted in the graph, therefore 
 		// it is not new anymore.
 		edge.setNew(false);

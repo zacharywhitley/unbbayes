@@ -46,14 +46,20 @@ public class ControllerResources extends ListResourceBundle {
 		{"firstStateProbabilisticName","State 0"},
 		{"firstStateDecisionName","Action 0"},
 		{"nodeName","Node: "},
+		
 		{"probabilisticNodeName","C"},
 		{"decisionNodeName","D"},
 		{"utilityNodeName","U"},
 		{"contextNodeName","CX"},
 		{"residentNodeName","RX"},
-		{"inputNodeName","IX"},		
+		{"inputNodeName","IX"},
+		{"ordinaryVariableName", "OX"}, 
+		
+		{"domainMFragName","DMFrag"},	
+		{"findingMFragName","FMFrag"},				
+		
 		{"potentialTableException","It is not a number!"},
-		{"copiedNodeName","Cópia do "},
+		{"copiedNodeName","Copy of"},
 		{"askTitle","Type a title for the net"},
 		{"informationText","Information"},
 		{"printException","Print Error: "},
@@ -68,6 +74,10 @@ public class ControllerResources extends ListResourceBundle {
 		{"loading","Loading "},
 		{"cancel","Cancel"},
 		{"of"," of "},
+		
+		/* Exceptions MEBN */
+		{"withoutMFrag", "Don't exists any MFrag"}, 
+		{"edgeInvalid", "Edge Invalid"}, 
 
 		{"JAXBExceptionFound", "Sintaxe error..."}
 				

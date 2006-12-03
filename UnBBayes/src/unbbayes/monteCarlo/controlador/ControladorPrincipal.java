@@ -3,6 +3,7 @@ package unbbayes.monteCarlo.controlador;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
@@ -11,6 +12,7 @@ import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
 import unbbayes.io.LoadException;
 import unbbayes.io.NetIO;
+import unbbayes.io.XMLIO;
 import unbbayes.monteCarlo.gui.TelaParametros;
 import unbbayes.monteCarlo.simulacao.SimulacaoMonteCarlo;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -27,22 +29,31 @@ public class ControladorPrincipal {
 	ProbabilisticNetwork redeProbabilistica;	
 	
 	public ControladorPrincipal(){	
-		io = new NetIO();
-		getNet();		
-		tp = new TelaParametros();	
-		adicionarListeners();	
+		
+		getNet();
+		
+		tp = new TelaParametros();
+		adicionarListeners();
 	}	
 	
 	private void getNet(){			
 		try{			
-			String[] nets = new String[] { "net" };
+			String[] nets = new String[] { "net", "xml" };
 			JFileChooser chooser = new JFileChooser(".");
 			chooser.setMultiSelectionEnabled(false);				
 			chooser.addChoosableFileFilter(
-				new SimpleFileFilter(nets,"Carregar .net"));
+					//TODO utilizar resources...
+				new SimpleFileFilter(nets,"Carregar .net, .xml"));
 			int option = chooser.showOpenDialog(null);
 			if (option == JFileChooser.APPROVE_OPTION) {
 				if (chooser.getSelectedFile() != null) {
+					String fileName = chooser.getSelectedFile().getName();
+					if(fileName.endsWith(".net")){
+						io = new NetIO();						
+					}
+					else{
+						io = new XMLIO(); 
+					}
 					redeProbabilistica = io.load(chooser.getSelectedFile());
 				}
 			}

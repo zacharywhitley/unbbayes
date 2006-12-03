@@ -25,19 +25,22 @@ import javax.swing.border.TitledBorder;
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
 import unbbayes.gui.FileIcon;
+import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.NetIO;
+import unbbayes.io.XMLIO;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
 /**
  * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
- * @version 1.0
+ * @version 1.1 (19/11/06)
  */
+
 public class MetaphorMain extends JPanel
 {
   /** Serialization runtime version number */
   private static final long serialVersionUID = 0;		
-	
+
   private BorderLayout borderLayout1 = new BorderLayout();
   private JToolBar metaphorToolBar = new JToolBar();
   private JTabbedPane jTabbedPane1 = new JTabbedPane();
@@ -189,24 +192,32 @@ public class MetaphorMain extends JPanel
 
   void openButton_actionPerformed(ActionEvent e)
   {   setCursor(new Cursor(Cursor.WAIT_CURSOR));
-      String[] s1 = {"net"};
+      String[] s1 = {"net", "xml"};
       fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setMultiSelectionEnabled(false);
       //adicionar FileView no FileChooser para desenhar ícones de arquivos
       fileChooser.setFileView(new FileIcon(this));
-      fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "Networks (*.net)"));
+      fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "Networks (*.net) or XML-BIF(*.xml)"));
       int returnVal = fileChooser.showOpenDialog(this);
       if (returnVal == JFileChooser.APPROVE_OPTION)
       {   File selectedFile = fileChooser.getSelectedFile();
-          openNetFile(selectedFile);
+          openFile(selectedFile);
           FileController.getInstance().setCurrentDirectory(fileChooser.getCurrentDirectory());
       }
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
-  private void openNetFile(File selectedFile)
+  private void openFile(File selectedFile)
   {   try
-      {   net = new NetIO().load(selectedFile);
+      {
+	    String name = selectedFile.getName().toLowerCase();				
+		
+		  if (name.endsWith("net")) {
+			 net = new NetIO().load(selectedFile);					
+		  } else if (name.endsWith("xml")){
+		 	net = new XMLIO().load(selectedFile);				
+		  }
+		
           net.compile();
           metaphorResult.setExplanationNodes(net.getExplanationNodes());
           metaphorTree = new MetaphorTree();

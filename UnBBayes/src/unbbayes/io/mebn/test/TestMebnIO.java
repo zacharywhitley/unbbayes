@@ -255,6 +255,7 @@ public class TestMebnIO {
 	}
 	
 	/* Run Tests */
+	/*
 	
 	public static void main(String[] args) {
 		
@@ -295,5 +296,5 @@ public class TestMebnIO {
 			e.printStackTrace(); 
 		}
 
-	} //main	
+	} *///main	
 }

@@ -2,6 +2,8 @@ package unbbayes.controller;
 
 import java.util.ResourceBundle;
 
+import javax.swing.JOptionPane;
+
 import unbbayes.gui.NetworkWindow;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -10,6 +12,7 @@ import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.InputNode;
+import unbbayes.prs.mebn.MEBNConstructionException;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -18,6 +21,9 @@ import unbbayes.prs.mebn.ResidentNode;
 public class MEBNController {
 
 	private NetworkWindow screen;
+	
+	/* counters */
+	int domainMFragCount = 0; 
 
 	private MultiEntityBayesianNetwork multiEntityBayesianNetwork;
 
@@ -30,6 +36,8 @@ public class MEBNController {
 			NetworkWindow screen) {
 		this.multiEntityBayesianNetwork = multiEntityBayesianNetwork;
 		this.screen = screen;
+		
+		this.domainMFragCount = multiEntityBayesianNetwork.getMFragCount(); 
 	}
 
 	
@@ -38,13 +46,14 @@ public class MEBNController {
     /**
      *  Faz a ligacão do arco desejado entre pai e filho.
      *
-     * @param  arco  um <code>TArco</code> que representa o arco a ser ligado
+     * @param  edge  um <code>TArco</code> que representa o arco a ser ligado
      * @since
      */
-    public void insertEdge(Edge arco) {
+    public void insertEdge(Edge edge) throws MEBNConstructionException{
     	
     	MFrag mFragCurrent = multiEntityBayesianNetwork.getCurrentMFrag(); 
-    	mFragCurrent.addEdge(arco);
+
+    	mFragCurrent.addEdge(edge);
     	
     }
 	
@@ -53,8 +62,10 @@ public class MEBNController {
 	
 	public void insertDomainMFrag(String name) {
 		
-		DomainMFrag domainMFrag = new DomainMFrag("DomainMFrag"
-				+ multiEntityBayesianNetwork.getMFragCount(), multiEntityBayesianNetwork); 
+		DomainMFrag domainMFrag = new DomainMFrag(resource.getString("domainMFragName")
+				+ domainMFragCount, multiEntityBayesianNetwork); 
+		
+		domainMFragCount++; 
 		
 		multiEntityBayesianNetwork.addDomainMFrag(domainMFrag); 
 		
@@ -72,6 +83,7 @@ public class MEBNController {
 	
 	public void removeDomainMFrag(DomainMFrag domainMFrag) {
 		multiEntityBayesianNetwork.removeDomainMFrag(domainMFrag);
+        screen.getMebnEditionPane().getMTheoryTree().updateTree(); 	
 	}
 	
 	public void setCurrentMFrag(MFrag mFrag){
@@ -90,101 +102,112 @@ public class MEBNController {
 	
 	/*---------------------------- Resident Node ----------------------------*/	
 	
-	public void insertResidentNode(double x, double y) throws Exception {
+	public void insertResidentNode(double x, double y) throws MEBNConstructionException {
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
-		if (!(currentMFrag instanceof DomainMFrag)) {
-			// TODO Criar uma exception específica para isso...
-			throw new Exception("Resident nodes must be added only in domain MFrags!");
+
+		if (currentMFrag == null) {
+			throw new MEBNConstructionException(resource.getString("withoutMFrag"));
 		}
+		
 		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
-		DomainResidentNode node = new DomainResidentNode(resource.getString("residentNodeName") + domainMFrag.getDomainResidentNodeCount(), domainMFrag);
+		DomainResidentNode node = new DomainResidentNode(resource.getString("residentNodeName") + domainMFrag.getDomainResidentNodeNum(), domainMFrag);
 		node.setPosition(x, y);
 		node.setDescription(node.getName());
 		domainMFrag.addDomainResidentNode(node);
 		
-		
-		
-		/* teste de ovariables... */
-		
-		String ovName1 = node.getName() + "_01"; 
-		String ovName2 = node.getName() + "_02"; 
-		OrdinaryVariable ov; 
-		ov = new OrdinaryVariable(ovName1, domainMFrag);
-		node.addOrdinaryVariable(ov); 
-		domainMFrag.addOrdinaryVariableDomain(ov);
-		ov = new OrdinaryVariable(ovName2, domainMFrag);
-		node.addOrdinaryVariable(ov); 		
-		domainMFrag.addOrdinaryVariableDomain(ov);		
-		
 		screen.getMebnEditionPane().getInputInstanceOfSelection().updateTree(); 
 		screen.getMebnEditionPane().setEditArgumentsTabActive(node); 
-		screen.getMebnEditionPane().setMTheoryTreeActive(); 
+		screen.getMebnEditionPane().setArgumentTabActive(); 
 	    screen.getMebnEditionPane().setResidentCardActive(); 
-		screen.getMebnEditionPane().setTxtNameResident(((ResidentNode)node).getName()); 		    	
+		screen.getMebnEditionPane().setTxtNameResident(((ResidentNode)node).getName()); 	
+		
 	}	
 	
 	/*---------------------------- Input Node ----------------------------*/		
 	
-	public void insertInputNode(double x, double y) throws Exception {
+	public void insertInputNode(double x, double y) throws MEBNConstructionException {
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
-		if (!(currentMFrag instanceof DomainMFrag)) {
-			// TODO Criar uma exception específica para isso...
-			throw new Exception("Input nodes must be added only in domain MFrags!");
+		
+		if (currentMFrag == null) {
+			throw new MEBNConstructionException(resource.getString("withoutMFrag"));
 		}
+		
 		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
-		GenerativeInputNode node = new GenerativeInputNode(resource.getString("contextNodeName") + domainMFrag.getGenerativeInputNodeCount(), domainMFrag);
+		GenerativeInputNode node = new GenerativeInputNode(resource.getString("contextNodeName") + domainMFrag.getGenerativeInputNodeNum(), domainMFrag);
 		node.setPosition(x, y);
 		node.setDescription(node.getName());
 		domainMFrag.addGenerativeInputNode(node);
 		
 	    screen.getMebnEditionPane().setInputCardActive(); 	
 		screen.getMebnEditionPane().setTxtNameInput(((InputNode)node).getName()); 		    
-		screen.getMebnEditionPane().setMTheoryTreeActive(); 
+		screen.getMebnEditionPane().setInputInstanceOfActive(); 
 	}		
 	
 	public void setInputInstanceOf(GenerativeInputNode input, ResidentNode resident){
 		
-		//TODO procurar qual é o nó de input selecionado e realizar operações necessárias neste...
+		input.setInputInstanceOfNode((DomainResidentNode)resident); 
 		screen.getMebnEditionPane().setTxtInputOf(resident.getName()); 
+		screen.getMebnEditionPane().updateUI(); 
 	
 	}
 	
 	/*---------------------------- ContextNode ----------------------------*/	
 	
-	public void insertContextNode(double x, double y) throws Exception {
+	public void insertContextNode(double x, double y) throws MEBNConstructionException {
+		
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
-		if (!(currentMFrag instanceof DomainMFrag)) {
-			// TODO Criar uma exception específica para isso...
-			throw new Exception("Context nodes must be added only in domain MFrags!");
+		
+		if (currentMFrag == null) {
+			throw new MEBNConstructionException(resource.getString("withoutMFrag"));
 		}
+		
 		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
-		ContextNode node = new ContextNode(resource.getString("contextNodeName") + domainMFrag.getContextNodeCount(), domainMFrag);
+		ContextNode node = new ContextNode(resource.getString("contextNodeName") + domainMFrag.getContextNodeNum(), domainMFrag);
 		node.setPosition(x, y);
 		node.setDescription(node.getName());
 		domainMFrag.addContextNode(node);
 		
 	    screen.getMebnEditionPane().setContextCardActive();
-		screen.getMebnEditionPane().setFormulaEdtionActive(node); 
-		screen.getMebnEditionPane().setMTheoryTreeActive(); 		
-		screen.getMebnEditionPane().setTxtNameContext(((ContextNode)node).getName()); 		    
-		screen.getMebnEditionPane().setMTheoryTreeActive(); 
+		screen.getMebnEditionPane().setFormulaEdtionActive(node); 	
+		screen.getMebnEditionPane().setTxtNameContext(((ContextNode)node).getName()); 
 	}	
 	
 	public void deleteSelected(Object selected) {
         if (selected instanceof ContextNode)
             ((ContextNode)selected).delete();
-    }
+        else{
+        	
+        	if (selected instanceof DomainResidentNode)
+                ((DomainResidentNode)selected).delete();
+        	else{
+            	if (selected instanceof GenerativeInputNode)
+                    ((GenerativeInputNode)selected).delete();
+            
+            	else{
+                    if (selected instanceof Edge) {
+                    	MFrag mFragCurrent = multiEntityBayesianNetwork.getCurrentMFrag(); 
+                    	mFragCurrent.removeEdge((Edge) selected);
+                    }
+            	}
+        	}
+        }
+        
+        screen.getMebnEditionPane().getMTheoryTree().updateTree(); 
+    
+	}
 
 	public void selectNode(Node node){
 		if (node instanceof ResidentNode){
 			screen.getMebnEditionPane().setResidentCardActive(); 
 			screen.getMebnEditionPane().setEditArgumentsTabActive((ResidentNode)node); 
-			screen.getMebnEditionPane().setTxtNameResident(((ResidentNode)node).getName()); 		  
+			screen.getMebnEditionPane().setTxtNameResident(((ResidentNode)node).getName()); 	
+			screen.getMebnEditionPane().setArgumentTabActive(); 	
 		}
 		else{
 			if(node instanceof InputNode){
 				screen.getMebnEditionPane().setInputCardActive(); 
 				screen.getMebnEditionPane().setTxtNameInput(((InputNode)node).getName()); 				
+				screen.getMebnEditionPane().setInputInstanceOfActive(); 
 			}
 			else{
 				if(node instanceof ContextNode){
@@ -197,15 +220,52 @@ public class MEBNController {
 				}
 			}
 			
+		}	
+	}
+
+	/*---------------------------- Ordinary Variable ----------------------------*/	
+		
+	/**
+	 * Create a ordinary variable and add it in the
+	 * current MFrag (if it is a DomainMFrag). 
+	 * 
+	 */
+	
+	public OrdinaryVariable addNewOrdinaryVariableInMFrag() throws Exception{
+		
+        MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
+		
+		if (!(currentMFrag instanceof DomainMFrag)) {
+			// TODO Criar uma exception específica para isso...
+			throw new Exception("Ordinary Variables must be added only in domain MFrags!");
 		}
-		screen.getMebnEditionPane().setMTheoryTreeActive(); 		
+		
+		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
+		String name = resource.getString("ordinaryVariableName") + domainMFrag.getOrdinaryVariableNum(); 
+		OrdinaryVariable ov = new OrdinaryVariable(name, domainMFrag);
+		domainMFrag.addOrdinaryVariable(ov);
+		
+		return ov; 
+		
+	}
+	
+	/**
+	 * Remove one ordinary variable of the current MFrag.
+	 * @param ov
+	 */
+	public void removeOrdinaryVariableOfMFrag(OrdinaryVariable ov){
+
+        MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
+        currentMFrag.removeOrdinaryVariable(ov);
+        
 	}
 	
 	public void addOrdinaryVariableInResident(OrdinaryVariable ordinaryVariable){
 		
 		ResidentNode resident = (ResidentNode) screen.getGraphPane().getSelected(); 
 		resident.addOrdinaryVariable(ordinaryVariable);
-		screen.getMebnEditionPane().getEditArgumentsTab().update(); 		
+		screen.getMebnEditionPane().getEditArgumentsTab().update();
+		screen.getMebnEditionPane().updateUI(); 
 	}
 	
 	public void removeOrdinaryVariableInResident(OrdinaryVariable ordinaryVariable){
@@ -213,7 +273,20 @@ public class MEBNController {
 		ResidentNode resident = (ResidentNode) screen.getGraphPane().getSelected(); 
 		resident.removeOrdinaryVariable(ordinaryVariable);
 		screen.getMebnEditionPane().getEditArgumentsTab().update(); 
+		screen.getMebnEditionPane().updateUI(); 
 		
 	}	
+	
+	/*---------------------------- Formulas ----------------------------*/	
+		
+	public void insertOperatorAND(){
+		
+	}
+	
+	public void selectOVariableInEdit(OrdinaryVariable ov){
+	
+		screen.getMebnEditionPane().getEditOVariableTab().setNameOVariableSelected(ov.getName()); 
+		
+	}
 	
 }

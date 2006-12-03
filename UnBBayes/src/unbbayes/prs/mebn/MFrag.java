@@ -5,14 +5,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.JOptionPane;
-
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.util.NodeList;
 
-import unbbayes.prs.mebn.*;
+/**
+ * This class represents a MEBN Fragment. 
+ * MEBN Fragments (MFrags) are the basic structure of any MEBN logic 
+ * model. MFrags represent influences among clusters of related RVs 
+ * and can portray repeated patters using ordinary variables as 
+ * placeholders in to which entity identifiers can be substituted.  
+ * 
+ * @version 1.0 (26/11/06)
+ */
 
 public class MFrag implements Graph{
 
@@ -40,10 +46,11 @@ public class MFrag implements Graph{
 	
 	private String name; 
 	
-
-	//private String name;
-
-	//private NodeList nodeList;
+	/* 
+	 * Estes contadores indicam qual deve ser o numero do proximo
+	 * no criado caso os nomes estejam sendo gerados automaticamente
+	 */
+	private int ordinaryVariableNum = 1; 	
 
 	/**
 	 * Contructs a new MFrag with empty node's list.
@@ -79,6 +86,14 @@ public class MFrag implements Graph{
 		return name;
 	}	
 	
+	/**
+	 * Get the MEBN where this MFrag is inside
+	 * @return the MEBN where this MFrag is inside
+	 */
+	public MultiEntityBayesianNetwork getMultiEntityBayesianNetwork(){
+		return multiEntityBayesianNetwork;
+	}
+	
 	
 	/**
 	 * Method responsible for deleting this MFrag but not its nodes and 
@@ -86,7 +101,9 @@ public class MFrag implements Graph{
 	 *
 	 */
 	public void delete() {
+		
 		nodeList.clear();
+		
 		for (MultiEntityNode node : residentNodeList) {
 			node.removeFromMFrag();
 		}
@@ -94,8 +111,9 @@ public class MFrag implements Graph{
 			node.removeFromMFrag();
 		}
 		for (OrdinaryVariable variable : ordinaryVariableList) {
-			variable.removeFromMFrag();
+			this.removeOrdinaryVariable(variable); 
 		}
+		
 	}	
 	
 	/**
@@ -174,6 +192,7 @@ public class MFrag implements Graph{
 		inputNodeList.remove(inputNode);
 		removeNode(inputNode);
 	}
+
 	
 	/**
 	 * Method responsible for adding the given ordinary variable in its ordinary variable list.
@@ -181,9 +200,15 @@ public class MFrag implements Graph{
 	 * @param ordinaryVariable
 	 *            The ordinary variable to be added in the ordinary variable list.
 	 */	
-	protected void addOrdinaryVariable(OrdinaryVariable ordinaryVariable){
-		ordinaryVariableList.add(ordinaryVariable); 
+	public void addOrdinaryVariable(OrdinaryVariable ordinaryVariable){
+		ordinaryVariableList.add(ordinaryVariable);
+		ordinaryVariableNum++; 
+		
 	}
+	
+	public int getOrdinaryVariableNum(){
+		return ordinaryVariableNum; 
+	}		
 	
 	/**
 	 * Method responsible for removing the given ordinary variable from its ordinary variable list.
@@ -191,8 +216,8 @@ public class MFrag implements Graph{
 	 * @param ordinary variable
 	 *            The ordinary variable to be removed from the ordinary variable list.
 	 */	
-	protected void removeOrdinaryVariable(OrdinaryVariable ordinaryVariable){
-		ordinaryVariableList.remove(ordinaryVariable); 
+	public void removeOrdinaryVariable(OrdinaryVariable ordinaryVariable){
+		ordinaryVariableList.remove(ordinaryVariable);
 	}	
 
 	/**
@@ -272,11 +297,41 @@ public class MFrag implements Graph{
 	 *@param  arco  arco a ser retirado.
 	 */
 	public void removeEdge(Edge arco) {
-	    arco.getOriginNode().getChildren().remove(arco.getDestinationNode());
-	    arco.getDestinationNode().getParents().remove(arco.getOriginNode());
+	    
+		Node origin = arco.getOriginNode();
+		Node destination = arco.getDestinationNode(); 
+		
+		origin.getChildren().remove(arco.getDestinationNode());
+	    destination.getParents().remove(arco.getOriginNode());
 	    edgeList.remove(arco);	
+	    
+	    if(origin instanceof DomainResidentNode){
+	    		((DomainResidentNode)origin).removeResidentNodeChildList((DomainResidentNode)destination); 
+	    }
+	    else{ //input
+	    	((GenerativeInputNode)origin).removeResidentNodeChild((DomainResidentNode)destination); 
+	    }
 	}
 
+
+	/**
+	 *  Retira do grafo o arco especificado.
+	 *
+	 *@param  arco  arco a ser retirado.
+	 */
+	public void removeEdgeByNodes(Node origin, Node destination) {
+	    
+		for(Edge edge: edgeList){
+			if (edge.getOriginNode() == origin){
+				if(edge.getDestinationNode() == destination){
+					removeEdge(edge); 
+					return; 
+				}
+			}
+		}
+		
+	}	
+	
 
 	/**
 	 *  Adciona um arco a rede se este for um arco valido. 
@@ -287,30 +342,42 @@ public class MFrag implements Graph{
 	 *
 	 *@param  arco  arco a ser inserido.
 	 */
-	public void addEdge(Edge arco){
+	public void addEdge(Edge arco) throws MEBNConstructionException{
 		
 		Node origin = arco.getOriginNode();
 		Node destination = arco.getDestinationNode();
 		
-		if (destination instanceof ResidentNode){
-			if (origin instanceof ResidentNode){
-			    origin.getChildren().add(arco.getDestinationNode());
+		if (destination instanceof DomainResidentNode){
+			if (origin instanceof DomainResidentNode){
+			    
+				origin.getChildren().add(arco.getDestinationNode());
 			    destination.getParents().add(arco.getOriginNode());
+			    
 			    edgeList.add(arco);
+			    
+			    ((DomainResidentNode)origin).addResidentNodeChild((DomainResidentNode)destination); 
+			
 			}
 			else{
-				if (origin instanceof InputNode){
-				    origin.getChildren().add(arco.getDestinationNode());
+				if (origin instanceof GenerativeInputNode){
+				    
+					origin.getChildren().add(arco.getDestinationNode());
 				    destination.getParents().add(arco.getOriginNode());
-				    edgeList.add(arco);					
+				    
+				    edgeList.add(arco);		
+				    
+				    ((GenerativeInputNode)origin).addResidentNodeChild((DomainResidentNode)destination); 
+
 				}
 				else{
-				    JOptionPane.showMessageDialog(null, "Arco Invalido!!!", "Alerta", JOptionPane.WARNING_MESSAGE); 
+					//TODO criar resource para isto... 
+					throw new MEBNConstructionException("Invalid Edge!!!"); 
 				}
 			}
 		}
 		else{
-			 JOptionPane.showMessageDialog(null, "Arco Invalido!!!", "Alerta", JOptionPane.WARNING_MESSAGE); 
+			//TODO criar resource para isto... 
+			throw new MEBNConstructionException("Invalid Edge!!!");
 		}
 	}
 

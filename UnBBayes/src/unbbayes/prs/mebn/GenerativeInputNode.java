@@ -5,7 +5,8 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.gui.draw.DrawRectangleThree;
+import unbbayes.gui.draw.DrawRoundedRectangle;
+import unbbayes.gui.draw.DrawTwoBaseRectangle;
 
 public class GenerativeInputNode extends InputNode {
 
@@ -30,14 +31,15 @@ public class GenerativeInputNode extends InputNode {
 
 	private DomainMFrag mFrag;
 	
-	private DrawRectangleThree drawInputNode; 
+	private DrawTwoBaseRectangle drawInputNode; 
 	
-	private static Color color = new Color(187, 247, 253); 		
+	private static Color color = new Color(220, 220, 220); 		
 	
 	public GenerativeInputNode(String name, DomainMFrag mFrag){
 		
 	   super(); 
 	   setName(name); 
+	   setLabel(" "); 
 	   
 	   this.mFrag = mFrag;
 	   
@@ -45,9 +47,21 @@ public class GenerativeInputNode extends InputNode {
 	
 	   size.x = 100;
 	   size.y = 20; 
-	   drawInputNode = new DrawRectangleThree(position, size);
+	   drawInputNode = new DrawTwoBaseRectangle(position, size);
 	   drawElement.add(drawInputNode);	
 	}
+	
+	/**
+	 * Remove the node of the resident node child list. 
+	 */
+	public void removeResidentNodeChild(DomainResidentNode node){
+		residentNodeChildList.remove(node);
+		node.removeInputNodeFatherList(this); 
+		
+		mFrag.removeEdgeByNodes(this, node);
+		
+	}	
+	
 	
 	/**
      *  Gets all generative input node node's color.
@@ -80,6 +94,11 @@ public class GenerativeInputNode extends InputNode {
 		return inputInstanceOfNode; 
 	}
 	
+	public void setInputInstanceOfNode(DomainResidentNode residentNode){
+		inputInstanceOfNode = residentNode; 
+		updateLabel(); 
+	}
+	
 	public DomainMFrag getMFrag(){
 		return mFrag; 
 	}
@@ -95,5 +114,24 @@ public class GenerativeInputNode extends InputNode {
 		drawInputNode.setFillColor(getColor());
 		super.paint(graphics);
 	}	
+
+    public void updateLabel(){
+    	setLabel(inputInstanceOfNode.getLabel()); 
+    }	
+    
+	/**
+	 * Method responsible for deleting this generative input node. It makes sure to clean 
+	 * the residentNodeChildList.
+	 *
+	 */    
+    
+    public void delete(){
+    
+    	for(ResidentNode resident : residentNodeChildList){
+    		residentNodeChildList.remove(resident); 
+    	}
+    	
+    	mFrag.removeGenerativeInputNode(this); 
+    }
 	
 }

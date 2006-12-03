@@ -20,6 +20,8 @@ public class MultiEntityBayesianNetwork extends Network {
 	
 	private List<FindingMFrag> findingMFragList; 
 	
+	private List<BuiltInRV> builtInRVList; 
+	
 	private MFrag currentMFrag;
 	
 	/**
@@ -30,11 +32,17 @@ public class MultiEntityBayesianNetwork extends Network {
 		super(name);
 		mFragList = new ArrayList<MFrag>();
 		domainMFragList = new ArrayList<DomainMFrag>(); 
-		findingMFragList = new ArrayList<FindingMFrag>(); 
+		findingMFragList = new ArrayList<FindingMFrag>();
+		builtInRVList = new ArrayList<BuiltInRV>(); 
 	}
 	
+	
+	
+	
+	/*--------------------------- MFrags ---------------------*/
+	
 	/**
-	 * Method responsible for adding a new Domain MFrag.
+	 * Method responsible for adding a new Domain MFrag .
 	 * @param domainMFrag The new DomainMFrag to be added.
 	 */
 	public void addDomainMFrag(DomainMFrag domainMFrag) {
@@ -123,8 +131,31 @@ public class MultiEntityBayesianNetwork extends Network {
 	 */
 	public void setCurrentMFrag(MFrag currentMFrag) {
 		this.currentMFrag = currentMFrag; 
+	}	
+	
+	
+	
+	/*--------------------------- BuiltInRV ---------------------*/
+		
+	/**
+	 * Get the BuiltIn randon variables list of this MEBN.
+	 * @return The built in list of this MEBN.
+	 */
+	public List<BuiltInRV> getBuiltInRVList() {
+		return builtInRVList;
 	}
+	
+	/**
+	 * Add a built-in rv to mebn
+	 */
+	//TODO substituir por um método que crie as built in rvs as quais há suporte... 
+	public void addBuiltInRVList(BuiltInRV builtInRV){
+		builtInRVList.add(builtInRV); 
+	}
+	
 
+	/*--------------------------- Nodes ---------------------*/
+		
 	/**
 	 * Returns the NodeList of the current MFrag
 	 */	

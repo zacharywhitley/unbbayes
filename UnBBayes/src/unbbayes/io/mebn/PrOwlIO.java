@@ -41,7 +41,7 @@ import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
 
 public class PrOwlIO implements MebnIO {
 	
-	public static final String PROWLMODELFILE = "pr-owl/pr-owl.owl"; 
+	public static final String PROWLMODELFILE = "/pr-owl/pr-owl.owl"; 
 	
 	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException, IOMebnException{
 		
@@ -52,11 +52,12 @@ public class PrOwlIO implements MebnIO {
 		Collection instances; 
 		Iterator itAux; 
 		
+	/*
 		JProgressBar progress; 
 		progress = new JProgressBar(0, 100); 
 		progress.setValue(0); 
 		progress.setStringPainted(true); 
-		
+	*/	
 		
 		DomainMFrag domainMFrag; 
 		OrdinaryVariable oVariable; 
@@ -199,7 +200,7 @@ public class PrOwlIO implements MebnIO {
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
 				individualTwo = (OWLIndividual) itIn.next();
 				oVariable = new OrdinaryVariable(individualTwo.getBrowserText(), domainMFrag); 
-				domainMFrag.addOrdinaryVariableDomain(oVariable); 
+				domainMFrag.addOrdinaryVariable(oVariable); 
 				mapOVariable.put(individualTwo.getBrowserText(), oVariable); 
 				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
 			}
@@ -277,6 +278,7 @@ public class PrOwlIO implements MebnIO {
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
 			individualOne = (OWLIndividual)it.next();
 			builtInRV = new BuiltInRV(individualOne.getBrowserText()); 			
+			mebn.addBuiltInRVList(builtInRV); 
 			mapBuiltInRV.put(individualOne.getBrowserText(), builtInRV); 
 			System.out.println("BuiltInRV loaded: " + individualOne.getBrowserText()); 
 			
@@ -351,7 +353,7 @@ public class PrOwlIO implements MebnIO {
 				individualTwo = (OWLIndividual) itIn.next();
 				if (mapDomainResidentNode.containsKey(individualTwo.getBrowserText())){
 					DomainResidentNode aux = mapDomainResidentNode.get(individualTwo.getBrowserText()); 
-					domainResidentNode.addResidentNodeFather(aux); 
+					aux.addResidentNodeChild(domainResidentNode); 
 				}
 				else{
 					if (mapGenerativeInputNode.containsKey(individualTwo.getBrowserText())){
@@ -528,35 +530,40 @@ public class PrOwlIO implements MebnIO {
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 			
 			individualTwo = (OWLIndividual)individualOne.getPropertyValue(objectProperty); 	
 			
-			/* check: 
-			 * - node
-			 * - entity //don't checked in this version
-			 * - oVariable
-			 * - skolen // don't checked in this version
-			 */
-			
-			if ((multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText())) != null){
-				try{
-					argument.setArgumentTerm(multiEntityNode);
-				}
-				catch(Exception e){
-					throw new IOMebnException(resource.getString("ArgumentTermError"),  individualTwo.getBrowserText()); 				   
-				}
-			}
-			else{
-				if( (oVariable = mapOVariable.get(individualTwo.getBrowserText())) != null) {
+			if(individualTwo != null){
+				//TODO apenas por enquanto, pois não podera ser igual a null no futuro!!!
+				
+				/* check: 
+				 * - node
+				 * - entity //don't checked in this version
+				 * - oVariable
+				 * - skolen // don't checked in this version
+				 */
+				
+				if ((multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText())) != null){
 					try{
-						argument.setOVariable(oVariable); 
+						argument.setArgumentTerm(multiEntityNode);
 					}
 					catch(Exception e){
 						throw new IOMebnException(resource.getString("ArgumentTermError"),  individualTwo.getBrowserText()); 				   
 					}
 				}
 				else{
-					/* TODO Tratamento para Entity */
+					if( (oVariable = mapOVariable.get(individualTwo.getBrowserText())) != null) {
+						try{
+							argument.setOVariable(oVariable); 
+						}
+						catch(Exception e){
+							throw new IOMebnException(resource.getString("ArgumentTermError"),  individualTwo.getBrowserText()); 				   
+						}
+					}
+					else{
+						/* TODO Tratamento para Entity */
+					}
 				}
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+				
 			}
-			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
 			
 			/* -> isArgumentOf  */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isArgumentOf"); 			
@@ -625,7 +632,7 @@ public class PrOwlIO implements MebnIO {
 	 * @param mebn: the mebn structure
 	 */
 	
-	public void saveMebn(String nameFile, MultiEntityBayesianNetwork mebn) throws IOException, IOMebnException{
+	public void saveMebn(File file, MultiEntityBayesianNetwork mebn) throws IOException, IOMebnException{
 		
 		HashMap<MultiEntityNode, OWLIndividual> nodeMap = new HashMap<MultiEntityNode, OWLIndividual>(); 
 		
@@ -641,6 +648,9 @@ public class PrOwlIO implements MebnIO {
 		ArrayList<OrdinaryVariable> oVariableGeral = new ArrayList<OrdinaryVariable>(); 
 		HashMap<OrdinaryVariable, OWLIndividual> oVariableMap = new HashMap<OrdinaryVariable, OWLIndividual>();
 		
+		ArrayList<BuiltInRV> builtInRVGeral = new ArrayList<BuiltInRV>(); 
+		HashMap<BuiltInRV, OWLIndividual> builtInRVMap = new HashMap<BuiltInRV, OWLIndividual>(); 
+		
 		/* Protege API Structure */
 		
 		JenaOWLModel owlModel;
@@ -655,9 +665,9 @@ public class PrOwlIO implements MebnIO {
 		
 		URI uri = URIUtilities.createURI("file:///pr-owl.owl");
 		
-		File file = new File(PROWLMODELFILE);
+		File filePrOwl = new File(PROWLMODELFILE);
 		
-		owlModel.getRepositoryManager().addProjectRepository(new LocalFileRepository(file, true));
+		owlModel.getRepositoryManager().addProjectRepository(new LocalFileRepository(filePrOwl, true));
 		
 		try{
 			owlModel.load(uri, FileUtils.langXMLAbbrev);
@@ -665,6 +675,8 @@ public class PrOwlIO implements MebnIO {
 		catch(Exception e){
 			throw new IOMebnException(resource.getString("PrOwlNotLoad")); 
 		}
+		
+
 		
 		/* MTheory */
 		
@@ -741,6 +753,7 @@ public class PrOwlIO implements MebnIO {
 			
 			/* hasSkolen don't implemented */
 		}
+		
 		
 		/* DomainResidentNode */
 		
@@ -850,7 +863,8 @@ public class PrOwlIO implements MebnIO {
 			for(MultiEntityNode innerTerm: innerTermList){
 				OWLIndividual innerTermIndividual = nodeMap.get(innerTerm);
 				contextNodeIndividual.addPropertyValue(hasInnerTermProperty, innerTermIndividual);
-			}		        
+			}		        	        
+			
 			
 		}		
 		
@@ -895,13 +909,53 @@ public class PrOwlIO implements MebnIO {
 				OWLIndividual innerTermIndividual = nodeMap.get(innerTerm);
 				generativeInputNodeIndividual.addPropertyValue(hasInnerTermProperty, innerTermIndividual);
 			}
+			
+
 		}
-		 
+
+		/* BuiltInRV */
+		
+		builtInRVGeral = (ArrayList)mebn.getBuiltInRVList(); 
+		OWLNamedClass builtInPr = owlModel.getOWLNamedClass("BuiltInRV"); 
+		Collection instances = builtInPr.getInstances(false); 
+		for (Iterator it = instances.iterator(); it.hasNext(); ){
+			OWLIndividual individualOne = (OWLIndividual)it.next();
+			BuiltInRV builtInRVTest = findBuiltInByName(builtInRVGeral, individualOne.getBrowserText());
+		    if(builtInRVTest != null){
+			    builtInRVMap.put(builtInRVTest, individualOne);
+		        
+			    List<GenerativeInputNode> inputInstanceFromList = builtInRVTest.getInputInstanceFromList();
+				OWLObjectProperty hasInputInstance = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputInstance"); 
+				for(GenerativeInputNode inputInstance: inputInstanceFromList)		{
+					OWLIndividual generativeInputNodeIndividual = generativeInputMap.get(inputInstance);	
+					individualOne.addPropertyValue(hasInputInstance, generativeInputNodeIndividual); 
+				}
+			    
+				
+			    List<ContextNode> contextInstanceFromList = builtInRVTest.getContextFromList(); 
+				OWLObjectProperty hasContextInstance = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasContextInstance"); 
+				for(ContextNode contextInstance: contextInstanceFromList)		{
+					OWLIndividual contextNodeIndividual = generativeInputMap.get(contextInstance);	
+					individualOne.addPropertyValue(hasContextInstance, contextNodeIndividual); 
+				}
+			    
+		    }
+		}
+		
 		/* saving */
 		
 		Collection errors = new ArrayList();
-		owlModel.save(new File(nameFile).toURI(), FileUtils.langXMLAbbrev, errors);
+		owlModel.save(file.toURI(), FileUtils.langXMLAbbrev, errors);
 		System.out.println("File saved with " + errors.size() + " errors.");
 		
 	}	
+	
+	private BuiltInRV findBuiltInByName(List<BuiltInRV> builtInRVList, String name){
+		for(BuiltInRV builtInRV: builtInRVList){
+	        if (builtInRV.getName().compareTo(name) == 0){
+	        	return builtInRV; 
+	        }
+		}
+		return null; 
+	}
 }

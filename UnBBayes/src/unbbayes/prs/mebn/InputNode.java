@@ -1,6 +1,5 @@
 package unbbayes.prs.mebn;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class InputNode extends MultiEntityNode {
@@ -25,7 +24,7 @@ public class InputNode extends MultiEntityNode {
 			inputInstanceOfRV = rv; 
 		}
 		else{
-			//TODO levantar excessao
+		
 		}
 	}
 	
@@ -45,5 +44,26 @@ public class InputNode extends MultiEntityNode {
 	public BuiltInRV getInputInstanceOfRV(){
 		return inputInstanceOfRV; 
 	}	
+	
 
+	
+	/**
+	 * Add a resident node in the list of resident node childs. 
+	 * @param node: the node that will be add. 
+	 */
+	public void addResidentNodeChild(ResidentNode node){
+		this.residentNodeChildList.add(node); 
+	}
+
+	/**
+	 * Method responsible for deleting this input node. 
+	 *
+	 */
+    
+	public void delete() {
+		
+		residentNodeChildList = null; 
+		
+	}	
+	
 }

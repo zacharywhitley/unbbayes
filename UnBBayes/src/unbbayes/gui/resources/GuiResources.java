@@ -150,6 +150,15 @@ public class GuiResources extends ListResourceBundle {
 		{"inputOf","Input of:"},	
 		{"arguments", "Args: "}, 
 		
+		{"andToolTip", "and operator"}, 
+		{"orToolTip", "or operator"},
+		{"notToolTip", "not operator"},
+		{"equalToToolTip", "equal to operator"},
+		{"impliesToolTip", "implies operator"},
+		{"iffToolTip", "iff operator"},
+		{"forallToolTip", "for all operator"},
+		{"existsToolTip", "exists operator"},		
+		
 		//Menus MEBN
 		{"menuDelete", "Delete"}, 
 		{"menuAddContext", "Add Context"}, 

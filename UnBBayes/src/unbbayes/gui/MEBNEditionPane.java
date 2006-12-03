@@ -27,12 +27,14 @@ import javax.swing.JToolBar;
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
 import unbbayes.gui.mebn.EditArgumentsTab;
+import unbbayes.gui.mebn.EditOVariableTab;
 import unbbayes.gui.mebn.EntityTree;
 import unbbayes.gui.mebn.FormulaEdtion;
 import unbbayes.gui.mebn.InputInstanceOfSelection;
 import unbbayes.gui.mebn.MTheoryTree;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.ResidentNode;
 
 public class MEBNEditionPane extends JPanel {
@@ -55,6 +57,7 @@ public class MEBNEditionPane extends JPanel {
     private EntityTree entityTree;    
     private InputInstanceOfSelection inputInstanceOfSelection;    
     private JScrollPane inputInstanceOfSelectionScroll;    
+    private EditOVariableTab editOVariableTab; 
     
     private EditArgumentsTab editArgumentsTab; 
 	
@@ -119,6 +122,7 @@ public class MEBNEditionPane extends JPanel {
     private final JButton btnTabOption3; 
     private final JButton btnTabOption4; 
     private final JButton btnTabOption5;  
+    private final JButton btnTabOption6;  
     
     /* botoes especificos para cada tipo de no */
     
@@ -210,11 +214,12 @@ public class MEBNEditionPane extends JPanel {
         btnGlobalOption      = new JButton(iconController.getGlobalOptionIcon());
 
         btnTabOption1 = new JButton(iconController.getEyeIcon());
-        btnTabOption2 = new JButton(iconController.getBoxXIcon());
-        btnTabOption3 = new JButton(iconController.getBoxXIcon());
-        btnTabOption4 = new JButton(iconController.getBoxXIcon());   
-        btnTabOption5 = new JButton(iconController.getBoxXIcon());   
-        
+        btnTabOption2 = new JButton(iconController.getOVariableNodeIcon()); 
+        btnTabOption3 = new JButton(iconController.getEntityNodeIcon()); 
+        btnTabOption4 = new JButton(iconController.getGrayBorderBoxIcon());   
+        btnTabOption5 = new JButton(iconController.getFunctIcon());   
+        btnTabOption6 = new JButton(iconController.getBoxSetIcon());   
+         
         btnResidentActive = new JButton(iconController.getBoxResidentIcon()); 
         btnInputActive = new JButton(iconController.getBoxInputIcon());  
         btnMFragActive = new JButton(iconController.getBoxMFragIcon()); 
@@ -223,7 +228,6 @@ public class MEBNEditionPane extends JPanel {
         btnAddArgument = new JButton(iconController.getGrayBoxBoxIcon());         
         btnEditFormula = new JButton(iconController.getFunctIcon()); 
         btnInputOf = new JButton(iconController.getBoxSetIcon());         
-        
         
         //setar tooltip para esses botões
         btnCompile.setToolTipText(resource.getString("compileToolTip"));
@@ -366,6 +370,7 @@ public class MEBNEditionPane extends JPanel {
         jtbTabPanel.add(btnTabOption3); 
         jtbTabPanel.add(btnTabOption4); 
         jtbTabPanel.add(btnTabOption5); 
+        jtbTabPanel.add(btnTabOption6);         
         jtbTabPanel.setBackground(Color.black);
         jtbTabPanel.setFloatable(false);
         
@@ -501,6 +506,7 @@ public class MEBNEditionPane extends JPanel {
   							matcher = wordPattern.matcher(name);
   							if (matcher.matches()) {
   								nodeAux.setName(name);
+  								
   								repaint();
   							}  else {
   								JOptionPane.showMessageDialog(netWindow, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
@@ -518,8 +524,8 @@ public class MEBNEditionPane extends JPanel {
   		txtNameResident.addKeyListener(new KeyAdapter() {
   			public void keyPressed(KeyEvent e) {
   				Object selected = netWindow.getGraphPane().getSelected();
-  				if (selected instanceof Node) {
-  					Node nodeAux = (Node)selected;
+  				if (selected instanceof DomainResidentNode) {
+  					DomainResidentNode nodeAux = (DomainResidentNode)selected;
   					if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameResident.getText().length()>0)) {
   						try {
   							String name = txtNameResident.getText(0,txtNameResident.getText().length());
@@ -633,7 +639,13 @@ public class MEBNEditionPane extends JPanel {
   			public void actionPerformed(ActionEvent ae) {
   				setMTheoryTreeActive(); 
   			}
-  		});  		
+  		});  
+  		
+  		btnTabOption2.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				setEditOVariableTabActive(); 
+  			}
+  		});  	  		
   	}  	
 
     /**
@@ -776,6 +788,10 @@ public class MEBNEditionPane extends JPanel {
          return editArgumentsTab; 	
     }
     
+    public EditOVariableTab getEditOVariableTab(){
+    	return editOVariableTab; 
+    }
+    
     /* TabPanel */
     
     public void setMTheoryTreeActive(){
@@ -819,7 +835,19 @@ public class MEBNEditionPane extends JPanel {
     	   
         cardLayout.show(tabPanel, "EditArgumentsTab"); 
         
-    }    
+    }
+    
+    public void setEditOVariableTabActive(){
+    	
+    	if(controller.getMebnController().getCurrentMFrag() != null){
+           editOVariableTab = new EditOVariableTab(controller); 
+           tabPanel.add("EditOVariableTab", editOVariableTab); 
+    	   cardLayout.show(tabPanel, "EditOVariableTab"); 
+    	}
+    }
+    
+    
+    
     
     /* Panel Node Selected */
 

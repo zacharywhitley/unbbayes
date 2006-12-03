@@ -52,7 +52,7 @@ public interface Graph {
 		 *
 		 *@param  arco  arco a ser inserido.
 		 */
-		public void addEdge(Edge arco);
+		public void addEdge(Edge arco) throws Exception;
 
 		/**
 		 *  Remove nó do grafo.

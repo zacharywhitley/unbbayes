@@ -15,6 +15,6 @@ public interface MebnIO {
 
 	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException, IOMebnException;
 	
-	public void saveMebn(String nameFile, MultiEntityBayesianNetwork mebn) throws IOException, IOMebnException; 
+	public void saveMebn(File file, MultiEntityBayesianNetwork mebn) throws IOException, IOMebnException; 
 	
 }

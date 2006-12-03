@@ -43,7 +43,7 @@ public class OVariableTreeResident extends JTree{
 		// set up node icons
 		setCellRenderer(new OrdinaryVariableTreeCellRenderer());
 		
-		DefaultMutableTreeNode root = new DefaultMutableTreeNode(net.getName());
+		DefaultMutableTreeNode root = new DefaultMutableTreeNode(resident.getName());
 		DefaultTreeModel model = new DefaultTreeModel(root);
 		
 		setModel(model);
@@ -65,10 +65,11 @@ public class OVariableTreeResident extends JTree{
 				DefaultMutableTreeNode node = (DefaultMutableTreeNode) selPath
 				.getLastPathComponent();
 				
-				if (node.isLeaf()) {
+				OrdinaryVariable ordinaryVariable = ordinaryVariableMap.get(node); 
+							
+				if (node.isLeaf() && (ordinaryVariable != null)) {
 					
-					OrdinaryVariable ordinaryVariable = ordinaryVariableMap.get(node); 
-					
+
 					if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
 						
 					} else if (e.getClickCount() == 2
@@ -117,8 +118,8 @@ public class OVariableTreeResident extends JTree{
 		private static final long serialVersionUID = 0;
 		
 		private ImageIcon grayBorderBox = iconController.getGrayBorderBoxIcon();
-		private ImageIcon folderSmallIcon = iconController.getAddFolderIcon(); 
-		
+		private ImageIcon greenNodeIcon = iconController.getGreenNodeIcon(); 
+
 		/**
 		 * Return a tree cell for the object value. 
 		 */
@@ -137,9 +138,7 @@ public class OVariableTreeResident extends JTree{
 					setIcon(grayBorderBox);								
 				}
 			}else {
-				setOpenIcon(folderSmallIcon);
-				setClosedIcon(folderSmallIcon);
-				setIcon(folderSmallIcon);			    	   
+				setIcon(greenNodeIcon);			    	   
 			}
 			return this;
 		}

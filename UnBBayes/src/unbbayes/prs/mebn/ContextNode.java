@@ -5,8 +5,9 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.gui.draw.DrawEllipse;
-import unbbayes.gui.draw.DrawRectangleTwo;
+import javax.swing.tree.DefaultMutableTreeNode;
+
+import unbbayes.gui.draw.DrawFlatPentagon;
 
 public class ContextNode extends MultiEntityNode {
  
@@ -28,27 +29,32 @@ public class ContextNode extends MultiEntityNode {
 	 */
 	private List<ContextNode> innerTermFromList;
 	
-	private static Color color = new Color(254, 250, 158);
+	//TODO procurar um modo melhor para armazenar a formula... balanceando espaço e processamento... 
+	//provavelmente em forma de texto usando o conceito de banco de informações sobre os objetos...
+	private DefaultMutableTreeNode formulaTree; 
 	
-    private DrawRectangleTwo drawContextNode;
+	
+	/* draw */ 
+	
+	private static Color color = new Color(176, 252, 131);
+    private DrawFlatPentagon drawContextNode;
     
     public ContextNode(String name, DomainMFrag mFrag) {
     	
     	super(); 
     	
     	setName(name); 
-    	this.name = name; 
+    	setLabel(" "); 
     	
     	this.mFrag = mFrag; 
     	
     	innerTermOfList = new ArrayList<ContextNode>();
     	innerTermFromList = new ArrayList<ContextNode>();
-    	// Here it is defined how this node is going to be drawn.
-        // In the superclass, Node, it was already definied to draw text, here
-        // we add the draw ellipse.
+    	
+    	/* draw */
     	size.x = 100;
     	size.y = 20; 
-    	drawContextNode = new DrawRectangleTwo(position, size);
+    	drawContextNode = new DrawFlatPentagon(position, size);
         drawElement.add(drawContextNode);
 
     }
@@ -58,6 +64,7 @@ public class ContextNode extends MultiEntityNode {
 	 * the innerTermFromList and the innerTermOfList.
 	 *
 	 */
+    
 	public void delete() {
 		for (ContextNode node: innerTermFromList) {
 			node.removeInnerTermOfList(node);
@@ -72,7 +79,9 @@ public class ContextNode extends MultiEntityNode {
 				node.removeInnerTermFromList(node);
 			}
 		}
+		
 		mFrag.removeContextNode(this);
+		
 	}
 	
 	/**
@@ -153,5 +162,14 @@ public class ContextNode extends MultiEntityNode {
 	public DomainMFrag getMFrag(){
 		return mFrag; 
 	}
+	
+	public DefaultMutableTreeNode getFormulaTree(){
+		return formulaTree; 
+	}
+	
+	public void setFormulaTree(DefaultMutableTreeNode formulaTree){
+		this.formulaTree = formulaTree; 
+	}
+	
 }
  

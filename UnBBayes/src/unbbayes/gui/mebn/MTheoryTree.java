@@ -32,7 +32,8 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.util.ArrayMap;
 
 /**
- * 
+ * Tree of the components of the MTheory. Show the MFrags and your 
+ * nodes. 
  */
 
 public class MTheoryTree extends JTree {
@@ -49,6 +50,8 @@ public class MTheoryTree extends JTree {
 	private ArrayMap<Object, ContextNode> contextNodeMap = new ArrayMap<Object, ContextNode>(); 
 	private ArrayMap<Object, Object> nodeMap = new ArrayMap<Object, Object>(); 	
 	
+	private Object objectSelected; 
+	
 	private JPopupMenu popup = new JPopupMenu();
 	
 	private JPopupMenu popupMFrag = new JPopupMenu(); 
@@ -60,9 +63,12 @@ public class MTheoryTree extends JTree {
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
   
-	
-	/*public MTheoryTree(final NetworkWindow netWindow) {
-		net = netWindow.getMultiEntityBayesianNetwork();*/
+  	
+  	/**
+  	 * 
+  	 * @param controller
+  	 */
+  	
 	public MTheoryTree(final NetworkController controller) {
 		
 		this.controller = controller; 
@@ -78,8 +84,6 @@ public class MTheoryTree extends JTree {
 	    createPopupMenu();
 	    createPopupMenuMFrag(); 	    
 
-		/*---------------- listeners ---------------------------*/ 
-		
 	    addMouseListener(new MouseAdapter() {
 			
 			public void mousePressed(MouseEvent e) {
@@ -96,6 +100,7 @@ public class MTheoryTree extends JTree {
 				if (node.isLeaf()) {
 					
 					Object nodeLeaf = nodeMap.get(node); 
+					objectSelected = nodeLeaf; 
 					
 					if (nodeLeaf instanceof MFrag){
 						if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
@@ -117,6 +122,8 @@ public class MTheoryTree extends JTree {
 				else { //Not is a leaf 
 					
 					Object nodeLeaf = nodeMap.get(node); 
+					objectSelected = nodeLeaf; 
+					
 					if (nodeLeaf instanceof MFrag){
 						if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
 							popupMFrag.setEnabled(true);
@@ -156,7 +163,7 @@ public class MTheoryTree extends JTree {
 				}
 			}
 		});
-	    
+	    	    
 		super.treeDidChange();
 		expandTree();
 	}
@@ -170,7 +177,8 @@ public class MTheoryTree extends JTree {
 
 		itemDelete.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				//TODO Action
+				controller.getMebnController().removeDomainMFrag((DomainMFrag) objectSelected); 
+				updateTree(); 
 			}
 		}); 		
 		
@@ -208,17 +216,7 @@ public class MTheoryTree extends JTree {
             }
         });
 		
-		JMenuItem itemAddFindingMFrag = new JMenuItem(resource.getString("menuAddFindingMFrag"));
-		itemAddFindingMFrag.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae)
-            {   
-            	net.addDomainMFrag(new DomainMFrag("FindingMFrag " + net.getMFragCount(), net));
-            	updateTree();
-            }
-        });
-		
         popup.add(itemAddDomainMFrag);
-        popup.add(itemAddFindingMFrag);
 	}
 
 	private void createTree() {
@@ -266,9 +264,9 @@ public class MTheoryTree extends JTree {
 		/** Serialization runtime version number */
 		private static final long serialVersionUID = 0;
 
-		private ImageIcon yellowNodeIcon = iconController.getYellowNodeIcon();
-		private ImageIcon greenNodeIcon = iconController.getGreenNodeIcon(); 
-		private ImageIcon blueNodeIcon = iconController.getBlueNodeIcon(); 
+		private ImageIcon contextNodeIcon = iconController.getGreenNodeIcon();
+		private ImageIcon residentNodeIcon = iconController.getYellowNodeIcon(); 
+		private ImageIcon inputNodeIcon = iconController.getGrayNodeIcon(); 
 		
 		private ImageIcon orangeNodeIcon = iconController.getOrangeNodeIcon(); 
 		private ImageIcon mTheoryNodeIcon = iconController.getMTheoryNodeIcon(); 
@@ -290,16 +288,16 @@ public class MTheoryTree extends JTree {
 				if (obj != null) {
 					
 					if (obj instanceof ResidentNode){ 
-						setIcon(greenNodeIcon);
+						setIcon(residentNodeIcon);
 						}
 										
 					else{
 						if (obj instanceof InputNode){
-							setIcon(blueNodeIcon); 
+							setIcon(inputNodeIcon); 
 						}
 						else{ 
 							if (obj instanceof ContextNode){
-						       setIcon(yellowNodeIcon);
+						       setIcon(contextNodeIcon);
 							}
 							else{ 
                                 if (obj instanceof MFrag){ 
@@ -484,40 +482,4 @@ public class MTheoryTree extends JTree {
 		return null;
 	}
 
-	/**
-	 * Adiciona uma evidencia no estado especificado.
-	 * 
-	 * @param caminho
-	 *            caminho do estado a ser setado para 100%;
-	 * @see TreePath
-	 */
-	private void treeDoubleClick(DefaultMutableTreeNode treeNode) {
-		/*DefaultMutableTreeNode parent = (DefaultMutableTreeNode) ((treeNode)
-				.getParent());
-		Object obj = nodeMap.get((DefaultMutableTreeNode) parent);
-		if (obj != null) {
-			TreeVariable node = (TreeVariable) obj;
-
-			// Só propaga nós de descrição
-			if (node.getInformationType() == Node.DESCRIPTION_TYPE) {
-				for (int i = 0; i < parent.getChildCount(); i++) {
-					DefaultMutableTreeNode auxNode = (DefaultMutableTreeNode) parent
-							.getChildAt(i);
-					auxNode.setUserObject(node.getStateAt(i) + ": 0");
-				}
-
-				if (node.getType() == Node.PROBABILISTIC_NODE_TYPE) {
-					treeNode.setUserObject(node.getStateAt(parent
-							.getIndex(treeNode))
-							+ ": 100");
-				} else {
-					treeNode.setUserObject(node.getStateAt(parent
-							.getIndex(treeNode))
-							+ ": **");
-				}
-				node.addFinding(parent.getIndex(treeNode));
-				((DefaultTreeModel) getModel()).reload(parent);
-			}
-		}*/
-	}
 }

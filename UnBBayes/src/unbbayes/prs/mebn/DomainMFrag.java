@@ -3,13 +3,25 @@ package unbbayes.prs.mebn;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Domain-specifcs MFrags. 
+ */
+
 public class DomainMFrag extends MFrag {
 
 	private List<ContextNode> contextNodeList;
 
-	private List<GenerativeInputNode> generativeInputNodeList;
+	private List<GenerativeInputNode> inputNodeList;
 
-	private List<DomainResidentNode> domainResidentNodeList;
+	private List<DomainResidentNode> residentNodeList;
+
+	/* 
+	 * Estes contadores indicam qual deve ser o numero do proximo
+	 * no criado caso os nomes estejam sendo gerados automaticamente
+	 */
+	private int generativeInputNodeNum = 1; 
+	private int domainResidentNodeNum = 1; 	
+	private int contextNodeNum = 1; 
 
 	/**
 	 * Contructs a new DomainMFrag with empty node's list.
@@ -18,8 +30,8 @@ public class DomainMFrag extends MFrag {
 	public DomainMFrag(String name, MultiEntityBayesianNetwork mebn) {
 		super(name, mebn);
 		contextNodeList = new ArrayList<ContextNode>();
-		generativeInputNodeList = new ArrayList<GenerativeInputNode>();
-		domainResidentNodeList = new ArrayList<DomainResidentNode>();
+		inputNodeList = new ArrayList<GenerativeInputNode>();
+		residentNodeList = new ArrayList<DomainResidentNode>();
 	}
 
 	/**
@@ -33,6 +45,8 @@ public class DomainMFrag extends MFrag {
 		contextNodeList.add(contextNode);
 		addNode(contextNode);
 		contextNode.setMFrag(this);
+		
+		contextNodeNum++; 
 	}
 
 	/**
@@ -43,8 +57,10 @@ public class DomainMFrag extends MFrag {
 	 *            The node to be added in the generative input node list.
 	 */
 	public void addGenerativeInputNode(GenerativeInputNode generativeInputNode) {
-		generativeInputNodeList.add(generativeInputNode);
+		inputNodeList.add(generativeInputNode);
 		addInputNode(generativeInputNode);
+		
+		generativeInputNodeNum++; 
 	}
 
 	/**
@@ -56,8 +72,11 @@ public class DomainMFrag extends MFrag {
 	 *            The node to be added in the domain resident node list.
 	 */
 	public void addDomainResidentNode(DomainResidentNode domainResidentNode) {
-		domainResidentNodeList.add(domainResidentNode);
+		
+		residentNodeList.add(domainResidentNode);
 		addResidentNode(domainResidentNode);
+		
+		domainResidentNodeNum++; 
 	}
 
 	/**
@@ -82,8 +101,8 @@ public class DomainMFrag extends MFrag {
 	 */
 	public void removeGenerativeInputNode(
 			GenerativeInputNode generativeInputNode) {
-		generativeInputNodeList.remove(generativeInputNode);
-		removeInputNode(generativeInputNode);
+		inputNodeList.remove(generativeInputNode);
+		removeNode(generativeInputNode);
 	}
 
 	/**
@@ -95,36 +114,17 @@ public class DomainMFrag extends MFrag {
 	 *            The node to be removed from the domain resident node list.
 	 */
 	public void removeDomainResidentNode(DomainResidentNode domainResidentNode) {
-		domainResidentNodeList.remove(domainResidentNode);
-		removeResidentNode(domainResidentNode);
+		residentNodeList.remove(domainResidentNode);
+		removeNode(domainResidentNode);
 	}
 	
-	/**
-	 * Method responsible for adding the given ordinary variable in its ordinary variable list.
-	 * 
-	 * @param ordinaryVariable
-	 *            The ordinary variable to be added in the ordinary variable list.
-	 */	
-	public void addOrdinaryVariableDomain(OrdinaryVariable ordinaryVariable){
-		addOrdinaryVariable(ordinaryVariable);
-	}
-	
-	/**
-	 * Method responsible for removing the given ordinary variable from its ordinary variable list.
-	 * 
-	 * @param ordinary variable
-	 *            The ordinary variable to be removed from the ordinary variable list.
-	 */	
-	protected void removeOrdinaryVariableDomain(OrdinaryVariable ordinaryVariable){
-		removeOrdinaryVariable(ordinaryVariable); 
-	}		
 	
 	/**
 	 * Gets the list of generative input nodes in this DomainMFrag.
 	 * @return The list of generative input nodes in this DomainMFrag.
 	 */
 	public List<GenerativeInputNode> getGenerativeInputNodeList() {
-		return generativeInputNodeList;
+		return inputNodeList;
 	}
 	
 	/**
@@ -132,7 +132,7 @@ public class DomainMFrag extends MFrag {
 	 * @return The list of domain resident nodes in this DomainMFrag.
 	 */
 	public List<DomainResidentNode> getDomainResidentNodeList() {
-		return domainResidentNodeList;
+		return residentNodeList;
 		
 	}
 	
@@ -157,15 +157,29 @@ public class DomainMFrag extends MFrag {
 	 * @return The total number of generative input nodes in this DomainMFrag.
 	 */
 	public int getGenerativeInputNodeCount() {
-		return generativeInputNodeList.size();
+		return inputNodeList.size();
 	}
+	
+	public int getDomainResidentNodeNum(){
+		return domainResidentNodeNum; 
+	}
+	
+	public int getContextNodeNum(){
+		return contextNodeNum; 
+	}
+	
+	public int getGenerativeInputNodeNum(){
+		return generativeInputNodeNum; 
+	}	
+	
+	
 	
 	/**
 	 * Gets the total number of domain resident nodes in this DomainMFrag.
 	 * @return The total number of domain resident nodes in this DomainMFrag.
 	 */
 	public int getDomainResidentNodeCount() {
-		return domainResidentNodeList.size();
+		return residentNodeList.size();
 		
 	}	
 	
@@ -186,7 +200,7 @@ public class DomainMFrag extends MFrag {
 	 * @return True if the list contais this node and false otherwise.
 	 */
 	public boolean containsDomainResidentNode(DomainResidentNode residentNode) {
-		return domainResidentNodeList.contains(residentNode);
+		return residentNodeList.contains(residentNode);
 	}	
 	
 	/**
@@ -196,7 +210,7 @@ public class DomainMFrag extends MFrag {
 	 * @return True if the list contais this node and false otherwise.
 	 */
 	public boolean containsGenerativeInputNode(GenerativeInputNode generativeInputNode) {
-		return generativeInputNodeList.contains(generativeInputNode);
+		return inputNodeList.contains(generativeInputNode);
 	}	
 
 	/**
@@ -211,16 +225,19 @@ public class DomainMFrag extends MFrag {
 	
 	/**
 	 * Method responsible for deleting this DomainMFrag but not its nodes and 
-	 * variables. Only their relationship.
+	 * variables. Only their relationship. Retire the DomainMFrag of the MEBN 
+	 * where it is inside. 
 	 * This method is overwritten because its superclass does not eleminate the
 	 * relationship with the context nodes, that just exist in this class.
 	 *
 	 */
 	public void delete() {
+		
 		super.delete();
 		for (MultiEntityNode node : contextNodeList) {
 			node.removeFromMFrag();
 		}
+		
 	}
 
 }

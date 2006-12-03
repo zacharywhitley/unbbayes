@@ -13,7 +13,8 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	 * 
 	 */
 	private static final long serialVersionUID = 8497908054569004909L;
-	 
+	
+	
 	private List<InputNode> inputNodeFatherList;
 	 
 	private List<InputNode> inputInstanceFromList;
@@ -24,8 +25,14 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	 
 	private List<ResidentNode> residentNodeChildList;
 	
+	/**
+	 * List of ordinary variables of this node. Don't have duplicates
+	 * elements. 
+	 */
+	
 	private List<OrdinaryVariable> ordinaryVariableList; 
-	 
+	
+	
 	public ResidentNode(){
 		
 		super(); 
@@ -40,13 +47,22 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 		return null;
 	}
 	
+	/**
+	 * add the ordinary variable in the list of ordinary variables 
+	 * of the node (if it alredy is present, don't do nothing)
+	 * @param ov
+	 */
 	
 	public void addOrdinaryVariable(OrdinaryVariable ov){
-		ordinaryVariableList.add(ov); 
+		if(!ordinaryVariableList.contains(ov)){
+		   ordinaryVariableList.add(ov); 
+		   ov.addIsOVariableOfList(this); 
+		}
 	}
 	
 	public void removeOrdinaryVariable(OrdinaryVariable ov){
-	    ordinaryVariableList.remove(ov); 	
+	    ordinaryVariableList.remove(ov);
+	    ov.removeIsOVariableOfList(this); 
 	}
 	
 	public boolean containsOrdinaryVariable(OrdinaryVariable ov){
@@ -56,6 +72,7 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	public List<OrdinaryVariable> getOrdinaryVariableList(){
 		return ordinaryVariableList; 
 	}
-	 
+	
+	
 }
  

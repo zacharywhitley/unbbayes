@@ -27,7 +27,6 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  */
 public class IOMonteCarlo {
 
-   
    private byte[][] matrix;
    private File file;
    private PrintStream ps;  
@@ -68,6 +67,7 @@ public class IOMonteCarlo {
    	 }  	 
    }
    
+   //TODO Isto esta mesmo sendo utilizado? 
    private File getFile(){	
 		String[] nets = new String[] { "net", "xml" };
 		FileController fileController = FileController.getInstance();;
@@ -89,6 +89,5 @@ public class IOMonteCarlo {
 		}
 		return null;		 
    }
-   
 
 }

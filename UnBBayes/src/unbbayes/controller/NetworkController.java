@@ -64,6 +64,7 @@ import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.mebn.MEBNConstructionException;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.util.NodeList;
 
@@ -125,33 +126,30 @@ public class NetworkController implements KeyListener {
      * @param x The x position of the new node.
      * @param y The y position of the new node.
      */
-    public void insertContextNode(double x, double y) {
+    public void insertContextNode(double x, double y) throws MEBNConstructionException{
     	if (mebnController != null)
 			try {
 				mebnController.insertContextNode(x,y);
-			} catch (Exception e) {
-				// TODO PEGAR ESSA EXCEÇÃO!! JOGAR PRO USUÁRIO!!
-				e.printStackTrace();
+			} catch (MEBNConstructionException e) {
+				throw e; 
 			}
     }
     
-    public void insertResidentNode(double x, double y) {
+    public void insertResidentNode(double x, double y) throws MEBNConstructionException{
     	if (mebnController != null)
 			try {
 				mebnController.insertResidentNode(x,y);
-			} catch (Exception e) {
-				// TODO PEGAR ESSA EXCEÇÃO!! JOGAR PRO USUÁRIO!!
-				e.printStackTrace();
+			} catch (MEBNConstructionException e) {
+				throw e; 
 			}
     }
         
-    public void insertInputNode(double x, double y) {
+    public void insertInputNode(double x, double y) throws MEBNConstructionException{
     	if (mebnController != null)
 			try {
 				mebnController.insertInputNode(x,y);
-			} catch (Exception e) {
-				// TODO PEGAR ESSA EXCEÇÃO!! JOGAR PRO USUÁRIO!!
-				e.printStackTrace();
+			} catch (MEBNConstructionException e) {
+				throw e; 
 			}
     }
     
@@ -308,7 +306,7 @@ public class NetworkController implements KeyListener {
      *
      * @param edge The new edge to be inserted.
      */
-    public void insertEdge(Edge edge) {
+    public void insertEdge(Edge edge) throws MEBNConstructionException{
     	if (senController != null) senController.insertEdge(edge); 
     	else{
     		if (mebnController!= null) mebnController.insertEdge(edge); 

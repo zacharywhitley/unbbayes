@@ -11,6 +11,8 @@ public class BuiltInRV {
 	
 	private List<ContextNode> contextInstanceFromList; 
 	
+	protected int numOperandos; 
+	
 	public BuiltInRV(String name){
 		this.name = name; 
 		inputInstanceFromList = new ArrayList<GenerativeInputNode>();
@@ -35,6 +37,15 @@ public class BuiltInRV {
 	
 	public List<ContextNode> getContextFromList(){
 		return contextInstanceFromList; 
-	}	
+	}
+	
+	public int getNumOperandos(){
+	   return numOperandos; 	
+	}
+	
+	public void setNumOperandos(int num){
+		numOperandos = num;
+	}
+	
 }
  

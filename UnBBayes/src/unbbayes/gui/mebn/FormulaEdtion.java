@@ -1,18 +1,32 @@
 package unbbayes.gui.mebn;
 
 import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ResourceBundle;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
+import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.controller.NetworkController;
+import unbbayes.gui.GraphAction;
+import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.MFrag;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVAnd;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVEqualTo;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVExists;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVForAll;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVIff;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVImplies;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVNot;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
 
 public class FormulaEdtion extends JPanel {
 
@@ -43,45 +57,56 @@ public class FormulaEdtion extends JPanel {
 	JButton btnEntityTree; 
 	JButton btnSkolenTree; 
 	
+	NetworkController controller; 
 	MEBNController mebnController; 
 	MFrag mFrag; 
 	ContextNode contextNode; 
+
+	/** Load resource file from this package */
+	private static ResourceBundle resource =
+		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+	
+    protected IconController iconController = IconController.getInstance();
 	
 	public FormulaEdtion(NetworkController _controller, ContextNode context){
 		
 		super(); 
 		
-		GridBagLayout gridbag = new GridBagLayout(); 
-		GridBagConstraints constraints = new GridBagConstraints(); 
+		setLayout(new BorderLayout());
 		
-		setLayout(gridbag);
-		
+		controller = _controller; 
 		mebnController = _controller.getMebnController(); 
 	    mFrag = mebnController.getCurrentMFrag(); 
 	    contextNode = context;
 	    
-	    upPanel = new JPanel(new BorderLayout()); 
+	    upPanel = new JPanel(new GridLayout(0,1)); 
 	    
-	    downPanel = new JPanel(new BorderLayout()); 
-	    
-		btnEqualTo = new JButton(" = ");  	
-		btnAnd = new JButton("&& ");  ; 
-		btnOr = new JButton("|| ");  ;
-		btnNot = new JButton(" ! ");  ;
-		btnImplies = new JButton(" ->");  ;
-		btnIf = new JButton("if ");  ; 	
-		btnExists = new JButton("ext");  ;
-		btnForAll = new JButton("all");  ; 
-	    
+		btnEqualTo = new JButton(iconController.getEqualIcon());  	
+		btnAnd = new JButton(iconController.getAndIcon())  ; 
+		btnOr = new JButton(iconController.getOrIcon())  ;
+		btnNot = new JButton(iconController.getNotIcon());  
+		btnImplies = new JButton(iconController.getImpliesIcon());  
+		btnIf = new JButton(iconController.getIffIcon());   	
+		btnExists = new JButton(iconController.getExistsIcon())  ;
+		btnForAll = new JButton(iconController.getForallIcon())  ;
+		
+		btnEqualTo.setToolTipText(resource.getString("andToolTip")); 
+		btnAnd.setToolTipText(resource.getString("andToolTip"))  ; 
+		btnOr.setToolTipText(resource.getString("orToolTip"))  ;
+		btnNot.setToolTipText(resource.getString("notToolTip"));  
+		btnImplies.setToolTipText(resource.getString("impliesToolTip"));  
+		btnIf.setToolTipText(resource.getString("iffToolTip"));   	
+		btnExists.setToolTipText(resource.getString("existsToolTip"))  ;
+		btnForAll.setToolTipText(resource.getString("forallToolTip"))  ;
+		
 	    jtbOperator1 = new JToolBar(); 
 	    jtbOperator1.add(btnEqualTo); 
 	    jtbOperator1.add(btnAnd); 
 	    jtbOperator1.add(btnOr); 
 	    jtbOperator1.add(btnNot); 
-	    jtbOperator1.setFloatable(false); 
-	    jtbOperator1.setOrientation(JToolBar.VERTICAL); 	    
+	    jtbOperator1.setFloatable(false);     
 	    
-	    upPanel.add("East", jtbOperator1); 
+	    upPanel.add(jtbOperator1); 
 	    
 	    jtbOperator2 = new JToolBar(); 	    
 	    jtbOperator2.add(btnImplies); 
@@ -89,54 +114,20 @@ public class FormulaEdtion extends JPanel {
 	    jtbOperator2.add(btnExists); 
 	    jtbOperator2.add(btnForAll); 	
 	    jtbOperator2.setFloatable(false); 
-	    jtbOperator2.setOrientation(JToolBar.VERTICAL); 
 	    
-	    upPanel.add("West", jtbOperator2); 
+	    upPanel.add(jtbOperator2); 
+        
+	    formulaTree = new FormulaTree(_controller, contextNode ); 
+	    jspFormulaTree = new JScrollPane(formulaTree); 
+ 
+	    this.add("North", upPanel);	    
 	    
-	    /*
-	    constraints.gridx = 0; 
-	    constraints.gridy = 0; 
-	    constraints.gridwidth = 1; 
-	    constraints.gridheight = 1; 
-	    constraints.weightx = 100; 
-	    constraints.weighty = 10; 
-	    constraints.fill = GridBagConstraints.BOTH; 
-	    constraints.anchor = GridBagConstraints.NORTH; 
-	    gridbag.setConstraints(jtbOperator1, constraints); 
-	    this.add(jtbOperator1);
+	    this.add("Center", jspFormulaTree); 
 	    
-	    constraints.gridx = 0; 
-	    constraints.gridy = 1; 
-	    constraints.gridwidth = 1; 
-	    constraints.gridheight = 1; 
-	    constraints.weightx = 100; 
-	    constraints.weighty = 10; 
-	    constraints.fill = GridBagConstraints.BOTH; 
-	    constraints.anchor = GridBagConstraints.NORTH; 
-	    gridbag.setConstraints(jtbOperator2, constraints); 
-	    this.add(jtbOperator2);	    
-	    */
-	    
-	    formulaTree = new FormulaTree(); 
-	    jspFormulaTree = new JScrollPane(); 
-	    upPanel.add("Center", jspFormulaTree); 
-	    
-	    
-	    constraints.gridx = 0; 
-	    constraints.gridy = 0; 
-	    constraints.gridwidth = 1; 
-	    constraints.gridheight = 1; 
-	    constraints.weightx = 0; 
-	    constraints.weighty = 50; 
-	    constraints.fill = GridBagConstraints.BOTH; 
-	    constraints.anchor = GridBagConstraints.NORTH; 	
-	    gridbag.setConstraints(upPanel, constraints); 	    
-	    this.add(upPanel);
-	    
-		btnOVariableTree = new JButton("ovt");  
-		btnNodeTree = new JButton("ndt");  
-		btnEntityTree = new JButton("ett");   
-		btnSkolenTree = new JButton("skt");   
+		btnOVariableTree = new JButton(iconController.getOVariableNodeIcon());  
+		btnNodeTree = new JButton(iconController.getNodeNodeIcon());  
+		btnEntityTree = new JButton(iconController.getEntityNodeIcon());   
+		btnSkolenTree = new JButton(iconController.getSkolenNodeIcon());   
 	    
 	    jtbSelectArgTree = new JToolBar(); 
 	    jtbSelectArgTree.add(btnOVariableTree);
@@ -145,37 +136,10 @@ public class FormulaEdtion extends JPanel {
 	    jtbSelectArgTree.add(btnSkolenTree);	    
 	    
 	    jtbSelectArgTree.setFloatable(false); 
-	    downPanel.add("North", jtbSelectArgTree); 
+	    this.add("South", jtbSelectArgTree); 
 	    
-	    /*
-	    constraints.gridx = 0; 
-	    constraints.gridy = 3; 
-	    constraints.gridwidth = 1; 
-	    constraints.gridheight = 1; 
-	    constraints.weightx = 0; 
-	    constraints.weighty = 10; 
-	    constraints.fill = GridBagConstraints.BOTH; 
-	    constraints.anchor = GridBagConstraints.NORTH; 
-	    gridbag.setConstraints(jtbSelectArgTree, constraints); 	    
-	    this.add(jtbSelectArgTree);	   
-	    */
-	    
-	    argTreePanel = new JPanel();
-	    jspArgTreePanel = new JScrollPane(argTreePanel); 
-	    downPanel.add("Center", jspArgTreePanel);
-	    
-	    
-	    
-	    constraints.gridx = 0; 
-	    constraints.gridy = 1; 
-	    constraints.gridwidth = 1; 
-	    constraints.gridheight = 1; 
-	    constraints.weightx = 0; 
-	    constraints.weighty = 50; 
-	    constraints.fill = GridBagConstraints.BOTH; 
-	    constraints.anchor = GridBagConstraints.NORTH; 
-	    gridbag.setConstraints(downPanel, constraints); 	    
-	    this.add(downPanel);	    	    
+	    addListeners(); 
+	      	    
 	}
 
 	/**
@@ -188,6 +152,120 @@ public class FormulaEdtion extends JPanel {
 		
 	public void update(){
 		
+	}
+	
+	public void addListeners(){
+
+	    btnAnd.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+			    BuiltInRV builtInRV = new BuiltInRVAnd(); 
+			    formulaTree.addOperatorInTree(builtInRV); 
+			}
+		});		
+		
+		btnOr.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+			    BuiltInRV builtInRV = new BuiltInRVOr(); 
+			    formulaTree.addOperatorInTree(builtInRV); 
+			}
+		});				
+		
+		btnNot.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+			    BuiltInRV builtInRV = new BuiltInRVNot(); 
+			    formulaTree.addOperatorInTree(builtInRV); 
+			}
+		});	
+		
+		btnEqualTo.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+			    BuiltInRV builtInRV = new BuiltInRVEqualTo(); 
+			    formulaTree.addOperatorInTree(builtInRV); 
+			}
+		});						
+
+		btnIf.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+			    BuiltInRV builtInRV = new BuiltInRVIff(); 
+			    formulaTree.addOperatorInTree(builtInRV); 
+			}
+		});						
+		
+		btnImplies.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+			    BuiltInRV builtInRV = new BuiltInRVImplies(); 
+			    formulaTree.addOperatorInTree(builtInRV); 
+			}
+		});						
+		
+		btnForAll.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+			    BuiltInRV builtInRV = new BuiltInRVForAll(); 
+			    formulaTree.addQuantifierInTree(builtInRV); 
+			}
+		});						
+		
+		btnExists.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+			    BuiltInRV builtInRV = new BuiltInRVExists(); 
+			    formulaTree.addQuantifierInTree(builtInRV); 
+			}
+		});						
+		
+						
+		
+		
+		
+		
+		btnNodeTree.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+			     
+				 JFrame teste = new JFrame("NodeTree"); 
+			     
+			     JPanel painel = new JPanel(new BorderLayout()); 
+
+			     MTheoryTree mTheoryTree = new MTheoryTree(controller); 
+			     JScrollPane jspMTheoryTree = new JScrollPane(mTheoryTree); 
+			     painel.add(jspMTheoryTree, BorderLayout.NORTH); 
+
+			     teste.setContentPane(painel);
+			     teste.pack();
+			     teste.setVisible(true); 
+			     teste.setLocationRelativeTo(null); 
+			     teste.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
+			
+			}
+		}); 		
+		
+		btnEntityTree.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				controller.getScreen().getGraphPane().setAction(GraphAction.CREATE_CONTEXT_NODE); 
+			}
+		}); 
+		
+		btnOVariableTree.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				
+			     JFrame teste = new JFrame("OrdinaryVariable"); 
+			     
+			     JPanel painel = new JPanel(new BorderLayout()); 
+
+			     OVariableTreeMFrag oVariableTreeMFrag = new OVariableTreeMFragArgument(controller); 
+			     JScrollPane jspOVariableTreeMFrag = new JScrollPane(oVariableTreeMFrag); 
+			     painel.add(jspOVariableTreeMFrag, BorderLayout.NORTH); 
+
+			     teste.setContentPane(painel);
+			     teste.pack();
+			     teste.setVisible(true); 
+			     teste.setLocationRelativeTo(null); 
+			     teste.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
+			
+			}
+		}); 
+		
+		btnSkolenTree.setEnabled(false); 
+			    
+	    
 	}
 	
 }

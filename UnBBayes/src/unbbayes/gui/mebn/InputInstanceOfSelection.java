@@ -1,3 +1,6 @@
+//TODO Aplicar algum pattern para evitar a duplicacoa ultra nociva de código aqui!!!!
+
+
 package unbbayes.gui.mebn;
 
 import java.awt.Component;
@@ -67,9 +70,6 @@ public class InputInstanceOfSelection extends JTree{
 		/* tratar os eventos de mouse, trocando o residente a qual o input
 		 * se refere. 
 		 */
-		
-		
-		
 		
 		
 		/*------------------ Adicionar listeners -----------------------*/

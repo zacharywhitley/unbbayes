@@ -121,13 +121,13 @@ public class MainController {
 					io = new XMLIO();
 				}
 				else if (name.endsWith("owl")){
-					prOwlIo = new PrOwlIO(); 
-				}
+				    prOwlIo = new PrOwlIO(); 
+		        }
 				
 				if (io != null)
 				   io.save(file, ((NetworkWindow) window).getSingleEntityNetwork());
 				else
-					prOwlIo.saveMebn(name, ((NetworkWindow) window).getMultiEntityBayesianNetwork()); 
+					prOwlIo.saveMebn(file, ((NetworkWindow) window).getMultiEntityBayesianNetwork()); 
 			}
         } catch (IOException e) {
             JOptionPane.showMessageDialog(screen, e.getMessage(), "saveNetException", JOptionPane.ERROR_MESSAGE);

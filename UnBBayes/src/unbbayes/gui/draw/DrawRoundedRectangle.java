@@ -9,12 +9,12 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Construct a rectangle stylized for the generative input node 
+ * Representa um retangulo com as bordas arredondadas. 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * @version 1.0 (06/10/31)
  */
 
-public class DrawRectangleThree extends DrawElement{
+public class DrawRoundedRectangle extends DrawElement{
 	
 	private Point2D.Double position;
 	private Point2D.Double size;
@@ -24,7 +24,7 @@ public class DrawRectangleThree extends DrawElement{
 	 * @param size The width and height of the rectangle.
 	 */	
 	
-	public DrawRectangleThree(Point2D.Double position, Point2D.Double size) {
+	public DrawRoundedRectangle(Point2D.Double position, Point2D.Double size) {
 		this.position = position;
 		this.size = size;
 	}

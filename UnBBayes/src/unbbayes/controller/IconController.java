@@ -189,6 +189,8 @@ public class IconController {
 	
 	protected ImageIcon blueNodeIcon; 
 	
+	protected ImageIcon grayNodeIcon; 
+	
 	protected ImageIcon yellowNodeIcon; 
 	
 	protected ImageIcon mTheoryNodeIcon; 
@@ -196,6 +198,37 @@ public class IconController {
 	protected ImageIcon setBoxIcon; 
 	
 	protected ImageIcon functIcon; 
+	
+	//operators
+
+	protected ImageIcon andIcon; 
+	
+	protected ImageIcon orIcon; 
+	
+	protected ImageIcon notIcon; 
+	
+	protected ImageIcon equalIcon; 
+	
+	protected ImageIcon impliesIcon; 
+	
+	protected ImageIcon forallIcon; 
+	
+	protected ImageIcon existsIcon; 
+	
+	protected ImageIcon iffIcon; 
+	
+	protected ImageIcon entityNodeIcon; 
+	
+	protected ImageIcon ovariableNodeIcon; 
+	
+	protected ImageIcon nodeNodeIcon; 
+	
+	protected ImageIcon skolenNodeIcon; 
+		
+	protected ImageIcon emptyNodeIcon; 	
+	
+	
+	
 	
 	public static IconController getInstance() {
 		if (singleton == null) {
@@ -550,6 +583,7 @@ public class IconController {
 			return greenBallIcon;
 		}
 	}
+	
 
 	public ImageIcon getYellowBallIcon() {
 		if (yellowBallIcon != null) {
@@ -947,6 +981,16 @@ public class IconController {
 		}
 	}	
 	
+	public ImageIcon getGrayNodeIcon() {
+		if (grayNodeIcon != null) {
+			return grayNodeIcon;
+		} else {
+			grayNodeIcon = new ImageIcon(getClass().getResource(
+					"../icons/gray-node.gif"));
+			return grayNodeIcon;
+		}
+	}		
+	
 	public ImageIcon getOrangeNodeIcon() {
 		if (orangeNodeIcon != null) {
 			return orangeNodeIcon;
@@ -975,7 +1019,149 @@ public class IconController {
 					"../icons/funct.gif"));
 			return functIcon;
 		}
-	}		
-		
+	}	
 	
+	
+	// operators
+	
+	public ImageIcon getAndIcon() {
+		if (andIcon != null) {
+			return andIcon;
+		} else {
+			andIcon = new ImageIcon(getClass().getResource(
+					"../icons/and.gif"));
+			return andIcon;
+		}
+	}			
+		
+
+	public ImageIcon getOrIcon() {
+		if (orIcon != null) {
+			return orIcon;
+		} else {
+			orIcon = new ImageIcon(getClass().getResource(
+					"../icons/or.gif"));
+			return andIcon;
+		}
+	}
+	
+
+	public ImageIcon getNotIcon() {
+		if (notIcon != null) {
+			return notIcon;
+		} else {
+			notIcon = new ImageIcon(getClass().getResource(
+					"../icons/not.gif"));
+			return notIcon;
+		}
+	}
+	
+
+	public ImageIcon getEqualIcon() {
+		if (equalIcon != null) {
+			return equalIcon;
+		} else {
+			equalIcon = new ImageIcon(getClass().getResource(
+					"../icons/equal.gif"));
+			return equalIcon;
+		}
+	}
+	
+
+	public ImageIcon getIffIcon() {
+		if (iffIcon != null) {
+			return iffIcon;
+		} else {
+			iffIcon = new ImageIcon(getClass().getResource(
+					"../icons/iff.gif"));
+			return iffIcon;
+		}
+	}
+	
+
+	public ImageIcon getImpliesIcon() {
+		if (impliesIcon != null) {
+			return impliesIcon;
+		} else {
+			impliesIcon = new ImageIcon(getClass().getResource(
+					"../icons/implies.gif"));
+			return impliesIcon;
+		}
+	}
+	
+
+	public ImageIcon getForallIcon() {
+		if (forallIcon != null) {
+			return forallIcon;
+		} else {
+			forallIcon = new ImageIcon(getClass().getResource(
+					"../icons/forall.gif"));
+			return forallIcon;
+		}
+	}
+	
+
+	public ImageIcon getExistsIcon() {
+		if (existsIcon != null) {
+			return existsIcon;
+		} else {
+			existsIcon = new ImageIcon(getClass().getResource(
+					"../icons/exists.gif"));
+			return existsIcon;
+		}
+	}
+	
+	
+	
+	public ImageIcon getEntityNodeIcon() {
+		if (entityNodeIcon != null) {
+			return entityNodeIcon;
+		} else {
+			entityNodeIcon = new ImageIcon(getClass().getResource(
+					"../icons/entityNode.gif"));
+			return entityNodeIcon;
+		}
+	}
+	
+	public ImageIcon getOVariableNodeIcon() {
+		if (ovariableNodeIcon != null) {
+			return ovariableNodeIcon;
+		} else {
+			ovariableNodeIcon = new ImageIcon(getClass().getResource(
+					"../icons/ovariableNode.gif"));
+			return ovariableNodeIcon;
+		}
+	}
+	
+	public ImageIcon getNodeNodeIcon() {
+		if (nodeNodeIcon != null) {
+			return nodeNodeIcon;
+		} else {
+			nodeNodeIcon = new ImageIcon(getClass().getResource(
+					"../icons/nodeNode.gif"));
+			return nodeNodeIcon;
+		}
+	}
+	
+	public ImageIcon getEmptyNodeIcon() {
+		if (emptyNodeIcon != null) {
+			return emptyNodeIcon;
+		} else {
+			emptyNodeIcon = new ImageIcon(getClass().getResource(
+					"../icons/emptyNode.gif"));
+			return emptyNodeIcon;
+		}
+	}	
+	
+	public ImageIcon getSkolenNodeIcon() {
+		if (skolenNodeIcon != null) {
+			return skolenNodeIcon;
+		} else {
+			skolenNodeIcon = new ImageIcon(getClass().getResource(
+					"../icons/skolenNode.gif"));
+			return skolenNodeIcon;
+		}
+	}	
+
+
 }
