@@ -28,7 +28,7 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVImplies;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVNot;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
 
-public class FormulaEdtion extends JPanel {
+public class FormulaEdction extends JPanel {
 
 	JToolBar jtbOperator1;
 	JToolBar jtbOperator2; 
@@ -68,7 +68,7 @@ public class FormulaEdtion extends JPanel {
 	
     protected IconController iconController = IconController.getInstance();
 	
-	public FormulaEdtion(NetworkController _controller, ContextNode context){
+	public FormulaEdction(NetworkController _controller, ContextNode context){
 		
 		super(); 
 		
@@ -146,7 +146,7 @@ public class FormulaEdtion extends JPanel {
 	 *  Create a empty painel 
 	 *  */
 	
-	public FormulaEdtion(){
+	public FormulaEdction(){
 		
 	}
 		
@@ -245,21 +245,7 @@ public class FormulaEdtion extends JPanel {
 		
 		btnOVariableTree.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				
-			     JFrame teste = new JFrame("OrdinaryVariable"); 
-			     
-			     JPanel painel = new JPanel(new BorderLayout()); 
-
-			     OVariableTreeMFrag oVariableTreeMFrag = new OVariableTreeMFragArgument(controller); 
-			     JScrollPane jspOVariableTreeMFrag = new JScrollPane(oVariableTreeMFrag); 
-			     painel.add(jspOVariableTreeMFrag, BorderLayout.NORTH); 
-
-			     teste.setContentPane(painel);
-			     teste.pack();
-			     teste.setVisible(true); 
-			     teste.setLocationRelativeTo(null); 
-			     teste.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
-			
+			     formulaTree.replaceByOVariable(); 
 			}
 		}); 
 		

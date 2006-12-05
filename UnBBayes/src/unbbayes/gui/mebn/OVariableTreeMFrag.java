@@ -1,8 +1,6 @@
 package unbbayes.gui.mebn;
 
 import java.awt.Component;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -12,21 +10,22 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
-import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.util.ArrayMap;
 
 
 /**
+ * Arvore de variaveis ordinarias de uma MFrag. Não contem os listeners (estes
+ * devem ser criados na classe concreta que estender esta de forma que a mesma
+ * arvore possa ser aproveitada onde for necessaria 
+ * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
- * @version 0.1 (11/14/2006)
+ * @version 1.0 (11/14/2006)
  */
 
 public abstract class OVariableTreeMFrag extends JTree{
@@ -61,9 +60,11 @@ public abstract class OVariableTreeMFrag extends JTree{
 		
 		super.treeDidChange();
 		
-		//expandTree();
 	}
 	
+	/*
+	 * cria a arvore a partir da lista de variaveis ordinarias da MFrag. 
+     */
 	
 	private void createTree() {
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode)getModel().getRoot();
@@ -118,8 +119,9 @@ public abstract class OVariableTreeMFrag extends JTree{
 	
 	
 	/**
-	 * Atualiza as marginais na árvore desejada.
+	 * Atualiza as variaveis ordinarias presentes na arvore
 	 */
+	
 	public void updateTree() {
 		
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode)getModel().getRoot();
@@ -154,7 +156,12 @@ public abstract class OVariableTreeMFrag extends JTree{
 		return null;
 	}
 	
-	public abstract void addListeners(); 
+	/**
+	 * adiciona os listeners para os nodos da arvore. (a classe que estender
+	 * esta deve colocar as acoes pertinentes aos evendos de mouse) 
+	 */
+	
+	protected abstract void addListeners(); 
 	
 	
 };		

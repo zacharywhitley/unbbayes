@@ -7,13 +7,13 @@ import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticTable;
 
+/**
+ *
+ */
+
 public class ResidentNode extends MultiEntityNode implements ITabledVariable {
  
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 8497908054569004909L;
-	
 	
 	private List<InputNode> inputNodeFatherList;
 	 
@@ -60,15 +60,28 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param ov
+	 */
 	public void removeOrdinaryVariable(OrdinaryVariable ov){
 	    ordinaryVariableList.remove(ov);
 	    ov.removeIsOVariableOfList(this); 
 	}
 	
+	/**
+	 * 
+	 * @param ov
+	 * @return
+	 */
 	public boolean containsOrdinaryVariable(OrdinaryVariable ov){
 	  	return ordinaryVariableList.contains(ov); 
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public List<OrdinaryVariable> getOrdinaryVariableList(){
 		return ordinaryVariableList; 
 	}

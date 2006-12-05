@@ -21,8 +21,15 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.util.ArrayMap;
 
+/**
+ * Lista as variaveis ordinarias atualmente presentes como argumento
+ * em um resident node. Quando o usuario clica duas vezes em uma destas
+ * variaveis ordinarias, esta é eliminada da lista de argumentos. 
+ * 
+ * @author Laecio
+ *
+ */
 public class OVariableTreeResident extends JTree{
-
 
     private MultiEntityBayesianNetwork net;
     
@@ -30,6 +37,9 @@ public class OVariableTreeResident extends JTree{
     private List<OrdinaryVariable> ordinaryVariableList = new ArrayList<OrdinaryVariable>();
     private ResidentNode residentNodeActive; 
 	
+    private OrdinaryVariable oVariableSelected = null; 
+    
+    
 	protected IconController iconController = IconController.getInstance();
 	
 	private final NetworkController controller;	
@@ -76,13 +86,18 @@ public class OVariableTreeResident extends JTree{
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 						
 						controller.getMebnController().removeOrdinaryVariableInResident(ordinaryVariable); 
+						oVariableSelected = null; 
 						
 					} else if (e.getClickCount() == 1) {
+						
+						oVariableSelected = ordinaryVariable; 
 						
 					}
 				} 
 				else {
-					//Never...
+				
+					oVariableSelected = null; 
+					
 			 	}
 			}
 			
@@ -146,7 +161,7 @@ public class OVariableTreeResident extends JTree{
 
 		
 		/**
-		 * Atualiza as marginais na árvore desejada.
+		 * Atualiza os nodos da arvore. 
 		 */
 		public void updateTree() {
 			
@@ -166,6 +181,7 @@ public class OVariableTreeResident extends JTree{
 				
 			}
 			
+			oVariableSelected = null; 
 			((DefaultTreeModel) getModel()).reload(root);
 			expandRow(0); 
 			
@@ -182,51 +198,10 @@ public class OVariableTreeResident extends JTree{
 				}
 			}
 			return null;
-		}
+		}	
 		
-		/**
-		 * Adiciona uma evidencia no estado especificado.
-		 * 
-		 * @param caminho
-		 *            caminho do estado a ser setado para 100%;
-		 * @see TreePath
-		 */
-		private void treeDoubleClick(DefaultMutableTreeNode treeNode) {
-			/*DefaultMutableTreeNode parent = (DefaultMutableTreeNode) ((treeNode)
-			 .getParent());
-			 Object obj = nodeMap.get((DefaultMutableTreeNode) parent);
-			 if (obj != null) {
-			 TreeVariable node = (TreeVariable) obj;
-			 
-			 // Só propaga nós de descrição
-			  if (node.getInformationType() == Node.DESCRIPTION_TYPE) {
-			  for (int i = 0; i < parent.getChildCount(); i++) {
-			  DefaultMutableTreeNode auxNode = (DefaultMutableTreeNode) parent
-			  .getChildAt(i);
-			  auxNode.setUserObject(node.getStateAt(i) + ": 0");
-			  }
-			  
-			  if (node.getType() == Node.PROBABILISTIC_NODE_TYPE) {
-			  treeNode.setUserObject(node.getStateAt(parent
-			  .getIndex(treeNode))
-			  + ": 100");
-			  } else {
-			  treeNode.setUserObject(node.getStateAt(parent
-			  .getIndex(treeNode))
-			  + ": **");
-			  }
-			  node.addFinding(parent.getIndex(treeNode));
-			  ((DefaultTreeModel) getModel()).reload(parent);
-			  }
-			  }*/
+		public OrdinaryVariable getOVariableSelected(){
+			return oVariableSelected; 
 		}
-		
 		
 	}
-
-
-
-
-	
-	
-

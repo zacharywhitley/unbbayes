@@ -78,6 +78,7 @@ import unbbayes.util.NodeList;
  * @created    27 de Junho de 2001
  * @version    1.5 2006/09/12
  */
+
 public class NetworkController implements KeyListener {
 
     private NetworkWindow screen;
@@ -95,6 +96,9 @@ public class NetworkController implements KeyListener {
     /** Load resource file from this package */
     private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.controller.resources.ControllerResources");
     
+    
+    
+    
     /***************** BEGIN CONTROLLING MULTI ENTTITY BAYESIAN NETWORK *********************/
     
     /**
@@ -105,8 +109,6 @@ public class NetworkController implements KeyListener {
         this.multiEntityBayesianNetwork = multiEntityBayesianNetwork;
         this.screen = screen;
         this.mebnController = new MEBNController(multiEntityBayesianNetwork, screen);
-        /*copia = new ArrayList();
-        copiados = new ArrayList<ProbabilisticNode>();*/
     }
     
     public void insertDomainMFrag(){
@@ -159,6 +161,8 @@ public class NetworkController implements KeyListener {
     
     
     /***************** END CONTROLLING MULTI ENTTITY BAYESIAN NETWORK *********************/
+    
+    
     
     
 
@@ -298,7 +302,6 @@ public class NetworkController implements KeyListener {
     /***************** END CONTROLLING SINGLE ENTTITY NETWORK *********************/
 
     
-    
     /***************** BEGIN CONTROLLING BOTH *********************/
     
     /**
@@ -306,12 +309,11 @@ public class NetworkController implements KeyListener {
      *
      * @param edge The new edge to be inserted.
      */
-    public void insertEdge(Edge edge) throws MEBNConstructionException{
+    public void insertEdge(Edge edge) throws MEBNConstructionException, Exception{
     	if (senController != null) senController.insertEdge(edge); 
     	else{
     		if (mebnController!= null) mebnController.insertEdge(edge); 
     	}
-    	
     }
     
     /**

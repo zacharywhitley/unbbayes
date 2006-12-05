@@ -51,6 +51,4 @@ public class DrawText extends DrawElement {
 		this.text = text;
 	}
 	
-	
-	
 }

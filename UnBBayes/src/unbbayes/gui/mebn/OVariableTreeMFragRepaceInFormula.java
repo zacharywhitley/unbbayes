@@ -9,21 +9,26 @@ import javax.swing.tree.TreePath;
 import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.OrdinaryVariable;
 
+//TODO aplicar pattern... 
+
 /**
- * This is the oVariable for edit (add, 
- * remove, rename, etc). 
+ * Tree for the user selected what o variable he
+ * want for substitute the atual place selected of
+ * the formula tree. 
  * 
  * @author Laecio
  *
  */
+public class OVariableTreeMFragRepaceInFormula extends OVariableTreeMFrag{
 
-public class OVariableTreeMFragEdit extends OVariableTreeMFrag{
+	private OrdinaryVariable oVariableActive; 	
+	private FormulaTree formulaTree; 
 	
-	private OrdinaryVariable oVariableActive; 
-	
-	public OVariableTreeMFragEdit(final NetworkController controller){
+	public OVariableTreeMFragRepaceInFormula(final NetworkController controller, FormulaTree _formulaTree){
 		super(controller); 
+		formulaTree = _formulaTree; 
 	}
+		
 	
 	public void addListeners(){
 		addMouseListener(new MouseAdapter(){
@@ -45,18 +50,14 @@ public class OVariableTreeMFragEdit extends OVariableTreeMFrag{
 					
 
 					if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
-						
+						//Nothing
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 						
-						controller.getMebnController().selectOVariableInEdit(ordinaryVariable); 
-						oVariableActive = ordinaryVariable; 						
-						
+						formulaTree.addOVariable(ordinaryVariable); 
 						
 					} else if (e.getClickCount() == 1) {
-						
-						controller.getMebnController().selectOVariableInEdit(ordinaryVariable); 
-						oVariableActive = ordinaryVariable; 
+						//Nothing
 					}
 				} 
 				else {
@@ -64,14 +65,6 @@ public class OVariableTreeMFragEdit extends OVariableTreeMFrag{
 				}
 			}
 		}); 
-	}
-	
-	public OrdinaryVariable getOVariableActive(){
-		return oVariableActive; 
-	}
-
-	public void setOVariableActive(OrdinaryVariable ov){
-		oVariableActive = ov; 
 	}
 	
 }

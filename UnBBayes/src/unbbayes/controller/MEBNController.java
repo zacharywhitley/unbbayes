@@ -2,8 +2,6 @@ package unbbayes.controller;
 
 import java.util.ResourceBundle;
 
-import javax.swing.JOptionPane;
-
 import unbbayes.gui.NetworkWindow;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -18,12 +16,15 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 
+/**
+ * 
+ * @author Laecio
+ *
+ */
+
 public class MEBNController {
 
 	private NetworkWindow screen;
-	
-	/* counters */
-	int domainMFragCount = 0; 
 
 	private MultiEntityBayesianNetwork multiEntityBayesianNetwork;
 
@@ -36,8 +37,6 @@ public class MEBNController {
 			NetworkWindow screen) {
 		this.multiEntityBayesianNetwork = multiEntityBayesianNetwork;
 		this.screen = screen;
-		
-		this.domainMFragCount = multiEntityBayesianNetwork.getMFragCount(); 
 	}
 
 	
@@ -49,11 +48,11 @@ public class MEBNController {
      * @param  edge  um <code>TArco</code> que representa o arco a ser ligado
      * @since
      */
-    public void insertEdge(Edge edge) throws MEBNConstructionException{
+    public void insertEdge(Edge edge) throws MEBNConstructionException, Exception{
     	
     	MFrag mFragCurrent = multiEntityBayesianNetwork.getCurrentMFrag(); 
 
-    	mFragCurrent.addEdge(edge);
+    	((DomainMFrag)mFragCurrent).addEdge(edge);
     	
     }
 	
@@ -63,9 +62,7 @@ public class MEBNController {
 	public void insertDomainMFrag(String name) {
 		
 		DomainMFrag domainMFrag = new DomainMFrag(resource.getString("domainMFragName")
-				+ domainMFragCount, multiEntityBayesianNetwork); 
-		
-		domainMFragCount++; 
+				+ multiEntityBayesianNetwork.getDomainMFragNum(), multiEntityBayesianNetwork); 
 		
 		multiEntityBayesianNetwork.addDomainMFrag(domainMFrag); 
 		
@@ -145,7 +142,7 @@ public class MEBNController {
 	
 	public void setInputInstanceOf(GenerativeInputNode input, ResidentNode resident){
 		
-		input.setInputInstanceOfNode((DomainResidentNode)resident); 
+		input.setInputInstanceOf((DomainResidentNode)resident); 
 		screen.getMebnEditionPane().setTxtInputOf(resident.getName()); 
 		screen.getMebnEditionPane().updateUI(); 
 	
@@ -196,6 +193,10 @@ public class MEBNController {
     
 	}
 
+	
+	
+	/*---------------------------- Nodes ----------------------------*/	
+	
 	public void selectNode(Node node){
 		if (node instanceof ResidentNode){
 			screen.getMebnEditionPane().setResidentCardActive(); 
@@ -279,10 +280,6 @@ public class MEBNController {
 	
 	/*---------------------------- Formulas ----------------------------*/	
 		
-	public void insertOperatorAND(){
-		
-	}
-	
 	public void selectOVariableInEdit(OrdinaryVariable ov){
 	
 		screen.getMebnEditionPane().getEditOVariableTab().setNameOVariableSelected(ov.getName()); 

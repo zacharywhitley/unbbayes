@@ -14,15 +14,28 @@ import unbbayes.util.NodeList;
 
 public class MultiEntityBayesianNetwork extends Network {
  
-	private List<MFrag> mFragList; /* contains all Domain MFrags and Input MFrags */ 
+	/* contains all Domain MFrags and Input MFrags: each MFrag in this list
+	 * or is in the domainMFragList or in the findingMFragList */ 
+	private List<MFrag> mFragList; 
 	
 	private List<DomainMFrag> domainMFragList;
 	
 	private List<FindingMFrag> findingMFragList; 
 	
+	//TODO analisar uma outra forma de armazenar os builtIn já que eles são inerentes 
+	//ao programa e não a cada MTheory. 
 	private List<BuiltInRV> builtInRVList; 
 	
+	/* aponta para a MFrag atualmente sendo trabalhada/visualisada/criada */
 	private MFrag currentMFrag;
+	
+	
+	/* Este contador serve apenas para indicar qual deve ser o número
+	 * da próxima MFrag criada (ao se gerar o nome automatico. Este número
+	 * não está em sincronia com o número atual de MFrags porque ele 
+	 * inclui também MFrags criadas e escluidas posteriormente */
+	
+	private int domainMFragNum = 1; 
 	
 	/**
 	 * Contructs a new MEBN with empty mFrag's lists.
@@ -36,9 +49,6 @@ public class MultiEntityBayesianNetwork extends Network {
 		builtInRVList = new ArrayList<BuiltInRV>(); 
 	}
 	
-	
-	
-	
 	/*--------------------------- MFrags ---------------------*/
 	
 	/**
@@ -49,6 +59,8 @@ public class MultiEntityBayesianNetwork extends Network {
 		mFragList.add(domainMFrag);
 		domainMFragList.add(domainMFrag); 
 		currentMFrag = domainMFrag; 
+		
+		domainMFragNum++; 
 	}
 	
 	/**
@@ -168,5 +180,12 @@ public class MultiEntityBayesianNetwork extends Network {
 		}
 	}
 	
+	/**
+	 * Return the number for put in the name of the next MFrag build.
+	 */
+	
+	public int getDomainMFragNum(){
+		return domainMFragNum; 
+	}	
 	 
 }

@@ -1,13 +1,10 @@
 package unbbayes.io.mebn.test;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.io.mebn.IOMebnException;
-import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.prs.mebn.Argument;
+import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
@@ -16,6 +13,7 @@ import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.util.NodeList;
 
 public class TestMebnIO {
@@ -201,14 +199,16 @@ public class TestMebnIO {
 				}	
 				
 				System.out.println("\n-> inputInstanceOf: "); 
-				if (generativeInputNode.getInputInstanceOfNode() != null){
-				   System.out.println("" + generativeInputNode.getInputInstanceOfNode().getName()); 
-				}
-				else{
-					if (generativeInputNode.getInputInstanceOfRV()!= null){
-						   System.out.println("" + generativeInputNode.getInputInstanceOfRV().getName()); 						
+
+                Object inputOf = generativeInputNode.getInputInstanceOf(); 
+				if(inputOf != null){
+					if (inputOf instanceof BuiltInRV){
+						   System.out.println("" + ((BuiltInRV)inputOf).getName()); 	
 					}
-			    }
+					else{
+						   System.out.println("" + ((ResidentNode)inputOf).getName()); 							
+					}
+				}
 				
 				System.out.println("\n-> argumentList: "); 
 				List<Argument> argumentList = generativeInputNode.getArgumentList(); 

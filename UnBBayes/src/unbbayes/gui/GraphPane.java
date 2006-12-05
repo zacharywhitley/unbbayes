@@ -908,6 +908,9 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 				    "MEBN Construction Error",
 				    JOptionPane.WARNING_MESSAGE);			
 		}
+		catch(Exception e){
+			e.printStackTrace(); 
+		}
 		
 		// Inform that the edge has being inserted in the graph, therefore 
 		// it is not new anymore.

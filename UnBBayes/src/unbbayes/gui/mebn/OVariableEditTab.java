@@ -23,7 +23,7 @@ import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
 
-public class EditOVariableTab extends JPanel {
+public class OVariableEditTab extends JPanel {
 
 	OVariableTreeMFragEdit treeMFrag; 
 	JScrollPane jspTreeMFrag; 
@@ -50,7 +50,7 @@ public class EditOVariableTab extends JPanel {
     private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
     private Matcher matcher;	
 	
-	public EditOVariableTab(NetworkController _controller){
+	public OVariableEditTab(NetworkController _controller){
 		
 		super(); 
 		
@@ -99,7 +99,7 @@ public class EditOVariableTab extends JPanel {
 	 *  Create a empty painel 
 	 *  */
 	
-	public EditOVariableTab(){
+	public OVariableEditTab(){
 		
 	}
 		

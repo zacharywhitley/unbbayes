@@ -38,6 +38,7 @@ public class OrdinaryVariable {
 	
 	public String getName(){
 		return name; 
+	
 	}
 	
 	/**
@@ -47,6 +48,12 @@ public class OrdinaryVariable {
 	
 	public void setName(String name){
 		this.name = name; 
+	
+	    for(Node node: isOVariableOfList){
+	    	if(node instanceof DomainResidentNode){
+	    		((DomainResidentNode)node).updateLabel(); 
+	    	}
+	    }
 	}
 	
 	/**

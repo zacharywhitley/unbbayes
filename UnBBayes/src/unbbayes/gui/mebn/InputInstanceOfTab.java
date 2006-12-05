@@ -37,7 +37,7 @@ import unbbayes.util.ArrayMap;
  * @version 0.1 (05/11/2006)
  */
 
-public class InputInstanceOfSelection extends JTree{
+public class InputInstanceOfTab extends JTree{
 	
 	
 	private MultiEntityBayesianNetwork net;
@@ -52,7 +52,7 @@ public class InputInstanceOfSelection extends JTree{
 	
 	private final NetworkController controller;	
 	
-	public InputInstanceOfSelection(final NetworkController controller) {
+	public InputInstanceOfTab(final NetworkController controller) {
 		
 		this.controller = controller; 
 		this.net = (MultiEntityBayesianNetwork)controller.getNetwork();

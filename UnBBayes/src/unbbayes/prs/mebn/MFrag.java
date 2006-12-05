@@ -98,7 +98,6 @@ public class MFrag implements Graph{
 	/**
 	 * Method responsible for deleting this MFrag but not its nodes and 
 	 * variables. Only their relationship.
-	 *
 	 */
 	public void delete() {
 		
@@ -107,9 +106,11 @@ public class MFrag implements Graph{
 		for (MultiEntityNode node : residentNodeList) {
 			node.removeFromMFrag();
 		}
+		
 		for (MultiEntityNode node : inputNodeList) {
 			node.removeFromMFrag();
 		}
+		
 		for (OrdinaryVariable variable : ordinaryVariableList) {
 			this.removeOrdinaryVariable(variable); 
 		}
@@ -332,53 +333,21 @@ public class MFrag implements Graph{
 		
 	}	
 	
-
-	/**
-	 *  Adciona um arco a rede se este for um arco valido. 
-	 *  Arcos Validos:
-	 *  - Input -> Resident
-	 *  - Resident -> Resident
-	 *  Levanta a excessao <> caso os nos nao sejam validos.  
-	 *
-	 *@param  arco  arco a ser inserido.
-	 */
-	public void addEdge(Edge arco) throws MEBNConstructionException{
+    /**
+	 *  Add a edge in the graph. 
+     *  @param edge
+	*/
+	
+	public void addEdge(Edge edge) throws Exception{
 		
-		Node origin = arco.getOriginNode();
-		Node destination = arco.getDestinationNode();
-		
-		if (destination instanceof DomainResidentNode){
-			if (origin instanceof DomainResidentNode){
-			    
-				origin.getChildren().add(arco.getDestinationNode());
-			    destination.getParents().add(arco.getOriginNode());
-			    
-			    edgeList.add(arco);
-			    
-			    ((DomainResidentNode)origin).addResidentNodeChild((DomainResidentNode)destination); 
-			
-			}
-			else{
-				if (origin instanceof GenerativeInputNode){
-				    
-					origin.getChildren().add(arco.getDestinationNode());
-				    destination.getParents().add(arco.getOriginNode());
-				    
-				    edgeList.add(arco);		
-				    
-				    ((GenerativeInputNode)origin).addResidentNodeChild((DomainResidentNode)destination); 
+		Node origin = edge.getOriginNode();
+		Node destination = edge.getDestinationNode();
 
-				}
-				else{
-					//TODO criar resource para isto... 
-					throw new MEBNConstructionException("Invalid Edge!!!"); 
-				}
-			}
-		}
-		else{
-			//TODO criar resource para isto... 
-			throw new MEBNConstructionException("Invalid Edge!!!");
-		}
+		origin.getChildren().add(edge.getDestinationNode());
+		destination.getParents().add(edge.getOriginNode());
+			    
+		edgeList.add(edge);
+
 	}
 
 	/**

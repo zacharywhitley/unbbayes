@@ -13,39 +13,45 @@ public class InputNode extends MultiEntityNode {
 	 * other words, if one is not null the other must be null.
 	 */
 	private BuiltInRV inputInstanceOfRV;
+	
 	private ResidentNode inputInstanceOfNode;
 	
 	public InputNode(){
 		super(); 
 	}
 	
-	public void setInputInstanceOfRV(BuiltInRV rv){
-		if (inputInstanceOfNode == null){
-			inputInstanceOfRV = rv; 
-		}
-		else{
-		
-		}
+	/**
+	 * set the input instance of this node for the BuiltInRV 
+	 * @param rv
+	 */
+	public void setInputInstanceOf(BuiltInRV rv){
+		inputInstanceOfNode = null; 
+		inputInstanceOfRV = rv; 
+
 	}
 	
-	public void setInputInstanceOfNode(ResidentNode node){
-		if (inputInstanceOfRV == null){
-			inputInstanceOfNode = node; 
+	/** 
+	 * set the input instance of this node for the ResidentNode or BuiltInRV
+	 * @param node
+	 */
+	public void setInputInstanceOf(ResidentNode node){
+		inputInstanceOfRV = null; 
+		inputInstanceOfNode = node; 
+		
+	}	
+
+	/** 
+	 * return the value of the property input instance of 
+	 * @return one BuiltInRV or one ResidentNode
+	 */	
+	public Object getInputInstanceOf(){
+		if (inputInstanceOfNode != null){
+			return inputInstanceOfNode; 
 		}
 		else{
-			//TODO levantar excessao
+			return inputInstanceOfRV;
 		}
-	}	
-	
-	public ResidentNode getInputInstanceOfNode(){
-		return inputInstanceOfNode; 
 	}		
-	
-	public BuiltInRV getInputInstanceOfRV(){
-		return inputInstanceOfRV; 
-	}	
-	
-
 	
 	/**
 	 * Add a resident node in the list of resident node childs. 
@@ -59,7 +65,6 @@ public class InputNode extends MultiEntityNode {
 	 * Method responsible for deleting this input node. 
 	 *
 	 */
-    
 	public void delete() {
 		
 		residentNodeChildList = null; 

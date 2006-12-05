@@ -24,12 +24,11 @@ public class DomainResidentNode extends ResidentNode {
 	
 	private static Color color = new Color(254, 250, 158); 	
 	
+	
+	
 	public DomainResidentNode(String name, DomainMFrag mFrag){
 		
 		super();
-		
-		setName(name); 
-		updateLabel(); 
 		
 		this.mFrag = mFrag; 
 		
@@ -37,7 +36,10 @@ public class DomainResidentNode extends ResidentNode {
 		inputNodeFatherList = new ArrayList<GenerativeInputNode>();
 		residentNodeFatherList = new ArrayList<DomainResidentNode>();	
 		residentNodeChildList = new ArrayList<DomainResidentNode>();	
-	
+		
+		setName(name); 
+		updateLabel(); 		
+		
     	size.x = 100;
     	size.y = 20; 
     	drawResidentNode = new DrawRoundedRectangle(position, size);
@@ -72,22 +74,7 @@ public class DomainResidentNode extends ResidentNode {
 		return mFrag; 
 	}
 	
-	private void addResidentNodeFather(DomainResidentNode father){
-		residentNodeFatherList.add(father);
-		father.addResidentNodeChild(this); 
-		
-		mFrag.removeEdgeByNodes(this, father);		
-	}
-	
-	public void addInputNodeFather(GenerativeInputNode father){
-		inputNodeFatherList.add(father); 
-		father.addResidentNodeChild(this); 
-	}	 
-	
-	public void addInputInstanceFromList(GenerativeInputNode instance){
-		inputInstanceFromList.add(instance);
-		instance.setInputInstanceOfNode(this); 
-	}
+	/*------------------------------------------------------------*/
 	
 	/**
 	 * Add a node in the list of childs resident nodes of this node. In the node 
@@ -100,7 +87,45 @@ public class DomainResidentNode extends ResidentNode {
 		node.addResidentNodeFather(this); 
 		
 		mFrag.removeEdgeByNodes(this, node);
-	}	
+	}		
+	
+	private void addResidentNodeFather(DomainResidentNode father){
+		residentNodeFatherList.add(father);
+		father.addResidentNodeChild(this); 
+		
+		mFrag.removeEdgeByNodes(this, father);		
+	}
+	
+	/**
+	 * Add a node in the list of input nodes fathers of this node. In the node 
+	 * father add this node in the list of child resident nodes.  
+	 * @param father
+	 */
+	public void addInputNodeFather(GenerativeInputNode father){
+		inputNodeFatherList.add(father); 
+		father.addResidentNodeChild(this); 
+	}	 
+	
+	protected void addInputInstanceFromList(GenerativeInputNode instance){
+		inputInstanceFromList.add(instance);
+	}
+	
+	public void addOrdinaryVariable(OrdinaryVariable ov){
+		super.addOrdinaryVariable(ov);
+		ov.addIsOVariableOfList(this); 
+		updateLabel(); 
+		
+	}   
+	
+	public void removeOrdinaryVariable(OrdinaryVariable ov){
+		super.removeOrdinaryVariable(ov);
+		ov.removeIsOVariableOfList(this); 
+		updateLabel(); 
+	}
+	
+	
+	
+	/*------------------------------------------------------------*/
 	
 	public List<DomainResidentNode> getResidentNodeFatherList(){
 		return this.residentNodeFatherList; 
@@ -117,6 +142,11 @@ public class DomainResidentNode extends ResidentNode {
 	public List<GenerativeInputNode> getInputInstanceFromList(){
 		return this.inputInstanceFromList; 
 	}	
+	
+	
+	
+	
+	/*------------------------------------------------------------*/
 	
 	public void removeResidentNodeFather(DomainResidentNode node){
 		residentNodeFatherList.remove(node);
@@ -135,8 +165,13 @@ public class DomainResidentNode extends ResidentNode {
 	
 	public void removeInputInstanceFromList(GenerativeInputNode node){
 		inputInstanceFromList.remove(node);
-		node.setInputInstanceOfNode(null); 
+		node.setInputInstanceOf((DomainResidentNode)null); 
 	}		
+	
+	
+	
+	
+	/*------------------------------------------------------------*/
 	
 	@Override
 	public void paint(Graphics2D graphics) {
@@ -151,28 +186,52 @@ public class DomainResidentNode extends ResidentNode {
 		
 	}
 	
+	/**
+	 * update the label of this node. 
+	 * The label is: 
+	 *    LABEL := "name" "(" LIST_ARGS ")"
+	 *    LIST_ARGS:= NAME_ARG "," LIST_ARGS | VAZIO 
+	 *    
+	 *  update too the copies of this labels in input nodes. 
+	 */
+	
     public void updateLabel(){
+    	
     	String newLabel; 
+    	List<OrdinaryVariable> ordinaryVariableList = super.getOrdinaryVariableList(); 
+    	
     	newLabel = name + "("; 
-    	for(OrdinaryVariable ov: super.getOrdinaryVariableList() ){
+    	
+    	for(OrdinaryVariable ov: ordinaryVariableList ){
     		newLabel = newLabel + ov.getName() + ", "; 
     	}
     	
-    	newLabel = newLabel.substring(0, newLabel.length() - 2); //retirar a virgula
+        // retirar a virgula desnecessaria caso ela exista
+    	if(ordinaryVariableList.size() > 0){
+    	   newLabel = newLabel.substring(0, newLabel.length() - 2); 
+    	}
     	
     	newLabel = newLabel + ")"; 
+    	
     	setLabel(newLabel); 
+    	
+    	/* referencias a este label */
+    	
+    	for(GenerativeInputNode inputNode: inputInstanceFromList){
+    		inputNode.updateLabel(); 
+    	}
+    	
     }
-    
-	public void addOrdinaryVariable(OrdinaryVariable ov){
-		super.addOrdinaryVariable(ov);
-		updateLabel(); 
-	}   
 	
+    /**
+     * retira todas as referencias exteriores a este nodo para que este
+     * possa ser removido corretamente.
+     */
+    
 	public void delete(){
 		
 		for (GenerativeInputNode inputNode: inputInstanceFromList){
-			inputInstanceFromList.remove(inputNode); 
+			inputInstanceFromList.remove(inputNode);
 		}
 		
 		for(GenerativeInputNode inputNode: inputNodeFatherList){

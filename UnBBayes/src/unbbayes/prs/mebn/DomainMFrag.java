@@ -2,9 +2,15 @@ package unbbayes.prs.mebn;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
+
+import unbbayes.prs.Edge;
+import unbbayes.prs.Node;
 
 /**
- * Domain-specifcs MFrags. 
+ * Domain-specific MFrags. 
+ * Extend the MFrag for work with GenerativeInputNode, 
+ * DomainResidentNode and ContextNode. 
  */
 
 public class DomainMFrag extends MFrag {
@@ -23,6 +29,10 @@ public class DomainMFrag extends MFrag {
 	private int domainResidentNodeNum = 1; 	
 	private int contextNodeNum = 1; 
 
+	/** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.resources.Resources");
+  		
+	
 	/**
 	 * Contructs a new DomainMFrag with empty node's list.
 	 * @param name The name of the DomainMFrag.
@@ -57,6 +67,7 @@ public class DomainMFrag extends MFrag {
 	 *            The node to be added in the generative input node list.
 	 */
 	public void addGenerativeInputNode(GenerativeInputNode generativeInputNode) {
+		
 		inputNodeList.add(generativeInputNode);
 		addInputNode(generativeInputNode);
 		
@@ -87,6 +98,7 @@ public class DomainMFrag extends MFrag {
 	 *            The node to be removed from the context node list.
 	 */
 	public void removeContextNode(ContextNode contextNode) {
+		contextNode.delete(); 
 		contextNodeList.remove(contextNode);
 		removeNode(contextNode);
 	}
@@ -99,8 +111,8 @@ public class DomainMFrag extends MFrag {
 	 * @param generativeInputNode
 	 *            The node to be removed from the generative input node list.
 	 */
-	public void removeGenerativeInputNode(
-			GenerativeInputNode generativeInputNode) {
+	public void removeGenerativeInputNode(GenerativeInputNode generativeInputNode) {
+		generativeInputNode.delete(); 
 		inputNodeList.remove(generativeInputNode);
 		removeNode(generativeInputNode);
 	}
@@ -114,6 +126,7 @@ public class DomainMFrag extends MFrag {
 	 *            The node to be removed from the domain resident node list.
 	 */
 	public void removeDomainResidentNode(DomainResidentNode domainResidentNode) {
+		domainResidentNode.delete(); 
 		residentNodeList.remove(domainResidentNode);
 		removeNode(domainResidentNode);
 	}
@@ -145,6 +158,15 @@ public class DomainMFrag extends MFrag {
 	}
 	
 	/**
+	 * Gets the total number of domain resident nodes in this DomainMFrag.
+	 * @return The total number of domain resident nodes in this DomainMFrag.
+	 */
+	public int getDomainResidentNodeCount() {
+		return residentNodeList.size();
+		
+	}	
+	
+	/**
 	 * Gets the total number of context nodes in this DomainMFrag.
 	 * @return The total number of context nodes in this DomainMFrag.
 	 */
@@ -160,27 +182,28 @@ public class DomainMFrag extends MFrag {
 		return inputNodeList.size();
 	}
 	
+	/**
+	 * gets the number of the next domain resident node (for uses to generate 
+	 * the automatic name
+	 */	
 	public int getDomainResidentNodeNum(){
 		return domainResidentNodeNum; 
 	}
-	
+
+	/**
+	 * gets the number of the next context node (for uses to generate 
+	 * the automatic name
+	 */	
 	public int getContextNodeNum(){
 		return contextNodeNum; 
 	}
 	
+	/**
+	 * gets the number of the next generative input node (for uses to generate 
+	 * the automatic name
+	 */	
 	public int getGenerativeInputNodeNum(){
 		return generativeInputNodeNum; 
-	}	
-	
-	
-	
-	/**
-	 * Gets the total number of domain resident nodes in this DomainMFrag.
-	 * @return The total number of domain resident nodes in this DomainMFrag.
-	 */
-	public int getDomainResidentNodeCount() {
-		return residentNodeList.size();
-		
 	}	
 	
 	/**
@@ -233,11 +256,48 @@ public class DomainMFrag extends MFrag {
 	 */
 	public void delete() {
 		
-		super.delete();
+		super.delete(); 
+		//TODO cuidado!!! analisar se a classe mae realmente esta deletando estes nodos!!! 
+		
 		for (MultiEntityNode node : contextNodeList) {
 			node.removeFromMFrag();
 		}
 		
 	}
+	
+	/**
+	 *  Add a edge in the domainMFrag. 
+	 *  Valid Edges:
+	 *  - Input -> Resident
+	 *  - Resident -> Resident
+	 *  
+	 *@param  edge
+	 *@throws MEBNConstructionException when the edge don't is bethwen valid nodes. 
+	 */
+	
+	public void addEdge(Edge edge) throws MEBNConstructionException, Exception{
+		
+		Node origin = edge.getOriginNode();
+		Node destination = edge.getDestinationNode();
+		
+		if (destination instanceof DomainResidentNode){
+			if (origin instanceof DomainResidentNode){
+				super.addEdge(edge); 
+			    ((DomainResidentNode)origin).addResidentNodeChild((DomainResidentNode)destination); 
+			}
+			else{
+				if (origin instanceof GenerativeInputNode){
+					super.addEdge(edge); 
+				    ((GenerativeInputNode)origin).addResidentNodeChild((DomainResidentNode)destination); 
+				}
+				else{
+					throw new MEBNConstructionException(resource.getString("InvalidEdgeException")); 
+				}
+			}
+		}
+		else{
+			throw new MEBNConstructionException(resource.getString("InvalidEdgeException"));
+		}
+	}	
 
 }

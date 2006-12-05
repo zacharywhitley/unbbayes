@@ -9,11 +9,12 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import unbbayes.gui.draw.DrawFlatPentagon;
 
+/**
+ * 
+ *
+ */
+
 public class ContextNode extends MultiEntityNode {
- 
-	/**
-	 * 
-	 */
 	
 	private static final long serialVersionUID = 8186266877724939663L;
 
@@ -33,12 +34,19 @@ public class ContextNode extends MultiEntityNode {
 	//provavelmente em forma de texto usando o conceito de banco de informações sobre os objetos...
 	private DefaultMutableTreeNode formulaTree; 
 	
-	
 	/* draw */ 
 	
 	private static Color color = new Color(176, 252, 131);
+	
     private DrawFlatPentagon drawContextNode;
     
+    
+    
+    /**
+     * 
+     * @param name
+     * @param mFrag
+     */
     public ContextNode(String name, DomainMFrag mFrag) {
     	
     	super(); 
@@ -58,6 +66,40 @@ public class ContextNode extends MultiEntityNode {
         drawElement.add(drawContextNode);
 
     }
+    
+    
+    
+    
+    
+	/**
+	 * Set the MFrag where this node resides.
+	 * @param frag The MFrag where this node resides.
+	 */
+	public void setMFrag(DomainMFrag frag) {
+		mFrag = frag;
+	}
+	
+	public DomainMFrag getMFrag(){
+		return mFrag; 
+	}
+	
+	public DefaultMutableTreeNode getFormulaTree(){
+		return formulaTree; 
+	}
+	
+	public void setFormulaTree(DefaultMutableTreeNode formulaTree){
+		this.formulaTree = formulaTree; 
+	}
+	
+    /**
+     * Gera a string que representa uma formula a partir de sua arvore
+     * @param formulaTree: raiz da arvore que contem a formula
+     * @return a string contendo a formula no formado padrao da FOL. 
+     */
+    private String getFormulaForTree(DefaultMutableTreeNode formulaTree){
+    	//TODO do!!! (rs)
+    	return ""; 
+    }
 	
 	/**
 	 * Method responsible for deleting this context node. It makes sure to clean 
@@ -66,6 +108,7 @@ public class ContextNode extends MultiEntityNode {
 	 */
     
 	public void delete() {
+		
 		for (ContextNode node: innerTermFromList) {
 			node.removeInnerTermOfList(node);
 		}
@@ -83,6 +126,12 @@ public class ContextNode extends MultiEntityNode {
 		mFrag.removeContextNode(this);
 		
 	}
+	
+	
+	
+	
+	
+	/*-------------------------------------------------------------*/
 	
 	/**
 	 * Method responsible for removing the given context node from the list of 
@@ -113,14 +162,12 @@ public class ContextNode extends MultiEntityNode {
 		innerTermFromList.add(contextNode); 
 	}
 	
-	//public List<ContextNode> getInnerTermOfList(){
-	//	return innerTermOfList; 
-	//}
 	
-	//public List<ContextNode> getInnerTermFromList(){
-	//	return innerTermFromList; 
-	//}	
-		
+	
+	
+	
+	/*-------------------------------------------------------------*/
+	
 	/**
      *  Gets all context node's color.
      *
@@ -150,26 +197,19 @@ public class ContextNode extends MultiEntityNode {
 		drawContextNode.setFillColor(getColor());
 		super.paint(graphics);
 	}
-
+	
 	/**
-	 * Set the MFrag where this node resides.
-	 * @param frag The MFrag where this node resides.
+	 * update the label of this node. 
+	 * The label is the formula that represents this context node.  
 	 */
-	public void setMFrag(DomainMFrag frag) {
-		mFrag = frag;
-	}
 	
-	public DomainMFrag getMFrag(){
-		return mFrag; 
-	}
-	
-	public DefaultMutableTreeNode getFormulaTree(){
-		return formulaTree; 
-	}
-	
-	public void setFormulaTree(DefaultMutableTreeNode formulaTree){
-		this.formulaTree = formulaTree; 
-	}
+    public void updateLabel(){
+    	
+    	String newLabel = getFormulaForTree(formulaTree); 
+    	
+    	setLabel(newLabel); 
+    	
+    }	
 	
 }
  

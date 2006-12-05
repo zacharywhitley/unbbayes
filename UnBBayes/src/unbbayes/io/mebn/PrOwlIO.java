@@ -421,12 +421,12 @@ public class PrOwlIO implements MebnIO {
 			individualTwo = (OWLIndividual) itAux.next();
 			if (mapDomainResidentNode.containsKey(individualTwo.getBrowserText())){
 				domainResidentNode = mapDomainResidentNode.get(individualTwo.getBrowserText()); 
-				generativeInputNode.setInputInstanceOfNode(domainResidentNode); 
+				generativeInputNode.setInputInstanceOf(domainResidentNode); 
 			}
 			else{
 				if (mapBuiltInRV.containsKey(individualTwo.getBrowserText())){
 					builtInRV = mapBuiltInRV.get(individualTwo.getBrowserText()); 
-					generativeInputNode.setInputInstanceOfRV(builtInRV); 
+					generativeInputNode.setInputInstanceOf(builtInRV); 
 				}				
 			}
 			

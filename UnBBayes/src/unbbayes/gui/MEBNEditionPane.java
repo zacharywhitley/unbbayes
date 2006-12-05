@@ -26,11 +26,11 @@ import javax.swing.JToolBar;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
-import unbbayes.gui.mebn.EditArgumentsTab;
-import unbbayes.gui.mebn.EditOVariableTab;
+import unbbayes.gui.mebn.ArgumentsEditTab;
+import unbbayes.gui.mebn.OVariableEditTab;
 import unbbayes.gui.mebn.EntityTree;
-import unbbayes.gui.mebn.FormulaEdtion;
-import unbbayes.gui.mebn.InputInstanceOfSelection;
+import unbbayes.gui.mebn.FormulaEdction;
+import unbbayes.gui.mebn.InputInstanceOfTab;
 import unbbayes.gui.mebn.MTheoryTree;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
@@ -53,13 +53,13 @@ public class MEBNEditionPane extends JPanel {
     private JPanel tabPanel;
     private MTheoryTree mTheoryTree; 
     private JScrollPane mTheoryTreeScroll; 
-    private FormulaEdtion formulaEdtion;    
+    private FormulaEdction formulaEdtion;    
     private EntityTree entityTree;    
-    private InputInstanceOfSelection inputInstanceOfSelection;    
+    private InputInstanceOfTab inputInstanceOfSelection;    
     private JScrollPane inputInstanceOfSelectionScroll;    
-    private EditOVariableTab editOVariableTab; 
+    private OVariableEditTab editOVariableTab; 
     
-    private EditArgumentsTab editArgumentsTab; 
+    private ArgumentsEditTab editArgumentsTab; 
 	
     private JPanel descriptionPanel; 
     
@@ -380,17 +380,17 @@ public class MEBNEditionPane extends JPanel {
         mTheoryTreeScroll = new JScrollPane(mTheoryTree); 
         tabPanel.add("MTheoryTree", mTheoryTreeScroll);
         
-        formulaEdtion = new FormulaEdtion(); 
+        formulaEdtion = new FormulaEdction(); 
         tabPanel.add("FormulaEdtion", formulaEdtion); 
         
         entityTree = new EntityTree(); 
         tabPanel.add("EntityTree", entityTree); 
         
-        inputInstanceOfSelection = new InputInstanceOfSelection(controller); 
+        inputInstanceOfSelection = new InputInstanceOfTab(controller); 
         inputInstanceOfSelectionScroll = new JScrollPane(inputInstanceOfSelection); 
         tabPanel.add("InputInstance", inputInstanceOfSelectionScroll); 
         
-        editArgumentsTab = new EditArgumentsTab(); 
+        editArgumentsTab = new ArgumentsEditTab(); 
         tabPanel.add("EditArgumentsTab", editArgumentsTab); 
         
         cardLayout.show(tabPanel, "MTheoryTree");  
@@ -780,15 +780,15 @@ public class MEBNEditionPane extends JPanel {
     	return mTheoryTree; 
     }
     
-    public InputInstanceOfSelection getInputInstanceOfSelection(){
+    public InputInstanceOfTab getInputInstanceOfSelection(){
     	return inputInstanceOfSelection; 
     }
     
-    public EditArgumentsTab getEditArgumentsTab(){
+    public ArgumentsEditTab getEditArgumentsTab(){
          return editArgumentsTab; 	
     }
     
-    public EditOVariableTab getEditOVariableTab(){
+    public OVariableEditTab getEditOVariableTab(){
     	return editOVariableTab; 
     }
     
@@ -806,7 +806,7 @@ public class MEBNEditionPane extends JPanel {
     public void setFormulaEdtionActive(ContextNode context){
     	   
         tabPanel.remove(formulaEdtion);     	
-    	formulaEdtion = new FormulaEdtion(controller, context); 
+    	formulaEdtion = new FormulaEdction(controller, context); 
     	tabPanel.add("FormulaEdtion", formulaEdtion);         
     	cardLayout.show(tabPanel, "FormulaEdtion"); 
     }    
@@ -826,7 +826,7 @@ public class MEBNEditionPane extends JPanel {
     public void setEditArgumentsTabActive(ResidentNode resident){
    
         tabPanel.remove(editArgumentsTab);     	
-    	editArgumentsTab = new EditArgumentsTab(controller, resident); 
+    	editArgumentsTab = new ArgumentsEditTab(controller, resident); 
     	tabPanel.add("EditArgumentsTab", editArgumentsTab);         
     	cardLayout.show(tabPanel, "EditArgumentsTab"); 
     }
@@ -840,7 +840,7 @@ public class MEBNEditionPane extends JPanel {
     public void setEditOVariableTabActive(){
     	
     	if(controller.getMebnController().getCurrentMFrag() != null){
-           editOVariableTab = new EditOVariableTab(controller); 
+           editOVariableTab = new OVariableEditTab(controller); 
            tabPanel.add("EditOVariableTab", editOVariableTab); 
     	   cardLayout.show(tabPanel, "EditOVariableTab"); 
     	}
