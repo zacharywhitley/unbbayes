@@ -79,7 +79,11 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"withoutMFrag", "Não existe nenhuma MFrag"}, 
 		{"edgeInvalid", "Arco invalido"}, 		
 		
-		{"JAXBExceptionFound", "Erro de sintaxe..."}
+		{"JAXBExceptionFound", "Erro de sintaxe..."},
+
+		/* Numeric attribute node */
+		{"mean", "Média"},
+		{"stdDev", "Desv. Padrão"}
 		
 	};
 }

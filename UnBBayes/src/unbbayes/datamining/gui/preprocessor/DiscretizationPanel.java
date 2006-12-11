@@ -17,29 +17,29 @@ public class DiscretizationPanel
 { private JComboBox numberStatesComboBox;
   private JComboBox discretizationTypeComboBox;
 
-  public DiscretizationPanel(PreprocessorMain parent,InstanceSet inst,Attribute selectedAttribute)
-  {   if ((JOptionPane.showInternalConfirmDialog(parent, buildPanel(), "Discretization "+selectedAttribute.getAttributeName(),
+  public DiscretizationPanel(PreprocessorMain reference,InstanceSet inst,Attribute selectedAttribute)
+  {   if ((JOptionPane.showInternalConfirmDialog(reference, buildPanel(), "Discretization "+selectedAttribute.getAttributeName(),
            JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION))
       {   if (discretizationTypeComboBox.getSelectedIndex() == 0)
           {   RangeDiscretization range = new RangeDiscretization(inst);
               try
               {   range.discretizeAttribute(selectedAttribute,(numberStatesComboBox.getSelectedIndex()+1));
-                  parent.updateInstances(range.getInstances());
-                  parent.setStatusBar("Range discretization successful");
+                  reference.updateInstances(range.getInstances());
+                  reference.setStatusBar("Range discretization successful");
               }
               catch (Exception ex)
-              {   parent.setStatusBar(ex.getMessage());
+              {   reference.setStatusBar(ex.getMessage());
               }
           }
           else if (discretizationTypeComboBox.getSelectedIndex() == 1)
           {   FrequencyDiscretization freq = new FrequencyDiscretization(inst);
               try
               {   freq.discretizeAttribute(selectedAttribute,(numberStatesComboBox.getSelectedIndex()+1));
-                  parent.updateInstances(freq.getInstances());
-                  parent.setStatusBar("Frequency discretization successful");
+                  reference.updateInstances(freq.getInstances());
+                  reference.setStatusBar("Frequency discretization successful");
               }
               catch (Exception ex)
-              {   parent.setStatusBar(ex.getMessage());
+              {   reference.setStatusBar(ex.getMessage());
               }
           }
       }

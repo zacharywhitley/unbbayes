@@ -43,10 +43,10 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.HierarchicTree;
 import unbbayes.prs.bn.ITabledVariable;
-import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
 import unbbayes.prs.msbn.SingleAgentMSBN;
@@ -138,15 +138,41 @@ public class NetIO implements BaseIO {
 					+ ");");
 
 			if (!(auxNo1.getType() == Node.UTILITY_NODE_TYPE)) {
-				StringBuffer auxString =
-					new StringBuffer("\"" + auxNo1.getStateAt(0) + "\"");
-
-				int sizeEstados = auxNo1.getStatesSize();
-				for (int c2 = 1; c2 < sizeEstados; c2++) {
-					auxString.append(" \"" + auxNo1.getStateAt(c2) + "\"");
+				/* Check if the node represents a numeric attribute */
+				if (auxNo1.getStatesSize() == 0) {
+					/* The node represents a numeric attribute */
+					double[] mean = auxNo1.getMean();
+					double[] stdDev = auxNo1.getStandardDeviation();
+					StringBuffer auxString = new StringBuffer();
+					
+					/* Mean per class */
+					auxString.append("\"" + mean[0] + "\"");
+					for (int i = 1; i < mean.length; i++) {
+						auxString.append(" \"" + mean[i] + "\"");
+					}
+					arq.println(
+							"     meanPerClass = (" + auxString.toString() + ");");
+					
+					/* Standard deviation per class */
+					auxString = new StringBuffer();
+					auxString.append("\"" + stdDev[0] + "\"");
+					for (int i = 1; i < mean.length; i++) {
+						auxString.append(" \"" + stdDev[i] + "\"");
+					}
+					arq.println(
+							"     stdDevPerClass = (" + auxString.toString() + ");");
+				} else {
+					/* The node represents a nominal attribute */
+					StringBuffer auxString =
+						new StringBuffer("\"" + auxNo1.getStateAt(0) + "\"");
+	
+					int sizeEstados = auxNo1.getStatesSize();
+					for (int c2 = 1; c2 < sizeEstados; c2++) {
+						auxString.append(" \"" + auxNo1.getStateAt(c2) + "\"");
+					}
+					arq.println(
+						"     states = (" + auxString.toString() + ");");
 				}
-				arq.println(
-					"     states = (" + auxString.toString() + ");");
 			}
 			if (auxNo1.getInformationType() == Node.EXPLANATION_TYPE)
                             {
@@ -387,6 +413,28 @@ public class NetIO implements BaseIO {
 							while (proximo(st) == '"') {
 								auxNo.appendState(st.sval);
 							}
+						} else if (st.sval.equals("meanPerClass")) {
+							ArrayList<String> array = new ArrayList<String>();
+							while (proximo(st) == '"') {
+								array.add(st.sval);
+							}
+							int size = array.size();
+							double[] mean = new double[size];
+							for (int i = 0; i < size; i++) {
+								mean[i] = Double.parseDouble(array.get(i));
+							}
+							auxNo.setMean(mean);
+						} else if (st.sval.equals("stdDevPerClass")) {
+							ArrayList<String> array = new ArrayList<String>();
+							while (proximo(st) == '"') {
+								array.add(st.sval);
+							}
+							int size = array.size();
+							double[] stdDev = new double[size];
+							for (int i = 0; i < size; i++) {
+								stdDev[i] = Double.parseDouble(array.get(i));
+							}
+							auxNo.setStandardDeviation(stdDev);
 						} else if (st.sval.equals("%descricao")) {
 							proximo(st);
 							auxNo.setExplanationDescription(

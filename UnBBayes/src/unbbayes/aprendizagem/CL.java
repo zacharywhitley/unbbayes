@@ -268,18 +268,21 @@ public class CL extends CBLToolkit{
 
 	private void desenharede(){
 		for(int i=0;i<nvar;i++){
-			// TODO DESCOMENTAR E CORRIGIR ERRO
-			//variaveis.ClearChildenFrom(i);
-			//variaveis.ClearParentsFrom(i);
+//			TODO SERÁ QUE ESTÁ CORRETO???
+//			variaveis.ClearChildrenFrom(i);
+//			variaveis.ClearParentsFrom(i);
+			variaveis.remove(i);
 		}
 		//desenhar a rede
 		int aux=0;
 		for(int i=0;i<nvar;i++){
 		if((i!=classe)&&(i!=raiz)){
 			aux++;
-			// TODO DESCOMENTAR E CORRIGIR ERRO
-			//variaveis.AddParentTo(enderecos[aux],variaveis.get(enderecos[melhorarvore[aux]]));
-			//variaveis.AddChildTo(enderecos[melhorarvore[aux]],variaveis.get(enderecos[aux]));
+//			TODO SERÁ QUE ESTÁ CORRETO???
+//			variaveis.AddParentTo(enderecos[aux],variaveis.get(enderecos[melhorarvore[aux]]));
+//			variaveis.AddChildTo(enderecos[melhorarvore[aux]],variaveis.get(enderecos[aux]));
+			variaveis.add(enderecos[aux],variaveis.get(enderecos[melhorarvore[aux]]));
+			variaveis.add(enderecos[melhorarvore[aux]],variaveis.get(enderecos[aux]));
 			}
 		}
 	}

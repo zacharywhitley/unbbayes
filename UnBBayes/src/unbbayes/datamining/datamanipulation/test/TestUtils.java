@@ -33,21 +33,21 @@ public class TestUtils extends TestCase {
       while (loader.getInstance())
       {}
 
-      contactInst = loader.getInstances();
+      contactInst = loader.getInstanceSet();
       contactInst.setClass(contactInst.getAttribute(contactInst.numAttributes()-1));
 
       loader = new ArffLoader(WEATHER_NOMINAL_FILE);
       while (loader.getInstance())
       {}
 
-      weatherInst = loader.getInstances();
+      weatherInst = loader.getInstanceSet();
       weatherInst.setClass(weatherInst.getAttribute(weatherInst.numAttributes()-1));
 
       loader = new TxtLoader(WEATHER_NUMERIC_CUT_FILE);
       while (loader.getInstance())
       {}
 
-      weatherCutInst = loader.getInstances();
+      weatherCutInst = loader.getInstanceSet();
       weatherCutInst.setClass(weatherCutInst.getAttribute(weatherCutInst.numAttributes()-1));
 
   }

@@ -1113,11 +1113,14 @@ private static void quickSort(byte[] array, int [] index, int lo0, int hi0)
 		int classIndex = instanceSet.classIndex;
 		int numAttributes = instanceSet.numAttributes;
 		byte[] attributeType = instanceSet.attributeType;
-		int numClasses = instanceSet.numClasses();
 		int numNominalAttributes = instanceSet.numNominalAttributes;
+		int numClasses = 0;
+		if (classIndex != -1) {
+			numClasses = instanceSet.numClasses();
 
-		/* The class is a nominal attribute as well. Must be not counted */
-		--numNominalAttributes;
+			/* The class is a nominal attribute as well. Must be not counted */
+			--numNominalAttributes;
+		}
 		
 		float[][][] distribution = new float[numClasses][numNominalAttributes][];
 

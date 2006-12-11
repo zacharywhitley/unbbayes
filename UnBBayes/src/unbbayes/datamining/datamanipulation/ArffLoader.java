@@ -85,6 +85,17 @@ public class ArffLoader extends Loader {
 		fileIn.close();
 	}
 
+	/**
+	 * Temporarily constructs the header of a txt file. Used as a preprocessor 
+	 * step in the construction of the file's header. 
+	 *
+	 * @param tokenizer Stream tokenizer
+	 * @exception IOException if the information is not read
+	 * successfully
+	 */
+	public void buildHeader() throws IOException {
+		readHeader();
+	}
 
 	/**
 	 * Reads and stores header of an ARFF file.
@@ -99,7 +110,7 @@ public class ArffLoader extends Loader {
 		ArrayList<String> stringValuesAux;
 		ArrayList<Float> numberValuesAux;
 		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
-
+		
 		// Get name of relation.
 		getFirstToken();
 		if (tokenizer.ttype == StreamTokenizer.TT_EOF) {
@@ -107,7 +118,7 @@ public class ArffLoader extends Loader {
 		}
 		if (tokenizer.sval.equalsIgnoreCase("@relation")) {
 			getNextToken();
-			relationName=(tokenizer.sval);
+			relationName = tokenizer.sval;
 			getLastToken(false);
 		} else {
 			errms(resource.getString("readHeaderException2"));
@@ -119,13 +130,30 @@ public class ArffLoader extends Loader {
 			errms(resource.getString("readHeaderException1"));
 		}
 
+		int counter = 0;
 		while (tokenizer.sval.equalsIgnoreCase("@attribute")) {
 			// Get attribute name.
 			getNextToken();
 			attributeName = tokenizer.sval;
 			getNextToken();
 
-			// Check if attribute is nominal.
+			/* Get likely counter attribute index */
+			if (attributeName.equalsIgnoreCase(counterAttributeName)) {
+				likelycounterIndex = counter;
+			}
+			
+			/* Check if the attribute is the counter attribute */
+			if (counter == counterIndex) {
+				counterAttributeName = attributeName;
+				readTillEOL();
+				getLastToken(false);
+				getFirstToken();
+				if (tokenizer.ttype == StreamTokenizer.TT_EOF) {
+					errms(resource.getString("readHeaderException1"));
+				}
+				continue;
+			}
+			
 			if (tokenizer.ttype == StreamTokenizer.TT_WORD) {
 				// Attribute is real, or integer.
 				if (tokenizer.sval.equalsIgnoreCase("real")
@@ -133,6 +161,11 @@ public class ArffLoader extends Loader {
 						|| tokenizer.sval.equalsIgnoreCase("numeric")) {
 					attributes.add(new Attribute(attributeName,
 							Attribute.NUMERIC, false, initialInstances,
+							attributes.size()));
+					readTillEOL();
+				} else if (tokenizer.sval.equalsIgnoreCase("cyclic")) {
+					attributes.add(new Attribute(attributeName,
+							Attribute.CYCLIC, false, initialInstances,
 							attributes.size()));
 					readTillEOL();
 				} else {
@@ -162,13 +195,14 @@ public class ArffLoader extends Loader {
 						numberValuesAux.add((float) tokenizer.nval);
 					}
 				}
-				if (stringValuesAux.size() == 0) {
+				if (stringValuesAux.size() == 0 && numberValuesAux.size() == 0) {
 					errms(resource.getString("readHeaderException6"));
 				}
-				int sizeValues = stringValuesAux.size();
 				
 				/* Check if the nominal attribute values are string values */ 
 				if (isString) {
+					int sizeValues = stringValuesAux.size();
+					
 					/* The attribute has string values */
 					String[] stringValues = new String[sizeValues];
 					for (int i = 0; i < sizeValues; i++) {
@@ -177,6 +211,8 @@ public class ArffLoader extends Loader {
 					attributes.add(new Attribute(attributeName,
 							stringValues, attributes.size()));
 				} else {
+					int sizeValues = numberValuesAux.size();
+
 					/* All attribute values are number values */
 					float[] numberValues = new float[sizeValues];
 					for (int i = 0; i < sizeValues; i++) {
@@ -188,20 +224,36 @@ public class ArffLoader extends Loader {
 			}
 			getLastToken(false);
 			getFirstToken();
-			if (tokenizer.ttype == StreamTokenizer.TT_EOF)
+			if (tokenizer.ttype == StreamTokenizer.TT_EOF) {
 				errms(resource.getString("readHeaderException1"));
+			}
+			++counter;
 		}
 
-		int size = attributes.size();
-		Attribute[] attributesArray = new Attribute[size];
-		for (int i = 0; i < size; i++) {
-			attributesArray[i] = (Attribute)attributes.get(i);
+		/* Set the current number of attributes */
+		numAttributes = counter;
+		attributeIsString = new boolean[numAttributes];
+		
+		Attribute[] attributesArray = new Attribute[numAttributes];
+		int attIndex = 0;
+		Attribute attribute;
+		for (int att = 0; att < numAttributes; att++) {
+			/* Skip the counter attribute */
+			if (att != counterIndex) {
+				attribute = (Attribute)attributes.get(att);
+				attributesArray[attIndex] = attribute;
+				attributeIsString[attIndex] = attribute.isString();
+				++attIndex;
+			}
 		}
+		
 		instanceSet = new InstanceSet(initialInstances, attributesArray);
 		instanceSet.setRelationName(relationName);
-
+		instanceSet.setCounterAttributeName(counterAttributeName);
+		
+		attributeType = instanceSet.attributeType;
+		
 		// Check if data part follows. We can't easily check for EOL.
-
 		if (!tokenizer.sval.equalsIgnoreCase("@data")) {
 			errms(resource.getString("readHeaderException7"));
 		}
@@ -292,7 +344,7 @@ public class ArffLoader extends Loader {
 		if (instanceSet == null) {
 			readHeader();
 		}
-
+		
 		// Check if any attributes have been declared.
 		if (instanceSet.numAttributes() == 0) {
 			errms(resource.getString("getInstanceException1"));
@@ -309,102 +361,49 @@ public class ArffLoader extends Loader {
 	}
 
 	/**
-	 * Reads a single instance using the tokenizer and appends it
-	 * to the dataset. Automatically expands the dataset if it
-	 * is not large enough to hold the instance.
-	 *
-	 * @return False if end of file has been reached
-	 * @exception IOException if the information is not read
-	 * successfully
+	 * Build the attributes.
+	 * @throws IOException 
 	 */
-	private boolean getInstanceAux() throws IOException {
-		int numAttributes = instanceSet.numAttributes();
-		Attribute attribute;
-		
-		/* Alocate space for the attributes and the counter variable */
-		float[] instance = new float[numAttributes + 1];
-		
-		/* Default value for the weight of an instance */
-		float instanceWeight = 1;
-		
-		int attIndex = 0;
-		String stringValue;
+	public void buildAttributes() throws IOException {
+		Attribute[] attributes = new Attribute[numAttributes];
 		int numColumns = numAttributes;
-		int index;
+		int attIndex = 0;
 		
-		/* Check if the instanceSet file has a counter attribute */
 		if (counterIndex != -1) {
-			/* Read the counter attribute */
 			++numColumns;
 		}
 		
-		/* 
-		 * Create instance. Iterate over all attributes and the counter
-		 * variable
-		 */
-		for (int i = 0; i < numColumns; i++) {
-			/* Check if the current attribute is the counter attribute */
-			if (i == counterIndex) {
-				try {
-					instanceWeight = (float) tokenizer.nval;
-					continue;
-				} catch (NumberFormatException nfe) {
-					errms("Atributo de contagem inválido");
-				}
+		for (int att = 0; att < numColumns; att++) {
+			if (att == counterIndex) {
+				/* Counter attribute. Just skip it */
+				continue;
 			}
 			
-			/* Get the attribute */
-			attribute = instanceSet.getAttribute(i);
-
-			/* Check the type of the token */
-			if (tokenizer.sval != null) {
-				/* The token is a String */
-				stringValue = tokenizer.sval;
-				
-				/* Check if value is missing */ 
-				if (stringValue.equals("?")) {
-					instance[attIndex] = Instance.MISSING_VALUE;
-				}
-
-				/* Check if value appears in header */
-				index = attribute.indexOfValue(stringValue);
-				if (index == -1) {
-					errms(resource.getString("getInstanceFullException2"));
-				}
-				instance[attIndex] = index;
-			} else {
-				/* 
-				 * The token is a number. Check if the attribute type was set
-				 * to nominal.
-				 */
-				if (attribute.isNominal()) {
-					/* 
-					 * The attribute is nominal. Check if value appears in
-					 * header. 
-					 */
-					index = attribute.indexOfValue((float) tokenizer.nval);
-					if (index == -1) {
-						errms(resource.getString("getInstanceFullException2"));
-					}
-					instance[attIndex] = index;
-				} else {
-					/* The attribute is numeric */
-					instance[attIndex] = (float) tokenizer.nval;
-				}
-			}
+			/* Build attribute */
+			attributes[attIndex] = new Attribute(attributeName[attIndex],
+												 attributeType[attIndex],
+												 attributeIsString[attIndex],
+												 initialInstances,
+												 attIndex
+												);
+							
 			++attIndex;
-			tokenizer.nextToken();
 		}
 		
-		/* Set the weight of this instance */
-		instance[attIndex] = instanceWeight;
+		/* Create the instanceSet */
+		instanceSet = new InstanceSet(initialInstances, attributes);
+		instanceSet.setCounterAttributeName(counterAttributeName);
 		
-		/* Add the current instance to the instanceSet */
-		instanceSet.insertInstance(new Instance(instance));
-
-		return true;
+		/* Skip the header of the aaaaaaaaarff file */
+		getFirstToken();
+		while (!tokenizer.sval.equalsIgnoreCase("@data")) {
+			readTillEOL();
+			getLastToken(false);
+			getFirstToken();
+		}
+		
+		attIndex = 0;
 	}
+
+
 }
-
-
-

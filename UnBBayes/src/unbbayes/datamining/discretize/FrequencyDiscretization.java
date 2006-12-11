@@ -36,8 +36,8 @@ public class FrequencyDiscretization implements IDiscretization
 		{	int position = att.getIndex();//cria um novo atributo nominal
 			Attribute newAttribute = new Attribute(att.getAttributeName(),
 					Attribute.NOMINAL,
-					false,
-					att.numValues(),
+					true,
+					numThresholds,
 					position
 					);
 			// encontra todos os valores do atributo antigo

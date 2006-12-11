@@ -286,7 +286,7 @@ public class PreprocessorMain extends JInternalFrame
           //jTabbedPane1.setSelectedIndex(0);
 		  jPanel1.setBaseInstances(inst);
 		  statusBar.setText(resource.getString("fileOpened"));
-          this.setTitle(resource.getString("preprocessorTitle")+selectedFile.getName());
+          this.setTitle(resource.getString("preprocessorTitle") + fileName);
 		  saveButton.setEnabled(true);
 		  jMenuFileSave.setEnabled(true);
         }

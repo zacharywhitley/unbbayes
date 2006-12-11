@@ -78,11 +78,8 @@ public class Attribute implements Serializable {
 			"unbbayes.datamining.datamanipulation.resources." +
 			"DataManipulationResource");
 
-	/**
-	 * True if this attribute has been finalized, ie, has been constructed.
-	 * False if this attribute is yet in the process of beeing build.
-	 */
-	private boolean finalized = false;
+	/** The instanceSet to which this attribute is related to */ 
+	private InstanceSet instanceSet;
 	
 	/**
 	 * Constructor for nominal attribute with String values.
@@ -454,12 +451,18 @@ public class Attribute implements Serializable {
 	/**
 	 * Finalize the construction of this attribute. All values stored in the
 	 * hashtable are destroyed. Only affects nominal attributes. 
+	 * @param instanceSet 
 	 */
-	public void setFinal() {
-		if (finalized) {
-			return;
-		}
+	public void setFinal(InstanceSet instanceSet) {
+		this.instanceSet = instanceSet;
+		
 		if (isString) {
+			/* Check if it's been finalized already */
+			if (stringValuesTemp == null) {
+				/* Finalized already. Just return */
+				return;
+			}
+			
 			/* Construct the final String vector of values */
 			stringValues = new String[numValues];
 			for (int i = 0; i < numValues; i++) {
@@ -475,6 +478,12 @@ public class Attribute implements Serializable {
 			stringValuesTemp.clear();
 			stringValuesTemp = null;
 		} else {
+			/* Check if it's been finalized already */
+			if (numberValuesTemp == null) {
+				/* Finalized already. Just return */
+				return;
+			}
+			
 			/* Construct the final float vector of values */
 			numberValues = new float[numValues];
 			for (int i = 0; i < numValues; i++) {
@@ -490,6 +499,15 @@ public class Attribute implements Serializable {
 			numberValuesTemp.clear();
 			numberValuesTemp = null;
 		}
-		finalized = true;
 	}
+	
+	/**
+	 * Return the instanceSet to which this attribute is related to.
+	 * 
+	 * @return
+	 */
+	public InstanceSet getInstanceSet() {
+		return instanceSet;
+	}
+	
 }

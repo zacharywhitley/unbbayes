@@ -429,6 +429,14 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	protected void updateMarginais() {
 		for (int i = 0; i < copiaNos.size(); i++) {
 			TreeVariable node = (TreeVariable) copiaNos.get(i);
+			/* Check if the node represents a numeric attribute */
+			if (node.getStatesSize() == 0) {
+				/* 
+				 * The node represents a numeric attribute which has no
+				 * potential table. Just skip it.
+				 */
+				continue;
+			}
 			node.marginal();
 		}
 	}

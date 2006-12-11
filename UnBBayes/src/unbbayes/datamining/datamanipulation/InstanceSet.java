@@ -1,5 +1,6 @@
 package unbbayes.datamining.datamanipulation;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Random;
@@ -14,8 +15,10 @@ import java.util.ResourceBundle;
  * @author Emerson Lopes Machado - emersoft@conectanet.com.br
  * @date 27/09/2006
  */
-public class InstanceSet {
-		
+public class InstanceSet implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+
 	/** The dataset's name. */
 	private String relationName;
 
@@ -70,7 +73,7 @@ public class InstanceSet {
 	 */
 	public int counterIndex;
 
-	/** Load resource file from this package */
+	/** Load resource file for this package */
 	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes"
 			+ ".datamining.datamanipulation.resources.DataManipulationResource");
 
@@ -107,7 +110,6 @@ public class InstanceSet {
 		
 		/* The counter attribute is always the last column */
 		counterIndex = numAttributes;
-		counterAttributeName = "Total";
 
 		instances = new Instance[capacity];
 		attributeType = new byte[numAttributes];
@@ -416,7 +418,7 @@ public class InstanceSet {
 			throw new IllegalArgumentException(exception);
 		}
 		attributes[position] = att;
-		att.setFinal();
+		att.setFinal(this);
 
 		for (int i = 0; i < numInstances; i++) {
 			instances[i].setMissing(att);
@@ -531,7 +533,7 @@ public class InstanceSet {
 
 	/**
 	 * Calculates summary statistics on the values that appear in each
-	 * attribute and return then as an vector. 
+	 * attribute and return then as a vector. 
 	 *
 	 * @param index The index of the attribute to summarize.
 	 * @return An AttributeStats object with it's fields calculated.
@@ -673,7 +675,7 @@ public class InstanceSet {
 	public void setFinal() {
 		for (int i = 0; i < numAttributes; i++) {
 			if (attributeType[i] == NOMINAL) {
-				attributes[i].setFinal();
+				attributes[i].setFinal(this);
 			}
 		}
 	}
@@ -1017,6 +1019,14 @@ public class InstanceSet {
 		}
 		
 		return false;
+	}
+
+	public void setCounterIndex(int counterIndex) {
+		this.counterIndex = counterIndex;
+	}
+
+	public int getCounterIndex() {
+		return counterIndex;
 	}
 
 }

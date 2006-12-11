@@ -72,8 +72,11 @@ public class HVDM extends Distance {
 	public HVDM(InstanceSet instanceSet, int normFactor) throws Exception {
 		numAttributes = instanceSet.numAttributes();
 		numInstances = instanceSet.numInstances();
-		numClasses = instanceSet.numClasses();
 		classIndex = instanceSet.classIndex;
+		numClasses = 0;
+		if (classIndex != -1) {
+			numClasses = instanceSet.numClasses();
+		}
 		attributeType = instanceSet.attributeType;
 		attributeStats = instanceSet.computeAttributeStats();
 		counterIndex = instanceSet.counterIndex;

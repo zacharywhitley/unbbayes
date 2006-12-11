@@ -4,11 +4,14 @@ import java.io.File;
 import java.io.IOException;
 
 import unbbayes.datamining.classifiers.Classifier;
+import unbbayes.datamining.classifiers.CombinatorialNeuralModel;
 import unbbayes.datamining.classifiers.DistributionClassifier;
 import unbbayes.datamining.classifiers.Evaluation;
 import unbbayes.datamining.classifiers.NaiveBayes;
 import unbbayes.datamining.classifiers.decisiontree.C45;
+import unbbayes.datamining.datamanipulation.ArffLoader;
 import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.Loader;
 import unbbayes.datamining.datamanipulation.TxtLoader;
 import unbbayes.datamining.preprocessor.imbalanceddataset.Sampling;
 import unbbayes.datamining.preprocessor.imbalanceddataset.Smote;
@@ -36,10 +39,16 @@ public class Testset {
 		}
 	}
 	
+	public static void main(String[] args) {
+		new Testset();
+	}
+
 	public void run() throws Exception {
 		/* Data set characteristics */
-		String trainFileName = "c:/m1t.txt";
-		String testFileName = "c:/m1av.txt";
+		String trainFileName = "c:/dados/m1t.txt";
+		String testFileName = "c:/dados/m1av.txt";
+//		String trainFileName = "c:/dados/m1tOriginal.arff";
+//		String testFileName = "c:/dados/m1avOriginal.arff";
 		int classIndex = 10;
 		int counterIndex = 11;
 		
@@ -86,8 +95,6 @@ public class Testset {
 		smote.setOptionFixedGap(optionFixedGap);
 		smote.setOptionNominal(optionNominal);
 		
-		smote.buildNN(5, 1);
-
 		/* Options for SMOTE - END *****************/
 
 		
@@ -95,7 +102,7 @@ public class Testset {
 		int weightLimit = 00000;
 		
 		/* Set relative probabilities - probabilistic models */
-		boolean relativeProb = false;
+		boolean relativeProb = true;
 		
 		/* Number of different sampling strategies */
 		int sampleQtd = 5;
@@ -104,22 +111,81 @@ public class Testset {
 		 * Type of classifier
 		 * 0 - Naive Bayes
 		 * 1 - C4.5
+		 * 2 - CNM
 		 */
-		int classifierID = 1;
-		
-		runAux(trainFileName, testFileName, classIndex, counterIndex,
-				weightLimit, relativeProb, sampleQtd, classifierID,
-				optionDiscretize, optionNominal);
+		int classifierID = 0;
 
+		/*
+		 * The maximum order of combinations for CNM  
+		 */
+		int maxOrderCNM = 3;
+		
+//		classifierID = 0;
+//		relativeProb = false;
+//		runAux(trainFileName, testFileName, classIndex, counterIndex,
+//				weightLimit, relativeProb, sampleQtd, classifierID,
+//				optionDiscretize, optionNominal);
+//
+//		classifierID = 0;
+//		relativeProb = true;
+//		runAux(trainFileName, testFileName, classIndex, counterIndex,
+//				weightLimit, relativeProb, sampleQtd, classifierID,
+//				optionDiscretize, optionNominal);
+//
+//		classifierID = 1;
+//		runAux(trainFileName, testFileName, classIndex, counterIndex,
+//				weightLimit, relativeProb, sampleQtd, classifierID,
+//				optionDiscretize, optionNominal);
+		
+		/**************************************************************/
+		
+		/* Opens the test set */
+		InstanceSet testData = openFile(testFileName, counterIndex);
+		if (testData == null) {
+			String exceptionMsg = "Couldn't open test data " + testFileName;
+			throw new Exception(exceptionMsg);
+		}
+		testData.setClassIndex(classIndex);
+		
+		/* Naive Bayes */
+		classifierID = 0;
+		relativeProb = false;
+		runAux2(trainFileName, testFileName, classIndex, counterIndex,
+				weightLimit, relativeProb, classifierID, testData, trainData,
+				maxOrderCNM);
+
+		/* Naive Bayes with Relative Prob */
+		classifierID = 0;
+		relativeProb = true;
+		runAux2(trainFileName, testFileName, classIndex, counterIndex,
+				weightLimit, relativeProb, classifierID, testData, trainData,
+				maxOrderCNM);
+
+		/* C4.5 */
+		classifierID = 1;
+		runAux2(trainFileName, testFileName, classIndex, counterIndex,
+				weightLimit, relativeProb, classifierID, testData, trainData,
+				maxOrderCNM);
+
+		/* CNM */
+		classifierID = 2;
+		runAux2(trainFileName, testFileName, classIndex, counterIndex,
+				weightLimit, relativeProb, classifierID, testData, trainData,
+				maxOrderCNM);
+
+		/**************************************************************/
+		
 //		for (weightLimit = 4970; weightLimit < 10000; weightLimit += 100) {
-//			runAux(trainFileName, testFileName, classIndex, counterIndex, weightLimit,
-//					relativeProb, sampleQtd, classifierID, optionDiscretize, optionNominal);
+			runAux(trainFileName, testFileName, classIndex, counterIndex,
+					weightLimit, relativeProb, sampleQtd, classifierID,
+					optionDiscretize, optionNominal, maxOrderCNM);
 //		}
 	}
 
 	private void runAux(String trainFileName, String testFileName, int classIndex,
 			int counterIndex, int weightLimit, boolean relativeProb, int sampleQtd,
-			int classifierID, boolean optionDiscretize, int optionNominal) throws Exception {
+			int classifierID, boolean optionDiscretize, int optionNominal,
+			int maxOrderCNM) throws Exception {
 		
 		/* Opens the test set */
 		InstanceSet testData = openFile(testFileName, counterIndex);
@@ -135,16 +201,19 @@ public class Testset {
 			classifier = new NaiveBayes();
 		} else if (classifierID == 1) {
 			classifier = new C45();
+		} else if (classifierID == 2) {
+			classifier = new CombinatorialNeuralModel(maxOrderCNM);
 		}
 
 		/* Loop through all sample strategies */
 //		for (int sampleID = 0; sampleID < sampleQtd; sampleID++) {
-		for (int sampleID = 3; sampleID < 4; sampleID++) {
+//		for (int sampleID = 0; sampleID < 4; sampleID++) {
+		for (int sampleID = 0; sampleID < 3; sampleID++) {
 			/* Print header */
-			printHeader(sampleID, weightLimit, relativeProb, classifier);
+			printHeader(sampleID, weightLimit, relativeProb, classifierID);
 
 			/* Change the distribution, run the models and evaluate */
-			for (int i = 1; i <= 8; i++) {
+			for (int i = 1; i <= 7; i++) {
 				/* Opens the training set */
 				InstanceSet trainData = openFile(trainFileName, counterIndex);
 				if (trainData == null) {
@@ -160,11 +229,11 @@ public class Testset {
 				}
 				
 				/* Sample training data */
-				trainData = sample(trainData, /*sampleID*/4, i,	optionDiscretize,
+				trainData = sample(trainData, sampleID, i,	optionDiscretize,
 						optionNominal);
 				
 				/* Distribution of the training data */
-				float originalDist[] = distribution(trainData);
+				float[] originalDist = distribution(trainData);
 	
 				/* Build model */
 				classifier = buildModel(trainData, originalDist, classifier);
@@ -181,47 +250,91 @@ public class Testset {
 		System.out.println("With:\n" + maxSEHeader);
 	}
 	
+	private void runAux2(String trainFileName, String testFileName,
+			int classIndex,	int counterIndex, int weightLimit,
+			boolean relativeProb, int classifierID, InstanceSet testData,
+			InstanceSet trainData, int maxOrderCNM) throws Exception {
+		
+		/* Choose classifier */
+		Classifier classifier = null;
+		if (classifierID == 0) {
+			classifier = new NaiveBayes();
+		} else if (classifierID == 1) {
+			classifier = new C45();
+		} else if (classifierID == 2) {
+			classifier = new CombinatorialNeuralModel(maxOrderCNM);
+		}
+
+		/* No sample strategy */
+		int sampleID = -1;
+		
+		printHeader(sampleID, weightLimit, relativeProb, classifierID);
+
+		trainData.setClassIndex(classIndex);
+		
+		/* Limit the weigth */
+		if (weightLimit != 0) {
+			Sampling.limitWeight(trainData, weightLimit, 0);
+		}
+		
+		/* Distribution of the training data */
+		float[] originalDist = distribution(trainData);
+
+		/* Build model */
+		classifier = buildModel(trainData, originalDist, classifier);
+		
+		/* Evaluate model */
+		evaluate(classifier, testData, relativeProb, 1, originalDist);
+		System.out.println("");
+		System.out.println("");
+
+		System.out.println("\n\n");
+		System.out.println("Maximum SE: " + maxSE);
+		System.out.println("With:\n" + maxSEHeader);
+	}
+	
 	private InstanceSet sample(InstanceSet trainData, int sampleID, int i,
-			boolean optionDiscretize, int optionNominal) {
+			boolean optionDiscretize, int optionNominal) throws Exception {
 		/* Get current class distribution  - Two class problem */
-		float originalDist[] = distribution(trainData);
+		float[] originalDist = distribution(trainData);
 		float proportion = originalDist[0] * (float) i;
 		proportion = proportion / (originalDist[1] * (float) (10 - i));
 		switch (sampleID) {
 			case 0:
 				/* Undersampling */
-				Sampling.simpleSampling(trainData,
-						(float) (1 / proportion), 0, false);
-				
+				Sampling.undersampling(trainData,(float) (1 / proportion), 0);
+
 				break;
 			case 1:
 				/* Oversampling */
-				Sampling.simpleSampling(trainData, proportion, 1, false);
+				Sampling.oversampling(trainData, proportion, 1);
 				
 				break;
 			case 2:
 				/* Oversampling */
-				Sampling.simpleSampling(trainData,
-						(float) Math.sqrt(proportion), 1, false);
+				Sampling.oversampling(trainData,
+						(float) Math.sqrt(proportion), 1);
 				
 				/* Undersampling */
-				Sampling.simpleSampling(trainData,
-						(float) Math.sqrt((float) (1 / proportion)), 0, false);
+				Sampling.undersampling(trainData,
+						(float) Math.sqrt((float) (1 / proportion)), 0);
 				
 				break;
 			case 3:
 				/* SMOTE */
 				smote.setInstanceSet(trainData);
-				smote.run(proportion, 1);
+				smote.buildNN(5, 1);
+				smote.run((float) proportion, 1);
 				
 				break;
 			case 4:
 				/* Undersampling */
-				Sampling.simpleSampling(trainData,
-						(float) Math.sqrt((float) (1 / proportion)), 0, false);
+				Sampling.undersampling(trainData,
+						(float) Math.sqrt((float) (1 / proportion)), 0);
 
-				/* SMOTE */
+				/* Cluster-Based SMOTE */
 				smote.setInstanceSet(trainData);
+				smote.buildNN(5, 1);
 				smote.run((float) Math.sqrt(proportion), 1);
 
 				break;
@@ -230,12 +343,14 @@ public class Testset {
 	}
 	
 	private void printHeader(int sampleID, int weightLimit,
-			boolean relativeProb, Classifier classifier) {
+			boolean relativeProb, int classifierID) {
 		
-		if (classifier instanceof NaiveBayes) {
+		if (classifierID == 0) {
 			header = "Naive Bayes";
-		} else if (classifier instanceof C45) {
+		} else if (classifierID == 1) {
 			header = "C4.5";
+		} else if (classifierID == 2) {
+			header = "CNM";
 		}
 		
 		/* Sampling strategy */
@@ -246,13 +361,14 @@ public class Testset {
 		} else if (sampleID == 2) {
 			header = header + ": Oversampling with Undersampling";
 		} else if (sampleID == 3) {
+//			header = header + ": SMOTE with Undersampling";
 			header = header + ": SMOTE";
 		} else if (sampleID == 4) {
-			header = header + ": SMOTE with Undersampling";
+			header = header + ": Cluster-Based SMOTE with Undersampling";
 		}
 
 		if (weightLimit > 0) header = header + " " + "Weight limited to " + weightLimit; 
-		if (relativeProb) header = header + "\n" + "Relative Probabilities"; 
+		if (relativeProb && classifierID == 0) header = header + "\n" + "Relative Probabilities"; 
 		System.out.print("---------------------------------");
 		System.out.println("---------------------------------");
 		System.out.println("");
@@ -266,9 +382,9 @@ public class Testset {
 	private Classifier buildModel(InstanceSet trainData, float originalDist[],
 			Classifier classifier) throws Exception {
 		/* Train the net */
-//		if (classifier instanceof NaiveBayes) {
-//			((NaiveBayes) classifier).setOriginalDistribution(originalDist);
-//		}
+		if (classifier instanceof DistributionClassifier) {
+			((DistributionClassifier) classifier).setOriginalDistribution(originalDist);
+		}
 		classifier.buildClassifier(trainData);
 		
 		return classifier;
@@ -300,7 +416,7 @@ public class Testset {
 	}
 
 	private void evaluate(Classifier classifier, InstanceSet testData,
-			boolean relativeProb, int i, float originalDist[]) throws Exception {
+			boolean relativeProb, int i, float[] originalDist) throws Exception {
 		float percentage = (float) originalDist[1] / (originalDist[0] + originalDist[1]);
 		percentage = (100 * percentage);
 		
@@ -340,8 +456,14 @@ public class Testset {
 	
 	private InstanceSet openFile(String fileName, int counterIndex) throws IOException {
 		File file = new File(fileName);
-		TxtLoader loader = new TxtLoader(file);
+		Loader loader = null;
 		
+		if (fileName.regionMatches(true, fileName.length() - 5, ".arff", 0, 5)) {
+        	loader = new ArffLoader(file);
+        } else if (fileName.regionMatches(true, fileName.length() - 4, ".txt", 0, 4)) {
+        	loader = new TxtLoader(file);
+        }
+
 		/* If the dataset is compacted */
 		loader.setCounterAttribute(counterIndex);
 		
@@ -349,11 +471,127 @@ public class Testset {
 			/* Wait while instances are loaded */
 		}
 		if (loader != null) {
-			InstanceSet instanceSet = loader.getInstances();
+			InstanceSet instanceSet = loader.getInstanceSet();
 
 			return instanceSet;
 		}
 		
 		return null;
 	}
+
+//	private void ema() {
+// 	// hugo
+//	attributeType = new byte[6];
+//	attributeIsString = new boolean[6];
+//	attributeType[0] = NUMERIC;
+//	attributeType[1] = NUMERIC;
+//	attributeType[2] = NUMERIC;
+//	attributeType[3] = NUMERIC;
+//	attributeType[4] = NUMERIC;
+//	attributeType[5] = NUMERIC;
+//	attributeIsString[0] = false;
+//	attributeIsString[1] = false;
+//	attributeIsString[2] = false;
+//	attributeIsString[3] = false;
+//	attributeIsString[4] = false;
+//	attributeIsString[5] = false;
+//}
+
+private void ema() {
+	// banco do brasil
+	attributeType = new byte[11];
+	attributeIsString = new boolean[11];
+	attributeType[0] = NOMINAL;
+	attributeType[1] = NOMINAL;
+	attributeType[2] = NOMINAL;
+//	attributeType[3] = NUMERIC;
+	attributeType[3] = NOMINAL;
+	attributeType[4] = NOMINAL;
+	attributeType[5] = NOMINAL;
+	attributeType[6] = NOMINAL;
+	attributeType[7] = NOMINAL;
+	attributeType[8] = NOMINAL;
+//	attributeType[9] = CYCLIC;
+	attributeType[9] = NOMINAL;
+//	attributeType[9] = NUMERIC;
+	attributeType[10] = NOMINAL;
+	attributeIsString[0] = false;
+	attributeIsString[1] = false;
+	attributeIsString[2] = false;
+	attributeIsString[3] = false;
+	attributeIsString[4] = false;
+	attributeIsString[5] = false;
+	attributeIsString[6] = false;
+	attributeIsString[7] = false;
+	attributeIsString[8] = false;
+	attributeIsString[9] = false;
+	attributeIsString[10] = false;
+	counterIndex = 11;
+}
+
+//private void ema() {
+//	// creditApproval
+//	attributeType = new byte[16];
+//	attributeIsString = new boolean[16];
+//	attributeType[0] = NOMINAL;
+//	attributeType[1] = NUMERIC;
+//	attributeType[2] = NUMERIC;
+//	attributeType[3] = NOMINAL;
+//	attributeType[4] = NOMINAL;
+//	attributeType[5] = NOMINAL;
+//	attributeType[6] = NOMINAL;
+//	attributeType[7] = NUMERIC;
+//	attributeType[8] = NOMINAL;
+//	attributeType[9] = NOMINAL;
+//	attributeType[9] = NOMINAL;
+//	attributeType[10] = NUMERIC;
+//	attributeType[11] = NOMINAL;
+//	attributeType[12] = NOMINAL;
+//	attributeType[13] = NUMERIC;
+//	attributeType[14] = NUMERIC;
+//	attributeType[15] = NOMINAL;
+//	attributeIsString[0] = true;
+//	attributeIsString[1] = true;
+//	attributeIsString[2] = true;
+//	attributeIsString[3] = true;
+//	attributeIsString[4] = true;
+//	attributeIsString[5] = true;
+//	attributeIsString[6] = true;
+//	attributeIsString[7] = true;
+//	attributeIsString[8] = true;
+//	attributeIsString[9] = true;
+//	attributeIsString[10] = true;
+//	attributeIsString[11] = true;
+//	attributeIsString[12] = true;
+//	attributeIsString[13] = true;
+//	attributeIsString[14] = true;
+//	attributeIsString[15] = false;
+//	counterIndex = -1;
+//}
+
+
+//private void ema() {
+//	attributeType = new byte[5];
+//	attributeIsString = new boolean[5];
+//	attributeType[0] = NOMINAL;
+//	attributeIsString[0] = true;
+//	attributeType[1] = NUMERIC;
+//	attributeIsString[1] = false;
+//	attributeType[2] = NUMERIC;
+//	attributeIsString[2] = false;
+//	attributeType[3] = NOMINAL;
+//	attributeIsString[3] = true;
+//	attributeType[4] = NOMINAL;
+//	attributeIsString[4] = true;
+//}
+
+//private void ema() {
+//	attributeType = new byte[23];
+//	attributeIsString = new boolean[23];
+//	for (int i = 0; i < 23; i++) {
+//		attributeType[i] = NOMINAL;
+//		attributeIsString[i] = true;
+//	}
+//}
+
 }

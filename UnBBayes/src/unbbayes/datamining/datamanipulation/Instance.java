@@ -1,5 +1,6 @@
 package unbbayes.datamining.datamanipulation;
 
+import java.io.Serializable;
 import java.util.ResourceBundle;
 
 /**
@@ -10,7 +11,10 @@ import java.util.ResourceBundle;
  *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @version $1.0 $ (16/02/2002)
  */
-public class Instance {
+public class Instance implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
+
 	/** Load resource file from this package */
 	private static ResourceBundle resource = ResourceBundle.getBundle("" +
 			"unbbayes.datamining.datamanipulation.resources." +

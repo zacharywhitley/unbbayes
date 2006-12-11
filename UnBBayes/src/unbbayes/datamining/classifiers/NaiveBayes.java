@@ -1,5 +1,6 @@
 package unbbayes.datamining.classifiers;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
@@ -19,7 +20,10 @@ import unbbayes.prs.bn.ProbabilisticNode;
  * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
  * @version $1.0 $ (17/02/2002)
  */
-public class NaiveBayes extends DistributionClassifier {
+public class NaiveBayes extends DistributionClassifier implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+
 	/** Load resources file from this package */
 	private static ResourceBundle resource = ResourceBundle.getBundle(
 			"unbbayes.datamining.classifiers.resources.ClassifiersResource");
@@ -213,9 +217,12 @@ public class NaiveBayes extends DistributionClassifier {
 		Edge arco = new Edge(classAtt, node);
 		net.addEdge(arco);
 
-		/* Inserção dos valores na tabela de probabilidades */
+		/* Check the type of node's attribute */
 		if (attributeType == InstanceSet.NOMINAL) {
-			/* The attribute is nominal. Get the nominal distribution */
+			/* 
+			 * The attribute is nominal. Get the nominal distribution and insert
+			 * state values in the probability table
+			 */
 			int[] coord = new int[numClasses];
 			for (int k = 0; k < numClasses; k++) {
 				for (int i = 0; i < numValues; i++) {
@@ -226,23 +233,13 @@ public class NaiveBayes extends DistributionClassifier {
 			}
 			++nominalCounter;
 		} else {
-//			/* Numeric attribute. Compute normal density function on the value */
-//			float stdDev;
-//			float mean;
-//			float value;
-//			int[] coord = new int[numClasses];
-//			for (int k = 0; k < numClasses; k++) {
-//				for (int inst = 0; inst < numInstances; inst++) {
-//					coord[0] = inst;
-//					coord[1] = k;
-//					stdDev = (float) stdDevPerClass[numericCounter][k];
-//					mean = (float) meanPerClass[numericCounter][k];
-//					value = dataset[inst][att];
-//					value = Utils.normalDensityFunction(value, stdDev, mean);
-//					tab.setValue(coord, value);
-//				}
-//			}
-//			++numericCounter;
+			/* 
+			 * The attribute is numeric. Set the mean and standard deviation of
+			 * the node.
+			 */
+			node.setMean(meanPerClass[numericCounter]);
+			node.setStandardDeviation(stdDevPerClass[numericCounter]);
+			++numericCounter;
 		}
 	}
 
@@ -269,7 +266,8 @@ public class NaiveBayes extends DistributionClassifier {
 				if (att != classIndex && inst[att] != MISSING_VALUE) {
 					if (attributeType[att] == InstanceSet.NOMINAL) {
 						/* Nominal attribute */
-						probs[k] *= nominalCounts[k][att][(int) inst[att]];
+						probs[k] *= nominalCounts[k][nominalCounter]
+						                             [(int) inst[att]];
 						++nominalCounter;
 					} else {
 						/* Numeric attribute */

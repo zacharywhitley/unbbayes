@@ -10,9 +10,9 @@ public class CompactFileDialog
         {   JComboBox attributesComboBox = new JComboBox();
             attributesComboBox.setMaximumRowCount(5);
             Attribute aux;
-            int numAttributes = loader.getInstances().numAttributes();
+            int numAttributes = loader.getInstanceSet().numAttributes();
             for (int i = 0 ; i < numAttributes ;i++ )
-            {	aux = (Attribute)loader.getInstances().getAttribute(i);
+            {	aux = (Attribute)loader.getInstanceSet().getAttribute(i);
                 attributesComboBox.addItem(aux.getAttributeName());
             }
             JLabel counterLabel = new JLabel("Select Counter Attribute");
@@ -23,7 +23,7 @@ public class CompactFileDialog
             if ((JOptionPane.showInternalConfirmDialog(parent, counterPanel, "", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION))
             {   int selectedAttribute = attributesComboBox.getSelectedIndex();
                 loader.setCounterAttribute(selectedAttribute);
-                loader.getInstances().setCounterAttributeName(attributesComboBox.getSelectedItem()+"");
+                loader.getInstanceSet().setCounterAttributeName(attributesComboBox.getSelectedItem()+"");
                 Options.getInstance().setCompactedFile(true);
             }
         }

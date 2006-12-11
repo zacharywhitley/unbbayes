@@ -69,57 +69,52 @@ public class TxtLoader extends Loader {
 	public void buildHeader() throws IOException {
 		/* Create am arraylist for the attributes */
 		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
-
-		/* Insert attributes in the new dataset */
-		getNextToken();
-		int attIndex = 0;
-		String attName;
 		
 		/* Update initialInstances excluding the header */
 		--initialInstances;
 		
+		/* Build attributes */
+		int counter = 0;
+		String attName;
+		getNextToken();
 		while (tokenizer.ttype != StreamTokenizer.TT_EOL) {
 			attName = tokenizer.sval;
+			
+			/* Check if there is a counter attribute */
+			if (attName.equalsIgnoreCase(counterAttributeName)) {
+				likelycounterIndex = counter;
+			}
 
 			/* Check if the header is ok */
-			if (attName == null) {
-				attName = String.valueOf(tokenizer.nval);
-			}
 			if (attName == null) {
 				errms(resource.getString("Invalid header"));
 			}
 			
-			/* Check if the current attribute is the counter */
-			if (attIndex == counterIndex) {
-				/* Get counter's name and skip to the next attribute */
-				counterAttributeName = attName;
-				tokenizer.nextToken();
-				continue;
-			}
-			
 			/* Build attribute */
-			attributes.add(new Attribute(attName,(byte) 1, true,
-					initialInstances, attIndex));
+			attributes.add(new Attribute(attName,
+										(byte) 1,
+										true,
+										initialInstances,
+										counter));
 			tokenizer.nextToken();
-			++attIndex;
+			++counter;
 		}
 		
-		int size = attributes.size();
-		Attribute[] attributesArray = new Attribute[size];
+		numAttributes = counter;
+		attributeType = new byte[numAttributes];
+		attributeIsString = new boolean[numAttributes];
+		Attribute[] attributesArray = new Attribute[numAttributes];
 		
-		for (int i = 0; i < size; i++) {
-			attributesArray[i] = (Attribute)attributes.get(i);
+		for (int att = 0; att < numAttributes; att++) {
+			attributesArray[att] = (Attribute)attributes.get(att);
+			attributeType[att] = InstanceSet.NOMINAL;
+			attributeIsString[att] = true;
 		}
 		
 		/* Create the instanceSet */
 		instanceSet = new InstanceSet(initialInstances, attributesArray);
 		instanceSet.setCounterAttributeName(counterAttributeName);
-		
-		/* Set the current number of attributes */
-		numAttributes = attIndex;
 	}
-
-
 
 	/**
 	 * Reads and stores header of a TXT file.
@@ -130,8 +125,6 @@ public class TxtLoader extends Loader {
 	 */
 	public void readHeader() throws IOException {
 		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
-		
-		ema();
 		
 		/* Insert attributes in the new dataset */
 		getNextToken();
@@ -172,19 +165,18 @@ public class TxtLoader extends Loader {
 			++attIndex;
 		}
 		
-		int size = attributes.size();
-		Attribute[] attributesArray = new Attribute[size];
+		/* Set the current number of attributes */
+		numAttributes = attributes.size();
 		
-		for (int i = 0; i < size; i++) {
+		Attribute[] attributesArray = new Attribute[numAttributes];
+		
+		for (int i = 0; i < numAttributes; i++) {
 			attributesArray[i] = (Attribute)attributes.get(i);
 		}
 		
 		/* Create the instanceSet */
 		instanceSet = new InstanceSet(initialInstances, attributesArray);
 		instanceSet.setCounterAttributeName(counterAttributeName);
-		
-		/* Set the current number of attributes */
-		numAttributes = attIndex;
 	}
 
 	/**
@@ -218,87 +210,6 @@ public class TxtLoader extends Loader {
 	}
 
 	/**
-	 * Reads a single instance using the tokenizer and appends it
-	 * to the dataset. Automatically expands the dataset if it
-	 * is not large enough to hold the instance.
-	 *
-	 * @return False if end of file has been reached
-	 * @exception IOException if the information is not read
-	 * successfully
-	 */
-	private boolean getInstanceAux() throws IOException {
-		/* Alocate space for the attributes and the counter variable */
-		float[] instance = new float[numAttributes + 1];
-		
-		/* Default value for the weight of an instance */
-		float instanceWeight = 1;
-		
-		int attIndex = 0;
-		String stringValue;
-		float numberValue;
-		int columns = numAttributes;
-		
-		/* Check if the instanceSet file has a counter attribute */
-		if (counterIndex != -1) {
-			/* Read the counter attribute */
-			++columns;
-		}
-		
-		/* 
-		 * Create instance. Iterate over all attributes and the counter
-		 * variable
-		 */
-		for (int i = 0; i < columns; i++) {
-			/* Check if the current attribute is the counter attribute */
-			if (i == counterIndex) {
-				try {
-					instanceWeight = (float) tokenizer.nval;
-					continue;
-				} catch (NumberFormatException nfe) {
-					errms("Atributo de contagem inválido");
-				}
-			}
-			
-			/* Check the type of the token */
-			if (tokenizer.sval != null) {
-				/* The token is a String */
-				stringValue = tokenizer.sval;
-				
-				/* Check if value is missing */ 
-				if (stringValue.equals("?")) {
-					instance[attIndex] = Instance.MISSING_VALUE;
-				}
-
-				/* Map the current String value to an internal value */ 
-				Attribute attribute = instanceSet.getAttribute(i);
-				instance[attIndex] = attribute.addValue(stringValue);
-			} else {
-				/* The token is a number. Check if the attribute type was set
-				 * to nominal.
-				 */
-				if (attributeType[attIndex] == NOMINAL) {
-					/* Map the current nominal value to an internal value */
-					numberValue = (float) tokenizer.nval;
-					Attribute attribute = instanceSet.getAttribute(i);
-					instance[attIndex] = attribute.addValue(numberValue);
-				} else {
-					instance[attIndex] = (float) tokenizer.nval;
-				}
-			}
-			++attIndex;
-			tokenizer.nextToken();
-		}
-		
-		/* Set the weight of this instance */
-		instance[attIndex] = instanceWeight;
-		
-		/* Add the current instance to the instanceSet */
-		instanceSet.insertInstance(new Instance(instance));
-
-		return true;
-	}
-
-	/**
 	 * Gets next token, skipping empty lines.
 	 *
 	 * @param tokenizer Stream tokenizer
@@ -325,114 +236,4 @@ public class TxtLoader extends Loader {
 		}
 	}
 
-//	private void ema() {
-//		attributeType = new byte[6];
-//		attributeIsString = new boolean[6];
-//		attributeType[0] = NUMERIC;
-//		attributeType[1] = NUMERIC;
-//		attributeType[2] = NUMERIC;
-//		attributeType[3] = NUMERIC;
-//		attributeType[4] = NUMERIC;
-//		attributeType[5] = NUMERIC;
-//		attributeIsString[0] = false;
-//		attributeIsString[1] = false;
-//		attributeIsString[2] = false;
-//		attributeIsString[3] = false;
-//		attributeIsString[4] = false;
-//		attributeIsString[5] = false;
-//	}
-
-	private void ema() {
-		attributeType = new byte[11];
-		attributeIsString = new boolean[11];
-		attributeType[0] = NOMINAL;
-		attributeType[1] = NOMINAL;
-		attributeType[2] = NOMINAL;
-		attributeType[3] = NOMINAL;
-		attributeType[4] = NOMINAL;
-		attributeType[5] = NOMINAL;
-		attributeType[6] = NOMINAL;
-		attributeType[7] = NOMINAL;
-		attributeType[8] = NOMINAL;
-		attributeType[9] = CYCLIC;
-//		attributeType[9] = NOMINAL;
-//		attributeType[9] = NUMERIC;
-		attributeType[10] = NOMINAL;
-		attributeIsString[0] = false;
-		attributeIsString[1] = false;
-		attributeIsString[2] = false;
-		attributeIsString[3] = false;
-		attributeIsString[4] = false;
-		attributeIsString[5] = false;
-		attributeIsString[6] = false;
-		attributeIsString[7] = false;
-		attributeIsString[8] = false;
-		attributeIsString[9] = false;
-		attributeIsString[10] = false;
-	}
-
-//	private void ema() {
-//		// creditApproval
-//		attributeType = new byte[16];
-//		attributeIsString = new boolean[16];
-//		attributeType[0] = NOMINAL;
-//		attributeType[1] = NUMERIC;
-//		attributeType[2] = NUMERIC;
-//		attributeType[3] = NOMINAL;
-//		attributeType[4] = NOMINAL;
-//		attributeType[5] = NOMINAL;
-//		attributeType[6] = NOMINAL;
-//		attributeType[7] = NUMERIC;
-//		attributeType[8] = NOMINAL;
-//		attributeType[9] = NOMINAL;
-//		attributeType[9] = NOMINAL;
-//		attributeType[10] = NUMERIC;
-//		attributeType[11] = NOMINAL;
-//		attributeType[12] = NOMINAL;
-//		attributeType[13] = NUMERIC;
-//		attributeType[14] = NUMERIC;
-//		attributeType[15] = NOMINAL;
-//		attributeIsString[0] = true;
-//		attributeIsString[1] = true;
-//		attributeIsString[2] = true;
-//		attributeIsString[3] = true;
-//		attributeIsString[4] = true;
-//		attributeIsString[5] = true;
-//		attributeIsString[6] = true;
-//		attributeIsString[7] = true;
-//		attributeIsString[8] = true;
-//		attributeIsString[9] = true;
-//		attributeIsString[10] = true;
-//		attributeIsString[11] = true;
-//		attributeIsString[12] = true;
-//		attributeIsString[13] = true;
-//		attributeIsString[14] = true;
-//		attributeIsString[15] = false;
-//		counterIndex = -1;
-//	}
-
-
-//	private void ema() {
-//		attributeType = new byte[5];
-//		attributeIsString = new boolean[5];
-//		attributeType[0] = NOMINAL;
-//		attributeIsString[0] = true;
-//		attributeType[1] = NUMERIC;
-//		attributeIsString[1] = false;
-//		attributeType[2] = NUMERIC;
-//		attributeIsString[2] = false;
-//		attributeType[3] = NOMINAL;
-//		attributeIsString[3] = true;
-//		attributeType[4] = NOMINAL;
-//		attributeIsString[4] = true;
-//	}
-
-//	private void ema() {
-//		attributeType = new byte[23];
-//		attributeIsString = new boolean[23];
-//		for (int i = 0; i < 23; i++) {
-//			attributeType[i] = NOMINAL;
-//			attributeIsString[i] = true;
-//		}
-//	}
 }

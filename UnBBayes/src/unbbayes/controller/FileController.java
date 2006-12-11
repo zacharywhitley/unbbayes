@@ -131,7 +131,7 @@ public class FileController
 		ProgressDialog progressDialog = new ProgressDialog (f.getName(), loader);
 		boolean successStatus = progressDialog.load();
 
-		InstanceSet inst = loader.getInstances();
+		InstanceSet inst = loader.getInstanceSet();
 
         if(successStatus)
         {
@@ -161,7 +161,7 @@ public class FileController
 		  while (loader.getInstance())
 		  {}
 
-		  return loader.getInstances();
+		  return loader.getInstanceSet();
 	  }
 
 	//--------------------------------------------------------------//

@@ -1,5 +1,8 @@
 package unbbayes.datamining.evaluation;
 
+import java.util.Date;
+import java.util.Random;
+
 import unbbayes.datamining.classifiers.Classifier;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 
@@ -25,12 +28,11 @@ public class CrossValidation implements ITrainingMode {
 	 */
 	public void crossValidateModel(InstanceSet data, Classifier classifier)
 			throws Exception {
-		// TODO DESCOMENTAR E CORRIGIR ERRO
-		// data.randomize(data.getRandomNumberGenerator((new
-		// Date()).getTime()));
-		// if (data.getClassAttribute().isNominal()) {
-		// data.stratify();
-		// }
+		 data.randomize(new Random(new Date().getTime()));
+//		 TODO DESCOMENTAR E CORRIGIR ERRO
+//		 if (data.getClassAttribute().isNominal()) {
+//			 data.stratify();
+//		 }
 		double bestPctCorrect = 0.0;
 		int bestModel = 0;
 		// Do the folds
@@ -90,10 +92,21 @@ public class CrossValidation implements ITrainingMode {
 		}
 		train = new InstanceSet(instances, (numInstances - numInstForFold));
 		first = numFold * (numInstances / numFolds) + offset;
-		// TODO DESCOMENTAR E CORRIGIR ERRO
-		// instances.copyInstances(0, train, 0, first);
-		// instances.copyInstances(first + numInstForFold, train, first,
-		// numInstances - first - numInstForFold);
+		
+		/* 
+		 * Build training set with all instances from the input instanceSet
+		 * except those instances chosen to the test set: numInstForFold
+		 * instances starting from the 'first' instance. 
+		 */
+		/* First, copy those instances before the 'first' instance */
+		int start = 0;
+		numInstances = first;
+		instances.copyInstances(start, train, numInstances);
+		
+		/* Next, copy those instances after 'first + numInstForFold' */
+		start = first + numInstForFold;
+		numInstances = numInstances - start;
+		instances.copyInstances(start, train, numInstances);
 
 		return train;
 	}
@@ -135,17 +148,8 @@ public class CrossValidation implements ITrainingMode {
 			offset = numInstances % numFolds;
 		test = new InstanceSet(instances, numInstForFold);
 		first = numFold * (numInstances / numFolds) + offset;
-		// TODO DESCOMENTAR E CORRIGIR ERRO
-		//instances.copyInstances(first, test, 0, numInstForFold);
+		instances.copyInstances(first, test, numInstForFold);
 		return test;
-	}
-
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
 	}
 
 }

@@ -3,7 +3,6 @@ package unbbayes.datamining.classifiers;
 import java.util.ResourceBundle;
 
 import unbbayes.datamining.datamanipulation.Instance;
-import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Utils;
 
 /**
@@ -149,5 +148,9 @@ public abstract class DistributionClassifier extends Classifier {
 		classificationType = ABSOLUTE_FREQUENCY_CLASSIFICATION;
 		this.classValues = classValues;
 		this.probabilities = probabilities;
+	}
+	
+	public void setOriginalDistribution(float[] originalDistribution) {
+		this.originalDistribution = originalDistribution;
 	}
 }

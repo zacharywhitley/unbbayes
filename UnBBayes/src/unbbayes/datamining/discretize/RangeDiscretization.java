@@ -36,8 +36,8 @@ public class RangeDiscretization implements IDiscretization
 		{	int position = att.getIndex();
 		Attribute newAttribute = new Attribute(att.getAttributeName(),
 				Attribute.NOMINAL,
-				false,
-				att.numValues(),
+				true,
+				numThresholds,
 				position
 				);
 			//pega os valores do atributo

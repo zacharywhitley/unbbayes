@@ -4,8 +4,11 @@ import java.awt.BasicStroke;
 import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
+import java.io.Serializable;
 
-public class DrawEllipse extends DrawElement {
+public class DrawEllipse extends DrawElement implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 	
 	private Point2D.Double position;
 	private Point2D.Double size;

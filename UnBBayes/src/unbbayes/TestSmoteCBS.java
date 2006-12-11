@@ -16,15 +16,14 @@ import unbbayes.datamining.datamanipulation.TxtLoader;
 import unbbayes.datamining.distance.Euclidean;
 import unbbayes.datamining.distance.IDistance;
 import unbbayes.datamining.preprocessor.imbalanceddataset.ClusterBasedSmote;
-import unbbayes.datamining.preprocessor.imbalanceddataset.Sampling;
 
 /**
  *
  * @author Emerson Lopes Machado - emersoft@conectanet.com.br
  * @date 11/10/2006
  */
-public class Testset2 {
-	public Testset2() {
+public class TestSmoteCBS {
+	public TestSmoteCBS() {
 		try {
 			run();
 		} catch (Exception e) {
@@ -32,61 +31,10 @@ public class Testset2 {
 		}
 	}
 
-	public void run2() throws Exception {
-		/* Data set characteristics */
-		String trainFileName = "c:/m1t.txt";
-		byte classIndex = 10;
-		byte counterIndex = 11;
-//		String trainFileName = "c:/creditApproval.txt";
-//		byte classIndex = 15;
-//		byte counterIndex = -1;
-
-		/* Opens the training set */
-		InstanceSet trainData = openFile(trainFileName, counterIndex);
-		if (trainData == null) {
-			String exceptionMsg = "Couldn't open test data " + trainFileName;
-			throw new Exception(exceptionMsg);
-		}
-		trainData.setClassIndex(classIndex);
-		
-//		float proportion = 838.66486f;
-////		/* Undersampling */
-////		Sampling.simpleSampling(trainData, (1 / proportion), 0);
-//		
-//		/* Oversampling */
-//		Sampling.simpleSampling(trainData, proportion, 1);
-//		
-//		int normFactor = 4;
-//		IDistance distance = new Euclidean(trainData, normFactor);
-//		Kmeans kmeans = new Kmeans(trainData);
-//		kmeans.setOptionDistance(distance);
-//		int[] numericClusters = kmeans.clusterize(5, 1.001f);
-//		
-//		Squeezer squeezer = new Squeezer(trainData);
-//		int[] nominalClusters = squeezer.clusterize(4f);
-//
-//		float[] weight = {trainData.numNumericAttributes, trainData.numNominalAttributes};
-//		CEBMDC cebmdc = new CEBMDC(trainData);
-//		cebmdc.clusterize(numericClusters, nominalClusters, weight, 1.8f);
-//		int[] clusters = cebmdc.getAssignmentMatrix();
-//		
-//		/* cross class with cluster */
-//		int numClusters = cebmdc.getNumClusters();
-//		int[][] count = new int[numClusters][2];
-////		Arrays.fill(count, 0);
-//		for (int i = 0; i < clusters.length; i++) {
-//			count[clusters[i]][(int) trainData.instances[i].data[classIndex]] +=  trainData.instances[i].data[counterIndex];
-//		}
-//		double ema = 0;
-//		for (int i = 0; i < numClusters; i++) {
-//			ema += Math.max(count[i][0], count[i][1]);
-//		}
-//		ema /= (double) trainData.numWeightedInstances;
-		
-		@SuppressWarnings("unused")
-		int x = 0;
+	public static void main(String[] args) {
+		new TestSmoteCBS();
 	}
-	
+
 	public void run() throws Exception {
 		/* Data set characteristics */
 		String trainFileName = "c:/m1t.txt";
@@ -220,7 +168,7 @@ public class Testset2 {
 			/* Wait while instances are loaded */
 		}
 		if (loader != null) {
-			InstanceSet instanceSet = loader.getInstances();
+			InstanceSet instanceSet = loader.getInstanceSet();
 
 			return instanceSet;
 		}

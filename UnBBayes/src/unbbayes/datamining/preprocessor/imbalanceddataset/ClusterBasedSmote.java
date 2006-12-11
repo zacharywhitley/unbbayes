@@ -94,7 +94,11 @@ public class ClusterBasedSmote {
 		numInstances = instanceSet.numInstances;
 		counterIndex = instanceSet.counterIndex;
 		classIndex = instanceSet.classIndex;
-		numClasses = instanceSet.getAttribute(classIndex).numValues();
+		if (classIndex != -1) {
+			numClasses = instanceSet.getAttribute(classIndex).numValues();
+		} else {
+			numClasses = 0;
+		}
 	}
 	
 	public InstanceSet run(int[][][] clusters, int[] numClusters,
@@ -223,7 +227,7 @@ public class ClusterBasedSmote {
 		 * its biggest cluster.
 		 */
 		double finalSize;
-		smote.buildNN(5, 0);
+		smote.buildNN(5, -1);
 		for (int clusterID = 0; clusterID < numClusters; clusterID++) {
 			if (clusterID != biggestClusterIndex) {
 				finalSize = biggestClusterSize / numClusters;

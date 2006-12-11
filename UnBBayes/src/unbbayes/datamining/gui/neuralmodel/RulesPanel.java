@@ -269,9 +269,9 @@ public class RulesPanel extends JPanel {
 
     for(int i=0; i<numOfTokens; i++){
       input = new int[2];
-      input[0] = Integer.parseInt(strTokenizer.nextToken());
+      input[0] = (int) Float.parseFloat(strTokenizer.nextToken());
       i++;
-      input[1] = Integer.parseInt(strTokenizer.nextToken());
+      input[1] = (int) Float.parseFloat(strTokenizer.nextToken());
       inputArray.add(input);
     }
     return inputArray;

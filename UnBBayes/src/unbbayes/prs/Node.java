@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.datamining.datamanipulation.Attribute;
 import unbbayes.gui.draw.DrawElement;
 import unbbayes.gui.draw.DrawText;
 import unbbayes.gui.draw.IOnePositionDrawable;
@@ -73,6 +74,18 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	public static final int EXPLANATION_TYPE = 4;
 	
 	protected DrawElement drawElement;
+	
+	/**
+	 * Holds the mean of the values for each class if this is a numeric
+	 * attribute node
+	 */
+	protected double[] mean;
+
+	/**
+	 * Holds the standard deviation of the values for each class if this is a
+	 * numeric attribute node.
+	 */		
+	protected double[] standardDeviation;
 
 	/**
 	 *  Constrói um novo nó e faz as devidas inicializações.
@@ -493,4 +506,41 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	public void setSizeIsVariable(boolean is){
 	   sizeIsVariable = is; 	
 	}
+	
+	/**
+	 * Set the mean of the values if this is a numeric attribute node.
+	 * 
+	 * @param mean
+	 */
+	public void setMean(double[] mean) {
+		this.mean = mean;
+	}
+	
+	/**
+	 * Set the mean of the values if this is a numeric attribute node.
+	 * 
+	 * @param mean
+	 */
+	public void setStandardDeviation(double[] standardDeviation) {
+		this.standardDeviation = standardDeviation;
+	}
+	
+	/**
+	 * Get the mean of the values if this is a numeric attribute node.
+	 * 
+	 * @param mean
+	 */
+	public double[] getMean() {
+		return mean;
+	}
+	
+	/**
+	 * Get the mean of the values if this is a numeric attribute node.
+	 * 
+	 * @param mean
+	 */
+	public double[] getStandardDeviation() {
+		return standardDeviation;
+	}
+	
 }

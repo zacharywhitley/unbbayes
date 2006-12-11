@@ -521,10 +521,21 @@ public class Evaluation implements IProgress {
 		}
 		train = new InstanceSet(instances, (numInstances - numInstForFold));
 		first = numFold * (numInstances / numFolds) + offset;
-		// TODO DESCOMENTAR E CORRIGIR ERRO
-		//instances.copyInstances(0, train, 0, first);
-		//instances.copyInstances(first + numInstForFold, train, train
-			//	.numInstances(), numInstances - first - numInstForFold);
+
+		/* 
+		 * Build training set with all instances from the input instanceSet
+		 * except those instances chosen to the test set: numInstForFold
+		 * instances starting from the 'first' instance. 
+		 */
+		/* First, copy those instances before the 'first' instance */
+		int start = 0;
+		numInstances = first;
+		instances.copyInstances(start, train, numInstances);
+		
+		/* Next, copy those instances after 'first + numInstForFold' */
+		start = first + numInstForFold;
+		numInstances = numInstances - start;
+		instances.copyInstances(start, train, numInstances);
 
 		return train;
 	}
@@ -563,8 +574,8 @@ public class Evaluation implements IProgress {
 			offset = numInstances % numFolds;
 		test = new InstanceSet(instances, numInstForFold);
 		first = numFold * (numInstances / numFolds) + offset;
-		// TODO DESCOMENTAR E CORRIGIR ERRO
-		//instances.copyInstances(first, test, 0, numInstForFold);
+		instances.copyInstances(first, test, numInstForFold);
+
 		return test;
 	}
 

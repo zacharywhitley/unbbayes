@@ -80,6 +80,7 @@ public abstract class Clustering {
 		numNominalAttributes = instanceSet.numNominalAttributes;
 		numCyclicAttributes = instanceSet.numCyclicAttributes;
 		counterIndex = instanceSet.counterIndex;
+		attributeType = instanceSet.attributeType;
 		clusters = null;
 		clustersSize = null;
 		assignmentMatrix = null;

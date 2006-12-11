@@ -7,9 +7,12 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextAttribute;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.io.Serializable;
 import java.text.AttributedString;
 
-public class DrawText extends DrawElement {
+public class DrawText extends DrawElement implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
 	
 	private String text;
 	private Point2D.Double position;

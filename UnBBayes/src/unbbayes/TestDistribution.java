@@ -1,19 +1,22 @@
-package unbbayes.datamining.preprocessor;
+package unbbayes;
 
 import java.io.File;
 import java.io.IOException;
 
+import unbbayes.datamining.datamanipulation.ArffLoader;
 import unbbayes.datamining.datamanipulation.ArffSaver;
 import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.Loader;
 import unbbayes.datamining.datamanipulation.TxtLoader;
+import unbbayes.datamining.preprocessor.TrainingTestSetCreator;
 
 /**
  *
  * @author Emerson Lopes Machado - emersoft@conectanet.com.br
- * @date 21/11/2006
+ * @date 01/12/2006
  */
-public class TrainingTestSetCreator {
-	public TrainingTestSetCreator() {
+public class TestDistribution {
+	public TestDistribution() {
 		try {
 			run();
 		} catch (Exception e) {
@@ -22,15 +25,13 @@ public class TrainingTestSetCreator {
 	}
 
 	public static void main(String[] args) {
-		new TrainingTestSetCreator();
+		new TestDistribution();
 	}
 	
 	public void run() throws Exception {
 		/* Data set characteristics */
-		String inputFileName = "c:/m1t.txt";
-		String trainFileName = "c:/m1t.arff";
-		String testFileName = "c:/m1av.arff";
-		byte counterIndex = -1;
+		String inputFileName = "c:/m1av.arff";
+		byte counterIndex = 11;
 		int classIndex = 10;
 	
 		/* Opens the input dataset */
@@ -40,55 +41,36 @@ public class TrainingTestSetCreator {
 			throw new Exception(exceptionMsg);
 		}
 
-		/* Build the test and training instanceSets */
-		int testSize = Math.round((float) inputData.numInstances / 3);
-		InstanceSet testData = inputData.buildTrainTestSet(testSize);
-		InstanceSet trainData = inputData;
-		
-		/* Select all attributes to be saved */
-		int[] selectedAttributes = new int[inputData.numAttributes];
-		for (int att = 0; att < inputData.numAttributes; att++) {
-			selectedAttributes[att] = att;
-		}
-		
-		/* Save the training instance */
-		saveFile(trainFileName, trainData, selectedAttributes, true);
-		
-		/* Save the test instance */
-		saveFile(testFileName, testData, selectedAttributes, true);
+		inputData.setClassIndex(classIndex);
+		float originalDist[] = distribution(inputData);
+
+		@SuppressWarnings("unused")
+		int ema = 0;
 	}
 	
 	private InstanceSet openFile(String fileName, int counterIndex) throws IOException {
 		File file = new File(fileName);
-		TxtLoader loader = new TxtLoader(file);
+		Loader loader = null;
 		
+		if (fileName.regionMatches(true, fileName.length() - 5, ".arff", 0, 5)) {
+        	loader = new ArffLoader(file);
+        } else if (fileName.regionMatches(true, fileName.length() - 4, ".txt", 0, 4)) {
+        	loader = new TxtLoader(file);
+        }
+
 		/* If the dataset is compacted */
 		loader.setCounterAttribute(counterIndex);
-
-		/* Get the instances one by one */
+		
 		while (loader.getInstance()) {
 			/* Wait while instances are loaded */
 		}
-
-		/* Return the instanceSet if read successfully */
 		if (loader != null) {
 			InstanceSet instanceSet = loader.getInstanceSet();
+
 			return instanceSet;
 		}
 		
 		return null;
-	}
-
-	private void saveFile(String fileName, InstanceSet instanceSet,
-			int[] selectedAttributes, boolean compacted) 
-	throws IOException {
-		File file = new File(fileName);
-		ArffSaver saver = new ArffSaver(file, instanceSet, selectedAttributes, 
-				compacted);
-		
-		while (saver.setInstance()) {
-			/* Wait while instances are loaded */
-		}
 	}
 
 	private float[] distribution(InstanceSet trainData) {
@@ -116,5 +98,5 @@ public class TrainingTestSetCreator {
 		return distribution;
 	}
 
-
 }
+
