@@ -165,7 +165,7 @@ public class FileController
 
 		  //starts loading and shows a status screen
 		  ProgressDialog progressDialog = new ProgressDialog (output.getName(), saver);
-		  boolean successStatus = progressDialog.load();
+		  progressDialog.load();
 		}
 
 }

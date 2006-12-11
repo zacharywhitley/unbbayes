@@ -162,6 +162,9 @@ public class AttributeTypeChooserController {
 			if (loader instanceof ArffLoader) {
 				((ArffLoader) loader).buildAttributes();
 			}
+		} else {
+			/* Canceled by the user */
+			loader = null;
 		}
 	}
 
