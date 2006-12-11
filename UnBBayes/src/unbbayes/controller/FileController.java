@@ -118,6 +118,11 @@ public class FileController
 		attributeTypeChooser = new AttributeTypeChooserController(file, component);
 		Loader loader = attributeTypeChooser.getLoader();
 		
+		/* Check if the user cancelled the opening operation */
+		if (loader == null) {
+			return null;
+		}
+		
 		/* Starts loading and shows a status screen */
 		String fileName = file.getName();
 		ProgressDialog progressDialog = new ProgressDialog (fileName, loader);
