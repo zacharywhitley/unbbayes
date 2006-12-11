@@ -10,26 +10,19 @@ import javax.help.HelpSet;
 import javax.help.JHelp;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.ProgressMonitor;
-import javax.swing.Timer;
 
-import unbbayes.datamining.datamanipulation.ArffLoader;
 import unbbayes.datamining.datamanipulation.ArffSaver;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Loader;
 import unbbayes.datamining.datamanipulation.Saver;
-import unbbayes.datamining.datamanipulation.TxtLoader;
 import unbbayes.datamining.datamanipulation.TxtSaver;
 import unbbayes.datamining.gui.datamanipulation.AttributeTypeChooserController;
 
 public class FileController
 {   /** Uma instância deste objeto */
 	private static FileController singleton;
-	private File selectedFile;
 	private ResourceBundle resource;
 	private JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
-	private Timer activityMonitor;
-	private ProgressMonitor progressDialog;
 
 	//--------------------------------------------------------------//
 
