@@ -11,8 +11,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.swing.JProgressBar;
-
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
@@ -374,7 +372,7 @@ public class PrOwlIO implements MebnIO {
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
 				individualTwo = (OWLIndividual) itIn.next();
 				generativeInputNode = mapGenerativeInputNode.get(individualTwo.getBrowserText()); 
-				domainResidentNode.addInputInstanceFromList(generativeInputNode); 
+				generativeInputNode.setInputInstanceOf(domainResidentNode); 
 				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
 			}
 			
