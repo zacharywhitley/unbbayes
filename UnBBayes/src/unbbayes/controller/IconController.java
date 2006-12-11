@@ -1,5 +1,7 @@
 package unbbayes.controller;
 
+import java.io.Serializable;
+
 import javax.swing.ImageIcon;
 
 /**
@@ -20,7 +22,10 @@ import javax.swing.ImageIcon;
  * @version 1.0 13/04/2003
  */
 
-public class IconController {
+public class IconController implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+
 	private static IconController singleton;
 
 	protected ImageIcon metalIcon;
