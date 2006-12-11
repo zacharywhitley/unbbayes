@@ -107,13 +107,13 @@ public class IconController implements Serializable {
 	protected ImageIcon grayBoxIcon; 	
 
 	protected ImageIcon arffFileIcon = new ImageIcon(getClass().getResource(
-			"../icons/arff-file.gif"));
+			"/icons/arff-file.gif"));
 
 	protected ImageIcon txtFileIcon = new ImageIcon(getClass().getResource(
-			"../icons/txt-file.gif"));
+			"/icons/txt-file.gif"));
 
 	protected ImageIcon netFileIcon = new ImageIcon(getClass().getResource(
-			"../icons/net-file.gif"));
+			"/icons/net-file.gif"));
 
 	protected ImageIcon deleteFolderIcon;
 
@@ -250,7 +250,7 @@ public class IconController implements Serializable {
 			return metalIcon;
 		} else {
 			metalIcon = new ImageIcon(getClass()
-					.getResource("../icons/metal.gif"));
+					.getResource("/icons/metal.gif"));
 			return metalIcon;
 		}
 	}
@@ -260,7 +260,7 @@ public class IconController implements Serializable {
 			return motifIcon;
 		} else {
 			motifIcon = new ImageIcon(getClass()
-					.getResource("../icons/motif.gif"));
+					.getResource("/icons/motif.gif"));
 			return motifIcon;
 		}
 	}
@@ -270,7 +270,7 @@ public class IconController implements Serializable {
 			return windowsIcon;
 		} else {
 			windowsIcon = new ImageIcon(getClass().getResource(
-					"../icons/windows.gif"));
+					"/icons/windows.gif"));
 			return windowsIcon;
 		}
 	}
@@ -280,7 +280,7 @@ public class IconController implements Serializable {
 			return cascadeIcon;
 		} else {
 			cascadeIcon = new ImageIcon(getClass().getResource(
-					"../icons/cascade.gif"));
+					"/icons/cascade.gif"));
 			return cascadeIcon;
 		}
 	}
@@ -289,7 +289,7 @@ public class IconController implements Serializable {
 		if (tileIcon != null) {
 			return tileIcon;
 		} else {
-			tileIcon = new ImageIcon(getClass().getResource("../icons/tile.gif"));
+			tileIcon = new ImageIcon(getClass().getResource("/icons/tile.gif"));
 			return tileIcon;
 		}
 	}
@@ -298,7 +298,7 @@ public class IconController implements Serializable {
 		if (helpIcon != null) {
 			return helpIcon;
 		} else {
-			helpIcon = new ImageIcon(getClass().getResource("../icons/help.gif"));
+			helpIcon = new ImageIcon(getClass().getResource("/icons/help.gif"));
 			return helpIcon;
 		}
 	}
@@ -308,7 +308,7 @@ public class IconController implements Serializable {
 			return globalOptionIcon;
 		} else {
 			globalOptionIcon = new ImageIcon(getClass().getResource(
-					"../icons/global-options.gif"));
+					"/icons/global-options.gif"));
 			return globalOptionIcon;
 		}
 	}
@@ -318,7 +318,7 @@ public class IconController implements Serializable {
 			return printIcon;
 		} else {
 			printIcon = new ImageIcon(getClass()
-					.getResource("../icons/print.gif"));
+					.getResource("/icons/print.gif"));
 			return printIcon;
 		}
 	}
@@ -328,7 +328,7 @@ public class IconController implements Serializable {
 			return visualizeIcon;
 		} else {
 			visualizeIcon = new ImageIcon(getClass().getResource(
-					"../icons/visualize.gif"));
+					"/icons/visualize.gif"));
 			return visualizeIcon;
 		}
 	}
@@ -338,7 +338,7 @@ public class IconController implements Serializable {
 			return compileIcon;
 		} else {
 			compileIcon = new ImageIcon(getClass().getResource(
-					"../icons/compile.gif"));
+					"/icons/compile.gif"));
 			return compileIcon;
 		}
 	}
@@ -347,7 +347,7 @@ public class IconController implements Serializable {
 		if (openIcon != null) {
 			return openIcon;
 		} else {
-			openIcon = new ImageIcon(getClass().getResource("../icons/open.gif"));
+			openIcon = new ImageIcon(getClass().getResource("/icons/open.gif"));
 			return openIcon;
 		}
 	}
@@ -356,7 +356,7 @@ public class IconController implements Serializable {
 		if (saveIcon != null) {
 			return saveIcon;
 		} else {
-			saveIcon = new ImageIcon(getClass().getResource("../icons/save.gif"));
+			saveIcon = new ImageIcon(getClass().getResource("/icons/save.gif"));
 			return saveIcon;
 		}
 	}
@@ -366,7 +366,7 @@ public class IconController implements Serializable {
 			return returnIcon;
 		} else {
 			returnIcon = new ImageIcon(getClass().getResource(
-					"../icons/return.gif"));
+					"/icons/return.gif"));
 			return returnIcon;
 		}
 	}
@@ -376,7 +376,7 @@ public class IconController implements Serializable {
 			return diagnosticMetaphorIcon;
 		} else {
 			diagnosticMetaphorIcon = new ImageIcon(getClass().getResource(
-					"../icons/diagnostic-metaphor.gif"));
+					"/icons/diagnostic-metaphor.gif"));
 			return diagnosticMetaphorIcon;
 		}
 	}
@@ -386,7 +386,7 @@ public class IconController implements Serializable {
 			return diagnosticMetaphorRollOverIcon;
 		} else {
 			diagnosticMetaphorRollOverIcon = new ImageIcon(getClass()
-					.getResource("../icons/diagnostics-metaphor.gif"));
+					.getResource("/icons/diagnostics-metaphor.gif"));
 			return diagnosticMetaphorRollOverIcon;
 		}
 	}
@@ -396,7 +396,7 @@ public class IconController implements Serializable {
 			return openMetaphorIcon;
 		} else {
 			openMetaphorIcon = new ImageIcon(getClass().getResource(
-					"../icons/open-metaphor.gif"));
+					"/icons/open-metaphor.gif"));
 			return openMetaphorIcon;
 		}
 	}
@@ -406,7 +406,7 @@ public class IconController implements Serializable {
 			return openMetaphorRollOverIcon;
 		} else {
 			openMetaphorRollOverIcon = new ImageIcon(getClass().getResource(
-					"../icons/opens-metaphor.gif"));
+					"/icons/opens-metaphor.gif"));
 			return openMetaphorRollOverIcon;
 		}
 	}
@@ -416,7 +416,7 @@ public class IconController implements Serializable {
 			return saveMetaphorIcon;
 		} else {
 			saveMetaphorIcon = new ImageIcon(getClass().getResource(
-					"../icons/save-metaphor.gif"));
+					"/icons/save-metaphor.gif"));
 			return saveMetaphorIcon;
 		}
 	}
@@ -426,7 +426,7 @@ public class IconController implements Serializable {
 			return saveMetaphorRollOverIcon;
 		} else {
 			saveMetaphorRollOverIcon = new ImageIcon(getClass().getResource(
-					"../icons/saves-metaphor.gif"));
+					"/icons/saves-metaphor.gif"));
 			return saveMetaphorRollOverIcon;
 		}
 	}
@@ -436,7 +436,7 @@ public class IconController implements Serializable {
 			return emptyStateIcon;
 		} else {
 			emptyStateIcon = new ImageIcon(getClass().getResource(
-					"../icons/empty-state.gif"));
+					"/icons/empty-state.gif"));
 			return emptyStateIcon;
 		}
 	}
@@ -446,7 +446,7 @@ public class IconController implements Serializable {
 			return folderSmallIcon;
 		} else {
 			folderSmallIcon = new ImageIcon(getClass().getResource(
-					"../icons/folder-small.gif"));
+					"/icons/folder-small.gif"));
 			return folderSmallIcon;
 		}
 	}
@@ -455,7 +455,7 @@ public class IconController implements Serializable {
 		if (moreIcon != null) {
 			return moreIcon;
 		} else {
-			moreIcon = new ImageIcon(getClass().getResource("../icons/more.gif"));
+			moreIcon = new ImageIcon(getClass().getResource("/icons/more.gif"));
 			return moreIcon;
 		}
 	}
@@ -465,7 +465,7 @@ public class IconController implements Serializable {
 			return noStateIcon;
 		} else {
 			noStateIcon = new ImageIcon(getClass().getResource(
-					"../icons/no-state.gif"));
+					"/icons/no-state.gif"));
 			return noStateIcon;
 		}
 	}
@@ -475,7 +475,7 @@ public class IconController implements Serializable {
 			return yesStateIcon;
 		} else {
 			yesStateIcon = new ImageIcon(getClass().getResource(
-					"../icons/yes-state.gif"));
+					"/icons/yes-state.gif"));
 			return yesStateIcon;
 		}
 	}
@@ -485,7 +485,7 @@ public class IconController implements Serializable {
 			return colapseIcon;
 		} else {
 			colapseIcon = new ImageIcon(getClass().getResource(
-					"../icons/contract-nodes.gif"));
+					"/icons/contract-nodes.gif"));
 			return colapseIcon;
 		}
 	}
@@ -495,7 +495,7 @@ public class IconController implements Serializable {
 			return expandIcon;
 		} else {
 			expandIcon = new ImageIcon(getClass().getResource(
-					"../icons/expand-nodes.gif"));
+					"/icons/expand-nodes.gif"));
 			return expandIcon;
 		}
 	}
@@ -505,7 +505,7 @@ public class IconController implements Serializable {
 			return propagateIcon;
 		} else {
 			propagateIcon = new ImageIcon(getClass().getResource(
-					"../icons/propagate.gif"));
+					"/icons/propagate.gif"));
 			return propagateIcon;
 		}
 	}
@@ -515,7 +515,7 @@ public class IconController implements Serializable {
 			return printPreviewTableIcon;
 		} else {
 			printPreviewTableIcon = new ImageIcon(getClass().getResource(
-					"../icons/preview-table.gif"));
+					"/icons/preview-table.gif"));
 			return printPreviewTableIcon;
 		}
 	}
@@ -525,7 +525,7 @@ public class IconController implements Serializable {
 			return printTableIcon;
 		} else {
 			printTableIcon = new ImageIcon(getClass().getResource(
-					"../icons/print-table.gif"));
+					"/icons/print-table.gif"));
 			return printTableIcon;
 		}
 	}
@@ -534,7 +534,7 @@ public class IconController implements Serializable {
 		if (edgeIcon != null) {
 			return edgeIcon;
 		} else {
-			edgeIcon = new ImageIcon(getClass().getResource("../icons/arc.gif"));
+			edgeIcon = new ImageIcon(getClass().getResource("/icons/arc.gif"));
 			return edgeIcon;
 		}
 	}
@@ -544,7 +544,7 @@ public class IconController implements Serializable {
 			return printNetIcon;
 		} else {
 			printNetIcon = new ImageIcon(getClass().getResource(
-					"../icons/print-net.gif"));
+					"/icons/print-net.gif"));
 			return printNetIcon;
 		}
 	}
@@ -554,7 +554,7 @@ public class IconController implements Serializable {
 			return printPreviewNetIcon;
 		} else {
 			printPreviewNetIcon = new ImageIcon(getClass().getResource(
-					"../icons/preview-print.gif"));
+					"/icons/preview-print.gif"));
 			return printPreviewNetIcon;
 		}
 	}
@@ -564,7 +564,7 @@ public class IconController implements Serializable {
 			return saveNetIcon;
 		} else {
 			saveNetIcon = new ImageIcon(getClass().getResource(
-					"../icons/save-net.gif"));
+					"/icons/save-net.gif"));
 			return saveNetIcon;
 		}
 	}
@@ -574,7 +574,7 @@ public class IconController implements Serializable {
 			return folderSmallDisabledIcon;
 		} else {
 			folderSmallDisabledIcon = new ImageIcon(getClass().getResource(
-					"../icons/folder-small-disabled.gif"));
+					"/icons/folder-small-disabled.gif"));
 			return folderSmallDisabledIcon;
 		}
 	}
@@ -584,7 +584,7 @@ public class IconController implements Serializable {
 			return greenBallIcon;
 		} else {
 			greenBallIcon = new ImageIcon(getClass().getResource(
-					"../icons/green-ball.gif"));
+					"/icons/green-ball.gif"));
 			return greenBallIcon;
 		}
 	}
@@ -595,7 +595,7 @@ public class IconController implements Serializable {
 			return yellowBallIcon;
 		} else {
 			yellowBallIcon = new ImageIcon(getClass().getResource(
-					"../icons/yellow-ball.gif"));
+					"/icons/yellow-ball.gif"));
 			return yellowBallIcon;
 		}
 	}
@@ -617,7 +617,7 @@ public class IconController implements Serializable {
 			return addFolderIcon;
 		} else {
 			addFolderIcon = new ImageIcon(getClass().getResource(
-					"../icons/add-folder.gif"));
+					"/icons/add-folder.gif"));
 			return addFolderIcon;
 		}
 	}
@@ -627,7 +627,7 @@ public class IconController implements Serializable {
 			return deleteFolderIcon;
 		} else {
 			deleteFolderIcon = new ImageIcon(getClass().getResource(
-					"../icons/delete-folder.gif"));
+					"/icons/delete-folder.gif"));
 			return deleteFolderIcon;
 		}
 	}
@@ -636,7 +636,7 @@ public class IconController implements Serializable {
 		if (editIcon != null) {
 			return editIcon;
 		} else {
-			editIcon = new ImageIcon(getClass().getResource("../icons/edit.gif"));
+			editIcon = new ImageIcon(getClass().getResource("/icons/edit.gif"));
 			return editIcon;
 		}
 	}
@@ -646,7 +646,7 @@ public class IconController implements Serializable {
 			return renameFolderIcon;
 		} else {
 			renameFolderIcon = new ImageIcon(getClass().getResource(
-					"../icons/rename-folder.gif"));
+					"/icons/rename-folder.gif"));
 			return renameFolderIcon;
 		}
 	}
@@ -655,7 +655,7 @@ public class IconController implements Serializable {
 		if (newIcon != null) {
 			return newIcon;
 		} else {
-			newIcon = new ImageIcon(getClass().getResource("../icons/new.gif"));
+			newIcon = new ImageIcon(getClass().getResource("/icons/new.gif"));
 			return newIcon;
 		}
 	}
@@ -664,7 +664,7 @@ public class IconController implements Serializable {
 		if (newBNIcon != null) {
 			return newBNIcon;
 		} else {
-			newBNIcon = new ImageIcon(getClass().getResource("../icons/new-bn.gif"));
+			newBNIcon = new ImageIcon(getClass().getResource("/icons/new-bn.gif"));
 			return newBNIcon;
 		}
 	}	
@@ -673,7 +673,7 @@ public class IconController implements Serializable {
 		if (newMSBNIcon != null) {
 			return newMSBNIcon;
 		} else {
-			newMSBNIcon = new ImageIcon(getClass().getResource("../icons/new-msbn.gif"));
+			newMSBNIcon = new ImageIcon(getClass().getResource("/icons/new-msbn.gif"));
 			return newMSBNIcon;
 		}
 	}
@@ -682,7 +682,7 @@ public class IconController implements Serializable {
 		if (newMEBNIcon != null) {
 			return newMEBNIcon;
 		} else {
-			newMEBNIcon = new ImageIcon(getClass().getResource("../icons/new-mebn.gif"));
+			newMEBNIcon = new ImageIcon(getClass().getResource("/icons/new-mebn.gif"));
 			return newMEBNIcon;
 		}
 	}	
@@ -691,7 +691,7 @@ public class IconController implements Serializable {
 		if (lessIcon != null) {
 			return lessIcon;
 		} else {
-			lessIcon = new ImageIcon(getClass().getResource("../icons/less.gif"));
+			lessIcon = new ImageIcon(getClass().getResource("/icons/less.gif"));
 			return lessIcon;
 		}
 	}
@@ -701,7 +701,7 @@ public class IconController implements Serializable {
 			return informationIcon;
 		} else {
 			informationIcon = new ImageIcon(getClass().getResource(
-					"../icons/information.gif"));
+					"/icons/information.gif"));
 			return informationIcon;
 		}
 	}
@@ -711,7 +711,7 @@ public class IconController implements Serializable {
 			return initializeIcon;
 		} else {
 			initializeIcon = new ImageIcon(getClass().getResource(
-					"../icons/initialize.gif"));
+					"/icons/initialize.gif"));
 			return initializeIcon;
 		}
 	}
@@ -721,7 +721,7 @@ public class IconController implements Serializable {
 			return decisionNodeIcon;
 		} else {
 			decisionNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/decision-node.gif"));
+					"/icons/decision-node.gif"));
 			return decisionNodeIcon;
 		}
 	}
@@ -731,7 +731,7 @@ public class IconController implements Serializable {
 			return ellipsisIcon;
 		} else {
 			ellipsisIcon = new ImageIcon(getClass().getResource(
-					"../icons/ellipsis.gif"));
+					"/icons/ellipsis.gif"));
 			return ellipsisIcon;
 		}
 	}
@@ -741,7 +741,7 @@ public class IconController implements Serializable {
 			return hierarchyIcon;
 		} else {
 			hierarchyIcon = new ImageIcon(getClass().getResource(
-					"../icons/hierarchy.gif"));
+					"/icons/hierarchy.gif"));
 			return hierarchyIcon;
 		}
 	}
@@ -751,7 +751,7 @@ public class IconController implements Serializable {
 			return saveTableIcon;
 		} else {
 			saveTableIcon = new ImageIcon(getClass().getResource(
-					"../icons/save-table.gif"));
+					"/icons/save-table.gif"));
 			return saveTableIcon;
 		}
 	}
@@ -761,7 +761,7 @@ public class IconController implements Serializable {
 			return selectionIcon;
 		} else {
 			selectionIcon = new ImageIcon(getClass().getResource(
-					"../icons/selection.gif"));
+					"/icons/selection.gif"));
 			return selectionIcon;
 		}
 	}
@@ -771,7 +771,7 @@ public class IconController implements Serializable {
 			return utilityNodeIcon;
 		} else {
 			utilityNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/utility-node.gif"));
+					"/icons/utility-node.gif"));
 			return utilityNodeIcon;
 		}
 	}
@@ -780,7 +780,7 @@ public class IconController implements Serializable {
 		if (fillIcon != null) {
 			return fillIcon;
 		} else {
-			fillIcon = new ImageIcon(getClass().getResource("../icons/fill.gif"));
+			fillIcon = new ImageIcon(getClass().getResource("/icons/fill.gif"));
 			return fillIcon;
 		}
 	}
@@ -790,7 +790,7 @@ public class IconController implements Serializable {
 			return resetSizeIcon;
 		} else {
 			resetSizeIcon = new ImageIcon(getClass().getResource(
-					"../icons/reset_size.gif"));
+					"/icons/reset_size.gif"));
 			return resetSizeIcon;
 		}
 	}
@@ -799,7 +799,7 @@ public class IconController implements Serializable {
 		if (gridIcon != null) {
 			return gridIcon;
 		} else {
-			gridIcon = new ImageIcon(getClass().getResource("../icons/grid.gif"));
+			gridIcon = new ImageIcon(getClass().getResource("/icons/grid.gif"));
 			return gridIcon;
 		}
 	}
@@ -809,7 +809,7 @@ public class IconController implements Serializable {
 			return openModelIcon;
 		} else {
 			openModelIcon = new ImageIcon(getClass().getResource(
-					"../icons/open4.gif"));
+					"/icons/open4.gif"));
 			return openModelIcon;
 		}
 	}
@@ -819,7 +819,7 @@ public class IconController implements Serializable {
 			return learningIcon;
 		} else {
 			learningIcon = new ImageIcon(getClass().getResource(
-					"../icons/learn.gif"));
+					"/icons/learn.gif"));
 			return learningIcon;
 		}
 	}
@@ -829,7 +829,7 @@ public class IconController implements Serializable {
 			return grayBorderIcon;
 		} else {
 			grayBorderIcon = new ImageIcon(getClass().getResource(
-					"../icons/gray-border-box.gif"));
+					"/icons/gray-border-box.gif"));
 			return grayBorderIcon;
 		}
 	}
@@ -839,7 +839,7 @@ public class IconController implements Serializable {
 			return grayBoxIcon;
 		} else {
 			grayBoxIcon = new ImageIcon(getClass().getResource(
-					"../icons/gray-box-box.gif"));
+					"/icons/gray-box-box.gif"));
 			return grayBoxIcon;
 		}
 	}	
@@ -850,7 +850,7 @@ public class IconController implements Serializable {
 			return contextNodeIcon;
 		} else {
 			contextNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/context-node.gif"));
+					"/icons/context-node.gif"));
 			return contextNodeIcon;
 		}
 	}
@@ -860,7 +860,7 @@ public class IconController implements Serializable {
 			return inputNodeIcon;
 		} else {
 			inputNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/input-node.gif"));
+					"/icons/input-node.gif"));
 			return inputNodeIcon;
 		}
 	}
@@ -870,7 +870,7 @@ public class IconController implements Serializable {
 			return residentNodeIcon;
 		} else {
 			residentNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/resident-node.gif"));
+					"/icons/resident-node.gif"));
 			return residentNodeIcon;
 		}
 	}
@@ -880,7 +880,7 @@ public class IconController implements Serializable {
 			return mfragIcon;
 		} else {
 			mfragIcon = new ImageIcon(getClass().getResource(
-					"../icons/mfrag.gif"));
+					"/icons/mfrag.gif"));
 			return mfragIcon;
 		}
 	}
@@ -890,7 +890,7 @@ public class IconController implements Serializable {
 			return boxContextNodeIcon;
 		} else {
 			boxContextNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/context-box.gif"));
+					"/icons/context-box.gif"));
 			return boxContextNodeIcon;
 		}
 	}
@@ -900,7 +900,7 @@ public class IconController implements Serializable {
 			return boxInputNodeIcon;
 		} else {
 			boxInputNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/input-box.gif"));
+					"/icons/input-box.gif"));
 			return boxInputNodeIcon;
 		}
 	}
@@ -910,7 +910,7 @@ public class IconController implements Serializable {
 			return boxResidentNodeIcon;
 		} else {
 			boxResidentNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/resident-box.gif"));
+					"/icons/resident-box.gif"));
 			return boxResidentNodeIcon;
 		}
 	}
@@ -920,7 +920,7 @@ public class IconController implements Serializable {
 			return boxMfragIcon;
 		} else {
 			boxMfragIcon = new ImageIcon(getClass().getResource(
-					"../icons/mfrag-box.gif"));
+					"/icons/mfrag-box.gif"));
 			return boxMfragIcon;
 		}
 	}
@@ -930,7 +930,7 @@ public class IconController implements Serializable {
 			return boxXIcon;
 		} else {
 			boxXIcon = new ImageIcon(getClass().getResource(
-					"../icons/x-box.gif"));
+					"/icons/x-box.gif"));
 			return boxXIcon;
 		}
 	}	
@@ -940,7 +940,7 @@ public class IconController implements Serializable {
 			return setBoxIcon;
 		} else {
 			setBoxIcon = new ImageIcon(getClass().getResource(
-					"../icons/set-box.gif"));
+					"/icons/set-box.gif"));
 			return setBoxIcon;
 		}
 	}	
@@ -950,7 +950,7 @@ public class IconController implements Serializable {
 			return eyeIcon;
 		} else {
 			eyeIcon = new ImageIcon(getClass().getResource(
-					"../icons/eye.gif"));
+					"/icons/eye.gif"));
 			return eyeIcon;
 		}
 	}		
@@ -961,7 +961,7 @@ public class IconController implements Serializable {
 			return yellowNodeIcon;
 		} else {
 			yellowNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/yellow-node.gif"));
+					"/icons/yellow-node.gif"));
 			return yellowNodeIcon;
 		}
 	}	
@@ -971,7 +971,7 @@ public class IconController implements Serializable {
 			return greenNodeIcon;
 		} else {
 			greenNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/green-node.gif"));
+					"/icons/green-node.gif"));
 			return greenNodeIcon;
 		}
 	}	
@@ -981,7 +981,7 @@ public class IconController implements Serializable {
 			return blueNodeIcon;
 		} else {
 			blueNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/blue-node.gif"));
+					"/icons/blue-node.gif"));
 			return blueNodeIcon;
 		}
 	}	
@@ -991,7 +991,7 @@ public class IconController implements Serializable {
 			return grayNodeIcon;
 		} else {
 			grayNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/gray-node.gif"));
+					"/icons/gray-node.gif"));
 			return grayNodeIcon;
 		}
 	}		
@@ -1001,7 +1001,7 @@ public class IconController implements Serializable {
 			return orangeNodeIcon;
 		} else {
 			orangeNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/orange-node.gif"));
+					"/icons/orange-node.gif"));
 			return orangeNodeIcon;
 		}
 	}	
@@ -1011,7 +1011,7 @@ public class IconController implements Serializable {
 			return mTheoryNodeIcon;
 		} else {
 			mTheoryNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/mtheory-node.gif"));
+					"/icons/mtheory-node.gif"));
 			return mTheoryNodeIcon;
 		}
 	}	
@@ -1021,7 +1021,7 @@ public class IconController implements Serializable {
 			return functIcon;
 		} else {
 			functIcon = new ImageIcon(getClass().getResource(
-					"../icons/funct.gif"));
+					"/icons/funct.gif"));
 			return functIcon;
 		}
 	}	
@@ -1034,7 +1034,7 @@ public class IconController implements Serializable {
 			return andIcon;
 		} else {
 			andIcon = new ImageIcon(getClass().getResource(
-					"../icons/and.gif"));
+					"/icons/and.gif"));
 			return andIcon;
 		}
 	}			
@@ -1045,7 +1045,7 @@ public class IconController implements Serializable {
 			return orIcon;
 		} else {
 			orIcon = new ImageIcon(getClass().getResource(
-					"../icons/or.gif"));
+					"/icons/or.gif"));
 			return andIcon;
 		}
 	}
@@ -1056,7 +1056,7 @@ public class IconController implements Serializable {
 			return notIcon;
 		} else {
 			notIcon = new ImageIcon(getClass().getResource(
-					"../icons/not.gif"));
+					"/icons/not.gif"));
 			return notIcon;
 		}
 	}
@@ -1067,7 +1067,7 @@ public class IconController implements Serializable {
 			return equalIcon;
 		} else {
 			equalIcon = new ImageIcon(getClass().getResource(
-					"../icons/equal.gif"));
+					"/icons/equal.gif"));
 			return equalIcon;
 		}
 	}
@@ -1078,7 +1078,7 @@ public class IconController implements Serializable {
 			return iffIcon;
 		} else {
 			iffIcon = new ImageIcon(getClass().getResource(
-					"../icons/iff.gif"));
+					"/icons/iff.gif"));
 			return iffIcon;
 		}
 	}
@@ -1089,7 +1089,7 @@ public class IconController implements Serializable {
 			return impliesIcon;
 		} else {
 			impliesIcon = new ImageIcon(getClass().getResource(
-					"../icons/implies.gif"));
+					"/icons/implies.gif"));
 			return impliesIcon;
 		}
 	}
@@ -1100,7 +1100,7 @@ public class IconController implements Serializable {
 			return forallIcon;
 		} else {
 			forallIcon = new ImageIcon(getClass().getResource(
-					"../icons/forall.gif"));
+					"/icons/forall.gif"));
 			return forallIcon;
 		}
 	}
@@ -1111,7 +1111,7 @@ public class IconController implements Serializable {
 			return existsIcon;
 		} else {
 			existsIcon = new ImageIcon(getClass().getResource(
-					"../icons/exists.gif"));
+					"/icons/exists.gif"));
 			return existsIcon;
 		}
 	}
@@ -1123,7 +1123,7 @@ public class IconController implements Serializable {
 			return entityNodeIcon;
 		} else {
 			entityNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/entityNode.gif"));
+					"/icons/entityNode.gif"));
 			return entityNodeIcon;
 		}
 	}
@@ -1133,7 +1133,7 @@ public class IconController implements Serializable {
 			return ovariableNodeIcon;
 		} else {
 			ovariableNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/ovariableNode.gif"));
+					"/icons/ovariableNode.gif"));
 			return ovariableNodeIcon;
 		}
 	}
@@ -1143,7 +1143,7 @@ public class IconController implements Serializable {
 			return nodeNodeIcon;
 		} else {
 			nodeNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/nodeNode.gif"));
+					"/icons/nodeNode.gif"));
 			return nodeNodeIcon;
 		}
 	}
@@ -1153,7 +1153,7 @@ public class IconController implements Serializable {
 			return emptyNodeIcon;
 		} else {
 			emptyNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/emptyNode.gif"));
+					"/icons/emptyNode.gif"));
 			return emptyNodeIcon;
 		}
 	}	
@@ -1163,7 +1163,7 @@ public class IconController implements Serializable {
 			return skolenNodeIcon;
 		} else {
 			skolenNodeIcon = new ImageIcon(getClass().getResource(
-					"../icons/skolenNode.gif"));
+					"/icons/skolenNode.gif"));
 			return skolenNodeIcon;
 		}
 	}	
