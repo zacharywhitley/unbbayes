@@ -429,7 +429,7 @@ public class Attribute implements Serializable {
 	 */
 	public String[] getAttributeValues() {
 		if (!isString) {
-			String[] values = new String[stringValues.length];
+			String[] values = new String[numberValues.length];
 			for (int i = 0; i < numValues; i++) {
 				values[i] = String.valueOf(numberValues[i]);
 			}
