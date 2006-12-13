@@ -376,20 +376,55 @@ public class ClassifierUtils {
 				float[][] classesDistribution;
 				
 				//gets values effectively used sorted
-				ArrayList<Float> valuesTemp = new ArrayList<Float>();
-				for (int x = 0; x < inst.size(); x++) {
+				int size = inst.size();
+				float[] instanceTemp = new float[size];
+				int counter = 0;
+				for (int x = 0; x < size; x++) {
 					instance = getInstance(inst, x);
 					if (!instance.isMissing(attIndex)) {
-						if (!valuesTemp.contains(instance.getValue(attIndex))) {
-							valuesTemp.add(instance.getValue(attIndex));
-						}
+						instanceTemp[counter] = instance.getValue(attIndex);
+						++counter;
 					}
 				}
-				values = new float[valuesTemp.size()];
-				for (int x = 0; x < valuesTemp.size(); x++) {
-					values[x] = valuesTemp.get(x);
+				size = counter;
+				values = new float[size];
+				for (int x = 0; x < size; x++) {
+					values[x] = instanceTemp[x];
 				}
 				Arrays.sort(values);
+				ArrayList<Float> valuesTemp = new ArrayList<Float>();
+				valuesTemp.add(values[0]);
+				float lastValue = values[0];
+				counter = 1;
+				for (int x = 1; x < size; x++) {
+					if (values[x] != lastValue) {
+						valuesTemp.add(values[x]);
+						lastValue = values[x];
+						++counter;
+					}					
+				}
+				size = counter;
+				values = new float[size];
+				for (int x = 0; x < size; x++) {
+					values[x] = valuesTemp.get(x);
+				}
+				
+				
+				//gets values effectively used sorted
+//				ArrayList<Float> valuesTemp = new ArrayList<Float>();
+//				for (int x = 0; x < inst.size(); x++) {
+//					instance = getInstance(inst, x);
+//					if (!instance.isMissing(attIndex)) {
+//						if (!valuesTemp.contains(instance.getValue(attIndex))) {
+//							valuesTemp.add(instance.getValue(attIndex));
+//						}
+//					}
+//				}
+//				values = new float[valuesTemp.size()];
+//				for (int x = 0; x < valuesTemp.size(); x++) {
+//					values[x] = valuesTemp.get(x);
+//				}
+//				Arrays.sort(values);
 				
 				classesDistribution = new float[values.length][numClassValues];
 				float[] missingValuesDistribution = new float[numClassValues];

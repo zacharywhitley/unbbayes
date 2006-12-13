@@ -172,7 +172,7 @@ public class Instance implements Serializable {
 	 * @return true if val codes "missing"
 	 */
 	public static final boolean isMissingValue(float val) {
-		 return val == MISSING_VALUE;
+		 return Float.isNaN(val);
 	}
 
 

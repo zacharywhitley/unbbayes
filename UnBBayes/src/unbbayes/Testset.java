@@ -30,6 +30,9 @@ public class Testset {
 	Smote smote;
 //	File saida = new File("c:/saida.txt");
 //	FileInputStream saidaX = new FileInputStream(saida);
+	private byte[] attributeType;
+	private boolean[] attributeIsString;
+	private byte NOMINAL;
 	
 	public Testset() {
 		try {
@@ -526,7 +529,6 @@ private void ema() {
 	attributeIsString[8] = false;
 	attributeIsString[9] = false;
 	attributeIsString[10] = false;
-	counterIndex = 11;
 }
 
 //private void ema() {

@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" sourcepath="JRE_SRC" kind="var" path="JRE_LIB"/>
-	<classpathentry exported="true" kind="lib" path="lib/GIFOutput.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/junit.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/plot.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jh.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jaxme/jaxmexs-0.5.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jaxme/jaxme2-0.5.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jaxme/jaxme2-rt-0.5.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jaxme/jaxmeapi-0.5.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jaxme/jaxmejs-0.5.1.jar"/>
+	<classpathentry sourcepath="JRE_SRC" kind="var" path="JRE_LIB"/>
+	<classpathentry kind="lib" path="lib/GIFOutput.jar"/>
+	<classpathentry kind="lib" path="lib/junit.jar"/>
+	<classpathentry kind="lib" path="lib/plot.jar"/>
+	<classpathentry kind="lib" path="lib/xalan.jar"/>
+	<classpathentry kind="lib" path="lib/jh.jar"/>
+	<classpathentry kind="lib" path="lib/xml-apis.jar"/>
+	<classpathentry kind="lib" path="lib/jaxme/jaxmexs-0.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/jaxme/jaxme2-0.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/jaxme/jaxme2-rt-0.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/jaxme/jaxmeapi-0.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/jaxme/jaxmejs-0.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/jaxme/jaxmepm-0.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/commons-logging.jar"/>
 	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/icu4j_3_4.jar"/>
 	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/iri.jar"/>

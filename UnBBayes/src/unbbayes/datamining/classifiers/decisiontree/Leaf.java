@@ -19,7 +19,7 @@ public class Leaf implements Serializable {
 	private Attribute classAttribute;
 	
 	/** Leaf's class value */
-	private int classValue;
+	private float classValue;
 
 	/** Leaf's weight class distribution. */
 	private float[] weightDistribution;
@@ -28,7 +28,7 @@ public class Leaf implements Serializable {
 	
 	/** Constructor used in the case of there is no instances */
 	public Leaf() {
-		classValue = (int) Instance.missingValue();
+		classValue = Instance.MISSING_VALUE;
 	}
   	
 	/** General use constructor 
@@ -50,7 +50,7 @@ public class Leaf implements Serializable {
   	 * @return the leaf's class value
   	 */
 	public int getClassValue() {
-		return classValue;
+		return (int) classValue;
 	}
 	
 	/**
@@ -101,6 +101,3 @@ public class Leaf implements Serializable {
 		}
 	}
 }
-
-
-

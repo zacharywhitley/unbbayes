@@ -86,7 +86,7 @@ public class AttributeStats  {
 		for (int inst = 0; inst < numInstances; inst++) {
 			value = instanceSet.instances[inst].data[att];
 			weight = (int) instanceSet.instances[inst].data[counterIndex];
-			if (value == Instance.MISSING_VALUE) {
+			if (Instance.isMissingValue(value)) {
 				/* The value is missing. Increment missing counter */
 				countWeightResults[missingIndex] += weight;
 				++countResults[missingIndex];
@@ -123,7 +123,7 @@ public class AttributeStats  {
 		missingCountWeighted = 0;
 		for (int inst = 0; inst < numInstances; inst++) {
 			value = instanceSet.instances[inst].data[att];
-			if (value == Instance.MISSING_VALUE) {
+			if (Instance.isMissingValue(value)) {
 				++missingCount;
 				missingCountWeighted += 
 					instanceSet.instances[inst].data[counterIndex];
