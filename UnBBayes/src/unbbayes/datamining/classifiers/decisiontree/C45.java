@@ -71,8 +71,7 @@ public class C45 extends DecisionTreeLearning implements Serializable
 	 *
 	 * 	@param data instance set used for the decision tree generation
 	 */
-	protected void makeTree(InstanceSet data) throws Exception
-	{
+	protected void makeTree(InstanceSet data) throws Exception {
 		int numInstances = data.numInstances();
 		int numAttributes = data.numAttributes();
 		int numClasses = data.numClasses();
@@ -89,17 +88,18 @@ public class C45 extends DecisionTreeLearning implements Serializable
 		Integer[] actualAtt = new Integer[numAttributes];
 
 		//starts lists of indexes with indexes of entire instanceSet
-		for (int i=0;i<numInstances;i++)
-		{
+		for (int i=0;i<numInstances;i++) {
 			actualInst.add(new Integer(i));
 		}
-		for (int i=0;i<numAttributes;i++)
-		{
+		for (int i=0;i<numAttributes;i++) {
 			actualAtt[i] = new Integer(i);
 		}
 
 		//object that contains lists of indexes
 		SplitObject split = new SplitObject(actualInst,actualAtt);
+
+//		/* Create initial object that contains list of indexes */
+//		SplitObject split = new SplitObject(data);
 
 		xRootNode = new Node(null);
 		// Nó ativo da árvore
@@ -127,8 +127,7 @@ public class C45 extends DecisionTreeLearning implements Serializable
 		ArrayList<NumericData> numericDataList;
 
 		//start recursive code
-		while ((!queue.isEmpty()))
-		{
+		while ((!queue.isEmpty())) {
 			//gets the objects relative to the iteration
 			queueComponent = (QueueComponent)queue.remove(0);
 			xNode = queueComponent.getNodeParent();
@@ -139,13 +138,10 @@ public class C45 extends DecisionTreeLearning implements Serializable
 			numAttributes = actualAtt.length;
 
 			//if no instance has reached this node - is leaf
-			if (numInstances == 0)
-			{
+			if (numInstances == 0) {
 				leaf = new Leaf();
 				xNode.add(leaf);
-			}
-			else
-			{
+			} else {
 				// compute array with the gain of each attribute.
 				// splitValues and numericDataList are initialized here
 				splitValues = new double[actualAtt.length];
@@ -153,21 +149,15 @@ public class C45 extends DecisionTreeLearning implements Serializable
 				infoGains = utils.computeInfoGain(split, splitValues, numericDataList);
 
 				//applies gain ratio if user chooses it
-				if(Options.getInstance().getIfUsingGainRatio())
-				{
+				if(Options.getInstance().getIfUsingGainRatio()) {
 					//applies gain ratio to attributes with gains greater than mean
 					meanInfoGains = Utils.sum(infoGains)/(double)(infoGains.length);
-					for (int i=0,decr=0; i<numAttributes;i++)
-					{
-						if(actualAtt[i].intValue()==classIndex)
-						{
+					for (int i=0,decr=0; i<numAttributes;i++) {
+						if(actualAtt[i].intValue()==classIndex) {
 							decr++;		//from now on, infoGains[i] corresponds to actualAtt[1+i]
-						}
-						else if (infoGains[i-decr] > meanInfoGains)
-						{
+						} else if (infoGains[i-decr] > meanInfoGains) {
 							att = (Attribute) data.getAttribute(actualAtt[i].intValue());
-							if(att.isNominal())
-							{
+							if(att.isNominal()) {
 								infoGains[i-decr] /= utils.computeSplitInformation(split,i);
 							}
 						}
@@ -181,13 +171,10 @@ public class C45 extends DecisionTreeLearning implements Serializable
 				//realIndex is the actualApp index for the same attribute
 				int realAttribute = -1;
 				int realIndex;
-				for (realIndex=0;realIndex<numAttributes;realIndex++)
-				{
-					if (actualAtt[realIndex].intValue()!=classIndex)
-					{
+				for (realIndex=0;realIndex<numAttributes;realIndex++) {
+					if (actualAtt[realIndex].intValue()!=classIndex) {
 						realAttribute++;
-						if (realAttribute==attributeIndex)
-						{
+						if (realAttribute==attributeIndex) {
 							break;
 						}
 					}
@@ -199,39 +186,33 @@ public class C45 extends DecisionTreeLearning implements Serializable
 				//computes the number of instances for each class
 				distribution = new float[numClasses];
 				int distributionClass;
-				for (int i=0;i<numInstances;i++)
-				{
+				for (int i=0;i<numInstances;i++) {
 						inst = utils.getInstance(actualInst,i);
 						distribution[(int) inst.classValue()] += inst.getWeight();
 				}
 				distributionClass = Utils.maxIndex(distribution);
 				
 				//make leaf if information gain is zero....
-				if ((Utils.eq(infoGains[attributeIndex], 0))||(ClassifierUtils.sumNonClassDistribution(distribution,distributionClass)<1))
-				{
+				if ((Utils.eq(infoGains[attributeIndex], 0))||(ClassifierUtils.sumNonClassDistribution(distribution,distributionClass)<1)) {
 					leaf = new Leaf(classAttribute,distribution);
 					xNode.add(leaf);
 				}
 				
 				//...Otherwise create successors.
-				else
-				{
+				else {
 					//puts children on queue
 					splitAttribute = data.getAttribute(actualAtt[realIndex].intValue());
 					//if split attribute is nominal...
-					if(splitAttribute.isNominal())
-					{
+					if(splitAttribute.isNominal()) {
 						splitData = utils.splitData(split, realIndex);
-						for (int j=0;j<splitData.length;j++)
-						{
+						for (int j=0;j<splitData.length;j++) {
 							NominalNode nominalNode = new NominalNode(splitAttribute,j);
 							xNode.add(nominalNode);
 							queue.add(new QueueComponent(nominalNode,splitData[j]));
 						}
 					}
 					//if split attribute is numeric....
-					else
-					{
+					else {
 						splitValue = splitValues[realIndex];
 						splitData = utils.splitNumericData(split,realIndex, splitValue);
 
@@ -247,14 +228,13 @@ public class C45 extends DecisionTreeLearning implements Serializable
 			}
 		}
 
-			 infoRootNode = xRootNode;
+		infoRootNode = xRootNode;
 
-         //prune tree if this option was enabled
-         if(Options.getInstance().getIfUsingPrunning())
-         {
-		 PrunningUtils pruner = new PrunningUtils();
-		 xRootNode = pruner.pruneTree(xRootNode, classAttribute);
-         }
+		//prune tree if this option was enabled
+		if(Options.getInstance().getIfUsingPrunning()) {
+			PrunningUtils pruner = new PrunningUtils();
+			xRootNode = pruner.pruneTree(xRootNode, classAttribute);
+		}
 
 	}
 
@@ -323,7 +303,7 @@ public class C45 extends DecisionTreeLearning implements Serializable
 	public String toString()
 	{
 		return getStringTree(xRootNode);
-    }
+	}
 
 	//-----------------------------------------------------------------------//
 	
@@ -515,5 +495,5 @@ public class C45 extends DecisionTreeLearning implements Serializable
 		{
 			return splitObject;
 		}
-     }
+	 }
 }
