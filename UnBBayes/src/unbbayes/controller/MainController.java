@@ -128,6 +128,8 @@ public class MainController {
 				   io.save(file, ((NetworkWindow) window).getSingleEntityNetwork());
 				else
 					prOwlIo.saveMebn(file, ((NetworkWindow) window).getMultiEntityBayesianNetwork()); 
+				    JOptionPane.showMessageDialog(screen, "Arquivo salvo com sucesso" , "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+	            
 			}
         } catch (IOException e) {
             JOptionPane.showMessageDialog(screen, e.getMessage(), "saveNetException", JOptionPane.ERROR_MESSAGE);

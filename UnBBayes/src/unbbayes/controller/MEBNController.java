@@ -53,8 +53,10 @@ public class MEBNController {
 	public MEBNController(
 			MultiEntityBayesianNetwork multiEntityBayesianNetwork,
 			NetworkWindow screen) {
+		
 		this.multiEntityBayesianNetwork = multiEntityBayesianNetwork;
 		this.screen = screen;
+	
 	}
 
 	

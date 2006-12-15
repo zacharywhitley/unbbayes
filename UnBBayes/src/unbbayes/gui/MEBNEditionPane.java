@@ -207,7 +207,7 @@ public class MEBNEditionPane extends JPanel {
         //criar botões que serão usados nodeList toolbars
         btnCompile           = new JButton(iconController.getCompileIcon());
         btnEditStates              = new JButton(iconController.getMoreIcon());
-        btnEditTable              = new JButton(iconController.getLessIcon());
+        btnEditTable              = new JButton(iconController.getEditIcon());
         btnAddEdge               = new JButton(iconController.getEdgeIcon());
         btnAddContextNode = new JButton(iconController.getContextNodeIcon());
         btnAddInputNode      = new JButton(iconController.getInputNodeIcon());
@@ -381,7 +381,10 @@ public class MEBNEditionPane extends JPanel {
         /*---------------- Tab panel ----------------------*/
         
         mTheoryTree = new MTheoryTree(controller); 
-        mTheoryTreeScroll = new JScrollPane(mTheoryTree); 
+        mTheoryTreeScroll = new JScrollPane(mTheoryTree,
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS); 
+        
         tabPanel.add("MTheoryTree", mTheoryTreeScroll);
         
         formulaEdtion = new FormulaEdtion(); 
@@ -391,7 +394,9 @@ public class MEBNEditionPane extends JPanel {
         tabPanel.add("EntityTree", entityTree); 
         
         inputInstanceOfSelection = new InputInstanceOfTab(controller); 
-        inputInstanceOfSelectionScroll = new JScrollPane(inputInstanceOfSelection); 
+        inputInstanceOfSelectionScroll = new JScrollPane(inputInstanceOfSelection,
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS); 
         tabPanel.add("InputInstance", inputInstanceOfSelectionScroll); 
         
         editArgumentsTab = new ArgumentsEditTab(); 
@@ -399,7 +404,6 @@ public class MEBNEditionPane extends JPanel {
         
         possibleValuesEditTab = new PossibleValuesEditTab(); 
         tabPanel.add("PossibleValuesEditTab", possibleValuesEditTab); 
-                
         
         cardLayout.show(tabPanel, "MTheoryTree");  
         

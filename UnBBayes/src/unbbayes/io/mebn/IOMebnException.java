@@ -12,7 +12,7 @@ public class IOMebnException extends Exception{
 	}
 	
 	public IOMebnException (String e, String extra){
-		super(e); 
+		super(e + ": " + extra); 
 		this.descriptionExtra = extra; 
 	}	
 	

@@ -29,6 +29,7 @@ import edu.stanford.smi.protegex.owl.jena.JenaOWLModel;
 import edu.stanford.smi.protegex.owl.model.OWLIndividual;
 import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
 import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
+import edu.stanford.smi.protegex.owl.model.OWLDatatypeProperty ;
 import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
 
 /**
@@ -137,6 +138,7 @@ public class PrOwlIO implements MebnIO {
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
 			individualTwo = (OWLIndividual) it.next();
+			System.out.println("hasDomainMFrag: " + individualTwo.getBrowserText()); 
 			domainMFrag = new DomainMFrag(individualTwo.getBrowserText(), mebn); 
 			mebn.addDomainMFrag(domainMFrag); 
 			mapDomainMFrag.put(individualTwo.getBrowserText(), domainMFrag); 
@@ -674,7 +676,7 @@ public class PrOwlIO implements MebnIO {
 			throw new IOMebnException(resource.getString("PrOwlNotLoad")); 
 		}
 		
-
+        System.out.println("Processo de save iniciado!"); 
 		
 		/* MTheory */
 		
@@ -757,6 +759,17 @@ public class PrOwlIO implements MebnIO {
 		
 		for (DomainResidentNode residentNode: residentNodeListGeral){  
 			OWLIndividual domainResIndividual = domainResMap.get(residentNode);	
+			
+	        System.out.println("save position start!"); 
+			/* has PositionX */
+			OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
+			domainResIndividual.setPropertyValue(hasPositionXProperty, residentNode.getPosition().getX());
+			
+			/* has PositionY */
+			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
+			domainResIndividual.setPropertyValue(hasPositionXProperty, residentNode.getPosition().getY());
+			 
+			System.out.println("save position end!"); 
 			
 			/* has Argument */
 			OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
