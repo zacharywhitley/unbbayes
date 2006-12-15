@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import unbbayes.prs.Edge;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
@@ -220,7 +221,25 @@ public class PrOwlIO implements MebnIO {
 			if (contextNode == null){
 				throw new IOMebnException(resource.getString("ContextNodeNotExistsInMTheory"), individualOne.getBrowserText()); 
 			}
+			
 			System.out.println("Context Node loaded: " + individualOne.getBrowserText()); 				
+			
+			
+			/* has PositionX */
+			OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
+
+			if (hasPositionXProperty != null){
+			float positionX = (Float)individualOne.getPropertyValue(hasPositionXProperty);
+			
+			/* has PositionY */
+			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
+			float positionY = (Float)individualOne.getPropertyValue(hasPositionYProperty);
+		
+			contextNode.setPosition(positionX, positionY); 
+			}
+			
+			System.out.println("Domain Resident loaded: " + individualOne.getBrowserText()); 			
+			
 			
 			/* -> isContextNodeIn  */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isContextNodeIn"); 			
@@ -314,12 +333,27 @@ public class PrOwlIO implements MebnIO {
 		
 		OWLNamedClass domainResidentNodePr = owlModel.getOWLNamedClass("Domain_Res"); 
 		instances = domainResidentNodePr.getInstances(false); 
+		DomainMFrag mFragOfNode = null; 
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
 			individualOne = (OWLIndividual)it.next();
 			domainResidentNode = mapDomainResidentNode.get(individualOne.getBrowserText()); 
 			if (domainResidentNode == null){
 				throw new IOMebnException(resource.getString("DomainResidentNotExistsInMTheory"), individualOne.getBrowserText() ); 
+			}
+			
+			/* has PositionX */
+			OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
+			
+			//TODO Tirar isso depois!!!
+			if (hasPositionXProperty != null){
+			float positionX = (Float)individualOne.getPropertyValue(hasPositionXProperty);
+			
+			/* has PositionY */
+			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
+			float positionY = (Float)individualOne.getPropertyValue(hasPositionYProperty);
+			
+			domainResidentNode.setPosition(positionX, positionY); 
 			}
 			
 			System.out.println("Domain Resident loaded: " + individualOne.getBrowserText()); 			
@@ -333,6 +367,7 @@ public class PrOwlIO implements MebnIO {
 			if(domainMFrag.containsDomainResidentNode(domainResidentNode) == false){
 				throw new IOMebnException(resource.getString("DomainResidentNotExistsInDomainMFrag") ); 
 			}
+			mFragOfNode = domainMFrag; 
 			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
 			
 			/* -> hasArgument */
@@ -354,11 +389,28 @@ public class PrOwlIO implements MebnIO {
 				if (mapDomainResidentNode.containsKey(individualTwo.getBrowserText())){
 					DomainResidentNode aux = mapDomainResidentNode.get(individualTwo.getBrowserText()); 
 					aux.addResidentNodeChild(domainResidentNode); 
+					
+					Edge auxEdge = new Edge(aux, domainResidentNode);
+					try{
+					mFragOfNode.addEdge(auxEdge); 
+					}
+					catch(Exception e){
+						System.out.println("Erro: arco invalidop!!!"); 
+					}
 				}
 				else{
 					if (mapGenerativeInputNode.containsKey(individualTwo.getBrowserText())){
 						GenerativeInputNode aux = mapGenerativeInputNode.get(individualTwo.getBrowserText()); 
 						aux.addResidentNodeChild(domainResidentNode); 
+			
+						Edge auxEdge = new Edge(aux, domainResidentNode);
+						try{
+						mFragOfNode.addEdge(auxEdge); 
+						}
+						catch(Exception e){
+							System.out.println("Erro: arco invalidop!!!"); 
+						}
+					
 					}
 					else{
 						throw new IOMebnException(resource.getString("NodeNotFound"), individualTwo.getBrowserText() ); 
@@ -413,22 +465,43 @@ public class PrOwlIO implements MebnIO {
 				throw new IOMebnException(resource.getString("GenerativeInputNodeNotExistsInMTheory"), individualOne.getBrowserText() ); 				
 			}
 			
+			//TODO Tirar isso depois... 
+			/* has PositionX */
+			OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
+			if (hasPositionXProperty != null){
+			float positionX = (Float)individualOne.getPropertyValue(hasPositionXProperty);
+			
+			/* has PositionY */
+			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
+			float positionY = (Float)individualOne.getPropertyValue(hasPositionYProperty);
+			
+			generativeInputNode.setPosition(positionX, positionY); 
+			
+			System.out.println("posicoes lidas "); 			
+			}
+			
 			/* -> isInputInstanceOf  */
 			
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isInputInstanceOf"); 			
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			itAux = instances.iterator();
-			individualTwo = (OWLIndividual) itAux.next();
-			if (mapDomainResidentNode.containsKey(individualTwo.getBrowserText())){
-				domainResidentNode = mapDomainResidentNode.get(individualTwo.getBrowserText()); 
-				generativeInputNode.setInputInstanceOf(domainResidentNode); 
+			
+			if(itAux.hasNext() != false){
+				individualTwo = (OWLIndividual) itAux.next();
+				
+				if (mapDomainResidentNode.containsKey(individualTwo.getBrowserText())){
+					domainResidentNode = mapDomainResidentNode.get(individualTwo.getBrowserText()); 
+					generativeInputNode.setInputInstanceOf(domainResidentNode); 
+				}
+				else{
+					if (mapBuiltInRV.containsKey(individualTwo.getBrowserText())){
+						builtInRV = mapBuiltInRV.get(individualTwo.getBrowserText()); 
+						generativeInputNode.setInputInstanceOf(builtInRV); 
+					}				
+				}
 			}
-			else{
-				if (mapBuiltInRV.containsKey(individualTwo.getBrowserText())){
-					builtInRV = mapBuiltInRV.get(individualTwo.getBrowserText()); 
-					generativeInputNode.setInputInstanceOf(builtInRV); 
-				}				
-			}
+			
+			System.out.println("passou por isInputInstanceOf"); 
 			
 			/* -> hasArgument */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 
@@ -694,20 +767,31 @@ public class PrOwlIO implements MebnIO {
 			mTheoryIndividual.addPropertyValue(hasMFragProperty, domainMFragIndividual); 
 			
 			/* Proprierties of the Domain MFrag */
-			
+		
+			System.out.println("Pt1!" + domainMFrag.getName()); 
+							
 			/* hasResidentNode */
 			OWLObjectProperty hasResidentNodeProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasResidentNode"); 	
 			List<DomainResidentNode> domainResidentNodeList = domainMFrag.getDomainResidentNodeList(); 
 			for(DomainResidentNode residentNode: domainResidentNodeList){
 				OWLNamedClass domainResClass = owlModel.getOWLNamedClass("Domain_Res"); 
+				
+				System.out.println("Nome = " + residentNode.getName());	
+				
+				
 				OWLIndividual domainResIndividual = domainResClass.createOWLIndividual(residentNode.getName());
+				
+				
 				domainMFragIndividual.addPropertyValue(hasResidentNodeProperty, domainResIndividual); 	
+				
+				System.out.println("Pt1.2!");		
 				
 				residentNodeListGeral.add(residentNode);
 				domainResMap.put(residentNode, domainResIndividual); 
 				nodeMap.put(residentNode, domainResIndividual);
 			}	
 			
+			  System.out.println("Pt2!");
 			/* hasInputNode */
 			OWLObjectProperty hasInputNodeProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputNode"); 	
 			List<GenerativeInputNode> generativeInputNodeList = domainMFrag.getGenerativeInputNodeList(); 
@@ -720,6 +804,8 @@ public class PrOwlIO implements MebnIO {
 				generativeInputMap.put(inputNode, generativeInputIndividual); 			
 				nodeMap.put(inputNode, generativeInputIndividual);
 			}				
+			
+			  System.out.println("Pt3!");
 			
 			/* hasContextNode */
 			OWLObjectProperty hasContextNodeProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasContextNode"); 	
@@ -736,6 +822,8 @@ public class PrOwlIO implements MebnIO {
 				
 			}				
 			
+			  System.out.println("Pt4!");
+			
 			/* hasOVariable */
 			OWLObjectProperty hasOVariableProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasOVariable"); 	
 			List<OrdinaryVariable> oVariableList = domainMFrag.getOrdinaryVariableList(); 
@@ -746,7 +834,6 @@ public class PrOwlIO implements MebnIO {
 				
 				oVariableGeral.add(oVariable);
 				oVariableMap.put(oVariable, oVariableIndividual); 				
-				
 			}				
 			
 			/* hasNode is automatic */
@@ -754,23 +841,22 @@ public class PrOwlIO implements MebnIO {
 			/* hasSkolen don't implemented */
 		}
 		
-		
 		/* DomainResidentNode */
+		
+		System.out.println("Chegou ponto 1"); 
 		
 		for (DomainResidentNode residentNode: residentNodeListGeral){  
 			OWLIndividual domainResIndividual = domainResMap.get(residentNode);	
 			
-	        System.out.println("save position start!"); 
 			/* has PositionX */
 			OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
-			domainResIndividual.setPropertyValue(hasPositionXProperty, residentNode.getPosition().getX());
+			domainResIndividual.setPropertyValue(hasPositionXProperty, (float)residentNode.getPosition().getX());
 			
 			/* has PositionY */
-			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
-			domainResIndividual.setPropertyValue(hasPositionXProperty, residentNode.getPosition().getY());
-			 
-			System.out.println("save position end!"); 
 			
+			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
+			domainResIndividual.setPropertyValue(hasPositionYProperty, (float)residentNode.getPosition().getY());
+						
 			/* has Argument */
 			OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
 			List<Argument> argumentList = residentNode.getArgumentList(); 
@@ -834,11 +920,22 @@ public class PrOwlIO implements MebnIO {
 			}	
 		}
 		
+		System.out.println("Chegou ponto 2"); 
+		
 		/* ContextNode */
 		
 		for (ContextNode contextNode: contextListGeral){  
 			OWLIndividual contextNodeIndividual = contextMap.get(contextNode);	
 			
+			/* has PositionX */
+			OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
+			contextNodeIndividual.setPropertyValue(hasPositionXProperty, (float)contextNode.getPosition().getX());
+			
+			/* has PositionY */
+			
+			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
+			contextNodeIndividual.setPropertyValue(hasPositionYProperty, (float)contextNode.getPosition().getY());
+					
 			/* has Argument */
 			OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
 			List<Argument> argumentList = contextNode.getArgumentList(); 
@@ -879,10 +976,22 @@ public class PrOwlIO implements MebnIO {
 			
 		}		
 		
+		System.out.println("Chegou ponto 3"); 
+		
 		/* InputNode */
 		
 		for (GenerativeInputNode generativeInputNode: inputNodeListGeral){  
 			OWLIndividual generativeInputNodeIndividual = generativeInputMap.get(generativeInputNode);	
+			
+			/* has PositionX */
+			OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
+			generativeInputNodeIndividual.setPropertyValue(hasPositionXProperty, (float)generativeInputNode.getPosition().getX());
+			
+			/* has PositionY */
+			
+			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
+			generativeInputNodeIndividual.setPropertyValue(hasPositionYProperty, (float)generativeInputNode.getPosition().getY());
+				
 			
 			/* has Argument */
 			

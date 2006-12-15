@@ -25,9 +25,11 @@ public class DomainMFrag extends MFrag {
 	 * Estes contadores indicam qual deve ser o numero do proximo
 	 * no criado caso os nomes estejam sendo gerados automaticamente
 	 */
+	/*
 	private int generativeInputNodeNum = 1; 
 	private int domainResidentNodeNum = 1; 	
 	private int contextNodeNum = 1; 
+    */
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.resources.Resources");
@@ -56,7 +58,8 @@ public class DomainMFrag extends MFrag {
 		addNode(contextNode);
 		contextNode.setMFrag(this);
 		
-		contextNodeNum++; 
+		super.getMultiEntityBayesianNetwork().plusContextNodeNul(); 
+		
 	}
 
 	/**
@@ -71,7 +74,7 @@ public class DomainMFrag extends MFrag {
 		inputNodeList.add(generativeInputNode);
 		addInputNode(generativeInputNode);
 		
-		generativeInputNodeNum++; 
+		super.getMultiEntityBayesianNetwork().plusGenerativeInputNodeNum();
 	}
 
 	/**
@@ -87,7 +90,8 @@ public class DomainMFrag extends MFrag {
 		residentNodeList.add(domainResidentNode);
 		addResidentNode(domainResidentNode);
 		
-		domainResidentNodeNum++; 
+		this.getMultiEntityBayesianNetwork().getDomainResidentNodeNum(); 
+
 	}
 
 	/**
@@ -184,7 +188,7 @@ public class DomainMFrag extends MFrag {
 	 * the automatic name
 	 */	
 	public int getDomainResidentNodeNum(){
-		return domainResidentNodeNum; 
+		return this.getMultiEntityBayesianNetwork().getDomainResidentNodeNum(); 
 	}
 
 	/**
@@ -192,7 +196,7 @@ public class DomainMFrag extends MFrag {
 	 * the automatic name
 	 */	
 	public int getContextNodeNum(){
-		return contextNodeNum; 
+		return this.getMultiEntityBayesianNetwork().getContextNodeNum(); 
 	}
 	
 	/**
@@ -200,7 +204,7 @@ public class DomainMFrag extends MFrag {
 	 * the automatic name
 	 */	
 	public int getGenerativeInputNodeNum(){
-		return generativeInputNodeNum; 
+		return this.getMultiEntityBayesianNetwork().getGenerativeInputNodeNum(); 
 	}	
 	
 	/**

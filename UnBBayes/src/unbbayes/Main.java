@@ -29,6 +29,7 @@ import unbbayes.controller.MainController;
  *@author     Michael e Rommel.
  *@version    24 de Junho de 2001
  */
+
 public class Main {
 	
     /**
@@ -39,4 +40,3 @@ public class Main {
     }
     
 }
-

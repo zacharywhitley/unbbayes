@@ -36,6 +36,12 @@ public class MultiEntityBayesianNetwork extends Network {
 	 * inclui também MFrags criadas e escluidas posteriormente */
 	
 	private int domainMFragNum = 1; 
+	private int generativeInputNodeNum = 1; 
+	private int domainResidentNodeNum = 1; 	
+	private int contextNodeNum = 1; 
+    
+	
+	
 	
 	/**
 	 * Contructs a new MEBN with empty mFrag's lists.
@@ -186,6 +192,44 @@ public class MultiEntityBayesianNetwork extends Network {
 	
 	public int getDomainMFragNum(){
 		return domainMFragNum; 
+	}
+
+	public int getContextNodeNum() {
+		return contextNodeNum;
+	}
+
+	public void setContextNodeNum(int contextNodeNum) {
+		this.contextNodeNum = contextNodeNum;
+	}
+	
+	public void plusContextNodeNul(){
+		contextNodeNum++; 
+	}
+
+	public int getDomainResidentNodeNum() {
+		return domainResidentNodeNum;
+	}
+	
+
+	public void setDomainResidentNodeNum(int domainResidentNodeNum) {
+		this.domainResidentNodeNum = domainResidentNodeNum;
+	}
+	
+	public void plusDomainResidentNodeNum() {
+		domainResidentNodeNum++;
+	}
+	
+
+	public int getGenerativeInputNodeNum() {
+		return generativeInputNodeNum;
+	}
+
+	public void setGenerativeInputNodeNum(int generativeInputNodeNum) {
+		this.generativeInputNodeNum = generativeInputNodeNum;
 	}	
+	
+	public void plusGenerativeInputNodeNum() {
+		generativeInputNodeNum++;
+	}		
 	 
 }
