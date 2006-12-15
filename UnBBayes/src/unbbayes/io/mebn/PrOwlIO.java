@@ -356,7 +356,7 @@ public class PrOwlIO implements MebnIO {
 				else{
 					if (mapGenerativeInputNode.containsKey(individualTwo.getBrowserText())){
 						GenerativeInputNode aux = mapGenerativeInputNode.get(individualTwo.getBrowserText()); 
-						domainResidentNode.addInputNodeFather(aux); 
+						aux.addResidentNodeChild(domainResidentNode); 
 					}
 					else{
 						throw new IOMebnException(resource.getString("NodeNotFound"), individualTwo.getBrowserText() ); 
