@@ -5,7 +5,6 @@
 	<classpathentry kind="lib" path="lib/GIFOutput.jar"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
 	<classpathentry kind="lib" path="lib/plot.jar"/>
-	<classpathentry kind="lib" path="lib/xalan.jar"/>
 	<classpathentry kind="lib" path="lib/jh.jar"/>
 	<classpathentry kind="lib" path="lib/xml-apis.jar"/>
 	<classpathentry kind="lib" path="lib/jaxme/jaxmexs-0.5.1.jar"/>
@@ -21,6 +20,5 @@
 	<classpathentry kind="lib" path="lib/protege/protege.jar"/>
 	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/protege-owl.jar"/>
 	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/xercesImpl.jar"/>
-	<classpathentry kind="lib" path="lib/xalan.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
