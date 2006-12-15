@@ -98,7 +98,6 @@ public class DomainMFrag extends MFrag {
 	 *            The node to be removed from the context node list.
 	 */
 	public void removeContextNode(ContextNode contextNode) {
-		contextNode.delete(); 
 		contextNodeList.remove(contextNode);
 		removeNode(contextNode);
 	}
@@ -112,7 +111,6 @@ public class DomainMFrag extends MFrag {
 	 *            The node to be removed from the generative input node list.
 	 */
 	public void removeGenerativeInputNode(GenerativeInputNode generativeInputNode) {
-		generativeInputNode.delete(); 
 		inputNodeList.remove(generativeInputNode);
 		removeNode(generativeInputNode);
 	}
@@ -126,7 +124,6 @@ public class DomainMFrag extends MFrag {
 	 *            The node to be removed from the domain resident node list.
 	 */
 	public void removeDomainResidentNode(DomainResidentNode domainResidentNode) {
-		domainResidentNode.delete(); 
 		residentNodeList.remove(domainResidentNode);
 		removeNode(domainResidentNode);
 	}

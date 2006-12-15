@@ -19,12 +19,12 @@ import unbbayes.prs.mebn.OrdinaryVariable;
  * @author Laecio
  *
  */
-public class OVariableTreeMFragRepaceInFormula extends OVariableTreeMFrag{
+public class OVariableTreeMFragReplaceInFormula extends OVariableTreeMFrag{
 
 	private OrdinaryVariable oVariableActive; 	
 	private FormulaTree formulaTree; 
 	
-	public OVariableTreeMFragRepaceInFormula(final NetworkController controller, FormulaTree _formulaTree){
+	public OVariableTreeMFragReplaceInFormula(final NetworkController controller, FormulaTree _formulaTree){
 		super(controller); 
 		formulaTree = _formulaTree; 
 	}

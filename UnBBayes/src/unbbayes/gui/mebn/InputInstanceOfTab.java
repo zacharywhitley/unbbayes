@@ -116,7 +116,8 @@ public class InputInstanceOfTab extends JTree{
 				  	DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel()
 					.getRoot();
 				  	int index = root.getIndex(node);
-					expandedNodes[index] = !expandedNodes[index];
+				  	//TODO ha um erro no codigo comentado
+					//expandedNodes[index] = !expandedNodes[index];
 			 	}
 			}
 			}

@@ -1,10 +1,11 @@
 package unbbayes.prs.mebn;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.ArrayList; 
 
 import unbbayes.prs.Node;
+import unbbayes.prs.mebn.entity.Entity;
 
 public class MultiEntityNode extends Node {
  
@@ -18,6 +19,7 @@ public class MultiEntityNode extends Node {
 	 
 	private List<MultiEntityNode> innerTermFromList;
 
+	private List<Entity> possibleValueList; 
 
 	private static Color color;
 	
@@ -38,6 +40,7 @@ public class MultiEntityNode extends Node {
 		argumentList = new ArrayList<Argument>(); 
 		innerTermOfList = new ArrayList<MultiEntityNode>();
 		innerTermFromList = new ArrayList<MultiEntityNode>(); 
+		possibleValueList = new ArrayList<Entity>(); 
 	}
 	
 	@Override
@@ -92,6 +95,10 @@ public class MultiEntityNode extends Node {
 		innerTermFromList.add(instance); 
 	}	
 	
+	public void addPossibleValue(Entity possibleValue){
+		possibleValueList.add(possibleValue); 
+	}
+	
 	public List<Argument> getArgumentList(){
 		return argumentList; 
 	}
@@ -103,5 +110,10 @@ public class MultiEntityNode extends Node {
 	public List<MultiEntityNode> getInnerTermFromList(){
 		return innerTermFromList; 
 	}		
+	
+	public List<Entity> getPossibleValueList(){
+		return possibleValueList; 
+	}
+	
 }
  

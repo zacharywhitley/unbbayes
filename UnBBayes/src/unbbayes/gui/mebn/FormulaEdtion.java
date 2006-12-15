@@ -28,7 +28,7 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVImplies;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVNot;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
 
-public class FormulaEdction extends JPanel {
+public class FormulaEdtion extends JPanel {
 
 	JToolBar jtbOperator1;
 	JToolBar jtbOperator2; 
@@ -68,7 +68,7 @@ public class FormulaEdction extends JPanel {
 	
     protected IconController iconController = IconController.getInstance();
 	
-	public FormulaEdction(NetworkController _controller, ContextNode context){
+	public FormulaEdtion(NetworkController _controller, ContextNode context){
 		
 		super(); 
 		
@@ -146,7 +146,7 @@ public class FormulaEdction extends JPanel {
 	 *  Create a empty painel 
 	 *  */
 	
-	public FormulaEdction(){
+	public FormulaEdtion(){
 		
 	}
 		
@@ -159,56 +159,56 @@ public class FormulaEdction extends JPanel {
 	    btnAnd.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 			    BuiltInRV builtInRV = new BuiltInRVAnd(); 
-			    formulaTree.addOperatorInTree(builtInRV); 
+			    formulaTree.addSimpleOperatorInTree(builtInRV); 
 			}
 		});		
 		
 		btnOr.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 			    BuiltInRV builtInRV = new BuiltInRVOr(); 
-			    formulaTree.addOperatorInTree(builtInRV); 
+			    formulaTree.addSimpleOperatorInTree(builtInRV); 
 			}
 		});				
 		
 		btnNot.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 			    BuiltInRV builtInRV = new BuiltInRVNot(); 
-			    formulaTree.addOperatorInTree(builtInRV); 
+			    formulaTree.addSimpleOperatorInTree(builtInRV); 
 			}
 		});	
 		
 		btnEqualTo.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 			    BuiltInRV builtInRV = new BuiltInRVEqualTo(); 
-			    formulaTree.addOperatorInTree(builtInRV); 
+			    formulaTree.addSimpleOperatorInTree(builtInRV); 
 			}
 		});						
 
 		btnIf.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 			    BuiltInRV builtInRV = new BuiltInRVIff(); 
-			    formulaTree.addOperatorInTree(builtInRV); 
+			    formulaTree.addSimpleOperatorInTree(builtInRV); 
 			}
 		});						
 		
 		btnImplies.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 			    BuiltInRV builtInRV = new BuiltInRVImplies(); 
-			    formulaTree.addOperatorInTree(builtInRV); 
+			    formulaTree.addSimpleOperatorInTree(builtInRV); 
 			}
 		});						
 		
 		btnForAll.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 			    BuiltInRV builtInRV = new BuiltInRVForAll(); 
-			    formulaTree.addQuantifierInTree(builtInRV); 
+			    formulaTree.addQuantifierOperatorInTree(builtInRV); 
 			}
 		});						
 		
 		btnExists.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 			    BuiltInRV builtInRV = new BuiltInRVExists(); 
-			    formulaTree.addQuantifierInTree(builtInRV); 
+			    formulaTree.addQuantifierOperatorInTree(builtInRV); 
 			}
 		});						
 		

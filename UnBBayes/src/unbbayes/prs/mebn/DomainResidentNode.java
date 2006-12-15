@@ -85,15 +85,10 @@ public class DomainResidentNode extends ResidentNode {
 	public void addResidentNodeChild(DomainResidentNode node){
 		residentNodeChildList.add(node); 
 		node.addResidentNodeFather(this); 
-		
-		mFrag.removeEdgeByNodes(this, node);
 	}		
 	
 	private void addResidentNodeFather(DomainResidentNode father){
 		residentNodeFatherList.add(father);
-		father.addResidentNodeChild(this); 
-		
-		mFrag.removeEdgeByNodes(this, father);		
 	}
 	
 	/**
@@ -101,9 +96,8 @@ public class DomainResidentNode extends ResidentNode {
 	 * father add this node in the list of child resident nodes.  
 	 * @param father
 	 */
-	public void addInputNodeFather(GenerativeInputNode father){
+	protected void addInputNodeFather(GenerativeInputNode father){
 		inputNodeFatherList.add(father); 
-		father.addResidentNodeChild(this); 
 	}	 
 	
 	protected void addInputInstanceFromList(GenerativeInputNode instance){

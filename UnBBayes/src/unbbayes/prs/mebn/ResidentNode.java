@@ -25,6 +25,8 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	 
 	private List<ResidentNode> residentNodeChildList;
 	
+	
+	
 	/**
 	 * List of ordinary variables of this node. Don't have duplicates
 	 * elements. 

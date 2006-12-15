@@ -15,6 +15,8 @@ import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
+import unbbayes.prs.mebn.entity.Entity;
 
 /**
  * 
@@ -28,6 +30,22 @@ public class MEBNController {
 
 	private MultiEntityBayesianNetwork multiEntityBayesianNetwork;
 
+	private ResidentNode residentNodeActive; 
+	private InputNode inputNodeActive; 
+	private ContextNode contextNodeActive; 
+	
+	public ResidentNode getResidentNodeActive(){
+		return residentNodeActive; 
+	}
+	
+	public InputNode getInputNodeActive(){
+		return inputNodeActive; 
+	}
+	
+	public ContextNode getContextNodeActive(){
+		return contextNodeActive; 
+	}
+	
 	/** Load resource file from this package */
 	private static ResourceBundle resource = ResourceBundle
 			.getBundle("unbbayes.controller.resources.ControllerResources");
@@ -112,13 +130,28 @@ public class MEBNController {
 		node.setDescription(node.getName());
 		domainMFrag.addDomainResidentNode(node);
 		
+		residentNodeActive = node; 
+		
 		screen.getMebnEditionPane().getInputInstanceOfSelection().updateTree(); 
-		screen.getMebnEditionPane().setEditArgumentsTabActive(node); 
+		screen.getMebnEditionPane().setEditArgumentsTabActive(node);
+		screen.getMebnEditionPane().setPossibleValuesEditTabActive(node); 
 		screen.getMebnEditionPane().setArgumentTabActive(); 
 	    screen.getMebnEditionPane().setResidentCardActive(); 
 		screen.getMebnEditionPane().setTxtNameResident(((ResidentNode)node).getName()); 	
 		
-	}	
+	}
+	
+	/**
+	 * Adiciona um possivel valor (estado) no nodo resident... 
+	 * @param resident
+	 * @param value
+	 */
+	public void addPossibleValue(DomainResidentNode resident, String nameValue){
+		
+		Entity value = new CategoricalStatesEntity(nameValue); 
+		resident.addPossibleValue(value); 
+				
+	}
 	
 	/*---------------------------- Input Node ----------------------------*/		
 	
@@ -134,6 +167,8 @@ public class MEBNController {
 		node.setPosition(x, y);
 		node.setDescription(node.getName());
 		domainMFrag.addGenerativeInputNode(node);
+		
+		inputNodeActive = node; 
 		
 	    screen.getMebnEditionPane().setInputCardActive(); 	
 		screen.getMebnEditionPane().setTxtNameInput(((InputNode)node).getName()); 		    
@@ -163,6 +198,8 @@ public class MEBNController {
 		node.setPosition(x, y);
 		node.setDescription(node.getName());
 		domainMFrag.addContextNode(node);
+		
+		contextNodeActive = node; 
 		
 	    screen.getMebnEditionPane().setContextCardActive();
 		screen.getMebnEditionPane().setFormulaEdtionActive(node); 	
@@ -199,19 +236,23 @@ public class MEBNController {
 	
 	public void selectNode(Node node){
 		if (node instanceof ResidentNode){
+			residentNodeActive = (ResidentNode)node; 
 			screen.getMebnEditionPane().setResidentCardActive(); 
 			screen.getMebnEditionPane().setEditArgumentsTabActive((ResidentNode)node); 
+			screen.getMebnEditionPane().setPossibleValuesEditTabActive((DomainResidentNode)node); 
 			screen.getMebnEditionPane().setTxtNameResident(((ResidentNode)node).getName()); 	
 			screen.getMebnEditionPane().setArgumentTabActive(); 	
 		}
 		else{
 			if(node instanceof InputNode){
+				inputNodeActive = (InputNode)node; 
 				screen.getMebnEditionPane().setInputCardActive(); 
 				screen.getMebnEditionPane().setTxtNameInput(((InputNode)node).getName()); 				
 				screen.getMebnEditionPane().setInputInstanceOfActive(); 
 			}
 			else{
 				if(node instanceof ContextNode){
+					contextNodeActive = (ContextNode)node; 
 					screen.getMebnEditionPane().setContextCardActive(); 
 					screen.getMebnEditionPane().setFormulaEdtionActive((ContextNode)node); 					
 					screen.getMebnEditionPane().setTxtNameContext(((ContextNode)node).getName()); 					
@@ -285,5 +326,7 @@ public class MEBNController {
 		screen.getMebnEditionPane().getEditOVariableTab().setNameOVariableSelected(ov.getName()); 
 		
 	}
+	
+	
 	
 }

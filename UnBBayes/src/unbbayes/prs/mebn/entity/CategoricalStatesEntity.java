@@ -1,15 +1,13 @@
 package unbbayes.prs.mebn.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.mebn.entity.exception.TypeChangeNotAllowedException;
 
 public class CategoricalStatesEntity extends Entity {
 	
-	public void setType(String type) throws TypeChangeNotAllowedException {
-		throw new TypeChangeNotAllowedException(
-				"This entity is not allowed to change its type.");
-	}
+	private static List<CategoricalStatesEntity> listEntity = new ArrayList<CategoricalStatesEntity>();	
 	
 	public CategoricalStatesEntity(String name) {
 		this.type = "CategoryLabel";
@@ -17,7 +15,11 @@ public class CategoricalStatesEntity extends Entity {
 		CategoricalStatesEntity.addEntity(this);
 	}
 	
-	private static List<CategoricalStatesEntity> listEntity;
+	public void setType(String type) throws TypeChangeNotAllowedException {
+		throw new TypeChangeNotAllowedException(
+				"This entity is not allowed to change its type.");
+	}
+
 	
 	public static void addEntity(CategoricalStatesEntity entity) {
 		CategoricalStatesEntity.listEntity.add(entity);

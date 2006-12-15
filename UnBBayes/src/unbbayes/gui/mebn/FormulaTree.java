@@ -2,23 +2,28 @@ package unbbayes.gui.mebn;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Enumeration;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.ListSelectionModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import unbbayes.controller.FormulaTreeController;
@@ -81,7 +86,8 @@ public class FormulaTree extends JTree{
 	/* types of the nodes */
 	private enum enumType{
 		EMPTY, 
-		OPERATOR, 
+		SIMPLE_OPERATOR,
+		QUANTIFIER_OPERATOR, 
 		FORMULA, 
 		VARIABLE_SEQUENCE,
 		VARIABLE, 
@@ -98,6 +104,7 @@ public class FormulaTree extends JTree{
 		OVARIABLE, 
 		NODE, 
 		ENTITY, 
+		VARIABLE, 
 		SKOLEN, 
 				
 		/* OPERATOR */
@@ -127,6 +134,8 @@ public class FormulaTree extends JTree{
     private JPopupMenu popupOperando = new JPopupMenu(); 
 	
     private JPopupMenu popupOperator = new JPopupMenu(); 
+    
+    private JPopupMenu popupVariable = new JPopupMenu(); 
     
     ContextNode contextNode; 
     
@@ -178,6 +187,7 @@ public class FormulaTree extends JTree{
     	
 		createPopupMenuFormula(); 
 		createPopupMenuOperator(); 
+		createPopupMenuVariable(); 
 		
 		/*------------------ Adicionar listeners -----------------------*/
 		
@@ -198,16 +208,34 @@ public class FormulaTree extends JTree{
 				nodeFormulaActive = (NodeFormulaTree)node.getUserObject(); 
 				
 				if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
-					if ((nodeFormulaActive.getTypeNode() == enumType.FORMULA) || 
-							(nodeFormulaActive.getTypeNode() == enumType.EMPTY)) {
+					
+					switch(nodeFormulaActive.getTypeNode()){
+					    
+					case FORMULA: 
+					case EMPTY: 
 						popupOperando.setEnabled(true);
 						popupOperando.show(e.getComponent(),e.getX(),e.getY());
-					}else{
-						if (nodeFormulaActive.getTypeNode() == enumType.OPERATOR) {
-							popupOperator.setEnabled(true);
-							popupOperator.show(e.getComponent(),e.getX(),e.getY());
-						}
+						break; 
+						
+					case SIMPLE_OPERATOR: 
+						popupOperator.setEnabled(true);
+						popupOperator.show(e.getComponent(),e.getX(),e.getY());
+						break; 
+
+					case QUANTIFIER_OPERATOR: 
+						popupOperator.setEnabled(true);
+						popupOperator.show(e.getComponent(),e.getX(),e.getY());
+						break; 						
+						
+					case VARIABLE_SEQUENCE: 
+						popupVariable.setEnabled(true); 
+						popupVariable.show(e.getComponent(),e.getX(),e.getY());
+						break; 
+						
+					default:
+						break;
 					}
+				
 					
 				} else if (e.getClickCount() == 2
 						&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {						
@@ -272,7 +300,8 @@ public class FormulaTree extends JTree{
     		
     	protected ImageIcon emptyNodeIcon = iconController.getEmptyNodeIcon(); 	        
         
-        
+        protected ImageIcon yellowBallIcon = iconController.getYellowBallIcon(); 
+    	
 		/**
 		 * Return a tree cell for the object value. 
 		 */
@@ -304,7 +333,7 @@ public class FormulaTree extends JTree{
 				setIcon(folderSmallIcon);
 				return this; 
 				
-			case OPERATOR: 
+			case SIMPLE_OPERATOR: 
 				switch(subType){
 				
 				case AND:
@@ -331,6 +360,12 @@ public class FormulaTree extends JTree{
 					setIcon(iffIcon); 
 					return this; 					
 					
+                default:
+                	return this; 
+				
+				}
+			case QUANTIFIER_OPERATOR: 
+				switch(subType){
 				case FORALL:
 					setIcon(forallIcon); 
 					return this; 					
@@ -342,7 +377,8 @@ public class FormulaTree extends JTree{
                 default:
                 	return this; 
 				
-				}
+				}				
+				
 				
 			case VARIABLE_SEQUENCE:
 				setIcon(folderSmallIcon);
@@ -374,6 +410,10 @@ public class FormulaTree extends JTree{
                 	return this; 
 				
 				}
+			
+			case VARIABLE:
+				setIcon(yellowBallIcon); 
+				return this; 
 				
 			default: 	
 				setIcon(folderSmallIcon);
@@ -436,7 +476,8 @@ public class FormulaTree extends JTree{
 			
 			JMenuItem itemNode =  new JMenuItem("addNode");
 			JMenuItem itemEntity =    new JMenuItem("addEntity"); 
-			JMenuItem itemOVariable = new JMenuItem("addOVariable"); 
+			JMenuItem itemOVariable = new JMenuItem("addOVariable");
+			JMenuItem itemVariable = new JMenuItem("addVariable"); 
 			JMenuItem itemSkolen = new JMenuItem("addSkolen");
 
 			JMenuItem itemAnd = new JMenuItem("and"); 
@@ -460,62 +501,63 @@ public class FormulaTree extends JTree{
 			menuOperando.add(itemNode); 
 			menuOperando.add(itemOVariable); 
 			menuOperando.add(itemEntity); 
+			menuOperando.add(itemVariable); 
 			itemSkolen.setArmed(false); 
 			menuOperando.add(itemSkolen); 
 			
 			itemAnd.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent ae){
 				    BuiltInRV builtInRV = new BuiltInRVAnd(); 
-				    addOperatorInTree(builtInRV); 
+				    addSimpleOperatorInTree(builtInRV); 
 				}
 			});		
 			
 			itemOr.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent ae){
 				    BuiltInRV builtInRV = new BuiltInRVOr(); 
-				    addOperatorInTree(builtInRV); 
+				    addSimpleOperatorInTree(builtInRV); 
 				}
 			});				
 			
 			itemNot.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent ae){
 				    BuiltInRV builtInRV = new BuiltInRVNot(); 
-				    addOperatorInTree(builtInRV); 
+				    addSimpleOperatorInTree(builtInRV); 
 				}
 			});	
 			
 			itemEqual.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent ae){
 				    BuiltInRV builtInRV = new BuiltInRVEqualTo(); 
-				    addOperatorInTree(builtInRV); 
+				    addSimpleOperatorInTree(builtInRV); 
 				}
 			});						
 
 			itemIff.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent ae){
 				    BuiltInRV builtInRV = new BuiltInRVIff(); 
-				    addOperatorInTree(builtInRV); 
+				    addSimpleOperatorInTree(builtInRV); 
 				}
 			});						
 			
 			itemImplies.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent ae){
 				    BuiltInRV builtInRV = new BuiltInRVImplies(); 
-				    addOperatorInTree(builtInRV); 
+				    addSimpleOperatorInTree(builtInRV); 
 				}
 			});						
 			
 			itemForall.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent ae){
 				    BuiltInRV builtInRV = new BuiltInRVForAll(); 
-				    addQuantifierInTree(builtInRV); 
+				    addQuantifierOperatorInTree(builtInRV); 
 				}
 			});						
 			
 			itemExists.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent ae){
 				    BuiltInRV builtInRV = new BuiltInRVExists(); 
-				    addQuantifierInTree(builtInRV); 
+				    addQuantifierOperatorInTree(builtInRV); 
 				}
 			});						
 			
@@ -537,6 +579,12 @@ public class FormulaTree extends JTree{
 				}
 			}); 
 			
+			itemVariable.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent ae){
+					replaceByVariable(nodeActive); 
+				}
+			}); 			
+			
 			itemDelete.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent ae){
 				
@@ -553,7 +601,7 @@ public class FormulaTree extends JTree{
 					NodeFormulaTree nodeFormulaParent = (NodeFormulaTree)parent.getUserObject(); 
 				    
 					/* operando */
-					if(nodeFormulaParent.getTypeNode() == enumType.OPERATOR){
+					if(nodeFormulaParent.getTypeNode() == enumType.SIMPLE_OPERATOR){
 						
 					}
 					
@@ -593,7 +641,7 @@ public class FormulaTree extends JTree{
 					
 					NodeFormulaTree nodeFormulaParent = (NodeFormulaTree)parent.getUserObject(); 
 				    
-					if(nodeFormulaParent.getTypeNode() == enumType.OPERATOR){
+					if((nodeFormulaParent.getTypeNode() == enumType.SIMPLE_OPERATOR) || (nodeFormulaParent.getTypeNode() == enumType.QUANTIFIER_OPERATOR) ){
 						
 						int indiceNewChild = parent.getChildCount();
 						
@@ -609,7 +657,22 @@ public class FormulaTree extends JTree{
 			popupOperator.add(itemDelete); 
 		}		
 		
-		public void addOperatorInTree(BuiltInRV builtInRV){
+		private void createPopupMenuVariable(){
+			
+			JMenuItem itemAdd = new JMenuItem("add"); 
+			 
+			itemAdd.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent ae){
+					addVariable(); 
+					updateTree(); 
+				}
+			}); 
+			
+			popupVariable.add(itemAdd); 
+		}		
+				
+		
+		public void addSimpleOperatorInTree(BuiltInRV builtInRV){
 
 			NodeFormulaTree nodeFormula = (NodeFormulaTree)nodeActive.getUserObject(); 
 		    NodeFormulaTree operandoChild; 
@@ -617,7 +680,7 @@ public class FormulaTree extends JTree{
 		    
 			nodeFormula.setName(builtInRV.getName()); 
 		    nodeFormula.setNodeVariable(builtInRV);
-		    nodeFormula.setTypeNode(enumType.OPERATOR); 
+		    nodeFormula.setTypeNode(enumType.SIMPLE_OPERATOR); 
 		    
 		    for (int i = 1; i <= builtInRV.getNumOperandos(); i++){
 		        operandoChild = new NodeFormulaTree("op_" + i, enumType.EMPTY, enumSubType.NOTHING, null); 
@@ -629,7 +692,7 @@ public class FormulaTree extends JTree{
 		    
 		}
 		
-		public void addQuantifierInTree(BuiltInRV builtInRV){
+		public void addQuantifierOperatorInTree(BuiltInRV builtInRV){
 			
 			NodeFormulaTree nodeFormula = (NodeFormulaTree)nodeActive.getUserObject(); 
 		    
@@ -638,7 +701,7 @@ public class FormulaTree extends JTree{
 		    
 			nodeFormula.setName(builtInRV.getName()); 
 		    nodeFormula.setNodeVariable(builtInRV);
-		    nodeFormula.setTypeNode(enumType.OPERATOR);
+		    nodeFormula.setTypeNode(enumType.QUANTIFIER_OPERATOR);
 		    
 		    /* adicionar nodo para insercao da sequencia de variaveis */
 		    nodeFormulaTree = new NodeFormulaTree("Var", enumType.VARIABLE_SEQUENCE, enumSubType.NOTHING, null); 
@@ -653,17 +716,6 @@ public class FormulaTree extends JTree{
 		    updateTree(); 
 		    
 		}
-		
-		
-		
-	
-		
-		
-		
-		
-		
-		
-		
 		
 		/**
 		 * Nodo of the tree of the formula. Have the information
@@ -742,7 +794,7 @@ public class FormulaTree extends JTree{
 	     
 	     JPanel painelOVariableSelection = new JPanel(new BorderLayout()); 
 
-	     OVariableTreeMFragRepaceInFormula oVariableTreeMFragReplaceInFormula = new OVariableTreeMFragRepaceInFormula(controller, this); 
+	     OVariableTreeMFragReplaceInFormula oVariableTreeMFragReplaceInFormula = new OVariableTreeMFragReplaceInFormula(controller, this); 
 	     JScrollPane jspOVariableTreeMFrag = new JScrollPane(oVariableTreeMFragReplaceInFormula); 
 	     painelOVariableSelection.add(jspOVariableTreeMFrag, BorderLayout.NORTH); 
 
@@ -753,27 +805,105 @@ public class FormulaTree extends JTree{
 	     frameOVariableSelection.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
 		}
 
+
+		
+
+		
 		/**
-		 * add one ordinary variable in the formula tree (replace
-		 * the actual node of the formula for the ordinary variable)
-		 * 
-		 * @param ov
+		 * Painel que mostra quais são as variaveis disponiveis para
+		 * se escolher uma a ser utilizada como operando na formula. 
+		 *
+		 * NodeTree deve ser um nodo do tipo enumType.VARIABLE.
+		 *  
 		 */
-		public void addOVariable(OrdinaryVariable ov){
+		
+		public void replaceByVariable(DefaultMutableTreeNode nodeTree){
 			
-			NodeFormulaTree nodePlace = (NodeFormulaTree)nodeActive.getUserObject(); 
-		    
-			nodePlace.setName(ov.getName()); 
-			nodePlace.setNodeVariable(ov);
-			nodePlace.setTypeNode(enumType.OPERANDO); 
-			nodePlace.setSubTypeNode(enumSubType.OVARIABLE); 
-			
-			frameOVariableSelection.setVisible(false); 
-			frameOVariableSelection = null; 
-			
-		    updateTree(); 
-		    
-		}			
+			JFrame variableList; 
+			variableList = new JFrame("Variable"); 
+		     
+		     JPanel painel = new JPanel(new BorderLayout()); 
+		     
+		     TreeNode nodeAux = nodeTree.getParent();  
+		     TreeNode variableListNode; 
+		     NodeFormulaTree nodeFormula; 
+		     boolean testeEnd = false; 
+		     
+		     /* contem os nodos correspondentes as variaveis disponiveis */
+		     final ArrayList<TreeNode> listVariables = new ArrayList<TreeNode>(); 
+		     
+		     /* 
+		      * percorrer a arvore de baixo para cima montando uma lista 
+		      * contendo todas as variaveis possiveis de escolha pelo 
+		      * usuario. 
+		      */
+		     while(testeEnd == false){
+		    	 nodeFormula = (NodeFormulaTree)((DefaultMutableTreeNode)nodeAux).getUserObject(); 	    	 
+		    	 if(nodeFormula.getTypeNode() == enumType.QUANTIFIER_OPERATOR){
+		    		 variableListNode = nodeAux.getChildAt(0); 
+		    		 int numChild = variableListNode.getChildCount(); 
+		    		 for (int i = 0; i < numChild; i++){
+		    			 listVariables.add(variableListNode.getChildAt(i));	 		    			 
+		    		 }
+		    	 }
+		    	 if(nodeAux.getParent() == null){
+		    		 testeEnd = true; 
+		    	 }
+		    	 else{
+		    		 nodeAux = nodeAux.getParent(); 
+		    	 }
+		     }
+		     
+		     /* Montagem da lista com os nomes das variaveis... */ 
+		     
+		     String variablesNames[] = new String[listVariables.size()]; 
+		     int i = 0; 
+		     
+		     for(TreeNode node: listVariables){
+		    	 nodeFormula = (NodeFormulaTree)((DefaultMutableTreeNode)node).getUserObject(); 
+		         variablesNames[i] = nodeFormula.getName(); 
+		         i++; 
+		     }
+		     
+		     final JList list = new JList(variablesNames);
+		     
+		     list.addMouseListener(new MouseAdapter() {
+					
+					public void mousePressed(MouseEvent e) {
+						
+						if ((e.getModifiers() == MouseEvent.BUTTON1_MASK) && (e.getClickCount() == 2)){
+							int selectedIndex = list.getSelectedIndex(); 
+							
+							TreeNode treeNodeSelected = listVariables.get(selectedIndex); 
+							NodeFormulaTree nodePlace = (NodeFormulaTree)((DefaultMutableTreeNode)treeNodeSelected).getUserObject(); 
+							NodeFormulaTree nodeFormulaActive = (NodeFormulaTree)((DefaultMutableTreeNode)nodeActive).getUserObject(); 
+							
+							nodeFormulaActive.setName(nodePlace.getName()); 
+							nodeFormulaActive.setNodeVariable(nodePlace);
+							nodeFormulaActive.setTypeNode(enumType.OPERANDO); 
+							nodeFormulaActive.setSubTypeNode(enumSubType.VARIABLE);
+							
+							updateTree(); 
+							
+						}
+						
+					}
+				});
+		     
+		     list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+		     list.setLayoutOrientation(JList.VERTICAL);
+		     list.setVisibleRowCount(-1);
+		     JScrollPane listScroller = new JScrollPane(list);
+		     listScroller.setPreferredSize(new Dimension(100, 200));
+		     
+		     painel.add(listScroller); 
+		     
+		     variableList.setContentPane(painel);
+		     variableList.pack();
+		     variableList.setVisible(true); 
+		     variableList.setLocationRelativeTo(null); 
+		     variableList.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 		
+		}
 		
 		/**
 		 * open the tree for selected the ordinary variable
@@ -816,9 +946,45 @@ public class FormulaTree extends JTree{
 			
 		    updateTree(); 
 		    
-		}			
+		}	
 		
+		/**
+		 * Adiciona uma variavel na arvore da formula. A variavel deve
+		 * ser inserida em um pai do tipo enumType.VARIABLE_SEQUENCE
+		 *
+		 */
+		public void addVariable(){
+			
+			NodeFormulaTree nodePlace = (NodeFormulaTree)nodeActive.getUserObject();
+			String name = "X"; 
+			
+			NodeFormulaTree variable = new NodeFormulaTree(name, enumType.VARIABLE, enumSubType.NOTHING, null);
+			DefaultMutableTreeNode nodeVariable = new DefaultMutableTreeNode(variable); 
+			nodeActive.add(nodeVariable); 
+			
+			
+		}		
+		
+		/**
+		 * add one ordinary variable in the formula tree (replace
+		 * the actual node of the formula for the ordinary variable)
+		 * 
+		 * @param ov
+		 */
+		public void addOVariable(OrdinaryVariable ov){
+			
+			NodeFormulaTree nodePlace = (NodeFormulaTree)nodeActive.getUserObject(); 
+		    
+			nodePlace.setName(ov.getName()); 
+			nodePlace.setNodeVariable(ov);
+			nodePlace.setTypeNode(enumType.OPERANDO); 
+			nodePlace.setSubTypeNode(enumSubType.OVARIABLE); 
+			
+			frameOVariableSelection.setVisible(false); 
+			frameOVariableSelection = null; 
+			
+		    updateTree(); 
+		    
+		}				
 		
 	}
-
-

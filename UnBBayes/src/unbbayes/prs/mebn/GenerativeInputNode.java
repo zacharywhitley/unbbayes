@@ -72,6 +72,7 @@ public class GenerativeInputNode extends InputNode {
 	
 	public void addResidentNodeChild(DomainResidentNode resident){
 		residentNodeChildList.add(resident); 
+		resident.addInputNodeFather(this); 
 	}
 	
 	public List<DomainResidentNode> getResidentNodeChildList(){
