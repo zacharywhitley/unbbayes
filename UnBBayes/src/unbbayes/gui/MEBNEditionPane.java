@@ -51,8 +51,8 @@ public class MEBNEditionPane extends JPanel {
 	private JPanel leftPanel; 	
 	
 	/*---- TabPanel and tabs ----*/
-	private JToolBar jtbTabPanel; 
-    private JPanel tabPanel;
+	private JToolBar jtbTabSelection; 
+    private JPanel jpTabSelected;
     private MTheoryTree mTheoryTree; 
     private JScrollPane mTheoryTreeScroll; 
     private FormulaEdtion formulaEdtion;    
@@ -62,9 +62,10 @@ public class MEBNEditionPane extends JPanel {
     private OVariableEditTab editOVariableTab; 
     private PossibleValuesEditTab possibleValuesEditTab; 
     private ArgumentsEditTab editArgumentsTab; 
+    
     private TableEdit tableEdit; 
     
-    private JPanel descriptionPanel; 
+    private JPanel jpDescription; 
     
     /*---- Global Options ----*/
     private GlobalOptionsDialog go;
@@ -81,16 +82,14 @@ public class MEBNEditionPane extends JPanel {
     
     
     private final NetworkController controller;
-    //private final JScrollPane jspTable;
     private final JSplitPane centerPanel;
-    //private Node tableOwner;
     private final JLabel status;
     private final JPanel bottomPanel;
 
     private final JPanel topPanel;
     private final JToolBar jtbEdition;
     
-    private final JPanel panelNodeSelected;
+    private final JPanel jpNodeSelectedOptions;
     private final CardLayout cardLayout = new CardLayout(); 
     private final JToolBar jtbEmpty; 
     private final JToolBar jtbMFrag; 
@@ -98,25 +97,28 @@ public class MEBNEditionPane extends JPanel {
     private final JToolBar jtbInput; 
     private final JToolBar jtbContext; 
 
-    private final JLabel name;
-    private final JLabel description;
-    private final JLabel arguments; 
+    private final JLabel labelDescription;
     
-    private final JLabel inputOf; 
-    private final JLabel formula; 
+    private final JLabel labelResidentName;
+    private final JLabel labelArguments; 
+ 
+    private final JLabel labelInputName; 
+    private final JLabel labelInputOf; 
     
-    private final JLabel nameMFrag; 
-    private final JLabel nameInput; 
-    private final JLabel nameContext; 
+    private final JLabel labelContextName;     
+    private final JLabel labelFormula; 
+    
+    private final JLabel labelMFragName; 
 
-    private final JButton btnCompile;
     private final JButton btnEditStates;
     private final JButton btnEditTable;
-    private final JButton btnAddEdge;
+    
     private final JButton btnAddMFrag; 
     private final JButton btnAddContextNode;
     private final JButton btnAddInputNode;
     private final JButton btnAddResidentNode;
+    private final JButton btnAddEdge;
+    
     private final JButton btnSelectObject;
     private final JButton btnGlobalOption;
     
@@ -160,12 +162,12 @@ public class MEBNEditionPane extends JPanel {
         
         leftPanel = new JPanel(new BorderLayout()); 
         
-        tabPanel = new JPanel(cardLayout); 
-        descriptionPanel = new JPanel(new BorderLayout()); 
-        jtbTabPanel = new JToolBar(); 
+        jpTabSelected = new JPanel(cardLayout); 
+        jpDescription = new JPanel(new BorderLayout()); 
+        jtbTabSelection = new JToolBar(); 
         
 
-        panelNodeSelected = new JPanel(cardLayout); 
+        jpNodeSelectedOptions = new JPanel(cardLayout); 
         jtbEdition  = new JToolBar();
         
         jtbResident = new JToolBar(); 
@@ -179,9 +181,9 @@ public class MEBNEditionPane extends JPanel {
         status      = new JLabel(resource.getString("statusReadyLabel"));
 
         //criar labels e textfields que serão usados no jtbState
-        name       = new JLabel(resource.getString("nameLabel"));
-        description = new JLabel(resource.getString("descriptionLabel"));
-        arguments = new JLabel(resource.getString("arguments")); 
+        labelResidentName       = new JLabel(resource.getString("nameLabel"));
+        labelDescription = new JLabel(resource.getString("descriptionLabel"));
+        labelArguments = new JLabel(resource.getString("arguments")); 
         txtName           = new JTextField(10);
         txtDescription     = new JTextField(15);
         
@@ -192,20 +194,19 @@ public class MEBNEditionPane extends JPanel {
         txtInputOf = new JTextField(10); 
         txtArguments = new JTextField(10); 
     
-        nameMFrag = new JLabel(resource.getString("nameLabel"));         
-        nameInput = new JLabel(resource.getString("nameLabel")); 
-        nameContext = new JLabel(resource.getString("nameLabel")); 
+        labelMFragName = new JLabel(resource.getString("nameLabel"));         
+        labelInputName = new JLabel(resource.getString("nameLabel")); 
+        labelContextName = new JLabel(resource.getString("nameLabel")); 
         
-        inputOf = new JLabel(resource.getString("inputOf")); 
+        labelInputOf = new JLabel(resource.getString("inputOf")); 
         
-        formula = new JLabel(resource.getString("formula"));
+        labelFormula = new JLabel(resource.getString("formula"));
         txtFormula = new JTextField(15); 
         
 
         
         
         //criar botões que serão usados nodeList toolbars
-        btnCompile           = new JButton(iconController.getCompileIcon());
         btnEditStates              = new JButton(iconController.getMoreIcon());
         btnEditTable              = new JButton(iconController.getEditIcon());
         btnAddEdge               = new JButton(iconController.getEdgeIcon());
@@ -233,7 +234,6 @@ public class MEBNEditionPane extends JPanel {
         btnInputOf = new JButton(iconController.getBoxSetIcon());         
         
         //setar tooltip para esses botões
-        btnCompile.setToolTipText(resource.getString("compileToolTip"));
         btnEditStates.setToolTipText(resource.getString("moreToolTip"));
         btnEditTable.setToolTipText(resource.getString("lessToolTip"));
         btnAddEdge.setToolTipText(resource.getString("arcToolTip"));
@@ -278,14 +278,14 @@ public class MEBNEditionPane extends JPanel {
         
         jtbMFrag.add(btnMFragActive); 
         jtbMFrag.addSeparator();         
-        jtbMFrag.add(nameMFrag);
+        jtbMFrag.add(labelMFragName);
         jtbMFrag.add(txtNameMFrag);        
         
         
         /*---- jtbResident ----*/
         jtbResident.add(btnResidentActive); 
         jtbResident.addSeparator();         
-        jtbResident.add(name);
+        jtbResident.add(labelResidentName);
         jtbResident.add(txtNameResident);
         jtbResident.addSeparator();
         jtbResident.addSeparator();
@@ -293,31 +293,31 @@ public class MEBNEditionPane extends JPanel {
         jtbResident.add(btnEditTable); 
         jtbResident.add(btnAddArgument);
         jtbResident.addSeparator(); 
-        jtbResident.add(arguments); 
+        jtbResident.add(labelArguments); 
         txtArguments.setEditable(false); 
         jtbResident.add(txtArguments); 
 
         /*----- jtbInput ----*/
         jtbInput.add(btnInputActive); 
         jtbInput.addSeparator();
-        jtbInput.add(nameInput);
+        jtbInput.add(labelInputName);
         txtNameInput.setEditable(false); 
         jtbInput.add(txtNameInput);
         jtbInput.addSeparator(); 
         jtbInput.add(btnInputOf);         
-        jtbInput.add(inputOf);
+        jtbInput.add(labelInputOf);
         txtInputOf.setEditable(false); 
         jtbInput.add(txtInputOf); 
         
         /*----- jtbContext ----*/
         jtbContext.add(btnContextActive); 
         jtbContext.addSeparator();         
-        jtbContext.add(nameContext);
+        jtbContext.add(labelContextName);
         txtNameContext.setEditable(false); 
         jtbContext.add(txtNameContext);
         jtbContext.addSeparator(); 
         jtbContext.add(btnEditFormula); 
-        jtbContext.add(formula); 
+        jtbContext.add(labelFormula); 
         txtFormula.setEditable(false); 
         jtbContext.add(txtFormula);
        
@@ -330,35 +330,15 @@ public class MEBNEditionPane extends JPanel {
         
         /*---- Add card panels in the layout ----*/
         
-        panelNodeSelected.add("ResidentCard", jtbResident);
-        panelNodeSelected.add("ContextCard", jtbContext); 
-        panelNodeSelected.add("InputCard", jtbInput); 
-        panelNodeSelected.add("MFragCard", jtbMFrag); 
-        panelNodeSelected.add("EmptyCard", jtbEmpty); 
+        jpNodeSelectedOptions.add("ResidentCard", jtbResident);
+        jpNodeSelectedOptions.add("ContextCard", jtbContext); 
+        jpNodeSelectedOptions.add("InputCard", jtbInput); 
+        jpNodeSelectedOptions.add("MFragCard", jtbMFrag); 
+        jpNodeSelectedOptions.add("EmptyCard", jtbEmpty); 
         
-        cardLayout.show(panelNodeSelected, "EmptyCard"); 
+        cardLayout.show(jpNodeSelectedOptions, "EmptyCard"); 
         
-        topPanel.add(panelNodeSelected); 
-
-        //setar o preferred size do jspTable para ser usado pelo SplitPanel
-        //jspTable.setPreferredSize(new Dimension(150,50));
-
-        //setar o auto resize off para que a tabela fique do tamanho ideal
-        //table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        
-        /* 
-         * Esperar Tabela ficar pronta... 
-         *
-         *
-        //adicionar tela da tabela(JScrollPane) da tabela de estados para o painel do centro
-        centerPanel.setTopComponent(jspTable);
-
-        //setar o tamanho do divisor entre o jspGraph(vem do NetWindow) e jspTable
-        centerPanel.setDividerSize(3);
-
-        //setar os tamanho de cada jsp(tabela e graph) para os seus PreferredSizes
-        centerPanel.resetToPreferredSizes();
-        */
+        topPanel.add(jpNodeSelectedOptions); 
 
         bottomPanel.add(status);
 
@@ -369,47 +349,43 @@ public class MEBNEditionPane extends JPanel {
        
         /*----------------- Icones do Tab Panel ------------*/
         
-        jtbTabPanel.add(btnTabOption1);
-        jtbTabPanel.add(btnTabOption2); 
-        jtbTabPanel.add(btnTabOption3); 
-        jtbTabPanel.add(btnTabOption4); 
-        jtbTabPanel.add(btnTabOption5); 
-        jtbTabPanel.add(btnTabOption6);         
-        jtbTabPanel.setBackground(Color.black);
-        jtbTabPanel.setFloatable(false);
+        jtbTabSelection.add(btnTabOption1);
+        jtbTabSelection.add(btnTabOption2); 
+        jtbTabSelection.add(btnTabOption3); 
+        jtbTabSelection.add(btnTabOption4); 
+        jtbTabSelection.add(btnTabOption5); 
+        jtbTabSelection.add(btnTabOption6);         
+        jtbTabSelection.setBackground(Color.black);
+        jtbTabSelection.setFloatable(false);
         
         /*---------------- Tab panel ----------------------*/
         
         mTheoryTree = new MTheoryTree(controller); 
-        mTheoryTreeScroll = new JScrollPane(mTheoryTree,
-                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS); 
-        
-        tabPanel.add("MTheoryTree", mTheoryTreeScroll);
+        mTheoryTreeScroll = new JScrollPane(mTheoryTree); 
+        jpTabSelected.add("MTheoryTree", mTheoryTreeScroll);
         
         formulaEdtion = new FormulaEdtion(); 
-        tabPanel.add("FormulaEdtion", formulaEdtion); 
+        jpTabSelected.add("FormulaEdtion", formulaEdtion); 
         
         entityTree = new EntityTree(); 
-        tabPanel.add("EntityTree", entityTree); 
+        jpTabSelected.add("EntityTree", entityTree); 
         
         inputInstanceOfSelection = new InputInstanceOfTab(controller); 
-        inputInstanceOfSelectionScroll = new JScrollPane(inputInstanceOfSelection,
-                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS); 
-        tabPanel.add("InputInstance", inputInstanceOfSelectionScroll); 
+        inputInstanceOfSelectionScroll = new JScrollPane(inputInstanceOfSelection); 
+        jpTabSelected.add("InputInstance", inputInstanceOfSelectionScroll); 
         
         editArgumentsTab = new ArgumentsEditTab(); 
-        tabPanel.add("EditArgumentsTab", editArgumentsTab); 
+        jpTabSelected.add("EditArgumentsTab", editArgumentsTab); 
         
         possibleValuesEditTab = new PossibleValuesEditTab(); 
-        tabPanel.add("PossibleValuesEditTab", possibleValuesEditTab); 
+        jpTabSelected.add("PossibleValuesEditTab", possibleValuesEditTab); 
+                
         
-        cardLayout.show(tabPanel, "MTheoryTree");  
+        cardLayout.show(jpTabSelected, "MTheoryTree");  
         
         /*------------------ Description panel ---------------*/
         
-        descriptionPanel.add("North", description);
+        jpDescription.add("North", labelDescription);
         
         JTextArea textArea = new JTextArea(5, 10);
         JScrollPane scrollPane = 
@@ -418,13 +394,13 @@ public class MEBNEditionPane extends JPanel {
                             JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         textArea.setEditable(true);
         
-        descriptionPanel.add("South", scrollPane); 
+        jpDescription.add("South", scrollPane); 
         
         /*------------------- Left panel ---------------------*/
         
-        leftPanel.add("North", jtbTabPanel);
-        leftPanel.add("Center", tabPanel); 
-        leftPanel.add("South", descriptionPanel); 
+        leftPanel.add("North", jtbTabSelection);
+        leftPanel.add("Center", jpTabSelected); 
+        leftPanel.add("South", jpDescription); 
         
         this.add(leftPanel, BorderLayout.WEST);
         
@@ -441,17 +417,6 @@ public class MEBNEditionPane extends JPanel {
   				go.setVisible(true);
   				netWindow.getGraphPane().update();
   				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-  			}
-  		});
-  		
-  		//ao clicar no botão btnCompile, chama-se o método de compilação da rede e
-  		//atualiza os toolbars
-  		btnCompile.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) {
-  				if (! controller.compileNetwork()) {
-  					return;
-  				}
-  				netWindow.changeToPNCompilationPane();
   			}
   		});
   		
@@ -665,17 +630,12 @@ public class MEBNEditionPane extends JPanel {
   	}  	
 
     /**
-     *  Retorna a tabela de probabilidades.
-     *
-     *@return    retorna a table (<code>JTable</code>)
-     *@see       JTable
-     */
-  	
-    /*
-  	public JTable getTable() {
-        return table;
+     * Mostra a tela de edição de tabela. 
+     */   
+    public void showTableEdit(){
+    	DomainResidentNode resident = (DomainResidentNode)controller.getMebnController().getResidentNodeActive(); 
+    	tableEdit = new TableEdit(resident); 
     }
-    */
 
     /**
      *  Retorna o text field da descrição do nó.
@@ -750,16 +710,12 @@ public class MEBNEditionPane extends JPanel {
         return this.btnAddEdge;
     }
 
-    public JButton getBtnCompile() {
-        return this.btnCompile;
-    }
-
     public JButton getBtnAddInputNode() {
         return this.btnAddInputNode;
     }
 
     public JLabel getDescription() {
-        return this.description;
+        return this.labelDescription;
     }
 
     public JButton getBtnGlobalOption() {
@@ -783,7 +739,7 @@ public class MEBNEditionPane extends JPanel {
     }
 
     public JLabel getname() {
-        return this.name;
+        return this.labelResidentName;
     }
 
     public JButton getBtnAddResidentNode() {
@@ -815,47 +771,47 @@ public class MEBNEditionPane extends JPanel {
     /* TabPanel */
     
     public void setMTheoryTreeActive(){
-        cardLayout.show(tabPanel, "MTheoryTree");  
+        cardLayout.show(jpTabSelected, "MTheoryTree");  
         mTheoryTree.updateTree(); 
     }
     
     public void setFormulaEdtionActive(){
-        cardLayout.show(tabPanel, "FormulaEdtion");  
+        cardLayout.show(jpTabSelected, "FormulaEdtion");  
     }
     
     public void setFormulaEdtionActive(ContextNode context){
     	   
-        tabPanel.remove(formulaEdtion);     	
+        jpTabSelected.remove(formulaEdtion);     	
     	formulaEdtion = new FormulaEdtion(controller, context); 
-    	tabPanel.add("FormulaEdtion", formulaEdtion);         
-    	cardLayout.show(tabPanel, "FormulaEdtion"); 
+    	jpTabSelected.add("FormulaEdtion", formulaEdtion);         
+    	cardLayout.show(jpTabSelected, "FormulaEdtion"); 
     }    
 
     public void setEntityTreeActive(){
-        cardLayout.show(tabPanel, "EntityTree");  
+        cardLayout.show(jpTabSelected, "EntityTree");  
     }    
     
     public void setInputInstanceOfActive(){
-        cardLayout.show(tabPanel, "InputInstance");  
+        cardLayout.show(jpTabSelected, "InputInstance");  
     }
     
     public void setArgumentTabActive(){
-        cardLayout.show(tabPanel, "ArgumentTab"); 	
+        cardLayout.show(jpTabSelected, "ArgumentTab"); 	
     }
     
     public void setEditArgumentsTabActive(ResidentNode resident){
    
-        tabPanel.remove(editArgumentsTab);     	
+        jpTabSelected.remove(editArgumentsTab);     	
     	editArgumentsTab = new ArgumentsEditTab(controller, resident); 
-    	tabPanel.add("EditArgumentsTab", editArgumentsTab);   
+    	jpTabSelected.add("EditArgumentsTab", editArgumentsTab);   
     	
     	
-    	cardLayout.show(tabPanel, "EditArgumentsTab"); 
+    	cardLayout.show(jpTabSelected, "EditArgumentsTab"); 
     }
     
     public void setEditArgumentsTabActive(){
     	editArgumentsTab.update();    
-        cardLayout.show(tabPanel, "EditArgumentsTab"); 
+        cardLayout.show(jpTabSelected, "EditArgumentsTab"); 
         
     }
     
@@ -863,8 +819,8 @@ public class MEBNEditionPane extends JPanel {
     	
     	if(controller.getMebnController().getCurrentMFrag() != null){
            editOVariableTab = new OVariableEditTab(controller); 
-           tabPanel.add("EditOVariableTab", editOVariableTab); 
-    	   cardLayout.show(tabPanel, "EditOVariableTab"); 
+           jpTabSelected.add("EditOVariableTab", editOVariableTab); 
+    	   cardLayout.show(jpTabSelected, "EditOVariableTab"); 
     	}
     }
     
@@ -872,16 +828,16 @@ public class MEBNEditionPane extends JPanel {
     	
     	if(controller.getMebnController().getCurrentMFrag() != null){
             
-    		tabPanel.remove(possibleValuesEditTab);     	
+    		jpTabSelected.remove(possibleValuesEditTab);     	
     		possibleValuesEditTab = new PossibleValuesEditTab(controller, resident); 
-        	tabPanel.add("PossibleValuesEditTab", possibleValuesEditTab);         
-        	cardLayout.show(tabPanel, "PossibleValuesEditTab"); 	
+        	jpTabSelected.add("PossibleValuesEditTab", possibleValuesEditTab);         
+        	cardLayout.show(jpTabSelected, "PossibleValuesEditTab"); 	
     	}
     }
     
     public void setPossibleValuesEditTabActive(){
     	
-        cardLayout.show(tabPanel, "PossibleValuesEditTab"); 
+        cardLayout.show(jpTabSelected, "PossibleValuesEditTab"); 
     	
     	
     }
@@ -889,23 +845,23 @@ public class MEBNEditionPane extends JPanel {
     /* Panel Node Selected */
 
     public void setResidentCardActive(){
-        cardLayout.show(panelNodeSelected, "ResidentCard");  
+        cardLayout.show(jpNodeSelectedOptions, "ResidentCard");  
     }    
     
     public void setContextCardActive(){
-        cardLayout.show(panelNodeSelected, "ContextCard");  
+        cardLayout.show(jpNodeSelectedOptions, "ContextCard");  
     }  
     
     public void setInputCardActive(){
-        cardLayout.show(panelNodeSelected, "InputCard");  
+        cardLayout.show(jpNodeSelectedOptions, "InputCard");  
     } 
     
     public void setMFragCardActive(){
-        cardLayout.show(panelNodeSelected, "MFragCard");  
+        cardLayout.show(jpNodeSelectedOptions, "MFragCard");  
     } 
     
     public void setEmptyCardActive(){
-        cardLayout.show(panelNodeSelected, "EmptyCard");  
+        cardLayout.show(jpNodeSelectedOptions, "EmptyCard");  
     } 
     
     /*---------------------------------------------------------*/
@@ -934,9 +890,5 @@ public class MEBNEditionPane extends JPanel {
     	txtArguments.setText(args); 
     }
     
-    public void showTableEdit(){
-    	DomainResidentNode resident = (DomainResidentNode)controller.getMebnController().getResidentNodeActive(); 
-    	tableEdit = new TableEdit(resident); 
-    }
 
 }
