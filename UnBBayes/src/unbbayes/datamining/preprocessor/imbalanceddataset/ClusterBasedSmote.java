@@ -268,7 +268,7 @@ public class ClusterBasedSmote {
 			instancesIDs[i] = instancesIDsTmp[i];
 		}
 //		Sampling.oversampling(instanceSet, proportion, instancesIDs);
-		Sampling.simpleSampling(instanceSet, proportion, instancesIDs, false);
+		//Sampling.simpleSampling(instanceSet, proportion, instancesIDs, false);
 	}
 
 	private void smoteCluster(int clusterIndex, double proportion,
