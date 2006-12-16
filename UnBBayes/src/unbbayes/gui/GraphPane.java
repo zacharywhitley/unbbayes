@@ -60,7 +60,7 @@ import unbbayes.util.NodeList;
 
 
 /**
- *  Essa classe é responsável por desenhar a rede Bayesiana na tela. Ela extende a classe
+ *  Essa classe é responsável por desenhar a rede Bayesiana ou a MFrag na tela. Ela extende a classe
  *  <code>JPanel</code>. Ela também implementa
  *  as interfaces MouseListener e MouseMotionListener, para poder tratar os eventos de
  *  mouse e desenhar a rede Bayesiana.

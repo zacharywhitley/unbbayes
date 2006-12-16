@@ -44,8 +44,8 @@ public class EditNet extends JPanel {
     private final JButton previewNet;
     private final JButton saveNetImage;
 
-        /** Load resource file from this package */
-          private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+    /** Load resource file from this package */
+    private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
     public EditNet(NetworkWindow _netWindow,
                             NetworkController _controller) {
