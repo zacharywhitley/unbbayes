@@ -20,5 +20,6 @@
 	<classpathentry kind="lib" path="lib/protege/protege.jar"/>
 	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/protege-owl.jar"/>
 	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="lib/xalan.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
