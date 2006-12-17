@@ -28,7 +28,7 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVImplies;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVNot;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
 
-public class FormulaEdtion extends JPanel {
+public class FormulaEditionPane extends JPanel {
 
 	JToolBar jtbOperator1;
 	JToolBar jtbOperator2; 
@@ -68,7 +68,7 @@ public class FormulaEdtion extends JPanel {
 	
     protected IconController iconController = IconController.getInstance();
 	
-	public FormulaEdtion(NetworkController _controller, ContextNode context){
+	public FormulaEditionPane(NetworkController _controller, ContextNode context){
 		
 		super(); 
 		
@@ -146,7 +146,7 @@ public class FormulaEdtion extends JPanel {
 	 *  Create a empty painel 
 	 *  */
 	
-	public FormulaEdtion(){
+	public FormulaEditionPane(){
 		
 	}
 		

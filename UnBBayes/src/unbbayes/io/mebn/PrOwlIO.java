@@ -41,7 +41,7 @@ import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
 
 public class PrOwlIO implements MebnIO {
 	
-	public static final String PROWLMODELFILE = "/pr-owl/pr-owl.owl"; 
+	public static final String PROWLMODELFILE = "pr-owl/pr-owl.owl"; 
 	
 	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException, IOMebnException{
 		
@@ -51,13 +51,6 @@ public class PrOwlIO implements MebnIO {
 		
 		Collection instances; 
 		Iterator itAux; 
-		
-	/*
-		JProgressBar progress; 
-		progress = new JProgressBar(0, 100); 
-		progress.setValue(0); 
-		progress.setStringPainted(true); 
-	*/	
 		
 		DomainMFrag domainMFrag; 
 		OrdinaryVariable oVariable; 
@@ -93,16 +86,19 @@ public class PrOwlIO implements MebnIO {
 		
 		owlModel = ProtegeOWL.createJenaOWLModel();
 		
-		URI uri = URIUtilities.createURI("file:///pr-owl.owl");
-		
 		owlModel.getRepositoryManager().addProjectRepository(new LocalFileRepository(file, true));
 		
+		FileInputStream inputStreamOwl; 
+		
+		inputStreamOwl = new FileInputStream(PROWLMODELFILE); 
+		
 		try{
-			owlModel.load(uri, FileUtils.langXMLAbbrev);
-		}	
-		catch(Exception e){
-			e.printStackTrace(); 
+			owlModel.load(inputStreamOwl, FileUtils.langXMLAbbrev);   
 		}
+		catch (Exception e){
+			throw new IOMebnException(resource.getString("ModelCreationError")); 
+		}
+		
 		
 		/* Build the owl model */
 		
@@ -734,22 +730,22 @@ public class PrOwlIO implements MebnIO {
 		
 		/* load the pr-owl model */
 		
+		
 		owlModel = ProtegeOWL.createJenaOWLModel();
 		
-		URI uri = URIUtilities.createURI("file:///pr-owl.owl");
-		
 		File filePrOwl = new File(PROWLMODELFILE);
-		
 		owlModel.getRepositoryManager().addProjectRepository(new LocalFileRepository(filePrOwl, true));
+	
+		FileInputStream inputStreamOwl; 
+		
+		inputStreamOwl = new FileInputStream(PROWLMODELFILE); 
 		
 		try{
-			owlModel.load(uri, FileUtils.langXMLAbbrev);
-		}	
-		catch(Exception e){
-			throw new IOMebnException(resource.getString("PrOwlNotLoad")); 
+			owlModel.load(inputStreamOwl, FileUtils.langXMLAbbrev);   
 		}
-		
-        System.out.println("Processo de save iniciado!"); 
+		catch (Exception e){
+			throw new IOMebnException(resource.getString("ModelCreationError")); 
+		}	
 		
 		/* MTheory */
 		
@@ -856,7 +852,9 @@ public class PrOwlIO implements MebnIO {
 			
 			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
 			domainResIndividual.setPropertyValue(hasPositionYProperty, (float)residentNode.getPosition().getY());
-						
+
+			System.out.println("Chegou ponto 1.2"); 			
+			
 			/* has Argument */
 			OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
 			List<Argument> argumentList = residentNode.getArgumentList(); 

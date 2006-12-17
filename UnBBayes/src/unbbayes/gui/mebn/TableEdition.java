@@ -44,7 +44,7 @@ import unbbayes.prs.mebn.entity.Entity;
  * @version 1.0 (14/12/06)
  *
  */
-public class TableEdit extends JFrame{
+public class TableEdition extends JFrame{
 
 	JPanel contentPane;
 
@@ -92,7 +92,7 @@ public class TableEdit extends JFrame{
     
 	JPanel jpStates; 
 	
-	public TableEdit(DomainResidentNode _residentNode){
+	public TableEdition(DomainResidentNode _residentNode){
 		
 		super("Table");
 		
@@ -506,7 +506,6 @@ public class TableEdit extends JFrame{
         } catch (BadLocationException ble) {
             System.err.println("Couldn't insert initial text into text pane.");
         }
-		
 	}	
 	
 	private void insertParamSubSet(StyledDocument doc){
@@ -653,23 +652,8 @@ public class TableEdit extends JFrame{
         		insertMinClause(doc); 
         	}
         });         
-        
-    	
     }
-	
-    
-	
-	
-/**
- * Testes... 
- * @param args
- */	
-	public static void main(String[] args){
-		
-		//JFrame tableEdit = new TableEdit(); 
-		
-	}   
-	
+
 	  //This listens for and reports caret movements.
     protected class CaretListenerLs  implements CaretListener {
         

@@ -21,6 +21,7 @@ import javax.swing.tree.TreePath;
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
 import unbbayes.gui.GraphAction;
+import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
@@ -33,7 +34,7 @@ import unbbayes.util.ArrayMap;
 
 /**
  * Tree of the components of the MTheory. Show the MFrags and your 
- * nodes. 
+ * nodes: resident nodes, input nodes and context nodes. 
  */
 
 public class MTheoryTree extends JTree {
@@ -219,43 +220,10 @@ public class MTheoryTree extends JTree {
         popup.add(itemAddDomainMFrag);
 	}
 
+	
 	private void createTree() {
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode)getModel().getRoot();
-		List<MFrag> mFragList = net.getMFragList();
-		for (MFrag mFrag : mFragList) {
-			DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(mFrag.getName());
-			root.add(treeNode);
-			mFragMap.put(treeNode, mFrag);
-			nodeMap.put(treeNode, mFrag); 
-			
-			//TODO verificar se não pe melhor fazer um painel separado para as findings...
-			if(mFrag instanceof DomainMFrag){
-				
-				List<DomainResidentNode> residentNodeList = ((DomainMFrag)mFrag).getDomainResidentNodeList(); 
-			    for(ResidentNode residentNode: residentNodeList){
-			    	DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(residentNode.getName());
-			    	treeNode.add(treeNodeChild); 
-			    	residentNodeMap.put(treeNodeChild, residentNode); 
-					nodeMap.put(treeNodeChild, residentNode);     	
-			    }
-				
-			    List<GenerativeInputNode> inputNodeList = ((DomainMFrag)mFrag).getGenerativeInputNodeList(); 
-			    for(GenerativeInputNode inputNode: inputNodeList){
-			    	DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(inputNode.getName());
-			    	treeNode.add(treeNodeChild); 
-			    	inputNodeMap.put(treeNodeChild, inputNode); 
-					nodeMap.put(treeNodeChild, inputNode);     	
-			    }
-			    
-				List<ContextNode> contextNodeList = ((DomainMFrag)mFrag).getContextNodeList(); 
-			    for(ContextNode contextNode: contextNodeList){
-			    	DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(contextNode.getName());
-			    	treeNode.add(treeNodeChild); 
-			    	contextNodeMap.put(treeNodeChild, contextNode); 
-					nodeMap.put(treeNodeChild, contextNode);     	
-			    }			    
-			}
-		}
+		buildNodesOfTree(net, root); 
 		expandedNodes = new boolean[net.getMFragCount()];
 	}
 
@@ -398,6 +366,15 @@ public class MTheoryTree extends JTree {
 		contextNodeMap.clear(); 
 		nodeMap.clear(); 
 		
+		buildNodesOfTree(net, root); 
+		
+		restoreTree();
+		((DefaultTreeModel) getModel()).reload(root);
+		restoreTree();
+	}
+
+	private void buildNodesOfTree(MultiEntityBayesianNetwork mTheory, DefaultMutableTreeNode root){
+
 		List<MFrag> mFragList = net.getMFragList();
 		
 		for (MFrag mFrag : mFragList) {
@@ -419,7 +396,14 @@ public class MTheoryTree extends JTree {
 				
 			    List<GenerativeInputNode> inputNodeList = ((DomainMFrag)mFrag).getGenerativeInputNodeList(); 
 			    for(GenerativeInputNode inputNode: inputNodeList){
-			    	DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(inputNode.getName());
+			    	DefaultMutableTreeNode treeNodeChild; 
+			    	Node inputInstanceOf = (Node)inputNode.getInputInstanceOf(); 
+			    	if(inputInstanceOf != null){
+			    	    treeNodeChild = new DefaultMutableTreeNode(inputInstanceOf.getName());
+			    	}
+			    	else{
+			    		treeNodeChild = new DefaultMutableTreeNode(" ");
+			    	}
 			    	treeNode.add(treeNodeChild); 
 			    	inputNodeMap.put(treeNodeChild, inputNode); 
 					nodeMap.put(treeNodeChild, inputNode);     	
@@ -434,41 +418,8 @@ public class MTheoryTree extends JTree {
 			    }			    
 			}
 		}
-		
-		/*
-		for (MFrag mFrag : mFragList) {
-			DefaultMutableTreeNode treeNode = findUserObject(mFrag.getName(), root);
-			if (treeNode == null) {
-				treeNode = new DefaultMutableTreeNode(mFrag.getName());
-				root.add(treeNode);
-			}
-			mFragMap.put(treeNode, mFrag);
-			//TODO USAR ESSA IDÉIA PARA ADICIONAR OS NÓS DE CADA MFRAG
-			/*
-			int statesSize = node.getStatesSize();
-			for (int j = 0; j < statesSize; j++) {
-				String label;
-				if (treeVariable.getType() == Node.PROBABILISTIC_NODE_TYPE) {
-					label = node.getStateAt(j) + ": "
-							+ nf.format(treeVariable.getMarginalAt(j) * 100.0);
-				} else {
-					label = node.getStateAt(j) + ": "
-							+ nf.format(treeVariable.getMarginalAt(j));
-				}
-				treeNode.add(new DefaultMutableTreeNode(label));
-			}
-			*/
-			
-			
-		/*}*/
-		
-		
-		
-		restoreTree();
-		((DefaultTreeModel) getModel()).reload(root);
-		restoreTree();
-	}
-
+	}	
+	
 	private DefaultMutableTreeNode findUserObject(String treeNode,
 			DefaultMutableTreeNode root) {
 		Enumeration e = root.breadthFirstEnumeration();

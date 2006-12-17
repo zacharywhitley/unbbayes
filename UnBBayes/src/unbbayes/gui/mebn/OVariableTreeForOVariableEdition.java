@@ -17,11 +17,11 @@ import unbbayes.prs.mebn.OrdinaryVariable;
  *
  */
 
-public class OVariableTreeMFragEdit extends OVariableTreeMFrag{
+public class OVariableTreeForOVariableEdition extends OVariableTree{
 	
 	private OrdinaryVariable oVariableActive; 
 	
-	public OVariableTreeMFragEdit(final NetworkController controller){
+	public OVariableTreeForOVariableEdition(final NetworkController controller){
 		super(controller); 
 	}
 	

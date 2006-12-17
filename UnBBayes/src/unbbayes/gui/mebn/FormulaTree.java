@@ -794,7 +794,7 @@ public class FormulaTree extends JTree{
 	     
 	     JPanel painelOVariableSelection = new JPanel(new BorderLayout()); 
 
-	     OVariableTreeMFragReplaceInFormula oVariableTreeMFragReplaceInFormula = new OVariableTreeMFragReplaceInFormula(controller, this); 
+	     OVariableTreeForReplaceInFormula oVariableTreeMFragReplaceInFormula = new OVariableTreeForReplaceInFormula(controller, this); 
 	     JScrollPane jspOVariableTreeMFrag = new JScrollPane(oVariableTreeMFragReplaceInFormula); 
 	     painelOVariableSelection.add(jspOVariableTreeMFrag, BorderLayout.NORTH); 
 

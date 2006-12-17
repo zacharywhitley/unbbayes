@@ -37,10 +37,10 @@ import unbbayes.prs.mebn.ResidentNode;
  * 
  */
 
-public class ArgumentsEditTab extends JPanel{
+public class ArgumentEditionPane extends JPanel{
 	
-	OVariableTreeMFragArgument treeMFrag; 
-	OVariableTreeResident treeResident; 
+	OVariableTreeForArgumentEdition treeMFrag; 
+	ResidentOVariableTree treeResident; 
 	JToolBar jtbInformation; 
 	
 	JScrollPane jspTreeMFrag; 
@@ -63,7 +63,7 @@ public class ArgumentsEditTab extends JPanel{
 	 * @param _controller o controlador da rede
 	 * @param resident O nodo ao qual se esta editando os argumentos. 
 	 */
-	public ArgumentsEditTab(NetworkController _controller, ResidentNode resident){
+	public ArgumentEditionPane(NetworkController _controller, ResidentNode resident){
 		
 		super(); 
 		
@@ -76,11 +76,11 @@ public class ArgumentsEditTab extends JPanel{
 	    mFrag = mebnController.getCurrentMFrag(); 
 	    residentNode = resident;
 	    
-	    treeMFrag = new OVariableTreeMFragArgument(_controller);
+	    treeMFrag = new OVariableTreeForArgumentEdition(_controller);
 	    jspTreeMFrag = new JScrollPane(treeMFrag);
 	    jspTreeMFrag.setBackground(Color.green); 
 	    
-	    treeResident = new OVariableTreeResident(_controller, resident); 	    
+	    treeResident = new ResidentOVariableTree(_controller, resident); 	    
 	    jspTreeResident = new JScrollPane(treeResident); 
 	    
 	    jtbInformation = new JToolBar(); 
@@ -156,7 +156,7 @@ public class ArgumentsEditTab extends JPanel{
 	 *  
 	 *  */
 	
-	public ArgumentsEditTab(){
+	public ArgumentEditionPane(){
 		
 		
 		

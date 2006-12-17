@@ -27,7 +27,7 @@ import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.entity.Entity;
 
-public class PossibleValuesEditTab extends JPanel{
+public class PossibleValuesEditionPane extends JPanel{
 
 	private DomainResidentNode residentNode; 
 	private MEBNController mebnController; 
@@ -55,12 +55,12 @@ public class PossibleValuesEditTab extends JPanel{
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 	
     
-    public PossibleValuesEditTab(){
+    public PossibleValuesEditionPane(){
     	
     }
     	
     
-	public PossibleValuesEditTab(NetworkController _controller, DomainResidentNode _residentNode){
+	public PossibleValuesEditionPane(NetworkController _controller, DomainResidentNode _residentNode){
 		
 		super(); 
 		setLayout(new BorderLayout()); 

@@ -28,7 +28,7 @@ import unbbayes.util.ArrayMap;
  * @version 1.0 (11/14/2006)
  */
 
-public abstract class OVariableTreeMFrag extends JTree{
+public abstract class OVariableTree extends JTree{
 	
 	private MultiEntityBayesianNetwork net;
 	
@@ -40,7 +40,7 @@ public abstract class OVariableTreeMFrag extends JTree{
 	
 	protected final NetworkController controller;	
 	
-	public OVariableTreeMFrag(final NetworkController controller) {
+	public OVariableTree(final NetworkController controller) {
 		
 		this.controller = controller; 
 		this.net = (MultiEntityBayesianNetwork)controller.getNetwork();

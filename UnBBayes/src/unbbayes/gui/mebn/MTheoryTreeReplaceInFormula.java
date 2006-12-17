@@ -428,8 +428,6 @@ import unbbayes.util.ArrayMap;
 				
 			/*}*/
 			
-			
-			
 			restoreTree();
 			((DefaultTreeModel) getModel()).reload(root);
 			restoreTree();

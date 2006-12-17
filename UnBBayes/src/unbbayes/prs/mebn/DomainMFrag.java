@@ -90,7 +90,7 @@ public class DomainMFrag extends MFrag {
 		residentNodeList.add(domainResidentNode);
 		addResidentNode(domainResidentNode);
 		
-		this.getMultiEntityBayesianNetwork().getDomainResidentNodeNum(); 
+		this.getMultiEntityBayesianNetwork().plusDomainResidentNodeNum(); 
 
 	}
 

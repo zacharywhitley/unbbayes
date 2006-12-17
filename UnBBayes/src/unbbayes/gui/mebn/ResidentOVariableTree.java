@@ -29,7 +29,7 @@ import unbbayes.util.ArrayMap;
  * @author Laecio
  *
  */
-public class OVariableTreeResident extends JTree{
+public class ResidentOVariableTree extends JTree{
 
     private MultiEntityBayesianNetwork net;
     
@@ -44,7 +44,7 @@ public class OVariableTreeResident extends JTree{
 	
 	private final NetworkController controller;	
 	
-	public OVariableTreeResident(final NetworkController controller, ResidentNode resident) {
+	public ResidentOVariableTree(final NetworkController controller, ResidentNode resident) {
 		
 		this.controller = controller; 
 		this.net = (MultiEntityBayesianNetwork)controller.getNetwork();

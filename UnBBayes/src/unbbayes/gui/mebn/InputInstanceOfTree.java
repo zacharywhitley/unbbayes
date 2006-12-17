@@ -37,7 +37,7 @@ import unbbayes.util.ArrayMap;
  * @version 0.1 (05/11/2006)
  */
 
-public class InputInstanceOfTab extends JTree{
+public class InputInstanceOfTree extends JTree{
 	
 	
 	private MultiEntityBayesianNetwork net;
@@ -52,7 +52,7 @@ public class InputInstanceOfTab extends JTree{
 	
 	private final NetworkController controller;	
 	
-	public InputInstanceOfTab(final NetworkController controller) {
+	public InputInstanceOfTree(final NetworkController controller) {
 		
 		this.controller = controller; 
 		this.net = (MultiEntityBayesianNetwork)controller.getNetwork();
@@ -96,7 +96,7 @@ public class InputInstanceOfTab extends JTree{
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 						//TODO preencher o generativeInput... 
-						GenerativeInputNode inputNode = (GenerativeInputNode)controller.getScreen().getGraphPane().getSelected(); 
+						GenerativeInputNode inputNode = (GenerativeInputNode)controller.getMebnController().getInputNodeActive(); 
 						controller.getMebnController().setInputInstanceOf(inputNode, residentNode); 
 						
 					} else if (e.getClickCount() == 1) {
