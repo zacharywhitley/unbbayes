@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jardesc>
+<jar path="c:/unbminer.jar"/>
+<options buildIfNeeded="true" compress="true" descriptionLocation="/UnBBayes/unbminerJAR.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="true" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+<storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+<selectedProjects/>
+<manifest generateManifest="false" manifestLocation="/UnBBayes/META-INF/MANIFEST.MF" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+<sealing sealJar="false">
+<packagesToSeal/>
+<packagesToUnSeal/>
+</sealing>
+</manifest>
+<selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+<javaElement handleIdentifier="=UnBBayes/src"/>
+<folder path="/UnBBayes/help"/>
+<folder path="/UnBBayes/examples"/>
+<file path="/UnBBayes/DataMining.ini"/>
+</selectedElements>
+</jardesc>

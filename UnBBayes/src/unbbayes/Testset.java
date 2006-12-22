@@ -48,10 +48,10 @@ public class Testset {
 
 	public void run() throws Exception {
 		/* Data set characteristics */
-		String trainFileName = "c:/dados/m1t.txt";
-		String testFileName = "c:/dados/m1av.txt";
-//		String trainFileName = "c:/dados/m1tOriginal.arff";
-//		String testFileName = "c:/dados/m1avOriginal.arff";
+//		String trainFileName = "c:/dados/m1t.arff";
+//		String testFileName = "c:/dados/m1av.arff";
+		String trainFileName = "c:/dados/m1tOriginal.arff";
+		String testFileName = "c:/dados/m1avOriginal.arff";
 		int classIndex = 10;
 		int counterIndex = 11;
 		
@@ -88,15 +88,15 @@ public class Testset {
 		byte optionDistanceFunction = 1;
 		
 		/* Computes the k nearest neighbors of each instance */
-		InstanceSet trainData = openFile(trainFileName, counterIndex);
-		trainData.setClassIndex(classIndex);
-		smote = new Smote(trainData, null);
-		
-		/* Set SMOTE options */
-		smote.setOptionDiscretize(optionDiscretize);
-		smote.setOptionDistanceFunction(optionDistanceFunction);
-		smote.setOptionFixedGap(optionFixedGap);
-		smote.setOptionNominal(optionNominal);
+//		InstanceSet trainData = openFile(trainFileName, counterIndex);
+//		trainData.setClassIndex(classIndex);
+//		smote = new Smote(trainData, null);
+//		
+//		/* Set SMOTE options */
+//		smote.setOptionDiscretize(optionDiscretize);
+//		smote.setOptionDistanceFunction(optionDistanceFunction);
+//		smote.setOptionFixedGap(optionFixedGap);
+//		smote.setOptionNominal(optionNominal);
 		
 		/* Options for SMOTE - END *****************/
 
@@ -123,65 +123,73 @@ public class Testset {
 		 */
 		int maxOrderCNM = 3;
 		
+		runAux3(trainFileName, testFileName, classIndex, counterIndex,
+				weightLimit, sampleQtd, optionDiscretize, optionNominal,
+				maxOrderCNM);
+		
 //		classifierID = 0;
 //		relativeProb = false;
 //		runAux(trainFileName, testFileName, classIndex, counterIndex,
 //				weightLimit, relativeProb, sampleQtd, classifierID,
-//				optionDiscretize, optionNominal);
+//				optionDiscretize, optionNominal, maxOrderCNM);
 //
 //		classifierID = 0;
 //		relativeProb = true;
 //		runAux(trainFileName, testFileName, classIndex, counterIndex,
 //				weightLimit, relativeProb, sampleQtd, classifierID,
-//				optionDiscretize, optionNominal);
+//				optionDiscretize, optionNominal, maxOrderCNM);
 //
 //		classifierID = 1;
 //		runAux(trainFileName, testFileName, classIndex, counterIndex,
 //				weightLimit, relativeProb, sampleQtd, classifierID,
-//				optionDiscretize, optionNominal);
+//				optionDiscretize, optionNominal, maxOrderCNM);
 		
 		/**************************************************************/
 		
-		/* Opens the test set */
-		InstanceSet testData = openFile(testFileName, counterIndex);
-		if (testData == null) {
-			String exceptionMsg = "Couldn't open test data " + testFileName;
-			throw new Exception(exceptionMsg);
-		}
-		testData.setClassIndex(classIndex);
+//		/* Opens the test set */
+//		InstanceSet testData = openFile(testFileName, counterIndex);
+//		if (testData == null) {
+//			String exceptionMsg = "Couldn't open test data " + testFileName;
+//			throw new Exception(exceptionMsg);
+//		}
+//		testData.setClassIndex(classIndex);
+//		
+//		/* Naive Bayes */
+//		classifierID = 0;
+//		relativeProb = false;
+//		runAux2(trainFileName, testFileName, classIndex, counterIndex,
+//				weightLimit, relativeProb, classifierID, testData, trainData,
+//				maxOrderCNM);
+//
+//		/* Naive Bayes with Relative Prob */
+//		classifierID = 0;
+//		relativeProb = true;
+//		runAux2(trainFileName, testFileName, classIndex, counterIndex,
+//				weightLimit, relativeProb, classifierID, testData, trainData,
+//				maxOrderCNM);
+//
+//		/* C4.5 */
+//		classifierID = 1;
+//		runAux2(trainFileName, testFileName, classIndex, counterIndex,
+//				weightLimit, relativeProb, classifierID, testData, trainData,
+//				maxOrderCNM);
+
+//		/* CNM */
+//		classifierID = 2;
+//		runAux2(trainFileName, testFileName, classIndex, counterIndex,
+//				weightLimit, relativeProb, classifierID, testData, trainData,
+//				maxOrderCNM);
+
 		
-		/* Naive Bayes */
-		classifierID = 0;
-		relativeProb = false;
-		runAux2(trainFileName, testFileName, classIndex, counterIndex,
-				weightLimit, relativeProb, classifierID, testData, trainData,
-				maxOrderCNM);
-
-		/* Naive Bayes with Relative Prob */
-		classifierID = 0;
-		relativeProb = true;
-		runAux2(trainFileName, testFileName, classIndex, counterIndex,
-				weightLimit, relativeProb, classifierID, testData, trainData,
-				maxOrderCNM);
-
-		/* C4.5 */
-		classifierID = 1;
-		runAux2(trainFileName, testFileName, classIndex, counterIndex,
-				weightLimit, relativeProb, classifierID, testData, trainData,
-				maxOrderCNM);
-
-		/* CNM */
-		classifierID = 2;
-		runAux2(trainFileName, testFileName, classIndex, counterIndex,
-				weightLimit, relativeProb, classifierID, testData, trainData,
-				maxOrderCNM);
-
-		/**************************************************************/
+		
+		/*************************************************************
+		 *                        A N T I G O                        *
+		 *************************************************************/
 		
 //		for (weightLimit = 4970; weightLimit < 10000; weightLimit += 100) {
-			runAux(trainFileName, testFileName, classIndex, counterIndex,
-					weightLimit, relativeProb, sampleQtd, classifierID,
-					optionDiscretize, optionNominal, maxOrderCNM);
+//			runAux(trainFileName, testFileName, classIndex, counterIndex,
+//					weightLimit, relativeProb, sampleQtd, classifierID,
+//					optionDiscretize, optionNominal, maxOrderCNM);
 //		}
 	}
 
@@ -291,6 +299,109 @@ public class Testset {
 		System.out.println("");
 		System.out.println("");
 
+		System.out.println("\n\n");
+		System.out.println("Maximum SE: " + maxSE);
+		System.out.println("With:\n" + maxSEHeader);
+	}
+	
+	private void runAux3(String trainFileName, String testFileName,
+			int classIndex, int counterIndex, int weightLimit, int sampleQtd,
+			boolean optionDiscretize, int optionNominal, int maxOrderCNM)
+	throws Exception {
+		boolean relativeProb;
+		InstanceSet trainData;
+//		int classifierID;
+		
+		/* Opens the training set */
+		InstanceSet data = openFile(trainFileName, counterIndex);
+		if (data == null) {
+			String exceptionMsg = "Couldn't open training data " 
+				+ trainFileName;
+			throw new Exception(exceptionMsg);
+		}
+		data.setClassIndex(classIndex);
+		
+		/* Opens the test set */
+		InstanceSet testData = openFile(testFileName, counterIndex);
+		if (testData == null) {
+			String exceptionMsg = "Couldn't open test data " + testFileName;
+			throw new Exception(exceptionMsg);
+		}
+		testData.setClassIndex(classIndex);
+		
+		/* Choose classifier */
+		Classifier classifier = null;
+
+		/* Loop through all sample strategies */
+//		for (int sampleID = 0; sampleID < sampleQtd; sampleID++) {
+//		for (int sampleID = 0; sampleID < 4; sampleID++) {
+		for (int sampleID = 0; sampleID < 3; sampleID++) {
+			trainData = new InstanceSet(data);
+			
+			/* Print header */
+//			printHeader(sampleID, weightLimit, relativeProb, classifierID);
+
+			/* Change the distribution, run the models and evaluate */
+			for (int i = 1; i <= 7; i++) {
+				/* Limit the weigth */
+				if (weightLimit != 0) {
+					Sampling.limitWeight(trainData, weightLimit, 0);
+				}
+				
+				/* Sample training data */
+				trainData = sample(trainData, sampleID, i,	optionDiscretize,
+						optionNominal);
+				
+				/* Distribution of the training data */
+				float[] originalDist = distribution(trainData);
+				
+				/************** Naive Bayes **************/
+
+				/* Build model */
+				classifier = new NaiveBayes();
+				relativeProb = false;
+				classifier = buildModel(trainData, originalDist, classifier);
+				
+				/* Evaluate model */
+				evaluate(classifier, testData, relativeProb, i, originalDist);
+				
+				/************** Naive Bayes Relative Prob **************/
+
+				/* Build model */
+				classifier = new NaiveBayes();
+				relativeProb = true;
+				classifier = buildModel(trainData, originalDist, classifier);
+				
+				/* Evaluate model */
+				evaluate(classifier, testData, relativeProb, i, originalDist);
+				
+				/************** C4.5 **************/
+
+				/* Build model */
+				classifier = new C45();
+				classifier = buildModel(trainData, originalDist, classifier);
+				
+				/* Evaluate model */
+				evaluate(classifier, testData, relativeProb, i, originalDist);
+				
+//				/************** CNM **************/
+//
+//				/* Build model */
+//				classifier = new CombinatorialNeuralModel(maxOrderCNM);
+//				classifier = buildModel(trainData, originalDist, classifier);
+//				
+//				/* Evaluate model */
+//				evaluate(classifier, testData, relativeProb, i, originalDist);
+
+				System.out.println("");
+			}
+			System.out.println("");
+			System.out.println("");
+
+			trainData = null;
+			System.gc();
+		}
+		
 		System.out.println("\n\n");
 		System.out.println("Maximum SE: " + maxSE);
 		System.out.println("With:\n" + maxSEHeader);

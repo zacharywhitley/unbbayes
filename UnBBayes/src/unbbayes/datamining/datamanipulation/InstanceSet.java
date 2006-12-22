@@ -145,8 +145,17 @@ public class InstanceSet implements Serializable {
 	 */
 	public InstanceSet(InstanceSet source, int capacity) {
 		this (capacity, (source.attributes).clone());
-		classIndex = source.classIndex;
-		relationName = source.relationName;
+		this.classIndex = source.classIndex;
+		this.relationName = source.relationName;
+		this.counterIndex = source.counterIndex;
+		if (source.counterAttributeName != null) {
+			this.counterAttributeName = new String(source.counterAttributeName);
+		}
+		this.attributeType = source.attributeType.clone();
+		this.numAttributes = source.numAttributes;
+		this.numCyclicAttributes = source.numCyclicAttributes;
+		this.numNominalAttributes = source.numNominalAttributes;
+		this.numNumericAttributes = source.numNumericAttributes;
 	}
 
 	/**
@@ -157,7 +166,7 @@ public class InstanceSet implements Serializable {
 	 * @param source Set to be copied
 	 */
 	public InstanceSet(InstanceSet source) {
-		this(source, source.numInstances, source.counterIndex);
+		this(source, source.numInstances);
 		source.copyInstances(0, this, source.numInstances);
 	}
 
@@ -305,25 +314,47 @@ public class InstanceSet implements Serializable {
 	 */
 	public final void removeAttribute(int index) {
 		if (index >= 0 && index < numAttributes) {
+			/* Update information about attributes */
+			switch (attributeType[index]) {
+				case NOMINAL:
+					--numNominalAttributes;
+					break;
+				case NUMERIC:
+					--numNumericAttributes;
+					break;
+				case CYCLIC:
+					--numCyclicAttributes;
+					break;
+			}
+
 			/* Update the current number of attributes */
 			--numAttributes;
 			
 			//new attributes without index attribute
-			Attribute[] newAttributes;
-			newAttributes = new Attribute[numAttributes];
+			Attribute[] newAttributes = new Attribute[numAttributes];
+			byte[] newAttributeType = new byte[numAttributes];
+
 			int att;
 
 			// attributes before index
 			for (att = 0; att < index; att++) {
 				newAttributes[att] = attributes[att];
+				newAttributeType[att] = attributeType[att];
 			}
 
 			//attributes after index
 			for (; att < numAttributes; att++) {
-				newAttributes[att]=attributes[att + 1];
+				newAttributes[att] = attributes[att + 1];
 				newAttributes[att].setIndex(att);
+				newAttributeType[att] = attributeType[att + 1];
 			}
 			attributes = newAttributes;
+			attributeType = newAttributeType;
+			
+			/* Remove the attribute from the instances */
+			for (int inst = 0; inst < numInstances; inst++) {
+				instances[inst].removeAttribute(index);
+			}
 		}
 	}
 

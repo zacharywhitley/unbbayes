@@ -40,6 +40,11 @@ public class Instance implements Serializable {
 	 */
 	protected int counterIndex;
 
+	/**
+	 * The number of attributes.
+	 */
+	private int numAttributes;
+
 	/** Constant representing a missing value. */
 	public final static float MISSING_VALUE = Float.NaN;
 
@@ -54,7 +59,8 @@ public class Instance implements Serializable {
  	 */
 	public Instance(Instance instance) {
 		data = instance.data.clone();
-		counterIndex = instance.instanceSet.counterIndex;
+		numAttributes = instance.numAttributes;
+		counterIndex = instance.counterIndex;
 		instanceSet = null;
 	}
 
@@ -63,8 +69,11 @@ public class Instance implements Serializable {
 	 *
 	 */
 	public Instance(int numAttributes) {
-		/* Allocates space for the attribute values and weith */
+		this.numAttributes = numAttributes;
+		
+		/* Allocates space for the attribute values and weight */
 		data = new float[numAttributes + 1];
+		counterIndex = numAttributes;
 		instanceSet = null;
 	}
 
@@ -81,8 +90,11 @@ public class Instance implements Serializable {
 		this.data = data;
 		instanceSet = null;
 		
+		/* Set the number of attributes (number of columns - 1) */
+		numAttributes = data.length - 1;
+		
 		/* Set counter index to the data's last column */
-		counterIndex = data.length - 1;
+		counterIndex = numAttributes;
 	}
 
 	/**
@@ -257,7 +269,6 @@ public class Instance implements Serializable {
 	 */
 	public String toString() {
 		StringBuffer text = new StringBuffer();
-		int numAttributes = instanceSet.numAttributes;
 		
 		/* Get the attributes' values */
 		if (numAttributes > 1) {
@@ -353,4 +364,18 @@ public class Instance implements Serializable {
 	public void setInstanceSet(InstanceSet instanceSet) {
 		this.instanceSet = instanceSet;
 	}
+	
+	/**
+	 * Removes an attribute.
+	 * 
+	 * @param index
+	 */
+	public void removeAttribute(int index) {
+		for (int inst = index; inst < data.length - 1; inst++) {
+			data[inst] = data[inst + 1];
+		}
+		--numAttributes;
+		--counterIndex;
+	}
+	
 }

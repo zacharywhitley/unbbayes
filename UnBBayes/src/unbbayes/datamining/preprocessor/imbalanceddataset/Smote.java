@@ -136,13 +136,8 @@ public class Smote {
 	 * @param instancesIDs[]: The chosen subset of instances to be smoted
 	 * @param mTree: index used to find nearest neighbors
 	 */
-	public Smote(InstanceSet instanceSet, MTree mTree) {
-		this.instanceSet = instanceSet;
+	public Smote(MTree mTree) {
 		this.mTree = mTree;
-		instances = instanceSet.instances;
-		numInstances = instanceSet.numInstances();
-		counterIndex = instanceSet.counterIndex;
-		classIndex = instanceSet.classIndex;
 		optionDistanceFunction = HAMMING;
 	}
 

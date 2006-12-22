@@ -229,7 +229,9 @@ public class Squeezer extends Clustering {
 		Random randomizer = new Random();
 		int counter = 0;
 		int inst;
-		boolean exists;
+		boolean[] exists = new boolean[numInstances];
+		
+		Arrays.fill(exists, false);
 
 		/* Randomly get a sample of the instanceSet */ 
 		while (counter < numCandidates) {
@@ -237,17 +239,10 @@ public class Squeezer extends Clustering {
 			inst = instancesIDs[randomizer.nextInt(numInstances)];
 
 			/* Test if the current candidate instance has been used */
-			exists = false;
-			for (int i = 0; i < counter; i++) {
-				if (inst == candidates[i]) {
-					exists = true;
-					break;
-				}
-			}
-			
 			/* Add the current candidate */
-			if (!exists) {
+			if (!exists[inst]) {
 				candidates[counter] = inst;
+				exists[inst] = true;
 				counter++;
 			}
 		}

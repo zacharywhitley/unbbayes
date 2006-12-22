@@ -117,7 +117,8 @@ public class AttributeTypeChooserController {
 			int size = numAttributes;
 			
 			/* First, check if the counter index has been set */
-			String counterAttributeName = null;
+			InstanceSet instanceSet = loader.getInstanceSet();
+			String counterAttributeName = instanceSet.getCounterAttributeName();
 			if (counterIndex != -1) {
 				--numAttributes;
 				counterAttributeName = attributeName[counterIndex];
