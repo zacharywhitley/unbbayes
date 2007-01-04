@@ -438,7 +438,7 @@ public class Testset {
 				/* SMOTE */
 				smote.setInstanceSet(trainData);
 				smote.buildNN(5, 1);
-				smote.run((float) proportion, 1);
+				smote.run(1, (float) proportion);
 				
 				break;
 			case 4:
@@ -449,7 +449,7 @@ public class Testset {
 				/* Cluster-Based SMOTE */
 				smote.setInstanceSet(trainData);
 				smote.buildNN(5, 1);
-				smote.run((float) Math.sqrt(proportion), 1);
+				smote.run(1, (float) Math.sqrt(proportion));
 
 				break;
 		}
