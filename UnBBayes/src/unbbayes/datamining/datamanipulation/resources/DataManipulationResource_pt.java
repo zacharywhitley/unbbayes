@@ -33,6 +33,7 @@ public class DataManipulationResource_pt extends ListResourceBundle
 		{"getNextTokenException1","Fim de linha prematuro."},
 		{"getNextTokenException2","Fim de arquivo prematuro."},
 		{"getInstanceException1","Nenhuma informação no cabeçalho disponível"},
+		{"getInstanceAuxException1","uma String foi lida quando se esperava um número"},
 		{"getInstanceFullException1","Valor inválido"},
 		{"getInstanceFullException2","Valor nominal não declarado no cabeçalho"},
 		{"getInstanceFullException3","Numero esperado"},

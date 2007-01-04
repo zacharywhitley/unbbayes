@@ -2,6 +2,7 @@ package unbbayes.datamining.datamanipulation;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Random;
 import java.util.ResourceBundle;
@@ -22,7 +23,7 @@ public class InstanceSet implements Serializable {
 	/** The dataset's name. */
 	private String relationName;
 
-    /** Stores the name of the counter attribute */
+	/** Stores the name of the counter attribute */
 	private String counterAttributeName;
 
 	/** The attribute information. */
@@ -87,9 +88,12 @@ public class InstanceSet implements Serializable {
 	/** Total number of instances considering their weights */
 	public int numWeightedInstances;
 	
+	/** Random used in the sorting of the instances */
+	private static Random rnd;
+
 	/**
 	 * Constructor creating an empty set of instances.
-     * Set class index to be undefined. Sets
+	 * Set class index to be undefined. Sets
 	 * the capacity of the set of instances to 0 if it's negative.
 	 *
 	 * @param capacity The capacity of the new dataset.
@@ -621,7 +625,7 @@ public class InstanceSet implements Serializable {
 			}
 		}
 		return false;
-    }
+	}
 
 	/**
 	 * Returns the dataset as a string in ARFF format.
@@ -748,7 +752,7 @@ public class InstanceSet implements Serializable {
 	 *  aterwards).
 	 */ 
 	public void compact() {
-		/* Gets array with the sorted index of the instanceSet */
+		/* Get array with the sorted index of the instanceSet */
 		int[] instancesIDs = sort();
 		
 		/* First instance of a pack */
@@ -767,8 +771,6 @@ public class InstanceSet implements Serializable {
 		boolean[] remove = new boolean[numInstances];
 		Arrays.fill(remove, false);
 		
-		int ema1 = 0;
-		
 		/* 
 		 * Loop through the sorted index finding each pack, computing its
 		 * weight (the sum of its instances), setting to its head (first
@@ -779,19 +781,19 @@ public class InstanceSet implements Serializable {
 		float[] headInstance;
 		float[] currentInstance;
 		while (inst < numInstances) {
-			/* Finds the tail (last instance) of the current pack */
+			/* Find the tail (last instance) of the current pack */
 			match = true;
 			head = inst;
 			packWeight = instances[instancesIDs[head]].data[counterIndex];
 			++inst;
 			while (match && inst < numInstances) {
 				/* 
-				 * Compares the 'currentInstance' instance with the current
+				 * Compare the 'currentInstance' instance with the current
 				 * pack's head instance.
 				 */ 
-				currentInstance = instances[instancesIDs[head]].data;
+				currentInstance = instances[instancesIDs[inst]].data;
+				headInstance = instances[instancesIDs[head]].data;
 				for (int att = 0; att < numAttributes; att++) {
-					headInstance = instances[instancesIDs[inst]].data;
 					if (currentInstance[att] != headInstance[att]) {
 						match = false;
 						break;
@@ -806,14 +808,20 @@ public class InstanceSet implements Serializable {
 					/* Update the total pack's weight */
 					packWeight += currentInstance[counterIndex];
 					
-					/* Mark the current instance to be removed afterwards */
-					remove[inst] = true;
+					/* 
+					 * The method 'removeInstances' will remove the packed
+					 * instances and decrease the value of numWeightedInstances.
+					 * Then, it's necessary to increase its value according, so
+					 * it keeps the right number of weighted instances.
+					 */
+					numWeightedInstances += currentInstance[counterIndex];
 					
-					++ema1;
+					/* Mark the current instance to be removed afterwards */
+					remove[instancesIDs[inst]] = true;
+					
+					/* Get the next instance */
+					++inst;
 				}
-				
-				/* Get to next instance */
-				++inst;
 			}
 			
 			/* The pack's head gets the total pack's weight */
@@ -825,7 +833,7 @@ public class InstanceSet implements Serializable {
 	}
 
 	/**
-	 * Builds a training and a test instanceSets from the current instanceSet.
+	 * Builds a training and a test instanceSets from this current instanceSet.
 	 * The test instanceSet will be created with <code>testSize</code>
 	 * instances and the rest will remains for the training instanceSet. For
 	 * matters of space, the current instanceSet will become the training
@@ -836,37 +844,87 @@ public class InstanceSet implements Serializable {
 	 * @param testSize The desired size of the new test instanceSet.
 	 * @return The test instanceSet just created.
 	 */
-	public InstanceSet buildTrainTestSet(int testSize) {
-		Random randomizer = new Random();
-
+	public InstanceSet buildTrainTestSet(float proportion, boolean compact) {
+		Random randomizer = new Random(new Date().getTime());
+		int testSize = (int) (numInstances * proportion);
+		
+		int numClasses;
+		int[] count = null;
+		int[][] instancesIDs = null;
+		
+		if (this.classIndex != -1) {
+			numClasses = numClasses();
+	
+			/* Count instances per class */
+			count = new int[numClasses];
+			Arrays.fill(count, 0);
+			for (int classValue, inst = 0; inst < numInstances; inst++) {
+				classValue = (int) instances[inst].data[classIndex];
+				++count[classValue];
+			}
+			
+			/* Separate the instances by their classes */
+			instancesIDs = new int[numClasses][];
+			for (int classValue = 0; classValue < numClasses; classValue++) {
+				instancesIDs[classValue] = new int[count[classValue]];
+			}
+			Arrays.fill(count, 0);
+			for (int classValue, inst = 0; inst < numInstances; inst++) {
+				classValue = (int) instances[inst].data[classIndex];
+				instancesIDs[classValue][count[classValue]] = inst;
+				++count[classValue];
+			}
+		} else {
+			numClasses = 1;
+			count = new int[1];
+			count[0] = numInstances;
+			instancesIDs = new int[1][numInstances];
+			for (int inst = 0; inst < numInstances; inst++) {
+				instancesIDs[0][inst] = inst;
+			}
+		}
+			
+		
 		/* Create test instanceSet with no instances */
 		InstanceSet testSet = new InstanceSet (this, testSize);
 		testSet.setCounterAttributeName(counterAttributeName);
+
+		/* Array that tells which instance will pertain to the test set */ 
+		boolean[] testSetIndex = new boolean[numInstances];
+		Arrays.fill(testSetIndex, false);
 
 		/* Auxiliary array: tells when an instance has not been chosen yet */
 		boolean[] notUsed = new boolean[numInstances];
 		Arrays.fill(notUsed, true);
 		
-		/* Array that tells which instance will pertain to the test set */ 
-		boolean[] testSetIndex = new boolean[numInstances];
-		Arrays.fill(testSetIndex, false);
-
-		/* Choose randomly the instances to the test set */
-		int counter = 0;
+		/* 
+		 * Randomly choose the instances for the test set using a stratified
+		 * approach for the class
+		 */
+		int index = 0;
+		int counter;
 		int inst;
-		while (counter < testSize) {
-			inst = randomizer.nextInt(numInstances);
-			if (notUsed[inst]) {
-				testSet.instances[counter] = instances[inst];
-				testSet.instances[counter].setInstanceSet(testSet);
-				testSet.numInstances++;
-				testSet.numWeightedInstances += 
-					instances[inst].data[counterIndex];
-				testSetIndex[inst] = true;
-				++counter;
-				
-				/* Discard the instance 'inst' */
-				notUsed[inst] = false;
+		int max;
+		for (int classValue = 0; classValue < numClasses; classValue++) {
+			/* Choose randomly the instances to the test set */
+			counter = 0;
+			max = Math.round((count[classValue] * proportion));
+			while (counter < max) {
+				inst = randomizer.nextInt(count[classValue]);
+				inst = instancesIDs[classValue][inst];
+				if (notUsed[inst]) {
+					testSet.instances[index] = instances[inst];
+					testSet.instances[index].setInstanceSet(testSet);
+					testSet.numInstances++;
+					testSet.numWeightedInstances += 
+						instances[inst].data[counterIndex];
+					testSetIndex[inst] = true;
+					++counter;
+					++index;
+					
+					/* Discard the instance 'inst' */
+					notUsed[inst] = false;
+				}
 			}
 		}
 		
@@ -874,8 +932,10 @@ public class InstanceSet implements Serializable {
 		removeInstances(testSetIndex);
 		
 		/* Compact both training and test instanceSets */
-		compact();
-		testSet.compact();
+		if (compact) {
+			compact();
+			testSet.compact();
+		}
 		
 		return testSet;
 	}
@@ -899,118 +959,77 @@ public class InstanceSet implements Serializable {
 			numWeightedInstances += newInstanceSet[inst][counterIndex];
 		}
 		
-		/* Now compact the instanceSet */
 		instances = newInstances;
-		compact();
+
+		/* Now compact the instanceSet */
+//		compact();
 	}
 
-	/**
-	 * Sorts a given matrix of floats in ascending order and returns an
-	 * matrix of integers with the positions of the elements of the
-	 * original matrix in the sorted matrix. It doesn't use safe floating-point
-	 * comparisons.
-	 *
-	 * @param matrix This matrix is changed by the method!
-	 */
-	private int[] sort() {
-		int[] instancesIDs = new int[numInstances];
-		
-		for (int i = 0; i < numInstances; i++) {
-			instancesIDs[i] = i;
-		}
-		quickSort(instancesIDs, 0, numInstances - 1);
-		
-		return instancesIDs;
-	}
 
+	
+	/*------------------- Quicksort - start ---------------------*/
+	
 	/**
-	 * Implements unsafe quicksort for a data set.
-	 *
-	 * @param matrix The matrix of floats to be sorted
-	 * @param lo0 The first index of the subset to be sorted
-	 * @param hi0 The last index of the subset to be sorted
-	 * @param num The number of columns of the input matrix
-	 */
-	private void quickSort(int[] instancesIDs, int lo0, int hi0) {
-		int lo = lo0;
-		int hi = hi0;
-		int mid;
-		int aux;
-
-		if (hi0 > lo0) {
-			/* 
-			 * Arbitrarily establishing partition element as the midpoint of
-			 * the matrix
-			 */
-			mid = instancesIDs[(lo0 + hi0) / 2];
-	
-			/* loop through the matrix until indices cross */
-			while (lo <= hi) {
-				/* 
-				 * find the first element that is greater than or equal to
-				 * the partition element starting from the left Index
-				 */
-				while (lessThan(instancesIDs[lo], mid) && lo < hi0) {
-					++lo;
-				}
-	
-				/* 
-				 * find an element that is smaller than or equal to
-				 * the partition element starting from the right Index
-				 */
-				while (greaterThan(instancesIDs[hi], mid) && hi > lo0) {
-					--hi;			
-				}
-	
-				/* if the indexes have not crossed, swap */
-				if (lo <= hi) {
-					aux = instancesIDs[lo];
-					instancesIDs[lo] = instancesIDs[hi];
-					instancesIDs[hi] = aux;
-					++lo;
-					--hi;
-				}
-			}
-	
-			/* 
-			 * If the right index has not reached the left side of matrix
-			 * must now sort the left partition
-			 */
-			if (lo0 < hi) {
-				quickSort(instancesIDs, lo0, hi);
-			}
-	
-			/* 
-			 * If the left index has not reached the right side of matrix
-			 * must now sort the right partition
-			 */
-			if (lo < hi0) {
-				quickSort(instancesIDs, lo, hi0);
-			}
-		}
-	}
-
-	/**
-	 * Compares two instances and returns true if the first is greater than the
-	 * second. If they are both equals they are tested by their indexes. If the
-	 * first instance has a index greater than the second it returns true.
-	 * Otherwise it returns false. 
+	 * Sorts a given array of objects in ascending order and returns an
+	 * array of integers with the positions of the elements of the
+	 * original array in the sorted array. 
 	 * 
-	 * @param v1 The first instance's index
-	 * @param v2 The second instance's index
-	 * @return
-	 * <li>true if v1 > v2
-	 * <li>false otherwise
+	 * @param array This array is not changed by the method!
+	 * @param cmp A comparable object.
+	 * @return An array of integers with the positions in the sorted array.
 	 */
+	public int[] sort() {
+		int[] index = new int[numInstances];
+
+		rnd = new Random(new Date().getTime());
+		
+		for (int i = 0; i < index.length; i++) {
+			index[i] = i;
+		}
+		qsort(index, 0, numInstances - 1);
+		
+		return index;
+	}
+
+	private void qsort(int[] index, int begin, int end) {
+		if (end > begin) {
+			int pos = partition(index, begin, end);
+			
+			qsort(index, begin, pos - 1);
+			qsort(index, pos + 1,  end);
+		}
+	}
+	
+	private int partition(int[] index, int begin, int end) {
+		int pos = begin + rnd.nextInt(end - begin + 1);
+		int pivot = index[pos];
+		
+		swap(index, pos, end);
+		
+		for (int i = pos = begin; i < end; ++ i) {
+			if (!greaterThan(index[i], pivot)) {
+				swap(index, pos++, i);
+			}
+		}
+		swap(index, pos, end);
+		
+		return pos;
+	}
+	
+	private void swap(int[] index, int i, int j) {
+		int tmp = index[i];
+		index[i] = index[j];
+		index[j] = tmp;
+	}
+	
 	private boolean greaterThan(int inst1, int inst2) {
 		float[] v1 = instances[inst1].data;
 		float[] v2 = instances[inst2].data;
-		int num = numAttributes;
 
-		for (int i = 0; i < num; i++) {
-			if (v1[i] > v2 [i]) {
+		for (int i = 0; i < numAttributes; i++) {
+			if (v1[i] > v2[i]) {
 				return true;
-			} else if (v1[i] < v2 [i]) {
+			} else if (v1[i] < v2[i]) {
 				return false;
 			}
 		}
@@ -1021,37 +1040,9 @@ public class InstanceSet implements Serializable {
 		return false;
 	}
 
-	/**
-	 * Compares two instances and returns true if the first is less than the
-	 * second. If they are both equals they are tested by their indexes. If the
-	 * first instance has a index less than the second it returns true.
-	 * Otherwise it returns false. 
-	 * 
-	 * @param v1 The first instance's index
-	 * @param v2 The second instance's index
-	 * @return
-	 * <li>true if v1 < v2
-	 * <li>false otherwise
-	 */
-	private boolean lessThan(int inst1, int inst2) {
-		float[] v1 = instances[inst1].data;
-		float[] v2 = instances[inst2].data;
-		int num = numAttributes;
+	/*------------------- Quicksort - end ---------------------*/
 
-		for (int i = 0; i < num; i++) {
-			if (v1[i] < v2 [i]) {
-				return true;
-			} else if (v1[i] < v2 [i]) {
-				return false;
-			}
-		}
-		if (inst1 < inst2) {
-			return true;
-		}
-		
-		return false;
-	}
-
+	
 	public void setCounterIndex(int counterIndex) {
 		this.counterIndex = counterIndex;
 	}

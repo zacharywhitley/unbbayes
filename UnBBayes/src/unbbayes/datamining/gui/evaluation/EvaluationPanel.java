@@ -48,8 +48,7 @@ import unbbayes.gui.SimpleFileFilter;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.util.GraphPaperLayout;
 
-public class EvaluationPanel extends JPanel
-{
+public class EvaluationPanel extends JPanel {
   /** Serialization runtime version number */
   private static final long serialVersionUID = 0;		
 	
@@ -109,11 +108,13 @@ public class EvaluationPanel extends JPanel
   private JTextArea jTextArea1 = new JTextArea();
   private int[] priorityClassValues;
   private float[] priorityProbabilities;
-
+  private EvaluationPanel evaluationPanel;
+  
   public EvaluationPanel(EvaluationMain reference)
   { this.reference = reference;
     try
     {
+    evaluationPanel = this;
       jbInit();
     }
     catch(Exception e)
@@ -351,16 +352,16 @@ public class EvaluationPanel extends JPanel
                       outBuff.append(classifier.toString() + "\n\n");
                       Evaluation eval;
 
-                                eval = new Evaluation(instances,classifier);
-                                ProgressDialog progressDialog = new ProgressDialog (null, eval);
-								boolean successStatus = progressDialog.load();
+                    eval = new Evaluation(instances,classifier);
+                    ProgressDialog progressDialog = new ProgressDialog (null, eval);
+					boolean successStatus = progressDialog.load();
 
-                                //eval.evaluateModel(classifier);
-                                    outBuff.append(eval.toString());
-                                    outBuff.append("\n");
-                                    outBuff.append(eval.toClassDetailsString());
-                                    outBuff.append("\n");
-                                    outBuff.append(eval.toMatrixString());
+                    //eval.evaluateModel(classifier);
+                        outBuff.append(eval.toString());
+                        outBuff.append("\n");
+                        outBuff.append(eval.toClassDetailsString());
+                        outBuff.append("\n");
+                        outBuff.append(eval.toMatrixString());
 
                       jTextArea2.setText(outBuff.toString());
                       currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());

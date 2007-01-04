@@ -29,21 +29,22 @@ public class TestUtils extends TestCase {
   }
 
   protected void setUp() throws Exception{
-      Loader loader = new TxtLoader(CONTACT_LENCES_FILE);
+	  int numLines = -1;
+      Loader loader = new TxtLoader(CONTACT_LENCES_FILE, numLines);
       while (loader.getInstance())
       {}
 
       contactInst = loader.getInstanceSet();
       contactInst.setClass(contactInst.getAttribute(contactInst.numAttributes()-1));
 
-      loader = new ArffLoader(WEATHER_NOMINAL_FILE);
+      loader = new ArffLoader(WEATHER_NOMINAL_FILE, numLines);
       while (loader.getInstance())
       {}
 
       weatherInst = loader.getInstanceSet();
       weatherInst.setClass(weatherInst.getAttribute(weatherInst.numAttributes()-1));
 
-      loader = new TxtLoader(WEATHER_NUMERIC_CUT_FILE);
+      loader = new TxtLoader(WEATHER_NUMERIC_CUT_FILE, numLines);
       while (loader.getInstance())
       {}
 

@@ -33,6 +33,7 @@ public class DataManipulationResource extends ListResourceBundle
 		{"getNextTokenException1","premature end of line"},
 		{"getNextTokenException2","premature end of file"},
 		{"getInstanceException1","no header information available"},
+		{"getInstanceAuxException1","a String was read while expecting a number"},
 		{"getInstanceFullException1","not a valid value"},
 		{"getInstanceFullException2","nominal value not declared in header"},
 		{"getInstanceFullException3","number expected"},

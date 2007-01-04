@@ -27,6 +27,8 @@ public abstract class Loader implements IProgress {
 	
 	protected StreamTokenizer tokenizer;
 
+	protected boolean compacted;
+
 	/** 
 	 * Stores the type of an attribute:
 	 * 0 - Numeric
@@ -172,7 +174,8 @@ public abstract class Loader implements IProgress {
 		return initialInstances;
 	}
 
-	protected void countInstancesFromFile(File file) throws IOException {
+	protected void countInstancesFromFile(File file, int num)
+	throws IOException {
 		FileInputStream fileIn = new FileInputStream(file);
 		InputStreamReader inReader = new InputStreamReader(fileIn);
 		BufferedReader in = new BufferedReader(inReader);
@@ -180,8 +183,18 @@ public abstract class Loader implements IProgress {
 		/* Count lines of the file */
 		int count = 0;
 		String line;
-		while ((line = in.readLine()) != null && !line.startsWith("%")) {
-			count++;
+		boolean startCount = false;
+		while ((line = in.readLine()) != null) {
+			if (startCount && (!line.startsWith("%"))) {
+				count++;
+			}
+			if ((line.toLowerCase()).equals("@data")) {
+				/* Finish reading header */
+				startCount = true;
+			}
+			if (num != -1 && count >= num) {
+				break;
+			}
 		}
 		initialInstances = count;
 		fileIn.close();
@@ -196,82 +209,7 @@ public abstract class Loader implements IProgress {
 	 * @exception IOException if the information is not read
 	 * successfully
 	 */
-	protected boolean getInstanceAux() throws IOException {
-		/* Alocate space for the attributes and the counter variable */
-		float[] instance = new float[numAttributes + 1];
-		
-		/* Default value for the weight of an instance */
-		float instanceWeight = 1;
-		
-		int attIndex = 0;
-		String stringValue;
-		int columns = numAttributes;
-		
-		/* Check if the instanceSet file has a counter attribute */
-		if (counterIndex != -1) {
-			/* Read the counter attribute */
-			++columns;
-		}
-		
-		/* 
-		 * Create instance. Iterate over all attributes and the counter
-		 * variable
-		 */
-		for (int i = 0; i < columns; i++) {
-			/* Check if the current attribute is the counter attribute */
-			if (i == counterIndex) {
-				try {
-					instanceWeight = (float) tokenizer.nval;
-					continue;
-				} catch (NumberFormatException nfe) {
-					errms("Atributo de contagem inválido");
-				}
-			}
-			
-			if (attributeType[attIndex] == NOMINAL) {
-				stringValue = tokenizer.sval;
-				Attribute attribute = instanceSet.getAttribute(attIndex);
-				
-				/* Check if the attribute is made of String values */
-				if (attributeIsString[attIndex]) {
-					if (tokenizer.sval == null) {
-						/* The token is a number */
-						stringValue = String.valueOf(tokenizer.nval);
-					} else {
-						/* The token is a String */
-						stringValue = tokenizer.sval;
-					}
-					/* Check if value is missing */ 
-					if (stringValue.equals("?")) {
-						instance[attIndex] = Instance.MISSING_VALUE;
-					}
-	
-					/* Map the current String value to an internal value */ 
-					instance[attIndex] = attribute.addValue(stringValue);
-				} else {
-					/* Map the current String value to an internal value */
-					float value = (float) tokenizer.nval;
-					instance[attIndex] = attribute.addValue(value);
-				}
-			} else {
-				/* 
-				 * The attribute is not nominal thus only numbers are allowed
-				 * here.
-				 */
-				instance[attIndex] = (float) tokenizer.nval;
-			}
-			++attIndex;
-			tokenizer.nextToken();
-		}
-		
-		/* Set the weight of this instance */
-		instance[attIndex] = instanceWeight;
-		
-		/* Add the current instance to the instanceSet */
-		instanceSet.insertInstance(new Instance(instance));
-
-		return true;
-	}
+	protected abstract boolean getInstanceAux() throws IOException;
 
 	public int getNumAttributes() {
 		return numAttributes;
@@ -287,6 +225,10 @@ public abstract class Loader implements IProgress {
 
 	public void setCounterAttributeName(String counterAttributeName) {
 		this.counterAttributeName = counterAttributeName;
+	}
+	
+	public void setCompacted(boolean compacted) {
+		this.compacted = compacted;
 	}
 
 }

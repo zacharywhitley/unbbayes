@@ -68,7 +68,9 @@ public class Squeezer extends Clustering {
 		
 		/* Check if the similarity threshold is to set automatically */
 		if (useAverageSimilarity) {
-			s = averageSimilarity(20) + 2;
+//			s = averageSimilarity(20) + 2;
+//			s = averageSimilarity(5) + 2;
+			s = averageSimilarity(1) + 2;
 		}
 		
 		/* Initialize the assignment matrix */
@@ -229,7 +231,7 @@ public class Squeezer extends Clustering {
 		Random randomizer = new Random();
 		int counter = 0;
 		int inst;
-		boolean[] exists = new boolean[numInstances];
+		boolean[] exists = new boolean[instanceSet.numInstances];
 		
 		Arrays.fill(exists, false);
 

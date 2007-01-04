@@ -127,6 +127,8 @@ public class Smote {
 	 * attributes. If set to false, a new one will be drawn for each attribute.
 	 */
 	private boolean optionFixedGap;
+
+	private AttributeStats[] attributeStats;
 	
 	/**
 	 * SMOTE oversamples a specified class of a dataset. It creates new cases
@@ -158,7 +160,8 @@ public class Smote {
 	 * @param proportion: Desired proportion of new instances
 	 * @param classValue: class of desired nearest neighbors
 	 */
-	public void run(double proportion, int classValue) {
+	public void run(double proportion, int classValue,
+			AttributeStats[] attributeStats) {
 		int counter = 0;
 		int instancesIDsTmp[] = new int[numInstances];
 		
@@ -173,7 +176,7 @@ public class Smote {
 			instancesIDs[i] = instancesIDsTmp[i];
 		}
 		
-		run(instancesIDs, proportion);
+		run(instancesIDs, proportion, attributeStats);
 	}
 
 	/**
@@ -183,14 +186,14 @@ public class Smote {
 	 * 
 	 * @param proportion: Desired proportion of new instances
 	 */
-	public void run(double proportion) {
+	public void run(double proportion, AttributeStats[] attributeStats) {
 		int instancesIDs[] = new int[numInstances];
 		
 		for (int inst = 0; inst < numInstances; inst++) {
 			instancesIDs[inst] = inst;
 		}
 		
-		run(instancesIDs, proportion);
+		run(instancesIDs, proportion, attributeStats);
 	}
 
 	/**
@@ -201,15 +204,14 @@ public class Smote {
 	 * @param instancesIDs[]: The chosen subset of instances to be smoted
 	 * @param proportion: Desired proportion of new instances
 	 */
-	public void run(int instancesIDs[], double proportion) {
+	public void run(int instancesIDs[], double proportion,
+			AttributeStats[] attributeStats) {
+		this.attributeStats = attributeStats;
 		/* The number of instances of the chosen subset of instances to be smoted */
 		int numInstancesIDs;
 		int nearestNeighborsIDs[];
 		
 		numAttributes = instanceSet.numAttributes();
-		
-		/* Compute the statistics for all attributes */
-		AttributeStats[] attributeStats = instanceSet.computeAttributeStats();
 		
 		/* Message thrown as an exception in case of wrong arguments */ 
 		String exceptionMsg = "";

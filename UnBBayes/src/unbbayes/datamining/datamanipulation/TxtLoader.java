@@ -23,16 +23,17 @@ public class TxtLoader extends Loader {
 
 	/**
 	 * Reads a TXT file from a reader.
+	 * @param file
+	 * @param numLines Desired number of lines to count
 	 *
-	 * @param reader Reader
 	 * @exception IOException if the TXT file is not read
 	 * successfully
 	 */
-	public TxtLoader(File file) throws IOException {
+	public TxtLoader(File file, int numLines) throws IOException {
 		this.file = file;
 		
 		// Count instanceSet
-		countInstancesFromFile(file);
+		countInstancesFromFile(file, numLines);
 		
 		//Memory initialization
 		Reader reader = new BufferedReader(new FileReader(file));
@@ -134,6 +135,7 @@ public class TxtLoader extends Loader {
 		/* Update initialInstances excluding the header */
 		--initialInstances;
 		
+		compacted = false;
 		while (tokenizer.ttype != StreamTokenizer.TT_EOL) {
 			attName = tokenizer.sval;
 
@@ -148,6 +150,7 @@ public class TxtLoader extends Loader {
 			/* Check if the current attribute is the counter */
 			if (attIndex == counterIndex) {
 				/* Get counter's name and skip to the next attribute */
+				compacted = true;
 				counterAttributeName = attName;
 				tokenizer.nextToken();
 				continue;
@@ -207,6 +210,92 @@ public class TxtLoader extends Loader {
 
 		/* Read the next instance from the file */
 		return getInstanceAux();
+	}
+
+	/**
+	 * Reads a single instance using the tokenizer and appends it
+	 * to the dataset. Automatically expands the dataset if it
+	 * is not large enough to hold the instance.
+	 *
+	 * @return False if end of file has been reached
+	 * @exception IOException if the information is not read
+	 * successfully
+	 */
+	protected boolean getInstanceAux() throws IOException {
+		/* Alocate space for the attributes and the counter variable */
+		float[] instance = new float[numAttributes + 1];
+		
+		/* Default value for the weight of an instance */
+		float instanceWeight = 1;
+		
+		int attIndex = 0;
+		String stringValue;
+		int columns = numAttributes;
+		
+		/* Check if the instanceSet file has a counter attribute */
+		if (compacted) {
+			/* Read the counter attribute */
+			++columns;
+		}
+		
+		/* 
+		 * Create instance. Iterate over all attributes and the counter
+		 * variable
+		 */
+		for (int i = 0; i < columns; i++) {
+			/* Check if the current attribute is the counter attribute */
+			if (i == counterIndex) {
+				try {
+					instanceWeight = (float) tokenizer.nval;
+					continue;
+				} catch (NumberFormatException nfe) {
+					errms("Atributo de contagem inválido");
+				}
+			}
+			
+			if (attributeType[attIndex] == NOMINAL) {
+				stringValue = tokenizer.sval;
+				Attribute attribute = instanceSet.getAttribute(attIndex);
+				
+				/* Check if the attribute is made of String values */
+				if (attributeIsString[attIndex]) {
+					if (tokenizer.sval == null) {
+						/* The token is a number */
+						stringValue = String.valueOf(tokenizer.nval);
+					} else {
+						/* The token is a String */
+						stringValue = tokenizer.sval;
+					}
+					/* Check if value is missing */ 
+					if (stringValue.equals("?")) {
+						instance[attIndex] = Instance.MISSING_VALUE;
+					}
+	
+					/* Map the current String value to an internal value */ 
+					instance[attIndex] = attribute.addValue(stringValue);
+				} else {
+					/* Map the current String value to an internal value */
+					float value = (float) tokenizer.nval;
+					instance[attIndex] = attribute.addValue(value);
+				}
+			} else {
+				/* 
+				 * The attribute is not nominal thus only numbers are allowed
+				 * here.
+				 */
+				instance[attIndex] = (float) tokenizer.nval;
+			}
+			++attIndex;
+			tokenizer.nextToken();
+		}
+		
+		/* Set the weight of this instance */
+		instance[attIndex] = instanceWeight;
+		
+		/* Add the current instance to the instanceSet */
+		instanceSet.insertInstance(new Instance(instance));
+
+		return true;
 	}
 
 	/**

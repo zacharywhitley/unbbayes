@@ -26,10 +26,10 @@ import javax.swing.JToolBar;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
+import unbbayes.TrainingTestSetCreator;
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
 import unbbayes.datamining.datamanipulation.InstanceSet;
-import unbbayes.datamining.preprocessor.TrainingTestSetCreator;
 import unbbayes.gui.FileIcon;
 import unbbayes.gui.SimpleFileFilter;
 
@@ -256,9 +256,12 @@ public class PreprocessorMain extends JInternalFrame
 		 */
 		jPanel1.setBaseInstances(trainSet);
 
+		/* Compact? */
+		boolean compact = true;
+		
 		/* Build the test and training instanceSets */
-		int testSize = Math.round((float) trainSet.numInstances / 3);
-		InstanceSet testSet = trainSet.buildTrainTestSet(testSize);
+		float testProportion = (float) 1 / 3;
+		InstanceSet testSet = trainSet.buildTrainTestSet(testProportion, compact);
 
 		/* Save file */
 		saveFile(trainingFile, selectedAttributes, trainSet);
