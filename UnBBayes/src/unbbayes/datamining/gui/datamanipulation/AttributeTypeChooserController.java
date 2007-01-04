@@ -48,28 +48,27 @@ import unbbayes.datamining.datamanipulation.Options;
 import unbbayes.datamining.datamanipulation.TxtLoader;
 
 /**
- *
+ * 
  * @author Emerson Lopes Machado - emersoft@conectanet.com.br
  * @date 22/11/2006
  */
 public class AttributeTypeChooserController {
 	/** Load resource file for this package */
-	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes"
-			+ ".datamining.gui.datamanipulation.resources." +
-					"AttributeTypeChooserResource");
-	
-	/** 
-	 * Stores the type of an attribute:
-	 * 0 - Numeric
-	 * 1 - Nominal
-	 * 2 - Cyclic numeric
+	private static ResourceBundle resource = ResourceBundle
+			.getBundle("unbbayes"
+					+ ".datamining.gui.datamanipulation.resources."
+					+ "AttributeTypeChooserResource");
+
+	/**
+	 * Stores the type of an attribute: 0 - Numeric 1 - Nominal 2 - Cyclic
+	 * numeric
 	 */
 	private byte[] attributeType;
 
 	/** Number of attributes */
 	private int numAttributes;
 
-	/** 
+	/**
 	 * The index of the dataset's column that represents the counter attribute.
 	 * Assumes always the last column of the internal dataset as the counter
 	 * attribute.
@@ -98,24 +97,27 @@ public class AttributeTypeChooserController {
 
 	private Object[][] chooserData;
 
+	private byte[] attributeTypeOriginal;
+
 	public AttributeTypeChooserController(File file, Component parent)
-	throws Exception{
+			throws Exception {
 		/* Set the desired number of instances read from the file */
 		numInstancesAux = 100;
-		
+
 		run(file, parent);
 	}
-	
+
 	private void run(File file, Component parent) throws Exception {
 		/* Build the principal panel */
 		JPanel principalPanel = buildWindow(file);
-		
+
+		/* Show window */
 		if ((JOptionPane.showInternalConfirmDialog(parent, principalPanel,
-				resource.getString("windowTitle"), JOptionPane.OK_CANCEL_OPTION,
-				JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION)) {
+				resource.getString("windowTitle"),
+				JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION)) {
 
 			int size = numAttributes;
-			
+
 			/* First, check if the counter index has been set */
 			InstanceSet instanceSet = loader.getInstanceSet();
 			String counterAttributeName = instanceSet.getCounterAttributeName();
@@ -123,29 +125,30 @@ public class AttributeTypeChooserController {
 				--numAttributes;
 				counterAttributeName = attributeName[counterIndex];
 			}
-			
+
 			attributeType = new byte[numAttributes];
 			attributeIsString = new boolean[numAttributes];
-			
+
 			/* Set the attribute's characteristics */
 			int attIndex = 0;
 			String[] attributeNameAux = new String[numAttributes];
 			for (int att = 0; att < size; att++) {
 				if (att != counterIndex) {
-					attributeType[attIndex] = (Byte) attTypes.get(chooserData[0][att]);
+					attributeType[attIndex] = (Byte) attTypes
+							.get(chooserData[0][att]);
 					attributeIsString[attIndex] = (Boolean) chooserData[1][att];
 					attributeNameAux[attIndex] = attributeName[att];
 					++attIndex;
 				}
 			}
 			attributeName = attributeNameAux;
-			
+
 			if (loader instanceof TxtLoader) {
-				loader = new TxtLoader(loader.file);
+				loader = new TxtLoader(loader.file, -1);
 			} else {
-				loader = new ArffLoader(loader.file);
+				loader = new ArffLoader(loader.file, -1);
 			}
-			
+
 			/* Set counter attribute */
 			loader.setAttributeIsString(attributeIsString);
 			loader.setAttributeType(attributeType);
@@ -154,11 +157,30 @@ public class AttributeTypeChooserController {
 			loader.setAttributeName(attributeName);
 			if (counterIndex != -1) {
 				Options.getInstance().setCompactedFile(true);
+				loader.setCompacted(true);
 			}
 			loader.setNumAttributes(numAttributes);
-			
+
 			if (loader instanceof ArffLoader) {
-				((ArffLoader) loader).buildAttributes();
+				/*
+				 * In the case the user has changed the header information from
+				 * a nominal attribute to a numeric or cyclic one, it's
+				 * necessary to build the attribute from the dataset. Otherwise,
+				 * the attribute must be built from the header information of
+				 * the Arff file.
+				 */
+				boolean[] buildNominalFromHeader = new boolean[numAttributes];
+				for (int att = 0; att < numAttributes; att++) {
+					if (attributeTypeOriginal[att] == InstanceSet.NOMINAL
+							&& attributeType[att] == InstanceSet.NOMINAL) {
+						buildNominalFromHeader[att] = true;
+					} else {
+						buildNominalFromHeader[att] = false;
+					}
+				}
+
+				((ArffLoader) loader).buildAttributes(buildNominalFromHeader,
+						instanceSet.attributes);
 			}
 		} else {
 			/* Canceled by the user */
@@ -169,35 +191,47 @@ public class AttributeTypeChooserController {
 	private JPanel buildWindow(File file) throws Exception {
 		/* Build a preliminary header and read a sample of the file */
 		getPreliminaries(file);
-		
+
 		/* Build the data table */
-		JTable dataTable = new JTable(instances, attributeName);
+		JTable dataTable = new JTable(instances, attributeName) {
+			private static final long serialVersionUID = 1L;
+
+			/* Make the table impossible for edition */
+			public boolean isCellEditable(int row, int col) {
+				return false;
+			}
+		};
+		dataTable.getTableHeader().setReorderingAllowed(false);
+		dataTable.getTableHeader().setResizingAllowed(false);
 		dataTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		dataTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		/* Build scroll pane for the data table */
 		JScrollPane dataTableScroll = new JScrollPane(dataTable);
-		dataTableScroll.setHorizontalScrollBarPolicy(
-				JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		dataTableScroll
+				.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
 		/* Build the chooser table */
 		JTable chooserTable = buildChooserTable();
-		
+		chooserTable.getTableHeader().setReorderingAllowed(false);
+		chooserTable.getTableHeader().setResizingAllowed(false);
+
 		/* Build the row header of the chooser table */
 		final String[] chooserTableRowHeaderData;
 		chooserTableRowHeaderData = new String[3];
-		chooserTableRowHeaderData[0] = resource.getString("attributeType") + "  ";
+		chooserTableRowHeaderData[0] = resource.getString("attributeType")
+				+ "  ";
 		chooserTableRowHeaderData[1] = resource.getString("isString") + "  ";
 		chooserTableRowHeaderData[2] = resource.getString("counter") + "  ";
 		JList chooserTableRowHeader = new JList(chooserTableRowHeaderData);
 		chooserTableRowHeader.setFixedCellWidth(150);
 		chooserTableRowHeader.setFixedCellHeight(dataTable.getRowHeight());
-		chooserTableRowHeader.setCellRenderer(
-				new RowHeaderRenderer(chooserTable, true));
+		chooserTableRowHeader.setCellRenderer(new RowHeaderRenderer(
+				chooserTable, true));
 
-		/* 
-		 * Build a dummy row header for the data table. It provides
-		 * horizontal alignment of the data table and the chooser table.
+		/*
+		 * Build a dummy row header for the data table. It provides horizontal
+		 * alignment of the data table and the chooser table.
 		 */
 		int numLines = dataTable.getRowCount();
 		final String[] dummyRowHeaderData = new String[numLines];
@@ -205,13 +239,12 @@ public class AttributeTypeChooserController {
 			dummyRowHeaderData[i] = "";
 		}
 		JList dataTableRowHeader = new JList(dummyRowHeaderData);
-		dataTableRowHeader.setFixedCellWidth(
-				chooserTableRowHeader.getFixedCellWidth());
+		dataTableRowHeader.setFixedCellWidth(chooserTableRowHeader
+				.getFixedCellWidth());
 		dataTableRowHeader.setFixedCellHeight(dataTable.getRowHeight());
-		dataTableRowHeader.setCellRenderer(
-				new RowHeaderRenderer(chooserTable, false));
+		dataTableRowHeader.setCellRenderer(new RowHeaderRenderer(chooserTable,
+				false));
 		dataTableScroll.setRowHeaderView(dataTableRowHeader);
-		
 
 		/* Build scroll pane for the chooser table and get rid of its header */
 		JScrollPane chooserScroll = new JScrollPane(chooserTable) {
@@ -221,19 +254,19 @@ public class AttributeTypeChooserController {
 			}
 		};
 		chooserScroll.setRowHeaderView(chooserTableRowHeader);
-		chooserScroll.setVerticalScrollBarPolicy(JScrollPane.
-				VERTICAL_SCROLLBAR_ALWAYS);
-		chooserScroll.setHorizontalScrollBarPolicy(JScrollPane.
-				HORIZONTAL_SCROLLBAR_NEVER);
+		chooserScroll
+				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		chooserScroll
+				.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
 		/* Get rid of the vertical bar of the chooser table */
 		chooserScroll.getVerticalScrollBar().setEnabled(false);
 
-		/* 
-		 * Bind the horizontal bar of the chooser table and data table
-		 * together so when you move the data table horizontal bar the
-		 * chooser table also moves.
-		 */ 
+		/*
+		 * Bind the horizontal bar of the chooser table and data table together
+		 * so when you move the data table horizontal bar the chooser table also
+		 * moves.
+		 */
 		JScrollBar bar1 = dataTableScroll.getHorizontalScrollBar();
 		final JScrollBar bar2 = chooserScroll.getHorizontalScrollBar();
 		bar1.addAdjustmentListener(new AdjustmentListener() {
@@ -241,11 +274,11 @@ public class AttributeTypeChooserController {
 				bar2.setValue(e.getValue());
 			}
 		});
-		
+
 		/* Set the window's size */
-		dataTableScroll.setPreferredSize(new Dimension(500, 100));
 		chooserScroll.setPreferredSize(new Dimension(500, 50));
-		
+		dataTableScroll.setPreferredSize(new Dimension(500, 150));
+
 		/* Get rid of the borders */
 		chooserScroll.setBorder(new EmptyBorder(dataTableScroll.getInsets()));
 		dataTableScroll.setBorder(new EmptyBorder(dataTableScroll.getInsets()));
@@ -255,11 +288,23 @@ public class AttributeTypeChooserController {
 		principalPanel.setLayout(new BorderLayout());
 		principalPanel.add(chooserScroll, BorderLayout.CENTER);
 		principalPanel.add(dataTableScroll, BorderLayout.SOUTH);
-		
+
 		return principalPanel;
 	}
 
 	private JTable buildChooserTable() {
+		/* Prepare combo box first */
+		attTypes = new Hashtable<Object, Object>();
+		attTypes.put("numeric", (byte) 0);
+		attTypes.put("nominal", (byte) 1);
+		attTypes.put("cyclic", (byte) 2);
+		attTypes.put((byte) 0, "numeric");
+		attTypes.put((byte) 1, "nominal");
+		attTypes.put((byte) 2, "cyclic");
+		String[] comboValues = { (String) attTypes.get((byte) 0),
+				(String) attTypes.get((byte) 1),
+				(String) attTypes.get((byte) 2), };
+
 		/* First, we build the recipient table */
 		AbstractTableModel chooserModel = new AbstractTableModel() {
 			private static final long serialVersionUID = 1L;
@@ -278,10 +323,10 @@ public class AttributeTypeChooserController {
 
 			public void setValueAt(Object value, int row, int col) {
 				int last = counterIndex;
-				
+
 				if (row == 2) {
 					if (col == counterIndex) {
-						/* Used to deselect the radio button */
+						/* Deselect the radio button */
 						counterIndex = -1;
 						chooserData[row][col] = false;
 					} else {
@@ -293,8 +338,11 @@ public class AttributeTypeChooserController {
 					}
 				} else {
 					chooserData[row][col] = value;
+					if (row == 0 && value != "nominal") {
+						setValueAt(new Boolean(false), 1, col);
+					}
 				}
-				
+
 				fireTableCellUpdated(row, col);
 				if (counterIndex != -1) {
 					fireTableCellUpdated(row, last);
@@ -302,10 +350,18 @@ public class AttributeTypeChooserController {
 			}
 
 			public boolean isCellEditable(int row, int col) {
+				if (row == 1) {
+					if (chooserData[0][col] == "nominal") {
+						return true;
+					} else {
+						return false;
+					}
+				}
+
 				return true;
 			}
 		};
-		
+
 		final JTable chooserTable = new JTable(chooserModel) {
 			private static final long serialVersionUID = 1L;
 
@@ -314,20 +370,6 @@ public class AttributeTypeChooserController {
 				super.tableChanged(e);
 				repaint();
 			}
-		};
-		
-		/* Prepare combo box first */
-		attTypes = new Hashtable<Object, Object>();
-		attTypes.put("numeric", (byte) 0);
-		attTypes.put("nominal", (byte) 1);
-		attTypes.put("cyclic", (byte) 2);
-		attTypes.put((byte) 0, "numeric");
-		attTypes.put((byte) 1, "nominal");
-		attTypes.put((byte) 2, "cyclic");
-		String[] comboValues = {
-				(String) attTypes.get((byte) 0),
-				(String) attTypes.get((byte) 1),
-				(String) attTypes.get((byte) 2),
 		};
 
 		/* Add components to the chooser data model */
@@ -347,11 +389,12 @@ public class AttributeTypeChooserController {
 			rowEditor.setEditorAt(0, new ComboBoxEditor(comboValues));
 			rowRenderer.add(0, new ComboBoxRenderer(comboValues));
 
-			rowEditor.setEditorAt(1, new CheckBoxEditor(attributeIsString[att]));
+			rowEditor
+					.setEditorAt(1, new CheckBoxEditor(attributeIsString[att]));
 			rowRenderer.add(1, new CheckBoxRenderer(attributeIsString[att]));
 
-//			rowEditor.setEditorAt(2, new CheckBoxEditor(counterIndexAux[att]));
-			rowEditor.setEditorAt(2, new RadioButtonEditor(counterIndexAux[att]));
+			rowEditor.setEditorAt(2,
+					new RadioButtonEditor(counterIndexAux[att]));
 			rowRenderer.add(2, new RadioButtonRenderer(counterIndexAux[att]));
 
 			/* Set the cell renderer and editor for the current column */
@@ -361,30 +404,31 @@ public class AttributeTypeChooserController {
 
 		chooserTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		chooserTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		
+
 		return chooserTable;
 	}
 
-	private void getPreliminaries(File file) throws Exception{
+	private void getPreliminaries(File file) throws Exception {
 		String fileName = file.getName();
-		
+
 		/* Constructs a preliminary header */
 		if (fileName.regionMatches(true, fileName.length() - 5, ".arff", 0, 5)) {
 			/* Read the arff header */
-			loader = new ArffLoader(file);
-		} else if (fileName.regionMatches(true, fileName.length() - 4, ".txt", 0, 4)) {
-			/* 
-			 * Read header of the txt file. All attributes will be read as nominal
-			 * (String values)
+			loader = new ArffLoader(file, numInstancesAux);
+		} else if (fileName.regionMatches(true, fileName.length() - 4, ".txt",
+				0, 4)) {
+			/*
+			 * Read header of the txt file. All attributes will be read as
+			 * nominal (String values)
 			 */
-			loader = new TxtLoader(file);
+			loader = new TxtLoader(file, numInstancesAux);
 		} else {
 			throw new IOException(resource.getString("fileExtensionException"));
 		}
 
 		/* Build the loader header */
 		loader.buildHeader();
-		
+
 		/* Read the first 'numInstancesAux' instances from 'file' */
 		boolean reading = true;
 		int i = 0;
@@ -401,16 +445,18 @@ public class AttributeTypeChooserController {
 		/* Set the initial attributes' characteristics */
 		numAttributes = instanceSet.numAttributes;
 		attributeType = instanceSet.attributeType;
-		
+		attributeTypeOriginal = attributeType.clone();
+
 		/* Get columns' labels and 'isString' vector */
 		attributeName = new String[numAttributes];
 		attributeIsString = new boolean[numAttributes];
 		for (int att = 0; att < numAttributes; att++) {
-			attributeName[att] = instanceSet.getAttribute(att).getAttributeName();
+			attributeName[att] = instanceSet.getAttribute(att)
+					.getAttributeName();
 			attributeIsString[att] = instanceSet.getAttribute(att).isString();
 		}
-		
-		/* 
+
+		/*
 		 * If the file is an txt file, analize the sample and check which
 		 * attributes contains at least one String value.
 		 */
@@ -418,7 +464,7 @@ public class AttributeTypeChooserController {
 			attributeIsString = new boolean[numAttributes];
 			Arrays.fill(attributeIsString, false);
 			Instance instance;
-			
+
 			for (int att = 0; att < numAttributes; att++) {
 				attributeIsString[att] = false;
 				for (int inst = 0; inst < numInstancesAux; inst++) {
@@ -432,10 +478,10 @@ public class AttributeTypeChooserController {
 				}
 			}
 		}
-		
-		/* 
-		 * Create the data table with the first 'numInstancesAux' instances
-		 * read from the file.
+
+		/*
+		 * Create the data table with the first 'numInstancesAux' instances read
+		 * from the file.
 		 */
 		Instance instance;
 		instances = new Object[numInstancesAux][numAttributes];
@@ -461,8 +507,9 @@ public class AttributeTypeChooserController {
 
 	/**
 	 * Initializes the StreamTokenizer used for reading the TXT file.
-	 *
-	 * @param tokenizer Stream tokenizer
+	 * 
+	 * @param tokenizer
+	 *            Stream tokenizer
 	 */
 	protected void initTokenizer() {
 		tokenizer.resetSyntax();
@@ -470,7 +517,7 @@ public class AttributeTypeChooserController {
 		tokenizer.wordChars('_', '_');
 		tokenizer.wordChars('-', '-');
 		tokenizer.whitespaceChars(0, ' ');
-		tokenizer.whitespaceChars('\t','\t');
+		tokenizer.whitespaceChars('\t', '\t');
 		tokenizer.commentChar('%');
 		tokenizer.quoteChar('"');
 		tokenizer.eolIsSignificant(true);
@@ -481,8 +528,7 @@ public class AttributeTypeChooserController {
 		return loader;
 	}
 
-	
-	public class RowHeaderRenderer extends JLabel implements ListCellRenderer {	
+	public class RowHeaderRenderer extends JLabel implements ListCellRenderer {
 		private static final long serialVersionUID = 1L;
 
 		RowHeaderRenderer(JTable table, boolean border) {
@@ -503,31 +549,35 @@ public class AttributeTypeChooserController {
 
 	public class EachRowRenderer implements TableCellRenderer {
 		protected Hashtable<Integer, Object> renderers;
+
 		protected TableCellRenderer renderer, defaultRenderer;
 
 		public EachRowRenderer() {
 			renderers = new Hashtable<Integer, Object>();
 			defaultRenderer = new DefaultTableCellRenderer();
 		}
-		
+
 		public void add(int row, TableCellRenderer renderer) {
-			renderers.put(new Integer(row),renderer);
+			renderers.put(new Integer(row), renderer);
 		}
-		
+
 		public Component getTableCellRendererComponent(JTable table,
-				Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			renderer = (TableCellRenderer)renderers.get(new Integer(row));
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			renderer = (TableCellRenderer) renderers.get(new Integer(row));
 			if (renderer == null) {
 				renderer = defaultRenderer;
 			}
-			return renderer.getTableCellRendererComponent(table,
-							 value, isSelected, hasFocus, row, column);
+			return renderer.getTableCellRendererComponent(table, value,
+					isSelected, hasFocus, row, column);
 		}
 	}
-	
+
 	public class EachRowEditor implements TableCellEditor {
 		private static final long serialVersionUID = 1L;
+
 		protected Hashtable<Integer, Object> editors;
+
 		protected TableCellEditor editor, defaultEditor;
 
 		JTable table;
@@ -544,7 +594,7 @@ public class AttributeTypeChooserController {
 
 		public Component getTableCellEditorComponent(JTable table,
 				Object value, boolean isSelected, int row, int column) {
-			editor = (TableCellEditor)editors.get(new Integer(row));
+			editor = (TableCellEditor) editors.get(new Integer(row));
 			if (editor == null) {
 				editor = defaultEditor;
 			}
@@ -598,61 +648,70 @@ public class AttributeTypeChooserController {
 
 	class RadioButtonRenderer extends JCheckBox implements TableCellRenderer {
 		private static final long serialVersionUID = 1L;
+
 		private JRadioButton button = new JRadioButton();
 
 		public RadioButtonRenderer(boolean value) {
 			super("", value);
 		}
 
-		public Component getTableCellRendererComponent(JTable table, Object value,
-										 boolean isSelected, boolean hasFocus, int row, int column) {
-			if (value == null) return null;
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			if (value == null)
+				return null;
 			button.setSelected((Boolean) value);
+			button.setHorizontalAlignment(JRadioButton.CENTER);
 			return (Component) button;
 		}
 	}
-	 
-	class RadioButtonEditor extends	DefaultCellEditor implements ItemListener {
+
+	class RadioButtonEditor extends DefaultCellEditor implements ItemListener {
 		private static final long serialVersionUID = 1L;
+
 		private JRadioButton button;
-	 
+
 		public RadioButtonEditor(boolean value) {
 			super(new JCheckBox("", value));
 			button = new JRadioButton("", value);
 		}
-	 
-		public Component getTableCellEditorComponent(JTable table, Object value,
-										 boolean isSelected, int row, int column) {
-			if (value==null) return null;
+
+		public Component getTableCellEditorComponent(JTable table,
+				Object value, boolean isSelected, int row, int column) {
+			if (value == null)
+				return null;
 			button.setSelected((Boolean) value);
 			button.addItemListener(this);
+			button.setHorizontalAlignment(JRadioButton.CENTER);
 			return (Component) button;
 		}
-	 
+
 		public Object getCellEditorValue() {
 			return button;
 		}
-	 
+
 		public void itemStateChanged(ItemEvent e) {
 			super.fireEditingStopped();
 		}
 	}
-	 
-	public class ComboBoxRenderer extends JComboBox implements TableCellRenderer {
+
+	public class ComboBoxRenderer extends JComboBox implements
+			TableCellRenderer {
 		private static final long serialVersionUID = 1L;
 
 		public ComboBoxRenderer(String[] items) {
 			super(items);
 		}
-	
-		public Component getTableCellRendererComponent(JTable table, Object value,
-				boolean isSelected, boolean hasFocus, int row, int column) {
+
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
 			setSelectedItem(value);
 			return this;
 		}
-		
+
 	}
-	
+
 	public class ComboBoxEditor extends DefaultCellEditor {
 		private static final long serialVersionUID = 1L;
 
@@ -661,29 +720,51 @@ public class AttributeTypeChooserController {
 		}
 	}
 
-	public class CheckBoxRenderer extends JCheckBox implements TableCellRenderer {
+	public class CheckBoxRenderer extends JCheckBox implements
+			TableCellRenderer {
 		private static final long serialVersionUID = 1L;
 
 		public CheckBoxRenderer(boolean value) {
 			super("", value);
 		}
-	
-		public Component getTableCellRendererComponent(JTable table, Object value,
-				boolean isSelected, boolean hasFocus, int row, int column) {
-	
+
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+
 			/* Select the current value */
 			setSelected((Boolean) value);
 
+			if (chooserData[0][column] == "nominal") {
+				this.setEnabled(true);
+			} else {
+				this.setEnabled(false);
+			}
+			setHorizontalAlignment(JCheckBox.CENTER);
+
 			return this;
 		}
-		
+
 	}
-	
-	public class CheckBoxEditor extends DefaultCellEditor {
+
+	class CheckBoxEditor extends DefaultCellEditor {
 		private static final long serialVersionUID = 1L;
+
+		private JCheckBox checkBox;
 
 		public CheckBoxEditor(boolean value) {
 			super(new JCheckBox("", value));
+			checkBox = new JCheckBox("", value);
+		}
+
+		public Component getTableCellEditorComponent(JTable table,
+				Object value, boolean isSelected, int row, int column) {
+			if (value == null)
+				return null;
+			checkBox.setSelected((Boolean) value);
+			checkBox.setHorizontalAlignment(JCheckBox.CENTER);
+			return (Component) checkBox;
 		}
 	}
+
 }
