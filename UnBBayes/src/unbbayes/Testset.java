@@ -573,9 +573,9 @@ public class Testset {
 		Loader loader = null;
 		
 		if (fileName.regionMatches(true, fileName.length() - 5, ".arff", 0, 5)) {
-        	loader = new ArffLoader(file);
+        	loader = new ArffLoader(file, -1);
         } else if (fileName.regionMatches(true, fileName.length() - 4, ".txt", 0, 4)) {
-        	loader = new TxtLoader(file);
+        	loader = new TxtLoader(file, -1);
         }
 
 		/* If the dataset is compacted */

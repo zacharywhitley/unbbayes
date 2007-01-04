@@ -8,7 +8,6 @@ import unbbayes.datamining.datamanipulation.ArffSaver;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Loader;
 import unbbayes.datamining.datamanipulation.TxtLoader;
-import unbbayes.datamining.preprocessor.TrainingTestSetCreator;
 
 /**
  *
@@ -53,9 +52,9 @@ public class TestDistribution {
 		Loader loader = null;
 		
 		if (fileName.regionMatches(true, fileName.length() - 5, ".arff", 0, 5)) {
-        	loader = new ArffLoader(file);
+        	loader = new ArffLoader(file, -1);
         } else if (fileName.regionMatches(true, fileName.length() - 4, ".txt", 0, 4)) {
-        	loader = new TxtLoader(file);
+        	loader = new TxtLoader(file, -1);
         }
 
 		/* If the dataset is compacted */
