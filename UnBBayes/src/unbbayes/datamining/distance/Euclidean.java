@@ -54,7 +54,7 @@ public class Euclidean extends Distance {
 	public Euclidean(InstanceSet instanceSet, int normFactor) {
 		this.instanceSet = instanceSet;
 		numAttributes = instanceSet.numAttributes;
-		AttributeStats attributeStats[] = instanceSet.computeAttributeStats();
+		AttributeStats attributeStats[] = instanceSet.getAttributeStats(false);
 
 		/* Get standard deviation and compute normalization factor */
 		Stats stats;

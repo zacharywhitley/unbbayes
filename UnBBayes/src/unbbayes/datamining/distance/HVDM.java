@@ -78,7 +78,7 @@ public class HVDM extends Distance {
 			numClasses = instanceSet.numClasses();
 		}
 		attributeType = instanceSet.attributeType;
-		attributeStats = instanceSet.computeAttributeStats();
+		attributeStats = instanceSet.getAttributeStats(false);
 		counterIndex = instanceSet.counterIndex;
 
 		attNorm = new double[numInstances];

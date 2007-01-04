@@ -128,8 +128,6 @@ public class Smote {
 	 */
 	private boolean optionFixedGap;
 
-	private AttributeStats[] attributeStats;
-	
 	/**
 	 * SMOTE oversamples a specified class of a dataset. It creates new cases
 	 * based on the existing ones. These new cases are randomly interpolated
@@ -160,8 +158,7 @@ public class Smote {
 	 * @param proportion: Desired proportion of new instances
 	 * @param classValue: class of desired nearest neighbors
 	 */
-	public void run(double proportion, int classValue,
-			AttributeStats[] attributeStats) {
+	public void run(double proportion, int classValue) {
 		int counter = 0;
 		int instancesIDsTmp[] = new int[numInstances];
 		
@@ -176,7 +173,7 @@ public class Smote {
 			instancesIDs[i] = instancesIDsTmp[i];
 		}
 		
-		run(instancesIDs, proportion, attributeStats);
+		run(instancesIDs, proportion);
 	}
 
 	/**
@@ -186,14 +183,14 @@ public class Smote {
 	 * 
 	 * @param proportion: Desired proportion of new instances
 	 */
-	public void run(double proportion, AttributeStats[] attributeStats) {
+	public void run(double proportion) {
 		int instancesIDs[] = new int[numInstances];
 		
 		for (int inst = 0; inst < numInstances; inst++) {
 			instancesIDs[inst] = inst;
 		}
 		
-		run(instancesIDs, proportion, attributeStats);
+		run(instancesIDs, proportion);
 	}
 
 	/**
@@ -204,9 +201,7 @@ public class Smote {
 	 * @param instancesIDs[]: The chosen subset of instances to be smoted
 	 * @param proportion: Desired proportion of new instances
 	 */
-	public void run(int instancesIDs[], double proportion,
-			AttributeStats[] attributeStats) {
-		this.attributeStats = attributeStats;
+	public void run(int instancesIDs[], double proportion) {
 		/* The number of instances of the chosen subset of instances to be smoted */
 		int numInstancesIDs;
 		int nearestNeighborsIDs[];
@@ -236,8 +231,9 @@ public class Smote {
 		attRangeValue = new float[numAttributes];
 		attHalfRangeValue = new float[numAttributes];
 		
+		/* Get some statistics about the cyclics attributes */
 		Stats stats;
-		
+		AttributeStats[] attributeStats = instanceSet.getAttributeStats(false);
 		for (int att = 0; att < numAttributes; att++) {
 			/* Skip the class attribute */
 			if (instanceSet.getClassIndex() == att) {

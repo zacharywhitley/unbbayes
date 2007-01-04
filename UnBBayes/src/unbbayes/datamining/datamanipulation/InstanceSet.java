@@ -569,11 +569,11 @@ public class InstanceSet implements Serializable {
 	/**
 	 * Calculates summary statistics on the values that appear in each
 	 * attribute and return then as a vector. 
-	 *
-	 * @param index The index of the attribute to summarize.
+	 * 
+	 * @param recalculate Tells that recalculation is desired.
 	 * @return An AttributeStats object with it's fields calculated.
 	 */
-	public AttributeStats[] computeAttributeStats() {
+	public AttributeStats[] getAttributeStats(boolean recalculate) {
 		AttributeStats[] attributeStats = new AttributeStats[numAttributes];
 		
 		for (int att = 0; att < numAttributes; att++) {

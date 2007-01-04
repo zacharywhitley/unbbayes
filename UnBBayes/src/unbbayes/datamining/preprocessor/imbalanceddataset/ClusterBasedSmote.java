@@ -111,7 +111,7 @@ public class ClusterBasedSmote {
 		}
 
 		/* Compute the statistics for all attributes */
-		attributeStats = instanceSet.computeAttributeStats();
+		attributeStats = instanceSet.getAttributeStats(false);
 	}
 	
 	public InstanceSet run() throws Exception {
@@ -388,7 +388,7 @@ public class ClusterBasedSmote {
 		for (int i = 0; i < counter; i++) {
 			instancesIDs[i] = instancesIDsTmp[i];
 		}
-		smote.run(instancesIDs, proportion, attributeStats);
+		smote.run(instancesIDs, proportion);
 	}
 
 	private void smoteCluster(int clusterIndex, double proportion,
@@ -406,7 +406,7 @@ public class ClusterBasedSmote {
 		for (int i = 0; i < counter; i++) {
 			instancesIDs[i] = instancesIDsTmp[i];
 		}
-		smote.run(instancesIDs, proportion, attributeStats);
+		smote.run(instancesIDs, proportion);
 	}
 
 	/**

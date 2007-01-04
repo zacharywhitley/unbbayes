@@ -103,7 +103,7 @@ public class NaiveBayes extends DistributionClassifier implements Serializable {
 		}
 
 		/* Get the class distribution */
-		AttributeStats[] attributeStats = instanceSet.computeAttributeStats();
+		AttributeStats[] attributeStats = instanceSet.getAttributeStats(false);
 		priors = attributeStats[classIndex].getNominalCountsWeighted();
 		
 		/* Normalize nominal distribution */
