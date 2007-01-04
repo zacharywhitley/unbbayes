@@ -18,13 +18,13 @@ import unbbayes.prs.bn.PotentialTable;
  * @author Rommel N Carvalho
  *
  * This class is responsible for...
+ * TODO FINISH THIS CLASS
  */
 public class ProbabilisticTable extends JTable {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
-    private JTable tabela;
 	private PotentialTable potTab;
 	private Node node;
 	private int columns;

@@ -11,9 +11,10 @@ import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
 
 /**
- * @author Rommel N Carvalho
+ * @author Rommel N Carvalho 
  *
  * This class is responsible for...
+ * TODO FINISH THIS CLASS
  */
 public class ProbabilisticTableModel extends AbstractTableModel {
     
@@ -35,7 +36,7 @@ public class ProbabilisticTableModel extends AbstractTableModel {
         
         node = _node;
         
-        df = NumberFormat.getInstance(Locale.US);
+        df = NumberFormat.getInstance(Locale.getDefault());
         df.setMaximumFractionDigits(4);
         
         calcData();

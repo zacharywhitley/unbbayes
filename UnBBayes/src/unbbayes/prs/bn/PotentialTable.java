@@ -22,8 +22,11 @@
 package unbbayes.prs.bn;
 
 
+import java.awt.Color;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.swing.JDialog;
@@ -32,6 +35,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 import unbbayes.gui.table.ColumnGroup;
+import unbbayes.gui.table.GroupableTableCellRenderer;
 import unbbayes.gui.table.GroupableTableColumnModel;
 import unbbayes.gui.table.GroupableTableHeader;
 import unbbayes.prs.Node;
@@ -42,9 +46,9 @@ import unbbayes.util.SetToolkit;
 
 /**
  * Tabela de Potencial.
- *
- *@author	 Michael e Rommel
- *@version	21 de Setembro de 2001
+ * 
+ * @author Michael e Rommel
+ * @version 21 de Setembro de 2001
  */
 public abstract class PotentialTable implements Cloneable, java.io.Serializable {
 	public static final int PRODUCT_OPERATOR = 0;
@@ -73,7 +77,8 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	private FloatCollection dataCopy;
 
 	/**
-	 * Fatores utilizados para converter coordenadas lineares em multidimensionais.
+	 * Fatores utilizados para converter coordenadas lineares em
+	 * multidimensionais.
 	 */
 	protected int[] fatores;
 
@@ -109,8 +114,8 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	}
 
 	/**
-	 *  Retorna uma COPIA da lista de variáveis desta tabela.
-	 *
+	 * Retorna uma COPIA da lista de variáveis desta tabela.
+	 * 
 	 * @return COPIA da lista de variaveis desta tabela.
 	 */
 	public NodeList cloneVariables() {
@@ -147,9 +152,9 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	}
 
 	/**
-	 *  Retorna uma cópia da tabela.
-	 *
-	 *@return	cópia da tabela.
+	 * Retorna uma cópia da tabela.
+	 * 
+	 * @return cópia da tabela.
 	 */
 	public Object clone() {
 		PotentialTable auxTab = newInstance();
@@ -162,49 +167,56 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	}
 
 	/**
-	 *  Insere celula na tabela pelas coordenadas.
-	 *
-	 *@param  coordenadas  Coordenada na tabela.
-	 *@param  valor Valor a ser colocado na coordenada especificada
+	 * Insere celula na tabela pelas coordenadas.
+	 * 
+	 * @param coordenadas
+	 *            Coordenada na tabela.
+	 * @param valor
+	 *            Valor a ser colocado na coordenada especificada
 	 */
 	public void setValue(int[] coordenadas, float valor) {
 		dados.data[getLinearCoord(coordenadas)] = valor;
 	}
 
 	/**
-	 *  Insere valor na posição (linear) na lista de dados.
-	 *
-	 *@param  index  posicao linear onde o valor entrará
-	 *@param  valor  valor a ser colocado na posicao especificada.
+	 * Insere valor na posição (linear) na lista de dados.
+	 * 
+	 * @param index
+	 *            posicao linear onde o valor entrará
+	 * @param valor
+	 *            valor a ser colocado na posicao especificada.
 	 */
 	public final void setValue(int index, float valor) {
 		dados.data[index] = valor;
 	}
 
 	/**
-	 *  Retorna o valor da célula com o respectivo índice.
-	 *
-	 *@param  index  índice linear do valor na tabela a ser retornado.
-	 *@return		valor na tabela correspondente ao indice linear especificado.
+	 * Retorna o valor da célula com o respectivo índice.
+	 * 
+	 * @param index
+	 *            índice linear do valor na tabela a ser retornado.
+	 * @return valor na tabela correspondente ao indice linear especificado.
 	 */
 	public final float getValue(int index) {
 		return dados.data[index];
 	}
 
 	/**
-	 *  Retorna o valor na tabela a partir do vetor de coordenadas
-	 *
-	 *@param  coordenadas  coordenadas do valor a ser pego.
-	 *@return			  valor na tabela especificada pelas coordenadas.
+	 * Retorna o valor na tabela a partir do vetor de coordenadas
+	 * 
+	 * @param coordenadas
+	 *            coordenadas do valor a ser pego.
+	 * @return valor na tabela especificada pelas coordenadas.
 	 */
 	public final float getValue(int[] coordenadas) {
 		return dados.data[getLinearCoord(coordenadas)];
 	}
 
 	/**
-	 *  Insere variável na tabela.
-	 *
-	 *@param  variavel  variavel a ser inserida na tabela.
+	 * Insere variável na tabela.
+	 * 
+	 * @param variavel
+	 *            variavel a ser inserida na tabela.
 	 */
 	public void addVariable(Node variavel) {
 		/** @todo Reimplementar este método de forma correta. */
@@ -228,15 +240,20 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 
 
 	/**
-	 *  Retira a variável da tabela. Utilizado também para marginalização generalizada.
-	 *
-	 *@param  variavel  Variavel a ser retirada da tabela.
+	 * Retira a variável da tabela. Utilizado também para marginalização
+	 * generalizada.
+	 * 
+	 * @param variavel
+	 *            Variavel a ser retirada da tabela.
 	 */
 	public abstract void removeVariable(Node variavel);
 
 	/**
-	 * Returns a new instance of a PotentialTable of the current implemented sub-class.
-	 * @return a new instance of a PotentialTable of the current implemented sub-class.
+	 * Returns a new instance of a PotentialTable of the current implemented
+	 * sub-class.
+	 * 
+	 * @return a new instance of a PotentialTable of the current implemented
+	 *         sub-class.
 	 */
 	public abstract PotentialTable newInstance();
 
@@ -257,13 +274,19 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	
 	
 	/**
-	 * Auxiliary method for sum() 
+	 * Auxiliary method for sum()
 	 * 
-	 * @param control Control index for the recursion. Call with the value 'variaveis.size - 1'
-	 * @param index Index of the variable to delete from the table
-	 * @param coord Call with 0
-	 * @param base  Call with 0
-	 * @param marked Call with an array of falses.
+	 * @param control
+	 *            Control index for the recursion. Call with the value
+	 *            'variaveis.size - 1'
+	 * @param index
+	 *            Index of the variable to delete from the table
+	 * @param coord
+	 *            Call with 0
+	 * @param base
+	 *            Call with 0
+	 * @param marked
+	 *            Call with an array of falses.
 	 */
 	private void sumAux(int control, int index, int coord, int base, boolean[] marked) {
 		if (control == -1) {
@@ -309,9 +332,11 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 
 
 	/**
-	 * Retorna a coordenada linear referente à coordenada multidimensional especificada.
-	 *
-	 * @param coord coordenada multidimensional.
+	 * Retorna a coordenada linear referente à coordenada multidimensional
+	 * especificada.
+	 * 
+	 * @param coord
+	 *            coordenada multidimensional.
 	 * @return coordenada linear correspondente.
 	 */
 	public final int getLinearCoord(int coord[]) {
@@ -326,8 +351,8 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 
 
 	/**
-	 * Calcula os fatores necessários para transformar as coordenadas
-	 * lineares em multidimensionais.
+	 * Calcula os fatores necessários para transformar as coordenadas lineares
+	 * em multidimensionais.
 	 */
 	protected void calcularFatores() {
 		if (! modified) {
@@ -349,10 +374,11 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 
 
 	/**
-	 *  Retorna valor em coordenada a partir do índice na lista.
-	 *
-	 *@param  index  índice linear na tabela.
-	 *@return		array das coordenadas respectivo ao indice linear especificado.
+	 * Retorna valor em coordenada a partir do índice na lista.
+	 * 
+	 * @param index
+	 *            índice linear na tabela.
+	 * @return array das coordenadas respectivo ao indice linear especificado.
 	 */
 	public final int[] voltaCoord(int index) {
 		calcularFatores();
@@ -370,8 +396,11 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 
 	/**
 	 * Operates with the argument table directly.
-	 * @param tab table to operate.
-	 * @param operator operator to use, defined in this class constants.
+	 * 
+	 * @param tab
+	 *            table to operate.
+	 * @param operator
+	 *            operator to use, defined in this class constants.
 	 */
 	public final void directOpTab(PotentialTable tab, int operator) {
 		if (tableSize() != tab.tableSize()) {
@@ -405,11 +434,13 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 
 
 	/**
-	 *  Opera tabela do parametro com esta.
-	 *
-	 *@param  tab	  tabela a ser operada com esta.
-	 *@param  operator  operador a ser utilizado, definido pelas
-	 *				  constantes desta classe.
+	 * Opera tabela do parametro com esta.
+	 * 
+	 * @param tab
+	 *            tabela a ser operada com esta.
+	 * @param operator
+	 *            operador a ser utilizado, definido pelas constantes desta
+	 *            classe.
 	 */
 	public final void opTab(PotentialTable tab, int operator) {		
 		int[] index = new int[variaveis.size()];
@@ -433,7 +464,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 				break;
 				
 			default:
-//				assert false : "Operador não suportado!";
+// assert false : "Operador não suportado!";
 		}
 	}
 	
@@ -485,144 +516,270 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 			}
 		}
 	}
-
+	
 	/**
-	 *  Mostra a tabela de potenciais. Utilizado para DEBUG.
-	 *
-	 * @param title Título da janela que será mostrada
+	 * This method is responsible to represent the potential table as a JTable.
+	 * @return Returns the JTable representing this potential table.
+	 * TODO MIGRATE TO A DIFFERENT CLASS - GUI.TABLE.PROBABILISTICTABLE
 	 */
-	public void showTable(String title) {
-		JTable tabela;
-		int noVariaveis;
-		Node no = getVariableAt(0);
+	public JTable makeTable() {
+		JTable table;
+		int nStates = 1;
+		// Number of variables
+		int nVariables = variableCount();
+		Node node = getVariableAt(0);
+		NumberFormat df = NumberFormat.getInstance(Locale.getDefault());
+		df.setMaximumFractionDigits(4);
 
-		int nEstados = 1;
-		noVariaveis = variableCount();
+		// calculate the number of states by multiplying the number of
+		// states that each father (variables) has. Where variable 0 is the
+		// node itself. That is why we divide the table size by the number 
+		// of states in the node itself. 
+		/*
+		 * Ex: states = 12 / 3;
+		 * 
+		 * |------------------------------------------------------| 
+		 * | Father 2     |      State 1      |      State 2      |
+		 * |--------------|-------------------|-------------------| 
+		 * | Father 1     | State 1 | State 2 | State 1 | State 2 |
+		 * |------------------------------------------------------| 
+		 * | Node State 1 |    1    |    1    |    1    |    1    | 
+		 * | Node State 2 |    0    |    0    |    0    |    0    |
+		 * | Node State 3 |    0    |    0    |    0    |    0    |
+		 * |------------------------------------------------------|
+		 * 
+		 */
+		nStates = tableSize() / node.getStatesSize();
 
-		for (int count = 1; count < noVariaveis; count++) {
-			nEstados *= getVariableAt(count).getStatesSize();
-		}
+		// the number of rows is the number of states the node has.
+		int rows = node.getStatesSize();
 
-		// Constructing the data of the data model
-		Float[][] data = new Float[no.getStatesSize()][nEstados + 1];
-		/*tabela = new JTable(no.getStatesSize() + noVariaveis - 1, nEstados + 1);
+		// the number of columns is the number of states that we calculated
+		// before plus one that is the column where the fathers names and
+		// the states of the node itself will be placed.
+		int columns = nStates + 1;
+		
+		// Constructing the data of the data model.
+		/*
+		 * Ex: data[3][4 + 1]
+		 * |------------------------------------------------------| 
+		 * | Node State 1 |    1    |    1    |    1    |    1    | 
+		 * | Node State 2 |    0    |    0    |    0    |    0    |
+		 * | Node State 3 |    0    |    0    |    0    |    0    |
+		 * |------------------------------------------------------|
+		 */
+		String[][] data = new String[rows][columns];
 
-		for (int k = noVariaveis - 1, l = 0; k < tabela.getRowCount(); k++, l++) {
-			tabela.setValueAt(no.getStateAt(l), k, 0);
-		}*/
-
-		// Constructing the last header's row
+		// Constructing the first header's row
+		/*
+		 * Ex: Following the example above this is the first header's row. 
+		 * 
+		 * |--------------|-------------------|-------------------| 
+		 * | Father 1     | State 1 | State 2 | State 1 | State 2 |
+		 * |------------------------------------------------------| 
+		 * 
+		 */
 		String[] column = new String[data[0].length];
-		Node lastNode = getVariableAt(noVariaveis - 1);
-		nEstados /= lastNode.getStatesSize();
-		column[0] = lastNode.getName();
-		for (int i = 0; i < data[0].length - 1; i++) {
-			if (noVariaveis > 1) {
-			// Reapeats all states in the node until there are cells to fill
-			column[i + 1] = lastNode.getStateAt((i / nEstados) % lastNode.getStatesSize());
-			} else {
-				column[i + 1] = "State";
-			}
-		}		
-		
-		// Constructiong the Float[][] 
-		nEstados = no.getStatesSize();
-		for (int c = 1, n = 0; c < data[0].length; c++, n += nEstados) {
-			for (int r = 0; r < data.length; r++) {
-				data[r][c] = new Float(dados.data[n + r]);
+		Node firtHeaderNode;
+		// If there is no father, this is going to be the first header's 
+		// row:
+		/*
+		 * |-----------|---------------| 
+		 * | State     |  Probability  |
+		 * |---------------------------| 
+		 * 
+		 */
+		if (nVariables == 1) {
+			column[0] = "State";
+			column[1] = "Probability";
+		} else {
+			firtHeaderNode = getVariableAt(1);
+			/*
+			 * Ex: Here we get the variable "Father 1" and set its name in 
+			 *     the header. 
+			 * 
+			 * |--------------| 
+			 * | Father 1     |
+			 * |--------------- 
+			 * 
+			 */
+			column[0] = firtHeaderNode.getName();
+			for (int i = 0; i < data[0].length - 1; i++) {
+				if (nVariables > 1) {
+					// Reapeats all states in the node until there are cells to
+					// fill.
+					/*
+					 * Ex: Following the example above. Here the states go. 
+					 * 
+					 * |-------------------|-------------------| 
+					 * | State 1 | State 2 | State 1 | State 2 |
+					 * ----------------------------------------| 
+					 * 
+					 */
+					column[i + 1] = firtHeaderNode.getStateAt(i % firtHeaderNode.getStatesSize());
+				}
 			}
 		}
 		
+		// Filling the data of the data model.
+		/*
+		 * Ex: Fill the data[3][5] constructed above.
+		 * |------------------------------------------------------| 
+		 * | Node State 1 |    1    |    1    |    1    |    1    | 
+		 * | Node State 2 |    0    |    0    |    0    |    0    |
+		 * | Node State 3 |    0    |    0    |    0    |    0    |
+		 * |------------------------------------------------------|
+		 */
+		// The values are arranged in the potential table as a vector.
+		/*
+		 * Ex: This would be the vector in the potential table.
+		 * |-------------------------------------------------------------------| 
+		 * | Vector Position | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 
+		 * | Vector Value    | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 0 | 0 | 1 | 0  | 0  |
+		 * |-------------------------------------------------------------------|
+		 */
+		// So, for each column we jump the number of values corresponding 
+		// that column, that is, the number of rows. 
+		for (int c = 1, n = 0; c < columns; c++, n += rows) {
+			for (int r = 0; r < rows; r++) {
+				// So, data[0][3] = vector[6 + 0] = 1 
+				data[r][c] = "" + "" + df.format(getValue(n + r));
+			}
+		}
+		// Now that we filled the values, we are going to put this node's
+		// states name.
+		/*
+		 * Ex: Fill the data[i][0] constructed above, that is, its states 
+		 *     name.
+		 * |--------------- 
+		 * | Node State 1 | 
+		 * | Node State 2 |
+		 * | Node State 3 |
+		 * |---------------
+		 */ 
+		for (int i = 0; i < rows; i++) {
+			data[i][0] = node.getStateAt(i);
+		}
+		
+		// Constructing the table so far.
+		/*
+		 * Ex: The table so far, following the example above.
+		 * 
+		 * |--------------|-------------------|-------------------| 
+		 * | Father 1     | State 1 | State 2 | State 1 | State 2 |
+		 * |------------------------------------------------------| 
+		 * | Node State 1 |    1    |    1    |    1    |    1    | 
+		 * | Node State 2 |    0    |    0    |    0    |    0    |
+		 * | Node State 3 |    0    |    0    |    0    |    0    |
+		 * |------------------------------------------------------|
+		 * 
+		 */
 		DefaultTableModel model = new DefaultTableModel();
 		model.setDataVector(data, column);
-		tabela = new JTable();
-		tabela.setColumnModel(new GroupableTableColumnModel());
-		tabela.setTableHeader(new GroupableTableHeader(
-				(GroupableTableColumnModel) tabela.getColumnModel()));
-		tabela.setModel(model);
-		
-		for (int count = 1; count < noVariaveis - 1; count++) {
-			nEstados *= getVariableAt(count).getStatesSize();
-		}
+		table = new JTable();
+		// Setup to allow grouping the header.
+		table.setColumnModel(new GroupableTableColumnModel());
+		table.setTableHeader(new GroupableTableHeader(
+				(GroupableTableColumnModel) table.getColumnModel()));
+		table.setModel(model);
 		
 		// Setup Column Groups
-		GroupableTableColumnModel cModel = (GroupableTableColumnModel) tabela
+		GroupableTableColumnModel cModel = (GroupableTableColumnModel) table
 				.getColumnModel();
 		ColumnGroup cNodeGroup = null;
 		ColumnGroup cNodeTempGroup = null;
 		ColumnGroup cGroup = null;
-		List<ColumnGroup> cGroupList = null;
+		List<ColumnGroup> cGroupList = new ArrayList<ColumnGroup>();
+		List<ColumnGroup> previousCGroupList = new ArrayList<ColumnGroup>();
 		int columnIndex;
 		boolean firstNode = true;
-		for (int k = noVariaveis - 2; k >= 1; k--) {
-			Node auxNo = getVariableAt(k);
-			nEstados /= auxNo.getStatesSize();
+		int sizeColumn = 1;
+		// Sets default color for parents name in first column.
+		/*
+		 * |--------------- 
+		 * | Father 2     |
+		 * |--------------| 
+		 * | Father 1     |
+		 * |--------------- 
+		 * 
+		 */
+		cModel.getColumn(0).setHeaderRenderer(new GroupableTableCellRenderer());
+		// Sets default color for node's states
+		/*
+		 * |--------------- 
+		 * | Node State 1 | 
+		 * | Node State 2 |
+		 * | Node State 3 |
+		 * |---------------
+		 * 
+		 */
+		cModel.getColumn(0).setCellRenderer(new GroupableTableCellRenderer(Color.BLACK, Color.YELLOW));
+		// Fill all other headers, but the first (that has already been 
+		// set). It ignores k = 0 (the node itself) and k = 1 (the fist 
+		// father).
+		for (int k = 2; k < nVariables; k++) {
+			Node parent = getVariableAt(k);
+			int nPreviousParentStates = getVariableAt(k-1).getStatesSize();
+			sizeColumn *= nPreviousParentStates;
 			// Set the node name as a header in the first column
 			if (!firstNode) {
 				cNodeTempGroup = cNodeGroup;
-				cNodeGroup = new ColumnGroup(auxNo.getName());
+				cNodeGroup = new ColumnGroup(new GroupableTableCellRenderer(), parent.getName());
 				cNodeGroup.add(cNodeTempGroup);
 			} else {
-				cNodeGroup = new ColumnGroup(auxNo.getName());
+				cNodeGroup = new ColumnGroup(new GroupableTableCellRenderer(), parent.getName());
 				cNodeGroup.add(cModel.getColumn(0));
 			}
 			columnIndex = 1;
 			cGroup = null;
-			cGroupList = new ArrayList<ColumnGroup>();
-			while (columnIndex <= nEstados) {
-				for (int i = 0; i < auxNo.getStatesSize(); i++) {
-					cGroup = new ColumnGroup(auxNo.getStateAt(i));
+			while (columnIndex <= nStates) {
+				for (int i = 0; i < parent.getStatesSize(); i++) {
+					cGroup = new ColumnGroup(parent.getStateAt(i));
 					if (!firstNode) {
-						for (ColumnGroup group : cGroupList) {
-							columnIndex++;
+						for (int j = 0; j < nPreviousParentStates; j++) {
+							ColumnGroup group = previousCGroupList.get(columnIndex-1);
 							cGroup.add(group);
+							columnIndex++;
 						}
 					} else {
-						Node previousNode = getVariableAt(k + 1);
-						for (int j = 0; j < previousNode.getStatesSize(); j++) {
+						for (int j = 0; j < sizeColumn; j++) {
 							cGroup.add(cModel.getColumn(columnIndex++));
 						}
 					}
 					cGroupList.add(cGroup);
 				}
 			}
+			previousCGroupList = cGroupList;
+			cGroupList = new ArrayList<ColumnGroup>();
 			firstNode = false;
+			// Update the number of states
+			nStates /= nPreviousParentStates;
 		}
+		// It adds all parents' node name as header
 		if (cNodeGroup != null) {
 			cModel.addColumnGroup(cNodeGroup);
 		}
-		if (cGroupList != null) {
-			for (ColumnGroup group : cGroupList) {
+		// It adds only the first row (here it is the last parent's states) 
+		// of the header that has all other headers (all other parent's states)
+		// as sub-headers.
+		if (previousCGroupList != null) {
+			for (ColumnGroup group : previousCGroupList) {
 				cModel.addColumnGroup(group);
 			}
 		}
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		
-		
-		
-		/*// Fill the parent's node and it's states as 'header' labels
-		for (int k = noVariaveis - 1, l = 0; k >= 1; k--, l++) {
-			Node auxNo = getVariableAt(k);
-			nEstados /= auxNo.getStatesSize();
-			// Set the node name that is the row header
-			tabela.setValueAt(auxNo.getName(), l, 0);
-			for (int i = 0; i < tabela.getColumnCount() - 1; i++) {
-				// Reapeats all states in the node until there are cells to fill
-				tabela.setValueAt(auxNo.getStateAt((i / nEstados) % auxNo.getStatesSize()), l, i + 1);
-			}
-		}
+		return table;
+	}
 
-		nEstados = no.getStatesSize();
-		for (int i = 1, k = 0; i < tabela.getColumnCount(); i++, k += nEstados) {
-			for (int j = noVariaveis - 1, l = 0; j < tabela.getRowCount(); j++, l++) {
-				tabela.setValueAt("" + dados.data[k + l], j, i);
-			}
-		}*/
-
-		//tabela.setTableHeader(null);
-		tabela.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
+	/**
+	 * Show the potential table. Used for DEBUG.
+	 * 
+	 * @param title Title of the window to be shown.
+	 */
+	public void showTable(String title) {
 		JDialog diag = new JDialog();
-		diag.getContentPane().add(new JScrollPane(tabela));
+		diag.getContentPane().add(new JScrollPane(makeTable()));
 		diag.pack();
 		diag.setVisible(true);
 		diag.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);

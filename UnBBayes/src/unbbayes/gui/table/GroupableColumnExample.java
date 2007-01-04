@@ -84,31 +84,3 @@ public class GroupableColumnExample extends JFrame {
 		frame.setVisible(true);
 	}
 }
-
-/**
- * Demo renderer just to prove they can be used.
- */
-class GroupableTableCellRenderer extends DefaultTableCellRenderer {
-	/**
-	 * 
-	 * @param table
-	 * @param value
-	 * @param selected
-	 * @param focused
-	 * @param row
-	 * @param column
-	 * @return
-	 */
-	public Component getTableCellRendererComponent(JTable table, Object value,
-			boolean selected, boolean focused, int row, int column) {
-		JTableHeader header = table.getTableHeader();
-		if (header != null) {
-			setForeground(Color.WHITE);
-			setBackground(Color.RED);
-		}
-		setHorizontalAlignment(SwingConstants.CENTER);
-		setText(value != null ? value.toString() : " ");
-		setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-		return this;
-	}
-}
