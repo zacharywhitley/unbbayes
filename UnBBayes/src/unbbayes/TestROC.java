@@ -278,13 +278,10 @@ public class TestROC {
 
 				originalDist = distribution(trainData);
 
-				/* Compute the statistics for all attributes */
-				AttributeStats[] attributeStats = trainData.computeAttributeStats();
-
 				/* Cluster-Based SMOTE */
 				smote.setInstanceSet(trainData);
 				smote.buildNN(5, 1);
-				smote.run((float) Math.sqrt(proportion), 1, attributeStats);
+				smote.run(1, (float) Math.sqrt(proportion));
 
 				break;
 			case 4:

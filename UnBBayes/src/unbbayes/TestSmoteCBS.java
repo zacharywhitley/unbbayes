@@ -159,7 +159,7 @@ public class TestSmoteCBS {
 	
 	private InstanceSet openFile(String fileName, int counterIndex) throws IOException {
 		File file = new File(fileName);
-		TxtLoader loader = new TxtLoader(file);
+		TxtLoader loader = new TxtLoader(file, -1);
 		
 		/* If the dataset is compacted */
 		loader.setCounterAttribute(counterIndex);

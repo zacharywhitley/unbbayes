@@ -158,7 +158,7 @@ public class Smote {
 	 * @param proportion: Desired proportion of new instances
 	 * @param classValue: class of desired nearest neighbors
 	 */
-	public void run(double proportion, int classValue) {
+	public void run(int classValue, double proportion) {
 		int counter = 0;
 		int instancesIDsTmp[] = new int[numInstances];
 		
@@ -177,7 +177,7 @@ public class Smote {
 	}
 
 	/**
-	 * SMOTE oversamples a specified class of a dataset. It creates new cases
+	 * SMOTE oversamples a complete dataset. It creates new cases
 	 * based on the existing ones. These new cases are randomly interpolated
 	 * between each instance and its k nearest neighbors, also chosen by random.
 	 * 

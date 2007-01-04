@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import unbbayes.datamining.clustering.CEBMDC;
 import unbbayes.datamining.clustering.Kmeans;
 import unbbayes.datamining.clustering.Squeezer;
+import unbbayes.datamining.datamanipulation.AttributeStats;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.TxtLoader;
 import unbbayes.datamining.distance.Euclidean;
@@ -69,7 +70,7 @@ public class TestSmoteCBSNoClass {
 //		trainData = cbs.run(clusters, numClusters, clustersSize, assignmentMatrix);
 		
 		/* Options for SMOTE - START *****************/
-		Smote smote = new Smote(trainData, null);
+		Smote smote = new Smote(null);
 		
 		/*
 		 * Set it <code>true</code> to optionDiscretize the synthetic value created for
@@ -110,6 +111,9 @@ public class TestSmoteCBSNoClass {
 
 		/* Options for SMOTE - END *****************/
 
+		/* Compute the statistics for all attributes */
+		AttributeStats[] attributeStats = trainData.getAttributeStats(false);
+
 		/* SMOTE */
 		smote.setInstanceSet(trainData);
 		smote.run(3);
@@ -120,7 +124,7 @@ public class TestSmoteCBSNoClass {
 	
 	private InstanceSet openFile(String fileName, int counterIndex) throws IOException {
 		File file = new File(fileName);
-		TxtLoader loader = new TxtLoader(file);
+		TxtLoader loader = new TxtLoader(file, -1);
 		
 		/* If the dataset is compacted */
 		loader.setCounterAttribute(counterIndex);

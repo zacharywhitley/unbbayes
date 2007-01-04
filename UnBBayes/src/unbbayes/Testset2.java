@@ -9,6 +9,7 @@ import unbbayes.datamining.classifiers.Evaluation;
 import unbbayes.datamining.classifiers.NaiveBayes;
 import unbbayes.datamining.classifiers.decisiontree.C45;
 import unbbayes.datamining.datamanipulation.ArffLoader;
+import unbbayes.datamining.datamanipulation.AttributeStats;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Loader;
 import unbbayes.datamining.datamanipulation.TxtLoader;
@@ -28,12 +29,15 @@ public class Testset2 {
 	String maxSEHeader;
 	String header = "";
 	Smote smote;
+	private int i;
 //	File saida = new File("c:/saida.txt");
 //	FileInputStream saidaX = new FileInputStream(saida);
 	
 	public Testset2() {
 		try {
-			run();
+			for (i = 10000; i <= 100000; i += 10000) {
+				run(i);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -43,16 +47,23 @@ public class Testset2 {
 		new Testset2();
 	}
 
-	public void run() throws Exception {
+	public void run(int i) throws Exception {
 		/* Data set characteristics */
 //		String trainFileName = "c:/dados/m1t.arff";
 //		String testFileName = "c:/dados/m1av.arff";
 //		String trainFileName = "c:/dados/m1tOriginal.arff";
 //		String testFileName = "c:/dados/m1avOriginal.arff";
-		String trainFileName = "c:/dados/m1tOriginal - var59 num.arff";
-		String testFileName = "c:/dados/m1avOriginal - var59 num.arff";
+//		String trainFileName = "c:/dados/m1tOriginal - var59 num.arff";
+//		String testFileName = "c:/dados/m1avOriginal - var59 num.arff";
+//		String trainFileName = "c:/dados/outros/pima/pima-indians-diabetes-training.arff";
+//		String testFileName = "c:/dados/outros/pima/pima-indians-diabetes-test.arff";
+		String trainFileName = "c:/dados/sampleados/m1t" + i + ".arff";
+		String testFileName = "c:/dados/sampleados/m1av" + i + ".arff";
+//		String testFileName = "c:/dados/m1avOriginal - var59 num.arff";
 		int classIndex = 10;
 		int counterIndex = 11;
+//		int classIndex = 8;
+//		int counterIndex = 9;
 		
 		
 		/* Options for SMOTE - START *****************/
@@ -135,18 +146,34 @@ public class Testset2 {
 		}
 		testData.setClassIndex(classIndex);
 		
+		System.out.println("");
+		System.out.println("");
+		System.out.println("");
+		System.out.print("---------------------------------");
+		System.out.println("---------------------------------");
+		System.out.print("---------------------------------");
+		System.out.println("---------------------------------");
+		System.out.println(i);
+		System.out.print("---------------------------------");
+		System.out.println("---------------------------------");
+		System.out.print("---------------------------------");
+		System.out.println("---------------------------------");
+		System.out.println("");
+		System.out.println("");
+		
 		/* Loop through all sample strategies */
-//		for (int sampleID = 0; sampleID < sampleQtd; sampleID++) {
+		for (int sampleID = 0; sampleID < 5; sampleID++) {
 //		for (int sampleID = 0; sampleID < 4; sampleID++) {
 //		for (int sampleID = 0; sampleID < 3; sampleID++) {
 //		for (int sampleID = 3; sampleID < 5; sampleID++) {
-		for (int sampleID = 4; sampleID < 5; sampleID++) {
+//		for (int sampleID = 4; sampleID < 5; sampleID++) {
 			/* Print header */
 			printHeader(sampleID);
 
 			/* Change the distribution, run the models and evaluate */
-			for (int i = 1; i <= 7; i++) {
-//			for (int i = 0; i <= 7; i++) {
+//			for (int i = 1; i <= 7; i++) {
+			for (int i = 0; i <= 7; i++) {
+//			for (int i = 0; i <= 1; i++) {
 				trainData = new InstanceSet(data);
 				
 				/* Check if the training data should be sampled */
@@ -265,10 +292,13 @@ public class Testset2 {
 
 				originalDist = distribution(trainData);
 
+				/* Compute the statistics for all attributes */
+				AttributeStats[] attributeStats = trainData.getAttributeStats(false);
+
 				/* Cluster-Based SMOTE */
 				smote.setInstanceSet(trainData);
 				smote.buildNN(5, 1);
-				smote.run((float) Math.sqrt(proportion), 1);
+				smote.run(1, (float) Math.sqrt(proportion));
 
 				break;
 			case 4:
@@ -391,9 +421,9 @@ public class Testset2 {
 		Loader loader = null;
 		
 		if (fileName.regionMatches(true, fileName.length() - 5, ".arff", 0, 5)) {
-        	loader = new ArffLoader(file);
+        	loader = new ArffLoader(file, -1);
         } else if (fileName.regionMatches(true, fileName.length() - 4, ".txt", 0, 4)) {
-        	loader = new TxtLoader(file);
+        	loader = new TxtLoader(file, -1);
         }
 
 		/* If the dataset is compacted */

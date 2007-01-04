@@ -271,7 +271,7 @@ public class PreprocessPanel extends JPanel
       jLabel4.setText(inst.getRelationName());
       jLabel2.setText(inst.numWeightedInstances()+"");
       jLabel3.setText(inst.numAttributes()+"");
-      attributeStats = inst.computeAttributeStats();
+      attributeStats = inst.getAttributeStats(false);
       attributePanel.setInstances(instances);
   }
 
