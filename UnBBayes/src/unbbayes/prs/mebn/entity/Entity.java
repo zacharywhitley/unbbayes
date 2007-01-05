@@ -69,6 +69,19 @@ public abstract class Entity {
 	public void removeNodeFromListIsPossibleValueOf(MultiEntityNode node) {
 		listIsPossibleValueOf.remove(node);
 	}
+	
+	public boolean isPossibleValueOf(MultiEntityNode node) {
+		return listIsPossibleValueOf.contains(node);
+	}
+	
+	public boolean isPossibleValueOf(String nodeName) {
+		for (MultiEntityNode node : listIsPossibleValueOf) {
+			if (node.getName().equals(nodeName)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * Get the entity's name.

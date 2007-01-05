@@ -115,5 +115,18 @@ public class MultiEntityNode extends Node {
 		return possibleValueList; 
 	}
 	
+	public boolean hasPossibleValue(Entity entity) {
+		return possibleValueList.contains(entity);
+	}
+	
+	public boolean hasPossibleValue(String stateName) {
+		for (Entity entity : possibleValueList) {
+			if (entity.getName().equals(stateName)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 }
  

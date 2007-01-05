@@ -1,4 +1,4 @@
-package unbbayes.prs.mebn;
+package unbbayes.prs.mebn.exception;
 
 public class MEBNException extends Exception{
     
