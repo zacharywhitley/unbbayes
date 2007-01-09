@@ -846,7 +846,7 @@ public class InstanceSet implements Serializable {
 	 */
 	public InstanceSet buildTrainTestSet(float proportion, boolean compact) {
 		Random randomizer = new Random(new Date().getTime());
-		int testSize = (int) (numInstances * proportion);
+		int testSize = Math.round(numInstances * proportion);
 		
 		int numClasses;
 		int[] count = null;

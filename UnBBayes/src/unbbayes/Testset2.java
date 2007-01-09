@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import unbbayes.datamining.classifiers.Classifier;
 import unbbayes.datamining.classifiers.DistributionClassifier;
-import unbbayes.datamining.classifiers.Evaluation;
 import unbbayes.datamining.classifiers.NaiveBayes;
 import unbbayes.datamining.classifiers.decisiontree.C45;
 import unbbayes.datamining.datamanipulation.ArffLoader;
@@ -13,6 +12,7 @@ import unbbayes.datamining.datamanipulation.AttributeStats;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Loader;
 import unbbayes.datamining.datamanipulation.TxtLoader;
+import unbbayes.datamining.evaluation.Evaluation;
 import unbbayes.datamining.preprocessor.imbalanceddataset.ClusterBasedSmote;
 import unbbayes.datamining.preprocessor.imbalanceddataset.Sampling;
 import unbbayes.datamining.preprocessor.imbalanceddataset.Smote;
@@ -162,6 +162,7 @@ public class Testset2 {
 		System.out.println("");
 		
 		/* Loop through all sample strategies */
+//		for (int sampleID = 1; sampleID < 2; sampleID++) {
 		for (int sampleID = 0; sampleID < 5; sampleID++) {
 //		for (int sampleID = 0; sampleID < 4; sampleID++) {
 //		for (int sampleID = 0; sampleID < 3; sampleID++) {
@@ -198,24 +199,24 @@ public class Testset2 {
 				}
 
 
-				/************** Naive Bayes **************/
-				/* Build model */
-				classifier = new NaiveBayes();
-				relativeProb = false;
-				classifier = buildModel(trainData, newDist, classifier);
-				
-				/* Evaluate model */
-				evaluate(classifier, testData, relativeProb, i, originalDist);
-				
-
-				/************** Naive Bayes Relative Prob **************/
-				/* Build model */
-				classifier = new NaiveBayes();
-				relativeProb = true;
-				classifier = buildModel(trainData, newDist, classifier);
-				
-				/* Evaluate model */
-				evaluate(classifier, testData, relativeProb, i, originalDist);
+//				/************** Naive Bayes **************/
+//				/* Build model */
+//				classifier = new NaiveBayes();
+//				relativeProb = false;
+//				classifier = buildModel(trainData, newDist, classifier);
+//				
+//				/* Evaluate model */
+//				evaluate(classifier, testData, relativeProb, originalDist);
+//				
+//
+//				/************** Naive Bayes Relative Prob **************/
+//				/* Build model */
+//				classifier = new NaiveBayes();
+//				relativeProb = true;
+//				classifier = buildModel(trainData, newDist, classifier);
+//				
+//				/* Evaluate model */
+//				evaluate(classifier, testData, relativeProb, originalDist);
 				
 
 				/************** C4.5 **************/
@@ -224,7 +225,7 @@ public class Testset2 {
 				classifier = buildModel(trainData, newDist, classifier);
 				
 				/* Evaluate model */
-				evaluate(classifier, testData, relativeProb, i, originalDist);
+				evaluate(classifier, testData, relativeProb, originalDist);
 				
 
 //				/************** CNM **************/
@@ -259,6 +260,11 @@ public class Testset2 {
 		/* Get current class distribution  - Two class problem */
 		float proportion = originalDist[0] * (float) i;
 		proportion = proportion / (originalDist[1] * (float) (10 - i));
+		
+		if (proportion < 1) {
+			return trainData;
+		}
+		
 		switch (sampleID) {
 			case 0:
 				/* Undersampling */
@@ -292,9 +298,6 @@ public class Testset2 {
 
 				originalDist = distribution(trainData);
 
-				/* Compute the statistics for all attributes */
-				AttributeStats[] attributeStats = trainData.getAttributeStats(false);
-
 				/* Cluster-Based SMOTE */
 				smote.setInstanceSet(trainData);
 				smote.buildNN(5, 1);
@@ -312,7 +315,7 @@ public class Testset2 {
 				cbs.setOptionDistanceFunction((byte) 1);
 				cbs.setOptionFixedGap(true);
 				cbs.setOptionNominal((byte) 0);
-				trainData = cbs.run();
+				trainData = cbs.run(0);
 
 				break;
 		}
@@ -379,7 +382,7 @@ public class Testset2 {
 	}
 
 	private void evaluate(Classifier classifier, InstanceSet testData,
-			boolean relativeProb, int i, float[] originalDist) throws Exception {
+			boolean relativeProb, float[] originalDist) throws Exception {
 		float percentage = (float) originalDist[1] / (originalDist[0] + originalDist[1]);
 		percentage = (100 * percentage);
 		
@@ -408,7 +411,7 @@ public class Testset2 {
 		
 		if (SE > maxSE) {
 			maxSE = SE;
-			maxSEHeader = header + "\nQuantity of fraud: "  + (int) percentage + "%" + "\nSE: " + maxSE;
+			maxSEHeader = header + "\nQuantity of fraud: "  + (int) percentage + "%" + "\ni: " + i;
 		}
 		
 		System.out.print(sensibility + "	");

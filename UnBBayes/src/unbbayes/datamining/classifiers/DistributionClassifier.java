@@ -40,7 +40,12 @@ public abstract class DistributionClassifier extends Classifier {
 	public static final int NORMAL_CLASSIFICATION = 0;
 	public static final int RELATIVE_FREQUENCY_CLASSIFICATION = 1;
 	public static final int ABSOLUTE_FREQUENCY_CLASSIFICATION = 2;
+	public static final int BINARY_CLASSIFICATION = 3;
 	private int classificationType = 0;
+
+	private int interestingClass;
+
+	private double threshold;
 
 	public float[] getOriginalDistribution() {
 		return originalDistribution;
@@ -129,7 +134,21 @@ public abstract class DistributionClassifier extends Classifier {
 					}
 				}
 				return (int) Instance.MISSING_VALUE;
+			
+			case BINARY_CLASSIFICATION:
+				float prob;
 				
+				for (int i = 0; i < dist.length; i++) {
+					dist[i] = dist[i] / originalDistribution[i];
+				}
+				
+				prob = dist[interestingClass] / dist[1 - interestingClass];
+				if (prob >= threshold) {
+					return interestingClass;
+				} else {
+					return 1 - interestingClass;
+				}
+					
 			default:
 				throw new Exception("Classification type not known");
 		}
@@ -153,4 +172,17 @@ public abstract class DistributionClassifier extends Classifier {
 	public void setOriginalDistribution(float[] originalDistribution) {
 		this.originalDistribution = originalDistribution;
 	}
+
+	public void setInterestingClass(int interestingClass) {
+		this.interestingClass = interestingClass;
+	}
+
+	public void setThreshold(float threshold) {
+		this.threshold = threshold;
+	}
+
+	public void setBinaryClassification() {
+		classificationType = BINARY_CLASSIFICATION;
+	}
+
 }

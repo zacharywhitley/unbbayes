@@ -20,7 +20,7 @@ import unbbayes.datamining.datamanipulation.Utils;
  * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
  * @version $1.0 $ (17/02/2002)
  */
-public class Evaluation implements IProgress {
+public class Evaluation2 implements IProgress {
 	/** Load resource file from this package */
 	private static ResourceBundle resource = ResourceBundle
 			.getBundle("unbbayes.datamining.classifiers.resources.ClassifiersResource");
@@ -84,7 +84,7 @@ public class Evaluation implements IProgress {
 	 * @exception Exception
 	 *                if the class is not defined
 	 */
-	public Evaluation(InstanceSet data) throws Exception {
+	public Evaluation2(InstanceSet data) throws Exception {
 		this.data = data;
 		numClasses = data.numClasses();
 		numInstances = data.numInstances();
@@ -100,7 +100,7 @@ public class Evaluation implements IProgress {
 		}
 	}
 
-	public Evaluation(InstanceSet data, Classifier classifier) throws Exception {
+	public Evaluation2(InstanceSet data, Classifier classifier) throws Exception {
 		this(data);
 		this.classifier = classifier;
 	}

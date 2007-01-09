@@ -91,13 +91,14 @@ public class Sampling {
 		
 		/* Get increase size */
 		int increaseSize;
-		increaseSize = (int) (proportion - 1) * currentSize;
+		increaseSize = (int) ((proportion - 1) * currentSize) + 1;
 		
 		/* Randomly oversample */
 		Random randomizer = new Random();
 		for (int i = 0; i < increaseSize; i++) {
 			inst = instancesIDs[randomizer.nextInt(numInstances)];
 			++instanceSet.instances[inst].data[counterIndex];
+			++instanceSet.numWeightedInstances;
 		}
 	}
 
@@ -208,7 +209,14 @@ public class Sampling {
 		while (deleteCounter < decreaseSize) {
 			instAux = randomizer.nextInt(numInstancesIDsAux);
 			inst = instancesIDsAux[instAux];
+			
+			/* Decrease from the total weight of the instanceSet */
+			--instanceSet.numWeightedInstances;
+			
+			/* Decrease the weight of the chosen instance */
 			--instanceSet.instances[inst].data[counterIndex];
+			
+			/* Check if removal of the chosen instance is needed */
 			if (instanceSet.instances[inst].data[counterIndex] <= 0) {
 				deleteIndex[inst] = true;
 				lastID = instancesIDsAux[numInstancesIDsAux - 1];

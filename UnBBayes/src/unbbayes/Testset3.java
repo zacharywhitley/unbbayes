@@ -6,7 +6,6 @@ import java.util.Random;
 
 import unbbayes.datamining.classifiers.Classifier;
 import unbbayes.datamining.classifiers.DistributionClassifier;
-import unbbayes.datamining.classifiers.Evaluation;
 import unbbayes.datamining.classifiers.NaiveBayes;
 import unbbayes.datamining.classifiers.decisiontree.C45;
 import unbbayes.datamining.datamanipulation.ArffLoader;
@@ -15,6 +14,7 @@ import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Loader;
 import unbbayes.datamining.datamanipulation.TxtLoader;
+import unbbayes.datamining.evaluation.Evaluation;
 import unbbayes.datamining.preprocessor.imbalanceddataset.ClusterBasedSmote;
 import unbbayes.datamining.preprocessor.imbalanceddataset.Sampling;
 import unbbayes.datamining.preprocessor.imbalanceddataset.Smote;

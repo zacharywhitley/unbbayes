@@ -6,7 +6,6 @@ import java.util.ArrayList;
 
 import unbbayes.datamining.classifiers.Classifier;
 import unbbayes.datamining.classifiers.DistributionClassifier;
-import unbbayes.datamining.classifiers.Evaluation;
 import unbbayes.datamining.classifiers.NaiveBayes;
 import unbbayes.datamining.clustering.CEBMDC;
 import unbbayes.datamining.clustering.Kmeans;
@@ -15,6 +14,7 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.TxtLoader;
 import unbbayes.datamining.distance.Euclidean;
 import unbbayes.datamining.distance.IDistance;
+import unbbayes.datamining.evaluation.Evaluation;
 import unbbayes.datamining.preprocessor.imbalanceddataset.ClusterBasedSmote;
 
 /**

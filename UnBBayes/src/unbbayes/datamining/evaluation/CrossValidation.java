@@ -40,7 +40,7 @@ public class CrossValidation implements ITrainingMode {
 			InstanceSet train = trainCV(data, numFolds, i);
 			classifier.buildClassifier(train);
 			InstanceSet test = testCV(data, numFolds, i);
-			Evaluation eval = new Evaluation(test);
+			Evaluation2 eval = new Evaluation2(test);
 			eval.evaluateModel(classifier);
 			if (eval.pctCorrect() > bestPctCorrect) {
 				bestPctCorrect = eval.pctCorrect();

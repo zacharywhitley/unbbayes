@@ -1,7 +1,8 @@
 package unbbayes.datamining.preprocessor.imbalanceddataset;
 
-import java.io.File;
-import java.io.RandomAccessFile;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Random;
 
 import unbbayes.datamining.datamanipulation.AttributeStats;
 import unbbayes.datamining.datamanipulation.Instance;
@@ -44,9 +45,6 @@ public class Smote {
 	/** Stores all new instances created */
 	private float newInstanceSet[][];
 	
-	/** The number of synthetic created instances */
-	private int numNewInstances = 0;
-
 	/** The number of current created new instance */
 	private int newInstanceCounter;
 	
@@ -202,10 +200,6 @@ public class Smote {
 	 * @param proportion: Desired proportion of new instances
 	 */
 	public void run(int instancesIDs[], double proportion) {
-		/* The number of instances of the chosen subset of instances to be smoted */
-		int numInstancesIDs;
-		int nearestNeighborsIDs[];
-		
 		numAttributes = instanceSet.numAttributes();
 		
 		/* Message thrown as an exception in case of wrong arguments */ 
@@ -214,7 +208,7 @@ public class Smote {
 		/* Test the parameters */
 		if (instanceSet == null) exceptionMsg = "The instanceSet is null!";
 		if (instancesIDs == null) exceptionMsg = "The instancesIDs is null!";
-		if (proportion <= 0) exceptionMsg = "proportion must be greater than 0!";
+		if (proportion < 1) exceptionMsg = "proportion must be greater than 1!";
 		if (k < 0) exceptionMsg = "k must be greater than 0!";
 //		if (mTree == null) exceptionMsg = "The mTree is null!";
 		
@@ -249,11 +243,22 @@ public class Smote {
 			}
 		}
 		
-		/* Set the number of instances that will be used to create new ones */
-		numInstancesIDs = instancesIDs.length;
+		/* Adjust proportion to count with the current number of instances */
+		--proportion;
 		
-		/* Initiate the counter of synthetic created instances */
-		numNewInstances = 0;
+		/* Set the number of instances that will be used to create new ones */
+		int numInstancesIDs = instancesIDs.length;
+		
+		/* The matrix which will hold the new instances and their weights */
+		int inst;
+		double currentSize = 0;
+		for (int i = 0; i < numInstancesIDs; i++) {
+			inst = instancesIDs[i];
+			currentSize += instances[inst].data[counterIndex];
+		}
+		int numNewInstances = (int) (proportion * currentSize) + 1;
+		newInstanceSet = new float[numNewInstances][numAttributes + 1];
+		newInstanceCounter = 0;
 		
 		/* The number of created instances for each instace */
 		int numNewInstancesPerInstance;
@@ -263,26 +268,37 @@ public class Smote {
 		 * used to oversample the data
 		 */
 		if (proportion < 1) {
-			numNewInstances = Math.round(numInstancesIDs * (float) proportion);
-			instancesIDs = chooseInstances(instancesIDs, numNewInstances);
+			int aux = (int) (numInstancesIDs * proportion) + 1;
+			instancesIDs = chooseInstances(instancesIDs, aux);
 			numInstancesIDs = instancesIDs.length;
 			numNewInstancesPerInstance = 1;
 		} else {
 			/* All the subset will be used to created new instances */
-			numNewInstancesPerInstance = Math.round((float) proportion);
-			numNewInstances = numInstancesIDs * numNewInstancesPerInstance;
+			numNewInstancesPerInstance = (int) proportion;
 		}
 		
-		/* The matrix which will hold the new instances and their weights */
-		int inst;
-		int numNewInstancesWeighted = 0;
-		for (int i = 0; i < numInstancesIDs; i++) {
-			inst = instancesIDs[i];
-			numNewInstancesWeighted += (int) instances[inst].data[counterIndex];
+		/* Create the new instances */
+		populate(numNewInstancesPerInstance, instancesIDs);
+		
+		/* Check if desired number of new instances has been reached */
+		if (newInstanceCounter < numNewInstances) {
+			int rest = numNewInstances - newInstanceCounter;
+			instancesIDs = chooseInstances(instancesIDs, rest);
+			numInstancesIDs = instancesIDs.length;
+			numNewInstancesPerInstance = 1;
+
+			/* Create the rest of the new instances */
+			populate(numNewInstancesPerInstance, instancesIDs);
 		}
-		numNewInstancesWeighted *= numNewInstancesPerInstance;
-		newInstanceSet = new float[numNewInstancesWeighted][numAttributes + 1];
-		newInstanceCounter = 0;
+		
+		/* Insert the created instances in the instanceSet */
+		instanceSet.insertInstances(newInstanceSet);
+	}
+	
+	private void populate(int numNewInstancesPerInstance, int[] instancesIDs) {
+		int numInstancesIDs = instancesIDs.length;
+		int inst;
+		int nearestNeighborsIDs[];
 		
 		/* 
 		 * Loop through all chosen instances and create
@@ -293,15 +309,13 @@ public class Smote {
 //			nearestNeighborsIDs = mTree.nearestNeighborIDs(i, k);
 			nearestNeighborsIDs = nearestNeighborIDs(i, instancesIDs);
 			for (int w = 0; w < instances[inst].data[counterIndex]; w++) {
-				populate(inst, nearestNeighborsIDs, numNewInstancesPerInstance);
+				populateAux(inst, nearestNeighborsIDs, numNewInstancesPerInstance);
 			}
 		}
 		
-		/* Insert the created instances in the instanceSet */
-		instanceSet.insertInstances(newInstanceSet);
 	}
-	 
-	private void populate(int inst, int nearestNeighborsIDs[],
+	
+	private void populateAux(int inst, int nearestNeighborsIDs[],
 			int numNewInstancesPerInstance) {
 		int nearestNeighborIndex;
 		
@@ -341,7 +355,7 @@ public class Smote {
 			/* Chooses randomly one of the k nearest neighbor */
 			chosenNN = (int) Math.round((Math.random() * (double) (k - 1)));
 			nearestNeighborIndex = nearestNeighborsIDs[chosenNN];
-
+			
 			gap = Math.random();
 			
 			/* 
@@ -470,39 +484,24 @@ public class Smote {
 	 * @return
 	 */
 	private int[] chooseInstances(int instancesIDs[], int numNewInstances) {
-		int index = -10;
-		int indexesChosen[];
-		int numInstances;
-		boolean equal;
+		int numInstances = instancesIDs.length;
+		int indexesChosen[] = new int[numNewInstances];
 
-		indexesChosen = new int[numNewInstances];
-		numInstances = instancesIDs.length;
-
-		/* Choose the first instace's index */
-		index = Math.round((float) Math.random() * (numInstances - 1));
-		index = instancesIDs[index];
-		indexesChosen[0] = index;
-
-		/* Chooses the next instances' indexes */
-		for (int i = 1; i < numNewInstances; i++) {
-			equal = true;
-
-			/* Loop while 'index' is equal to any previous chosen one */
-			while (equal) {
-				index = Math.round((float) Math.random() * (numInstances - 1));
-				index = instancesIDs[index];
-				equal = false;
-
-				/* Compares 'index' to all chosen previous indexes*/
-				for (int j = 0; j < i; j++) {
-					if (index == indexesChosen[j]) {
-						equal = true;
-						break;
-					}
-				}
+		boolean[] used = new boolean[numInstances];
+		Arrays.fill(used, false);
+		
+		Random random = new Random(new Date().getTime());
+		int counter = 0;
+		int inst;
+		while (counter < numNewInstances) {
+			inst = random.nextInt(numInstances);
+			if (!used[inst]) {
+				indexesChosen[counter] = instancesIDs[inst];
+				used[inst] = true;
+				++counter;
 			}
-			indexesChosen[i] = index;
 		}
+		
 		return indexesChosen;
 	}
 	
@@ -520,9 +519,11 @@ public class Smote {
 		
 		for (int i = 0; i < k; i++) {
 			index = (int) nearesNeighborsIDs[idx][2 * i];
-			if (index == -1) {
-				index = -1;
+			if (index < 0) {
+				@SuppressWarnings("unused")
+				boolean fudeu = true;
 			}
+
 			nearestNeighborIDs[i] = index;
 		}
 		return nearestNeighborIDs;

@@ -142,6 +142,35 @@ public class ClusterBasedSmote {
 		return run(clusters, numClusters, clustersSize, assignmentMatrix);
 	}
 
+	public InstanceSet run(int majorityClass) throws Exception {
+		/*
+		 *******************************************************
+		 * Clusterize the training set separated by each class *
+		 *******************************************************
+		 */
+		
+		/* Number of clusters desired for the numeric clusterization */ 
+		int k = 5;
+
+		/* 
+		 * The minimum accepted % of change in each iteration in the numeric
+		 * clusterization.
+		 */
+		double kError = 1.001f;
+
+		/* Similarity threshold for the Squeezer algorithm */
+		double sSqueezer = 0f;
+		
+		/* Similarity threshold for the CEBMDC algorithm */
+		double sCEBMDC = 0f;
+
+		/* Clusterize classes */
+		clusterizeClasses(classIndex, k, kError, sSqueezer, sCEBMDC);
+		
+		return run(clusters, numClusters, clustersSize, assignmentMatrix,
+				majorityClass);
+	}
+
 	/**
 	 * Return an array of integer with the clusterID of each instance of the
 	 * class pointed by the parameter <code>classValue</code> in the order they
@@ -243,7 +272,6 @@ public class ClusterBasedSmote {
 		}
 	}
 
-
 	public InstanceSet run(int[][][] clusters, int[] numClusters,
 			double[][] clustersSize, int[][] assignmentMatrix) throws Exception {
 		this.clusters = clusters;
@@ -298,7 +326,7 @@ public class ClusterBasedSmote {
 //				finalSize = biggestClusterSize / count[clusterID];
 //				--finalSize;
 ////				oversampleCluster(clusterID, finalSize, majorityClass);
-//				smoteCluster(clusterID, finalSize, majorityClass, attributeStats);
+//				smoteCluster(clusterID, finalSize, majorityClass);
 //			}
 //		}
 
@@ -326,8 +354,111 @@ public class ClusterBasedSmote {
 					--finalSize;
 					if (finalSize > 1) {
 //						oversampleCluster(clusterID, finalSize, classValue);
-						smoteCluster(clusterID, finalSize, classValue,
-								attributeStats);
+						smoteCluster(clusterID, finalSize, classValue);
+					}
+				}
+			}
+		}
+		
+//		// Only for testing purpouses
+//		clustersSize = new double[numClasses][];
+//		for (int classValue = 0; classValue < numClasses; classValue++) {
+//			clustersSize[classValue] = new double[numClusters[classValue]];
+//			double clusterSize;
+//			int inst;
+//			int clusterQtd;
+//			numClustersAux = numClusters[classValue];
+//			for (int clusterID = 0; clusterID < numClustersAux; clusterID++) {
+//				clusterQtd = clusters[classValue][clusterID].length;
+//				clusterSize = 0;
+//				for (int i = 0; i < clusterQtd; i++) {
+//					inst = clusters[classValue][clusterID][i];
+//					clusterSize += instances[inst].data[counterIndex];
+//				}
+//				clustersSize[classValue][clusterID] = clusterSize;
+//			}
+//		}
+		
+		return instanceSet;
+	}
+	
+	public InstanceSet run(int[][][] clusters, int[] numClusters,
+			double[][] clustersSize, int[][] assignmentMatrix,
+			int majorityClass) throws Exception {
+		this.clusters = clusters;
+		this.numClusters = numClusters;
+		this.clustersSize = clustersSize;
+		this.assignmentMatrix = assignmentMatrix;
+		
+		/* Set SMOTE options */
+		smote = new Smote(null);
+		smote.setOptionDiscretize(optionDiscretize);
+		smote.setOptionDistanceFunction(optionDistanceFunction);
+		smote.setOptionFixedGap(optionFixedGap);
+		smote.setOptionNominal(optionNominal);
+		smote.setInstanceSet(instanceSet);
+
+		int numClustersAux = numClusters[majorityClass];
+		double finalSize;
+		
+//		/* Count the majority class */
+//		int majorityClassQtd = 0;
+//		for (int inst = 0; inst < numInstances; inst++) {
+//			if (instances[inst].data[classIndex] == majorityClass) {
+//				majorityClassQtd += instances[inst].data[counterIndex];
+//			}
+//		}
+//		
+//		/* Pick the biggest cluster of the majority class */
+//		int biggestClusterIndex = 0;
+//		double biggestClusterSize = 0;
+//		for (int clusterID = 0; clusterID < numClustersAux; clusterID++) {
+//			if (clustersSize[majorityClass][clusterID] > biggestClusterSize) {
+//				biggestClusterSize = clustersSize[majorityClass][clusterID];
+//				biggestClusterIndex = clusterID;
+//			}
+//		}
+//		
+//		/* 
+//		 * Oversample the clusters of the majority class to the same size of
+//		 * its biggest cluster.
+//		 */
+//		smote.buildNN(5, majorityClass);
+//		count = clustersSize[majorityClass];
+//		numClustersAux = numClusters[majorityClass];
+//		for (int clusterID = 0; clusterID < numClustersAux; clusterID++) {
+//			if (clusterID != biggestClusterIndex) {
+//				finalSize = biggestClusterSize / count[clusterID];
+//				--finalSize;
+////				oversampleCluster(clusterID, finalSize, majorityClass);
+//				smoteCluster(clusterID, finalSize, majorityClass);
+//			}
+//		}
+
+		/* Reset the variables */
+		instances = instanceSet.instances;
+		
+		/* Compute the new size of the majority class */
+		double majorityClassSize = 0;
+		for (int inst = 0; inst < instanceSet.numInstances; inst++) {
+			if (instances[inst].data[classIndex] == majorityClass) {
+				majorityClassSize += instances[inst].data[counterIndex];
+			}
+		}
+		
+		/* Now we oversample the clusters of the other classes one by one */
+		double newSizePerCluster;
+		for (int classValue = 0; classValue < numClasses; classValue++) {
+			if (classValue != majorityClass) {
+				smote.buildNN(5, classValue);
+				numClustersAux = numClusters[classValue];
+				newSizePerCluster = majorityClassSize / numClustersAux;
+				for (int clusterID = 0; clusterID < numClustersAux; clusterID++) {
+					finalSize = newSizePerCluster;
+					finalSize /= clustersSize[classValue][clusterID];
+					if (finalSize > 1) {
+//						oversampleCluster(clusterID, finalSize, classValue);
+						smoteCluster(clusterID, finalSize, classValue);
 					}
 				}
 			}
@@ -374,7 +505,7 @@ public class ClusterBasedSmote {
 	}
 
 	private void smoteCluster(int clusterIndex, double proportion,
-			int classValue, AttributeStats[] attributeStats) {
+			int classValue) {
 		/* Choose the instancesIDs for the sampling process */
 		int counter = 0;
 		int instancesIDsTmp[] = new int[numInstances];

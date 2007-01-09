@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import unbbayes.datamining.classifiers.Classifier;
 import unbbayes.datamining.classifiers.DistributionClassifier;
-import unbbayes.datamining.classifiers.Evaluation;
 import unbbayes.datamining.classifiers.NaiveBayes;
 import unbbayes.datamining.classifiers.decisiontree.C45;
 import unbbayes.datamining.datamanipulation.ArffLoader;
@@ -13,6 +12,7 @@ import unbbayes.datamining.datamanipulation.AttributeStats;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Loader;
 import unbbayes.datamining.datamanipulation.TxtLoader;
+import unbbayes.datamining.evaluation.Evaluation;
 import unbbayes.datamining.preprocessor.imbalanceddataset.ClusterBasedSmote;
 import unbbayes.datamining.preprocessor.imbalanceddataset.Sampling;
 import unbbayes.datamining.preprocessor.imbalanceddataset.Smote;
@@ -30,6 +30,7 @@ public class TestROC {
 	String header = "";
 	Smote smote;
 	private int i;
+	private int interestingClass;
 //	File saida = new File("c:/saida.txt");
 //	FileInputStream saidaX = new FileInputStream(saida);
 	
@@ -60,10 +61,11 @@ public class TestROC {
 //		String trainFileName = "c:/dados/sampleados/m1t" + i + ".arff";
 //		String testFileName = "c:/dados/sampleados/m1av" + i + ".arff";
 //		String testFileName = "c:/dados/m1avOriginal - var59 num.arff";
-//		int classIndex = 10;
-//		int counterIndex = 11;
-		int classIndex = 8;
-		int counterIndex = 9;
+		int classIndex = 10;
+		int counterIndex = 11;
+//		int classIndex = 8;
+//		int counterIndex = 9;
+		interestingClass = 1;
 		
 		
 		/* Options for SMOTE - START *****************/
@@ -124,7 +126,6 @@ public class TestROC {
 			boolean optionDiscretize, int optionNominal, int maxOrderCNM)
 	throws Exception {
 		boolean relativeProb = false;
-		float[] newDist = new float[2];
 		InstanceSet trainData;
 		Classifier classifier = null;
 		
@@ -161,6 +162,8 @@ public class TestROC {
 		System.out.println("");
 		System.out.println("");
 		
+		float threshold;
+
 		/* Loop through all sample strategies */
 		for (int sampleID = 0; sampleID < 5; sampleID++) {
 //		for (int sampleID = 0; sampleID < 4; sampleID++) {
@@ -172,26 +175,23 @@ public class TestROC {
 
 			/* Change the distribution, run the models and evaluate */
 //			for (int i = 1; i <= 7; i++) {
-//			for (int i = 0; i <= 7; i++) {
-//			for (int i = 0; i <= 1; i++) {
-			for (int i = 0; i <= 100; i =+ 10) {
+			for (int i = 0; i <= 100; i++) {
+//			for (float i = 5.6f; i <= 5.8f; i += 0.01f) {
 				trainData = data;
-				newDist[0] = 100 - i;
-				newDist[1] = i;
+				threshold = (float) i / 10;
 				
-				float percentage = i;
-
 				/* Internal header */
-				System.out.print("     " + (int) percentage + "% 	");
+				System.out.print("      " + threshold + "	");
 
 				/************** Naive Bayes **************/
 				/* Build model */
 				classifier = new NaiveBayes();
 				relativeProb = false;
-				classifier = buildModel(trainData, newDist, classifier);
+				classifier.buildClassifier(trainData);
 				
 				/* Evaluate model */
-				evaluate(classifier, testData, relativeProb, i, originalDist);
+				evaluate(classifier, testData, relativeProb, originalDist,
+						threshold);
 				
 
 //				/************** Naive Bayes Relative Prob **************/
@@ -295,7 +295,9 @@ public class TestROC {
 				cbs.setOptionDistanceFunction((byte) 1);
 				cbs.setOptionFixedGap(true);
 				cbs.setOptionNominal((byte) 0);
-				trainData = cbs.run();
+				
+				/* Run Cluster-Based SMOTE on majority class */
+				trainData = cbs.run(1 - interestingClass);
 
 				break;
 		}
@@ -321,19 +323,7 @@ public class TestROC {
 		System.out.println("");
 		System.out.println(header);
 		System.out.println("");
-		System.out.println("			NB			NBRP			C4.5");
-		System.out.println("% de fraude	S	E	SE	S	E	SE	S	E	SE");
-	}
-
-	private Classifier buildModel(InstanceSet trainData, float originalDist[],
-			Classifier classifier) throws Exception {
-		/* Train the net */
-		if (classifier instanceof DistributionClassifier) {
-			((DistributionClassifier) classifier).setOriginalDistribution(originalDist);
-		}
-		classifier.buildClassifier(trainData);
-		
-		return classifier;
+		System.out.println("threshold	S	E	SE");
 	}
 
 	private float[] distribution(InstanceSet trainData) {
@@ -342,7 +332,6 @@ public class TestROC {
 		int classIndex = trainData.classIndex;
 		int counterIndex = trainData.counterIndex;
 		float distribution[] = new float[numClasses];
-//		float weight = 0;
 		int classValue;
 		
 		for (int i = 0; i < numClasses; i++) {
@@ -352,17 +341,14 @@ public class TestROC {
 		for (int i = 0; i < numInstances; i++) {
 			classValue = (int) trainData.instances[i].data[classIndex];
 			distribution[classValue] += trainData.instances[i].data[counterIndex];
-//			weight += dataset[i][counterIndex];
 		}
 
-//		for (int i = 0; i < numClasses; i++) {
-//			distribution[i] /= weight;
-//		}
 		return distribution;
 	}
 
 	private void evaluate(Classifier classifier, InstanceSet testData,
-			boolean relativeProb, int i, float[] originalDist) throws Exception {
+			boolean relativeProb, float[] originalDist, float threshold)
+	throws Exception {
 		float percentage = (float) originalDist[1] / (originalDist[0] + originalDist[1]);
 		percentage = (100 * percentage);
 		
@@ -372,6 +358,10 @@ public class TestROC {
 			} else {
 				((DistributionClassifier)classifier).setNormalClassification();
 			}
+			((DistributionClassifier) classifier).setOriginalDistribution(originalDist);
+			((DistributionClassifier)classifier).setBinaryClassification();
+			((DistributionClassifier)classifier).setInterestingClass(interestingClass);
+			((DistributionClassifier)classifier).setThreshold(threshold);
 		}
 
 		/* Evaluate the model */
@@ -379,10 +369,10 @@ public class TestROC {
 		eval.evaluateModel(classifier, testData);
 		
 		/* Print out the SE */
-		float sensibility = (float) eval.truePositiveRate(1) * 1000;
+		float sensibility = (float) eval.truePositiveRate(interestingClass) * 1000;
 		sensibility = (int) sensibility;
 		sensibility = sensibility / 1000;
-		float specificity = (float) eval.truePositiveRate(0) * 1000;
+		float specificity = (float) eval.truePositiveRate(1 - interestingClass) * 1000;
 		specificity = (int) specificity;
 		specificity = specificity / 1000;
 		float SE = sensibility * specificity * 1000;
