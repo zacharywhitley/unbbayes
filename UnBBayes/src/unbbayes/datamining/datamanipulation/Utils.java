@@ -449,40 +449,7 @@ public final class Utils {
 
 
 	
-	/*------------------- Quicksort - start ---------------------*/
-	
-	private static void swap(int[] index, int i, int j) {
-		int tmp = index[i];
-		index[i] = index[j];
-		index[j] = tmp;
-	}
-	
-	private static int partition(Object[] array, int[] index, int begin,
-			int end, Comparator<Object> cmp) {
-		int pos = begin + rnd.nextInt(end - begin + 1);
-		Object pivot = array[index[pos]];
-		
-		swap(index, pos, end);
-		
-		for (int i = pos = begin; i < end; ++ i) {
-			if (cmp.compare(array[index[i]], pivot) <= 0) {
-				swap(index, pos++, i);
-			}
-		}
-		swap(index, pos, end);
-		
-		return pos;
-	}
-	
-	private static void qsort(Object[] array, int[] index, int begin, int end,
-			Comparator<Object> cmp) {
-		if (end > begin) {
-			int pos = partition(array, index, begin, end, cmp);
-			
-			qsort(array, index, begin, pos - 1, cmp);
-			qsort(array, index, pos + 1,  end,  cmp);
-		}
-	}
+	/*------------------- Generic Quicksort - start ---------------------*/
 	
 	/**
 	 * Sorts a given array of objects in ascending order and returns an
@@ -506,9 +473,44 @@ public final class Utils {
 		return index;
 	}
 
-	/*------------------- Quicksort - end ---------------------*/
+	private static void qsort(Object[] array, int[] index, int begin, int end,
+			Comparator<Object> cmp) {
+		if (end > begin) {
+			int pos = partition(array, index, begin, end, cmp);
+			
+			qsort(array, index, begin, pos - 1, cmp);
+			qsort(array, index, pos + 1,  end,  cmp);
+		}
+	}
+	
+	private static int partition(Object[] array, int[] index, int begin,
+			int end, Comparator<Object> cmp) {
+		int pos = begin + rnd.nextInt(end - begin + 1);
+		Object pivot = array[index[pos]];
+		
+		swap(index, pos, end);
+		
+		for (int i = pos = begin; i < end; ++ i) {
+			if (cmp.compare(array[index[i]], pivot) <= 0) {
+				swap(index, pos++, i);
+			}
+		}
+		swap(index, pos, end);
+		
+		return pos;
+	}
+	
+	private static void swap(int[] index, int i, int j) {
+		int tmp = index[i];
+		index[i] = index[j];
+		index[j] = tmp;
+	}
+	
+	/*------------------- Generic Quicksort - end ---------------------*/
 
 	
+	
+	/*------------------- double[] Quicksort - start ---------------------*/
 	
 	/**
 	 * Sorts a given array of doubles in ascending order and returns an
@@ -523,7 +525,8 @@ public final class Utils {
 	 */
 	public static int[] sort(double[] array) {
 		int [] index = new int[array.length];
-		array = (double [])array.clone();
+		
+		rnd = new Random(new Date().getTime());
 		
 		for (int i = 0; i < index.length; i++) {
 			index[i] = i;
@@ -531,10 +534,42 @@ public final class Utils {
 				array[i] = Double.MAX_VALUE;
 			}
 		}
-		quickSort(array, index, 0, array.length - 1);
+		qsort(array, index, 0, array.length - 1);
 		
 		return index;
 	}
+
+	private static void qsort(double[] array, int[] index, int begin, int end) {
+		if (end > begin) {
+			int pos = partition(array, index, begin, end);
+			
+			qsort(array, index, begin, pos - 1);
+			qsort(array, index, pos + 1,  end);
+		}
+	}
+	
+	private static int partition(double[] array, int[] index, int begin,
+			int end) {
+		int pos = begin + rnd.nextInt(end - begin + 1);
+		double pivot = array[index[pos]];
+		
+		swap(index, pos, end);
+		
+		for (int i = pos = begin; i < end; ++ i) {
+			if (array[index[i]] <= pivot) {
+				swap(index, pos++, i);
+			}
+		}
+		swap(index, pos, end);
+		
+		return pos;
+	}
+
+	/*------------------- double[] Quicksort - end ---------------------*/
+
+	
+	
+	/*------------------- int[] Quicksort - start ---------------------*/
 
 	/**
 	 * Sorts a given array of integers in ascending order and returns an
@@ -546,11 +581,49 @@ public final class Utils {
 	 * array.
 	 */
 	public static int[] sort(int[] array) {
-		array = array.clone();
-			quickSort(array, 0, array.length - 1);
-			
-			return array;
+		int[] index = new int[array.length];
+		
+		rnd = new Random(new Date().getTime());
+		
+		for (int i = 0; i < index.length; i++) {
+			index[i] = i;
+		}
+		qsort(array, index, 0, array.length - 1);
+		
+		return array;
 	}
+
+	private static void qsort(int[] array, int[] index, int begin, int end) {
+		if (end > begin) {
+			int pos = partition(array, index, begin, end);
+			
+			qsort(array, index, begin, pos - 1);
+			qsort(array, index, pos + 1,  end);
+		}
+	}
+	
+	private static int partition(int[] array, int[] index, int begin,
+			int end) {
+		int pos = begin + rnd.nextInt(end - begin + 1);
+		int pivot = array[index[pos]];
+		
+		swap(index, pos, end);
+		
+		for (int i = pos = begin; i < end; ++ i) {
+			if (array[index[i]] <= pivot) {
+				swap(index, pos++, i);
+			}
+		}
+		swap(index, pos, end);
+		
+		return pos;
+	}
+
+	/*------------------- double[] Quicksort - end ---------------------*/
+
+	
+	
+	/*------------------- byte[] Quicksort - start ---------------------*/
 
 	/**
 	 * Sorts a given array of bytes in ascending order and returns an
@@ -563,200 +636,48 @@ public final class Utils {
 	 * array.
 	 */
 	public static int[] sort(byte[] array) {
-		int [] index = new int[array.length];
+		int[] index = new int[array.length];
 		
-		array = (byte[])array.clone();
+		rnd = new Random(new Date().getTime());
+		
 		for (int i = 0; i < index.length; i++) {
 			index[i] = i;
 		}
-		quickSort(array, index, 0, array.length - 1);
+		qsort(array, index, 0, array.length - 1);
 		
 		return index;
 	}
 
-	/**
-	 * Implements unsafe quicksort for an array of indices.
-	 *
-	 * @param array The array of doubles to be sorted
-	 * @param index The index which should contain the positions in the
-	 * sorted array
-	 * @param lo0 The first index of the subset to be sorted
-	 * @param hi0 The last index of the subset to be sorted
-	 */
-	private static void quickSort(double[] array, int[] index, int lo0, int hi0) {
-		int lo = lo0;
-		int hi = hi0;
-		double mid;
-		int help;
-
-		if (hi0 > lo0) {
-			// Arbitrarily establishing partition element as the midpoint of
-			// the array.
-			mid = array[index[(lo0 + hi0) / 2]];
-
-			// loop through the array until indices cross
-			while (lo <= hi) {
-				// find the first element that is greater than or equal to
-				// the partition element starting from the left Index.
-				while ((array[index[lo]] < mid) && (lo < hi0)) {
-					++lo;
-				}
-
-				// find an element that is smaller than or equal to
-				// the partition element starting from the right Index.
-				while ((array[index[hi]] > mid) && (hi > lo0)) {
-					--hi;
-				}
-		
-				// if the indexes have not crossed, swap
-				if (lo <= hi) {
-					help = index[lo];
-					index[lo] = index[hi];
-					index[hi] = help;
-					++lo;
-					--hi;
-				}
-			}
-
-			// If the right index has not reached the left side of array
-			// must now sort the left partition.
-			if (lo0 < hi) {
-				quickSort(array, index, lo0, hi);
-			}
-
-			// If the left index has not reached the right side of array
-			// must now sort the right partition.
-			if (lo < hi0) {
-				quickSort(array, index, lo, hi0);
-			}
+	private static void qsort(byte[] array, int[] index, int begin, int end) {
+		if (end > begin) {
+			int pos = partition(array, index, begin, end);
+			
+			qsort(array, index, begin, pos - 1);
+			qsort(array, index, pos + 1,  end);
 		}
 	}
-
-	/**
-	 * Implements unsafe quicksort for an array of indices.
-	 *
-	 * @param array The array of bytes to be sorted
-	 * @param index The index which should contain the positions in the
-	 * sorted array
-	 * @param lo0 The first index of the subset to be sorted
-	 * @param hi0 The last index of the subset to be sorted
-	 */
-	private static void quickSort(byte[] array, int [] index, int lo0, int hi0) {
-		int lo = lo0;
-		int hi = hi0;
-		byte mid;
-		int help;
-
-		if (hi0 > lo0) {
-			// Arbitrarily establishing partition element as the midpoint of
-			// the array.
-			mid = array[index[(lo0 + hi0) / 2]];
-
-			// loop through the array until indices cross
-			while (lo <= hi) {
-				// find the first element that is greater than or equal to
-				// the partition element starting from the left Index.
-				while ((array[index[lo]] < mid) && (lo < hi0)) {
-					++lo;
-				}
+	
+	private static int partition(byte[] array, int[] index, int begin,
+			int end) {
+		int pos = begin + rnd.nextInt(end - begin + 1);
+		byte pivot = array[index[pos]];
 		
-				// find an element that is smaller than or equal to
-				// the partition element starting from the right Index.
-				while ((array[index[hi]] > mid) && (hi > lo0)) {
-					--hi;
-				}
+		swap(index, pos, end);
 		
-				// if the indexes have not crossed, swap
-				if (lo <= hi) {
-					help = index[lo];
-					index[lo] = index[hi];
-					index[hi] = help;
-					++lo;
-					--hi;
-				}
-			}
-
-			// If the right index has not reached the left side of array
-			// must now sort the left partition.
-			if (lo0 < hi) {
-				quickSort(array, index, lo0, hi);
-			}
-
-			// If the left index has not reached the right side of array
-			// must now sort the right partition.
-			if (lo < hi0) {
-				quickSort(array, index, lo, hi0);
+		for (int i = pos = begin; i < end; ++ i) {
+			if (array[index[i]] <= pivot) {
+				swap(index, pos++, i);
 			}
 		}
+		swap(index, pos, end);
+		
+		return pos;
 	}
 
-	/**
-	 * Implements quicksort for a array of integers.
-	 *
-	 * @param matrix The matrix of floats to be sorted
-	 * @param lo0 The first index of the subset to be sorted
-	 * @param hi0 The last index of the subset to be sorted
-	 * @param num The number of columns of the input matrix
-	 */
-	private static void quickSort(int[] array, int lo0, int hi0) {
-		int lo = lo0;
-		int hi = hi0;
-		int mid;
-		int aux;
-	
-		if (hi0 > lo0) {
-			/* 
-			 * Arbitrarily establishing partition element as the midpoint of
-			 * the matrix
-			 */
-			mid = array[(lo0 + hi0) / 2];
-	
-			/* loop through the matrix until indices cross */
-			while (lo <= hi) {
-				/* 
-				 * find the first element that is greater than or equal to
-				 * the partition element starting from the left Index
-				 */
-				while (array[lo] < mid && lo < hi0) {
-					++lo;
-				}
-	
-				/* 
-				 * find an element that is smaller than or equal to
-				 * the partition element starting from the right Index
-				 */
-				while (array[hi] > mid && hi > lo0) {
-					--hi;			
-				}
-	
-				/* if the indexes have not crossed, swap */
-				if (lo <= hi) {
-					aux = array[lo];
-					array[lo] = array[hi];
-					array[hi] = aux;
-					++lo;
-					--hi;
-				}
-			}
-	
-			/* 
-			 * If the right index has not reached the left side of matrix
-			 * must now sort the left partition
-			 */
-			if (lo0 < hi) {
-				quickSort(array, lo0, hi);
-			}
-	
-			/* 
-			 * If the left index has not reached the right side of matrix
-			 * must now sort the right partition
-			 */
-			if (lo < hi0) {
-				quickSort(array, lo, hi0);
-			}
-		}
-	}
+	/*------------------- byte[] Quicksort - end ---------------------*/
 
+	
+	
 	/** 
 	 * Sort values in a array of doubles and returns an array of doubles
 	 * with the sum of equal values. Original array will be modified
