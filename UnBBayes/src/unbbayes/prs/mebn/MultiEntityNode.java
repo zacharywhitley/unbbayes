@@ -128,5 +128,22 @@ public class MultiEntityNode extends Node {
 		return false;
 	}
 	
+	/**
+	 * This method is responsible for returning the index where this state is 
+	 * located.
+	 * @param stateName State's name desired to know the index.
+	 * @return Returns the state position, index. -1 if the state is not found.
+	 */
+	public int getPossibleValueIndex(String stateName) {
+		int index = 0;
+		for (Entity entity : possibleValueList) {
+			if (entity.getName().equals(stateName)) {
+				return index;
+			}
+			index++;
+		}
+		return -1;
+	}
+	
 }
  

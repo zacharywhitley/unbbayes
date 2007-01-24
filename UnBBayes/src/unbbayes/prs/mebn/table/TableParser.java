@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.exception.EntityNotPossibleValueOfNodeException;
 import unbbayes.prs.mebn.exception.NodeNotPresentInMTheoryException;
 import unbbayes.prs.mebn.table.exception.TableFunctionMalformedException;
@@ -19,12 +20,16 @@ import unbbayes.prs.mebn.table.exception.TableFunctionMalformedException;
 
 public class TableParser {
 	
+	// The MEBN where this table is defined
 	private MultiEntityBayesianNetwork mebn;
+	// The node that this table is defining
+	private MultiEntityNode node;
 	
 	private TableFunction tableFunction = new TableFunction();
 	
-	public TableParser(MultiEntityBayesianNetwork mebn) {
+	public TableParser(MultiEntityBayesianNetwork mebn, MultiEntityNode node) {
 		this.mebn = mebn;
+		this.node = node;
 		
 	}
 	
@@ -34,21 +39,23 @@ public class TableParser {
 		StringTokenizer st = new StringTokenizer(tableFunction);
 		
 		while (st.hasMoreTokens()) {
-			parseIfClause(st);
-			parseProbabilityFunction(st);
+			IfClause ifClause = parseIfClause(st);
+			parseProbabilityFunction(st, ifClause);
 		}
 		
 		return data;
 	}
 	
-	private void parseIfClause(StringTokenizer st) throws TableFunctionMalformedException, NodeNotPresentInMTheoryException, EntityNotPossibleValueOfNodeException {
+	private IfClause parseIfClause(StringTokenizer st) throws TableFunctionMalformedException, NodeNotPresentInMTheoryException, EntityNotPossibleValueOfNodeException {
 		String token = st.nextToken();
+		IfClause ifClause;
 		if (token.equalsIgnoreCase("IF")) {
 			token = st.nextToken();
-			IfClause ifClause = new IfClause();
+			ifClause = new IfClause();
 			if (token.equalsIgnoreCase("ANY")) {
 				// A string representing the parameter subset
 				token = st.nextToken();
+				ifClause.setIfParameterSetName(token);
 				ifClause.setIfOperator(IfOperator.ANY);
 				token = st.nextToken();
 				if (token.equalsIgnoreCase("HAVE(")) {
@@ -59,6 +66,7 @@ public class TableParser {
 			} else if (token.equalsIgnoreCase("ALL")) {
 				// A string representing the parameter set
 				token = st.nextToken();
+				ifClause.setIfParameterSetName(token);
 				ifClause.setIfOperator(IfOperator.ALL);
 				token = st.nextToken();
 				if (token.equalsIgnoreCase("HAVE(")) {
@@ -75,6 +83,7 @@ public class TableParser {
 		} else {
 			throw new TableFunctionMalformedException("\'IF\' expected where " + token + "was found.");
 		}
+		return ifClause;
 	}
 	
 	private void parseIfClause(StringTokenizer st, IfClause ifClause) throws TableFunctionMalformedException, NodeNotPresentInMTheoryException, EntityNotPossibleValueOfNodeException {
@@ -106,8 +115,64 @@ public class TableParser {
 		}
 	}
 	
-	private void parseProbabilityFunction(StringTokenizer st) {
+	private void parseProbabilityFunction(StringTokenizer st, IfClause ifClause) throws TableFunctionMalformedException, EntityNotPossibleValueOfNodeException {
+		ProbabilityFunction probabilityFunction = new ProbabilityFunction(node);
 		String token = st.nextToken();
+		if (token.equalsIgnoreCase("[")) {
+			// Node's state
+			token = st.nextToken();
+			StateFunction stateFunction = new StateFunction(node, token);
+			token = st.nextToken();
+			if (token.equalsIgnoreCase("=")) {
+				token = st.nextToken();
+				boolean isNumber = false;
+				// Try to convert the token to a number
+				try {
+					Float.parseFloat(token);
+					isNumber = true;
+				} catch(NumberFormatException e) {
+				}
+				if (isNumber) {
+					
+				} else if (token.equalsIgnoreCase("CARDINALITY(")) {
+					token = st.nextToken();
+					if (token.equalsIgnoreCase(ifClause.getIfParameterSetName())) {
+						token = st.nextToken();
+						if (token.equalsIgnoreCase(")")) {
+							stateFunction.addFunctionElement("CARDINALITY(" + ifClause.getIfParameterSetName() + ")");
+							token = st.nextToken();
+							if (token.equalsIgnoreCase("+")) {
+								
+							} else if (token.equalsIgnoreCase("-")) {
+								
+							} else if (token.equalsIgnoreCase("*")) {
+								
+							} else if (token.equalsIgnoreCase("/")) {
+								
+							} else if (token.equalsIgnoreCase("]")) {
+								
+							} else {
+								throw new TableFunctionMalformedException("\'+\\-\\*\\/\\]\' expected where " + token + "was found.");
+							}
+						} else {
+							throw new TableFunctionMalformedException("\'" + ifClause.getIfParameterSetName() + "\' expected where " + token + "was found.");
+						}
+					} else {
+						throw new TableFunctionMalformedException("\'" + ifClause.getIfParameterSetName() + "\' expected where " + token + "was found.");
+					}
+				} else if (token.equalsIgnoreCase("MAX(")) {
+					
+				} else if (token.equalsIgnoreCase("MIN(")) {
+					
+				} else if (node.hasPossibleValue(token)) {
+					
+				}
+			} else {
+				throw new TableFunctionMalformedException("\'=\' expected where " + token + "was found.");
+			}
+		} else {
+			throw new TableFunctionMalformedException("\'[\' expected where " + token + "was found.");
+		}
 	}
 	
 }
