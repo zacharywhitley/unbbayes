@@ -1,6 +1,0 @@
-temperature humidity windy play
-85 85 false no
-80 90 true no
-72 95 false no
-69 70 false yes
-75 70 true yes

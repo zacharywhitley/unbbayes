@@ -10,7 +10,6 @@ public class Options
 	//global options
 	private int numberStatesAllowed;
 	private int confidenceLimit;
-	private boolean compactedFile = false;
 	
 	//c4.5 options
 	/** defines if gain ratio is used to build the tree or not */
@@ -46,14 +45,6 @@ public class Options
 	public int getNumberStatesAllowed()
 	{	return numberStatesAllowed;
 	}
-	
-	public void setCompactedFile(boolean compactedFile)
-	{	this.compactedFile = compactedFile;
-	}	
-	
-	public boolean getCompactedFile()
-	{	return compactedFile;
-	}	
 	
 	public void setConfidenceLimit(int confidenceLimit)
   	{	this.confidenceLimit = confidenceLimit;

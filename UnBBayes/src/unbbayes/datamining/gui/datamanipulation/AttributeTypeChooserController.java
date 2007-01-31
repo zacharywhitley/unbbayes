@@ -156,7 +156,6 @@ public class AttributeTypeChooserController {
 			loader.setCounterAttributeName(counterAttributeName);
 			loader.setAttributeName(attributeName);
 			if (counterIndex != -1) {
-				Options.getInstance().setCompactedFile(true);
 				loader.setCompacted(true);
 			}
 			loader.setNumAttributes(numAttributes);
@@ -429,6 +428,10 @@ public class AttributeTypeChooserController {
 		/* Build the loader header */
 		loader.buildHeader();
 
+		if (loader.getnumInitialInstances() < numInstancesAux) {
+			numInstancesAux = loader.getnumInitialInstances();
+		}
+		
 		/* Read the first 'numInstancesAux' instances from 'file' */
 		boolean reading = true;
 		int i = 0;
@@ -437,9 +440,6 @@ public class AttributeTypeChooserController {
 			i++;
 		}
 		instanceSet = loader.getInstanceSet();
-		if (instanceSet.numInstances < numInstancesAux) {
-			numInstancesAux = instanceSet.numInstances;
-		}
 		counterIndex = loader.getLikelyCounterIndex();
 
 		/* Set the initial attributes' characteristics */

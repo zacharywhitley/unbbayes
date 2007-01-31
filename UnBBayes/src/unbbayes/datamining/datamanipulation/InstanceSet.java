@@ -87,7 +87,10 @@ public class InstanceSet implements Serializable {
 
 	/** Total number of instances considering their weights */
 	public int numWeightedInstances;
-	
+
+	/** Tells if this instanceSet is compacted */
+	private boolean compactedFile;
+
 	/** Random used in the sorting of the instances */
 	private static Random rnd;
 
@@ -171,7 +174,7 @@ public class InstanceSet implements Serializable {
 	 */
 	public InstanceSet(InstanceSet source) {
 		this(source, source.numInstances);
-		source.copyInstances(0, this, source.numInstances);
+		source.copyInstancesTo(this, 0, source.numInstances);
 	}
 
 	/**
@@ -191,7 +194,7 @@ public class InstanceSet implements Serializable {
 			String exception = resource.getString("outOfRange");
 			throw new IllegalArgumentException(exception);
 		}
-		source.copyInstances(first, this, numToCopy);
+		source.copyInstancesTo(this, first, numToCopy);
 	}
 
 	/**
@@ -271,18 +274,18 @@ public class InstanceSet implements Serializable {
 
 	/**
 	 * Removes from this instanceSet those instances marked as <code>true
-	 * </code> in the input array of indexes <code>remove</code>.
+	 * </code> in the input array of indexes <code>deleteIndex</code>.
 	 * 
-	 * @param remove The index of the instance to be removed.
+	 * @param deleteIndex The index of the instance to be removed.
 	 */
-	public final void removeInstances(boolean[] remove) {
+	public final void removeInstances(boolean[] deleteIndex) {
 		/* Get the current size */
 		int currentSize = numInstances;
 		
 		/* Count the number of instances to be removed */
 		int numInstancesToBeRemoved = 0;
 		for (int inst = 0; inst < currentSize; inst++) {
-			if (remove[inst]) {
+			if (deleteIndex[inst]) {
 				++numInstancesToBeRemoved;
 			}
 		}
@@ -297,7 +300,7 @@ public class InstanceSet implements Serializable {
 		 */
 		int newInstanceIndex = 0;
 		for (int inst = 0; inst < currentSize; inst++) {
-			if (remove[inst]) {
+			if (deleteIndex[inst]) {
 				/* Remove instance */
 				--numInstances;
 				numWeightedInstances -= instances[inst].data[counterIndex];
@@ -551,18 +554,28 @@ public class InstanceSet implements Serializable {
 	}
 
 	/**
-	 * Copies instances from one set to the end of another one
-	 *
+	 * Copies instances from one set to the end of another one. It copies all
+	 * instances if the specified quantity of instances is greater than the
+	 * number of instances of this instanceSet or is less than 0.
+	 * 
 	 * @param from Position of the first instance to be copied
 	 * @param dest Destination for the instances
-	 * @param num Number of instances to be copied
+	 * @param qtd Number of instances to be copied
 	 */
-	public void copyInstances(int start, InstanceSet destination, int end) {
-		for (int inst = start; inst < end; inst++) {
-			destination.instances[destination.numInstances] = instances[inst].clone();
+	public void copyInstancesTo(InstanceSet destination, int start, int qtd) {
+		if (qtd > numInstances || qtd < 0) {
+			qtd = numInstances;
+		}
+		int inst = start;
+		int counter = 0;
+		while (counter  < qtd) {
+			destination.instances[destination.numInstances]
+			                      = instances[inst].clone();
 			destination.numInstances++;
 			destination.numWeightedInstances += 
 				instances[inst].data[counterIndex];
+			++inst;
+			++counter;
 		}
 	}
 
@@ -600,6 +613,23 @@ public class InstanceSet implements Serializable {
 			instances[i] = instances[index];
 			instances[index] = temp;
 		}
+	}
+
+	/**
+	 * Returns a shuffled index of the instanceSet so that they are ordered
+	 * randomly.
+	 *
+	 * @param random A random number generator
+	 */
+	public final int[] randomizeIndex(Random random) {
+		int[] index = new int[numInstances];
+
+		for (int i = numInstances - 1; i > 0; i--) {
+			/* Randomly get an instance index */ 
+			index[i] = (int) (random.nextDouble() * (double) i);
+		}
+		
+		return index;
 	}
 
 	/**
@@ -852,6 +882,7 @@ public class InstanceSet implements Serializable {
 		int[] count = null;
 		int[][] instancesIDs = null;
 		
+		//TODO colocar o abaixo como parâmetro e não fixo!!!
 		if (this.classIndex != -1) {
 			numClasses = numClasses();
 	
@@ -883,7 +914,6 @@ public class InstanceSet implements Serializable {
 				instancesIDs[0][inst] = inst;
 			}
 		}
-			
 		
 		/* Create test instanceSet with no instances */
 		InstanceSet testSet = new InstanceSet (this, testSize);
@@ -1049,6 +1079,108 @@ public class InstanceSet implements Serializable {
 
 	public int getCounterIndex() {
 		return counterIndex;
+	}
+
+	public void setCompacted(boolean compactedFile) {
+		this.compactedFile = compactedFile;
+	}	
+	
+	public boolean isCompacted() {
+		return compactedFile;
+	}
+
+	public void stratify(int numFolds) {
+		int[] instancesIDs = new int[numInstances];
+		int numClasses = numClasses();
+		
+		/* Indexes the instanceSet separated by its instances class */
+		int[][] stratifiedIndex = new int[numClasses][];
+		
+		/* Counter of each class */
+		int[] counter = new int[numClasses];
+		Arrays.fill(counter, 0);
+		
+		/* Count each class separatedly */
+		for (int classLabel, inst = 0; inst < numInstances; inst++) {
+			classLabel = (int) instances[inst].data[classIndex];
+			++counter[classLabel];
+		}
+		
+		/* Create index of instances separated by class */
+		for (int classLabel = 0; classLabel < numClasses; classLabel++) {
+			stratifiedIndex[classLabel] = new int[counter[classLabel]];
+		}
+		
+		/* Separate the instances by class */
+		Arrays.fill(counter, 0);
+		for (int classLabel, inst = 0; inst < numInstances; inst++) {
+			classLabel = (int) instances[inst].data[classIndex];
+			stratifiedIndex[classLabel][counter[classLabel]] = inst;
+			++counter[classLabel];
+		}
+
+		/* Randomize each class group's instances */
+		for (int classLabel = 0; classLabel < numClasses; classLabel++) {
+			rnd = new Random(new Date().getTime());
+			Utils.randomize(stratifiedIndex[classLabel], rnd);
+		}
+		
+		/* Create the maxPerClassPerFold counter */
+		int[][] maxPerFoldPerClass = new int[numFolds][numClasses];
+		int aux;
+		maxPerFoldPerClass[0] = new int[numClasses];
+		Arrays.fill(maxPerFoldPerClass[0], 0);
+		for (int classLabel = 0; classLabel < numClasses; classLabel++) {
+			aux = counter[classLabel] / numFolds;
+			maxPerFoldPerClass[0][classLabel] = aux;
+			if (0 < (counter[classLabel] % numFolds)) {
+				++maxPerFoldPerClass[0][classLabel];
+			}
+		}
+		for (int fold = 1; fold < numFolds; fold++) {
+			maxPerFoldPerClass[fold] = new int[numClasses];
+			Arrays.fill(maxPerFoldPerClass[fold], 0);
+			for (int classLabel = 0; classLabel < numClasses; classLabel++) {
+				aux = counter[classLabel] / numFolds;
+				if ((fold) < (counter[classLabel] % numFolds)) {
+					++aux;
+				}
+				aux += maxPerFoldPerClass[fold - 1][classLabel];
+				maxPerFoldPerClass[fold][classLabel] = aux;
+			}
+		}
+		
+		/* Zero the counter */
+		Arrays.fill(counter, 0);
+		
+		/* Create stratified instancesIDs array */
+		int num = 0;
+		int inst;
+		int max;
+		for (int fold = 0; fold < numFolds; fold++) {
+			/* Populate each fold */
+			for (int classLabel = 0; classLabel < numClasses; classLabel++) {
+				max = maxPerFoldPerClass[fold][classLabel];
+				while (counter[classLabel] < max) {
+					inst = stratifiedIndex[classLabel][counter[classLabel]];
+					instancesIDs[num] = inst;
+					++counter[classLabel];
+					++num;
+				}
+			}
+		}
+
+		/* Set instances' position according to the stratified instancesIDs */
+		Instance[] newInstances = new Instance[numInstances];
+		for (int i = 0; i < numInstances; i++) {
+			inst = instancesIDs[i];
+			newInstances[i] = instances[inst];
+		}
+		instances = newInstances;
+	}
+
+	public boolean classIsNominal() {
+		return attributes[classIndex].isNominal();
 	}
 
 }

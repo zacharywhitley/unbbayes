@@ -1,6 +1,7 @@
 package unbbayes.datamining.preprocessor.imbalanceddataset;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Random;
 
 import unbbayes.datamining.datamanipulation.Instance;
@@ -13,6 +14,9 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
  * @date 26/08/2006
  */
 public class Sampling {
+
+	/*--------------------- oversampling - start ----------------------*/
+	
 	/**
 	 * Samples an instanceSet. The amount of increase or decrease is controlled
 	 * by the <code>proportion</code> parameter, which will be multiplied by
@@ -30,6 +34,7 @@ public class Sampling {
 		for (int i = 0; i < numInstances; i++) {
 			instancesIDs[i] = i;
 		}
+		
 		oversampling(instanceSet, proportion, instancesIDs);
 	}
 	
@@ -62,6 +67,7 @@ public class Sampling {
 		for (int i = 0; i < counter; i++) {
 			instancesIDs[i] = instancesIDsTmp[i];
 		}
+		
 		oversampling(instanceSet, proportion, instancesIDs);
 	}
 	
@@ -102,6 +108,11 @@ public class Sampling {
 		}
 	}
 
+	/*--------------------- oversampling - end ----------------------*/
+
+	
+	/*--------------------- undersampling - start ----------------------*/
+
 	/**
 	 * Samples an instanceSet. The amount of increase or decrease is controlled
 	 * by the <code>proportion</code> parameter, which will be multiplied by
@@ -112,8 +123,8 @@ public class Sampling {
 	 * @param proportion
 	 * @return
 	 */
-	public static int[] undersampling(InstanceSet instanceSet,
-			double proportion) {
+	public static void undersampling(InstanceSet instanceSet,
+			double proportion, boolean remove) {
 		int numInstances = instanceSet.numInstances;
 
 		/* Choose all instances for the sampling process */
@@ -121,7 +132,7 @@ public class Sampling {
 		for (int i = 0; i < numInstances; i++) {
 			instancesIDs[i] = i;
 		}
-		return undersampling(instanceSet, proportion, instancesIDs);
+		undersampling(instanceSet, proportion, instancesIDs, remove);
 	}
 	
 	/**
@@ -135,8 +146,8 @@ public class Sampling {
 	 * @param classValue
 	 * @return
 	 */
-	public static int[] undersampling(InstanceSet instanceSet,
-			double proportion, int classValue) {
+	public static void undersampling(InstanceSet instanceSet,
+			double proportion, int classValue, boolean remove) {
 		Instance[] instances = instanceSet.instances;
 		int numInstances = instanceSet.numInstances;
 
@@ -154,7 +165,8 @@ public class Sampling {
 		for (int i = 0; i < counter; i++) {
 			instancesIDs[i] = instancesIDsTmp[i];
 		}
-		return undersampling(instanceSet, proportion, instancesIDs);
+		
+		undersampling(instanceSet, proportion, instancesIDs, remove);
 	}
 	
 	/**
@@ -170,8 +182,8 @@ public class Sampling {
 	 * @param instancesIDs Must be sorted ascending!!!
 	 * @return
 	 */
-	public static int[] undersampling(InstanceSet instanceSet, double proportion,
-			int[] instancesIDs) {
+	public static void undersampling(InstanceSet instanceSet, double proportion,
+			int[] instancesIDs, boolean remove) {
 		int counterIndex = instanceSet.counterIndex;
 		int numInstancesIDs = instancesIDs.length;
 		int inst = 0;
@@ -191,25 +203,19 @@ public class Sampling {
 		boolean[] deleteIndex = new boolean[instanceSet.numInstances];
 		Arrays.fill(deleteIndex, false);
 		
-		/* Array that tells which instancesIDs must be removed (weight < 1) */ 
-		boolean[] deleteIndexAux = new boolean[numInstancesIDs];
-		Arrays.fill(deleteIndexAux, false);
-		
 		/* Randomly undersample */
-		Random randomizer = new Random();
+		Random randomizer = new Random(new Date().getTime());
 		int deleteCounter = 0;
-		int instAux;
-		int[] instancesIDsAux = instancesIDs.clone();
-		int numInstancesIDsAux = numInstancesIDs;
-		int[] ema = new int[numInstancesIDs];
-		for (int i = 0; i < numInstancesIDs; i++) {
-			ema[i] = i;
-		}
+		int instIDs;
 		int lastID;
 		while (deleteCounter < decreaseSize) {
-			instAux = randomizer.nextInt(numInstancesIDsAux);
-			inst = instancesIDsAux[instAux];
+			instIDs = randomizer.nextInt(numInstancesIDs);
+			inst = instancesIDs[instIDs];
 			
+			if (deleteIndex[inst]) {
+				@SuppressWarnings("unused")
+				int x = 0;
+			}
 			/* Decrease from the total weight of the instanceSet */
 			--instanceSet.numWeightedInstances;
 			
@@ -219,44 +225,136 @@ public class Sampling {
 			/* Check if removal of the chosen instance is needed */
 			if (instanceSet.instances[inst].data[counterIndex] <= 0) {
 				deleteIndex[inst] = true;
-				lastID = instancesIDsAux[numInstancesIDsAux - 1];
-				instancesIDsAux[instAux] = lastID;
-				
-				deleteIndexAux[ema[instAux]] = true;
-				lastID = ema[numInstancesIDsAux - 1];
-				ema[instAux] = lastID;
-				
-				--numInstancesIDsAux;
+				lastID = instancesIDs[numInstancesIDs - 1];
+				instancesIDs[instIDs] = lastID;
+				--numInstancesIDs;
 			}
 			++deleteCounter;
 		}
 
 		/* If there are instances to be removed */
-		if (deleteCounter > 0) {
+		if (deleteCounter > 0 && remove) {
 			/* Remove instances marked to be removed */
 			instanceSet.removeInstances(deleteIndex);
+		}
+	}
+	
+	/*--------------------- undersampling - end ----------------------*/
+	
+	
+	/*--------------------- simplesampling - start ----------------------*/
 
-			/* Return null if all instances have been removed */
-			if (numInstancesIDsAux == 0) {
-				return null;
-			}
-			
-			/* Create new array with the valid instancesIDs */
-			int[] newInstancesIDs = new int[numInstancesIDsAux];
-			inst = 0;
-			for (int i = 0; i < numInstancesIDs; i++) {
-				if (!deleteIndexAux[i]) {
-					newInstancesIDs[inst] = instancesIDs[i];
-					++inst;
-				}
-			}
-			return newInstancesIDs;
+	/**
+	 * Samples an instanceSet. The amount of increase or decrease is controlled
+	 * by the <code>proportion</code> parameter, which will be multiplied by
+	 * the counter attribute.	 * 
+	 * @param instanceSet
+	 * @param proportion
+	 * @return
+	 */
+	public static void simplesampling(InstanceSet instanceSet,
+			double proportion, boolean remove) {
+		int numInstances = instanceSet.numInstances;
+
+		/* Choose all instances for the sampling process */
+		int[] instancesIDs = new int[numInstances];
+		for (int i = 0; i < numInstances; i++) {
+			instancesIDs[i] = i;
 		}
 		
-		/* Return the input instancesIDs if no instance has been removed */
-		return instancesIDs;
+		simplesampling(instanceSet, proportion, instancesIDs, remove);
+	}
+	
+	/**
+	 * Samples an instanceSet. The amount of increase or decrease is controlled
+	 * by the <code>proportion</code> parameter, which will be multiplied by
+	 * the counter attribute. Only those instances from the class <code>
+	 * classValue</code> will be sampled.
+	 *  
+	 * @param instanceSet
+	 * @param proportion
+	 * @param classValue
+	 * @return
+	 */
+	public static void simplesampling(InstanceSet instanceSet,
+			double proportion, int classValue, boolean remove) {
+		Instance[] instances = instanceSet.instances;
+		int numInstances = instanceSet.numInstances;
+
+		/* Choose the instancesIDs for the sampling process */
+		int counter = 0;
+		int instancesIDsTmp[] = new int[numInstances];
+		int classIndex = instanceSet.classIndex;
+		for (int inst = 0; inst < numInstances; inst++) {
+			if (instances[inst].data[classIndex] == classValue) {
+				instancesIDsTmp[counter] = inst;
+				++counter;
+			}
+		}
+		int[] instancesIDs = new int[counter];
+		for (int i = 0; i < counter; i++) {
+			instancesIDs[i] = instancesIDsTmp[i];
+		}
+		
+		simplesampling(instanceSet, proportion, instancesIDs, remove);
+	}
+	
+	/**
+	 * Samples an instanceSet. The amount of increase or decrease is controlled
+	 * by the <code>proportion</code> parameter, which will be multiplied by
+	 * the counter attribute. Only those instances indicated by the array
+	 * <code>instancesIDs</code> will be sampled.
+	 * 
+	 * @param instanceSet
+	 * @param proportion
+	 * @param instancesIDs Must be sorted ascending!!!
+	 * @return
+	 */
+	public static void simplesampling(InstanceSet instanceSet, double proportion,
+			int[] instancesIDs, boolean remove) {
+		int counterIndex = instanceSet.counterIndex;
+		int numInstancesIDs = instancesIDs.length;
+		int inst = 0;
+
+		/* Array that tells which instances must be removed (weight < 1) */ 
+		boolean[] deleteIndex = new boolean[instanceSet.numInstances];
+		Arrays.fill(deleteIndex, false);
+		
+		boolean delete = false;
+		int weight;
+		int newWeight;
+		int difference;
+		for (int i = 0; i < numInstancesIDs; i++) {
+			inst = instancesIDs[i];
+			
+			weight = (int) instanceSet.instances[inst].data[counterIndex];
+			newWeight = Math.round((float) proportion * weight);
+			difference = newWeight - weight;
+			
+			/* Decrease from the total weight of the instanceSet */
+			instanceSet.numWeightedInstances += difference;
+			
+			/* Decrease the weight of the chosen instance */
+			instanceSet.instances[inst].data[counterIndex] = newWeight;
+			
+			/* Check if removal of the chosen instance is needed */
+			if (newWeight <= 0) {
+				deleteIndex[inst] = true;
+				delete = true;
+			}
+		}
+
+		/* If there are instances to be removed */
+		if (delete && remove) {
+			/* Remove instances marked to be removed */
+			instanceSet.removeInstances(deleteIndex);
+		}
 	}
 
+	/*--------------------- simpleSampling - end ----------------------*/
+
+	
+	
 	public static void limitWeight(InstanceSet instanceSet, int limit,
 			int classValue) {
 		int classIndex = instanceSet.classIndex;
@@ -275,5 +373,5 @@ public class Sampling {
 			}
 		}
 	}
-	
+
 }

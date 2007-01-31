@@ -389,8 +389,8 @@ public class Attribute implements Serializable {
 		if (key == -1) {
 			/* The input value is new. */
 			key = numValues;
-			hashtableString.put(value, new Integer(key));
 			stringValuesTemp.add(value);
+			hashtableString.put(value, new Integer(key));
 			++numValues;
 		}
 		return key;
@@ -406,8 +406,8 @@ public class Attribute implements Serializable {
 		if (key == -1) {
 			/* The input value is new. */
 			key = numValues;
-			hashtableNumber.put(value, new Integer(key));
 			numberValuesTemp.add(value);
+			hashtableNumber.put(value, new Integer(key));
 			++numValues;
 		}
 		return key;

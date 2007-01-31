@@ -33,7 +33,7 @@ public class TxtLoader extends Loader {
 		this.file = file;
 		
 		// Count instanceSet
-		countInstancesFromFile(file, numLines);
+		countInstancesFromFile(file, numLines, true);
 		
 		//Memory initialization
 		Reader reader = new BufferedReader(new FileReader(file));

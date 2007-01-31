@@ -1,6 +1,5 @@
 package unbbayes.datamining.preprocessor.imbalanceddataset;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
 
@@ -126,6 +125,8 @@ public class Smote {
 	 */
 	private boolean optionFixedGap;
 
+	private Random random;
+
 	/**
 	 * SMOTE oversamples a specified class of a dataset. It creates new cases
 	 * based on the existing ones. These new cases are randomly interpolated
@@ -215,6 +216,9 @@ public class Smote {
 		/* Throw exception if there is problems with the parameters */
 		if (exceptionMsg != "") throw new IllegalArgumentException(exceptionMsg);
 		
+		/* Initialize the random number generator */
+		random  = new Random(new Date().getTime());
+
 		/* 
 		 * Set the array of the mininum and maximum attributes' values used to
 		 * smote cyclic attributes.
@@ -278,7 +282,7 @@ public class Smote {
 		}
 		
 		/* Create the new instances */
-		populate(numNewInstancesPerInstance, instancesIDs);
+		populate(numNewInstancesPerInstance, instancesIDs, numNewInstances);
 		
 		/* Check if desired number of new instances has been reached */
 		if (newInstanceCounter < numNewInstances) {
@@ -288,14 +292,15 @@ public class Smote {
 			numNewInstancesPerInstance = 1;
 
 			/* Create the rest of the new instances */
-			populate(numNewInstancesPerInstance, instancesIDs);
+			populate(numNewInstancesPerInstance, instancesIDs, numNewInstances);
 		}
 		
 		/* Insert the created instances in the instanceSet */
 		instanceSet.insertInstances(newInstanceSet);
 	}
 	
-	private void populate(int numNewInstancesPerInstance, int[] instancesIDs) {
+	private void populate(int numNewInstancesPerInstance, int[] instancesIDs,
+			int max) {
 		int numInstancesIDs = instancesIDs.length;
 		int inst;
 		int nearestNeighborsIDs[];
@@ -310,6 +315,12 @@ public class Smote {
 			nearestNeighborsIDs = nearestNeighborIDs(i, instancesIDs);
 			for (int w = 0; w < instances[inst].data[counterIndex]; w++) {
 				populateAux(inst, nearestNeighborsIDs, numNewInstancesPerInstance);
+				if (newInstanceCounter >= max) {
+					break;
+				}
+			}
+			if (newInstanceCounter >= max) {
+				break;
 			}
 		}
 		
@@ -352,8 +363,13 @@ public class Smote {
 			/* Alocate space for the new instance and its weight */
 			float newInstance[] = new float[numAttributes + 1];
 
+//			OLD
+//			/* Chooses randomly one of the k nearest neighbor */
+//			chosenNN = (int) Math.round((Math.random() * (double) (k - 1)));
+//			nearestNeighborIndex = nearestNeighborsIDs[chosenNN];
+
 			/* Chooses randomly one of the k nearest neighbor */
-			chosenNN = (int) Math.round((Math.random() * (double) (k - 1)));
+			chosenNN = random.nextInt(nearestNeighborsIDs.length);
 			nearestNeighborIndex = nearestNeighborsIDs[chosenNN];
 			
 			gap = Math.random();
@@ -483,23 +499,29 @@ public class Smote {
 	 * @param numNewInstances: The size of the subset created
 	 * @return
 	 */
-	private int[] chooseInstances(int instancesIDs[], int numNewInstances) {
-		int numInstances = instancesIDs.length;
+	private int[] chooseInstances(int[] instancesIDs, int numNewInstances) {
+		int[] instancesIDsAux = instancesIDs.clone();
+
+		int numInstances = instancesIDsAux.length;
 		int indexesChosen[] = new int[numNewInstances];
 
-		boolean[] used = new boolean[numInstances];
-		Arrays.fill(used, false);
-		
 		Random random = new Random(new Date().getTime());
 		int counter = 0;
+		int index = 0;
 		int inst;
+		int instIDs;
+		int last;
 		while (counter < numNewInstances) {
-			inst = random.nextInt(numInstances);
-			if (!used[inst]) {
-				indexesChosen[counter] = instancesIDs[inst];
-				used[inst] = true;
-				++counter;
-			}
+			instIDs = random.nextInt(numInstances);
+			inst = instancesIDsAux[instIDs];
+			
+			counter += instanceSet.instances[inst].data[counterIndex];
+			indexesChosen[index] = inst;
+			++index;
+			
+			last = instancesIDsAux[numInstances - 1];
+			instancesIDsAux[instIDs] = last;
+			--numInstances;
 		}
 		
 		return indexesChosen;
@@ -513,47 +535,81 @@ public class Smote {
 	 * @return
 	 */
 	private int[] nearestNeighborIDs(int instanceID, int[] instancesIDs) {
-		int nearestNeighborIDs[] = new int[k];
 		int index;
-		int idx = instancesIDs[instanceID];
+		int count = 0;
 		
 		for (int i = 0; i < k; i++) {
-			index = (int) nearesNeighborsIDs[idx][2 * i];
-			if (index < 0) {
-				@SuppressWarnings("unused")
-				boolean fudeu = true;
+			index = (int) nearesNeighborsIDs[instanceID][2 * i];
+			if (index > 0) {
+				++count;
 			}
-
-			nearestNeighborIDs[i] = index;
 		}
+
+		if (count == 0) {
+			@SuppressWarnings("unused")
+			boolean fudeu = true;
+		}
+		
+		int nearestNeighborIDs[] = new int[count];
+		count = 0;
+		for (int i = 0; i < k; i++) {
+			index = (int) nearesNeighborsIDs[instanceID][2 * i];
+			if (index > 0) {
+				nearestNeighborIDs[count] = index;
+				++count;
+			}
+		}
+
 		return nearestNeighborIDs;
 	}
 
-	public void buildNN(int k, int classValue)
-	throws Exception {
-		this.k = k;
-
-		/* Build instancesIDs */
-		int numInstancesIDs = 0;
+	public void buildNN(int k, int classValue) throws Exception {
+		int counter = 0;
 		int instancesIDsTmp[] = new int[numInstances];
+		
 		for (int inst = 0; inst < numInstances; inst++) {
-			if (classValue == -1 ||
-					instances[inst].data[classIndex] == classValue) {
-				instancesIDsTmp[numInstancesIDs] = inst;
-				++numInstancesIDs;
+			if (instances[inst].data[classIndex] == classValue) {
+				instancesIDsTmp[counter] = inst;
+				++counter;
 			}
 		}
-		int instancesIDs[] = new int[numInstancesIDs];
-		for (int i = 0; i < numInstancesIDs; i++) {
+		int instancesIDs[] = new int[counter];
+		for (int i = 0; i < counter; i++) {
 			instancesIDs[i] = instancesIDsTmp[i];
 		}
 		
+		buildNN(instancesIDs, k);
+	}
+
+	/**
+	 * SMOTE oversamples a complete dataset. It creates new cases
+	 * based on the existing ones. These new cases are randomly interpolated
+	 * between each instance and its k nearest neighbors, also chosen by random.
+	 * 
+	 * @param proportion: Desired proportion of new instances
+	 * @throws Exception 
+	 */
+	public void buildNN(int k) throws Exception {
+		int instancesIDs[] = new int[numInstances];
+		
+		for (int inst = 0; inst < numInstances; inst++) {
+			instancesIDs[inst] = inst;
+		}
+		
+		buildNN(instancesIDs, k);
+	}
+
+	public void buildNN(int[] instancesIDs, int k)
+	throws Exception {
+		this.k = k;
+		int numInstancesIDs = instancesIDs.length;
+
 		/* 
 		 * 'nearesNeighborsIDs[i][j]' - j:
 		 * evens - nn ID
 		 * odds - nn distance
 		 */
-		nearesNeighborsIDs = new float[numInstances][2 * k];
+		nearesNeighborsIDs = new float[numInstancesIDs][2 * k];
 		
 //		/* File with nearest neighbors to open */
 //		File fileTest;
@@ -568,7 +624,7 @@ public class Smote {
 //		if(fileTest.exists()) {
 //			/* Initialize from existing file */
 //			file = new RandomAccessFile(fileTest, "r");
-//			for (int i = 0; i < numInstances; i++) {
+//			for (int i = 0; i < numInstancesIDs; i++) {
 //				for (int d = 0; d < 2 * k; d += 2) {
 //					nearesNeighborsIDs[i][d] = file.readInt();
 //					nearesNeighborsIDs[i][d + 1] = file.readFloat();
@@ -579,7 +635,7 @@ public class Smote {
 //		}
 
 		/* Initialize 'nearesNeighborsIDs */
-		for (int i = 0; i < numInstances; i++) {
+		for (int i = 0; i < numInstancesIDs; i++) {
 			for (int j = 0; j < 2 * k; j += 2) {
 				nearesNeighborsIDs[i][j] = -1;
 				nearesNeighborsIDs[i][j + 1] = Float.POSITIVE_INFINITY;
@@ -605,14 +661,14 @@ public class Smote {
 				dist = distance.distanceValue(instances[instI].data,
 						instances[instJ].data);
 				if (dist < distGreater) {
-					nearesNeighborsIDs[instI][distGreaterID + 1] = dist;
-					nearesNeighborsIDs[instI][distGreaterID] = instJ;
+					nearesNeighborsIDs[i][distGreaterID + 1] = dist;
+					nearesNeighborsIDs[i][distGreaterID] = instJ;
 					distGreater = 0;
 					
 					/* Find the greatest distance */
 					for (int d = 0; d < 2 * k; d += 2) {
-						if (distGreater < nearesNeighborsIDs[instI][d + 1]) {
-							distGreater = nearesNeighborsIDs[instI][d + 1];
+						if (distGreater < nearesNeighborsIDs[i][d + 1]) {
+							distGreater = nearesNeighborsIDs[i][d + 1];
 							distGreaterID = d;
 						}
 					}
@@ -622,7 +678,7 @@ public class Smote {
 		
 //		/* Save nearestneighbors */
 //		file = new RandomAccessFile(fileTest, "rw");
-//		for (int i = 0; i < numInstances; i++) {
+//		for (int i = 0; i < numInstancesIDs; i++) {
 //			for (int d = 0; d < 2 * k; d += 2) {
 //				file.writeInt((int) nearesNeighborsIDs[i][d]);
 //				file.writeFloat(nearesNeighborsIDs[i][d + 1]);

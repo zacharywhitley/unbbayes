@@ -397,9 +397,9 @@ public class PreprocessorMain extends JInternalFrame
 				statusBar.setText("Operação cancelada");
 			}
 
-		} catch (NullPointerException npe) {
-			statusBar.setText(resource.getString("errorDB") +
-					selectedFile.getName() + " " + npe.getMessage());
+//		} catch (NullPointerException npe) {
+//			statusBar.setText(resource.getString("errorDB") +
+//					selectedFile.getName() + " " + npe.getMessage());
 		} catch (FileNotFoundException fnfe) {
 			statusBar.setText(resource.getString("fileNotFound") +
 					selectedFile.getName() + " " + fnfe.getMessage());

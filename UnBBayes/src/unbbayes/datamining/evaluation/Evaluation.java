@@ -1,7 +1,6 @@
 package unbbayes.datamining.evaluation;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 import java.util.ResourceBundle;
@@ -12,8 +11,8 @@ import unbbayes.datamining.classifiers.DistributionClassifier;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Options;
-import unbbayes.datamining.datamanipulation.UnassignedClassException;
 import unbbayes.datamining.datamanipulation.Utils;
+import unbbayes.datamining.evaluation.CrossValidation;
 
 /**
  * Class for evaluating machine learning classsifiers
@@ -100,7 +99,7 @@ public class Evaluation implements IProgress {
 		}
 	}
 
-	public Evaluation(InstanceSet instanceSet,Classifier classifier) throws Exception {
+	public Evaluation(InstanceSet instanceSet, Classifier classifier) throws Exception {
 		this(instanceSet);
 		this.classifier = classifier;
 //		if (classifier instanceof DistributionClassifier) {
@@ -121,13 +120,13 @@ public class Evaluation implements IProgress {
 //			propagationResults = new float[numInstances][numClasses];
 //			propagation = new byte[numInstances][2];
 //		}	
-		for	(int i = 0; i < numInstances; i++)
-			{	 if ((i%50000)==0)
-				{	 String currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
-					System.out.println("instância = "+i+" hora = "+currentHour);
-				}
-				evaluateModelOnce(classifier,instanceSet.getInstance(i));
+		for	(int i = 0; i < numInstances; i++) {
+			if ((i%50000)==0) {
+				String currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
+				System.out.println("instância = "+i+" hora = "+currentHour);
 			}
+			evaluateModelOnce(classifier, instanceSet.getInstance(i));
+		}
 	}
 
 	/**
@@ -138,7 +137,7 @@ public class Evaluation implements IProgress {
 	 * @exception Exception if model could not be evaluated
 	 * successfully
 	 */
-	public void evaluateModel(Classifier classifier,InstanceSet testData)
+	public void evaluateModel(Classifier classifier, InstanceSet testData)
 	throws Exception {	
 //		if (classifier instanceof DistributionClassifier) {
 //			propagationResults = new float[numInstances][numClasses];
@@ -146,7 +145,7 @@ public class Evaluation implements IProgress {
 //		}
 		int numInstances = testData.numInstances();
 		for (int i = 0; i < numInstances; i++) {
-			evaluateModelOnce(classifier,testData.getInstance(i));
+			evaluateModelOnce(classifier, testData.getInstance(i));
 		}
 	}
 
@@ -159,21 +158,20 @@ public class Evaluation implements IProgress {
 	 * @exception Exception if model could not be evaluated
 	 * successfully
 	 */
-	public float evaluateModelOnce(Classifier classifier,Instance instance)
+	public float evaluateModelOnce(Classifier classifier, Instance instance)
 	throws Exception {
-		Instance classMissing = instance;
 		int pred = 0;
 		if (classIsNominal) {	 
 			if (classifier instanceof DistributionClassifier) {	
 				float[] dist = ((DistributionClassifier) classifier)
-					.distributionForInstance(classMissing);
+					.distributionForInstance(instance);
 				//propagationResults[counter] = dist;
 				
 				pred = ((DistributionClassifier) classifier)
 					.classifyInstance(dist);
 				updateStatsForClassifier(pred, instance);
 			} else {	
-				pred = classifier.classifyInstance(classMissing);
+				pred = classifier.classifyInstance(instance);
 				updateStatsForClassifier(pred, instance);
 			}
 		} else {
@@ -473,7 +471,8 @@ public class Evaluation implements IProgress {
 
 	/**
 	 * Performs a (stratified if class is nominal) cross-validation for a
-	 * classifier on a set of instances.
+	 * classifier on a set of instances. Only works with non compacted 
+	 * instanceSet.
 	 * 
 	 * @param classifier
 	 *            the classifier with any options set.
@@ -485,158 +484,25 @@ public class Evaluation implements IProgress {
 	 */
 	public void crossValidateModel(Classifier classifier, int numFolds)
 			throws Exception {
-		instanceSet.randomize(new Random(new Date().getTime()));
-		if (instanceSet.getClassAttribute().isNominal()) {
-			// TODO DESCOMENTAR E CORRIGIR ERRO
-			//instanceSet.stratify();
+		/* Check if the instanceSet is compacted */
+		if (instanceSet.isCompacted()) {
+			throw new IllegalArgumentException("cross validation only " +
+					"works with non compacted instanceSet!");
 		}
-		// Do the folds
+		
+		if (instanceSet.getClassAttribute().isNominal()) {
+			instanceSet.stratify(numFolds);
+		} else {
+			instanceSet.randomize(new Random(new Date().getTime()));
+		}
+		
+		/* Do the folds */
 		for (int i = 0; i < numFolds; i++) {
-			InstanceSet train = trainCV(instanceSet, numFolds, i);
+			InstanceSet train = CrossValidation.trainCV(instanceSet, numFolds, i);
 			classifier.buildClassifier(train);
-			InstanceSet test = testCV(instanceSet, numFolds, i);
+			InstanceSet test = CrossValidation.testCV(instanceSet, numFolds, i);
 			evaluateModel(classifier, test);
 		}
-	}
-
-	/**
-	 * Creates the training set for one fold of a cross-validation
-	 * on the dataset.
-	 *
-	 * @param instances set of training instances
-	 * @param numFolds the number of folds in the cross-validation. Must
-	 * be greater than 1.
-	 * @param numFold 0 for the first fold, 1 for the second, ...
-	 * @return the training set for a fold
-	 * @exception IllegalArgumentException if the number of folds is less than
-	 * 2 or greater than the number of instances.
-	 */
-	public InstanceSet trainCV(InstanceSet instances, int numFolds,
-			int numFold) {
-		int numInstForFold, first, offset;
-		int numInstances = instances.numInstances();
-		InstanceSet train;
-	
-		if (numFolds < 2) {
-			throw new IllegalArgumentException(resource.getString("folds2"));
-		}
-		if (numFolds > numInstances) {
-			throw new IllegalArgumentException(resource.getString("moreFolds"));
-		}
-		numInstForFold = numInstances / numFolds;
-		if (numFold < numInstances % numFolds) {
-			numInstForFold++;
-			offset = numFold;
-		} else {
-			offset = numInstances % numFolds;
-		}
-		train = new InstanceSet(instances, (numInstances - numInstForFold));
-		first = numFold * (numInstances / numFolds) + offset;
-		instances.copyInstances(0, train, first);
-		instances.copyInstances(first + numInstForFold, train, numInstances -
-				first - numInstForFold);
-	
-		return train;
-	}
-
-	/**
-	 * Creates the test set for one fold of a cross-validation on
-	 * the dataset.
-	 *
-	 * @param instances set of training instances
-	 * @param numFolds the number of folds in the cross-validation. Must
-	 * be greater than 1.
-	 * @param numFold 0 for the first fold, 1 for the second, ...
-	 * @return the test set of instances
-	 * @exception IllegalArgumentException if the number of folds is less than
-	 * 2 or greater than the number of instances.
-	 */
-	public InstanceSet testCV(InstanceSet instances,int numFolds,
-			int numFold) {
-		int numInstForFold, first, offset;
-		int numInstances = instances.numInstances();
-		InstanceSet test;
-	
-		if (numFolds < 2) {
-			throw new IllegalArgumentException(resource.getString("folds2"));
-		}
-		if (numFolds > numInstances) {
-			throw new IllegalArgumentException(resource.getString("moreFolds"));
-		}
-		numInstForFold = numInstances / numFolds;
-		if (numFold < numInstances % numFolds) {
-			numInstForFold++;
-			offset = numFold;
-		} else {
-			offset = numInstances % numFolds;
-		}
-		test = new InstanceSet(instances, numInstForFold);
-		first = numFold * (numInstances / numFolds) + offset;
-		instances.copyInstances(first, test, numInstForFold);
-		return test;
-	}
-
-	/**
-	 * Stratifies a set of instances according to its class values
-	 * if the class attribute is nominal (so that afterwards a
-	 * stratified cross-validation can be performed).
-	 *
-	 * @param instances set of training instances
-	 * @param numFolds the number of folds in the cross-validation
-	 * @exception UnassignedClassException if the class is not set
-	 */
-	public final void stratify(InstanceSet instances, int numFolds) {
-		if (numFolds <= 0) {
-			throw new IllegalArgumentException(resource.getString("folds1"));
-		}
-		if (instances.getClassIndex() < 0) {
-			throw new UnassignedClassException(resource.getString("classNegative"));
-		}
-		if (instances.getClassAttribute().isNominal()) {
-			/* Sort by class */
-			int index = 1;
-			int numInstances = instances.numInstances();
-			while (index < numInstances) {
-				Instance instance1 = instances.getInstance(index - 1);
-				for (int j = index; j < numInstances; j++) {
-					Instance instance2 = instances.getInstance(j);
-					if (instance1.classValue() == instance2.classValue() ||
-							(instance1.classIsMissing()
-									&& instance2.classIsMissing())) {
-						instances.swap(index,j);
-						index++;
-					}
-				}
-				index++;
-			}
-			stratStep(instances,numFolds);
-		}
-	}
-
-	/**
-	 * Help function needed for stratification of a set.
-	 *
-	 * @param instances set of training instances
-	 * @param numFolds the number of folds for the stratification
-	 */
-	private void stratStep (InstanceSet instances, int numFolds) {
-		int numInstances = instances.numInstances();
-		Instance[] newVec = new Instance[numInstances];
-		int start = 0;
-		int j;
-		int i = 0;
-	
-		/* Create stratified batch */
-		while (newVec.length < numInstances) {
-			j = start;
-			while (j < numInstances) {
-				newVec[i]= instances.getInstance(j);
-				j += numFolds;
-			}
-			start++;
-			i++;
-		}
-		instances.setInstances(newVec);
 	}
 
 	/**
@@ -1062,52 +928,23 @@ public class Evaluation implements IProgress {
 		counter = 0;
 	}
 
-	public void computeROCCurve() {
-		/*
-		 * for (int i=0;i<numInstances;i++) { for (int j=0;j<numClasses;j++) {
-		 * System.out.println("j = "+propagationResults[i][j]); }
-		 * System.out.println("actualClass = "+propagation[i][0]);
-		 * System.out.println("predictedClass = "+propagation[i][1]);
-		 * System.out.println("i = "+i); }
+	public static float[] getEvaluatedProbabilities(Classifier classifier, InstanceSet testData,
+			int positiveClass) throws Exception {	
+		int numInstances = testData.numInstances();
+		float[] probs = new float[numInstances];
+		
+		/* 
+		 * Get probabilistic classifier's estimate that instance i is
+		 * positive.
 		 */
-		ArrayList[] vet1 = new ArrayList[numClasses];// float
-		ArrayList[] vet2 = new ArrayList[numClasses];// boolean
-		for (int j = 0; j < numClasses; j++) {
-			vet1[j] = new ArrayList();
-			vet2[j] = new ArrayList();
+		float[] dist;
+		for (int inst = 0; inst < numInstances; inst++) {
+			dist = ((DistributionClassifier) classifier)
+				.distributionForInstance(testData.getInstance(inst));
+			probs[inst] = dist[positiveClass];
 		}
-		for (int i = 0; i < numInstances; i++) {
-			// vet1[propagation[i][1]].add(new
-			// Float(propagationResults[i][propagation[i][1]]));
-			// vet2[propagation[i][1]].add(new
-			// Boolean(propagation[i][0]==propagation[i][1]));
-		}
-		double[][] v3 = new double[numClasses][];
-		boolean[][] v4 = new boolean[numClasses][];
-		boolean[][] v5 = new boolean[numClasses][];
-		for (int j = 0; j < numClasses; j++) {
-			/*
-			 * System.out.println("class = "+j); for(int i=0;i<vet1[j].size();i++) {
-			 * System.out.println("Valor = "+vet1[j].get(i));
-			 * System.out.println("Flag = "+vet2[j].get(i)); }
-			 */
-			v3[j] = new double[vet1[j].size()];
-			v4[j] = new boolean[vet1[j].size()];
-			v5[j] = new boolean[vet1[j].size()];
-		}
-		for (int j = 0; j < numClasses; j++) {
-			for (int i = 0; i < v3[j].length; i++) {
-				v3[j][i] = ((Float) vet1[j].get(i)).floatValue();
-				v4[j][i] = ((Boolean) vet2[j].get(i)).booleanValue();
-			}
-		}
-		/*
-		 * for (int j=0;j<numClasses;j++) { int[] res = Utils.sort(v3[j]); for
-		 * (int i=0;i<res.length;i++) { v5[i] = v4[res[i]]; } } for (int j=0;j<numClasses;j++) {
-		 * System.out.println("Class = "+j); for(int i=0;i<v3[j].length;i++) {
-		 * System.out.println("Valor = "+v3[j][i]); System.out.println("Flag =
-		 * "+v5[j][i]); } }
-		 */
+		
+		return probs;
 	}
-
+	
 }

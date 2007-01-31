@@ -48,10 +48,10 @@ public class Testset {
 
 	public void run() throws Exception {
 		/* Data set characteristics */
-//		String trainFileName = "c:/dados/m1t.arff";
-//		String testFileName = "c:/dados/m1av.arff";
-		String trainFileName = "c:/dados/m1tOriginal.arff";
-		String testFileName = "c:/dados/m1avOriginal.arff";
+		String trainFileName = "c:/dados/m1t.arff";
+		String testFileName = "c:/dados/m1av.arff";
+//		String trainFileName = "c:/dados/m1tOriginal.arff";
+//		String testFileName = "c:/dados/m1avOriginal.arff";
 		int classIndex = 10;
 		int counterIndex = 11;
 		

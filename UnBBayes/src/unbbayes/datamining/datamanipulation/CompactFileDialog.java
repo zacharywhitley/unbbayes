@@ -24,7 +24,7 @@ public class CompactFileDialog
             {   int selectedAttribute = attributesComboBox.getSelectedIndex();
                 loader.setCounterAttribute(selectedAttribute);
                 loader.getInstanceSet().setCounterAttributeName(attributesComboBox.getSelectedItem()+"");
-                Options.getInstance().setCompactedFile(true);
+                loader.getInstanceSet().setCompacted(true);
             }
         }
     }

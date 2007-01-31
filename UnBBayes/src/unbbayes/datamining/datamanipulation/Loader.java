@@ -29,6 +29,8 @@ public abstract class Loader implements IProgress {
 
 	protected boolean compacted;
 
+	protected boolean checkedCompacted = false;
+
 	/** 
 	 * Stores the type of an attribute:
 	 * 0 - Numeric
@@ -82,6 +84,22 @@ public abstract class Loader implements IProgress {
 	 */
 	public InstanceSet getInstanceSet() {
 		instanceSet.setFinal();
+		
+		/* Check if the instanceSet is compacted or not */
+		if (!checkedCompacted) {
+			instanceSet.setCompacted(false);
+			float weight;
+			for (int inst = 0; inst < instanceSet.numInstances; inst++) {
+				weight = instanceSet
+					.instances[inst].data[instanceSet.counterIndex];
+				if (weight > 1) {
+					instanceSet.setCompacted(true);
+					break;
+				}
+			}
+			checkedCompacted = true;
+		}
+
 		return instanceSet;
 	}
 
@@ -174,7 +192,7 @@ public abstract class Loader implements IProgress {
 		return initialInstances;
 	}
 
-	protected void countInstancesFromFile(File file, int num)
+	protected void countInstancesFromFile(File file, int num, boolean txt)
 	throws IOException {
 		FileInputStream fileIn = new FileInputStream(file);
 		InputStreamReader inReader = new InputStreamReader(fileIn);
@@ -183,7 +201,14 @@ public abstract class Loader implements IProgress {
 		/* Count lines of the file */
 		int count = 0;
 		String line;
+		
 		boolean startCount = false;
+
+		/* Check if its a txt file */
+		if (txt) {
+			startCount = true;
+		}
+		
 		while ((line = in.readLine()) != null) {
 			if (startCount && (!line.startsWith("%"))) {
 				count++;
@@ -229,6 +254,10 @@ public abstract class Loader implements IProgress {
 	
 	public void setCompacted(boolean compacted) {
 		this.compacted = compacted;
+	}
+
+	public int getnumInitialInstances() {
+		return initialInstances;
 	}
 
 }

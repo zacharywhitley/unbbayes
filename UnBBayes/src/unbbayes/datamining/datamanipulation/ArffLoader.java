@@ -38,7 +38,7 @@ public class ArffLoader extends Loader {
 		this.file = file;
 
 		// Count instanceSet
-		countInstancesFromFile(file, numLines);
+		countInstancesFromFile(file, numLines, false);
 
 		// Memory initialization
 		Reader reader = new BufferedReader(new FileReader(file));
@@ -438,7 +438,7 @@ public class ArffLoader extends Loader {
 
 		/* Set the weight of this instance */
 		instance[attIndex] = instanceWeight;
-
+		
 		/* Add the current instance to the instanceSet */
 		instanceSet.insertInstance(new Instance(instance));
 

@@ -569,6 +569,65 @@ public final class Utils {
 
 	
 	
+	/*------------------- float[] Quicksort - start ---------------------*/
+	
+	/**
+	 * Sorts a given array of floats in ascending order and returns an
+	 * array of integers with the positions of the elements of the
+	 * original array in the sorted array. It doesn't use safe floating-point
+	 * comparisons. Occurrences of Double.NaN are treated as
+	 * Double.MAX_VALUE
+	 *
+	 * @param array This array is not changed by the method!
+	 * @return An array of integers with the positions in the sorted
+	 * array.
+	 */
+	public static int[] sort(float[] array) {
+		int [] index = new int[array.length];
+		
+		rnd = new Random(new Date().getTime());
+		
+		for (int i = 0; i < index.length; i++) {
+			index[i] = i;
+			if (Double.isNaN(array[i])) {
+				array[i] = Float.MAX_VALUE;
+			}
+		}
+		qsort(array, index, 0, array.length - 1);
+		
+		return index;
+	}
+
+	private static void qsort(float[] array, int[] index, int begin, int end) {
+		if (end > begin) {
+			int pos = partition(array, index, begin, end);
+			
+			qsort(array, index, begin, pos - 1);
+			qsort(array, index, pos + 1,  end);
+		}
+	}
+	
+	private static int partition(float[] array, int[] index, int begin,
+			int end) {
+		int pos = begin + rnd.nextInt(end - begin + 1);
+		float pivot = array[index[pos]];
+		
+		swap(index, pos, end);
+		
+		for (int i = pos = begin; i < end; ++ i) {
+			if (array[index[i]] <= pivot) {
+				swap(index, pos++, i);
+			}
+		}
+		swap(index, pos, end);
+		
+		return pos;
+	}
+
+	/*------------------- double[] Quicksort - end ---------------------*/
+
+	
+	
 	/*------------------- int[] Quicksort - start ---------------------*/
 
 	/**
@@ -1147,4 +1206,21 @@ public final class Utils {
 		
 		return prob;
 	}
+	
+	public static void randomize(int[] index, Random random) {
+		int inst;
+		int size = index.length;
+		int temp;
+		
+		for (int i = size - 1; i > 0; i--) {
+			/* Randomly get an instance index */ 
+			inst = (int) (random.nextDouble() * (double) i);
+			
+			/* swap index with the current instance */
+			temp = index[i];
+			index[i] = index[inst];
+			index[inst] = temp;
+		}
+	}
+	
 }
