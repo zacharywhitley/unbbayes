@@ -12,42 +12,49 @@ import unbbayes.prs.mebn.table.exception.InvalidProbabilityFunctionOperandExcept
 import unbbayes.prs.mebn.table.exception.TableFunctionMalformedException;
 
 /**
- * Classe responsavel por realizar um parser na tabela definida
- * pelo usuario. 
+ * Classe responsavel por realizar um parser na tabela definida pelo usuario.
  * 
  * @author Laecio Lima dos Santos
- *
+ * 
  */
 
 public class TableParser {
-	
+
 	// The MEBN where this table is defined
 	private MultiEntityBayesianNetwork mebn;
+
 	// The node that this table is defining
 	private MultiEntityNode node;
-	
+
 	private TableFunction tableFunction = new TableFunction();
-	
+
 	public TableParser(MultiEntityBayesianNetwork mebn, MultiEntityNode node) {
 		this.mebn = mebn;
 		this.node = node;
-		
+
 	}
-	
-	public List parseTable(String tableFunction) throws TableFunctionMalformedException, NodeNotPresentInMTheoryException, EntityNotPossibleValueOfNodeException, InvalidProbabilityFunctionOperandException {
+
+	public List parseTable(String tableFunction)
+			throws TableFunctionMalformedException,
+			NodeNotPresentInMTheoryException,
+			EntityNotPossibleValueOfNodeException,
+			InvalidProbabilityFunctionOperandException {
 		List data = new ArrayList();
-		
+
 		StringTokenizer st = new StringTokenizer(tableFunction);
-		
+
 		while (st.hasMoreTokens()) {
 			IfClause ifClause = parseIfClause(st);
 			parseProbabilityFunction(st, ifClause);
 		}
-		
+
 		return data;
 	}
-	
-	private IfClause parseIfClause(StringTokenizer st) throws TableFunctionMalformedException, NodeNotPresentInMTheoryException, EntityNotPossibleValueOfNodeException {
+
+	private IfClause parseIfClause(StringTokenizer st)
+			throws TableFunctionMalformedException,
+			NodeNotPresentInMTheoryException,
+			EntityNotPossibleValueOfNodeException {
 		String token = st.nextToken();
 		IfClause ifClause;
 		if (token.equalsIgnoreCase("IF")) {
@@ -62,7 +69,8 @@ public class TableParser {
 				if (token.equalsIgnoreCase("HAVE(")) {
 					parseIfClause(st, ifClause);
 				} else {
-					throw new TableFunctionMalformedException("\'HAVE(\' expected where " + token + "was found.");
+					throw new TableFunctionMalformedException(
+							"\'HAVE(\' expected where " + token + " was found.");
 				}
 			} else if (token.equalsIgnoreCase("ALL")) {
 				// A string representing the parameter set
@@ -73,21 +81,28 @@ public class TableParser {
 				if (token.equalsIgnoreCase("HAVE(")) {
 					parseIfClause(st, ifClause);
 				} else {
-					throw new TableFunctionMalformedException("\'HAVE(\' expected where " + token + "was found.");
+					throw new TableFunctionMalformedException(
+							"\'HAVE(\' expected where " + token + " was found.");
 				}
 			} else if (token.equalsIgnoreCase("(")) {
 				ifClause.setIfOperator(IfOperator.NONE);
 				parseIfClause(st, ifClause);
 			} else {
-				throw new TableFunctionMalformedException("\'ANY\\ALL\\(\' expected where " + token + "was found.");
+				throw new TableFunctionMalformedException(
+						"\'ANY\\ALL\\(\' expected where " + token
+								+ " was found.");
 			}
 		} else {
-			throw new TableFunctionMalformedException("\'IF\' expected where " + token + "was found.");
+			throw new TableFunctionMalformedException("\'IF\' expected where "
+					+ token + " was found.");
 		}
 		return ifClause;
 	}
-	
-	private void parseIfClause(StringTokenizer st, IfClause ifClause) throws TableFunctionMalformedException, NodeNotPresentInMTheoryException, EntityNotPossibleValueOfNodeException {
+
+	private void parseIfClause(StringTokenizer st, IfClause ifClause)
+			throws TableFunctionMalformedException,
+			NodeNotPresentInMTheoryException,
+			EntityNotPossibleValueOfNodeException {
 		BooleanFunction booleanFunction;
 		String nodeName = st.nextToken();
 		String token = st.nextToken();
@@ -109,155 +124,313 @@ public class TableParser {
 				parseIfClause(st, ifClause);
 				return;
 			} else {
-				throw new TableFunctionMalformedException("\')THEN\\AND\\OR\' expected where " + token + "was found.");
+				throw new TableFunctionMalformedException(
+						"\')THEN\\AND\\OR\' expected where " + token
+								+ " was found.");
 			}
 		} else {
-			throw new TableFunctionMalformedException("\'=\' expected where " + token + "was found.");
+			throw new TableFunctionMalformedException("\'=\' expected where "
+					+ token + " was found.");
 		}
 	}
-	
-	private void parseProbabilityFunction(StringTokenizer st, IfClause ifClause) throws TableFunctionMalformedException, EntityNotPossibleValueOfNodeException, InvalidProbabilityFunctionOperandException {
+
+	private void parseProbabilityFunction(StringTokenizer st, IfClause ifClause)
+			throws TableFunctionMalformedException,
+			EntityNotPossibleValueOfNodeException,
+			InvalidProbabilityFunctionOperandException {
 		ProbabilityFunction probabilityFunction = new ProbabilityFunction(node);
 		String token = st.nextToken();
+		// TODO Retirar o [ daqui e colocar onde esse método é chamado
+		// acrescentar o , e o else
 		if (token.equalsIgnoreCase("[")) {
 			// Node's state
 			token = st.nextToken();
-			StateFunction stateFunction = new StateFunction(node, token, ifClause);
+			StateFunction stateFunction = new StateFunction(node, token,
+					ifClause);
 			token = st.nextToken();
 			if (token.equalsIgnoreCase("=")) {
 				parseStateFunction(st, stateFunction);
 			} else {
-				throw new TableFunctionMalformedException("\'=\' expected where " + token + "was found.");
+				throw new TableFunctionMalformedException(
+						"\'=\' expected where " + token + " was found.");
 			}
 		} else {
-			throw new TableFunctionMalformedException("\'[\' expected where " + token + "was found.");
+			throw new TableFunctionMalformedException("\'[\' expected where "
+					+ token + " was found.");
 		}
 	}
-	
-	private void parseStateFunction(StringTokenizer st, StateFunction stateFunction) throws InvalidProbabilityFunctionOperandException, TableFunctionMalformedException {
+
+	private void parseStateFunction(StringTokenizer st,
+			StateFunction stateFunction)
+			throws InvalidProbabilityFunctionOperandException,
+			TableFunctionMalformedException {
+		ProbabilityFunctionOperator firstFunction;
+
+		String token = st.nextToken();
+
+		if (token.equalsIgnoreCase("MAX(")) {
+			firstFunction = ProbabilityFunctionOperator.MAX;
+			token = st.nextToken();
+			parseSimpleStateFunction(st, token, null, firstFunction, true);
+			parseStateFunction(st, stateFunction);
+		} else if (token.equalsIgnoreCase("MIN(")) {
+			firstFunction = ProbabilityFunctionOperator.MIN;
+			token = st.nextToken();
+			parseSimpleStateFunction(st, token, null, firstFunction, true);
+			parseStateFunction(st, stateFunction);
+		} else {
+			parseSimpleStateFunction(st, token, stateFunction, null, false);
+		}
+	}
+
+	private void parseSimpleStateFunction(StringTokenizer st, String token,
+			StateFunction stateFunction,
+			ProbabilityFunctionOperator minMaxFunction, 
+			boolean minMaxFirstOperand)
+			throws InvalidProbabilityFunctionOperandException,
+			TableFunctionMalformedException {
 		ProbabilityFunctionOperator firstFunction;
 		ProbabilityFunctionOperator secondFunction;
-		String token = st.nextToken();
-		
-		if (token.equalsIgnoreCase("MAX(")) {
-			// TODO ESTOU AQUI!!!
-		} else if (token.equalsIgnoreCase("MIN(")) {
-			
-		} else {
-			parseSimpleStateFunction(st, stateFunction, token);
-		}
-	} 
-		
-		private void parseSimpleStateFunction(StringTokenizer st, StateFunction stateFunction, String token) throws InvalidProbabilityFunctionOperandException, TableFunctionMalformedException {
-			ProbabilityFunctionOperator firstFunction;
-			ProbabilityFunctionOperator secondFunction;
 
-			boolean isNumber = false;
-			// Try to convert the token to a number
-			try {
-				Float.parseFloat(token);
-				isNumber = true;
-			} catch(NumberFormatException e) {
-			}
-			if (token.equalsIgnoreCase("CARDINALITY(")) {
+		boolean isNumber = false;
+		// Try to convert the token to a number
+		try {
+			Float.parseFloat(token);
+			isNumber = true;
+		} catch (NumberFormatException e) {
+		}
+		if (token.equalsIgnoreCase("CARDINALITY(")) {
+			token = st.nextToken();
+			if (token.equalsIgnoreCase(stateFunction.getIfClause()
+					.getIfParameterSetName())) {
 				token = st.nextToken();
-				if (token.equalsIgnoreCase(stateFunction.getIfClause().getIfParameterSetName())) {
+				if (token.equalsIgnoreCase(")")) {
+					firstFunction = ProbabilityFunctionOperator.CARDINALITY;
+					firstFunction.setUniqueOperand(stateFunction.getIfClause()
+							.getIfParameterSetName());
+
 					token = st.nextToken();
-					if (token.equalsIgnoreCase(")")) {
-						firstFunction = ProbabilityFunctionOperator.CARDINALITY;
-						firstFunction.setUniqueOperand(stateFunction.getIfClause().getIfParameterSetName());
-						
-						token = st.nextToken();
-						if (token.equalsIgnoreCase("+")) {
-							secondFunction = ProbabilityFunctionOperator.PLUS;
-							secondFunction.setFirstOperand(firstFunction);
+					if (token.equalsIgnoreCase("+")
+							|| token.equalsIgnoreCase("-")
+							|| token.equalsIgnoreCase("*")
+							|| token.equalsIgnoreCase("/")) {
+						secondFunction = getBasicFunction(token);
+						secondFunction.setFirstOperand(firstFunction);
+						if (stateFunction != null) {
 							stateFunction.setFunction(secondFunction);
 							parseStateFunction(st, stateFunction);
-						} else if (token.equalsIgnoreCase("-")) {
-							secondFunction = ProbabilityFunctionOperator.MINUS;
-							secondFunction.setFirstOperand(firstFunction);
-							stateFunction.setFunction(secondFunction);
-							parseStateFunction(st, stateFunction);
-						} else if (token.equalsIgnoreCase("*")) {
-							secondFunction = ProbabilityFunctionOperator.TIMES;
-							secondFunction.setFirstOperand(firstFunction);
-							stateFunction.setFunction(secondFunction);
-							parseStateFunction(st, stateFunction);
-						} else if (token.equalsIgnoreCase("/")) {
-							secondFunction = ProbabilityFunctionOperator.DIVIDE;
-							secondFunction.setFirstOperand(firstFunction);
-							stateFunction.setFunction(secondFunction);
-							parseStateFunction(st, stateFunction);
-						} else if (token.equalsIgnoreCase("]")) {
-							stateFunction.setFunction(firstFunction);
-						} else {
-							throw new TableFunctionMalformedException("\'+\\-\\*\\/\\]\' expected where " + token + "was found.");
+						} else if (minMaxFunction != null) {
+							if (minMaxFirstOperand) {
+								setLastFunctionInFirstOperand(minMaxFunction, secondFunction);
+							} else {
+								setLastFunctionInSecondOperand(minMaxFunction, secondFunction);
+							}
+							token = st.nextToken();
+							parseSimpleStateFunction(st, token, null,
+									minMaxFunction, minMaxFirstOperand);
 						}
-					} else {
-						throw new TableFunctionMalformedException("\')\' expected where " + token + "was found.");
+					} else if (stateFunction != null
+							&& token.equalsIgnoreCase("]")) {
+						stateFunction.setFunction(firstFunction);
+					} else if (minMaxFunction != null && minMaxFirstOperand
+							&& token.equalsIgnoreCase(";")) {
+						setLastFunctionInFirstOperand(minMaxFunction, firstFunction);
+						token = st.nextToken();
+						parseSimpleStateFunction(st, token, null,
+								minMaxFunction, false);
+					} else if (minMaxFunction != null && !minMaxFirstOperand
+							&& token.equalsIgnoreCase(")")) {
+						setLastFunctionInSecondOperand(minMaxFunction, firstFunction);
+					} else if (stateFunction != null) {
+						throw new TableFunctionMalformedException(
+								"\'+\\-\\*\\/\\]\' expected where " + token
+										+ " was found.");
+					} else if (minMaxFunction != null && minMaxFirstOperand) {
+						throw new TableFunctionMalformedException(
+								"\'+\\-\\*\\/\\;\' expected where " + token
+										+ " was found.");
+					} else if (minMaxFunction != null && !minMaxFirstOperand) {
+						throw new TableFunctionMalformedException(
+								"\'+\\-\\*\\/\\)\' expected where " + token
+										+ " was found.");
 					}
 				} else {
-					throw new TableFunctionMalformedException("\'" + stateFunction.getIfClause().getIfParameterSetName() + "\' expected where " + token + "was found.");
+					throw new TableFunctionMalformedException(
+							"\')\' expected where " + token + " was found.");
 				}
-			} else if (node.hasPossibleValue(token)) {
-				firstFunction = ProbabilityFunctionOperator.REFERENCE;
-				firstFunction.setUniqueOperand(token);
-				
+			} else {
+				throw new TableFunctionMalformedException("\'"
+						+ stateFunction.getIfClause().getIfParameterSetName()
+						+ "\' expected where " + token + " was found.");
+			}
+		} else if (node.hasPossibleValue(token)) {
+			firstFunction = ProbabilityFunctionOperator.REFERENCE;
+			firstFunction.setUniqueOperand(token);
+
+			token = st.nextToken();
+			if (token.equalsIgnoreCase("+") || token.equalsIgnoreCase("-")
+					|| token.equalsIgnoreCase("*")
+					|| token.equalsIgnoreCase("/")) {
+				secondFunction = getBasicFunction(token);
+				secondFunction.setFirstOperand(firstFunction);
+				if (stateFunction != null) {
+					stateFunction.setFunction(secondFunction);
+					parseStateFunction(st, stateFunction);
+				} else if (minMaxFunction != null) {
+					if (minMaxFirstOperand) {
+						setLastFunctionInFirstOperand(minMaxFunction, secondFunction);
+					} else {
+						setLastFunctionInSecondOperand(minMaxFunction, secondFunction);
+					}
+					token = st.nextToken();
+					parseSimpleStateFunction(st, token, null,
+							minMaxFunction, minMaxFirstOperand);
+				}
+			} else if (stateFunction != null
+					&& token.equalsIgnoreCase("]")) {
+				stateFunction.setFunction(firstFunction);
+			} else if (minMaxFunction != null && minMaxFirstOperand
+					&& token.equalsIgnoreCase(";")) {
+				setLastFunctionInFirstOperand(minMaxFunction, firstFunction);
 				token = st.nextToken();
-				if (token.equalsIgnoreCase("+")) {
-					secondFunction = ProbabilityFunctionOperator.PLUS;
-					secondFunction.setFirstOperand(firstFunction);
+				parseSimpleStateFunction(st, token, null,
+						minMaxFunction, false);
+			} else if (minMaxFunction != null && !minMaxFirstOperand
+					&& token.equalsIgnoreCase(")")) {
+				setLastFunctionInSecondOperand(minMaxFunction, firstFunction);
+			} else if (stateFunction != null) {
+				throw new TableFunctionMalformedException(
+						"\'+\\-\\*\\/\\]\' expected where " + token
+								+ " was found.");
+			} else if (minMaxFunction != null && minMaxFirstOperand) {
+				throw new TableFunctionMalformedException(
+						"\'+\\-\\*\\/\\;\' expected where " + token
+								+ " was found.");
+			} else if (minMaxFunction != null && !minMaxFirstOperand) {
+				throw new TableFunctionMalformedException(
+						"\'+\\-\\*\\/\\)\' expected where " + token
+								+ " was found.");
+			}
+		} else if (isNumber) {
+			float number = Float.parseFloat(token);
+
+			token = st.nextToken();
+			if (token.equalsIgnoreCase("+") || token.equalsIgnoreCase("-")
+					|| token.equalsIgnoreCase("*")
+					|| token.equalsIgnoreCase("/")) {
+				secondFunction = getBasicFunction(token);
+				secondFunction.setFirstOperand(number);
+				if (stateFunction != null) {
 					stateFunction.setFunction(secondFunction);
 					parseStateFunction(st, stateFunction);
-				} else if (token.equalsIgnoreCase("-")) {
-					secondFunction = ProbabilityFunctionOperator.MINUS;
-					secondFunction.setFirstOperand(firstFunction);
-					stateFunction.setFunction(secondFunction);
-					parseStateFunction(st, stateFunction);
-				} else if (token.equalsIgnoreCase("*")) {
-					secondFunction = ProbabilityFunctionOperator.TIMES;
-					secondFunction.setFirstOperand(firstFunction);
-					stateFunction.setFunction(secondFunction);
-					parseStateFunction(st, stateFunction);
-				} else if (token.equalsIgnoreCase("/")) {
-					secondFunction = ProbabilityFunctionOperator.DIVIDE;
-					secondFunction.setFirstOperand(firstFunction);
-					stateFunction.setFunction(secondFunction);
-					parseStateFunction(st, stateFunction);
-				} else if (token.equalsIgnoreCase("]")) {
-					stateFunction.setFunction(firstFunction);
-				} else {
-					throw new TableFunctionMalformedException("\'+\\-\\*\\/\\]\' expected where " + token + "was found.");
+				} else if (minMaxFunction != null) {
+					if (minMaxFirstOperand) {
+						setLastFunctionInFirstOperand(minMaxFunction, secondFunction);
+					} else {
+						setLastFunctionInSecondOperand(minMaxFunction, secondFunction);
+					}
+					token = st.nextToken();
+					parseSimpleStateFunction(st, token, null,
+							minMaxFunction, minMaxFirstOperand);
 				}
-			} else if (isNumber) {
-				float number = Float.parseFloat(token);
-				
+			} else if (stateFunction != null
+					&& token.equalsIgnoreCase("]")) {
+				stateFunction.setFunction(number);
+			} else if (minMaxFunction != null && minMaxFirstOperand
+					&& token.equalsIgnoreCase(";")) {
+				setLastFunctionInFirstOperand(minMaxFunction, number);
 				token = st.nextToken();
-				if (token.equalsIgnoreCase("+")) {
-					secondFunction = ProbabilityFunctionOperator.PLUS;
-					secondFunction.setFirstOperand(number);
-					stateFunction.setFunction(secondFunction);
-					parseStateFunction(st, stateFunction);
-				} else if (token.equalsIgnoreCase("-")) {
-					secondFunction = ProbabilityFunctionOperator.MINUS;
-					secondFunction.setFirstOperand(number);
-					stateFunction.setFunction(secondFunction);
-					parseStateFunction(st, stateFunction);
-				} else if (token.equalsIgnoreCase("*")) {
-					secondFunction = ProbabilityFunctionOperator.TIMES;
-					secondFunction.setFirstOperand(number);
-					stateFunction.setFunction(secondFunction);
-					parseStateFunction(st, stateFunction);
-				} else if (token.equalsIgnoreCase("/")) {
-					secondFunction = ProbabilityFunctionOperator.DIVIDE;
-					secondFunction.setFirstOperand(number);
-					stateFunction.setFunction(secondFunction);
-					parseStateFunction(st, stateFunction);
-				} else if (token.equalsIgnoreCase("]")) {
-					stateFunction.setFunction(number);
-				} else {
-					throw new TableFunctionMalformedException("\'+\\-\\*\\/\\]\' expected where " + token + "was found.");
-				}
-			} 
+				parseSimpleStateFunction(st, token, null,
+						minMaxFunction, false);
+			} else if (minMaxFunction != null && !minMaxFirstOperand
+					&& token.equalsIgnoreCase(")")) {
+				setLastFunctionInSecondOperand(minMaxFunction, number);
+			} else if (stateFunction != null) {
+				throw new TableFunctionMalformedException(
+						"\'+\\-\\*\\/\\]\' expected where " + token
+								+ " was found.");
+			} else if (minMaxFunction != null && minMaxFirstOperand) {
+				throw new TableFunctionMalformedException(
+						"\'+\\-\\*\\/\\;\' expected where " + token
+								+ " was found.");
+			} else if (minMaxFunction != null && !minMaxFirstOperand) {
+				throw new TableFunctionMalformedException(
+						"\'+\\-\\*\\/\\)\' expected where " + token
+								+ " was found.");
+			}
+		}
+	}
+
+	private void setLastFunctionInFirstOperand(ProbabilityFunctionOperator function1,
+			ProbabilityFunctionOperator function2)
+			throws InvalidProbabilityFunctionOperandException {
+		if (function1.getFirstOperand() != null) {
+			function1 = function1.getFirstOperand();
+		} else {
+			function1.setFirstOperand(function2);
+			return;
+		}
+		while (function1.getSecondOperand() != null) {
+			function1 = function1.getSecondOperand();
+		}
+		function1.setSecondOperand(function2);
+	}
+	
+	private void setLastFunctionInSecondOperand(ProbabilityFunctionOperator function1,
+			ProbabilityFunctionOperator function2)
+			throws InvalidProbabilityFunctionOperandException {
+		if (function1.getSecondOperand() != null) {
+			function1 = function1.getSecondOperand();
+		} else {
+			function1.setSecondOperand(function2);
+			return;
+		}
+		while (function1.getSecondOperand() != null) {
+			function1 = function1.getSecondOperand();
+		}
+		function1.setSecondOperand(function2);
+	}
+	
+	private void setLastFunctionInFirstOperand(ProbabilityFunctionOperator function1,
+			float number)
+			throws InvalidProbabilityFunctionOperandException {
+		if (function1.getFirstOperand() != null) {
+			function1 = function1.getFirstOperand();
+		} else {
+			function1.setFirstOperand(number);
+			return;
+		}
+		while (function1.getSecondOperand() != null) {
+			function1 = function1.getSecondOperand();
+		}
+		function1.setSecondOperand(number);
+	}
+	
+	private void setLastFunctionInSecondOperand(ProbabilityFunctionOperator function1,
+			float number)
+			throws InvalidProbabilityFunctionOperandException {
+		if (function1.getSecondOperand() != null) {
+			function1 = function1.getSecondOperand();
+		} else {
+			function1.setSecondOperand(number);
+			return;
+		}
+		while (function1.getSecondOperand() != null) {
+			function1 = function1.getSecondOperand();
+		}
+		function1.setSecondOperand(number);
+	}
+
+	private ProbabilityFunctionOperator getBasicFunction(String token) {
+		if (token.equalsIgnoreCase("+")) {
+			return ProbabilityFunctionOperator.PLUS;
+		} else if (token.equalsIgnoreCase("-")) {
+			return ProbabilityFunctionOperator.MINUS;
+		} else if (token.equalsIgnoreCase("*")) {
+			return ProbabilityFunctionOperator.TIMES;
+		} else if (token.equalsIgnoreCase("/")) {
+			return ProbabilityFunctionOperator.DIVIDE;
+		}
+		return null;
 	}
 }

@@ -114,6 +114,10 @@ public enum ProbabilityFunctionOperator {
 		this.uniqueOperand = uniqueOperand;
 	}
 	
+	public ProbabilityFunctionOperator getFirstOperand() {
+		return firstProbabilityFunctionOperator;
+	}
+	
 	public ProbabilityFunctionOperator getSecondOperand() {
 		return secondProbabilityFunctionOperator;
 	}
