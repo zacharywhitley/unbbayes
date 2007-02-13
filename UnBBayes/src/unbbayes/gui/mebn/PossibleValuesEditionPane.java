@@ -1,6 +1,7 @@
 package unbbayes.gui.mebn;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,6 +23,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 
+import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.DomainResidentNode;
@@ -35,6 +37,7 @@ public class PossibleValuesEditionPane extends JPanel{
     private List<Entity> listPossibleValues; 
     
     JPanel jpInformation; 
+    JPanel jpAddOptions; 
 	
 	JLabel name; 
 	JTextField txtName; 
@@ -42,8 +45,9 @@ public class PossibleValuesEditionPane extends JPanel{
 	JButton jbNew; 
 	JButton jbDelete; 	
 	
+	JButton jbBooleanStates; 
+	
 	JToolBar jtbOptions; 	
-    
     
     private JList jlPossibleValues; 
     private DefaultListModel listModel;
@@ -54,6 +58,7 @@ public class PossibleValuesEditionPane extends JPanel{
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 	
+    private final IconController iconController = IconController.getInstance();
     
     public PossibleValuesEditionPane(){
     	
@@ -68,7 +73,6 @@ public class PossibleValuesEditionPane extends JPanel{
 		residentNode = _residentNode;
 		mebnController = _controller.getMebnController(); 
 		
-		
 		listPossibleValues = residentNode.getPossibleValueList(); 
 		
 		listModel = new DefaultListModel(); 
@@ -76,44 +80,40 @@ public class PossibleValuesEditionPane extends JPanel{
 			listModel.addElement(entity.getName()); 
 		}
 		
-		/* a jogadinha abaixo foi feita para setar o tamanho do painel,
-		 * pois caso não haja nenhum elemento ele aumentara o frame
-		 * no qual este painel esta sendo inserido
-		 */
-		//TODO fazer isto de uma forma decente... 
-		if(listPossibleValues.size() == 0){
-		    listModel.addElement(""); 
-		}
-		
 	    jlPossibleValues = new JList(listModel); 
 	    jlPossibleValues.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	    jlPossibleValues.setSelectedIndex(0);
+	    
 	    //jlPossibleValues.addListSelectionListener(this);
+	    
 	    jlPossibleValues.setLayoutOrientation(JList.VERTICAL);
 	    jlPossibleValues.setVisibleRowCount(-1);
 	    JScrollPane listScrollPane = new JScrollPane(jlPossibleValues);
 	    
-	    /* painel of information abaut the OVariable */
-	    jpInformation = new JPanel(new GridLayout(3, 0)); 
+
 	    
-	    name = new JLabel("Name: "); 
 	    txtName = new JTextField(10);
 	    
 	    jtbOptions = new JToolBar(); 
 	    jtbOptions.setLayout(new GridLayout(0, 2)); 
 	    
-	    //TODO usar resources
-	    jbNew = new JButton("NEW"); 
-	    jbDelete = new JButton("DEL"); 
+	    jbNew = new JButton(iconController.getMoreIcon()); 
+	    jbDelete = new JButton(iconController.getLessIcon()); 
 	    jtbOptions.add(jbNew);
 	    jtbOptions.add(jbDelete); 
 	    jtbOptions.setFloatable(false);	    
 
+	    //TODO fazer este painel... 
+	    jbBooleanStates = new JButton("B"); 
+	    
+	    jpAddOptions = new JPanel(new BorderLayout()); 
+	    jpAddOptions.add(jbBooleanStates, BorderLayout.LINE_END); 
+	    jpAddOptions.add(txtName, BorderLayout.CENTER); 
+	    
+	    jpInformation = new JPanel(new GridLayout(2, 0)); 	    
 	    jpInformation.add(jtbOptions); 
-	    jpInformation.add(name); 
-	    jpInformation.add(txtName); 
-	    name.setVisible(false); 
-	    txtName.setVisible(false); 
+	    jpInformation.add(jpAddOptions);
+	    jpAddOptions.setVisible(false); 
 	    
         this.add("South", jpInformation); 
         this.add("Center", listScrollPane);
@@ -137,19 +137,26 @@ public class PossibleValuesEditionPane extends JPanel{
 	}
 	
 	private void addListeners(){
+		
 		txtName.addKeyListener(new KeyAdapter() {
   			public void keyPressed(KeyEvent e) {
-  				
   				
   				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtName.getText().length()>0)) {
   					try {
   						String nameValue = txtName.getText(0,txtName.getText().length());
   						matcher = wordPattern.matcher(nameValue);
   						if (matcher.matches()) {
-  							mebnController.addPossibleValue(residentNode, nameValue); 
-  							//name.setVisible(false); 
-  						    txtName.setText(""); 
-  							//txtName.setVisible(false); 
+  							boolean teste = mebnController.existsPossibleValue(residentNode, nameValue); 
+  							if(teste == false){
+  							   mebnController.addPossibleValue(residentNode, nameValue); 
+  							}
+  							else{
+  								JOptionPane.showMessageDialog(null, resource.getString("nameDuplicated"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+  							}
+  							
+  							txtName.setText(""); 
+  			  				jpAddOptions.setVisible(false);  
+  							
   						}  else {
   							JOptionPane.showMessageDialog(null, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
   							txtName.selectAll();
@@ -165,17 +172,24 @@ public class PossibleValuesEditionPane extends JPanel{
         
 		jbNew.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
-  				name.setVisible(true); 
-  				txtName.setVisible(true); 
+  				jpAddOptions.setVisible(true); 
   			}
   		});
 		
 		jbDelete.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
-  				int selected = jlPossibleValues.getSelectedIndex(); 
-  			    if(selected != -1){
-  			    	
-  			    }
+  			    String nameValue = (String)jlPossibleValues.getSelectedValue(); 
+				mebnController.removePossibleValue(residentNode, nameValue); 
+  			    update(); 
+  			
+  			}
+  		});
+		
+		jbBooleanStates.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				mebnController.addBooleanAsPossibleValue(residentNode);
+  				update(); 
+  				jpAddOptions.setVisible(false); 
   			}
   		});
 	}

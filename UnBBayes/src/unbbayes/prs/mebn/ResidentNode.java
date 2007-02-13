@@ -25,8 +25,6 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	 
 	private List<ResidentNode> residentNodeChildList;
 	
-	
-	
 	/**
 	 * List of ordinary variables of this node. Don't have duplicates
 	 * elements. 
@@ -63,7 +61,8 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	}
 	
 	/**
-	 * 
+	 * remove the ordinary variable of the list of ordinary variables
+	 * of the node. 
 	 * @param ov
 	 */
 	public void removeOrdinaryVariable(OrdinaryVariable ov){

@@ -26,8 +26,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ResourceBundle;
 
+import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.xml.bind.JAXBException;
 
 import unbbayes.gui.MSBNWindow;
@@ -121,7 +124,10 @@ public class MainController {
 					io = new XMLIO();
 				}
 				else if (name.endsWith("owl")){
-				    prOwlIo = new PrOwlIO(); 
+
+					
+				    prOwlIo = new PrOwlIO();
+				    
 		        }
 				
 				if (io != null)

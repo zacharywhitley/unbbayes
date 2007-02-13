@@ -2,6 +2,7 @@ package unbbayes.controller;
 
 import java.util.ResourceBundle;
 
+import unbbayes.gui.MEBNEditionPane;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -15,8 +16,11 @@ import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.entity.BooleanStatesEntity;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
-import unbbayes.prs.mebn.entity.Entity;
+import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.Type;
+import unbbayes.prs.mebn.entity.exception.TypeException;
 
 /**
  * 
@@ -27,6 +31,7 @@ import unbbayes.prs.mebn.entity.Entity;
 public class MEBNController {
 
 	private NetworkWindow screen;
+	private MEBNEditionPane mebnEditionPane; 
 
 	private MultiEntityBayesianNetwork multiEntityBayesianNetwork;
 
@@ -34,6 +39,8 @@ public class MEBNController {
 	private InputNode inputNodeActive; 
 	private ContextNode contextNodeActive; 
 	private Node nodeActive; 
+	
+	
 	
 	public ResidentNode getResidentNodeActive(){
 		return residentNodeActive; 
@@ -61,6 +68,7 @@ public class MEBNController {
 		
 		this.multiEntityBayesianNetwork = multiEntityBayesianNetwork;
 		this.screen = screen;
+		mebnEditionPane = screen.getMebnEditionPane(); 
 	
 	}
 
@@ -92,20 +100,20 @@ public class MEBNController {
 		multiEntityBayesianNetwork.addDomainMFrag(domainMFrag); 
 		
 		screen.getMebnEditionPane().getMTheoryTree().updateTree();
-		screen.getMebnEditionPane().getInputInstanceOfSelection().updateTree(); 
-	    screen.getMebnEditionPane().setMTheoryTreeActive(); 
+		//screen.getMebnEditionPane().getInputInstanceOfSelection().updateTree(); 
+		screen.getMebnEditionPane().setMTheoryTreeActive(); 
 	    
 	    screen.getGraphPane().resetGraph(); 
 	    
 	    screen.getMebnEditionPane().setMFragCardActive(); 
-		screen.getMebnEditionPane().setTxtNameMFrag(domainMFrag.getName()); 	    
+	    screen.getMebnEditionPane().setTxtNameMFrag(domainMFrag.getName()); 	    
 		screen.getMebnEditionPane().setMTheoryTreeActive(); 
 		
 	}
 	
 	public void removeDomainMFrag(DomainMFrag domainMFrag) {
 		multiEntityBayesianNetwork.removeDomainMFrag(domainMFrag);
-        screen.getMebnEditionPane().getMTheoryTree().updateTree(); 	
+		screen.getMebnEditionPane().getMTheoryTree().updateTree(); 	
 	}
 	
 	public void setCurrentMFrag(MFrag mFrag){
@@ -114,7 +122,7 @@ public class MEBNController {
 	    screen.getGraphPane().resetGraph(); 
 	    
 	    screen.getMebnEditionPane().setMFragCardActive(); 
-		screen.getMebnEditionPane().setTxtNameMFrag(mFrag.getName()); 		    
+	    screen.getMebnEditionPane().setTxtNameMFrag(mFrag.getName()); 		    
 		screen.getMebnEditionPane().setMTheoryTreeActive(); 
 	}
 	
@@ -122,9 +130,9 @@ public class MEBNController {
 		return multiEntityBayesianNetwork.getCurrentMFrag(); 
 	}
 	
-	/*---------------------------- Resident Node ----------------------------*/	
+	/*---------------------------- Domain Resident Node ----------------------------*/	
 	
-	public void insertResidentNode(double x, double y) throws MEBNConstructionException {
+	public void insertDomainResidentNode(double x, double y) throws MEBNConstructionException {
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
 
 		if (currentMFrag == null) {
@@ -140,13 +148,18 @@ public class MEBNController {
 		residentNodeActive = node; 
 		nodeActive = node; 
 		
-		screen.getMebnEditionPane().getInputInstanceOfSelection().updateTree(); 
+		//screen.getMebnEditionPane().getInputInstanceOfSelection().updateTree(); 
 		screen.getMebnEditionPane().setEditArgumentsTabActive(node);
-		screen.getMebnEditionPane().setPossibleValuesEditTabActive(node); 
+		screen.getMebnEditionPane().setResidentNodeTabActive(node); 
 		screen.getMebnEditionPane().setArgumentTabActive(); 
-	    screen.getMebnEditionPane().setResidentCardActive(); 
-		screen.getMebnEditionPane().setTxtNameResident(((ResidentNode)node).getName()); 	
+		screen.getMebnEditionPane().setResidentCardActive(); 
+	    screen.getMebnEditionPane().setTxtNameResident(((ResidentNode)node).getName()); 	
 		
+	}
+	
+	public void renameDomainResidentNode(DomainResidentNode resident, String newName){
+		resident.setName(newName);	
+		screen.getMebnEditionPane().repaint(); 
 	}
 	
 	/**
@@ -156,14 +169,38 @@ public class MEBNController {
 	 */
 	public void addPossibleValue(DomainResidentNode resident, String nameValue){
 		
-		Entity value = new CategoricalStatesEntity(nameValue); 
+		CategoricalStatesEntity value = new CategoricalStatesEntity(nameValue); 
 		resident.addPossibleValue(value); 
+		value.addNodeToListIsPossibleValueOf(resident); 
 				
 	}
 	
-	/*---------------------------- Input Node ----------------------------*/		
+	public void addBooleanAsPossibleValue(DomainResidentNode resident){
 	
-	public void insertInputNode(double x, double y) throws MEBNConstructionException {
+		resident.addPossibleValue(BooleanStatesEntity.getTrueStateEntity());
+		resident.addPossibleValue(BooleanStatesEntity.getFalseStateEntity());
+		resident.addPossibleValue(BooleanStatesEntity.getAbsurdStateEntity()); 
+		
+	}
+	
+	/**
+	 * Adiciona um possivel valor (estado) no nodo resident... 
+	 * @param resident
+	 * @param value
+	 */
+	public void removePossibleValue(DomainResidentNode resident, String nameValue){
+		resident.removePossibleValueByName(nameValue); 	
+	}	
+	
+	public boolean existsPossibleValue(DomainResidentNode resident, String nameValue){
+		return resident.existsPossibleValueByName(nameValue); 
+	}
+	
+	
+	/*---------------------------- Generative Input Node ----------------------------*/		
+	
+	public void insertGenerativeInputNode(double x, double y) throws MEBNConstructionException {
+		
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
 		
 		if (currentMFrag == null) {
@@ -179,10 +216,11 @@ public class MEBNController {
 		inputNodeActive = node; 
 		nodeActive = node; 
 		
-	    screen.getMebnEditionPane().setInputCardActive(); 	
+		screen.getMebnEditionPane().setInputCardActive(); 	
 		screen.getMebnEditionPane().setTxtNameInput(((InputNode)node).getName()); 		    
-		screen.getMebnEditionPane().setInputInstanceOfActive(); 
-	}		
+		screen.getMebnEditionPane().setInputNodeActive(node); 
+		screen.getMebnEditionPane().setTxtInputOf(""); 		
+	}	
 	
 	public void setInputInstanceOf(GenerativeInputNode input, ResidentNode resident){
 		
@@ -190,6 +228,25 @@ public class MEBNController {
 		screen.getMebnEditionPane().setTxtInputOf(resident.getName()); 
 		screen.getMebnEditionPane().updateUI(); 
 	
+	}
+	
+	/**
+	 * Update the input intance of atribute (in the view) of the input node for the value current 
+	 * @param input The input node active
+	 */
+	public void updateInputInstanceOf(GenerativeInputNode input){
+		
+		Object target = input.getInputInstanceOf(); 
+		
+		if (target == null){
+			screen.getMebnEditionPane().setTxtInputOf(""); 
+		}
+		else{
+			if (target instanceof ResidentNode){
+				screen.getMebnEditionPane().setTxtInputOf(((ResidentNode)target).getName()); 
+			}
+		}
+		
 	}
 	
 	/*---------------------------- ContextNode ----------------------------*/	
@@ -216,17 +273,28 @@ public class MEBNController {
 		screen.getMebnEditionPane().setTxtNameContext(((ContextNode)node).getName()); 
 	}	
 	
+	
+	/*-------------------------------- outros -------------------------*/
+	
 	public void deleteSelected(Object selected) {
-        if (selected instanceof ContextNode)
+        if (selected instanceof ContextNode){
             ((ContextNode)selected).delete();
+            screen.getMebnEditionPane().getMTheoryTree().updateTree(); 
+            screen.getMebnEditionPane().setMTheoryTreeActive();  
+        }
         else{
         	
-        	if (selected instanceof DomainResidentNode)
+        	if (selected instanceof DomainResidentNode){
                 ((DomainResidentNode)selected).delete();
+                screen.getMebnEditionPane().getMTheoryTree().updateTree(); 
+                screen.getMebnEditionPane().setMTheoryTreeActive();  
+        	}
         	else{
-            	if (selected instanceof GenerativeInputNode)
+            	if (selected instanceof GenerativeInputNode){
                     ((GenerativeInputNode)selected).delete();
-            
+                     screen.getMebnEditionPane().getMTheoryTree().updateTree(); 
+                     screen.getMebnEditionPane().setMTheoryTreeActive(); 
+            	}
             	else{
                     if (selected instanceof Edge) {
                     	MFrag mFragCurrent = multiEntityBayesianNetwork.getCurrentMFrag(); 
@@ -235,9 +303,7 @@ public class MEBNController {
             	}
         	}
         }
-        
-        screen.getMebnEditionPane().getMTheoryTree().updateTree(); 
-    
+
 	}
 	
 	/*---------------------------- Nodes ----------------------------*/	
@@ -248,7 +314,7 @@ public class MEBNController {
 			nodeActive = node; 
 			screen.getMebnEditionPane().setResidentCardActive(); 
 			screen.getMebnEditionPane().setEditArgumentsTabActive((ResidentNode)node); 
-			screen.getMebnEditionPane().setPossibleValuesEditTabActive((DomainResidentNode)node); 
+			screen.getMebnEditionPane().setResidentNodeTabActive((DomainResidentNode)node); 
 			screen.getMebnEditionPane().setTxtNameResident(((ResidentNode)node).getName()); 	
 			screen.getMebnEditionPane().setArgumentTabActive(); 	
 		}
@@ -258,7 +324,8 @@ public class MEBNController {
 				nodeActive = node; 
 				screen.getMebnEditionPane().setInputCardActive(); 
 				screen.getMebnEditionPane().setTxtNameInput(((InputNode)node).getName()); 				
-				screen.getMebnEditionPane().setInputInstanceOfActive(); 
+				screen.getMebnEditionPane().setInputNodeActive((GenerativeInputNode)inputNodeActive); 
+				updateInputInstanceOf((GenerativeInputNode)inputNodeActive); 
 			}
 			else{
 				if(node instanceof ContextNode){
@@ -284,22 +351,29 @@ public class MEBNController {
 	 * 
 	 */
 	
-	public OrdinaryVariable addNewOrdinaryVariableInMFrag() throws Exception{
-		
-        MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
-		
-		if (!(currentMFrag instanceof DomainMFrag)) {
-			// TODO Criar uma exception específica para isso...
-			throw new Exception("Ordinary Variables must be added only in domain MFrags!");
-		}
-		
-		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
+	public OrdinaryVariable addNewOrdinaryVariableInMFrag(){
+
+		DomainMFrag domainMFrag = (DomainMFrag) multiEntityBayesianNetwork.getCurrentMFrag();
 		String name = resource.getString("ordinaryVariableName") + domainMFrag.getOrdinaryVariableNum(); 
 		OrdinaryVariable ov = new OrdinaryVariable(name, domainMFrag);
 		domainMFrag.addOrdinaryVariable(ov);
 		
 		return ov; 
 		
+	}
+	
+	/** 
+	 * Create a new ordinary variable and add this in the resident
+	 * node active. Add this in the MFrag list of ordinary variables too.
+	 * @return new ordinary variable 
+	 */
+	public OrdinaryVariable addNewOrdinaryVariableInResident(){
+		
+		OrdinaryVariable ov; 
+		ov = addNewOrdinaryVariableInMFrag(); 
+		addOrdinaryVariableInResident(ov); 
+		
+		return ov; 
 	}
 	
 	/**
@@ -313,12 +387,17 @@ public class MEBNController {
         
 	}
 	
+	/**
+	 * Add one ordinary variable in the list of arguments of the resident node active.
+	 * @param ordinaryVariable ov for add
+	 */
 	public void addOrdinaryVariableInResident(OrdinaryVariable ordinaryVariable){
 		
 		ResidentNode resident = (ResidentNode) screen.getGraphPane().getSelected(); 
 		resident.addOrdinaryVariable(ordinaryVariable);
 		screen.getMebnEditionPane().getEditArgumentsTab().update();
-		screen.getMebnEditionPane().updateUI(); 
+		screen.getMebnEditionPane().updateUI();
+		
 	}
 	
 	public void removeOrdinaryVariableInResident(OrdinaryVariable ordinaryVariable){
@@ -330,6 +409,39 @@ public class MEBNController {
 		
 	}	
 	
+	public void setOVariableSelectedInResidentTree(OrdinaryVariable oVariableSelected){
+		screen.getMebnEditionPane().getEditArgumentsTab().setTxtName(oVariableSelected.getName()); 
+		screen.getMebnEditionPane().getEditArgumentsTab().setTreeResidentActive(); 
+	}
+	
+	public void setOVariableSelectedInMFragTree(OrdinaryVariable oVariableSelected){
+		screen.getMebnEditionPane().getEditArgumentsTab().setTxtName(oVariableSelected.getName()); 
+		screen.getMebnEditionPane().getEditArgumentsTab().setTreeMFragActive(); 
+	}	
+	
+	public void renameOVariableOfResidentTree(String name){
+		OrdinaryVariable ov = screen.getMebnEditionPane().getEditArgumentsTab().getResidentOVariableTree().getOVariableSelected(); 
+	    ov.setName(name); 
+		screen.getMebnEditionPane().getEditArgumentsTab().setTxtName(ov.getName()); 
+		screen.getMebnEditionPane().getEditArgumentsTab().update(); 
+	}
+	
+	public void renameOVariableOfMFragTree(String name){
+		OrdinaryVariable ov = screen.getMebnEditionPane().getEditArgumentsTab().getMFragOVariableTree().getOVariableSelected(); 
+	    ov.setName(name); 
+		screen.getMebnEditionPane().getEditArgumentsTab().setTxtName(ov.getName()); 
+		screen.getMebnEditionPane().getEditArgumentsTab().update(); 
+	}
+	
+	public void renameOVariableInArgumentEditionPane(String name){
+		if (screen.getMebnEditionPane().getEditArgumentsTab().isTreeResidentActive()){
+			renameOVariableOfResidentTree(name); 
+		}
+		else{
+			renameOVariableOfMFragTree(name); 
+		}
+	}
+	
 	/*---------------------------- Formulas ----------------------------*/	
 		
 	public void selectOVariableInEdit(OrdinaryVariable ov){
@@ -338,6 +450,52 @@ public class MEBNController {
 		
 	}
 	
+	public void setEnableTableEditionView(){
+		
+		screen.getMebnEditionPane().showTableEdit();
+		
+	}
 	
+	public void setUnableTableEditionView(){
+		
+		screen.getMebnEditionPane().hideTableEdit(); 
+		
+	}
+	
+	/*--------------------------------- Entidades ---------------------*/
+	
+	/**
+	 * Adiciona uma nova entidade com o nome passado como parametro
+	 * pelo usuario. O tipo da entidade sera um nome gerado automaticamente, a 
+	 * partir do passado pelo usuário. 
+	 */
+	public ObjectEntity addObjectEntity() throws TypeException{
+
+		
+		String name = resource.getString("entityName") + ObjectEntity.getEntityNum();
+
+		String nameType = name + "_Label" ; 
+		
+		Type.addType(nameType);
+		
+		ObjectEntity objectEntity = new ObjectEntity(name, nameType); 
+		 
+		return objectEntity; 
+	}
+	
+	public void renameObjectEntity(ObjectEntity entity, String name) throws TypeException{
+		
+		String nameType = name + "_Label" ; 
+		
+		Type.addType(nameType);
+		
+		entity.setName(name); 
+		entity.setType(nameType);
+		
+	}
+	
+	public void removeObjectEntity(ObjectEntity entity){
+		ObjectEntity.removeEntity(entity); 
+	}
 	
 }

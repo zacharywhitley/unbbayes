@@ -54,6 +54,7 @@ public class ControllerResources extends ListResourceBundle {
 		{"residentNodeName","RX"},
 		{"inputNodeName","IX"},
 		{"ordinaryVariableName", "OX"}, 
+		{"entityName", "EX"}, 			
 		
 		{"domainMFragName","DMFrag"},	
 		{"findingMFragName","FMFrag"},				

@@ -6,6 +6,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
+import unbbayes.controller.MEBNController;
 import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.OrdinaryVariable;
 
@@ -21,9 +22,11 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 public class OVariableTreeForArgumentEdition extends OVariableTree{
 
     private OrdinaryVariable oVariableSelected = null; 	
-	
+	private MEBNController mebnController; 
+    
 	public OVariableTreeForArgumentEdition(final NetworkController controller){
 		super(controller); 
+		mebnController = controller.getMebnController(); 
 	}
 	
 	public void addListeners(){
@@ -54,7 +57,9 @@ public class OVariableTreeForArgumentEdition extends OVariableTree{
 						
 					} else if (e.getClickCount() == 1) {
 						
-						oVariableSelected = ordinaryVariable; 
+						oVariableSelected = ordinaryVariable;
+						mebnController.setOVariableSelectedInMFragTree(oVariableSelected); 
+						
 					}
 				} 
 				else {

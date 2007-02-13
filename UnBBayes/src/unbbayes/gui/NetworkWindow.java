@@ -156,7 +156,7 @@ public class NetworkWindow extends JInternalFrame {
 			contentPane.add(mebnEditionPane, "mebnEditionPane");
 
 			// inicia com a tela de edicao de rede(PNEditionPane)
-			mebnEditionPane.getCenterPanel().setBottomComponent(jspGraph);
+			mebnEditionPane.getGraphPanel().setBottomComponent(jspGraph);
 			card.show(getContentPane(), "mebnEditionPane");
 		}
 

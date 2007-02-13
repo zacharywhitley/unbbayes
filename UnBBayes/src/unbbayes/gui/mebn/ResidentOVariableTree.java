@@ -15,6 +15,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
+import unbbayes.controller.MEBNController;
 import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -23,8 +24,7 @@ import unbbayes.util.ArrayMap;
 
 /**
  * Lista as variaveis ordinarias atualmente presentes como argumento
- * em um resident node. Quando o usuario clica duas vezes em uma destas
- * variaveis ordinarias, esta é eliminada da lista de argumentos. 
+ * em um resident node. 
  * 
  * @author Laecio
  *
@@ -42,11 +42,11 @@ public class ResidentOVariableTree extends JTree{
     
 	protected IconController iconController = IconController.getInstance();
 	
-	private final NetworkController controller;	
+	private final MEBNController mebnController; 
 	
 	public ResidentOVariableTree(final NetworkController controller, ResidentNode resident) {
 		
-		this.controller = controller; 
+		this.mebnController = controller.getMebnController(); 
 		this.net = (MultiEntityBayesianNetwork)controller.getNetwork();
         this.residentNodeActive = resident; 
 		
@@ -78,21 +78,16 @@ public class ResidentOVariableTree extends JTree{
 				OrdinaryVariable ordinaryVariable = ordinaryVariableMap.get(node); 
 							
 				if (node.isLeaf() && (ordinaryVariable != null)) {
-					
-
+				
 					if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
 						
-					} else if (e.getClickCount() == 2
+					} else if (e.getClickCount() == 1
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 						
-						controller.getMebnController().removeOrdinaryVariableInResident(ordinaryVariable); 
-						oVariableSelected = null; 
-						
-					} else if (e.getClickCount() == 1) {
-						
 						oVariableSelected = ordinaryVariable; 
+						mebnController.setOVariableSelectedInResidentTree(oVariableSelected); 
 						
-					}
+					} 
 				} 
 				else {
 				

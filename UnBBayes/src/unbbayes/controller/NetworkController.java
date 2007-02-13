@@ -140,7 +140,7 @@ public class NetworkController implements KeyListener {
     public void insertResidentNode(double x, double y) throws MEBNConstructionException{
     	if (mebnController != null)
 			try {
-				mebnController.insertResidentNode(x,y);
+				mebnController.insertDomainResidentNode(x,y);
 			} catch (MEBNConstructionException e) {
 				throw e; 
 			}
@@ -149,7 +149,7 @@ public class NetworkController implements KeyListener {
     public void insertInputNode(double x, double y) throws MEBNConstructionException{
     	if (mebnController != null)
 			try {
-				mebnController.insertInputNode(x,y);
+				mebnController.insertGenerativeInputNode(x,y);
 			} catch (MEBNConstructionException e) {
 				throw e; 
 			}

@@ -30,6 +30,9 @@ public class MultiEntityBayesianNetwork extends Network {
 	private MFrag currentMFrag;
 	
 	
+	//TODO as entidades devem ficar aqui ou não???
+	
+	
 	/* Este contador serve apenas para indicar qual deve ser o número
 	 * da próxima MFrag criada (ao se gerar o nome automatico. Este número
 	 * não está em sincronia com o número atual de MFrags porque ele 
@@ -39,7 +42,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	private int generativeInputNodeNum = 1; 
 	private int domainResidentNodeNum = 1; 	
 	private int contextNodeNum = 1; 
-    
+    private int entityNum = 1; 
 	
 	
 	
@@ -231,5 +234,17 @@ public class MultiEntityBayesianNetwork extends Network {
 	public void plusGenerativeInputNodeNum() {
 		generativeInputNodeNum++;
 	}		
+	
+	public int getEntityNum() {
+		return entityNum;
+	}
+
+	public void setEntityNum(int entityNum) {
+		this.entityNum = entityNum;
+	}
+	
+	public void plusEntityNul(){
+		entityNum++; 
+	}
 	 
 }

@@ -1,6 +1,7 @@
 package unbbayes.gui.mebn;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -13,11 +14,11 @@ import java.util.List;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.JToolBar;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
@@ -26,8 +27,6 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
 
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.GenerativeInputNode;
@@ -44,10 +43,7 @@ import unbbayes.prs.mebn.entity.Entity;
  * @version 1.0 (14/12/06)
  *
  */
-public class TableEdition extends JFrame{
-
-	JPanel contentPane;
-
+public class TableEdition extends JPanel{
 	
 	JTextPane txtPane;
 	JScrollPane jsTxtPane; 
@@ -57,19 +53,18 @@ public class TableEdition extends JFrame{
 	int positionCaret = 0; 
 	
 	/* buttons */
-	JPanel jpOptions; 
-	JPanel jpButtons; 
-	final JPanel jpFather; 
+	JPanel jpButtonsEdition; 
+	JToolBar jpButtonsOptions; 
+	
+	 JPanel jpOptions; 
+	 JPanel jpFather; 
+	 JPanel jpArguments; 
+	 JPanel jpStates;
 	
 	JButton btnIfAnyClause; 
 	JButton btnIfAllClause; 
 	JButton btnElseClause; 
-	JButton btnStates; 
-	
-	JButton btnAdd; 
-	JButton btnSub; 
-	JButton btnMult; 
-	JButton btnDiv; 
+	JButton btnEraseAll; 
 	
 	JButton btnEqual; 
 	JButton btnAnd; 
@@ -81,7 +76,15 @@ public class TableEdition extends JFrame{
 	JButton btnMax; 
 	JButton btnMin; 
 	
+	JButton btnStates; 
+	JButton btnFathers; 
+	JButton btnArguments; 
+	
+	JButton btnExit; 
+	
 	DomainResidentNode residentNode; 
+	
+	CardLayout cardLayout; 
 	
 	String[] oVariableArray; 
 	String[] fatherNodeArray; 
@@ -89,12 +92,11 @@ public class TableEdition extends JFrame{
 	
     private JList jlStates; 
     private DefaultListModel listModel;
-    
-	JPanel jpStates; 
+
 	
 	public TableEdition(DomainResidentNode _residentNode){
 		
-		super("Table");
+		//super("Table");
 		
 		residentNode = _residentNode; 
 		
@@ -105,70 +107,80 @@ public class TableEdition extends JFrame{
         doc = txtPane.getStyledDocument();
         addStylesToDocument(doc); 
         
-        jpButtons = new JPanel(new GridLayout(4, 4));
         buildJpButtons(); 
         
+        jsTxtPane = new JScrollPane(txtPane);
+		jsTxtPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		jsTxtPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
+
+        cardLayout = new CardLayout();         
+        jpOptions = new JPanel(cardLayout);
         
-        jpOptions = new JPanel(new BorderLayout()); 
-        jpOptions.add("North", jpButtons); 
-            
-        jpFather = new JPanel(new GridLayout(3, 0)); 
-        buildJpFather(doc); 
+        jpFather = buildJpFather(); 
+        jpArguments = buildJpArguments(); 
+        jpStates = buildJpStates(); 
         
-    	jpOptions.add("Center", jpFather); 
-        
-        addButtonsListeners();    
-        
-        jsTxtPane = new JScrollPane(txtPane); 
-		jsTxtPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS); 
-		jsTxtPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS); 
+        jpOptions.add("FatherTab", jpFather); 
+        jpOptions.add("ArgumentsTab", jpArguments); 
+        jpOptions.add("StatesTab", jpStates); 
 		
-		GridBagLayout gridbag = new GridBagLayout(); 
+        cardLayout.show(jpOptions, "FatherTab"); 
+        jpOptions.setSize(15,15); 
+        
+        GridBagLayout gridbag = new GridBagLayout(); 
 		GridBagConstraints constraints = new GridBagConstraints(); 
 		
-		contentPane = new JPanel(gridbag); 
+		this.setLayout(gridbag); 
 	    
 		constraints.gridx = 0; 
 	    constraints.gridy = 0; 
 	    constraints.gridwidth = 1; 
 	    constraints.gridheight = 1; 
-	    constraints.weightx = 100;
-	    constraints.weighty = 80; 
+	    constraints.weightx = 0;
+	    constraints.weighty = 0; 
 	    constraints.fill = GridBagConstraints.BOTH; 
 	    constraints.anchor = GridBagConstraints.NORTH; 
-	    gridbag.setConstraints(jsTxtPane, constraints); 
-	    contentPane.add(jsTxtPane);
+	    gridbag.setConstraints(jpButtonsEdition, constraints); 
+	    this.add(jpButtonsEdition);
+        
+		constraints.gridx = 2; 
+	    constraints.gridy = 0; 
+	    constraints.gridwidth = 1; 
+	    constraints.gridheight = 1; 
+	    constraints.weightx = 40;
+	    constraints.weighty = 0; 
+	    constraints.fill = GridBagConstraints.BOTH; 
+	    constraints.anchor = GridBagConstraints.NORTH; 
+	    gridbag.setConstraints(jpOptions, constraints); 
+	    this.add(jpOptions);	
 	    
 		constraints.gridx = 1; 
 	    constraints.gridy = 0; 
 	    constraints.gridwidth = 1; 
 	    constraints.gridheight = 1; 
-	    constraints.weightx = 0; 
-	    constraints.weighty = 15; 
+	    constraints.weightx = 100;
+	    constraints.weighty = 0; 
 	    constraints.fill = GridBagConstraints.BOTH; 
 	    constraints.anchor = GridBagConstraints.NORTH; 
-	    gridbag.setConstraints(jpOptions, constraints); 
-	    contentPane.add(jpOptions);
+	    gridbag.setConstraints(jsTxtPane, constraints); 
+	    this.add(jsTxtPane);
+        
+   
 		
-		this.setContentPane(contentPane); 
-		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
-		this.setSize(600, 400); 
-	    this.setVisible(true);  
-	    this.setLocationRelativeTo(null); 
-	    
 	}
 	
 	private void buildJpButtons(){
 
+		jpButtonsEdition = new JPanel(new GridLayout(5, 4));
+		
+        btnEraseAll = new JButton("DEL");
+        btnEraseAll.setBackground(Color.RED); 
+        btnEraseAll.setForeground(Color.WHITE); 
+        
         btnIfAnyClause = new JButton("ANY");
         btnIfAllClause = new JButton("ALL");
         btnElseClause = new JButton("ELS"); 
-        btnStates = new JButton("STT"); 
-        
-    	btnAdd = new JButton(" + "); 
-    	btnSub = new JButton(" - "); 
-    	btnMult = new JButton(" * "); 
-    	btnDiv = new JButton(" \\ "); 
         
     	btnEqual= new JButton("== "); 
     	btnAnd= new JButton("AND"); 
@@ -178,54 +190,64 @@ public class TableEdition extends JFrame{
     	btnNumber= new JButton("NUM"); 
     	btnCardinality= new JButton("CAR"); 
     	btnMax= new JButton("MAX"); 
-    	btnMin= new JButton("MIN");     	
+    	btnMin= new JButton("MIN");     
+    	
+    	btnStates= new JButton("STT"); 
+    	btnFathers= new JButton("FAT");  
+    	btnArguments= new JButton("ARG"); 
+    	
+    	btnExit = new JButton("EXI");   
+    	btnExit.setBackground(Color.RED); 
+    	btnExit.setForeground(Color.WHITE); 
 
-    	jpButtons.add(btnIfAnyClause); 
-    	jpButtons.add(btnIfAllClause);
-    	jpButtons.add(btnElseClause); 
-    	jpButtons.add(btnStates); 
+    	jpButtonsEdition.add(btnEraseAll);
+    	jpButtonsEdition.add(btnIfAnyClause); 
+    	jpButtonsEdition.add(btnIfAllClause);
+    	jpButtonsEdition.add(btnElseClause);
         
-    	jpButtons.add(btnAdd); 
-    	jpButtons.add(btnSub);
-    	jpButtons.add(btnMult); 
-    	jpButtons.add(btnDiv); 
+    	jpButtonsEdition.add(btnEqual); 
+    	jpButtonsEdition.add(btnAnd);
+    	jpButtonsEdition.add(btnOr); 
+    	jpButtonsEdition.add(btnNot); 
         
-    	jpButtons.add(btnEqual); 
-    	jpButtons.add(btnAnd);
-    	jpButtons.add(btnOr); 
-    	jpButtons.add(btnNot); 
-        
-    	jpButtons.add(btnNumber); 
-    	jpButtons.add(btnCardinality);
-    	jpButtons.add(btnMax); 
-    	jpButtons.add(btnMin); 
+    	jpButtonsEdition.add(btnNumber); 
+    	jpButtonsEdition.add(btnCardinality);
+    	jpButtonsEdition.add(btnMax); 
+    	jpButtonsEdition.add(btnMin); 
+    	
+    	//TODO fazer isto de uma forma descente...
+    	JButton btnPhanton; 
+    	btnPhanton = new JButton(); 
+    	btnPhanton.setVisible(false); 
+    	jpButtonsEdition.add(btnPhanton); 
+    	btnPhanton = new JButton(); 
+    	btnPhanton.setVisible(false); 
+    	jpButtonsEdition.add(btnPhanton);
+    	btnPhanton = new JButton(); 
+    	btnPhanton.setVisible(false); 
+    	jpButtonsEdition.add(btnPhanton);
+    	btnPhanton = new JButton(); 
+    	btnPhanton.setVisible(false); 
+    	jpButtonsEdition.add(btnPhanton); 
+    	
+    	jpButtonsEdition.add(btnStates); 
+    	jpButtonsEdition.add(btnFathers);
+    	jpButtonsEdition.add(btnArguments); 
+    	jpButtonsEdition.add(btnExit); 
 
 	}
 	
-	private void buildJpFather(final StyledDocument doc){
-		
-		int i; 
-		
-		/* Lista com as variavies ordinarias */
-		
-		List<OrdinaryVariable> oVariableList = residentNode.getOrdinaryVariableList(); 
-		oVariableArray = new String[oVariableList.size()]; 
-		i = 0; 
-		
-		for(OrdinaryVariable ov: oVariableList){
-			oVariableArray[i] = ov.getName(); 
-			i++; 
-		}
-		
-		final JList jlOVariable = new JList(oVariableArray);
-		JScrollPane jscJlOVariable = new JScrollPane(jlOVariable); 
-		jpFather.add(jscJlOVariable); 
-		
-		
-		/* Lista com os nodos pais */
+    private JPanel buildJpFather(){
+    	
+    	JPanel jpFather = new JPanel(new BorderLayout()); 
+    	int i; 
+    	
+    	/* Lista com os nodos pais */
 		List<GenerativeInputNode> inputNodeList = residentNode.getInputNodeFatherList(); 
 		fatherNodeArray = new String[inputNodeList.size()]; 
+		
 		i = 0; 
+		
 		for(GenerativeInputNode input: inputNodeList){
 			fatherNodeArray[i] = ((DomainResidentNode)input.getInputInstanceOf()).getName(); 
 			i++; 
@@ -233,7 +255,8 @@ public class TableEdition extends JFrame{
 		
 		final JList jlFathers = new JList(fatherNodeArray);
 		JScrollPane jscJlOFathers = new JScrollPane(jlFathers); 
-		jpFather.add(jscJlOFathers); 
+		
+		jpFather.add(jscJlOFathers, BorderLayout.NORTH); 
 		
 		jlFathers.addMouseListener(new MouseAdapter() {
 			
@@ -257,14 +280,12 @@ public class TableEdition extends JFrame{
 			}
 	
 		});
-				
-		
 		
 		/* Lista com os estados do nodo pai selecionado */
 		listModel = new DefaultListModel();
 		jlStates = new JList(listModel); 
 		JScrollPane jspStates = new JScrollPane(jlStates); 
-		jpFather.add(jspStates); 
+		jpFather.add(jspStates, BorderLayout.CENTER); 
 		
 		jlStates.addMouseListener(new MouseAdapter() {
 			
@@ -277,23 +298,56 @@ public class TableEdition extends JFrame{
 			}
 	
 		});
+    	
+    	return jpFather; 
+    }
+
+    
+    private JPanel buildJpArguments(){
+
+    	JPanel jpArguments = new JPanel(); 
+    	int i; 
+    	
+/* Lista com as variavies ordinarias */
 		
+		List<OrdinaryVariable> oVariableList = residentNode.getOrdinaryVariableList(); 
+		oVariableArray = new String[oVariableList.size()]; 
+		i = 0; 
+		
+		for(OrdinaryVariable ov: oVariableList){
+			oVariableArray[i] = ov.getName(); 
+			i++; 
+		}
+		
+		final JList jlOVariable = new JList(oVariableArray);
+		JScrollPane jscJlOVariable = new JScrollPane(jlOVariable); 
+		jpArguments.add(jscJlOVariable); 
 		
 		jlOVariable.addMouseListener(new MouseAdapter() {
+			
+			public void mousePressed(MouseEvent e) {
 				
-				public void mousePressed(MouseEvent e) {
-					
-					if ((e.getModifiers() == MouseEvent.BUTTON1_MASK) && (e.getClickCount() == 2)){
-						int selectedIndex = jlOVariable.getSelectedIndex(); 
-						insertParamSet(doc, oVariableArray[selectedIndex]); 
-					}
-					
+				if ((e.getModifiers() == MouseEvent.BUTTON1_MASK) && (e.getClickCount() == 2)){
+					int selectedIndex = jlOVariable.getSelectedIndex(); 
+					insertParamSet(doc, oVariableArray[selectedIndex]); 
 				}
-		});
-		
-	}
+				
+			}
+		}); 
 	
-	
+    	return jpArguments;    	
+    	
+    }
+    
+    private JPanel buildJpStates(){
+    	
+    	JPanel jpStates = new JPanel(); 
+    	
+    	return jpStates;  	
+    	
+    }
+    
+
 	private void updateStatesList(GenerativeInputNode inputNode){
 	
 		DomainResidentNode resident = (DomainResidentNode)(inputNode.getInputInstanceOf()); 
@@ -323,6 +377,8 @@ public class TableEdition extends JFrame{
 		
 		jlStates.setModel(listModel); 
 	}
+	
+	
 	
 	/**
 	 * Adiciona os estilos possiveis para o texto da tabela. 
@@ -363,6 +419,8 @@ public class TableEdition extends JFrame{
         StyleConstants.setFontSize(s, 16);
         
     }	
+	
+	
 	
 	/**
 	 * choice: 
@@ -581,29 +639,6 @@ public class TableEdition extends JFrame{
         	}
         }); 
         
-    	btnAdd.addActionListener( new ActionListener(){
-        	public void actionPerformed(ActionEvent e){
-        		insertArithmOperator(doc, "+"); 
-        	}
-        }); 
-    	
-    	btnSub.addActionListener( new ActionListener(){
-        	public void actionPerformed(ActionEvent e){
-        		insertArithmOperator(doc, "-"); 
-        	}
-        }); 
-    	
-    	btnMult.addActionListener( new ActionListener(){
-        	public void actionPerformed(ActionEvent e){
-        		insertArithmOperator(doc, "*"); 
-        	}
-        }); 
-    	
-    	btnDiv.addActionListener( new ActionListener(){
-        	public void actionPerformed(ActionEvent e){
-        		insertArithmOperator(doc, "\\"); 
-        	}
-        });  
         
     	btnEqual.addActionListener( new ActionListener(){
         	public void actionPerformed(ActionEvent e){
@@ -651,7 +686,31 @@ public class TableEdition extends JFrame{
         	public void actionPerformed(ActionEvent e){
         		insertMinClause(doc); 
         	}
-        });         
+        });     
+    	
+    	btnStates.addActionListener( new ActionListener(){
+        	public void actionPerformed(ActionEvent e){
+        		
+        	}
+        }); 
+    	
+    	btnFathers.addActionListener( new ActionListener(){
+        	public void actionPerformed(ActionEvent e){
+        		
+        	}
+        }); 
+    	
+    	btnArguments.addActionListener( new ActionListener(){
+        	public void actionPerformed(ActionEvent e){
+        		
+        	}
+        }); 
+    	
+    	btnExit.addActionListener( new ActionListener(){
+        	public void actionPerformed(ActionEvent e){
+        		
+        	}
+        }); 
     }
 
 	  //This listens for and reports caret movements.
@@ -659,11 +718,10 @@ public class TableEdition extends JFrame{
         
         //Might not be invoked from the event dispatching thread.
         public void caretUpdate(CaretEvent e) {
-            positionCaret = e.getDot();
+        
+        	positionCaret = e.getDot();
+        
         }
 
     }
-    
-    
-	
 }

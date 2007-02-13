@@ -53,7 +53,8 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"contextNodeName","CX"},
 		{"residentNodeName","RX"},
 		{"inputNodeName","IX"},		
-		{"ordinaryVariableName", "OX"}, 		
+		{"ordinaryVariableName", "OX"}, 	
+		{"entityName", "EX"}, 	
 		
 		{"domainMFragName","DMFrag"},	
 		{"findingMFragName","FMFrag"},				

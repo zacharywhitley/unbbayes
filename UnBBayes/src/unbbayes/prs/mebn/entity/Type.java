@@ -57,7 +57,7 @@ public class Type {
 			throw new TypeDoesNotExistException("The type " + oldType
 					+ " does not exist. Please try again.");
 	}
-	
+
 	/**
 	 * Verify if the type already exists.
 	 * @param aType The type to be verified.

@@ -54,6 +54,8 @@ public class OVariableEditionPane extends JPanel {
 		
 		super(); 
 		
+		this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel(resource.getString("OVariableTitle"))); 
+		
 		setLayout(new BorderLayout()); 
 		
 		mebnController = _controller.getMebnController(); 
@@ -62,7 +64,7 @@ public class OVariableEditionPane extends JPanel {
 	    treeMFrag = new OVariableTreeForOVariableEdition(_controller);
 	    jspTreeMFrag = new JScrollPane(treeMFrag);
 	    
-	    /* painel of information abaut the OVariable */
+	    /* painel of information about the OVariable */
 	    jpInformation = new JPanel(new GridLayout(5, 0)); 
 	    
 	    name = new JLabel("Name: "); 

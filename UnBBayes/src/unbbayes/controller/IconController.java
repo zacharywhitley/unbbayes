@@ -232,7 +232,7 @@ public class IconController implements Serializable {
 		
 	protected ImageIcon emptyNodeIcon; 	
 	
-	
+	protected ImageIcon downIcon; 	
 	
 	
 	public static IconController getInstance() {
@@ -1167,6 +1167,15 @@ public class IconController implements Serializable {
 			return skolenNodeIcon;
 		}
 	}	
-
+	
+	public ImageIcon getDownIcon() {
+		if (downIcon != null) {
+			return downIcon;
+		} else {
+			downIcon = new ImageIcon(getClass().getResource(
+					"/icons/down.gif"));
+			return downIcon;
+		}
+	}	
 
 }

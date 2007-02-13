@@ -111,7 +111,6 @@ public class GuiResources extends ListResourceBundle {
 		{"LookAndFeelIllegalAccessException","This LookAndFeel can not be used: "},
 		{"nameError","Nome don't acept"},		
 		
-		{"statusReadyLabel","Ready"},
 		{"helpToolTip","UnBBayes help"},
 		{"propagateToolTip","Propagate evidences"},
 		{"expandToolTip","Expand evidences tree"},
@@ -124,7 +123,8 @@ public class GuiResources extends ListResourceBundle {
 		{"saveNetImageToolTip","Save graph as a gif image"},
 		{"siglaLabel","Sigla:"},
 		{"nameLabel", "Name:"}, 
-		{"descriptionLabel","Description:"},
+		{"typeLabel", "Type:"}, 
+		{"descriptionLabel","Description"},
 		{"compileToolTip","Compile junction tree"},
 		{"moreToolTip","Add state"},
 		{"lessToolTip","Remove state"},
@@ -146,9 +146,13 @@ public class GuiResources extends ListResourceBundle {
 		{"printTableToolTip","Print table"},
 		{"previewTableToolTip","Print table preview"},
 		{"saveTableImageToolTip","Save table as a gif image"},
+		{"newEntityToolTip","Create new entity"},		
+		{"delEntityToolTip","Delete entity"},	
+		
 		{"formula","Formula:"},	
 		{"inputOf","Input of:"},	
 		{"arguments", "Args: "}, 
+		{"statusReadyLabel","Ready"},
 		
 		{"andToolTip", "and operator"}, 
 		{"orToolTip", "or operator"},
@@ -166,6 +170,15 @@ public class GuiResources extends ListResourceBundle {
 		{"menuAddResident", "Add Resident"}, 
 		{"menuAddDomainMFrag", "Add Domain MFrag"}, 
 		{"menuAddFindingMFrag", "Add Finding MFrag"}, 
+		
+		//Titles for tab panel
+		{"ResidentTabTitle", "Resident Node"}, 
+		{"InputTabTitle", "Input Node"}, 
+		{"ContextTabTitle", "Context Node"}, 
+		{"MTheoryTreeTitle", "MTheory Tree"}, 
+		{"EntityTitle", "Entity"}, 
+		{"OVariableTitle", "Ord. Variable"}, 
+		{"ArgumentTitle", "Arguments"}, 
 		
 		{"whithotMFragActive","Don't have MFrag active"},			
 		{"previewTitle","Preview"},
@@ -222,6 +235,7 @@ public class GuiResources extends ListResourceBundle {
         
         {"properties","Properties..."},
         {"nameException","Name Error"},
+        {"nameDuplicated", "Name alredy exists..."}, 
         {"siglaError","The sigla must have only letters and numbers."},
         {"descriptionError","The description must have only letters and numbers."}
 	};

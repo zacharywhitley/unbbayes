@@ -3,13 +3,17 @@ package unbbayes.io.mebn;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JWindow;
 
 import unbbayes.prs.Edge;
 import unbbayes.prs.mebn.Argument;
@@ -24,13 +28,12 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 
 import com.hp.hpl.jena.util.FileUtils;
 
-import edu.stanford.smi.protege.util.URIUtilities;
 import edu.stanford.smi.protegex.owl.ProtegeOWL;
 import edu.stanford.smi.protegex.owl.jena.JenaOWLModel;
+import edu.stanford.smi.protegex.owl.model.OWLDatatypeProperty;
 import edu.stanford.smi.protegex.owl.model.OWLIndividual;
 import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
 import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
-import edu.stanford.smi.protegex.owl.model.OWLDatatypeProperty ;
 import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
 
 /**
@@ -722,6 +725,29 @@ public class PrOwlIO implements MebnIO {
 		
 		/* Protege API Structure */
 		
+		//TODO try to put progress bar 
+		
+		/*
+		JProgressBar progressBar;
+		
+		progressBar = new JProgressBar(0, 100);
+		progressBar.setValue(0);
+		progressBar.setStringPainted(true);
+		
+		JWindow jfProgress = new JWindow();
+		JPanel jpProgress = new JPanel(); 
+		jpProgress.add(progressBar); 
+		
+		jfProgress.setContentPane(jpProgress);
+		progressBar.setVisible(true);
+		jfProgress.pack(); 
+		jfProgress.setLocationRelativeTo(null); 
+		jfProgress.setAlwaysOnTop(true); 
+		jfProgress.setVisible(true); 
+		
+		progressBar.setValue(10); 
+		*/
+		
 		JenaOWLModel owlModel;
 		
 		/** Load resource file from this package */
@@ -729,7 +755,6 @@ public class PrOwlIO implements MebnIO {
 			ResourceBundle.getBundle("unbbayes.io.mebn.resources.IoMebnResources");
 		
 		/* load the pr-owl model */
-		
 		
 		owlModel = ProtegeOWL.createJenaOWLModel();
 		
@@ -921,58 +946,59 @@ public class PrOwlIO implements MebnIO {
 		System.out.println("Chegou ponto 2"); 
 		
 		/* ContextNode */
-		
-		for (ContextNode contextNode: contextListGeral){  
-			OWLIndividual contextNodeIndividual = contextMap.get(contextNode);	
-			
-			/* has PositionX */
-			OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
-			contextNodeIndividual.setPropertyValue(hasPositionXProperty, (float)contextNode.getPosition().getX());
-			
-			/* has PositionY */
-			
-			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
-			contextNodeIndividual.setPropertyValue(hasPositionYProperty, (float)contextNode.getPosition().getY());
-					
-			/* has Argument */
-			OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
-			List<Argument> argumentList = contextNode.getArgumentList(); 
-			for(Argument argument: argumentList){
-				if (!argument.isSimpleArgRelationship()){
-					OWLNamedClass argumentClass = owlModel.getOWLNamedClass("ArgRelationship"); 
-					OWLIndividual argumentIndividual = argumentClass.createOWLIndividual(argument.getName());
-					contextNodeIndividual.addPropertyValue(hasArgumentProperty, argumentIndividual); 		
-					
-					OWLObjectProperty hasArgTerm = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 
-					if(argument.getArgumentTerm() != null){
-						MultiEntityNode node = argument.getArgumentTerm();
-						OWLIndividual nodeIndividual = nodeMap.get(node); 
-						argumentIndividual.addPropertyValue(hasArgTerm, nodeIndividual); 
+	
+			for (ContextNode contextNode: contextListGeral){  
+				OWLIndividual contextNodeIndividual = contextMap.get(contextNode);	
+				
+				/* has PositionX */
+				OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
+				contextNodeIndividual.setPropertyValue(hasPositionXProperty, (float)contextNode.getPosition().getX());
+				
+				/* has PositionY */
+				
+				OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
+				contextNodeIndividual.setPropertyValue(hasPositionYProperty, (float)contextNode.getPosition().getY());
+						
+				/* has Argument */
+				OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
+				List<Argument> argumentList = contextNode.getArgumentList(); 
+				for(Argument argument: argumentList){
+					if (!argument.isSimpleArgRelationship()){
+						OWLNamedClass argumentClass = owlModel.getOWLNamedClass("ArgRelationship"); 
+						OWLIndividual argumentIndividual = argumentClass.createOWLIndividual(argument.getName());
+						contextNodeIndividual.addPropertyValue(hasArgumentProperty, argumentIndividual); 		
+						
+						OWLObjectProperty hasArgTerm = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 
+						if(argument.getArgumentTerm() != null){
+							MultiEntityNode node = argument.getArgumentTerm();
+							OWLIndividual nodeIndividual = nodeMap.get(node); 
+							argumentIndividual.addPropertyValue(hasArgTerm, nodeIndividual); 
+						}
 					}
-				}
-				else{
-					OWLNamedClass argumentClass = owlModel.getOWLNamedClass("SimpleArgRelationship"); 
-					OWLIndividual argumentIndividual = argumentClass.createOWLIndividual(argument.getName());
-					contextNodeIndividual.addPropertyValue(hasArgumentProperty, argumentIndividual); 		
-					
-					OWLObjectProperty hasArgTerm = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 
-					OrdinaryVariable oVariable = argument.getOVariable();
-					OWLIndividual oVariableIndividual = oVariableMap.get(oVariable); 
-					argumentIndividual.addPropertyValue(hasArgTerm, oVariableIndividual); 
-					
-				}
-			}	
-			
-			/* has Inner Term */
-			OWLObjectProperty hasInnerTermProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInnerTerm"); 	
-			List<MultiEntityNode> innerTermList = contextNode.getInnerTermOfList(); 
-			for(MultiEntityNode innerTerm: innerTermList){
-				OWLIndividual innerTermIndividual = nodeMap.get(innerTerm);
-				contextNodeIndividual.addPropertyValue(hasInnerTermProperty, innerTermIndividual);
-			}		        	        
-			
-			
-		}		
+					else{
+						OWLNamedClass argumentClass = owlModel.getOWLNamedClass("SimpleArgRelationship"); 
+						OWLIndividual argumentIndividual = argumentClass.createOWLIndividual(argument.getName());
+						contextNodeIndividual.addPropertyValue(hasArgumentProperty, argumentIndividual); 		
+						
+						OWLObjectProperty hasArgTerm = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 
+						OrdinaryVariable oVariable = argument.getOVariable();
+						OWLIndividual oVariableIndividual = oVariableMap.get(oVariable); 
+						argumentIndividual.addPropertyValue(hasArgTerm, oVariableIndividual); 
+						
+					}
+				}	
+				
+				/* has Inner Term */
+				OWLObjectProperty hasInnerTermProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInnerTerm"); 	
+				List<MultiEntityNode> innerTermList = contextNode.getInnerTermOfList(); 
+				for(MultiEntityNode innerTerm: innerTermList){
+					OWLIndividual innerTermIndividual = nodeMap.get(innerTerm);
+					contextNodeIndividual.addPropertyValue(hasInnerTermProperty, innerTermIndividual);
+				}		        	        
+				
+				
+			}		
+				
 		
 		System.out.println("Chegou ponto 3"); 
 		

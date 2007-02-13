@@ -111,7 +111,6 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"LookAndFeelIllegalAccessException","Esse LookAndFeel não pode ser usado: "},
 		{"nameError","Nome não aceito"},
 		
-		{"statusReadyLabel","Pronto"},
 		{"helpToolTip","Ajuda do UnBBayes"},
 		{"propagateToolTip","Propagar as evidências"},
 		{"expandToolTip","Expandir a árvore de evidências"},
@@ -124,7 +123,8 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"saveNetImageToolTip","Salvar o grafo como imagem gif"},
 		{"siglaLabel","Sigla:"},
 		{"nameLabel", "Nome:"}, 
-		{"descriptionLabel","Descrição:"},
+		{"typeLabel", "Tipo:"}, 
+		{"descriptionLabel","Descrição"},
 		{"compileToolTip","Compilar árvore de junção"},
 		{"moreToolTip","Adicionar estado"},
 		{"lessToolTip","Remover estado"},
@@ -146,9 +146,13 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"printTableToolTip","Imprimir a tabela"},
 		{"previewTableToolTip","Visualizar a impressão da tabela"},
 		{"saveTableImageToolTip","Salvar a tabela como imagem gif"},
+		{"newEntityToolTip","Criar nova entidade"},		
+		{"delEntityToolTip","Deletar entidade"},		
+		
 		{"formula","Formula:"},	
 		{"inputOf","Input de:"},	
-		{"arguments", "Args: "}, 		
+		{"arguments", "Args: "}, 	
+		{"statusReadyLabel","Pronto"},
 		
 		{"andToolTip", "operador and"}, 
 		{"orToolTip", "operador or"},
@@ -166,6 +170,15 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"menuAddResident", "Add Resident"}, 
 		{"menuAddDomainMFrag", "Add Domain MFrag"}, 
 		{"menuAddFindingMFrag", "Add Finding MFrag"}, 
+		
+		//Titles for tab panel
+		{"ResidentTabTitle", "Nó Residente"}, 
+		{"InputTabTitle", "Nó de Input"}, 
+		{"ContextTabTitle", "Nó de Contexto"}, 
+		{"MTheoryTreeTitle", "Árvore MTheory"}, 
+		{"EntityTitle", "Entidade"}, 
+		{"OVariableTitle", "Variavel Ord."},
+		{"ArgumentTitle", "Argumentos"}, 
 		
 		{"whithotMFragActive","Não há MFrag ativa"},			
 		{"previewTitle","Pré Visualização"},
@@ -222,6 +235,7 @@ public class GuiResources_pt extends ListResourceBundle {
        
         {"properties","Propriedades..."},
         {"nameException","Erro no Nome"},
+        {"nameDuplicated", "Nome já existe..."}, 
         {"siglaError","A sigla só pode ter letras e números."},
         {"descriptionError","A descrição só pode ter letras e números."}
 	};

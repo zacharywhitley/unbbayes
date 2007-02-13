@@ -1,5 +1,6 @@
 package unbbayes.prs.mebn.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -8,13 +9,17 @@ import unbbayes.prs.mebn.entity.exception.TypeException;
 
 public class ObjectEntity extends Entity {
 	
-	private static List<ObjectEntity> listEntity;
+	private static List<ObjectEntity> listEntity = new ArrayList<ObjectEntity>();
+
+	private static int entityNum = 1; 
+	
 	/**
 	 * This object property (subsOVar) assigns MetaEntity individuals in order 
 	 * to define the type of the substituters for each MFrag ordinary variable. 
 	 * Its inverse property is the functional isSubsBy.
 	 */
 	private List<OrdinaryVariable> listSubstitute;
+	
 	/**
 	 * This is a list of instances of a given object entity. For instance, ST0 
 	 * and ST1 can be instances of the object entity Starship that has type 
@@ -26,15 +31,44 @@ public class ObjectEntity extends Entity {
 		this.name = name;
 		setType(type);
 		ObjectEntity.addEntity(this);
+		plusEntityNum(); 
 	}
 	
-	public static void addEntity(ObjectEntity entity) {
+	private static void addEntity(ObjectEntity entity) {
 		ObjectEntity.listEntity.add(entity);
 	}
 	
-	public void removeEntity(ObjectEntity entity) throws TypeDoesNotExistException {
+	public static void removeEntity(ObjectEntity entity){
+		
+		try{
+		   Type.removeType(entity.getType());
+		}
+		catch(TypeDoesNotExistException e){
+				
+		}	
+			
 		ObjectEntity.listEntity.remove(entity);
-		Type.removeType(type);
+
+	}
+	
+	public static List<ObjectEntity> getListEntity(){
+		return ObjectEntity.listEntity; 
+	}
+	
+	/**
+	 * Returns the object entity with the name. Return null if 
+	 * the object entity not exists. 
+	 * @param name
+	 * @return
+	 */
+	public static ObjectEntity getObjectEntity(String name){
+		for(ObjectEntity oe: listEntity){
+			if (oe.getName().compareTo(name) == 0){
+				return oe; 
+			}
+		}
+		
+		return null; 
 	}
 	
 	public void addSubstitute(OrdinaryVariable oVar) {
@@ -71,5 +105,16 @@ public class ObjectEntity extends Entity {
 	public void removeInstance(ObjectEntity instance) {
 		listObjectEntityInstance.remove(instance);
 	}
+	
+	public static int getEntityNum() {
+		return entityNum;
+	}
 
+	public void setEntityNum(int entityNum) {
+		this.entityNum = entityNum;
+	}
+	
+	public void plusEntityNum(){
+		entityNum++; 
+	}
 }

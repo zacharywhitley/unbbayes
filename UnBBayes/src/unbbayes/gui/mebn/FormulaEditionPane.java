@@ -1,6 +1,7 @@
 package unbbayes.gui.mebn;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,8 +31,7 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
 
 public class FormulaEditionPane extends JPanel {
 
-	JToolBar jtbOperator1;
-	JToolBar jtbOperator2; 
+	JToolBar jtbOperator;
 	FormulaTree formulaTree; 
 	JPanel upPanel; 
 	JPanel downPanel; 	
@@ -74,6 +74,8 @@ public class FormulaEditionPane extends JPanel {
 		
 		setLayout(new BorderLayout());
 		
+		this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel("Context Node")); 
+		
 		controller = _controller; 
 		mebnController = _controller.getMebnController(); 
 	    mFrag = mebnController.getCurrentMFrag(); 
@@ -99,23 +101,19 @@ public class FormulaEditionPane extends JPanel {
 		btnExists.setToolTipText(resource.getString("existsToolTip"))  ;
 		btnForAll.setToolTipText(resource.getString("forallToolTip"))  ;
 		
-	    jtbOperator1 = new JToolBar(); 
-	    jtbOperator1.add(btnEqualTo); 
-	    jtbOperator1.add(btnAnd); 
-	    jtbOperator1.add(btnOr); 
-	    jtbOperator1.add(btnNot); 
-	    jtbOperator1.setFloatable(false);     
-	    
-	    upPanel.add(jtbOperator1); 
-	    
-	    jtbOperator2 = new JToolBar(); 	    
-	    jtbOperator2.add(btnImplies); 
-	    jtbOperator2.add(btnIf); 
-	    jtbOperator2.add(btnExists); 
-	    jtbOperator2.add(btnForAll); 	
-	    jtbOperator2.setFloatable(false); 
-	    
-	    upPanel.add(jtbOperator2); 
+	    jtbOperator = new JToolBar(); 
+	    jtbOperator.setLayout(new GridLayout(2,4));
+	    jtbOperator.add(btnEqualTo); 
+	    jtbOperator.add(btnAnd); 
+	    jtbOperator.add(btnOr); 
+	    jtbOperator.add(btnNot); 
+	    jtbOperator.add(btnImplies); 
+	    jtbOperator.add(btnIf); 
+	    jtbOperator.add(btnExists); 
+	    jtbOperator.add(btnForAll); 	
+	    jtbOperator.setFloatable(false); 
+
+	    upPanel.add(jtbOperator); 
         
 	    formulaTree = new FormulaTree(_controller, contextNode ); 
 	    jspFormulaTree = new JScrollPane(formulaTree); 
@@ -130,6 +128,7 @@ public class FormulaEditionPane extends JPanel {
 		btnSkolenTree = new JButton(iconController.getSkolenNodeIcon());   
 	    
 	    jtbSelectArgTree = new JToolBar(); 
+	    jtbSelectArgTree.setLayout(new GridLayout(1,4)); 
 	    jtbSelectArgTree.add(btnOVariableTree);
 	    jtbSelectArgTree.add(btnNodeTree);
 	    jtbSelectArgTree.add(btnEntityTree);

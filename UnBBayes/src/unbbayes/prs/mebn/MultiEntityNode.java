@@ -99,6 +99,38 @@ public class MultiEntityNode extends Node {
 		possibleValueList.add(possibleValue); 
 	}
 	
+	/**
+	 * Remove the possible value with the name 
+	 * @param possibleValue name of the possible value
+	 */
+	public void removePossibleValueByName(String possibleValue){
+		
+		for(Entity value : possibleValueList){
+			if (value.getName().compareTo(possibleValue) == 0){
+				possibleValueList.remove(value);
+				return; 
+			}
+		}
+		
+	}
+	
+	/**
+	 * Verifies if the possible value is on the list of possible values
+	 * of the node. 
+	 * @param possibleValue name of the possible value
+	 * @return true if it is present or false otherside
+	 */
+	public boolean existsPossibleValueByName(String possibleValue){
+		
+		for(Entity value : possibleValueList){
+			if (value.getName().compareTo(possibleValue) == 0){
+				return true; 
+			}
+		}
+		
+		return false; 
+	}	
+	
 	public List<Argument> getArgumentList(){
 		return argumentList; 
 	}
