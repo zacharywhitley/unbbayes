@@ -143,10 +143,10 @@ public class Instance implements Serializable {
 
 	/**
 	 * Returns an instance's class value in internal format. (ie. as a
-	 * float number)
+	 * int integer)
 	 *
-	 * @return The corresponding value as a float (It returns the
-	 * value's index as a float).
+	 * @return The corresponding value as a integer (It returns the
+	 * value's index as a integer).
 	 * @exception UnassignedClassException if the class is not set or the
 	 * instance doesn't have access to a instanceSet
 	 */

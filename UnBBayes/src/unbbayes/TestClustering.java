@@ -124,7 +124,7 @@ public class TestClustering {
 		if (numeric) {
 			/* Set the options for the Kmeans algorithm */
 			int normFactor = 4;
-			IDistance distance = new Euclidean(instanceSet, normFactor);
+			IDistance distance = new Euclidean(instanceSet, normFactor, false);
 			kmeans = new Kmeans(instanceSet);
 			kmeans.setOptionDistance(distance);
 			kmeans.setError(kError);
@@ -277,7 +277,7 @@ public class TestClustering {
 
 		/* Set the options for the Kmeans algorithm */
 		int normFactor = 4;
-		IDistance distance = new Euclidean(instanceSet, normFactor);
+		IDistance distance = new Euclidean(instanceSet, normFactor, false);
 		Kmeans kmeans = new Kmeans(instanceSet);
 		kmeans.setOptionDistance(distance);
 		kmeans.setError(kError);

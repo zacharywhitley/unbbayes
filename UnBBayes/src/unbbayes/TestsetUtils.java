@@ -1,9 +1,7 @@
 package unbbayes;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import unbbayes.datamining.classifiers.Classifier;
@@ -13,12 +11,16 @@ import unbbayes.datamining.classifiers.decisiontree.C45;
 import unbbayes.datamining.datamanipulation.ArffLoader;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Loader;
+import unbbayes.datamining.datamanipulation.Options;
 import unbbayes.datamining.datamanipulation.TxtLoader;
+import unbbayes.datamining.datamanipulation.Utils;
 import unbbayes.datamining.evaluation.CrossValidation;
 import unbbayes.datamining.evaluation.Evaluation;
 import unbbayes.datamining.evaluation.ROCAnalysis;
+import unbbayes.datamining.evaluation.Samples;
 import unbbayes.datamining.preprocessor.imbalanceddataset.ClusterBasedSmote;
-import unbbayes.datamining.preprocessor.imbalanceddataset.Sampling;
+import unbbayes.datamining.preprocessor.imbalanceddataset.ClusterBasedUndersampling;
+import unbbayes.datamining.preprocessor.imbalanceddataset.ClusterBasedUtils;
 import unbbayes.datamining.preprocessor.imbalanceddataset.Smote;
 
 /**
@@ -70,6 +72,8 @@ public class TestsetUtils {
 	private int positiveClass;
 	
 	private int negativeClass;
+
+	private int k;
 	
 	public TestsetUtils() {
 		smote = new Smote(null);
@@ -126,195 +130,8 @@ public class TestsetUtils {
 		return results;
 	}
 
-	public InstanceSet sample(InstanceSet trainData, int sampleID, int i,
-			float[] originalDist)
-	throws Exception {
-		/* Get current class distribution  - Two class problem */
-		float proportion = originalDist[negativeClass] * (float) i;
-		proportion = proportion / (originalDist[positiveClass] * (float) (10 - i));
-		ClusterBasedSmote cbs;
-		if (proportion < 1 && i != -1) {
-			return null;
-		}
-		
-		switch (sampleID) {
-			case 0:
-				/* Samples the data down */
-				if (simplesampling) {
-					/* Simplesampling down */
-					Sampling.simplesampling(trainData, (float) (1 / proportion),
-							negativeClass, true);
-				} else {
-					/* Random undersampling */
-					Sampling.undersampling(trainData, (float) (1 / proportion),
-							negativeClass, true);
-				}
-
-				break;
-			case 1:
-				/* Samples the data up */
-				if (simplesampling) {
-					/* Simplesampling over */
-					Sampling.simplesampling(trainData, proportion,
-							positiveClass, false);
-				} else {
-					/* Random oversampling */
-					Sampling.oversampling(trainData, proportion, positiveClass);
-				}
-				
-				break;
-			case 2:
-				/* Samples the data down */
-				if (simplesampling) {
-					/* Simplesampling down */
-					Sampling.simplesampling(trainData,
-							Math.sqrt((float) (1 / proportion)), negativeClass,
-							true);
-				} else {
-					/* Random undersampling */
-					Sampling.undersampling(trainData,
-							Math.sqrt((float) (1 / proportion)), negativeClass, true);
-				}
-
-				/* Samples the data up */
-				if (simplesampling) {
-					/* Simplesampling over */
-					Sampling.simplesampling(trainData,
-							Math.sqrt(proportion), positiveClass, true);
-				} else {
-					/* Random oversampling */
-					Sampling.oversampling(trainData, Math.sqrt(proportion),
-							positiveClass);
-				}
-
-				break;
-			case 3:
-//				/* Samples the data down */
-//				if (simplesampling) {
-//					/* Simplesampling down */
-//					Sampling.simplesampling(trainData,
-//							Math.sqrt((float) (1 / proportion)), negativeClass,
-//							true);
-//				} else {
-//					/* Random undersampling */
-//					Sampling.undersampling(trainData,
-//							Math.sqrt((float) (1 / proportion)), negativeClass,
-//							true);
-//				}
-
-				/* Smote */
-				smote.setInstanceSet(trainData);
-				smote.buildNN(5, positiveClass);
-				smote.run(positiveClass, (float) Math.sqrt(proportion));
-
-				break;
-			case 4:
-				/* Samples the data down */
-				if (simplesampling) {
-					/* Simplesampling down */
-					Sampling.simplesampling(trainData,
-							(float) Math.sqrt((float) (1 / proportion)),
-							negativeClass, true);
-				} else {
-					/* Random undersampling */
-					Sampling.undersampling(trainData,
-							(float) Math.sqrt((float) (1 / proportion)),
-							negativeClass, true);
-				}
-
-				/* Cluster-Based SMOTE */
-				cbs = new ClusterBasedSmote(trainData);
-				cbs.setOptionDiscretize(false);
-				cbs.setOptionDistanceFunction((byte) 1);
-				cbs.setOptionFixedGap(false);
-				cbs.setOptionNominal((byte) 0);
-//				cbs.runUndersampling(negativeClass,
-//						Math.sqrt((float) (1 / proportion)), simplesampling);
-				cbs.runOversampling(positiveClass, Math.sqrt(proportion));
-
-				break;
-			case 5:
-				/* Samples the data down */
-				if (simplesampling) {
-					/* Simplesampling down */
-					Sampling.simplesampling(trainData,
-							(float) Math.sqrt((float) (1 / proportion)),
-							negativeClass, true);
-				} else {
-					/* Random undersampling */
-					Sampling.undersampling(trainData,
-							(float) Math.sqrt((float) (1 / proportion)),
-							negativeClass, true);
-				}
-
-				/* Cluster-Based SMOTE */
-				cbs = new ClusterBasedSmote(trainData);
-				cbs.setOptionDiscretize(false);
-				cbs.setOptionDistanceFunction((byte) 1);
-				cbs.setOptionFixedGap(true);
-				cbs.setOptionNominal((byte) 0);
-				cbs.run(negativeClass, false, false);
-
-				break;
-				
-			case 6:
-				/* Samples the data down */
-				if (simplesampling) {
-					/* Simplesampling down */
-					Sampling.simplesampling(trainData,
-							(float) Math.sqrt((float) (1 / proportion)),
-							negativeClass, true);
-				} else {
-					/* Random undersampling */
-					Sampling.undersampling(trainData,
-							(float) Math.sqrt((float) (1 / proportion)),
-							negativeClass, true);
-				}
-
-				/* Cluster-Based SMOTE */
-				cbs = new ClusterBasedSmote(trainData);
-				cbs.setOptionDiscretize(false);
-				cbs.setOptionDistanceFunction((byte) 1);
-				cbs.setOptionFixedGap(true);
-				cbs.setOptionNominal((byte) 0);
-				cbs.run(negativeClass, false, true);
-
-				break;
-				
-			default:
-				return trainData;
-		}
-		
-		return trainData;
-	}
-	
-	public String getSampleName(int sampleID) {
-		String result = null;
-		
-		/* Sampling strategy */
-		if (sampleID == 0) {
-			result = "Undersampling";
-		} else if (sampleID == 1) {
-			result = "Oversampling";
-		} else if (sampleID == 2) {
-			result = "Undersampling with Oversampling";
-		} else if (sampleID == 3) {
-			result = "SMOTE with Undersampling";
-		} else if (sampleID == 4) {
-			result = "Cluster-Based SMOTE (modified) with Undersampling";
-		} else if (sampleID == 5) {
-			result = "Cluster-Based SMOTE with Undersampling";
-		} else if (sampleID == 6) {
-			result = "Cluster-Based Oversampling with Undersampling";
-		} else {
-			result = "Original";
-		}
-		
-		return result;
-	}
-	
 	public void printHeader(int sampleID) {
-		header = getSampleName(sampleID);
+		header = Samples.getSampleName(sampleID);
 
 		System.out.print("---------------------------------");
 		System.out.println("---------------------------------");
@@ -361,220 +178,25 @@ public class TestsetUtils {
 			maxSEHeader = header + "\nQuantity of fraud: "  + (int) percentage + "%";
 		}
 		
-		results = sensitivity + "\t";
-		results += specificity + "\t";
-		results += SE + "\t";
+//		results = sensitivity + "\t";
+//		results += specificity + "\t";
+//		results += SE + "\t";
+		
+		results = eval.correct() + "\t";
+		results += eval.incorrect() + "\t";
+		results += 0 + "\t";
 		
 		return results;
 	}
 
-	public void generateRocPoints(InstanceSet instanceSet,
-			InstanceSet trainData, InstanceSet testData, float[] distribution,
-			boolean cross, int sampleID, int i, int numFolds, String outputFileName,
-			String ext)
+	public void sample(InstanceSet train, int sampleID, int i,
+			float[] originalDist, ClusterBasedSmote cbs,
+			ClusterBasedUndersampling cbu)
 	throws Exception {
-		float percentage = (float) distribution[positiveClass];
-		percentage /= (distribution[0] + distribution[1]);
-		percentage *= 100;
-
-		Classifier classifier;
-		
-		/************** Naive Bayes **************/
-		/* Build model */
-		classifier = new NaiveBayes();
-		classifier.buildClassifier(trainData);
-		
-		/* Run roc */
-		outputFileName = outputFileName + getSampleName(sampleID) +
-			"NaiveBayes" + (int) percentage + ext;
-		runROC(instanceSet, classifier, testData, distribution, outputFileName,
-				numFolds, cross, sampleID, i);
-		
-
-//		/************** C4.5 **************/
-//		/* Build model */
-//		classifier = new C45();
-//		classifier.buildClassifier(trainData);
-//		
-//		/* Run roc */
-//		outputFileName = outputFileName + getSampleName(sampleID) +
-//			"C4.5" + (int) percentage + ext;
-//		runROC(instanceSet, classifier, testData, distribution, cross,
-//				outputFileName, numFolds);
-		
-
-//		/************** CNM **************/
-//		/* Build model */
-//		classifier = new CombinatorialNeuralModel(maxOrderCNM);
-//		classifier.buildClassifier(trainData);
-//		
-//		/* Run roc */
-//		outputFileName = outputFileName + getSampleName(sampleID) +
-//			"Cnm" + (int) percentage + ext;
-//		runROC(instanceSet, classifier, testData, distribution, cross,
-//				outputFileName, numFolds);
+		Samples.sample(train, sampleID, i, originalDist, positiveClass,
+				simplesampling, k, smote, cbs, cbu);
 	}
 
-	private void runROC(InstanceSet instanceSet, Classifier classifier,
-			InstanceSet testData, float[] distribution, String outputFileName,
-			int numFolds, boolean cross, int sampleID, int i)
-	throws Exception {
-		if (classifier instanceof DistributionClassifier) {
-			((DistributionClassifier)classifier).setNormalClassification();
-			((DistributionClassifier) classifier).setOriginalDistribution(
-					distribution);
-		}
-
-		float[][] rocPoints;
-		float[] probs;
-		
-		if (cross) {
-			ArrayList<Object> aux;
-			aux = CrossValidation.getEvaluatedProbabilities(classifier,
-					instanceSet, positiveClass, numFolds, sampleID, i,
-					this);
-			probs = (float[]) aux.get(0);
-			distribution = (float[]) aux.get(1);		
-			testData = instanceSet;
-		} else {
-			probs = Evaluation.getEvaluatedProbabilities(classifier, testData,
-					positiveClass);
-		}
-		
-		rocPoints = ROCAnalysis.computeROCPoints(probs, testData, positiveClass);
-		saveRocPoints(rocPoints, outputFileName);
-	}
-	
-	public static void saveRocPoints(float[][] rocPoints,
-			String rocPointsFileName) throws Exception {
-		File output = new File(rocPointsFileName);
-		PrintWriter writer = new PrintWriter(new FileWriter(output), true);
-		int numRocPoints = rocPoints.length;
-		writer.println("FP\tTP");
-		for (int i = 0; i < numRocPoints; i++) {
-			writer.println(rocPoints[i][0] + "\t" + rocPoints[i][1]);
-		}
-		writer.flush();
-		writer.close();
-	}
-	
-	public ArrayList<Object> generateAUCValues(InstanceSet trainData,
-			InstanceSet testData, float[] distribution, int numFolds,
-			int sampleID, int i, boolean cross)
-	throws Exception {
-		Classifier classifier;
-		
-		ArrayList<Object> allResults = new ArrayList<Object>();
-		ArrayList<Object> rocResults = new ArrayList<Object>();
-		
-		double auc;
-		
-		String[][] aucResults = new String[1][2];
-		
-		/************** Naive Bayes **************/
-		/* Build model */
-		classifier = new NaiveBayes();
-		if (!cross) {
-			classifier.buildClassifier(trainData);
-		}
-		
-		/* Run roc */
-		ArrayList<Object> results;
-		results = runAUC(trainData, testData, classifier, numFolds, sampleID,
-				i, cross);
-		auc = (Double) results.get(0);
-		distribution = (float[]) results.get(2);
-		
-		if (distribution == null) {
-			distribution = distribution(trainData);
-		}
-		
-		if (auc == -1) {
-			return null;
-		}
-
-		float percentage = (float) distribution[positiveClass];
-		percentage /= (distribution[0] + distribution[1]);
-		percentage *= 100;
-
-		aucResults[0][0] = getSampleName(sampleID) + "NaiveBayes" + Math.round(percentage);
-		aucResults[0][1] = "" + auc;
-		
-		/* Add roc results */
-		rocResults.add(aucResults[0][0]);
-		rocResults.add(results.get(1));
-		
-//		/************** C4.5 **************/
-//		/* Build model */
-//		classifier = new C45();
-//		classifier.buildClassifier(trainData);
-//		
-//		/* Run roc */
-//		outputFileName = outputFileName + getSampleName(sampleID) +
-//			"C4.5" + (int) percentage + ext;
-//		auc = runROC(instanceSet, classifier, testData, distribution, cross,
-//				outputFileName, numFolds);
-		
-
-//		/************** CNM **************/
-//		/* Build model */
-//		classifier = new CombinatorialNeuralModel(maxOrderCNM);
-//		classifier.buildClassifier(trainData);
-//		
-//		/* Run roc */
-//		outputFileName = outputFileName + getSampleName(sampleID) +
-//			"Cnm" + (int) percentage + ext;
-//		auc = runROC(instanceSet, classifier, testData, distribution, cross,
-//				outputFileName, numFolds);
-
-		allResults.add(aucResults);
-		allResults.add(rocResults);
-		
-		return allResults;
-	}
-
-	private ArrayList<Object> runAUC(InstanceSet instanceSet, InstanceSet testData,
-			Classifier classifier, int numFolds,
-			int sampleID, int i, boolean cross)
-	throws Exception {
-		float[] probs;
-		float[] distribution = null;
-		double auc;
-		
-		if (cross) {
-			ArrayList<Object> aux;
-			aux = CrossValidation.getEvaluatedProbabilities(classifier,
-					instanceSet, positiveClass, numFolds, sampleID, i,
-					this);
-			probs = (float[]) aux.get(0);
-			distribution = (float[]) aux.get(1);		
-			if (probs == null) {
-				return null;
-			}
-			testData = instanceSet;
-		} else {
-			if (classifier instanceof DistributionClassifier) {
-				((DistributionClassifier)classifier).setNormalClassification();
-				((DistributionClassifier) classifier).setOriginalDistribution(
-						distribution(instanceSet));
-			}
-			probs = Evaluation.getEvaluatedProbabilities(classifier, testData,
-					positiveClass);
-		}
-		
-		float[][] rocPoints;
-		rocPoints = ROCAnalysis.computeROCPoints(probs, testData, positiveClass);
-
-		auc = ROCAnalysis.computeAUC(probs, testData, positiveClass);
-		
-		ArrayList<Object> results = new ArrayList<Object>(2);
-		results.add(auc);
-		results.add(rocPoints);
-		results.add(distribution);
-		
-		return results;
-	}
-	
 	
 	/** Auxiliary methods ***********************************/
 	
@@ -657,6 +279,30 @@ public class TestsetUtils {
 	public void setInterestingClass(int interestingClass) {
 		positiveClass = interestingClass;
 		negativeClass = 1 - positiveClass;
+	}
+
+	public void setConfidenceLevel(float value) {
+		Options.getInstance().setConfidenceLevel(value);
+	}
+
+	public void setIfUsingPrunning(boolean value) {
+		Options.getInstance().setIfUsingPrunning(value);
+	}
+
+	public void setK(int k) {
+		this.k = k;
+	}
+
+	public int getPositiveClass() {
+		return positiveClass;
+	}
+
+	public Smote getSmote() {
+		return smote;
+	}
+
+	public int getK() {
+		return k;
 	}
 
 }

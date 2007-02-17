@@ -44,7 +44,6 @@ import unbbayes.datamining.datamanipulation.ArffLoader;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Loader;
-import unbbayes.datamining.datamanipulation.Options;
 import unbbayes.datamining.datamanipulation.TxtLoader;
 
 /**
@@ -457,29 +456,6 @@ public class AttributeTypeChooserController {
 		}
 
 		/*
-		 * If the file is an txt file, analize the sample and check which
-		 * attributes contains at least one String value.
-		 */
-		if (loader instanceof TxtLoader) {
-			attributeIsString = new boolean[numAttributes];
-			Arrays.fill(attributeIsString, false);
-			Instance instance;
-
-			for (int att = 0; att < numAttributes; att++) {
-				attributeIsString[att] = false;
-				for (int inst = 0; inst < numInstancesAux; inst++) {
-					instance = instanceSet.instances[inst];
-					try {
-						Float.parseFloat(instance.stringValue(att));
-					} catch (Exception e) {
-						attributeIsString[att] = true;
-						break;
-					}
-				}
-			}
-		}
-
-		/*
 		 * Create the data table with the first 'numInstancesAux' instances read
 		 * from the file.
 		 */
@@ -489,6 +465,30 @@ public class AttributeTypeChooserController {
 			instance = instanceSet.instances[inst];
 			for (int att = 0; att < numAttributes; att++) {
 				instances[inst][att] = instance.stringValue(att);
+			}
+		}
+
+		/*
+		 * If the file is an txt file, analize the sample and check which
+		 * attributes contains at least one String value.
+		 */
+		if (loader instanceof TxtLoader) {
+			attributeIsString = new boolean[numAttributes];
+			Arrays.fill(attributeIsString, false);
+			Arrays.fill(attributeType, (byte) 0);
+
+			for (int att = 0; att < numAttributes; att++) {
+				attributeIsString[att] = false;
+				for (int inst = 0; inst < numInstancesAux; inst++) {
+					instance = instanceSet.instances[inst];
+					try {
+						Float.parseFloat(instance.stringValue(att));
+					} catch (Exception e) {
+						attributeIsString[att] = true;
+						attributeType[att] = 1;
+						break;
+					}
+				}
 			}
 		}
 
@@ -754,17 +754,18 @@ public class AttributeTypeChooserController {
 
 		public CheckBoxEditor(boolean value) {
 			super(new JCheckBox("", value));
-			checkBox = new JCheckBox("", value);
+//			checkBox = new JCheckBox("", value);
 		}
 
-		public Component getTableCellEditorComponent(JTable table,
-				Object value, boolean isSelected, int row, int column) {
-			if (value == null)
-				return null;
-			checkBox.setSelected((Boolean) value);
-			checkBox.setHorizontalAlignment(JCheckBox.CENTER);
-			return (Component) checkBox;
-		}
+//		public Component getTableCellEditorComponent(JTable table,
+//				Object value, boolean isSelected, int row, int column) {
+//			if (value == null)
+//				return null;
+//			checkBox = new JCheckBox();
+//			checkBox.setSelected((Boolean) value);
+//			checkBox.setHorizontalAlignment(JCheckBox.CENTER);
+//			return (Component) value;
+//		}
 	}
 
 }

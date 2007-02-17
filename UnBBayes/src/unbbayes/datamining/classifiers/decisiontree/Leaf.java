@@ -20,7 +20,10 @@ public class Leaf implements Serializable {
 	
 	/** Leaf's class value */
 	private float classValue;
-
+	
+	/** Used in binary class problems. It's the leaf's class complementary */
+	private int notClassValue;
+	
 	/** Leaf's weight class distribution. */
 	private float[] weightDistribution;
 	
@@ -40,6 +43,7 @@ public class Leaf implements Serializable {
 		this.classAttribute = classAttribute;
 		this.weightDistribution = weightDistribution;
 		classValue = Utils.maxIndex(weightDistribution);
+		notClassValue = (int) Math.abs(1 - classValue);
 	}
 	
 	//---------------------------BASIC FUNCIONS---------------------------//
@@ -100,4 +104,19 @@ public class Leaf implements Serializable {
 			return text;
 		}
 	}
+	
+	/**
+	 * @return the matched
+	 */
+	public int getMatched() {
+		return (int) weightDistribution[(int) classValue];
+	}
+
+	/**
+	 * @return the errors
+	 */
+	public int getErrors() {
+		return (int) weightDistribution[notClassValue];
+	}
+	
 }

@@ -30,6 +30,7 @@ import java.util.Random;
 
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.Utils;
 import unbbayes.datamining.distance.IDistance;
 
 /**
@@ -47,7 +48,7 @@ import unbbayes.datamining.distance.IDistance;
  * 2006/10/06.
  */
 public class Kmeans extends Clustering {
-	
+
 	/** Matrix containing in each row the coordinates of final the clusters. */
 	private float[][] centroids;
 
@@ -87,6 +88,9 @@ public class Kmeans extends Clustering {
 
 		/* Initialie the centroids */
 		centroids = initialize();
+		
+		int count1 = 0;
+		int count2 = 0;
 
 		do {
 			go = false;
@@ -95,6 +99,8 @@ public class Kmeans extends Clustering {
 
 			/* Assign instances to clusters */
 			assignmentMatrix = assignPoints();
+
+			++count1;
 
 			/* Recalculate centroids */
 			centroids = calculateCentroids();
@@ -106,6 +112,7 @@ public class Kmeans extends Clustering {
 					go = true;
 				}
 			}
+			++count2;
 		} while (go);
 	}
 	
@@ -122,14 +129,21 @@ public class Kmeans extends Clustering {
 		int inst;
 		int attIndex;
 		boolean exists;
-
+		int lastID;
+		int numInstancesIDs = numInstances;
+		int instIDs;
+		int[] instancesIDsAux = instancesIDs.clone();
+		int classIndex = instanceSet.classIndex;
+		int countEqualAttribs;
+		
 		while (filled < numClusters) {
-			
 			/* Get the candidate */
-			inst = instancesIDs[randomizer.nextInt(numInstances)];
+			instIDs = randomizer.nextInt(numInstancesIDs);
+			inst = instancesIDsAux[instIDs];
 			attIndex = 0;
 			for (int att = 0; att < numAttributes; att++) {
-				if (instanceSet.attributeType[att] == NUMERIC) {
+				if (instanceSet.attributeType[att] == NUMERIC
+						&& instanceSet.attributeType[att] != classIndex) {
 					candidate[attIndex] = instances[inst].data[att];
 					++attIndex;
 				}
@@ -141,16 +155,24 @@ public class Kmeans extends Clustering {
 			 */
 			exists = false;
 			for (int c = 0; c < filled; c++) {
+				countEqualAttribs = 0;
 				for (int att = 0; att < numNumericAttributes; att++) {
 					if (centroids[c][att] == candidate[att]) {
-						exists = true;
-						break;
+						++countEqualAttribs;
 					}
 				}
-				if (exists) break;
+				if (countEqualAttribs == numNumericAttributes) {
+					exists = true;
+					break;
+				}
 			}
 			
-			if (!exists) {
+			if (exists) {
+				lastID = instancesIDsAux[numInstancesIDs - 1];
+				instancesIDsAux[instIDs] = lastID;
+				--numInstancesIDs;
+				
+			} else {
 				for (int att = 0; att < numNumericAttributes; att++) {
 					centroids[filled][att] = candidate[att];
 				}
@@ -190,6 +212,10 @@ public class Kmeans extends Clustering {
 				}
 				centroid = centroids[clusterIndex];
 				dist = distance.distanceValue(centroid, instance);
+				if (Float.isNaN(dist)) {
+					@SuppressWarnings("unused")
+					boolean fudeu = true;
+				}
 				distanceMatrix[clusterIndex][i] = dist;
 			}
 		}
@@ -204,11 +230,16 @@ public class Kmeans extends Clustering {
 	private int[] assignPoints() {
 		int[] assignmentMatrix = new int[instanceSet.numInstances];
 		double least;
-		int selectedCluster = 0;
+		int selectedCluster = -999;
 		int inst;
 		
 		/* Initialize the assignment matrix */
 		Arrays.fill(assignmentMatrix, -1);
+		
+		/* Check the quantity of clusters */
+		if (numClusters == 0) {
+			return assignmentMatrix;
+		}
 		
 		for (int i = 0; i < numInstances; i++) {
 			inst = instancesIDs[i];
@@ -230,12 +261,16 @@ public class Kmeans extends Clustering {
 	 * @return New centroids values.
 	 */
 	private float[][] calculateCentroids() {
-		float[][] centroids = new float[numClusters][numNumericAttributes];
+		float[][] centroidsAux = new float[numClusters][numNumericAttributes];
 		float[] sum = new float[numNumericAttributes];
 		int membersCounter;
 		int attIndex;
 		float weight;
 		int inst;
+		boolean deleteAny = false;
+		
+		boolean[] deleteIndex = new boolean[numClusters];
+		Arrays.fill(deleteIndex, false);
 
 		for (int clusterIndex = 0; clusterIndex < numClusters; clusterIndex++) {
 			/* Fill up 'sum' with 0 */
@@ -256,13 +291,56 @@ public class Kmeans extends Clustering {
 					}
 				}
 			}
-			for (int att = 0; att < numNumericAttributes; att++) {
-				centroids[clusterIndex][att] = sum[att] / membersCounter;
+			if (membersCounter == 0) {
+				/* This cluster must be removed */
+				deleteIndex[clusterIndex] = true;
+				deleteAny = true;
+			} else {
+				for (int att = 0; att < numNumericAttributes; att++) {
+					centroidsAux[clusterIndex][att] = sum[att] / membersCounter;
+				}
 			}
 		}
-		return centroids;
+
+		/* Remove clusters marked for removal */
+		if (deleteAny) {
+			removeEmptyCluster(deleteIndex);
+		}
+
+		return centroidsAux;
 	}
 	
+	private void removeEmptyCluster(boolean[] deleteIndex) {
+		/* Count marked clusters */
+		int deleteCount = 0;
+		for (int clusterId = 0; clusterId < numClusters; clusterId++) {
+			if (deleteIndex[clusterId]) {
+				++deleteCount;
+			}
+		}
+		
+		int newNumClusters = numClusters - deleteCount;
+		float[][] centroidsAux = new float[newNumClusters][];
+		double[][] distanceMatrixAux = new double[newNumClusters][];
+		
+		int index = 0;
+		for (int clusterId = 0; clusterId < numClusters; clusterId++) {
+			if (!deleteIndex[clusterId]) {
+				centroidsAux[index] = centroids[clusterId];
+				distanceMatrixAux[index] = distanceMatrix[clusterId];
+				++index;
+			}
+		}
+
+		numClusters = newNumClusters;
+		
+		/* Calculate distance matrix */
+		distanceMatrix = calculateDistanceMatrix();
+
+		/* Assign instances to clusters */
+		assignmentMatrix = assignPoints();
+	}
+
 	/**
 	 * Calculates error in clustering.
 	 * 

@@ -9,6 +9,7 @@ import unbbayes.datamining.datamanipulation.AttributeStats;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Utils;
+import unbbayes.datamining.utils.Statistics;
 import unbbayes.prs.Edge;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -102,8 +103,23 @@ public class NaiveBayes extends DistributionClassifier implements Serializable {
 			}
 		}
 
+//		attIndex = 0;
+//		for (int att = 0; att < numAttributes; att++) {
+//			if (attributeType[att] != InstanceSet.NOMINAL) {
+//				meanPerClass[attIndex] = Utils.meanPerClass(instanceSet, att);
+//				attIndex++;
+//			}
+//		}
+//		attIndex = 0;
+//		for (int att = 0; att < numAttributes; att++) {
+//			if (attributeType[att] != InstanceSet.NOMINAL) {
+//				stdDevPerClass[attIndex] = Utils.standardDeviationPerClass(instanceSet, att, meanPerClass[att]);
+//				attIndex++;
+//			}
+//		}
+
 		/* Get the class distribution */
-		AttributeStats[] attributeStats = instanceSet.getAttributeStats(false);
+		AttributeStats[] attributeStats = instanceSet.getAttributeStats();
 		priors = attributeStats[classIndex].getNominalCountsWeighted();
 		
 		/* Normalize nominal distribution */
@@ -252,13 +268,12 @@ public class NaiveBayes extends DistributionClassifier implements Serializable {
 	 */
 	public float[] distributionForInstance(Instance instance) throws Exception {
 		float[] inst = instance.data;
-		float[] probs = new float[numClasses];
-		float stdDev;
-		float mean;
-		double aux;
+		double[] probsAux = new double[numClasses];
+		double stdDev;
+		double mean;
 
 		for (int k = 0; k < numClasses; k++) {
-			probs[k] = 1;
+			probsAux[k] = priors[k];
 			numericCounter = 0;
 			nominalCounter = 0;
 			for (int att = 0; att < numAttributes; att++) {
@@ -266,30 +281,31 @@ public class NaiveBayes extends DistributionClassifier implements Serializable {
 				if (att != classIndex && inst[att] != MISSING_VALUE) {
 					if (attributeType[att] == InstanceSet.NOMINAL) {
 						/* Nominal attribute */
-						probs[k] *= nominalCounts[k][nominalCounter]
+						probsAux[k] *= nominalCounts[k][nominalCounter]
 						                             [(int) inst[att]];
 						++nominalCounter;
 					} else {
 						/* Numeric attribute */
-						stdDev = (float) stdDevPerClass[numericCounter][k];
-						mean = (float) meanPerClass[numericCounter][k];
-						aux = probs[k];
-						aux *= Utils.normalDensityFunction(inst[att], stdDev,
-								mean);
-						probs[k] = (float) aux;
+						stdDev = stdDevPerClass[numericCounter][k];
+						mean = meanPerClass[numericCounter][k];
+//						probsAux[k] *= Utils.normalDensityFunction(inst[att],
+//								stdDev, mean);
+						probsAux[k] *= Utils.getProbability(inst[att], mean,
+								stdDev);
 						++numericCounter;
+
 					}
 				}
 			}
-			aux = probs[k] * priors[k];
-			probs[k] = (float) aux;
 		}
 
 		/* Normalize probabilities */
-		double sum = Utils.sum(probs);
-		float size = probs.length;
+		double aux;
+		double sum = Utils.sum(probsAux);
+		int size = probsAux.length;
+		float[] probs = new float[numClasses];
 		for (int att = 0; att < size; att++) {
-			aux = probs[att];
+			aux = probsAux[att];
 			aux /= sum;
 			probs[att] = (float) aux;      	
 		}

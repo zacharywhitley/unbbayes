@@ -112,7 +112,7 @@ public class TestSmoteCBSNoClass {
 		/* Options for SMOTE - END *****************/
 
 		/* Compute the statistics for all attributes */
-		AttributeStats[] attributeStats = trainData.getAttributeStats(false);
+		AttributeStats[] attributeStats = trainData.getAttributeStats();
 
 		/* SMOTE */
 		smote.setInstanceSet(trainData);
@@ -163,7 +163,7 @@ public class TestSmoteCBSNoClass {
 
 		/* Set the options for the Kmeans algorithm */
 		int normFactor = 4;
-		IDistance distance = new Euclidean(instanceSet, normFactor);
+		IDistance distance = new Euclidean(instanceSet, normFactor, false);
 		Kmeans kmeans = new Kmeans(instanceSet);
 		kmeans.setOptionDistance(distance);
 		kmeans.setError(kError);

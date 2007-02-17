@@ -21,7 +21,7 @@ import unbbayes.datamining.distance.HVDM;
  */
 public class Smote {
 	
-	private float nearesNeighborsIDs[][];
+	private int nearesNeighborsIDs[][];
 	
 	/** The number of attributes of the dataset */
 	private int numAttributes;
@@ -157,7 +157,9 @@ public class Smote {
 	 * @param proportion: Desired proportion of new instances
 	 * @param classValue: class of desired nearest neighbors
 	 */
-	public void run(int classValue, double proportion) {
+	public void run(InstanceSet instanceSet, int classValue, double proportion) {
+		setInstanceSet(instanceSet);
+		
 		int counter = 0;
 		int instancesIDsTmp[] = new int[numInstances];
 		
@@ -200,7 +202,8 @@ public class Smote {
 	 * @param instancesIDs[]: The chosen subset of instances to be smoted
 	 * @param proportion: Desired proportion of new instances
 	 */
-	public void run(int instancesIDs[], double proportion) {
+	public void run(int[] instancesIDs, double proportion) {
+		instancesIDs = instancesIDs.clone();
 		numAttributes = instanceSet.numAttributes();
 		
 		/* Message thrown as an exception in case of wrong arguments */ 
@@ -231,7 +234,7 @@ public class Smote {
 		
 		/* Get some statistics about the cyclics attributes */
 		Stats stats;
-		AttributeStats[] attributeStats = instanceSet.getAttributeStats(false);
+		AttributeStats[] attributeStats = instanceSet.getAttributeStats();
 		for (int att = 0; att < numAttributes; att++) {
 			/* Skip the class attribute */
 			if (instanceSet.getClassIndex() == att) {
@@ -312,7 +315,7 @@ public class Smote {
 		for (int i = 0; i < numInstancesIDs; i++) {
 			inst = instancesIDs[i];
 //			nearestNeighborsIDs = mTree.nearestNeighborIDs(i, k);
-			nearestNeighborsIDs = nearestNeighborIDs(i, instancesIDs);
+			nearestNeighborsIDs = nearestNeighborIDs(i);
 			for (int w = 0; w < instances[inst].data[counterIndex]; w++) {
 				populateAux(inst, nearestNeighborsIDs, numNewInstancesPerInstance);
 				if (newInstanceCounter >= max) {
@@ -534,12 +537,12 @@ public class Smote {
 	 * @param instanceID The index of the input instance.
 	 * @return
 	 */
-	private int[] nearestNeighborIDs(int instanceID, int[] instancesIDs) {
+	private int[] nearestNeighborIDs(int instanceID) {
 		int index;
 		int count = 0;
 		
 		for (int i = 0; i < k; i++) {
-			index = (int) nearesNeighborsIDs[instanceID][2 * i];
+			index = nearesNeighborsIDs[instanceID][2 * i];
 			if (index > 0) {
 				++count;
 			}
@@ -553,7 +556,7 @@ public class Smote {
 		int nearestNeighborIDs[] = new int[count];
 		count = 0;
 		for (int i = 0; i < k; i++) {
-			index = (int) nearesNeighborsIDs[instanceID][2 * i];
+			index = nearesNeighborsIDs[instanceID][2 * i];
 			if (index > 0) {
 				nearestNeighborIDs[count] = index;
 				++count;
@@ -599,17 +602,13 @@ public class Smote {
 		buildNN(instancesIDs, k);
 	}
 
-	public void buildNN(int[] instancesIDs, int k)
+	public int[][] buildNN(int[] instancesIDs, int k)
 	throws Exception {
 		this.k = k;
 		int numInstancesIDs = instancesIDs.length;
 
-		/* 
-		 * 'nearesNeighborsIDs[i][j]' - j:
-		 * evens - nn ID
-		 * odds - nn distance
-		 */
-		nearesNeighborsIDs = new float[numInstancesIDs][2 * k];
+		nearesNeighborsIDs = new int[numInstancesIDs][k];
+		float[][] nearestNeighborsDistance = new float[numInstancesIDs][k];
 		
 //		/* File with nearest neighbors to open */
 //		File fileTest;
@@ -636,9 +635,9 @@ public class Smote {
 
 		/* Initialize 'nearesNeighborsIDs */
 		for (int i = 0; i < numInstancesIDs; i++) {
-			for (int j = 0; j < 2 * k; j += 2) {
+			for (int j = 0; j < k; j++) {
 				nearesNeighborsIDs[i][j] = -1;
-				nearesNeighborsIDs[i][j + 1] = Float.POSITIVE_INFINITY;
+				nearestNeighborsDistance[i][j] = Float.POSITIVE_INFINITY;
 			}
 		}
 		
@@ -660,15 +659,24 @@ public class Smote {
 				instJ = instancesIDs[j];
 				dist = distance.distanceValue(instances[instI].data,
 						instances[instJ].data);
+				/* Check if the 'instJ' is a nearest neighbor */
 				if (dist < distGreater) {
-					nearesNeighborsIDs[i][distGreaterID + 1] = dist;
+					/* 
+					 * We've found a new nearest neighbor. Pop the farthest
+					 * neighbor up and insert this new nearest neighbor.
+					 */
 					nearesNeighborsIDs[i][distGreaterID] = instJ;
+					nearestNeighborsDistance[i][distGreaterID] = dist;
 					distGreater = 0;
 					
-					/* Find the greatest distance */
-					for (int d = 0; d < 2 * k; d += 2) {
-						if (distGreater < nearesNeighborsIDs[i][d + 1]) {
-							distGreater = nearesNeighborsIDs[i][d + 1];
+					/* 
+					 * Find the new farthest neighbor and its distance from
+					 * 'intI'.
+					 */
+					for (int d = 0; d < k; d++) {
+						if (distGreater < nearestNeighborsDistance[i][d]) {
+							distGreater = nearestNeighborsDistance[i][d];
+							nearesNeighborsIDs[i][distGreaterID] = instJ;
 							distGreaterID = d;
 						}
 					}
@@ -684,6 +692,7 @@ public class Smote {
 //				file.writeFloat(nearesNeighborsIDs[i][d + 1]);
 //			}
 //		}
+		return nearesNeighborsIDs;
 	}
 
 	public void setOptionDiscretize(boolean optionDiscretize) {
@@ -701,5 +710,12 @@ public class Smote {
 	public void setOptionFixedGap(boolean optionFixedGap) {
 		this.optionFixedGap = optionFixedGap;
 	}
-	
+
+	/**
+	 * @param nearesNeighborsIDs the nearesNeighborsIDs to set
+	 */
+	public void setNearestNeighborsIDs(int[][] nearestNeighborsIDs) {
+		this.nearesNeighborsIDs = nearestNeighborsIDs;
+	}
+
 }

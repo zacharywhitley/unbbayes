@@ -3,10 +3,11 @@ package unbbayes.datamining.datamanipulation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.Random;
 import java.util.ResourceBundle;
+
+import unbbayes.datamining.utils.Statistics;
 
 /**
  * Class implementing some simple utility methods.
@@ -446,297 +447,80 @@ public final class Utils {
 
 		return new String(result);
 	}
-
-
-	
-	/*------------------- Generic Quicksort - start ---------------------*/
 	
 	/**
-	 * Sorts a given array of objects in ascending order and returns an
-	 * array of integers with the positions of the elements of the
-	 * original array in the sorted array. 
+	 * Returns the index of the input array sorted in ascending way. It does not
+	 * change the positions of the input array. Should two values be equal,
+	 * they will appear in resulting index in the same order they appear in the
+	 * input array (in other words, this method is stable).
 	 * 
-	 * @param array This array is not changed by the method!
-	 * @param cmp A comparable object.
-	 * @return An array of integers with the positions in the sorted array.
+	 * @return An array of integers with the positions of this instanceSet
+	 * sorted in ascending way.
 	 */
-	public static int[] sort(Object[] array, Comparator<Object> cmp) {
-		int[] index = new int[array.length];
+	public static int[] sortAscending(float[] array) {
+		return sort(array, false);
+	}
 
-		rnd = new Random(new Date().getTime());
+	/**
+	 * Returns the index of the input array sorted in descending way. It does
+	 * not change the positions of the input array. Should two values be equal,
+	 * they will appear in resulting index in the same order they appear in the
+	 * input array (in other words, this method is stable).
+	 * 
+	 * @return An array of integers with the positions of this instanceSet
+	 * sorted in descending way.
+	 */
+	public static int[] sortDescending(float[] array) {
+		return sort(array, true);
+	}
+
+	private static int[] sort(float[] array, boolean descending) {
+		int numInstances = array.length;
 		
-		for (int i = 0; i < index.length; i++) {
-			index[i] = i;
+		float[][] arrayAux = new float[numInstances][2];
+		for (int i = 0; i < numInstances; i++) {
+			arrayAux[i][0] = array[i];
+			arrayAux[i][1] = i;
 		}
-		qsort(array, index, 0, array.length - 1, cmp);
+		sort(arrayAux);
+		
+		int[] index = new int[numInstances];
+		
+		if (descending) {
+			for (int inst = 0; inst < numInstances; inst++) {
+				index[inst] = (int) arrayAux[numInstances - inst - 1][1];
+			}
+		} else {
+			for (int inst = 0; inst < numInstances; inst++) {
+				index[inst] = (int) arrayAux[inst][1];
+			}
+		}
 		
 		return index;
 	}
 
-	private static void qsort(Object[] array, int[] index, int begin, int end,
-			Comparator<Object> cmp) {
-		if (end > begin) {
-			int pos = partition(array, index, begin, end, cmp);
+	public static void sort(float[][] array) {
+		Arrays.sort(array, new Comparator<float[]>() {
+			public int compare(final float[] arg0, final float[] arg1) {
+				float[] p1 = (float[]) arg0;
+				float[] p2 = (float[]) arg1;
+				float x;
+				
+				for (int i = 0; i < p1.length; i++) {
+					x = p1[i] - p2[i];
+					if (x < 0) {
+						return -1;
+					} else if (x > 0) {
+						return 1;
+					}
+				}
+				
+				return 0;
+			}
 			
-			qsort(array, index, begin, pos - 1, cmp);
-			qsort(array, index, pos + 1,  end,  cmp);
-		}
-	}
-	
-	private static int partition(Object[] array, int[] index, int begin,
-			int end, Comparator<Object> cmp) {
-		int pos = begin + rnd.nextInt(end - begin + 1);
-		Object pivot = array[index[pos]];
-		
-		swap(index, pos, end);
-		
-		for (int i = pos = begin; i < end; ++ i) {
-			if (cmp.compare(array[index[i]], pivot) <= 0) {
-				swap(index, pos++, i);
-			}
-		}
-		swap(index, pos, end);
-		
-		return pos;
-	}
-	
-	private static void swap(int[] index, int i, int j) {
-		int tmp = index[i];
-		index[i] = index[j];
-		index[j] = tmp;
-	}
-	
-	/*------------------- Generic Quicksort - end ---------------------*/
-
-	
-	
-	/*------------------- double[] Quicksort - start ---------------------*/
-	
-	/**
-	 * Sorts a given array of doubles in ascending order and returns an
-	 * array of integers with the positions of the elements of the
-	 * original array in the sorted array. It doesn't use safe floating-point
-	 * comparisons. Occurrences of Double.NaN are treated as
-	 * Double.MAX_VALUE
-	 *
-	 * @param array This array is not changed by the method!
-	 * @return An array of integers with the positions in the sorted
-	 * array.
-	 */
-	public static int[] sort(double[] array) {
-		int [] index = new int[array.length];
-		
-		rnd = new Random(new Date().getTime());
-		
-		for (int i = 0; i < index.length; i++) {
-			index[i] = i;
-			if (Double.isNaN(array[i])) {
-				array[i] = Double.MAX_VALUE;
-			}
-		}
-		qsort(array, index, 0, array.length - 1);
-		
-		return index;
+		});
 	}
 
-	private static void qsort(double[] array, int[] index, int begin, int end) {
-		if (end > begin) {
-			int pos = partition(array, index, begin, end);
-			
-			qsort(array, index, begin, pos - 1);
-			qsort(array, index, pos + 1,  end);
-		}
-	}
-	
-	private static int partition(double[] array, int[] index, int begin,
-			int end) {
-		int pos = begin + rnd.nextInt(end - begin + 1);
-		double pivot = array[index[pos]];
-		
-		swap(index, pos, end);
-		
-		for (int i = pos = begin; i < end; ++ i) {
-			if (array[index[i]] <= pivot) {
-				swap(index, pos++, i);
-			}
-		}
-		swap(index, pos, end);
-		
-		return pos;
-	}
-
-	/*------------------- double[] Quicksort - end ---------------------*/
-
-	
-	
-	/*------------------- float[] Quicksort - start ---------------------*/
-	
-	/**
-	 * Sorts a given array of floats in ascending order and returns an
-	 * array of integers with the positions of the elements of the
-	 * original array in the sorted array. It doesn't use safe floating-point
-	 * comparisons. Occurrences of Double.NaN are treated as
-	 * Double.MAX_VALUE
-	 *
-	 * @param array This array is not changed by the method!
-	 * @return An array of integers with the positions in the sorted
-	 * array.
-	 */
-	public static int[] sort(float[] array) {
-		int [] index = new int[array.length];
-		
-		rnd = new Random(new Date().getTime());
-		
-		for (int i = 0; i < index.length; i++) {
-			index[i] = i;
-			if (Double.isNaN(array[i])) {
-				array[i] = Float.MAX_VALUE;
-			}
-		}
-		qsort(array, index, 0, array.length - 1);
-		
-		return index;
-	}
-
-	private static void qsort(float[] array, int[] index, int begin, int end) {
-		if (end > begin) {
-			int pos = partition(array, index, begin, end);
-			
-			qsort(array, index, begin, pos - 1);
-			qsort(array, index, pos + 1,  end);
-		}
-	}
-	
-	private static int partition(float[] array, int[] index, int begin,
-			int end) {
-		int pos = begin + rnd.nextInt(end - begin + 1);
-		float pivot = array[index[pos]];
-		
-		swap(index, pos, end);
-		
-		for (int i = pos = begin; i < end; ++ i) {
-			if (array[index[i]] <= pivot) {
-				swap(index, pos++, i);
-			}
-		}
-		swap(index, pos, end);
-		
-		return pos;
-	}
-
-	/*------------------- double[] Quicksort - end ---------------------*/
-
-	
-	
-	/*------------------- int[] Quicksort - start ---------------------*/
-
-	/**
-	 * Sorts a given array of integers in ascending order and returns an
-	 * array of integers with the positions of the elements of the
-	 * original array in the sorted array.
-	 *
-	 * @param array This array is not changed by the method!
-	 * @return An array of integers with the positions in the sorted
-	 * array.
-	 */
-	public static int[] sort(int[] array) {
-		int[] index = new int[array.length];
-		
-		rnd = new Random(new Date().getTime());
-		
-		for (int i = 0; i < index.length; i++) {
-			index[i] = i;
-		}
-		qsort(array, index, 0, array.length - 1);
-		
-		return array;
-	}
-
-	private static void qsort(int[] array, int[] index, int begin, int end) {
-		if (end > begin) {
-			int pos = partition(array, index, begin, end);
-			
-			qsort(array, index, begin, pos - 1);
-			qsort(array, index, pos + 1,  end);
-		}
-	}
-	
-	private static int partition(int[] array, int[] index, int begin,
-			int end) {
-		int pos = begin + rnd.nextInt(end - begin + 1);
-		int pivot = array[index[pos]];
-		
-		swap(index, pos, end);
-		
-		for (int i = pos = begin; i < end; ++ i) {
-			if (array[index[i]] <= pivot) {
-				swap(index, pos++, i);
-			}
-		}
-		swap(index, pos, end);
-		
-		return pos;
-	}
-
-	/*------------------- double[] Quicksort - end ---------------------*/
-
-	
-	
-	/*------------------- byte[] Quicksort - start ---------------------*/
-
-	/**
-	 * Sorts a given array of bytes in ascending order and returns an
-	 * array of integers with the positions of the elements of the
-	 * original array in the sorted array. It doesn't use safe floating-point
-	 * comparisons.
-	 *
-	 * @param array This array is not changed by the method!
-	 * @return An array of integers with the positions in the sorted
-	 * array.
-	 */
-	public static int[] sort(byte[] array) {
-		int[] index = new int[array.length];
-		
-		rnd = new Random(new Date().getTime());
-		
-		for (int i = 0; i < index.length; i++) {
-			index[i] = i;
-		}
-		qsort(array, index, 0, array.length - 1);
-		
-		return index;
-	}
-
-	private static void qsort(byte[] array, int[] index, int begin, int end) {
-		if (end > begin) {
-			int pos = partition(array, index, begin, end);
-			
-			qsort(array, index, begin, pos - 1);
-			qsort(array, index, pos + 1,  end);
-		}
-	}
-	
-	private static int partition(byte[] array, int[] index, int begin,
-			int end) {
-		int pos = begin + rnd.nextInt(end - begin + 1);
-		byte pivot = array[index[pos]];
-		
-		swap(index, pos, end);
-		
-		for (int i = pos = begin; i < end; ++ i) {
-			if (array[index[i]] <= pivot) {
-				swap(index, pos++, i);
-			}
-		}
-		swap(index, pos, end);
-		
-		return pos;
-	}
-
-	/*------------------- byte[] Quicksort - end ---------------------*/
-
-	
-	
 	/** 
 	 * Sort values in a array of doubles and returns an array of doubles
 	 * with the sum of equal values. Original array will be modified
@@ -916,8 +700,7 @@ public final class Utils {
 	 * This algorithm is slower, but more resistant to error propagation.
 	 * The input dataset must contain at least two values.
 	 * M(1) = x(1), M(k) = M(k-1) + (x(k) - M(k-1) / k<br>
-	 * S(1) = 0, S(k) = S(k-1) + (x(k) - M(k-1)) * (x(k) - M(k))<br>
-	 * for 2 <= k <= n, then<br>
+	 * S(1) = 0, S(k) = S(k-1) + (x(k) - M(k-1)) * (x(k) - M(k)) for 2 <= k <= n
 	 * sigma = sqrt(S(n) / (n - 1))
 	 *
 	 * @param dataset Sample to compute the standard deviation of.
@@ -1036,8 +819,8 @@ public final class Utils {
 		while(instancesEnum.hasMoreElements()){
 			instance = (Instance)instancesEnum.nextElement();
 			temp = instance.data[attribute];
-			temp = temp-mean;
-			sqrSum = sqrSum+(temp*temp);
+			temp = temp - mean;
+			sqrSum = sqrSum + (temp*temp);
 		}
 
 		sigma = Math.sqrt(sqrSum/(numOfInstances-1));
@@ -1067,9 +850,11 @@ public final class Utils {
 			throw new Exception(resource.getString("nominalAttribute"));
 		}
 
+		float weight;
 		while(instancesEnum.hasMoreElements()){
 			instance = (Instance)instancesEnum.nextElement();
-			sum = sum + instance.data[attribute];
+			weight = instance.getWeight();
+			sum += instance.data[attribute] * weight;
 		}
 
 		return sum / numOfInstances;
@@ -1195,7 +980,8 @@ public final class Utils {
 		return distribution;
 	}
 
-	public static double normalDensityFunction(float value, float stdDev, float mean) {
+	public static double normalDensityFunction(double value, double stdDev,
+			double mean) {
 		double prob;
 		double e;
 		
@@ -1207,6 +993,24 @@ public final class Utils {
 		return prob;
 	}
 	
+	/**
+	 * Get a probability estimate for a value
+	 *
+	 * @param data the value to estimate the probability of
+	 * @return the estimated probability of the supplied value
+	 */
+	public static double getProbability(double data, double m_Mean, double m_StandardDev) {
+		double m_Precision = 0.01;
+		//	  data = round(data);
+		double zLower = (data - m_Mean - (m_Precision / 2)) / m_StandardDev;
+		double zUpper = (data - m_Mean + (m_Precision / 2)) / m_StandardDev;
+		
+		double pLower = Statistics.normalProbability(zLower);
+		double pUpper = Statistics.normalProbability(zUpper);
+		return pUpper - pLower;
+	}
+
+
 	public static void randomize(int[] index, Random random) {
 		int inst;
 		int size = index.length;
@@ -1223,4 +1027,59 @@ public final class Utils {
 		}
 	}
 	
+	/**
+	 * Calculates the standard deviation and the mean of an array of numbers
+	 * per each class value of the instance set.
+	 * 
+	 * See Knuth's The Art Of Computer Programming Volume II: Seminumerical
+	 * Algorithms.
+	 * This algorithm is slower, but more resistant to error propagation.
+	 * The input dataset must contain at least two values.
+	 * M(1) = x(1), M(k) = M(k-1) + (x(k) - M(k-1) / k<br>
+	 * S(1) = 0, S(k) = S(k-1) + (x(k) - M(k-1)) * (x(k) - M(k))<br>
+	 * for 2 <= k <= n, then<br>
+	 * sigma = sqrt(S(n) / (n - 1))
+	 *
+	 * @param values Sample to compute the standard deviation of.
+	 * @return An array of double with two values containing:
+	 * <li> First: the <b>mean</b> 
+	 * <li> Second: the <b>standard deviation</b>.
+	 */
+	public static double[] computeMeanStdDev(double[] values) {
+		int numValues = values.length;
+		
+		if (numValues < 2) {
+			return null;
+		}
+		
+		double sum;
+		double avg;
+		double newavg;
+		int count;
+		
+		/* M(1) = x(1) */
+		avg = values[0];
+		count = 1;
+		
+		/* S(1) = 0 */
+		sum = 0;
+		
+		/* 
+		 * M(k) = M(k-1) + (x(k) - M(k-1) / k
+		 * S(k) = S(k-1) + (x(k) - M(k-1)) * (x(k) - M(k))
+		 */
+		for (int i = 1; i < numValues; i++) {
+			newavg = avg + (values[i] - avg) / count;
+			sum += (values[i] - avg) * (values[i] - newavg);
+			avg = newavg;
+			++count;
+		}
+		
+		double[] result = new double[2];
+		
+		result[0] = avg;
+		result[1] = Math.sqrt(sum / (numValues - 1));
+			
+		return result;
+	}
 }

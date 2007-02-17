@@ -1,5 +1,8 @@
 package unbbayes.datamining.classifiers;
 
+import java.util.ArrayList;
+
+import unbbayes.datamining.classifiers.decisiontree.Node;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 
@@ -26,4 +29,5 @@ public abstract class Classifier {
 	 * @exception Exception if an error occurred during the prediction
   	 */
   	public abstract int classifyInstance(Instance instance) throws Exception;
+  	
 }

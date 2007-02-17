@@ -384,12 +384,33 @@ public class C45 extends DecisionTreeLearning implements Serializable
 	//-----------------------------------------------------------------------//
 
 	/**
-	 * Classifies a given test instance using the decision tree.
+	 * Classifies a given test instance using the decision tree. It will also
+	 * update the macthed and errors counters of the leaf corresponding to the
+	 * input instance. These counters will be used to build the points of a ROC
+	 * curve of this classifier.
 	 *
 	 * @param instance the instance to be classified
 	 * @return the classification
 	 */
 	public int classifyInstance(Instance instance) {
+		return classifyInstanceAux(instance).getClassValue();
+	}
+	
+	public float positiveClassProb(Instance instance, int positiveClass,
+			int numClasses) {
+		Leaf leaf = classifyInstanceAux(instance);
+		
+		float[] dist = leaf.getDistribution();
+		int negativeClass = Math.abs(positiveClass - 1);
+		
+		/* With Laplace estimate */
+		double prob = dist[positiveClass] + 1;
+		prob /= (dist[positiveClass] + dist[negativeClass] + numClasses);
+		
+		return (float) prob;
+	}
+	
+	private Leaf classifyInstanceAux(Instance instance) {
 		Leaf leaf;
 		Node node;
 		Attribute att;
@@ -417,9 +438,60 @@ public class C45 extends DecisionTreeLearning implements Serializable
 		}
 
 		leaf = (Leaf)treeNode.children.get(0);
-		return leaf.getClassValue();
+		
+		return leaf;
 	}
 	
+	
+	//-----------------------------------------------------------------------//
+	public void descendTree(Node treeNode, int positiveClass, int[] count,
+			ArrayList<float[]> positivePoints,
+			ArrayList<float[]> negativePoints,
+			ArrayList<float[]> probs) {
+		int tp = 0;
+		int fp = 0;
+		
+		if (treeNode.children.get(0) instanceof Leaf) {
+			/* The node is a LEAF */
+			Leaf leaf;
+			int matched;
+			int errors;
+			int leafClass;
+			float[] point;
+			
+			leaf = (Leaf) treeNode.children.get(0);
+			matched = leaf.getMatched();
+			errors = leaf.getErrors();
+			tp = matched - errors;
+			fp = errors;
+			leafClass = leaf.getClassValue();
+			count[leafClass] += tp;
+			point = new float[2];
+			
+			if (leafClass == positiveClass) {
+				point[0] = fp;
+				point[1] = tp;
+				positivePoints.add(point);
+			} else {
+				point[0] = tp;
+				point[1] = fp;
+				negativePoints.add(point);
+			}
+			
+			/* Compute prob of being positive example */
+			float[] prob = new float[2];
+			prob[0] = (float) matched / (matched + errors);
+			prob[1] = leafClass;
+		} else {
+			/* The node is internal node */
+			int numChildren = treeNode.children.size();
+			for (int i = 0; i < numChildren; i++) {
+				descendTree((Node) treeNode.children.get(i), positiveClass,
+						count, positivePoints, negativePoints, probs);
+			}
+		}
+	}
+
 	//-----------------------------------------------------------------------//
 	
 	/**
@@ -427,8 +499,7 @@ public class C45 extends DecisionTreeLearning implements Serializable
 	 * 
 	 * @return the root of the tree created
 	 */
-	public Node getRootNode()
-	{
+	public Node getRootNode() {
 		return xRootNode; 
 	}
 	

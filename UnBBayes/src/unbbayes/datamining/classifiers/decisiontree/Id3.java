@@ -410,4 +410,17 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 		 return splitObject;
          }
        }
+
+		@Override
+		public void descendTree(Node treeNode, int positiveClass, int[] count, ArrayList<float[]> positivePoints, ArrayList<float[]> negativePoints, ArrayList<float[]> probs) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public float positiveClassProb(Instance instance, int positiveClass,
+				int numClasses) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
 }

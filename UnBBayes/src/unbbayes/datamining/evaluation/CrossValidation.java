@@ -8,7 +8,10 @@ import java.util.ResourceBundle;
 import unbbayes.TestsetUtils;
 import unbbayes.datamining.classifiers.Classifier;
 import unbbayes.datamining.classifiers.DistributionClassifier;
+import unbbayes.datamining.classifiers.decisiontree.DecisionTreeLearning;
+import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.Utils;
 
 public class CrossValidation implements ITrainingMode {
 	/** Load resource file from this package */
@@ -105,9 +108,8 @@ public class CrossValidation implements ITrainingMode {
 	 *                if a classifier could not be generated successfully or the
 	 *                class is not defined
 	 */
-	public static ArrayList<Object> getEvaluatedProbabilities(Classifier classifier,
-			InstanceSet instanceSet, int positiveClass, int numFolds,
-			int sampleID, int i, TestsetUtils testsetUtils)
+	public static TestFold getEvaluatedProbabilities(InstanceSet instanceSet,
+			int numFolds, int numRounds, TestsetUtils testsetUtils)
 	throws Exception {
 		/* Check if the instanceSet is compacted */
 		if (instanceSet.isCompacted()) {
@@ -115,63 +117,49 @@ public class CrossValidation implements ITrainingMode {
 					"works with non compacted instanceSet!");
 		}
 		
-		if (instanceSet.classIsNominal() && !instanceSet.isCompacted()) {
-			instanceSet.stratify(numFolds);
-		} else {
-			instanceSet.randomize(new Random(new Date().getTime()));
-		}
-		
-		/* Do the folds */
-		int numInstances = instanceSet.numInstances;
-		float[] probs = new float[numInstances];
-		float[] dist;
-		float[] distribution = null;
-		int inst = 0;
 		InstanceSet train = null;
 		InstanceSet test;
-		for (int fold = 0; fold < numFolds; fold++) {
-			train = trainCV(instanceSet, numFolds, fold);
-			
-			/* Sample training instanceSet */
-			distribution = TestsetUtils.distribution(train);
-			train = testsetUtils.sample(train, sampleID, i, distribution);
-			
-			/* Get distribution after sampling */
-			distribution = TestsetUtils.distribution(train);
-			
-			/* Check if the trainData has been sampled */
-			if (train == null) {
-				/* Break */
-				return null;
-			}
-			
-			classifier.buildClassifier(train);
-			test = testCV(instanceSet, numFolds, fold);
-			
-			if (classifier instanceof DistributionClassifier) {
-				((DistributionClassifier)classifier).setNormalClassification();
-				((DistributionClassifier) classifier).setOriginalDistribution(
-						distribution);
-			}
 
-			/* 
-			 * Get probabilistic classifier's estimate that instance i is
-			 * positive.
-			 */
-			numInstances = test.numInstances();
-			for (int n = 0; n < numInstances; n++) {
-				dist = ((DistributionClassifier) classifier)
-					.distributionForInstance(test.getInstance(n));
-				probs[inst] = dist[positiveClass];
-				++inst;
+		TestFold testFold = new TestFold(numFolds, numRounds, testsetUtils);
+		
+		for (int round = 0; round < numRounds; round++) {
+			/* Randomize and stratify the instanceSet */
+			if (instanceSet.classIsNominal()) {
+				instanceSet.stratify(numFolds);
+			} else {
+				instanceSet.randomize(new Random(new Date().getTime()));
+			}
+			
+			/* Compute rocPoints and auc */
+			for (int fold = 0; fold < numFolds; fold++) {
+				train = trainCV(instanceSet, numFolds, fold);
+				test = testCV(instanceSet, numFolds, fold);
+
+				testFold.run(train, test);
 			}
 		}
 		
-		ArrayList<Object> results = new ArrayList<Object>(2);
-		results.add(probs);
-		results.add(distribution);
+		return testFold;
+	}
+
+	/**
+	 * Performs a (stratified if class is nominal) cross-validation for a
+	 * classifier on a set of instances and returns its average roc points.
+	 * 
+	 * @exception Exception
+	 *                if a classifier could not be generated successfully or the
+	 *                class is not defined
+	 */
+	public static TestFold getEvaluatedProbabilities(InstanceSet train,
+			InstanceSet test, int numRounds, TestsetUtils testsetUtils)
+	throws Exception {
+		TestFold testFold = new TestFold(1, numRounds, testsetUtils);
 		
-		return results;
+		for (int round = 0; round < numRounds; round++) {
+			testFold.run(train, test);
+		}
+		
+		return testFold;
 	}
 
 	/**

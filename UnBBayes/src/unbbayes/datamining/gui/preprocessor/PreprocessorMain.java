@@ -5,30 +5,36 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
-import unbbayes.TrainingTestSetCreator;
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
+import unbbayes.datamining.datamanipulation.Attribute;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.gui.FileIcon;
 import unbbayes.gui.SimpleFileFilter;
@@ -64,6 +70,7 @@ public class PreprocessorMain extends JInternalFrame
 	private InstanceSet inst;
 	private JMenuItem jMenuFileOpen = new JMenuItem();
 	private JMenuItem jMenuFileTestTrainingSet = new JMenuItem();
+	private JMenuItem jMenuBuildSample = new JMenuItem();
 	private JMenuItem jMenuFileExit = new JMenuItem();
 	private JFileChooser fileChooser;
 	private JPanel jPanel3 = new JPanel();
@@ -186,12 +193,25 @@ public class PreprocessorMain extends JInternalFrame
 			}
 		});
 	 
+		/* Add the menu for the test and training set creator */
+		jMenuBuildSample.setEnabled(false);
+		jMenuBuildSample.setMnemonic(((Character)resource.getObject("sampleMnemonic")).charValue());
+		jMenuBuildSample.setText(resource.getString("sample"));
+		jMenuBuildSample.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				jMenuBuildSample_actionPerformed(e);
+			}
+		});
+	 
 		jToolBar.add(openButton);
 		jToolBar.add(saveButton);
 		jToolBar.add(helpButton);
 		jMenuFile.add(jMenuFileOpen);
 		jMenuFile.add(jMenuFileSave);
 		jMenuFile.add(jMenuFileTestTrainingSet);
+		jMenuFile.add(jMenuBuildSample);
 		jMenuFile.add(jMenuFileExit);
 		jMenuHelp.add(jMenuHelpAbout);
 		jMenuBar1.add(jMenuFile);
@@ -206,10 +226,92 @@ public class PreprocessorMain extends JInternalFrame
 		jPanel3.add(jPanel1,BorderLayout.CENTER);
 	}
  
+	private void removeAttributes() {
+		int[] selectedAttributes;
+		selectedAttributes = jPanel1.getAttributePanel().getSelectedAttributes();
+		int numAttributes = inst.numAttributes;
+		int counter = 0;
+		ArrayList<Boolean> removeAtt = new ArrayList<Boolean>(numAttributes);
+		for (int i = 0; i < numAttributes; i++) {
+			removeAtt.add(true);
+		}
+		for (int i = 0; i < selectedAttributes.length; i++) {
+			removeAtt.set(selectedAttributes[i], false);
+		}
+		int att = 0;
+		int classIndex = inst.getClassIndex();
+		while (att < numAttributes) {
+			if (removeAtt.get(att)) {
+				inst.removeAttribute(att);
+				removeAtt.remove(att);
+				--numAttributes;
+				if (classIndex != -1) {
+					--classIndex;
+				}
+				continue;
+			}
+			++att;
+		}
+		inst.setClassIndex(classIndex);
+		
+		/* Rebuild selectedAttributes array */
+		selectedAttributes = new int[counter];
+		for (int i = 0; i < counter; i++) {
+			selectedAttributes[i] = i;
+		}
+	}
+	
+	private void jMenuBuildSample_actionPerformed(ActionEvent e) {
+		/* Get sample save file name from user */
+		String saveDialogTitle = resource.getString("saveSample");
+		File sampleFile = getFileFromUser(saveDialogTitle);
+		
+		/* Check if aborted by user */
+		if (sampleFile == null) {
+			return;
+		}
+		
+		setCursor(new Cursor(Cursor.WAIT_CURSOR));
+
+		/*** Ask user for proportion, compact and class attribute (if any) ***/
+		PreprocessorParameters askUser = new PreprocessorParameters(this, inst,
+				true);
+		float proportion = askUser.getSampleSize();
+		proportion /= inst.numWeightedInstances;
+		boolean compact = askUser.isCompact();
+		boolean canceled = askUser.isCanceled();
+		askUser = null;
+		if (canceled) {
+			return;
+		}
+		
+		/* Sample the instanceSet */
+		inst.buildSample(proportion, compact);
+
+		/* Remove attributes not selected */
+		removeAttributes();
+		
+		jPanel1.setBaseInstances(inst);
+
+		/* Save file */
+		int[] selectedAttributes;
+		selectedAttributes = jPanel1.getAttributePanel().getSelectedAttributes();
+		saveFile(sampleFile, selectedAttributes, inst);
+		File dir = fileChooser.getCurrentDirectory();
+		FileController.getInstance().setCurrentDirectory(dir);
+		
+		/* Set the panel to show the training set */
+		jPanel1.setBaseInstances(inst);
+		String fileName = sampleFile.getName();
+		this.setTitle(resource.getString("preprocessorTitle") + fileName);
+		statusBar.setText(resource.getString("sampleCreated"));
+		setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	}
+
 	private void jMenuFileTestTrainingSet_actionPerformed(ActionEvent e) {
 		String saveDialogTitle;
 
-		/* Get training save file from user */
+		/* Get training save file name from user */
 		saveDialogTitle = resource.getString("saveTrainingFile");
 		File trainingFile = getFileFromUser(saveDialogTitle);
 		
@@ -218,7 +320,7 @@ public class PreprocessorMain extends JInternalFrame
 			return;
 		}
 
-		/* Get test save file from user */
+		/* Get test save file name from user */
 		saveDialogTitle = resource.getString("saveTestFile");
 		File testFile = getFileFromUser(saveDialogTitle);
 		
@@ -229,41 +331,33 @@ public class PreprocessorMain extends JInternalFrame
 		
 		setCursor(new Cursor(Cursor.WAIT_CURSOR));
 
-		int[] selectedAttributes = jPanel1.getAttributePanel().getSelectedAttributes();
+		/*** Ask user for proportion, compact and class attribute (if any) ***/
+		PreprocessorParameters askUser = new PreprocessorParameters(this, inst,
+				false);
+		float proportion = askUser.getSampleSize();
+		boolean compact = askUser.isCompact();
+		boolean canceled = askUser.isCanceled();
+		askUser = null;
+		if (canceled) {
+			return;
+		}
 		
-		InstanceSet trainSet = inst;
-
-		int numAttributes = trainSet.numAttributes;
-		int counter = 0;
-		for (int att = 0; att < numAttributes; att++) {
-			if (att >= selectedAttributes.length - 1
-					|| att == selectedAttributes[counter]) {
-				++counter;
-				continue;
-			}
-			trainSet.removeAttribute(att);
-		}
-
-		/* Rebuild selectedAttributes array */
-		selectedAttributes = new int[counter];
-		for (int att = 0; att < counter; att++) {
-			selectedAttributes[att] = att;
-		}
+		/* Remove attributes not selected */
+		removeAttributes();
 		
 		/* 
 		 * Set the panel to show the instanceSet without the removed
 		 * attributes.
 		 */
+		InstanceSet trainSet = inst;
 		jPanel1.setBaseInstances(trainSet);
 
-		/* Compact? */
-		boolean compact = true;
-		
 		/* Build the test and training instanceSets */
-		float testProportion = (float) 1 / 3;
-		InstanceSet testSet = trainSet.buildTrainTestSet(testProportion, compact);
+		InstanceSet testSet = trainSet.buildTrainTestSet(proportion, compact);
 
 		/* Save file */
+		int[] selectedAttributes;
+		selectedAttributes = jPanel1.getAttributePanel().getSelectedAttributes();
 		saveFile(trainingFile, selectedAttributes, trainSet);
 		saveFile(testFile, selectedAttributes, testSet);
 		File dir = fileChooser.getCurrentDirectory();
@@ -382,6 +476,7 @@ public class PreprocessorMain extends JInternalFrame
 			saveButton.setEnabled(false);
 			jMenuFileSave.setEnabled(false);
 			jMenuFileTestTrainingSet.setEnabled(false);
+			jMenuBuildSample.setEnabled(false);
 	
 			inst = FileController.getInstance().getInstanceSet(selectedFile,this);
 			if (inst != null) {
@@ -393,6 +488,7 @@ public class PreprocessorMain extends JInternalFrame
 				saveButton.setEnabled(true);
 				jMenuFileSave.setEnabled(true);
 				jMenuFileTestTrainingSet.setEnabled(true);
+				jMenuBuildSample.setEnabled(true);
 			} else {
 				statusBar.setText("Operação cancelada");
 			}

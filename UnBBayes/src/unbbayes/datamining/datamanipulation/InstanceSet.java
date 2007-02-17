@@ -2,10 +2,15 @@ package unbbayes.datamining.datamanipulation;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Random;
 import java.util.ResourceBundle;
+
+import unbbayes.datamining.clustering.Kmeans;
+import unbbayes.datamining.distance.Euclidean;
+import unbbayes.datamining.distance.IDistance;
 
 /**
  * Class for handling a set of instances.
@@ -37,14 +42,17 @@ public class InstanceSet implements Serializable {
 	 */
 	public byte[] attributeType;
 
-	/** Constant set for numeric attributes. */
+	/** Constant set for numeric attributes and instanceSets. */
 	public final static byte NUMERIC = 0;
 
-	/** Constant set for nominal attributes. */
+	/** Constant set for nominal attributes and instanceSets. */
 	public final static byte NOMINAL = 1;
 
 	/** Constant set for cyclic numeric attributes. */
 	public final static byte CYCLIC = 2;
+
+	/** Constant set for mixed instanceSets. */
+	public final static byte MIXED = 2;
 
 	/** Number of attributes */
 	public int numAttributes;
@@ -90,6 +98,19 @@ public class InstanceSet implements Serializable {
 
 	/** Tells if this instanceSet is compacted */
 	private boolean compactedFile;
+
+	private boolean[] attributeHasChanged;
+
+	private AttributeStats[] attributeStats;
+
+	/** 
+	 * Stores the type of this instanceSet:
+	 * 
+	 * 0 - Numeric
+	 * 1 - Nominal
+	 * 2 - Mixed
+	 */
+	private int instanceSetType;
 
 	/** Random used in the sorting of the instances */
 	private static Random rnd;
@@ -139,6 +160,10 @@ public class InstanceSet implements Serializable {
 					break;
 			}
 		}
+		
+		/* Set flag that tells that an attribute has been changed */
+		attributeHasChanged = new boolean[numAttributes];
+		Arrays.fill(attributeHasChanged, true);
 	}
 
 	/**
@@ -163,6 +188,7 @@ public class InstanceSet implements Serializable {
 		this.numCyclicAttributes = source.numCyclicAttributes;
 		this.numNominalAttributes = source.numNominalAttributes;
 		this.numNumericAttributes = source.numNumericAttributes;
+		this.attributeHasChanged = source.attributeHasChanged;
 	}
 
 	/**
@@ -269,6 +295,8 @@ public class InstanceSet implements Serializable {
 				newInstanceSet[inst] = instances[inst + 1];
 			}
 			instances = newInstanceSet;
+			
+			Arrays.fill(attributeHasChanged, true);
 		}
 	}
 
@@ -280,14 +308,19 @@ public class InstanceSet implements Serializable {
 	 */
 	public final void removeInstances(boolean[] deleteIndex) {
 		/* Get the current size */
-		int currentSize = numInstances;
+		int currentSize = instances.length;
+		int deleteSize = deleteIndex.length;
 		
 		/* Count the number of instances to be removed */
 		int numInstancesToBeRemoved = 0;
-		for (int inst = 0; inst < currentSize; inst++) {
+		for (int inst = 0; inst < deleteSize; inst++) {
 			if (deleteIndex[inst]) {
 				++numInstancesToBeRemoved;
 			}
+		}
+		
+		if (numInstancesToBeRemoved == 0) {
+			return;
 		}
 		
 		/* Create new instanceSet */
@@ -299,7 +332,7 @@ public class InstanceSet implements Serializable {
 		 * deletion.
 		 */
 		int newInstanceIndex = 0;
-		for (int inst = 0; inst < currentSize; inst++) {
+		for (int inst = 0; inst < deleteSize; inst++) {
 			if (deleteIndex[inst]) {
 				/* Remove instance */
 				--numInstances;
@@ -310,8 +343,17 @@ public class InstanceSet implements Serializable {
 			++newInstanceIndex;
 		}
 		
+		if (deleteSize < currentSize) {
+			for (int inst = deleteSize; inst < currentSize; inst++) {
+				newInstanceSet[newInstanceIndex] = instances[inst];
+				++newInstanceIndex;
+			}
+		}
+		
 		/* Set the current instanceSet to the new one just created */
 		instances = newInstanceSet;
+		
+		Arrays.fill(attributeHasChanged, true);
 	}
 
 	/**
@@ -340,13 +382,15 @@ public class InstanceSet implements Serializable {
 			//new attributes without index attribute
 			Attribute[] newAttributes = new Attribute[numAttributes];
 			byte[] newAttributeType = new byte[numAttributes];
-
+			boolean[] newAttributeHasChanged = new boolean[numAttributes];
+			
 			int att;
 
 			// attributes before index
 			for (att = 0; att < index; att++) {
 				newAttributes[att] = attributes[att];
 				newAttributeType[att] = attributeType[att];
+				newAttributeHasChanged[att] = attributeHasChanged[att];
 			}
 
 			//attributes after index
@@ -354,9 +398,11 @@ public class InstanceSet implements Serializable {
 				newAttributes[att] = attributes[att + 1];
 				newAttributes[att].setIndex(att);
 				newAttributeType[att] = attributeType[att + 1];
+				newAttributeHasChanged[att] = attributeHasChanged[att + 1];
 			}
 			attributes = newAttributes;
 			attributeType = newAttributeType;
+			attributeHasChanged = newAttributeHasChanged;
 			
 			/* Remove the attribute from the instances */
 			for (int inst = 0; inst < numInstances; inst++) {
@@ -457,7 +503,8 @@ public class InstanceSet implements Serializable {
 		}
 		attributes[position] = att;
 		att.setFinal(this);
-
+		attributeHasChanged[position] = true;
+		
 		for (int i = 0; i < numInstances; i++) {
 			instances[i].setMissing(att);
 		}
@@ -473,6 +520,7 @@ public class InstanceSet implements Serializable {
 		newInstance.setInstanceSet(this);
 		numInstances++;
 		numWeightedInstances += newInstance.data[counterIndex];
+		Arrays.fill(attributeHasChanged, true);
 	}
 	
 	/**
@@ -577,23 +625,47 @@ public class InstanceSet implements Serializable {
 			++inst;
 			++counter;
 		}
+		Arrays.fill(destination.attributeHasChanged, true);
 	}
 
 	/**
 	 * Calculates summary statistics on the values that appear in each
 	 * attribute and return then as a vector. 
 	 * 
-	 * @param recalculate Tells that recalculation is desired.
 	 * @return An AttributeStats object with it's fields calculated.
 	 */
-	public AttributeStats[] getAttributeStats(boolean recalculate) {
-		AttributeStats[] attributeStats = new AttributeStats[numAttributes];
-		
-		for (int att = 0; att < numAttributes; att++) {
-			attributeStats[att] = new AttributeStats(this, attributes[att]);
+	public AttributeStats[] getAttributeStats() {
+		if (attributeStats == null) {
+			attributeStats = new AttributeStats[numAttributes];
+			Arrays.fill(attributeHasChanged, true);
 		}
 		
+		for (int att = 0; att < numAttributes; att++) {
+			if (attributeHasChanged[att]) {
+				attributeStats[att] = new AttributeStats(this, attributes[att]);
+			}
+		}
+		Arrays.fill(attributeHasChanged, false);
+		
 		return attributeStats;
+	}
+
+	/**
+	 * Calculates summary statistics on the values that appear in each
+	 * attribute and return then as a vector. 
+	 * 
+	 * @return An AttributeStats object with it's fields calculated.
+	 */
+	public AttributeStats getAttributeStats(int attIndex) {
+		if (attributeStats[attIndex] == null) {
+			attributeStats = new AttributeStats[numAttributes];
+			Arrays.fill(attributeHasChanged, true);
+		}
+		
+		attributeStats[attIndex] = new AttributeStats(this, attributes[attIndex]);
+		attributeHasChanged[attIndex] = false;
+
+		return attributeStats[attIndex];
 	}
 
 	/**
@@ -769,6 +841,7 @@ public class InstanceSet implements Serializable {
 	 */
 	public void setInstances(Instance[] newVec) {
 		instances = newVec;
+		Arrays.fill(attributeHasChanged, true);
 	}
 
 	/**
@@ -783,7 +856,7 @@ public class InstanceSet implements Serializable {
 	 */ 
 	public void compact() {
 		/* Get array with the sorted index of the instanceSet */
-		int[] instancesIDs = sort();
+		int[] instancesIDs = sortAscending();
 		
 		/* First instance of a pack */
 		int head;
@@ -882,10 +955,12 @@ public class InstanceSet implements Serializable {
 		int[] count = null;
 		int[][] instancesIDs = null;
 		
-		//TODO colocar o abaixo como parâmetro e não fixo!!!
 		if (this.classIndex != -1) {
 			numClasses = numClasses();
 	
+			/* For safety purpouses */
+			testSize += numClasses;
+				
 			/* Count instances per class */
 			count = new int[numClasses];
 			Arrays.fill(count, 0);
@@ -967,7 +1042,108 @@ public class InstanceSet implements Serializable {
 			testSet.compact();
 		}
 		
+		Arrays.fill(attributeHasChanged, true);
+		Arrays.fill(testSet.attributeHasChanged, true);
+
 		return testSet;
+	}
+
+	/**
+	 * Sample down the current instanceSet to the desired proportion. If it has
+	 * a class attribute it will be used to make a stratified sample.
+	 *  
+	 * @param proportion
+	 * @param compact
+	 */
+	public void buildSample(float proportion, boolean compact) {
+		/* 
+		 * The proportion variable has a different meaning here. It tells
+		 * how much of the instanceSet should be removed. Then, the input
+		 * proportion must be changed to reflect this mean. 
+		 */
+		proportion = 1 - proportion;
+		
+		Random randomizer = new Random(new Date().getTime());
+		
+		int numClasses;
+		int[] count = null;
+		int[][] instancesIDs = null;
+		
+		if (this.classIndex != -1) {
+			numClasses = numClasses();
+	
+			/* Count instances per class */
+			count = new int[numClasses];
+			Arrays.fill(count, 0);
+			for (int classValue, inst = 0; inst < numInstances; inst++) {
+				classValue = (int) instances[inst].data[classIndex];
+				++count[classValue];
+			}
+			
+			/* Separate the instances by their classes */
+			instancesIDs = new int[numClasses][];
+			for (int classValue = 0; classValue < numClasses; classValue++) {
+				instancesIDs[classValue] = new int[count[classValue]];
+			}
+			Arrays.fill(count, 0);
+			for (int classValue, inst = 0; inst < numInstances; inst++) {
+				classValue = (int) instances[inst].data[classIndex];
+				instancesIDs[classValue][count[classValue]] = inst;
+				++count[classValue];
+			}
+		} else {
+			numClasses = 1;
+			count = new int[1];
+			count[0] = numInstances;
+			instancesIDs = new int[1][numInstances];
+			for (int inst = 0; inst < numInstances; inst++) {
+				instancesIDs[0][inst] = inst;
+			}
+		}
+		
+		/* Array that tells which instance will pertain to the test set */ 
+		boolean[] removeIndex = new boolean[numInstances];
+		Arrays.fill(removeIndex, false);
+
+		/* Auxiliary array: tells when an instance has not been chosen yet */
+		boolean[] notUsed = new boolean[numInstances];
+		Arrays.fill(notUsed, true);
+		
+		/* 
+		 * Randomly choose the instances for the test set using a stratified
+		 * approach for the class
+		 */
+		int index = 0;
+		int counter;
+		int inst;
+		int max;
+		for (int classValue = 0; classValue < numClasses; classValue++) {
+			/* Choose randomly the instances to the test set */
+			counter = 0;
+			max = Math.round((count[classValue] * proportion));
+			while (counter < max) {
+				inst = randomizer.nextInt(count[classValue]);
+				inst = instancesIDs[classValue][inst];
+				if (notUsed[inst]) {
+					removeIndex[inst] = true;
+					++counter;
+					++index;
+					
+					/* Discard the instance 'inst' */
+					notUsed[inst] = false;
+				}
+			}
+		}
+		
+		/* Remove all instances marked to be removed */
+		removeInstances(removeIndex);
+		
+		/* Compact both training and test instanceSets */
+		if (compact) {
+			compact();
+		}
+		
+		Arrays.fill(attributeHasChanged, true);
 	}
 
 	public void insertInstances(float[][] newInstanceSet) {
@@ -993,6 +1169,8 @@ public class InstanceSet implements Serializable {
 
 		/* Now compact the instanceSet */
 //		compact();
+
+		Arrays.fill(attributeHasChanged, true);
 	}
 
 
@@ -1000,74 +1178,89 @@ public class InstanceSet implements Serializable {
 	/*------------------- Quicksort - start ---------------------*/
 	
 	/**
-	 * Sorts a given array of objects in ascending order and returns an
-	 * array of integers with the positions of the elements of the
-	 * original array in the sorted array. 
+	 * Returns an index of this instanceSet with the instances' position 
+	 * sorted in ascending way. It does not change the position of the 
+	 * instances in this instanceSet. Should two instances be equal, they will
+	 * appear in resulting index in the same order they appear in this
+	 * instanceSet (in other words, this method is stable).
 	 * 
-	 * @param array This array is not changed by the method!
-	 * @param cmp A comparable object.
-	 * @return An array of integers with the positions in the sorted array.
+	 * @return An array of integers with the positions of this instanceSet
+	 * sorted in ascending way.
 	 */
-	public int[] sort() {
-		int[] index = new int[numInstances];
+	public int[] sortAscending() {
+		return sort(false);
+	}
 
-		rnd = new Random(new Date().getTime());
-		
-		for (int i = 0; i < index.length; i++) {
-			index[i] = i;
+	/**
+	 * Returns an index of this instanceSet with the instances' position 
+	 * sorted in descending way. It does not change the position of the 
+	 * instances in this instanceSet. Should two instances be equal, they will
+	 * appear in resulting index in the same order they appear in this
+	 * instanceSet (in other words, this method is stable).
+	 * 
+	 * @return An array of integers with the positions of this instanceSet
+	 * sorted in descending way.
+	 */
+	public int[] sortDescending() {
+		return sort(true);
+	}
+
+	private int[] sort(boolean descending) {
+		float[][][] arrays = new float[numInstances][][];
+		for (int inst = 0; inst < numInstances; inst++) {
+			arrays[inst] = new float[2][];
+			arrays[inst][0] = instances[inst].data;
+			float[] aux = {inst};
+			arrays[inst][1] = aux;
 		}
-		qsort(index, 0, numInstances - 1);
+		sort(arrays);
+		
+		int[] index = new int[numInstances];
+		
+		if (descending) {
+			for (int inst = 0; inst < numInstances; inst++) {
+				index[inst] = (int) arrays[numInstances - inst - 1][1][0];
+			}
+		} else {
+			for (int inst = 0; inst < numInstances; inst++) {
+				index[inst] = (int) arrays[inst][1][0];
+			}
+		}
 		
 		return index;
 	}
 
-	private void qsort(int[] index, int begin, int end) {
-		if (end > begin) {
-			int pos = partition(index, begin, end);
-			
-			qsort(index, begin, pos - 1);
-			qsort(index, pos + 1,  end);
-		}
-	}
-	
-	private int partition(int[] index, int begin, int end) {
-		int pos = begin + rnd.nextInt(end - begin + 1);
-		int pivot = index[pos];
-		
-		swap(index, pos, end);
-		
-		for (int i = pos = begin; i < end; ++ i) {
-			if (!greaterThan(index[i], pivot)) {
-				swap(index, pos++, i);
+	private void sort(float[][][] array) {
+		Arrays.sort(array, new Comparator<float[][]>() {
+			public int compare(final float[][] arg0, final float[][] arg1) {
+				float[][] p1 = (float[][]) arg0;
+				float[][] p2 = (float[][]) arg1;
+				float x;
+				
+				for (int i = 0; i < numAttributes; i++) {
+					x = p1[0][i] - p2[0][i];
+					if (x < 0) {
+						return -1;
+					} else if (x > 0) {
+						return 1;
+					}
+				}
+				
+				/* 
+				 * The two instances are equal. Check their position in the
+				 * instanceSet.
+				 */
+				x = p1[1][0] - p2[1][0];
+				if (x < 0) {
+					return -1;
+				} else if (x > 0) {
+					return 1;
+				}
+				
+				/* It will never happen */
+				return 0;
 			}
-		}
-		swap(index, pos, end);
-		
-		return pos;
-	}
-	
-	private void swap(int[] index, int i, int j) {
-		int tmp = index[i];
-		index[i] = index[j];
-		index[j] = tmp;
-	}
-	
-	private boolean greaterThan(int inst1, int inst2) {
-		float[] v1 = instances[inst1].data;
-		float[] v2 = instances[inst2].data;
-
-		for (int i = 0; i < numAttributes; i++) {
-			if (v1[i] > v2[i]) {
-				return true;
-			} else if (v1[i] < v2[i]) {
-				return false;
-			}
-		}
-		if (inst1 > inst2) {
-			return true;
-		}
-		
-		return false;
+		});
 	}
 
 	/*------------------- Quicksort - end ---------------------*/
@@ -1183,4 +1376,163 @@ public class InstanceSet implements Serializable {
 		return attributes[classIndex].isNominal();
 	}
 
+	/**
+	 * Returns the mean (mode) for a numeric (nominal) attribute as
+	 * a floating-point value. Returns 0 if the attribute is neither nominal nor 
+	 * numeric. If all values are missing it returns zero.
+	 *
+	 * @param attIndex the attribute's index (index starts with 0)
+	 * @return the mean or the mode
+	 */
+	public double meanOrMode(int attIndex) {
+		double result;
+		double found;
+		double value;
+		double weight;
+		int [] counts;
+
+		if (attributes[attIndex].isNumeric()) {
+			result = found = 0;
+			for (int i = 0; i < numInstances(); i++) {
+				if (!instances[i].isMissing(attIndex)) {
+					value = instances[i].data[attIndex];
+					weight = instances[i].data[counterIndex];
+					found += weight;
+					result += value * weight;
+				}
+			}
+			if (found <= 0) {
+				return 0;
+			} else {
+				return result / found;
+			}
+		} else if (attributes[attIndex].isNominal()) {
+			counts = new int[attributes[attIndex].numValues()];
+			for (int j = 0; j < numInstances(); j++) {
+				value = instances[j].data[attIndex];
+				weight = instances[j].data[counterIndex];
+				counts[(int) value] += weight;
+			}
+			return (double) Utils.maxIndex(counts);
+		} else {
+			return 0;
+		}
+	}
+
+	/**
+	 * Returns the mean (mode) for a numeric (nominal) attribute as a
+	 * floating-point value.	Returns 0 if the attribute is neither
+	 * nominal nor numeric.	If all values are missing it returns zero.
+	 *
+	 * @param att the attribute
+	 * @return the mean or the mode 
+	 */
+	public double meanOrMode(Attribute att) {
+		return meanOrMode(att.getIndex());
+	}
+	
+	/**
+	 * Computes the variance for a numeric attribute.
+	 *
+	 * @param attIndex the numeric attribute (index starts with 0)
+	 * @return the variance if the attribute is numeric
+	 * @throws IllegalArgumentException if the attribute is not numeric
+	 */
+	public double variance(int attIndex) {
+		double sum = 0;
+		double sumSquared = 0;
+		double sumOfWeights = 0;
+		double value;
+		double weight;
+
+		if (!attributes[attIndex].isNumeric()) {
+			throw new IllegalArgumentException("Can't compute variance" +
+					" because attribute is not numeric!");
+		}
+		
+		for (int i = 0; i < numInstances(); i++) {
+			if (!instances[i].isMissing(attIndex)) {
+				value = instances[i].data[attIndex];
+				weight = instances[i].data[counterIndex];
+				sum += value * weight;
+				sumSquared += value * value * weight;
+				sumOfWeights += weight;
+			}
+		}
+
+		if (sumOfWeights <= 1) {
+			return 0;
+		}
+
+		double result = sumSquared - (sum * sum / sumOfWeights);
+		result /= (sumOfWeights - 1);
+
+		/* We don't want negative variance */
+		if (result < 0) {
+			return 0;
+		} else {
+			return result;
+		}
+	}
+
+	/**
+	 * Computes the variance for a numeric attribute.
+	 *
+	 * @param att the numeric attribute
+	 * @return the variance if the attribute is numeric
+	 * @throws IllegalArgumentException if the attribute is not numeric
+	 */
+	public double variance(Attribute att) {
+		return variance(att.getIndex());
+	}
+	
+	/** 
+	 * Stores the type of this instanceSet:
+	 * 
+	 * 0 - Numeric
+	 * 1 - Nominal
+	 * 2 - Mixed
+	 */
+	public void setInstanceSetType() {
+		boolean numeric = false;
+		boolean nominal = false;
+		boolean mixed = false;
+		
+		/* Check if the instanceSet contains any numeric attribute */
+		if (numNumericAttributes > 0) {
+			numeric = true;
+		}
+
+		/*
+		 * Check if the instanceSet contains any nominal attribute, besides the
+		 * class attribute.
+		 */
+		if (numCyclicAttributes > 0 ||
+			numNominalAttributes > 1 ||
+			(!classIsNominal() &&
+				numNominalAttributes > 0)) {
+			nominal = true;
+		}
+		
+		/* Check if the instanceSet contains mixed attributes */
+		if (nominal && numeric) {
+			mixed = true;
+		}
+		
+		if (mixed) {
+			instanceSetType = 2;
+		} else if (nominal) {
+			instanceSetType = 1;
+		} else {
+			instanceSetType = 0;
+		}
+	}
+
+	public boolean isNominal() {
+		if (instanceSetType == 1) {
+			return true;
+		}
+		return false;
+	}
+	
 }

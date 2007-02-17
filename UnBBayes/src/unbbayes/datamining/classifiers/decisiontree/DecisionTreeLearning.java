@@ -1,5 +1,7 @@
 package unbbayes.datamining.classifiers.decisiontree;
 
+import java.util.ArrayList;
+
 import javax.swing.*;
 
 import unbbayes.datamining.classifiers.Classifier;
@@ -24,5 +26,26 @@ public abstract class DecisionTreeLearning extends Classifier
 
 	public abstract String toString();
 
+  	/**
+  	 * Return the probability of the input instance being of the positive
+  	 * class.
+  	 * 
+  	 * @param instance
+  	 * @param positiveClass
+  	 * @return
+  	 */
+	public abstract float positiveClassProb(Instance instance, int positiveClass,
+			int numClasses);
+
+  	/**
+  	 * Descend the tree updating the input parameters with information for
+  	 * building a ROC curve.
+  	 * 
+  	 * @param positiveClass
+  	 */
+	public abstract void descendTree(Node treeNode, int positiveClass,
+			int[] count, ArrayList<float[]> positivePoints,
+			ArrayList<float[]> negativePoints,
+			ArrayList<float[]> probs);
 }
 
