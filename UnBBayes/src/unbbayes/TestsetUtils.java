@@ -75,6 +75,10 @@ public class TestsetUtils {
 
 	private int k;
 	
+	private float learningRate;
+	
+	private float momentum;
+	
 	public TestsetUtils() {
 		smote = new Smote(null);
 		smote.setOptionDiscretize(optionDiscretize);
@@ -276,9 +280,9 @@ public class TestsetUtils {
 	/**
 	 * @param positiveClass the positiveClass to set
 	 */
-	public void setInterestingClass(int interestingClass) {
-		positiveClass = interestingClass;
-		negativeClass = 1 - positiveClass;
+	public void setPositiveClass(int positiveClass) {
+		this.positiveClass = positiveClass;
+		negativeClass = Math.abs(1 - positiveClass);
 	}
 
 	public void setConfidenceLevel(float value) {
@@ -297,12 +301,32 @@ public class TestsetUtils {
 		return positiveClass;
 	}
 
+	public int getNegativeClass() {
+		return negativeClass;
+	}
+
 	public Smote getSmote() {
 		return smote;
 	}
 
 	public int getK() {
 		return k;
+	}
+
+	public float getLearningRate() {
+		return learningRate;
+	}
+
+	public float getMomentum() {
+		return momentum;
+	}
+
+	public void setLearningRate(float learningRate) {
+		this.learningRate = learningRate;
+	}
+
+	public void setMomentum(float momentum) {
+		this.momentum = momentum;
 	}
 
 }

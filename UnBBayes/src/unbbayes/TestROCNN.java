@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Date;
 import java.util.Locale;
 
 import unbbayes.datamining.datamanipulation.InstanceSet;
@@ -20,7 +19,7 @@ import unbbayes.datamining.preprocessor.imbalanceddataset.Smote;
  * @author Emerson Lopes Machado - emersoft@conectanet.com.br
  * @date 24/08/2006
  */
-public class TestROC {
+public class TestROCNN {
 	
 	float maxSE = 0;
 	String maxSEHeader;
@@ -46,8 +45,11 @@ public class TestROC {
 	private int numRounds;
 	private boolean cross;
 	private int k;
+	private float learningRate;
+	private float momentum;
+	private PrintWriter writer;
 	
-	public TestROC() {
+	public TestROCNN() {
 		run1();
 	}
 	
@@ -61,11 +63,8 @@ public class TestROC {
 		}
 	}
 
-	private void run2() {
-	}
-
 	public static void main(String[] args) {
-		new TestROC();
+		new TestROCNN();
 	}
 
 	public void dataset(int x) {
@@ -94,7 +93,7 @@ public class TestROC {
 				positiveClass = 1;
 				cross = true;
 				numFolds = 10;
-				numRounds = 100;
+				numRounds = 1;
 				k = 15;
 				break;
 			case 2:
@@ -107,7 +106,7 @@ public class TestROC {
 				positiveClass = 1;
 				cross = false;
 				numFolds = 10;
-				numRounds = 20;
+				numRounds = 1;
 				k = 15;
 				break;
 			case 3:
@@ -120,7 +119,7 @@ public class TestROC {
 				positiveClass = 1;
 				cross = true;
 				numFolds = 10;
-				numRounds = 5;
+				numRounds = 1;
 				k = 15;
 				break;
 			case 4:
@@ -158,7 +157,7 @@ public class TestROC {
 				counterIndex = -1;
 				positiveClass = 1;
 				cross = true;
-				numFolds = 10;
+				numFolds = 5;
 				numRounds = 1;
 				k = 15;
 				break;
@@ -179,9 +178,6 @@ public class TestROC {
 	}
 	
 	public void run(int x) throws Exception {
-		long start = System.currentTimeMillis();
-		System.out.println("Inicio = " + (new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
-
 		/*
 		 * 0: banco do brasil
 		 * 1: pima
@@ -210,6 +206,8 @@ public class TestROC {
 		testsetUtils = new TestsetUtils();
 		testsetUtils.setPositiveClass(positiveClass);
 		testsetUtils.setK(k);
+		testsetUtils.setLearningRate(learningRate);
+		testsetUtils.setMomentum(momentum);
 		
 		/**** C4.5 options ****/
 		testsetUtils.setIfUsingPrunning(false);
@@ -220,18 +218,32 @@ public class TestROC {
 					"must be greater than zero!");
 		}
 		
-		if (cross) {
-			runCross();
-		} else {
-			run();
+		/* Create AUC output file */
+		String fileName = outputFilePath + "naive/" + aucFileName;
+		File output = new File(fileName);
+		writer = new PrintWriter(new FileWriter(output), true);
+		
+		for (learningRate = 0.1f; learningRate <= 1; learningRate += 0.1) {
+			for (momentum = 0.1f; momentum <= 1; momentum += 0.1) {
+				long start = System.currentTimeMillis();
+
+				if (cross) {
+					runCross();
+				} else {
+					run();
+				}
+				
+				long time = System.currentTimeMillis() - start;
+				int min = (int) (time / 1000) / 60;
+				int sec = (int) (time / 1000) - (min * 60);
+				String mes;
+				mes = "Time for " + x + ": " + min + "\"" + sec + "'";
+				System.out.println(mes);
+			}
 		}
 
-		long time = System.currentTimeMillis() - start;
-		int min = (int) (time / 1000) / 60;
-		int sec = (int) (time / 1000) - (min * 60);
-		String timeMesg;
-		timeMesg = "Time for " + x + ": " + min + "\"" + sec + "'";
-		System.out.println(timeMesg);
+		writer.flush();
+		writer.close();
 	}
 
 	private void runCross() throws Exception {
@@ -410,11 +422,6 @@ public class TestROC {
 //	
 	private void saveAUCResults(TestFold testFold)
 	throws IOException {
-		PrintWriter writer;
-		File output;
-		String fileName;
-		String classifierName;
-
 		int numClassifiers = Classifiers.getNumClassifiers();
 		int numSamples = Samples.getNumSamples();
 		
@@ -423,25 +430,15 @@ public class TestROC {
 		
 		/* Save auc values on disk */
 		for (int i = 0; i < numClassifiers; i++) {
-			classifierName = Classifiers.getClassifierName(i);
-
-			/* Create AUC output file */
-			fileName = outputFilePath + classifierName + "/" + aucFileName;
-			output = new File(fileName);
-			writer = new PrintWriter(new FileWriter(output), true);
-			
 			for (int sampleID = 0; sampleID < numSamples; sampleID++) {
 				writer.print(Samples.getSampleName(sampleID));
-	
+				
+				writer.print("\t" + "learningRate" + "\t" + learningRate);
+				writer.print("\t" + "momentum" + "\t" + momentum);
+
 				/* AUC */
 				value = testFold.getAuc(sampleID, i)[0];
 				stdDev = testFold.getAuc(sampleID, i)[1];
-				writer.print("\t" + String.format(Locale.FRANCE, "%.2f", value));
-				writer.print("\t" + String.format(Locale.FRANCE, "%.2f", stdDev));
-				
-				/* Global error */
-				value = testFold.getGlobalError(sampleID, i)[0];
-				stdDev = testFold.getGlobalError(sampleID, i)[1];
 				writer.print("\t" + String.format(Locale.FRANCE, "%.2f", value));
 				writer.print("\t" + String.format(Locale.FRANCE, "%.2f", stdDev));
 				
@@ -465,8 +462,8 @@ public class TestROC {
 				
 				writer.println();
 			}
-			writer.flush();
-			writer.close();
+//			writer.flush();
+//			writer.close();
 		}
 	}
 	

@@ -4,6 +4,7 @@ import unbbayes.datamining.classifiers.Classifier;
 import unbbayes.datamining.classifiers.DistributionClassifier;
 import unbbayes.datamining.classifiers.NaiveBayes;
 import unbbayes.datamining.classifiers.decisiontree.C45;
+import unbbayes.datamining.classifiers.decisiontree.DecisionTreeLearning;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 
 /**
@@ -14,27 +15,36 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
 public class Classifiers {
 
 	private static String[] classifierNames = {
-		"naive",
-		"c45"
+		"naive"
+		,"c45"
+//		,"ann"
 		};
 	
-	private static int numClassifiers = 1;
+	private static int numClassifiers = 2;
 	
 	public static Classifier buildClassifier(InstanceSet train, int classifierID,
-			float[] distribution) throws Exception {
+			float[] distribution, int positiveClass, float learningRate,
+			float momentum, float threshold)
+	throws Exception {
 		Classifier classifier = null;
 		
-		switch (classifierID) {
+	    switch (classifierID) {
 			case 0:
 				classifier = new NaiveBayes();
-				((DistributionClassifier)classifier).setNormalClassification();
+				((DistributionClassifier)classifier).setRelativeClassification();
 				((DistributionClassifier) classifier).setOriginalDistribution(
 						distribution);
 				break;
 				
 			case 1:
 				classifier = new C45();
+				((DecisionTreeLearning) classifier).setPositiveClass(positiveClass);
+				((DecisionTreeLearning) classifier).setThreshold(threshold);
 				break;
+				
+//			case 3:
+//				classifier = new NeuralNetwork(learningRate, false, momentum,
+//						-1, 0, 100, 1, 1, -2);
 		}
 		classifier.buildClassifier(train);
 		

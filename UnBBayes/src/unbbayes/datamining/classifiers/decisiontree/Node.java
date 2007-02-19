@@ -29,6 +29,7 @@ public class Node implements Serializable
 	/** data obtained from numeric attributes */
 	protected ArrayList numericDataList;
 	
+	protected float[] distribution;
 	
 	//--------------------------------CONSTRUCTORS--------------------------------//
 
@@ -40,6 +41,16 @@ public class Node implements Serializable
 	public Node(Attribute splitAttribute)
 	{
 		this.splitAttribute = splitAttribute;
+	}
+	
+	/** 
+	 * Constructor that creates a node without children
+	 * 
+	 * @param splitAttribute attribute used for splitting
+	 */	
+	public Node(Attribute splitAttribute, float[] distribution) {
+		this.splitAttribute = splitAttribute;
+		this.distribution = distribution;
 	}
 	
 			

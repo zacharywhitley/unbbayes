@@ -625,8 +625,8 @@ public class ROCAnalysis {
 		
 		/* Descend the tree */
 		Node treeNode = ((C45) classifier).getRootNode();
-		((DecisionTreeLearning) classifier).descendTree(treeNode, positiveClass,
-				count, positivePoints, negativePoints, probs);
+		((DecisionTreeLearning) classifier).descendTree(treeNode, count,
+				positivePoints, negativePoints, probs);
 		
 		float[] point;
 		int sizePositive = positivePoints.size();

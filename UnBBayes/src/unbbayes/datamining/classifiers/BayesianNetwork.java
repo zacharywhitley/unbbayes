@@ -78,9 +78,8 @@ public class BayesianNetwork extends DistributionClassifier
 
 	/**
    	* Generates the classifier.
-   	*
-   	* @param instances Set of instances serving as training data
-   	* @exception Exception if the classifier has not been generated successfully
+	 * @param instances Set of instances serving as training data
+	 * @exception Exception if the classifier has not been generated successfully
    	*/
   	public void buildClassifier(InstanceSet instances) throws Exception
 	{	}

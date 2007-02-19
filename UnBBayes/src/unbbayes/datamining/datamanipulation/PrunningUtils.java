@@ -107,7 +107,7 @@ public class PrunningUtils
 	public Node pruneTree(Node root, Attribute classAttribute)
 	{
 		this.classAttribute = classAttribute;
-		int numClasses = classAttribute.getAttributeValues().length;
+		int numClasses = classAttribute.getDistinticNominalValues().length;
 		Node rootClone = cloneTree(root);
 		pruneTree(rootClone,new float[numClasses]);
 		return rootClone;
@@ -182,7 +182,7 @@ public class PrunningUtils
 			if(prunningError<currentError)
 			{
 				child.removeChildren();
-				child.add(new Leaf(classAttribute,distributionSum));
+				child.add(new Leaf(classAttribute,distributionSum, -1,0));
 				return prunningError;
 			}
 			//otherwise, there is no prunning 
@@ -201,8 +201,7 @@ public class PrunningUtils
 	 * @param parent root of the tree to be cloned
 	 * @return root of the cloned tree
 	 */
-	private Node cloneTree(Node parent)
-	{
+	private Node cloneTree(Node parent) {
 		Leaf leaf;
 	  	Node node, nodeClone;
 	  	NumericNode numericNode;
@@ -210,25 +209,15 @@ public class PrunningUtils
 		ArrayList children = parent.getChildren();
 		ArrayList<Object> newChildren = new ArrayList<Object>();
 		
-		//leaf
-		if(children.get(0) instanceof Leaf)
-		{
+		if(children.get(0) instanceof Leaf) {
+			//leaf
 		  	leaf = (Leaf)children.get(0);
-		  	if(leaf.getDistribution()==null)
-		  	{
-		  		newChildren.add(new Leaf());
-		  	}
-		  	else
-		  	{
-				newChildren.add(new Leaf(classAttribute,leaf.getDistribution()));
-		  	}
-		}
-		//node
-		else
-		{
+			newChildren.add(new Leaf(classAttribute,leaf.getDistribution(), -1,0));
+		} else {
+			//node
+			
 			//for each node child - recursive call
-			for(int i=0;i<children.size();i++)
-			{
+			for(int i=0;i<children.size();i++) {
 				node = (Node)children.get(i);
 				nodeClone = cloneTree(node);
 				newChildren.add(nodeClone);				
@@ -236,19 +225,13 @@ public class PrunningUtils
 		}
 		
 		//create node clone according to the original node type
-		if(parent instanceof NumericNode)
-		{
-			numericNode = (NumericNode)parent;
-			return new NumericNode( numericNode.getAttribute(),numericNode.getSplitValue(),
-									numericNode.isMoreThanAttributeValue(),newChildren);
-		}
-		else if(parent instanceof NominalNode)
-		{
-			nominalNode = (NominalNode)parent;
-			return new NominalNode(nominalNode.getAttribute(),nominalNode.getAttributeValue(),newChildren);
-		}
-		else
-		{
+		if(parent instanceof NumericNode) {
+			numericNode = (NumericNode) parent;
+			return new NumericNode(numericNode, newChildren);
+		} else if(parent instanceof NominalNode) {
+			nominalNode = (NominalNode) parent;
+			return new NominalNode(nominalNode, newChildren);
+		} else {
 			return new Node(parent.getAttribute(),newChildren);
 		}
 	}

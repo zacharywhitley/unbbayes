@@ -21,7 +21,7 @@ import unbbayes.datamining.distance.HVDM;
  */
 public class Smote {
 	
-	private int nearesNeighborsIDs[][];
+	private int nearestNeighborsIDs[][];
 	
 	/** The number of attributes of the dataset */
 	private int numAttributes;
@@ -329,7 +329,7 @@ public class Smote {
 		
 	}
 	
-	private void populateAux(int inst, int nearestNeighborsIDs[],
+	private void populateAux(int inst, int[] nearestNeighborsIDs,
 			int numNewInstancesPerInstance) {
 		int nearestNeighborIndex;
 		
@@ -365,11 +365,6 @@ public class Smote {
 		for (int i = 0; i < numNewInstancesPerInstance; i++) {
 			/* Alocate space for the new instance and its weight */
 			float newInstance[] = new float[numAttributes + 1];
-
-//			OLD
-//			/* Chooses randomly one of the k nearest neighbor */
-//			chosenNN = (int) Math.round((Math.random() * (double) (k - 1)));
-//			nearestNeighborIndex = nearestNeighborsIDs[chosenNN];
 
 			/* Chooses randomly one of the k nearest neighbor */
 			chosenNN = random.nextInt(nearestNeighborsIDs.length);
@@ -542,7 +537,7 @@ public class Smote {
 		int count = 0;
 		
 		for (int i = 0; i < k; i++) {
-			index = nearesNeighborsIDs[instanceID][2 * i];
+			index = nearestNeighborsIDs[instanceID][i];
 			if (index > 0) {
 				++count;
 			}
@@ -556,7 +551,7 @@ public class Smote {
 		int nearestNeighborIDs[] = new int[count];
 		count = 0;
 		for (int i = 0; i < k; i++) {
-			index = nearesNeighborsIDs[instanceID][2 * i];
+			index = nearestNeighborsIDs[instanceID][i];
 			if (index > 0) {
 				nearestNeighborIDs[count] = index;
 				++count;
@@ -607,7 +602,7 @@ public class Smote {
 		this.k = k;
 		int numInstancesIDs = instancesIDs.length;
 
-		nearesNeighborsIDs = new int[numInstancesIDs][k];
+		nearestNeighborsIDs = new int[numInstancesIDs][k];
 		float[][] nearestNeighborsDistance = new float[numInstancesIDs][k];
 		
 //		/* File with nearest neighbors to open */
@@ -625,18 +620,18 @@ public class Smote {
 //			file = new RandomAccessFile(fileTest, "r");
 //			for (int i = 0; i < numInstancesIDs; i++) {
 //				for (int d = 0; d < 2 * k; d += 2) {
-//					nearesNeighborsIDs[i][d] = file.readInt();
-//					nearesNeighborsIDs[i][d + 1] = file.readFloat();
+//					nearestNeighborsIDs[i][d] = file.readInt();
+//					nearestNeighborsIDs[i][d + 1] = file.readFloat();
 //				}
 //			}
 //			/* Return with the nearest neighbors read from file */
 //			return;
 //		}
 
-		/* Initialize 'nearesNeighborsIDs */
+		/* Initialize 'nearestNeighborsIDs */
 		for (int i = 0; i < numInstancesIDs; i++) {
 			for (int j = 0; j < k; j++) {
-				nearesNeighborsIDs[i][j] = -1;
+				nearestNeighborsIDs[i][j] = -1;
 				nearestNeighborsDistance[i][j] = Float.POSITIVE_INFINITY;
 			}
 		}
@@ -665,7 +660,7 @@ public class Smote {
 					 * We've found a new nearest neighbor. Pop the farthest
 					 * neighbor up and insert this new nearest neighbor.
 					 */
-					nearesNeighborsIDs[i][distGreaterID] = instJ;
+					nearestNeighborsIDs[i][distGreaterID] = instJ;
 					nearestNeighborsDistance[i][distGreaterID] = dist;
 					distGreater = 0;
 					
@@ -676,7 +671,7 @@ public class Smote {
 					for (int d = 0; d < k; d++) {
 						if (distGreater < nearestNeighborsDistance[i][d]) {
 							distGreater = nearestNeighborsDistance[i][d];
-							nearesNeighborsIDs[i][distGreaterID] = instJ;
+							nearestNeighborsIDs[i][distGreaterID] = instJ;
 							distGreaterID = d;
 						}
 					}
@@ -688,11 +683,11 @@ public class Smote {
 //		file = new RandomAccessFile(fileTest, "rw");
 //		for (int i = 0; i < numInstancesIDs; i++) {
 //			for (int d = 0; d < 2 * k; d += 2) {
-//				file.writeInt((int) nearesNeighborsIDs[i][d]);
-//				file.writeFloat(nearesNeighborsIDs[i][d + 1]);
+//				file.writeInt((int) nearestNeighborsIDs[i][d]);
+//				file.writeFloat(nearestNeighborsIDs[i][d + 1]);
 //			}
 //		}
-		return nearesNeighborsIDs;
+		return nearestNeighborsIDs;
 	}
 
 	public void setOptionDiscretize(boolean optionDiscretize) {
@@ -712,10 +707,10 @@ public class Smote {
 	}
 
 	/**
-	 * @param nearesNeighborsIDs the nearesNeighborsIDs to set
+	 * @param nearestNeighborsIDs the nearestNeighborsIDs to set
 	 */
 	public void setNearestNeighborsIDs(int[][] nearestNeighborsIDs) {
-		this.nearesNeighborsIDs = nearestNeighborsIDs;
+		this.nearestNeighborsIDs = nearestNeighborsIDs;
 	}
 
 }

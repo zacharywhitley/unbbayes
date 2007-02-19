@@ -25,11 +25,13 @@ public class NominalNode extends Node
 	 * 
 	 * @param splitAttribute attribute used for splitting
 	 * @param attributeValue value position on splitAttribute
+	 * @param parentDistribution TODO
 	 */	
-	public NominalNode(Attribute splitAttribute, int attributeValue)
-	{
+	public NominalNode(Attribute splitAttribute, int attributeValue,
+			float[] distribution) {
 		super(splitAttribute);
 		this.attributeValue = attributeValue;
+		this.distribution = distribution;
 	}
 	
 	/** 
@@ -39,9 +41,8 @@ public class NominalNode extends Node
 	 * @param attributeValue value position of splitAttribute
 	 * @param children list of children (Node or Leaf type)
 	 */
-	public NominalNode(Attribute splitAttribute, int attributeValue, ArrayList<Object> children)
-	{
-		this(splitAttribute, attributeValue);
+	public NominalNode(NominalNode parent, ArrayList<Object> children) {
+		this(parent.splitAttribute, parent.attributeValue, parent.distribution);
 		this.children = children;
 	}
 	

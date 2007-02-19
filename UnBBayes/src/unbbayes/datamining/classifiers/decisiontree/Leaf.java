@@ -25,29 +25,46 @@ public class Leaf implements Serializable {
 	private int notClassValue;
 	
 	/** Leaf's weight class distribution. */
-	private float[] weightDistribution;
+	private float[] distribution;
 	
-	//-----------------------------CONSTRUCTORS---------------------------//
+	//-----------------------------CONSTRUCTOR---------------------------//
 	
-	/** Constructor used in the case of there is no instances */
-	public Leaf() {
-		classValue = Instance.MISSING_VALUE;
-	}
-  	
 	/** General use constructor 
 	 *
 	 * @param classAttribute new class attribute of dataset 
 	 * @param weightDistribution new weight distribution
+	 * @param threshold
+	 * @param positiveClass
 	 */
-	public Leaf(Attribute classAttribute, float[] weightDistribution) {
+	public Leaf(Attribute classAttribute, float[] distribution, float threshold,
+			int positiveClass) {
 		this.classAttribute = classAttribute;
-		this.weightDistribution = weightDistribution;
-		classValue = Utils.maxIndex(weightDistribution);
-		notClassValue = (int) Math.abs(1 - classValue);
+		this.distribution = distribution;
+		computeClass(threshold, positiveClass);
 	}
-	
+  	
 	//---------------------------BASIC FUNCIONS---------------------------//
   	
+	private void computeClass(float threshold, int positiveClass) {
+		int negativeClass = Math.abs(1 - positiveClass);
+		
+		if (threshold > 0) {
+			/* With Laplace estimate */
+			double positiveRate = distribution[positiveClass] + 1;
+			positiveRate /= (distribution[positiveClass] +
+					distribution[negativeClass] + 2);
+			if (positiveRate > threshold) {
+				classValue = positiveClass;
+			} else {
+				classValue = negativeClass;
+			}
+		} else {
+			classValue = Utils.maxIndex(distribution);
+		}
+		
+		notClassValue = (int) Math.abs(1 - classValue);
+	}
+
   	/**
   	 * Returns the leaf's class value
   	 * 
@@ -63,12 +80,12 @@ public class Leaf implements Serializable {
 	 * @return the weight distribution
 	 */
 	public float[] getDistribution() {
-		if (weightDistribution == null) {
+		if (distribution == null) {
 			return null;
 		} else {
-			float[] arrayCopy = new float[weightDistribution.length];
-			System.arraycopy(weightDistribution, 0, arrayCopy, 0,
-					weightDistribution.length);
+			float[] arrayCopy = new float[distribution.length];
+			System.arraycopy(distribution, 0, arrayCopy, 0,
+					distribution.length);
 			return arrayCopy;
 		}
 	}
@@ -84,11 +101,11 @@ public class Leaf implements Serializable {
 		} else {
 			float numberInst = 0;
 			float numberInstNonClass = 0;
-			int weightDistributionSize = weightDistribution.length;
+			int weightDistributionSize = distribution.length;
 			for (int i = 0; i < weightDistributionSize; i++) {
-				numberInst += weightDistribution[i];
+				numberInst += distribution[i];
 				if (i != classValue) {
-					numberInstNonClass += weightDistribution[i]; 
+					numberInstNonClass += distribution[i]; 
 				}
 			}
 							
@@ -109,14 +126,14 @@ public class Leaf implements Serializable {
 	 * @return the matched
 	 */
 	public int getMatched() {
-		return (int) weightDistribution[(int) classValue];
+		return (int) distribution[(int) classValue];
 	}
 
 	/**
 	 * @return the errors
 	 */
 	public int getErrors() {
-		return (int) weightDistribution[notClassValue];
+		return (int) distribution[notClassValue];
 	}
 	
 }

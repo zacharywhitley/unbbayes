@@ -15,10 +15,11 @@ import unbbayes.datamining.distance.IDistance;
 /**
  * Class for handling a set of instances.
  *
- * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br) - first version
  * @version $1.0 $ (16/02/2002)
  * 
- * @author Emerson Lopes Machado - emersoft@conectanet.com.br
+ * @author Emerson Lopes Machado - emersoft@conectanet.com.br - second version
+ * @version $2.0 $ (16/02/2002)
  * @date 27/09/2006
  */
 public class InstanceSet implements Serializable {
@@ -502,7 +503,8 @@ public class InstanceSet implements Serializable {
 			throw new IllegalArgumentException(exception);
 		}
 		attributes[position] = att;
-		att.setFinal(this);
+		attributes[position].setInstanceSet(this);
+		att.setFinal();
 		attributeHasChanged[position] = true;
 		
 		for (int i = 0; i < numInstances; i++) {
@@ -657,7 +659,7 @@ public class InstanceSet implements Serializable {
 	 * @return An AttributeStats object with it's fields calculated.
 	 */
 	public AttributeStats getAttributeStats(int attIndex) {
-		if (attributeStats[attIndex] == null) {
+		if (attributeStats == null || attributeStats[attIndex] == null) {
 			attributeStats = new AttributeStats[numAttributes];
 			Arrays.fill(attributeHasChanged, true);
 		}
@@ -811,8 +813,9 @@ public class InstanceSet implements Serializable {
 	 */
 	public void setFinal() {
 		for (int i = 0; i < numAttributes; i++) {
+			attributes[i].setInstanceSet(this);
 			if (attributeType[i] == NOMINAL) {
-				attributes[i].setFinal(this);
+				attributes[i].setFinal();
 			}
 		}
 	}

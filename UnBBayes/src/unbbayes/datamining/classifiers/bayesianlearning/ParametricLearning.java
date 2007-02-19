@@ -26,7 +26,7 @@ public class ParametricLearning
       attrib = set.getAttribute(i);
       x[i] = attrib.getAttributeName();
       ArrayList<String[]> temp = new ArrayList<String[]>();
-      temp.add(attrib.getAttributeValues());
+      temp.add(attrib.getDistinticNominalValues());
       dx[i] = temp;
     }
 

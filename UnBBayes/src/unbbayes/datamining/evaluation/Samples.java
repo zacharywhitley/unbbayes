@@ -3,7 +3,6 @@ package unbbayes.datamining.evaluation;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.preprocessor.imbalanceddataset.ClusterBasedSmote;
 import unbbayes.datamining.preprocessor.imbalanceddataset.ClusterBasedUndersampling;
-import unbbayes.datamining.preprocessor.imbalanceddataset.ClusterBasedUtils;
 import unbbayes.datamining.preprocessor.imbalanceddataset.Sampling;
 import unbbayes.datamining.preprocessor.imbalanceddataset.Smote;
 
@@ -14,7 +13,7 @@ import unbbayes.datamining.preprocessor.imbalanceddataset.Smote;
  */
 public class Samples {
 	
-	private static int numSamples = 16;
+	private static int numSamples = 18;
 	
 	public static void sample(InstanceSet train, int sampleID, int i,
 			float[] originalDist, int positiveClass, boolean simplesampling,
@@ -61,31 +60,6 @@ public class Samples {
 				}
 				
 				break;
-//			case 3:
-//				/* Samples the data down */
-//				if (simplesampling) {
-//					/* Simplesampling down */
-//					Sampling.simplesampling(train,
-//							Math.sqrt((float) (1 / proportion)), negativeClass,
-//							true);
-//				} else {
-//					/* Random undersampling */
-//					Sampling.undersampling(train,
-//							Math.sqrt((float) (1 / proportion)), negativeClass, true);
-//				}
-//
-//				/* Samples the data up */
-//				if (simplesampling) {
-//					/* Simplesampling over */
-//					Sampling.simplesampling(train,
-//							Math.sqrt(proportion), positiveClass, true);
-//				} else {
-//					/* Random oversampling */
-//					Sampling.oversampling(train, Math.sqrt(proportion),
-//							positiveClass);
-//				}
-//
-//				break;
 
 			case 3:
 //				/* Samples the data down */
@@ -122,7 +96,7 @@ public class Samples {
 //				}
 
 				/* Cluster-Based Oversampling (flattens clusters' distribution) */
-				cbs.run(train, false, true);
+				cbs.run(train, true, true);
 
 				break;
 				
@@ -267,6 +241,26 @@ public class Samples {
 //				boolean under, boolean over, ClusterBasedUtils clustersInfo)
 
 				break;
+
+			case 16:
+				/* under */
+				positiveRate = originalDist[positiveClass];
+				positiveRate /= train.numWeightedInstances;
+				cbu.run(train, positiveRate, false, false, true, false);
+//				run(float positiveRate, boolean doSmote, boolean clean,
+//				boolean under, boolean over, ClusterBasedUtils clustersInfo)
+
+				break;
+
+			case 17:
+				/* under and clean */
+				positiveRate = originalDist[positiveClass];
+				positiveRate /= train.numWeightedInstances;
+				cbu.run(train, positiveRate, false, true, true, false);
+//				run(float positiveRate, boolean doSmote, boolean clean,
+//				boolean under, boolean over, ClusterBasedUtils clustersInfo)
+
+				break;
 		}
 		
 		return;
@@ -282,8 +276,6 @@ public class Samples {
 			result = "Undersampling";
 		} else if (sampleID == 2) {
 			result = "Oversampling";
-//		} else if (sampleID == 3) {
-//			result = "Undersampling with Oversampling";
 		} else if (sampleID == 3) {
 			result = "SMOTE";
 		} else if (sampleID == 4) {
@@ -310,6 +302,10 @@ public class Samples {
 			result = "Cluster-Based Undersampling (smote & clean)";
 		} else if (sampleID == 15) {
 			result = "Cluster-Based Undersampling (smote, under & over)";
+		} else if (sampleID == 16) {
+			result = "Cluster-Based Undersampling (under)";
+		} else if (sampleID == 17) {
+			result = "Cluster-Based Undersampling (under & clean)";
 		}
 		
 		return result;

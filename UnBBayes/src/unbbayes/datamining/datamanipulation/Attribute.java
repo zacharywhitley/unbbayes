@@ -2,6 +2,7 @@ package unbbayes.datamining.datamanipulation;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.ResourceBundle;
@@ -366,20 +367,6 @@ public class Attribute implements Serializable {
 	}
 
 	/**
-	 * Returns a float value of an attribute with number values.
-	 *
-	 * @param valIndex The value's attIndex
-	 * @return the attribute's value as a float. If value is not found returns
-	 * NaN
-	 */
-	public final float numberValue(int valIndex) {
-		if (valIndex >= 0 && valIndex <= numValues && numberValues != null) {
-			return numberValues[valIndex];				
-		}
-		return Float.NaN;
-	}
-
-	/**
 	 * Adds an nominal attribute value.
 	 *
 	 * @param value The nominal attribute value.
@@ -427,15 +414,54 @@ public class Attribute implements Serializable {
 	 *
 	 * @return the attribute's values.
 	 */
-	public String[] getAttributeValues() {
-		if (!isString) {
-			String[] values = new String[numberValues.length];
-			for (int i = 0; i < numValues; i++) {
-				values[i] = String.valueOf(numberValues[i]);
+	public String[] getDistinticNominalValues() {
+		if (attributeType == NOMINAL) {
+			if (!isString) {
+				String[] values = new String[numberValues.length];
+				for (int i = 0; i < numValues; i++) {
+					values[i] = String.valueOf(numberValues[i]);
+				}
+				return values;
 			}
-			return values;
+			return stringValues.clone(); 
 		}
-		return stringValues.clone();
+		
+		return null;
+	}
+
+	/**
+	 * Returns the attribute's values.
+	 *
+	 * @return the attribute's values.
+	 */
+	public float[] getDistinticNumericValues() {
+		if (attributeType == NUMERIC) {
+			if (numberValues != null) {
+				return numberValues.clone();
+			} else {
+				int numInstances = instanceSet.numInstances;
+				float value;
+				
+				ArrayList<Float> numberValuesAux = new ArrayList<Float>();
+				hashtableNumber = new Hashtable<Float, Integer>(numInstances);
+				for (int i = 0; i < numInstances; i++) {
+					value = instanceSet.instances[i].data[attIndex];
+					if (!hashtableNumber.contains(value)) { 
+						hashtableNumber.put(value, new Integer(i));
+						numberValuesAux.add(value);
+					}
+				}
+				numValues = numberValuesAux.size();
+				numberValues = new float[numValues];
+				for (int i = 0; i < numValues; i++) {
+					numberValues[i] = numberValuesAux.get(i);
+				}
+				
+				Arrays.sort(numberValues);
+			}
+		}
+		
+		return null;
 	}
 
 	/** 
@@ -451,11 +477,8 @@ public class Attribute implements Serializable {
 	/**
 	 * Finalize the construction of this attribute. All values stored in the
 	 * hashtable are destroyed. Only affects nominal attributes. 
-	 * @param instanceSet 
 	 */
-	public void setFinal(InstanceSet instanceSet) {
-		this.instanceSet = instanceSet;
-		
+	public void setFinal() {
 		if (isString) {
 			/* Check if it's been finalized already */
 			if (stringValuesTemp == null) {
@@ -508,6 +531,10 @@ public class Attribute implements Serializable {
 	 */
 	public InstanceSet getInstanceSet() {
 		return instanceSet;
+	}
+	
+	public void setInstanceSet(InstanceSet instanceSet) {
+		this.instanceSet = instanceSet;
 	}
 	
 }

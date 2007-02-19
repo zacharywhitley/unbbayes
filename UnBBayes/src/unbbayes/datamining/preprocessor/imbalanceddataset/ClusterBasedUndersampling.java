@@ -13,6 +13,15 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
  */
 public class ClusterBasedUndersampling extends ClusterBasedUtils {
 	
+	/** Matrix of all clusters. Each row stores all instancesIDs of a cluster */
+	private int[][] clusters;
+	
+	/** Number of clusters created */
+	private int numClusters;
+	
+	/** Weighted number of instances in each cluster created */
+	private double[] clustersSize;
+
 	public ClusterBasedUndersampling(InstanceSet instanceSet, int positiveClass,
 			int k) {
 		super(instanceSet, positiveClass, k);
@@ -24,7 +33,12 @@ public class ClusterBasedUndersampling extends ClusterBasedUtils {
 		setInstanceSet(instanceSet);
 
 		/* Clusterize */
-		clusterize();
+		clusterizeAll(positiveClass);
+		
+		/* Reassign arrays: positive class stores clusters of the whole data */
+		clusters = super.clusters[positiveClass];
+		numClusters = super.numClusters[positiveClass];
+		clustersSize = super.clustersSize[positiveClass];
 		
 		/* Assign the class to each cluster according to the positiveRate*/
 		assignClassCluster(positiveRate);
@@ -60,9 +74,11 @@ public class ClusterBasedUndersampling extends ClusterBasedUtils {
 		
 		/* Oversample */
 		if (over) {
-			float proportion = dist[negativeClass] / dist[positiveClass];
-			if (proportion > 1) {
-				overSample(proportion, doSmote);
+			if (dist[positiveClass] > 0) {
+				float proportion = dist[negativeClass] / dist[positiveClass];
+				if (proportion > 1) {
+					overSample(proportion, doSmote);
+				}
 			}
 		}
 		
@@ -72,9 +88,9 @@ public class ClusterBasedUndersampling extends ClusterBasedUtils {
 
 	private void assignClassCluster(float positiveRate) throws Exception {
 		/* Assign a class to each cluster according to its distribution */
-		clusterClass = new int[numClusters[0]];
+		clusterClass = new int[numClusters];
 		int classValue;
-		for (int clusterID = 0; clusterID < numClusters[0]; clusterID++) {
+		for (int clusterID = 0; clusterID < numClusters; clusterID++) {
 			classValue = assignClassCluster(clusterID, positiveRate);
 			clusterClass[clusterID] = classValue;
 		}
@@ -82,7 +98,7 @@ public class ClusterBasedUndersampling extends ClusterBasedUtils {
 	
 	private void overSample(float proportion, boolean doSmote)
 	throws Exception {
-		for (int clusterID = 0; clusterID < numClusters[0]; clusterID++) {
+		for (int clusterID = 0; clusterID < numClusters; clusterID++) {
 			/* Oversample only the positive class */
 			if (clusterClass[clusterID] == positiveClass) {
 				if (doSmote) {
@@ -110,11 +126,13 @@ public class ClusterBasedUndersampling extends ClusterBasedUtils {
 		int clusterLength;
 		int inst;
 		Instance instance;
-		for (int clusterID = 0; clusterID < numClusters[0]; clusterID++) {
+		int[] cluster;
+		for (int clusterID = 0; clusterID < numClusters; clusterID++) {
 			if (clusterClass[clusterID] == clusterClassDesired) {
-				clusterLength = clusters[0][clusterID].length;
+				cluster = clusters[clusterID];
+				clusterLength = cluster.length;
 				for (int i = 0; i < clusterLength; i++) {
-					inst = clusters[0][clusterID][i];
+					inst = cluster[i];
 					instance = instanceSet.getInstance(inst);
 					if (instance.classValue() == instanceClassDesired) {
 						deleteIndex[inst] = true;
@@ -133,9 +151,10 @@ public class ClusterBasedUndersampling extends ClusterBasedUtils {
 		
 		Instance instance;
 		int inst;
-		int clusterLength = clusters[0][clusterID].length;
+		int[] cluster = clusters[clusterID];
+		int clusterLength = cluster.length;
 		for (int i = 0; i < clusterLength; i++) {
-			inst = clusters[0][clusterID][i];
+			inst = cluster[i];
 			instance = instanceSet.getInstance(inst);
 			classValue = instance.classValue();
 			if (classValue == positiveClass) {
@@ -143,7 +162,7 @@ public class ClusterBasedUndersampling extends ClusterBasedUtils {
 			}
 		}
 		float clusterPositiveRate;
-		double clusterSize = clustersSize[0][clusterID];
+		double clusterSize = clustersSize[clusterID];
 		clusterPositiveRate = (float) (numPositives / clusterSize);
 		
 		/* Check if the cluster should be taken as a positive cluster */

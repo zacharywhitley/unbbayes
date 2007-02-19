@@ -120,8 +120,8 @@ public class ClusterBasedUtils {
 
 	protected boolean[] classClusterized;
 
-	private int[][][] smoteNN;
-	
+	private int[][][][] smoteNN;
+
 	public ClusterBasedUtils(InstanceSet instanceSet, int positiveClass, int k) {
 		this.positiveClass = positiveClass;
 		this.instanceSet = instanceSet;
@@ -151,6 +151,7 @@ public class ClusterBasedUtils {
 		smote.setOptionDistanceFunction(optionDistanceFunction);
 		smote.setOptionFixedGap(optionFixedGap);
 		smote.setOptionNominal(optionNominal);
+		smote.setInstanceSet(instanceSet);
 
 		classClusterized = new boolean[numClasses];
 		Arrays.fill(classClusterized, false);
@@ -160,6 +161,7 @@ public class ClusterBasedUtils {
 		numClusters = new int[numClasses];
 		clustersSize = new double[numClasses][];
 		assignmentMatrix = new int[numClasses][];
+		smoteNN = new int[numClasses][][][];
 	}
 	
 	public void setClusters(ClusterBasedUtils clustersInfo) {
@@ -180,8 +182,8 @@ public class ClusterBasedUtils {
 		clusterize(classValue, true);
 	}
 	
-	public void clusterize() throws Exception {
-		clusterize(0, false);
+	public void clusterizeAll(int classValue) throws Exception {
+		clusterize(classValue, false);
 	}
 	
 	/**
@@ -302,18 +304,22 @@ public class ClusterBasedUtils {
 		if (classValue == positiveClass) {
 			int[][] clusters = this.clusters[classValue];
 			int numClusters = this.numClusters[classValue];
+			smoteNN[classValue] = new int[numClusters][][];
 			
 			/* Build nearest neighbors for each cluster */
 			for (int clusterID = 0; clusterID < numClusters; clusterID++) {
-				smoteNN[clusterID] = smote.buildNN(clusters[clusterID], 5);
+				smoteNN[classValue][clusterID] =
+					smote.buildNN(clusters[clusterID], 5);
 			}
-		}
+		} 
 	}
 
 	protected void smoteCluster(int clusterID, double proportion,
 			int classValue) throws Exception {
 		int[] cluster = clusters[classValue][clusterID];
-		smote.setNearestNeighborsIDs(smoteNN[clusterID]);
+		int[][] smoteNN = this.smoteNN[classValue][clusterID];
+		
+		smote.setNearestNeighborsIDs(smoteNN);
 		smote.run(cluster, proportion);
 	}
 
@@ -322,7 +328,7 @@ public class ClusterBasedUtils {
 		/* Choose the instancesIDs for the sampling process */
 		int counter = 0;
 		int instancesIDsTmp[] = new int[numInstances];
-		int[] cluster = clusters[0][clusterID];
+		int[] cluster = clusters[positiveClass][clusterID];
 		int clusterLength = cluster.length;
 		int inst;
 		for (int i = 0; i < clusterLength; i++) {
@@ -336,7 +342,7 @@ public class ClusterBasedUtils {
 		int[][] smoteNN = new int[counter][];
 		for (int i = 0; i < counter; i++) {
 			instancesIDs[i] = instancesIDsTmp[i];
-			smoteNN[i] = this.smoteNN[clusterID][i];
+			smoteNN[i] = this.smoteNN[positiveClass][clusterID][i];
 		}
 		smote.setNearestNeighborsIDs(smoteNN);
 		smote.run(instancesIDs, proportion);
@@ -344,7 +350,7 @@ public class ClusterBasedUtils {
 
 	protected void oversampleCluster(int clusterIndex, double proportion,
 			int classValue, boolean simplesampling) {
-		int[] cluster = clusters[classValue][clusterIndex].clone();
+		int[] cluster = clusters[classValue][clusterIndex];
 		if (simplesampling) {
 			Sampling.simplesampling(instanceSet, proportion, cluster,
 					false);
@@ -359,7 +365,7 @@ public class ClusterBasedUtils {
 		int counter = 0;
 		int instancesIDsTmp[] = new int[numInstances];
 		for (int inst = 0; inst < numInstances; inst++) {
-			if (assignmentMatrix[0][inst] == clusterIndex) {
+			if (assignmentMatrix[positiveClass][inst] == clusterIndex) {
 				instancesIDsTmp[counter] = inst;
 				++counter;
 			}
@@ -381,7 +387,7 @@ public class ClusterBasedUtils {
 		/* Choose the instancesIDs for the sampling process */
 		int counter = 0;
 		int instancesIDsTmp[] = new int[numInstances];
-		int[] cluster = clusters[0][clusterIndex];
+		int[] cluster = clusters[positiveClass][clusterIndex];
 		int clusterLength = cluster.length;
 		int inst;
 		for (int i = 0; i < clusterLength; i++) {

@@ -45,8 +45,8 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
         *
         * @param data instance set used for the decision tree generation
         */
-	public void buildClassifier(InstanceSet data) throws Exception
-	{
+	public void buildClassifier(InstanceSet data)
+	throws Exception {
 		//internacionalization
 		resource = ResourceBundle.getBundle("unbbayes.datamining.classifiers.resources.ClassifiersResource");
 
@@ -92,8 +92,8 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
          *
          * 	@param data instance set used for the decision tree generation
          */
-	protected void makeTree(InstanceSet data) throws Exception
-	{
+	protected void makeTree(InstanceSet data)
+	throws Exception {
 		int numInstances = data.numInstances();
 		int numAttributes = data.numAttributes();
 		int numClasses = data.numClasses();
@@ -155,7 +155,8 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 			//if no instance has reached this node - is leaf
 			if (numInstances == 0)
 			{
-				leaf = new Leaf();
+				leaf = new Leaf(classAttribute, xNode.distribution, threshold,
+						positiveClass);
 				xNode.add(leaf);
 			}
 			else
@@ -184,18 +185,19 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 					}
 				}
 
+				//computes the number of instances for each class
+				distribution = new float[numClasses];
+				for (int i=0;i<numInstances;i++)
+				{
+					inst = data.getInstance(((Integer)actualInst.get(i)).intValue());
+					distribution[(int) inst.classValue()] += inst.getWeight();
+				}
+
 				//make leaf if information gain is zero....
 				if (Utils.eq(infoGains[attributeIndex], 0))
 				{
-					//computes the number of instances for each class
-					distribution = new float[numClasses];
-					for (int i=0;i<numInstances;i++)
-					{
-						inst = data.getInstance(((Integer)actualInst.get(i)).intValue());
-						distribution[(int) inst.classValue()] += inst.getWeight();
-					}
-
-					leaf = new Leaf(classAttribute,distribution);
+					leaf = new Leaf(classAttribute,distribution, threshold,
+							positiveClass);
 					xNode.add(leaf);
 				}
 
@@ -209,7 +211,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 					splitData = utils.splitData(split, realIndex);
 					for (int j=0;j<splitData.length;j++)
 					{
-												NominalNode nominalNode = new NominalNode(splitAttribute,j);
+						NominalNode nominalNode = new NominalNode(splitAttribute,j, distribution);
 						xNode.add(nominalNode);
 						queue.add(new QueueComponent(nominalNode,splitData[j]));
 					}
@@ -342,8 +344,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 	 * @param instance the instance to be classified
 	 * @return the classification
 	 */
-	public int classifyInstance(Instance instance) {
-		Leaf leaf;
+	protected Leaf classifyInstanceAux(Instance instance) {
 		NominalNode node;
 		Node treeNode = xRootNode;
 		int index;
@@ -355,8 +356,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 			treeNode = (NominalNode)treeNode.children.get(index);
 		}
 
-		leaf = (Leaf)treeNode.children.get(0);
-		return leaf.getClassValue();
+		return (Leaf)treeNode.children.get(0);
 	}
 
 	/*************************************************************************/
@@ -412,14 +412,13 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
        }
 
 		@Override
-		public void descendTree(Node treeNode, int positiveClass, int[] count, ArrayList<float[]> positivePoints, ArrayList<float[]> negativePoints, ArrayList<float[]> probs) {
+		public void descendTree(Node treeNode, int[] count, ArrayList<float[]> positivePoints, ArrayList<float[]> negativePoints, ArrayList<float[]> probs) {
 			// TODO Auto-generated method stub
 			
 		}
 
 		@Override
-		public float positiveClassProb(Instance instance, int positiveClass,
-				int numClasses) {
+		public float positiveClassProb(Instance instance, int positiveClass) {
 			// TODO Auto-generated method stub
 			return 0;
 		}

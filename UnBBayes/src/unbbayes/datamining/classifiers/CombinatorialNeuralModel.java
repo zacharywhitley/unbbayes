@@ -55,9 +55,8 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
 
   /**
    * Builds the Combinatorial Neural Model classifier (CNM).
-   *
-   * @param instanceSet The training data
-   * @exception Exception if classifier can't be built successfully
+ * @param instanceSet The training data
+ * @exception Exception if classifier can't be built successfully
    */
   public void buildClassifier(InstanceSet instanceSet) throws Exception{
 	this.instanceSet = instanceSet;

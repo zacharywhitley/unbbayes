@@ -93,7 +93,7 @@ public class VerbosityPanel extends JScrollPane
 		Instance instance;
 		Attribute attribute;
 		String[] attributeValues;
-		String[] classValues = classAttribute.getAttributeValues();
+		String[] classValues = classAttribute.getDistinticNominalValues();
 		int classSize = classValues.length;
 								
 		//start string buffer
@@ -198,7 +198,7 @@ public class VerbosityPanel extends JScrollPane
 								if(attribute.isNominal())
 								{
 									//computes the distribution
-									distribution = new float[attribute.getAttributeValues().length][classSize];
+									distribution = new float[attribute.getDistinticNominalValues().length][classSize];
 									missingDistribution = new float[classSize];
 									for(int x=0;x<instIndexes.size();x++)
 									{
@@ -229,7 +229,7 @@ public class VerbosityPanel extends JScrollPane
 									}
 									text.append("\n");
 									
-									attributeValues = attribute.getAttributeValues();
+									attributeValues = attribute.getDistinticNominalValues();
 									for(int x=0;x<attributeValues.length;x++)
 									{
 										if(attributeValues[x].length()>5)

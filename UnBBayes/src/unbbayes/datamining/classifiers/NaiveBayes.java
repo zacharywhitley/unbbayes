@@ -60,9 +60,8 @@ public class NaiveBayes extends DistributionClassifier implements Serializable {
 	
 	/**
 	* Generates the classifier.
-	*
-	* @param instanceSet Set of instanceSet serving as training data
-	* @exception Exception if the classifier has not been generated successfully
+	 * @param instanceSet Set of instanceSet serving as training data
+	 * @exception Exception if the classifier has not been generated successfully
 	*/
 	public void buildClassifier(InstanceSet instanceSet) throws Exception {
 		this.instanceSet = instanceSet;

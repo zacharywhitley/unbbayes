@@ -172,6 +172,10 @@ public class Evaluation implements IProgress {
 				updateStatsForClassifier(pred, instance);
 			} else {	
 				pred = classifier.classifyInstance(instance);
+				if (pred == Float.NaN) {
+					@SuppressWarnings("unused")
+					int e = 0;
+				}
 				updateStatsForClassifier(pred, instance);
 			}
 		} else {

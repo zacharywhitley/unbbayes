@@ -31,11 +31,12 @@ public class NumericNode extends Node
 	 * @param isMoreThanAttributeValue true if this node is relative 
 	 * to values more than the split value 
 	 */	
-	public NumericNode(Attribute splitAttribute, double splitValue, boolean isMoreThanAttributeValue)
-	{
+	public NumericNode(Attribute splitAttribute, double splitValue,
+			boolean isMoreThanAttributeValue, float[] distribution) {
 		super(splitAttribute);
 		this.splitValue = splitValue;
 		this.isMoreThanAttributeValue = isMoreThanAttributeValue;
+		this.distribution = distribution;
 	}
 	
 	/** 
@@ -47,9 +48,9 @@ public class NumericNode extends Node
 	 * to values more than the split value
 	 * @param children list of children (Node or Leaf type)
 	 */
-	public NumericNode(Attribute splitAttribute, double splitValue, boolean isMoreThanAttributeValue, ArrayList<Object> children)
-	{
-		this(splitAttribute,splitValue,isMoreThanAttributeValue);
+	public NumericNode(NumericNode parent, ArrayList<Object> children) {
+		this(parent.splitAttribute, parent.splitValue,
+				parent.isMoreThanAttributeValue, parent.distribution);
 		this.children = children;
 	}
 	
