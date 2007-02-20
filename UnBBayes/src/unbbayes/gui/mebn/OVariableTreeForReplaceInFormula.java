@@ -28,7 +28,6 @@ public class OVariableTreeForReplaceInFormula extends OVariableTree{
 		super(controller); 
 		formulaTree = _formulaTree; 
 	}
-		
 	
 	public void addListeners(){
 		addMouseListener(new MouseAdapter(){

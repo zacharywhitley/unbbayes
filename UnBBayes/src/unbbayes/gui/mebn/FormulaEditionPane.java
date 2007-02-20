@@ -1,7 +1,9 @@
 package unbbayes.gui.mebn;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
+import java.awt.CardLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,10 +15,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
+import unbbayes.controller.FormulaTreeController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.controller.NetworkController;
 import unbbayes.gui.GraphAction;
+import unbbayes.gui.mebn.FormulaTree.enumSubType;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.MFrag;
@@ -32,7 +36,6 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
 public class FormulaEditionPane extends JPanel {
 
 	JToolBar jtbOperator;
-	FormulaTree formulaTree; 
 	JPanel upPanel; 
 	JPanel downPanel; 	
 	
@@ -40,6 +43,8 @@ public class FormulaEditionPane extends JPanel {
 	JToolBar jtbSelectArgTree;
 	JPanel argTreePanel;
 	JScrollPane jspArgTreePanel; 
+	
+	JPanel jpOperandos;  
 	
 	//buttons of the jpOperator 
 	
@@ -59,8 +64,12 @@ public class FormulaEditionPane extends JPanel {
 	
 	NetworkController controller; 
 	MEBNController mebnController; 
+	FormulaTreeController formulaTreeController;
 	MFrag mFrag; 
 	ContextNode contextNode; 
+	
+	CardLayout cardLayout; 
+	JPanel jpArgTree; 
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource =
@@ -72,16 +81,12 @@ public class FormulaEditionPane extends JPanel {
 		
 		super(); 
 		
-		setLayout(new BorderLayout());
-		
 		this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel("Context Node")); 
 		
 		controller = _controller; 
 		mebnController = _controller.getMebnController(); 
 	    mFrag = mebnController.getCurrentMFrag(); 
 	    contextNode = context;
-	    
-	    upPanel = new JPanel(new GridLayout(0,1)); 
 	    
 		btnEqualTo = new JButton(iconController.getEqualIcon());  	
 		btnAnd = new JButton(iconController.getAndIcon())  ; 
@@ -112,16 +117,10 @@ public class FormulaEditionPane extends JPanel {
 	    jtbOperator.add(btnExists); 
 	    jtbOperator.add(btnForAll); 	
 	    jtbOperator.setFloatable(false); 
-
-	    upPanel.add(jtbOperator); 
         
-	    formulaTree = new FormulaTree(_controller, contextNode ); 
-	    jspFormulaTree = new JScrollPane(formulaTree); 
- 
-	    this.add("North", upPanel);	    
-	    
-	    this.add("Center", jspFormulaTree); 
-	    
+	    formulaTreeController = new FormulaTreeController(_controller, contextNode, this);	    
+	    jspFormulaTree = new JScrollPane(formulaTreeController.getFormulaTree()); 
+
 		btnOVariableTree = new JButton(iconController.getOVariableNodeIcon());  
 		btnNodeTree = new JButton(iconController.getNodeNodeIcon());  
 		btnEntityTree = new JButton(iconController.getEntityNodeIcon());   
@@ -132,13 +131,56 @@ public class FormulaEditionPane extends JPanel {
 	    jtbSelectArgTree.add(btnOVariableTree);
 	    jtbSelectArgTree.add(btnNodeTree);
 	    jtbSelectArgTree.add(btnEntityTree);
-	    jtbSelectArgTree.add(btnSkolenTree);	    
+	    jtbSelectArgTree.add(btnSkolenTree);	
 	    
 	    jtbSelectArgTree.setFloatable(false); 
-	    this.add("South", jtbSelectArgTree); 
+	    
+	    upPanel = new JPanel(new BorderLayout()); 
+	    upPanel.add(jtbOperator, BorderLayout.NORTH);	    
+	    upPanel.add(jspFormulaTree, BorderLayout.CENTER);
+	    
+	    
+	    cardLayout = new CardLayout(); 
+        jpArgTree = new JPanel(cardLayout);
+        jpArgTree.add("NodeTab", replaceByNode()); 
+        jpArgTree.add("OVariableTab", replaceByOVariable()); 
+        //jpArgTree.add("VariableTab", formulaTree.replaceByVariable()); 
+        
+        cardLayout.show(jpArgTree, "NodeTab"); 
+        
+	    downPanel = new JPanel(new BorderLayout()); 
+	    downPanel.add(jtbSelectArgTree, BorderLayout.NORTH);
+	    downPanel.add(jpArgTree, BorderLayout.CENTER); 
+	    
+		GridBagLayout gridbag = new GridBagLayout(); 
+		GridBagConstraints constraints = new GridBagConstraints(); 
+		
+		this.setLayout(gridbag); 
+		
+		constraints.gridx = 0; 
+		constraints.gridy = 0; 
+		constraints.gridwidth = 1; 
+		constraints.gridheight = 1; 
+		constraints.weightx = 100;
+		constraints.weighty = 60; 
+		constraints.fill = GridBagConstraints.BOTH; 
+		constraints.anchor = GridBagConstraints.CENTER; 
+		gridbag.setConstraints(upPanel, constraints); 
+		this.add(upPanel);
+		
+		constraints.gridx = 0; 
+		constraints.gridy = 1; 
+		constraints.gridwidth = 1; 
+		constraints.gridheight = 1; 
+		constraints.weightx = 0;
+		constraints.weighty = 40; 
+		constraints.fill = GridBagConstraints.BOTH; 
+		constraints.anchor = GridBagConstraints.CENTER; 
+		gridbag.setConstraints(downPanel, constraints); 
+		this.add(downPanel);
 	    
 	    addListeners(); 
-	      	    
+
 	}
 
 	/**
@@ -153,86 +195,72 @@ public class FormulaEditionPane extends JPanel {
 		
 	}
 	
+	public void setNodeTabActive(){
+		 
+		cardLayout.show(jpArgTree, "NodeTab"); 
+	
+	}
+	
+	public void setOVariableTabActive(){
+		 
+		cardLayout.show(jpArgTree, "OVariableTab"); 
+	
+	}	
+	
 	public void addListeners(){
 
 	    btnAnd.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-			    BuiltInRV builtInRV = new BuiltInRVAnd(); 
-			    formulaTree.addSimpleOperatorInTree(builtInRV); 
+			    formulaTreeController.addOperatorAnd(); 
 			}
 		});		
 		
 		btnOr.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-			    BuiltInRV builtInRV = new BuiltInRVOr(); 
-			    formulaTree.addSimpleOperatorInTree(builtInRV); 
+				formulaTreeController.addOperatorOr(); 
 			}
 		});				
 		
 		btnNot.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-			    BuiltInRV builtInRV = new BuiltInRVNot(); 
-			    formulaTree.addSimpleOperatorInTree(builtInRV); 
+				formulaTreeController.addOperatorNot(); 
 			}
 		});	
 		
 		btnEqualTo.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-			    BuiltInRV builtInRV = new BuiltInRVEqualTo(); 
-			    formulaTree.addSimpleOperatorInTree(builtInRV); 
+				formulaTreeController.addOperatorEqualTo(); 
 			}
 		});						
 
 		btnIf.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-			    BuiltInRV builtInRV = new BuiltInRVIff(); 
-			    formulaTree.addSimpleOperatorInTree(builtInRV); 
+				formulaTreeController.addOperatorIf(); 
 			}
 		});						
 		
 		btnImplies.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-			    BuiltInRV builtInRV = new BuiltInRVImplies(); 
-			    formulaTree.addSimpleOperatorInTree(builtInRV); 
+				formulaTreeController.addOperatorImplies(); 
 			}
 		});						
 		
 		btnForAll.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-			    BuiltInRV builtInRV = new BuiltInRVForAll(); 
-			    formulaTree.addQuantifierOperatorInTree(builtInRV); 
+				formulaTreeController.addOperatorForAll(); 
 			}
 		});						
 		
 		btnExists.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-			    BuiltInRV builtInRV = new BuiltInRVExists(); 
-			    formulaTree.addQuantifierOperatorInTree(builtInRV); 
+				formulaTreeController.addOperatorExists(); 
 			}
-		});						
-		
-						
-		
-		
+		});	
 		
 		
 		btnNodeTree.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-			     
-				 JFrame teste = new JFrame("NodeTree"); 
-			     
-			     JPanel painel = new JPanel(new BorderLayout()); 
-
-			     MTheoryTree mTheoryTree = new MTheoryTree(controller); 
-			     JScrollPane jspMTheoryTree = new JScrollPane(mTheoryTree); 
-			     painel.add(jspMTheoryTree, BorderLayout.NORTH); 
-
-			     teste.setContentPane(painel);
-			     teste.pack();
-			     teste.setVisible(true); 
-			     teste.setLocationRelativeTo(null); 
-			     teste.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
-			
+			     setNodeTabActive(); 
 			}
 		}); 		
 		
@@ -244,13 +272,46 @@ public class FormulaEditionPane extends JPanel {
 		
 		btnOVariableTree.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-			     formulaTree.replaceByOVariable(); 
+				setOVariableTabActive(); 
 			}
 		}); 
 		
 		btnSkolenTree.setEnabled(false); 
 			    
 	    
+	}
+	
+	/**
+	 * open the tree for selected the ordinary variable
+	 * that replaces the actual node selected. 
+	 */
+	
+	public JPanel replaceByNode(){
+     
+     JPanel painel = new JPanel(new BorderLayout()); 
+     
+     MTheoryTreeReplaceInFormula mTheoryTree = new MTheoryTreeReplaceInFormula(controller, formulaTreeController.getFormulaTree()); 
+     JScrollPane jspOVariableTreeMFrag = new JScrollPane(mTheoryTree); 
+     painel.add(jspOVariableTreeMFrag, BorderLayout.CENTER); 
+     
+     return painel; 
+	}		
+
+	/**
+	 * open the tree for selected the ordinary variable
+	 * that replaces the actual node selected. 
+	 */
+	
+	public JPanel replaceByOVariable(){
+	
+     JPanel painelOVariableSelection = new JPanel(new BorderLayout()); 
+
+     OVariableTreeForReplaceInFormula oVariableTreeMFragReplaceInFormula = new OVariableTreeForReplaceInFormula(controller, formulaTreeController.getFormulaTree()); 
+     JScrollPane jspOVariableTreeMFrag = new JScrollPane(oVariableTreeMFragReplaceInFormula); 
+     painelOVariableSelection.add(jspOVariableTreeMFrag, BorderLayout.NORTH); 
+     
+     return painelOVariableSelection; 
+     
 	}
 	
 }

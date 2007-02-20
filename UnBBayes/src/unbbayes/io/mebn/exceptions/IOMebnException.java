@@ -1,4 +1,4 @@
-package unbbayes.io.mebn;
+package unbbayes.io.mebn.exceptions;
 
 public class IOMebnException extends Exception{
 	

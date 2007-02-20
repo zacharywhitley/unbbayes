@@ -137,9 +137,6 @@ public class DomainResidentNode extends ResidentNode {
 		return this.inputInstanceFromList; 
 	}	
 	
-	
-	
-	
 	/*------------------------------------------------------------*/
 	
 	public void removeResidentNodeFather(DomainResidentNode node){

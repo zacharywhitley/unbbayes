@@ -147,7 +147,11 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"previewTableToolTip","Visualizar a impressão da tabela"},
 		{"saveTableImageToolTip","Salvar a tabela como imagem gif"},
 		{"newEntityToolTip","Criar nova entidade"},		
-		{"delEntityToolTip","Deletar entidade"},		
+		{"delEntityToolTip","Deletar entidade"},
+		
+		{"showMTheoryToolTip","Mostrar árvore da MTheory"},	
+		{"showEntitiesToolTip","Mostrar entidades da MTheory"},
+		{"showOVariablesToolTip","Mostrar ovariables da MFrag"},			
 		
 		{"formula","Formula:"},	
 		{"inputOf","Input de:"},	
@@ -179,6 +183,15 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"EntityTitle", "Entidade"}, 
 		{"OVariableTitle", "Variavel Ord."},
 		{"ArgumentTitle", "Argumentos"}, 
+		{"StatesTitle", "Estados"}, 	
+		{"FathersTitle", "Nós Pais"}, 		
+		
+		//Label for buttons of tab selection
+		{"ResidentButton", "Resident"}, 
+		{"InputButton", "Input"}, 
+		{"ContextButton", "Context"}, 
+		{"MFragButton", "MFrag"}, 	
+		{"ArgumentsButton", "Argumentos"}, 		
 		
 		{"whithotMFragActive","Não há MFrag ativa"},			
 		{"previewTitle","Pré Visualização"},

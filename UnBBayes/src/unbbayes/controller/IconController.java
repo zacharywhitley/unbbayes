@@ -234,6 +234,8 @@ public class IconController implements Serializable {
 	
 	protected ImageIcon downIcon; 	
 	
+	protected ImageIcon boxVariablesIcon; 		
+	
 	
 	public static IconController getInstance() {
 		if (singleton == null) {
@@ -1046,7 +1048,7 @@ public class IconController implements Serializable {
 		} else {
 			orIcon = new ImageIcon(getClass().getResource(
 					"/icons/or.gif"));
-			return andIcon;
+			return orIcon;
 		}
 	}
 	
@@ -1178,4 +1180,13 @@ public class IconController implements Serializable {
 		}
 	}	
 
+	public ImageIcon getBoxVariablesIcon() {
+		if (boxVariablesIcon != null) {
+			return boxVariablesIcon;
+		} else {
+			boxVariablesIcon = new ImageIcon(getClass().getResource(
+					"/icons/boxVariables.gif"));
+			return boxVariablesIcon;
+		}
+	}		
 }

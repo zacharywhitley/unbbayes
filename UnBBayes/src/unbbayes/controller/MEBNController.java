@@ -40,8 +40,6 @@ public class MEBNController {
 	private ContextNode contextNodeActive; 
 	private Node nodeActive; 
 	
-	
-	
 	public ResidentNode getResidentNodeActive(){
 		return residentNodeActive; 
 	}
@@ -108,6 +106,7 @@ public class MEBNController {
 	    screen.getMebnEditionPane().setMFragCardActive(); 
 	    screen.getMebnEditionPane().setTxtNameMFrag(domainMFrag.getName()); 	    
 		screen.getMebnEditionPane().setMTheoryTreeActive(); 
+		this.setUnableTableEditionView(); 
 		
 	}
 	
@@ -154,7 +153,7 @@ public class MEBNController {
 		screen.getMebnEditionPane().setArgumentTabActive(); 
 		screen.getMebnEditionPane().setResidentCardActive(); 
 	    screen.getMebnEditionPane().setTxtNameResident(((ResidentNode)node).getName()); 	
-		
+		this.setUnableTableEditionView(); 
 	}
 	
 	public void renameDomainResidentNode(DomainResidentNode resident, String newName){
@@ -197,6 +196,18 @@ public class MEBNController {
 	}
 	
 	
+	public void setEnableTableEditionView(){
+		
+		screen.getMebnEditionPane().showTableEdit();
+		
+	}
+	
+	public void setUnableTableEditionView(){
+		
+		screen.getMebnEditionPane().hideTableEdit(); 
+		
+	}	
+	
 	/*---------------------------- Generative Input Node ----------------------------*/		
 	
 	public void insertGenerativeInputNode(double x, double y) throws MEBNConstructionException {
@@ -219,7 +230,8 @@ public class MEBNController {
 		screen.getMebnEditionPane().setInputCardActive(); 	
 		screen.getMebnEditionPane().setTxtNameInput(((InputNode)node).getName()); 		    
 		screen.getMebnEditionPane().setInputNodeActive(node); 
-		screen.getMebnEditionPane().setTxtInputOf(""); 		
+		screen.getMebnEditionPane().setTxtInputOf(""); 	
+		this.setUnableTableEditionView(); 
 	}	
 	
 	public void setInputInstanceOf(GenerativeInputNode input, ResidentNode resident){
@@ -271,6 +283,7 @@ public class MEBNController {
 	    screen.getMebnEditionPane().setContextCardActive();
 		screen.getMebnEditionPane().setFormulaEdtionActive(node); 	
 		screen.getMebnEditionPane().setTxtNameContext(((ContextNode)node).getName()); 
+		this.setUnableTableEditionView(); 
 	}	
 	
 	
@@ -288,6 +301,7 @@ public class MEBNController {
                 ((DomainResidentNode)selected).delete();
                 screen.getMebnEditionPane().getMTheoryTree().updateTree(); 
                 screen.getMebnEditionPane().setMTheoryTreeActive();  
+        		this.setUnableTableEditionView(); 
         	}
         	else{
             	if (selected instanceof GenerativeInputNode){
@@ -311,29 +325,17 @@ public class MEBNController {
 	public void selectNode(Node node){
 		if (node instanceof ResidentNode){
 			residentNodeActive = (ResidentNode)node; 
-			nodeActive = node; 
-			screen.getMebnEditionPane().setResidentCardActive(); 
-			screen.getMebnEditionPane().setEditArgumentsTabActive((ResidentNode)node); 
-			screen.getMebnEditionPane().setResidentNodeTabActive((DomainResidentNode)node); 
-			screen.getMebnEditionPane().setTxtNameResident(((ResidentNode)node).getName()); 	
-			screen.getMebnEditionPane().setArgumentTabActive(); 	
+			setResidentNodeActive(residentNodeActive); 	
 		}
 		else{
 			if(node instanceof InputNode){
 				inputNodeActive = (InputNode)node;
-				nodeActive = node; 
-				screen.getMebnEditionPane().setInputCardActive(); 
-				screen.getMebnEditionPane().setTxtNameInput(((InputNode)node).getName()); 				
-				screen.getMebnEditionPane().setInputNodeActive((GenerativeInputNode)inputNodeActive); 
-				updateInputInstanceOf((GenerativeInputNode)inputNodeActive); 
+				setInputNodeActive(inputNodeActive); 
 			}
 			else{
 				if(node instanceof ContextNode){
 					contextNodeActive = (ContextNode)node; 
-					nodeActive = node; 
-					screen.getMebnEditionPane().setContextCardActive(); 
-					screen.getMebnEditionPane().setFormulaEdtionActive((ContextNode)node); 					
-					screen.getMebnEditionPane().setTxtNameContext(((ContextNode)node).getName()); 					
+				    setContextNodeActive(contextNodeActive); 
 				}
 				else{
 					
@@ -341,6 +343,34 @@ public class MEBNController {
 			}
 			
 		}	
+	}
+	
+
+	private void setResidentNodeActive(ResidentNode residentNodeActive){ 
+	   nodeActive = residentNodeActive; 
+	   screen.getMebnEditionPane().setResidentCardActive(); 
+	   screen.getMebnEditionPane().setEditArgumentsTabActive(residentNodeActive); 
+	   screen.getMebnEditionPane().setResidentNodeTabActive((DomainResidentNode)residentNodeActive); 
+	   screen.getMebnEditionPane().setTxtNameResident((residentNodeActive).getName()); 	
+	   screen.getMebnEditionPane().setArgumentTabActive(); 	
+	   this.setUnableTableEditionView(); 
+	}
+	
+	private void setInputNodeActive(InputNode inputNodeActive){
+		nodeActive = inputNodeActive; 
+		screen.getMebnEditionPane().setInputCardActive(); 
+		screen.getMebnEditionPane().setTxtNameInput((inputNodeActive).getName()); 				
+		screen.getMebnEditionPane().setInputNodeActive((GenerativeInputNode)inputNodeActive); 
+		updateInputInstanceOf((GenerativeInputNode)inputNodeActive); 
+		this.setUnableTableEditionView(); 
+	}
+	
+	private void setContextNodeActive(ContextNode contextNodeActive){
+		nodeActive = contextNodeActive; 
+		screen.getMebnEditionPane().setContextCardActive(); 
+		screen.getMebnEditionPane().setFormulaEdtionActive(contextNodeActive); 					
+		screen.getMebnEditionPane().setTxtNameContext((contextNodeActive).getName()); 					
+		this.setUnableTableEditionView(); 			
 	}
 
 	/*---------------------------- Ordinary Variable ----------------------------*/	
@@ -393,8 +423,7 @@ public class MEBNController {
 	 */
 	public void addOrdinaryVariableInResident(OrdinaryVariable ordinaryVariable){
 		
-		ResidentNode resident = (ResidentNode) screen.getGraphPane().getSelected(); 
-		resident.addOrdinaryVariable(ordinaryVariable);
+		residentNodeActive.addOrdinaryVariable(ordinaryVariable);
 		screen.getMebnEditionPane().getEditArgumentsTab().update();
 		screen.getMebnEditionPane().updateUI();
 		
@@ -447,18 +476,6 @@ public class MEBNController {
 	public void selectOVariableInEdit(OrdinaryVariable ov){
 	
 		screen.getMebnEditionPane().getEditOVariableTab().setNameOVariableSelected(ov.getName()); 
-		
-	}
-	
-	public void setEnableTableEditionView(){
-		
-		screen.getMebnEditionPane().showTableEdit();
-		
-	}
-	
-	public void setUnableTableEditionView(){
-		
-		screen.getMebnEditionPane().hideTableEdit(); 
 		
 	}
 	

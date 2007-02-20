@@ -1,5 +1,6 @@
 package unbbayes.prs.mebn.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.mebn.MultiEntityNode;
@@ -22,7 +23,7 @@ public abstract class Entity {
 
 	protected String type;
 
-	protected List<MultiEntityNode> listIsPossibleValueOf;
+	protected List<MultiEntityNode> listIsPossibleValueOf = new ArrayList<MultiEntityNode>();
 
 	/**
 	 * Sets the entity's type.

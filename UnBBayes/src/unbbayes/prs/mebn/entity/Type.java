@@ -66,5 +66,9 @@ public class Type {
 	public static boolean hasType(String aType) {
 		return listOfTypes.contains(aType);
 	}
+	
+	public static Set<String> getListOfTypes(){
+		return listOfTypes; 
+	}
 
 }

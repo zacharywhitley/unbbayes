@@ -155,13 +155,14 @@ public class PossibleValuesEditionPane extends JPanel{
   							}
   							
   							txtName.setText(""); 
-  			  				jpAddOptions.setVisible(false);  
   							
   						}  else {
   							JOptionPane.showMessageDialog(null, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
   							txtName.selectAll();
   						}
+  						
   						update(); 
+  						
   					}
   					catch (javax.swing.text.BadLocationException ble) {
   						System.out.println(ble.getMessage());
@@ -173,6 +174,7 @@ public class PossibleValuesEditionPane extends JPanel{
 		jbNew.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
   				jpAddOptions.setVisible(true); 
+  				txtName.requestFocus(); 
   			}
   		});
 		

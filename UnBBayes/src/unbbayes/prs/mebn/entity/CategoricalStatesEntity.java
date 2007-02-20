@@ -29,5 +29,9 @@ public class CategoricalStatesEntity extends Entity {
 	public static void removeEntity(CategoricalStatesEntity entity) {
 		CategoricalStatesEntity.listEntity.remove(entity);
 	}
+	
+	public static List<CategoricalStatesEntity> getListEntity(){
+		return listEntity; 
+	}
 
 }

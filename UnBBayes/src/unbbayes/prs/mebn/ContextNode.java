@@ -8,6 +8,7 @@ import java.util.List;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import unbbayes.gui.draw.DrawFlatPentagon;
+import unbbayes.prs.mebn.entity.BooleanStatesEntity;
 
 /**
  * 
@@ -43,7 +44,7 @@ public class ContextNode extends MultiEntityNode {
     
     
     /**
-     * 
+     * Create the context node and add your default possible values 
      * @param name
      * @param mFrag
      */
@@ -58,6 +59,13 @@ public class ContextNode extends MultiEntityNode {
     	
     	innerTermOfList = new ArrayList<ContextNode>();
     	innerTermFromList = new ArrayList<ContextNode>();
+    	
+    	/* a lista de possiveis valores de um nó de contexto contém por
+    	 * default os valores True, False e Absurd. 
+    	 */
+    	this.addPossibleValue(BooleanStatesEntity.getTrueStateEntity()); 
+    	this.addPossibleValue(BooleanStatesEntity.getFalseStateEntity()); 
+    	this.addPossibleValue(BooleanStatesEntity.getAbsurdStateEntity()); 
     	
     	/* draw */
     	size.x = 100;
