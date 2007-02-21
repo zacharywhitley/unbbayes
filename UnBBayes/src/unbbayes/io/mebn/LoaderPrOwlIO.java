@@ -22,6 +22,7 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.Type;
+import unbbayes.prs.mebn.entity.exception.CategoricalStateDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 
@@ -118,558 +119,22 @@ public class LoaderPrOwlIO {
 		
 		/*------------------- Entities -------------------*/
 		
-		//this.loadMetaEntitiesClasses(); 
-		//this.loadBooleanRVStates(); 
-		this.loadCategoricalRVStates(); 
-		this.loadObjectEntity(); 
+		//loadMetaEntitiesClasses(); 
+		//loadBooleanRVStates(); 
+		loadCategoricalRVStates(); 
+		loadObjectEntity(); 
 		
-		/*------------------- DomainMFrag -------------------*/
+		/*-------------------MTheory elements------------*/
+		loadDomainMFrag(); 
+		loadContextNode(); 		
+		loadBuiltInRV(); 
+		loadDomainResidentNode(); 	
+		loadGenerativeInputNode(); 	
 		
-		owlNamedClass = owlModel.getOWLNamedClass("Domain_MFrag"); 
-		instances = owlNamedClass.getInstances(false); 
-		
-		for (Iterator it = instances.iterator(); it.hasNext(); ){
-			individualOne = (OWLIndividual)it.next();
-			domainMFrag = mapDomainMFrag.get(individualOne.getBrowserText()); 
-			if (domainMFrag == null){
-				throw new IOMebnException(resource.getString("DomainMFragNotExistsInMTheory"), individualOne.getBrowserText()); 
-			}
-			
-			System.out.println("DomainMFrag loaded: " + individualOne.getBrowserText()); 
-			
-			/* -> hasResidentNode */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasResidentNode"); 
-			instances = individualOne.getPropertyValues(objectProperty); 
-			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
-				domainResidentNode = new DomainResidentNode(individualTwo.getBrowserText(), domainMFrag); 
-				domainMFrag.addDomainResidentNode(domainResidentNode); 
-				mapDomainResidentNode.put(individualTwo.getBrowserText(), domainResidentNode); 
-				mapMultiEntityNode.put(individualTwo.getBrowserText(), domainResidentNode); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
-			}	
-			
-			/* -> hasInputNode */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputNode"); 
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
-				generativeInputNode = new GenerativeInputNode(individualTwo.getBrowserText(), domainMFrag); 
-				domainMFrag.addGenerativeInputNode(generativeInputNode); 
-				mapGenerativeInputNode.put(individualTwo.getBrowserText(), generativeInputNode); 
-				mapMultiEntityNode.put(individualTwo.getBrowserText(), generativeInputNode); 				
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
-			}	
-			
-			/* -> hasContextNode */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasContextNode"); 
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
-				contextNode = new ContextNode(individualTwo.getBrowserText(), domainMFrag); 
-				domainMFrag.addContextNode(contextNode); 
-				mapContextNode.put(individualTwo.getBrowserText(), contextNode); 
-				mapMultiEntityNode.put(individualTwo.getBrowserText(), contextNode); 				
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
-			}	
-			
-			/* -> hasOVariable */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasOVariable"); 
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
-				oVariable = new OrdinaryVariable(individualTwo.getBrowserText(), domainMFrag); 
-				domainMFrag.addOrdinaryVariable(oVariable); 
-				mapOVariable.put(individualTwo.getBrowserText(), oVariable); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
-			}
-			
-			/* -> hasSkolen don't checked! */
-			
-		}		
-		
-		/*------------------- Context Node -------------------*/
-		
-		OWLNamedClass contextNodePr = owlModel.getOWLNamedClass("Context"); 
-		instances = contextNodePr.getInstances(false); 
-		
-		for (Iterator it = instances.iterator(); it.hasNext(); ){
-			individualOne = (OWLIndividual)it.next();
-			contextNode = mapContextNode.get(individualOne.getBrowserText()); 
-			if (contextNode == null){
-				throw new IOMebnException(resource.getString("ContextNodeNotExistsInMTheory"), individualOne.getBrowserText()); 
-			}
-			
-			System.out.println("Context Node loaded: " + individualOne.getBrowserText()); 				
-			
-			/* has PositionX */
-			OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
-
-			if (hasPositionXProperty != null){
-			float positionX = (Float)individualOne.getPropertyValue(hasPositionXProperty);
-			
-			/* has PositionY */
-			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
-			float positionY = (Float)individualOne.getPropertyValue(hasPositionYProperty);
-		
-			contextNode.setPosition(positionX, positionY); 
-			}
-			
-			System.out.println("Domain Resident loaded: " + individualOne.getBrowserText()); 			
-			
-			
-			/* -> isContextNodeIn  */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isContextNodeIn"); 			
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			itAux = instances.iterator();
-			individualTwo = (OWLIndividual) itAux.next();
-			domainMFrag = mapDomainMFrag.get(individualTwo.getBrowserText()); 
-			if(domainMFrag.containsContextNode(contextNode) == false){
-				throw new IOMebnException(resource.getString("ContextNodeNotExistsInMFrag"), contextNode.getName() + ", " + domainMFrag.getName()); 
-			}
-			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
-			
-			/* -> isNodeFrom */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isNodeFrom"); 			
-			instances = individualOne.getPropertyValues(objectProperty);		
-			for(Iterator itIn = instances.iterator(); itIn.hasNext();  ){
-				individualTwo = (OWLIndividual) itAux.next();
-				domainMFrag = mapDomainMFrag.get(individualTwo.getBrowserText()); 
-				if(domainMFrag.containsNode(contextNode) == false){
-					throw new IOMebnException(resource.getString("NodeNotExistsInMFrag"), contextNode.getName() + ", " + domainMFrag.getName()); 
-				}
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());				
-			}
-			
-			/* -> hasArgument */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();			
-				argument = new Argument(individualTwo.getBrowserText(), contextNode); 
-				contextNode.addArgument(argument); 
-				mapArgument.put(individualTwo.getBrowserText(), argument); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
-			}
-			
-			/* -> isInnerTermOf */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isInnerTermOf"); 			
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			itAux = instances.iterator();			
-			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
-				multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
-				contextNode.addInnerTermFromList(multiEntityNode); 
-				multiEntityNode.addInnerTermOfList(contextNode); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
-			}	
-			
-		}
-		
-		/*------------------- BuiltIn Node -------------------*/
-		
-		OWLNamedClass builtInPr = owlModel.getOWLNamedClass("BuiltInRV"); 
-		instances = builtInPr.getInstances(false); 
-		
-		for (Iterator it = instances.iterator(); it.hasNext(); ){
-			individualOne = (OWLIndividual)it.next();
-			builtInRV = new BuiltInRV(individualOne.getBrowserText()); 			
-			mebn.addBuiltInRVList(builtInRV); 
-			mapBuiltInRV.put(individualOne.getBrowserText(), builtInRV); 
-			System.out.println("BuiltInRV loaded: " + individualOne.getBrowserText()); 
-			
-			/* -> hasContextInstance */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasContextInstance"); 
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
-				contextNode = mapContextNode.get(individualTwo.getBrowserText());
-				if(contextNode == null){
-					throw new IOMebnException(resource.getString("ContextNodeNotExistsInMTheory"), individualTwo.getBrowserText()); 
-				}
-				builtInRV.addContextInstance(contextNode); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
-			}				
-			
-			/* -> hasInputInstance */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputInstance"); 
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
-				generativeInputNode = mapGenerativeInputNode.get(individualTwo.getBrowserText());
-				if(generativeInputNode == null){
-					throw new IOMebnException(resource.getString("GenerativeInputNodeNotExistsInMTheory"), individualTwo.getBrowserText()); 
-				}
-				builtInRV.addInputInstance(generativeInputNode); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
-			}				
-			
-		}		
-		
-		/*------------------- Domain Resident -------------------*/
-		
-		OWLNamedClass domainResidentNodePr = owlModel.getOWLNamedClass("Domain_Res"); 
-		instances = domainResidentNodePr.getInstances(false); 
-		DomainMFrag mFragOfNode = null; 
-		
-		for (Iterator it = instances.iterator(); it.hasNext(); ){
-			individualOne = (OWLIndividual)it.next();
-			domainResidentNode = mapDomainResidentNode.get(individualOne.getBrowserText()); 
-			if (domainResidentNode == null){
-				throw new IOMebnException(resource.getString("DomainResidentNotExistsInMTheory"), individualOne.getBrowserText() ); 
-			}
-			
-			/* has PositionX */
-			OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
-			
-			//TODO Tirar isso depois!!!
-			if (hasPositionXProperty != null){
-			float positionX = (Float)individualOne.getPropertyValue(hasPositionXProperty);
-			
-			/* has PositionY */
-			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
-			float positionY = (Float)individualOne.getPropertyValue(hasPositionYProperty);
-			
-			domainResidentNode.setPosition(positionX, positionY); 
-			}
-			
-			System.out.println("Domain Resident loaded: " + individualOne.getBrowserText()); 			
-			
-			/* -> isResidentNodeIn  */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isResidentNodeIn"); 			
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			itAux = instances.iterator();
-			individualTwo = (OWLIndividual) itAux.next();
-			domainMFrag = mapDomainMFrag.get(individualTwo.getBrowserText()); 
-			if(domainMFrag.containsDomainResidentNode(domainResidentNode) == false){
-				throw new IOMebnException(resource.getString("DomainResidentNotExistsInDomainMFrag") ); 
-			}
-			mFragOfNode = domainMFrag; 
-			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
-			
-			/* -> hasArgument */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
-				argument = new Argument(individualTwo.getBrowserText(), domainResidentNode); 
-				domainResidentNode.addArgument(argument); 
-				mapArgument.put(individualTwo.getBrowserText(), argument); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
-			}		
-			
-			/* -> hasParent */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasParent"); 
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
-				if (mapDomainResidentNode.containsKey(individualTwo.getBrowserText())){
-					DomainResidentNode aux = mapDomainResidentNode.get(individualTwo.getBrowserText()); 
-					aux.addResidentNodeChild(domainResidentNode); 
-					
-					Edge auxEdge = new Edge(aux, domainResidentNode);
-					try{
-					mFragOfNode.addEdge(auxEdge); 
-					}
-					catch(Exception e){
-						System.out.println("Erro: arco invalidop!!!"); 
-					}
-				}
-				else{
-					if (mapGenerativeInputNode.containsKey(individualTwo.getBrowserText())){
-						GenerativeInputNode aux = mapGenerativeInputNode.get(individualTwo.getBrowserText()); 
-						aux.addResidentNodeChild(domainResidentNode); 
-			
-						Edge auxEdge = new Edge(aux, domainResidentNode);
-						try{
-						mFragOfNode.addEdge(auxEdge); 
-						}
-						catch(Exception e){
-							System.out.println("Erro: arco invalidop!!!"); 
-						}
-					
-					}
-					else{
-						throw new IOMebnException(resource.getString("NodeNotFound"), individualTwo.getBrowserText() ); 
-					}
-				}
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
-			}	
-			
-			/* -> hasInputInstance  */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputInstance"); 			
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			
-			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
-				generativeInputNode = mapGenerativeInputNode.get(individualTwo.getBrowserText()); 
-				generativeInputNode.setInputInstanceOf(domainResidentNode); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
-			}
-			
-			/* -> isInnerTermOf */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isInnerTermOf"); 			
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			itAux = instances.iterator();			
-			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
-				multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
-				domainResidentNode.addInnerTermFromList(multiEntityNode); 
-				multiEntityNode.addInnerTermOfList(domainResidentNode); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
-			}				
-			
-			/* hasProbDist don't checked */
-			
-			/* hasPossibleValues don't checked */
-			
-			/* hasContextInstance don't checked */
-			
-			/* isArgTermIn don't checked */
-		}
-		
-		/*------------------- Generative Input Node -------------------*/
-		
-		OWLNamedClass inputNodePr = owlModel.getOWLNamedClass("Generative_input"); 
-		instances = inputNodePr.getInstances(false); 
-		
-		for (Iterator it = instances.iterator(); it.hasNext(); ){
-			
-			individualOne = (OWLIndividual)it.next();
-			System.out.println("Input Node loaded: " + individualOne.getBrowserText()); 			
-			generativeInputNode = mapGenerativeInputNode.get(individualOne.getBrowserText()); 
-			if (generativeInputNode == null){
-				throw new IOMebnException(resource.getString("GenerativeInputNodeNotExistsInMTheory"), individualOne.getBrowserText() ); 				
-			}
-			
-			//TODO Tirar isso depois... 
-			/* has PositionX */
-			OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
-			if (hasPositionXProperty != null){
-			float positionX = (Float)individualOne.getPropertyValue(hasPositionXProperty);
-			
-			/* has PositionY */
-			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
-			float positionY = (Float)individualOne.getPropertyValue(hasPositionYProperty);
-			
-			generativeInputNode.setPosition(positionX, positionY); 
-			
-			System.out.println("posicoes lidas "); 			
-			}
-			
-			/* -> isInputInstanceOf  */
-			
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isInputInstanceOf"); 			
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			itAux = instances.iterator();
-			
-			if(itAux.hasNext() != false){
-				individualTwo = (OWLIndividual) itAux.next();
-				
-				if (mapDomainResidentNode.containsKey(individualTwo.getBrowserText())){
-					domainResidentNode = mapDomainResidentNode.get(individualTwo.getBrowserText()); 
-					generativeInputNode.setInputInstanceOf(domainResidentNode); 
-				}
-				else{
-					if (mapBuiltInRV.containsKey(individualTwo.getBrowserText())){
-						builtInRV = mapBuiltInRV.get(individualTwo.getBrowserText()); 
-						generativeInputNode.setInputInstanceOf(builtInRV); 
-					}				
-				}
-			}
-			
-			System.out.println("passou por isInputInstanceOf"); 
-			
-			/* -> hasArgument */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
-				argument = new Argument(individualTwo.getBrowserText(), generativeInputNode); 
-				generativeInputNode.addArgument(argument); 
-				mapArgument.put(individualTwo.getBrowserText(), argument); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
-			}		
-			
-			/* isParentOf */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isParentOf"); 
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
-				domainResidentNode = mapDomainResidentNode.get(individualTwo.getBrowserText());
-				if(domainResidentNode == null){
-					throw new IOMebnException(resource.getString("DomainMFragNotExistsInMTheory"),  individualTwo.getBrowserText()); 
-				}
-				generativeInputNode.addResidentNodeChild(domainResidentNode); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
-			}			
-			
-			/* -> isInnerTermOf */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isInnerTermOf"); 			
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			itAux = instances.iterator();			
-			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
-				multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
-				generativeInputNode.addInnerTermFromList(multiEntityNode); 
-				multiEntityNode.addInnerTermOfList(generativeInputNode); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
-			}	
-			
-			/* hasProbDist don't checked */
-			
-		}
-		
-		/*------------------- Ordinary Variable -------------------*/
-		
-		OWLNamedClass ordinaryVariablePr = owlModel.getOWLNamedClass("OVariable"); 
-		instances = ordinaryVariablePr.getInstances(false); 
-		for (Iterator it = instances.iterator(); it.hasNext(); ){
-			individualOne = (OWLIndividual)it.next();		
-			oVariable = mapOVariable.get(individualOne.getBrowserText()); 
-			if (oVariable == null){
-				throw new IOMebnException(resource.getString("OVariableNotExistsInMTheory"),  individualOne.getBrowserText()); 
-			}
-			System.out.println("Ordinary Variable loaded: " + individualOne.getBrowserText()); 				
-			
-			/* -> isOVariableIn  */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isOVariableIn"); 			
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			itAux = instances.iterator();
-			individualTwo = (OWLIndividual) itAux.next();
-			domainMFrag = mapDomainMFrag.get(individualTwo.getBrowserText()); 
-			if(domainMFrag != oVariable.getMFrag()){
-				throw new IOMebnException(resource.getString("isOVariableInError"),  individualOne.getBrowserText()); 
-			}
-			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
-			
-			/* -> isSubsBy */
-			/*
-			 objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isSubsBy"); 			
-			 instances = individualOne.getPropertyValues(objectProperty); 	
-			 itAux = instances.iterator();
-			 individualTwo = (OWLIndividual) itAux.next();
-			 argument = mapArgument.get(individualTwo.getBrowserText()); 
-			 if (argument.isSimpleArgRelationship()){
-			 //TODO: criar algum atributo em OV para identificar onde ele é utilizado? 
-			  }
-			  else{
-			  
-			  }
-			  System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
-			  */
-			
-			/* isRepBySkolen don't checked */ 
-			
-		}
-		
-		/*------------------- Arg Relationship -------------------*/
-		
-		OWLNamedClass argRelationshipPr = owlModel.getOWLNamedClass("ArgRelationship"); 
-		instances = argRelationshipPr.getInstances(false); 
-		
-		for (Iterator it = instances.iterator(); it.hasNext(); ){	
-			individualOne = (OWLIndividual)it.next();
-			argument = mapArgument.get(individualOne.getBrowserText()); 
-			if (argument == null){
-				throw new IOMebnException(resource.getString("ArgumentNotFound"),  individualOne.getBrowserText()); 
-			}
-			System.out.println("ArgRelationship loaded: " + individualOne.getBrowserText()); 
-			
-			/* -> hasArgTerm  */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 			
-			individualTwo = (OWLIndividual)individualOne.getPropertyValue(objectProperty); 	
-			
-			if(individualTwo != null){
-				//TODO apenas por enquanto, pois não podera ser igual a null no futuro!!!
-				
-				/* check: 
-				 * - node
-				 * - entity //don't checked in this version
-				 * - oVariable
-				 * - skolen // don't checked in this version
-				 */
-				
-				if ((multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText())) != null){
-					try{
-						argument.setArgumentTerm(multiEntityNode);
-					}
-					catch(Exception e){
-						throw new IOMebnException(resource.getString("ArgumentTermError"),  individualTwo.getBrowserText()); 				   
-					}
-				}
-				else{
-					if( (oVariable = mapOVariable.get(individualTwo.getBrowserText())) != null) {
-						try{
-							argument.setOVariable(oVariable); 
-						}
-						catch(Exception e){
-							throw new IOMebnException(resource.getString("ArgumentTermError"),  individualTwo.getBrowserText()); 				   
-						}
-					}
-					else{
-						/* TODO Tratamento para Entity */
-					}
-				}
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
-				
-			}
-			
-			/* -> isArgumentOf  */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isArgumentOf"); 			
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			itAux = instances.iterator();
-			individualTwo = (OWLIndividual) itAux.next();
-			multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
-			if (argument.getMultiEntityNode() != multiEntityNode){
-				throw new IOMebnException(resource.getString("isArgumentOfError"),  individualTwo.getBrowserText()); 				   
-			}
-			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());					
-		}
-		
-		/*------------------- Simple Arg Relationship -------------------*/
-		
-		argRelationshipPr = owlModel.getOWLNamedClass("SimpleArgRelationship"); 
-		instances = argRelationshipPr.getInstances(false); 
-		for (Iterator it = instances.iterator(); it.hasNext(); ){
-			individualOne = (OWLIndividual)it.next();
-			argument = mapArgument.get(individualOne.getBrowserText()); 
-			if (argument == null){
-				throw new IOMebnException(resource.getString("ArgumentNotFound"),  individualOne.getBrowserText()); 
-			}
-			System.out.println("SimpleArgRelationship loaded: " + individualOne.getBrowserText()); 
-			
-			/* -> hasArgTerm  */
-			
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 			
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			itAux = instances.iterator();
-			individualTwo = (OWLIndividual) itAux.next();
-			
-			oVariable = mapOVariable.get(individualTwo.getBrowserText()); 
-			if (oVariable == null){
-				throw new IOMebnException(resource.getString("ArgumentTermError"),  individualTwo.getBrowserText()); 	
-			}
-			try{
-				argument.setOVariable(oVariable); 
-			}
-			catch(Exception e){
-				throw new IOMebnException(resource.getString("ArgumentTermError"),  individualTwo.getBrowserText()); 	
-			}
-			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
-			
-			/* -> isArgumentOf  */
-			
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isArgumentOf"); 			
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			itAux = instances.iterator();
-			individualTwo = (OWLIndividual) itAux.next();
-			multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
-			if (argument.getMultiEntityNode() != multiEntityNode){
-				throw new IOMebnException(resource.getString("isArgumentOfError"),  individualTwo.getBrowserText()); 				   
-			}
-			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());					
-		}
+		/*---------------------Arguments-------------------*/
+		loadOrdinaryVariable(); 	
+		loadArgRelationship(); 		
+		loadSimpleRelationship(); 
 		
 		System.out.println("Load concluido com sucesso!"); 
 		
@@ -795,9 +260,602 @@ public class LoaderPrOwlIO {
 					
 				}
 		}		
+
+	}
+	
+	
+	private void loadDomainMFrag() throws IOMebnException{
+/*------------------- DomainMFrag -------------------*/
 		
+		owlNamedClass = owlModel.getOWLNamedClass("Domain_MFrag"); 
+		instances = owlNamedClass.getInstances(false); 
+		
+		for (Iterator it = instances.iterator(); it.hasNext(); ){
+			individualOne = (OWLIndividual)it.next();
+			domainMFrag = mapDomainMFrag.get(individualOne.getBrowserText()); 
+			if (domainMFrag == null){
+				throw new IOMebnException(resource.getString("DomainMFragNotExistsInMTheory"), individualOne.getBrowserText()); 
+			}
+			
+			System.out.println("DomainMFrag loaded: " + individualOne.getBrowserText()); 
+			
+			/* -> hasResidentNode */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasResidentNode"); 
+			instances = individualOne.getPropertyValues(objectProperty); 
+			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+				individualTwo = (OWLIndividual) itIn.next();
+				domainResidentNode = new DomainResidentNode(individualTwo.getBrowserText(), domainMFrag); 
+				domainMFrag.addDomainResidentNode(domainResidentNode); 
+				mapDomainResidentNode.put(individualTwo.getBrowserText(), domainResidentNode); 
+				mapMultiEntityNode.put(individualTwo.getBrowserText(), domainResidentNode); 
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+			}	
+			
+			/* -> hasInputNode */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputNode"); 
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+				individualTwo = (OWLIndividual) itIn.next();
+				generativeInputNode = new GenerativeInputNode(individualTwo.getBrowserText(), domainMFrag); 
+				domainMFrag.addGenerativeInputNode(generativeInputNode); 
+				mapGenerativeInputNode.put(individualTwo.getBrowserText(), generativeInputNode); 
+				mapMultiEntityNode.put(individualTwo.getBrowserText(), generativeInputNode); 				
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+			}	
+			
+			/* -> hasContextNode */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasContextNode"); 
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+				individualTwo = (OWLIndividual) itIn.next();
+				contextNode = new ContextNode(individualTwo.getBrowserText(), domainMFrag); 
+				domainMFrag.addContextNode(contextNode); 
+				mapContextNode.put(individualTwo.getBrowserText(), contextNode); 
+				mapMultiEntityNode.put(individualTwo.getBrowserText(), contextNode); 				
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+			}	
+			
+			/* -> hasOVariable */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasOVariable"); 
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+				individualTwo = (OWLIndividual) itIn.next();
+				oVariable = new OrdinaryVariable(individualTwo.getBrowserText(), domainMFrag); 
+				domainMFrag.addOrdinaryVariable(oVariable); 
+				mapOVariable.put(individualTwo.getBrowserText(), oVariable); 
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+			}
+			
+			/* -> hasSkolen don't checked! */
+			
+		}						
+	}
+	
+	private void loadContextNode() throws IOMebnException{
+
+		/*------------------- Context Node -------------------*/
+		
+		OWLNamedClass contextNodePr = owlModel.getOWLNamedClass("Context"); 
+		instances = contextNodePr.getInstances(false); 
+		
+		for (Iterator it = instances.iterator(); it.hasNext(); ){
+			individualOne = (OWLIndividual)it.next();
+			contextNode = mapContextNode.get(individualOne.getBrowserText()); 
+			if (contextNode == null){
+				throw new IOMebnException(resource.getString("ContextNodeNotExistsInMTheory"), individualOne.getBrowserText()); 
+			}
+			
+			System.out.println("Context Node loaded: " + individualOne.getBrowserText()); 				
+			
+			/* has PositionX */
+			OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
+
+			if (hasPositionXProperty != null){
+			float positionX = (Float)individualOne.getPropertyValue(hasPositionXProperty);
+			
+			/* has PositionY */
+			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
+			float positionY = (Float)individualOne.getPropertyValue(hasPositionYProperty);
+		
+			contextNode.setPosition(positionX, positionY); 
+			}
+			
+			System.out.println("Domain Resident loaded: " + individualOne.getBrowserText()); 			
+			
+			
+			/* -> isContextNodeIn  */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isContextNodeIn"); 			
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			itAux = instances.iterator();
+			individualTwo = (OWLIndividual) itAux.next();
+			domainMFrag = mapDomainMFrag.get(individualTwo.getBrowserText()); 
+			if(domainMFrag.containsContextNode(contextNode) == false){
+				throw new IOMebnException(resource.getString("ContextNodeNotExistsInMFrag"), contextNode.getName() + ", " + domainMFrag.getName()); 
+			}
+			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+			
+			/* -> isNodeFrom */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isNodeFrom"); 			
+			instances = individualOne.getPropertyValues(objectProperty);		
+			for(Iterator itIn = instances.iterator(); itIn.hasNext();  ){
+				individualTwo = (OWLIndividual) itAux.next();
+				domainMFrag = mapDomainMFrag.get(individualTwo.getBrowserText()); 
+				if(domainMFrag.containsNode(contextNode) == false){
+					throw new IOMebnException(resource.getString("NodeNotExistsInMFrag"), contextNode.getName() + ", " + domainMFrag.getName()); 
+				}
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());				
+			}
+			
+			/* -> hasArgument */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+				individualTwo = (OWLIndividual) itIn.next();			
+				argument = new Argument(individualTwo.getBrowserText(), contextNode); 
+				contextNode.addArgument(argument); 
+				mapArgument.put(individualTwo.getBrowserText(), argument); 
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+			}
+			
+			/* -> isInnerTermOf */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isInnerTermOf"); 			
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			itAux = instances.iterator();			
+			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+				individualTwo = (OWLIndividual) itIn.next();
+				multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
+				contextNode.addInnerTermFromList(multiEntityNode); 
+				multiEntityNode.addInnerTermOfList(contextNode); 
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+			}	
+			
+		}
+	}
+	
+	private void loadBuiltInRV() throws IOMebnException{
+		/*------------------- BuiltIn Node -------------------*/
+		
+		OWLNamedClass builtInPr = owlModel.getOWLNamedClass("BuiltInRV"); 
+		instances = builtInPr.getInstances(false); 
+		
+		for (Iterator it = instances.iterator(); it.hasNext(); ){
+			individualOne = (OWLIndividual)it.next();
+			builtInRV = new BuiltInRV(individualOne.getBrowserText()); 			
+			mebn.addBuiltInRVList(builtInRV); 
+			mapBuiltInRV.put(individualOne.getBrowserText(), builtInRV); 
+			System.out.println("BuiltInRV loaded: " + individualOne.getBrowserText()); 
+			
+			/* -> hasContextInstance */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasContextInstance"); 
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+				individualTwo = (OWLIndividual) itIn.next();
+				contextNode = mapContextNode.get(individualTwo.getBrowserText());
+				if(contextNode == null){
+					throw new IOMebnException(resource.getString("ContextNodeNotExistsInMTheory"), individualTwo.getBrowserText()); 
+				}
+				builtInRV.addContextInstance(contextNode); 
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+			}				
+			
+			/* -> hasInputInstance */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputInstance"); 
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+				individualTwo = (OWLIndividual) itIn.next();
+				generativeInputNode = mapGenerativeInputNode.get(individualTwo.getBrowserText());
+				if(generativeInputNode == null){
+					throw new IOMebnException(resource.getString("GenerativeInputNodeNotExistsInMTheory"), individualTwo.getBrowserText()); 
+				}
+				builtInRV.addInputInstance(generativeInputNode); 
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+			}				
+			
+		}						
+	}
+	
+	private void loadDomainResidentNode() throws IOMebnException{
+
+		OWLNamedClass domainResidentNodePr = owlModel.getOWLNamedClass("Domain_Res"); 
+		instances = domainResidentNodePr.getInstances(false); 
+		DomainMFrag mFragOfNode = null; 
+		
+		for (Iterator it = instances.iterator(); it.hasNext(); ){
+			individualOne = (OWLIndividual)it.next();
+			domainResidentNode = mapDomainResidentNode.get(individualOne.getBrowserText()); 
+			if (domainResidentNode == null){
+				throw new IOMebnException(resource.getString("DomainResidentNotExistsInMTheory"), individualOne.getBrowserText() ); 
+			}
+			
+			/* has PositionX */
+			OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
+			
+			//TODO Tirar isso depois!!!
+			if (hasPositionXProperty != null){
+			float positionX = (Float)individualOne.getPropertyValue(hasPositionXProperty);
+			
+			/* has PositionY */
+			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
+			float positionY = (Float)individualOne.getPropertyValue(hasPositionYProperty);
+			
+			domainResidentNode.setPosition(positionX, positionY); 
+			}
+			
+			System.out.println("Domain Resident loaded: " + individualOne.getBrowserText()); 			
+			
+			/* -> isResidentNodeIn  */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isResidentNodeIn"); 			
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			itAux = instances.iterator();
+			individualTwo = (OWLIndividual) itAux.next();
+			domainMFrag = mapDomainMFrag.get(individualTwo.getBrowserText()); 
+			if(domainMFrag.containsDomainResidentNode(domainResidentNode) == false){
+				throw new IOMebnException(resource.getString("DomainResidentNotExistsInDomainMFrag") ); 
+			}
+			mFragOfNode = domainMFrag; 
+			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+			
+			/* -> hasArgument */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+				individualTwo = (OWLIndividual) itIn.next();
+				argument = new Argument(individualTwo.getBrowserText(), domainResidentNode); 
+				domainResidentNode.addArgument(argument); 
+				mapArgument.put(individualTwo.getBrowserText(), argument); 
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+			}		
+			
+			/* -> hasParent */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasParent"); 
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+				individualTwo = (OWLIndividual) itIn.next();
+				if (mapDomainResidentNode.containsKey(individualTwo.getBrowserText())){
+					DomainResidentNode aux = mapDomainResidentNode.get(individualTwo.getBrowserText()); 
+					aux.addResidentNodeChild(domainResidentNode); 
+					
+					Edge auxEdge = new Edge(aux, domainResidentNode);
+					try{
+					mFragOfNode.addEdge(auxEdge); 
+					}
+					catch(Exception e){
+						System.out.println("Erro: arco invalidop!!!"); 
+					}
+				}
+				else{
+					if (mapGenerativeInputNode.containsKey(individualTwo.getBrowserText())){
+						GenerativeInputNode aux = mapGenerativeInputNode.get(individualTwo.getBrowserText()); 
+						aux.addResidentNodeChild(domainResidentNode); 
+			
+						Edge auxEdge = new Edge(aux, domainResidentNode);
+						try{
+						mFragOfNode.addEdge(auxEdge); 
+						}
+						catch(Exception e){
+							System.out.println("Erro: arco invalidop!!!"); 
+						}
+					
+					}
+					else{
+						throw new IOMebnException(resource.getString("NodeNotFound"), individualTwo.getBrowserText() ); 
+					}
+				}
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+			}	
+			
+			/* -> hasInputInstance  */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputInstance"); 			
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			
+			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+				individualTwo = (OWLIndividual) itIn.next();
+				generativeInputNode = mapGenerativeInputNode.get(individualTwo.getBrowserText()); 
+				generativeInputNode.setInputInstanceOf(domainResidentNode); 
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+			}
+			
+			/* -> isInnerTermOf */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isInnerTermOf"); 			
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			itAux = instances.iterator();			
+			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+				individualTwo = (OWLIndividual) itIn.next();
+				multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
+				domainResidentNode.addInnerTermFromList(multiEntityNode); 
+				multiEntityNode.addInnerTermOfList(domainResidentNode); 
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+			}				
+
+			/* -> hasPossibleValues */
+			{
+				CategoricalStatesEntity state; 
+				objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 			
+				instances = individualOne.getPropertyValues(objectProperty); 	
+				itAux = instances.iterator();
+				for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+					individualTwo = (OWLIndividual) itIn.next();
+					try{
+					   state = CategoricalStatesEntity.getCategoricalState(individualTwo.getBrowserText()) ; 
+					   domainResidentNode.addPossibleValue(state); 
+					}
+					catch(CategoricalStateDoesNotExistException e){
+						throw new IOMebnException(resource.getString("CategoricalStateNotFoundException"), individualTwo.getBrowserText() ); 						
+					}
+				}
+			}
+			
+			/* hasProbDist don't checked */
+			
+			/* -> hasPossibleValues */
+			
+			/* hasContextInstance don't checked */
+			
+			/* isArgTermIn don't checked */
+		}
+				
+	}
+	
+	private void loadGenerativeInputNode() throws IOMebnException{
+	
 		
 
+		/*------------------- Generative Input Node -------------------*/
+		
+		OWLNamedClass inputNodePr = owlModel.getOWLNamedClass("Generative_input"); 
+		instances = inputNodePr.getInstances(false); 
+		
+		for (Iterator it = instances.iterator(); it.hasNext(); ){
+			
+			individualOne = (OWLIndividual)it.next();
+			System.out.println("Input Node loaded: " + individualOne.getBrowserText()); 			
+			generativeInputNode = mapGenerativeInputNode.get(individualOne.getBrowserText()); 
+			if (generativeInputNode == null){
+				throw new IOMebnException(resource.getString("GenerativeInputNodeNotExistsInMTheory"), individualOne.getBrowserText() ); 				
+			}
+			
+			//TODO Tirar isso depois... 
+			/* has PositionX */
+			OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
+			if (hasPositionXProperty != null){
+			float positionX = (Float)individualOne.getPropertyValue(hasPositionXProperty);
+			
+			/* has PositionY */
+			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
+			float positionY = (Float)individualOne.getPropertyValue(hasPositionYProperty);
+			
+			generativeInputNode.setPosition(positionX, positionY); 
+			
+			System.out.println("posicoes lidas "); 			
+			}
+			
+			/* -> isInputInstanceOf  */
+			
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isInputInstanceOf"); 			
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			itAux = instances.iterator();
+			
+			if(itAux.hasNext() != false){
+				individualTwo = (OWLIndividual) itAux.next();
+				
+				if (mapDomainResidentNode.containsKey(individualTwo.getBrowserText())){
+					domainResidentNode = mapDomainResidentNode.get(individualTwo.getBrowserText()); 
+					generativeInputNode.setInputInstanceOf(domainResidentNode); 
+				}
+				else{
+					if (mapBuiltInRV.containsKey(individualTwo.getBrowserText())){
+						builtInRV = mapBuiltInRV.get(individualTwo.getBrowserText()); 
+						generativeInputNode.setInputInstanceOf(builtInRV); 
+					}				
+				}
+			}
+			
+			System.out.println("passou por isInputInstanceOf"); 
+			
+			/* -> hasArgument */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+				individualTwo = (OWLIndividual) itIn.next();
+				argument = new Argument(individualTwo.getBrowserText(), generativeInputNode); 
+				generativeInputNode.addArgument(argument); 
+				mapArgument.put(individualTwo.getBrowserText(), argument); 
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+			}		
+			
+			/* isParentOf */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isParentOf"); 
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+				individualTwo = (OWLIndividual) itIn.next();
+				domainResidentNode = mapDomainResidentNode.get(individualTwo.getBrowserText());
+				if(domainResidentNode == null){
+					throw new IOMebnException(resource.getString("DomainMFragNotExistsInMTheory"),  individualTwo.getBrowserText()); 
+				}
+				generativeInputNode.addResidentNodeChild(domainResidentNode); 
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+			}			
+			
+			/* -> isInnerTermOf */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isInnerTermOf"); 			
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			itAux = instances.iterator();			
+			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+				individualTwo = (OWLIndividual) itIn.next();
+				multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
+				generativeInputNode.addInnerTermFromList(multiEntityNode); 
+				multiEntityNode.addInnerTermOfList(generativeInputNode); 
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+			}	
+			
+			/* hasProbDist don't checked */
+			
+		}		
+	}
+	
+	private void loadOrdinaryVariable() throws IOMebnException{
+		
+	
+		
+		/*------------------- Ordinary Variable -------------------*/
+		
+		OWLNamedClass ordinaryVariablePr = owlModel.getOWLNamedClass("OVariable"); 
+		instances = ordinaryVariablePr.getInstances(false); 
+		for (Iterator it = instances.iterator(); it.hasNext(); ){
+			individualOne = (OWLIndividual)it.next();		
+			oVariable = mapOVariable.get(individualOne.getBrowserText()); 
+			if (oVariable == null){
+				throw new IOMebnException(resource.getString("OVariableNotExistsInMTheory"),  individualOne.getBrowserText()); 
+			}
+			System.out.println("Ordinary Variable loaded: " + individualOne.getBrowserText()); 				
+			
+			/* -> isOVariableIn  */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isOVariableIn"); 			
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			itAux = instances.iterator();
+			individualTwo = (OWLIndividual) itAux.next();
+			domainMFrag = mapDomainMFrag.get(individualTwo.getBrowserText()); 
+			if(domainMFrag != oVariable.getMFrag()){
+				throw new IOMebnException(resource.getString("isOVariableInError"),  individualOne.getBrowserText()); 
+			}
+			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+			
+			/* -> isSubsBy */
+			/*
+			 objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isSubsBy"); 			
+			 instances = individualOne.getPropertyValues(objectProperty); 	
+			 itAux = instances.iterator();
+			 individualTwo = (OWLIndividual) itAux.next();
+			 argument = mapArgument.get(individualTwo.getBrowserText()); 
+			 if (argument.isSimpleArgRelationship()){
+			 //TODO: criar algum atributo em OV para identificar onde ele é utilizado? 
+			  }
+			  else{
+			  
+			  }
+			  System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+			  */
+			
+			/* isRepBySkolen don't checked */ 
+			
+		}		
+	}
+	
+	private void loadArgRelationship() throws IOMebnException{
+		
+/*------------------- Arg Relationship -------------------*/
+		
+		OWLNamedClass argRelationshipPr = owlModel.getOWLNamedClass("ArgRelationship"); 
+		instances = argRelationshipPr.getInstances(false); 
+		
+		for (Iterator it = instances.iterator(); it.hasNext(); ){	
+			individualOne = (OWLIndividual)it.next();
+			argument = mapArgument.get(individualOne.getBrowserText()); 
+			if (argument == null){
+				throw new IOMebnException(resource.getString("ArgumentNotFound"),  individualOne.getBrowserText()); 
+			}
+			System.out.println("ArgRelationship loaded: " + individualOne.getBrowserText()); 
+			
+			/* -> hasArgTerm  */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 			
+			individualTwo = (OWLIndividual)individualOne.getPropertyValue(objectProperty); 	
+			
+			if(individualTwo != null){
+				//TODO apenas por enquanto, pois não podera ser igual a null no futuro!!!
+				
+				/* check: 
+				 * - node
+				 * - entity //don't checked in this version
+				 * - oVariable
+				 * - skolen // don't checked in this version
+				 */
+				
+				if ((multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText())) != null){
+					try{
+						argument.setArgumentTerm(multiEntityNode);
+					}
+					catch(Exception e){
+						throw new IOMebnException(resource.getString("ArgumentTermError"),  individualTwo.getBrowserText()); 				   
+					}
+				}
+				else{
+					if( (oVariable = mapOVariable.get(individualTwo.getBrowserText())) != null) {
+						try{
+							argument.setOVariable(oVariable); 
+						}
+						catch(Exception e){
+							throw new IOMebnException(resource.getString("ArgumentTermError"),  individualTwo.getBrowserText()); 				   
+						}
+					}
+					else{
+						/* TODO Tratamento para Entity */
+					}
+				}
+				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+				
+			}
+			
+			/* -> isArgumentOf  */
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isArgumentOf"); 			
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			itAux = instances.iterator();
+			individualTwo = (OWLIndividual) itAux.next();
+			multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
+			if (argument.getMultiEntityNode() != multiEntityNode){
+				throw new IOMebnException(resource.getString("isArgumentOfError"),  individualTwo.getBrowserText()); 				   
+			}
+			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());					
+		}
+				
+	}
+	
+	private void loadSimpleRelationship() throws IOMebnException{
+		
+		OWLNamedClass argRelationshipPr = owlModel.getOWLNamedClass("ArgRelationship"); 
+		
+		/*------------------- Simple Arg Relationship -------------------*/
+		
+		argRelationshipPr = owlModel.getOWLNamedClass("SimpleArgRelationship"); 
+		instances = argRelationshipPr.getInstances(false); 
+		for (Iterator it = instances.iterator(); it.hasNext(); ){
+			individualOne = (OWLIndividual)it.next();
+			argument = mapArgument.get(individualOne.getBrowserText()); 
+			if (argument == null){
+				throw new IOMebnException(resource.getString("ArgumentNotFound"),  individualOne.getBrowserText()); 
+			}
+			System.out.println("SimpleArgRelationship loaded: " + individualOne.getBrowserText()); 
+			
+			/* -> hasArgTerm  */
+			
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 			
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			itAux = instances.iterator();
+			individualTwo = (OWLIndividual) itAux.next();
+			
+			oVariable = mapOVariable.get(individualTwo.getBrowserText()); 
+			if (oVariable == null){
+				throw new IOMebnException(resource.getString("ArgumentTermError"),  individualTwo.getBrowserText()); 	
+			}
+			try{
+				argument.setOVariable(oVariable); 
+			}
+			catch(Exception e){
+				throw new IOMebnException(resource.getString("ArgumentTermError"),  individualTwo.getBrowserText()); 	
+			}
+			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+			
+			/* -> isArgumentOf  */
+			
+			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isArgumentOf"); 			
+			instances = individualOne.getPropertyValues(objectProperty); 	
+			itAux = instances.iterator();
+			individualTwo = (OWLIndividual) itAux.next();
+			multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
+			if (argument.getMultiEntityNode() != multiEntityNode){
+				throw new IOMebnException(resource.getString("isArgumentOfError"),  individualTwo.getBrowserText()); 				   
+			}
+			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());					
+		}		
 	}
 	
 }
