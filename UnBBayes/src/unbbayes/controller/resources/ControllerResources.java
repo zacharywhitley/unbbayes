@@ -84,7 +84,13 @@ public class ControllerResources extends ListResourceBundle {
 		
 		/* Numeric attribute node */
 		{"mean", "Mean"},
-		{"stdDev", "Standard Dev"}
+		{"stdDev", "Standard Dev"}, 
 				
+		/* load/save */
+		{"saveSucess", "File save!"},
+		{"sucess", "Sucess"}, 
+		{"error", "Error"},
+		{"withoutPosfixe", "Type of file don't informed!"}
+		
 	};
 }

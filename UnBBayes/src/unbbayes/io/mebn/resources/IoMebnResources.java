@@ -47,7 +47,8 @@ public class IoMebnResources extends ListResourceBundle {
 		{"ContextNodeNotExistsInMFrag", "ContextNode nao existe na MFrag!"}, 
 		{"DomainResidentNotExistsInMTheory", "Nodo de dominio residente nao existe na MTheory!"}, 
 		{"DomainResidentNotExistsInDomainMFrag", "Nodo domain Resident não existe na DomainMFrag"}, 
-		{"GenerativeInputNodeNotExistsInDomainMFrag", "Nodo generative Input nao existe na MTheory"}, 		
+		{"GenerativeInputNodeNotExistsInDomainMFrag", "Nodo generative Input nao existe na MTheory"}, 
+		{"CategoricalStateNotFoundException", "Estado não encontrado"}, 		
 		{"FileNotFoundException","Não foi possível abrir o arquivo!"},		       
 	};
 }

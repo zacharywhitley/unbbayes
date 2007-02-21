@@ -84,7 +84,13 @@ public class ControllerResources_pt extends ListResourceBundle {
 
 		/* Numeric attribute node */
 		{"mean", "Média"},
-		{"stdDev", "Desv. Padrão"}
+		{"stdDev", "Desv. Padrão"}, 
+		
+		/* load/save */
+		{"saveSucess", "Arquivo salvo!"},
+		{"sucess", "Sucesso"}, 
+		{"error", "Erro"},
+		{"withoutPosfixe", "Tipo do arquivo não informado!"}		
 		
 	};
 }
