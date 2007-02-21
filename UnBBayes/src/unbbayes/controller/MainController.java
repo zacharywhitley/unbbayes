@@ -124,18 +124,20 @@ public class MainController {
 					io = new XMLIO();
 				}
 				else if (name.endsWith("owl")){
-
-					
 				    prOwlIo = new PrOwlIO();
-				    
 		        }
 				
 				if (io != null)
 				   io.save(file, ((NetworkWindow) window).getSingleEntityNetwork());
-				else
-					prOwlIo.saveMebn(file, ((NetworkWindow) window).getMultiEntityBayesianNetwork()); 
-				    JOptionPane.showMessageDialog(screen, "Arquivo salvo com sucesso" , "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-	            
+				else{
+					if(prOwlIo != null){
+					   prOwlIo.saveMebn(file, ((NetworkWindow) window).getMultiEntityBayesianNetwork()); 
+				       JOptionPane.showMessageDialog(screen, resource.getString("saveSucess") , resource.getString("sucess"), JOptionPane.INFORMATION_MESSAGE);
+					}
+					else{
+					   JOptionPane.showMessageDialog(screen, resource.getString("withoutPosfixe") , resource.getString("error"), JOptionPane.ERROR_MESSAGE);							
+					}
+				}
 			}
         } catch (IOException e) {
             JOptionPane.showMessageDialog(screen, e.getMessage(), "saveNetException", JOptionPane.ERROR_MESSAGE);

@@ -3,6 +3,7 @@ package unbbayes.prs.mebn.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.mebn.entity.exception.CategoricalStateDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.TypeChangeNotAllowedException;
 
 public class CategoricalStatesEntity extends Entity {
@@ -28,6 +29,21 @@ public class CategoricalStatesEntity extends Entity {
 	// TODO Possivelmente fazer alguma limpeza de variáveis ou dependências aqui.
 	public static void removeEntity(CategoricalStatesEntity entity) {
 		CategoricalStatesEntity.listEntity.remove(entity);
+	}
+	
+	public static CategoricalStatesEntity getCategoricalState(String name) 
+	                         throws CategoricalStateDoesNotExistException{
+		
+		for(CategoricalStatesEntity teste: listEntity){
+			if (teste.name.compareTo(name) == 0){
+				return teste; 
+			}
+		}
+		
+		// não foi achado!!! Retornar exceção... 
+		
+		throw new CategoricalStateDoesNotExistException(); 
+		
 	}
 	
 	public static List<CategoricalStatesEntity> getListEntity(){
