@@ -8,12 +8,13 @@ import java.util.List;
 import unbbayes.gui.draw.DrawRoundedRectangle;
 import unbbayes.gui.draw.DrawTwoBaseRectangle;
 
+/**
+ * 
+ */
+
 public class GenerativeInputNode extends InputNode {
 
-	/**
-	 * 
-	 */
-	
+
 	private static final long serialVersionUID = 7377146558744109802L;
 	
 	private List<DomainResidentNode> residentNodeChildList;
@@ -40,8 +41,6 @@ public class GenerativeInputNode extends InputNode {
 	   drawElement.add(drawInputNode);	
 	}
 	
-	
-    
 	/**
 	 * Method responsible for deleting this generative input node. It makes sure to clean 
 	 * the residentNodeChildList.
@@ -50,8 +49,9 @@ public class GenerativeInputNode extends InputNode {
     
     public void delete(){
     
-    	for(ResidentNode resident : residentNodeChildList){
-    		residentNodeChildList.remove(resident); 
+    	while(!residentNodeChildList.isEmpty()){
+    		DomainResidentNode resident = residentNodeChildList.get(0); 
+    		this.removeResidentNodeChild(resident); 
     	}
     	
     	mFrag.removeGenerativeInputNode(this); 
@@ -63,9 +63,9 @@ public class GenerativeInputNode extends InputNode {
 	 * Remove the node of the resident node child list. 
 	 */
 	public void removeResidentNodeChild(DomainResidentNode node){
+		
 		residentNodeChildList.remove(node);
 		node.removeInputNodeFatherList(this); 
-		
 		mFrag.removeEdgeByNodes(this, node);
 		
 	}	
@@ -94,9 +94,6 @@ public class GenerativeInputNode extends InputNode {
 	public DomainMFrag getMFrag(){
 		return mFrag; 
 	}
-	
-	
-	
 	
 	/*--------------------------------------------------------------*/
 

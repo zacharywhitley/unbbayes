@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 
 import javax.swing.ImageIcon;
-import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -28,13 +27,9 @@ import javax.swing.tree.TreePath;
 
 import unbbayes.controller.FormulaTreeController;
 import unbbayes.controller.IconController;
-import unbbayes.controller.NetworkController;
-import unbbayes.gui.GraphAction;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.MFrag;
-import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVAnd;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVEqualTo;
@@ -44,6 +39,7 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVIff;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVImplies;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVNot;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
+import unbbayes.prs.mebn.entity.Entity;
 
 /** 
  * Tree of the formula 
@@ -551,6 +547,10 @@ public class FormulaTree extends JTree{
 				}
 			});						
 			
+			
+			
+			
+			
 			itemNode.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent ae){
 					formulaTreeController.setNodeChoiceActive(); 
@@ -571,7 +571,7 @@ public class FormulaTree extends JTree{
 			
 			itemVariable.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent ae){
-					replaceByVariable(nodeActive); 
+					formulaTreeController.setVariableChoiceActive(); 
 				}
 			}); 			
 			
@@ -823,13 +823,13 @@ public class FormulaTree extends JTree{
 		 *  
 		 */
 		
-		public JPanel replaceByVariable(DefaultMutableTreeNode nodeTree){
+		public JPanel replaceByVariable(){
 			
-			//JFrame variableList; 
-			//variableList = new JFrame("Variable"); 
+			 JPanel painel = new JPanel(new BorderLayout()); 
 		     
-		     JPanel painel = new JPanel(new BorderLayout()); 
-		     
+			 if (nodeActive == null) return painel; 
+			 
+		     DefaultMutableTreeNode nodeTree = nodeActive; 
 		     TreeNode nodeAux = nodeTree.getParent();  
 		     TreeNode variableListNode; 
 		     NodeFormulaTree nodeFormula; 
@@ -942,7 +942,19 @@ public class FormulaTree extends JTree{
 			nodeActive.add(nodeVariable); 
 			
 			
-		}		
+		}	
+		
+		public void addEntity(Entity entity){
+			
+			NodeFormulaTree nodePlace = (NodeFormulaTree)nodeActive.getUserObject(); 
+		    
+			nodePlace.setName(entity.getName()); 
+			nodePlace.setNodeVariable(entity);
+			nodePlace.setTypeNode(enumType.OPERANDO); 
+			nodePlace.setSubTypeNode(enumSubType.ENTITY); 
+			
+		    updateTree(); 			
+		}
 		
 		/**
 		 * add one ordinary variable in the formula tree (replace

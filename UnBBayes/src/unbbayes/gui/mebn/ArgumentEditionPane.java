@@ -112,7 +112,8 @@ public class ArgumentEditionPane extends JPanel{
 	    jtbDown.setLayout(new GridLayout(1,0)); 
 	    
 	    btnDown = new JButton(iconController.getDownIcon());
-		
+	    btnDown.setToolTipText(resource.getString("downArgumentToolTip")); 
+	    
 	    jtbDown.add(btnDown); 
 	    jtbDown.setFloatable(false); 
 	    
@@ -135,7 +136,9 @@ public class ArgumentEditionPane extends JPanel{
 	    jtbOptions.setLayout(new GridLayout(0, 2)); 
 	     
 	    btnNew = new JButton("+"); 
+	    btnNew.setToolTipText(resource.getString("newArgumentToolTip")); 
 	    btnDel = new JButton("-"); 
+	    btnDel.setToolTipText(resource.getString("delArgumentToolTip")); 	    
 	    jtbOptions.add(btnNew);
 	    jtbOptions.add(btnDel); 
 	    jtbOptions.setFloatable(false);
@@ -245,7 +248,11 @@ public class ArgumentEditionPane extends JPanel{
 		btnNew.addActionListener(
 		    new ActionListener(){
 		    	public void actionPerformed(ActionEvent ae){
-		    		mebnController.addNewOrdinaryVariableInResident(); 
+		    		OrdinaryVariable ov = mebnController.addNewOrdinaryVariableInResident(); 
+		    		treeResident.setOVariableSelected(ov);
+		    		txtName.setText(ov.getName()); 
+		    		txtName.selectAll(); 
+		    		txtName.requestFocus(); 
 		    	}
 		    }
 		); 

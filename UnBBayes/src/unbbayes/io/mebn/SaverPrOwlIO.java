@@ -82,19 +82,7 @@ public class SaverPrOwlIO {
 	    mebn = _mebn; 
 		owlModel = ProtegeOWL.createJenaOWLModel();
 		
-		File filePrOwl = new File(PROWLMODELFILE);
-		owlModel.getRepositoryManager().addProjectRepository(new LocalFileRepository(filePrOwl, true));
-	
-		FileInputStream inputStreamOwl; 
-		
-		inputStreamOwl = new FileInputStream(PROWLMODELFILE); 
-		
-		try{
-			owlModel.load(inputStreamOwl, FileUtils.langXMLAbbrev);   
-		}
-		catch (Exception e){
-			throw new IOMebnException(resource.getString("ModelCreationError")); 
-		}	
+		loadPrOwlModel(owlModel); 
 
 		/* Definitions */
 
@@ -118,6 +106,23 @@ public class SaverPrOwlIO {
 		System.out.println("File saved with " + errors.size() + " errors.");
 		
 	}	
+	
+	private void loadPrOwlModel(JenaOWLModel owlModel)throws IOException, IOMebnException{
+		File filePrOwl = new File(PROWLMODELFILE);
+		owlModel.getRepositoryManager().addProjectRepository(new LocalFileRepository(filePrOwl, true));
+	
+		FileInputStream inputStreamOwl; 
+		
+		inputStreamOwl = new FileInputStream(PROWLMODELFILE); 
+		
+		try{
+			owlModel.load(inputStreamOwl, FileUtils.langXMLAbbrev);   
+		}
+		catch (Exception e){
+			throw new IOMebnException(resource.getString("ModelCreationError")); 
+		}			
+	}
+	
 	
 	/**
 	 * Load MetaEntities for the MTheory and build the structure for

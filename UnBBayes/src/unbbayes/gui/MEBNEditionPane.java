@@ -35,7 +35,7 @@ import unbbayes.gui.mebn.InputNodePane;
 import unbbayes.gui.mebn.MTheoryTree;
 import unbbayes.gui.mebn.OVariableEditionPane;
 import unbbayes.gui.mebn.ResidentNodePane;
-import unbbayes.gui.mebn.TableEdition;
+import unbbayes.gui.mebn.TableEditionPane;
 import unbbayes.gui.mebn.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainResidentNode;
@@ -112,7 +112,7 @@ public class MEBNEditionPane extends JPanel {
     private final JButton btnTabOptionOVariable; 
     private final JButton btnTabOptionEntity; 
     
-    private TableEdition tableEdit; 
+    private TableEditionPane tableEdit; 
     
     private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
     private Matcher matcher;
@@ -590,7 +590,7 @@ public class MEBNEditionPane extends JPanel {
     	
     	DomainResidentNode resident = (DomainResidentNode)controller.getMebnController().getResidentNodeActive(); 
     	
-    	this.getGraphPanel().setTopComponent(new TableEdition(resident, controller.getMebnController())); 
+    	this.getGraphPanel().setTopComponent(new TableEditionPane(resident, controller.getMebnController())); 
     }
 
     public void hideTableEdit(){

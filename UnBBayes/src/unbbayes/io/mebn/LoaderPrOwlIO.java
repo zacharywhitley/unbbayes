@@ -10,6 +10,7 @@ import java.util.ResourceBundle;
 
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
+import unbbayes.prs.Node;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
@@ -86,19 +87,7 @@ public class LoaderPrOwlIO {
 
 		owlModel = ProtegeOWL.createJenaOWLModel();
 		
-		owlModel.getRepositoryManager().addProjectRepository(new LocalFileRepository(file, true));
-		
-		FileInputStream inputStreamOwl; 
-		
-		inputStreamOwl = new FileInputStream(PROWLMODELFILE); 
-		
-		try{
-			owlModel.load(inputStreamOwl, FileUtils.langXMLAbbrev);   
-		}
-		catch (Exception e){
-			throw new IOMebnException(resource.getString("ModelCreationError")); 
-		}
-		
+		loadPrOwlModel(owlModel); 
 		
 		/* Build the owl model */
 		
@@ -112,7 +101,6 @@ public class LoaderPrOwlIO {
 		catch (Exception e){
 			throw new IOMebnException(resource.getString("ModelCreationError")); 
 		}
-		
 
 		/*------------------- MTheory -------------------*/
 		mebn = this.loadMTheoryClass(); 
@@ -139,6 +127,27 @@ public class LoaderPrOwlIO {
 		System.out.println("Load concluido com sucesso!"); 
 		
 		return mebn; 		
+	}	
+	
+	private void loadPrOwlModel(JenaOWLModel owlModel)throws IOException, IOMebnException{
+		
+		File filePrOwl = new File(PROWLMODELFILE);
+		owlModel.getRepositoryManager().addProjectRepository(new LocalFileRepository(filePrOwl, true));
+	
+		FileInputStream inputStreamOwl; 
+		
+		inputStreamOwl = new FileInputStream(PROWLMODELFILE); 
+		
+		try{
+			owlModel.load(inputStreamOwl, FileUtils.langXMLAbbrev);   
+			System.out.println("Modelo loaded... "); 
+		}
+		catch (Exception e){
+			System.out.println("Problemas meu caro... "); 
+			e.printStackTrace(); 
+			throw new IOMebnException(resource.getString("ModelCreationError")); 
+		}
+					
 	}	
 	
 	private MultiEntityBayesianNetwork loadMTheoryClass() throws IOMebnException {
@@ -347,18 +356,7 @@ public class LoaderPrOwlIO {
 			
 			System.out.println("Context Node loaded: " + individualOne.getBrowserText()); 				
 			
-			/* has PositionX */
-			OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
-
-			if (hasPositionXProperty != null){
-			float positionX = (Float)individualOne.getPropertyValue(hasPositionXProperty);
-			
-			/* has PositionY */
-			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
-			float positionY = (Float)individualOne.getPropertyValue(hasPositionYProperty);
-		
-			contextNode.setPosition(positionX, positionY); 
-			}
+			loadHasPositionProperty(individualOne, contextNode); 
 			
 			System.out.println("Domain Resident loaded: " + individualOne.getBrowserText()); 			
 			
@@ -467,19 +465,7 @@ public class LoaderPrOwlIO {
 				throw new IOMebnException(resource.getString("DomainResidentNotExistsInMTheory"), individualOne.getBrowserText() ); 
 			}
 			
-			/* has PositionX */
-			OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
-			
-			//TODO Tirar isso depois!!!
-			if (hasPositionXProperty != null){
-			float positionX = (Float)individualOne.getPropertyValue(hasPositionXProperty);
-			
-			/* has PositionY */
-			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
-			float positionY = (Float)individualOne.getPropertyValue(hasPositionYProperty);
-			
-			domainResidentNode.setPosition(positionX, positionY); 
-			}
+			loadHasPositionProperty(individualOne, domainResidentNode); 
 			
 			System.out.println("Domain Resident loaded: " + individualOne.getBrowserText()); 			
 			
@@ -597,11 +583,7 @@ public class LoaderPrOwlIO {
 	}
 	
 	private void loadGenerativeInputNode() throws IOMebnException{
-	
-		
-
-		/*------------------- Generative Input Node -------------------*/
-		
+	    
 		OWLNamedClass inputNodePr = owlModel.getOWLNamedClass("Generative_input"); 
 		instances = inputNodePr.getInstances(false); 
 		
@@ -614,20 +596,7 @@ public class LoaderPrOwlIO {
 				throw new IOMebnException(resource.getString("GenerativeInputNodeNotExistsInMTheory"), individualOne.getBrowserText() ); 				
 			}
 			
-			//TODO Tirar isso depois... 
-			/* has PositionX */
-			OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
-			if (hasPositionXProperty != null){
-			float positionX = (Float)individualOne.getPropertyValue(hasPositionXProperty);
-			
-			/* has PositionY */
-			OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
-			float positionY = (Float)individualOne.getPropertyValue(hasPositionYProperty);
-			
-			generativeInputNode.setPosition(positionX, positionY); 
-			
-			System.out.println("posicoes lidas "); 			
-			}
+			loadHasPositionProperty(individualOne, generativeInputNode); 
 			
 			/* -> isInputInstanceOf  */
 			
@@ -858,4 +827,16 @@ public class LoaderPrOwlIO {
 		}		
 	}
 	
+	private void loadHasPositionProperty(OWLIndividual individualOne, Node node){
+		
+		OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
+        float positionX = (Float)individualOne.getPropertyValue(hasPositionXProperty);
+		
+		
+		OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
+		float positionY = (Float)individualOne.getPropertyValue(hasPositionYProperty);
+	
+		node.setPosition(positionX, positionY);
+		
+	}
 }

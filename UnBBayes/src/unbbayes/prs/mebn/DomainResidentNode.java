@@ -22,8 +22,9 @@ public class DomainResidentNode extends ResidentNode {
 	
 	private DrawRoundedRectangle drawResidentNode; 
 	
-	private static Color color = new Color(254, 250, 158); 	
+	private String tableFunction;
 	
+	private static Color color = new Color(254, 250, 158); 	
 	
 	
 	public DomainResidentNode(String name, DomainMFrag mFrag){
@@ -141,12 +142,12 @@ public class DomainResidentNode extends ResidentNode {
 	
 	public void removeResidentNodeFather(DomainResidentNode node){
 		residentNodeFatherList.remove(node);
-		node.removeResidentNodeChildList(this); 
+		//node.removeResidentNodeChildList(this); 
 	}
 	
 	public void removeInputNodeFatherList(GenerativeInputNode node){
 		inputNodeFatherList.remove(node); 
-		node.removeResidentNodeChild(this); 
+		//node.removeResidentNodeChild(this); 
 	}	
 	
 	public void removeResidentNodeChildList(DomainResidentNode node){
@@ -226,7 +227,7 @@ public class DomainResidentNode extends ResidentNode {
 		}
 		
 		for(GenerativeInputNode inputNode: inputNodeFatherList){
-			inputNodeFatherList.remove(inputNode); 
+			inputNodeFatherList.remove(inputNode);
 		}
 		
 		for(DomainResidentNode residentNode: residentNodeFatherList){
@@ -240,6 +241,14 @@ public class DomainResidentNode extends ResidentNode {
 		mFrag.removeDomainResidentNode(this); 
 		
 		
+	}
+	
+	public String getTableFunction(){
+		return tableFunction; 
+	}
+	
+	public void setTableFunction(String table){
+		tableFunction = table;
 	}
 	
 }

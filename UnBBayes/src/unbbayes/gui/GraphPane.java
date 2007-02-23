@@ -502,6 +502,9 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 			case CREATE_CONTEXT_NODE:
 				try{
 				   controller.insertContextNode(e.getX(), e.getY());
+				   node = getNode(e.getX(), e.getY());
+				   selectObject(node);
+				   controller.selectNode(node); 
 				}
 				catch(MEBNConstructionException exception){
 					JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
@@ -514,6 +517,9 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 			case CREATE_RESIDENT_NODE:
 				try{
 				controller.insertResidentNode(e.getX(), e.getY());
+                node = getNode(e.getX(), e.getY());
+				   selectObject(node);
+				   controller.selectNode(node); 
 				}
 				catch(MEBNConstructionException exception){
 					JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
@@ -526,6 +532,9 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 			case CREATE_INPUT_NODE:
                 try{
 				controller.insertInputNode(e.getX(), e.getY());
+                node = getNode(e.getX(), e.getY());
+				   selectObject(node);
+				   controller.selectNode(node);
                 }
 				catch(MEBNConstructionException exception){
 					JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),

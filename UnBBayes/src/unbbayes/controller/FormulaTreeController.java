@@ -5,6 +5,7 @@ import unbbayes.gui.mebn.FormulaTree;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVAnd;
+import unbbayes.prs.mebn.entity.Entity;
 
 public class FormulaTreeController {
 
@@ -72,4 +73,13 @@ public class FormulaTreeController {
 	public void setOVariableChoiveActive(){
 		formulaEditionPane.setOVariableTabActive(); 
 	}
+	
+	public void setVariableChoiceActive(){
+		formulaEditionPane.setVariableTabActive(); 
+	}
+	
+	public void addEntity(Entity entity){
+		formulaTree.addEntity(entity);
+	}
+	
 }

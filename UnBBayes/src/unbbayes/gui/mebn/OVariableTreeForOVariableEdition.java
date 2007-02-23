@@ -10,10 +10,10 @@ import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.OrdinaryVariable;
 
 /**
- * This is the oVariable for edit (add, 
- * remove, rename, etc). 
+ * Tree that add to the tree of ordinary variables the 
+ * action of selection of one variable.
  * 
- * @author Laecio
+ * @author Laecio Lima dos Santos
  *
  */
 

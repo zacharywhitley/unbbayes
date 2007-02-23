@@ -148,6 +148,11 @@ public class GuiResources extends ListResourceBundle {
 		{"saveTableImageToolTip","Save table as a gif image"},
 		{"newEntityToolTip","Create new entity"},		
 		{"delEntityToolTip","Delete entity"},
+		{"newOVariableToolTip","Create new ord. variable"},
+		{"delOVariableToolTip", "Delete ord. variable"}, 	
+		{"newArgumentToolTip","Add new ord. variable to argument list"},
+		{"delArgumentToolTip", "Remove ord. variable from argument list"}, 	
+		{"downArgumentToolTip", "Add to argument list ord. variable selected"}, 
 		
 		{"showMTheoryToolTip","Show MTheory tree"},	
 		{"showEntitiesToolTip","Show entities of the MTheory"},

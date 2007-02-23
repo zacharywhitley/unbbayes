@@ -148,6 +148,11 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"saveTableImageToolTip","Salvar a tabela como imagem gif"},
 		{"newEntityToolTip","Criar nova entidade"},		
 		{"delEntityToolTip","Deletar entidade"},
+		{"newOVariableToolTip","Criar nova var. ordinária"},
+		{"delOVariableToolTip", "Deletar var. ordinária"}, 
+		{"newArgumentToolTip","Adicionar nova v. ord. à lista de argumentos"},
+		{"delArgumentToolTip", "Remover var. ord. da lista de argumentos"}, 		
+		{"downArgumentToolTip", "Aicionar a lista de argumentos v. ord. selecionada"}, 		
 		
 		{"showMTheoryToolTip","Mostrar árvore da MTheory"},	
 		{"showEntitiesToolTip","Mostrar entidades da MTheory"},

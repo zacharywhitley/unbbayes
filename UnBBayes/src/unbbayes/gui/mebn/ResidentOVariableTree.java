@@ -199,4 +199,8 @@ public class ResidentOVariableTree extends JTree{
 			return oVariableSelected; 
 		}
 		
+		public void setOVariableSelected(OrdinaryVariable ov){
+			oVariableSelected = ov; 
+		}
+		
 	}

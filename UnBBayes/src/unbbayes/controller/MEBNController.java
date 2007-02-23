@@ -98,7 +98,6 @@ public class MEBNController {
 		multiEntityBayesianNetwork.addDomainMFrag(domainMFrag); 
 		
 		screen.getMebnEditionPane().getMTheoryTree().updateTree();
-		//screen.getMebnEditionPane().getInputInstanceOfSelection().updateTree(); 
 		screen.getMebnEditionPane().setMTheoryTreeActive(); 
 	    
 	    screen.getGraphPane().resetGraph(); 
@@ -147,7 +146,6 @@ public class MEBNController {
 		residentNodeActive = node; 
 		nodeActive = node; 
 		
-		//screen.getMebnEditionPane().getInputInstanceOfSelection().updateTree(); 
 		screen.getMebnEditionPane().setEditArgumentsTabActive(node);
 		screen.getMebnEditionPane().setResidentNodeTabActive(node); 
 		screen.getMebnEditionPane().setArgumentTabActive(); 

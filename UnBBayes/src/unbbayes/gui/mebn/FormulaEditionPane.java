@@ -62,6 +62,8 @@ public class FormulaEditionPane extends JPanel {
 	JButton btnEntityTree; 
 	JButton btnSkolenTree; 
 	
+	private JPanel variablePanel; 
+	
 	NetworkController controller; 
 	MEBNController mebnController; 
 	FormulaTreeController formulaTreeController;
@@ -144,7 +146,9 @@ public class FormulaEditionPane extends JPanel {
         jpArgTree = new JPanel(cardLayout);
         jpArgTree.add("NodeTab", replaceByNode()); 
         jpArgTree.add("OVariableTab", replaceByOVariable()); 
-        //jpArgTree.add("VariableTab", formulaTree.replaceByVariable()); 
+        variablePanel = formulaTreeController.getFormulaTree().replaceByVariable(); 
+        jpArgTree.add("VariableTab", variablePanel); 
+        jpArgTree.add("EntityTab", replaceByEntity()); 
         
         cardLayout.show(jpArgTree, "NodeTab"); 
         
@@ -207,6 +211,21 @@ public class FormulaEditionPane extends JPanel {
 	
 	}	
 	
+	public void setVariableTabActive(){
+
+		jpArgTree.remove(variablePanel); 
+		variablePanel = replaceByVariable(); 
+        jpArgTree.add("VariableTab", variablePanel);
+		cardLayout.show(jpArgTree, "VariableTab"); 
+	
+	}	
+	
+	public void setEntityTabActive(){
+		
+		cardLayout.show(jpArgTree, "EntityTab"); 
+		
+	}
+	
 	public void addListeners(){
 
 	    btnAnd.addActionListener(new ActionListener(){
@@ -266,7 +285,7 @@ public class FormulaEditionPane extends JPanel {
 		
 		btnEntityTree.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				controller.getScreen().getGraphPane().setAction(GraphAction.CREATE_CONTEXT_NODE); 
+				setEntityTabActive(); 
 			}
 		}); 
 		
@@ -312,6 +331,24 @@ public class FormulaEditionPane extends JPanel {
      
      return painelOVariableSelection; 
      
+	}
+	
+	public JPanel replaceByEntity(){
+		
+	     JPanel painelEntitySelection = new JPanel(new BorderLayout()); 
+
+	     EntityListForReplaceInFormula entityList = new EntityListForReplaceInFormula(formulaTreeController); 
+	     JScrollPane jspEntityList = new JScrollPane(entityList); 
+	     painelEntitySelection.add(jspEntityList, BorderLayout.NORTH); 
+	     
+	     return painelEntitySelection; 
+	     
+		}	
+	
+	public JPanel replaceByVariable(){
+         
+		return formulaTreeController.getFormulaTree().replaceByVariable(); 
+	
 	}
 	
 }

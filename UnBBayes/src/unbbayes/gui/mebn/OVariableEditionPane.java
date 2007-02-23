@@ -23,6 +23,15 @@ import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
 
+/** 
+ * Pane for edition of the ordinary variables of one MFrag. 
+ * Show a tree with the ordinary variables, buttons for add, 
+ * remove and text panes for rename and set the type of 
+ * one ordinary variable. 
+ * 
+ * @author Laecio Lima dos Santos
+ * @version 1.0 02/22/07
+ */
 public class OVariableEditionPane extends JPanel {
 
 	OVariableTreeForOVariableEdition treeMFrag; 
@@ -32,7 +41,6 @@ public class OVariableEditionPane extends JPanel {
 	
 	JLabel name; 
 	JTextField txtName; 
-	JButton btnChangeType; 
 	JLabel type; 
 	JTextField txtType; 
 	
@@ -67,19 +75,19 @@ public class OVariableEditionPane extends JPanel {
 	    /* painel of information about the OVariable */
 	    jpInformation = new JPanel(new GridLayout(5, 0)); 
 	    
-	    name = new JLabel("Name: "); 
+	    name = new JLabel(resource.getString("nameLabel")); 
 	    txtName = new JTextField(10);
-	    btnChangeType = new JButton("I"); 
-	    type = new JLabel("Type: "); 
+	    type = new JLabel(resource.getString("typeLabel")); 
 	    txtType = new JTextField(10); 
 	    txtType.setEditable(false); 
 	    
 	    jtbOptions = new JToolBar(); 
 	    jtbOptions.setLayout(new GridLayout(0, 2)); 
 	    
-	    //TODO usar resources
-	    jbNew = new JButton("NEW"); 
-	    jbDelete = new JButton("DEL"); 
+	    jbNew = new JButton("+"); 
+	    jbNew.setToolTipText(resource.getString("newOVariableToolTip")); 
+	    jbDelete = new JButton("-"); 
+	    jbDelete.setToolTipText(resource.getString("delOVariableToolTip")); 
 	    jtbOptions.add(jbNew);
 	    jtbOptions.add(jbDelete); 
 	    jtbOptions.setFloatable(false);	    
@@ -94,17 +102,19 @@ public class OVariableEditionPane extends JPanel {
 	    
 	    this.add("Center", jspTreeMFrag);	    
 	    this.add("South", jpInformation);	    
-
 	}
 
 	/**
 	 *  Create a empty painel 
-	 *  */
+	 **/
 	
 	public OVariableEditionPane(){
 		
 	}
-		
+	
+	/**
+	 * update the tree of ordinary variables of the MFrag active
+	 */
 	public void update(){
 	  	treeMFrag.updateTree(); 
 	}	
@@ -126,10 +136,13 @@ public class OVariableEditionPane extends JPanel {
   				try{
   				   OrdinaryVariable ov = mebnController.addNewOrdinaryVariableInMFrag(); 
   				   treeMFrag.updateTree(); 
-  				   treeMFrag.setOVariableActive(ov); 
+  				   treeMFrag.setOVariableActive(ov);
+  				   txtName.setText(ov.getName()); 
+  				   txtName.selectAll(); 
+  				   txtName.requestFocus(); 
   				}
   				catch(Exception e){
-  					//TODO tratar excessão... 
+  					e.printStackTrace();  
   				}
   				
   			}
