@@ -147,10 +147,22 @@ public class MultiEntityNode extends Node {
 		return possibleValueList; 
 	}
 	
+	/**
+	 * Verify if the entity is a state of the node 
+	 * Warning: the search will be for the entity and not for the
+	 * name of entity.
+	 * @param entity The entity 
+	 * @return true if the entity is a state, false otherside
+	 */
 	public boolean hasPossibleValue(Entity entity) {
 		return possibleValueList.contains(entity);
 	}
 	
+	/**
+	 * Verify if the node has a state with the name
+	 * @param stateName Name of state
+	 * @return true if have a state with the name, false otherside
+	 */
 	public boolean hasPossibleValue(String stateName) {
 		for (Entity entity : possibleValueList) {
 			if (entity.getName().equals(stateName)) {
