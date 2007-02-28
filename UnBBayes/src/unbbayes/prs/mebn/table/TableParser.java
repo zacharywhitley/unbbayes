@@ -41,18 +41,31 @@ public class TableParser {
 		StringTokenizer st = new StringTokenizer(tableFunction);
 
 		while (st.hasMoreTokens()) {
-			IfClause ifClause = parseIfClause(st);
-			parseProbabilityFunction(st, ifClause);
+			String token = st.nextToken();
+			IfClause ifClause = parseIfClause(st, token);
+			token = st.nextToken();
+			parseProbabilityFunction(st, ifClause, token);
+			token = st.nextToken();
+			if (token.equalsIgnoreCase("IF")) {
+				ifClause = parseIfClause(st, token);
+				token = st.nextToken();
+			} else {
+				ifClause = new IfClause();
+				// This is the parameter set for the outer else, that means
+				// the default table value.
+				// TODO ACRESCENTAR NA DOCUMENTAÇÃO DA TABELA
+				ifClause.setIfParameterSetName("DEFAULT");
+			}
+			parseProbabilityFunction(st, ifClause, token);
 		}
 
 		return data;
 	}
 
-	private IfClause parseIfClause(StringTokenizer st)
+	private IfClause parseIfClause(StringTokenizer st, String token)
 			throws TableFunctionMalformedException,
 			NodeNotPresentInMTheoryException,
 			EntityNotPossibleValueOfNodeException {
-		String token = st.nextToken();
 		IfClause ifClause;
 		if (token.equalsIgnoreCase("IF")) {
 			token = st.nextToken();
@@ -131,33 +144,44 @@ public class TableParser {
 		}
 	}
 
-	private void parseProbabilityFunction(StringTokenizer st, IfClause ifClause)
+	private void parseProbabilityFunction(StringTokenizer st, IfClause ifClause, String token)
 			throws TableFunctionMalformedException,
 			EntityNotPossibleValueOfNodeException,
 			InvalidProbabilityFunctionOperandException {
 		ProbabilityFunction probabilityFunction = new ProbabilityFunction(node);
-		String token = st.nextToken();
-		// TODO Retirar o [ daqui e colocar onde esse método é chamado
-		// acrescentar o , e o else
+		ifClause.setProbabilityFunciton(probabilityFunction);
 		if (token.equalsIgnoreCase("[")) {
-			// Node's state
-			token = st.nextToken();
-			StateFunction stateFunction = new StateFunction(node, token,
-					ifClause);
-			token = st.nextToken();
-			if (token.equalsIgnoreCase("=")) {
-				parseStateFunction(st, stateFunction);
-			} else {
-				throw new TableFunctionMalformedException(
-						"\'=\' expected where " + token + " was found.");
-			}
+			boolean hasNextStateFunction = false;
+			do {
+				// Node's state
+				token = st.nextToken();
+				StateFunction stateFunction = new StateFunction(node, token,
+						ifClause);
+				probabilityFunction.addStateFunction(stateFunction);
+				token = st.nextToken();
+				if (token.equalsIgnoreCase("=")) {
+					hasNextStateFunction = parseStateFunction(st, stateFunction);
+				} else {
+					throw new TableFunctionMalformedException(
+							"\'=\' expected where " + token + " was found.");
+				}
+			} while (hasNextStateFunction);
 		} else {
 			throw new TableFunctionMalformedException("\'[\' expected where "
 					+ token + " was found.");
 		}
 	}
 
-	private void parseStateFunction(StringTokenizer st,
+	/**
+	 * 
+	 * @param st
+	 * @param stateFunction
+	 * @return True if it has another state function to parse (finishes with 
+	 * ','), false otherwise.
+	 * @throws InvalidProbabilityFunctionOperandException
+	 * @throws TableFunctionMalformedException
+	 */
+	private boolean parseStateFunction(StringTokenizer st,
 			StateFunction stateFunction)
 			throws InvalidProbabilityFunctionOperandException,
 			TableFunctionMalformedException {
@@ -169,18 +193,30 @@ public class TableParser {
 			firstFunction = ProbabilityFunctionOperator.MAX;
 			token = st.nextToken();
 			parseSimpleStateFunction(st, token, null, firstFunction, true);
-			parseStateFunction(st, stateFunction);
+			return parseStateFunction(st, stateFunction);
 		} else if (token.equalsIgnoreCase("MIN(")) {
 			firstFunction = ProbabilityFunctionOperator.MIN;
 			token = st.nextToken();
 			parseSimpleStateFunction(st, token, null, firstFunction, true);
-			parseStateFunction(st, stateFunction);
+			return parseStateFunction(st, stateFunction);
 		} else {
-			parseSimpleStateFunction(st, token, stateFunction, null, false);
+			return parseSimpleStateFunction(st, token, stateFunction, null, false);
 		}
 	}
 
-	private void parseSimpleStateFunction(StringTokenizer st, String token,
+	/**
+	 * 
+	 * @param st
+	 * @param token
+	 * @param stateFunction
+	 * @param minMaxFunction
+	 * @param minMaxFirstOperand
+	 * @return True if it has another state function to parse (finishes with 
+	 * ','), false otherwise.
+	 * @throws InvalidProbabilityFunctionOperandException
+	 * @throws TableFunctionMalformedException
+	 */
+	private boolean parseSimpleStateFunction(StringTokenizer st, String token,
 			StateFunction stateFunction,
 			ProbabilityFunctionOperator minMaxFunction, 
 			boolean minMaxFirstOperand)
@@ -215,7 +251,7 @@ public class TableParser {
 						secondFunction.setFirstOperand(firstFunction);
 						if (stateFunction != null) {
 							stateFunction.setFunction(secondFunction);
-							parseStateFunction(st, stateFunction);
+							return parseStateFunction(st, stateFunction);
 						} else if (minMaxFunction != null) {
 							if (minMaxFirstOperand) {
 								setLastFunctionInFirstOperand(minMaxFunction, secondFunction);
@@ -223,21 +259,27 @@ public class TableParser {
 								setLastFunctionInSecondOperand(minMaxFunction, secondFunction);
 							}
 							token = st.nextToken();
-							parseSimpleStateFunction(st, token, null,
+							return parseSimpleStateFunction(st, token, null,
 									minMaxFunction, minMaxFirstOperand);
 						}
 					} else if (stateFunction != null
 							&& token.equalsIgnoreCase("]")) {
 						stateFunction.setFunction(firstFunction);
+						return false;
+					} else if (stateFunction != null
+							&& token.equalsIgnoreCase(",")) {
+						stateFunction.setFunction(firstFunction);
+						return true;
 					} else if (minMaxFunction != null && minMaxFirstOperand
 							&& token.equalsIgnoreCase(";")) {
 						setLastFunctionInFirstOperand(minMaxFunction, firstFunction);
 						token = st.nextToken();
-						parseSimpleStateFunction(st, token, null,
+						return parseSimpleStateFunction(st, token, null,
 								minMaxFunction, false);
 					} else if (minMaxFunction != null && !minMaxFirstOperand
 							&& token.equalsIgnoreCase(")")) {
 						setLastFunctionInSecondOperand(minMaxFunction, firstFunction);
+						return false;
 					} else if (stateFunction != null) {
 						throw new TableFunctionMalformedException(
 								"\'+\\-\\*\\/\\]\' expected where " + token
@@ -272,7 +314,7 @@ public class TableParser {
 				secondFunction.setFirstOperand(firstFunction);
 				if (stateFunction != null) {
 					stateFunction.setFunction(secondFunction);
-					parseStateFunction(st, stateFunction);
+					return parseStateFunction(st, stateFunction);
 				} else if (minMaxFunction != null) {
 					if (minMaxFirstOperand) {
 						setLastFunctionInFirstOperand(minMaxFunction, secondFunction);
@@ -280,21 +322,27 @@ public class TableParser {
 						setLastFunctionInSecondOperand(minMaxFunction, secondFunction);
 					}
 					token = st.nextToken();
-					parseSimpleStateFunction(st, token, null,
+					return parseSimpleStateFunction(st, token, null,
 							minMaxFunction, minMaxFirstOperand);
 				}
 			} else if (stateFunction != null
 					&& token.equalsIgnoreCase("]")) {
 				stateFunction.setFunction(firstFunction);
+				return false;
+			} else if (stateFunction != null
+					&& token.equalsIgnoreCase(",")) {
+				stateFunction.setFunction(firstFunction);
+				return true;
 			} else if (minMaxFunction != null && minMaxFirstOperand
 					&& token.equalsIgnoreCase(";")) {
 				setLastFunctionInFirstOperand(minMaxFunction, firstFunction);
 				token = st.nextToken();
-				parseSimpleStateFunction(st, token, null,
+				return parseSimpleStateFunction(st, token, null,
 						minMaxFunction, false);
 			} else if (minMaxFunction != null && !minMaxFirstOperand
 					&& token.equalsIgnoreCase(")")) {
 				setLastFunctionInSecondOperand(minMaxFunction, firstFunction);
+				return false;
 			} else if (stateFunction != null) {
 				throw new TableFunctionMalformedException(
 						"\'+\\-\\*\\/\\]\' expected where " + token
@@ -319,7 +367,7 @@ public class TableParser {
 				secondFunction.setFirstOperand(number);
 				if (stateFunction != null) {
 					stateFunction.setFunction(secondFunction);
-					parseStateFunction(st, stateFunction);
+					return parseStateFunction(st, stateFunction);
 				} else if (minMaxFunction != null) {
 					if (minMaxFirstOperand) {
 						setLastFunctionInFirstOperand(minMaxFunction, secondFunction);
@@ -327,21 +375,27 @@ public class TableParser {
 						setLastFunctionInSecondOperand(minMaxFunction, secondFunction);
 					}
 					token = st.nextToken();
-					parseSimpleStateFunction(st, token, null,
+					return parseSimpleStateFunction(st, token, null,
 							minMaxFunction, minMaxFirstOperand);
 				}
 			} else if (stateFunction != null
 					&& token.equalsIgnoreCase("]")) {
 				stateFunction.setFunction(number);
+				return false;
+			} else if (stateFunction != null
+					&& token.equalsIgnoreCase(",")) {
+				stateFunction.setFunction(number);
+				return true;
 			} else if (minMaxFunction != null && minMaxFirstOperand
 					&& token.equalsIgnoreCase(";")) {
 				setLastFunctionInFirstOperand(minMaxFunction, number);
 				token = st.nextToken();
-				parseSimpleStateFunction(st, token, null,
+				return parseSimpleStateFunction(st, token, null,
 						minMaxFunction, false);
 			} else if (minMaxFunction != null && !minMaxFirstOperand
 					&& token.equalsIgnoreCase(")")) {
 				setLastFunctionInSecondOperand(minMaxFunction, number);
+				return false;
 			} else if (stateFunction != null) {
 				throw new TableFunctionMalformedException(
 						"\'+\\-\\*\\/\\]\' expected where " + token
@@ -356,6 +410,7 @@ public class TableParser {
 								+ " was found.");
 			}
 		}
+		return false;
 	}
 
 	private void setLastFunctionInFirstOperand(ProbabilityFunctionOperator function1,
@@ -429,5 +484,10 @@ public class TableParser {
 			return ProbabilityFunctionOperator.DIVIDE;
 		}
 		return null;
+	}
+	
+	public static void main(String[] args) {
+		MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork("MEBN Teste");
+		
 	}
 }
