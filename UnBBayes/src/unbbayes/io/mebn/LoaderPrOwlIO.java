@@ -20,6 +20,7 @@ import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.entity.BooleanStatesEntity;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.Type;
@@ -46,15 +47,6 @@ public class LoaderPrOwlIO {
 	private Collection instances; 
 	private Iterator itAux; 
 	
-	private DomainMFrag domainMFrag; 
-	private OrdinaryVariable oVariable; 
-	private ContextNode contextNode; 
-	private DomainResidentNode domainResidentNode; 
-	private GenerativeInputNode generativeInputNode; 
-	private Argument argument;
-	private MultiEntityNode multiEntityNode; 
-	private BuiltInRV builtInRV; 
-	
 	private HashMap<String, DomainMFrag> mapDomainMFrag = new HashMap<String, DomainMFrag>(); 
 	private HashMap<String, OrdinaryVariable> mapOVariable = new HashMap<String, OrdinaryVariable>();
 	private HashMap<String, ContextNode> mapContextNode = new HashMap<String, ContextNode>();
@@ -67,14 +59,7 @@ public class LoaderPrOwlIO {
 	
 	/* Protege API Structure */
 	
-	private JenaOWLModel owlModel;     	
-	
-	private OWLIndividual individualOne;
-	private OWLIndividual individualTwo; 
-	
-	private OWLNamedClass owlNamedClass; 	
-	
-	private OWLObjectProperty objectProperty; 
+	private JenaOWLModel owlModel;  
 	
 	/** Load resource file from this package */
 	final ResourceBundle resource = 
@@ -143,7 +128,7 @@ public class LoaderPrOwlIO {
 			System.out.println("Modelo loaded... "); 
 		}
 		catch (Exception e){
-			System.out.println("Problemas meu caro... "); 
+			System.out.println("Problemas... "); 
 			e.printStackTrace(); 
 			throw new IOMebnException(resource.getString("ModelCreationError")); 
 		}
@@ -153,6 +138,12 @@ public class LoaderPrOwlIO {
 	private MultiEntityBayesianNetwork loadMTheoryClass() throws IOMebnException {
         
 		MultiEntityBayesianNetwork mebn; 
+		DomainMFrag domainMFrag; 		
+		
+		OWLIndividual individualOne;
+		OWLIndividual individualTwo; 
+		OWLNamedClass owlNamedClass; 	
+		OWLObjectProperty objectProperty; 
 		
 		owlNamedClass = owlModel.getOWLNamedClass("MTheory"); 
 		
@@ -249,6 +240,7 @@ public class LoaderPrOwlIO {
         OWLNamedClass objectEntityClass; 
 		Collection subClasses; 
 		OWLNamedClass subClass; 
+		OWLObjectProperty objectProperty; 		
 		
 		objectEntityClass = owlModel.getOWLNamedClass("ObjectEntity");
 		
@@ -263,7 +255,7 @@ public class LoaderPrOwlIO {
 			//TODO melhorar/corrigir isto!!! 
 				try{
 				   Type.addType(subClass.getBrowserText() + "_Type"); 
-				   ObjectEntity objectEntity = new ObjectEntity(subClass.getBrowserText(), subClass.getBrowserText() + "_Type"); 	
+				   ObjectEntity objectEntityMebn = new ObjectEntity(subClass.getBrowserText(), subClass.getBrowserText() + "_Type"); 	
 				}
 				catch(TypeException typeException){
 					
@@ -274,7 +266,18 @@ public class LoaderPrOwlIO {
 	
 	
 	private void loadDomainMFrag() throws IOMebnException{
-/*------------------- DomainMFrag -------------------*/
+
+		DomainMFrag domainMFrag; 
+		OrdinaryVariable oVariable; 
+		ContextNode contextNode; 
+		DomainResidentNode domainResidentNode; 
+		GenerativeInputNode generativeInputNode; 
+		BuiltInRV builtInRV;		
+		
+		OWLIndividual individualOne;
+		OWLIndividual individualTwo; 
+		OWLNamedClass owlNamedClass; 	
+		OWLObjectProperty objectProperty; 
 		
 		owlNamedClass = owlModel.getOWLNamedClass("Domain_MFrag"); 
 		instances = owlNamedClass.getInstances(false); 
@@ -342,7 +345,14 @@ public class LoaderPrOwlIO {
 	
 	private void loadContextNode() throws IOMebnException{
 
-		/*------------------- Context Node -------------------*/
+		DomainMFrag domainMFrag; 
+		ContextNode contextNode; 
+		Argument argument;
+		MultiEntityNode multiEntityNode; 	
+		
+		OWLIndividual individualOne;
+		OWLIndividual individualTwo; 	
+		OWLObjectProperty objectProperty; 
 		
 		OWLNamedClass contextNodePr = owlModel.getOWLNamedClass("Context"); 
 		instances = contextNodePr.getInstances(false); 
@@ -411,7 +421,14 @@ public class LoaderPrOwlIO {
 	}
 	
 	private void loadBuiltInRV() throws IOMebnException{
-		/*------------------- BuiltIn Node -------------------*/
+
+		ContextNode contextNode; 
+		GenerativeInputNode generativeInputNode; 
+		BuiltInRV builtInRV;		
+		
+		OWLIndividual individualOne;
+		OWLIndividual individualTwo; 	
+		OWLObjectProperty objectProperty; 
 		
 		OWLNamedClass builtInPr = owlModel.getOWLNamedClass("BuiltInRV"); 
 		instances = builtInPr.getInstances(false); 
@@ -454,11 +471,22 @@ public class LoaderPrOwlIO {
 	
 	private void loadDomainResidentNode() throws IOMebnException{
 
+		DomainMFrag domainMFrag; 
+		DomainResidentNode domainResidentNode; 
+		GenerativeInputNode generativeInputNode; 
+		Argument argument;
+		MultiEntityNode multiEntityNode; 	
+		
+		OWLIndividual individualOne;
+		OWLIndividual individualTwo; 	
+		OWLObjectProperty objectProperty; 		
+		
 		OWLNamedClass domainResidentNodePr = owlModel.getOWLNamedClass("Domain_Res"); 
 		instances = domainResidentNodePr.getInstances(false); 
 		DomainMFrag mFragOfNode = null; 
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
+			
 			individualOne = (OWLIndividual)it.next();
 			domainResidentNode = mapDomainResidentNode.get(individualOne.getBrowserText()); 
 			if (domainResidentNode == null){
@@ -562,8 +590,27 @@ public class LoaderPrOwlIO {
 				for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
 					individualTwo = (OWLIndividual) itIn.next();
 					try{
-					   state = CategoricalStatesEntity.getCategoricalState(individualTwo.getBrowserText()) ; 
-					   domainResidentNode.addPossibleValue(state); 
+					   String stateName = individualTwo.getBrowserText(); 
+					   /* case 1: booleans states */
+					   if(stateName.compareTo("true")==0){
+						   domainResidentNode.addPossibleValue(BooleanStatesEntity.getTrueStateEntity());   
+					   }
+					   else{
+						   if(stateName.compareTo("false") == 0){
+							   domainResidentNode.addPossibleValue(BooleanStatesEntity.getFalseStateEntity());   						   
+						   }
+						   else{
+							   if(stateName.compareTo("absurd") == 0){
+								   domainResidentNode.addPossibleValue(BooleanStatesEntity.getAbsurdStateEntity());   							   
+							   }
+							   else{
+								   /* case 2: categorical states */
+								      state = CategoricalStatesEntity.getCategoricalState(individualTwo.getBrowserText()) ; 
+								      domainResidentNode.addPossibleValue(state);    
+							   }
+						   }
+					   }
+				
 					}
 					catch(CategoricalStateDoesNotExistException e){
 						throw new IOMebnException(resource.getString("CategoricalStateNotFoundException"), individualTwo.getBrowserText() ); 						
@@ -584,6 +631,16 @@ public class LoaderPrOwlIO {
 	
 	private void loadGenerativeInputNode() throws IOMebnException{
 	    
+		DomainResidentNode domainResidentNode; 
+		GenerativeInputNode generativeInputNode; 
+		Argument argument;
+		MultiEntityNode multiEntityNode; 
+		BuiltInRV builtInRV;		
+		
+		OWLIndividual individualOne;
+		OWLIndividual individualTwo; 	
+		OWLObjectProperty objectProperty; 		
+		
 		OWLNamedClass inputNodePr = owlModel.getOWLNamedClass("Generative_input"); 
 		instances = inputNodePr.getInstances(false); 
 		
@@ -664,9 +721,12 @@ public class LoaderPrOwlIO {
 	
 	private void loadOrdinaryVariable() throws IOMebnException{
 		
-	
+		DomainMFrag domainMFrag; 
+		OrdinaryVariable oVariable; 		
 		
-		/*------------------- Ordinary Variable -------------------*/
+		OWLIndividual individualOne;
+		OWLIndividual individualTwo; 
+		OWLObjectProperty objectProperty; 
 		
 		OWLNamedClass ordinaryVariablePr = owlModel.getOWLNamedClass("OVariable"); 
 		instances = ordinaryVariablePr.getInstances(false); 
@@ -712,7 +772,13 @@ public class LoaderPrOwlIO {
 	
 	private void loadArgRelationship() throws IOMebnException{
 		
-/*------------------- Arg Relationship -------------------*/
+		OrdinaryVariable oVariable; 
+		Argument argument;
+		MultiEntityNode multiEntityNode; 	
+		
+		OWLIndividual individualOne;
+		OWLIndividual individualTwo; 	
+		OWLObjectProperty objectProperty; 
 		
 		OWLNamedClass argRelationshipPr = owlModel.getOWLNamedClass("ArgRelationship"); 
 		instances = argRelationshipPr.getInstances(false); 
@@ -780,11 +846,15 @@ public class LoaderPrOwlIO {
 	
 	private void loadSimpleRelationship() throws IOMebnException{
 		
-		OWLNamedClass argRelationshipPr = owlModel.getOWLNamedClass("ArgRelationship"); 
+		OrdinaryVariable oVariable; 
+		Argument argument;
+		MultiEntityNode multiEntityNode; 	
 		
-		/*------------------- Simple Arg Relationship -------------------*/
+		OWLIndividual individualOne;
+		OWLIndividual individualTwo; 	
+		OWLObjectProperty objectProperty; 		
 		
-		argRelationshipPr = owlModel.getOWLNamedClass("SimpleArgRelationship"); 
+		OWLNamedClass argRelationshipPr = owlModel.getOWLNamedClass("SimpleArgRelationship"); 
 		instances = argRelationshipPr.getInstances(false); 
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
 			individualOne = (OWLIndividual)it.next();

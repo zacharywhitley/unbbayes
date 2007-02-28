@@ -532,7 +532,11 @@ public class SaverPrOwlIO {
 		/*has possible values */
 		OWLObjectProperty hasPossibleValuesProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
 		for(Entity possibleValue: node.getPossibleValueList()){
+			if(possibleValue instanceof CategoricalStatesEntity)
 			individual.addPropertyValue(hasPossibleValuesProperty, this.mapCategoricalStates.get(possibleValue)); 
+			else{ //boolean states entity
+				individual.addPropertyValue(hasPossibleValuesProperty, this.mapBooleanStatesEntity.get(possibleValue)); 
+			}
 		}
 	}
 	
