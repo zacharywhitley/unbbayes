@@ -7,6 +7,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import unbbayes.controller.NetworkController;
+import unbbayes.gui.mebn.formula.FormulaTree;
 import unbbayes.prs.mebn.OrdinaryVariable;
 
 //TODO aplicar pattern... 

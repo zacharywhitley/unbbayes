@@ -13,8 +13,7 @@ import unbbayes.prs.mebn.OrdinaryVariable;
  * Tree that add to the tree of ordinary variables the 
  * action of selection of one variable.
  * 
- * @author Laecio Lima dos Santos
- *
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
  */
 
 public class OVariableTreeForOVariableEdition extends OVariableTree{

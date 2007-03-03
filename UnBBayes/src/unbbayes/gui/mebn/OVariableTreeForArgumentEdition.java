@@ -2,13 +2,17 @@ package unbbayes.gui.mebn;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ResourceBundle;
 
+import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import unbbayes.controller.MEBNController;
 import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
+import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
 /**
  * Arvore de variaveis ordinarias utilizada para que o usuario adicione
@@ -24,6 +28,10 @@ public class OVariableTreeForArgumentEdition extends OVariableTree{
     private OrdinaryVariable oVariableSelected = null; 	
 	private MEBNController mebnController; 
     
+	/** Load resource file from this package */
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+    	
+	
 	public OVariableTreeForArgumentEdition(final NetworkController controller){
 		super(controller); 
 		mebnController = controller.getMebnController(); 
@@ -51,8 +59,16 @@ public class OVariableTreeForArgumentEdition extends OVariableTree{
 						oVariableSelected = null; 
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-						
-						controller.getMebnController().addOrdinaryVariableInResident(ordinaryVariable); 
+					
+					try{	
+						controller.getMebnController().addOrdinaryVariableInResident(ordinaryVariable);
+					}
+					catch(OVariableAlreadyExistsInArgumentList e1){
+							JOptionPane.showMessageDialog(null, resource.getString("oVariableAlreadyIsArgumentError"), resource.getString("operationError"), JOptionPane.ERROR_MESSAGE);
+					}
+					catch(ArgumentNodeAlreadySetException e2){
+						e2.printStackTrace(); 
+					}
 						oVariableSelected = null; 
 						
 					} else if (e.getClickCount() == 1) {

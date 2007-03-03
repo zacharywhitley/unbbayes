@@ -4,6 +4,7 @@ import java.util.ResourceBundle;
 
 import unbbayes.gui.MEBNEditionPane;
 import unbbayes.gui.NetworkWindow;
+import unbbayes.gui.mebn.OVariableEditionPane;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
@@ -21,6 +22,8 @@ import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.exception.TypeException;
+import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
+import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
 /**
  * 
@@ -166,7 +169,7 @@ public class MEBNController {
 	 */
 	public void addPossibleValue(DomainResidentNode resident, String nameValue){
 		
-		CategoricalStatesEntity value = new CategoricalStatesEntity(nameValue); 
+		CategoricalStatesEntity value = CategoricalStatesEntity.createCategoricalEntity(nameValue); 
 		resident.addPossibleValue(value); 
 		value.addNodeToListIsPossibleValueOf(resident); 
 				
@@ -383,7 +386,8 @@ public class MEBNController {
 
 		DomainMFrag domainMFrag = (DomainMFrag) multiEntityBayesianNetwork.getCurrentMFrag();
 		String name = resource.getString("ordinaryVariableName") + domainMFrag.getOrdinaryVariableNum(); 
-		OrdinaryVariable ov = new OrdinaryVariable(name, domainMFrag);
+		String type = Type.getFirstType(); 
+		OrdinaryVariable ov = new OrdinaryVariable(name, type, domainMFrag);
 		domainMFrag.addOrdinaryVariable(ov);
 		
 		return ov; 
@@ -395,7 +399,8 @@ public class MEBNController {
 	 * node active. Add this in the MFrag list of ordinary variables too.
 	 * @return new ordinary variable 
 	 */
-	public OrdinaryVariable addNewOrdinaryVariableInResident(){
+	public OrdinaryVariable addNewOrdinaryVariableInResident() throws OVariableAlreadyExistsInArgumentList, 
+	                                                                  ArgumentNodeAlreadySetException{
 		
 		OrdinaryVariable ov; 
 		ov = addNewOrdinaryVariableInMFrag(); 
@@ -419,18 +424,20 @@ public class MEBNController {
 	 * Add one ordinary variable in the list of arguments of the resident node active.
 	 * @param ordinaryVariable ov for add
 	 */
-	public void addOrdinaryVariableInResident(OrdinaryVariable ordinaryVariable){
+	public void addOrdinaryVariableInResident(OrdinaryVariable ordinaryVariable) throws ArgumentNodeAlreadySetException, 
+	                                                                                    OVariableAlreadyExistsInArgumentList{
 		
-		residentNodeActive.addOrdinaryVariable(ordinaryVariable);
+		residentNodeActive.addArgument(ordinaryVariable);
 		screen.getMebnEditionPane().getEditArgumentsTab().update();
 		screen.getMebnEditionPane().updateUI();
+		
 		
 	}
 	
 	public void removeOrdinaryVariableInResident(OrdinaryVariable ordinaryVariable){
 		
 		ResidentNode resident = (ResidentNode) screen.getGraphPane().getSelected(); 
-		resident.removeOrdinaryVariable(ordinaryVariable);
+		resident.removeArgument(ordinaryVariable);
 		screen.getMebnEditionPane().getEditArgumentsTab().update(); 
 		screen.getMebnEditionPane().updateUI(); 
 		
@@ -472,8 +479,10 @@ public class MEBNController {
 	/*---------------------------- Formulas ----------------------------*/	
 		
 	public void selectOVariableInEdit(OrdinaryVariable ov){
-	
-		screen.getMebnEditionPane().getEditOVariableTab().setNameOVariableSelected(ov.getName()); 
+	    OVariableEditionPane editionPane; 
+		editionPane = screen.getMebnEditionPane().getEditOVariableTab(); 
+		editionPane.setNameOVariableSelected(ov.getName()); 
+		editionPane.setTypeOVariableSelected(ov.getType()); 
 		
 	}
 	
@@ -496,6 +505,7 @@ public class MEBNController {
 		ObjectEntity objectEntity = new ObjectEntity(name, nameType); 
 		 
 		return objectEntity; 
+		
 	}
 	
 	public void renameObjectEntity(ObjectEntity entity, String name) throws TypeException{

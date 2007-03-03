@@ -1,4 +1,4 @@
-package unbbayes.gui.mebn;
+package unbbayes.gui.mebn.formula;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -27,6 +27,7 @@ import javax.swing.tree.TreePath;
 
 import unbbayes.controller.FormulaTreeController;
 import unbbayes.controller.IconController;
+import unbbayes.gui.mebn.NodeFormulaTree;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
@@ -42,7 +43,9 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
 import unbbayes.prs.mebn.entity.Entity;
 
 /** 
- * Tree of the formula 
+ * 
+ * Tree that represents the formula of a context node. 
+ * 
  * */
 
 /*-----------------------------------------------------------------------------------------
@@ -78,41 +81,6 @@ A construcao da logica de primeira ordem suportada aqui segue
  ----------------------------------------------------------------------*/
 
 public class FormulaTree extends JTree{
-
-	/* types of the nodes */
-	protected enum enumType{
-		EMPTY, 
-		SIMPLE_OPERATOR,
-		QUANTIFIER_OPERATOR, 
-		FORMULA, 
-		VARIABLE_SEQUENCE,
-		VARIABLE, 
-		OPERANDO
-	}
-	
-	/* sub types of the nodes */
-	protected enum enumSubType{
-	
-		/* DON'T CARE */
-		NOTHING, 
-		
-		/* OPERANDO */
-		OVARIABLE, 
-		NODE, 
-		ENTITY, 
-		VARIABLE, 
-		SKOLEN, 
-				
-		/* OPERATOR */
-		AND, 
-		OR, 
-		NOT, 
-		EQUALTO, 
-		IMPLIES, 
-		IFF, 
-		FORALL, 
-		EXISTS
-	}
 	
 	NodeFormulaTree nodeFormulaActive; 
 	DefaultMutableTreeNode nodeActive; 
@@ -716,6 +684,7 @@ public class FormulaTree extends JTree{
 		        operandoChild = new NodeFormulaTree("op_" + i, enumType.EMPTY, enumSubType.NOTHING, null); 
 		        nodeChild = new DefaultMutableTreeNode(operandoChild); 
 		        nodeActive.add(nodeChild); 
+		        nodeFormula.addChildren(operandoChild); 
 		    }
 		       
 		    updateTree(); 
@@ -737,84 +706,20 @@ public class FormulaTree extends JTree{
 		    /* adicionar nodo para insercao da sequencia de variaveis */
 		    nodeFormulaTree = new NodeFormulaTree("Var", enumType.VARIABLE_SEQUENCE, enumSubType.NOTHING, null); 
 		    node = new DefaultMutableTreeNode(nodeFormulaTree); 
-		    nodeActive.add(node); 
+		    nodeActive.add(node);
+		    nodeFormula.addChildren(nodeFormulaTree); 
 		
+		    
 		    /* adicionar nodo para a insercao da formula */
 		    nodeFormulaTree = new NodeFormulaTree("Formula", enumType.FORMULA, enumSubType.NOTHING, null); 
 		    node = new DefaultMutableTreeNode(nodeFormulaTree); 
 		    nodeActive.add(node); 
-		
+		    nodeFormula.addChildren(nodeFormulaTree); 
+		    
 		    updateTree(); 
 		    
 		}
 		
-		/**
-		 * Nodo of the tree of the formula. Have the information
-		 * about what type of things can replace it.  
-		 * 
-		 * @author Laecio Lima dos Santos (laecio@gmail.com)
-		 */
-		
-		private class NodeFormulaTree{
-			
-			String name; 
-			enumType type;
-			enumSubType subType; 
-			Object nodeVariable; 
-			
-			/**
-			 * create a new nodo formula tree
-			 * @param typeNode type of the node (what go to fill its)
-			 * @param nodeVariable object that fill the node 
-			 */
-			
-			public NodeFormulaTree(String _name, enumType _type, enumSubType _subType, Object _nodeVariable){
-				name = _name; 
-				type = _type; 
-				subType = _subType; 
-				nodeVariable = _nodeVariable; 
-			}
-			
-			public String toString(){
-				return name; 
-			}
-			
-			public String getName(){
-				return name; 
-			}
-			
-			public void setName(String name){
-				this.name = name; 
-			}
-			
-			public enumType getTypeNode(){
-				return type; 
-			}
-			
-			public void setTypeNode(enumType _type){
-				this.type = _type; 
-			}
-
-			public enumSubType getSubTypeNode(){
-				return subType; 
-			}
-			
-			public void setSubTypeNode(enumSubType _subType){
-				this.subType = _subType; 
-			}
-			
-						
-			
-			
-			public Object getNodeVariable(){
-				return nodeVariable; 
-			}
-			
-			public void setNodeVariable(Object nodeVariable){
-				this.nodeVariable = nodeVariable; 
-			}
-		}
-	
 		/**
 		 * Painel que mostra quais são as variaveis disponiveis para
 		 * se escolher uma a ser utilizada como operando na formula. 
@@ -941,6 +846,7 @@ public class FormulaTree extends JTree{
 			DefaultMutableTreeNode nodeVariable = new DefaultMutableTreeNode(variable); 
 			nodeActive.add(nodeVariable); 
 			
+			nodePlace.addChildren(variable); 
 			
 		}	
 		

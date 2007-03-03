@@ -1,7 +1,7 @@
 package unbbayes.controller;
 
 import unbbayes.gui.mebn.FormulaEditionPane;
-import unbbayes.gui.mebn.FormulaTree;
+import unbbayes.gui.mebn.formula.FormulaTree;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVAnd;

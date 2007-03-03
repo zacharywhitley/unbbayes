@@ -1,6 +1,5 @@
 package unbbayes.gui.mebn;
 
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -26,6 +25,8 @@ import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
+import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
 /**
  * Painel para que o usuario edite quais são os argumentos presentes em 
@@ -208,6 +209,7 @@ public class ArgumentEditionPane extends JPanel{
 	 * */
 	
 	public ArgumentEditionPane(){
+		
 	}
 		
 	public void addListenersOptions(){
@@ -239,7 +241,15 @@ public class ArgumentEditionPane extends JPanel{
 	    			public void actionPerformed(ActionEvent ae){
 	    				OrdinaryVariable ov = treeMFrag.getOVariableSelected(); 
 	    				if (ov != null){
-	    					mebnController.addOrdinaryVariableInResident(ov); 
+	    					try{
+	    					   mebnController.addOrdinaryVariableInResident(ov);
+	    					}
+	    					catch(OVariableAlreadyExistsInArgumentList e1){
+	  							JOptionPane.showMessageDialog(null, resource.getString("oVariableAlreadyIsArgumentError"), resource.getString("operationError"), JOptionPane.ERROR_MESSAGE);
+	    					}
+	    					catch(ArgumentNodeAlreadySetException e2){
+	    						e2.printStackTrace(); 
+	    					}
 	    				}
 	    			}
 	    		}
@@ -248,11 +258,20 @@ public class ArgumentEditionPane extends JPanel{
 		btnNew.addActionListener(
 		    new ActionListener(){
 		    	public void actionPerformed(ActionEvent ae){
-		    		OrdinaryVariable ov = mebnController.addNewOrdinaryVariableInResident(); 
-		    		treeResident.setOVariableSelected(ov);
-		    		txtName.setText(ov.getName()); 
-		    		txtName.selectAll(); 
-		    		txtName.requestFocus(); 
+		    		
+		    		try{
+		    		   OrdinaryVariable ov = mebnController.addNewOrdinaryVariableInResident();
+			    		treeResident.setOVariableSelected(ov);
+			    		txtName.setText(ov.getName()); 
+			    		txtName.selectAll(); 
+			    		txtName.requestFocus(); 
+		    		}
+					catch(OVariableAlreadyExistsInArgumentList e1){
+							JOptionPane.showMessageDialog(null, resource.getString("oVariableAlreadyIsArgumentError"), resource.getString("operationError"), JOptionPane.ERROR_MESSAGE);
+					}
+					catch(ArgumentNodeAlreadySetException e2){
+						e2.printStackTrace(); 
+					}
 		    	}
 		    }
 		); 

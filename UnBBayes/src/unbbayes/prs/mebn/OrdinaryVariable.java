@@ -5,6 +5,11 @@ import java.util.List;
 
 import unbbayes.prs.Node;
 
+/**
+ * 
+ *
+ */
+
 public class OrdinaryVariable {
  
 	
@@ -12,12 +17,15 @@ public class OrdinaryVariable {
 	
 	private MFrag mFrag;
 	
+	private String type; 
+	
 	private List<Node> isOVariableOfList; 
 	
-	public OrdinaryVariable(String name, MFrag mFrag){
+	public OrdinaryVariable(String name, String type, MFrag mFrag){
 		
 		this.name = name; 
 		this.mFrag = (MFrag)mFrag; 
+		this.type = type; 
 		
 		isOVariableOfList = new ArrayList<Node>(); 
 		
@@ -54,6 +62,25 @@ public class OrdinaryVariable {
 	    		((DomainResidentNode)node).updateLabel(); 
 	    	}
 	    }
+	}
+	
+	/**
+	 * Set the type.
+	 * Nota: this method don't verify if the string is a type valid.  
+	 * @param type
+	 */
+	public void setType(String type){
+		this.type = type; 
+		
+		System.out.println("-> Type of ov " + this.name + " turned for " + type); 
+		
+	}
+	
+	/**
+	 * Method responsible for return the type of the OV. 
+	 */
+	public String getType(){
+		return type; 
 	}
 	
 	/**

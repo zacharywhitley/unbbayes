@@ -42,17 +42,17 @@ public class EntityEditionPane extends JPanel{
 	
     private List<ObjectEntity> listEntity; 
     
-    JPanel jpInformation; 
+    private JPanel jpInformation; 
 	
-	JLabel name; 
-	JTextField txtName; 
-	JLabel type; 
-	JTextField txtType; 
+    private JLabel name; 
+    private JTextField txtName; 
+    private JLabel type; 
+    private JTextField txtType; 
 	
-	JToolBar jtbOptions; 	
+    private JToolBar jtbOptions; 	
     
-	JButton jbNew; 
-	JButton jbDelete; 	
+    private JButton jbNew; 
+    private JButton jbDelete; 	
     
     private JList jlEntities; 
     private DefaultListModel listModel;
@@ -136,6 +136,8 @@ public class EntityEditionPane extends JPanel{
 	
 	public void update(){
 		
+		ObjectEntity antSelected = selected; 
+		
 		listModel.clear(); 
 		
 		listEntity = ObjectEntity.getListEntity(); 
@@ -146,6 +148,14 @@ public class EntityEditionPane extends JPanel{
 		}
 		
 		jlEntities.setModel(listModel); 
+		
+		/* 
+		 * Warning: Por algum motivo estranho a mim a referencia feita por
+		 * selected estava sendo perdida quando se adicionava seguidamente
+		 * nos entidades... Esta jogadinha solucionou o problema... 
+		 */
+		selected = antSelected; 
+		
 	}
 	
 	private void addListListener(){
@@ -203,11 +213,13 @@ public class EntityEditionPane extends JPanel{
 		jbNew.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
   				try{
-				   selected = mebnController.addObjectEntity();
+				   
+  				   selected = mebnController.addObjectEntity();
+				   
 				   update();  
+				   
 				   jlEntities.setSelectedValue(selected, true); 
 				   txtType.setText(selected.getType()); 
-				   
 				   txtName.setEditable(true); 
 				   txtName.setText(selected.getName());
 				   txtName.selectAll(); 

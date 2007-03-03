@@ -10,7 +10,6 @@ import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
@@ -19,19 +18,8 @@ import unbbayes.controller.FormulaTreeController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.controller.NetworkController;
-import unbbayes.gui.GraphAction;
-import unbbayes.gui.mebn.FormulaTree.enumSubType;
-import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.MFrag;
-import unbbayes.prs.mebn.builtInRV.BuiltInRVAnd;
-import unbbayes.prs.mebn.builtInRV.BuiltInRVEqualTo;
-import unbbayes.prs.mebn.builtInRV.BuiltInRVExists;
-import unbbayes.prs.mebn.builtInRV.BuiltInRVForAll;
-import unbbayes.prs.mebn.builtInRV.BuiltInRVIff;
-import unbbayes.prs.mebn.builtInRV.BuiltInRVImplies;
-import unbbayes.prs.mebn.builtInRV.BuiltInRVNot;
-import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
 
 public class FormulaEditionPane extends JPanel {
 

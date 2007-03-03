@@ -22,6 +22,7 @@ import javax.swing.tree.TreePath;
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
 import unbbayes.gui.GraphAction;
+import unbbayes.gui.mebn.formula.FormulaTree;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;

@@ -10,10 +10,24 @@ public class CategoricalStatesEntity extends Entity {
 	
 	private static List<CategoricalStatesEntity> listEntity = new ArrayList<CategoricalStatesEntity>();	
 	
-	public CategoricalStatesEntity(String name) {
+	private CategoricalStatesEntity(String name) {
 		this.type = "CategoryLabel";
 		this.name = name;
 		CategoricalStatesEntity.addEntity(this);
+	}
+	
+	public static CategoricalStatesEntity createCategoricalEntity(String name){
+		
+		for(CategoricalStatesEntity teste: listEntity){
+			if (teste.name.compareTo(name) == 0){
+				return teste; 
+			}
+		}
+		
+		//not exists: create!!!
+		
+		return new CategoricalStatesEntity(name); 
+		
 	}
 	
 	public void setType(String type) throws TypeChangeNotAllowedException {
@@ -22,13 +36,16 @@ public class CategoricalStatesEntity extends Entity {
 	}
 
 	
-	public static void addEntity(CategoricalStatesEntity entity) {
+	private static void addEntity(CategoricalStatesEntity entity) {
 		CategoricalStatesEntity.listEntity.add(entity);
 	}
 	
 	// TODO Possivelmente fazer alguma limpeza de variáveis ou dependências aqui.
+	//Problema: nao há referencia a partir da entidade!!!
+	
 	public static void removeEntity(CategoricalStatesEntity entity) {
 		CategoricalStatesEntity.listEntity.remove(entity);
+		
 	}
 	
 	public static CategoricalStatesEntity getCategoricalState(String name) 
@@ -39,8 +56,6 @@ public class CategoricalStatesEntity extends Entity {
 				return teste; 
 			}
 		}
-		
-		// não foi achado!!! Retornar exceção... 
 		
 		throw new CategoricalStateDoesNotExistException(); 
 		

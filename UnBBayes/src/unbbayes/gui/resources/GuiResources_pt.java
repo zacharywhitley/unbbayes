@@ -251,6 +251,8 @@ public class GuiResources_pt extends ListResourceBundle {
         {"helpItemMn","U"},
         {"aboutItemMn","S"},
        
+        {"operationError","Erro na operação"},           
+        {"oVariableAlreadyIsArgumentError","Variável ord. já é argumento deste nó!"},       
         {"properties","Propriedades..."},
         {"nameException","Erro no Nome"},
         {"nameDuplicated", "Nome já existe..."}, 

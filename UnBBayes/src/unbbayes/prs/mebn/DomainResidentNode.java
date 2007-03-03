@@ -5,8 +5,9 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.gui.draw.DrawRectangle;
 import unbbayes.gui.draw.DrawRoundedRectangle;
+import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
+import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
 public class DomainResidentNode extends ResidentNode {
  
@@ -105,15 +106,16 @@ public class DomainResidentNode extends ResidentNode {
 		inputInstanceFromList.add(instance);
 	}
 	
-	public void addOrdinaryVariable(OrdinaryVariable ov){
-		super.addOrdinaryVariable(ov);
+	public void addArgument(OrdinaryVariable ov) throws OVariableAlreadyExistsInArgumentList, 
+	                                                    ArgumentNodeAlreadySetException{
+		super.addArgument(ov);
 		ov.addIsOVariableOfList(this); 
 		updateLabel(); 
 		
 	}   
 	
-	public void removeOrdinaryVariable(OrdinaryVariable ov){
-		super.removeOrdinaryVariable(ov);
+	public void removeArgument(OrdinaryVariable ov){
+		super.removeArgument(ov);
 		ov.removeIsOVariableOfList(this); 
 		updateLabel(); 
 	}

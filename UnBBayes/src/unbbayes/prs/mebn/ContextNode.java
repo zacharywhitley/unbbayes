@@ -42,7 +42,6 @@ public class ContextNode extends MultiEntityNode {
     private DrawFlatPentagon drawContextNode;
     
     
-    
     /**
      * Create the context node and add your default possible values 
      * @param name

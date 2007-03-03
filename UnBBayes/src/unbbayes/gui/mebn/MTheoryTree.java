@@ -397,13 +397,21 @@ public class MTheoryTree extends JTree {
 			    List<GenerativeInputNode> inputNodeList = ((DomainMFrag)mFrag).getGenerativeInputNodeList(); 
 			    for(GenerativeInputNode inputNode: inputNodeList){
 			    	DefaultMutableTreeNode treeNodeChild; 
-			    	Node inputInstanceOf = (Node)inputNode.getInputInstanceOf(); 
+			    	Object inputInstanceOf = inputNode.getInputInstanceOf(); 
+			    	
 			    	if(inputInstanceOf != null){
-			    	    treeNodeChild = new DefaultMutableTreeNode(inputInstanceOf.getName());
+			    		if (inputInstanceOf instanceof Node){
+			    	       treeNodeChild = new DefaultMutableTreeNode(((Node)inputInstanceOf).getName());
+			    		}
+			    		else{
+			    			//TODO InputInstanceOf a built in !!!!
+			    			treeNodeChild = new DefaultMutableTreeNode(" ");
+			    		}
 			    	}
 			    	else{
 			    		treeNodeChild = new DefaultMutableTreeNode(" ");
 			    	}
+			    	
 			    	treeNode.add(treeNodeChild); 
 			    	inputNodeMap.put(treeNodeChild, inputNode); 
 					nodeMap.put(treeNodeChild, inputNode);     	

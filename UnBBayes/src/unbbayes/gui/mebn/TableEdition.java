@@ -22,11 +22,11 @@ public class TableEdition {
 	private DomainResidentNode residentNode; 
 	
 	public TableEdition(DomainResidentNode _residentNode, ToolKitForTableEdition _toolKit){
-	
-	    residentNode = _residentNode; 
+		
+		residentNode = _residentNode; 
 		toolKit = _toolKit;  
 		buildAuxiliaryLists(); 
-	    
+		
 	}	
 	
 	/**
@@ -95,51 +95,51 @@ public class TableEdition {
 	}
 	
 	private void writeWord(String word, int position, StyledDocument doc){
-
+		
 		try{
 			
 			if(isIfWord(word)){
-			    doc.insertString(position, word, toolKit.getIfStyle());
-			    return; 
+				doc.insertString(position, word, toolKit.getIfStyle());
+				return; 
 			}
 			
 			if(isAnyWord(word)){
-			    doc.insertString(position, word, toolKit.getAnyStyle());
-			    return; 
+				doc.insertString(position, word, toolKit.getAnyStyle());
+				return; 
 			}			
 			
 			if(isFunctionWord(word)){
-			    doc.insertString(position, word, toolKit.getFunctionStyle());
-			    return; 
+				doc.insertString(position, word, toolKit.getFunctionStyle());
+				return; 
 			}	
-
+			
 			if(isExpansionWord(word)){
-			    doc.insertString(position, word, toolKit.getDescriptionStyle());
-			    return; 
+				doc.insertString(position, word, toolKit.getDescriptionStyle());
+				return; 
 			}				
 			
 			if(isStateNode(word)){
-			    doc.insertString(position, word, toolKit.getStateNodeStyle());
-			    return; 
+				doc.insertString(position, word, toolKit.getStateNodeStyle());
+				return; 
 			}	
 			
 			if(isFather(word)){
-			    doc.insertString(position, word, toolKit.getFatherStyle());
-			    return; 
+				doc.insertString(position, word, toolKit.getFatherStyle());
+				return; 
 			}				
 			
 			if(isStateFather(word)){
-			    doc.insertString(position, word, toolKit.getStateFatherStyle());
-			    return; 
+				doc.insertString(position, word, toolKit.getStateFatherStyle());
+				return; 
 			}	
 			
 			if(isArgument(word)){
-			    doc.insertString(position, word, toolKit.getArgumentStyle());
-			    return; 
+				doc.insertString(position, word, toolKit.getArgumentStyle());
+				return; 
 			}				
 			
-		    doc.insertString(position, word, toolKit.getDefaultStype());
-		     
+			doc.insertString(position, word, toolKit.getDefaultStype());
+			
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
@@ -217,7 +217,7 @@ public class TableEdition {
 	private void writeNumber(String number, int position, StyledDocument doc){
 		try{
 			doc.insertString(position, number, toolKit.getNumberStyle());
-        }
+		}
 		catch(Exception e){
 			e.printStackTrace(); 
 		}		
@@ -225,7 +225,7 @@ public class TableEdition {
 	
 	private void writeCharacter(char character, int position, StyledDocument doc){
 		try{
-            doc.insertString(position, "" + character , toolKit.getDefaultStype());
+			doc.insertString(position, "" + character , toolKit.getDefaultStype());
 		}
 		catch(Exception e){
 			
@@ -239,18 +239,20 @@ public class TableEdition {
 		statesFatherList = new ArrayList<String>(); 
 		
 		for(ResidentNode resident : residentNode.getResidentNodeFatherList()){
-			 fatherList.add(resident.getName());
-			 for(Entity state: resident.getPossibleValueList()){
-				 statesFatherList.add(state.getName()); 
-			 }
+			fatherList.add(resident.getName());
+			for(Entity state: resident.getPossibleValueList()){
+				statesFatherList.add(state.getName()); 
+			}
 		}
 		
 		for(InputNode input : residentNode.getInputNodeFatherList()){
-			ResidentNode resident = (ResidentNode)input.getInputInstanceOf(); 
-			if(resident != null){
-				fatherList.add(resident.getName());
-				for(Entity state: resident.getPossibleValueList()){
-					statesFatherList.add(state.getName()); 
+			if(input.getInputInstanceOf() instanceof ResidentNode){
+				ResidentNode resident = (ResidentNode)input.getInputInstanceOf(); 
+				if(resident != null){
+					fatherList.add(resident.getName());
+					for(Entity state: resident.getPossibleValueList()){
+						statesFatherList.add(state.getName()); 
+					}
 				}
 			}
 		}

@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ResourceBundle;
@@ -11,6 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -22,6 +25,7 @@ import unbbayes.controller.MEBNController;
 import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.entity.Type;
 
 /** 
  * Pane for edition of the ordinary variables of one MFrag. 
@@ -34,23 +38,26 @@ import unbbayes.prs.mebn.OrdinaryVariable;
  */
 public class OVariableEditionPane extends JPanel {
 
-	OVariableTreeForOVariableEdition treeMFrag; 
-	JScrollPane jspTreeMFrag; 
+	private OVariableTreeForOVariableEdition treeMFrag; 
+	private JScrollPane jspTreeMFrag; 
 	
-	JPanel jpInformation; 
+	private JPanel jpInformation; 
 	
-	JLabel name; 
-	JTextField txtName; 
-	JLabel type; 
-	JTextField txtType; 
+	private JLabel name; 
+	private JTextField txtName; 
+	private JLabel type; 
 	
-	JButton jbNew; 
-	JButton jbDelete; 	
 	
-	JToolBar jtbOptions; 	
+	private JComboBox jcbType; 
+	private String[] types; 	
 	
-	MEBNController mebnController; 
-	MFrag mFrag; 
+	private JButton jbNew; 
+	private JButton jbDelete; 	
+	
+	private JToolBar jtbOptions; 	
+	
+	private MEBNController mebnController; 
+	private MFrag mFrag; 
 	
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
@@ -78,8 +85,36 @@ public class OVariableEditionPane extends JPanel {
 	    name = new JLabel(resource.getString("nameLabel")); 
 	    txtName = new JTextField(10);
 	    type = new JLabel(resource.getString("typeLabel")); 
-	    txtType = new JTextField(10); 
-	    txtType.setEditable(false); 
+	    
+	    //Fill the combo box with the possible labels 
+	    types = Type.getListOfTypes().toArray( new String[0] ); 
+	    jcbType = new JComboBox(types); 
+	    jcbType.setSelectedIndex(0); 
+	    
+	    jcbType.addActionListener(
+           new ActionListener(){
+        	   public void actionPerformed(ActionEvent e){
+	    	        String typeName = (String)jcbType.getSelectedItem();
+					if(treeMFrag.getOVariableActive() != null){
+						   treeMFrag.getOVariableActive().setType(typeName); 
+					}
+        	   }
+           }
+	    ); 
+	    
+	    /*
+	    jcbType.addActionListener(
+	       new ActionListener(){
+	    
+	    	    public void actionPerformed(ActionEvent e) {
+	    	        String typeName = (String)jcbType.getSelectedItem();
+						if(treeMFrag.getOVariableActive() != null){
+							   treeMFrag.getOVariableActive().setType(typeName); 
+						}
+	    	    }
+	       }
+	    ); 
+	    */
 	    
 	    jtbOptions = new JToolBar(); 
 	    jtbOptions.setLayout(new GridLayout(0, 2)); 
@@ -96,7 +131,7 @@ public class OVariableEditionPane extends JPanel {
 	    jpInformation.add(name); 
 	    jpInformation.add(txtName); 
 	    jpInformation.add(type); 
-	    jpInformation.add(txtType); 
+	    jpInformation.add(jcbType); 
 	    
 	    addListeners(); 
 	    
@@ -123,6 +158,32 @@ public class OVariableEditionPane extends JPanel {
 		txtName.setText(name);; 
 	}
 	
+	/**
+	 * Set the type of the variable show in the window. 
+	 * @param nameType The name o the type
+	 * @return true if sucess or false if the type don't exists in the 
+	 * list of types of this panel. 
+	 */
+	public boolean setTypeOVariableSelected(String nameType){
+		
+		int index = 0;
+		boolean sucess = false; 
+		
+		for(index = 0; index < types.length; index++){
+			if(types[index].compareTo(nameType) == 0){
+				jcbType.setSelectedIndex(index);
+				jcbType.updateUI();
+				sucess = true; 
+				break; 
+			}
+		}
+		
+		return sucess; 
+	}
+	
+	/**
+	 * Get the name of ovariable show in the pane. 
+	 */
 	public String getNameOVariable(){
 		return txtName.getText(); 
 	}

@@ -6,38 +6,36 @@ import java.util.List;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticTable;
+import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
+import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
 /**
  *
  */
 
 public class ResidentNode extends MultiEntityNode implements ITabledVariable {
- 
+	
 	private static final long serialVersionUID = 8497908054569004909L;
 	
 	private List<InputNode> inputNodeFatherList;
-	 
-	private List<InputNode> inputInstanceFromList;
-	 
-	private ProbabilisticTable probabilisticTable;
-	 
-	private List<ResidentNode> residentNodeFatherList;
-	 
-	private List<ResidentNode> residentNodeChildList;
 	
-	/**
-	 * List of ordinary variables of this node. Don't have duplicates
-	 * elements. 
-	 */
+	private List<InputNode> inputInstanceFromList;
+	
+	private ProbabilisticTable probabilisticTable;
+	
+	private List<ResidentNode> residentNodeFatherList;
+	
+	private List<ResidentNode> residentNodeChildList;
 	
 	private List<OrdinaryVariable> ordinaryVariableList; 
 	
+	private int numNextArgument = 0; 
 	
 	public ResidentNode(){
 		
 		super(); 
-		
 		ordinaryVariableList = new ArrayList<OrdinaryVariable>(); 
+		
 	}
 	
 	/**
@@ -47,46 +45,51 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 		return null;
 	}
 	
-	/**
-	 * add the ordinary variable in the list of ordinary variables 
-	 * of the node (if it alredy is present, don't do nothing)
-	 * @param ov
-	 */
+	public void addArgument(OrdinaryVariable ov) throws ArgumentNodeAlreadySetException, 
+	OVariableAlreadyExistsInArgumentList{
+		
+		Argument argument = new Argument(this.getName() + "_" + numNextArgument, this);
+		
+		this.addArgument(argument); 
+		
+		if(ordinaryVariableList.contains(ov)){
+			throw new OVariableAlreadyExistsInArgumentList(); 
+		}
+		else{
+			ordinaryVariableList.add(ov); 
+			ov.addIsOVariableOfList(this); 
+			argument.setOVariable(ov); 
+		}
+		
+	}
 	
-	public void addOrdinaryVariable(OrdinaryVariable ov){
-		if(!ordinaryVariableList.contains(ov)){
-		   ordinaryVariableList.add(ov); 
-		   ov.addIsOVariableOfList(this); 
+	public void removeArgument(OrdinaryVariable ov){
+		
+		ordinaryVariableList.remove(ov);
+		ov.removeIsOVariableOfList(this);
+		
+		for(Argument argument: super.getArgumentList()){
+			if(argument.getOVariable() == ov){
+				super.removeArgument(argument); 
+				return; 
+			}
 		}
 	}
 	
-	/**
-	 * remove the ordinary variable of the list of ordinary variables
-	 * of the node. 
-	 * @param ov
-	 */
-	public void removeOrdinaryVariable(OrdinaryVariable ov){
-	    ordinaryVariableList.remove(ov);
-	    ov.removeIsOVariableOfList(this); 
-	}
 	
 	/**
 	 * 
 	 * @param ov
 	 * @return
 	 */
-	public boolean containsOrdinaryVariable(OrdinaryVariable ov){
-	  	return ordinaryVariableList.contains(ov); 
+	public boolean containsArgument(OrdinaryVariable ov){
+		return ordinaryVariableList.contains(ov); 
 	}
 	
-	/**
-	 * 
-	 * @return
-	 */
 	public List<OrdinaryVariable> getOrdinaryVariableList(){
 		return ordinaryVariableList; 
 	}
 	
 	
 }
- 
+

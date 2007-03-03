@@ -67,6 +67,11 @@ public class Type {
 		return listOfTypes.contains(aType);
 	}
 	
+	//TODO Tirar isto!!!
+	public static String getFirstType(){
+		return "TypeLabel"; 
+	}
+	
 	public static Set<String> getListOfTypes(){
 		return listOfTypes; 
 	}

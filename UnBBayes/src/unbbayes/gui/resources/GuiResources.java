@@ -250,7 +250,9 @@ public class GuiResources extends ListResourceBundle {
         {"tileItemMn","T"},
         {"helpItemMn","H"},
         {"aboutItemMn","A"},
-        
+ 
+        {"operationError","Operation Error"},        
+        {"oVariableAlreadyIsArgumentError","Ord. Variable already is argument of this node!"},
         {"properties","Properties..."},
         {"nameException","Name Error"},
         {"nameDuplicated", "Name alredy exists..."}, 

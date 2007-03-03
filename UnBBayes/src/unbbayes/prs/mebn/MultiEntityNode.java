@@ -79,13 +79,15 @@ public class MultiEntityNode extends Node {
 		mFrag = null;
 	}
 	
-	/**
-	 * 
-	 */	
-	
 	public void addArgument(Argument arg){
 		argumentList.add(arg); 
 	}
+	
+	
+	public void removeArgument(Argument arg){
+		argumentList.remove(arg); 
+	}
+    
 
 	public void addInnerTermOfList(MultiEntityNode instance){
 		innerTermOfList.add(instance); 
