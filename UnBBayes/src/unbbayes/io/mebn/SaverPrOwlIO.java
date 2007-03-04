@@ -440,9 +440,10 @@ public class SaverPrOwlIO {
 			OWLNamedClass declarativeDist = owlModel.getOWLNamedClass("DeclarativeDist"); 
 			OWLIndividual declarativeDistThisNode = declarativeDist.createOWLIndividual(residentNode.getName() + "_table"); 
 			OWLDatatypeProperty hasDeclaration = owlModel.getOWLDatatypeProperty("hasDeclaration"); 
-			declarativeDistThisNode.addPropertyValue(hasDeclaration, residentNode.getTableFunction()); 
-			domainResIndividual.addPropertyValue(hasProbDist, declarativeDistThisNode); 
-			
+			if(residentNode.getTableFunction() != null){
+			   declarativeDistThisNode.addPropertyValue(hasDeclaration, residentNode.getTableFunction()); 
+			   domainResIndividual.addPropertyValue(hasProbDist, declarativeDistThisNode); 
+			}
 		} 	
     	
     }
@@ -593,6 +594,7 @@ public class SaverPrOwlIO {
 				List<NodeFormulaTree> childrenList = formulaNode.getChildrenList(); 
 				
 				int childNum = 0; 
+				
 				for(NodeFormulaTree child: childrenList){
 				 
 					childNum++; 

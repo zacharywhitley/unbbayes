@@ -1102,13 +1102,14 @@ public class LoaderPrOwlIO {
 	private DefaultMutableTreeNode buildFormulaTree(ContextNode contextNode){
 		
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode(); 
+		
 		DefaultMutableTreeNode node; 
-		NodeFormulaTree nodeFormula; 
+		NodeFormulaTree nodeFormulaRoot; 
+		NodeFormulaTree nodeFormulaChild; 
 		
-		
-		nodeFormula = new NodeFormulaTree("formula", enumType.FORMULA, 	enumSubType.NOTHING, null);  
+		nodeFormulaRoot = new NodeFormulaTree("formula", enumType.FORMULA, 	enumSubType.NOTHING, null);  
     	
-	    root = new DefaultMutableTreeNode(nodeFormula); 
+	    root = new DefaultMutableTreeNode(nodeFormulaRoot); 
 		
 		System.out.println("Entrou no build " +  contextNode.getName()); 
 		
@@ -1164,8 +1165,8 @@ public class LoaderPrOwlIO {
 									}; 
 			
 			
-			nodeFormula = new NodeFormulaTree(builtIn.getName(), type, subType, builtIn); 
-		    root.setUserObject(nodeFormula); 
+			nodeFormulaRoot = new NodeFormulaTree(builtIn.getName(), type, subType, builtIn); 
+		    root.setUserObject(nodeFormulaRoot); 
 		    
 			/* 
 			 * procura pelos argumentos do builtIn, podendo estes serem contextnodes internos, o que 
@@ -1176,9 +1177,10 @@ public class LoaderPrOwlIO {
 		    	
 		    	if(argument.getOVariable()!= null){
 		    		OrdinaryVariable ov = argument.getOVariable(); 
-		    		nodeFormula = new NodeFormulaTree(ov.getName(), enumType.OPERANDO, enumSubType.OVARIABLE, ov); 
-		    		node = new DefaultMutableTreeNode(nodeFormula); 
+		    		nodeFormulaChild = new NodeFormulaTree(ov.getName(), enumType.OPERANDO, enumSubType.OVARIABLE, ov); 
+		    		node = new DefaultMutableTreeNode(nodeFormulaChild); 
 		    		root.add(node); 
+		    		nodeFormulaRoot.addChildren(nodeFormulaChild); 
 		    	}
 		    	else{
 		    		if(argument.getArgumentTerm() != null){
@@ -1186,13 +1188,16 @@ public class LoaderPrOwlIO {
 		    			MultiEntityNode multiEntityNode = argument.getArgumentTerm(); 
 		    			
 		    			if(multiEntityNode instanceof ResidentNode){
-		    				nodeFormula = new NodeFormulaTree(multiEntityNode.getName(), enumType.OPERANDO, enumSubType.NODE, multiEntityNode); 
-		    				node = new DefaultMutableTreeNode(nodeFormula); 
+		    				nodeFormulaChild = new NodeFormulaTree(multiEntityNode.getName(), enumType.OPERANDO, enumSubType.NODE, multiEntityNode); 
+		    				node = new DefaultMutableTreeNode(nodeFormulaChild); 
 		    				root.add(node); 
+		    				nodeFormulaRoot.addChildren(nodeFormulaChild); 
 		    			}
 		    			else{
 		    				if(multiEntityNode instanceof ContextNode){
-		    					root.add(buildFormulaTree((ContextNode)multiEntityNode)); 
+		    					DefaultMutableTreeNode child = buildFormulaTree((ContextNode)multiEntityNode);
+		    					root.add(child); 
+		    					nodeFormulaRoot.addChildren((NodeFormulaTree)child.getUserObject()); 
 		    				}
 		    			}
 		    		}
@@ -1206,8 +1211,8 @@ public class LoaderPrOwlIO {
 		}
 		else{
 			if((obj instanceof ResidentNode)){
-				nodeFormula = new NodeFormulaTree(((ResidentNode)obj).getName(), enumType.OPERANDO, enumSubType.NODE, (ResidentNode)obj); 
-				root.setUserObject(nodeFormula); 				
+				nodeFormulaRoot = new NodeFormulaTree(((ResidentNode)obj).getName(), enumType.OPERANDO, enumSubType.NODE, (ResidentNode)obj); 
+				root.setUserObject(nodeFormulaRoot); 				
 			}
 		}
 		

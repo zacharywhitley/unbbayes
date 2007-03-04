@@ -1,4 +1,4 @@
-; Thu Mar 01 21:28:39 GMT-03:00 2007
+; Sun Mar 04 19:07:26 GMT-03:00 2007
 ; 
 ;+ (version "3.2")
 ;+ (build "Build 342")
@@ -6,11 +6,11 @@
 ([BROWSER_SLOT_NAMES] of  Property_List
 
 	(properties
-		[pr-owl_ProjectKB_Instance_72]
-		[pr-owl_ProjectKB_Instance_73]
-		[pr-owl_ProjectKB_Instance_74]
-		[pr-owl_ProjectKB_Instance_75]
-		[pr-owl_ProjectKB_Instance_76]))
+		[pr-owl_ProjectKB_Instance_48]
+		[pr-owl_ProjectKB_Instance_49]
+		[pr-owl_ProjectKB_Instance_50]
+		[pr-owl_ProjectKB_Instance_51]
+		[pr-owl_ProjectKB_Instance_52]))
 
 ([CLSES_TAB] of  Widget
 
@@ -419,11 +419,6 @@
 	(property_list [KB_100699_Instance_11])
 	(widget_class_name "edu.stanford.smi.protege.widget.FormWidget"))
 
-([KB_110662_Instance_0] of  String
-
-	(name "owl_file_name")
-	(string_value "pr-owl.owl"))
-
 ([KB_140180_Instance_0] of  Widget
 
 	(is_hidden FALSE)
@@ -531,6 +526,11 @@
 
 ([KB_140180_Instance_9] of  Property_List
 )
+
+([KB_193017_Instance_0] of  String
+
+	(name "owl_file_name")
+	(string_value "pr-owl.owl"))
 
 ([KB_221055_Instance_10] of  Widget
 
@@ -7386,11 +7386,36 @@
 ([pr-owl_ProjectKB_Instance_42] of  Property_List
 )
 
+([pr-owl_ProjectKB_Instance_48] of  String
+
+	(name "owl:Class")
+	(string_value "%3ANAME"))
+
+([pr-owl_ProjectKB_Instance_49] of  String
+
+	(name ":INSTANCE-ANNOTATION")
+	(string_value "%3AANNOTATION-TEXT"))
+
 ([pr-owl_ProjectKB_Instance_5] of  Widget
 
 	(is_hidden TRUE)
 	(property_list [pr-owl_ProjectKB_Instance_6])
 	(widget_class_name "JessTab.JessTab"))
+
+([pr-owl_ProjectKB_Instance_50] of  String
+
+	(name ":PAL-CONSTRAINT")
+	(string_value "%3APAL-NAME"))
+
+([pr-owl_ProjectKB_Instance_51] of  String
+
+	(name "owl:Thing")
+	(string_value "%3ANAME"))
+
+([pr-owl_ProjectKB_Instance_52] of  String
+
+	(name ":META-CLASS")
+	(string_value "%3ANAME"))
 
 ([pr-owl_ProjectKB_Instance_6] of  Property_List
 )
@@ -7400,31 +7425,6 @@
 	(is_hidden TRUE)
 	(property_list [pr-owl_ProjectKB_Instance_8])
 	(widget_class_name "script.ProtegeScriptTab"))
-
-([pr-owl_ProjectKB_Instance_72] of  String
-
-	(name "owl:Class")
-	(string_value "%3ANAME"))
-
-([pr-owl_ProjectKB_Instance_73] of  String
-
-	(name ":INSTANCE-ANNOTATION")
-	(string_value "%3AANNOTATION-TEXT"))
-
-([pr-owl_ProjectKB_Instance_74] of  String
-
-	(name ":PAL-CONSTRAINT")
-	(string_value "%3APAL-NAME"))
-
-([pr-owl_ProjectKB_Instance_75] of  String
-
-	(name "owl:Thing")
-	(string_value "%3ANAME"))
-
-([pr-owl_ProjectKB_Instance_76] of  String
-
-	(name ":META-CLASS")
-	(string_value "%3ANAME"))
 
 ([pr-owl_ProjectKB_Instance_8] of  Property_List
 )
@@ -7715,7 +7715,7 @@
 		[OWL_ProjectKB_Instance_3]
 		[KB_444675_Instance_0]
 		[KB_632156_Instance_0]
-		[KB_110662_Instance_0]))
+		[KB_193017_Instance_0]))
 
 ([STANDARD_CLASS_FORM_WIDGET] of  Widget
 
