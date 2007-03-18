@@ -153,6 +153,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"newArgumentToolTip","Adicionar nova v. ord. à lista de argumentos"},
 		{"delArgumentToolTip", "Remover var. ord. da lista de argumentos"}, 		
 		{"downArgumentToolTip", "Aicionar a lista de argumentos v. ord. selecionada"}, 		
+		{"mTheoryEditionTip", "Editar atributos da MTheory"}, 		
 		
 		{"showMTheoryToolTip","Mostrar árvore da MTheory"},	
 		{"showEntitiesToolTip","Mostrar entidades da MTheory"},
@@ -192,6 +193,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"FathersTitle", "Nós Pais"}, 		
 		
 		//Label for buttons of tab selection
+		{"MTheoryButton", "MTheory"}, 
 		{"ResidentButton", "Resident"}, 
 		{"InputButton", "Input"}, 
 		{"ContextButton", "Context"}, 
@@ -257,6 +259,10 @@ public class GuiResources_pt extends ListResourceBundle {
         {"nameException","Erro no Nome"},
         {"nameDuplicated", "Nome já existe..."}, 
         {"siglaError","A sigla só pode ter letras e números."},
-        {"descriptionError","A descrição só pode ter letras e números."}
+        {"descriptionError","A descrição só pode ter letras e números."},
+        
+		/* Exceptions MEBN */
+		{"withoutMFrag", "Não existe nenhuma MFrag"}, 
+		{"edgeInvalid", "Arco invalido"} 		
 	};
 }

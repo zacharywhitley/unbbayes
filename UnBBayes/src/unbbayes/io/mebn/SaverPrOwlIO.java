@@ -13,7 +13,7 @@ import java.util.Set;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import unbbayes.gui.mebn.NodeFormulaTree;
+import unbbayes.gui.mebn.formula.NodeFormulaTree;
 import unbbayes.gui.mebn.formula.enumSubType;
 import unbbayes.gui.mebn.formula.enumType;
 import unbbayes.io.mebn.exceptions.IOMebnException;

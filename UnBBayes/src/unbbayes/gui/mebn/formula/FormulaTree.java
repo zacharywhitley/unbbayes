@@ -27,7 +27,7 @@ import javax.swing.tree.TreePath;
 
 import unbbayes.controller.FormulaTreeController;
 import unbbayes.controller.IconController;
-import unbbayes.gui.mebn.NodeFormulaTree;
+import unbbayes.gui.mebn.formula.NodeFormulaTree;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;

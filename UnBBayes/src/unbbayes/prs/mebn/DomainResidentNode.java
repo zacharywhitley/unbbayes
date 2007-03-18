@@ -224,24 +224,24 @@ public class DomainResidentNode extends ResidentNode {
     
 	public void delete(){
 		
-		for (GenerativeInputNode inputNode: inputInstanceFromList){
-			inputInstanceFromList.remove(inputNode);
+		while(inputInstanceFromList.isEmpty() != true){
+			inputInstanceFromList.remove(0).setInputInstanceOf(); 
 		}
 		
-		for(GenerativeInputNode inputNode: inputNodeFatherList){
-			inputNodeFatherList.remove(inputNode);
+		//não utilize o for para evitar acesso concorrente a lista.... 
+		while(inputNodeFatherList.isEmpty() != true){
+			inputNodeFatherList.remove(0).removeResidentNodeChild(this); 
 		}
 		
-		for(DomainResidentNode residentNode: residentNodeFatherList){
-			inputNodeFatherList.remove(residentNode); 
+		while(residentNodeFatherList.isEmpty() != true){
+			residentNodeFatherList.remove(0).removeResidentNodeChildList(this); 
 		}
 		
-		for(DomainResidentNode residentNode: residentNodeChildList){
-			inputNodeFatherList.remove(residentNode); 
-		}				
+		while(residentNodeChildList.isEmpty() != true){
+			residentNodeChildList.remove(0).removeResidentNodeFather(this); 
+		}
 		
 		mFrag.removeDomainResidentNode(this); 
-		
 		
 	}
 	

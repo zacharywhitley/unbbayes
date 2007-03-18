@@ -24,6 +24,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 
 import unbbayes.controller.IconController;
@@ -72,6 +73,7 @@ public class MEBNEditionPane extends JPanel {
     
     /*---- Global Options ----*/
     private GlobalOptionsDialog go;
+    private JTextField txtNameMTheory; 
     private JTextField txtNameResident; 
     private JTextField txtDescription;
     private JTextField txtFormula;   
@@ -98,12 +100,14 @@ public class MEBNEditionPane extends JPanel {
     private final JToolBar jtbResident;
     private final JToolBar jtbInput; 
     private final JToolBar jtbContext;  
+    private final JToolBar jtbMTheory; 
 
     private final JButton btnAddMFrag; 
     private final JButton btnAddContextNode;
     private final JButton btnAddInputNode;
     private final JButton btnAddResidentNode;
     private final JButton btnAddEdge;
+    private final JButton btnEditMTheory;
     
     private final JButton btnSelectObject;
     private final JButton btnGlobalOption;
@@ -144,12 +148,14 @@ public class MEBNEditionPane extends JPanel {
         jtbEmpty = new JToolBar(); 
         
         graphPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        graphPanel.setDividerSize(1); 
         bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 1));
         status      = new JLabel(resource.getString("statusReadyLabel"));
 
         //criar labels e textfields que serão usados no jtbState
         txtDescription     = new JTextField(15);
         
+        txtNameMTheory = new JTextField(5); 
         txtNameResident = new JTextField(5);         
         txtNameMFrag = new JTextField(5); 
         txtNameContext = new JTextField(5); 
@@ -158,6 +164,7 @@ public class MEBNEditionPane extends JPanel {
         txtFormula = new JTextField(15); 
         
         //criar botões que serão usados nodeList toolbars
+        btnEditMTheory = new JButton(iconController.getMTheoryNodeIcon()); 
         btnAddEdge               = new JButton(iconController.getEdgeIcon());
         btnAddContextNode = new JButton(iconController.getContextNodeIcon());
         btnAddInputNode      = new JButton(iconController.getInputNodeIcon());
@@ -166,6 +173,7 @@ public class MEBNEditionPane extends JPanel {
         btnSelectObject            = new JButton(iconController.getSelectionIcon());
         btnGlobalOption      = new JButton(iconController.getGlobalOptionIcon());
 
+        btnEditMTheory.setToolTipText(resource.getString("mTheoryEditionTip"));
         btnAddEdge.setToolTipText(resource.getString("arcToolTip"));
         btnAddMFrag.setToolTipText(resource.getString("mFragInsertToolTip")); 
         btnAddContextNode.setToolTipText(resource.getString("contextNodeInsertToolTip"));
@@ -181,21 +189,23 @@ public class MEBNEditionPane extends JPanel {
         btnTabOptionTree.setToolTipText(resource.getString("showMTheoryToolTip")); 
         btnTabOptionOVariable.setToolTipText(resource.getString("showOVariablesToolTip"));
         btnTabOptionEntity.setToolTipText(resource.getString("showEntitiesToolTip"));
-
+        
         addActionListeners(); 
         
         //colocar botões e controladores do look-and-feel no toolbar e esse no topPanel
 
-        jtbEdition.add(btnAddMFrag); 
-        
+        jtbEdition.add(btnEditMTheory); 
         jtbEdition.addSeparator(); 
-
+        jtbEdition.add(btnAddMFrag);
         jtbEdition.add(btnAddResidentNode);
         jtbEdition.add(btnAddInputNode);
         jtbEdition.add(btnAddContextNode);
         jtbEdition.add(btnAddEdge);
+        jtbEdition.addSeparator(); 
         jtbEdition.add(btnSelectObject);
 
+        jtbEdition.setFloatable(false); 
+        
         topPanel.add(jtbEdition);
         
         jtbMFrag = buildJtbMFrag(); 
@@ -203,15 +213,20 @@ public class MEBNEditionPane extends JPanel {
         jtbInput = buildJtbInput(); 
         jtbContext = buildJtbContext(); 
 
+        /*---- jtbMTheory ----*/
+        jtbMTheory = buildJtbMTheory();  
+        
         
         /*---- jtbEmpty ----*/
         JTextField txtIsEmpty = new JTextField(resource.getString("whithotMFragActive")); 
         txtIsEmpty.setEditable(false); 
         jtbEmpty.addSeparator(); 
         jtbEmpty.add(txtIsEmpty);
+        jtbEmpty.setFloatable(false); 
         
         /*---- Add card panels in the layout ----*/
         
+        jpNodeSelectedOptions.add("MTheoryCard", jtbMTheory); 
         jpNodeSelectedOptions.add("ResidentCard", jtbResident);
         jpNodeSelectedOptions.add("ContextCard", jtbContext); 
         jpNodeSelectedOptions.add("InputCard", jtbInput); 
@@ -225,7 +240,7 @@ public class MEBNEditionPane extends JPanel {
         bottomPanel.add(status);
        
         /*----------------- Icones do Tab Panel ------------*/
-        jtbTabSelection.setBackground(ToolKitForGuiMebn.getBorderColor()); 
+
         jtbTabSelection.setLayout(new GridLayout(1,3)); 
         jtbTabSelection.add(btnTabOptionTree);
         jtbTabSelection.add(btnTabOptionOVariable); 
@@ -270,8 +285,8 @@ public class MEBNEditionPane extends JPanel {
         tabsPanel.add("South", jpDescription); 
         
         centerPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, tabsPanel, graphPanel); 
+        centerPanel.setDividerSize(3); 
         
-
         //adiciona containers para o contentPane
         this.add(topPanel, BorderLayout.NORTH);
         this.add(bottomPanel, BorderLayout.SOUTH);        
@@ -279,6 +294,32 @@ public class MEBNEditionPane extends JPanel {
         
         setVisible(true);
     }
+  	
+  	private JToolBar buildJtbMTheory(){
+  		
+  		JToolBar jtbMTheory = new JToolBar(); 
+  		
+    	JButton btnMTheoryActive = new JButton(resource.getString("MTheoryButton")); 
+  		
+    	btnMTheoryActive.setBackground(ToolKitForGuiMebn.getBorderColor()); 
+    	btnMTheoryActive.setForeground(Color.WHITE);
+    	btnMTheoryActive.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				setMTheoryTreeActive(); 
+  			}
+  		});
+    	
+    	JLabel labelMTheoryName = new JLabel(resource.getString("nameLabel")); 
+    	
+    	jtbMTheory.add(btnMTheoryActive); 
+    	jtbMTheory.addSeparator(); 
+    	jtbMTheory.add(labelMTheoryName); 
+    	jtbMTheory.add(txtNameMTheory); 
+    	
+  		jtbMTheory.setFloatable(false); 
+  		
+  		return jtbMTheory; 
+  	}
   	
     private JToolBar buildJtbMFrag(){
      	
@@ -301,6 +342,8 @@ public class MEBNEditionPane extends JPanel {
         jtbMFrag.add(labelMFragName);
         jtbMFrag.add(txtNameMFrag);        
     
+        jtbMFrag.setFloatable(false); 
+        
         return jtbMFrag; 
         
     }
@@ -354,6 +397,8 @@ public class MEBNEditionPane extends JPanel {
   		txtArguments.setEditable(false); 
   		jtbResident.add(txtArguments); 
   		
+  		jtbResident.setFloatable(false); 
+  		
   		return jtbResident;  		
   	}
   	
@@ -394,6 +439,8 @@ public class MEBNEditionPane extends JPanel {
         jtbInput.add(txtNameInput);    
         //jtbInput.add(labelInputOf);
   		
+        jtbInput.setFloatable(false); 
+        
   		return jtbInput; 
   	}
   	
@@ -429,6 +476,8 @@ public class MEBNEditionPane extends JPanel {
         txtNameContext.setEditable(false); 
         jtbContext.add(txtNameContext);
   
+        jtbContext.setFloatable(false); 
+        
         return jtbContext; 
   	}
   	
@@ -458,6 +507,12 @@ public class MEBNEditionPane extends JPanel {
   	}
   	
   	private void addActionListeners(){
+  		
+  		btnEditMTheory.addActionListener(new ActionListener(){
+  			public void actionPerformed(ActionEvent ae){
+  				controller.getMebnController().enableMTheoryEdition(); 
+  			}
+  		}); 
   		
   		//ao clicar no botão btnGlobalOption, mostra-se o menu para escolha das opções
   		btnGlobalOption.addActionListener(new ActionListener() {
@@ -558,6 +613,29 @@ public class MEBNEditionPane extends JPanel {
   			}
   		});
   		
+  		txtNameMTheory.addKeyListener(new KeyAdapter() {
+  			public void keyPressed(KeyEvent e) {
+  				
+  				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameMTheory.getText().length()>0)) {
+  					try {
+  						String name = txtNameMFrag.getText(0,txtNameMTheory.getText().length());
+  						matcher = wordPattern.matcher(name);
+  						if (matcher.matches()) {
+  							controller.getMebnController().setNameMTheory(name);
+  							mTheoryTree.setMTheoryName(name);
+  							mTheoryTree.updateUI(); 
+  						}  else {
+  							JOptionPane.showMessageDialog(netWindow, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+  							txtNameMTheory.selectAll();
+  						}
+  					}
+  					catch (javax.swing.text.BadLocationException ble) {
+  						System.out.println(ble.getMessage());
+  					}
+  				}
+  			}
+  		});
+  		
   		// listener responsável pela atualização do texo da descrição do nó
   		txtDescription.addKeyListener(new KeyAdapter() {
   			public void keyPressed(KeyEvent e) {
@@ -586,6 +664,8 @@ public class MEBNEditionPane extends JPanel {
 
   	}  	
 
+
+  	
     public void showTableEdit(){
     	
     	DomainResidentNode resident = (DomainResidentNode)controller.getMebnController().getResidentNodeActive(); 
@@ -593,11 +673,27 @@ public class MEBNEditionPane extends JPanel {
     	this.getGraphPanel().setTopComponent(new TableEditionPane(resident, controller.getMebnController())); 
     }
 
-    public void hideTableEdit(){
+    public void showTitleGraph(String mFragName){
+    	
+    	JPanel titleMFragPane = new JPanel(new BorderLayout()); 
+    	titleMFragPane.setBackground(new Color(7, 199, 203)); 
+    	
+    	JLabel label = new JLabel(mFragName);
+    	label.setForeground(Color.BLACK); 
+    	label.setHorizontalAlignment(JLabel.CENTER); 
+    	label.setHorizontalTextPosition(JLabel.CENTER);
+    	
+    	titleMFragPane.add(label, BorderLayout.CENTER); 
+    	
+    	this.getGraphPanel().setTopComponent(titleMFragPane);
+    	
+    }
+    
+    public void hideTopComponent(){
     	
     	this.getGraphPanel().setTopComponent(null); 
     	 
-    }
+    }    
     
     /**
      *  Retorna o text field da descrição do nó.
@@ -628,6 +724,13 @@ public class MEBNEditionPane extends JPanel {
         this.status.setText(status);
     }
 
+    public void setNameMTheory(String name){
+    	this.txtNameMTheory.setText(name); 
+    }
+    
+    public String getNameMTheory(String name){
+    	return this.txtNameMTheory.getText(); 
+    }
     
     /**
      *  Retorna o painel do centro onde fica o graph e a table.
@@ -760,7 +863,12 @@ public class MEBNEditionPane extends JPanel {
     }
     
     /* Panel Node Selected */
-
+    
+    public void setMTheoryCardActive(){
+        cardLayout.show(jpNodeSelectedOptions, "MTheoryCard");  
+    }    
+    
+    
     public void setResidentCardActive(){
         cardLayout.show(jpNodeSelectedOptions, "ResidentCard");  
     }    

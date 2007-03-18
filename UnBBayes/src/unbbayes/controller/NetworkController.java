@@ -64,8 +64,9 @@ import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
-import unbbayes.prs.mebn.MEBNConstructionException;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.exception.MEBNConstructionException;
+import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.util.NodeList;
 
 /**
@@ -128,31 +129,20 @@ public class NetworkController implements KeyListener {
      * @param x The x position of the new node.
      * @param y The y position of the new node.
      */
-    public void insertContextNode(double x, double y) throws MEBNConstructionException{
-    	if (mebnController != null)
-			try {
-				mebnController.insertContextNode(x,y);
-			} catch (MEBNConstructionException e) {
-				throw e; 
-			}
-    }
     
-    public void insertResidentNode(double x, double y) throws MEBNConstructionException{
+    public void insertResidentNode(double x, double y) throws MFragDoesNotExistException{
     	if (mebnController != null)
-			try {
-				mebnController.insertDomainResidentNode(x,y);
-			} catch (MEBNConstructionException e) {
-				throw e; 
-			}
+			mebnController.insertDomainResidentNode(x,y);
     }
         
-    public void insertInputNode(double x, double y) throws MEBNConstructionException{
+    public void insertInputNode(double x, double y) throws MFragDoesNotExistException{
     	if (mebnController != null)
-			try {
-				mebnController.insertGenerativeInputNode(x,y);
-			} catch (MEBNConstructionException e) {
-				throw e; 
-			}
+			mebnController.insertGenerativeInputNode(x,y);
+    }
+    
+    public void insertContextNode(double x, double y) throws MFragDoesNotExistException{
+    	if (mebnController != null)
+				mebnController.insertContextNode(x,y);
     }
     
     public MEBNController getMebnController(){
@@ -832,6 +822,7 @@ public class NetworkController implements KeyListener {
     public void selectNode(Node node){
     	if (multiEntityBayesianNetwork != null){
     		mebnController.selectNode(node); 
+    		screen.getGraphPane().selectObject(node); 
     	}
     }
     

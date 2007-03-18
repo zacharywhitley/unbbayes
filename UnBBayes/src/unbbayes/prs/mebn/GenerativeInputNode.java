@@ -63,11 +63,9 @@ public class GenerativeInputNode extends InputNode {
 	 * Remove the node of the resident node child list. 
 	 */
 	public void removeResidentNodeChild(DomainResidentNode node){
-		
 		residentNodeChildList.remove(node);
 		node.removeInputNodeFatherList(this); 
 		mFrag.removeEdgeByNodes(this, node);
-		
 	}	
 	
 	public void addResidentNodeChild(DomainResidentNode resident){
@@ -88,6 +86,11 @@ public class GenerativeInputNode extends InputNode {
 	public void setInputInstanceOf(BuiltInRV builtInRV){
 		super.setInputInstanceOf(builtInRV); 
 		builtInRV.addInputInstance(this); 
+		updateLabel(); 
+	}
+	
+	public void setInputInstanceOf(){
+		super.setInputInstanceOf(); 
 		updateLabel(); 
 	}
 	
@@ -145,6 +148,9 @@ public class GenerativeInputNode extends InputNode {
     		else{
     			this.setLabel(((BuiltInRV)inputInstanceOf).getName()); 
         	}
+    	}
+    	else{
+    		this.setLabel(" "); 
     	}
     	
     }	

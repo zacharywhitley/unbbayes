@@ -1,4 +1,4 @@
-package unbbayes.gui.mebn;
+package unbbayes.gui.mebn.formula;
 
 import java.util.ArrayList;
 import java.util.List;

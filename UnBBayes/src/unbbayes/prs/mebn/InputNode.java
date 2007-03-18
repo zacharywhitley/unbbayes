@@ -39,6 +39,14 @@ public class InputNode extends MultiEntityNode {
 		inputInstanceOfNode = node; 
 		
 	}	
+	
+	/**
+	 * set the input instance of propriety for null... 
+	 */
+	public void setInputInstanceOf(){
+		inputInstanceOfRV = null; 
+		inputInstanceOfNode = null; 
+	}
 
 	/** 
 	 * return the value of the property input instance of 

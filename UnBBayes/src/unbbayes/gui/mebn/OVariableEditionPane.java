@@ -91,31 +91,6 @@ public class OVariableEditionPane extends JPanel {
 	    jcbType = new JComboBox(types); 
 	    jcbType.setSelectedIndex(0); 
 	    
-	    jcbType.addActionListener(
-           new ActionListener(){
-        	   public void actionPerformed(ActionEvent e){
-	    	        String typeName = (String)jcbType.getSelectedItem();
-					if(treeMFrag.getOVariableActive() != null){
-						   treeMFrag.getOVariableActive().setType(typeName); 
-					}
-        	   }
-           }
-	    ); 
-	    
-	    /*
-	    jcbType.addActionListener(
-	       new ActionListener(){
-	    
-	    	    public void actionPerformed(ActionEvent e) {
-	    	        String typeName = (String)jcbType.getSelectedItem();
-						if(treeMFrag.getOVariableActive() != null){
-							   treeMFrag.getOVariableActive().setType(typeName); 
-						}
-	    	    }
-	       }
-	    ); 
-	    */
-	    
 	    jtbOptions = new JToolBar(); 
 	    jtbOptions.setLayout(new GridLayout(0, 2)); 
 	    
@@ -243,6 +218,17 @@ public class OVariableEditionPane extends JPanel {
   				}
   			}
   		});
+		
+	    jcbType.addActionListener(
+           new ActionListener(){
+        	   public void actionPerformed(ActionEvent e){
+	    	        String typeName = (String)jcbType.getSelectedItem();
+					if(treeMFrag.getOVariableActive() != null){
+						   treeMFrag.getOVariableActive().setType(typeName); 
+					}
+        	   }
+           }
+	    ); 
 		
 		
 	}

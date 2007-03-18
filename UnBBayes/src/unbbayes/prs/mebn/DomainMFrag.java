@@ -6,6 +6,7 @@ import java.util.ResourceBundle;
 
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
+import unbbayes.prs.mebn.exception.MEBNConstructionException;
 
 /**
  * Domain-specific MFrags. 

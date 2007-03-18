@@ -53,8 +53,9 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
-import unbbayes.prs.mebn.MEBNConstructionException;
 import unbbayes.prs.mebn.MultiEntityNode;
+import unbbayes.prs.mebn.exception.MEBNConstructionException;
+import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.util.GeometricUtil;
 import unbbayes.util.NodeList;
 
@@ -508,8 +509,8 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 				}
 				catch(MEBNConstructionException exception){
 					JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
-						    exception.getMessage(),
-						    "MEBN Construction Error",
+							resource.getString("withoutMFrag"),
+						    resource.getString("operationError"),
 						    JOptionPane.WARNING_MESSAGE);
 				}
 			    return; 
@@ -523,8 +524,8 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 				}
 				catch(MEBNConstructionException exception){
 					JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
-						    exception.getMessage(),
-						    "MEBN Construction Error",
+							resource.getString("withoutMFrag"),
+						    resource.getString("operationError"),
 						    JOptionPane.WARNING_MESSAGE);
 				}				
 				return; 
@@ -536,10 +537,10 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 				   selectObject(node);
 				   controller.selectNode(node);
                 }
-				catch(MEBNConstructionException exception){
+				catch(MFragDoesNotExistException exception){
 					JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
-						    exception.getMessage(),
-						    "MEBN Construction Error",
+							resource.getString("withoutMFrag"),
+						    resource.getString("operationError"),
 						    JOptionPane.WARNING_MESSAGE);
 				}
 				return; 				
@@ -550,7 +551,6 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 					
 					Node node2; 
 					
-					//TODO resolver isto fazendo com que size em Node nao seja estatico!!!
 					if (controller.getMebnController() != null){
 					   node2 = new MultiEntityNode();
 					}
@@ -635,7 +635,6 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 					}
 				}
 				else{
-					//TODO Acao quando for selecionado um no da MFrag...
 					
 					
 				}

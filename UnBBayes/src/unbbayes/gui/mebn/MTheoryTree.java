@@ -16,6 +16,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
@@ -29,6 +30,7 @@ import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.util.ArrayMap;
 
@@ -56,9 +58,16 @@ public class MTheoryTree extends JTree {
 	private JPopupMenu popup = new JPopupMenu();
 	
 	private JPopupMenu popupMFrag = new JPopupMenu(); 
+	private JPopupMenu popupNode = new JPopupMenu(); 
+	//private JPopupMenu popupResidentNode = new JPopupMenu(); 
+	//private JPopupMenu popupContextNode = new JPopupMenu(); 
+	//private JPopupMenu popupInputNode = new JPopupMenu(); 
+	
 
 	protected IconController iconController = IconController.getInstance();
 
+	private DefaultMutableTreeNode root; 
+	
     private final NetworkController controller;	
     
 	/** Load resource file from this package */
@@ -78,97 +87,24 @@ public class MTheoryTree extends JTree {
 		/*----------------- build tree --------------------------*/ 
 		
 		setCellRenderer(new MTheoryTreeCellRenderer());
-		DefaultMutableTreeNode root = new DefaultMutableTreeNode(net.getName());
+		root = new DefaultMutableTreeNode(net.getName());
 	    DefaultTreeModel model = new DefaultTreeModel(root);
 	    setModel(model);
 	    createTree();
+	    
 	    createPopupMenu();
-	    createPopupMenuMFrag(); 	    
-
-	    addMouseListener(new MouseAdapter() {
-			
-			public void mousePressed(MouseEvent e) {
-				
-				int selRow = getRowForLocation(e.getX(), e.getY());
-				if (selRow == -1) {
-					return;
-				}
-
-				TreePath selPath = getPathForLocation(e.getX(), e.getY());
-				DefaultMutableTreeNode node = (DefaultMutableTreeNode) selPath
-						.getLastPathComponent();
-
-				if (node.isLeaf()) {
-					
-					Object nodeLeaf = nodeMap.get(node); 
-					objectSelected = nodeLeaf; 
-					
-					if (nodeLeaf instanceof MFrag){
-						if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
-							popupMFrag.setEnabled(true);
-							popupMFrag.show(e.getComponent(),e.getX(),e.getY());
-						} else if (e.getClickCount() == 2
-								&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-							controller.getMebnController().setCurrentMFrag(mFragMap.get(node)); 
-						} else if (e.getClickCount() == 1) {
-							//TODO acao para clique simples na MFrag. 
-						}
-					}
-					else{
-						
-					}
-					
-					
-				} 
-				else { //Not is a leaf 
-					
-					Object nodeLeaf = nodeMap.get(node); 
-					objectSelected = nodeLeaf; 
-					
-					if (nodeLeaf instanceof MFrag){
-						if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
-							popupMFrag.setEnabled(true);
-							popupMFrag.show(e.getComponent(),e.getX(),e.getY());
-						} else if (e.getClickCount() == 2
-								&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-							controller.getMebnController().setCurrentMFrag(mFragMap.get(node)); 
-						} else if (e.getClickCount() == 1) {
-							//TODO acao para clique simples na MFrag. 
-						}
-					}
-					else{
-						if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
-							
-							// PARECE NÃO ENTRAR AQUI... VERIFICAR...
-							//if (e.isPopupTrigger()) {
-							if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
-								popup.setEnabled(true);
-								popup.show(e.getComponent(),e.getX(),e.getY());
-							}
-							
-						}
-						if (e.getClickCount() == 1) {
-							/*Node newNode = getNodeMap(node);
-							 if (newNode != null) {
-							 netWindow.getGraphPane().selectObject(newNode);
-							 netWindow.getGraphPane().update();
-							 }*/
-							//TODO NÃO TEM ISSO NA MFRAG
-						} else if (e.getClickCount() == 2) {
-							DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel()
-							.getRoot();
-							int index = root.getIndex(node);
-							expandedNodes[index] = !expandedNodes[index];
-						}
-					}
-				}
-			}
-		});
+	    createPopupMenuMFrag(); 
+	    //createPopupMenuResident(); 
+	    //createPopupMenuInput(); 
+	    //createPopupMenuContext(); 
+	    createPopupMenuNode(); 
+	    
+	    addMouseListener(new MousePressedListener()); 
 	    	    
 		super.treeDidChange();
 		expandTree();
 	}
-
+	
 	private void createPopupMenuMFrag(){
 		
 		JMenuItem itemDelete =   new JMenuItem(resource.getString("menuDelete")); 
@@ -205,6 +141,64 @@ public class MTheoryTree extends JTree {
 		popupMFrag.add(itemContext); 
 		popupMFrag.add(itemResident); 
 		popupMFrag.add(itemInput); 
+	}
+
+	/*
+	private void createPopupMenuResident(){
+		
+		JMenuItem itemDelete =   new JMenuItem(resource.getString("menuDelete")); 
+
+		itemDelete.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				controller.getMebnController().deleteSelected(objectSelected); 
+				updateTree(); 
+			}
+		}); 		
+		
+		popupResidentNode.add(itemDelete); 
+	}	
+	
+	private void createPopupMenuInput(){
+		
+		JMenuItem itemDelete =   new JMenuItem(resource.getString("menuDelete")); 
+
+		itemDelete.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				controller.getMebnController().deleteSelected(objectSelected); 
+				updateTree(); 
+			}
+		}); 		
+		
+		popupInputNode.add(itemDelete); 
+	}	
+	
+	private void createPopupMenuContext(){
+		
+		JMenuItem itemDelete =   new JMenuItem(resource.getString("menuDelete")); 
+
+		itemDelete.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				controller.getMebnController().deleteSelected(objectSelected); 
+				updateTree(); 
+			}
+		}); 		
+		
+		popupContextNode.add(itemDelete); 
+	}
+	*/		
+
+	private void createPopupMenuNode(){
+		
+		JMenuItem itemDelete =   new JMenuItem(resource.getString("menuDelete")); 
+
+		itemDelete.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				controller.getMebnController().deleteSelected(objectSelected); 
+				updateTree(); 
+			}
+		}); 		
+		
+		popupNode.add(itemDelete); 
 	}
 	
 	private void createPopupMenu() {
@@ -440,5 +434,124 @@ public class MTheoryTree extends JTree {
 		}
 		return null;
 	}
+	
+	public void setMTheoryName(String name){
+		root.setUserObject(name); 
+	}
+	
+	/**
+	 * Listener for the events of mouse in the tree
+	 * @author Laecio Lima dos Santos
+	 *
+	 */
+	private class MousePressedListener extends MouseAdapter{
+
+		public void mousePressed(MouseEvent e) {
+			
+			int selRow = getRowForLocation(e.getX(), e.getY());
+			if (selRow == -1) {
+				return;
+			}
+
+			TreePath selPath = getPathForLocation(e.getX(), e.getY());
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) selPath
+					.getLastPathComponent();
+
+			if (node.isLeaf()) {
+				
+				Object nodeLeaf = nodeMap.get(node); 
+				objectSelected = nodeLeaf; 
+				
+				if (nodeLeaf instanceof MFrag){
+					if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
+						popupMFrag.setEnabled(true);
+						popupMFrag.show(e.getComponent(),e.getX(),e.getY());
+					} else if (e.getClickCount() == 2
+							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
+						controller.getMebnController().setCurrentMFrag(mFragMap.get(node)); 
+					} else if (e.getClickCount() == 1) {
+						
+					}
+				}
+				else{
+					if (nodeLeaf instanceof MultiEntityNode){
+						if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
+							popupNode.setEnabled(true);
+							popupNode.show(e.getComponent(),e.getX(),e.getY());
+						} else if (e.getClickCount() == 2
+								&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
+							
+							/* 
+							 * ativar a MFrag do nodo como a ativa e selecionar o nodo
+							 * no grafo desta. 
+							 */ 
+							Object fatherNode = objectSelected;
+							TreeNode treeNode = node; 
+							
+							while (!(fatherNode instanceof MFrag)){
+								treeNode = treeNode.getParent(); 
+								fatherNode = nodeMap.get(treeNode); 
+							}
+							
+							System.out.println("\n# Ação: Node selecionado na arvore da MTheory"); 
+							System.out.println("  -> MFrag Father = " + ((MFrag)fatherNode).getName()); 
+							System.out.println("  -> Node name = " + ((Node)objectSelected).getName()); 
+							
+							controller.getMebnController().showGraphMFrag((MFrag)fatherNode); 
+							controller.selectNode((Node)objectSelected); 
+							
+						} else if (e.getClickCount() == 1) {
+							
+						}
+					}					
+				}
+				
+				
+			} 
+			else { //Not is a leaf 
+				
+				Object nodeLeaf = nodeMap.get(node); 
+				objectSelected = nodeLeaf; 
+				
+				if (nodeLeaf instanceof MFrag){
+					if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
+						popupMFrag.setEnabled(true);
+						popupMFrag.show(e.getComponent(),e.getX(),e.getY());
+					} else if (e.getClickCount() == 2
+							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
+						controller.getMebnController().setCurrentMFrag(mFragMap.get(node)); 
+					} else if (e.getClickCount() == 1) {
+						//TODO acao para clique simples na MFrag. 
+					}
+				}
+				else{
+					if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
+						
+						// PARECE NÃO ENTRAR AQUI... VERIFICAR...
+						//if (e.isPopupTrigger()) {
+						if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
+							popup.setEnabled(true);
+							popup.show(e.getComponent(),e.getX(),e.getY());
+						}
+						
+					}
+					if (e.getClickCount() == 1) {
+						/*Node newNode = getNodeMap(node);
+						 if (newNode != null) {
+						 netWindow.getGraphPane().selectObject(newNode);
+						 netWindow.getGraphPane().update();
+						 }*/
+						//TODO NÃO TEM ISSO NA MFRAG
+					} else if (e.getClickCount() == 2) {
+						DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel()
+						.getRoot();
+						int index = root.getIndex(node);
+						expandedNodes[index] = !expandedNodes[index];
+					}
+				}
+			}
+		}
+	}
+
 
 }

@@ -12,7 +12,7 @@ import java.util.ResourceBundle;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import unbbayes.gui.mebn.NodeFormulaTree;
+import unbbayes.gui.mebn.formula.NodeFormulaTree;
 import unbbayes.gui.mebn.formula.enumSubType;
 import unbbayes.gui.mebn.formula.enumType;
 import unbbayes.io.mebn.exceptions.IOMebnException;

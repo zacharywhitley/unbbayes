@@ -153,6 +153,7 @@ public class GuiResources extends ListResourceBundle {
 		{"newArgumentToolTip","Add new ord. variable to argument list"},
 		{"delArgumentToolTip", "Remove ord. variable from argument list"}, 	
 		{"downArgumentToolTip", "Add to argument list ord. variable selected"}, 
+		{"mTheoryEditionTip", "Edit atributes of the MTheory"}, 		
 		
 		{"showMTheoryToolTip","Show MTheory tree"},	
 		{"showEntitiesToolTip","Show entities of the MTheory"},
@@ -192,6 +193,7 @@ public class GuiResources extends ListResourceBundle {
 		{"FathersTitle", "Fathers Nodes"}, 			
 		
 		//Label for buttons of tab selection
+		{"MTheoryButton", "MTheory"}, 
 		{"ResidentButton", "Resident"}, 
 		{"InputButton", "Input"}, 
 		{"ContextButton", "Context"}, 
@@ -257,6 +259,10 @@ public class GuiResources extends ListResourceBundle {
         {"nameException","Name Error"},
         {"nameDuplicated", "Name alredy exists..."}, 
         {"siglaError","The sigla must have only letters and numbers."},
-        {"descriptionError","The description must have only letters and numbers."}
+        {"descriptionError","The description must have only letters and numbers."}, 
+        
+		/* Exceptions MEBN */
+		{"withoutMFrag", "Don't exists any MFrag"}, 
+		{"edgeInvalid", "Edge Invalid"}
 	};
 }
