@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.io.mebn.IOMebnException;
-import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.PrOwlIO;
+import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
