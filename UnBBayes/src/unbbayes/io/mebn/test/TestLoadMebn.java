@@ -1,5 +1,6 @@
 package unbbayes.io.mebn.test;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -196,13 +197,8 @@ public class TestLoadMebn {
 				}	
 				
 				System.out.println("\n-> inputInstanceOf: "); 
-				if (generativeInputNode.getInputInstanceOfNode() != null){
-				   System.out.println("" + generativeInputNode.getInputInstanceOfNode().getName()); 
-				}
-				else{
-					if (generativeInputNode.getInputInstanceOfRV()!= null){
-						   System.out.println("" + generativeInputNode.getInputInstanceOfRV().getName()); 						
-					}
+				if (generativeInputNode.getInputInstanceOf() != null){
+				   //TODO este teste... 
 			    }
 				
 				System.out.println("\n-> argumentList: "); 
@@ -260,7 +256,8 @@ public class TestLoadMebn {
 		System.out.println("-----Load file test-----"); 
 		
 		try{
-			mebn = prOwlIO.loadMebn(STARSHIP16FILEEXAMPLE); 
+			File file = new File(STARSHIP16FILEEXAMPLE); 
+			mebn = prOwlIO.loadMebn(file); 
 			System.out.println("Load concluido"); 
 		}
 		catch (IOMebnException e){
@@ -282,7 +279,8 @@ public class TestLoadMebn {
 		}
 		
 		try{
-		   prOwlIO.saveMebn(STARSHIP16FILEEXAMPLESAVED, mebn);
+			File file = new File(STARSHIP16FILEEXAMPLESAVED); 
+		   prOwlIO.saveMebn(file, mebn);
 		}
 		catch(Exception e){
 			e.printStackTrace(); 
