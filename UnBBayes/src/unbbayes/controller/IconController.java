@@ -204,6 +204,8 @@ public class IconController implements Serializable {
 	
 	protected ImageIcon functIcon; 
 	
+	protected ImageIcon stateIcon; 
+	
 	//operators
 
 	protected ImageIcon andIcon; 
@@ -1028,6 +1030,15 @@ public class IconController implements Serializable {
 		}
 	}	
 	
+	public ImageIcon getStateIcon() {
+		if (stateIcon != null) {
+			return stateIcon;
+		} else {
+			stateIcon = new ImageIcon(getClass().getResource(
+					"/icons/state.gif"));
+			return stateIcon;
+		}
+	}	
 	
 	// operators
 	

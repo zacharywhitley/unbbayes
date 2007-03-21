@@ -73,7 +73,7 @@ public abstract class OVariableTree extends JTree{
 		
 		for (OrdinaryVariable ordinaryVariable : ordinaryVariableList){
 			
-			DefaultMutableTreeNode node = new DefaultMutableTreeNode(ordinaryVariable.getName()); 
+			DefaultMutableTreeNode node = new DefaultMutableTreeNode(ordinaryVariable.getName() + " (" + ordinaryVariable.getType() + ")"); 
 			ordinaryVariableMap.put(node, ordinaryVariable); 
 			
 			root.add(node); 
@@ -133,7 +133,7 @@ public abstract class OVariableTree extends JTree{
 		
 		for (OrdinaryVariable ordinaryVariable : ordinaryVariableList){
 			
-			DefaultMutableTreeNode node = new DefaultMutableTreeNode(ordinaryVariable.getName()); 
+			DefaultMutableTreeNode node = new DefaultMutableTreeNode(ordinaryVariable.getName() + " (" + ordinaryVariable.getType() + ")"); 
 			ordinaryVariableMap.put(node, ordinaryVariable); 
 			root.add(node); 
 		}

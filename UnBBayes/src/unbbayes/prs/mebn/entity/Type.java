@@ -21,10 +21,9 @@ public class Type {
 	static {
 		listOfTypes.add("Boolean");
 		listOfTypes.add("CategoryLabel");
-		// TODO make sure the TypeLabel is necessary!
 		listOfTypes.add("TypeLabel");
 	}
-
+	
 	/**
 	 * Adds a new type to the list of possible entity's type.
 	 * 
@@ -67,8 +66,7 @@ public class Type {
 		return listOfTypes.contains(aType);
 	}
 	
-	//TODO Tirar isto!!!
-	public static String getFirstType(){
+	public static String getDefaultType(){
 		return "TypeLabel"; 
 	}
 	

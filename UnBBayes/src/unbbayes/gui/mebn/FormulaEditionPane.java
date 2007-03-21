@@ -297,7 +297,7 @@ public class FormulaEditionPane extends JPanel {
      
      JPanel painel = new JPanel(new BorderLayout()); 
      
-     MTheoryTreeReplaceInFormula mTheoryTree = new MTheoryTreeReplaceInFormula(controller, formulaTreeController.getFormulaTree()); 
+     MTheoryTreeForReplaceInFormula mTheoryTree = new MTheoryTreeForReplaceInFormula(controller, formulaTreeController.getFormulaTree()); 
      JScrollPane jspOVariableTreeMFrag = new JScrollPane(mTheoryTree); 
      painel.add(jspOVariableTreeMFrag, BorderLayout.CENTER); 
      
@@ -325,12 +325,10 @@ public class FormulaEditionPane extends JPanel {
 		
 	     JPanel painelEntitySelection = new JPanel(new BorderLayout()); 
 
-	     EntityListForReplaceInFormula entityList = new EntityListForReplaceInFormula(formulaTreeController); 
+	     EntityListForReplaceInFormula entityList = new EntityListForReplaceInFormula(controller, formulaTreeController); 
 	     JScrollPane jspEntityList = new JScrollPane(entityList); 
 	     painelEntitySelection.add(jspEntityList, BorderLayout.NORTH); 
-	     
 	     return painelEntitySelection; 
-	     
 		}	
 	
 	public JPanel replaceByVariable(){

@@ -12,13 +12,15 @@ public enum enumSubType{
 	VARIABLE, 
 	SKOLEN, 
 			
-	/* OPERATOR */
+	/* SIMPLE OPERATOR */
 	AND, 
 	OR, 
 	NOT, 
 	EQUALTO, 
 	IMPLIES, 
 	IFF, 
+	
+	/* QUANTIFIER	 */
 	FORALL, 
 	EXISTS
 	

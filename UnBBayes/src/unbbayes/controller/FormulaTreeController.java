@@ -36,38 +36,46 @@ public class FormulaTreeController {
 	
 	public void addOperatorAnd(){
 		 formulaTree.addOperatorAnd(); 
+		 mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorOr(){
 		formulaTree.addOperatorOr(); 
+		 mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorNot(){
 		formulaTree.addOperatorNot(); 
+		 mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorEqualTo(){
 		formulaTree.addOperatorEqualTo(); 
+		 mebnController.updateFormulaActiveContextNode(); 
 	}	
 
 	public void addOperatorIf(){
 		 formulaTree.addOperatorIf(); 
+		 mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorImplies(){
-		formulaTree.addOperatorImplies(); 
+		formulaTree.addOperatorImplies();
+		 mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorForAll(){
 		formulaTree.addOperatorForAll(); 
+		 mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorExists(){
 		formulaTree.addOperatorExists(); 
+		mebnController.updateFormulaActiveContextNode(); 
 	}	
 	
 	public void setNodeChoiceActive(){
-		formulaEditionPane.setNodeTabActive(); 
+		formulaEditionPane.setNodeTabActive();
 	}
 	
 	public void setOVariableChoiveActive(){

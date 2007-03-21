@@ -23,7 +23,7 @@ public class NodeFormulaTree{
 	ArrayList<NodeFormulaTree> childList; 
 	
 	/**
-	 * create a new nodo formula tree
+	 * create a new node formula tree
 	 * @param typeNode type of the node (what go to fill its)
 	 * @param nodeVariable object that fill the node 
 	 */
@@ -76,9 +76,6 @@ public class NodeFormulaTree{
 		this.subType = _subType; 
 	}
 	
-				
-	
-	
 	public Object getNodeVariable(){
 		return nodeVariable; 
 	}
@@ -86,4 +83,29 @@ public class NodeFormulaTree{
 	public void setNodeVariable(Object nodeVariable){
 		this.nodeVariable = nodeVariable; 
 	}
+	
+	public String getFormulaViewText(){
+		
+		if (type == enumType.OPERANDO){
+			return name; 
+		}else{
+			if(type == enumType.SIMPLE_OPERATOR){
+				if(childList.size() == 2){
+					return "( " + childList.get(0).getFormulaViewText() + " " + name + " " + childList.get(1).getFormulaViewText() + " )" ;
+				}
+				else{
+					if(childList.size() == 1){
+						return "( " + name + " " + childList.get(0).getFormulaViewText() + " )"; 
+					}
+					else return " "; 
+				}
+			}else{
+				if(type == enumType.QUANTIFIER_OPERATOR){
+					return " "; 
+				}else return " ";
+			}
+		}
+	}
+	
+	
 }

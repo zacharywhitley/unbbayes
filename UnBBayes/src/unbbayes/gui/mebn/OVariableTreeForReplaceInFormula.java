@@ -55,6 +55,7 @@ public class OVariableTreeForReplaceInFormula extends OVariableTree{
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 						
 						formulaTree.addOVariable(ordinaryVariable); 
+						controller.getMebnController().updateFormulaActiveContextNode(); 
 						
 					} else if (e.getClickCount() == 1) {
 						//Nothing

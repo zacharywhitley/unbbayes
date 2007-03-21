@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.gui.draw.DrawRoundedRectangle;
+import unbbayes.gui.mebn.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
@@ -25,7 +26,7 @@ public class DomainResidentNode extends ResidentNode {
 	
 	private String tableFunction;
 	
-	private static Color color = new Color(254, 250, 158); 	
+	private static Color color = ToolKitForGuiMebn.getColorResident(); 	
 	
 	
 	public DomainResidentNode(String name, DomainMFrag mFrag){

@@ -401,7 +401,7 @@ public class LoaderPrOwlIO {
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
 				individualTwo = (OWLIndividual) itIn.next();
-				oVariable = new OrdinaryVariable(individualTwo.getBrowserText(), Type.getFirstType(), domainMFrag); 
+				oVariable = new OrdinaryVariable(individualTwo.getBrowserText(), Type.getDefaultType(), domainMFrag); 
 				domainMFrag.addOrdinaryVariable(oVariable); 
 				mapOVariable.put(individualTwo.getBrowserText(), oVariable); 
 				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 

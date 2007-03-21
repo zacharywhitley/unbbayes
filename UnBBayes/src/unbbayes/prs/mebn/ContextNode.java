@@ -8,6 +8,8 @@ import java.util.List;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import unbbayes.gui.draw.DrawFlatPentagon;
+import unbbayes.gui.mebn.ToolKitForGuiMebn;
+import unbbayes.gui.mebn.formula.NodeFormulaTree;
 import unbbayes.prs.mebn.entity.BooleanStatesEntity;
 
 /**
@@ -31,13 +33,15 @@ public class ContextNode extends MultiEntityNode {
 	 */
 	private List<ContextNode> innerTermFromList;
 	
-	//TODO procurar um modo melhor para armazenar a formula... balanceando espaço e processamento... 
-	//provavelmente em forma de texto usando o conceito de banco de informações sobre os objetos...
 	private DefaultMutableTreeNode formulaTree; 
+	
+	/* the formula in the PowerLoom format */
+	
+	private String formula; 
 	
 	/* draw */ 
 	
-	private static Color color = new Color(176, 252, 131);
+	private static Color color = ToolKitForGuiMebn.getColorContext();
 	
     private DrawFlatPentagon drawContextNode;
     
@@ -74,10 +78,6 @@ public class ContextNode extends MultiEntityNode {
 
     }
     
-    
-    
-    
-    
 	/**
 	 * Set the MFrag where this node resides.
 	 * @param frag The MFrag where this node resides.
@@ -96,6 +96,7 @@ public class ContextNode extends MultiEntityNode {
 	
 	public void setFormulaTree(DefaultMutableTreeNode formulaTree){
 		this.formulaTree = formulaTree; 
+		updateLabel(); 
 	}
 	
     /**
@@ -104,8 +105,8 @@ public class ContextNode extends MultiEntityNode {
      * @return a string contendo a formula no formado padrao da FOL. 
      */
     private String getFormulaForTree(DefaultMutableTreeNode formulaTree){
-    	//TODO do!!! (rs)
-    	return ""; 
+    	
+    	return ((NodeFormulaTree)(formulaTree.getUserObject())).getFormulaViewText(); 
     }
 	
 	/**
@@ -210,13 +211,27 @@ public class ContextNode extends MultiEntityNode {
 	 * The label is the formula that represents this context node.  
 	 */
 	
-    public void updateLabel(){
+    public String updateLabel(){
     	
-    	String newLabel = getFormulaForTree(formulaTree); 
+    	String label; 
+    	if(formulaTree != null){
+    	   label = ((NodeFormulaTree)(formulaTree.getUserObject())).getFormulaViewText(); 
+    	}
+    	else{
+    	   label = " "; 
+    	}
     	
-    	setLabel(newLabel); 
-    	
+    	setLabel(label);
+    	return label; 
     }	
-	
+    
+    /**
+     * Return the formula. (format only for view)
+     */
+    
+    public String toString(){
+    	return ((NodeFormulaTree)(formulaTree.getUserObject())).getFormulaViewText();
+    }
+    
 }
  

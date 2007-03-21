@@ -70,7 +70,8 @@ public class OrdinaryVariable {
 	 * @param type
 	 */
 	public void setType(String type){
-		this.type = type; 
+		
+		this.type = new String(type); 
 		
 		System.out.println("-> Type of ov " + this.name + " turned for " + type); 
 		

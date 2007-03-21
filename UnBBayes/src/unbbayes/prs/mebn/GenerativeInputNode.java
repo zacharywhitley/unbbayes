@@ -7,6 +7,7 @@ import java.util.List;
 
 import unbbayes.gui.draw.DrawRoundedRectangle;
 import unbbayes.gui.draw.DrawTwoBaseRectangle;
+import unbbayes.gui.mebn.ToolKitForGuiMebn;
 
 /**
  * 
@@ -23,7 +24,7 @@ public class GenerativeInputNode extends InputNode {
 	
 	private DrawTwoBaseRectangle drawInputNode; 
 	
-	private static Color color = new Color(220, 220, 220); 		
+	private static Color color = ToolKitForGuiMebn.getColorInput(); 		
 	
 	public GenerativeInputNode(String name, DomainMFrag mFrag){
 		

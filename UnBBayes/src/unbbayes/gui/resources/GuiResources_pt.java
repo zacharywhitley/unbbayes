@@ -164,14 +164,14 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"arguments", "Args: "}, 	
 		{"statusReadyLabel","Pronto"},
 		
-		{"andToolTip", "operador and"}, 
-		{"orToolTip", "operador or"},
-		{"notToolTip", "operador not"},
-		{"equalToToolTip", "operador igual"},
-		{"impliesToolTip", "operador implicacao"},
-		{"iffToolTip", "operador if"},
-		{"forallToolTip", "operador para todo"},
-		{"existsToolTip", "operador existe"},	
+		{"andToolTip", "operador 'e'"}, 
+		{"orToolTip", "operador 'ou'"},
+		{"notToolTip", "operador 'não'"},
+		{"equalToToolTip", "operador 'igual'"},
+		{"impliesToolTip", "operador 'implicaca'"},
+		{"iffToolTip", "operador 'see' "},
+		{"forallToolTip", "quantificador 'para todo'"},
+		{"existsToolTip", "quantificador 'existe'"},	
 		
 		//Menus MEBN
 		{"menuDelete", "Delete"}, 

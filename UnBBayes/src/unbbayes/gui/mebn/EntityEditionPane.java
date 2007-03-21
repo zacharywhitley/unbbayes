@@ -1,6 +1,8 @@
 package unbbayes.gui.mebn;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,7 +13,10 @@ import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -85,6 +90,7 @@ public class EntityEditionPane extends JPanel{
 	    jlEntities.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	    jlEntities.setLayoutOrientation(JList.VERTICAL);
 	    jlEntities.setVisibleRowCount(-1);
+	    jlEntities.setCellRenderer(new ListEntitiesCellRenderer()); 
 	    
 	    selected = null; 
 	    update(); 
@@ -242,6 +248,30 @@ public class EntityEditionPane extends JPanel{
   			    }
   			}
   		});
+	}
+	
+	class ListEntitiesCellRenderer extends DefaultListCellRenderer{
+		
+		private ImageIcon entityIcon = iconController.getEntityNodeIcon(); 
+		
+		public ListEntitiesCellRenderer(){
+			
+		}
+		
+		public Component getListCellRendererComponent(JList list, Object value, int index, 
+				                                      boolean isSelected, boolean cellHasFocus){
+			
+			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);  
+			
+			super.setIcon(entityIcon); 
+			
+			if(isSelected){
+			   super.setBorder(BorderFactory.createEtchedBorder()); 
+			}
+			
+			return this; 
+		}
+		
 	}
 
 }

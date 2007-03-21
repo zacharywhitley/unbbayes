@@ -147,7 +147,6 @@ public class OVariableEditionPane extends JPanel {
 		for(index = 0; index < types.length; index++){
 			if(types[index].compareTo(nameType) == 0){
 				jcbType.setSelectedIndex(index);
-				jcbType.updateUI();
 				sucess = true; 
 				break; 
 			}
@@ -222,10 +221,17 @@ public class OVariableEditionPane extends JPanel {
 	    jcbType.addActionListener(
            new ActionListener(){
         	   public void actionPerformed(ActionEvent e){
+        		   
 	    	        String typeName = (String)jcbType.getSelectedItem();
+					System.out.println("item selected = " + typeName); 
+	    	        
 					if(treeMFrag.getOVariableActive() != null){
-						   treeMFrag.getOVariableActive().setType(typeName); 
+						treeMFrag.getOVariableActive().setType(typeName); 
 					}
+					
+					treeMFrag.updateTree(); 
+					
+					
         	   }
            }
 	    ); 

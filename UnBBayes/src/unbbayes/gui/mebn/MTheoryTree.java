@@ -102,6 +102,7 @@ public class MTheoryTree extends JTree {
 	    addMouseListener(new MousePressedListener()); 
 	    	    
 		super.treeDidChange();
+		
 		expandTree();
 	}
 	
@@ -236,16 +237,13 @@ public class MTheoryTree extends JTree {
 		public Component getTreeCellRendererComponent(JTree tree, Object value,
 				boolean sel, boolean expanded, boolean leaf, int row,
 				boolean hasFocus) {
+			
 			super.getTreeCellRendererComponent(tree, value, sel, expanded,
 					leaf, row, hasFocus);
 			
 			Object obj = nodeMap.get((DefaultMutableTreeNode) value);
 			
-			
 			if (leaf) {
-				/*DefaultMutableTreeNode parent = (DefaultMutableTreeNode) (((DefaultMutableTreeNode) value)
-						.getParent());
-				Object obj = mFragMap.get((DefaultMutableTreeNode) parent);*/
 
 				if (obj != null) {
 					
@@ -283,9 +281,7 @@ public class MTheoryTree extends JTree {
      				setOpenIcon(mTheoryNodeIcon);
     				setClosedIcon(mTheoryNodeIcon);                	 
                  	setIcon(mTheoryNodeIcon); 
-                 }				
-				
-
+                 }	
 			}
 			return this;
 		}
@@ -343,8 +339,6 @@ public class MTheoryTree extends JTree {
 	 * 
 	 */
 	public void updateTree() {
-		
-		
 		if (expandedNodes == null) {
 			expandedNodes = new boolean[net.getMFragCount()];
 			for (int i = 0; i < expandedNodes.length; i++) {
@@ -413,7 +407,7 @@ public class MTheoryTree extends JTree {
 			    
 				List<ContextNode> contextNodeList = ((DomainMFrag)mFrag).getContextNodeList(); 
 			    for(ContextNode contextNode: contextNodeList){
-			    	DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(contextNode.getName());
+			    	DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(contextNode);
 			    	treeNode.add(treeNodeChild); 
 			    	contextNodeMap.put(treeNodeChild, contextNode); 
 					nodeMap.put(treeNodeChild, contextNode);     	
@@ -519,9 +513,11 @@ public class MTheoryTree extends JTree {
 						popupMFrag.show(e.getComponent(),e.getX(),e.getY());
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-						controller.getMebnController().setCurrentMFrag(mFragMap.get(node)); 
+						controller.getMebnController().setCurrentMFrag(mFragMap.get(node));
 					} else if (e.getClickCount() == 1) {
-						//TODO acao para clique simples na MFrag. 
+					
+					
+					
 					}
 				}
 				else{
@@ -543,10 +539,7 @@ public class MTheoryTree extends JTree {
 						 }*/
 						//TODO NÃO TEM ISSO NA MFRAG
 					} else if (e.getClickCount() == 2) {
-						DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel()
-						.getRoot();
-						int index = root.getIndex(node);
-						expandedNodes[index] = !expandedNodes[index];
+
 					}
 				}
 			}

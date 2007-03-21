@@ -10,6 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,7 +26,6 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 
 import unbbayes.controller.IconController;
@@ -197,6 +198,7 @@ public class MEBNEditionPane extends JPanel {
         jtbEdition.add(btnEditMTheory); 
         jtbEdition.addSeparator(); 
         jtbEdition.add(btnAddMFrag);
+        jtbEdition.addSeparator(); 
         jtbEdition.add(btnAddResidentNode);
         jtbEdition.add(btnAddInputNode);
         jtbEdition.add(btnAddContextNode);
@@ -599,7 +601,7 @@ public class MEBNEditionPane extends JPanel {
   						String name = txtNameMFrag.getText(0,txtNameMFrag.getText().length());
   						matcher = wordPattern.matcher(name);
   						if (matcher.matches()) {
-  							controller.getMebnController().getCurrentMFrag().setName(name);
+  							controller.getMebnController().renameMFrag(controller.getMebnController().getCurrentMFrag(), name);
   							mTheoryTree.updateTree(); 
   						}  else {
   							JOptionPane.showMessageDialog(netWindow, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
@@ -914,5 +916,9 @@ public class MEBNEditionPane extends JPanel {
     public void setTxtArguments(String args){
     	txtArguments.setText(args); 
     }
+
+	public void setFormula(String formula) {
+		this.txtFormula.setText(formula);
+	}
 
 }

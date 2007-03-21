@@ -1,9 +1,13 @@
 package unbbayes.gui.mebn;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.util.List;
 
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
@@ -11,23 +15,29 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import unbbayes.controller.FormulaTreeController;
+import unbbayes.controller.IconController;
+import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 
 public class EntityListForReplaceInFormula extends JPanel{
 
+    private final IconController iconController = IconController.getInstance();
+    
 	private List<ObjectEntity> listEntity; 
-	
+
 	private JList jlEntities; 
 	private DefaultListModel listModel;
 	private ObjectEntity selected;
 	
 	private FormulaTreeController formulaTreeController; 
+	private NetworkController networkController; 
 	
-	public EntityListForReplaceInFormula(FormulaTreeController _formulaTreeController){
+	public EntityListForReplaceInFormula(NetworkController _controller, FormulaTreeController _formulaTreeController){
 		
 		super(); 
 		formulaTreeController = _formulaTreeController; 
+		networkController = _controller; 
 		
 		listModel = new DefaultListModel(); 
 		
@@ -35,6 +45,7 @@ public class EntityListForReplaceInFormula extends JPanel{
 		jlEntities.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		jlEntities.setLayoutOrientation(JList.VERTICAL);
 		jlEntities.setVisibleRowCount(-1);
+	    jlEntities.setCellRenderer(new ListEntitiesCellRenderer()); 
 		
 		selected = null;     
 		update(); 
@@ -50,6 +61,8 @@ public class EntityListForReplaceInFormula extends JPanel{
 	
 	public void update(){
 		
+		ObjectEntity antSelected = selected; 
+		
 		listModel.clear(); 
 		
 		listEntity = ObjectEntity.getListEntity(); 
@@ -60,6 +73,14 @@ public class EntityListForReplaceInFormula extends JPanel{
 		}
 		
 		jlEntities.setModel(listModel); 
+		
+		/* 
+		 * Warning: Por algum motivo estranho a mim a referencia feita por
+		 * selected estava sendo perdida quando se adicionava seguidamente
+		 * nos entidades... Esta jogadinha solucionou o problema... 
+		 */
+		selected = antSelected; 
+		
 	}
 	
 	private void addListListener(){
@@ -70,11 +91,35 @@ public class EntityListForReplaceInFormula extends JPanel{
                 	
                 	selected = (ObjectEntity)jlEntities.getSelectedValue(); 
                 	formulaTreeController.addEntity(selected); 
-                    
+                	networkController.getMebnController().updateFormulaActiveContextNode(); 
+				
                 }
             }  	
 	    );
 	   
 	}	
 	
+	class ListEntitiesCellRenderer extends DefaultListCellRenderer{
+		
+		private ImageIcon entityIcon = iconController.getEntityNodeIcon(); 
+		
+		public ListEntitiesCellRenderer(){
+			
+		}
+		
+		public Component getListCellRendererComponent(JList list, Object value, int index, 
+				                                      boolean isSelected, boolean cellHasFocus){
+			
+			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);  
+			
+			super.setIcon(entityIcon); 
+			
+			if(isSelected){
+			   super.setBorder(BorderFactory.createEtchedBorder()); 
+			}
+			
+			return this; 
+		}
+		
+	}
 }

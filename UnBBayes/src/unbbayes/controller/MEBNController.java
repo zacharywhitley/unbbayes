@@ -142,6 +142,19 @@ public class MEBNController {
 	}
 	
 	/**
+	 * rename the MFrag and update its name in the title of the graph
+	 * @param mFrag
+	 * @param name
+	 */
+	public void renameMFrag(MFrag mFrag, String name){
+			mFrag.setName(name);
+			
+			if(this.getCurrentMFrag() == mFrag){
+				screen.getMebnEditionPane().showTitleGraph(name); 
+			}
+	}
+	
+	/**
 	 * Apenas mostra o grafo da MFrag e a seleciona como MFrag ativa. 
 	 * @param mFrag
 	 */
@@ -159,7 +172,7 @@ public class MEBNController {
 	
 	/*---------------------------- Domain Resident Node ----------------------------*/	
 	
-	public void insertDomainResidentNode(double x, double y) throws MFragDoesNotExistException {
+	public DomainResidentNode insertDomainResidentNode(double x, double y) throws MFragDoesNotExistException {
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
 
 		if (currentMFrag == null) {
@@ -181,6 +194,7 @@ public class MEBNController {
 		screen.getMebnEditionPane().setResidentCardActive(); 
 	    screen.getMebnEditionPane().setTxtNameResident(((ResidentNode)node).getName()); 
 	    
+	    return node;
 	}
 	
 	public void renameDomainResidentNode(DomainResidentNode resident, String newName){
@@ -237,7 +251,7 @@ public class MEBNController {
 	
 	/*---------------------------- Generative Input Node ----------------------------*/		
 	
-	public void insertGenerativeInputNode(double x, double y) throws MFragDoesNotExistException {
+	public GenerativeInputNode insertGenerativeInputNode(double x, double y) throws MFragDoesNotExistException {
 		
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
 		
@@ -259,6 +273,7 @@ public class MEBNController {
 		screen.getMebnEditionPane().setInputNodeActive(node); 
 		screen.getMebnEditionPane().setTxtInputOf(""); 	
 	 	
+		return node; 
 	}	
 	
 	public void setInputInstanceOf(GenerativeInputNode input, ResidentNode resident){
@@ -290,7 +305,7 @@ public class MEBNController {
 	
 	/*---------------------------- ContextNode ----------------------------*/	
 	
-	public void insertContextNode(double x, double y) throws MFragDoesNotExistException {
+	public ContextNode insertContextNode(double x, double y) throws MFragDoesNotExistException {
 		
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
 		
@@ -310,6 +325,8 @@ public class MEBNController {
 	    screen.getMebnEditionPane().setContextCardActive();
 		screen.getMebnEditionPane().setFormulaEdtionActive(node); 	
 		screen.getMebnEditionPane().setTxtNameContext(((ContextNode)node).getName()); 
+	
+		return node; 
 	}	
 	
 	
@@ -372,6 +389,10 @@ public class MEBNController {
 	    screen.getMebnEditionPane().showTitleGraph(multiEntityBayesianNetwork.getCurrentMFrag().getName());  
 	}
 	
+	public void updateFormulaActiveContextNode(){
+		String formula = contextNodeActive.updateLabel(); 
+		screen.getMebnEditionPane().setFormula(formula); 
+	}
 
 	private void setResidentNodeActive(ResidentNode residentNodeActive){ 
 	   nodeActive = residentNodeActive; 
@@ -412,7 +433,7 @@ public class MEBNController {
 
 		DomainMFrag domainMFrag = (DomainMFrag) multiEntityBayesianNetwork.getCurrentMFrag();
 		String name = resource.getString("ordinaryVariableName") + domainMFrag.getOrdinaryVariableNum(); 
-		String type = Type.getFirstType(); 
+		String type = Type.getDefaultType(); 
 		OrdinaryVariable ov = new OrdinaryVariable(name, type, domainMFrag);
 		domainMFrag.addOrdinaryVariable(ov);
 		
@@ -507,7 +528,7 @@ public class MEBNController {
 	public void selectOVariableInEdit(OrdinaryVariable ov){
 	    OVariableEditionPane editionPane = screen.getMebnEditionPane().getEditOVariableTab(); 
 		editionPane.setNameOVariableSelected(ov.getName()); 
-		editionPane.setTypeOVariableSelected(ov.getType()); 
+		//editionPane.setTypeOVariableSelected(ov.getType()); 
 		
 	}
 	
