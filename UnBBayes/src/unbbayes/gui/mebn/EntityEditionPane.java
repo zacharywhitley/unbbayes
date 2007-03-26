@@ -32,6 +32,8 @@ import javax.swing.event.ListSelectionListener;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.controller.NetworkController;
+import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
+import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.exception.TypeException;
@@ -90,7 +92,7 @@ public class EntityEditionPane extends JPanel{
 	    jlEntities.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	    jlEntities.setLayoutOrientation(JList.VERTICAL);
 	    jlEntities.setVisibleRowCount(-1);
-	    jlEntities.setCellRenderer(new ListEntitiesCellRenderer()); 
+	    jlEntities.setCellRenderer(new ListCellRenderer(iconController.getEntityNodeIcon())); 
 	    
 	    selected = null; 
 	    update(); 
@@ -248,30 +250,6 @@ public class EntityEditionPane extends JPanel{
   			    }
   			}
   		});
-	}
-	
-	class ListEntitiesCellRenderer extends DefaultListCellRenderer{
-		
-		private ImageIcon entityIcon = iconController.getEntityNodeIcon(); 
-		
-		public ListEntitiesCellRenderer(){
-			
-		}
-		
-		public Component getListCellRendererComponent(JList list, Object value, int index, 
-				                                      boolean isSelected, boolean cellHasFocus){
-			
-			super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);  
-			
-			super.setIcon(entityIcon); 
-			
-			if(isSelected){
-			   super.setBorder(BorderFactory.createEtchedBorder()); 
-			}
-			
-			return this; 
-		}
-		
 	}
 
 }

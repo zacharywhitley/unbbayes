@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.swing.text.StyledDocument;
 
+import unbbayes.gui.mebn.auxiliary.ToolKitForTableEdition;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;

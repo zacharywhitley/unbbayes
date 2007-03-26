@@ -11,6 +11,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
 import unbbayes.controller.NetworkController;
+import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.GenerativeInputNode;
 
 public class InputNodePane extends JPanel{

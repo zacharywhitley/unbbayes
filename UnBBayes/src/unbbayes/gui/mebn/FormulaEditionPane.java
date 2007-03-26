@@ -18,6 +18,7 @@ import unbbayes.controller.FormulaTreeController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.controller.NetworkController;
+import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.MFrag;
 

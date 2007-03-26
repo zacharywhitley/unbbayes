@@ -8,10 +8,10 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,17 +38,24 @@ import unbbayes.gui.mebn.MTheoryTree;
 import unbbayes.gui.mebn.OVariableEditionPane;
 import unbbayes.gui.mebn.ResidentNodePane;
 import unbbayes.gui.mebn.TableEditionPane;
-import unbbayes.gui.mebn.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
+import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
+;
+
+/**
+ * Painel de edição de Redes Bayesianas Multi-Entidades. Cria 
+ * o painel principal e os sub-paineis que o compoem.
+ * 
+ *  @author Laécio Lima dos Santos
+ *  @author Rommel N. Carvalho                                  
+ */
 
 public class MEBNEditionPane extends JPanel {
-
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = 6194855055129252835L;
 	
 	private final NetworkWindow netWindow;
@@ -156,12 +163,10 @@ public class MEBNEditionPane extends JPanel {
         //criar labels e textfields que serão usados no jtbState
         txtDescription     = new JTextField(15);
         
-        txtNameMTheory = new JTextField(5); 
-        txtNameResident = new JTextField(5);         
+        txtNameMTheory = new JTextField(5);         
         txtNameMFrag = new JTextField(5); 
         txtNameContext = new JTextField(5); 
         txtArguments = new JTextField(10); 
-
         txtFormula = new JTextField(15); 
         
         //criar botões que serão usados nodeList toolbars
@@ -313,6 +318,8 @@ public class MEBNEditionPane extends JPanel {
     	
     	JLabel labelMTheoryName = new JLabel(resource.getString("nameLabel")); 
     	
+    	txtNameMTheory.addFocusListener(new FocusListenerTextField()); 
+    	
     	jtbMTheory.add(btnMTheoryActive); 
     	jtbMTheory.addSeparator(); 
     	jtbMTheory.add(labelMTheoryName); 
@@ -339,6 +346,9 @@ public class MEBNEditionPane extends JPanel {
     	
         JLabel labelMFragName = new JLabel(resource.getString("nameLabel")); 
      
+
+        txtNameMFrag.addFocusListener(new FocusListenerTextField()); 
+        
         jtbMFrag.add(btnMFragActive); 
         jtbMFrag.addSeparator(); 
         jtbMFrag.add(labelMFragName);
@@ -349,18 +359,13 @@ public class MEBNEditionPane extends JPanel {
         return jtbMFrag; 
         
     }
-  	
-/* Building the tool bars */
-  	//TODO refatoracao das outras barras de ferramentas para melhorar codigo
-  	
+    
   	private JToolBar buildJtbResident(){
   		
   		JToolBar jtbResident = new JToolBar(); 
   		
   		final JLabel labelResidentName = new JLabel(resource.getString("nameLabel"));
   		
-  		//final JButton btnResidentActive = new JButton(iconController.getBoxResidentIcon());  
-  		//TODO resources
   		final JButton btnResidentActive = new JButton(resource.getString("ResidentButton")); 
   		btnResidentActive.setBackground(ToolKitForGuiMebn.getBorderColor()); 
   		btnResidentActive.setForeground(Color.WHITE);
@@ -370,8 +375,6 @@ public class MEBNEditionPane extends JPanel {
   			}
   		});
   		
-  		
-  		//TODO resources se for deixar tesxto mesmo
   		final JButton btnAddArgument = 	 new JButton(resource.getString("ArgumentsButton"));  
   		btnAddArgument.setToolTipText(resource.getString("addArgumentToolTip")); 
   		
@@ -388,7 +391,54 @@ public class MEBNEditionPane extends JPanel {
   		btnAddArgument.setBackground(ToolKitForGuiMebn.getBorderColor()); 
   		btnAddArgument.setForeground(Color.WHITE);
   		
+
+        txtNameResident = new JTextField(5); 
+ 
+  		txtNameResident.addKeyListener(new KeyAdapter() {
+  			public void keyPressed(KeyEvent e) {
+  				DomainResidentNode nodeAux = (DomainResidentNode)controller.getMebnController().getResidentNodeActive();
+  				
+  				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameResident.getText().length()>0)) {
+  					try {
+  						String name = txtNameResident.getText(0,txtNameResident.getText().length());
+  						matcher = wordPattern.matcher(name);
+  						if (matcher.matches()) {
+  							controller.getMebnController().renameDomainResidentNode(nodeAux, name); 
+  						}  else {
+							txtNameResident.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+						    txtNameResident.setForeground(Color.WHITE); 
+  							txtNameResident.selectAll();
+  							JOptionPane.showMessageDialog(netWindow, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+  						}
+  					}
+  					catch (javax.swing.text.BadLocationException ble) {
+  						System.out.println(ble.getMessage());
+  					}
+  				}
+  			}
+  			
+  			public void keyReleased(KeyEvent e){
+  				try{
+                    String name = txtNameResident.getText(0,txtNameResident.getText().length());
+						matcher = wordPattern.matcher(name);
+						if (!matcher.matches()) {
+							txtNameResident.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+						    txtNameResident.setForeground(Color.WHITE); 
+						}
+						else{
+							txtNameResident.setBackground(ToolKitForGuiMebn.getColorTextFieldSelected());
+						    txtNameResident.setForeground(Color.BLACK); 
+						}
+  				}
+  				catch(Exception efd){
+  					
+  				}
+  				
+  			}
+  		}); 
   		
+        txtNameResident.addFocusListener(new FocusListenerTextField()); 
+        
   		/*---- jtbResident ----*/
   		jtbResident.add(btnResidentActive); 
   		jtbResident.addSeparator();         
@@ -412,7 +462,6 @@ public class MEBNEditionPane extends JPanel {
   		
   		JToolBar jtbInput = new JToolBar(); 
   		
-//  	TODO fazer resource... BoxInputIcon
   		btnInputActive = new JButton(resource.getString("InputButton"));    		
   		btnInputActive.setBackground(ToolKitForGuiMebn.getBorderColor()); 
   		btnInputActive.setForeground(Color.WHITE);
@@ -569,29 +618,7 @@ public class MEBNEditionPane extends JPanel {
   			public void actionPerformed(ActionEvent ae) {
   				netWindow.getGraphPane().setAction(GraphAction.SELECT_MANY_OBJECTS);
   			}
-  		});
-  		
-  		
-  		txtNameResident.addKeyListener(new KeyAdapter() {
-  			public void keyPressed(KeyEvent e) {
-  				DomainResidentNode nodeAux = (DomainResidentNode)controller.getMebnController().getResidentNodeActive();
-  				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameResident.getText().length()>0)) {
-  					try {
-  						String name = txtNameResident.getText(0,txtNameResident.getText().length());
-  						matcher = wordPattern.matcher(name);
-  						if (matcher.matches()) {
-  							controller.getMebnController().renameDomainResidentNode(nodeAux, name); 
-  						}  else {
-  							JOptionPane.showMessageDialog(netWindow, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
-  							txtNameResident.selectAll();
-  						}
-  					}
-  					catch (javax.swing.text.BadLocationException ble) {
-  						System.out.println(ble.getMessage());
-  					}
-  				}
-  			}
-  		});  		
+  		}); 		
   		
   		txtNameMFrag.addKeyListener(new KeyAdapter() {
   			public void keyPressed(KeyEvent e) {
@@ -896,23 +923,23 @@ public class MEBNEditionPane extends JPanel {
     public void setTxtNameResident(String name){
     	txtNameResident.setText(name); 
     }
-    
+
     public void setTxtNameMFrag(String name){
     	txtNameMFrag.setText(name); 
     }
-    
+
     public void setTxtNameInput(String name){
     	txtNameInput.setText(name); 
     }
-    
+
     public void setTxtNameContext(String name){
     	txtNameContext.setText(name); 
     }   
-    
+
     public void setTxtInputOf(String name){
     	txtInputOf.setText(name); 
     }
-    
+
     public void setTxtArguments(String args){
     	txtArguments.setText(args); 
     }

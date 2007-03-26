@@ -7,7 +7,7 @@ import java.util.List;
 
 import unbbayes.gui.draw.DrawRoundedRectangle;
 import unbbayes.gui.draw.DrawTwoBaseRectangle;
-import unbbayes.gui.mebn.ToolKitForGuiMebn;
+import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 
 /**
  * 

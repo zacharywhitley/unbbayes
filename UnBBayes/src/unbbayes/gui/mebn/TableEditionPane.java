@@ -29,6 +29,8 @@ import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 
 import unbbayes.controller.MEBNController;
+import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
+import unbbayes.gui.mebn.auxiliary.ToolKitForTableEdition;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.MultiEntityNode;

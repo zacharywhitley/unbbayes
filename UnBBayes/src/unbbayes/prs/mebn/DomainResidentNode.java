@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.gui.draw.DrawRoundedRectangle;
-import unbbayes.gui.mebn.ToolKitForGuiMebn;
+import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 

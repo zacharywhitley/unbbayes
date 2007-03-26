@@ -8,7 +8,7 @@ import java.util.List;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import unbbayes.gui.draw.DrawFlatPentagon;
-import unbbayes.gui.mebn.ToolKitForGuiMebn;
+import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.gui.mebn.formula.NodeFormulaTree;
 import unbbayes.prs.mebn.entity.BooleanStatesEntity;
 

@@ -1,4 +1,4 @@
-package unbbayes.gui.mebn;
+package unbbayes.gui.mebn.auxiliary;
 
 import java.awt.Color;
 

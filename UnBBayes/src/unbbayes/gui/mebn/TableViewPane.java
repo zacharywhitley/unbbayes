@@ -16,6 +16,8 @@ import javax.swing.text.StyledDocument;
 
 import unbbayes.controller.MEBNController;
 import unbbayes.controller.NetworkController;
+import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
+import unbbayes.gui.mebn.auxiliary.ToolKitForTableEdition;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.exception.EntityNotPossibleValueOfNodeException;
 import unbbayes.prs.mebn.exception.NodeNotPresentInMTheoryException;

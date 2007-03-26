@@ -249,6 +249,24 @@ public class MEBNController {
 		
 	}	
 	
+	public boolean isResidentNodeUsed(){
+		
+		return false;
+		
+	}
+	
+	public boolean isContextNodeUsed(){
+		
+		return false; 
+	
+	}
+	
+	public boolean isInputNodeUsed(){
+	
+		return false; 
+	
+	}
+	
 	/*---------------------------- Generative Input Node ----------------------------*/		
 	
 	public GenerativeInputNode insertGenerativeInputNode(double x, double y) throws MFragDoesNotExistException {

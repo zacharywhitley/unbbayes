@@ -10,6 +10,7 @@ import javax.swing.JSplitPane;
 import javax.swing.border.TitledBorder;
 
 import unbbayes.controller.NetworkController;
+import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.DomainResidentNode;
 
 /**

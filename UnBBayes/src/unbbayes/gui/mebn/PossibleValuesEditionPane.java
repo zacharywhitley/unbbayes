@@ -1,7 +1,6 @@
 package unbbayes.gui.mebn;
 
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,6 +25,7 @@ import javax.swing.ListSelectionModel;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.controller.NetworkController;
+import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.entity.Entity;
 
@@ -83,8 +83,7 @@ public class PossibleValuesEditionPane extends JPanel{
 	    jlPossibleValues = new JList(listModel); 
 	    jlPossibleValues.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	    jlPossibleValues.setSelectedIndex(0);
-	    
-	    //jlPossibleValues.addListSelectionListener(this);
+	    jlPossibleValues.setCellRenderer(new ListCellRenderer(iconController.getStateIcon())); 
 	    
 	    jlPossibleValues.setLayoutOrientation(JList.VERTICAL);
 	    jlPossibleValues.setVisibleRowCount(-1);
@@ -195,5 +194,5 @@ public class PossibleValuesEditionPane extends JPanel{
   			}
   		});
 	}
-
+	
 }
