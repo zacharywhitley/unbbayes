@@ -1,9 +1,13 @@
 package unbbayes.prs.mebn.table;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import unbbayes.io.mebn.PrOwlIO;
+import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.exception.EntityNotPossibleValueOfNodeException;
@@ -24,6 +28,10 @@ public class TableParser {
 	private MultiEntityNode node;
 
 	private TableFunction tableFunction = new TableFunction();
+	
+	// Helper atributes
+	private IfClause currentIfClause;
+	private String token;
 
 	public TableParser(MultiEntityBayesianNetwork mebn, MultiEntityNode node) {
 		this.mebn = mebn;
@@ -41,28 +49,31 @@ public class TableParser {
 		StringTokenizer st = new StringTokenizer(tableFunction);
 
 		while (st.hasMoreTokens()) {
-			String token = st.nextToken();
-			IfClause ifClause = parseIfClause(st, token);
 			token = st.nextToken();
-			parseProbabilityFunction(st, ifClause, token);
+			IfClause ifClause = parseIfClause(st);
+			currentIfClause = ifClause;
+			token = st.nextToken();
+			parseProbabilityFunction(st, ifClause);
 			token = st.nextToken();
 			if (token.equalsIgnoreCase("IF")) {
-				ifClause = parseIfClause(st, token);
+				ifClause = parseIfClause(st);
+				currentIfClause = ifClause;
 				token = st.nextToken();
 			} else {
 				ifClause = new IfClause();
+				currentIfClause = ifClause;
 				// This is the parameter set for the outer else, that means
 				// the default table value.
 				// TODO ACRESCENTAR NA DOCUMENTAÇÃO DA TABELA
 				ifClause.setIfParameterSetName("DEFAULT");
 			}
-			parseProbabilityFunction(st, ifClause, token);
+			parseProbabilityFunction(st, ifClause);
 		}
 
 		return data;
 	}
 
-	private IfClause parseIfClause(StringTokenizer st, String token)
+	private IfClause parseIfClause(StringTokenizer st)
 			throws TableFunctionMalformedException,
 			NodeNotPresentInMTheoryException,
 			EntityNotPossibleValueOfNodeException {
@@ -115,7 +126,7 @@ public class TableParser {
 			EntityNotPossibleValueOfNodeException {
 		BooleanFunction booleanFunction;
 		String nodeName = st.nextToken();
-		String token = st.nextToken();
+		token = st.nextToken();
 		String stateName;
 		if (token.equalsIgnoreCase("==")) {
 			stateName = st.nextToken();
@@ -144,7 +155,7 @@ public class TableParser {
 		}
 	}
 
-	private void parseProbabilityFunction(StringTokenizer st, IfClause ifClause, String token)
+	private void parseProbabilityFunction(StringTokenizer st, IfClause ifClause)
 			throws TableFunctionMalformedException,
 			EntityNotPossibleValueOfNodeException,
 			InvalidProbabilityFunctionOperandException {
@@ -187,20 +198,22 @@ public class TableParser {
 			TableFunctionMalformedException {
 		ProbabilityFunctionOperator firstFunction;
 
-		String token = st.nextToken();
+		token = st.nextToken();
 
 		if (token.equalsIgnoreCase("MAX(")) {
 			firstFunction = ProbabilityFunctionOperator.MAX;
 			token = st.nextToken();
-			parseSimpleStateFunction(st, token, null, firstFunction, true);
+			parseSimpleStateFunction(st, null, firstFunction, true);
 			return parseStateFunction(st, stateFunction);
 		} else if (token.equalsIgnoreCase("MIN(")) {
 			firstFunction = ProbabilityFunctionOperator.MIN;
 			token = st.nextToken();
-			parseSimpleStateFunction(st, token, null, firstFunction, true);
+			parseSimpleStateFunction(st, null, firstFunction, true);
 			return parseStateFunction(st, stateFunction);
+		} else if (token.equalsIgnoreCase(",")) {
+			return true;
 		} else {
-			return parseSimpleStateFunction(st, token, stateFunction, null, false);
+			return parseSimpleStateFunction(st, stateFunction, null, false);
 		}
 	}
 
@@ -216,7 +229,7 @@ public class TableParser {
 	 * @throws InvalidProbabilityFunctionOperandException
 	 * @throws TableFunctionMalformedException
 	 */
-	private boolean parseSimpleStateFunction(StringTokenizer st, String token,
+	private boolean parseSimpleStateFunction(StringTokenizer st,
 			StateFunction stateFunction,
 			ProbabilityFunctionOperator minMaxFunction, 
 			boolean minMaxFirstOperand)
@@ -234,12 +247,12 @@ public class TableParser {
 		}
 		if (token.equalsIgnoreCase("CARDINALITY(")) {
 			token = st.nextToken();
-			if (token.equalsIgnoreCase(stateFunction.getIfClause()
+			if (token.equalsIgnoreCase(currentIfClause
 					.getIfParameterSetName())) {
 				token = st.nextToken();
 				if (token.equalsIgnoreCase(")")) {
 					firstFunction = ProbabilityFunctionOperator.CARDINALITY;
-					firstFunction.setUniqueOperand(stateFunction.getIfClause()
+					firstFunction.setUniqueOperand(currentIfClause
 							.getIfParameterSetName());
 
 					token = st.nextToken();
@@ -259,7 +272,7 @@ public class TableParser {
 								setLastFunctionInSecondOperand(minMaxFunction, secondFunction);
 							}
 							token = st.nextToken();
-							return parseSimpleStateFunction(st, token, null,
+							return parseSimpleStateFunction(st, null,
 									minMaxFunction, minMaxFirstOperand);
 						}
 					} else if (stateFunction != null
@@ -274,7 +287,7 @@ public class TableParser {
 							&& token.equalsIgnoreCase(";")) {
 						setLastFunctionInFirstOperand(minMaxFunction, firstFunction);
 						token = st.nextToken();
-						return parseSimpleStateFunction(st, token, null,
+						return parseSimpleStateFunction(st, null,
 								minMaxFunction, false);
 					} else if (minMaxFunction != null && !minMaxFirstOperand
 							&& token.equalsIgnoreCase(")")) {
@@ -299,7 +312,7 @@ public class TableParser {
 				}
 			} else {
 				throw new TableFunctionMalformedException("\'"
-						+ stateFunction.getIfClause().getIfParameterSetName()
+						+ currentIfClause.getIfParameterSetName()
 						+ "\' expected where " + token + " was found.");
 			}
 		} else if (node.hasPossibleValue(token)) {
@@ -322,7 +335,7 @@ public class TableParser {
 						setLastFunctionInSecondOperand(minMaxFunction, secondFunction);
 					}
 					token = st.nextToken();
-					return parseSimpleStateFunction(st, token, null,
+					return parseSimpleStateFunction(st, null,
 							minMaxFunction, minMaxFirstOperand);
 				}
 			} else if (stateFunction != null
@@ -337,7 +350,7 @@ public class TableParser {
 					&& token.equalsIgnoreCase(";")) {
 				setLastFunctionInFirstOperand(minMaxFunction, firstFunction);
 				token = st.nextToken();
-				return parseSimpleStateFunction(st, token, null,
+				return parseSimpleStateFunction(st, null,
 						minMaxFunction, false);
 			} else if (minMaxFunction != null && !minMaxFirstOperand
 					&& token.equalsIgnoreCase(")")) {
@@ -375,7 +388,7 @@ public class TableParser {
 						setLastFunctionInSecondOperand(minMaxFunction, secondFunction);
 					}
 					token = st.nextToken();
-					return parseSimpleStateFunction(st, token, null,
+					return parseSimpleStateFunction(st, null,
 							minMaxFunction, minMaxFirstOperand);
 				}
 			} else if (stateFunction != null
@@ -390,7 +403,7 @@ public class TableParser {
 					&& token.equalsIgnoreCase(";")) {
 				setLastFunctionInFirstOperand(minMaxFunction, number);
 				token = st.nextToken();
-				return parseSimpleStateFunction(st, token, null,
+				return parseSimpleStateFunction(st, null,
 						minMaxFunction, false);
 			} else if (minMaxFunction != null && !minMaxFirstOperand
 					&& token.equalsIgnoreCase(")")) {
@@ -409,6 +422,9 @@ public class TableParser {
 						"\'+\\-\\*\\/\\)\' expected where " + token
 								+ " was found.");
 			}
+		} else if (token.equalsIgnoreCase("(")) {
+			token = st.nextToken();
+			// TODO LASCOU... NAO TO TRATANDO ()'S NEM PRECEDENCIA DE OPERADORES
 		}
 		return false;
 	}
@@ -486,8 +502,41 @@ public class TableParser {
 		return null;
 	}
 	
-	public static void main(String[] args) {
-		MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork("MEBN Teste");
+	public static void main(String[] args) throws TableFunctionMalformedException, NodeNotPresentInMTheoryException, EntityNotPossibleValueOfNodeException, InvalidProbabilityFunctionOperandException {
+		MultiEntityBayesianNetwork mebn = null; 
 		
+		PrOwlIO prOwlIO = new PrOwlIO(); 
+		
+		System.out.println("-----Load file test-----"); 
+		
+		try{
+			mebn = prOwlIO.loadMebn(new File("examples/mebn/StarshipTableParser.owl")); 
+			System.out.println("Load concluido"); 
+		}
+		catch (IOMebnException e){
+			System.out.println("ERROR IO PROWL!!!!!!!!!"); 
+			e.printStackTrace();
+		}
+		catch (IOException e){
+			System.out.println("ERROR IO!!!!!!!!!"); 
+			e.printStackTrace();
+		}
+		
+		String tableString =  
+		" if any STi have( OpSpec == Cardassian and HarmPotential == true )then " + 
+		"  [ Un = .90 + min( .10 ; .025 * cardinality( STi ) ) , Hi = ( 1 - Un ) * .8 , Me = ( 1 - Un ) * .2 , Lo = 0 ] " +
+		" else if any STj have( OpSpec == Romulan and HarmPotential == true )then " +
+		"  [ Un = .70 + min( .30; .03 * cardinality( STj ) ) , Hi = ( 1 - Un ) * .6 , Me = ( 1 - Hi ) * .3 , Lo = ( 1 - Hi ) * .1 ] " + 
+		" else if any STj have( OpSpec == Unknown and HarmPotential == true )then " + 
+		"  [ Un = ( 1 - Hi ) , Hi = .50 - min( .20 ; .02 * cardinality( STk ) ) , Me = .50 - min( .20 ; .02 * number( STk ) ) , Lo = ( 1 - Me ) ] " +
+		" else if any STk have( OpSpec == Klingon and HarmPotential == true )then " +
+		"  [ Un = 0.10 , Hi = 0.15 , Me = .15 , Lo = .65 ] " +
+		" else if any STl have( OpSpec == Friend and HarmPotential == true )then " +
+		"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ] " +
+		" else [ Un = 0 , Hi = 0 , Me = 0 , Lo = 1 ] ";
+		
+		TableParser tableParser = new TableParser(mebn, (MultiEntityNode)mebn.getNode("DangerToSelf"));
+		
+		tableParser.parseTable(tableString);
 	}
 }
