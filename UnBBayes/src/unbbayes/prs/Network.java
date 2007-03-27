@@ -143,11 +143,13 @@ public class Network implements Graph{
 	    
 	    nodeList.remove(elemento);
 	    
-	    nodeIndexes.remove(elemento.getName());
+	    //nodeIndexes.remove(elemento.getName());
+	    nodeIndexes.clear();
 	    for (c = 0; c < nodeList.size(); c++) {
 	        auxNo = nodeList.get(c);
 	        auxNo.getParents().remove(elemento);
 	        auxNo.getChildren().remove(elemento);
+	        nodeIndexes.put(auxNo.getName(), new Integer(c));
 	    }
 	    if (!edgeList.isEmpty()) {
 	        auxArco = edgeList.get(0);
@@ -165,6 +167,8 @@ public class Network implements Graph{
 	            removeArco(auxArco);
 	        }
 	    }
+	    
+	    
 	}
 
 	/**
