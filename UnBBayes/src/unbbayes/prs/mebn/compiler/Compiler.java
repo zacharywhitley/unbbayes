@@ -45,10 +45,6 @@ public class Compiler {
 
 	private char[] text;
 
-	public String newLine = System.getProperty("line.separator");
-
-	private int KWLIST_SZ = 5;
-
 	/* palavras-chave */
 	private String kwlist[] = { "IF", "ELSE", "ALL", "ANY", "HAVE"}; 
 
@@ -76,14 +72,17 @@ public class Compiler {
 
 	/* inicialização do compilador */
 	public void init(String text) {
-		System.out.println(text);
+		Debug.println("************************************");
+		Debug.println("ORIGINAL: " + text);
 		text = text.replaceAll("\\s+", " ");
-		System.out.println(text);
+		Debug.println("CHANGED: " + text);
+		Debug.println("************************************");
 		this.text = text.toCharArray();
 		nextChar();
 	}
 
 	public void parse() {
+		Debug.println("PARSED: ");
 		ifStatement();
 	}
 	
@@ -297,8 +296,8 @@ public class Compiler {
 	private void signedFactor() {
 		
 		// CHECK TO SEE IF THERE IS A -/+ UNARY SIGN
-		boolean negative;
-		negative = (look == '-');
+		//boolean negative;
+		//negative = (look == '-');
 		if (isAddOp(look)) {
 			Debug.print("" + look);
 			nextChar();
@@ -352,11 +351,11 @@ public class Compiler {
 	 */
 	private void getNum() {
 		value = "";
-		
-		if (!isNumeric(look))
+			
+		if (!((isNumeric(look)) || ((look == '.') && (value.indexOf('.') == -1))))
 			expected("Number");
 
-		while(isNumeric(look)) {
+		while((isNumeric(look)) || ((look == '.') && (value.indexOf('.') == -1))) {
 			value += look;
 			nextChar();
 		}
@@ -382,7 +381,7 @@ public class Compiler {
 	private int lookup(String s) {
 		int i;
 
-		for (i = 0; i < KWLIST_SZ; i++) {
+		for (i = 0; i < kwlist.length; i++) {
 			if (kwlist[i].equalsIgnoreCase(s))
 				return i;
 		}
@@ -401,23 +400,6 @@ public class Compiler {
 	{
 		while ((index < text.length) && (look == ' '))
 			nextChar();
-	}
-
-
-	/* exibe uma mensagem de erro formatada */
-	private void error(String error) {
-		System.err.println("Error: " + error + "\n");
-	}
-
-	/* exibe uma mensagem de erro formatada e sai */
-	private void fatal(String error) {
-		System.err.println("Error: " + error + "\n");
-		System.exit(1);
-	}
-	
-	/* emite uma instrução seguida por uma nova linha */
-	private void emit(String instruction) {
-		System.out.println(instruction + newLine);
 	}
 
 	/* alerta sobre alguma entrada esperada */
@@ -457,17 +439,12 @@ public class Compiler {
 	}
 
 	private boolean isNumeric(final char c) {
-		return ( ((c >= '0') && (c <= '9')) || (c == '.') );
+		return ( ((c >= '0') && (c <= '9')));
 	}
 
 	/* reconhece operador aditivo */
 	private boolean isAddOp(char c) {
 		return (c == '+' || c == '-');
-	}
-
-	/* reconhece operador multiplicativo */
-	private boolean isMulOp(char c) {
-		return (c == '*' || c == '/');
 	}
 
 }
