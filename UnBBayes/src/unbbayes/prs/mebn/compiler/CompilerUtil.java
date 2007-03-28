@@ -4,25 +4,7 @@ package unbbayes.prs.mebn.compiler;
 BNF MEBN Table:
 ----------------
 ===============================================================
-if_statement 
-      ::= 
-      "if" allop ident "have" "(" b_expression ")" statement 
-      [ "else" statement ]
-allop ::= "any" | "all"
-b_expression ::= b_term [ orop b_term ]*
-b_term ::= not_factor [ "and" not_factor ]*
-not_factor ::= [ "not" ] b_factor
-b_factor ::= ident "==" ident
-statement ::= "[" assignment "]" | if_statement
-assignment ::= ident "=" expression [ "," assignment ]*
-expression ::= term [ addop term ]*
-term ::= signed_factor [ mulop factor ]*
-signed_factor ::= [ addop ] factor
-factor ::= number | ident | ( expression )
-addop ::= "+" | "-"
-mulop ::= "*" | "/"
-ident ::= letter [ letter | digit ]*
-number ::= [digit]+
+r
 ================================================================
  * BNF atual:
  * <b-expression>   = <b-term> [<orop> <b-term>]*
@@ -81,7 +63,7 @@ public class CompilerUtil {
 	public static void main(String[] args) {
 		init(" a = -1   +2 -  a * 3+4       ");
 		program();
-		assignment();
+		
 		if (look != '\n')
 			expected("NewLine");
 
