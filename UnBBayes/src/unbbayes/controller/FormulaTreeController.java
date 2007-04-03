@@ -66,7 +66,7 @@ public class FormulaTreeController {
 	
 	public void addOperatorForAll(){
 		formulaTree.addOperatorForAll(); 
-		 mebnController.updateFormulaActiveContextNode(); 
+		mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorExists(){

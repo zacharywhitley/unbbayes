@@ -21,5 +21,7 @@
 	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/protege-owl.jar"/>
 	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/xercesImpl.jar"/>
 	<classpathentry kind="lib" path="lib/xalan.jar"/>
+	<classpathentry kind="lib" path="lib/powerloom/powerloom.jar"/>
+	<classpathentry kind="lib" path="lib/powerloom/stella.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
