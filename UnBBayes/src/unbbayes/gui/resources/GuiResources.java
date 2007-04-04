@@ -261,8 +261,16 @@ public class GuiResources extends ListResourceBundle {
         {"siglaError","The sigla must have only letters and numbers."},
         {"descriptionError","The description must have only letters and numbers."}, 
         
+        /* FormulaTreeConstructionException */
+        {"notOperator", "Operator don't acept in this position"},  
+		
+		{"sucess", "Sucess"}, 
+		{"error", "Error"},
+        
 		/* Exceptions MEBN */
 		{"withoutMFrag", "Don't exists any MFrag"}, 
 		{"edgeInvalid", "Edge Invalid"}
+		
+		
 	};
 }

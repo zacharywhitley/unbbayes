@@ -34,42 +34,42 @@ public class FormulaTreeController {
 	
 	}
 	
-	public void addOperatorAnd(){
+	public void addOperatorAnd()throws Exception{
 		 formulaTree.addOperatorAnd(); 
 		 mebnController.updateFormulaActiveContextNode(); 
 	}
 	
-	public void addOperatorOr(){
+	public void addOperatorOr()throws Exception{
 		formulaTree.addOperatorOr(); 
 		 mebnController.updateFormulaActiveContextNode(); 
 	}
 	
-	public void addOperatorNot(){
+	public void addOperatorNot()throws Exception{
 		formulaTree.addOperatorNot(); 
 		 mebnController.updateFormulaActiveContextNode(); 
 	}
 	
-	public void addOperatorEqualTo(){
+	public void addOperatorEqualTo()throws Exception{
 		formulaTree.addOperatorEqualTo(); 
 		 mebnController.updateFormulaActiveContextNode(); 
 	}	
 
-	public void addOperatorIf(){
+	public void addOperatorIf() throws Exception{
 		 formulaTree.addOperatorIf(); 
 		 mebnController.updateFormulaActiveContextNode(); 
 	}
 	
-	public void addOperatorImplies(){
+	public void addOperatorImplies()throws Exception{
 		formulaTree.addOperatorImplies();
 		 mebnController.updateFormulaActiveContextNode(); 
 	}
 	
-	public void addOperatorForAll(){
+	public void addOperatorForAll()throws Exception{
 		formulaTree.addOperatorForAll(); 
 		mebnController.updateFormulaActiveContextNode(); 
 	}
 	
-	public void addOperatorExists(){
+	public void addOperatorExists()throws Exception{
 		formulaTree.addOperatorExists(); 
 		mebnController.updateFormulaActiveContextNode(); 
 	}	

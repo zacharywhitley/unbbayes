@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
 
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -17,9 +18,9 @@ import unbbayes.controller.FormulaTreeController;
  */
 
 public class BuilderMenuNode {
-
+	
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");	
+	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");	
 	
 	private JMenuItem itemDelete = new JMenuItem("delete"); 
 	
@@ -27,6 +28,7 @@ public class BuilderMenuNode {
 	private JMenuItem itemEntity = new JMenuItem("addEntity"); 
 	private JMenuItem itemOVariable = new JMenuItem("addOVariable");
 	private JMenuItem itemVariable = new JMenuItem("addVariable"); 
+	private JMenuItem itemExemplar = new JMenuItem("addExemplar"); 
 	private JMenuItem itemSkolen = new JMenuItem("addSkolen");
 	
 	private JMenuItem itemAnd = new JMenuItem("and"); 
@@ -37,6 +39,8 @@ public class BuilderMenuNode {
 	private JMenuItem itemImplies = new JMenuItem("Implies"); 
 	private JMenuItem itemForall = new JMenuItem("For All"); 
 	private JMenuItem itemExists = new JMenuItem("Exists"); 
+	
+	private JMenuItem itemAddExemplar = new JMenuItem("addExemplar"); 
 	
 	private JPopupMenu popupFormula; 
 	private JPopupMenu popupOperando; 
@@ -54,50 +58,90 @@ public class BuilderMenuNode {
 	
 	private void addListener(){
 		itemAnd.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent ae){
-				formulaTreeController.addOperatorAnd();  
+			public void actionPerformed(ActionEvent ae) {
+				try{
+					formulaTreeController.addOperatorAnd();
+				}
+				catch(Exception e){
+					showErrorMessage(e.getMessage());	
+				}
 			}
 		});		
 		
 		itemOr.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				formulaTreeController.addOperatorOr();    
+				try{
+					formulaTreeController.addOperatorOr();    
+				}
+				catch(Exception e){
+					showErrorMessage(e.getMessage());						
+				}
 			}
 		});				
 		
 		itemNot.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				formulaTreeController.addOperatorNot(); 
+				try{
+					formulaTreeController.addOperatorNot();
+				}
+				catch(Exception e){
+					showErrorMessage(e.getMessage());						
+				}
 			}
 		});	
 		
 		itemEqual.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				formulaTreeController.addOperatorEqualTo(); 
+				try{
+					formulaTreeController.addOperatorEqualTo(); 
+				}
+				catch(Exception e){
+					showErrorMessage(e.getMessage());							
+				}
 			}
 		});						
 		
 		itemIff.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				formulaTreeController.addOperatorIf(); 
+				try{
+					formulaTreeController.addOperatorIf(); 
+				}
+				catch(Exception e){
+					showErrorMessage(e.getMessage());						
+				}
 			}
 		});						
 		
 		itemImplies.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				formulaTreeController.addOperatorImplies(); 
+				try{
+					formulaTreeController.addOperatorImplies(); 
+				}
+				catch(Exception e){
+					showErrorMessage(e.getMessage());						
+				}
 			}
 		});						
 		
 		itemForall.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				formulaTreeController.addOperatorForAll(); 
+				try{
+					formulaTreeController.addOperatorForAll(); 
+				}
+				catch(Exception e){
+					showErrorMessage(e.getMessage());						
+				}
 			}
 		});						
 		
 		itemExists.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				formulaTreeController.addOperatorExists(); 
+				try{
+					formulaTreeController.addOperatorExists(); 
+				}
+				catch(Exception e){
+					showErrorMessage(e.getMessage());						
+				}
 			}
 		});		
 		
@@ -123,7 +167,13 @@ public class BuilderMenuNode {
 			public void actionPerformed(ActionEvent ae){
 				formulaTreeController.setVariableChoiceActive(); 
 			}
-		}); 			
+		}); 	
+		
+		itemExemplar.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				formulaTreeController.setVariableChoiceActive(); 
+			}
+		}); 
 		
 		itemDelete.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
@@ -143,7 +193,7 @@ public class BuilderMenuNode {
 				
 				/* operando */
 				if(nodeFormulaParent.getTypeNode() == enumType.SIMPLE_OPERATOR){
-
+					
 				}
 				
 				/* variavel: mais problematico */
@@ -161,7 +211,7 @@ public class BuilderMenuNode {
 	public JPopupMenu buildPopupFormula(){
 		
 		if (popupFormula == null){
-		
+			
 			popupFormula = new JPopupMenu(); 
 			popupFormula.add(itemAnd); 
 			popupFormula.add(itemOr); 
@@ -171,9 +221,9 @@ public class BuilderMenuNode {
 			popupFormula.add(itemIff); 
 			popupFormula.add(itemForall); 
 			popupFormula.add(itemExists); 
-	 
+			
 		}
-	
+		
 		return popupFormula;
 	}
 	
@@ -211,6 +261,8 @@ public class BuilderMenuNode {
 			popupExemplarList = new JPopupMenu();  
 		}
 		
+		popupExemplarList.add(itemExemplar); 
+		
 		return popupExemplarList; 
 		
 	}
@@ -219,7 +271,7 @@ public class BuilderMenuNode {
 		
 		if(popupExemplar == null){
 			popupExemplar = new JPopupMenu(); 
-			popupExemplar.add(itemDelete); 
+			popupExemplar.add(itemAddExemplar); 
 		}
 		
 		return popupExemplar; 
@@ -231,20 +283,25 @@ public class BuilderMenuNode {
 		if(popupOperator == null){
 			popupOperator = new JPopupMenu(); 
 			
-		    popupOperator.add(itemDelete); 
-		    popupOperator.addSeparator(); 
-		    
-		    popupOperator.add(itemAnd); 
-		    popupOperator.add(itemOr); 
-		    popupOperator.add(itemNot); 
-		    popupOperator.add(itemEqual); 
-		    popupOperator.add(itemImplies); 
-		    popupOperator.add(itemIff); 
-		    popupOperator.add(itemForall); 
-		    popupOperator.add(itemExists); 
+			popupOperator.add(itemDelete); 
+			popupOperator.addSeparator(); 
+			
+			popupOperator.add(itemAnd); 
+			popupOperator.add(itemOr); 
+			popupOperator.add(itemNot); 
+			popupOperator.add(itemEqual); 
+			popupOperator.add(itemImplies); 
+			popupOperator.add(itemIff); 
+			popupOperator.add(itemForall); 
+			popupOperator.add(itemExists); 
 		}
 		
 		return popupOperator; 
 		
 	}	
+	
+	public void showErrorMessage(String msg){
+		JOptionPane.showMessageDialog(null, msg , resource.getString("error"), JOptionPane.ERROR_MESSAGE);	
+	}
+	
 }

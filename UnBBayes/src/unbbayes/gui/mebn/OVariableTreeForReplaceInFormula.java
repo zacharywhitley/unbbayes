@@ -53,10 +53,14 @@ public class OVariableTreeForReplaceInFormula extends OVariableTree{
 						//Nothing
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-						
-						formulaTree.addOVariable(ordinaryVariable); 
-						controller.getMebnController().updateFormulaActiveContextNode(); 
-						
+						try{
+						   formulaTree.addOVariable(ordinaryVariable); 
+						   controller.getMebnController().updateFormulaActiveContextNode(); 
+						}
+						catch(Exception ex){
+							//TODO colocar dialogo de erro. 
+							ex.printStackTrace(); 
+						}
 					} else if (e.getClickCount() == 1) {
 						//Nothing
 					}
@@ -67,5 +71,7 @@ public class OVariableTreeForReplaceInFormula extends OVariableTree{
 			}
 		}); 
 	}
+
+	
 	
 }
