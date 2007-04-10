@@ -1,5 +1,13 @@
 package unbbayes.prs.mebn.compiler;
 
+import java.io.File;
+
+import unbbayes.io.BaseIO;
+import unbbayes.io.NetIO;
+import unbbayes.prs.Edge;
+import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.util.Debug;
 
 /*
@@ -64,10 +72,79 @@ public class Compiler {
 
 	/* PROGRAMA PRINCIPAL */
 	public static void main(String[] args) {
+		ProbabilisticNetwork rede = new ProbabilisticNetwork("MEBN Table Test");
+
+		ProbabilisticNode dangerToSelf = new ProbabilisticNode();
+		dangerToSelf.setName("DangerToSelf");
+		dangerToSelf.setDescription("Danger to self");
+		dangerToSelf.appendState("Un");
+		dangerToSelf.appendState("Hi");
+		dangerToSelf.appendState("Me");
+		dangerToSelf.appendState("Lo");
+		PotentialTable auxTabPot = dangerToSelf.getPotentialTable();
+		auxTabPot.addVariable(dangerToSelf);
+		rede.addNode(dangerToSelf);
+		
+		ProbabilisticNode opSpec = new ProbabilisticNode();
+		opSpec.setName("OpSpec");
+		opSpec.setDescription("Operator Specie");
+		opSpec.appendState("Cardassian");
+		opSpec.appendState("Unknown");
+		opSpec.appendState("Friend");
+		opSpec.appendState("Klingon");
+		opSpec.appendState("Romulan");
+		auxTabPot = opSpec.getPotentialTable();
+		auxTabPot.addVariable(opSpec);
+		rede.addNode(opSpec);
+
+		Edge auxArco = new Edge(dangerToSelf, opSpec);
+		rede.addEdge(auxArco);
+		
+		ProbabilisticNode harmPotential = new ProbabilisticNode();
+		harmPotential.setName("HarmPotential");
+		harmPotential.setDescription("Harm Potential");
+		harmPotential.appendState("True");
+		harmPotential.appendState("False");
+		auxTabPot = harmPotential.getPotentialTable();
+		auxTabPot.addVariable(harmPotential);
+		rede.addNode(harmPotential);
+		
+		auxArco = new Edge(dangerToSelf, harmPotential);
+		rede.addEdge(auxArco);
+		
+		opSpec = new ProbabilisticNode();
+		opSpec.setName("OpSpec2");
+		opSpec.setDescription("Operator Specie 2");
+		opSpec.appendState("Cardassian");
+		opSpec.appendState("Unknown");
+		opSpec.appendState("Friend");
+		opSpec.appendState("Klingon");
+		opSpec.appendState("Romulan");
+		auxTabPot = opSpec.getPotentialTable();
+		auxTabPot.addVariable(opSpec);
+		rede.addNode(opSpec);
+
+		auxArco = new Edge(dangerToSelf, opSpec);
+		rede.addEdge(auxArco);
+		
+		harmPotential = new ProbabilisticNode();
+		harmPotential.setName("HarmPotential2");
+		harmPotential.setDescription("Harm Potential 2");
+		harmPotential.appendState("True");
+		harmPotential.appendState("False");
+		auxTabPot = harmPotential.getPotentialTable();
+		auxTabPot.addVariable(harmPotential);
+		rede.addNode(harmPotential);
+		
+		auxArco = new Edge(dangerToSelf, harmPotential);
+		rede.addEdge(auxArco);
+		
+		/*
 		Debug.setDebug(true);
 		Compiler c = new Compiler();
 		c.init(TABLE_TO_PARSE);
 		c.parse();
+		*/
 	}
 
 	/* inicialização do compilador */
