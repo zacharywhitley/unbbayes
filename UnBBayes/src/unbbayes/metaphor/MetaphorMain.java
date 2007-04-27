@@ -1,4 +1,4 @@
-package unbbayes.datamining.gui.metaphor;
+package unbbayes.metaphor;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;

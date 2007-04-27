@@ -34,12 +34,12 @@ import unbbayes.controller.IconController;
 import unbbayes.datamining.datamanipulation.Options;
 import unbbayes.datamining.gui.bayesianlearning.BayesianLearningMain;
 import unbbayes.datamining.gui.evaluation.EvaluationMain;
-import unbbayes.datamining.gui.metaphor.MetaphorMain;
 import unbbayes.datamining.gui.naivebayes.NaiveBayesMain;
 import unbbayes.datamining.gui.neuralmodel.NeuralModelController;
 import unbbayes.datamining.gui.neuralnetwork.NeuralNetworkController;
 import unbbayes.datamining.gui.preprocessor.PreprocessorMain;
 import unbbayes.gui.MDIDesktopPane;
+import unbbayes.metaphor.MetaphorMain;
 
 public class InvokerMain extends JFrame
 {
