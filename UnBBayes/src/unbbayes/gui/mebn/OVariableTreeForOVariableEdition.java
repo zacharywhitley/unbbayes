@@ -6,7 +6,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
-import unbbayes.controller.NetworkController;
+import unbbayes.controller.MEBNController;
 import unbbayes.prs.mebn.OrdinaryVariable;
 
 /**
@@ -20,7 +20,7 @@ public class OVariableTreeForOVariableEdition extends OVariableTree{
 	
 	private OrdinaryVariable oVariableActive; 
 	
-	public OVariableTreeForOVariableEdition(final NetworkController controller){
+	public OVariableTreeForOVariableEdition(final MEBNController controller){
 		super(controller); 
 	}
 	
@@ -48,13 +48,13 @@ public class OVariableTreeForOVariableEdition extends OVariableTree{
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 						
-						controller.getMebnController().selectOVariableInEdit(ordinaryVariable); 
+						controller.selectOVariableInEdit(ordinaryVariable); 
 						oVariableActive = ordinaryVariable; 						
 						
 						
 					} else if (e.getClickCount() == 1) {
 						
-						controller.getMebnController().selectOVariableInEdit(ordinaryVariable); 
+						controller.selectOVariableInEdit(ordinaryVariable); 
 						oVariableActive = ordinaryVariable; 
 					}
 				} 

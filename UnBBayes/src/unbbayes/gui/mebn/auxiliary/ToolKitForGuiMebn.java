@@ -7,9 +7,11 @@ import javax.swing.border.TitledBorder;
 
 
 /** 
+ * Esta classe contem dados sobre a renderização dos objetos MEBN. 
+ * 
  * @author Laecio Lima dos Santos
- *
  */
+
 public class ToolKitForGuiMebn {
 
 	private static Color borderColor = Color.BLUE; 

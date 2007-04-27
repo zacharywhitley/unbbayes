@@ -6,6 +6,7 @@ import java.util.List;
 public class BuiltInRV {
  
 	private String name; 
+	private String mnemonic; 
 	
 	private List<GenerativeInputNode> inputInstanceFromList;
 	
@@ -13,8 +14,9 @@ public class BuiltInRV {
 	
 	protected int numOperandos; 
 	
-	public BuiltInRV(String name){
+	public BuiltInRV(String name, String mnemonic){
 		this.name = name; 
+		this.mnemonic = mnemonic; 
 		inputInstanceFromList = new ArrayList<GenerativeInputNode>();
 		contextInstanceFromList = new ArrayList<ContextNode>();		
 	}
@@ -45,6 +47,14 @@ public class BuiltInRV {
 	
 	public void setNumOperandos(int num){
 		numOperandos = num;
+	}
+
+	public String getMnemonic() {
+		return mnemonic;
+	}
+
+	public void setMnemonic(String mnemonic) {
+		this.mnemonic = mnemonic;
 	}
 	
 }

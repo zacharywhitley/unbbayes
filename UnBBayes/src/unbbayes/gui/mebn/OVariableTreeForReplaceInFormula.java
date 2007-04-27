@@ -6,8 +6,8 @@ import java.awt.event.MouseEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
-import unbbayes.controller.NetworkController;
-import unbbayes.gui.mebn.formula.FormulaTree;
+import unbbayes.controller.FormulaTreeController;
+import unbbayes.controller.MEBNController;
 import unbbayes.prs.mebn.OrdinaryVariable;
 
 //TODO aplicar pattern... 
@@ -23,11 +23,11 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 public class OVariableTreeForReplaceInFormula extends OVariableTree{
 
 	private OrdinaryVariable oVariableActive; 	
-	private FormulaTree formulaTree; 
+	private FormulaTreeController formulaTreeController; 
 	
-	public OVariableTreeForReplaceInFormula(final NetworkController controller, FormulaTree _formulaTree){
+	public OVariableTreeForReplaceInFormula(final MEBNController controller, FormulaTreeController _formulaTreeController){
 		super(controller); 
-		formulaTree = _formulaTree; 
+		formulaTreeController = _formulaTreeController; 
 	}
 	
 	public void addListeners(){
@@ -54,8 +54,8 @@ public class OVariableTreeForReplaceInFormula extends OVariableTree{
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 						try{
-						   formulaTree.addOVariable(ordinaryVariable); 
-						   controller.getMebnController().updateFormulaActiveContextNode(); 
+						   formulaTreeController.addOVariable(ordinaryVariable); 
+						   controller.updateFormulaActiveContextNode(); 
 						}
 						catch(Exception ex){
 							//TODO colocar dialogo de erro. 

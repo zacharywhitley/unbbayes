@@ -10,8 +10,7 @@ import unbbayes.prs.mebn.exception.MEBNConstructionException;
 
 /**
  * Domain-specific MFrags. 
- * Extend the MFrag for work with GenerativeInputNode, 
- * DomainResidentNode and ContextNode. 
+ * Extend the MFrag for work with GenerativeInputNode, DomainResidentNode and ContextNode. 
  */
 
 public class DomainMFrag extends MFrag {
@@ -22,19 +21,8 @@ public class DomainMFrag extends MFrag {
 
 	private List<DomainResidentNode> residentNodeList;
 
-	/* 
-	 * Estes contadores indicam qual deve ser o numero do proximo
-	 * no criado caso os nomes estejam sendo gerados automaticamente
-	 */
-	/*
-	private int generativeInputNodeNum = 1; 
-	private int domainResidentNodeNum = 1; 	
-	private int contextNodeNum = 1; 
-    */
-
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.resources.Resources");
-  		
+  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.resources.Resources");  		
 	
 	/**
 	 * Contructs a new DomainMFrag with empty node's list.
@@ -60,7 +48,6 @@ public class DomainMFrag extends MFrag {
 		contextNode.setMFrag(this);
 		
 		super.getMultiEntityBayesianNetwork().plusContextNodeNul(); 
-		
 	}
 
 	/**
@@ -95,6 +82,19 @@ public class DomainMFrag extends MFrag {
 
 	}
 
+	/**
+	 * Method responsible for adding the given ordinary variable in its ordinary variable list.
+	 * 
+	 * @param ordinaryVariable
+	 *            The ordinary variable to be added in the ordinary variable list.
+	 */	
+	public void addOrdinaryVariable(OrdinaryVariable ordinaryVariable){
+		
+		super.addOrdinaryVariable(ordinaryVariable);
+		addNode(ordinaryVariable); 
+		
+	}	
+	
 	/**
 	 * Method responsible for removing the given node from its context node
 	 * list. It is also responsible to remove the same node from the node list.
@@ -133,6 +133,16 @@ public class DomainMFrag extends MFrag {
 		removeNode(domainResidentNode);
 	}
 	
+	/**
+	 * Method responsible for removing the given ordinary variable from its ordinary variable list.
+	 * 
+	 * @param ordinary variable
+	 *            The ordinary variable to be removed from the ordinary variable list.
+	 */	
+	public void removeOrdinaryVariable(OrdinaryVariable ordinaryVariable){
+		super.getOrdinaryVariableList().remove(ordinaryVariable);
+		removeNode(ordinaryVariable); 
+	}	
 	
 	/**
 	 * Gets the list of generative input nodes in this DomainMFrag.

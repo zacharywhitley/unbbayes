@@ -5,7 +5,7 @@ import unbbayes.prs.mebn.BuiltInRV;
 public class BuiltInRVEqualTo extends BuiltInRV{
 
 	public BuiltInRVEqualTo(){
-		super("equalto"); 
+		super("equalto", "\u003D"); 
 		numOperandos = 2; 
 	}	
 	

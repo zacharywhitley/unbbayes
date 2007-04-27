@@ -48,17 +48,12 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	public void addArgument(OrdinaryVariable ov) throws ArgumentNodeAlreadySetException, 
 	OVariableAlreadyExistsInArgumentList{
 		
-		Argument argument = new Argument(this.getName() + "_" + numNextArgument, this);
-		
-		this.addArgument(argument); 
-		
 		if(ordinaryVariableList.contains(ov)){
 			throw new OVariableAlreadyExistsInArgumentList(); 
 		}
 		else{
 			ordinaryVariableList.add(ov); 
 			ov.addIsOVariableOfList(this); 
-			argument.setOVariable(ov); 
 		}
 		
 	}

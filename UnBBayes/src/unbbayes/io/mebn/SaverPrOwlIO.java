@@ -13,9 +13,6 @@ import java.util.Set;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import unbbayes.gui.mebn.formula.NodeFormulaTree;
-import unbbayes.gui.mebn.formula.enumSubType;
-import unbbayes.gui.mebn.formula.enumType;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
@@ -28,6 +25,9 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.context.NodeFormulaTree;
+import unbbayes.prs.mebn.context.enumSubType;
+import unbbayes.prs.mebn.context.enumType;
 import unbbayes.prs.mebn.entity.BooleanStatesEntity;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
 import unbbayes.prs.mebn.entity.Entity;
@@ -369,7 +369,7 @@ public class SaverPrOwlIO {
 				domainMFragIndividual.addPropertyValue(hasOVariableProperty, oVariableIndividual); 		
 				
 				for(String type: Type.getListOfTypes()){
-					if(type.compareTo(oVariable.getType()) == 0){
+					if(type.compareTo(oVariable.getValueType()) == 0){
 						domainMFragIndividual.addPropertyValue(isSubsByProperty, mapMetaEntity.get(type)); 
 						break; 
 					}
@@ -591,7 +591,7 @@ public class SaverPrOwlIO {
 			
 				//salvar os argumentos
 				
-				List<NodeFormulaTree> childrenList = formulaNode.getChildrenList(); 
+				List<NodeFormulaTree> childrenList = formulaNode.getChildren(); 
 				
 				int childNum = 0; 
 				

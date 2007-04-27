@@ -5,7 +5,7 @@ import unbbayes.prs.mebn.BuiltInRV;
 public class BuiltInRVIff extends BuiltInRV{
 
 	public BuiltInRVIff(){
-		super("iff"); 
+		super("iff", "\u2194"); 
 		numOperandos = 2; 
 	}	
 }

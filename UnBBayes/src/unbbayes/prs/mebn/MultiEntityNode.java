@@ -31,11 +31,8 @@ public class MultiEntityNode extends Node {
 		
 		super();
 		
-		//TODO Melhorar isso!!! 
-		// width
 		size.x = 100;
-		// height
-		size.y = 20;		
+		size.y = 20;	
 		
 		argumentList = new ArrayList<Argument>(); 
 		innerTermOfList = new ArrayList<MultiEntityNode>();

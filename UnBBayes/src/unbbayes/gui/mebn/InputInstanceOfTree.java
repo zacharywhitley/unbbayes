@@ -17,7 +17,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
-import unbbayes.controller.NetworkController;
+import unbbayes.controller.MEBNController;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
@@ -50,12 +50,12 @@ public class InputInstanceOfTree extends JTree{
 	
 	protected IconController iconController = IconController.getInstance();
 	
-	private final NetworkController controller;	
+	private final MEBNController controller;	
 	
-	public InputInstanceOfTree(final NetworkController controller) {
+	public InputInstanceOfTree(final MEBNController controller) {
 		
 		this.controller = controller; 
-		this.net = (MultiEntityBayesianNetwork)controller.getNetwork();
+		this.net = controller.getMultiEntityBayesianNetwork();
 		
 		// set up node icons
 		setCellRenderer(new InputInstanceTreeCellRenderer());
@@ -96,8 +96,8 @@ public class InputInstanceOfTree extends JTree{
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 						//TODO preencher o generativeInput... 
-						GenerativeInputNode inputNode = (GenerativeInputNode)controller.getMebnController().getInputNodeActive(); 
-						controller.getMebnController().setInputInstanceOf(inputNode, residentNode); 
+						GenerativeInputNode inputNode = (GenerativeInputNode)controller.getInputNodeActive(); 
+						controller.setInputInstanceOf(inputNode, residentNode); 
 						
 					} else if (e.getClickCount() == 1) {
 						

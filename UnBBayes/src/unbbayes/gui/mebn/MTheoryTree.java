@@ -20,8 +20,9 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
-import unbbayes.controller.NetworkController;
+import unbbayes.controller.MEBNController;
 import unbbayes.gui.GraphAction;
+import unbbayes.gui.GraphPane;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
@@ -68,7 +69,8 @@ public class MTheoryTree extends JTree {
 
 	private DefaultMutableTreeNode root; 
 	
-    private final NetworkController controller;	
+    private final MEBNController controller;	
+    private final GraphPane graphPane;
     
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
@@ -79,11 +81,12 @@ public class MTheoryTree extends JTree {
   	 * @param controller
   	 */
   	
-	public MTheoryTree(final NetworkController controller) {
+	public MTheoryTree(final MEBNController controller, GraphPane graphPane) {
 		
 		this.controller = controller; 
-		this.net = (MultiEntityBayesianNetwork)controller.getNetwork();
-
+		this.net = controller.getMultiEntityBayesianNetwork();
+		this.graphPane = graphPane; 
+		
 		/*----------------- build tree --------------------------*/ 
 		
 		setCellRenderer(new MTheoryTreeCellRenderer());
@@ -115,26 +118,26 @@ public class MTheoryTree extends JTree {
 
 		itemDelete.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				controller.getMebnController().removeDomainMFrag((DomainMFrag) objectSelected); 
+				controller.removeDomainMFrag((DomainMFrag) objectSelected); 
 				updateTree(); 
 			}
 		}); 		
 		
 		itemContext.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				controller.getScreen().getGraphPane().setAction(GraphAction.CREATE_CONTEXT_NODE); 
+				graphPane.setAction(GraphAction.CREATE_CONTEXT_NODE); 
 			}
 		}); 
 		
 		itemInput.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				controller.getScreen().getGraphPane().setAction(GraphAction.CREATE_INPUT_NODE); 				
+				graphPane.setAction(GraphAction.CREATE_INPUT_NODE); 				
 			}
 		}); 
 		
 		itemResident.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				controller.getScreen().getGraphPane().setAction(GraphAction.CREATE_RESIDENT_NODE); 								
+				graphPane.setAction(GraphAction.CREATE_RESIDENT_NODE); 								
 			}
 		}); 		
 		
@@ -194,7 +197,7 @@ public class MTheoryTree extends JTree {
 
 		itemDelete.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				controller.getMebnController().deleteSelected(objectSelected); 
+				controller.deleteSelected(objectSelected); 
 				updateTree(); 
 			}
 		}); 		
@@ -208,7 +211,7 @@ public class MTheoryTree extends JTree {
 		itemAddDomainMFrag.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae)
             {   
-            	controller.getMebnController().insertDomainMFrag("DomainMFrag " + net.getMFragCount()); 
+            	controller.insertDomainMFrag(); 
             }
         });
 		
@@ -462,7 +465,7 @@ public class MTheoryTree extends JTree {
 						popupMFrag.show(e.getComponent(),e.getX(),e.getY());
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-						controller.getMebnController().setCurrentMFrag(mFragMap.get(node)); 
+						controller.setCurrentMFrag(mFragMap.get(node)); 
 					} else if (e.getClickCount() == 1) {
 						
 					}
@@ -491,7 +494,7 @@ public class MTheoryTree extends JTree {
 							System.out.println("  -> MFrag Father = " + ((MFrag)fatherNode).getName()); 
 							System.out.println("  -> Node name = " + ((Node)objectSelected).getName()); 
 							
-							controller.getMebnController().showGraphMFrag((MFrag)fatherNode); 
+							controller.showGraphMFrag((MFrag)fatherNode); 
 							controller.selectNode((Node)objectSelected); 
 							
 						} else if (e.getClickCount() == 1) {
@@ -513,7 +516,7 @@ public class MTheoryTree extends JTree {
 						popupMFrag.show(e.getComponent(),e.getX(),e.getY());
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-						controller.getMebnController().setCurrentMFrag(mFragMap.get(node));
+						controller.setCurrentMFrag(mFragMap.get(node));
 					} else if (e.getClickCount() == 1) {
 					
 					

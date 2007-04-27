@@ -65,13 +65,13 @@ public class PossibleValuesEditionPane extends JPanel{
     }
     	
     
-	public PossibleValuesEditionPane(NetworkController _controller, DomainResidentNode _residentNode){
+	public PossibleValuesEditionPane(MEBNController _controller, DomainResidentNode _residentNode){
 		
 		super(); 
 		setLayout(new BorderLayout()); 
 		
 		residentNode = _residentNode;
-		mebnController = _controller.getMebnController(); 
+		mebnController = _controller; 
 		
 		listPossibleValues = residentNode.getPossibleValueList(); 
 		

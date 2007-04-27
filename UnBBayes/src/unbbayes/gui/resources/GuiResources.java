@@ -199,6 +199,7 @@ public class GuiResources extends ListResourceBundle {
 		{"ContextButton", "Context"}, 
 		{"MFragButton", "MFrag"}, 	
 		{"ArgumentsButton", "Arguments"}, 			
+		{"OrdVariableButton", "Ord. Variable"}, 
 		
 		{"whithotMFragActive","Don't have MFrag active"},			
 		{"previewTitle","Preview"},
@@ -267,6 +268,24 @@ public class GuiResources extends ListResourceBundle {
 		{"sucess", "Sucess"}, 
 		{"error", "Error"},
         
+		/* Tips for buttons of the table edition */
+		{"deleteTip", "Delet selected text"}, 
+		{"anyTip", "Insert statement \"If any\""}, 
+		{"allTip", "Insert statement \"If all\""}, 
+		{"elseTip", "Insert \"else\""}, 
+		{"equalTip", "Insert equal operator"}, 
+		{"andTip", "Insert statement AND"}, 
+		{"orTip", "Insert statement OR"}, 
+		{"notTip", "Insert statement NOT"}, 
+		{"cadinalityTip", "Insert statement CARDINALITY"}, 
+		{"maxTip", "Insert statement MAX"}, 
+		{"minTip", "Insert statement MIN"}, 
+		{"saveTip", "Save the table"}, 
+		{"statesTip", "Show states of the node"}, 
+		{"fatherTip", "Show fathers of the node"}, 
+		{"argTip", "Show arguments of the node"}, 
+		{"exitTip", "Exit whithout save"}, 
+		
 		/* Exceptions MEBN */
 		{"withoutMFrag", "Don't exists any MFrag"}, 
 		{"edgeInvalid", "Edge Invalid"}

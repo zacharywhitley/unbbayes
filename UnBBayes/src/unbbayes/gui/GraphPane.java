@@ -543,7 +543,22 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 						    resource.getString("operationError"),
 						    JOptionPane.WARNING_MESSAGE);
 				}
-				return; 				
+				return; 	
+				
+			case CREATE_ORDINARYVARIABLE_NODE:
+				try{
+				controller.getMebnController().insertOrdinaryVariable(e.getX(), e.getY());
+                node = getNode(e.getX(), e.getY());
+				   selectObject(node);
+				   controller.selectNode(node); 
+				}
+				catch(MEBNConstructionException exception){
+					JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
+							resource.getString("withoutMFrag"),
+						    resource.getString("operationError"),
+						    JOptionPane.WARNING_MESSAGE);
+				}				
+				return; 		
 				
 			case CREATE_EDGE:
 				if (node != null) {
@@ -994,6 +1009,9 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 		case CREATE_INPUT_NODE:
 			
 		case CREATE_RESIDENT_NODE: 
+			
+		case CREATE_ORDINARYVARIABLE_NODE: 	
+			
 			setCursor(new Cursor(Cursor.HAND_CURSOR));
 			break;
 			

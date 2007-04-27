@@ -100,8 +100,6 @@ public class ObjectEntity extends Entity {
 		return instance;
 	}
 	
-	// TODO verificar se seria interessante lançar exception aqui de instancia 
-	// inexistente.
 	public void removeInstance(ObjectEntity instance) {
 		listObjectEntityInstance.remove(instance);
 	}

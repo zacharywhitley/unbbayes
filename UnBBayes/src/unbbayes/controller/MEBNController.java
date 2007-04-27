@@ -1,5 +1,6 @@
 package unbbayes.controller;
 
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import unbbayes.gui.MEBNEditionPane;
@@ -25,6 +26,7 @@ import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
+import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 
 /**
  * Controller of MEBN
@@ -42,6 +44,7 @@ public class MEBNController {
 	private ResidentNode residentNodeActive; 
 	private InputNode inputNodeActive; 
 	private ContextNode contextNodeActive; 
+	private OrdinaryVariable ordVariableNodeActive; 
 	private Node nodeActive; 
 	
 	public ResidentNode getResidentNodeActive(){
@@ -70,22 +73,22 @@ public class MEBNController {
 		
 		this.multiEntityBayesianNetwork = multiEntityBayesianNetwork;
 		this.screen = screen;
-		mebnEditionPane = screen.getMebnEditionPane(); 
+		mebnEditionPane = new MEBNEditionPane(screen, this);
 	
 	}
 
 	public void enableMTheoryEdition(){
 		
-	    screen.getMebnEditionPane().setMTheoryCardActive(); 
-	    screen.getMebnEditionPane().setNameMTheory(this.multiEntityBayesianNetwork.getName()); 	    
-		screen.getMebnEditionPane().setMTheoryTreeActive(); 
+		mebnEditionPane.setMTheoryBarActive(); 
+		mebnEditionPane.setNameMTheory(this.multiEntityBayesianNetwork.getName()); 	    
+		mebnEditionPane.setMTheoryTreeActive(); 
 		
 	}
 	
 	public void setNameMTheory(String name){
 		
 		this.multiEntityBayesianNetwork.setName(name);
-		screen.getMebnEditionPane().setNameMTheory(name); 
+		mebnEditionPane.setNameMTheory(name); 
 		
 	}
 	
@@ -109,36 +112,36 @@ public class MEBNController {
 	
 	/*---------------------------- MFrag ----------------------------*/
 	
-	public void insertDomainMFrag(String name) {
+	public void insertDomainMFrag() {
 		
 		DomainMFrag domainMFrag = new DomainMFrag(resource.getString("domainMFragName")
 				+ multiEntityBayesianNetwork.getDomainMFragNum(), multiEntityBayesianNetwork); 
 		
 		multiEntityBayesianNetwork.addDomainMFrag(domainMFrag); 
 		
-		screen.getMebnEditionPane().getMTheoryTree().updateTree();
-		screen.getMebnEditionPane().setMTheoryTreeActive(); 
+		mebnEditionPane.getMTheoryTree().updateTree();
+		mebnEditionPane.setMTheoryTreeActive(); 
 	    
 	    showGraphMFrag(domainMFrag); 
 	    
-	    screen.getMebnEditionPane().setMFragCardActive(); 
-	    screen.getMebnEditionPane().setTxtNameMFrag(domainMFrag.getName()); 	    
-		screen.getMebnEditionPane().setMTheoryTreeActive(); 
+	    mebnEditionPane.setMFragBarActive(); 
+	    mebnEditionPane.setTxtNameMFrag(domainMFrag.getName()); 	    
+	    mebnEditionPane.setMTheoryTreeActive(); 
 		
 	}
 	
 	public void removeDomainMFrag(DomainMFrag domainMFrag) {
 		multiEntityBayesianNetwork.removeDomainMFrag(domainMFrag);
-		screen.getMebnEditionPane().getMTheoryTree().updateTree(); 	
+		mebnEditionPane.getMTheoryTree().updateTree(); 	
 	}
 	
 	public void setCurrentMFrag(MFrag mFrag){
 		
 		showGraphMFrag(mFrag); 
 	    
-	    screen.getMebnEditionPane().setMFragCardActive(); 
-	    screen.getMebnEditionPane().setTxtNameMFrag(mFrag.getName()); 		    
-		screen.getMebnEditionPane().setMTheoryTreeActive(); 
+		mebnEditionPane.setMFragBarActive(); 
+		mebnEditionPane.setTxtNameMFrag(mFrag.getName()); 		    
+		mebnEditionPane.setMTheoryTreeActive(); 
 	}
 	
 	/**
@@ -150,7 +153,7 @@ public class MEBNController {
 			mFrag.setName(name);
 			
 			if(this.getCurrentMFrag() == mFrag){
-				screen.getMebnEditionPane().showTitleGraph(name); 
+				mebnEditionPane.showTitleGraph(name); 
 			}
 	}
 	
@@ -162,12 +165,36 @@ public class MEBNController {
 		
 		multiEntityBayesianNetwork.setCurrentMFrag(mFrag); 
 	    screen.getGraphPane().resetGraph(); 
-	    screen.getMebnEditionPane().showTitleGraph(mFrag.getName()); 
+	    mebnEditionPane.showTitleGraph(mFrag.getName()); 
 	    
 	}
 	
 	public MFrag getCurrentMFrag(){
 		return multiEntityBayesianNetwork.getCurrentMFrag(); 
+	}
+	
+	public OrdinaryVariable insertOrdinaryVariable(double x, double y) throws MFragDoesNotExistException {
+		
+		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
+
+		if (currentMFrag == null) {
+			throw new MFragDoesNotExistException();
+		}
+		
+		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
+		String name = resource.getString("ordinaryVariableName") + domainMFrag.getOrdinaryVariableNum(); 
+		String type = Type.getDefaultType(); 
+		OrdinaryVariable ov = new OrdinaryVariable(name, type, domainMFrag);
+		
+		ov.setPosition(x, y);
+		ov.setDescription(ov.getName());
+		domainMFrag.addOrdinaryVariable(ov);
+		
+		ordVariableNodeActive = ov; 
+		setOrdVariableNodeActive(ov); 
+		
+	    return ov;
+	    
 	}
 	
 	/*---------------------------- Domain Resident Node ----------------------------*/	
@@ -188,18 +215,18 @@ public class MEBNController {
 		residentNodeActive = node; 
 		nodeActive = node; 
 		
-		screen.getMebnEditionPane().setEditArgumentsTabActive(node);
-		screen.getMebnEditionPane().setResidentNodeTabActive(node); 
-		screen.getMebnEditionPane().setArgumentTabActive(); 
-		screen.getMebnEditionPane().setResidentCardActive(); 
-	    screen.getMebnEditionPane().setTxtNameResident(((ResidentNode)node).getName()); 
+		mebnEditionPane.setEditArgumentsTabActive(node);
+		mebnEditionPane.setResidentNodeTabActive(node); 
+		mebnEditionPane.setArgumentTabActive(); 
+		mebnEditionPane.setResidentBarActive(); 
+		mebnEditionPane.setTxtNameResident(((ResidentNode)node).getName()); 
 	    
 	    return node;
 	}
 	
 	public void renameDomainResidentNode(DomainResidentNode resident, String newName){
 		resident.setName(newName);	
-		screen.getMebnEditionPane().repaint(); 
+		mebnEditionPane.repaint(); 
 	}
 	
 	/**
@@ -239,13 +266,13 @@ public class MEBNController {
 	
 	public void setEnableTableEditionView(){
 		
-		screen.getMebnEditionPane().showTableEdit();
+		mebnEditionPane.showTableEdit();
 		
 	}
 	
 	public void setUnableTableEditionView(){
 		
-		screen.getMebnEditionPane().hideTopComponent(); 
+		mebnEditionPane.hideTopComponent(); 
 		
 	}	
 	
@@ -286,10 +313,10 @@ public class MEBNController {
 		inputNodeActive = node; 
 		nodeActive = node; 
 		
-		screen.getMebnEditionPane().setInputCardActive(); 	
-		screen.getMebnEditionPane().setTxtNameInput(((InputNode)node).getName()); 		    
-		screen.getMebnEditionPane().setInputNodeActive(node); 
-		screen.getMebnEditionPane().setTxtInputOf(""); 	
+		mebnEditionPane.setInputBarActive(); 	
+		mebnEditionPane.setTxtNameInput(((InputNode)node).getName()); 		    
+		mebnEditionPane.setInputNodeActive(node); 
+		mebnEditionPane.setTxtInputOf(""); 	
 	 	
 		return node; 
 	}	
@@ -297,8 +324,8 @@ public class MEBNController {
 	public void setInputInstanceOf(GenerativeInputNode input, ResidentNode resident){
 		
 		input.setInputInstanceOf((DomainResidentNode)resident); 
-		screen.getMebnEditionPane().setTxtInputOf(resident.getName()); 
-		screen.getMebnEditionPane().updateUI(); 
+		mebnEditionPane.setTxtInputOf(resident.getName()); 
+		mebnEditionPane.updateUI(); 
 	
 	}
 	
@@ -311,11 +338,11 @@ public class MEBNController {
 		Object target = input.getInputInstanceOf(); 
 		
 		if (target == null){
-			screen.getMebnEditionPane().setTxtInputOf(""); 
+			mebnEditionPane.setTxtInputOf(""); 
 		}
 		else{
 			if (target instanceof ResidentNode){
-				screen.getMebnEditionPane().setTxtInputOf(((ResidentNode)target).getName()); 
+				mebnEditionPane.setTxtInputOf(((ResidentNode)target).getName()); 
 			}
 		}
 		
@@ -340,10 +367,8 @@ public class MEBNController {
 		contextNodeActive = node; 
 		nodeActive = node; 
 		
-	    screen.getMebnEditionPane().setContextCardActive();
-		screen.getMebnEditionPane().setFormulaEdtionActive(node); 	
-		screen.getMebnEditionPane().setTxtNameContext(((ContextNode)node).getName()); 
-	
+		setContextNodeActive(node); 
+		
 		return node; 
 	}	
 	
@@ -353,28 +378,32 @@ public class MEBNController {
 	public void deleteSelected(Object selected) {
         if (selected instanceof ContextNode){
             ((ContextNode)selected).delete();
-            screen.getMebnEditionPane().getMTheoryTree().updateTree(); 
-            screen.getMebnEditionPane().setMTheoryTreeActive();  
+            mebnEditionPane.getMTheoryTree().updateTree(); 
+            mebnEditionPane.setMTheoryTreeActive();  
         }
         else{
         	
         	if (selected instanceof DomainResidentNode){
                 ((DomainResidentNode)selected).delete();
-                screen.getMebnEditionPane().getMTheoryTree().updateTree(); 
-                screen.getMebnEditionPane().setMTheoryTreeActive();  
+                mebnEditionPane.getMTheoryTree().updateTree(); 
+                mebnEditionPane.setMTheoryTreeActive();  
         		this.setUnableTableEditionView(); 
         	}
         	else{
             	if (selected instanceof GenerativeInputNode){
                     ((GenerativeInputNode)selected).delete();
-                     screen.getMebnEditionPane().getMTheoryTree().updateTree(); 
-                     screen.getMebnEditionPane().setMTheoryTreeActive(); 
-            	}
-            	else{
+                     mebnEditionPane.getMTheoryTree().updateTree(); 
+                     mebnEditionPane.setMTheoryTreeActive(); 
+            	}else{
+            	 if (selected instanceof OrdinaryVariable){
+                     ((OrdinaryVariable)selected).delete();
+                  }
+               else{
                     if (selected instanceof Edge) {
                     	MFrag mFragCurrent = multiEntityBayesianNetwork.getCurrentMFrag(); 
                     	mFragCurrent.removeEdge((Edge) selected);
                     }
+            	}
             	}
         	}
         }
@@ -399,46 +428,54 @@ public class MEBNController {
 				    setContextNodeActive(contextNodeActive); 
 				}
 				else{
-					
+					if(node instanceof OrdinaryVariable){
+						ordVariableNodeActive = (OrdinaryVariable)node; 
+						setOrdVariableNodeActive((OrdinaryVariable)node); 
+					}
 				}
 			}
 			
 		}	
-	    screen.getMebnEditionPane().showTitleGraph(multiEntityBayesianNetwork.getCurrentMFrag().getName());  
+	    mebnEditionPane.showTitleGraph(multiEntityBayesianNetwork.getCurrentMFrag().getName());  
 	}
 	
 	public void updateFormulaActiveContextNode(){
 		String formula = contextNodeActive.updateLabel(); 
-		screen.getMebnEditionPane().setFormula(formula); 
+		mebnEditionPane.setFormula(formula); 
 	}
 
 	private void setResidentNodeActive(ResidentNode residentNodeActive){ 
 	   nodeActive = residentNodeActive; 
-	   screen.getMebnEditionPane().setResidentCardActive(); 
-	   screen.getMebnEditionPane().setEditArgumentsTabActive(residentNodeActive); 
-	   screen.getMebnEditionPane().setResidentNodeTabActive((DomainResidentNode)residentNodeActive); 
-	   screen.getMebnEditionPane().setTxtNameResident((residentNodeActive).getName()); 	
-	   screen.getMebnEditionPane().setArgumentTabActive(); 	
+	   mebnEditionPane.setResidentBarActive(); 
+	   mebnEditionPane.setEditArgumentsTabActive(residentNodeActive); 
+	   mebnEditionPane.setResidentNodeTabActive((DomainResidentNode)residentNodeActive); 
+	   mebnEditionPane.setTxtNameResident((residentNodeActive).getName()); 	
+	   mebnEditionPane.setArgumentTabActive(); 	
 	   this.setUnableTableEditionView(); 
 	}
 	
 	private void setInputNodeActive(InputNode inputNodeActive){
 		nodeActive = inputNodeActive; 
-		screen.getMebnEditionPane().setInputCardActive(); 
-		screen.getMebnEditionPane().setTxtNameInput((inputNodeActive).getName()); 				
-		screen.getMebnEditionPane().setInputNodeActive((GenerativeInputNode)inputNodeActive); 
+		mebnEditionPane.setInputBarActive(); 
+		mebnEditionPane.setTxtNameInput((inputNodeActive).getName()); 				
+		mebnEditionPane.setInputNodeActive((GenerativeInputNode)inputNodeActive); 
 		updateInputInstanceOf((GenerativeInputNode)inputNodeActive); 
 		this.setUnableTableEditionView(); 
 	}
 	
 	private void setContextNodeActive(ContextNode contextNodeActive){
 		nodeActive = contextNodeActive; 
-		screen.getMebnEditionPane().setContextCardActive(); 
-		screen.getMebnEditionPane().setFormulaEdtionActive(contextNodeActive); 					
-		screen.getMebnEditionPane().setTxtNameContext((contextNodeActive).getName()); 					
+		mebnEditionPane.setContextBarActive(); 
+		mebnEditionPane.setFormulaEdtionActive(contextNodeActive); 					
+		mebnEditionPane.setTxtNameContext((contextNodeActive).getName()); 					
 		this.setUnableTableEditionView(); 			
 	}
 
+	private void setOrdVariableNodeActive(OrdinaryVariable ov){
+		nodeActive = ov; 
+		mebnEditionPane.setOrdVariableBarActive(ov); 
+	}
+	
 	/*---------------------------- Ordinary Variable ----------------------------*/	
 		
 	/**
@@ -493,8 +530,7 @@ public class MEBNController {
 	                                                                                    OVariableAlreadyExistsInArgumentList{
 		
 		residentNodeActive.addArgument(ordinaryVariable);
-		screen.getMebnEditionPane().getEditArgumentsTab().update();
-		screen.getMebnEditionPane().updateUI();
+		mebnEditionPane.getEditArgumentsTab().update();
 		
 		
 	}
@@ -503,37 +539,39 @@ public class MEBNController {
 		
 		ResidentNode resident = (ResidentNode) screen.getGraphPane().getSelected(); 
 		resident.removeArgument(ordinaryVariable);
-		screen.getMebnEditionPane().getEditArgumentsTab().update(); 
-		screen.getMebnEditionPane().updateUI(); 
+		mebnEditionPane.getEditArgumentsTab().update(); 
+		mebnEditionPane.updateUI(); 
 		
 	}	
 	
 	public void setOVariableSelectedInResidentTree(OrdinaryVariable oVariableSelected){
-		screen.getMebnEditionPane().getEditArgumentsTab().setTxtName(oVariableSelected.getName()); 
-		screen.getMebnEditionPane().getEditArgumentsTab().setTreeResidentActive(); 
+		mebnEditionPane.getEditArgumentsTab().setTxtName(oVariableSelected.getName()); 
+		mebnEditionPane.getEditArgumentsTab().setTreeResidentActive(); 
 	}
 	
 	public void setOVariableSelectedInMFragTree(OrdinaryVariable oVariableSelected){
-		screen.getMebnEditionPane().getEditArgumentsTab().setTxtName(oVariableSelected.getName()); 
-		screen.getMebnEditionPane().getEditArgumentsTab().setTreeMFragActive(); 
+		mebnEditionPane.getEditArgumentsTab().setTxtName(oVariableSelected.getName()); 
+		mebnEditionPane.getEditArgumentsTab().setTreeMFragActive(); 
 	}	
 	
 	public void renameOVariableOfResidentTree(String name){
-		OrdinaryVariable ov = screen.getMebnEditionPane().getEditArgumentsTab().getResidentOVariableTree().getOVariableSelected(); 
+		OrdinaryVariable ov = mebnEditionPane.getEditArgumentsTab().getResidentOVariableTree().getOVariableSelected(); 
 	    ov.setName(name); 
-		screen.getMebnEditionPane().getEditArgumentsTab().setTxtName(ov.getName()); 
-		screen.getMebnEditionPane().getEditArgumentsTab().update(); 
+	    ov.updateLabel(); 
+		mebnEditionPane.getEditArgumentsTab().setTxtName(ov.getName()); 
+		mebnEditionPane.getEditArgumentsTab().update(); 
 	}
 	
 	public void renameOVariableOfMFragTree(String name){
-		OrdinaryVariable ov = screen.getMebnEditionPane().getEditArgumentsTab().getMFragOVariableTree().getOVariableSelected(); 
+		OrdinaryVariable ov = mebnEditionPane.getEditArgumentsTab().getMFragOVariableTree().getOVariableSelected(); 
 	    ov.setName(name); 
-		screen.getMebnEditionPane().getEditArgumentsTab().setTxtName(ov.getName()); 
-		screen.getMebnEditionPane().getEditArgumentsTab().update(); 
+	    ov.updateLabel(); 
+		mebnEditionPane.getEditArgumentsTab().setTxtName(ov.getName()); 
+		mebnEditionPane.getEditArgumentsTab().update(); 
 	}
 	
 	public void renameOVariableInArgumentEditionPane(String name){
-		if (screen.getMebnEditionPane().getEditArgumentsTab().isTreeResidentActive()){
+		if (mebnEditionPane.getEditArgumentsTab().isTreeResidentActive()){
 			renameOVariableOfResidentTree(name); 
 		}
 		else{
@@ -544,7 +582,7 @@ public class MEBNController {
 	/*---------------------------- Formulas ----------------------------*/	
 		
 	public void selectOVariableInEdit(OrdinaryVariable ov){
-	    OVariableEditionPane editionPane = screen.getMebnEditionPane().getEditOVariableTab(); 
+	    OVariableEditionPane editionPane = mebnEditionPane.getEditOVariableTab(); 
 		editionPane.setNameOVariableSelected(ov.getName()); 
 		//editionPane.setTypeOVariableSelected(ov.getType()); 
 		
@@ -574,7 +612,7 @@ public class MEBNController {
 	
 	public void renameObjectEntity(ObjectEntity entity, String name) throws TypeException{
 		
-		String nameType = name + "_Label" ; 
+		String nameType = name + "_Label"; 
 		
 		Type.addType(nameType);
 		
@@ -585,6 +623,106 @@ public class MEBNController {
 	
 	public void removeObjectEntity(ObjectEntity entity){
 		ObjectEntity.removeEntity(entity); 
+		try{
+		   Type.removeType(entity.getType());
+		}
+		catch(Exception e){
+			
+		}
 	}
 	
+	
+	
+	
+	
+	
+	
+	/*-------------------Uso do PowerLoom--------------*/
+	
+	public void preencherKB(){
+
+			PowerLoomKB test = PowerLoomKB.getInstanceKB(); 
+			
+			for(ObjectEntity entity: ObjectEntity.getListEntity()){
+				test.executeConceptDefinition(entity); 
+			}
+			
+			for(ResidentNode resident: multiEntityBayesianNetwork.getCurrentMFrag().getResidentNodeList()){	
+				test.executeRandonVariableDefinition((DomainResidentNode) resident); 
+			}
+			
+			
+			
+	}
+	
+	public void executeContext(){
+		
+		PowerLoomKB test = PowerLoomKB.getInstanceKB(); 
+		
+		for(ContextNode context: ((DomainMFrag)(multiEntityBayesianNetwork.getCurrentMFrag())).getContextNodeList()){
+			
+			boolean resultado = test.executeContextFormula(context);
+		    
+			System.out.println("Contexto " + context.getName() + resultado); 
+		}
+		
+	}
+	
+	public void makeEntityAssert(String assertComand){
+		    PowerLoomKB test = PowerLoomKB.getInstanceKB(); 
+		    
+		    test.executeEntityFinding(assertComand); 
+		
+	}
+	
+	public void makeRelationAssert(String assertComand){
+	    PowerLoomKB test = PowerLoomKB.getInstanceKB(); 
+	    
+	    test.executeRandonVariableFinding(assertComand); 
+	}
+	
+	public void saveDefinitionsFile(){
+		PowerLoomKB test = PowerLoomKB.getInstanceKB(); 
+
+		System.out.println("[PL] saving module"); 
+		test.saveDefinitionsFile(); 
+		System.out.println("[PL] file save sucefull");
+    
+	}
+	
+	public void linkOrdVariable2Entity(String nameOV, String entity){
+		
+		ArrayList<OrdinaryVariable> listOV = (ArrayList<OrdinaryVariable>)this.getCurrentMFrag().getOrdinaryVariableList(); 
+		
+		for(OrdinaryVariable ov : listOV){
+			if(ov.getName().compareTo(nameOV) == 0){
+				
+				try{ 
+				ov.setEntity(new ObjectEntity(entity, "Boolean")); //warn: o tipo aqui eh apenas para testarmos... 
+				System.out.println(" -> Linkado: " + ov.getName() + " a " + entity); 
+				}
+				catch(Exception e){
+					e.printStackTrace(); 
+				}
+				break; 
+			}
+		}
+	}
+
+	public MultiEntityBayesianNetwork getMultiEntityBayesianNetwork() {
+		return multiEntityBayesianNetwork;
+	}
+
+	public void setMultiEntityBayesianNetwork(
+			MultiEntityBayesianNetwork multiEntityBayesianNetwork) {
+		this.multiEntityBayesianNetwork = multiEntityBayesianNetwork;
+	}
+
+	public MEBNEditionPane getMebnEditionPane() {
+		return mebnEditionPane;
+	}
+
+	public void setMebnEditionPane(MEBNEditionPane mebnEditionPane) {
+		this.mebnEditionPane = mebnEditionPane;
+	}
 }

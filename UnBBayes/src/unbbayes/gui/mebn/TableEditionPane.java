@@ -3,6 +3,7 @@ package unbbayes.gui.mebn;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -82,7 +83,6 @@ public class TableEditionPane extends JPanel{
 	private JButton btnOr; 
 	private JButton btnNot; 
 	
-	private JButton btnNumber; 
 	private JButton btnCardinality; 
 	private JButton btnMax; 
 	private JButton btnMin; 
@@ -198,70 +198,121 @@ public class TableEditionPane extends JPanel{
 	
 	private void buildJpButtons(){
 		
-		jpButtonsEdition = new JPanel(new GridLayout(5, 4));
+		jpButtonsEdition = new JPanel(new GridLayout(6, 3));
 		
-		btnEraseAll = new JButton("DEL");
-		btnEraseAll.setBackground(Color.RED); 
+		Font font = new Font("Serif", Font.ITALIC, 12); 
+		
+		btnEraseAll = new JButton("delete");
+		btnEraseAll.setFont(font); 
+		btnEraseAll.setToolTipText(resource.getString("deleteTip")); 
+		btnEraseAll.setBackground(Color.LIGHT_GRAY); 
 		btnEraseAll.setForeground(Color.WHITE); 
 		
-		btnIfAnyClause = new JButton("ANY");
-		btnIfAllClause = new JButton("ALL");
-		btnElseClause = new JButton("ELS"); 
+		btnIfAnyClause = new JButton("if any");
+		btnIfAnyClause.setFont(font);
+		btnIfAnyClause.setToolTipText(resource.getString("anyTip")); 
 		
-		btnEqual= new JButton("== "); 
-		btnAnd= new JButton("AND"); 
-		btnOr= new JButton("OR "); 
-		btnNot= new JButton("NOT");     	
+		btnIfAllClause = new JButton("if all");
+		btnIfAllClause.setFont(font);
+		btnIfAllClause.setToolTipText(resource.getString("allTip")); 
 		
-		btnNumber= new JButton("NUM"); 
-		btnCardinality= new JButton("CAR"); 
-		btnMax= new JButton("MAX"); 
-		btnMin= new JButton("MIN");     
+		btnElseClause = new JButton("else"); 
+		btnElseClause.setFont(font);
+		btnElseClause.setToolTipText(resource.getString("elseTip")); 
 		
-		btnStates= new JButton("STT"); 
-		btnFathers= new JButton("FAT");  
-		btnArguments= new JButton("ARG"); 
 		
-		btnCompile = new JButton("C&S"); 
-		btnCompile.setBackground(new Color(102, 169, 1)); //green 
+		btnEqual= new JButton("=="); 
+		btnEqual.setFont(font);
+		btnEqual.setToolTipText(resource.getString("equalTip")); 
+		
+		btnAnd= new JButton("and"); 
+		btnAnd.setFont(font);
+		btnAnd.setToolTipText(resource.getString("andTip")); 
+		
+		btnOr= new JButton("or");
+		btnOr.setFont(font);
+		btnOr.setToolTipText(resource.getString("orTip")); 
+		
+		btnNot= new JButton("not");     	
+		btnNot.setFont(font);
+		btnNot.setToolTipText(resource.getString("notTip")); 
+		
+		btnCardinality= new JButton("card");
+		btnCardinality.setFont(font);
+		btnCardinality.setToolTipText(resource.getString("cadinalityTip"));
+		
+		btnMax= new JButton("max"); 
+		btnMax.setFont(font);
+		btnMax.setToolTipText(resource.getString("maxTip")); 
+		
+		btnMin= new JButton("min");     
+		btnMin.setFont(font);
+		btnMin.setToolTipText(resource.getString("minTip")); 
+		
+		btnStates= new JButton("states"); 
+		btnStates.setBackground(Color.LIGHT_GRAY); 
+		btnStates.setForeground(Color.WHITE); 
+		btnStates.setFont(font);
+		btnStates.setToolTipText(resource.getString("statesTip")); 
+		
+		btnFathers= new JButton("fathers");
+		btnFathers.setBackground(Color.LIGHT_GRAY); 
+		btnFathers.setForeground(Color.WHITE);
+		btnFathers.setFont(font);
+		btnFathers.setToolTipText(resource.getString("fatherTip"));
+		
+		btnArguments= new JButton("args");
+		btnArguments.setBackground(Color.LIGHT_GRAY); 
+		btnArguments.setForeground(Color.WHITE);
+		btnArguments.setFont(font);
+		btnArguments.setToolTipText(resource.getString("argTip")); 
+		
+		btnCompile = new JButton("save"); 
+		btnCompile.setFont(font);
+		btnCompile.setToolTipText(resource.getString("saveTip")); 
+		btnCompile.setBackground(Color.LIGHT_GRAY); //green 
 		btnCompile.setForeground(Color.WHITE); 
 		
-		btnExit = new JButton("EXI");   
-		btnExit.setBackground(Color.RED); 
+		btnExit = new JButton("exit");
+		btnExit.setFont(font);
+		btnExit.setToolTipText(resource.getString("exitTip")); 
+		btnExit.setBackground(Color.LIGHT_GRAY); 
 		btnExit.setForeground(Color.WHITE); 
 		
-		jpButtonsEdition.add(btnEraseAll);
+		//First row
+		jpButtonsEdition.add(btnStates); 
+		jpButtonsEdition.add(btnFathers);
+		jpButtonsEdition.add(btnArguments); 
+		
+		//Second row
 		jpButtonsEdition.add(btnIfAnyClause); 
 		jpButtonsEdition.add(btnIfAllClause);
 		jpButtonsEdition.add(btnElseClause);
 		
-		jpButtonsEdition.add(btnEqual); 
+		
+		//Third row
 		jpButtonsEdition.add(btnAnd);
 		jpButtonsEdition.add(btnOr); 
 		jpButtonsEdition.add(btnNot); 
 		
-		jpButtonsEdition.add(btnNumber); 
-		jpButtonsEdition.add(btnCardinality);
+
+		//Fourth row
+		jpButtonsEdition.add(btnEqual); 
 		jpButtonsEdition.add(btnMax); 
 		jpButtonsEdition.add(btnMin); 
 		
-		//TODO fazer isto de uma forma descente...
-		JButton btnPhanton; 
+		//Fifth row
+		jpButtonsEdition.add(btnCardinality);
+		JButton btnPhanton; //Reservado para novas funcionalidades...  
 		btnPhanton = new JButton(); 
 		btnPhanton.setVisible(false); 
 		jpButtonsEdition.add(btnPhanton); 
 		btnPhanton = new JButton(); 
 		btnPhanton.setVisible(false); 
 		jpButtonsEdition.add(btnPhanton);
-		btnPhanton = new JButton(); 
-		btnPhanton.setVisible(false); 
-		jpButtonsEdition.add(btnPhanton);
 		
+		jpButtonsEdition.add(btnEraseAll);
 		jpButtonsEdition.add(btnCompile); 
-		
-		jpButtonsEdition.add(btnStates); 
-		jpButtonsEdition.add(btnFathers);
-		jpButtonsEdition.add(btnArguments); 
 		jpButtonsEdition.add(btnExit); 
 		
 	}
@@ -581,19 +632,6 @@ public class TableEditionPane extends JPanel{
 			System.err.println("Couldn't insert initial text into text pane.");
 		}
 		
-	}		
-	
-	private void insertNumberClause(StyledDocument doc){
-		try {
-			txtPane.replaceSelection(""); 
-			doc.insertString(positionCaret, "number", toolKit.getFunctionStyle());			
-			doc.insertString(positionCaret, "(", toolKit.getDefaultStype());
-			doc.insertString(positionCaret, " op ", toolKit.getDescriptionStyle());
-		    doc.insertString(positionCaret, ")", toolKit.getDefaultStype());
-							
-		} catch (BadLocationException ble) {
-			System.err.println("Couldn't insert initial text into text pane.");
-		}
 	}
 	
 	private void insertCardinalityClause(StyledDocument doc){
@@ -731,13 +769,7 @@ public class TableEditionPane extends JPanel{
 			public void actionPerformed(ActionEvent e){
 				insertNotOperator(doc);
 			}
-		});    	
-		
-		btnNumber.addActionListener( new ActionListener(){
-			public void actionPerformed(ActionEvent e){
-				insertNumberClause(doc); 
-			}
-		}); 
+		});
 		
 		btnCardinality.addActionListener( new ActionListener(){
 			public void actionPerformed(ActionEvent e){

@@ -32,9 +32,9 @@ public class OVariableTreeForArgumentEdition extends OVariableTree{
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
     	
 	
-	public OVariableTreeForArgumentEdition(final NetworkController controller){
+	public OVariableTreeForArgumentEdition(final MEBNController controller){
 		super(controller); 
-		mebnController = controller.getMebnController(); 
+		mebnController = controller; 
 	}
 	
 	public void addListeners(){
@@ -61,7 +61,7 @@ public class OVariableTreeForArgumentEdition extends OVariableTree{
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 					
 					try{	
-						controller.getMebnController().addOrdinaryVariableInResident(ordinaryVariable);
+						controller.addOrdinaryVariableInResident(ordinaryVariable);
 					}
 					catch(OVariableAlreadyExistsInArgumentList e1){
 							JOptionPane.showMessageDialog(null, resource.getString("oVariableAlreadyIsArgumentError"), resource.getString("operationError"), JOptionPane.ERROR_MESSAGE);

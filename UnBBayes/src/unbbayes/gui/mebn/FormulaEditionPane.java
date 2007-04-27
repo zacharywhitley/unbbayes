@@ -18,10 +18,18 @@ import javax.swing.JToolBar;
 import unbbayes.controller.FormulaTreeController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
-import unbbayes.controller.NetworkController;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.MFrag;
+import unbbayes.prs.mebn.ResidentNodePointer;
+
+/**
+ * This class build the pane for edition of the formula of 
+ * one ContextNode. The formula is a tree structure. 
+ * 
+ * @author Laecio Lima dos Santos
+ *
+ */
 
 public class FormulaEditionPane extends JPanel {
 	
@@ -53,8 +61,8 @@ public class FormulaEditionPane extends JPanel {
 	JButton btnSkolenTree; 
 	
 	private JPanel variablePanel; 
+	private ArgumentsTypedPane argsPanel; 
 	
-	NetworkController controller; 
 	MEBNController mebnController; 
 	FormulaTreeController formulaTreeController;
 	MFrag mFrag; 
@@ -69,14 +77,13 @@ public class FormulaEditionPane extends JPanel {
 	
 	protected IconController iconController = IconController.getInstance();
 	
-	public FormulaEditionPane(NetworkController _controller, ContextNode context){
+	public FormulaEditionPane(MEBNController _controller, ContextNode context){
 		
 		super(); 
 		
 		this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel("Context Node")); 
 		
-		controller = _controller; 
-		mebnController = _controller.getMebnController(); 
+		mebnController = _controller; 
 		mFrag = mebnController.getCurrentMFrag(); 
 		contextNode = context;
 		
@@ -189,6 +196,12 @@ public class FormulaEditionPane extends JPanel {
 		
 	}
 	
+	
+	
+	
+	
+	//---------------------------------------------------------------
+	
 	public void setNodeTabActive(){
 		
 		cardLayout.show(jpArgTree, "NodeTab"); 
@@ -215,6 +228,20 @@ public class FormulaEditionPane extends JPanel {
 		cardLayout.show(jpArgTree, "EntityTab"); 
 		
 	}
+	
+
+	public void setArgumentSelectionTab(ResidentNodePointer residentPointer){
+		
+		argsPanel = new ArgumentsTypedPane(residentPointer, mebnController); 
+		JScrollPane scroll = new JScrollPane(argsPanel); 
+		jpArgTree.add("ResidentArgsTab", scroll); 
+		cardLayout.show(jpArgTree, "ResidentArgsTab"); 
+		
+	}
+	
+	
+	
+	//--------------------------------------------------------------------
 	
 	public void addListeners(){
 		
@@ -339,7 +366,7 @@ public class FormulaEditionPane extends JPanel {
 		
 		JPanel painel = new JPanel(new BorderLayout()); 
 		
-		MTheoryTreeForReplaceInFormula mTheoryTree = new MTheoryTreeForReplaceInFormula(controller, formulaTreeController.getFormulaTree()); 
+		MTheoryTreeForReplaceInFormula mTheoryTree = new MTheoryTreeForReplaceInFormula(mebnController, formulaTreeController); 
 		JScrollPane jspOVariableTreeMFrag = new JScrollPane(mTheoryTree); 
 		painel.add(jspOVariableTreeMFrag, BorderLayout.CENTER); 
 		
@@ -355,7 +382,7 @@ public class FormulaEditionPane extends JPanel {
 		
 		JPanel painelOVariableSelection = new JPanel(new BorderLayout()); 
 		
-		OVariableTreeForReplaceInFormula oVariableTreeMFragReplaceInFormula = new OVariableTreeForReplaceInFormula(controller, formulaTreeController.getFormulaTree()); 
+		OVariableTreeForReplaceInFormula oVariableTreeMFragReplaceInFormula = new OVariableTreeForReplaceInFormula(mebnController, formulaTreeController); 
 		JScrollPane jspOVariableTreeMFrag = new JScrollPane(oVariableTreeMFragReplaceInFormula); 
 		painelOVariableSelection.add(jspOVariableTreeMFrag, BorderLayout.NORTH); 
 		
@@ -367,12 +394,13 @@ public class FormulaEditionPane extends JPanel {
 		
 		JPanel painelEntitySelection = new JPanel(new BorderLayout()); 
 		
-		EntityListForReplaceInFormula entityList = new EntityListForReplaceInFormula(controller, formulaTreeController); 
+		EntityListForReplaceInFormula entityList = new EntityListForReplaceInFormula(mebnController, formulaTreeController); 
 		JScrollPane jspEntityList = new JScrollPane(entityList); 
 		painelEntitySelection.add(jspEntityList, BorderLayout.NORTH); 
 		return painelEntitySelection; 
 		
 	}
+	
 	
 	public void showErrorMessage(String msg){
 		JOptionPane.showMessageDialog(null, msg , resource.getString("error"), JOptionPane.ERROR_MESSAGE);	

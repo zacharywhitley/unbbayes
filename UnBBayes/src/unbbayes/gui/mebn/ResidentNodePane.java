@@ -1,15 +1,12 @@
 package unbbayes.gui.mebn;
 
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 
-import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.border.TitledBorder;
 
-import unbbayes.controller.NetworkController;
+import unbbayes.controller.MEBNController;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.DomainResidentNode;
 
@@ -29,7 +26,7 @@ public class ResidentNodePane extends JPanel{
 		
 	}
 	
-	public ResidentNodePane(NetworkController _controller, DomainResidentNode _residentNode){
+	public ResidentNodePane(MEBNController _controller, DomainResidentNode _residentNode){
 		super(); 
 		
 		this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel("Resident Node")); 

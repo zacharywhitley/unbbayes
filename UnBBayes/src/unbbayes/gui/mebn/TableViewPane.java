@@ -25,7 +25,6 @@ import unbbayes.prs.mebn.table.TableParser;
 import unbbayes.prs.mebn.table.exception.InvalidProbabilityFunctionOperandException;
 import unbbayes.prs.mebn.table.exception.TableFunctionMalformedException;
 
-
 /** 
  * Pane that show the probabilistic table of the selected resident node
  * @author Laecio Lima dos Santos (laecio@gmail.com)
@@ -47,12 +46,12 @@ public class TableViewPane extends JPanel{
 	
 	private MEBNController mebnController; 
 	
-	TableViewPane(NetworkController _controller, DomainResidentNode _residentNode){
+	TableViewPane(MEBNController _controller, DomainResidentNode _residentNode){
 		
 		super(); 
 		this.setLayout(new BorderLayout()); 
 		
-		mebnController = _controller.getMebnController(); 
+		mebnController = _controller; 
 		
 		residentNode = _residentNode; 
 		

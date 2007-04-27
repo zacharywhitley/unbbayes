@@ -115,7 +115,7 @@ public class NetworkController implements KeyListener {
     public void insertDomainMFrag(){
     	if(mebnController!= null){
     		try{
-    			mebnController.insertDomainMFrag("MFragTeste"); 
+    			mebnController.insertDomainMFrag(); 
     		} catch (Exception e){
     			e.printStackTrace(); 
     		}

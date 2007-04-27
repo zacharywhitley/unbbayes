@@ -9,7 +9,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import unbbayes.gui.draw.DrawFlatPentagon;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
-import unbbayes.gui.mebn.formula.NodeFormulaTree;
+import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.entity.BooleanStatesEntity;
 
 /**
@@ -33,10 +33,12 @@ public class ContextNode extends MultiEntityNode {
 	 */
 	private List<ContextNode> innerTermFromList;
 	
+	/* formula */
 	private DefaultMutableTreeNode formulaTree; 
 	
 	/* the formula in the PowerLoom format */
 	
+	private boolean formulaTreeTurned; //The formula don't is equal to formulaTree!!! 
 	private String formula; 
 	
 	/* draw */ 
@@ -44,7 +46,6 @@ public class ContextNode extends MultiEntityNode {
 	private static Color color = ToolKitForGuiMebn.getColorContext();
 	
     private DrawFlatPentagon drawContextNode;
-    
     
     /**
      * Create the context node and add your default possible values 
@@ -107,6 +108,7 @@ public class ContextNode extends MultiEntityNode {
     private String getFormulaForTree(DefaultMutableTreeNode formulaTree){
     	
     	return ((NodeFormulaTree)(formulaTree.getUserObject())).getFormulaViewText(); 
+    
     }
 	
 	/**
@@ -134,10 +136,6 @@ public class ContextNode extends MultiEntityNode {
 		mFrag.removeContextNode(this);
 		
 	}
-	
-	
-	
-	
 	
 	/*-------------------------------------------------------------*/
 	
@@ -169,10 +167,6 @@ public class ContextNode extends MultiEntityNode {
 	public void addInnerTermFromList(ContextNode contextNode){
 		innerTermFromList.add(contextNode); 
 	}
-	
-	
-	
-	
 	
 	/*-------------------------------------------------------------*/
 	

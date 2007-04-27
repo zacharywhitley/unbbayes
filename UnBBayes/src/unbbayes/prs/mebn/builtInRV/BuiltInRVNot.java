@@ -5,7 +5,7 @@ import unbbayes.prs.mebn.BuiltInRV;
 public class BuiltInRVNot extends BuiltInRV{
 
 	public BuiltInRVNot(){
-		super("not"); 
+		super("not", "\u00AC"); 
 		numOperandos = 1; 
 	}	
 	

@@ -5,7 +5,7 @@ import unbbayes.prs.mebn.BuiltInRV;
 public class BuiltInRVForAll extends BuiltInRV{
 
 	public BuiltInRVForAll(){
-		super("forall"); 
+		super("forall", "\u2200"); 
 		numOperandos = 2; 
 	}		
 	

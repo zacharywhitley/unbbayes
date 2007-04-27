@@ -21,10 +21,12 @@ public class DomainResidentNode extends ResidentNode {
 	private List<DomainResidentNode> residentNodeChildList;
 	 
 	private DomainMFrag mFrag;
+
+	private String tableFunction;
+	
+	//Graphics informations 
 	
 	private DrawRoundedRectangle drawResidentNode; 
-	
-	private String tableFunction;
 	
 	private static Color color = ToolKitForGuiMebn.getColorResident(); 	
 	

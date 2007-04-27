@@ -16,6 +16,7 @@ import javax.swing.event.ListSelectionListener;
 
 import unbbayes.controller.FormulaTreeController;
 import unbbayes.controller.IconController;
+import unbbayes.controller.MEBNController;
 import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
@@ -31,9 +32,9 @@ public class EntityListForReplaceInFormula extends JPanel{
 	private ObjectEntity selected;
 	
 	private FormulaTreeController formulaTreeController; 
-	private NetworkController networkController; 
+	private MEBNController networkController; 
 	
-	public EntityListForReplaceInFormula(NetworkController _controller, FormulaTreeController _formulaTreeController){
+	public EntityListForReplaceInFormula(MEBNController _controller, FormulaTreeController _formulaTreeController){
 		
 		super(); 
 		formulaTreeController = _formulaTreeController; 
@@ -91,7 +92,7 @@ public class EntityListForReplaceInFormula extends JPanel{
                 	
                 	selected = (ObjectEntity)jlEntities.getSelectedValue(); 
                 	formulaTreeController.addEntity(selected); 
-                	networkController.getMebnController().updateFormulaActiveContextNode(); 
+                	networkController.updateFormulaActiveContextNode(); 
 				
                 }
             }  	

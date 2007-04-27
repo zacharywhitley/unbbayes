@@ -44,10 +44,10 @@ public class ResidentOVariableTree extends JTree{
 	
 	private final MEBNController mebnController; 
 	
-	public ResidentOVariableTree(final NetworkController controller, ResidentNode resident) {
+	public ResidentOVariableTree(final MEBNController controller, ResidentNode resident) {
 		
-		this.mebnController = controller.getMebnController(); 
-		this.net = (MultiEntityBayesianNetwork)controller.getNetwork();
+		this.mebnController = controller; 
+		this.net = controller.getMultiEntityBayesianNetwork();
         this.residentNodeActive = resident; 
 		
 		// set up node icons

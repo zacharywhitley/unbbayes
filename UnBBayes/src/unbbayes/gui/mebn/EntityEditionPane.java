@@ -76,7 +76,7 @@ public class EntityEditionPane extends JPanel{
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
     
     
-	public EntityEditionPane(NetworkController _controller){
+	public EntityEditionPane(MEBNController _controller){
 		
 		super(); 
 		
@@ -84,7 +84,7 @@ public class EntityEditionPane extends JPanel{
         
 		setLayout(new BorderLayout()); 
 		
-		mebnController = _controller.getMebnController(); 
+		mebnController = _controller; 
 		
 		listModel = new DefaultListModel(); 
 		

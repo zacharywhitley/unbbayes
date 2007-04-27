@@ -198,7 +198,8 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"InputButton", "Input"}, 
 		{"ContextButton", "Context"}, 
 		{"MFragButton", "MFrag"}, 	
-		{"ArgumentsButton", "Argumentos"}, 		
+		{"ArgumentsButton", "Argumentos"}, 	
+		{"OrdVariableButton", "Var. Ordinária"}, 
 		
 		{"whithotMFragActive","Não há MFrag ativa"},			
 		{"previewTitle","Pré Visualização"},
@@ -267,6 +268,24 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"sucess", "Sucesso"}, 
 		{"error", "Erro"},
         
+		/* Tips for buttons of the table edition */
+		{"deleteTip", "Deleta o texto selecionado"}, 
+		{"anyTip", "Inserir construção \"If any\""}, 
+		{"allTip", "Inserir construção \"If all\""}, 
+		{"else", "Inserir \"else\""}, 
+		{"equalTip", "Inserir operador de igualdade"}, 
+		{"andTip", "Inserir construção AND"}, 
+		{"orTip", "Inserir construção OR"}, 
+		{"notTip", "Inserir construção NOT"}, 
+		{"cadinalityTip", "Inserir construção CARDINALITY"}, 
+		{"maxTip", "Inserir contrução MAX"}, 
+		{"minTip", "Inserir contrução MIN"}, 
+		{"saveTip", "Salvar a tabela"}, 
+		{"statesTip", "Mostrar estados do nó"}, 
+		{"fatherTip", "Mostrar pais do nó"}, 
+		{"argTip", "Mostrar argumentos do nó"}, 
+		{"exitTip", "Sair sem salvar"}, 
+		
 		/* Exceptions MEBN */
 		{"withoutMFrag", "Não existe nenhuma MFrag"}, 
 		{"edgeInvalid", "Arco invalido"} 		

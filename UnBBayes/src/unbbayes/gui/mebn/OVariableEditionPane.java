@@ -4,8 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ResourceBundle;
@@ -22,7 +20,6 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
 import unbbayes.controller.MEBNController;
-import unbbayes.controller.NetworkController;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -66,7 +63,7 @@ public class OVariableEditionPane extends JPanel {
     private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
     private Matcher matcher;	
 	
-	public OVariableEditionPane(NetworkController _controller){
+	public OVariableEditionPane(MEBNController _controller){
 		
 		super(); 
 		
@@ -74,7 +71,7 @@ public class OVariableEditionPane extends JPanel {
 		
 		setLayout(new BorderLayout()); 
 		
-		mebnController = _controller.getMebnController(); 
+		mebnController = _controller; 
 	    mFrag = mebnController.getCurrentMFrag(); 
 	    
 	    treeMFrag = new OVariableTreeForOVariableEdition(_controller);
@@ -99,8 +96,8 @@ public class OVariableEditionPane extends JPanel {
 	    jbNew.setToolTipText(resource.getString("newOVariableToolTip")); 
 	    jbDelete = new JButton("-"); 
 	    jbDelete.setToolTipText(resource.getString("delOVariableToolTip")); 
-	    jtbOptions.add(jbNew);
-	    jtbOptions.add(jbDelete); 
+	    //jtbOptions.add(jbNew);
+	    //jtbOptions.add(jbDelete); 
 	    jtbOptions.setFloatable(false);	    
 
 	    jpInformation.add(jtbOptions); 
@@ -111,8 +108,9 @@ public class OVariableEditionPane extends JPanel {
 	    
 	    addListeners(); 
 	    
-	    this.add("Center", jspTreeMFrag);	    
-	    this.add("South", jpInformation);	    
+	    this.add("Center", jspTreeMFrag);	 
+	    //TODO refazer esta classe retirando informações desnecessárias... 
+	    //this.add("South", jpInformation);	    
 	}
 
 	/**
@@ -227,7 +225,7 @@ public class OVariableEditionPane extends JPanel {
 					System.out.println("item selected = " + typeName); 
 	    	        
 					if(treeMFrag.getOVariableActive() != null){
-						treeMFrag.getOVariableActive().setType(typeName); 
+						treeMFrag.getOVariableActive().setValueType(typeName); 
 					}
 					
 					treeMFrag.updateTree(); 

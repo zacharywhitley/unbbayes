@@ -10,6 +10,9 @@ import javax.swing.JPopupMenu;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import unbbayes.controller.FormulaTreeController;
+import unbbayes.prs.mebn.context.NodeFormulaTree;
+import unbbayes.prs.mebn.context.enumSubType;
+import unbbayes.prs.mebn.context.enumType;
 
 /**
  * Cria o menu para um nó da arvore de fórmula. 
@@ -179,27 +182,50 @@ public class BuilderMenuNode {
 			public void actionPerformed(ActionEvent ae){
 				
 				DefaultMutableTreeNode parent = (DefaultMutableTreeNode)formulaTreeController.getFormulaTree().getNodeActive().getParent(); 
+				NodeFormulaTree nodeFormulaParent = (NodeFormulaTree)parent.getUserObject(); 
+				NodeFormulaTree nodeFormula = formulaTreeController.getFormulaTree().getNodeFormulaActive(); 
 				
-				
-				/* primeira formula */
-				
+				/* Caso 1: raiz */
 				if(parent == null){
-					NodeFormulaTree rootFormula = new NodeFormulaTree("formula", enumType.FORMULA, enumSubType.NOTHING, null); 					
-					formulaTreeController.getFormulaTree().getNodeActive().setUserObject(rootFormula); 
+					NodeFormulaTree rootFormula = new NodeFormulaTree("formula", enumType.FORMULA, enumSubType.NOTHING, null); 	
+					DefaultMutableTreeNode nodeTree =  new DefaultMutableTreeNode(rootFormula); 
+					formulaTreeController.setContextNodeFormula(nodeTree); 
+					formulaTreeController.getFormulaTree().setNodeActive(nodeTree); 
 					return; 
 				}
 				
-				NodeFormulaTree nodeFormulaParent = (NodeFormulaTree)parent.getUserObject(); 
+				/* Caso 2: Operando */
+				if(nodeFormula.getTypeNode() == enumType.OPERANDO){
+					nodeFormula.setSubTypeNode(enumSubType.NOTHING); 
+					nodeFormula.setName("op"); 
+					nodeFormula.setNodeVariable(null); 
+					nodeFormula.setMnemonic(""); 
+					return; 
+				}
 				
-				/* operando */
-				if(nodeFormulaParent.getTypeNode() == enumType.SIMPLE_OPERATOR){
-					
+				/* Caso 3: operador */
+				
+				if((nodeFormula.getTypeNode() == enumType.SIMPLE_OPERATOR)||
+					(nodeFormula.getTypeNode() == enumType.QUANTIFIER_OPERATOR)){
+					nodeFormula.setSubTypeNode(enumSubType.NOTHING); 
+					nodeFormula.setName("op"); 
+					nodeFormula.setNodeVariable(null); 
+					nodeFormula.setMnemonic(""); 
+					nodeFormula.removeAllChildren(); 
+					DefaultMutableTreeNode nodeTree = formulaTreeController.getFormulaTree().getNodeActive(); 
+					nodeTree.removeAllChildren(); 
+					return;                   						
 				}
 				
 				/* variavel: mais problematico */
+				if(nodeFormula.getTypeNode() == enumType.VARIABLE){
+					
+					nodeFormulaParent.removeChild(nodeFormula); 
+					parent.remove(formulaTreeController.getFormulaTree().getNodeActive()); 
+					return; 
+				}
 				
 				
-				/* formula (quantificador) */
 				
 			}
 		}); 
@@ -270,8 +296,12 @@ public class BuilderMenuNode {
 	public JPopupMenu buildPopupExemplar(){
 		
 		if(popupExemplar == null){
-			popupExemplar = new JPopupMenu(); 
+			popupExemplar = new JPopupMenu();
+			
+			popupExemplar.add(itemDelete); 
+			popupExemplar.addSeparator(); 
 			popupExemplar.add(itemAddExemplar); 
+		
 		}
 		
 		return popupExemplar; 

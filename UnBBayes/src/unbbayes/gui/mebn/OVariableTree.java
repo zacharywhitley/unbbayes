@@ -12,7 +12,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 
 import unbbayes.controller.IconController;
-import unbbayes.controller.NetworkController;
+import unbbayes.controller.MEBNController;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -38,12 +38,12 @@ public abstract class OVariableTree extends JTree{
 	
 	protected IconController iconController = IconController.getInstance();
 	
-	protected final NetworkController controller;	
+	protected final MEBNController controller;	
 	
-	public OVariableTree(final NetworkController controller) {
+	public OVariableTree(MEBNController controller) {
 		
 		this.controller = controller; 
-		this.net = (MultiEntityBayesianNetwork)controller.getNetwork();
+		this.net = controller.getMultiEntityBayesianNetwork();
 		this.mfragActive = net.getCurrentMFrag(); 
 		
 		// set up node icons
@@ -73,7 +73,7 @@ public abstract class OVariableTree extends JTree{
 		
 		for (OrdinaryVariable ordinaryVariable : ordinaryVariableList){
 			
-			DefaultMutableTreeNode node = new DefaultMutableTreeNode(ordinaryVariable.getName() + " (" + ordinaryVariable.getType() + ")"); 
+			DefaultMutableTreeNode node = new DefaultMutableTreeNode(ordinaryVariable.getName() + " (" + ordinaryVariable.getValueType() + ")"); 
 			ordinaryVariableMap.put(node, ordinaryVariable); 
 			
 			root.add(node); 
@@ -133,7 +133,7 @@ public abstract class OVariableTree extends JTree{
 		
 		for (OrdinaryVariable ordinaryVariable : ordinaryVariableList){
 			
-			DefaultMutableTreeNode node = new DefaultMutableTreeNode(ordinaryVariable.getName() + " (" + ordinaryVariable.getType() + ")"); 
+			DefaultMutableTreeNode node = new DefaultMutableTreeNode(ordinaryVariable.getName() + " (" + ordinaryVariable.getValueType() + ")"); 
 			ordinaryVariableMap.put(node, ordinaryVariable); 
 			root.add(node); 
 		}

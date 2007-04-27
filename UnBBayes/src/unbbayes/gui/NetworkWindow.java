@@ -93,7 +93,10 @@ public class NetworkWindow extends JInternalFrame {
 		graphViewport = new JViewport();
 		if (net instanceof SingleEntityNetwork)
 			controller = new NetworkController((SingleEntityNetwork)net, this);
-		else controller = new NetworkController((MultiEntityBayesianNetwork)net, this);
+		else {
+			controller = new NetworkController((MultiEntityBayesianNetwork)net, this);
+			mebnEditionPane = controller.getMebnController().getMebnEditionPane();		
+		}
 			
 		graphPane = new GraphPane(controller, graphViewport);
 
@@ -151,7 +154,6 @@ public class NetworkWindow extends JInternalFrame {
 			pnEditionPane.getCenterPanel().setBottomComponent(jspGraph);
 			card.show(getContentPane(), "pnEditionPane");
 		} else {
-			mebnEditionPane = new MEBNEditionPane(this, controller);
 			
 			contentPane.add(mebnEditionPane, "mebnEditionPane");
 

@@ -1,6 +1,7 @@
 package unbbayes.prs.mebn;
 
 import java.util.List;
+import java.util.Vector;
 
 public class InputNode extends MultiEntityNode {
 
@@ -77,6 +78,7 @@ public class InputNode extends MultiEntityNode {
 		
 		residentNodeChildList = null; 
 		
-	}	
-	
+	}
+
+
 }

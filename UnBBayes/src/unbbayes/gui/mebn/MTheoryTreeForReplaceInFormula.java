@@ -3,8 +3,6 @@ package unbbayes.gui.mebn;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Enumeration;
@@ -12,18 +10,15 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.swing.ImageIcon;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
+import unbbayes.controller.FormulaTreeController;
 import unbbayes.controller.IconController;
-import unbbayes.controller.NetworkController;
-import unbbayes.gui.GraphAction;
-import unbbayes.gui.mebn.formula.FormulaTree;
+import unbbayes.controller.MEBNController;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
@@ -51,30 +46,26 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 	
 	private Object objectSelected; 
 	
-	private JPopupMenu popup = new JPopupMenu();
-	
-	private JPopupMenu popupMFrag = new JPopupMenu(); 
-	
 	protected IconController iconController = IconController.getInstance();
 	
-	private final NetworkController controller;	
+	private final MEBNController controller;	
 	
 	/** Load resource file from this package */
 	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 	
-	private FormulaTree formulaTree; 
+	private FormulaTreeController formulaTreeController; 
 	
 	/**
 	 * 
 	 * @param controller
 	 */
 	
-	public MTheoryTreeForReplaceInFormula(final NetworkController controller, FormulaTree _formulaTree) {
+	public MTheoryTreeForReplaceInFormula(final MEBNController controller, FormulaTreeController _formulaTreeController) {
 		
 		this.controller = controller; 
-		this.net = (MultiEntityBayesianNetwork)controller.getNetwork();
+		this.net = controller.getMultiEntityBayesianNetwork();
 		
-		formulaTree = _formulaTree; 
+		formulaTreeController = _formulaTreeController; 
 		
 		/*----------------- build tree --------------------------*/ 
 		
@@ -86,9 +77,7 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 		
 		this.setRootVisible(false); 
 		this.putClientProperty("JTree.lineStyle", "None");
-		
-		createPopupMenu();
-		createPopupMenuMFrag(); 	    
+
 		
 		addMouseListener(new MouseAdapter() {
 			
@@ -114,8 +103,8 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 							
 						} else if (e.getClickCount() == 2
 								&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-							formulaTree.addNode((Node)nodeLeaf); 
-							controller.getMebnController().updateFormulaActiveContextNode(); 
+							formulaTreeController.addNode((ResidentNode)nodeLeaf); 
+							controller.updateFormulaActiveContextNode(); 
 						} else if (e.getClickCount() == 1) {
 							
 														
@@ -128,7 +117,8 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 								
 							} else if (e.getClickCount() == 2
 									&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-								formulaTree.addEntity((Entity)nodeLeaf); 
+								formulaTreeController.addEntity((Entity)nodeLeaf); 
+								controller.updateFormulaActiveContextNode(); 
 							} else if (e.getClickCount() == 1) {
 								
 															
@@ -147,8 +137,8 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 						if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
 						} else if (e.getClickCount() == 2
 								&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-							formulaTree.addNode((Node)nodeLeaf); 
-							controller.getMebnController().updateFormulaActiveContextNode(); 
+							formulaTreeController.addNode((ResidentNode)nodeLeaf); 
+							controller.updateFormulaActiveContextNode(); 
 							
 						} else if (e.getClickCount() == 1) {
 							
@@ -163,57 +153,6 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 		
 		super.treeDidChange();
 		expandTree();
-	}
-	
-	private void createPopupMenuMFrag(){
-		
-		JMenuItem itemDelete =   new JMenuItem(resource.getString("menuDelete")); 
-		JMenuItem itemContext =  new JMenuItem(resource.getString("menuAddContext"));
-		JMenuItem itemInput =    new JMenuItem(resource.getString("menuAddInput")); 
-		JMenuItem itemResident = new JMenuItem(resource.getString("menuAddResident"));
-		
-		itemDelete.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent ae){
-				controller.getMebnController().removeDomainMFrag((DomainMFrag) objectSelected); 
-				updateTree(); 
-			}
-		}); 		
-		
-		itemContext.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent ae){
-				controller.getScreen().getGraphPane().setAction(GraphAction.CREATE_CONTEXT_NODE); 
-			}
-		}); 
-		
-		itemInput.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent ae){
-				controller.getScreen().getGraphPane().setAction(GraphAction.CREATE_INPUT_NODE); 				
-			}
-		}); 
-		
-		itemResident.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent ae){
-				controller.getScreen().getGraphPane().setAction(GraphAction.CREATE_RESIDENT_NODE); 								
-			}
-		}); 		
-		
-		popupMFrag.add(itemDelete); 
-		popupMFrag.add(itemContext); 
-		popupMFrag.add(itemResident); 
-		popupMFrag.add(itemInput); 
-	}
-	
-	private void createPopupMenu() {
-		
-		JMenuItem itemAddDomainMFrag = new JMenuItem(resource.getString("menuAddDomainMFrag"));
-		itemAddDomainMFrag.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ae)
-			{   
-				controller.getMebnController().insertDomainMFrag("DomainMFrag " + net.getMFragCount()); 
-			}
-		});
-		
-		popup.add(itemAddDomainMFrag);
 	}
 	
 	private void createTree() {
@@ -357,8 +296,6 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 		}
 		return null;
 	}
-	
-	
 
 	private class MTheoryTreeCellRenderer extends DefaultTreeCellRenderer {
 		

@@ -8,6 +8,9 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 import unbbayes.controller.IconController;
+import unbbayes.prs.mebn.context.NodeFormulaTree;
+import unbbayes.prs.mebn.context.enumSubType;
+import unbbayes.prs.mebn.context.enumType;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
 
 public class FormulaTreeCellRenderer extends DefaultTreeCellRenderer {
@@ -16,7 +19,6 @@ public class FormulaTreeCellRenderer extends DefaultTreeCellRenderer {
 	private static final long serialVersionUID = 0;
 	
 	protected IconController iconController = IconController.getInstance();
-	
 	
 	protected ImageIcon folderSmallIcon = iconController.getOpenIcon(); 
 	

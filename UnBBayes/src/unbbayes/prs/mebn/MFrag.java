@@ -43,7 +43,6 @@ public class MFrag implements Graph{
 	
 	protected Map<String,Integer> nodeIndexes;	
 	
-	
 	private String name; 
 	
 	/* 
@@ -204,7 +203,6 @@ public class MFrag implements Graph{
 	public void addOrdinaryVariable(OrdinaryVariable ordinaryVariable){
 		ordinaryVariableList.add(ordinaryVariable);
 		ordinaryVariableNum++; 
-		
 	}
 	
 	public int getOrdinaryVariableNum(){
@@ -374,6 +372,22 @@ public class MFrag implements Graph{
 			}
 		}
 		return -1;		
+	}
+
+	public List<InputNode> getInputNodeList() {
+		return inputNodeList;
+	}
+
+	public void setInputNodeList(List<InputNode> inputNodeList) {
+		this.inputNodeList = inputNodeList;
+	}
+
+	public List<ResidentNode> getResidentNodeList() {
+		return residentNodeList;
+	}
+
+	public void setResidentNodeList(List<ResidentNode> residentNodeList) {
+		this.residentNodeList = residentNodeList;
 	}
 
 }

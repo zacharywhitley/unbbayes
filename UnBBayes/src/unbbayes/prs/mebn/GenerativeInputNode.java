@@ -4,8 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 
-import unbbayes.gui.draw.DrawRoundedRectangle;
 import unbbayes.gui.draw.DrawTwoBaseRectangle;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 
@@ -14,7 +14,6 @@ import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
  */
 
 public class GenerativeInputNode extends InputNode {
-
 
 	private static final long serialVersionUID = 7377146558744109802L;
 	
@@ -25,6 +24,13 @@ public class GenerativeInputNode extends InputNode {
 	private DrawTwoBaseRectangle drawInputNode; 
 	
 	private static Color color = ToolKitForGuiMebn.getColorInput(); 		
+	
+	private ResidentNodePointer residentNodePointer; 
+	
+	/**
+	 * @param name Name of the GenerativeInputNode
+	 * @param mFrag where this node is in 
+	 */
 	
 	public GenerativeInputNode(String name, DomainMFrag mFrag){
 		
@@ -40,6 +46,7 @@ public class GenerativeInputNode extends InputNode {
 	   size.y = 20; 
 	   drawInputNode = new DrawTwoBaseRectangle(position, size);
 	   drawElement.add(drawInputNode);	
+	   
 	}
 	
 	/**
@@ -57,8 +64,6 @@ public class GenerativeInputNode extends InputNode {
     	
     	mFrag.removeGenerativeInputNode(this); 
     }
-	
-	
 	
 	/**
 	 * Remove the node of the resident node child list. 
@@ -79,20 +84,29 @@ public class GenerativeInputNode extends InputNode {
 	}
 	
 	public void setInputInstanceOf(DomainResidentNode residentNode){
+		
 		super.setInputInstanceOf(residentNode); 
 		residentNode.addInputInstanceFromList(this); 
 		updateLabel(); 
+		
+		residentNodePointer = new ResidentNodePointer(residentNode); 
 	}
+	
 	
 	public void setInputInstanceOf(BuiltInRV builtInRV){
 		super.setInputInstanceOf(builtInRV); 
 		builtInRV.addInputInstance(this); 
-		updateLabel(); 
+		updateLabel();
+		
+		residentNodePointer = null; 	
 	}
 	
 	public void setInputInstanceOf(){
 		super.setInputInstanceOf(); 
 		updateLabel(); 
+		
+		residentNodePointer = null; 
+		
 	}
 	
 	public DomainMFrag getMFrag(){
@@ -105,8 +119,7 @@ public class GenerativeInputNode extends InputNode {
 	public void setSelected(boolean b) {
 		drawInputNode.setSelected(b);
 		super.setSelected(b);
-	}    	
-		
+	}    		
 	
 	/**
      *  Gets all generative input node node's color.
@@ -153,8 +166,14 @@ public class GenerativeInputNode extends InputNode {
     	else{
     		this.setLabel(" "); 
     	}
-    	
     }	
 
+	public Vector<OrdinaryVariable> getOrdinaryVariableList() {
+		return residentNodePointer.getOrdinaryVariableList();
+	}
+
+	public Vector<String> getTypesOfOrdinaryVariableList() {
+		return residentNodePointer.getTypesOfOrdinaryVariableList(); 
+	}
 	
 }

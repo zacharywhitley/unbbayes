@@ -12,9 +12,6 @@ import java.util.ResourceBundle;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import unbbayes.gui.mebn.formula.NodeFormulaTree;
-import unbbayes.gui.mebn.formula.enumSubType;
-import unbbayes.gui.mebn.formula.enumType;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -36,6 +33,9 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVIff;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVImplies;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVNot;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
+import unbbayes.prs.mebn.context.NodeFormulaTree;
+import unbbayes.prs.mebn.context.enumSubType;
+import unbbayes.prs.mebn.context.enumType;
 import unbbayes.prs.mebn.entity.BooleanStatesEntity;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
@@ -585,7 +585,7 @@ public class LoaderPrOwlIO {
 											builtInRV = new BuiltInRVImplies(); 
 										}else{
 											//TODO lançar excessão... 
-											builtInRV = new BuiltInRV(individualOne.getBrowserText()); 											
+											builtInRV = new BuiltInRV(individualOne.getBrowserText(), " "); 											
 										}	
 			
 			mebn.addBuiltInRVList(builtInRV); 
@@ -909,7 +909,7 @@ public class LoaderPrOwlIO {
 			 if(itAux.hasNext()){
 			     individualTwo = (OWLIndividual) itAux.next();
 			     if (Type.hasType(individualTwo.getBrowserText())){
-			    	 oVariable.setType(individualTwo.getBrowserText()); 
+			    	 oVariable.setValueType(individualTwo.getBrowserText()); 
 			     }
 			 }
 			
@@ -1180,7 +1180,7 @@ public class LoaderPrOwlIO {
 		    		nodeFormulaChild = new NodeFormulaTree(ov.getName(), enumType.OPERANDO, enumSubType.OVARIABLE, ov); 
 		    		node = new DefaultMutableTreeNode(nodeFormulaChild); 
 		    		root.add(node); 
-		    		nodeFormulaRoot.addChildren(nodeFormulaChild); 
+		    		nodeFormulaRoot.addChild(nodeFormulaChild); 
 		    	}
 		    	else{
 		    		if(argument.getArgumentTerm() != null){
@@ -1191,13 +1191,13 @@ public class LoaderPrOwlIO {
 		    				nodeFormulaChild = new NodeFormulaTree(multiEntityNode.getName(), enumType.OPERANDO, enumSubType.NODE, multiEntityNode); 
 		    				node = new DefaultMutableTreeNode(nodeFormulaChild); 
 		    				root.add(node); 
-		    				nodeFormulaRoot.addChildren(nodeFormulaChild); 
+		    				nodeFormulaRoot.addChild(nodeFormulaChild); 
 		    			}
 		    			else{
 		    				if(multiEntityNode instanceof ContextNode){
 		    					DefaultMutableTreeNode child = buildFormulaTree((ContextNode)multiEntityNode);
 		    					root.add(child); 
-		    					nodeFormulaRoot.addChildren((NodeFormulaTree)child.getUserObject()); 
+		    					nodeFormulaRoot.addChild((NodeFormulaTree)child.getUserObject()); 
 		    				}
 		    			}
 		    		}

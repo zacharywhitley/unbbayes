@@ -10,31 +10,30 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
-import unbbayes.controller.NetworkController;
+import unbbayes.controller.MEBNController;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.GenerativeInputNode;
 
 public class InputNodePane extends JPanel{
 	
 	private GenerativeInputNode inputNode; 
-	private NetworkController controller; 
 	private InputInstanceOfTree inputInstanceOfTree; 
 	private JScrollPane inputInstanceOfTreeScroll; 
+	private MEBNController controller; 
 	
 	public InputNodePane(){
 		
 	}
 	
-	public InputNodePane(NetworkController _controller, GenerativeInputNode _inputNode){
+	public InputNodePane(MEBNController _controller, GenerativeInputNode _inputNode){
 		
 		JToolBar jtbInputInstanceOf; 
 		JLabel jlInputInstanceOf; 
 		JButton btnInputOfResident; 
 		JButton btnInputOfBuiltIn; 
-		
+		controller = _controller; 
 		
 		inputNode = _inputNode; 
-		controller = _controller; 
 		
 		this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel("Input Node")); 
 		

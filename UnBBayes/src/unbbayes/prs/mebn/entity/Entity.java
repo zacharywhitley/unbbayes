@@ -17,7 +17,7 @@ import unbbayes.prs.mebn.entity.exception.TypeException;
  * @author Rommel Carvalho
  * 
  */
-public abstract class Entity {
+public abstract class Entity{
 	
 	protected String name;
 
