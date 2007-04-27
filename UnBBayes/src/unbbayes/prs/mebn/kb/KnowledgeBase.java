@@ -1,15 +1,21 @@
 package unbbayes.prs.mebn.kb;
 
+import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.DomainResidentNode;
+import unbbayes.prs.mebn.entity.ObjectEntity;
+
 public interface KnowledgeBase {
 
-	public void executeConceptDefinition(Object conceptDefinition);
+	public void executeConceptDefinition(ObjectEntity entity);
 	
-	public void executeRandonVariableDefinition(Object randonVariableDefinition);
+	public void executeRandonVariableDefinition(DomainResidentNode resident);
 	
-	public void executeEntityFinding(Object entityFinding);
+	//TODO alterar apos definir como sera um finding... 
+	public void executeEntityFinding(String entityFinding);
 	
-	public void executeRandonVariableFinding(Object randonVariableFinding);
+	//TODO alterar apos definir como sera um finding... 
+	public void executeRandonVariableFinding(String randonVariableFinding);
 	
-	public boolean executeContextFormula(Object contextFormula);
+	public boolean executeContextFormula(ContextNode context);
 	
 }
