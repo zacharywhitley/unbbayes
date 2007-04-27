@@ -29,7 +29,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.datamining.datamanipulation.Attribute;
 import unbbayes.gui.draw.DrawElement;
 import unbbayes.gui.draw.DrawText;
 import unbbayes.gui.draw.IOnePositionDrawable;
