@@ -23,7 +23,7 @@ public class GenerativeInputNode extends InputNode {
 	
 	private DrawTwoBaseRectangle drawInputNode; 
 	
-	private static Color color = ToolKitForGuiMebn.getColorInput(); 		
+	private static Color color = new Color(220, 220, 220); 		
 	
 	private ResidentNodePointer residentNodePointer; 
 	

@@ -10,8 +10,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -1099,18 +1097,14 @@ public class LoaderPrOwlIO {
 	 * @param contextNode
 	 */
 	
-	private DefaultMutableTreeNode buildFormulaTree(ContextNode contextNode){
+	private NodeFormulaTree buildFormulaTree(ContextNode contextNode){
 		
-		DefaultMutableTreeNode root = new DefaultMutableTreeNode(); 
 		
-		DefaultMutableTreeNode node; 
 		NodeFormulaTree nodeFormulaRoot; 
 		NodeFormulaTree nodeFormulaChild; 
 		
 		nodeFormulaRoot = new NodeFormulaTree("formula", enumType.FORMULA, 	enumSubType.NOTHING, null);  
     	
-	    root = new DefaultMutableTreeNode(nodeFormulaRoot); 
-		
 		System.out.println("Entrou no build " +  contextNode.getName()); 
 		
 		/* 
@@ -1166,7 +1160,6 @@ public class LoaderPrOwlIO {
 			
 			
 			nodeFormulaRoot = new NodeFormulaTree(builtIn.getName(), type, subType, builtIn); 
-		    root.setUserObject(nodeFormulaRoot); 
 		    
 			/* 
 			 * procura pelos argumentos do builtIn, podendo estes serem contextnodes internos, o que 
@@ -1178,8 +1171,6 @@ public class LoaderPrOwlIO {
 		    	if(argument.getOVariable()!= null){
 		    		OrdinaryVariable ov = argument.getOVariable(); 
 		    		nodeFormulaChild = new NodeFormulaTree(ov.getName(), enumType.OPERANDO, enumSubType.OVARIABLE, ov); 
-		    		node = new DefaultMutableTreeNode(nodeFormulaChild); 
-		    		root.add(node); 
 		    		nodeFormulaRoot.addChild(nodeFormulaChild); 
 		    	}
 		    	else{
@@ -1189,15 +1180,12 @@ public class LoaderPrOwlIO {
 		    			
 		    			if(multiEntityNode instanceof ResidentNode){
 		    				nodeFormulaChild = new NodeFormulaTree(multiEntityNode.getName(), enumType.OPERANDO, enumSubType.NODE, multiEntityNode); 
-		    				node = new DefaultMutableTreeNode(nodeFormulaChild); 
-		    				root.add(node); 
 		    				nodeFormulaRoot.addChild(nodeFormulaChild); 
 		    			}
 		    			else{
 		    				if(multiEntityNode instanceof ContextNode){
-		    					DefaultMutableTreeNode child = buildFormulaTree((ContextNode)multiEntityNode);
-		    					root.add(child); 
-		    					nodeFormulaRoot.addChild((NodeFormulaTree)child.getUserObject()); 
+		    					NodeFormulaTree child = buildFormulaTree((ContextNode)multiEntityNode);
+		    					nodeFormulaRoot.addChild(child); 
 		    				}
 		    			}
 		    		}
@@ -1212,11 +1200,11 @@ public class LoaderPrOwlIO {
 		else{
 			if((obj instanceof ResidentNode)){
 				nodeFormulaRoot = new NodeFormulaTree(((ResidentNode)obj).getName(), enumType.OPERANDO, enumSubType.NODE, (ResidentNode)obj); 
-				root.setUserObject(nodeFormulaRoot); 				
+							
 			}
 		}
 		
-		return root; 
+		return nodeFormulaRoot; 
 	}
 	
 	/**

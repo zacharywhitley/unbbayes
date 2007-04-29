@@ -158,7 +158,7 @@ public class PowerLoomKB implements KnowledgeBase{
 		
 		String formula = ""; 
 		
-		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree().getUserObject(); 
+		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
 		
 		formula+= "(";  
 		

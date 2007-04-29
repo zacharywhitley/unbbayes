@@ -52,7 +52,6 @@ import unbbayes.prs.mebn.table.exception.TableFunctionMalformedException;
  * 
  * @author Laecio Lima dos Santos
  * @version 1.0 (14/12/06)
- *
  */
 
 public class TableEditionPane extends JPanel{

@@ -5,10 +5,7 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import unbbayes.gui.draw.DrawFlatPentagon;
-import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.entity.BooleanStatesEntity;
 
@@ -34,7 +31,7 @@ public class ContextNode extends MultiEntityNode {
 	private List<ContextNode> innerTermFromList;
 	
 	/* formula */
-	private DefaultMutableTreeNode formulaTree; 
+	private NodeFormulaTree formulaTree; 
 	
 	/* the formula in the PowerLoom format */
 	
@@ -43,7 +40,7 @@ public class ContextNode extends MultiEntityNode {
 	
 	/* draw */ 
 	
-	private static Color color = ToolKitForGuiMebn.getColorContext();
+	private static Color color = new Color(176, 252, 131); 
 	
     private DrawFlatPentagon drawContextNode;
     
@@ -91,11 +88,11 @@ public class ContextNode extends MultiEntityNode {
 		return mFrag; 
 	}
 	
-	public DefaultMutableTreeNode getFormulaTree(){
+	public NodeFormulaTree getFormulaTree(){
 		return formulaTree; 
 	}
 	
-	public void setFormulaTree(DefaultMutableTreeNode formulaTree){
+	public void setFormulaTree(NodeFormulaTree formulaTree){
 		this.formulaTree = formulaTree; 
 		updateLabel(); 
 	}
@@ -105,9 +102,9 @@ public class ContextNode extends MultiEntityNode {
      * @param formulaTree: raiz da arvore que contem a formula
      * @return a string contendo a formula no formado padrao da FOL. 
      */
-    private String getFormulaForTree(DefaultMutableTreeNode formulaTree){
+    private String getFormulaForTree(NodeFormulaTree formulaTree){
     	
-    	return ((NodeFormulaTree)(formulaTree.getUserObject())).getFormulaViewText(); 
+    	return formulaTree.getFormulaViewText(); 
     
     }
 	
@@ -209,7 +206,7 @@ public class ContextNode extends MultiEntityNode {
     	
     	String label; 
     	if(formulaTree != null){
-    	   label = ((NodeFormulaTree)(formulaTree.getUserObject())).getFormulaViewText(); 
+    	   label = formulaTree.getFormulaViewText(); 
     	}
     	else{
     	   label = " "; 
@@ -224,7 +221,7 @@ public class ContextNode extends MultiEntityNode {
      */
     
     public String toString(){
-    	return ((NodeFormulaTree)(formulaTree.getUserObject())).getFormulaViewText();
+    	return formulaTree.getFormulaViewText();
     }
     
 }

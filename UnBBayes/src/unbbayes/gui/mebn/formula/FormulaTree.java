@@ -78,8 +78,10 @@ public class FormulaTree extends JTree{
 	
 	private ContextNode contextNode; 
 	
-	private DefaultMutableTreeNode root;     
+	private DefaultMutableTreeNode rootTreeView;     
 	private DefaultTreeModel model; 
+	
+	private NodeFormulaTree rootTreeFormula; 
 	
 	private NodeFormulaTree nodeFormulaActive; 
 	private DefaultMutableTreeNode nodeActive; 
@@ -100,15 +102,15 @@ public class FormulaTree extends JTree{
 		
 		if(contextNode.getFormulaTree() == null){
 			NodeFormulaTree rootFormula = new NodeFormulaTree("formula", enumType.FORMULA, 	enumSubType.NOTHING, null);  
-			root = new DefaultMutableTreeNode(rootFormula);    
+			rootTreeView = new DefaultMutableTreeNode(rootFormula);    
 			createTree();
-			contextNode.setFormulaTree(root); 
+			contextNode.setFormulaTree(rootFormula); 
 		}
 		else{
 			buildTree(); 
 		}
 		
-		model = new DefaultTreeModel(root);
+		model = new DefaultTreeModel(rootTreeView);
 		
 		setModel(model);
 		
@@ -141,10 +143,23 @@ public class FormulaTree extends JTree{
 	 */
 	public void buildTree(){
 		
-		root = contextNode.getFormulaTree();  
+		rootTreeFormula = contextNode.getFormulaTree();
+		
+		rootTreeView = new DefaultMutableTreeNode(rootTreeFormula);  
+		
+		buildChildren(rootTreeFormula, rootTreeView); 
 		
 	}
 	
+	public void buildChildren(NodeFormulaTree nodeFormulaFather, DefaultMutableTreeNode nodeTreeFather){
+		
+		for(NodeFormulaTree child: nodeFormulaFather.getChildren()){
+			DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(child); 
+			nodeTreeFather.add(treeNode);
+			buildChildren(child, treeNode); 
+		}
+		
+	}
 	
 	/**
 	 * Remonta a arvore.

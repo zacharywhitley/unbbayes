@@ -1,7 +1,5 @@
 package unbbayes.controller;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import unbbayes.gui.mebn.FormulaEditionPane;
 import unbbayes.gui.mebn.formula.FormulaTree;
 import unbbayes.gui.mebn.formula.exception.FormulaTreeConstructionException;
@@ -32,7 +30,7 @@ public class FormulaTreeController {
 	
 	}
 	
-	public void setContextNodeFormula(DefaultMutableTreeNode formula){
+	public void setContextNodeFormula(NodeFormulaTree formula){
 		contextNode.setFormulaTree(formula); 
 	}
 	

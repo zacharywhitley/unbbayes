@@ -189,7 +189,7 @@ public class BuilderMenuNode {
 				if(parent == null){
 					NodeFormulaTree rootFormula = new NodeFormulaTree("formula", enumType.FORMULA, enumSubType.NOTHING, null); 	
 					DefaultMutableTreeNode nodeTree =  new DefaultMutableTreeNode(rootFormula); 
-					formulaTreeController.setContextNodeFormula(nodeTree); 
+					formulaTreeController.setContextNodeFormula(rootFormula); 
 					formulaTreeController.getFormulaTree().setNodeActive(nodeTree); 
 					return; 
 				}

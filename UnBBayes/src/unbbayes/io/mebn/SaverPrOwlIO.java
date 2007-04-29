@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
@@ -559,12 +557,10 @@ public class SaverPrOwlIO {
 			
 			/* Passo 1: verificar de qual built in o nó de contexto é instancia */
 			
-			DefaultMutableTreeNode root = contextNode.getFormulaTree(); 
+			NodeFormulaTree formulaNode = contextNode.getFormulaTree(); 
 			
-			if (root != null){
+			if (formulaNode != null){
 			
-				NodeFormulaTree formulaNode = (NodeFormulaTree)(root.getUserObject()); 
-
 				loadContextNodeFormula(formulaNode, contextNodeIndividual, contextNode); 
 				
 			}

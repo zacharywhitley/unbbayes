@@ -28,7 +28,7 @@ public class OrdinaryVariable extends Node{
 	
 	/* draw */ 
 	
-	private static Color color = ToolKitForGuiMebn.getColorContext();
+	private static Color color = new Color(176, 252, 131); 
 	
     private DrawFlatPentagon drawContextNode;	
 	
