@@ -19,6 +19,7 @@ public class InputNodePane extends JPanel{
 	private GenerativeInputNode inputNode; 
 	private InputInstanceOfTree inputInstanceOfTree; 
 	private JScrollPane inputInstanceOfTreeScroll; 
+	private JPanel argumentsPane; 
 	private MEBNController controller; 
 	
 	public InputNodePane(){
@@ -54,12 +55,27 @@ public class InputNodePane extends JPanel{
 		inputInstanceOfTreeScroll = new JScrollPane(inputInstanceOfTree);
 		inputInstanceOfTreeScroll.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Resident List")); 
 		
+		if(_inputNode.getResidentNodePointer() != null){
+		    argumentsPane = new ArgumentsTypedPane(inputNode,  _inputNode.getResidentNodePointer(), controller); 
+		}
+		else{
+			argumentsPane = new JPanel(); 
+		}
+		
 		setLayout(new BorderLayout());
+		
 		this.add(jtbInputInstanceOf, BorderLayout.NORTH); 
 		this.add(inputInstanceOfTreeScroll, BorderLayout.CENTER);
+		this.add(argumentsPane, BorderLayout.SOUTH); 
+		
 		this.setVisible(true);
 		
 	}
     
+	public void updateArgumentPane(){
+		this.remove(argumentsPane); 
+		argumentsPane = new ArgumentsTypedPane(inputNode, inputNode.getResidentNodePointer(), controller);
+		this.add(argumentsPane, BorderLayout.SOUTH); 
+	}
 
 }

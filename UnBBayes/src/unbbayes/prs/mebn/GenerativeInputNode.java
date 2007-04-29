@@ -86,10 +86,10 @@ public class GenerativeInputNode extends InputNode {
 	public void setInputInstanceOf(DomainResidentNode residentNode){
 		
 		super.setInputInstanceOf(residentNode); 
+		residentNodePointer = new ResidentNodePointer(residentNode);
 		residentNode.addInputInstanceFromList(this); 
 		updateLabel(); 
-		
-		residentNodePointer = new ResidentNodePointer(residentNode); 
+		 
 	}
 	
 	
@@ -157,14 +157,35 @@ public class GenerativeInputNode extends InputNode {
     	
     	if(inputInstanceOf != null){
     		if(inputInstanceOf instanceof DomainResidentNode){
-    			this.setLabel(((DomainResidentNode)inputInstanceOf).getLabel()); 
+    			ResidentNodePointer pointer = getResidentNodePointer();
+    			String newLabel = ""; 
+    			
+    			newLabel+= pointer.getResidentNode().getName(); 
+    			newLabel+= "("; 
+    			
+    			for(OrdinaryVariable ov: pointer.getOrdinaryVariableList()){
+    				
+    				if(ov!=null) newLabel+= ov.getName(); 
+    				else newLabel+= " ";
+    				
+    				newLabel+= ","; 
+    			}
+    			
+    			//delete the last virgle
+    			if(pointer.getOrdinaryVariableList().size() > 0){
+    				newLabel = newLabel.substring(0, newLabel.length() - 1); 
+    			}
+    			
+    			newLabel+= ")"; 
+    			
+    			setLabel(newLabel); 
     		}
     		else{
-    			this.setLabel(((BuiltInRV)inputInstanceOf).getName()); 
+    			setLabel(((BuiltInRV)inputInstanceOf).getName()); 
         	}
     	}
     	else{
-    		this.setLabel(" "); 
+    		setLabel(" "); 
     	}
     }	
 
@@ -174,6 +195,10 @@ public class GenerativeInputNode extends InputNode {
 
 	public Vector<String> getTypesOfOrdinaryVariableList() {
 		return residentNodePointer.getTypesOfOrdinaryVariableList(); 
+	}
+
+	public ResidentNodePointer getResidentNodePointer() {
+		return residentNodePointer;
 	}
 	
 }

@@ -418,12 +418,18 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	public boolean equals(Object obj) {
+		
 		if (obj == this) {
 			return true;
 		}
 		
-		Node node = (Node) obj;
-		return (node.name.equals(this.name));		
+		if(obj != null){
+		   Node node = (Node) obj;
+		   return (node.name.equals(this.name));
+		}
+		
+		return false; //obj == null && this != null 
+		
 	}
 	
 	public void paint(Graphics2D graphics) {

@@ -922,6 +922,10 @@ public class MEBNEditionPane extends JPanel {
     	cardLayout.show(jpTabSelected, "InputNodeTab");
     }
     
+    public InputNodePane getInputNodePane(){
+    	return inputNodePane; 
+    }
+    
     public void setInputNodeActive(){
     	cardLayout.show(jpTabSelected, "InputNodeTab");    	
     }

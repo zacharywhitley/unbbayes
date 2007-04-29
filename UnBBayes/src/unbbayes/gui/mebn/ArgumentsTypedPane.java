@@ -7,7 +7,6 @@ import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Vector;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -23,11 +22,13 @@ public class ArgumentsTypedPane extends JPanel{
 	
 	ResidentNodePointer pointer; 
 	MEBNController mebnController; 
+	Object node; 
 	
-	public ArgumentsTypedPane(ResidentNodePointer _pointer, MEBNController _mebnController){
+	public ArgumentsTypedPane(Object _node, ResidentNodePointer _pointer, MEBNController _mebnController){
 		super(); 
 		pointer = _pointer; 
 		mebnController = _mebnController; 
+		node = _node; 
 		
 		if(pointer.getNumberArguments() > 5)
 		setLayout(new GridLayout(pointer.getNumberArguments() + 1,1)); 
@@ -101,7 +102,8 @@ public class ArgumentsTypedPane extends JPanel{
 				OrdinaryVariable ov = (OrdinaryVariable)combo.getSelectedItem(); 
 				try{
 					pointer.addOrdinaryVariable(ov, indice);
-					System.out.println("Indice: " + indice + " = " + ov.getName()); 
+					mebnController.updateArgumentsOfObject(node); 
+					System.out.println("[DEBUG]Indice: " + indice + " = " + ov.getName()); 
 				}
 				catch(OVDontIsOfTypeExpected ex){
 					ex.printStackTrace(); 

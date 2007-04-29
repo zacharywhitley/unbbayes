@@ -323,10 +323,19 @@ public class MEBNController {
 	
 	public void setInputInstanceOf(GenerativeInputNode input, ResidentNode resident){
 		
-		input.setInputInstanceOf((DomainResidentNode)resident); 
+		input.setInputInstanceOf((DomainResidentNode)resident);
+		mebnEditionPane.getInputNodePane().updateArgumentPane(); 
 		mebnEditionPane.setTxtInputOf(resident.getName()); 
 		mebnEditionPane.updateUI(); 
 	
+	}
+	
+	public void updateArgumentsOfObject(Object node){
+		
+		if (node instanceof GenerativeInputNode){
+			((GenerativeInputNode)node).updateLabel(); 
+		}
+		
 	}
 	
 	/**

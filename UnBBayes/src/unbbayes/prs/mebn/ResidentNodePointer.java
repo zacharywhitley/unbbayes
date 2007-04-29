@@ -30,11 +30,11 @@ public class ResidentNodePointer {
 	 * devem sempre corresponder ao tipo do outro vetor.  
 	 */
 	
-	private Vector<OrdinaryVariable> ordinaryVariableList; 	
+	private OrdinaryVariable ordinaryVariableList[]; 	
 	
-	private Vector<String> typesOfOrdinaryVariableList; 
+	private String typesOfOrdinaryVariableList[]; 
 	
-	private int numberArguments; 
+	private final int numberArguments; 
 	
 	/**
 	 * 
@@ -48,6 +48,11 @@ public class ResidentNodePointer {
 	
 	public ResidentNodePointer(ResidentNode _residentNode){
 		residentNode = _residentNode; 
+		
+		numberArguments = residentNode.getOrdinaryVariableList().size(); 
+		typesOfOrdinaryVariableList = new String[numberArguments]; 
+	    ordinaryVariableList = new OrdinaryVariable[numberArguments]; 
+	    
 		buildTypeOfOVList(); 
 	}
 	
@@ -60,13 +65,9 @@ public class ResidentNodePointer {
 	
 	private void buildTypeOfOVList(){
 		
-		        numberArguments = residentNode.getOrdinaryVariableList().size(); 
-				typesOfOrdinaryVariableList = new Vector<String>(numberArguments); 
-			    ordinaryVariableList = new Vector<OrdinaryVariable>(numberArguments); 
-			    
-				int index = 0; 
+		        int index = 0; 
 			    for (OrdinaryVariable ov: residentNode.getOrdinaryVariableList()){
-				   typesOfOrdinaryVariableList.add(index, ov.getValueType()); 
+				   typesOfOrdinaryVariableList[index] = ov.getValueType(); 
 				   index++; 
 			    }
 		
@@ -81,11 +82,11 @@ public class ResidentNodePointer {
 	
 	public void addOrdinaryVariable(OrdinaryVariable ov, int index)  throws OVDontIsOfTypeExpected{
 		
-		if(typesOfOrdinaryVariableList.get(index).compareTo(ov.getValueType()) != 0){
-			throw new OVDontIsOfTypeExpected(typesOfOrdinaryVariableList.get(index)); 
+		if(typesOfOrdinaryVariableList[index].compareTo(ov.getValueType()) != 0){
+			throw new OVDontIsOfTypeExpected(typesOfOrdinaryVariableList[index]); 
 		}
 		else{
-			ordinaryVariableList.add(index, ov); 
+			ordinaryVariableList[index] = ov; 
 		}
 		
 	}
@@ -99,8 +100,7 @@ public class ResidentNodePointer {
 	
 	public void removeOrdinaryVariable(int index){
 		
-		ordinaryVariableList.remove(index);
-		ordinaryVariableList.add(index, null); 
+		ordinaryVariableList[index] = null; 
 	
 	}	
 	
@@ -113,27 +113,41 @@ public class ResidentNodePointer {
 	}
 
 	public Vector<OrdinaryVariable> getOrdinaryVariableList() {
-		return ordinaryVariableList;
+		Vector<OrdinaryVariable> vetor = new Vector<OrdinaryVariable>(); 
+		
+		for(int i= 0; i < ordinaryVariableList.length; i++){
+			vetor.add(i, ordinaryVariableList[i]); 
+		}
+		
+		return vetor;
 	}
 
+	/*
 	public void setOrdinaryVariableList(
 			Vector<OrdinaryVariable> ordinaryVariableList) {
 		this.ordinaryVariableList = ordinaryVariableList;
-	}
+	}*/
 
 	public String getTypeOfArgument(int index){
-		return typesOfOrdinaryVariableList.get(index); 
+		return typesOfOrdinaryVariableList[index]; 
 	}
 
 	public Vector<String> getTypesOfOrdinaryVariableList() {
-		return typesOfOrdinaryVariableList;
+        
+		Vector<String> vetor = new Vector<String>(); 
+		
+		for(int i= 0; i < typesOfOrdinaryVariableList.length; i++){
+			vetor.add(i, typesOfOrdinaryVariableList[i]); 
+		}
+		
+		return vetor;
 	}
-
+/*
 	public void setTypesOfOrdinaryVariableList(
 			Vector<String> typesOfOrdinaryVariableList) {
 		this.typesOfOrdinaryVariableList = typesOfOrdinaryVariableList;
 	}
-
+*/
 	public void setResidentNode(ResidentNode residentNode) {
 		this.residentNode = residentNode;
 	}
