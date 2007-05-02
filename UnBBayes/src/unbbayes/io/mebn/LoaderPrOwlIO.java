@@ -169,7 +169,7 @@ public class LoaderPrOwlIO {
 			context.setFormulaTree(buildFormulaTree(context)); 
 		}
 		
-		checkMTheory(); 
+		//checkMTheory(); 
 		
 		System.out.println("Load concluido com sucesso!"); 
 		
@@ -262,7 +262,7 @@ public class LoaderPrOwlIO {
 			   Type.addType(individualOne.getBrowserText()); 
 			}
 			catch (TypeAlreadyExistsException exception){
-				//OK... lembre-se que os tipos basicos já existem... 
+				//OK... lembre-se que os tipos basicos jï¿½ existem... 
 			}
 			
 			System.out.println("Meta Entity Loaded: " + individualOne.getBrowserText()); 
@@ -433,7 +433,7 @@ public class LoaderPrOwlIO {
 			
 			System.out.println("Context Node loaded: " + individualOne.getBrowserText()); 				
 			
-			loadHasPositionProperty(individualOne, contextNode); 
+			//loadHasPositionProperty(individualOne, contextNode); 
 			
 			System.out.println("Domain Resident loaded: " + individualOne.getBrowserText()); 			
 			
@@ -582,7 +582,7 @@ public class LoaderPrOwlIO {
 										if(nameBuiltIn.compareTo("implies") == 0){
 											builtInRV = new BuiltInRVImplies(); 
 										}else{
-											//TODO lançar excessão... 
+											//TODO lanï¿½ar excessï¿½o... 
 											builtInRV = new BuiltInRV(individualOne.getBrowserText(), " "); 											
 										}	
 			
@@ -630,7 +630,7 @@ public class LoaderPrOwlIO {
 				throw new IOMebnException(resource.getString("DomainResidentNotExistsInMTheory"), individualOne.getBrowserText() ); 
 			}
 			
-			loadHasPositionProperty(individualOne, domainResidentNode); 
+			//loadHasPositionProperty(individualOne, domainResidentNode); 
 			
 			System.out.println("Domain Resident loaded: " + individualOne.getBrowserText()); 			
 			
@@ -803,7 +803,7 @@ public class LoaderPrOwlIO {
 				throw new IOMebnException(resource.getString("GenerativeInputNodeNotExistsInMTheory"), individualOne.getBrowserText() ); 				
 			}
 			
-			loadHasPositionProperty(individualOne, generativeInputNode); 
+			//loadHasPositionProperty(individualOne, generativeInputNode); 
 			
 			/* -> isInputInstanceOf  */
 			
@@ -945,7 +945,7 @@ public class LoaderPrOwlIO {
 			individualTwo = (OWLIndividual)individualOne.getPropertyValue(objectProperty); 	
 			
 			if(individualTwo != null){
-				//TODO apenas por enquanto, pois não podera ser igual a null no futuro!!!
+				//TODO apenas por enquanto, pois nï¿½o podera ser igual a null no futuro!!!
 				
 				/* check: 
 				 * - node
@@ -1108,7 +1108,7 @@ public class LoaderPrOwlIO {
 		System.out.println("Entrou no build " +  contextNode.getName()); 
 		
 		/* 
-		 * a raiz sera setada como o builtIn do qual o contextnode é instancia. 
+		 * a raiz sera setada como o builtIn do qual o contextnode ï¿½ instancia. 
 		 * */
 		
 		Object obj = mapIsContextInstanceOf.get(contextNode); 
@@ -1163,7 +1163,7 @@ public class LoaderPrOwlIO {
 		    
 			/* 
 			 * procura pelos argumentos do builtIn, podendo estes serem contextnodes internos, o que 
-			 * acarreta uma busca dos argumentos internos a este até se chegar ao final. 
+			 * acarreta uma busca dos argumentos internos a este atï¿½ se chegar ao final. 
 			 */
 		    
 		    for(Argument argument: contextNode.getArgumentList()){
@@ -1190,7 +1190,7 @@ public class LoaderPrOwlIO {
 		    			}
 		    		}
 		    		else{
-		    			//TODO lançar exceção... 
+		    			//TODO lanï¿½ar exceï¿½ï¿½o... 
 		    		}
 		    	}
 		    	

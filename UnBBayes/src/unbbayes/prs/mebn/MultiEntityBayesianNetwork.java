@@ -22,21 +22,21 @@ public class MultiEntityBayesianNetwork extends Network {
 	
 	private List<FindingMFrag> findingMFragList; 
 	
-	//TODO analisar uma outra forma de armazenar os builtIn já que eles são inerentes 
-	//ao programa e não a cada MTheory. 
+	//TODO analisar uma outra forma de armazenar os builtIn jï¿½ que eles sï¿½o inerentes 
+	//ao programa e nï¿½o a cada MTheory. 
 	private List<BuiltInRV> builtInRVList; 
 	
 	/* aponta para a MFrag atualmente sendo trabalhada/visualisada/criada */
 	private MFrag currentMFrag;
 	
 	
-	//TODO as entidades devem ficar aqui ou não???
+	//TODO as entidades devem ficar aqui ou nï¿½o???
 	
 	
-	/* Este contador serve apenas para indicar qual deve ser o número
-	 * da próxima MFrag criada (ao se gerar o nome automatico. Este número
-	 * não está em sincronia com o número atual de MFrags porque ele 
-	 * inclui também MFrags criadas e escluidas posteriormente */
+	/* Este contador serve apenas para indicar qual deve ser o nï¿½mero
+	 * da prï¿½xima MFrag criada (ao se gerar o nome automatico. Este nï¿½mero
+	 * nï¿½o estï¿½ em sincronia com o nï¿½mero atual de MFrags porque ele 
+	 * inclui tambï¿½m MFrags criadas e escluidas posteriormente */
 	
 	private int domainMFragNum = 1; 
 	private int generativeInputNodeNum = 1; 
@@ -169,7 +169,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	/**
 	 * Add a built-in rv to mebn
 	 */
-	//TODO substituir por um método que crie as built in rvs as quais há suporte... 
+	//TODO substituir por um mï¿½todo que crie as built in rvs as quais hï¿½ suporte... 
 	public void addBuiltInRVList(BuiltInRV builtInRV){
 		builtInRVList.add(builtInRV); 
 	}
@@ -245,6 +245,10 @@ public class MultiEntityBayesianNetwork extends Network {
 	
 	public void plusEntityNul(){
 		entityNum++; 
+	}
+
+	public void setDomainMFragNum(int domainMFragNum) {
+		this.domainMFragNum = domainMFragNum;
 	}
 	 
 }

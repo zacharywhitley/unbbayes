@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -56,8 +56,10 @@ import unbbayes.controller.IconController;
 import unbbayes.controller.MainController;
 import unbbayes.monteCarlo.controlador.ControladorPrincipal;
 
+import unbbayes.io.mebn.UbfIO;
+
 /**
- *  Essa classe extende o <code>JFrame</code> e é responsável pela interface
+ *  Essa classe extende o <code>JFrame</code> e ï¿½ responsï¿½vel pela interface
  *  da tela principal do programa.
  *
  *@author     Rommel Novaes Carvalho, Michael S. Onishi
@@ -132,9 +134,9 @@ public class UnBBayesFrame extends JFrame {
 		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
 	/**
-	 *  Constrói a tela principal do programa, ajustando os Layouts e criando
-	 *  botões, labels, e outros responsáveis pela interface. Além disso nesse
-	 *  contrutor também criamos os respectivos <code>ActionListener</code>,
+	 *  Constrï¿½i a tela principal do programa, ajustando os Layouts e criando
+	 *  botï¿½es, labels, e outros responsï¿½veis pela interface. Alï¿½m disso nesse
+	 *  contrutor tambï¿½m criamos os respectivos <code>ActionListener</code>,
 	 *  <code>KeyListener</code> e <code>MouseListener</code> para os
 	 *  respectivos componentes.
 	 *
@@ -196,9 +198,9 @@ public class UnBBayesFrame extends JFrame {
 	}
 
 	/**
-	 * Retorna a janela que está selecionada.
+	 * Retorna a janela que estï¿½ selecionada.
 	 *
-	 * @return janela que está selecionada.
+	 * @return janela que estï¿½ selecionada.
 	 */
 	public JInternalFrame getSelectedWindow() {
 		return desktop.getSelectedFrame();
@@ -250,12 +252,13 @@ public class UnBBayesFrame extends JFrame {
 		alOpen = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				String[] nets = new String[] { "net", "xml", "owl" };
+				//String[] nets = new String[] { "net", "xml", "owl" };
+				String[] nets = new String[] { "net", "xml", "owl", UbfIO.fileExtension };				
 				chooser = new JFileChooser(fileController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
 				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
-				// adicionar FileView no FileChooser para desenhar ícones de
+				// adicionar FileView no FileChooser para desenhar ï¿½cones de
 				// arquivos
 				chooser.setFileView(new FileIcon(UnBBayesFrame.this));
 
@@ -278,18 +281,20 @@ public class UnBBayesFrame extends JFrame {
 		alSave = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				String[] nets = new String[] { "net", "xml", "owl" };
+				//String[] nets = new String[] { "net", "xml", "owl" };
+				String[] nets = new String[] { "net", "xml", UbfIO.fileExtension};
+				
 				chooser = new JFileChooser(fileController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
 				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
-				// adicionar FileView no FileChooser para desenhar ícones de
+				// adicionar FileView no FileChooser para desenhar ï¿½cones de
 				// arquivos
 				chooser.setFileView(new FileIcon(UnBBayesFrame.this));
 				chooser.addChoosableFileFilter(
 					new SimpleFileFilter(
 						nets,
-						resource.getString("netFileFilter")));
+						resource.getString("netFileFilterSave")));
 				int option = chooser.showSaveDialog(null);
 				if (option == JFileChooser.APPROVE_OPTION) {
 					File file = chooser.getSelectedFile();

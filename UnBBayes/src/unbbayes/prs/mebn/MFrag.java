@@ -269,9 +269,9 @@ public class MFrag implements Graph{
 	}
 
 	/**
-	 *  Retorna os nós do grafo.
+	 *  Retorna os nï¿½s do grafo.
 	 *
-	 *@return    nós do grafo.
+	 *@return    nï¿½s do grafo.
 	 * 
 	 * @todo Eliminar esse metodo! eh utilizado na classe NetWindow
 	 */
@@ -280,9 +280,9 @@ public class MFrag implements Graph{
 	}
 
 	/**
-	 *  Returna o número de variáveis da rede.
+	 *  Returna o nï¿½mero de variï¿½veis da rede.
 	 *
-	 *@return    número de variáveis da rede.
+	 *@return    nï¿½mero de variï¿½veis da rede.
 	 */
 	public int getNodeCount(){
 		return nodeList.size();		
@@ -349,11 +349,11 @@ public class MFrag implements Graph{
 	}
 
 	/**
-	 *  Verifica existência de determinado arco.
+	 *  Verifica existï¿½ncia de determinado arco.
 	 *
-	 *@param  no1  nó origem.
-	 *@param  no2  nó destino.
-	 *@return      posição do arco no vetor ou -1 caso não exista tal arco.
+	 *@param  no1  nï¿½ origem.
+	 *@param  no2  nï¿½ destino.
+	 *@return      posiï¿½ï¿½o do arco no vetor ou -1 caso nï¿½o exista tal arco.
 	 */
 	public int hasEdge(Node no1, Node no2){
 		if (no1 == no2) {
@@ -389,5 +389,10 @@ public class MFrag implements Graph{
 	public void setResidentNodeList(List<ResidentNode> residentNodeList) {
 		this.residentNodeList = residentNodeList;
 	}
+
+	public void setOrdinaryVariableNum(int ordinaryVariableNum) {
+		this.ordinaryVariableNum = ordinaryVariableNum;
+	}
+	
 
 }

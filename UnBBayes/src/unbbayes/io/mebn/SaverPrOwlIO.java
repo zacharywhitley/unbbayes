@@ -284,7 +284,7 @@ public class SaverPrOwlIO {
 		}
 		return null;
 		
-		//TODO lançar excessão... 
+		//TODO lanï¿½ar excessï¿½o... 
 		
 	}
 		
@@ -388,7 +388,7 @@ public class SaverPrOwlIO {
 		for (DomainResidentNode residentNode: residentNodeListGeral){  
 			OWLIndividual domainResIndividual = domainResMap.get(residentNode);	
 			
-			savePositionProperty(domainResIndividual, residentNode); 
+			//savePositionProperty(domainResIndividual, residentNode); 
 			
 			List<OrdinaryVariable> argumentList = residentNode.getOrdinaryVariableList(); 
 	    	int argumentNumber = 1; 
@@ -553,9 +553,9 @@ public class SaverPrOwlIO {
 			
 			OWLIndividual contextNodeIndividual = contextMap.get(contextNode);	
 			
-			savePositionProperty(contextNodeIndividual, contextNode);
+			//savePositionProperty(contextNodeIndividual, contextNode);
 			
-			/* Passo 1: verificar de qual built in o nó de contexto é instancia */
+			/* Passo 1: verificar de qual built in o nï¿½ de contexto ï¿½ instancia */
 			
 			NodeFormulaTree formulaNode = contextNode.getFormulaTree(); 
 			
@@ -664,7 +664,7 @@ public class SaverPrOwlIO {
 		for (GenerativeInputNode generativeInputNode: inputNodeListGeral){  
 			OWLIndividual generativeInputNodeIndividual = generativeInputMap.get(generativeInputNode);	
 			
-			savePositionProperty(generativeInputNodeIndividual, generativeInputNode);
+			//savePositionProperty(generativeInputNodeIndividual, generativeInputNode);
 			
 			/* has Argument */
 			

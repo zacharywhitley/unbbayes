@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -40,6 +40,7 @@ import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLIO;
 import unbbayes.io.mebn.PrOwlIO;
+import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -47,6 +48,7 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.util.NodeList;
+
 
 /**
  *  This class is responsible for creating, loading and saving networks supported by UnBBayes.
@@ -108,6 +110,9 @@ public class MainController {
      */
     public void saveNet(File file) {
         screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        
+        UbfIO ubfIo = UbfIO.getInstance();
+        
         try {
 			BaseIO io = null;
 			PrOwlIO prOwlIo = null; 
@@ -123,16 +128,31 @@ public class MainController {
 				else if (name.endsWith("xml")){
 					io = new XMLIO();
 				}
-				else if (name.endsWith("owl")){
+				else if (name.endsWith(ubfIo.fileExtension)) {
+		        	ubfIo = UbfIO.getInstance();
+		        /*
+		        } else if (name.endsWith("owl")){
 				    prOwlIo = new PrOwlIO();
+				    */
 		        }
 				
 				if (io != null)
 				   io.save(file, ((NetworkWindow) window).getSingleEntityNetwork());
-				else{
+				else {
+					/*
 					if(prOwlIo != null){
 					   prOwlIo.saveMebn(file, ((NetworkWindow) window).getMultiEntityBayesianNetwork()); 
 				       JOptionPane.showMessageDialog(screen, resource.getString("saveSucess") , resource.getString("sucess"), JOptionPane.INFORMATION_MESSAGE);
+					} else */ 
+					if (ubfIo != null) {
+						try {
+							ubfIo.saveMebn(file, ((NetworkWindow) window).getMultiEntityBayesianNetwork()); 
+						    JOptionPane.showMessageDialog(screen, resource.getString("saveSucess") , resource.getString("sucess"), JOptionPane.INFORMATION_MESSAGE);
+						} catch (Exception e) {
+							JOptionPane.showMessageDialog(screen, e.getMessage(), "saveNetException", JOptionPane.ERROR_MESSAGE);        	
+				        	e.printStackTrace(); 
+						}
+						
 					}
 					else{
 					   JOptionPane.showMessageDialog(screen, resource.getString("withoutPosfixe") , resource.getString("error"), JOptionPane.ERROR_MESSAGE);							
@@ -144,10 +164,10 @@ public class MainController {
             e.printStackTrace();
         } catch (JAXBException je){
         	je.printStackTrace(); 
-        } catch (IOMebnException me){
+        } /*catch (IOMebnException me){
             JOptionPane.showMessageDialog(screen, me.getMessage(), "saveNetException", JOptionPane.ERROR_MESSAGE);        	
         	me.printStackTrace(); 
-        }
+        }*/
         
         finally {
         	screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -184,6 +204,10 @@ public class MainController {
 					PrOwlIO prOwlIo = new PrOwlIO(); 
 			    	MultiEntityBayesianNetwork mebn = prOwlIo.loadMebn(file);
 			    	window = new NetworkWindow(mebn);					
+				}  else if (name.endsWith(UbfIO.fileExtension)) {        			
+        			UbfIO ubfIo = UbfIO.getInstance(); 
+        			MultiEntityBayesianNetwork mebn = ubfIo.loadMebn(file);
+			    	window = new NetworkWindow(mebn);	
 				}
         	}
 			screen.addWindow(window);
