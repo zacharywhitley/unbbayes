@@ -38,10 +38,10 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 
+import unbbayes.gui.HierarchicTree;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
-import unbbayes.prs.bn.HierarchicTree;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;

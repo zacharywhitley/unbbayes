@@ -24,13 +24,13 @@ import javax.xml.bind.Unmarshaller;
 
 import org.xml.sax.InputSource;
 
+import unbbayes.gui.HierarchicTree;
 import unbbayes.io.xmlclasses.BIF;
 import unbbayes.io.xmlclasses.BIFType;
 import unbbayes.io.xmlclasses.ObjectFactory;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
-import unbbayes.prs.bn.HierarchicTree;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.PotentialTable;

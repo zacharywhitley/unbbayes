@@ -32,6 +32,7 @@ import java.util.ResourceBundle;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
+import unbbayes.gui.HierarchicTree;
 import unbbayes.io.LogManager;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Network;

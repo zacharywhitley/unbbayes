@@ -1,4 +1,4 @@
-package unbbayes.prs.bn;
+package unbbayes.gui;
 
 import java.awt.Component;
 import java.awt.Point;
@@ -34,6 +34,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 import unbbayes.controller.IconController;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.util.ArrayMap;
 import unbbayes.util.NodeList;
 

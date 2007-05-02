@@ -24,7 +24,6 @@ import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.HierarchicTree;
 import unbbayes.prs.bn.SingleEntityNetwork;
 
 
