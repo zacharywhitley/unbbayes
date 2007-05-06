@@ -43,10 +43,13 @@ public class IoUbfResources extends ListResourceBundle {
 		{"UBFOrdinalVars", " Ordinary Variables"},
 		
 		{"InvalidSyntax", "Invalid syntax for this version"},
-		{"NoProwlFound", "No pr-owl file found"}, 		
+		{"NoProwlFound", "No pr-owl file found"}, 	
+		{"InvalidProwlScheme", "File contains invalid pr-owl format"}, 	
+		{"InvalidUbfScheme", "File contains invalid or erroneous UBF format. Some elements were ignored"}, 
 		{"IncompatibleVersion", "File version is incompatible"},
 		{"MTheoryConfigError", "Some MTheory data where not loaded - using default"},
 		{"MFragConfigError", "Some MFrag/Node data where not loaded - using default"},
 		{"MFragTypeException", "System has tried to store a unexpected MFrag type"},
+		
 	};
 }

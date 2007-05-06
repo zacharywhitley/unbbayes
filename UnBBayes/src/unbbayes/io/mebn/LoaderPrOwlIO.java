@@ -96,6 +96,9 @@ public class LoaderPrOwlIO {
 	private static final String PROWLMODELFILE = "pr-owl/pr-owl.owl";
 	private static final String URIPROWLMODELFILE = "file:///UnBBayes_/UnBBayes/pr-owl/pr-owl.owl"; 
 	
+	
+	private String ordinaryVarScopeSeparator = ".";
+	
 	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException, IOMebnException{
 
 
@@ -262,7 +265,7 @@ public class LoaderPrOwlIO {
 			   Type.addType(individualOne.getBrowserText()); 
 			}
 			catch (TypeAlreadyExistsException exception){
-				//OK... lembre-se que os tipos basicos jï¿½ existem... 
+				//OK... lembre-se que os tipos basicos j?¿½ existem... 
 			}
 			
 			System.out.println("Meta Entity Loaded: " + individualOne.getBrowserText()); 
@@ -396,11 +399,18 @@ public class LoaderPrOwlIO {
 			
 			/* -> hasOVariable */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasOVariable"); 
-			instances = individualOne.getPropertyValues(objectProperty); 	
+			instances = individualOne.getPropertyValues(objectProperty); 
+			String ovName = null;
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
 				individualTwo = (OWLIndividual) itIn.next();
-				oVariable = new OrdinaryVariable(individualTwo.getBrowserText(), Type.getDefaultType(), domainMFrag); 
+				ovName = individualTwo.getBrowserText();	// Name of the OV individual
+				// Remove MFrag name from ovName. MFrag name is a scope identifier
+				ovName = ovName.split(domainMFrag.getName() + this.getOrdinaryVarScopeSeparator())[1];
+				//System.out.println("> Internal OV name is : " + ovName);				
+				// Create instance of OV w/o scope identifier
+				oVariable = new OrdinaryVariable(ovName, Type.getDefaultType(), domainMFrag); 
 				domainMFrag.addOrdinaryVariable(oVariable); 
+				// let's map objects w/ scope identifier included
 				mapOVariable.put(individualTwo.getBrowserText(), oVariable); 
 				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
 			}
@@ -582,7 +592,7 @@ public class LoaderPrOwlIO {
 										if(nameBuiltIn.compareTo("implies") == 0){
 											builtInRV = new BuiltInRVImplies(); 
 										}else{
-											//TODO lanï¿½ar excessï¿½o... 
+											//TODO lan?¿½ar excess?¿½o... 
 											builtInRV = new BuiltInRV(individualOne.getBrowserText(), " "); 											
 										}	
 			
@@ -945,7 +955,7 @@ public class LoaderPrOwlIO {
 			individualTwo = (OWLIndividual)individualOne.getPropertyValue(objectProperty); 	
 			
 			if(individualTwo != null){
-				//TODO apenas por enquanto, pois nï¿½o podera ser igual a null no futuro!!!
+				//TODO apenas por enquanto, pois n?¿½o podera ser igual a null no futuro!!!
 				
 				/* check: 
 				 * - node
@@ -1108,7 +1118,7 @@ public class LoaderPrOwlIO {
 		System.out.println("Entrou no build " +  contextNode.getName()); 
 		
 		/* 
-		 * a raiz sera setada como o builtIn do qual o contextnode ï¿½ instancia. 
+		 * a raiz sera setada como o builtIn do qual o contextnode ?¿½ instancia. 
 		 * */
 		
 		Object obj = mapIsContextInstanceOf.get(contextNode); 
@@ -1163,7 +1173,7 @@ public class LoaderPrOwlIO {
 		    
 			/* 
 			 * procura pelos argumentos do builtIn, podendo estes serem contextnodes internos, o que 
-			 * acarreta uma busca dos argumentos internos a este atï¿½ se chegar ao final. 
+			 * acarreta uma busca dos argumentos internos a este at?¿½ se chegar ao final. 
 			 */
 		    
 		    for(Argument argument: contextNode.getArgumentList()){
@@ -1190,7 +1200,7 @@ public class LoaderPrOwlIO {
 		    			}
 		    		}
 		    		else{
-		    			//TODO lanï¿½ar exceï¿½ï¿½o... 
+		    			//TODO lan?¿½ar exce?¿½?¿½o... 
 		    		}
 		    	}
 		    	
@@ -1273,6 +1283,20 @@ public class LoaderPrOwlIO {
 		}
 		
 		return stringReturn; 
+	}
+
+	/**
+	 * @return Returns the ordinaryVarScopeSeparator.
+	 */
+	public String getOrdinaryVarScopeSeparator() {
+		return ordinaryVarScopeSeparator;
+	}
+
+	/**
+	 * @param ordinaryVarScopeSeparator The ordinaryVarScopeSeparator to set.
+	 */
+	public void setOrdinaryVarScopeSeparator(String ordinaryVarScopeSeparator) {
+		this.ordinaryVarScopeSeparator = ordinaryVarScopeSeparator;
 	}
 	
 }

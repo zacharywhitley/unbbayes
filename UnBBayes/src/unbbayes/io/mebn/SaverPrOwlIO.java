@@ -73,6 +73,10 @@ public class SaverPrOwlIO {
 	
 	private File file; 
 	
+	
+	private String ordinaryVarScopeSeparator = ".";
+	
+	
 	MultiEntityBayesianNetwork mebn; 
 	
 	/* nums for automatic names */
@@ -284,7 +288,7 @@ public class SaverPrOwlIO {
 		}
 		return null;
 		
-		//TODO lanï¿½ar excessï¿½o... 
+		//TODO lan?¿½ar excess?¿½o... 
 		
 	}
 		
@@ -358,12 +362,15 @@ public class SaverPrOwlIO {
 			OWLObjectProperty hasOVariableProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasOVariable"); 	
 			List<OrdinaryVariable> oVariableList = domainMFrag.getOrdinaryVariableList(); 
 
+			
 			OWLNamedClass oVariableClass = owlModel.getOWLNamedClass("OVariable"); 
 			OWLObjectProperty isSubsByProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isSubsBy"); 	
 			
 			for(OrdinaryVariable oVariable: oVariableList){
 				
-				OWLIndividual oVariableIndividual = oVariableClass.createOWLIndividual(oVariable.getName());
+				OWLIndividual oVariableIndividual = oVariableClass.createOWLIndividual(
+								  oVariable.getMFrag().getName() + this.getOrdinaryVarScopeSeparator() 
+								+ oVariable.getName() );
 				domainMFragIndividual.addPropertyValue(hasOVariableProperty, oVariableIndividual); 		
 				
 				for(String type: Type.getListOfTypes()){
@@ -555,7 +562,7 @@ public class SaverPrOwlIO {
 			
 			//savePositionProperty(contextNodeIndividual, contextNode);
 			
-			/* Passo 1: verificar de qual built in o nï¿½ de contexto ï¿½ instancia */
+			/* Passo 1: verificar de qual built in o n?¿½ de contexto ?¿½ instancia */
 			
 			NodeFormulaTree formulaNode = contextNode.getFormulaTree(); 
 			
@@ -799,6 +806,20 @@ public class SaverPrOwlIO {
 			context.delete(); 
 		}
 		
+	}
+
+	/**
+	 * @return Returns the ordinaryVarScopeSeparator.
+	 */
+	public String getOrdinaryVarScopeSeparator() {
+		return ordinaryVarScopeSeparator;
+	}
+
+	/**
+	 * @param ordinaryVarScopeSeparator The ordinaryVarScopeSeparator to set.
+	 */
+	public void setOrdinaryVarScopeSeparator(String ordinaryVarScopeSeparator) {
+		this.ordinaryVarScopeSeparator = ordinaryVarScopeSeparator;
 	}
 	
 }

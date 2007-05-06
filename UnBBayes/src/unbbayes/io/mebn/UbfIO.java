@@ -519,9 +519,13 @@ public class UbfIO implements MebnIO {
 		// Extracting owl file
 		try {
 			prowlFile = new File(owlFilePath);
+			if (!prowlFile.exists()) {
+				throw new IOException(this.resource.getString("NoProwlFound"));
+			}
+		
 			mebn = this.prowlIO.loadMebn(prowlFile);
 		} catch(Exception e) {
-			throw new IOException(e.getLocalizedMessage() + " : " + this.resource.getString("NoProwlFound"));
+			throw new IOException(e.getLocalizedMessage() + " : " + this.resource.getString("InvalidProwlScheme"));
 		}
 		
 		//System.out.println("\n\nLoading UBF config");
