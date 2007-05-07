@@ -1,6 +1,6 @@
 % UBF file header
 Version=0.01
-PrOwl="/C:/Documents and Settings/user/Desktop/eclipse/UnBBayes/examples/mebn/asia2.owl"
+PrOwl="examples/mebn/asia2.owl"
 
 % UBF MTheory declaration
 MTheory=New_MEBN
