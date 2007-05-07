@@ -13,21 +13,21 @@ import unbbayes.prs.mebn.context.enumType;
 import unbbayes.prs.mebn.entity.Entity;
 
 public class FormulaTreeController {
-
+	
 	private FormulaTree formulaTree;
 	private MEBNController mebnController; 
 	private ContextNode contextNode; 
 	private FormulaEditionPane formulaEditionPane; 
 	
 	public FormulaTreeController(MEBNController _controller, 
-			                     ContextNode context, FormulaEditionPane _formulaEditionPane){
-	
+			ContextNode context, FormulaEditionPane _formulaEditionPane){
+		
 		this.mebnController = _controller; 
 		this.contextNode = context; 
 		this.formulaEditionPane = _formulaEditionPane; 
-	
+		
 		formulaTree = new FormulaTree(this, context); 
-	
+		
 	}
 	
 	public void setContextNodeFormula(NodeFormulaTree formula){
@@ -37,37 +37,37 @@ public class FormulaTreeController {
 	public FormulaTree getFormulaTree(){
 		
 		return formulaTree; 
-	
+		
 	}
 	
 	public void addOperatorAnd()throws Exception{
-		 formulaTree.addOperatorAnd(); 
-		 mebnController.updateFormulaActiveContextNode(); 
+		formulaTree.addOperatorAnd(); 
+		mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorOr()throws Exception{
 		formulaTree.addOperatorOr(); 
-		 mebnController.updateFormulaActiveContextNode(); 
+		mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorNot()throws Exception{
 		formulaTree.addOperatorNot(); 
-		 mebnController.updateFormulaActiveContextNode(); 
+		mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorEqualTo()throws Exception{
 		formulaTree.addOperatorEqualTo(); 
-		 mebnController.updateFormulaActiveContextNode(); 
+		mebnController.updateFormulaActiveContextNode(); 
 	}	
-
+	
 	public void addOperatorIf() throws Exception{
-		 formulaTree.addOperatorIf(); 
-		 mebnController.updateFormulaActiveContextNode(); 
+		formulaTree.addOperatorIf(); 
+		mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorImplies()throws Exception{
 		formulaTree.addOperatorImplies();
-		 mebnController.updateFormulaActiveContextNode(); 
+		mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorForAll()throws Exception{
@@ -109,10 +109,10 @@ public class FormulaTreeController {
 		}
 		
 		else{
-		   nodePlace.setName(ov.getName()); 
-		   nodePlace.setNodeVariable(ov);
-		   nodePlace.setTypeNode(enumType.OPERANDO); 
-		   nodePlace.setSubTypeNode(enumSubType.OVARIABLE);
+			nodePlace.setName(ov.getName()); 
+			nodePlace.setNodeVariable(ov);
+			nodePlace.setTypeNode(enumType.OPERANDO); 
+			nodePlace.setSubTypeNode(enumSubType.OVARIABLE);
 		}
 		formulaTree.updateTree(); 
 		

@@ -49,6 +49,8 @@ public class IoMebnResources extends ListResourceBundle {
 		{"DomainResidentNotExistsInDomainMFrag", "Nodo domain Resident não existe na DomainMFrag"}, 
 		{"GenerativeInputNodeNotExistsInDomainMFrag", "Nodo generative Input nao existe na MTheory"}, 
 		{"CategoricalStateNotFoundException", "Estado não encontrado"}, 		
-		{"FileNotFoundException","Não foi possível abrir o arquivo!"},		       
+		{"FileNotFoundException","Não foi possível abrir o arquivo!"},	
+		{"ErrorReadingFile", "Ocorreu erro ao tentar ler o arquivo"}, 
+		{"BuiltInDontImplemented", "Built-In não é implementada no UnBBayes"}		
 	};
 }
