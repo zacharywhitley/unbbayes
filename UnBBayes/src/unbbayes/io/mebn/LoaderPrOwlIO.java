@@ -77,7 +77,6 @@ public class LoaderPrOwlIO {
 	 */
 	private HashMap<ContextNode, Object> mapIsContextInstanceOf = new HashMap<ContextNode, Object>(); 
 
-	
 	private HashMap<String, DomainResidentNode> mapDomainResidentNode = new HashMap<String, DomainResidentNode>();
 	private HashMap<String, GenerativeInputNode> mapGenerativeInputNode = new HashMap<String, GenerativeInputNode>();
 	private HashMap<String, Argument> mapArgument = new HashMap<String, Argument>();
@@ -105,21 +104,20 @@ public class LoaderPrOwlIO {
 		owlModel = ProtegeOWL.createJenaOWLModel();
 		
 		//URI uri = URIUtilities.createURI(URIPROWLMODELFILE);
+		System.out.println("[DEBUG]" + LoaderPrOwlIO.class + " -> " + "Load begin"); 
 		
 		File filePrOwl = new File(PROWLMODELFILE);
 		FileInputStream inputStreamOwl = new FileInputStream(filePrOwl); 
 		
 		owlModel.getRepositoryManager().addProjectRepository(new LocalFileRepository(filePrOwl, true));
 		
-		
 		try{
 			owlModel.load(inputStreamOwl, FileUtils.langXMLAbbrev);
-			System.out.println("load do arquivo modelo com sucesso!"); 
+			System.out.println("-> Load of model file PR-OWL successful"); 
 		}	
 		catch(Exception e){
-			e.printStackTrace(); 
+			throw new IOMebnException(resource.getString("ErrorReadingFile") + ": " + PROWLMODELFILE); 
 		}
-		
 			
 		FileInputStream inputStream = new FileInputStream(file); 
 		
@@ -127,7 +125,7 @@ public class LoaderPrOwlIO {
 			owlModel.load(inputStream, FileUtils.langXMLAbbrev);   
 		}
 		catch (Exception e){
-			throw new IOMebnException("Erro ao tentar ler o arquivo!!! " + file.getAbsolutePath()); 
+			throw new IOMebnException(resource.getString("ErrorReadingFile") + ": " + file.getAbsolutePath()); 
 		}
 		
 		/* Build the owl model */
@@ -174,7 +172,7 @@ public class LoaderPrOwlIO {
 		
 		//checkMTheory(); 
 		
-		System.out.println("Load concluido com sucesso!"); 
+		System.out.println("[DEBUG]" + LoaderPrOwlIO.class + " - " + "Processo de load concluido"); 
 		
 		return mebn; 		
 	}	
@@ -249,9 +247,7 @@ public class LoaderPrOwlIO {
 	private void loadMetaEntitiesClasses(){
 		
 		OWLNamedClass metaEntityClass; 
-		
 		Collection instances; 
-		
 		OWLIndividual individualOne;
 		
 		metaEntityClass = owlModel.getOWLNamedClass("MetaEntity");
@@ -262,10 +258,11 @@ public class LoaderPrOwlIO {
 			individualOne = (OWLIndividual) owlIndividual; 
 			
 			try{
+				//TODO novo sistema de tipagem
 			   Type.addType(individualOne.getBrowserText()); 
 			}
 			catch (TypeAlreadyExistsException exception){
-				//OK... lembre-se que os tipos basicos j?¿½ existem... 
+				//OK... lembre-se que os tipos basicos jï¿½ existem... 
 			}
 			
 			System.out.println("Meta Entity Loaded: " + individualOne.getBrowserText()); 
@@ -281,9 +278,7 @@ public class LoaderPrOwlIO {
 	private void loadCategoricalRVStates(){
 		
 		OWLNamedClass metaEntityClass; 
-		
 		Collection instances; 
-		
 		OWLIndividual individualOne;
 		
 		metaEntityClass = owlModel.getOWLNamedClass("CategoricalRVStates");
@@ -328,10 +323,9 @@ public class LoaderPrOwlIO {
 				ObjectEntity objectEntityMebn = new ObjectEntity(subClass.getBrowserText(), subClass.getBrowserText() + "_Type"); 	
 			}
 			catch(TypeException typeException){
-				
+				typeException.printStackTrace(); 
 			}
-		}		
-
+		}	
 	}
 	
 	
@@ -955,7 +949,7 @@ public class LoaderPrOwlIO {
 			individualTwo = (OWLIndividual)individualOne.getPropertyValue(objectProperty); 	
 			
 			if(individualTwo != null){
-				//TODO apenas por enquanto, pois n?¿½o podera ser igual a null no futuro!!!
+				//TODO apenas por enquanto, pois nï¿½o podera ser igual a null no futuro!!!
 				
 				/* check: 
 				 * - node
@@ -1118,7 +1112,7 @@ public class LoaderPrOwlIO {
 		System.out.println("Entrou no build " +  contextNode.getName()); 
 		
 		/* 
-		 * a raiz sera setada como o builtIn do qual o contextnode ?¿½ instancia. 
+		 * a raiz sera setada como o builtIn do qual o contextnode ï¿½ instancia. 
 		 * */
 		
 		Object obj = mapIsContextInstanceOf.get(contextNode); 
@@ -1173,7 +1167,7 @@ public class LoaderPrOwlIO {
 		    
 			/* 
 			 * procura pelos argumentos do builtIn, podendo estes serem contextnodes internos, o que 
-			 * acarreta uma busca dos argumentos internos a este at?¿½ se chegar ao final. 
+			 * acarreta uma busca dos argumentos internos a este atï¿½ se chegar ao final. 
 			 */
 		    
 		    for(Argument argument: contextNode.getArgumentList()){
@@ -1200,7 +1194,7 @@ public class LoaderPrOwlIO {
 		    			}
 		    		}
 		    		else{
-		    			//TODO lan?¿½ar exce?¿½?¿½o... 
+		    			//TODO lanï¿½ar exceï¿½ï¿½o... 
 		    		}
 		    	}
 		    	
@@ -1218,12 +1212,12 @@ public class LoaderPrOwlIO {
 	}
 	
 	/**
-	 * Test method that print the mtheory structure. 
+	 * Test that print the mtheory structure. 
 	 */
 	
 	private void checkMTheory(){
 		
-		System.out.println("\n\n\n\n-------   Test End --------"); 
+		System.out.println("\n\n\n\n-------   Test Begin --------"); 
 		
 		System.out.println("-> MTheory: " + mebn.getName());
 		

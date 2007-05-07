@@ -24,7 +24,6 @@ import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
-import unbbayes.prs.mebn.context.enumSubType;
 import unbbayes.prs.mebn.context.enumType;
 import unbbayes.prs.mebn.entity.BooleanStatesEntity;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
@@ -110,9 +109,7 @@ public class SaverPrOwlIO {
 		loadBooleanRVStates(); 
 		loadBuiltInRV();  
 		
-		
 		System.out.println("-> Definitions load sucess ");
-		
 		
 		/* MTheory */
 		
@@ -578,6 +575,12 @@ public class SaverPrOwlIO {
 		
     }
     
+    /**
+     * 
+     * @param _formulaNode Root of the tree of the formula
+     * @param contextNodeIndividual
+     * @param contextNode
+     */
     
     private void loadContextNodeFormula(NodeFormulaTree _formulaNode, OWLIndividual contextNodeIndividual, ContextNode contextNode){
     	
@@ -603,30 +606,30 @@ public class SaverPrOwlIO {
 					childNum++; 
 					if(child.getTypeNode() == enumType.OPERANDO){
 						
-						if(child.getSubTypeNode() == enumSubType.NOTHING){
+						switch(child.getSubTypeNode()){
+						   
+						case NOTHING:
 							saveEmptySimpleArgRelationship(contextNodeIndividual, contextNode, childNum );
-						}
-						else{
-							if(child.getSubTypeNode() == enumSubType.OVARIABLE){
-								saveSimpleArgRelationship((OrdinaryVariable)(child.getNodeVariable()), contextNodeIndividual, contextNode, childNum ); 
+							break; 
+							
+						case OVARIABLE: 
+							saveSimpleArgRelationship((OrdinaryVariable)(child.getNodeVariable()), contextNodeIndividual, contextNode, childNum ); 
+							break; 
+							
+						case NODE: 
+							if(child.getNodeVariable() instanceof ResidentNodePointer){
+							    saveResidentNodeArgRelationship(((ResidentNodePointer)(child.getNodeVariable())).getResidentNode(), contextNodeIndividual, contextNode, childNum );
 							}
 							else{
-								if(child.getSubTypeNode() == enumSubType.NODE){
-									if(child.getNodeVariable() instanceof ResidentNode){
-									   saveResidentNodeArgRelationship((ResidentNode)(child.getNodeVariable()), contextNodeIndividual, contextNode, childNum ); 
-									}
-									else{
-                                        //TODO ... 
-								     }
-								}
-								else{
-									//TODO Variable and Skolen... 
-									this.saveEmptySimpleArgRelationship(contextNodeIndividual, contextNode, childNum );
-									
-								}
+								//TODO
 							}
-						}
+							break; 
+							
+						default: 
+							saveEmptySimpleArgRelationship(contextNodeIndividual, contextNode, childNum );
+							break; 
 						
+						}
 						
 					}
 					else{
