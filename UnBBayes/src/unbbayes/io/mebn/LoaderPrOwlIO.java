@@ -399,7 +399,11 @@ public class LoaderPrOwlIO {
 				individualTwo = (OWLIndividual) itIn.next();
 				ovName = individualTwo.getBrowserText();	// Name of the OV individual
 				// Remove MFrag name from ovName. MFrag name is a scope identifier
-				ovName = ovName.split(domainMFrag.getName() + this.getOrdinaryVarScopeSeparator())[1];
+				try {
+					ovName = ovName.split(domainMFrag.getName() + this.getOrdinaryVarScopeSeparator())[1];
+				} catch (java.lang.ArrayIndexOutOfBoundsException e) {
+					
+				}
 				//System.out.println("> Internal OV name is : " + ovName);				
 				// Create instance of OV w/o scope identifier
 				oVariable = new OrdinaryVariable(ovName, Type.getDefaultType(), domainMFrag); 
@@ -586,7 +590,7 @@ public class LoaderPrOwlIO {
 										if(nameBuiltIn.compareTo("implies") == 0){
 											builtInRV = new BuiltInRVImplies(); 
 										}else{
-											//TODO lan?¿½ar excess?¿½o... 
+											//TODO lan?ï¿½ï¿½ar excess?ï¿½ï¿½o... 
 											builtInRV = new BuiltInRV(individualOne.getBrowserText(), " "); 											
 										}	
 			

@@ -15,11 +15,11 @@ import java.util.*;
 public class IoMebnResources_pt extends ListResourceBundle {
 
     /**
-	 *  Sobrescreve getContents e retorna um array, onde cada item no array é
-	 *	um par de objetos. O primeiro elemento do par é uma String chave, e o
-	 *	segundo é o valor associado a essa chave.
+	 *  Sobrescreve getContents e retorna um array, onde cada item no array ï¿½
+	 *	um par de objetos. O primeiro elemento do par ï¿½ uma String chave, e o
+	 *	segundo ï¿½ o valor associado a essa chave.
 	 *
-	 * @return O conteúdo dos recursos
+	 * @return O conteï¿½do dos recursos
 	 */
 	public Object[][] getContents() {
 		return contents;
@@ -43,11 +43,13 @@ public class IoMebnResources_pt extends ListResourceBundle {
 		{"ArgumentTermInError", "Conflito na propriedade Argument Term!"}, 			
 		{"ContextNodeNotExistsInMFrag", "ContextNode nao existe na MFrag!"}, 
 		{"DomainResidentNotExistsInMTheory", "Nodo de dominio residente nao existe na MTheory!"}, 
-		{"DomainResidentNotExistsInDomainMFrag", "Nodo domain Resident não existe na DomainMFrag"}, 
+		{"DomainResidentNotExistsInDomainMFrag", "Nodo domain Resident nï¿½o existe na DomainMFrag"}, 
 		{"GenerativeInputNodeNotExistsInDomainMFrag", "Nodo generative Input nao existe na MTheory"}, 		
-        {"CategoricalStateNotFoundException", "Estado não encontrado"}, 
-		{"FileNotFoundException","Não foi possível abrir o arquivo!"},	  
+        {"CategoricalStateNotFoundException", "Estado nï¿½o encontrado"}, 
+		{"FileNotFoundException","Nï¿½o foi possï¿½vel abrir o arquivo!"},	  
 		{"ErrorReadingFile", "Ocorreu erro ao tentar ler o arquivo"}, 
-		{"BuiltInDontImplemented", "Built-In não é implementada no UnBBayes"}
+		{"BuiltInDontImplemented", "Built-In nï¿½o ï¿½ implementada no UnBBayes"},
+		{"NoOVariableContextIdentifier", "NÃ£o foi encontrado um identificador de escopo da VariÃ¡vel OrdinÃ¡ria no seu nome"}	
+		
 	};
 }
