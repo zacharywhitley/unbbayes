@@ -23,6 +23,7 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.ResidentNodePointer;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.context.enumType;
 import unbbayes.prs.mebn.entity.BooleanStatesEntity;
