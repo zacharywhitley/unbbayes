@@ -24,7 +24,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ResourceBundle;
 
-import unbbayes.gui.draw.DrawEllipse;
+import unbbayes.draw.DrawEllipse;
 import unbbayes.prs.Node;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;

@@ -86,7 +86,6 @@ public class InvokerMain extends JFrame
   private ActionListener alPreProcessor;
   private ActionListener alId3;
   private ActionListener alEvaluation;
-  private ActionListener alMetaphor;
   private ActionListener alCnm;
   private ActionListener alC45;
   private ActionListener alBayesianLearning;
@@ -304,18 +303,6 @@ public class InvokerMain extends JFrame
                 }
         };
 
-        // create an ActionListener for opening new window for Metaphor
-        alMetaphor = new ActionListener() {
-                public void actionPerformed(ActionEvent ae) {
-                        setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                        MetaphorMain metaphor = new MetaphorMain();
-                        JInternalFrame jif = new JInternalFrame("Metáfora Médica", true, true, true, true);
-                        jif.getContentPane().add(metaphor);
-                        addWindow(jif);
-                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                }
-        };
-
         // create an ActionListener for opening new window for Combinatorial Neural Model
         alCnm = new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
@@ -510,7 +497,6 @@ public class InvokerMain extends JFrame
         JMenuItem evaluationItem = new JMenuItem(resource.getString("evaluation")/*, icon*/ );
         JMenuItem optionsItem = new JMenuItem(resource.getString("preferences"),opcaoglobalIcon);
         /////////////
-        JMenuItem metaphorItem = new JMenuItem("Metaphor"/*, icon*/ );
         JMenuItem cnmItem = new JMenuItem("Combinatorial Neural Model"/*, icon*/ );
         JMenuItem c45Item = new JMenuItem("C4.5 Classifier"/*, icon*/ );
         JMenuItem bayesianItem = new JMenuItem("Bayesian Learning"/*, icon*/ );
@@ -534,7 +520,6 @@ public class InvokerMain extends JFrame
         evaluationItem.setMnemonic(((Character)resource.getObject("evaluationMnemonic")).charValue());
         optionsItem.setMnemonic(((Character)resource.getObject("preferencesMnemonic")).charValue());
         ///////////////
-        metaphorItem.setMnemonic('M');
         cnmItem.setMnemonic('N');
         c45Item.setMnemonic('C');
         bayesianItem.setMnemonic('B');
@@ -571,7 +556,6 @@ public class InvokerMain extends JFrame
         c45Item.addActionListener(alC45);
         naiveBayesItem.addActionListener(alNaiveBayes);
         evaluationItem.addActionListener(alEvaluation);
-        metaphorItem.addActionListener(alMetaphor);
         cnmItem.addActionListener(alCnm);
         neuralNetworkItem.addActionListener(alNeuralNetwork);
         bayesianItem.addActionListener(alBayesianLearning);
@@ -591,7 +575,6 @@ public class InvokerMain extends JFrame
 		programMenu.add(bayesianItem);//
         programMenu.add(cnmItem);
         programMenu.add(neuralNetworkItem);//
-		programMenu.add(metaphorItem);//
         programMenu.add(evaluationItem);
 		lafMenu.add(metalItem);
         lafMenu.add(motifItem);

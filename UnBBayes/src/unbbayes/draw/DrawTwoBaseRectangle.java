@@ -1,4 +1,4 @@
-package unbbayes.gui.draw;
+package unbbayes.draw;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
@@ -6,20 +6,15 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 
 /**
- * Representa um pentagono formado por um retangulo na base
- * e um triangulo encima:
- *              
- *             .
- *           .    .
- *           .    .
- *           ......
+ * Representa um quadrilatero com a base inferior correspondendo 
+ * a 70% do tamanho da base superior. 
  *  
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * @version 1.0 (06/10/31)
  */
 
-public class DrawFlatPentagon extends DrawElement{
-	
+
+public class DrawTwoBaseRectangle extends DrawElement{
 	private Point2D.Double position;
 	private Point2D.Double size;
 	
@@ -29,7 +24,7 @@ public class DrawFlatPentagon extends DrawElement{
 	 * @param size The width and height of the rectangle.
 	 */
 	
-	public DrawFlatPentagon(Point2D.Double position, Point2D.Double size) {
+	public DrawTwoBaseRectangle(Point2D.Double position, Point2D.Double size) {
 		this.position = position;
 		this.size = size;
 	}
@@ -41,15 +36,13 @@ public class DrawFlatPentagon extends DrawElement{
 		
 		GeneralPath parallelogram = new GeneralPath();
 
-		parallelogram.moveTo((float)(position.x - size.x/2), (float)(position.y + size.y/2));
-		parallelogram.lineTo((float)(position.x - size.x/2), (float)(position.y - size.y/2));  
-		parallelogram.lineTo((float)(position.x), (float)(position.y - (0.90)*size.y));  
-		parallelogram.lineTo((float)(position.x + size.x/2), (float)(position.y - size.y/2));  
-		parallelogram.lineTo((float)(position.x + size.x/2), (float)(position.y + size.y/2));  		
+		parallelogram.moveTo((float)(position.x - 0.5*size.x), (float)(position.y - 0.5*size.y));
+		parallelogram.lineTo((float)(position.x - 0.35*size.x),  (float)(position.y + 0.5*size.y)); 
+		parallelogram.lineTo((float)(position.x + 0.35*size.x),  (float)(position.y + 0.5*size.y));  
+		parallelogram.lineTo((float)(position.x + 0.5*size.x), (float)(position.y - 0.5*size.y));  		
 		parallelogram.closePath(); 
 		
 		graphics.fill(parallelogram);
-		
 		
 		if (isSelected()) {
 			graphics.setColor(getSelectionColor());
@@ -63,5 +56,4 @@ public class DrawFlatPentagon extends DrawElement{
 		
 		super.paint(graphics);
 	}
-	
-} 
+}

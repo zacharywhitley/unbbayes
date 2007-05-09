@@ -1,23 +1,25 @@
 package unbbayes.datamining.gui.preprocessor;
 
+// TODO: PEDIR PARA QUEM FEZ CORRIGIR TUDO
+
 /** Thread para discretização múltipla
  * @author gabriel guimaraes - Aluno de IC 2005-2006
  * @Orientador Marcelo Ladeira
  */
-
+/*
 import unbbayes.util.NodeList;
 import unbbayes.util.SwingWorker;
 import unbbayes.aprendizagem.TVariavel;
 import unbbayes.gui.janeladiscret;
-
+*/
 /**
  * Algoritimo para discretização múltipla
  * 
  * @author gabriel guimaraes - Aluno de IC 2005/2006
  * @orientador Marcelo Ladeira
  */
-public class dalgo2 extends Thread {
-	public NodeList variables;
+public class dalgo2 /*extends Thread */{
+/*	public NodeList variables;
 
 	public int[][] originalmatrix;
 
@@ -121,7 +123,7 @@ public class dalgo2 extends Thread {
 		return i;
 	}
 
-	/**
+	*//**
 	 * Contagem condicional: se uma linha tem o estado e1 ou e2 de var 1 e evar2
 	 * de var2 então uma unidade é acrescida ao somatório.
 	 * 
@@ -131,7 +133,7 @@ public class dalgo2 extends Thread {
 	 * @param var2
 	 * @param evar2
 	 * @return
-	 */
+	 *//*
 	public int countc(int lvar1, int le1, int le2, int lvar2, int levar2) {
 		int i, counter;
 		counter = 0;
@@ -153,11 +155,11 @@ public class dalgo2 extends Thread {
 		this.limiteperda = lim;
 	}
 
-	/**
+	*//**
 	 * 
 	 * @param number
 	 * @return zero se o numero nao é impar, 1 se for.
-	 */
+	 *//*
 	public int odd(int number) {
 		int isodd = 0;
 		if (Math.round(number / 2 + 0.00001) == number / 2)
@@ -165,7 +167,7 @@ public class dalgo2 extends Thread {
 		return isodd;
 	}
 
-	/**
+	*//**
 	 * Transforma o valor do qui-quadrado em probabilidade de rejeição de H0
 	 * 
 	 * @param chi2
@@ -173,7 +175,7 @@ public class dalgo2 extends Thread {
 	 * @param df -
 	 *            graus de liberdade
 	 * @return valor do p
-	 */
+	 *//*
 	public double c2prob(double chi2, int df) {
 		double pval = 0;
 
@@ -202,7 +204,7 @@ public class dalgo2 extends Thread {
 		return pval;
 	}
 
-	/**
+	*//**
 	 * Calcula o escore da variavel var1 se concatenada entre e1 e e2. Para o
 	 * calculo do escore de e1 apenas basta usar o mesmo e1 para e2.
 	 * 
@@ -217,7 +219,7 @@ public class dalgo2 extends Thread {
 	 * @param estadosv2
 	 *            número de estados de var2
 	 * @return Escore (nao normalizado)
-	 */
+	 *//*
 	public float score(int var1, int e1, int e2, int var2, int estadosv2) {
 		int i, j;
 		float score = 0;
@@ -467,5 +469,5 @@ public class dalgo2 extends Thread {
 	}
 
 	// public void finished
-
+*/
 }// obj

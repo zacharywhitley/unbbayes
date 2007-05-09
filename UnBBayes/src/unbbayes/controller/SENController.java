@@ -14,6 +14,7 @@ import javax.swing.event.TableModelListener;
 
 import unbbayes.gui.ExplanationProperties;
 import unbbayes.gui.NetworkWindow;
+import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ITabledVariable;
@@ -293,7 +294,7 @@ public class SENController {
 			// Number of variables
 			nVariables = potTab.variableCount();
 			
-			table = potTab.makeTable();
+			table = new GUIPotentialTable(potTab).makeTable();
 
 		} else {
 			// decision

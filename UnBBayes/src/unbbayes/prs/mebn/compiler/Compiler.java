@@ -1,13 +1,11 @@
 package unbbayes.prs.mebn.compiler;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import unbbayes.io.BaseIO;
-import unbbayes.io.NetIO;
+import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
@@ -250,7 +248,7 @@ public class Compiler {
 			i += dangerToSelf.getStatesSize();
 		}
 
-		tab.showTable("VAI FUNCIONAR!");
+		new GUIPotentialTable(tab).showTable("VAI FUNCIONAR!");
 
 		/*
 		 * Debug.setDebug(true); Compiler c = new Compiler();

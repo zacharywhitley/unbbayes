@@ -5,10 +5,8 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.gui.draw.DrawFlatPentagon;
-import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
+import unbbayes.draw.DrawFlatPentagon;
 import unbbayes.prs.Node;
-import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 
 /**

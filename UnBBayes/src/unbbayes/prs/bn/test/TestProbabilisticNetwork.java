@@ -1,9 +1,12 @@
 package unbbayes.prs.bn.test;
 
-import unbbayes.io.*;
-import unbbayes.prs.bn.*;
-import junit.framework.*;
-import java.io.*;
+import java.io.File;
+
+import junit.framework.TestCase;
+import unbbayes.io.BaseIO;
+import unbbayes.io.NetIO;
+import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
 
 public class TestProbabilisticNetwork extends TestCase {
 

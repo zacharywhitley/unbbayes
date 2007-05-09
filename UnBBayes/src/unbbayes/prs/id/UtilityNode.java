@@ -25,7 +25,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ResourceBundle;
 
-import unbbayes.gui.draw.DrawParallelogram;
+import unbbayes.draw.DrawParallelogram;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;

@@ -24,7 +24,7 @@ package unbbayes.prs.id;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
-import unbbayes.gui.draw.DrawRectangle;
+import unbbayes.draw.DrawRectangle;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.TreeVariable;

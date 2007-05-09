@@ -6,8 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import unbbayes.gui.draw.DrawTwoBaseRectangle;
-import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
+import unbbayes.draw.DrawTwoBaseRectangle;
 
 /**
  * 

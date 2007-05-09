@@ -6,7 +6,9 @@ package unbbayes.gui;
  * @Orientador Marcelo Ladeira
  */
 
-import javax.swing.JFileChooser;
+// TODO: PEDIR PRA QUEM FEZ CORRIGIR TUDO
+
+/*import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JFrame;
 
@@ -26,10 +28,10 @@ import unbbayes.util.NodeList;
 import javax.swing.JCheckBox;
 import java.awt.GridLayout;
 import java.awt.Dimension;
-import javax.swing.JProgressBar;
+import javax.swing.JProgressBar;*/
 
-public class janeladiscret extends JFrame {
-
+public class janeladiscret /*extends JFrame*/ {
+/*
 	private JPanel jContentPane = null;
 
 	public static final long serialVersionUID = 1;
@@ -87,20 +89,20 @@ public class janeladiscret extends JFrame {
 
 	private JLabel jLabel3 = null;
 
-	/**
+	*//**
 	 * This is the default constructor
-	 */
+	 *//*
 	public janeladiscret() {
 		super();
 		initialize();
 		fileController = FileController.getInstance();
 	}
 
-	/**
+	*//**
 	 * This method initializes this
 	 * 
 	 * @return void
-	 */
+	 *//*
 	private janeladiscret geti() {
 		return this;
 	}
@@ -112,11 +114,11 @@ public class janeladiscret extends JFrame {
 
 	}
 
-	/**
+	*//**
 	 * This method initializes jContentPane
 	 * 
 	 * @return javax.swing.JPanel
-	 */
+	 *//*
 	private JPanel getJContentPane() {
 		if (jContentPane == null) {
 			GridLayout gridLayout = new GridLayout();
@@ -141,11 +143,11 @@ public class janeladiscret extends JFrame {
 		};
 	}
 
-	/**
+	*//**
 	 * This method initializes jPanel3
 	 * 
 	 * @return javax.swing.JPanel
-	 */
+	 *//*
 	private JPanel getJPanel3() {
 		if (jPanel3 == null) {
 			jPanel3 = new JPanel();
@@ -158,11 +160,11 @@ public class janeladiscret extends JFrame {
 		return jPanel3;
 	}
 
-	/**
+	*//**
 	 * This method initializes jButton
 	 * 
 	 * @return javax.swing.JButton
-	 */
+	 *//*
 	private JButton getJButton2() {
 		if (jButton2 == null) {
 			jButton2 = new JButton();
@@ -216,11 +218,11 @@ public class janeladiscret extends JFrame {
 		return jButton2;
 	}
 
-	/**
+	*//**
 	 * This method initializes jButton1
 	 * 
 	 * @return javax.swing.JButton
-	 */
+	 *//*
 	private JButton getJButton() {
 		if (jButton == null) {
 			jButton = new JButton();
@@ -247,11 +249,11 @@ public class janeladiscret extends JFrame {
 		return jButton;
 	}
 
-	/**
+	*//**
 	 * This method initializes jButton2
 	 * 
 	 * @return javax.swing.JButton
-	 */
+	 *//*
 	private JButton getJButton5() {
 		if (jButton5 == null) {
 			jButton5 = new JButton();
@@ -322,11 +324,11 @@ public class janeladiscret extends JFrame {
 		this.jButton5.setEnabled(true);
 	}
 
-	/**
+	*//**
 	 * This method initializes jPanel
 	 * 
 	 * @return javax.swing.JPanel
-	 */
+	 *//*
 	private JPanel getJPanel() {
 		if (jPanel == null) {
 			jLabel1 = new JLabel();
@@ -345,11 +347,11 @@ public class janeladiscret extends JFrame {
 		return jPanel;
 	}
 
-	/**
+	*//**
 	 * This method initializes jComboBox
 	 * 
 	 * @return javax.swing.JComboBox
-	 */
+	 *//*
 	private JComboBox getListavar() {
 		if (listavar == null) {
 			listavar = new JComboBox();
@@ -360,11 +362,11 @@ public class janeladiscret extends JFrame {
 		return listavar;
 	}
 
-	/**
+	*//**
 	 * This method initializes jComboBox1
 	 * 
 	 * @return javax.swing.JComboBox
-	 */
+	 *//*
 	private JComboBox getDiscretlist() {
 		if (discretlist == null) {
 			discretlist = new JComboBox();
@@ -376,11 +378,11 @@ public class janeladiscret extends JFrame {
 		return discretlist;
 	}
 
-	/**
+	*//**
 	 * This method initializes jPanel1
 	 * 
 	 * @return javax.swing.JPanel
-	 */
+	 *//*
 	private JPanel getJPanel1() {
 		if (jPanel1 == null) {
 			jPanel1 = new JPanel();
@@ -390,11 +392,11 @@ public class janeladiscret extends JFrame {
 		return jPanel1;
 	}
 
-	/**
+	*//**
 	 * This method initializes jCheckBox
 	 * 
 	 * @return javax.swing.JCheckBox
-	 */
+	 *//*
 	private JCheckBox getPeso() {
 		if (peso == null) {
 			peso = new JCheckBox();
@@ -403,11 +405,11 @@ public class janeladiscret extends JFrame {
 		return peso;
 	}
 
-	/**
+	*//**
 	 * This method initializes jCheckBox1
 	 * 
 	 * @return javax.swing.JCheckBox
-	 */
+	 *//*
 	private JCheckBox getQui2() {
 		if (qui2 == null) {
 			qui2 = new JCheckBox();
@@ -416,11 +418,11 @@ public class janeladiscret extends JFrame {
 		return qui2;
 	}
 
-	/**
+	*//**
 	 * This method initializes jPanel2
 	 * 
 	 * @return javax.swing.JPanel
-	 */
+	 *//*
 	private JPanel getJPanel2() {
 		if (jPanel2 == null) {
 			jLabel2 = new JLabel();
@@ -434,11 +436,11 @@ public class janeladiscret extends JFrame {
 		return jPanel2;
 	}
 
-	/**
+	*//**
 	 * This method initializes jButton3
 	 * 
 	 * @return javax.swing.JButton
-	 */
+	 *//*
 	private JButton getJButton3() {
 		if (jButton3 == null) {
 			jButton3 = new JButton();
@@ -452,11 +454,11 @@ public class janeladiscret extends JFrame {
 		return jButton3;
 	}
 
-	/**
+	*//**
 	 * This method initializes jProgressBar
 	 * 
 	 * @return javax.swing.JProgressBar
-	 */
+	 *//*
 	private JProgressBar getJProgressBar() {
 		if (jProgressBar == null) {
 			jProgressBar = new JProgressBar();
@@ -466,11 +468,11 @@ public class janeladiscret extends JFrame {
 		return jProgressBar;
 	}
 
-	/**
+	*//**
 	 * This method initializes jButton4
 	 * 
 	 * @return javax.swing.JButton
-	 */
+	 *//*
 	public synchronized void mensagem(String msg) {
 		jLabel3.setText(msg);
 		notify();
@@ -489,11 +491,11 @@ public class janeladiscret extends JFrame {
 		return jButton4;
 	}
 
-	/**
+	*//**
 	 * This method initializes jPanel4
 	 * 
 	 * @return javax.swing.JPanel
-	 */
+	 *//*
 	private JPanel getJPanel4() {
 		if (jPanel4 == null) {
 			jLabel3 = new JLabel();
@@ -503,5 +505,5 @@ public class janeladiscret extends JFrame {
 		}
 		return jPanel4;
 	}
-
+*/
 } // @jve:decl-index=0:visual-constraint="24,0"

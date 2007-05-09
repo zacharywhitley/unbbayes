@@ -1,4 +1,4 @@
-package unbbayes.gui.draw;
+package unbbayes.draw;
 
 import java.awt.Color;
 import java.awt.Font;

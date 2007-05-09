@@ -29,9 +29,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.gui.draw.DrawElement;
-import unbbayes.gui.draw.DrawText;
-import unbbayes.gui.draw.IOnePositionDrawable;
+import unbbayes.draw.DrawElement;
+import unbbayes.draw.DrawText;
+import unbbayes.draw.IOnePositionDrawable;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.util.ArrayMap;

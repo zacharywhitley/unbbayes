@@ -25,9 +25,9 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 
-import unbbayes.gui.draw.DrawArrow;
-import unbbayes.gui.draw.DrawLine;
-import unbbayes.gui.draw.ITwoPositionDrawable;
+import unbbayes.draw.DrawArrow;
+import unbbayes.draw.DrawLine;
+import unbbayes.draw.ITwoPositionDrawable;
 import unbbayes.util.GeometricUtil;
 
 

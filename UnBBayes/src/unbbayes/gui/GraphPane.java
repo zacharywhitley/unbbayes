@@ -46,9 +46,9 @@ import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
 
 import unbbayes.controller.NetworkController;
-import unbbayes.gui.draw.DrawDashRectangle;
-import unbbayes.gui.draw.DrawElement;
-import unbbayes.gui.draw.IDrawable;
+import unbbayes.draw.DrawDashRectangle;
+import unbbayes.draw.DrawElement;
+import unbbayes.draw.IDrawable;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
