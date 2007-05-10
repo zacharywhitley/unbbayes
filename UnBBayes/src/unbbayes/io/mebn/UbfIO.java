@@ -199,11 +199,11 @@ public class UbfIO implements MebnIO {
 			}
 			if ( this.getToken("MTheoryDeclarator").compareTo(st.sval) == 0 )  {
 				while (st.nextToken() != st.TT_EOL) {
-					if (st.ttype == st.TT_WORD) {
+					/*if (st.ttype == st.TT_WORD) {
 						mebn.setName(st.sval);
 						//System.out.println("Setting mtheory name to " + st.sval);
 						break;
-					}
+					}*/
 				}
 			}
 			
