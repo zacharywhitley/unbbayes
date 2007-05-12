@@ -1,25 +1,19 @@
 package unbbayes.datamining.gui.preprocessor;
 
-// TODO: PEDIR PARA QUEM FEZ CORRIGIR TUDO
-
-/** Thread para discretização múltipla
- * @author gabriel guimaraes - Aluno de IC 2005-2006
- * @Orientador Marcelo Ladeira
- */
-/*
 import unbbayes.util.NodeList;
 import unbbayes.util.SwingWorker;
 import unbbayes.aprendizagem.TVariavel;
 import unbbayes.gui.janeladiscret;
-*/
+
 /**
  * Algoritimo para discretização múltipla
  * 
  * @author gabriel guimaraes - Aluno de IC 2005/2006
  * @orientador Marcelo Ladeira
  */
-public class dalgo2 /*extends Thread */{
-/*	public NodeList variables;
+public class dalgo2 extends Thread {
+
+	public NodeList variables;
 
 	public int[][] originalmatrix;
 
@@ -62,7 +56,7 @@ public class dalgo2 /*extends Thread */{
 		mlines = lines(tempmatrix);
 		mcolumns = columns(tempmatrix);
 
-		originalmatrix = new int[mlines][mcolumns];
+		//originalmatrix = new int[mlines][mcolumns]; // nao precisa instanciar, já que não está criando uma cópia abaixo
 		originalmatrix = tempmatrix;
 	}
 
@@ -123,7 +117,7 @@ public class dalgo2 /*extends Thread */{
 		return i;
 	}
 
-	*//**
+	/**
 	 * Contagem condicional: se uma linha tem o estado e1 ou e2 de var 1 e evar2
 	 * de var2 então uma unidade é acrescida ao somatório.
 	 * 
@@ -133,7 +127,7 @@ public class dalgo2 /*extends Thread */{
 	 * @param var2
 	 * @param evar2
 	 * @return
-	 *//*
+	 */
 	public int countc(int lvar1, int le1, int le2, int lvar2, int levar2) {
 		int i, counter;
 		counter = 0;
@@ -155,11 +149,11 @@ public class dalgo2 /*extends Thread */{
 		this.limiteperda = lim;
 	}
 
-	*//**
+	/**
 	 * 
 	 * @param number
 	 * @return zero se o numero nao é impar, 1 se for.
-	 *//*
+	 */
 	public int odd(int number) {
 		int isodd = 0;
 		if (Math.round(number / 2 + 0.00001) == number / 2)
@@ -167,7 +161,7 @@ public class dalgo2 /*extends Thread */{
 		return isodd;
 	}
 
-	*//**
+	/**
 	 * Transforma o valor do qui-quadrado em probabilidade de rejeição de H0
 	 * 
 	 * @param chi2
@@ -175,7 +169,7 @@ public class dalgo2 /*extends Thread */{
 	 * @param df -
 	 *            graus de liberdade
 	 * @return valor do p
-	 *//*
+	 */
 	public double c2prob(double chi2, int df) {
 		double pval = 0;
 
@@ -204,7 +198,7 @@ public class dalgo2 /*extends Thread */{
 		return pval;
 	}
 
-	*//**
+	/**
 	 * Calcula o escore da variavel var1 se concatenada entre e1 e e2. Para o
 	 * calculo do escore de e1 apenas basta usar o mesmo e1 para e2.
 	 * 
@@ -219,7 +213,7 @@ public class dalgo2 /*extends Thread */{
 	 * @param estadosv2
 	 *            número de estados de var2
 	 * @return Escore (nao normalizado)
-	 *//*
+	 */
 	public float score(int var1, int e1, int e2, int var2, int estadosv2) {
 		int i, j;
 		float score = 0;
@@ -280,7 +274,7 @@ public class dalgo2 /*extends Thread */{
 			//variables.get(i).atualizatamanhoinfoestados();
 			k = variables.get(i).getStatesSize();
 			for (int j = 0; j < k; j++) {
-				k = k + 0;
+				// k = k + 0; // o que é isso? 
 				// TODO DESCOMENTAR E CORRIGIR ERRO
 				//variables.get(i).infoestados[j] = 0;
 			}
@@ -315,22 +309,24 @@ public class dalgo2 /*extends Thread */{
 						if (dowh) {
 							if (!pesogeral) {
 								perda = (score1 + score2 - score12)
-										/ new Float(total);
+										/ (float)total;
 
 							} else {
 								perda = (score1 + score2 - score12)
-										/ new Float(total);
+										/ (float)total;
 
 							}
 						} else
-							perda = score1 / (new Float(total)) + score2
-									/ (new Float(total)) - score12
-									/ (new Float(total));
+							perda = score1 / ((float)total) + score2
+									/ ((float)total) - score12
+									/ ((float)total);
 						if (perda > limiteperda) {
 							continua = false;
+							
+							
 							// TODO DESCOMENTAR E CORRIGIR ERRO
-							//if (variables.get(var1).infoestados[e1] == 0)
-								//variables.get(var1).infoestados[e1] = 1;
+							// if (variables.get(var1).infoestados[e1] == 0)
+							// variables.get(var1).infoestados[e1] = 1;
 						} else {
 
 						}// else perda
@@ -344,7 +340,7 @@ public class dalgo2 /*extends Thread */{
 
 				}
 			}// todos os estados de var1 já foram aglomerados, quando
-				// possivel
+			// possivel
 		}// for var1
 		concatena2();
 		System.out.println("Limite de perda = " + limiteperda);
@@ -377,10 +373,10 @@ public class dalgo2 /*extends Thread */{
 			nest = variables.get(i).getStatesSize() - 1;
 			while (j < nest) {
 				// TODO DESCOMENTAR E CORRIGIR ERRO
-				//if (variables.get(i).infoestados[j] == 0) {
-					//concatena(i, (byte) j);
-					//nest--;
-				//}
+				// if (variables.get(i).infoestados[j] == 0) {
+				// concatena(i, (byte) j);
+				// nest--;
+				// }
 				j++;
 			}
 
@@ -394,16 +390,19 @@ public class dalgo2 /*extends Thread */{
 		if (estado < variables.get(var).getStatesSize() - 1) {
 			novonome = parte(variables.get(var).getStateAt(estado), 0) + "_"
 					+ parte(variables.get(var).getStateAt(estado + 1), 1);
-			// TODO DESCOMENTAR E CORRIGIR ERRO
-			//variables.setnodestateat(var, novonome, estado);
+
+			// variables.setnodestateat(var, novonome, estado);
+			variables.get(var).setStateAt(novonome, estado);
+
 			System.out.println(variables.get(var).getName() + ": " + novonome);
 
 			for (i = 0; i < mlines; i++) {
 				if (originalmatrix[i][var] > (estado))
 					originalmatrix[i][var]--;
 			}
+			
 			// TODO DESCOMENTAR E CORRIGIR ERRO
-			//variables.removestateat(var, estado + 1);
+			// variables.removestateat(var, estado + 1);
 		}
 
 	}
@@ -469,5 +468,4 @@ public class dalgo2 /*extends Thread */{
 	}
 
 	// public void finished
-*/
 }// obj
