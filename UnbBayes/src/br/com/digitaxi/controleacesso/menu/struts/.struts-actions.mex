@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlowViewLayout Version="1.2">
+  <StrutsActivity path="/Menu/PrepareSelecionarMenu.do" location="50,50" dimension="347,88" />
+  <StrutsActivity path="/Menu/ExcluirMenu.do" location="650,50" dimension="345,88" />
+  <StrutsActivity path="/Menu/PrepareCreateMenu.do" location="650,250" dimension="385,88" />
+  <StrutsActivity path="/Menu/CreateMenu.do" location="650,450" dimension="347,88" />
+  <StrutsActivity path="/Menu/PrepareUpdateMenu.do" location="650,650" dimension="387,88" />
+  <StrutsActivity path="/Menu/UpdateMenu.do" location="350,850" dimension="349,88" />
+  <StrutsActivity path="/Menu/ExecuteMenu.do" location="350,1050" dimension="353,88" />
+  <StrutsActivity path="/controleacesso/menu/BuscaMenu.jsp" location="950,850" dimension="211,49" />
+  <StrutsActivity path="/controleacesso/menu/CadastraMenu.jsp" location="950,950" dimension="227,49" />
+  <StrutsActivity path="/controleacesso/menu/EditaMenu.jsp" location="50,1050" dimension="207,49" />
+  <StrutsActivity path="/controleacesso/menu/PainelMenu.jsp" location="950,1150" dimension="211,49" />
+  <StrutsActivity path="/controleacesso/perfil/BuscaPerfil.jsp" location="288,376" dimension="207,49" />
+  <StrutsActivity path="/controleacesso/perfil/CadastraPerfil.jsp" location="310,658" dimension="223,49" />
+  <StrutsActivity path="/controleacesso/perfil/EditaPerfil.jsp" location="90,940" dimension="203,49" />
+  <StrutsTransition id="/Menu/CreateMenu.do,success,/Menu/PrepareCreateMenu.do,1" routingType="0">
+    <AutomaticBendpoints>
+      <AbsolutePoint location="823,450" />
+      <AbsolutePoint location="823,338" />
+    </AutomaticBendpoints>
+  </StrutsTransition>
+  <StrutsTransition id="/Menu/ExcluirMenu.do,success,/Menu/PrepareSelecionarMenu.do,1" routingType="0">
+    <AutomaticBendpoints>
+      <AbsolutePoint location="650,94" />
+      <AbsolutePoint location="397,94" />
+    </AutomaticBendpoints>
+  </StrutsTransition>
+  <StrutsTransition id="/Menu/PrepareSelecionarMenu.do,success,/controleacesso/menu/BuscaMenu.jsp,1" routingType="0">
+    <AutomaticBendpoints>
+      <AbsolutePoint location="253,138" />
+      <AbsolutePoint location="253,583" />
+      <AbsolutePoint location="1055,583" />
+      <AbsolutePoint location="1055,850" />
+    </AutomaticBendpoints>
+  </StrutsTransition>
+  <StrutsTransition id="/Menu/PrepareUpdateMenu.do,success,/controleacesso/menu/EditaMenu.jsp,1" routingType="0">
+    <AutomaticBendpoints>
+      <AbsolutePoint location="843,738" />
+      <AbsolutePoint location="843,1274" />
+      <AbsolutePoint location="153,1274" />
+      <AbsolutePoint location="153,1099" />
+    </AutomaticBendpoints>
+  </StrutsTransition>
+  <StrutsTransition id="/Menu/PrepareCreateMenu.do,success,/controleacesso/menu/CadastraMenu.jsp,1" routingType="0">
+    <AutomaticBendpoints>
+      <AbsolutePoint location="1035,294" />
+      <AbsolutePoint location="1176,294" />
+      <AbsolutePoint location="1176,950" />
+    </AutomaticBendpoints>
+  </StrutsTransition>
+  <StrutsTransition id="/Menu/ExecuteMenu.do,painelmenu,/controleacesso/menu/PainelMenu.jsp,1" routingType="0">
+    <AutomaticBendpoints>
+      <AbsolutePoint location="703,1094" />
+      <AbsolutePoint location="1055,1094" />
+      <AbsolutePoint location="1055,1150" />
+    </AutomaticBendpoints>
+  </StrutsTransition>
+  <StrutsTransition id="/Menu/UpdateMenu.do,success,/Menu/PrepareSelecionarMenu.do,1" routingType="0">
+    <AutomaticBendpoints>
+      <AbsolutePoint location="350,894" />
+      <AbsolutePoint location="223,894" />
+      <AbsolutePoint location="223,138" />
+    </AutomaticBendpoints>
+  </StrutsTransition>
+</FlowViewLayout>
+

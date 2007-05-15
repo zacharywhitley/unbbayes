@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 23/03/2007 15:18:08 by Hibernate Tools 3.2.0.beta8 -->
+<hibernate-mapping>
+    <class name="br.com.digitaxi.empresa.empresataxi.EmpresaTaxi" table="empresa_taxi">
+        <id name="idEmpresaTaxi" type="int">
+            <column name="id_empresa_taxi" />
+            <generator class="sequence">
+                <param name="sequence">seq_empresa_taxi</param>
+            </generator>
+        </id>
+        <many-to-one name="empresa" class="br.com.digitaxi.empresa.empresa.Empresa" fetch="select">
+            <column name="id_empresa" not-null="true" />
+        </many-to-one>
+        <set name="interfaceSmses" inverse="true">
+            <key>
+                <column name="id_empresa_taxi" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.empresa.interfacesms.InterfaceSms" />
+        </set>
+        <set name="convenios" inverse="true">
+            <key>
+                <column name="id_empresa_taxi" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.empresa.convenio.Convenio" />
+        </set>
+        <set name="operadors" inverse="true">
+            <key>
+                <column name="id_empresa_taxi" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.pessoa.operador.Operador" />
+        </set>
+        <set name="operadors_1" inverse="true">
+            <key>
+                <column name="id_empresa_taxi" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.pessoa.operador.Operador" />
+        </set>
+        <set name="interfaceSmses_1" inverse="true">
+            <key>
+                <column name="id_empresa_taxi" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.empresa.interfacesms.InterfaceSms" />
+        </set>
+        <set name="convenios_1" inverse="true">
+            <key>
+                <column name="id_empresa_taxi" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.empresa.convenio.Convenio" />
+        </set>
+        <set name="taxis" inverse="true">
+            <key>
+                <column name="id_empresa_taxi" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.ativo.taxi.Taxi" />
+        </set>
+        <set name="taxis_1" inverse="true">
+            <key>
+                <column name="id_empresa_taxi" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.ativo.taxi.Taxi" />
+        </set>
+    </class>
+</hibernate-mapping>

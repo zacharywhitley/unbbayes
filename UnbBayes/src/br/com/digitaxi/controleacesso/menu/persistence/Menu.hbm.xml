@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 23/03/2007 15:18:08 by Hibernate Tools 3.2.0.beta8 -->
+<hibernate-mapping>
+    <class name="br.com.digitaxi.controleacesso.menu.Menu" table="menu">
+        <id name="idMenu" type="short">
+            <column name="id_menu" />
+            <generator class="sequence">
+                <param name="sequence">seq_menu</param>
+            </generator>
+        </id>
+        <many-to-one name="menuPai" class="br.com.digitaxi.controleacesso.menu.Menu" fetch="select" >
+            <column name="id_menu_pai" not-null="false" />
+        </many-to-one>
+        <many-to-one name="perfil" class="br.com.digitaxi.controleacesso.perfil.Perfil" fetch="select">
+            <column name="id_perfil" not-null="true" />
+        </many-to-one>
+        <property name="nome" type="string">
+            <column name="nome" length="20" not-null="true" />
+        </property>
+        <property name="descricao" type="string">
+            <column name="descricao" />
+        </property>
+        <property name="url" type="string">
+            <column name="url" />
+        </property>
+        <property name="icon" type="string">
+            <column name="icon" />
+        </property>
+        <property name="prioridade" type="integer">
+            <column name="prioridade" />
+        </property>
+        <set name="menus" inverse="true" order-by="prioridade,nome">
+            <key>
+                <column name="id_menu_pai" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.controleacesso.menu.Menu" />
+        </set>
+    </class>
+</hibernate-mapping>

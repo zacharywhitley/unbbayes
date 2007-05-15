@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<!DOCTYPE struts-config PUBLIC
+	"-//Apache Software Foundation//DTD Struts Configuration 1.1//EN"
+	"http://jakarta.apache.org/struts/dtds/struts-config_1_1.dtd">
+
+<struts-config>
+
+	<action-mappings>
+
+		<action path="/Autenticacao/PrepareExecuteAutenticacao"
+			name="autenticacaoForm"
+			type="br.com.digitaxi.controleacesso.autenticacao.actions.PrepareExecuteAutenticacaoAction"
+			scope="request">
+			<forward name="formulario"
+				path="/controleacesso/autenticacao/FormularioAutenticacao.jsp" redirect="false" />
+		</action>
+
+		<action path="/Autenticacao/ExecuteAutenticacao"
+			name="autenticacaoForm"
+			type="br.com.digitaxi.controleacesso.autenticacao.actions.ExecuteAutenticacaoAction"
+			scope="request">
+			<forward name="formulario"
+				path="/controleacesso/autenticacao/FormularioAutenticacao.jsp" redirect="false" />
+			<forward name="principal"
+				path="/Geral/Principal.do" redirect="true" />
+		</action>
+
+		<action path="/Autenticacao/Logout"
+			name="autenticacaoForm"
+			type="br.com.digitaxi.controleacesso.autenticacao.actions.LogoutAction"
+			scope="request">
+			<forward name="index"
+				path="/index.jsp" redirect="false" />
+		</action>
+
+	</action-mappings>
+
+	<message-resources key="Autenticacao"
+		parameter="br.com.digitaxi.controleacesso.autenticacao.resource.AutenticacaoResources" />
+
+</struts-config>

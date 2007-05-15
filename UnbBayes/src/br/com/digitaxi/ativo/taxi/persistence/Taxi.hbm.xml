@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 23/03/2007 15:18:08 by Hibernate Tools 3.2.0.beta8 -->
+<hibernate-mapping>
+    <class name="br.com.digitaxi.ativo.taxi.Taxi" table="taxi">
+        <id name="idTaxi" type="int">
+            <column name="id_taxi" />
+            <generator class="sequence">
+                <param name="sequence">seq_taxi</param>
+            </generator>
+        </id>
+        <many-to-one name="modelo" class="br.com.digitaxi.ativo.modelo.Modelo" fetch="select">
+            <column name="id_modelo" not-null="true" />
+        </many-to-one>
+        <many-to-one name="empresaTaxi" class="br.com.digitaxi.empresa.empresataxi.EmpresaTaxi" fetch="select">
+            <column name="id_empresa_taxi" not-null="true" />
+        </many-to-one>
+        <many-to-one name="proprietario" class="br.com.digitaxi.pessoa.proprietario.Proprietario" fetch="select">
+            <column name="id_proprietario" not-null="true" />
+        </many-to-one>
+        <property name="ano" type="java.lang.Integer">
+            <column name="ano" />
+        </property>
+        <property name="cor" type="string">
+            <column name="cor" length="0" />
+        </property>
+        <property name="placa" type="string">
+            <column name="placa" length="0" />
+        </property>
+        <set name="interfaceAvls" inverse="true">
+            <key>
+                <column name="id_taxi" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.ativo.interfaceavl.InterfaceAvl" />
+        </set>
+        <set name="motoristas" inverse="true">
+            <key>
+                <column name="id_taxi" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.pessoa.motorista.Motorista" />
+        </set>
+        <set name="interfaceAvls_1" inverse="true">
+            <key>
+                <column name="id_taxi" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.ativo.interfaceavl.InterfaceAvl" />
+        </set>
+        <set name="motoristas_1" inverse="true">
+            <key>
+                <column name="id_taxi" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.pessoa.motorista.Motorista" />
+        </set>
+    </class>
+</hibernate-mapping>

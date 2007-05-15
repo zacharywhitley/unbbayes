@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.4" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee   http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+
+	<description>DigiTaxi</description>
+	<session-config>
+		<session-timeout>30</session-timeout>
+	</session-config>
+
+	<mime-mapping>
+		<extension>html</extension>
+		<mime-type>text/html</mime-type>
+	</mime-mapping>
+	<mime-mapping>
+		<extension>txt</extension>
+		<mime-type>text/plain</mime-type>
+	</mime-mapping>
+
+	<welcome-file-list>
+		<welcome-file>index.jsp</welcome-file>
+	</welcome-file-list>
+
+  <servlet>
+    <servlet-name>action</servlet-name>
+    <servlet-class>org.apache.struts.action.ActionServlet</servlet-class>
+    <init-param>
+      <param-name>config</param-name>
+      <param-value>/WEB-INF/struts-config.xml
+		 ,/WEB-INF/classes/br/com/digitaxi/controleacesso/autenticacao/struts/struts-actions.xml 
+		 ,/WEB-INF/classes/br/com/digitaxi/controleacesso/autenticacao/struts/struts-forms.xml 
+		 ,/WEB-INF/classes/br/com/digitaxi/controleacesso/menu/struts/struts-actions.xml 
+		 ,/WEB-INF/classes/br/com/digitaxi/controleacesso/menu/struts/struts-forms.xml
+		 ,/WEB-INF/classes/br/com/digitaxi/controleacesso/perfil/struts/struts-actions.xml 
+		 ,/WEB-INF/classes/br/com/digitaxi/controleacesso/perfil/struts/struts-forms.xml
+		 ,/WEB-INF/classes/br/com/digitaxi/controleacesso/usuario/struts/struts-actions.xml 
+		 ,/WEB-INF/classes/br/com/digitaxi/controleacesso/usuario/struts/struts-forms.xml
+		 ,/WEB-INF/classes/br/com/digitaxi/pessoa/pessoa/struts/struts-actions.xml 
+		 ,/WEB-INF/classes/br/com/digitaxi/pessoa/pessoa/struts/struts-forms.xml
+      </param-value>
+    </init-param>
+    <init-param>
+      <param-name>debug</param-name>
+      <param-value>3</param-value>
+    </init-param>
+    <init-param>
+      <param-name>detail</param-name>
+      <param-value>3</param-value>
+    </init-param>
+    <load-on-startup>0</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>action</servlet-name>
+    <url-pattern>*.do</url-pattern>
+  </servlet-mapping>
+    <taglib>
+        <taglib-uri>struts-bean</taglib-uri>
+        <taglib-location>/WEB-INF/struts-bean.tld</taglib-location>
+    </taglib>
+    <taglib>
+        <taglib-uri>struts-html</taglib-uri>
+        <taglib-location>/WEB-INF/struts-html.tld</taglib-location>
+    </taglib>
+    <taglib>
+        <taglib-uri>struts-logic</taglib-uri>
+        <taglib-location>/WEB-INF/struts-logic.tld</taglib-location>
+    </taglib>
+	<!-- filter>
+		<filter-name>HibernateFilter</filter-name>
+		<filter-class>
+			br.com.digitaxi.util.filter.HibernateFilter
+		</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>HibernateFilter</filter-name>
+		<url-pattern>*.do</url-pattern>
+	</filter-mapping-->
+</web-app>

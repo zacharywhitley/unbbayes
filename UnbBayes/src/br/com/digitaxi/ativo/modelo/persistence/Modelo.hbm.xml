@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 23/03/2007 15:18:08 by Hibernate Tools 3.2.0.beta8 -->
+<hibernate-mapping>
+    <class name="br.com.digitaxi.ativo.modelo.Modelo" table="modelo">
+        <id name="idModelo" type="short">
+            <column name="id_modelo" />
+            <generator class="sequence">
+                <param name="sequence">seq_modelo</param>
+            </generator>
+        </id>
+        <many-to-one name="marca" class="br.com.digitaxi.ativo.marca.Marca" fetch="select">
+            <column name="id_marca" not-null="true" />
+        </many-to-one>
+        <property name="nome" type="string">
+            <column name="nome" length="0" />
+        </property>
+        <set name="taxis" inverse="true">
+            <key>
+                <column name="id_modelo" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.ativo.taxi.Taxi" />
+        </set>
+        <set name="taxis_1" inverse="true">
+            <key>
+                <column name="id_modelo" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.ativo.taxi.Taxi" />
+        </set>
+    </class>
+</hibernate-mapping>

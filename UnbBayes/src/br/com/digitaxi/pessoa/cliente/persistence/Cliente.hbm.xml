@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 23/03/2007 15:18:08 by Hibernate Tools 3.2.0.beta8 -->
+<hibernate-mapping>
+    <class name="br.com.digitaxi.pessoa.cliente.Cliente" table="cliente">
+        <id name="idCliente" type="int">
+            <column name="id_cliente" />
+            <generator class="sequence">
+                <param name="sequence">seq_cliente</param>
+            </generator>
+        </id>
+        <many-to-one name="pessoa" class="br.com.digitaxi.pessoa.pessoa.Pessoa" fetch="select">
+            <column name="id_pessoa" not-null="true" />
+        </many-to-one>
+        <property name="staEventual" type="string">
+            <column name="sta_eventual" length="1" not-null="true" />
+        </property>
+        <set name="clienteConvenios" inverse="true">
+            <key>
+                <column name="id_cliente" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.pessoa.clienteconvenio.ClienteConvenio" />
+        </set>
+        <set name="clienteConvenios_1" inverse="true">
+            <key>
+                <column name="id_cliente" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.pessoa.clienteconvenio.ClienteConvenio" />
+        </set>
+        <set name="celulars" inverse="true">
+            <key>
+                <column name="id_cliente" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.pessoa.celular.Celular" />
+        </set>
+        <set name="celulars_1" inverse="true">
+            <key>
+                <column name="id_cliente" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.pessoa.celular.Celular" />
+        </set>
+    </class>
+</hibernate-mapping>

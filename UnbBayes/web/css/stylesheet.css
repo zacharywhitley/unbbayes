@@ -1,0 +1,32 @@
+	.btn1{
+		font-weight: bold;
+		font-size: 11px;
+		border: 2px outset #ffcc00;
+		cursor: hand;
+	}
+
+	.h1{
+		font-size: 13px;
+		font-family: fraklin gothic medium;
+		font-weight: bold;
+		color: black;
+	}
+
+	.required{
+		font-size: 13px;
+		font-family: fraklin gothic medium;
+		font-weight: bold;
+		color: red;
+	}
+	.textbox{
+		border:2px inset white;
+		background-color: #ffffff;
+	}
+	.btns{
+		border:1px outset yellow;
+		}
+	.requiredfield { font-family: fraklin gothic medium;
+                font-size: 9pt;
+                font-weight: bold;
+                color: RED;
+	}

@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 23/03/2007 15:18:08 by Hibernate Tools 3.2.0.beta8 -->
+<hibernate-mapping>
+    <class name="br.com.digitaxi.pessoa.uf.Uf" table="uf">
+        <id name="idUf" type="short">
+            <column name="id_uf" />
+            <generator class="sequence">
+                <param name="sequence">seq_uf</param>
+            </generator>
+        </id>
+        <property name="nome" type="string">
+            <column name="nome" length="0" not-null="true" />
+        </property>
+        <set name="cidades" inverse="true">
+            <key>
+                <column name="id_uf" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.pessoa.cidade.Cidade" />
+        </set>
+        <set name="cidades_1" inverse="true">
+            <key>
+                <column name="id_uf" not-null="true" />
+            </key>
+            <one-to-many class="br.com.digitaxi.pessoa.cidade.Cidade" />
+        </set>
+    </class>
+</hibernate-mapping>

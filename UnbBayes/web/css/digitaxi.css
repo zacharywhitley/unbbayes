@@ -1,0 +1,73 @@
+.taxi {
+	background-image: url(../images/car_1.jpg);
+	background-repeat: no-repeat;
+}
+
+.taxi_2 {
+	background-image: url(../images/car_2.jpg);
+	background-repeat: no-repeat;
+}
+
+.logo {
+	background-image: url(../images/logo_DIGI.jpg);
+	background-repeat: no-repeat;
+}
+
+.reserva {
+	background-image: url(../images/reservar_E.jpg);
+	background-repeat: no-repeat;
+}
+
+.conveniado {
+	background-image: url(../images/conveniado_C.jpg);
+	background-repeat: no-repeat;
+}
+
+.cliente {
+	background-image: url(../images/cliente_D.jpg);
+	background-repeat: no-repeat;
+}
+
+.restrito {
+	background-image: url(../images/ac_restrito.jpg);
+	background-repeat: no-repeat;
+}
+
+.recomende {
+	background-image: url(../images/recomende.jpg);
+	background-repeat: no-repeat;
+}
+
+.bullet_empresa {
+	background-image: url(../images/bullet_empresa.jpg);	
+}
+
+.bullet_tecnologia {
+	background-image: url(../images/bullet_tecnologia.jpg);	
+}
+
+.bullet_parceiros {
+	background-image: url(../images/bullet_parceiros.jpg);	
+}
+
+.bullet_estatisticas {
+	background-image: url(../images/bullet_estatisticas.jpg);	
+}
+
+.bullet_pontos {
+	background-image: url(../images/bullet_pontos.jpg);	
+}
+
+.bullet_faq {
+	background-image: url(../images/bullet_faq.jpg);	
+}
+
+.bullet_contato {
+	background-image: url(../images/bullet_contato.jpg);	
+}
+
+.baseline {
+	background-image: url(../images/baseline.jpg);
+	background-repeat: no-repeat;
+}
+

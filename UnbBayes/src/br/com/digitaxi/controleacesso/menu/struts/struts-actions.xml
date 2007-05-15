@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.1//EN" "http://jakarta.apache.org/struts/dtds/struts-config_1_1.dtd">
+
+<struts-config>
+
+<action-mappings>
+
+<action 
+    path="/Menu/PrepareSelecionarMenu" 
+    name="menuForm"   
+    type="br.com.digitaxi.controleacesso.menu.actions.PrepareSearchMenuAction"
+    scope="request">
+    <forward name="success" path="/controleacesso/menu/BuscaMenu.jsp" redirect="false"/>    
+</action>
+
+<action 
+    path="/Menu/SelecionarMenu" 
+    name="menuForm"   
+    type="br.com.digitaxi.controleacesso.menu.actions.SearchMenuAction"
+    scope="request">
+    <forward name="success" path="/controleacesso/menu/ListaMenu.jsp" redirect="false"/>    
+</action>
+
+<action 
+    path="/Menu/ExcluirMenu" 
+    name="menuForm"   
+    type="br.com.digitaxi.controleacesso.menu.actions.DeleteMenuAction"
+    scope="request">
+    <forward name="success" path="/Menu/SelecionarMenu.do" redirect="false"/>    
+</action>
+
+<action 
+    path="/Menu/PrepareCreateMenu" 
+    name="menuForm"   
+    type="br.com.digitaxi.controleacesso.menu.actions.PrepareCreateMenuAction"
+    scope="request">
+    <forward name="success" path="/controleacesso/menu/CadastraMenu.jsp" redirect="false"/>    
+</action>
+
+<action 
+    path="/Menu/CreateMenu" 
+    name="menuForm"   
+    type="br.com.digitaxi.controleacesso.menu.actions.CreateMenuAction"
+    scope="request">
+    <forward name="success" path="/Menu/SelecionarMenu.do" redirect="false"/>    
+</action>
+
+<action 
+    path="/Menu/PrepareUpdateMenu" 
+    name="menuForm"   
+    type="br.com.digitaxi.controleacesso.menu.actions.PrepareUpdateMenuAction"
+    scope="request">
+    <forward name="success" path="/controleacesso/menu/EditaMenu.jsp" redirect="false"/>    
+</action>
+
+<action 
+    path="/Menu/UpdateMenu" 
+    name="menuForm"   
+    type="br.com.digitaxi.controleacesso.menu.actions.UpdateMenuAction"
+    scope="request">
+    <forward name="success" path="/Menu/SelecionarMenu.do" redirect="false"/>    
+</action>
+
+<action path="/Menu/ExecuteMenu"
+	name="menuForm"
+	type="br.com.digitaxi.controleacesso.menu.actions.ExecuteMenuAction"
+	scope="request">
+	<forward name="painelmenu" path="/controleacesso/menu/PainelMenu.jsp" redirect="false" />
+</action>
+
+</action-mappings>
+
+	<message-resources key="Menu" parameter="br.com.digitaxi.controleacesso.menu.resource.MenuResources" />
+
+</struts-config>
