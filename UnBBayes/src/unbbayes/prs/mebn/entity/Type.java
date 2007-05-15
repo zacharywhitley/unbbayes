@@ -14,6 +14,8 @@ import unbbayes.prs.mebn.entity.exception.TypeDoesNotExistException;
  */
 public class Type {
 
+	private static String labelSuffix = "_Label";
+	
 	private static Set<String> listOfTypes = new TreeSet<String>();
 	
 	// Below we have the default types allowed by the MEBN logic and
@@ -72,6 +74,20 @@ public class Type {
 	
 	public static Set<String> getListOfTypes(){
 		return listOfTypes; 
+	}
+
+	/**
+	 * @return Returns the labelSuffix.
+	 */
+	public static String getLabelSuffix() {
+		return labelSuffix;
+	}
+
+	/**
+	 * @param labelSuffix The labelSuffix to set.
+	 */
+	public static void setLabelSuffix(String labelSuffix) {
+		Type.labelSuffix = labelSuffix;
 	}
 
 }

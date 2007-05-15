@@ -95,7 +95,7 @@ public class MEBNController {
 	/*---------------------------- Edge ---------------------------*/
 	
     /**
-     *  Faz a ligac„o do arco desejado entre pai e filho.
+     *  Faz a ligac√£o do arco desejado entre pai e filho.
      *
      * @param  edge  um <code>TArco</code> que representa o arco a ser ligado
      * @since
@@ -602,14 +602,14 @@ public class MEBNController {
 	/**
 	 * Adiciona uma nova entidade com o nome passado como parametro
 	 * pelo usuario. O tipo da entidade sera um nome gerado automaticamente, a 
-	 * partir do passado pelo usu·rio. 
+	 * partir do passado pelo usu√°rio. 
 	 */
 	public ObjectEntity addObjectEntity() throws TypeException{
 
 		
 		String name = resource.getString("entityName") + ObjectEntity.getEntityNum();
 
-		String nameType = name + "_Label" ; 
+		String nameType = name + Type.getLabelSuffix() ; 
 		
 		Type.addType(nameType);
 		
@@ -621,7 +621,7 @@ public class MEBNController {
 	
 	public void renameObjectEntity(ObjectEntity entity, String name) throws TypeException{
 		
-		String nameType = name + "_Label"; 
+		String nameType = name + Type.getLabelSuffix(); 
 		
 		Type.addType(nameType);
 		

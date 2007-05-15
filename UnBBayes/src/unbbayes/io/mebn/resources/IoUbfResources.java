@@ -50,6 +50,6 @@ public class IoUbfResources extends ListResourceBundle {
 		{"MTheoryConfigError", "Some MTheory data where not loaded - using default"},
 		{"MFragConfigError", "Some MFrag/Node data where not loaded - using default"},
 		{"MFragTypeException", "System has tried to store a unexpected MFrag type"},
-		
+		{"UnknownPrOWLError", "Error manipulating pr-owl file (.owl)"}
 	};
 }

@@ -167,11 +167,19 @@ public class SaverPrOwlIO {
 		OWLNamedClass metaEntityClass = owlModel.getOWLNamedClass("MetaEntity"); 
 		Collection instances = metaEntityClass.getInstances(false); 
 		
+		OWLIndividual rootLabel = null;	// stores "TypeLabel" individual, which is root
+		
 		for(Object instance: instances){
 			
 			OWLIndividual metaEntityInstance = (OWLIndividual) instance;  
 			mapMetaEntity.put(metaEntityInstance.getBrowserText(), metaEntityInstance); 
-			metaEntitiesDefault.add(metaEntityInstance.getBrowserText()); 
+			metaEntitiesDefault.add(metaEntityInstance.getBrowserText());
+			
+			// Extract the extreme super-type label (the root type label)
+			if (metaEntityInstance.getName().compareTo("TypeLabel") == 0) {
+				rootLabel = metaEntityInstance;
+			}
+			
 		}
 		
 		/* segundo passo: lista de meta entidades criadas pelo usuario */
@@ -192,6 +200,14 @@ public class SaverPrOwlIO {
 			
 			if(present == false){
 			   OWLIndividual stateIndividual = metaEntityClass.createOWLIndividual(state); 
+			   
+			   // Set user-defined meta-entity's superclass to TypeLabel
+			   if (rootLabel != null) {
+				   stateIndividual.addPropertyValue(owlModel.getOWLObjectProperty("hasType"),rootLabel);
+			   }
+			   // TODO Treat user-defined super-types when necessary
+			   // Since isTypeOf is inverse of hasType, it is set automatically
+			   
 			   mapMetaEntity.put(state, stateIndividual); 					
 			}
 		}	
@@ -257,12 +273,37 @@ public class SaverPrOwlIO {
 	 */
 	private void loadObjectEntitiesClasses(){
 		
+		String labelSuffix = "_Label";
+		
 		OWLNamedClass entityClass = owlModel.getOWLNamedClass("ObjectEntity"); 
 		List<ObjectEntity> listEntities = ObjectEntity.getListEntity(); 
+		
+		// Prepare to Get the correspondent meta entity and assign proper hasType property
+		OWLNamedClass metaEntity = owlModel.getOWLNamedClass("MetaEntity");
+		OWLObjectProperty hasType = owlModel.getOWLObjectProperty("hasType");
 		
 		for(ObjectEntity entity: listEntities){
 			
 			OWLNamedClass newEntityClass = owlModel.createOWLNamedSubclass(entity.getName(), entityClass); 
+			
+			// Grants all individuals of ObjEntity classes has its right types (<Name of entity><TypeSuffix>. Ex: EX1_Label)
+			if ((hasType != null) && (metaEntity != null)) {
+				
+				// use map to search proper meta entity for that object entity, and adds restriction
+				newEntityClass.addSuperclass( owlModel.createOWLHasValue(hasType , mapMetaEntity.get(newEntityClass.getName() + Type.getLabelSuffix())));
+								
+				//	Search proper meta entity and add restriction
+				/*
+				for (Iterator iter = metaEntity.getInstances(false).iterator(); iter.hasNext();) {
+					OWLIndividual element = (OWLIndividual) iter.next();
+					if (element.getName().equals(newEntityClass.getName() + Type.getLabelSuffix())) {
+						newEntityClass.addSuperclass(owlModel.createOWLHasValue(hasType,element));
+						break;
+					}
+				}
+				*/
+			}
+			
 			mapObjectEntityClasses.put(entity, newEntityClass); 
 		}
 		
@@ -286,7 +327,7 @@ public class SaverPrOwlIO {
 		}
 		return null;
 		
-		//TODO lan?¿½ar excess?¿½o... 
+		//TODO lan?Â¿Å“ar excess?Â¿Å“o... 
 		
 	}
 		
@@ -365,7 +406,7 @@ public class SaverPrOwlIO {
 			OWLObjectProperty isSubsByProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isSubsBy"); 	
 			
 			for(OrdinaryVariable oVariable: oVariableList){
-				
+				// Set variable name as "MFragName.OVName"
 				OWLIndividual oVariableIndividual = oVariableClass.createOWLIndividual(
 								  oVariable.getMFrag().getName() + this.getOrdinaryVarScopeSeparator() 
 								+ oVariable.getName() );
@@ -560,7 +601,7 @@ public class SaverPrOwlIO {
 			
 			//savePositionProperty(contextNodeIndividual, contextNode);
 			
-			/* Passo 1: verificar de qual built in o n?¿½ de contexto ?¿½ instancia */
+			/* Passo 1: verificar de qual built in o n?Â¿Å“ de contexto ?Â¿Å“ instancia */
 			
 			NodeFormulaTree formulaNode = contextNode.getFormulaTree(); 
 			
@@ -681,6 +722,8 @@ public class SaverPrOwlIO {
 			
 			OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
 			List<Argument> argumentList = generativeInputNode.getArgumentList(); 
+			
+			
 			
 			for(Argument argument: argumentList){
 				if (!argument.isSimpleArgRelationship()){

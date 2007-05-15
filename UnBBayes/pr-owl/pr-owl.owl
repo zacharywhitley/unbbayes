@@ -15,22 +15,22 @@
   <owl:Class rdf:ID="CondRelationship">
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:allValuesFrom>
-          <owl:Class rdf:ID="Node"/>
-        </owl:allValuesFrom>
         <owl:onProperty>
-          <owl:FunctionalProperty rdf:ID="hasParentName"/>
+          <owl:FunctionalProperty rdf:ID="hasParentState"/>
         </owl:onProperty>
+        <owl:someValuesFrom>
+          <owl:Class rdf:ID="Entity"/>
+        </owl:someValuesFrom>
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:allValuesFrom>
-          <owl:Class rdf:ID="Entity"/>
-        </owl:allValuesFrom>
         <owl:onProperty>
-          <owl:FunctionalProperty rdf:ID="hasParentState"/>
+          <owl:FunctionalProperty rdf:about="#hasParentState"/>
         </owl:onProperty>
+        <owl:allValuesFrom>
+          <owl:Class rdf:about="#Entity"/>
+        </owl:allValuesFrom>
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:subClassOf>
@@ -38,8 +38,18 @@
         <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
         >1</owl:cardinality>
         <owl:onProperty>
-          <owl:FunctionalProperty rdf:about="#hasParentName"/>
+          <owl:FunctionalProperty rdf:about="#hasParentState"/>
         </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:FunctionalProperty rdf:ID="hasParentName"/>
+        </owl:onProperty>
+        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+        >1</owl:cardinality>
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:subClassOf>
@@ -52,36 +62,26 @@
         </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
-    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:FunctionalProperty rdf:about="#hasParentState"/>
-        </owl:onProperty>
-        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-        >1</owl:cardinality>
-      </owl:Restriction>
-    </rdfs:subClassOf>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >The conditional relationship class is a reified property representing a (parent) node and one of its possible states. Individuals of this class are used to built PR-OWL probabilistic distribution tables. Each cell of such a table corresponds to a probability assignment of a possible value of a node given one combination of the states of its parents. Each individual of class CondRelationship represents one parent/state pair, so a probability assigment is conditioned by a set of CondRelationship pairs (one for each parent node).</rdfs:comment>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:someValuesFrom>
-          <owl:Class rdf:about="#Entity"/>
-        </owl:someValuesFrom>
+        <owl:allValuesFrom>
+          <owl:Class rdf:ID="Node"/>
+        </owl:allValuesFrom>
         <owl:onProperty>
-          <owl:FunctionalProperty rdf:about="#hasParentState"/>
+          <owl:FunctionalProperty rdf:about="#hasParentName"/>
         </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:onProperty>
-          <owl:FunctionalProperty rdf:about="#hasParentName"/>
-        </owl:onProperty>
         <owl:someValuesFrom>
           <owl:Class rdf:about="#Node"/>
         </owl:someValuesFrom>
+        <owl:onProperty>
+          <owl:FunctionalProperty rdf:about="#hasParentName"/>
+        </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
@@ -90,12 +90,12 @@
     >Domain MFrags is the subclass of class MFrag that includes all the domain-specific MFrags. It is disjoint with class Finding_MFrag. All generative MFrags created by the ontology engineer (i.e. the domain expert) are members of this class.</rdfs:comment>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:allValuesFrom>
-          <owl:Class rdf:ID="Context"/>
-        </owl:allValuesFrom>
         <owl:onProperty>
           <owl:ObjectProperty rdf:ID="hasContextNode"/>
         </owl:onProperty>
+        <owl:allValuesFrom>
+          <owl:Class rdf:ID="Context"/>
+        </owl:allValuesFrom>
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:subClassOf>
@@ -110,9 +110,6 @@
     >A declarative distribution is a distribution that is conveyed via a xsd:string datatype, using a specific format defined in the hasDeclaration datatype property. In order to allow a MEBN algorithm to work, a parser should be able to retrieve the probability distribution information in the format it is stored and then pass that information to the MEBN algorithm in its own proprietaty format.
 Describing a probability distribution is a much more compact and flexible way of conveying it. However, it assumes that an OWL-P parser would understand the format in which the information is stored. PR-OWL tables, on the other hand, convey probability distributions in a more interoperable way, but are not flexible enough to represent complex distributions such as the cases in which a node has multiple possible parents.
 For added compatibility, one probability distribution can be stored in multiple formats (i.e. multiple DeclarativeDist individuals for the same RV).</rdfs:comment>
-    <owl:disjointWith>
-      <owl:Class rdf:ID="PR-OWLTable"/>
-    </owl:disjointWith>
     <owl:equivalentClass>
       <owl:Class>
         <owl:intersectionOf rdf:parseType="Collection">
@@ -124,19 +121,19 @@ For added compatibility, one probability distribution can be stored in multiple 
             >1</owl:minCardinality>
           </owl:Restriction>
           <owl:Restriction>
+            <owl:minCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+            >1</owl:minCardinality>
             <owl:onProperty>
               <owl:FunctionalProperty rdf:ID="isRepresentedAs"/>
             </owl:onProperty>
-            <owl:minCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-            >1</owl:minCardinality>
           </owl:Restriction>
           <owl:Class rdf:ID="ProbDist"/>
           <owl:Restriction>
+            <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+            >1</owl:cardinality>
             <owl:onProperty>
               <owl:ObjectProperty rdf:ID="isProbDistOf"/>
             </owl:onProperty>
-            <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-            >1</owl:cardinality>
           </owl:Restriction>
           <owl:Restriction>
             <owl:onProperty>
@@ -157,14 +154,11 @@ For added compatibility, one probability distribution can be stored in multiple 
         </owl:intersectionOf>
       </owl:Class>
     </owl:equivalentClass>
+    <owl:disjointWith>
+      <owl:Class rdf:ID="PR-OWLTable"/>
+    </owl:disjointWith>
   </owl:Class>
   <owl:Class rdf:ID="Generative_input">
-    <rdfs:subClassOf>
-      <owl:Class rdf:ID="Input"/>
-    </rdfs:subClassOf>
-    <owl:disjointWith>
-      <owl:Class rdf:ID="Finding_input"/>
-    </owl:disjointWith>
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty>
@@ -180,6 +174,12 @@ For added compatibility, one probability distribution can be stored in multiple 
         </owl:someValuesFrom>
       </owl:Restriction>
     </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Input"/>
+    </rdfs:subClassOf>
+    <owl:disjointWith>
+      <owl:Class rdf:ID="Finding_input"/>
+    </owl:disjointWith>
   </owl:Class>
   <owl:Class rdf:ID="SimpleArgRelationship">
     <owl:equivalentClass>
@@ -195,12 +195,12 @@ For added compatibility, one probability distribution can be stored in multiple 
           </owl:Restriction>
           <owl:Class rdf:ID="ArgRelationship"/>
           <owl:Restriction>
-            <owl:someValuesFrom>
-              <owl:Class rdf:about="#OVariable"/>
-            </owl:someValuesFrom>
             <owl:onProperty>
               <owl:FunctionalProperty rdf:about="#hasArgTerm"/>
             </owl:onProperty>
+            <owl:someValuesFrom>
+              <owl:Class rdf:about="#OVariable"/>
+            </owl:someValuesFrom>
           </owl:Restriction>
           <owl:Restriction>
             <owl:allValuesFrom>
@@ -223,67 +223,6 @@ For added compatibility, one probability distribution can be stored in multiple 
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >Each generic random variable can have many arguments. Arguments are usually restricted in their type and meaning via the context nodes of an MFrag. In order to model these complex N-ary relations, PR-OWL makes use of the SimpleArgRelationship class, which is a reified relation that conveys the number and order of arguments that each RV expects, it's type (defined via a link to the TypeContext class), and the link to the RV itself.</rdfs:comment>
   </owl:Class>
-  <owl:Class rdf:about="#Context">
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom>
-          <owl:Class rdf:about="#Entity"/>
-        </owl:allValuesFrom>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:ID="hasPossibleValues"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasPossibleValues"/>
-        </owl:onProperty>
-        <owl:someValuesFrom>
-          <owl:Class rdf:about="#Entity"/>
-        </owl:someValuesFrom>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom rdf:resource="#Context"/>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:ID="hasInnerTerm"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <owl:disjointWith>
-      <owl:Class rdf:about="#Input"/>
-    </owl:disjointWith>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom rdf:resource="#Domain_MFrag"/>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:ID="isContextNodeIn"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-        >1</owl:cardinality>
-        <owl:onProperty>
-          <owl:FunctionalProperty rdf:ID="isContextInstanceOf"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >In general, MFrags impose constraints to the type of arguments each of its resident RVs should accept. The individuals of the Context class represent these types of constraints.
-In PR-OWL, the class Context is the only subclass of the Node class that accepts composite RV terms as arguments (that is, uses the complete ArgRelationship instead of the more restricted SimpleArgRelashionship).
-A context node is either satisfiable or not, which means its possible states are instances of  the BooleanRVStates class.
-</rdfs:comment>
-    <owl:disjointWith>
-      <owl:Class rdf:about="#Resident"/>
-    </owl:disjointWith>
-    <rdfs:subClassOf>
-      <owl:Class rdf:about="#Node"/>
-    </rdfs:subClassOf>
-  </owl:Class>
   <owl:Class rdf:ID="Exemplar">
     <rdfs:subClassOf>
       <owl:Restriction>
@@ -297,45 +236,11 @@ A context node is either satisfiable or not, which means its possible states are
     </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
+        <owl:someValuesFrom>
+          <owl:Class rdf:about="#OVariable"/>
+        </owl:someValuesFrom>
         <owl:onProperty>
           <owl:ObjectProperty rdf:ID="representsOVar"/>
-        </owl:onProperty>
-        <owl:someValuesFrom>
-          <owl:Class rdf:about="#OVariable"/>
-        </owl:someValuesFrom>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom>
-          <owl:Class rdf:about="#ArgRelationship"/>
-        </owl:allValuesFrom>
-        <owl:onProperty>
-          <owl:InverseFunctionalProperty rdf:ID="isArgTermIn"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Each individual of class Skolem represents a Skolem constant in a MEBN quantifier random variable.  Each MEBN quantifier random variable corresponds to a first-order formula beginning with a universal or existential quantifier. The Skolem constant in the MEBN random variable represents a generic individual within the scope of the universal or existential quantifier of the corresponding first-order formula.  
-MEBN logic contains a set of built-in MFrags for quantifier random variables.  In PR-OWL modelers can use individuals of class Skolem to define distributions for Skolem constants used in quantifier random variables.</rdfs:comment>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:InverseFunctionalProperty rdf:about="#isArgTermIn"/>
-        </owl:onProperty>
-        <owl:someValuesFrom>
-          <owl:Class rdf:about="#ArgRelationship"/>
-        </owl:someValuesFrom>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom>
-          <owl:Class rdf:about="#OVariable"/>
-        </owl:allValuesFrom>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#representsOVar"/>
         </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
@@ -349,13 +254,108 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
         </owl:allValuesFrom>
       </owl:Restriction>
     </rdfs:subClassOf>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Each individual of class Skolem represents a Skolem constant in a MEBN quantifier random variable.  Each MEBN quantifier random variable corresponds to a first-order formula beginning with a universal or existential quantifier. The Skolem constant in the MEBN random variable represents a generic individual within the scope of the universal or existential quantifier of the corresponding first-order formula.  
+MEBN logic contains a set of built-in MFrags for quantifier random variables.  In PR-OWL modelers can use individuals of class Skolem to define distributions for Skolem constants used in quantifier random variables.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:InverseFunctionalProperty rdf:ID="isArgTermIn"/>
+        </owl:onProperty>
+        <owl:allValuesFrom>
+          <owl:Class rdf:about="#ArgRelationship"/>
+        </owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#representsOVar"/>
+        </owl:onProperty>
+        <owl:allValuesFrom>
+          <owl:Class rdf:about="#OVariable"/>
+        </owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:someValuesFrom>
+          <owl:Class rdf:about="#ArgRelationship"/>
+        </owl:someValuesFrom>
+        <owl:onProperty>
+          <owl:InverseFunctionalProperty rdf:about="#isArgTermIn"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#Context">
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="isContextNodeIn"/>
+        </owl:onProperty>
+        <owl:allValuesFrom rdf:resource="#Domain_MFrag"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:someValuesFrom>
+          <owl:Class rdf:about="#Entity"/>
+        </owl:someValuesFrom>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="hasPossibleValues"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:disjointWith>
+      <owl:Class rdf:about="#Input"/>
+    </owl:disjointWith>
+    <owl:disjointWith>
+      <owl:Class rdf:about="#Resident"/>
+    </owl:disjointWith>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >In general, MFrags impose constraints to the type of arguments each of its resident RVs should accept. The individuals of the Context class represent these types of constraints.
+In PR-OWL, the class Context is the only subclass of the Node class that accepts composite RV terms as arguments (that is, uses the complete ArgRelationship instead of the more restricted SimpleArgRelashionship).
+A context node is either satisfiable or not, which means its possible states are instances of  the BooleanRVStates class.
+</rdfs:comment>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:allValuesFrom rdf:resource="#Context"/>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="hasInnerTerm"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Node"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:FunctionalProperty rdf:ID="isContextInstanceOf"/>
+        </owl:onProperty>
+        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+        >1</owl:cardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:allValuesFrom>
+          <owl:Class rdf:about="#Entity"/>
+        </owl:allValuesFrom>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#hasPossibleValues"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
   </owl:Class>
   <owl:Class rdf:about="#Finding_input">
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:someValuesFrom>
+        <owl:allValuesFrom>
           <owl:Class rdf:about="#Finding_MFrag"/>
-        </owl:someValuesFrom>
+        </owl:allValuesFrom>
         <owl:onProperty>
           <owl:ObjectProperty rdf:ID="isInputNodeIn"/>
         </owl:onProperty>
@@ -366,12 +366,12 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
+        <owl:allValuesFrom>
+          <owl:Class rdf:ID="Finding_res"/>
+        </owl:allValuesFrom>
         <owl:onProperty>
           <owl:ObjectProperty rdf:about="#isInputInstanceOf"/>
         </owl:onProperty>
-        <owl:someValuesFrom>
-          <owl:Class rdf:ID="Finding_res"/>
-        </owl:someValuesFrom>
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:subClassOf>
@@ -379,8 +379,48 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
         <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
         >1</owl:cardinality>
         <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="isParentOf"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:disjointWith rdf:resource="#Generative_input"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#isParentOf"/>
+        </owl:onProperty>
+        <owl:someValuesFrom>
+          <owl:Class rdf:about="#Finding_res"/>
+        </owl:someValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#isParentOf"/>
+        </owl:onProperty>
+        <owl:allValuesFrom>
+          <owl:Class rdf:about="#Finding_res"/>
+        </owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:someValuesFrom>
+          <owl:Class rdf:about="#Finding_res"/>
+        </owl:someValuesFrom>
+        <owl:onProperty>
           <owl:ObjectProperty rdf:about="#isInputInstanceOf"/>
         </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#isInputInstanceOf"/>
+        </owl:onProperty>
+        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+        >1</owl:cardinality>
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:subClassOf>
@@ -388,49 +428,9 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
         <owl:onProperty>
           <owl:ObjectProperty rdf:about="#isInputNodeIn"/>
         </owl:onProperty>
-        <owl:allValuesFrom>
-          <owl:Class rdf:about="#Finding_MFrag"/>
-        </owl:allValuesFrom>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
         <owl:someValuesFrom>
-          <owl:Class rdf:about="#Finding_res"/>
+          <owl:Class rdf:about="#Finding_MFrag"/>
         </owl:someValuesFrom>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:ID="isParentOf"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#isParentOf"/>
-        </owl:onProperty>
-        <owl:allValuesFrom>
-          <owl:Class rdf:about="#Finding_res"/>
-        </owl:allValuesFrom>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#isParentOf"/>
-        </owl:onProperty>
-        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-        >1</owl:cardinality>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <owl:disjointWith rdf:resource="#Generative_input"/>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#isInputInstanceOf"/>
-        </owl:onProperty>
-        <owl:allValuesFrom>
-          <owl:Class rdf:about="#Finding_res"/>
-        </owl:allValuesFrom>
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
@@ -438,9 +438,12 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     <rdfs:subClassOf>
       <owl:Class rdf:about="#Resident"/>
     </rdfs:subClassOf>
+    <owl:disjointWith>
+      <owl:Class rdf:about="#Domain_Res"/>
+    </owl:disjointWith>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:allValuesFrom>
+        <owl:someValuesFrom>
           <owl:Class>
             <owl:oneOf rdf:parseType="Collection">
               <BooleanRVStates rdf:ID="absurd">
@@ -470,8 +473,8 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
                                 </isPossibleValueOf>
                                 <isPossibleValueOf>
                                   <BuiltInRV rdf:ID="equalto">
-                                    <hasPossibleValues rdf:resource="#absurd"/>
                                     <hasPossibleValues rdf:resource="#true"/>
+                                    <hasPossibleValues rdf:resource="#absurd"/>
                                     <hasPossibleValues rdf:resource="#false"/>
                                   </BuiltInRV>
                                 </isPossibleValueOf>
@@ -492,42 +495,6 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
                                     <hasPossibleValues rdf:resource="#false"/>
                                   </BuiltInRV>
                                 </isPossibleValueOf>
-                                <hasType>
-                                  <MetaEntity rdf:ID="Boolean">
-                                    <hasType>
-                                      <MetaEntity rdf:ID="TypeLabel">
-                                        <isTypeOf rdf:resource="#Boolean"/>
-                                        <rdfs:comment rdf:datatype=
-                                        "http://www.w3.org/2001/XMLSchema#string"
-                                        >This MetaEntity shold be assigned for the labels of all domain specific types and subtypes.</rdfs:comment>
-                                        <hasUID rdf:datatype=
-                                        "http://www.w3.org/2001/XMLSchema#string"
-                                        >!TypeLabel</hasUID>
-                                        <isTypeOf rdf:resource="#TypeLabel"/>
-                                        <hasType rdf:resource="#TypeLabel"/>
-                                        <isTypeOf>
-                                          <MetaEntity rdf:ID="CategoryLabel">
-                                            <hasType rdf:resource="#TypeLabel"/>
-                                            <hasUID rdf:datatype=
-                                            "http://www.w3.org/2001/XMLSchema#string"
-                                            >!CategoryLabel</hasUID>
-                                            <rdfs:comment rdf:datatype=
-                                            "http://www.w3.org/2001/XMLSchema#string"
-                                            >This MetaEntity should be assigned to the labels for the states of random variables whose domain is a list of categorical values</rdfs:comment>
-                                          </MetaEntity>
-                                        </isTypeOf>
-                                      </MetaEntity>
-                                    </hasType>
-                                    <isTypeOf rdf:resource="#true"/>
-                                    <isTypeOf rdf:resource="#absurd"/>
-                                    <hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-                                    >!Boolean</hasUID>
-                                    <isTypeOf rdf:resource="#false"/>
-                                    <rdfs:comment rdf:datatype=
-                                    "http://www.w3.org/2001/XMLSchema#string"
-                                    >This MetaEntity should be applied to the truth-values T, F and ⊥ (absurd).</rdfs:comment>
-                                  </MetaEntity>
-                                </hasType>
                                 <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
                                 >This state corresponds to the meaningfull hypotheses that have a false truth-value. </rdfs:comment>
                                 <isPossibleValueOf>
@@ -546,7 +513,6 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
                         </isPossibleValueOf>
                         <isPossibleValueOf rdf:resource="#implies"/>
                         <isPossibleValueOf rdf:resource="#and"/>
-                        <hasType rdf:resource="#Boolean"/>
                         <isPossibleValueOf rdf:resource="#or"/>
                         <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
                         >This state corresponds to the meaningfull hypotheses that have a false truth-value. </rdfs:comment>
@@ -570,27 +536,33 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
                 <isPossibleValueOf rdf:resource="#and"/>
                 <hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
                 >⊥</hasUID>
-                <hasType rdf:resource="#Boolean"/>
                 <isPossibleValueOf rdf:resource="#not"/>
               </BooleanRVStates>
               <BooleanRVStates rdf:about="#true"/>
             </owl:oneOf>
           </owl:Class>
-        </owl:allValuesFrom>
+        </owl:someValuesFrom>
         <owl:onProperty>
           <owl:ObjectProperty rdf:about="#hasPossibleValues"/>
         </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
     <owl:disjointWith>
-      <owl:Class rdf:about="#Domain_Res"/>
-    </owl:disjointWith>
-    <owl:disjointWith>
       <owl:Class rdf:about="#BuiltInRV"/>
     </owl:disjointWith>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:someValuesFrom rdf:resource="#Finding_input"/>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="isResidentNodeIn"/>
+        </owl:onProperty>
+        <owl:someValuesFrom>
+          <owl:Class rdf:about="#Finding_MFrag"/>
+        </owl:someValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:allValuesFrom rdf:resource="#Finding_input"/>
         <owl:onProperty>
           <owl:ObjectProperty rdf:ID="hasParent"/>
         </owl:onProperty>
@@ -598,48 +570,46 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:allValuesFrom>
-          <owl:Class rdf:about="#Finding_MFrag"/>
-        </owl:allValuesFrom>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:ID="isResidentNodeIn"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-        >0</owl:cardinality>
         <owl:onProperty>
           <owl:ObjectProperty rdf:about="#isParentOf"/>
         </owl:onProperty>
+        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+        >0</owl:cardinality>
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >This is the subclass of class Resident (node) that includes all finding nodes. Finding nodes convey new evidence into a probabilistic system via a Finding_MFrag. The class is disjoint with classes Domain_res and BuiltInRV.</rdfs:comment>
     <rdfs:subClassOf>
       <owl:Restriction>
+        <owl:someValuesFrom rdf:resource="#Finding_input"/>
         <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasPossibleValues"/>
+          <owl:ObjectProperty rdf:about="#hasParent"/>
         </owl:onProperty>
-        <owl:someValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:allValuesFrom>
+          <owl:Class rdf:about="#Finding_MFrag"/>
+        </owl:allValuesFrom>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#isResidentNodeIn"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:allValuesFrom>
           <owl:Class>
             <owl:oneOf rdf:parseType="Collection">
               <BooleanRVStates rdf:about="#absurd"/>
               <BooleanRVStates rdf:about="#true"/>
             </owl:oneOf>
           </owl:Class>
-        </owl:someValuesFrom>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
+        </owl:allValuesFrom>
         <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#isResidentNodeIn"/>
+          <owl:ObjectProperty rdf:about="#hasPossibleValues"/>
         </owl:onProperty>
-        <owl:someValuesFrom>
-          <owl:Class rdf:about="#Finding_MFrag"/>
-        </owl:someValuesFrom>
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:subClassOf>
@@ -647,35 +617,27 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
         <owl:onProperty>
           <owl:ObjectProperty rdf:about="#hasParent"/>
         </owl:onProperty>
-        <owl:allValuesFrom rdf:resource="#Finding_input"/>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
         <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
         >1</owl:cardinality>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasParent"/>
-        </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
   <owl:Class rdf:ID="ObjectEntity">
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:ID="subsOVar"/>
-        </owl:onProperty>
-        <owl:allValuesFrom>
-          <owl:Class rdf:about="#OVariable"/>
-        </owl:allValuesFrom>
-      </owl:Restriction>
-    </rdfs:subClassOf>
     <owl:disjointWith>
       <owl:Class rdf:ID="BooleanRVStates"/>
     </owl:disjointWith>
     <rdfs:subClassOf>
       <owl:Class rdf:about="#Entity"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:allValuesFrom>
+          <owl:Class rdf:about="#OVariable"/>
+        </owl:allValuesFrom>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="subsOVar"/>
+        </owl:onProperty>
+      </owl:Restriction>
     </rdfs:subClassOf>
     <owl:disjointWith>
       <owl:Class rdf:ID="CategoricalRVStates"/>
@@ -689,68 +651,19 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
   <owl:Class rdf:about="#Resident">
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:allValuesFrom>
-          <owl:Class rdf:about="#ArgRelationship"/>
-        </owl:allValuesFrom>
-        <owl:onProperty>
-          <owl:InverseFunctionalProperty rdf:about="#isArgTermIn"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom rdf:resource="#Resident"/>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasInnerTerm"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#isResidentNodeIn"/>
-        </owl:onProperty>
-        <owl:minCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-        >1</owl:minCardinality>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:someValuesFrom>
-          <owl:Class rdf:about="#Entity"/>
-        </owl:someValuesFrom>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasPossibleValues"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasPossibleValues"/>
-        </owl:onProperty>
-        <owl:allValuesFrom>
-          <owl:Class rdf:about="#Entity"/>
-        </owl:allValuesFrom>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
         <owl:onProperty>
           <owl:ObjectProperty rdf:ID="hasProbDist"/>
         </owl:onProperty>
-        <owl:allValuesFrom>
+        <owl:someValuesFrom>
           <owl:Class rdf:about="#ProbDist"/>
-        </owl:allValuesFrom>
+        </owl:someValuesFrom>
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:subClassOf>
-      <owl:Class rdf:about="#Node"/>
-    </rdfs:subClassOf>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Resident nodes are the random variables that have their respective probability distribution defined in the MFrag.</rdfs:comment>
-    <rdfs:subClassOf>
       <owl:Restriction>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#hasParent"/>
+        </owl:onProperty>
         <owl:allValuesFrom>
           <owl:Class>
             <owl:unionOf rdf:parseType="Collection">
@@ -759,8 +672,25 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
             </owl:unionOf>
           </owl:Class>
         </owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
         <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasParent"/>
+          <owl:ObjectProperty rdf:about="#hasPossibleValues"/>
+        </owl:onProperty>
+        <owl:someValuesFrom>
+          <owl:Class rdf:about="#Entity"/>
+        </owl:someValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:allValuesFrom>
+          <owl:Class rdf:about="#ProbDist"/>
+        </owl:allValuesFrom>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#hasProbDist"/>
         </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
@@ -776,25 +706,13 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
+        <owl:minCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+        >1</owl:minCardinality>
         <owl:onProperty>
           <owl:ObjectProperty rdf:about="#isResidentNodeIn"/>
         </owl:onProperty>
-        <owl:someValuesFrom>
-          <owl:Class rdf:about="#MFrag"/>
-        </owl:someValuesFrom>
       </owl:Restriction>
     </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasProbDist"/>
-        </owl:onProperty>
-        <owl:someValuesFrom>
-          <owl:Class rdf:about="#ProbDist"/>
-        </owl:someValuesFrom>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <owl:disjointWith rdf:resource="#Context"/>
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty>
@@ -805,11 +723,57 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
+        <owl:onProperty>
+          <owl:InverseFunctionalProperty rdf:about="#isArgTermIn"/>
+        </owl:onProperty>
+        <owl:allValuesFrom>
+          <owl:Class rdf:about="#ArgRelationship"/>
+        </owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Node"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#isParentOf"/>
+        </owl:onProperty>
+        <owl:allValuesFrom>
+          <owl:Class rdf:about="#Resident"/>
+        </owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Resident nodes are the random variables that have their respective probability distribution defined in the MFrag.</rdfs:comment>
+    <rdfs:subClassOf>
+      <owl:Restriction>
         <owl:allValuesFrom>
           <owl:Class rdf:about="#Resident"/>
         </owl:allValuesFrom>
         <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#isParentOf"/>
+          <owl:ObjectProperty rdf:about="#hasInnerTerm"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:disjointWith rdf:resource="#Context"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:someValuesFrom>
+          <owl:Class rdf:about="#MFrag"/>
+        </owl:someValuesFrom>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#isResidentNodeIn"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:allValuesFrom>
+          <owl:Class rdf:about="#Entity"/>
+        </owl:allValuesFrom>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#hasPossibleValues"/>
         </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
@@ -818,48 +782,8 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     </owl:disjointWith>
   </owl:Class>
   <owl:Class rdf:about="#Node">
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom>
-          <owl:Class rdf:about="#MFrag"/>
-        </owl:allValuesFrom>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:ID="isNodeFrom"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:InverseFunctionalProperty rdf:about="#hasArgument"/>
-        </owl:onProperty>
-        <owl:allValuesFrom>
-          <owl:Class rdf:about="#ArgRelationship"/>
-        </owl:allValuesFrom>
-      </owl:Restriction>
-    </rdfs:subClassOf>
     <owl:versionInfo rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     ></owl:versionInfo>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasPossibleValues"/>
-        </owl:onProperty>
-        <owl:someValuesFrom>
-          <owl:Class rdf:about="#Entity"/>
-        </owl:someValuesFrom>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom rdf:resource="#Node"/>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:ID="isInnerTermOf"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >A node is part of an MFrag and it can be a random variable that is defined within that MFrag (a resident node), a RV that input values to nodes within that MFrag (an input node), or a RV that expresses the context in which the probability distributions within that MFrag are valid (a context node).</rdfs:comment>
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:allValuesFrom rdf:resource="#Node"/>
@@ -871,6 +795,18 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="isNodeFrom"/>
+        </owl:onProperty>
+        <owl:allValuesFrom>
+          <owl:Class rdf:about="#MFrag"/>
+        </owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >A node is part of an MFrag and it can be a random variable that is defined within that MFrag (a resident node), a RV that input values to nodes within that MFrag (an input node), or a RV that expresses the context in which the probability distributions within that MFrag are valid (a context node).</rdfs:comment>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
           <owl:ObjectProperty rdf:about="#hasPossibleValues"/>
         </owl:onProperty>
         <owl:allValuesFrom>
@@ -878,7 +814,24 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
         </owl:allValuesFrom>
       </owl:Restriction>
     </rdfs:subClassOf>
-    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="isInnerTermOf"/>
+        </owl:onProperty>
+        <owl:allValuesFrom rdf:resource="#Node"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#hasPossibleValues"/>
+        </owl:onProperty>
+        <owl:someValuesFrom>
+          <owl:Class rdf:about="#Entity"/>
+        </owl:someValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty>
@@ -889,46 +842,54 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
         </owl:someValuesFrom>
       </owl:Restriction>
     </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:allValuesFrom>
+          <owl:Class rdf:about="#ArgRelationship"/>
+        </owl:allValuesFrom>
+        <owl:onProperty>
+          <owl:InverseFunctionalProperty rdf:about="#hasArgument"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
   </owl:Class>
   <owl:Class rdf:about="#Domain_Res">
     <owl:disjointWith rdf:resource="#Finding_res"/>
     <rdfs:subClassOf>
-      <owl:Class>
-        <owl:unionOf rdf:parseType="Collection">
-          <owl:Restriction>
-            <owl:onProperty>
-              <owl:ObjectProperty rdf:about="#hasParent"/>
-            </owl:onProperty>
-            <owl:allValuesFrom rdf:resource="#Generative_input"/>
-          </owl:Restriction>
-          <owl:Class rdf:about="#Domain_Res"/>
-        </owl:unionOf>
-      </owl:Class>
+      <owl:Restriction>
+        <owl:allValuesFrom rdf:resource="#Domain_Res"/>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#isParentOf"/>
+        </owl:onProperty>
+      </owl:Restriction>
     </rdfs:subClassOf>
     <owl:disjointWith>
       <owl:Class rdf:about="#BuiltInRV"/>
     </owl:disjointWith>
     <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#isParentOf"/>
-        </owl:onProperty>
-        <owl:allValuesFrom>
+      <owl:Class>
+        <owl:unionOf rdf:parseType="Collection">
+          <owl:Restriction>
+            <owl:allValuesFrom rdf:resource="#Generative_input"/>
+            <owl:onProperty>
+              <owl:ObjectProperty rdf:about="#hasParent"/>
+            </owl:onProperty>
+          </owl:Restriction>
           <owl:Class rdf:about="#Domain_Res"/>
-        </owl:allValuesFrom>
-      </owl:Restriction>
+        </owl:unionOf>
+      </owl:Class>
     </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:allValuesFrom rdf:resource="#Domain_MFrag"/>
         <owl:onProperty>
           <owl:ObjectProperty rdf:about="#isResidentNodeIn"/>
         </owl:onProperty>
+        <owl:allValuesFrom rdf:resource="#Domain_MFrag"/>
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >This is the subclass of class Resident (node) that includes all domain-specific resident nodes. It is disjoint with classes Finding_res and BuiltInRV.</rdfs:comment>
-    <rdfs:subClassOf rdf:resource="#Resident"/>
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty>
@@ -937,23 +898,15 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
         <owl:someValuesFrom rdf:resource="#Domain_MFrag"/>
       </owl:Restriction>
     </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#Resident"/>
   </owl:Class>
   <owl:Class rdf:about="#Finding_MFrag">
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-        >1</owl:cardinality>
         <owl:onProperty>
           <owl:ObjectProperty rdf:ID="hasResidentNode"/>
         </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:someValuesFrom rdf:resource="#Finding_input"/>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:ID="hasInputNode"/>
-        </owl:onProperty>
+        <owl:allValuesFrom rdf:resource="#Finding_res"/>
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:subClassOf>
@@ -961,29 +914,32 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasInputNode"/>
-        </owl:onProperty>
         <owl:allValuesFrom rdf:resource="#Finding_input"/>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="hasInputNode"/>
+        </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Finding MFrags are used to convey information about findings, which is the default way of entering evidence in a MEBN MTheory so a probabilistic algorithm can be applied to perform inferences regarding the new evidence. They have no context nodes, only one input and one resident node. </rdfs:comment>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasInputNode"/>
-        </owl:onProperty>
         <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
         >1</owl:cardinality>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
         <owl:onProperty>
           <owl:ObjectProperty rdf:about="#hasResidentNode"/>
         </owl:onProperty>
-        <owl:allValuesFrom rdf:resource="#Finding_res"/>
       </owl:Restriction>
     </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:someValuesFrom rdf:resource="#Finding_input"/>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#hasInputNode"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:disjointWith rdf:resource="#Domain_MFrag"/>
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty>
@@ -992,102 +948,101 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
         <owl:someValuesFrom rdf:resource="#Finding_res"/>
       </owl:Restriction>
     </rdfs:subClassOf>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Finding MFrags are used to convey information about findings, which is the default way of entering evidence in a MEBN MTheory so a probabilistic algorithm can be applied to perform inferences regarding the new evidence. They have no context nodes, only one input and one resident node. </rdfs:comment>
-    <owl:disjointWith rdf:resource="#Domain_MFrag"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#hasInputNode"/>
+        </owl:onProperty>
+        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+        >1</owl:cardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
   </owl:Class>
   <owl:Class rdf:about="#BooleanRVStates">
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >The BooleanRVStates class is formed by the Boolean truth-value states and are applied to Boolean random variables.</rdfs:comment>
-    <owl:disjointWith rdf:resource="#ObjectEntity"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:hasValue>
+          <MetaEntity rdf:ID="Boolean">
+            <hasType>
+              <MetaEntity rdf:ID="TypeLabel">
+                <isTypeOf rdf:resource="#Boolean"/>
+                <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                >This MetaEntity shold be assigned for the labels of all domain specific types and subtypes.</rdfs:comment>
+                <hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                >!TypeLabel</hasUID>
+                <isTypeOf rdf:resource="#TypeLabel"/>
+                <hasType rdf:resource="#TypeLabel"/>
+                <isTypeOf>
+                  <MetaEntity rdf:ID="CategoryLabel">
+                    <hasType rdf:resource="#TypeLabel"/>
+                    <hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                    >!CategoryLabel</hasUID>
+                    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                    >This MetaEntity should be assigned to the labels for the states of random variables whose domain is a list of categorical values</rdfs:comment>
+                  </MetaEntity>
+                </isTypeOf>
+              </MetaEntity>
+            </hasType>
+            <hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+            >!Boolean</hasUID>
+            <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+            >This MetaEntity should be applied to the truth-values T, F and ⊥ (absurd).</rdfs:comment>
+          </MetaEntity>
+        </owl:hasValue>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="hasType"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
     <owl:disjointWith>
       <owl:Class rdf:about="#CategoricalRVStates"/>
     </owl:disjointWith>
+    <owl:disjointWith rdf:resource="#ObjectEntity"/>
     <owl:disjointWith>
       <owl:Class rdf:about="#MetaEntity"/>
     </owl:disjointWith>
     <rdfs:subClassOf>
       <owl:Class rdf:about="#Entity"/>
     </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:ID="hasType"/>
-        </owl:onProperty>
-        <owl:hasValue rdf:resource="#Boolean"/>
-      </owl:Restriction>
-    </rdfs:subClassOf>
   </owl:Class>
   <owl:Class rdf:about="#MFrag">
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasResidentNode"/>
-        </owl:onProperty>
-        <owl:someValuesFrom rdf:resource="#Resident"/>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom rdf:resource="#Resident"/>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasResidentNode"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasInputNode"/>
-        </owl:onProperty>
-        <owl:allValuesFrom>
-          <owl:Class rdf:about="#Input"/>
-        </owl:allValuesFrom>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >MEBN Fragments (MFrags) are the basic structure of any MEBN logic model. MFrags represent influences among clusters of related RVs and can portray repeated patters using ordinary variables as placeholders in to which entity identifiers can be substituted. In PR-OWL, each individual the MFrag class represents a MEBN Fragment (MFrag).</rdfs:comment>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom>
-          <owl:Class rdf:ID="MTheory"/>
-        </owl:allValuesFrom>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:ID="isMFragOf"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:ID="hasNode"/>
-        </owl:onProperty>
-        <owl:someValuesFrom rdf:resource="#Node"/>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasNode"/>
-        </owl:onProperty>
-        <owl:allValuesFrom rdf:resource="#Node"/>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom rdf:resource="#Exemplar"/>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:ID="hasExemplar"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:minCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
         >1</owl:minCardinality>
         <owl:onProperty>
           <owl:ObjectProperty rdf:about="#hasResidentNode"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:someValuesFrom rdf:resource="#Resident"/>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#hasResidentNode"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#hasResidentNode"/>
+        </owl:onProperty>
+        <owl:allValuesFrom rdf:resource="#Resident"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >MEBN Fragments (MFrags) are the basic structure of any MEBN logic model. MFrags represent influences among clusters of related RVs and can portray repeated patters using ordinary variables as placeholders in to which entity identifiers can be substituted. In PR-OWL, each individual the MFrag class represents a MEBN Fragment (MFrag).</rdfs:comment>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:allValuesFrom>
+          <owl:Class rdf:about="#Input"/>
+        </owl:allValuesFrom>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#hasInputNode"/>
         </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
@@ -1101,9 +1056,51 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
         </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:allValuesFrom rdf:resource="#Exemplar"/>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="hasExemplar"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:allValuesFrom>
+          <owl:Class rdf:ID="MTheory"/>
+        </owl:allValuesFrom>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="isMFragOf"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:allValuesFrom rdf:resource="#Node"/>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="hasNode"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#hasNode"/>
+        </owl:onProperty>
+        <owl:someValuesFrom rdf:resource="#Node"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
   </owl:Class>
   <owl:Class rdf:about="#CategoricalRVStates">
     <owl:disjointWith rdf:resource="#BooleanRVStates"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:hasValue rdf:resource="#CategoryLabel"/>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#hasType"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
     <owl:disjointWith rdf:resource="#ObjectEntity"/>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >Nodes represent random variables, which by definition have a list of mutually exclusive, collectively exhaustive states. In PR-OWL, those states are represented by individuals from class Entity. Some random variables have a list of categorical values as its possible states, and these are represented by elements from subclass CategoricalRVStates.</rdfs:comment>
@@ -1113,14 +1110,6 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     <rdfs:subClassOf>
       <owl:Class rdf:about="#Entity"/>
     </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasType"/>
-        </owl:onProperty>
-        <owl:hasValue rdf:resource="#CategoryLabel"/>
-      </owl:Restriction>
-    </rdfs:subClassOf>
   </owl:Class>
   <owl:Class rdf:about="#OVariable">
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
@@ -1129,12 +1118,12 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
       <owl:Class>
         <owl:intersectionOf rdf:parseType="Collection">
           <owl:Restriction>
-            <owl:onProperty>
-              <owl:InverseFunctionalProperty rdf:about="#isArgTermIn"/>
-            </owl:onProperty>
             <owl:allValuesFrom>
               <owl:Class rdf:about="#ArgRelationship"/>
             </owl:allValuesFrom>
+            <owl:onProperty>
+              <owl:InverseFunctionalProperty rdf:about="#isArgTermIn"/>
+            </owl:onProperty>
           </owl:Restriction>
           <owl:Restriction>
             <owl:onProperty>
@@ -1151,17 +1140,17 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
             <owl:allValuesFrom rdf:resource="#MFrag"/>
           </owl:Restriction>
           <owl:Restriction>
-            <owl:someValuesFrom rdf:resource="#MFrag"/>
             <owl:onProperty>
               <owl:FunctionalProperty rdf:about="#isOVariableIn"/>
             </owl:onProperty>
+            <owl:someValuesFrom rdf:resource="#MFrag"/>
           </owl:Restriction>
           <owl:Restriction>
+            <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+            >1</owl:cardinality>
             <owl:onProperty>
               <owl:FunctionalProperty rdf:about="#isOVariableIn"/>
             </owl:onProperty>
-            <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-            >1</owl:cardinality>
           </owl:Restriction>
           <owl:Restriction>
             <owl:allValuesFrom>
@@ -1172,12 +1161,12 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
             </owl:onProperty>
           </owl:Restriction>
           <owl:Restriction>
-            <owl:someValuesFrom>
-              <owl:Class rdf:about="#MetaEntity"/>
-            </owl:someValuesFrom>
             <owl:onProperty>
               <owl:ObjectProperty rdf:about="#isSubsBy"/>
             </owl:onProperty>
+            <owl:someValuesFrom>
+              <owl:Class rdf:about="#MetaEntity"/>
+            </owl:someValuesFrom>
           </owl:Restriction>
           <owl:Restriction>
             <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
@@ -1202,7 +1191,7 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
         <owl:onProperty>
           <owl:ObjectProperty rdf:about="#isProbDistOf"/>
         </owl:onProperty>
-        <owl:someValuesFrom rdf:resource="#Resident"/>
+        <owl:allValuesFrom rdf:resource="#Resident"/>
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:subClassOf>
@@ -1210,23 +1199,23 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
         <owl:onProperty>
           <owl:ObjectProperty rdf:about="#isProbDistOf"/>
         </owl:onProperty>
-        <owl:allValuesFrom rdf:resource="#Resident"/>
+        <owl:someValuesFrom rdf:resource="#Resident"/>
       </owl:Restriction>
     </rdfs:subClassOf>
-    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >This class is meant to represent the probability distributions that are defined in an MFrag to each of its resident nodes (random variables). A probability distribution can be described using a proprietary declarative format, such as a Netica table or a Quiddity function, or via an PR-OWL table (which has probability assigments as its cells).</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
   </owl:Class>
   <owl:Class rdf:about="#MTheory">
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:allValuesFrom rdf:resource="#MFrag"/>
         <owl:onProperty>
           <owl:ObjectProperty rdf:ID="hasMFrag"/>
         </owl:onProperty>
+        <owl:allValuesFrom rdf:resource="#MFrag"/>
       </owl:Restriction>
     </rdfs:subClassOf>
-    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty>
@@ -1239,6 +1228,18 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     >An MTheory is a collection of MFrags that statisfies consistency constraints ensuring the existence of a unique joint distribution over the random variables mentioned in the MTheory. In PR-OWL, the class MTheory allows a probabilistic ontology to have more than one valid MTheory to represent its RVs, and each individual of that class is basically a list of the MFrags that collectively form that MTheory. In addition, one MFrag can be part of more than one MTheory.</rdfs:comment>
   </owl:Class>
   <owl:Class rdf:about="#Input">
+    <owl:disjointWith rdf:resource="#Resident"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >In PR-OWL, an input node is basically a "copy" of a resident node that is used as an input in a given MFrag. Thus, each individual of class Input is linked with an individual of class Resident via the property isInputInstanceOf.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="#Node"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:someValuesFrom rdf:resource="#Resident"/>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#isParentOf"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty>
@@ -1256,19 +1257,19 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:allValuesFrom rdf:resource="#MFrag"/>
         <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#isInputNodeIn"/>
+          <owl:ObjectProperty rdf:about="#hasInnerTerm"/>
         </owl:onProperty>
+        <owl:allValuesFrom rdf:resource="#Input"/>
       </owl:Restriction>
     </rdfs:subClassOf>
-    <owl:disjointWith rdf:resource="#Resident"/>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-        >1</owl:cardinality>
+        <owl:allValuesFrom>
+          <owl:Class rdf:about="#ArgRelationship"/>
+        </owl:allValuesFrom>
         <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#isInputInstanceOf"/>
+          <owl:InverseFunctionalProperty rdf:about="#hasArgument"/>
         </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
@@ -1287,43 +1288,16 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
         </owl:someValuesFrom>
       </owl:Restriction>
     </rdfs:subClassOf>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >In PR-OWL, an input node is basically a "copy" of a resident node that is used as an input in a given MFrag. Thus, each individual of class Input is linked with an individual of class Resident via the property isInputInstanceOf.</rdfs:comment>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:someValuesFrom rdf:resource="#MFrag"/>
         <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#isInputNodeIn"/>
+          <owl:ObjectProperty rdf:about="#isInputInstanceOf"/>
         </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf rdf:resource="#Node"/>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:minCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-        >1</owl:minCardinality>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#isParentOf"/>
-        </owl:onProperty>
+        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+        >1</owl:cardinality>
       </owl:Restriction>
     </rdfs:subClassOf>
     <owl:disjointWith rdf:resource="#Context"/>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom rdf:resource="#Input"/>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasInnerTerm"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:someValuesFrom rdf:resource="#Resident"/>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#isParentOf"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:allValuesFrom rdf:resource="#Resident"/>
@@ -1334,12 +1308,27 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
+        <owl:minCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+        >1</owl:minCardinality>
         <owl:onProperty>
-          <owl:InverseFunctionalProperty rdf:about="#hasArgument"/>
+          <owl:ObjectProperty rdf:about="#isParentOf"/>
         </owl:onProperty>
-        <owl:allValuesFrom>
-          <owl:Class rdf:about="#ArgRelationship"/>
-        </owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#isInputNodeIn"/>
+        </owl:onProperty>
+        <owl:allValuesFrom rdf:resource="#MFrag"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#isInputNodeIn"/>
+        </owl:onProperty>
+        <owl:someValuesFrom rdf:resource="#MFrag"/>
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
@@ -1347,25 +1336,25 @@ MEBN logic contains a set of built-in MFrags for quantifier random variables.  I
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasPossibleValues"/>
-        </owl:onProperty>
-        <owl:allValuesFrom rdf:resource="#BooleanRVStates"/>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:someValuesFrom rdf:resource="#BooleanRVStates"/>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasPossibleValues"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
           <owl:InverseFunctionalProperty rdf:ID="hasInputInstance"/>
         </owl:onProperty>
         <owl:allValuesFrom rdf:resource="#Input"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#hasPossibleValues"/>
+        </owl:onProperty>
+        <owl:someValuesFrom rdf:resource="#BooleanRVStates"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#hasPossibleValues"/>
+        </owl:onProperty>
+        <owl:allValuesFrom rdf:resource="#BooleanRVStates"/>
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
@@ -1379,13 +1368,12 @@ Note that MEBN's built-in Indirect Reference MFrag is already represented in PR-
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >An PR-OWL table has all the probability assignments for each state of a RV stored in a xsd:decimal format (future implementations might use the pr-owl:prob format, but currently that means incompatibilities with OWL, which has no support for PR-OWL custom datatypes). 
 This format for storing probability distributions cannot represent complex cases for which only formulas can represent a probability distribution (e.g. a node that have a variable number of parents) and usually incurs in huge ontologies, since each table can have many cells and each cell is an individual of the ProbAssign class. Therefore, PR-OWL tables are only recommended for the simplest models in which the maximum level of compatibility is desired.</rdfs:comment>
-    <rdfs:subClassOf rdf:resource="#ProbDist"/>
     <rdfs:subClassOf>
       <owl:Restriction>
+        <owl:allValuesFrom rdf:resource="#Resident"/>
         <owl:onProperty>
           <owl:ObjectProperty rdf:about="#isProbDistOf"/>
         </owl:onProperty>
-        <owl:allValuesFrom rdf:resource="#Resident"/>
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:subClassOf>
@@ -1398,42 +1386,51 @@ This format for storing probability distributions cannot represent complex cases
         </owl:someValuesFrom>
       </owl:Restriction>
     </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#ProbDist"/>
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasProbAssign"/>
+          <owl:ObjectProperty rdf:about="#isProbDistOf"/>
         </owl:onProperty>
+        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+        >1</owl:cardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#isProbDistOf"/>
+        </owl:onProperty>
+        <owl:someValuesFrom rdf:resource="#Resident"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
         <owl:allValuesFrom>
           <owl:Class rdf:about="#ProbAssign"/>
         </owl:allValuesFrom>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#hasProbAssign"/>
+        </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
     <owl:disjointWith rdf:resource="#DeclarativeDist"/>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:someValuesFrom rdf:resource="#Resident"/>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#isProbDistOf"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-        >1</owl:cardinality>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#isProbDistOf"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
   </owl:Class>
   <owl:Class rdf:about="#ArgRelationship">
     <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Each generic random variable can have many arguments. Arguments are usually restricted in their type and meaning via the context nodes of an MFrag. In order to model these complex N-ary relations, PR-OWL makes use of the ArgRelationship class, which is a reified relation that conveys the number and order of arguments that each RV expects, it's type (defined via a link to the OVariable class), and the link to the RV itself.
-MEBN logic has the concept of a simple and a composite random variable term. Simple RV terms accepts variables and constant symbols as arguments. Composite RV terms also accepts other RV terms as arguments. In PR-OWL, the class ArgRelashionship models composite RV terms, while its SimpleArgRelashionship subclass models simple RV terms.</rdfs:comment>
     <rdfs:subClassOf>
       <owl:Restriction>
+        <owl:allValuesFrom rdf:resource="#Node"/>
+        <owl:onProperty>
+          <owl:FunctionalProperty rdf:about="#isArgumentOf"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty>
+          <owl:FunctionalProperty rdf:about="#hasArgTerm"/>
+        </owl:onProperty>
         <owl:allValuesFrom>
           <owl:Class>
             <owl:unionOf rdf:parseType="Collection">
@@ -1444,31 +1441,28 @@ MEBN logic has the concept of a simple and a composite random variable term. Sim
             </owl:unionOf>
           </owl:Class>
         </owl:allValuesFrom>
-        <owl:onProperty>
-          <owl:FunctionalProperty rdf:about="#hasArgTerm"/>
-        </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Each generic random variable can have many arguments. Arguments are usually restricted in their type and meaning via the context nodes of an MFrag. In order to model these complex N-ary relations, PR-OWL makes use of the ArgRelationship class, which is a reified relation that conveys the number and order of arguments that each RV expects, it's type (defined via a link to the OVariable class), and the link to the RV itself.
+MEBN logic has the concept of a simple and a composite random variable term. Simple RV terms accepts variables and constant symbols as arguments. Composite RV terms also accepts other RV terms as arguments. In PR-OWL, the class ArgRelashionship models composite RV terms, while its SimpleArgRelashionship subclass models simple RV terms.</rdfs:comment>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-        >1</owl:cardinality>
         <owl:onProperty>
           <owl:FunctionalProperty rdf:ID="hasArgNumber"/>
         </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:allValuesFrom rdf:resource="#Node"/>
-        <owl:onProperty>
-          <owl:FunctionalProperty rdf:about="#isArgumentOf"/>
-        </owl:onProperty>
+        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+        >1</owl:cardinality>
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
   <owl:Class rdf:about="#MetaEntity">
     <owl:disjointWith rdf:resource="#BooleanRVStates"/>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Entity"/>
+    </rdfs:subClassOf>
+    <owl:disjointWith rdf:resource="#ObjectEntity"/>
+    <owl:disjointWith rdf:resource="#CategoricalRVStates"/>
     <owl:equivalentClass>
       <owl:Class>
         <owl:intersectionOf rdf:parseType="Collection">
@@ -1481,21 +1475,16 @@ MEBN logic has the concept of a simple and a composite random variable term. Sim
             </owl:onProperty>
           </owl:Restriction>
           <owl:Restriction>
-            <owl:onProperty>
-              <owl:ObjectProperty rdf:about="#isTypeOf"/>
-            </owl:onProperty>
             <owl:someValuesFrom>
               <owl:Class rdf:about="#Entity"/>
             </owl:someValuesFrom>
+            <owl:onProperty>
+              <owl:ObjectProperty rdf:about="#isTypeOf"/>
+            </owl:onProperty>
           </owl:Restriction>
         </owl:intersectionOf>
       </owl:Class>
     </owl:equivalentClass>
-    <rdfs:subClassOf>
-      <owl:Class rdf:about="#Entity"/>
-    </rdfs:subClassOf>
-    <owl:disjointWith rdf:resource="#ObjectEntity"/>
-    <owl:disjointWith rdf:resource="#CategoricalRVStates"/>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >The MetaEntity class includes all the entities that convey specific definitions about entities (e.g. typelabels that name the possible types of entities).</rdfs:comment>
   </owl:Class>
@@ -1513,13 +1502,16 @@ MEBN logic has the concept of a simple and a composite random variable term. Sim
     <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-        >1</owl:cardinality>
         <owl:onProperty>
-          <owl:DatatypeProperty rdf:ID="hasUID"/>
+          <owl:ObjectProperty rdf:about="#hasType"/>
         </owl:onProperty>
+        <owl:someValuesFrom rdf:resource="#MetaEntity"/>
       </owl:Restriction>
     </rdfs:subClassOf>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >MEBN logic treats the world as being comprised of entities that have attributes and are related to other entities. The logic assumes uniqueness or each concept (i.e. unique name assumption), so each entity in a MEBN model has a unique identifier and no unique identifier can be assigned to more than one entity.
+PR-OWL follows MEBN syntax and semantics for defining entities so each member of the class Entity has a unique identifier assigned by the datatype property hasUID. OWL doesn't have the unique name assumption so the UID can be seen a tool for providing maximum compatibility with legacy OWL ontologies, since parsers may refer to it as a means to enforce uniqueness among declared entities.
+It is important to note that not all concepts in an ontology have a UID, but only those which will be considered as part of the probabilistic model that is implicit in any probabilistic ontology. This structure allows mixing legacy deterministic ontologies with probabilististic ones. That allows knowledge engineers to assign PR-OWL definitions only to the parts of the domain for which plausible reasoning is desired.</rdfs:comment>
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:allValuesFrom rdf:resource="#MetaEntity"/>
@@ -1530,30 +1522,6 @@ MEBN logic has the concept of a simple and a composite random variable term. Sim
     </rdfs:subClassOf>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-        >1</owl:cardinality>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasType"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >MEBN logic treats the world as being comprised of entities that have attributes and are related to other entities. The logic assumes uniqueness or each concept (i.e. unique name assumption), so each entity in a MEBN model has a unique identifier and no unique identifier can be assigned to more than one entity.
-PR-OWL follows MEBN syntax and semantics for defining entities so each member of the class Entity has a unique identifier assigned by the datatype property hasUID. OWL doesn't have the unique name assumption so the UID can be seen a tool for providing maximum compatibility with legacy OWL ontologies, since parsers may refer to it as a means to enforce uniqueness among declared entities.
-It is important to note that not all concepts in an ontology have a UID, but only those which will be considered as part of the probabilistic model that is implicit in any probabilistic ontology. This structure allows mixing legacy deterministic ontologies with probabilististic ones. That allows knowledge engineers to assign PR-OWL definitions only to the parts of the domain for which plausible reasoning is desired.</rdfs:comment>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:someValuesFrom rdf:resource="#MetaEntity"/>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:about="#hasType"/>
-        </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:ID="isPossibleValueOf"/>
-        </owl:onProperty>
         <owl:allValuesFrom>
           <owl:Class>
             <owl:unionOf rdf:parseType="Collection">
@@ -1562,6 +1530,27 @@ It is important to note that not all concepts in an ontology have a UID, but onl
             </owl:unionOf>
           </owl:Class>
         </owl:allValuesFrom>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="isPossibleValueOf"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+        >1</owl:cardinality>
+        <owl:onProperty>
+          <owl:DatatypeProperty rdf:ID="hasUID"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+        >1</owl:cardinality>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:about="#hasType"/>
+        </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
@@ -1569,54 +1558,54 @@ It is important to note that not all concepts in an ontology have a UID, but onl
     <rdfs:subClassOf>
       <owl:Restriction>
         <owl:onProperty>
-          <owl:FunctionalProperty rdf:ID="hasStateName"/>
-        </owl:onProperty>
-        <owl:allValuesFrom rdf:resource="#Entity"/>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
-        >1</owl:cardinality>
-        <owl:onProperty>
           <owl:DatatypeProperty rdf:ID="hasStateProb"/>
         </owl:onProperty>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
-        <owl:onProperty>
-          <owl:ObjectProperty rdf:ID="hasConditionant"/>
-        </owl:onProperty>
-        <owl:allValuesFrom rdf:resource="#CondRelationship"/>
-      </owl:Restriction>
-    </rdfs:subClassOf>
-    <rdfs:subClassOf>
-      <owl:Restriction>
         <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
         >1</owl:cardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
         <owl:onProperty>
-          <owl:FunctionalProperty rdf:about="#hasStateName"/>
+          <owl:FunctionalProperty rdf:ID="hasStateName"/>
+        </owl:onProperty>
+        <owl:someValuesFrom rdf:resource="#Entity"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:someValuesFrom rdf:resource="#CondRelationship"/>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="hasConditionant"/>
         </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
     <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >Each cell in an PR-OWL table has a probability assignment for the state of a RV given the states of its parent nodes. Thus, the resulting relationship is N-ary and we opted for representing it via a reified relation (ProbAssign) that includes the name of the state to which the probability is being assigned, the probability value itself, and the list of states of parent nodes (i.e. conditionants) that collectively define the context in which that probability assignment is valid. Also, individuals of the ProbAssign class have an object property that links them with its respective PR-OWL table. </rdfs:comment>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:someValuesFrom rdf:resource="#CondRelationship"/>
+        <owl:onProperty>
+          <owl:FunctionalProperty rdf:about="#hasStateName"/>
+        </owl:onProperty>
+        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+        >1</owl:cardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:allValuesFrom rdf:resource="#CondRelationship"/>
         <owl:onProperty>
           <owl:ObjectProperty rdf:about="#hasConditionant"/>
         </owl:onProperty>
       </owl:Restriction>
     </rdfs:subClassOf>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >Each cell in an PR-OWL table has a probability assignment for the state of a RV given the states of its parent nodes. Thus, the resulting relationship is N-ary and we opted for representing it via a reified relation (ProbAssign) that includes the name of the state to which the probability is being assigned, the probability value itself, and the list of states of parent nodes (i.e. conditionants) that collectively define the context in which that probability assignment is valid. Also, individuals of the ProbAssign class have an object property that links them with its respective PR-OWL table. </rdfs:comment>
     <rdfs:subClassOf>
       <owl:Restriction>
-        <owl:someValuesFrom rdf:resource="#Entity"/>
         <owl:onProperty>
           <owl:FunctionalProperty rdf:about="#hasStateName"/>
         </owl:onProperty>
+        <owl:allValuesFrom rdf:resource="#Entity"/>
       </owl:Restriction>
     </rdfs:subClassOf>
   </owl:Class>
@@ -1705,10 +1694,10 @@ The inverse of this property is hasProbDist.</rdfs:comment>
     <rdfs:range rdf:resource="#Resident"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:about="#hasInputNode">
-    <rdfs:range rdf:resource="#Input"/>
     <rdfs:subPropertyOf>
       <owl:ObjectProperty rdf:about="#hasNode"/>
     </rdfs:subPropertyOf>
+    <rdfs:range rdf:resource="#Input"/>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >This object property links each MFrag with its respective input nodes.
 The inverse property is isInputNodeIn</rdfs:comment>
@@ -1738,22 +1727,22 @@ The inverse property is isInnerTermOf.</rdfs:comment>
     <rdfs:range rdf:resource="#Node"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:about="#isExemplarIn">
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >This object property relates one Skolem constant (i.e. an individual from class Skolem) to the MFrag in which it is defined.
-The inverse of this property is hasSkolem.</rdfs:comment>
     <owl:inverseOf>
       <owl:ObjectProperty rdf:about="#hasExemplar"/>
     </owl:inverseOf>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >This object property relates one Skolem constant (i.e. an individual from class Skolem) to the MFrag in which it is defined.
+The inverse of this property is hasSkolem.</rdfs:comment>
     <rdfs:domain rdf:resource="#Exemplar"/>
     <rdfs:range rdf:resource="#MFrag"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:about="#hasContextNode">
-    <owl:inverseOf>
-      <owl:ObjectProperty rdf:about="#isContextNodeIn"/>
-    </owl:inverseOf>
     <rdfs:subPropertyOf>
       <owl:ObjectProperty rdf:about="#hasNode"/>
     </rdfs:subPropertyOf>
+    <owl:inverseOf>
+      <owl:ObjectProperty rdf:about="#isContextNodeIn"/>
+    </owl:inverseOf>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >This object property links an MFrag to the context nodes being applied to it.
 The inverse property is isContextIn</rdfs:comment>
@@ -1761,12 +1750,6 @@ The inverse property is isContextIn</rdfs:comment>
     <rdfs:domain rdf:resource="#Domain_MFrag"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:about="#isPossibleValueOf">
-    <owl:inverseOf rdf:resource="#hasPossibleValues"/>
-    <rdfs:domain rdf:resource="#Entity"/>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >This object property correlates one entity with the node(s) of one or more MFrags that have such entity as a possible state.
-Note that the individuals listed as being possible values of a node must form a mutually exclusive, collectively exhaustive set. PR-OWL has the same tools for enforcing exclusiveness (i.e. MEBN entity unique name assumption and the existential and universal qualifiers acting together as a closure axiom), but the domain expert must ensure completeness.
-The inverse property is hasPossibleValues.</rdfs:comment>
     <rdfs:range>
       <owl:Class>
         <owl:unionOf rdf:parseType="Collection">
@@ -1775,6 +1758,12 @@ The inverse property is hasPossibleValues.</rdfs:comment>
         </owl:unionOf>
       </owl:Class>
     </rdfs:range>
+    <owl:inverseOf rdf:resource="#hasPossibleValues"/>
+    <rdfs:domain rdf:resource="#Entity"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >This object property correlates one entity with the node(s) of one or more MFrags that have such entity as a possible state.
+Note that the individuals listed as being possible values of a node must form a mutually exclusive, collectively exhaustive set. PR-OWL has the same tools for enforcing exclusiveness (i.e. MEBN entity unique name assumption and the existential and universal qualifiers acting together as a closure axiom), but the domain expert must ensure completeness.
+The inverse property is hasPossibleValues.</rdfs:comment>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:about="#hasParent">
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
@@ -1784,6 +1773,7 @@ The inverse property is isParentOf.
     <owl:inverseOf>
       <owl:ObjectProperty rdf:about="#isParentOf"/>
     </owl:inverseOf>
+    <rdfs:domain rdf:resource="#Resident"/>
     <rdfs:range>
       <owl:Class>
         <owl:unionOf rdf:parseType="Collection">
@@ -1792,7 +1782,6 @@ The inverse property is isParentOf.
         </owl:unionOf>
       </owl:Class>
     </rdfs:range>
-    <rdfs:domain rdf:resource="#Resident"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:about="#hasOVariable">
     <owl:inverseOf>
@@ -1807,6 +1796,10 @@ The inverse of this property is isOVariableIn.</rdfs:comment>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:ID="hasContextInstance">
     <rdfs:range rdf:resource="#Context"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >This object property links a resident node or a built-in RV to its many possible "context node instances", or the instances of context nodes that take their values from that resident node or built-in RV.
+The inverse property is isContextInstanceOf. </rdfs:comment>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
     <rdfs:domain>
       <owl:Class>
         <owl:unionOf rdf:parseType="Collection">
@@ -1815,10 +1808,6 @@ The inverse of this property is isOVariableIn.</rdfs:comment>
         </owl:unionOf>
       </owl:Class>
     </rdfs:domain>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >This object property links a resident node or a built-in RV to its many possible "context node instances", or the instances of context nodes that take their values from that resident node or built-in RV.
-The inverse property is isContextInstanceOf. </rdfs:comment>
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
     <owl:inverseOf>
       <owl:FunctionalProperty rdf:about="#isContextInstanceOf"/>
     </owl:inverseOf>
@@ -1827,9 +1816,6 @@ The inverse property is isContextInstanceOf. </rdfs:comment>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >This object property links an input node to its "generative resident node", or the resident node to which that input node is a copy.
 The inverse property is hasInputInstance.</rdfs:comment>
-    <owl:inverseOf>
-      <owl:InverseFunctionalProperty rdf:about="#hasInputInstance"/>
-    </owl:inverseOf>
     <rdfs:range>
       <owl:Class>
         <owl:unionOf rdf:parseType="Collection">
@@ -1838,6 +1824,9 @@ The inverse property is hasInputInstance.</rdfs:comment>
         </owl:unionOf>
       </owl:Class>
     </rdfs:range>
+    <owl:inverseOf>
+      <owl:InverseFunctionalProperty rdf:about="#hasInputInstance"/>
+    </owl:inverseOf>
     <rdfs:domain rdf:resource="#Input"/>
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
   </owl:ObjectProperty>
@@ -1913,11 +1902,6 @@ The inverse property is isRepBySkolem.</rdfs:comment>
     </owl:inverseOf>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:about="#isParentOf">
-    <owl:inverseOf rdf:resource="#hasParent"/>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >This object property links a resident or input node of an MFrag with its respective children, which are resident nodes in that same MFrag.
-The inverse property is hasParent.</rdfs:comment>
-    <rdfs:range rdf:resource="#Resident"/>
     <rdfs:domain>
       <owl:Class>
         <owl:unionOf rdf:parseType="Collection">
@@ -1926,6 +1910,11 @@ The inverse property is hasParent.</rdfs:comment>
         </owl:unionOf>
       </owl:Class>
     </rdfs:domain>
+    <owl:inverseOf rdf:resource="#hasParent"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >This object property links a resident or input node of an MFrag with its respective children, which are resident nodes in that same MFrag.
+The inverse property is hasParent.</rdfs:comment>
+    <rdfs:range rdf:resource="#Resident"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:about="#isMFragOf">
     <rdfs:range rdf:resource="#MTheory"/>
@@ -1952,8 +1941,8 @@ This object property is the inverse of subsOVar.</rdfs:comment>
 The inverse property is representsOVar.</rdfs:comment>
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
     <rdfs:domain rdf:resource="#OVariable"/>
-    <rdfs:range rdf:resource="#Exemplar"/>
     <owl:inverseOf rdf:resource="#representsOVar"/>
+    <rdfs:range rdf:resource="#Exemplar"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:about="#subsOVar">
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
@@ -1965,8 +1954,8 @@ Its inverse property is the functional isSubsBy.</rdfs:comment>
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#InverseFunctionalProperty"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:about="#hasProbDist">
-    <owl:inverseOf rdf:resource="#isProbDistOf"/>
     <rdfs:range rdf:resource="#ProbDist"/>
+    <owl:inverseOf rdf:resource="#isProbDistOf"/>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >This object property links a RV to its respective probability distributions, as defined in that RV's home MFrags. Note that this property is not being defined as functional, implying a polymorphic version of MEBN (where each RV can have different distributions in different MFrags).
 The inverse of this property is isProbDistOf.</rdfs:comment>
@@ -1985,8 +1974,8 @@ The inverse property is hasInputNode.</rdfs:comment>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >This datatype property indicates whether a probability distribution is the default probability distribution of a node or not. Default probability distributions for nodes are used when the context nodes of the MFrag containing those nodes are not met.</rdfs:comment>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-    <rdfs:domain rdf:resource="#ProbDist"/>
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <rdfs:domain rdf:resource="#ProbDist"/>
   </owl:DatatypeProperty>
   <owl:DatatypeProperty rdf:about="#hasStateProb">
     <rdfs:domain rdf:resource="#ProbAssign"/>
@@ -2076,44 +2065,43 @@ The inverse of this property is hasArgument.
     >This functional object property relates one ordinary variable (i.e. an individual from class OVariable) to its respective MFrag.
 The inverse of this property is hasOVariable.</rdfs:comment>
     <rdfs:domain rdf:resource="#OVariable"/>
-    <owl:inverseOf rdf:resource="#hasOVariable"/>
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <owl:inverseOf rdf:resource="#hasOVariable"/>
   </owl:FunctionalProperty>
   <owl:FunctionalProperty rdf:about="#isRepresentedAs">
-    <rdfs:domain rdf:resource="#DeclarativeDist"/>
     <rdfs:range>
       <owl:DataRange>
         <owl:oneOf rdf:parseType="Resource">
+          <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+          >BNIF</rdf:first>
           <rdf:rest rdf:parseType="Resource">
-            <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-            >MS_DSC</rdf:first>
             <rdf:rest rdf:parseType="Resource">
               <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
               >Quiddity_SPI</rdf:first>
               <rdf:rest rdf:parseType="Resource">
-                <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-                >Netica_DNE</rdf:first>
                 <rdf:rest rdf:parseType="Resource">
                   <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
                   >MS_XBN</rdf:first>
                   <rdf:rest rdf:parseType="Resource">
+                    <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                    >BIF</rdf:first>
                     <rdf:rest rdf:parseType="Resource">
                       <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
                       >Hugin_NET</rdf:first>
                       <rdf:rest rdf:parseType="Resource">
                         <rdf:rest rdf:parseType="Resource">
                           <rdf:rest rdf:parseType="Resource">
-                            <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-                            >Ergo_ENT</rdf:first>
                             <rdf:rest rdf:parseType="Resource">
                               <rdf:rest rdf:parseType="Resource">
+                                <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
                                 <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
                                 >PR-OWL_MEBN</rdf:first>
-                                <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
                               </rdf:rest>
                               <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
                               >Other</rdf:first>
                             </rdf:rest>
+                            <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                            >Ergo_ENT</rdf:first>
                           </rdf:rest>
                           <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
                           >IDEAL_IDE</rdf:first>
@@ -2122,23 +2110,32 @@ The inverse of this property is hasOVariable.</rdfs:comment>
                         >Genie_DSL</rdf:first>
                       </rdf:rest>
                     </rdf:rest>
-                    <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-                    >BIF</rdf:first>
                   </rdf:rest>
                 </rdf:rest>
+                <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+                >Netica_DNE</rdf:first>
               </rdf:rest>
             </rdf:rest>
+            <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+            >MS_DSC</rdf:first>
           </rdf:rest>
-          <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-          >BNIF</rdf:first>
         </owl:oneOf>
       </owl:DataRange>
     </rdfs:range>
+    <rdfs:domain rdf:resource="#DeclarativeDist"/>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >This datatype property defines how a given declarative probability distribution is expressed. Each probability distribution can be expressed in different formats, and each format is defined by this datatype property. Possible formats include Netica tables, Netica equations, Quiddity formulas, MEBN syntax, and others. However, the declaration itself is stored in the hasDeclaration datatype property as a string so parsers will have to know how to deal with the specific text format of each declaration.</rdfs:comment>
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
   </owl:FunctionalProperty>
   <owl:FunctionalProperty rdf:about="#hasArgTerm">
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >This object property links one instance of class ArgRelationship (which is linked to a RV) to an internal variable within the home MFrag where its RV is resident, to a node that is being used as argument in that RV, or to a MEBN entity. 
+This object property is the inverse of isArgTermIn.
+One individual of the class ArgRelationship can have only one RV (since it refers to a specific argument of an RV), and thus can be related to only one OVariable (Simple RV Terms) or one Node (Composite RV Terms), which makes that property a functional one.
+The inverse property is isArgTermIn.</rdfs:comment>
+    <owl:inverseOf>
+      <owl:InverseFunctionalProperty rdf:about="#isArgTermIn"/>
+    </owl:inverseOf>
     <rdfs:range>
       <owl:Class>
         <owl:unionOf rdf:parseType="Collection">
@@ -2149,14 +2146,6 @@ The inverse of this property is hasOVariable.</rdfs:comment>
         </owl:unionOf>
       </owl:Class>
     </rdfs:range>
-    <owl:inverseOf>
-      <owl:InverseFunctionalProperty rdf:about="#isArgTermIn"/>
-    </owl:inverseOf>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >This object property links one instance of class ArgRelationship (which is linked to a RV) to an internal variable within the home MFrag where its RV is resident, to a node that is being used as argument in that RV, or to a MEBN entity. 
-This object property is the inverse of isArgTermIn.
-One individual of the class ArgRelationship can have only one RV (since it refers to a specific argument of an RV), and thus can be related to only one OVariable (Simple RV Terms) or one Node (Composite RV Terms), which makes that property a functional one.
-The inverse property is isArgTermIn.</rdfs:comment>
     <rdfs:domain rdf:resource="#ArgRelationship"/>
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
   </owl:FunctionalProperty>
@@ -2164,8 +2153,8 @@ The inverse property is isArgTermIn.</rdfs:comment>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >This datatype property conveys the declarative probability distributions. Each probability distribution can be expressed in different formats and each format is defined by the datatype property isRepresentedAs. Possible formats include Netica tables, Netica equations, Quiddity formulas, MEBN syntax, and others. However, the declaration itself is stored as a string so parsers are expected to understand how to deal with the specific text format of each declaration.</rdfs:comment>
     <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
     <rdfs:domain rdf:resource="#DeclarativeDist"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
   </owl:FunctionalProperty>
   <owl:FunctionalProperty rdf:about="#hasStateName">
     <rdfs:domain rdf:resource="#ProbAssign"/>
@@ -2185,12 +2174,9 @@ The inverse of this property is isArgumentOf</rdfs:comment>
     <rdfs:range rdf:resource="#ArgRelationship"/>
   </owl:InverseFunctionalProperty>
   <owl:InverseFunctionalProperty rdf:about="#isArgTermIn">
-    <owl:inverseOf rdf:resource="#hasArgTerm"/>
     <rdfs:range rdf:resource="#ArgRelationship"/>
+    <owl:inverseOf rdf:resource="#hasArgTerm"/>
     <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >This object property links an individual of class OVariable, Resident, Entity, or Skolem to one ArgRelationship(s) that has individual as its argument. Each ArgRelationship can have only one argument, but each individual of those classes can refer to many ArgRelationships.
-The inverse of this property is hasArgTerm.</rdfs:comment>
     <rdfs:domain>
       <owl:Class>
         <owl:unionOf rdf:parseType="Collection">
@@ -2201,9 +2187,13 @@ The inverse of this property is hasArgTerm.</rdfs:comment>
         </owl:unionOf>
       </owl:Class>
     </rdfs:domain>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >This object property links an individual of class OVariable, Resident, Entity, or Skolem to one ArgRelationship(s) that has individual as its argument. Each ArgRelationship can have only one argument, but each individual of those classes can refer to many ArgRelationships.
+The inverse of this property is hasArgTerm.</rdfs:comment>
   </owl:InverseFunctionalProperty>
   <owl:InverseFunctionalProperty rdf:about="#hasInputInstance">
     <owl:inverseOf rdf:resource="#isInputInstanceOf"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
     <rdfs:domain>
       <owl:Class>
         <owl:unionOf rdf:parseType="Collection">
@@ -2212,11 +2202,10 @@ The inverse of this property is hasArgTerm.</rdfs:comment>
         </owl:unionOf>
       </owl:Class>
     </rdfs:domain>
-    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:range rdf:resource="#Input"/>
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >This object property links a resident node or a built-in RV to its many possible "input node instances", or the instances of input nodes that take their values from that resident node or built-in RV.
 The inverse property is isInputInstanceOf. </rdfs:comment>
-    <rdfs:range rdf:resource="#Input"/>
   </owl:InverseFunctionalProperty>
 </rdf:RDF>
 

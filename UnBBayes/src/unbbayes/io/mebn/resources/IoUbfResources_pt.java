@@ -49,6 +49,6 @@ public class IoUbfResources_pt extends ListResourceBundle {
 		{"MTheoryConfigError", "Algumas MTheories não foram carregadas - usando default"},
 		{"MFragConfigError", "Algumas MFrags/Nós não foram carregadas - usando default"},
 		{"MFragTypeException", "O sistema executou uma tentativa de armazenamento de uma MFrag inválida"},
-		
+		{"UnknownPrOWLError", "Erro ao manipular pr-owl file (.owl)"}
 	};
 }

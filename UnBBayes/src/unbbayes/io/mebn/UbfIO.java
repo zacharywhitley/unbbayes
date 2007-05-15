@@ -16,6 +16,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StreamTokenizer;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ResourceBundle;
@@ -83,7 +84,7 @@ public class UbfIO implements MebnIO {
 	};
 	
 	
-	public static final double ubfVersion = 0.01;
+	public static final double ubfVersion = 0.02;
 	
 	public static final String fileExtension = "ubf";
 	
@@ -572,8 +573,13 @@ public class UbfIO implements MebnIO {
 		try {
 			this.prowlIO.saveMebn(prowlFile,mebn);
 		} catch(Exception e) {
-			throw new IOException(e.getLocalizedMessage() + " : " + this.resource.getString("NoProwlFound"));
+			throw new IOException(e.getLocalizedMessage() + " : " + this.resource.getString("UnknownPrOWLError"));
 		}
+		
+		// Extract relative prowlFile URI
+		File root = new File("root");
+		URI relativeURI = root.getCanonicalFile().getParentFile().toURI();
+		relativeURI = relativeURI.relativize(prowlFile.toURI());
 		
 		// Save .ubf header
 		out.println(this.getToken("CommentInitiator") + resource.getString("UBFFileHeader"));
@@ -582,7 +588,7 @@ public class UbfIO implements MebnIO {
 		out.println(this.getToken("PrOwlFileDeclarator")				  
 				  + this.getToken("AttributionSeparator") 
 				  + this.getToken("Quote")
-				  + prowlFile.toURI().getPath()
+				  + relativeURI.getPath()
 				  + this.getToken("Quote") );
 		
 		// Save Mtheory declarations
