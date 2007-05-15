@@ -3,18 +3,21 @@
  */
 package unbbayes.controller.test;
 
+import unbbayes.io.mebn.test.UbfIoTest;
 import junit.framework.TestCase;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  * @author shou
  *
  */
-public class TestMEBNController extends TestCase {
+public class MEBNControllerTest extends TestCase {
 
 	/**
 	 * @param arg0
 	 */
-	public TestMEBNController(String arg0) {
+	public MEBNControllerTest(String arg0) {
 		super(arg0);
 	}
 
@@ -437,5 +440,11 @@ public class TestMEBNController extends TestCase {
 	public void testSetMebnEditionPane() {
 		fail("Not yet implemented"); // TODO
 	}
-
+	
+	/**
+	 *  Use this for test suite creation
+	 */
+	public static Test suite() {
+		return new TestSuite(MEBNControllerTest.class);
+	}
 }

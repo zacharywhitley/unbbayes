@@ -3,18 +3,21 @@
  */
 package unbbayes.prs.mebn.test;
 
+import unbbayes.prs.mebn.builtInRV.test.BuiltInRVAndTest;
 import junit.framework.TestCase;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  * @author shou
  *
  */
-public class TestArgument extends TestCase {
+public class ArgumentTest extends TestCase {
 
 	/**
 	 * @param arg0
 	 */
-	public TestArgument(String arg0) {
+	public ArgumentTest(String arg0) {
 		super(arg0);
 	}
 
@@ -87,5 +90,11 @@ public class TestArgument extends TestCase {
 	public void testIsSimpleArgRelationship() {
 		fail("Not yet implemented"); // TODO
 	}
-
+	
+	/**
+	 *  Use this for test suite creation
+	 */
+	public static Test suite() {
+		return new TestSuite(ArgumentTest.class);
+	}
 }

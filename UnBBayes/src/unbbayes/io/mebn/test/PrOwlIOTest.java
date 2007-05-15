@@ -3,18 +3,21 @@
  */
 package unbbayes.io.mebn.test;
 
+import unbbayes.prs.mebn.test.ArgumentTest;
 import junit.framework.TestCase;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  * @author shou
  *
  */
-public class TestPrOwlIO extends TestCase {
+public class PrOwlIOTest extends TestCase {
 
 	/**
 	 * @param arg0
 	 */
-	public TestPrOwlIO(String arg0) {
+	public PrOwlIOTest(String arg0) {
 		super(arg0);
 	}
 
@@ -45,5 +48,11 @@ public class TestPrOwlIO extends TestCase {
 	public void testSaveMebn() {
 		fail("Not yet implemented"); // TODO
 	}
-
+	
+	/**
+	 *  Use this for test suite creation
+	 */
+	public static Test suite() {
+		return new TestSuite(PrOwlIOTest.class);
+	}
 }
