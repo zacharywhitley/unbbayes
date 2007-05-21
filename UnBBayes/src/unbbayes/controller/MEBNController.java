@@ -95,7 +95,7 @@ public class MEBNController {
 	/*---------------------------- Edge ---------------------------*/
 	
     /**
-     *  Faz a ligac√£o do arco desejado entre pai e filho.
+     *  Faz a ligac„o do arco desejado entre pai e filho.
      *
      * @param  edge  um <code>TArco</code> que representa o arco a ser ligado
      * @since
@@ -183,7 +183,7 @@ public class MEBNController {
 		
 		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
 		String name = resource.getString("ordinaryVariableName") + domainMFrag.getOrdinaryVariableNum(); 
-		String type = Type.getDefaultType(); 
+		Type type = Type.getDefaultType(); 
 		OrdinaryVariable ov = new OrdinaryVariable(name, type, domainMFrag);
 		
 		ov.setPosition(x, y);
@@ -497,7 +497,7 @@ public class MEBNController {
 
 		DomainMFrag domainMFrag = (DomainMFrag) multiEntityBayesianNetwork.getCurrentMFrag();
 		String name = resource.getString("ordinaryVariableName") + domainMFrag.getOrdinaryVariableNum(); 
-		String type = Type.getDefaultType(); 
+		Type type = Type.getDefaultType(); 
 		OrdinaryVariable ov = new OrdinaryVariable(name, type, domainMFrag);
 		domainMFrag.addOrdinaryVariable(ov);
 		
@@ -602,35 +602,26 @@ public class MEBNController {
 	/**
 	 * Adiciona uma nova entidade com o nome passado como parametro
 	 * pelo usuario. O tipo da entidade sera um nome gerado automaticamente, a 
-	 * partir do passado pelo usu√°rio. 
+	 * partir do passado pelo usu·rio. 
 	 */
 	public ObjectEntity addObjectEntity() throws TypeException{
 
 		
 		String name = resource.getString("entityName") + ObjectEntity.getEntityNum();
 
-		String nameType = name + Type.getLabelSuffix() ; 
+		ObjectEntity objectEntity = ObjectEntity.createObjectEntity(name);
 		
-		Type.addType(nameType);
-		
-		ObjectEntity objectEntity = new ObjectEntity(name, nameType); 
-		 
 		return objectEntity; 
 		
 	}
 	
 	public void renameObjectEntity(ObjectEntity entity, String name) throws TypeException{
 		
-		String nameType = name + Type.getLabelSuffix(); 
-		
-		Type.addType(nameType);
-		
 		entity.setName(name); 
-		entity.setType(nameType);
 		
 	}
 	
-	public void removeObjectEntity(ObjectEntity entity){
+	public void removeObjectEntity(ObjectEntity entity) throws Exception{
 		ObjectEntity.removeEntity(entity); 
 		try{
 		   Type.removeType(entity.getType());
@@ -699,6 +690,7 @@ public class MEBNController {
     
 	}
 	
+	/*
 	public void linkOrdVariable2Entity(String nameOV, String entity){
 		
 		ArrayList<OrdinaryVariable> listOV = (ArrayList<OrdinaryVariable>)this.getCurrentMFrag().getOrdinaryVariableList(); 
@@ -718,6 +710,8 @@ public class MEBNController {
 		}
 	}
 
+*/
+	
 	public MultiEntityBayesianNetwork getMultiEntityBayesianNetwork() {
 		return multiEntityBayesianNetwork;
 	}

@@ -54,7 +54,7 @@ public class ArgumentsTypedPane extends JPanel{
 			Vector<OrdinaryVariable> list = new Vector<OrdinaryVariable>(); 
 			list.add(null); //elemento em branco... 
 			for(OrdinaryVariable ov: ovList){
-				if(ov.getValueType().compareTo(pointer.getTypeOfArgument(i)) == 0){
+				if(ov.getValueType().equals(pointer.getTypeOfArgument(i))){
 					list.add(ov); 
 					if(pointer.getOrdinaryVariableList().size() == 0){
 					   try{
@@ -72,7 +72,7 @@ public class ArgumentsTypedPane extends JPanel{
 			
 			btnArgXNumber = new JButton("" + i);
 			btnArgXNumber.setBackground(Color.RED); 
-			btnArgXType = new JButton(pointer.getTypeOfArgument(i)); 
+			btnArgXType = new JButton(pointer.getTypeOfArgument(i).getName()); 
 			btnArgXType.setBackground(Color.LIGHT_GRAY); 
 			
 			tbArgX.add(btnArgXNumber); 

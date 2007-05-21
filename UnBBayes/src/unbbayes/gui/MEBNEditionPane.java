@@ -257,7 +257,7 @@ public class MEBNEditionPane extends JPanel {
   			public void actionPerformed(ActionEvent ae) { 
   				String ovName = JOptionPane.showInputDialog(null, "Entre com o nome da variavel ordinaria: ", "Test Finding", JOptionPane.QUESTION_MESSAGE); 
   				String entityName = JOptionPane.showInputDialog(null, "Entre com o nome da entidade: ", "Test Finding", JOptionPane.QUESTION_MESSAGE); 
-  				controller.linkOrdVariable2Entity(ovName, entityName); 
+  				//controller.linkOrdVariable2Entity(ovName, entityName); 
   			}
   		});  
         

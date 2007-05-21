@@ -47,7 +47,7 @@ public class OVariableEditionPane extends JPanel {
 	
 	
 	private JComboBox jcbType; 
-	private String[] types; 	
+	private Type[] types; 	
 	
 	private JButton jbNew; 
 	private JButton jbDelete; 	
@@ -85,7 +85,7 @@ public class OVariableEditionPane extends JPanel {
 	    type = new JLabel(resource.getString("typeLabel")); 
 	    
 	    //Fill the combo box with the possible labels 
-	    types = Type.getListOfTypes().toArray( new String[0] ); 
+	    types = Type.getListOfTypes().toArray( new Type[0] ); 
 	    jcbType = new JComboBox(types); 
 	    jcbType.setSelectedIndex(0); 
 	    
@@ -138,13 +138,13 @@ public class OVariableEditionPane extends JPanel {
 	 * @return true if sucess or false if the type don't exists in the 
 	 * list of types of this panel. 
 	 */
-	public boolean setTypeOVariableSelected(String nameType){
+	public boolean setTypeOVariableSelected(Type nameType){
 		
 		int index = 0;
 		boolean sucess = false; 
 		
 		for(index = 0; index < types.length; index++){
-			if(types[index].compareTo(nameType) == 0){
+			if(types[index].equals(nameType)){
 				jcbType.setSelectedIndex(index);
 				sucess = true; 
 				break; 
@@ -221,7 +221,7 @@ public class OVariableEditionPane extends JPanel {
            new ActionListener(){
         	   public void actionPerformed(ActionEvent e){
         		   
-	    	        String typeName = (String)jcbType.getSelectedItem();
+	    	        Type typeName = (Type)jcbType.getSelectedItem();
 					System.out.println("item selected = " + typeName); 
 	    	        
 					if(treeMFrag.getOVariableActive() != null){

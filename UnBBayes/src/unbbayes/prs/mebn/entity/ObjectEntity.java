@@ -7,6 +7,11 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.entity.exception.TypeDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 
+/**
+ * 
+ * 
+ *
+ */
 public class ObjectEntity extends Entity {
 	
 	private static List<ObjectEntity> listEntity = new ArrayList<ObjectEntity>();
@@ -27,26 +32,49 @@ public class ObjectEntity extends Entity {
 	 */
 	private List<ObjectEntity> listObjectEntityInstance;
 	
-	public ObjectEntity(String name, String type) throws TypeException {
+	private ObjectEntity(String name) throws TypeException {
+		
 		this.name = name;
-		setType(type);
-		ObjectEntity.addEntity(this);
+		
+		Type typeOfThisEntity = Type.createType(name + "_label");  
+		this.setType(typeOfThisEntity);
+		
+	}
+	
+	public static ObjectEntity createObjectEntity(String name) throws TypeException{
+		
+		ObjectEntity objEntity = new ObjectEntity(name); 
+		objEntity.getType().addUserObject(objEntity); 
+		
+		ObjectEntity.addEntity(objEntity);
+	
 		plusEntityNum(); 
+		
+		return objEntity; 
+		
+	}
+	
+	/**
+	 * Create a entity instance of a object entity. 
+	 * @param name
+	 * @throws TypeException
+	 */
+	private ObjectEntity(String name, Type _type) throws TypeException {
+		
+		this.name = name;
+		  
+		setType(_type);
+		_type.addUserObject(this); 
+		
 	}
 	
 	private static void addEntity(ObjectEntity entity) {
 		ObjectEntity.listEntity.add(entity);
 	}
 	
-	public static void removeEntity(ObjectEntity entity){
-		
-		try{
-		   Type.removeType(entity.getType());
-		}
-		catch(TypeDoesNotExistException e){
-				
-		}	
-			
+	public static void removeEntity(ObjectEntity entity) throws Exception{
+
+		entity.delete(); 	
 		ObjectEntity.listEntity.remove(entity);
 
 	}
@@ -95,7 +123,7 @@ public class ObjectEntity extends Entity {
 	 * setting.
 	 */
 	public ObjectEntity addInstance(String name) throws TypeException {
-		ObjectEntity instance = new ObjectEntity(name, type);
+		ObjectEntity instance = new ObjectEntity(name, this.getType());
 		listObjectEntityInstance.add(instance);
 		return instance;
 	}
@@ -104,15 +132,24 @@ public class ObjectEntity extends Entity {
 		listObjectEntityInstance.remove(instance);
 	}
 	
+	private void delete() throws TypeDoesNotExistException{
+		
+		getType().removeUserObject(this); 
+		Type.removeType(getType());
+		
+	}
+	
+	//Para gerar nomes automaticos. 
+	
 	public static int getEntityNum() {
 		return entityNum;
 	}
 
-	public void setEntityNum(int entityNum) {
-		this.entityNum = entityNum;
+	public static void setEntityNum(int _entityNum) {
+		entityNum = _entityNum;
 	}
 	
-	public void plusEntityNum(){
+	public static void plusEntityNum(){
 		entityNum++; 
 	}
 }

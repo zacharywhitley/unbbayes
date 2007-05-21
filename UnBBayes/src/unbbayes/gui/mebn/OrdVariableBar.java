@@ -28,7 +28,7 @@ public class OrdVariableBar extends JToolBar{
 	private OrdinaryVariable ov; 
 		
 	private JComboBox jcbType; 
-	private String[] types; 	
+	private Type[] types; 	
 	
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
@@ -47,7 +47,7 @@ public class OrdVariableBar extends JToolBar{
 	    type = new JLabel(resource.getString("typeLabel")); 
 	    
 	    //Fill the combo box with the possible labels 
-	    types = Type.getListOfTypes().toArray( new String[0] ); 
+	    types = Type.getListOfTypes().toArray( new Type[0] ); 
 	    jcbType = new JComboBox(types); 
 	    jcbType.setSelectedIndex(0);
 	    
@@ -79,9 +79,7 @@ public class OrdVariableBar extends JToolBar{
            new ActionListener(){
         	   public void actionPerformed(ActionEvent e){
         		   
-	    	        String typeName = (String)jcbType.getSelectedItem();
-					System.out.println("item selected = " + typeName); 
-	    	        
+	    	        Type typeName = (Type)jcbType.getSelectedItem();
 					if(ov != null){
 						ov.setValueType(typeName); 
 						ov.updateLabel(); 

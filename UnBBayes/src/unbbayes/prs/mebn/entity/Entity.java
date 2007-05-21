@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.mebn.MultiEntityNode;
+import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 
@@ -21,7 +22,7 @@ public abstract class Entity{
 	
 	protected String name;
 
-	protected String type;
+	protected Type type;
 
 	protected List<MultiEntityNode> listIsPossibleValueOf = new ArrayList<MultiEntityNode>();
 
@@ -33,12 +34,19 @@ public abstract class Entity{
 	 * @throws TypeDoesNotExistException
 	 *             Thrown if the type to be set does not exist.
 	 */
-	public void setType(String type) throws TypeException {
-		if (Type.hasType(type))
-			this.type = type;
-		else
-			throw new TypeDoesNotExistException("The type " + type
-					+ " does not exist. Please try again.");
+	public void setType(Type _type) throws TypeException {
+		
+		if (Type.hasType(_type)){
+			if(type != null){
+				type.removeUserObject(this); 
+			}
+			this.type = _type;
+		}
+		else{
+			throw new TypeDoesNotExistException();
+	
+		}
+		
 	}
 
 	/**
@@ -46,7 +54,7 @@ public abstract class Entity{
 	 * 
 	 * @return The entity's type.
 	 */
-	public String getType() {
+	public Type getType() {
 		return type;
 	}
 
@@ -96,9 +104,13 @@ public abstract class Entity{
 	 * Set the entity's name. 
 	 * @param name The entity's name.
 	 */
-	public void setName(String name) {
-		this.name = name;
+	public void setName(String name) throws TypeAlreadyExistsException{
+		if(type != null){
+			type.removeUserObject(this); 
+		}
 		
+		type =  Type.createType(name + "_label"); 
+		this.name = name;
 	}
 	
 	public String toString(){

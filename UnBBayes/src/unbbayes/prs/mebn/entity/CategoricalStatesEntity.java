@@ -11,7 +11,7 @@ public class CategoricalStatesEntity extends Entity {
 	private static List<CategoricalStatesEntity> listEntity = new ArrayList<CategoricalStatesEntity>();	
 	
 	private CategoricalStatesEntity(String name) {
-		this.type = "CategoryLabel";
+		this.type = Type.typeCategoryLabel;
 		this.name = name;
 		CategoricalStatesEntity.addEntity(this);
 	}

@@ -23,7 +23,7 @@ public class BooleanStatesEntity extends Entity {
 	}
 
 	private BooleanStatesEntity(String name) {
-		this.type = "Boolean";
+		this.type = Type.typeBoolean;
 		this.name = name;
 	}
 

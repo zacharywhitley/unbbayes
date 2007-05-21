@@ -2,6 +2,7 @@ package unbbayes.prs.mebn;
 
 import java.util.Vector;
 
+import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
 
 /** 
@@ -32,7 +33,7 @@ public class ResidentNodePointer {
 	
 	private OrdinaryVariable ordinaryVariableList[]; 	
 	
-	private String typesOfOrdinaryVariableList[]; 
+	private Type typesOfOrdinaryVariableList[]; 
 	
 	private final int numberArguments; 
 	
@@ -50,7 +51,7 @@ public class ResidentNodePointer {
 		residentNode = _residentNode; 
 		
 		numberArguments = residentNode.getOrdinaryVariableList().size(); 
-		typesOfOrdinaryVariableList = new String[numberArguments]; 
+		typesOfOrdinaryVariableList = new Type[numberArguments]; 
 	    ordinaryVariableList = new OrdinaryVariable[numberArguments]; 
 	    
 		buildTypeOfOVList(); 
@@ -67,7 +68,10 @@ public class ResidentNodePointer {
 		
 		        int index = 0; 
 			    for (OrdinaryVariable ov: residentNode.getOrdinaryVariableList()){
-				   typesOfOrdinaryVariableList[index] = ov.getValueType(); 
+				   Type type = ov.getValueType(); 
+			       typesOfOrdinaryVariableList[index] = type; 
+				   type.addUserObject(this); 
+			       
 				   index++; 
 			    }
 		
@@ -82,8 +86,8 @@ public class ResidentNodePointer {
 	
 	public void addOrdinaryVariable(OrdinaryVariable ov, int index)  throws OVDontIsOfTypeExpected{
 		
-		if(typesOfOrdinaryVariableList[index].compareTo(ov.getValueType()) != 0){
-			throw new OVDontIsOfTypeExpected(typesOfOrdinaryVariableList[index]); 
+		if(typesOfOrdinaryVariableList[index].equals(ov.getValueType())){
+			throw new OVDontIsOfTypeExpected(typesOfOrdinaryVariableList[index].toString()); 
 		}
 		else{
 			ordinaryVariableList[index] = ov; 
@@ -128,13 +132,13 @@ public class ResidentNodePointer {
 		this.ordinaryVariableList = ordinaryVariableList;
 	}*/
 
-	public String getTypeOfArgument(int index){
+	public Type getTypeOfArgument(int index){
 		return typesOfOrdinaryVariableList[index]; 
 	}
 
-	public Vector<String> getTypesOfOrdinaryVariableList() {
+	public Vector<Type> getTypesOfOrdinaryVariableList() {
         
-		Vector<String> vetor = new Vector<String>(); 
+		Vector<Type> vetor = new Vector<Type>(); 
 		
 		for(int i= 0; i < typesOfOrdinaryVariableList.length; i++){
 			vetor.add(i, typesOfOrdinaryVariableList[i]); 

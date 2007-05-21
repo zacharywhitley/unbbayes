@@ -128,22 +128,6 @@ public class LoaderPrOwlIO {
 			throw new IOMebnException(resource.getString("ErrorReadingFile") + ": " + file.getAbsolutePath()); 
 		}
 		
-		/* Build the owl model */
-		/*
-		FileInputStream inputStream; 
-		
-		inputStream = new FileInputStream(file); 
-		
-		
-		try{
-			System.out.println("File: " + file.getAbsolutePath()); 
-			owlModel.load(inputStream, FileUtils.langXMLAbbrev);   
-		}
-		catch (Exception e){
-			throw new IOMebnException("Problemas ao tentar ler o arquivo" + file.getName()); 
-		}
-		*/
-		
 		/*------------------- MTheory -------------------*/
 		mebn = this.loadMTheoryClass(); 
 		
@@ -259,7 +243,7 @@ public class LoaderPrOwlIO {
 			
 			try{
 				//TODO novo sistema de tipagem
-			   Type.addType(individualOne.getBrowserText()); 
+			    Type type = Type.createType(individualOne.getBrowserText()); 
 			}
 			catch (TypeAlreadyExistsException exception){
 				//OK... lembre-se que os tipos basicos j� existem... 
@@ -317,10 +301,9 @@ public class LoaderPrOwlIO {
 			
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasType");
 
-			//TODO melhorar isto!!!
 			try{
-				Type.addType(subClass.getBrowserText() + "_Type"); 
-				ObjectEntity objectEntityMebn = new ObjectEntity(subClass.getBrowserText(), subClass.getBrowserText() + "_Type"); 	
+				ObjectEntity objectEntityMebn = new ObjectEntity(subClass.getBrowserText()); 	
+			    //TODO verificar se o tipo eh o desejado... 
 			}
 			catch(TypeException typeException){
 				typeException.printStackTrace(); 
@@ -433,6 +416,7 @@ public class LoaderPrOwlIO {
 		instances = contextNodePr.getInstances(false); 
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
+			
 			individualOne = (OWLIndividual)it.next();
 			contextNode = mapContextNode.get(individualOne.getBrowserText()); 
 			if (contextNode == null){
@@ -440,10 +424,6 @@ public class LoaderPrOwlIO {
 			}
 			
 			System.out.println("Context Node loaded: " + individualOne.getBrowserText()); 				
-			
-			//loadHasPositionProperty(individualOne, contextNode); 
-			
-			System.out.println("Domain Resident loaded: " + individualOne.getBrowserText()); 			
 			
 			/* -> isContextNodeIn  */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isContextNodeIn"); 			
@@ -454,6 +434,7 @@ public class LoaderPrOwlIO {
 			if(domainMFrag.containsContextNode(contextNode) == false){
 				throw new IOMebnException(resource.getString("ContextNodeNotExistsInMFrag"), contextNode.getName() + ", " + domainMFrag.getName()); 
 			}
+			
 			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
 			
 			/* -> isNodeFrom */
@@ -609,7 +590,9 @@ public class LoaderPrOwlIO {
 				}
 				builtInRV.addInputInstance(generativeInputNode); 
 				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
-			}				
+			}
+			
+			/* -> hasContextInstance */
 			
 		}						
 	}
@@ -1120,6 +1103,7 @@ public class LoaderPrOwlIO {
 		 * */
 		
 		Object obj = mapIsContextInstanceOf.get(contextNode); 
+		
 		if((obj instanceof BuiltInRV)){
 			BuiltInRV builtIn = (BuiltInRV) obj; 
 			
@@ -1168,7 +1152,8 @@ public class LoaderPrOwlIO {
 			
 			
 			nodeFormulaRoot = new NodeFormulaTree(builtIn.getName(), type, subType, builtIn); 
-		    
+		    nodeFormulaRoot.setMnemonic(builtIn.getMnemonic()); 
+			
 			/* 
 			 * procura pelos argumentos do builtIn, podendo estes serem contextnodes internos, o que 
 			 * acarreta uma busca dos argumentos internos a este at� se chegar ao final. 

@@ -176,7 +176,7 @@ public class EntityEditionPane extends JPanel{
                 	if(selected != null){
                 	   txtName.setText(selected.getName()); 
                 	   txtName.setEditable(true); 
-                       txtType.setText(selected.getType());
+                       txtType.setText(selected.getType().getName());
                 	}
                 }
             }  	
@@ -199,7 +199,7 @@ public class EntityEditionPane extends JPanel{
   							   jlEntities.setSelectedValue(selected, true); 
   		  					   txtName.setText(selected.getName()); 
   		  					   txtName.setEditable(false); 
-  		  					   txtType.setText(selected.getType());
+  		  					   txtType.setText(selected.getType().getName());
   		  					   update();
   							}
   							catch (TypeException typeException){
@@ -227,7 +227,7 @@ public class EntityEditionPane extends JPanel{
 				   update();  
 				   
 				   jlEntities.setSelectedValue(selected, true); 
-				   txtType.setText(selected.getType()); 
+				   txtType.setText(selected.getType().getName()); 
 				   txtName.setEditable(true); 
 				   txtName.setText(selected.getName());
 				   txtName.selectAll(); 
@@ -242,7 +242,12 @@ public class EntityEditionPane extends JPanel{
 		jbDelete.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) { 
   			    if(selected != null){
-  			    	mebnController.removeObjectEntity(selected); 
+  			    	try{
+  			    	   mebnController.removeObjectEntity(selected);
+  			    	}
+  			    	catch(Exception e){
+  			    		e.printStackTrace(); 
+  			    	}
   			    	update(); 
   			    	txtName.setText(" "); 
   			    	txtType.setText(" "); 
