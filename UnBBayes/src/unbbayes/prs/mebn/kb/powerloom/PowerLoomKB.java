@@ -27,8 +27,8 @@ import edu.isi.stella.Module;
 
 /**
  * Usa o PowerLoom para montar uma base de conhecimentos a partir da MTheoria, 
- * permitindo que se use este para responder as restri√ß√µes impostas pelos n√≥s de 
- * contexto. O PowerLoom ? utilizado como um reasoner de L√≥gica de primeira
+ * permitindo que se use este para responder as restriÁıes impostas pelos nÛs de 
+ * contexto. O PowerLoom È utilizado como um reasoner de LÛgica de primeira
  * ordem. 
  * 
  * @author Laecio Lima dos Santos
@@ -66,19 +66,19 @@ public class PowerLoomKB implements KnowledgeBase{
 	
 	public void executeConceptDefinition(ObjectEntity entity){
 		
-		System.out.println("PL: Defini√ß√£o de conceito -> " + entity.getType()); 
-		PLI.sCreateConcept(entity.getType(), null, moduleName, null); 
+		System.out.println("PL: DefiniÁ„o de conceito -> " + entity.getType()); 
+		PLI.sCreateConcept(entity.getType().toString(), null, moduleName, null); 
 		PLI.sEvaluate("(assert ( closed " + entity.getType() +" ) )", moduleName, null); 
 		
 	}
 	
 	public void executeRandonVariableDefinition(DomainResidentNode resident){
 		
-		System.out.println("PL: Defini√ß√£o de randonVariable -> " + resident.getName()); 
+		System.out.println("PL: DefiniÁ„o de randonVariable -> " + resident.getName()); 
 		
 		List<Entity> states = resident.getPossibleValueList(); 
 		
-		/* Passo 1: definir a lista de possiveis estados do n? residente */
+		/* Passo 1: definir a lista de possiveis estados do nÛ residente */
 		String setofList = ""; 
 		for(Entity state: states){
 			setofList+= state.getName() + ",";
@@ -87,11 +87,11 @@ public class PowerLoomKB implements KnowledgeBase{
 			setofList = setofList.substring(0, setofList.length() - 1); //tirar a virgula final
 		}
 		
-		//defini√ß√£o da imagem da fun√ß√£o
+		//definiÁ„o da imagem da funÁ„o
 		String residentStateListName = resident.getName() + "_state "; 
 		PLI.sEvaluate("(defconcept " + residentStateListName + "(?z) :<=> (member-of ?z ( setof " + setofList + ")))", moduleName, null);
 		
-		/* Passo 2: definir o n? residente */
+		/* Passo 2: definir o nÛ residente */
 		String arguments = ""; 
 		List<OrdinaryVariable> listVariables = resident.getOrdinaryVariableList(); 
 		
@@ -139,19 +139,19 @@ public class PowerLoomKB implements KnowledgeBase{
 	/*
 	 * 
 	 * Deve ser criada uma lista com as variaveis ordinarias que deverao
-	 * ser instanciadas antes de se tentar resolver um n? de contexto. 
-	 * As vari√°veis exemplares, por outro lado, n√£o ser√£o nunca instanciadas. 
-	 * Usaremos deste ultimo fato para definir o que ? uma vari√°vel ordin√°ria
-	 * e o que ? uma vari√°vel exemplar: sempre que a vari√°vel ordin√°ria n√£o 
-	 * estiver preenchida ela ? uma exemplar (observe a responsabiliade de quem
-	 * chama esta fun√ß√£o: deve preencher todas as VO's, n√£o permitindo o 
+	 * ser instanciadas antes de se tentar resolver um nÛ de contexto. 
+	 * As vari·veis exemplares, por outro lado, n„o ser„o nunca instanciadas. 
+	 * Usaremos deste ultimo fato para definir o que È uma vari·vel ordin·ria
+	 * e o que È uma vari·vel exemplar: sempre que a vari·vel ordin·ria n„o 
+	 * estiver preenchida ela È uma exemplar (observe a responsabiliade de quem
+	 * chama esta funÁ„o: deve preencher todas as VO's, n„o permitindo o 
 	 * prosseguimento caso haja alguma nao preenchida). 
 	 *
 	 */
 	
 	/*
-	 * Nesta vers√£o de teste, cada ov estara com a entidade que a preenche
-	 * anexada a esta... A vers√£o final pode utilizar outra estrat√©gia...  
+	 * Nesta vers„o de teste, cada ov estara com a entidade que a preenche
+	 * anexada a esta... A vers„o final pode utilizar outra estratÈgia...  
 	 */
 	
 	public boolean executeContextFormula(ContextNode context){
@@ -389,22 +389,22 @@ public class PowerLoomKB implements KnowledgeBase{
 	
 	public static void main(String[] args){
 		
-		PowerLoomKB test = new PowerLoomKB(); 
-		
-		ObjectEntity teste; 
-		
-		try{
-		   Type.addType("Starship" + Type.getLabelSuffix()); 
-		   teste = new ObjectEntity("Starship", "Starship_Label"); 
-		   test.executeConceptDefinition(teste); 
-		}
-		catch(Exception e){
-			e.printStackTrace(); 
-		}
-		
-		System.out.println("[PL] saving module"); 
-		test.saveDefinitionsFile(); 
-		System.out.println("[PL] file save sucefull"); 
+//		PowerLoomKB test = new PowerLoomKB(); 
+//		
+//		ObjectEntity teste; 
+//		
+//		try{
+//		   Type.addType("Starship_Label"); 
+//		   teste = new ObjectEntity("Starship", "Starship_Label"); 
+//		   test.executeConceptDefinition(teste); 
+//		}
+//		catch(Exception e){
+//			e.printStackTrace(); 
+//		}
+//		
+//		System.out.println("[PL] saving module"); 
+//		test.saveDefinitionsFile(); 
+//		System.out.println("[PL] file save sucefull"); 
 		
 	}
 	

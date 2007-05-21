@@ -6,7 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import unbbayes.draw.DrawTwoBaseRectangle;
+import unbbayes.gui.draw.DrawTwoBaseRectangle;
+import unbbayes.prs.mebn.entity.Type;
 
 /**
  * 
@@ -192,7 +193,7 @@ public class GenerativeInputNode extends InputNode {
 		return residentNodePointer.getOrdinaryVariableList();
 	}
 
-	public Vector<String> getTypesOfOrdinaryVariableList() {
+	public Vector<Type> getTypesOfOrdinaryVariableList() {
 		return residentNodePointer.getTypesOfOrdinaryVariableList(); 
 	}
 

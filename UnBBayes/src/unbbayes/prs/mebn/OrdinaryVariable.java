@@ -5,9 +5,10 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.draw.DrawFlatPentagon;
+import unbbayes.gui.draw.DrawFlatPentagon;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.Type;
 
 /**
  * Ordinary Variables are placeholders used in MFrag to refer to 
@@ -20,7 +21,7 @@ public class OrdinaryVariable extends Node{
  
 	private MFrag mFrag;
 	
-	private String type; 
+	private Type type; 
 	
 	private List<Node> isOVariableOfList; 
 	
@@ -36,11 +37,13 @@ public class OrdinaryVariable extends Node{
 	 */
 	private ObjectEntity entity; 
 	
-	public OrdinaryVariable(String name, String type, MFrag mFrag){
+	public OrdinaryVariable(String name, Type type, MFrag mFrag){
 		
 		this.name = name; 
 		this.mFrag = (MFrag)mFrag; 
+		
 		this.type = type; 
+		type.addUserObject(this);
 		
 		isOVariableOfList = new ArrayList<Node>(); 
 		
@@ -91,11 +94,12 @@ public class OrdinaryVariable extends Node{
 	 * Nota: this method don't verify if the string is a type valid.  
 	 * @param type
 	 */
-	public void setValueType(String type){
+	public void setValueType(Type _type){
 		
-		this.type = new String(type); 
+		type.removeUserObject(this); 
 		
-		System.out.println("-> Type of ov " + this.name + " turned for " + type); 
+		type = _type; 
+		type.addUserObject(this); 
 		
 	}
 	
@@ -103,7 +107,7 @@ public class OrdinaryVariable extends Node{
 	 * Method responsible for return the type of the OV. 
 	 */
 	
-	public String getValueType(){
+	public Type getValueType(){
 		return type; 
 	}
 	
@@ -143,7 +147,7 @@ public class OrdinaryVariable extends Node{
 	public void delete(){
 		
     	mFrag.removeOrdinaryVariable(this); 
-	
+	    type.removeUserObject(this); 
 	    for(Node node: this.isOVariableOfList){
 	    	//TODO fazer remocao
 	    }
