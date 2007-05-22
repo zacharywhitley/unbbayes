@@ -20,7 +20,16 @@ import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.entity.Type;
 
-public class OrdVariableBar extends JToolBar{
+/**
+ * Bar of edition for one ordinary variable. 
+ * 
+ * Structure: 
+ * Icon of OV - Name of OV - Type of OV
+ * 
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
+ *
+ */
+public class OrdVariableToolBar extends JToolBar{
 
 	private JLabel name; 
 	private JTextField txtName; 
@@ -36,7 +45,7 @@ public class OrdVariableBar extends JToolBar{
     private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
     private Matcher matcher;	
 	
-	public OrdVariableBar(){
+	public OrdVariableToolBar(){
 		
   		JButton btnOrdVariableActive = new JButton(resource.getString("OrdVariableButton"));  
   		btnOrdVariableActive.setBackground(ToolKitForGuiMebn.getBorderColor()); 
@@ -98,9 +107,23 @@ public class OrdVariableBar extends JToolBar{
 	    
 	}
 	
+	/**
+	 * Set the ordinary variable that this tool bar use. 
+	 * @param _ov
+	 */
 	public void setOrdVariable(OrdinaryVariable _ov){
+		
 		ov = _ov; 
 		txtName.setText(ov.getName()); 
+		
+		//select the type of the OV in the combo box
+		for(int i = 0; i < types.length; i++){
+			if(types[i].compareTo(ov.getValueType()) == 0){
+				jcbType.setSelectedIndex(i); 
+				break; 
+			}
+		}
+		
 		repaint(); 
 	}
 	

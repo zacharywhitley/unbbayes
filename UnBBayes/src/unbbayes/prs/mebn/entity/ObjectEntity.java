@@ -41,6 +41,13 @@ public class ObjectEntity extends Entity {
 		
 	}
 	
+	/**
+	 * Create a new Object Entity with the name specified. Is create a type for the
+	 * Object Entity and this is added to the list of Type (see <Type>). 
+	 * @param name The name of the entity
+	 * @return the new ObjectEntity 
+	 * @throws TypeException Some error when try to create a new type
+	 */
 	public static ObjectEntity createObjectEntity(String name) throws TypeException{
 		
 		ObjectEntity objEntity = new ObjectEntity(name); 

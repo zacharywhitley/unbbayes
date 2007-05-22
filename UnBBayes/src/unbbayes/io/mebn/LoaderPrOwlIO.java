@@ -52,6 +52,14 @@ import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
 import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
 import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
 
+/**
+ * Make de loader from a file pr owl for the mebn structure. 
+ * 
+ * @author Laecio Lima dos Santos
+ * @version 1.0 
+ *
+ */
+
 public class LoaderPrOwlIO {
 
 	/* MEBN Structure */ 
@@ -72,9 +80,7 @@ public class LoaderPrOwlIO {
 	private HashMap<String, ContextNode> mapContextNodeInner = new HashMap<String, ContextNode>();
 	private List<ContextNode> listContextNode = new ArrayList<ContextNode>(); 
 	
-	/*
-	 * 
-	 */
+	
 	private HashMap<ContextNode, Object> mapIsContextInstanceOf = new HashMap<ContextNode, Object>(); 
 
 	private HashMap<String, DomainResidentNode> mapDomainResidentNode = new HashMap<String, DomainResidentNode>();
@@ -281,8 +287,7 @@ public class LoaderPrOwlIO {
 	}
 	
 	/**
-	 * load the Object Entity of the file
-	 *
+	 * load the Object Entities of the file
 	 */
 	private void loadObjectEntity(){
     
@@ -302,7 +307,7 @@ public class LoaderPrOwlIO {
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasType");
 
 			try{
-				ObjectEntity objectEntityMebn = new ObjectEntity(subClass.getBrowserText()); 	
+				ObjectEntity objectEntityMebn = ObjectEntity.createObjectEntity(subClass.getBrowserText()); 	
 			    //TODO verificar se o tipo eh o desejado... 
 			}
 			catch(TypeException typeException){
@@ -897,8 +902,13 @@ public class LoaderPrOwlIO {
 			 itAux = instances.iterator();
 			 if(itAux.hasNext()){
 			     individualTwo = (OWLIndividual) itAux.next();
-			     if (Type.hasType(individualTwo.getBrowserText())){
-			    	 oVariable.setValueType(individualTwo.getBrowserText()); 
+			     Type type = Type.getType(individualTwo.getBrowserText()); 
+			     if (type != null){
+			    	 oVariable.setValueType(type); 
+			     }
+			     else{
+			    	 //TODO Erro no arquivo Pr-OWL... 
+			    	 
 			     }
 			 }
 			

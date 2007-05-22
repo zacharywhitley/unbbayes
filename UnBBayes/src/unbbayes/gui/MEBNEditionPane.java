@@ -34,7 +34,7 @@ import unbbayes.gui.mebn.FormulaEditionPane;
 import unbbayes.gui.mebn.InputNodePane;
 import unbbayes.gui.mebn.MTheoryTree;
 import unbbayes.gui.mebn.OVariableEditionPane;
-import unbbayes.gui.mebn.OrdVariableBar;
+import unbbayes.gui.mebn.OrdVariableToolBar;
 import unbbayes.gui.mebn.ResidentNodePane;
 import unbbayes.gui.mebn.TableEditionPane;
 import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
@@ -109,7 +109,7 @@ public class MEBNEditionPane extends JPanel {
     private final JToolBar jtbInput; 
     private final JToolBar jtbContext;  
     private final JToolBar jtbMTheory; 
-    private final OrdVariableBar jtbOVariable;
+    private final OrdVariableToolBar jtbOVariable;
 
     private final JButton btnAddMFrag; 
     private final JButton btnAddContextNode;
@@ -388,6 +388,47 @@ public class MEBNEditionPane extends JPanel {
     	JLabel labelMTheoryName = new JLabel(resource.getString("nameLabel")); 
     	
     	txtNameMTheory.addFocusListener(new FocusListenerTextField()); 
+    	txtNameMTheory.addKeyListener(new KeyAdapter() {
+    		
+  			public void keyPressed(KeyEvent e) {
+  				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameMTheory.getText().length()>0)) {
+  					try {
+  						String name = txtNameMTheory.getText(0,txtNameMTheory.getText().length());
+  						matcher = wordPattern.matcher(name);
+  						if (matcher.matches()) {
+  							controller.setNameMTheory(name); 
+  						}  else {
+  							txtNameMTheory.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+  							txtNameMTheory.setForeground(Color.WHITE); 
+  							txtNameMTheory.selectAll();
+  							JOptionPane.showMessageDialog(netWindow, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+  						}
+  					}
+  					catch (javax.swing.text.BadLocationException ble) {
+  						System.out.println(ble.getMessage());
+  					}
+  				}
+  			}
+  			
+  			public void keyReleased(KeyEvent e){
+  				try{
+                    String name = txtNameMTheory.getText(0,txtNameMTheory.getText().length());
+						matcher = wordPattern.matcher(name);
+						if (!matcher.matches()) {
+							txtNameMTheory.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+							txtNameMTheory.setForeground(Color.WHITE); 
+						}
+						else{
+							txtNameMTheory.setBackground(ToolKitForGuiMebn.getColorTextFieldSelected());
+							txtNameMTheory.setForeground(Color.BLACK); 
+						}
+  				}
+  				catch(Exception efd){
+  					
+  				}
+  				
+  			}
+  		});
     	
     	jtbMTheory.add(btnMTheoryActive); 
     	jtbMTheory.addSeparator(); 
@@ -601,9 +642,9 @@ public class MEBNEditionPane extends JPanel {
         return jtbContext; 
   	}
   	
-	private OrdVariableBar buildJtbOVariable(){
+	private OrdVariableToolBar buildJtbOVariable(){
         
-  		OrdVariableBar jtbOVariable = new OrdVariableBar(); 
+  		OrdVariableToolBar jtbOVariable = new OrdVariableToolBar(); 
   		
         return jtbOVariable; 
    

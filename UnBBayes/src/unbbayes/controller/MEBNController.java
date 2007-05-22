@@ -47,6 +47,20 @@ public class MEBNController {
 	private OrdinaryVariable ordVariableNodeActive; 
 	private Node nodeActive; 
 	
+	/** Load resource file from this package */
+	private static ResourceBundle resource = ResourceBundle
+			.getBundle("unbbayes.controller.resources.ControllerResources");
+
+	public MEBNController(
+			MultiEntityBayesianNetwork multiEntityBayesianNetwork,
+			NetworkWindow screen) {
+		
+		this.multiEntityBayesianNetwork = multiEntityBayesianNetwork;
+		this.screen = screen;
+		mebnEditionPane = new MEBNEditionPane(screen, this);
+	
+	}
+
 	public ResidentNode getResidentNodeActive(){
 		return residentNodeActive; 
 	}
@@ -63,20 +77,6 @@ public class MEBNController {
 		return nodeActive; 
 	}
 	
-	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle
-			.getBundle("unbbayes.controller.resources.ControllerResources");
-
-	public MEBNController(
-			MultiEntityBayesianNetwork multiEntityBayesianNetwork,
-			NetworkWindow screen) {
-		
-		this.multiEntityBayesianNetwork = multiEntityBayesianNetwork;
-		this.screen = screen;
-		mebnEditionPane = new MEBNEditionPane(screen, this);
-	
-	}
-
 	public void enableMTheoryEdition(){
 		
 		mebnEditionPane.setMTheoryBarActive(); 
@@ -87,7 +87,7 @@ public class MEBNController {
 	
 	public void setNameMTheory(String name){
 		
-		this.multiEntityBayesianNetwork.setName(name);
+		multiEntityBayesianNetwork.setName(name);
 		mebnEditionPane.setNameMTheory(name); 
 		
 	}

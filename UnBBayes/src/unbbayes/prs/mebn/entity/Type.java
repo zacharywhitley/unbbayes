@@ -207,4 +207,23 @@ public class Type implements Comparable<Type>{
 		return listOfTypes; 
 	}
 	
+	/**
+	 * Return a list with the names of the types. 
+	 */
+	public static List<String> getTypesNames(){
+		
+		ArrayList<String> list = new ArrayList<String>(); 
+		for(Type type: listOfTypes){
+			list.add(type.getName()); 
+		}
+		
+		return list; 
+	}
+	
+	public static String getLabelSuffix(){
+		
+		return "_label"; 
+		
+	}
+	
 }

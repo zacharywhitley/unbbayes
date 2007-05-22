@@ -184,7 +184,7 @@ public class SaverPrOwlIO {
 		
 		/* segundo passo: lista de meta entidades criadas pelo usuario */
 		
-		Set<String> listMetaEntities = Type.getListOfTypes(); 
+		List<String> listMetaEntities = Type.getTypesNames(); 
 		
 		boolean present;
 		
@@ -412,8 +412,8 @@ public class SaverPrOwlIO {
 								+ oVariable.getName() );
 				domainMFragIndividual.addPropertyValue(hasOVariableProperty, oVariableIndividual); 		
 				
-				for(String type: Type.getListOfTypes()){
-					if(type.compareTo(oVariable.getValueType()) == 0){
+				for(String type: Type.getTypesNames()){
+					if(type.compareTo(oVariable.getValueType().getName()) == 0){
 						domainMFragIndividual.addPropertyValue(isSubsByProperty, mapMetaEntity.get(type)); 
 						break; 
 					}
