@@ -59,19 +59,19 @@ import unbbayes.monteCarlo.controlador.ControladorPrincipal;
 import unbbayes.io.mebn.UbfIO;
 
 /**
- *  Essa classe extende o <code>JFrame</code> e � respons�vel pela interface
- *  da tela principal do programa.
- *
- *@author     Rommel Novaes Carvalho, Michael S. Onishi
- *@created    27 de Junho de 2001
- *@see        JFrame
- *@version    1.0 06/07/2001
+ * Essa classe extende o <code>JFrame</code> e � respons�vel pela interface da
+ * tela principal do programa.
+ * 
+ * @author Rommel Novaes Carvalho, Michael S. Onishi
+ * @created 27 de Junho de 2001
+ * @see JFrame
+ * @version 1.0 06/07/2001
  */
 public class UnBBayesFrame extends JFrame {
 
 	/** Serialization runtime version number */
-	private static final long serialVersionUID = 0;		
-	
+	private static final long serialVersionUID = 0;
+
 	private MDIDesktopPane desktop;
 	private JPanel topPanel;
 	private JPanel bottomPanel;
@@ -81,13 +81,13 @@ public class UnBBayesFrame extends JFrame {
 	private JToolBar jtbWindow;
 	private JToolBar jtbHelp;
 	private MainController controller;
-	
+
 	private JButton newNet;
-	private JButton newMsbn; 
-	private JButton newMebn; 
+	private JButton newMsbn;
+	private JButton newMebn;
 	private JButton openNet;
 	private JButton saveNet;
-	
+
 	private JButton learn;
 	private JButton metal;
 	private JButton motif;
@@ -95,10 +95,11 @@ public class UnBBayesFrame extends JFrame {
 	private JButton tile;
 	private JButton cascade;
 	private JButton help;
-	//private URL helpSetURL;
-	//private HelpSet set;
-	//private JHelp jHelp;
+	// private URL helpSetURL;
+	// private HelpSet set;
+	// private JHelp jHelp;
 	private ActionListener alNewBN;
+	private ActionListener alDiscretize;
 	private ActionListener alNewMSBN;
 	private ActionListener alNewMEBN;
 	private ActionListener alOpen;
@@ -117,32 +118,32 @@ public class UnBBayesFrame extends JFrame {
 	private ActionListener alTile;
 	private ActionListener alHelp;
 	// TODO Criar uma tela de about!
-	//private ActionListener alAbout;
+	// private ActionListener alAbout;
 	private ActionListener alMonteCarlo;
 	private ActionListener alGibbs;
 	private ActionListener alIL;
-	
-        private JFileChooser chooser;
-        private FileController fileController;
 
-        protected IconController iconController = IconController.getInstance();
+	private JFileChooser chooser;
+	private FileController fileController;
+
+	protected IconController iconController = IconController.getInstance();
 
 	private static UnBBayesFrame singleton = null;
 
 	/** Load resource file from this package */
-	private static ResourceBundle resource =
-		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+	private static ResourceBundle resource = ResourceBundle
+			.getBundle("unbbayes.gui.resources.GuiResources");
 
 	/**
-	 *  Constr�i a tela principal do programa, ajustando os Layouts e criando
-	 *  bot�es, labels, e outros respons�veis pela interface. Al�m disso nesse
-	 *  contrutor tamb�m criamos os respectivos <code>ActionListener</code>,
-	 *  <code>KeyListener</code> e <code>MouseListener</code> para os
-	 *  respectivos componentes.
-	 *
-	 *@see    ActionListener
-	 *@see    MouseListener
-	 *@see    KeyListener
+	 * Constr�i a tela principal do programa, ajustando os Layouts e criando
+	 * bot�es, labels, e outros respons�veis pela interface. Al�m disso nesse
+	 * contrutor tamb�m criamos os respectivos <code>ActionListener</code>,
+	 * <code>KeyListener</code> e <code>MouseListener</code> para os
+	 * respectivos componentes.
+	 * 
+	 * @see ActionListener
+	 * @see MouseListener
+	 * @see KeyListener
 	 */
 	public UnBBayesFrame(MainController _controller) {
 		super(resource.getString("unbbayesTitle"));
@@ -150,7 +151,7 @@ public class UnBBayesFrame extends JFrame {
 		setSize(650, 480);
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                fileController = FileController.getInstance();
+		fileController = FileController.getInstance();
 
 		Container contentPane = getContentPane();
 
@@ -179,27 +180,27 @@ public class UnBBayesFrame extends JFrame {
 			UIManager.setLookAndFeel(lnfName);
 			SwingUtilities.updateComponentTreeUI(this);
 		} catch (UnsupportedLookAndFeelException ex1) {
-			System.err.println(
-				resource.getString("LookAndFeelUnsupportedException")
+			System.err.println(resource
+					.getString("LookAndFeelUnsupportedException")
 					+ lnfName);
 		} catch (ClassNotFoundException ex2) {
-			System.err.println(
-				resource.getString("LookAndFeelClassNotFoundException")
+			System.err.println(resource
+					.getString("LookAndFeelClassNotFoundException")
 					+ lnfName);
 		} catch (InstantiationException ex3) {
-			System.err.println(
-				resource.getString("LookAndFeelInstantiationException")
+			System.err.println(resource
+					.getString("LookAndFeelInstantiationException")
 					+ lnfName);
 		} catch (IllegalAccessException ex4) {
-			System.err.println(
-				resource.getString("LookAndFeelIllegalAccessException")
+			System.err.println(resource
+					.getString("LookAndFeelIllegalAccessException")
 					+ lnfName);
 		}
 	}
 
 	/**
 	 * Retorna a janela que est� selecionada.
-	 *
+	 * 
 	 * @return janela que est� selecionada.
 	 */
 	public JInternalFrame getSelectedWindow() {
@@ -208,16 +209,16 @@ public class UnBBayesFrame extends JFrame {
 
 	/**
 	 * Adiciona uma nova janela.
-	 *
-	 * @param newWindow nova janela.
+	 * 
+	 * @param newWindow
+	 *            nova janela.
 	 */
 	public void addWindow(JInternalFrame newWindow) {
 		desktop.add(newWindow);
 	}
 
 	/**
-	 * Method responsible for creating all ActionListeners
-	 * needed.
+	 * Method responsible for creating all ActionListeners needed.
 	 */
 	public void createActionListeners() {
 
@@ -238,7 +239,7 @@ public class UnBBayesFrame extends JFrame {
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 		};
-		
+
 		// create an ActionListener for opening new window for MEBN
 		alNewMEBN = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
@@ -248,29 +249,57 @@ public class UnBBayesFrame extends JFrame {
 			}
 		};
 
+		alDiscretize = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				// setCursor(new Cursor(Cursor.WAIT_CURSOR));
+				janeladiscret janeld = new janeladiscret();
+				janeld.setVisible(true);
+				/*
+				 * String[] nets = new String[] { "txt", "arff" }; chooser = new
+				 * JFileChooser(fileController.getCurrentDirectory());
+				 * chooser.setMultiSelectionEnabled(false);
+				 * chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+				 *  // adicionar FileView no FileChooser para desenhar �cones de //
+				 * arquivos chooser.setFileView(new FileIcon(IUnBBayes.this));
+				 * 
+				 * chooser.addChoosableFileFilter( new SimpleFileFilter( nets,
+				 * "")); int option = chooser.showOpenDialog(null); if (option ==
+				 * JFileChooser.APPROVE_OPTION) { if (chooser.getSelectedFile() !=
+				 * null) { //at� agora o c�digo era semelhante ao do comando
+				 * abrir
+				 * 
+				 * 
+				 * 
+				 * //agora o final do codigo � igual ao do comando abrir } }
+				 * setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				 */
+			}
+		};
+
 		// create an ActionListener for loading
 		alOpen = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				//String[] nets = new String[] { "net", "xml", "owl" };
-				String[] nets = new String[] { "net", "xml", "owl", UbfIO.fileExtension };				
+				// String[] nets = new String[] { "net", "xml", "owl" };
+				String[] nets = new String[] { "net", "xml", "owl",
+						UbfIO.fileExtension };
 				chooser = new JFileChooser(fileController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
-				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+				chooser
+						.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
 				// adicionar FileView no FileChooser para desenhar �cones de
 				// arquivos
 				chooser.setFileView(new FileIcon(UnBBayesFrame.this));
 
-				chooser.addChoosableFileFilter(
-					new SimpleFileFilter(
-						nets,
+				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
 						resource.getString("netFileFilter")));
 				int option = chooser.showOpenDialog(null);
 				if (option == JFileChooser.APPROVE_OPTION) {
 					if (chooser.getSelectedFile() != null) {
 						controller.loadNet(chooser.getSelectedFile());
-                                                fileController.setCurrentDirectory(chooser.getCurrentDirectory());
+						fileController.setCurrentDirectory(chooser
+								.getCurrentDirectory());
 					}
 				}
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -281,32 +310,31 @@ public class UnBBayesFrame extends JFrame {
 		alSave = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				//String[] nets = new String[] { "net", "xml", "owl" };
-				String[] nets = new String[] { "net", "xml", UbfIO.fileExtension};
-				
+				// String[] nets = new String[] { "net", "xml", "owl" };
+				String[] nets = new String[] { "net", "xml",
+						UbfIO.fileExtension };
+
 				chooser = new JFileChooser(fileController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
-				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+				chooser
+						.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
 				// adicionar FileView no FileChooser para desenhar �cones de
 				// arquivos
 				chooser.setFileView(new FileIcon(UnBBayesFrame.this));
-				chooser.addChoosableFileFilter(
-					new SimpleFileFilter(
-						nets,
+				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
 						resource.getString("netFileFilterSave")));
 				int option = chooser.showSaveDialog(null);
 				if (option == JFileChooser.APPROVE_OPTION) {
 					File file = chooser.getSelectedFile();
 					if (file != null) {
 						if (file.isFile()) {
-							//String name = file.getName();
-							/*							
-							if (! name.endsWith(".net")) {
-								file = new File(file.getAbsoluteFile() + ".net");
-                                                                fileController.setCurrentDirectory(chooser.getCurrentDirectory());
-							}
-							*/
+							// String name = file.getName();
+							/*
+							 * if (! name.endsWith(".net")) { file = new
+							 * File(file.getAbsoluteFile() + ".net");
+							 * fileController.setCurrentDirectory(chooser.getCurrentDirectory()); }
+							 */
 						}
 						controller.saveNet(file);
 					}
@@ -330,36 +358,35 @@ public class UnBBayesFrame extends JFrame {
 				String[] nets = new String[] { "txt" };
 				chooser = new JFileChooser(fileController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
-				chooser.addChoosableFileFilter(
-					new SimpleFileFilter(
-						nets,
+				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
 						resource.getString("textFileFilter")));
 				int option = chooser.showOpenDialog(UnBBayesFrame.this);
 				File file;
 				if (option == JFileChooser.APPROVE_OPTION) {
 					file = chooser.getSelectedFile();
-                                        fileController.setCurrentDirectory(chooser.getCurrentDirectory());
+					fileController.setCurrentDirectory(chooser
+							.getCurrentDirectory());
 					new ConstructionController(file, controller);
 				}
 			}
 		};
-		
-		alIL = new ActionListener(){
-		    public void actionPerformed(ActionEvent ae){
-				new ILController(controller);				
+
+		alIL = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				new ILController(controller);
 			}
 		};
-		
-		alMonteCarlo = new ActionListener(){
-			public void actionPerformed(ActionEvent ae){
-				//ControladorPrincipal cp = new ControladorPrincipal();
+
+		alMonteCarlo = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				// ControladorPrincipal cp = new ControladorPrincipal();
 				new ControladorPrincipal();
 			}
 		};
-		
-		alGibbs = new ActionListener(){
-			public void actionPerformed(ActionEvent ae){				
-			}			
+
+		alGibbs = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+			}
 		};
 
 		// create an ActionListener for showing the File Tool Bar
@@ -493,25 +520,21 @@ public class UnBBayesFrame extends JFrame {
 
 		// create an ActionListener for opening the Help window
 		alHelp = new ActionListener() {
-			public void actionPerformed(ActionEvent ae)
-                        {
-                          try
-                          {
-                            FileController.getInstance().openHelp(singleton);
-                          }
-                          catch (Exception evt)
-                          {
-                            System.out.println("Error= "+evt.getMessage()+" "+this.getClass().getName());
-                            evt.printStackTrace();
-                          }
-                        }
+			public void actionPerformed(ActionEvent ae) {
+				try {
+					FileController.getInstance().openHelp(singleton);
+				} catch (Exception evt) {
+					System.out.println("Error= " + evt.getMessage() + " "
+							+ this.getClass().getName());
+					evt.printStackTrace();
+				}
+			}
 		};
 
 	}
 
 	/**
-	 * Method responsible for creating the menu used in this
-	 * class, JFrame.
+	 * Method responsible for creating the menu used in this class, JFrame.
 	 */
 	public void createMenu() {
 		JMenuBar menu = new JMenuBar();
@@ -526,7 +549,7 @@ public class UnBBayesFrame extends JFrame {
 		JMenu windowMenu = new JMenu(resource.getString("windowMenu"));
 		JMenu helpMenu = new JMenu(resource.getString("helpMenu"));
 		fileMenu.setMnemonic(resource.getString("fileMenuMn").charAt(0));
-        lafMenu.setMnemonic(resource.getString("lafMenuMn").charAt(0));
+		lafMenu.setMnemonic(resource.getString("lafMenuMn").charAt(0));
 		viewMenu.setMnemonic(resource.getString("viewMenuMn").charAt(0));
 		tbMenu.setMnemonic(resource.getString("tbMenuMn").charAt(0));
 		toolsMenu.setMnemonic(resource.getString("toolsMenuMn").charAt(0));
@@ -534,90 +557,76 @@ public class UnBBayesFrame extends JFrame {
 		helpMenu.setMnemonic(resource.getString("helpMenuMn").charAt(0));
 
 		// create menu items, set their mnemonic and their key accelerator
-		JMenuItem newBN =
-			new JMenuItem(
-				resource.getString("newBN"),iconController.getNewIcon());
+		JMenuItem newBN = new JMenuItem(resource.getString("newBN"),
+				iconController.getNewIcon());
 
+		JMenuItem newMSBN = new JMenuItem(resource.getString("newMSBN"),
+				iconController.getNewIcon());
 
-		JMenuItem newMSBN =
-			new JMenuItem(
-				resource.getString("newMSBN"),iconController.getNewIcon());
-		
-		JMenuItem newMEBN =
-			new JMenuItem(
-				resource.getString("newMEBN"),iconController.getNewIcon());
+		JMenuItem newMEBN = new JMenuItem(resource.getString("newMEBN"),
+				iconController.getNewIcon());
 
-		JMenuItem openItem =
-			new JMenuItem(
-				resource.getString("openItem"),iconController.getOpenIcon());
-		JMenuItem saveItem =
-			new JMenuItem(
-				resource.getString("saveItem"),iconController.getSaveIcon());
+		JMenuItem openItem = new JMenuItem(resource.getString("openItem"),
+				iconController.getOpenIcon());
+		JMenuItem saveItem = new JMenuItem(resource.getString("saveItem"),
+				iconController.getSaveIcon());
 		JMenuItem exitItem = new JMenuItem(resource.getString("exitItem"), 'X');
-		JMenuItem tbFile =
-			new JCheckBoxMenuItem(resource.getString("tbFile"), true);
-		JMenuItem tbView =
-			new JCheckBoxMenuItem(resource.getString("tbView"), true);
-		JMenuItem tbTools =
-			new JCheckBoxMenuItem(resource.getString("tbTools"), true);
-		JMenuItem tbWindow =
-			new JCheckBoxMenuItem(resource.getString("tbWindow"), true);
-		JMenuItem tbHelp =
-			new JCheckBoxMenuItem(resource.getString("tbHelp"), true);
-		JMenuItem metalItem =
-			new JMenuItem(
-				resource.getString("metalItem"),iconController.getMetalIcon());
-		JMenuItem motifItem =
-			new JMenuItem(
-				resource.getString("motifItem"),iconController.getMotifIcon());
-		JMenuItem windowsItem =
-			new JMenuItem(
-				resource.getString("windowsItem"),iconController.getWindowsIcon());
-		JMenuItem learningItem =
-			new JMenuItem(
-				resource.getString("learningItem"),iconController.getLearningIcon());
-		JMenuItem monteCarloItem = 
-			new JMenuItem("Monte Carlo");
-		JMenuItem ILItem = 
-			new JMenuItem("Incremental Learning");
-		JMenuItem gibbsItem = 
-					new JMenuItem("Gibbs");
-		JMenuItem cascadeItem =
-			new JMenuItem(
-				resource.getString("cascadeItem"),iconController.getCascadeIcon());
-		JMenuItem tileItem =
-			new JMenuItem(
-				resource.getString("tileItem"),iconController.getTileIcon());
-		JMenuItem helpItem =
-			new JMenuItem(
-				resource.getString("helpItem"),iconController.getHelpIcon());
-		JMenuItem aboutItem =
-			new JMenuItem(resource.getString("aboutItem"));
-
+		JMenuItem tbFile = new JCheckBoxMenuItem(resource.getString("tbFile"),
+				true);
+		JMenuItem tbView = new JCheckBoxMenuItem(resource.getString("tbView"),
+				true);
+		JMenuItem tbTools = new JCheckBoxMenuItem(
+				resource.getString("tbTools"), true);
+		JMenuItem tbWindow = new JCheckBoxMenuItem(resource
+				.getString("tbWindow"), true);
+		JMenuItem tbHelp = new JCheckBoxMenuItem(resource.getString("tbHelp"),
+				true);
+		JMenuItem discretize = new JMenuItem("Discretizar");		
+		JMenuItem metalItem = new JMenuItem(resource.getString("metalItem"),
+				iconController.getMetalIcon());
+		JMenuItem motifItem = new JMenuItem(resource.getString("motifItem"),
+				iconController.getMotifIcon());
+		JMenuItem windowsItem = new JMenuItem(
+				resource.getString("windowsItem"), iconController
+						.getWindowsIcon());
+		JMenuItem learningItem = new JMenuItem(resource
+				.getString("learningItem"), iconController.getLearningIcon());
+		JMenuItem monteCarloItem = new JMenuItem("Monte Carlo");
+		JMenuItem ILItem = new JMenuItem("Incremental Learning");
+		JMenuItem gibbsItem = new JMenuItem("Gibbs");
+		JMenuItem cascadeItem = new JMenuItem(
+				resource.getString("cascadeItem"), iconController
+						.getCascadeIcon());
+		JMenuItem tileItem = new JMenuItem(resource.getString("tileItem"),
+				iconController.getTileIcon());
+		JMenuItem helpItem = new JMenuItem(resource.getString("helpItem"),
+				iconController.getHelpIcon());
+		JMenuItem aboutItem = new JMenuItem(resource.getString("aboutItem"));
 
 		newBN.setMnemonic(resource.getString("newItemMn").charAt(0));
 		openItem.setMnemonic(resource.getString("openItemMn").charAt(0));
 		saveItem.setMnemonic(resource.getString("saveItemMn").charAt(0));
-        exitItem.setMnemonic(resource.getString("exitItemMn").charAt(0));
+		exitItem.setMnemonic(resource.getString("exitItemMn").charAt(0));
 		metalItem.setMnemonic(resource.getString("metalItemMn").charAt(0));
 		motifItem.setMnemonic(resource.getString("motifItemMn").charAt(0));
 		windowsItem.setMnemonic(resource.getString("windowsItemMn").charAt(0));
-		learningItem.setMnemonic(resource.getString("learningItemMn").charAt(0));
+		learningItem
+				.setMnemonic(resource.getString("learningItemMn").charAt(0));
 		cascadeItem.setMnemonic(resource.getString("cascadeItemMn").charAt(0));
 		tileItem.setMnemonic(resource.getString("tileItemMn").charAt(0));
 		helpItem.setMnemonic(resource.getString("helpItemMn").charAt(0));
-        aboutItem.setMnemonic(resource.getString("aboutItemMn").charAt(0));
+		aboutItem.setMnemonic(resource.getString("aboutItemMn").charAt(0));
 
-		newBN.setAccelerator(
-			KeyStroke.getKeyStroke(resource.getString("newItemMn").charAt(0), Event.CTRL_MASK, false));
-		openItem.setAccelerator(
-			KeyStroke.getKeyStroke(resource.getString("openItemMn").charAt(0), Event.CTRL_MASK, false));
-		saveItem.setAccelerator(
-			KeyStroke.getKeyStroke(resource.getString("saveItemMn").charAt(0), Event.CTRL_MASK, false));
-		learningItem.setAccelerator(
-			KeyStroke.getKeyStroke(resource.getString("learningItemMn").charAt(0), Event.CTRL_MASK, false));
-		helpItem.setAccelerator(
-			KeyStroke.getKeyStroke(resource.getString("helpItemMn").charAt(0), Event.CTRL_MASK, false));
+		newBN.setAccelerator(KeyStroke.getKeyStroke(resource.getString(
+				"newItemMn").charAt(0), Event.CTRL_MASK, false));
+		openItem.setAccelerator(KeyStroke.getKeyStroke(resource.getString(
+				"openItemMn").charAt(0), Event.CTRL_MASK, false));
+		saveItem.setAccelerator(KeyStroke.getKeyStroke(resource.getString(
+				"saveItemMn").charAt(0), Event.CTRL_MASK, false));
+		learningItem.setAccelerator(KeyStroke.getKeyStroke(resource.getString(
+				"learningItemMn").charAt(0), Event.CTRL_MASK, false));
+		helpItem.setAccelerator(KeyStroke.getKeyStroke(resource.getString(
+				"helpItemMn").charAt(0), Event.CTRL_MASK, false));
 
 		// add ActionListener to all menu items
 		newBN.addActionListener(alNewBN);
@@ -644,6 +653,7 @@ public class UnBBayesFrame extends JFrame {
 		// aboutItem.addActionListener(alAbout);
 
 		// add menu items to their respective menu
+		discretize.addActionListener(alDiscretize);		
 		newMenu.add(newBN);
 		newMenu.add(newMSBN);
 		newMenu.add(newMEBN);
@@ -664,8 +674,9 @@ public class UnBBayesFrame extends JFrame {
 		viewMenu.addSeparator();
 		viewMenu.add(lafMenu);
 		toolsMenu.add(learningItem);
-		toolsMenu.add(monteCarloItem);		
+		toolsMenu.add(monteCarloItem);
 		toolsMenu.add(gibbsItem);
+		toolsMenu.add(discretize);
 		toolsMenu.add(ILItem);
 		windowMenu.add(cascadeItem);
 		windowMenu.add(tileItem);
@@ -682,8 +693,8 @@ public class UnBBayesFrame extends JFrame {
 	}
 
 	/**
-	 * Call the method for creating the needed buttons and then create the
-	 * tool bars and add the buttons to them and finally to the topPanel.
+	 * Call the method for creating the needed buttons and then create the tool
+	 * bars and add the buttons to them and finally to the topPanel.
 	 */
 	public void createToolBars() {
 
@@ -698,8 +709,8 @@ public class UnBBayesFrame extends JFrame {
 
 		// add their buttons
 		jtbFile.add(newNet);
-		jtbFile.add(newMsbn); 
-		jtbFile.add(newMebn); 
+		jtbFile.add(newMsbn);
+		jtbFile.add(newMebn);
 		jtbFile.add(openNet);
 		jtbFile.add(saveNet);
 		jtbTools.add(learn);
@@ -724,36 +735,24 @@ public class UnBBayesFrame extends JFrame {
 	public void createButtons() {
 
 		// create the buttons
-		newNet =
-			new JButton(iconController.getNewBNIcon());
-		newMsbn =
-			new JButton(iconController.getNewMSBNIcon());	
-		newMebn =
-			new JButton(iconController.getNewMEBNIcon());				
-		openNet =
-			new JButton(iconController.getOpenIcon());
-		saveNet =
-			new JButton(iconController.getSaveIcon());
-		learn =
-			new JButton(iconController.getLearningIcon());
-		metal =
-			new JButton(iconController.getMetalIcon());
-		motif =
-			new JButton(iconController.getMotifIcon());
-		windows =
-			new JButton(iconController.getWindowsIcon());
-		tile =
-			new JButton(iconController.getTileIcon());
-		cascade =
-			new JButton(iconController.getCascadeIcon());
-		help =
-			new JButton(iconController.getHelpIcon());
+		newNet = new JButton(iconController.getNewBNIcon());
+		newMsbn = new JButton(iconController.getNewMSBNIcon());
+		newMebn = new JButton(iconController.getNewMEBNIcon());
+		openNet = new JButton(iconController.getOpenIcon());
+		saveNet = new JButton(iconController.getSaveIcon());
+		learn = new JButton(iconController.getLearningIcon());
+		metal = new JButton(iconController.getMetalIcon());
+		motif = new JButton(iconController.getMotifIcon());
+		windows = new JButton(iconController.getWindowsIcon());
+		tile = new JButton(iconController.getTileIcon());
+		cascade = new JButton(iconController.getCascadeIcon());
+		help = new JButton(iconController.getHelpIcon());
 
 		// add their tool tip
 		help.setToolTipText(resource.getString("helpToolTip"));
 		newNet.setToolTipText(resource.getString("newToolTip"));
 		newMsbn.setToolTipText(resource.getString("newMsbnToolTip"));
-		newMebn.setToolTipText(resource.getString("newMebnToolTip"));		
+		newMebn.setToolTipText(resource.getString("newMebnToolTip"));
 		openNet.setToolTipText(resource.getString("openToolTip"));
 		saveNet.setToolTipText(resource.getString("saveToolTip"));
 		learn.setToolTipText(resource.getString("learningToolTip"));
@@ -771,8 +770,8 @@ public class UnBBayesFrame extends JFrame {
 	public void assignActionListeners() {
 
 		newNet.addActionListener(alNewBN);
-		newMsbn.addActionListener(alNewMSBN); 
-		newMebn.addActionListener(alNewMEBN); 
+		newMsbn.addActionListener(alNewMSBN);
+		newMebn.addActionListener(alNewMEBN);
 		openNet.addActionListener(alOpen);
 		saveNet.addActionListener(alSave);
 		metal.addActionListener(alMetal);
@@ -785,7 +784,7 @@ public class UnBBayesFrame extends JFrame {
 
 	}
 
-	public static UnBBayesFrame getIUnBBayes(){
+	public static UnBBayesFrame getIUnBBayes() {
 		return UnBBayesFrame.singleton;
 	}
 
