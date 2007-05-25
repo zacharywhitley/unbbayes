@@ -6,7 +6,7 @@ import unbbayes.aprendizagem.TVariavel;
 import unbbayes.gui.janeladiscret;
 
 /**
- * Algoritimo para discretização múltipla
+ * Algoritimo para discretizaï¿½ï¿½o mï¿½ltipla
  * 
  * @author gabriel guimaraes - Aluno de IC 2005/2006
  * @orientador Marcelo Ladeira
@@ -15,7 +15,7 @@ public class dalgo2 extends Thread {
 
 	public NodeList variables;
 
-	public int[][] originalmatrix;
+	public byte[][] originalmatrix;
 
 	public int[][] matrix1;
 
@@ -52,11 +52,12 @@ public class dalgo2 extends Thread {
 		this.controlador = wc;
 	}
 
-	public void Setmatrix(int[][] tempmatrix) {
+	public void Setmatrix(byte[][] tempmatrix) {
 		mlines = lines(tempmatrix);
 		mcolumns = columns(tempmatrix);
 
-		//originalmatrix = new int[mlines][mcolumns]; // nao precisa instanciar, já que não está criando uma cópia abaixo
+		// originalmatrix = new int[mlines][mcolumns]; // nao precisa
+		// instanciar, jï¿½ que nï¿½o estï¿½ criando uma cï¿½pia abaixo
 		originalmatrix = tempmatrix;
 	}
 
@@ -105,13 +106,13 @@ public class dalgo2 extends Thread {
 		return resultado;
 	}
 
-	public int lines(int[][] tempmatrix) {
+	public int lines(byte[][] tempmatrix) {
 		int i;
 		i = tempmatrix.length;
 		return i;
 	}
 
-	public int columns(int[][] tempmatrix) {
+	public int columns(byte[][] tempmatrix) {
 		int i;
 		i = tempmatrix[0].length;
 		return i;
@@ -119,7 +120,7 @@ public class dalgo2 extends Thread {
 
 	/**
 	 * Contagem condicional: se uma linha tem o estado e1 ou e2 de var 1 e evar2
-	 * de var2 então uma unidade é acrescida ao somatório.
+	 * de var2 entï¿½o uma unidade ï¿½ acrescida ao somatï¿½rio.
 	 * 
 	 * @param var1
 	 * @param e1
@@ -152,17 +153,20 @@ public class dalgo2 extends Thread {
 	/**
 	 * 
 	 * @param number
-	 * @return zero se o numero nao é impar, 1 se for.
+	 * @return zero se o numero nao ï¿½ impar, 1 se for.
 	 */
 	public int odd(int number) {
+		return number % 2;
+		/*
 		int isodd = 0;
 		if (Math.round(number / 2 + 0.00001) == number / 2)
 			isodd = 1;
 		return isodd;
+		*/
 	}
 
 	/**
-	 * Transforma o valor do qui-quadrado em probabilidade de rejeição de H0
+	 * Transforma o valor do qui-quadrado em probabilidade de rejeiï¿½ï¿½o de H0
 	 * 
 	 * @param chi2
 	 *            -valor do qui-quadrado
@@ -203,15 +207,15 @@ public class dalgo2 extends Thread {
 	 * calculo do escore de e1 apenas basta usar o mesmo e1 para e2.
 	 * 
 	 * @param var1
-	 *            Variável a ser discretizada
+	 *            Variï¿½vel a ser discretizada
 	 * @param e1
 	 *            estado 1 da variavel var1
 	 * @param e2
 	 *            estado 2 da variavel var 1
 	 * @param var2
-	 *            variável limitante
+	 *            variï¿½vel limitante
 	 * @param estadosv2
-	 *            número de estados de var2
+	 *            nï¿½mero de estados de var2
 	 * @return Escore (nao normalizado)
 	 */
 	public float score(int var1, int e1, int e2, int var2, int estadosv2) {
@@ -270,13 +274,11 @@ public class dalgo2 extends Thread {
 		nvar = variables.size();
 		var2 = 0;
 		for (int i = 0, k = 0; i < nvar; i++) {
-			// TODO DESCOMENTAR E CORRIGIR ERRO
-			//variables.get(i).atualizatamanhoinfoestados();
+			variables.get(i).atualizatamanhoinfoestados();
 			k = variables.get(i).getStatesSize();
 			for (int j = 0; j < k; j++) {
-				// k = k + 0; // o que é isso? 
-				// TODO DESCOMENTAR E CORRIGIR ERRO
-				//variables.get(i).infoestados[j] = 0;
+				k = k + 0; // o que eh isso?
+				variables.get(i).infoestados[j] = 0;
 			}
 		}
 
@@ -309,24 +311,22 @@ public class dalgo2 extends Thread {
 						if (dowh) {
 							if (!pesogeral) {
 								perda = (score1 + score2 - score12)
-										/ (float)total;
+										/ (float) total;
 
 							} else {
 								perda = (score1 + score2 - score12)
-										/ (float)total;
+										/ (float) total;
 
 							}
 						} else
-							perda = score1 / ((float)total) + score2
-									/ ((float)total) - score12
-									/ ((float)total);
+							perda = score1 / ((float) total) + score2
+									/ ((float) total) - score12
+									/ ((float) total);
 						if (perda > limiteperda) {
 							continua = false;
-							
-							
-							// TODO DESCOMENTAR E CORRIGIR ERRO
-							// if (variables.get(var1).infoestados[e1] == 0)
-							// variables.get(var1).infoestados[e1] = 1;
+
+							if (variables.get(var1).infoestados[e1] == 0)
+								variables.get(var1).infoestados[e1] = 1;
 						} else {
 
 						}// else perda
@@ -339,7 +339,7 @@ public class dalgo2 extends Thread {
 					}// while v2
 
 				}
-			}// todos os estados de var1 já foram aglomerados, quando
+			}// todos os estados de var1 jï¿½ foram aglomerados, quando
 			// possivel
 		}// for var1
 		concatena2();
@@ -372,11 +372,10 @@ public class dalgo2 extends Thread {
 			j = 0;
 			nest = variables.get(i).getStatesSize() - 1;
 			while (j < nest) {
-				// TODO DESCOMENTAR E CORRIGIR ERRO
-				// if (variables.get(i).infoestados[j] == 0) {
-				// concatena(i, (byte) j);
-				// nest--;
-				// }
+				if (variables.get(i).infoestados[j] == 0) {
+					concatena(i, (byte) j);
+					nest--;
+				}
 				j++;
 			}
 
@@ -400,9 +399,8 @@ public class dalgo2 extends Thread {
 				if (originalmatrix[i][var] > (estado))
 					originalmatrix[i][var]--;
 			}
-			
-			// TODO DESCOMENTAR E CORRIGIR ERRO
-			// variables.removestateat(var, estado + 1);
+
+			variables.get(var).removeStateAt(estado + 1);
 		}
 
 	}

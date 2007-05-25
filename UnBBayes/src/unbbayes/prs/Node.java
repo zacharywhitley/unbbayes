@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -39,7 +39,7 @@ import unbbayes.util.NodeList;
 import unbbayes.util.SerializablePoint2D;
 
 /**
- *  Classe que representa um nó genérico.
+ *  Classe que representa um nï¿½ genï¿½rico.
  *
  *@author     Michael e Rommel
  */
@@ -64,6 +64,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	private String explanationDescription;
 	private ArrayMap<String,ExplanationPhrase> phrasesMap;
 	private int informationType;
+	public int infoestados[];
 
 	public static final int PROBABILISTIC_NODE_TYPE = 0;
 	public static final int UTILITY_NODE_TYPE = 1;
@@ -87,11 +88,11 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	protected double[] standardDeviation;
 
 	/**
-	 *  Constrói um novo nó e faz as devidas inicializações.
+	 *  Constrï¿½i um novo nï¿½ e faz as devidas inicializaï¿½ï¿½es.
 	 */
 	public Node() {
 		name = "";
-		label= ""; //o texto dentro do nó
+		label= ""; //o texto dentro do nï¿½
 		description = "";
 		explanationDescription = "";
 		adjacents = new NodeList();
@@ -114,25 +115,25 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 
 	public abstract int getType();
 
-	/** Retorna o tipo de informação do nó.
-	 *  @return Tipo de informação do nó.
+	/** Retorna o tipo de informaï¿½ï¿½o do nï¿½.
+	 *  @return Tipo de informaï¿½ï¿½o do nï¿½.
 	 */
 	public int getInformationType() {
 		return informationType;
 	}
 
-	/** Altera o tipo de informação do nó.
-	 *  Os tipos de informação podem ser:
-	 *  -   DESCRIPTION_TYPE : nó de descrição
-	 *  -   EXPLANATION_TYPE : nó de explicação
-	 *  @param informationType Tipo de informação
-	 *  @throws Exception se o tipo de informação for inválida
+	/** Altera o tipo de informaï¿½ï¿½o do nï¿½.
+	 *  Os tipos de informaï¿½ï¿½o podem ser:
+	 *  -   DESCRIPTION_TYPE : nï¿½ de descriï¿½ï¿½o
+	 *  -   EXPLANATION_TYPE : nï¿½ de explicaï¿½ï¿½o
+	 *  @param informationType Tipo de informaï¿½ï¿½o
+	 *  @throws Exception se o tipo de informaï¿½ï¿½o for invï¿½lida
 	 */
 	public void setInformationType(int informationType) /*throws Exception*/ {
 		if ((informationType > 2) && (informationType < 5))
 			this.informationType = informationType;
 		/*else
-		{   throw new Exception("Valor de infromação inválido");
+		{   throw new Exception("Valor de infromaï¿½ï¿½o invï¿½lido");
 		}*/
 	}
 
@@ -144,16 +145,16 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 		throws Exception {
 		ExplanationPhrase ep = phrasesMap.get(node);
 		if (ep == null) {
-			throw new Exception("Nó não encontrado.");
+			throw new Exception("Nï¿½ nï¿½o encontrado.");
 		} else {
 			return (ExplanationPhrase) ep;
 		}
 	}
 
 	/**
-	 *  Modifica o nome do nó.
+	 *  Modifica o nome do nï¿½.
 	 *
-	 *@param  texto  descrição do nó.
+	 *@param  texto  descriï¿½ï¿½o do nï¿½.
 	 */
 	public void setDescription(String texto) {
 		this.description = texto;
@@ -194,7 +195,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	/**
 	 *  Insere nova lista de filhos.
 	 *
-	 *@param  filhos  List de nós que representam os filhos.
+	 *@param  filhos  List de nï¿½s que representam os filhos.
 	 */
 	public void setChildren(NodeList filhos) {
 		this.children = filhos;
@@ -203,16 +204,16 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	/**
 	 *  Insere nova lista de pais.
 	 *
-	 *@param  pais  List de nós que representam os pais.
+	 *@param  pais  List de nï¿½s que representam os pais.
 	 */
 	public void setParents(NodeList pais) {
 		this.parents = pais;
 	}
 
 	/**
-	 *  Modifica a descrição da explanação do nó.
+	 *  Modifica a descriï¿½ï¿½o da explanaï¿½ï¿½o do nï¿½.
 	 *
-	 *@param  texto  descrição da explanação do nó.
+	 *@param  texto  descriï¿½ï¿½o da explanaï¿½ï¿½o do nï¿½.
 	 */
 	public void setExplanationDescription(String texto) {
 		this.explanationDescription = texto;
@@ -231,9 +232,9 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 
 	/**
-	 *  Retorna o nome do nó.
+	 *  Retorna o nome do nï¿½.
 	 *
-	 *@return    descrição do nó.
+	 *@return    descriï¿½ï¿½o do nï¿½.
 	 */
 	public String getDescription() {
 		return description;
@@ -242,16 +243,16 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	/**
 	 *  Retorna a lista de adjacentes.
 	 *
-	 *@return    Referência para os adjacentes do nó.
+	 *@return    Referï¿½ncia para os adjacentes do nï¿½.
 	 */
 	public NodeList getAdjacents() {
 		return adjacents;
 	}
 
 	/**
-	 *  Retorna a sigla do nó.
+	 *  Retorna a sigla do nï¿½.
 	 *
-	 *@return    Sigla do nó.
+	 *@return    Sigla do nï¿½.
 	 */
 	public String getName() {
 		return name;
@@ -276,9 +277,9 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 
 	/**
-	 *  Retorna a descrição de explanação do nó.
+	 *  Retorna a descriï¿½ï¿½o de explanaï¿½ï¿½o do nï¿½.
 	 *
-	 *@return    descrição de explanação do nó.
+	 *@return    descriï¿½ï¿½o de explanaï¿½ï¿½o do nï¿½.
 	 */
 	public String getExplanationDescription() {
 		return explanationDescription;
@@ -291,6 +292,19 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	 */
 	public ArrayMap<String,ExplanationPhrase> getPhrasesMap() {
 		return this.phrasesMap;
+	}
+	
+	/**
+	 * Utilizado em dalgo2
+	 */
+	public void atualizatamanhoinfoestados() {
+		int i = states.size();
+		infoestados = new int[i];
+		
+		/* nao precisa, pois o array eh criado sempre com o valor 0
+		for (int j = 0; j < i; j++)
+			infoestados[j] = 0;
+		*/
 	}
 
 	/**
@@ -305,7 +319,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 
 	/**
 	 *  Retira o estado criado mais recentemente.
-	 *  Isto é, o último estado da lista.
+	 *  Isto ï¿½, o ï¿½ltimo estado da lista.
 	 */
 	public void removeLastState() {
 		if (states.size() > 1) {
@@ -315,10 +329,19 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 	
 	/**
-	 *  Substitui o estado da posição especificada pelo estado especificado.
+	 * Utilizado em dalgo2. 
+	 * Nao deve ser utilizado em nodes com informacoes de tabelas de potencial.
+	 */
+	public void removeStateAt(int index){
+		states.remove(index);
+		this.atualizatamanhoinfoestados();
+	}
+	
+	/**
+	 *  Substitui o estado da posiï¿½ï¿½o especificada pelo estado especificado.
 	 *
 	 *@param  estado  Nome do estado atualizado.
-	 *@param  index   Índice em que deseja-se modificar, começando do 0.
+	 *@param  index   ï¿½ndice em que deseja-se modificar, comeï¿½ando do 0.
 	 */
 	public void setStateAt(String estado, int index) {
 		states.set(index, estado);
@@ -336,26 +359,26 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	*/
 
 	/**
-	 *  Retorna o número de estados do nó.
+	 *  Retorna o nï¿½mero de estados do nï¿½.
 	 *
-	 *@return    Retorna o número de estados do nó.
+	 *@return    Retorna o nï¿½mero de estados do nï¿½.
 	 */
 	public final int getStatesSize() {
 		return states.size();
 	}
 
 	/**
-	 *  Retorna o estado da posição <code>index</code>
+	 *  Retorna o estado da posiï¿½ï¿½o <code>index</code>
 	 *
-	 *@param  index  Índice do estado a ser lido.
-	 *@return        Nome do estado da posição <code>index</code>
+	 *@param  index  ï¿½ndice do estado a ser lido.
+	 *@return        Nome do estado da posiï¿½ï¿½o <code>index</code>
 	 */
 	public final String getStateAt(int index) {
 		return (String) (states.get(index));
 	}
 
 	/**
-	 *  Monta lista de nós adjacentes.
+	 *  Monta lista de nï¿½s adjacentes.
 	 */
 	public void makeAdjacents() {
 		adjacents.addAll(parents);
@@ -363,7 +386,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 
 	/**
-	 *  Desmonta a lista de nós adjacentes.
+	 *  Desmonta a lista de nï¿½s adjacentes.
 	 */
 	public void clearAdjacents() {
 		adjacents.clear();
@@ -371,8 +394,8 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 
 
 	/**
-	 * Utilizado para notificar as tabelas de que esta variável faz parte de que houve uma
-	 * modificação na estrutura desta variável.
+	 * Utilizado para notificar as tabelas de que esta variï¿½vel faz parte de que houve uma
+	 * modificaï¿½ï¿½o na estrutura desta variï¿½vel.
 	 */
 	private void updateTables() {
 		ITabledVariable aux;
@@ -405,10 +428,10 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 	
 	/**
-	 *  Imprime a descrição do nó no formato: "descrição (sigla)" (sem aspas)
-	 *  É utilizado no JTree da Interface quando a rede é compilada.
+	 *  Imprime a descriï¿½ï¿½o do nï¿½ no formato: "descriï¿½ï¿½o (sigla)" (sem aspas)
+	 *  ï¿½ utilizado no JTree da Interface quando a rede ï¿½ compilada.
 	 *
-	 *@return    descrição do nó formatado.
+	 *@return    descriï¿½ï¿½o do nï¿½ formatado.
 	 */
 	public String toString() {
 		return description + " (" + name + ")";

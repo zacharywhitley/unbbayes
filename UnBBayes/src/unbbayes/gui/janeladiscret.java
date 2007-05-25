@@ -23,7 +23,7 @@ import java.awt.Dimension;
 import javax.swing.JProgressBar;
 
 /**
- * Janela para discretização múltipla
+ * Janela para discretizaï¿½ï¿½o mï¿½ltipla
  * 
  * @author gabriel guimaraes - Aluno de IC 2005-2006
  * @Orientador Marcelo Ladeira
@@ -36,7 +36,7 @@ public class janeladiscret extends JFrame {
 
 	private FileController fileController;
 
-	public int[][] matriz;
+	public byte[][] matriz;
 
 	public dalgo2 discretizador;
 
@@ -181,17 +181,15 @@ public class janeladiscret extends JFrame {
 						file = chooser.getSelectedFile();
 						fileController.setCurrentDirectory(chooser
 								.getCurrentDirectory());
-						
+
 						// new ConstructionController(file, controller);
-						// TODO DESCOMENTAR E CORRIGIR ERRO
-						// ConstructionController construtor = new
-						// ConstructionController(
-						// file);
-						// int ln = construtor.getMatrix().length;
-						// int cl = construtor.getMatrix()[1].length;
-						// matriz = new int[ln][cl];
-						// matriz = construtor.getMatrix();
-						// variaveis = construtor.variablesVector;
+
+						ConstructionController construtor = new ConstructionController(file);
+						//int ln = construtor.getMatrix().length;
+						//int cl = construtor.getMatrix()[1].length;
+						// matriz = new int[ln][cl];  // nao faz sentido, dado a proxima linha
+						matriz = construtor.getMatrix();
+						variaveis = construtor.getVariablesVector();
 						jButton.setEnabled(true);
 						// jButton5.setEnabled(true);
 						listavar.setEnabled(true);
@@ -317,7 +315,7 @@ public class janeladiscret extends JFrame {
 		return jButton5;
 	}
 
-	public void setdalgoresp(NodeList vv, int mline, int[][] mt) {
+	public void setdalgoresp(NodeList vv, int mline, byte[][] mt) {
 		this.variaveis = vv;
 		this.linhas = mline;
 		this.matriz = mt;
@@ -332,9 +330,9 @@ public class janeladiscret extends JFrame {
 	private JPanel getJPanel() {
 		if (jPanel == null) {
 			jLabel1 = new JLabel();
-			jLabel1.setText("Tipo de discretização");
+			jLabel1.setText("Tipo de discretizaï¿½ï¿½o");
 			jLabel = new JLabel();
-			jLabel.setText("Variável dependente");
+			jLabel.setText("Variï¿½vel dependente");
 			jPanel = new JPanel();
 			jPanel
 					.setComponentOrientation(java.awt.ComponentOrientation.LEFT_TO_RIGHT);
@@ -372,7 +370,7 @@ public class janeladiscret extends JFrame {
 			discretlist = new JComboBox();
 			discretlist.setEnabled(false);
 			discretlist
-					.setToolTipText("Escolha o tipo de discretização a ser aplicada");
+					.setToolTipText("Escolha o tipo de discretizaï¿½ï¿½o a ser aplicada");
 			discretlist.setPreferredSize(new Dimension(100, 25));
 		}
 		return discretlist;
@@ -426,7 +424,7 @@ public class janeladiscret extends JFrame {
 	private JPanel getJPanel2() {
 		if (jPanel2 == null) {
 			jLabel2 = new JLabel();
-			jLabel2.setText("Aceitar perda de até");
+			jLabel2.setText("Aceitar perda de atï¿½");
 			jPanel2 = new JPanel();
 			jPanel2.add(jLabel2, null);
 			jPanel2.add(getJButton3(), null);
