@@ -10,6 +10,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -26,6 +27,7 @@ import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.util.ArrayMap;
 
 /**
@@ -97,7 +99,15 @@ public class InputInstanceOfTree extends JTree{
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 						//TODO preencher o generativeInput... 
 						GenerativeInputNode inputNode = (GenerativeInputNode)controller.getInputNodeActive(); 
-						controller.setInputInstanceOf(inputNode, residentNode); 
+						try{
+						   controller.setInputInstanceOf(inputNode, residentNode); 
+						}
+						catch(CycleFoundException ce){
+							JOptionPane.showMessageDialog(null,
+									ce.getMessage(),
+								    "MEBN Construction Error",
+								    JOptionPane.ERROR_MESSAGE);	
+						}
 						
 					} else if (e.getClickCount() == 1) {
 						

@@ -40,7 +40,7 @@ import unbbayes.prs.mebn.entity.exception.TypeException;
 
 
 /**
- * Pane for edition of entities (Create, Edit, View)
+ * Pane for edition of entities : Create, Delete, Edit and View
  */
 
 public class EntityEditionPane extends JPanel{
@@ -222,7 +222,7 @@ public class EntityEditionPane extends JPanel{
   			public void actionPerformed(ActionEvent ae) {
   				try{
 				   
-  				   selected = mebnController.addObjectEntity();
+  				   selected = mebnController.createObjectEntity();
 				   
 				   update();  
 				   

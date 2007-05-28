@@ -25,6 +25,7 @@ public class Resources_pt extends ListResourceBundle {
 	 * The resources
 	 */
 	static final Object[][] contents =
-	{	{"InvalidEdgeException","Arco Invalido"}
+	{	{"InvalidEdgeException","Arco Invalido!"}, 
+		{"CycleFoundException","Ciclo encontrado! Não pode haver ciclos no grafo. "}
 	};
 }

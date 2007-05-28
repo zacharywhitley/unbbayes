@@ -238,6 +238,8 @@ public class IconController implements Serializable {
 	
 	protected ImageIcon boxVariablesIcon; 		
 	
+	protected ImageIcon booleanIcon; 	
+	
 	
 	public static IconController getInstance() {
 		if (singleton == null) {
@@ -1198,6 +1200,16 @@ public class IconController implements Serializable {
 			boxVariablesIcon = new ImageIcon(getClass().getResource(
 					"/icons/boxVariables.gif"));
 			return boxVariablesIcon;
+		}
+	}	
+	
+	public ImageIcon getBooleanIcon() {
+		if (booleanIcon != null) {
+			return booleanIcon;
+		} else {
+			booleanIcon = new ImageIcon(getClass().getResource(
+					"/icons/boolean.gif"));
+			return booleanIcon;
 		}
 	}		
 }

@@ -25,6 +25,7 @@ public class Resources extends ListResourceBundle {
 	 * The resources
 	 */
 	static final Object[][] contents =
-	{	{"InvalidEdgeException","Invalid Edge"}
+	{	{"InvalidEdgeException","Invalid Edge"}, 
+		{"CycleFoundException","Cycle found"}
 	};
 }

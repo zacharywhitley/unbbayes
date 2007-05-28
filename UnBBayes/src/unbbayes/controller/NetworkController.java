@@ -65,6 +65,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.util.NodeList;
@@ -299,7 +300,7 @@ public class NetworkController implements KeyListener {
      *
      * @param edge The new edge to be inserted.
      */
-    public void insertEdge(Edge edge) throws MEBNConstructionException, Exception{
+    public void insertEdge(Edge edge) throws MEBNConstructionException, CycleFoundException, Exception{
     	if (senController != null) senController.insertEdge(edge); 
     	else{
     		if (mebnController!= null) mebnController.insertEdge(edge); 

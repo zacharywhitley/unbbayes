@@ -161,7 +161,12 @@ public class DomainResidentNode extends ResidentNode {
 	
 	public void removeInputInstanceFromList(GenerativeInputNode node){
 		inputInstanceFromList.remove(node);
-		node.setInputInstanceOf((DomainResidentNode)null); 
+		try{
+			node.setInputInstanceOf((DomainResidentNode)null); 
+		}
+		catch(Exception e){
+			e.printStackTrace(); 
+		}
 	}		
 	
 	

@@ -1,6 +1,5 @@
 package unbbayes.controller;
 
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import unbbayes.gui.MEBNEditionPane;
@@ -23,6 +22,7 @@ import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
+import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
@@ -34,7 +34,7 @@ import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
  */
 
 public class MEBNController {
-
+	
 	private NetworkWindow screen;
 	private MEBNEditionPane mebnEditionPane; 
 
@@ -95,16 +95,17 @@ public class MEBNController {
 	/*---------------------------- Edge ---------------------------*/
 	
     /**
-     *  Faz a ligacão do arco desejado entre pai e filho.
+     *  Faz a ligacão do arco desejado entre pai e filho. Deve preencher de forma
+     *  correta as listas que precisam ser atualizadas. 
      *
      * @param  edge  um <code>TArco</code> que representa o arco a ser ligado
      * @since
      */
 	
-    public void insertEdge(Edge edge) throws MEBNConstructionException, Exception{
+    public void insertEdge(Edge edge) throws MEBNConstructionException, CycleFoundException, Exception{
     	
     	MFrag mFragCurrent = multiEntityBayesianNetwork.getCurrentMFrag(); 
-
+    	
     	((DomainMFrag)mFragCurrent).addEdge(edge);
     	
     }
@@ -321,7 +322,7 @@ public class MEBNController {
 		return node; 
 	}	
 	
-	public void setInputInstanceOf(GenerativeInputNode input, ResidentNode resident){
+	public void setInputInstanceOf(GenerativeInputNode input, ResidentNode resident) throws CycleFoundException{
 		
 		input.setInputInstanceOf((DomainResidentNode)resident);
 		mebnEditionPane.getInputNodePane().updateArgumentPane(); 
@@ -604,7 +605,7 @@ public class MEBNController {
 	 * pelo usuario. O tipo da entidade sera um nome gerado automaticamente, a 
 	 * partir do passado pelo usuário. 
 	 */
-	public ObjectEntity addObjectEntity() throws TypeException{
+	public ObjectEntity createObjectEntity() throws TypeException{
 
 		
 		String name = resource.getString("entityName") + ObjectEntity.getEntityNum();

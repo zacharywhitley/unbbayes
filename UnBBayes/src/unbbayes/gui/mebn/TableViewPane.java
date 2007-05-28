@@ -2,6 +2,7 @@ package unbbayes.gui.mebn;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -77,13 +78,17 @@ public class TableViewPane extends JPanel{
 		jsTxtPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		jsTxtPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		
-		btnEditTable = new JButton("EDIT");
-		btnEditTable.setBackground(ToolKitForGuiMebn.getBorderColor()); 
-		btnEditTable.setForeground(Color.WHITE);
+		Font font = new Font("Serif", Font.ITALIC, 12); 
+		
+		btnEditTable = new JButton("edit");
+		btnEditTable.setBackground(Color.LIGHT_GRAY); 
+		btnEditTable.setForeground(Color.BLUE); 
+		btnEditTable.setFont(font);
 
-		btnCompileTable = new JButton("COMP"); 
-		btnCompileTable.setBackground(new Color(102, 169, 1)); //green 
-		btnCompileTable.setForeground(Color.WHITE); 
+		btnCompileTable = new JButton("comp"); 
+		btnCompileTable.setBackground(Color.LIGHT_GRAY); 
+		btnCompileTable.setForeground(Color.BLUE); 
+		btnCompileTable.setFont(font);
 		
 		addListeners(); 
 		

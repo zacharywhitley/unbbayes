@@ -8,17 +8,18 @@ import java.util.Vector;
 
 import unbbayes.draw.DrawTwoBaseRectangle;
 import unbbayes.prs.mebn.entity.Type;
+import unbbayes.prs.mebn.exception.CycleFoundException;
 
 /**
  * 
  */
 
 public class GenerativeInputNode extends InputNode {
-
+	
 	private static final long serialVersionUID = 7377146558744109802L;
 	
 	private List<DomainResidentNode> residentNodeChildList;
-
+	
 	private DomainMFrag mFrag;
 	
 	private DrawTwoBaseRectangle drawInputNode; 
@@ -34,19 +35,19 @@ public class GenerativeInputNode extends InputNode {
 	
 	public GenerativeInputNode(String name, DomainMFrag mFrag){
 		
-	   super(); 
-	   setName(name); 
-	   setLabel(" "); 
-	   
-	   this.mFrag = mFrag;
-	   
-	   residentNodeChildList = new ArrayList<DomainResidentNode>(); 
-	
-	   size.x = 100;
-	   size.y = 20; 
-	   drawInputNode = new DrawTwoBaseRectangle(position, size);
-	   drawElement.add(drawInputNode);	
-	   
+		super(); 
+		setName(name); 
+		setLabel(" "); 
+		
+		this.mFrag = mFrag;
+		
+		residentNodeChildList = new ArrayList<DomainResidentNode>(); 
+		
+		size.x = 100;
+		size.y = 20; 
+		drawInputNode = new DrawTwoBaseRectangle(position, size);
+		drawElement.add(drawInputNode);	
+		
 	}
 	
 	/**
@@ -54,16 +55,16 @@ public class GenerativeInputNode extends InputNode {
 	 * the residentNodeChildList.
 	 *
 	 */    
-    
-    public void delete(){
-    
-    	while(!residentNodeChildList.isEmpty()){
-    		DomainResidentNode resident = residentNodeChildList.get(0); 
-    		this.removeResidentNodeChild(resident); 
-    	}
-    	
-    	mFrag.removeGenerativeInputNode(this); 
-    }
+	
+	public void delete(){
+		
+		while(!residentNodeChildList.isEmpty()){
+			DomainResidentNode resident = residentNodeChildList.get(0); 
+			this.removeResidentNodeChild(resident); 
+		}
+		
+		mFrag.removeGenerativeInputNode(this); 
+	}
 	
 	/**
 	 * Remove the node of the resident node child list. 
@@ -83,13 +84,23 @@ public class GenerativeInputNode extends InputNode {
 		return residentNodeChildList; 
 	}
 	
-	public void setInputInstanceOf(DomainResidentNode residentNode){
+	/**
+	 * 
+	 * @param residentNode
+	 */
+	public void setInputInstanceOf(DomainResidentNode residentNode) throws CycleFoundException{
+		
+		for(ResidentNode resident: residentNodeChildList){
+			if(ConsistencyUtilities.hasCycle(residentNode, (DomainResidentNode)resident)){
+				throw new CycleFoundException(); 
+			}
+		}
 		
 		super.setInputInstanceOf(residentNode); 
 		residentNodePointer = new ResidentNodePointer(residentNode);
 		residentNode.addInputInstanceFromList(this); 
 		updateLabel(); 
-		 
+		
 	}
 	
 	
@@ -114,7 +125,7 @@ public class GenerativeInputNode extends InputNode {
 	}
 	
 	/*--------------------------------------------------------------*/
-
+	
 	@Override
 	public void setSelected(boolean b) {
 		drawInputNode.setSelected(b);
@@ -122,81 +133,81 @@ public class GenerativeInputNode extends InputNode {
 	}    		
 	
 	/**
-     *  Gets all generative input node node's color.
-     *
-     * @return The color of all generative input node's color.
-     */
-    public static Color getColor() {
-        return color;
-    }
-
-    /**
-     *  Sets the new color for all generative input node node.
-     *
-     * @return The new color of all generative input node in RGB.
-     */
-    public static void setColor(int c) {
-        color = new Color(c);
-    }		
+	 *  Gets all generative input node node's color.
+	 *
+	 * @return The color of all generative input node's color.
+	 */
+	public static Color getColor() {
+		return color;
+	}
+	
+	/**
+	 *  Sets the new color for all generative input node node.
+	 *
+	 * @return The new color of all generative input node in RGB.
+	 */
+	public static void setColor(int c) {
+		color = new Color(c);
+	}		
 	
 	@Override
 	public void paint(Graphics2D graphics) {
 		drawInputNode.setFillColor(getColor());
 		super.paint(graphics);
 	}	
-
+	
 	/**
 	 * Atualiza o texto do label apresentado pelo no... 
 	 * O label de um nó de input contem o nome do resident ou 
 	 * built in o qual este nó representa.
 	 */
 	
-    public void updateLabel(){
-    	
-    	Object inputInstanceOf = super.getInputInstanceOf();
-    	
-    	if(inputInstanceOf != null){
-    		if(inputInstanceOf instanceof DomainResidentNode){
-    			ResidentNodePointer pointer = getResidentNodePointer();
-    			String newLabel = ""; 
-    			
-    			newLabel+= pointer.getResidentNode().getName(); 
-    			newLabel+= "("; 
-    			
-    			for(OrdinaryVariable ov: pointer.getOrdinaryVariableList()){
-    				
-    				if(ov!=null) newLabel+= ov.getName(); 
-    				else newLabel+= " ";
-    				
-    				newLabel+= ","; 
-    			}
-    			
-    			//delete the last virgle
-    			if(pointer.getOrdinaryVariableList().size() > 0){
-    				newLabel = newLabel.substring(0, newLabel.length() - 1); 
-    			}
-    			
-    			newLabel+= ")"; 
-    			
-    			setLabel(newLabel); 
-    		}
-    		else{
-    			setLabel(((BuiltInRV)inputInstanceOf).getName()); 
-        	}
-    	}
-    	else{
-    		setLabel(" "); 
-    	}
-    }	
-
+	public void updateLabel(){
+		
+		Object inputInstanceOf = super.getInputInstanceOf();
+		
+		if(inputInstanceOf != null){
+			if(inputInstanceOf instanceof DomainResidentNode){
+				ResidentNodePointer pointer = getResidentNodePointer();
+				String newLabel = ""; 
+				
+				newLabel+= pointer.getResidentNode().getName(); 
+				newLabel+= "("; 
+				
+				for(OrdinaryVariable ov: pointer.getOrdinaryVariableList()){
+					
+					if(ov!=null) newLabel+= ov.getName(); 
+					else newLabel+= " ";
+					
+					newLabel+= ","; 
+				}
+				
+				//delete the last virgle
+				if(pointer.getOrdinaryVariableList().size() > 0){
+					newLabel = newLabel.substring(0, newLabel.length() - 1); 
+				}
+				
+				newLabel+= ")"; 
+				
+				setLabel(newLabel); 
+			}
+			else{
+				setLabel(((BuiltInRV)inputInstanceOf).getName()); 
+			}
+		}
+		else{
+			setLabel(" "); 
+		}
+	}	
+	
 	public Vector<OrdinaryVariable> getOrdinaryVariableList() {
 		return residentNodePointer.getOrdinaryVariableList();
 	}
-
+	
 	public Vector<Type> getTypesOfOrdinaryVariableList() {
 		return residentNodePointer.getTypesOfOrdinaryVariableList(); 
 	}
-
+	
 	public ResidentNodePointer getResidentNodePointer() {
 		return residentNodePointer;
 	}

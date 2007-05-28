@@ -29,6 +29,10 @@ public class Type implements Comparable<Type>{
 	public static Type typeCategoryLabel; 
 	public static Type typeLabel; 
 	
+	/* 
+	 * Creation of the types defaults of the MEBN 
+	 * */
+	
 	static {
 		try{
 			typeBoolean = new Type("Boolean"); 
@@ -151,6 +155,13 @@ public class Type implements Comparable<Type>{
 		 
 	}
 	
+	/**
+	 * Create a type with the name specified and add this to the
+	 * list of types. 
+	 * @param nameType Name of the type that will be create
+	 * @return The new Type
+	 * @throws TypeAlreadyExistsException Type don't can be create because it already exists. 
+	 */
 	public static Type createType(String nameType) throws TypeAlreadyExistsException{
 		
 		Type newType = new Type(nameType); 

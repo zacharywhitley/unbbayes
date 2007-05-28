@@ -54,6 +54,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
+import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.util.GeometricUtil;
@@ -929,7 +930,13 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 			JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
 					me.getMessage(),
 				    "MEBN Construction Error",
-				    JOptionPane.WARNING_MESSAGE);			
+				    JOptionPane.ERROR_MESSAGE);			
+		}
+		catch(CycleFoundException cycle){
+			JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
+					cycle.getMessage(),
+				    "Cycle Found Exception",
+				    JOptionPane.ERROR_MESSAGE);	
 		}
 		catch(Exception e){
 			e.printStackTrace(); 

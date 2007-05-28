@@ -10,6 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.swing.JOptionPane;
+
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -698,7 +700,12 @@ public class LoaderPrOwlIO {
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
 				individualTwo = (OWLIndividual) itIn.next();
 				generativeInputNode = mapGenerativeInputNode.get(individualTwo.getBrowserText()); 
-				generativeInputNode.setInputInstanceOf(domainResidentNode); 
+				try{
+				   generativeInputNode.setInputInstanceOf(domainResidentNode); 
+				}
+				catch(Exception e){
+					e.printStackTrace(); 
+			    }
 				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
 			}
 			
@@ -812,7 +819,12 @@ public class LoaderPrOwlIO {
 				
 				if (mapDomainResidentNode.containsKey(individualTwo.getBrowserText())){
 					domainResidentNode = mapDomainResidentNode.get(individualTwo.getBrowserText()); 
-					generativeInputNode.setInputInstanceOf(domainResidentNode); 
+					try{
+						generativeInputNode.setInputInstanceOf(domainResidentNode); 
+					}
+					catch(Exception e){
+						e.printStackTrace(); 
+					}
 					System.out.println("   - isInputInstanceOf " + domainResidentNode.getName()); 
 				}
 				else{

@@ -89,24 +89,20 @@ public class PossibleValuesEditionPane extends JPanel{
 	    jlPossibleValues.setVisibleRowCount(-1);
 	    JScrollPane listScrollPane = new JScrollPane(jlPossibleValues);
 	    
-
-	    
 	    txtName = new JTextField(10);
 	    
 	    jtbOptions = new JToolBar(); 
-	    jtbOptions.setLayout(new GridLayout(0, 2)); 
+	    jtbOptions.setLayout(new GridLayout(0, 3)); 
 	    
 	    jbNew = new JButton(iconController.getMoreIcon()); 
-	    jbDelete = new JButton(iconController.getLessIcon()); 
+	    jbDelete = new JButton(iconController.getLessIcon());
+	    jbBooleanStates = new JButton(iconController.getBooleanIcon()); 
 	    jtbOptions.add(jbNew);
 	    jtbOptions.add(jbDelete); 
+	    jtbOptions.add(jbBooleanStates); 
 	    jtbOptions.setFloatable(false);	    
-
-	    //TODO fazer este painel... 
-	    jbBooleanStates = new JButton("B"); 
 	    
 	    jpAddOptions = new JPanel(new BorderLayout()); 
-	    jpAddOptions.add(jbBooleanStates, BorderLayout.LINE_END); 
 	    jpAddOptions.add(txtName, BorderLayout.CENTER); 
 	    
 	    jpInformation = new JPanel(new GridLayout(2, 0)); 	    

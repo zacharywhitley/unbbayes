@@ -6,6 +6,7 @@ import java.util.ResourceBundle;
 
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
+import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 
 /**
@@ -287,20 +288,32 @@ public class DomainMFrag extends MFrag {
 	 *@throws MEBNConstructionException when the edge don't is bethwen valid nodes. 
 	 */
 	
-	public void addEdge(Edge edge) throws MEBNConstructionException, Exception{
+	public void addEdge(Edge edge) throws MEBNConstructionException, CycleFoundException, Exception{
 		
 		Node origin = edge.getOriginNode();
 		Node destination = edge.getDestinationNode();
 		
 		if (destination instanceof DomainResidentNode){
 			if (origin instanceof DomainResidentNode){
-				super.addEdge(edge); 
-			    ((DomainResidentNode)origin).addResidentNodeChild((DomainResidentNode)destination); 
+				//Case 1: DomainResidentNode -> DomainResidentNode
+				if(!ConsistencyUtilities.hasCycle((DomainResidentNode)origin, (DomainResidentNode)destination)){
+				   super.addEdge(edge); 
+			       ((DomainResidentNode)origin).addResidentNodeChild((DomainResidentNode)destination); 
+				}
+				else{
+					throw new CycleFoundException(); 
+				}
 			}
 			else{
 				if (origin instanceof GenerativeInputNode){
-					super.addEdge(edge); 
-				    ((GenerativeInputNode)origin).addResidentNodeChild((DomainResidentNode)destination); 
+					//Case 2: GenerativeInputNode -> DomainResidentNode 
+				    if(!ConsistencyUtilities.hasCycle((GenerativeInputNode)origin, (DomainResidentNode)destination)){
+					   super.addEdge(edge); 
+				       ((GenerativeInputNode)origin).addResidentNodeChild((DomainResidentNode)destination);
+				    }
+					else{
+						throw new CycleFoundException(); 
+					}
 				}
 				else{
 					throw new MEBNConstructionException(resource.getString("InvalidEdgeException")); 
@@ -311,5 +324,6 @@ public class DomainMFrag extends MFrag {
 			throw new MEBNConstructionException(resource.getString("InvalidEdgeException"));
 		}
 	}	
+	
 
 }

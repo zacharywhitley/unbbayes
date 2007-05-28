@@ -351,7 +351,7 @@ public class MEBNControllerTest extends TestCase {
 	}
 
 	/**
-	 * Test method for {@link unbbayes.controller.MEBNController#addObjectEntity()}.
+	 * Test method for {@link unbbayes.controller.MEBNController#createObjectEntity()}.
 	 */
 	public void testAddObjectEntity() {
 		fail("Not yet implemented"); // TODO
