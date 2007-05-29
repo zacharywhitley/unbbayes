@@ -21,7 +21,6 @@
 
 package unbbayes.prs;
 
-
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
@@ -39,30 +38,30 @@ import unbbayes.util.NodeList;
 import unbbayes.util.SerializablePoint2D;
 
 /**
- *  Classe que representa um n� gen�rico.
- *
- *@author     Michael e Rommel
+ * Classe que representa um n� gen�rico.
+ * 
+ * @author Michael e Rommel
  */
 public abstract class Node implements Serializable, IOnePositionDrawable {
 
 	private String description;
 	protected String name;
-	protected String label; 
-	private boolean nameIsLabel = true; 
-	
+	protected String label;
+	private boolean nameIsLabel = true;
+
 	protected SerializablePoint2D position;
 	protected static SerializablePoint2D size = new SerializablePoint2D();
-	
-	protected SerializablePoint2D sizeVariable = new SerializablePoint2D(); 
-	protected boolean sizeIsVariable = false;  
-	
+
+	protected SerializablePoint2D sizeVariable = new SerializablePoint2D();
+	protected boolean sizeIsVariable = false;
+
 	protected NodeList parents;
 	private NodeList children;
 	protected List<String> states;
 	private NodeList adjacents;
 	private boolean bSelected;
 	private String explanationDescription;
-	private ArrayMap<String,ExplanationPhrase> phrasesMap;
+	private ArrayMap<String, ExplanationPhrase> phrasesMap;
 	private int informationType;
 	public int infoestados[];
 
@@ -72,9 +71,9 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 
 	public static final int DESCRIPTION_TYPE = 3;
 	public static final int EXPLANATION_TYPE = 4;
-	
+
 	protected DrawElement drawElement;
-	
+
 	/**
 	 * Holds the mean of the values for each class if this is a numeric
 	 * attribute node
@@ -84,65 +83,68 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	/**
 	 * Holds the standard deviation of the values for each class if this is a
 	 * numeric attribute node.
-	 */		
+	 */
 	protected double[] standardDeviation;
 
 	/**
-	 *  Constr�i um novo n� e faz as devidas inicializa��es.
+	 * Constr�i um novo n� e faz as devidas inicializa��es.
 	 */
 	public Node() {
 		name = "";
-		label= ""; //o texto dentro do n�
+		label = ""; // o texto dentro do n�
 		description = "";
 		explanationDescription = "";
 		adjacents = new NodeList();
 		parents = new NodeList();
 		children = new NodeList();
 		states = new ArrayList<String>();
-		
+
 		// width
 		size.x = 35;
 		// height
 		size.y = 35;
-		
+
 		position = new SerializablePoint2D();
 		bSelected = false;
 		drawElement = new DrawText(name, position);
 		drawElement.setFillColor(Color.black);
-		phrasesMap = new ArrayMap<String,ExplanationPhrase>();
+		phrasesMap = new ArrayMap<String, ExplanationPhrase>();
 		informationType = DESCRIPTION_TYPE;
 	}
 
 	public abstract int getType();
 
-	/** Retorna o tipo de informa��o do n�.
-	 *  @return Tipo de informa��o do n�.
+	/**
+	 * Retorna o tipo de informa��o do n�.
+	 * 
+	 * @return Tipo de informa��o do n�.
 	 */
 	public int getInformationType() {
 		return informationType;
 	}
 
-	/** Altera o tipo de informa��o do n�.
-	 *  Os tipos de informa��o podem ser:
-	 *  -   DESCRIPTION_TYPE : n� de descri��o
-	 *  -   EXPLANATION_TYPE : n� de explica��o
-	 *  @param informationType Tipo de informa��o
-	 *  @throws Exception se o tipo de informa��o for inv�lida
+	/**
+	 * Altera o tipo de informa��o do n�. Os tipos de informa��o podem ser: -
+	 * DESCRIPTION_TYPE : n� de descri��o - EXPLANATION_TYPE : n� de explica��o
+	 * 
+	 * @param informationType
+	 *            Tipo de informa��o
+	 * @throws Exception
+	 *             se o tipo de informa��o for inv�lida
 	 */
-	public void setInformationType(int informationType) /*throws Exception*/ {
+	public void setInformationType(int informationType) /* throws Exception */{
 		if ((informationType > 2) && (informationType < 5))
 			this.informationType = informationType;
-		/*else
-		{   throw new Exception("Valor de infroma��o inv�lido");
-		}*/
+		/*
+		 * else { throw new Exception("Valor de infroma��o inv�lido"); }
+		 */
 	}
 
 	public void addExplanationPhrase(ExplanationPhrase explanationPhrase) {
 		phrasesMap.put(explanationPhrase.getNode(), explanationPhrase);
 	}
 
-	public ExplanationPhrase getExplanationPhrase(String node)
-		throws Exception {
+	public ExplanationPhrase getExplanationPhrase(String node) throws Exception {
 		ExplanationPhrase ep = phrasesMap.get(node);
 		if (ep == null) {
 			throw new Exception("N� n�o encontrado.");
@@ -152,165 +154,208 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 
 	/**
-	 *  Modifica o nome do n�.
-	 *
-	 *@param  texto  descri��o do n�.
+	 * Modifica o nome do n�.
+	 * 
+	 * @param texto
+	 *            descri��o do n�.
 	 */
 	public void setDescription(String texto) {
 		this.description = texto;
 	}
 
 	/**
-	 *  Set the node's name.
-	 *
-	 *@param  name Node's name.
+	 * Set the node's name.
+	 * 
+	 * @param name
+	 *            Node's name.
 	 */
 	public void setName(String name) {
 		this.name = name;
-		if(nameIsLabel == true){
-		   ((DrawText)drawElement).setText(name);
+		if (nameIsLabel == true) {
+			((DrawText) drawElement).setText(name);
 		}
 	}
 
 	/**
-	 *  Set the node's label (text of the node).
-	 *
-	 *@param  label Node's label.
+	 * Set the node's label (text of the node).
+	 * 
+	 * @param label
+	 *            Node's label.
 	 */
 	public void setLabel(String label) {
 		this.label = label;
-		nameIsLabel = false; 
-		((DrawText)drawElement).setText(label);
-	}	
-	
-	/**
-	 *  Return the node's label (text of the node).
-	 *
-	 */
-	public String getLabel() {
-		return label; 
-	}		
-	
+		nameIsLabel = false;
+		((DrawText) drawElement).setText(label);
+	}
 
 	/**
-	 *  Insere nova lista de filhos.
-	 *
-	 *@param  filhos  List de n�s que representam os filhos.
+	 * Return the node's label (text of the node).
+	 * 
+	 */
+	public String getLabel() {
+		return label;
+	}
+
+	/**
+	 * Insere nova lista de filhos.
+	 * 
+	 * @param filhos
+	 *            List de n�s que representam os filhos.
 	 */
 	public void setChildren(NodeList filhos) {
 		this.children = filhos;
 	}
 
 	/**
-	 *  Insere nova lista de pais.
-	 *
-	 *@param  pais  List de n�s que representam os pais.
+	 * Insere nova lista de pais.
+	 * 
+	 * @param pais
+	 *            List de n�s que representam os pais.
 	 */
 	public void setParents(NodeList pais) {
 		this.parents = pais;
 	}
+	
+	public void addChild(Node filho){
+		this.children.add(filho);
+	}
+	
+	public void addParent(Node parent){
+		this.parents.add(parent);
+	}
+
+	public boolean isParentOf(Node child) {
+		// boolean result=children.contains(child);
+		boolean result = false;
+		int j = children.size();
+		try {
+			for (int i = 0; i < j; i++) {
+				result = ((result) || ((child.getName()) == (children.get(i)
+						.getName())));
+			}
+		} catch (Exception ee) {
+			int debug = 0;
+			int debug2 = debug;
+		}
+		return result;
+	}
+
+	public boolean isChildOf(Node parent) {
+		// boolean result=parents.contains(parent);
+		boolean result = false;
+		int j = parents.size();
+		for (int i = 0; i < j; i++) {
+			result = ((result) || ((parent.getName()) == (parents.get(i)
+					.getName())));
+		}
+		return result;
+	}
 
 	/**
-	 *  Modifica a descri��o da explana��o do n�.
-	 *
-	 *@param  texto  descri��o da explana��o do n�.
+	 * Modifica a descri��o da explana��o do n�.
+	 * 
+	 * @param texto
+	 *            descri��o da explana��o do n�.
 	 */
 	public void setExplanationDescription(String texto) {
 		this.explanationDescription = texto;
 	}
 
 	/**
-	 *  Modifica o ArrayMap com as frases.
-	 *
-	 *@param phrasesMap novo ArrayMap a ser setado
-	 *@return	phrasesMap	anterior.
+	 * Modifica o ArrayMap com as frases.
+	 * 
+	 * @param phrasesMap
+	 *            novo ArrayMap a ser setado
+	 * @return phrasesMap anterior.
 	 */
-	public ArrayMap<String,ExplanationPhrase> setPhrasesMap(ArrayMap<String,ExplanationPhrase> phrasesMap) {
-		ArrayMap<String,ExplanationPhrase> old = this.phrasesMap;
+	public ArrayMap<String, ExplanationPhrase> setPhrasesMap(
+			ArrayMap<String, ExplanationPhrase> phrasesMap) {
+		ArrayMap<String, ExplanationPhrase> old = this.phrasesMap;
 		this.phrasesMap = phrasesMap;
 		return old;
 	}
 
 	/**
-	 *  Retorna o nome do n�.
-	 *
-	 *@return    descri��o do n�.
+	 * Retorna o nome do n�.
+	 * 
+	 * @return descri��o do n�.
 	 */
 	public String getDescription() {
 		return description;
 	}
 
 	/**
-	 *  Retorna a lista de adjacentes.
-	 *
-	 *@return    Refer�ncia para os adjacentes do n�.
+	 * Retorna a lista de adjacentes.
+	 * 
+	 * @return Refer�ncia para os adjacentes do n�.
 	 */
 	public NodeList getAdjacents() {
 		return adjacents;
 	}
 
 	/**
-	 *  Retorna a sigla do n�.
-	 *
-	 *@return    Sigla do n�.
+	 * Retorna a sigla do n�.
+	 * 
+	 * @return Sigla do n�.
 	 */
 	public String getName() {
 		return name;
 	}
 
 	/**
-	 *  Retorna a lista de filhos.
-	 *
-	 *@return    Lista de filhos.
+	 * Retorna a lista de filhos.
+	 * 
+	 * @return Lista de filhos.
 	 */
 	public final NodeList getChildren() {
 		return children;
 	}
 
 	/**
-	 *  Retorna a lista de pais.
-	 *
-	 *@return    Lista de Pais.
+	 * Retorna a lista de pais.
+	 * 
+	 * @return Lista de Pais.
 	 */
 	public final NodeList getParents() {
 		return parents;
 	}
 
 	/**
-	 *  Retorna a descri��o de explana��o do n�.
-	 *
-	 *@return    descri��o de explana��o do n�.
+	 * Retorna a descri��o de explana��o do n�.
+	 * 
+	 * @return descri��o de explana��o do n�.
 	 */
 	public String getExplanationDescription() {
 		return explanationDescription;
 	}
 
 	/**
-	 *  Retorna o ArrayMap com as frases.
-	 *
-	 *@return    ArrayMap com as frases.
+	 * Retorna o ArrayMap com as frases.
+	 * 
+	 * @return ArrayMap com as frases.
 	 */
-	public ArrayMap<String,ExplanationPhrase> getPhrasesMap() {
+	public ArrayMap<String, ExplanationPhrase> getPhrasesMap() {
 		return this.phrasesMap;
 	}
-	
+
 	/**
 	 * Utilizado em dalgo2
 	 */
 	public void atualizatamanhoinfoestados() {
 		int i = states.size();
 		infoestados = new int[i];
-		
-		/* nao precisa, pois o array eh criado sempre com o valor 0
-		for (int j = 0; j < i; j++)
-			infoestados[j] = 0;
-		*/
+
+		/*
+		 * nao precisa, pois o array eh criado sempre com o valor 0 for (int j =
+		 * 0; j < i; j++) infoestados[j] = 0;
+		 */
 	}
 
 	/**
-	 *  Insere um estado com o nome especificado no final da lista.
-	 *
-	 *@param  estado  Nome do estado a ser inserido.
+	 * Insere um estado com o nome especificado no final da lista.
+	 * 
+	 * @param estado
+	 *            Nome do estado a ser inserido.
 	 */
 	public void appendState(String estado) {
 		updateTables();
@@ -318,8 +363,8 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 
 	/**
-	 *  Retira o estado criado mais recentemente.
-	 *  Isto �, o �ltimo estado da lista.
+	 * Retira o estado criado mais recentemente. Isto �, o �ltimo estado da
+	 * lista.
 	 */
 	public void removeLastState() {
 		if (states.size() > 1) {
@@ -327,58 +372,56 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 			states.remove(states.size() - 1);
 		}
 	}
-	
+
 	/**
-	 * Utilizado em dalgo2. 
-	 * Nao deve ser utilizado em nodes com informacoes de tabelas de potencial.
+	 * Utilizado em dalgo2. Nao deve ser utilizado em nodes com informacoes de
+	 * tabelas de potencial.
 	 */
-	public void removeStateAt(int index){
+	public void removeStateAt(int index) {
 		states.remove(index);
 		this.atualizatamanhoinfoestados();
 	}
-	
+
 	/**
-	 *  Substitui o estado da posi��o especificada pelo estado especificado.
-	 *
-	 *@param  estado  Nome do estado atualizado.
-	 *@param  index   �ndice em que deseja-se modificar, come�ando do 0.
+	 * Substitui o estado da posi��o especificada pelo estado especificado.
+	 * 
+	 * @param estado
+	 *            Nome do estado atualizado.
+	 * @param index
+	 *            �ndice em que deseja-se modificar, come�ando do 0.
 	 */
 	public void setStateAt(String estado, int index) {
 		states.set(index, estado);
 	}
 
 	/*
-	public boolean existState(String state)
-	{   int size = states.size();
-	    for (int i=0; i<size; i++)
-	    {   if (states.get(i).equals(state))
-	            return true;
-	    }
-	    return false;
-	}
-	*/
+	 * public boolean existState(String state) { int size = states.size(); for
+	 * (int i=0; i<size; i++) { if (states.get(i).equals(state)) return true; }
+	 * return false; }
+	 */
 
 	/**
-	 *  Retorna o n�mero de estados do n�.
-	 *
-	 *@return    Retorna o n�mero de estados do n�.
+	 * Retorna o n�mero de estados do n�.
+	 * 
+	 * @return Retorna o n�mero de estados do n�.
 	 */
 	public final int getStatesSize() {
 		return states.size();
 	}
 
 	/**
-	 *  Retorna o estado da posi��o <code>index</code>
-	 *
-	 *@param  index  �ndice do estado a ser lido.
-	 *@return        Nome do estado da posi��o <code>index</code>
+	 * Retorna o estado da posi��o <code>index</code>
+	 * 
+	 * @param index
+	 *            �ndice do estado a ser lido.
+	 * @return Nome do estado da posi��o <code>index</code>
 	 */
 	public final String getStateAt(int index) {
 		return (String) (states.get(index));
 	}
 
 	/**
-	 *  Monta lista de n�s adjacentes.
+	 * Monta lista de n�s adjacentes.
 	 */
 	public void makeAdjacents() {
 		adjacents.addAll(parents);
@@ -386,16 +429,15 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 
 	/**
-	 *  Desmonta a lista de n�s adjacentes.
+	 * Desmonta a lista de n�s adjacentes.
 	 */
 	public void clearAdjacents() {
 		adjacents.clear();
 	}
 
-
 	/**
-	 * Utilizado para notificar as tabelas de que esta vari�vel faz parte de que houve uma
-	 * modifica��o na estrutura desta vari�vel.
+	 * Utilizado para notificar as tabelas de que esta vari�vel faz parte de que
+	 * houve uma modifica��o na estrutura desta vari�vel.
 	 */
 	private void updateTables() {
 		ITabledVariable aux;
@@ -411,9 +453,12 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 			}
 		}
 	}
+
 	/**
 	 * Sets the adjacents.
-	 * @param adjacents The adjacents to set
+	 * 
+	 * @param adjacents
+	 *            The adjacents to set
 	 */
 	public void setAdjacents(NodeList adjacents) {
 		this.adjacents = adjacents;
@@ -421,17 +466,19 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 
 	/**
 	 * Sets the states.
-	 * @param states The states to set
+	 * 
+	 * @param states
+	 *            The states to set
 	 */
 	public void setStates(List<String> states) {
 		this.states = states;
 	}
-	
+
 	/**
-	 *  Imprime a descri��o do n� no formato: "descri��o (sigla)" (sem aspas)
-	 *  � utilizado no JTree da Interface quando a rede � compilada.
-	 *
-	 *@return    descri��o do n� formatado.
+	 * Imprime a descri��o do n� no formato: "descri��o (sigla)" (sem aspas) �
+	 * utilizado no JTree da Interface quando a rede � compilada.
+	 * 
+	 * @return descri��o do n� formatado.
 	 */
 	public String toString() {
 		return description + " (" + name + ")";
@@ -441,34 +488,35 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	public boolean equals(Object obj) {
-		
+
 		if (obj == this) {
 			return true;
 		}
-		
-		if(obj != null){
-		   Node node = (Node) obj;
-		   return (node.name.equals(this.name));
+
+		if (obj != null) {
+			Node node = (Node) obj;
+			return (node.name.equals(this.name));
 		}
-		
-		return false; //obj == null && this != null 
-		
+
+		return false; // obj == null && this != null
+
 	}
-	
+
 	public void paint(Graphics2D graphics) {
 		drawElement.paint(graphics);
 	}
-	
+
 	public boolean isPointInDrawableArea(int x, int y) {
 		double x1 = position.x;
-        double y1 = position.y;
-        double width = size.x/2;
-        double height = size.y/2;
+		double y1 = position.y;
+		double width = size.x / 2;
+		double height = size.y / 2;
 
-        if ((x >= x1 - width) && (x <= x1 + width) && (y >= y1 - height) && (y <= y1 + height)) {
-            return true;
-        }
-        
+		if ((x >= x1 - width) && (x <= x1 + width) && (y >= y1 - height)
+				&& (y <= y1 + height)) {
+			return true;
+		}
+
 		return false;
 	}
 
@@ -479,62 +527,64 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	public void setSelected(boolean b) {
 		bSelected = b;
 	}
-	
+
 	public Point2D.Double getPosition() {
 		return position;
 	}
-	
+
 	public void setPosition(double x, double y) {
 		position.setLocation(x, y);
 	}
-	
+
 	/**
-	 *  Get the node's width.
-	 *
-	 *@return Node's width.
+	 * Get the node's width.
+	 * 
+	 * @return Node's width.
 	 */
 	public static int getWidth() {
-		return (int)size.x;
+		return (int) size.x;
 	}
 
 	/**
-	 *  Get the node's height.
-	 *
-	 *@return The node's height.
+	 * Get the node's height.
+	 * 
+	 * @return The node's height.
 	 */
 	public static int getHeight() {
-		return (int)size.y;
+		return (int) size.y;
 	}
 
 	/**
-	 * Returns the node's size (x,y) where x = width and y = height. 
+	 * Returns the node's size (x,y) where x = width and y = height.
+	 * 
 	 * @return The node's size.
 	 */
 	public static Point2D.Double getSize() {
-      
-	      return size;
-	      
+
+		return size;
 
 	}
-	
+
 	/**
-	 *  Set the node's size.
-	 *
-	 *@param  width  The node's width.
-	 *@param  height The node's height.
+	 * Set the node's size.
+	 * 
+	 * @param width
+	 *            The node's width.
+	 * @param height
+	 *            The node's height.
 	 */
 	public static void setSize(double width, double height) {
 		size.setLocation(width, height);
 	}
-	
-	public void setSizeVariable(double width, double height){
-		sizeVariable.setLocation(width, height); 
+
+	public void setSizeVariable(double width, double height) {
+		sizeVariable.setLocation(width, height);
 	}
-	
-	public void setSizeIsVariable(boolean is){
-	   sizeIsVariable = is; 	
+
+	public void setSizeIsVariable(boolean is) {
+		sizeIsVariable = is;
 	}
-	
+
 	/**
 	 * Set the mean of the values if this is a numeric attribute node.
 	 * 
@@ -543,7 +593,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	public void setMean(double[] mean) {
 		this.mean = mean;
 	}
-	
+
 	/**
 	 * Set the mean of the values if this is a numeric attribute node.
 	 * 
@@ -552,7 +602,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	public void setStandardDeviation(double[] standardDeviation) {
 		this.standardDeviation = standardDeviation;
 	}
-	
+
 	/**
 	 * Get the mean of the values if this is a numeric attribute node.
 	 * 
@@ -561,7 +611,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	public double[] getMean() {
 		return mean;
 	}
-	
+
 	/**
 	 * Get the mean of the values if this is a numeric attribute node.
 	 * 
@@ -570,5 +620,5 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	public double[] getStandardDeviation() {
 		return standardDeviation;
 	}
-	
+
 }

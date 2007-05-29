@@ -54,6 +54,7 @@ import unbbayes.aprendizagem.incrementalLearning.controller.ILController;
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MainController;
+import unbbayes.datamining.gui.preprocessor.janeladiscret;
 import unbbayes.monteCarlo.controlador.ControladorPrincipal;
 
 import unbbayes.io.mebn.UbfIO;
@@ -100,6 +101,8 @@ public class UnBBayesFrame extends JFrame {
 	// private JHelp jHelp;
 	private ActionListener alNewBN;
 	private ActionListener alDiscretize;
+	private ActionListener alTAN;
+	private ActionListener alBAN;
 	private ActionListener alNewMSBN;
 	private ActionListener alNewMEBN;
 	private ActionListener alOpen;
@@ -249,6 +252,45 @@ public class UnBBayesFrame extends JFrame {
 			}
 		};
 
+		alTAN = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				String[] nets = new String[] { "txt" };
+				int classe = 0;
+				chooser = new JFileChooser(fileController.getCurrentDirectory());
+				chooser.setMultiSelectionEnabled(false);
+				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
+						resource.getString("textFileFilter")));
+				int option = chooser.showOpenDialog(UnBBayesFrame.this);
+				File file;
+				if (option == JFileChooser.APPROVE_OPTION) {
+					file = chooser.getSelectedFile();
+					fileController.setCurrentDirectory(chooser
+							.getCurrentDirectory());
+					new ConstructionController(file, controller, classe);
+				}
+
+			}
+		};		
+		alBAN = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				String[] nets = new String[] { "txt" };
+				int classe = 0;
+				chooser = new JFileChooser(fileController.getCurrentDirectory());
+				chooser.setMultiSelectionEnabled(false);
+				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
+						resource.getString("textFileFilter")));
+				int option = chooser.showOpenDialog(UnBBayesFrame.this);
+				File file;
+				if (option == JFileChooser.APPROVE_OPTION) {
+					file = chooser.getSelectedFile();
+					fileController.setCurrentDirectory(chooser
+							.getCurrentDirectory());
+					new ConstructionController(file, controller, classe, true);
+				}
+
+			}
+		};
+
 		alDiscretize = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				// setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -258,8 +300,8 @@ public class UnBBayesFrame extends JFrame {
 				 * String[] nets = new String[] { "txt", "arff" }; chooser = new
 				 * JFileChooser(fileController.getCurrentDirectory());
 				 * chooser.setMultiSelectionEnabled(false);
-				 * chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-				 *  // adicionar FileView no FileChooser para desenhar �cones de //
+				 * chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES); //
+				 * adicionar FileView no FileChooser para desenhar �cones de //
 				 * arquivos chooser.setFileView(new FileIcon(IUnBBayes.this));
 				 * 
 				 * chooser.addChoosableFileFilter( new SimpleFileFilter( nets,
@@ -581,7 +623,10 @@ public class UnBBayesFrame extends JFrame {
 				.getString("tbWindow"), true);
 		JMenuItem tbHelp = new JCheckBoxMenuItem(resource.getString("tbHelp"),
 				true);
-		JMenuItem discretize = new JMenuItem("Discretizar");		
+		JMenuItem discretize = new JMenuItem("Discretizar");
+		JMenuItem TAN = new JMenuItem("TAN");
+		JMenuItem BAN = new JMenuItem("BAN");
+		
 		JMenuItem metalItem = new JMenuItem(resource.getString("metalItem"),
 				iconController.getMetalIcon());
 		JMenuItem motifItem = new JMenuItem(resource.getString("motifItem"),
@@ -653,7 +698,10 @@ public class UnBBayesFrame extends JFrame {
 		// aboutItem.addActionListener(alAbout);
 
 		// add menu items to their respective menu
-		discretize.addActionListener(alDiscretize);		
+		discretize.addActionListener(alDiscretize);
+		TAN.addActionListener(alTAN);
+		BAN.addActionListener(alBAN);
+		
 		newMenu.add(newBN);
 		newMenu.add(newMSBN);
 		newMenu.add(newMEBN);
@@ -674,6 +722,8 @@ public class UnBBayesFrame extends JFrame {
 		viewMenu.addSeparator();
 		viewMenu.add(lafMenu);
 		toolsMenu.add(learningItem);
+		toolsMenu.add(TAN);
+		toolsMenu.add(BAN);
 		toolsMenu.add(monteCarloItem);
 		toolsMenu.add(gibbsItem);
 		toolsMenu.add(discretize);

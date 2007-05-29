@@ -8,7 +8,7 @@ import unbbayes.util.NodeList;
 /**
  * TAN
  * @version 1.0
- * @author Gabriel Guimarães - aluno de IC 2005-2006
+ * @author Gabriel Guimarï¿½es - aluno de IC 2005-2006
  * @author Marcelo Ladeira - Orientador
  * @author Patricia Marinho
  */
@@ -20,7 +20,7 @@ public class CL extends CBLToolkit{
 	public int classe;
 	public int caseNumber;
 	public int raiz;
-	protected int[][] dataBase;
+	protected byte[][] dataBase;
     protected int[] vector;
     protected boolean compacted;
     protected double [][] matrizinfo;
@@ -42,7 +42,7 @@ public class CL extends CBLToolkit{
 	/*
 	 * Prepara e faz tudo.
 	 */
-	public void preparar(NodeList vetordevariaveis, int classei, int numerodecasos, int[] vetor,boolean comp,int[][]dados) {
+	public void preparar(NodeList vetordevariaveis, int classei, int numerodecasos, int[] vetor,boolean comp,byte[][]dados) {
 		int i;
 		//copiar os parametros
 		nvar=vetordevariaveis.size();
@@ -69,7 +69,7 @@ public class CL extends CBLToolkit{
         return Math.log(numero)/Math.log(2);
     }
 	/*
-	 * Informação mutua da variavel xk para a xi
+	 * Informaï¿½ï¿½o mutua da variavel xk para a xi
 	 */	
 	public double mutualInformation(TVariavel xi,TVariavel xk){    	
     	int nt = 0;
@@ -168,7 +168,7 @@ public class CL extends CBLToolkit{
     
 	
 	/*
-	 * Cria matriz de informações mutuas
+	 * Cria matriz de informaï¿½ï¿½es mutuas
 	 */	
 	public void calculainformacoes() {
 	for(int i=0;i<nvar;i++){
@@ -193,7 +193,7 @@ public class CL extends CBLToolkit{
 					posicao=i;					
 				}}raiz=posicao;	}}
 	/**
-	 * Detecta proxima árvore válida
+	 * Detecta proxima ï¿½rvore vï¿½lida
 	 * @return
 	 */
 	protected boolean proxima(){
@@ -206,7 +206,7 @@ public class CL extends CBLToolkit{
 	
 	return (l!=nvar-3);}
 	/*
-	 * Valida ou não uma árvore
+	 * Valida ou nï¿½o uma ï¿½rvore
 	 */
 	protected boolean valida_arvore(){
 		int i;
@@ -223,7 +223,7 @@ public class CL extends CBLToolkit{
 		return !houveciclo;
 		}
 	/*
-	 * Soma das informações mutuas entre cada filho e seu pai
+	 * Soma das informaï¿½ï¿½es mutuas entre cada filho e seu pai
 	 */
 	protected double infoatual(){
 		double resultado=0;
@@ -268,7 +268,7 @@ public class CL extends CBLToolkit{
 
 	private void desenharede(){
 		for(int i=0;i<nvar;i++){
-//			TODO SERÁ QUE ESTÁ CORRETO???
+//			TODO SERï¿½ QUE ESTï¿½ CORRETO???
 //			variaveis.ClearChildrenFrom(i);
 //			variaveis.ClearParentsFrom(i);
 			variaveis.remove(i);
@@ -278,7 +278,7 @@ public class CL extends CBLToolkit{
 		for(int i=0;i<nvar;i++){
 		if((i!=classe)&&(i!=raiz)){
 			aux++;
-//			TODO SERÁ QUE ESTÁ CORRETO???
+//			TODO SERï¿½ QUE ESTï¿½ CORRETO???
 //			variaveis.AddParentTo(enderecos[aux],variaveis.get(enderecos[melhorarvore[aux]]));
 //			variaveis.AddChildTo(enderecos[melhorarvore[aux]],variaveis.get(enderecos[aux]));
 			variaveis.add(enderecos[aux],variaveis.get(enderecos[melhorarvore[aux]]));
