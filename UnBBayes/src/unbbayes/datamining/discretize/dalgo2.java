@@ -1,9 +1,9 @@
-package unbbayes.datamining.gui.preprocessor;
+package unbbayes.datamining.discretize;
 
 import unbbayes.util.NodeList;
 import unbbayes.util.SwingWorker;
 import unbbayes.aprendizagem.TVariavel;
-import unbbayes.gui.janeladiscret;
+import unbbayes.datamining.gui.preprocessor.janeladiscret;
 
 /**
  * Algoritimo para discretiza��o m�ltipla
