@@ -1,4 +1,4 @@
-package unbbayes.gui;
+package unbbayes.datamining.gui.preprocessor;
 
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -8,7 +8,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ResourceBundle;
-import unbbayes.datamining.gui.preprocessor.dalgo2;
+
+import unbbayes.gui.SimpleFileFilter;
 
 import javax.swing.JLabel;
 import javax.swing.JComboBox;
@@ -16,6 +17,7 @@ import javax.swing.JButton;
 
 import unbbayes.aprendizagem.ConstructionController;
 import unbbayes.controller.FileController;
+import unbbayes.datamining.discretize.dalgo2;
 import unbbayes.util.NodeList;
 import javax.swing.JCheckBox;
 import java.awt.GridLayout;
