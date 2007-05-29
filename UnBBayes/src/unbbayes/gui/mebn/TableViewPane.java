@@ -23,6 +23,7 @@ import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.exception.EntityNotPossibleValueOfNodeException;
 import unbbayes.prs.mebn.exception.NodeNotPresentInMTheoryException;
 import unbbayes.prs.mebn.table.TableParser;
+import unbbayes.prs.mebn.table.exception.InconsistentTableSemanticsException;
 import unbbayes.prs.mebn.table.exception.InvalidProbabilityFunctionOperandException;
 import unbbayes.prs.mebn.table.exception.TableFunctionMalformedException;
 
@@ -132,6 +133,10 @@ public class TableViewPane extends JPanel{
 				}
 				catch(InvalidProbabilityFunctionOperandException e4){
 					JOptionPane.showMessageDialog(null, e4.getMessage(), "InvalidProbabilityFunctionOperandException", JOptionPane.ERROR_MESSAGE);		
+									
+				}
+				catch(InconsistentTableSemanticsException ex){
+					JOptionPane.showMessageDialog(null, ex.getMessage(), "InconsistentTableSemanticsException", JOptionPane.ERROR_MESSAGE);		
 									
 				}
 			}

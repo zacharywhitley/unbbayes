@@ -1,19 +1,32 @@
 package unbbayes.prs.mebn.table;
 
-import java.io.File;
-import java.io.IOException;
+
 import java.util.ArrayList;
+
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
-import unbbayes.io.mebn.PrOwlIO;
-import unbbayes.io.mebn.exceptions.IOMebnException;
+
+
+
+import unbbayes.prs.Node;
+
+import unbbayes.prs.mebn.GenerativeInputNode;
+import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
+
+import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.exception.EntityNotPossibleValueOfNodeException;
 import unbbayes.prs.mebn.exception.NodeNotPresentInMTheoryException;
+import unbbayes.prs.mebn.table.exception.InvalidConditionantException;
 import unbbayes.prs.mebn.table.exception.InvalidProbabilityFunctionOperandException;
+import unbbayes.prs.mebn.table.exception.NoDefaultDistributionDeclaredException;
+import unbbayes.prs.mebn.table.exception.SomeStateUndeclaredException;
 import unbbayes.prs.mebn.table.exception.TableFunctionMalformedException;
+import unbbayes.util.NodeList;
+
 
 /**
  * Classe responsavel por realizar um parser na tabela definida pelo usuario.
@@ -21,6 +34,10 @@ import unbbayes.prs.mebn.table.exception.TableFunctionMalformedException;
 
 public class TableParser {
 
+	// System messages
+	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.table.resources.Resources");
+
+	
 	// The MEBN where this table is defined
 	private MultiEntityBayesianNetwork mebn;
 
@@ -32,7 +49,10 @@ public class TableParser {
 	// Helper atributes
 	private IfClause currentIfClause;
 	private String token;
-
+	
+	// Last read probability distribution's possible value. Negative if unknown
+	private float lastProbability = -1.0F;
+	
 	public TableParser(MultiEntityBayesianNetwork mebn, MultiEntityNode node) {
 		this.mebn = mebn;
 		this.node = node;
@@ -43,31 +63,62 @@ public class TableParser {
 			throws TableFunctionMalformedException,
 			NodeNotPresentInMTheoryException,
 			EntityNotPossibleValueOfNodeException,
-			InvalidProbabilityFunctionOperandException {
+			InvalidProbabilityFunctionOperandException,
+			NoDefaultDistributionDeclaredException, 
+			InvalidConditionantException,
+			SomeStateUndeclaredException {
 		List data = new ArrayList();
 
 		StringTokenizer st = new StringTokenizer(tableFunction);
 
-		while (st.hasMoreTokens()) {
+		
+		token = st.nextToken();
+		
+		IfClause ifClause = parseIfClause(st);
+		currentIfClause = ifClause;
+		token = st.nextToken();
+
+		parseProbabilityFunction(st, ifClause);
+		
+		// check consistency C09
+		// Verify if Default distribution was declared at the end
+		boolean isDefaultDist = false;
+		while (!isDefaultDist) {
+			if (!st.hasMoreTokens()) {
+				throw new NoDefaultDistributionDeclaredException();
+			}
 			token = st.nextToken();
-			IfClause ifClause = parseIfClause(st);
-			currentIfClause = ifClause;
-			token = st.nextToken();
-			parseProbabilityFunction(st, ifClause);
+			if (!token.equalsIgnoreCase("ELSE")) {
+				// check consistency C09
+				// Every if should have else, at least the default
+				throw new NoDefaultDistributionDeclaredException();
+			}
 			token = st.nextToken();
 			if (token.equalsIgnoreCase("IF")) {
 				ifClause = parseIfClause(st);
 				currentIfClause = ifClause;
 				token = st.nextToken();
 			} else {
+				isDefaultDist = true;
 				ifClause = new IfClause();
 				currentIfClause = ifClause;
 				// This is the parameter set for the outer else, that means
 				// the default table value.
 				// TODO ACRESCENTAR NA DOCUMENTAÇÃO DA TABELA
 				ifClause.setIfParameterSetName("DEFAULT");
+			} 
+			try {
+
+				parseProbabilityFunction(st, ifClause);
+				
+			} catch (TableFunctionMalformedException e) {
+				// Consistency check C09
+				// If we find malformed table here, it's because there is no "default" clause
+				// This might be an anti-pattern (exception hiding), but its necessary
+				// to notify user that he has to declare a default clause (else)
+				throw new NoDefaultDistributionDeclaredException();
 			}
-			parseProbabilityFunction(st, ifClause);
+			
 		}
 
 		return data;
@@ -76,7 +127,8 @@ public class TableParser {
 	private IfClause parseIfClause(StringTokenizer st)
 			throws TableFunctionMalformedException,
 			NodeNotPresentInMTheoryException,
-			EntityNotPossibleValueOfNodeException {
+			EntityNotPossibleValueOfNodeException,
+			InvalidConditionantException {
 		IfClause ifClause;
 		if (token.equalsIgnoreCase("IF")) {
 			token = st.nextToken();
@@ -123,14 +175,21 @@ public class TableParser {
 	private void parseIfClause(StringTokenizer st, IfClause ifClause)
 			throws TableFunctionMalformedException,
 			NodeNotPresentInMTheoryException,
-			EntityNotPossibleValueOfNodeException {
+			EntityNotPossibleValueOfNodeException,
+			InvalidConditionantException {
 		BooleanFunction booleanFunction;
 		String nodeName = st.nextToken();
+		// Consistency check C09: 
 		token = st.nextToken();
 		String stateName;
 		if (token.equalsIgnoreCase("==")) {
 			stateName = st.nextToken();
 			booleanFunction = new BooleanFunction(mebn, nodeName, stateName);
+			if (!isValidConditionant(mebn, nodeName)) {
+				// Consistency check C09
+				// Conditionants must be parents
+				throw new InvalidConditionantException();
+			}
 			ifClause.addBooleanFunction(booleanFunction);
 			token = st.nextToken();
 			if (token.equalsIgnoreCase(")THEN")) {
@@ -154,21 +213,37 @@ public class TableParser {
 					+ token + " was found.");
 		}
 	}
+	
 
 	private void parseProbabilityFunction(StringTokenizer st, IfClause ifClause)
 			throws TableFunctionMalformedException,
 			EntityNotPossibleValueOfNodeException,
-			InvalidProbabilityFunctionOperandException {
+			InvalidProbabilityFunctionOperandException,
+			SomeStateUndeclaredException {
 		ProbabilityFunction probabilityFunction = new ProbabilityFunction(node);
 		ifClause.setProbabilityFunciton(probabilityFunction);
 		if (token.equalsIgnoreCase("[")) {
+			
 			boolean hasNextStateFunction = false;
+			
+			// Consistency check C09
+			// Verify if all states has probability declared
+			List<Entity> declaredStates = new ArrayList<Entity>();
+			List<Entity> possibleStates = this.node.getPossibleValueList();
+			
 			do {
 				// Node's state
 				token = st.nextToken();
+				
 				StateFunction stateFunction = new StateFunction(node, token,
 						ifClause);
 				probabilityFunction.addStateFunction(stateFunction);
+				
+				// Consistency check C09
+				// Verify if all states has probability declared
+				declaredStates.add(possibleStates.get(this.node.getPossibleValueIndex(token)));
+				
+				
 				token = st.nextToken();
 				if (token.equalsIgnoreCase("=")) {
 					hasNextStateFunction = parseStateFunction(st, stateFunction);
@@ -177,7 +252,15 @@ public class TableParser {
 							"\'=\' expected where " + token + " was found.");
 				}
 			} while (hasNextStateFunction);
+			// Consistency check C09
+			// Verify if all states has probability declared
+			if (!declaredStates.containsAll(possibleStates)) {
+				throw new SomeStateUndeclaredException();
+			}
 		} else {
+
+			System.out.println("...Tracing...");
+			
 			throw new TableFunctionMalformedException("\'[\' expected where "
 					+ token + " was found.");
 		}
@@ -191,6 +274,7 @@ public class TableParser {
 	 * ','), false otherwise.
 	 * @throws InvalidProbabilityFunctionOperandException
 	 * @throws TableFunctionMalformedException
+	 * 
 	 */
 	private boolean parseStateFunction(StringTokenizer st,
 			StateFunction stateFunction)
@@ -394,10 +478,16 @@ public class TableParser {
 			} else if (stateFunction != null
 					&& token.equalsIgnoreCase("]")) {
 				stateFunction.setFunction(number);
+				// Consistency check C09
+				// Verify static probability sum is 1
+				this.setLastProbability(number);
 				return false;
 			} else if (stateFunction != null
 					&& token.equalsIgnoreCase(",")) {
 				stateFunction.setFunction(number);
+				//	Consistency check C09
+				// Verify static probability sum is 1
+				this.setLastProbability(number);
 				return true;
 			} else if (minMaxFunction != null && minMaxFirstOperand
 					&& token.equalsIgnoreCase(";")) {
@@ -425,6 +515,7 @@ public class TableParser {
 		} else if (token.equalsIgnoreCase("(")) {
 			token = st.nextToken();
 			// TODO LASCOU... NAO TO TRATANDO ()'S NEM PRECEDENCIA DE OPERADORES
+			
 		}
 		return false;
 	}
@@ -502,41 +593,72 @@ public class TableParser {
 		return null;
 	}
 	
-	public static void main(String[] args) throws TableFunctionMalformedException, NodeNotPresentInMTheoryException, EntityNotPossibleValueOfNodeException, InvalidProbabilityFunctionOperandException {
-		MultiEntityBayesianNetwork mebn = null; 
+	/**
+	 * Consistency check C09
+	 * Conditionants must be parents referenced by this.node	
+	 * @return whether node with name == nodeName is a valid conditionant.
+	 */
+	private boolean isValidConditionant(MultiEntityBayesianNetwork mebn, String conditionantName) {
 		
-		PrOwlIO prOwlIO = new PrOwlIO(); 
+		Node conditionant = mebn.getNode(conditionantName);
+		/*
+		System.out.println("!!!Conditionants, mebn = " + mebn.getName());
+		System.out.println("!!!Conditionants, conditionantName = " + conditionantName);
+		System.out.println("!!!Conditionants, conditionantNode = " + conditionant.getName());
 		
-		System.out.println("-----Load file test-----"); 
-		
-		try{
-			mebn = prOwlIO.loadMebn(new File("examples/mebn/StarshipTableParser.owl")); 
-			System.out.println("Load concluido"); 
+		NodeList nodelist = conditionant.getChildren();
+		for (int i = 0; i < nodelist.size(); i++) {
+			System.out.println("!!!!!!Children of conditionants= " + nodelist.get(i).getName());
 		}
-		catch (IOMebnException e){
-			System.out.println("ERROR IO PROWL!!!!!!!!!"); 
-			e.printStackTrace();
+		nodelist = this.node.getParents();
+		for (int i = 0; i < nodelist.size(); i++) {
+			System.out.println("!!!!!!Parents of me = " + nodelist.get(i).getName());
+			System.out.println("!!!!!!Input instance of: " + nodelist.get(i).getClass().getName());
 		}
-		catch (IOException e){
-			System.out.println("ERROR IO!!!!!!!!!"); 
-			e.printStackTrace();
+		*/
+		if (conditionant != null) {
+			
+			//	Check if it's parent of current node	
+			if (this.node.getParents().contains(conditionant)) {
+				//System.out.println("!!!!Is node");
+				return true;
+			} else {
+				NodeList parents = this.node.getParents();
+				for (int i = 0; i < parents.size(); i++) {
+					if (parents.get(i) instanceof GenerativeInputNode) {
+						if ( ((GenerativeInputNode)(parents.get(i))).getInputInstanceOf().equals(conditionant) ) {
+							//System.out.println("!!!!Is GenerativeInputNode");
+							return true;
+						}
+					}
+				}
+			}
+			
+			
+			
+			//	Check if it's a context node. Not necessary, because contexts are parents of all residents
+			// TODO verify if it isn't a redundant check, since context node might not be
+			// parents of all resident nodes
+			
 		}
 		
-		String tableString =  
-		" if any STi have( OpSpec == Cardassian and HarmPotential == true )then " + 
-		"  [ Un = .90 + min( .10 ; .025 * cardinality( STi ) ) , Hi = ( 1 - Un ) * .8 , Me = ( 1 - Un ) * .2 , Lo = 0 ] " +
-		" else if any STj have( OpSpec == Romulan and HarmPotential == true )then " +
-		"  [ Un = .70 + min( .30; .03 * cardinality( STj ) ) , Hi = ( 1 - Un ) * .6 , Me = ( 1 - Hi ) * .3 , Lo = ( 1 - Hi ) * .1 ] " + 
-		" else if any STj have( OpSpec == Unknown and HarmPotential == true )then " + 
-		"  [ Un = ( 1 - Hi ) , Hi = .50 - min( .20 ; .02 * cardinality( STk ) ) , Me = .50 - min( .20 ; .02 * number( STk ) ) , Lo = ( 1 - Me ) ] " +
-		" else if any STk have( OpSpec == Klingon and HarmPotential == true )then " +
-		"  [ Un = 0.10 , Hi = 0.15 , Me = .15 , Lo = .65 ] " +
-		" else if any STl have( OpSpec == Friend and HarmPotential == true )then " +
-		"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ] " +
-		" else [ Un = 0 , Hi = 0 , Me = 0 , Lo = 1 ] ";
-		
-		TableParser tableParser = new TableParser(mebn, (MultiEntityNode)mebn.getNode("DangerToSelf"));
-		
-		tableParser.parseTable(tableString);
+		return false;
 	}
+
+	/**
+	 * @return Returns the possible value of last parsed Probability distribution.
+	 * Negative if unknown.
+	 */
+	private float getLastProbability() {
+		return lastProbability;
+	}
+
+	/**
+	 * @param lastProbability Possible value of last parsed Probability distribution to set.
+	 */
+	private void setLastProbability(float lastProbability) {
+		this.lastProbability = lastProbability;
+	}
+	
+	
 }

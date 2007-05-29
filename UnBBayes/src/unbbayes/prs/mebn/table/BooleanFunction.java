@@ -1,9 +1,11 @@
 package unbbayes.prs.mebn.table;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.exception.EntityNotPossibleValueOfNodeException;
 import unbbayes.prs.mebn.exception.NodeNotPresentInMTheoryException;
+import unbbayes.prs.mebn.table.exception.InvalidConditionantException;
 
 public class BooleanFunction {
 	
@@ -11,13 +13,16 @@ public class BooleanFunction {
 	private String nodeName;
 	private String stateName;
 	
-	public BooleanFunction(MultiEntityBayesianNetwork mebn, String nodeName, String stateName) throws NodeNotPresentInMTheoryException, EntityNotPossibleValueOfNodeException { 
+	public BooleanFunction(MultiEntityBayesianNetwork mebn, String nodeName, String stateName) 
+			throws NodeNotPresentInMTheoryException, 
+			EntityNotPossibleValueOfNodeException { 
 		this.mebn = mebn;
 		this.nodeName = nodeName;
 		this.stateName = stateName;
 		if (!isNodeInMTheory()) {
 			throw new NodeNotPresentInMTheoryException("The node " + nodeName + " is not present in this MTheory."); 
 		}
+		
 		if (!isStateInNode()) {
 			throw new EntityNotPossibleValueOfNodeException("The entity " + stateName + " is not present in the node " + nodeName);
 		}
@@ -31,10 +36,12 @@ public class BooleanFunction {
 	
 	private boolean isNodeInMTheory() {
 		if (mebn.getNode(nodeName) != null) {
+			
 			return true;
 		}
 		return false;
 	}
+	
 	
 	private boolean isStateInNode() {
 		MultiEntityNode node = (MultiEntityNode)mebn.getNode(nodeName); 
