@@ -167,5 +167,13 @@ public class FormulaTreeController {
 		formulaEditionPane.setArgumentSelectionTab((ResidentNodePointer)nodeFormulaActive.getNodeVariable());
 		
 	}
+
+	public ContextNode getContextNode() {
+		return contextNode;
+	}
+
+	public void setContextNode(ContextNode contextNode) {
+		this.contextNode = contextNode;
+	}
 	
 }
