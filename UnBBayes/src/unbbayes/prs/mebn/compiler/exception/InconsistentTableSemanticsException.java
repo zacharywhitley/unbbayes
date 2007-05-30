@@ -1,4 +1,4 @@
-package unbbayes.prs.mebn.table.exception;
+package unbbayes.prs.mebn.compiler.exception;
 
 import unbbayes.prs.mebn.exception.MEBNException;
 

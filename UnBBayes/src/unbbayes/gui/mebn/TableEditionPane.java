@@ -37,14 +37,15 @@ import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.compiler.exception.InvalidConditionantException;
+import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredException;
+import unbbayes.prs.mebn.compiler.exception.SomeStateUndeclaredException;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.exception.EntityNotPossibleValueOfNodeException;
+import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.exception.NodeNotPresentInMTheoryException;
 import unbbayes.prs.mebn.table.TableParser;
-import unbbayes.prs.mebn.table.exception.InvalidConditionantException;
 import unbbayes.prs.mebn.table.exception.InvalidProbabilityFunctionOperandException;
-import unbbayes.prs.mebn.table.exception.NoDefaultDistributionDeclaredException;
-import unbbayes.prs.mebn.table.exception.SomeStateUndeclaredException;
 import unbbayes.prs.mebn.table.exception.TableFunctionMalformedException;
 
 /**
@@ -840,6 +841,8 @@ public class TableEditionPane extends JPanel{
 				}
 				catch(NoDefaultDistributionDeclaredException exc){
 					JOptionPane.showMessageDialog(null, exc.getMessage(), "NoDefaultDistributionDeclaredException", JOptionPane.ERROR_MESSAGE);		
+				} catch (MEBNException exc) {
+					JOptionPane.showMessageDialog(null, exc.getMessage(), "MEBNException", JOptionPane.ERROR_MESSAGE);		
 				}
 			}
 		}); 

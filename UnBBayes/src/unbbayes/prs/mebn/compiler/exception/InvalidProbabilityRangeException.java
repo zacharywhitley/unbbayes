@@ -1,12 +1,13 @@
-package unbbayes.prs.mebn.table.exception;
+package unbbayes.prs.mebn.compiler.exception;
 
 import java.util.ResourceBundle;
+
 
 public class InvalidProbabilityRangeException extends
 		InconsistentTableSemanticsException {
 
 	private static final long serialVersionUID = -3141592653589793238L;
-	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.table.resources.Resources");
+	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.compiler.resources.Resources");
 
 	public InvalidProbabilityRangeException() {
 		super(resource.getString("InvalidProbabilityRange"));

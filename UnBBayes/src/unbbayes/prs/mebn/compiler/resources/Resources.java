@@ -1,4 +1,4 @@
-package unbbayes.prs.mebn.table.resources;
+package unbbayes.prs.mebn.compiler.resources;
 
 import java.util.*;
 

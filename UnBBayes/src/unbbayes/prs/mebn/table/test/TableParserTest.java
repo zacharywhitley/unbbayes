@@ -13,9 +13,9 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.table.TableParser;
-import unbbayes.prs.mebn.table.exception.InvalidConditionantException;
-import unbbayes.prs.mebn.table.exception.NoDefaultDistributionDeclaredException;
-import unbbayes.prs.mebn.table.exception.SomeStateUndeclaredException;
+import unbbayes.prs.mebn.compiler.exception.InvalidConditionantException;
+import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredException;
+import unbbayes.prs.mebn.compiler.exception.SomeStateUndeclaredException;
 
 /**
  * @author user

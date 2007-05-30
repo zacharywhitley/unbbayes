@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbayes.prs.mebn.table.exception;
+package unbbayes.prs.mebn.compiler.exception;
 
 import java.util.ResourceBundle;
 
@@ -13,8 +13,8 @@ import unbbayes.prs.mebn.exception.MEBNException;
  */
 public class NoDefaultDistributionDeclaredException extends InconsistentTableSemanticsException {
 	private static final long serialVersionUID = 3141592653589793238L;
-	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.table.resources.Resources");
-	
+	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.compiler.resources.Resources");
+
 	/**
 	 * The default constructor sets it's message to NoDefaultDistributionDeclared
 	 * from resource "unbbayes.prs.mebn.table.resources.Resources"

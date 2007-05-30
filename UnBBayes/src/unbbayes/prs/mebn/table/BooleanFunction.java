@@ -5,7 +5,7 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.exception.EntityNotPossibleValueOfNodeException;
 import unbbayes.prs.mebn.exception.NodeNotPresentInMTheoryException;
-import unbbayes.prs.mebn.table.exception.InvalidConditionantException;
+import unbbayes.prs.mebn.compiler.exception.InvalidConditionantException;
 
 public class BooleanFunction {
 	

@@ -20,10 +20,11 @@ import unbbayes.controller.NetworkController;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.gui.mebn.auxiliary.ToolKitForTableEdition;
 import unbbayes.prs.mebn.DomainResidentNode;
+import unbbayes.prs.mebn.compiler.exception.InconsistentTableSemanticsException;
 import unbbayes.prs.mebn.exception.EntityNotPossibleValueOfNodeException;
+import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.exception.NodeNotPresentInMTheoryException;
 import unbbayes.prs.mebn.table.TableParser;
-import unbbayes.prs.mebn.table.exception.InconsistentTableSemanticsException;
 import unbbayes.prs.mebn.table.exception.InvalidProbabilityFunctionOperandException;
 import unbbayes.prs.mebn.table.exception.TableFunctionMalformedException;
 
@@ -138,6 +139,8 @@ public class TableViewPane extends JPanel{
 				catch(InconsistentTableSemanticsException ex){
 					JOptionPane.showMessageDialog(null, ex.getMessage(), "InconsistentTableSemanticsException", JOptionPane.ERROR_MESSAGE);		
 									
+				}catch (MEBNException exc) {
+					JOptionPane.showMessageDialog(null, exc.getMessage(), "MEBNException", JOptionPane.ERROR_MESSAGE);		
 				}
 			}
 		}); 
