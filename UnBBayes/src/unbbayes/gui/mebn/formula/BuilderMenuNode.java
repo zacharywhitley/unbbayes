@@ -181,9 +181,20 @@ public class BuilderMenuNode {
 		itemDelete.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 				
-				DefaultMutableTreeNode parent = (DefaultMutableTreeNode)formulaTreeController.getFormulaTree().getNodeActive().getParent(); 
-				NodeFormulaTree nodeFormulaParent = (NodeFormulaTree)parent.getUserObject(); 
-				NodeFormulaTree nodeFormula = formulaTreeController.getFormulaTree().getNodeFormulaActive(); 
+				/*
+				 * Para decidir a ação ao se fazer o delete, é necessário avaliar o nó pai
+				 * do nó a ser deletado, para ver em que situação o nó deletado deverá ficar. 
+				 */
+				DefaultMutableTreeNode parent = null; 
+				NodeFormulaTree nodeFormulaParent = null;
+				NodeFormulaTree nodeFormula = null;
+				
+				parent = (DefaultMutableTreeNode)formulaTreeController.getFormulaTree().getNodeActive().getParent(); 
+				if(parent != null){
+				    nodeFormulaParent = (NodeFormulaTree)parent.getUserObject(); 
+				}
+				
+				nodeFormula = formulaTreeController.getFormulaTree().getNodeFormulaActive(); 
 				
 				/* Caso 1: raiz */
 				if(parent == null){
@@ -191,6 +202,7 @@ public class BuilderMenuNode {
 					DefaultMutableTreeNode nodeTree =  new DefaultMutableTreeNode(rootFormula); 
 					formulaTreeController.setContextNodeFormula(rootFormula); 
 					formulaTreeController.getFormulaTree().setNodeActive(nodeTree); 
+					formulaTreeController.getContextNode().updateLabel(); 
 					return; 
 				}
 				
@@ -199,7 +211,8 @@ public class BuilderMenuNode {
 					nodeFormula.setSubTypeNode(enumSubType.NOTHING); 
 					nodeFormula.setName("op"); 
 					nodeFormula.setNodeVariable(null); 
-					nodeFormula.setMnemonic(""); 
+					nodeFormula.setMnemonic("");
+					formulaTreeController.getContextNode().updateLabel(); 
 					return; 
 				}
 				
@@ -213,7 +226,8 @@ public class BuilderMenuNode {
 					nodeFormula.setMnemonic(""); 
 					nodeFormula.removeAllChildren(); 
 					DefaultMutableTreeNode nodeTree = formulaTreeController.getFormulaTree().getNodeActive(); 
-					nodeTree.removeAllChildren(); 
+					nodeTree.removeAllChildren();
+					formulaTreeController.getContextNode().updateLabel(); 
 					return;                   						
 				}
 				
@@ -222,10 +236,9 @@ public class BuilderMenuNode {
 					
 					nodeFormulaParent.removeChild(nodeFormula); 
 					parent.remove(formulaTreeController.getFormulaTree().getNodeActive()); 
+					formulaTreeController.getContextNode().updateLabel(); 
 					return; 
 				}
-				
-				
 				
 			}
 		}); 
