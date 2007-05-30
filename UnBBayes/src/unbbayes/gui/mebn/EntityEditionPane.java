@@ -38,7 +38,6 @@ import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 
-
 /**
  * Pane for edition of entities : Create, Delete, Edit and View
  */
@@ -73,14 +72,16 @@ public class EntityEditionPane extends JPanel{
     private final IconController iconController = IconController.getInstance();
     
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+  	private static ResourceBundle resource = 
+  		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
     
     
 	public EntityEditionPane(MEBNController _controller){
 		
 		super(); 
 		
-		this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel(resource.getString("EntityTitle"))); 
+		this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel(
+				resource.getString("EntityTitle"))); 
         
 		setLayout(new BorderLayout()); 
 		
@@ -189,7 +190,8 @@ public class EntityEditionPane extends JPanel{
 		txtName.addKeyListener(new KeyAdapter() {
   			public void keyPressed(KeyEvent e) {
   				
-  				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtName.getText().length()>0)) {
+  				if ((e.getKeyCode() == KeyEvent.VK_ENTER) 
+  						&& (txtName.getText().length()>0)) {
   					try {
   						String nameValue = txtName.getText(0,txtName.getText().length());
   						matcher = wordPattern.matcher(nameValue);
@@ -203,11 +205,17 @@ public class EntityEditionPane extends JPanel{
   		  					   update();
   							}
   							catch (TypeException typeException){
-  								JOptionPane.showMessageDialog(null, resource.getString("nameDuplicated"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+  								JOptionPane.showMessageDialog(null, 
+  										resource.getString("nameDuplicated"), 
+  										resource.getString("nameException"), 
+  										JOptionPane.ERROR_MESSAGE);
   	  							txtName.selectAll();
   							}
   						}  else {
-  							JOptionPane.showMessageDialog(null, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+  							JOptionPane.showMessageDialog(null, 
+  									resource.getString("nameError"), 
+  									resource.getString("nameException"), 
+  									JOptionPane.ERROR_MESSAGE);
   							txtName.selectAll();
   						}
   					}
@@ -234,7 +242,10 @@ public class EntityEditionPane extends JPanel{
 				   txtName.requestFocus(); 
   				}
   				catch(TypeException e){
-  					JOptionPane.showMessageDialog(null, resource.getString("nameDuplicated"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+  					JOptionPane.showMessageDialog(null, 
+  							resource.getString("nameDuplicated"), 
+  							resource.getString("nameException"), 
+  							JOptionPane.ERROR_MESSAGE);
   				}
   			}
   		});

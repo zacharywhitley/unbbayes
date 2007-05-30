@@ -105,12 +105,16 @@ public abstract class Entity{
 	 * @param name The entity's name.
 	 */
 	public void setName(String name) throws TypeAlreadyExistsException{
+		
 		if(type != null){
-			type.removeUserObject(this); 
+			type.renameType(name + "_label"); 
+		}
+		else{
+			type =  Type.createType(name + "_label"); 
 		}
 		
-		type =  Type.createType(name + "_label"); 
 		this.name = name;
+		
 	}
 	
 	public String toString(){

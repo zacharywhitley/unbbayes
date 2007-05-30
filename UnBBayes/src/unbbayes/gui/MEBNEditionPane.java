@@ -3,7 +3,6 @@ package unbbayes.gui;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -37,6 +36,7 @@ import unbbayes.gui.mebn.OVariableEditionPane;
 import unbbayes.gui.mebn.OrdVariableToolBar;
 import unbbayes.gui.mebn.ResidentNodePane;
 import unbbayes.gui.mebn.TableEditionPane;
+import unbbayes.gui.mebn.auxiliary.ButtonLabel;
 import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.ContextNode;
@@ -469,10 +469,8 @@ public class MEBNEditionPane extends JPanel {
   		
   		JToolBar jtbMTheory = new JToolBar(); 
   		
-    	JButton btnMTheoryActive = new JButton(resource.getString("MTheoryButton")); 
+  		ButtonLabel btnMTheoryActive = new ButtonLabel(resource.getString("MTheoryButton"), iconController.getMTheoryNodeIcon()); 
   		
-    	btnMTheoryActive.setBackground(ToolKitForGuiMebn.getBorderColor()); 
-    	btnMTheoryActive.setForeground(Color.WHITE);
     	btnMTheoryActive.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
   				setMTheoryTreeActive(); 
@@ -541,11 +539,8 @@ public class MEBNEditionPane extends JPanel {
      	
         JToolBar jtbMFrag = new JToolBar(); 
         
-    	JButton btnMFragActive = new JButton(resource.getString("MFragButton")); 
-  		
-    	btnMFragActive.setBackground(ToolKitForGuiMebn.getBorderColor()); 
-    	btnMFragActive.setForeground(Color.WHITE);
-    	btnMFragActive.addActionListener(new ActionListener() {
+    	ButtonLabel btnMFragActive = new ButtonLabel(resource.getString("MFragButton"), iconController.getMFragIcon()); 
+  		btnMFragActive.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
   				setMTheoryTreeActive(); 
   			}
@@ -573,16 +568,14 @@ public class MEBNEditionPane extends JPanel {
   		
   		final JLabel labelResidentName = new JLabel(resource.getString("nameLabel"));
   		
-  		final JButton btnResidentActive = new JButton(resource.getString("ResidentButton")); 
-  		btnResidentActive.setBackground(ToolKitForGuiMebn.getBorderColor()); 
-  		btnResidentActive.setForeground(Color.WHITE);
+  		final ButtonLabel btnResidentActive = new ButtonLabel(resource.getString("ResidentButton"), iconController.getResidentNodeIcon()); 
   		btnResidentActive.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
   				setResidentNodeTabActive(); 
   			}
   		});
   		
-  		final JButton btnAddArgument = 	 new JButton(resource.getString("ArgumentsButton"));  
+  		final ButtonLabel btnAddArgument = 	 new ButtonLabel(resource.getString("ArgumentsButton"), iconController.getOVariableNodeIcon());  
   		btnAddArgument.setToolTipText(resource.getString("addArgumentToolTip")); 
   		
   		final JLabel labelArguments = new JLabel(resource.getString("arguments")); 
@@ -595,9 +588,6 @@ public class MEBNEditionPane extends JPanel {
   			}
   			
   		});
-  		btnAddArgument.setBackground(ToolKitForGuiMebn.getBorderColor()); 
-  		btnAddArgument.setForeground(Color.WHITE);
-  		
 
         txtNameResident = new JTextField(5); 
  
@@ -666,15 +656,13 @@ public class MEBNEditionPane extends JPanel {
   	
   	private JToolBar buildJtbInput(){
   		
-  		JButton btnInputActive; 
+  		ButtonLabel btnInputActive; 
   		JLabel labelInputName; 
   		JLabel labelInputOf; 
   		
   		JToolBar jtbInput = new JToolBar(); 
   		
-  		btnInputActive = new JButton(resource.getString("InputButton"));    		
-  		btnInputActive.setBackground(ToolKitForGuiMebn.getBorderColor()); 
-  		btnInputActive.setForeground(Color.WHITE);
+  		btnInputActive = new ButtonLabel(resource.getString("InputButton"), iconController.getInputNodeIcon());    		
   		btnInputActive.addActionListener(new ActionListener(){
   			public void actionPerformed(ActionEvent ae){
   				setInputNodeActive(); 
@@ -709,9 +697,7 @@ public class MEBNEditionPane extends JPanel {
         
   		JToolBar jtbContext = new JToolBar(); 
   		
-  		JButton btnContextActive = new JButton(resource.getString("ContextButton"));  
-  		btnContextActive.setBackground(ToolKitForGuiMebn.getBorderColor()); 
-  		btnContextActive.setForeground(Color.WHITE); 
+  		ButtonLabel btnContextActive = new ButtonLabel(resource.getString("ContextButton"), iconController.getContextNodeIcon());  
   		btnContextActive.addActionListener(new ActionListener(){
   			
   			public void actionPerformed(ActionEvent ae){
@@ -878,12 +864,12 @@ public class MEBNEditionPane extends JPanel {
   				
   				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameMTheory.getText().length()>0)) {
   					try {
-  						String name = txtNameMFrag.getText(0,txtNameMTheory.getText().length());
+  						String name = txtNameMTheory.getText(0,txtNameMTheory.getText().length());
   						matcher = wordPattern.matcher(name);
   						if (matcher.matches()) {
   							controller.setNameMTheory(name);
   							mTheoryTree.setMTheoryName(name);
-  							mTheoryTree.updateUI(); 
+  							mTheoryTree.updateTree(); 
   						}  else {
   							JOptionPane.showMessageDialog(netWindow, 
   									resource.getString("nameError"), 
@@ -1156,8 +1142,9 @@ public class MEBNEditionPane extends JPanel {
     } 
     
     public void setOrdVariableBarActive(OrdinaryVariable ov){
-        cardLayout.show(nodeSelectedBar, ORDVARIABLE_BAR);
+        jtbOVariable.updateListOfTypes(); 
         jtbOVariable.setOrdVariable(ov); 
+        cardLayout.show(nodeSelectedBar, ORDVARIABLE_BAR);
     }
     
     /*---------------------------------------------------------*/

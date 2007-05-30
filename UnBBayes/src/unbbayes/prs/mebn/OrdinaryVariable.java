@@ -23,7 +23,18 @@ public class OrdinaryVariable extends Node{
 	
 	private Type type; 
 	
+	/* 
+	 * Uma variavel ordinaria pode ser utilizada como argumetno em um nó residente
+	 * ou em um ponteiro para nó residente (input nodes e context nodes. 
+	 * A primeira lista armazena os nodos do primeiro caso que possuem referencia
+	 * para este, enquanto a segunda lista armazena os ponteiros do segundo 
+	 * caso. Estas listas são necessárias para manter a conscistência
+	 * quando for feita a remoção desta variavel ordinária. 
+	 */
+	
 	private List<Node> isOVariableOfList; 
+	
+	private List<ResidentNodePointer> isArgumentOfList; 
 	
 	/* draw */ 
 	
@@ -46,6 +57,7 @@ public class OrdinaryVariable extends Node{
 		type.addUserObject(this);
 		
 		isOVariableOfList = new ArrayList<Node>(); 
+		isArgumentOfList = new  ArrayList<ResidentNodePointer>(); 
 		
     	/* draw */
     	updateLabel(); 
@@ -128,8 +140,18 @@ public class OrdinaryVariable extends Node{
 	 * @param node
 	 */
 	
-	protected void removeIsOVariableOfList(Node node){
+	public void removeIsOVariableOfList(Node node){
 		isOVariableOfList.remove(node);
+	}
+	
+	protected void addIsArgumentOfList(ResidentNodePointer pointer){
+		if(!isArgumentOfList.contains(pointer)){
+			isArgumentOfList.add(pointer); 
+		}
+	}
+	
+	protected void removeIsArgumentOfList(ResidentNodePointer pointer){
+		isArgumentOfList.remove(pointer); 
 	}
 	
 	public String toString(){
@@ -148,9 +170,21 @@ public class OrdinaryVariable extends Node{
 		
     	mFrag.removeOrdinaryVariable(this); 
 	    type.removeUserObject(this); 
-	    for(Node node: this.isOVariableOfList){
-	    	//TODO fazer remocao
+	    
+	    for(Node node: isOVariableOfList){
+	    	if(node instanceof ResidentNode){
+	    		((ResidentNode) node).removeArgument(this); 
+	    	}else{
+	    		if(node instanceof InputNode){
+	    			
+	    		}
+	    	}
 	    }
+	    
+	    for(ResidentNodePointer pointer: this.isArgumentOfList){
+	    	pointer.removeOrdinaryVariable(this);  	
+	    }
+	    
 	}
 	
 	/* draw */

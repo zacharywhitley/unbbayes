@@ -11,7 +11,10 @@ import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.exception.CycleFoundException;
 
 /**
+ * Generative Input Node
  * 
+ * Notes: 
+ *   
  */
 
 public class GenerativeInputNode extends InputNode {
@@ -97,10 +100,22 @@ public class GenerativeInputNode extends InputNode {
 		}
 		
 		super.setInputInstanceOf(residentNode); 
-		residentNodePointer = new ResidentNodePointer(residentNode);
+		residentNodePointer = new ResidentNodePointer(residentNode, this);
 		residentNode.addInputInstanceFromList(this); 
 		updateLabel(); 
 		
+	}
+	
+	/**
+	 * Update the resident node pointer. 
+	 * This is necessary if the list of arguments of the resident pointed for
+	 * this pointer change. After the update the list of arguments will 
+	 * be empty.
+	 */
+	public void updateResidentNodePointer(){
+		if (residentNodePointer != null){
+			residentNodePointer = new ResidentNodePointer(residentNodePointer.getResidentNode(), this); 
+		}
 	}
 	
 	

@@ -108,17 +108,27 @@ public class DomainResidentNode extends ResidentNode {
 		inputInstanceFromList.add(instance);
 	}
 	
+	/**
+	 * Add a new ordinary variable to the list of arguments of this node 
+	 * and update all input nodes of this node for have the same number
+	 * of arguments. 
+	 */
 	public void addArgument(OrdinaryVariable ov) throws OVariableAlreadyExistsInArgumentList, 
 	                                                    ArgumentNodeAlreadySetException{
 		super.addArgument(ov);
 		ov.addIsOVariableOfList(this); 
+		
+		for(GenerativeInputNode inputNode: inputInstanceFromList){
+			inputNode.updateResidentNodePointer(); 
+		}
+		
 		updateLabel(); 
 		
 	}   
 	
 	public void removeArgument(OrdinaryVariable ov){
 		super.removeArgument(ov);
-		ov.removeIsOVariableOfList(this); 
+		//ov.removeIsOVariableOfList(this); 
 		updateLabel(); 
 	}
 	
@@ -259,6 +269,8 @@ public class DomainResidentNode extends ResidentNode {
 	public void setTableFunction(String table){
 		tableFunction = table;
 	}
+	
+	
 	
 }
  

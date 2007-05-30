@@ -251,4 +251,7 @@ public class MultiEntityBayesianNetwork extends Network {
 		this.domainMFragNum = domainMFragNum;
 	}
 	 
+	public String toString(){
+		return name;
+	}
 }

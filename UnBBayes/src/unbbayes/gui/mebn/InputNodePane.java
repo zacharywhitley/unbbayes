@@ -14,6 +14,16 @@ import unbbayes.controller.MEBNController;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.GenerativeInputNode;
 
+/**
+ * Pane for edition of a input node. 
+ * Contains: 
+ * -> A tree for selection of the property "is input of" 
+ * -> A pane for selection of the arguments of the input node. 
+ * 
+ * @author Laecio Lima dos Santos
+ * @version 1.0 05/28/07
+ *
+ */
 public class InputNodePane extends JPanel{
 	
 	private GenerativeInputNode inputNode; 
@@ -41,13 +51,19 @@ public class InputNodePane extends JPanel{
 		jtbInputInstanceOf = new JToolBar(); 
 		
 		jlInputInstanceOf = new JLabel("Input of: ");
-		btnInputOfResident = new JButton("RES"); 
-		btnInputOfBuiltIn = new JButton("BUI"); 
 		jtbInputInstanceOf.setFloatable(false); 
 		
 		jtbInputInstanceOf.add(jlInputInstanceOf); 
-		jtbInputInstanceOf.add(btnInputOfResident); 
-		jtbInputInstanceOf.add(btnInputOfBuiltIn); 
+		
+		/* 
+		 * No artigo original da Dr. Laskey, um nó de input pode ser instancia
+		 * de um nó residente ou de uma built-in... Simplificado nesta versão
+		 * apenas para residente.  
+		 */
+        //btnInputOfResident = new JButton("RES"); 
+        //btnInputOfBuiltIn = new JButton("BUI"); 
+		//jtbInputInstanceOf.add(btnInputOfResident); 
+		//jtbInputInstanceOf.add(btnInputOfBuiltIn); 
 		
 		inputInstanceOfTree = new InputInstanceOfTree(controller); 
 		//inputInstanceOfTree.setBackground(new Color(240,240,240)); //ligth gray

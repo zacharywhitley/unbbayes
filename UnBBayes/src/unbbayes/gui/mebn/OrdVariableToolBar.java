@@ -1,6 +1,5 @@
 package unbbayes.gui.mebn;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -9,14 +8,14 @@ import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
-import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
+import unbbayes.controller.IconController;
+import unbbayes.gui.mebn.auxiliary.ButtonLabel;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.entity.Type;
 
@@ -47,18 +46,16 @@ public class OrdVariableToolBar extends JToolBar{
 	
 	public OrdVariableToolBar(){
 		
-  		JButton btnOrdVariableActive = new JButton(resource.getString("OrdVariableButton"));  
-  		btnOrdVariableActive.setBackground(ToolKitForGuiMebn.getBorderColor()); 
-  		btnOrdVariableActive.setForeground(Color.WHITE); 
-		
+		this.setFloatable(false); 
+  		ButtonLabel btnOrdVariableActive = new ButtonLabel(resource.getString("OrdVariableButton"), IconController.getInstance().getOVariableNodeIcon());  
+  		
 	    name = new JLabel(resource.getString("nameLabel")); 
 	    txtName = new JTextField(10);
 	    type = new JLabel(resource.getString("typeLabel")); 
 	    
 	    //Fill the combo box with the possible labels 
 	    types = Type.getListOfTypes().toArray( new Type[0] ); 
-	    jcbType = new JComboBox(types); 
-	    jcbType.setSelectedIndex(0);
+        buildJComboBoxTypes(types); 
 	    
 		txtName.addKeyListener(new KeyAdapter() {
   			public void keyPressed(KeyEvent e) {
@@ -82,20 +79,7 @@ public class OrdVariableToolBar extends JToolBar{
   					}
   				}
   			}
-  		});
-		
-	    jcbType.addActionListener(
-           new ActionListener(){
-        	   public void actionPerformed(ActionEvent e){
-        		   
-	    	        Type typeName = (Type)jcbType.getSelectedItem();
-					if(ov != null){
-						ov.setValueType(typeName); 
-						ov.updateLabel(); 
-					}
-        	   }
-           }
-	    );     
+  		});  
 	    
 	    add(btnOrdVariableActive); 
 	    addSeparator();
@@ -118,13 +102,44 @@ public class OrdVariableToolBar extends JToolBar{
 		
 		//select the type of the OV in the combo box
 		for(int i = 0; i < types.length; i++){
-			if(types[i].compareTo(ov.getValueType()) == 0){
+			if(types[i].equals(ov.getValueType())){
 				jcbType.setSelectedIndex(i); 
 				break; 
 			}
 		}
 		
 		repaint(); 
+	}
+	
+	/**
+	 * Update the types of the list of types
+	 */
+	
+	public void updateListOfTypes(){
+		remove(jcbType); 
+		types = Type.getListOfTypes().toArray( new Type[0] );
+		add(buildJComboBoxTypes(types)); 
+		validate(); 
+	}
+	
+	private JComboBox buildJComboBoxTypes(Type[] types){
+	    jcbType = new JComboBox(types); 
+	    jcbType.setSelectedIndex(0);
+	    
+	    jcbType.addActionListener(
+           new ActionListener(){
+        	   public void actionPerformed(ActionEvent e){
+        		   
+	    	        Type typeName = (Type)jcbType.getSelectedItem();
+					if(ov != null){
+						ov.setValueType(typeName); 
+						ov.updateLabel(); 
+					}
+        	   }
+           }
+	    );   
+	    
+	    return jcbType; 
 	}
 	
 }

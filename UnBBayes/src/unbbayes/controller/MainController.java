@@ -97,7 +97,7 @@ public class MainController {
      *
      */
     public void newMEBN() {
-    	MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork("New MEBN");
+    	MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork("NewMEBN");
     	NetworkWindow netWindow = new NetworkWindow(mebn);
 		screen.addWindow(netWindow);
     }

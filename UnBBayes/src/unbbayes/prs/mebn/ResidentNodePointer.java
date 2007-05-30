@@ -2,6 +2,7 @@ package unbbayes.prs.mebn;
 
 import java.util.Vector;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
 
@@ -37,6 +38,8 @@ public class ResidentNodePointer {
 	
 	private final int numberArguments; 
 	
+	private Node node; 
+	
 	/**
 	 * 
 	 * Nota: o numero de argumentos do no residente bem como o tipo
@@ -47,14 +50,20 @@ public class ResidentNodePointer {
 	 * 
 	 */
 	
-	public ResidentNodePointer(ResidentNode _residentNode){
+	public ResidentNodePointer(ResidentNode _residentNode, Node _node){
 		residentNode = _residentNode; 
+		node = _node; 
+		residentNode.addResidentNodePointer(this); 
 		
 		numberArguments = residentNode.getOrdinaryVariableList().size(); 
 		typesOfOrdinaryVariableList = new Type[numberArguments]; 
 	    ordinaryVariableList = new OrdinaryVariable[numberArguments]; 
 	    
 		buildTypeOfOVList(); 
+	}
+	
+	public void delete(){
+		residentNode.removeResidentNodePointer(this); 
 	}
 	
 	/*
@@ -86,11 +95,12 @@ public class ResidentNodePointer {
 	
 	public void addOrdinaryVariable(OrdinaryVariable ov, int index)  throws OVDontIsOfTypeExpected{
 		
-		if(typesOfOrdinaryVariableList[index].equals(ov.getValueType())){
+		if(!typesOfOrdinaryVariableList[index].equals(ov.getValueType())){
 			throw new OVDontIsOfTypeExpected(typesOfOrdinaryVariableList[index].toString()); 
 		}
 		else{
 			ordinaryVariableList[index] = ov; 
+			ov.addIsArgumentOfList(this); 
 		}
 		
 	}
@@ -104,9 +114,38 @@ public class ResidentNodePointer {
 	
 	public void removeOrdinaryVariable(int index){
 		
+		if(ordinaryVariableList[index] != null){
+			ordinaryVariableList[index].removeIsArgumentOfList(this); 
+		}
+		
 		ordinaryVariableList[index] = null; 
-	
+		
 	}	
+	
+	/**
+	 * Remove from the list of arguments all the references
+	 * for the ordinary variable.
+	 */
+	
+	public void removeOrdinaryVariable(OrdinaryVariable ov){
+		
+		for(int i = 0; i < ordinaryVariableList.length; i++){
+			if(ordinaryVariableList[i] != null){
+				if(ordinaryVariableList[i].equals(ov)){
+					ordinaryVariableList[i] = null; 
+				}
+			}
+		}
+		
+		if(node instanceof GenerativeInputNode){
+			((GenerativeInputNode)node).updateLabel(); 
+		}else{
+			if(node instanceof ContextNode){
+				((ContextNode)node).updateLabel(); 
+			}
+		}
+		
+	}
 	
 	public ResidentNode getResidentNode(){
 		return residentNode; 
@@ -134,6 +173,10 @@ public class ResidentNodePointer {
 
 	public Type getTypeOfArgument(int index){
 		return typesOfOrdinaryVariableList[index]; 
+	}
+	
+	public OrdinaryVariable getArgument(int index){
+		return ordinaryVariableList[index]; 
 	}
 
 	public Vector<Type> getTypesOfOrdinaryVariableList() {

@@ -52,7 +52,12 @@ public class MTheoryTree extends JTree {
 	private ArrayMap<Object, ResidentNode> residentNodeMap = new ArrayMap<Object, ResidentNode>();
 	private ArrayMap<Object, InputNode> inputNodeMap = new ArrayMap<Object, InputNode>();
 	private ArrayMap<Object, ContextNode> contextNodeMap = new ArrayMap<Object, ContextNode>(); 
-	private ArrayMap<Object, Object> nodeMap = new ArrayMap<Object, Object>(); 	
+	
+	/* 
+	 * Contem a relação entre os nós da árvore e os elementos da MTheory que 
+	 * estes representam. 
+	 */
+	private ArrayMap<DefaultMutableTreeNode, Object> nodeMap = new ArrayMap<DefaultMutableTreeNode, Object>(); 	
 	
 	private Object objectSelected; 
 	
@@ -244,7 +249,7 @@ public class MTheoryTree extends JTree {
 			super.getTreeCellRendererComponent(tree, value, sel, expanded,
 					leaf, row, hasFocus);
 			
-			Object obj = nodeMap.get((DefaultMutableTreeNode) value);
+			Object obj = nodeMap.get(value);
 			
 			if (leaf) {
 

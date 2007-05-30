@@ -169,13 +169,41 @@ public class Type implements Comparable<Type>{
 		return newType; 
 	}
 	
+	/**
+	 * Remove the type. 
+	 * 
+	 * @param type
+	 * @throws TypeDoesNotExistException
+	 */
 	public static void removeType(Type type) throws TypeDoesNotExistException{
 		
 		if(listOfTypes.contains(type)){
+		   
 		   listOfTypes.remove(type);
+		   
 		}
 		else{
+			
 			 throw new TypeDoesNotExistException(); 
+		
+		}
+	
+	}
+	
+	/**
+	 * Rename the type. 
+	 * 
+	 * @param name The new name
+	 * @throws TypeAlreadyExistsException The name can't be turned because
+	 * 						              already have an type with the new name. 
+	 */
+	public void renameType(String name) throws TypeAlreadyExistsException{
+		
+		if (Type.getType(name) != null){
+			throw new TypeAlreadyExistsException(); 
+		}
+		else{
+		    this.name = name;
 		}
 	
 	}
@@ -189,7 +217,7 @@ public class Type implements Comparable<Type>{
 		
 		for(Type type: listOfTypes){
 			 
-			 if(type.getName() == aType){
+			 if(type.getName().equals(aType)){
 				 return type; 
 			 }
 		}
@@ -235,6 +263,14 @@ public class Type implements Comparable<Type>{
 		
 		return "_label"; 
 		
+	}
+
+	public List<Object> getIsTypeOfList() {
+		return isTypeOfList;
+	}
+
+	public void setIsTypeOfList(List<Object> isTypeOfList) {
+		this.isTypeOfList = isTypeOfList;
 	}
 	
 }

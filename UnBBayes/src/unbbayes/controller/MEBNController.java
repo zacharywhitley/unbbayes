@@ -20,6 +20,7 @@ import unbbayes.prs.mebn.entity.BooleanStatesEntity;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.Type;
+import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.CycleFoundException;
@@ -29,8 +30,13 @@ import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 
 /**
- * Controller of MEBN
+ * Controller of the MEBN structure. 
+ * Utilizado pelas classes de GUI para fazer solicitar alterações na 
+ * estrutura do MEBN. Faz as atualizações necessárias nas telas após a 
+ * ação sobre a estrutura do MEBN ser atualizada. 
+ *   
  * @author Laecio Lima dos Santos (laecio@gmail.com)
+ * @version 1.0 05/29/07
  */
 
 public class MEBNController {
@@ -85,6 +91,10 @@ public class MEBNController {
 		
 	}
 	
+	/**
+	 * Set the name of the MTheory active. 
+	 * @param name The new name
+	 */
 	public void setNameMTheory(String name){
 		
 		multiEntityBayesianNetwork.setName(name);
@@ -193,6 +203,8 @@ public class MEBNController {
 		
 		ordVariableNodeActive = ov; 
 		setOrdVariableNodeActive(ov); 
+		
+		mebnEditionPane.setEditOVariableTabActive(); 
 		
 	    return ov;
 	    
@@ -407,6 +419,8 @@ public class MEBNController {
             	}else{
             	 if (selected instanceof OrdinaryVariable){
                      ((OrdinaryVariable)selected).delete();
+                     screen.getGraphPane().update(); 
+                     mebnEditionPane.setMTheoryTreeActive(); 
                   }
                else{
                     if (selected instanceof Edge) {
@@ -484,6 +498,7 @@ public class MEBNController {
 	private void setOrdVariableNodeActive(OrdinaryVariable ov){
 		nodeActive = ov; 
 		mebnEditionPane.setOrdVariableBarActive(ov); 
+		mebnEditionPane.setEditOVariableTabActive(); 
 	}
 	
 	/*---------------------------- Ordinary Variable ----------------------------*/	
@@ -542,13 +557,14 @@ public class MEBNController {
 		residentNodeActive.addArgument(ordinaryVariable);
 		mebnEditionPane.getEditArgumentsTab().update();
 		
-		
 	}
 	
 	public void removeOrdinaryVariableInResident(OrdinaryVariable ordinaryVariable){
 		
 		ResidentNode resident = (ResidentNode) screen.getGraphPane().getSelected(); 
 		resident.removeArgument(ordinaryVariable);
+		ordinaryVariable.removeIsOVariableOfList(resident);
+		
 		mebnEditionPane.getEditArgumentsTab().update(); 
 		mebnEditionPane.updateUI(); 
 		
@@ -607,16 +623,13 @@ public class MEBNController {
 	 */
 	public ObjectEntity createObjectEntity() throws TypeException{
 
-		
 		String name = resource.getString("entityName") + ObjectEntity.getEntityNum();
-
 		ObjectEntity objectEntity = ObjectEntity.createObjectEntity(name);
 		
 		return objectEntity; 
-		
 	}
 	
-	public void renameObjectEntity(ObjectEntity entity, String name) throws TypeException{
+	public void renameObjectEntity(ObjectEntity entity, String name) throws TypeAlreadyExistsException{
 		
 		entity.setName(name); 
 		

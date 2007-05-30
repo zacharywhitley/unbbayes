@@ -131,7 +131,7 @@ public class FormulaTreeController {
 		
 		nodePlace.setName(node.getName()); 
 		
-		ResidentNodePointer residentNodePointer = new ResidentNodePointer(node); 
+		ResidentNodePointer residentNodePointer = new ResidentNodePointer(node, contextNode); 
 		nodePlace.setNodeVariable(residentNodePointer);
 		
 		nodePlace.setTypeNode(enumType.OPERANDO); 

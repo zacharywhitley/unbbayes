@@ -29,13 +29,24 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	
 	private List<OrdinaryVariable> ordinaryVariableList; 
 	
+	private List<ResidentNodePointer> listPointers; 
+	
 	private int numNextArgument = 0; 
 	
 	public ResidentNode(){
 		
 		super(); 
+		listPointers = new ArrayList<ResidentNodePointer>(); 
 		ordinaryVariableList = new ArrayList<OrdinaryVariable>(); 
 		
+	}
+	
+	public void addResidentNodePointer(ResidentNodePointer pointer){
+		listPointers.add(pointer); 
+	}
+	
+	public void removeResidentNodePointer(ResidentNodePointer pointer){
+		listPointers.remove(pointer); 
 	}
 	
 	/**
@@ -45,6 +56,13 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 		return null;
 	}
 	
+	/**
+	 * Add a ov in the list of arguments in this resident node
+	 * 
+	 * @param ov
+	 * @throws ArgumentNodeAlreadySetException
+	 * @throws OVariableAlreadyExistsInArgumentList
+	 */
 	public void addArgument(OrdinaryVariable ov) throws ArgumentNodeAlreadySetException, 
 	OVariableAlreadyExistsInArgumentList{
 		
@@ -55,13 +73,12 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 			ordinaryVariableList.add(ov); 
 			ov.addIsOVariableOfList(this); 
 		}
-		
 	}
 	
 	public void removeArgument(OrdinaryVariable ov){
 		
 		ordinaryVariableList.remove(ov);
-		ov.removeIsOVariableOfList(this);
+		//ov.removeIsOVariableOfList(this); -> deve ser feito pela classe que chama. 
 		
 		for(Argument argument: super.getArgumentList()){
 			if(argument.getOVariable() == ov){
