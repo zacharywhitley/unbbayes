@@ -577,7 +577,7 @@ public class Compiler implements AbstractCompiler {
 	/* alerta sobre alguma entrada esperada */
 	private void expected(String error) {
 		System.err.println("Error: " + error + " expected!");
-		System.exit(1);
+	
 	}
 
 	/* verifica se entrada combina com o esperado */
