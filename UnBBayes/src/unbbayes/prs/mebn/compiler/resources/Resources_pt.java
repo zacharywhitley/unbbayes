@@ -28,7 +28,8 @@ public class Resources_pt extends ListResourceBundle {
 	{	{"NoDefaultDistributionDeclared","Uma distribuicao default deve ser declarada (uma clausula else)."}, 
 		{"InvalidConditionantFound","Um condicionante invalido foi encontrado na declaracao da tabela."},
 		{"InvalidProbabilityRange","A distribuicao de probabilidades e invalida (a soma deve ser 1)."},
-		{"SomeStateUndeclared","Todos os estados deste no deve ter uma probabilidade associada."}
+		{"SomeStateUndeclared","Todos os estados deste no deve ter uma probabilidade associada."},
+		{"UnexpectedTokenFound","Um termo inesperado foi encontrado."}
 		
 	};
 }

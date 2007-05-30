@@ -28,7 +28,8 @@ public class Resources extends ListResourceBundle {
 	{	{"NoDefaultDistributionDeclared","A default distribution (else clause) must be declared within table."}, 
 		{"InvalidConditionantFound","An invalid conditionant was found within the table declaration."},
 		{"InvalidProbabilityRange","The probability distribution is invalid (the sum must be 1)."},
-		{"SomeStateUndeclared","All possible states of this node must have an associated probability."}
+		{"SomeStateUndeclared","All possible states of this node must have an associated probability."},
+		{"UnexpectedTokenFound","Unexpected token found."}
 		
 	};
 }

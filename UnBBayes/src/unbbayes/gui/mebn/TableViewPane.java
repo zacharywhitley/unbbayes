@@ -21,12 +21,12 @@ import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.gui.mebn.auxiliary.ToolKitForTableEdition;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.compiler.exception.InconsistentTableSemanticsException;
+import unbbayes.prs.mebn.compiler.exception.TableFunctionMalformedException;
 import unbbayes.prs.mebn.exception.EntityNotPossibleValueOfNodeException;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.exception.NodeNotPresentInMTheoryException;
 import unbbayes.prs.mebn.table.TableParser;
 import unbbayes.prs.mebn.table.exception.InvalidProbabilityFunctionOperandException;
-import unbbayes.prs.mebn.table.exception.TableFunctionMalformedException;
 
 /** 
  * Pane that show the probabilistic table of the selected resident node

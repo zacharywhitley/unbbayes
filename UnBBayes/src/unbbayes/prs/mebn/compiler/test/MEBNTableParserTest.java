@@ -20,62 +20,10 @@ import junit.framework.TestCase;
 public class MEBNTableParserTest extends TestCase {
 	
 	private MultiEntityBayesianNetwork mebn = null; 
+	private MEBNTableParser tableParser = null;
 	
 	public MEBNTableParserTest(String arg0) {
 		super(arg0);
-		
-	}
-
-	protected void setUp() throws Exception {
-		super.setUp();
-
-		
-		
-		
-		
-	
-	}
-
-	protected void tearDown() throws Exception {
-		super.tearDown();
-	}
-
-	/*
-	 * Test method for 'unbbayes.prs.mebn.compiler.MEBNTableParser.getInstance(DomainResidentNode)'
-	 */
-	public void testGetInstanceDomainResidentNode() {
-		// TODO Auto-generated method stub
-		fail("Not yet implemented"); // TODO
-	}
-
-	/*
-	 * Test method for 'unbbayes.prs.mebn.compiler.MEBNTableParser.getInstance(MultiEntityBayesianNetwork, DomainResidentNode)'
-	 */
-	public void testGetInstanceMultiEntityBayesianNetworkDomainResidentNode() {
-		// TODO Auto-generated method stub
-		fail("Not yet implemented"); // TODO
-	}
-
-	/*
-	 * Test method for 'unbbayes.prs.mebn.compiler.MEBNTableParser.getInstance(MultiEntityBayesianNetwork, DomainResidentNode, AbstractCompiler)'
-	 */
-	public void testGetInstanceMultiEntityBayesianNetworkDomainResidentNodeAbstractCompiler() {
-		// TODO Auto-generated method stub
-		fail("Not yet implemented"); // TODO
-	}
-
-	/*
-	 * Test method for 'unbbayes.prs.mebn.compiler.MEBNTableParser.init(String)'
-	 */
-	public void testInit() {
-		// TODO Auto-generated method stub
-		fail("Not yet implemented"); // TODO
-	}
-
-	/*
-	 * Test method for 'unbbayes.prs.mebn.compiler.MEBNTableParser.parse()'
-	 */
-	public void testParse() {
 		Debug.setDebug(true);
 		
 		PrOwlIO prOwlIO = new PrOwlIO(); 
@@ -84,7 +32,7 @@ public class MEBNTableParserTest extends TestCase {
 		
 		try{
 			mebn = prOwlIO.loadMebn(new File("examples/mebn/StarshipTableParser.owl")); 
-			System.out.println("Load concluido"); 
+			Debug.println("LOAD COMPLETE"); 
 		}
 		catch (IOMebnException e){
 			e.printStackTrace();
@@ -97,7 +45,29 @@ public class MEBNTableParserTest extends TestCase {
 		}
 		
 		
-		// should go all right
+		
+		tableParser = MEBNTableParser.getInstance(mebn, (DomainResidentNode)mebn.getNode("DangerToSelf"));
+		
+	}
+
+	protected void setUp() throws Exception {
+		super.setUp();
+		
+		assertNotNull(tableParser);
+		
+	}
+
+	protected void tearDown() throws Exception {
+		super.tearDown();
+	}
+
+	
+	/*
+	 * Test method for 'unbbayes.prs.mebn.compiler.MEBNTableParser.parse()'
+	 */
+	public void testNormalConsistencyCheck() {
+		
+		//		 should go all right
 		String tableString =  
 			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
@@ -111,9 +81,6 @@ public class MEBNTableParserTest extends TestCase {
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ] " +
 			" else [ Un = 0 , Hi = 0 , Me = 0 , Lo = 1 ] ";
 		
-		MEBNTableParser tableParser = MEBNTableParser.getInstance(mebn, (DomainResidentNode)mebn.getNode("DangerToSelf"));
-		
-		assertNotNull(tableParser);
 		
 		try  {
 			tableParser.parse(tableString);
@@ -122,8 +89,17 @@ public class MEBNTableParserTest extends TestCase {
 		} 
 		
 		
-		// Should fail, no default distro
-		tableString =  
+		
+	}
+	
+	/*
+	 * Test if parser detect no default distribution table
+	 * or else clause undeclared
+	 *
+	 */
+	public void testConsistencyNoDefDistro() {
+		//		 Should fail, no default distro
+		String tableString =  
 			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
 			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
@@ -135,10 +111,7 @@ public class MEBNTableParserTest extends TestCase {
 			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ] " ;
 		
-		tableParser = MEBNTableParser.getInstance(mebn, (DomainResidentNode)mebn.getNode("DangerToSelf"));
-		
-		assertNotNull(tableParser);
-		
+			
 		try  {
 			tableParser.parse(tableString);
 		} catch (NoDefaultDistributionDeclaredException e) {
@@ -148,8 +121,90 @@ public class MEBNTableParserTest extends TestCase {
 		} 
 		
 		
-		//		 Should fail sum is above 1
+		//		 Should fail, no else clause
 		tableString =  
+			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
+			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
+			" if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
+			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
+			" if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
+			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
+			" if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
+			"  [ Un = 0.10 , Hi = 0.15 , Me = .15 , Lo = .65 ] " +
+			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
+			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ] " ;
+		
+			
+		try  {
+			tableParser.parse(tableString);
+		} catch (NoDefaultDistributionDeclaredException e) {
+			// pass
+		} catch (MEBNException e) {
+			fail(e.getMessage());
+		} 
+		
+	}
+	
+	/*
+	 * Tests if a single node state is between [0,1]
+	 */
+	public void testConsistencySingleState() {
+
+		//		 Should fail, some state is above 1
+		String tableString =  
+			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
+			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
+			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
+			"  [ Un = 2 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
+			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
+			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
+			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
+			"  [ Un = 0.10 , Hi = 0.15 , Me = .15 , Lo = .65 ] " +
+			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
+			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ] " +
+			" else [ Un = 0 , Hi = 0 , Me = 0 , Lo = 1 ] ";
+		
+		
+		try  {
+			tableParser.parse(tableString);
+		} catch (InvalidProbabilityRangeException e) {
+			// pass
+		} catch (MEBNException e) {
+			fail(e.getMessage());
+		} 
+
+		//		 Should fail, some state is below 0
+		tableString =  
+			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
+			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
+			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
+			"  [ Un = 2 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
+			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
+			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
+			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
+			"  [ Un = 0.10 , Hi = 0.15 , Me = .15 , Lo = .65 ] " +
+			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
+			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ] " +
+			" else [ Un = 0 , Hi = 0.5 , Me = -0.5 , Lo = 1 ] ";
+		
+		
+		try  {
+			tableParser.parse(tableString);
+		} catch (InvalidProbabilityRangeException e) {
+			// pass
+		} catch (MEBNException e) {
+			fail(e.getMessage());
+		} 
+		
+		
+	}
+	
+	
+	public void testProbDistroSum() {
+
+		
+		//		 Should fail sum is above 1 in default distro
+		String tableString =  
 			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
 			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
@@ -162,9 +217,7 @@ public class MEBNTableParserTest extends TestCase {
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ] " +
 			" else [ Un = 0 , Hi = 0.5 , Me = 0 , Lo = 1 ] ";
 		
-		tableParser = MEBNTableParser.getInstance(mebn, (DomainResidentNode)mebn.getNode("DangerToSelf"));
 		
-		assertNotNull(tableParser);
 		
 		try  {
 			tableParser.parse(tableString);
@@ -189,10 +242,6 @@ public class MEBNTableParserTest extends TestCase {
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ] " +
 			" else [ Un = 0 , Hi = 0 , Me = 0 , Lo = 1 ] ";
 		
-		tableParser = MEBNTableParser.getInstance(mebn, (DomainResidentNode)mebn.getNode("DangerToSelf"));
-		
-		assertNotNull(tableParser);
-		
 		try  {
 			tableParser.parse(tableString);
 		} catch (InvalidProbabilityRangeException e) {
@@ -202,12 +251,12 @@ public class MEBNTableParserTest extends TestCase {
 		} 
 		
 		
-		//		 Should fail, some state is above 1
+		//		 Should fail sum is below 1
 		tableString =  
 			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
 			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
-			"  [ Un = 2 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
+			"  [ Un = 0 , Hi = 0 , Me = .0 , Lo = .99 ]  " +
 			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
 			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
@@ -216,10 +265,6 @@ public class MEBNTableParserTest extends TestCase {
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ] " +
 			" else [ Un = 0 , Hi = 0 , Me = 0 , Lo = 1 ] ";
 		
-		tableParser = MEBNTableParser.getInstance(mebn, (DomainResidentNode)mebn.getNode("DangerToSelf"));
-		
-		assertNotNull(tableParser);
-		
 		try  {
 			tableParser.parse(tableString);
 		} catch (InvalidProbabilityRangeException e) {
@@ -229,25 +274,19 @@ public class MEBNTableParserTest extends TestCase {
 		} 
 		
 		
-		
-
-		//		 Should fail, some state is below 0
+		//		 Should fail sum is below 1 in default distribution
 		tableString =  
 			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
 			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
-			"  [ Un = 2 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
+			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
 			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
 			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
 			"  [ Un = 0.10 , Hi = 0.15 , Me = .15 , Lo = .65 ] " +
 			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ] " +
-			" else [ Un = 0 , Hi = 0.5 , Me = -0.5 , Lo = 1 ] ";
-		
-		tableParser = MEBNTableParser.getInstance(mebn, (DomainResidentNode)mebn.getNode("DangerToSelf"));
-		
-		assertNotNull(tableParser);
+			" else [ Un = 0 , Hi = 0 , Me = 0 , Lo = 0 ] ";
 		
 		try  {
 			tableParser.parse(tableString);
@@ -258,62 +297,7 @@ public class MEBNTableParserTest extends TestCase {
 		} 
 		
 		
-	}
-
-	/*
-	 * Test method for 'unbbayes.prs.mebn.compiler.MEBNTableParser.parse(String)'
-	 */
-	public void testParseString() {
-		// TODO Auto-generated method stub
-		fail("Not yet implemented"); // TODO
-	}
-
-	/*
-	 * Test method for 'unbbayes.prs.mebn.compiler.MEBNTableParser.getCompiler()'
-	 */
-	public void testGetCompiler() {
-		// TODO Auto-generated method stub
-		fail("Not yet implemented"); // TODO
-	}
-
-	/*
-	 * Test method for 'unbbayes.prs.mebn.compiler.MEBNTableParser.setCompiler(AbstractCompiler)'
-	 */
-	public void testSetCompiler() {
-		// TODO Auto-generated method stub
-		fail("Not yet implemented"); // TODO
-	}
-
-	/*
-	 * Test method for 'unbbayes.prs.mebn.compiler.MEBNTableParser.getMebn()'
-	 */
-	public void testGetMebn() {
-		// TODO Auto-generated method stub
-		fail("Not yet implemented"); // TODO
-	}
-
-	/*
-	 * Test method for 'unbbayes.prs.mebn.compiler.MEBNTableParser.setMebn(MultiEntityBayesianNetwork)'
-	 */
-	public void testSetMebn() {
-		// TODO Auto-generated method stub
-		fail("Not yet implemented"); // TODO
-	}
-
-	/*
-	 * Test method for 'unbbayes.prs.mebn.compiler.MEBNTableParser.getNode()'
-	 */
-	public void testGetNode() {
-		// TODO Auto-generated method stub
-		fail("Not yet implemented"); // TODO
-	}
-
-	/*
-	 * Test method for 'unbbayes.prs.mebn.compiler.MEBNTableParser.setNode(DomainResidentNode)'
-	 */
-	public void testSetNode() {
-		// TODO Auto-generated method stub
-		fail("Not yet implemented"); // TODO
+		
 	}
 
 }

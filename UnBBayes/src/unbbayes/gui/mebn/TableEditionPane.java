@@ -40,13 +40,13 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.compiler.exception.InvalidConditionantException;
 import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredException;
 import unbbayes.prs.mebn.compiler.exception.SomeStateUndeclaredException;
+import unbbayes.prs.mebn.compiler.exception.TableFunctionMalformedException;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.exception.EntityNotPossibleValueOfNodeException;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.exception.NodeNotPresentInMTheoryException;
 import unbbayes.prs.mebn.table.TableParser;
 import unbbayes.prs.mebn.table.exception.InvalidProbabilityFunctionOperandException;
-import unbbayes.prs.mebn.table.exception.TableFunctionMalformedException;
 
 /**
  * Tabela de distribuição de probabilidade de um nodo Resident.
