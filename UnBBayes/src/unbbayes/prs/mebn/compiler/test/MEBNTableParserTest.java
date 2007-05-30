@@ -136,11 +136,12 @@ public class MEBNTableParserTest extends TestCase {
 		
 			
 		try  {
+			Debug.println("=> PARSING A NO-ELSE CLAUSE TABLE");
 			tableParser.parse(tableString);
 		} catch (NoDefaultDistributionDeclaredException e) {
 			// pass
 		} catch (MEBNException e) {
-			fail(e.getMessage());
+			fail(e.getMessage()+ ", " + e.getClass().getName());
 		} 
 		
 	}

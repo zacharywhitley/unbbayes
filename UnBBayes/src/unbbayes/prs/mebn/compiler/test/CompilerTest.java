@@ -20,6 +20,7 @@ import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.compiler.Compiler;
+import unbbayes.prs.mebn.exception.MEBNException;
 import junit.framework.TestCase;
 
 /*
@@ -248,8 +249,8 @@ public class CompilerTest extends TestCase {
 		c.init(TABLE_TO_PARSE); 
 		try  {
 			c.parse();
-		} catch (Exception e) {
-			fail(e.getMessage());
+		} catch (MEBNException e) {
+			fail(e.getMessage() + ": "+ e.getClass().getName());
 		}
 		
 		 

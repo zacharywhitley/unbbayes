@@ -1,4 +1,4 @@
-package unbbayes.prs.mebn.resources;
+﻿package unbbayes.prs.mebn.resources;
 
 import java.util.*;
 
@@ -26,6 +26,6 @@ public class Resources_pt extends ListResourceBundle {
 	 */
 	static final Object[][] contents =
 	{	{"InvalidEdgeException","Arco Invalido!"}, 
-		{"CycleFoundException","Ciclo encontrado! N�o pode haver ciclos no grafo. "}
+		{"CycleFoundException","Ciclo encontrado! Não pode haver ciclos no grafo. "}
 	};
 }

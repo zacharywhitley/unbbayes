@@ -9,10 +9,12 @@ import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
+import unbbayes.prs.mebn.compiler.exception.InconsistentTableSemanticsException;
 import unbbayes.prs.mebn.compiler.exception.InvalidConditionantException;
 import unbbayes.prs.mebn.compiler.exception.InvalidProbabilityRangeException;
 import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredException;
 import unbbayes.prs.mebn.compiler.exception.SomeStateUndeclaredException;
+import unbbayes.prs.mebn.compiler.exception.TableFunctionMalformedException;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.util.Debug;
@@ -64,7 +66,7 @@ public class Compiler implements AbstractCompiler {
 	/* O caracter lido "antecipadamente" (lookahead) */
 	private char look;
 
-	/* Posição de leitura do text */
+	/* Posiï¿½ï¿½o de leitura do text */
 	private int index = 0;
 
 	private char[] text;
@@ -73,7 +75,7 @@ public class Compiler implements AbstractCompiler {
 	private String kwlist[] = { "IF", "ELSE", "ALL", "ANY", "HAVE" };
 
 	/*
-	 * código para as palavras-chave
+	 * cï¿½digo para as palavras-chave
 	 */
 	private char kwcode[] = { 'i', 'l', 'a', 'y', 'h' };
 
@@ -81,7 +83,7 @@ public class Compiler implements AbstractCompiler {
 	private char token;
 
 	/*
-	 * valor do token não codificado
+	 * valor do token nï¿½o codificado
 	 */
 	private String value = "";
 	private String noCaseChangeValue = "";
@@ -92,11 +94,12 @@ public class Compiler implements AbstractCompiler {
 	private DomainResidentNode node = null;
 	
 
-	/* inicialização do compilador */
+	/* inicializaï¿½ï¿½o do compilador */
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.compiler.AbstractCompiler#init(java.lang.String)
 	 */
 	public void init(String text) {
+		index = 0;
 		Debug.println("************************************");
 		Debug.println("ORIGINAL: " + text);
 		text = text.replaceAll("\\s+", " ");
@@ -123,9 +126,10 @@ public class Compiler implements AbstractCompiler {
 	private void ifStatement() throws NoDefaultDistributionDeclaredException,
 									  InvalidConditionantException,
 									  SomeStateUndeclaredException,
-									  InvalidProbabilityRangeException{
+									  InvalidProbabilityRangeException,
+									  TableFunctionMalformedException{
 		Debug.println("PARSING IF STATEMENT");
-		// SCAN FOR IF
+		// SCAN FOR IF		
 		scan();
 		matchString("IF");
 
@@ -157,7 +161,12 @@ public class Compiler implements AbstractCompiler {
 
 		// ( EXPECTED
 		match('(');
-		bExpression();
+		// if we catch sintax error here, it may be conditionant error
+		try {
+			bExpression();
+		} catch (TableFunctionMalformedException e) {
+			throw new InvalidConditionantException(e.getMessage());
+		}
 		//this.nextChar();
 		//this.skipWhite();
 		Debug.println("LOOKAHEAD = " + look);
@@ -166,8 +175,13 @@ public class Compiler implements AbstractCompiler {
 		
 		Debug.println("STARTING STATEMENTS");
 		
-		statement();
-
+		// if we catch a sintax error here, it may be a value error
+		try {
+			statement();
+		} catch (TableFunctionMalformedException e) {
+			throw new InvalidProbabilityRangeException(e.getMessage());
+		}
+		
 		Debug.println("LOOKING FOR ELSE STATEMENT");
 		// LOOK FOR ELSE
 		// Consistency check C09: the grammar may state else as optional,
@@ -176,9 +190,14 @@ public class Compiler implements AbstractCompiler {
 		
 		//	This test is necessary to verify if  there is an else clause
 		if (this.index < this.text.length) {
-			scan();
+			try {
+				scan();
+			} catch (TableFunctionMalformedException e) {
+				// a sintax error here represents no else statement
+				throw new NoDefaultDistributionDeclaredException();
+			}
 		} else {
-			// No else statement was found.
+			// No else statement was found literally, and its end of table.
 			Debug.println("END OF TABLE");
 			throw new NoDefaultDistributionDeclaredException();
 		}
@@ -195,7 +214,8 @@ public class Compiler implements AbstractCompiler {
 	 * b_expression ::= b_term [ "|" b_term ]*
 	 * 
 	 */
-	private void bExpression() throws InvalidConditionantException {
+	private void bExpression() throws InvalidConditionantException,
+									  TableFunctionMalformedException{
 		bTerm();
 
 		// LOOK FOR OR (OPTIONAL)
@@ -211,7 +231,8 @@ public class Compiler implements AbstractCompiler {
 	 * b_term ::= not_factor [ "&" not_factor ]*
 	 * 
 	 */
-	private void bTerm() throws InvalidConditionantException {
+	private void bTerm() throws InvalidConditionantException,
+							    TableFunctionMalformedException{
 		notFactor();
 
 		// LOOK FOR AND (OPTIONAL)
@@ -226,7 +247,8 @@ public class Compiler implements AbstractCompiler {
 	 * not_factor ::= [ "~" ] b_factor
 	 * 
 	 */
-	private void notFactor() throws InvalidConditionantException{
+	private void notFactor() throws InvalidConditionantException,
+									TableFunctionMalformedException{
 		// SCAN FOR NOT (OPTIONAL)
 		// scan();
 		if (look == '~') {
@@ -241,7 +263,8 @@ public class Compiler implements AbstractCompiler {
 	 * b_factor ::= ident "=" ident
 	 * 
 	 */
-	private void bFactor() throws InvalidConditionantException {
+	private void bFactor() throws InvalidConditionantException,
+								  TableFunctionMalformedException{
 		String conditionantName = null;
 		Debug.println("Parsing bFactor");
 		// SCAN FOR CONDITIONANTS
@@ -255,7 +278,11 @@ public class Compiler implements AbstractCompiler {
 				}
 			}
 		} else {
-			expected("Identifier");
+			try{
+				expected("Identifier");
+			} catch (TableFunctionMalformedException e) {
+				throw new InvalidConditionantException(e.getMessage());
+			}
 		}
 
 		// LOOK FOR = OPERATOR
@@ -268,11 +295,18 @@ public class Compiler implements AbstractCompiler {
 		
 		if (token == 'x') {
 			// consistency check C09: verify whether conditionant has valid values
-			if (!this.isValidConditionantValue(this.mebn,conditionantName,this.noCaseChangeValue)) {
-				throw new InvalidConditionantException();
+			if (this.node != null) {
+				if (!this.isValidConditionantValue(this.mebn,conditionantName,this.noCaseChangeValue)) {
+					throw new InvalidConditionantException();
+				}
 			}
+			
 		} else {
-			expected("Identifier");
+			try{
+				expected("Identifier");
+			} catch (TableFunctionMalformedException e) {
+				throw new InvalidConditionantException(e.getMessage());
+			}
 		}
 	}
 
@@ -283,7 +317,8 @@ public class Compiler implements AbstractCompiler {
 	private void statement() throws NoDefaultDistributionDeclaredException,
 									InvalidConditionantException,
 									SomeStateUndeclaredException,
-									InvalidProbabilityRangeException{
+									InvalidProbabilityRangeException,									
+									TableFunctionMalformedException{
 		Debug.println("PARSING STATEMENT, VALUE = " + value + ", LOOKAHEAD = " + look);
 		if (look == '[') {
 			
@@ -332,7 +367,8 @@ public class Compiler implements AbstractCompiler {
 	 * 
 	 */
 	private float assignment(List<Entity> declaredStates, List<Entity> possibleStates) 
-					throws InvalidProbabilityRangeException{
+					throws InvalidProbabilityRangeException, 
+						   TableFunctionMalformedException{
 		// SCAN FOR IDENTIFIER
 		scan();
 		if (token == 'x') {
@@ -383,7 +419,7 @@ public class Compiler implements AbstractCompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	private float expression() {
+	private float expression() throws TableFunctionMalformedException {
 		float temp1 = term();
 		float temp2 = Float.NaN;
 		// LOOK FOR +/- (OPTIONAL)
@@ -415,7 +451,7 @@ public class Compiler implements AbstractCompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	private float term() {
+	private float term() throws TableFunctionMalformedException {
 		float temp1 = signedFactor();
 		float temp2 = Float.NaN;
 		// LOOK FOR *// (OPTIONAL)
@@ -445,7 +481,7 @@ public class Compiler implements AbstractCompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	private float signedFactor() {
+	private float signedFactor() throws TableFunctionMalformedException {
 
 		int sign = 1;
 		
@@ -471,7 +507,7 @@ public class Compiler implements AbstractCompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	private float factor() {
+	private float factor() throws TableFunctionMalformedException {
 		float ret = Float.NaN;
 		if (look == '(') {
 			match('(');
@@ -490,7 +526,7 @@ public class Compiler implements AbstractCompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	private float getName() {
+	private float getName()throws TableFunctionMalformedException {
 		Debug.println("RESETING VALUE FROM " + value);
 		value = "";
 		Debug.println("LOOKAHEAD IS " + look);
@@ -519,7 +555,7 @@ public class Compiler implements AbstractCompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	private float getNum() {
+	private float getNum() throws TableFunctionMalformedException {
 		value = "";
 
 		if (!((isNumeric(look)) || ((look == '.') && (value.indexOf('.') == -1))))
@@ -538,7 +574,7 @@ public class Compiler implements AbstractCompiler {
 		return Float.parseFloat(value);
 	}
 
-	private void scan() {
+	private void scan() throws TableFunctionMalformedException {
 			
 		int kw;
 		
@@ -562,7 +598,7 @@ public class Compiler implements AbstractCompiler {
 		return -1;
 	}
 
-	/* l? próximo caracter da entrada */
+	/* l? prï¿½ximo caracter da entrada */
 	private void nextChar() {
 		if (index < text.length) {
 			look = text[index++];
@@ -575,13 +611,13 @@ public class Compiler implements AbstractCompiler {
 	}
 
 	/* alerta sobre alguma entrada esperada */
-	private void expected(String error) {
+	private void expected(String error) throws TableFunctionMalformedException {
 		System.err.println("Error: " + error + " expected!");
-	
+		throw new TableFunctionMalformedException();
 	}
 
 	/* verifica se entrada combina com o esperado */
-	private void match(char c) {
+	private void match(char c) throws TableFunctionMalformedException {
 		
 		Debug.print(c + " ");
 		if (look != c)
@@ -590,7 +626,7 @@ public class Compiler implements AbstractCompiler {
 		skipWhite();
 	}
 
-	private void matchString(String s) {
+	private void matchString(String s) throws TableFunctionMalformedException {
 		if (!value.equalsIgnoreCase(s))
 			expected(s);
 	}
@@ -654,35 +690,17 @@ public class Compiler implements AbstractCompiler {
 		Node conditionant = mebn.getNode(conditionantName);
 		
 		
-		System.out.println("!!!Mynode = " + node.getName());
-		
-		System.out.println("!!!Conditionants, mebn = " + mebn.getName());
-		System.out.println("!!!Conditionants, conditionantName = " + conditionantName);
-		System.out.println("!!!Conditionants, conditionantNode = " + conditionant.getName());
-		
-		
-		NodeList nodelist = conditionant.getChildren();
-		for (int i = 0; i < nodelist.size(); i++) {
-			System.out.println("!!!!!!Children of conditionants= " + nodelist.get(i).getName());
-		}
-		nodelist = this.node.getParents();
-		for (int i = 0; i < nodelist.size(); i++) {
-			System.out.println("!!!!!!Parents of me = " + nodelist.get(i).getName());
-			System.out.println("!!!!!!Input instance of: " + nodelist.get(i).getClass().getName());
-		}
 		
 		if (conditionant != null) {
 			
 			//	Check if it's parent of current node	
 			if (node.getParents().contains(conditionant)) {
-				System.out.println("!!!!Is node");
 				return true;
 			} else {
 				NodeList parents = node.getParents();
 				for (int i = 0; i < parents.size(); i++) {
 					if (parents.get(i) instanceof GenerativeInputNode) {
 						if ( ((GenerativeInputNode)(parents.get(i))).getInputInstanceOf().equals(conditionant) ) {
-							System.out.println("!!!!Is GenerativeInputNode");
 							return true;
 						}
 					}
