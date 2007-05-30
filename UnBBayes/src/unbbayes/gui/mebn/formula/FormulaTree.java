@@ -252,6 +252,8 @@ public class FormulaTree extends JTree{
 		
 		/* turn the node active for the operator */
 		nodeActive.removeAllChildren(); 
+		nodeFormula.removeAllChildren(); 
+		
 		nodeFormula.setName(builtInRV.getName());
 		nodeFormula.setMnemonic(builtInRV.getMnemonic()); 
 		nodeFormula.setNodeVariable(builtInRV);
@@ -291,6 +293,7 @@ public class FormulaTree extends JTree{
 		}
 		
 		nodeActive.removeAllChildren(); 
+		nodeFormula.removeAllChildren(); 
 		nodeFormula.setName(builtInRV.getName()); 
 		nodeFormula.setMnemonic(builtInRV.getMnemonic()); 
 		nodeFormula.setNodeVariable(builtInRV);
@@ -475,6 +478,9 @@ public class FormulaTree extends JTree{
 				case VARIABLE_SEQUENCE: 
 					builderMenuNode.buildPopupExemplarList().show(e.getComponent(),e.getX(),e.getY()); 
 					break; 
+				
+				case VARIABLE: 
+					builderMenuNode.buildPopupExemplar().show(e.getComponent(),e.getX(),e.getY()); 
 					
 				default:
 					break;

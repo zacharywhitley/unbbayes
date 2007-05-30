@@ -148,6 +148,7 @@ public class FormulaTreeController {
 		
 		NodeFormulaTree nodePlace = formulaTree.getNodeFormulaActive();  
 		
+		
 	}	
 	
 	public void addEntity(Entity entity){

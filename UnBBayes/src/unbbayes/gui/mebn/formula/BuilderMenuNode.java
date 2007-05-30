@@ -201,7 +201,8 @@ public class BuilderMenuNode {
 					NodeFormulaTree rootFormula = new NodeFormulaTree("formula", enumType.FORMULA, enumSubType.NOTHING, null); 	
 					DefaultMutableTreeNode nodeTree =  new DefaultMutableTreeNode(rootFormula); 
 					formulaTreeController.setContextNodeFormula(rootFormula); 
-					formulaTreeController.getFormulaTree().setNodeActive(nodeTree); 
+					formulaTreeController.getFormulaTree().setNodeActive(nodeTree);
+					formulaTreeController.getFormulaTree().updateTree(); 
 					formulaTreeController.getContextNode().updateLabel(); 
 					return; 
 				}
@@ -213,6 +214,7 @@ public class BuilderMenuNode {
 					nodeFormula.setNodeVariable(null); 
 					nodeFormula.setMnemonic("");
 					formulaTreeController.getContextNode().updateLabel(); 
+					formulaTreeController.getFormulaTree().updateTree(); 
 					return; 
 				}
 				
@@ -228,6 +230,7 @@ public class BuilderMenuNode {
 					DefaultMutableTreeNode nodeTree = formulaTreeController.getFormulaTree().getNodeActive(); 
 					nodeTree.removeAllChildren();
 					formulaTreeController.getContextNode().updateLabel(); 
+					formulaTreeController.getFormulaTree().updateTree(); 
 					return;                   						
 				}
 				
@@ -237,6 +240,8 @@ public class BuilderMenuNode {
 					nodeFormulaParent.removeChild(nodeFormula); 
 					parent.remove(formulaTreeController.getFormulaTree().getNodeActive()); 
 					formulaTreeController.getContextNode().updateLabel(); 
+					formulaTreeController.getFormulaTree().updateTree(); 
+					
 					return; 
 				}
 				
@@ -312,8 +317,6 @@ public class BuilderMenuNode {
 			popupExemplar = new JPopupMenu();
 			
 			popupExemplar.add(itemDelete); 
-			popupExemplar.addSeparator(); 
-			popupExemplar.add(itemAddExemplar); 
 		
 		}
 		
