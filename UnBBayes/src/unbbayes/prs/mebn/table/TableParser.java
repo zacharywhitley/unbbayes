@@ -1,3 +1,8 @@
+/**
+ * This is a dead code!!!! Do not use your effort to 
+ * edit it because it is not called by any
+ * class!!!!!!
+ */
 package unbbayes.prs.mebn.table;
 
 
@@ -33,6 +38,7 @@ import unbbayes.util.NodeList;
 
 
 /**
+ * 
  * This is a poltergeist programming anti-pattern.
  * It's previous version was a dead-code programming anti-pattern.
  * It exists only to mantain possible compatibility.

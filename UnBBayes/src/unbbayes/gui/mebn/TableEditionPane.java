@@ -37,6 +37,7 @@ import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.compiler.MEBNTableParser;
 import unbbayes.prs.mebn.compiler.exception.InvalidConditionantException;
 import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredException;
 import unbbayes.prs.mebn.compiler.exception.SomeStateUndeclaredException;
@@ -49,9 +50,9 @@ import unbbayes.prs.mebn.table.TableParser;
 import unbbayes.prs.mebn.table.exception.InvalidProbabilityFunctionOperandException;
 
 /**
- * Tabela de distribuição de probabilidade de um nodo Resident.
- * Contem um editor de texto e um menu com opções para facilitar a 
- * edição (botões de auto texto e botões para abrir lista de 
+ * Tabela de distribuiï¿½ï¿½o de probabilidade de um nodo Resident.
+ * Contem um editor de texto e um menu com opï¿½ï¿½es para facilitar a 
+ * ediï¿½ï¿½o (botï¿½es de auto texto e botï¿½es para abrir lista de 
  * escolhas de variaveis da ontologia. 
  * 
  * @author Laecio Lima dos Santos
@@ -813,10 +814,10 @@ public class TableEditionPane extends JPanel{
 		btnCompile.addActionListener( new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				residentNode.setTableFunction(getTableTxt());
-				TableParser tableParser = new TableParser(residentNode.getMFrag().getMultiEntityBayesianNetwork(), residentNode);  
+				MEBNTableParser tableParser = MEBNTableParser.getInstance(residentNode);
 				
 				try{
-				   tableParser.parseTable(getTableTxt());
+				   tableParser.parse(getTableTxt());
 				}
 				catch(TableFunctionMalformedException e1){
 					JOptionPane.showMessageDialog(null, e1.getMessage(), "TableFunctionMalformedException", JOptionPane.ERROR_MESSAGE);		
