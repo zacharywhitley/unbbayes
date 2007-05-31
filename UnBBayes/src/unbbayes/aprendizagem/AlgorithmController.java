@@ -33,7 +33,7 @@ public class AlgorithmController{
 	/**
 	 * 
 	 */
-	public AlgorithmController(NodeList variables,byte[][] matrix, int[] vector,
+	public AlgorithmController(NodeList variables,int[][] matrix, int[] vector,
 	        long caseNumber, String[] pamp, boolean compacted){	        	
 	        if(pamp[0].equalsIgnoreCase("Ponctuation")){
 	        	if(pamp[1].equalsIgnoreCase("k2")){
@@ -51,7 +51,7 @@ public class AlgorithmController{
 	        }	        
 	} 
 	
-	public AlgorithmController(NodeList variables,byte[][] matrix, int[] vector,
+	public AlgorithmController(NodeList variables,int[][] matrix, int[] vector,
 	        long caseNumber, String[] pamp, boolean compacted, int classex){	        	
 	        if(pamp[0].equalsIgnoreCase("Ponctuation")){
 	        	if(pamp[1].equalsIgnoreCase("k2")){

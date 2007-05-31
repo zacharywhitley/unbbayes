@@ -15,7 +15,7 @@ public class dalgo2 extends Thread {
 
 	public NodeList variables;
 
-	public byte[][] originalmatrix;
+	public int[][] originalmatrix;
 
 	public int[][] matrix1;
 
@@ -52,7 +52,7 @@ public class dalgo2 extends Thread {
 		this.controlador = wc;
 	}
 
-	public void Setmatrix(byte[][] tempmatrix) {
+	public void Setmatrix(int[][] tempmatrix) {
 		mlines = lines(tempmatrix);
 		mcolumns = columns(tempmatrix);
 
@@ -106,13 +106,13 @@ public class dalgo2 extends Thread {
 		return resultado;
 	}
 
-	public int lines(byte[][] tempmatrix) {
+	public int lines(int[][] tempmatrix) {
 		int i;
 		i = tempmatrix.length;
 		return i;
 	}
 
-	public int columns(byte[][] tempmatrix) {
+	public int columns(int[][] tempmatrix) {
 		int i;
 		i = tempmatrix[0].length;
 		return i;

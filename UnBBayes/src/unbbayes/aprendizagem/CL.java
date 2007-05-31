@@ -20,7 +20,7 @@ public class CL extends CBLToolkit{
 	public int classe;
 	public int caseNumber;
 	public int raiz;
-	protected byte[][] dataBase;
+	protected int[][] dataBase;
     protected int[] vector;
     protected boolean compacted;
     protected double [][] matrizinfo;
@@ -42,7 +42,7 @@ public class CL extends CBLToolkit{
 	/*
 	 * Prepara e faz tudo.
 	 */
-	public void preparar(NodeList vetordevariaveis, int classei, int numerodecasos, int[] vetor,boolean comp,byte[][]dados) {
+	public void preparar(NodeList vetordevariaveis, int classei, int numerodecasos, int[] vetor,boolean comp,int[][]dados) {
 		int i;
 		//copiar os parametros
 		nvar=vetordevariaveis.size();

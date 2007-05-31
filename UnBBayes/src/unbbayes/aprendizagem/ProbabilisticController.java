@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -32,7 +32,7 @@ public class ProbabilisticController extends LearningToolkit{
 
     //private boolean ok; 
     
-    public ProbabilisticController(NodeList variables,byte[][] matrix,
+    public ProbabilisticController(NodeList variables,int[][] matrix,
                        int[] vector,long caseNumber, MainController controller, boolean compacted){
         this.compacted = compacted;
         this.dataBase = matrix;

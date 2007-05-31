@@ -28,7 +28,7 @@ public class CBLB extends CBLToolkit {
 
 	private ArrayList<int[]> esFinal;
 
-	public CBLB(NodeList variables, byte[][] dataBase, int[] vector,
+	public CBLB(NodeList variables, int[][] dataBase, int[] vector,
 			long caseNumber, String param, boolean compacted) {
 		this.variablesVector = variables;
 		double epsilon;
@@ -54,7 +54,7 @@ public class CBLB extends CBLToolkit {
 		}
 	}
 
-	public CBLB(NodeList variables, byte[][] dataBase, int[] vector,
+	public CBLB(NodeList variables, int[][] dataBase, int[] vector,
 			long caseNumber, String param, boolean compacted, int classex) {
 		this.variablesVector = variables;
 		esFinal = new ArrayList();

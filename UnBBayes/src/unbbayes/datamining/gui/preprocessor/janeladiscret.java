@@ -38,7 +38,7 @@ public class janeladiscret extends JFrame {
 
 	private FileController fileController;
 
-	public byte[][] matriz;
+	public int[][] matriz;
 
 	public dalgo2 discretizador;
 
@@ -317,7 +317,7 @@ public class janeladiscret extends JFrame {
 		return jButton5;
 	}
 
-	public void setdalgoresp(NodeList vv, int mline, byte[][] mt) {
+	public void setdalgoresp(NodeList vv, int mline, int[][] mt) {
 		this.variaveis = vv;
 		this.linhas = mline;
 		this.matriz = mt;

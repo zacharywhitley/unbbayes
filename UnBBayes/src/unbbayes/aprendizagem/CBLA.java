@@ -1,7 +1,7 @@
 
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -30,7 +30,7 @@ public class CBLA extends CBLToolkit{
 	
 	
 	
-	public CBLA(NodeList variables, byte[][] dataBase, int[] vector,
+	public CBLA(NodeList variables, int[][] dataBase, int[] vector,
 	             long caseNumber, String param, boolean compacted){
 	    this.variablesVector = variables;
         this.separators = new ArrayList<Object[]>();	    
@@ -81,12 +81,12 @@ public class CBLA extends CBLToolkit{
 	
 	/*Coloca os primeiros arcos da estrutura*/
 	private ArrayList<double[]> scketch(){
-		System.out.println("Inicia o esboçar");
+		System.out.println("Inicia o esboï¿½ar");
 		int n = this.variablesVector.size();
-		/* imAux recebe as informações mutuas auxiliares*/
+		/* imAux recebe as informaï¿½ï¿½es mutuas auxiliares*/
 		double imAux;
 		ArrayList<double[]> ls = new ArrayList<double[]>(); 		
-		/*Seta as informações mutuas de cada par, a informcao mutua de ab é 
+		/*Seta as informaï¿½ï¿½es mutuas de cada par, a informcao mutua de ab ï¿½ 
 		 * a mesma de ba*/		
 		for(int i = 0 ; i < n; i++){
 			for(int k = i+1; k < n ; k++){
@@ -100,8 +100,8 @@ public class CBLA extends CBLToolkit{
 		/*Ordena a lista em ordem decrescente de informacao mutua*/				
 		sort(ls);						        						
 		double[] peace;
-		/*Verifica se há caminhos abertos entre as variaveis, caso não 
-		 * haja é adionado um novo caminho entre essas variaveis*/		
+		/*Verifica se hï¿½ caminhos abertos entre as variaveis, caso nï¿½o 
+		 * haja ï¿½ adionado um novo caminho entre essas variaveis*/		
 		for(int i  = 0 ; i < ls.size(); i++){
 			peace =(double[])ls.get(i);
 			if(!(isOpenWays((int)peace[1],(int)peace[2],es))){
@@ -111,7 +111,7 @@ public class CBLA extends CBLToolkit{
 				i--;
 			}			
 		}   	
-      	System.out.println("Acaba o esboçar");
+      	System.out.println("Acaba o esboï¿½ar");
        	return ls;					       	
 	}
 	

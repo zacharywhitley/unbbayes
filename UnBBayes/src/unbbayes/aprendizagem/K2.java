@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -24,10 +24,10 @@
 import unbbayes.util.NodeList;
 
 /**
- *   Essa classe implementa os métodos necessários para que
- *   o algoritmo k2 funcione .O algoritmo k2 é um
- *   algoritmo de aprendizagem que utiliza a busca em pontuaçao.
- *   @author     Danilo Custódio
+ *   Essa classe implementa os mï¿½todos necessï¿½rios para que
+ *   o algoritmo k2 funcione .O algoritmo k2 ï¿½ um
+ *   algoritmo de aprendizagem que utiliza a busca em pontuaï¿½ao.
+ *   @author     Danilo Custï¿½dio
  *   @version    1.0
  *   @see TAprendizagemTollKit
  */
@@ -37,7 +37,7 @@ public class K2 extends K2Toolkit{
     private NodeList variablesVector;  
     
     
-    public K2(NodeList variables, byte[][] dataBase, int vector[], long 
+    public K2(NodeList variables, int[][] dataBase, int vector[], long 
             caseNumber, String metric, String param, boolean compacted){    	
     	Object[]  zMax;
     	TVariavel z;

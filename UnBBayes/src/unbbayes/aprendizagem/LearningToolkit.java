@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -30,7 +30,7 @@ import unbbayes.util.SetToolkit;
 public abstract class LearningToolkit{
 
 	    protected long caseNumber;
-	    protected byte[][] dataBase;
+	    protected int[][] dataBase;
 	    protected int[] vector;
 	    protected boolean compacted;
 

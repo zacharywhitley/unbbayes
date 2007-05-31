@@ -67,7 +67,7 @@ public class ConstructionController {
 	private NodeList variablesVector;
 	private NodeList variables;
 	private int[] vector;
-	private byte[][] matrix;
+	private int[][] matrix;
 	private long caseNumber;
 	private boolean compacted;
 
@@ -113,7 +113,7 @@ public class ConstructionController {
 			new CompactFileWindow(variablesVector);
 			filterVariablesVector(rows);
 			verificarConsistencia(pn);
-			matrix = new byte[rows][variables.size()];
+			matrix = new int[rows][variables.size()];
 			makeMatrix(cols, rows);
 			br.close();
 		} catch (Exception e) {
@@ -137,7 +137,7 @@ public class ConstructionController {
 			variables = new NodeList();
 			makeVariablesVector(cols);
 			filterVariablesVector(rows);
-			matrix = new byte[rows][variables.size()];
+			matrix = new int[rows][variables.size()];
 
 			UnBBayesFrame.getIUnBBayes().setCursor(
 					new Cursor(Cursor.WAIT_CURSOR));
@@ -181,7 +181,7 @@ public class ConstructionController {
 			new ChooseVariablesWindow(variablesVector);
 			new CompactFileWindow(variablesVector);
 			filterVariablesVector(rows);
-			matrix = new byte[rows][variables.size()];
+			matrix = new int[rows][variables.size()];
 			UnBBayesFrame.getIUnBBayes().setCursor(
 					new Cursor(Cursor.WAIT_CURSOR));
 			makeMatrix(cols, rows);
@@ -243,7 +243,7 @@ public class ConstructionController {
 			new ChooseVariablesWindow(variablesVector);
 			new CompactFileWindow(variablesVector);
 			filterVariablesVector(rows);
-			matrix = new byte[rows][variables.size()];
+			matrix = new int[rows][variables.size()];
 			makeMatrix(cols, rows);
 
 			br.close();
@@ -322,7 +322,7 @@ public class ConstructionController {
 			new ChooseVariablesWindow(variablesVector);
 			new CompactFileWindow(variablesVector);
 			filterVariablesVector(rows);
-			matrix = new byte[rows][variables.size()];
+			matrix = new int[rows][variables.size()];
 			makeMatrix(cols, rows);
 
 			br.close();
@@ -571,7 +571,7 @@ public class ConstructionController {
 		}
 	}
 
-	public byte[][] getMatrix() {
+	public int[][] getMatrix() {
 		return this.matrix;
 	}
 
