@@ -20,7 +20,8 @@
  */
 package unbbayes.aprendizagem;
 
-import unbbayes.gui.LearningPNEditionDialog;
+
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
@@ -48,14 +49,13 @@ public class B extends BToolkit{
     * @param BaseDados Representaçào do arquivo em memória(<code>byte[][]<code>)
     * @param vetor     Vetor que indica quantas vezes uma linha do arquivo se repete
     * (<code>int[]<code>)
-    * @see TVariavel
-    * @see LearningPNEditionDialog
+    * @see LearningNode
     * @see Tnij
     * @see TAprendizagemTollKit
     */
   public B(NodeList variables, byte[][] dataBase, int[] vector, long caseNumber,
                 String metric, String param, boolean compacted){  
-    TVariavel variable;
+    LearningNode variable;
     NodeList parentsAux;
     double gi;
     double gj;
@@ -75,7 +75,7 @@ public class B extends BToolkit{
         constructGMatrix();                
         IJVector = maxMatrix();
     	while(gMatrix[IJVector[0]][IJVector[1]] > 0){ 
-        	variable = (TVariavel)variablesVector.get(IJVector[0]);
+        	variable = (LearningNode)variablesVector.get(IJVector[0]);
            	parentsAux = variable.getPais();
            	parentsAux.add(variablesVector.get(IJVector[1]));
            	gi = getG(variable,parentsAux);
@@ -90,7 +90,7 @@ public class B extends BToolkit{
            	}
            	for(int i = 0; i < variables.size(); i++){
                 if(gMatrix[IJVector[0]][i] > Double.NEGATIVE_INFINITY){
-                  	if(isMember((TVariavel)variables.get(i),variable.getPais())){
+                  	if(isMember((LearningNode)variables.get(i),variable.getPais())){
                       	gMatrix[IJVector[0]][i] = 0;
                    	} else{
                        	parentsAux = SetToolkit.clone(variable.getPais());
