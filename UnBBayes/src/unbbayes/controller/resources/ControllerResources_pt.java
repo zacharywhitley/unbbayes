@@ -15,11 +15,11 @@ import java.util.*;
 public class ControllerResources_pt extends ListResourceBundle {
 
     /**
-	 *  Sobrescreve getContents e retorna um array, onde cada item no array é
-	 *	um par de objetos. O primeiro elemento do par é uma String chave, e o
-	 *	segundo é o valor associado a essa chave.
+	 *  Sobrescreve getContents e retorna um array, onde cada item no array ï¿½
+	 *	um par de objetos. O primeiro elemento do par ï¿½ uma String chave, e o
+	 *	segundo ï¿½ o valor associado a essa chave.
 	 *
-	 * @return O conteúdo dos recursos
+	 * @return O conteï¿½do dos recursos
 	 */
 	public Object[][] getContents() {
 		return contents;
@@ -31,21 +31,21 @@ public class ControllerResources_pt extends ListResourceBundle {
 	static final Object[][] contents =
 	{	{"imageFileFilter","Imagem (*.gif)"},
 		{"likelihoodName","Likelihood"},
-		{"likelihoodException","Só tem zeros!"},
-		{"statusEvidenceProbabilistic","Probabilidade da Evidência Total: "},
-		{"statusEvidenceException","Evidências não consistentes ou underflow"},
+		{"likelihoodException","SÃ³ tem zeros!"},
+		{"statusEvidenceProbabilistic","Probabilidade da EvidÃªncia Total: "},
+		{"statusEvidenceException","EvidÃªncias nÃ£o consistentes ou underflow"},
 		{"statusError","Erro!"},
-		{"printLogToolTip","Imprimir o log de compilação"},
-		{"previewLogToolTip","Visualizar a impressão"},
+		{"printLogToolTip","Imprimir o log de compilaÃ§Ã£o"},
+		{"previewLogToolTip","Visualizar a impressÃ£o"},
 		{"okButtonLabel"," Ok "},
 		{"statusTotalTime","Tempo Total: "},
 		{"statusSeconds"," segundos"},
 		{"stateProbabilisticName","Estado "},
-		{"stateDecisionName","Ação "},
+		{"stateDecisionName","AÃ§Ã£o "},
 		{"stateUtilityName","Utilidade "},
 		{"firstStateProbabilisticName","Estado 0"},
-		{"firstStateDecisionName","Ação 0"},
-		{"nodeName","Nó: "},
+		{"firstStateDecisionName","AÃ§Ã£o 0"},
+		{"nodeName","NÃ³: "},
 		
 		{"probabilisticNodeName","C"},
 		{"decisionNodeName","D"},
@@ -59,38 +59,38 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"domainMFragName","DMFrag"},	
 		{"findingMFragName","FMFrag"},				
 		
-		{"potentialTableException","Não é um número!"},
-		{"copiedNodeName","Cópia do "},
-		{"askTitle","Digite um rótulo para a rede"},
-		{"informationText","Informação"},
-		{"printException","Erro de Impressão: "},
+		{"potentialTableException","NÃ£o Ã© um nÃºmero!"},
+		{"copiedNodeName","CÃ³pia do "},
+		{"askTitle","Digite um rÃ³tulo para a rede"},
+		{"informationText","InformaÃ§Ã£o"},
+		{"printException","Erro de ImpressÃ£o: "},
 		{"loadNetException","Erro ao Abrir a Rede"},
 		{"cancelOption","Cancelar"},
 		{"printerStatus","Status da Impressora"},
 		{"initializingPrinter","Inicializando impressora..."},
-		{"printingPage","Imprimindo página "},
+		{"printingPage","Imprimindo pÃ¡gina "},
 		{"previewButtonLabel","Anterior"},
-		{"nextButtonLabel","Próxima"},
-		{"fitToPageButtonLabel","Ajustar para Página"},
+		{"nextButtonLabel","PrÃ³xima"},
+		{"fitToPageButtonLabel","Ajustar para PÃ¡gina"},
 		{"loading","Carregando "},
 		{"cancel","Cancelar"},
 		{"of"," de "},
 		
 		/* Exceptions MEBN */
-		{"withoutMFrag", "Não existe nenhuma MFrag"}, 
+		{"withoutMFrag", "NÃ£o existe nenhuma MFrag"}, 
 		{"edgeInvalid", "Arco invalido"}, 		
 		
 		{"JAXBExceptionFound", "Erro de sintaxe..."},
 
 		/* Numeric attribute node */
-		{"mean", "Média"},
-		{"stdDev", "Desv. Padrão"}, 
+		{"mean", "Mï¿½dia"},
+		{"stdDev", "Desv. PadrÃ£o"}, 
 		
 		/* load/save */
 		{"saveSucess", "Arquivo salvo!"},
 		{"sucess", "Sucesso"}, 
 		{"error", "Erro"},
-		{"withoutPosfixe", "Tipo do arquivo não informado!"}		
+		{"withoutPosfixe", "Tipo do arquivo nÃ£o informado!"}		
 		
 	};
 }

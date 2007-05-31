@@ -16,11 +16,11 @@ import java.util.*;
 public class BnResources_pt extends ListResourceBundle {
 
     /**
-	 *  Sobrescreve getContents e retorna um array, onde cada item no array é
-	 *	um par de objetos. O primeiro elemento do par é uma String chave, e o
-	 *	segundo é o valor associado a essa chave.
+	 *  Sobrescreve getContents e retorna um array, onde cada item no array ï¿½
+	 *	um par de objetos. O primeiro elemento do par ï¿½ uma String chave, e o
+	 *	segundo ï¿½ o valor associado a essa chave.
 	 *
-	 * @return O conteúdo dos recursos
+	 * @return O conteï¿½do dos recursos
 	 */
 	public Object[][] getContents() {
 		return contents;
@@ -35,16 +35,16 @@ public class BnResources_pt extends ListResourceBundle {
 		{"TableSizeException","Tamanho das tabelas diferem"},
 		{"OperatorException","Operador desconhecido"},
 		{"moralizeLabel","Moralizados com os arcos:\n"},
-		{"triangulateLabel","\nOrdem de Eliminação e Triangulação (ligações):\n"},
-		{"EmptyNetException","A rede está vazia!"},		
-		{"DecisionOrderException","Não existe ordenação das variáveis de decisão"},
-		{"variableName","Variável "},
-		{"hasChildName"," contém filho(s)"},
+		{"triangulateLabel","\nOrdem de EliminaÃ§Ã£o e TriangulaÃ§Ã£o (ligaÃ§Ãµes):\n"},
+		{"EmptyNetException","A rede estÃ¡ vazia!"},		
+		{"DecisionOrderException","NÃ£o existe ordenaÃ§Ã£o das variÃ¡veis de decisÃ£o"},
+		{"variableName","VariÃ¡vel "},
+		{"hasChildName"," contÃ©m filho(s)"},
 		{"linkedName"," ligado a "},
-		{"copyName","Cópia do "},
-		{"variableTableName","Tabela da variável "},
+		{"copyName","CÃ³pia do "},
+		{"variableTableName","Tabela da variÃ¡vel "},
 		{"inconsistencyName"," inconsistente -> "},
 		{"utilityName","Utilidade"},
-		{"InconsistencyUnderflowException","Encontrado erro numérico ou inconsistência."}
+		{"InconsistencyUnderflowException","Encontrado erro numÃ©rico ou inconsistÃªncia."}
 	};
 }

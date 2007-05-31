@@ -15,11 +15,11 @@ import java.util.*;
 public class IoResources_pt extends ListResourceBundle {
 
     /**
-	 *  Sobrescreve getContents e retorna um array, onde cada item no array é
-	 *	um par de objetos. O primeiro elemento do par é uma String chave, e o
-	 *	segundo é o valor associado a essa chave.
+	 *  Sobrescreve getContents e retorna um array, onde cada item no array ï¿½
+	 *	um par de objetos. O primeiro elemento do par ï¿½ uma String chave, e o
+	 *	segundo ï¿½ o valor associado a essa chave.
 	 *
-	 * @return O conteúdo dos recursos
+	 * @return O conteï¿½do dos recursos
 	 */
 	public Object[][] getContents() {
 		return contents;
@@ -29,10 +29,10 @@ public class IoResources_pt extends ListResourceBundle {
 	 * Os recursos
 	 */
 	static final Object[][] contents =
-	{	{"logHeader","Essa descrição é feita no processo de compilação da rede.\n" +
-                     "Ela dispõe de informações de como a árvore de junção subjacente foi\n" +
-                     "criada baseada na técnica de árvore de junção com uso da heurística do\n" +
-                     "peso mínimo.\n\n"},
+	{	{"logHeader","Essa descriÃ§Ã£o Ã© feita no processo de compilaÃ§Ã£o da rede.\n" +
+                     "Ela dispÃµe de informaÃ§Ãµes de como a Ã¡rvore de junÃ§Ã£o subjacente foi\n" +
+                     "criada baseada na tÃ©cnica de Ã¡rvore de junÃ§Ã£o com uso da heurÃ­stica do\n" +
+                     "peso mÃ­nimo.\n\n"},
 		{"cliqueHeader","******************* Cliques ******************\n"},
 		{"cliqueName","Clique "},
 		{"cliqueLabel"," Clique: "},
@@ -42,16 +42,16 @@ public class IoResources_pt extends ListResourceBundle {
 		{"separatorName","Separador "},
 		{"betweenName","entre "},
 		{"andName"," e "},
-		{"nodeName","Nó(s): "},		
+		{"nodeName","NÃ³(s): "},		
 		{"potentialAssociatedHeader","************ Potenciais associados aos cliques **************\n"},
-		{"errorNet","Esse arquivo não está de acordo com a especificação do NET."},
+		{"errorNet","Esse arquivo nÃ£o estÃ¡ de acordo com a especificaÃ§Ã£o do NET."},
 		{"LoadException"," Falta 'net'"},
-		{"LoadException2",": Sentença inválida: "},
+		{"LoadException2",": SentenÃ§a invÃ¡lida: "},
 		{"LoadException3",": Falta '{'"},
-		{"LoadException4",": Variável de decisão não pode ter tabela"},
+		{"LoadException4",": VariÃ¡vel de decisÃ£o nÃ£o pode ter tabela"},
 		{"LoadException5",": Falta 'data'"},
-		{"FileNotFoundException","Não foi possível abrir o arquivo!"},
-		{"IsNotDirectoryException", "O caminho especificado tem que ser um diretório"}
+		{"FileNotFoundException","NÃ£o foi possÃ­vel abrir o arquivo!"},
+		{"IsNotDirectoryException", "O caminho especificado tem que ser um diretÃ³rio"}
 		
 	};
 }

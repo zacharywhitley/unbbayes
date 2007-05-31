@@ -16,11 +16,11 @@ import java.util.*;
 public class UtilResources_pt extends ListResourceBundle {
 
     /**
-	 *  Sobrescreve getContents e retorna um array, onde cada item no array é
-	 *	um par de objetos. O primeiro elemento do par é uma String chave, e o
-	 *	segundo é o valor associado a essa chave.
+	 *  Sobrescreve getContents e retorna um array, onde cada item no array ï¿½
+	 *	um par de objetos. O primeiro elemento do par ï¿½ uma String chave, e o
+	 *	segundo ï¿½ o valor associado a essa chave.
 	 *
-	 * @return O conteúdo dos recursos
+	 * @return O conteï¿½do dos recursos
 	 */
 	public Object[][] getContents() {
 		return contents;
@@ -32,6 +32,6 @@ public class UtilResources_pt extends ListResourceBundle {
 	static final Object[][] contents =
 	{	{"IllegalCapacityException","Capacidade Ilegal: "},
 		{"IllegalAccessException","Erro na rotina clone. Sem acesso"},
-		{"InstantiationException","Erro na rotina clone. Instanciação"}	
+		{"InstantiationException","Erro na rotina clone. InstanciaÃ§Ã£o"}	
 	};
 }

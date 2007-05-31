@@ -4,7 +4,7 @@ import java.util.*;
 
 /** Resources file for datamanipulation package. Localization = portuguese.
  *
- *  @author M·rio Henrique Paes Vieira (mariohpv@bol.com.br)
+ *  @author MÔøΩrio Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @version $1.0 $ (16/02/2002)
  */
 public class DataManipulationResource_pt extends ListResourceBundle
@@ -18,34 +18,34 @@ public class DataManipulationResource_pt extends ListResourceBundle
 
 	/** The resources */
 	static final Object[][] contents =
-	{	{"normalizeException1","Array n„o pode ser normalizado. Soma È NaN."},
-		{"normalizeException2","Array n„o pode ser normalizado. Soma È zero."},
-                {"normalizeException3","N„o È possÌvel normalizar. Limites de normalizaÁ„o inv·lidos."},
+	{	{"normalizeException1","Array n√£o pode ser normalizado. Soma √© NaN."},
+		{"normalizeException2","Array n√£o pode ser normalizado. Soma √© zero."},
+                {"normalizeException3","N√£o √© poss√≠vel normalizar. Limites de normaliza√ß√£o inv√°lidos."},
 		{"readHeaderException1","Fim de linha prematuro."},
 		{"readHeaderException2","Palavra chave @relation esperada"},
-		{"readHeaderException3","Nenhum tipo de atributo v·lido ou enumeraÁ„o inv·lida"},
-		{"readHeaderException4","{ esperado no inÌcio da enumeraÁ„o "},
-		{"readHeaderException5","} esperado no fim da enumeraÁ„o "},
+		{"readHeaderException3","Nenhum tipo de atributo v√°lido ou enumera√ß√£o inv√°lida"},
+		{"readHeaderException4","{ esperado no in√≠cio da enumera√ß√£o "},
+		{"readHeaderException5","} esperado no fim da enumera√ß√£o "},
 		{"readHeaderException6","Nenhum valor nominal encontrado"},
 		{"readHeaderException7","Palavra chave @data esperada"},
 		{"readHeaderException8","Nenhum atributo declarado"},
 		{"getLastTokenException1","fim de linha esperado"},
 		{"getNextTokenException1","Fim de linha prematuro."},
 		{"getNextTokenException2","Fim de arquivo prematuro."},
-		{"getInstanceException1","Nenhuma informaÁ„o no cabeÁalho disponÌvel"},
-		{"getInstanceAuxException1","uma String foi lida quando se esperava um n˙mero"},
-		{"getInstanceFullException1","Valor inv·lido"},
-		{"getInstanceFullException2","Valor nominal n„o declarado no cabeÁalho"},
-		{"getInstanceFullException3","Numero esperado"},
-		{"getInstanceTXT","Nenhuma informaÁ„o sobre o atributo disponÌvel"},
-		{"runtimeException1","Inst‚ncia n„o tem acesso ‡ base de dados!"},
-		{"runtimeException2","Classe n„o est· definida!"},
-		{"illegalArgumentException1","Õndice da classe inv·lido: "},
-		{"setAttributeAtException","Õndice n„o definido"},
-		{"setClassIndexException","Õndice da classe inv·lido: "},
-		{"outOfRange","Par‚metro first e/ou toCopy n„o definidos"},
-		{"setValueException","Valor n„o pode ser inserido. N„o consegue traduzir String para float."},
-                {"emptyInstanceSet","O instanceSet n„o contÈm instancias."},
-                {"nominalAttribute","O atributo para se calcular o desvio padr„o deve ser numÈrico."},
+		{"getInstanceException1","Nenhuma informa√ß√£o no cabe√ßalho dispon√≠vel"},
+		{"getInstanceAuxException1","uma String foi lida quando se esperava um n√∫mero"},
+		{"getInstanceFullException1","Valor inv√°lido"},
+		{"getInstanceFullException2","Valor nominal n√£o declarado no cabe√ßalho"},
+		{"getInstanceFullException3","N√∫mero esperado"},
+		{"getInstanceTXT","Nenhuma informa√ß√£o sobre o atributo dispon√≠vel"},
+		{"runtimeException1","Inst√¢ncia n√£o tem acesso √† base de dados!"},
+		{"runtimeException2","Classe n√£o est√° definida!"},
+		{"illegalArgumentException1","ÔøΩndice da classe invÔøΩlido: "},
+		{"setAttributeAtException","ÔøΩndice nÔøΩo definido"},
+		{"setClassIndexException","ÔøΩndice da classe invÔøΩlido: "},
+		{"outOfRange","Par√¢metro first e/ou toCopy n√£o definidos"},
+		{"setValueException","Valor n√£o pode ser inserido. N√£o consegue traduzir String para float."},
+                {"emptyInstanceSet","O instanceSet n√£o cont√©m instancias."},
+                {"nominalAttribute","O atributo para se calcular o desvio padr√£o deve ser num√©rico."},
 	};
 }

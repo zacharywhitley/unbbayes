@@ -16,11 +16,11 @@ import java.util.*;
 public class ExampleResources_pt extends ListResourceBundle {
 
     /**
-	 *  Sobrescreve getContents e retorna um array, onde cada item no array é
-	 *	um par de objetos. O primeiro elemento do par é uma String chave, e o
-	 *	segundo é o valor associado a essa chave.
+	 *  Sobrescreve getContents e retorna um array, onde cada item no array ï¿½
+	 *	um par de objetos. O primeiro elemento do par ï¿½ uma String chave, e o
+	 *	segundo ï¿½ o valor associado a essa chave.
 	 *
-	 * @return O conteúdo dos recursos
+	 * @return O conteï¿½do dos recursos
 	 */
 	public Object[][] getContents() {
 		return contents;
@@ -32,10 +32,10 @@ public class ExampleResources_pt extends ListResourceBundle {
 	static final Object[][] contents =
 	{	{"exampleTitle","Exemplo de Uso da API"},
 		{"fileName","Nome do Arquivo"},
-		{"compileTree","Compila Árvore"},
+		{"compileTree","Compila Ã¡rvore"},
 		{"nodeName1","K"},
 		{"nodeName2","A"},
-		{"nodeDescription","Variável de Teste"},
+		{"nodeDescription","VariÃ¡vel de Teste"},
 		{"stateName0","Estado 0"},
 		{"stateName1","Estado 1"}
 	};

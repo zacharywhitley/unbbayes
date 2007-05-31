@@ -5,7 +5,7 @@ import java.util.ListResourceBundle;
 
 /** Resources file for classifiers package. Localization = portuguese.
  *
- *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ *  @author Mï¿½rio Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @version $1.0 $ (16/02/2002)
  */
 public class ClassifiersResource_pt extends ListResourceBundle implements Serializable
@@ -24,36 +24,36 @@ public class ClassifiersResource_pt extends ListResourceBundle implements Serial
 	/** The resources */
 	static final Object[][] contents =
 	{	// Naive Bayes
-		{"nullPrediction","Distribuição null"},
-		{"exception1","Não é aceito classe numérica!"},
+		{"nullPrediction","DistribuiÃ§Ã£o null"},
+		{"exception1","NÃ£o Ã© aceito classe numï¿½rica!"},
 		{"attribute","Atributo"},
 		{"exception2","menos do que duas classes"},
-		{"exception3","o desvio padrão é 0 para a classe"},
-		{"exception4","o modelo ainda não foi construído"},
+		{"exception3","o desvio padrÃ£o Ã© 0 para a classe"},
+		{"exception4","o modelo ainda nÃ£o foi construï¿½do"},
 		{"class","Classe"},
-		{"mean","Média"},
-		{"stdev","Desvio padrão:"},
+		{"mean","MÃ©dia"},
+		{"stdev","Desvio padrÃ£o:"},
 		{"exception5","Erro ao imprimir o classificador Naive Bayes!"},
 		// Evaluation
 		{"summary","=== Resumo ===\n"},
-		{"correctly",   "Instâncias Corretamente Classificadas   "},
-		{"incorrectly", "Instâncias Incorretamente Classificadas "},
-		{"unclassified","Instâncias Não Classificadas            "},
-		{"totalNumber", "Número Total de Instâncias              "},
-		{"unknownInstances","Instâncias Ignoradas Com Classes Desconhecidas   "},
-		{"folds2","Número de folds deve ser pelo menos 2!"},
-		{"moreFolds","Não pode haver mais folds do que instâncias!"},
-		{"folds1","Número de folds deve ser maior que 1"},
-		{"classNegative","Índice da classe é negativo (não definido)!"},
-		{"noMatrix","Avaliação: A matriz confusão não pode ser construída!"},
-		{"accuracy","=== Acurácia Detalhada por Classe ===\n"},
-		{"matrix","=== Matriz Confusão ===\n"},
+		{"correctly",   "InstÃ¢ncias Corretamente Classificadas   "},
+		{"incorrectly", "InstÃ¢ncias Incorretamente Classificadas "},
+		{"unclassified","InstÃ¢ncias NÃ£o Classificadas            "},
+		{"totalNumber", "NÃºmero Total de InstÃ¢ncias              "},
+		{"unknownInstances","InstÃ¢ncias Ignoradas Com Classes Desconhecidas   "},
+		{"folds2","NÃºmero de folds deve ser pelo menos 2!"},
+		{"moreFolds","NÃ£o pode haver mais folds do que instÃ¢ncias!"},
+		{"folds1","NÃºmero de folds deve ser maior que 1"},
+		{"classNegative","ï¿½ndice da classe ï¿½ negativo (nÃ£o definido)!"},
+		{"noMatrix","AvaliaÃ§Ã£o: A matriz confusÃ£o nÃ£o pode ser construÃ­da!"},
+		{"accuracy","=== AcurÃ¡cia Detalhada por Classe ===\n"},
+		{"matrix","=== Matriz ConfusÃ£o ===\n"},
 		// Id3
-		{ "exception1","Árvore de decisão: Não é aceito classe numérica!"		},
-		{ "exception2","Árvore de decisão: Não é aceito atributos numéricos!"	},
-		{ "exception3","Árvore de decisão: Não são aceitos missing values!" 	},
-		{ "toStringException1","Árvore de decisão: O modelo ainda não foi construído. Tente de novo!"	},
-		{ "id3ToString","ÁRVORE DE DECISÃO:"	},
+		{ "exception1","ï¿½rvore de decisï¿½o: NÃ£o Ã© aceito classe numÃ©rica!"		},
+		{ "exception2","ï¿½rvore de decisï¿½o: NÃ£o Ã© aceito atributos numÃ©ricos!"	},
+		{ "exception3","ï¿½rvore de decisï¿½o: NÃ£o sÃ£o aceitos missing values!" 	},
+		{ "toStringException1","ï¿½rvore de decisï¿½o: O modelo ainda nÃ£o foi construÃ­do. Tente de novo!"	},
+		{ "id3ToString","ï¿½RVORE DE DECISï¿½O:"	},
 		{ "null","null"	},
 		{ "NULL","NULL"	},
 	};

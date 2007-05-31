@@ -43,12 +43,12 @@ public class IoMebnResources_pt extends ListResourceBundle {
 		{"ArgumentTermInError", "Conflito na propriedade Argument Term!"}, 			
 		{"ContextNodeNotExistsInMFrag", "ContextNode nao existe na MFrag!"}, 
 		{"DomainResidentNotExistsInMTheory", "Nodo de dominio residente nao existe na MTheory!"}, 
-		{"DomainResidentNotExistsInDomainMFrag", "Nodo domain Resident n�o existe na DomainMFrag"}, 
+		{"DomainResidentNotExistsInDomainMFrag", "Nodo domain Resident não existe na DomainMFrag"}, 
 		{"GenerativeInputNodeNotExistsInDomainMFrag", "Nodo generative Input nao existe na MTheory"}, 		
-        {"CategoricalStateNotFoundException", "Estado n�o encontrado"}, 
-		{"FileNotFoundException","N�o foi poss�vel abrir o arquivo!"},	  
+        {"CategoricalStateNotFoundException", "Estado não encontrado"}, 
+		{"FileNotFoundException","Não foi possível abrir o arquivo!"},	  
 		{"ErrorReadingFile", "Ocorreu erro ao tentar ler o arquivo"}, 
-		{"BuiltInDontImplemented", "Built-In n�o � implementada no UnBBayes"},
+		{"BuiltInDontImplemented", "Built-In não é implementada no UnBBayes"},
 		{"NoOVariableContextIdentifier", "Não foi encontrado um identificador de escopo da Variável Ordinária no seu nome"}	
 		
 	};
