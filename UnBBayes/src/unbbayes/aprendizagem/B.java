@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -26,10 +26,10 @@ import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
- *   Essa classe implementa os métodos necessários para que
- *   o algoritmo B funcione .O algoritmo k2 é um
- *   algoritmo de aprendizagem que utiliza a busca em pontuaçao. *
- *   @author     Danilo Custódio
+ *   Essa classe implementa os mï¿½todos necessï¿½rios para que
+ *   o algoritmo B funcione .O algoritmo k2 ï¿½ um
+ *   algoritmo de aprendizagem que utiliza a busca em pontuaï¿½ao. *
+ *   @author     Danilo Custï¿½dio
  *   @version    1.0
  *   @see TAprendizagemTollKit
  */
@@ -39,23 +39,24 @@ public class B extends BToolkit{
 
 
     /**
-    * Método que representa a funçao principal do algoritmo B.
-    * Esse método recebe um lista de variáveis, uma matriz com
+    * Mï¿½todo que representa a funï¿½ao principal do algoritmo B.
+    * Esse mï¿½todo recebe um lista de variï¿½veis, uma matriz com
     * os dados do arquivo, uma matriz arranjo que possui a pontu
     * acao de cada para de elemento e a partir disso monta a rede
     * bayseana correspondente aquele arquivo.
     *
-    * @param variaveis Lista de variáveis(<code>List</code>)
-    * @param BaseDados Representaçào do arquivo em memória(<code>byte[][]<code>)
+    * @param variaveis Lista de variï¿½veis(<code>List</code>)
+    * @param BaseDados Representaï¿½ï¿½o do arquivo em memï¿½ria(<code>int[][]<code>)
     * @param vetor     Vetor que indica quantas vezes uma linha do arquivo se repete
     * (<code>int[]<code>)
     * @see LearningNode
     * @see Tnij
     * @see TAprendizagemTollKit
     */
-  public B(NodeList variables, byte[][] dataBase, int[] vector, long caseNumber,
+  public B(NodeList variables, int[][] dataBase, int[] vector, long caseNumber,
                 String metric, String param, boolean compacted){  
-    LearningNode variable;
+    //LearningNode variable;
+	TVariavel variable;
     NodeList parentsAux;
     double gi;
     double gj;
@@ -75,7 +76,8 @@ public class B extends BToolkit{
         constructGMatrix();                
         IJVector = maxMatrix();
     	while(gMatrix[IJVector[0]][IJVector[1]] > 0){ 
-        	variable = (LearningNode)variablesVector.get(IJVector[0]);
+        	//variable = (LearningNode)variablesVector.get(IJVector[0]);
+    		variable = (TVariavel)variablesVector.get(IJVector[0]);
            	parentsAux = variable.getPais();
            	parentsAux.add(variablesVector.get(IJVector[1]));
            	gi = getG(variable,parentsAux);
@@ -90,7 +92,8 @@ public class B extends BToolkit{
            	}
            	for(int i = 0; i < variables.size(); i++){
                 if(gMatrix[IJVector[0]][i] > Double.NEGATIVE_INFINITY){
-                  	if(isMember((LearningNode)variables.get(i),variable.getPais())){
+                  	//if(isMember((LearningNode)variables.get(i),variable.getPais())){
+                	if(isMember((TVariavel)variables.get(i),variable.getPais())){
                       	gMatrix[IJVector[0]][i] = 0;
                    	} else{
                        	parentsAux = SetToolkit.clone(variable.getPais());
