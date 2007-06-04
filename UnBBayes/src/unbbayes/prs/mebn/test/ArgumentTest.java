@@ -3,6 +3,9 @@
  */
 package unbbayes.prs.mebn.test;
 
+import unbbayes.prs.mebn.Argument;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.builtInRV.test.BuiltInRVAndTest;
 import junit.framework.TestCase;
 import junit.framework.Test;
@@ -13,12 +16,19 @@ import junit.framework.TestSuite;
  *
  */
 public class ArgumentTest extends TestCase {
-
+	
+	MultiEntityBayesianNetwork mebn = null;
+	MultiEntityNode node = null;
+	Argument argument = null;
+	
+	
 	/**
 	 * @param arg0
 	 */
 	public ArgumentTest(String arg0) {
 		super(arg0);
+		this.mebn = new MultiEntityBayesianNetwork("TestMEBN");
+		// TODO auto generated stub
 	}
 
 	/* (non-Javadoc)
