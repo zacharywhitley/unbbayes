@@ -276,7 +276,7 @@ public class MFrag implements Graph{
 	 * @todo Eliminar esse metodo! eh utilizado na classe NetWindow
 	 */
 	public NodeList getNodes(){
-		return nodeList; 
+		return this.getNodeList(); 
 	}
 
 	/**
