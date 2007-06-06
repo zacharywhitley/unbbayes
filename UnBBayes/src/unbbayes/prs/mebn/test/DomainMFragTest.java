@@ -3,10 +3,15 @@
  */
 package unbbayes.prs.mebn.test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
+import unbbayes.prs.mebn.DomainResidentNode;
+import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -27,6 +32,7 @@ import junit.framework.TestSuite;
 public class DomainMFragTest extends TestCase {
 
 	MultiEntityBayesianNetwork mebn = null;
+	DomainMFrag mfrag = null;
 	
 	/**
 	 * @param arg0
@@ -41,6 +47,8 @@ public class DomainMFragTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		mebn = new MultiEntityBayesianNetwork("DomainMFragTestMEBN");
+		mfrag = new DomainMFrag("DomainMFragTestMFrag",mebn);
+		
 		
 	}
 
@@ -54,11 +62,11 @@ public class DomainMFragTest extends TestCase {
 	}
 	
 	
+	
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#MFrag(java.lang.String, unbbayes.prs.mebn.MultiEntityBayesianNetwork)}.
 	 */
 	public void testMFrag() {
-		DomainMFrag mfrag = new DomainMFrag("TestConstructor",mebn);
 		assertEquals(mebn.getMFragCount(),1);
 		assertTrue(mebn.getMFragList().contains(mfrag));
 		assertTrue(mebn.getDomainMFragList().contains(mfrag));
@@ -88,7 +96,6 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#getMultiEntityBayesianNetwork()}.
 	 */
 	public void testGetMultiEntityBayesianNetwork() {
-		DomainMFrag mfrag = new DomainMFrag("testGetMultiEntityBayesianNetwork",mebn);
 		MultiEntityBayesianNetwork mebn2 = new MultiEntityBayesianNetwork("testGetMultiEntityBayesianNetworkMEBN");
 		DomainMFrag mfrag2 = new DomainMFrag("testGetMultiEntityBayesianNetwork",mebn2);
 		
@@ -107,7 +114,6 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#addNode(unbbayes.prs.Node)}.
 	 */
 	public void testAddNode() {
-		DomainMFrag mfrag = new DomainMFrag("testAddNode",mebn);
 		Node node = new ResidentNode();
 		Node node2 = new InputNode();
 		Node node3 = new ContextNode("testAddNode",mfrag);
@@ -149,7 +155,6 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#removeNode(unbbayes.prs.Node)}.
 	 */
 	public void testRemoveNode() {
-		DomainMFrag mfrag = new DomainMFrag("testAddNode",mebn);
 		Node node = new ResidentNode();
 		Node node2 = new InputNode();
 		Node node3 = new ContextNode("testAddNode",mfrag);
@@ -200,14 +205,67 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#removeResidentNode(unbbayes.prs.mebn.ResidentNode)}.
 	 */
 	public void testRemoveResidentNode() {
-		fail("addResidentNode is not visible. Impossible to test removeResidentNode"); // TODO
+		DomainResidentNode resident1 = new DomainResidentNode("testRemoveResidentNode",mfrag);
+		DomainResidentNode resident2 = new DomainResidentNode("testRemoveResidentNode",mfrag);
+		
+		assertEquals(mfrag.getNodeCount(),2);
+		assertEquals(mfrag.getDomainResidentNodeCount(),2);
+		assertTrue(mfrag.containsDomainResidentNode(resident1));
+		assertTrue(mfrag.containsDomainResidentNode(resident2));
+		assertTrue(mfrag.containsNode(resident1));
+		assertTrue(mfrag.containsNode(resident2));
+		
+		mfrag.removeDomainResidentNode(resident1);
+		assertEquals(mfrag.getNodeCount(),1);
+		assertEquals(mfrag.getDomainResidentNodeCount(),1);
+		assertTrue(!mfrag.containsDomainResidentNode(resident1));
+		assertTrue(mfrag.containsDomainResidentNode(resident2));
+		assertTrue(!mfrag.containsNode(resident1));
+		assertTrue(mfrag.containsNode(resident2));
+		
+		mfrag.removeDomainResidentNode(resident2);
+		assertEquals(mfrag.getNodeCount(),0);
+		assertEquals(mfrag.getDomainResidentNodeCount(),0);
+		assertTrue(!mfrag.containsDomainResidentNode(resident1));
+		assertTrue(!mfrag.containsDomainResidentNode(resident2));
+		assertTrue(!mfrag.containsNode(resident1));
+		assertTrue(!mfrag.containsNode(resident2));
+		
+		//fail("addResidentNode is not visible. Impossible to test removeResidentNode"); // TODO
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#removeInputNode(unbbayes.prs.mebn.InputNode)}.
 	 */
 	public void testRemoveInputNode() {
-		fail("addInputNode is not visible. Impossible to test removeResidentNode"); // TODO
+		
+		GenerativeInputNode input1 = new GenerativeInputNode("testRemoveResidentNode",mfrag);
+		GenerativeInputNode input2 = new GenerativeInputNode("testRemoveResidentNode",mfrag);
+		
+		assertEquals(mfrag.getNodeCount(),2);
+		assertEquals(mfrag.getGenerativeInputNodeCount(),2);
+		assertTrue(mfrag.containsGenerativeInputNode(input1));
+		assertTrue(mfrag.containsGenerativeInputNode(input2));
+		assertTrue(mfrag.containsNode(input1));
+		assertTrue(mfrag.containsNode(input2));
+		
+		mfrag.removeGenerativeInputNode(input1);
+		assertEquals(mfrag.getNodeCount(),1);
+		assertEquals(mfrag.getGenerativeInputNodeCount(),1);
+		assertTrue(!mfrag.containsGenerativeInputNode(input1));
+		assertTrue(mfrag.containsGenerativeInputNode(input2));
+		assertTrue(!mfrag.containsNode(input1));
+		assertTrue(mfrag.containsNode(input2));
+		
+		mfrag.removeGenerativeInputNode(input2);
+		assertEquals(mfrag.getNodeCount(),0);
+		assertEquals(mfrag.getGenerativeInputNodeCount(),0);
+		assertTrue(!mfrag.containsGenerativeInputNode(input1));
+		assertTrue(!mfrag.containsGenerativeInputNode(input2));
+		assertTrue(!mfrag.containsNode(input1));
+		assertTrue(!mfrag.containsNode(input2));
+		
+		//fail("addInputNode is not visible. Impossible to test removeResidentNode"); // TODO
 	}
 
 	
@@ -219,7 +277,6 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#containsOrdinaryVariable(unbbayes.prs.mebn.OrdinaryVariable)}.
 	 */
 	public void testAddRemoveOrdinaryVariableNum() {
-		DomainMFrag mfrag = new DomainMFrag("testGetOrdinaryVariableNum", mebn);
 		OrdinaryVariable ov1 = new OrdinaryVariable("ov1",Type.typeCategoryLabel,mfrag);
 		OrdinaryVariable ov2 = new OrdinaryVariable("ov1",Type.typeCategoryLabel,mfrag);
 		OrdinaryVariable ov3 = new OrdinaryVariable("ov1",Type.typeCategoryLabel,mfrag);
@@ -282,7 +339,6 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#getOrdinaryVariableList()}.
 	 */
 	public void testGetOrdinaryVariableList() {
-		DomainMFrag mfrag = new DomainMFrag("testGetOrdinaryVariableNum", mebn);
 		OrdinaryVariable ov1 = new OrdinaryVariable("ov1",Type.typeCategoryLabel,mfrag);
 		OrdinaryVariable ov2 = new OrdinaryVariable("ov1",Type.typeCategoryLabel,mfrag);
 		OrdinaryVariable ov3 = new OrdinaryVariable("ov1",Type.typeCategoryLabel,mfrag);
@@ -305,7 +361,6 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#containsNode(unbbayes.prs.Node)}.
 	 */
 	public void testContainsNode() {
-		DomainMFrag mfrag = new DomainMFrag("testAddNode",mebn);
 		Node node = new ResidentNode();
 		Node node2 = new InputNode();
 		Node node3 = new ContextNode("testAddNode",mfrag);
@@ -349,7 +404,6 @@ public class DomainMFragTest extends TestCase {
 		 * 
 		 */
 		
-		DomainMFrag mfrag = new DomainMFrag("testAddNode",mebn);
 		Node node1 = new ResidentNode();
 		Node node2 = new InputNode();
 		Node node3 = new ResidentNode();
@@ -397,7 +451,6 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#getNodes()}.
 	 */
 	public void testGetNodes() {
-		DomainMFrag mfrag = new DomainMFrag("testAddNode",mebn);
 		Node node = new ResidentNode();
 		Node node2 = new InputNode();
 		Node node3 = new ContextNode("testAddNode",mfrag);
@@ -437,7 +490,6 @@ public class DomainMFragTest extends TestCase {
 		 * 
 		 */
 		
-		DomainMFrag mfrag = new DomainMFrag("testAddNode",mebn);
 		Node node1 = new ResidentNode();
 		Node node2 = new InputNode();
 		Node node3 = new ResidentNode();
@@ -529,44 +581,155 @@ public class DomainMFragTest extends TestCase {
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#hasEdge(unbbayes.prs.Node, unbbayes.prs.Node)}.
+	 * Test method for {@link unbbayes.prs.mebn.MFrag#addEdge(Edge)}.
+	 *
 	 */
 	public void testHasEdge() {
-		fail("Not yet implemented"); // TODO
+		/*
+		 * 			________________
+		 * 			|	Node2		|
+		 * 			-----------------
+		 * 				|			\
+		 * 				|		 	 \
+		 * 				V			  \
+		 * 		______________		   \
+		 * 		|	Node1	  |			\
+		 * 		--------------			|
+		 * 				\				|
+		 * 				 \				|
+		 * 				  \				|
+		 * 				  V				V
+		 * 				__________________
+		 * 				|	Node3		  |
+		 * 				-------------------
+		 * 
+		 */
+		
+		Node node1 = new ResidentNode();
+		Node node2 = new InputNode();
+		Node node3 = new ResidentNode();
+		
+		Edge edge21 = new Edge(node2,node1);
+		Edge edge23 = new Edge(node2,node3);
+		Edge edge13 = new Edge(node1,node3);
+		
+		try {
+			mfrag.addEdge(edge21);
+			mfrag.addEdge(edge23);
+			mfrag.addEdge(edge13);
+		} catch (Exception e) {
+			fail (e.getMessage());
+		}
+		
+		int edgePos = -1;
+		assertTrue((mfrag.hasEdge(node1,node1)) < 0);
+		assertTrue((mfrag.hasEdge(node1,node2)) < 0);
+		assertTrue((edgePos = mfrag.hasEdge(node1,node3)) >= 0);
+		assertEquals(mfrag.getEdges().get(edgePos),edge13);
+		
+		edgePos = -1;
+		assertTrue((edgePos = mfrag.hasEdge(node2,node1)) >= 0);
+		assertEquals(mfrag.getEdges().get(edgePos),edge21);
+		assertTrue((mfrag.hasEdge(node2,node2)) < 0);
+		assertTrue((edgePos = mfrag.hasEdge(node2,node3)) >= 0);
+		assertEquals(mfrag.getEdges().get(edgePos),edge23);
+		
+		assertTrue((mfrag.hasEdge(node3,node1)) < 0);
+		assertTrue((mfrag.hasEdge(node3,node2)) < 0);
+		assertTrue((mfrag.hasEdge(node3,node3)) < 0);
+		
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#getInputNodeList()}.
 	 */
 	public void testGetInputNodeList() {
-		fail("Not yet implemented"); // TODO
+		Node node1 = new ResidentNode();
+		Node node2 = new GenerativeInputNode("node2",mfrag);
+		Node node3 = new ResidentNode();
+		
+		
+		
+		assertTrue(mfrag.getInputNodeList().contains(node2));
+		assertTrue(!mfrag.getInputNodeList().contains(node1));
+		assertTrue(!mfrag.getInputNodeList().contains(node3));
+		
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#setInputNodeList(java.util.List)}.
 	 */
 	public void testSetInputNodeList() {
-		fail("Not yet implemented"); // TODO
+		DomainMFrag placeholder = new DomainMFrag("placeholder",mebn);
+		GenerativeInputNode node1 = new GenerativeInputNode("node1",mfrag);
+		GenerativeInputNode node2 = new GenerativeInputNode("node2",placeholder);
+		GenerativeInputNode node3 = new GenerativeInputNode("node3",placeholder);
+		List<InputNode> list = new ArrayList<InputNode>();
+		
+		assertTrue(mfrag.containsGenerativeInputNode(node1));
+		assertTrue(!mfrag.containsGenerativeInputNode(node2));
+		assertTrue(!mfrag.containsGenerativeInputNode(node3));
+		
+		list.add(node2);
+		list.add(node3);
+		mfrag.setInputNodeList(list);
+		
+		assertEquals(mfrag.getGenerativeInputNodeList(),list);
+		
+		assertTrue(!mfrag.containsGenerativeInputNode(node1));
+		assertTrue(mfrag.containsGenerativeInputNode(node2));
+		assertTrue(mfrag.containsGenerativeInputNode(node3));
+		
+		
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#getResidentNodeList()}.
 	 */
 	public void testGetResidentNodeList() {
-		fail("Not yet implemented"); // TODO
+		Node node1 = new ResidentNode();
+		Node node2 = new GenerativeInputNode("node2",mfrag);
+		Node node3 = new ResidentNode();
+				
+		
+		assertTrue(mfrag.getResidentNodeList().contains(node1));
+		assertTrue(!mfrag.getResidentNodeList().contains(node2));
+		assertTrue(mfrag.getResidentNodeList().contains(node3));
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#setResidentNodeList(java.util.List)}.
 	 */
 	public void testSetResidentNodeList() {
-		fail("Not yet implemented"); // TODO
+		DomainMFrag placeholder = new DomainMFrag("placeholder",mebn);
+		DomainResidentNode node1 = new DomainResidentNode("node1",mfrag);
+		DomainResidentNode node2 = new DomainResidentNode("node2",placeholder);
+		DomainResidentNode node3 = new DomainResidentNode("node3",placeholder);
+		List<ResidentNode> list = new ArrayList<ResidentNode>();
+		
+		assertTrue(mfrag.containsDomainResidentNode(node1));
+		assertTrue(!mfrag.containsDomainResidentNode(node2));
+		assertTrue(!mfrag.containsDomainResidentNode(node3));
+		
+		list.add(node2);
+		list.add(node3);
+		mfrag.setResidentNodeList(list);
+		
+		assertEquals(mfrag.getGenerativeInputNodeList(),list);
+		
+		assertTrue(!mfrag.containsDomainResidentNode(node1));
+		assertTrue(mfrag.containsDomainResidentNode(node2));
+		assertTrue(mfrag.containsDomainResidentNode(node3));
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#setOrdinaryVariableNum(int)}.
 	 */
 	public void testSetOrdinaryVariableNum() {
-		fail("Not yet implemented"); // TODO
+		int i = (int)Math.random()*100;
+		mfrag.setOrdinaryVariableNum(i);
+		assertEquals(mfrag.getOrdinaryVariableNum(),i);
+		
 	}
 
 	
@@ -576,77 +739,149 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.DomainMFrag#delete()}.
 	 */
 	public void testDelete() {
-		fail("Not yet implemented"); // TODO
+		DomainResidentNode resident = new DomainResidentNode("resident",mfrag);
+		GenerativeInputNode input = new GenerativeInputNode("input",mfrag);
+		ContextNode context = new ContextNode("context",mfrag);
+		OrdinaryVariable ov1 = new OrdinaryVariable("typeBoolean",Type.typeBoolean,mfrag);
+		OrdinaryVariable ov2 = new OrdinaryVariable("typeCategoryLabel",Type.typeCategoryLabel,mfrag);
+		OrdinaryVariable ov3 = new OrdinaryVariable("typeLabel",Type.typeLabel,mfrag);
+		
+		mfrag.delete();
+		
+		assertNull(resident.getMFrag());
+		assertNull(input.getMFrag());
+		assertNull(context.getMFrag());
+		assertNull(ov1.getMFrag());
+		assertNull(ov2.getMFrag());
+		assertNull(ov3.getMFrag());
+		
+		assertEquals(mfrag.getNodeCount(),0);
+		assertEquals(mfrag.getDomainResidentNodeCount(),0);
+		assertEquals(mfrag.getGenerativeInputNodeCount(),0);
+		assertEquals(mfrag.getContextNodeCount(),0);
+		assertEquals(mfrag.getOrdinaryVariableList().size(),0);
+		
+		assertTrue(!mfrag.containsDomainResidentNode(resident));
+		assertTrue(!mfrag.containsGenerativeInputNode(input));
+		assertTrue(!mfrag.containsContextNode(context));
+		assertTrue(!mfrag.containsOrdinaryVariable(ov1));
+		assertTrue(!mfrag.containsOrdinaryVariable(ov2));
+		assertTrue(!mfrag.containsOrdinaryVariable(ov3));
+		
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.DomainMFrag#addOrdinaryVariable(unbbayes.prs.mebn.OrdinaryVariable)}.
 	 */
 	public void testAddOrdinaryVariable() {
-		fail("Not yet implemented"); // TODO
+		DomainMFrag temp = new DomainMFrag("testAddOrdinaryVariable",mebn);
+		OrdinaryVariable ov = new OrdinaryVariable("ov",Type.typeBoolean,temp);
+		int ovCount = mfrag.getOrdinaryVariableNum();
+		
+		mfrag.addOrdinaryVariable(ov);
+		assertEquals(mfrag.getOrdinaryVariableNum(),ovCount + 1);
+		assertTrue(mfrag.containsOrdinaryVariable(ov));
+		assertEquals(ov.getMFrag(),mfrag);
+		
+		
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.DomainMFrag#removeOrdinaryVariable(unbbayes.prs.mebn.OrdinaryVariable)}.
 	 */
 	public void testRemoveOrdinaryVariable() {
-		fail("Not yet implemented"); // TODO
+		OrdinaryVariable ov = new OrdinaryVariable("ov",Type.typeBoolean,mfrag);
+		
+		mfrag.removeOrdinaryVariable(ov);
+		assertTrue(!mfrag.containsOrdinaryVariable(ov));
+		assertTrue(!ov.getMFrag().equals(mfrag));
+		
 	}
 
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.DomainMFrag#addEdge(unbbayes.prs.Edge)}.
-	 */
-	public void testAddEdge() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.DomainMFrag#DomainMFrag(java.lang.String, unbbayes.prs.mebn.MultiEntityBayesianNetwork)}.
-	 */
-	public void testDomainMFrag() {
-		fail("Not yet implemented"); // TODO
-	}
+	
+	
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.DomainMFrag#addContextNode(unbbayes.prs.mebn.ContextNode)}.
 	 */
 	public void testAddContextNode() {
-		fail("Not yet implemented"); // TODO
+		DomainMFrag temp = new DomainMFrag("testAddOrdinaryVariable",mebn);
+		ContextNode context = new ContextNode("context",temp);
+		
+		mfrag.addContextNode(context);
+		assertEquals(mfrag.getContextNodeCount(),1);
+		assertEquals(mfrag.getContextNodeNum(),1);
+		assertTrue(mfrag.containsContextNode(context));
+		assertTrue(mfrag.containsNode(context));
+		assertEquals(context.getMFrag(),mfrag);
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.DomainMFrag#addGenerativeInputNode(unbbayes.prs.mebn.GenerativeInputNode)}.
 	 */
 	public void testAddGenerativeInputNode() {
-		fail("Not yet implemented"); // TODO
+
+		DomainMFrag temp = new DomainMFrag("testAddOrdinaryVariable",mebn);
+		GenerativeInputNode node = new GenerativeInputNode("node",temp);
+		
+		mfrag.addGenerativeInputNode(node);
+		assertEquals(mfrag.getGenerativeInputNodeCount(),1);
+		assertEquals(mfrag.getGenerativeInputNodeNum(),1);
+		assertTrue(mfrag.containsGenerativeInputNode(node));
+		assertTrue(mfrag.containsNode(node));
+		assertEquals(node.getMFrag(),mfrag);
+		
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.DomainMFrag#addDomainResidentNode(unbbayes.prs.mebn.DomainResidentNode)}.
 	 */
 	public void testAddDomainResidentNode() {
-		fail("Not yet implemented"); // TODO
+		DomainMFrag temp = new DomainMFrag("testAddOrdinaryVariable",mebn);
+		DomainResidentNode node = new DomainResidentNode("node",temp);
+		
+		mfrag.addDomainResidentNode(node);
+		assertEquals(mfrag.getDomainResidentNodeCount(),1);
+		assertEquals(mfrag.getDomainResidentNodeNum(),1);
+		assertTrue(mfrag.containsDomainResidentNode(node));
+		assertTrue(mfrag.containsNode(node));
+		assertEquals(node.getMFrag(),mfrag);
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.DomainMFrag#removeContextNode(unbbayes.prs.mebn.ContextNode)}.
 	 */
 	public void testRemoveContextNode() {
-		fail("Not yet implemented"); // TODO
+		ContextNode node = new ContextNode("node",mfrag);
+		
+		mfrag.removeContextNode(node);
+		assertTrue(!mfrag.containsContextNode(node));
+		assertTrue(!mfrag.containsNode(node));
+		assertTrue(!node.getMFrag().equals(mfrag));
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.DomainMFrag#removeGenerativeInputNode(unbbayes.prs.mebn.GenerativeInputNode)}.
 	 */
 	public void testRemoveGenerativeInputNode() {
-		fail("Not yet implemented"); // TODO
+		GenerativeInputNode node = new GenerativeInputNode("node",mfrag);
+		
+		mfrag.removeGenerativeInputNode(node);
+		assertTrue(!mfrag.containsGenerativeInputNode(node));
+		assertTrue(!mfrag.containsNode(node));
+		assertTrue(!node.getMFrag().equals(mfrag));
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.DomainMFrag#removeDomainResidentNode(unbbayes.prs.mebn.DomainResidentNode)}.
 	 */
 	public void testRemoveDomainResidentNode() {
-		fail("Not yet implemented"); // TODO
+		DomainResidentNode node = new DomainResidentNode("node",mfrag);
+		
+		mfrag.removeDomainResidentNode(node);
+		assertTrue(!mfrag.containsDomainResidentNode(node));
+		assertTrue(!mfrag.containsNode(node));
+		assertTrue(!node.getMFrag().equals(mfrag));
 	}
 
 	/**
