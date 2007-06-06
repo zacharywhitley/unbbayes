@@ -3,12 +3,22 @@
  */
 package unbbayes.prs.mebn.test;
 
+import java.util.Iterator;
 import java.util.List;
 
+import com.hp.hpl.jena.reasoner.rdfsReasoner1.AssertFRule;
+
+import unbbayes.prs.Node;
+import unbbayes.prs.mebn.BuiltInRV;
+import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
+import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.FindingMFrag;
+import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVAnd;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVEqualTo;
 import unbbayes.prs.mebn.builtInRV.test.BuiltInRVAndTest;
 import unbbayes.prs.mebn.exception.MEBNException;
 import junit.framework.TestCase;
@@ -159,162 +169,176 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getMFragList()}.
 	 */
 	public void testGetMFragList() {
-		fail("Not yet implemented"); // TODO
+		MFrag mfrag1 = new DomainMFrag("mfrag",mebn);
+		MFrag mfrag2 = new FindingMFrag("finding",mebn);
+		MFrag mfrag3 = new DomainMFrag("mfrag",mebn);
+		MFrag mfrag4 = new FindingMFrag("finding",mebn);
+		
+		
+		assertTrue(mebn.getMFragList().contains(mfrag1));
+		assertEquals(mebn.getMFragList().get(mebn.getMFragList().indexOf(mfrag1)),mfrag1);
+		
+		assertTrue(mebn.getMFragList().contains(mfrag2));
+		assertEquals(mebn.getMFragList().get(mebn.getMFragList().indexOf(mfrag2)),mfrag2);
+		
+		assertTrue(mebn.getMFragList().contains(mfrag3));
+		assertEquals(mebn.getMFragList().get(mebn.getMFragList().indexOf(mfrag3)),mfrag3);
+		
+		assertTrue(mebn.getMFragList().contains(mfrag4));
+		assertEquals(mebn.getMFragList().get(mebn.getMFragList().indexOf(mfrag4)),mfrag4);
+		
+		
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getDomainMFragList()}.
 	 */
 	public void testGetDomainMFragList() {
-		fail("Not yet implemented"); // TODO
+		MFrag mfrag1 = new DomainMFrag("mfrag",mebn);
+		MFrag mfrag2 = new FindingMFrag("finding",mebn);
+		MFrag mfrag3 = new DomainMFrag("mfrag",mebn);
+		MFrag mfrag4 = new FindingMFrag("finding",mebn);
+		
+		assertTrue(mebn.getDomainMFragList().contains(mfrag1));
+		assertEquals(mebn.getDomainMFragList().get(mebn.getMFragList().indexOf(mfrag1)),mfrag1);
+		
+		assertTrue(!mebn.getDomainMFragList().contains(mfrag2));
+		
+		assertTrue(mebn.getDomainMFragList().contains(mfrag3));
+		assertEquals(mebn.getDomainMFragList().get(mebn.getDomainMFragList().indexOf(mfrag3)),mfrag3);
+		
+		assertTrue(!mebn.getDomainMFragList().contains(mfrag4));
+		
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getFindingMFragList()}.
 	 */
 	public void testGetFindingMFragList() {
-		fail("Not yet implemented"); // TODO
+		MFrag mfrag1 = new DomainMFrag("mfrag",mebn);
+		MFrag mfrag2 = new FindingMFrag("finding",mebn);
+		MFrag mfrag3 = new DomainMFrag("mfrag",mebn);
+		MFrag mfrag4 = new FindingMFrag("finding",mebn);
+		
+		
+		assertTrue(!mebn.getFindingMFragList().contains(mfrag1));
+		
+		assertTrue(mebn.getFindingMFragList().contains(mfrag2));
+		assertEquals(mebn.getFindingMFragList().get(mebn.getFindingMFragList().indexOf(mfrag2)),mfrag2);
+		
+		assertTrue(!mebn.getFindingMFragList().contains(mfrag3));
+		
+		assertTrue(mebn.getFindingMFragList().contains(mfrag4));
+		assertEquals(mebn.getFindingMFragList().get(mebn.getFindingMFragList().indexOf(mfrag4)),mfrag4);
+		
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getMFragCount()}.
 	 */
 	public void testGetMFragCount() {
-		fail("Not yet implemented"); // TODO
+		MFrag mfrag1 = new DomainMFrag("mfrag",mebn);
+		MFrag mfrag2 = new FindingMFrag("finding",mebn);
+		MFrag mfrag3 = new DomainMFrag("mfrag",mebn);
+		MFrag mfrag4 = new FindingMFrag("finding",mebn);
+		
+		assertEquals(mebn.getMFragCount(),4);
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getCurrentMFrag()}.
 	 */
 	public void testGetCurrentMFrag() {
-		fail("Not yet implemented"); // TODO
+		assertNull(mebn.getCurrentMFrag());
+		
+		DomainMFrag mfrag = new DomainMFrag("mfrag",this.tempMebn);
+		
+		mebn.addDomainMFrag(mfrag);		
+		assertEquals(mebn.getCurrentMFrag(),mfrag);
+		
+		mebn.removeDomainMFrag(mfrag);
+		assertNull(mebn.getCurrentMFrag());
+		
+		mebn.setCurrentMFrag(mfrag);
+		assertEquals(mebn.getCurrentMFrag(),mfrag);
 	}
 
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#setCurrentMFrag(unbbayes.prs.mebn.MFrag)}.
-	 */
-	public void testSetCurrentMFrag() {
-		fail("Not yet implemented"); // TODO
-	}
+	
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getBuiltInRVList()}.
 	 */
 	public void testGetBuiltInRVList() {
-		fail("Not yet implemented"); // TODO
+		BuiltInRV built1 = new BuiltInRVAnd();
+		BuiltInRV built2 = new BuiltInRVEqualTo();
+
+		assertTrue(!mebn.getBuiltInRVList().contains(built1));
+				
+		
+		mebn.addBuiltInRVList(built1);
+		mebn.addBuiltInRVList(built2);
+		
+		assertTrue(mebn.getBuiltInRVList().contains(built1));
+		assertTrue(mebn.getBuiltInRVList().contains(built2));
+		
+		assertEquals(mebn.getBuiltInRVList().get(mebn.getBuiltInRVList().indexOf(built1)),built1);
+		assertEquals(mebn.getBuiltInRVList().get(mebn.getBuiltInRVList().indexOf(built2)),built2);
+		
+		
+		
 	}
 
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#addBuiltInRVList(unbbayes.prs.mebn.BuiltInRV)}.
-	 */
-	public void testAddBuiltInRVList() {
-		fail("Not yet implemented"); // TODO
-	}
-
+	
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getNodeList()}.
 	 */
 	public void testGetNodeList() {
-		fail("Not yet implemented"); // TODO
+		MFrag dmfrag = new DomainMFrag("mfrag",mebn);
+		
+		Node node1 = new DomainResidentNode("resident",(DomainMFrag)dmfrag);
+		Node node2 = new InputNode();
+		mebn.addNode(node2);
+		Node node3 = new ContextNode("context",(DomainMFrag)dmfrag);
+		
+		assertNotNull(mebn.getNodeList());
+		assertTrue(mebn.getNodeList().contains(node1));
+		assertTrue(mebn.getNodeList().contains(node2));
+		assertTrue(mebn.getNodeList().contains(node3));
+		
+		
+		MFrag dmfrag2 = new DomainMFrag("mfrag",tempMebn);
+		Node node4 = new DomainResidentNode("resident",(DomainMFrag)dmfrag2);
+		assertTrue(!mebn.getNodeList().contains(node4));
+		
+		dmfrag.addNode(node4);
+		assertTrue(mebn.getNodeList().contains(node4));
+		
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getDomainMFragNum()}.
 	 */
 	public void testGetDomainMFragNum() {
-		fail("Not yet implemented"); // TODO
+		MFrag mfrag1 = new DomainMFrag("mfrag",mebn);
+		MFrag mfrag2 = new FindingMFrag("finding",mebn);
+		MFrag mfrag3 = new DomainMFrag("mfrag",mebn);
+		MFrag mfrag4 = new FindingMFrag("finding",mebn);
+		
+		assertEquals(mebn.getDomainMFragNum(),2);
+		
+		mebn.removeDomainMFrag((DomainMFrag)mfrag3);
+		assertEquals(mebn.getDomainMFragNum(),1);
+		mebn.removeFindingMFrag((FindingMFrag)mfrag4);
+		assertEquals(mebn.getDomainMFragNum(),1);
+		
+		mebn.addDomainMFrag((DomainMFrag)mfrag3);
+		assertEquals(mebn.getDomainMFragNum(),2);
+		
+		mebn.addFindingMFrag((FindingMFrag)mfrag4);
+		assertEquals(mebn.getDomainMFragNum(),2);
 	}
 
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getContextNodeNum()}.
-	 */
-	public void testGetContextNodeNum() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#setContextNodeNum(int)}.
-	 */
-	public void testSetContextNodeNum() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#plusContextNodeNul()}.
-	 */
-	public void testPlusContextNodeNul() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getDomainResidentNodeNum()}.
-	 */
-	public void testGetDomainResidentNodeNum() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#setDomainResidentNodeNum(int)}.
-	 */
-	public void testSetDomainResidentNodeNum() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#plusDomainResidentNodeNum()}.
-	 */
-	public void testPlusDomainResidentNodeNum() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getGenerativeInputNodeNum()}.
-	 */
-	public void testGetGenerativeInputNodeNum() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#setGenerativeInputNodeNum(int)}.
-	 */
-	public void testSetGenerativeInputNodeNum() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#plusGenerativeInputNodeNum()}.
-	 */
-	public void testPlusGenerativeInputNodeNum() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getEntityNum()}.
-	 */
-	public void testGetEntityNum() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#setEntityNum(int)}.
-	 */
-	public void testSetEntityNum() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#plusEntityNul()}.
-	 */
-	public void testPlusEntityNul() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#setDomainMFragNum(int)}.
-	 */
-	public void testSetDomainMFragNum() {
-		fail("Not yet implemented"); // TODO
-	}
+	// Getters, setters and simple integer adders are not tested
 
 	/**
 	 *  Use this for test suite creation

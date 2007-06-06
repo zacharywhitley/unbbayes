@@ -8,6 +8,7 @@ public class FindingMFrag extends MFrag {
 	
 	public FindingMFrag(String name, MultiEntityBayesianNetwork mebn) {
 		super(name, mebn);
+		mebn.addFindingMFrag(this);
 	}
 }
  

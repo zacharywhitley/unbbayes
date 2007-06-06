@@ -34,6 +34,8 @@ public class DomainMFrag extends MFrag {
 		contextNodeList = new ArrayList<ContextNode>();
 		inputNodeList = new ArrayList<GenerativeInputNode>();
 		residentNodeList = new ArrayList<DomainResidentNode>();
+		
+		mebn.addDomainMFrag(this);
 	}
 
 	/**
