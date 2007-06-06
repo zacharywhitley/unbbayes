@@ -3,6 +3,7 @@
  */
 package unbbayes.prs.mebn.test;
 
+import unbbayes.prs.mebn.FindingMFrag;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.builtInRV.test.BuiltInRVAndTest;
@@ -21,7 +22,7 @@ public class FindingMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#MFrag(java.lang.String, unbbayes.prs.mebn.MultiEntityBayesianNetwork)}.
 	 */
 	public void testMFrag() {
-		MFrag mfrag = new MFrag("TestConstructor",mebn);
+		MFrag mfrag = new FindingMFrag("TestConstructor",mebn);
 	}
 
 	/**
