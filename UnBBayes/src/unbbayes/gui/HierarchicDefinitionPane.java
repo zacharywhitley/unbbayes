@@ -28,7 +28,7 @@ import unbbayes.prs.bn.SingleEntityNetwork;
 
 
 /**
- * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ * @author MÃ¡rio Henrique Paes Vieira (mariohpv@bol.com.br)
  * @version $1.0 $ (04/11/2002)
  */
 
@@ -74,10 +74,10 @@ public class HierarchicDefinitionPane extends JPanel
     topPanel       = new JPanel(new GridLayout(0,1));
     centerPanel    = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
     bottomPanel    = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 1));
-    statusBar      = new JLabel("Definição da hierarquia");
+    statusBar      = new JLabel("Definicao da hierarquia");
     hierarchicTree = net.getHierarchicTree();
 
-    //cria botões que serão usados nodeList toolbars
+    //cria botoes que serao usados nodeList toolbars
     deleteButton        = new JButton(iconController.getDeleteFolderIcon());
     renameButton        = new JButton(iconController.getRenameFolderIcon());
     addFolderButton     = new JButton(iconController.getAddFolderIcon());
@@ -85,7 +85,7 @@ public class HierarchicDefinitionPane extends JPanel
     edit                = new JButton(iconController.getEditIcon());
     collapse            = new JButton(iconController.getColapseIcon());
 
-    //seta tooltip para esses botões
+    //seta tooltip para esses botoes
     deleteButton.setToolTipText("Delete Folder");
     renameButton.setToolTipText("Rename Folder");
     addFolderButton.setToolTipText("Add Folder");
@@ -141,7 +141,7 @@ public class HierarchicDefinitionPane extends JPanel
       }
     });
 
-    //trata os eventos de mouse para a árvore de hierarquia
+    //trata os eventos de mouse para a arvore de hierarquia
     hierarchicTree.addMouseListener(new MouseAdapter()
     {
       private int oldRow = -1;
@@ -169,7 +169,7 @@ public class HierarchicDefinitionPane extends JPanel
       }
     });
 
-    //coloca botões no toolbar e edte no painel principal
+    //coloca botoes no toolbar e edte no painel principal
     jToolBar.add(expand);
     jToolBar.add(collapse);
 
@@ -193,14 +193,14 @@ public class HierarchicDefinitionPane extends JPanel
     centerPanel.add(descriptionScrollPane,JSplitPane.TOP);
     centerPanel.add(explanationScrollPane,JSplitPane.BOTTOM);
 
-    // Definição da árvore de explanação
+    // Definicao da arvore de explanacao
     DefaultMutableTreeNode root = new DefaultMutableTreeNode("root");
     DefaultTreeModel explanationModel = new DefaultTreeModel(root);
     explanationTree = new HierarchicTree(explanationModel);
 
     explanationScrollPane.getViewport().add(explanationTree, null);
 
-    //trata os eventos de mouse para a árvore de explanação
+    //trata os eventos de mouse para a arvore de explanacao
     explanationTree.addMouseListener(new MouseAdapter()
     {
       private int oldRow = -1;
