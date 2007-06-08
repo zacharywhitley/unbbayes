@@ -39,7 +39,7 @@ import unbbayes.util.ArrayMap;
 import unbbayes.util.NodeList;
 
 /**
- * @author Mário Henrique Paes Vieira
+ * @author MÃ¡rio Henrique Paes Vieira
  * @version 1.0
  */
 
@@ -163,7 +163,7 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
   }
 
   /**
-     *  Expande todos os nós da árvore.
+     *  Expande todos os nos da arvore.
      *
      * @see            JTree
      */
@@ -174,7 +174,7 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
     }
 
     /**
-     *  Retrai todos os nós da árvore.
+     *  Retrai todos os nos da arvore.
      *
      * @see            JTree
      */

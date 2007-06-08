@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasilia
  *
  *  This file is part of UnbBayes.
  *
@@ -89,7 +89,7 @@ public class NetworkWindow extends JInternalFrame {
 		contentPane.setLayout(card);
 		setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
 
-		// instancia variáveis de instância
+		// instancia variaveis de instancia
 		graphViewport = new JViewport();
 		if (net instanceof SingleEntityNetwork)
 			controller = new NetworkController((SingleEntityNetwork)net, this);
@@ -113,7 +113,7 @@ public class NetworkWindow extends JInternalFrame {
 						(int) (graphPane.getBiggestPoint().getX() + width),
 						(int) (graphPane.getBiggestPoint().getY() + height)));
 
-		// setar o conteúdo e o tamanho do graphViewport
+		// setar o conteudo e o tamanho do graphViewport
 		graphViewport.setView(graphPane);
 		graphViewport.setSize(800, 600);
 
@@ -167,7 +167,7 @@ public class NetworkWindow extends JInternalFrame {
 	}
 
 	/**
-	 * Retorna o grafo responsável pela representação gráfica da rede.
+	 * Retorna o grafo responsavel pela representacao grafica da rede.
 	 * 
 	 * @return retorna o (<code>GraphPane</code>)
 	 * @see GraphPane
@@ -177,7 +177,7 @@ public class NetworkWindow extends JInternalFrame {
 	}
 
 	/**
-	 * Retorna a árvore de evidencias.
+	 * Retorna a arvore de evidencias.
 	 * 
 	 * @return retorna o evidenceTree (<code>JTree</code>)
 	 * @see JTree
@@ -188,7 +188,7 @@ public class NetworkWindow extends JInternalFrame {
 
 	/**
 	 * Retorna o container, graphViewport (<code>JViewport</code>), que
-	 * contem o grafo responsável pela representação gráfica da rede.
+	 * contem o grafo responsavel pela representacao grafica da rede.
 	 * 
 	 * @return retorna o graphViewport(<code>JViewport</code>)
 	 * @see JViewport
@@ -208,9 +208,9 @@ public class NetworkWindow extends JInternalFrame {
 	}
 
 	/**
-	 * Retorna o text field da descrição do nó.
+	 * Retorna o text field da descricao do no.
 	 * 
-	 * @return retorna a txtDescrição (<code>JTextField</code>)
+	 * @return retorna a txtDescricao (<code>JTextField</code>)
 	 * @see JTextField
 	 */
 	public JTextField getTxtDescription() {
@@ -218,7 +218,7 @@ public class NetworkWindow extends JInternalFrame {
 	}
 
 	/**
-	 * Retorna o text field da sigla do nó.
+	 * Retorna o text field da sigla do no.
 	 * 
 	 * @return retorna a txtSigla (<code>JTextField</code>)
 	 * @see JTextField
@@ -249,7 +249,7 @@ public class NetworkWindow extends JInternalFrame {
 	}
 
 	/**
-	 * Retorna o painel da árvore.
+	 * Retorna o painel da arvore.
 	 * 
 	 * @return retorna o jspTree (<code>JScrollPane</code>)
 	 * @see JScrollPane
@@ -267,9 +267,9 @@ public class NetworkWindow extends JInternalFrame {
 	}
 
 	/**
-	 * Retorna a rede probabilística <code>(ProbabilisticNetwork)</code>
+	 * Retorna a rede probabil_stica <code>(ProbabilisticNetwork)</code>
 	 * 
-	 * @return a rede probabilística
+	 * @return a rede probabil_stica
 	 * @see ProbabilisticNetwork
 	 */
 	public SingleEntityNetwork getSingleEntityNetwork() {
@@ -277,9 +277,9 @@ public class NetworkWindow extends JInternalFrame {
 	}
 	
 	/**
-	 * Retorna a rede probabilística <code>(ProbabilisticNetwork)</code>
+	 * Retorna a rede probabil_stica <code>(ProbabilisticNetwork)</code>
 	 * 
-	 * @return a rede probabilística
+	 * @return a rede probabil_stica
 	 * @see ProbabilisticNetwork
 	 */
 	public MultiEntityBayesianNetwork getMultiEntityBayesianNetwork() {
@@ -299,8 +299,8 @@ public class NetworkWindow extends JInternalFrame {
 	}
 
 	/**
-	 * Método responsável por fazer as alterações necessárias para a mudar da
-	 * tela de edição para a de compilação.
+	 * M_todo respons_vel por fazer as altera__es necess_rias para a mudar da
+	 * tela de edi__o para a de compila__o.
 	 */
 	public void changeToPNCompilationPane() {
 
@@ -322,8 +322,8 @@ public class NetworkWindow extends JInternalFrame {
 	}
 
 	/**
-	 * Método responsável por fazer as alterações necessárias para a mudar da
-	 * tela de compilação para a de edição.
+	 * M_todo respons_vel por fazer as altera__es necess_rias para a mudar da
+	 * tela de compila__o para a de edi__o.
 	 */
 	public void changeToPNEditionPane() {
 
@@ -340,8 +340,8 @@ public class NetworkWindow extends JInternalFrame {
 	}
 
 	/**
-	 * Método responsável por fazer as alterações necessárias para a mudar da
-	 * tela de edição para a tela de definição da hierarquia.
+	 * M_todo respons_vel por fazer as altera__es necess_rias para a mudar da
+	 * tela de edi__o para a tela de defini__o da hierarquia.
 	 */
 	public void changeToHierarchy() {
 
@@ -356,18 +356,18 @@ public class NetworkWindow extends JInternalFrame {
 
 	/**
 	 * Retorna se a janela que esta aparecendo esta em modo de edicao(false) ou
-	 * se ela esta em modo de compilação(true).
+	 * se ela esta em modo de compila__o(true).
 	 * 
-	 * @return true se estiver em modo de compilação, e false caso contrário.
+	 * @return true se estiver em modo de compila__o, e false caso contr_rio.
 	 */
 	public boolean isCompiled() {
 		return this.bCompiled;
 	}
 
 	/**
-	 * Retorna a tela de edição (<code>PNEditionPane</code>).
+	 * Retorna a tela de edi__o (<code>PNEditionPane</code>).
 	 * 
-	 * @return a tela de edição
+	 * @return a tela de edi__o
 	 * @see PNEditionPane
 	 */
 	public PNEditionPane getNetWindowEdition() {
@@ -379,9 +379,9 @@ public class NetworkWindow extends JInternalFrame {
 	}
 
 	/**
-	 * Retorna a tela de compilação (<code>PNCompilationPane</code>).
+	 * Retorna a tela de compila__o (<code>PNCompilationPane</code>).
 	 * 
-	 * @return a tela de compilação
+	 * @return a tela de compila__o
 	 * @see PNCompilationPane
 	 */
 	public PNCompilationPane getNetWindowCompilation() {

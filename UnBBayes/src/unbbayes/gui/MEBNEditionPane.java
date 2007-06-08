@@ -50,7 +50,7 @@ import unbbayes.prs.mebn.ResidentNode;
  * the MEBN suport of the UnBBayes. All others painels of MEBN
  * are inside this panel. 
  * 
- *  @author Laécio Lima dos Santos
+ *  @author Laecio Lima dos Santos
  *  @author Rommel N. Carvalho                                  
  */
 
@@ -64,17 +64,17 @@ public class MEBNEditionPane extends JPanel {
 	 * Contem as opcoes gerais do suporte a MEBN: 
 	 * - Editar os templates
 	 * - Entrar com os findings e queries
-	 * - Configurações do programa
+	 * - Configuracoes do programa
 	 */
 	private JToolBar jtbGeneralOptions;
 	
-	/* Mostra o painel de edição do objeto ativo */
+	/* Mostra o painel de edicao do objeto ativo */
 	private JPanel tabsPanel; 	
 	
 	/* 
 	 * Panel que contem: 
-	 * - O painel de edição do objeto atual
-	 * - O grafo de edição 
+	 * - O painel de edicao do objeto atual
+	 * - O grafo de edicao 
 	 */
 	private JSplitPane centerPanel; 
 	
@@ -87,8 +87,8 @@ public class MEBNEditionPane extends JPanel {
 	/* 
 	 * Painel utilizado para mostrar 
 	 * - textos de ajuda para o usuario
-	 * - relatórios
-	 * - descrições de erros complexas
+	 * - relatorios
+	 * - descricoes de erros complexas
 	 */
 	private JPanel helpPanel; 
 	
@@ -225,7 +225,7 @@ public class MEBNEditionPane extends JPanel {
         bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 1));
         status      = new JLabel(resource.getString("statusReadyLabel"));
 
-        //criar labels e textfields que serão usados no jtbState
+        //criar labels e textfields que serao usados no jtbState
         txtDescription     = new JTextField(15);
         
         txtNameMTheory = new JTextField(5);         
@@ -234,7 +234,7 @@ public class MEBNEditionPane extends JPanel {
         txtArguments = new JTextField(10); 
         txtFormula = new JTextField(15); 
         
-        //criar botões que serão usados nodeList toolbars
+        //criar botoes que serao usados nodeList toolbars
         btnEditMTheory = new JButton(iconController.getMTheoryNodeIcon()); 
         btnAddEdge               = new JButton(iconController.getEdgeIcon());
         btnAddContextNode = new JButton(iconController.getContextNodeIcon());
@@ -264,7 +264,7 @@ public class MEBNEditionPane extends JPanel {
         
         addActionListeners(); 
         
-        //colocar botões e controladores do look-and-feel no toolbar e esse no topPanel
+        //colocar botoes e controladores do look-and-feel no toolbar e esse no topPanel
         
         jtbEdition.add(btnEditMTheory); 
         jtbEdition.addSeparator(); 
@@ -771,7 +771,7 @@ public class MEBNEditionPane extends JPanel {
   			}
   		}); 
   		
-  		//ao clicar no botão btnGlobalOption, mostra-se o menu para escolha das opções
+  		//ao clicar no botao btnGlobalOption, mostra-se o menu para escolha das opcoes
   		/*
   		btnGlobalOption.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
@@ -783,7 +783,7 @@ public class MEBNEditionPane extends JPanel {
   			}
   		});*/
   		
-  		//ao clicar no botão btnAddEdge setamos as variáveis booleanas e os estados dos butões
+  		//ao clicar no botÃ£o btnAddEdge setamos as variaveis booleanas e os estados dos butoes
   		btnAddEdge.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
   				netWindow.getGraphPane().setAction(GraphAction.CREATE_EDGE);
@@ -797,7 +797,7 @@ public class MEBNEditionPane extends JPanel {
   			}
   		}); 
   			
-  		//ao clicar no botão node setamos as variáveis booleanas e os estados dos butões
+  		//ao clicar no botao node setamos as variaveis booleanas e os estados dos butoes
   		btnAddContextNode.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
   				netWindow.getGraphPane().setAction(GraphAction.CREATE_CONTEXT_NODE);
@@ -805,28 +805,28 @@ public class MEBNEditionPane extends JPanel {
   		});
   		
   		
-  		//ao clicar no botão btnAddInputNode setamos as variáveis booleanas e os estados dos butões
+  		//ao clicar no botao btnAddInputNode setamos as variaveis booleanas e os estados dos butoes
   		btnAddInputNode.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
   				netWindow.getGraphPane().setAction(GraphAction.CREATE_INPUT_NODE);
   			}
   		});
   		
-  		//ao clicar no botão btnAddResidentNode setamos as variáveis booleanas e os estados dos butões
+  		//ao clicar no botao btnAddResidentNode setamos as variaveis booleanas e os estados dos butoes
   		btnAddResidentNode.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
   				netWindow.getGraphPane().setAction(GraphAction.CREATE_RESIDENT_NODE);
   			}
   		});
   		
-        // ao clicar no botão node setamos as variáveis booleanas e os estados dos butões
+        // ao clicar no botao node setamos as variaveis booleanas e os estados dos butoes
     		btnAddOrdinaryVariable.addActionListener(new ActionListener() {
     			public void actionPerformed(ActionEvent ae) {
     				netWindow.getGraphPane().setAction(GraphAction.CREATE_ORDINARYVARIABLE_NODE);
     			}
     		}); 
   		
-  		//ao clicar no botão node setamos as variáveis booleanas e os estados dos butões
+  		//ao clicar no botao node setamos as variaveis booleanas e os estados dos butoes
   		btnSelectObject.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
   				netWindow.getGraphPane().setAction(GraphAction.SELECT_MANY_OBJECTS);
@@ -885,14 +885,14 @@ public class MEBNEditionPane extends JPanel {
   			}
   		});
   		
-  		// listener responsável pela atualização do texo da descrição do nó
+  		// listener responsavel pela atualizacao do texo da descricao do no
   		txtDescription.addKeyListener(new KeyAdapter() {
   			public void keyPressed(KeyEvent e) {
   				//TODO fazer ... 
   			}
   		});	
   		
-  		//ao clicar no botão btnGlobalOption, mostra-se o menu para escolha das opções
+  		//ao clicar no botao btnGlobalOption, mostra-se o menu para escolha das opcoes
   		btnTabOptionTree.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
   				setMTheoryTreeActive(); 
@@ -945,9 +945,9 @@ public class MEBNEditionPane extends JPanel {
     }    
     
     /**
-     *  Retorna o text field da descrição do nó.
+     *  Retorna o text field da descricao do no.
      *
-     *@return    retorna a txtDescrição (<code>JTextField</code>)
+     *@return    retorna a txtDescricao (<code>JTextField</code>)
      *@see       JTextField
      */
     public JTextField getTxtDescription() {
@@ -955,7 +955,7 @@ public class MEBNEditionPane extends JPanel {
     }
 
     /**
-     *  Retorna o text field da name do nó.
+     *  Retorna o text field da name do no.
      *
      *@return    retorna a txtName (<code>JTextField</code>)
      *@see       JTextField

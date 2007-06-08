@@ -93,7 +93,7 @@ public class LearningPNEditionDialog extends JDialog {
         jspView.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         jspView.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
-        //ao clicar no botão reaprende, mostra-se o menu para escolha do arquivo para o aprendizado.
+        //ao clicar no botao reaprende, mostra-se o menu para escolha do arquivo para o aprendizado.
         reaprende.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
             	List edgeList = net.getEdges();
@@ -103,14 +103,14 @@ public class LearningPNEditionDialog extends JDialog {
             	for(int i = 0; i < edgeList.size() && close; i++){
                      edge = (Edge)edgeList.get(i);
                     if(!edge.hasDirection()){
-                    	JOptionPane.showMessageDialog(null,"Todos os arcos tem que ter uma direção.","ERROR",JOptionPane.ERROR_MESSAGE);
+                    	JOptionPane.showMessageDialog(null,"Todos os arcos tem que ter uma direcao.","ERROR",JOptionPane.ERROR_MESSAGE);
                     	return;
                     }
                	}
                	for(int i = 0; i < net.getNodeCount() && close; i++){
                      node = net.getNodeAt(i);
                     if(node.getChildren().size() == 0 && node.getParents().size() == 0){
-                    	JOptionPane.showMessageDialog(null,"Todo nó deve tem que ter pelo menos um adjacente.","ERROR",JOptionPane.ERROR_MESSAGE);
+                    	JOptionPane.showMessageDialog(null,"Todo no deve tem que ter pelo menos um adjacente.","ERROR",JOptionPane.ERROR_MESSAGE);
                     	return;
                     }
                	}
@@ -136,7 +136,7 @@ public class LearningPNEditionDialog extends JDialog {
     }
 
     /**
-     *  Retorna o painel da tela de edição.
+     *  Retorna o painel da tela de edicao.
      *
      *@return    retorna o jspView (<code>JScrollPane</code>)
      *@see       JScrollPane

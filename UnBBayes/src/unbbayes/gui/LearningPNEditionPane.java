@@ -52,8 +52,8 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 
 /**
- *  Essa classe é responsável por desenhar a rede Bayesiana na tela. Ela extende a classe
- *  <code>JPanel</code> para ser inserida na <code>TDesenho</code>. Ela também implementa
+ *  Essa classe e responsavel por desenhar a rede Bayesiana na tela. Ela extende a classe
+ *  <code>JPanel</code> para ser inserida na <code>TDesenho</code>. Ela tambem implementa
  *  as interfaces MouseListener e MouseMotionListener, para poder tratar os eventos de
  *  mouse e desenhar a rede Bayesiana.
  *
@@ -97,7 +97,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
     private LearningPNEditionDialog janela;
 	private ProbabilisticNetwork net;
 	
-	// se 0 e 1 mudar a direção do arco e se 2 deixar sem direção    
+	// se 0 e 1 mudar a direcao do arco e se 2 deixar sem direcao    
     private int direction;
 
 	/** Load resource file from this package */
@@ -105,7 +105,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  O construtor é responsável por iniciar todas as variáveis que serão
+     *  O construtor e responsavel por iniciar todas as variaveis que serao
      *  utilizadas por essa classe para que se possa desenhar a rede Bayesiana.
      *
      */
@@ -154,7 +154,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
     }
 
     /**
-     *  Esse método seta o valor do bArco (valor booleano para desenhar o arco)
+     *  Esse metodo seta o valor do bArco (valor booleano para desenhar o arco)
      *
      *@param  b  O booleano true ou false
      */
@@ -170,11 +170,11 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  Pega o nó que se encontra na posição x,y
+     *  Pega o na que se encontra na posicao x,y
      *
-     *@param  x  A posição x (double)
-     *@param  y  A posição y (double)
-     *@return    O nó encontrado (<code>Node</code>)
+     *@param  x  A posicao x (double)
+     *@param  y  A posicao y (double)
+     *@return    O no encontrado (<code>Node</code>)
      *@see Node
      */
     public Node getNo(double x, double y) {
@@ -197,17 +197,17 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
     /**
      *  Pega o atributo focusTransversable do objeto da classe TDesenhaRede
      *
-     *@return    True como valor do focusTransversable (método necessário para que se possa tratar evento de tecla)
+     *@return    True como valor do focusTransversable (metodo necessario para que se possa tratar evento de tecla)
      */
     public boolean isFocusable() {
         return true;
     }
 
     /**
-     *  Pega o arco que se encontra na posição x,y
+     *  Pega o arco que se encontra na posicao x,y
      *
-     *@param  x  A posição x (double)
-     *@param  y  A posição y (double)
+     *@param  x  A posicao x (double)
+     *@param  y  A posicao y (double)
      *@return    O arco encontrado (<code>TArco</code>)
      *@see TArco
      */
@@ -267,13 +267,13 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
     }
 
     /**
-     *  Método para achar o ponto do arco (<code>Point2D.Double</code>) na circunferência do nó em
-     *  relação ao ponto1 (<code>Point2D.Double</code>)
+     *  Metodo para achar o ponto do arco (<code>Point2D.Double</code>) na circunferencia do no em
+     *  relacao ao ponto1 (<code>Point2D.Double</code>)
      *
-     *@param  ponto1  Centro da circunferência do nó de origem
-     *@param  ponto2  Centro da circunferência do nó de destino
-     *@param  r       O raio da circunferência
-     *@return         O ponto do arco na circunferência
+     *@param  ponto1  Centro da circunferencia do no de origem
+     *@param  ponto2  Centro da circunferencia do no de destino
+     *@param  r       O raio da circunferencia
+     *@return         O ponto do arco na circunferencia
      *@see Point2D.Double
      */
     public Point2D.Double getPonto(Point2D.Double ponto1, Point2D.Double ponto2, double r) {
@@ -297,9 +297,9 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  Pega o tamanho necessário para repintar a tela (<code>Rectangle</code>)
+     *  Pega o tamanho necessario para repintar a tela (<code>Rectangle</code>)
      *
-     *@return    O tamanho necessário para repintar a tela
+     *@return    O tamanho necessario para repintar a tela
      *@see Rectangle
      */
     public Rectangle getTamanhoRepintar() {
@@ -368,16 +368,16 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  Método responsável por repintar a rede Bayesiana
+     *  Metodo responsavel por repintar a rede Bayesiana
      */
     public void repintar() {
         this.repaint(getTamanhoRepintar());
     }
 
     /**
-     *  Não faz nada quando uma tecla é pressionada e em seguida solta.
+     *  Nao faz nada quando uma tecla e pressionada e em seguida solta.
      *
-     * @param  e  um <code>KeyEvent</code> que será passado pelo <code>KeyListener
+     * @param  e  um <code>KeyEvent</code> que sera passado pelo <code>KeyListener
      *      </code>
      * @since
      * @see       KeyEvent
@@ -387,11 +387,11 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  Apaga o objeto selecionado da rede quando a tecla del(KeyEvent.VK_DELETE) é
-     *  pressionada, copia um pedaço da rede quando a tecla c(KeyEvent.VK_C) é pressionada
-     *  e cola um pedaço da rede quando a tecla p(KeyEvent.VK_P) é pressionada.
+     *  Apaga o objeto selecionado da rede quando a tecla del(KeyEvent.VK_DELETE) e
+     *  pressionada, copia um pedaco da rede quando a tecla c(KeyEvent.VK_C) e pressionada
+     *  e cola um pedaco da rede quando a tecla p(KeyEvent.VK_P) e pressionada.
      *
-     * @param  e  um <code>KeyEvent</code> que será passado pelo <code>KeyListener
+     * @param  e  um <code>KeyEvent</code> que sera passado pelo <code>KeyListener
      *      </code>
      * @since
      * @see       KeyEvent
@@ -406,9 +406,9 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
     }
 
     /**
-     *  Não faz nada quando uma tecla é solta.
+     *  Nao faz nada quando uma tecla e solta.
      *
-     * @param  e  um <code>KeyEvent</code> que será passado pelo <code>KeyListener
+     * @param  e  um <code>KeyEvent</code> que sera passado pelo <code>KeyListener
      *      </code>
      * @since
      * @see       KeyEvent
@@ -419,7 +419,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  Método responsável por tratar o evento de botão de mouse pressionado
+     *  Metodo responsavel por tratar o evento de botao de mouse pressionado
      *
      *@param  e  O <code>MouseEvent</code>
      *@see MouseEvent
@@ -471,7 +471,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  Método responsável por tratar o evento de clique no botão do mouse
+     *  Metodo responsavel por tratar o evento de clique no botao do mouse
      *
      *@param  e  O <code>MouseEvent</code>
      *@see MouseEvent
@@ -492,7 +492,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  Método responsável por tratar o evento de botão de mouse soltado
+     *  Metodo responsavel por tratar o evento de botao de mouse soltado
      *
      *@param  e  O <code>MouseEvent</code>
      *@see MouseEvent
@@ -534,7 +534,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
         }
 
         if (bArrastouNo) {
-            //retorna o valor de bArrastouNo para false para futura comparação
+            //retorna o valor de bArrastouNo para false para futura comparacao
             bArrastouNo = false;
         }
 
@@ -543,7 +543,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  Método responsável por tratar o evento do mouse entrar nesse componente (objeto da classe TDesenhaRede)
+     *  Metodo responsavel por tratar o evento do mouse entrar nesse componente (objeto da classe TDesenhaRede)
      *
      *@param  e  O <code>MouseEvent</code>
      *@see MouseEvent
@@ -566,7 +566,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  Método responsável por tratar o evento do mouse sair desse componente (objeto da classe TDesenhaRede)
+     *  Metodo responsavel por tratar o evento do mouse sair desse componente (objeto da classe TDesenhaRede)
      *
      *@param  e  O <code>MouseEvent</code>
      *@see MouseEvent
@@ -577,14 +577,14 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  Método responsável por tratar o evento arrastar o mouse com o botão pressionado
+     *  Metodo responsavel por tratar o evento arrastar o mouse com o botao pressionado
      *
      *@param  e  O <code>MouseEvent</code>
      *@see MouseEvent
      */
     public void mouseDragged(MouseEvent e) {
 
-        //mover o scroll junto com a seta e/ou nó
+        //mover o scroll junto com a seta e/ou no
         if ((e.getX() < tamanhoRede.getWidth()) && (e.getY() < tamanhoRede.getHeight()) && (e.getX() + 2 * raio > tamanhoVisivel.getWidth() + janela.getJspView().getHorizontalScrollBar().getValue()) && (e.getY() + 2 * raio > tamanhoVisivel.getHeight() + janela.getJspView().getVerticalScrollBar().getValue())) {
             if (bMoverNo && noMover != null) {
                 janela.getJspView().getHorizontalScrollBar().setValue((int) (noMover.getPosition().getX() + 2 * raio - tamanhoVisivel.getWidth()));
@@ -655,15 +655,15 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
         }
 
         if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-            //move nó somente se este menos o raio for menor que (0,0)
+            //move no somente se este menos o raio for menor que (0,0)
             if ((bMoverNo) && (e.getX() > raio) && (e.getY() > raio) && (e.getX() < tamanhoRede.getWidth() - raio) && (e.getY() < tamanhoRede.getHeight() - raio)) {
                 noAtual = noMover;
                 atualizaNoAtual(e.getX(), e.getY());
-                //seta a variável bArrastouNo para true para futura comparação
+                //seta a variavel bArrastouNo para true para futura comparacao
                 bArrastouNo = true;
             }
             else {
-                //atualiza a posicão da arco que está sendo desenhada, somente se este for maior que (0,0)
+                //atualiza a posicao da arco que esta sendo desenhada, somente se este for maior que (0,0)
                 if ((bArco) && (bMoverArco) && (e.getX() > 0) && (e.getY() > 0) && (e.getX() < tamanhoRede.getWidth()) && (e.getY() < tamanhoRede.getHeight())) {
                     arcoFimAtual.setLocation(e.getX(), e.getY());
                     atualizaArcoAtual(e.getX(), e.getY());
@@ -712,56 +712,56 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
                                                     if ((bMoverNo) && (e.getX() <= raio) && (e.getY() > raio) && (e.getX() < tamanhoRede.getWidth() - raio) && (e.getY() < tamanhoRede.getHeight() - raio)) {
                                                         noAtual = noMover;
                                                         atualizaNoAtual(raio, e.getY());
-                                                        //seta a variável bArrastouNo para true para futura comparação
+                                                        //seta a variavel bArrastouNo para true para futura comparacao
                                                         bArrastouNo = true;
                                                     }
                                                     else {
                                                         if ((bMoverNo) && (e.getX() > raio) && (e.getY() <= raio) && (e.getX() < tamanhoRede.getWidth() - raio) && (e.getY() < tamanhoRede.getHeight() - raio)) {
                                                             noAtual = noMover;
                                                             atualizaNoAtual(e.getX(), raio);
-                                                            //seta a variável bArrastouNo para true para futura comparação
+                                                            //seta a variavel bArrastouNo para true para futura comparacao
                                                             bArrastouNo = true;
                                                         }
                                                         else {
                                                             if ((bMoverNo) && (e.getX() <= raio) && (e.getY() <= raio) && (e.getX() < tamanhoRede.getWidth() - raio) && (e.getY() < tamanhoRede.getHeight() - raio)) {
                                                                 noAtual = noMover;
                                                                 atualizaNoAtual(raio, raio);
-                                                                //seta a variável bArrastouNo para true para futura comparação
+                                                                //seta a variavel bArrastouNo para true para futura comparacao
                                                                 bArrastouNo = true;
                                                             }
                                                             else {
                                                                 if ((bMoverNo) && (e.getX() <= raio) && (e.getY() > raio) && (e.getX() < tamanhoRede.getWidth() - raio) && (e.getY() >= tamanhoRede.getHeight() - raio)) {
                                                                     noAtual = noMover;
                                                                     atualizaNoAtual(raio, tamanhoRede.getHeight() - raio);
-                                                                    //seta a variável bArrastouNo para true para futura comparação
+                                                                    //seta a variavel bArrastouNo para true para futura comparacao
                                                                     bArrastouNo = true;
                                                                 }
                                                                 else {
                                                                     if ((bMoverNo) && (e.getX() > raio) && (e.getY() > raio) && (e.getX() < tamanhoRede.getWidth() - raio) && (e.getY() >= tamanhoRede.getHeight() - raio)) {
                                                                         noAtual = noMover;
                                                                         atualizaNoAtual(e.getX(), tamanhoRede.getHeight() - raio);
-                                                                        //seta a variável bArrastouNo para true para futura comparação
+                                                                        //seta a variavel bArrastouNo para true para futura comparacao
                                                                         bArrastouNo = true;
                                                                     }
                                                                     else {
                                                                         if ((bMoverNo) && (e.getX() > raio) && (e.getY() > raio) && (e.getX() >= tamanhoRede.getWidth() - raio) && (e.getY() >= tamanhoRede.getHeight() - raio)) {
                                                                             noAtual = noMover;
                                                                             atualizaNoAtual(tamanhoRede.getWidth() - raio, tamanhoRede.getHeight() - raio);
-                                                                            //seta a variável bArrastouNo para true para futura comparação
+                                                                            //seta a variavel bArrastouNo para true para futura comparacao
                                                                             bArrastouNo = true;
                                                                         }
                                                                         else {
                                                                             if ((bMoverNo) && (e.getX() > raio) && (e.getY() > raio) && (e.getX() >= tamanhoRede.getWidth() - raio) && (e.getY() < tamanhoRede.getHeight() - raio)) {
                                                                                 noAtual = noMover;
                                                                                 atualizaNoAtual(tamanhoRede.getWidth() - raio, e.getY());
-                                                                                //seta a variável bArrastouNo para true para futura comparação
+                                                                                //seta a variavel bArrastouNo para true para futura comparacao
                                                                                 bArrastouNo = true;
                                                                             }
                                                                             else {
                                                                                 if ((bMoverNo) && (e.getX() > raio) && (e.getY() <= raio) && (e.getX() >= tamanhoRede.getWidth() - raio) && (e.getY() < tamanhoRede.getHeight() - raio)) {
                                                                                     noAtual = noMover;
                                                                                     atualizaNoAtual(tamanhoRede.getWidth() - raio, raio);
-                                                                                    //seta a variável bArrastouNo para true para futura comparação
+                                                                                    //seta a variavel bArrastouNo para true para futura comparacao
                                                                                     bArrastouNo = true;
                                                                                 }
                                                                             }
@@ -786,7 +786,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  Método responsável por tratar o evento de mover o mouse
+     *  Metodo responsavel por tratar o evento de mover o mouse
      *
      *@param  e  O <code>MouseEvent</code>
      *@see MouseEvent
@@ -808,7 +808,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  Seta o atributo selecionado (boolean) do nó (<code>Node</code>) para falso, caso exista selecionado
+     *  Seta o atributo selecionado (boolean) do no (<code>Node</code>) para falso, caso exista selecionado
      *
      * @see Node
      */
@@ -820,17 +820,17 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  Seta o atributo selecionado (boolean) do nó (<code>Node</code>) desejado para true
+     *  Seta o atributo selecionado (boolean) do no (<code>Node</code>) desejado para true
      *
-     *@param  no  O nó desejado
+     *@param  no  O no desejado
      *@see Node
      */
     public void selecionaNo(Node no) {
-        //deseleciona nó ou arco, caso algum esteja selecionado
+        //deseleciona no ou arco, caso algum esteja selecionado
         deselecionaNo();
         deselecionaArco();
 
-        //seleciona o nó escolhido
+        //seleciona o no escolhido
         no.setSelected(true);
         selecionado = no;
     }
@@ -842,7 +842,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
      *@param  arco  O arco desejado
      */
     public void selecionaArco(Edge arco) {
-        //deseleciona nó ou arco, caso algum esteja selecionado
+        //deseleciona no ou arco, caso algum esteja selecionado
         deselecionaNo();
         deselecionaArco();
 
@@ -852,10 +852,10 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
     }
 
     /**
-     *  Método responsável por atualizar o arco (<code>TArco</code>) atual ao se mover um arco
+     *  Metodo responsavel por atualizar o arco (<code>TArco</code>) atual ao se mover um arco
      *
-     *@param  x  Posição x (double) da ponta do arco
-     *@param  y  Posição y (double) da ponta do arco
+     *@param  x  Posicao x (double) da ponta do arco
+     *@param  y  Posicao y (double) da ponta do arco
      */
     public void atualizaArcoAtual(double x, double y) {
         Point2D.Double ponto = new Point2D.Double();
@@ -869,10 +869,10 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  Método responsável por atualizar o nó (<code>Node</code>) atual ao se mover um nó
+     *  Metodo responsavel por atualizar o no (<code>Node</code>) atual ao se mover um no
      *
-     *@param  x  Posição x (double) do centro do nó
-     *@param  y  Posição y (double) do centro do nó
+     *@param  x  Posicao x (double) do centro do no
+     *@param  y  Posicao y (double) do centro do no
      *@see Node
      */
     public void atualizaNoAtual(double x, double y) {
@@ -882,12 +882,12 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  Inere um arco (<code>TArco</code>) com origem na posição (x1,y1) e destino na posição (x2,y2)
+     *  Inere um arco (<code>TArco</code>) com origem na posicao (x1,y1) e destino na posicao (x2,y2)
      *
-     *@param  x1  Posição x1 (double) da origem do arco
-     *@param  y1  Posição y1 (double) da origem do arco
-     *@param  x2  Posição x2 (double) do destino do arco
-     *@param  y2  Posição y2 (double) do destino do arco
+     *@param  x1  Posicao x1 (double) da origem do arco
+     *@param  y1  Posicao y1 (double) da origem do arco
+     *@param  x2  Posicao x2 (double) do destino do arco
+     *@param  y2  Posicao y2 (double) do destino do arco
      */
     public void insereArco(double x1, double y1, double x2, double y2) {
         Node no1 = getNo(x1, y1);
@@ -910,7 +910,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  Método responsável por desenhar um arco a (<code>TArco</code>) desejado
+     *  Metodo responsavel por desenhar um arco a (<code>TArco</code>) desejado
      *
      *@param  a  O arco que se deseja desenhar
      *@return    A reta do arco (<code>Line2D.Double</code>)
@@ -933,10 +933,10 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
 
 
     /**
-     *  Método responsável por desenhar a ponta da seta do arco (<code>TArco</code>) desejado
+     *  Metodo responsavel por desenhar a ponta da seta do arco (<code>TArco</code>) desejado
      *
      *@param  a            O arco que se deseja desenhar a ponta da seta
-     *@param  bExisteArco  True se a seta já existe e false se ela está sendo inserida
+     *@param  bExisteArco  True se a seta ja existe e false se ela esta sendo inserida
      *@return              A ponta de uma seta (<code>GeneralPath</code>)
      *@see GeneralPath
      */
@@ -958,7 +958,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
         double x4;
         double y4;
 
-        //ponta da seta = ponto correspondente na circunferência do nó, caso a seta já esteja inserida - base da seta deslecada de 10 do centro do nó
+        //ponta da seta = ponto correspondente na circunferencia do no, caso a seta ja esteja inserida - base da seta deslecada de 10 do centro do no
         if (bExisteArco) {
             ponto1 = getPonto(no2.getPosition(), no1.getPosition(), raio + 10);
             ponto2 = getPonto(no2.getPosition(), no1.getPosition(), raio);
@@ -972,7 +972,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
             y2 = no2.getPosition().getY();
         }
 
-        //se for no segundo ou quarto quadrante usamos as primeiras 4 equações, senão, usammos as outras 4
+        //se for no segundo ou quarto quadrante usamos as primeiras 4 equacoes, senao, usammos as outras 4
         if (((x1 > x2) && (y1 > y2)) || ((x1 < x2) && (y1 < y2))) {
             x3 = ponto1.getX() + 5 * Math.abs(Math.cos(Math.atan((x2 - x1) / (y1 - y2))));
             y3 = ponto1.getY() - 5 * Math.abs(Math.sin(Math.atan((x2 - x1) / (y1 - y2))));
@@ -996,7 +996,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
     }
 
     /**
-     *  Método responsável por pintar a rede Bayesiana, ou seja, o objeto da classe TDesenhaRede
+     *  Matodo responsavel por pintar a rede Bayesiana, ou seja, o objeto da classe TDesenhaRede
      *
      *@param  g  O <code>Graphics</code>
      *@see Graphics
@@ -1009,14 +1009,14 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
         view.setColor(corNo);
         view.setStroke(new BasicStroke(1));
 
-        //desenha todos os nós
+        //desenha todos os nos
         for (int i = 0; i < net.getNodeCount(); i++) {
             Node noAux = (Node) net.getNodeAt(i);
             view.fill(new Ellipse2D.Double(noAux.getPosition().x - raio, noAux.getPosition().y - raio, raio * 2, raio * 2));
             if (noAux.getName() == null) {
                 noAux.setName(resource.getString("nodeGraphName") + i);
             }
-            //desenha a sigla do nó
+            //desenha a sigla do no
             AttributedString as = new AttributedString(noAux.getName());
             Font serifFont = new Font("Serif", Font.PLAIN, 12);
             FontRenderContext frc = new FontRenderContext(new AffineTransform(), true, true);
@@ -1032,7 +1032,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
         //desenha o arco atual se booleano for true
         if (bArco) {
             view.draw(arcoAtual);
-            //chama o método que desenha a ponta da seta e desenha na tela
+            //chama o metodo que desenha a ponta da seta e desenha na tela
             Node noAux = new ProbabilisticNode();
             noAux.setPosition(arcoAtual.getX1(), arcoAtual.getY1());
             Node noAux2 = new ProbabilisticNode();
@@ -1060,11 +1060,11 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
                view.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_OFF);
             }
 
-            //chama o método que cria um Line2D.Double e desenha o mesmo
+            //chama o metodo que cria um Line2D.Double e desenha o mesmo
             view.draw(desenhaArco(arcoAux));
             
             if (arcoAux.hasDirection()) {
-            	//chama o método que desenha a ponta da seta e desenha na tela
+            	//chama o metodo que desenha a ponta da seta e desenha na tela
             	view.fill(desenhaSeta(arcoAux, true));
             }
             
@@ -1072,7 +1072,7 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
             view.setStroke(new BasicStroke(1));
         }
 
-        //desenha o nó atual se for para mover o nó selecionado
+        //desenha o no atual se for para mover o no selecionado
         if ((bMoverNo) && (noAtual != null) && (noAtual.getPosition().getX() != 0) && (noAtual.getPosition().getY() != 0) ) {
             view.setColor(corNo);
             view.draw(new Ellipse2D.Double(noAtual.getPosition().getX() - raio, noAtual.getPosition().getY() - raio, raio * 2, raio * 2));
@@ -1109,10 +1109,10 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
     }
     
     /**
-     *  Pega o arco que se encontra na posição x,y
+     *  Pega o arco que se encontra na posicao x,y
      *
-     *@param  x  A posição x (double)
-     *@param  y  A posição y (double)
+     *@param  x  A posicao x (double)
+     *@param  y  A posicao y (double)
      *@return    O arco encontrado (<code>Edge</code>)
      *@see Edge
      */
@@ -1172,13 +1172,13 @@ public class LearningPNEditionPane extends JPanel implements MouseListener, Mous
     }
     
     /**
-     *  Método para achar o ponto do arco (<code>Point2D.Double</code>) na circunferência do nó em
-     *  relação ao ponto1 (<code>Point2D.Double</code>)
+     *  Metodo para achar o ponto do arco (<code>Point2D.Double</code>) na circunferencia do no em
+     *  relacao ao ponto1 (<code>Point2D.Double</code>)
      *
-     *@param  point1  Centro da circunferência do nó de origem
-     *@param  point2  Centro da circunferência do nó de destino
-     *@param  r       O raio da circunferência
-     *@return         O ponto do arco na circunferência
+     *@param  point1  Centro da circunferencia do no de origem
+     *@param  point2  Centro da circunferencia do no de destino
+     *@param  r       O raio da circunferencia
+     *@return         O ponto do arco na circunferencia
      *@see Point2D.Double
      */
     public Point2D.Double getPoint(Point2D.Double point1, Point2D.Double point2, double r) {
