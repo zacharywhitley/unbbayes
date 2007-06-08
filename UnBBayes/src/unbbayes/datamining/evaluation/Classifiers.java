@@ -1,8 +1,10 @@
 package unbbayes.datamining.evaluation;
 
+import unbbayes.TestsetUtils;
 import unbbayes.datamining.classifiers.Classifier;
 import unbbayes.datamining.classifiers.DistributionClassifier;
 import unbbayes.datamining.classifiers.NaiveBayes;
+import unbbayes.datamining.classifiers.NaiveScaleBayes;
 import unbbayes.datamining.classifiers.decisiontree.C45;
 import unbbayes.datamining.classifiers.decisiontree.DecisionTreeLearning;
 import unbbayes.datamining.datamanipulation.InstanceSet;
@@ -14,41 +16,49 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
  */
 public class Classifiers {
 
-	private static String[] classifierNames = {
-		"naive"
-		,"c45"
-//		,"ann"
-		};
+	private static String[] classifierNames = new String[20];
 	
-	private static int numClassifiers = 2;
+	private static int numClassifiers = 1;
 	
-	public static Classifier buildClassifier(InstanceSet train, int classifierID,
-			float[] distribution, int positiveClass, float learningRate,
-			float momentum, float threshold)
+	public static Classifier newClassifier(int classifierID)
 	throws Exception {
 		Classifier classifier = null;
-		
+
 	    switch (classifierID) {
-			case 0:
-				classifier = new NaiveBayes();
-				((DistributionClassifier)classifier).setRelativeClassification();
-				((DistributionClassifier) classifier).setOriginalDistribution(
-						distribution);
-				break;
-				
 			case 1:
-				classifier = new C45();
-				((DecisionTreeLearning) classifier).setPositiveClass(positiveClass);
-				((DecisionTreeLearning) classifier).setThreshold(threshold);
+				classifier = new NaiveBayes();
+				classifierNames[classifierID] = "naive";
 				break;
 				
-//			case 3:
-//				classifier = new NeuralNetwork(learningRate, false, momentum,
-//						-1, 0, 100, 1, 1, -2);
+			case 0:
+				classifier = new C45();
+				classifierNames[classifierID] = "c45";
+				break;
+				
+//			case 1:
+//				classifier = new NaiveScaleBayes();
+//				classifierNames[classifierID] = "naiveScale";
+//				break;
+		}
+
+		return classifier;
+	}
+
+	public static void buildClassifier(InstanceSet train,
+			Classifier classifier, float[] distribution,
+			TestsetUtils testsetUtils)
+	throws Exception {
+		int positiveClass = testsetUtils.getPositiveClass();
+		if (classifier instanceof DecisionTreeLearning) {
+			((DecisionTreeLearning) classifier).setPositiveClass(positiveClass);
+		} else if (classifier instanceof DistributionClassifier) {
+			((DistributionClassifier) classifier).setOriginalDistribution(
+			distribution);
+			if (classifier instanceof NaiveScaleBayes) {
+				((NaiveScaleBayes) classifier).setTestsetUtils(testsetUtils);
+			}
 		}
 		classifier.buildClassifier(train);
-		
-		return classifier;
 	}
 
 	public static String getClassifierName(int classifierID) {

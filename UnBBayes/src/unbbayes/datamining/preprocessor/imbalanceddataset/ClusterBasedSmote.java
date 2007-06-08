@@ -1,8 +1,6 @@
 package unbbayes.datamining.preprocessor.imbalanceddataset;
 
-import java.util.Arrays;
-
-import unbbayes.datamining.clustering.Clustering;
+import unbbayes.TestsetUtils;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 
 /**
@@ -11,15 +9,13 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
  * @date 09/11/2006
  */
 public class ClusterBasedSmote extends ClusterBasedUtils {
-	/**********************************************/
-	/** Options for SMOTE - END *******************/
-	/**********************************************/
-	
-	public ClusterBasedSmote(InstanceSet instanceSet, int positiveClass, int k) {
-		super(instanceSet, positiveClass, k);
+
+	public ClusterBasedSmote(InstanceSet instanceSet, TestsetUtils testsetUtils) {
+		super(instanceSet, testsetUtils);
 	}
 	
-	public void run(InstanceSet instanceSet, boolean overMajority, boolean cbo)
+	public void run(InstanceSet instanceSet, boolean overMajority, boolean cbo,
+			int ratio)
 	throws Exception {
 		setInstanceSet(instanceSet);
 
@@ -30,14 +26,6 @@ public class ClusterBasedSmote extends ClusterBasedUtils {
 		double finalSize;
 
 		if (overMajority) {
-			/* Count the majority class */
-			int majorityClassQtd = 0;
-			for (int inst = 0; inst < numInstances; inst++) {
-				if (instances[inst].data[classIndex] == negativeClass) {
-					majorityClassQtd += instances[inst].data[counterIndex];
-				}
-			}
-			
 			/* Pick the biggest cluster of the majority class */
 			int biggestClusterIndex = 0;
 			double biggestClusterSize = 0;
@@ -68,7 +56,7 @@ public class ClusterBasedSmote extends ClusterBasedUtils {
 		}
 
 		/* Reset the variables */
-		instances = instanceSet.instances;
+		setInstanceSet(instanceSet);
 		
 		/* Compute the new size of the majority class */
 		double majorityClassSize = 0;
@@ -83,7 +71,8 @@ public class ClusterBasedSmote extends ClusterBasedUtils {
 		for (int classValue = 0; classValue < numClasses; classValue++) {
 			if (classValue != negativeClass) {
 				numClustersAux = numClusters[classValue];
-				newSizePerCluster = majorityClassSize / numClustersAux;
+				newSizePerCluster = (majorityClassSize * ratio) / (10 - ratio);
+				newSizePerCluster /= numClustersAux;
 				for (int clusterID = 0; clusterID < numClustersAux; clusterID++) {
 					finalSize = newSizePerCluster;
 					finalSize /= clustersSize[classValue][clusterID];
@@ -103,21 +92,18 @@ public class ClusterBasedSmote extends ClusterBasedUtils {
 	public void runUndersampling(InstanceSet instanceSet, double proportion,
 			boolean simplesampling)
 	throws Exception {
+		
+		/* Initialize */
 		setInstanceSet(instanceSet);
 		
 		/* Clusterize classe */
-		clusterize(negativeClass);
+		clusterizeByClass(negativeClass);
 		
 		/* Undersample the clusters of the majority class */
 		int numClustersAux = numClusters[negativeClass];
 		for (int clusterID = 0; clusterID < numClustersAux; clusterID++) {
-			undersampleCluster(clusterID, proportion, negativeClass,
-					simplesampling);
+			undersampleCluster(clusterID, proportion, simplesampling);
 		}
-		
-		/* Array that tells which instances must be removed (weight < 1) */ 
-		boolean[] deleteIndex = new boolean[instanceSet.numInstances];
-		Arrays.fill(deleteIndex, false);
 		
 		/* Mark instances with weight < 1 for deletion */
 		float weight;
@@ -129,6 +115,7 @@ public class ClusterBasedSmote extends ClusterBasedUtils {
 		}
 		
 		/* Remove from instanceSet those instances marked for deletion */
+		removeMarkedInstances(instanceSet, deleteIndex);
 		instanceSet.removeInstances(deleteIndex);
 		
 		/* Update references to instanceSet */
@@ -142,7 +129,7 @@ public class ClusterBasedSmote extends ClusterBasedUtils {
 		setInstanceSet(instanceSet);
 		
 		/* Clusterize positive class */
-		clusterize(positiveClass);
+		clusterizeByClass(positiveClass);
 		
 		int numClustersAux = numClusters[positiveClass];
 

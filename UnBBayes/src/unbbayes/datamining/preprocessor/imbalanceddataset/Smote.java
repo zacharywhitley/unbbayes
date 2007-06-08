@@ -202,7 +202,14 @@ public class Smote {
 	 * @param instancesIDs[]: The chosen subset of instances to be smoted
 	 * @param proportion: Desired proportion of new instances
 	 */
-	public void run(int[] instancesIDs, double proportion) {
+	public int[] run(int[] instancesIDs, double proportion) {
+		if (instanceSet.numInstances < 2 || instancesIDs.length < 2) {
+			return instancesIDs;
+		}
+		
+//		System.out.print("Entrei: ");
+//		System.out.println((new java.text.SimpleDateFormat("HH:mm:ss")).format(new Date()));
+
 		instancesIDs = instancesIDs.clone();
 		numAttributes = instanceSet.numAttributes();
 		
@@ -284,6 +291,9 @@ public class Smote {
 			numNewInstancesPerInstance = (int) proportion;
 		}
 		
+//		System.out.print("Antes de popular: ");
+//		System.out.println((new java.text.SimpleDateFormat("HH:mm:ss")).format(new Date()));
+
 		/* Create the new instances */
 		populate(numNewInstancesPerInstance, instancesIDs, numNewInstances);
 		
@@ -298,8 +308,19 @@ public class Smote {
 			populate(numNewInstancesPerInstance, instancesIDs, numNewInstances);
 		}
 		
-		/* Insert the created instances in the instanceSet */
-		instanceSet.insertInstances(newInstanceSet);
+//		System.out.print("Antes de mesclar: ");
+//		System.out.println((new java.text.SimpleDateFormat("HH:mm:ss")).format(new Date()));
+
+		/* 
+		 * Insert the created instances in the instanceSet and return their indexes
+		 */
+		int[] result = instanceSet.insertInstances(newInstanceSet);
+		
+//		System.out.print("Depois de mesclar: ");
+//		System.out.println((new java.text.SimpleDateFormat("HH:mm:ss")).format(new Date()));
+//		System.out.println();
+		
+		return result;
 	}
 	
 	private void populate(int numNewInstancesPerInstance, int[] instancesIDs,
@@ -533,11 +554,16 @@ public class Smote {
 	 * @return
 	 */
 	private int[] nearestNeighborIDs(int instanceID) {
-		int index;
+		int index = -1;
 		int count = 0;
 		
 		for (int i = 0; i < k; i++) {
-			index = nearestNeighborsIDs[instanceID][i];
+			try {
+				index = nearestNeighborsIDs[instanceID][i];
+			} catch (Exception e) {
+				@SuppressWarnings("unused")
+				boolean pause = true;
+			}
 			if (index > 0) {
 				++count;
 			}

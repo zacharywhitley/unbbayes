@@ -18,10 +18,10 @@ public abstract class DecisionTreeLearning extends Classifier {
 	/**
 	 * Factor used in the computation of the class of a leaf. If the leaf's
 	 * number of positive instances divided by the number of negative instances
-	 * is greater than the 'balanceFactor' the leaf's class is positive.
+	 * is greater than the 'threshold' the leaf's class is positive.
 	 * Otherwise, the leaf's class is negative.
 	 */
-	protected float threshold = 0;
+	protected float threshold = -1;
 	
 	/* Two class problem */
 	protected int positiveClass = 1;
@@ -47,18 +47,23 @@ public abstract class DecisionTreeLearning extends Classifier {
   	 * @param positiveClass
   	 * @return
   	 */
-	public float positiveClassProb(Instance instance, int positiveClass) {
+	public float[] distributionForInstance(Instance instance) {
 		Leaf leaf = classifyInstanceAux(instance);
 		
 		float[] dist = leaf.getDistribution();
 		
-		int negativeClass = Math.abs(positiveClass - 1);
+		double aux;
+		int numClasses = dist.length;
+		float[] probs = new float[numClasses];
+		float sum = Utils.sum(dist);
+		for (int i = 0; i < numClasses; i++) {
+			/* With Laplace estimate */
+			aux = dist[i] + 1;
+			aux /= (sum + numClasses);
+			probs[i] = (float) aux;
+		}
 		
-		/* With Laplace estimate */
-		double prob = dist[positiveClass] + 1;
-		prob /= (dist[positiveClass] + dist[negativeClass] + 2);
-		
-		return (float) prob;
+		return probs;
 	}
 	
 	/**

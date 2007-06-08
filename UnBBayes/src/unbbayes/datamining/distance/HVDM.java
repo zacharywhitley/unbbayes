@@ -114,7 +114,11 @@ public class HVDM extends Distance {
 		}
 		
 		/* Compute nominal distributions */
-		distribution = Utils.computeNominalDistributions(instanceSet);
+		if (instanceSet.numNominalAttributes > 1 || 
+				(instanceSet.numNominalAttributes == 1 && 
+						instanceSet.classIsNominal())) {
+			distribution = Utils.computeNominalDistributions(instanceSet);
+		}
 	}
 	
 	/** 
@@ -130,10 +134,6 @@ public class HVDM extends Distance {
 	
 	public float distanceValue(float[] vector1, float[] vector2) {
 		int attIndex = 0;
-		double aux1;
-		double aux2;
-		int index;
-		AttributeStats attStats;
 		double attDif;
 		double distance = 0;
 
@@ -156,29 +156,8 @@ public class HVDM extends Distance {
 
 			if (attributeType[att] == InstanceSet.NOMINAL) {
 				/* The attribute is nominal */
-				if (optionDistanceFunction == HVDM) {
-					/* Apply VDM distance */
-					attStats = attributeStats[att];
-					for (int k = 0; k < numClasses; k++) {
-						/* Get relative frequency for 'vector1' */
-						index = (int) vector1[att];
-						aux1 = distribution[k][attIndex][index];
-						aux1 /= (double) attStats.nominalCountsWeighted[index];
-	
-						/* Get relative frequency for 'vector2' */
-						index = (int) vector2[att];
-						aux2 = distribution[k][attIndex][index];
-						aux2 /= (double) attStats.nominalCountsWeighted[index];
-						
-						/* Calculate the difference */
-						attDif += (aux1 - aux2) * (aux1 - aux2);
-					}
-				} else if (optionDistanceFunction == HAMMING) {
-					/* Apply Hamming distance */
-					if (vector1[att] != vector2[att]) {
-						attDif = 1;
-					}
-				}
+				attDif = distanceNominal(vector1, vector2, att, attIndex);
+				
 				/* Get next nominal attribute */
 				++attIndex;
 			} else if (attributeType[att] == InstanceSet.NUMERIC) {
@@ -206,7 +185,43 @@ public class HVDM extends Distance {
 			distance += attDif * attDif;
 		}
 		distance = Math.sqrt(distance);
+		
 		return (float) distance;
+	}
+
+	private double distanceNominal(float[] vector1, float[] vector2, int att,
+			int attIndex) {
+		double attDif = 0;
+		float aux1;
+		float aux2;
+		AttributeStats attStats;
+		int index;
+		
+		if (optionDistanceFunction == HVDM) {
+			/* Apply VDM distance */
+			attStats = attributeStats[att];
+			for (int k = 0; k < numClasses; k++) {
+				/* Get relative frequency for 'vector1' */
+				index = (int) vector1[att];
+				aux1 = distribution[k][attIndex][index];
+				aux1 /= attStats.nominalCountsWeighted[index];
+
+				/* Get relative frequency for 'vector2' */
+				index = (int) vector2[att];
+				aux2 = distribution[k][attIndex][index];
+				aux2 /= attStats.nominalCountsWeighted[index];
+				
+				/* Calculate the difference */
+				attDif += (aux1 - aux2) * (aux1 - aux2);
+			}
+		} else if (optionDistanceFunction == HAMMING) {
+			/* Apply Hamming distance */
+			if (vector1[att] != vector2[att]) {
+				attDif = 1;
+			}
+		}
+		
+		return attDif;
 	}
 }
 

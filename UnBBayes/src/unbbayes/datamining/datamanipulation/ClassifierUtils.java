@@ -3,6 +3,7 @@ package unbbayes.datamining.datamanipulation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Hashtable;
 
 import unbbayes.datamining.classifiers.decisiontree.SplitObject;
 
@@ -267,7 +268,13 @@ public class ClassifierUtils {
 		//class attribute's index
 		int classIndex = instances.getClassIndex();
 		
-		//class values distribution for each value of each attribute 
+		/* 
+		 * Class values distribution for each value of each attribute.
+		 * Positions:
+		 * 0: attribute index
+		 * 1: instance index
+		 * 2: class
+		 */
 		float[][][] counts = new float[att.length-1][][];
 		
 		//number of instances without missing values for each attribute
@@ -282,7 +289,7 @@ public class ClassifierUtils {
 		//stores if the attributes has missing values or not
 		boolean[] hasMissingValues = new boolean[att.length-1];
 		
-		//initialize counts for each attribute...
+		//initialize counter 'counts' for each nominal attribute...
 		int attAux;
 		int numValues;
 		for (int i = 0; i < att.length; i++) {
@@ -313,14 +320,14 @@ public class ClassifierUtils {
 						&& attributeIndex != classIndex) {
 						if (!instance.isMissing(attributeIndex)) {
 							value = (int) instance.getValue(attributeIndex);
-							classValue = (int)instance.classValue();
+							classValue = (int)instance.getClassValue();
 							counts[j][value][classValue] += weight;
 						} else {
 							hasMissingValues[j]=true;
 						}
 					}					
 				}
-				totalCounts[instance.classValue()] += weight;
+				totalCounts[instance.getClassValue()] += weight;
 			}
 		}
 		
@@ -335,6 +342,7 @@ public class ClassifierUtils {
 						
 		for (int i = 0; i < counts.length; i++) {
 			if (hasMissingValues[i]) {
+				/* Computation with missing values */
 				Arrays.fill(attributeCounts, 0);
 				for (int j = 0; j < counts[i].length; j++) {
 					for (int k = 0; k < counts[i][j].length; k++) {
@@ -344,6 +352,7 @@ public class ClassifierUtils {
 				totalSums[i] = Utils.sum(attributeCounts);
 				infoGain = computeEntropy(attributeCounts, totalSums[i]);
 			} else {
+				/* Computation without missing values */
 				totalSums[i] = totalSum;
 				infoGain = totalInfoGain;
 			}
@@ -365,142 +374,164 @@ public class ClassifierUtils {
 			if (instances.getAttribute(attIndex).isNominal()) {
 				/* The attribute is nominal */
 				for (int j = 0; j < counts[i].length; j++) {
-					resultGain[i] -= computeEntropy(counts[i][j], totalSums[i]);	
+					resultGain[i] -= computeEntropy(counts[i][j], totalSums[i]);
 				}
-			} else {	
+			} else {
 				/* The attribute is numeric */
-				//array with possible values
-				float[] values;
-				
-				//array with classes distribution for each attribute value,
-				float[][] classesDistribution;
-				
-				//gets values effectively used sorted
-				int size = inst.size();
-				float[] instanceTemp = new float[size];
-				int counter = 0;
-				for (int x = 0; x < size; x++) {
-					instance = getInstance(inst, x);
-					if (!instance.isMissing(attIndex)) {
-						instanceTemp[counter] = instance.getValue(attIndex);
-						++counter;
-					}
-				}
-				size = counter;
-				values = new float[size];
-				for (int x = 0; x < size; x++) {
-					values[x] = instanceTemp[x];
-				}
-				Arrays.sort(values);
-				ArrayList<Float> valuesTemp = new ArrayList<Float>();
-				valuesTemp.add(values[0]);
-				float lastValue = values[0];
-				counter = 1;
-				for (int x = 1; x < size; x++) {
-					if (values[x] != lastValue) {
-						valuesTemp.add(values[x]);
-						lastValue = values[x];
-						++counter;
-					}					
-				}
-				size = counter;
-				values = new float[size];
-				for (int x = 0; x < size; x++) {
-					values[x] = valuesTemp.get(x);
-				}
-				
-				
-				//gets values effectively used sorted
-//				ArrayList<Float> valuesTemp = new ArrayList<Float>();
-//				for (int x = 0; x < inst.size(); x++) {
-//					instance = getInstance(inst, x);
-//					if (!instance.isMissing(attIndex)) {
-//						if (!valuesTemp.contains(instance.getValue(attIndex))) {
-//							valuesTemp.add(instance.getValue(attIndex));
-//						}
-//					}
-//				}
-//				values = new float[valuesTemp.size()];
-//				for (int x = 0; x < valuesTemp.size(); x++) {
-//					values[x] = valuesTemp.get(x);
-//				}
-//				Arrays.sort(values);
-				
-				classesDistribution = new float[values.length][numClassValues];
-				float[] missingValuesDistribution = new float[numClassValues];
-				
-				//fill classes distribution
-				//for each instance...
-				for (int x = 0; x < inst.size(); x++) {
-					instance = getInstance(inst,x);
-					classValue = (int)instance.classValue();
-					weight = instance.getWeight();
-					if (!instance.isMissing(attIndex)) {
-						//for each value...
-						for (int y = 0; y < values.length; y++) {
-							if (values[y] == instance.getValue(attIndex)) {
-								classesDistribution[y][classValue] += weight;
-								break;
-							}
-						}
-					} else {
-						missingValuesDistribution[classValue] += weight;
-					}
-				}					
-																	
-				//search for the minimum entropy
-				float[] distribution1, distribution2;
-				double minimumEntropy = Integer.MAX_VALUE;
-				double entropy; 
-				double minimumValue = Integer.MAX_VALUE;
-				float[] sumPart1, sumPart2;
-				double actualValue;
-				NumericData numericData;
-				numericData = new NumericData(i, missingValuesDistribution);
-				//for each attribute value...
-				for (int x = 1; x < values.length; x++) {
-					distribution1 = classesDistribution[x-1];
-					distribution2 = classesDistribution[x];
-					sumPart1 = new float[numClassValues]; 
-					sumPart2 = new float[numClassValues];
-					entropy = 0; 
-										
-					//if two values has the same class, there is no evaluation
-					if (!hasSameClass(distribution1, distribution2)) {
-						for (int y = 0; y < x; y++) {
-							sumPart1 = Utils.arraysSum(sumPart1, classesDistribution[y]);							
-						}
-						for (int y = x; y < values.length; y++) {
-							sumPart2 = Utils.arraysSum(sumPart2, classesDistribution[y]);
-						}
-						
-						entropy = computeEntropy(sumPart1, totalSums[i]); 
-						entropy += computeEntropy(sumPart2, totalSums[i]);
-						
-						actualValue = (double) (values[x-1] + values[x]) / 2.0d;
-						
-						numericData.addData(actualValue, resultGain[i] - entropy,
-								sumPart1, sumPart2);
-												
-						if (minimumEntropy > entropy) {
-							minimumEntropy = entropy;
-							minimumValue = actualValue;
-						}
-					}
-				}
-				
-				if (minimumEntropy == Integer.MAX_VALUE) {
-					resultGain[i] = 0;
-				} else {
-					resultGain[i] -= minimumEntropy;
-					splitValues[i] = minimumValue;
-				}
-				numericDataList.add(numericData);
+				computeNumericAttEntropy(splitValues, numericDataList,
+						resultGain, i, inst, attIndex, numClassValues,
+						totalSums);
 			}
 		}
 		return resultGain;
 	}
 
+
+	@SuppressWarnings("unchecked")
+	private void computeNumericAttEntropy(double[] splitValues,
+			ArrayList numericDataList, double[] resultGain, int i,
+			ArrayList inst, int attIndex, int numClassValues,
+			float[] totalSums) {
+		//array with possible values
+		float[] values;
+		
+		/* Get distinct attribute values in a sorted way */
+		values = getDistinctSortedValues(inst, attIndex);
+		int numDistinctValues = values.length;
+		
+		/* 
+		 * Array with class distribution for each attribute value.
+		 * Positions:
+		 * 0: instance index
+		 * 1: class index
+		 */
+		float[][] classDistribution = new float[numDistinctValues][numClassValues];
+		float[] missingValuesDistribution = new float[numClassValues];
+		
+		Hashtable<Float, Integer> distinctValueHash;
+		distinctValueHash = new Hashtable<Float, Integer>();
+		for (int pos = 0; pos < numDistinctValues; pos++) {
+			distinctValueHash.put(values[pos], pos);
+		}
+
+		//fill classes distribution
+		//for each instance...
+		float valueAux;
+		int pos;
+		Instance instance;
+		int classValue;
+		float weight;
+		int numInst = inst.size();
+		for (int x = 0; x < numInst; x++) {
+			instance = getInstance(inst,x);
+			classValue = (int) instance.getClassValue();
+			weight = instance.getWeight();
+			if (!instance.isMissing(attIndex)) {
+				valueAux = instance.getValue(attIndex);
+				pos = distinctValueHash.get(valueAux);
+				classDistribution[pos][classValue] += weight;
+			} else {
+				missingValuesDistribution[classValue] += weight;
+			}
+		}					
+															
+		float[] sumPart1 = new float[numClassValues]; 
+		float[] sumPart2 = new float[numClassValues];
+		for (int x = 0; x < numDistinctValues; x++) {
+			for (int y = 0; y < numClassValues; y++) {
+				sumPart2[y] += classDistribution[x][y];
+			}
+		}
+
+		//search for the minimum entropy
+		float[] distribution1, distribution2;
+		double minimumEntropy = Integer.MAX_VALUE;
+		double entropy; 
+		double minimumValue = Integer.MAX_VALUE;
+		double actualValue;
+		NumericData numericData;
+		numericData = new NumericData(i, missingValuesDistribution);
+		//for each distinct attribute value...
+		for (int x = 1; x < numDistinctValues; x++) {
+			distribution1 = classDistribution[x - 1];
+			distribution2 = classDistribution[x];
+			entropy = 0; 
+								
+			for (int y = 0; y < numClassValues; y++) {
+				sumPart1[y] += classDistribution[x - 1][y];
+				sumPart2[y] -= classDistribution[x - 1][y];
+			}
+
+			//if two values has the same class, there is no evaluation
+			if (!hasSameClass(distribution1, distribution2)) {
+				entropy = computeEntropy(sumPart1, totalSums[i]); 
+				entropy += computeEntropy(sumPart2, totalSums[i]);
+				
+				actualValue = (double) (values[x - 1] + values[x]) / 2.0d;
+				
+				numericData.addData(actualValue, resultGain[i] - entropy,
+						sumPart1, sumPart2);
+										
+				if (minimumEntropy > entropy) {
+					minimumEntropy = entropy;
+					minimumValue = actualValue;
+				}
+			}
+		}
+		
+		if (minimumEntropy == Integer.MAX_VALUE) {
+			resultGain[i] = 0;
+		} else {
+			resultGain[i] -= minimumEntropy;
+			splitValues[i] = minimumValue;
+		}
+		numericDataList.add(numericData);
+	}
+
+	private float[] getDistinctSortedValues(ArrayList inst, int attIndex) {
+		float[] distinctValues;
+		
+		/* Build array with the current attribute values for sorting */
+		int size = inst.size();
+		Instance instance;
+		float[] instanceTemp = new float[size];
+		int counter = 0;
+		for (int x = 0; x < size; x++) {
+			instance = getInstance(inst, x);
+			if (!instance.isMissing(attIndex)) {
+				instanceTemp[counter] = instance.getValue(attIndex);
+				++counter;
+			}
+		}
+		size = counter;
+		distinctValues = new float[size];
+		for (int x = 0; x < size; x++) {
+			distinctValues[x] = instanceTemp[x];
+		}
+		
+		/* Sort current attribute values */
+		Arrays.sort(distinctValues);
+		
+		/* Build array with distinct attribute values */
+		ArrayList<Float> valuesTemp = new ArrayList<Float>();
+		valuesTemp.add(distinctValues[0]);
+		float lastValue = distinctValues[0];
+		counter = 1;
+		for (int x = 1; x < size; x++) {
+			if (distinctValues[x] != lastValue) {
+				valuesTemp.add(distinctValues[x]);
+				lastValue = distinctValues[x];
+				++counter;
+			}					
+		}
+		size = counter;
+		distinctValues = new float[size];
+		for (int x = 0; x < size; x++) {
+			distinctValues[x] = valuesTemp.get(x);
+		}
+
+		return distinctValues;
+	}
 
 	//--------------------------------------------------------------------//
 
@@ -511,7 +542,7 @@ public class ClassifierUtils {
 	* @param totalSum total number of instances from the instance set 
 	* @return Entropy of the classes distribution
 	*/
-	public double computeEntropy(float[] classValues,float totalSum) {
+	public double computeEntropy(float[] classValues, float totalSum) {
 		double entropy = 0;
 		float sum = 0;
 		int size = classValues.length;

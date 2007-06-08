@@ -166,7 +166,7 @@ public class SimpleKMeans extends Clustering {
 						vals[j] = (float) tempI[i].meanOrMode(j);
 					}
 					vals[numAttributes] = 1;
-					centroids.insertInstance(new Instance(vals));
+					centroids.insertInstance(vals);
 				}
 			}
 
@@ -190,7 +190,7 @@ public class SimpleKMeans extends Clustering {
 				}	
 			}
 			vals2[numAttributes] = 1;
-			clustersStdDev.insertInstance(new Instance(vals2));
+			clustersStdDev.insertInstance(vals2);
 			clustersSize[i] = tempI[i].numInstances();
 		}
 	}

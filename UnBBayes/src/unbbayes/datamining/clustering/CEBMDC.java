@@ -136,7 +136,7 @@ public class CEBMDC extends Clustering {
 			instance[0] = numericClusters[i];
 			instance[1] = nominalClusters[i];
 			instance[2] = instances[i].data[counterIndex];
-			mixedData.insertInstance(new Instance(instance));
+			mixedData.insertInstance(instance);
 		}
 		
 		/* 

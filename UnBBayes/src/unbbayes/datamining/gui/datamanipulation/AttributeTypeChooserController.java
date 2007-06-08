@@ -474,11 +474,11 @@ public class AttributeTypeChooserController {
 		 */
 		if (loader instanceof TxtLoader) {
 			attributeIsString = new boolean[numAttributes];
-			Arrays.fill(attributeIsString, false);
-			Arrays.fill(attributeType, (byte) 0);
+			attributeType = new byte[numAttributes];
 
 			for (int att = 0; att < numAttributes; att++) {
 				attributeIsString[att] = false;
+				attributeType[att] = 0;
 				for (int inst = 0; inst < numInstancesAux; inst++) {
 					instance = instanceSet.instances[inst];
 					try {

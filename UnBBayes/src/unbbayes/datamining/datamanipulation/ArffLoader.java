@@ -64,7 +64,7 @@ public class ArffLoader extends Loader {
 		tokenizer.ordinaryChar('{');
 		tokenizer.ordinaryChar('}');
 		tokenizer.eolIsSignificant(true);
-		tokenizer.parseNumbers();
+//		tokenizer.parseNumbers(); // not working with floating (e.g. 1.23E8)
 	}
 
 	/**
@@ -173,13 +173,16 @@ public class ArffLoader extends Loader {
 					if (tokenizer.ttype == StreamTokenizer.TT_EOL) {
 						errms(resource.getString("readHeaderException5"));
 					}
-					if (tokenizer.sval != null) {
+					try {
+						float numValue;
+						numValue = (float) Double.parseDouble(tokenizer.sval);
+
+						/* Number value */
+						numberValuesAux.add(numValue);
+					} catch (NumberFormatException nfe) {
 						/* String value */
 						stringValuesAux.add(tokenizer.sval);
 						isString = true;
-					} else {
-						/* Number value */
-						numberValuesAux.add((float) tokenizer.nval);
 					}
 				}
 				if (stringValuesAux.size() == 0 && numberValuesAux.size() == 0) {
@@ -188,13 +191,23 @@ public class ArffLoader extends Loader {
 
 				/* Check if the nominal attribute values are string values */
 				if (isString) {
-					int sizeValues = stringValuesAux.size();
-
 					/* The attribute has string values */
-					String[] stringValues = new String[sizeValues];
-					for (int i = 0; i < sizeValues; i++) {
-						stringValues[i] = (String) stringValuesAux.get(i);
+					int numStringValues = stringValuesAux.size();
+					int numNumericValues = numberValuesAux.size();
+					int totalSize = numStringValues + numNumericValues;
+					String[] stringValues = new String[totalSize];
+
+					/* Get string values */
+					for (int i = 0; i < numStringValues; i++) {
+						stringValues[i] = stringValuesAux.remove(0);
 					}
+
+					/* Get numeric values (if exists) */
+					for (int i = numStringValues; i < totalSize; i++) {
+						stringValues[i] = numberValuesAux.remove(0).toString();
+					}
+
+					/* Create attribute and insert it in the attribute array */
 					attributes.add(new Attribute(attributeName, stringValues,
 							attributes.size()));
 				} else {
@@ -203,8 +216,10 @@ public class ArffLoader extends Loader {
 					/* All attribute values are number values */
 					float[] numberValues = new float[sizeValues];
 					for (int i = 0; i < sizeValues; i++) {
-						numberValues[i] = numberValuesAux.get(i);
+						numberValues[i] = numberValuesAux.remove(0);
 					}
+
+					/* Create attribute and insert it in the attribute array */
 					attributes.add(new Attribute(attributeName, numberValues,
 							attributes.size()));
 				}
@@ -383,7 +398,8 @@ public class ArffLoader extends Loader {
 			/* Check if the current attribute is the counter attribute */
 			if (i == counterIndex) {
 				try {
-					instanceWeight = (float) tokenizer.nval;
+					float numValue = (float) Double.parseDouble(tokenizer.sval);
+					instanceWeight = numValue;
 					continue;
 				} catch (NumberFormatException nfe) {
 					errms("Atributo de contagem inválido");
@@ -396,13 +412,9 @@ public class ArffLoader extends Loader {
 
 				/* Check if the attribute is made of String values */
 				if (attributeIsString[attIndex]) {
-					if (tokenizer.sval == null) {
-						/* The token is a number */
-						stringValue = String.valueOf(tokenizer.nval);
-					} else {
-						/* The token is a String */
-						stringValue = tokenizer.sval;
-					}
+					/* The token is a String */
+					stringValue = tokenizer.sval;
+
 					/* Check if value is missing */
 					if (stringValue.equals("?")) {
 						instance[attIndex] = Instance.MISSING_VALUE;
@@ -412,25 +424,20 @@ public class ArffLoader extends Loader {
 					instance[attIndex] = attribute.addValue(stringValue);
 				} else {
 					/* Map the current String value to an internal value */
-					float value = (float) tokenizer.nval;
-					instance[attIndex] = attribute.addValue(value);
+					float numValue = (float) Double.parseDouble(tokenizer.sval);
+					instance[attIndex] = attribute.addValue(numValue);
 				}
 			} else {
 				/*
 				 * The attribute is not nominal thus only numbers are allowed
 				 * here.
 				 */
-				if (tokenizer.sval != null) {
-					/*
-					 * Throw an error indicating a string has been read while
-					 * expecting a number
-					 */
-					// errms(resource.getString("getInstanceException1"));
-					throw new IOException(resource
-							.getString("getInstanceException1")
-							+ ", read " + tokenizer.toString());
+				try {
+				double numValue = Double.parseDouble(tokenizer.sval);
+				instance[attIndex] = (float) numValue;
+				} catch (Exception e) {
+					boolean pause = true;
 				}
-				instance[attIndex] = (float) tokenizer.nval;
 			}
 			++attIndex;
 			tokenizer.nextToken();
@@ -440,7 +447,7 @@ public class ArffLoader extends Loader {
 		instance[attIndex] = instanceWeight;
 		
 		/* Add the current instance to the instanceSet */
-		instanceSet.insertInstance(new Instance(instance));
+		instanceSet.insertInstance(instance);
 
 		return true;
 	}

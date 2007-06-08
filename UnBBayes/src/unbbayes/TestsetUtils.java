@@ -2,7 +2,6 @@ package unbbayes;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import unbbayes.datamining.classifiers.Classifier;
 import unbbayes.datamining.classifiers.DistributionClassifier;
@@ -13,14 +12,11 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Loader;
 import unbbayes.datamining.datamanipulation.Options;
 import unbbayes.datamining.datamanipulation.TxtLoader;
-import unbbayes.datamining.datamanipulation.Utils;
-import unbbayes.datamining.evaluation.CrossValidation;
 import unbbayes.datamining.evaluation.Evaluation;
-import unbbayes.datamining.evaluation.ROCAnalysis;
-import unbbayes.datamining.evaluation.Samples;
+import unbbayes.datamining.evaluation.Misclassify;
+import unbbayes.datamining.evaluation.Samplings;
 import unbbayes.datamining.preprocessor.imbalanceddataset.ClusterBasedSmote;
-import unbbayes.datamining.preprocessor.imbalanceddataset.ClusterBasedUndersampling;
-import unbbayes.datamining.preprocessor.imbalanceddataset.ClusterBasedUtils;
+import unbbayes.datamining.preprocessor.imbalanceddataset.Cclear;
 import unbbayes.datamining.preprocessor.imbalanceddataset.Smote;
 
 /**
@@ -33,7 +29,7 @@ public class TestsetUtils {
 	String maxSEHeader;
 	String header = "";
 	Smote smote;
-	boolean simplesampling = false;
+	private boolean simplesampling;
 	
 	/**
 	 * Set it <code>true</code> to optionDiscretize the synthetic value created for
@@ -73,11 +69,29 @@ public class TestsetUtils {
 	
 	private int negativeClass;
 
+	/** Number of clusters desired for the numeric clusterization */ 
 	private int k;
+	
+	/** 
+	 * The minimum accepted % of change in each iteration in the numeric
+	 * clusterization.
+	 */
+	private double kError = 1.001f;
 	
 	private float learningRate;
 	
 	private float momentum;
+	private float similarityThreshold;
+	private boolean useClusterDistribution;
+	private float thresholdFactor;
+	private Misclassify misclassify;
+	private float maxUnderLimit;
+	private float cleanByDistThreshold;
+	private int instanceSetType;
+	private int ratioStart;
+	private int ratioEnd;
+	private int kStart;
+	private int kEnd;
 	
 	public TestsetUtils() {
 		smote = new Smote(null);
@@ -135,7 +149,7 @@ public class TestsetUtils {
 	}
 
 	public void printHeader(int sampleID) {
-		header = Samples.getSampleName(sampleID);
+//		header = Samplings.getSamplingName(sampleID);
 
 		System.out.print("---------------------------------");
 		System.out.println("---------------------------------");
@@ -193,18 +207,11 @@ public class TestsetUtils {
 		return results;
 	}
 
-	public void sample(InstanceSet train, int sampleID, int i,
-			float[] originalDist, ClusterBasedSmote cbs,
-			ClusterBasedUndersampling cbu)
-	throws Exception {
-		Samples.sample(train, sampleID, i, originalDist, positiveClass,
-				simplesampling, k, smote, cbs, cbu);
-	}
 
 	
-	/** Auxiliary methods ***********************************/
-	
-	public static InstanceSet openFile(String fileName, int counterIndex) throws IOException {
+	/****************** Auxiliary methods **********************************/
+
+	public static InstanceSet openFile(String fileName, int counterIndex, int classIndex) throws IOException {
 		File file = new File(fileName);
 		Loader loader = null;
 		
@@ -217,6 +224,8 @@ public class TestsetUtils {
 		/* If the dataset is compacted */
 		loader.setCounterAttribute(counterIndex);
 		
+		loader.setClassIndex(classIndex);
+
 		while (loader.getInstance()) {
 			/* Wait while instances are loaded */
 		}
@@ -227,26 +236,6 @@ public class TestsetUtils {
 		}
 		
 		return null;
-	}
-
-	public static float[] distribution(InstanceSet trainData) {
-		int numInstances = trainData.numInstances();
-		int numClasses = trainData.numClasses();
-		int classIndex = trainData.classIndex;
-		int counterIndex = trainData.counterIndex;
-		float distribution[] = new float[numClasses];
-		int classValue;
-		
-		for (int i = 0; i < numClasses; i++) {
-			distribution[i] = 0;
-		}
-		
-		for (int i = 0; i < numInstances; i++) {
-			classValue = (int) trainData.instances[i].data[classIndex];
-			distribution[classValue] += trainData.instances[i].data[counterIndex];
-		}
-
-		return distribution;
 	}
 
 	/**
@@ -327,6 +316,122 @@ public class TestsetUtils {
 
 	public void setMomentum(float momentum) {
 		this.momentum = momentum;
+	}
+
+	/**
+	 * @param simplesampling the simplesampling to set
+	 */
+	public void setSimplesampling(boolean simplesampling) {
+		this.simplesampling = simplesampling;
+	}
+
+	/**
+	 * @return the simplesampling
+	 */
+	public boolean isSimplesampling() {
+		return simplesampling;
+	}
+
+	/**
+	 * @param kError the kError to set
+	 */
+	public void setKError(double kError) {
+		this.kError = kError;
+	}
+
+	/**
+	 * @return the kError
+	 */
+	public double getKError() {
+		return kError;
+	}
+
+	public float getSimilarityThreshold() {
+		return similarityThreshold;
+	}
+
+	public void setSimilarityThreshold(float similarityThreshold) {
+		this.similarityThreshold = similarityThreshold;
+	}
+
+	public boolean useClusterDistribution() {
+		return useClusterDistribution;
+	}
+
+	public void setUseClusterDistribution(boolean useClusterDistribution) {
+		this.useClusterDistribution = useClusterDistribution;
+	}
+
+	public float getThresholdFactor() {
+		return thresholdFactor;
+	}
+
+	public void setThresholdFactor(float thresholdFactor) {
+		this.thresholdFactor = thresholdFactor;
+	}
+
+	public void setMisclassify(Misclassify misclassify) {
+		this.misclassify = misclassify;
+	}
+
+	public Misclassify getMisclassify() {
+		return misclassify;
+	}
+
+	public float maxUnderLimit() {
+		return maxUnderLimit;
+	}
+
+	public void setMaxUnderLimit(float maxUnderLimit) {
+		this.maxUnderLimit = maxUnderLimit;
+	}
+
+	public float getCleanByDistThreshold() {
+		return cleanByDistThreshold;
+	}
+
+	public void setCleanByDistThreshold(float cleanByDistThreshold) {
+		this.cleanByDistThreshold = cleanByDistThreshold;
+	}
+
+	public int getInstanceSetType() {
+		return instanceSetType;
+	}
+
+	public void setInstanceSetType(int instanceSetType) {
+		this.instanceSetType = instanceSetType;
+	}
+
+	public int getRatioStart() {
+		return ratioStart;
+	}
+
+	public void setRatioStart(int ratioStart) {
+		this.ratioStart = ratioStart;
+	}
+
+	public int getRatioEnd() {
+		return ratioEnd;
+	}
+
+	public void setRatioEnd(int ratioEnd) {
+		this.ratioEnd = ratioEnd;
+	}
+
+	public int getKstart() {
+		return kStart;
+	}
+
+	public void setKstart(int kStart) {
+		this.kStart = kStart;
+	}
+
+	public int getKend() {
+		return kEnd;
+	}
+
+	public void setKend(int kEnd) {
+		this.kEnd = kEnd;
 	}
 
 }

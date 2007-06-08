@@ -13,7 +13,7 @@ import unbbayes.datamining.datamanipulation.Utils;
  * @author Emerson Lopes Machado - emersoft@conectanet.com.br
  * @date 16/02/2007
  */
-public class TestFold {
+public class TestFoldBackup {
 
 	/**
 	 * first: samplingID second: classifierID third and fourth: rocPoints
@@ -30,7 +30,40 @@ public class TestFold {
 
 	private double[][][] aucTemp;
 
+	/**
+	 * first: samplingID second: classifierID third: meand and stdDev
+	 */
+	private double[][][] globalError;
+
+	private double[][][] globalErrorTemp;
+
+	/**
+	 * first: samplingID second: classifierID third: meand and stdDev
+	 */
+	private double[][][] sensitivity;
+
+	private double[][][] sensitivityTemp;
+
+	/**
+	 * first: samplingID second: classifierID third: meand and stdDev
+	 */
+	private double[][][] specificity;
+
+	private double[][][] specificityTemp;
+
+	/**
+	 * first: samplingID second: classifierID third: meand and stdDev
+	 */
+	private double[][][] SE;
+
+	private double[][][] SETemp;
+	
 	private String[] samplingName;
+
+	/**
+	 * Array for storing the confusion matrix. [trueClass][predictedClass]
+	 */
+	private int[][] confusionMatrix;
 
 	private int numSamplings;
 
@@ -57,7 +90,7 @@ public class TestFold {
 	
 	private int numClasses;
 
-	public TestFold(int numFolds, int numRounds, TestsetUtils testsetUtils) {
+	public TestFoldBackup(int numFolds, int numRounds, TestsetUtils testsetUtils) {
 		this.testsetUtils = testsetUtils;
 		this.numClassifiers = Classifiers.getNumClassifiers();
 		positiveClass = testsetUtils.getPositiveClass();
@@ -235,6 +268,15 @@ public class TestFold {
 		int actualClass;
 		int predictedClass;
 		float weight;
+		int[] total = new int[numClasses];
+		Arrays.fill(total, 0);
+
+//		/* Initiate the confusion matrix */
+//		for (int i = 0; i < numClasses; i++) {
+//			for (int j = 0; j < numClasses; j++) {
+//				confusionMatrix[i][j] = 0;
+//			}
+//		}
 
 		/*
 		 * Get probabilistic classifier's estimate that instance i is positive.
@@ -251,61 +293,10 @@ public class TestFold {
 
 			predictedClass = Utils.maxIndex(dist);
 
-			confusionMatrix[samplingID]
-			               [classfID]
-			               [pos]
-			               [actualClass]
-			               [predictedClass] += weight;
+			confusionMatrix[actualClass][predictedClass] += weight;
+
+			total[actualClass] += weight;
 		}
-
-		return probs;
-	}
-
-	private void average() {
-		rocPointsAvg = new float[numSamplings][numClassifiers][][];
-		rocPointsStdDev = new float[numSamplings][numClassifiers][][];
-		auc = new double[numSamplings][numClassifiers][];
-		float[][][] rocPointsAux;
-		
-		for (int i = 0; i < numSamplings; i++) {
-			rocPointsAvg[i] = new float[numClassifiers][][];
-			rocPointsStdDev[i] = new float[numClassifiers][][];
-			auc[i] = new double[numClassifiers][];
-			for (int j = 0; j < numClassifiers; j++) {
-				/* Average the 'numRoundsTotal' roc curves */
-				rocPointsAux = 
-					ROCAnalysis.averageROCPoints(rocPointsProbsTemp[i][j]);
-				rocPointsAvg[i][j] = rocPointsAux[0];
-				rocPointsStdDev[i][j] = rocPointsAux[1];
-
-				if (numRoundsTotal > 1) {
-					/* Average the 'numFolds' aucs */
-					auc[i][j] = Utils.computeMeanStdDev(aucTemp[i][j]);
-				} else {
-					auc[i][j] = new double[2];
-					auc[i][j][0] = aucTemp[i][j][0];
-					auc[i][j][1] = 0;
-				}
-			}
-		}
-	}
-	
-	private void generateIndexes() {
-		/**
-		 * Array for storing the confusion matrix.
-		 * first: samplingID
-		 * second: classifierID
-		 * third: true class
-		 * fourth: predicted class
-		 */
-		int[][][][] confusionMatrix;
-		
-		for
-		
-		int[] total = new int[numClasses];
-		Arrays.fill(total, 0);
-
-		total[actualClass] += weight;
 
 		int tp = confusionMatrix[positiveClass][positiveClass];
 		int fp = confusionMatrix[negativeClass][positiveClass];
@@ -332,16 +323,34 @@ public class TestFold {
 		sensitivityTemp[samplingID][classfID][pos] = sensitivity * 100;
 		specificityTemp[samplingID][classfID][pos] = specificity * 100;
 		SETemp[samplingID][classfID][pos] = SE * 100;
-		
+
+		return probs;
+	}
+
+	private void average() {
+		rocPointsAvg = new float[numSamplings][numClassifiers][][];
+		rocPointsStdDev = new float[numSamplings][numClassifiers][][];
+		auc = new double[numSamplings][numClassifiers][];
 		globalError = new double[numSamplings][numClassifiers][];
 		sensitivity = new double[numSamplings][numClassifiers][];
 		specificity = new double[numSamplings][numClassifiers][];
 		SE = new double[numSamplings][numClassifiers][];
+		float[][][] rocPointsAux;
 		
 		for (int i = 0; i < numSamplings; i++) {
+			rocPointsAvg[i] = new float[numClassifiers][][];
+			rocPointsStdDev[i] = new float[numClassifiers][][];
+			auc[i] = new double[numClassifiers][];
 			for (int j = 0; j < numClassifiers; j++) {
+				/* Average the 'numRoundsTotal' roc curves */
+				rocPointsAux = 
+					ROCAnalysis.averageROCPoints(rocPointsProbsTemp[i][j]);
+				rocPointsAvg[i][j] = rocPointsAux[0];
+				rocPointsStdDev[i][j] = rocPointsAux[1];
+
 				if (numRoundsTotal > 1) {
 					/* Average the 'numFolds' aucs */
+					auc[i][j] = Utils.computeMeanStdDev(aucTemp[i][j]);
 					globalError[i][j] = Utils
 							.computeMeanStdDev(globalErrorTemp[i][j]);
 					sensitivity[i][j] = Utils
@@ -350,6 +359,10 @@ public class TestFold {
 							.computeMeanStdDev(specificityTemp[i][j]);
 					SE[i][j] = Utils.computeMeanStdDev(SETemp[i][j]);
 				} else {
+					auc[i][j] = new double[2];
+					auc[i][j][0] = aucTemp[i][j][0];
+					auc[i][j][1] = 0;
+
 					globalError[i][j] = new double[2];
 					globalError[i][j][0] = globalErrorTemp[i][j][0];
 					globalError[i][j][1] = 0;
@@ -379,6 +392,7 @@ public class TestFold {
 			specificityTemp = new double[numSamplings][numClassifiers][numRoundsTotal];
 			SETemp = new double[numSamplings][numClassifiers][numRoundsTotal];
 			samplingName = new String[numSamplings];
+			confusionMatrix = new int[numClasses][numClasses];
 		}
 	}
 
@@ -399,7 +413,6 @@ public class TestFold {
 	}
 
 	public double[] getGlobalError(int samplingID, int classifier) {
-		
 		return globalError[samplingID][classifier];
 	}
 

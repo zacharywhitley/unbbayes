@@ -130,7 +130,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
 
 	for(int i=0; i<combinationsSize; i++){                    //para cada combinaçao gerada
 	  //addCombination(combinationsKeys[i], instance.classValue(), instance.getWeight());
-	  addCombination(combinationsKeys[i], (int) instance.classValue(), (int)instance.getWeight());
+	  addCombination(combinationsKeys[i], (int) instance.getClassValue(), (int)instance.getWeight());
 	}
   }
 

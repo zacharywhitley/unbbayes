@@ -190,7 +190,7 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
 				for (int i=0;i<numInstances;i++)
 				{
 					inst = data.getInstance(((Integer)actualInst.get(i)).intValue());
-					distribution[(int) inst.classValue()] += inst.getWeight();
+					distribution[(int) inst.getClassValue()] += inst.getWeight();
 				}
 
 				//make leaf if information gain is zero....
@@ -411,15 +411,4 @@ public class Id3 extends DecisionTreeLearning implements Serializable{
          }
        }
 
-		@Override
-		public void descendTree(Node treeNode, int[] count, ArrayList<float[]> positivePoints, ArrayList<float[]> negativePoints, ArrayList<float[]> probs) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public float positiveClassProb(Instance instance, int positiveClass) {
-			// TODO Auto-generated method stub
-			return 0;
-		}
 }

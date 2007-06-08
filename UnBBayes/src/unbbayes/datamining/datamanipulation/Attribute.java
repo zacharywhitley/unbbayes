@@ -167,6 +167,44 @@ public class Attribute implements Serializable {
 	}
 
 	/**
+	 * Copy constructor.
+	 * 
+	 * @param source
+	 */
+	public Attribute(Attribute source) {
+		attributeType = source.attributeType;
+		attributeName = new String(source.attributeName);
+		isString = source.isString;
+		if (source.stringValuesTemp != null) {
+			stringValuesTemp = (ArrayList<String>) source.stringValuesTemp.clone();
+		}
+		if (source.numberValuesTemp != null) {
+			numberValuesTemp = (ArrayList<Float>) source.numberValuesTemp.clone();
+		}
+		if (source.hashtableString != null) {
+			hashtableString = (Hashtable<String, Integer>) source.hashtableString.clone();
+		}
+		if (source.hashtableNumber != null) {
+			hashtableNumber = (Hashtable<Float, Integer>) source.hashtableNumber.clone();
+		}
+		numValues = source.numValues;
+		attIndex = source.attIndex;
+
+		if (source.stringValues != null) {
+			stringValues = new String[numValues];
+			for (int i = 0; i < numValues; i++) {
+				stringValues[i] = new String(source.stringValues[i]);
+			}
+		}
+		if (source.numberValues != null) {
+			numberValues = new float[numValues];
+			for (int i = 0; i < numValues; i++) {
+				numberValues[i] = source.numberValues[i];
+			}
+		}
+	}
+	
+	/**
 	 * Returns an enumeration of all the attribute's values
 	 *
 	 * @return Enumeration of all the attribute's values
@@ -376,7 +414,22 @@ public class Attribute implements Serializable {
 		if (key == -1) {
 			/* The input value is new. */
 			key = numValues;
-			stringValuesTemp.add(value);
+			/* 
+			 * If the numberValuesTemp is null then we are not at the reading
+			 * process.
+			 */
+			if (stringValuesTemp == null) {
+				String[] newStringValues = new String[numValues + 1];
+				for (int i = 0; i < numValues; i++) {
+					newStringValues[i] = stringValues[i];
+				}
+				newStringValues[numValues] = value;
+				stringValues = newStringValues;
+				instanceSet.setAttributeHasChanged(attIndex);
+			} else {
+				/* We are at the reading process */
+				stringValuesTemp.add(value);
+			}
 			hashtableString.put(value, new Integer(key));
 			++numValues;
 		}
@@ -393,7 +446,23 @@ public class Attribute implements Serializable {
 		if (key == -1) {
 			/* The input value is new. */
 			key = numValues;
-			numberValuesTemp.add(value);
+			
+			/* 
+			 * If the numberValuesTemp is null then we are not at the reading
+			 * process.
+			 */
+			if (numberValuesTemp == null) {
+				float[] newNumberValues = new float[numValues + 1];
+				for (int i = 0; i < numValues; i++) {
+					newNumberValues[i] = numberValues[i];
+				}
+				newNumberValues[numValues] = value;
+				numberValues = newNumberValues;
+				instanceSet.setAttributeHasChanged(attIndex);
+			} else {
+				/* We are at the reading process */
+				numberValuesTemp.add(value);
+			}
 			hashtableNumber.put(value, new Integer(key));
 			++numValues;
 		}

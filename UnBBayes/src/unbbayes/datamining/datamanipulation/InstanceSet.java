@@ -5,12 +5,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Random;
 import java.util.ResourceBundle;
-
-import unbbayes.datamining.clustering.Kmeans;
-import unbbayes.datamining.distance.Euclidean;
-import unbbayes.datamining.distance.IDistance;
 
 /**
  * Class for handling a set of instances.
@@ -19,12 +16,15 @@ import unbbayes.datamining.distance.IDistance;
  * @version $1.0 $ (16/02/2002)
  * 
  * @author Emerson Lopes Machado - emersoft@conectanet.com.br - second version
- * @version $2.0 $ (16/02/2002)
+ * @version $2.0 $ (16/10/2006)
  * @date 27/09/2006
  */
 public class InstanceSet implements Serializable {
 
 	private static final long serialVersionUID = 1L;
+
+	/*** The precision parameter used for numeric attributes */
+	protected static final float DEFAULT_NUM_PRECISION = 0.01f;
 
 	/** The dataset's name. */
 	private String relationName;
@@ -116,6 +116,13 @@ public class InstanceSet implements Serializable {
 	/** Random used in the sorting of the instances */
 	private static Random rnd;
 
+	private boolean hasChanged;
+
+	private float[] distribution;
+
+	/** Maps the instancesIDs to the actual instances */
+	public Hashtable<Integer, Integer> instancesIDs;
+
 	/**
 	 * Constructor creating an empty set of instances.
 	 * Set class index to be undefined. Sets
@@ -142,6 +149,7 @@ public class InstanceSet implements Serializable {
 
 		instances = new Instance[capacity];
 		attributeType = new byte[numAttributes];
+		instancesIDs = new Hashtable<Integer, Integer>();
 		
 		/* Get information related to the attributes */
 		numNominalAttributes = 0;
@@ -149,6 +157,7 @@ public class InstanceSet implements Serializable {
 		numCyclicAttributes = 0;
 		for (int att = 0; att < numAttributes; att++) {
 			attributeType[att] = newAttributes[att].getAttributeType();
+			attributes[att].setInstanceSet(this);
 			switch (attributeType[att]) {
 				case NOMINAL:
 					++numNominalAttributes;
@@ -165,6 +174,7 @@ public class InstanceSet implements Serializable {
 		/* Set flag that tells that an attribute has been changed */
 		attributeHasChanged = new boolean[numAttributes];
 		Arrays.fill(attributeHasChanged, true);
+		hasChanged = true;
 	}
 
 	/**
@@ -177,19 +187,33 @@ public class InstanceSet implements Serializable {
 	 * @param capacity The capacity of the new dataset
 	 */
 	public InstanceSet(InstanceSet source, int capacity) {
-		this (capacity, (source.attributes).clone());
-		this.classIndex = source.classIndex;
-		this.relationName = source.relationName;
-		this.counterIndex = source.counterIndex;
+		classIndex = source.classIndex;
+		relationName = source.relationName;
+		counterIndex = source.counterIndex;
 		if (source.counterAttributeName != null) {
 			this.counterAttributeName = new String(source.counterAttributeName);
 		}
-		this.attributeType = source.attributeType.clone();
-		this.numAttributes = source.numAttributes;
-		this.numCyclicAttributes = source.numCyclicAttributes;
-		this.numNominalAttributes = source.numNominalAttributes;
-		this.numNumericAttributes = source.numNumericAttributes;
-		this.attributeHasChanged = source.attributeHasChanged;
+		numAttributes = source.numAttributes;
+		numCyclicAttributes = source.numCyclicAttributes;
+		numNominalAttributes = source.numNominalAttributes;
+		numNumericAttributes = source.numNumericAttributes;
+		instanceSetType = source.instanceSetType;
+
+		attributeHasChanged = new boolean[numAttributes];
+		attributeType = new byte[numAttributes];
+		attributes = new Attribute[numAttributes];
+		instances = new Instance[capacity];
+		attributeStats = new AttributeStats[numAttributes];
+		instancesIDs = new Hashtable<Integer, Integer>();
+		
+		for (int att = 0; att < numAttributes; att++) {
+			attributes[att] = new Attribute(source.attributes[att]);
+			attributes[att].setInstanceSet(this);
+			attributeType[att] = source.attributeType[att];
+			attributeHasChanged[att] = true;
+		}
+		
+		hasChanged = true;
 	}
 
 	/**
@@ -222,6 +246,21 @@ public class InstanceSet implements Serializable {
 			throw new IllegalArgumentException(exception);
 		}
 		source.copyInstancesTo(this, first, numToCopy);
+	}
+
+	/**
+	 * Creates a new set of instances by copying a
+	 * subset of another set.
+	 *
+	 * @param source The set of instances from which a subset
+	 * is to be created
+	 * @param first The index of the first instance to be copied
+	 * @param numToCopy The number of instances to be copied
+	 * @exception IllegalArgumentException if first and numToCopy are out of range
+	 */
+	public InstanceSet(InstanceSet source, int[] instancesIDs) {
+		this(source, instancesIDs.length);
+		source.copyInstancesTo(this, instancesIDs);
 	}
 
 	/**
@@ -298,9 +337,26 @@ public class InstanceSet implements Serializable {
 			instances = newInstanceSet;
 			
 			Arrays.fill(attributeHasChanged, true);
+			hasChanged = true;
 		}
 	}
 
+	/**
+	 * Removes from this instanceSet those instances marked as <code>true
+	 * </code> in the input array of indexes <code>deleteIndex</code>.
+	 * 
+	 * @param deleteIndex The index of the instance to be removed.
+	 */
+	public final void removeInstances(int[] instancesIDs) {
+		boolean[] deleteIndex = new boolean[numInstances];
+		Arrays.fill(deleteIndex, false);
+		
+		for (int i = 0; i < instancesIDs.length; i++) {
+			deleteIndex[instancesIDs[i]] = true;
+		}
+		removeInstances(deleteIndex);
+	}
+	
 	/**
 	 * Removes from this instanceSet those instances marked as <code>true
 	 * </code> in the input array of indexes <code>deleteIndex</code>.
@@ -332,6 +388,7 @@ public class InstanceSet implements Serializable {
 		 * Make a new instanceSet with only the instances not marked for 
 		 * deletion.
 		 */
+		instancesIDs = new Hashtable<Integer, Integer>(newSize);
 		int newInstanceIndex = 0;
 		for (int inst = 0; inst < deleteSize; inst++) {
 			if (deleteIndex[inst]) {
@@ -341,12 +398,14 @@ public class InstanceSet implements Serializable {
 				continue;
 			}
 			newInstanceSet[newInstanceIndex] = instances[inst];
+			instancesIDs.put(instances[inst].getInstanceID(), newInstanceIndex);
 			++newInstanceIndex;
 		}
 		
 		if (deleteSize < currentSize) {
 			for (int inst = deleteSize; inst < currentSize; inst++) {
 				newInstanceSet[newInstanceIndex] = instances[inst];
+				instancesIDs.put(instances[inst].getInstanceID(), newInstanceIndex);
 				++newInstanceIndex;
 			}
 		}
@@ -355,6 +414,7 @@ public class InstanceSet implements Serializable {
 		instances = newInstanceSet;
 		
 		Arrays.fill(attributeHasChanged, true);
+		hasChanged = true;
 	}
 
 	/**
@@ -409,6 +469,8 @@ public class InstanceSet implements Serializable {
 			for (int inst = 0; inst < numInstances; inst++) {
 				instances[inst].removeAttribute(index);
 			}
+			
+			hasChanged = true;
 		}
 	}
 
@@ -490,6 +552,16 @@ public class InstanceSet implements Serializable {
 	}
 
 	/**
+	 * Returns the instance at the given position.
+	 *
+	 * @param index Instance's index
+	 * @return The instance at the given position
+	 */
+	public final Instance getInstanceByID(int instanceID) {
+		return instances[instancesIDs.get(instanceID)];
+	}
+
+	/**
 	 * Set an attribute at the given position (0 to numAttributes) and 
 	 * sets all values to be missing. IllegalArgumentException if the given 
 	 * index is out of range
@@ -510,6 +582,8 @@ public class InstanceSet implements Serializable {
 		for (int i = 0; i < numInstances; i++) {
 			instances[i].setMissing(att);
 		}
+		
+		hasChanged = true;
 	}
 
 	/**
@@ -520,9 +594,21 @@ public class InstanceSet implements Serializable {
 	public void insertInstance(Instance newInstance) {
 		instances[numInstances] = newInstance;
 		newInstance.setInstanceSet(this);
+		instancesIDs.put(newInstance.getInstanceID(), numInstances);
 		numInstances++;
 		numWeightedInstances += newInstance.data[counterIndex];
+		
 		Arrays.fill(attributeHasChanged, true);
+		hasChanged = true;
+	}
+	
+	/**
+	 * Insert an instance to current Dataset
+	 * 
+	 * @param newInstance New instance
+	 */
+	public void insertInstance(float[] values) {
+		insertInstance(new Instance(values, numInstances));
 	}
 	
 	/**
@@ -532,6 +618,8 @@ public class InstanceSet implements Serializable {
 	 */
 	public final void setClass(Attribute att) {
 		classIndex = att.getIndex();
+		
+		hasChanged = true;
 	}
 
 	/**
@@ -559,6 +647,8 @@ public class InstanceSet implements Serializable {
 			throw new IllegalArgumentException(exception + classIndex);
 		}
 		this.classIndex = classIndex;
+		
+		hasChanged = true;
 	}
 
 	/**
@@ -601,6 +691,9 @@ public class InstanceSet implements Serializable {
 				removeInstance(inst);
 			}
 		}
+		
+		Arrays.fill(attributeHasChanged, true);
+		hasChanged = true;
 	}
 
 	/**
@@ -619,15 +712,32 @@ public class InstanceSet implements Serializable {
 		int inst = start;
 		int counter = 0;
 		while (counter  < qtd) {
-			destination.instances[destination.numInstances]
-			                      = instances[inst].clone();
-			destination.numInstances++;
-			destination.numWeightedInstances += 
-				instances[inst].data[counterIndex];
+			destination.insertInstance(new Instance(instances[inst]));
 			++inst;
 			++counter;
 		}
 		Arrays.fill(destination.attributeHasChanged, true);
+		destination.hasChanged = true;
+	}
+
+	/**
+	 * Copies instances from one set to the end of another one. It copies all
+	 * instances specified in the array of int instancesIDs. It does not check
+	 * if the instances specified in the input array exists.
+	 * 
+	 * @param from Position of the first instance to be copied
+	 * @param instancesIDs The instances index positions desired
+	 */
+	public void copyInstancesTo(InstanceSet destination, int[] instancesIDs) {
+		int numInstancesIDs = instancesIDs.length;
+		int inst;
+		for (int i = 0; i < numInstancesIDs; i++) {
+			inst = instancesIDs[i];
+			destination.insertInstance(new Instance(instances[inst]));
+		}
+		
+		Arrays.fill(destination.attributeHasChanged, true);
+		destination.hasChanged = true;
 	}
 
 	/**
@@ -678,6 +788,7 @@ public class InstanceSet implements Serializable {
 	public final void randomize(Random random) {
 		int index;
 		
+		instancesIDs = new Hashtable<Integer, Integer>(numInstances);
 		for (int i = numInstances - 1; i > 0; i--) {
 			/* Randomly get an instance index */ 
 			index = (int) (random.nextDouble() * (double) i);
@@ -686,6 +797,7 @@ public class InstanceSet implements Serializable {
 			Instance temp = instances[i];
 			instances[i] = instances[index];
 			instances[index] = temp;
+			instancesIDs.put(instances[index].getInstanceID(), index);
 		}
 	}
 
@@ -713,9 +825,13 @@ public class InstanceSet implements Serializable {
 	 * @param second Index of the second element
 	 */
 	public final void swap(int first, int second) {
+		instancesIDs.remove(instances[first].getInstanceID());
+		instancesIDs.remove(instances[second].getInstanceID());
 		Instance temp = instances[first];
 		instances[first] = instances[second];
 		instances[second] = temp;
+		instancesIDs.put(instances[first].getInstanceID(), first);
+		instancesIDs.put(instances[second].getInstanceID(), second);
 	}
 
 	/**
@@ -818,6 +934,10 @@ public class InstanceSet implements Serializable {
 				attributes[i].setFinal();
 			}
 		}
+		setInstanceSetType();
+		
+		Arrays.fill(attributeHasChanged, true);
+		hasChanged = true;
 	}
 	
 	/**
@@ -835,16 +955,6 @@ public class InstanceSet implements Serializable {
 		}
 		
 		instances = newInstances;
-	}
-
-	/**
-	 * Set the set of instances to the informed vector of instances.
-	 * 
-	 * @param newVec
-	 */
-	public void setInstances(Instance[] newVec) {
-		instances = newVec;
-		Arrays.fill(attributeHasChanged, true);
 	}
 
 	/**
@@ -936,6 +1046,8 @@ public class InstanceSet implements Serializable {
 		
 		/* Remove those instances marked to be removed */
 		removeInstances(remove);
+		
+		hasChanged = true;
 	}
 
 	/**
@@ -1047,6 +1159,8 @@ public class InstanceSet implements Serializable {
 		
 		Arrays.fill(attributeHasChanged, true);
 		Arrays.fill(testSet.attributeHasChanged, true);
+		hasChanged = true;
+		testSet.hasChanged = true;
 
 		return testSet;
 	}
@@ -1147,33 +1261,32 @@ public class InstanceSet implements Serializable {
 		}
 		
 		Arrays.fill(attributeHasChanged, true);
+		hasChanged = true;
 	}
 
-	public void insertInstances(float[][] newInstanceSet) {
+	public int[] insertInstances(float[][] newInstanceSet) {
 		int increaseSize = newInstanceSet.length;
-		int newSize = increaseSize + numInstances;
-		Instance[] newInstances = new Instance[newSize];
-		int inst;
+		int oldSize = numInstances;
+		int[] newInstancesIDs = new int[increaseSize];
 		
-		/* First, copy the instances from the current instanceSet */
-		for (inst = 0; inst < numInstances; inst++) {
-			newInstances[inst] = instances[inst];
-		}
+		/* First, increase size */
+		sizeUp(increaseSize);
 
-		/* Next, copy the instances from the new instanceSet */
-		for (inst = 0; numInstances < newSize; numInstances++, inst++) {
-			Instance newInstance = new Instance(newInstanceSet[inst]);
-			newInstances[numInstances] = newInstance;
-			newInstance.setInstanceSet(this);
-			numWeightedInstances += newInstanceSet[inst][counterIndex];
+		/* Next, insert the instances from the new instanceSet */
+		for (int i = 0; i < increaseSize; i++) {
+			insertInstance(newInstanceSet[i]);
+
+			/* Create array of the new instances' index */
+			newInstancesIDs[i] = oldSize + i;
 		}
 		
-		instances = newInstances;
-
 		/* Now compact the instanceSet */
 //		compact();
 
 		Arrays.fill(attributeHasChanged, true);
+		hasChanged = true;
+		
+		return newInstancesIDs;
 	}
 
 
@@ -1191,7 +1304,23 @@ public class InstanceSet implements Serializable {
 	 * sorted in ascending way.
 	 */
 	public int[] sortAscending() {
-		return sort(false);
+		return sort(false, -1);
+	}
+
+	/**
+	 * Returns an index of this instanceSet with the instances' position 
+	 * sorted in ascending way according to the attribute specified as a
+	 * parameter. It does not change the position of the 
+	 * instances in this instanceSet. Should two instances be equal, they will
+	 * appear in resulting index in the same order they appear in this
+	 * instanceSet (in other words, this method is stable).
+	 * 
+	 * @param att The attribute index wich will the instances be sorted by
+	 * @return An array of integers with the positions of this instanceSet
+	 * sorted in ascending way.
+	 */
+	public int[] sortAscending(int att) {
+		return sort(false, att);
 	}
 
 	/**
@@ -1205,10 +1334,26 @@ public class InstanceSet implements Serializable {
 	 * sorted in descending way.
 	 */
 	public int[] sortDescending() {
-		return sort(true);
+		return sort(true, -1);
 	}
 
-	private int[] sort(boolean descending) {
+	/**
+	 * Returns an index of this instanceSet with the instances' position 
+	 * sorted in descending way according to the attribute specified as a
+	 * parameter. It does not change the position of the 
+	 * instances in this instanceSet. Should two instances be equal, they will
+	 * appear in resulting index in the same order they appear in this
+	 * instanceSet (in other words, this method is stable).
+	 * 
+	 * @param att The attribute index wich will the instances be sorted by
+	 * @return An array of integers with the positions of this instanceSet
+	 * sorted in descending way.
+	 */
+	public int[] sortDescending(int att) {
+		return sort(true, att);
+	}
+
+	private int[] sort(boolean descending, int att) {
 		float[][][] arrays = new float[numInstances][][];
 		for (int inst = 0; inst < numInstances; inst++) {
 			arrays[inst] = new float[2][];
@@ -1216,7 +1361,11 @@ public class InstanceSet implements Serializable {
 			float[] aux = {inst};
 			arrays[inst][1] = aux;
 		}
-		sort(arrays);
+		if (att == -1) {
+			sort(arrays);
+		} else {
+			sort(arrays, att);
+		}
 		
 		int[] index = new int[numInstances];
 		
@@ -1266,11 +1415,31 @@ public class InstanceSet implements Serializable {
 		});
 	}
 
+	private void sort(float[][][] array, final int att) {
+		Arrays.sort(array, new Comparator<float[][]>() {
+			public int compare(final float[][] arg0, final float[][] arg1) {
+				float[][] p1 = (float[][]) arg0;
+				float[][] p2 = (float[][]) arg1;
+				float x;
+				
+				x = p1[0][att] - p2[0][att];
+				if (x < 0) {
+					return -1;
+				} else if (x > 0) {
+					return 1;
+				}
+				return 0;
+			}
+		});
+	}
+
 	/*------------------- Quicksort - end ---------------------*/
 
 	
 	public void setCounterIndex(int counterIndex) {
 		this.counterIndex = counterIndex;
+		
+		hasChanged = true;
 	}
 
 	public int getCounterIndex() {
@@ -1367,12 +1536,26 @@ public class InstanceSet implements Serializable {
 		}
 
 		/* Set instances' position according to the stratified instancesIDs */
+		this.instancesIDs = new Hashtable<Integer, Integer>(numInstances);
 		Instance[] newInstances = new Instance[numInstances];
 		for (int i = 0; i < numInstances; i++) {
 			inst = instancesIDs[i];
 			newInstances[i] = instances[inst];
+			this.instancesIDs.put(newInstances[i].getInstanceID(), i);
 		}
 		instances = newInstances;
+		
+		/* Test */
+//		int[][] ema = new int[numClasses][numFolds];
+//		int classValue;
+//		int fold;
+//		for (int i = 0; i < numInstances; i++) {
+//			fold = i / (numInstances / numFolds);
+//			classValue = (int) instances[i].data[classIndex];
+//			++ema[classValue][fold];
+//		}
+//		@SuppressWarnings("unused")
+//		boolean pause = true;
 	}
 
 	public boolean classIsNominal() {
@@ -1523,19 +1706,196 @@ public class InstanceSet implements Serializable {
 		}
 		
 		if (mixed) {
-			instanceSetType = 2;
+			instanceSetType = MIXED;
 		} else if (nominal) {
-			instanceSetType = 1;
+			instanceSetType = NOMINAL;
 		} else {
-			instanceSetType = 0;
+			instanceSetType = NUMERIC;
 		}
 	}
 
-	public boolean isNominal() {
-		if (instanceSetType == 1) {
-			return true;
-		}
-		return false;
+	public int getInstanceSetType() {
+		return instanceSetType;
 	}
 	
+	public boolean isNumeric() {
+		return instanceSetType == NUMERIC;
+	}
+	
+	public boolean isNominal() {
+		return instanceSetType == NOMINAL;
+	}
+	
+	public boolean isMixed() {
+		return instanceSetType == MIXED;
+	}
+	
+	public float[] getClassDistribution(boolean force) {
+		/* Check if this instanceSet has been changed */
+		if (hasChanged || force) {
+			int numClasses = numClasses();
+			distribution = new float[numClasses];
+			
+			for (int i = 0; i < numClasses; i++) {
+				distribution[i] = 0;
+			}
+			
+			int classValue;
+			for (int i = 0; i < numInstances; i++) {
+				classValue = (int) instances[i].data[classIndex];
+				distribution[classValue] += instances[i].data[counterIndex];
+			}
+			
+			hasChanged = false;
+		}
+
+		return distribution.clone();
+	}
+
+	public float positiveFrequency(int positiveClass) {
+		return  getClassDistribution(false)[positiveClass] / numWeightedInstances;
+	}
+
+	public void setAttributeHasChanged(int att) {
+		this.attributeHasChanged[att] = true;
+	}
+
+	/** 
+	 * Determine the estimator numeric precision from differences between
+	 * adjacent values.
+	 */
+	public float[] computePrecision() {
+		int[] instancesIDs = new int[numInstances];
+		
+		for (int i = 0; i < numInstances; i++) {
+			instancesIDs[i] = i;
+		}
+		
+		return computePrecision(instancesIDs);
+	}
+
+	/** 
+	 * Determine the estimator numeric precision from differences between
+	 * adjacent values.
+	 */
+	public float[] computePrecision(int[] instancesIDs) {
+		float[] precision = new float[numNumericAttributes];
+		int[] pos;
+		Hashtable<Integer, Integer> validInstances;
+		validInstances = new Hashtable<Integer, Integer>();
+		int inst;
+		float lastValue = 0;
+		int distinct;
+		float value;
+		float deltaSum;
+		int attIndex;
+		
+		for (int i = 0; i < instancesIDs.length; i++) {
+			inst = instancesIDs[i];
+			validInstances.put(inst, i);
+		}
+		
+		attIndex = 0;
+		for (int att = 0; att < numNumericAttributes; att++) {
+			if (attributeType[att] != NUMERIC) {
+				continue;
+			}
+			
+			precision[attIndex] = DEFAULT_NUM_PRECISION;
+				
+			pos = sortAscending(att);
+			
+			distinct = 0;
+			deltaSum = 0;
+			lastValue = instances[pos[0]].data[att];
+			for (int i = 1; i < numInstances; i++) {
+				inst = pos[i];
+				
+				if (!validInstances.containsKey(inst)) {
+					continue;
+				}
+				
+				value = instances[inst].data[att];
+				
+				if (value != lastValue) {
+					deltaSum += value - lastValue;
+					lastValue = value;
+					++distinct;
+				}
+			}
+			if (distinct > 0) {
+				precision[attIndex] = deltaSum / distinct;
+			}
+			++attIndex;
+		}
+		
+		return precision;
+	}
+
+	public int[] getArrayOfInstancesPos(int[] misclassifiedInstancesIDs) {
+		int[] instancesPos = new int[numInstances];
+		
+		for (int i = 0; i < numInstances; i++) {
+			instancesPos[i] = instancesIDs.get(misclassifiedInstancesIDs[i]);
+		}
+		
+		return instancesPos;
+	}
+
+	public int getInstancePos(int instanceID) {
+		if (instancesIDs.containsKey(instanceID)) {
+			return instancesIDs.get(instanceID);
+		} else {
+			return -1;
+		}
+	}
+
+	public int[] getInstancesPosFromClass(int classValue) {
+		int counter = 0;
+		int instancesIDsTmp[] = new int[numInstances];
+		for (int inst = 0; inst < numInstances; inst++) {
+			if (instances[inst].data[classIndex] == classValue) {
+				instancesIDsTmp[counter] = inst;
+				++counter;
+			}
+		}
+		int[] instancesPos = new int[counter];
+		for (int i = 0; i < counter; i++) {
+			instancesPos[i] = instancesIDsTmp[i];
+		}
+		
+		return instancesPos;
+	}
+
+	public void rebuildInstancesIDs() {
+		instancesIDs = new Hashtable<Integer, Integer>();
+		for (int i = 0; i < numInstances; i++) {
+			instancesIDs.put(i, i);
+			instances[i].assignID(i);
+		}
+	}
+	
+	public void assume(InstanceSet instanceSet) {
+		this.relationName = instanceSet.relationName;
+		this.counterAttributeName = instanceSet.counterAttributeName;
+		this.attributes = instanceSet.attributes;
+		this.attributeType = instanceSet.attributeType;
+		this.numAttributes = instanceSet.numAttributes;
+		this.numNominalAttributes = instanceSet.numNominalAttributes;
+		this.numNumericAttributes = instanceSet.numNumericAttributes;
+		this.numCyclicAttributes = instanceSet.numCyclicAttributes;
+		this.instances = instanceSet.instances;
+		this.classIndex = instanceSet.classIndex;
+		this.counterIndex = instanceSet.counterIndex;
+		this.numInstances = instanceSet.numInstances;
+		this.numWeightedInstances = instanceSet.numWeightedInstances;
+		this.compactedFile = instanceSet.compactedFile;
+		this.attributeHasChanged = instanceSet.attributeHasChanged;
+		this.attributeStats = instanceSet.attributeStats;
+		this.instanceSetType = instanceSet.instanceSetType;
+		this.hasChanged = instanceSet.hasChanged;
+		this.distribution = instanceSet.distribution;
+		this.instancesIDs = instanceSet.instancesIDs;
+	}
+
 }

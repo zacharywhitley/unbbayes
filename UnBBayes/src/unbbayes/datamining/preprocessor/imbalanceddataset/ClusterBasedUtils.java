@@ -1,8 +1,12 @@
 package unbbayes.datamining.preprocessor.imbalanceddataset;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
+import unbbayes.TestsetUtils;
 import unbbayes.datamining.clustering.CEBMDC;
+import unbbayes.datamining.clustering.Cluster;
+import unbbayes.datamining.clustering.ClusterDistribution;
 import unbbayes.datamining.clustering.Kmeans;
 import unbbayes.datamining.clustering.Squeezer;
 import unbbayes.datamining.datamanipulation.Instance;
@@ -16,6 +20,9 @@ import unbbayes.datamining.distance.IDistance;
  * @date 14/02/2007
  */
 public class ClusterBasedUtils {
+	
+	protected ArrayList<Cluster> meusClusters;
+
 	/** The current instanceSet */
 	protected InstanceSet instanceSet;
 
@@ -42,20 +49,15 @@ public class ClusterBasedUtils {
 	/** Matrix of all clusters. Each row stores all instancesIDs of a cluster */
 	protected int[][][] clusters;
 	
-	/** The class given to each cluster according to its distribution */
-	protected int[] clusterClass;
-	
-	/** Number of clusters created */
 	protected int[] numClusters;
 	
-	/** Weighted number of instances in each cluster created */
 	protected double[][] clustersSize;
-
-	/**
-	 * Data assignment to clusters. Each position corresponds to the cluster id
-	 * of an instance in the same order it appears in the input instanceSet.
-	 */
-	protected int[][] assignmentMatrix;
+	
+	/** The class given to each cluster according to its distribution */
+	protected int[] clustersClass;
+	
+	/** Class of most common settings */
+	protected TestsetUtils testsetUtils;
 
 	/** Number of clusters desired for the numeric clusterization */ 
 	int k;
@@ -75,10 +77,6 @@ public class ClusterBasedUtils {
 
 	protected int positiveClass;
 
-	
-	/**********************************************/
-	/** Options for SMOTE - START *****************/
-	/**********************************************/
 	
 	/**
 	 * SMOTE
@@ -121,12 +119,13 @@ public class ClusterBasedUtils {
 	protected boolean[] classClusterized;
 
 	private int[][][][] smoteNN;
-
-	public ClusterBasedUtils(InstanceSet instanceSet, int positiveClass, int k) {
-		this.positiveClass = positiveClass;
+	
+	public ClusterBasedUtils(InstanceSet instanceSet, TestsetUtils testsetUtils) {
 		this.instanceSet = instanceSet;
-		this.k = k;
-		negativeClass = Math.abs(1 - positiveClass);
+		this.testsetUtils = testsetUtils;
+		positiveClass = testsetUtils.getPositiveClass();
+		k = testsetUtils.getK();
+		negativeClass = testsetUtils.getNegativeClass();
 		instances = instanceSet.instances;
 		numInstances = instanceSet.numInstances;
 		counterIndex = instanceSet.counterIndex;
@@ -160,30 +159,85 @@ public class ClusterBasedUtils {
 		clusters = new int[numClasses][][];
 		numClusters = new int[numClasses];
 		clustersSize = new double[numClasses][];
-		assignmentMatrix = new int[numClasses][];
 		smoteNN = new int[numClasses][][][];
 	}
 	
-	public void setClusters(ClusterBasedUtils clustersInfo) {
-		clusters = clustersInfo.getClusters();
-		numClusters = clustersInfo.getNumClusters();
-		clustersSize = clustersInfo.getClustersSize();
-		assignmentMatrix = clustersInfo.getAssignmentMatrix();
-	}
-
 	public void clusterizeByClass() throws Exception {
 		int numClasses = instanceSet.numClasses();
 		for (int classValue = 0; classValue < numClasses; classValue++) {
-			clusterize(classValue);
+			clusterizeByClass(classValue);
 		}
 	}
 	
-	public void clusterize(int classValue) throws Exception {
-		clusterize(classValue, true);
+	public static int[][][] clusterizeByClass(InstanceSet instanceSet,
+			TestsetUtils testsetUtils)
+	throws Exception {
+		int numClasses = instanceSet.numClasses();
+		int[][][] clusters = new int[numClasses][][];
+		for (int classValue = 0; classValue < numClasses; classValue++) {
+			ArrayList<Object> result = clusterize(classValue, true, instanceSet,
+					testsetUtils);
+			
+			clusters[classValue] = (int[][]) result.get(0);
+		}
+		return clusters;
 	}
 	
-	public void clusterizeAll(int classValue) throws Exception {
-		clusterize(classValue, false);
+	public void clusterizeByClass(int classValue) throws Exception {
+		if (classClusterized[classValue]) {
+			return;
+		}
+		
+		ArrayList<Object> result = clusterize(classValue, true, instanceSet,
+				testsetUtils);
+		
+		clusters[classValue] = (int[][]) result.get(0);
+		numClusters[classValue] = clusters[classValue].length;
+		clustersSize[classValue] = new double[numClusters[classValue]];
+		int[] cluster;
+		int counter;
+		int inst;
+		for (int i = 0; i < numClusters[classValue]; i++) {
+			cluster = clusters[classValue][i];
+			counter = 0;
+			for (int j = 0; j < cluster.length; j++) {
+				inst = cluster[j];
+				counter += instanceSet.instances[inst].getWeight();
+			}
+			clustersSize[classValue][i] = counter;
+		}
+		smoteNN[classValue] = buildSmoteNN(clusters[classValue], instanceSet, smote);
+		classClusterized[classValue] = true;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static ArrayList<Cluster> clusterizeAll(InstanceSet instanceSet,
+			TestsetUtils testsetUtils)
+	throws Exception {
+		ArrayList<Object> result = clusterize(testsetUtils.getPositiveClass(),
+				false, instanceSet, testsetUtils);
+		
+		return (ArrayList<Cluster>) result.get(1);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static int[][] clusterizeAll2(InstanceSet instanceSet,
+			TestsetUtils testsetUtils)
+	throws Exception {
+		ArrayList<Object> result = clusterize(testsetUtils.getPositiveClass(),
+				false, instanceSet, testsetUtils);
+		
+		return (int[][]) result.get(0);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static int[][] clusterizeAll2(InstanceSet instanceSet,
+			int[] instancesPos, TestsetUtils testsetUtils)
+	throws Exception {
+		ArrayList<Object> result;
+		result = clusterize(instancesPos, true, instanceSet, testsetUtils);
+		
+		return (int[][]) result.get(0);
 	}
 	
 	/**
@@ -192,52 +246,36 @@ public class ClusterBasedUtils {
 	 * appear in the instanceSet.
 	 * 
 	 * @param classValue
+	 * @param testsetUtils
 	 * @return
 	 * @throws Exception 
 	 */
-	public void clusterize(int classValue, boolean byClass) throws Exception {
-		boolean numeric = false;
-		boolean nominal = false;
-		boolean mixed = false;
+	private static ArrayList<Object> clusterize(int classValue, boolean byClass,
+			InstanceSet instanceSet, TestsetUtils testsetUtils) throws Exception {
+		/* Choose the instancesIDs for the clustering process */
+		int[] instancesPos = instanceSet.getInstancesPosFromClass(classValue);
 		
-		if (classClusterized[classValue]) {
-			return;
-		}
-		
-		/* Check if the instanceSet contains any numeric attribute */
-		if (instanceSet.numNumericAttributes > 0) {
-			numeric = true;
-		}
-
+		return clusterize(instancesPos, byClass, instanceSet, testsetUtils);
+	}
+	
+	private static ArrayList<Object> clusterize(int[] instancesPos, boolean byClass,
+			InstanceSet instanceSet, TestsetUtils testsetUtils) throws Exception {
 		/* Set the options for the Kmeans algorithm */
 		int normFactor = 4;
 		IDistance distance = new Euclidean(instanceSet, normFactor, false);
 		Kmeans kmeans = new Kmeans(instanceSet);
 		kmeans.setOptionDistance(distance);
-		kmeans.setError(kError);
-		kmeans.setNumClusters(k);
+		kmeans.setError(testsetUtils.getKError());
+		kmeans.setNumClusters(testsetUtils.getK());
 		
-		/*
-		 * Check if the instanceSet contains any nominal attribute, besides the
-		 * class attribute.
-		 */
-		if (instanceSet.numCyclicAttributes > 0 ||
-			instanceSet.numNominalAttributes > 1 ||
-			(!instanceSet.classIsNominal() &&
-				instanceSet.numNominalAttributes > 0)) {
-			nominal = true;
-		}
-		
-		/* Check if the instanceSet contains mixed attributes */
-		if (nominal && numeric) {
-			mixed = true;
-		}
-		
+		/* Set the options for the numeric Squeezer algorithm */
+		float similarityThreshold = testsetUtils.getSimilarityThreshold();
+		ClusterDistribution clusterDistribution = new ClusterDistribution(instanceSet);
+		clusterDistribution.setSimilarityThreshold(similarityThreshold);
+
 		/* Set the options for the Squeezer algorithm */
 		Squeezer squeezer = new Squeezer(instanceSet);
 		squeezer.setUseAverageSimilarity(true);
-//		squeezer.setUseAverageSimilarity(false);
-//		squeezer.setS(sSqueezer);
 		
 		/* Algorithm for clustering mixed attributes */
 		/* Set the options for the CEBMDC algorithm */
@@ -246,106 +284,108 @@ public class ClusterBasedUtils {
 				instanceSet.numNominalAttributes};
 		cebmdc.setWeight(weight);
 		cebmdc.setUseAverageSimilarity(true);
-//		cebmdc.setUseAverageSimilarity(false);
-//		cebmdc.setS(sCEBMDC);
 
 		int[] numericClusters;
 		int[] nominalClusters;
 		
 		/* Clusterize the numeric attributes */
 		numericClusters = null;
-		if (numeric) {
-			if (byClass) {
-				kmeans.clusterize(classValue);
+		if (instanceSet.isNumeric() || instanceSet.isMixed()) {
+			if (testsetUtils.useClusterDistribution()) {
+				if (byClass) {
+					clusterDistribution.clusterize(instancesPos);
+				} else {
+					clusterDistribution.clusterize();
+				}
+				numericClusters = clusterDistribution.getAssignmentMatrix();
 			} else {
-				kmeans.clusterize();
+				if (byClass) {
+					kmeans.clusterize(instancesPos);
+				} else {
+					kmeans.clusterize();
+				}
+				numericClusters = kmeans.getAssignmentMatrix();
 			}
-			numericClusters = kmeans.getAssignmentMatrix();
 		}
 
 		/* Clusterize the nominal attributes */
 		nominalClusters = null;
-		if (nominal) {
-			if (byClass) {
-				squeezer.clusterize(classValue);
+		if (instanceSet.isNominal() || instanceSet.isMixed()) {
+			if (testsetUtils.useClusterDistribution()) {
+				if (byClass) {
+					clusterDistribution.clusterize(instancesPos);
+				} else {
+					clusterDistribution.clusterize();
+				}
+				nominalClusters = clusterDistribution.getAssignmentMatrix();
 			} else {
-				squeezer.clusterize();
+				if (byClass) {
+					squeezer.clusterize(instancesPos);
+				} else {
+					squeezer.clusterize();
+				}
+				nominalClusters = squeezer.getAssignmentMatrix();
 			}
-			nominalClusters = squeezer.getAssignmentMatrix();
 		}
 
-		/* Clusterize the both numeric and nominal attributes */
-		if (mixed) {
-			cebmdc.setNumericClustersInput(numericClusters);
-			cebmdc.setNominalClustersInput(nominalClusters);
-			cebmdc.clusterize();
-			
-			/* Get the cluster results */
-			clusters[classValue] = cebmdc.getClusters();
-			numClusters[classValue] = cebmdc.getNumClusters();
-			clustersSize[classValue] = cebmdc.getClustersSize();
-			assignmentMatrix[classValue] = cebmdc.getAssignmentMatrix();
-		} else if (numeric) {
-			/* Get the cluster results */
-			clusters[classValue] = kmeans.getClusters();
-			numClusters[classValue] = kmeans.getNumClusters();
-			clustersSize[classValue] = kmeans.getClustersSize();
-			assignmentMatrix[classValue] = kmeans.getAssignmentMatrix();
-		} else if (nominal) {
-			/* Get the cluster results */
-			clusters[classValue] = squeezer.getClusters();
-			numClusters[classValue] = squeezer.getNumClusters();
-			clustersSize[classValue] = squeezer.getClustersSize();
-			assignmentMatrix[classValue] = squeezer.getAssignmentMatrix();
+		int[][] clusters = null;
+		ArrayList<Cluster> meusClusters = null;
+
+		if (testsetUtils.useClusterDistribution()) {
+			clusters = clusterDistribution.getClusters();
+			meusClusters = clusterDistribution.getMeusClusters();
+		} else {
+			/* Clusterize the both numeric and nominal attributes */
+			if (instanceSet.isMixed()) {
+				cebmdc.setNumericClustersInput(numericClusters);
+				cebmdc.setNominalClustersInput(nominalClusters);
+				cebmdc.clusterize();
+				
+				/* Get the cluster results */
+				clusters = cebmdc.getClusters();
+			} else if (instanceSet.isNumeric()) {
+				/* Get the cluster results */
+				clusters = kmeans.getClusters();
+			} else if (instanceSet.isNominal()) {
+				/* Get the cluster results */
+				clusters = squeezer.getClusters();
+			}
 		}
 		
-		classClusterized[classValue] = true;
+		ArrayList<Object> result = new ArrayList<Object>(2);
+		result.add(clusters);
+		result.add(meusClusters);
 		
-		if (classValue == positiveClass) {
-			int[][] clusters = this.clusters[classValue];
-			int numClusters = this.numClusters[classValue];
-			smoteNN[classValue] = new int[numClusters][][];
+		return result;
+	}
+
+	public static int[][][] buildSmoteNN(int[][] clusters,
+			InstanceSet instanceSet, Smote smote)
+	throws Exception {
+		if (instanceSet.isNumeric() || instanceSet.isMixed()) {
+			int numClusters = clusters.length;
+			int[][][] smoteNN = new int[numClusters][][];
 			
 			/* Build nearest neighbors for each cluster */
 			for (int clusterID = 0; clusterID < numClusters; clusterID++) {
-				smoteNN[classValue][clusterID] =
-					smote.buildNN(clusters[clusterID], 5);
+				smoteNN[clusterID] = smote.buildNN(clusters[clusterID], 5);
 			}
-		} 
+			return smoteNN;
+		}
+		return null;
 	}
 
 	protected void smoteCluster(int clusterID, double proportion,
 			int classValue) throws Exception {
+		if (smoteNN[classValue] == null) {
+			smoteNN[classValue] = 
+				buildSmoteNN(clusters[classValue], instanceSet, smote);
+		}
 		int[] cluster = clusters[classValue][clusterID];
 		int[][] smoteNN = this.smoteNN[classValue][clusterID];
 		
 		smote.setNearestNeighborsIDs(smoteNN);
 		smote.run(cluster, proportion);
-	}
-
-	protected void smoteCluster(int clusterID, double proportion)
-	throws Exception {
-		/* Choose the instancesIDs for the sampling process */
-		int counter = 0;
-		int instancesIDsTmp[] = new int[numInstances];
-		int[] cluster = clusters[positiveClass][clusterID];
-		int clusterLength = cluster.length;
-		int inst;
-		for (int i = 0; i < clusterLength; i++) {
-			inst = cluster[i];
-			if (instanceSet.getInstance(inst).classValue() == positiveClass) {
-				instancesIDsTmp[counter] = inst;
-				++counter;
-			}
-		}
-		int[] instancesIDs = new int[counter];
-		int[][] smoteNN = new int[counter][];
-		for (int i = 0; i < counter; i++) {
-			instancesIDs[i] = instancesIDsTmp[i];
-			smoteNN[i] = this.smoteNN[positiveClass][clusterID][i];
-		}
-		smote.setNearestNeighborsIDs(smoteNN);
-		smote.run(instancesIDs, proportion);
 	}
 
 	protected void oversampleCluster(int clusterIndex, double proportion,
@@ -362,18 +402,8 @@ public class ClusterBasedUtils {
 	protected void oversampleCluster(int clusterIndex, double proportion,
 			boolean simplesampling) {
 		/* Choose the instancesIDs for the sampling process */
-		int counter = 0;
-		int instancesIDsTmp[] = new int[numInstances];
-		for (int inst = 0; inst < numInstances; inst++) {
-			if (assignmentMatrix[positiveClass][inst] == clusterIndex) {
-				instancesIDsTmp[counter] = inst;
-				++counter;
-			}
-		}
-		int[] instancesIDs = new int[counter];
-		for (int i = 0; i < counter; i++) {
-			instancesIDs[i] = instancesIDsTmp[i];
-		}
+		int[] instancesIDs = chooseInstancesIDs(clusterIndex, positiveClass);
+
 		if (simplesampling) {
 			Sampling.simplesampling(instanceSet, proportion, instancesIDs,
 					false);
@@ -382,17 +412,23 @@ public class ClusterBasedUtils {
 		}
 	}
 
-	protected void undersampleCluster(int clusterIndex, double proportion,
-			int classValue, boolean simplesampling) {
+	private int[] chooseInstancesIDs(int clusterIndex, int classValue) {
 		/* Choose the instancesIDs for the sampling process */
 		int counter = 0;
-		int instancesIDsTmp[] = new int[numInstances];
-		int[] cluster = clusters[positiveClass][clusterIndex];
-		int clusterLength = cluster.length;
+		int[] instancesIDsTmp = new int[numInstances];
+		int[] cluster = clusters[classValue][clusterIndex];
+		int clusterSize = cluster.length;
+		Instance instance;
+		int instanceClass;
 		int inst;
-		for (int i = 0; i < clusterLength; i++) {
+		for (int i = 0; i < clusterSize; i++) {
 			inst = cluster[i];
-			if (instanceSet.getInstance(inst).classValue() == positiveClass) {
+			if (deleteIndex[inst]) {
+				continue;
+			}
+			instance = instanceSet.instances[inst];
+			instanceClass = (int) instance.data[classIndex];
+			if (instanceClass == classValue || classValue == -1) {
 				instancesIDsTmp[counter] = inst;
 				++counter;
 			}
@@ -401,53 +437,39 @@ public class ClusterBasedUtils {
 		for (int i = 0; i < counter; i++) {
 			instancesIDs[i] = instancesIDsTmp[i];
 		}
+		
+		return instancesIDs;
+	}
+	
+	protected void undersampleCluster(int clusterIndex, double proportion,
+			boolean simplesampling) {
+		/* Choose the instancesIDs for the sampling process */
+		int[] instancesIDs = chooseInstancesIDs(clusterIndex, negativeClass);
+
 		if (simplesampling) {
 			Sampling.simplesampling(instanceSet, proportion, instancesIDs,
 					false);
 		} else {
 			Sampling.undersampling(instanceSet, proportion, instancesIDs,
-					false);
+					false, null);
 		}
 	}
 
-	public void setInstanceSet(InstanceSet instanceSet) {
+	protected void setInstanceSet(InstanceSet instanceSet) {
 		this.instanceSet = instanceSet;
 		smote.setInstanceSet(instanceSet);
+		numInstances = instanceSet.numInstances;
+		instances = instanceSet.instances;
+
+		/* Initialize deleteIndex array (set no instance to be removed) */
+		deleteIndex = new boolean[instanceSet.numInstances];
+		Arrays.fill(deleteIndex, false);
 	}
 	
-	/**
-	 * @return the clusters
-	 */
-	public int[][][] getClusters() {
-		return clusters;
-	}
-
-	/**
-	 * @param numClusters the numClusters to set
-	 */
-	public void setNumClusters(int[] numClusters) {
-		this.numClusters = numClusters;
-	}
-
-	/**
-	 * @return the numClusters
-	 */
-	public int[] getNumClusters() {
-		return numClusters;
-	}
-
-	/**
-	 * @return the clustersSize
-	 */
-	public double[][] getClustersSize() {
-		return clustersSize;
-	}
-
-	/**
-	 * @return the assignmentMatrix
-	 */
-	public int[][] getAssignmentMatrix() {
-		return assignmentMatrix;
+	public static void removeMarkedInstances(InstanceSet instanceSet,
+			boolean[] deleteIndex) {
+		/* Remove those negative instances marked for removal */
+		instanceSet.removeInstances(deleteIndex);
 	}
 
 	/**

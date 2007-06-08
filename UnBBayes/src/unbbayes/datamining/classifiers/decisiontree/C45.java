@@ -142,91 +142,101 @@ public class C45 extends DecisionTreeLearning implements Serializable
 				leaf = new Leaf(classAttribute, xNode.distribution, threshold,
 						positiveClass);
 				xNode.add(leaf);
+				
+				/* Skip to next queue component */
+				continue;
+			}
+			
+			// compute array with the gain of each attribute.
+			// splitValues and numericDataList are initialized here
+			splitValues = new double[actualAtt.length];
+			numericDataList = new ArrayList<NumericData>();
+			infoGains = utils.computeInfoGain(split, splitValues, numericDataList);
+			
+			//applies gain ratio if user chooses it
+			if(Options.getInstance().getIfUsingGainRatio()) {
+				//applies gain ratio to attributes with gains greater than mean
+				meanInfoGains = Utils.sum(infoGains)/(double)(infoGains.length);
+				for (int i=0,decr=0; i<numAttributes;i++) {
+					if(actualAtt[i].intValue()==classIndex) {
+						decr++;		//from now on, infoGains[i] corresponds to actualAtt[1+i]
+					} else if (infoGains[i-decr] > meanInfoGains) {
+						att = (Attribute) data.getAttribute(actualAtt[i].intValue());
+						if(att.isNominal()) {
+							infoGains[i-decr] /= utils.computeSplitInformation(split,i);
+						}
+					}
+				}
+			}
+
+			//gets attribute with maximum gain
+			attributeIndex = Utils.maxIndex(infoGains);
+
+			//attributeIndex is the infoGains index for the split attribute
+			//realIndex is the actualApp index for the same attribute
+			int realAttribute = -1;
+			int realIndex;
+			for (realIndex=0;realIndex<numAttributes;realIndex++) {
+				if (actualAtt[realIndex].intValue()!=classIndex) {
+					realAttribute++;
+					if (realAttribute==attributeIndex) {
+						break;
+					}
+				}
+			}
+
+			//add data relative to infogain calculus into the actual node
+			xNode.setInstrumentationData(split,infoGains,numericDataList);
+
+			//computes the number of instances for each class
+			distribution = new float[numClasses];
+			int distributionClass;
+			for (int i=0;i<numInstances;i++) {
+				inst = utils.getInstance(actualInst,i);
+				distribution[(int) inst.getClassValue()] += inst.getWeight();
+			}
+			distributionClass = Utils.maxIndex(distribution);
+			
+			//make leaf if information gain is zero
+			if (Utils.eq(infoGains[attributeIndex], 0) ||
+					ClassifierUtils.sumNonClassDistribution(distribution,
+							distributionClass) < 1) {
+				leaf = new Leaf(classAttribute,distribution, threshold,
+						positiveClass);
+				xNode.add(leaf);
+				
+				/* Skip to next queue component */
+				continue;
+			}
+			
+			//create successors.
+			//puts children on queue
+			splitAttribute = data.getAttribute(actualAtt[realIndex].intValue());
+			if(splitAttribute.isNominal()) {
+				// the split attribute is nominal...
+				splitData = utils.splitData(split, realIndex);
+				for (int j=0;j<splitData.length;j++) {
+					NominalNode nominalNode;
+					nominalNode = new NominalNode(splitAttribute, j,
+							distribution);
+					xNode.add(nominalNode);
+					queue.add(new QueueComponent(nominalNode, splitData[j]));
+				}
 			} else {
-				// compute array with the gain of each attribute.
-				// splitValues and numericDataList are initialized here
-				splitValues = new double[actualAtt.length];
-				numericDataList = new ArrayList<NumericData>();
-				infoGains = utils.computeInfoGain(split, splitValues, numericDataList);
+				// the split attribute is numeric....
+				splitValue = splitValues[realIndex];
+				splitData = utils.splitNumericData(split,realIndex, splitValue);
 
-				//applies gain ratio if user chooses it
-				if(Options.getInstance().getIfUsingGainRatio()) {
-					//applies gain ratio to attributes with gains greater than mean
-					meanInfoGains = Utils.sum(infoGains)/(double)(infoGains.length);
-					for (int i=0,decr=0; i<numAttributes;i++) {
-						if(actualAtt[i].intValue()==classIndex) {
-							decr++;		//from now on, infoGains[i] corresponds to actualAtt[1+i]
-						} else if (infoGains[i-decr] > meanInfoGains) {
-							att = (Attribute) data.getAttribute(actualAtt[i].intValue());
-							if(att.isNominal()) {
-								infoGains[i-decr] /= utils.computeSplitInformation(split,i);
-							}
-						}
-					}
-				}
+				NumericNode numericNode;
+				numericNode = new NumericNode(splitAttribute, splitValue, true,
+						distribution);
+				xNode.add(numericNode);
+				queue.add(new QueueComponent(numericNode,splitData[0]));
 
-				//gets attribute with maximum gain
-				attributeIndex = Utils.maxIndex(infoGains);
-
-				//attributeIndex is the infoGains index for the split attribute
-				//realIndex is the actualApp index for the same attribute
-				int realAttribute = -1;
-				int realIndex;
-				for (realIndex=0;realIndex<numAttributes;realIndex++) {
-					if (actualAtt[realIndex].intValue()!=classIndex) {
-						realAttribute++;
-						if (realAttribute==attributeIndex) {
-							break;
-						}
-					}
-				}
-
-				//add data relative to infogain calculus into the actual node
-				xNode.setInstrumentationData(split,infoGains,numericDataList);
-
-				//computes the number of instances for each class
-				distribution = new float[numClasses];
-				int distributionClass;
-				for (int i=0;i<numInstances;i++) {
-						inst = utils.getInstance(actualInst,i);
-						distribution[(int) inst.classValue()] += inst.getWeight();
-				}
-				distributionClass = Utils.maxIndex(distribution);
-				
-				//make leaf if information gain is zero....
-				if ((Utils.eq(infoGains[attributeIndex], 0))||(ClassifierUtils.sumNonClassDistribution(distribution,distributionClass)<1)) {
-					leaf = new Leaf(classAttribute,distribution, threshold,
-							positiveClass);
-					xNode.add(leaf);
-				}
-				
-				//...Otherwise create successors.
-				else {
-					//puts children on queue
-					splitAttribute = data.getAttribute(actualAtt[realIndex].intValue());
-					//if split attribute is nominal...
-					if(splitAttribute.isNominal()) {
-						splitData = utils.splitData(split, realIndex);
-						for (int j=0;j<splitData.length;j++) {
-							NominalNode nominalNode = new NominalNode(splitAttribute,j, distribution);
-							xNode.add(nominalNode);
-							queue.add(new QueueComponent(nominalNode,splitData[j]));
-						}
-					}
-					//if split attribute is numeric....
-					else {
-						splitValue = splitValues[realIndex];
-						splitData = utils.splitNumericData(split,realIndex, splitValue);
-
-						NumericNode numericNode = new NumericNode(splitAttribute,splitValue,true, distribution);
-						xNode.add(numericNode);
-						queue.add(new QueueComponent(numericNode,splitData[0]));
-
-						numericNode = new NumericNode(splitAttribute,splitValue,false, distribution);
-						xNode.add(numericNode);
-						queue.add(new QueueComponent(numericNode,splitData[1]));
-					}
-				}
+				numericNode = new NumericNode(splitAttribute,splitValue,false,
+						distribution);
+				xNode.add(numericNode);
+				queue.add(new QueueComponent(numericNode,splitData[1]));
 			}
 		}
 

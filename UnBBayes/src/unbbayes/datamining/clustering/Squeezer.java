@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.Utils;
 
 /**
  *
@@ -68,9 +69,12 @@ public class Squeezer extends Clustering {
 		
 		/* Check if the similarity threshold is to set automatically */
 		if (useAverageSimilarity) {
-//			s = averageSimilarity(20) + 2;
-//			s = averageSimilarity(5) + 2;
-			s = averageSimilarity(1) + 2;
+			int max = 1000;
+			if (numInstances < max) {
+				max = numInstances;
+			}
+			
+			s = averageSimilarity((double) max / numInstances) + 2;
 		}
 		
 		/* Initialize the assignment matrix */
@@ -225,8 +229,8 @@ public class Squeezer extends Clustering {
 	 * calculation. 
 	 * @return Average similarity.
 	 */
-	public double averageSimilarity(int percentage) {
-		int numCandidates = Math.round(numInstances * percentage / 100);
+	public double averageSimilarity(double proportion) {
+		int numCandidates = (int) Math.round(numInstances * proportion);
 		int candidates[] = new int[numCandidates];
 		Random randomizer = new Random();
 		int counter = 0;
@@ -265,8 +269,10 @@ public class Squeezer extends Clustering {
 				}
 			}
 		}
+		
 		double avgSimilarity = similarity;
 		avgSimilarity /= (double) numCandidates * (numCandidates - 1);
+		
 		return avgSimilarity ;
 	}
 	

@@ -57,9 +57,12 @@ public class NaiveBayes extends DistributionClassifier implements Serializable {
 	private byte nominalCounter;
 	private byte numericCounter;
 	private float MISSING_VALUE;
+
+	private boolean normalize = true;
+
+	private float[] precision;
 	
-	/**
-	* Generates the classifier.
+	/* Generates the classifier.
 	 * @param instanceSet Set of instanceSet serving as training data
 	 * @exception Exception if the classifier has not been generated successfully
 	*/
@@ -93,47 +96,49 @@ public class NaiveBayes extends DistributionClassifier implements Serializable {
 		ArrayList<double[]> stdDevMeanPerClass;
 		stdDevPerClass = new double[numNumericAttributes][];
 		meanPerClass = new double[numNumericAttributes][];
-		for (int att = 0; att < numAttributes; att++) {
-			if (attributeType[att] != InstanceSet.NOMINAL) {
-				stdDevMeanPerClass = Utils.stdDevMeanPerClass(instanceSet, att);
-				stdDevPerClass[attIndex] = stdDevMeanPerClass.get(0);
-				meanPerClass[attIndex] = stdDevMeanPerClass.get(1);
-				attIndex++;
+		precision = instanceSet.computePrecision();
+		
+		if (instanceSet.numInstances > 1) {
+			for (int att = 0; att < numAttributes; att++) {
+				if (attributeType[att] != InstanceSet.NOMINAL) {
+					stdDevMeanPerClass = Utils.stdDevMeanPerClass(instanceSet, att);
+					stdDevPerClass[attIndex] = stdDevMeanPerClass.get(0);
+					meanPerClass[attIndex] = stdDevMeanPerClass.get(1);
+					attIndex++;
+				}
+			}
+		} else {
+			for (int att = 0; att < numAttributes; att++) {
+				if (attributeType[att] != InstanceSet.NOMINAL) {
+					stdDevPerClass[attIndex] = new double[2];
+					meanPerClass[attIndex] = new double[2];
+					attIndex++;
+				}
 			}
 		}
-
-//		attIndex = 0;
-//		for (int att = 0; att < numAttributes; att++) {
-//			if (attributeType[att] != InstanceSet.NOMINAL) {
-//				meanPerClass[attIndex] = Utils.meanPerClass(instanceSet, att);
-//				attIndex++;
-//			}
-//		}
-//		attIndex = 0;
-//		for (int att = 0; att < numAttributes; att++) {
-//			if (attributeType[att] != InstanceSet.NOMINAL) {
-//				stdDevPerClass[attIndex] = Utils.standardDeviationPerClass(instanceSet, att, meanPerClass[att]);
-//				attIndex++;
-//			}
-//		}
-
+	
 		/* Get the class distribution */
 		AttributeStats[] attributeStats = instanceSet.getAttributeStats();
-		priors = attributeStats[classIndex].getNominalCountsWeighted();
+
+		/* Set the original class distribution of the instance set */
+		if (originalDistribution == null) {
+			priors = attributeStats[classIndex].getNominalCountsWeighted();
+		} else {
+			priors = originalDistribution;
+		}
 		
 		/* Normalize nominal distribution */
 		float sum;
-		float sumAux;
 		for (int att = 0; att < numNominalAttributes; att++) {
 			for (int k = 0; k < numClasses; k++) {
 				/* Sum of all counts of attribute 'att' values for the class 'k' */
-				sumAux = Utils.sum(nominalCounts[k][att]);
+				sum = Utils.sum(nominalCounts[k][att]);
 				
 				numValues = nominalCounts[k][att].length;
 				for (int i = 0; i < numValues; i++) {
 					/* Laplace estimator: ensures always Prob > 0 */
 					++nominalCounts[k][att][i];
-					sum = sumAux + numValues;
+					sum += numValues;
 					
 					/* Normalize */
 					nominalCounts[k][att][i] /= sum ;
@@ -142,12 +147,12 @@ public class NaiveBayes extends DistributionClassifier implements Serializable {
 		}
     		
 		/* Normalize class priors */
-		sumAux = Utils.sum(priors);
+		sum = Utils.sum(priors);
 		double aux;
 		for (int k = 0; k < numClasses; k++) {
 			/* Laplace estimator: ensures always Prob > 0 */
 			++priors[k];
-			sum = sumAux + numClasses;
+			sum += numClasses;
 
 			/* Normalize */
 			aux = priors[k];
@@ -155,9 +160,6 @@ public class NaiveBayes extends DistributionClassifier implements Serializable {
 			priors[k] = (float) aux;      	
 		}
       	
-		/* Set the original class distribution of the instance set */
-		originalDistribution = priors;
-		
 		/* 
 		 * Compute bayesian network
 		 */
@@ -270,6 +272,8 @@ public class NaiveBayes extends DistributionClassifier implements Serializable {
 		double[] probsAux = new double[numClasses];
 		double stdDev;
 		double mean;
+		double aux;
+		double maxProb = -1;
 
 		for (int k = 0; k < numClasses; k++) {
 			probsAux[k] = priors[k];
@@ -289,27 +293,101 @@ public class NaiveBayes extends DistributionClassifier implements Serializable {
 						mean = meanPerClass[numericCounter][k];
 //						probsAux[k] *= Utils.normalDensityFunction(inst[att],
 //								stdDev, mean);
-						probsAux[k] *= Utils.getProbability(inst[att], mean,
-								stdDev);
+						aux = Utils.getProbability(inst[att], mean, stdDev,
+								precision[numericCounter]);
+						aux = Math.max(1e-75, aux);
+						probsAux[k] *= aux;
 						++numericCounter;
-
 					}
 				}
 			}
+			if (probsAux[k] > maxProb) {
+				maxProb = probsAux[k];
+			}
 		}
 
-		/* Normalize probabilities */
-		double aux;
-		double sum = Utils.sum(probsAux);
-		int size = probsAux.length;
+		/* 
+		 * Check if maximun value is less than 1e-75 (Danger of probability
+		 * underflow).
+		 */
+		if (normalize) {
+			if (maxProb < 1e-75) {
+				for (int k = 0; k < numClasses; k++) {
+					probsAux[k] *= 1e75;
+				}
+			}
+		} else {
+			for (int k = 0; k < numClasses; k++) {
+				probsAux[k] *= 1e61;
+			}
+		}
+		
 		float[] probs = new float[numClasses];
-		for (int att = 0; att < size; att++) {
-			aux = probsAux[att];
-			aux /= sum;
-			probs[att] = (float) aux;      	
+		int size = probsAux.length;
+		if (normalize) {
+			/* Normalize probabilities */
+			double sum = Utils.sum(probsAux);
+			if (sum > 0) {
+				for (int att = 0; att < size; att++) {
+					aux = probsAux[att];
+					aux /= sum;
+					probs[att] = (float) aux;
+				}
+			}
+		} else {
+			for (int att = 0; att < size; att++) {
+				probs[att] = (float) probsAux[att];
+			}
+		}
+		if (Float.isNaN(probs[0]) || Float.isNaN(probs[1])) {
+			@SuppressWarnings("unused")
+			boolean fudeu = true;
+		}
+		
+		return probs;
+	}
+
+	public double[] distributionForInstanceEma(Instance instance)
+	throws Exception {
+		float[] inst = instance.data;
+		double[] probsAux = new double[numClasses];
+		double stdDev;
+		double mean;
+		double aux;
+		double maxProb = -1;
+
+		for (int k = 0; k < numClasses; k++) {
+			probsAux[k] = priors[k];
+			numericCounter = 0;
+			nominalCounter = 0;
+			for (int att = 0; att < numAttributes; att++) {
+				/* Skip class attribute missing value */
+				if (att != classIndex && inst[att] != MISSING_VALUE) {
+					if (attributeType[att] == InstanceSet.NOMINAL) {
+						/* Nominal attribute */
+						probsAux[k] *= nominalCounts[k][nominalCounter]
+						                             [(int) inst[att]];
+						++nominalCounter;
+					} else {
+						/* Numeric attribute */
+						stdDev = stdDevPerClass[numericCounter][k];
+						mean = meanPerClass[numericCounter][k];
+//						probsAux[k] *= Utils.normalDensityFunction(inst[att],
+//								stdDev, mean);
+						aux = Utils.getProbability(inst[att], mean, stdDev,
+								precision[numericCounter]);
+						aux = Math.max(1e-75, aux);
+						probsAux[k] *= aux;
+						++numericCounter;
+					}
+				}
+			}
+			if (probsAux[k] > maxProb) {
+				maxProb = probsAux[k];
+			}
 		}
 
-		return probs;
+		return probsAux;
 	}
 
 	/**
@@ -379,20 +457,12 @@ public class NaiveBayes extends DistributionClassifier implements Serializable {
 	/** Retorna a rede bayesiana ProbabilisticNetwork
 	  @return Um rede ProbabilisticNetwork
 	*/
-	public ProbabilisticNetwork getProbabilisticNetwork()
-	{	  return net;
+	public ProbabilisticNetwork getProbabilisticNetwork() {
+		return net;
 	}
 
-	/** Returns the computed priors
-
-		@return the computed priors.
-	*/
-	public float[] getPriors()
-	{	return priors;
-	}
-
-	public void setPriors(float[] priors)
-	{	this.priors = priors;
+	public void setNormalize(boolean normalize) {
+		this.normalize = normalize;
 	}
 
 }

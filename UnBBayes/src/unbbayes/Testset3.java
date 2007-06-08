@@ -106,7 +106,7 @@ public class Testset3 {
 		while (counter < minorityClassQtd) {
 			data = instanceSet.instances[inst].data;
 			if (data[classIndex] == minorityClass) {
-				Instance newInstance = instanceSet.instances[inst].clone();
+				Instance newInstance = new Instance(instanceSet.instances[inst]);
 				newInstanceSet.insertInstance(newInstance);
 				++counter;
 			}
@@ -119,7 +119,7 @@ public class Testset3 {
 			inst = randomizer.nextInt(numInstances);
 			data = instanceSet.instances[inst].data;
 			if (data[classIndex] != minorityClass) {
-				Instance newInstance = instanceSet.instances[inst].clone();
+				Instance newInstance = new Instance(instanceSet.instances[inst]);
 				newInstanceSet.insertInstance(newInstance);
 			}
 		}

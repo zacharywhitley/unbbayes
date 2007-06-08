@@ -185,14 +185,14 @@ public class TestClustering {
 		int index;
 		for (int inst = 0; inst < biggestClusterSize; inst++) {
 			index = clusters[biggestClusterIndex][inst];
-			Instance newInstance = instanceSet.instances[index].clone();
+			Instance newInstance = new Instance(instanceSet.instances[index]);
 			newInstanceSet.insertInstance(newInstance);
 		}
 		float[] data;
 		for (int inst = 0; inst < numInstances; inst++) {
 			data = instanceSet.instances[inst].data;
 			if (data[classIndex] != majorityClass) {
-				Instance newInstance = instanceSet.instances[inst].clone();
+				Instance newInstance = new Instance(instanceSet.instances[inst]);
 				newInstanceSet.insertInstance(newInstance);
 			}
 		}

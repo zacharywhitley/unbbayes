@@ -174,7 +174,7 @@ public class Evaluation implements IProgress {
 				pred = classifier.classifyInstance(instance);
 				if (pred == Float.NaN) {
 					@SuppressWarnings("unused")
-					int e = 0;
+					boolean fudeu = true;
 				}
 				updateStatsForClassifier(pred, instance);
 			}
@@ -450,7 +450,7 @@ public class Evaluation implements IProgress {
 				return;
 			}
 			
-			int actualClass = instance.classValue();
+			int actualClass = instance.getClassValue();
 			updateNumericScores(makeDistribution(predictedClass)
 								/*predictedDistribution*/,
 								makeDistribution(actualClass),
@@ -488,23 +488,14 @@ public class Evaluation implements IProgress {
 	 */
 	public void crossValidateModel(Classifier classifier, int numFolds)
 			throws Exception {
-		/* Check if the instanceSet is compacted */
-		if (instanceSet.isCompacted()) {
-			throw new IllegalArgumentException("cross validation only " +
-					"works with non compacted instanceSet!");
-		}
-		
-		if (instanceSet.getClassAttribute().isNominal()) {
-			instanceSet.stratify(numFolds);
-		} else {
-			instanceSet.randomize(new Random(new Date().getTime()));
-		}
-		
 		/* Do the folds */
-		for (int i = 0; i < numFolds; i++) {
-			InstanceSet train = CrossValidation.trainCV(instanceSet, numFolds, i);
+		Folds folds = new Folds(instanceSet, numFolds);
+		InstanceSet train;
+		InstanceSet test;
+		for (int fold = 0; fold < numFolds; fold++) {
+			train = folds.getTrain(fold);
+			test = folds.getTest(fold);
 			classifier.buildClassifier(train);
-			InstanceSet test = CrossValidation.testCV(instanceSet, numFolds, i);
 			evaluateModel(classifier, test);
 		}
 	}
@@ -514,15 +505,8 @@ public class Evaluation implements IProgress {
 	 *
 	 * @return a copy of the confusion matrix as a two-dimensional array
 	 */
-	public double[][] confusionMatrix() {
-		double[][] newMatrix = new double[confusionMatrix.length][0];
-
-		for (int i = 0; i < confusionMatrix.length; i++) {
-			newMatrix[i] = new double[confusionMatrix[i].length];
-			System.arraycopy(confusionMatrix[i], 0, newMatrix[i], 0,
-					 confusionMatrix[i].length);
-		}
-		return newMatrix;
+	public int[][] confusionMatrix() {
+		return confusionMatrix;
 	}
 
 	/**

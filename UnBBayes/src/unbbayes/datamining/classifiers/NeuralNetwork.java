@@ -402,7 +402,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 		for (int i = 0; i < outputLayer.length; i++){
 			float instantaneousError;
 			outputLayer[i].calculateOutputValue(hiddenLayerOutput);
-			instantaneousError = outputLayer[i].calculateErrorTerm(expectedOutput[instance.classValue()][i]);
+			instantaneousError = outputLayer[i].calculateErrorTerm(expectedOutput[instance.getClassValue()][i]);
 			totalErrorEnergy = totalErrorEnergy + (instantaneousError * instantaneousError);
 		}
 

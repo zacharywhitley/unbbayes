@@ -119,7 +119,7 @@ public class Kmeans extends Clustering {
 	/**
 	 * Initializes the centroids matrix.
 	 * 
-	 * @return Clusters matrix with initial values.
+	 * @return Cluster matrix with initial values.
 	 */
 	private float[][] initialize() {
 		float[][] centroids = new float[numClusters][numNumericAttributes];
@@ -136,7 +136,7 @@ public class Kmeans extends Clustering {
 		int classIndex = instanceSet.classIndex;
 		int countEqualAttribs;
 		
-		while (filled < numClusters) {
+		while (filled < numClusters && numInstancesIDs > 0) {
 			/* Get the candidate */
 			instIDs = randomizer.nextInt(numInstancesIDs);
 			inst = instancesIDsAux[instIDs];
@@ -382,6 +382,10 @@ public class Kmeans extends Clustering {
 	
 	public void setOptionDistance(IDistance distance) {
 		this.distance = distance;
+	}
+
+	public float[][] getCentroids() {
+		return centroids;
 	}
 
 }

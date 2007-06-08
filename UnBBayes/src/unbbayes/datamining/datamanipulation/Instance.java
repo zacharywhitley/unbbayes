@@ -10,6 +10,8 @@ import java.util.ResourceBundle;
  *
  *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @version $1.0 $ (16/02/2002)
+ *  <br>modified by Emerson Lopes Machado (emersoft@conectanet.com.br)
+ *  (2006/11/02)
  */
 public class Instance implements Serializable {
 	
@@ -45,33 +47,38 @@ public class Instance implements Serializable {
 	 */
 	private int numAttributes;
 
+	/**
+	 * Instance's ID provided by the instanceSet to wich this pertains. It gets
+	 * -1 if this pertains to no instanceSet. 
+	 */
+	private int instanceID;
+	
 	/** Constant representing a missing value. */
 	public final static float MISSING_VALUE = Float.NaN;
-
+	
 	/**
  	 * Constructor that copies the attribute values from
- 	 * the given instance. Reference to the dataset is set to null.
- 	 * (ie. the instance doesn't have access to information about the
- 	 * attribute types).
+ 	 * the given instance.
  	 *
  	 * @param instance Instance from which the attribute
 	 * values are to be copied
  	 */
 	public Instance(Instance instance) {
-		data = instance.data.clone();
 		numAttributes = instance.numAttributes;
 		counterIndex = instance.counterIndex;
-		instanceSet = null;
+		instanceSet = instance.instanceSet;
+		instanceID = instance.instanceID;
+		int size = instance.data.length;
+		data = new float[size];
+		for (int att = 0; att < size; att++) {
+			data[att] = instance.data[att];
+		}
 	}
 
-	/**
-	 * 
-	 *
-	 */
 	public Instance(int numAttributes) {
 		this.numAttributes = numAttributes;
 		
-		/* Allocates space for the attribute values and weight */
+		/* Allocates space for the attribute values + weight */
 		data = new float[numAttributes + 1];
 		counterIndex = numAttributes;
 		instanceSet = null;
@@ -83,18 +90,21 @@ public class Instance implements Serializable {
 	 * <code>data</code> vector do affect this instance <code>data</code>
 	 * vector. Reference to the dataset is set to null. (ie, the instance
  	 * doesn't have access to information about its attributes).
-	 *
- 	 * @param attValues An array of attribute values
+	 * 
+	 * @param data An array of attribute values.
+	 * @param instanceID The ID of this instance in the instanceSet (-1 if it
+	 * pertains to no instanceSet.
  	 */
-	public Instance(float[] data) {
+	public Instance(float[] data, int instanceID) {
 		this.data = data;
+		this.instanceID = instanceID;
 		instanceSet = null;
 		
 		/* Set the number of attributes (number of columns - 1) */
 		numAttributes = data.length - 1;
 		
 		/* Set counter index to the data's last column */
-		counterIndex = numAttributes;
+		counterIndex = data.length - 1;
 	}
 
 	/**
@@ -150,7 +160,7 @@ public class Instance implements Serializable {
 	 * @exception UnassignedClassException if the class is not set or the
 	 * instance doesn't have access to a instanceSet
 	 */
-	public final int classValue() {
+	public final int getClassValue() {
 		if (instanceSet.classIndex < 0) {
 			throw new UnassignedClassException(resource.getString("" +
 					"runtimeException2"));
@@ -350,12 +360,6 @@ public class Instance implements Serializable {
 		this.data = data;
 	}
 	
-	public final Instance clone() {
-		Instance instance = new Instance(this);
-		instance.instanceSet = instanceSet;
-		return instance;
-	}
-
 	/**
 	 * Binds this instance to the informed instanceSet.
 	 * 
@@ -377,5 +381,36 @@ public class Instance implements Serializable {
 		--numAttributes;
 		--counterIndex;
 	}
+
+	public void setClassValue(int value) {
+		data[instanceSet.classIndex] = value;
+	}
 	
+//	public void setValueChecked(int att, float value) {
+//		if (instanceSet.attributeType[att] == InstanceSet.NUMERIC) {
+//			data[att] = value;
+//		} else {
+//			/* Verify if the value exists in the attribute values */
+//			float internalValue;
+//			if (instanceSet.attributes[att].isString()) {
+//				String stringValue = String.valueOf(value);
+//				internalValue = instanceSet.attributes[att].addValue(stringValue);
+//			} else {
+//				internalValue = instanceSet.attributes[att].addValue(value);
+//			}
+//			data[att] = internalValue;
+//		}
+//	}
+
+	/**
+	 * @return the instanceID
+	 */
+	public int getInstanceID() {
+		return instanceID;
+	}
+
+	public void assignID(int instanceID) {
+		this.instanceID = instanceID;
+	}
+
 }

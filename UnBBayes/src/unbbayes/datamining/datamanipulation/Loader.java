@@ -61,6 +61,8 @@ public abstract class Loader implements IProgress {
 	protected String[] attributeName;
 
 	protected int likelycounterIndex = -1;
+
+	private int classIndex;
 	
 	public void setAttributeType(byte[] attributeType) {
 		this.attributeType = attributeType;
@@ -83,6 +85,7 @@ public abstract class Loader implements IProgress {
 	 * @return The instance set
 	 */
 	public InstanceSet getInstanceSet() {
+		instanceSet.setClassIndex(classIndex);
 		instanceSet.setFinal();
 		
 		/* Check if the instanceSet is compacted or not */
@@ -258,6 +261,10 @@ public abstract class Loader implements IProgress {
 
 	public int getnumInitialInstances() {
 		return initialInstances;
+	}
+
+	public void setClassIndex(int classIndex) {
+		this.classIndex = classIndex;
 	}
 
 }

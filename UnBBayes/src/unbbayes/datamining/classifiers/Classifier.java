@@ -29,5 +29,8 @@ public abstract class Classifier {
 	 * @exception Exception if an error occurred during the prediction
   	 */
   	public abstract int classifyInstance(Instance instance) throws Exception;
+
+	public abstract float[] distributionForInstance(Instance instance)
+	throws Exception;
   	
 }

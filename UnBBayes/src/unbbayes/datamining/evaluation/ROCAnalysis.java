@@ -40,7 +40,7 @@ public class ROCAnalysis {
 		 */
 		int[] probsIndex = Utils.sortDescending(probs);
 		
-		float[] distribution = TestsetUtils.distribution(testData);
+		float[] distribution = testData.getClassDistribution(false);
 		float fp = 0;
 		float tp = 0;
 		float n = distribution[negativeClass];
@@ -138,7 +138,7 @@ public class ROCAnalysis {
 		 */
 		int[] probsIndex = Utils.sortDescending(probs);
 		
-		float[] distribution = TestsetUtils.distribution(testData);
+		float[] distribution = testData.getClassDistribution(false);
 		float fp = 0;
 		float tp = 0;
 		float fpLast = 0;
@@ -187,6 +187,10 @@ public class ROCAnalysis {
 		/* Scale the AUC to the unit square */
 		auc /= p * n;
 		
+		if (Double.isNaN(auc)) {
+			return 0;
+		}
+		
 		return auc;
 	}
 
@@ -206,12 +210,12 @@ public class ROCAnalysis {
 	 */
 	public static ArrayList<float[]> computeConvexHull(
 			ArrayList<float[]> rocPoints) {
-//		/* Sort ascending by FP and TP */
-//		sort(rocPoints);
-//		
-//		/* Remove repeated points */
-//		removeRepeated(rocPoints);
-//		
+		/* Sort ascending by FP and TP */
+		sort(rocPoints);
+		
+		/* Remove repeated points */
+		removeRepeated(rocPoints);
+		
 		/* Remove those points under the diagonal ((0,0),(1,1)) */
 		removePointsUnderDiagonal(rocPoints);
 		
@@ -263,7 +267,8 @@ public class ROCAnalysis {
 		int num = p1.length;
 		
 		for (int i = 0; i < num; i++) {
-			if (Math.abs(p1[i] - p2[i]) > Utils.SMALL) {
+//			if (Math.abs(p1[i] - p2[i]) > Utils.SMALL) {
+			if (Math.abs(p1[i] - p2[i]) > 0) {
 				return false;
 			}
 		}
@@ -312,7 +317,7 @@ public class ROCAnalysis {
 		convexHull(pointsABC, s2, result);
 	}
 
-	private static void buildS1S2(float[][] pointsABC,
+	public static void buildS1S2(float[][] pointsABC,
 			ArrayList<float[]> rocPoints, ArrayList<float[]> s1,
 			ArrayList<float[]> s2) {
 		int numPoints = rocPoints.size();
@@ -324,16 +329,20 @@ public class ROCAnalysis {
 		double dPA;
 		
 		for (int i = 0; i < numPoints; i++) {
-			pointP = rocPoints.get(i);
+			pointP = rocPoints.remove(i);
 			dPA = distance(pointP, pointA);
 			
 			/* Check wich group (s1 or s2) this point should go to */
 			if (dPA < dCA) {
 				/* This point pertains to s1 */
-				s1.add(rocPoints.remove(i));
-			} else {
+				s1.add(pointP);
+			} else if (dPA > dCA) {
 				/* This point pertains to s2 */
-				s2.add(rocPoints.remove(i));
+				s2.add(pointP);
+			} else {
+				/* Should never happens */
+				@SuppressWarnings("unused")
+				boolean fudeu = true;
 			}
 			--i;
 			--numPoints;
@@ -358,7 +367,7 @@ public class ROCAnalysis {
 		return Math.sqrt(result);
 	}
 
-	private static void removePointsInsideABC(float[][] pointsABC,
+	public static void removePointsInsideABC(float[][] pointsABC,
 			ArrayList<float[]> rocPoints) {
 		float[] pointA = pointsABC[0];
 		float[] pointB = pointsABC[1];
@@ -371,6 +380,7 @@ public class ROCAnalysis {
 		double dBC;
 		
 		int numPoints = rocPoints.size();
+		int counter = 0;
 
 		/* Remove points inside the triangle ABC */
 		for (int i = 0; i < numPoints; i++) {
@@ -390,7 +400,8 @@ public class ROCAnalysis {
 				rocPoints.remove(i);
 				--i;
 				--numPoints;
-			} 
+			}
+			++counter;
 		}
 		
 		/* Resize the rocPoint arraylist to its real size */
@@ -404,36 +415,25 @@ public class ROCAnalysis {
 		int numPoints = rocPoints.size();
 
 		/* Loop through all points between A and B and pick the farthest one */
-		int minPointCindex = -1;
-		double minDistance = Double.MAX_VALUE;
+		int maxPointCindex = -1;
+		double maxDistance = Double.MIN_VALUE;
 		double d;
 		float[] pointC;
 		for (int i = 0; i < numPoints; i++) {
 			pointC = rocPoints.get(i);
-			d = distancePointToLine(pointC, pointA, pointB);
-			if (d < minDistance) {
-				minDistance = d;
-				minPointCindex = i;
-			}
-			
-			if (Double.isNaN(d)) {
-				@SuppressWarnings("unused")
-				int ema = 0;
+			d = -distancePointToLine(pointC, pointA, pointB);
+			if (d > maxDistance) {
+				maxDistance = d;
+				maxPointCindex = i;
 			}
 		}
 		
-		/* Remove pointC from rocPoints and put it in the resulting arraylist */
-		pointC = rocPoints.remove(minPointCindex);
+		pointC = rocPoints.remove(maxPointCindex);
 		result.add(pointC);
 		
 		return pointC;
 	}
 
-	
-	/* ---- Sort hull points ascending according to their FP and TP values ----
-	 * --------------------------------START-----------------------------------
-	 */
-	
 	public static void sort(ArrayList<float[]> rocPoints) {
 		Object[] aux = rocPoints.toArray();
 		Arrays.sort(aux, new Comparator<Object>() {
@@ -472,7 +472,8 @@ public class ROCAnalysis {
 			d = rocPoints.get(point)[0] - rocPoints.get(point)[1];
 			
 			/* Remove if point is under diagonal */
-			if (d >= -Utils.SMALL) {
+//			if (d >= -Utils.SMALL) {
+			if (d >= 0) {
 				rocPoints.remove(point);
 				--point;
 				--numPoints;
@@ -498,6 +499,9 @@ public class ROCAnalysis {
 		 * 
 		 * 		m = (y2 - y1) / (x2 - x1);
 		 */
+		if (pointB[0] == pointA[0]) {
+			return point[1] - pointB[1];
+		}
 		float m = (pointB[1] - pointA[1]) / (pointB[0] - pointA[0]);
 		float a = m;
 		float b = -1;
@@ -516,21 +520,20 @@ public class ROCAnalysis {
 		double d = (a * point[0] + b * point[1] + c);
 		d /= Math.sqrt(a * a + b * b);
 		
-		if (Double.isNaN(d)) {
-			@SuppressWarnings("unused")
-			boolean fudeu = true;
-		}
 		return d;
 	}
 
-	public static float[][] averageROCPoints(float[][][] rocPoints,
-			int numRounds) {
+	public static float[][][] averageROCPoints(float[][][] rocPoints) {
 		int nRocs = rocPoints.length;
 		
 		/* Count the number of rocPoints in all roc curves */
 		int numT = 0;
 		int[] nPts = new int[nRocs];
 		for (int roc = 0; roc < nRocs; roc++) {
+			if (rocPoints[roc] == null) {
+				@SuppressWarnings("unused")
+				boolean fudeu = true;
+			}
 			nPts[roc] = rocPoints[roc].length;
 			numT += nPts[roc];
 		}
@@ -550,41 +553,57 @@ public class ROCAnalysis {
 		
 		/* Output rocPoints */
 		ArrayList<float[]> avg = new ArrayList<float[]>();
+		ArrayList<float[]> stdDev = new ArrayList<float[]>();
 		                          
-		int samples = numT * numRounds / nRocs;
-		double fprsum;
-		double tprsum;
+		int samples = numT / nRocs;
 		int p;
-		float[] rocPoint;
+		double[] fprsumTemp = new double[nRocs];
+		double[] tprsumTemp = new double[nRocs];
+		float[] rocPointAvg;
+		float[] rocPointStdDev;
+		double[] rocPointAvgStdDev;
 		for (int tIdx = 0; tIdx < numT; tIdx += numT / samples) {
-			fprsum = 0;
-			tprsum = 0;
 			for (int roc = 0; roc < nRocs; roc++) {
 				p = rocPointAtThreshold(rocPoints[roc], t[tIdx]);
-				fprsum += rocPoints[roc][p][0];
-				tprsum += rocPoints[roc][p][1];
+				fprsumTemp[roc] = rocPoints[roc][p][0];
+				tprsumTemp[roc] = rocPoints[roc][p][1];
 			}
 			
-			/* Add averaged roc point */
-			rocPoint = new float[2];
-			rocPoint[0] = (float) (fprsum / nRocs);
-			rocPoint[1] = (float) (tprsum / nRocs);
-			avg.add(rocPoint);
+			/* Prepare for roc points */
+			rocPointAvg = new float[2];
+			rocPointStdDev = new float[2];
+			
+			/* Average and Standard Deviation for fpr */
+			rocPointAvgStdDev = Utils.computeMeanStdDev(fprsumTemp);
+			rocPointAvg[0] = (float) rocPointAvgStdDev[0];
+			rocPointStdDev[0] = (float) rocPointAvgStdDev[1];
+			
+			/* Average and Standard Deviation for tpr */
+			rocPointAvgStdDev = Utils.computeMeanStdDev(tprsumTemp);
+			rocPointAvg[1] = (float) rocPointAvgStdDev[0];
+			rocPointStdDev[1] = (float) rocPointAvgStdDev[1];
+			
+			/* Add average and standard deviation of roc points */
+			avg.add(rocPointAvg);
+			stdDev.add(rocPointStdDev);
 		}
 		
 		/* Check if last roc point is (0,0) */
 		int numPoints = avg.size();
 		if (avg.get(numPoints - 1)[0] != 0
 				|| avg.get(numPoints - 1)[1] != 0) {
-			float[] lastRocPoint = {0, 0};
-			avg.add(lastRocPoint);
+			float[] lastRocPointAvg = {0, 0};
+			float[] lastRocPointStdDev = {0, 0};
+			avg.add(lastRocPointAvg);
+			stdDev.add(lastRocPointStdDev);
 			++numPoints;
 		}
 		
 		/* Build new rocPoints */
-		float[][] newRocPoints = new float[numPoints][];
+		float[][][] newRocPoints = new float[2][numPoints][];
 		for (int i = 0; i < numPoints; i++) {
-			newRocPoints[i] = avg.get(i);
+			newRocPoints[0][i] = avg.get(i);
+			newRocPoints[1][i] = stdDev.get(i);
 		}
 		
 		return newRocPoints;
@@ -599,72 +618,6 @@ public class ROCAnalysis {
 		}
 
 		return i;
-	}
-	
-	public static ArrayList<Object> computeROCPointsDecisionTree(Classifier classifier,
-			InstanceSet testSet, int positiveClass) throws Exception {
-		/* Evaluate the testSet with the classifier */
-		int numInstances = testSet.numInstances();
-		for (int inst = 0; inst < numInstances; inst++) {
-			classifier.classifyInstance(testSet.getInstance(inst));
-		}
-
-		int negativeClass = Math.abs(positiveClass - 1);
-		
-		/* Stores the positive roc points */
-		ArrayList<float[]> positivePoints = new ArrayList<float[]>();
-
-		/* Stores the negative roc points */
-		ArrayList<float[]> negativePoints = new ArrayList<float[]>();
-		
-		/* Class counter (two classes only - positive and negative) */
-		int[] count = {0, 0};
-		
-		/* Stores the probability of a point being positive and its real class */
-		ArrayList<float[]> probs = new ArrayList<float[]>();
-		
-		/* Descend the tree */
-		Node treeNode = ((C45) classifier).getRootNode();
-		((DecisionTreeLearning) classifier).descendTree(treeNode, count,
-				positivePoints, negativePoints, probs);
-		
-		float[] point;
-		int sizePositive = positivePoints.size();
-		for (int i = 0; i < sizePositive; i++) {
-			point = positivePoints.get(i);
-			point[0] /= count[negativeClass];
-			point[1] /= count[positiveClass];
-		}
-		
-		int sizeNegative = negativePoints.size();
-		for (int i = 0; i < sizeNegative; i++) {
-			point = negativePoints.get(i);
-			point[0] = (count[negativeClass] - point[0]) / count[negativeClass];
-			point[1] = (count[positiveClass] - point[1]) / count[positiveClass];
-		}
-		
-		/* Build the roc points */
-		int numPoints = sizePositive + sizeNegative + 2;
-		float[][] rocPoints = new float[numPoints][2];
-		float[] pointZero = {0, 0};
-		float[] pointOne = {1, 1};
-		rocPoints[0] = pointZero;
-		rocPoints[1] = pointOne;
-		int index = 2;
-		for (int i = 0; i < sizePositive; i++) {
-			rocPoints[index] = positivePoints.get(i);
-			++index;
-		}
-		for (int i = 0; i < sizeNegative; i++) {
-			rocPoints[index] = negativePoints.get(i);
-			++index;
-		}
-		
-		ArrayList<Object> result = new ArrayList<Object>(2);
-		result.add(probs);
-		result.add(rocPoints);
-		
-		return result;
 	}
 	
 }

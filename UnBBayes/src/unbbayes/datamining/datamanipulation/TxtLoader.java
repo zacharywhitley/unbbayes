@@ -53,10 +53,11 @@ public class TxtLoader extends Loader {
 		tokenizer.wordChars('-', '-');
 		tokenizer.whitespaceChars(0, ' ');
 		tokenizer.whitespaceChars('\t','\t');
+		tokenizer.whitespaceChars(',',',');
 		tokenizer.commentChar('%');
 		tokenizer.quoteChar('"');
 		tokenizer.eolIsSignificant(true);
-		tokenizer.parseNumbers();
+//		tokenizer.parseNumbers(); // not working with floating (e.g. 1.23E8)
 	}
 
 	/**
@@ -140,9 +141,6 @@ public class TxtLoader extends Loader {
 			attName = tokenizer.sval;
 
 			/* Check if the header is ok */
-			if (attName == null) {
-				attName = String.valueOf(tokenizer.nval);
-			}
 			if (attName == null) {
 				errms(resource.getString("Invalid header"));
 			}
@@ -246,7 +244,8 @@ public class TxtLoader extends Loader {
 			/* Check if the current attribute is the counter attribute */
 			if (i == counterIndex) {
 				try {
-					instanceWeight = (float) tokenizer.nval;
+					float numValue = (float) Double.parseDouble(tokenizer.sval);
+					instanceWeight = numValue;
 					continue;
 				} catch (NumberFormatException nfe) {
 					errms("Atributo de contagem inválido");
@@ -259,13 +258,9 @@ public class TxtLoader extends Loader {
 				
 				/* Check if the attribute is made of String values */
 				if (attributeIsString[attIndex]) {
-					if (tokenizer.sval == null) {
-						/* The token is a number */
-						stringValue = String.valueOf(tokenizer.nval);
-					} else {
-						/* The token is a String */
-						stringValue = tokenizer.sval;
-					}
+					/* The token is a String */
+					stringValue = tokenizer.sval;
+					
 					/* Check if value is missing */ 
 					if (stringValue.equals("?")) {
 						instance[attIndex] = Instance.MISSING_VALUE;
@@ -275,15 +270,16 @@ public class TxtLoader extends Loader {
 					instance[attIndex] = attribute.addValue(stringValue);
 				} else {
 					/* Map the current String value to an internal value */
-					float value = (float) tokenizer.nval;
-					instance[attIndex] = attribute.addValue(value);
+					float numValue = (float) Double.parseDouble(tokenizer.sval);
+					instance[attIndex] = attribute.addValue(numValue);
 				}
 			} else {
-				/* 
+				/*
 				 * The attribute is not nominal thus only numbers are allowed
 				 * here.
 				 */
-				instance[attIndex] = (float) tokenizer.nval;
+				float numValue = (float) Double.parseDouble(tokenizer.sval);
+				instance[attIndex] = numValue;
 			}
 			++attIndex;
 			tokenizer.nextToken();
@@ -293,7 +289,7 @@ public class TxtLoader extends Loader {
 		instance[attIndex] = instanceWeight;
 		
 		/* Add the current instance to the instanceSet */
-		instanceSet.insertInstance(new Instance(instance));
+		instanceSet.insertInstance(instance);
 
 		return true;
 	}

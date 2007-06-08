@@ -68,8 +68,10 @@ public class TxtSaver extends Saver{
 		if (counter != numInstances) {
 			Instance instance = instanceSet.getInstance(counter);
 			
+			int attIndex;
 			for (int i = 0; i < numAttributes; i++) {
-				writer.print(instance.stringValue(selectedAttributes[i]) + " ");
+				attIndex = selectedAttributes[i];
+				writer.print(instance.stringValue(attIndex) + " ");
 			}
 			if (counterAttribute) {
 				writer.print(instance.getWeight());

@@ -19,7 +19,7 @@ public class Sampling {
 	/*--------------------- oversampling - start ----------------------*/
 	
 	/**
-	 * Samples an instanceSet. The amount of increase or decrease is controlled
+	 * Samplings an instanceSet. The amount of increase or decrease is controlled
 	 * by the <code>proportion</code> parameter, which will be multiplied by
 	 * the counter attribute.
 	 * 
@@ -40,7 +40,7 @@ public class Sampling {
 	}
 	
 	/**
-	 * Samples an instanceSet. The amount of increase or decrease is controlled
+	 * Samplings an instanceSet. The amount of increase or decrease is controlled
 	 * by the <code>proportion</code> parameter, which will be multiplied by
 	 * the counter attribute.
 	 * 
@@ -73,7 +73,7 @@ public class Sampling {
 	}
 	
 	/**
-	 * Samples an instanceSet. The amount of increase or decrease is controlled
+	 * Samplings an instanceSet. The amount of increase or decrease is controlled
 	 * by the <code>proportion</code> parameter, which will be multiplied by
 	 * the counter attribute. Only those instances indicated by the array
 	 * <code>instancesIDs</code> will be sampled.
@@ -85,6 +85,10 @@ public class Sampling {
 	 */
 	public static void oversampling(InstanceSet instanceSet, double proportion,
 			int[] instancesIDs) {
+		if (instanceSet.numInstances < 1 || instancesIDs.length < 1) {
+			return;
+		}
+		
 		if (instanceSet.isCompacted()) {
 			instancesIDs = uncompactInstancesIDs(instancesIDs, instanceSet);
 		}
@@ -111,6 +115,7 @@ public class Sampling {
 			++instanceSet.instances[inst].data[counterIndex];
 			++instanceSet.numWeightedInstances;
 		}
+		instanceSet.getClassDistribution(true);
 	}
 
 	/*--------------------- oversampling - end ----------------------*/
@@ -119,7 +124,7 @@ public class Sampling {
 	/*--------------------- undersampling - start ----------------------*/
 
 	/**
-	 * Samples an instanceSet. The amount of increase or decrease is controlled
+	 * Samplings an instanceSet. The amount of increase or decrease is controlled
 	 * by the <code>proportion</code> parameter, which will be multiplied by
 	 * the counter attribute. Should any instance be removed, a new valid array
 	 * of instances <code>instancesIDs</code> will be returned.
@@ -129,7 +134,7 @@ public class Sampling {
 	 * @return
 	 */
 	public static void undersampling(InstanceSet instanceSet,
-			double proportion, boolean remove) {
+			double proportion, boolean remove, boolean[] deleteIndex) {
 		int numInstances = instanceSet.numInstances;
 
 		/* Choose all instances for the sampling process */
@@ -137,11 +142,12 @@ public class Sampling {
 		for (int i = 0; i < numInstances; i++) {
 			instancesIDs[i] = i;
 		}
-		undersampling(instanceSet, proportion, instancesIDs, remove);
+		undersampling(instanceSet, proportion, instancesIDs, remove,
+				deleteIndex);
 	}
 	
 	/**
-	 * Samples an instanceSet. The amount of increase or decrease is controlled
+	 * Samplings an instanceSet. The amount of increase or decrease is controlled
 	 * by the <code>proportion</code> parameter, which will be multiplied by
 	 * the counter attribute. Should any instance be removed, a new valid array
 	 * of instances <code>instancesIDs</code> will be returned.
@@ -152,7 +158,8 @@ public class Sampling {
 	 * @return
 	 */
 	public static void undersampling(InstanceSet instanceSet,
-			double proportion, int classValue, boolean remove) {
+			double proportion, int classValue, boolean remove,
+			boolean[] deleteIndex) {
 		Instance[] instances = instanceSet.instances;
 		int numInstances = instanceSet.numInstances;
 
@@ -171,11 +178,12 @@ public class Sampling {
 			instancesIDs[i] = instancesIDsTmp[i];
 		}
 		
-		undersampling(instanceSet, proportion, instancesIDs, remove);
+		undersampling(instanceSet, proportion, instancesIDs, remove,
+				deleteIndex);
 	}
 	
 	/**
-	 * Samples an instanceSet. The amount of increase or decrease is controlled
+	 * Samplings an instanceSet. The amount of increase or decrease is controlled
 	 * by the <code>proportion</code> parameter, which will be multiplied by
 	 * the counter attribute. Only those instances indicated by the array
 	 * <code>instancesIDs</code> will be sampled. Should any instance be
@@ -188,7 +196,7 @@ public class Sampling {
 	 * @return
 	 */
 	public static void undersampling(InstanceSet instanceSet, double proportion,
-			int[] instancesIDs, boolean remove) {
+			int[] instancesIDs, boolean remove, boolean[] deleteIndex) {
 		if (instanceSet.isCompacted()) {
 			instancesIDs = uncompactInstancesIDs(instancesIDs, instanceSet);
 		}
@@ -209,8 +217,10 @@ public class Sampling {
 		decreaseSize = Math.round((float) (1 - proportion) * currentSize);
 		
 		/* Array that tells which instances must be removed (weight < 1) */ 
-		boolean[] deleteIndex = new boolean[instanceSet.numInstances];
-		Arrays.fill(deleteIndex, false);
+		if (deleteIndex == null) {
+			deleteIndex = new boolean[instanceSet.numInstances];
+			Arrays.fill(deleteIndex, false);
+		}
 		
 		/* Randomly undersample */
 		Random randomizer = new Random(new Date().getTime());
@@ -254,7 +264,7 @@ public class Sampling {
 	/*--------------------- simplesampling - start ----------------------*/
 
 	/**
-	 * Samples an instanceSet. The amount of increase or decrease is controlled
+	 * Samplings an instanceSet. The amount of increase or decrease is controlled
 	 * by the <code>proportion</code> parameter, which will be multiplied by
 	 * the counter attribute.	 * 
 	 * @param instanceSet
@@ -275,7 +285,7 @@ public class Sampling {
 	}
 	
 	/**
-	 * Samples an instanceSet. The amount of increase or decrease is controlled
+	 * Samplings an instanceSet. The amount of increase or decrease is controlled
 	 * by the <code>proportion</code> parameter, which will be multiplied by
 	 * the counter attribute. Only those instances from the class <code>
 	 * classValue</code> will be sampled.
@@ -309,7 +319,7 @@ public class Sampling {
 	}
 	
 	/**
-	 * Samples an instanceSet. The amount of increase or decrease is controlled
+	 * Samplings an instanceSet. The amount of increase or decrease is controlled
 	 * by the <code>proportion</code> parameter, which will be multiplied by
 	 * the counter attribute. Only those instances indicated by the array
 	 * <code>instancesIDs</code> will be sampled.
@@ -340,10 +350,10 @@ public class Sampling {
 			newWeight = Math.round((float) proportion * weight);
 			difference = newWeight - weight;
 			
-			/* Decrease from the total weight of the instanceSet */
+			/* Increase/decrease from the total weight of the instanceSet */
 			instanceSet.numWeightedInstances += difference;
 			
-			/* Decrease the weight of the chosen instance */
+			/* Increase/decrease the weight of the chosen instance */
 			instanceSet.instances[inst].data[counterIndex] = newWeight;
 			
 			/* Check if removal of the chosen instance is needed */

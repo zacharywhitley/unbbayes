@@ -4,13 +4,18 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
 import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.Utils;
 import unbbayes.datamining.evaluation.Classifiers;
 import unbbayes.datamining.evaluation.CrossValidation;
-import unbbayes.datamining.evaluation.Samples;
+import unbbayes.datamining.evaluation.ROCAnalysis;
+import unbbayes.datamining.evaluation.Samplings;
 import unbbayes.datamining.evaluation.TestFold;
 import unbbayes.datamining.preprocessor.imbalanceddataset.Smote;
 
@@ -32,7 +37,6 @@ public class TestROC {
 	String outputFileName;
 	private String aucFileName;
 	private int positiveClass;
-	private int negativeClass;
 	private String outputFilePath;
 	private String hullFileName;
 	private int classIndex;
@@ -41,136 +45,293 @@ public class TestROC {
 	private String inputFileName;
 	private String trainingFileName;
 	private String testFileName;
-	private String aucAnalysisFileName;
-	private double alfa = 0.05;
 	private int numRounds;
 	private boolean cross;
 	private int k;
+	private boolean simplesampling = false;
+	private Samplings samplings;
+	private TestFold testFold;
+	private int numberFractionDigits;
+	private int ratioStart;
+	private int ratioEnd;
+	private int kStart;
+	private int kEnd;
+	private boolean multiClass;
 	
 	public TestROC() {
-		run1();
-	}
-	
-	private void run1() {
 		try {
-			for (int x = 1; x < 7; x++) {
-				run(x);
-			}
+			rodaTodos();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-
-	private void run2() {
-	}
-
+	
 	public static void main(String[] args) {
 		new TestROC();
 	}
 
+	private void rodaTodos() throws Exception {
+		ratioStart = 1;
+		ratioEnd = 5;
+
+		kStart = 2;
+//		kEnd = 3;
+//		kStart = 16;
+		kEnd = 4;
+
+		for (int x = 2; x < 3; x++) {
+			callSettings(x);
+
+			numRounds = 1;
+//			numFolds = 10;
+//			cross = false;
+
+			applySettings();
+			try {
+				run(x);
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+				continue;
+			}
+			saveResults(testFold);
+//			saveAUCResults2(testFold, kStart);
+		}
+	}
+	
 	public void dataset(int x) {
 		/* Data set characteristics */
 		switch (x) {
 			case 0:
-				inputFilePath = "d:/dados/";
-				inputFileName = "m1t.arff";
-				trainingFileName = "m1t.arff";
-				testFileName = "m1av.arff";
-				classIndex = 10;
-				counterIndex = 11;
+				inputFilePath = "c:/dados/outros/kdd";
+				inputFileName = "kdd.arff";
+				trainingFileName = "";
+				testFileName = "";
+				classIndex = 17;
+				counterIndex = 18;
 				positiveClass = 1;
-				cross = false;
+				cross = true;
 				numFolds = 10;
 				numRounds = 1;
 				k = 15;
+				multiClass = true;
 				break;
 			case 1:
-				inputFilePath = "d:/dados/outros/pima/";
-				inputFileName = "pima-indians-diabetes.arff";
-				trainingFileName = "pima-indians-diabetes-training.arff";
-				testFileName = "pima-indians-diabetes-test.arff";
+				inputFilePath = "c:/dados/outros/glass/";
+				inputFileName = "glass.arff";
+				trainingFileName = "glass.arff";
+				testFileName = "glass.arff";
+				classIndex = 9;
+				counterIndex = 10;
+				positiveClass = 1;
+				cross = true;
+				numFolds = 10;
+				numRounds = 600;
+				k = 3;
+				break;
+			case 2:
+				inputFilePath = "c:/dados/outros/yeast/";
+				inputFileName = "yeast.arff";
+				trainingFileName = "";
+				testFileName = "";
 				classIndex = 8;
 				counterIndex = 9;
 				positiveClass = 1;
 				cross = true;
 				numFolds = 10;
-				numRounds = 100;
-				k = 15;
-				break;
-			case 2:
-				inputFilePath = "D:/dados/outros/phoneme/";
-				inputFileName = "phoneme.arff";
-				trainingFileName = "phoneme-train.arff";
-				testFileName = "phoneme-test.arff";
-				classIndex = 5;
-				counterIndex = -1;
-				positiveClass = 1;
-				cross = false;
-				numFolds = 10;
-				numRounds = 20;
+				numRounds = 86;
 				k = 15;
 				break;
 			case 3:
-				inputFilePath = "d:/dados/outros/satimage/";
-				inputFileName = "satimage - smote.arff";
-				trainingFileName = "satimage - smote-train.arff";
-				testFileName = "satimage - smote-test.arff";
-				classIndex = 36;
-				counterIndex = -1;
+				inputFilePath = "c:/dados/outros/pima/";
+				inputFileName = "pima-indians-diabetes.arff";
+				trainingFileName = "";
+				testFileName = "";
+				classIndex = 8;
+				counterIndex = 9;
 				positiveClass = 1;
 				cross = true;
 				numFolds = 10;
-				numRounds = 5;
+				numRounds = 40;
 				k = 15;
 				break;
 			case 4:
-				inputFilePath = "D:/dados/outros/adult - numeric/";
-				inputFileName = "Adult - numeric.arff";
-				trainingFileName = "Adult - numeric-train.arff";
-				testFileName = "Adult - numeric-test.arff";
-				classIndex = 6;
-				counterIndex = -1;
+				inputFilePath = "c:/dados/outros/sonar/";
+				inputFileName = "sonar.arff";
+				trainingFileName = "";
+				testFileName = "";
+				classIndex = 60;
+				counterIndex = 61;
 				positiveClass = 1;
 				cross = true;
 				numFolds = 10;
-				numRounds = 1;
+				numRounds = 18;
 				k = 15;
 				break;
 			case 5:
-				inputFilePath = "D:/dados/outros/adult - complete/";
-				inputFileName = "Adult - complete - no null.arff";
-				trainingFileName = "Adult - complete - no null-train.arff";
-				testFileName = "Adult - complete - no null-test.arff";
-				classIndex = 14;
-				counterIndex = -1;
-				positiveClass = 1;
+				inputFilePath = "c:/dados/outros/vowel/";
+				inputFileName = "vowel.arff";
+				trainingFileName = "";
+				testFileName = "";
+				classIndex = 12;
+				counterIndex = 13;
+				positiveClass = 0;
 				cross = true;
 				numFolds = 10;
-				numRounds = 1;
+				numRounds = 12;
 				k = 15;
 				break;
 			case 6:
-				inputFilePath = "d:/dados/outros/forest/";
-				inputFileName = "cover type - smote.arff";
-				trainingFileName = "cover type - smote-train.arff";
-				testFileName = "cover type - smote-test.arff";
-				classIndex = 54;
-				counterIndex = -1;
+				inputFilePath = "c:/dados/outros/vehicle/";
+				inputFileName = "vehicle.arff";
+				trainingFileName = "";
+				testFileName = "";
+				classIndex = 18;
+				counterIndex = 19;
+				positiveClass = 0;
+				cross = true;
+				numFolds = 10;
+				numRounds = 10;
+				k = 15;
+				break;
+			case 7:
+				inputFilePath = "c:/dados/outros/letter-a/";
+				inputFileName = "letter-a.arff";
+				trainingFileName = "";
+				testFileName = "";
+				classIndex = 16;
+				counterIndex = 17;
 				positiveClass = 1;
 				cross = true;
 				numFolds = 10;
 				numRounds = 1;
 				k = 15;
 				break;
-			case 7:
-				inputFilePath = "";
-				inputFileName = "";
+			case 8:
+				inputFilePath = "c:/dados/outros/letter-vowel/";
+				inputFileName = "letter-vowel.arff";
+				trainingFileName = "letter-vowel.arff";
+				testFileName = "letter-vowel.arff";
+				classIndex = 16;
+				counterIndex = 17;
+				positiveClass = 1;
+				cross = true;
+				numFolds = 10;
+				numRounds = 1;
+				k = 15;
+				break;
+			case 9:
+				inputFilePath = "c:/dados/outros/forest/";
+				inputFileName = "cover type.arff";
 				trainingFileName = "";
 				testFileName = "";
-				classIndex = 0;
-				counterIndex = -1;
+				classIndex = 27;
+				counterIndex = 28;
 				positiveClass = 1;
-				cross = false;
+				cross = true;
+				numFolds = 10;
+				numRounds = 1;
+				k = 15;
+				break;
+			case 10:
+				inputFilePath = "c:/dados/outros/german/";
+				inputFileName = "german.arff";
+				trainingFileName = "";
+				testFileName = "";
+				classIndex = 20;
+				counterIndex = 21;
+				positiveClass = 1;
+				cross = true;
+				numFolds = 10;
+				numRounds = 15;
+				k = 15;
+				break;
+			case 11:
+				inputFilePath = "c:/dados/outros/phoneme/";
+				inputFileName = "phoneme.arff";
+				trainingFileName = "";
+				testFileName = "";
+				classIndex = 5;
+				counterIndex = 6;
+				positiveClass = 1;
+				cross = true;
+				numFolds = 10;
+				numRounds = 1;
+				k = 15;
+				break;
+			case 12:
+				inputFilePath = "c:/dados/outros/nursery/";
+				inputFileName = "nursery.arff";
+				trainingFileName = "";
+				testFileName = "";
+				classIndex = 8;
+				counterIndex = 9;
+				positiveClass = 1;
+				cross = true;
+				numFolds = 10;
+				numRounds = 1;
+				k = 15;
+				break;
+			case 13:
+				inputFilePath = "c:/dados/outros/satimage/";
+				inputFileName = "satimage - smote.arff";
+				trainingFileName = "";
+				testFileName = "";
+				classIndex = 36;
+				counterIndex = 37;
+				positiveClass = 1;
+				cross = true;
+				numFolds = 10;
+				numRounds = 1;
+				k = 15;
+				break;
+			case 14:
+				inputFilePath = "c:/dados/outros/splice-ei/";
+				inputFileName = "splice-ei.arff";
+				trainingFileName = "";
+				testFileName = "";
+				classIndex = 60;
+				counterIndex = 61;
+				positiveClass = 0;
+				cross = true;
+				numFolds = 10;
+				numRounds = 10;
+				k = 15;
+				break;
+			case 15:
+				inputFilePath = "c:/dados/outros/splice-ie/";
+				inputFileName = "splice-ie.arff";
+				trainingFileName = "";
+				testFileName = "";
+				classIndex = 60;
+				counterIndex = 61;
+				positiveClass = 0;
+				cross = true;
+				numFolds = 10;
+				numRounds = 10;
+				k = 15;
+				break;
+			case 16:
+				inputFilePath = "c:/dados/outros/adult - complete/";
+				inputFileName = "Adult - complete.arff";
+				trainingFileName = "";
+				testFileName = "";
+				classIndex = 14;
+				counterIndex = 15;
+				positiveClass = 1;
+				cross = true;
+				numFolds = 10;
+				numRounds = 1;
+				k = 15;
+				break;
+			case 17:
+				inputFilePath = "c:/dados/outros/adult - numeric/";
+				inputFileName = "Adult - numeric.arff";
+				trainingFileName = "";
+				testFileName = "";
+				classIndex = 6;
+				counterIndex = 7;
+				positiveClass = 1;
+				cross = true;
 				numFolds = 10;
 				numRounds = 1;
 				k = 15;
@@ -179,46 +340,11 @@ public class TestROC {
 	}
 	
 	public void run(int x) throws Exception {
+		System.out.println(inputFileName);
 		long start = System.currentTimeMillis();
-		System.out.println("Inicio = " + (new java.text.SimpleDateFormat("HH:mm:ss:SSS - ")).format(new Date()));
+		System.out.println(x + " - " + (new java.text.SimpleDateFormat("HH:mm:ss")).format(new Date()));
 
-		/*
-		 * 0: banco do brasil
-		 * 1: pima
-		 * 3: phoneme
-		 * 5: satimage
-		 * 2: adult - numeric
-		 * 4: adult - complete - no null
-		 * 6: forest cover
-		 */
-		dataset(x);
-		
-		negativeClass = Math.abs(1 - positiveClass);
-		aucFileName = "auc.txt";
-		aucAnalysisFileName = "aucAnalysis.txt";
-		rocFileNameExtension = ".roc";
-		hullFileName = "hull.txt";
-		
-		/* Add paths to the file names */
-		outputFilePath = "results/";
-		inputFileName = inputFilePath + inputFileName;
-		trainingFileName = inputFilePath + trainingFileName;
-		testFileName = inputFilePath + testFileName;
-		outputFilePath = inputFilePath + outputFilePath;
-		
-		/* Create the utils */
-		testsetUtils = new TestsetUtils();
-		testsetUtils.setPositiveClass(positiveClass);
-		testsetUtils.setK(k);
-		
-		/**** C4.5 options ****/
-		testsetUtils.setIfUsingPrunning(false);
-		testsetUtils.setConfidenceLevel(0.01f);
-		
-		if (numRounds <= 0) {
-			throw new IllegalArgumentException("numRounds " +
-					"must be greater than zero!");
-		}
+//		callSettings(x);
 		
 		if (cross) {
 			runCross();
@@ -232,41 +358,96 @@ public class TestROC {
 		String timeMesg;
 		timeMesg = "Time for " + x + ": " + min + "\"" + sec + "'";
 		System.out.println(timeMesg);
+		System.out.println();
+	}
+
+	private void callSettings(int x) {
+		/*
+		 * 0: banco do brasil
+		 * 1: pima
+		 * 3: phoneme
+		 * 5: satimage
+		 * 2: adult - numeric
+		 * 4: adult - complete - no null
+		 * 6: forest cover
+		 */
+		dataset(x);
+		
+		aucFileName = "auc.txt";
+		rocFileNameExtension = " - roc.txt";
+		hullFileName = "hull.txt";
+		
+		/* Add paths to the file names */
+		outputFilePath = "results/";
+		inputFileName = inputFilePath + inputFileName;
+		trainingFileName = inputFilePath + trainingFileName;
+		testFileName = inputFilePath + testFileName;
+		outputFilePath = inputFilePath + outputFilePath;
+		
+		/* Number of fraction digits */
+		numberFractionDigits = 10;
+	}
+	
+	public void applySettings() {
+		/* Create the utils */
+		testsetUtils = new TestsetUtils();
+		testsetUtils.setPositiveClass(positiveClass);
+		testsetUtils.setK(k);
+		testsetUtils.setSimplesampling(simplesampling);
+		testsetUtils.setRatioStart(ratioStart);
+		testsetUtils.setRatioEnd(ratioEnd);
+		testsetUtils.setKstart(kStart);
+		testsetUtils.setKend(kEnd);
+		
+		/**** C4.5 options ****/
+		testsetUtils.setIfUsingPrunning(false);
+		testsetUtils.setConfidenceLevel(0.25f);
+		
+		if (numRounds <= 0) {
+			throw new IllegalArgumentException("numRounds " +
+					"must be greater than zero!");
+		}
+		
 	}
 
 	private void runCross() throws Exception {
 		/* Opens the input set */
-		InstanceSet instanceSet;
-		instanceSet = TestsetUtils.openFile(inputFileName, counterIndex);
+		InstanceSet instanceSet = openFile(inputFileName);
+		
 		if (instanceSet == null) {
 			String exceptionMsg = "Couldn't open training instanceSet " 
 				+ inputFileName;
 			throw new Exception(exceptionMsg);
 		}
-		instanceSet.setClassIndex(classIndex);
 		
 		/* Run baby, run! */
-		TestFold testFold;
 		testFold = CrossValidation.getEvaluatedProbabilities(instanceSet,
 				numFolds, numRounds, testsetUtils);
 	
-		saveResults(testFold);
+		samplings = testFold.getSamplings();
 	}
 	
+	private InstanceSet openFile(String fileName) throws IOException {
+		InstanceSet instanceSet;
+		instanceSet = TestsetUtils.openFile(fileName, counterIndex, classIndex);
+		testsetUtils.setInstanceSetType(instanceSet.getInstanceSetType());
+		
+		return instanceSet;
+	}
+
 	private void run() throws Exception {
 		/* Opens the training set */
-		InstanceSet trainingSet;
-		trainingSet = TestsetUtils.openFile(trainingFileName, counterIndex);
+		InstanceSet trainingSet = openFile(trainingFileName);
+		
 		if (trainingSet == null) {
 			String exceptionMsg = "Couldn't open training instanceSet " 
 				+ trainingFileName;
 			throw new Exception(exceptionMsg);
 		}
-		trainingSet.setClassIndex(classIndex);
 		
 		/* Opens the test set */
 		InstanceSet testSet;
-		testSet = TestsetUtils.openFile(testFileName, counterIndex);
+		testSet = TestsetUtils.openFile(testFileName, counterIndex, classIndex);
 		if (testSet == null) {
 			String exceptionMsg = "Couldn't open training instanceSet " 
 				+ testFileName;
@@ -275,55 +456,137 @@ public class TestROC {
 		testSet.setClassIndex(classIndex);
 		
 		/* Run baby, run! */
-		TestFold testFold;
 		testFold = CrossValidation.getEvaluatedProbabilities(trainingSet,
-				testSet, numRounds, testsetUtils);
+				testSet, numRounds, testsetUtils, samplings);
 	
-		saveResults(testFold);
+		samplings = testFold.getSamplings();
 	}
 	
 	private void saveResults(TestFold testFold) throws IOException {
-//		selectBestAUC(testFold);
-		saveAUCResults(testFold);
-//		saveROCResults(testFold);
-//		analyzeAUC(testFold);
-//		computeHullResults(testFold);
+		if (multiClass) {
+			saveMultiClassResults(testFold);
+		} else {
+			saveAUCResults(testFold);
+			saveROCResults(testFold);
+			computeHullResults(testFold);
+		}
 	}
 
-	
+	private void saveMultiClassResults(TestFold testFold2) {
+		PrintWriter writer;
+		File output;
+		String fileName;
+
+		/* Save tp and fp on disk */
+		fileName = outputFilePath + "/TP-FP.txt";
+		output = new File(fileName);
+		writer = new PrintWriter(new FileWriter(output), true);
+		writer.println("TP Rate\tFP Rate\tTN Rate\tFN Rate\tClass");
+		for (int i = 0; i < numClasses; i++) {
+			writer.print(eval.truePositiveRate(i) + "\t");
+			writer.print(eval.falsePositiveRate(i) + "\t");
+			writer.print(eval.trueNegativeRate(i) + "\t");
+			writer.print(eval.falseNegativeRate(i) + "\t");
+			writer.print(trainingSet.attributes[trainingSet.classIndex].value(i));
+			writer.println();
+		}
+		writer.flush();
+		writer.close();
+		
+		/* Save indexes on disk */
+		fileName = outputFilePath + "/indices.txt";
+		output = new File(fileName);
+		writer = new PrintWriter(new FileWriter(output), true);
+		writer.println("Precision\tRecall\tAccuracy\tFScore\tClass");
+		for (int i = 0; i < numClasses; i++) {
+			writer.print(eval.getPrecision(i) + "\t");
+			writer.print(eval.getRecall(i) + "\t");
+			writer.print(eval.getAccuracy(i) + "\t");
+			writer.print(eval.getFScore(i) + "\t");
+			writer.print(trainingSet.attributes[trainingSet.classIndex].value(i));
+			writer.println();
+		}
+		writer.flush();
+		writer.close();
+		
+		/* Save confusion matrix on disk */
+		fileName = outputFilePath + "/confusionMatrix.txt";
+		output = new File(fileName);
+		writer = new PrintWriter(new FileWriter(output), true);
+		for (int i = 0; i < numClasses; i++) {
+			if (i > 0) writer.print("\t");
+			writer.print(trainingSet.attributes[trainingSet.classIndex].value(i));
+		}
+		writer.println();
+		int[][] confusionMatrix = eval.confusionMatrix();
+		for (int i = 0; i < numClasses; i++) {
+			for (int j = 0; j < numClasses; j++) {
+				writer.print(confusionMatrix[i][j] + "\t");
+			}
+			writer.print(trainingSet.attributes[trainingSet.classIndex].value(i));
+			writer.println();
+		}
+		writer.flush();
+		writer.close();
+	}
+
 	private void saveROCResults(TestFold testFold) throws IOException {
 		PrintWriter writer;
 		File output;
 		String fileName;
 		String classifierName;
 		String sampleName;
+		String fpAvg;
+		String tpAvg;
+		String fpStdDev;
+		String tpStdDev;
 		
 		int numClassifiers = Classifiers.getNumClassifiers();
-		int numSamples = Samples.getNumSamples();
+		int numSamplings = samplings.getNumSamplings();
 		
 		int numROCPoints;
-		float[][] rocPoints;
+		float[][] rocPointsAvg;
+		float[][] rocPointsStdDev;
 		
 		/* Save roc points */
 		for (int i = 0; i < numClassifiers; i++) {
 			classifierName = Classifiers.getClassifierName(i);
 			
-			for (int sampleID = 0; sampleID < numSamples; sampleID++) {
+			for (int sampleID = 0; sampleID < numSamplings; sampleID++) {
 				/* Create roc output file */
-				sampleName = Samples.getSampleName(sampleID);
+				sampleName = samplings.getSamplingName(sampleID);
 				fileName = outputFilePath + "/" + classifierName;
-				fileName += "/" + sampleName + rocFileNameExtension;
+//				fileName += "/" + sampleName + rocFileNameExtension;
+				fileName += "/" + sampleID + sampleName + rocFileNameExtension;
 				output = new File(fileName);
 				writer = new PrintWriter(new FileWriter(output), true);
 				
 				/* Get roc values */
-				rocPoints = testFold.getRocPointsProbs(sampleID, i);
+				rocPointsAvg = testFold.getRocPointsAvg(sampleID, i);
+				rocPointsStdDev = testFold.getRocPointsStdDev(sampleID, i);
+				
+				/* Sort ascending by FP and TP */
+				numROCPoints = rocPointsAvg.length;
+				float[][] rocPointsAux = new float[numROCPoints][4];
+				for (int n = 0; n < numROCPoints; n++) {
+					rocPointsAux[n][0] = rocPointsAvg[n][0];
+					rocPointsAux[n][1] = rocPointsAvg[n][1];
+					rocPointsAux[n][2] = rocPointsStdDev[n][0];
+					rocPointsAux[n][3] = rocPointsStdDev[n][1];
+				}
+				Utils.sort(rocPointsAux);
 				
 				/* Save roc values */
-				numROCPoints = rocPoints.length;
-				writer.println("FP\tTP");
+				numROCPoints = rocPointsAvg.length;
+				writer.println();
+				writer.println(sampleName);
 				for (int k = 0; k < numROCPoints; k++) {
-					writer.println(rocPoints[k][0] + "\t" + rocPoints[k][1]);
+					fpAvg = toComma(rocPointsAux[k][0], numberFractionDigits);
+					tpAvg = toComma(rocPointsAux[k][1], numberFractionDigits);
+					fpStdDev = toComma(rocPointsAux[k][2], numberFractionDigits);
+					tpStdDev = toComma(rocPointsAux[k][3], numberFractionDigits);
+					writer.print(fpAvg + "\t" + tpAvg + "\t");
+					writer.println(fpStdDev + "\t" + tpStdDev);
 				}
 				writer.flush();
 				writer.close();
@@ -331,83 +594,109 @@ public class TestROC {
 		}
 	}
 	
-//	private void computeHullResults(ArrayList<Object> hullPointsAux)
-//	throws IOException {
-//		PrintWriter writer;
-//		File output;
-//		String fileName;
-//		String classifierName;
-//		String sampleName;
-//		
-//		int numClassifiers = testsetUtils.getNumClassifiers();
-//		int numSamples = testsetUtils.getNumSamples();
-//		
-//		int numROCPoints;
-//		float[][] rocPoints;
-//		
-//		/* Save roc points */
-//		for (int i = 0; i < numClassifiers; i++) {
-//			classifierName = Classifiers.getClassifierName(i);
-//			
-//			for (int j = 0; j < numSamples; j++) {
-//				/* Create roc output file */
-//				sampleName = Samples.getSampleName(j);
-//				fileName = outputFilePath + "/" + classifierName;
-//				fileName += "/" + sampleName;
-//				output = new File(fileName);
-//				writer = new PrintWriter(new FileWriter(output), true);
-//				
-//				/* Get roc values */
-//				rocPoints = testFold.getRocPointsProbs(i, j);
-//				
-//				/* Save roc values */
-//				numROCPoints = rocPoints.length;
-//				writer.println("FP\tTP");
-//				for (int k = 0; k < numROCPoints; k++) {
-//					writer.println(rocPoints[k][0] + "\t" + rocPoints[k][1]);
-//				}
-//				writer.flush();
-//				writer.close();
-//			}
-//		}
-//		/* Merge all rocPoints */
-//		int size = hullPointsAux.size();
-//		ArrayList<float[]> hullPoints = new ArrayList<float[]>();
-//		float[][] aux;
-//		int numRocPoints;
-//		for (int i = 0; i < size; i++) {
-//			aux = (float[][]) hullPointsAux.get(i);
-//			numRocPoints = aux.length;
-//			for (int j = 0; j < numRocPoints; j++) {
-//				hullPoints.add(aux[j]);
-//			}
-//		}
-//		
-//		/* Sort ascending by FP and TP */
-//		ROCAnalysis.sort(hullPoints);
-//		
-//		/* Remove repeated points */
-//		ROCAnalysis.removeRepeated(hullPoints);
-//		
-//		/* Compute the convex hull */
-//		hullPoints = ROCAnalysis.computeConvexHull(hullPoints);
-//		
-//		/* Create convex hull output file */
-//		PrintWriter writer;
-//		File output;
-//		output = new File(outputFilePath + hullFileName);
-//		writer = new PrintWriter(new FileWriter(output), true);
-//		
-//		/* Save convex hull points on disk */
-//		writer.println("FP\tTP");
-//		int numHullResults = hullPoints.size();
-//		for (int n = 0; n < numHullResults; n++) {
-//			writer.println(hullPoints.get(n)[0] + "\t" + hullPoints.get(n)[1]);
-//		}
-//		writer.flush();
-//		writer.close();
-//	}
-//	
+	private void computeHullResults(TestFold testFold)
+	throws IOException {
+		int numClassifiers = Classifiers.getNumClassifiers();
+		int numSamplings = samplings.getNumSamplings();
+		
+		ArrayList<float[]> hullPoints;
+		float[][] rocPoints;
+		int numRocPoints;
+
+		/* Merge all rocPoints */
+		hullPoints = new ArrayList<float[]>();
+		for (int classID = 0; classID < numClassifiers; classID++) {
+			for (int sampleID = 0; sampleID < numSamplings; sampleID++) {
+				/* Get roc values */
+				rocPoints = testFold.getRocPointsAvg(sampleID, classID);
+				numRocPoints = rocPoints.length;
+				
+				for (int i = 0; i < numRocPoints; i++) {
+					hullPoints.add(rocPoints[i]);
+				}
+			}
+			computeHullResults(hullPoints, "");
+		}
+	}
+	
+	private void computeHullResults() throws IOException {
+		double[][] rocPoints = {
+								};
+		
+		/* Merge all rocPoints */
+		ArrayList<float[]> hullPoints = new ArrayList<float[]>();
+		int numRocPoints = rocPoints.length;
+		for (int i = 0; i < numRocPoints; i++) {
+			float[] ema = new float[2];
+			ema[0] = (float) rocPoints[i][0];
+			ema[1] = (float) rocPoints[i][1];
+			hullPoints.add(ema);
+		}
+		/*
+		 * 0: banco do brasil
+		 * 1: pima
+		 * 3: phoneme
+		 * 5: satimage
+		 * 2: adult - numeric
+		 * 4: adult - complete - no null
+		 * 6: forest cover
+		 */
+		dataset(16);
+		
+		aucFileName = "auc.txt";
+		rocFileNameExtension = ".roc";
+		hullFileName = "hull.txt";
+		
+		/* Add paths to the file names */
+		outputFilePath = "results/";
+		inputFileName = inputFilePath + inputFileName;
+		trainingFileName = inputFilePath + trainingFileName;
+		testFileName = inputFilePath + testFileName;
+		outputFilePath = inputFilePath + outputFilePath;
+		
+		computeHullResults(hullPoints, "");
+	}
+	
+	private void computeHullResults(ArrayList<float[]> hullPoints, String folder)
+	throws IOException {
+		/* Compute the convex hull */
+		hullPoints = ROCAnalysis.computeConvexHull(hullPoints);
+		
+		/* Sort ascending by FP and TP */
+		ROCAnalysis.sort(hullPoints);
+		
+		/* Create convex hull output file */
+		PrintWriter writer;
+		File output;
+		output = new File(outputFilePath + folder + hullFileName);
+		writer = new PrintWriter(new FileWriter(output), true);
+		
+		/* Save convex hull points on disk */
+		int numHullResults = hullPoints.size();
+		String fp;
+		String tp;
+		writer.println();
+		writer.println("Hull");
+		numberFractionDigits = 10;
+		for (int n = 0; n < numHullResults; n++) {
+			fp = toComma(hullPoints.get(n)[0], numberFractionDigits);
+			tp = toComma(hullPoints.get(n)[1], numberFractionDigits);
+			writer.println(fp + "\t" + tp);
+		}
+		writer.flush();
+		writer.close();
+	}
+	
+	private String toComma(float f, int numberFractionDigits) {
+		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+		dfs.setDecimalSeparator(',');
+		DecimalFormat format = new DecimalFormat();
+	    format.setDecimalFormatSymbols(dfs);
+	    format.setMinimumFractionDigits(numberFractionDigits);
+	    
+		return format.format(f);
+	}
+
 	private void saveAUCResults(TestFold testFold)
 	throws IOException {
 		PrintWriter writer;
@@ -416,59 +705,112 @@ public class TestROC {
 		String classifierName;
 
 		int numClassifiers = Classifiers.getNumClassifiers();
-		int numSamples = Samples.getNumSamples();
+		int numSamplings = testFold.getNumSamplings();
 		
 		double value;
 		double stdDev;
+		String stringValue;
+		String stringStdDev;
+		
+		/* Create AUC output file */
+		fileName = outputFilePath + "/" + aucFileName;
+		output = new File(fileName);
+		writer = new PrintWriter(new FileWriter(output), true);
 		
 		/* Save auc values on disk */
 		for (int i = 0; i < numClassifiers; i++) {
 			classifierName = Classifiers.getClassifierName(i);
 
-			/* Create AUC output file */
-			fileName = outputFilePath + classifierName + "/" + aucFileName;
-			output = new File(fileName);
-			writer = new PrintWriter(new FileWriter(output), true);
-			
-			for (int sampleID = 0; sampleID < numSamples; sampleID++) {
-				writer.print(Samples.getSampleName(sampleID));
+			for (int sampleID = 0; sampleID < numSamplings; sampleID++) {
+				
+				/* Write classifier name */
+				writer.print(classifierName);
+	
+				/* Write sample name */
+				writer.print("\t" + testFold.getSamplingName(sampleID));
 	
 				/* AUC */
 				value = testFold.getAuc(sampleID, i)[0];
 				stdDev = testFold.getAuc(sampleID, i)[1];
-				writer.print("\t" + String.format(Locale.FRANCE, "%.2f", value));
-				writer.print("\t" + String.format(Locale.FRANCE, "%.2f", stdDev));
+				stringValue = String.format(Locale.FRANCE, "%.2f", value);
+				stringStdDev = String.format(Locale.FRANCE, "%.2f", stdDev);
+				writer.print("\t" + stringValue + " (" + stringStdDev + ")");
 				
-				/* Global error */
-				value = testFold.getGlobalError(sampleID, i)[0];
-				stdDev = testFold.getGlobalError(sampleID, i)[1];
-				writer.print("\t" + String.format(Locale.FRANCE, "%.2f", value));
-				writer.print("\t" + String.format(Locale.FRANCE, "%.2f", stdDev));
-				
-				/* Sensitivity */
-				value = testFold.getSensitivity(sampleID, i)[0];
-				stdDev = testFold.getSensitivity(sampleID, i)[1];
-				writer.print("\t" + String.format(Locale.FRANCE, "%.2f", value));
-				writer.print("\t" + String.format(Locale.FRANCE, "%.2f", stdDev));
-				
-				/* Specificity */
-				value = testFold.getSpecificity(sampleID, i)[0];
-				stdDev = testFold.getSpecificity(sampleID, i)[1];
-				writer.print("\t" + String.format(Locale.FRANCE, "%.2f", value));
-				writer.print("\t" + String.format(Locale.FRANCE, "%.2f", stdDev));
-				
-				/* SE */
-				value = testFold.getSE(sampleID, i)[0];
-				stdDev = testFold.getSE(sampleID, i)[1];
-				writer.print("\t" + String.format(Locale.FRANCE, "%.2f", value));
-				writer.print("\t" + String.format(Locale.FRANCE, "%.2f", stdDev));
+//				/* Global error */
+//				value = testFold.getGlobalError(sampleID, i)[0];
+//				stdDev = testFold.getGlobalError(sampleID, i)[1];
+//				stringValue = String.format(Locale.FRANCE, "%.2f", value);
+//				stringStdDev = String.format(Locale.FRANCE, "%.2f", stdDev);
+//				writer.print("\t" + stringValue + " (" + stringStdDev + ")");
+//				
+//				/* Sensitivity */
+//				value = testFold.getSensitivity(sampleID, i)[0];
+//				stdDev = testFold.getSensitivity(sampleID, i)[1];
+//				stringValue = String.format(Locale.FRANCE, "%.2f", value);
+//				stringStdDev = String.format(Locale.FRANCE, "%.2f", stdDev);
+//				writer.print("\t" + stringValue + " (" + stringStdDev + ")");
+//				
+//				/* Specificity */
+//				value = testFold.getSpecificity(sampleID, i)[0];
+//				stdDev = testFold.getSpecificity(sampleID, i)[1];
+//				stringValue = String.format(Locale.FRANCE, "%.2f", value);
+//				stringStdDev = String.format(Locale.FRANCE, "%.2f", stdDev);
+//				writer.print("\t" + stringValue + " (" + stringStdDev + ")");
+//				
+//				/* SE */
+//				value = testFold.getSE(sampleID, i)[0];
+//				stdDev = testFold.getSE(sampleID, i)[1];
+//				stringValue = String.format(Locale.FRANCE, "%.2f", value);
+//				stringStdDev = String.format(Locale.FRANCE, "%.2f", stdDev);
+//				writer.print("\t" + stringValue + " (" + stringStdDev + ")");
 				
 				writer.println();
 			}
-			writer.flush();
-			writer.close();
 		}
+		writer.flush();
+		writer.close();
 	}
+	
+	private void saveAUCResults2(TestFold testFold, int kSeries)
+	throws IOException {
+		PrintWriter writer;
+		File output;
+		String fileName;
+
+		int numClassifiers = Classifiers.getNumClassifiers();
+		int numSamplings = testFold.getNumSamplings();
+		
+		double value;
+		double stdDev;
+		String stringValue;
+		String stringStdDev;
+		
+		/* Create AUC output file */
+		fileName = outputFilePath + "/" + kSeries + " - " + aucFileName;
+		output = new File(fileName);
+		writer = new PrintWriter(new FileWriter(output), true);
+		
+		/* Save auc values on disk */
+		for (int i = 0; i < numClassifiers; i++) {
+			for (int sampleID = 0; sampleID < numSamplings; sampleID++) {
+				
+				/* Write sample name */
+				writer.print(testFold.getSamplingName(sampleID));
+	
+				/* AUC */
+				value = testFold.getAuc(sampleID, i)[0];
+				stdDev = testFold.getAuc(sampleID, i)[1];
+				stringValue = String.format(Locale.FRANCE, "%.2f", value);
+				stringStdDev = String.format(Locale.FRANCE, "%.2f", stdDev);
+				writer.print("\t" + stringValue + " (" + stringStdDev + ")");
+				
+				writer.println();
+			}
+		}
+		writer.flush();
+		writer.close();
+	}
+	
 	
 //	private void analyzeAUC(ArrayList<Object> aucResultsAux, boolean cross)
 //	throws IOException {

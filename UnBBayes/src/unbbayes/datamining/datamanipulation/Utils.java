@@ -7,6 +7,10 @@ import java.util.Enumeration;
 import java.util.Random;
 import java.util.ResourceBundle;
 
+import unbbayes.TestsetUtils;
+import unbbayes.datamining.classifiers.Classifier;
+import unbbayes.datamining.evaluation.Classifiers;
+import unbbayes.datamining.evaluation.Misclassify;
 import unbbayes.datamining.utils.Statistics;
 
 /**
@@ -17,6 +21,10 @@ import unbbayes.datamining.utils.Statistics;
  *	@version $1.0 $ (16/02/2002)
  */
 public final class Utils { 
+
+	/*** The precision parameter used for numeric attributes */
+	protected static final float DEFAULT_NUM_PRECISION = 0.01f;
+
 	/** The small deviation allowed in double comparisons */
 	public static double SMALL = 1e-6;
 	
@@ -500,7 +508,7 @@ public final class Utils {
 	}
 
 	public static void sort(float[][] array) {
-		Arrays.sort(array, new Comparator<float[]>() {
+		Comparator comparator = new Comparator<float[]>() {
 			public int compare(final float[] arg0, final float[] arg1) {
 				float[] p1 = (float[]) arg0;
 				float[] p2 = (float[]) arg1;
@@ -518,7 +526,37 @@ public final class Utils {
 				return 0;
 			}
 			
-		});
+		};
+		
+		sort(array, comparator);
+	}
+
+	public static void sortDescending(float[][] array) {
+		Comparator comparator = new Comparator<float[]>() {
+			public int compare(final float[] arg0, final float[] arg1) {
+				float[] p1 = (float[]) arg0;
+				float[] p2 = (float[]) arg1;
+				float x;
+				
+				for (int i = 0; i < p1.length; i++) {
+					x = p1[i] - p2[i];
+					if (x < 0) {
+						return 1;
+					} else if (x > 0) {
+						return -1;
+					}
+				}
+				
+				return 0;
+			}
+			
+		};
+		
+		sort(array, comparator);
+	}
+
+	public static void sort(float[][] array, Comparator comparator) {
+		Arrays.sort(array, comparator);
 	}
 
 	/** 
@@ -716,11 +754,11 @@ public final class Utils {
 		int count = instanceSet.numInstances;
 
 		if (count < 2) {
-						throw new Exception(resource.getString("emptyInstanceSet"));
+			throw new Exception(resource.getString("emptyInstanceSet"));
 		}
 		
 		if(instanceSet.attributeType[att] == InstanceSet.NOMINAL){
-				throw new Exception(resource.getString("nominalAttribute"));
+			throw new Exception(resource.getString("nominalAttribute"));
 		}
 
 		double MISSING_VALUE = Instance.MISSING_VALUE;
@@ -780,12 +818,25 @@ public final class Utils {
 			}
 		}
 		for (int k = 0; k < numClasses; k++) {
+			if (instPerClass[k] == 0) {
+				meanPerClass[k] = 0;
+				stdDevPerClass[k] = 0;
+				continue;
+			}
 			meanPerClass[k] = meanPerClass[k] / instPerClass[k];
-			temp = sumPerClass[k] / (instPerClass[k] - 1);
+			if (instPerClass[k] > 1) {
+				temp = sumPerClass[k] / (instPerClass[k] - 1);
+			} else {
+				temp = (sumPerClass[k] + 1) / ((instPerClass[k] + numClasses) - 1);
+			}
 			stdDevPerClass[k] = (double) Math.sqrt(temp);
 		}
 		
 		ArrayList<double[]> list = new ArrayList<double[]>(2);
+		if (Double.isNaN(stdDevPerClass[0]) || Double.isNaN(stdDevPerClass[1])) {
+			@SuppressWarnings("unused")
+			boolean fudeu = true;
+		}
 		list.add(0, stdDevPerClass);
 		list.add(1, meanPerClass);
 		return list;
@@ -935,11 +986,13 @@ public final class Utils {
 		byte[] attributeType = instanceSet.attributeType;
 		int numNominalAttributes = instanceSet.numNominalAttributes;
 		int numClasses = 0;
-		if (classIndex != -1) {
-			numClasses = instanceSet.numClasses();
+		numClasses = instanceSet.numClasses();
 
-			/* The class is a nominal attribute as well. Must be not counted */
-			--numNominalAttributes;
+		/* The class is a nominal attribute as well. Must not be counted */
+		--numNominalAttributes;
+		
+		if (numNominalAttributes < 1) {
+			return null;
 		}
 		
 		float[][][] distribution = new float[numClasses][numNominalAttributes][];
@@ -997,19 +1050,65 @@ public final class Utils {
 	 * Get a probability estimate for a value
 	 *
 	 * @param data the value to estimate the probability of
+	 * @param precision TODO
 	 * @return the estimated probability of the supplied value
 	 */
-	public static double getProbability(double data, double m_Mean, double m_StandardDev) {
-		double m_Precision = 0.01;
+	public static double getProbability(double data, double avg, double stdDev,
+			float precision) {
 		//	  data = round(data);
-		double zLower = (data - m_Mean - (m_Precision / 2)) / m_StandardDev;
-		double zUpper = (data - m_Mean + (m_Precision / 2)) / m_StandardDev;
+		double zLower = (data - avg - (precision / 2)) / stdDev;
+		double zUpper = (data - avg + (precision / 2)) / stdDev;
 		
 		double pLower = Statistics.normalProbability(zLower);
 		double pUpper = Statistics.normalProbability(zUpper);
 		return pUpper - pLower;
 	}
 
+	/**
+	 * Get a probability estimate for a value
+	 *
+	 * @param data the value to estimate the probability of
+	 * @return the estimated probability of the supplied value
+	 */
+	public static double getProbabilityBetween(double lower, double upper, double avg,
+			double stdDev) {
+		double m_Precision = 0.01;
+		//	  data = round(data);
+		double zLower = (lower - avg - (m_Precision / 2)) / stdDev;
+		double zUpper = (upper - avg + (m_Precision / 2)) / stdDev;
+		
+		double pLower = Statistics.normalProbability(zLower);
+		double pUpper = Statistics.normalProbability(zUpper);
+		return pUpper - pLower;
+	}
+
+	/**
+	 * Get a probability estimate for a value
+	 *
+	 * @param data the value to estimate the probability of
+	 * @return the estimated probability of the supplied value
+	 */
+	public static double getProbabilityFromMinusInf(double value, double avg,
+			double stdDev) {
+		//	  data = round(data);
+		double zValue = (value - avg) / stdDev;
+		
+		return Statistics.normalProbability(zValue);
+	}
+
+	/**
+	 * Get a probability estimate for a value
+	 *
+	 * @param data the value to estimate the probability of
+	 * @return the estimated probability of the supplied value
+	 */
+	public static double getProbabilityToPlusInf(double value, double avg,
+			double stdDev) {
+		//	  data = round(data);
+		double zValue = (value - avg) / stdDev;
+		
+		return 1 - Statistics.normalProbability(zValue);
+	}
 
 	public static void randomize(int[] index, Random random) {
 		int inst;
@@ -1019,6 +1118,22 @@ public final class Utils {
 		for (int i = size - 1; i > 0; i--) {
 			/* Randomly get an instance index */ 
 			inst = (int) (random.nextDouble() * (double) i);
+			
+			/* swap index with the current instance */
+			temp = index[i];
+			index[i] = index[inst];
+			index[inst] = temp;
+		}
+	}
+	
+	public static void randomize(int[] index) {
+		int inst;
+		int size = index.length;
+		int temp;
+		
+		for (int i = size - 1; i > 0; i--) {
+			/* Randomly get an instance index */ 
+			inst = (int) (Math.random() * (double) i);
 			
 			/* swap index with the current instance */
 			temp = index[i];
@@ -1082,4 +1197,128 @@ public final class Utils {
 			
 		return result;
 	}
+
+	public static float[] removeRepeatedValues(float[] values) {
+		int numValues = values.length;
+		float[] valuesAux = new float[numValues];
+		float last;
+		float current;
+		int counter;
+		
+		counter = 0;
+		valuesAux[counter] = values[0];;
+		last = valuesAux[counter];
+		++counter;
+		for (int i = 1; i < numValues; i++) {
+			current = values[i];
+			if (last == current) {
+				continue;
+			}
+			valuesAux[counter] = current;
+			last = current;
+			++counter;
+		}
+		
+		values = new float[counter];
+		for (int i = 0; i < counter; i++) {
+			values[i] = valuesAux[i];
+		}
+		
+		return values;
+	}
+
+	public static double maxValue(double[] values) {
+		return values[maxIndex(values)];
+	}
+
+	/**
+	 * Sort Descending the input array
+	 *  
+	 * @param positiveCleanFactors
+	 */
+	public static void invertOrder(float[] values) {
+		float aux;
+		int auxIndex;
+		int numValues = values.length;
+		
+		for (int i = 0; i < numValues / 2; i++) {
+			auxIndex = (numValues - 1) - i;
+			aux = values[auxIndex];
+			values[auxIndex] = values[i];
+			values[i] = aux;
+		}
+	}
+	
+	/** 
+	 * Determine the estimator numeric precision from differences between
+	 * adjacent values.
+	 */
+	public static float computePrecision(float[] values) {
+		int numValues = values.length;
+		float precision;
+		float lastValue;
+		int distinct;
+		float value;
+		float deltaSum;
+		
+		precision = DEFAULT_NUM_PRECISION;
+		
+		values = values.clone();
+		Arrays.sort(values);
+		
+		distinct = 0;
+		deltaSum = 0;
+		lastValue = values[0];
+		for (int i = 1; i < numValues; i++) {
+			value = values[i];
+			if (value != lastValue) {
+				deltaSum += value - lastValue;
+				lastValue = value;
+				++distinct;
+			}
+			if (distinct > 0) {
+				precision = deltaSum / distinct;
+			}
+		}
+		
+		return precision;
+	}
+
+	public static float[][] getDifs(InstanceSet train, int classifierID,
+			TestsetUtils testsetUtils)
+	throws Exception {
+		int positiveClass = testsetUtils.getPositiveClass();
+		Misclassify misclassify = new Misclassify(testsetUtils.getMisclassify());
+		misclassify.zeroAll();
+		
+		Classifier classifier = Classifiers.newClassifier(classifierID);
+		Classifiers.buildClassifier(train, classifier, null, testsetUtils);
+		
+		/* Get distributions */
+		int numInstances = train.numInstances;
+		float[][] distribution = new float[numInstances][];
+		Instance instance;
+		float[][] difs = new float[numInstances][3];
+		int realClass;
+		int predictedClass;
+		int error;
+		for (int i = 0; i < numInstances; i++) {
+			instance = train.instances[i];
+			distribution[i] = classifier.distributionForInstance(instance);
+			predictedClass = Utils.maxIndex(distribution[i]);
+			realClass = instance.getClassValue();
+			difs[i][0] = Math.abs(distribution[i][0] - distribution[i][1]);
+			difs[i][1] = i;
+			
+			/* Error:
+			 * 0 - False
+			 * 1 - True
+			 */
+			error = Math.abs(realClass - predictedClass);
+			difs[i][2] = error;
+		}
+		
+		return difs;
+	}
+		
 }

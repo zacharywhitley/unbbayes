@@ -47,11 +47,15 @@ public class Statistics {
 	    x = a * SQRTH;
 	    z = Math.abs(x);
 	 
-	    if( z < SQRTH ) y = 0.5 + 0.5 * errorFunction(x);
-	    else {
-	      y = 0.5 * errorFunctionComplemented(z);
-	      if( x > 0 )  y = 1.0 - y;
-	    } 
+	    if (z < SQRTH) {
+	    	y = 0.5 + 0.5 * errorFunction(x);
+	    } else {
+	    	y = 0.5 * errorFunctionComplemented(z);
+	    	if (x > 0) {
+	    		y = 1.0 - y;
+	    	}
+	    }
+	    
 	    return y;
 	  }
 
