@@ -57,6 +57,7 @@ public class TestROC {
 	private int kStart;
 	private int kEnd;
 	private boolean multiClass;
+	private InstanceSet instanceSet;
 	
 	public TestROC() {
 		try {
@@ -71,13 +72,13 @@ public class TestROC {
 	}
 
 	private void rodaTodos() throws Exception {
-		ratioStart = 1;
+		ratioStart = 4;
 		ratioEnd = 5;
 
 		kStart = 2;
 //		kEnd = 3;
 //		kStart = 16;
-		kEnd = 4;
+		kEnd = 3;
 
 		for (int x = 2; x < 3; x++) {
 			callSettings(x);
@@ -412,7 +413,7 @@ public class TestROC {
 
 	private void runCross() throws Exception {
 		/* Opens the input set */
-		InstanceSet instanceSet = openFile(inputFileName);
+		instanceSet = openFile(inputFileName);
 		
 		if (instanceSet == null) {
 			String exceptionMsg = "Couldn't open training instanceSet " 
@@ -437,9 +438,9 @@ public class TestROC {
 
 	private void run() throws Exception {
 		/* Opens the training set */
-		InstanceSet trainingSet = openFile(trainingFileName);
+		instanceSet = openFile(trainingFileName);
 		
-		if (trainingSet == null) {
+		if (instanceSet == null) {
 			String exceptionMsg = "Couldn't open training instanceSet " 
 				+ trainingFileName;
 			throw new Exception(exceptionMsg);
@@ -456,7 +457,7 @@ public class TestROC {
 		testSet.setClassIndex(classIndex);
 		
 		/* Run baby, run! */
-		testFold = CrossValidation.getEvaluatedProbabilities(trainingSet,
+		testFold = CrossValidation.getEvaluatedProbabilities(instanceSet,
 				testSet, numRounds, testsetUtils, samplings);
 	
 		samplings = testFold.getSamplings();
@@ -472,63 +473,76 @@ public class TestROC {
 		}
 	}
 
-	private void saveMultiClassResults(TestFold testFold2) {
-		PrintWriter writer;
-		File output;
-		String fileName;
-
-		/* Save tp and fp on disk */
-		fileName = outputFilePath + "/TP-FP.txt";
-		output = new File(fileName);
-		writer = new PrintWriter(new FileWriter(output), true);
-		writer.println("TP Rate\tFP Rate\tTN Rate\tFN Rate\tClass");
-		for (int i = 0; i < numClasses; i++) {
-			writer.print(eval.truePositiveRate(i) + "\t");
-			writer.print(eval.falsePositiveRate(i) + "\t");
-			writer.print(eval.trueNegativeRate(i) + "\t");
-			writer.print(eval.falseNegativeRate(i) + "\t");
-			writer.print(trainingSet.attributes[trainingSet.classIndex].value(i));
-			writer.println();
-		}
-		writer.flush();
-		writer.close();
-		
-		/* Save indexes on disk */
-		fileName = outputFilePath + "/indices.txt";
-		output = new File(fileName);
-		writer = new PrintWriter(new FileWriter(output), true);
-		writer.println("Precision\tRecall\tAccuracy\tFScore\tClass");
-		for (int i = 0; i < numClasses; i++) {
-			writer.print(eval.getPrecision(i) + "\t");
-			writer.print(eval.getRecall(i) + "\t");
-			writer.print(eval.getAccuracy(i) + "\t");
-			writer.print(eval.getFScore(i) + "\t");
-			writer.print(trainingSet.attributes[trainingSet.classIndex].value(i));
-			writer.println();
-		}
-		writer.flush();
-		writer.close();
-		
-		/* Save confusion matrix on disk */
-		fileName = outputFilePath + "/confusionMatrix.txt";
-		output = new File(fileName);
-		writer = new PrintWriter(new FileWriter(output), true);
-		for (int i = 0; i < numClasses; i++) {
-			if (i > 0) writer.print("\t");
-			writer.print(trainingSet.attributes[trainingSet.classIndex].value(i));
-		}
-		writer.println();
-		int[][] confusionMatrix = eval.confusionMatrix();
-		for (int i = 0; i < numClasses; i++) {
-			for (int j = 0; j < numClasses; j++) {
-				writer.print(confusionMatrix[i][j] + "\t");
+	private void saveMultiClassResults(TestFold testFold) {
+		int numSamplings = testFold.getNumSamplings();
+		int numClassifiers = testFold.getNumClassifiers();
+		for (int samplingID = 0; samplingID < numSamplings; samplingID++) {
+			for (int classfID = 0; classfID < numClassifiers; classfID++) {
+				
 			}
-			writer.print(trainingSet.attributes[trainingSet.classIndex].value(i));
-			writer.println();
 		}
-		writer.flush();
-		writer.close();
+		
 	}
+	
+//	private void saveMultiClassResults(TestFold testFold, int samplingID, int classfID) {
+//		PrintWriter writer;
+//		File output;
+//		String fileName;
+//		int numClasses = instanceSet.numClasses();
+//		int classIndex = instanceSet.classIndex;
+//
+//		/* Save tp and fp on disk */
+//		fileName = outputFilePath + "/TP-FP.txt";
+//		output = new File(fileName);
+//		writer = new PrintWriter(new FileWriter(output), true);
+//		writer.println("TP Rate\tFP Rate\tTN Rate\tFN Rate\tClass");
+//		for (int i = 0; i < numClasses; i++) {
+//			writer.print(testFold.truePositiveRate(i) + "\t");
+//			writer.print(testFold.falsePositiveRate(i) + "\t");
+//			writer.print(testFold.trueNegativeRate(i) + "\t");
+//			writer.print(testFold.falseNegativeRate(i) + "\t");
+//			writer.print(instanceSet.attributes[classIndex].value(i));
+//			writer.println();
+//		}
+//		writer.flush();
+//		writer.close();
+//		
+//		/* Save indexes on disk */
+//		fileName = outputFilePath + "/indices.txt";
+//		output = new File(fileName);
+//		writer = new PrintWriter(new FileWriter(output), true);
+//		writer.println("Precision\tRecall\tAccuracy\tFScore\tClass");
+//		for (int i = 0; i < numClasses; i++) {
+//			writer.print(testFold.getPrecision(i) + "\t");
+//			writer.print(testFold.getRecall(i) + "\t");
+//			writer.print(testFold.getAccuracy(i) + "\t");
+//			writer.print(testFold.getFScore(i) + "\t");
+//			writer.print(instanceSet.attributes[classIndex].value(i));
+//			writer.println();
+//		}
+//		writer.flush();
+//		writer.close();
+//		
+//		/* Save confusion matrix on disk */
+//		fileName = outputFilePath + "/confusionMatrix.txt";
+//		output = new File(fileName);
+//		writer = new PrintWriter(new FileWriter(output), true);
+//		for (int i = 0; i < numClasses; i++) {
+//			if (i > 0) writer.print("\t");
+//			writer.print(instanceSet.attributes[classIndex].value(i));
+//		}
+//		writer.println();
+//		int[][] confusionMatrix = testFold.getConfusionMatrix();
+//		for (int i = 0; i < numClasses; i++) {
+//			for (int j = 0; j < numClasses; j++) {
+//				writer.print(confusionMatrix[i][j] + "\t");
+//			}
+//			writer.print(instanceSet.attributes[classIndex].value(i));
+//			writer.println();
+//		}
+//		writer.flush();
+//		writer.close();
+//	}
 
 	private void saveROCResults(TestFold testFold) throws IOException {
 		PrintWriter writer;
@@ -704,7 +718,7 @@ public class TestROC {
 		String fileName;
 		String classifierName;
 
-		int numClassifiers = Classifiers.getNumClassifiers();
+		int numClassifiers = testFold.getNumClassifiers();
 		int numSamplings = testFold.getNumSamplings();
 		
 		double value;

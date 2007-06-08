@@ -202,7 +202,7 @@ public class TestFaber {
 			writer.print(trainingSet.attributes[trainingSet.classIndex].value(i));
 		}
 		writer.println();
-		int[][] confusionMatrix = eval.confusionMatrix();
+		int[][] confusionMatrix = eval.getConfusionMatrix();
 		for (int i = 0; i < numClasses; i++) {
 			for (int j = 0; j < numClasses; j++) {
 				writer.print(confusionMatrix[i][j] + "\t");

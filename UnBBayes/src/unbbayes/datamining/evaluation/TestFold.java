@@ -1,7 +1,5 @@
 package unbbayes.datamining.evaluation;
 
-import java.util.Arrays;
-
 import unbbayes.TestsetUtils;
 import unbbayes.datamining.classifiers.Classifier;
 import unbbayes.datamining.datamanipulation.Instance;
@@ -56,6 +54,8 @@ public class TestFold {
 	private int samplingID;
 	
 	private int numClasses;
+	
+	private Indexes indexes;
 
 	public TestFold(int numFolds, int numRounds, TestsetUtils testsetUtils) {
 		this.testsetUtils = testsetUtils;
@@ -64,6 +64,8 @@ public class TestFold {
 		negativeClass = testsetUtils.getNegativeClass();
 		numRoundsTotal = numFolds * numRounds;
 		pos = 0;
+		
+//		indexes = new Indexes();
 	}
 	
 	public void run(InstanceSet originalTrain, InstanceSet test)
@@ -189,30 +191,6 @@ public class TestFold {
 		}
 	}
 
-	public void classifyEvaluateForMisclassify(InstanceSet train,
-			InstanceSet test, int samplingID, int classfID)
-	throws Exception {
-		Classifier classifier;
-		float[] probs;
-		float[] distribution = train.getClassDistribution(false);
-		
-		classifier = Classifiers.newClassifier(classfID);
-		Classifiers.buildClassifier(train, classifier,
-				distribution, testsetUtils);
-
-		probs = evaluateClassifier(classifier, test, samplingID, 0);
-
-		rocPointsProbsTemp[samplingID][0][pos] = ROCAnalysis
-				.computeROCPoints(probs, test, positiveClass);
-		aucTemp[samplingID][0][pos] = ROCAnalysis.computeAUC(
-				probs, test, positiveClass) * 100;
-		
-		if (aucTemp[samplingID][0][pos] < 50) {
-			@SuppressWarnings("unused")
-			boolean fudeu = true;
-		}
-	}
-
 	/**
 	 * Evaluate the model according to specificity, sensitivity and the SE rate (
 	 * specificity * sensitivity). Also returns the probability of an instance
@@ -251,11 +229,11 @@ public class TestFold {
 
 			predictedClass = Utils.maxIndex(dist);
 
-			confusionMatrix[samplingID]
-			               [classfID]
-			               [pos]
-			               [actualClass]
-			               [predictedClass] += weight;
+//			confusionMatrix[samplingID]
+//			               [classfID]
+//			               [pos]
+//			               [actualClass]
+//			               [predictedClass] += weight;
 		}
 
 		return probs;
@@ -290,94 +268,10 @@ public class TestFold {
 		}
 	}
 	
-	private void generateIndexes() {
-		/**
-		 * Array for storing the confusion matrix.
-		 * first: samplingID
-		 * second: classifierID
-		 * third: true class
-		 * fourth: predicted class
-		 */
-		int[][][][] confusionMatrix;
-		
-		for
-		
-		int[] total = new int[numClasses];
-		Arrays.fill(total, 0);
-
-		total[actualClass] += weight;
-
-		int tp = confusionMatrix[positiveClass][positiveClass];
-		int fp = confusionMatrix[negativeClass][positiveClass];
-
-		/* Global error */
-		double globalError = confusionMatrix[0][1] + confusionMatrix[1][0];
-		globalError /= test.numWeightedInstances;
-
-		/* Sensitivity */
-		double sensitivity = (double) tp / total[positiveClass];
-
-		/* Specificity */
-		double specificity = 1 - ((double) fp / total[negativeClass]);
-
-		/* SE */
-		double SE = sensitivity * specificity;
-
-		if (SE < 50) {
-			@SuppressWarnings("unused")
-			boolean fudeu = true;
-		}
-		
-		globalErrorTemp[samplingID][classfID][pos] = globalError * 100;
-		sensitivityTemp[samplingID][classfID][pos] = sensitivity * 100;
-		specificityTemp[samplingID][classfID][pos] = specificity * 100;
-		SETemp[samplingID][classfID][pos] = SE * 100;
-		
-		globalError = new double[numSamplings][numClassifiers][];
-		sensitivity = new double[numSamplings][numClassifiers][];
-		specificity = new double[numSamplings][numClassifiers][];
-		SE = new double[numSamplings][numClassifiers][];
-		
-		for (int i = 0; i < numSamplings; i++) {
-			for (int j = 0; j < numClassifiers; j++) {
-				if (numRoundsTotal > 1) {
-					/* Average the 'numFolds' aucs */
-					globalError[i][j] = Utils
-							.computeMeanStdDev(globalErrorTemp[i][j]);
-					sensitivity[i][j] = Utils
-							.computeMeanStdDev(sensitivityTemp[i][j]);
-					specificity[i][j] = Utils
-							.computeMeanStdDev(specificityTemp[i][j]);
-					SE[i][j] = Utils.computeMeanStdDev(SETemp[i][j]);
-				} else {
-					globalError[i][j] = new double[2];
-					globalError[i][j][0] = globalErrorTemp[i][j][0];
-					globalError[i][j][1] = 0;
-
-					sensitivity[i][j] = new double[2];
-					sensitivity[i][j][0] = sensitivityTemp[i][j][0];
-					sensitivity[i][j][1] = 0;
-
-					specificity[i][j] = new double[2];
-					specificity[i][j][0] = specificityTemp[i][j][0];
-					specificity[i][j][1] = 0;
-
-					SE[i][j] = new double[2];
-					SE[i][j][0] = SETemp[i][j][0];
-					SE[i][j][1] = 0;
-				}
-			}
-		}
-	}
-
 	private void initializeArrays() {
 		if (rocPointsProbsTemp == null) {
 			rocPointsProbsTemp = new float[numSamplings][numClassifiers][numRoundsTotal][][];
 			aucTemp = new double[numSamplings][numClassifiers][numRoundsTotal];
-			globalErrorTemp = new double[numSamplings][numClassifiers][numRoundsTotal];
-			sensitivityTemp = new double[numSamplings][numClassifiers][numRoundsTotal];
-			specificityTemp = new double[numSamplings][numClassifiers][numRoundsTotal];
-			SETemp = new double[numSamplings][numClassifiers][numRoundsTotal];
 			samplingName = new String[numSamplings];
 		}
 	}
@@ -398,22 +292,21 @@ public class TestFold {
 		return aucTemp[samplingID][classifier];
 	}
 
-	public double[] getGlobalError(int samplingID, int classifier) {
-		
-		return globalError[samplingID][classifier];
-	}
-
-	public double[] getSensitivity(int samplingID, int classifier) {
-		return sensitivity[samplingID][classifier];
-	}
-
-	public double[] getSpecificity(int samplingID, int classifier) {
-		return specificity[samplingID][classifier];
-	}
-
-	public double[] getSE(int samplingID, int classifier) {
-		return SE[samplingID][classifier];
-	}
+//	public double[] getGlobalError(int samplingID, int classifier) {
+//		return globalError[samplingID][classifier];
+//	}
+//
+//	public double[] getSensitivity(int samplingID, int classifier) {
+//		return sensitivity[samplingID][classifier];
+//	}
+//
+//	public double[] getSpecificity(int samplingID, int classifier) {
+//		return specificity[samplingID][classifier];
+//	}
+//
+//	public double[] getSE(int samplingID, int classifier) {
+//		return SE[samplingID][classifier];
+//	}
 
 	public Samplings getSamplings() {
 		return samplings;
@@ -425,6 +318,10 @@ public class TestFold {
 
 	public int getNumSamplings() {
 		return numSamplings;
+	}
+
+	public int getNumClassifiers() {
+		return numClassifiers;
 	}
 
 }

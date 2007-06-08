@@ -10,7 +10,6 @@ import java.util.ResourceBundle;
 import unbbayes.TestsetUtils;
 import unbbayes.datamining.classifiers.Classifier;
 import unbbayes.datamining.evaluation.Classifiers;
-import unbbayes.datamining.evaluation.Misclassify;
 import unbbayes.datamining.utils.Statistics;
 
 /**
@@ -1284,41 +1283,4 @@ public final class Utils {
 		return precision;
 	}
 
-	public static float[][] getDifs(InstanceSet train, int classifierID,
-			TestsetUtils testsetUtils)
-	throws Exception {
-		int positiveClass = testsetUtils.getPositiveClass();
-		Misclassify misclassify = new Misclassify(testsetUtils.getMisclassify());
-		misclassify.zeroAll();
-		
-		Classifier classifier = Classifiers.newClassifier(classifierID);
-		Classifiers.buildClassifier(train, classifier, null, testsetUtils);
-		
-		/* Get distributions */
-		int numInstances = train.numInstances;
-		float[][] distribution = new float[numInstances][];
-		Instance instance;
-		float[][] difs = new float[numInstances][3];
-		int realClass;
-		int predictedClass;
-		int error;
-		for (int i = 0; i < numInstances; i++) {
-			instance = train.instances[i];
-			distribution[i] = classifier.distributionForInstance(instance);
-			predictedClass = Utils.maxIndex(distribution[i]);
-			realClass = instance.getClassValue();
-			difs[i][0] = Math.abs(distribution[i][0] - distribution[i][1]);
-			difs[i][1] = i;
-			
-			/* Error:
-			 * 0 - False
-			 * 1 - True
-			 */
-			error = Math.abs(realClass - predictedClass);
-			difs[i][2] = error;
-		}
-		
-		return difs;
-	}
-		
 }

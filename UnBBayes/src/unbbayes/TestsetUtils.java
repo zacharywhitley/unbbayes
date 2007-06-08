@@ -13,10 +13,6 @@ import unbbayes.datamining.datamanipulation.Loader;
 import unbbayes.datamining.datamanipulation.Options;
 import unbbayes.datamining.datamanipulation.TxtLoader;
 import unbbayes.datamining.evaluation.Evaluation;
-import unbbayes.datamining.evaluation.Misclassify;
-import unbbayes.datamining.evaluation.Samplings;
-import unbbayes.datamining.preprocessor.imbalanceddataset.ClusterBasedSmote;
-import unbbayes.datamining.preprocessor.imbalanceddataset.Cclear;
 import unbbayes.datamining.preprocessor.imbalanceddataset.Smote;
 
 /**
@@ -84,7 +80,6 @@ public class TestsetUtils {
 	private float similarityThreshold;
 	private boolean useClusterDistribution;
 	private float thresholdFactor;
-	private Misclassify misclassify;
 	private float maxUnderLimit;
 	private float cleanByDistThreshold;
 	private int instanceSetType;
@@ -368,14 +363,6 @@ public class TestsetUtils {
 
 	public void setThresholdFactor(float thresholdFactor) {
 		this.thresholdFactor = thresholdFactor;
-	}
-
-	public void setMisclassify(Misclassify misclassify) {
-		this.misclassify = misclassify;
-	}
-
-	public Misclassify getMisclassify() {
-		return misclassify;
 	}
 
 	public float maxUnderLimit() {

@@ -46,10 +46,11 @@ public class Evaluation implements IProgress {
 	/** Is the class nominal or numeric? */
 	private boolean classIsNominal;
 
-	/** Array for storing the confusion matrix. 
+	/** 
+	 * Array for storing the confusion matrix. 
 	 * [trueClass][predictedClass]
 	 */
-	private int [][] confusionMatrix;
+	private int[][] confusionMatrix;
 
 	/** Sum of squared errors. */
 	private double sumSqrErr;
@@ -501,15 +502,6 @@ public class Evaluation implements IProgress {
 	}
 
 	/**
-	 * Returns a copy of the confusion matrix.
-	 *
-	 * @return a copy of the confusion matrix as a two-dimensional array
-	 */
-	public int[][] confusionMatrix() {
-		return confusionMatrix;
-	}
-
-	/**
 	 * Generates a breakdown of the accuracy for each class, incorporating
 	 * various information-retrieval statistics, such as true/false positive
 	 * rate. Should be useful for ROC curves.
@@ -933,6 +925,24 @@ public class Evaluation implements IProgress {
 		}
 		
 		return probs;
+	}
+
+	/**
+	 * Return the confusionMatrix
+	 * 
+	 * @return the confusionMatrix
+	 */
+	public int[][] getConfusionMatrix() {
+		return confusionMatrix;
+	}
+	
+	/**
+	 * Return the confusionMatrix
+	 * 
+	 * @return the confusionMatrix
+	 */
+	public void setConfusionMatrix(int[][] confusionMatrix) {
+		this.confusionMatrix = confusionMatrix;
 	}
 	
 }

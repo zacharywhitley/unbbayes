@@ -4,7 +4,6 @@ import unbbayes.TestsetUtils;
 import unbbayes.datamining.classifiers.Classifier;
 import unbbayes.datamining.classifiers.DistributionClassifier;
 import unbbayes.datamining.classifiers.NaiveBayes;
-import unbbayes.datamining.classifiers.NaiveScaleBayes;
 import unbbayes.datamining.classifiers.decisiontree.C45;
 import unbbayes.datamining.classifiers.decisiontree.DecisionTreeLearning;
 import unbbayes.datamining.datamanipulation.InstanceSet;
@@ -54,9 +53,6 @@ public class Classifiers {
 		} else if (classifier instanceof DistributionClassifier) {
 			((DistributionClassifier) classifier).setOriginalDistribution(
 			distribution);
-			if (classifier instanceof NaiveScaleBayes) {
-				((NaiveScaleBayes) classifier).setTestsetUtils(testsetUtils);
-			}
 		}
 		classifier.buildClassifier(train);
 	}

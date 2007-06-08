@@ -1,10 +1,8 @@
 package unbbayes.datamining.preprocessor.imbalanceddataset;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import unbbayes.TestsetUtils;
-import unbbayes.datamining.clustering.Cluster;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 
@@ -15,8 +13,6 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
  */
 public class Cclear {
 	
-	protected ArrayList<Cluster> meusClusters;
-
 	/** The current instanceSet */
 	protected InstanceSet instanceSet;
 

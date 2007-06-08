@@ -5,8 +5,6 @@ import java.util.Arrays;
 
 import unbbayes.TestsetUtils;
 import unbbayes.datamining.clustering.CEBMDC;
-import unbbayes.datamining.clustering.Cluster;
-import unbbayes.datamining.clustering.ClusterDistribution;
 import unbbayes.datamining.clustering.Kmeans;
 import unbbayes.datamining.clustering.Squeezer;
 import unbbayes.datamining.datamanipulation.Instance;
@@ -21,8 +19,6 @@ import unbbayes.datamining.distance.IDistance;
  */
 public class ClusterBasedUtils {
 	
-	protected ArrayList<Cluster> meusClusters;
-
 	/** The current instanceSet */
 	protected InstanceSet instanceSet;
 
@@ -211,16 +207,6 @@ public class ClusterBasedUtils {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static ArrayList<Cluster> clusterizeAll(InstanceSet instanceSet,
-			TestsetUtils testsetUtils)
-	throws Exception {
-		ArrayList<Object> result = clusterize(testsetUtils.getPositiveClass(),
-				false, instanceSet, testsetUtils);
-		
-		return (ArrayList<Cluster>) result.get(1);
-	}
-	
-	@SuppressWarnings("unchecked")
 	public static int[][] clusterizeAll2(InstanceSet instanceSet,
 			TestsetUtils testsetUtils)
 	throws Exception {
@@ -270,8 +256,6 @@ public class ClusterBasedUtils {
 		
 		/* Set the options for the numeric Squeezer algorithm */
 		float similarityThreshold = testsetUtils.getSimilarityThreshold();
-		ClusterDistribution clusterDistribution = new ClusterDistribution(instanceSet);
-		clusterDistribution.setSimilarityThreshold(similarityThreshold);
 
 		/* Set the options for the Squeezer algorithm */
 		Squeezer squeezer = new Squeezer(instanceSet);
@@ -291,70 +275,45 @@ public class ClusterBasedUtils {
 		/* Clusterize the numeric attributes */
 		numericClusters = null;
 		if (instanceSet.isNumeric() || instanceSet.isMixed()) {
-			if (testsetUtils.useClusterDistribution()) {
-				if (byClass) {
-					clusterDistribution.clusterize(instancesPos);
-				} else {
-					clusterDistribution.clusterize();
-				}
-				numericClusters = clusterDistribution.getAssignmentMatrix();
+			if (byClass) {
+				kmeans.clusterize(instancesPos);
 			} else {
-				if (byClass) {
-					kmeans.clusterize(instancesPos);
-				} else {
-					kmeans.clusterize();
-				}
-				numericClusters = kmeans.getAssignmentMatrix();
+				kmeans.clusterize();
 			}
+			numericClusters = kmeans.getAssignmentMatrix();
 		}
 
 		/* Clusterize the nominal attributes */
 		nominalClusters = null;
 		if (instanceSet.isNominal() || instanceSet.isMixed()) {
-			if (testsetUtils.useClusterDistribution()) {
-				if (byClass) {
-					clusterDistribution.clusterize(instancesPos);
-				} else {
-					clusterDistribution.clusterize();
-				}
-				nominalClusters = clusterDistribution.getAssignmentMatrix();
+			if (byClass) {
+				squeezer.clusterize(instancesPos);
 			} else {
-				if (byClass) {
-					squeezer.clusterize(instancesPos);
-				} else {
-					squeezer.clusterize();
-				}
-				nominalClusters = squeezer.getAssignmentMatrix();
+				squeezer.clusterize();
 			}
+			nominalClusters = squeezer.getAssignmentMatrix();
 		}
 
 		int[][] clusters = null;
-		ArrayList<Cluster> meusClusters = null;
 
-		if (testsetUtils.useClusterDistribution()) {
-			clusters = clusterDistribution.getClusters();
-			meusClusters = clusterDistribution.getMeusClusters();
-		} else {
-			/* Clusterize the both numeric and nominal attributes */
-			if (instanceSet.isMixed()) {
-				cebmdc.setNumericClustersInput(numericClusters);
-				cebmdc.setNominalClustersInput(nominalClusters);
-				cebmdc.clusterize();
-				
-				/* Get the cluster results */
-				clusters = cebmdc.getClusters();
-			} else if (instanceSet.isNumeric()) {
-				/* Get the cluster results */
-				clusters = kmeans.getClusters();
-			} else if (instanceSet.isNominal()) {
-				/* Get the cluster results */
-				clusters = squeezer.getClusters();
-			}
+		/* Clusterize the both numeric and nominal attributes */
+		if (instanceSet.isMixed()) {
+			cebmdc.setNumericClustersInput(numericClusters);
+			cebmdc.setNominalClustersInput(nominalClusters);
+			cebmdc.clusterize();
+			
+			/* Get the cluster results */
+			clusters = cebmdc.getClusters();
+		} else if (instanceSet.isNumeric()) {
+			/* Get the cluster results */
+			clusters = kmeans.getClusters();
+		} else if (instanceSet.isNominal()) {
+			/* Get the cluster results */
+			clusters = squeezer.getClusters();
 		}
 		
 		ArrayList<Object> result = new ArrayList<Object>(2);
 		result.add(clusters);
-		result.add(meusClusters);
 		
 		return result;
 	}
