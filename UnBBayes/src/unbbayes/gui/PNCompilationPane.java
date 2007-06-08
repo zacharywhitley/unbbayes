@@ -75,7 +75,7 @@ public class PNCompilationPane extends JPanel {
         bottomPanel    = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 1));
         status         = new JLabel(resource.getString("statusReadyLabel"));
 
-        //criar botões que serão usados nodeList toolbars
+        //criar bot_es que ser_o usados nodeList toolbars
         propagate         = new JButton(iconController.getPropagateIcon());
         expand            = new JButton(iconController.getExpandIcon());
         collapse          = new JButton(iconController.getColapseIcon());
@@ -87,7 +87,7 @@ public class PNCompilationPane extends JPanel {
         saveNetImage      = new JButton(iconController.getSaveNetIcon());
 
 
-        //setar tooltip para esses botões
+        //setar tooltip para esses bot_es
         propagate.setToolTipText(resource.getString("propagateToolTip"));
         expand.setToolTipText(resource.getString("expandToolTip"));
         collapse.setToolTipText(resource.getString("collapseToolTip"));
@@ -106,21 +106,21 @@ public class PNCompilationPane extends JPanel {
             }
         });
 
-        //ao clicar no botão reset, chama-se o método de iniciação de crenças da rede
+        //ao clicar no bot_o reset, chama-se o m_todo de inicia__o de cren_as da rede
         reset.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 controller.initialize();
             }
         });
 
-        //volta para o modo de edição e construção da rede
+        //volta para o modo de edi__o e constru__o da rede
         editMode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 netWindow.changeToPNEditionPane();
             }
         });
 
-        //ao clicar nesse botão, chama-se o método do controller responsável por
+        //ao clicar nesse bot_o, chama-se o m_todo do controller respons_vel por
         //propagar as evidencias
         propagate.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
@@ -128,8 +128,8 @@ public class PNCompilationPane extends JPanel {
                 }
         });
 
-        //ao clicar nesse botão, chama-se o método do controller responsável por
-        //contrair árvore de evidências
+        //ao clicar nesse bot_o, chama-se o m_todo do controller respons_vel por
+        //contrair _rvore de evid_ncias
         collapse.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                     setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -138,8 +138,8 @@ public class PNCompilationPane extends JPanel {
                 }
         });
 
-        //ao clicar nesse botão, chama-se o método do controller responsável por
-        //expandir árvore de evidências
+        //ao clicar nesse bot_o, chama-se o m_todo do controller respons_vel por
+        //expandir _rvore de evid_ncias
         expand.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                     setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -169,7 +169,7 @@ public class PNCompilationPane extends JPanel {
             }
         });
 
-        //colocar botões e controladores do look-and-feel no toolbar e esse no topPanel
+        //colocar bot_es e controladores do look-and-feel no toolbar e esse no topPanel
         jtbCompilation.add(printNet);
         jtbCompilation.add(previewNet);
         jtbCompilation.add(saveNetImage);
@@ -188,10 +188,10 @@ public class PNCompilationPane extends JPanel {
 
         topPanel.add(jtbCompilation);
 
-        //setar a estrutura da árvore para falso, já que ainda não foi compilada
+        //setar a estrutura da _rvore para falso, j_ que ainda n_o foi compilada
         //jspTree.setVisible(true);
 
-        //adicionar tela da árvore(JScrollPane) na esquerda do centerPanel
+        //adicionar tela da _rvore(JScrollPane) na esquerda do centerPanel
         centerPanel.setLeftComponent(jspTree);
 
         //setar o tamanho do divisor entre o jspGraph(vem do NetWindow) e jspTree
@@ -210,7 +210,7 @@ public class PNCompilationPane extends JPanel {
     }
 
     /**
-     *  Retorna o painel da árvore.
+     *  Retorna o painel da _rvore.
      *
      *@return    retorna o jspTree (<code>JScrollPane</code>)
      *@see       JScrollPane
@@ -229,7 +229,7 @@ public class PNCompilationPane extends JPanel {
     }
 
     /**
-     *  Retorna a árvore de evidencias.
+     *  Retorna a _rvore de evidencias.
      *
      *@return    retorna o evidenceTree (<code>JTree</code>)
      *@see       JTree
