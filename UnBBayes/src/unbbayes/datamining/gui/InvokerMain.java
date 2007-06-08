@@ -38,6 +38,7 @@ import unbbayes.datamining.gui.naivebayes.NaiveBayesMain;
 import unbbayes.datamining.gui.neuralmodel.NeuralModelController;
 import unbbayes.datamining.gui.neuralnetwork.NeuralNetworkController;
 import unbbayes.datamining.gui.preprocessor.PreprocessorMain;
+import unbbayes.datamining.gui.preprocessor.janeladiscret;
 import unbbayes.gui.MDIDesktopPane;
 import unbbayes.metaphor.MetaphorMain;
 
@@ -101,6 +102,7 @@ public class InvokerMain extends JFrame
   private ActionListener alTile;
   private ActionListener alHelp;
   private ActionListener alNeuralNetwork;
+  private ActionListener alDiscretize;
 
   //Construct the frame
   public InvokerMain()
@@ -463,6 +465,33 @@ public class InvokerMain extends JFrame
           }
 
         };
+        
+        alDiscretize = new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				// setCursor(new Cursor(Cursor.WAIT_CURSOR));
+				janeladiscret janela = new janeladiscret();
+				janela.setVisible(true);
+				/*
+				 * String[] nets = new String[] { "txt", "arff" }; chooser = new
+				 * JFileChooser(fileController.getCurrentDirectory());
+				 * chooser.setMultiSelectionEnabled(false);
+				 * chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES); //
+				 * adicionar FileView no FileChooser para desenhar �cones de //
+				 * arquivos chooser.setFileView(new FileIcon(IUnBBayes.this));
+				 * 
+				 * chooser.addChoosableFileFilter( new SimpleFileFilter( nets,
+				 * "")); int option = chooser.showOpenDialog(null); if (option ==
+				 * JFileChooser.APPROVE_OPTION) { if (chooser.getSelectedFile() !=
+				 * null) { //at� agora o c�digo era semelhante ao do comando
+				 * abrir
+				 * 
+				 * 
+				 * 
+				 * //agora o final do codigo � igual ao do comando abrir } }
+				 * setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				 */
+			}
+		};
 
       }
 
@@ -496,6 +525,7 @@ public class InvokerMain extends JFrame
         JMenuItem naiveBayesItem = new JMenuItem(resource.getString("naiveBayesClassifier")/*, icon*/ );
         JMenuItem evaluationItem = new JMenuItem(resource.getString("evaluation")/*, icon*/ );
         JMenuItem optionsItem = new JMenuItem(resource.getString("preferences"),opcaoglobalIcon);
+        JMenuItem discretizeItem = new JMenuItem("Discretizar");
         /////////////
         JMenuItem cnmItem = new JMenuItem("Combinatorial Neural Model"/*, icon*/ );
         JMenuItem c45Item = new JMenuItem("C4.5 Classifier"/*, icon*/ );
@@ -566,6 +596,7 @@ public class InvokerMain extends JFrame
         tileItem.addActionListener(alTile);
         helpItem.addActionListener(alHelp);
         optionsItem.addActionListener(alPreferences);
+        discretizeItem.addActionListener(alDiscretize);
 
         // add menu items to their respective menu
         programMenu.add(preprocessorItem);
@@ -576,6 +607,7 @@ public class InvokerMain extends JFrame
         programMenu.add(cnmItem);
         programMenu.add(neuralNetworkItem);//
         programMenu.add(evaluationItem);
+        programMenu.add(discretizeItem);
 		lafMenu.add(metalItem);
         lafMenu.add(motifItem);
         lafMenu.add(windowsItem);

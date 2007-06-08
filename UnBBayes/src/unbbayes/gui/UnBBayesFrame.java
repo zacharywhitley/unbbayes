@@ -100,7 +100,7 @@ public class UnBBayesFrame extends JFrame {
 	// private HelpSet set;
 	// private JHelp jHelp;
 	private ActionListener alNewBN;
-	private ActionListener alDiscretize;
+	
 	private ActionListener alTAN;
 	private ActionListener alBAN;
 	private ActionListener alNewMSBN;
@@ -291,32 +291,7 @@ public class UnBBayesFrame extends JFrame {
 			}
 		};
 
-		alDiscretize = new ActionListener() {
-			public void actionPerformed(ActionEvent ae) {
-				// setCursor(new Cursor(Cursor.WAIT_CURSOR));
-				janeladiscret janeld = new janeladiscret();
-				janeld.setVisible(true);
-				/*
-				 * String[] nets = new String[] { "txt", "arff" }; chooser = new
-				 * JFileChooser(fileController.getCurrentDirectory());
-				 * chooser.setMultiSelectionEnabled(false);
-				 * chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES); //
-				 * adicionar FileView no FileChooser para desenhar �cones de //
-				 * arquivos chooser.setFileView(new FileIcon(IUnBBayes.this));
-				 * 
-				 * chooser.addChoosableFileFilter( new SimpleFileFilter( nets,
-				 * "")); int option = chooser.showOpenDialog(null); if (option ==
-				 * JFileChooser.APPROVE_OPTION) { if (chooser.getSelectedFile() !=
-				 * null) { //at� agora o c�digo era semelhante ao do comando
-				 * abrir
-				 * 
-				 * 
-				 * 
-				 * //agora o final do codigo � igual ao do comando abrir } }
-				 * setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-				 */
-			}
-		};
+		
 
 		// create an ActionListener for loading
 		alOpen = new ActionListener() {
@@ -623,7 +598,7 @@ public class UnBBayesFrame extends JFrame {
 				.getString("tbWindow"), true);
 		JMenuItem tbHelp = new JCheckBoxMenuItem(resource.getString("tbHelp"),
 				true);
-		JMenuItem discretize = new JMenuItem("Discretizar");
+		
 		JMenuItem TAN = new JMenuItem("TAN");
 		JMenuItem BAN = new JMenuItem("BAN");
 		
@@ -698,7 +673,7 @@ public class UnBBayesFrame extends JFrame {
 		// aboutItem.addActionListener(alAbout);
 
 		// add menu items to their respective menu
-		discretize.addActionListener(alDiscretize);
+		
 		TAN.addActionListener(alTAN);
 		BAN.addActionListener(alBAN);
 		
@@ -726,7 +701,6 @@ public class UnBBayesFrame extends JFrame {
 		toolsMenu.add(BAN);
 		toolsMenu.add(monteCarloItem);
 		toolsMenu.add(gibbsItem);
-		toolsMenu.add(discretize);
 		toolsMenu.add(ILItem);
 		windowMenu.add(cascadeItem);
 		windowMenu.add(tileItem);
