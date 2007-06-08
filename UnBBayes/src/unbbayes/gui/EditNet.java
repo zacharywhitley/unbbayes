@@ -57,23 +57,26 @@ public class EditNet extends JPanel {
         topPanel    = new JPanel(new GridLayout(0,1));
         jtbEdition  = new JToolBar();
         centerPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        
+        // Create buttons used by nodeList toolbars
 
-        //criar botões que serão usados nodeList toolbars
         compile           = new JButton(iconController.getCompileIcon());
         arc               = new JButton(iconController.getEdgeIcon());
         printNet          = new JButton(iconController.getPrintNetIcon());
         previewNet        = new JButton(iconController.getPrintPreviewNetIcon());
         saveNetImage      = new JButton(iconController.getSaveNetIcon());
 
-        //setar tooltip para esses botões
+        // Set tooltip for those buttons
+
         compile.setToolTipText(resource.getString("compileToolTip"));
         arc.setToolTipText(resource.getString("arcToolTip"));
         printNet.setToolTipText(resource.getString("printNetToolTip"));
         previewNet.setToolTipText(resource.getString("previewNetToolTip"));
         saveNetImage.setToolTipText(resource.getString("saveNetImageToolTip"));
 
-        //ao clicar no botão compile, chama-se o método de compilação da rede e
-        //atualiza os toolbars
+        // By clicking the compile button, calls compilation method of the network and
+        // updates the toolbars
+
         compile.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 if (! controller.compileNetwork()) {
@@ -83,7 +86,8 @@ public class EditNet extends JPanel {
             }
         });
 
-        //ao clicar no botão arc setamos as variáveis booleanas e os estados dos butões
+        // by clicking the button arc, we set those boolean variables and states of the buttons.
+        
         arc.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 //netWindow.getIGraph().setbSelect(false);
@@ -113,8 +117,8 @@ public class EditNet extends JPanel {
             }
         });
 
-
-        //colocar botões e controladores do look-and-feel no toolbar e esse no topPanel
+        // Puts buttons and controllers of look-and-feel into toolbar and this is for topPanel.
+        
         jtbEdition.add(printNet);
         jtbEdition.add(previewNet);
         jtbEdition.add(saveNetImage);

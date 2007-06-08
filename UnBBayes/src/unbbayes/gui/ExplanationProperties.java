@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasilia
  *
  *  This file is part of UnbBayes.
  *
@@ -51,7 +51,7 @@ import unbbayes.util.NodeList;
 
 /**
  *
- * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ * @author MÃ¡rio Henrique Paes Vieira (mariohpv@bol.com.br)
  * @version 1.0
  */
 public class ExplanationProperties extends JDialog
@@ -122,15 +122,15 @@ public class ExplanationProperties extends JDialog
   {
     this.setSize(550, 470);
     this.setResizable(false);
-    this.setTitle("Propriedades da Variável de Explicação");
+    this.setTitle("Propriedades da VariÃ¡vel de ExplicaÃ§Ã£o");
 
     // Cria bordas
     border1 = BorderFactory.createEmptyBorder(0,10,0,10);
     border2 = BorderFactory.createEmptyBorder(20,20,20,20);
-    titledBorder1 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de Evidência:");
-    evidenceTypeBorder = BorderFactory.createCompoundBorder(new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de Evidência:"),BorderFactory.createEmptyBorder(0,10,0,0));
+    titledBorder1 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de EvidÃªncia:");
+    evidenceTypeBorder = BorderFactory.createCompoundBorder(new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de EvidÃªncia:"),BorderFactory.createEmptyBorder(0,10,0,0));
 
-    // Muda propriedades do botão ok
+    // Muda propriedades do botao ok
     okButton.setMaximumSize(new Dimension(85, 27));
     okButton.setMinimumSize(new Dimension(85, 27));
     okButton.setPreferredSize(new Dimension(85, 27));
@@ -197,7 +197,7 @@ public class ExplanationProperties extends JDialog
     necessaryPanel.setLayout(new BorderLayout());
     exclusivePanel.setLayout(new BorderLayout());
     notUsedPanel.setLayout(new BorderLayout());
-    evidencePhraseLabel.setText("Texto para Explanação :");
+    evidencePhraseLabel.setText("Texto para ExplanaÃ§Ã£o :");
     evidencePhraseTopPanel.setLayout(new BorderLayout());
     evidencePhraseBottomPanel.setLayout(new BorderLayout());
     cancelButton.setText("Cancelar");
@@ -226,10 +226,10 @@ public class ExplanationProperties extends JDialog
     descriptionTopPanel3.setLayout(new BorderLayout());
     descriptionTopPanel.setLayout(new GridLayout(3,0));
     descriptionBottomPanel.setLayout(new BorderLayout());
-    explanationVariableLabel.setText("Variável de explicação : ");
+    explanationVariableLabel.setText("VariÃ¡vel de explicaÃ§Ã£o : ");
     descriptionPanel.setBorder(border2);
     descriptionTopPanel1.setLayout(new BorderLayout());
-    descriptionLabel.setText("Descrição:");
+    descriptionLabel.setText("DescriÃ§Ã£o:");
     explanationPanel.setBorder(border2);
     this.getContentPane().add(southPanel,  BorderLayout.SOUTH);
     descriptionTopPanel.add(descriptionTopPanel1, null);
@@ -272,8 +272,8 @@ public class ExplanationProperties extends JDialog
     buttonGroup1.add(necessaryRadioButton);
     buttonGroup1.add(exclusiveRadioButton);
     jTabbedPane.setBorder(border1);
-    jTabbedPane.add(descriptionPanel, "Descrição");
-    jTabbedPane.add(explanationPanel, "Explanação");
+    jTabbedPane.add(descriptionPanel, "DescriÃ§Ã£o");
+    jTabbedPane.add(explanationPanel, "ExplanaÃ§Ã£o");
     this.getContentPane().add(jTabbedPane,  BorderLayout.CENTER);
     NodeList nodes = net.getDescriptionNodes();
     int size = nodes.size();
@@ -297,7 +297,7 @@ public class ExplanationProperties extends JDialog
       updateExplanationInformation(evidenceNodeComboBox.getItemAt(0).toString());
     }
     nodeNameLabel.setText(node.getName());
-    descriptionLabel.setText("Descrição: "+node.getDescription());
+    descriptionLabel.setText("DescriÃ§Ã£o: "+node.getDescription());
   }
 
   void okButton_actionPerformed(ActionEvent e)

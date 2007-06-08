@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de BrasÃ­lia
  *
  *  This file is part of UnbBayes.
  *
@@ -55,7 +55,7 @@ import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
 
 /**
- *  Classe responsável pelas configurações básicas da rede Bayesiana. Ela extende
+ *  Classe responsÃ¡vel pelas configuracoes basicas da rede Bayesiana. Ela extende
  *  a classe <code>JDialog</code>.
  *
  *@author     Rommel N. Carvalho, Michael S. Onishi
@@ -125,7 +125,7 @@ public class GlobalOptionsDialog extends JDialog {
 
 
     /**
-     *  Constrói a estrutura da janela que mostra as opções globais
+     *  Constroi a estrutura da janela que mostra as opcoes globais
      *
      *@param  a rede a ser configurada (<code>TDesenhaRede</code>)
      */
@@ -155,7 +155,7 @@ public class GlobalOptionsDialog extends JDialog {
         gbc     = new GridBagConstraints();
         //preview = new PreviewPane(this);
 
-        //setar cores padrões do nó, arco e de seleção e boolean de criar log
+        //setar cores padroes do no, arco e de selecao e boolean de criar log
         probabilisticDescriptionNodeColor = ProbabilisticNode.getDescriptionColor();
         probabilisticExplanationNodeColor = ProbabilisticNode.getExplanationColor();
 		decisionNodeColor      = DecisionNode.getColor();
@@ -503,9 +503,9 @@ public class GlobalOptionsDialog extends JDialog {
 
 
     /**
-     *  Retorna a cor do nó de probabilidade do botão <code>corNo</code>
+     *  Retorna a cor do no de probabilidade do botao <code>corNo</code>
      *
-     *@return    a cor do nó de probabilidade (<code>Color<code>)
+     *@return    a cor do no de probabilidade (<code>Color<code>)
      *@see Color
      */
     public Color getPropabilisticDescriptionNodeColor() {
@@ -513,9 +513,9 @@ public class GlobalOptionsDialog extends JDialog {
     }
 
     /**
-     *  Retorna a cor do nó de probabilidade do botão <code>corNo</code>
+     *  Retorna a cor do no de probabilidade do botao <code>corNo</code>
      *
-     *@return    a cor do nó de probabilidade (<code>Color<code>)
+     *@return    a cor do no de probabilidade (<code>Color<code>)
      *@see Color
      */
     public Color getPropabilisticExplanationNodeColor() {
@@ -523,9 +523,9 @@ public class GlobalOptionsDialog extends JDialog {
     }
 
 	/**
-     *  Retorna a cor do nó de decisão do botão <code>corNo</code>
+     *  Retorna a cor do no de decisao do botao <code>corNo</code>
      *
-     *@return    a cor do nó de decisão (<code>Color<code>)
+     *@return    a cor do no de decisao (<code>Color<code>)
      *@see Color
      */
     public Color getDecisionNodeColor() {
@@ -533,9 +533,9 @@ public class GlobalOptionsDialog extends JDialog {
     }
 
 	/**
-     *  Retorna a cor do nó de utilidade do botão <code>corNo</code>
+     *  Retorna a cor do no de utilidade do botao <code>corNo</code>
      *
-     *@return    a cor do nó de utilidade (<code>Color<code>)
+     *@return    a cor do no de utilidade (<code>Color<code>)
      *@see Color
      */
     public Color getUtilityNodeColor() {
@@ -544,7 +544,7 @@ public class GlobalOptionsDialog extends JDialog {
 
 
     /**
-     *  Retorna a cor do arco do botão <code>corArco</code>
+     *  Retorna a cor do arco do botao <code>corArco</code>
      *
      *@return    a cor do arco (<code>Color<code>)
      *@see Color
@@ -555,9 +555,9 @@ public class GlobalOptionsDialog extends JDialog {
 
 
     /**
-     *  Retorna a cor de seleção do botão <code>corSelecao</code>
+     *  Retorna a cor de selecao do botao <code>corSelecao</code>
      *
-     *@return    a cor de seleção (<code>Color<code>)
+     *@return    a cor de selecao (<code>Color<code>)
      *@see Color
      */
     public Color getSelectionColor() {
@@ -566,7 +566,7 @@ public class GlobalOptionsDialog extends JDialog {
 
 
     /**
-     *  Retorna a cor de fundo do botão <code>corFundo</code>
+     *  Retorna a cor de fundo do botao <code>corFundo</code>
      *
      *@return    a cor de fundo (<code>Color<code>)
      *@see Color
@@ -576,15 +576,15 @@ public class GlobalOptionsDialog extends JDialog {
     }
 
 
-    //método para usar no GridBagLayout, para setar constraints
+    //mï¿½todo para usar no GridBagLayout, para setar constraints
     /**
      *  Seta as constraints do <code>GridBagConstraints</code>
      *
      *@param  gbc  o <code>GridBagConstraints</code>
-     *@param  gx   posição x
-     *@param  gy   posição y
-     *@param  gw   proporção da largura
-     *@param  gh   proporção da altura
+     *@param  gx   posicao x
+     *@param  gy   posicao y
+     *@param  gw   proporcao da largura
+     *@param  gh   proporcao da altura
      *@param  wx   peso x
      *@param  wy   peso y
      *@see GridBagConstraints

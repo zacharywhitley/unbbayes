@@ -31,8 +31,8 @@ import javax.swing.filechooser.FileView;
 
 import unbbayes.controller.IconController;
 /**
- *  Essa classe extende o <code>FileView</code> que é o responsável por
- *  mostrar os ícones correspondentes para cada tipo de aquivo e pasta.
+ *  Essa classe extende o <code>FileView</code> que Ã© o responsÃ¡vel por
+ *  mostrar os Ã­cones correspondentes para cada tipo de aquivo e pasta.
  *
  *@author     Rommel Novaes Carvalho, Michael S. Onishi
  *@created    27 de Junho de 2001
@@ -49,25 +49,25 @@ public class FileIcon extends FileView {
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
     /**
-     *  Constroi um observer para desenhar ícones e um JFileChooser para pegar
-     *  ícones (<code>Icon</code>) padrões.
+     *  Constroi um observer para desenhar Ã­cones e um JFileChooser para pegar
+     *  Ã­cones (<code>Icon</code>) padrÃµes.
      *
-     *@param  c o componente (<code>Component</code>) que será o observer para desenhar ícones.
+     *@param  c o componente (<code>Component</code>) que sera o observer para desenhar icones.
      *@see    Component
      *@see    Icon
      */
     public FileIcon(Component c) {
-        //componente para criar ícones de arquivos
+        //componente para criar icones de arquivos
         observer = c;
         fc = new JFileChooser();
     }
 
 
     /**
-     *  Retorna a descrição do arquivo desejado.
+     *  Retorna a descricao do arquivo desejado.
      *
-     *@param     f o arquivo (<code>File</code>) ao qual se deseja a descrição
-     *@return    a descrição do arquivo (<code>String</code>)
+     *@param     f o arquivo (<code>File</code>) ao qual se deseja a descricao
+     *@return    a descricao do arquivo (<code>String</code>)
      *@see       File
      *@see       String
      */
@@ -77,10 +77,10 @@ public class FileIcon extends FileView {
 
 
     /**
-     *  Retorna o ícone (<code>Icon</code>) correnspondente ao arquivo desejado.
+     *  Retorna o icone (<code>Icon</code>) correnspondente ao arquivo desejado.
      *
-     *@param     f o arquivo (<code>File</code>) que se deseja pegar o ícone
-     *@return    o ícone correspondente ao arquivo f
+     *@param     f o arquivo (<code>File</code>) que se deseja pegar o icone
+     *@return    o icone correspondente ao arquivo f
      *@see       Icon
      *@see       File
      */
@@ -122,7 +122,7 @@ public class FileIcon extends FileView {
     /**
      *  Retorna o tipo do arquivo.
      *
-     *@param     f o arquivo (<code>File</code>) que se deseja descrição do tipo
+     *@param     f o arquivo (<code>File</code>) que se deseja descricao do tipo
      *@return    o tipo do arquivo (<code>String</code>)
      *@see       String
      *@see       File
@@ -149,21 +149,21 @@ public class FileIcon extends FileView {
 
 
     /**
-     *  Retorna se é tranversable ou não.
+     *  Retorna se e tranversable ou nao.
      *
-     *@param     f o arquivo (<code>File</code>) que se deseja saber se é tranversable
-     *@return    true se for tranversable e falso caso contrário
+     *@param     f o arquivo (<code>File</code>) que se deseja saber se e tranversable
+     *@return    true se for tranversable e falso caso contrario
      *@see       File
      */
     public boolean isTranversable(File f) {
-        //todos diretórios serão transversable
+        //todos diretorios serao transversable
         return f.isDirectory() ? true : false;
     }
 
 
     /**
-     *  Classe que extende <code>ImageIcon</code> responsável por desenhar
-     *  um ícone.
+     *  Classe que extende <code>ImageIcon</code> responsavel por desenhar
+     *  um icone.
      *
      *@author     Rommel Novaes Carvalho, Michael S. Onishi
      *@created    27 de Junho de 2001
@@ -175,9 +175,9 @@ public class FileIcon extends FileView {
     	private static final long serialVersionUID = 0;	
     	
     	/**
-         *  Cria e desenha um ícone para o arquivo desejado.
+         *  Cria e desenha um icone para o arquivo desejado.
          *
-         *@param  f  o arquivo (<code>String</code>) que deseja-se criar um ícone
+         *@param  f  o arquivo (<code>String</code>) que deseja-se criar um icone
          *@see    String
          */
         public Icon16(String f) {
@@ -189,9 +189,9 @@ public class FileIcon extends FileView {
 
 
         /**
-         *  Retorna altura do ícone
+         *  Retorna altura do icone
          *
-         *@return    a altura do ícone (int)
+         *@return    a altura do icone (int)
          */
         public int getIconHeight() {
             return 16;
@@ -199,9 +199,9 @@ public class FileIcon extends FileView {
 
 
         /**
-         *  Retorna a largura do ícone
+         *  Retorna a largura do icone
          *
-         *@return    a altura do ícone (int)
+         *@return    a altura do icone (int)
          */
         public int getIconWidth() {
             return 16;
@@ -209,12 +209,12 @@ public class FileIcon extends FileView {
 
 
         /**
-         *  Desenha o ícone.
+         *  Desenha o icone.
          *
          *@param  c  o componente (<code>Component</code>)
-         *@param  g  o gráfico (<code>Graphics</code>)
-         *@param  x  a largura do ícone (int)
-         *@param  y  a altura do ícone (int)
+         *@param  g  o grafico (<code>Graphics</code>)
+         *@param  x  a largura do icone (int)
+         *@param  y  a altura do icone (int)
          *@see    Component
          *@see    Graphics
          */

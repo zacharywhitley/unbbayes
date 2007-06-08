@@ -13,7 +13,8 @@ import javax.swing.JTextField;
 
 /**
  * 
- * Classe que constroi a tela de interação com o usuáirio, relativo á Geração de amostra pelo método de montecarlo
+ * Class which constructs a screen for user interaction, related to sample generation of montecarlo method
+ * 
  * @author Danilo
  */
 public class TelaParametros extends JFrame {
@@ -29,7 +30,7 @@ public class TelaParametros extends JFrame {
 	
 	
 	public TelaParametros(){
-		super("Simulação de Monte Carlo");
+		super("Monte Carlo Simulation");
 		Container c = getContentPane();		
 		c.add(criarTela());		
 		pack();
@@ -44,7 +45,7 @@ public class TelaParametros extends JFrame {
 	
 	private JPanel getPainelNCasos(){
 		painelNCasos = new JPanel(new GridLayout(1,3,5,5));
-		lNCasos = new JLabel("Número de Casos : ");
+		lNCasos = new JLabel("Number of cases : ");
 		txtNCasos = new JTextField();		
 		btnOK = new JButton("OK");
 		painelNCasos.add(lNCasos);

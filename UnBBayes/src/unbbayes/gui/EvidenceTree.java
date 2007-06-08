@@ -28,7 +28,7 @@ import unbbayes.util.ArrayMap;
 import unbbayes.util.NodeList;
 
 /**
- * @author Mário Henrique Paes Vieira
+ * @author MÃ¡rio Henrique Paes Vieira
  * @version 1.0
  */
 public class EvidenceTree extends JTree {
@@ -50,7 +50,7 @@ public class EvidenceTree extends JTree {
 		// set up node icons
 		setCellRenderer(new EvidenceTreeCellRenderer());
 
-		//trata os eventos de mouse para a árvore de evidências
+		//trata os eventos de mouse para a arvore de evidencias
 		addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e) {
 				int selRow = getRowForLocation(e.getX(), e.getY());
@@ -165,10 +165,10 @@ public class EvidenceTree extends JTree {
 	}
 
 	/**
-	 *  Retrai todos os nós da árvore desejada.
+	 *  Collapses every single nodes from a tree
 	 *
-	 * @param  arvore  uma <code>JTree</code> que representa a rede Bayesiana em
-	 *      forma de árvore.
+	 * @param  tree  a <code>JTree</code> representing a BN in a tree format
+	 *
 	 * @since
 	 * @see            JTree
 	 */
@@ -183,10 +183,10 @@ public class EvidenceTree extends JTree {
 	}
 
 	/**
-	 *  Expande todos os nós da árvore desejada.
+	 *  Expande todos os nos da arvore desejada.
 	 *
 	 * @param  arvore  uma <code>JTree</code> que representa a rede Bayesiana em
-	 *      forma de árvore.
+	 *      forma de arvore.
 	 * @since
 	 * @see            JTree
 	 */
@@ -211,9 +211,9 @@ public class EvidenceTree extends JTree {
 	}
 
 	/**
-	 *  Atualiza as marginais na árvore desejada.
+	 *  Atualiza as marginais na arvore desejada.
 	 *
-	 * @param  arvore  uma <code>JTree</code> que representa a árvore a ser
+	 * @param  arvore  uma <code>JTree</code> que representa a arvore a ser
 	 *      atualizada
 	 * @since
 	 * @see            JTree
@@ -274,9 +274,9 @@ public class EvidenceTree extends JTree {
 	}
 
 	/**
-	 * Modifica o formato de números
+	 * Modifica o formato de numeros
 	 *
-	 * @param local localidade do formato de números.
+	 * @param local localidade do formato de numeros.
 	 */
 	public void setNumberFormat(Locale local) {
 		nf = NumberFormat.getInstance(local);
@@ -309,7 +309,7 @@ public class EvidenceTree extends JTree {
 		if (obj != null) {
 			TreeVariable node = (TreeVariable) obj;
 
-			//Só propaga nós de descrição
+			//So propaga nos de descricao
 			if (node.getInformationType() == Node.DESCRIPTION_TYPE) {
 				for (int i = 0; i < parent.getChildCount(); i++) {
 					DefaultMutableTreeNode auxNode =
@@ -334,7 +334,7 @@ public class EvidenceTree extends JTree {
 	 *  Abre uma nova janela modal para inserir os dados para serem usados no
 	 *  likelihood.
 	 *
-	 * @param  caminho  um <code>TreePath <code>dizendo a posição do mouse.
+	 * @param  caminho  um <code>TreePath <code>dizendo a posicao do mouse.
 	 * @since
 	 * @see             TreePath
 	 */
