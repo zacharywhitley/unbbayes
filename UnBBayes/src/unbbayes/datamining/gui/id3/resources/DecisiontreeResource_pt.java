@@ -12,7 +12,7 @@ public class DecisiontreeResource_pt extends ListResourceBundle {
 	static final Object[][] contents = {
 	// Decision Tree Main
 	{"open","Abrir ..."},
-	{"build","Construir �rvore de Decisão"},
+	{"build","Construir Árvore de Decisão"},
 	{"preferences","Preferências"},	
 	{"file","Arquivo"},
 	{"help","Ajuda"},
@@ -25,8 +25,8 @@ public class DecisiontreeResource_pt extends ListResourceBundle {
 	{"ioException1","Problema lendo "},
 	{"ioException2"," como um arquivo arff."},
 	{"result1","Processando arquivo:\t"},
-	{"result2","N�mero de instâncias:\t"},
-	{"result3","N�mero de atributos:\t"},
+	{"result2","Número de instâncias:\t"},
+	{"result3","Número de atributos:\t"},
 	{"result4","Atributos:\t"},
 	{"result5","Classe:\t\t"},
 	{"fileMnemonic",new Character('A')},

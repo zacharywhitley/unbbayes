@@ -34,7 +34,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"fileARFFType","Arquivo Arff"},
 		{"fileTXTType","Arquivo Texto TXT"},
 		{"fileNETType","Arquivo de Rede Bayesiana NET"},
-		{"fileGenericType","Arquivo Gen�rico"},
+		{"fileGenericType","Arquivo Genérico"},
 		
 		{"unbbayesTitle","UnBBayes"},
 		
@@ -110,7 +110,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		
 		{"LookAndFeelUnsupportedException","Não suporta esse LookAndFeel: "},
 		{"LookAndFeelClassNotFoundException","A classe desse LookAndFeel não foi encontrada: "},
-		{"LookAndFeelInstantiationException","Não foi poss�vel carregar esse LookAndFeel: "},
+		{"LookAndFeelInstantiationException","Não foi possível carregar esse LookAndFeel: "},
 		{"LookAndFeelIllegalAccessException","Esse LookAndFeel não pode ser usado: "},
 		{"nameError","Nome não aceito"},
 		
@@ -153,7 +153,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"delEntityToolTip","Deletar entidade"},
 		{"newOVariableToolTip","Criar nova var. ordinária"},
 		{"delOVariableToolTip", "Deletar var. ordinária"}, 
-		{"newArgumentToolTip","Adicionar nova v. ord. � lista de argumentos"},
+		{"newArgumentToolTip","Adicionar nova v. ord. à lista de argumentos"},
 		{"delArgumentToolTip", "Remover var. ord. da lista de argumentos"}, 		
 		{"downArgumentToolTip", "Aicionar a lista de argumentos v. ord. selecionada"}, 		
 		{"mTheoryEditionTip", "Editar atributos da MTheory"}, 		
@@ -188,7 +188,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"ResidentTabTitle", "Nó Residente"}, 
 		{"InputTabTitle", "Nó de Input"}, 
 		{"ContextTabTitle", "Nó de Contexto"}, 
-		{"MTheoryTreeTitle", "�rvore MTheory"}, 
+		{"MTheoryTreeTitle", "Árvore MTheory"}, 
 		{"EntityTitle", "Entidade"}, 
 		{"OVariableTitle", "Variável Ord."},
 		{"ArgumentTitle", "Argumentos"}, 

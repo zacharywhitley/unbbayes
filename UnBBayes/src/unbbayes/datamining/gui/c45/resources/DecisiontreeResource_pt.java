@@ -78,7 +78,7 @@ public class DecisiontreeResource_pt extends ListResourceBundle
 		{"prunning1","Poda"},
 		{"prunning2","Podar a árvore"},
 		{"verbosity1","Log"},
-		{"verbosity2","N�vel de log:"},
+		{"verbosity2","Nível de log:"},
 		{"confidenceLevel","Nível de confiança:"},
 	};
 }

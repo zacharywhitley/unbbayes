@@ -26,7 +26,7 @@ public class EvaluationResource_pt extends ListResourceBundle {
 	{"errorOpen","Erro ao abrir arquivo: "},
 	{"modelOpened","Modelo aberto com sucesso"},
 	{"model","Modelo "},
-	{"fileExtensionNotKnown","Extens�o de arquivo não conhecida"},
+	{"fileExtensionNotKnown","Extensão de arquivo não conhecida"},
         {"numericAttributesException","Este programa não manipula atributos numéricos - Discretização necessária"},
 	{"fileMnemonic",new Character('A')},
 	{"helpMnemonic",new Character('U')},

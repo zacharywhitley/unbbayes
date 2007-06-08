@@ -15,11 +15,11 @@ import java.util.*;
 public class ControllerResources_pt extends ListResourceBundle {
 
     /**
-	 *  Sobrescreve getContents e retorna um array, onde cada item no array �
-	 *	um par de objetos. O primeiro elemento do par � uma String chave, e o
-	 *	segundo � o valor associado a essa chave.
+	 *  Sobrescreve getContents e retorna um array, onde cada item no array eh
+	 *	um par de objetos. O primeiro elemento do par eh uma String chave, e o
+	 *	segundo eh o valor associado a essa chave.
 	 *
-	 * @return O conte�do dos recursos
+	 * @return O conteudo dos recursos
 	 */
 	public Object[][] getContents() {
 		return contents;
@@ -83,7 +83,7 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"JAXBExceptionFound", "Erro de sintaxe..."},
 
 		/* Numeric attribute node */
-		{"mean", "M�dia"},
+		{"mean", "Média"},
 		{"stdDev", "Desv. Padrão"}, 
 		
 		/* load/save */

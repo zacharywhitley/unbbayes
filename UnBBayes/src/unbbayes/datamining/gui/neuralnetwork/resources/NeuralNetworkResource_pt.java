@@ -55,7 +55,7 @@ public class NeuralNetworkResource_pt extends ListResourceBundle{
     {"resetButtonToolTip","Restaurar tamanho original"},
     {"chartTitle","Erro Quadrado Médio X Época"},
     {"YAxisTitle","Erro Quadrado Médio"},
-    {"XAxisTitle","�pocas"},
+    {"XAxisTitle","Épocas"},
     {"printingFailed","Falha na impressão "},
 
     //OptionsPanel & AdvancedOptionsPanel

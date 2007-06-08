@@ -28,7 +28,7 @@ public class PreprocessorResource_pt extends ListResourceBundle {
 		{"preprocess","Pré processamento"},
 	{"errorException","Erro= "},
 	{"fileOpened","Arquivo aberto com sucesso"},
-	{"fileTestTrainingCreated","Arquivos de treinamento e avalia��o criados com sucesso"},
+	{"fileTestTrainingCreated","Arquivos de treinamento e avaliação criados com sucesso"},
 	{"sampleCreated","Amostra criada com sucesso"},
 	{"preprocessorTitle","Preprocessor - "},
 	{"errorDB","Erro na base de dados: "},

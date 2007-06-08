@@ -47,7 +47,7 @@ public class NaiveBayesResource_pt extends ListResourceBundle {
 	{"welcome","Bem Vindo"},
 	{"attributes2","Atributos"},
 	{"inference","Inferência"},
-	{"fileExtensionException","Extensão de arquivo n�o conhecida."},
+	{"fileExtensionException","Extensão de arquivo não conhecida."},
 	{"numericAttributesException","Este programa não manipula atributos numéricos - Discretização necessária"},
 	{"openFile","Arquivo aberto com sucesso"},
 	{"error2","Erro= "},

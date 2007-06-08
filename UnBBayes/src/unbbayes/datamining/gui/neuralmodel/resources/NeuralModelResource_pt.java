@@ -55,7 +55,7 @@ public class NeuralModelResource_pt extends ListResourceBundle{
     {"if","SE"},
     {"then","ENTÃO"},
     {"and","E"},
-    {"index","�ndice"},
+    {"index","Índice"},
     {"confidence","Confiança"},
     {"support","Suporte"},
     {"cases","Casos"},
