@@ -7,7 +7,8 @@ import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 
 /**
- * Make load/save in pr-owl.
+ * Implements the interface MebnIO for the Pr-OWL format.
+ * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * @version 1.0 2006/10/25
  */
@@ -16,8 +17,9 @@ public class PrOwlIO implements MebnIO {
 	
 	public static final String PROWLMODELFILE = "pr-owl/pr-owl.owl"; 
 	
-	/* only a façade for the class that realy do the work */
-	
+	/**
+	 * Make de loader from a file pr owl for the mebn structure. 
+	 */
 	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException, IOMebnException{
  		LoaderPrOwlIO loader = new LoaderPrOwlIO(); 
  		return loader.loadMebn(file); 

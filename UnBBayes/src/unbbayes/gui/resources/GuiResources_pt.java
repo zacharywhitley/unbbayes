@@ -113,6 +113,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"LookAndFeelInstantiationException","Não foi possível carregar esse LookAndFeel: "},
 		{"LookAndFeelIllegalAccessException","Esse LookAndFeel não pode ser usado: "},
 		{"nameError","Nome não aceito"},
+		{"internalError","Erro interno... Reporte aos desenvolvedores"},
 		
 		{"helpToolTip","Ajuda do UnBBayes"},
 		{"propagateToolTip","Propagar as evidências"},
@@ -188,7 +189,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"ResidentTabTitle", "Nó Residente"}, 
 		{"InputTabTitle", "Nó de Input"}, 
 		{"ContextTabTitle", "Nó de Contexto"}, 
-		{"MTheoryTreeTitle", "Árvore MTheory"}, 
+		{"MTheoryTreeTitle", "�?rvore MTheory"}, 
 		{"EntityTitle", "Entidade"}, 
 		{"OVariableTitle", "Variável Ord."},
 		{"ArgumentTitle", "Argumentos"}, 

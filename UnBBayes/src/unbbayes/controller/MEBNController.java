@@ -20,6 +20,7 @@ import unbbayes.prs.mebn.entity.BooleanStatesEntity;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.Type;
+import unbbayes.prs.mebn.entity.TypeContainer;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
@@ -50,7 +51,8 @@ public class MEBNController {
 	private ResidentNode residentNodeActive; 
 	private InputNode inputNodeActive; 
 	private ContextNode contextNodeActive; 
-	private OrdinaryVariable ordVariableNodeActive; 
+	private OrdinaryVariable ordVariableNodeActive;
+	private MFrag mFragActive; /* The MFrag active in the view */
 	private Node nodeActive; 
 	
 	/** Load resource file from this package */
@@ -143,6 +145,18 @@ public class MEBNController {
 	
 	public void removeDomainMFrag(DomainMFrag domainMFrag) {
 		multiEntityBayesianNetwork.removeDomainMFrag(domainMFrag);
+		if(mFragActive != domainMFrag){
+			multiEntityBayesianNetwork.setCurrentMFrag(mFragActive); 
+		}
+		else{
+		    if(multiEntityBayesianNetwork.getDomainMFragList().size() != 0){
+		    	mFragActive = multiEntityBayesianNetwork.getDomainMFragList().get(0); 
+			    showGraphMFrag(mFragActive); 	    
+		    }
+		    else{
+		       showGraphMFrag(); 
+		    }
+		}
 		mebnEditionPane.getMTheoryTree().updateTree(); 	
 	}
 	
@@ -169,7 +183,8 @@ public class MEBNController {
 	}
 	
 	/**
-	 * Apenas mostra o grafo da MFrag e a seleciona como MFrag ativa. 
+	 * Show the graph of the MFrag and select it how active MFrag. 
+	 * 
 	 * @param mFrag
 	 */
 	public void showGraphMFrag(MFrag mFrag){
@@ -177,7 +192,23 @@ public class MEBNController {
 		multiEntityBayesianNetwork.setCurrentMFrag(mFrag); 
 	    screen.getGraphPane().resetGraph(); 
 	    mebnEditionPane.showTitleGraph(mFrag.getName()); 
+	    mFragActive = mFrag; 
 	    
+	}
+	
+	/**
+	 * Show a empty MFrag graph. 
+	 * Use when don't have any MFrag in the MTheory. 
+	 *
+	 */
+	public void showGraphMFrag(){
+
+		multiEntityBayesianNetwork.setCurrentMFrag(null); 
+		screen.getGraphPane().showEmptyGraph();
+		mebnEditionPane.hideTopComponent();
+		mebnEditionPane.setEmptyBarActive(); 
+		mFragActive = null; 
+		
 	}
 	
 	public MFrag getCurrentMFrag(){
@@ -194,7 +225,7 @@ public class MEBNController {
 		
 		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
 		String name = resource.getString("ordinaryVariableName") + domainMFrag.getOrdinaryVariableNum(); 
-		Type type = Type.getDefaultType(); 
+		Type type = TypeContainer.getDefaultType(); 
 		OrdinaryVariable ov = new OrdinaryVariable(name, type, domainMFrag);
 		
 		ov.setPosition(x, y);
@@ -249,7 +280,7 @@ public class MEBNController {
 	 */
 	public void addPossibleValue(DomainResidentNode resident, String nameValue){
 		
-		CategoricalStatesEntity value = CategoricalStatesEntity.createCategoricalEntity(nameValue); 
+		CategoricalStatesEntity value = multiEntityBayesianNetwork.getCategoricalStatesEntityContainer().createCategoricalEntity(nameValue); 
 		resident.addPossibleValue(value); 
 		value.addNodeToListIsPossibleValueOf(resident); 
 				
@@ -257,9 +288,9 @@ public class MEBNController {
 	
 	public void addBooleanAsPossibleValue(DomainResidentNode resident){
 	
-		resident.addPossibleValue(BooleanStatesEntity.getTrueStateEntity());
-		resident.addPossibleValue(BooleanStatesEntity.getFalseStateEntity());
-		resident.addPossibleValue(BooleanStatesEntity.getAbsurdStateEntity()); 
+		resident.addPossibleValue(multiEntityBayesianNetwork.getBooleanStatesEntityContainer().getTrueStateEntity());
+		resident.addPossibleValue(multiEntityBayesianNetwork.getBooleanStatesEntityContainer().getFalseStateEntity());
+		resident.addPossibleValue(multiEntityBayesianNetwork.getBooleanStatesEntityContainer().getAbsurdStateEntity()); 
 		
 	}
 	
@@ -513,7 +544,7 @@ public class MEBNController {
 
 		DomainMFrag domainMFrag = (DomainMFrag) multiEntityBayesianNetwork.getCurrentMFrag();
 		String name = resource.getString("ordinaryVariableName") + domainMFrag.getOrdinaryVariableNum(); 
-		Type type = Type.getDefaultType(); 
+		Type type = multiEntityBayesianNetwork.getTypeContainer().getDefaultType(); 
 		OrdinaryVariable ov = new OrdinaryVariable(name, type, domainMFrag);
 		domainMFrag.addOrdinaryVariable(ov);
 		
@@ -623,8 +654,8 @@ public class MEBNController {
 	 */
 	public ObjectEntity createObjectEntity() throws TypeException{
 
-		String name = resource.getString("entityName") + ObjectEntity.getEntityNum();
-		ObjectEntity objectEntity = ObjectEntity.createObjectEntity(name);
+		String name = resource.getString("entityName") + multiEntityBayesianNetwork.getObjectEntityContainer().getEntityNum();
+		ObjectEntity objectEntity = multiEntityBayesianNetwork.getObjectEntityContainer().createObjectEntity(name);
 		
 		return objectEntity; 
 	}
@@ -636,9 +667,9 @@ public class MEBNController {
 	}
 	
 	public void removeObjectEntity(ObjectEntity entity) throws Exception{
-		ObjectEntity.removeEntity(entity); 
+		multiEntityBayesianNetwork.getObjectEntityContainer().removeEntity(entity); 
 		try{
-		   Type.removeType(entity.getType());
+			multiEntityBayesianNetwork.getTypeContainer().removeType(entity.getType());
 		}
 		catch(Exception e){
 			
@@ -657,7 +688,7 @@ public class MEBNController {
 
 			PowerLoomKB test = PowerLoomKB.getInstanceKB(); 
 			
-			for(ObjectEntity entity: ObjectEntity.getListEntity()){
+			for(ObjectEntity entity: multiEntityBayesianNetwork.getObjectEntityContainer().getListEntity()){
 				test.executeConceptDefinition(entity); 
 			}
 			

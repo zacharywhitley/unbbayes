@@ -32,13 +32,13 @@ public class EntityListForReplaceInFormula extends JPanel{
 	private ObjectEntity selected;
 	
 	private FormulaTreeController formulaTreeController; 
-	private MEBNController networkController; 
+	private MEBNController mebnController; 
 	
 	public EntityListForReplaceInFormula(MEBNController _controller, FormulaTreeController _formulaTreeController){
 		
 		super(); 
 		formulaTreeController = _formulaTreeController; 
-		networkController = _controller; 
+		mebnController = _controller; 
 		
 		listModel = new DefaultListModel(); 
 		
@@ -66,7 +66,7 @@ public class EntityListForReplaceInFormula extends JPanel{
 		
 		listModel.clear(); 
 		
-		listEntity = ObjectEntity.getListEntity(); 
+		listEntity = mebnController.getMultiEntityBayesianNetwork().getObjectEntityContainer().getListEntity(); 
 		
 		listModel = new DefaultListModel(); 
 		for(Entity entity: listEntity){
@@ -92,7 +92,7 @@ public class EntityListForReplaceInFormula extends JPanel{
                 	
                 	selected = (ObjectEntity)jlEntities.getSelectedValue(); 
                 	formulaTreeController.addEntity(selected); 
-                	networkController.updateFormulaActiveContextNode(); 
+                	mebnController.updateFormulaActiveContextNode(); 
 				
                 }
             }  	

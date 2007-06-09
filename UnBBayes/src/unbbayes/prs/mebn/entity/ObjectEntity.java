@@ -1,9 +1,9 @@
 package unbbayes.prs.mebn.entity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 
@@ -13,10 +13,9 @@ import unbbayes.prs.mebn.entity.exception.TypeException;
  *
  */
 public class ObjectEntity extends Entity {
-	
-	private static List<ObjectEntity> listEntity = new ArrayList<ObjectEntity>();
 
-	private static int entityNum = 1; 
+	private boolean isInstance = false;
+	private TypeContainer typeContainer = null; 
 	
 	/**
 	 * This object property (subsOVar) assigns MetaEntity individuals in order 
@@ -32,34 +31,14 @@ public class ObjectEntity extends Entity {
 	 */
 	private List<ObjectEntity> listObjectEntityInstance;
 	
-	private ObjectEntity(String name) throws TypeException {
+	protected ObjectEntity(String name, TypeContainer container) throws TypeException {
 		
-		this.name = name;
-		
-		Type typeOfThisEntity = Type.createType(name + "_label");  
-		this.setType(typeOfThisEntity);
-		
+		super(name, container.createType(name + "_label")); 
+		typeContainer = container; 
+		isInstance = false; 
 	}
 	
-	/**
-	 * Create a new Object Entity with the name specified. 
-	 * Create a type for the Object Entity and this is added to the list of Type (see <Type>). 
-	 * @param name The name of the entity
-	 * @return the new ObjectEntity 
-	 * @throws TypeException Some error when try to create a new type
-	 */
-	public static ObjectEntity createObjectEntity(String name) throws TypeException{
-		
-		ObjectEntity objEntity = new ObjectEntity(name); 
-		objEntity.getType().addUserObject(objEntity); 
-		
-		ObjectEntity.addEntity(objEntity);
-	
-		plusEntityNum(); 
-		
-		return objEntity; 
-		
-	}
+
 	
 	/**
 	 * Create a entity instance of a object entity. 
@@ -68,42 +47,11 @@ public class ObjectEntity extends Entity {
 	 */
 	private ObjectEntity(String name, Type _type) throws TypeException {
 		
-		this.name = name;
-		  
-		setType(_type);
+		super(name, _type);   
 		_type.addUserObject(this); 
+		typeContainer = null; 
+		isInstance = true; 
 		
-	}
-	
-	private static void addEntity(ObjectEntity entity) {
-		ObjectEntity.listEntity.add(entity);
-	}
-	
-	public static void removeEntity(ObjectEntity entity) throws Exception{
-
-		entity.delete(); 	
-		ObjectEntity.listEntity.remove(entity);
-
-	}
-	
-	public static List<ObjectEntity> getListEntity(){
-		return ObjectEntity.listEntity; 
-	}
-	
-	/**
-	 * Returns the object entity with the name. Return null if 
-	 * the object entity not exists. 
-	 * @param name
-	 * @return
-	 */
-	public static ObjectEntity getObjectEntity(String name){
-		for(ObjectEntity oe: listEntity){
-			if (oe.getName().compareTo(name) == 0){
-				return oe; 
-			}
-		}
-		
-		return null; 
 	}
 	
 	public void addSubstitute(OrdinaryVariable oVar) {
@@ -139,24 +87,54 @@ public class ObjectEntity extends Entity {
 		listObjectEntityInstance.remove(instance);
 	}
 	
-	private void delete() throws TypeDoesNotExistException{
+	protected void delete() throws TypeDoesNotExistException{
 		
 		getType().removeUserObject(this); 
-		Type.removeType(getType());
+		
+		if(!isInstance){
+		   typeContainer.removeType(getType());
+		}
+		
+	}	
+	
+	/**
+	 * Sets the entity's type.
+	 * 
+	 * @param type
+	 *            The entity's new type.
+	 * @throws TypeDoesNotExistException
+	 *             Thrown if the type to be set does not exist.
+	 */
+	public void setType(Type _type) throws TypeException {
+		
+		if (typeContainer.hasType(_type)){
+			if(type != null){
+				type.removeUserObject(this); 
+			}
+			this.type = _type;
+		}
+		else{
+			throw new TypeDoesNotExistException();
+	
+		}
+		
+	}
+
+	/**
+	 * Set the entity's name. 
+	 * @param name The entity's name.
+	 */
+	public void setName(String name) throws TypeAlreadyExistsException{
+		
+		if(type != null){
+			type.renameType(name + "_label"); 
+		}
+		else{
+			type =  typeContainer.createType(name + "_label"); 
+		}
+		
+		this.name = name;
 		
 	}
 	
-	//Para gerar nomes automaticos. 
-	
-	public static int getEntityNum() {
-		return entityNum;
-	}
-
-	public static void setEntityNum(int _entityNum) {
-		entityNum = _entityNum;
-	}
-	
-	public static void plusEntityNum(){
-		entityNum++; 
-	}
 }

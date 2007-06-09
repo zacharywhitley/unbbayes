@@ -149,7 +149,7 @@ public class EntityEditionPane extends JPanel{
 		
 		listModel.clear(); 
 		
-		listEntity = ObjectEntity.getListEntity(); 
+		listEntity = mebnController.getMultiEntityBayesianNetwork().getObjectEntityContainer().getListEntity(); 
 		
 		listModel = new DefaultListModel(); 
 		for(Entity entity: listEntity){

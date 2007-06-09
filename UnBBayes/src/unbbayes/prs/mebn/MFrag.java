@@ -111,7 +111,7 @@ public class MFrag implements Graph{
 		}
 		
 		for (OrdinaryVariable variable : ordinaryVariableList) {
-			this.removeOrdinaryVariable(variable); 
+			variable.removeFromMFrag(); 
 		}
 		
 	}	

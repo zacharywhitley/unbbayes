@@ -166,6 +166,10 @@ public class OrdinaryVariable extends Node{
 		this.entity = entity;
 	}
 	
+	public void removeFromMFrag(){
+		mFrag = null; 
+	}
+	
 	public void delete(){
 		
     	mFrag.removeOrdinaryVariable(this); 

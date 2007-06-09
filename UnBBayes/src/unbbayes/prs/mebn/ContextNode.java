@@ -64,9 +64,9 @@ public class ContextNode extends MultiEntityNode {
     	/* a lista de possiveis valores de um nó de contexto contém por
     	 * default os valores True, False e Absurd. 
     	 */
-    	this.addPossibleValue(BooleanStatesEntity.getTrueStateEntity()); 
-    	this.addPossibleValue(BooleanStatesEntity.getFalseStateEntity()); 
-    	this.addPossibleValue(BooleanStatesEntity.getAbsurdStateEntity()); 
+    	this.addPossibleValue(mFrag.getMultiEntityBayesianNetwork().getBooleanStatesEntityContainer().getTrueStateEntity()); 
+    	this.addPossibleValue(mFrag.getMultiEntityBayesianNetwork().getBooleanStatesEntityContainer().getFalseStateEntity()); 
+    	this.addPossibleValue(mFrag.getMultiEntityBayesianNetwork().getBooleanStatesEntityContainer().getAbsurdStateEntity()); 
     	
     	/* draw */
     	size.x = 100;

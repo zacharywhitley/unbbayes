@@ -18,43 +18,11 @@ import unbbayes.prs.mebn.entity.exception.TypeIsInUseException;
  */
 public class Type implements Comparable<Type>{
 	
-	/* List of types in the MEBN */
-	
-	private static Set<Type> listOfTypes = new TreeSet<Type>();
-	
-	// Below we have the default types allowed by the MEBN logic and
-	// definition of PR-OWL.
-	
-	public static Type typeBoolean; 
-	public static Type typeCategoryLabel; 
-	public static Type typeLabel; 
-	
-	/* 
-	 * Creation of the types defaults of the MEBN 
-	 * */
-	
-	static {
-		try{
-			typeBoolean = new Type("Boolean"); 
-			typeCategoryLabel = new Type("CategoryLabel"); 
-			typeLabel = new Type("TypeLabel"); 
-			
-			listOfTypes.add(typeBoolean);
-			listOfTypes.add(typeCategoryLabel);
-			listOfTypes.add(typeLabel);               
-		}
-		catch(Exception e){
-			e.printStackTrace(); 
-		}
-	}
-	
-	
-	
 	/*-------------------------- Methods for the objets Type --------------------------------------*/
 	
     private String name;
-	
 	private List<Object> isTypeOfList; 
+	private TypeContainer container; 
 	
 	/**
 	 * Adds a new type to the list of possible entity's type.
@@ -66,14 +34,30 @@ public class Type implements Comparable<Type>{
 	 *             there is a type with the same name already.
 	 */
 	
-	private Type(String newType) throws TypeAlreadyExistsException {
+	protected Type(String newType, TypeContainer container) throws TypeAlreadyExistsException {
 		
 		name = newType; 
 		isTypeOfList = new ArrayList<Object>(); 
+		this.container = container; 
 		
-		if (Type.getType(newType) != null){
+		if (container.getType(newType) != null){
 			throw new TypeAlreadyExistsException(); 
 		}
+		
+	}
+	
+	/**
+	 * Adds a new type to the list of possible entity's type. This method
+	 * don't verify if already have a type with the same name. 
+	 * 
+	 * @param newType
+	 *            The new type to be added.
+	 */
+	
+	protected Type(String newType){
+		
+		name = newType; 
+		isTypeOfList = new ArrayList<Object>(); 
 		
 	}
 	
@@ -124,72 +108,6 @@ public class Type implements Comparable<Type>{
 		return name.compareTo(anotherType.getName()); 
 	}
 	
-
-	/*-------------------------- Methods statics for the set of Types --------------------------------------*/
-	
-	/**
-	 * Removes an old type from the list of possible entity's type.
-	 * 
-	 * @param oldType
-	 *            The old type to be removed.
-	 * @throws TypeIsInUseException 
-	 *             Thrown if the type don't can be removed because it is
-	 *             in use for some object
-	 * @throws TypeDoesNotExistException
-	 *             Thrown if the old type does not exist, in other words, if
-	 *             there is no type with the same name given.
-	 */
-	public static void removeType(String oldType) throws TypeDoesNotExistException, TypeIsInUseException {
-		
-		 for(Type type: listOfTypes){
-			 
-			 if(type.getName() == oldType){
-				 type.delete(); 
-				 listOfTypes.remove(type); 
-			 }
-			 else{
-				 throw new TypeDoesNotExistException(); 		 
-			 }
-			 
-		 }
-		 
-	}
-	
-	/**
-	 * Create a type with the name specified and add this to the
-	 * list of types. 
-	 * @param nameType Name of the type that will be create
-	 * @return The new Type
-	 * @throws TypeAlreadyExistsException Type don't can be create because it already exists. 
-	 */
-	public static Type createType(String nameType) throws TypeAlreadyExistsException{
-		
-		Type newType = new Type(nameType); 
-		listOfTypes.add(newType); 
-		return newType; 
-	}
-	
-	/**
-	 * Remove the type. 
-	 * 
-	 * @param type
-	 * @throws TypeDoesNotExistException
-	 */
-	public static void removeType(Type type) throws TypeDoesNotExistException{
-		
-		if(listOfTypes.contains(type)){
-		   
-		   listOfTypes.remove(type);
-		   
-		}
-		else{
-			
-			 throw new TypeDoesNotExistException(); 
-		
-		}
-	
-	}
-	
 	/**
 	 * Rename the type. 
 	 * 
@@ -199,70 +117,13 @@ public class Type implements Comparable<Type>{
 	 */
 	public void renameType(String name) throws TypeAlreadyExistsException{
 		
-		if (Type.getType(name) != null){
+		if (container.getType(name) != null){
 			throw new TypeAlreadyExistsException(); 
 		}
 		else{
 		    this.name = name;
 		}
 	
-	}
-	
-	/**
-	 * Verify if the type with the name exists and return it.
-	 * @param aType The type to be search.
-	 * @return the type if it exists or null otherwise.
-	 */
-	public static Type getType(String aType) {
-		
-		for(Type type: listOfTypes){
-			 
-			 if(type.getName().equals(aType)){
-				 return type; 
-			 }
-		}
-		
-		return null; 
-		 
-	}
-	
-	/**
-	 * Verify if the type already exists.
-	 * @param aType The type to be verified.
-	 * @return True if the type exists and false otherwise.
-	 */
-	
-	public static boolean hasType(Type type){
-		
-		return listOfTypes.contains(type); 
-		
-	}
-	
-	public static Type getDefaultType(){
-		return typeCategoryLabel; 
-	}
-	
-	public static Set<Type> getListOfTypes(){
-		return listOfTypes; 
-	}
-	
-	/**
-	 * Return a list with the names of the types. 
-	 */
-	public static List<String> getTypesNames(){
-		
-		ArrayList<String> list = new ArrayList<String>(); 
-		for(Type type: listOfTypes){
-			list.add(type.getName()); 
-		}
-		
-		return list; 
-	}
-	
-	public static String getLabelSuffix(){
-		
-		return "_label"; 
-		
 	}
 
 	public List<Object> getIsTypeOfList() {

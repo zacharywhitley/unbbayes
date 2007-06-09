@@ -15,6 +15,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
 import unbbayes.controller.IconController;
+import unbbayes.controller.MEBNController;
 import unbbayes.gui.mebn.auxiliary.ButtonLabel;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.entity.Type;
@@ -30,6 +31,8 @@ import unbbayes.prs.mebn.entity.Type;
  */
 public class OrdVariableToolBar extends JToolBar{
 
+	private MEBNController mebnController; 
+	
 	private JLabel name; 
 	private JTextField txtName; 
 	private JLabel type; 
@@ -44,8 +47,9 @@ public class OrdVariableToolBar extends JToolBar{
     private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
     private Matcher matcher;	
 	
-	public OrdVariableToolBar(){
+	public OrdVariableToolBar(MEBNController _mebnController){
 		
+		mebnController = _mebnController; 
 		this.setFloatable(false); 
   		ButtonLabel btnOrdVariableActive = new ButtonLabel(resource.getString("OrdVariableButton"), IconController.getInstance().getOVariableNodeIcon());  
   		
@@ -54,7 +58,7 @@ public class OrdVariableToolBar extends JToolBar{
 	    type = new JLabel(resource.getString("typeLabel")); 
 	    
 	    //Fill the combo box with the possible labels 
-	    types = Type.getListOfTypes().toArray( new Type[0] ); 
+	    types = mebnController.getMultiEntityBayesianNetwork().getTypeContainer().getListOfTypes().toArray( new Type[0] ); 
         buildJComboBoxTypes(types); 
 	    
 		txtName.addKeyListener(new KeyAdapter() {
@@ -117,7 +121,7 @@ public class OrdVariableToolBar extends JToolBar{
 	
 	public void updateListOfTypes(){
 		remove(jcbType); 
-		types = Type.getListOfTypes().toArray( new Type[0] );
+		types = mebnController.getMultiEntityBayesianNetwork().getTypeContainer().getListOfTypes().toArray( new Type[0] );
 		add(buildJComboBoxTypes(types)); 
 		validate(); 
 	}

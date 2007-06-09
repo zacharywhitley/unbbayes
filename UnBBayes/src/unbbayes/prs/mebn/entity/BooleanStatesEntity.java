@@ -11,37 +11,8 @@ import unbbayes.prs.mebn.entity.exception.TypeChangeNotAllowedException;
  */
 public class BooleanStatesEntity extends Entity {
 
-	private static BooleanStatesEntity trueStateEntity;
-
-	private static BooleanStatesEntity falseStateEntity;
-
-	private static BooleanStatesEntity absurdStateEntity;
-
-	public void setType(String type) throws TypeChangeNotAllowedException {
-		throw new TypeChangeNotAllowedException(
-				"This entity is not allowed to change its type.");
+    protected BooleanStatesEntity(String name) {
+		super(name, TypeContainer.typeBoolean);
 	}
 
-	private BooleanStatesEntity(String name) {
-		this.type = Type.typeBoolean;
-		this.name = name;
-	}
-
-	public static BooleanStatesEntity getTrueStateEntity() {
-		if (trueStateEntity == null)
-			trueStateEntity = new BooleanStatesEntity("true");
-		return trueStateEntity;
-	}
-
-	public static BooleanStatesEntity getFalseStateEntity() {
-		if (falseStateEntity == null)
-			falseStateEntity = new BooleanStatesEntity("false");
-		return falseStateEntity;
-	}
-
-	public static BooleanStatesEntity getAbsurdStateEntity() {
-		if (absurdStateEntity == null)
-			absurdStateEntity = new BooleanStatesEntity("absurd");
-		return absurdStateEntity;
-	}
 }

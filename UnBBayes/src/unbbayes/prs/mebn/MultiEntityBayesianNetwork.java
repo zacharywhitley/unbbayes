@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.Network;
+import unbbayes.prs.mebn.entity.BooleanStatesEntityContainer;
+import unbbayes.prs.mebn.entity.CategoricalStatesEntityContainer;
+import unbbayes.prs.mebn.entity.ObjectEntityConteiner;
+import unbbayes.prs.mebn.entity.TypeContainer;
 import unbbayes.util.NodeList;
 
 /**
@@ -29,9 +33,11 @@ public class MultiEntityBayesianNetwork extends Network {
 	/* aponta para a MFrag atualmente sendo trabalhada/visualisada/criada */
 	private MFrag currentMFrag;
 	
-	
-	//TODO as entidades devem ficar aqui ou n�o???
-	
+	/* Entidades */
+	TypeContainer typeContainer; 
+	ObjectEntityConteiner objectEntityContainer; 
+	BooleanStatesEntityContainer booleanStatesEntityContainer; 
+	CategoricalStatesEntityContainer categoricalStatesEntityContainer; 
 	
 	/* Este contador serve apenas para indicar qual deve ser o n�mero
 	 * da pr�xima MFrag criada (ao se gerar o nome automatico. Este n�mero
@@ -43,19 +49,24 @@ public class MultiEntityBayesianNetwork extends Network {
 	private int domainResidentNodeNum = 1; 	
 	private int contextNodeNum = 1; 
     private int entityNum = 1; 
-	
-	
-	
+		
 	/**
 	 * Contructs a new MEBN with empty mFrag's lists.
 	 * @param name The name of the MEBN.
 	 */
 	public MultiEntityBayesianNetwork(String name) {
 		super(name);
+		
 		mFragList = new ArrayList<MFrag>();
 		domainMFragList = new ArrayList<DomainMFrag>(); 
 		findingMFragList = new ArrayList<FindingMFrag>();
 		builtInRVList = new ArrayList<BuiltInRV>(); 
+		
+		typeContainer = new TypeContainer(); 
+		objectEntityContainer = new ObjectEntityConteiner(typeContainer); 
+		booleanStatesEntityContainer = new BooleanStatesEntityContainer(); 
+		categoricalStatesEntityContainer = new CategoricalStatesEntityContainer(); 
+		
 	}
 	
 	/*--------------------------- MFrags ---------------------*/
@@ -74,6 +85,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	
 	/**
 	 * Method responsible for removing the given Domain MFrag.
+	 * Set the current MFrag to null. 
 	 * @param mFrag The DomainMFrag to be removed.
 	 */
 	public void removeDomainMFrag(DomainMFrag domainMFrag) {
@@ -253,5 +265,21 @@ public class MultiEntityBayesianNetwork extends Network {
 	 
 	public String toString(){
 		return name;
+	}
+
+	public BooleanStatesEntityContainer getBooleanStatesEntityContainer() {
+		return booleanStatesEntityContainer;
+	}
+
+	public CategoricalStatesEntityContainer getCategoricalStatesEntityContainer() {
+		return categoricalStatesEntityContainer;
+	}
+
+	public ObjectEntityConteiner getObjectEntityContainer() {
+		return objectEntityContainer;
+	}
+
+	public TypeContainer getTypeContainer() {
+		return typeContainer;
 	}
 }

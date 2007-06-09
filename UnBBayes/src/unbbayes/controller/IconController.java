@@ -314,7 +314,7 @@ public class IconController implements Serializable {
 			return globalOptionIcon;
 		} else {
 			globalOptionIcon = new ImageIcon(getClass().getResource(
-					"/icons/global-options.gif"));
+					"/icons/preferences-system.png"));
 			return globalOptionIcon;
 		}
 	}
@@ -324,7 +324,7 @@ public class IconController implements Serializable {
 			return printIcon;
 		} else {
 			printIcon = new ImageIcon(getClass()
-					.getResource("/icons/print.gif"));
+					.getResource("/icons/document-print.png"));
 			return printIcon;
 		}
 	}
@@ -353,7 +353,7 @@ public class IconController implements Serializable {
 		if (openIcon != null) {
 			return openIcon;
 		} else {
-			openIcon = new ImageIcon(getClass().getResource("/icons/open.gif"));
+			openIcon = new ImageIcon(getClass().getResource("/icons/document-open.png"));
 			return openIcon;
 		}
 	}
@@ -362,7 +362,7 @@ public class IconController implements Serializable {
 		if (saveIcon != null) {
 			return saveIcon;
 		} else {
-			saveIcon = new ImageIcon(getClass().getResource("/icons/save.gif"));
+			saveIcon = new ImageIcon(getClass().getResource("/icons/document-save.png"));
 			return saveIcon;
 		}
 	}
@@ -461,7 +461,7 @@ public class IconController implements Serializable {
 		if (moreIcon != null) {
 			return moreIcon;
 		} else {
-			moreIcon = new ImageIcon(getClass().getResource("/icons/more.gif"));
+			moreIcon = new ImageIcon(getClass().getResource("/icons/list-add.png"));
 			return moreIcon;
 		}
 	}
@@ -642,7 +642,7 @@ public class IconController implements Serializable {
 		if (editIcon != null) {
 			return editIcon;
 		} else {
-			editIcon = new ImageIcon(getClass().getResource("/icons/edit.gif"));
+			editIcon = new ImageIcon(getClass().getResource("/icons/edit-paste.png"));
 			return editIcon;
 		}
 	}
@@ -661,7 +661,7 @@ public class IconController implements Serializable {
 		if (newIcon != null) {
 			return newIcon;
 		} else {
-			newIcon = new ImageIcon(getClass().getResource("/icons/new.gif"));
+			newIcon = new ImageIcon(getClass().getResource("/icons/document-new.png"));
 			return newIcon;
 		}
 	}
@@ -670,7 +670,7 @@ public class IconController implements Serializable {
 		if (newBNIcon != null) {
 			return newBNIcon;
 		} else {
-			newBNIcon = new ImageIcon(getClass().getResource("/icons/new-bn.gif"));
+			newBNIcon = new ImageIcon(getClass().getResource("/icons/new-bn.png"));
 			return newBNIcon;
 		}
 	}	
@@ -679,7 +679,7 @@ public class IconController implements Serializable {
 		if (newMSBNIcon != null) {
 			return newMSBNIcon;
 		} else {
-			newMSBNIcon = new ImageIcon(getClass().getResource("/icons/new-msbn.gif"));
+			newMSBNIcon = new ImageIcon(getClass().getResource("/icons/new-msbn.png"));
 			return newMSBNIcon;
 		}
 	}
@@ -688,7 +688,7 @@ public class IconController implements Serializable {
 		if (newMEBNIcon != null) {
 			return newMEBNIcon;
 		} else {
-			newMEBNIcon = new ImageIcon(getClass().getResource("/icons/new-mebn.gif"));
+			newMEBNIcon = new ImageIcon(getClass().getResource("/icons/new-mebn.png"));
 			return newMEBNIcon;
 		}
 	}	
@@ -697,7 +697,7 @@ public class IconController implements Serializable {
 		if (lessIcon != null) {
 			return lessIcon;
 		} else {
-			lessIcon = new ImageIcon(getClass().getResource("/icons/less.gif"));
+			lessIcon = new ImageIcon(getClass().getResource("/icons/list-remove.png"));
 			return lessIcon;
 		}
 	}

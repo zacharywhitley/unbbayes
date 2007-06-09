@@ -10,8 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.swing.JOptionPane;
-
+import unbbayes.gui.InternalErrorDialog;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -36,13 +35,12 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.context.enumSubType;
 import unbbayes.prs.mebn.context.enumType;
-import unbbayes.prs.mebn.entity.BooleanStatesEntity;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.Type;
-import unbbayes.prs.mebn.entity.exception.CategoricalStateDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
+import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
 
 import com.hp.hpl.jena.util.FileUtils;
 
@@ -55,7 +53,7 @@ import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
 import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
 
 /**
- * Make de loader from a file pr owl for the mebn structure. 
+ * Make de loader from a file pr-owl for the mebn structure. 
  * 
  * @author Laecio Lima dos Santos
  * @version 1.0 
@@ -80,8 +78,8 @@ public class LoaderPrOwlIO {
 	 */
 	private HashMap<String, ContextNode> mapContextNode = new HashMap<String, ContextNode>();
 	private HashMap<String, ContextNode> mapContextNodeInner = new HashMap<String, ContextNode>();
-	private List<ContextNode> listContextNode = new ArrayList<ContextNode>(); 
 	
+	private List<ContextNode> listContextNode = new ArrayList<ContextNode>(); 
 	
 	private HashMap<ContextNode, Object> mapIsContextInstanceOf = new HashMap<ContextNode, Object>(); 
 
@@ -101,30 +99,38 @@ public class LoaderPrOwlIO {
 		ResourceBundle.getBundle("unbbayes.io.mebn.resources.IoMebnResources");	
 	
 	private static final String PROWLMODELFILE = "pr-owl/pr-owl.owl";
-	private static final String URIPROWLMODELFILE = "file:///UnBBayes_/UnBBayes/pr-owl/pr-owl.owl"; 
-	
 	
 	private String ordinaryVarScopeSeparator = ".";
+	private String possibleValueScopeSeparator = ".";	
 	
-	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException, IOMebnException{
-
+	/**
+	 * Make the load from file to MEBN structure.
+	 * 
+	 * @param file The pr-owl file. 
+	 * @return the <MultiEntityBayesianNetwork> build from the pr-owl file
+	 * @throws IOException
+	 * @throws IOMebnException
+	 */
+	public MultiEntityBayesianNetwork loadMebn(File file) throws 
+													IOException, IOMebnException{
 
 		owlModel = ProtegeOWL.createJenaOWLModel();
 		
-		//URI uri = URIUtilities.createURI(URIPROWLMODELFILE);
 		System.out.println("[DEBUG]" + LoaderPrOwlIO.class + " -> " + "Load begin"); 
 		
 		File filePrOwl = new File(PROWLMODELFILE);
 		FileInputStream inputStreamOwl = new FileInputStream(filePrOwl); 
 		
-		owlModel.getRepositoryManager().addProjectRepository(new LocalFileRepository(filePrOwl, true));
+		owlModel.getRepositoryManager().addProjectRepository(
+				new LocalFileRepository(filePrOwl, true));
 		
 		try{
 			owlModel.load(inputStreamOwl, FileUtils.langXMLAbbrev);
 			System.out.println("-> Load of model file PR-OWL successful"); 
 		}	
 		catch(Exception e){
-			throw new IOMebnException(resource.getString("ErrorReadingFile") + ": " + PROWLMODELFILE); 
+			throw new IOMebnException(resource.getString("ErrorReadingFile") + 
+					                  ": " + PROWLMODELFILE); 
 		}
 			
 		FileInputStream inputStream = new FileInputStream(file); 
@@ -133,7 +139,8 @@ public class LoaderPrOwlIO {
 			owlModel.load(inputStream, FileUtils.langXMLAbbrev);   
 		}
 		catch (Exception e){
-			throw new IOMebnException(resource.getString("ErrorReadingFile") + ": " + file.getAbsolutePath()); 
+			throw new IOMebnException(resource.getString("ErrorReadingFile") + 
+					                    ": " + file.getAbsolutePath()); 
 		}
 		
 		/*------------------- MTheory -------------------*/
@@ -141,7 +148,7 @@ public class LoaderPrOwlIO {
 		
 		/*------------------- Entities -------------------*/
 		
-		//loadMetaEntitiesClasses(); 
+		loadMetaEntitiesClasses(); 
 		//loadBooleanRVStates(); 
 		loadCategoricalRVStates(); 
 		loadObjectEntity(); 
@@ -156,7 +163,8 @@ public class LoaderPrOwlIO {
 		/*---------------------Arguments-------------------*/
 		loadOrdinaryVariable(); 	
 		loadArgRelationship(); 		
-		loadSimpleRelationship(); 
+		loadSimpleArgRelationship(); 
+		ajustArgumentOfNodes(); 
 		
 		for(ContextNode context: this.listContextNode){
 			context.setFormulaTree(buildFormulaTree(context)); 
@@ -250,8 +258,7 @@ public class LoaderPrOwlIO {
 			individualOne = (OWLIndividual) owlIndividual; 
 			
 			try{
-				//TODO novo sistema de tipagem
-			    Type type = Type.createType(individualOne.getBrowserText()); 
+			    Type type = mebn.getTypeContainer().createType(individualOne.getBrowserText()); 
 			}
 			catch (TypeAlreadyExistsException exception){
 				//OK... lembre-se que os tipos basicos jï¿½ existem... 
@@ -277,15 +284,15 @@ public class LoaderPrOwlIO {
 		
 		instances = metaEntityClass.getInstances(false); 
 		
-		for (Object owlIndividual : instances){
-			
-			individualOne = (OWLIndividual) owlIndividual; 
-			
-			CategoricalStatesEntity categoricalStatesEntity = CategoricalStatesEntity.createCategoricalEntity(individualOne.getBrowserText()); 
-			
-			System.out.println("Categorical State Loaded: " + individualOne.getBrowserText()); 
-						
-		}			
+		/* O load esta sendo feito ao se fazer o load dos resident nodes */
+//		for (Object owlIndividual : instances){
+//			
+//			individualOne = (OWLIndividual) owlIndividual; 
+//			CategoricalStatesEntity categoricalStatesEntity = mebn.getCategoricalStatesEntityContainer().createCategoricalEntity(individualOne.getBrowserText()); 
+//			
+//			System.out.println("Categorical State Loaded: " + individualOne.getBrowserText()); 
+//			
+//		}			
 	}
 	
 	/**
@@ -309,7 +316,7 @@ public class LoaderPrOwlIO {
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasType");
 
 			try{
-				ObjectEntity objectEntityMebn = ObjectEntity.createObjectEntity(subClass.getBrowserText()); 	
+				ObjectEntity objectEntityMebn = mebn.getObjectEntityContainer().createObjectEntity(subClass.getBrowserText()); 	
 			    //TODO verificar se o tipo eh o desejado... 
 			}
 			catch(TypeException typeException){
@@ -392,11 +399,12 @@ public class LoaderPrOwlIO {
 				try {
 					ovName = ovName.split(domainMFrag.getName() + this.getOrdinaryVarScopeSeparator())[1];
 				} catch (java.lang.ArrayIndexOutOfBoundsException e) {
-					
+					e.printStackTrace(); 
+					new InternalErrorDialog();
 				}
 				//System.out.println("> Internal OV name is : " + ovName);				
 				// Create instance of OV w/o scope identifier
-				oVariable = new OrdinaryVariable(ovName, Type.getDefaultType(), domainMFrag); 
+				oVariable = new OrdinaryVariable(ovName, mebn.getTypeContainer().getDefaultType(), domainMFrag); 
 				domainMFrag.addOrdinaryVariable(oVariable); 
 				// let's map objects w/ scope identifier included
 				mapOVariable.put(individualTwo.getBrowserText(), oVariable); 
@@ -628,8 +636,6 @@ public class LoaderPrOwlIO {
 				throw new IOMebnException(resource.getString("DomainResidentNotExistsInMTheory"), individualOne.getBrowserText() ); 
 			}
 			
-			//loadHasPositionProperty(individualOne, domainResidentNode); 
-			
 			System.out.println("Domain Resident loaded: " + individualOne.getBrowserText()); 			
 			
 			/* -> isResidentNodeIn  */
@@ -729,32 +735,31 @@ public class LoaderPrOwlIO {
 				itAux = instances.iterator();
 				for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
 					individualTwo = (OWLIndividual) itIn.next();
-					try{
+					
 					   String stateName = individualTwo.getBrowserText(); 
 					   /* case 1: booleans states */
 					   if(stateName.compareTo("true")==0){
-						   domainResidentNode.addPossibleValue(BooleanStatesEntity.getTrueStateEntity());   
+						   domainResidentNode.addPossibleValue(mebn.getBooleanStatesEntityContainer().getTrueStateEntity());   
 					   }
 					   else{
 						   if(stateName.compareTo("false") == 0){
-							   domainResidentNode.addPossibleValue(BooleanStatesEntity.getFalseStateEntity());   						   
+							   domainResidentNode.addPossibleValue(mebn.getBooleanStatesEntityContainer().getFalseStateEntity());   						   
 						   }
 						   else{
 							   if(stateName.compareTo("absurd") == 0){
-								   domainResidentNode.addPossibleValue(BooleanStatesEntity.getAbsurdStateEntity());   							   
+								   domainResidentNode.addPossibleValue(mebn.getBooleanStatesEntityContainer().getAbsurdStateEntity());   							   
 							   }
 							   else{
 								   /* case 2: categorical states */
-								      state = CategoricalStatesEntity.getCategoricalState(individualTwo.getBrowserText()) ; 
+								      String name = individualTwo.getBrowserText(); 
+								      name = name.split(domainResidentNode.getName() + this.getOrdinaryVarScopeSeparator())[1]; 
+								      state = mebn.getCategoricalStatesEntityContainer().createCategoricalEntity(name) ; 
 								      domainResidentNode.addPossibleValue(state);    
 							   }
 						   }
 					   }
 				
-					}
-					catch(CategoricalStateDoesNotExistException e){
-						throw new IOMebnException(resource.getString("CategoricalStateNotFoundException"), individualTwo.getBrowserText() ); 						
-					}
+					
 				}
 			}
 			
@@ -773,11 +778,17 @@ public class LoaderPrOwlIO {
 				
 			}
 			
-			/* -> hasPossibleValues */
+			/* -> hasPossibleValues don't checked */
+			
+			/* 
+			 * In this implementation, the possible values of a input node is all
+			 * the possible values of the node from what it is input.
+			 */
 			
 			/* hasContextInstance don't checked */
 			
 			/* isArgTermIn don't checked */
+			
 		}
 				
 	}
@@ -914,7 +925,7 @@ public class LoaderPrOwlIO {
 			 itAux = instances.iterator();
 			 if(itAux.hasNext()){
 			     individualTwo = (OWLIndividual) itAux.next();
-			     Type type = Type.getType(individualTwo.getBrowserText()); 
+			     Type type = mebn.getTypeContainer().getType(individualTwo.getBrowserText()); 
 			     if (type != null){
 			    	 oVariable.setValueType(type); 
 			     }
@@ -1013,7 +1024,7 @@ public class LoaderPrOwlIO {
 				
 	}
 	
-	private void loadSimpleRelationship() throws IOMebnException{
+	private void loadSimpleArgRelationship() throws IOMebnException{
 		
 		OrdinaryVariable oVariable = null; 
 		Argument argument;
@@ -1055,29 +1066,104 @@ public class LoaderPrOwlIO {
 				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
 			}
 			
+			/* -> hasArgNumber */
+			int argNumber = 0; 
+			
+			OWLDatatypeProperty hasArgNumber = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasArgNumber");
+	        
+			if (individualOne.getPropertyValue(hasArgNumber) != null){
+			   argument.setArgNumber((Integer)individualOne.getPropertyValue(hasArgNumber));
+			}
+			
 			/* -> isArgumentOf  */
 			
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isArgumentOf"); 			
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			itAux = instances.iterator();
-			individualTwo = (OWLIndividual) itAux.next();
-			multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
-			
-			if(multiEntityNode instanceof ResidentNode){
-				try{
-			       ((ResidentNode) multiEntityNode).addArgument(oVariable); 
-				}
-				catch(Exception e){
-					e.printStackTrace(); 
-				}
-			}
-			
-			if (argument.getMultiEntityNode() != multiEntityNode){
-				throw new IOMebnException(resource.getString("isArgumentOfError"),  individualTwo.getBrowserText()); 				   
-			}
-			
-			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());					
+//			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isArgumentOf"); 			
+//			instances = individualOne.getPropertyValues(objectProperty); 	
+//			itAux = instances.iterator();
+//			individualTwo = (OWLIndividual) itAux.next();
+//			multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
+//			
+//			if(multiEntityNode instanceof ResidentNode){
+//				try{
+//			       ((ResidentNode) multiEntityNode).addArgument(oVariable); 
+//				}
+//				catch(Exception e){
+//					new InternalErrorDialog(); 
+//					e.printStackTrace(); 
+//				}
+//			}
+//			else{
+//				if(multiEntityNode instanceof InputNode){					
+//					
+//				}
+//			}
+//			
+//			if (argument.getMultiEntityNode() != multiEntityNode){
+//				throw new IOMebnException(resource.getString("isArgumentOfError"),  individualTwo.getBrowserText()); 				   
+//			}
+//			
+//			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());					
 		}		
+	}
+	
+	/*
+	 * Este mecanismo complexo eh necessario para que os argumentos sejam 
+	 * inseridos no noh residente na mesma ordem em que foram salvos, permitindo
+	 * manter a ligação com os respectivos argumentos dos nos inputs instancias 
+	 * destes... Eh ineficiente... merece uma atencao para otimização posterior.
+	 * (ps.: Funciona!) 
+	 */
+	private void ajustArgumentOfNodes(){
+		
+		for(DomainResidentNode resident: mapDomainResidentNode.values()){
+			int argNumberActual = 1; 
+			int tamArgumentList = resident.getArgumentList().size(); 
+			
+			while(argNumberActual <= tamArgumentList){
+				boolean find = false; 
+				Argument argumentOfPosition = null; 
+				for(Argument argument: resident.getArgumentList()){
+					if(argument.getArgNumber() == argNumberActual){
+						find = true; 
+						argumentOfPosition = argument; 
+						break; 
+					}
+				}
+				if(!find){
+					new InternalErrorDialog(); 
+				}
+				else{
+					try{
+					   resident.addArgument(argumentOfPosition.getOVariable());
+					}
+					catch(Exception e){
+						new InternalErrorDialog(); 
+						e.printStackTrace(); 
+					}
+				}
+				argNumberActual++; 
+			}
+		}
+		
+		for(GenerativeInputNode input: mapGenerativeInputNode.values()){
+			
+			if(input.getInputInstanceOf() instanceof ResidentNode){
+				input.updateResidentNodePointer(); 
+				for(Argument argument: input.getArgumentList()){
+					try{
+					   input.getResidentNodePointer().addOrdinaryVariable(
+							   argument.getOVariable(), argument.getArgNumber());
+					   input.updateLabel(); 
+					}
+					catch(OVDontIsOfTypeExpected e){
+						new InternalErrorDialog(); 
+						e.printStackTrace(); 
+					}
+					
+				}
+			}
+			
+		}
 	}
 	
 	private void loadHasPositionProperty(OWLIndividual individualOne, Node node){
@@ -1205,7 +1291,8 @@ public class LoaderPrOwlIO {
 		    			}
 		    		}
 		    		else{
-		    			//TODO lanï¿½ar exceï¿½ï¿½o... 
+						new InternalErrorDialog(); 
+						System.out.println("Erro: " + LoaderPrOwlIO.class + " " + 1295); 
 		    		}
 		    	}
 		    	

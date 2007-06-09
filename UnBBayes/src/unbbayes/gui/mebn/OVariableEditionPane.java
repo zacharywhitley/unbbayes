@@ -85,7 +85,7 @@ public class OVariableEditionPane extends JPanel {
 	    type = new JLabel(resource.getString("typeLabel")); 
 	    
 	    //Fill the combo box with the possible labels 
-	    types = Type.getListOfTypes().toArray( new Type[0] ); 
+	    types = mebnController.getMultiEntityBayesianNetwork().getTypeContainer().getListOfTypes().toArray( new Type[0] ); 
 	    jcbType = new JComboBox(types); 
 	    jcbType.setSelectedIndex(0); 
 	    

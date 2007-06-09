@@ -111,7 +111,8 @@ public class GuiResources extends ListResourceBundle {
 		{"LookAndFeelClassNotFoundException","This LookAndFeel class was not found: "},
 		{"LookAndFeelInstantiationException","It was not possible to load this LookAndFeel: "},
 		{"LookAndFeelIllegalAccessException","This LookAndFeel can not be used: "},
-		{"nameError","Nome don't acept"},		
+		{"nameError","Nome don't acept"},	
+		{"internalError","Internal Error..."},	
 		
 		{"helpToolTip","UnBBayes help"},
 		{"propagateToolTip","Propagate evidences"},

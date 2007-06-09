@@ -89,6 +89,14 @@ public class Argument {
 			return false; 
 		}
 	}
+
+	public int getArgNumber() {
+		return argNumber;
+	}
+
+	public void setArgNumber(int argNumber) {
+		this.argNumber = argNumber;
+	}
 	
 }
  

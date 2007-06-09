@@ -164,6 +164,12 @@ public class ResidentNodePointer {
 		
 		return vetor;
 	}
+	
+	public OrdinaryVariable[] getOrdinaryVariableArray(){
+		
+		return this.ordinaryVariableList; 
+		
+	}
 
 	/*
 	public void setOrdinaryVariableList(

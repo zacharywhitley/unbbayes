@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.Vector;
 
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.Argument;
@@ -30,7 +30,6 @@ import unbbayes.prs.mebn.entity.BooleanStatesEntity;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
-import unbbayes.prs.mebn.entity.Type;
 
 import com.hp.hpl.jena.util.FileUtils;
 
@@ -42,6 +41,13 @@ import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
 import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
 import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
 
+/**
+ * Save the MEBN structure in a file pr-owl. 
+ * 
+ * @author Laecio Lima dos Santos
+ * @version 1.0 05/31/2007
+ *
+ */
 public class SaverPrOwlIO {
 
 	private HashMap<MFrag, OWLIndividual> mFragMap = new HashMap<MFrag, OWLIndividual>(); 
@@ -73,26 +79,23 @@ public class SaverPrOwlIO {
 	
 	private File file; 
 	
-	
 	private String ordinaryVarScopeSeparator = ".";
-	
+	private String possibleValueScopeSeparator = ".";	
 	
 	MultiEntityBayesianNetwork mebn; 
-	
-	/* nums for automatic names */
 	
 	/** Load resource file from this package */
 	final ResourceBundle resource = 
 		ResourceBundle.getBundle("unbbayes.io.mebn.resources.IoMebnResources");
 	
-	
+
+	private static final String PROWLMODELFILE = "pr-owl/pr-owl.owl"; 	
+
 	/**
 	 * Save the mebn structure in an file pr-owl. 
 	 * @param nameFile: name of the file pr-owl where the mebn structure will be save
 	 * @param mebn: the mebn structure
 	 */
-
-	private static final String PROWLMODELFILE = "pr-owl/pr-owl.owl"; 	
 	
 	public void saveMebn(File file, MultiEntityBayesianNetwork _mebn) throws IOException, IOMebnException{
 		
@@ -105,7 +108,16 @@ public class SaverPrOwlIO {
 		/* Definitions */
 	
 		loadMetaEntities();
-		loadCategoricalRVStates(); 			
+		
+		/* 
+		 * Os estados categoricos estao sendo salvos a partir do nó residente
+		 * que os cria (isto esta sendo necessario porque o possivel estado esta 
+		 * sendo salco com o nome modificado, de forma a ser precedido pelo nome
+		 * do noh residente do qual ele eh um possivel estado).  
+		 */
+		
+		//loadCategoricalRVStates(); 			
+		
 		loadObjectEntitiesClasses(); 
 		loadBooleanRVStates(); 
 		loadBuiltInRV();  
@@ -127,9 +139,14 @@ public class SaverPrOwlIO {
 		
 		/* saving */
 		
-		Collection errors = new ArrayList();
+		Collection<String> errors = new ArrayList();
 		owlModel.save(file.toURI(), FileUtils.langXMLAbbrev, errors);
+		
 		System.out.println("File saved with " + errors.size() + " errors.");
+		for(String error: errors){
+			System.out.println(""); 
+		}
+		System.out.println("\n"); 
 		
 	}	
 	
@@ -184,7 +201,7 @@ public class SaverPrOwlIO {
 		
 		/* segundo passo: lista de meta entidades criadas pelo usuario */
 		
-		List<String> listMetaEntities = Type.getTypesNames(); 
+		List<String> listMetaEntities = mebn.getTypeContainer().getTypesNames(); 
 		
 		boolean present;
 		
@@ -194,7 +211,8 @@ public class SaverPrOwlIO {
 			present = false; 
 			for(String type: metaEntitiesDefault){
 				if(type.compareTo(state) == 0){
-					present = true; break; 
+					present = true; 
+					break; 
 				}
 			}
 			
@@ -205,7 +223,7 @@ public class SaverPrOwlIO {
 			   if (rootLabel != null) {
 				   stateIndividual.addPropertyValue(owlModel.getOWLObjectProperty("hasType"),rootLabel);
 			   }
-			   // TODO Treat user-defined super-types when necessary
+			   
 			   // Since isTypeOf is inverse of hasType, it is set automatically
 			   
 			   mapMetaEntity.put(state, stateIndividual); 					
@@ -222,14 +240,44 @@ public class SaverPrOwlIO {
 
 		/* categoricalRVStates */
 		OWLNamedClass categoricalRVStatesClass = owlModel.getOWLNamedClass("CategoricalRVStates"); 
-		List<CategoricalStatesEntity> listStates = CategoricalStatesEntity.getListEntity(); 
+		List<CategoricalStatesEntity> listStates = mebn.getCategoricalStatesEntityContainer().getListEntity(); 
 		OWLIndividual typeOfState = mapMetaEntity.get("CategoryLabel"); 		
+		OWLObjectProperty hasType = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasType"); 	
 		
 		for(CategoricalStatesEntity state: listStates){
+			
 			OWLIndividual stateIndividual = categoricalRVStatesClass.createOWLIndividual(state.getName()); 
-			OWLObjectProperty hasType = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasType"); 	
 			stateIndividual.addPropertyValue(hasType, typeOfState);
-			this.mapCategoricalStates.put(state, stateIndividual); 
+			mapCategoricalStates.put(state, stateIndividual); 
+		}
+
+	}
+
+	/**
+	 * Load the categorical RV states of one resident node to the saver structure. 
+	 * 
+	 * @param residentNodeIndividual
+	 * @param node
+	 */
+	private void loadCategoricalRVStates(OWLIndividual residentNodeIndividual, ResidentNode node){
+
+		/* categoricalRVStates */
+		OWLNamedClass categoricalRVStatesClass = owlModel.getOWLNamedClass("CategoricalRVStates"); 
+		List<Entity> listStates = node.getPossibleValueList(); 
+		OWLIndividual categoryLabel = mapMetaEntity.get("CategoryLabel"); 		
+		OWLObjectProperty hasType = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasType"); 	
+		
+		OWLObjectProperty hasPossibleValues = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
+		
+		for(Entity state: listStates){
+			//Name = nodeName.categoricalEntityName 
+			String name = node.getName() + possibleValueScopeSeparator + state.getName(); 
+			OWLIndividual stateIndividual = categoricalRVStatesClass.createOWLIndividual(name); 
+			stateIndividual.addPropertyValue(hasType, categoryLabel);
+			mapCategoricalStates.put(state, stateIndividual); 
+			
+			residentNodeIndividual.addPropertyValue(hasPossibleValues, stateIndividual);
+					
 		}
 
 	}
@@ -246,18 +294,25 @@ public class SaverPrOwlIO {
 	
 		Collection instances = booleanRVStates.getInstances(false); 
 		
+		/*
+		 * É assumido que o arquivo PR-OWL contem os tipos booleanos (todos e apenas estes)
+		 * - true
+		 * - false
+		 * - absurde
+		 */
+		
 		for(Object instance : instances){
 			OWLIndividual stateOwl = (OWLIndividual)instance; 
 			if(stateOwl.getBrowserText().compareTo("true") == 0){
-				this.mapBooleanStatesEntity.put(BooleanStatesEntity.getTrueStateEntity(), stateOwl); 
+				this.mapBooleanStatesEntity.put(mebn.getBooleanStatesEntityContainer().getTrueStateEntity(), stateOwl); 
 			}
 			else{
 				if(stateOwl.getBrowserText().compareTo("false") == 0){
-					this.mapBooleanStatesEntity.put(BooleanStatesEntity.getFalseStateEntity(), stateOwl); 
+					this.mapBooleanStatesEntity.put(mebn.getBooleanStatesEntityContainer().getFalseStateEntity(), stateOwl); 
 				}
 				else{
 					if(stateOwl.getBrowserText().compareTo("absurd") == 0){
-						this.mapBooleanStatesEntity.put(BooleanStatesEntity.getAbsurdStateEntity(), stateOwl); 
+						this.mapBooleanStatesEntity.put(mebn.getBooleanStatesEntityContainer().getAbsurdStateEntity(), stateOwl); 
 					}					
 				}
 			}
@@ -276,7 +331,7 @@ public class SaverPrOwlIO {
 		String labelSuffix = "_Label";
 		
 		OWLNamedClass entityClass = owlModel.getOWLNamedClass("ObjectEntity"); 
-		List<ObjectEntity> listEntities = ObjectEntity.getListEntity(); 
+		List<ObjectEntity> listEntities = mebn.getObjectEntityContainer().getListEntity(); 
 		
 		// Prepare to Get the correspondent meta entity and assign proper hasType property
 		OWLNamedClass metaEntity = owlModel.getOWLNamedClass("MetaEntity");
@@ -286,23 +341,23 @@ public class SaverPrOwlIO {
 			
 			OWLNamedClass newEntityClass = owlModel.createOWLNamedSubclass(entity.getName(), entityClass); 
 			
-			// Grants all individuals of ObjEntity classes has its right types (<Name of entity><TypeSuffix>. Ex: EX1_Label)
-			if ((hasType != null) && (metaEntity != null)) {
-				
-				// use map to search proper meta entity for that object entity, and adds restriction
-				newEntityClass.addSuperclass( owlModel.createOWLHasValue(hasType , mapMetaEntity.get(newEntityClass.getName() + Type.getLabelSuffix())));
-								
-				//	Search proper meta entity and add restriction
-				/*
-				for (Iterator iter = metaEntity.getInstances(false).iterator(); iter.hasNext();) {
-					OWLIndividual element = (OWLIndividual) iter.next();
-					if (element.getName().equals(newEntityClass.getName() + Type.getLabelSuffix())) {
-						newEntityClass.addSuperclass(owlModel.createOWLHasValue(hasType,element));
-						break;
-					}
-				}
-				*/
-			}
+//			// Grants all individuals of ObjEntity classes has its right types (<Name of entity><TypeSuffix>. Ex: EX1_Label)
+//			if ((hasType != null) && (metaEntity != null)) {
+//				
+//				// use map to search proper meta entity for that object entity, and adds restriction
+//				newEntityClass.addSuperclass( owlModel.createOWLHasValue(hasType , mapMetaEntity.get(newEntityClass.getName() + mebn.getTypeContainer().getLabelSuffix())));
+//								
+//				//	Search proper meta entity and add restriction
+//				
+//				for (Iterator iter = metaEntity.getInstances(false).iterator(); iter.hasNext();) {
+//					OWLIndividual element = (OWLIndividual) iter.next();
+//					if (element.getName().equals(newEntityClass.getName() + mebn.getTypeContainer().getLabelSuffix())) {
+//						newEntityClass.addSuperclass(owlModel.createOWLHasValue(hasType,element));
+//						break;
+//					}
+//				}
+//				
+//			}
 			
 			mapObjectEntityClasses.put(entity, newEntityClass); 
 		}
@@ -412,7 +467,7 @@ public class SaverPrOwlIO {
 								+ oVariable.getName() );
 				domainMFragIndividual.addPropertyValue(hasOVariableProperty, oVariableIndividual); 		
 				
-				for(String type: Type.getTypesNames()){
+				for(String type: mebn.getTypeContainer().getTypesNames()){
 					if(type.compareTo(oVariable.getValueType().getName()) == 0){
 						domainMFragIndividual.addPropertyValue(isSubsByProperty, mapMetaEntity.get(type)); 
 						break; 
@@ -434,16 +489,17 @@ public class SaverPrOwlIO {
 		for (DomainResidentNode residentNode: residentNodeListGeral){  
 			OWLIndividual domainResIndividual = domainResMap.get(residentNode);	
 			
-			//savePositionProperty(domainResIndividual, residentNode); 
+			/* has Argument */
 			
-			List<OrdinaryVariable> argumentList = residentNode.getOrdinaryVariableList(); 
+			List<OrdinaryVariable> ordVariableList = residentNode.getOrdinaryVariableList(); 
 	    	int argumentNumber = 1; 
-			for(OrdinaryVariable argument: argumentList){
+			for(OrdinaryVariable argument: ordVariableList){
 				saveSimpleArgRelationship(argument, domainResIndividual, residentNode, argumentNumber);
 			    argumentNumber ++; 
 			}			
 			
 			/* has Parent */
+			
 			OWLObjectProperty hasParentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasParent"); 				
 			
 			List<DomainResidentNode> residentNodeFatherList = residentNode.getResidentNodeFatherList(); 	        
@@ -457,6 +513,9 @@ public class SaverPrOwlIO {
 				OWLIndividual inputNodeFatherIndividual = generativeInputMap.get(inputNodeFather); 
 				domainResIndividual.addPropertyValue(hasParentProperty, inputNodeFatherIndividual);
 			}		
+			
+			/* has possible values */
+			loadCategoricalRVStates(domainResIndividual, residentNode); 
 			
 			/* has Context Instance */
 			
@@ -479,7 +538,6 @@ public class SaverPrOwlIO {
 			saveHasPossibleValueProperty(domainResIndividual, residentNode); 
 			
 			/* hasProbDist */
-			
 			OWLObjectProperty hasProbDist = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasProbDist");
 			OWLNamedClass declarativeDist = owlModel.getOWLNamedClass("DeclarativeDist"); 
 			OWLIndividual declarativeDistThisNode = declarativeDist.createOWLIndividual(residentNode.getName() + "_table"); 
@@ -493,8 +551,10 @@ public class SaverPrOwlIO {
     }
     
     /**
+     * Save one simple argument relationship of a node. A simple argument is only
+     * fill with a ordinary variable. 
      * 
-     * @param argument the ordinary variable that is the argument
+     * @param argument the ordinary variable that is the argument (null is accept)
      * @param individual The individual where this is a argument
      * @param node The name of the node where this is a argument
      * @param argNumber The number of this argument in the list of arguments of the node.
@@ -507,8 +567,11 @@ public class SaverPrOwlIO {
 		individual.addPropertyValue(hasArgumentProperty, argumentIndividual); 		
 			
 		OWLObjectProperty hasArgTerm = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 
-		OWLIndividual oVariableIndividual = oVariableMap.get(argument); 
-		argumentIndividual.addPropertyValue(hasArgTerm, oVariableIndividual); 
+		if(argument != null){
+		   OWLIndividual oVariableIndividual = oVariableMap.get(argument); 
+		   argumentIndividual.addPropertyValue(hasArgTerm, oVariableIndividual); 
+		}
+		
 			
 		OWLDatatypeProperty hasArgNumber = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasArgNumber");
 		argumentIndividual.setPropertyValue(hasArgNumber, argNumber);
@@ -710,44 +773,52 @@ public class SaverPrOwlIO {
     	
     }
     
+    /**
+     * 
+     * Pre-conditions: the method loadDomainResidentNode shoud run before. 
+     */
     private void loadGenerativeInputNode(){
     	
-
 		for (GenerativeInputNode generativeInputNode: inputNodeListGeral){  
 			OWLIndividual generativeInputNodeIndividual = generativeInputMap.get(generativeInputNode);	
 			
-			//savePositionProperty(generativeInputNodeIndividual, generativeInputNode);
-			
 			/* has Argument */
-			
-			OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
-			List<Argument> argumentList = generativeInputNode.getArgumentList(); 
-			
-			
-			
-			for(Argument argument: argumentList){
-				if (!argument.isSimpleArgRelationship()){
-					OWLNamedClass argumentClass = owlModel.getOWLNamedClass("ArgRelationship"); 
-					OWLIndividual argumentIndividual = argumentClass.createOWLIndividual(argument.getName());
-					generativeInputNodeIndividual.addPropertyValue(hasArgumentProperty, argumentIndividual); 		
-					
-					OWLObjectProperty hasArgTerm = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 
-					if(argument.getArgumentTerm() != null){
-						MultiEntityNode node = argument.getArgumentTerm();
-						OWLIndividual nodeIndividual = nodeMap.get(node); 
-						argumentIndividual.addPropertyValue(hasArgTerm, nodeIndividual); }
-				}
-				else{
-					OWLNamedClass argumentClass = owlModel.getOWLNamedClass("SimpleArgRelationship"); 
-					OWLIndividual argumentIndividual = argumentClass.createOWLIndividual(argument.getName());
-					generativeInputNodeIndividual.addPropertyValue(hasArgumentProperty, argumentIndividual); 		
-					
-					OWLObjectProperty hasArgTerm = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 
-					OrdinaryVariable oVariable = argument.getOVariable();
-					OWLIndividual oVariableIndividual = oVariableMap.get(oVariable); 
-					argumentIndividual.addPropertyValue(hasArgTerm, oVariableIndividual); 
+			if (generativeInputNode.getInputInstanceOf() != null){
+				if(generativeInputNode.getInputInstanceOf() instanceof DomainResidentNode){
+				     ResidentNodePointer pointer = generativeInputNode.getResidentNodePointer(); 
+				     OrdinaryVariable[] ovArray = pointer.getOrdinaryVariableArray(); 
+				     for(int i = 0; i < ovArray.length; i++){
+				    	 saveSimpleArgRelationship(ovArray[i], 
+				    			 generativeInputNodeIndividual, generativeInputNode, i); 
+				     }
 				}
 			}
+			
+//			OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
+//			List<Argument> argumentList = generativeInputNode.getArgumentList(); 
+//			for(Argument argument: argumentList){
+//				if (!argument.isSimpleArgRelationship()){
+//					OWLNamedClass argumentClass = owlModel.getOWLNamedClass("ArgRelationship"); 
+//					OWLIndividual argumentIndividual = argumentClass.createOWLIndividual(argument.getName());
+//					generativeInputNodeIndividual.addPropertyValue(hasArgumentProperty, argumentIndividual); 		
+//					
+//					OWLObjectProperty hasArgTerm = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 
+//					if(argument.getArgumentTerm() != null){
+//						MultiEntityNode node = argument.getArgumentTerm();
+//						OWLIndividual nodeIndividual = nodeMap.get(node); 
+//						argumentIndividual.addPropertyValue(hasArgTerm, nodeIndividual); }
+//				}
+//				else{
+//					OWLNamedClass argumentClass = owlModel.getOWLNamedClass("SimpleArgRelationship"); 
+//					OWLIndividual argumentIndividual = argumentClass.createOWLIndividual(argument.getName());
+//					generativeInputNodeIndividual.addPropertyValue(hasArgumentProperty, argumentIndividual); 		
+//					
+//					OWLObjectProperty hasArgTerm = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 
+//					OrdinaryVariable oVariable = argument.getOVariable();
+//					OWLIndividual oVariableIndividual = oVariableMap.get(oVariable); 
+//					argumentIndividual.addPropertyValue(hasArgTerm, oVariableIndividual); 
+//				}
+//			}
 			
 			/* has Inner Term */
 			OWLObjectProperty hasInnerTermProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInnerTerm"); 	
@@ -757,7 +828,21 @@ public class SaverPrOwlIO {
 				generativeInputNodeIndividual.addPropertyValue(hasInnerTermProperty, innerTermIndividual);
 			}
 			
-
+			/* has Possible Values */
+			
+			if (generativeInputNode.getInputInstanceOf() != null){
+				if(generativeInputNode.getInputInstanceOf() instanceof DomainResidentNode){
+					DomainResidentNode residentNode = (DomainResidentNode)generativeInputNode.getInputInstanceOf(); 
+					for(Entity state: residentNode.getPossibleValueList()){
+						//Pre conditions shoud be true... 
+						OWLObjectProperty hasPossibleValues = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
+						generativeInputNodeIndividual.addPropertyValue(hasPossibleValues, mapCategoricalStates.get(state)); 
+					}
+				}
+				else{
+					// Built-in don't checked... 
+				}
+			}
 		}
     	
     }

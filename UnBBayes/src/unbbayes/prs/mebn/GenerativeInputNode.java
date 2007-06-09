@@ -12,8 +12,6 @@ import unbbayes.prs.mebn.exception.CycleFoundException;
 
 /**
  * Generative Input Node
- * 
- * Notes: 
  *   
  */
 
@@ -21,13 +19,13 @@ public class GenerativeInputNode extends InputNode {
 	
 	private static final long serialVersionUID = 7377146558744109802L;
 	
-	private List<DomainResidentNode> residentNodeChildList;
-	
 	private DomainMFrag mFrag;
 	
 	private DrawTwoBaseRectangle drawInputNode; 
 	
 	private static Color color = new Color(220, 220, 220); 		
+	
+	private List<DomainResidentNode> residentNodeChildList;
 	
 	private ResidentNodePointer residentNodePointer; 
 	
