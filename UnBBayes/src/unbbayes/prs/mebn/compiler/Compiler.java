@@ -3,6 +3,7 @@ package unbbayes.prs.mebn.compiler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.DomainResidentNode;
@@ -34,6 +35,11 @@ import unbbayes.util.NodeList;
  				must be related to the first if everytime - since
  				we don't have a block sentence yet, it is not possible).
  			Author: Shou Matsumoto
+ 			
+ 	10/06/2007: 
+ 			Description: Added cardinality(), min() and max() functions
+ 			syntax analiser.
+ 			Author: Shou Matsumoto
  	
  ===============================================================
  if_statement 
@@ -50,7 +56,13 @@ import unbbayes.util.NodeList;
  expression ::= term [ addop term ]*
  term ::= signed_factor [ mulop factor ]*
  signed_factor ::= [ addop ] factor
- factor ::= number | ident | ( expression )
+ factor ::= number | function | "(" expression ")" 
+ 	| simplefunction "(" expression ")"
+ 	| biargfunction "(" expression ; expression ")"
+ function ::= ident 
+ 	| "CARDINALITY" "(" ident ")"
+ 	| "MIN" "(" expression ; expression ")"
+ 	| "MAX" "(" expression ; expression ")"
  addop ::= "+" | "-"
  mulop ::= "*" | "/"
  ident ::= letter [ letter | digit ]*
@@ -61,6 +73,9 @@ import unbbayes.util.NodeList;
 
 
 public class Compiler implements AbstractCompiler {
+
+	// resource files
+	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.compiler.resources.Resources");
 
 	
 	/* O caracter lido "antecipadamente" (lookahead) */
@@ -503,7 +518,7 @@ public class Compiler implements AbstractCompiler {
 	}
 
 	/**
-	 * factor ::= number | ident | ( expression )
+	 * factor ::= number | function | ( expression )
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
@@ -513,9 +528,9 @@ public class Compiler implements AbstractCompiler {
 			match('(');
 			ret = expression();
 			match(')');
-		} else if (isAlpha(look))
-			return getName();
-		else {
+		} else if (isAlpha(look)) {
+			return function();
+		} else {
 			return getNum();
 		}
 		return ret;
@@ -737,5 +752,111 @@ public class Compiler implements AbstractCompiler {
 			
 		return false;
 	}
+	
+	
+	/**
+	 *  function ::= ident 
+	 *   	| "CARDINALITY" "(" ident ")"
+	 *    	| "MIN" "(" expression ; expression ")"
+	 *     	| "MAX" "(" expression ; expression ")"
+	 * @return numeric value expected for the function
+	 * @throws TableFunctionMalformedException
+	 */
+	private float function()throws TableFunctionMalformedException {
+		float ret = this.getName();
+		if (this.look == '(') {
+			if (this.value.compareToIgnoreCase("CARDINALITY") == 0) {
+				return cardinality();
+			} else if (this.value.compareToIgnoreCase("MIN") == 0) {
+				return min();
+			} else if (this.value.compareToIgnoreCase("MAX") == 0) {
+				return max();
+			} else {
+				Debug.println("UNKNOWN FUNCTION FOUND: " + this.value);
+				throw new TableFunctionMalformedException(this.resource.getString("UnexpectedTokenFound")
+						+ ": " + value);
+			}
+		}
+		
+		
+		return ret;
+	}
+	
+	
+	/**
+	 * Computes cardinality funcion's arguments and values
+	 * @return
+	 * @throws TableFunctionMalformedException
+	 */
+	private float cardinality()throws TableFunctionMalformedException {
+		float ret = 0;
+		match('(');
+		ret = this.getName();
+		Debug.println("CARDINALITY'S ARGUMENT IS " + this.value);
+		match(')');
+		return ret;
+		
+	}
+	
+	/**
+	 * Computes min funcion's arguments and values
+	 * @return
+	 * @throws TableFunctionMalformedException
+	 */
+	private float min()throws TableFunctionMalformedException {
+		Debug.println("ANALISING MIN FUNCTION");
+		
+		float ret1 = 0;
+		float ret2 = 0;
+		match('(');
+		ret1 = this.expression();
+		match(';');
+		ret2 = this.expression();
+		match(')');
+		if (!Float.isNaN(ret1)) {
+			if (!Float.isNaN(ret2)) {
+				ret1 = ((ret2<ret1)?ret2:ret1);
+			}
+		} else if (!Float.isNaN(ret2)) {
+			return ret2;
+		}
+		return ret1;
+		
+	}
+	
+	/**
+	 * Computes MAX funcion's arguments and values
+	 * @return
+	 * @throws TableFunctionMalformedException
+	 */
+	private float max()throws TableFunctionMalformedException {
+		Debug.println("ANALISING MAX FUNCTION");
+		
+		float ret1 = 0;
+		float ret2 = 0;
+		match('(');
+		ret1 = this.expression();
+		match(';');
+		ret2 = this.expression();
+		match(')');
+		if (!Float.isNaN(ret1)) {
+			if (!Float.isNaN(ret2)) {
+				ret1 = ((ret2>ret1)?ret2:ret1);
+			}
+		} else if (!Float.isNaN(ret2)) {
+			return ret2;
+		}
+		return ret1;
+		
+	}
+
+	/**
+	 * Use this method to determine where the error has occurred
+	 * @return Returns the last read index.
+	 */
+	public int getIndex() {
+		return index;
+	}
+		
 
 }

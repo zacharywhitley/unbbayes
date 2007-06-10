@@ -31,7 +31,7 @@ public class MEBNTableParserTest extends TestCase {
 		System.out.println("-----Load file test-----"); 
 		
 		try{
-			mebn = prOwlIO.loadMebn(new File("examples/mebn/StarshipTableParser.owl")); 
+			mebn = prOwlIO.loadMebn(new File("examples/mebn/StarshipMEBNTableParserTest.owl")); 
 			Debug.println("LOAD COMPLETE"); 
 		}
 		catch (IOMebnException e){
@@ -103,11 +103,11 @@ public class MEBNTableParserTest extends TestCase {
 			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
 			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
-			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
+			"  [ Un = 0 , Hi = MIN(0;1) , Me = .01 , Lo = .99 ]  " +
 			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
-			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
+			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = MAX(0;.99) ]  " +
 			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
-			"  [ Un = 0.10 , Hi = 0.15 , Me = .15 , Lo = .65 ] " +
+			"  [ Un = 0.10 , Hi = CARDINALITY(OpSpec)*0.1 , Me = .15 , Lo = 0 ] " +
 			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ] " ;
 		
@@ -117,7 +117,9 @@ public class MEBNTableParserTest extends TestCase {
 		} catch (NoDefaultDistributionDeclaredException e) {
 			// pass
 		} catch (MEBNException e) {
-			fail(e.getMessage());
+			fail(e.getMessage() + " at " + tableString.substring(tableParser.getIndex()-1,tableParser.getIndex()+10));
+			e.printStackTrace();
+			System.exit(1);
 		} 
 		
 		
@@ -298,6 +300,30 @@ public class MEBNTableParserTest extends TestCase {
 		} 
 		
 		
+		
+	}
+	
+	public void testNormalConsistencyCheckWithFunctions() {
+		//		 should go all right
+		String tableString =  
+			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
+			"  [ Un = 0 , Hi = 0 , Me = MIN ( CARDINALITY (OpSpec) * 2 ; .2 ) , Lo = 1 - Me ]  " +
+			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
+			"  [ Un = 0 , Hi = 0 , Me = (.005 + .005) , Lo = .99 ]  " +
+			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
+			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = (((1 - Me) - Un) - Hi ) ]  " +
+			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
+			"  [ Un = 0.10 , Hi = 0.15 , Me = .15 , Lo = .65 ] " +
+			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
+			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ] " +
+			" else [ Un = 0 , Hi = 0 , Me = MAX (.5 ; CARDINALITY (HarmPotential)) , Lo = 1 - Me ] ";
+		
+		
+		try  {
+			tableParser.parse(tableString);
+		} catch (MEBNException e) {
+			fail(e.getMessage() + " at index " + tableParser.getIndex());
+		} 
 		
 	}
 

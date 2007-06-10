@@ -19,5 +19,9 @@ public interface AbstractCompiler {
 	 */
 	public abstract void parse() throws MEBNException;
 	
-	
+	/**
+	 * Use this method to determine where the error has occurred
+	 * @return Returns the last read index.
+	 */
+	public abstract int getIndex();
 }

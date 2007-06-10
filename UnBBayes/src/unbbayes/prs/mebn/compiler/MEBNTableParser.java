@@ -151,5 +151,13 @@ public class MEBNTableParser implements AbstractCompiler {
 		this.node = node;
 		this.mebn = node.getMFrag().getMultiEntityBayesianNetwork();
 	}
+	
+	/**
+	 * Use this method to determine where the error has occurred
+	 * @return Returns the last read index.
+	 */
+	public int getIndex() {
+		return this.compiler.getIndex();
+	}
 
 }
