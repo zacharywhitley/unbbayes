@@ -277,7 +277,7 @@ public class DomainMFrag extends MFrag {
 		for (MultiEntityNode node : contextNodeList) {
 			node.removeFromMFrag();
 		}
-		
+		contextNodeList = new ArrayList<ContextNode>();
 	}
 	
 	/**

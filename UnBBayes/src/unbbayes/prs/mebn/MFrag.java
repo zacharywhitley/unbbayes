@@ -105,14 +105,22 @@ public class MFrag implements Graph{
 		for (MultiEntityNode node : residentNodeList) {
 			node.removeFromMFrag();
 		}
+		residentNodeList = new ArrayList<ResidentNode>();
+				
 		
 		for (MultiEntityNode node : inputNodeList) {
 			node.removeFromMFrag();
 		}
 		
+		inputNodeList = new ArrayList<InputNode>();
+		
+		
 		for (OrdinaryVariable variable : ordinaryVariableList) {
 			variable.removeFromMFrag(); 
 		}
+		
+		ordinaryVariableList = new ArrayList<OrdinaryVariable>();
+		
 		
 	}	
 	
