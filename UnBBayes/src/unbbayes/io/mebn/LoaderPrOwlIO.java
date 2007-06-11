@@ -399,8 +399,7 @@ public class LoaderPrOwlIO {
 				try {
 					ovName = ovName.split(domainMFrag.getName() + this.getOrdinaryVarScopeSeparator())[1];
 				} catch (java.lang.ArrayIndexOutOfBoundsException e) {
-					//e.printStackTrace(); 
-					//new InternalErrorDialog();
+					//Use the original name... 
 					ovName = ovName;	// If its impossible to split, then no Scope id was found
 				}
 				//System.out.println("> Internal OV name is : " + ovName);				
@@ -676,7 +675,7 @@ public class LoaderPrOwlIO {
 					mFragOfNode.addEdge(auxEdge); 
 					}
 					catch(Exception e){
-						System.out.println("Erro: arco invalidop!!!"); 
+						System.out.println("Erro: arco invalido!!!"); 
 					}
 				}
 				else{
@@ -689,7 +688,7 @@ public class LoaderPrOwlIO {
 						mFragOfNode.addEdge(auxEdge); 
 						}
 						catch(Exception e){
-							System.out.println("Erro: arco invalidop!!!"); 
+							System.out.println("Erro: arco invalido!!!"); 
 						}
 					
 					}
@@ -753,11 +752,16 @@ public class LoaderPrOwlIO {
 							   else{
 								   /* case 2: categorical states */
 								      String name = individualTwo.getBrowserText(); 
-								      try { 
-								    	  name = name.split(domainResidentNode.getName() + this.getOrdinaryVarScopeSeparator())[1]; 
-								      } catch (ArrayIndexOutOfBoundsException e) {
-								    	  name = individualTwo.getBrowserText(); 
+								      
+								      try{
+								         name = name.split(domainResidentNode.getName() + this.getOrdinaryVarScopeSeparator())[1]; 
 								      }
+								      catch(java.lang.ArrayIndexOutOfBoundsException e){
+								    	 //The name don't is in the valid format <ResidentNodeName>.<Name> 
+						                 //use the real name of the state...
+						                 name = individualTwo.getBrowserText(); 
+								      }
+								      
 								      state = mebn.getCategoricalStatesEntityContainer().createCategoricalEntity(name) ; 
 								      domainResidentNode.addPossibleValue(state);    
 							   }
@@ -1072,7 +1076,6 @@ public class LoaderPrOwlIO {
 			}
 			
 			/* -> hasArgNumber */
-			int argNumber = 0; 
 			
 			OWLDatatypeProperty hasArgNumber = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasArgNumber");
 	        
@@ -1114,8 +1117,8 @@ public class LoaderPrOwlIO {
 	/*
 	 * Este mecanismo complexo eh necessario para que os argumentos sejam 
 	 * inseridos no noh residente na mesma ordem em que foram salvos, permitindo
-	 * manter a ligaï¿½ï¿½o com os respectivos argumentos dos nos inputs instancias 
-	 * destes... Eh ineficiente... merece uma atencao para otimizaï¿½ï¿½o posterior.
+	 * manter a ligação com os respectivos argumentos dos nos inputs instancias 
+	 * destes... Eh ineficiente... merece uma atencao para otimização posterior.
 	 * (ps.: Funciona!) 
 	 */
 	private void ajustArgumentOfNodes(){
@@ -1157,12 +1160,18 @@ public class LoaderPrOwlIO {
 				for(Argument argument: input.getArgumentList()){
 					try{
 					   input.getResidentNodePointer().addOrdinaryVariable(
-							   argument.getOVariable(), argument.getArgNumber());
+							   argument.getOVariable(), argument.getArgNumber() - 1);
 					   input.updateLabel(); 
 					}
 					catch(OVDontIsOfTypeExpected e){
 						new InternalErrorDialog(); 
 						e.printStackTrace(); 
+					}
+					catch(Exception e){
+						System.out.println("Error: Arguemt " + argument.getName() 
+								+ " do input " + input.getName() + " don't setted..."); 
+						//TODO... problens when the arguments of the resident node
+						//aren't set... 
 					}
 					
 				}
