@@ -9,10 +9,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Vector;
 
 import unbbayes.io.mebn.exceptions.IOMebnException;
-import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
@@ -255,11 +253,12 @@ public class SaverPrOwlIO {
 
 	/**
 	 * Load the categorical RV states of one resident node to the saver structure. 
+	 * (Load both categorical states and boolean states)
 	 * 
-	 * @param residentNodeIndividual
-	 * @param node
+	 * @param residentNodeIndividual Individual that is the node in the PowerLoom structure. 
+	 * @param node Resident Node of the MEBN structure
 	 */
-	private void loadCategoricalRVStates(OWLIndividual residentNodeIndividual, ResidentNode node){
+	private void loadPossibleValues(OWLIndividual residentNodeIndividual, ResidentNode node){
 
 		/* categoricalRVStates */
 		OWLNamedClass categoricalRVStatesClass = owlModel.getOWLNamedClass("CategoricalRVStates"); 
@@ -270,14 +269,18 @@ public class SaverPrOwlIO {
 		OWLObjectProperty hasPossibleValues = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
 		
 		for(Entity state: listStates){
-			//Name = nodeName.categoricalEntityName 
-			String name = node.getName() + possibleValueScopeSeparator + state.getName(); 
-			OWLIndividual stateIndividual = categoricalRVStatesClass.createOWLIndividual(name); 
-			stateIndividual.addPropertyValue(hasType, categoryLabel);
-			mapCategoricalStates.put(state, stateIndividual); 
-			
-			residentNodeIndividual.addPropertyValue(hasPossibleValues, stateIndividual);
-					
+			if(state instanceof CategoricalStatesEntity){
+				//Name = nodeName.categoricalEntityName 
+				String name = node.getName() + possibleValueScopeSeparator + state.getName(); 
+				OWLIndividual stateIndividual = categoricalRVStatesClass.createOWLIndividual(name); 
+				stateIndividual.addPropertyValue(hasType, categoryLabel);
+				mapCategoricalStates.put(state, stateIndividual); 
+				
+				residentNodeIndividual.addPropertyValue(hasPossibleValues, stateIndividual);
+			}
+			else{
+				residentNodeIndividual.addPropertyValue(hasPossibleValues, this.mapBooleanStatesEntity.get(state)); 
+			}
 		}
 
 	}
@@ -495,7 +498,7 @@ public class SaverPrOwlIO {
 	    	int argumentNumber = 1; 
 			for(OrdinaryVariable argument: ordVariableList){
 				saveSimpleArgRelationship(argument, domainResIndividual, residentNode, argumentNumber);
-			    argumentNumber ++; 
+			    argumentNumber++; 
 			}			
 			
 			/* has Parent */
@@ -515,7 +518,7 @@ public class SaverPrOwlIO {
 			}		
 			
 			/* has possible values */
-			loadCategoricalRVStates(domainResIndividual, residentNode); 
+			loadPossibleValues(domainResIndividual, residentNode); 
 			
 			/* has Context Instance */
 			

@@ -90,10 +90,22 @@ public class Argument {
 		}
 	}
 
+	/**
+	 * Return the number of the argument in the argument list of the node. 
+	 * Be careful because the pr-owl has the first arg number "1" and
+	 * don't "0".
+	 * 
+	 * @return The arg number of the argument. (ArgNumber >= 1)
+	 */
 	public int getArgNumber() {
 		return argNumber;
 	}
 
+	/**
+	 * Set the number of the argument in the argument list of the node. 
+	 * Be careful because the pr-owl has the first arg number "1" and
+	 * don't "0".
+	 */
 	public void setArgNumber(int argNumber) {
 		this.argNumber = argNumber;
 	}

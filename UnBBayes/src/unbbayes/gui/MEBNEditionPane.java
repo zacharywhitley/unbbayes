@@ -450,14 +450,12 @@ public class MEBNEditionPane extends JPanel {
   	private void turnButtonOptionTab1(JButton btn){
         jtbTabSelection.remove(INDEX_POSITION_BUTTON_OPTION_1);  
         btnTabOption1 = btn; 
-        btnTabOption1.setBackground(new Color(78, 201, 249)); 
         jtbTabSelection.add(btnTabOption1, INDEX_POSITION_BUTTON_OPTION_1); 
   	}
   	
   	private void turnButtonOptionTab2(JButton btn){
         jtbTabSelection.remove(INDEX_POSITION_BUTTON_OPTION_2);  
         btnTabOption2 = btn; 
-        btnTabOption2.setBackground(new Color(78, 201, 249)); 
         jtbTabSelection.add(btnTabOption2, INDEX_POSITION_BUTTON_OPTION_2); 
   	}
   	

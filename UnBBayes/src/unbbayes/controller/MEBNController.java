@@ -133,7 +133,6 @@ public class MEBNController {
 		multiEntityBayesianNetwork.addDomainMFrag(domainMFrag); 
 		
 		mebnEditionPane.getMTheoryTree().updateTree();
-		mebnEditionPane.setMTheoryTreeActive(); 
 	    
 	    showGraphMFrag(domainMFrag); 
 	    
