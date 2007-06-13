@@ -24,6 +24,7 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.ResidentNodePointer;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVAnd;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVEqualTo;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVExists;
@@ -91,6 +92,7 @@ public class LoaderPrOwlIO {
 	private HashMap<String, MultiEntityNode> mapMultiEntityNode = new HashMap<String, MultiEntityNode>(); 
 	private HashMap<String, BuiltInRV> mapBuiltInRV = new HashMap<String, BuiltInRV>(); 
 	private HashMap<String, ObjectEntity> mapObjectEntityEntity = new HashMap<String, ObjectEntity>(); 	
+	private HashMap<String, CategoricalStatesEntity> mapCategoricalStates = new HashMap<String, CategoricalStatesEntity>(); 
 	
 	/* Protege API Structure */
 	
@@ -630,8 +632,6 @@ public class LoaderPrOwlIO {
 		OWLIndividual individualTwo; 	
 		OWLObjectProperty objectProperty; 	
 		
-		
-		
 		OWLNamedClass domainResidentNodePr = owlModel.getOWLNamedClass("Domain_Res"); 
 		instances = domainResidentNodePr.getInstances(false); 
 		DomainMFrag mFragOfNode = null; 
@@ -771,6 +771,7 @@ public class LoaderPrOwlIO {
 								      }
 								      
 								      state = mebn.getCategoricalStatesEntityContainer().createCategoricalEntity(name) ; 
+								      mapCategoricalStates.put(individualTwo.getBrowserText(), state); 
 								      domainResidentNode.addPossibleValue(state);    
 							   }
 						   }
@@ -807,7 +808,7 @@ public class LoaderPrOwlIO {
 				domainResidentNode.setTableFunction(table); 
 				
 			}
-			*/
+			
 			/* -> hasPossibleValues don't checked */
 			
 			/* 
@@ -970,6 +971,10 @@ public class LoaderPrOwlIO {
 		}		
 	}
 	
+	/**
+	 * 
+	 * @throws IOMebnException
+	 */
 	private void loadArgRelationship() throws IOMebnException{
 		
 		OrdinaryVariable oVariable; 
@@ -1010,7 +1015,15 @@ public class LoaderPrOwlIO {
 				
 				if ((multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText())) != null){
 					try{
-						argument.setArgumentTerm(multiEntityNode);
+						if (multiEntityNode instanceof ResidentNode){
+							argument.setArgumentTerm(multiEntityNode);
+					        argument.setType(Argument.RESIDENT_NODE);  
+						}else{
+							if(multiEntityNode instanceof ContextNode){
+								argument.setArgumentTerm(multiEntityNode); 
+								argument.setType(Argument.CONTEXT_NODE); 
+							}
+						}
 					}
 					catch(Exception e){
 						throw new IOMebnException(resource.getString("ArgumentTermError"),  individualTwo.getBrowserText()); 				   
@@ -1020,24 +1033,29 @@ public class LoaderPrOwlIO {
 					if( (oVariable = mapOVariable.get(individualTwo.getBrowserText())) != null) {
 						try{
 							argument.setOVariable(oVariable);
-							
-							//ResidentNodes: 
-							Node node = argument.getMultiEntityNode(); 
-							if (node instanceof ResidentNode){
-								((ResidentNode)node).addArgument(oVariable); 
-							}
-							
+							argument.setType(Argument.ORDINARY_VARIABLE); 					
 						}
 						catch(Exception e){
 							throw new IOMebnException(resource.getString("ArgumentTermError"),  individualTwo.getBrowserText()); 				   
 						}
 					}
 					else{
-						/* TODO Tratamento para Entity */
+						CategoricalStatesEntity state; 
+						if((state = mapCategoricalStates.get(individualTwo.getBrowserText())) != null){
+					        argument.setEntityTerm(state); 	
+					        argument.setType(Argument.ORDINARY_VARIABLE); 
+						}
 					}
 				}
 				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
 				
+			}
+			
+			/* has Arg Number */
+			OWLDatatypeProperty hasArgNumber = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasArgNumber");
+			Integer argNumber = (Integer)individualOne.getPropertyValue(hasArgNumber);
+			if(argNumber != null){
+			   argument.setArgNumber(argNumber);
 			}
 			
 			/* -> isArgumentOf  */
@@ -1072,7 +1090,7 @@ public class LoaderPrOwlIO {
 			if (argument == null){
 				throw new IOMebnException(resource.getString("ArgumentNotFound"),  individualOne.getBrowserText()); 
 			}
-			Debug.println("SimpleArgRelationship loaded: " + individualOne.getBrowserText()); 
+			System.println("SimpleArgRelationship loaded: " + individualOne.getBrowserText()); 
 			
 			/* -> hasArgTerm  */
 			
@@ -1138,8 +1156,8 @@ public class LoaderPrOwlIO {
 	/*
 	 * Este mecanismo complexo eh necessario para que os argumentos sejam 
 	 * inseridos no noh residente na mesma ordem em que foram salvos, permitindo
-	 * manter a ligaï¿½ï¿½o com os respectivos argumentos dos nos inputs instancias 
-	 * destes... Eh ineficiente... merece uma atencao para otimizaï¿½ï¿½o posterior.
+	 * manter a ligação com os respectivos argumentos dos nos inputs instancias 
+	 * destes... Eh ineficiente... merece uma atencao para otimização posterior.
 	 * (ps.: Funciona!) 
 	 */
 	private void ajustArgumentOfNodes(){
@@ -1297,13 +1315,9 @@ public class LoaderPrOwlIO {
 			nodeFormulaRoot = new NodeFormulaTree(builtIn.getName(), type, subType, builtIn); 
 		    nodeFormulaRoot.setMnemonic(builtIn.getMnemonic()); 
 			
-			/* 
-			 * procura pelos argumentos do builtIn, podendo estes serem contextnodes internos, o que 
-			 * acarreta uma busca dos argumentos internos a este atï¿½ se chegar ao final. 
-			 */
-		    
-		    for(Argument argument: contextNode.getArgumentList()){
-		    	
+			List<Argument> argumentList = putArgumentListInOrder(contextNode.getArgumentList()); 
+		  		    
+		    for(Argument argument: argumentList){
 		    	if(argument.getOVariable()!= null){
 		    		OrdinaryVariable ov = argument.getOVariable(); 
 		    		nodeFormulaChild = new NodeFormulaTree(ov.getName(), enumType.OPERANDO, enumSubType.OVARIABLE, ov); 
@@ -1315,8 +1329,13 @@ public class LoaderPrOwlIO {
 		    			MultiEntityNode multiEntityNode = argument.getArgumentTerm(); 
 		    			
 		    			if(multiEntityNode instanceof ResidentNode){
-		    				nodeFormulaChild = new NodeFormulaTree(multiEntityNode.getName(), enumType.OPERANDO, enumSubType.NODE, multiEntityNode); 
+		    				ResidentNodePointer residentNodePointer = new ResidentNodePointer((ResidentNode)multiEntityNode, contextNode); 
+		    				nodeFormulaChild = new NodeFormulaTree(multiEntityNode.getName(), enumType.OPERANDO, enumSubType.NODE, residentNodePointer); 
 		    				nodeFormulaRoot.addChild(nodeFormulaChild); 
+		    				
+		    				//Adjust the arguments of the resident node 
+		    				
+		    				
 		    			}
 		    			else{
 		    				if(multiEntityNode instanceof ContextNode){
@@ -1326,8 +1345,10 @@ public class LoaderPrOwlIO {
 		    			}
 		    		}
 		    		else{
-						new InternalErrorDialog(); 
-						Debug.println("Erro: " + LoaderPrOwlIO.class + " " + 1295); 
+						if(argument.getEntityTerm() != null){
+							nodeFormulaChild = new NodeFormulaTree(argument.getEntityTerm().getName(), enumType.OPERANDO, enumSubType.ENTITY, argument.getEntityTerm());
+							nodeFormulaRoot.addChild(nodeFormulaChild); 
+						}
 		    		}
 		    	}
 		    	
@@ -1336,12 +1357,59 @@ public class LoaderPrOwlIO {
 		}
 		else{
 			if((obj instanceof ResidentNode)){
-				nodeFormulaRoot = new NodeFormulaTree(((ResidentNode)obj).getName(), enumType.OPERANDO, enumSubType.NODE, (ResidentNode)obj); 
-							
+				ResidentNodePointer residentNodePointer = new ResidentNodePointer((ResidentNode)obj, contextNode); 
+				nodeFormulaRoot = new NodeFormulaTree(((ResidentNode)obj).getName(), enumType.OPERANDO, enumSubType.NODE, residentNodePointer); 
+				
+				List<Argument> argumentList = putArgumentListInOrder(contextNode.getArgumentList()); 
+			  	for(Argument argument: argumentList){
+					
+					if(argument.getOVariable()!= null){
+						OrdinaryVariable ov = argument.getOVariable(); 
+						try{
+						    residentNodePointer.addOrdinaryVariable(ov, argument.getArgNumber() - 1); 
+						}
+						catch(Exception e){
+							e.printStackTrace(); 
+						}
+					}
+					else{
+						
+					}		
+				}
+				
 			}
 		}
 		
 		return nodeFormulaRoot; 
+	}
+	
+	/**
+	 * Put the list of argument in order (for the argNumber atribute of the <Argument>. 
+	 * 
+	 * pos-conditions: the <argumentListOriginal> will be empty
+	 * 
+	 * @param argumentListOriginal the original list
+	 * @return a new list with the arguments in order
+	 */
+	private List<Argument> putArgumentListInOrder(List<Argument> argumentListOriginal){
+		
+	    ArrayList<Argument> argumentList = new ArrayList<Argument>(); 
+	    int i = 1; /* number of the actual argument */
+	    while(argumentListOriginal.size() > 0){
+	    	Argument argumentActual = null; 
+	    	for(Argument argument: argumentListOriginal){
+	    		if(argument.getArgNumber() == i){
+	    			argumentActual = argument;
+	    			break; 
+	    		}
+	    	}
+	    	argumentList.add(argumentActual);
+	    	argumentListOriginal.remove(argumentActual);
+	    	i++; 
+	    }
+	    
+	    return argumentList; 
+		
 	}
 	
 	/**
@@ -1411,9 +1479,7 @@ public class LoaderPrOwlIO {
 		
 		return stringReturn; 
 	}
-	
-	
-	
+
 	/**
 	 * @return Returns the ordinaryVarScopeSeparator.
 	 */
@@ -1427,8 +1493,5 @@ public class LoaderPrOwlIO {
 	public void setOrdinaryVarScopeSeparator(String ordinaryVarScopeSeparator) {
 		this.ordinaryVarScopeSeparator = ordinaryVarScopeSeparator;
 	}
-	
-	
-	
 	
 }

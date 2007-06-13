@@ -502,7 +502,7 @@ public class SaverPrOwlIO {
 			List<OrdinaryVariable> ordVariableList = residentNode.getOrdinaryVariableList(); 
 	    	int argumentNumber = 1; 
 			for(OrdinaryVariable argument: ordVariableList){
-				saveSimpleArgRelationship(argument, domainResIndividual, residentNode, argumentNumber);
+				saveSimpleArgRelationship(argument, domainResIndividual, residentNode.getName(), argumentNumber);
 			    argumentNumber++; 
 			}			
 			
@@ -572,14 +572,14 @@ public class SaverPrOwlIO {
      * 
      * @param argument the ordinary variable that is the argument (null is accept)
      * @param individual The individual where this is a argument
-     * @param node The name of the node where this is a argument
+     * @param name The name of the node where this is a argument
      * @param argNumber The number of this argument in the list of arguments of the node.
      */
-    private void saveSimpleArgRelationship(OrdinaryVariable argument, OWLIndividual individual, MultiEntityNode node, int argNumber){
+    private void saveSimpleArgRelationship(OrdinaryVariable argument, OWLIndividual individual, String name, int argNumber){
     	
     	OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
 		OWLNamedClass argumentClass = owlModel.getOWLNamedClass("SimpleArgRelationship"); 
-		OWLIndividual argumentIndividual = argumentClass.createOWLIndividual(node.getName() + "_" + argNumber);
+		OWLIndividual argumentIndividual = argumentClass.createOWLIndividual(name + "_" + argNumber);
 		individual.addPropertyValue(hasArgumentProperty, argumentIndividual); 		
 			
 		OWLObjectProperty hasArgTerm = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 
@@ -595,13 +595,24 @@ public class SaverPrOwlIO {
     }
     
     /**
+     * Save a argument where the term is a Resident Node. 
+     * The strucuture of Pr-OWL for this save is: 
      * 
-     * @param argument the ordinary variable that is the argument
+     * 01 - Is create a ArgRelationship where the name is NodeName_ArgNumber
+     * 02 - The argument is setted how a argument of the individual (original context node)
+     * 03 - Is create a context node Inner Term with the name NodeName_ArgNumber_inner
+     * 04 - The inner term is settend how inner term of the individual (original context node)
+     * 05 - The inner term is setted how context node of the MFrag of the original context node
+     * 06 - The possible values of the inner term is setted how the possible values of the resident node
+     * 07 - The arguments of the inner term is setted how the arguments of the residentNode (recursively for this method). 
+     * 08 - The inner term is setted how the argument element of the ArgRelationship create in the first step.  
+     * 
+     * @param argument The pointer for the resident node that is the argument
      * @param individual The individual where this is a argument
      * @param node The name of the node where this is a argument
      * @param argNumber The number of this argument in the list of arguments of the node.
      */
-    private void saveResidentNodeArgRelationship(ResidentNode argument, OWLIndividual individual, MultiEntityNode node, int argNumber){
+    private void saveResidentNodeArgRelationship(ResidentNodePointer argument, OWLIndividual individual, MultiEntityNode node, int argNumber){
     	
     	OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
 		OWLNamedClass argumentClass = owlModel.getOWLNamedClass("ArgRelationship"); 
@@ -621,12 +632,52 @@ public class SaverPrOwlIO {
 		innerContextNode.addPropertyValue(isContextNodeIn, mFragMap.get(node.getMFrag())); 
 		
 		OWLObjectProperty isContextInstanceOf = (OWLObjectProperty)owlModel.getOWLObjectProperty("isContextInstanceOf"); 	
-		innerContextNode.addPropertyValue(isContextInstanceOf, domainResMap.get(argument)); 
+		innerContextNode.addPropertyValue(isContextInstanceOf, domainResMap.get(argument.getResidentNode())); 
+		
+		//Save the possible values
+		saveHasPossibleValueProperty(innerContextNode, argument.getResidentNode()); 
+		
+        //Save the arguments
+		OrdinaryVariable[] oVariableArray = argument.getOrdinaryVariableArray(); 
+		for(int i = 0; i < oVariableArray.length; i++){
+			if(oVariableArray[i] == null){
+				this.saveEmptySimpleArgRelationship(innerContextNode, innerContextNode.getName(), i + 1); 
+			}
+			else{
+				this.saveSimpleArgRelationship(oVariableArray[i], innerContextNode, innerContextNode.getName(), i + 1); 
+			}
+		}
 		
 		OWLObjectProperty hasArgTerm = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 
 		argumentIndividual.addPropertyValue(hasArgTerm, innerContextNode); 
 		
     }   
+    
+    /**
+     * Save a categirucak state how one Arg Relationship of a node. 
+     *
+     * @param argument
+     * @param individual
+     * @param name
+     * @param argNumber
+     */
+    private void saveCategoricalStateArgRelationship(CategoricalStatesEntity argument, OWLIndividual individual, String name, int argNumber){
+    	
+    	OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
+		OWLNamedClass argumentClass = owlModel.getOWLNamedClass("ArgRelationship"); 
+		OWLIndividual argumentIndividual = argumentClass.createOWLIndividual(name + "_" + argNumber);
+		individual.addPropertyValue(hasArgumentProperty, argumentIndividual); 		
+			
+		OWLObjectProperty hasArgTerm = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 
+		if(argument != null){
+		   OWLIndividual categoricalStateIndividual = mapCategoricalStates.get(argument); 
+		   argumentIndividual.addPropertyValue(hasArgTerm, categoricalStateIndividual); 
+		}
+			
+		OWLDatatypeProperty hasArgNumber = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasArgNumber");
+		argumentIndividual.setPropertyValue(hasArgNumber, argNumber);
+		
+    }
     
     private void saveBuiltInArgRelationship(OWLIndividual individual, MultiEntityNode node, int argNumber, NodeFormulaTree root){
     	
@@ -658,11 +709,18 @@ public class SaverPrOwlIO {
 		
     }       
     
-    private void saveEmptySimpleArgRelationship(OWLIndividual individual, MultiEntityNode node, int argNumber){
+    /**
+     * Save a SimpleArgRelationship without ordinary variable setted. 
+     * 
+     * @param individual
+     * @param name The name of the node that has the argument. 
+     * @param argNumber
+     */
+    private void saveEmptySimpleArgRelationship(OWLIndividual individual, String name, int argNumber){
     	
     	OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
 		OWLNamedClass argumentClass = owlModel.getOWLNamedClass("SimpleArgRelationship"); 
-		OWLIndividual argumentIndividual = argumentClass.createOWLIndividual(node.getName() + "_" + argNumber);
+		OWLIndividual argumentIndividual = argumentClass.createOWLIndividual(name + "_" + argNumber);
 		individual.addPropertyValue(hasArgumentProperty, argumentIndividual); 		
 			
 		OWLDatatypeProperty hasArgNumber = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasArgNumber");
@@ -670,6 +728,9 @@ public class SaverPrOwlIO {
 		
     }
     
+    /**
+     * Load the context nodes from the MEBN structure for the PR-OWL structure. 
+     */
     private void loadContextNode(){
     	
 		for (ContextNode contextNode: contextListGeral){
@@ -677,32 +738,22 @@ public class SaverPrOwlIO {
 			Debug.println("Saving Context: " + contextNode.getName()); 
 			
 			OWLIndividual contextNodeIndividual = contextMap.get(contextNode);	
-			
-			//savePositionProperty(contextNodeIndividual, contextNode);
-			
-			/* Passo 1: verificar de qual built in o n?¿œ de contexto ?¿œ instancia */
-			
 			NodeFormulaTree formulaNode = contextNode.getFormulaTree(); 
-			
 			if (formulaNode != null){
-			
 				loadContextNodeFormula(formulaNode, contextNodeIndividual, contextNode); 
-				
-			}
-				
-				
-			saveHasPossibleValuePropertyContext(contextNodeIndividual, contextNode); 
+			}		
+			saveHasPossibleValueProperty(contextNodeIndividual, contextNode); 
 		}		
 		
     }
     
     /**
+     * Create the PR-OWL structure for the formula of a context node. 
      * 
      * @param _formulaNode Root of the tree of the formula
-     * @param contextNodeIndividual
-     * @param contextNode
+     * @param contextNodeIndividual Protege individual for the context node
+     * @param contextNode Context node from the MEBN structure
      */
-    
     private void loadContextNodeFormula(NodeFormulaTree _formulaNode, OWLIndividual contextNodeIndividual, ContextNode contextNode){
     	
     	NodeFormulaTree formulaNode = _formulaNode; 
@@ -711,43 +762,65 @@ public class SaverPrOwlIO {
 				(formulaNode.getTypeNode() == enumType.QUANTIFIER_OPERATOR)){
 			
 			if(formulaNode.getNodeVariable() instanceof BuiltInRV){
-				OWLObjectProperty isContextInstanceOf = (OWLObjectProperty)owlModel.getOWLObjectProperty("isContextInstanceOf");
 				
-				OWLIndividual builtInIndividual = this.findBuiltInIndividualByName(((BuiltInRV)(formulaNode.getNodeVariable())).getName()); 
+				//Step 1: Built-In
+				OWLObjectProperty isContextInstanceOf = (OWLObjectProperty)owlModel.getOWLObjectProperty("isContextInstanceOf");
+				OWLIndividual builtInIndividual = findBuiltInIndividualByName(((BuiltInRV)(formulaNode.getNodeVariable())).getName()); 
 				contextNodeIndividual.setPropertyValue(isContextInstanceOf, builtInIndividual); 	
 			
-				//salvar os argumentos
-				
+				//Step 2: Arguments
 				List<NodeFormulaTree> childrenList = formulaNode.getChildren(); 
 				
-				int childNum = 0; 
+				/* 
+				 * Number of the argument in the list of arguments. 
+				 * In the Pr-Owl the first argument have the number 1. 
+				 */
+				int argNumber = 0; 
 				
 				for(NodeFormulaTree child: childrenList){
 				 
-					childNum++; 
+					/*
+					 * One argument of a context node can be of the types: 
+					 * - Ordinary Variable
+					 * - Node (Domain Resident Node)
+					 * - Entity
+					 * - Exemplar
+					 */
+					argNumber++; 					
 					if(child.getTypeNode() == enumType.OPERANDO){
 						
 						switch(child.getSubTypeNode()){
 						   
 						case NOTHING:
-							saveEmptySimpleArgRelationship(contextNodeIndividual, contextNode, childNum );
+							saveEmptySimpleArgRelationship(contextNodeIndividual, contextNode.getName(), argNumber );
 							break; 
 							
 						case OVARIABLE: 
-							saveSimpleArgRelationship((OrdinaryVariable)(child.getNodeVariable()), contextNodeIndividual, contextNode, childNum ); 
+							saveSimpleArgRelationship((OrdinaryVariable)(child.getNodeVariable()), contextNodeIndividual, contextNode.getName(), argNumber ); 
 							break; 
 							
 						case NODE: 
 							if(child.getNodeVariable() instanceof ResidentNodePointer){
-							    saveResidentNodeArgRelationship(((ResidentNodePointer)(child.getNodeVariable())).getResidentNode(), contextNodeIndividual, contextNode, childNum );
+							    saveResidentNodeArgRelationship((ResidentNodePointer)child.getNodeVariable(), contextNodeIndividual, contextNode, argNumber );
 							}
 							else{
-								//TODO
+								//TODO other cases? 
+								//wait for the complet model. 
+							}
+							break; 
+						
+						case ENTITY:
+							if(child.getNodeVariable() instanceof CategoricalStatesEntity){
+								saveCategoricalStateArgRelationship((CategoricalStatesEntity)child.getNodeVariable(), contextNodeIndividual, contextNode.getName(), argNumber); 
+							}
+							else{
+								//TODO save normal entities instances?
+								//wait for the complet model. 
 							}
 							break; 
 							
 						default: 
-							saveEmptySimpleArgRelationship(contextNodeIndividual, contextNode, childNum );
+							saveEmptySimpleArgRelationship(contextNodeIndividual, contextNode.getName(), argNumber );
 							break; 
 						
 						}
@@ -755,18 +828,16 @@ public class SaverPrOwlIO {
 					}
 					else{
 						if(child.getTypeNode() == enumType.SIMPLE_OPERATOR) {
-							this.saveBuiltInArgRelationship(contextNodeIndividual, contextNode, childNum, child );
+							this.saveBuiltInArgRelationship(contextNodeIndividual, contextNode, argNumber, child );
 							
 						}
 						else{
 							if(child.getTypeNode() == enumType.QUANTIFIER_OPERATOR){
-
-								this.saveBuiltInArgRelationship(contextNodeIndividual, contextNode, childNum, child );
+								this.saveBuiltInArgRelationship(contextNodeIndividual, contextNode, argNumber, child );
 							}
 							else{
-								
 								//TODO avaliar outros casos... 
-								this.saveEmptySimpleArgRelationship(contextNodeIndividual, contextNode, childNum );
+								this.saveEmptySimpleArgRelationship(contextNodeIndividual, contextNode.getName(), argNumber );
 							}
 						}
 					}
@@ -775,7 +846,6 @@ public class SaverPrOwlIO {
 				
 			}
 			else{ //don't is a built-in... 
-				
 				//TODO levantar excessao
 			}
 								
@@ -805,7 +875,7 @@ public class SaverPrOwlIO {
 				     OrdinaryVariable[] ovArray = pointer.getOrdinaryVariableArray(); 
 				     for(int i = 0; i < ovArray.length; i++){
 				    	 saveSimpleArgRelationship(ovArray[i], 
-				    			 generativeInputNodeIndividual, generativeInputNode, i); 
+				    			 generativeInputNodeIndividual, generativeInputNode.getName(), i); 
 				     }
 				}
 			}
@@ -875,6 +945,12 @@ public class SaverPrOwlIO {
 	
 	}
 	
+	/**
+	 * Save the possible values of a node. 
+	 * 
+	 * @param individual The individual owl for the node
+	 * @param node The node that have the possible values
+	 */
 	private void saveHasPossibleValueProperty(OWLIndividual individual, MultiEntityNode node){
 		/*has possible values */
 		OWLObjectProperty hasPossibleValuesProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
@@ -887,23 +963,24 @@ public class SaverPrOwlIO {
 		}
 	}
 	
-	private void saveHasPossibleValuePropertyContext(OWLIndividual individual, MultiEntityNode node){
-		
-		/*has possible values */
-		OWLObjectProperty hasPossibleValuesProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
-		
-		for(Entity possibleValue: node.getPossibleValueList()){
-			
-			if(this.mapCategoricalStates.get(possibleValue) == null){
-			   individual.addPropertyValue(hasPossibleValuesProperty, this.mapBooleanStatesEntity.get(possibleValue)); 	
-			}
-			else{
-			   individual.addPropertyValue(hasPossibleValuesProperty, this.mapCategoricalStates.get(possibleValue)); 
-			}
-		}
-		
-	}	
-	
+//	
+//	private void saveHasPossibleValuePropertyContext(OWLIndividual individual, MultiEntityNode node){
+//		
+//		/*has possible values */
+//		OWLObjectProperty hasPossibleValuesProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
+//		
+//		for(Entity possibleValue: node.getPossibleValueList()){
+//			
+//			if(this.mapCategoricalStates.get(possibleValue) == null){
+//			   individual.addPropertyValue(hasPossibleValuesProperty, this.mapBooleanStatesEntity.get(possibleValue)); 	
+//			}
+//			else{
+//			   individual.addPropertyValue(hasPossibleValuesProperty, this.mapCategoricalStates.get(possibleValue)); 
+//			}
+//		}
+//		
+//	}	
+//	
 	private void loadBuiltInRV(){
 
 		/* BuiltInRV */
