@@ -29,7 +29,7 @@ import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.util.ArrayMap;
 
 /**
- * Show the nodes residents of the MTheory for the user select 
+ * Show the nodes residents (and its possible values) of the MTheory for the user select 
  * and use in the formula of the context node
  */
 public class MTheoryTreeForReplaceInFormula extends JTree {

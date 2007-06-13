@@ -3,16 +3,25 @@ package unbbayes.prs.mebn;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.ArgumentOVariableAlreadySetException;
 
+/*
+ * Used only for do the load/save pr-owl process. 
+ */
 public class Argument {
+	
+	public static final int ORDINARY_VARIABLE = 0; 
+	public static final int RESIDENT_NODE = 1; 
+	public static final int CATEGORICAL_STATE = 2;
+	public static final int SKOLEN = 3; 
+	public static final int CONTEXT_NODE = 4; 
 	
 	private String name; 
  
 	private MultiEntityNode multiEntityNode; 
 	
-	//TODO this is necessary or the arg number is better
 	private List<Argument> argumentOfList;  
 	private List<Argument> argumentFromList;
 	
@@ -23,6 +32,9 @@ public class Argument {
 
 	/* Complex argument */
 	private MultiEntityNode argumentTerm; 
+	private Entity entityTerm; 
+	
+	private int type; 
 	
 	/**
 	 * Contructs a new Argument.
@@ -108,6 +120,22 @@ public class Argument {
 	 */
 	public void setArgNumber(int argNumber) {
 		this.argNumber = argNumber;
+	}
+
+	public Entity getEntityTerm() {
+		return entityTerm;
+	}
+
+	public void setEntityTerm(Entity entityTerm) {
+		this.entityTerm = entityTerm;
+	}
+
+	public int getType() {
+		return type;
+	}
+
+	public void setType(int type) {
+		this.type = type;
 	}
 	
 }

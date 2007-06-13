@@ -8,7 +8,7 @@ import unbbayes.prs.mebn.context.enumType;
 
 
 /**
- * Nodo of the tree of the formula. Have the information
+ * Node of the tree of the formula. Have the information
  * about what type of things can replace it.  
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
