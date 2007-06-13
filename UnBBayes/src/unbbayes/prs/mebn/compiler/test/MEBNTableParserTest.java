@@ -69,7 +69,7 @@ public class MEBNTableParserTest extends TestCase {
 		
 		//		 should go all right
 		String tableString =  
-			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
+			" if any STi have( OpSpec = Cardassian | HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
 			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
