@@ -87,7 +87,11 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"stdDev", "Desv. PadrÃ£o"}, 
 		
 		/* load/save */
-		{"saveSucess", "Arquivo salvo!"},
+		{"saveSucess", "Arquivo salvo com sucesso!"},
+		{"mebnDontExists", "Operação falhou: Não há MEBN ativa"},
+		{"bnDontExists", "Operação falhou: Não há Rede Bayesiana ativa"},
+		{"msbnDontExists", "Operação falhou: Não há MSBN ativa"},
+		{"windowDontExists", "Operação falhou: Não há janela ativa"},
 		{"sucess", "Sucesso"}, 
 		{"error", "Erro"},
 		{"withoutPosfixe", "Tipo do arquivo nÃ£o informado!"}		

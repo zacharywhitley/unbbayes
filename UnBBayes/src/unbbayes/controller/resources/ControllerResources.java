@@ -88,6 +88,9 @@ public class ControllerResources extends ListResourceBundle {
 				
 		/* load/save */
 		{"saveSucess", "File save!"},
+		{"mebnDontExists", "Operação falhou: Não há MEBN ativa"}, //TODO Translate
+		{"bnDontExists", "Operação falhou: Não há Rede Bayesiana ativa"},
+		{"mebnDontExists", "Operação falhou: Não há MSBN ativa"},
 		{"sucess", "Sucess"}, 
 		{"error", "Error"},
 		{"withoutPosfixe", "Type of file don't informed!"}
