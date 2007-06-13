@@ -77,7 +77,7 @@ public class InputNode extends MultiEntityNode {
 	public void delete() {
 		
 		residentNodeChildList = null; 
-		
+		inputInstanceOfNode = null;
 	}
 
 

@@ -123,25 +123,25 @@ public class TableViewPane extends JPanel{
 				        tableParser.parse(residentNode.getTableFunction());
 				}
 				catch(TableFunctionMalformedException e1){
-					JOptionPane.showMessageDialog(null, e1.getMessage(), "TableFunctionMalformedException", JOptionPane.ERROR_MESSAGE);		
+					JOptionPane.showMessageDialog(null, e1.getMessage()+ " : " + tableParser.getIndex(), "TableFunctionMalformedException", JOptionPane.ERROR_MESSAGE);		
 				}
 				catch(NodeNotPresentInMTheoryException e2){
-					JOptionPane.showMessageDialog(null, e2.getMessage(), "NodeNotPresentInMTheoryException", JOptionPane.ERROR_MESSAGE);		
+					JOptionPane.showMessageDialog(null, e2.getMessage()+ " : " + tableParser.getIndex(), "NodeNotPresentInMTheoryException", JOptionPane.ERROR_MESSAGE);		
 									
 				}
 				catch(EntityNotPossibleValueOfNodeException e3 ){
-					JOptionPane.showMessageDialog(null, e3.getMessage(), "EntityNotPossibleValueOfNodeException", JOptionPane.ERROR_MESSAGE);		
+					JOptionPane.showMessageDialog(null, e3.getMessage()+ " : " + tableParser.getIndex(), "EntityNotPossibleValueOfNodeException", JOptionPane.ERROR_MESSAGE);		
 									
 				}
 				catch(InvalidProbabilityFunctionOperandException e4){
-					JOptionPane.showMessageDialog(null, e4.getMessage(), "InvalidProbabilityFunctionOperandException", JOptionPane.ERROR_MESSAGE);		
+					JOptionPane.showMessageDialog(null, e4.getMessage()+ " : " + tableParser.getIndex(), "InvalidProbabilityFunctionOperandException", JOptionPane.ERROR_MESSAGE);		
 									
 				}
 				catch(InconsistentTableSemanticsException ex){
-					JOptionPane.showMessageDialog(null, ex.getMessage(), "InconsistentTableSemanticsException", JOptionPane.ERROR_MESSAGE);		
+					JOptionPane.showMessageDialog(null, ex.getMessage()+ " : " + tableParser.getIndex(), "InconsistentTableSemanticsException", JOptionPane.ERROR_MESSAGE);		
 									
 				}catch (MEBNException exc) {
-					JOptionPane.showMessageDialog(null, exc.getMessage(), "MEBNException", JOptionPane.ERROR_MESSAGE);		
+					JOptionPane.showMessageDialog(null, exc.getMessage()+ " : " + tableParser.getIndex(), "MEBNException", JOptionPane.ERROR_MESSAGE);		
 				}
 			}
 		}); 

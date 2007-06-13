@@ -42,6 +42,8 @@ import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
 
+import unbbayes.util.Debug;
+
 import com.hp.hpl.jena.util.FileUtils;
 
 import edu.stanford.smi.protegex.owl.ProtegeOWL;
@@ -116,7 +118,7 @@ public class LoaderPrOwlIO {
 
 		owlModel = ProtegeOWL.createJenaOWLModel();
 		
-		System.out.println("[DEBUG]" + LoaderPrOwlIO.class + " -> " + "Load begin"); 
+		Debug.println("[DEBUG]" + LoaderPrOwlIO.class + " -> " + "Load begin"); 
 		
 		File filePrOwl = new File(PROWLMODELFILE);
 		FileInputStream inputStreamOwl = new FileInputStream(filePrOwl); 
@@ -126,7 +128,7 @@ public class LoaderPrOwlIO {
 		
 		try{
 			owlModel.load(inputStreamOwl, FileUtils.langXMLAbbrev);
-			System.out.println("-> Load of model file PR-OWL successful"); 
+			Debug.println("-> Load of model file PR-OWL successful"); 
 		}	
 		catch(Exception e){
 			throw new IOMebnException(resource.getString("ErrorReadingFile") + 
@@ -170,9 +172,13 @@ public class LoaderPrOwlIO {
 			context.setFormulaTree(buildFormulaTree(context)); 
 		}
 		
+		
+		
 		//checkMTheory(); 
 		
-		System.out.println("[DEBUG]" + LoaderPrOwlIO.class + " - " + "Processo de load concluido"); 
+		
+		
+		Debug.println("[DEBUG]" + LoaderPrOwlIO.class + " - " + "Processo de load concluido"); 
 		
 		return mebn; 		
 	}	
@@ -224,7 +230,7 @@ public class LoaderPrOwlIO {
 		individualOne = (OWLIndividual) itAux.next();
 		mebn = new MultiEntityBayesianNetwork(individualOne.getBrowserText()); 
 		
-		System.out.println("MTheory loaded: " + individualOne.getBrowserText()); 
+		Debug.println("MTheory loaded: " + individualOne.getBrowserText()); 
 		
 		//Properties 
 		
@@ -235,7 +241,7 @@ public class LoaderPrOwlIO {
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
 			individualTwo = (OWLIndividual) it.next();
-			System.out.println("hasDomainMFrag: " + individualTwo.getBrowserText()); 
+			Debug.println("hasDomainMFrag: " + individualTwo.getBrowserText()); 
 			domainMFrag = new DomainMFrag(individualTwo.getBrowserText(), mebn); 
 			mebn.addDomainMFrag(domainMFrag); 
 			mapDomainMFrag.put(individualTwo.getBrowserText(), domainMFrag); 
@@ -264,7 +270,7 @@ public class LoaderPrOwlIO {
 				//OK... lembre-se que os tipos basicos jï¿½ existem... 
 			}
 			
-			System.out.println("Meta Entity Loaded: " + individualOne.getBrowserText()); 
+			Debug.println("Meta Entity Loaded: " + individualOne.getBrowserText()); 
 						
 		}		
 	}
@@ -290,7 +296,7 @@ public class LoaderPrOwlIO {
 //			individualOne = (OWLIndividual) owlIndividual; 
 //			CategoricalStatesEntity categoricalStatesEntity = mebn.getCategoricalStatesEntityContainer().createCategoricalEntity(individualOne.getBrowserText()); 
 //			
-//			System.out.println("Categorical State Loaded: " + individualOne.getBrowserText()); 
+//			Debug.println("Categorical State Loaded: " + individualOne.getBrowserText()); 
 //			
 //		}			
 	}
@@ -350,7 +356,7 @@ public class LoaderPrOwlIO {
 				throw new IOMebnException(resource.getString("DomainMFragNotExistsInMTheory"), individualOne.getBrowserText()); 
 			}
 			
-			System.out.println("DomainMFrag loaded: " + individualOne.getBrowserText()); 
+			Debug.println("DomainMFrag loaded: " + individualOne.getBrowserText()); 
 			
 			/* -> hasResidentNode */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasResidentNode"); 
@@ -361,7 +367,7 @@ public class LoaderPrOwlIO {
 				domainMFrag.addDomainResidentNode(domainResidentNode); 
 				mapDomainResidentNode.put(individualTwo.getBrowserText(), domainResidentNode); 
 				mapMultiEntityNode.put(individualTwo.getBrowserText(), domainResidentNode); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
 			}	
 			
 			/* -> hasInputNode */
@@ -373,7 +379,7 @@ public class LoaderPrOwlIO {
 				domainMFrag.addGenerativeInputNode(generativeInputNode); 
 				mapGenerativeInputNode.put(individualTwo.getBrowserText(), generativeInputNode); 
 				mapMultiEntityNode.put(individualTwo.getBrowserText(), generativeInputNode); 				
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
 			}	
 			
 			/* -> hasContextNode */
@@ -385,7 +391,7 @@ public class LoaderPrOwlIO {
 				domainMFrag.addContextNode(contextNode); 
 				mapContextNode.put(individualTwo.getBrowserText(), contextNode); 
 				mapMultiEntityNode.put(individualTwo.getBrowserText(), contextNode); 				
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
 			}	
 			
 			/* -> hasOVariable */
@@ -402,13 +408,13 @@ public class LoaderPrOwlIO {
 					//Use the original name... 
 					ovName = ovName;	// If its impossible to split, then no Scope id was found
 				}
-				//System.out.println("> Internal OV name is : " + ovName);				
+				//Debug.println("> Internal OV name is : " + ovName);				
 				// Create instance of OV w/o scope identifier
 				oVariable = new OrdinaryVariable(ovName, mebn.getTypeContainer().getDefaultType(), domainMFrag); 
 				domainMFrag.addOrdinaryVariable(oVariable); 
 				// let's map objects w/ scope identifier included
 				mapOVariable.put(individualTwo.getBrowserText(), oVariable); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
 			}
 			
 			/* -> hasSkolen don't checked! */
@@ -438,7 +444,7 @@ public class LoaderPrOwlIO {
 				throw new IOMebnException(resource.getString("ContextNodeNotExistsInMTheory"), individualOne.getBrowserText()); 
 			}
 			
-			System.out.println("Context Node loaded: " + individualOne.getBrowserText()); 				
+			Debug.println("Context Node loaded: " + individualOne.getBrowserText()); 				
 			
 			/* -> isContextNodeIn  */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isContextNodeIn"); 			
@@ -450,7 +456,7 @@ public class LoaderPrOwlIO {
 				throw new IOMebnException(resource.getString("ContextNodeNotExistsInMFrag"), contextNode.getName() + ", " + domainMFrag.getName()); 
 			}
 			
-			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+			Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
 			
 			/* -> isNodeFrom */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isNodeFrom"); 			
@@ -461,7 +467,7 @@ public class LoaderPrOwlIO {
 				if(domainMFrag.containsNode(contextNode) == false){
 					throw new IOMebnException(resource.getString("NodeNotExistsInMFrag"), contextNode.getName() + ", " + domainMFrag.getName()); 
 				}
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());				
+				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());				
 			}
 			
 			/* -> hasArgument */
@@ -472,7 +478,7 @@ public class LoaderPrOwlIO {
 				argument = new Argument(individualTwo.getBrowserText(), contextNode); 
 				contextNode.addArgument(argument); 
 				mapArgument.put(individualTwo.getBrowserText(), argument); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
 			}
 			
 			/* -> isContextInstanceOf */
@@ -506,7 +512,7 @@ public class LoaderPrOwlIO {
 					throw new IOMebnException(resource.getString("ContextNodeNotExistsInMTheory"), individualTwo.getBrowserText()); 
 				}
 				builtInRV.addContextInstance(contextNode); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
 			}
 			*/
 			
@@ -526,7 +532,7 @@ public class LoaderPrOwlIO {
 					multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
 					contextNode.addInnerTermFromList(multiEntityNode); 
 					multiEntityNode.addInnerTermOfList(contextNode); 
-					System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+					Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
 				}				
 			}
 			else{
@@ -592,7 +598,7 @@ public class LoaderPrOwlIO {
 			
 			mebn.addBuiltInRVList(builtInRV); 
 			mapBuiltInRV.put(individualOne.getBrowserText(), builtInRV); 
-			System.out.println("BuiltInRV loaded: " + individualOne.getBrowserText()); 				
+			Debug.println("BuiltInRV loaded: " + individualOne.getBrowserText()); 				
 			
 			/* -> hasInputInstance */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputInstance"); 
@@ -604,7 +610,7 @@ public class LoaderPrOwlIO {
 					throw new IOMebnException(resource.getString("GenerativeInputNodeNotExistsInMTheory"), individualTwo.getBrowserText()); 
 				}
 				builtInRV.addInputInstance(generativeInputNode); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
 			}
 			
 			/* -> hasContextInstance */
@@ -622,7 +628,9 @@ public class LoaderPrOwlIO {
 		
 		OWLIndividual individualOne;
 		OWLIndividual individualTwo; 	
-		OWLObjectProperty objectProperty; 		
+		OWLObjectProperty objectProperty; 	
+		
+		
 		
 		OWLNamedClass domainResidentNodePr = owlModel.getOWLNamedClass("Domain_Res"); 
 		instances = domainResidentNodePr.getInstances(false); 
@@ -636,7 +644,7 @@ public class LoaderPrOwlIO {
 				throw new IOMebnException(resource.getString("DomainResidentNotExistsInMTheory"), individualOne.getBrowserText() ); 
 			}
 			
-			System.out.println("Domain Resident loaded: " + individualOne.getBrowserText()); 			
+			Debug.println("Domain Resident loaded: " + individualOne.getBrowserText()); 			
 			
 			/* -> isResidentNodeIn  */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isResidentNodeIn"); 			
@@ -648,7 +656,7 @@ public class LoaderPrOwlIO {
 				throw new IOMebnException(resource.getString("DomainResidentNotExistsInDomainMFrag") ); 
 			}
 			mFragOfNode = domainMFrag; 
-			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+			Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
 			
 			/* -> hasArgument */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 
@@ -658,7 +666,7 @@ public class LoaderPrOwlIO {
 				argument = new Argument(individualTwo.getBrowserText(), domainResidentNode); 
 				domainResidentNode.addArgument(argument); 
 				mapArgument.put(individualTwo.getBrowserText(), argument); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
 			}		
 			
 			/* -> hasParent */
@@ -675,7 +683,7 @@ public class LoaderPrOwlIO {
 					mFragOfNode.addEdge(auxEdge); 
 					}
 					catch(Exception e){
-						System.out.println("Erro: arco invalido!!!"); 
+						Debug.println("Erro: arco invalido!!!"); 
 					}
 				}
 				else{
@@ -688,7 +696,7 @@ public class LoaderPrOwlIO {
 						mFragOfNode.addEdge(auxEdge); 
 						}
 						catch(Exception e){
-							System.out.println("Erro: arco invalido!!!"); 
+							Debug.println("Erro: arco invalido!!!"); 
 						}
 					
 					}
@@ -696,7 +704,7 @@ public class LoaderPrOwlIO {
 						throw new IOMebnException(resource.getString("NodeNotFound"), individualTwo.getBrowserText() ); 
 					}
 				}
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
 			}	
 			
 			/* -> hasInputInstance  */
@@ -712,7 +720,7 @@ public class LoaderPrOwlIO {
 				catch(Exception e){
 					e.printStackTrace(); 
 			    }
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
 			}
 			
 			/* -> isInnerTermOf */
@@ -724,7 +732,7 @@ public class LoaderPrOwlIO {
 				multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
 				domainResidentNode.addInnerTermFromList(multiEntityNode); 
 				multiEntityNode.addInnerTermOfList(domainResidentNode); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
 			}				
 
 			/* -> hasPossibleValues */
@@ -775,6 +783,19 @@ public class LoaderPrOwlIO {
 			/* hasProbDist don't checked */
 			
 			OWLObjectProperty hasProbDist = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasProbDist");
+			OWLDatatypeProperty hasDeclaration = owlModel.getOWLDatatypeProperty("hasDeclaration"); 
+			String cpt = null;
+			for (Iterator iter = individualOne.getPropertyValues(hasProbDist).iterator(); iter.hasNext();) {
+				OWLIndividual element = (OWLIndividual) iter.next();
+				try {
+					cpt = (String)element.getPropertyValue(hasDeclaration);
+				} catch (Exception e) {
+					cpt = "";
+				}
+				domainResidentNode.setTableFunction(cpt);
+			}
+			
+			/*
 			OWLNamedClass declarativeDist = owlModel.getOWLNamedClass("DeclarativeDist"); 
 			Collection declarativeDistList = declarativeDist.getInstances(true); 
 			
@@ -786,7 +807,7 @@ public class LoaderPrOwlIO {
 				domainResidentNode.setTableFunction(table); 
 				
 			}
-			
+			*/
 			/* -> hasPossibleValues don't checked */
 			
 			/* 
@@ -820,7 +841,7 @@ public class LoaderPrOwlIO {
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
 			
 			individualOne = (OWLIndividual)it.next();
-			System.out.println("  - Input Node loaded: " + individualOne.getBrowserText()); 			
+			Debug.println("  - Input Node loaded: " + individualOne.getBrowserText()); 			
 			generativeInputNode = mapGenerativeInputNode.get(individualOne.getBrowserText()); 
 			if (generativeInputNode == null){
 				throw new IOMebnException(resource.getString("GenerativeInputNodeNotExistsInMTheory"), individualOne.getBrowserText() ); 				
@@ -845,13 +866,13 @@ public class LoaderPrOwlIO {
 					catch(Exception e){
 						e.printStackTrace(); 
 					}
-					System.out.println("   - isInputInstanceOf " + domainResidentNode.getName()); 
+					Debug.println("   - isInputInstanceOf " + domainResidentNode.getName()); 
 				}
 				else{
 					if (mapBuiltInRV.containsKey(individualTwo.getBrowserText())){
 						builtInRV = mapBuiltInRV.get(individualTwo.getBrowserText()); 
 						generativeInputNode.setInputInstanceOf(builtInRV); 
-						System.out.println("   - isInputInstanceOf " + builtInRV.getName()); 
+						Debug.println("   - isInputInstanceOf " + builtInRV.getName()); 
 					}				
 				}
 			}
@@ -864,7 +885,7 @@ public class LoaderPrOwlIO {
 				argument = new Argument(individualTwo.getBrowserText(), generativeInputNode); 
 				generativeInputNode.addArgument(argument); 
 				mapArgument.put(individualTwo.getBrowserText(), argument); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
 			}		
 			
 			/* isParentOf */
@@ -877,7 +898,7 @@ public class LoaderPrOwlIO {
 					throw new IOMebnException(resource.getString("DomainMFragNotExistsInMTheory"),  individualTwo.getBrowserText()); 
 				}
 				generativeInputNode.addResidentNodeChild(domainResidentNode); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
 			}			
 			
 			/* -> isInnerTermOf */
@@ -889,7 +910,7 @@ public class LoaderPrOwlIO {
 				multiEntityNode = mapMultiEntityNode.get(individualTwo.getBrowserText()); 
 				generativeInputNode.addInnerTermFromList(multiEntityNode); 
 				multiEntityNode.addInnerTermOfList(generativeInputNode); 
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
 			}	
 			
 			/* hasProbDist don't checked */
@@ -914,7 +935,7 @@ public class LoaderPrOwlIO {
 			if (oVariable == null){
 				throw new IOMebnException(resource.getString("OVariableNotExistsInMTheory"),  individualOne.getBrowserText()); 
 			}
-			System.out.println("Ordinary Variable loaded: " + individualOne.getBrowserText()); 				
+			Debug.println("Ordinary Variable loaded: " + individualOne.getBrowserText()); 				
 			
 			/* -> isOVariableIn  */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isOVariableIn"); 			
@@ -925,7 +946,7 @@ public class LoaderPrOwlIO {
 			if(domainMFrag != oVariable.getMFrag()){
 				throw new IOMebnException(resource.getString("isOVariableInError"),  individualOne.getBrowserText()); 
 			}
-			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+			Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
 			
 			/* -> isSubsBy */
 			
@@ -970,7 +991,7 @@ public class LoaderPrOwlIO {
 				throw new IOMebnException(resource.getString("ArgumentNotFound"),  individualOne.getBrowserText()); 
 			}
 			
-			System.out.println("-> ArgRelationship loaded: " + individualOne.getBrowserText()); 
+			Debug.println("-> ArgRelationship loaded: " + individualOne.getBrowserText()); 
 			
 			/* -> hasArgTerm  */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgTerm"); 			
@@ -1015,7 +1036,7 @@ public class LoaderPrOwlIO {
 						/* TODO Tratamento para Entity */
 					}
 				}
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
 				
 			}
 			
@@ -1028,7 +1049,7 @@ public class LoaderPrOwlIO {
 			if (argument.getMultiEntityNode() != multiEntityNode){
 				throw new IOMebnException(resource.getString("isArgumentOfError"),  individualTwo.getBrowserText()); 				   
 			}
-			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());					
+			Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());					
 		}
 				
 	}
@@ -1051,7 +1072,7 @@ public class LoaderPrOwlIO {
 			if (argument == null){
 				throw new IOMebnException(resource.getString("ArgumentNotFound"),  individualOne.getBrowserText()); 
 			}
-			System.out.println("SimpleArgRelationship loaded: " + individualOne.getBrowserText()); 
+			Debug.println("SimpleArgRelationship loaded: " + individualOne.getBrowserText()); 
 			
 			/* -> hasArgTerm  */
 			
@@ -1072,7 +1093,7 @@ public class LoaderPrOwlIO {
 				catch(Exception e){
 					throw new IOMebnException(resource.getString("ArgumentTermError"),  individualTwo.getBrowserText()); 	
 				}
-				System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
+				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());			
 			}
 			
 			/* -> hasArgNumber */
@@ -1110,15 +1131,15 @@ public class LoaderPrOwlIO {
 //				throw new IOMebnException(resource.getString("isArgumentOfError"),  individualTwo.getBrowserText()); 				   
 //			}
 //			
-//			System.out.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());					
+//			Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText());					
 		}		
 	}
 	
 	/*
 	 * Este mecanismo complexo eh necessario para que os argumentos sejam 
 	 * inseridos no noh residente na mesma ordem em que foram salvos, permitindo
-	 * manter a ligação com os respectivos argumentos dos nos inputs instancias 
-	 * destes... Eh ineficiente... merece uma atencao para otimização posterior.
+	 * manter a ligaï¿½ï¿½o com os respectivos argumentos dos nos inputs instancias 
+	 * destes... Eh ineficiente... merece uma atencao para otimizaï¿½ï¿½o posterior.
 	 * (ps.: Funciona!) 
 	 */
 	private void ajustArgumentOfNodes(){
@@ -1168,7 +1189,7 @@ public class LoaderPrOwlIO {
 						e.printStackTrace(); 
 					}
 					catch(Exception e){
-						System.out.println("Error: Arguemt " + argument.getName() 
+						Debug.println("Error: Arguemt " + argument.getName() 
 								+ " do input " + input.getName() + " don't setted..."); 
 						//TODO... problens when the arguments of the resident node
 						//aren't set... 
@@ -1218,7 +1239,7 @@ public class LoaderPrOwlIO {
 		
 		nodeFormulaRoot = new NodeFormulaTree("formula", enumType.FORMULA, 	enumSubType.NOTHING, null);  
     	
-		System.out.println("Entrou no build " +  contextNode.getName()); 
+		Debug.println("Entrou no build " +  contextNode.getName()); 
 		
 		/* 
 		 * a raiz sera setada como o builtIn do qual o contextnode ï¿½ instancia. 
@@ -1306,7 +1327,7 @@ public class LoaderPrOwlIO {
 		    		}
 		    		else{
 						new InternalErrorDialog(); 
-						System.out.println("Erro: " + LoaderPrOwlIO.class + " " + 1295); 
+						Debug.println("Erro: " + LoaderPrOwlIO.class + " " + 1295); 
 		    		}
 		    	}
 		    	
@@ -1329,9 +1350,9 @@ public class LoaderPrOwlIO {
 	
 	private void checkMTheory(){
 		
-		System.out.println("\n\n\n\n-------   Test Begin --------"); 
+		Debug.println("\n\n\n\n-------   Test Begin --------"); 
 		
-		System.out.println("-> MTheory: " + mebn.getName());
+		Debug.println("-> MTheory: " + mebn.getName());
 		
 		List<DomainMFrag> mFragList = mebn.getDomainMFragList(); 
 		
@@ -1341,23 +1362,23 @@ public class LoaderPrOwlIO {
 			
 			desvio++; 
 			
-			System.out.println(printSpace(desvio,3) + "->MFrag: " + mFrag.getName());
+			Debug.println(printSpace(desvio,3) + "->MFrag: " + mFrag.getName());
 			
 			List<ContextNode> contextNodeList = mFrag.getContextNodeList(); 
 			
 			for(ContextNode contextNode: contextNodeList){
 				
 				desvio++; 
-				System.out.println(printSpace(desvio,3) + "-> ContextNode: " + contextNode.getName());
+				Debug.println(printSpace(desvio,3) + "-> ContextNode: " + contextNode.getName());
 				
 				for(Argument argument: contextNode.getArgumentList()){
 					desvio++; 
-					System.out.println(printSpace(desvio,3) + "-> Argument: " + argument.getName());
+					Debug.println(printSpace(desvio,3) + "-> Argument: " + argument.getName());
 					{
 					   desvio++; 
-						System.out.println(printSpace(desvio,3) + "- IsSimpleArg: " + argument.isSimpleArgRelationship());
+						Debug.println(printSpace(desvio,3) + "- IsSimpleArg: " + argument.isSimpleArgRelationship());
 					    if(!argument.isSimpleArgRelationship()){
-					    	System.out.println(printSpace(desvio,3) + "- ArgTerm: " + argument.getArgumentTerm().getName() );
+					    	Debug.println(printSpace(desvio,3) + "- ArgTerm: " + argument.getArgumentTerm().getName() );
 					    }
 					   desvio--; 
 					}
@@ -1370,7 +1391,7 @@ public class LoaderPrOwlIO {
 			desvio--; 
 		}
 		
-		System.out.println("-------   Test End --------\n\n\n\n"); 
+		Debug.println("-------   Test End --------\n\n\n\n"); 
 				
 	}
 
@@ -1390,7 +1411,9 @@ public class LoaderPrOwlIO {
 		
 		return stringReturn; 
 	}
-
+	
+	
+	
 	/**
 	 * @return Returns the ordinaryVarScopeSeparator.
 	 */
@@ -1404,5 +1427,8 @@ public class LoaderPrOwlIO {
 	public void setOrdinaryVarScopeSeparator(String ordinaryVarScopeSeparator) {
 		this.ordinaryVarScopeSeparator = ordinaryVarScopeSeparator;
 	}
+	
+	
+	
 	
 }

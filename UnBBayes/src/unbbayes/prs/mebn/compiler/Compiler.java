@@ -651,6 +651,10 @@ public class Compiler implements AbstractCompiler {
 			return true; // lowercase
 		if ((c >= 'A') && (c <= 'Z'))
 			return true; // uppercase
+		if (c == '_') {
+			return true; // underscore
+		}
+		
 		return false;
 	}
 

@@ -28,6 +28,7 @@ import unbbayes.prs.mebn.entity.BooleanStatesEntity;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.util.Debug;
 
 import com.hp.hpl.jena.util.FileUtils;
 
@@ -96,19 +97,21 @@ public class SaverPrOwlIO {
 	 */
 	
 	public void saveMebn(File file, MultiEntityBayesianNetwork _mebn) throws IOException, IOMebnException{
-		
+		Debug.setDebug(true);
 	    mebn = _mebn; 
 		owlModel = ProtegeOWL.createJenaOWLModel();
 		
+		
+		
 		loadPrOwlModel(owlModel); 
-		System.out.println("-> Model pr-owl load sucess ");	
+		Debug.println("-> Model pr-owl load sucess ");	
 
 		/* Definitions */
 	
 		loadMetaEntities();
 		
 		/* 
-		 * Os estados categoricos estao sendo salvos a partir do nó residente
+		 * Os estados categoricos estao sendo salvos a partir do nï¿½ residente
 		 * que os cria (isto esta sendo necessario porque o possivel estado esta 
 		 * sendo salco com o nome modificado, de forma a ser precedido pelo nome
 		 * do noh residente do qual ele eh um possivel estado).  
@@ -120,18 +123,18 @@ public class SaverPrOwlIO {
 		loadBooleanRVStates(); 
 		loadBuiltInRV();  
 		
-		System.out.println("-> Definitions load sucess ");
+		Debug.println("-> Definitions load sucess ");
 		
 		/* MTheory */
 		
 		loadMTheory(); 
-		System.out.println("-> MTheory load sucess ");
+		Debug.println("-> MTheory load sucess ");
 		loadDomainResidentNode(); 
-		System.out.println("-> Domain Resident Nodes load sucess ");		
+		Debug.println("-> Domain Resident Nodes load sucess ");		
 		loadContextNode(); 
-		System.out.println("-> Context Node load sucess ");		
+		Debug.println("-> Context Node load sucess ");		
 		loadGenerativeInputNode(); 
-		System.out.println("-> Generative Input Node load sucess ");		
+		Debug.println("-> Generative Input Node load sucess ");		
 		
 		clearAuxiliaryLists(); 
 		
@@ -140,12 +143,12 @@ public class SaverPrOwlIO {
 		Collection<String> errors = new ArrayList();
 		owlModel.save(file.toURI(), FileUtils.langXMLAbbrev, errors);
 		
-		System.out.println("File saved with " + errors.size() + " errors.");
+		Debug.println("File saved with " + errors.size() + " errors.");
 		for(String error: errors){
-			System.out.println(""); 
+			Debug.println(""); 
 		}
-		System.out.println("\n"); 
-		
+		Debug.println("\n"); 
+		Debug.setDebug(false);
 	}	
 	
 	private void loadPrOwlModel(JenaOWLModel owlModel)throws IOException, IOMebnException{
@@ -298,7 +301,7 @@ public class SaverPrOwlIO {
 		Collection instances = booleanRVStates.getInstances(false); 
 		
 		/*
-		 * É assumido que o arquivo PR-OWL contem os tipos booleanos (todos e apenas estes)
+		 * ï¿½ assumido que o arquivo PR-OWL contem os tipos booleanos (todos e apenas estes)
 		 * - true
 		 * - false
 		 * - absurde
@@ -414,7 +417,7 @@ public class SaverPrOwlIO {
 			for(DomainResidentNode residentNode: domainResidentNodeList){
 				OWLNamedClass domainResClass = owlModel.getOWLNamedClass("Domain_Res"); 
 				
-				System.out.println("Nome = " + residentNode.getName());	
+				Debug.println("Nome = " + residentNode.getName());	
 				
 				
 				OWLIndividual domainResIndividual = domainResClass.createOWLIndividual(residentNode.getName());
@@ -431,6 +434,8 @@ public class SaverPrOwlIO {
 			OWLObjectProperty hasInputNodeProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputNode"); 	
 			List<GenerativeInputNode> generativeInputNodeList = domainMFrag.getGenerativeInputNodeList(); 
 			for(GenerativeInputNode inputNode: generativeInputNodeList){
+				Debug.println("input node name = " + inputNode.getName());	
+				
 				OWLNamedClass generativeInputClass = owlModel.getOWLNamedClass("Generative_input"); 
 				OWLIndividual generativeInputIndividual = generativeInputClass.createOWLIndividual(inputNode.getName());
 				domainMFragIndividual.addPropertyValue(hasInputNodeProperty, generativeInputIndividual); 		
@@ -488,12 +493,12 @@ public class SaverPrOwlIO {
     }
 	
     private void loadDomainResidentNode(){
-
+    	Debug.println("loadDomainResidentNode");
 		for (DomainResidentNode residentNode: residentNodeListGeral){  
 			OWLIndividual domainResIndividual = domainResMap.get(residentNode);	
 			
 			/* has Argument */
-			
+			Debug.println("Verifying arguments");
 			List<OrdinaryVariable> ordVariableList = residentNode.getOrdinaryVariableList(); 
 	    	int argumentNumber = 1; 
 			for(OrdinaryVariable argument: ordVariableList){
@@ -502,7 +507,7 @@ public class SaverPrOwlIO {
 			}			
 			
 			/* has Parent */
-			
+			Debug.println("Verifying parents");
 			OWLObjectProperty hasParentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasParent"); 				
 			
 			List<DomainResidentNode> residentNodeFatherList = residentNode.getResidentNodeFatherList(); 	        
@@ -518,11 +523,13 @@ public class SaverPrOwlIO {
 			}		
 			
 			/* has possible values */
+			Debug.println("Verifying possible values");
 			loadPossibleValues(domainResIndividual, residentNode); 
 			
 			/* has Context Instance */
 			
 			/* has Inner Term */
+			Debug.println("Verifying inner terms");
 			OWLObjectProperty hasInnerTermProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInnerTerm"); 	
 			List<MultiEntityNode> innerTermList = residentNode.getInnerTermOfList(); 
 			for(MultiEntityNode innerTerm: innerTermList){
@@ -531,16 +538,22 @@ public class SaverPrOwlIO {
 			}		        
 			
 			/* has Input Instance */
+			Debug.println("Verifying input instances");
 			OWLObjectProperty hasInputInstanceProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputInstance"); 	
 			List<GenerativeInputNode> inputInstanceList = residentNode.getInputInstanceFromList(); 
 			for(GenerativeInputNode inputInstance: inputInstanceList){
+				Debug.println("Read input: " + inputInstance.getName());
 				OWLIndividual inputInstanceIndividual = generativeInputMap.get(inputInstance);
-				domainResIndividual.addPropertyValue(hasInputInstanceProperty, inputInstanceIndividual);
+				if (inputInstanceIndividual != null) {
+					domainResIndividual.addPropertyValue(hasInputInstanceProperty, inputInstanceIndividual);
+				}
+				
 			}	
 			
 			saveHasPossibleValueProperty(domainResIndividual, residentNode); 
 			
 			/* hasProbDist */
+			Debug.println("Verifying probability distros");
 			OWLObjectProperty hasProbDist = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasProbDist");
 			OWLNamedClass declarativeDist = owlModel.getOWLNamedClass("DeclarativeDist"); 
 			OWLIndividual declarativeDistThisNode = declarativeDist.createOWLIndividual(residentNode.getName() + "_table"); 
@@ -661,7 +674,7 @@ public class SaverPrOwlIO {
     	
 		for (ContextNode contextNode: contextListGeral){
 			
-			System.out.println("Saving Context: " + contextNode.getName()); 
+			Debug.println("Saving Context: " + contextNode.getName()); 
 			
 			OWLIndividual contextNodeIndividual = contextMap.get(contextNode);	
 			
