@@ -1090,7 +1090,7 @@ public class LoaderPrOwlIO {
 			if (argument == null){
 				throw new IOMebnException(resource.getString("ArgumentNotFound"),  individualOne.getBrowserText()); 
 			}
-			System.println("SimpleArgRelationship loaded: " + individualOne.getBrowserText()); 
+			Debug.println("SimpleArgRelationship loaded: " + individualOne.getBrowserText()); 
 			
 			/* -> hasArgTerm  */
 			
@@ -1156,8 +1156,8 @@ public class LoaderPrOwlIO {
 	/*
 	 * Este mecanismo complexo eh necessario para que os argumentos sejam 
 	 * inseridos no noh residente na mesma ordem em que foram salvos, permitindo
-	 * manter a ligação com os respectivos argumentos dos nos inputs instancias 
-	 * destes... Eh ineficiente... merece uma atencao para otimização posterior.
+	 * manter a ligaï¿½ï¿½o com os respectivos argumentos dos nos inputs instancias 
+	 * destes... Eh ineficiente... merece uma atencao para otimizaï¿½ï¿½o posterior.
 	 * (ps.: Funciona!) 
 	 */
 	private void ajustArgumentOfNodes(){
