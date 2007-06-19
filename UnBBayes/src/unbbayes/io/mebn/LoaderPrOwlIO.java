@@ -151,11 +151,11 @@ public class LoaderPrOwlIO {
 		mebn = this.loadMTheoryClass(); 
 		
 		/*------------------- Entities -------------------*/
-		
+
+		loadObjectEntity(); 
 		loadMetaEntitiesClasses(); 
 		//loadBooleanRVStates(); 
 		loadCategoricalRVStates(); 
-		loadObjectEntity(); 
 		
 		/*-------------------MTheory elements------------*/
 		loadDomainMFrag(); 
@@ -173,12 +173,6 @@ public class LoaderPrOwlIO {
 		for(ContextNode context: this.listContextNode){
 			context.setFormulaTree(buildFormulaTree(context)); 
 		}
-		
-		
-		
-		//checkMTheory(); 
-		
-		
 		
 		Debug.println("[DEBUG]" + LoaderPrOwlIO.class + " - " + "Processo de load concluido"); 
 		
@@ -252,6 +246,9 @@ public class LoaderPrOwlIO {
 		return mebn; 
 	}
 	
+	/**
+	 * Load the MetaEntities for types of the mebn structure. 
+	 */
 	private void loadMetaEntitiesClasses(){
 		
 		OWLNamedClass metaEntityClass; 
@@ -304,7 +301,11 @@ public class LoaderPrOwlIO {
 	}
 	
 	/**
-	 * load the Object Entities of the file
+	 * Load the Object Entities of the file. 
+	 * 
+	 * Note: the type of the object entity don't is read of the file pr-owl... 
+	 * it is create automaticaly when the object entity is created (default name for
+	 * a type of a object entity). 
 	 */
 	private void loadObjectEntity(){
     
@@ -676,11 +677,10 @@ public class LoaderPrOwlIO {
 				individualTwo = (OWLIndividual) itIn.next();
 				if (mapDomainResidentNode.containsKey(individualTwo.getBrowserText())){
 					DomainResidentNode aux = mapDomainResidentNode.get(individualTwo.getBrowserText()); 
-					aux.addResidentNodeChild(domainResidentNode); 
 					
 					Edge auxEdge = new Edge(aux, domainResidentNode);
 					try{
-					mFragOfNode.addEdge(auxEdge); 
+					    mFragOfNode.addEdge(auxEdge); 
 					}
 					catch(Exception e){
 						Debug.println("Erro: arco invalido!!!"); 
@@ -1156,8 +1156,8 @@ public class LoaderPrOwlIO {
 	/*
 	 * Este mecanismo complexo eh necessario para que os argumentos sejam 
 	 * inseridos no noh residente na mesma ordem em que foram salvos, permitindo
-	 * manter a ligaï¿½ï¿½o com os respectivos argumentos dos nos inputs instancias 
-	 * destes... Eh ineficiente... merece uma atencao para otimizaï¿½ï¿½o posterior.
+	 * manter a ligação com os respectivos argumentos dos nos inputs instancias 
+	 * destes... Eh ineficiente... merece uma atencao para otimização posterior.
 	 * (ps.: Funciona!) 
 	 */
 	private void ajustArgumentOfNodes(){
