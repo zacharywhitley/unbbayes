@@ -135,13 +135,13 @@ public class ArgumentEditionPane extends JPanel{
 	    jtbInformation.setFloatable(false); 
 
 	    jtbOptions = new JToolBar(); 
-	    jtbOptions.setLayout(new GridLayout(0, 1)); 
+	    jtbOptions.setLayout(new GridLayout(0, 2)); 
 	     
-	    btnNew = new JButton("+"); 
+	    btnNew = new JButton(iconController.getMoreIcon()); 
 	    btnNew.setToolTipText(resource.getString("newArgumentToolTip")); 
-	    btnDel = new JButton("-"); 
+	    btnDel = new JButton(iconController.getLessIcon()); 
 	    btnDel.setToolTipText(resource.getString("delArgumentToolTip")); 	    
-	    //jtbOptions.add(btnNew);
+	    jtbOptions.add(btnNew);
 	    jtbOptions.add(btnDel); 
 	    jtbOptions.setFloatable(false);
 	    

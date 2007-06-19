@@ -15,8 +15,14 @@ public class DomainResidentNode extends ResidentNode {
 	
 	private List<GenerativeInputNode> inputNodeFatherList;
 	 
+	/**
+	 * List of fathers of this node
+	 */
 	private List<DomainResidentNode> residentNodeFatherList;
 	 
+	/**
+	 * List of children of this node
+	 */
 	private List<DomainResidentNode> residentNodeChildList;
 	 
 	private DomainMFrag mFrag;
@@ -153,19 +159,24 @@ public class DomainResidentNode extends ResidentNode {
 	}	
 	
 	/*------------------------------------------------------------*/
-	
-	public void removeResidentNodeFather(DomainResidentNode node){
-		residentNodeFatherList.remove(node);
-		//node.removeResidentNodeChildList(this); 
+	/**
+	 * Don't use this method! Use removeResidentNodeChildList
+	 */
+	private void removeResidentNodeFather(DomainResidentNode node){
+		residentNodeFatherList.remove(node); 
 	}
 	
 	public void removeInputNodeFatherList(GenerativeInputNode node){
 		inputNodeFatherList.remove(node); 
-		//node.removeResidentNodeChild(this); 
 	}	
 	
+	/**
+	 * Remove a node of the list of childs of this node. 
+	 * 
+	 * @param node
+	 */
 	public void removeResidentNodeChildList(DomainResidentNode node){
-		residentNodeChildList.remove(node); 
+		residentNodeChildList.remove(node);
 		node.removeResidentNodeFather(this); 
 	}
 	
@@ -198,7 +209,7 @@ public class DomainResidentNode extends ResidentNode {
 	}
 	
 	/**
-	 * update the label of this node. 
+	 * Update the label of this node. 
 	 * The label is: 
 	 *    LABEL := "name" "(" LIST_ARGS ")"
 	 *    LIST_ARGS:= NAME_ARG "," LIST_ARGS | VAZIO 
@@ -235,27 +246,36 @@ public class DomainResidentNode extends ResidentNode {
     }
 	
     /**
-     * retira todas as referencias exteriores a este nodo para que este
-     * possa ser removido corretamente.
+     * Remove the extern references to this node.
+     * 
+     *  - Fathers nodes (and edges) 
+     *  - Child nodes (and edges)
+     *  
+     *  Call the method delete of the super class; 
      */
     
 	public void delete(){
 		
-		while(inputInstanceFromList.isEmpty() != true){
+		super.delete(); 
+		
+		while(!inputInstanceFromList.isEmpty()){
 			inputInstanceFromList.remove(0).setInputInstanceOf(); 
 		}
 		
-		//não utilize o for para evitar acesso concorrente a lista.... 
-		while(inputNodeFatherList.isEmpty() != true){
+		while(!inputNodeFatherList.isEmpty()){
 			inputNodeFatherList.remove(0).removeResidentNodeChild(this); 
 		}
 		
-		while(residentNodeFatherList.isEmpty() != true){
-			residentNodeFatherList.remove(0).removeResidentNodeChildList(this); 
+		while(!residentNodeFatherList.isEmpty()){
+			DomainResidentNode father = residentNodeFatherList.get(0); 
+			father.removeResidentNodeChildList(this); 
+			mFrag.removeEdgeByNodes(father, this);
 		}
 		
-		while(residentNodeChildList.isEmpty() != true){
-			residentNodeChildList.remove(0).removeResidentNodeFather(this); 
+		while(!residentNodeChildList.isEmpty()){
+			DomainResidentNode child = residentNodeChildList.get(0); 
+			this.removeResidentNodeChildList(child);
+			mFrag.removeEdgeByNodes(this, child); 
 		}
 		
 		mFrag.removeDomainResidentNode(this); 

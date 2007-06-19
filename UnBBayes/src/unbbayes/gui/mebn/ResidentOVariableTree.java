@@ -44,6 +44,13 @@ public class ResidentOVariableTree extends JTree{
 	
 	private final MEBNController mebnController; 
 	
+	/**
+	 * Tree with the ordinary variables arguments of a resident node. 
+	 * Used for ediction of this list. 
+	 * 
+	 * @param controller
+	 * @param resident
+	 */
 	public ResidentOVariableTree(final MEBNController controller, ResidentNode resident) {
 		
 		this.mebnController = controller; 

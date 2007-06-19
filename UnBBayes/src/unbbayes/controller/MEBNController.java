@@ -377,6 +377,10 @@ public class MEBNController {
 		
 		if (node instanceof GenerativeInputNode){
 			((GenerativeInputNode)node).updateLabel(); 
+		}else{
+			if(node instanceof ContextNode){
+				((ContextNode)node).updateLabel(); 
+			}
 		}
 		
 	}
@@ -491,6 +495,17 @@ public class MEBNController {
 			
 		}	
 	    mebnEditionPane.showTitleGraph(multiEntityBayesianNetwork.getCurrentMFrag().getName());  
+	}
+	
+	public void unselectNodes(){
+		if(multiEntityBayesianNetwork.getCurrentMFrag() != null){
+	       mebnEditionPane.setMFragBarActive(); 
+	       mebnEditionPane.setTxtNameMFrag(multiEntityBayesianNetwork.getCurrentMFrag().getName()); 	    
+	       mebnEditionPane.setMTheoryTreeActive(); 
+		}
+		else{
+			//The program still is in the MTheory screen edition
+		}
 	}
 	
 	public void updateFormulaActiveContextNode(){

@@ -19,7 +19,7 @@ import unbbayes.prs.mebn.DomainResidentNode;
 public class ResidentNodePane extends JPanel{
 
 	private PossibleValuesEditionPane possibleValuesEditPane; 
-	private TableViewPane tableViewPane; 
+	private TablePreviewPane tableViewPane; 
 	private JSplitPane splitStateTable; 
 	
 	public ResidentNodePane(){
@@ -32,7 +32,7 @@ public class ResidentNodePane extends JPanel{
 		this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel("Resident Node")); 
 		
 		possibleValuesEditPane = new PossibleValuesEditionPane(_controller, _residentNode); 
-		tableViewPane = new TableViewPane(_controller, _residentNode); 
+		tableViewPane = new TablePreviewPane(_controller, _residentNode); 
 		
 		GridBagLayout gridbag = new GridBagLayout(); 
 		GridBagConstraints constraints = new GridBagConstraints(); 

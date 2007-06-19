@@ -46,14 +46,12 @@ import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.exception.EntityNotPossibleValueOfNodeException;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.exception.NodeNotPresentInMTheoryException;
-import unbbayes.prs.mebn.table.TableParser;
 import unbbayes.prs.mebn.table.exception.InvalidProbabilityFunctionOperandException;
 
 /**
- * Tabela de distribui��o de probabilidade de um nodo Resident.
- * Contem um editor de texto e um menu com op��es para facilitar a 
- * edi��o (bot�es de auto texto e bot�es para abrir lista de 
- * escolhas de variaveis da ontologia. 
+ * Table of probabilistic distribution of a resident node. 
+ * Contains one text editor and a options menu with buttons for
+ * auto-text insertion.
  * 
  * @author Laecio Lima dos Santos
  * @version 1.0 (14/12/06)
@@ -66,7 +64,7 @@ public class TableEditionPane extends JPanel{
 	
 	private StyledDocument doc; 
 	
-	/* posicao onde se enconra o prompt */
+	/* position of the prompt */
 	private int positionCaret = 0; 
 	
 	/* buttons */
@@ -113,7 +111,7 @@ public class TableEditionPane extends JPanel{
 	
 	private MEBNController mebnController; 
 	
-	private TableEdition tableEdition; 
+	private TableEditionUtils tableEdition; 
 	
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
@@ -137,7 +135,7 @@ public class TableEditionPane extends JPanel{
 		
 		doc = txtPane.getStyledDocument();
 		toolKit = new ToolKitForTableEdition(doc); 
-		tableEdition = new TableEdition(residentNode, toolKit); 	
+		tableEdition = new TableEditionUtils(residentNode, toolKit); 	
 		this.buildTxtEdition(residentNode.getTableFunction(), doc); 
 
 		buildJpButtons(); 
@@ -223,7 +221,6 @@ public class TableEditionPane extends JPanel{
 		btnElseClause = new JButton("else"); 
 		btnElseClause.setFont(font);
 		btnElseClause.setToolTipText(resource.getString("elseTip")); 
-		
 		
 		btnEqual= new JButton("=="); 
 		btnEqual.setFont(font);
@@ -330,7 +327,11 @@ public class TableEditionPane extends JPanel{
 		
 		int i; 
 		
-		/* Lista com os nodos pais */
+		/* 
+		 * List with the fathers of this node: 
+		 * - Resident Nodes
+		 * - Input Nodes 
+		 * */
 		jpFather = new JPanel();
 		jpFather.setBorder(ToolKitForGuiMebn.getBorderForTabPanel(resource.getString("FathersTitle"))); 				
 		
@@ -339,7 +340,7 @@ public class TableEditionPane extends JPanel{
 		inputNodeList = residentNode.getInputNodeFatherList(); 
 		for(GenerativeInputNode inputNode: inputNodeList){
 			Object father = inputNode.getInputInstanceOf();
-			//TODO caso BuiltInRV
+			//TODO BuiltInRV case
 			if (father instanceof ResidentNode){
 				residentNodeAuxList.add((DomainResidentNode)father); 
 			}
@@ -365,7 +366,6 @@ public class TableEditionPane extends JPanel{
 				if ((e.getModifiers() == MouseEvent.BUTTON1_MASK) && (e.getClickCount() == 2)){
 					int selectedIndex = jlFathers.getSelectedIndex(); 
 					insertNode(doc, fatherNodeArray[selectedIndex]); 
-					
 				}
 				else{
 					if ((e.getModifiers() == MouseEvent.BUTTON1_MASK) && (e.getClickCount() == 1)){
@@ -398,8 +398,6 @@ public class TableEditionPane extends JPanel{
 			}
 			
 		});
-		
-		
 		
 		
 		jpFather.setLayout(new GridLayout(2,0)); 
@@ -563,7 +561,7 @@ public class TableEditionPane extends JPanel{
 			doc.insertString(positionCaret, "booleanFunction", toolKit.getDescriptionStyle()); 
 			doc.insertString(positionCaret, " ) ", toolKit.getDefaultStype()); 
 			
-			doc.insertString(positionCaret, " then ", toolKit.getIfStyle());
+			//doc.insertString(positionCaret, " then ", toolKit.getIfStyle());
 			doc.insertString(positionCaret, "[\n", toolKit.getDefaultStype()); 
 			
 			List<Entity> statesList = residentNode.getPossibleValueList(); 
@@ -629,7 +627,7 @@ public class TableEditionPane extends JPanel{
 		try {
 			txtPane.replaceSelection(""); 
 			doc.insertString(positionCaret, "Node", toolKit.getDescriptionStyle()); 
-			doc.insertString(positionCaret, " == ", toolKit.getDefaultStype()); 		
+			doc.insertString(positionCaret, " = ", toolKit.getDefaultStype()); 		
 			doc.insertString(positionCaret, "NodeState", toolKit.getDescriptionStyle()); 
 		
 		} catch (BadLocationException ble) {
@@ -892,6 +890,9 @@ public class TableEditionPane extends JPanel{
 			
 		}
 		
+		/**
+		 * Turn the color of the text
+		 */
 		public void keyPressed(KeyEvent e){
 			if ((e.getKeyCode() == KeyEvent.VK_ENTER) 
 					|| (e.getKeyCode() == KeyEvent.VK_SPACE)){
@@ -972,11 +973,6 @@ public class TableEditionPane extends JPanel{
 					}
 				}/* if*/				
 			} /* else */
-		
-			
 		}
-		
-		
 	}	
-   
 }

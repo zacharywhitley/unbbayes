@@ -710,6 +710,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			if ((selected == null) || (destinationNode == null || !selected.equals(destinationNode)) && (edge == null || !selected.equals(edge))) {
 				unselectAll();
+				controller.unselectAll(); 
 			}
 			break;
 		}

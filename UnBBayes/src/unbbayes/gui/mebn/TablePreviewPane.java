@@ -34,7 +34,7 @@ import unbbayes.prs.mebn.table.exception.InvalidProbabilityFunctionOperandExcept
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  */ 
 
-public class TableViewPane extends JPanel{
+public class TablePreviewPane extends JPanel{
 
 	private DomainResidentNode residentNode; 
 	private JButton btnEditTable; 
@@ -46,11 +46,11 @@ public class TableViewPane extends JPanel{
 	private StyledDocument doc; 
 	private ToolKitForTableEdition toolKit; 
 	
-	private TableEdition tableEdition; 
+	private TableEditionUtils tableEdition; 
 	
 	private MEBNController mebnController; 
 	
-	TableViewPane(MEBNController _controller, DomainResidentNode _residentNode){
+	TablePreviewPane(MEBNController _controller, DomainResidentNode _residentNode){
 		
 		super(); 
 		this.setLayout(new BorderLayout()); 
@@ -150,7 +150,7 @@ public class TableViewPane extends JPanel{
 	private void buildTxtEdition(String textTable, StyledDocument doc){
 
 		if(textTable != null){
-		tableEdition = new TableEdition(residentNode, toolKit); 	
+		tableEdition = new TableEditionUtils(residentNode, toolKit); 	
 		tableEdition.turnTextColor(textTable, positionCaret, doc);
 		}
 	

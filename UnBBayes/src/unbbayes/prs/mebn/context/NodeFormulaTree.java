@@ -3,8 +3,7 @@ package unbbayes.prs.mebn.context;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.prs.mebn.context.enumSubType;
-import unbbayes.prs.mebn.context.enumType;
+import unbbayes.prs.mebn.ResidentNodePointer;
 
 
 /**
@@ -106,8 +105,29 @@ public class NodeFormulaTree{
 		switch(type){
 		
 		case OPERANDO:
-			return name; 
-		
+			switch(subType){
+			
+			case NODE: 
+				ResidentNodePointer pointer = (ResidentNodePointer)nodeVariable;
+				String returnName = name + "(";
+				int numberAguments = pointer.getNumberArguments(); 
+				for(int i = 0; i < numberAguments - 1; i++){
+					if(pointer.getArgument(i) != null){
+					   returnName+= pointer.getArgument(i).getName();
+					}
+					returnName+= ","; 
+				}
+				if(numberAguments > 0){
+					if(pointer.getArgument(numberAguments - 1) != null){		
+					    returnName+= pointer.getArgument(numberAguments - 1).getName(); // without ","
+					}
+				}
+				return returnName + ")"; 
+	
+			default: 
+				return name; 
+			}
+			
 		case SIMPLE_OPERATOR: 
 			
 			if(children.size() == 2){

@@ -16,17 +16,7 @@ import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	
 	private static final long serialVersionUID = 8497908054569004909L;
-	
-	private List<InputNode> inputNodeFatherList;
-	
-	private List<InputNode> inputInstanceFromList;
-	
-	private ProbabilisticTable probabilisticTable;
-	
-	private List<ResidentNode> residentNodeFatherList;
-	
-	private List<ResidentNode> residentNodeChildList;
-	
+
 	private List<OrdinaryVariable> ordinaryVariableList; 
 	
 	private List<ResidentNodePointer> listPointers; 
@@ -75,6 +65,17 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 		}
 	}
 	
+	/**
+	 * Delete the extern references for this node
+	 * 
+	 * - Ordinary Variables
+	 */
+	public void delete(){
+		while(!ordinaryVariableList.isEmpty()){
+			ordinaryVariableList.remove(0).removeIsOVariableOfList(this); 
+		}
+	}
+	
 	public void removeArgument(OrdinaryVariable ov){
 		
 		ordinaryVariableList.remove(ov);
@@ -87,7 +88,6 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 			}
 		}
 	}
-	
 	
 	/**
 	 * 

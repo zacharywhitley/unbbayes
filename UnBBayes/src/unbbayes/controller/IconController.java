@@ -186,7 +186,7 @@ public class IconController implements Serializable {
 	
 	protected ImageIcon eyeIcon; 
 	
-	protected ImageIcon boxXIcon; 
+	protected ImageIcon xIcon; 
 	
 	protected ImageIcon orangeNodeIcon; 
 	
@@ -235,6 +235,8 @@ public class IconController implements Serializable {
 	protected ImageIcon emptyNodeIcon; 	
 	
 	protected ImageIcon downIcon; 	
+	
+	protected ImageIcon upIcon; 
 	
 	protected ImageIcon boxVariablesIcon; 		
 	
@@ -931,13 +933,13 @@ public class IconController implements Serializable {
 		}
 	}
 	
-	public ImageIcon getBoxXIcon() {
-		if (boxXIcon != null) {
-			return boxXIcon;
+	public ImageIcon xIcon() {
+		if (xIcon != null) {
+			return xIcon;
 		} else {
-			boxXIcon = new ImageIcon(getClass().getResource(
-					"/icons/x-box.gif"));
-			return boxXIcon;
+			xIcon = new ImageIcon(getClass().getResource(
+					"/icons/x.png"));
+			return xIcon;
 		}
 	}	
 	
@@ -1188,10 +1190,20 @@ public class IconController implements Serializable {
 			return downIcon;
 		} else {
 			downIcon = new ImageIcon(getClass().getResource(
-					"/icons/down.gif"));
+					"/icons/go-down.png"));
 			return downIcon;
 		}
 	}	
+	
+	public ImageIcon getUpIcon() {
+		if (upIcon != null) {
+			return upIcon;
+		} else {
+			upIcon = new ImageIcon(getClass().getResource(
+					"/icons/go-up.png"));
+			return upIcon;
+		}
+	}
 
 	public ImageIcon getBoxVariablesIcon() {
 		if (boxVariablesIcon != null) {
@@ -1208,7 +1220,7 @@ public class IconController implements Serializable {
 			return booleanIcon;
 		} else {
 			booleanIcon = new ImageIcon(getClass().getResource(
-					"/icons/boolean.gif"));
+					"/icons/boolean.png"));
 			return booleanIcon;
 		}
 	}		

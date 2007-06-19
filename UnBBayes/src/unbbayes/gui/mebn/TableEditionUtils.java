@@ -12,7 +12,12 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.Entity;
 
-public class TableEdition {
+/**
+ * Utilities for set the format of a word.  
+ * 
+ * @author Laecio
+ */
+public class TableEditionUtils {
 	
 	private List<String> fatherList; 
 	private List<String> statesFatherList; 
@@ -22,7 +27,7 @@ public class TableEdition {
 	
 	private DomainResidentNode residentNode; 
 	
-	public TableEdition(DomainResidentNode _residentNode, ToolKitForTableEdition _toolKit){
+	public TableEditionUtils(DomainResidentNode _residentNode, ToolKitForTableEdition _toolKit){
 		
 		residentNode = _residentNode; 
 		toolKit = _toolKit;  
@@ -234,6 +239,11 @@ public class TableEdition {
 		}	
 	}	
 	
+	/**
+	 * Update de lists of fathers, states and arguments of the node. This lists
+	 * are used for verifies if the color os a word is the default color for
+	 * fathers, states or arguments. 
+	 */
 	private void buildAuxiliaryLists(){
 		
 		fatherList = new ArrayList<String>(); 

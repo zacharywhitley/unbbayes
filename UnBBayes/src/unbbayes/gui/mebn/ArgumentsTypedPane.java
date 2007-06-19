@@ -40,7 +40,7 @@ public class ArgumentsTypedPane extends JPanel{
 	 * Notas: o painel é criado baseando-se na estrutura atual do nó residente
 	 * ao qual o ResidentNodePointer aponta. 
 	 * 
-	 * @param _node
+	 * @param _node Node that have this pointer (GenerativeInputNode or ContextNode)
 	 * @param _pointer
 	 * @param _mebnController
 	 */

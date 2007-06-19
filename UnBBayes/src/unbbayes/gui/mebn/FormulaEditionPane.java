@@ -232,7 +232,7 @@ public class FormulaEditionPane extends JPanel {
 
 	public void setArgumentSelectionTab(ResidentNodePointer residentPointer){
 		
-		argsPanel = new ArgumentsTypedPane(null, residentPointer, mebnController); 
+		argsPanel = new ArgumentsTypedPane(contextNode, residentPointer, mebnController); 
 		JScrollPane scroll = new JScrollPane(argsPanel); 
 		jpArgTree.add("ResidentArgsTab", scroll); 
 		cardLayout.show(jpArgTree, "ResidentArgsTab"); 

@@ -827,5 +827,11 @@ public class NetworkController implements KeyListener {
     	}
     }
     
+    public void unselectAll(){
+    	if (multiEntityBayesianNetwork != null){
+    		mebnController.unselectNodes(); 
+    	}    	
+    }
+    
     /****************** END GENERIC METHODS *********************/
 }
