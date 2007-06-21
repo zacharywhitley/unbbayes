@@ -22,6 +22,7 @@ public class PreprocessorParameters {
 	private float sampleSize;
 	private boolean compact;
 	private boolean canceled;
+	private int classIndex = -1;
 
 	public PreprocessorParameters(Component parent, InstanceSet inst,
 			boolean size) {
@@ -63,7 +64,7 @@ public class PreprocessorParameters {
         if ((JOptionPane.showInternalConfirmDialog(parent, panel, "", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)) {
 			int selectedAttribute = attributesComboBox.getSelectedIndex();
 			if (selectedAttribute != 0) {
-				inst.setClassIndex(selectedAttribute - 1);
+				classIndex = selectedAttribute - 1;
 			}
 			sampleSize = Float.parseFloat(sizeField.getText());
 			compact = compactCheckBox.isSelected();
@@ -91,6 +92,13 @@ public class PreprocessorParameters {
 	 */
 	public boolean isCanceled() {
 		return canceled;
+	}
+
+	/**
+	 * @return the classIndex
+	 */
+	public int getClassIndex() {
+		return classIndex;
 	}
 
 }

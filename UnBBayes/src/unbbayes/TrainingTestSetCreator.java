@@ -42,7 +42,7 @@ public class TrainingTestSetCreator {
 		
 		/* Build the test and training instanceSets */
 		float testProportion = (float) 1 / 3;
-		InstanceSet testData = inputData.buildTrainTestSet(testProportion, false);
+		InstanceSet testData = inputData.buildTrainTestSet(testProportion, false, classIndex);
 		InstanceSet trainData = inputData;
 		
 		/* Select all attributes to be saved */

@@ -34,43 +34,35 @@ public class Indexes {
 	 * first: samplingID second: classifierID third: meand and stdDev
 	 */
 	private double[][][] globalError;
-
 	private double[][][] globalErrorTemp;
 
 	/**
 	 * first: samplingID second: classifierID third: meand and stdDev
 	 */
 	private double[][][] sensitivity;
-
 	private double[][][] sensitivityTemp;
 
 	/**
 	 * first: samplingID second: classifierID third: meand and stdDev
 	 */
 	private double[][][] specificity;
-
 	private double[][][] specificityTemp;
 
 	/**
 	 * first: samplingID second: classifierID third: meand and stdDev
 	 */
 	private double[][][] SE;
-
 	private double[][][] SETemp;
 	
-	private String[] samplingName;
-
 	private int numSamplings;
-
 	private int numClassifiers;
-
 	private int numRoundsTotal;
-
 	private int numClasses;
 
 	private Evaluation eval;
 
-	public Indexes(int numSamplings, int numClassifiers, int numRoundsTotal)
+	public Indexes(InstanceSet instanceSet, int numSamplings,
+			int numClassifiers, int numRoundsTotal)
 	throws Exception {
 		this.numSamplings = numSamplings;
 		this.numClassifiers = numClassifiers;
@@ -92,7 +84,7 @@ public class Indexes {
 	}
 
 	public void insert(int samplingID, int classfID, int pos, int actualClass,
-			int predictedClass, int weight) {
+			int predictedClass, float weight) {
 		confusionMatrix[samplingID]
 			           [classfID]
 			           [actualClass]

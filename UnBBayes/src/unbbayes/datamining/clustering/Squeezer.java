@@ -74,7 +74,7 @@ public class Squeezer extends Clustering {
 				max = numInstances;
 			}
 			
-			s = averageSimilarity((double) max / numInstances) + 2;
+			s = averageSimilarity((double) max / numInstances) + 1.5;
 		}
 		
 		/* Initialize the assignment matrix */

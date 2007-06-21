@@ -45,22 +45,25 @@ public class Samplings {
 	private int clusterBasedSmote = 4;
 	private int cPlusClear = 5;
 	private int cMinusClear = 6;
+	private int baseline = 7;
 	/****************************************/
 	
 	private String[] samplingStrategiesNames;
+
+	private TestsetUtils testsetUtils;
 
 
 	public Samplings(InstanceSet instanceSet, float[] originalDist,
 			TestsetUtils testsetUtils)
 	throws Exception {
 		this.originalDist = originalDist;
+		this.testsetUtils = testsetUtils;
 		smote = testsetUtils.getSmote();
 		simplesampling = testsetUtils.isSimplesampling();
 		positiveClass = testsetUtils.getPositiveClass();
 		negativeClass = testsetUtils.getNegativeClass();
 
 		smote.setInstanceSet(instanceSet);
-		smote.buildNN(5, positiveClass);
 		
 		cClear = new Cclear(instanceSet, testsetUtils);
 
@@ -69,7 +72,6 @@ public class Samplings {
 		cbs.setOptionDistanceFunction((byte) 1);
 		cbs.setOptionFixedGap(true);
 		cbs.setOptionNominal((byte) 0);
-		cbs.clusterizeByClass();
 
 		subscribeSamplingStrategies();
 		samplingID = 0;
@@ -79,11 +81,12 @@ public class Samplings {
 		int[] samplingOrder = {
 //				original,
 //				oversamplingOnly,
-//				smoteOnly,
+				smoteOnly,
 //				clusterBasedOversampling,
 //				clusterBasedSmote,
-				cPlusClear,
+//				cPlusClear,
 //				cMinusClear,
+//				baseline,
 		};
 		this.samplingOrder = samplingOrder;
 		
@@ -96,6 +99,7 @@ public class Samplings {
 				"Cluster Based Smote",
 				"C+clear",
 				"C-clear",
+				"Baseline",
 		};
 		
 		this.samplingStrategiesNames = samplingStrategiesNames;
@@ -140,8 +144,29 @@ public class Samplings {
 			
 		/* Smote */
 		if (querySampling(smoteOnly)) {
+//			buildNN();
 			smote.setInstanceSet(instanceSet);
-			smote.run(instanceSet, positiveClass, proportion);
+//			smote.run(instanceSet, positiveClass, proportion);
+			
+//			smote.buildNN(5, 1);
+//			smote.run(instanceSet, 1, 1.3);
+			
+//			smote.buildNN(5, 3);
+//			smote.run(instanceSet, 3, 5);
+//			
+//			smote.buildNN(5, 4);
+//			smote.run(instanceSet, 4, 3);
+			
+//			Sampling.undersampling(instanceSet, 0.2, 0, true);
+			
+//			testsetUtils.setNegativeClass(0);
+//			cbs.runUndersampling(instanceSet, 0.2, false);
+			
+//			Sampling.undersampling(instanceSet, 0.8, 1, true);
+			
+//			Sampling.undersampling(instanceSet, 0.9, 2, true);
+			
+			
 			samplingType = 1;
 		} else
 		
@@ -157,6 +182,7 @@ public class Samplings {
 		
 		/* Cluster-Based Smote */
 		if (querySampling(clusterBasedSmote)) {
+			buildNN();
 			boolean overMajority = true;
 			boolean cbo = false;
 			cbs.run(instanceSet, overMajority, cbo, ratio);
@@ -166,6 +192,7 @@ public class Samplings {
 		
 		/* C+clear */
 		if (querySampling(cPlusClear)) {
+			buildNN();
 			boolean clean = false;
 			cClear.run(instanceSet, ratio, clean);
 			samplingType = 2;
@@ -174,9 +201,17 @@ public class Samplings {
 
 		/* C-clear */
 		if (querySampling(cMinusClear)) {
+			buildNN();
 			boolean clean = true;
 			cClear.run(instanceSet, ratio, clean);
 			samplingType = 2;
+		}
+		
+		/* Baseline */
+		if (querySampling(baseline)) {
+			int limit = testsetUtils.getBaselineLimit();
+			Sampling.limitWeight(instanceSet, limit);
+			samplingType = 0;
 		}
 		
 		return samplingType;
@@ -231,4 +266,16 @@ public class Samplings {
 		return numSamplings;
 	}
 
-}
+	private void buildNN() throws Exception {
+		if (!smote.isNearestNeighborsIDsBuilt()) {
+			smote.buildNN(5, positiveClass);
+		}
+	}
+	
+//	private void clusterizeByClass() throws Exception {
+//		if (!cbs.isNearestNeighborsIDsBuilt()) {
+//			cbs.clusterizeByClass();
+//		}
+//	}
+	
+	}

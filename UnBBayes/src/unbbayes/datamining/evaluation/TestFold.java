@@ -1,5 +1,7 @@
 package unbbayes.datamining.evaluation;
 
+import java.util.Date;
+
 import unbbayes.TestsetUtils;
 import unbbayes.datamining.classifiers.Classifier;
 import unbbayes.datamining.datamanipulation.Instance;
@@ -18,54 +20,42 @@ public class TestFold {
 	 */
 	private float[][][][] rocPointsAvg;
 	private float[][][][] rocPointsStdDev;
-
-	float[][][][][] rocPointsProbsTemp;
+	private float[][][][][] rocPointsProbsTemp;
 
 	/**
 	 * first: samplingID second: classifierID third: meand and stdDev
 	 */
 	private double[][][] auc;
-
 	private double[][][] aucTemp;
 
 	private String[] samplingName;
-
 	private int numSamplings;
-
 	private int numClassifiers;
 
 	private int positiveClass;
 
-	private int negativeClass;
-
 	/** Class of most common settings */
 	private TestsetUtils testsetUtils;
 
-	private int pos;
+	private Samplings samplings;
+	private Indexes indexes;
 
+	private int pos;
 	private int numRoundsTotal;
 
 	private int classIndex;
-
 	private int counterIndex;
-
-	private Samplings samplings;
-
 	private int samplingID;
-	
-	private int numClasses;
-	
-	private Indexes indexes;
+	private boolean multiClass;
+	private float[][] classDistribution;
 
 	public TestFold(int numFolds, int numRounds, TestsetUtils testsetUtils) {
 		this.testsetUtils = testsetUtils;
 		this.numClassifiers = Classifiers.getNumClassifiers();
 		positiveClass = testsetUtils.getPositiveClass();
-		negativeClass = testsetUtils.getNegativeClass();
 		numRoundsTotal = numFolds * numRounds;
+		multiClass = testsetUtils.isMultiClass();
 		pos = 0;
-		
-//		indexes = new Indexes();
 	}
 	
 	public void run(InstanceSet originalTrain, InstanceSet test)
@@ -90,9 +80,8 @@ public class TestFold {
 		int numSamplingStrategies = samplings.getNumSamplings();
 		numSamplings = numSamplingStrategies * numRatios * numKs;
 		
-		numClasses = originalTrain.numClasses();
-			
-		initializeArrays();
+		/* Initialize arrays and Indexes class */
+		initialize(originalTrain);
 		
 		/*
 		 * 0: no cluster and no ratio;
@@ -105,10 +94,12 @@ public class TestFold {
 		samplingID = 0;
 		numSamplings = 0;
 		for (int ssID = 0; ssID < numSamplingStrategies; ssID++) {
-			for (int k = kStart; k < kEnd; k += 1) {
+			System.out.print((new java.text.SimpleDateFormat("HH:mm:ss")).format(new Date()));
+			System.out.println(": samplingID: " + ssID);
+			for (int k = kStart; k < kEnd; k += 3) {
 				for (int ratio = ratioStart; ratio < ratioEnd; ratio++) {
-					samplingType = runAux(originalTrain, ssID, ratio, test, k);
 					++numSamplings;
+					samplingType = runAux(originalTrain, ssID, ratio, test, k);
 					if (samplingType == 0) {
 						break;
 					}
@@ -120,7 +111,7 @@ public class TestFold {
 		}
 		++pos;
 
-		if (pos == numRoundsTotal) {
+		if (!multiClass && pos == numRoundsTotal) {
 			average();
 		}
 	}
@@ -140,6 +131,7 @@ public class TestFold {
 			samplingType = samplings.buildSample(train, ssID, ratio);
 		} catch (Exception e) {
 			/* Do nothing. Just continue! */
+			@SuppressWarnings("unused")
 			boolean stop = true;
 		}
 		
@@ -150,6 +142,9 @@ public class TestFold {
 		
 		/* Classify and evaluate sample */
 		classifyEvaluate(train, test, samplingID);
+		
+		/* Store class distribution */
+		classDistribution[samplingID] = train.getClassDistribution();
 		
 		++samplingID;
 
@@ -169,8 +164,6 @@ public class TestFold {
 	throws Exception {
 		Classifier classifier;
 		float[] probs;
-		float learningRate = testsetUtils.getLearningRate();
-		float momentum = testsetUtils.getMomentum();
 		float[] distribution = train.getClassDistribution(false);
 		
 		classifier = Classifiers.newClassifier(classfID);
@@ -179,22 +172,25 @@ public class TestFold {
 
 		probs = evaluateClassifier(classifier, test, samplingID, classfID);
 
-		rocPointsProbsTemp[samplingID][classfID][pos] = ROCAnalysis
-				.computeROCPoints(probs, test, positiveClass);
-
-		aucTemp[samplingID][classfID][pos] = ROCAnalysis.computeAUC(
-				probs, test, positiveClass) * 100;
-		
-		if (aucTemp[samplingID][classfID][pos] < 50) {
-			@SuppressWarnings("unused")
-			boolean fudeu = true;
+		if (!multiClass) {
+			/* ROC and AUC only available for binary class datasets. Sorry! */
+			rocPointsProbsTemp[samplingID][classfID][pos] = ROCAnalysis
+					.computeROCPoints(probs, test, positiveClass);
+	
+			aucTemp[samplingID][classfID][pos] = ROCAnalysis.computeAUC(
+					probs, test, positiveClass) * 100;
+			
+			if (aucTemp[samplingID][classfID][pos] < 50) {
+				@SuppressWarnings("unused")
+				boolean fudeu = true;
+			}
 		}
 	}
 
 	/**
-	 * Evaluate the model according to specificity, sensitivity and the SE rate (
-	 * specificity * sensitivity). Also returns the probability of an instance
-	 * being from the positive class for each instance of the input test set.
+	 * Evaluate model and build confusion matrix (inside Indexes class). Also
+	 * compute the probability of an instance being from the positive class
+	 * for each instance of the input test set.
 	 * 
 	 * @param classifier
 	 * @param test
@@ -221,19 +217,16 @@ public class TestFold {
 		float[] probs = new float[numInstances];
 		for (int inst = 0; inst < numInstances; inst++) {
 			instance = test.getInstance(inst);
-			weight = (int) instance.data[counterIndex];
-			actualClass = (int) instance.data[classIndex];
 
 			dist = classifier.distributionForInstance(instance);
 			probs[inst] = dist[positiveClass];
 
+			actualClass = (int) instance.data[classIndex];
 			predictedClass = Utils.maxIndex(dist);
+			weight = instance.data[counterIndex];
 
-//			confusionMatrix[samplingID]
-//			               [classfID]
-//			               [pos]
-//			               [actualClass]
-//			               [predictedClass] += weight;
+			indexes.insert(samplingID, classfID, pos, actualClass,
+					predictedClass, weight);
 		}
 
 		return probs;
@@ -268,11 +261,24 @@ public class TestFold {
 		}
 	}
 	
-	private void initializeArrays() {
+	private void initialize(InstanceSet instanceSet) throws Exception {
+		/* 
+		 * The arrays and the Indexes class are only started once for each
+		 * dataset. Check if the arrays has already been started.
+		 */
 		if (rocPointsProbsTemp == null) {
-			rocPointsProbsTemp = new float[numSamplings][numClassifiers][numRoundsTotal][][];
+			/* Start the arrays for roc and auc */
+			rocPointsProbsTemp = 
+				new float[numSamplings][numClassifiers][numRoundsTotal][][];
 			aucTemp = new double[numSamplings][numClassifiers][numRoundsTotal];
 			samplingName = new String[numSamplings];
+			
+			/* Start the Indexes class */
+			indexes = new Indexes(instanceSet, numSamplings, numClassifiers,
+					numRoundsTotal);
+			
+			/* Array for storing the class distribution of each sampling */
+			classDistribution = new float[numSamplings][];
 		}
 	}
 
@@ -287,26 +293,6 @@ public class TestFold {
 	public double[] getAuc(int samplingID, int classifier) {
 		return auc[samplingID][classifier];
 	}
-
-	public double[] getAucCrude(int samplingID, int classifier) {
-		return aucTemp[samplingID][classifier];
-	}
-
-//	public double[] getGlobalError(int samplingID, int classifier) {
-//		return globalError[samplingID][classifier];
-//	}
-//
-//	public double[] getSensitivity(int samplingID, int classifier) {
-//		return sensitivity[samplingID][classifier];
-//	}
-//
-//	public double[] getSpecificity(int samplingID, int classifier) {
-//		return specificity[samplingID][classifier];
-//	}
-//
-//	public double[] getSE(int samplingID, int classifier) {
-//		return SE[samplingID][classifier];
-//	}
 
 	public Samplings getSamplings() {
 		return samplings;
@@ -324,4 +310,12 @@ public class TestFold {
 		return numClassifiers;
 	}
 
+	public Indexes getIndexes() {
+		return indexes;
+	}
+
+	public int getClassDistribution(int samplingID, int classID) {
+		return (int) classDistribution[samplingID][classID];
+	}
+	
 }

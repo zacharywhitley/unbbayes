@@ -1058,11 +1058,12 @@ public class InstanceSet implements Serializable {
 	 * instanceSet and <code>testSize</code> instances will be removed to the
 	 * the test instanceSet (randomly selected). Then it returns the test
 	 * instanceSet.
-	 * 
+	 * @param classIndex TODO
 	 * @param testSize The desired size of the new test instanceSet.
+	 * 
 	 * @return The test instanceSet just created.
 	 */
-	public InstanceSet buildTrainTestSet(float proportion, boolean compact) {
+	public InstanceSet buildTrainTestSet(float proportion, boolean compact, int classIndex) {
 		Random randomizer = new Random(new Date().getTime());
 		int testSize = Math.round(numInstances * proportion);
 		
@@ -1070,11 +1071,11 @@ public class InstanceSet implements Serializable {
 		int[] count = null;
 		int[][] instancesIDs = null;
 		
-		if (this.classIndex != -1) {
-			numClasses = numClasses();
+		if (classIndex != -1) {
+			numClasses = attributes[classIndex].numValues();
 	
-			/* For safety purpouses */
-			testSize += numClasses;
+//			/* For safety purpouses */
+//			testSize += numClasses;
 				
 			/* Count instances per class */
 			count = new int[numClasses];
@@ -1171,11 +1172,12 @@ public class InstanceSet implements Serializable {
 	 *  
 	 * @param proportion
 	 * @param compact
+	 * @param classIndex TODO
 	 */
-	public void buildSample(float proportion, boolean compact) {
+	public void buildSample(float proportion, boolean compact, int classIndex) {
 		/* 
 		 * The proportion variable has a different meaning here. It tells
-		 * how much of the instanceSet should be removed. Then, the input
+		 * how much from the instanceSet should be removed. Then, the input
 		 * proportion must be changed to reflect this mean. 
 		 */
 		proportion = 1 - proportion;
@@ -1186,8 +1188,8 @@ public class InstanceSet implements Serializable {
 		int[] count = null;
 		int[][] instancesIDs = null;
 		
-		if (this.classIndex != -1) {
-			numClasses = numClasses();
+		if (classIndex != -1) {
+			numClasses = attributes[classIndex].numValues();
 	
 			/* Count instances per class */
 			count = new int[numClasses];
@@ -1695,7 +1697,7 @@ public class InstanceSet implements Serializable {
 		 */
 		if (numCyclicAttributes > 0 ||
 			numNominalAttributes > 1 ||
-			(!classIsNominal() &&
+			(classIndex > -1 && !classIsNominal() &&
 				numNominalAttributes > 0)) {
 			nominal = true;
 		}
@@ -1728,6 +1730,14 @@ public class InstanceSet implements Serializable {
 	
 	public boolean isMixed() {
 		return instanceSetType == MIXED;
+	}
+	
+	public float[] getClassDistribution() {
+		if (distribution != null) {
+			return distribution.clone();
+		} else {
+			return getClassDistribution(true);
+		}
 	}
 	
 	public float[] getClassDistribution(boolean force) {

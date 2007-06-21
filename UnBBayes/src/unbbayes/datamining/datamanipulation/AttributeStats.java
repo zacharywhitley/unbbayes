@@ -187,7 +187,7 @@ public class AttributeStats  {
 			return null;
 		}
 		
-		return nominalCountsWeighted;
+		return nominalCountsWeighted.clone();
 	}
 	
 	/** 

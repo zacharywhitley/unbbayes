@@ -280,13 +280,14 @@ public class PreprocessorMain extends JInternalFrame
 		proportion /= inst.numWeightedInstances;
 		boolean compact = askUser.isCompact();
 		boolean canceled = askUser.isCanceled();
+		int classIndex = askUser.getClassIndex();
 		askUser = null;
 		if (canceled) {
 			return;
 		}
 		
 		/* Sample the instanceSet */
-		inst.buildSample(proportion, compact);
+		inst.buildSample(proportion, compact, classIndex);
 
 		/* Remove attributes not selected */
 		removeAttributes();
@@ -337,6 +338,7 @@ public class PreprocessorMain extends JInternalFrame
 		float proportion = askUser.getSampleSize();
 		boolean compact = askUser.isCompact();
 		boolean canceled = askUser.isCanceled();
+		int classIndex = askUser.getClassIndex();
 		askUser = null;
 		if (canceled) {
 			return;
@@ -353,7 +355,8 @@ public class PreprocessorMain extends JInternalFrame
 		jPanel1.setBaseInstances(trainSet);
 
 		/* Build the test and training instanceSets */
-		InstanceSet testSet = trainSet.buildTrainTestSet(proportion, compact);
+		InstanceSet testSet;
+		testSet = trainSet.buildTrainTestSet(proportion, compact, classIndex);
 
 		/* Save file */
 		int[] selectedAttributes;

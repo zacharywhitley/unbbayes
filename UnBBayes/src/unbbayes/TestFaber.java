@@ -110,7 +110,7 @@ public class TestFaber {
 	
 	private InstanceSet openFile(String fileName) throws IOException {
 		InstanceSet instanceSet;
-		instanceSet = TestsetUtils.openFile(fileName, counterIndex, classIndex);
+		instanceSet = TestsetUtils.openFile(fileName, counterIndex);
 		
 		return instanceSet;
 	}

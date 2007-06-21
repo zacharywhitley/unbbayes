@@ -282,7 +282,8 @@ public class Smote {
 		 * used to oversample the data
 		 */
 		if (proportion < 1) {
-			int aux = (int) (numInstancesIDs * proportion) + 1;
+//			int aux = (int) (numInstancesIDs * proportion) + 1;
+			int aux = (int) (currentSize * proportion) + 1;
 			instancesIDs = chooseInstances(instancesIDs, aux);
 			numInstancesIDs = instancesIDs.length;
 			numNewInstancesPerInstance = 1;
@@ -522,7 +523,11 @@ public class Smote {
 		int[] instancesIDsAux = instancesIDs.clone();
 
 		int numInstances = instancesIDsAux.length;
-		int indexesChosen[] = new int[numNewInstances];
+		int aux = numNewInstances;
+		if (numNewInstances > numInstances) {
+			aux = numInstances;
+		}
+		int indexesChosen[] = new int[aux];
 
 		Random random = new Random(new Date().getTime());
 		int counter = 0;
@@ -543,7 +548,12 @@ public class Smote {
 			--numInstances;
 		}
 		
-		return indexesChosen;
+		int[] result = new int[index];
+		for (int i = 0; i < index; i++) {
+			result[i] = indexesChosen[i];
+		}
+		
+		return result;
 	}
 	
 	/**
@@ -732,11 +742,12 @@ public class Smote {
 		this.optionFixedGap = optionFixedGap;
 	}
 
-	/**
-	 * @param nearestNeighborsIDs the nearestNeighborsIDs to set
-	 */
 	public void setNearestNeighborsIDs(int[][] nearestNeighborsIDs) {
 		this.nearestNeighborsIDs = nearestNeighborsIDs;
+	}
+
+	public boolean isNearestNeighborsIDsBuilt() {
+		return nearestNeighborsIDs != null;
 	}
 
 }

@@ -149,6 +149,21 @@ public class Sampling {
 	/**
 	 * Samplings an instanceSet. The amount of increase or decrease is controlled
 	 * by the <code>proportion</code> parameter, which will be multiplied by
+	 * the counter attribute.
+	 * 
+	 * @param instanceSet
+	 * @param proportion
+	 * @param classValue
+	 * @return
+	 */
+	public static void undersampling(InstanceSet instanceSet,
+			double proportion, int classValue, boolean remove) {
+		undersampling(instanceSet, proportion, classValue, remove, null);
+	}
+	
+	/**
+	 * Samplings an instanceSet. The amount of increase or decrease is controlled
+	 * by the <code>proportion</code> parameter, which will be multiplied by
 	 * the counter attribute. Should any instance be removed, a new valid array
 	 * of instances <code>instancesIDs</code> will be returned.
 	 * 
@@ -374,6 +389,10 @@ public class Sampling {
 
 	
 	
+	public static void limitWeight(InstanceSet instanceSet, int limit) {
+		limitWeight(instanceSet, limit, -1);
+	}
+	
 	public static void limitWeight(InstanceSet instanceSet, int limit,
 			int classValue) {
 		int classIndex = instanceSet.classIndex;
@@ -383,7 +402,8 @@ public class Sampling {
 
 		numInstances = instanceSet.numInstances();
 		for (int i = 0; i < numInstances; i++) {
-			if (instanceSet.instances[i].data[classIndex] == classValue) {
+			if (instanceSet.instances[i].data[classIndex] == classValue
+					|| classValue == -1) {
 				difference = instanceSet.instances[i].data[counterIndex] - limit;
 				if (difference > 0) {
 					instanceSet.numWeightedInstances -= difference;

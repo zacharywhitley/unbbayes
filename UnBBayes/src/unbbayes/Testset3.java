@@ -132,7 +132,7 @@ public class Testset3 {
 		
 		/* Build the test and training instanceSets */
 		float testProportion = (float) 1 / 3;
-		InstanceSet testData = newInstanceSet.buildTrainTestSet(testProportion, false);
+		InstanceSet testData = newInstanceSet.buildTrainTestSet(testProportion, false, classIndex);
 		InstanceSet trainData = newInstanceSet;
 		
 		/* Save the sampled instanceSet */

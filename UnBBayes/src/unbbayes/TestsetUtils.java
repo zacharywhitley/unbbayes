@@ -87,6 +87,8 @@ public class TestsetUtils {
 	private int ratioEnd;
 	private int kStart;
 	private int kEnd;
+	private boolean multiClass;
+	private int baselineLimit;
 	
 	public TestsetUtils() {
 		smote = new Smote(null);
@@ -206,7 +208,7 @@ public class TestsetUtils {
 	
 	/****************** Auxiliary methods **********************************/
 
-	public static InstanceSet openFile(String fileName, int counterIndex, int classIndex) throws IOException {
+	public static InstanceSet openFile(String fileName, int counterIndex) throws IOException {
 		File file = new File(fileName);
 		Loader loader = null;
 		
@@ -218,8 +220,6 @@ public class TestsetUtils {
 
 		/* If the dataset is compacted */
 		loader.setCounterAttribute(counterIndex);
-		
-		loader.setClassIndex(classIndex);
 
 		while (loader.getInstance()) {
 			/* Wait while instances are loaded */
@@ -267,6 +267,10 @@ public class TestsetUtils {
 	public void setPositiveClass(int positiveClass) {
 		this.positiveClass = positiveClass;
 		negativeClass = Math.abs(1 - positiveClass);
+	}
+
+	public void setNegativeClass(int negativeClass) {
+		this.negativeClass = negativeClass;
 	}
 
 	public void setConfidenceLevel(float value) {
@@ -419,6 +423,22 @@ public class TestsetUtils {
 
 	public void setKend(int kEnd) {
 		this.kEnd = kEnd;
+	}
+
+	public void setMultiClass(boolean multiClass) {
+		this.multiClass = multiClass;
+	}
+
+	public boolean isMultiClass() {
+		return multiClass;
+	}
+
+	public int getBaselineLimit() {
+		return baselineLimit;
+	}
+
+	public void setBaselineLimit(int baselineLimit) {
+		this.baselineLimit = baselineLimit;
 	}
 
 }

@@ -85,7 +85,6 @@ public abstract class Loader implements IProgress {
 	 * @return The instance set
 	 */
 	public InstanceSet getInstanceSet() {
-		instanceSet.setClassIndex(classIndex);
 		instanceSet.setFinal();
 		
 		/* Check if the instanceSet is compacted or not */
