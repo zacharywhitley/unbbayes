@@ -189,7 +189,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"ResidentTabTitle", "Nó Residente"}, 
 		{"InputTabTitle", "Nó de Input"}, 
 		{"ContextTabTitle", "Nó de Contexto"}, 
-		{"MTheoryTreeTitle", "�?rvore MTheory"}, 
+		{"MTheoryTreeTitle", "Árvore MTheory"}, 
 		{"EntityTitle", "Entidade"}, 
 		{"OVariableTitle", "Variável Ord."},
 		{"ArgumentTitle", "Argumentos"}, 

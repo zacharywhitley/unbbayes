@@ -1,6 +1,6 @@
 % UBF file header
 Version=0.02
-PrOwl="examples/mebn/StarshipMEBNTableParserTest.owl"
+PrOwl="StarshipMEBNTableParserTest.owl"
 
 % UBF MTheory declaration
 MTheory=MEBNTableParserTest

@@ -1,4 +1,4 @@
-package unbbayes.prs.mebn.compiler;
+﻿package unbbayes.prs.mebn.compiler;
 
 
 import java.util.ArrayList;
@@ -25,6 +25,19 @@ import unbbayes.util.NodeList;
  BNF MEBN Table:
  ----------------
  Changes: 
+ 
+ 
+ 	24/06/2007:
+ 			Description: The top level BNF Grammar class was changed from 
+ 				if_statement to table, in order to make possible a probability
+ 				table without an if clause.
+			Author: Shou Matsumoto
+ 
+ 	10/06/2007: 
+ 			Description: Added cardinality(), min() and max() functions
+ 			syntax analiser.
+ 			Author: Shou Matsumoto 
+
  	29/05/2007: 
  			Description: the else clause is now required, in order to
  				force user to declare a default distribution and
@@ -36,12 +49,10 @@ import unbbayes.util.NodeList;
  				we don't have a block sentence yet, it is not possible).
  			Author: Shou Matsumoto
  			
- 	10/06/2007: 
- 			Description: Added cardinality(), min() and max() functions
- 			syntax analiser.
- 			Author: Shou Matsumoto
+
  	
  ===============================================================
+ table := statement | if_statement
  if_statement 
  ::= 
  "if" allop ident "have" "(" b_expression ")" statement 
@@ -130,7 +141,31 @@ public class Compiler implements AbstractCompiler {
 	public void parse() throws MEBNException {
 		Debug.println("PARSED: ");
 		this.skipWhite();
-		ifStatement();
+		this.table();
+	}
+	
+	/**
+	 *  table := statement | if_statement
+	 */
+	private void table() throws NoDefaultDistributionDeclaredException,
+	  							InvalidConditionantException,
+	  							SomeStateUndeclaredException,
+	  							InvalidProbabilityRangeException,
+	  							TableFunctionMalformedException{
+		
+		if (this.look == '[') {
+			Debug.println("STARTING DEFAULT STATEMENT");			
+			// if we catch a sintax error here, it may be a value error
+			try {
+				statement();
+			} catch (TableFunctionMalformedException e) {
+				// Exception translation (perharps an anti-pattern ?)
+				throw new InvalidProbabilityRangeException(e.getMessage());
+			}
+		} else {
+			// Please note table() repasses every exception reported by ifStatement()
+			this.ifStatement();
+		}
 	}
 
 	/**

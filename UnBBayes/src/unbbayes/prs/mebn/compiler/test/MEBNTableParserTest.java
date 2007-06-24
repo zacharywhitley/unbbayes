@@ -326,5 +326,18 @@ public class MEBNTableParserTest extends TestCase {
 		} 
 		
 	}
+	
+	
+	public void testNoIfStatement() {
+		//		 should go all right
+		String tableString =  
+			" [ Un = 0 , Hi = 0 , Me = MIN ( CARDINALITY (OpSpec) * 2 ; .2 ) , Lo = 1 - Me ]  ";		
+		try  {
+			tableParser.parse(tableString);
+		} catch (MEBNException e) {
+			fail(e.getMessage() + " at index " + tableParser.getIndex());
+		} 
+		
+	}
 
 }

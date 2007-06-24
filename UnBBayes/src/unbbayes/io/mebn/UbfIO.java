@@ -31,6 +31,8 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 
+import unbbayes.util.Debug;
+
 /**
  * <p>Title: UnBBayes</p>
  * <p>Description: Ubf file format manipulator. </p>
@@ -93,6 +95,7 @@ public class UbfIO implements MebnIO {
 	private UbfIO() {
 		super();
 		this.prowlIO = new PrOwlIO();
+		Debug.setDebug(true);
 	}		
 	/**
 	 * Construction method for UbfIO
@@ -473,6 +476,7 @@ public class UbfIO implements MebnIO {
 	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException,
 			IOMebnException {
 		
+		
 				
 		MultiEntityBayesianNetwork mebn = null;	// target mebn
 		
@@ -515,7 +519,11 @@ public class UbfIO implements MebnIO {
 			throw e;
 		}
 		
-		//System.out.println("Opening .owl file: " + owlFilePath);
+		// Make owl file path relative to ubf file path
+		owlFilePath = file.getParentFile().getCanonicalPath().concat("/" + owlFilePath);
+		
+		
+		Debug.println("Opening .owl file: " + owlFilePath);
 		
 		// Extracting owl file
 		try {
@@ -576,10 +584,13 @@ public class UbfIO implements MebnIO {
 			throw new IOException(e.getLocalizedMessage() + " : " + this.resource.getString("UnknownPrOWLError"));
 		}
 		
+		
 		// Extract relative prowlFile URI
-		File root = new File("root");
-		URI relativeURI = root.getCanonicalFile().getParentFile().toURI();
+		//File root = new File("root");
+		//URI relativeURI = root.getCanonicalFile().getParentFile().toURI();
+		URI relativeURI = file.getCanonicalFile().getParentFile().toURI();
 		relativeURI = relativeURI.relativize(prowlFile.toURI());
+		
 		
 		// Save .ubf header
 		out.println(this.getToken("CommentInitiator") + resource.getString("UBFFileHeader"));

@@ -1,8 +1,8 @@
-% Cabeçalho UBF
+% Cabeï¿½alho UBF
 Version=0.02
-PrOwl="examples/mebn/StarTrek27.owl"
+PrOwl="StarTrek27.owl"
 
-% Declaração de MTheory - UBF
+% Declaracao de MTheory - UBF
 MTheory=Starship_MTheory
 NextMFrag=10
 NextResident=24
@@ -10,13 +10,13 @@ NextInput=19
 NextContext=15
 NextEntity=1
 
-% Declaração de MFrags e nós UBF
+% Declaracao de MFrags e nos UBF
 
 % MFrag
 MFrag=DangerToOthers_MFrag
 NextOrdinaryVar=4
 
-% Nós Residentes
+% Nï¿½s Residentes
 
 
 Node=DangerToOthers
@@ -24,7 +24,7 @@ Type=DomainResidentNode
 Position=165.0,280.0
 Size=100,20
 
-% nós Input
+% nï¿½s Input
 
 
 Node=IX18
@@ -32,7 +32,7 @@ Type=GenerativeInputNode
 Position=155.0,153.0
 Size=100,20
 
-% Nós de Contexto
+% Nï¿½s de Contexto
 
 
 Node=CX1
@@ -45,7 +45,7 @@ Type=ContextNode
 Position=205.0,44.0
 Size=100,20
 
-% Variáveis Ordinárias
+% Variï¿½veis Ordinï¿½rias
 
 
 Node=s
@@ -67,7 +67,7 @@ Size=100,20
 MFrag=DangerToSelf_MFrag
 NextOrdinaryVar=4
 
-% Nós Residentes
+% Nï¿½s Residentes
 
 
 Node=DangerToSelf
@@ -75,7 +75,7 @@ Type=DomainResidentNode
 Position=193.0,329.0
 Size=100,20
 
-% nós Input
+% nï¿½s Input
 
 
 Node=IX7
@@ -88,7 +88,7 @@ Type=GenerativeInputNode
 Position=133.0,221.0
 Size=100,20
 
-% Nós de Contexto
+% Nï¿½s de Contexto
 
 
 Node=CX8
@@ -101,7 +101,7 @@ Type=ContextNode
 Position=132.0,84.0
 Size=100,20
 
-% Variáveis Ordinárias
+% Variï¿½veis Ordinï¿½rias
 
 
 Node=t
@@ -123,7 +123,7 @@ Size=100,20
 MFrag=SRData_MFrag
 NextOrdinaryVar=2
 
-% Nós Residentes
+% Nï¿½s Residentes
 
 
 Node=Subject
@@ -131,7 +131,7 @@ Type=DomainResidentNode
 Position=137.0,355.0
 Size=100,20
 
-% Variáveis Ordinárias
+% Variï¿½veis Ordinï¿½rias
 
 
 Node=sr
@@ -143,7 +143,7 @@ Size=100,20
 MFrag=StarshipData_MFrag
 NextOrdinaryVar=2
 
-% Nós Residentes
+% Nï¿½s Residentes
 
 
 Node=StarshipZone
@@ -156,7 +156,7 @@ Type=DomainResidentNode
 Position=120.0,337.0
 Size=100,20
 
-% Nós de Contexto
+% Nï¿½s de Contexto
 
 
 Node=CX3
@@ -164,7 +164,7 @@ Type=ContextNode
 Position=135.0,111.0
 Size=100,20
 
-% Variáveis Ordinárias
+% Variï¿½veis Ordinï¿½rias
 
 
 Node=st
@@ -176,7 +176,7 @@ Size=100,20
 MFrag=TimeStep_MFrag
 NextOrdinaryVar=2
 
-% Nós Residentes
+% Nï¿½s Residentes
 
 
 Node=Identity
@@ -194,7 +194,7 @@ Type=DomainResidentNode
 Position=83.0,266.0
 Size=100,20
 
-% Variáveis Ordinárias
+% Variï¿½veis Ordinï¿½rias
 
 
 Node=t
@@ -206,7 +206,7 @@ Size=100,20
 MFrag=Zone_MFrag
 NextOrdinaryVar=5
 
-% Nós Residentes
+% Nï¿½s Residentes
 
 
 Node=ZoneEShips
@@ -229,7 +229,7 @@ Type=DomainResidentNode
 Position=98.0,447.0
 Size=100,20
 
-% nós Input
+% nï¿½s Input
 
 
 Node=IX4
@@ -247,7 +247,7 @@ Type=GenerativeInputNode
 Position=50.0,260.0
 Size=100,20
 
-% Nós de Contexto
+% Nï¿½s de Contexto
 
 
 Node=CX6
@@ -260,7 +260,7 @@ Type=ContextNode
 Position=67.0,39.0
 Size=100,20
 
-% Variáveis Ordinárias
+% Variï¿½veis Ordinï¿½rias
 
 
 Node=tPrev
@@ -287,7 +287,7 @@ Size=100,20
 MFrag=Starship_MFrag
 NextOrdinaryVar=5
 
-% Nós Residentes
+% Nï¿½s Residentes
 
 
 Node=HarmPotential
@@ -315,7 +315,7 @@ Type=DomainResidentNode
 Position=137.0,456.0
 Size=100,20
 
-% nós Input
+% nï¿½s Input
 
 
 Node=IX12
@@ -338,7 +338,7 @@ Type=GenerativeInputNode
 Position=295.0,398.0
 Size=100,20
 
-% Nós de Contexto
+% Nï¿½s de Contexto
 
 
 Node=CX12
@@ -361,7 +361,7 @@ Type=ContextNode
 Position=76.0,212.0
 Size=100,20
 
-% Variáveis Ordinárias
+% Variï¿½veis Ordinï¿½rias
 
 
 Node=tPrev
@@ -388,7 +388,7 @@ Size=100,20
 MFrag=StarshipExistance_MFrag
 NextOrdinaryVar=3
 
-% Nós Residentes
+% Nï¿½s Residentes
 
 
 Node=Exists
@@ -396,7 +396,7 @@ Type=DomainResidentNode
 Position=162.0,238.0
 Size=100,20
 
-% nós Input
+% nï¿½s Input
 
 
 Node=IX3
@@ -409,7 +409,7 @@ Type=GenerativeInputNode
 Position=36.0,141.0
 Size=100,20
 
-% Nós de Contexto
+% Nï¿½s de Contexto
 
 
 Node=CX2
@@ -417,7 +417,7 @@ Type=ContextNode
 Position=86.0,73.0
 Size=100,20
 
-% Variáveis Ordinárias
+% Variï¿½veis Ordinï¿½rias
 
 
 Node=z
@@ -434,7 +434,7 @@ Size=100,20
 MFrag=SensorReport_MFrag
 NextOrdinaryVar=6
 
-% Nós Residentes
+% Nï¿½s Residentes
 
 
 Node=SRDistance
@@ -447,7 +447,7 @@ Type=DomainResidentNode
 Position=158.0,580.0
 Size=100,20
 
-% nós Input
+% nï¿½s Input
 
 
 Node=IX15
@@ -470,7 +470,7 @@ Type=GenerativeInputNode
 Position=65.0,433.0
 Size=100,20
 
-% Nós de Contexto
+% Nï¿½s de Contexto
 
 
 Node=CX14
@@ -483,7 +483,7 @@ Type=ContextNode
 Position=71.0,230.0
 Size=100,20
 
-% Variáveis Ordinárias
+% Variï¿½veis Ordinï¿½rias
 
 
 Node=t

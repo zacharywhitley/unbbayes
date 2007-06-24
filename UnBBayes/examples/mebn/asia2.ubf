@@ -1,6 +1,6 @@
 % UBF file header
 Version=0.01
-PrOwl="examples/mebn/asia2.owl"
+PrOwl="asia2.owl"
 
 % UBF MTheory declaration
 MTheory=New_MEBN
