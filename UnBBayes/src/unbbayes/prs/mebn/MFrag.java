@@ -288,9 +288,7 @@ public class MFrag implements Graph{
 	}
 
 	/**
-	 *  Returna o n�mero de vari�veis da rede.
-	 *
-	 *@return    n�mero de vari�veis da rede.
+	 *@return number of nodes of this MFrag (node of all types). 
 	 */
 	public int getNodeCount(){
 		return nodeList.size();		
@@ -299,19 +297,23 @@ public class MFrag implements Graph{
 
 
 	/**
-	 *  Retira do grafo o arco especificado.
+	 *  Remove the edge between two nodes and remove the relations
+	 *  between the nodes.  
 	 *
-	 *@param  arco  arco a ser retirado.
+	 *  @param  arco
 	 */
+	
 	public void removeEdge(Edge arco) {
 	    
 		Node origin = arco.getOriginNode();
 		Node destination = arco.getDestinationNode(); 
 		
+		/* graph structure */
 		origin.getChildren().remove(arco.getDestinationNode());
 	    destination.getParents().remove(arco.getOriginNode());
 	    edgeList.remove(arco);	
 	    
+	    /* mebn strucutre */
 	    if(origin instanceof DomainResidentNode){
 	    		((DomainResidentNode)origin).removeResidentNodeChildList((DomainResidentNode)destination); 
 	    }

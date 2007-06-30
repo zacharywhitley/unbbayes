@@ -24,6 +24,13 @@ public class ConsistencyUtilities {
 		return false; 
 	}
 
+	/**
+	 * Verifies if exists a cycle from the origin to destination. 
+	 * 
+	 * @param origin
+	 * @param destination
+	 * @return
+	 */
 	public static  boolean hasCycle(GenerativeInputNode origin, DomainResidentNode destination){
 		
 		if(origin.getInputInstanceOf() != null){

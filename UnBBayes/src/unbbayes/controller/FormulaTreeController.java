@@ -93,7 +93,7 @@ public class FormulaTreeController {
 	}
 	
 	/**
-	 * add one ordinary variable in the formula tree (replace
+	 * Add one ordinary variable in the formula tree (replace
 	 * the actual node of the formula for the ordinary variable)
 	 * 
 	 * @param ov
@@ -148,7 +148,6 @@ public class FormulaTreeController {
 		
 		NodeFormulaTree nodePlace = formulaTree.getNodeFormulaActive();  
 		
-		
 	}	
 	
 	public void addEntity(Entity entity){
@@ -175,6 +174,16 @@ public class FormulaTreeController {
 
 	public void setContextNode(ContextNode contextNode) {
 		this.contextNode = contextNode;
+	}
+	
+	/**
+	 * Update the text of formula in: 
+	 * - node context
+	 * - tab painel of Context node. 
+	 */
+	public void updateFormulaText(){
+		contextNode.updateLabel();
+		mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 }

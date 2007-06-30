@@ -61,7 +61,7 @@ public class GenerativeInputNode extends InputNode {
 		
 		while(!residentNodeChildList.isEmpty()){
 			DomainResidentNode resident = residentNodeChildList.get(0); 
-			this.removeResidentNodeChild(resident); 
+			removeResidentNodeChild(resident); 
 		}
 		
 		mFrag.removeGenerativeInputNode(this); 
@@ -72,8 +72,7 @@ public class GenerativeInputNode extends InputNode {
 	 */
 	public void removeResidentNodeChild(DomainResidentNode node){
 		residentNodeChildList.remove(node);
-		node.removeInputNodeFatherList(this); 
-		mFrag.removeEdgeByNodes(this, node);
+		node.removeInputNodeFatherList(this);
 	}	
 	
 	public void addResidentNodeChild(DomainResidentNode resident){
@@ -91,11 +90,11 @@ public class GenerativeInputNode extends InputNode {
 	 */
 	public void setInputInstanceOf(DomainResidentNode residentNode) throws CycleFoundException{
 		
-		for(ResidentNode resident: residentNodeChildList){
-			if(ConsistencyUtilities.hasCycle(residentNode, (DomainResidentNode)resident)){
-				throw new CycleFoundException(); 
-			}
-		}
+//		for(ResidentNode resident: residentNodeChildList){
+//			if(ConsistencyUtilities.hasCycle(residentNode, (DomainResidentNode)resident)){
+//				throw new CycleFoundException(); 
+//			}
+//		}
 		
 		super.setInputInstanceOf(residentNode); 
 		residentNodePointer = new ResidentNodePointer(residentNode, this);

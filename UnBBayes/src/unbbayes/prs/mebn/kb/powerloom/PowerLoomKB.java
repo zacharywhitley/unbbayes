@@ -19,37 +19,38 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
-import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import edu.isi.powerloom.PLI;
 import edu.isi.powerloom.logic.TruthValue;
 import edu.isi.stella.Module;
 
 /**
- * Usa o PowerLoom para montar uma base de conhecimentos a partir da MTheoria, 
- * permitindo que se use este para responder as restrições impostas pelos nós de 
- * contexto. O PowerLoom é utilizado como um reasoner de Lógica de primeira
- * ordem. 
+ * Use the PowerLoom for build the knowledge base from the MTheory. The Knowledge
+ * base will be used for answer about the context restrictions. The PowerLoom is
+ * used how a reasoner for the first-order logic. 
  * 
- * @author Laecio Lima dos Santos
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
+ * @version 1.0 (06/29/07)
  */
 public class PowerLoomKB implements KnowledgeBase{
 
-    private String moduleName = "MeuModulo"; 
+    private String moduleName = "MyModule"; 
 	private Module module; 
     
+	DebugPowerLoom debug = new DebugPowerLoom(true); 
+	
 	private static PowerLoomKB singleton = null; 
 	
 	private PowerLoomKB(){
 	    
-		System.out.print("[PL]Initializing...");
+		debug.println("Initializing...");
 	    PLI.initialize();
-	    System.out.println("[PL] done.");
+	    debug.println("Done.");
 	
 	    Module fatherModule = PLI.getModule("/PL-KERNEL/PL-USER/", null); 
 	    module = PLI.createModule(moduleName, fatherModule, false); //Case Sensitive
 	   
-	    System.out.println("[PL] " + module.moduleFullName + " created. "); 
+	    debug.println(module.moduleFullName + " created. "); 
 	    PLI.sChangeModule(moduleName, null);
 	    
 	}
@@ -66,7 +67,7 @@ public class PowerLoomKB implements KnowledgeBase{
 	
 	public void executeConceptDefinition(ObjectEntity entity){
 		
-		System.out.println("PL: Definição de conceito -> " + entity.getType()); 
+		debug.println("Concept definition: " + entity.getType()); 
 		PLI.sCreateConcept(entity.getType().toString(), null, moduleName, null); 
 		PLI.sEvaluate("(assert ( closed " + entity.getType() +" ) )", moduleName, null); 
 		
@@ -74,7 +75,7 @@ public class PowerLoomKB implements KnowledgeBase{
 	
 	public void executeRandonVariableDefinition(DomainResidentNode resident){
 		
-		System.out.println("PL: Definição de randonVariable -> " + resident.getName()); 
+		debug.println("Randon variable definition: " + resident.getName()); 
 		
 		List<Entity> states = resident.getPossibleValueList(); 
 		
@@ -118,10 +119,8 @@ public class PowerLoomKB implements KnowledgeBase{
 	 * @param entityFinding
 	 */
 	public void executeEntityFinding(String entityFinding){
-		System.out.println("PL: fazendo assert -> " + entityFinding); 
-		PLI.sAssertProposition(entityFinding, moduleName, null); 
-		System.out.println("PL Operacao Finalizada"); 
-			
+		debug.println("Entity finding: " + entityFinding); 
+		PLI.sAssertProposition(entityFinding, moduleName, null); 	
 	}
 
 	/**
@@ -130,10 +129,8 @@ public class PowerLoomKB implements KnowledgeBase{
 	 * @param entityFinding
 	 */
 	public void executeRandonVariableFinding(String randonVariableFinding){
-		System.out.println("PL: fazendo assert -> " + randonVariableFinding); 
-		PLI.sAssertProposition(randonVariableFinding, moduleName, null);
-		System.out.println("PL: Operacao Finalizada "); 
-		
+		debug.println("Randon variable finding: " + randonVariableFinding); 
+		PLI.sAssertProposition(randonVariableFinding, moduleName, null); 
 	}
 	
 	/*
@@ -156,6 +153,8 @@ public class PowerLoomKB implements KnowledgeBase{
 	
 	public boolean executeContextFormula(ContextNode context){
 		
+		debug.println("Generating formula for context node " + context.getName()); 
+		
 		String formula = ""; 
 		
 		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
@@ -167,18 +166,19 @@ public class PowerLoomKB implements KnowledgeBase{
 		
 		formula+= ")"; 
 		
-		System.out.println("-> Formula gerada: " + formula); 
+		debug.println("Original formula: " + context.getLabel()); 
+		debug.println("PowerLoom Formula: " + formula); 
 		
 	    TruthValue answer = PLI.sAsk(formula, moduleName, null);
 	    
 	    if (PLI.isTrue(answer)) {
-	        System.out.println("PL: true");
+	        debug.println("Result: true");
 	        return true; 
 	      } else if (PLI.isFalse(answer)) {
-	        System.out.println("PL: false");
+	        debug.println("Result: false");
 	        return false; 
 	      } else if (PLI.isUnknown(answer)) {
-	        System.out.println("PL: unknown");
+	        debug.println("Result: unknown");
 	        return false; 
 	      }else{
 	    	  return false; 
@@ -229,7 +229,7 @@ public class PowerLoomKB implements KnowledgeBase{
 			break; 
 			
 		default: 
-				System.out.println("[DEBUG]Problemas ao procurar o tipo de operador"); 
+				debug.println("ERROR! type of operator don't found"); 
 		
 		}
 		
@@ -387,26 +387,29 @@ public class PowerLoomKB implements KnowledgeBase{
 		return retorno; 
 	}
 	
-	public static void main(String[] args){
+	/*
+	 * Print in the screen informations for debug. 
+	 */
+	public class DebugPowerLoom{
 		
-//		PowerLoomKB test = new PowerLoomKB(); 
-//		
-//		ObjectEntity teste; 
-//		
-//		try{
-//		   Type.addType("Starship_Label"); 
-//		   teste = new ObjectEntity("Starship", "Starship_Label"); 
-//		   test.executeConceptDefinition(teste); 
-//		}
-//		catch(Exception e){
-//			e.printStackTrace(); 
-//		}
-//		
-//		System.out.println("[PL] saving module"); 
-//		test.saveDefinitionsFile(); 
-//		System.out.println("[PL] file save sucefull"); 
+		private boolean debugActive = true; 
 		
+		public DebugPowerLoom(boolean debugActive){
+			this.debugActive = debugActive; 
+		}
+		
+		public void setDebugActive(boolean debugActive){
+			this.debugActive = debugActive; 
+		}
+		
+		public void println(String string){
+			System.out.println("[KB] " + string); 
+		}
+		
+		/* skip a line */
+		public void ln(){
+			System.out.println(); 
+		}
 	}
-	
 	
 }

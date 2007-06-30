@@ -123,7 +123,22 @@ public class FormulaTree extends JTree{
 		
 		addMouseListener(new MouseListenerTree()); 
 		
-		super.treeDidChange();
+		treeDidChange();
+	}
+	
+	/**
+	 * Create a new formula tree. 
+	 * 
+	 * @param root
+	 */
+	public void recriateTree(){
+		NodeFormulaTree rootFormula = new NodeFormulaTree("formula", enumType.FORMULA, enumSubType.NOTHING, null); 	
+		DefaultMutableTreeNode nodeTree =  new DefaultMutableTreeNode(rootFormula); 
+		rootTreeView = new DefaultMutableTreeNode(rootFormula); 
+		contextNode.setFormulaTree(rootFormula); 
+		model = new DefaultTreeModel(rootTreeView);
+		setModel(model);
+		updateTree(); 
 	}
 	
 	/**
@@ -162,7 +177,7 @@ public class FormulaTree extends JTree{
 	}
 	
 	/**
-	 * Remonta a arvore.
+	 * Rebuild the tree.
 	 */
 	public void updateTree() {
 		

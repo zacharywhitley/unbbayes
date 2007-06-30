@@ -198,12 +198,8 @@ public class BuilderMenuNode {
 				
 				/* Caso 1: raiz */
 				if(parent == null){
-					NodeFormulaTree rootFormula = new NodeFormulaTree("formula", enumType.FORMULA, enumSubType.NOTHING, null); 	
-					DefaultMutableTreeNode nodeTree =  new DefaultMutableTreeNode(rootFormula); 
-					formulaTreeController.setContextNodeFormula(rootFormula); 
-					formulaTreeController.getFormulaTree().setNodeActive(nodeTree);
-					formulaTreeController.getFormulaTree().updateTree(); 
-					formulaTreeController.getContextNode().updateLabel(); 
+					formulaTreeController.getFormulaTree().recriateTree(); 
+					formulaTreeController.updateFormulaText(); 
 					return; 
 				}
 				
@@ -213,7 +209,7 @@ public class BuilderMenuNode {
 					nodeFormula.setName("op"); 
 					nodeFormula.setNodeVariable(null); 
 					nodeFormula.setMnemonic("");
-					formulaTreeController.getContextNode().updateLabel(); 
+					formulaTreeController.updateFormulaText(); 
 					formulaTreeController.getFormulaTree().updateTree(); 
 					return; 
 				}
@@ -229,7 +225,7 @@ public class BuilderMenuNode {
 					nodeFormula.removeAllChildren(); 
 					DefaultMutableTreeNode nodeTree = formulaTreeController.getFormulaTree().getNodeActive(); 
 					nodeTree.removeAllChildren();
-					formulaTreeController.getContextNode().updateLabel(); 
+					formulaTreeController.updateFormulaText(); 
 					formulaTreeController.getFormulaTree().updateTree(); 
 					return;                   						
 				}
@@ -239,7 +235,7 @@ public class BuilderMenuNode {
 					
 					nodeFormulaParent.removeChild(nodeFormula); 
 					parent.remove(formulaTreeController.getFormulaTree().getNodeActive()); 
-					formulaTreeController.getContextNode().updateLabel(); 
+					formulaTreeController.updateFormulaText(); 
 					formulaTreeController.getFormulaTree().updateTree(); 
 					
 					return; 

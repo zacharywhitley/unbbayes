@@ -364,13 +364,19 @@ public class MEBNController {
 		return node; 
 	}	
 	
+	/**
+	 * Set the input node for be a instance of a resident node. 
+	 * Update the graph. 
+	 * 
+	 * @param input
+	 * @param resident
+	 * @throws CycleFoundException
+	 */
 	public void setInputInstanceOf(GenerativeInputNode input, ResidentNode resident) throws CycleFoundException{
 		
 		input.setInputInstanceOf((DomainResidentNode)resident);
 		mebnEditionPane.getInputNodePane().updateArgumentPane(); 
 		mebnEditionPane.setTxtInputOf(resident.getName()); 
-		mebnEditionPane.updateUI(); 
-	
 	}
 	
 	public void updateArgumentsOfObject(Object node){

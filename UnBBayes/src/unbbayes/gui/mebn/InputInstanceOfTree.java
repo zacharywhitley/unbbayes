@@ -198,16 +198,11 @@ public class InputInstanceOfTree extends JTree{
 				if (obj != null) {
 					
 					if (obj instanceof ResidentNode){ 
-						setIcon(greenNodeIcon);
-						}
-										
+						setIcon(yellowNodeIcon);
+						}			
 					else{
-						if (obj instanceof InputNode){
-							setIcon(blueNodeIcon); 
-						}
-						else{ 
 							if (obj instanceof ContextNode){
-						       setIcon(yellowNodeIcon);
+						       setIcon(greenNodeIcon);
 							}
 							else{ 
                                 if (obj instanceof MFrag){ 
@@ -220,8 +215,7 @@ public class InputInstanceOfTree extends JTree{
 						}
 					}
 				}
-				
-			} else {
+			else {
                 if (obj instanceof MFrag){ 
     				setOpenIcon(orangeNodeIcon);
     				setClosedIcon(orangeNodeIcon);
@@ -231,9 +225,7 @@ public class InputInstanceOfTree extends JTree{
      				setOpenIcon(mTheoryNodeIcon);
     				setClosedIcon(mTheoryNodeIcon);                	 
                  	setIcon(mTheoryNodeIcon); 
-                 }				
-				
-
+                 }	
 			}
 			return this;
 		}

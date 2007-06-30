@@ -166,7 +166,7 @@ public class DomainResidentNode extends ResidentNode {
 		residentNodeFatherList.remove(node); 
 	}
 	
-	public void removeInputNodeFatherList(GenerativeInputNode node){
+	protected void removeInputNodeFatherList(GenerativeInputNode node){
 		inputNodeFatherList.remove(node); 
 	}	
 	

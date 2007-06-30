@@ -401,7 +401,6 @@ public class FormulaEditionPane extends JPanel {
 		
 	}
 	
-	
 	public void showErrorMessage(String msg){
 		JOptionPane.showMessageDialog(null, msg , resource.getString("error"), JOptionPane.ERROR_MESSAGE);	
 	}
