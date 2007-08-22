@@ -18,5 +18,9 @@ public class Debug {
 		if (debug)
 			System.out.println(message);
 	}
-
+	
+	public static void println(Class classOrigin, String message) {
+		if (debug)
+			System.out.println("[DEBUG] " + classOrigin + ": " + message);
+	}
 }

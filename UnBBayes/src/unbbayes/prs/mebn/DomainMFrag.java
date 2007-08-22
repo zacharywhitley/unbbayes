@@ -205,6 +205,18 @@ public class DomainMFrag extends MFrag {
 	}
 
 	/**
+	 * Return the domain resident node with the name, or null if don't exists. 
+	 */
+	public DomainResidentNode getDomainResidentNodeByName(String name){
+		for(DomainResidentNode test: residentNodeList){
+			if (test.getName().equals(name)){
+				return test; 
+			}
+		}
+		return null; 
+	}
+	
+	/**
 	 * gets the number of the next context node (for uses to generate 
 	 * the automatic name
 	 */	
@@ -286,7 +298,7 @@ public class DomainMFrag extends MFrag {
 	 *  - Resident -> Resident
 	 *  
 	 *@param  edge
-	 *@throws MEBNConstructionException when the edge don't is bethwen valid nodes. 
+	 *@throws MEBNConstructionException when the edge don't is between valid nodes. 
 	 */
 	
 	public void addEdge(Edge edge) throws MEBNConstructionException, CycleFoundException, Exception{
@@ -297,24 +309,14 @@ public class DomainMFrag extends MFrag {
 		if (destination instanceof DomainResidentNode){
 			if (origin instanceof DomainResidentNode){
 				//Case 1: DomainResidentNode -> DomainResidentNode
-				if(!ConsistencyUtilities.hasCycle((DomainResidentNode)origin, (DomainResidentNode)destination)){
-				   super.addEdge(edge); 
-			       ((DomainResidentNode)origin).addResidentNodeChild((DomainResidentNode)destination); 
-				}
-				else{
-					throw new CycleFoundException(); 
-				}
+				super.addEdge(edge); 
+			    ((DomainResidentNode)origin).addResidentNodeChild((DomainResidentNode)destination); 
 			}
 			else{
 				if (origin instanceof GenerativeInputNode){
 					//Case 2: GenerativeInputNode -> DomainResidentNode 
-				    if(!ConsistencyUtilities.hasCycle((GenerativeInputNode)origin, (DomainResidentNode)destination)){
-					   super.addEdge(edge); 
-				       ((GenerativeInputNode)origin).addResidentNodeChild((DomainResidentNode)destination);
-				    }
-					else{
-						throw new CycleFoundException(); 
-					}
+				   super.addEdge(edge); 
+				   ((GenerativeInputNode)origin).addResidentNodeChild((DomainResidentNode)destination);
 				}
 				else{
 					throw new MEBNConstructionException(resource.getString("InvalidEdgeException")); 

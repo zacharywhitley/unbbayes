@@ -56,7 +56,6 @@ public class MultiEntityBayesianNetwork extends Network {
 	 */
 	public MultiEntityBayesianNetwork(String name) {
 		super(name);
-		
 		mFragList = new ArrayList<MFrag>();
 		domainMFragList = new ArrayList<DomainMFrag>(); 
 		findingMFragList = new ArrayList<FindingMFrag>();
@@ -93,6 +92,20 @@ public class MultiEntityBayesianNetwork extends Network {
 		mFragList.remove(domainMFrag);
 		domainMFragList.remove(domainMFrag); 
 		currentMFrag = null; 
+	}
+	
+	/**
+	 * Return a MFrag with the name if it exists or null otherside. 
+	 */
+	public DomainMFrag getMFragByName(String name){
+		
+		for(DomainMFrag test: domainMFragList){
+			if (test.getName().equals(name)){
+				return test; 
+			}
+		}
+		
+		return null; 
 	}
 	
 	/**

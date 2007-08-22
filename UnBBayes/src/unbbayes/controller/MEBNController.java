@@ -1,5 +1,6 @@
 package unbbayes.controller;
 
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import unbbayes.gui.MEBNEditionPane;
@@ -16,7 +17,6 @@ import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.entity.BooleanStatesEntity;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.Type;
@@ -25,10 +25,12 @@ import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.CycleFoundException;
+import unbbayes.prs.mebn.exception.DuplicatedNameException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
+import unbbayes.util.Debug;
 
 /**
  * Controller of the MEBN structure. 
@@ -127,8 +129,21 @@ public class MEBNController {
 	
 	public void insertDomainMFrag() {
 		
-		DomainMFrag domainMFrag = new DomainMFrag(resource.getString("domainMFragName")
-				+ multiEntityBayesianNetwork.getDomainMFragNum(), multiEntityBayesianNetwork); 
+		//The name of the MFrag is unique
+		
+		String name = null; 
+        
+		int domainMFragNum = multiEntityBayesianNetwork.getDomainMFragNum(); 
+		
+		while (name == null){
+			name = name = resource.getString("domainMFragName") + multiEntityBayesianNetwork.getDomainMFragNum(); 
+			if(multiEntityBayesianNetwork.getMFragByName(name) != null){
+				name = null;
+				multiEntityBayesianNetwork.setDomainMFragNum(++domainMFragNum); 
+			}
+		}
+		
+		DomainMFrag domainMFrag = new DomainMFrag(name, multiEntityBayesianNetwork); 
 		
 		multiEntityBayesianNetwork.addDomainMFrag(domainMFrag); 
 		
@@ -173,13 +188,20 @@ public class MEBNController {
 	 * @param mFrag
 	 * @param name
 	 */
-	public void renameMFrag(MFrag mFrag, String name){
-			mFrag.setName(name);
+	public void renameMFrag(MFrag mFrag, String name) throws DuplicatedNameException{
+			
+           if (multiEntityBayesianNetwork.getMFragByName(name) != null){
+        	   throw new DuplicatedNameException(); 
+           }
+		    
+		    mFrag.setName(name);
 			
 			if(this.getCurrentMFrag() == mFrag){
 				mebnEditionPane.showTitleGraph(name); 
 			}
 	}
+	
+
 	
 	/**
 	 * Show the graph of the MFrag and select it how active MFrag. 
@@ -250,7 +272,23 @@ public class MEBNController {
 		}
 		
 		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
-		DomainResidentNode node = new DomainResidentNode(resource.getString("residentNodeName") + domainMFrag.getDomainResidentNodeNum(), domainMFrag);
+		
+		//The name of the Domain Resident Node is unique into MFrag
+		
+		String name = null; 
+        
+		int residentNodeNum = domainMFrag.getDomainResidentNodeNum(); 
+		
+		while (name == null){
+			name = name = resource.getString("residentNodeName") + 
+			                        multiEntityBayesianNetwork.getDomainResidentNodeNum(); 
+			if(domainMFrag.getDomainResidentNodeByName(name) != null){
+				name = null;
+				multiEntityBayesianNetwork.plusDomainResidentNodeNum(); 
+			}
+		}
+		DomainResidentNode node = new DomainResidentNode(name, domainMFrag);
+		
 		node.setPosition(x, y);
 		node.setDescription(node.getName());
 		domainMFrag.addDomainResidentNode(node);
@@ -267,9 +305,15 @@ public class MEBNController {
 	    return node;
 	}
 	
-	public void renameDomainResidentNode(DomainResidentNode resident, String newName){
-		resident.setName(newName);	
-		mebnEditionPane.repaint(); 
+	public void renameDomainResidentNode(DomainResidentNode resident, String newName)
+	                                   throws DuplicatedNameException{
+		if(((DomainMFrag)mFragActive).getDomainResidentNodeByName(newName) == null){; 
+		   resident.setName(newName);	
+		   mebnEditionPane.repaint();
+		}
+		else{
+			throw new DuplicatedNameException(); 
+		}
 	}
 	
 	/**
@@ -563,8 +607,21 @@ public class MEBNController {
 	public OrdinaryVariable addNewOrdinaryVariableInMFrag(){
 
 		DomainMFrag domainMFrag = (DomainMFrag) multiEntityBayesianNetwork.getCurrentMFrag();
-		String name = resource.getString("ordinaryVariableName") + domainMFrag.getOrdinaryVariableNum(); 
+		
+		String name = null; 
+        
+		int ordinaryVariableNum = domainMFrag.getOrdinaryVariableNum(); 
+		
+		while (name == null){
+			name = resource.getString("ordinaryVariableName") + domainMFrag.getOrdinaryVariableNum(); 
+			if(domainMFrag.getOrdinaryVariableByName(name) != null){
+				name = null;
+				domainMFrag.setOrdinaryVariableNum(++ordinaryVariableNum); 
+			}
+		}
+		
 		Type type = multiEntityBayesianNetwork.getTypeContainer().getDefaultType(); 
+		
 		OrdinaryVariable ov = new OrdinaryVariable(name, type, domainMFrag);
 		domainMFrag.addOrdinaryVariable(ov);
 		
@@ -631,6 +688,7 @@ public class MEBNController {
 		mebnEditionPane.getEditArgumentsTab().setTreeMFragActive(); 
 	}	
 	
+	@Deprecated
 	public void renameOVariableOfResidentTree(String name){
 		OrdinaryVariable ov = mebnEditionPane.getEditArgumentsTab().getResidentOVariableTree().getOVariableSelected(); 
 	    ov.setName(name); 
@@ -639,6 +697,7 @@ public class MEBNController {
 		mebnEditionPane.getEditArgumentsTab().update(); 
 	}
 	
+	@Deprecated
 	public void renameOVariableOfMFragTree(String name){
 		OrdinaryVariable ov = mebnEditionPane.getEditArgumentsTab().getMFragOVariableTree().getOVariableSelected(); 
 	    ov.setName(name); 
@@ -647,6 +706,7 @@ public class MEBNController {
 		mebnEditionPane.getEditArgumentsTab().update(); 
 	}
 	
+	@Deprecated
 	public void renameOVariableInArgumentEditionPane(String name){
 		if (mebnEditionPane.getEditArgumentsTab().isTreeResidentActive()){
 			renameOVariableOfResidentTree(name); 
@@ -674,7 +734,19 @@ public class MEBNController {
 	 */
 	public ObjectEntity createObjectEntity() throws TypeException{
 
-		String name = resource.getString("entityName") + multiEntityBayesianNetwork.getObjectEntityContainer().getEntityNum();
+		String name = null; 
+        
+		int entityNum = multiEntityBayesianNetwork.getObjectEntityContainer().getEntityNum();
+		
+		while (name == null){
+			name = resource.getString("entityName") + 
+			            multiEntityBayesianNetwork.getObjectEntityContainer().getEntityNum();
+			if(multiEntityBayesianNetwork.getObjectEntityContainer().getObjectEntityByName(name) != null){
+				name = null;
+				multiEntityBayesianNetwork.getObjectEntityContainer().setEntityNum(++entityNum); 
+			}
+		}
+		
 		ObjectEntity objectEntity = multiEntityBayesianNetwork.getObjectEntityContainer().createObjectEntity(name);
 		
 		return objectEntity; 
@@ -697,11 +769,6 @@ public class MEBNController {
 	}
 	
 	
-	
-	
-	
-	
-	
 	/*-------------------Uso do PowerLoom--------------*/
 	
 	public void preencherKB(){
@@ -715,11 +782,12 @@ public class MEBNController {
 			for(ResidentNode resident: multiEntityBayesianNetwork.getCurrentMFrag().getResidentNodeList()){	
 				test.executeRandonVariableDefinition((DomainResidentNode) resident); 
 			}
-			
-			
-			
 	}
 	
+	/**
+	 * Execute the list of context nodes of the current MFrag. 
+	 * (this version only print the result in console)
+	 */
 	public void executeContext(){
 		
 		PowerLoomKB test = PowerLoomKB.getInstanceKB(); 
@@ -728,11 +796,19 @@ public class MEBNController {
 			
 			boolean resultado = test.executeContextFormula(context);
 		    
-			System.out.println("Contexto " + context.getName() + resultado); 
+			Debug.println(this.getClass(), "Contexto " + context.getName() + "=" + resultado); 
 		}
 		
 	}
 	
+	/**
+	 * Put a new assert of a entity in the KB. 
+	 * 
+	 * Sintaxe PowerLoom: 
+	 * (assert (Starship Enterprise))
+	 * 
+	 * @param assertComand Assert in powerloom sintaxe
+	 */
 	public void makeEntityAssert(String assertComand){
 		    PowerLoomKB test = PowerLoomKB.getInstanceKB(); 
 		    
@@ -740,6 +816,14 @@ public class MEBNController {
 		
 	}
 	
+	/**
+	 * Put a new relation assert in the KB. 
+	 * 
+	 * Sintaxe PowerLoom: 
+	 * (assert(= (StarshipZone(Enterprise))  ZN_BlackHoleBoundary))
+	 * 
+	 * @param assertComand Assert in powerloom sintaxe
+	 */	
 	public void makeRelationAssert(String assertComand){
 	    PowerLoomKB test = PowerLoomKB.getInstanceKB(); 
 	    
@@ -749,23 +833,34 @@ public class MEBNController {
 	public void saveDefinitionsFile(){
 		PowerLoomKB test = PowerLoomKB.getInstanceKB(); 
 
-		System.out.println("[PL] saving module"); 
-		test.saveDefinitionsFile(); 
-		System.out.println("[PL] file save sucefull");
+		Debug.println(this.getClass(), "[PowerLoom] Saving module..."); 
+		test.saveDefinitionsFile("AfirmTeste.plm"); 
+		Debug.println(this.getClass(), "[PowerLoom] ...File save sucefull");
     
 	}
 	
-	/*
+	/**
+	 *Apenas de teste...
+	 *
+	 * Preenche uma variável ordinária com uma entidade... 
+	 * 
+	 * @param nameOV Nome da OV que será linkada (jah deve existir)
+	 * @param entity Entidade a ser criada e linkada. 
+	 */
 	public void linkOrdVariable2Entity(String nameOV, String entity){
-		
+		//TODO tirar este metodo da versao final
 		ArrayList<OrdinaryVariable> listOV = (ArrayList<OrdinaryVariable>)this.getCurrentMFrag().getOrdinaryVariableList(); 
 		
 		for(OrdinaryVariable ov : listOV){
 			if(ov.getName().compareTo(nameOV) == 0){
 				
 				try{ 
-				ov.setEntity(new ObjectEntity(entity, "Boolean")); //warn: o tipo aqui eh apenas para testarmos... 
-				System.out.println(" -> Linkado: " + ov.getName() + " a " + entity); 
+					ObjectEntity oe = multiEntityBayesianNetwork.getObjectEntityContainer().createObjectEntity(entity); 
+					ov.setEntity(oe); //warn: o tipo aqui eh apenas para testarmos... 
+					Debug.println(this.getClass(), " Linkado: " + ov.getName() + " a " + entity); 
+				}
+				catch(TypeException e){
+					e.printStackTrace(); 
 				}
 				catch(Exception e){
 					e.printStackTrace(); 
@@ -774,8 +869,6 @@ public class MEBNController {
 			}
 		}
 	}
-
-*/
 	
 	public MultiEntityBayesianNetwork getMultiEntityBayesianNetwork() {
 		return multiEntityBayesianNetwork;

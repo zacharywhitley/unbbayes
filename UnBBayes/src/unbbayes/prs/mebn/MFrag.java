@@ -238,6 +238,18 @@ public class MFrag implements Graph{
 	}	
 	
 	/**
+	 * Return the ordinary variable with the name, or null if don't exists. 
+	 */
+	public OrdinaryVariable getOrdinaryVariableByName(String name){
+		for(OrdinaryVariable test: ordinaryVariableList){
+			if (test.getName().equals(name)){
+				return test; 
+			}
+		}
+		return null; 
+	}
+	
+	/**
 	 * Gets the node list. List of all nodes in this MFrag.
 	 * 
 	 * @return The list of all nodes in this MFrag.

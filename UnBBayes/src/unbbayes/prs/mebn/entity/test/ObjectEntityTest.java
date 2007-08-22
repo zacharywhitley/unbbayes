@@ -54,7 +54,7 @@ public class ObjectEntityTest extends TestCase {
 	}
 
 	/**
-	 * Test method for {@link unbbayes.prs.mebn.entity.ObjectEntity#getObjectEntity(java.lang.String)}.
+	 * Test method for {@link unbbayes.prs.mebn.entity.ObjectEntity#getObjectEntityByName(java.lang.String)}.
 	 */
 	public void testGetObjectEntity() {
 		fail("Not yet implemented"); // TODO

@@ -77,7 +77,7 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"of"," de "},
 		
 		/* Exceptions MEBN */
-		{"withoutMFrag", "NÃ£o existe nenhuma MFrag"}, 
+		{"withoutMFrag", "Não existe nenhuma MFrag"}, 
 		{"edgeInvalid", "Arco invalido"}, 		
 		
 		{"JAXBExceptionFound", "Erro de sintaxe..."},

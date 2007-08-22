@@ -1,5 +1,6 @@
 package unbbayes.gui.mebn;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -17,6 +18,8 @@ import javax.swing.JToolBar;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.gui.mebn.auxiliary.ButtonLabel;
+import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
+import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.entity.Type;
 
@@ -61,6 +64,7 @@ public class OrdVariableToolBar extends JToolBar{
 	    types = mebnController.getMultiEntityBayesianNetwork().getTypeContainer().getListOfTypes().toArray( new Type[0] ); 
         buildJComboBoxTypes(types); 
 	    
+        txtName.addFocusListener(new FocusListenerTextField()); 
 		txtName.addKeyListener(new KeyAdapter() {
   			public void keyPressed(KeyEvent e) {
   				
@@ -70,18 +74,49 @@ public class OrdVariableToolBar extends JToolBar{
   						matcher = wordPattern.matcher(name);
   						if (matcher.matches()) {
   							if(ov != null){
-  							   ov.setName(name); 
-  							   ov.updateLabel(); 
+  								
+  								if(mebnController.getCurrentMFrag().getOrdinaryVariableByName(name)!= null){
+  									JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
+  	  	  									resource.getString("nameAlreadyExists"), 
+  	  	  									resource.getString("nameException"), 
+  	  	  									JOptionPane.ERROR_MESSAGE);
+  	  							   	
+  								}else{
+  	  							   ov.setName(name); 
+  							       ov.updateLabel();
+  								}
   							}
   						}  else {
-  							JOptionPane.showMessageDialog(null, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+  							txtName.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+  							txtName.setForeground(Color.WHITE); 
   							txtName.selectAll();
+  							JOptionPane.showMessageDialog(null, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
   						}
   					}
   					catch (javax.swing.text.BadLocationException ble) {
   						System.out.println(ble.getMessage());
   					}
   				}
+  			}
+  			
+
+  			public void keyReleased(KeyEvent e){
+  				try{
+                    String name = txtName.getText(0,txtName.getText().length());
+						matcher = wordPattern.matcher(name);
+						if (!matcher.matches()) {
+							txtName.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+							txtName.setForeground(Color.WHITE); 
+						}
+						else{
+							txtName.setBackground(ToolKitForGuiMebn.getColorTextFieldSelected());
+							txtName.setForeground(Color.BLACK); 
+						}
+  				}
+  				catch(Exception efd){
+  					
+  				}
+  				
   			}
   		});  
 	    

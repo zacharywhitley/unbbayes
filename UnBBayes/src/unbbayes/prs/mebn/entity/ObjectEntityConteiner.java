@@ -8,6 +8,10 @@ import unbbayes.prs.mebn.entity.exception.TypeException;
 /**
  * Contains the Object entities of a MEBN. 
  * 
+ * Note: Este conteiner não pode ser um singleton poque o usuario pode editar
+ * duas ou mais MTheories ao mesmo tempo, acarretando conjuntos de entidades
+ * diferentes. 
+ * 
  * @author Laecio Lima dos Santos
  * @version 1.0 06/03/07
  *
@@ -68,7 +72,7 @@ public class ObjectEntityConteiner {
 	 * @param name
 	 * @return
 	 */
-	public ObjectEntity getObjectEntity(String name){
+	public ObjectEntity getObjectEntityByName(String name){
 		for(ObjectEntity oe: listEntity){
 			if (oe.getName().compareTo(name) == 0){
 				return oe; 

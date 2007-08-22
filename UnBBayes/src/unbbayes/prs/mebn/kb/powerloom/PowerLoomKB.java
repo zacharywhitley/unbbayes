@@ -185,8 +185,13 @@ public class PowerLoomKB implements KnowledgeBase{
 	      } 
 	}
 	
-	public void saveDefinitionsFile(){
-		PLI.sSaveModule(moduleName, "AfirmTeste.plm", "REPLACE", null); 
+	/**
+	 * Save the definitions file (content of current KB)
+	 * 
+	 * @param name Name of the file
+	 */
+	public void saveDefinitionsFile(String name){
+		PLI.sSaveModule(moduleName, name, "REPLACE", null); 
 	}
 	
 	private String makeOperatorString(NodeFormulaTree operatorNode){

@@ -32,6 +32,7 @@ import javax.swing.event.ListSelectionListener;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.controller.NetworkController;
+import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.entity.Entity;
@@ -187,6 +188,7 @@ public class EntityEditionPane extends JPanel{
 	
 	private void addButtonsListeners(){
 		
+		txtName.addFocusListener(new FocusListenerTextField()); 
 		txtName.addKeyListener(new KeyAdapter() {
   			public void keyPressed(KeyEvent e) {
   				
@@ -212,6 +214,8 @@ public class EntityEditionPane extends JPanel{
   	  							txtName.selectAll();
   							}
   						}  else {
+  							txtName.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+  							txtName.setForeground(Color.WHITE); 
   							JOptionPane.showMessageDialog(null, 
   									resource.getString("nameError"), 
   									resource.getString("nameException"), 
@@ -223,6 +227,25 @@ public class EntityEditionPane extends JPanel{
   						System.out.println(ble.getMessage());
   					}
   				}
+  			}
+  			
+  			public void keyReleased(KeyEvent e){
+  				try{
+                    String name = txtName.getText(0,txtName.getText().length());
+						matcher = wordPattern.matcher(name);
+						if (!matcher.matches()) {
+							txtName.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+							txtName.setForeground(Color.WHITE); 
+						}
+						else{
+							txtName.setBackground(ToolKitForGuiMebn.getColorTextFieldSelected());
+							txtName.setForeground(Color.BLACK); 
+						}
+  				}
+  				catch(Exception efd){
+  					
+  				}
+  				
   			}
   		});
         

@@ -113,6 +113,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"LookAndFeelInstantiationException","N√£o foi poss√≠vel carregar esse LookAndFeel: "},
 		{"LookAndFeelIllegalAccessException","Esse LookAndFeel n√£o pode ser usado: "},
 		{"nameError","Nome n√£o aceito"},
+		{"nameAlreadyExists","J· existe um objeto com este nome"},	
 		{"internalError","Erro interno... Reporte aos desenvolvedores"},
 		
 		{"helpToolTip","Ajuda do UnBBayes"},
@@ -128,7 +129,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"siglaLabel","Sigla:"},
 		{"nameLabel", "Nome:"}, 
 		{"typeLabel", "Tipo:"}, 
-		{"descriptionLabel","Descri√ß√£o"},
+		{"descriptionLabel","DescriÁ„o"},
 		{"compileToolTip","Compilar √°rvore de jun√ß√£o"},
 		{"moreToolTip","Adicionar estado"},
 		{"lessToolTip","Remover estado"},
@@ -139,7 +140,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"contextNodeInsertToolTip","Inserir vari√°vel de contexto"},
 		{"inputNodeInsertToolTip","Inserir vari√°vel de entrada"},
 		{"residentNodeInsertToolTip","Inserir vari√°vel residente"},
-		{"mFragInsertToolTip","Inserir MFrag"},	
+		{"mFragInsertToolTip",",Inserir MFrag"},	
 		{"inputActiveToolTip","Input Node Selecionado"},  
 		{"mFragActiveToolTip","MFrag Selecionada"}, 		
 		{"contextActiveToolTip","Context Node Selecionado"}, 
@@ -159,7 +160,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"downArgumentToolTip", "Aicionar a lista de argumentos v. ord. selecionada"}, 		
 		{"mTheoryEditionTip", "Editar atributos da MTheory"}, 		
 		
-		{"showMTheoryToolTip","Mostrar √°rvore da MTheory"},	
+		{"showMTheoryToolTip","Mostrar ·rvore da MTheory"},	
 		{"showEntitiesToolTip","Mostrar entidades da MTheory"},
 		{"showOVariablesToolTip","Mostrar ovariables da MFrag"},			
 		
@@ -170,7 +171,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		
 		{"andToolTip", "operador 'e'"}, 
 		{"orToolTip", "operador 'ou'"},
-		{"notToolTip", "operador 'n√£o'"},
+		{"notToolTip", "operador 'n„o'"},
 		{"equalToToolTip", "operador 'igual'"},
 		{"impliesToolTip", "operador 'implica'"},
 		{"iffToolTip", "operador 'see' "},
@@ -186,15 +187,15 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"menuAddFindingMFrag", "Add Finding MFrag"}, 
 		
 		//Titles for tab panel
-		{"ResidentTabTitle", "N√≥ Residente"}, 
-		{"InputTabTitle", "N√≥ de Input"}, 
-		{"ContextTabTitle", "N√≥ de Contexto"}, 
-		{"MTheoryTreeTitle", "√Årvore MTheory"}, 
+		{"ResidentTabTitle", "NÛ Residente"}, 
+		{"InputTabTitle", "NÛ de Input"}, 
+		{"ContextTabTitle", "NÛ de Contexto"}, 
+		{"MTheoryTreeTitle", "¡rvore MTheory"}, 
 		{"EntityTitle", "Entidade"}, 
-		{"OVariableTitle", "Vari√°vel Ord."},
+		{"OVariableTitle", "Vari·vel Ord."},
 		{"ArgumentTitle", "Argumentos"}, 
 		{"StatesTitle", "Estados"}, 	
-		{"FathersTitle", "N√≥s Pais"}, 		
+		{"FathersTitle", "NÛs Pais"}, 		
 		
 		//Label for buttons of tab selection
 		{"MTheoryButton", "MTheory"}, 
@@ -205,11 +206,11 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"ArgumentsButton", "Argumentos"}, 	
 		{"OrdVariableButton", "Var. Ordin√°ria"}, 
 		
-		{"whithotMFragActive","N√£o h√° MFrag ativa"},			
-		{"previewTitle","Pr√© visualiza√ß√£o"},
+		{"whithotMFragActive","N√o h· MFrag ativa"},			
+		{"previewTitle","PrÈ visualizaÁ„o"},
 		{"filesText"," arquivos"},
-		{"aprendizagemTitle","Edi√ß√£o da Rede de Aprendizagem"},
-		{"calculateProbabilitiesFromLearningToEditMode","Remontar a estrutura da rede e voltar para o modo de edi√ß√£o"},
+		{"aprendizagemTitle","EdiÁ„o da Rede de Aprendizagem"},
+		{"calculateProbabilitiesFromLearningToEditMode","Remontar a estrutura da rede e voltar para o modo de ediÁ„o"},
         {"fileMenu","Arquivo"},
         {"lafMenu","Look and Feel"},
         {"viewMenu","Exibir"},

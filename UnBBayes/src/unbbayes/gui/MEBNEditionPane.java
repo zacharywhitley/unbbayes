@@ -44,6 +44,7 @@ import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.exception.DuplicatedNameException;
 
 /**
  * Pane for edition of MEBN. This is the main panel of 
@@ -226,7 +227,6 @@ public class MEBNEditionPane extends JPanel {
         bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 1));
         status      = new JLabel(resource.getString("statusReadyLabel"));
 
-        //criar labels e textfields que serao usados no jtbState
         txtDescription     = new JTextField(15);
         
         txtNameMTheory = new JTextField(5);         
@@ -235,7 +235,6 @@ public class MEBNEditionPane extends JPanel {
         txtArguments = new JTextField(10); 
         txtFormula = new JTextField(15); 
         
-        //criar botoes que serao usados nodeList toolbars
         btnEditMTheory = new JButton(iconController.getMTheoryNodeIcon()); 
         btnAddEdge               = new JButton(iconController.getEdgeIcon());
         btnAddContextNode = new JButton(iconController.getContextNodeIcon());
@@ -263,7 +262,7 @@ public class MEBNEditionPane extends JPanel {
         btnTabOptionOVariable.setToolTipText(resource.getString("showOVariablesToolTip"));
         btnTabOptionEntity.setToolTipText(resource.getString("showEntitiesToolTip"));
         
-        addActionListeners(); 
+        addActionListenersToButtons(); 
         
         //colocar botoes e controladores do look-and-feel no toolbar e esse no topPanel
         
@@ -284,69 +283,7 @@ public class MEBNEditionPane extends JPanel {
         jtbEdition.setOrientation(JToolBar.VERTICAL); 
         
         /* testes... */
-        JButton rodarKB = new JButton("PL"); 
-        jtbGeneralOptions.add(rodarKB); 
-        rodarKB.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) {
-  				mebnController.preencherKB(); 
-  			}
-  		});
-        
-        JButton entityFinding = new JButton("EF"); 
-        jtbGeneralOptions.add(entityFinding); 
-        entityFinding.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) {
-  				String finding = JOptionPane.showInputDialog(null, 
-  						"Entre com o entity finding: ", 
-  						"Test Finding", 
-  						JOptionPane.QUESTION_MESSAGE); 
-  				mebnController.makeEntityAssert(finding); 
-  			}
-  		});        
-
-        JButton finding = new JButton("RF"); 
-        jtbGeneralOptions.add(finding); 
-        finding.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) {
-  				String finding = JOptionPane.showInputDialog(null, 
-  						"Entre com o relation finding: ", 
-  						"Test Finding", 
-  						JOptionPane.QUESTION_MESSAGE); 
-  				mebnController.makeRelationAssert(finding); 
-  			}
-  		});     
-        
-        JButton link = new JButton("LK"); 
-        jtbGeneralOptions.add(link); 
-        link.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) { 
-  				String ovName = JOptionPane.showInputDialog(null, 
-  						"Entre com o nome da variavel ordinaria: ", 
-  						"Test Finding", 
-  						JOptionPane.QUESTION_MESSAGE); 
-  				String entityName = JOptionPane.showInputDialog(null, 
-  						"Entre com o nome da entidade: ", 
-  						"Test Finding", 
-  						JOptionPane.QUESTION_MESSAGE); 
-  				//controller.linkOrdVariable2Entity(ovName, entityName); 
-  			}
-  		});  
-        
-        JButton context = new JButton("CT"); 
-        jtbGeneralOptions.add(context); 
-        context.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) { 
-  				mebnController.executeContext(); 
-  			}
-  		});  
-        
-        JButton save = new JButton("SV"); 
-        jtbGeneralOptions.add(save); 
-        save.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) { 
-  				mebnController.saveDefinitionsFile(); 
-  			}
-  		}); 
+        buildJtbPowerLoom();  
         jtbGeneralOptions.setFloatable(false); 
         topPanel.add(jtbGeneralOptions);
         
@@ -544,6 +481,59 @@ public class MEBNEditionPane extends JPanel {
      
 
         txtNameMFrag.addFocusListener(new FocusListenerTextField()); 
+  		txtNameMFrag.addKeyListener(new KeyAdapter() {
+  			public void keyPressed(KeyEvent e) {
+  				
+  				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameMFrag.getText().length()>0)) {
+  					try {
+  						String name = txtNameMFrag.getText(0,txtNameMFrag.getText().length());
+  						matcher = wordPattern.matcher(name);
+  						if (matcher.matches()) {
+  							try{
+  							   mebnController.renameMFrag(mebnController.getCurrentMFrag(), name);
+  							   mTheoryTree.updateTree();
+  							}
+  							catch(DuplicatedNameException dne){
+  	  							JOptionPane.showMessageDialog(netWindow, 
+  	  									resource.getString("nameAlreadyExists"), 
+  	  									resource.getString("nameException"), 
+  	  									JOptionPane.ERROR_MESSAGE);
+  							}
+  						}  else {
+  							txtNameMFrag.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+  							txtNameMFrag.setForeground(Color.WHITE); 
+  							txtNameMFrag.selectAll();
+  							JOptionPane.showMessageDialog(netWindow, 
+  									resource.getString("nameError"), 
+  									resource.getString("nameException"), 
+  									JOptionPane.ERROR_MESSAGE);
+  						}
+  					}
+  					catch (javax.swing.text.BadLocationException ble) {
+  						System.out.println(ble.getMessage());
+  					}
+  				}
+  			}
+  			
+  			public void keyReleased(KeyEvent e){
+  				try{
+                    String name = txtNameMFrag.getText(0,txtNameMFrag.getText().length());
+						matcher = wordPattern.matcher(name);
+						if (!matcher.matches()) {
+							txtNameMFrag.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+							txtNameMFrag.setForeground(Color.WHITE); 
+						}
+						else{
+							txtNameMFrag.setBackground(ToolKitForGuiMebn.getColorTextFieldSelected());
+							txtNameMFrag.setForeground(Color.BLACK); 
+						}
+  				}
+  				catch(Exception efd){
+  					
+  				}
+  				
+  			}
+  		});
         
         jtbMFrag.add(btnMFragActive); 
         jtbMFrag.addSeparator(); 
@@ -607,7 +597,12 @@ public class MEBNEditionPane extends JPanel {
   					}
   					catch (javax.swing.text.BadLocationException ble) {
   						System.out.println(ble.getMessage());
-  					}
+  					} catch (DuplicatedNameException dne) {
+							JOptionPane.showMessageDialog(netWindow, 
+	  									resource.getString("nameAlreadyExists"), 
+	  									resource.getString("nameException"), 
+	  									JOptionPane.ERROR_MESSAGE);
+					}
   				}
   			}
   			
@@ -730,6 +725,10 @@ public class MEBNEditionPane extends JPanel {
    
   	}
   	
+	/*
+	 * Build Description panel. This panel show de description of 
+	 * the active item (is used for the user for edit this description)
+	 */
   	private JPanel buildJpDescritpion(){
   		
         JPanel jpDescription = new JPanel(new BorderLayout()); 
@@ -757,7 +756,74 @@ public class MEBNEditionPane extends JPanel {
  
   	}
   	
-  	private void addActionListeners(){
+  	private void buildJtbPowerLoom(){
+
+        JButton rodarKB = new JButton("PL"); 
+        jtbGeneralOptions.add(rodarKB); 
+        rodarKB.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				mebnController.preencherKB(); 
+  			}
+  		});
+        
+        JButton entityFinding = new JButton("EF"); 
+        jtbGeneralOptions.add(entityFinding); 
+        entityFinding.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				String finding = JOptionPane.showInputDialog(null, 
+  						"Entre com o entity finding: ", 
+  						"Test Finding", 
+  						JOptionPane.QUESTION_MESSAGE); 
+  				mebnController.makeEntityAssert(finding); 
+  			}
+  		});        
+
+        JButton finding = new JButton("RF"); 
+        jtbGeneralOptions.add(finding); 
+        finding.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				String finding = JOptionPane.showInputDialog(null, 
+  						"Entre com o relation finding: ", 
+  						"Test Finding", 
+  						JOptionPane.QUESTION_MESSAGE); 
+  				mebnController.makeRelationAssert(finding); 
+  			}
+  		});     
+        
+        JButton link = new JButton("LK"); 
+        jtbGeneralOptions.add(link); 
+        link.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) { 
+  				String ovName = JOptionPane.showInputDialog(null, 
+  						"Entre com o nome da variavel ordinaria: ", 
+  						"Test Finding", 
+  						JOptionPane.QUESTION_MESSAGE); 
+  				String entityName = JOptionPane.showInputDialog(null, 
+  						"Entre com o nome da entidade: ", 
+  						"Test Finding", 
+  						JOptionPane.QUESTION_MESSAGE); 
+  				//controller.linkOrdVariable2Entity(ovName, entityName); 
+  			}
+  		});  
+        
+        JButton context = new JButton("CT"); 
+        jtbGeneralOptions.add(context); 
+        context.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) { 
+  				mebnController.executeContext(); 
+  			}
+  		});  
+        
+        JButton save = new JButton("SV"); 
+        jtbGeneralOptions.add(save); 
+        save.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) { 
+  				mebnController.saveDefinitionsFile(); 
+  			}
+  		}); 
+  	}
+  	
+  	private void addActionListenersToButtons(){
   		
   		btnEditMTheory.addActionListener(new ActionListener(){
   			public void actionPerformed(ActionEvent ae){
@@ -826,65 +892,6 @@ public class MEBNEditionPane extends JPanel {
   				netWindow.getGraphPane().setAction(GraphAction.SELECT_MANY_OBJECTS);
   			}
   		}); 	
-  		
-  		
-  		txtNameMFrag.addKeyListener(new KeyAdapter() {
-  			public void keyPressed(KeyEvent e) {
-  				
-  				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameMFrag.getText().length()>0)) {
-  					try {
-  						String name = txtNameMFrag.getText(0,txtNameMFrag.getText().length());
-  						matcher = wordPattern.matcher(name);
-  						if (matcher.matches()) {
-  							mebnController.renameMFrag(mebnController.getCurrentMFrag(), name);
-  							mTheoryTree.updateTree(); 
-  						}  else {
-  							JOptionPane.showMessageDialog(netWindow, 
-  									resource.getString("nameError"), 
-  									resource.getString("nameException"), 
-  									JOptionPane.ERROR_MESSAGE);
-  							txtNameMFrag.selectAll();
-  						}
-  					}
-  					catch (javax.swing.text.BadLocationException ble) {
-  						System.out.println(ble.getMessage());
-  					}
-  				}
-  			}
-  		});
-  		
-  		txtNameMTheory.addKeyListener(new KeyAdapter() {
-  			public void keyPressed(KeyEvent e) {
-  				
-  				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameMTheory.getText().length()>0)) {
-  					try {
-  						String name = txtNameMTheory.getText(0,txtNameMTheory.getText().length());
-  						matcher = wordPattern.matcher(name);
-  						if (matcher.matches()) {
-  							mebnController.setNameMTheory(name);
-  							mTheoryTree.setMTheoryName(name);
-  							mTheoryTree.updateTree(); 
-  						}  else {
-  							JOptionPane.showMessageDialog(netWindow, 
-  									resource.getString("nameError"), 
-  									resource.getString("nameException"), 
-  									JOptionPane.ERROR_MESSAGE);
-  							txtNameMTheory.selectAll();
-  						}
-  					}
-  					catch (javax.swing.text.BadLocationException ble) {
-  						System.out.println(ble.getMessage());
-  					}
-  				}
-  			}
-  		});
-  		
-  		// listener responsavel pela atualizacao do texo da descricao do no
-  		txtDescription.addKeyListener(new KeyAdapter() {
-  			public void keyPressed(KeyEvent e) {
-  				//TODO fazer ... 
-  			}
-  		});	
   		
   		//ao clicar no botao btnGlobalOption, mostra-se o menu para escolha das opcoes
   		btnTabOptionTree.addActionListener(new ActionListener() {
@@ -1171,5 +1178,4 @@ public class MEBNEditionPane extends JPanel {
 		this.txtFormula.setText(formula);
 	}
 	
-
 }
