@@ -58,9 +58,6 @@ import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
 /**
  * Make de loader from a file pr-owl for the mebn structure. 
  * 
- * Version Pr-OWL: 1.02
- * (http://www.pr-owl.org/pr-owl.owl) 
- * 
  * @author Laecio Lima dos Santos
  * @version 1.0 
  *
@@ -80,8 +77,7 @@ public class LoaderPrOwlIO {
 	
 	/* 
 	 * the first contains the context nodes of the MTheory while the second contains 
-	 * the context nodes inner terms (exists only in the pr-owl, not in the mebn
-	 * structure)
+	 * the context nodes inner terms (exists only in the pr-owl format)
 	 */
 	private HashMap<String, ContextNode> mapContextNode = new HashMap<String, ContextNode>();
 	private HashMap<String, ContextNode> mapContextNodeInner = new HashMap<String, ContextNode>();
@@ -108,9 +104,8 @@ public class LoaderPrOwlIO {
 	
 	private static final String PROWLMODELFILE = "pr-owl/pr-owl.owl";
 	
-	private final String ORDINARY_VAR_SCOPE_SEPARATOR = ".";
-	private final String POSSIBLE_VALUE_SCOPE_SEPARATOR = ".";	
-	
+	private String ordinaryVarScopeSeparator = ".";
+	private String possibleValueScopeSeparator = ".";	
 	
 	/**
 	 * Make the load from file to MEBN structure.
@@ -123,11 +118,9 @@ public class LoaderPrOwlIO {
 	public MultiEntityBayesianNetwork loadMebn(File file) throws 
 													IOException, IOMebnException{
 
-		List<String> listWarnings = new ArrayList<String>(); 
-		
 		owlModel = ProtegeOWL.createJenaOWLModel();
 		
-		Debug.println("[DEBUG]" + this.getClass() + " -> Load begin"); 
+		Debug.println("[DEBUG]" + LoaderPrOwlIO.class + " -> " + "Load begin"); 
 		
 		File filePrOwl = new File(PROWLMODELFILE);
 		FileInputStream inputStreamOwl = new FileInputStream(filePrOwl); 
@@ -211,13 +204,6 @@ public class LoaderPrOwlIO {
 		*/
 	}
 	
-	/**
-	 * Load the MTheory and the MFrags objects
-	 * 
-	 * Pre-requisites:
-	 * - Only one MTheory per file 
-	 * - The MFrags have different names
-	 */
 	private MultiEntityBayesianNetwork loadMTheoryClass() throws IOMebnException {
         
 		MultiEntityBayesianNetwork mebn; 
@@ -245,6 +231,7 @@ public class LoaderPrOwlIO {
 		//Properties 
 		
 		/* hasMFrag */
+		/* cria todas as MFrags existentes na MTheory e armazena estas no mapDomainMFrag */
 		objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasMFrag"); 	
 		instances = individualOne.getPropertyValues(objectProperty); 
 		
@@ -781,7 +768,6 @@ public class LoaderPrOwlIO {
 								    	 //The name don't is in the valid format <ResidentNodeName>.<Name> 
 						                 //use the real name of the state...
 						                 name = individualTwo.getBrowserText(); 
-						                 //TODO warning
 								      }
 								      
 								      state = mebn.getCategoricalStatesEntityContainer().createCategoricalEntity(name) ; 
@@ -1170,8 +1156,8 @@ public class LoaderPrOwlIO {
 	/*
 	 * Este mecanismo complexo eh necessario para que os argumentos sejam 
 	 * inseridos no noh residente na mesma ordem em que foram salvos, permitindo
-	 * manter a ligação com os respectivos argumentos dos nos inputs instancias 
-	 * destes... Eh ineficiente... merece uma atencao para otimização posterior.
+	 * manter a ligaï¿½ï¿½o com os respectivos argumentos dos nos inputs instancias 
+	 * destes... Eh ineficiente... merece uma atencao para otimizaï¿½ï¿½o posterior.
 	 * (ps.: Funciona!) 
 	 */
 	private void ajustArgumentOfNodes(){
@@ -1498,8 +1484,14 @@ public class LoaderPrOwlIO {
 	 * @return Returns the ordinaryVarScopeSeparator.
 	 */
 	public String getOrdinaryVarScopeSeparator() {
-		return ORDINARY_VAR_SCOPE_SEPARATOR;
+		return ordinaryVarScopeSeparator;
 	}
 
+	/**
+	 * @param ordinaryVarScopeSeparator The ordinaryVarScopeSeparator to set.
+	 */
+	public void setOrdinaryVarScopeSeparator(String ordinaryVarScopeSeparator) {
+		this.ordinaryVarScopeSeparator = ordinaryVarScopeSeparator;
+	}
 	
 }

@@ -5,6 +5,7 @@ public class ConsistencyUtilities {
 	public static boolean hasCycle(DomainResidentNode origin, DomainResidentNode destination){
 		
 		/* Caso trivial */
+		/*
 		if(origin == destination){
 			return true; 
 		}
@@ -20,6 +21,7 @@ public class ConsistencyUtilities {
 				return true; 
 			}
 		}
+		*/
 		
 		return false; 
 	}
@@ -32,7 +34,7 @@ public class ConsistencyUtilities {
 	 * @return
 	 */
 	public static  boolean hasCycle(GenerativeInputNode origin, DomainResidentNode destination){
-		
+		/*
 		if(origin.getInputInstanceOf() != null){
 			if(origin.getInputInstanceOf() instanceof ResidentNode){
 				
@@ -42,7 +44,7 @@ public class ConsistencyUtilities {
 				
 			}
 		}
-		
+		*/
 		return false; 
 	}
 	
