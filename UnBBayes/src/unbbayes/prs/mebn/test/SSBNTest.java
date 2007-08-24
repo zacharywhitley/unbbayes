@@ -20,6 +20,15 @@ public class SSBNTest {
 		
 		// 1.2 Tratar sempre harArgNum como nonnegativenumber
 		
+		// Alterar de categorico para objectentity -> zone, timestep, starship
+		
+		// Atribuir objectentity, mas salvar como objectentity_Label
+		
+		// Verificar os erros ao carregar o prowl (setas voando)
+		
+		// Gravar desenhos japa!!!
+		
+		// Fazer bateria de teste na GUI criando um novo startrekXXX.ubf (encontrar e corrigir erros)
 		
 		
 		// 2. Popular a base de conhecimento com os individuos
