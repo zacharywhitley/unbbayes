@@ -4,7 +4,6 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import junit.swingui.TestRunner;
-import unbbayes.datamining.datamanipulation.test.TestUtils;
 import unbbayes.prs.bn.test.TestProbabilisticNetwork;
 import unbbayes.prs.msbn.test.TestCompiled;
 import unbbayes.prs.msbn.test.TestTopologicalTransformation;

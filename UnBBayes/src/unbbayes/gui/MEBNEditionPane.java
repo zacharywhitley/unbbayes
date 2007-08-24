@@ -763,6 +763,8 @@ public class MEBNEditionPane extends JPanel {
         rodarKB.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
   				mebnController.preencherKB(); 
+  			   JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
+  					   "Base de conhecimento criada com sucesso"); 
   			}
   		});
         
@@ -770,7 +772,7 @@ public class MEBNEditionPane extends JPanel {
         jtbGeneralOptions.add(entityFinding); 
         entityFinding.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
-  				String finding = JOptionPane.showInputDialog(null, 
+  				String finding = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), 
   						"Entre com o entity finding: ", 
   						"Test Finding", 
   						JOptionPane.QUESTION_MESSAGE); 
@@ -814,11 +816,27 @@ public class MEBNEditionPane extends JPanel {
   			}
   		});  
         
+        JButton execute = new JButton("X"); 
+        jtbGeneralOptions.add(execute); 
+        execute.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) { 
+  				String command = JOptionPane.showInputDialog(null, "Insira o commando a ser executado"); 
+  				if(command != ""){
+  				   String resposta = mebnController.executeCommand(command);
+  				   JOptionPane.showMessageDialog(null, resposta); 
+  				}
+  			}
+  		}); 
+        
         JButton save = new JButton("SV"); 
         jtbGeneralOptions.add(save); 
         save.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) { 
-  				mebnController.saveDefinitionsFile(); 
+  				String fileName = JOptionPane.showInputDialog(null, "Informe o nome do arquivo"); 
+  				if(fileName != ""){
+  				   mebnController.saveDefinitionsFile(fileName);
+  				   JOptionPane.showMessageDialog(null, "Arquivo salvo com sucesso"); 
+  				}
   			}
   		}); 
   	}

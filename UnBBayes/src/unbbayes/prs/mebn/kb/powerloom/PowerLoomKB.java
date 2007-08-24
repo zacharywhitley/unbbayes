@@ -7,6 +7,7 @@ import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.ResidentNodePointer;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVAnd;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVEqualTo;
@@ -80,17 +81,44 @@ public class PowerLoomKB implements KnowledgeBase{
 		List<Entity> states = resident.getPossibleValueList(); 
 		
 		/* Passo 1: definir a lista de possiveis estados do nó residente */
-		String setofList = ""; 
-		for(Entity state: states){
-			setofList+= state.getName() + ",";
-		}
-		if(!states.isEmpty()) {
-			setofList = setofList.substring(0, setofList.length() - 1); //tirar a virgula final
-		}
 		
-		//definição da imagem da função
-		String residentStateListName = resident.getName() + "_state "; 
-		PLI.sEvaluate("(defconcept " + residentStateListName + "(?z) :<=> (member-of ?z ( setof " + setofList + ")))", moduleName, null);
+		String range = ""; 
+		
+		switch(resident.getTypeOfStates()){
+		
+		case ResidentNode.OBJECT_ENTITY:
+			
+			if(!resident.getPossibleValueList().isEmpty()){
+			   range = "(" + "?range " +  resident.getPossibleValueList().get(0).getType().getName() + ")";
+			}
+			
+			break; 
+		
+		case ResidentNode.CATEGORY_RV_STATES: 
+			
+			String setofList = ""; 
+			for(Entity state: states){
+				setofList+= state.getName() + ",";
+			}
+			if(!states.isEmpty()) {
+				setofList = setofList.substring(0, setofList.length() - 1); //tirar a virgula final
+			}
+			
+			//definição da imagem da função
+			String residentStateListName = resident.getName() + "_state "; 
+			PLI.sEvaluate("(defconcept " + residentStateListName + "(?z) :<=> (member-of ?z ( setof " + setofList + ")))", moduleName, null);
+			
+			range = "(" + "?range " +  residentStateListName + ")"; 	
+			
+			break; 
+		
+		case ResidentNode.BOOLEAN_RV_STATES:
+			
+			range = "(" + "?range " +  "Boolean" + ")"; 	
+			
+			break; 
+		
+		}
 		
 		/* Passo 2: definir o nó residente */
 		String arguments = ""; 
@@ -104,13 +132,16 @@ public class PowerLoomKB implements KnowledgeBase{
 			i++; 
 		}
 		
-		String range = "(" + "?range " +  residentStateListName + ")"; 
 		
 		PLI.sEvaluate("(deffunction " + resident.getName() + " (" + arguments + range + "))", moduleName, null); 
 		
 		/*Passo 3: setar mundo fechado*/
 		PLI.sEvaluate("(assert (closed " + resident.getName() + "))", moduleName, null);
 		
+	}
+	
+	public String executeCommand(String command){
+		return PLI.sEvaluate(command, moduleName, null).toString();
 	}
 	
 	/**

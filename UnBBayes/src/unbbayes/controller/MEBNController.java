@@ -835,11 +835,11 @@ public class MEBNController {
 	    test.executeRandonVariableFinding(assertComand); 
 	}
 	
-	public void saveDefinitionsFile(){
+	public void saveDefinitionsFile(String fileName){
 		PowerLoomKB test = PowerLoomKB.getInstanceKB(); 
 
 		Debug.println(this.getClass(), "[PowerLoom] Saving module..."); 
-		test.saveDefinitionsFile("AfirmTeste.plm"); 
+		test.saveDefinitionsFile(fileName + ".plm"); 
 		Debug.println(this.getClass(), "[PowerLoom] ...File save sucefull");
     
 	}
@@ -873,6 +873,11 @@ public class MEBNController {
 				break; 
 			}
 		}
+	}
+	
+	public String executeCommand(String command){
+		PowerLoomKB test = PowerLoomKB.getInstanceKB(); 
+		return test.executeCommand(command); 
 	}
 	
 	public MultiEntityBayesianNetwork getMultiEntityBayesianNetwork() {
