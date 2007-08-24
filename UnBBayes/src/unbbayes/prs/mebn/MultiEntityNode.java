@@ -18,7 +18,7 @@ public class MultiEntityNode extends Node {
 	private List<MultiEntityNode> innerTermOfList;
 	 
 	private List<MultiEntityNode> innerTermFromList;
-
+	
 	private List<Entity> possibleValueList; 
 
 	private static Color color;
@@ -110,7 +110,13 @@ public class MultiEntityNode extends Node {
 				return; 
 			}
 		}
-		
+	}
+	
+	/**
+	 * Remove all possible values of the node
+	 */
+	public void removeAllPossibleValues(){
+		possibleValueList.clear(); 
 	}
 	
 	/**

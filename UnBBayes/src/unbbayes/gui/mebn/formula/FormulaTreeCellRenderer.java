@@ -38,7 +38,7 @@ public class FormulaTreeCellRenderer extends DefaultTreeCellRenderer {
 	
 	protected ImageIcon iffIcon = iconController.getIffIcon(); 
 	
-	protected ImageIcon entityNodeIcon = iconController.getEntityNodeIcon(); 
+	protected ImageIcon entityNodeIcon = iconController.getEntityInstanceIcon(); 
 	
 	protected ImageIcon stateIcon = iconController.getStateIcon(); 
 	

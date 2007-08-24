@@ -292,7 +292,17 @@ public class GuiResources extends ListResourceBundle {
 		
 		/* Exceptions MEBN */
 		{"withoutMFrag", "Don't exists any MFrag"}, 
-		{"edgeInvalid", "Edge Invalid"}
+		{"edgeInvalid", "Edge Invalid"}, 
+		
+		/* Edition of states */
+		{"insertBooleanStates", "Insert boolean states"}, 
+		{"categoryStatesType", "Insert category states"}, 
+		{"objectStatesType", "Insert object entity states"}, 
+		{"booleanStatesType", "Insert boolean states"}, 
+		{"addState", "Add state(s)"}, 
+		{"removeState", "Remove state(s)"}, 
+		{"confirmation", "Confirmation"}, 
+		{"warningDeletStates", "Os estados anteriores serão removidos. Tem certeza que deseja realizar a operação?"}
 		
 		
 	};

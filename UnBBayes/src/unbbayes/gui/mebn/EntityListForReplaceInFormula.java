@@ -102,7 +102,7 @@ public class EntityListForReplaceInFormula extends JPanel{
 	
 	class ListEntitiesCellRenderer extends DefaultListCellRenderer{
 		
-		private ImageIcon entityIcon = iconController.getEntityNodeIcon(); 
+		private ImageIcon entityIcon = iconController.getEntityInstanceIcon(); 
 		
 		public ListEntitiesCellRenderer(){
 			

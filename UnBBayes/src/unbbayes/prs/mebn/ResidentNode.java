@@ -20,8 +20,14 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	private List<OrdinaryVariable> ordinaryVariableList; 
 	
 	private List<ResidentNodePointer> listPointers; 
+
+	public static final int OBJECT_ENTITY = 0; 
+	public static final int CATEGORY_RV_STATES = 1; 
+	public static final int BOOLEAN_RV_STATES = 2; 
+	private int typeOfStates = CATEGORY_RV_STATES; 
 	
 	private int numNextArgument = 0; 
+	
 	
 	public ResidentNode(){
 		
@@ -100,6 +106,14 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	
 	public List<OrdinaryVariable> getOrdinaryVariableList(){
 		return ordinaryVariableList; 
+	}
+
+	public int getTypeOfStates() {
+		return typeOfStates;
+	}
+
+	public void setTypeOfStates(int typeOfStates) {
+		this.typeOfStates = typeOfStates;
 	}
 	
 	

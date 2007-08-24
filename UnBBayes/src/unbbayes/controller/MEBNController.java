@@ -34,6 +34,7 @@ import unbbayes.util.Debug;
 
 /**
  * Controller of the MEBN structure. 
+ * 
  * Utilizado pelas classes de GUI para fazer solicitar alterações na 
  * estrutura do MEBN. Faz as atualizações necessárias nas telas após a 
  * ação sobre a estrutura do MEBN ser atualizada. 
@@ -344,6 +345,10 @@ public class MEBNController {
 	 */
 	public void removePossibleValue(DomainResidentNode resident, String nameValue){
 		resident.removePossibleValueByName(nameValue); 	
+	}	
+	
+	public void removeAllPossibleValues(DomainResidentNode resident){
+		resident.removeAllPossibleValues(); 	
 	}	
 	
 	public boolean existsPossibleValue(DomainResidentNode resident, String nameValue){
@@ -725,7 +730,7 @@ public class MEBNController {
 		
 	}
 	
-	/*--------------------------------- Entidades ---------------------*/
+	/*--------------------------------- Object Entities ---------------------*/
 	
 	/**
 	 * Adiciona uma nova entidade com o nome passado como parametro

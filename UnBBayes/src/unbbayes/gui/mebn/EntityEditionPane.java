@@ -40,7 +40,7 @@ import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 
 /**
- * Pane for edition of entities : Create, Delete, Edit and View
+ * Pane for edition of object entities : Create, Delete, Edit and View
  */
 
 public class EntityEditionPane extends JPanel{
@@ -76,34 +76,48 @@ public class EntityEditionPane extends JPanel{
   	private static ResourceBundle resource = 
   		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
     
-    
-	public EntityEditionPane(MEBNController _controller){
+    /**
+     * 
+     * @param mebnController Controller for objects of this pane
+     */
+	public EntityEditionPane(MEBNController mebnController){
 		
 		super(); 
+
+		this.mebnController = mebnController; 
 		
 		this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel(
 				resource.getString("EntityTitle"))); 
         
 		setLayout(new BorderLayout()); 
 		
-		mebnController = _controller; 
-		
+		buildJlEntities();
+		JScrollPane listScrollPane = new JScrollPane(jlEntities);
+	    buildJpInformation(); 
+
+        this.add(BorderLayout.SOUTH, jpInformation); 
+        this.add(BorderLayout.CENTER, listScrollPane);
+        
+	    selected = null; 
+	    update(); 
+	    addListListener(); 
+        addButtonsListeners(); 
+ 
+	}
+
+	private void buildJlEntities() {
 		listModel = new DefaultListModel(); 
 		
 	    jlEntities = new JList(listModel); 
 	    jlEntities.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	    jlEntities.setLayoutOrientation(JList.VERTICAL);
 	    jlEntities.setVisibleRowCount(-1);
-	    jlEntities.setCellRenderer(new ListCellRenderer(iconController.getEntityNodeIcon())); 
+	    jlEntities.setCellRenderer(new ListCellRenderer(iconController.getObjectEntityIcon())); 
 	    
-	    selected = null; 
-	    update(); 
-	    addListListener(); 
-	    
-	    JScrollPane listScrollPane = new JScrollPane(jlEntities);
-	    
-	    /* panel of information about the Entity */
-	    jpInformation = new JPanel(new GridLayout(5, 0)); 
+	}
+
+	private void buildJpInformation() {
+		jpInformation = new JPanel(new GridLayout(5, 0)); 
 	    
 	    name = new JLabel(resource.getString("nameLabel")); 
 	    txtName = new JTextField(10);
@@ -126,25 +140,18 @@ public class EntityEditionPane extends JPanel{
 	    jtbOptions.add(jbDelete); 
 	    jtbOptions.setFloatable(false);	    
 	    
-	    
 	    jpInformation.add(jtbOptions); 
 	    jpInformation.add(name); 
 	    jpInformation.add(txtName);
 	    jpInformation.add(type); 
-	    jpInformation.add(txtType); 
-	    
-        this.add("South", jpInformation); 
-        this.add("Center", listScrollPane);
-
-        addButtonsListeners(); 
- 
+	    jpInformation.add(txtType);
 	}
 	
 	/**
 	 *  update the list of entities 
 	 **/
 	
-	public void update(){
+	private void update(){
 		
 		ObjectEntity antSelected = selected; 
 		

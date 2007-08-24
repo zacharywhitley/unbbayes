@@ -256,7 +256,7 @@ public class MEBNEditionPane extends JPanel {
         
         btnTabOptionTree = new JButton(iconController.getMTheoryNodeIcon());
         btnTabOptionOVariable = new JButton(iconController.getOVariableNodeIcon()); 
-        btnTabOptionEntity = new JButton(iconController.getEntityNodeIcon()); 
+        btnTabOptionEntity = new JButton(iconController.getObjectEntityIcon()); 
         
         btnTabOptionTree.setToolTipText(resource.getString("showMTheoryToolTip")); 
         btnTabOptionOVariable.setToolTipText(resource.getString("showOVariablesToolTip"));

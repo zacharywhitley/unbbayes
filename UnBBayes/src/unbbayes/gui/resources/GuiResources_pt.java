@@ -293,6 +293,18 @@ public class GuiResources_pt extends ListResourceBundle {
 		
 		/* Exceptions MEBN */
 		{"withoutMFrag", "NÃ£o existe nenhuma MFrag"}, 
-		{"edgeInvalid", "Arco invalido"} 		
+		{"edgeInvalid", "Arco invalido"}, 
+		
+		/* Edition of states */
+		{"insertBooleanStates", "Inserir estados booleanos"}, 
+		{"categoryStatesTip", "Inserir estados categóricos"}, 
+		{"objectStatesTip", "Inserir entidades como estados"}, 
+		{"booleanStatesTip", "Inserir estados booleanos"}, 
+		{"addStateTip", "Inserir estado(s)"}, 
+		{"removeState", "Remover estado"}, 
+		{"confirmation", "Confirmação"}, 
+		{"warningDeletStates", "Os estados anteriores serão removidos. Tem certeza que deseja realizar a operação?"} 
+		
+		
 	};
 }

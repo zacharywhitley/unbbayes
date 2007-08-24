@@ -205,6 +205,32 @@ public class IconController implements Serializable {
 	protected ImageIcon functIcon; 
 	
 	protected ImageIcon stateIcon; 
+
+	protected ImageIcon entityInstanceIcon; 
+	
+	protected ImageIcon objectEntityIcon; 
+	
+	protected ImageIcon ovariableNodeIcon; 
+	
+	protected ImageIcon nodeNodeIcon; 
+	
+	protected ImageIcon skolenNodeIcon; 
+		
+	protected ImageIcon emptyNodeIcon; 	
+	
+	protected ImageIcon downIcon; 	
+	
+	protected ImageIcon upIcon; 
+	
+	protected ImageIcon boxVariablesIcon; 		
+	
+	protected ImageIcon booleanIcon; 	
+	
+	protected ImageIcon entityStateIcon; 	
+	
+	protected ImageIcon booleanStateIcon; 	
+	
+	protected ImageIcon categoryStateIcon; 	
 	
 	//operators
 
@@ -223,24 +249,6 @@ public class IconController implements Serializable {
 	protected ImageIcon existsIcon; 
 	
 	protected ImageIcon iffIcon; 
-	
-	protected ImageIcon entityNodeIcon; 
-	
-	protected ImageIcon ovariableNodeIcon; 
-	
-	protected ImageIcon nodeNodeIcon; 
-	
-	protected ImageIcon skolenNodeIcon; 
-		
-	protected ImageIcon emptyNodeIcon; 	
-	
-	protected ImageIcon downIcon; 	
-	
-	protected ImageIcon upIcon; 
-	
-	protected ImageIcon boxVariablesIcon; 		
-	
-	protected ImageIcon booleanIcon; 	
 	
 	
 	public static IconController getInstance() {
@@ -1135,13 +1143,23 @@ public class IconController implements Serializable {
 	
 	
 	
-	public ImageIcon getEntityNodeIcon() {
-		if (entityNodeIcon != null) {
-			return entityNodeIcon;
+	public ImageIcon getEntityInstanceIcon() {
+		if (entityInstanceIcon != null) {
+			return entityInstanceIcon;
 		} else {
-			entityNodeIcon = new ImageIcon(getClass().getResource(
+			entityInstanceIcon = new ImageIcon(getClass().getResource(
 					"/icons/entityNode.gif"));
-			return entityNodeIcon;
+			return entityInstanceIcon;
+		}
+	}
+	
+	public ImageIcon getObjectEntityIcon() {
+		if (objectEntityIcon != null) {
+			return objectEntityIcon;
+		} else {
+			objectEntityIcon = new ImageIcon(getClass().getResource(
+					"/icons/object-entity.gif"));
+			return objectEntityIcon;
 		}
 	}
 	
@@ -1152,6 +1170,36 @@ public class IconController implements Serializable {
 			ovariableNodeIcon = new ImageIcon(getClass().getResource(
 					"/icons/ovariableNode.gif"));
 			return ovariableNodeIcon;
+		}
+	}
+	
+	public ImageIcon getCategoryStateIcon() {
+		if (categoryStateIcon != null) {
+			return categoryStateIcon;
+		} else {
+			categoryStateIcon = new ImageIcon(getClass().getResource(
+					"/icons/category-state.gif"));
+			return categoryStateIcon;
+		}
+	}
+	
+	public ImageIcon getEntityStateIcon() {
+		if (entityStateIcon != null) {
+			return entityStateIcon;
+		} else {
+			entityStateIcon = new ImageIcon(getClass().getResource(
+					"/icons/entity-state.gif"));
+			return entityStateIcon;
+		}
+	}
+	
+	public ImageIcon getBooleanStateIcon() {
+		if (booleanStateIcon != null) {
+			return booleanStateIcon;
+		} else {
+			booleanStateIcon = new ImageIcon(getClass().getResource(
+					"/icons/boolean-state.gif"));
+			return booleanStateIcon;
 		}
 	}
 	

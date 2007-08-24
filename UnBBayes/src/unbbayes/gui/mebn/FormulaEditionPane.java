@@ -122,7 +122,7 @@ public class FormulaEditionPane extends JPanel {
 		
 		btnOVariableTree = new JButton(iconController.getOVariableNodeIcon());  
 		btnNodeTree = new JButton(iconController.getNodeNodeIcon());  
-		btnEntityTree = new JButton(iconController.getEntityNodeIcon());   
+		btnEntityTree = new JButton(iconController.getEntityInstanceIcon());   
 		btnSkolenTree = new JButton(iconController.getSkolenNodeIcon());   
 		
 		jtbSelectArgTree = new JToolBar(); 

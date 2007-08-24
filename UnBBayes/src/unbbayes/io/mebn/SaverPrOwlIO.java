@@ -265,13 +265,12 @@ public class SaverPrOwlIO {
 
 		/* categoricalRVStates */
 		OWLNamedClass categoricalRVStatesClass = owlModel.getOWLNamedClass("CategoricalRVStates"); 
-		List<Entity> listStates = node.getPossibleValueList(); 
 		OWLIndividual categoryLabel = mapMetaEntity.get("CategoryLabel"); 		
 		OWLObjectProperty hasType = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasType"); 	
 		
 		OWLObjectProperty hasPossibleValues = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
 		
-		for(Entity state: listStates){
+		for(Entity state: node.getPossibleValueList()){
 			if(state instanceof CategoricalStatesEntity){
 				//Name = nodeName.categoricalEntityName 
 				String name = node.getName() + possibleValueScopeSeparator + state.getName(); 
@@ -282,7 +281,16 @@ public class SaverPrOwlIO {
 				residentNodeIndividual.addPropertyValue(hasPossibleValues, stateIndividual);
 			}
 			else{
-				residentNodeIndividual.addPropertyValue(hasPossibleValues, this.mapBooleanStatesEntity.get(state)); 
+				if(state instanceof BooleanStatesEntity){
+					residentNodeIndividual.addPropertyValue(hasPossibleValues, mapBooleanStatesEntity.get(state)); 
+				}
+				else{
+					if(state instanceof ObjectEntity){
+						residentNodeIndividual.addPropertyValue(hasPossibleValues, mapObjectEntityClasses.get(state)); 		
+					}else{
+						System.out.println("Erro: Estado do nó não é de um tipo válido!!!"); 
+					}
+				}
 			}
 		}
 
@@ -550,7 +558,7 @@ public class SaverPrOwlIO {
 				
 			}	
 			
-			saveHasPossibleValueProperty(domainResIndividual, residentNode); 
+			//saveHasPossibleValueProperty(domainResIndividual, residentNode); 
 			
 			/* hasProbDist */
 			Debug.println("Verifying probability distros");
@@ -963,24 +971,6 @@ public class SaverPrOwlIO {
 		}
 	}
 	
-//	
-//	private void saveHasPossibleValuePropertyContext(OWLIndividual individual, MultiEntityNode node){
-//		
-//		/*has possible values */
-//		OWLObjectProperty hasPossibleValuesProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
-//		
-//		for(Entity possibleValue: node.getPossibleValueList()){
-//			
-//			if(this.mapCategoricalStates.get(possibleValue) == null){
-//			   individual.addPropertyValue(hasPossibleValuesProperty, this.mapBooleanStatesEntity.get(possibleValue)); 	
-//			}
-//			else{
-//			   individual.addPropertyValue(hasPossibleValuesProperty, this.mapCategoricalStates.get(possibleValue)); 
-//			}
-//		}
-//		
-//	}	
-//	
 	private void loadBuiltInRV(){
 
 		/* BuiltInRV */
