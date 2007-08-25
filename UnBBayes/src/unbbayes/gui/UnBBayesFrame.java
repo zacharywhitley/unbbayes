@@ -50,14 +50,12 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import unbbayes.aprendizagem.ConstructionController;
-import unbbayes.aprendizagem.incrementalLearning.controller.ILController;
+import unbbayes.aprendizagem.incrementalLearning.ILBridge;
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MainController;
-import unbbayes.datamining.gui.preprocessor.janeladiscret;
-import unbbayes.monteCarlo.controlador.ControladorPrincipal;
-
 import unbbayes.io.mebn.UbfIO;
+import unbbayes.monteCarlo.controlador.ControladorPrincipal;
 
 /**
  * Essa classe extende o <code>JFrame</code> e � respons�vel pela interface da
@@ -390,7 +388,7 @@ public class UnBBayesFrame extends JFrame {
 
 		alIL = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				new ILController(controller);
+				new ILBridge(controller);
 			}
 		};
 

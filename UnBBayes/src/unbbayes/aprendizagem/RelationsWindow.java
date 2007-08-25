@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -36,13 +36,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 
 /**
- * Classe para a construção de uma tela que possui
+ * Classe para a construï¿½ï¿½o de uma tela que possui
  * como finalidade definir relacionamentos entre as
- * variáveis, lembrando que nunca um ancestral pode
- * ser filho da propria variável.
+ * variï¿½veis, lembrando que nunca um ancestral pode
+ * ser filho da propria variï¿½vel.
  * @author Danilo Custodio da Silva
  * @version 1.0
  */
@@ -70,14 +71,14 @@ public class RelationsWindow extends JDialog{
     private RelationInterationController relationController;
 
     /**
-     * Método para a construção da tela onde são definidos
+     * Mï¿½todo para a construï¿½ï¿½o da tela onde sï¿½o definidos
      * relacionamentos de paternidade fixos. Contem um painel
      * com a lista dos pais, um painel com a lista dos filhos,
      * um painel com botoes para adicionar, remover relacionamentos
      * ou continuar o programa, e um painel com os relacionamentos
      * previamente decididos.
-     * @param vetor - A lista de variáveis(<code>java.util.List<code>)
-     * @see TVariavel
+     * @param vetor - A lista de variï¿½veis(<code>java.util.List<code>)
+     * @see LearningNode
      * @see JList
      * @see DefaultListModel
      * @see JScrollPane
@@ -165,9 +166,9 @@ public class RelationsWindow extends JDialog{
     }
     
     private void listInsert(){
-    	TVariavel aux;
+    	LearningNode aux;
     	for (int i = 0 ; i < variables.size(); i++ ){
-           aux = (TVariavel)variables.get(i);
+           aux = (LearningNode)variables.get(i);
            parentsListModel.addElement(aux.getName());
            sunListModel.addElement(aux.getName());
         }        

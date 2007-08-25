@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -31,12 +31,13 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 
 /**
- * Classe que constroi uma tela onde usuário devera
- * informar ao programa se o arquivo é o do tipo
- * compactado ou não.
+ * Classe que constroi uma tela onde usuï¿½rio devera
+ * informar ao programa se o arquivo ï¿½ o do tipo
+ * compactado ou nï¿½o.
  * @author Danilo Custodio da Silva
  * @version 1.0
  */
@@ -51,12 +52,12 @@ public class CompactFileWindow extends JDialog
     private JButton no;
     private CompactInterationController compactController;
     /**
-     * Constrói a tela essa tela possui um label
-     * que pergunta ao usuário se o arquivo que ele
-     * está tratando é compactado ou não, e dois botões.
-     * @param vetorVariaveis - As variáveis presentes na
+     * Constrï¿½i a tela essa tela possui um label
+     * que pergunta ao usuï¿½rio se o arquivo que ele
+     * estï¿½ tratando ï¿½ compactado ou nï¿½o, e dois botï¿½es.
+     * @param vetorVariaveis - As variï¿½veis presentes na
      * (<code>java.util.List<code>)
-     * @see TVariavel
+     * @see LearningNode
      * @see Container
      * @see JDialog
      */

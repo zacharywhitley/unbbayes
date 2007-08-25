@@ -3,6 +3,7 @@ package unbbayes.aprendizagem;
 import java.util.ArrayList;
 
 import unbbayes.aprendizagem.ConstructionController;
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 
 /**
@@ -71,7 +72,7 @@ public class CL extends CBLToolkit{
 	/*
 	 * Informa��o mutua da variavel xk para a xi
 	 */	
-	public double mutualInformation(TVariavel xi,TVariavel xk){    	
+	public double mutualInformation(LearningNode xi,LearningNode xk){    	
     	int nt = 0;
     	int il = 0;    	
     	int kl = 0;
@@ -110,13 +111,13 @@ public class CL extends CBLToolkit{
 		//this.classe = classe;
 		//int qj = classe;
     	//if(qj == 0 ){
-		  //return mutualInformation((TVariavel)variaveis.get(v1),
-    		//                        (TVariavel)variaveis.get(v2));    		
+		  //return mutualInformation((LearningNode)variaveis.get(v1),
+    		//                        (LearningNode)variaveis.get(v2));    		
     	//}    	;
     	
-    	int ri = ((TVariavel)variaveis.get(v1)).getEstadoTamanho();
-    	int rk = ((TVariavel)variaveis.get(v2)).getEstadoTamanho();
-    	int rj = ((TVariavel)variaveis.get(classe)).getEstadoTamanho();
+    	int ri = ((LearningNode)variaveis.get(v1)).getEstadoTamanho();
+    	int rk = ((LearningNode)variaveis.get(v2)).getEstadoTamanho();
+    	int rj = ((LearningNode)variaveis.get(classe)).getEstadoTamanho();
     	double pjik;
     	double cpjik;
     	double im = 0.0;    	

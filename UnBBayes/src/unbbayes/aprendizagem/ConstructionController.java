@@ -33,6 +33,7 @@ import javax.swing.JOptionPane;
 import unbbayes.controller.MainController;
 import unbbayes.gui.UnBBayesFrame;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.util.NodeList;
 
@@ -156,7 +157,7 @@ public class ConstructionController {
 
 	private void verificarConsistencia(ProbabilisticNetwork pn) {
 		for (int i = 0; i < variables.size(); i++) {
-			TVariavel variavel = (TVariavel) variables.get(i);
+			LearningNode variavel = (LearningNode) variables.get(i);
 			Node no = pn.getNode(variavel.getName());
 			for (int j = 0; j < no.getStatesSize(); j++) {
 				String estado = no.getStateAt(j);
@@ -384,7 +385,7 @@ public class ConstructionController {
 	}
 
 	/**
-	 * Makes the variables vector. The vector is composed by many TVariavel
+	 * Makes the variables vector. The vector is composed by many LearningNode
 	 * objects.
 	 * 
 	 * @param cols -
@@ -395,20 +396,20 @@ public class ConstructionController {
 		try {
 			while (cols.nextToken() != StreamTokenizer.TT_EOL) {
 				if (cols.sval != null) {
-					variablesVector.add(new TVariavel(cols.sval, position));
-					((TVariavel) variablesVector
+					variablesVector.add(new LearningNode(cols.sval, position));
+					((LearningNode) variablesVector
 							.get(variablesVector.size() - 1))
 							.setDescription(cols.sval);
-					((TVariavel) variablesVector
+					((LearningNode) variablesVector
 							.get(variablesVector.size() - 1))
 							.setParticipa(true);
 				} else {
-					variablesVector.add(new TVariavel(
+					variablesVector.add(new LearningNode(
 							String.valueOf(cols.nval), position));
-					((TVariavel) variablesVector
+					((LearningNode) variablesVector
 							.get(variablesVector.size() - 1))
 							.setDescription(String.valueOf(cols.nval));
-					((TVariavel) variablesVector
+					((LearningNode) variablesVector
 							.get(variablesVector.size() - 1))
 							.setParticipa(true);
 				}
@@ -456,7 +457,7 @@ public class ConstructionController {
 	private void filterVariablesVector(int rows) {
 		int nCols = 0;
 		for (int i = 0; i < variablesVector.size(); i++) {
-			TVariavel aux = (TVariavel) variablesVector.get(i);
+			LearningNode aux = (LearningNode) variablesVector.get(i);
 			if (aux.getParticipa()) {
 				if (!aux.getRep()) {
 					aux.setPos(nCols);
@@ -484,13 +485,13 @@ public class ConstructionController {
 		boolean missing = false;
 		int position = 0;
 		String stateName = "";
-		TVariavel aux;
+		LearningNode aux;
 		try {
 			while (cols.ttype != StreamTokenizer.TT_EOF && caseNumber <= rows) {
 				while (cols.ttype != StreamTokenizer.TT_EOL
 						&& position < variablesVector.size()
 						&& caseNumber <= rows) {
-					aux = (TVariavel) variablesVector.get(position);
+					aux = (LearningNode) variablesVector.get(position);
 					if (aux.getRep()) {
 						/*
 						 * if(cols.nval > 0.0){ vector[(int)caseNumber] =
@@ -548,9 +549,9 @@ public class ConstructionController {
 	 * Normalizes the probabilities of a variable.
 	 * 
 	 * @param variable -
-	 *            A TVariavel object.
+	 *            A LearningNode object.
 	 */
-	private void normalize(TVariavel variable) {
+	private void normalize(LearningNode variable) {
 		for (int c = 0; c < variable.getPotentialTable().tableSize()/* .getDados().size() */; c += variable
 				.getEstadoTamanho()/* .noEstados() */) {
 			float sum = 0;

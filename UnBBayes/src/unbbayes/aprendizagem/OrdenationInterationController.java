@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -27,6 +27,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 
 public class OrdenationInterationController {
@@ -47,14 +48,14 @@ public class OrdenationInterationController {
 		DefaultListModel listModel   =  (DefaultListModel)ordenationJL.getModel();
 		NodeList auxVector = new NodeList();
         String auxName = (String)ordenationJL.getSelectedValue();
-        TVariavel aux = null;
+        LearningNode aux = null;
         int index = ordenationJL.getSelectedIndex();
         if (index != 0){
             listModel.remove(index);
             index--;
             listModel.add(index, auxName);
             for (int i = 0 ; i < variables.size() ; i++ ){
-                 aux = (TVariavel)variables.get(i);
+                 aux = (LearningNode)variables.get(i);
                  if (aux.getName().equals(auxName)){
                      variables.remove(i);
                      for(int j = 0; j < i -1 ; j++){
@@ -77,14 +78,14 @@ public class OrdenationInterationController {
 		DefaultListModel listModel   =  (DefaultListModel)ordenationJL.getModel();
 		NodeList auxVector = new NodeList();
         String auxName = (String)ordenationJL.getSelectedValue();
-        TVariavel aux = null;
+        LearningNode aux = null;
         int index = ordenationJL.getSelectedIndex();
         if (index < listModel.getSize()-1){
             listModel.remove(index);
             index++;
             listModel.add(index, auxName);
             for (int i = 0 ; i < variables.size() ; i++ ){
-                 aux = (TVariavel)variables.get(i);
+                 aux = (LearningNode)variables.get(i);
                  if (aux.getName().equals(auxName)){
                      variables.remove(i);
                      for(int j = 0; j < i +1 ; j++){
@@ -125,11 +126,11 @@ public class OrdenationInterationController {
         if (nClick == 2){
              JList list = (JList)e.getSource();
              if (!list.isSelectionEmpty()){
-                 TVariavel aux = null;
+                 LearningNode aux = null;
                  Object object = list.getSelectedValue();
                  String name = object.toString();
                  for (int i = 0 ; i < variables.size(); i++ ){
-                     aux = (TVariavel)variables.get(i);
+                     aux = (LearningNode)variables.get(i);
                      if (aux.getName().equals(name)){
                          break;
                      }

@@ -22,6 +22,7 @@ package unbbayes.aprendizagem;
 
 import java.util.ArrayList;
 
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 
 public class CBLB extends CBLToolkit {
@@ -32,7 +33,7 @@ public class CBLB extends CBLToolkit {
 			long caseNumber, String param, boolean compacted) {
 		this.variablesVector = variables;
 		double epsilon;
-		TVariavel variable;
+		LearningNode variable;
 		esFinal = new ArrayList<int[]>();
 		this.separators = new ArrayList<Object[]>();
 		this.es = new ArrayList<int[]>();
@@ -112,19 +113,19 @@ public class CBLB extends CBLToolkit {
 
 	private void mapStructure() {
 		int[] peace;
-		TVariavel var1;
-		TVariavel var2;
+		LearningNode var1;
+		LearningNode var2;
 		for (int i = 0; i < es.size(); i++) {
 			peace = (int[]) es.get(i);
-			var1 = (TVariavel) variablesVector.get(peace[1]);
-			var2 = (TVariavel) variablesVector.get(peace[0]);
+			var1 = (LearningNode) variablesVector.get(peace[1]);
+			var2 = (LearningNode) variablesVector.get(peace[0]);
 			var1.adicionaPai(var2);
 			var2.adicionaPai(var1);
 		}
 		for (int i = 0; i < esFinal.size(); i++) {
 			peace = esFinal.get(i);
-			var1 = (TVariavel) variablesVector.get(peace[1]);
-			var2 = (TVariavel) variablesVector.get(peace[0]);
+			var1 = (LearningNode) variablesVector.get(peace[1]);
+			var2 = (LearningNode) variablesVector.get(peace[0]);
 			var1.adicionaPai(var2);
 		}
 
@@ -142,8 +143,8 @@ public class CBLB extends CBLToolkit {
 		 */
 		for (int i = 0; i < n; i++) {
 			for (int k = i + 1; k < n; k++) {
-				imAux = mutualInformation((TVariavel) variablesVector.get(i),
-						(TVariavel) variablesVector.get(k));
+				imAux = mutualInformation((LearningNode) variablesVector.get(i),
+						(LearningNode) variablesVector.get(k));
 				if (imAux > epsilon) {
 					ls.add(new double[] { imAux, i, k });
 				}
@@ -169,9 +170,9 @@ public class CBLB extends CBLToolkit {
 
 	protected double conditionalMutualInformation(int v1, int v2, int classe) {
 
-		int ri = ((TVariavel) variablesVector.get(v1)).getEstadoTamanho();
-		int rk = ((TVariavel) variablesVector.get(v2)).getEstadoTamanho();
-		int rj = ((TVariavel) variablesVector.get(classe)).getEstadoTamanho();
+		int ri = ((LearningNode) variablesVector.get(v1)).getEstadoTamanho();
+		int rk = ((LearningNode) variablesVector.get(v2)).getEstadoTamanho();
+		int rj = ((LearningNode) variablesVector.get(classe)).getEstadoTamanho();
 		double pjik;
 		double cpjik;
 		double im = 0.0;

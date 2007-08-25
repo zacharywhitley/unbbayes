@@ -23,6 +23,7 @@ package unbbayes.aprendizagem;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
@@ -35,7 +36,7 @@ public abstract class LearningToolkit{
 	    protected boolean compacted;
 
 
-	protected void getProbability(int[][] arrayNijk, TVariavel variable){
+	protected void getProbability(int[][] arrayNijk, LearningNode variable){
         List instanceVector;
         List instance = new ArrayList();
         float probability;
@@ -64,8 +65,8 @@ public abstract class LearningToolkit{
         }
     }
 
-    protected  int[][] getFrequencies(TVariavel variable, NodeList parents){
-        TVariavel aux;
+    protected  int[][] getFrequencies(LearningNode variable, NodeList parents){
+        LearningNode aux;
         int[][] ArrayNijk;
         int parentsLength;
         int position;
@@ -81,7 +82,7 @@ public abstract class LearningToolkit{
         byte positionVector[] = new byte[parentsLength];
         int maxVector[]      = new int[parentsLength];
         for (int i = 0; i < parentsLength; i++ ){
-            aux = (TVariavel)parents.get(i);
+            aux = (LearningNode)parents.get(i);
             positionVector[i] = (byte)aux.getPos();
             maxVector[i] = aux.getEstadoTamanho();
 
@@ -128,14 +129,14 @@ public abstract class LearningToolkit{
     protected List getInstances(NodeList list){
         List<List<Integer>> instances = new ArrayList<List<Integer>>();
         List<List<Integer>> listAux = new ArrayList<List<Integer>>();;
-        TVariavel aux;
+        LearningNode aux;
         List<Integer> array;
         List<Integer> arrayAux;
         if(list.size() == 0){
             return instances;
         }
         for(int i = 0; i < list.size(); i++){
-            aux = (TVariavel)list.get(i);
+            aux = (LearningNode)list.get(i);
             for(int k = 0 ; k < instances.size(); k++){
                      array = (List<Integer>)instances.get(k);
                 for(int h = 0 ; h < aux.getEstadoTamanho(); h++){
@@ -165,12 +166,12 @@ public abstract class LearningToolkit{
     }
 
     protected int getQ(NodeList list) {
-        TVariavel variable;
+        LearningNode variable;
         int qi = 1;
         if(list != null){
             int length  = list.size();
             for (int i = 0; i < length; i++ ){
-                variable  = (TVariavel)list.get(i);
+                variable  = (LearningNode)list.get(i);
                 qi = qi* variable.getEstadoTamanho();
             }
         }

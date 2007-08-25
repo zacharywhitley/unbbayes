@@ -8,12 +8,16 @@ package unbbayes.aprendizagem.Gibbs.gui;
 
 import java.awt.Container;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+
+import unbbayes.gui.SimpleFileFilter;
 
 /**
  * @author Administrador
@@ -52,15 +56,41 @@ public class GibbsFrame extends JFrame {
 		return gibbsPanel;			
 	}
 	
-	public void addCancelListener(ActionListener cancelListener){
-		btnCancel.addActionListener(cancelListener);				
-	}
-	
-	public void addContinueListener(ActionListener continueListener){
-		btnContinue.addActionListener(continueListener);		
-	}
-	
-	public void addChooseNetListener(ActionListener chooseNetListener){
-		btnChooseNet.addActionListener(chooseNetListener);		
-	}
+	ActionListener chooseNetListener = new ActionListener() {
+	      public void actionPerformed(ActionEvent ae) {
+	         //try {
+	            String[] nets = new String[] { "net" };
+	            JFileChooser chooser = new JFileChooser(".");
+	            chooser.setMultiSelectionEnabled(false);
+	            chooser.addChoosableFileFilter(
+	               new SimpleFileFilter(nets, "Carregar .net"));
+	            int option = chooser.showOpenDialog(null);
+	            if (option == JFileChooser.APPROVE_OPTION) {
+	               if (chooser.getSelectedFile() != null) {
+	                  //pn = io.load(chooser.getSelectedFile());
+	               }
+	            }
+	         /*} catch (LoadException le) {
+	            le.printStackTrace();
+	         } catch (IOException ie) {
+	            ie.printStackTrace();
+	         } catch (JAXBException je){
+	        	je.printStackTrace(); 
+	         }*/
+	      }
+	   };
+	   
+	   ActionListener cancelListener = new ActionListener() {
+		      public void actionPerformed(ActionEvent ae) {
+		         //gf.dispose();
+		      }
+		   };
+
+		   ActionListener continueListener = new ActionListener() {
+		      public void actionPerformed(ActionEvent ae) {
+		         //gf.dispose();
+				 //IOGibbs iog = new IOGibbs(data,variables);
+				 //iog.makeFile();
+		      }
+		   };   
 }

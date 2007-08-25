@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -22,6 +22,7 @@ package unbbayes.aprendizagem;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 
 
@@ -41,25 +42,25 @@ public class RelationInterationController {
         boolean flag = false;
         if (!(relationIndex.equals("null-->null"))){
             for(int i = 0; i < variables.size(); i++){
-                TVariavel aux = (TVariavel)variables.get(i);
+                LearningNode aux = (LearningNode)variables.get(i);
                 if (aux.getName().equals(""+index2)){
                     for(int j = 0; j < variables.size(); j++){
                         if (i != j){
-                          aux = (TVariavel)variables.get(j);
+                          aux = (LearningNode)variables.get(j);
                           if (aux.getName().equals(""+index1)){
-                              aux = (TVariavel)variables.get(j);
+                              aux = (LearningNode)variables.get(j);
                               if (!(aux.getPai(""+index2).equals(""+index2))){
-                                  aux = (TVariavel)variables.get(i);
+                                  aux = (LearningNode)variables.get(i);
                                   NodeList auxVector = aux.getPais();
                                   for (int k = 0; k < auxVector.size() ; k++ ){
-                                      TVariavel aux1 = (TVariavel)auxVector.get(k);
+                                      LearningNode aux1 = (LearningNode)auxVector.get(k);
                                       if (aux1.getName().equals(""+index1)){
                                           flag = true;
                                           break;      
                                       }                                
                                   }
                                   if (!flag){ 
-                                   	  aux.adicionaPai((TVariavel)variables.get(j));
+                                   	  aux.adicionaPai((LearningNode)variables.get(j));
                                       relationListModel.addElement(relationIndex);
                                   }
                               }
@@ -83,11 +84,11 @@ public class RelationInterationController {
             String parentName = relationName.substring(0,index);
             String sunName     = relationName.substring(index +3,length);
             for (int i = 0; i < variables.size() ; i++ ){
-                TVariavel aux = (TVariavel)variables.get(i);
+                LearningNode aux = (LearningNode)variables.get(i);
                 if (aux.getName().equals(sunName)){
                     auxVector =  aux.getPais();
                     for (int j = 0 ; j < auxVector.size() ;j++ ){
-                        TVariavel aux1 = (TVariavel)auxVector.get(j);
+                        LearningNode aux1 = (LearningNode)auxVector.get(j);
                         if (aux1.getName().equals(parentName)){
                             auxVector.remove(j);
                             relationListModel.removeElement(relation);

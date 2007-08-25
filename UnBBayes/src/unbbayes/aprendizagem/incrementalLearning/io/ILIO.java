@@ -15,8 +15,11 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JFileChooser;
 import javax.xml.bind.JAXBException;
 
+import unbbayes.controller.FileController;
+import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
 import unbbayes.io.LoadException;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -28,12 +31,6 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 public class ILIO {
-
-   /**
-    * 
-    */
-
-   private File file;
 
    public ILIO() {
       super();
@@ -87,6 +84,44 @@ public class ILIO {
       } catch (IOException ioe) {
          ioe.printStackTrace();
       }
+   }
+   
+   public File getFile() {
+       FileController fileController = FileController.getInstance();
+       JFileChooser chooser = new JFileChooser(fileController
+               .getCurrentDirectory());
+       chooser.setMultiSelectionEnabled(false);
+       chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+       // adicionar FileView no FileChooser para desenhar �cones de
+       // arquivos
+       int option = chooser.showSaveDialog(null);
+       if (option == JFileChooser.APPROVE_OPTION) {
+           File file = chooser.getSelectedFile();
+           if (file != null) {
+               return file;
+           }
+       }
+       return null;
+   }
+	
+   public File chooseFile(String[] tipos, String title) {
+       try {
+           FileController fileController = FileController.getInstance();            
+           JFileChooser chooser = new JFileChooser(fileController
+                   .getCurrentDirectory());
+           chooser.setMultiSelectionEnabled(false);
+           chooser.addChoosableFileFilter(new SimpleFileFilter(tipos, tipos[0]));
+           chooser.setDialogTitle(title);
+           int option = chooser.showOpenDialog(null);
+           if (option == JFileChooser.APPROVE_OPTION) {
+               /* Seta o arquivo escolhido */
+               return chooser.getSelectedFile();
+           }
+       } catch (Exception e) {
+           e.printStackTrace();
+           return null;
+       }
+       return null;
    }
 
 }

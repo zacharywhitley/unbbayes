@@ -4,7 +4,7 @@ package unbbayes.aprendizagem.incrementalLearning.util;
 
 
 import unbbayes.aprendizagem.LearningToolkit;
-import unbbayes.aprendizagem.TVariavel;
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 
 /**
@@ -15,7 +15,7 @@ import unbbayes.util.NodeList;
  */
 public class ILToolkit extends LearningToolkit {
 	
-	protected double g(TVariavel variable, NodeList parents,int[][]old){
+	protected double g(LearningNode variable, NodeList parents,int[][]old){
 			double riSum = 0;
 			double qiSum = 0;
 			  int  nij  = 0;

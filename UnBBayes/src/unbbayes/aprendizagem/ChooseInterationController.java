@@ -24,6 +24,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
+import unbbayes.prs.bn.LearningNode;
+
 public class ChooseInterationController {
 	
 	
@@ -43,7 +45,7 @@ public class ChooseInterationController {
 		frame.dispose();				
 		JPanel choosePanel = frame.getChoosePanel();
 		int length = choosePanel.getComponentCount();
-		TVariavel variable;
+		LearningNode variable;
 		for(int i = 0 ;i < length; i++){
 		    variable = frame.getVariable(i);
 		    variable.setParticipa(((JCheckBox)choosePanel.getComponent(i)).isSelected());		    
@@ -53,7 +55,7 @@ public class ChooseInterationController {
 	public int setVariablesState(int inutil){
 		JPanel choosePanel = frame.getChoosePanel();
 		int length = choosePanel.getComponentCount();
-		TVariavel variable;
+		LearningNode variable;
 		int resultado=-1;
 		for(int i = 0 ;i < length; i++){
 		    variable = frame.getVariable(i);

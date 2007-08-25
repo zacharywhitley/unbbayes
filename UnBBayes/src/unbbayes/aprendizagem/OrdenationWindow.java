@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -43,6 +43,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 
 public class OrdenationWindow extends JDialog {	
@@ -202,9 +203,9 @@ public class OrdenationWindow extends JDialog {
 	}
 	
 	private void insertList(){
-		TVariavel aux;
+		LearningNode aux;
 		for(int i = 0 ; i< variables.size(); i++){			
-			aux = (TVariavel)variables.get(i);
+			aux = (LearningNode)variables.get(i);
 			listModel.addElement(aux.getName());
 		}				
 	}

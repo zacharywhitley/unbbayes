@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Stack;
 import java.util.TreeSet;
 
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 
 public abstract class CBLToolkit extends LearningToolkit {
@@ -33,7 +34,7 @@ public abstract class CBLToolkit extends LearningToolkit {
 	protected ArrayList<int[]> es;
 	protected ArrayList<Object[]> separators;
 
-	protected double mutualInformation(TVariavel xi, TVariavel xk) {
+	protected double mutualInformation(LearningNode xi, LearningNode xk) {
 		int nt = 0;
 		int il = 0;
 		int kl = 0;
@@ -507,9 +508,9 @@ public abstract class CBLToolkit extends LearningToolkit {
 
 	protected double mutualInformation(int v1, int v2, int classe) {
 
-		int ri = ((TVariavel) variablesVector.get(v1)).getEstadoTamanho();
-		int rk = ((TVariavel) variablesVector.get(v2)).getEstadoTamanho();
-		int rj = ((TVariavel) variablesVector.get(classe)).getEstadoTamanho();
+		int ri = ((LearningNode) variablesVector.get(v1)).getEstadoTamanho();
+		int rk = ((LearningNode) variablesVector.get(v2)).getEstadoTamanho();
+		int rj = ((LearningNode) variablesVector.get(classe)).getEstadoTamanho();
 		double pjik;
 		double cpjik;
 		double im = 0.0;
@@ -564,12 +565,12 @@ public abstract class CBLToolkit extends LearningToolkit {
 		int qj = getQ(sep);
 		if (qj == 0) {
 			System.out.println("SAIIIIIIIIII");
-			return mutualInformation((TVariavel) variablesVector.get(v1),
-					(TVariavel) variablesVector.get(v2));
+			return mutualInformation((LearningNode) variablesVector.get(v1),
+					(LearningNode) variablesVector.get(v2));
 		}
 		;
-		int ri = ((TVariavel) variablesVector.get(v1)).getEstadoTamanho();
-		int rk = ((TVariavel) variablesVector.get(v2)).getEstadoTamanho();
+		int ri = ((LearningNode) variablesVector.get(v1)).getEstadoTamanho();
+		int rk = ((LearningNode) variablesVector.get(v2)).getEstadoTamanho();
 		double pjik;
 		double cpjik;
 		double im = 0.0;
@@ -634,8 +635,8 @@ public abstract class CBLToolkit extends LearningToolkit {
 			return mutualInformation(v1, v2, classex);
 		}
 		;
-		int ri = ((TVariavel) variablesVector.get(v1)).getEstadoTamanho();
-		int rk = ((TVariavel) variablesVector.get(v2)).getEstadoTamanho();
+		int ri = ((LearningNode) variablesVector.get(v1)).getEstadoTamanho();
+		int rk = ((LearningNode) variablesVector.get(v2)).getEstadoTamanho();
 		double pjik;
 		double cpjik;
 		double im = 0.0;
@@ -692,10 +693,10 @@ public abstract class CBLToolkit extends LearningToolkit {
 	}
 
 	protected int getQ(ArrayList cc) {
-		TVariavel aux;
+		LearningNode aux;
 		int ac = 1;
 		for (int i = 0; i < cc.size(); i++) {
-			aux = (TVariavel) variablesVector.get(((Integer) cc.get(i))
+			aux = (LearningNode) variablesVector.get(((Integer) cc.get(i))
 					.intValue());
 			ac *= aux.getEstadoTamanho();
 		}
@@ -706,13 +707,13 @@ public abstract class CBLToolkit extends LearningToolkit {
 	}
 
 	protected int[] multipliers(ArrayList a) {
-		TVariavel aux;
+		LearningNode aux;
 		int np = a.size();
 		int m = np == 0 ? 1 : np;
 		int[] mult = new int[m];
 		mult[m - 1] = 1;
 		for (int i = m - 2; i >= 0; i--) {
-			aux = (TVariavel) variablesVector.get(((Integer) a.get(i + 1))
+			aux = (LearningNode) variablesVector.get(((Integer) a.get(i + 1))
 					.intValue());
 			mult[i] = aux.getEstadoTamanho() * mult[i + 1];
 		}

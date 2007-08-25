@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -20,87 +20,42 @@
  */
 package unbbayes.aprendizagem.incrementalLearning.controller;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JFileChooser;
-
-import unbbayes.aprendizagem.ConstructionController;
-import unbbayes.aprendizagem.ProbabilisticController;
-import unbbayes.aprendizagem.TVariavel;
-import unbbayes.aprendizagem.incrementalLearning.io.ILIO;
 import unbbayes.aprendizagem.incrementalLearning.util.ILToolkit;
-import unbbayes.controller.FileController;
-import unbbayes.controller.MainController;
-import unbbayes.gui.SimpleFileFilter;
-import unbbayes.io.BaseIO;
-import unbbayes.io.NetIO;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.util.NodeList;
 
 /**
  * 
  * 
- * @author Danilo Custódio da Silva
+ * @author Danilo Custï¿½dio da Silva
  */
 public class ILController extends ILToolkit {
-
-    private BaseIO io;
-
+    
     private ProbabilisticNetwork pn;
 
-    private ArrayList nijks;
-
-    private ILIO ilio;
-
     private List<Object>  ssList = new ArrayList<Object> ();
+    
+    private NodeList variables;
 
-    ConstructionController constructionController;
+    //ConstructionController constructionController;
 
-    public ILController(MainController controller) {
-        /* Escolha do arquivo .net para a atualização da rede */
-        File file = chooseFile(new String[] { "net" }, "Choose the priori net.");
-        io = new NetIO();
-        ilio = new ILIO();
-        /* Recuperação da rede a partir de um arquivo .net */
-        pn = ilio.getNet(file, io);
-        /*
-         * Escolher um outro arquivo, agora que contenha informções das
-         * estatísticas suficientes
-         */
-        file = chooseFile(new String[] { "obj" }, "Choose the frontier set.");
-        if (file != null) {
-            ssList = (ArrayList<Object>)ilio.getSuficStatistics(file);
-        }
-        file = chooseFile(new String[] { "txt" }, "Choose the training set.");
-        constructionController = new ConstructionController(file,pn);
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        dataBase = constructionController.getMatrix();
-        vector = constructionController.getVector();
-        caseNumber = constructionController.getCaseNumber();
-        compacted = constructionController.isCompacted();        
+    public ILController(ProbabilisticNetwork pn,List<Object> ssList, NodeList variables) {
+    	this.pn = pn;
+    	this.ssList = ssList;
+    	this.variables = variables;    	
         chooseBetterNet();
-        /*Gives the probability of each node*/         
-        ProbabilisticController probabilisticController = new ProbabilisticController
-                                (getListaVariaveis(),dataBase, vector,caseNumber,controller, compacted);
-        //paramRecalc();
-        file = getFile();
-        ilio.makeNetFile(file, io, pn);
-        file = getFile();
-        ilio.makeContFile(ssList, file);
+       
     }
     
     /**
      * @return
      */
-    private NodeList getListaVariaveis() {
+    public NodeList getListaVariaveis() {
         NodeList listaVariaveis = new NodeList();
         for(int i = 0; i< pn.getNodeCount(); i++){
             listaVariaveis.add(getTVariavel(pn.getNodeAt(i),true));
@@ -171,7 +126,7 @@ public class ILController extends ILToolkit {
     }
 
     private int[][] makeRemoveNijksStructure(Node node, Node lastParent) {
-        TVariavel v = getTVariavel(node, true);
+        LearningNode v = getTVariavel(node, true);
         NodeList parents = v.getPais();
         for (int i = 0; i < parents.size(); i++) {
             Node parent = (Node) node.getParents().get(i);
@@ -199,7 +154,7 @@ public class ILController extends ILToolkit {
     }
 
     private int[][] makeAddNijksStructure(Node node, Node lastParent) {
-        TVariavel v = getTVariavel(node, true);
+        LearningNode v = getTVariavel(node, true);
         NodeList parents = v.getPais();
         if (lastParent != null) {
             parents.add(getTVariavel(lastParent, true));
@@ -211,9 +166,9 @@ public class ILController extends ILToolkit {
         return nijk;
     }
 
-    private TVariavel getTVariavel(Node node, boolean pais) {
-        for (int i = 0; i < constructionController.getVariables().size(); i++) {
-            TVariavel v = (TVariavel) constructionController.getVariables().get(i);
+    private LearningNode getTVariavel(Node node, boolean pais) {
+        for (int i = 0; i < variables.size(); i++) {
+            LearningNode v = (LearningNode) variables.get(i);
             if (v.getName().equals(node.getName())) {
                 NodeList listaPais = node.getParents();
                 NodeList listaPaisAtual = new NodeList();
@@ -230,7 +185,7 @@ public class ILController extends ILToolkit {
     }
 
     /*
-     * Nome do nó Pais do nó Estatisticas suficientes guardadas0
+     * Nome do nï¿½ Pais do nï¿½ Estatisticas suficientes guardadas0
      */
     private void chooseBetterNet() {
         findBestFrontier();        
@@ -256,7 +211,7 @@ public class ILController extends ILToolkit {
                         System.out.println("Equivalente - > " + frontierObject[0]);
                         break;
                     }else{
-                        System.out.println("Não Equivalente - > " + frontierObject[0]);
+                        System.out.println("Nï¿½o Equivalente - > " + frontierObject[0]);
                     }
                     g = g(getTVariavel(node,true), getParents(node,
                             (ArrayList) frontierObject[1]), (int[][]) frontierObject[2]);
@@ -283,7 +238,7 @@ public class ILController extends ILToolkit {
         double fator = numeroCasos/(double)getTotalCases(velho);
         System.out.println("Numero de caso = " + numeroCasos);
         System.out.println("Numero de caso Antigo = " + getTotalCases(velho));
-        System.out.println("Nó " + node.getName());        
+        System.out.println("Nï¿½ " + node.getName());        
         double intervalosNovos[] = null;
         double intervalosAntigos[] = null;
         double maiorDiferenca = Double.MIN_VALUE;
@@ -383,7 +338,7 @@ public class ILController extends ILToolkit {
 
     private NodeList getParents(Node node, ArrayList parents) {
         NodeList parentsAux = new NodeList();
-        TVariavel v = getTVariavel(node,true);
+        LearningNode v = getTVariavel(node,true);
         for (int i = 0; i < parents.size(); i++) {
             String parent = (String) parents.get(i);
             for (int j = 0; j < pn.getNodeCount(); j++) {
@@ -408,7 +363,7 @@ public class ILController extends ILToolkit {
 
     private void makeBetterNetwork(Object[] betterNet) {
         if (betterNet != null) {
-            System.out.println("Mudou Familia do Nó " + betterNet[0]);
+            System.out.println("Mudou Familia do Nï¿½ " + betterNet[0]);
             Node node = getNode((String) betterNet[0]);            
             NodeList parents = getParents(node, (ArrayList) betterNet[1]);
             
@@ -428,9 +383,9 @@ public class ILController extends ILToolkit {
         for (int i = 0; i < pn.getNodeCount(); i++) {
             if (!pn.getNodeAt(i).getName().equals(node.getName())) {
                 Node nodeAux = pn.getNodeAt(i);                
-                /* Verifica se é pai */
+                /* Verifica se ï¿½ pai */
                 if (!isParent(node, nodeAux) && !isDescendent(node,nodeAux)) {
-                    /* Verifica se há uma melhora na pontuacao para aquele nó */
+                    /* Verifica se hï¿½ uma melhora na pontuacao para aquele nï¿½ */
                     node.getParents().add(nodeAux);
                     /* Atualiza pais da fronteira */
                     ((ArrayList) frontierObject[1]).add(nodeAux.getName());
@@ -488,7 +443,7 @@ public class ILController extends ILToolkit {
             Object[] fronteira = (Object[]) ssList.get(i);
             long[] marginalVector = makeMarginal((int[][]) fronteira[2]);
             /*
-             * Encontrou-se um nó com a distribuição marginal da variável
+             * Encontrou-se um nï¿½ com a distribuiï¿½ï¿½o marginal da variï¿½vel
              * escolhida
              */
             if (fronteira[0].equals(parents.get(parents.size() - 1))) {
@@ -549,8 +504,8 @@ public class ILController extends ILToolkit {
     }
 
     /**
-     * Pega a distribuição marginal associada ao array. O tamanho do vetor é
-     * igual ao número de linhas do array.
+     * Pega a distribuiï¿½ï¿½o marginal associada ao array. O tamanho do vetor ï¿½
+     * igual ao nï¿½mero de linhas do array.
      * 
      * @param array
      * @return
@@ -606,49 +561,11 @@ public class ILController extends ILToolkit {
 
     private void paramRecalc() {
         for (int i = 0; i < pn.getNodeCount(); i++) {
-            TVariavel node = getTVariavel(pn.getNodeAt(i),true);
+            LearningNode node = getTVariavel(pn.getNodeAt(i),true);
             int[][] news = getFrequencies(node, node.getPais());
             getProbability(news, node);
         }
-    }
-
-    private File getFile() {
-        FileController fileController = FileController.getInstance();
-        JFileChooser chooser = new JFileChooser(fileController
-                .getCurrentDirectory());
-        chooser.setMultiSelectionEnabled(false);
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        // adicionar FileView no FileChooser para desenhar ícones de
-        // arquivos
-        int option = chooser.showSaveDialog(null);
-        if (option == JFileChooser.APPROVE_OPTION) {
-            File file = chooser.getSelectedFile();
-            if (file != null) {
-                return file;
-            }
-        }
-        return null;
-    }
-
-    private File chooseFile(String[] tipos, String title) {
-        try {
-            FileController fileController = FileController.getInstance();            
-            JFileChooser chooser = new JFileChooser(fileController
-                    .getCurrentDirectory());
-            chooser.setMultiSelectionEnabled(false);
-            chooser.addChoosableFileFilter(new SimpleFileFilter(tipos, tipos[0]));
-            chooser.setDialogTitle(title);
-            int option = chooser.showOpenDialog(null);
-            if (option == JFileChooser.APPROVE_OPTION) {
-                /* Seta o arquivo escolhido */
-                return chooser.getSelectedFile();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-        return null;
-    }
+    }    
 }
 
 /*

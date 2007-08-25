@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -27,6 +27,7 @@ import javax.swing.JDialog;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 
 
@@ -46,18 +47,18 @@ public class LogAprendizagem extends JDialog{
         Container container = getContentPane();
         caixaLog = new JTextArea();
         int tamanho = variaveis.size();
-        caixaLog.setText("Lista com os pais de cada variável\n\n");
+        caixaLog.setText("Lista com os pais de cada variï¿½vel\n\n");
         for(int i = 0 ; i < tamanho; i++){
-                TVariavel variavel = (TVariavel)variaveis.get(i);
-                caixaLog.append("Variável : "+variavel.getName()+"\n");
+                LearningNode variavel = (LearningNode)variaveis.get(i);
+                caixaLog.append("Variï¿½vel : "+variavel.getName()+"\n");
                 NodeList pais = variavel.getPais();
                 for(int j = 0 ; j < pais.size(); j++){
-                    TVariavel variavel2 = (TVariavel)pais.get(j);
+                    LearningNode variavel2 = (LearningNode)pais.get(j);
                     int k = j+1;
                     caixaLog.append("\tPai "+k+" : "+variavel2.getName()+"\n");
                 }
                 if(pais.size() == 0 ){
-                    caixaLog.append("\tNão possui pais\n");
+                    caixaLog.append("\tNï¿½o possui pais\n");
                 }
         }
         painel = new JScrollPane(caixaLog);

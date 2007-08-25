@@ -56,7 +56,7 @@ public class B extends BToolkit{
   public B(NodeList variables, int[][] dataBase, int[] vector, long caseNumber,
                 String metric, String param, boolean compacted){  
     //LearningNode variable;
-	TVariavel variable;
+	LearningNode variable;
     NodeList parentsAux;
     double gi;
     double gj;
@@ -77,7 +77,7 @@ public class B extends BToolkit{
         IJVector = maxMatrix();
     	while(gMatrix[IJVector[0]][IJVector[1]] > 0){ 
         	//variable = (LearningNode)variablesVector.get(IJVector[0]);
-    		variable = (TVariavel)variablesVector.get(IJVector[0]);
+    		variable = (LearningNode)variablesVector.get(IJVector[0]);
            	parentsAux = variable.getPais();
            	parentsAux.add(variablesVector.get(IJVector[1]));
            	gi = getG(variable,parentsAux);
@@ -93,7 +93,7 @@ public class B extends BToolkit{
            	for(int i = 0; i < variables.size(); i++){
                 if(gMatrix[IJVector[0]][i] > Double.NEGATIVE_INFINITY){
                   	//if(isMember((LearningNode)variables.get(i),variable.getPais())){
-                	if(isMember((TVariavel)variables.get(i),variable.getPais())){
+                	if(isMember((LearningNode)variables.get(i),variable.getPais())){
                       	gMatrix[IJVector[0]][i] = 0;
                    	} else{
                        	parentsAux = SetToolkit.clone(variable.getPais());

@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -35,6 +35,7 @@ public class MainGibbs {
 
 	public static void main(String args[]){
 		//GibbsFrame gf = new GibbsFrame();		
-		//GibbsController gc = new GibbsController(data vector,variables);
+		//GibbsController gc = new GibbsController(new byte[][] ,variables);
+		
 	}
 }

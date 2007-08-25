@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -26,14 +26,14 @@ import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
- * Classe que define um variável de um banco de casos, as variáveis
+ * Classe que define um variï¿½vel de um banco de casos, as variï¿½veis
  * possuem um vetor de pais(do tipo LearningNode), um veto de estados
- * (do tipo String), um vetor de predecessores, que são os candidatos
- * a pais (do tipo TVariavel), um nome e um numero máximo de pais.
+ * (do tipo String), um vetor de predecessores, que sï¿½o os candidatos
+ * a pais (do tipo LearningNode), um nome e um numero mï¿½ximo de pais.
  * O modelo ainda possui uma variavel que informa o numero de casos
  * em um determinado banco de casos.
  * @version 1.0
- * @author Danilo Custódio da Silva
+ * @author Danilo Custï¿½dio da Silva
  */
 
 public class LearningNode extends ProbabilisticNode implements Cloneable {
@@ -49,10 +49,10 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     private boolean participa;
 
     /**
-     * Constutor de uma TVariavel.
-     * @param nome - O Nome de uma TVariavel(<code>String<code>)
-     * @param pos - A posição de uma TVariavel em um vetor de
-     * variáveis(<code>int<code>)
+     * Constutor de uma LearningNode.
+     * @param nome - O Nome de uma LearningNode(<code>String<code>)
+     * @param pos - A posiï¿½ï¿½o de uma LearningNode em um vetor de
+     * variï¿½veis(<code>int<code>)
      * @see List
      */
     public LearningNode(String nome, int pos){
@@ -65,9 +65,9 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método para determinar a posição de uma variável no vetor
-     * de variáveis
-     * @param pos - Posição que a variável ocupará no vetor(<code>
+     * Mï¿½todo para determinar a posiï¿½ï¿½o de uma variï¿½vel no vetor
+     * de variï¿½veis
+     * @param pos - Posiï¿½ï¿½o que a variï¿½vel ocuparï¿½ no vetor(<code>
      * int<code>)
      */
     public void setPos(int pos){
@@ -75,10 +75,10 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método que seta a variável a condição de que ela será ou
-     * não a variável que conterá o numero de vezes que um deter
+     * Mï¿½todo que seta a variï¿½vel a condiï¿½ï¿½o de que ela serï¿½ ou
+     * nï¿½o a variï¿½vel que conterï¿½ o numero de vezes que um deter
      * minado registro se repete.
-     * @param rep - Indica se a condiçao para essa variável é ver
+     * @param rep - Indica se a condiï¿½ao para essa variï¿½vel ï¿½ ver
      * dadeira ou falsa(<code>boolean<code>)
      */
     public void isRep(boolean rep){
@@ -86,20 +86,20 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método que indica se uma determinada variável é ou não
-     * a variável que contem o número de vezes que um registro
+     * Mï¿½todo que indica se uma determinada variï¿½vel ï¿½ ou nï¿½o
+     * a variï¿½vel que contem o nï¿½mero de vezes que um registro
      * se repete.
-     * @return boolean - Indica se a variável e ou nao a variável
-     * que contem o número de vezes que um registro se repete
+     * @return boolean - Indica se a variï¿½vel e ou nao a variï¿½vel
+     * que contem o nï¿½mero de vezes que um registro se repete
      */
     public boolean getRep(){
         return rep;
     }
 
     /**
-     * Método que clona a variável original.
-     * @return Object - Retorna um objeto que é uma cópia
-     * da variável original, mas com uma nova referência
+     * Mï¿½todo que clona a variï¿½vel original.
+     * @return Object - Retorna um objeto que ï¿½ uma cï¿½pia
+     * da variï¿½vel original, mas com uma nova referï¿½ncia
      * @see LearningNode
      */
     public Object clone(){
@@ -112,35 +112,35 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método que indica a posição da variável no vetor de variáveis
-     * @return int - Posição da variável dentro do vetor de variáveis
+     * Mï¿½todo que indica a posiï¿½ï¿½o da variï¿½vel no vetor de variï¿½veis
+     * @return int - Posiï¿½ï¿½o da variï¿½vel dentro do vetor de variï¿½veis
      */
     public int getPos(){
         return this.pos;
     }
 
     /**
-     * Método que coloca na variável o numero máximo de pais
+     * Mï¿½todo que coloca na variï¿½vel o numero mï¿½ximo de pais
      * permitidos a ela.
-     * @param numero - Número máximo de pais(<code>int<code>)
+     * @param numero - Nï¿½mero mï¿½ximo de pais(<code>int<code>)
      */
     public void setNumeroMaximoPais(int numero){
         numeroMaximoPais = numero;
     }
 
     /**
-     * Método que indica o número máximo de pais que uma
-     * variável pode ter.
-     * @return int - Retorna o número máximo de pais que uma
-     * variável pode conter
+     * Mï¿½todo que indica o nï¿½mero mï¿½ximo de pais que uma
+     * variï¿½vel pode ter.
+     * @return int - Retorna o nï¿½mero mï¿½ximo de pais que uma
+     * variï¿½vel pode conter
      */
     public int getNumeroMaximoPais(){
         return this.numeroMaximoPais;
     }
 
     /**
-     * Método que retorna os estados de uma variável.
-     * @return List - Array de estados da variável
+     * Mï¿½todo que retorna os estados de uma variï¿½vel.
+     * @return List - Array de estados da variï¿½vel
      * @see List
      */
     public List<String> getEstados(){
@@ -148,9 +148,9 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método que retorna os predecessores de uma variável,
-     * ou seja, as variáveis que podem ser pais dessa variável.
-     * @return List - Array de predecessores da variável
+     * Mï¿½todo que retorna os predecessores de uma variï¿½vel,
+     * ou seja, as variï¿½veis que podem ser pais dessa variï¿½vel.
+     * @return List - Array de predecessores da variï¿½vel
      * @see List
      */
     public NodeList getPredecessores(){
@@ -158,8 +158,8 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método que retorna os pais de uma variável.
-     * @return List - Array de pais da variável
+     * Mï¿½todo que retorna os pais de uma variï¿½vel.
+     * @return List - Array de pais da variï¿½vel
      * @see List
      */
     public NodeList getPais(){
@@ -167,8 +167,8 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método que retorna a tabela com todas as probabilidades
-     * possíveis para as variáveis dependendo dos pais.
+     * Mï¿½todo que retorna a tabela com todas as probabilidades
+     * possï¿½veis para as variï¿½veis dependendo dos pais.
      * @return TTabPot - Tabela com as probabilidades(<code>
      * TTabPo<code>)
      * @see TTabPor
@@ -178,9 +178,9 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método que indica o tamanho do número de predecessores
-     * de uma variável.
-     * @return int - Número de predecessores de uma variável
+     * Mï¿½todo que indica o tamanho do nï¿½mero de predecessores
+     * de uma variï¿½vel.
+     * @return int - Nï¿½mero de predecessores de uma variï¿½vel
      * @see List
      */
     public int getTamanhoPredecessores(){
@@ -188,9 +188,9 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método que indica o tamanho do número de pais de uma
-     * variável.
-     * @return int - Número de pais de uma variável
+     * Mï¿½todo que indica o tamanho do nï¿½mero de pais de uma
+     * variï¿½vel.
+     * @return int - Nï¿½mero de pais de uma variï¿½vel
      * @see List
      */
     public int getTamanhoPais(){
@@ -201,7 +201,7 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método que retorna o estado que está em um determinado
+     * Mï¿½todo que retorna o estado que estï¿½ em um determinado
      * indice do vetor de estados.
      * @param indexo - Indice do estado no vetor de estados
      * (<code>int<code>
@@ -214,7 +214,7 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método que indica o numero de estados da variável.
+     * Mï¿½todo que indica o numero de estados da variï¿½vel.
      * @return int - Tamanho do vetor de estados
      * @see List
      */
@@ -223,9 +223,9 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método para adicionar um predecessor à variável.
-     * @param predecessor - Variável que será inserida no
-     * vetor de predecessores(<code>TVariavel<code>)
+     * Mï¿½todo para adicionar um predecessor ï¿½ variï¿½vel.
+     * @param predecessor - Variï¿½vel que serï¿½ inserida no
+     * vetor de predecessores(<code>LearningNode<code>)
      * @see List
      */
     public void adicionaPredecessor(LearningNode predecessor){
@@ -233,8 +233,8 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método para adicionar um estado à variável.
-     * @param predecessor - Estado que será inserido no
+     * Mï¿½todo para adicionar um estado ï¿½ variï¿½vel.
+     * @param predecessor - Estado que serï¿½ inserido no
      * vetor de estados(<code>String<code>)
      * @see List
      */
@@ -243,8 +243,8 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método que retorna o nome do Ancestral da váriavel
-     * que possui o nome específico.
+     * Mï¿½todo que retorna o nome do Ancestral da vï¿½riavel
+     * que possui o nome especï¿½fico.
      * @param nome - Nome do ancestral(<code>String<code>)
      * @return String - Nome do ancestral, caso nao exista
      * retorna string vazia
@@ -264,9 +264,9 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método para adicionar um pai à variável.
-     * @param pai - Variável que será inserida no
-     * vetor de pais(<code>TVariavel<code>)
+     * Mï¿½todo para adicionar um pai ï¿½ variï¿½vel.
+     * @param pai - Variï¿½vel que serï¿½ inserida no
+     * vetor de pais(<code>LearningNode<code>)
      * @see List
      */
     public void adicionaPai(LearningNode pai){
@@ -274,11 +274,11 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método que indica se um estado está ou não presente na
-     * variável
-     * @param nomeEstado - Nome do estado que está sendo procurado
+     * Mï¿½todo que indica se um estado estï¿½ ou nï¿½o presente na
+     * variï¿½vel
+     * @param nomeEstado - Nome do estado que estï¿½ sendo procurado
      * (<code>String<code>)
-     * @return boolean - Se o estado existe ou não
+     * @return boolean - Se o estado existe ou nï¿½o
      * @see List
      */
     public boolean existeEstado(String nomeEstado){
@@ -292,11 +292,11 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método que retorna a posição de um estado no vetor
+     * Mï¿½todo que retorna a posiï¿½ï¿½o de um estado no vetor
      * de estados.
      * @param nomeEstado - Nome do estado que esta sendo procurado
      * (<code>String<code>)
-     * @return int - Posição do estado
+     * @return int - Posiï¿½ï¿½o do estado
      */
     public int getEstadoPosicao(String nomeEstado){
         int tamanho = states.size();
@@ -317,8 +317,8 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método para colocar uma lista de pais na variável.
-     * Serve para o método clone.
+     * Mï¿½todo para colocar uma lista de pais na variï¿½vel.
+     * Serve para o mï¿½todo clone.
      * @param parents - Lista de pais(<code>Object<code>)
      * @see Clone()
      */
@@ -327,8 +327,8 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método para colocar uma lista de estados na variável.
-     * Serve para o método clone.
+     * Mï¿½todo para colocar uma lista de estados na variï¿½vel.
+     * Serve para o mï¿½todo clone.
      * @param states - Lista de states(<code>Object<code>)
      * @see Clone()
      */
@@ -337,8 +337,8 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     }
 
     /**
-     * Método para colocar uma lista de predecessores na variável.
-     * Serve para o método clone.
+     * Mï¿½todo para colocar uma lista de predecessores na variï¿½vel.
+     * Serve para o mï¿½todo clone.
      * @param predecessores - Lista de predecessores(<code>Object<code>)
      * @see Clone()
      */

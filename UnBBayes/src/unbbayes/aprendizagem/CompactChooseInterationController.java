@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -22,6 +22,7 @@ package unbbayes.aprendizagem;
 
 import javax.swing.JComboBox;
 
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 public class CompactChooseInterationController {
 	
@@ -34,9 +35,9 @@ public class CompactChooseInterationController {
 	public void actionOk(JComboBox variablesCombo, NodeList variablesVector){
 		frame.dispose();
 		String name = (String)variablesCombo.getSelectedItem();
-            TVariavel aux;
+            LearningNode aux;
             for (int i = 0 ; i < variablesVector.size() ;i++ ){
-                aux = (TVariavel)variablesVector.get(i);
+                aux = (LearningNode)variablesVector.get(i);
                 if (aux.getName().equals(name)){
                     System.out.println("Sigla = " + aux.getName());
                     aux.isRep(true);

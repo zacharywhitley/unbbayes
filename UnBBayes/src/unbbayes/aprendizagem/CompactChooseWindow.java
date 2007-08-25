@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -33,11 +33,12 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 
 /**
- * Classe que controi uma tela onde o usuário deverá
- * definir qual a variável que deverá conter o numero
+ * Classe que controi uma tela onde o usuï¿½rio deverï¿½
+ * definir qual a variï¿½vel que deverï¿½ conter o numero
  * de vezes que um certo caso se repete no arquivo.
  * @author Danilo Custodio da Silva
  * @version 1.0
@@ -56,13 +57,13 @@ public class CompactChooseWindow extends JDialog{
     private CompactChooseInterationController chooseController;
 
     /**
-     * Constrói a tela que contem uma lista onde
-     * o usuário deverá escolhera variável que contem
-     * o número de vezes que um determinado caso se
+     * Constrï¿½i a tela que contem uma lista onde
+     * o usuï¿½rio deverï¿½ escolhera variï¿½vel que contem
+     * o nï¿½mero de vezes que um determinado caso se
      * repete.
-     * @param vetorVariaveis - O vetor com as variáveis
+     * @param vetorVariaveis - O vetor com as variï¿½veis
      * do arquivo(<code>java.util.List<code>)
-     * @see TVariavel
+     * @see LearningNode
      * @see Container
      */
     CompactChooseWindow(NodeList variablesVector){
@@ -83,9 +84,9 @@ public class CompactChooseWindow extends JDialog{
         cancel          = new JButton("Cancelar");
         variablesCombo  = new JComboBox();
         variablesCombo.setMaximumRowCount(5);
-        TVariavel aux;
+        LearningNode aux;
         for (int i = 0 ; i < variablesVector.size() ;i++ ){
-            aux = (TVariavel)variablesVector.get(i);
+            aux = (LearningNode)variablesVector.get(i);
             if(aux.getParticipa()){
                variablesCombo.addItem(aux.getName());
             }

@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -20,12 +20,14 @@
  */
 package unbbayes.aprendizagem;
 
+import unbbayes.prs.bn.LearningNode;
+
 public class OptionsInterationController {
 	
-	private TVariavel variable;
+	private LearningNode variable;
 	private OptionsWindow frame;
 	
-	public OptionsInterationController(OptionsWindow frame, TVariavel variable){
+	public OptionsInterationController(OptionsWindow frame, LearningNode variable){
 		this.frame = frame;
 		this.variable = variable;		
 	}

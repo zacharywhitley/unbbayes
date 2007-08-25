@@ -21,6 +21,7 @@
  package unbbayes.aprendizagem;
 
 
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 
 /**
@@ -40,8 +41,8 @@ public class K2 extends K2Toolkit{
     public K2(NodeList variables, int[][] dataBase, int vector[], long 
             caseNumber, String metric, String param, boolean compacted){    	
     	Object[]  zMax;
-    	TVariavel z;
-        TVariavel variable;                
+    	LearningNode z;
+        LearningNode variable;                
         this.compacted = compacted;
     	this.variablesVector = variables;
         this.dataBase        = dataBase;
@@ -59,12 +60,12 @@ public class K2 extends K2Toolkit{
             constructPredecessors(variablesVector);                        
         	for(int i = 0; i < length;i++){
             	continueFlag      = true;
-            	variable          = (TVariavel)variablesVector.get(i);
+            	variable          = (LearningNode)variablesVector.get(i);
             	pOld              = getG(variable,null);
             	parentsLength     = variable.getNumeroMaximoPais();                         
             	while (continueFlag && variable.getTamanhoPais() < parentsLength){
-                	zMax = getZMax((TVariavel)variable.clone());
-                	z    = (TVariavel)zMax[0];
+                	zMax = getZMax((LearningNode)variable.clone());
+                	z    = (LearningNode)zMax[0];
                 	pNew = ((Double)zMax[1]).doubleValue();
                 	if (pNew - pOld > variation){
                     	pOld = pNew;

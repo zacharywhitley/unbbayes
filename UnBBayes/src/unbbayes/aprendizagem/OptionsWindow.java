@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -38,16 +38,18 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 
+import unbbayes.prs.bn.LearningNode;
+
 
 
 
 /**
- * Classe para a construção de uma tela que mostra
- * qual a sigla de uma determinada variável, uma lista
- * com os possíveis estados dessa variável, e permite ao
- * usuário do sistema alterar o número máximo de pais de
- * uma variável.
- * @author Danilo Custódio da Silva
+ * Classe para a construï¿½ï¿½o de uma tela que mostra
+ * qual a sigla de uma determinada variï¿½vel, uma lista
+ * com os possï¿½veis estados dessa variï¿½vel, e permite ao
+ * usuï¿½rio do sistema alterar o nï¿½mero mï¿½ximo de pais de
+ * uma variï¿½vel.
+ * @author Danilo Custï¿½dio da Silva
  * @version 1.0
  */
 public class OptionsWindow extends JDialog
@@ -55,7 +57,7 @@ public class OptionsWindow extends JDialog
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
-    private TVariavel variable;
+    private LearningNode variable;
     private JTextField txtMaxParents;
     private JTextField txtName;
     private JLabel lMaxParents;
@@ -74,17 +76,17 @@ public class OptionsWindow extends JDialog
     private OptionsInterationController optionsController;
 
     /**
-     * Método construtor da tela.Essa tela possui dois paineis
+     * Mï¿½todo construtor da tela.Essa tela possui dois paineis
      * principais,o pPainelCentro que contem os paineis com a li
-     * sta dos estados e com os botões e o pPainelNorte que contém
-     * a sigla da variável e o número máximo de pais.
-     * @param no - A váriavel a qual se deseja obter as informações
-     * (<code>TVariavel<code>)
-     * @see TVariavel
+     * sta dos estados e com os botï¿½es e o pPainelNorte que contï¿½m
+     * a sigla da variï¿½vel e o nï¿½mero mï¿½ximo de pais.
+     * @param no - A vï¿½riavel a qual se deseja obter as informaï¿½ï¿½es
+     * (<code>LearningNode<code>)
+     * @see LearningNode
      * @see JPanel
      * @see Container
      */
-    public OptionsWindow(TVariavel variable){
+    public OptionsWindow(LearningNode variable){
         super(new Frame(),"UnBBayes - Learning Module",true);
         this.variable = variable;
         Container container  = getContentPane();
@@ -122,7 +124,7 @@ public class OptionsWindow extends JDialog
 
     private JPanel getMaxPanel(){
         maxPanel             = new JPanel(new GridLayout(1,2));
-        lMaxParents          = new JLabel("Máx :");
+        lMaxParents          = new JLabel("Mï¿½x :");
         txtMaxParents        = new JTextField("" + variable.getNumeroMaximoPais());
         maxPanel.add(lMaxParents);
         maxPanel.add(txtMaxParents);

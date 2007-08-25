@@ -1,8 +1,8 @@
 package unbbayes.datamining.discretize;
 
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 import unbbayes.util.SwingWorker;
-import unbbayes.aprendizagem.TVariavel;
 import unbbayes.datamining.gui.preprocessor.janeladiscret;
 
 /**
@@ -345,9 +345,9 @@ public class dalgo2 extends Thread {
 		concatena2();
 		System.out.println("Limite de perda = " + limiteperda);
 		String bbuf = "";
-		TVariavel auxx;
+		LearningNode auxx;
 		for (int i = 0; i < nvar; i++) {
-			auxx = (TVariavel) variables.get(i);
+			auxx = (LearningNode) variables.get(i);
 			if (!auxx.getRep()) {
 				for (int j = 0; j < variables.get(i).getStatesSize(); j++) {
 					bbuf = variables.get(i).getStateAt(j);

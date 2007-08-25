@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -20,6 +20,7 @@
  */
 package unbbayes.aprendizagem;
 
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
@@ -37,15 +38,15 @@ public abstract class BToolkit extends PonctuationToolkit{
     protected void constructGMatrix(){
     	double gi = 0;
     	double gk = 0;
-    	TVariavel variable;
-    	TVariavel aux;
+    	LearningNode variable;
+    	LearningNode aux;
     	NodeList parentsAux;
     	for(int i = 0; i < variablesVector.size(); i++){
-            variable   = (TVariavel)variablesVector.get(i);            
+            variable   = (LearningNode)variablesVector.get(i);            
        		gi = getG(variable,variable.getPais());
        		for(int j = 0; j < variablesVector.size(); j++){
          	    if(i != j){
-            		aux = (TVariavel)variablesVector.get(j);
+            		aux = (LearningNode)variablesVector.get(j);
             		if(isMember(aux, variable.getPais())){
                		    gMatrix[i][j]  = 0;
             		}else{
@@ -61,9 +62,9 @@ public abstract class BToolkit extends PonctuationToolkit{
     	}
     }
     
-    protected boolean isMember(TVariavel variable, NodeList list){
+    protected boolean isMember(LearningNode variable, NodeList list){
         for(int i = 0 ; i < list.size(); i++){
-            if(variable.getName().equals(((TVariavel)list.get(i)).getName())){
+            if(variable.getName().equals(((LearningNode)list.get(i)).getName())){
                 return true;
         	}
       	}
@@ -88,35 +89,35 @@ public abstract class BToolkit extends PonctuationToolkit{
      	return vector;
   	}
   	
-  	protected void setForefathers(TVariavel variable){
-        TVariavel aux;
+  	protected void setForefathers(LearningNode variable){
+        LearningNode aux;
         NodeList list = variable.getPais();
         for(int j = 0 ; j < variablesVector.size(); j++)
-           if(variable.getName().equals(((TVariavel)variablesVector.get(j)).getName())){
+           if(variable.getName().equals(((LearningNode)variablesVector.get(j)).getName())){
                 forefathers[j] = true;
                 break;
         }
         for(int i = 0 ; i < list.size();i++){
-            aux = (TVariavel)list.get(i);
+            aux = (LearningNode)list.get(i);
             setForefathers(aux);
         }
     }
     
-    protected void setDescendants(TVariavel variable){
-        TVariavel aux;	
-     	TVariavel aux2;
+    protected void setDescendants(LearningNode variable){
+        LearningNode aux;	
+     	LearningNode aux2;
      	NodeList list;
      	for(int j = 0 ; j < variablesVector.size(); j++){
-            if(variable.getName().equals(((TVariavel)variablesVector.get(j)).getName())){
+            if(variable.getName().equals(((LearningNode)variablesVector.get(j)).getName())){
                 descendants[j] = true;
                 break;
      		}
         }
      	for(int i = 0 ; i < variablesVector.size();i++){
-         	aux  = (TVariavel)variablesVector.get(i);
+         	aux  = (LearningNode)variablesVector.get(i);
          	list =  aux.getPais();
          	for(int j = 0 ; j < list.size(); j++){
-            	aux2 = (TVariavel)list.get(j);
+            	aux2 = (LearningNode)list.get(j);
             	if(variable.getName().equals(aux2.getName())){
                 	setDescendants(aux);
             	}

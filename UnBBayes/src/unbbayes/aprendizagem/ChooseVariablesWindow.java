@@ -35,6 +35,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 
 public class ChooseVariablesWindow extends JDialog {
@@ -68,9 +69,9 @@ public class ChooseVariablesWindow extends JDialog {
 		choosePanel.setLayout(new GridLayout(variables.size(), 1, 3, 3));
 
 		/* Construct the checkboxes */
-		TVariavel variable;
+		LearningNode variable;
 		for (int i = 0; i < length; i++) {
-			variable = (TVariavel) variables.get(i);
+			variable = (LearningNode) variables.get(i);
 			choosePanel.add(new JCheckBox(variable.getName(), true));
 		}
 		ok = new JButton("Ok");
@@ -101,9 +102,9 @@ public class ChooseVariablesWindow extends JDialog {
 		int length = variables.size();
 		choosePanel.setLayout(new GridLayout(variables.size(), 1, 3, 3));
 
-		TVariavel variable;
+		LearningNode variable;
 		for (int i = 0; i < length; i++) {
-			variable = (TVariavel) variables.get(i);
+			variable = (LearningNode) variables.get(i);
 			// choosePanel.add(new JCheckBox(variable.getName(),true));
 			choosePanel.add(new JRadioButton(variable.getName(), false));
 		}
@@ -129,8 +130,8 @@ public class ChooseVariablesWindow extends JDialog {
 		return choosePanel;
 	}
 
-	public TVariavel getVariable(int i) {
-		return (TVariavel) variablesVector.get(i);
+	public LearningNode getVariable(int i) {
+		return (LearningNode) variablesVector.get(i);
 	}
 
 	ActionListener okListener = new ActionListener() {

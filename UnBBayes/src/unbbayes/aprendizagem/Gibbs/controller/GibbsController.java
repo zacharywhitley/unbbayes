@@ -1,23 +1,12 @@
 package unbbayes.aprendizagem.Gibbs.controller;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.xml.bind.JAXBException;
-
-import javax.swing.JFileChooser;
 
 import unbbayes.aprendizagem.LearningToolkit;
-import unbbayes.aprendizagem.TVariavel;
-import unbbayes.aprendizagem.Gibbs.gui.GibbsFrame;
-import unbbayes.aprendizagem.Gibbs.io.IOGibbs;
-import unbbayes.gui.SimpleFileFilter;
-import unbbayes.io.BaseIO;
-import unbbayes.io.LoadException;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.LearningNode;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.util.NodeList;
 
@@ -29,38 +18,28 @@ import unbbayes.util.NodeList;
  */
 public class GibbsController extends LearningToolkit {
 
-   private byte[][] data;
-   private int[] vector;
-   private NodeList variables;
-   private GibbsFrame gf;
-   private BaseIO io;
+   private byte[][] data;   
+   private NodeList variables;     
    private ProbabilisticNetwork pn = null;
 
-   public GibbsController(byte[][] data, NodeList variables) {
+   public GibbsController(ProbabilisticNetwork pn,byte[][] data, NodeList variables) {
       this.data = data;
       this.variables = variables;
-      double[] distribution = null;
-      gf = new GibbsFrame();
-      addListeners();
+      this.pn = pn;
+      double[] distribution = null;      
       for (int i = 0; i < data[0].length; i++) {
          for (int j = 0; j < data.length; j++) {
             //Dado faltante
             if (data[j][i] == -1) {
-               distribution = getDistribution((TVariavel) variables.get(i), j);
+               distribution = getDistribution((LearningNode) variables.get(i), j);
                data[j][i] = (byte) getEstado(distribution);
             }
          }
       }
 	 
-   }
+   }   
 
-   private void addListeners() {
-      gf.addCancelListener(cancelListener);
-      gf.addContinueListener(continueListener);
-      gf.addChooseNetListener(chooseNetListener);
-   }
-
-   private double[] getDistribution(TVariavel node, int line) {
+   private double[] getDistribution(LearningNode node, int line) {
       byte[] parents = new byte[variables.size() - 1];
       boolean find;
       
@@ -98,7 +77,7 @@ public class GibbsController extends LearningToolkit {
       return distributionCalc(node, parents, node.getPos());
    }
 
-   private double[] distributionCalc(TVariavel node, byte[] parents, int col) {
+   private double[] distributionCalc(LearningNode node, byte[] parents, int col) {
       int[] absoluteDistribution = new int[node.getEstadoTamanho()];
       int cont = 0;
       boolean achou;
@@ -123,7 +102,7 @@ public class GibbsController extends LearningToolkit {
    private double[] makeRelativeDistribution(
       int[] absolute,
       int cont,
-      TVariavel node) {
+      LearningNode node) {
       double[] relative = new double[absolute.length];
       int ri = node.getEstadoTamanho();
       for (int i = 0; i < relative.length; i++) {
@@ -175,43 +154,5 @@ public class GibbsController extends LearningToolkit {
       }
       return colunaOrdenada;
    }
-
-   ActionListener cancelListener = new ActionListener() {
-      public void actionPerformed(ActionEvent ae) {
-         gf.dispose();
-      }
-   };
-
-   ActionListener continueListener = new ActionListener() {
-      public void actionPerformed(ActionEvent ae) {
-         gf.dispose();
-		 IOGibbs iog = new IOGibbs(data,variables);
-		 iog.makeFile();
-      }
-   };
-
-   ActionListener chooseNetListener = new ActionListener() {
-      public void actionPerformed(ActionEvent ae) {
-         try {
-            String[] nets = new String[] { "net" };
-            JFileChooser chooser = new JFileChooser(".");
-            chooser.setMultiSelectionEnabled(false);
-            chooser.addChoosableFileFilter(
-               new SimpleFileFilter(nets, "Carregar .net"));
-            int option = chooser.showOpenDialog(null);
-            if (option == JFileChooser.APPROVE_OPTION) {
-               if (chooser.getSelectedFile() != null) {
-                  pn = io.load(chooser.getSelectedFile());
-               }
-            }
-         } catch (LoadException le) {
-            le.printStackTrace();
-         } catch (IOException ie) {
-            ie.printStackTrace();
-         } catch (JAXBException je){
-        	je.printStackTrace(); 
-         }
-      }
-   };
 
 }
