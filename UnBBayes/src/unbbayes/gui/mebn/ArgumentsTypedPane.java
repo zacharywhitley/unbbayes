@@ -67,7 +67,7 @@ public class ArgumentsTypedPane extends JPanel{
 		JButton btnArgXNumber; 
 		JButton btnArgXType; 
 		
-		/* Indica se a lista de argumetnos estava inicialmente vazia... */
+		/* Indica se a lista de argumentos estava inicialmente vazia... */
 		boolean listEmpty = (pointer.getOrdinaryVariableList().size() == 0) ; 
 			  
 		//Montagem das JComboBox para cada argumento	
@@ -99,7 +99,7 @@ public class ArgumentsTypedPane extends JPanel{
 			int indexSelected = 0; 
 						
 			if(pointer.getArgument(i) != null){
-				int j = 1; 
+				int j = 0; 
 				for(OrdinaryVariable ov: ovList){
 					if(ov.equals(pointer.getArgument(i))){
 						indexSelected = j;
