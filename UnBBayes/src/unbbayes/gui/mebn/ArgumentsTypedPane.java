@@ -99,13 +99,15 @@ public class ArgumentsTypedPane extends JPanel{
 			int indexSelected = 0; 
 						
 			if(pointer.getArgument(i) != null){
-				int j = 0; 
-				for(OrdinaryVariable ov: ovList){
-					if(ov.equals(pointer.getArgument(i))){
-						indexSelected = j;
-						break; 
-					}else{
-						j++; 
+				int j = 1; 
+				for(OrdinaryVariable ov: list){
+					if(ov != null){
+						if(ov.equals(pointer.getArgument(i))){
+							indexSelected = j;
+							break; 
+						}else{
+							j++; 
+						}
 					}
 				}
 			}
