@@ -261,7 +261,7 @@ public class SaverPrOwlIO {
 	 * @param residentNodeIndividual Individual that is the node in the PowerLoom structure. 
 	 * @param node Resident Node of the MEBN structure
 	 */
-	private void loadPossibleValues(OWLIndividual residentNodeIndividual, ResidentNode node){
+	private void loadPossibleValues(OWLIndividual residentNodeIndividual, ResidentNode node, String nodeName){
 
 		/* categoricalRVStates */
 		OWLNamedClass categoricalRVStatesClass = owlModel.getOWLNamedClass("CategoricalRVStates"); 
@@ -273,7 +273,7 @@ public class SaverPrOwlIO {
 		for(Entity state: node.getPossibleValueList()){
 			if(state instanceof CategoricalStatesEntity){
 				//Name = nodeName.categoricalEntityName 
-				String name = node.getName() + possibleValueScopeSeparator + state.getName(); 
+				String name = nodeName + possibleValueScopeSeparator + state.getName(); 
 				OWLIndividual stateIndividual = categoricalRVStatesClass.createOWLIndividual(name); 
 				stateIndividual.addPropertyValue(hasType, categoryLabel);
 				mapCategoricalStates.put(state, stateIndividual); 
@@ -286,7 +286,7 @@ public class SaverPrOwlIO {
 				}
 				else{
 					if(state instanceof ObjectEntity){
-						residentNodeIndividual.addPropertyValue(hasPossibleValues, mapObjectEntityClasses.get(state)); 		
+						residentNodeIndividual.addPropertyValue(hasPossibleValues, mapMetaEntity.get(((ObjectEntity)state).getType().getName())); 		
 					}else{
 						System.out.println("Erro: Estado do nó não é de um tipo válido!!!"); 
 					}
@@ -532,7 +532,7 @@ public class SaverPrOwlIO {
 			
 			/* has possible values */
 			Debug.println("Verifying possible values");
-			loadPossibleValues(domainResIndividual, residentNode); 
+			loadPossibleValues(domainResIndividual, residentNode, residentNode.getName()); 
 			
 			/* has Context Instance */
 			
@@ -557,8 +557,6 @@ public class SaverPrOwlIO {
 				}
 				
 			}	
-			
-			//saveHasPossibleValueProperty(domainResIndividual, residentNode); 
 			
 			/* hasProbDist */
 			Debug.println("Verifying probability distros");
@@ -643,7 +641,8 @@ public class SaverPrOwlIO {
 		innerContextNode.addPropertyValue(isContextInstanceOf, domainResMap.get(argument.getResidentNode())); 
 		
 		//Save the possible values
-		saveHasPossibleValueProperty(innerContextNode, argument.getResidentNode()); 
+		//saveHasPossibleValueProperty(innerContextNode, argument.getResidentNode()); 
+		loadPossibleValues(innerContextNode, argument.getResidentNode(), innerContextNode.getBrowserText()); 
 		
         //Save the arguments
 		OrdinaryVariable[] oVariableArray = argument.getOrdinaryVariableArray(); 
@@ -883,7 +882,7 @@ public class SaverPrOwlIO {
 				     OrdinaryVariable[] ovArray = pointer.getOrdinaryVariableArray(); 
 				     for(int i = 0; i < ovArray.length; i++){
 				    	 saveSimpleArgRelationship(ovArray[i], 
-				    			 generativeInputNodeIndividual, generativeInputNode.getName(), i); 
+				    			 generativeInputNodeIndividual, generativeInputNode.getName(), i + 1); 
 				     }
 				}
 			}
@@ -929,8 +928,8 @@ public class SaverPrOwlIO {
 					DomainResidentNode residentNode = (DomainResidentNode)generativeInputNode.getInputInstanceOf(); 
 					for(Entity state: residentNode.getPossibleValueList()){
 						//Pre conditions shoud be true... 
-						OWLObjectProperty hasPossibleValues = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
-						generativeInputNodeIndividual.addPropertyValue(hasPossibleValues, mapCategoricalStates.get(state)); 
+						//OWLObjectProperty hasPossibleValues = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
+						loadPossibleValues(generativeInputNodeIndividual, residentNode); 
 					}
 				}
 				else{
@@ -969,6 +968,36 @@ public class SaverPrOwlIO {
 				individual.addPropertyValue(hasPossibleValuesProperty, this.mapBooleanStatesEntity.get(possibleValue)); 
 			}
 		}
+	}
+	
+	private void loadPossibleValues(OWLIndividual nodeIndividual, ResidentNode node){
+
+		/* categoricalRVStates */
+		OWLNamedClass categoricalRVStatesClass = owlModel.getOWLNamedClass("CategoricalRVStates"); 
+		OWLIndividual categoryLabel = mapMetaEntity.get("CategoryLabel"); 		
+		OWLObjectProperty hasType = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasType"); 	
+		
+		OWLObjectProperty hasPossibleValues = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
+		
+		for(Entity state: node.getPossibleValueList()){
+			if(state instanceof CategoricalStatesEntity){
+				OWLIndividual stateIndividual = mapCategoricalStates.get(state); 
+				nodeIndividual.addPropertyValue(hasPossibleValues, stateIndividual);
+			}
+			else{
+				if(state instanceof BooleanStatesEntity){
+					nodeIndividual.addPropertyValue(hasPossibleValues, mapBooleanStatesEntity.get(state)); 
+				}
+				else{
+					if(state instanceof ObjectEntity){
+						nodeIndividual.addPropertyValue(hasPossibleValues, mapMetaEntity.get(((ObjectEntity)state).getType().getName())); 		
+					}else{
+						System.out.println("Erro: Estado do nó não é de um tipo válido!!!"); 
+					}
+				}
+			}
+		}
+
 	}
 	
 	private void loadBuiltInRV(){

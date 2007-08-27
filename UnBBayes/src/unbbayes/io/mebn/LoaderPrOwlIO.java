@@ -13,7 +13,6 @@ import java.util.ResourceBundle;
 import unbbayes.gui.InternalErrorDialog;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
-import unbbayes.prs.Node;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
@@ -52,7 +51,6 @@ import edu.stanford.smi.protegex.owl.model.OWLDatatypeProperty;
 import edu.stanford.smi.protegex.owl.model.OWLIndividual;
 import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
 import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
-import edu.stanford.smi.protegex.owl.model.impl.DefaultOWLNamedClass;
 import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
 
 /**
@@ -97,6 +95,8 @@ public class LoaderPrOwlIO {
 	private HashMap<String, BuiltInRV> mapBuiltInRV = new HashMap<String, BuiltInRV>(); 
 	private HashMap<String, ObjectEntity> mapObjectEntity = new HashMap<String, ObjectEntity>(); 	
 	private HashMap<String, CategoricalStatesEntity> mapCategoricalStates = new HashMap<String, CategoricalStatesEntity>(); 
+	
+	private HashMap<String, ObjectEntity> mapTypes = new HashMap<String, ObjectEntity>(); 	
 	
 	/* Protege API Structure */
 	
@@ -340,7 +340,8 @@ public class LoaderPrOwlIO {
 			try{
 				ObjectEntity objectEntityMebn = mebn.getObjectEntityContainer().createObjectEntity(subClass.getBrowserText()); 	
 			    mapObjectEntity.put(subClass.getBrowserText(), objectEntityMebn); 
-				
+			    mapTypes.put(objectEntityMebn.getType().getName(), objectEntityMebn); 
+			    
 			    //TODO verificar se o tipo eh o desejado... 
 			}
 			catch(TypeException typeException){
@@ -757,68 +758,59 @@ public class LoaderPrOwlIO {
 				instances = individualOne.getPropertyValues(objectProperty); 	
 				itAux = instances.iterator();
 				for (Object instance: instances){
-					
-					if(instance instanceof OWLIndividual){
-					   individualTwo = (OWLIndividual)instance;
-					   String stateName = individualTwo.getBrowserText(); 
-					   /* case 1: booleans states */
-					   if(stateName.compareTo("true")==0){
-						   domainResidentNode.addPossibleValue(mebn.getBooleanStatesEntityContainer().getTrueStateEntity());   
-						   domainResidentNode.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES); 
-					   }
-					   else{
-						   if(stateName.compareTo("false") == 0){
-							   domainResidentNode.addPossibleValue(mebn.getBooleanStatesEntityContainer().getFalseStateEntity());  
-							   domainResidentNode.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES); 
-						   }
-						   else{
-							   if(stateName.compareTo("absurd") == 0){
-								   domainResidentNode.addPossibleValue(mebn.getBooleanStatesEntityContainer().getAbsurdStateEntity());   
-								   domainResidentNode.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES); 
-							   }
-							   else{
-								      
-									   /* case 3: categorical states */
-									   String name = individualTwo.getBrowserText(); 
-									   
-									   try{
-										   name = name.split(domainResidentNode.getName() + this.getOrdinaryVarScopeSeparator())[1]; 
-									   }
-									   catch(java.lang.ArrayIndexOutOfBoundsException e){
-										   //The name don't is in the valid format <ResidentNodeName>.<Name> 
-										   //use the real name of the state...
-										   name = individualTwo.getBrowserText(); 
-										   //TODO warning
-									   }
-									   
-									   state = mebn.getCategoricalStatesEntityContainer().createCategoricalEntity(name) ; 
-									   mapCategoricalStates.put(individualTwo.getBrowserText(), state); 
-									   domainResidentNode.addPossibleValue(state);  
-									   domainResidentNode.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES); 
-								   
-							   }
-						   }
-					   }
+					individualTwo = (OWLIndividual)instance;
+					String stateName = individualTwo.getBrowserText(); 
+					/* case 1: booleans states */
+					if(stateName.compareTo("true")==0){
+						domainResidentNode.addPossibleValue(mebn.getBooleanStatesEntityContainer().getTrueStateEntity());   
+						domainResidentNode.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES); 
 					}
 					else{
-						if(instance instanceof DefaultOWLNamedClass){
-							
-							DefaultOWLNamedClass owlClass = (DefaultOWLNamedClass)instance; 
-							
-							/* case 2: object entities */
-							
-							   if(mapObjectEntity.containsKey(owlClass.getName())){
-								   domainResidentNode.addPossibleValue(mapObjectEntity.get(owlClass.getName()));
-								   domainResidentNode.setTypeOfStates(ResidentNode.OBJECT_ENTITY); 
-							   }	
+						if(stateName.compareTo("false") == 0){
+							domainResidentNode.addPossibleValue(mebn.getBooleanStatesEntityContainer().getFalseStateEntity());  
+							domainResidentNode.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES); 
 						}
-						
+						else{
+							if(stateName.compareTo("absurd") == 0){
+								domainResidentNode.addPossibleValue(mebn.getBooleanStatesEntityContainer().getAbsurdStateEntity());   
+								domainResidentNode.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES); 
+							}
+							else{
+								if(mapTypes.get(stateName) != null){
+									
+									/* case 2:object entities */
+									
+									domainResidentNode.addPossibleValue(mapTypes.get(stateName)); 
+									
+								}
+								else{
+									/* case 3: categorical states */
+									String name = individualTwo.getBrowserText(); 
+									
+									try{
+										name = name.split(domainResidentNode.getName() + this.getOrdinaryVarScopeSeparator())[1]; 
+									}
+									catch(java.lang.ArrayIndexOutOfBoundsException e){
+										//The name don't is in the valid format <ResidentNodeName>.<Name> 
+										//use the real name of the state...
+										name = individualTwo.getBrowserText(); 
+										//TODO warning
+									}
+									
+									state = mebn.getCategoricalStatesEntityContainer().createCategoricalEntity(name) ; 
+									mapCategoricalStates.put(individualTwo.getBrowserText(), state); 
+									domainResidentNode.addPossibleValue(state);  
+									domainResidentNode.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES);
+								}
+								
+							}
+						}
 					}
-					
-				}
+				} /* for */
+				
 			}
 			
-			/* hasProbDist don't checked */
+			/* hasProbDist */
 			
 			OWLObjectProperty hasProbDist = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasProbDist");
 			OWLDatatypeProperty hasDeclaration = owlModel.getOWLDatatypeProperty("hasDeclaration"); 
@@ -832,21 +824,6 @@ public class LoaderPrOwlIO {
 				}
 				domainResidentNode.setTableFunction(cpt);
 			}
-			
-			/*
-			OWLNamedClass declarativeDist = owlModel.getOWLNamedClass("DeclarativeDist"); 
-			Collection declarativeDistList = declarativeDist.getInstances(true); 
-			
-			for(Object instance : declarativeDistList){
-
-				OWLIndividual declarativeDistThisNode = (OWLIndividual)instance; 
-				OWLDatatypeProperty hasDeclaration = owlModel.getOWLDatatypeProperty("hasDeclaration"); 
-				String table = (String)declarativeDistThisNode.getPropertyValue(hasDeclaration); 
-				domainResidentNode.setTableFunction(table); 
-				
-			}
-			
-			/* hasContextInstance don't checked */
 			
 			/* isArgTermIn don't checked */
 			
@@ -1146,7 +1123,7 @@ public class LoaderPrOwlIO {
 			
 			/* -> hasArgNumber */
 			
-			OWLDatatypeProperty hasArgNumber = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasArgNumber");
+			OWLDatatypeProperty hasArgNumber = (OWLDatatypeProperty)owlModel.getOWLDatatypeProperty("hasArgNumber");
 	        
 			if (individualOne.getPropertyValue(hasArgNumber) != null){
 			   argument.setArgNumber((Integer)individualOne.getPropertyValue(hasArgNumber));
@@ -1239,8 +1216,7 @@ public class LoaderPrOwlIO {
 					catch(Exception e){
 						Debug.println("Error: Arguemt " + argument.getName() 
 								+ " do input " + input.getName() + " don't setted..."); 
-						//TODO... problens when the arguments of the resident node
-						//aren't set... 
+						//TODO... problens when the arguments of the resident node aren't set... 
 					}
 					
 				}
@@ -1248,31 +1224,6 @@ public class LoaderPrOwlIO {
 			
 		}
 	}
-	
-	private void loadHasPositionProperty(OWLIndividual individualOne, Node node){
-		
-		
-		float positionX = 15; 
-		float positionY = 15; 
-		
-		OWLDatatypeProperty hasPositionXProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionX");
-        if(hasPositionXProperty != null){
-		   if (individualOne.getPropertyValue(hasPositionXProperty) != null){
-			   positionX = (Float)individualOne.getPropertyValue(hasPositionXProperty);
-		   }
-        }
-		
-		OWLDatatypeProperty hasPositionYProperty = (OWLDatatypeProperty )owlModel.getOWLDatatypeProperty("hasPositionY");
-		if(hasPositionYProperty != null){
-			   if (individualOne.getPropertyValue(hasPositionYProperty) != null){
-				   positionY = (Float)individualOne.getPropertyValue(hasPositionYProperty);
-			   }
-		}
-		
-		node.setPosition(positionX, positionY); 
-		
-	}
-	
 	
 	/** 
 	 * 
