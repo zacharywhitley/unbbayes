@@ -56,7 +56,7 @@ public class SENController {
 	}
 
 	/**
-	 * Insere novo estado no nó selecionado.
+	 * Insere novo estado no nï¿½ selecionado.
 	 * 
 	 * @param no
 	 *            o <code>Object <code>selecionado.
@@ -75,7 +75,7 @@ public class SENController {
 	}
 
 	/**
-	 * Remove último estado do nó selecionado.
+	 * Remove ï¿½ltimo estado do nï¿½ selecionado.
 	 * 
 	 * @param no
 	 *            o <code>Object <code>selecionado.
@@ -88,7 +88,7 @@ public class SENController {
 	}
 
 	/**
-	 * Inicia as crenças da árvore de junção.
+	 * Inicia as crenï¿½as da ï¿½rvore de junï¿½ï¿½o.
 	 */
 	public void initialize() {
 		try {
@@ -100,7 +100,7 @@ public class SENController {
 	}
 
 	/**
-	 * Propaga as evidências da rede Bayesiana ( <code>TRP</code> ).
+	 * Propaga as evidï¿½ncias da rede Bayesiana ( <code>TRP</code> ).
 	 * 
 	 * @since
 	 */
@@ -124,11 +124,11 @@ public class SENController {
 	}
 
 	/**
-	 * Compila a rede Bayesiana. Caso haja algum problema na compilação,
+	 * Compila a rede Bayesiana. Caso haja algum problema na compilaï¿½ï¿½o,
 	 * mostra-se o erro em um <code>JOptionPane</code> .
 	 * 
 	 * @return true se a rede compilar sem problemas e false se houver algum
-	 *         problema na compilação
+	 *         problema na compilaï¿½ï¿½o
 	 * @since
 	 * @see JOptionPane
 	 */
@@ -145,8 +145,8 @@ public class SENController {
 			return false;
 		}
 
-		// Ordenar pela descricao do nó apenas para facilitar a visualização da
-		// árvore.
+		// Ordenar pela descricao do nï¿½ apenas para facilitar a visualizaï¿½ï¿½o da
+		// ï¿½rvore.
 		NodeList nos = singleEntityNetwork.getNodesCopy();
 		boolean haTroca = true;
 		while (haTroca) {
@@ -174,10 +174,10 @@ public class SENController {
 	}
 
 	/**
-	 * Insere o nó desejado na rede criando estado, sigla e descrição padrões.
+	 * Insere o nï¿½ desejado na rede criando estado, sigla e descriï¿½ï¿½o padrï¿½es.
 	 * 
 	 * @param no
-	 *            uma <code>Node</code> que representa o nó a ser inserido
+	 *            uma <code>Node</code> que representa o nï¿½ a ser inserido
 	 * @since
 	 * @see unbbayes.prs.Node
 	 */
@@ -196,10 +196,10 @@ public class SENController {
 	}
 
 	/**
-	 * Insere o nó desejado na rede criando estado, sigla e descrição padrões.
+	 * Insere o nï¿½ desejado na rede criando estado, sigla e descriï¿½ï¿½o padrï¿½es.
 	 * 
 	 * @param no
-	 *            uma <code>DecisionNode</code> que representa o nó a ser
+	 *            uma <code>DecisionNode</code> que representa o nï¿½ a ser
 	 *            inserido
 	 * @since
 	 * @see unbbayes.prs.DecisionNode
@@ -215,10 +215,10 @@ public class SENController {
 	}
 
 	/**
-	 * Insere o nó desejado na rede criando estado, sigla e descrição padrões.
+	 * Insere o nï¿½ desejado na rede criando estado, sigla e descriï¿½ï¿½o padrï¿½es.
 	 * 
 	 * @param no
-	 *            uma <code>UtilityNode</code> que representa o nó a ser
+	 *            uma <code>UtilityNode</code> que representa o nï¿½ a ser
 	 *            inserido
 	 * @since
 	 * @see unbbayes.prs.UtilityNode
@@ -235,7 +235,7 @@ public class SENController {
 	}
 
 	/**
-	 * Faz a ligacão do arco desejado entre pai e filho.
+	 * Faz a ligacï¿½o do arco desejado entre pai e filho.
 	 * 
 	 * @param arco
 	 *            um <code>TArco</code> que representa o arco a ser ligado
@@ -322,9 +322,9 @@ public class SENController {
 		// TODO MIGRATE TO A DIFFERENT CLASS - GUI.TABLE.PROBABILISTICTABLEMODEL
 		table.getModel().addTableModelListener(new TableModelListener() {
 			public void tableChanged(TableModelEvent e) {
-				if (e.getLastRow() < nVariables - 1) {
+				/*if (e.getLastRow() < nVariables - 1) {
 					return;
-				}
+				}*/
 				if (e.getColumn() == 0) {
 					if (!table.getValueAt(e.getLastRow(), e.getColumn())
 							.equals("")) {
@@ -344,16 +344,12 @@ public class SENController {
 									JOptionPane.ERROR_MESSAGE);
 							table.revalidate();
 							table.setValueAt(""
-									+ potTab.getValue((e.getColumn() - 1)
-											* node.getStatesSize()
-											+ e.getLastRow() - nVariables + 1),
+									+ potTab.getValue((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow()),
 									e.getLastRow(), e.getColumn());
 							return;
 						}
 						float valor = Float.parseFloat(temp);
-						potTab.setValue((e.getColumn() - 1)
-								* node.getStatesSize() + e.getLastRow()
-								- nVariables + 1, valor);
+						potTab.setValue((e.getColumn() - 1) * node.getStatesSize() + e.getLastRow(), valor);
 					} catch (Exception pe) {
 						System.err.println(resource
 								.getString("potentialTableException"));
@@ -369,7 +365,7 @@ public class SENController {
 	 * Mostra a tabela de potenciais do no desejado.
 	 * 
 	 * @param no
-	 *            um <code>Node</code> que representa o nó o qual deve-se
+	 *            um <code>Node</code> que representa o nï¿½ o qual deve-se
 	 *            mostrar a tabela de potenciais
 	 * @since
 	 * @see unbbayes.prs.Node
