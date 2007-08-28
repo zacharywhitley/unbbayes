@@ -322,9 +322,6 @@ public class SENController {
 		// TODO MIGRATE TO A DIFFERENT CLASS - GUI.TABLE.PROBABILISTICTABLEMODEL
 		table.getModel().addTableModelListener(new TableModelListener() {
 			public void tableChanged(TableModelEvent e) {
-				/*if (e.getLastRow() < nVariables - 1) {
-					return;
-				}*/
 				if (e.getColumn() == 0) {
 					if (!table.getValueAt(e.getLastRow(), e.getColumn())
 							.equals("")) {
