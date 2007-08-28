@@ -17,6 +17,7 @@ public class Argument {
 	public static final int CATEGORICAL_STATE = 2;
 	public static final int SKOLEN = 3; 
 	public static final int CONTEXT_NODE = 4; 
+	public static final int BOOLEAN_STATE = 5; 
 	
 	private String name; 
  

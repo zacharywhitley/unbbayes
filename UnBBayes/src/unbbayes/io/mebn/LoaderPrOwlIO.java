@@ -61,7 +61,6 @@ import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
  * 
  * @author Laecio Lima dos Santos
  * @version 1.0 
- *
  */
 
 public class LoaderPrOwlIO {
@@ -95,7 +94,6 @@ public class LoaderPrOwlIO {
 	private HashMap<String, BuiltInRV> mapBuiltInRV = new HashMap<String, BuiltInRV>(); 
 	private HashMap<String, ObjectEntity> mapObjectEntity = new HashMap<String, ObjectEntity>(); 	
 	private HashMap<String, CategoricalStatesEntity> mapCategoricalStates = new HashMap<String, CategoricalStatesEntity>(); 
-	
 	private HashMap<String, ObjectEntity> mapTypes = new HashMap<String, ObjectEntity>(); 	
 	
 	/* Protege API Structure */
@@ -155,14 +153,12 @@ public class LoaderPrOwlIO {
 		}
 		
 		/*------------------- MTheory -------------------*/
-		mebn = this.loadMTheoryClass(); 
+		loadMTheoryClass(); 
 		
 		/*------------------- Entities -------------------*/
 
 		loadObjectEntity(); 
 		loadMetaEntitiesClasses(); 
-		//loadBooleanRVStates(); 
-		loadCategoricalRVStates(); 
 		
 		/*-------------------MTheory elements------------*/
 		loadDomainMFrag(); 
@@ -177,38 +173,9 @@ public class LoaderPrOwlIO {
 		loadSimpleArgRelationship(); 
 		ajustArgumentOfNodes(); 
 		
-		for(ContextNode context: this.listContextNode){
-			context.setFormulaTree(buildFormulaTree(context)); 
-		}
-		
-		Debug.println("[DEBUG]" + LoaderPrOwlIO.class + " - " + "Processo de load concluido"); 
+		setFormulasOfContextNodes(); 
 		
 		return mebn; 		
-	}	
-	
-	private void loadPrOwlModel(JenaOWLModel owlModel)throws IOException, IOMebnException{
-		
-		
-		/*
-		File filePrOwl = new File(PROWLMODELFILE);
-		
-		LocalFileRepository repository = new LocalFileRepository(filePrOwl, true); 
-		repository.setForceReadOnly(true); 
-		
-		owlModel.getRepositoryManager().addProjectRepository(repository);
-		
-		FileInputStream inputStreamOwl; 
-		
-		inputStreamOwl = new FileInputStream(filePrOwl); 
-		
-		try{
-			
-			owlModel.load(inputStreamOwl, FileUtils.langXMLAbbrev);   
-		}
-		catch (Exception e){
-			throw new IOMebnException(resource.getString("ModelCreationError")); 
-		}	
-		*/
 	}
 	
 	/**
@@ -218,9 +185,8 @@ public class LoaderPrOwlIO {
 	 * - Only one MTheory per file 
 	 * - The MFrags have different names
 	 */
-	private MultiEntityBayesianNetwork loadMTheoryClass() throws IOMebnException {
+	private void loadMTheoryClass() throws IOMebnException {
         
-		MultiEntityBayesianNetwork mebn; 
 		DomainMFrag domainMFrag; 		
 		
 		OWLIndividual individualOne;
@@ -255,8 +221,7 @@ public class LoaderPrOwlIO {
 			mebn.addDomainMFrag(domainMFrag); 
 			mapDomainMFrag.put(individualTwo.getBrowserText(), domainMFrag); 
 		}	
-
-		return mebn; 
+ 
 	}
 	
 	/**
@@ -285,32 +250,6 @@ public class LoaderPrOwlIO {
 			Debug.println("Meta Entity Loaded: " + individualOne.getBrowserText()); 
 						
 		}		
-	}
-	
-	/**
-	 * Load the categorical RV states of the file, create the 
-	 * CategoricalStatesEntity objects and add to the static list
-	 * inside the CategoricalStatesEntity class. 
-	 */
-	private void loadCategoricalRVStates(){
-		
-		OWLNamedClass metaEntityClass; 
-		Collection instances; 
-		OWLIndividual individualOne;
-		
-		metaEntityClass = owlModel.getOWLNamedClass("CategoricalRVStates");
-		
-		instances = metaEntityClass.getInstances(false); 
-		
-		/* O load esta sendo feito ao se fazer o load dos resident nodes */
-//		for (Object owlIndividual : instances){
-//			
-//			individualOne = (OWLIndividual) owlIndividual; 
-//			CategoricalStatesEntity categoricalStatesEntity = mebn.getCategoricalStatesEntityContainer().createCategoricalEntity(individualOne.getBrowserText()); 
-//			
-//			Debug.println("Categorical State Loaded: " + individualOne.getBrowserText()); 
-//			
-//		}			
 	}
 	
 	/**
@@ -349,7 +288,6 @@ public class LoaderPrOwlIO {
 			}
 		}	
 	}
-	
 	
 	private void loadDomainMFrag() throws IOMebnException{
 
@@ -435,9 +373,6 @@ public class LoaderPrOwlIO {
 				mapOVariable.put(individualTwo.getBrowserText(), oVariable); 
 				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
 			}
-			
-			/* -> hasSkolen don't checked! */
-			
 		}						
 	}
 	
@@ -573,7 +508,7 @@ public class LoaderPrOwlIO {
 	private void loadBuiltInRV() throws IOMebnException{
 
 		GenerativeInputNode generativeInputNode; 
-		BuiltInRV builtInRV;		
+		BuiltInRV builtInRV = null;		
 		
 		OWLIndividual individualOne;
 		OWLIndividual individualTwo; 	
@@ -587,52 +522,52 @@ public class LoaderPrOwlIO {
 			
 			String nameBuiltIn = individualOne.getBrowserText(); 
 			
-			if(nameBuiltIn.compareTo("and") == 0){
+			if(nameBuiltIn.equals("and")){
 				builtInRV = new BuiltInRVAnd(); 
 			}else
-				if(nameBuiltIn.compareTo("or") == 0){
+				if(nameBuiltIn.equals("or")){
 					builtInRV = new BuiltInRVOr(); 
 				}else
-					if(nameBuiltIn.compareTo("equalto") == 0){
+					if(nameBuiltIn.equals("equalto")){
 						builtInRV = new BuiltInRVEqualTo(); 
 					}else
-						if(nameBuiltIn.compareTo("exists") == 0){
+						if(nameBuiltIn.equals("exists")){
 							builtInRV = new BuiltInRVExists(); 
 						}else
-							if(nameBuiltIn.compareTo("forall") == 0){
+							if(nameBuiltIn.equals("forall")){
 								builtInRV = new BuiltInRVForAll(); 
 							}else
-								if(nameBuiltIn.compareTo("not") == 0){
+								if(nameBuiltIn.equals("not")){
 									builtInRV = new BuiltInRVNot(); 
 								}else
-									if(nameBuiltIn.compareTo("iff") == 0){
+									if(nameBuiltIn.equals("iff")){
 										builtInRV = new BuiltInRVIff(); 
 									}else								
-										if(nameBuiltIn.compareTo("implies") == 0){
+										if(nameBuiltIn.equals("implies")){
 											builtInRV = new BuiltInRVImplies(); 
 										}else{
-											//TODO lan?��ar excess?��o... 
-											builtInRV = new BuiltInRV(individualOne.getBrowserText(), " "); 											
+											//TODO lan?��ar excess?��o... 											
 										}	
 			
-			mebn.addBuiltInRVList(builtInRV); 
-			mapBuiltInRV.put(individualOne.getBrowserText(), builtInRV); 
-			Debug.println("BuiltInRV loaded: " + individualOne.getBrowserText()); 				
-			
-			/* -> hasInputInstance */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputInstance"); 
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
-				generativeInputNode = mapGenerativeInputNode.get(individualTwo.getBrowserText());
-				if(generativeInputNode == null){
-					throw new IOMebnException(resource.getString("GenerativeInputNodeNotExistsInMTheory"), individualTwo.getBrowserText()); 
+			if(builtInRV != null){
+				
+				mebn.addBuiltInRVList(builtInRV); 
+				mapBuiltInRV.put(individualOne.getBrowserText(), builtInRV); 
+				Debug.println("BuiltInRV loaded: " + individualOne.getBrowserText()); 				
+				
+				/* -> hasInputInstance */
+				objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputInstance"); 
+				instances = individualOne.getPropertyValues(objectProperty); 	
+				for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+					individualTwo = (OWLIndividual) itIn.next();
+					generativeInputNode = mapGenerativeInputNode.get(individualTwo.getBrowserText());
+					if(generativeInputNode == null){
+						throw new IOMebnException(resource.getString("GenerativeInputNodeNotExistsInMTheory"), individualTwo.getBrowserText()); 
+					}
+					builtInRV.addInputInstance(generativeInputNode); 
+					Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
 				}
-				builtInRV.addInputInstance(generativeInputNode); 
-				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
 			}
-			
-			/* -> hasContextInstance */
 			
 		}						
 	}
@@ -966,6 +901,7 @@ public class LoaderPrOwlIO {
 			     Type type = mebn.getTypeContainer().getType(individualTwo.getBrowserText()); 
 			     if (type != null){
 			    	 oVariable.setValueType(type); 
+			    	 oVariable.updateLabel(); 
 			     }
 			     else{
 			    	 //TODO Erro no arquivo Pr-OWL... 
@@ -1051,6 +987,23 @@ public class LoaderPrOwlIO {
 						if((state = mapCategoricalStates.get(individualTwo.getBrowserText())) != null){
 					        argument.setEntityTerm(state); 	
 					        argument.setType(Argument.ORDINARY_VARIABLE); 
+						}
+						else{
+							if(individualTwo.getBrowserText().equals("true")){
+								argument.setEntityTerm(mebn.getBooleanStatesEntityContainer().getTrueStateEntity());
+							    argument.setType(Argument.BOOLEAN_STATE); 
+							}else{
+								if(individualTwo.getBrowserText().equals("false")){
+									argument.setEntityTerm(mebn.getBooleanStatesEntityContainer().getFalseStateEntity());
+								    argument.setType(Argument.BOOLEAN_STATE); 
+								}else{
+									if(individualTwo.getBrowserText().equals("absurd")){
+										argument.setEntityTerm(mebn.getBooleanStatesEntityContainer().getAbsurdStateEntity());
+									    argument.setType(Argument.BOOLEAN_STATE); 
+									}
+								}
+							}
+								
 						}
 					}
 				}
@@ -1224,6 +1177,12 @@ public class LoaderPrOwlIO {
 			
 		}
 	}
+
+	private void setFormulasOfContextNodes() {
+		for(ContextNode context: this.listContextNode){
+			context.setFormulaTree(buildFormulaTree(context)); 
+		}
+	}	
 	
 	/** 
 	 * 
@@ -1440,10 +1399,8 @@ public class LoaderPrOwlIO {
 			desvio--; 
 		}
 		
-		Debug.println("-------   Test End --------\n\n\n\n"); 
-				
+		Debug.println("-------   Test End --------\n\n\n\n"); 			
 	}
-
 	
 	private String printSpace(int numSpaces, int size){
 		
@@ -1467,6 +1424,5 @@ public class LoaderPrOwlIO {
 	public String getOrdinaryVarScopeSeparator() {
 		return ORDINARY_VAR_SCOPE_SEPARATOR;
 	}
-
 	
 }
