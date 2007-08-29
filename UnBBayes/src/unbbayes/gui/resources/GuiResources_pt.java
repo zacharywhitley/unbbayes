@@ -15,11 +15,11 @@ import java.util.*;
 public class GuiResources_pt extends ListResourceBundle {
 
     /**
-	 *  Sobrescreve getContents e retorna um array, onde cada item no array �
-	 *	um par de objetos. O primeiro elemento do par � uma String chave, e o
-	 *	segundo � o valor associado a essa chave.
+	 *  Sobrescreve getContents e retorna um array, onde cada item no array é
+	 *	um par de objetos. O primeiro elemento do par é uma String chave, e o
+	 *	segundo é o valor associado a essa chave.
 	 *
-	 * @return O conte�do dos recursos
+	 * @return O conteúdo dos recursos
 	 */
 	public Object[][] getContents() {
 		return contents;
@@ -113,7 +113,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"LookAndFeelInstantiationException","Não foi possível carregar esse LookAndFeel: "},
 		{"LookAndFeelIllegalAccessException","Esse LookAndFeel não pode ser usado: "},
 		{"nameError","Nome não aceito"},
-		{"nameAlreadyExists","J� existe um objeto com este nome"},	
+		{"nameAlreadyExists","Já existe um objeto com este nome"},	
 		{"internalError","Erro interno... Reporte aos desenvolvedores"},
 		
 		{"helpToolTip","Ajuda do UnBBayes"},
@@ -160,7 +160,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"downArgumentToolTip", "Aicionar a lista de argumentos v. ord. selecionada"}, 		
 		{"mTheoryEditionTip", "Editar atributos da MTheory"}, 		
 		
-		{"showMTheoryToolTip","Mostrar �rvore da MTheory"},	
+		{"showMTheoryToolTip","Mostrar Árvore da MTheory"},	
 		{"showEntitiesToolTip","Mostrar entidades da MTheory"},
 		{"showOVariablesToolTip","Mostrar ovariables da MFrag"},			
 		
@@ -171,7 +171,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		
 		{"andToolTip", "operador 'e'"}, 
 		{"orToolTip", "operador 'ou'"},
-		{"notToolTip", "operador 'n�o'"},
+		{"notToolTip", "operador 'não'"},
 		{"equalToToolTip", "operador 'igual'"},
 		{"impliesToolTip", "operador 'implica'"},
 		{"iffToolTip", "operador 'see' "},
@@ -187,15 +187,15 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"menuAddFindingMFrag", "Add Finding MFrag"}, 
 		
 		//Titles for tab panel
-		{"ResidentTabTitle", "N� Residente"}, 
-		{"InputTabTitle", "N� de Input"}, 
-		{"ContextTabTitle", "N� de Contexto"}, 
-		{"MTheoryTreeTitle", "�rvore MTheory"}, 
+		{"ResidentTabTitle", "Nó Residente"}, 
+		{"InputTabTitle", "Nó de Input"}, 
+		{"ContextTabTitle", "Nó de Contexto"}, 
+		{"MTheoryTreeTitle", "Árvore MTheory"}, 
 		{"EntityTitle", "Entidade"}, 
-		{"OVariableTitle", "Vari�vel Ord."},
+		{"OVariableTitle", "Variável Ord."},
 		{"ArgumentTitle", "Argumentos"}, 
 		{"StatesTitle", "Estados"}, 	
-		{"FathersTitle", "N�s Pais"}, 		
+		{"FathersTitle", "Nós Pais"}, 		
 		
 		//Label for buttons of tab selection
 		{"MTheoryButton", "MTheory"}, 
@@ -206,11 +206,11 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"ArgumentsButton", "Argumentos"}, 	
 		{"OrdVariableButton", "Var. Ordinária"}, 
 		
-		{"whithotMFragActive","N�o h� MFrag ativa"},			
-		{"previewTitle","Pr� visualiza��o"},
+		{"whithotMFragActive","Não há MFrag ativa"},			
+		{"previewTitle","Pré visualização"},
 		{"filesText"," arquivos"},
-		{"aprendizagemTitle","Edi��o da Rede de Aprendizagem"},
-		{"calculateProbabilitiesFromLearningToEditMode","Remontar a estrutura da rede e voltar para o modo de edi��o"},
+		{"aprendizagemTitle","Edição da Rede de Aprendizagem"},
+		{"calculateProbabilitiesFromLearningToEditMode","Remontar a estrutura da rede e voltar para o modo de edição"},
         {"fileMenu","Arquivo"},
         {"lafMenu","Look and Feel"},
         {"viewMenu","Exibir"},
@@ -297,13 +297,13 @@ public class GuiResources_pt extends ListResourceBundle {
 		
 		/* Edition of states */
 		{"insertBooleanStates", "Inserir estados booleanos"}, 
-		{"categoryStatesTip", "Inserir estados categ�ricos"}, 
+		{"categoryStatesTip", "Inserir estados categóricos"}, 
 		{"objectStatesTip", "Inserir entidades como estados"}, 
 		{"booleanStatesTip", "Inserir estados booleanos"}, 
 		{"addStateTip", "Inserir estado(s)"}, 
 		{"removeState", "Remover estado"}, 
-		{"confirmation", "Confirma��o"}, 
-		{"warningDeletStates", "Os estados anteriores ser�o removidos. Tem certeza que deseja realizar a opera��o?"} 
+		{"confirmation", "Confirmação"}, 
+		{"warningDeletStates", "Os estados anteriores serão removidos. Tem certeza que deseja realizar a operação?"} 
 		
 		
 	};
