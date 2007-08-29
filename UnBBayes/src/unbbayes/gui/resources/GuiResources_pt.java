@@ -113,7 +113,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"LookAndFeelInstantiationException","NÃ£o foi possÃ­vel carregar esse LookAndFeel: "},
 		{"LookAndFeelIllegalAccessException","Esse LookAndFeel nÃ£o pode ser usado: "},
 		{"nameError","Nome nÃ£o aceito"},
-		{"nameAlreadyExists","Já existe um objeto com este nome"},	
+		{"nameAlreadyExists","Jï¿½ existe um objeto com este nome"},	
 		{"internalError","Erro interno... Reporte aos desenvolvedores"},
 		
 		{"helpToolTip","Ajuda do UnBBayes"},
@@ -129,7 +129,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"siglaLabel","Sigla:"},
 		{"nameLabel", "Nome:"}, 
 		{"typeLabel", "Tipo:"}, 
-		{"descriptionLabel","Descrição"},
+		{"descriptionLabel","DescriÃ§Ã£o"},
 		{"compileToolTip","Compilar Ã¡rvore de junÃ§Ã£o"},
 		{"moreToolTip","Adicionar estado"},
 		{"lessToolTip","Remover estado"},
@@ -160,7 +160,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"downArgumentToolTip", "Aicionar a lista de argumentos v. ord. selecionada"}, 		
 		{"mTheoryEditionTip", "Editar atributos da MTheory"}, 		
 		
-		{"showMTheoryToolTip","Mostrar árvore da MTheory"},	
+		{"showMTheoryToolTip","Mostrar ï¿½rvore da MTheory"},	
 		{"showEntitiesToolTip","Mostrar entidades da MTheory"},
 		{"showOVariablesToolTip","Mostrar ovariables da MFrag"},			
 		
@@ -171,7 +171,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		
 		{"andToolTip", "operador 'e'"}, 
 		{"orToolTip", "operador 'ou'"},
-		{"notToolTip", "operador 'não'"},
+		{"notToolTip", "operador 'nï¿½o'"},
 		{"equalToToolTip", "operador 'igual'"},
 		{"impliesToolTip", "operador 'implica'"},
 		{"iffToolTip", "operador 'see' "},
@@ -187,15 +187,15 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"menuAddFindingMFrag", "Add Finding MFrag"}, 
 		
 		//Titles for tab panel
-		{"ResidentTabTitle", "Nó Residente"}, 
-		{"InputTabTitle", "Nó de Input"}, 
-		{"ContextTabTitle", "Nó de Contexto"}, 
-		{"MTheoryTreeTitle", "Árvore MTheory"}, 
+		{"ResidentTabTitle", "Nï¿½ Residente"}, 
+		{"InputTabTitle", "Nï¿½ de Input"}, 
+		{"ContextTabTitle", "Nï¿½ de Contexto"}, 
+		{"MTheoryTreeTitle", "ï¿½rvore MTheory"}, 
 		{"EntityTitle", "Entidade"}, 
-		{"OVariableTitle", "Variável Ord."},
+		{"OVariableTitle", "Variï¿½vel Ord."},
 		{"ArgumentTitle", "Argumentos"}, 
 		{"StatesTitle", "Estados"}, 	
-		{"FathersTitle", "Nós Pais"}, 		
+		{"FathersTitle", "Nï¿½s Pais"}, 		
 		
 		//Label for buttons of tab selection
 		{"MTheoryButton", "MTheory"}, 
@@ -206,11 +206,11 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"ArgumentsButton", "Argumentos"}, 	
 		{"OrdVariableButton", "Var. OrdinÃ¡ria"}, 
 		
-		{"whithotMFragActive","NÃo há MFrag ativa"},			
-		{"previewTitle","Pré visualização"},
+		{"whithotMFragActive","Nï¿½o hï¿½ MFrag ativa"},			
+		{"previewTitle","Prï¿½ visualizaï¿½ï¿½o"},
 		{"filesText"," arquivos"},
-		{"aprendizagemTitle","Edição da Rede de Aprendizagem"},
-		{"calculateProbabilitiesFromLearningToEditMode","Remontar a estrutura da rede e voltar para o modo de edição"},
+		{"aprendizagemTitle","Ediï¿½ï¿½o da Rede de Aprendizagem"},
+		{"calculateProbabilitiesFromLearningToEditMode","Remontar a estrutura da rede e voltar para o modo de ediï¿½ï¿½o"},
         {"fileMenu","Arquivo"},
         {"lafMenu","Look and Feel"},
         {"viewMenu","Exibir"},
@@ -297,13 +297,13 @@ public class GuiResources_pt extends ListResourceBundle {
 		
 		/* Edition of states */
 		{"insertBooleanStates", "Inserir estados booleanos"}, 
-		{"categoryStatesTip", "Inserir estados categóricos"}, 
+		{"categoryStatesTip", "Inserir estados categï¿½ricos"}, 
 		{"objectStatesTip", "Inserir entidades como estados"}, 
 		{"booleanStatesTip", "Inserir estados booleanos"}, 
 		{"addStateTip", "Inserir estado(s)"}, 
 		{"removeState", "Remover estado"}, 
-		{"confirmation", "Confirmação"}, 
-		{"warningDeletStates", "Os estados anteriores serão removidos. Tem certeza que deseja realizar a operação?"} 
+		{"confirmation", "Confirmaï¿½ï¿½o"}, 
+		{"warningDeletStates", "Os estados anteriores serï¿½o removidos. Tem certeza que deseja realizar a operaï¿½ï¿½o?"} 
 		
 		
 	};
