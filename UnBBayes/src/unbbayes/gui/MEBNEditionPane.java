@@ -763,7 +763,7 @@ public class MEBNEditionPane extends JPanel {
         rodarKB.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
   				mebnController.preencherKB(); 
-  			   JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
+  			    JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
   					   "Base de conhecimento criada com sucesso"); 
   			}
   		});
@@ -776,6 +776,7 @@ public class MEBNEditionPane extends JPanel {
   						"Entre com o entity finding: ", 
   						"Test Finding", 
   						JOptionPane.QUESTION_MESSAGE); 
+  				if((finding!=null)&&(!finding.equals("")))
   				mebnController.makeEntityAssert(finding); 
   			}
   		});        
@@ -784,10 +785,11 @@ public class MEBNEditionPane extends JPanel {
         jtbGeneralOptions.add(finding); 
         finding.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
-  				String finding = JOptionPane.showInputDialog(null, 
+  				String finding = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), 
   						"Entre com o relation finding: ", 
   						"Test Finding", 
   						JOptionPane.QUESTION_MESSAGE); 
+  				if((finding!=null)&&(!finding.equals("")))
   				mebnController.makeRelationAssert(finding); 
   			}
   		});     
@@ -796,15 +798,18 @@ public class MEBNEditionPane extends JPanel {
         jtbGeneralOptions.add(link); 
         link.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) { 
-  				String ovName = JOptionPane.showInputDialog(null, 
+  				String ovName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), 
   						"Entre com o nome da variavel ordinaria: ", 
   						"Test Finding", 
   						JOptionPane.QUESTION_MESSAGE); 
-  				String entityName = JOptionPane.showInputDialog(null, 
+  				
+  				String entityName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), 
   						"Entre com o nome da entidade: ", 
   						"Test Finding", 
   						JOptionPane.QUESTION_MESSAGE); 
-  				//controller.linkOrdVariable2Entity(ovName, entityName); 
+  				
+  				if(((ovName!=null)&&(!ovName.equals("")))&&((entityName!=null)&&(!entityName.equals(""))))
+  				mebnController.linkOrdVariable2Entity(ovName, entityName); 
   			}
   		});  
         
@@ -820,10 +825,10 @@ public class MEBNEditionPane extends JPanel {
         jtbGeneralOptions.add(execute); 
         execute.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) { 
-  				String command = JOptionPane.showInputDialog(null, "Insira o commando a ser executado"); 
-  				if(command != ""){
+  				String command = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), "Insira o commando a ser executado"); 
+  				if((command != "")&&(command != null)){
   				   String resposta = mebnController.executeCommand(command);
-  				   JOptionPane.showMessageDialog(null, resposta); 
+  				   JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resposta); 
   				}
   			}
   		}); 
@@ -832,10 +837,22 @@ public class MEBNEditionPane extends JPanel {
         jtbGeneralOptions.add(save); 
         save.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) { 
-  				String fileName = JOptionPane.showInputDialog(null, "Informe o nome do arquivo"); 
-  				if(fileName != ""){
+  				String fileName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), "Informe o nome do arquivo"); 
+  				if((fileName != "")&&(fileName != null)){
   				   mebnController.saveDefinitionsFile(fileName);
-  				   JOptionPane.showMessageDialog(null, "Arquivo salvo com sucesso"); 
+  				   JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Arquivo salvo com sucesso"); 
+  				}
+  			}
+  		}); 
+        
+        JButton load = new JButton("LD"); 
+        jtbGeneralOptions.add(load); 
+        load.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) { 
+  				String fileName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), "Informe o nome do arquivo"); 
+  				if((fileName != "")&&(fileName != null)){
+  				   mebnController.loadDefinitionsFile(fileName);
+  				   JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Arquivo carregado com sucesso"); 
   				}
   			}
   		}); 

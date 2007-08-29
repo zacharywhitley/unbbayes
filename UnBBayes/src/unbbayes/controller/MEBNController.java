@@ -776,6 +776,10 @@ public class MEBNController {
 	
 	/*-------------------Uso do PowerLoom--------------*/
 	
+	/**
+	 * Insert the MEBN Generative into KB. 
+	 * (Object Entities and Domain Resident Nodes) 
+	 */
 	public void preencherKB(){
 
 			PowerLoomKB test = PowerLoomKB.getInstanceKB(); 
@@ -784,8 +788,10 @@ public class MEBNController {
 				test.executeConceptDefinition(entity); 
 			}
 			
-			for(ResidentNode resident: multiEntityBayesianNetwork.getCurrentMFrag().getResidentNodeList()){	
-				test.executeRandonVariableDefinition((DomainResidentNode) resident); 
+			for(DomainMFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
+				for(ResidentNode resident: mfrag.getDomainResidentNodeList()){	
+					test.executeRandonVariableDefinition((DomainResidentNode)resident); 
+				}
 			}
 	}
 	
@@ -844,6 +850,15 @@ public class MEBNController {
     
 	}
 	
+	public void loadDefinitionsFile(String fileName){
+		PowerLoomKB test = PowerLoomKB.getInstanceKB(); 
+
+		Debug.println(this.getClass(), "[PowerLoom] Loading module..."); 
+		test.loadDefinitionsFile(fileName + ".plm"); 
+		Debug.println(this.getClass(), "[PowerLoom] ...File load sucefull");
+    
+	}
+	
 	/**
 	 *Apenas de teste...
 	 *
@@ -879,6 +894,8 @@ public class MEBNController {
 		PowerLoomKB test = PowerLoomKB.getInstanceKB(); 
 		return test.executeCommand(command); 
 	}
+	
+	
 	
 	public MultiEntityBayesianNetwork getMultiEntityBayesianNetwork() {
 		return multiEntityBayesianNetwork;

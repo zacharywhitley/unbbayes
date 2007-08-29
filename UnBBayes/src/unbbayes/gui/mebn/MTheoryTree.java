@@ -495,10 +495,6 @@ public class MTheoryTree extends JTree {
 								fatherNode = nodeMap.get(treeNode); 
 							}
 							
-							System.out.println("\n# Ação: Node selecionado na arvore da MTheory"); 
-							System.out.println("  -> MFrag Father = " + ((MFrag)fatherNode).getName()); 
-							System.out.println("  -> Node name = " + ((Node)objectSelected).getName()); 
-							
 							controller.showGraphMFrag((MFrag)fatherNode); 
 							controller.selectNode((Node)objectSelected); 
 							

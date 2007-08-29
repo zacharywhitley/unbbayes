@@ -21,6 +21,7 @@ import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
+import edu.isi.powerloom.Environment;
 import edu.isi.powerloom.PLI;
 import edu.isi.powerloom.logic.TruthValue;
 import edu.isi.stella.Module;
@@ -35,10 +36,17 @@ import edu.isi.stella.Module;
  */
 public class PowerLoomKB implements KnowledgeBase{
 
-    private String moduleName = "MyModule"; 
-	private Module module; 
+    private String moduleName = "UBModule"; 
+	
+    private Module module; 
+    private Environment environment = null; 
     
-	DebugPowerLoom debug = new DebugPowerLoom(true); 
+	private static final String POWER_LOOM_KERNEL_MODULE = "/PL-KERNEL/PL-USER/"; 
+	private static final boolean CASE_SENSITIVE = false; 
+	
+	private static final String POSSIBLE_STATE_SUFIX = "_state"; 
+	
+	private DebugPowerLoom debug = new DebugPowerLoom(true); 
 	
 	private static PowerLoomKB singleton = null; 
 	
@@ -48,11 +56,11 @@ public class PowerLoomKB implements KnowledgeBase{
 	    PLI.initialize();
 	    debug.println("Done.");
 	
-	    Module fatherModule = PLI.getModule("/PL-KERNEL/PL-USER/", null); 
-	    module = PLI.createModule(moduleName, fatherModule, false); //Case Sensitive
+	    Module fatherModule = PLI.getModule(POWER_LOOM_KERNEL_MODULE, environment); 
+	    module = PLI.createModule(moduleName, fatherModule, CASE_SENSITIVE); 
 	   
-	    debug.println(module.moduleFullName + " created. "); 
-	    PLI.sChangeModule(moduleName, null);
+	    debug.println(module.moduleFullName); 
+	    PLI.sChangeModule(moduleName, environment);
 	    
 	}
 	
@@ -66,21 +74,41 @@ public class PowerLoomKB implements KnowledgeBase{
 			
 	}
 	
+	/**
+	 * Insert the entity into KB. 
+	 * 
+	 * Sintaxe: 
+	 * (DEFCONCEPT CATEGORY_LABEL)
+	 * (ASSERT (CLOSED CATEGORY_LABEL))
+	 * 
+	 * Nota: As object entities são salvas pelo seu tipo (label) ao invés de
+	 * pelo seu nome porque as suas instancias tem referencia apenas ao tipo. 
+	 */
 	public void executeConceptDefinition(ObjectEntity entity){
 		
 		debug.println("Concept definition: " + entity.getType()); 
-		PLI.sCreateConcept(entity.getType().toString(), null, moduleName, null); 
-		PLI.sEvaluate("(assert ( closed " + entity.getType() +" ) )", moduleName, null); 
+		PLI.sCreateConcept(entity.getType().toString(), null, moduleName, environment); 
+		PLI.sEvaluate("(assert ( closed " + entity.getType() +" ) )", moduleName, environment); 
 		
 	}
 	
+	/**
+	 * Insert the randon variable and your states into KB. 
+	 * 
+	 * Sintaxe: 
+	 * (DEFCONCEPT SRDISTANCE_STATE (?Z) :<=> 
+	 *           (MEMBER-OF ?Z (SETOF PHASER1RANGE |&| PULSECANONRANGE)))
+	 *           
+     * (DEFFUNCTION SRDISTANCE (
+     *           (?ARG_0 SENSORREPORT_LABEL) (?ARG_1 TIMESTEP_LABEL) 
+     *           (?RANGE SRDISTANCE_STATE)))
+	 * 
+	 */
 	public void executeRandonVariableDefinition(DomainResidentNode resident){
 		
 		debug.println("Randon variable definition: " + resident.getName()); 
 		
 		List<Entity> states = resident.getPossibleValueList(); 
-		
-		/* Passo 1: definir a lista de possiveis estados do nó residente */
 		
 		String range = ""; 
 		
@@ -105,8 +133,9 @@ public class PowerLoomKB implements KnowledgeBase{
 			}
 			
 			//definição da imagem da função
-			String residentStateListName = resident.getName() + "_state "; 
-			PLI.sEvaluate("(defconcept " + residentStateListName + "(?z) :<=> (member-of ?z ( setof " + setofList + ")))", moduleName, null);
+			String residentStateListName = resident.getName() + POSSIBLE_STATE_SUFIX; 
+			PLI.sEvaluate("(defconcept " + residentStateListName + 
+					"(?z) :<=> (member-of ?z ( setof " + setofList + ")))", moduleName, environment);
 			
 			range = "(" + "?range " +  residentStateListName + ")"; 	
 			
@@ -131,7 +160,6 @@ public class PowerLoomKB implements KnowledgeBase{
 			arguments+= ")"; 
 			i++; 
 		}
-		
 		
 		PLI.sEvaluate("(deffunction " + resident.getName() + " (" + arguments + range + "))", moduleName, null); 
 		
@@ -169,17 +197,17 @@ public class PowerLoomKB implements KnowledgeBase{
 	 * Deve ser criada uma lista com as variaveis ordinarias que deverao
 	 * ser instanciadas antes de se tentar resolver um nó de contexto. 
 	 * As variáveis exemplares, por outro lado, não serão nunca instanciadas. 
+	 * 
 	 * Usaremos deste ultimo fato para definir o que é uma variável ordinária
 	 * e o que é uma variável exemplar: sempre que a variável ordinária não 
 	 * estiver preenchida ela é uma exemplar (observe a responsabiliade de quem
 	 * chama esta função: deve preencher todas as VO's, não permitindo o 
-	 * prosseguimento caso haja alguma nao preenchida). 
+	 * prosseguimento caso haja alguma não preenchida). 
 	 *
-	 */
-	
-	/*
-	 * Nesta versão de teste, cada ov estara com a entidade que a preenche
-	 * anexada a esta... A versão final pode utilizar outra estratégia...  
+     * Nota de implementação:
+     * - Nesta versão de teste, cada ov estara com a entidade que a preenche
+	 * anexada a esta... A versão final pode utilizar outra estratégia...
+	 * (sera usado o método "ov.getEntity()")
 	 */
 	
 	public boolean executeContextFormula(ContextNode context){
@@ -222,7 +250,16 @@ public class PowerLoomKB implements KnowledgeBase{
 	 * @param name Name of the file
 	 */
 	public void saveDefinitionsFile(String name){
-		PLI.sSaveModule(moduleName, name, "REPLACE", null); 
+		PLI.sSaveModule(moduleName, name, "REPLACE", environment); 
+	}
+	
+	/**
+	 * Load the definitions file (content of current KB)
+	 * 
+	 * @param name Name of the file
+	 */
+	public void loadDefinitionsFile(String name){
+		PLI.load(name, environment); 
 	}
 	
 	private String makeOperatorString(NodeFormulaTree operatorNode){
@@ -429,6 +466,9 @@ public class PowerLoomKB implements KnowledgeBase{
 	public class DebugPowerLoom{
 		
 		private boolean debugActive = true; 
+		
+		public DebugPowerLoom(){
+		}
 		
 		public DebugPowerLoom(boolean debugActive){
 			this.debugActive = debugActive; 
