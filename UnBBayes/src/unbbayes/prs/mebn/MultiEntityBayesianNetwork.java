@@ -295,4 +295,41 @@ public class MultiEntityBayesianNetwork extends Network {
 	public TypeContainer getTypeContainer() {
 		return typeContainer;
 	}
+	
+	
+	
+	
+	public MFrag getMFragByNode(MultiEntityNode node) {
+		for (MFrag element : this.mFragList) {
+			if (element.containsNode(node)) {
+				return element;
+			}
+		}
+		return null;
+	}
+	
+	public MFrag getMFragByNodeName(String nodeName) {
+		for (MFrag element : this.mFragList) {
+			if (element.containsNode(nodeName) != null) {
+				return element;
+			}
+		}
+		return null;
+	}
+	
+	public DomainMFrag getDomainMFragByNode(MultiEntityNode node) {
+		MFrag ret = this.getMFragByNode(node);
+		if (ret instanceof DomainMFrag) {
+			return (DomainMFrag) ret;
+		}
+		return null;
+	}
+	
+	public MFrag getDomainMFragByNodeName(String nodeName) {
+		MFrag ret = this.getMFragByNodeName(nodeName);
+		if (ret instanceof DomainMFrag) {
+			return (DomainMFrag) ret;
+		}
+		return null;
+	}
 }

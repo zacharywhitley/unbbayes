@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import unbbayes.gui.UnBBayesFrame;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
@@ -50,6 +51,12 @@ public class MFrag implements Graph{
 	 * no criado caso os nomes estejam sendo gerados automaticamente
 	 */
 	private int ordinaryVariableNum = 1; 	
+	
+	
+	/*
+	 * When creating SSBN, this state tells us if any context node has failed somewhere inside this MFrag
+	 */
+	private boolean isUsingDefaultCPT = false;
 
 	/**
 	 * Contructs a new MFrag with empty node's list.
@@ -416,5 +423,45 @@ public class MFrag implements Graph{
 		this.ordinaryVariableNum = ordinaryVariableNum;
 	}
 	
+	/**
+	 * When creating SSBN and making a query, this method tells us whether someone has reported this MFrag as having
+	 * a failed context node (thus we should use default CPT for every). This value should be cleared every time we
+	 * start a new SSBN creation.
+	 * @return true if every Random Variable inside this MFrag should use default CPT (there were failing context node).
+	 * Returns false elsewise.
+	 * @see MFrag.setAsUsingDefaultCPT()
+	 * 
+	 */
+	public boolean isUsingDefaultCPT() {
+		return isUsingDefaultCPT;
+	}
+	
+	/**
+	 * By setting this to true, lets a "note" informing other classes accessing this class that there were some
+	 * context node failing and every Resident Node inside this MFrag must use default distribution By setting this to false,
+	 * clears that information. We should set this to false everytime we start a new SSBN query.
+	 * @param isUsingDefaultCPT: value to set
+	 */
+	public void setAsUsingDefaultCPT(boolean isUsingDefaultCPT) {
+		this.isUsingDefaultCPT = isUsingDefaultCPT;
+	}
+	
+	
+	/**
+	 * checks if there are any node with a particular name inside this mfrag.
+	 * @param name: the name of a node
+	 * @return A Node if found. Null elsewhen.
+	 */
+	public Node containsNode(String name){
+		NodeList list = this.getNodeList();
+		Node node = null;
+		for (int i = 0 ; i < list.size() ; i++) {
+			node = list.get(i);
+			if (node.getName().compareToIgnoreCase(name) == 0) {
+				return node;
+			}
+		}
+		return null;
+	}
 
 }

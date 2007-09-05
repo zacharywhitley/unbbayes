@@ -19,7 +19,7 @@ public class ProjectSuite extends TestCase {
     suite.addTestSuite(TestProbabilisticNetwork.class);
     suite.addTestSuite(TestTopologicalTransformation.class);
     suite.addTestSuite(TestCompiled.class);
-    suite.addTestSuite(TestUtils.class); 
+    //suite.addTestSuite(TestUtils.class); 
     return suite;
   }
 
