@@ -10,7 +10,7 @@ import unbbayes.datamining.classifiers.decisiontree.SplitObject;
 /**
  * Class implementing information gain method and other related actions
  *
- *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ *  @author Mï¿½rio Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  *
  */
@@ -323,7 +323,7 @@ public class ClassifierUtils {
 							classValue = (int)instance.getClassValue();
 							counts[j][value][classValue] += weight;
 						} else {
-							hasMissingValues[j]=true;
+							hasMissingValues[j] = true;
 						}
 					}					
 				}
@@ -426,6 +426,9 @@ public class ClassifierUtils {
 			instance = getInstance(inst,x);
 			classValue = (int) instance.getClassValue();
 			weight = instance.getWeight();
+			if (weight > 1) {
+				@SuppressWarnings("unused") boolean stop = true;
+			}
 			if (!instance.isMissing(attIndex)) {
 				valueAux = instance.getValue(attIndex);
 				pos = distinctValueHash.get(valueAux);
