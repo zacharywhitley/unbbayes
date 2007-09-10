@@ -1,6 +1,8 @@
 package unbbayes.prs.mebn.entity;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
@@ -14,7 +16,6 @@ import unbbayes.prs.mebn.entity.exception.TypeException;
  */
 public class ObjectEntity extends Entity {
 
-	private boolean isInstance = false;
 	private TypeContainer typeContainer = null; 
 	
 	/**
@@ -29,13 +30,14 @@ public class ObjectEntity extends Entity {
 	 * and ST1 can be instances of the object entity Starship that has type 
 	 * Starship_Label.
 	 */
-	private List<ObjectEntity> listObjectEntityInstance;
+	private Set<ObjectEntityInstance> listObjectEntityInstance;
 	
 	protected ObjectEntity(String name, TypeContainer container) throws TypeException {
 		
 		super(name, container.createType(name + "_label")); 
 		typeContainer = container; 
-		isInstance = false; 
+		
+		listObjectEntityInstance = new HashSet<ObjectEntityInstance>(); 
 	}
 	
 
@@ -50,7 +52,6 @@ public class ObjectEntity extends Entity {
 		super(name, _type);   
 		_type.addUserObject(this); 
 		typeContainer = null; 
-		isInstance = true; 
 		
 	}
 	
@@ -77,23 +78,26 @@ public class ObjectEntity extends Entity {
 	 * @throws TypeException Thrown if there is any problem concerning the type 
 	 * setting.
 	 */
-	public ObjectEntity addInstance(String name) throws TypeException {
-		ObjectEntity instance = new ObjectEntity(name, this.getType());
+	public ObjectEntityInstance addInstance(String name) throws TypeException {
+		
+		ObjectEntityInstance instance = new ObjectEntityInstance(name, this);
 		listObjectEntityInstance.add(instance);
 		return instance;
+		
 	}
 	
-	public void removeInstance(ObjectEntity instance) {
+	public Set<ObjectEntityInstance> getInstanceList(){
+		return this.listObjectEntityInstance; 
+	}
+	
+	public void removeInstance(ObjectEntityInstance instance) {
 		listObjectEntityInstance.remove(instance);
 	}
 	
 	protected void delete() throws TypeDoesNotExistException{
 		
 		getType().removeUserObject(this); 
-		
-		if(!isInstance){
-		   typeContainer.removeType(getType());
-		}
+		typeContainer.removeType(getType());
 		
 	}	
 	
@@ -137,4 +141,15 @@ public class ObjectEntity extends Entity {
 		
 	}
 	
+	public String toString(){
+		return name; 		
+	}
+	
+	public boolean equals(Object obj){ 
+		if(obj instanceof ObjectEntity){
+			return this.getName().equals(((ObjectEntity)obj).getName()); 
+		}else{
+			return false; 
+		}
+	}
 }

@@ -39,6 +39,8 @@ import unbbayes.gui.mebn.TableEditionPane;
 import unbbayes.gui.mebn.auxiliary.ButtonLabel;
 import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
+import unbbayes.gui.mebn.finding.EntityFindingEditionPane;
+import unbbayes.gui.mebn.finding.RandonVariableFindingEdtitionPane;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.GenerativeInputNode;
@@ -104,6 +106,8 @@ public class MEBNEditionPane extends JPanel {
     private EntityEditionPane entityEditionPane;    
     private InputNodePane inputNodePane;      
     private OVariableEditionPane editOVariableTab;
+    private RandonVariableFindingEdtitionPane nodeFindingEditionPane; 
+    private EntityFindingEditionPane entityFindingEditionPane; 
     
     private ResidentNodePane residentNodePane; 
     private ArgumentEditionPane editArgumentsTab; 
@@ -167,16 +171,32 @@ public class MEBNEditionPane extends JPanel {
     private final JButton btnSelectObject;
     private final JButton btnGlobalOption;
     
+    private final JButton btnEditingMode; 
+    private final JButton btnFindingMode; 
+    private final JButton btnQueryMode; 
+    
     /* Buttons for select the active tab */
     
     private final JButton btnTabOptionTree;                                    
     private final JButton btnTabOptionOVariable; 
     private final JButton btnTabOptionEntity; 
+    private final JButton btnTabOptionEntityFinding; 
+    private final JButton btnTabOptionNodeFinding; 
     private JButton btnTabOption1; 
     private JButton btnTabOption2; 
     
     private final int INDEX_POSITION_BUTTON_OPTION_1 = 4; 
     private final int INDEX_POSITION_BUTTON_OPTION_2 = 5; 
+    
+    private final String MTHEORY_TREE_TAB = "MTheoryTree"; 
+    private final String ENTITY_EDITION_TAB = "EntityEdtionTab"; 
+    private final String OVARIABLE_EDITION_TAB = "EditOVariableTab"; 
+    private final String INPUT_NODE_TAB = "InputNodeTab"; 
+    private final String ARGUMENTS_EDITION_TAB = "EditArgumentsTab"; 
+    private final String RESIDENT_NODE_TAB = "ResidentNodeTab"; 
+    private final String FORMULA_TAB = "FormulaEdtion"; 
+    private final String ENTITY_FINDING_TAB = "EntityFindingTab"; 
+    private final String NODE_FINDING_TAB = "NodeFindingTab"; 
    
     /* Table edition pane */
     private TableEditionPane tableEdit; 
@@ -198,8 +218,6 @@ public class MEBNEditionPane extends JPanel {
         this.mebnController    = _controller;
         this.setLayout(new BorderLayout());
 
-        //table       = new JTable();
-        //jspTable    = new JScrollPane(table);
         topPanel    = new JPanel(new GridLayout(0,1));
         
         tabsPanel = new JPanel(new BorderLayout()); 
@@ -254,9 +272,15 @@ public class MEBNEditionPane extends JPanel {
         btnSelectObject.setToolTipText(resource.getString("mFragInsertToolTip")); 
         btnGlobalOption.setToolTipText(resource.getString("mFragInsertToolTip"));         
         
+        btnEditingMode = new JButton(iconController.getMTheoryNodeIcon()); 
+        btnFindingMode = new JButton(iconController.getMTheoryNodeIcon()); 
+        btnQueryMode = new JButton(iconController.getMTheoryNodeIcon()); 
+        
         btnTabOptionTree = new JButton(iconController.getMTheoryNodeIcon());
         btnTabOptionOVariable = new JButton(iconController.getOVariableNodeIcon()); 
         btnTabOptionEntity = new JButton(iconController.getObjectEntityIcon()); 
+        btnTabOptionEntityFinding = new JButton(iconController.getObjectEntityIcon()); 
+        btnTabOptionNodeFinding = new JButton(iconController.getObjectEntityIcon());  
         
         btnTabOptionTree.setToolTipText(resource.getString("showMTheoryToolTip")); 
         btnTabOptionOVariable.setToolTipText(resource.getString("showOVariablesToolTip"));
@@ -283,7 +307,11 @@ public class MEBNEditionPane extends JPanel {
         jtbEdition.setOrientation(JToolBar.VERTICAL); 
         
         /* testes... */
-        buildJtbPowerLoom();  
+        //buildJtbPowerLoom();  
+        jtbGeneralOptions.add(btnEditingMode);
+        jtbGeneralOptions.add(btnFindingMode); 
+        jtbGeneralOptions.add(btnQueryMode);
+        
         jtbGeneralOptions.setFloatable(false); 
         topPanel.add(jtbGeneralOptions);
         
@@ -322,14 +350,12 @@ public class MEBNEditionPane extends JPanel {
        
         /*----------------- Icones do Tab Panel ------------*/
 
-        jtbTabSelection.setLayout(new GridLayout(1,5)); 
+        jtbTabSelection.setLayout(new GridLayout(1,3)); 
         jtbTabSelection.add(btnTabOptionTree);
         jtbTabSelection.add(btnTabOptionOVariable); 
         jtbTabSelection.add(btnTabOptionEntity);   
-        btnTabOption1 = new JButton(" "); 
-        jtbTabSelection.add(btnTabOption1); 
-        btnTabOption2 = new JButton(" "); 
-        jtbTabSelection.add(btnTabOption2); 
+        jtbTabSelection.add(btnTabOptionEntityFinding); 
+        jtbTabSelection.add(btnTabOptionNodeFinding); 
         jtbTabSelection.setFloatable(false);
         
         
@@ -339,25 +365,31 @@ public class MEBNEditionPane extends JPanel {
         mTheoryTreeScroll = new JScrollPane(mTheoryTree); 
         mTheoryTreeScroll.setBorder(ToolKitForGuiMebn.getBorderForTabPanel(
         		resource.getString("MTheoryTreeTitle"))); 
-        jpTabSelected.add("MTheoryTree", mTheoryTreeScroll);
+        jpTabSelected.add(MTHEORY_TREE_TAB, mTheoryTreeScroll);
         
         entityEditionPane = new EntityEditionPane(mebnController); 
-        jpTabSelected.add("EntityEdtionTab", entityEditionPane); 
+        jpTabSelected.add(ENTITY_EDITION_TAB, entityEditionPane); 
         
     	editOVariableTab = new OVariableEditionPane(); 
-        jpTabSelected.add("EditOVariableTab", editOVariableTab); 
+        jpTabSelected.add(OVARIABLE_EDITION_TAB, editOVariableTab); 
         
         inputNodePane = new InputNodePane();                 
-        jpTabSelected.add("InputNodeTab", inputNodePane); 
+        jpTabSelected.add(INPUT_NODE_TAB, inputNodePane); 
        
         editArgumentsTab = new ArgumentEditionPane(); 
-        jpTabSelected.add("EditArgumentsTab", editArgumentsTab); 
+        jpTabSelected.add(ARGUMENTS_EDITION_TAB, editArgumentsTab); 
         
         residentNodePane = new ResidentNodePane(); 
-        jpTabSelected.add("ResidentNodeTab", residentNodePane); 
+        jpTabSelected.add(RESIDENT_NODE_TAB, residentNodePane); 
         
         formulaEdtion = new FormulaEditionPane(); 
-        jpTabSelected.add("FormulaEdtion", formulaEdtion); 
+        jpTabSelected.add(FORMULA_TAB, formulaEdtion); 
+
+        entityFindingEditionPane = new EntityFindingEditionPane(); 
+        jpTabSelected.add(ENTITY_FINDING_TAB, entityFindingEditionPane); 
+        
+        nodeFindingEditionPane = new RandonVariableFindingEdtitionPane(); 
+        jpTabSelected.add(NODE_FINDING_TAB, nodeFindingEditionPane); 
         
         cardLayout.show(jpTabSelected, "MTheoryTree");  
         
@@ -383,6 +415,44 @@ public class MEBNEditionPane extends JPanel {
         
         setVisible(true);
     }
+  	
+  	private void turnForFindingMode(){
+  		
+  		tabsPanel.remove(jtbTabSelection); 
+          		
+  		jtbTabSelection.removeAll(); 
+        jtbTabSelection.setLayout(new GridLayout(1,3)); 
+        jtbTabSelection.add(btnTabOptionTree);
+        jtbTabSelection.add(btnTabOptionOVariable); 
+        jtbTabSelection.add(btnTabOptionEntity);
+        jtbTabSelection.setFloatable(false);
+        
+        tabsPanel.add(BorderLayout.NORTH, jtbTabSelection);
+  	}
+  	
+  	private void turnForQueryMode(){
+        jtbTabSelection.setLayout(new GridLayout(1,3)); 
+        jtbTabSelection.add(btnTabOptionTree);
+        jtbTabSelection.add(btnTabOptionOVariable); 
+        jtbTabSelection.add(btnTabOptionEntity);   
+//        btnTabOption1 = new JButton(" "); 
+//        jtbTabSelection.add(btnTabOption1); 
+//        btnTabOption2 = new JButton(" "); 
+//        jtbTabSelection.add(btnTabOption2); 
+        jtbTabSelection.setFloatable(false);
+  	}
+  	
+  	private void turnForEditionMode(){
+        jtbTabSelection.setLayout(new GridLayout(1,3)); 
+        jtbTabSelection.add(btnTabOptionTree);
+        jtbTabSelection.add(btnTabOptionOVariable); 
+        jtbTabSelection.add(btnTabOptionEntity);   
+//        btnTabOption1 = new JButton(" "); 
+//        jtbTabSelection.add(btnTabOption1); 
+//        btnTabOption2 = new JButton(" "); 
+//        jtbTabSelection.add(btnTabOption2); 
+        jtbTabSelection.setFloatable(false);
+  	}
   	
   	private void turnButtonOptionTab1(JButton btn){
         jtbTabSelection.remove(INDEX_POSITION_BUTTON_OPTION_1);  
@@ -947,6 +1017,12 @@ public class MEBNEditionPane extends JPanel {
   			}
   		});  
 
+  		btnTabOptionEntityFinding.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				setEntityFindingEditionPaneActive(); 
+  			}
+  		});  
+  		
   	}  	
 
 
@@ -1150,6 +1226,21 @@ public class MEBNEditionPane extends JPanel {
     public void setResidentNodeTabActive(){
     	cardLayout.show(jpTabSelected, "ResidentNodeTab"); 	
     }
+
+    public void setEntityFindingEditionPaneActive(){
+       cardLayout.removeLayoutComponent(entityFindingEditionPane); 
+       entityFindingEditionPane = new EntityFindingEditionPane(mebnController); 
+       jpTabSelected.add(ENTITY_FINDING_TAB, entityFindingEditionPane); 
+ 	   cardLayout.show(jpTabSelected, ENTITY_FINDING_TAB); 
+    }
+    
+    public void setRandonVariableFindingEditionPaneActive(){
+       cardLayout.removeLayoutComponent(nodeFindingEditionPane); 
+       nodeFindingEditionPane = new RandonVariableFindingEdtitionPane();  
+       jpTabSelected.add(NODE_FINDING_TAB, nodeFindingEditionPane); 
+ 	   cardLayout.show(jpTabSelected, NODE_FINDING_TAB); 
+    }
+    
     
     /* Bar Selected */
     

@@ -3,6 +3,7 @@ package unbbayes.prs.mebn.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 
 /**
@@ -19,6 +20,8 @@ import unbbayes.prs.mebn.entity.exception.TypeException;
 public class ObjectEntityConteiner {
 
 	private List<ObjectEntity> listEntity;
+	
+	private List<ObjectEntityInstance> listEntityInstances; 
 
 	private TypeContainer typeContainer; 
 	
@@ -29,7 +32,10 @@ public class ObjectEntityConteiner {
 		typeContainer = _typeConteiner; 
 		entityNum = 1;
 		listEntity = new ArrayList<ObjectEntity>(); 
+		listEntityInstances = new ArrayList<ObjectEntityInstance>(); 
+		
 	}
+	
 	
 	/**
 	 * Create a new Object Entity with the name specified. 
@@ -95,5 +101,31 @@ public class ObjectEntityConteiner {
 	public void plusEntityNum(){
 		entityNum++; 
 	}
-		
+
+
+	public List<ObjectEntityInstance> getListEntityInstances() {
+		return listEntityInstances;
+	}
+	
+	public void addEntityInstance(ObjectEntityInstance entityInstance) throws EntityInstanceAlreadyExistsException{
+		if(!listEntityInstances.contains(entityInstance)){
+		   this.listEntityInstances.add(entityInstance); 
+		}
+		else{
+			throw new EntityInstanceAlreadyExistsException(); 
+		}
+	}
+	
+	public void removeEntityInstance(ObjectEntityInstance entityInstance){
+		this.listEntityInstances.remove(entityInstance); 
+	}
+	
+	public ObjectEntityInstance getEntityInstanceByName(String name){
+		for(ObjectEntityInstance entity: listEntityInstances){
+			if(entity.getName().equals(name)){
+				return entity; 
+			}
+		}
+		return null; 
+	}
 }

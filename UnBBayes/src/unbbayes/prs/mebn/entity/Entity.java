@@ -37,28 +37,6 @@ public abstract class Entity{
 		type = _type; 
 	}
 	
-//	/**
-//	 * Sets the entity's type.
-//	 * 
-//	 * @param type
-//	 *            The entity's new type.
-//	 * @throws TypeDoesNotExistException
-//	 *             Thrown if the type to be set does not exist.
-//	 */
-//	public void setType(Type _type) throws TypeException {
-//		
-//		if (typeContainer.hasType(_type)){
-//			if(type != null){
-//				type.removeUserObject(this); 
-//			}
-//			this.type = _type;
-//		}
-//		else{
-//			throw new TypeDoesNotExistException();
-//	
-//		}
-//		
-//	}
 
 	/**
 	 * Returns the entity's type.
@@ -110,23 +88,6 @@ public abstract class Entity{
 	public String getName() {
 		return name;
 	}
-
-//	/**
-//	 * Set the entity's name. 
-//	 * @param name The entity's name.
-//	 */
-//	public void setName(String name) throws TypeAlreadyExistsException{
-//		
-//		if(type != null){
-//			type.renameType(name + "_label"); 
-//		}
-//		else{
-//			type =  typeContainer.createType(name + "_label"); 
-//		}
-//		
-//		this.name = name;
-//		
-//	}
 	
 	public String toString(){
 		return name; 

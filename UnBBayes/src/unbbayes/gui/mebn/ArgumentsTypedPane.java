@@ -31,9 +31,9 @@ import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
  */
 public class ArgumentsTypedPane extends JPanel{
 	
-	ResidentNodePointer pointer; 
-	MEBNController mebnController; 
-	Object node; 
+	private ResidentNodePointer pointer; 
+	private MEBNController mebnController; 
+	private Object node; 
 	
 	/**
 	 * 

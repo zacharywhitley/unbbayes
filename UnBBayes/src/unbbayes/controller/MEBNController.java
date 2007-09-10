@@ -3,9 +3,12 @@ package unbbayes.controller;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
+import javax.swing.JFrame;
+
 import unbbayes.gui.MEBNEditionPane;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.mebn.OVariableEditionPane;
+import unbbayes.gui.mebn.finding.EntityFindingEditionPane;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
@@ -19,8 +22,10 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.TypeContainer;
+import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
@@ -773,6 +778,32 @@ public class MEBNController {
 		}
 	}
 	
+	public void createEntityIntance(ObjectEntity entity, String nameInstance) throws EntityInstanceAlreadyExistsException{
+		
+		if(multiEntityBayesianNetwork.getObjectEntityContainer().getEntityInstanceByName(nameInstance)!=null){
+			throw new EntityInstanceAlreadyExistsException(); 
+		}
+		else{
+			try {
+				ObjectEntityInstance instance = entity.addInstance(nameInstance);
+				multiEntityBayesianNetwork.getObjectEntityContainer().addEntityInstance(instance); 
+			} catch (TypeException e1) {
+				e1.printStackTrace();
+			} catch(EntityInstanceAlreadyExistsException e){
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public void renameEntityIntance(ObjectEntityInstance entity, String newName) throws EntityInstanceAlreadyExistsException{
+		
+		if(multiEntityBayesianNetwork.getObjectEntityContainer().getEntityInstanceByName(newName)!=null){
+			throw new EntityInstanceAlreadyExistsException(); 
+		}
+		else{
+			entity.setName(newName); 
+		}
+	}
 	
 	/*-------------------Uso do PowerLoom--------------*/
 	
@@ -782,17 +813,24 @@ public class MEBNController {
 	 */
 	public void preencherKB(){
 
-			PowerLoomKB test = PowerLoomKB.getInstanceKB(); 
-			
-			for(ObjectEntity entity: multiEntityBayesianNetwork.getObjectEntityContainer().getListEntity()){
-				test.executeConceptDefinition(entity); 
+		PowerLoomKB test = PowerLoomKB.getInstanceKB(); 
+		
+		for(ObjectEntity entity: multiEntityBayesianNetwork.getObjectEntityContainer().getListEntity()){
+			test.executeConceptDefinition(entity); 
+		}
+		
+		for(DomainMFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
+			for(ResidentNode resident: mfrag.getDomainResidentNodeList()){	
+				test.executeRandonVariableDefinition((DomainResidentNode)resident); 
 			}
-			
-			for(DomainMFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
-				for(ResidentNode resident: mfrag.getDomainResidentNodeList()){	
-					test.executeRandonVariableDefinition((DomainResidentNode)resident); 
-				}
-			}
+		}
+		
+		EntityFindingEditionPane entityPane = new EntityFindingEditionPane(this);
+		JFrame frameTest = new JFrame(); 
+		frameTest.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
+		frameTest.setContentPane(entityPane); 
+		frameTest.pack(); 
+		frameTest.setVisible(true); 
 	}
 	
 	/**

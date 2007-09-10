@@ -36,8 +36,10 @@ public class MultiEntityBayesianNetwork extends Network {
 	/* Entidades */
 	TypeContainer typeContainer; 
 	ObjectEntityConteiner objectEntityContainer; 
+	
 	BooleanStatesEntityContainer booleanStatesEntityContainer; 
 	CategoricalStatesEntityContainer categoricalStatesEntityContainer; 
+	
 	
 	/* Este contador serve apenas para indicar qual deve ser o n�mero
 	 * da pr�xima MFrag criada (ao se gerar o nome automatico. Este n�mero

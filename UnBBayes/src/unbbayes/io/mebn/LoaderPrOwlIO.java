@@ -121,6 +121,8 @@ public class LoaderPrOwlIO {
 	public MultiEntityBayesianNetwork loadMebn(File file) throws 
 													IOException, IOMebnException{
 
+		Debug.setDebug(false); 
+		
 		List<String> listWarnings = new ArrayList<String>(); 
 		
 		owlModel = ProtegeOWL.createJenaOWLModel();

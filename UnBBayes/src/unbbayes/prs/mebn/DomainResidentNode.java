@@ -25,6 +25,8 @@ public class DomainResidentNode extends ResidentNode {
 	 */
 	private List<DomainResidentNode> residentNodeChildList;
 	 
+	private List<RandonVariableFinding> randonVariableFindingList; 
+	
 	private DomainMFrag mFrag;
 
 	private String tableFunction;
@@ -46,6 +48,7 @@ public class DomainResidentNode extends ResidentNode {
 		inputNodeFatherList = new ArrayList<GenerativeInputNode>();
 		residentNodeFatherList = new ArrayList<DomainResidentNode>();	
 		residentNodeChildList = new ArrayList<DomainResidentNode>();	
+		randonVariableFindingList = new ArrayList<RandonVariableFinding>(); 
 		
 		setName(name); 
 		updateLabel(); 		
@@ -288,6 +291,22 @@ public class DomainResidentNode extends ResidentNode {
 	
 	public void setTableFunction(String table){
 		tableFunction = table;
+	}
+
+	public void addRandonVariableFinding(RandonVariableFinding finding){
+		randonVariableFindingList.add(finding); 
+	}
+	
+	public void removeRandonVariableFinding(RandonVariableFinding finding){
+		randonVariableFindingList.remove(finding); 
+	}
+	
+	public boolean containsRandonVariableFinding(RandonVariableFinding finding){
+		return randonVariableFindingList.contains(finding); 
+	}
+	
+	public List<RandonVariableFinding> getRandonVariableFindingList() {
+		return randonVariableFindingList;
 	}
 	
 	
