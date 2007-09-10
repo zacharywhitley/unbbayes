@@ -450,7 +450,7 @@ public class MFrag implements Graph{
 	/**
 	 * checks if there are any node with a particular name inside this mfrag.
 	 * @param name: the name of a node
-	 * @return A Node if found. Null elsewhen.
+	 * @return The first Node found. Null elsewise.
 	 */
 	public Node containsNode(String name){
 		NodeList list = this.getNodeList();

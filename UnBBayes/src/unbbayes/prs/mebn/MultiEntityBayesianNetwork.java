@@ -301,6 +301,12 @@ public class MultiEntityBayesianNetwork extends Network {
 	
 	
 	
+	
+	/**
+	 * searches for a MFrag containing a node
+	 * @param node: the node to search for
+	 * @return a MFrag containing the required node
+	 */
 	public MFrag getMFragByNode(MultiEntityNode node) {
 		for (MFrag element : this.mFragList) {
 			if (element.containsNode(node)) {
@@ -310,6 +316,7 @@ public class MultiEntityBayesianNetwork extends Network {
 		return null;
 	}
 	
+	/*	This method should never be used by this project
 	public MFrag getMFragByNodeName(String nodeName) {
 		for (MFrag element : this.mFragList) {
 			if (element.containsNode(nodeName) != null) {
@@ -318,7 +325,9 @@ public class MultiEntityBayesianNetwork extends Network {
 		}
 		return null;
 	}
+	*/
 	
+	/* This method should never be used by this project
 	public DomainMFrag getDomainMFragByNode(MultiEntityNode node) {
 		MFrag ret = this.getMFragByNode(node);
 		if (ret instanceof DomainMFrag) {
@@ -326,11 +335,29 @@ public class MultiEntityBayesianNetwork extends Network {
 		}
 		return null;
 	}
+	*/
 	
+	/* This method should never be used by this project
 	public MFrag getDomainMFragByNodeName(String nodeName) {
 		MFrag ret = this.getMFragByNodeName(nodeName);
 		if (ret instanceof DomainMFrag) {
 			return (DomainMFrag) ret;
+		}
+		return null;
+	}
+	*/
+	
+	
+	/**
+	 * Searches for a domain mfrag containing a resident node with a name passed by its argument.
+	 * @param nodeName: a name for a resident node to look for
+	 * @return if found, a DomainMFrag. If not found, null.
+	 */
+	public DomainMFrag getDomainMFragByNodeName(String nodeName) {
+		for (DomainMFrag mfrag : this.domainMFragList) {
+			if (mfrag.getDomainResidentNodeByName(nodeName) != null) {
+				return mfrag;
+			}
 		}
 		return null;
 	}

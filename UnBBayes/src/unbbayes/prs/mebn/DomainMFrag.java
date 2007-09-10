@@ -205,7 +205,7 @@ public class DomainMFrag extends MFrag {
 	}
 
 	/**
-	 * Return the domain resident node with the name, or null if don't exists. 
+	 * Returns the domain resident node with respective name, or null if it doesn't exist. 
 	 */
 	public DomainResidentNode getDomainResidentNodeByName(String name){
 		for(DomainResidentNode test: residentNodeList){
