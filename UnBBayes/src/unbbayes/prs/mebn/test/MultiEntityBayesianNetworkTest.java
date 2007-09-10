@@ -14,6 +14,7 @@ import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.FindingMFrag;
+import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -336,6 +337,52 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 		
 		mebn.addFindingMFrag((FindingMFrag)mfrag4);
 		assertEquals(mebn.getDomainMFragNum(),2);
+	}
+	
+	
+	public void testGetDomainMFragByNodeName() {
+		
+		MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork("testGetDomainMFragNodeNameMEBN");
+		
+		DomainMFrag mfrag1 = new DomainMFrag("mfrag1",mebn);
+		DomainMFrag mfrag2 = new DomainMFrag("mfrag2",mebn);
+		DomainMFrag mfrag3 = new DomainMFrag("mfrag3",mebn);
+		DomainMFrag mfrag4 = new DomainMFrag("mfrag4",mebn);
+		
+		// This is odd! Why should we add a mfrag when we just added them at its constructor?!
+		mebn.addDomainMFrag(mfrag1);
+		mebn.addDomainMFrag(mfrag2);
+		mebn.addDomainMFrag(mfrag3);
+		mebn.addDomainMFrag(mfrag4);
+		
+		mfrag1.addDomainResidentNode(new DomainResidentNode("node1",mfrag1));
+		mfrag2.addDomainResidentNode(new DomainResidentNode("node2",mfrag2));
+		mfrag3.addDomainResidentNode(new DomainResidentNode("node3",mfrag3));
+		mfrag4.addDomainResidentNode(new DomainResidentNode("node4",mfrag4));
+		
+		mfrag2.addGenerativeInputNode(new GenerativeInputNode("input2",mfrag2));
+		mfrag3.addGenerativeInputNode(new GenerativeInputNode("input3",mfrag3));
+		mfrag4.addGenerativeInputNode(new GenerativeInputNode("input4",mfrag4));
+		
+		mfrag3.addContextNode(new ContextNode("context3",mfrag3));
+		mfrag4.addContextNode(new ContextNode("context4",mfrag4));
+		
+		
+		assertEquals(mebn.getDomainMFragByNodeName("node1"),mfrag1);
+		assertEquals(mebn.getDomainMFragByNodeName("node2"),mfrag2);
+		assertEquals(mebn.getDomainMFragByNodeName("node3"),mfrag3);
+		assertEquals(mebn.getDomainMFragByNodeName("node4"),mfrag4);
+		
+		assertTrue(mebn.getDomainMFragByNodeName("Auszeichnung") == null);
+		assertTrue(mebn.getDomainMFragByNodeName("") == null);
+		assertTrue(mebn.getDomainMFragByNodeName(null) == null);
+		
+		assertTrue(mebn.getDomainMFragByNodeName("input2") == null);
+		assertTrue(mebn.getDomainMFragByNodeName("input3") == null);
+		assertTrue(mebn.getDomainMFragByNodeName("input4") == null);
+		
+		assertTrue(mebn.getDomainMFragByNodeName("context3") == null);
+		assertTrue(mebn.getDomainMFragByNodeName("context4") == null);
 	}
 
 	// Getters, setters and simple integer adders are not tested

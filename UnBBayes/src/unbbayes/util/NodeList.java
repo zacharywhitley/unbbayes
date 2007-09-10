@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -27,7 +27,7 @@ import unbbayes.prs.Node;
 
 
 /**
- * Classe que representa um array dinâmico do tipo <code>Node</code>.
+ * Classe que representa um array dinï¿½mico do tipo <code>Node</code>.
  *
  * @author Michael
  * @author Rommel
