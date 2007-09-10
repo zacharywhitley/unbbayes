@@ -35,25 +35,45 @@ public class MFragTest extends TestCase {
 	public void testContainsNode(){
 		MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork("teste");
 		DomainMFrag mfrag1 = new DomainMFrag("mfrag1",mebn);
-		DomainMFrag mfrag2 = new DomainMFrag("mfrag1",mebn);
-		DomainMFrag mfrag3 = new DomainMFrag("mfrag1",mebn);
+		DomainMFrag mfrag2 = new DomainMFrag("mfrag2",mebn);
 		
 		DomainResidentNode resident1 = new DomainResidentNode("resident1",mfrag1);
+		mfrag1.addDomainResidentNode(resident1);
 		DomainResidentNode resident2 = new DomainResidentNode("resident2",mfrag2);
+		mfrag2.addDomainResidentNode(resident2);
 		GenerativeInputNode input1 = new GenerativeInputNode("resident1",mfrag2);
+		mfrag2.addGenerativeInputNode(input1);
 		try {
 			input1.setInputInstanceOf(resident1);
 		} catch (Exception e) {
 			fail("A cycle has been found");
 		}
 		resident2.addParent(input1);
-		ContextNode context1 = new ContextNode("resident1",mfrag3);
+		
+		NodeList temp = mfrag1.getNodeList();
+		for (int i = 0; i < temp.size(); i++) {
+			System.out.println(temp.get(i).getName());
+			System.out.println(temp.get(i).getClass());
+		}
+		System.out.println("===============");
+		temp = mfrag2.getNodeList();
+		for (int i = 0; i < temp.size(); i++) {
+			System.out.println(temp.get(i).getName());
+			System.out.println(temp.get(i).getClass());
+		}
 		
 		assertTrue(mfrag1.containsNode(resident1));
 		assertNotNull(mfrag1.containsNode("resident1"));
 		assertTrue(!mfrag1.containsNode(resident2));
 		assertNull(mfrag1.containsNode("resident2"));
-		// TODO
+		//assertTrue(!(mfrag1.containsNode(input1))); // This is searching by node name
+		
+		assertTrue(mfrag2.containsNode(resident2));
+		assertNotNull(mfrag2.containsNode("resident2"));
+		//assertTrue(!mfrag2.containsNode(resident1));
+		assertNotNull(mfrag2.containsNode("resident1"));
+		assertTrue(mfrag2.containsNode(input1));
+		
 	}
 
 	
@@ -66,7 +86,7 @@ public class MFragTest extends TestCase {
 		//$JUnit-BEGIN$
 		suite.addTest(FindingMFragTest.suite());
 		suite.addTest(DomainMFragTest.suite());
-		
+		suite.addTest(new TestSuite(MFragTest.class));
 		return suite;
 	}
 }

@@ -278,6 +278,8 @@ public class MFrag implements Graph{
 	
 	/**
 	 * Method responsible to tell if the node list contains the given node.
+	 * Note that this method depends on NodeList.contains(node) method and
+	 * for now (September 10, 2007) it makes name comparision.
 	 * @param node The node to check.
 	 * @return True if the list contais this node and false otherwise.
 	 */

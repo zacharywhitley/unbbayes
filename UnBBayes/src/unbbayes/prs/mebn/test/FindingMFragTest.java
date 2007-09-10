@@ -17,6 +17,8 @@ import junit.framework.TestSuite;
  */
 public class FindingMFragTest extends TestCase {
 
+	
+	
 	MultiEntityBayesianNetwork mebn = null;
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#MFrag(java.lang.String, unbbayes.prs.mebn.MultiEntityBayesianNetwork)}.
@@ -240,6 +242,7 @@ public class FindingMFragTest extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
+		this.mebn = new MultiEntityBayesianNetwork("FindingMFragTest");
 	}
 
 	/* (non-Javadoc)
