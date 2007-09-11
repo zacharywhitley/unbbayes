@@ -279,8 +279,8 @@ public class MEBNEditionPane extends JPanel {
         btnTabOptionTree = new JButton(iconController.getMTheoryNodeIcon());
         btnTabOptionOVariable = new JButton(iconController.getOVariableNodeIcon()); 
         btnTabOptionEntity = new JButton(iconController.getObjectEntityIcon()); 
-        btnTabOptionEntityFinding = new JButton(iconController.getObjectEntityIcon()); 
-        btnTabOptionNodeFinding = new JButton(iconController.getObjectEntityIcon());  
+        btnTabOptionEntityFinding = new JButton(iconController.getEntityInstance()); 
+        btnTabOptionNodeFinding = new JButton(iconController.getNodeInstance());  
         
         btnTabOptionTree.setToolTipText(resource.getString("showMTheoryToolTip")); 
         btnTabOptionOVariable.setToolTipText(resource.getString("showOVariablesToolTip"));
@@ -434,11 +434,7 @@ public class MEBNEditionPane extends JPanel {
         jtbTabSelection.setLayout(new GridLayout(1,3)); 
         jtbTabSelection.add(btnTabOptionTree);
         jtbTabSelection.add(btnTabOptionOVariable); 
-        jtbTabSelection.add(btnTabOptionEntity);   
-//        btnTabOption1 = new JButton(" "); 
-//        jtbTabSelection.add(btnTabOption1); 
-//        btnTabOption2 = new JButton(" "); 
-//        jtbTabSelection.add(btnTabOption2); 
+        jtbTabSelection.add(btnTabOptionEntity);  
         jtbTabSelection.setFloatable(false);
   	}
   	
@@ -447,10 +443,6 @@ public class MEBNEditionPane extends JPanel {
         jtbTabSelection.add(btnTabOptionTree);
         jtbTabSelection.add(btnTabOptionOVariable); 
         jtbTabSelection.add(btnTabOptionEntity);   
-//        btnTabOption1 = new JButton(" "); 
-//        jtbTabSelection.add(btnTabOption1); 
-//        btnTabOption2 = new JButton(" "); 
-//        jtbTabSelection.add(btnTabOption2); 
         jtbTabSelection.setFloatable(false);
   	}
   	
@@ -1023,6 +1015,12 @@ public class MEBNEditionPane extends JPanel {
   			}
   		});  
   		
+  		btnTabOptionNodeFinding.addActionListener(new ActionListener() {
+  			public void actionPerformed(ActionEvent ae) {
+  				setRandonVariableFindingEditionPaneActive(); 
+  			}
+  		});  
+  		
   	}  	
 
 
@@ -1236,7 +1234,7 @@ public class MEBNEditionPane extends JPanel {
     
     public void setRandonVariableFindingEditionPaneActive(){
        cardLayout.removeLayoutComponent(nodeFindingEditionPane); 
-       nodeFindingEditionPane = new RandonVariableFindingEdtitionPane();  
+       nodeFindingEditionPane = new RandonVariableFindingEdtitionPane(mebnController);  
        jpTabSelected.add(NODE_FINDING_TAB, nodeFindingEditionPane); 
  	   cardLayout.show(jpTabSelected, NODE_FINDING_TAB); 
     }

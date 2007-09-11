@@ -251,6 +251,17 @@ public class IconController implements Serializable {
 	protected ImageIcon iffIcon; 
 	
 	
+	protected ImageIcon editClear; 
+	
+	protected ImageIcon editUndo; 
+	
+	protected ImageIcon edit; 
+	
+	protected ImageIcon nodeInstance; 
+	
+	protected ImageIcon entityInstance; 
+	
+	
 	public static IconController getInstance() {
 		if (singleton == null) {
 			singleton = new IconController();
@@ -1271,5 +1282,56 @@ public class IconController implements Serializable {
 					"/icons/boolean.png"));
 			return booleanIcon;
 		}
-	}		
+	}
+
+	public ImageIcon getEdit() {
+		if (edit != null) {
+			return edit;
+		} else {
+			edit = new ImageIcon(getClass().getResource(
+					"/icons/edit.gif"));
+			return edit;
+		}
+	}
+
+	public ImageIcon getEditClear() {
+		if (editClear != null) {
+			return editClear;
+		} else {
+			editClear = new ImageIcon(getClass().getResource(
+					"/icons/edit-clear.png"));
+			return editClear;
+		}
+	}
+
+	public ImageIcon getEditUndo() {
+		if (editUndo != null) {
+			return editUndo;
+		} else {
+			editUndo = new ImageIcon(getClass().getResource(
+					"/icons/edit-undo.png"));
+			return editUndo;
+		}
+	}
+
+	public ImageIcon getEntityInstance() {
+		if (entityInstance != null) {
+			return entityInstance;
+		} else {
+			entityInstance = new ImageIcon(getClass().getResource(
+					"/icons/entity-intance.gif"));
+			return entityInstance;
+		}
+	}
+
+	public ImageIcon getNodeInstance() {
+		if (nodeInstance != null) {
+			return nodeInstance;
+		} else {
+			nodeInstance = new ImageIcon(getClass().getResource(
+					"/icons/node-instance.gif"));
+			return nodeInstance;
+		}
+	}	
+	
 }

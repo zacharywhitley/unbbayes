@@ -116,6 +116,9 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 		this.typeOfStates = typeOfStates;
 	}
 	
+	public String toString() {
+		return name;
+	}
 	
 }
 
