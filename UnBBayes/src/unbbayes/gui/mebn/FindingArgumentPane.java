@@ -10,6 +10,7 @@ import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
@@ -17,6 +18,7 @@ import unbbayes.controller.MEBNController;
 import unbbayes.gui.ParcialStateException;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 
 /**
@@ -35,6 +37,9 @@ public class FindingArgumentPane extends JPanel{
 	private MEBNController mebnController; 
 	private ResidentNode node; 
 	
+	private JComboBox states; 
+	private JComboBox argument[]; 
+	
 	private final static int MINIMUM_LINE_SIXE_PANEL = 5; 
 	
 	public FindingArgumentPane(ResidentNode node, MEBNController mebnController){
@@ -46,14 +51,14 @@ public class FindingArgumentPane extends JPanel{
 		
 		if(node.getOrdinaryVariableList().size() > MINIMUM_LINE_SIXE_PANEL)
 		setLayout(new GridLayout(node.getOrdinaryVariableList().size(),1)); 
-		else setLayout(new GridLayout(MINIMUM_LINE_SIXE_PANEL , 1 )); 
+		else setLayout(new GridLayout(MINIMUM_LINE_SIXE_PANEL + 1 , 1 )); 
 		
-		JComboBox argument[] = new JComboBox[node.getOrdinaryVariableList().size()]; 
+		argument = new JComboBox[node.getOrdinaryVariableList().size()]; 
 		
 		JToolBar tbArgX; 
 		JButton btnArgXNumber; 
 		JButton btnArgXType; 
-			  
+		 
 		//Montagem das JComboBox para cada argumento	
 
 		List<ObjectEntityInstance> entityList = 
@@ -93,12 +98,60 @@ public class FindingArgumentPane extends JPanel{
 			tbArgX.setFloatable(false); 
 			
 			add(tbArgX); 
+			i++; 
 		}
+		
+
+		JLabel labelState = new JLabel("State:"); 
+		
+		JButton btnLabelType = null; 
+		switch(node.getTypeOfStates()){
+		case ResidentNode.BOOLEAN_RV_STATES:
+			btnLabelType = new JButton("Boolean"); 
+			break; 
+		case ResidentNode.CATEGORY_RV_STATES:
+			btnLabelType = new JButton("Categorical"); 
+			break; 
+		case ResidentNode.OBJECT_ENTITY:
+			btnLabelType = new JButton("Object"); 
+			break; 
+		default:
+		    break; 	
+		}
+		
+		states = new JComboBox(node.getPossibleValueList().toArray()); 
+		
+		JToolBar tbStates = new JToolBar();
+		
+		tbStates.add(labelState);
+		tbStates.add(btnLabelType); 
+		tbStates.add(states); 
+		tbStates.setFloatable(false); 
+		
+		add(tbStates); 
 	}
 	
 	public ObjectEntityInstance[] getArguments() throws ParcialStateException{
 		
-		return null; 
+		ObjectEntityInstance[] argumentVector = new ObjectEntityInstance[argument.length]; 
+		
+		for(int i = 0; i < argument.length; i++){
+			if(argument[i].getSelectedItem() != null){
+				argumentVector[i] = (ObjectEntityInstance)argument[i].getSelectedItem(); 
+			}
+			else{
+				throw new ParcialStateException(); 
+			}
+		}
+		
+		return argumentVector; 
+	}
+	
+	public Entity getState(){
+		return (Entity)states.getSelectedItem(); 
+	}
+	
+	public void clear(){
 	
 	}
 	
