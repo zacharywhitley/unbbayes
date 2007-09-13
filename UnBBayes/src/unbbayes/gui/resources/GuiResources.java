@@ -198,13 +198,14 @@ public class GuiResources extends ListResourceBundle {
 		{"AddFinding", "Finding"}, 	
 		
 		//Label for buttons of tab selection
+		/* Don't use names with more than fifteen letters */
 		{"MTheoryButton", "MTheory"}, 
 		{"ResidentButton", "Resident"}, 
 		{"InputButton", "Input"}, 
 		{"ContextButton", "Context"}, 
 		{"MFragButton", "MFrag"}, 	
 		{"ArgumentsButton", "Arguments"}, 			
-		{"OrdVariableButton", "Ord. Variable"}, 
+		{"OrdVariableButton", "Variable"}, 
 		
 		{"whithotMFragActive","Don't have MFrag active"},			
 		{"previewTitle","Preview"},
