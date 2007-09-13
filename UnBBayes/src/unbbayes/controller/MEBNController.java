@@ -805,6 +805,10 @@ public class MEBNController {
 		}
 	}
 	
+	public void removeEntityInstance(ObjectEntityInstance entity) {
+		multiEntityBayesianNetwork.getObjectEntityContainer().removeEntityInstance(entity); 
+	}
+	
 	/*-------------------Uso do PowerLoom--------------*/
 	
 	/**

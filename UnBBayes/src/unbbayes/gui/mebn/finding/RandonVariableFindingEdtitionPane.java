@@ -1,12 +1,15 @@
 package unbbayes.gui.mebn.finding;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -16,13 +19,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.gui.ParcialStateException;
-import unbbayes.gui.mebn.FindingArgumentPane;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MFrag;
@@ -135,6 +138,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
 			 );
 			
 			jtbOptions = new JToolBar();
+			jtbOptions.setLayout(new GridLayout(1,3)); 
 			jtbOptions.setFloatable(false); 
 			btnEditNode = new JButton(iconController.getEdit()); 
 			btnEditNode.addActionListener(new ActionListener(){
@@ -147,7 +151,9 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
 				
 			}); 
 			
+			jtbOptions.add(new JPanel()); 
 			jtbOptions.add(btnEditNode); 
+			jtbOptions.add(new JPanel());
 			
 			this.add(scrollListObjectEntity, BorderLayout.CENTER);
 			this.add(jtbOptions, BorderLayout.PAGE_END); 
@@ -182,12 +188,16 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
 		
 		private JToolBar jtbOptions; 
 		
+		private JToolBar jtbName; 
+		
 		public RandonVariableInstanceEditionPane(ResidentNode _residentNode){
 			
 			super(new BorderLayout()); 
 			this.residentNode = _residentNode; 
 			
 			nodeName = new JLabel(residentNode.getName()); 
+			nodeName.setAlignmentX(JLabel.CENTER_ALIGNMENT); 
+			nodeName.setBackground(Color.YELLOW); 
 			
 			findingArgumentPane = new FindingArgumentPane(residentNode, mebnController); 
 			
@@ -196,6 +206,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
 			btnInsert = new JButton(iconController.getMoreIcon()); 
 			
 			jtbOptions = new JToolBar(); 
+			jtbOptions.setLayout(new GridLayout(1,3)); 
 			jtbOptions.add(btnBack); 
 			jtbOptions.add(btnClear); 
 			jtbOptions.add(btnInsert); 
@@ -234,9 +245,19 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
 				}
 			}); 			
 			
-			this.add(nodeName, BorderLayout.PAGE_START);
-			this.add(findingArgumentPane, BorderLayout.CENTER); 
+			//this.add(nodeName, BorderLayout.PAGE_START);
+			this.add(new JScrollPane(findingArgumentPane), BorderLayout.CENTER); 
 			this.add(jtbOptions, BorderLayout.PAGE_END); 
+			
+			TitledBorder titledBorder; 
+			
+			titledBorder = BorderFactory.createTitledBorder(
+					BorderFactory.createLineBorder(Color.BLUE), 
+					resource.getString("AddFinding") + ": " +residentNode.getName()); 
+			titledBorder.setTitleColor(Color.BLUE); 
+			titledBorder.setTitleJustification(TitledBorder.CENTER); 
+			
+			this.setBorder(titledBorder); 
 			
 		}
 		

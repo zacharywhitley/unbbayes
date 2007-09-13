@@ -194,7 +194,8 @@ public class GuiResources extends ListResourceBundle {
 		{"OVariableTitle", "Ord. Variable"}, 
 		{"ArgumentTitle", "Arguments"}, 
 		{"StatesTitle", "States"}, 	
-		{"FathersTitle", "Fathers Nodes"}, 			
+		{"FathersTitle", "Fathers Nodes"}, 		
+		{"AddFinding", "Finding"}, 	
 		
 		//Label for buttons of tab selection
 		{"MTheoryButton", "MTheory"}, 

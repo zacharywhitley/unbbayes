@@ -28,7 +28,6 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	
 	private int numNextArgument = 0; 
 	
-	
 	public ResidentNode(){
 		
 		super(); 

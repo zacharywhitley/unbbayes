@@ -117,6 +117,8 @@ public class ObjectEntityConteiner {
 	}
 	
 	public void removeEntityInstance(ObjectEntityInstance entityInstance){
+		ObjectEntity object = entityInstance.getInstanceOf();
+		object.removeInstance(entityInstance); 
 		this.listEntityInstances.remove(entityInstance); 
 	}
 	

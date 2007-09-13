@@ -1,4 +1,4 @@
-package unbbayes.gui.mebn;
+package unbbayes.gui.mebn.finding;
 
 
 import java.awt.Color;
@@ -49,9 +49,12 @@ public class FindingArgumentPane extends JPanel{
 		this.node = node; 
 		this.mebnController = mebnController; 
 		
-		if(node.getOrdinaryVariableList().size() > MINIMUM_LINE_SIXE_PANEL)
-		setLayout(new GridLayout(node.getOrdinaryVariableList().size(),1)); 
-		else setLayout(new GridLayout(MINIMUM_LINE_SIXE_PANEL + 1 , 1 )); 
+		if(node.getOrdinaryVariableList().size() > MINIMUM_LINE_SIXE_PANEL){
+		    setLayout(new GridLayout(node.getOrdinaryVariableList().size(), 1)); 
+		}
+		else{
+			setLayout(new GridLayout(MINIMUM_LINE_SIXE_PANEL + 1 , 1 )); 
+		}
 		
 		argument = new JComboBox[node.getOrdinaryVariableList().size()]; 
 		

@@ -58,7 +58,10 @@ public class RandonVariableFinding {
 			nameFinding+=arguments[i];
 			nameFinding+=",";
 		}
-		nameFinding+=arguments[arguments.length - 1];
+		
+		if(arguments.length > 0){
+		   nameFinding+= arguments[arguments.length - 1];
+		}
 		
 		nameFinding+=")";
 		nameFinding+="=";

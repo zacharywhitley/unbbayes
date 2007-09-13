@@ -160,7 +160,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"downArgumentToolTip", "Aicionar a lista de argumentos v. ord. selecionada"}, 		
 		{"mTheoryEditionTip", "Editar atributos da MTheory"}, 		
 		
-		{"showMTheoryToolTip","Mostrar Árvore da MTheory"},	
+		{"showMTheoryToolTip","Mostrar �?rvore da MTheory"},	
 		{"showEntitiesToolTip","Mostrar entidades da MTheory"},
 		{"showOVariablesToolTip","Mostrar ovariables da MFrag"},			
 		
@@ -190,12 +190,13 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"ResidentTabTitle", "Nó Residente"}, 
 		{"InputTabTitle", "Nó de Input"}, 
 		{"ContextTabTitle", "Nó de Contexto"}, 
-		{"MTheoryTreeTitle", "Árvore MTheory"}, 
+		{"MTheoryTreeTitle", "�?rvore MTheory"}, 
 		{"EntityTitle", "Entidade"}, 
 		{"OVariableTitle", "Variável Ord."},
 		{"ArgumentTitle", "Argumentos"}, 
 		{"StatesTitle", "Estados"}, 	
 		{"FathersTitle", "Nós Pais"}, 		
+		{"AddFinding", "Finding"}, 		
 		
 		//Label for buttons of tab selection
 		{"MTheoryButton", "MTheory"}, 

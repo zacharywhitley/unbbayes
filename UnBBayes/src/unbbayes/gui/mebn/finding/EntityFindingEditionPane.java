@@ -2,6 +2,8 @@ package unbbayes.gui.mebn.finding;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,11 +16,14 @@ import java.util.regex.Pattern;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.JToolBar;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -50,6 +55,11 @@ public class EntityFindingEditionPane extends JPanel{
 	private MEBNController mebnController; 
 	
 	private Object selected; 
+	
+	/* 
+	 * indica se o usuario esta adicionando uma nova instancia (true) ou se esta
+	 * apenas editando uma instancia já existente (false). 
+	 */
 	private boolean isAdding = true; 
 	
 	private ObjectEntityListPane objectEntityListPane; 
@@ -62,7 +72,7 @@ public class EntityFindingEditionPane extends JPanel{
   		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
 	public EntityFindingEditionPane(){
-		
+		super(); 
 	}
 	
 	public EntityFindingEditionPane(MEBNController mebnController){
@@ -73,8 +83,12 @@ public class EntityFindingEditionPane extends JPanel{
 		objectEntityInstancePane = new ObjectEntityInstancePane(); 
 		objectEntityInstanceListPane = new ObjectEntityInstanceListPane(); 
 		
-		add(objectEntityListPane, BorderLayout.NORTH); 
-		add(objectEntityInstancePane, BorderLayout.CENTER);
+		add(objectEntityListPane, BorderLayout.NORTH);
+		
+		JPanel panelCentro = new JPanel(new GridLayout(1,1)); 
+		panelCentro.add(objectEntityInstancePane); 
+		add(panelCentro, BorderLayout.CENTER);
+		
 		add(objectEntityInstanceListPane, BorderLayout.SOUTH);
 	}
 	
@@ -82,19 +96,33 @@ public class EntityFindingEditionPane extends JPanel{
 		
 		private JTextField typeObjectEntity; 
 		private JTextField nameObjectEntity; 
-		private JButton addInstance; 
+		
+		//Button for add or edit instances
+		private JButton btnAddInstance; 
+		
+		//Button for remove instances
+		private JButton btnRemoveInstance; 
+		
+		private JToolBar barButtons; 
+		
+		private final JLabel labelType = new JLabel(resource.getString("typeLabel")); 
+		private final JLabel labelName = new JLabel(resource.getString("nameLabel")); 
 		
 	    private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
 	    private Matcher matcher;	
 		
 		public ObjectEntityInstancePane(){
 
-			super(new GridLayout(3,1));
+			super();
 			
-			typeObjectEntity = new JTextField(); 
+			GridBagLayout gridbag = new GridBagLayout(); 
+			GridBagConstraints constraints = new GridBagConstraints(); 
+			setLayout(gridbag); 
+			
+			typeObjectEntity = new JTextField(10); 
 			typeObjectEntity.setEditable(false); 
 			
-			nameObjectEntity = new JTextField();
+			nameObjectEntity = new JTextField(10);
 			nameObjectEntity.addFocusListener(new FocusListenerTextField());
 			nameObjectEntity.addKeyListener(new KeyAdapter() {
 	  			public void keyPressed(KeyEvent e) {
@@ -105,7 +133,7 @@ public class EntityFindingEditionPane extends JPanel{
 	  						String nameValue = nameObjectEntity.getText(0,nameObjectEntity.getText().length());
 	  						matcher = wordPattern.matcher(nameValue);
 	  						if (matcher.matches()) {
-	  							processAction(); 
+	  							addOrEditInstance(); 
 	  						}  else {
 	  							nameObjectEntity.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
 	  							nameObjectEntity.setForeground(Color.WHITE); 
@@ -142,20 +170,50 @@ public class EntityFindingEditionPane extends JPanel{
 	  			}
 	  		});
 			
-			addInstance = new JButton(iconController.getMoreIcon()); 
-			addInstance.addActionListener(new ActionListener(){
+			btnAddInstance = new JButton(iconController.getMoreIcon()); 
+			btnAddInstance.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
-					processAction(); 
+					addOrEditInstance(); 
 				}
-				
 			}); 
 			
+			btnRemoveInstance = new JButton(iconController.getLessIcon()); 
+			btnRemoveInstance.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent e) {
+					removeInstance(); 
+				}
+			}); 
+			
+			barButtons = new JToolBar();
+			barButtons.setLayout(new GridLayout(1, 2)); 
+			barButtons.add(btnAddInstance); 
+			barButtons.add(btnRemoveInstance); 
+			barButtons.setFloatable(false); 
+			
+			
+			gridbag.setConstraints(labelType, 
+					getConstraints(0,0, 1, 1, 40, 35,  GridBagConstraints.BOTH, GridBagConstraints.CENTER)); 
+			add(labelType); 
+			
+			gridbag.setConstraints(typeObjectEntity, 
+					getConstraints(1,0, 1, 1, 60, 0,  GridBagConstraints.BOTH, GridBagConstraints.CENTER)); 
 			add(typeObjectEntity); 
+			
+			gridbag.setConstraints(labelName, 
+					getConstraints(0,1, 1, 1, 0, 35,  GridBagConstraints.BOTH, GridBagConstraints.CENTER)); 
+			add(labelName); 
+			
+			gridbag.setConstraints(nameObjectEntity, 
+					getConstraints(1,1, 1, 1, 0, 0,  GridBagConstraints.BOTH, GridBagConstraints.CENTER)); 
 			add(nameObjectEntity); 
-			add(addInstance); 
+			
+			gridbag.setConstraints(barButtons, 
+					getConstraints(0,2, 2, 1, 0, 30,  GridBagConstraints.BOTH, GridBagConstraints.CENTER)); 
+			add(barButtons); 
+			
 		}
 		
-		private void processAction(){
+		private void addOrEditInstance(){
 			if((selected != null)&&(testName(nameObjectEntity.getText()))){
 				if(isAdding){
 					try{
@@ -184,14 +242,27 @@ public class EntityFindingEditionPane extends JPanel{
 			}
 		}
 		
+		private void removeInstance(){
+			if(selected != null){
+				if(!isAdding){
+					   mebnController.removeEntityInstance((ObjectEntityInstance)selected); 
+					   objectEntityInstanceListPane.update();  
+					}
+				}
+		}
+		
 		public void updateReference(){
 			if(selected!=null){
-				if((selected instanceof ObjectEntity)&&(isAdding)){
-					typeObjectEntity.setText(((ObjectEntity)selected).getName());
-					nameObjectEntity.setText(""); 
+				if(isAdding){					
+					    typeObjectEntity.setText(((ObjectEntity)selected).getName());
+					    nameObjectEntity.setText("");
+					    btnAddInstance.setIcon(iconController.getMoreIcon()); 
+					    btnRemoveInstance.setVisible(false); 
 				}else{
 					typeObjectEntity.setText(((ObjectEntityInstance)selected).getInstanceOf().getName());
 					nameObjectEntity.setText(((ObjectEntityInstance)selected).getName());
+				    btnAddInstance.setIcon(iconController.getEditIcon());
+				    btnRemoveInstance.setVisible(true); 
 				}
 			}
 		}
@@ -234,8 +305,8 @@ public class EntityFindingEditionPane extends JPanel{
 			jlistEntity.addListSelectionListener(
 		            new ListSelectionListener(){
 		                public void valueChanged(ListSelectionEvent e) {
-		                	
 		                	selected = (ObjectEntity)jlistEntity.getSelectedValue(); 
+		                	isAdding = true; 
 		                	if(selected != null){
 		                	   objectEntityInstancePane.updateReference(); 
 		                	}
@@ -303,5 +374,31 @@ public class EntityFindingEditionPane extends JPanel{
 			jlistEntity.setModel(listModel); 
 		}
 	}	
+	
+	public GridBagConstraints getConstraints( 
+			int gridx, 
+			int gridy, 
+			int gridwidth, 
+			int gridheight, 
+			int weightx,
+			int weighty, 
+			int fill, 
+			int anchor){
+		
+		GridBagConstraints constraints = new GridBagConstraints(); 
+		
+		constraints.gridx = gridx; 
+		constraints.gridy = gridy; 
+		constraints.gridwidth = gridwidth; 
+		constraints.gridheight = gridheight; 
+		constraints.weightx = weightx;
+		constraints.weighty = weighty; 
+		constraints.fill = fill; 
+		constraints.anchor = anchor; 
+		
+		return constraints; 
+	
+	}
+	
 	
 }
