@@ -9,7 +9,7 @@ import unbbayes.controller.IconController;
 
 public class ButtonLabel extends JButton{
 	
-	private int SIZE_LABEL = 25; 
+	private int SIZE_LABEL = 15; 
 	
 	public ButtonLabel(String label, ImageIcon icon){
 		super(); 

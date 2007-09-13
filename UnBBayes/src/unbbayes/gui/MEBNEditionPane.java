@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -539,8 +541,7 @@ public class MEBNEditionPane extends JPanel {
   			}
   		});
     	
-        JLabel labelMFragName = new JLabel(resource.getString("nameLabel")); 
-     
+        JLabel labelMFragName = new JLabel(resource.getString("nameLabel") + " "); 
 
         txtNameMFrag.addFocusListener(new FocusListenerTextField()); 
   		txtNameMFrag.addKeyListener(new KeyAdapter() {
@@ -597,12 +598,27 @@ public class MEBNEditionPane extends JPanel {
   			}
   		});
         
-        jtbMFrag.add(btnMFragActive); 
-        jtbMFrag.addSeparator(); 
-        jtbMFrag.add(labelMFragName);
-        jtbMFrag.add(txtNameMFrag);        
-    
-        jtbMFrag.setFloatable(false); 
+  		GridLayout grid = new GridLayout(1,5); 
+  		jtbMFrag.setLayout(grid); 
+		
+  		jtbMFrag.add(btnMFragActive); 
+		
+  		JToolBar barName = new JToolBar(); 
+  		barName.add(labelMFragName); 
+  		barName.add(txtNameMFrag); 
+  		barName.setFloatable(false);
+  		jtbMFrag.add(barName);  
+  		
+		JPanel emptyPane = new JPanel(); 
+		jtbMFrag.add(emptyPane);  
+		
+		emptyPane = new JPanel(); 
+		jtbMFrag.add(emptyPane);
+		
+		emptyPane = new JPanel(); 
+		jtbMFrag.add(emptyPane);
+		
+		jtbMFrag.setFloatable(false); 
         
         return jtbMFrag; 
         
@@ -612,7 +628,8 @@ public class MEBNEditionPane extends JPanel {
   		
   		JToolBar jtbResident = new JToolBar(); 
   		
-  		final JLabel labelResidentName = new JLabel(resource.getString("nameLabel"));
+  		
+  		final JLabel labelResidentName = new JLabel(resource.getString("nameLabel") + " ");
   		
   		final ButtonLabel btnResidentActive = new ButtonLabel(resource.getString("ResidentButton"), iconController.getResidentNodeIcon()); 
   		btnResidentActive.addActionListener(new ActionListener() {
@@ -689,16 +706,45 @@ public class MEBNEditionPane extends JPanel {
   		}); 
   		
         txtNameResident.addFocusListener(new FocusListenerTextField()); 
+
+  		txtArguments.setEditable(false);
         
   		/*---- jtbResident ----*/
-  		jtbResident.add(btnResidentActive); 
-  		jtbResident.addSeparator();         
-  		jtbResident.add(labelResidentName);
-  		jtbResident.add(txtNameResident);
-  		jtbResident.addSeparator();
-  		jtbResident.add(btnAddArgument);
-  		txtArguments.setEditable(false); 
-  		jtbResident.add(txtArguments); 
+    	GridLayout grid = new GridLayout(1,5); 
+    	jtbResident.setLayout(grid); 
+        
+  		jtbResident.add(btnResidentActive);
+  		
+  		JToolBar barName = new JToolBar(); 
+  		barName.setFloatable(false); 
+  		barName.add(labelResidentName); 
+  		barName.add(txtNameResident);
+  		jtbResident.add(barName);
+  		
+//  	jtbResident.add(btnAddArgument); 
+  		//jtbResident.add(txtArguments); 
+  		
+  		JPanel emptyPane; 
+  		
+  		JToolBar barOptions = new JToolBar(); 
+  		barOptions.setFloatable(false); 
+  		barOptions.setLayout(new GridLayout(1,5)); 
+  		JButton btnStateEdition = new JButton(iconController.getYellowBallIcon()); 
+  		JButton btnEditTable = new JButton(iconController.getEditIcon()); 
+  		JButton btnEditArguments = new JButton(iconController.getBoxVariablesIcon()); 
+  		barOptions.add(btnStateEdition); 
+  		barOptions.add(btnEditArguments); 
+  		barOptions.add(btnEditTable); 
+  		barOptions.add(new JPanel()); 
+  		barOptions.add(new JPanel()); 
+  		
+  		jtbResident.add(barOptions); 
+  		
+  		emptyPane = new JPanel(); 
+  		jtbResident.add(emptyPane); 
+  		
+  		emptyPane = new JPanel(); 
+  		jtbResident.add(emptyPane); 
   		
   		jtbResident.setFloatable(false); 
   		
@@ -720,7 +766,7 @@ public class MEBNEditionPane extends JPanel {
   			}
   		}); 
   		
-  		labelInputName = new JLabel(resource.getString("nameLabel")); 
+  		labelInputName = new JLabel(resource.getString("nameLabel") + " "); 
   		
   		labelInputOf = new JLabel(resource.getString("inputOf")); 
   		
@@ -730,15 +776,23 @@ public class MEBNEditionPane extends JPanel {
         txtInputOf = new JTextField(10); 
         txtInputOf.setEditable(false); 
         
+    	GridLayout grid = new GridLayout(1,5); 
+    	jtbInput.setLayout(grid); 
+        
   		jtbInput.add(btnInputActive);
-  		jtbInput.addSeparator(); 
-  		jtbInput.add(labelInputOf); 
-        jtbInput.add(txtInputOf); 
-        jtbInput.addSeparator();     
-        jtbInput.add(labelInputName);
-        jtbInput.add(txtNameInput);    
-        //jtbInput.add(labelInputOf);
   		
+  		JToolBar barName = new JToolBar(); 
+  		barName.setFloatable(false); 
+  		barName.add(labelInputName); 
+  		barName.add(txtNameInput);
+        jtbInput.add(barName);
+        
+  		jtbInput.add(labelInputOf); 
+  		jtbInput.add(txtInputOf); 
+        
+        JPanel emptyPanel = new JPanel(); 
+        jtbInput.add(emptyPanel); 
+        
         jtbInput.setFloatable(false); 
         
   		return jtbInput; 
@@ -1302,4 +1356,28 @@ public class MEBNEditionPane extends JPanel {
 		this.txtFormula.setText(formula);
 	}
 	
+	public GridBagConstraints getConstraints( 
+			int gridx, 
+			int gridy, 
+			int gridwidth, 
+			int gridheight, 
+			double weightx,
+			double weighty, 
+			int fill, 
+			int anchor){
+		
+		GridBagConstraints constraints = new GridBagConstraints(); 
+		
+		constraints.gridx = gridx; 
+		constraints.gridy = gridy; 
+		constraints.gridwidth = gridwidth; 
+		constraints.gridheight = gridheight; 
+		constraints.weightx = weightx;
+		constraints.weighty = weighty; 
+		constraints.fill = fill; 
+		constraints.anchor = anchor; 
+		
+		return constraints; 
+	
+	}
 }

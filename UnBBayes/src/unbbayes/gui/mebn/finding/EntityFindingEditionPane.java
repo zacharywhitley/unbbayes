@@ -116,7 +116,6 @@ public class EntityFindingEditionPane extends JPanel{
 			super();
 			
 			GridBagLayout gridbag = new GridBagLayout(); 
-			GridBagConstraints constraints = new GridBagConstraints(); 
 			setLayout(gridbag); 
 			
 			typeObjectEntity = new JTextField(10); 
