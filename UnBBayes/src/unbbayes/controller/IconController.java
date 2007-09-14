@@ -218,6 +218,8 @@ public class IconController implements Serializable {
 		
 	protected ImageIcon emptyNodeIcon; 	
 	
+	protected ImageIcon argumentsIcon; 	
+	
 	protected ImageIcon downIcon; 	
 	
 	protected ImageIcon upIcon; 
@@ -1233,6 +1235,16 @@ public class IconController implements Serializable {
 			return emptyNodeIcon;
 		}
 	}	
+	
+	public ImageIcon getArgumentsIcon() {
+		if (argumentsIcon != null) {
+			return argumentsIcon;
+		} else {
+			argumentsIcon = new ImageIcon(getClass().getResource(
+					"/icons/arguments.gif"));
+			return argumentsIcon;
+		}
+	}
 	
 	public ImageIcon getSkolenNodeIcon() {
 		if (skolenNodeIcon != null) {

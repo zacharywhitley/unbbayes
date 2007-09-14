@@ -4,8 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -35,9 +33,9 @@ import unbbayes.gui.mebn.FormulaEditionPane;
 import unbbayes.gui.mebn.InputNodePane;
 import unbbayes.gui.mebn.MTheoryTree;
 import unbbayes.gui.mebn.OVariableEditionPane;
-import unbbayes.gui.mebn.OrdVariableToolBar;
 import unbbayes.gui.mebn.ResidentNodePane;
 import unbbayes.gui.mebn.TableEditionPane;
+import unbbayes.gui.mebn.ToolBarOrdVariable;
 import unbbayes.gui.mebn.auxiliary.ButtonLabel;
 import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
@@ -114,7 +112,7 @@ public class MEBNEditionPane extends JPanel {
     private ResidentNodePane residentNodePane; 
     private ArgumentEditionPane editArgumentsTab; 
     
-    private JPanel jpDescription; 
+    private DescriptionPane descriptionPane; 
     
     /*---- Global Options ----*/
     
@@ -123,15 +121,11 @@ public class MEBNEditionPane extends JPanel {
     /* Text fields */
     
     private JTextField txtNameMTheory; 
-    private JTextField txtNameResident; 
     private JTextField txtDescription;
     private JTextField txtFormula;   
     private JTextField txtNameMFrag; 
-    private JTextField txtNameContext; 
-    private JTextField txtNameInput;     
-    private JTextField txtInputOf; 
+    private JTextField txtNameContext;  
     private JTextField txtArguments; 
-    
     
     private final MEBNController mebnController;
     private final JSplitPane graphPanel;
@@ -139,7 +133,7 @@ public class MEBNEditionPane extends JPanel {
     private final JPanel bottomPanel;
 
     private final JPanel topPanel;
-    private final JToolBar jtbEdition;
+    private final ToolBarEdition jtbEdition;
     
     private final JPanel nodeSelectedBar;
     private final CardLayout cardLayout = new CardLayout(); 
@@ -147,12 +141,13 @@ public class MEBNEditionPane extends JPanel {
     /* Tool bars for each possible edition mode */
     
     private final JToolBar jtbEmpty; 
-    private final JToolBar jtbMFrag; 
-    private final JToolBar jtbResident;
-    private final JToolBar jtbInput; 
-    private final JToolBar jtbContext;  
-    private final JToolBar jtbMTheory; 
-    private final OrdVariableToolBar jtbOVariable;
+    
+    private final ToolBarMFrag toolBarMFrag; 
+    private final ToolBarResidentNode toolBarResidentNode;
+    private final ToolBarInputNode toolBarInputNode; 
+    private final ToolBarContextNode toolBarContextNode;  
+    private final ToolBarMTheory toolBarMTheory; 
+    private final ToolBarOrdVariable toolBarOVariable;
     
     private final String MTHEORY_BAR = "MTheoryCard"; 
     private final String RESIDENT_BAR = "ResidentCard";
@@ -162,15 +157,6 @@ public class MEBNEditionPane extends JPanel {
     private final String EMPTY_BAR = "EmptyCard";
     private final String ORDVARIABLE_BAR = "OrdVariableCard";
 
-    private final JButton btnAddMFrag; 
-    private final JButton btnAddContextNode;
-    private final JButton btnAddInputNode;
-    private final JButton btnAddResidentNode;
-    private final JButton btnAddEdge;
-    private final JButton btnAddOrdinaryVariable; 
-    private final JButton btnEditMTheory;
-    
-    private final JButton btnSelectObject;
     private final JButton btnGlobalOption;
     
     private final JButton btnEditingMode; 
@@ -225,16 +211,14 @@ public class MEBNEditionPane extends JPanel {
         tabsPanel = new JPanel(new BorderLayout()); 
         
         jpTabSelected = new JPanel(cardLayout); 
-        jpDescription = new JPanel(new BorderLayout()); 
+        descriptionPane = new DescriptionPane(); 
         jtbTabSelection = new JToolBar(); 
 
         nodeSelectedBar = new JPanel(cardLayout); 
-        jtbEdition  = new JToolBar();
 
         jtbGeneralOptions = new JToolBar(); 
         
         jtbEmpty = new JToolBar(); 
-        
         
         graphPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         graphPanel.setDividerSize(1); 
@@ -254,24 +238,8 @@ public class MEBNEditionPane extends JPanel {
         txtNameContext = new JTextField(5); 
         txtArguments = new JTextField(10); 
         txtFormula = new JTextField(15); 
-        
-        btnEditMTheory = new JButton(iconController.getMTheoryNodeIcon()); 
-        btnAddEdge               = new JButton(iconController.getEdgeIcon());
-        btnAddContextNode = new JButton(iconController.getContextNodeIcon());
-        btnAddInputNode  = new JButton(iconController.getInputNodeIcon());
-        btnAddResidentNode  = new JButton(iconController.getResidentNodeIcon());
-        btnAddOrdinaryVariable = new JButton(iconController.getOVariableNodeIcon());
-        btnAddMFrag		= new JButton(iconController.getMFragIcon()); 
-        btnSelectObject            = new JButton(iconController.getSelectionIcon());
+  
         btnGlobalOption      = new JButton(iconController.getGlobalOptionIcon());
-
-        btnEditMTheory.setToolTipText(resource.getString("mTheoryEditionTip"));
-        btnAddEdge.setToolTipText(resource.getString("arcToolTip"));
-        btnAddMFrag.setToolTipText(resource.getString("mFragInsertToolTip")); 
-        btnAddContextNode.setToolTipText(resource.getString("contextNodeInsertToolTip"));
-        btnAddInputNode.setToolTipText(resource.getString("inputNodeInsertToolTip"));
-        btnAddResidentNode.setToolTipText(resource.getString("residentNodeInsertToolTip"));;
-        btnSelectObject.setToolTipText(resource.getString("mFragInsertToolTip")); 
         btnGlobalOption.setToolTipText(resource.getString("mFragInsertToolTip"));         
         
         btnEditingMode = new JButton(iconController.getMTheoryNodeIcon()); 
@@ -290,21 +258,7 @@ public class MEBNEditionPane extends JPanel {
         
         addActionListenersToButtons(); 
         
-        //colocar botoes e controladores do look-and-feel no toolbar e esse no topPanel
-        
-        jtbEdition.add(btnEditMTheory); 
-        jtbEdition.addSeparator(); 
-        jtbEdition.add(btnAddMFrag);
-        jtbEdition.addSeparator(); 
-        jtbEdition.add(btnAddResidentNode);
-        jtbEdition.add(btnAddInputNode);
-        jtbEdition.add(btnAddContextNode);
-        jtbEdition.add(btnAddOrdinaryVariable); 
-        jtbEdition.add(btnAddEdge);
-        jtbEdition.addSeparator(); 
-        jtbEdition.add(btnSelectObject);
-        jtbEdition.addSeparator(); 
-    
+        jtbEdition = new ToolBarEdition(); 
         jtbEdition.setFloatable(true); 
         jtbEdition.setOrientation(JToolBar.VERTICAL); 
         
@@ -317,15 +271,12 @@ public class MEBNEditionPane extends JPanel {
         jtbGeneralOptions.setFloatable(false); 
         topPanel.add(jtbGeneralOptions);
         
-        jtbMFrag = buildJtbMFrag(); 
-        jtbResident = buildJtbResident(); 
-        jtbInput = buildJtbInput(); 
-        jtbContext = buildJtbContext(); 
-        jtbOVariable = buildJtbOVariable(); 
-        
-        /*---- jtbMTheory ----*/
-        jtbMTheory = buildJtbMTheory();  
-        
+        toolBarMFrag = new ToolBarMFrag(); 
+        toolBarResidentNode = new ToolBarResidentNode(); 
+        toolBarInputNode = new ToolBarInputNode(); 
+        toolBarContextNode = new ToolBarContextNode(); 
+        toolBarOVariable = new ToolBarOrdVariable(mebnController); 
+        toolBarMTheory = new ToolBarMTheory(); 
         
         /*---- jtbEmpty ----*/
         JTextField txtIsEmpty = new JTextField(resource.getString("whithotMFragActive")); 
@@ -336,13 +287,13 @@ public class MEBNEditionPane extends JPanel {
         
         /*---- Add card panels in the layout ----*/
         
-        nodeSelectedBar.add(MTHEORY_BAR, jtbMTheory); 
-        nodeSelectedBar.add(RESIDENT_BAR, jtbResident);
-        nodeSelectedBar.add(CONTEXT_BAR, jtbContext); 
-        nodeSelectedBar.add(INPUT_BAR, jtbInput); 
-        nodeSelectedBar.add(MFRAG_BAR, jtbMFrag); 
+        nodeSelectedBar.add(MTHEORY_BAR, toolBarMTheory); 
+        nodeSelectedBar.add(RESIDENT_BAR, toolBarResidentNode);
+        nodeSelectedBar.add(CONTEXT_BAR, toolBarContextNode); 
+        nodeSelectedBar.add(INPUT_BAR, toolBarInputNode); 
+        nodeSelectedBar.add(MFRAG_BAR, toolBarMFrag); 
         nodeSelectedBar.add(EMPTY_BAR, jtbEmpty); 
-        nodeSelectedBar.add(ORDVARIABLE_BAR, jtbOVariable); 
+        nodeSelectedBar.add(ORDVARIABLE_BAR, toolBarOVariable); 
         
         cardLayout.show(nodeSelectedBar, EMPTY_BAR); 
         
@@ -395,15 +346,11 @@ public class MEBNEditionPane extends JPanel {
         
         cardLayout.show(jpTabSelected, "MTheoryTree");  
         
-        /*------------------ Description panel ---------------*/
-        
-        jpDescription = buildJpDescritpion(); 
-        
         /*------------------- Left panel ---------------------*/
         
         tabsPanel.add(BorderLayout.NORTH, jtbTabSelection);
         tabsPanel.add(BorderLayout.CENTER, jpTabSelected); 
-        tabsPanel.add(BorderLayout.SOUTH, jpDescription); 
+        tabsPanel.add(BorderLayout.SOUTH, descriptionPane); 
         tabsPanel.add(BorderLayout.EAST, jtbEdition); 
         
         centerPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, tabsPanel, jspGraphHelper); 
@@ -417,6 +364,7 @@ public class MEBNEditionPane extends JPanel {
         
         setVisible(true);
     }
+  	
   	
   	private void turnForFindingMode(){
   		
@@ -460,589 +408,8 @@ public class MEBNEditionPane extends JPanel {
         jtbTabSelection.add(btnTabOption2, INDEX_POSITION_BUTTON_OPTION_2); 
   	}
   	
-  	private JToolBar buildJtbMTheory(){
-  		
-  		JToolBar jtbMTheory = new JToolBar(); 
-  		
-  		ButtonLabel btnMTheoryActive = new ButtonLabel(resource.getString("MTheoryButton"), iconController.getMTheoryNodeIcon()); 
-  		
-    	btnMTheoryActive.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) {
-  				setMTheoryTreeActive(); 
-  			}
-  		});
-    	
-    	JLabel labelMTheoryName = new JLabel(resource.getString("nameLabel")); 
-    	
-    	txtNameMTheory.addFocusListener(new FocusListenerTextField()); 
-    	txtNameMTheory.addKeyListener(new KeyAdapter() {
-    		
-  			public void keyPressed(KeyEvent e) {
-  				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameMTheory.getText().length()>0)) {
-  					try {
-  						String name = txtNameMTheory.getText(0,txtNameMTheory.getText().length());
-  						matcher = wordPattern.matcher(name);
-  						if (matcher.matches()) {
-  							mebnController.setNameMTheory(name); 
-  						}  else {
-  							txtNameMTheory.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
-  							txtNameMTheory.setForeground(Color.WHITE); 
-  							txtNameMTheory.selectAll();
-  							JOptionPane.showMessageDialog(netWindow, 
-  									resource.getString("nameError"), 
-  									resource.getString("nameException"), 
-  									JOptionPane.ERROR_MESSAGE);
-  						}
-  					}
-  					catch (javax.swing.text.BadLocationException ble) {
-  						System.out.println(ble.getMessage());
-  					}
-  				}
-  			}
-  			
-  			public void keyReleased(KeyEvent e){
-  				try{
-                    String name = txtNameMTheory.getText(0,txtNameMTheory.getText().length());
-						matcher = wordPattern.matcher(name);
-						if (!matcher.matches()) {
-							txtNameMTheory.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
-							txtNameMTheory.setForeground(Color.WHITE); 
-						}
-						else{
-							txtNameMTheory.setBackground(ToolKitForGuiMebn.getColorTextFieldSelected());
-							txtNameMTheory.setForeground(Color.BLACK); 
-						}
-  				}
-  				catch(Exception efd){
-  					
-  				}
-  				
-  			}
-  		});
-    	
-    	jtbMTheory.add(btnMTheoryActive); 
-    	jtbMTheory.addSeparator(); 
-    	jtbMTheory.add(labelMTheoryName); 
-    	jtbMTheory.add(txtNameMTheory); 
-    	
-  		jtbMTheory.setFloatable(false); 
-  		
-  		return jtbMTheory; 
-  	}
-  	
-    private JToolBar buildJtbMFrag(){
-     	
-        JToolBar jtbMFrag = new JToolBar(); 
-        
-    	ButtonLabel btnMFragActive = new ButtonLabel(resource.getString("MFragButton"), iconController.getMFragIcon()); 
-  		btnMFragActive.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) {
-  				setMTheoryTreeActive(); 
-  			}
-  		});
-    	
-        JLabel labelMFragName = new JLabel(resource.getString("nameLabel") + " "); 
-
-        txtNameMFrag.addFocusListener(new FocusListenerTextField()); 
-  		txtNameMFrag.addKeyListener(new KeyAdapter() {
-  			public void keyPressed(KeyEvent e) {
-  				
-  				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameMFrag.getText().length()>0)) {
-  					try {
-  						String name = txtNameMFrag.getText(0,txtNameMFrag.getText().length());
-  						matcher = wordPattern.matcher(name);
-  						if (matcher.matches()) {
-  							try{
-  							   mebnController.renameMFrag(mebnController.getCurrentMFrag(), name);
-  							   mTheoryTree.updateTree();
-  							}
-  							catch(DuplicatedNameException dne){
-  	  							JOptionPane.showMessageDialog(netWindow, 
-  	  									resource.getString("nameAlreadyExists"), 
-  	  									resource.getString("nameException"), 
-  	  									JOptionPane.ERROR_MESSAGE);
-  							}
-  						}  else {
-  							txtNameMFrag.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
-  							txtNameMFrag.setForeground(Color.WHITE); 
-  							txtNameMFrag.selectAll();
-  							JOptionPane.showMessageDialog(netWindow, 
-  									resource.getString("nameError"), 
-  									resource.getString("nameException"), 
-  									JOptionPane.ERROR_MESSAGE);
-  						}
-  					}
-  					catch (javax.swing.text.BadLocationException ble) {
-  						System.out.println(ble.getMessage());
-  					}
-  				}
-  			}
-  			
-  			public void keyReleased(KeyEvent e){
-  				try{
-                    String name = txtNameMFrag.getText(0,txtNameMFrag.getText().length());
-						matcher = wordPattern.matcher(name);
-						if (!matcher.matches()) {
-							txtNameMFrag.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
-							txtNameMFrag.setForeground(Color.WHITE); 
-						}
-						else{
-							txtNameMFrag.setBackground(ToolKitForGuiMebn.getColorTextFieldSelected());
-							txtNameMFrag.setForeground(Color.BLACK); 
-						}
-  				}
-  				catch(Exception efd){
-  					
-  				}
-  				
-  			}
-  		});
-        
-  		GridLayout grid = new GridLayout(1,5); 
-  		jtbMFrag.setLayout(grid); 
-		
-  		jtbMFrag.add(btnMFragActive); 
-		
-  		JToolBar barName = new JToolBar(); 
-  		barName.add(labelMFragName); 
-  		barName.add(txtNameMFrag); 
-  		barName.setFloatable(false);
-  		jtbMFrag.add(barName);  
-  		
-		JPanel emptyPane = new JPanel(); 
-		jtbMFrag.add(emptyPane);  
-		
-		emptyPane = new JPanel(); 
-		jtbMFrag.add(emptyPane);
-		
-		emptyPane = new JPanel(); 
-		jtbMFrag.add(emptyPane);
-		
-		jtbMFrag.setFloatable(false); 
-        
-        return jtbMFrag; 
-        
-    }
-    
-  	private JToolBar buildJtbResident(){
-  		
-  		JToolBar jtbResident = new JToolBar(); 
-  		
-  		
-  		final JLabel labelResidentName = new JLabel(resource.getString("nameLabel") + " ");
-  		
-  		final ButtonLabel btnResidentActive = new ButtonLabel(resource.getString("ResidentButton"), iconController.getResidentNodeIcon()); 
-  		btnResidentActive.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) {
-  				setResidentNodeTabActive(); 
-  			}
-  		});
-  		
-  		final ButtonLabel btnAddArgument = 	 new ButtonLabel(resource.getString("ArgumentsButton"), iconController.getOVariableNodeIcon());  
-  		btnAddArgument.setToolTipText(resource.getString("addArgumentToolTip")); 
-  		
-  		final JLabel labelArguments = new JLabel(resource.getString("arguments")); 
-
-  		
-  		btnAddArgument.addActionListener(new ActionListener(){
-  			
-  			public void actionPerformed(ActionEvent ae){
-  				setEditArgumentsTabActive(); 
-  			}
-  			
-  		});
-
-        txtNameResident = new JTextField(5); 
- 
-  		txtNameResident.addKeyListener(new KeyAdapter() {
-  			public void keyPressed(KeyEvent e) {
-  				DomainResidentNode nodeAux = (DomainResidentNode)mebnController.getResidentNodeActive();
-  				
-  				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameResident.getText().length()>0)) {
-  					try {
-  						String name = txtNameResident.getText(0,txtNameResident.getText().length());
-  						matcher = wordPattern.matcher(name);
-  						if (matcher.matches()) {
-  							mebnController.renameDomainResidentNode(nodeAux, name); 
-  						}  else {
-							txtNameResident.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
-						    txtNameResident.setForeground(Color.WHITE); 
-  							txtNameResident.selectAll();
-  							JOptionPane.showMessageDialog(netWindow, 
-  									resource.getString("nameError"), 
-  									resource.getString("nameException"), 
-  									JOptionPane.ERROR_MESSAGE);
-  						}
-  					}
-  					catch (javax.swing.text.BadLocationException ble) {
-  						System.out.println(ble.getMessage());
-  					} catch (DuplicatedNameException dne) {
-							JOptionPane.showMessageDialog(netWindow, 
-	  									resource.getString("nameAlreadyExists"), 
-	  									resource.getString("nameException"), 
-	  									JOptionPane.ERROR_MESSAGE);
-					}
-  				}
-  			}
-  			
-  			public void keyReleased(KeyEvent e){
-  				try{
-                    String name = txtNameResident.getText(0,txtNameResident.getText().length());
-						matcher = wordPattern.matcher(name);
-						if (!matcher.matches()) {
-							txtNameResident.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
-						    txtNameResident.setForeground(Color.WHITE); 
-						}
-						else{
-							txtNameResident.setBackground(ToolKitForGuiMebn.getColorTextFieldSelected());
-						    txtNameResident.setForeground(Color.BLACK); 
-						}
-  				}
-  				catch(Exception efd){
-  					
-  				}
-  				
-  			}
-  		}); 
-  		
-        txtNameResident.addFocusListener(new FocusListenerTextField()); 
-
-  		txtArguments.setEditable(false);
-        
-  		/*---- jtbResident ----*/
-    	GridLayout grid = new GridLayout(1,5); 
-    	jtbResident.setLayout(grid); 
-        
-  		jtbResident.add(btnResidentActive);
-  		
-  		JToolBar barName = new JToolBar(); 
-  		barName.setFloatable(false); 
-  		barName.add(labelResidentName); 
-  		barName.add(txtNameResident);
-  		jtbResident.add(barName);
-  		
-//  	jtbResident.add(btnAddArgument); 
-  		//jtbResident.add(txtArguments); 
-  		
-  		JPanel emptyPane; 
-  		
-  		JToolBar barOptions = new JToolBar(); 
-  		barOptions.setFloatable(false); 
-  		barOptions.setLayout(new GridLayout(1,5)); 
-  		JButton btnStateEdition = new JButton(iconController.getYellowBallIcon()); 
-  		JButton btnEditTable = new JButton(iconController.getEditIcon()); 
-  		JButton btnEditArguments = new JButton(iconController.getBoxVariablesIcon()); 
-  		barOptions.add(btnStateEdition); 
-  		barOptions.add(btnEditArguments); 
-  		barOptions.add(btnEditTable); 
-  		barOptions.add(new JPanel()); 
-  		barOptions.add(new JPanel()); 
-  		
-  		jtbResident.add(barOptions); 
-  		
-  		emptyPane = new JPanel(); 
-  		jtbResident.add(emptyPane); 
-  		
-  		emptyPane = new JPanel(); 
-  		jtbResident.add(emptyPane); 
-  		
-  		jtbResident.setFloatable(false); 
-  		
-  		return jtbResident;  		
-  	}
-  	
-  	private JToolBar buildJtbInput(){
-  		
-  		ButtonLabel btnInputActive; 
-  		JLabel labelInputName; 
-  		JLabel labelInputOf; 
-  		
-  		JToolBar jtbInput = new JToolBar(); 
-  		
-  		btnInputActive = new ButtonLabel(resource.getString("InputButton"), iconController.getInputNodeIcon());    		
-  		btnInputActive.addActionListener(new ActionListener(){
-  			public void actionPerformed(ActionEvent ae){
-  				setInputNodeActive(); 
-  			}
-  		}); 
-  		
-  		labelInputName = new JLabel(resource.getString("nameLabel") + " "); 
-  		
-  		labelInputOf = new JLabel(resource.getString("inputOf")); 
-  		
-  		txtNameInput = new JTextField(10); 
-        txtNameInput.setEditable(false);
-  		
-        txtInputOf = new JTextField(10); 
-        txtInputOf.setEditable(false); 
-        
-    	GridLayout grid = new GridLayout(1,5); 
-    	jtbInput.setLayout(grid); 
-        
-  		jtbInput.add(btnInputActive);
-  		
-  		JToolBar barName = new JToolBar(); 
-  		barName.setFloatable(false); 
-  		barName.add(labelInputName); 
-  		barName.add(txtNameInput);
-        jtbInput.add(barName);
-        
-  		jtbInput.add(labelInputOf); 
-  		jtbInput.add(txtInputOf); 
-        
-        JPanel emptyPanel = new JPanel(); 
-        jtbInput.add(emptyPanel); 
-        
-        jtbInput.setFloatable(false); 
-        
-  		return jtbInput; 
-  	}
-  	
-  	private JToolBar buildJtbContext(){
-        
-  		JToolBar jtbContext = new JToolBar(); 
-  		
-  		ButtonLabel btnContextActive = new ButtonLabel(resource.getString("ContextButton"), iconController.getContextNodeIcon());  
-  		btnContextActive.addActionListener(new ActionListener(){
-  			
-  			public void actionPerformed(ActionEvent ae){
-  				setFormulaEdtionActive(); 
-  			}
-  			
-  		});  
-        jtbContext.add(btnContextActive); 
-        
-        jtbContext.addSeparator(); 
-        
-        final JLabel labelFormula = new JLabel(resource.getString("formula")); 
-        jtbContext.add(labelFormula); 
-        
-        txtFormula.setEditable(false); 
-        jtbContext.add(txtFormula);
-        
-        jtbContext.addSeparator();         
-        
-        final JLabel labelContextName = new JLabel(resource.getString("nameLabel")); 
-        jtbContext.add(labelContextName);
-        
-        txtNameContext.setEditable(false); 
-        jtbContext.add(txtNameContext);
-  
-        jtbContext.setFloatable(false); 
-        
-        return jtbContext; 
-  	}
-  	
-	private OrdVariableToolBar buildJtbOVariable(){
-        
-  		OrdVariableToolBar jtbOVariable = new OrdVariableToolBar(mebnController); 
-  		
-        return jtbOVariable; 
-   
-  	}
-  	
-	/*
-	 * Build Description panel. This panel show de description of 
-	 * the active item (is used for the user for edit this description)
-	 */
-  	private JPanel buildJpDescritpion(){
-  		
-        JPanel jpDescription = new JPanel(new BorderLayout()); 
-        
-		TitledBorder titledBorder; 
-		
-		titledBorder = BorderFactory.createTitledBorder(
-				BorderFactory.createLineBorder(Color.BLUE), 
-				resource.getString("descriptionLabel")); 
-		titledBorder.setTitleColor(Color.BLUE); 
-		titledBorder.setTitleJustification(TitledBorder.CENTER); 
-		
-		jpDescription.setBorder(titledBorder); 
-        
-        JTextArea textArea = new JTextArea(5, 10);
-        JScrollPane scrollPane = 
-            new JScrollPane(textArea,
-                            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                            JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        textArea.setEditable(true);
-        
-        jpDescription.add("South", scrollPane); 
-        
-        return jpDescription; 
- 
-  	}
-  	
-  	private void buildJtbPowerLoom(){
-
-        JButton rodarKB = new JButton("PL"); 
-        jtbGeneralOptions.add(rodarKB); 
-        rodarKB.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) {
-  				mebnController.preencherKB(); 
-  			    JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
-  					   "Base de conhecimento criada com sucesso"); 
-  			}
-  		});
-        
-        JButton entityFinding = new JButton("EF"); 
-        jtbGeneralOptions.add(entityFinding); 
-        entityFinding.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) {
-  				String finding = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), 
-  						"Entre com o entity finding: ", 
-  						"Test Finding", 
-  						JOptionPane.QUESTION_MESSAGE); 
-  				if((finding!=null)&&(!finding.equals("")))
-  				mebnController.makeEntityAssert(finding); 
-  			}
-  		});        
-
-        JButton finding = new JButton("RF"); 
-        jtbGeneralOptions.add(finding); 
-        finding.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) {
-  				String finding = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), 
-  						"Entre com o relation finding: ", 
-  						"Test Finding", 
-  						JOptionPane.QUESTION_MESSAGE); 
-  				if((finding!=null)&&(!finding.equals("")))
-  				mebnController.makeRelationAssert(finding); 
-  			}
-  		});     
-        
-        JButton link = new JButton("LK"); 
-        jtbGeneralOptions.add(link); 
-        link.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) { 
-  				String ovName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), 
-  						"Entre com o nome da variavel ordinaria: ", 
-  						"Test Finding", 
-  						JOptionPane.QUESTION_MESSAGE); 
-  				
-  				String entityName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), 
-  						"Entre com o nome da entidade: ", 
-  						"Test Finding", 
-  						JOptionPane.QUESTION_MESSAGE); 
-  				
-  				if(((ovName!=null)&&(!ovName.equals("")))&&((entityName!=null)&&(!entityName.equals(""))))
-  				mebnController.linkOrdVariable2Entity(ovName, entityName); 
-  			}
-  		});  
-        
-        JButton context = new JButton("CT"); 
-        jtbGeneralOptions.add(context); 
-        context.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) { 
-  				mebnController.executeContext(); 
-  			}
-  		});  
-        
-        JButton execute = new JButton("X"); 
-        jtbGeneralOptions.add(execute); 
-        execute.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) { 
-  				String command = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), "Insira o commando a ser executado"); 
-  				if((command != "")&&(command != null)){
-  				   String resposta = mebnController.executeCommand(command);
-  				   JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resposta); 
-  				}
-  			}
-  		}); 
-        
-        JButton save = new JButton("SV"); 
-        jtbGeneralOptions.add(save); 
-        save.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) { 
-  				String fileName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), "Informe o nome do arquivo"); 
-  				if((fileName != "")&&(fileName != null)){
-  				   mebnController.saveDefinitionsFile(fileName);
-  				   JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Arquivo salvo com sucesso"); 
-  				}
-  			}
-  		}); 
-        
-        JButton load = new JButton("LD"); 
-        jtbGeneralOptions.add(load); 
-        load.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) { 
-  				String fileName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), "Informe o nome do arquivo"); 
-  				if((fileName != "")&&(fileName != null)){
-  				   mebnController.loadDefinitionsFile(fileName);
-  				   JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Arquivo carregado com sucesso"); 
-  				}
-  			}
-  		}); 
-  	}
-  	
   	private void addActionListenersToButtons(){
   		
-  		btnEditMTheory.addActionListener(new ActionListener(){
-  			public void actionPerformed(ActionEvent ae){
-  				mebnController.enableMTheoryEdition(); 
-  			}
-  		}); 
-  		
-  		//ao clicar no botao btnGlobalOption, mostra-se o menu para escolha das opcoes
-  		/*
-  		btnGlobalOption.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) {
-  				setCursor(new Cursor(Cursor.WAIT_CURSOR));
-  				go = new GlobalOptionsDialog(netWindow.getGraphPane(), controller);
-  				go.setVisible(true);
-  				netWindow.getGraphPane().update();
-  				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-  			}
-  		});*/
-  		
-  		//ao clicar no botÃ£o btnAddEdge setamos as variaveis booleanas e os estados dos butoes
-  		btnAddEdge.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) {
-  				netWindow.getGraphPane().setAction(GraphAction.CREATE_EDGE);
-  			}
-  		});
-  		
-  		btnAddMFrag.addActionListener(new ActionListener(){
-  			public void actionPerformed(ActionEvent ae){
-  				//netWindow.getGraphPane().setAction(GraphAction.CREATE_DOMAIN_MFRAG);
-  				mebnController.insertDomainMFrag(); 
-  			}
-  		}); 
-  			
-  		//ao clicar no botao node setamos as variaveis booleanas e os estados dos butoes
-  		btnAddContextNode.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) {
-  				netWindow.getGraphPane().setAction(GraphAction.CREATE_CONTEXT_NODE);
-  			}
-  		});
-  		
-  		
-  		//ao clicar no botao btnAddInputNode setamos as variaveis booleanas e os estados dos butoes
-  		btnAddInputNode.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) {
-  				netWindow.getGraphPane().setAction(GraphAction.CREATE_INPUT_NODE);
-  			}
-  		});
-  		
-  		//ao clicar no botao btnAddResidentNode setamos as variaveis booleanas e os estados dos butoes
-  		btnAddResidentNode.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) {
-  				netWindow.getGraphPane().setAction(GraphAction.CREATE_RESIDENT_NODE);
-  			}
-  		});
-  		
-        // ao clicar no botao node setamos as variaveis booleanas e os estados dos butoes
-    		btnAddOrdinaryVariable.addActionListener(new ActionListener() {
-    			public void actionPerformed(ActionEvent ae) {
-    				netWindow.getGraphPane().setAction(GraphAction.CREATE_ORDINARYVARIABLE_NODE);
-    			}
-    		}); 
-  		
-  		//ao clicar no botao node setamos as variaveis booleanas e os estados dos butoes
-  		btnSelectObject.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) {
-  				netWindow.getGraphPane().setAction(GraphAction.SELECT_MANY_OBJECTS);
-  			}
-  		}); 	
   		
   		//ao clicar no botao btnGlobalOption, mostra-se o menu para escolha das opcoes
   		btnTabOptionTree.addActionListener(new ActionListener() {
@@ -1083,7 +450,14 @@ public class MEBNEditionPane extends JPanel {
     	
     	DomainResidentNode resident = (DomainResidentNode)mebnController.getResidentNodeActive(); 
     	
-    	this.getGraphPanel().setTopComponent(new TableEditionPane(resident, mebnController)); 
+    	this.getGraphPanel().setTopComponent(new TableEditionPane(resident, mebnController));
+    	
+//    	JFrame popup = new JFrame();
+//    	popup.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+//    	popup.setContentPane(new TableEditionPane(resident, mebnController));
+//    	popup.pack(); 
+//    	popup.setVisible(true); 
+    	
     }
 
     public void showTitleGraph(String mFragName){
@@ -1125,7 +499,7 @@ public class MEBNEditionPane extends JPanel {
      *@see       JTextField
      */
     public JTextField getTxtNameResident() {
-      return this.txtNameResident;
+      return toolBarResidentNode.getJTextFieldName();
     }
 
     /**
@@ -1153,30 +527,6 @@ public class MEBNEditionPane extends JPanel {
      */
     public JSplitPane getGraphPanel() {
       return this.graphPanel;
-    }
-
-    public JButton getBtnAddEdge() {
-        return this.btnAddEdge;
-    }
-
-    public JButton getBtnAddInputNode() {
-        return this.btnAddInputNode;
-    }
-
-    public JButton getBtnGlobalOption() {
-        return this.btnGlobalOption;
-    }
-
-    public JButton getBtnAddContextNode() {
-        return this.btnAddContextNode;
-    }
-
-    public JButton getBtnSelectObject() {
-        return this.btnSelectObject;
-    }
-
-    public JButton getBtnAddResidentNode() {
-        return this.btnAddResidentNode;
     }
     
     public MTheoryTree getMTheoryTree(){
@@ -1321,15 +671,15 @@ public class MEBNEditionPane extends JPanel {
     } 
     
     public void setOrdVariableBarActive(OrdinaryVariable ov){
-        jtbOVariable.updateListOfTypes(); 
-        jtbOVariable.setOrdVariable(ov); 
+        toolBarOVariable.updateListOfTypes(); 
+        toolBarOVariable.setOrdVariable(ov); 
         cardLayout.show(nodeSelectedBar, ORDVARIABLE_BAR);
     }
     
     /*---------------------------------------------------------*/
     
     public void setTxtNameResident(String name){
-    	txtNameResident.setText(name); 
+    	toolBarResidentNode.setNameResident(name); 
     }
 
     public void setTxtNameMFrag(String name){
@@ -1337,7 +687,7 @@ public class MEBNEditionPane extends JPanel {
     }
 
     public void setTxtNameInput(String name){
-    	txtNameInput.setText(name); 
+    	toolBarInputNode.setTxtNameInput(name); 
     }
 
     public void setTxtNameContext(String name){
@@ -1345,7 +695,7 @@ public class MEBNEditionPane extends JPanel {
     }   
 
     public void setTxtInputOf(String name){
-    	txtInputOf.setText(name); 
+    	toolBarInputNode.setTxtInputOf(name); 
     }
 
     public void setTxtArguments(String args){
@@ -1356,28 +706,698 @@ public class MEBNEditionPane extends JPanel {
 		this.txtFormula.setText(formula);
 	}
 	
-	public GridBagConstraints getConstraints( 
-			int gridx, 
-			int gridy, 
-			int gridwidth, 
-			int gridheight, 
-			double weightx,
-			double weighty, 
-			int fill, 
-			int anchor){
-		
-		GridBagConstraints constraints = new GridBagConstraints(); 
-		
-		constraints.gridx = gridx; 
-		constraints.gridy = gridy; 
-		constraints.gridwidth = gridwidth; 
-		constraints.gridheight = gridheight; 
-		constraints.weightx = weightx;
-		constraints.weighty = weighty; 
-		constraints.fill = fill; 
-		constraints.anchor = anchor; 
-		
-		return constraints; 
+
+  	private class ToolBarEdition extends JToolBar{
+  		
+  	    private final JButton btnAddMFrag; 
+  	    private final JButton btnAddContextNode;
+  	    private final JButton btnAddInputNode;
+  	    private final JButton btnAddResidentNode;
+  	    private final JButton btnAddEdge;
+  	    private final JButton btnAddOrdinaryVariable; 
+  	    private final JButton btnEditMTheory;
+  	    private final JButton btnSelectObject;
+  		
+  		public ToolBarEdition(){
+  	      
+  	        btnEditMTheory = new JButton(iconController.getMTheoryNodeIcon()); 
+  	        btnAddEdge               = new JButton(iconController.getEdgeIcon());
+  	        btnAddContextNode = new JButton(iconController.getContextNodeIcon());
+  	        btnAddInputNode  = new JButton(iconController.getInputNodeIcon());
+  	        btnAddResidentNode  = new JButton(iconController.getResidentNodeIcon());
+  	        btnAddOrdinaryVariable = new JButton(iconController.getOVariableNodeIcon());
+  	        btnAddMFrag		= new JButton(iconController.getMFragIcon()); 
+  	        btnSelectObject            = new JButton(iconController.getSelectionIcon());
+  	        
+  	        btnEditMTheory.setToolTipText(resource.getString("mTheoryEditionTip"));
+  	        btnAddEdge.setToolTipText(resource.getString("arcToolTip"));
+  	        btnAddMFrag.setToolTipText(resource.getString("mFragInsertToolTip")); 
+  	        btnAddContextNode.setToolTipText(resource.getString("contextNodeInsertToolTip"));
+  	        btnAddInputNode.setToolTipText(resource.getString("inputNodeInsertToolTip"));
+  	        btnAddResidentNode.setToolTipText(resource.getString("residentNodeInsertToolTip"));
+  	        btnSelectObject.setToolTipText(resource.getString("mFragInsertToolTip")); 
+  	        
+  	        add(btnEditMTheory); 
+  	        addSeparator(); 
+  	        add(btnAddMFrag);
+  	        addSeparator(); 
+  	        add(btnAddResidentNode);
+  	        add(btnAddInputNode);
+  	        add(btnAddContextNode);
+  	        add(btnAddOrdinaryVariable); 
+  	        add(btnAddEdge);
+  	        addSeparator(); 
+  	        add(btnSelectObject);
+  	        addSeparator(); 
+
+  	  		btnEditMTheory.addActionListener(new ActionListener(){
+  	  			public void actionPerformed(ActionEvent ae){
+  	  				mebnController.enableMTheoryEdition(); 
+  	  			}
+  	  		}); 
+  	  		  	  		
+  	  		//ao clicar no botÃ£o btnAddEdge setamos as variaveis booleanas e os estados dos butoes
+  	  		btnAddEdge.addActionListener(new ActionListener() {
+  	  			public void actionPerformed(ActionEvent ae) {
+  	  				netWindow.getGraphPane().setAction(GraphAction.CREATE_EDGE);
+  	  			}
+  	  		});
+  	  		
+  	  		btnAddMFrag.addActionListener(new ActionListener(){
+  	  			public void actionPerformed(ActionEvent ae){
+  	  				//netWindow.getGraphPane().setAction(GraphAction.CREATE_DOMAIN_MFRAG);
+  	  				mebnController.insertDomainMFrag(); 
+  	  			}
+  	  		}); 
+  	  			
+  	  		//ao clicar no botao node setamos as variaveis booleanas e os estados dos butoes
+  	  		btnAddContextNode.addActionListener(new ActionListener() {
+  	  			public void actionPerformed(ActionEvent ae) {
+  	  				netWindow.getGraphPane().setAction(GraphAction.CREATE_CONTEXT_NODE);
+  	  			}
+  	  		});
+  	  		
+  	  		
+  	  		//ao clicar no botao btnAddInputNode setamos as variaveis booleanas e os estados dos butoes
+  	  		btnAddInputNode.addActionListener(new ActionListener() {
+  	  			public void actionPerformed(ActionEvent ae) {
+  	  				netWindow.getGraphPane().setAction(GraphAction.CREATE_INPUT_NODE);
+  	  			}
+  	  		});
+  	  		
+  	  		//ao clicar no botao btnAddResidentNode setamos as variaveis booleanas e os estados dos butoes
+  	  		btnAddResidentNode.addActionListener(new ActionListener() {
+  	  			public void actionPerformed(ActionEvent ae) {
+  	  				netWindow.getGraphPane().setAction(GraphAction.CREATE_RESIDENT_NODE);
+  	  			}
+  	  		});
+  	  		
+  	        // ao clicar no botao node setamos as variaveis booleanas e os estados dos butoes
+  	    		btnAddOrdinaryVariable.addActionListener(new ActionListener() {
+  	    			public void actionPerformed(ActionEvent ae) {
+  	    				netWindow.getGraphPane().setAction(GraphAction.CREATE_ORDINARYVARIABLE_NODE);
+  	    			}
+  	    		}); 
+  	  		
+  	  		//ao clicar no botao node setamos as variaveis booleanas e os estados dos butoes
+  	  		btnSelectObject.addActionListener(new ActionListener() {
+  	  			public void actionPerformed(ActionEvent ae) {
+  	  				netWindow.getGraphPane().setAction(GraphAction.SELECT_MANY_OBJECTS);
+  	  			}
+  	  		}); 	
+  	        
+  		}
+  		
+  		
+  	}
 	
-	}
+  	
+  	private class ToolBarMTheory extends JToolBar{
+  		
+  		public ToolBarMTheory(){
+  			
+  			super(); 
+  			setLayout(new GridLayout(1,5)); 
+  			
+  	  		ButtonLabel btnMTheoryActive = new ButtonLabel(resource.getString("MTheoryButton"), iconController.getMTheoryNodeIcon()); 
+  	  		
+  	    	btnMTheoryActive.addActionListener(new ActionListener() {
+  	  			public void actionPerformed(ActionEvent ae) {
+  	  				setMTheoryTreeActive(); 
+  	  			}
+  	  		});
+  	    	
+  	    	JLabel labelMTheoryName = new JLabel(resource.getString("nameLabel") + " "); 
+  	    	
+  	    	txtNameMTheory.addFocusListener(new FocusListenerTextField()); 
+  	    	txtNameMTheory.addKeyListener(new KeyAdapter() {
+  	    		
+  	  			public void keyPressed(KeyEvent e) {
+  	  				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameMTheory.getText().length()>0)) {
+  	  					try {
+  	  						String name = txtNameMTheory.getText(0,txtNameMTheory.getText().length());
+  	  						matcher = wordPattern.matcher(name);
+  	  						if (matcher.matches()) {
+  	  							mebnController.setNameMTheory(name); 
+  	  						}  else {
+  	  							txtNameMTheory.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+  	  							txtNameMTheory.setForeground(Color.WHITE); 
+  	  							txtNameMTheory.selectAll();
+  	  							JOptionPane.showMessageDialog(netWindow, 
+  	  									resource.getString("nameError"), 
+  	  									resource.getString("nameException"), 
+  	  									JOptionPane.ERROR_MESSAGE);
+  	  						}
+  	  					}
+  	  					catch (javax.swing.text.BadLocationException ble) {
+  	  						System.out.println(ble.getMessage());
+  	  					}
+  	  				}
+  	  			}
+  	  			
+  	  			public void keyReleased(KeyEvent e){
+  	  				try{
+  	                    String name = txtNameMTheory.getText(0,txtNameMTheory.getText().length());
+  							matcher = wordPattern.matcher(name);
+  							if (!matcher.matches()) {
+  								txtNameMTheory.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+  								txtNameMTheory.setForeground(Color.WHITE); 
+  							}
+  							else{
+  								txtNameMTheory.setBackground(ToolKitForGuiMebn.getColorTextFieldSelected());
+  								txtNameMTheory.setForeground(Color.BLACK); 
+  							}
+  	  				}
+  	  				catch(Exception efd){
+  	  					
+  	  				}
+  	  				
+  	  			}
+  	  		});
+  	    	
+  	    	add(btnMTheoryActive); 
+  	    	
+  	    	JToolBar barName = new JToolBar(); 
+  	    	barName.add(labelMTheoryName); 
+  	    	barName.add(txtNameMTheory); 
+  	    	barName.setFloatable(false); 
+  	    	add(barName); 
+  	    	
+  	    	add(new JPanel()); 
+  	    	add(new JPanel()); 
+  	    	add(new JPanel()); 
+  	    	
+  	  		setFloatable(false); 
+  	  		
+  		}
+  	}
+  	
+    private class ToolBarMFrag extends JToolBar{
+     	
+    	public ToolBarMFrag(){
+    		super(); 
+  			setLayout(new GridLayout(1,5)); 
+    		
+        	ButtonLabel btnMFragActive = new ButtonLabel(resource.getString("MFragButton"), iconController.getMFragIcon()); 
+      		btnMFragActive.addActionListener(new ActionListener() {
+      			public void actionPerformed(ActionEvent ae) {
+      				setMTheoryTreeActive(); 
+      			}
+      		});
+        	
+            JLabel labelMFragName = new JLabel(resource.getString("nameLabel") + " "); 
+
+            txtNameMFrag.addFocusListener(new FocusListenerTextField()); 
+      		txtNameMFrag.addKeyListener(new KeyAdapter() {
+      			public void keyPressed(KeyEvent e) {
+      				
+      				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameMFrag.getText().length()>0)) {
+      					try {
+      						String name = txtNameMFrag.getText(0,txtNameMFrag.getText().length());
+      						matcher = wordPattern.matcher(name);
+      						if (matcher.matches()) {
+      							try{
+      							   mebnController.renameMFrag(mebnController.getCurrentMFrag(), name);
+      							   mTheoryTree.updateTree();
+      							}
+      							catch(DuplicatedNameException dne){
+      	  							JOptionPane.showMessageDialog(netWindow, 
+      	  									resource.getString("nameAlreadyExists"), 
+      	  									resource.getString("nameException"), 
+      	  									JOptionPane.ERROR_MESSAGE);
+      							}
+      						}  else {
+      							txtNameMFrag.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+      							txtNameMFrag.setForeground(Color.WHITE); 
+      							txtNameMFrag.selectAll();
+      							JOptionPane.showMessageDialog(netWindow, 
+      									resource.getString("nameError"), 
+      									resource.getString("nameException"), 
+      									JOptionPane.ERROR_MESSAGE);
+      						}
+      					}
+      					catch (javax.swing.text.BadLocationException ble) {
+      						System.out.println(ble.getMessage());
+      					}
+      				}
+      			}
+      			
+      			public void keyReleased(KeyEvent e){
+      				try{
+                        String name = txtNameMFrag.getText(0,txtNameMFrag.getText().length());
+    						matcher = wordPattern.matcher(name);
+    						if (!matcher.matches()) {
+    							txtNameMFrag.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+    							txtNameMFrag.setForeground(Color.WHITE); 
+    						}
+    						else{
+    							txtNameMFrag.setBackground(ToolKitForGuiMebn.getColorTextFieldSelected());
+    							txtNameMFrag.setForeground(Color.BLACK); 
+    						}
+      				}
+      				catch(Exception efd){
+      					
+      				}
+      				
+      			}
+      		});
+    		
+      		add(btnMFragActive); 
+    		
+      		JToolBar barName = new JToolBar(); 
+      		barName.add(labelMFragName); 
+      		barName.add(txtNameMFrag); 
+      		barName.setFloatable(false);
+      		add(barName);  
+      		
+    		JPanel emptyPane = new JPanel(); 
+    		add(emptyPane);  
+    		
+    		emptyPane = new JPanel(); 
+    		add(emptyPane);
+    		
+    		emptyPane = new JPanel(); 
+    		add(emptyPane);
+    		
+    		setFloatable(false); 
+            
+    	}
+        
+    }
+  	
+  	private class ToolBarInputNode extends JToolBar{
+  		
+  		private ButtonLabel btnInputActive; 
+  		private JLabel labelInputName; 
+  		private JLabel labelInputOf; 
+  	    private JTextField txtNameInput;    
+  	    private JTextField txtInputOf; 
+  		
+  		public ToolBarInputNode(){
+  			super(); 
+  	  		
+  	  		btnInputActive = new ButtonLabel(resource.getString("InputButton"), iconController.getInputNodeIcon());    		
+  	  		btnInputActive.addActionListener(new ActionListener(){
+  	  			public void actionPerformed(ActionEvent ae){
+  	  				setInputNodeActive(); 
+  	  			}
+  	  		}); 
+  	  		
+  	  		labelInputName = new JLabel(resource.getString("nameLabel") + " "); 
+  	  		labelInputOf = new JLabel(resource.getString("inputOf")); 
+
+  	    	GridLayout grid = new GridLayout(1,5); 
+  	    	setLayout(grid); 
+  	        
+  	  		add(btnInputActive);
+  	  		
+  	  		JToolBar barName = new JToolBar(); 
+  	  		barName.setFloatable(false); 
+  	  		
+  	  	    txtNameInput = new JTextField(10); 
+	        txtNameInput.setEditable(false);
+  	  		
+	        barName.add(labelInputName); 
+  	  		barName.add(txtNameInput);
+  	  	barName.setFloatable(false); 
+  	        add(barName);
+  	        
+	        txtInputOf = new JTextField(10); 
+  	        txtInputOf.setEditable(false); 
+  	  		
+  	        add(new JPanel()); 
+  	  		add(new JPanel()); 
+  	        add(new JPanel()); 
+  	        
+  	        setFloatable(false); 
+  		}
+
+		public void setTxtInputOf(String txtInputOf) {
+			this.txtInputOf.setText(txtInputOf);
+		}
+
+		public void setTxtNameInput(String txtNameInput) {
+			this.txtNameInput.setText(txtNameInput);
+		}
+  	}
+  	
+  	private class ToolBarContextNode extends JToolBar{
+        
+  		public ToolBarContextNode(){
+
+  			super(); 
+  			setLayout(new GridLayout(1,5)); 
+  			
+  	  		ButtonLabel btnContextActive = new ButtonLabel(resource.getString("ContextButton"), iconController.getContextNodeIcon());  
+  	  		btnContextActive.addActionListener(new ActionListener(){
+  	  			
+  	  			public void actionPerformed(ActionEvent ae){
+  	  				setFormulaEdtionActive(); 
+  	  			}
+  	  			
+  	  		});  
+  	  		
+  	        final JLabel labelFormula = new JLabel(resource.getString("formula")); 
+  	        //add(labelFormula); 
+  	        
+  	        txtFormula.setEditable(false); 
+  	        //add(txtFormula);        
+  	        
+  	        final JLabel labelContextName = new JLabel(resource.getString("nameLabel") + " "); 
+  	        txtNameContext.setEditable(false); 
+  	        JToolBar barName = new JToolBar();
+  	        barName.add(labelContextName); 
+  	        barName.add(txtNameContext); 
+  	        barName.setFloatable(false); 
+  	        
+
+  	        add(btnContextActive); 
+  	        add(barName);
+  	        add(new JPanel()); 
+  	        add(new JPanel()); 
+  	        add(new JPanel()); 
+  	        
+  	        setFloatable(false); 
+  	        
+  		}
+  	}
+  	
+	/*
+	 * Tool Bar for resident node edition. 
+	 * 
+	 */
+    private class ToolBarResidentNode extends JToolBar{
+    	
+    	private JLabel labelResidentName = new JLabel(resource.getString("nameLabel") + " ");
+    	private ButtonLabel btnResidentActive = new ButtonLabel(resource.getString("ResidentButton"), iconController.getResidentNodeIcon()); 
+    	private ButtonLabel btnAddArgument = new ButtonLabel(resource.getString("ArgumentsButton"), iconController.getOVariableNodeIcon());  
+        private JTextField txtNameResident; 
+    	
+    	public ToolBarResidentNode(){
+    		super(); 
+    		
+      		btnResidentActive.addActionListener(new ActionListener() {
+      			public void actionPerformed(ActionEvent ae) {
+      				setResidentNodeTabActive(); 
+      			}
+      		});
+      		
+      		btnAddArgument.setToolTipText(resource.getString("addArgumentToolTip")); 
+      		
+      		final JLabel labelArguments = new JLabel(resource.getString("arguments")); 
+
+      		
+      		btnAddArgument.addActionListener(new ActionListener(){
+      			
+      			public void actionPerformed(ActionEvent ae){
+      				setEditArgumentsTabActive(); 
+      			}
+      			
+      		});
+      		
+            txtNameResident = new JTextField(5); 
+            
+      		txtNameResident.addKeyListener(new KeyAdapter() {
+      			public void keyPressed(KeyEvent e) {
+      				DomainResidentNode nodeAux = (DomainResidentNode)mebnController.getResidentNodeActive();
+      				
+      				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameResident.getText().length()>0)) {
+      					try {
+      						String name = txtNameResident.getText(0,txtNameResident.getText().length());
+      						matcher = wordPattern.matcher(name);
+      						if (matcher.matches()) {
+      							mebnController.renameDomainResidentNode(nodeAux, name); 
+      						}  else {
+    							txtNameResident.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+    						    txtNameResident.setForeground(Color.WHITE); 
+      							txtNameResident.selectAll();
+      							JOptionPane.showMessageDialog(netWindow, 
+      									resource.getString("nameError"), 
+      									resource.getString("nameException"), 
+      									JOptionPane.ERROR_MESSAGE);
+      						}
+      					}
+      					catch (javax.swing.text.BadLocationException ble) {
+      						System.out.println(ble.getMessage());
+      					} catch (DuplicatedNameException dne) {
+    							JOptionPane.showMessageDialog(netWindow, 
+    	  									resource.getString("nameAlreadyExists"), 
+    	  									resource.getString("nameException"), 
+    	  									JOptionPane.ERROR_MESSAGE);
+    					}
+      				}
+      			}
+      			
+      			public void keyReleased(KeyEvent e){
+      				try{
+                        String name = txtNameResident.getText(0,txtNameResident.getText().length());
+    						matcher = wordPattern.matcher(name);
+    						if (!matcher.matches()) {
+    							txtNameResident.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+    						    txtNameResident.setForeground(Color.WHITE); 
+    						}
+    						else{
+    							txtNameResident.setBackground(ToolKitForGuiMebn.getColorTextFieldSelected());
+    						    txtNameResident.setForeground(Color.BLACK); 
+    						}
+      				}
+      				catch(Exception efd){
+      					
+      				}
+      				
+      			}
+      		}); 
+      		
+            txtNameResident.addFocusListener(new FocusListenerTextField()); 
+
+      		txtArguments.setEditable(false);
+            
+      		/*---- jtbResident ----*/
+        	GridLayout grid = new GridLayout(1,5); 
+        	this.setLayout(grid); 
+            
+        	this.add(btnResidentActive);
+      		
+      		JToolBar barName = new JToolBar(); 
+      		barName.setFloatable(false); 
+      		barName.add(labelResidentName); 
+      		barName.add(txtNameResident);
+      		this.add(barName);
+      		
+      		JToolBar barOptions = new JToolBar(); 
+      		barOptions.setFloatable(false); 
+      		barOptions.setLayout(new GridLayout(1,5)); 
+      		
+      		JButton btnStateEdition = new JButton(iconController.getStateIcon()); 
+      		JButton btnEditTable = new JButton(iconController.getGridIcon()); 
+      		JButton btnEditArguments = new JButton(iconController.getArgumentsIcon()); 
+      		
+      		btnStateEdition.addActionListener(new ActionListener() {
+      			public void actionPerformed(ActionEvent ae) {
+      				setResidentNodeTabActive(); 
+      			}
+      		});
+      		
+      		btnEditTable.addActionListener(new ActionListener(){
+            	public void actionPerformed(ActionEvent e){
+        			mebnController.setEnableTableEditionView(); 
+            	}
+    		}); 
+      		
+      		btnEditArguments.addActionListener(new ActionListener(){
+      			
+      			public void actionPerformed(ActionEvent ae){
+      				setEditArgumentsTabActive(); 
+      			}
+      			
+      		});
+      		
+      		barOptions.add(btnStateEdition); 
+      		barOptions.add(btnEditArguments); 
+      		barOptions.add(btnEditTable); 
+      		barOptions.add(new JPanel()); 
+      		barOptions.add(new JPanel()); 
+      		
+      		this.add(barOptions); 
+      		
+      		this.add(new JPanel()); 
+      		
+      		this.add(new JPanel()); 
+      		
+      		this.setFloatable(false); 
+    		
+    	}
+
+		public JTextField getJTextFieldName() {
+			return txtNameResident;
+		}
+
+		public void setNameResident(String txtNameResident) {
+			this.txtNameResident.setText(txtNameResident);
+		}
+    	
+    }
+    
+    /*
+     * Painel que mostra a descrição do objeto selecionado.
+     */
+    
+  	private class DescriptionPane extends JPanel{
+  		
+  		private JTextArea textArea; 
+  		
+  		public DescriptionPane(){
+  			
+  			super(new BorderLayout()); 
+  			
+  			TitledBorder titledBorder; 
+  			
+  			titledBorder = BorderFactory.createTitledBorder(
+  					BorderFactory.createLineBorder(Color.BLUE), 
+  					resource.getString("descriptionLabel")); 
+  			titledBorder.setTitleColor(Color.BLUE); 
+  			titledBorder.setTitleJustification(TitledBorder.CENTER); 
+  			
+  			setBorder(titledBorder); 
+  	        
+  	        textArea = new JTextArea(5, 10);
+  	        JScrollPane scrollPane = 
+  	            new JScrollPane(textArea,
+  	                            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+  	                            JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+  	        textArea.setEditable(true);
+  	        
+  	        add(scrollPane, BorderLayout.CENTER); 
+  		}
+  		
+  		public void setDescription(String description){
+  			textArea.setText(description); 
+  		}
+  		
+  		public String getDescriptions(String description){
+  			return textArea.getText(); 
+  		}
+  		
+  	}
+    
+    /*
+     * Classe com botões para utilizar o powerloom em uma forma simplificada, 
+     * entrando com os findings e queries como strings na sintaxe do PowerLoom. 
+     * Permite ainda salvar a MTheory atual e carregar arquivos com MTheorys
+     * e findings pré-definidos. 
+     * 
+     * (Apenas para testes)
+     */
+  	private class ToolBarPowerLoomButtons extends JToolBar{
+  		
+  		private final MEBNController mebnController; 
+  		
+  		public ToolBarPowerLoomButtons(MEBNController _mebnController){
+  			
+  			super(); 
+  			
+  			mebnController = _mebnController; 
+  			
+  			JButton rodarKB = new JButton("PL"); 
+  	        add(rodarKB); 
+  	        rodarKB.addActionListener(new ActionListener() {
+  	  			public void actionPerformed(ActionEvent ae) {
+  	  				mebnController.preencherKB(); 
+  	  			    JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
+  	  					   "Base de conhecimento criada com sucesso"); 
+  	  			}
+  	  		});
+  	        
+  	        JButton entityFinding = new JButton("EF"); 
+  	        add(entityFinding); 
+  	        entityFinding.addActionListener(new ActionListener() {
+  	  			public void actionPerformed(ActionEvent ae) {
+  	  				String finding = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), 
+  	  						"Entre com o entity finding: ", 
+  	  						"Test Finding", 
+  	  						JOptionPane.QUESTION_MESSAGE); 
+  	  				if((finding!=null)&&(!finding.equals("")))
+  	  				mebnController.makeEntityAssert(finding); 
+  	  			}
+  	  		});        
+
+  	        JButton finding = new JButton("RF"); 
+  	        add(finding); 
+  	        finding.addActionListener(new ActionListener() {
+  	  			public void actionPerformed(ActionEvent ae) {
+  	  				String finding = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), 
+  	  						"Entre com o relation finding: ", 
+  	  						"Test Finding", 
+  	  						JOptionPane.QUESTION_MESSAGE); 
+  	  				if((finding!=null)&&(!finding.equals("")))
+  	  				mebnController.makeRelationAssert(finding); 
+  	  			}
+  	  		});     
+  	        
+  	        JButton link = new JButton("LK"); 
+  	        add(link); 
+  	        link.addActionListener(new ActionListener() {
+  	  			public void actionPerformed(ActionEvent ae) { 
+  	  				String ovName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), 
+  	  						"Entre com o nome da variavel ordinaria: ", 
+  	  						"Test Finding", 
+  	  						JOptionPane.QUESTION_MESSAGE); 
+  	  				
+  	  				String entityName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), 
+  	  						"Entre com o nome da entidade: ", 
+  	  						"Test Finding", 
+  	  						JOptionPane.QUESTION_MESSAGE); 
+  	  				
+  	  				if(((ovName!=null)&&(!ovName.equals("")))&&((entityName!=null)&&(!entityName.equals(""))))
+  	  				mebnController.linkOrdVariable2Entity(ovName, entityName); 
+  	  			}
+  	  		});  
+  	        
+  	        JButton context = new JButton("CT"); 
+  	        add(context); 
+  	        context.addActionListener(new ActionListener() {
+  	  			public void actionPerformed(ActionEvent ae) { 
+  	  				mebnController.executeContext(); 
+  	  			}
+  	  		});  
+  	        
+  	        JButton execute = new JButton("X"); 
+  	        add(execute); 
+  	        execute.addActionListener(new ActionListener() {
+  	  			public void actionPerformed(ActionEvent ae) { 
+  	  				String command = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), "Insira o commando a ser executado"); 
+  	  				if((command != "")&&(command != null)){
+  	  				   String resposta = mebnController.executeCommand(command);
+  	  				   JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resposta); 
+  	  				}
+  	  			}
+  	  		}); 
+  	        
+  	        JButton save = new JButton("SV"); 
+  	        add(save); 
+  	        save.addActionListener(new ActionListener() {
+  	  			public void actionPerformed(ActionEvent ae) { 
+  	  				String fileName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), "Informe o nome do arquivo"); 
+  	  				if((fileName != "")&&(fileName != null)){
+  	  				   mebnController.saveDefinitionsFile(fileName);
+  	  				   JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Arquivo salvo com sucesso"); 
+  	  				}
+  	  			}
+  	  		}); 
+  	        
+  	        JButton load = new JButton("LD"); 
+  	        add(load); 
+  	        load.addActionListener(new ActionListener() {
+  	  			public void actionPerformed(ActionEvent ae) { 
+  	  				String fileName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), "Informe o nome do arquivo"); 
+  	  				if((fileName != "")&&(fileName != null)){
+  	  				   mebnController.loadDefinitionsFile(fileName);
+  	  				   JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Arquivo carregado com sucesso"); 
+  	  				}
+  	  			}
+  	  		}); 
+  		}
+  		
+  	}
+	
 }

@@ -75,7 +75,10 @@ public class TablePreviewPane extends JPanel{
 		
 		doc = txtPane.getStyledDocument();
 		toolKit = new ToolKitForTableEdition(doc); 
-		buildTxtEdition(residentNode.getTableFunction(), doc); 
+		if(residentNode.getTableFunction() != null){
+			tableEdition = new TableEditionUtils(residentNode, toolKit); 	
+			tableEdition.turnTextColor(residentNode.getTableFunction(), positionCaret, doc);
+		}
 		
 		jsTxtPane = new JScrollPane(txtPane);
 		jsTxtPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -87,33 +90,16 @@ public class TablePreviewPane extends JPanel{
 		btnEditTable.setBackground(Color.LIGHT_GRAY); 
 		btnEditTable.setForeground(Color.BLUE); 
 		btnEditTable.setFont(font);
-
-		btnCompileTable = new JButton("comp"); 
-		btnCompileTable.setBackground(Color.LIGHT_GRAY); 
-		btnCompileTable.setForeground(Color.BLUE); 
-		btnCompileTable.setFont(font);
-		
-		addListeners(); 
-		
-		jtbTable = new JToolBar();		
-		jtbTable.setLayout(new GridLayout(1,2)); 
-		jtbTable.add(btnEditTable); 
-		jtbTable.add(btnCompileTable); 
-		jtbTable.setFloatable(false); 
-		
-		
-		this.add(jtbTable, BorderLayout.SOUTH);
-		this.add(jsTxtPane, BorderLayout.CENTER); 
-	}
-	
-	private void addListeners(){
-		
 		btnEditTable.addActionListener(new ActionListener(){
         	public void actionPerformed(ActionEvent e){
     			mebnController.setEnableTableEditionView(); 
         	}
 		}); 
-		
+
+		btnCompileTable = new JButton("comp"); 
+		btnCompileTable.setBackground(Color.LIGHT_GRAY); 
+		btnCompileTable.setForeground(Color.BLUE); 
+		btnCompileTable.setFont(font);
 		btnCompileTable.addActionListener( new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				MEBNTableParser tableParser = MEBNTableParser.getInstance(residentNode);  
@@ -145,15 +131,15 @@ public class TablePreviewPane extends JPanel{
 				}
 			}
 		}); 
+		
+		jtbTable = new JToolBar();		
+		jtbTable.setLayout(new GridLayout(1,2)); 
+		jtbTable.add(btnEditTable); 
+		jtbTable.add(btnCompileTable); 
+		jtbTable.setFloatable(false); 
+		
+		
+		this.add(jtbTable, BorderLayout.SOUTH);
+		this.add(jsTxtPane, BorderLayout.CENTER); 
 	}
-	
-	private void buildTxtEdition(String textTable, StyledDocument doc){
-
-		if(textTable != null){
-		tableEdition = new TableEditionUtils(residentNode, toolKit); 	
-		tableEdition.turnTextColor(textTable, positionCaret, doc);
-		}
-	
-	}	
-	
 }

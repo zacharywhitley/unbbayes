@@ -1,6 +1,7 @@
 package unbbayes.gui.mebn;
 
 import java.awt.Color;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -12,6 +13,7 @@ import java.util.regex.Pattern;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
@@ -32,7 +34,7 @@ import unbbayes.prs.mebn.entity.Type;
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  *
  */
-public class OrdVariableToolBar extends JToolBar{
+public class ToolBarOrdVariable extends JToolBar{
 
 	private MEBNController mebnController; 
 	
@@ -50,7 +52,10 @@ public class OrdVariableToolBar extends JToolBar{
     private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
     private Matcher matcher;	
 	
-	public OrdVariableToolBar(MEBNController _mebnController){
+	public ToolBarOrdVariable(MEBNController _mebnController){
+		
+		super(); 
+		setLayout(new GridLayout(1, 5)); 
 		
 		mebnController = _mebnController; 
 		this.setFloatable(false); 
@@ -121,13 +126,17 @@ public class OrdVariableToolBar extends JToolBar{
   		});  
 	    
 	    add(btnOrdVariableActive); 
-	    addSeparator();
-	    add(name); 
-	    add(txtName); 
-	    addSeparator();
-	    add(type); 
-	    add(jcbType); 
 	    
+	    JToolBar barName = new JToolBar(); 
+	    barName.setFloatable(false); 
+	    barName.add(name); 
+	    barName.add(txtName); 
+	    add(barName);
+	    
+	    add(new JLabel()); 
+	    add(new JLabel()); 
+	    
+	    add(jcbType); 
 	}
 	
 	/**
