@@ -170,11 +170,6 @@ public class MEBNEditionPane extends JPanel {
     private final JButton btnTabOptionEntity; 
     private final JButton btnTabOptionEntityFinding; 
     private final JButton btnTabOptionNodeFinding; 
-    private JButton btnTabOption1; 
-    private JButton btnTabOption2; 
-    
-    private final int INDEX_POSITION_BUTTON_OPTION_1 = 4; 
-    private final int INDEX_POSITION_BUTTON_OPTION_2 = 5; 
     
     private final String MTHEORY_TREE_TAB = "MTheoryTree"; 
     private final String ENTITY_EDITION_TAB = "EntityEdtionTab"; 
@@ -394,18 +389,6 @@ public class MEBNEditionPane extends JPanel {
         jtbTabSelection.add(btnTabOptionOVariable); 
         jtbTabSelection.add(btnTabOptionEntity);   
         jtbTabSelection.setFloatable(false);
-  	}
-  	
-  	private void turnButtonOptionTab1(JButton btn){
-        jtbTabSelection.remove(INDEX_POSITION_BUTTON_OPTION_1);  
-        btnTabOption1 = btn; 
-        jtbTabSelection.add(btnTabOption1, INDEX_POSITION_BUTTON_OPTION_1); 
-  	}
-  	
-  	private void turnButtonOptionTab2(JButton btn){
-        jtbTabSelection.remove(INDEX_POSITION_BUTTON_OPTION_2);  
-        btnTabOption2 = btn; 
-        jtbTabSelection.add(btnTabOption2, INDEX_POSITION_BUTTON_OPTION_2); 
   	}
   	
   	private void addActionListenersToButtons(){

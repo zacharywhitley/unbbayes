@@ -50,16 +50,17 @@ public class ResidentNodePane extends JPanel{
 	    gridbag.setConstraints(possibleValuesEditPane, constraints); 
 	    this.add(possibleValuesEditPane);
 	    
-		constraints.gridx = 0; 
-	    constraints.gridy = 1; 
-	    constraints.gridwidth = 1; 
-	    constraints.gridheight = 1; 
-	    constraints.weightx = 0; 
-	    constraints.weighty = 50; 
-	    constraints.fill = GridBagConstraints.BOTH; 
-	    constraints.anchor = GridBagConstraints.NORTH; 
-	    gridbag.setConstraints(tableViewPane, constraints); 
-	    this.add(tableViewPane);
+	    /* Painel temporariamente retirado */
+//		constraints.gridx = 0; 
+//	    constraints.gridy = 1; 
+//	    constraints.gridwidth = 1; 
+//	    constraints.gridheight = 1; 
+//	    constraints.weightx = 0; 
+//	    constraints.weighty = 50; 
+//	    constraints.fill = GridBagConstraints.BOTH; 
+//	    constraints.anchor = GridBagConstraints.NORTH; 
+//	    gridbag.setConstraints(tableViewPane, constraints); 
+//	    this.add(tableViewPane);
 		
 		
 	    

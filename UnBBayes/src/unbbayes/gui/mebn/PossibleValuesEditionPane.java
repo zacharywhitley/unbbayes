@@ -18,6 +18,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -31,13 +32,9 @@ import javax.swing.text.BadLocationException;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
-import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.entity.BooleanStatesEntity;
-import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
 import unbbayes.prs.mebn.entity.Entity;
-import unbbayes.prs.mebn.entity.ObjectEntity;
 
 /**
  * Panel for selection of the possible values (states) of a
@@ -50,10 +47,9 @@ public class PossibleValuesEditionPane extends JPanel{
 	private DomainResidentNode residentNode; 
 	private MEBNController mebnController; 	
 	
-	private JToolBar jtbOptions;
-	
-	private JPanel panelStates; 
-    private JScrollPane listScrollPane; 
+	private JPanel jtbOptions;
+	private StatesPanel panelStates; 
+    private ListStatesPanel listStatesPanel; 
 	private CardLayout cardLayout; 
     
     private JPanel panelCategoryStates; 
@@ -76,10 +72,18 @@ public class PossibleValuesEditionPane extends JPanel{
 	
     private final IconController iconController = IconController.getInstance();
     
+    /**
+     * Create a empty panel. 
+     */
     public PossibleValuesEditionPane(){
-    	
+    	super(); 
     }
     
+    /**
+     * Create the panel for edition of possible values of the resident node. 
+     * @param _controller
+     * @param _residentNode
+     */
 	public PossibleValuesEditionPane(MEBNController _controller, DomainResidentNode _residentNode){
 		
 		super(new BorderLayout()); 
@@ -87,17 +91,17 @@ public class PossibleValuesEditionPane extends JPanel{
 		residentNode = _residentNode;
 		mebnController = _controller; 
 		
-		buildPanelOptions(); 
-		buildListScrollPane();
-		buildPanelStates();  
+		buildListStates(); 
+		jtbOptions = new OptionsPanel(); 
+		listStatesPanel = new ListStatesPanel();
+		panelStates = new StatesPanel();  
 		
 		add(jtbOptions, BorderLayout.NORTH); 
-		add(listScrollPane, BorderLayout.CENTER); 
+		add(listStatesPanel, BorderLayout.CENTER); 
 		add(panelStates, BorderLayout.SOUTH); 
 	}
-
-
-	private void buildListScrollPane() {
+	
+	public void buildListStates(){
 		statesList = residentNode.getPossibleValueList(); 
 		
 		statesListModel = new DefaultListModel(); 
@@ -111,235 +115,355 @@ public class PossibleValuesEditionPane extends JPanel{
 		statesJList.setCellRenderer(new StateCellRenderer()); 
 		statesJList.setLayoutOrientation(JList.VERTICAL);
 		statesJList.setVisibleRowCount(-1);
-	    listScrollPane = new JScrollPane(statesJList);
 	}
-
-	private void buildPanelStates(){
 	
-		cardLayout = new CardLayout(); 
-		panelStates = new JPanel(cardLayout); 
+	/**
+	 * ScroolPane contendo a lista de estados. 
+	 */
+	private class ListStatesPanel extends JScrollPane{
 		
-		panelCategoryStates = createPanelCategoryStates(); 
-		panelObjectStates = createPanelObjectStates(); 
-		panelBooleanStates = createPanelBooleanStates(); 
+		public ListStatesPanel(){
+			super(statesJList); 
+		}
 		
-		panelStates.add(PANEL_CATEGORY_STATES, panelCategoryStates); 
-		panelStates.add(PANEL_OBJECT_STATES, panelObjectStates); 
-		panelStates.add(PANEL_BOOLEAN_STATES, panelBooleanStates); 
+		/**
+		 * Update the list of category states. 
+		 */
+		public void update(){
+			
+			statesListModel.clear(); 
+			
+			statesList = residentNode.getPossibleValueList(); 
+			
+			statesListModel = new DefaultListModel(); 
+			for(Entity entity: statesList){
+				statesListModel.addElement(entity.getName()); 
+			}
+			
+			statesJList.setModel(statesListModel); 
+		}
 		
-		switch(residentNode.getTypeOfStates()){
-		case ResidentNode.OBJECT_ENTITY:
-			cardLayout.show(panelStates, PANEL_OBJECT_STATES);
-			break; 
-		case ResidentNode.CATEGORY_RV_STATES:
-			cardLayout.show(panelStates, PANEL_CATEGORY_STATES);
-			break; 
-		case ResidentNode.BOOLEAN_RV_STATES: 
-			cardLayout.show(panelStates, PANEL_BOOLEAN_STATES);
-			break; 
+	}
+	
+	private class StatesPanel extends JPanel{
+		
+		private int selectedPanel; 
+		
+		public StatesPanel(){
+			super();
+			cardLayout = new CardLayout(); 
+			this.setLayout(cardLayout); 
+			
+			panelCategoryStates = new CategoryStatesPanel(); 
+			panelObjectStates = new ObjectStatesPanel(); 
+			panelBooleanStates = new BooleanStatesPane(); 
+			
+			panelStates.add(PANEL_CATEGORY_STATES, panelCategoryStates); 
+			panelStates.add(PANEL_OBJECT_STATES, panelObjectStates); 
+			panelStates.add(PANEL_BOOLEAN_STATES, panelBooleanStates); 
+			
+			switch(residentNode.getTypeOfStates()){
+			case ResidentNode.OBJECT_ENTITY:
+				cardLayout.show(panelStates, PANEL_OBJECT_STATES);
+				selectedPanel = ResidentNode.OBJECT_ENTITY; 
+				break; 
+			case ResidentNode.CATEGORY_RV_STATES:
+				cardLayout.show(panelStates, PANEL_CATEGORY_STATES);
+				selectedPanel = ResidentNode.CATEGORY_RV_STATES; 
+				break; 
+			case ResidentNode.BOOLEAN_RV_STATES: 
+				cardLayout.show(panelStates, PANEL_BOOLEAN_STATES);
+				selectedPanel = ResidentNode.BOOLEAN_RV_STATES; 
+				break; 
+			}
+
+		}
+
+		public int getSelectedPanel() {
+			return selectedPanel;
+		}
+
+		public void setSelectedPanel(int selectedPanel) {
+			this.selectedPanel = selectedPanel;
 		}
 		
 	}
 
 
-	private void buildPanelOptions() {
-		
-		JButton btnCategoryStates; 
-		JButton btnObjectStates; 
-		JButton btnBooleanStates; 
-		
-		btnCategoryStates = new JButton(iconController.getCategoryStateIcon()); 
-		btnCategoryStates.setToolTipText(resource.getString("categoryStatesType")); 
-		btnObjectStates = new JButton(iconController.getEntityStateIcon()); 
-		btnObjectStates.setToolTipText(resource.getString("objectStatesType")); 
-		btnBooleanStates = new JButton(iconController.getBooleanStateIcon()); 
-		btnBooleanStates.setToolTipText(resource.getString("booleanStatesType")); 
-		
-		btnCategoryStates.addActionListener(new ActionListener(){
-
-			public void actionPerformed(ActionEvent e) {
-				cardLayout.show(panelStates, PANEL_CATEGORY_STATES); 
-			}
-			
-		});
-		
-		btnBooleanStates.addActionListener(new ActionListener(){
-
-			public void actionPerformed(ActionEvent e) {
-				cardLayout.show(panelStates, PANEL_BOOLEAN_STATES);
-			}
-			
-		});
-		
-		btnObjectStates.addActionListener(new ActionListener(){
-
-			public void actionPerformed(ActionEvent e) {
-				cardLayout.show(panelStates, PANEL_OBJECT_STATES);
-			}
-			
-		});		
-		
-		jtbOptions = new JToolBar(); 
-		jtbOptions.setLayout(new GridLayout(1, 3)); 
-		jtbOptions.add(btnCategoryStates); 
-		jtbOptions.add(btnObjectStates); 
-		jtbOptions.add(btnBooleanStates);
-		jtbOptions.setFloatable(false); 
-	}
+	/**
+	 * Painel para a edição de estados do tipo categórico. 
+	 */
 	
-	private JPanel createPanelCategoryStates(){
+	private class CategoryStatesPanel extends JPanel{
 		
-		JPanel panel; 
-	    JButton btnAdd; 
-	    JButton btnRemove; 
+	    private JButton btnAdd; 
+	    private JButton btnRemove; 
+	    private JCheckBox checkGloballyExclusive; 
 	    
-	    final JPanel jpAddOptions = new JPanel(new BorderLayout());
-	    final JTextField txtName = new JTextField(10);
-		
-	    btnAdd = new JButton(iconController.getMoreIcon()); 
-    	btnAdd.setToolTipText(resource.getString("addStateTip")); 
-    	btnRemove = new JButton(iconController.getLessIcon()); 
-    	btnRemove.setToolTipText(resource.getString("removeState")); 
-    	
-	    jpAddOptions.add(btnAdd, BorderLayout.LINE_START); 
-	    jpAddOptions.add(txtName, BorderLayout.CENTER); 
-	    jpAddOptions.add(btnRemove, BorderLayout.LINE_END); 
+	    private final JTextField txtName = new JTextField(10);
 	    
-	    panel = new JPanel(new BorderLayout()); 
-	    panel.add(jpAddOptions, BorderLayout.CENTER); 
-	   
-	    txtName.addKeyListener(new KeyAdapter() {
-  			public void keyPressed(KeyEvent e) {
-  				
-  				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtName.getText().length()>0)) {
-  					try {
-  						String nameValue = txtName.getText(0,txtName.getText().length());
-  						matcher = wordPattern.matcher(nameValue);
-  						if (matcher.matches()) {
-  							boolean teste = mebnController.existsPossibleValue(residentNode, nameValue); 
-  							if(teste == false){
-  							   if(!(residentNode.getPossibleValueList().isEmpty())&&(residentNode.getTypeOfStates() != ResidentNode.CATEGORY_RV_STATES)){
-  								 int answer = JOptionPane.showConfirmDialog(
-  										mebnController.getMebnEditionPane(),
-  										resource.getString("warningDeletStates"),
-  										resource.getString("confirmation"),
-  										JOptionPane.YES_NO_OPTION);
-  								if(answer == JOptionPane.YES_OPTION){
-  									mebnController.removeAllPossibleValues(residentNode); 
-   								    mebnController.addPossibleValue(residentNode, nameValue);
-   								    residentNode.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES); 
-  								}
-  							   }else{
-  								   mebnController.addPossibleValue(residentNode, nameValue); 	   
-  							   }
-  							
-  							}
-  							else{
-  								JOptionPane.showMessageDialog(null, resource.getString("nameDuplicated"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
-  							}
-  							
-  							txtName.setText(""); 
-  							
-  						}  else {
-  							JOptionPane.showMessageDialog(null, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
-  							txtName.selectAll();
-  						}
-  						
-  						update(); 
-  						
-  					}
-  					catch (javax.swing.text.BadLocationException ble) {
-  						System.out.println(ble.getMessage());
-  					}
-  				}
-  			}
-  		});
-        
-		btnAdd.addActionListener(new ActionListener() {
-  			public void actionPerformed(ActionEvent ae) {
-  				try {
-						String nameValue = txtName.getText(0,txtName.getText().length());
-						matcher = wordPattern.matcher(nameValue);
-						if (matcher.matches()) {
-							boolean teste = mebnController.existsPossibleValue(residentNode, nameValue); 
-							if(teste == false){
-							   if(!(residentNode.getPossibleValueList().isEmpty())&&(residentNode.getTypeOfStates() != ResidentNode.CATEGORY_RV_STATES)){
-								 int answer = JOptionPane.showConfirmDialog(
-										mebnController.getMebnEditionPane(),
-										resource.getString("warningDeletStates"),
-										resource.getString("confirmation"),
-										JOptionPane.YES_NO_OPTION);
-								if(answer == JOptionPane.YES_OPTION){
-									mebnController.removeAllPossibleValues(residentNode); 
-								    mebnController.addPossibleValue(residentNode, nameValue);
-								    residentNode.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES); 
+		public CategoryStatesPanel(){
+			
+			
+			/*------------------------- Build Panel ---------------------------*/
+			
+			super(new GridLayout(3,1)); 
+		    btnAdd = new JButton(iconController.getMoreIcon()); 
+	    	btnAdd.setToolTipText(resource.getString("addStateTip")); 
+	    	btnRemove = new JButton(iconController.getLessIcon()); 
+	    	btnRemove.setToolTipText(resource.getString("removeState")); 
+	    	
+		    JToolBar barOptions = new JToolBar(); 
+		    barOptions.setLayout(new GridLayout(1,2));
+		    barOptions.setFloatable(false);
+		    barOptions.add(btnAdd); 
+		    barOptions.add(btnRemove); 
+		    
+		    JToolBar barName = new JToolBar(); 
+		    barName.setFloatable(false); 
+		    JLabel labelName = new JLabel(resource.getString("nameLabel") + " "); 
+		    barName.add(labelName); 
+		    barName.add(txtName); 
+		    
+		    JToolBar toolGloballyExclusive = new JToolBar();
+		    toolGloballyExclusive.setFloatable(false);
+		    JLabel labelExclusive = new JLabel(resource.getString("isGloballyExclusive")); 
+		    checkGloballyExclusive = new JCheckBox(); 
+		    checkGloballyExclusive.setSelected(false); 
+		    toolGloballyExclusive.add(checkGloballyExclusive); 
+		    toolGloballyExclusive.add(labelExclusive); 
+		    
+		    add(barOptions); 
+		    add(barName); 
+		    add(toolGloballyExclusive); 
+		    
+		    
+		    
+		    
+		    /*--------------------------- Add listeners ----------------------*/
+		    
+		    txtName.addKeyListener(new KeyAdapter() {
+	  			public void keyPressed(KeyEvent e) {
+	  				
+	  				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtName.getText().length() > 0)) {
+	  					try {
+	  						String nameValue = txtName.getText(0,txtName.getText().length());
+	  						matcher = wordPattern.matcher(nameValue);
+	  						if (matcher.matches()) {
+	  							boolean teste = mebnController.existsPossibleValue(residentNode, nameValue); 
+	  							if(teste == false){
+	  							   if(!(residentNode.getPossibleValueList().isEmpty())&&(residentNode.getTypeOfStates() != ResidentNode.CATEGORY_RV_STATES)){
+	  								 int answer = JOptionPane.showConfirmDialog(
+	  										mebnController.getMebnEditionPane(),
+	  										resource.getString("warningDeletStates"),
+	  										resource.getString("confirmation"),
+	  										JOptionPane.YES_NO_OPTION);
+	  								if(answer == JOptionPane.YES_OPTION){
+	  									mebnController.removeAllPossibleValues(residentNode); 
+	   								    mebnController.addPossibleValue(residentNode, nameValue);
+	   								    residentNode.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES); 
+	  								}
+	  							   }else{
+	  								   mebnController.addPossibleValue(residentNode, nameValue); 	   
+	  							   }
+	  							
+	  							}
+	  							else{
+	  								JOptionPane.showMessageDialog(null, resource.getString("nameDuplicated"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+	  							}
+	  							
+	  							txtName.setText(""); 
+	  							
+	  						}  else {
+	  							JOptionPane.showMessageDialog(null, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+	  							txtName.selectAll();
+	  						}
+	  						
+	  						listStatesPanel.update(); 
+	  						
+	  					}
+	  					catch (javax.swing.text.BadLocationException ble) {
+	  						System.out.println(ble.getMessage());
+	  					}
+	  				}
+	  			}
+	  		});
+	        
+		    btnAdd.addActionListener(new ActionListener() {
+		    	public void actionPerformed(ActionEvent ae) {
+		    		
+		    		if (txtName.getText().length() > 0) {
+		    			try {
+		    				String nameValue = txtName.getText(0,txtName.getText().length());
+		    				matcher = wordPattern.matcher(nameValue);
+		    				if (matcher.matches()) {
+		    					boolean teste = mebnController.existsPossibleValue(residentNode, nameValue); 
+		    					if(teste == false){
+		    						if(!(residentNode.getPossibleValueList().isEmpty())&&(residentNode.getTypeOfStates() != ResidentNode.CATEGORY_RV_STATES)){
+		    							int answer = JOptionPane.showConfirmDialog(
+		    									mebnController.getMebnEditionPane(),
+		    									resource.getString("warningDeletStates"),
+		    									resource.getString("confirmation"),
+		    									JOptionPane.YES_NO_OPTION);
+		    							if(answer == JOptionPane.YES_OPTION){
+		    								mebnController.removeAllPossibleValues(residentNode); 
+		    								mebnController.addPossibleValue(residentNode, nameValue);
+		    								residentNode.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES); 
+		    							}
+		    						}else{
+		    							mebnController.addPossibleValue(residentNode, nameValue); 	   
+		    						}
+		    						
+		    					}
+		    					else{
+		    						JOptionPane.showMessageDialog(null, resource.getString("nameDuplicated"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+		    					}
+		    					
+		    					txtName.setText(""); 
+		    					
+		    				}  else {
+		    					JOptionPane.showMessageDialog(null, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+		    					txtName.selectAll();
+		    				}
+		    				
+		    				listStatesPanel.update();
+		    				
+		    			}
+		    			catch (javax.swing.text.BadLocationException ble) {
+		    				System.out.println(ble.getMessage());
+		    			}
+		    		}
+		    	}
+		    });
+			
+			btnRemove.addActionListener(new ActionListener(){
+
+				public void actionPerformed(ActionEvent e) {
+					if (statesJList.getSelectedValue()!= null){
+						mebnController.removePossibleValue(residentNode, statesJList.getSelectedValue().toString()); 
+					}else{
+						String nameValue;
+						try {
+							nameValue = txtName.getText(0,txtName.getText().length());
+							
+							matcher = wordPattern.matcher(nameValue);
+							if (matcher.matches()) {
+								boolean teste = mebnController.existsPossibleValue(residentNode, nameValue); 
+								if(teste == true){
+									mebnController.removePossibleValue(residentNode, nameValue); 
 								}
-							   }else{
-								   mebnController.addPossibleValue(residentNode, nameValue); 	   
-							   }
-							
 							}
-							else{
-								JOptionPane.showMessageDialog(null, resource.getString("nameDuplicated"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
-							}
-							
-							txtName.setText(""); 
-							
-						}  else {
-							JOptionPane.showMessageDialog(null, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
-							txtName.selectAll();
+						} catch (BadLocationException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
 						}
-						
-						update(); 
-						
 					}
-					catch (javax.swing.text.BadLocationException ble) {
-						System.out.println(ble.getMessage());
-					}
+					listStatesPanel.update();
 				}
-  		});
+				
+			}); 
+		}
 		
-		btnRemove.addActionListener(new ActionListener(){
-
-			public void actionPerformed(ActionEvent e) {
-				if (statesJList.getSelectedValue()!= null){
-					mebnController.removePossibleValue(residentNode, statesJList.getSelectedValue().toString()); 
-				}else{
-					String nameValue;
-					try {
-						nameValue = txtName.getText(0,txtName.getText().length());
-						
-						matcher = wordPattern.matcher(nameValue);
-						if (matcher.matches()) {
-							boolean teste = mebnController.existsPossibleValue(residentNode, nameValue); 
-							if(teste == true){
-								mebnController.removePossibleValue(residentNode, nameValue); 
-							}
-						}
-					} catch (BadLocationException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-				}
-				update();
-			}
-			
-		}); 
-	
-        return panel; 
 	}
 	
-	private JPanel createPanelObjectStates(){
+	private class ObjectStatesPanel extends JPanel{
 		
-		JPanel panel; 
 		final JComboBox comboEntities = new JComboBox(mebnController.getMultiEntityBayesianNetwork().getObjectEntityContainer().getListEntity().toArray());; 
     	JButton btnAdd = new JButton(iconController.getMoreIcon()); 
-    	btnAdd.setToolTipText(resource.getString("addStateTip")); 
     	
-		btnAdd.addActionListener(new ActionListener(){
+		public ObjectStatesPanel(){
+			super(new GridLayout(3,1)); 
+			
+	    	btnAdd.setToolTipText(resource.getString("addStateTip")); 
+			
+			JToolBar barEdition = new JToolBar(); 
+			barEdition.setFloatable(false); 
+			barEdition.add(btnAdd); 
+			barEdition.add(comboEntities); 
+	    	
+	    	add(barEdition); 
+	    	add(new JLabel()); 
+	    	add(new JLabel()); 
+	    	
+			btnAdd.addActionListener(new ActionListener(){
 
-			public void actionPerformed(ActionEvent e) {
-				if(comboEntities.getSelectedItem() != null){
+				public void actionPerformed(ActionEvent e) {
+					if(comboEntities.getSelectedItem() != null){
+						if(!(residentNode.getPossibleValueList().isEmpty())){
+							int answer = JOptionPane.showConfirmDialog(
+									mebnController.getMebnEditionPane(),
+									resource.getString("warningDeletStates"),
+									resource.getString("confirmation"),
+									JOptionPane.YES_NO_OPTION);
+							if(answer == JOptionPane.YES_OPTION){
+								   residentNode.removeAllPossibleValues(); 
+								   residentNode.addPossibleValue((Entity)(comboEntities.getSelectedItem()));	
+								   residentNode.setTypeOfStates(ResidentNode.OBJECT_ENTITY); 
+								   listStatesPanel.update();
+							}	
+						}else{
+							residentNode.addPossibleValue((Entity)(comboEntities.getSelectedItem()));
+							residentNode.setTypeOfStates(ResidentNode.OBJECT_ENTITY); 
+							listStatesPanel.update();
+						}
+						
+					} 
+				}
+				
+			}); 
+			
+		}
+		
+	}
+	
+	
+	private class BooleanStatesPane extends JPanel{
+		
+		private JButton btnAdd;
+		private JCheckBox checkGloballyExclusive; 
+		private JTextField txtName = new JTextField(); 
+		
+		public BooleanStatesPane(){
+			
+			super(new GridLayout(3,1)); 
+			
+			btnAdd = new JButton(iconController.getMoreIcon());
+			btnAdd.setToolTipText(resource.getString("addStateTip")); 
+	 	    //JLabel labelNotEditable = new JLabel(" " + resource.getString("insertBooleanStates")); 
+
+	 	    JToolBar barAddStates = new JToolBar(); 
+	 	    barAddStates.setFloatable(false); 
+	 	    barAddStates.setLayout(new GridLayout(1,3)); 
+	 	    barAddStates.add(new JLabel()); 
+	 	    barAddStates.add(btnAdd);
+	 	    barAddStates.add(new JLabel()); 
+	 	    
+	 	    //barAddStates.add(labelNotEditable); 
+	 	    
+		    JToolBar barName = new JToolBar(); 
+		    barName.setFloatable(false); 
+		    JLabel labelName = new JLabel(resource.getString("nameLabel") + " "); 
+		    barName.add(labelName); 
+		    barName.add(txtName); 
+	 	    
+		    JToolBar toolGloballyExclusive = new JToolBar();
+		    toolGloballyExclusive.setFloatable(false);
+		    JLabel labelExclusive = new JLabel(resource.getString("isGloballyExclusive")); 
+		    checkGloballyExclusive = new JCheckBox(); 
+		    checkGloballyExclusive.setSelected(false); 
+		    toolGloballyExclusive.add(checkGloballyExclusive); 
+		    toolGloballyExclusive.add(labelExclusive); 
+	 	    
+	 	    add(barAddStates); 
+	 	    add(barName); 
+	 	    add(toolGloballyExclusive); 
+	 	    
+	 	    
+	 	    
+	 	    btnAdd.addActionListener(new ActionListener(){
+
+				public void actionPerformed(ActionEvent e) {
+					
 					if(!(residentNode.getPossibleValueList().isEmpty())){
 						int answer = JOptionPane.showConfirmDialog(
 								mebnController.getMebnEditionPane(),
@@ -347,89 +471,86 @@ public class PossibleValuesEditionPane extends JPanel{
 								resource.getString("confirmation"),
 								JOptionPane.YES_NO_OPTION);
 						if(answer == JOptionPane.YES_OPTION){
-							   residentNode.removeAllPossibleValues(); 
-							   residentNode.addPossibleValue((Entity)(comboEntities.getSelectedItem()));	
-							   residentNode.setTypeOfStates(ResidentNode.OBJECT_ENTITY); 
-							   update();
-						}	
+							mebnController.removeAllPossibleValues(residentNode); 
+							mebnController.addBooleanAsPossibleValue(residentNode); 
+							residentNode.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES); 
+							listStatesPanel.update();
+						}
 					}else{
-						residentNode.addPossibleValue((Entity)(comboEntities.getSelectedItem()));
-						residentNode.setTypeOfStates(ResidentNode.OBJECT_ENTITY); 
-						update(); 
+						mebnController.addBooleanAsPossibleValue(residentNode); 
+						residentNode.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES);
+						listStatesPanel.update(); 
 					}
 					
-				} 
-			}
-			
-		}); 
+				}
+	 	    	
+	 	    }); 
+	 	    
+		}
 		
-		panel = new JPanel(new BorderLayout()); 
-		panel.add(btnAdd, BorderLayout.LINE_START); 
-		panel.add(comboEntities, BorderLayout.CENTER); 
-		
-		return panel; 
 	}
 	
-    private JPanel createPanelBooleanStates(){
-		
-    	JButton btnAdd = new JButton(iconController.getMoreIcon()); 
-    	btnAdd.setToolTipText(resource.getString("addStateTip")); 
-    	
- 	    JLabel labelNotEditable = new JLabel(" " + resource.getString("insertBooleanStates")); 
-    	
- 	    btnAdd.addActionListener(new ActionListener(){
 
-			public void actionPerformed(ActionEvent e) {
-				
-				if(!(residentNode.getPossibleValueList().isEmpty())){
-					int answer = JOptionPane.showConfirmDialog(
-							mebnController.getMebnEditionPane(),
-							resource.getString("warningDeletStates"),
-							resource.getString("confirmation"),
-							JOptionPane.YES_NO_OPTION);
-					if(answer == JOptionPane.YES_OPTION){
-						mebnController.removeAllPossibleValues(residentNode); 
-						mebnController.addBooleanAsPossibleValue(residentNode); 
-						residentNode.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES); 
-						update(); 
-					}
-				}else{
-					mebnController.addBooleanAsPossibleValue(residentNode); 
-					residentNode.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES);
-					update(); 
+	
+	/**
+	 * Painel para seleção do tipo de argumento que o resident node terá. 
+	 * Apresenta um botão para cada opção possível e um rótulo indicando a 
+	 * opção selecionada. 
+	 * 
+	 * @author Laecio Lima dos Santos. 
+	 */
+	private class OptionsPanel extends JPanel{
+		
+		private JButton btnCategoryStates; 
+		private JButton btnObjectStates; 
+		private JButton btnBooleanStates; 
+		
+		public OptionsPanel(){ 
+
+			btnCategoryStates = new JButton(iconController.getCategoryStateIcon()); 
+			btnCategoryStates.setToolTipText(resource.getString("categoryStatesType")); 
+			btnObjectStates = new JButton(iconController.getEntityStateIcon()); 
+			btnObjectStates.setToolTipText(resource.getString("objectStatesType")); 
+			btnBooleanStates = new JButton(iconController.getBooleanStateIcon()); 
+			btnBooleanStates.setToolTipText(resource.getString("booleanStatesType")); 
+			
+			btnCategoryStates.addActionListener(new ActionListener(){
+
+				public void actionPerformed(ActionEvent e) {
+					cardLayout.show(panelStates, PANEL_CATEGORY_STATES); 
 				}
 				
-			}
- 	    	
- 	    }); 
- 	    
- 	    JPanel panel = new JPanel(new BorderLayout());
- 	    panel.add(btnAdd, BorderLayout.LINE_START); 
- 	    panel.add(labelNotEditable, BorderLayout.CENTER); 
- 	    
- 	    
-		return panel; 
+			});
+			
+			btnBooleanStates.addActionListener(new ActionListener(){
+
+				public void actionPerformed(ActionEvent e) {
+					cardLayout.show(panelStates, PANEL_BOOLEAN_STATES);
+				}
+				
+			});
+			
+			btnObjectStates.addActionListener(new ActionListener(){
+
+				public void actionPerformed(ActionEvent e) {
+					cardLayout.show(panelStates, PANEL_OBJECT_STATES);
+				}
+				
+			});		
+			
+			
+			this.setLayout(new GridLayout(1, 3)); 
+			this.add(btnCategoryStates); 
+			this.add(btnObjectStates); 
+			this.add(btnBooleanStates);
+		}
+		
 	}
 	
 	/**
-	 * Update the list of category states. 
+	 * Renderizador para celula da lista de estados. 
 	 */
-	public void update(){
-		
-		statesListModel.clear(); 
-		
-		statesList = residentNode.getPossibleValueList(); 
-		
-		statesListModel = new DefaultListModel(); 
-		for(Entity entity: statesList){
-			statesListModel.addElement(entity.getName()); 
-		}
-		
-		statesJList.setModel(statesListModel); 
-	}
-	
-	
-	public class StateCellRenderer extends DefaultListCellRenderer{
+	private class StateCellRenderer extends DefaultListCellRenderer{
 		
 		private ImageIcon iconObjectState = iconController.getObjectEntityIcon();
 		private ImageIcon iconCategoryState = iconController.getStateIcon(); 
