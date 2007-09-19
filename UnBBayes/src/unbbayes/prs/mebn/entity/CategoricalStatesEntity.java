@@ -1,21 +1,26 @@
 package unbbayes.prs.mebn.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import unbbayes.prs.mebn.MultiEntityNode;
-import unbbayes.prs.mebn.entity.exception.TypeChangeNotAllowedException;
-
 /**
- * 
- * 
+ *
+ *
  * @author Laecio Lima dos Santos
  */
 
 public class CategoricalStatesEntity extends Entity {
 
+	private boolean globallyExclusive;
+
 	protected CategoricalStatesEntity(String name) {
-		super(name, TypeContainer.typeCategoryLabel); 
+		super(name, TypeContainer.typeCategoryLabel);
+		globallyExclusive = false;
+	}
+
+	public boolean isGloballyExclusive() {
+		return globallyExclusive;
+	}
+
+	public void setGloballyExclusive(boolean globallyExclusive) {
+		this.globallyExclusive = globallyExclusive;
 	}
 
 }

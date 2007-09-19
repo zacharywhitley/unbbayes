@@ -5,38 +5,39 @@ import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 
 /**
- * 
- * 
+ *
+ *
  * @author Laecio
  *
  */
 public class RandonVariableFinding {
 
-	private DomainResidentNode node; 
-	
+	private DomainResidentNode node;
+
 	private ObjectEntityInstance[] arguments;
-	
-	MultiEntityBayesianNetwork mebn; 
-	
+
+	MultiEntityBayesianNetwork mebn;
+
 	//boolean, categorical or object entity
 	private Entity state;
-	
-	private String name; 
-	
+
+	private String name;
+
 	/**
-	 * 
+	 *
 	 * @param node
 	 * @param arguments
 	 * @param state
 	 */
 	public RandonVariableFinding(DomainResidentNode node, ObjectEntityInstance[] arguments, Entity state, MultiEntityBayesianNetwork mebn){
-		
-		this.node = node; 
-		this.arguments = arguments; 
-		this.state = state; 
+
+		this.node = node;
+		this.arguments = arguments;
+		this.state = state;
 		this.mebn = mebn;
-		
-		name = "RVF"; 
+
+		//TODO name...
+		name = "RVF";
 	}
 
 	public ObjectEntityInstance[] getArguments() {
@@ -50,24 +51,24 @@ public class RandonVariableFinding {
 	public Entity getState() {
 		return state;
 	}
-	
+
 	public String toString(){
 		String nameFinding = node.getName();
-		nameFinding+="("; 
+		nameFinding+="(";
 		for(int i = 0; i < arguments.length - 1; i++){
 			nameFinding+=arguments[i];
 			nameFinding+=",";
 		}
-		
+
 		if(arguments.length > 0){
 		   nameFinding+= arguments[arguments.length - 1];
 		}
-		
+
 		nameFinding+=")";
 		nameFinding+="=";
-		nameFinding+=state.getName(); 
-		
-		return nameFinding; 
+		nameFinding+=state.getName();
+
+		return nameFinding;
 	}
-	
+
 }
