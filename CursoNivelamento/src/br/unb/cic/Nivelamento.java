@@ -12,7 +12,7 @@ public class Nivelamento {
 	{
 		
 		
-		System.out.println("The grade is"+grade+"\n."+"The teacher is"+teacher+"\n.");
+		System.out.println("The grade is "+grade+".\n"+"The teacher is "+teacher+".\n");
 	}
 	
 	
