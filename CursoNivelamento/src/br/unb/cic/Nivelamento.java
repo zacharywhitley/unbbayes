@@ -20,7 +20,7 @@ public class Nivelamento {
 	private String teacher;
 	
 	public void methodTest() {
-		System.out.println("ç teste");
+		System.out.println("teste");
 	}
 		
 
