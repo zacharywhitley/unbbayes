@@ -10,6 +10,8 @@ public class Nivelamento {
 	}
 	public void methodTest2()
 	{
+		
+		
 		System.out.println("The grade is"+grade+"\n."+"The teacher is"+teacher+"\n.");
 	}
 	
