@@ -18,7 +18,8 @@ public class Nivelamento {
 	private String teacher;
 	
 	public void methodTest() {
-		System.out.println("teste");
+		System.out.println("ç teste");
 	}
+		
 
 }
