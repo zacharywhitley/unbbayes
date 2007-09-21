@@ -4,7 +4,7 @@
   <groupId>br.unb.cic</groupId>
   <artifactId>curso-nivelamento</artifactId>
   <version>1.0</version>
-  <description>Este ?? apenas um teste do maven no projeto de nivelamento.</description>
+  <description>Este é apenas um teste do maven no projeto de nivelamento.</description>
   <dependencies>
     <dependency>
       <groupId>ant</groupId>
