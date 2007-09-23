@@ -1,6 +1,8 @@
 package unbbayes.prs.mebn.compiler;
 
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.mebn.exception.MEBNException;
 
 public interface AbstractCompiler {
@@ -24,4 +26,11 @@ public interface AbstractCompiler {
 	 * @return Returns the last read index.
 	 */
 	public abstract int getIndex();
+	
+	
+	/**
+	 * generates CPT using a pseudocode.
+	 * @return
+	 */
+	public PotentialTable generateCPT();
 }

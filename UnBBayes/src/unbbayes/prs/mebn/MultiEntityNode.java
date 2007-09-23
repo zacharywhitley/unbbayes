@@ -194,5 +194,43 @@ public class MultiEntityNode extends Node {
 		return -1;
 	}
 	
+	
+	/**
+	 * 
+	 * @param ovs Set of OrdinaryVariables to be searched inside its arguments.
+	 * @return True if all OVs within "ovs" are used as argument. False otherwise.
+	 */
+	public boolean hasAllOVs(OrdinaryVariable...ovs) {
+		boolean found = false;
+		for (OrdinaryVariable ov : ovs) {
+			found = false;
+			for (Argument arg : this.getArgumentList()) {
+				if (arg.getOVariable().equals(ov)){
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	
+	/**
+	 * Counts how many simple arg relationships are present within ArgumentList
+	 * @return
+	 */
+	public int getSimpleArgRelationshipCount() {
+		int ret = 0;
+		for (Argument arg : this.getArgumentList()) {
+			if (arg.isSimpleArgRelationship()) {
+				ret++;
+			}
+		}
+		return ret;
+	}
+	
 }
  

@@ -20,7 +20,7 @@ import unbbayes.controller.NetworkController;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.gui.mebn.auxiliary.ToolKitForTableEdition;
 import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.compiler.MEBNTableParser;
+import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.compiler.exception.InconsistentTableSemanticsException;
 import unbbayes.prs.mebn.compiler.exception.TableFunctionMalformedException;
 import unbbayes.prs.mebn.exception.EntityNotPossibleValueOfNodeException;
@@ -102,7 +102,7 @@ public class TablePreviewPane extends JPanel{
 		btnCompileTable.setFont(font);
 		btnCompileTable.addActionListener( new ActionListener(){
 			public void actionPerformed(ActionEvent e){
-				MEBNTableParser tableParser = MEBNTableParser.getInstance(residentNode);  
+				Compiler tableParser = new Compiler(residentNode);  
 				
 				try{
 				   if(residentNode.getTableFunction() != null)

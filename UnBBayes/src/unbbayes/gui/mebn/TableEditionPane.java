@@ -37,7 +37,7 @@ import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.compiler.MEBNTableParser;
+import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.compiler.exception.InvalidConditionantException;
 import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredException;
 import unbbayes.prs.mebn.compiler.exception.SomeStateUndeclaredException;
@@ -812,7 +812,7 @@ public class TableEditionPane extends JPanel{
 		btnCompile.addActionListener( new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				residentNode.setTableFunction(getTableTxt());
-				MEBNTableParser tableParser = MEBNTableParser.getInstance(residentNode);
+				Compiler tableParser = new Compiler(residentNode);
 				
 				try{
 				   tableParser.parse(getTableTxt());

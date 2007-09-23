@@ -1,9 +1,12 @@
 /**
- * 
+ * This is a dead code! Do not use your effort to edit this class because this is not used
+ * anywhere!!
  */
 package unbbayes.prs.mebn.compiler;
 
 
+import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.exception.MEBNException;
@@ -27,7 +30,8 @@ public class MEBNTableParser implements AbstractCompiler {
 	
 	private MEBNTableParser(MultiEntityBayesianNetwork mebn, DomainResidentNode node) {
 		super();
-		this.setCompiler(new Compiler());
+		//this.setCompiler(new Compiler());
+		this.setCompiler(new Compiler(node));
 		((Compiler)this.getCompiler()).setNode(node);
 	}
 	
@@ -36,10 +40,10 @@ public class MEBNTableParser implements AbstractCompiler {
 	 * @param node: the node where the table resides
 	 * @return instance of MEBNTableParser
 	 */
-	public static MEBNTableParser getInstance(DomainResidentNode node) {
+	/*public static MEBNTableParser getInstance(DomainResidentNode node) {
 		MEBNTableParser parser = new MEBNTableParser( node.getMFrag().getMultiEntityBayesianNetwork(),  node);
 		return parser;
-	}
+	}*/
 	
 	/**
 	 * Instantiates MEBNTableParser
@@ -158,6 +162,10 @@ public class MEBNTableParser implements AbstractCompiler {
 	 */
 	public int getIndex() {
 		return this.compiler.getIndex();
+	}
+	
+	public ProbabilisticTable generateCPT() {
+		return null;
 	}
 
 }

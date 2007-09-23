@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -120,6 +122,25 @@ public class Compiler implements AbstractCompiler {
 	private DomainResidentNode node = null;
 	
 
+	// Variables used for ProbabilisticTable generation
+	private PotentialTable cpt = null;
+	
+	private Compiler() {
+		
+	}
+	
+	public Compiler (DomainResidentNode node) {
+		super();
+		this.setNode(node);
+		this.cpt = null;
+	}
+	
+	public Compiler (DomainResidentNode node, PotentialTable cpt) {
+		super();
+		this.setNode(node);
+		this.cpt = cpt;
+	}
+	
 	/* inicializa��o do compilador */
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.compiler.AbstractCompiler#init(java.lang.String)
@@ -142,6 +163,21 @@ public class Compiler implements AbstractCompiler {
 		Debug.println("PARSED: ");
 		this.skipWhite();
 		this.table();
+	}
+	
+	public void parse(String table) throws MEBNException {
+		this.init(table);
+		this.parse();
+	}
+	
+	/**
+	 * 
+	 * TODO implement this method
+	 * @return
+	 */
+	public PotentialTable generateCPT() {
+		// TODO implement this!!!
+		return this.cpt;
 	}
 	
 	/**
@@ -719,7 +755,7 @@ public class Compiler implements AbstractCompiler {
 	/**
 	 * @return Returns the node.
 	 */
-	DomainResidentNode getNode() {
+	public DomainResidentNode getNode() {
 		return node;
 	}
 
@@ -729,7 +765,7 @@ public class Compiler implements AbstractCompiler {
 	 * are real)
 	 * @param node The node to set.
 	 */
-	void setNode(DomainResidentNode node) {
+	public void setNode(DomainResidentNode node) {
 		this.node = node;
 		this.mebn = node.getMFrag().getMultiEntityBayesianNetwork();
 	}
@@ -896,6 +932,22 @@ public class Compiler implements AbstractCompiler {
 	public int getIndex() {
 		return index;
 	}
-		
+
+	/**
+	 * @return the cpt
+	 */
+	public PotentialTable getCpt() {
+		return cpt;
+	}
+
+	/**
+	 * @param cpt the cpt to set
+	 */
+	public void setCpt(PotentialTable cpt) {
+		this.cpt = cpt;
+	}
+	
+	
+	
 
 }
