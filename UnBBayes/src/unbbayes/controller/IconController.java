@@ -263,6 +263,11 @@ public class IconController implements Serializable {
 	
 	protected ImageIcon entityInstance; 
 	
+	protected ImageIcon goNextIcon; 
+	
+	protected ImageIcon goPreviousIcon; 
+	
+	protected ImageIcon processStopIcon; 
 	
 	public static IconController getInstance() {
 		if (singleton == null) {
@@ -1343,6 +1348,36 @@ public class IconController implements Serializable {
 			nodeInstance = new ImageIcon(getClass().getResource(
 					"/icons/node-instance.gif"));
 			return nodeInstance;
+		}
+	}	
+	
+	public ImageIcon getGoNextInstance() {
+		if (goNextIcon != null) {
+			return goNextIcon;
+		} else {
+			goNextIcon = new ImageIcon(getClass().getResource(
+					"/icons/go-next.png"));
+			return goNextIcon;
+		}
+	}	
+	
+	public ImageIcon getGoPreviousInstance() {
+		if (goPreviousIcon != null) {
+			return goPreviousIcon;
+		} else {
+			goPreviousIcon = new ImageIcon(getClass().getResource(
+					"/icons/go-previous.png"));
+			return goPreviousIcon;
+		}
+	}	
+	
+	public ImageIcon getProcessStopInstance() {
+		if (processStopIcon != null) {
+			return processStopIcon;
+		} else {
+			processStopIcon = new ImageIcon(getClass().getResource(
+					"/icons/process-stop.png"));
+			return processStopIcon;
 		}
 	}	
 	

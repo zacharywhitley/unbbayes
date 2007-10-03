@@ -372,7 +372,7 @@ public class MEBNControllerTest extends TestCase {
 	}
 
 	/**
-	 * Test method for {@link unbbayes.controller.MEBNController#preencherKB()}.
+	 * Test method for {@link unbbayes.controller.MEBNController#loadGenerativeMEBNIntoKB()}.
 	 */
 	public void testPreencherKB() {
 		fail("Not yet implemented"); // TODO

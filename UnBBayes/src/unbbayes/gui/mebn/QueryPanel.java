@@ -3,6 +3,7 @@ package unbbayes.gui.mebn;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
@@ -10,37 +11,28 @@ import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
-import unbbayes.gui.ParcialStateException;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
-import unbbayes.gui.mebn.finding.FindingArgumentPane;
-import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MFrag;
-import unbbayes.prs.mebn.RandonVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.entity.Entity;
-import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 
 /**
  * Class for insert a query
  *
- * Composto por dois paineis: um para selecionar o nó ao qual a query irá se referir
- * e o outro para selecionar os argumentos deste nó.
+ * Composto por dois paineis: um para selecionar o nï¿½ ao qual a query irï¿½ se referir
+ * e o outro para selecionar os argumentos deste nï¿½.
  *
- * @author Laécio Lima dos Santos
+ * @author Laï¿½cio Lima dos Santos
  */
 
 public class QueryPanel extends JFrame{
@@ -55,45 +47,72 @@ public class QueryPanel extends JFrame{
 
 	public QueryPanel(MEBNController mebnController){
 
-		super();
+		super("Query");
 
-		this.setLocationRelativeTo(mebnController.getMebnEditionPane());
-		this.setSize(200, 200);
-
+		setLocationRelativeTo(mebnController.getMebnEditionPane());
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
 		this.mebnController = mebnController;
+		
+		showRandonVariableListPane(); 
+	}
 
+	/**
+	 * Mostra o painel para selecionar os argumntos da query. 
+	 * @param _residentNode
+	 */
+	public void showArgumentsSelection(ResidentNode _residentNode){
+		JPanel contentPane = new QueryArgumentsEditionPane(_residentNode);
+		setContentPane(contentPane);
+		validate(); 
+		pack(); 
+	}
+	
+	/**
+	 * Mostra o painel para seleï¿½ï¿½o da randon variable da qual a query se
+	 * refere.
+	 */
+	public void showRandonVariableListPane(){
+		
 		JPanel contentPane;
 		contentPane = new JPanel(new BorderLayout());
 
-		btnSelect = new JButton(iconController.getCompileIcon());
+		btnSelect = new JButton(iconController.getGoNextInstance());
 		btnSelect.addActionListener(new ActionListener(){
-
 			public void actionPerformed(ActionEvent arg0) {
 				showArgumentsSelection(residentSelected);
 			}
-
 		});
 
 		JToolBar toolBar = new JToolBar();
 		toolBar.setFloatable(false);
-		toolBar.setLayout(new BorderLayout());
-		toolBar.add(btnSelect, BorderLayout.CENTER);
+		toolBar.setLayout(new GridLayout());
+		toolBar.add(new JLabel());
+		toolBar.add(btnSelect);
+		toolBar.add(new JLabel());
 
 		RandonVariableListPane randonVariableListPane = new RandonVariableListPane();
+		randonVariableListPane.setBorder(BorderFactory.createLineBorder(Color.YELLOW)); 
 
+		JLabel label = new JLabel("Selecione a variï¿½vel aleatï¿½ria:    ");
+		
+		contentPane.add(label, BorderLayout.PAGE_START); 
 		contentPane.add(randonVariableListPane, BorderLayout.CENTER);
 		contentPane.add(toolBar, BorderLayout.PAGE_END);
 
-		super.setContentPane(contentPane);
-	}
-
-	public void showArgumentsSelection(ResidentNode _residentNode){
-		JPanel contentPane = new RandonVariableInstanceEditionPane(_residentNode);
 		setContentPane(contentPane);
+		validate(); 
+		pack(); 
+	}
+	
+	public void exit(){
+		this.dispose(); 
 	}
 
+	public void makeInvisible(){
+		this.setVisible(false); 
+	}
+	
 	private class RandonVariableListPane extends JPanel{
 
 		private JList jlistResident;
@@ -141,26 +160,21 @@ public class QueryPanel extends JFrame{
 	 * @author Laecio Lima dos Santos (laecio@gmail.com)
 	 * @version 1.0 (09/09/07)
 	 */
-	private class RandonVariableInstanceEditionPane extends JPanel{
+	private class QueryArgumentsEditionPane extends JPanel{
 
 		private final ResidentNode residentNode;
 
 		private JLabel nodeName;
 
-		private JComboBox comboState;
-		private JPanel paneArguments;
+		private QueryArgumentsPane queryArgumentsPane;
 
-		private FindingArgumentPane findingArgumentPane;
-
-		private JButton btnInsert;
-		private JButton btnClear;
-		private JButton btnBack;
+		private JButton btnBack; 
+		private JButton btnExecute;
+		private JButton btnExit; 
 
 		private JToolBar jtbOptions;
 
-		private JToolBar jtbName;
-
-		public RandonVariableInstanceEditionPane(ResidentNode _residentNode){
+		public QueryArgumentsEditionPane(ResidentNode _residentNode){
 
 			super(new BorderLayout());
 			this.residentNode = _residentNode;
@@ -169,65 +183,42 @@ public class QueryPanel extends JFrame{
 			nodeName.setAlignmentX(JLabel.CENTER_ALIGNMENT);
 			nodeName.setBackground(Color.YELLOW);
 
-			findingArgumentPane = new FindingArgumentPane(residentNode, mebnController);
+			queryArgumentsPane = new QueryArgumentsPane(residentNode, mebnController);
 
-			btnBack = new JButton(iconController.getEditUndo());
-			btnClear = new JButton(iconController.getEditClear());
-			btnInsert = new JButton(iconController.getMoreIcon());
+			btnBack = new JButton(iconController.getGoPreviousInstance());
+			btnExecute = new JButton(iconController.getCompileIcon());
+			btnExit = new JButton(iconController.getProcessStopInstance());
 
 			jtbOptions = new JToolBar();
 			jtbOptions.setLayout(new GridLayout(1,3));
 			jtbOptions.add(btnBack);
-			jtbOptions.add(btnClear);
-			jtbOptions.add(btnInsert);
+			jtbOptions.add(btnExecute);
+			jtbOptions.add(btnExit);
 			jtbOptions.setFloatable(false);
 
 			btnBack.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
-
+					showRandonVariableListPane(); 
 				}
 			});
 
-			btnClear.addActionListener(new ActionListener(){
+			btnExecute.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
-					findingArgumentPane.clear();
+					makeInvisible(); 
+			         //mebnController.executeQuery(); 
+			         exit(); 
 				}
 			});
 
-			btnInsert.addActionListener(new ActionListener(){
+			btnExit.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
-					try {
-						ObjectEntityInstance[] arguments = findingArgumentPane.getArguments();
-						Entity state = findingArgumentPane.getState();
-						RandonVariableFinding finding = new RandonVariableFinding(
-								(DomainResidentNode)residentNode,
-								arguments,
-								state,
-								mebnController.getMultiEntityBayesianNetwork());
-						((DomainResidentNode)residentNode).addRandonVariableFinding(finding);
-
-					} catch (ParcialStateException e1) {
-						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(),
-									resource.getString("nameError"),
-									resource.getString("nameException"),
-									JOptionPane.ERROR_MESSAGE);
-					}
+					exit(); 
 				}
 			});
-
-			//this.add(nodeName, BorderLayout.PAGE_START);
-			this.add(new JScrollPane(findingArgumentPane), BorderLayout.CENTER);
+			
+			this.add(new JLabel("Selecione os valores dos argumentos:   ")); 
+			this.add(new JScrollPane(queryArgumentsPane), BorderLayout.CENTER);
 			this.add(jtbOptions, BorderLayout.PAGE_END);
-
-			TitledBorder titledBorder;
-
-			titledBorder = BorderFactory.createTitledBorder(
-					BorderFactory.createLineBorder(Color.BLUE),
-					resource.getString("AddFinding") + ": " +residentNode.getName());
-			titledBorder.setTitleColor(Color.BLUE);
-			titledBorder.setTitleJustification(TitledBorder.CENTER);
-
-			this.setBorder(titledBorder);
 
 		}
 

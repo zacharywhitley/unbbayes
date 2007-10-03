@@ -3,18 +3,22 @@ package unbbayes.gui;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -25,6 +29,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.border.TitledBorder;
 
+import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.gui.mebn.ArgumentEditionPane;
@@ -42,6 +47,7 @@ import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.gui.mebn.finding.EntityFindingEditionPane;
 import unbbayes.gui.mebn.finding.RandonVariableFindingEdtitionPane;
+import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.GenerativeInputNode;
@@ -54,7 +60,7 @@ import unbbayes.prs.mebn.exception.DuplicatedNameException;
  * the MEBN suport of the UnBBayes. All others painels of MEBN
  * are inside this panel.
  *
- *  @author Laécio Lima dos Santos
+ *  @author Laï¿½cio Lima dos Santos
  *  @author Rommel N. Carvalho
  *  @version 1.0 06/08/07
  */
@@ -158,12 +164,6 @@ public class MEBNEditionPane extends JPanel {
     private final String EMPTY_BAR = "EmptyCard";
     private final String ORDVARIABLE_BAR = "OrdVariableCard";
 
-    private final JButton btnGlobalOption;
-
-    private final JButton btnEditingMode;
-    private final JButton btnFindingMode;
-    private final JButton btnQueryMode;
-
     /* Buttons for select the active tab */
 
     private final JButton btnTabOptionTree;
@@ -235,23 +235,6 @@ public class MEBNEditionPane extends JPanel {
         txtArguments = new JTextField(10);
         txtFormula = new JTextField(15);
 
-        btnGlobalOption      = new JButton(iconController.getGlobalOptionIcon());
-        btnGlobalOption.setToolTipText(resource.getString("mFragInsertToolTip"));
-
-        btnEditingMode = new JButton(iconController.getMTheoryNodeIcon());
-        btnFindingMode = new JButton(iconController.getMTheoryNodeIcon());
-        btnQueryMode = new JButton(iconController.getMTheoryNodeIcon());
-
-        btnQueryMode.addActionListener(new ActionListener(){
-
-			public void actionPerformed(ActionEvent arg0) {
-				QueryPanel queryPanel = new QueryPanel(mebnController);
-				queryPanel.pack();
-				queryPanel.setVisible(true);
-			}
-
-        });
-
         btnTabOptionTree = new JButton(iconController.getMTheoryNodeIcon());
         btnTabOptionOVariable = new JButton(iconController.getOVariableNodeIcon());
         btnTabOptionEntity = new JButton(iconController.getObjectEntityIcon());
@@ -268,14 +251,8 @@ public class MEBNEditionPane extends JPanel {
         jtbEdition.setFloatable(true);
         jtbEdition.setOrientation(JToolBar.VERTICAL);
 
-        /* testes... */
-        //buildJtbPowerLoom();
-        jtbGeneralOptions.add(btnEditingMode);
-        jtbGeneralOptions.add(btnFindingMode);
-        jtbGeneralOptions.add(btnQueryMode);
 
-        jtbGeneralOptions.setFloatable(false);
-        topPanel.add(jtbGeneralOptions);
+        topPanel.add(new ToolBarGlobalOptions());
 
         toolBarMFrag = new ToolBarMFrag();
         toolBarResidentNode = new ToolBarResidentNode();
@@ -372,38 +349,7 @@ public class MEBNEditionPane extends JPanel {
     }
 
 
-  	private void turnForFindingMode(){
-
-  		tabsPanel.remove(jtbTabSelection);
-
-  		jtbTabSelection.removeAll();
-        jtbTabSelection.setLayout(new GridLayout(1,3));
-        jtbTabSelection.add(btnTabOptionTree);
-        jtbTabSelection.add(btnTabOptionOVariable);
-        jtbTabSelection.add(btnTabOptionEntity);
-        jtbTabSelection.setFloatable(false);
-
-        tabsPanel.add(BorderLayout.NORTH, jtbTabSelection);
-  	}
-
-  	private void turnForQueryMode(){
-        jtbTabSelection.setLayout(new GridLayout(1,3));
-        jtbTabSelection.add(btnTabOptionTree);
-        jtbTabSelection.add(btnTabOptionOVariable);
-        jtbTabSelection.add(btnTabOptionEntity);
-        jtbTabSelection.setFloatable(false);
-  	}
-
-  	private void turnForEditionMode(){
-        jtbTabSelection.setLayout(new GridLayout(1,3));
-        jtbTabSelection.add(btnTabOptionTree);
-        jtbTabSelection.add(btnTabOptionOVariable);
-        jtbTabSelection.add(btnTabOptionEntity);
-        jtbTabSelection.setFloatable(false);
-  	}
-
   	private void addActionListenersToButtons(){
-
 
   		//ao clicar no botao btnGlobalOption, mostra-se o menu para escolha das opcoes
   		btnTabOptionTree.addActionListener(new ActionListener() {
@@ -445,12 +391,6 @@ public class MEBNEditionPane extends JPanel {
     	DomainResidentNode resident = (DomainResidentNode)mebnController.getResidentNodeActive();
 
     	this.getGraphPanel().setTopComponent(new TableEditionPane(resident, mebnController));
-
-//    	JFrame popup = new JFrame();
-//    	popup.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-//    	popup.setContentPane(new TableEditionPane(resident, mebnController));
-//    	popup.pack();
-//    	popup.setVisible(true);
 
     }
 
@@ -700,7 +640,136 @@ public class MEBNEditionPane extends JPanel {
 		this.txtFormula.setText(formula);
 	}
 
+	private class ToolBarGlobalOptions extends JToolBar{
+		
 
+	    private JButton btnGlobalOption;
+
+	    private JButton btnEditingMode;
+	    private JButton btnFindingMode;
+	    private JButton btnQueryMode;
+	    
+	    private JButton btnSaveKB; 
+	    private JButton btnLoadKB; 
+		
+	    public ToolBarGlobalOptions(){
+	    	
+	    	super(); 
+	    	
+	    	btnGlobalOption = new JButton(iconController.getGlobalOptionIcon());
+	    	btnGlobalOption.setToolTipText(resource.getString("mFragInsertToolTip"));
+	    	
+	    	btnEditingMode = new JButton(iconController.getGlobalOptionIcon());
+	    	btnFindingMode = new JButton(iconController.getMTheoryNodeIcon());
+	    	btnQueryMode = new JButton(iconController.getCompileIcon());
+	    	
+	    	btnQueryMode.addActionListener(new ActionListener(){
+	    		
+	    		public void actionPerformed(ActionEvent arg0) {
+	    			QueryPanel queryPanel = new QueryPanel(mebnController);
+	    			queryPanel.pack();
+	    			queryPanel.setVisible(true);
+	    		}
+	    		
+	    	});
+	    	
+	    	/*--------------- PowerLoom Options ------------------*/
+	    	JButton btnSaveGenerative = new JButton("SVG");
+	    	btnSaveGenerative.addActionListener(new ActionListener() {
+	    		public void actionPerformed(ActionEvent ae) {
+	    			setCursor(new Cursor(Cursor.WAIT_CURSOR));
+	    			
+	    			JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+	    			chooser.setMultiSelectionEnabled(false);
+	    			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+	    			
+	    			int option = chooser.showSaveDialog(null);
+	    			if (option == JFileChooser.APPROVE_OPTION) {
+	    				File file = chooser.getSelectedFile();
+	    				if (file != null) {
+	    						mebnController.saveGenerativeMTheory(file);
+	    						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Arquivo salvo com sucesso");
+
+	    				}
+	    			}
+	    			
+	    			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	    		}
+	    	}); 
+	    	
+	    	JButton btnSaveFindings = new JButton("SVF");
+	    	btnSaveFindings.addActionListener(new ActionListener() {
+	    		public void actionPerformed(ActionEvent ae) {
+	    			setCursor(new Cursor(Cursor.WAIT_CURSOR));
+	    			
+	    			JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+	    			chooser.setMultiSelectionEnabled(false);
+	    			chooser
+	    			.setFileSelectionMode(JFileChooser.FILES_ONLY);
+	    			
+	    			int option = chooser.showSaveDialog(null);
+	    			if (option == JFileChooser.APPROVE_OPTION) {
+	    				File file = chooser.getSelectedFile();
+	    				if (file != null) {
+	    						mebnController.saveFindings(file);
+	    						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Arquivo salvo com sucesso");
+	    				}
+	    			}
+	    			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	    		}
+	    	}); 
+	    	
+	    	JButton btnLoad = new JButton("LOD");
+	    	btnLoad.addActionListener(new ActionListener() {
+	    		public void actionPerformed(ActionEvent ae) {
+	    			setCursor(new Cursor(Cursor.WAIT_CURSOR));
+	    			JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+	    			chooser.setMultiSelectionEnabled(false);
+	    			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+	    			
+	    			int option = chooser.showOpenDialog(null);
+	    			if (option == JFileChooser.APPROVE_OPTION) {
+	    				if (chooser.getSelectedFile() != null) {
+	    					mebnController.loadDefinitionsFile(chooser.getSelectedFile());
+	    					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Arquivo carregado com sucesso");
+	    				}
+	    			}
+	    			
+	    			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	    		}}); 
+	    	
+	    	JButton btnExecute = new JButton("EXE");
+	    	btnExecute.addActionListener(new ActionListener() {
+	    		public void actionPerformed(ActionEvent ae) {
+	    			setCursor(new Cursor(Cursor.WAIT_CURSOR));
+	    			
+	    			mebnController.loadGenerativeMEBNIntoKB(); 
+	    			mebnController.loadFindingsIntoKB(); 
+	    			JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Base de conhecimento criada com sucesso");
+	    		
+	    			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	    		}
+	    	}); 
+	    	
+
+	        add(btnQueryMode);
+	        
+	        addSeparator(); 
+	        
+	        add(btnExecute); 
+	        add(btnLoad); 
+	        add(btnSaveGenerative); 
+	        add(btnSaveFindings); 
+	        
+	        addSeparator(new Dimension(10, 10)); 
+	        
+	        add(btnEditingMode);
+	        
+	        setFloatable(false);
+	    }; 
+	    
+	}
+	
   	private class ToolBarEdition extends JToolBar{
 
   	    private final JButton btnAddMFrag;
@@ -1233,7 +1302,7 @@ public class MEBNEditionPane extends JPanel {
     }
 
     /*
-     * Painel que mostra a descrição do objeto selecionado.
+     * Painel que mostra a descriï¿½ï¿½o do objeto selecionado.
      */
 
   	private class DescriptionPane extends JPanel{
@@ -1275,123 +1344,100 @@ public class MEBNEditionPane extends JPanel {
   	}
 
     /*
-     * Classe com botões para utilizar o powerloom em uma forma simplificada,
+     * Classe com botï¿½es para utilizar o powerloom em uma forma simplificada,
      * entrando com os findings e queries como strings na sintaxe do PowerLoom.
      * Permite ainda salvar a MTheory atual e carregar arquivos com MTheorys
-     * e findings pré-definidos.
+     * e findings prï¿½-definidos.
      *
      * (Apenas para testes)
      */
-  	private class ToolBarPowerLoomButtons extends JToolBar{
-
-  		private final MEBNController mebnController;
-
-  		public ToolBarPowerLoomButtons(MEBNController _mebnController){
-
-  			super();
-
-  			mebnController = _mebnController;
-
-  			JButton rodarKB = new JButton("PL");
-  	        add(rodarKB);
-  	        rodarKB.addActionListener(new ActionListener() {
-  	  			public void actionPerformed(ActionEvent ae) {
-  	  				mebnController.preencherKB();
-  	  			    JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(),
-  	  					   "Base de conhecimento criada com sucesso");
-  	  			}
-  	  		});
-
-  	        JButton entityFinding = new JButton("EF");
-  	        add(entityFinding);
-  	        entityFinding.addActionListener(new ActionListener() {
-  	  			public void actionPerformed(ActionEvent ae) {
-  	  				String finding = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(),
-  	  						"Entre com o entity finding: ",
-  	  						"Test Finding",
-  	  						JOptionPane.QUESTION_MESSAGE);
-  	  				if((finding!=null)&&(!finding.equals("")))
-  	  				mebnController.makeEntityAssert(finding);
-  	  			}
-  	  		});
-
-  	        JButton finding = new JButton("RF");
-  	        add(finding);
-  	        finding.addActionListener(new ActionListener() {
-  	  			public void actionPerformed(ActionEvent ae) {
-  	  				String finding = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(),
-  	  						"Entre com o relation finding: ",
-  	  						"Test Finding",
-  	  						JOptionPane.QUESTION_MESSAGE);
-  	  				if((finding!=null)&&(!finding.equals("")))
-  	  				mebnController.makeRelationAssert(finding);
-  	  			}
-  	  		});
-
-  	        JButton link = new JButton("LK");
-  	        add(link);
-  	        link.addActionListener(new ActionListener() {
-  	  			public void actionPerformed(ActionEvent ae) {
-  	  				String ovName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(),
-  	  						"Entre com o nome da variavel ordinaria: ",
-  	  						"Test Finding",
-  	  						JOptionPane.QUESTION_MESSAGE);
-
-  	  				String entityName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(),
-  	  						"Entre com o nome da entidade: ",
-  	  						"Test Finding",
-  	  						JOptionPane.QUESTION_MESSAGE);
-
-  	  				if(((ovName!=null)&&(!ovName.equals("")))&&((entityName!=null)&&(!entityName.equals(""))))
-  	  				mebnController.linkOrdVariable2Entity(ovName, entityName);
-  	  			}
-  	  		});
-
-  	        JButton context = new JButton("CT");
-  	        add(context);
-  	        context.addActionListener(new ActionListener() {
-  	  			public void actionPerformed(ActionEvent ae) {
-  	  				mebnController.executeContext();
-  	  			}
-  	  		});
-
-  	        JButton execute = new JButton("X");
-  	        add(execute);
-  	        execute.addActionListener(new ActionListener() {
-  	  			public void actionPerformed(ActionEvent ae) {
-  	  				String command = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), "Insira o commando a ser executado");
-  	  				if((command != "")&&(command != null)){
-  	  				   String resposta = mebnController.executeCommand(command);
-  	  				   JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resposta);
-  	  				}
-  	  			}
-  	  		});
-
-  	        JButton save = new JButton("SV");
-  	        add(save);
-  	        save.addActionListener(new ActionListener() {
-  	  			public void actionPerformed(ActionEvent ae) {
-  	  				String fileName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), "Informe o nome do arquivo");
-  	  				if((fileName != "")&&(fileName != null)){
-  	  				   mebnController.saveDefinitionsFile(fileName);
-  	  				   JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Arquivo salvo com sucesso");
-  	  				}
-  	  			}
-  	  		});
-
-  	        JButton load = new JButton("LD");
-  	        add(load);
-  	        load.addActionListener(new ActionListener() {
-  	  			public void actionPerformed(ActionEvent ae) {
-  	  				String fileName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), "Informe o nome do arquivo");
-  	  				if((fileName != "")&&(fileName != null)){
-  	  				   mebnController.loadDefinitionsFile(fileName);
-  	  				   JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Arquivo carregado com sucesso");
-  	  				}
-  	  			}
-  	  		});
-  		}
-
-  	}
+//  	private class ToolBarPowerLoomButtons extends JToolBar{
+//
+//  		private final MEBNController mebnController;
+//
+//  		public ToolBarPowerLoomButtons(MEBNController _mebnController){
+//
+//  			super();
+//
+//  			mebnController = _mebnController;
+//
+//  			JButton rodarKB = new JButton("PL");
+//  	        add(rodarKB);
+//  	        rodarKB.addActionListener(new ActionListener() {
+//  	  			public void actionPerformed(ActionEvent ae) {
+//  	  				mebnController.loadGenerativeMEBNIntoKB();
+//  	  			    JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(),
+//  	  					   "Base de conhecimento criada com sucesso");
+//  	  			}
+//  	  		});
+//
+//  	        JButton entityFinding = new JButton("EF");
+//  	        add(entityFinding);
+//  	        entityFinding.addActionListener(new ActionListener() {
+//  	  			public void actionPerformed(ActionEvent ae) {
+//  	  				String finding = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(),
+//  	  						"Entre com o entity finding: ",
+//  	  						"Test Finding",
+//  	  						JOptionPane.QUESTION_MESSAGE);
+//  	  				if((finding!=null)&&(!finding.equals("")))
+//  	  				mebnController.makeEntityAssert(finding);
+//  	  			}
+//  	  		});
+//
+//  	        JButton finding = new JButton("RF");
+//  	        add(finding);
+//  	        finding.addActionListener(new ActionListener() {
+//  	  			public void actionPerformed(ActionEvent ae) {
+//  	  				String finding = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(),
+//  	  						"Entre com o relation finding: ",
+//  	  						"Test Finding",
+//  	  						JOptionPane.QUESTION_MESSAGE);
+//  	  				if((finding!=null)&&(!finding.equals("")))
+//  	  				mebnController.makeRelationAssert(finding);
+//  	  			}
+//  	  		});
+//
+//  	        JButton link = new JButton("LK");
+//  	        add(link);
+//  	        link.addActionListener(new ActionListener() {
+//  	  			public void actionPerformed(ActionEvent ae) {
+//  	  				String ovName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(),
+//  	  						"Entre com o nome da variavel ordinaria: ",
+//  	  						"Test Finding",
+//  	  						JOptionPane.QUESTION_MESSAGE);
+//
+//  	  				String entityName = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(),
+//  	  						"Entre com o nome da entidade: ",
+//  	  						"Test Finding",
+//  	  						JOptionPane.QUESTION_MESSAGE);
+//
+//  	  				if(((ovName!=null)&&(!ovName.equals("")))&&((entityName!=null)&&(!entityName.equals(""))))
+//  	  				mebnController.linkOrdVariable2Entity(ovName, entityName);
+//  	  			}
+//  	  		});
+//
+//  	        JButton context = new JButton("CT");
+//  	        add(context);
+//  	        context.addActionListener(new ActionListener() {
+//  	  			public void actionPerformed(ActionEvent ae) {
+//  	  				mebnController.executeContext();
+//  	  			}
+//  	  		});
+//
+//  	        JButton execute = new JButton("X");
+//  	        add(execute);
+//  	        execute.addActionListener(new ActionListener() {
+//  	  			public void actionPerformed(ActionEvent ae) {
+//  	  				String command = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), "Insira o commando a ser executado");
+//  	  				if((command != "")&&(command != null)){
+//  	  				   String resposta = mebnController.executeCommand(command);
+//  	  				   JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resposta);
+//  	  				}
+//  	  			}
+//  	  		});
+//
+//  		}
+//
+//  	}
 
 }

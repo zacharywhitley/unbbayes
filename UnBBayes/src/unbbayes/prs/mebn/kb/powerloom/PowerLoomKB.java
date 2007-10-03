@@ -1,12 +1,15 @@
 package unbbayes.prs.mebn.kb.powerloom;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainResidentNode;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.RandonVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.ResidentNodePointer;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVAnd;
@@ -20,11 +23,16 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import edu.isi.powerloom.Environment;
 import edu.isi.powerloom.PLI;
+import edu.isi.powerloom.PlIterator;
+import edu.isi.powerloom.logic.LogicObject;
 import edu.isi.powerloom.logic.TruthValue;
 import edu.isi.stella.Module;
+import edu.isi.stella.Stella_Object;
 
 /**
  * Use the PowerLoom for build the knowledge base from the MTheory. The Knowledge
@@ -36,13 +44,30 @@ import edu.isi.stella.Module;
  */
 public class PowerLoomKB implements KnowledgeBase{
 
-    private String moduleName = "UBModule"; 
-	
-    private Module module; 
+    private Module moduleGenerative; 
+    private Module moduleFinding; 
+    
     private Environment environment = null; 
     
 	private static final String POWER_LOOM_KERNEL_MODULE = "/PL-KERNEL/PL-USER/"; 
 	private static final boolean CASE_SENSITIVE = false; 
+	
+	private String moduleGenerativeName = "GENERATIVE_MODULE"; 
+	private String moduleFindingName = "FINDINGS_MODULE"; 
+	
+	/* 
+	 * Estrutura dos mÃ³dulos: 
+	 * 
+	 * - PL-USER
+	 * - GENERATIVE_MODULE
+	 * - FINDING_MODULE (possivelmente vÃ¡rios) 
+	 *             -> deve ser filho do mÃ³dulo pai... mas cada um deve ter nome individual
+	 *             -> fazer uma espÃ©cie de controle de versionamento automatico para o usuÃ¡rio nÃ£o se perder
+	 * 
+	 * Algum controle para indicar quais sÃ£o os mÃ³dulos de findings e quais sÃ£o
+	 * os mÃ³dulos generatives para um dado arquivo PR-OWL (UBF).
+	 * Problema para manter a consistÃªncia destes arquivos. (usuÃ¡rio alterando Generative) 
+	 */
 	
 	private static final String POSSIBLE_STATE_SUFIX = "_state"; 
 	
@@ -51,16 +76,19 @@ public class PowerLoomKB implements KnowledgeBase{
 	private static PowerLoomKB singleton = null; 
 	
 	private PowerLoomKB(){
-	    
+		
 		debug.println("Initializing...");
 	    PLI.initialize();
 	    debug.println("Done.");
 	
 	    Module fatherModule = PLI.getModule(POWER_LOOM_KERNEL_MODULE, environment); 
-	    module = PLI.createModule(moduleName, fatherModule, CASE_SENSITIVE); 
-	   
-	    debug.println(module.moduleFullName); 
-	    PLI.sChangeModule(moduleName, environment);
+	    
+	    moduleGenerative = PLI.createModule(moduleGenerativeName, fatherModule, CASE_SENSITIVE); 
+	    moduleFinding = PLI.createModule(moduleFindingName, moduleGenerative, CASE_SENSITIVE); 
+
+	    debug.println(moduleGenerative.moduleFullName); 
+	    debug.println(moduleFinding.moduleFullName); 
+        PLI.sChangeModule(moduleFindingName, environment);
 	    
 	}
 	
@@ -74,6 +102,35 @@ public class PowerLoomKB implements KnowledgeBase{
 			
 	}
 	
+	
+	
+	
+	
+	/*---------- Methods for save and load modules --------------------*/
+	
+	public void saveGenerativeMTheory(MultiEntityBayesianNetwork mebn, File file) {
+	    debug.println("Saving module..."); 
+		PLI.sSaveModule(moduleGenerativeName, file.getAbsolutePath(), "REPLACE", environment); 
+	    debug.println("...File save sucefull"); 
+	}
+
+	public void saveFindings(MultiEntityBayesianNetwork mebn, File file) {
+	    debug.println("Saving module..."); 
+		PLI.sSaveModule(moduleFindingName, file.getAbsolutePath(), "REPLACE", environment); 
+	    debug.println("...File save sucefull"); 
+	}
+
+	public void loadModule(File file) {
+		debug.println("Loading module...");
+		PLI.load(file.getAbsolutePath(), environment); 
+		debug.println("File load sucefull");
+	}
+	
+    
+	
+	
+	/*---------- Methods for insert elements in the KB --------------------*/
+	
 	/**
 	 * Insert the entity into KB. 
 	 * 
@@ -81,15 +138,15 @@ public class PowerLoomKB implements KnowledgeBase{
 	 * (DEFCONCEPT CATEGORY_LABEL)
 	 * (ASSERT (CLOSED CATEGORY_LABEL))
 	 * 
-	 * Nota: As object entities são salvas pelo seu tipo (label) ao invés de
+	 * Nota: As object entities sï¿½o salvas pelo seu tipo (label) ao invï¿½s de
 	 * pelo seu nome porque as suas instancias tem referencia apenas ao tipo. 
 	 */
 	public void executeConceptDefinition(ObjectEntity entity){
 		
-		debug.println("Concept definition: " + entity.getType()); 
-		PLI.sCreateConcept(entity.getType().toString(), null, moduleName, environment); 
-		PLI.sEvaluate("(assert ( closed " + entity.getType() +" ) )", moduleName, environment); 
+		LogicObject lo = PLI.sCreateConcept(entity.getType().toString(), null, moduleGenerativeName, environment); 
+		debug.println(lo.toString()); 
 		
+		//PLI.sEvaluate("(assert ( closed " + entity.getType() +" ) )", moduleName, environment);  
 	}
 	
 	/**
@@ -105,8 +162,6 @@ public class PowerLoomKB implements KnowledgeBase{
 	 * 
 	 */
 	public void executeRandonVariableDefinition(DomainResidentNode resident){
-		
-		debug.println("Randon variable definition: " + resident.getName()); 
 		
 		List<Entity> states = resident.getPossibleValueList(); 
 		
@@ -132,10 +187,10 @@ public class PowerLoomKB implements KnowledgeBase{
 				setofList = setofList.substring(0, setofList.length() - 1); //tirar a virgula final
 			}
 			
-			//definição da imagem da função
+			//definiï¿½ï¿½o da imagem da funï¿½ï¿½o
 			String residentStateListName = resident.getName() + POSSIBLE_STATE_SUFIX; 
 			PLI.sEvaluate("(defconcept " + residentStateListName + 
-					"(?z) :<=> (member-of ?z ( setof " + setofList + ")))", moduleName, environment);
+					"(?z) :<=> (member-of ?z ( setof " + setofList + ")))", moduleGenerativeName, environment);
 			
 			range = "(" + "?range " +  residentStateListName + ")"; 	
 			
@@ -149,7 +204,7 @@ public class PowerLoomKB implements KnowledgeBase{
 		
 		}
 		
-		/* Passo 2: definir o nó residente */
+		/* Passo 2: definir o nï¿½ residente */
 		String arguments = ""; 
 		List<OrdinaryVariable> listVariables = resident.getOrdinaryVariableList(); 
 		
@@ -161,15 +216,12 @@ public class PowerLoomKB implements KnowledgeBase{
 			i++; 
 		}
 		
-		PLI.sEvaluate("(deffunction " + resident.getName() + " (" + arguments + range + "))", moduleName, null); 
+		Stella_Object result = PLI.sEvaluate("(deffunction " + resident.getName() + " (" + arguments + range + "))", moduleGenerativeName, null); 
+		debug.println(result.toString()); 
 		
-		/*Passo 3: setar mundo fechado*/
-		PLI.sEvaluate("(assert (closed " + resident.getName() + "))", moduleName, null);
+		//TODO closed or open world ? 
+		//PLI.sEvaluate("(assert (closed " + resident.getName() + "))", moduleName, null);
 		
-	}
-	
-	public String executeCommand(String command){
-		return PLI.sEvaluate(command, moduleName, null).toString();
 	}
 	
 	/**
@@ -177,11 +229,48 @@ public class PowerLoomKB implements KnowledgeBase{
 	 * assert devidamente entre parenteses. 
 	 * @param entityFinding
 	 */
-	public void executeEntityFinding(String entityFinding){
-		debug.println("Entity finding: " + entityFinding); 
-		PLI.sAssertProposition(entityFinding, moduleName, null); 	
+	public void executeEntityFinding(ObjectEntityInstance entityFinding){
+		debug.println("Entity finding: " + entityFinding.getName()); 
+		
+		//(Starship Enterprise)
+		String assertCommand = "("; 
+		assertCommand+= entityFinding.getInstanceOf().getType().toString() + " "; 
+		assertCommand+= entityFinding.getName(); 
+		assertCommand+=")"; 
+		
+		PlIterator iterator = PLI.sAssertProposition(assertCommand, moduleFindingName, null); 	
+		while(iterator.nextP()){
+			debug.println(iterator.value.toString()); 
+		}
 	}
 
+	public void executeRandonVariableFinding(RandonVariableFinding randonVariableFinding){
+		
+		String finding = ""; 
+		finding+= "(=";
+		   finding+= "("; 
+		   finding+= randonVariableFinding.getNode().getName(); 
+		      finding+=" "; 
+		         boolean isFirst = true; //usado para nÃ£o colocar virgula antes do primeiro elemento. 
+		         for(Entity argument: randonVariableFinding.getArguments()){
+		        	 if(isFirst){
+		        		isFirst = false;  
+		        	 }else{
+		        		 finding+=","; 
+		        	 }
+		        	 finding+=argument.getName();
+		         }
+		   finding+= ") "; 
+		   finding+= randonVariableFinding.getState().getName();  
+		finding+= ")";
+		
+		PlIterator iterator = PLI.sAssertProposition(finding, moduleFindingName, null); 
+		
+		while(iterator.nextP()){
+			debug.println(iterator.value.toString()); 
+		}
+	}
+	
 	/**
 	 * O texto da definicao nao precisa conter o assert... apenas o conteudo do
 	 * assert devidamente entre parenteses. 
@@ -189,25 +278,35 @@ public class PowerLoomKB implements KnowledgeBase{
 	 */
 	public void executeRandonVariableFinding(String randonVariableFinding){
 		debug.println("Randon variable finding: " + randonVariableFinding); 
-		PLI.sAssertProposition(randonVariableFinding, moduleName, null); 
+		PLI.sAssertProposition(randonVariableFinding, moduleGenerativeName, null); 
+	}
+	
+
+	
+	
+	
+	
+	
+	private String executeCommand(String command){
+		return PLI.sEvaluate(command, moduleFindingName, null).toString();
 	}
 	
 	/*
 	 * 
 	 * Deve ser criada uma lista com as variaveis ordinarias que deverao
-	 * ser instanciadas antes de se tentar resolver um nó de contexto. 
-	 * As variáveis exemplares, por outro lado, não serão nunca instanciadas. 
+	 * ser instanciadas antes de se tentar resolver um nï¿½ de contexto. 
+	 * As variï¿½veis exemplares, por outro lado, nï¿½o serï¿½o nunca instanciadas. 
 	 * 
-	 * Usaremos deste ultimo fato para definir o que é uma variável ordinária
-	 * e o que é uma variável exemplar: sempre que a variável ordinária não 
-	 * estiver preenchida ela é uma exemplar (observe a responsabiliade de quem
-	 * chama esta função: deve preencher todas as VO's, não permitindo o 
-	 * prosseguimento caso haja alguma não preenchida). 
+	 * Usaremos deste ultimo fato para definir o que ï¿½ uma variï¿½vel ordinï¿½ria
+	 * e o que ï¿½ uma variï¿½vel exemplar: sempre que a variï¿½vel ordinï¿½ria nï¿½o 
+	 * estiver preenchida ela ï¿½ uma exemplar (observe a responsabiliade de quem
+	 * chama esta funï¿½ï¿½o: deve preencher todas as VO's, nï¿½o permitindo o 
+	 * prosseguimento caso haja alguma nï¿½o preenchida). 
 	 *
-     * Nota de implementação:
-     * - Nesta versão de teste, cada ov estara com a entidade que a preenche
-	 * anexada a esta... A versão final pode utilizar outra estratégia...
-	 * (sera usado o método "ov.getEntity()")
+     * Nota de implementaï¿½ï¿½o:
+     * - Nesta versï¿½o de teste, cada ov estara com a entidade que a preenche
+	 * anexada a esta... A versï¿½o final pode utilizar outra estratï¿½gia...
+	 * (sera usado o mï¿½todo "ov.getEntity()")
 	 */
 	
 	public boolean executeContextFormula(ContextNode context){
@@ -228,7 +327,7 @@ public class PowerLoomKB implements KnowledgeBase{
 		debug.println("Original formula: " + context.getLabel()); 
 		debug.println("PowerLoom Formula: " + formula); 
 		
-	    TruthValue answer = PLI.sAsk(formula, moduleName, null);
+	    TruthValue answer = PLI.sAsk(formula, moduleFindingName, null);
 	    
 	    if (PLI.isTrue(answer)) {
 	        debug.println("Result: true");
@@ -249,8 +348,8 @@ public class PowerLoomKB implements KnowledgeBase{
 	 * 
 	 * @param name Name of the file
 	 */
-	public void saveDefinitionsFile(String name){
-		PLI.sSaveModule(moduleName, name, "REPLACE", environment); 
+	private void saveDefinitionsFile(String name){
+		PLI.sSaveModule(moduleGenerativeName, name, "REPLACE", environment); 
 	}
 	
 	/**
@@ -258,7 +357,7 @@ public class PowerLoomKB implements KnowledgeBase{
 	 * 
 	 * @param name Name of the file
 	 */
-	public void loadDefinitionsFile(String name){
+	private void loadDefinitionsFile(String name){
 		PLI.load(name, environment); 
 	}
 	
@@ -486,6 +585,31 @@ public class PowerLoomKB implements KnowledgeBase{
 		public void ln(){
 			System.out.println(); 
 		}
+	}
+
+	
+	
+	
+	
+
+	public boolean existEntity(String name) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public Type getTypeByEntity(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String searchFinding(String nameRV, List<String> listArguments) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public List<Entity> getEntityByType(Type type) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

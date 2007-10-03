@@ -161,7 +161,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"mTheoryEditionTip", "Editar atributos da MTheory"}, 		
 		{"isGloballyExclusive", "Exclusivo globalmente"}, 
 		
-		{"showMTheoryToolTip","Mostrar �?rvore da MTheory"},	
+		{"showMTheoryToolTip","Mostrar Árvore da MTheory"},	
 		{"showEntitiesToolTip","Mostrar entidades da MTheory"},
 		{"showOVariablesToolTip","Mostrar ovariables da MFrag"},			
 		
@@ -191,7 +191,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"ResidentTabTitle", "Nó Residente"}, 
 		{"InputTabTitle", "Nó de Input"}, 
 		{"ContextTabTitle", "Nó de Contexto"}, 
-		{"MTheoryTreeTitle", "�?rvore MTheory"}, 
+		{"MTheoryTreeTitle", "Árvore MTheory"}, 
 		{"EntityTitle", "Entidade"}, 
 		{"OVariableTitle", "Variável Ord."},
 		{"ArgumentTitle", "Argumentos"}, 
@@ -207,7 +207,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"ContextButton", "Context"}, 
 		{"MFragButton", "MFrag"}, 	
 		{"ArgumentsButton", "Argumentos"}, 	
-		{"OrdVariableButton", "Vari�vel"}, 
+		{"OrdVariableButton", "Variável"}, 
 		
 		{"whithotMFragActive","Não há MFrag ativa"},			
 		{"previewTitle","Pré visualização"},

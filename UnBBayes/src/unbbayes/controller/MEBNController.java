@@ -1,14 +1,12 @@
 package unbbayes.controller;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-
-import javax.swing.JFrame;
 
 import unbbayes.gui.MEBNEditionPane;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.mebn.OVariableEditionPane;
-import unbbayes.gui.mebn.finding.EntityFindingEditionPane;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
@@ -19,6 +17,7 @@ import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.RandonVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
@@ -34,15 +33,16 @@ import unbbayes.prs.mebn.exception.DuplicatedNameException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
+import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.util.Debug;
 
 /**
  * Controller of the MEBN structure.
  *
- * Utilizado pelas classes de GUI para fazer solicitar alterações na
- * estrutura do MEBN. Faz as atualizações necessárias nas telas após a
- * ação sobre a estrutura do MEBN ser atualizada.
+ * Utilizado pelas classes de GUI para fazer solicitar alteraï¿½ï¿½es na
+ * estrutura do MEBN. Faz as atualizaï¿½ï¿½es necessï¿½rias nas telas apï¿½s a
+ * aï¿½ï¿½o sobre a estrutura do MEBN ser atualizada.
  *
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * @version 1.0 05/29/07
@@ -115,7 +115,7 @@ public class MEBNController {
 	/*---------------------------- Edge ---------------------------*/
 
     /**
-     *  Faz a ligacão do arco desejado entre pai e filho. Deve preencher de forma
+     *  Faz a ligacï¿½o do arco desejado entre pai e filho. Deve preencher de forma
      *  correta as listas que precisam ser atualizadas.
      *
      * @param  edge  um <code>TArco</code> que representa o arco a ser ligado
@@ -129,7 +129,6 @@ public class MEBNController {
     	((DomainMFrag)mFragCurrent).addEdge(edge);
 
     }
-
 
 	/*---------------------------- MFrag ----------------------------*/
 
@@ -746,7 +745,7 @@ public class MEBNController {
 	/**
 	 * Adiciona uma nova entidade com o nome passado como parametro
 	 * pelo usuario. O tipo da entidade sera um nome gerado automaticamente, a
-	 * partir do passado pelo usuário.
+	 * partir do passado pelo usuï¿½rio.
 	 */
 	public ObjectEntity createObjectEntity() throws TypeException{
 
@@ -821,28 +820,51 @@ public class MEBNController {
 	 * Insert the MEBN Generative into KB.
 	 * (Object Entities and Domain Resident Nodes)
 	 */
-	public void preencherKB(){
-
-		PowerLoomKB test = PowerLoomKB.getInstanceKB();
+	public void loadGenerativeMEBNIntoKB(){
+		KnowledgeBase knowledgeBase = PowerLoomKB.getInstanceKB();
 
 		for(ObjectEntity entity: multiEntityBayesianNetwork.getObjectEntityContainer().getListEntity()){
-			test.executeConceptDefinition(entity);
+			knowledgeBase.executeConceptDefinition(entity);
 		}
 
 		for(DomainMFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
 			for(ResidentNode resident: mfrag.getDomainResidentNodeList()){
-				test.executeRandonVariableDefinition((DomainResidentNode)resident);
+				knowledgeBase.executeRandonVariableDefinition((DomainResidentNode)resident);
 			}
 		}
-
-		EntityFindingEditionPane entityPane = new EntityFindingEditionPane(this);
-		JFrame frameTest = new JFrame();
-		frameTest.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		frameTest.setContentPane(entityPane);
-		frameTest.pack();
-		frameTest.setVisible(true);
+	}
+	
+	public void loadFindingsIntoKB(){
+		KnowledgeBase knowledgeBase = PowerLoomKB.getInstanceKB();		
+		
+		for(ObjectEntityInstance instance: multiEntityBayesianNetwork.getObjectEntityContainer().getListEntityInstances()){
+			 knowledgeBase.executeEntityFinding(instance); 
+		}
+		
+		for(DomainMFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
+			for(DomainResidentNode residentNode : mfrag.getDomainResidentNodeList()){
+				for(RandonVariableFinding finding: residentNode.getRandonVariableFindingList()){
+					knowledgeBase.executeRandonVariableFinding(finding); 
+				}
+			}
+		}
+		
 	}
 
+	public void saveGenerativeMTheory(File file){
+		PowerLoomKB.getInstanceKB().saveGenerativeMTheory(getMultiEntityBayesianNetwork(), file);
+	}
+
+	public void saveFindings(File file){
+		PowerLoomKB.getInstanceKB().saveFindings(getMultiEntityBayesianNetwork(), file);
+	}
+
+	public void loadDefinitionsFile(File file){
+		PowerLoomKB.getInstanceKB().loadModule(file);
+	}
+	
+	
+	
 	/**
 	 * Execute the list of context nodes of the current MFrag.
 	 * (this version only print the result in console)
@@ -869,9 +891,9 @@ public class MEBNController {
 	 * @param assertComand Assert in powerloom sintaxe
 	 */
 	public void makeEntityAssert(String assertComand){
-		    PowerLoomKB test = PowerLoomKB.getInstanceKB();
+		  PowerLoomKB test = PowerLoomKB.getInstanceKB();
 
-		    test.executeEntityFinding(assertComand);
+		    //test.executeEntityFinding(assertComand);
 
 	}
 
@@ -884,35 +906,16 @@ public class MEBNController {
 	 * @param assertComand Assert in powerloom sintaxe
 	 */
 	public void makeRelationAssert(String assertComand){
-	    PowerLoomKB test = PowerLoomKB.getInstanceKB();
-
-	    test.executeRandonVariableFinding(assertComand);
+	    PowerLoomKB.getInstanceKB().executeRandonVariableFinding(assertComand);
 	}
 
-	public void saveDefinitionsFile(String fileName){
-		PowerLoomKB test = PowerLoomKB.getInstanceKB();
-
-		Debug.println(this.getClass(), "[PowerLoom] Saving module...");
-		test.saveDefinitionsFile(fileName + ".plm");
-		Debug.println(this.getClass(), "[PowerLoom] ...File save sucefull");
-
-	}
-
-	public void loadDefinitionsFile(String fileName){
-		PowerLoomKB test = PowerLoomKB.getInstanceKB();
-
-		Debug.println(this.getClass(), "[PowerLoom] Loading module...");
-		test.loadDefinitionsFile(fileName + ".plm");
-		Debug.println(this.getClass(), "[PowerLoom] ...File load sucefull");
-
-	}
 
 	/**
 	 *Apenas de teste...
 	 *
-	 * Preenche uma variável ordinária com uma entidade...
+	 * Preenche uma variï¿½vel ordinï¿½ria com uma entidade...
 	 *
-	 * @param nameOV Nome da OV que será linkada (jah deve existir)
+	 * @param nameOV Nome da OV que serï¿½ linkada (jah deve existir)
 	 * @param entity Entidade a ser criada e linkada.
 	 */
 	public void linkOrdVariable2Entity(String nameOV, String entity){
@@ -938,13 +941,6 @@ public class MEBNController {
 		}
 	}
 
-	public String executeCommand(String command){
-		PowerLoomKB test = PowerLoomKB.getInstanceKB();
-		return test.executeCommand(command);
-	}
-
-
-
 	public MultiEntityBayesianNetwork getMultiEntityBayesianNetwork() {
 		return multiEntityBayesianNetwork;
 	}
@@ -960,5 +956,13 @@ public class MEBNController {
 
 	public void setMebnEditionPane(MEBNEditionPane mebnEditionPane) {
 		this.mebnEditionPane = mebnEditionPane;
+	}
+
+	public NetworkWindow getScreen() {
+		return screen;
+	}
+
+	public void setScreen(NetworkWindow screen) {
+		this.screen = screen;
 	}
 }
