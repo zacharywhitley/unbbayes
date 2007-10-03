@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasilia
  *
  *  This file is part of UnbBayes.
  *
@@ -22,7 +22,7 @@
 package unbbayes.io;
 
 /**
- * Classe de exceção de se carregar uma rede.
+ * Exception class when loading a network.
  * @author Rommel N. Carvalho
  * @author Michael S. Onishi
  * @version 1.0

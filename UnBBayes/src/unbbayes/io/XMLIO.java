@@ -43,8 +43,8 @@ import unbbayes.prs.msbn.SubNetwork;
 import unbbayes.util.ArrayMap;
 import unbbayes.util.NodeList;
 
-/**
- * Manipula a entrada e saida de arquivos XMLBIF
+/** 
+ * Manipulates I/O of XMLBIF file format
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * @author Shigeki (version 1.0)
  * @version 2.0
@@ -141,9 +141,10 @@ public class XMLIO implements BaseIO{
 //	----------------------------------------------------------------------------------------
 	
 	
-	/* Recupera a rede a partir de um aquivo XML 
-	 * input: arquivo no qual se encontra a rede
-	 * pn: rede onde será feito o load (nota: a rede já deve ter sido criada)
+	/* 
+	 * Recuperates a net from a XML file
+	 * input: file where the net resides
+	 * pn: net where the load should be done (note:the net should be already created)
 	 * */ 
 	
 	private SingleEntityNetwork loadXML(File input, SingleEntityNetwork pn) throws LoadException, IOException, JAXBException{
@@ -265,8 +266,8 @@ public class XMLIO implements BaseIO{
 			return pn; 
 	}
 	
-	/* Salva a rede em um arquivo xml 
-	 * net: rede a ser salva
+	/* Saves the net in XML file
+	 * net: net to be saved
 	 */
 	
 	private void saveXML(FileWriter arqoutput, SingleEntityNetwork net) throws JAXBException {
@@ -696,8 +697,8 @@ public class XMLIO implements BaseIO{
 	}	
 	
 	/* 
-	 * preenche no modelo XML um elemento root seguido por todos os seus filhos e
-	 * logo após, recursivamente faz a mesma coisa para cada um dos filhos. 
+	 * fills the XML model a root element followed by all its children, and aps logos, recursevely
+	 * it does the same for all its children. 
 	 */
 	private void processTreeNode (
 			TreeNode node,
@@ -711,7 +712,7 @@ public class XMLIO implements BaseIO{
 		
 		root.setNAME(node.toString());
 		
-		//Inserir os filhos como level e armazena-los para serem percorridos depois
+		//insert children as level and save'em to be searched after
 		int childCount = model.getChildCount(node);
 		System.out.print("\nFilhos = " + childCount); 
 		if (!node.isLeaf()) {
@@ -776,7 +777,7 @@ public class XMLIO implements BaseIO{
 		return root; 
 	}
 	
-	/* retorna nodo com o nome especificado e o retira da lista */
+	/* returns a node with specified name and removes it from the list*/
 	private DefaultMutableTreeNode getAtualNode(ArrayList<DefaultMutableTreeNode> rootsTree, String name){
 	    boolean achou = false;  
 		int index = 0; 

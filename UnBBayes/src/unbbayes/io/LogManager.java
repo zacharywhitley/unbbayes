@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasilia
  *
  *  This file is part of UnbBayes.
  *
@@ -36,7 +36,7 @@ import unbbayes.prs.bn.Separator;
 import unbbayes.util.NodeList;
 
 /**
- * Responsável por gerar o log de compilação da rede.
+ * Responsible for generating network compilation log
  * @author Rommel N. Carvalho
  * @author Michael S. Onishi
  * @version 1.0
@@ -68,8 +68,7 @@ public class LogManager implements java.io.Serializable {
     }
 
     /**
-     *  Inicializa o arquivo de log de compilação da rede. Escreve o cabeçalho no
-     *  arquivo.
+     *  Initializes the logfile of network compilation. Writes the header inside the file.
      */
     public void reset() {
         clear();

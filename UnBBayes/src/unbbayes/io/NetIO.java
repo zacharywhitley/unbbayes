@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de BrasÃ­lia
  *
  *  This file is part of UnbBayes.
  *
@@ -55,10 +55,10 @@ import unbbayes.util.ArrayMap;
 import unbbayes.util.NodeList;
 
 /**
- * Classe que manipula a entrada e saída de arquivos NET.
+ * Manipulates input/output of NET files.
  * @author Rommel N. Carvalho
  * @author Michael S. Onishi
- * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ * @author Mrio Henrique Paes Vieira (mariohpv@bol.com.br)
  * @version 1.0
  */
 public class NetIO implements BaseIO {
@@ -70,12 +70,11 @@ public class NetIO implements BaseIO {
 	private static final String ERROR_NET = resource.getString("errorNet");
 	
 	/**
-	 *  Carrega a rede de um arquivo no formato NET.
-	 *
-	 * @param  input  arquivo a ser lido.
-	 * @return rede carregada.
-	 * @throws LoadException caso existam erros na fase de carregamento da rede
-	 * @throws IOException caso existam erros no processo de manipulação de arquivos.
+	 *  Loads a NET format file
+	 * @param  input  file to be read.
+	 * @return loaded net.
+	 * @throws LoadException when there were errors loading the network
+	 * @throws IOException in case there were errors when manipulating files.
 	 */
 	public ProbabilisticNetwork load(File input)
 		throws LoadException, IOException {
@@ -88,10 +87,10 @@ public class NetIO implements BaseIO {
 	}
 
 	/**
-	 *  Salva a rede em um arquivo no formato NET básico.
+	 * Saves a network in basic NET file format.
 	 *
-	 * @param  output arquivo onde a rede será salva.
-	 * @param net rede a ser salva.
+	 * @param  output file where the net should be saved.
+	 * @param net network to be saved.
 	 */
 	public void save(File output, SingleEntityNetwork net) throws FileNotFoundException {
 		PrintStream arq = new PrintStream(new FileOutputStream(output));
@@ -193,9 +192,9 @@ public class NetIO implements BaseIO {
 			arq.println("}");
 			arq.println();
 		}
-		/*
-		 * fim da escrita das variaveis!
-		 * agora vamos à escrita dos potenciais!
+		/* 
+		 * end of variable writing
+		 * let's start writing potenciais!
 		 */
 		for (int c1 = 0; c1 < net.getNodeCount(); c1++) {
 			auxNo1 = (Node) net.getNodeAt(c1);
@@ -343,7 +342,7 @@ public class NetIO implements BaseIO {
 						proximo(st);
 						StringBuffer sb = new StringBuffer(st.sval);
 						DefaultMutableTreeNode root =
-							new DefaultMutableTreeNode("Variáveis de Informação");
+							new DefaultMutableTreeNode("Variveis de Informao");
 						loadHierarchicTree(sb, root);
 
 						// construct tree
