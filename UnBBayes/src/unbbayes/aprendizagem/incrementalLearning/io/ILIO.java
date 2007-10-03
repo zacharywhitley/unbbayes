@@ -92,14 +92,14 @@ public class ILIO {
                .getCurrentDirectory());
        chooser.setMultiSelectionEnabled(false);
        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-       // adicionar FileView no FileChooser para desenhar �cones de
+       // adicionar FileView no FileChooser para desenhar ícones de
        // arquivos
        int option = chooser.showSaveDialog(null);
        if (option == JFileChooser.APPROVE_OPTION) {
            File file = chooser.getSelectedFile();
            if (file != null) {
                return file;
-           }
+           } 
        }
        return null;
    }

@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Bras�lia
+ *  Copyright (C) 2002 Universidade de Brasília
  *
  *  This file is part of UnbBayes.
  *
@@ -265,8 +265,8 @@ public abstract class CBLToolkit extends LearningToolkit {
 			// esAncMor = moralize(esAnc);
 			/*
 			 * int[] peace; for(int i = 0 ; i < esAncMor.size(); i++){ peace =
-			 * (int[])esAncMor.get(i); System.out.println("N� 1 = "+ peace[0] + "
-			 * N� 2 = "+ peace[1]); }
+			 * (int[])esAncMor.get(i); System.out.println("Nó 1 = "+ peace[0] + "
+			 * Nó 2 = "+ peace[1]); }
 			 */
 		} else {
 			esAncMor = (ArrayList) esx.clone();
@@ -327,7 +327,7 @@ public abstract class CBLToolkit extends LearningToolkit {
 		ArrayList<Object> sep = new ArrayList<Object>();
 		ArrayList<Object> sep2 = new ArrayList<Object>();
 		/*
-		 * � usada uma estrutura de Set para que n�o aja elementos repetidos
+		 * é usada uma estrutura de Set para que não aja elementos repetidos
 		 */
 		TreeSet<Integer> nn1 = new TreeSet<Integer>();
 		TreeSet<Integer> nn2 = new TreeSet<Integer>();

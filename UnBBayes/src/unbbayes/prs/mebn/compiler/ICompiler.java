@@ -5,19 +5,19 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.mebn.exception.MEBNException;
 
-public interface AbstractCompiler {
+public interface ICompiler {
 
 	/**
 	 * Initializes compiler. Sets the text to parse by
 	 * parse() method
 	 * @param text: text to parse
-	 * @see unbbayes.gui.UnBBayesFrame.prs.mebn.compiler.AbstractCompiler#parse()
+	 * @see unbbayes.gui.UnBBayesFrame.prs.mebn.compiler.ICompiler#parse()
 	 */
 	public abstract void init(String text);
 	
 	/**
 	 * Parse the string passed by init method
-	 * @see unbbayes.gui.UnBBayesFrame.prs.mebn.compiler.AbstractCompiler#init(String)
+	 * @see unbbayes.gui.UnBBayesFrame.prs.mebn.compiler.ICompiler#init(String)
 	 */
 	public abstract void parse() throws MEBNException;
 	

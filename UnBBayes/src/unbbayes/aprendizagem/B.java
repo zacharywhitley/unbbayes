@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Bras�lia
+ *  Copyright (C) 2002 Universidade de Brasília
  *
  *  This file is part of UnbBayes.
  *
@@ -26,10 +26,9 @@ import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
- *   Essa classe implementa os m�todos necess�rios para que
- *   o algoritmo B funcione .O algoritmo k2 � um
- *   algoritmo de aprendizagem que utiliza a busca em pontua�ao. *
- *   @author     Danilo Cust�dio
+ * 	 This class implements methods which are necessary to make the algorithm B to work.
+ *   The k2 algorithm is a learning algorithm which uses scoring search (busca em pontuacao)
+ *   @author     Danilo Custódio
  *   @version    1.0
  *   @see TAprendizagemTollKit
  */
@@ -38,17 +37,16 @@ public class B extends BToolkit{
 	
 
 
-    /**
-    * M�todo que representa a fun�ao principal do algoritmo B.
-    * Esse m�todo recebe um lista de vari�veis, uma matriz com
-    * os dados do arquivo, uma matriz arranjo que possui a pontu
-    * acao de cada para de elemento e a partir disso monta a rede
-    * bayseana correspondente aquele arquivo.
+   /**
+    * Method which represents the main function of B algorithm.
+    * This method accepts a list of variables, an array
+    * with data from the archive, another array containing the scores
+    * of each elements. Based on those informations, this method
+    * builds the bayesian network of that archive.
     *
-    * @param variaveis Lista de vari�veis(<code>List</code>)
-    * @param BaseDados Representa��o do arquivo em mem�ria(<code>int[][]<code>)
-    * @param vetor     Vetor que indica quantas vezes uma linha do arquivo se repete
-    * (<code>int[]<code>)
+    * @param variaveis List of variables(<code>List</code>)
+    * @param BaseDados On-memory representation of the archive(<code>int[][]<code>)
+    * @param vetor     Vector representing how many times a line withing the archive is repeating(<code>int[]<code>)
     * @see LearningNode
     * @see Tnij
     * @see TAprendizagemTollKit

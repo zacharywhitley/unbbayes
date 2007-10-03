@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Bras�lia
+ *  Copyright (C) 2002 Universidade de Brasília
  *
  *  This file is part of UnbBayes.
  *
@@ -134,11 +134,11 @@ public class CBLB extends CBLToolkit {
 	/* Coloca os primeiros arcos da estrutura */
 	private ArrayList scketch() {
 		int n = this.variablesVector.size();
-		/* imAux recebe as informa��es mutuas auxiliares */
+		/* imAux recebe as informações mutuas auxiliares */
 		double imAux;
 		ArrayList<double[]> ls = new ArrayList<double[]>();
 		/*
-		 * Seta as informa��es mutuas de cada par, a informcao mutua de ab � a
+		 * Seta as informações mutuas de cada par, a informcao mutua de ab é a
 		 * mesma de ba
 		 */
 		for (int i = 0; i < n; i++) {
@@ -154,8 +154,8 @@ public class CBLB extends CBLToolkit {
 		sort(ls);
 		double[] peace;
 		/*
-		 * Verifica se h� caminhos abertos entre as variaveis, caso n�o haja �
-		 * adionado um novo caminho entre essas variaveis
+		 * Verifica se há caminhos abertos entre as variaveis, caso não haja é
+		 * adicionado um novo caminho entre essas variaveis
 		 */
 		for (int i = 0; i < ls.size(); i++) {
 			peace = (double[]) ls.get(i);
@@ -225,11 +225,11 @@ public class CBLB extends CBLToolkit {
 
 	private ArrayList scketch(int classex) {
 		int n = this.variablesVector.size();
-		/* imAux recebe as informa��es mutuas auxiliares */
+		/* imAux recebe as informações mutuas auxiliares */
 		double imAux;
 		ArrayList ls = new ArrayList();
 		/*
-		 * Seta as informa��es mutuas de cada par, a informcao mutua de ab � a
+		 * Seta as informações mutuas de cada par, a informcao mutua de ab é a
 		 * mesma de ba
 		 */
 		for (int i = 0; i < n; i++) {
@@ -244,7 +244,7 @@ public class CBLB extends CBLToolkit {
 		sort(ls);
 		double[] peace;
 		/*
-		 * Verifica se h� caminhos abertos entre as variaveis, caso n�o haja �
+		 * Verifica se há caminhos abertos entre as variaveis, caso não haja é
 		 * adionado um novo caminho entre essas variaveis
 		 */
 		for (int i = 0; i < ls.size(); i++) {

@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Bras�lia
+ *  Copyright (C) 2002 Universidade de Brasília
  *
  *  This file is part of UnbBayes.
  *
@@ -116,7 +116,7 @@ public class ChooseVariablesWindow extends JDialog {
 		centerPanel.add(scrollPane);
 		buttonPanel.add(ok);
 		centerPanel.add(buttonPanel);
-		container.add(new JLabel("Escolha a vari�vel de Classe"),
+		container.add(new JLabel("Escolha a variável de Classe"),
 				BorderLayout.NORTH);
 		ok.addActionListener(okListener2);
 		container.add(centerPanel, BorderLayout.CENTER);
@@ -146,7 +146,7 @@ public class ChooseVariablesWindow extends JDialog {
 			if (classei != -1) {
 				dispose();
 			} else {
-				String msg = "Escolha a vari�vel a ser predita!";
+				String msg = "Escolha a variável a ser predita!";
 				JOptionPane.showMessageDialog(null, msg, "ERROR",
 						JOptionPane.ERROR_MESSAGE);
 			}

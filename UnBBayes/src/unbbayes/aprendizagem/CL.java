@@ -9,7 +9,7 @@ import unbbayes.util.NodeList;
 /**
  * TAN
  * @version 1.0
- * @author Gabriel Guimar�es - aluno de IC 2005-2006
+ * @author Gabriel Guimarães - aluno de IC 2005-2006
  * @author Marcelo Ladeira - Orientador
  * @author Patricia Marinho
  */
@@ -62,7 +62,7 @@ public class CL extends CBLToolkit{
 		desenharede();
 		}
 	/**
-	 * log na base 2
+	 * log  base 2
 	 * @param numero
 	 * @return
 	 */
@@ -70,7 +70,7 @@ public class CL extends CBLToolkit{
         return Math.log(numero)/Math.log(2);
     }
 	/*
-	 * Informa��o mutua da variavel xk para a xi
+	 * Informação mutua da variavel xk para a xi
 	 */	
 	public double mutualInformation(LearningNode xi,LearningNode xk){    	
     	int nt = 0;
@@ -169,7 +169,7 @@ public class CL extends CBLToolkit{
     
 	
 	/*
-	 * Cria matriz de informa��es mutuas
+	 * Cria matriz de informações mutuas
 	 */	
 	public void calculainformacoes() {
 	for(int i=0;i<nvar;i++){
@@ -194,7 +194,7 @@ public class CL extends CBLToolkit{
 					posicao=i;					
 				}}raiz=posicao;	}}
 	/**
-	 * Detecta proxima �rvore v�lida
+	 * Detects the next valid tree
 	 * @return
 	 */
 	protected boolean proxima(){
@@ -207,7 +207,7 @@ public class CL extends CBLToolkit{
 	
 	return (l!=nvar-3);}
 	/*
-	 * Valida ou n�o uma �rvore
+	 * Valida ou não uma Árvore
 	 */
 	protected boolean valida_arvore(){
 		int i;
@@ -224,7 +224,7 @@ public class CL extends CBLToolkit{
 		return !houveciclo;
 		}
 	/*
-	 * Soma das informa��es mutuas entre cada filho e seu pai
+	 * Soma das informações mutuas entre cada filho e seu pai
 	 */
 	protected double infoatual(){
 		double resultado=0;
@@ -269,7 +269,7 @@ public class CL extends CBLToolkit{
 
 	private void desenharede(){
 		for(int i=0;i<nvar;i++){
-//			TODO SER� QUE EST� CORRETO???
+//			TODO Is this correct???
 //			variaveis.ClearChildrenFrom(i);
 //			variaveis.ClearParentsFrom(i);
 			variaveis.remove(i);
@@ -279,7 +279,7 @@ public class CL extends CBLToolkit{
 		for(int i=0;i<nvar;i++){
 		if((i!=classe)&&(i!=raiz)){
 			aux++;
-//			TODO SER� QUE EST� CORRETO???
+//			TODO Is this correct???
 //			variaveis.AddParentTo(enderecos[aux],variaveis.get(enderecos[melhorarvore[aux]]));
 //			variaveis.AddChildTo(enderecos[melhorarvore[aux]],variaveis.get(enderecos[aux]));
 			variaveis.add(enderecos[aux],variaveis.get(enderecos[melhorarvore[aux]]));

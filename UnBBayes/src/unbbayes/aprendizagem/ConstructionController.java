@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Bras�lia
+ *  Copyright (C) 2002 Universidade de Brasília
  *
  *  This file is part of UnbBayes.
  *
@@ -38,7 +38,7 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.util.NodeList;
 
 /*
- * UnbBayes Copyright (C) 2002 Universidade de Bras�lia
+ * UnbBayes Copyright (C) 2002 Universidade de Brasília
  * 
  * This file is part of UnbBayes.
  * 
@@ -118,7 +118,7 @@ public class ConstructionController {
 			makeMatrix(cols, rows);
 			br.close();
 		} catch (Exception e) {
-			String msg = "N�o foi poss�vel abrir o arquivo solicitado. Verifique o formato do arquivo.";
+			String msg = "Não foi possível abrir o arquivo solicitado. Verifique o formato do arquivo.";
 			JOptionPane.showMessageDialog(null, msg, "ERROR",
 					JOptionPane.ERROR_MESSAGE);
 		}
@@ -148,7 +148,7 @@ public class ConstructionController {
 					new Cursor(Cursor.DEFAULT_CURSOR));
 			br.close();
 		} catch (Exception e) {
-			String msg = "N�o foi poss�vel abrir o arquivo solicitado. Verifique o formato do arquivo.";
+			String msg = "Não foi possível abrir o arquivo solicitado. Verifique o formato do arquivo.";
 			JOptionPane.showMessageDialog(null, msg, "ERROR",
 					JOptionPane.ERROR_MESSAGE);
 		}
@@ -190,7 +190,7 @@ public class ConstructionController {
 					new Cursor(Cursor.DEFAULT_CURSOR));
 			br.close();
 		} catch (Exception e) {
-			String msg = "N�o foi poss�vel abrir o arquivo solicitado. Verifique o formato do arquivo.";
+			String msg = "Não foi possível abrir o arquivo solicitado. Verifique o formato do arquivo.";
 			JOptionPane.showMessageDialog(null, msg, "ERROR",
 					JOptionPane.ERROR_MESSAGE);
 		}
@@ -220,7 +220,7 @@ public class ConstructionController {
 
 	/**
 	 * @version 1.0
-	 * @author Gabriel Guimar�es - aluno de IC 2005-2006
+	 * @author Gabriel Guimarães - aluno de IC 2005-2006
 	 * @author Marcelo Ladeira - Orientador
 	 * @author Patricia Marinho
 	 */
@@ -249,7 +249,7 @@ public class ConstructionController {
 
 			br.close();
 		} catch (Exception e) {
-			String msg = "N�o foi poss�vel abrir o arquivo solicitado. Verifique o formato do arquivo.";
+			String msg = "Não foi possível abrir o arquivo solicitado. Verifique o formato do arquivo.";
 			JOptionPane.showMessageDialog(null, msg, "ERROR",
 					JOptionPane.ERROR_MESSAGE);
 		}
@@ -272,16 +272,16 @@ public class ConstructionController {
 			variaveis.add(variables.get(i));
 
 		for (i = 0; i < j; i++) {
-			// se alguma variavel n�o � filha da classe ent�o passa a ser!
+			// se alguma variavel não é filha da classe então passa a ser!
 			if ((i != classex)
 					&& (!(variaveis.get(classex).isParentOf(variaveis.get(i)))))
 				//variaveis.AddChildTo(classex, variaveis.get(i));
 				variaveis.get(classex).addChild(variaveis.get(i));
-			// se alguma vari�vel tem como filho a classe--> retirar!
+			// se alguma variavel tem como filho a classe--> retirar!
 			if ((variaveis.get(i).isParentOf(variaveis.get(classex))))
 				//variaveis.RemoveParentFrom(classex, i);
 				variaveis.get(i).getParents().remove(variaveis.get(classex));
-			// se alguma variavel n�o tem a classe como pai entao passa a ter
+			// se alguma variavel nao tem a classe como pai entao passa a ter
 			if ((!(variaveis.get(i).isChildOf(variaveis.get(classex)))))
 				//variaveis.AddParentTo(i, variaveis.get(classex));
 				variaveis.get(i).addParent(variaveis.get(classex));
@@ -294,12 +294,12 @@ public class ConstructionController {
 	}
 
 	/**
-	 * Para o TAN
+	 * For TAN
 	 * 
 	 * @param file
 	 * @param controller
 	 * @param classe
-	 * @author Gabriel Guimar�es
+	 * @author Gabriel Guimarães
 	 * @author Patricia
 	 */
 	public ConstructionController(File file, MainController controller,
@@ -328,7 +328,7 @@ public class ConstructionController {
 
 			br.close();
 		} catch (Exception e) {
-			String msg = "N�o foi poss�vel abrir o arquivo solicitado. Verifique o formato do arquivo.";
+			String msg = "Não foi possível abrir o arquivo solicitado. Verifique o formato do arquivo.";
 			JOptionPane.showMessageDialog(null, msg, "ERROR",
 					JOptionPane.ERROR_MESSAGE);
 		}
@@ -344,16 +344,16 @@ public class ConstructionController {
 		// Adicionar a variavel de classe como pai de todas
 
 		for (i = 0; i < j; i++) {
-			// se alguma variavel n�o � filha da classe ent�o passa a ser!
+			// se alguma variavel não é filha da classe então passa a ser!
 			if ((i != classex)
 					&& (!(variables.get(classex).isParentOf(variables.get(i)))))
 				//variables.AddChildTo(classex, variables.get(i));
 				variables.get(classex).addChild(variables.get(i));
-			// se alguma vari�vel tem como filho a classe--> retirar!
+			// se alguma variavel tem como filho a classe--> retirar!
 			if ((variables.get(i).isParentOf(variables.get(classex))))
 				//variables.RemoveParentFrom(classex, i);
 				variables.get(i).getParents().remove(variables.get(classex));
-			// se alguma variavel n�o tem a classe como pai entao passa a ter
+			// se alguma variavel nao tem a classe como pai entao passa a ter
 			if ((!(variables.get(i).isChildOf(variables.get(classex)))))
 				//variables.AddParentTo(i, variables.get(classex));
 				variables.get(i).addParent(variables.get(classex));
@@ -541,7 +541,7 @@ public class ConstructionController {
 					JOptionPane.ERROR_MESSAGE);
 		}
 		;
-		/* Tirar isso. S� pra debug */
+		/* Tirar isso. So pra debug */
 		System.out.println("NumeroCasos " + caseNumber);
 	}
 

@@ -1,7 +1,7 @@
 
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Bras�lia
+ *  Copyright (C) 2002 Universidade de Brasília
  *
  *  This file is part of UnbBayes.
  *
@@ -82,12 +82,12 @@ public class CBLA extends CBLToolkit{
 	
 	/*Coloca os primeiros arcos da estrutura*/
 	private ArrayList<double[]> scketch(){
-		System.out.println("Inicia o esbo�ar");
+		System.out.println("Inicia o esboçar");
 		int n = this.variablesVector.size();
-		/* imAux recebe as informa��es mutuas auxiliares*/
+		/* imAux recebe as informações mutuas auxiliares*/
 		double imAux;
 		ArrayList<double[]> ls = new ArrayList<double[]>(); 		
-		/*Seta as informa��es mutuas de cada par, a informcao mutua de ab � 
+		/*Seta as informações mutuas de cada par, a informcao mutua de ab é 
 		 * a mesma de ba*/		
 		for(int i = 0 ; i < n; i++){
 			for(int k = i+1; k < n ; k++){
@@ -101,8 +101,8 @@ public class CBLA extends CBLToolkit{
 		/*Ordena a lista em ordem decrescente de informacao mutua*/				
 		sort(ls);						        						
 		double[] peace;
-		/*Verifica se h� caminhos abertos entre as variaveis, caso n�o 
-		 * haja � adionado um novo caminho entre essas variaveis*/		
+		/*Verifica se há caminhos abertos entre as variaveis, caso não 
+		 * haja é adionado um novo caminho entre essas variaveis*/		
 		for(int i  = 0 ; i < ls.size(); i++){
 			peace =(double[])ls.get(i);
 			if(!(isOpenWays((int)peace[1],(int)peace[2],es))){
@@ -112,7 +112,7 @@ public class CBLA extends CBLToolkit{
 				i--;
 			}			
 		}   	
-      	System.out.println("Acaba o esbo�ar");
+      	System.out.println("Acaba o esboçar");
        	return ls;					       	
 	}
 	

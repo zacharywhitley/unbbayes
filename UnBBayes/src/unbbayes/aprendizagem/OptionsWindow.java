@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Bras�lia
+ *  Copyright (C) 2002 Universidade de Brasília
  *
  *  This file is part of UnbBayes.
  *
@@ -44,12 +44,10 @@ import unbbayes.prs.bn.LearningNode;
 
 
 /**
- * Classe para a constru��o de uma tela que mostra
- * qual a sigla de uma determinada vari�vel, uma lista
- * com os poss�veis estados dessa vari�vel, e permite ao
- * usu�rio do sistema alterar o n�mero m�ximo de pais de
- * uma vari�vel.
- * @author Danilo Cust�dio da Silva
+ * Class which builds a screen showing a simbol representing a variable, a list
+ * with possible states of that variable, and allows the user to change the
+ * maximum number of parents of a variable.
+ * @author Danilo Custódio da Silva
  * @version 1.0
  */
 public class OptionsWindow extends JDialog
@@ -76,11 +74,10 @@ public class OptionsWindow extends JDialog
     private OptionsInterationController optionsController;
 
     /**
-     * M�todo construtor da tela.Essa tela possui dois paineis
-     * principais,o pPainelCentro que contem os paineis com a li
-     * sta dos estados e com os bot�es e o pPainelNorte que cont�m
-     * a sigla da vari�vel e o n�mero m�ximo de pais.
-     * @param no - A v�riavel a qual se deseja obter as informa��es
+     * Constructor method of the screen. This screen has 2 main panels, pPainelCentro which
+     * contains the panels with a list of states and buttons, and pPainelNorte which
+     * contains a simbol of that variable and the maximum count of parents.
+     * @param variable - The variables which we wish to obtain the informations.
      * (<code>LearningNode<code>)
      * @see LearningNode
      * @see JPanel
@@ -124,7 +121,7 @@ public class OptionsWindow extends JDialog
 
     private JPanel getMaxPanel(){
         maxPanel             = new JPanel(new GridLayout(1,2));
-        lMaxParents          = new JLabel("M�x :");
+        lMaxParents          = new JLabel("Max :");
         txtMaxParents        = new JTextField("" + variable.getNumeroMaximoPais());
         maxPanel.add(lMaxParents);
         maxPanel.add(txtMaxParents);

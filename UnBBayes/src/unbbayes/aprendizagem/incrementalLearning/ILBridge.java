@@ -32,8 +32,8 @@ public class ILBridge {
         File file = ilio.chooseFile(new String[] { "net" }, "Choose the priori net.");
         /* Recuperação da rede a partir de um arquivo .net*/
         ProbabilisticNetwork pn = ilio.getNet(file, io);        
-        /*Escolher um outro arquivo, agora que contenha inform��es das
-         stat�sticas suficientes*/                 
+        /*Escolher um outro arquivo, agora que contenha informções das
+         statísticas suficientes*/                 
         file = ilio.chooseFile(new String[] { "obj" }, "Choose the frontier set.");
         if (file != null) {
             ssList = (ArrayList<Object>)ilio.getSuficStatistics(file);

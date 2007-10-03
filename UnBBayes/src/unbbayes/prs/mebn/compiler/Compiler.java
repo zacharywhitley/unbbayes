@@ -85,7 +85,7 @@ import unbbayes.util.NodeList;
 
 
 
-public class Compiler implements AbstractCompiler {
+public class Compiler implements ICompiler {
 
 	// resource files
 	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.compiler.resources.Resources");

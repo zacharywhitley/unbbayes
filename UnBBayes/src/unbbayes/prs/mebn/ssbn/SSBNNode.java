@@ -7,7 +7,7 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ssbn.exception.*;
-import unbbayes.prs.mebn.compiler.AbstractCompiler;
+import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.entity.Entity;
 
@@ -53,7 +53,7 @@ public class SSBNNode {
 	
 	
 	
-	private AbstractCompiler compiler = null;
+	private ICompiler compiler = null;
 	
 	
 	
@@ -585,7 +585,7 @@ public class SSBNNode {
 	/**
 	 * @return the current compiler
 	 */
-	public AbstractCompiler getCompiler() {
+	public ICompiler getCompiler() {
 		return compiler;
 	}
 
@@ -593,7 +593,7 @@ public class SSBNNode {
 	 * Sets which compiler class we should use to parse pseudocode and generate CPT
 	 * @param compiler: the compiler to set
 	 */
-	public void setCompiler(AbstractCompiler compiler) {
+	public void setCompiler(ICompiler compiler) {
 		this.compiler = compiler;
 	}
 	

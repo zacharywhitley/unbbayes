@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Bras�lia
+ *  Copyright (C) 2002 Universidade de Brasília
  *
  *  This file is part of UnbBayes.
  *
@@ -25,10 +25,9 @@ import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 
 /**
- *   Essa classe implementa os m�todos necess�rios para que
- *   o algoritmo k2 funcione .O algoritmo k2 � um
- *   algoritmo de aprendizagem que utiliza a busca em pontua�ao.
- *   @author     Danilo Cust�dio
+ * 	 This class implements those methods needed for the k2 algorithm to work.
+ * 	 The k2 algorithm is a learning algorithm which uses scoring search.
+ *   @author     Danilo Custódio
  *   @version    1.0
  *   @see TAprendizagemTollKit
  */

@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Bras�lia
+ *  Copyright (C) 2002 Universidade de Brasília
  *
  *  This file is part of UnbBayes.
  *
@@ -47,10 +47,10 @@ public class LogAprendizagem extends JDialog{
         Container container = getContentPane();
         caixaLog = new JTextArea();
         int tamanho = variaveis.size();
-        caixaLog.setText("Lista com os pais de cada vari�vel\n\n");
+        caixaLog.setText("Lista com os pais de cada variável\n\n");
         for(int i = 0 ; i < tamanho; i++){
                 LearningNode variavel = (LearningNode)variaveis.get(i);
-                caixaLog.append("Vari�vel : "+variavel.getName()+"\n");
+                caixaLog.append("Variável : "+variavel.getName()+"\n");
                 NodeList pais = variavel.getPais();
                 for(int j = 0 ; j < pais.size(); j++){
                     LearningNode variavel2 = (LearningNode)pais.get(j);
@@ -58,7 +58,7 @@ public class LogAprendizagem extends JDialog{
                     caixaLog.append("\tPai "+k+" : "+variavel2.getName()+"\n");
                 }
                 if(pais.size() == 0 ){
-                    caixaLog.append("\tN�o possui pais\n");
+                    caixaLog.append("\tNão possui pais\n");
                 }
         }
         painel = new JScrollPane(caixaLog);

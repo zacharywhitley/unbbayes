@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Bras�lia
+ *  Copyright (C) 2002 Universidade de Brasília
  *
  *  This file is part of UnbBayes.
  *
@@ -36,10 +36,9 @@ import javax.swing.JPanel;
 import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 
-/**
- * Classe que controi uma tela onde o usu�rio dever�
- * definir qual a vari�vel que dever� conter o numero
- * de vezes que um certo caso se repete no arquivo.
+/** 
+ * Class which controlls a screen where the user should define which variable
+ * must contain the mumber of times a particular case repeats within the archive
  * @author Danilo Custodio da Silva
  * @version 1.0
  */
@@ -57,11 +56,9 @@ public class CompactChooseWindow extends JDialog{
     private CompactChooseInterationController chooseController;
 
     /**
-     * Constr�i a tela que contem uma lista onde
-     * o usu�rio dever� escolhera vari�vel que contem
-     * o n�mero de vezes que um determinado caso se
-     * repete.
-     * @param vetorVariaveis - O vetor com as vari�veis
+     * Builds a screen containing a list where the user should choose the variable containing
+     * the number of times a particular case is repeating.
+     * @param vetorVariaveis - variable vector
      * do arquivo(<code>java.util.List<code>)
      * @see LearningNode
      * @see Container

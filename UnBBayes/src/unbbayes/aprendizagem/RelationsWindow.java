@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Bras�lia
+ *  Copyright (C) 2002 Universidade de Brasília
  *
  *  This file is part of UnbBayes.
  *
@@ -40,10 +40,9 @@ import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 
 /**
- * Classe para a constru��o de uma tela que possui
- * como finalidade definir relacionamentos entre as
- * vari�veis, lembrando que nunca um ancestral pode
- * ser filho da propria vari�vel.
+ * Class for building a screen which defines relations between
+ * variables, observing that an ancester should never be a son of
+ * itself.
  * @author Danilo Custodio da Silva
  * @version 1.0
  */
@@ -71,13 +70,11 @@ public class RelationsWindow extends JDialog{
     private RelationInterationController relationController;
 
     /**
-     * M�todo para a constru��o da tela onde s�o definidos
-     * relacionamentos de paternidade fixos. Contem um painel
-     * com a lista dos pais, um painel com a lista dos filhos,
-     * um painel com botoes para adicionar, remover relacionamentos
-     * ou continuar o programa, e um painel com os relacionamentos
-     * previamente decididos.
-     * @param vetor - A lista de vari�veis(<code>java.util.List<code>)
+     * Method for screen construction, which defines fixed parent-children relationships.
+     * It contains a panel with parents' list, a panel with a list of its childrens,
+     * a panel with buttons for adding-removing relationships or leaving the program, and
+     * a panel with previously-decided relationships.
+     * @param vetor - Variables' list(<code>java.util.List<code>)
      * @see LearningNode
      * @see JList
      * @see DefaultListModel

@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Bras�lia
+ *  Copyright (C) 2002 Universidade de Brasília
  *
  *  This file is part of UnbBayes.
  *
@@ -35,9 +35,8 @@ import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 
 /**
- * Classe que constroi uma tela onde usu�rio devera
- * informar ao programa se o arquivo � o do tipo
- * compactado ou n�o.
+ * Class which builds a screen where the user should inform the program if the archive
+ * is compressed or not.
  * @author Danilo Custodio da Silva
  * @version 1.0
  */
@@ -52,10 +51,9 @@ public class CompactFileWindow extends JDialog
     private JButton no;
     private CompactInterationController compactController;
     /**
-     * Constr�i a tela essa tela possui um label
-     * que pergunta ao usu�rio se o arquivo que ele
-     * est� tratando � compactado ou n�o, e dois bot�es.
-     * @param vetorVariaveis - As vari�veis presentes na
+     * Builds a screen. That screen has a label which asks the user if that archive
+     * is compressed or not, and two buttons.
+     * @param variablesVector - variables inside
      * (<code>java.util.List<code>)
      * @see LearningNode
      * @see Container

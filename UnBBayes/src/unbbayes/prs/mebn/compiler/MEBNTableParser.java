@@ -20,9 +20,9 @@ import unbbayes.util.Debug;
  * @see unbbayes.prs.mebn.compiler.Compiler
  *
  */
-public class MEBNTableParser implements AbstractCompiler {
+public class MEBNTableParser implements ICompiler {
 	
-	private AbstractCompiler compiler = null;
+	private ICompiler compiler = null;
 	private MultiEntityBayesianNetwork mebn = null;
 	private DomainResidentNode node = null;
 	
@@ -63,7 +63,7 @@ public class MEBNTableParser implements AbstractCompiler {
 	 * @param compiler: sets the implementation of AbstractCompiler the instance of MEBNTableParser shall behave like.
 	 * @return instance of MEBNTableParser
 	 */
-	public static MEBNTableParser getInstance(MultiEntityBayesianNetwork mebn, DomainResidentNode node, AbstractCompiler compiler) {
+	public static MEBNTableParser getInstance(MultiEntityBayesianNetwork mebn, DomainResidentNode node, ICompiler compiler) {
 		MEBNTableParser parser = new MEBNTableParser( mebn,  node);
 		parser.setCompiler(compiler);
 		if (parser.getCompiler() instanceof Compiler) {
@@ -111,14 +111,14 @@ public class MEBNTableParser implements AbstractCompiler {
 	/**
 	 * @return Returns the currently used implementation of AbstractCompiler to parse tables.
 	 */
-	public AbstractCompiler getCompiler() {
+	public ICompiler getCompiler() {
 		return compiler;
 	}
 
 	/**
 	 * @param compiler Sets the currently used implementation of AbstractCompiler to parse tables.
 	 */
-	public void setCompiler(AbstractCompiler compiler) {
+	public void setCompiler(ICompiler compiler) {
 		this.compiler = compiler;
 		// If its not our compiler, no need for the nodes
 		if (!(compiler instanceof Compiler)) {

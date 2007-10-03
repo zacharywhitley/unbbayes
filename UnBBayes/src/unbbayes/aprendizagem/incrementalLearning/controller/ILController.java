@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Bras�lia
+ *  Copyright (C) 2002 Universidade de Brasília
  *
  *  This file is part of UnbBayes.
  *
@@ -32,7 +32,7 @@ import unbbayes.util.NodeList;
 /**
  * 
  * 
- * @author Danilo Cust�dio da Silva
+ * @author Danilo Custódio da Silva
  */
 public class ILController extends ILToolkit {
     
@@ -185,7 +185,7 @@ public class ILController extends ILToolkit {
     }
 
     /*
-     * Nome do n� Pais do n� Estatisticas suficientes guardadas0
+     * Nome do nó Pais do nó Estatisticas suficientes guardadas0
      */
     private void chooseBetterNet() {
         findBestFrontier();        
@@ -211,7 +211,7 @@ public class ILController extends ILToolkit {
                         System.out.println("Equivalente - > " + frontierObject[0]);
                         break;
                     }else{
-                        System.out.println("N�o Equivalente - > " + frontierObject[0]);
+                        System.out.println("Não Equivalente - > " + frontierObject[0]);
                     }
                     g = g(getTVariavel(node,true), getParents(node,
                             (ArrayList) frontierObject[1]), (int[][]) frontierObject[2]);
@@ -238,7 +238,7 @@ public class ILController extends ILToolkit {
         double fator = numeroCasos/(double)getTotalCases(velho);
         System.out.println("Numero de caso = " + numeroCasos);
         System.out.println("Numero de caso Antigo = " + getTotalCases(velho));
-        System.out.println("N� " + node.getName());        
+        System.out.println("Nó " + node.getName());        
         double intervalosNovos[] = null;
         double intervalosAntigos[] = null;
         double maiorDiferenca = Double.MIN_VALUE;
@@ -363,7 +363,7 @@ public class ILController extends ILToolkit {
 
     private void makeBetterNetwork(Object[] betterNet) {
         if (betterNet != null) {
-            System.out.println("Mudou Familia do N� " + betterNet[0]);
+            System.out.println("Mudou Familia do Nó " + betterNet[0]);
             Node node = getNode((String) betterNet[0]);            
             NodeList parents = getParents(node, (ArrayList) betterNet[1]);
             
@@ -383,9 +383,9 @@ public class ILController extends ILToolkit {
         for (int i = 0; i < pn.getNodeCount(); i++) {
             if (!pn.getNodeAt(i).getName().equals(node.getName())) {
                 Node nodeAux = pn.getNodeAt(i);                
-                /* Verifica se � pai */
+                /* Verifica se é pai */
                 if (!isParent(node, nodeAux) && !isDescendent(node,nodeAux)) {
-                    /* Verifica se h� uma melhora na pontuacao para aquele n� */
+                    /* Verifica se há uma melhora na pontuacao para aquele nó */
                     node.getParents().add(nodeAux);
                     /* Atualiza pais da fronteira */
                     ((ArrayList) frontierObject[1]).add(nodeAux.getName());
@@ -443,7 +443,7 @@ public class ILController extends ILToolkit {
             Object[] fronteira = (Object[]) ssList.get(i);
             long[] marginalVector = makeMarginal((int[][]) fronteira[2]);
             /*
-             * Encontrou-se um n� com a distribui��o marginal da vari�vel
+             * Encontrou-se um nó com a distribuição marginal da variável
              * escolhida
              */
             if (fronteira[0].equals(parents.get(parents.size() - 1))) {
@@ -504,8 +504,8 @@ public class ILController extends ILToolkit {
     }
 
     /**
-     * Pega a distribui��o marginal associada ao array. O tamanho do vetor �
-     * igual ao n�mero de linhas do array.
+     * Pega a distribuição marginal associada ao array. O tamanho do vetor é
+     * igual ao número de linhas do array.
      * 
      * @param array
      * @return
