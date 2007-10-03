@@ -39,7 +39,7 @@ public class SSBNTest {
 		// 3. Popular a base de conhecimento com as evidencias
 		long tIni = System.currentTimeMillis();
 		PowerLoomKB kb = PowerLoomKB.getInstanceKB(); 
-		kb.loadDefinitionsFile("examples/mebn/starshipfull.plm");
+		//kb.loadDefinitionsFile("examples/mebn/starshipfull.plm");
 		long tFim = System.currentTimeMillis();
 		
 		System.out.println("Carregou a kb em: " + (tFim - tIni)/1000f + " segundos" );
@@ -50,28 +50,28 @@ public class SSBNTest {
 		
 		// STEP 1 - fazer esse passo depois do 3, pq nao sei os tipos de st4 e t0
 		tIni = System.currentTimeMillis();
-		String teste = kb.executeCommand("(ask (Starship_label !ST4))"); 
+		//String teste = kb.executeCommand("(ask (Starship_label !ST4))"); 
 		
-		if (!teste.equalsIgnoreCase("TRUE")) {
-			System.out.println("Não achou !st4");
-		}
-		tFim = System.currentTimeMillis();
+//		if (!teste.equalsIgnoreCase("TRUE")) {
+//			System.out.println("Não achou !st4");
+//		}
+//		tFim = System.currentTimeMillis();
 		
 		System.out.println("(ask (Starship_label !ST4)) em: " + (tFim - tIni)/1000f + " segundos" );
-		
-		teste = kb.executeCommand("(ask (Starship_label !ST4))"); 
-		
-		if (!teste.equalsIgnoreCase("TRUE")) {
-			System.out.println("Não achou !st4");
-		}
-		
-		// STEP 2
-		teste = kb.executeCommand("(RETRIEVE (HarmPotential !ST4 !T0 ?x) )"); 
-		if (!teste.equalsIgnoreCase("No solution.")) {
-			System.out.println("Solução econtrada é: " + teste);
-			return;
-		}
-		
+//		
+//		teste = kb.executeCommand("(ask (Starship_label !ST4))"); 
+//		
+//		if (!teste.equalsIgnoreCase("TRUE")) {
+//			System.out.println("Não achou !st4");
+//		}
+//		
+//		// STEP 2
+//		teste = kb.executeCommand("(RETRIEVE (HarmPotential !ST4 !T0 ?x) )"); 
+//		if (!teste.equalsIgnoreCase("No solution.")) {
+//			System.out.println("Solução econtrada é: " + teste);
+//			return;
+//		}
+//		
 		// STEP 3
 		// criar um método q retorne a MFrag de HarmPotential (domain) 
 		// e verificar se os parametros passados batem com o tipo
