@@ -19,7 +19,7 @@ import unbbayes.datamining.datamanipulation.TxtSaver;
 import unbbayes.datamining.gui.datamanipulation.AttributeTypeChooserController;
 
 public class FileController
-{	 /** Uma instância deste objeto */
+{	 /** A instance of this object */
 	private static FileController singleton;
 	private ResourceBundle resource;
 	private JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
@@ -38,17 +38,20 @@ public class FileController
 
 	//--------------------------------------------------------------//
 
-	/** Construtor padrão. Só pode ser instanciado pelo método getInstance. */
+	/** 
+	 * default constructor. S may be instanciated by getInstance method 
+	 */
 	protected FileController()
 	{	 resource = ResourceBundle.getBundle("unbbayes.datamining.gui.naivebayes.resources.NaiveBayesResource");
 	}
 
 	//--------------------------------------------------------------//
 
-	/** Retorna uma instância deste objeto. Se o objeto já estiver instanciado retorna o
-		objeto atual, senão retorna uma nova instância do objeto.
-		@return Um objeto Options
-	*/
+	/**
+	 * Returns an instance of this object. If the object is already instanciated once, it
+	 * returns the current object, otherwise it returns a new object.
+	 * @return Options object
+	 */
 	public static FileController getInstance()
 	{	 if (singleton == null)
 		{	 singleton = new FileController();

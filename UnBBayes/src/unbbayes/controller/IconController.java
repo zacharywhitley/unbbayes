@@ -18,7 +18,7 @@ import javax.swing.ImageIcon;
  * Company:
  * </p>
  * 
- * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ * @author MÃ¡rio Henrique Paes Vieira (mariohpv@bol.com.br)
  * @version 1.0 13/04/2003
  */
 

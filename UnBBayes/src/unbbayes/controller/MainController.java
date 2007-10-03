@@ -55,7 +55,7 @@ import unbbayes.util.NodeList;
  *
  * @author     Rommel Novaes Carvalho
  * @author     Michael S. Onishi
- * @created    27 de Junho de 2001
+ * @created    June, 27th, 2001
  * @version    1.5 2006/09/14
  */
 public class MainController {

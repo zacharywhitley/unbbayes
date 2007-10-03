@@ -24,7 +24,7 @@ import javax.swing.*;
 import java.awt.geom.*;
 
 /**
- * Classe utilizada para imprimir a visualização de uma rede no modo gráfico.
+ * Useful class for printing a view of a graphic-mode network
  */
 public class PrintNet implements Printable, Pageable {
 

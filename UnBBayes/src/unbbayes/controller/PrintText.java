@@ -23,7 +23,7 @@ import java.awt.print.*;
 import javax.swing.*;
 
 /**
- * Classe utilizada para imprimir o conteúdo de um <code>JTextArea</code>
+ *  <code>JTextArea</code> printing class
  */
 public class PrintText implements Printable, Pageable {
 

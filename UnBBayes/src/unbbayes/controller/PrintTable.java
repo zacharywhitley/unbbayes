@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Classe utilizada para fazer a impressão de tabelas <code>JTable</code>
+ * Table printing class <code>JTable</code>
  */
 public class PrintTable implements Printable, Pageable {
 
@@ -82,7 +82,7 @@ public class PrintTable implements Printable, Pageable {
             size = getPrintSize(table, positionX, positionY);
             if (pageIndex == index) {
               //  Paint as much of the table as will fit on a page
-//              g.drawString("Nó: " + donos.get(i), positionX + (int)pageFormat.getImageableX(), (int)pageFormat.getImageableY() + SIZE);
+//              g.drawString("N: " + donos.get(i), positionX + (int)pageFormat.getImageableX(), (int)pageFormat.getImageableY() + SIZE);
        //       paintTable(resource.getString("nodeName") + owners.get(i), table, g, positionX, positionY, size);
 
 /**/            if(owners != null){

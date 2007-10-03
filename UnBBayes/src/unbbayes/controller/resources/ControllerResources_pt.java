@@ -77,7 +77,7 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"of"," de "},
 		
 		/* Exceptions MEBN */
-		{"withoutMFrag", "Não existe nenhuma MFrag"}, 
+		{"withoutMFrag", "No existe nenhuma MFrag"}, 
 		{"edgeInvalid", "Arco invalido"}, 		
 		
 		{"JAXBExceptionFound", "Erro de sintaxe..."},
@@ -88,10 +88,10 @@ public class ControllerResources_pt extends ListResourceBundle {
 		
 		/* load/save */
 		{"saveSucess", "Arquivo salvo com sucesso!"},
-		{"mebnDontExists", "Operação falhou: Não há MEBN ativa"},
-		{"bnDontExists", "Operação falhou: Não há Rede Bayesiana ativa"},
-		{"msbnDontExists", "Operação falhou: Não há MSBN ativa"},
-		{"windowDontExists", "Operação falhou: Não há janela ativa"},
+		{"mebnDontExists", "Operao falhou: No h MEBN ativa"},
+		{"bnDontExists", "Operao falhou: No h Rede Bayesiana ativa"},
+		{"msbnDontExists", "Operao falhou: No h MSBN ativa"},
+		{"windowDontExists", "Operao falhou: No h janela ativa"},
 		{"sucess", "Sucesso"}, 
 		{"error", "Erro"},
 		{"withoutPosfixe", "Tipo do arquivo nÃ£o informado!"}		

@@ -35,7 +35,7 @@ import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 
 /**
- * Faz a visualização de impressão
+ * Creates a pre-visualization of a printing
  *
  */
 public class PrintPreviewer extends JPanel {

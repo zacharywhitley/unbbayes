@@ -40,10 +40,8 @@ import unbbayes.util.Debug;
 /**
  * Controller of the MEBN structure.
  *
- * Utilizado pelas classes de GUI para fazer solicitar altera��es na
- * estrutura do MEBN. Faz as atualiza��es necess�rias nas telas ap�s a
- * a��o sobre a estrutura do MEBN ser atualizada.
- *
+ * Used by GUI classes to ask for MEBN structure changes. Makes needed updates on the screens
+ * after MEBN structure update action
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * @version 1.0 05/29/07
  */
@@ -115,10 +113,10 @@ public class MEBNController {
 	/*---------------------------- Edge ---------------------------*/
 
     /**
-     *  Faz a ligac�o do arco desejado entre pai e filho. Deve preencher de forma
-     *  correta as listas que precisam ser atualizadas.
+     *  Connects a parent and its child with an edge. We must fill correctly the lists
+     *  that need updates.
      *
-     * @param  edge  um <code>TArco</code> que representa o arco a ser ligado
+     * @param  edge  a <code>TArco</code> which represent an edge to connect
      * @since
      */
 
@@ -322,7 +320,7 @@ public class MEBNController {
 	}
 
 	/**
-	 * Adiciona um possivel valor (estado) no nodo resident...
+	 * Adds a possible value (state) of a resident node...
 	 * @param resident
 	 * @param value
 	 */
@@ -349,7 +347,7 @@ public class MEBNController {
 	}
 
 	/**
-	 * Adiciona um possivel valor (estado) no nodo resident...
+	 *  Adds a possible value (state) for a resident node...
 	 * @param resident
 	 * @param value
 	 */
@@ -743,9 +741,9 @@ public class MEBNController {
 	/*--------------------------------- Object Entities ---------------------*/
 
 	/**
-	 * Adiciona uma nova entidade com o nome passado como parametro
-	 * pelo usuario. O tipo da entidade sera um nome gerado automaticamente, a
-	 * partir do passado pelo usu�rio.
+	 * Adds a new entity with a name passed as its argument.
+	 * The entity type will be an automatically generated type, based on
+	 * what the user has passed as its argument.
 	 */
 	public ObjectEntity createObjectEntity() throws TypeException{
 
@@ -911,15 +909,14 @@ public class MEBNController {
 
 
 	/**
-	 *Apenas de teste...
+	 * Just a test...
 	 *
-	 * Preenche uma vari�vel ordin�ria com uma entidade...
-	 *
-	 * @param nameOV Nome da OV que ser� linkada (jah deve existir)
-	 * @param entity Entidade a ser criada e linkada.
+	 * Fills a Ordinary Variable with an entity
+	 * @param nameOV OV name to be linked (must exist already)
+	 * @param entity entity to be created and linked.
 	 */
 	public void linkOrdVariable2Entity(String nameOV, String entity){
-		//TODO tirar este metodo da versao final
+		//TODO take this out from the final version
 		ArrayList<OrdinaryVariable> listOV = (ArrayList<OrdinaryVariable>)this.getCurrentMFrag().getOrdinaryVariableList();
 
 		for(OrdinaryVariable ov : listOV){

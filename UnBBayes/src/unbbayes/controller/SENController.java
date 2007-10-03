@@ -56,10 +56,9 @@ public class SENController {
 	}
 
 	/**
-	 * Insere novo estado no n� selecionado.
-	 * 
+	 * Inserts a new state for a selected node
 	 * @param no
-	 *            o <code>Object <code>selecionado.
+	 *            The selected <code>Object <code>.
 	 * @since
 	 * @see		Object
 	 */
@@ -75,10 +74,10 @@ public class SENController {
 	}
 
 	/**
-	 * Remove �ltimo estado do n� selecionado.
+	 * Deletes the last state of a selected node
 	 * 
 	 * @param no
-	 *            o <code>Object <code>selecionado.
+	 *            selected <code>Object <code>.
 	 * @since
 	 * @see		Object
 	 */
@@ -88,7 +87,7 @@ public class SENController {
 	}
 
 	/**
-	 * Inicia as cren�as da �rvore de jun��o.
+	 * Initializes the junction tree's known facts
 	 */
 	public void initialize() {
 		try {
@@ -100,7 +99,7 @@ public class SENController {
 	}
 
 	/**
-	 * Propaga as evid�ncias da rede Bayesiana ( <code>TRP</code> ).
+	 * Propagates the bayesian network's evidences ( <code>TRP</code> ).
 	 * 
 	 * @since
 	 */
@@ -124,11 +123,10 @@ public class SENController {
 	}
 
 	/**
-	 * Compila a rede Bayesiana. Caso haja algum problema na compila��o,
-	 * mostra-se o erro em um <code>JOptionPane</code> .
+	 * Compiles the bayesian network. If there was any problem during compilation, the error
+	 * message will be shown as a <code>JOptionPane</code> .
 	 * 
-	 * @return true se a rede compilar sem problemas e false se houver algum
-	 *         problema na compila��o
+	 * @return true if the net was compiled without any problem, false if there was a problem
 	 * @since
 	 * @see JOptionPane
 	 */
@@ -145,8 +143,7 @@ public class SENController {
 			return false;
 		}
 
-		// Ordenar pela descricao do n� apenas para facilitar a visualiza��o da
-		// �rvore.
+		// Order by node description just to make tree's visualization easy.
 		NodeList nos = singleEntityNetwork.getNodesCopy();
 		boolean haTroca = true;
 		while (haTroca) {
@@ -174,10 +171,10 @@ public class SENController {
 	}
 
 	/**
-	 * Insere o n� desejado na rede criando estado, sigla e descri��o padr�es.
+	 * Inserts the desired node inside the network creating default state, simbol and description
 	 * 
 	 * @param no
-	 *            uma <code>Node</code> que representa o n� a ser inserido
+	 *            <code>Node</code> representing the inserting node
 	 * @since
 	 * @see unbbayes.prs.Node
 	 */
@@ -196,11 +193,10 @@ public class SENController {
 	}
 
 	/**
-	 * Insere o n� desejado na rede criando estado, sigla e descri��o padr�es.
+	 * Inserts the desired node inside a network creating a default state, simbol and description.
 	 * 
 	 * @param no
-	 *            uma <code>DecisionNode</code> que representa o n� a ser
-	 *            inserido
+	 *            <code>DecisionNode</code> representing the inserting node
 	 * @since
 	 * @see unbbayes.prs.DecisionNode
 	 */
@@ -215,11 +211,10 @@ public class SENController {
 	}
 
 	/**
-	 * Insere o n� desejado na rede criando estado, sigla e descri��o padr�es.
+	 * Inserts the desired node inside a network creating a default state, simbol and description.
 	 * 
 	 * @param no
-	 *            uma <code>UtilityNode</code> que representa o n� a ser
-	 *            inserido
+	 *            A <code>UtilityNode</code> representing a inserting node.
 	 * @since
 	 * @see unbbayes.prs.UtilityNode
 	 */
@@ -235,10 +230,10 @@ public class SENController {
 	}
 
 	/**
-	 * Faz a ligac�o do arco desejado entre pai e filho.
+	 * Links an edge connecting parents and children.
 	 * 
 	 * @param arco
-	 *            um <code>TArco</code> que representa o arco a ser ligado
+	 *            an <code>Edge</code> representing a linking edge
 	 * @since
 	 */
 	public void insertEdge(Edge arco) {
@@ -359,11 +354,10 @@ public class SENController {
 	}
 	
 	/**
-	 * Mostra a tabela de potenciais do no desejado.
+	 * Shows the potential table of a desired node
 	 * 
 	 * @param no
-	 *            um <code>Node</code> que representa o n� o qual deve-se
-	 *            mostrar a tabela de potenciais
+	 *            a <code>Node</code> representing a node which we wanto to see the table
 	 * @since
 	 * @see unbbayes.prs.Node
 	 * @deprecated

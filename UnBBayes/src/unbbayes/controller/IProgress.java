@@ -5,7 +5,7 @@
 package unbbayes.controller;
 
 /**
- * @author Mário Henrique
+ * @author MÃ¡rio Henrique
  *
  * To change the template for this generated type comment go to
  * Window>Preferences>Java>Code Generation>Code and Comments
