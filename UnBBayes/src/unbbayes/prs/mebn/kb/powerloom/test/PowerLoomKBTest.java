@@ -41,21 +41,21 @@ public class PowerLoomKBTest extends TestCase {
 	}
 
 	/**
-	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#executeConceptDefinition(unbbayes.prs.mebn.entity.ObjectEntity)}.
+	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#createEntityDefinition(unbbayes.prs.mebn.entity.ObjectEntity)}.
 	 */
 	public void testExecuteConceptDefinition() {
 		fail("Not yet implemented"); // TODO
 	}
 
 	/**
-	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#executeRandonVariableDefinition(unbbayes.prs.mebn.DomainResidentNode)}.
+	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#createRandonVariableDefinition(unbbayes.prs.mebn.DomainResidentNode)}.
 	 */
 	public void testExecuteRandonVariableDefinition() {
 		fail("Not yet implemented"); // TODO
 	}
 
 	/**
-	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#executeEntityFinding(java.lang.String)}.
+	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#insertEntityInstance(java.lang.String)}.
 	 */
 	public void testExecuteEntityFinding() {
 		fail("Not yet implemented"); // TODO

@@ -3,6 +3,8 @@
  */
 package unbbayes.prs.mebn.ssbn;
 
+import java.util.List;
+
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.entity.Type;
 
@@ -64,5 +66,22 @@ public class OVInstance {
 		this.ov = ov;
 	}
 	
+	/* 
+	 * devera ser criado um metodo para retornar a OVInstance para uma data OV, 
+	 * em uma lista de OVInstance...
+	 * 
+	 *  Objeto "Parameters"? 
+	 */
+	
+	private OVInstance getOVInstanceForOV(OrdinaryVariable ov, List<OVInstance> list){
+		
+		for(OVInstance ovi: list){
+			if (ovi.getOv() == ov){
+				return ovi; 
+			}
+		}
+		
+		return null; 
+	}
 	
 }

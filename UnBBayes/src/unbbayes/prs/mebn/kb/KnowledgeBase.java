@@ -11,6 +11,7 @@ import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.Type;
+import unbbayes.prs.mebn.ssbn.OVInstance;
 
 /**
  * 
@@ -22,29 +23,25 @@ public interface KnowledgeBase {
 	/**
 	 * Insert the entity into KB. 
 	 */
-	//createEntityDefinition
-	public void executeConceptDefinition(ObjectEntity entity);
+	public void createEntityDefinition(ObjectEntity entity);
 	
 	/**
 	 * Insert the randon variable and your states into KB. 
 	 * @param resident
 	 */
-	//createRandonVariableDefinition
-	public void executeRandonVariableDefinition(DomainResidentNode resident);
+	public void createRandonVariableDefinition(DomainResidentNode resident);
 	
 	/**
 	 * Insert the entity finding into KB. 
 	 * @param resident
 	 */
-	//insertEntityInstance
-	public void executeEntityFinding(ObjectEntityInstance entityFinding);
+	public void insertEntityInstance(ObjectEntityInstance entityFinding);
 	
 	/**
 	 * Insert the randon variable and your states into KB. 
 	 * @param randonVariableFinding
 	 */
-	//insertRandonVariableInstance
-	public void executeRandonVariableFinding(RandonVariableFinding randonVariableFinding); 
+	public void insertRandonVariableFinding(RandonVariableFinding randonVariableFinding); 
 
 	/**
 	 * Insert the randon variable and your states into KB. 
@@ -55,7 +52,6 @@ public interface KnowledgeBase {
 	 * 
 	 * @param resident
 	 */
-	//queryContextFormula
 	public boolean executeContextFormula(ContextNode context);
 	
 	
@@ -72,22 +68,27 @@ public interface KnowledgeBase {
 	
 	public void loadModule(File file); 
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	/* Outras classes */
-	/* O painel de query deve permitir que o usuário entre com entidades não 
-	 * instanciadas por findings anteriormente?... Caso afirmativo, criar no painel
-	 * uma forma de entrar com o finding pelo nome (texto). 
+	/** 
+	 * A simple formula is a formula that don't have variables and the result is
+	 * a boolean falue (true/false). 
+	 * ex: IsOwnStarship(Enterprise). 
 	 * 
-	 * A MEBN deve ter métodos para a partir dos nomes, obter os objetos desejados. 
+	 * @param context
+	 * @param ovInstances
+	 * @return
 	 */
+    public Boolean evaluateSimpleFormula(ContextNode context, List<OVInstance> ovInstances); 
+	
+    /**
+     * Complex formulas are formulas that return a list of entities that satisfies 
+     * a restriction. Ex: z = StarshipZone(!ST0) return the zones that satisfies
+     * StarshipZone(!ST0).  
+     * @param context Node that have the formula
+     * @param ovInstances List of OVInstance. Don't have a ovInstance for the 
+     *                    parameters that will be search (z in the example). 
+     * @return list of the names of entities that satisfies (a empty list if
+     *                     don't have entities).  
+     */
+    public  List<String> evaluateComplexFormula(ContextNode context, List<OVInstance> ovInstances); 
 	
 }

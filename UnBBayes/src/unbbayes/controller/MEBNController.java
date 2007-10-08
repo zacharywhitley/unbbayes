@@ -822,12 +822,12 @@ public class MEBNController {
 		KnowledgeBase knowledgeBase = PowerLoomKB.getInstanceKB();
 
 		for(ObjectEntity entity: multiEntityBayesianNetwork.getObjectEntityContainer().getListEntity()){
-			knowledgeBase.executeConceptDefinition(entity);
+			knowledgeBase.createEntityDefinition(entity);
 		}
 
 		for(DomainMFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
 			for(ResidentNode resident: mfrag.getDomainResidentNodeList()){
-				knowledgeBase.executeRandonVariableDefinition((DomainResidentNode)resident);
+				knowledgeBase.createRandonVariableDefinition((DomainResidentNode)resident);
 			}
 		}
 	}
@@ -836,13 +836,13 @@ public class MEBNController {
 		KnowledgeBase knowledgeBase = PowerLoomKB.getInstanceKB();		
 		
 		for(ObjectEntityInstance instance: multiEntityBayesianNetwork.getObjectEntityContainer().getListEntityInstances()){
-			 knowledgeBase.executeEntityFinding(instance); 
+			 knowledgeBase.insertEntityInstance(instance); 
 		}
 		
 		for(DomainMFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
 			for(DomainResidentNode residentNode : mfrag.getDomainResidentNodeList()){
 				for(RandonVariableFinding finding: residentNode.getRandonVariableFindingList()){
-					knowledgeBase.executeRandonVariableFinding(finding); 
+					knowledgeBase.insertRandonVariableFinding(finding); 
 				}
 			}
 		}

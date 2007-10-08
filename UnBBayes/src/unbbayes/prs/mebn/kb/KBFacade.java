@@ -2,6 +2,9 @@ package unbbayes.prs.mebn.kb;
 
 import java.util.List;
 
+import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.ssbn.OVInstance;
+
 public interface KBFacade {
 
 	/** 
@@ -34,5 +37,21 @@ public interface KBFacade {
 	 * @param query
 	 */
 	public boolean executeAsk(String query); 
+	
+	/**
+	 * Execute formulas that return a boolean value (asks). 
+	 * @param context
+	 * @param ovInstances
+	 * @return
+	 */
+    public Boolean evaluateSimpleFormula(ContextNode context, List<OVInstance> ovInstances);
+    
+    /**
+     * Evaluate formulas that result in a list of OVInstance (retrieves). 
+     * @param context
+     * @param ovInstances
+     * @return
+     */
+    public List<OVInstance> evaluateComplexFormula(ContextNode context, List<OVInstance> ovInstances);
 	
 }

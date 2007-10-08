@@ -24,8 +24,8 @@ import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
-import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
+import unbbayes.prs.mebn.ssbn.OVInstance;
 import edu.isi.powerloom.Environment;
 import edu.isi.powerloom.PLI;
 import edu.isi.powerloom.PlIterator;
@@ -141,7 +141,7 @@ public class PowerLoomKB implements KnowledgeBase{
 	 * Nota: As object entities s�o salvas pelo seu tipo (label) ao inv�s de
 	 * pelo seu nome porque as suas instancias tem referencia apenas ao tipo. 
 	 */
-	public void executeConceptDefinition(ObjectEntity entity){
+	public void createEntityDefinition(ObjectEntity entity){
 		
 		LogicObject lo = PLI.sCreateConcept(entity.getType().toString(), null, moduleGenerativeName, environment); 
 		debug.println(lo.toString()); 
@@ -161,7 +161,7 @@ public class PowerLoomKB implements KnowledgeBase{
      *           (?RANGE SRDISTANCE_STATE)))
 	 * 
 	 */
-	public void executeRandonVariableDefinition(DomainResidentNode resident){
+	public void createRandonVariableDefinition(DomainResidentNode resident){
 		
 		List<Entity> states = resident.getPossibleValueList(); 
 		
@@ -229,7 +229,7 @@ public class PowerLoomKB implements KnowledgeBase{
 	 * assert devidamente entre parenteses. 
 	 * @param entityFinding
 	 */
-	public void executeEntityFinding(ObjectEntityInstance entityFinding){
+	public void insertEntityInstance(ObjectEntityInstance entityFinding){
 		debug.println("Entity finding: " + entityFinding.getName()); 
 		
 		//(Starship Enterprise)
@@ -244,7 +244,7 @@ public class PowerLoomKB implements KnowledgeBase{
 		}
 	}
 
-	public void executeRandonVariableFinding(RandonVariableFinding randonVariableFinding){
+	public void insertRandonVariableFinding(RandonVariableFinding randonVariableFinding){
 		
 		String finding = ""; 
 		finding+= "(=";
@@ -282,34 +282,85 @@ public class PowerLoomKB implements KnowledgeBase{
 	}
 	
 
+	/**
+	 * Save the definitions file (content of current KB)
+	 * 
+	 * @param name Name of the file
+	 */
+	private void saveDefinitionsFile(String name){
+		PLI.sSaveModule(moduleGenerativeName, name, "REPLACE", environment); 
+	}
 	
-	
-	
+	/**
+	 * Load the definitions file (content of current KB)
+	 * 
+	 * @param name Name of the file
+	 */
+	private void loadDefinitionsFile(String name){
+		PLI.load(name, environment); 
+	}
 	
 	
 	private String executeCommand(String command){
 		return PLI.sEvaluate(command, moduleFindingName, null).toString();
 	}
 	
-	/*
-	 * 
-	 * Deve ser criada uma lista com as variaveis ordinarias que deverao
-	 * ser instanciadas antes de se tentar resolver um n� de contexto. 
-	 * As vari�veis exemplares, por outro lado, n�o ser�o nunca instanciadas. 
-	 * 
-	 * Usaremos deste ultimo fato para definir o que � uma vari�vel ordin�ria
-	 * e o que � uma vari�vel exemplar: sempre que a vari�vel ordin�ria n�o 
-	 * estiver preenchida ela � uma exemplar (observe a responsabiliade de quem
-	 * chama esta fun��o: deve preencher todas as VO's, n�o permitindo o 
-	 * prosseguimento caso haja alguma n�o preenchida). 
-	 *
-     * Nota de implementa��o:
-     * - Nesta vers�o de teste, cada ov estara com a entidade que a preenche
-	 * anexada a esta... A vers�o final pode utilizar outra estrat�gia...
-	 * (sera usado o m�todo "ov.getEntity()")
-	 */
+    /* 
+     * Estes dois métodos consideram que todos os termos da fórmula estão 
+     * preenchidos da forma correta. 
+     */
+    public Boolean evaluateSimpleFormula(ContextNode context, List<OVInstance> ovInstances){
+        
+    	String formula = ""; 
+		
+		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
+		
+		formula+= "(";  
+		formula+= makeOperatorString(formulaTree, ovInstances); 		
+		formula+= ")"; 
+		
+		debug.println("Original formula: " + context.getLabel()); 
+		debug.println("PowerLoom Formula: " + formula); 
+		
+	    TruthValue answer = PLI.sAsk(formula, moduleFindingName, null);
+	    
+	    if (PLI.isTrue(answer)) {
+	        debug.println("Result: true");
+	        return true; 
+	      } else if (PLI.isFalse(answer)) {
+	        debug.println("Result: false");
+	        return false; 
+	      } else if (PLI.isUnknown(answer)) {
+	        debug.println("Result: unknown");
+	        return false; 
+	      }else{
+	    	return false; 
+	    } 
+    }
+    
+    public List<String> evaluateComplexFormula(ContextNode context, List<OVInstance> ovInstances){
+    	String formula = ""; 
+		
+		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
+		
+		formula+= "(";  
+		formula+= makeOperatorString(formulaTree, ovInstances); 		
+		formula+= ")"; 
+		
+		debug.println("Original formula: " + context.getLabel()); 
+		debug.println("PowerLoom Formula: " + formula); 
+		
+		PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);
+	    List result = new ArrayList<String>(); 
+		
+		if(iterator.nextP()){
+			result.add(PLI.getNthString(iterator, 0, moduleFinding, environment)); 
+		}
+		
+		return result; 
+    }
 	
-	public boolean executeContextFormula(ContextNode context){
+	public boolean executeContextFormula(ContextNode context, List<OVInstance> ovInstances){
 		
 		debug.println("Generating formula for context node " + context.getName()); 
 		
@@ -320,7 +371,7 @@ public class PowerLoomKB implements KnowledgeBase{
 		formula+= "(";  
 		
 		/* montar a formula sem preencher os valores da variaveis ordinarias ??? */
-		formula+= makeOperatorString(formulaTree); 
+		formula+= makeOperatorString(formulaTree, ovInstances); 
 		
 		formula+= ")"; 
 		
@@ -343,25 +394,13 @@ public class PowerLoomKB implements KnowledgeBase{
 	      } 
 	}
 	
-	/**
-	 * Save the definitions file (content of current KB)
-	 * 
-	 * @param name Name of the file
+	/*
+	 * Build a operator string from the NodeFormulaTree. (a operator and its 
+	 * operandos). 
+	 * @param operatorNode
+	 * @return
 	 */
-	private void saveDefinitionsFile(String name){
-		PLI.sSaveModule(moduleGenerativeName, name, "REPLACE", environment); 
-	}
-	
-	/**
-	 * Load the definitions file (content of current KB)
-	 * 
-	 * @param name Name of the file
-	 */
-	private void loadDefinitionsFile(String name){
-		PLI.load(name, environment); 
-	}
-	
-	private String makeOperatorString(NodeFormulaTree operatorNode){
+	private String makeOperatorString(NodeFormulaTree operatorNode, List<OVInstance> ovInstances){
 		
 		String retorno = ""; 
 		BuiltInRV builtIn = (BuiltInRV)operatorNode.getNodeVariable(); 
@@ -370,32 +409,32 @@ public class PowerLoomKB implements KnowledgeBase{
 		   
 		case SIMPLE_OPERATOR:
 			if(builtIn instanceof BuiltInRVAnd){
-				retorno+= makeConective(operatorNode, "AND");
+				retorno+= makeConective(operatorNode, "AND", ovInstances);
 			}else
 				if(builtIn instanceof BuiltInRVOr){
-					retorno+= makeConective(operatorNode, "OR");	
+					retorno+= makeConective(operatorNode, "OR", ovInstances);	
 				}else
 					if(builtIn instanceof BuiltInRVEqualTo){
-						retorno+= makeEqualStatement(operatorNode, " = "); 	
+						retorno+= makeEqualStatement(operatorNode, " = ", ovInstances); 	
 					}else
 						if(builtIn instanceof BuiltInRVIff){
-							retorno+= makeConective(operatorNode, "<=>");
+							retorno+= makeConective(operatorNode, "<=>", ovInstances);
 						}else
 							if(builtIn instanceof BuiltInRVImplies){
-								retorno+= makeConective(operatorNode, "=>");
+								retorno+= makeConective(operatorNode, "=>", ovInstances);
 							}else
 								if(builtIn instanceof BuiltInRVNot){
-									retorno+= makeSingleStatement(operatorNode, "NOT") ; 
+									retorno+= makeSingleStatement(operatorNode, "NOT", ovInstances) ; 
 								}	    
 			                    break;
 			
 		case QUANTIFIER_OPERATOR:
 			
 			if(builtIn instanceof BuiltInRVExists){
-				retorno+= makeQuantifier(operatorNode, "EXISTS"); 
+				retorno+= makeQuantifier(operatorNode, "EXISTS", ovInstances); 
 		    }else
 		    	if(builtIn instanceof BuiltInRVForAll){
-		    		retorno+= makeQuantifier(operatorNode, "FORALL");
+		    		retorno+= makeQuantifier(operatorNode, "FORALL", ovInstances);
 			    }
 			
 			break; 
@@ -409,18 +448,18 @@ public class PowerLoomKB implements KnowledgeBase{
 		
 	}
 	
-	private String makeOperandoString(NodeFormulaTree operator){
+	private String makeOperandoString(NodeFormulaTree operator, List<OVInstance> ovInstances){
 		
 		String operando = ""; 
 		
 		switch(operator.getTypeNode()){
 		
 		case SIMPLE_OPERATOR:
-			operando+= makeOperatorString(operator); 
+			operando+= makeOperatorString(operator, ovInstances); 
 		break; 	
 			
 		case QUANTIFIER_OPERATOR:
-			operando+= makeOperatorString(operator); 
+			operando+= makeOperatorString(operator, ovInstances); 
 		break; 	
 		
 		case OPERANDO: 
@@ -429,10 +468,12 @@ public class PowerLoomKB implements KnowledgeBase{
 		   
 		   case OVARIABLE: 
 			   OrdinaryVariable ov = (OrdinaryVariable)operator.getNodeVariable(); 
-			   if(ov.getEntity() != null){
-			       operando+= ov.getEntity().getName();
+			   OVInstance ovInstance = getOVInstanceForOV(ov, ovInstances); 
+			   if(ovInstance != null){
+			       operando+= ovInstance.getEntity().getInstanceName(); 
 			   }
-			   else{  //exemplar... 
+			   else{ 
+				   //TODO exemplar
 				   operando+= "?" + ov.getName(); 
 			   }
 			   break; 
@@ -445,10 +486,11 @@ public class PowerLoomKB implements KnowledgeBase{
 			   operando+= " "; 
 			   
 			   for(OrdinaryVariable ordVariable: node.getOrdinaryVariableList()){
-				   if(ordVariable.getEntity() != null){
-				       operando+= ordVariable.getEntity().getName();
+				   ovInstance = getOVInstanceForOV(ordVariable, ovInstances); 
+				   if(ovInstance != null){
+				       operando+= ovInstance.getEntity().getInstanceName(); 
 				   }
-				   else{  //exemplar... 
+				   else{
 					   operando+= "?" + ordVariable.getName(); 
 				   }
 				   operando+=" "; 
@@ -468,7 +510,7 @@ public class PowerLoomKB implements KnowledgeBase{
 		return operando; 
 	}
 	
-	private String makeConective(NodeFormulaTree node, String conectiveName){
+	private String makeConective(NodeFormulaTree node, String conectiveName, List<OVInstance> ovInstances){
     	
 		String retorno = ""; 
 		
@@ -479,19 +521,19 @@ public class PowerLoomKB implements KnowledgeBase{
     	NodeFormulaTree leftOperando = listChildren.get(0);
     	
     	retorno+= "( "; 
-		retorno+= makeOperandoString(leftOperando);   		
+		retorno+= makeOperandoString(leftOperando, ovInstances);   		
     	retorno+=" ) "; 
     	
     	retorno+= "( "; 
     	NodeFormulaTree rightOperando = listChildren.get(1); 
-		retorno+= makeOperandoString(rightOperando);   
+		retorno+= makeOperandoString(rightOperando, ovInstances);   
     	retorno+=" ) "; 
     	
     	return retorno; 
     	
 	}
 	
-	private String makeEqualStatement(NodeFormulaTree node, String conectiveName){
+	private String makeEqualStatement(NodeFormulaTree node, String conectiveName, List<OVInstance> ovInstances){
     	
 		String retorno = ""; 
 		retorno+= conectiveName; 
@@ -501,33 +543,39 @@ public class PowerLoomKB implements KnowledgeBase{
     	NodeFormulaTree leftOperando = listChildren.get(0);
     	
     	retorno+= "( "; 
-		retorno+= this.makeOperandoString(leftOperando);   		
+		retorno+= this.makeOperandoString(leftOperando, ovInstances);   		
     	retorno+=" ) "; 
     	
     	NodeFormulaTree rightOperando = listChildren.get(1); 
-		retorno+= this.makeOperandoString(rightOperando);  
+		retorno+= this.makeOperandoString(rightOperando, ovInstances);  
 		
 		return retorno; 
 	}
 	
-	private String makeSingleStatement(NodeFormulaTree node, String conectiveName){
+	/**
+	 * Used for unary operators. 
+	 * 
+	 * @param node
+	 * @param conectiveName
+	 * @param ovInstances
+	 * @return
+	 */
+	private String makeSingleStatement(NodeFormulaTree node, String conectiveName, List<OVInstance> ovInstances){
     	
 		String retorno = ""; 
 		retorno+= conectiveName; 	
 		
-
 		ArrayList<NodeFormulaTree> listChildren = (ArrayList<NodeFormulaTree>)node.getChildren(); 
     	
-    	NodeFormulaTree operando = listChildren.get(0); 
     	retorno+= "( "; 
-		retorno+= this.makeOperandoString(operando);   		
+		retorno+= this.makeOperandoString(listChildren.get(0), ovInstances);   		
     	retorno+=" ) "; 
 		
 		return retorno; 
 	
 	}
 	
-	private String makeQuantifier(NodeFormulaTree node, String name){
+	private String makeQuantifier(NodeFormulaTree node, String name, List<OVInstance> ovInstances){
     	
 		String retorno = ""; 
 		retorno+= name; 
@@ -553,7 +601,7 @@ public class PowerLoomKB implements KnowledgeBase{
     	/*-------------------------- Formula ----------------------------------*/
     	NodeFormulaTree formula = listChildren.get(1); 
     	retorno+="("; 
-		retorno+= makeOperatorString(formula);   		
+		retorno+= makeOperatorString(formula, ovInstances);   		
 		retorno+=")"; 
 		
 		return retorno; 
@@ -587,29 +635,20 @@ public class PowerLoomKB implements KnowledgeBase{
 		}
 	}
 
-	
-	
-	
-	
+	private OVInstance getOVInstanceForOV(OrdinaryVariable ov, List<OVInstance> list){
+		
+		for(OVInstance ovi: list){
+			if (ovi.getOv() == ov){
+				return ovi; 
+			}
+		}
+		
+		return null; 
+	}
 
-	public boolean existEntity(String name) {
+	public boolean executeContextFormula(ContextNode context) {
 		// TODO Auto-generated method stub
 		return false;
-	}
-
-	public Type getTypeByEntity(String name) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public String searchFinding(String nameRV, List<String> listArguments) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public List<Entity> getEntityByType(Type type) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 	
 }

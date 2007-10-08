@@ -3,7 +3,9 @@ package unbbayes.prs.mebn.kb.powerloom;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.kb.KBFacade;
+import unbbayes.prs.mebn.ssbn.OVInstance;
 import edu.isi.powerloom.Environment;
 import edu.isi.powerloom.PLI;
 import edu.isi.powerloom.PlIterator;
@@ -79,6 +81,16 @@ public class PowerLoomFacade implements KBFacade{
 		TruthValue value = PLI.sAsk(query, moduleName, environment); 
 		
 		return false;
+	}
+
+	public Boolean evaluateSimpleFormula(ContextNode context, List<OVInstance> ovInstances) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public List<OVInstance> evaluateComplexFormula(ContextNode context, List<OVInstance> ovInstances) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

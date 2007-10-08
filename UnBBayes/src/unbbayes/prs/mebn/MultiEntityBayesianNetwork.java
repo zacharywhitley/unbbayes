@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.Network;
+import unbbayes.prs.Node;
 import unbbayes.prs.mebn.entity.BooleanStatesEntityContainer;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntityContainer;
 import unbbayes.prs.mebn.entity.ObjectEntityConteiner;
@@ -301,6 +302,22 @@ public class MultiEntityBayesianNetwork extends Network {
 	
 	
 	
+	/*--------------------- Searchs using the unique names -------------------*/
+	
+	
+	/**
+	 * Searches for a domain mfrag containing a resident node with a name passed by its argument.
+	 * @param nodeName: a name for a resident node to look for
+	 * @return if found, a DomainMFrag. If not found, null.
+	 */
+	public DomainMFrag getDomainMFragByNodeName(String nodeName) {
+		for (DomainMFrag mfrag : this.domainMFragList) {
+			if (mfrag.getDomainResidentNodeByName(nodeName) != null) {
+				return mfrag;
+			}
+		}
+		return null;
+	}
 	
 	/**
 	 * searches for a MFrag containing a node
@@ -315,6 +332,55 @@ public class MultiEntityBayesianNetwork extends Network {
 		}
 		return null;
 	}
+	
+	/**
+	 * Search the context node with the name. 
+	 * @param name Name of context node
+	 * @return the context node if it exists and null otherside. 
+	 */
+	public ContextNode getContextNode(String name){
+		for(DomainMFrag mfrag: domainMFragList){
+			for(ContextNode node: mfrag.getContextNodeList()){
+				if(node.getName().equals(name)){
+					return node; 
+				}
+			}
+		}
+		return null; 
+	}
+
+	/**
+	 * Search the context node with the name. 
+	 * @param name Name of context node
+	 * @return the context node if it exists and null otherside. 
+	 */
+	public DomainResidentNode getDomainResidentNode(String name){
+		for(DomainMFrag mfrag: domainMFragList){
+			for(DomainResidentNode node: mfrag.getDomainResidentNodeList()){
+				if(node.getName().equals(name)){
+					return node; 
+				}
+			}
+		}
+		return null; 
+	}
+	
+	/**
+	 * Search the context node with the name. 
+	 * @param name Name of context node
+	 * @return the context node if it exists and null otherside. 
+	 */
+	public GenerativeInputNode getInputNode(String name){
+		for(DomainMFrag mfrag: domainMFragList){
+			for(GenerativeInputNode node: mfrag.getGenerativeInputNodeList()){
+				if(node.getName().equals(name)){
+					return node; 
+				}
+			}
+		}
+		return null; 
+	}	
+	
 	
 	/*	This method should never be used by this project
 	public MFrag getMFragByNodeName(String nodeName) {
@@ -348,17 +414,5 @@ public class MultiEntityBayesianNetwork extends Network {
 	*/
 	
 	
-	/**
-	 * Searches for a domain mfrag containing a resident node with a name passed by its argument.
-	 * @param nodeName: a name for a resident node to look for
-	 * @return if found, a DomainMFrag. If not found, null.
-	 */
-	public DomainMFrag getDomainMFragByNodeName(String nodeName) {
-		for (DomainMFrag mfrag : this.domainMFragList) {
-			if (mfrag.getDomainResidentNodeByName(nodeName) != null) {
-				return mfrag;
-			}
-		}
-		return null;
-	}
+
 }
