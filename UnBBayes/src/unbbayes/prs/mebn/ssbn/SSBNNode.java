@@ -66,12 +66,17 @@ public class SSBNNode {
 		this.arguments = new ArrayList<OVInstance>();
 		this.parents = new ArrayList<SSBNNode>();
 		this.resident = resident;
-		this.probNode = probNode;
+		
+		if (probNode == null) {
+			this.probNode = new ProbabilisticNode();
+		} else {
+			this.probNode = probNode;
+		}
 		
 		this.actualValues = new ArrayList<Entity>(resident.getPossibleValueList());
 		this.setUsingDefaultCPT(false);
 		
-		this.setCompiler(new Compiler(resident, probNode.getPotentialTable()));
+		this.setCompiler(new Compiler(resident, this.probNode.getPotentialTable()));
 		
 	}
 	

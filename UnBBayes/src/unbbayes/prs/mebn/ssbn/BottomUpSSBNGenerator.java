@@ -9,7 +9,7 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  * @author Shou Matsumoto
  *
  */
-public class BottomUpSSBNGenerator implements SSBNGenerator {
+public class BottomUpSSBNGenerator implements ISSBNGenerator {
 
 	/**
 	 * 

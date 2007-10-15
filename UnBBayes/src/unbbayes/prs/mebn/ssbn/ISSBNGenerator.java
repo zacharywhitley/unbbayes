@@ -9,6 +9,6 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
  * @author Shou Matsumoto
  *
  */
-public interface SSBNGenerator {
+public interface ISSBNGenerator {
 	public ProbabilisticNetwork generateSSBN(Query query);
 }

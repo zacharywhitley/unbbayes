@@ -1,14 +1,20 @@
 /**
  * 
  */
-package unbbayes.prs.mebn.ssbn;
+package unbbayes.prs.mebn.ssbn.test;
 
 import java.io.File;
+import java.io.IOException;
 
 import unbbayes.io.mebn.UbfIO;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.entity.Entity;
+import unbbayes.prs.mebn.ssbn.SSBNNode;
+import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import junit.framework.TestCase;
 
 /**
@@ -17,12 +23,17 @@ import junit.framework.TestCase;
  */
 public class SSBNNodeTest extends TestCase {
 
-	private SSBNNode ssbnnode;
+	private MultiEntityBayesianNetwork mebn = null;
+	private  DomainMFrag mfrag = null;
+	private DomainResidentNode resident = null;
+	
+	private SSBNNode ssbnnode = null;
 	/**
 	 * @param arg0
 	 */
 	public SSBNNodeTest(String arg0) {
 		super(arg0);
+		
 	}
 
 	/* (non-Javadoc)
@@ -30,10 +41,29 @@ public class SSBNNodeTest extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
-		MultiEntityBayesianNetwork mebn = UbfIO.getInstance().loadMebn(new File("examples/mebn/SSBNNodeTest.ubf"));
-		DomainResidentNode resident = mebn.getDomainMFragByNodeName("").getDomainResidentNodeByName("");
-		//TODO
-		//this.ssbnode = SSBNNode.getInstance(resident);
+		UbfIO ubf = UbfIO.getInstance();
+		try {
+			mebn = ubf.loadMebn(new File("examples/mebn/SSBNNodeTest.ubf"));
+		} catch (Exception e) {
+			fail(e.getMessage());
+			return;
+		}
+		
+		if (this.mebn == null) {
+			fail("Unable to load file");
+			return;
+		}
+		this.resident = mebn.getDomainResidentNode("HarmPotential");
+		
+		if (this.resident == null) {
+			fail("Unable to retreve resident node");
+			return;
+		}
+		
+		this.ssbnnode = SSBNNode.getInstance(this.resident);
+		
+		
+		
 	}
 
 	/* (non-Javadoc)
@@ -47,21 +77,40 @@ public class SSBNNodeTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.ssbn.SSBNNode#getInstance(unbbayes.prs.mebn.DomainResidentNode, unbbayes.prs.bn.ProbabilisticNode)}.
 	 */
 	public void testGetInstanceDomainResidentNodeProbabilisticNode() {
-		fail("Not yet implemented"); // TODO
+		ProbabilisticNode pnode = new ProbabilisticNode();
+		SSBNNode node = SSBNNode.getInstance(this.resident,pnode);
+		assertNotNull(node);
+		assertEquals(node.getResident(), this.resident);
+		assertEquals(node.getProbNode(), pnode);
+		assertEquals(3,node.getActualValues().size()); // contains true, false and absurd
+		assertEquals(node.getParents().size(),0);
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.ssbn.SSBNNode#getInstance(unbbayes.prs.mebn.DomainResidentNode)}.
 	 */
 	public void testGetInstanceDomainResidentNode() {
-		fail("Not yet implemented"); // TODO
+		SSBNNode node = SSBNNode.getInstance(resident);
+		assertNotNull(node);
+		assertEquals(node.getResident(), resident);
+		assertNotNull(node.getProbNode());
+		assertEquals(node.getActualValues().size(),3);
+		assertEquals(node.getParents().size(),0);
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.ssbn.SSBNNode#getOVs()}.
 	 */
 	public void testGetOVs() {
-		fail("Not yet implemented"); // TODO
+		for (OrdinaryVariable ov : this.resident.getOrdinaryVariableList()) {
+			try { 
+				this.ssbnnode.addArgument(ov, ov.getName());
+			} catch (SSBNNodeGeneralException e) {
+				fail(e.getMessage());
+			}
+		}
+		assertTrue(this.resident.getOrdinaryVariableList().containsAll(this.ssbnnode.getOVs()));
+		assertTrue(this.ssbnnode.getOVs().containsAll(this.resident.getOrdinaryVariableList()));
 	}
 
 	/**
