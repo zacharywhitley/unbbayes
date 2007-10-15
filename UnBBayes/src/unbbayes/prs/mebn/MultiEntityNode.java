@@ -2,7 +2,10 @@ package unbbayes.prs.mebn;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.entity.Entity;
@@ -205,16 +208,51 @@ public class MultiEntityNode extends Node {
 		for (OrdinaryVariable ov : ovs) {
 			found = false;
 			for (Argument arg : this.getArgumentList()) {
-				if (arg.getOVariable().equals(ov)){
-					found = true;
-					break;
-				}
+				if (arg.isSimpleArgRelationship()) {
+					if (arg.getOVariable().equals(ov)){
+						found = true;
+						break;
+					}
+				} else {
+					// recursivelly searches for the ovs inside a complex argument
+					found = arg.getArgumentTerm().hasAllOVs(ovs);
+				}				
 			}
 			if (!found) {
 				return false;
 			}
 		}
 		return true;
+	}
+	
+	
+	protected Collection<OrdinaryVariable> fillAlreadyCountedOVs(Collection<OrdinaryVariable> alreadyCountedOVs) {
+		OrdinaryVariable ov = null;
+		MultiEntityNode node = null;
+		for (Argument arg : this.getArgumentList()) {
+			if (arg.isSimpleArgRelationship()) {
+				ov = arg.getOVariable();
+				if (!alreadyCountedOVs.contains(ov)) {
+					alreadyCountedOVs.add(ov);
+				}
+			} else {
+				node = arg.getArgumentTerm();
+				if (node != null) {
+					node.fillAlreadyCountedOVs(alreadyCountedOVs);
+				}				
+			}
+		}
+		return alreadyCountedOVs;
+	}
+	
+	/**
+	 * 
+	 * @return how many different ovs appear inside this node, including inner nodes.
+	 */
+	public int getAllOVCount() {
+		Collection<OrdinaryVariable> ovs = new ArrayList<OrdinaryVariable>();
+		ovs = this.fillAlreadyCountedOVs(ovs);
+		return ovs.size();
 	}
 	
 	

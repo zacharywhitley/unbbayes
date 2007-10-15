@@ -24,6 +24,7 @@ import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.TypeContainer;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
+import unbbayes.prs.mebn.exception.ArgumentOVariableAlreadySetException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import junit.framework.TestCase;
 import junit.framework.Test;
@@ -897,7 +898,8 @@ public class DomainMFragTest extends TestCase {
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.DomainMFrag#getContextByAllOV(unbbayes.prs.mebn.OrdinaryVariable...allOVs)}.
 	 */
-	public void testGetContextByAllOV() {
+	public void testGetContextByAllOV_getContextByOV() {
+		// initialize types
 		TypeContainer typeContainer = new TypeContainer();
 		try {
 			typeContainer.createType("Starship");
@@ -911,10 +913,14 @@ public class DomainMFragTest extends TestCase {
 		Type tZone = typeContainer.getType("Zone");
 		Type tTimestep = typeContainer.getType("Timestep");
 		
+		// prepare ovs
 		OrdinaryVariable st = new OrdinaryVariable("st",tStarship,this.mfrag);
 		OrdinaryVariable z = new OrdinaryVariable("z",tZone,this.mfrag);
-		OrdinaryVariable t = new OrdinaryVariable("z",tTimestep,this.mfrag);
+		OrdinaryVariable t = new OrdinaryVariable("t",tTimestep,this.mfrag);
 		
+		// creates 3 kinds of context nodes
+		
+		// context(st,t,z)
 		ContextNode context_st_t_z = new ContextNode("context_st_t_z",this.mfrag);
 		Argument arg = new Argument("st",context_st_t_z);
 		try{
@@ -934,7 +940,7 @@ public class DomainMFragTest extends TestCase {
 		context_st_t_z.addArgument(arg);
 		arg = new Argument("z",context_st_t_z);
 		try{
-			arg.setOVariable(t);
+			arg.setOVariable(z);
 		} catch (ArgumentNodeAlreadySetException e) {
 			this.fail(e.getMessage());
 			return;
@@ -942,9 +948,104 @@ public class DomainMFragTest extends TestCase {
 		context_st_t_z.addArgument(arg);
 		
 		
+		// context(st,z)
 		ContextNode context_st_z = new ContextNode("context_st_z",this.mfrag);
+		arg = new Argument("st",context_st_z);
+		try{
+			arg.setOVariable(st);
+		} catch (ArgumentNodeAlreadySetException e) {
+			this.fail(e.getMessage());
+			return;
+		}
+		context_st_z.addArgument(arg);
+		arg = new Argument("z",context_st_z);
+		try{
+			arg.setOVariable(z);
+		} catch (ArgumentNodeAlreadySetException e) {
+			this.fail(e.getMessage());
+			return;
+		}
+		context_st_z.addArgument(arg);
+		
+		// context(resident(st,z))
+		ContextNode context_resident_st_z = new ContextNode("context_resident_st_z",this.mfrag);
+		DomainResidentNode resident = new DomainResidentNode("resident",mfrag);
+		arg = new Argument("st",resident);
+		try{
+			arg.setOVariable(st);
+		} catch (ArgumentNodeAlreadySetException e) {
+			this.fail(e.getMessage());
+			return;
+		}
+		resident.addArgument(arg);
+		arg = new Argument("z",resident);
+		try{
+			arg.setOVariable(z);
+		} catch (ArgumentNodeAlreadySetException e) {
+			this.fail(e.getMessage());
+			return;
+		}
+		resident.addArgument(arg);
+		arg = new Argument("resident",context_resident_st_z);
+		try {
+			arg.setArgumentTerm(resident);
+		} catch (ArgumentOVariableAlreadySetException e) {
+			fail(e.getMessage());
+			return;
+		}
+		context_resident_st_z.addArgument(arg);
 		
 		
+		// add all nodes into one single mfrag
+		mfrag.addDomainResidentNode(resident);
+		mfrag.addContextNode(context_resident_st_z);
+		mfrag.addContextNode(context_st_t_z);
+		mfrag.addContextNode(context_st_z);
+		
+		// start testing getContextByAllOVs
+		
+		assertTrue(mfrag.getContextByAllOV(null).isEmpty());
+		assertTrue(mfrag.getContextByAllOV(st).isEmpty());
+		assertTrue(mfrag.getContextByAllOV(z).isEmpty());
+		assertTrue(mfrag.getContextByAllOV(t).isEmpty());
+		
+		assertTrue(!mfrag.getContextByAllOV(z,st).contains(context_st_t_z));
+		assertTrue(mfrag.getContextByAllOV(z,st).contains(context_resident_st_z));
+		assertTrue(mfrag.getContextByAllOV(z,st).contains(context_st_z));
+		assertEquals(mfrag.getContextByAllOV(z,st).size(), 2);
+		
+		assertTrue(mfrag.getContextByAllOV(st,z,t).contains(context_st_t_z));
+		assertTrue(!mfrag.getContextByAllOV(st,z,t).contains(context_resident_st_z));
+		assertTrue(!mfrag.getContextByAllOV(st,z,t).contains(context_st_z));
+		assertEquals(mfrag.getContextByAllOV(z,st,t).size(), 1);
+		
+		// start testing getContextByOVs
+		
+
+		assertTrue(mfrag.getContextByOV(null).isEmpty());
+		assertTrue(mfrag.getContextByOV(st).contains(context_st_t_z));
+		assertTrue(mfrag.getContextByOV(st).contains(context_st_z));
+		assertTrue(mfrag.getContextByOV(st).contains(context_resident_st_z));
+
+		assertTrue(mfrag.getContextByOV(z).contains(context_st_t_z));
+		assertTrue(mfrag.getContextByOV(z).contains(context_st_z));
+		assertTrue(mfrag.getContextByOV(z).contains(context_resident_st_z));
+
+		assertTrue(mfrag.getContextByOV(t).contains(context_st_t_z));
+		
+		assertEquals(mfrag.getContextByOV(st).size(), 3);
+		assertEquals(mfrag.getContextByOV(z).size(), 3);
+		assertEquals(mfrag.getContextByOV(t).size(), 1);
+		
+		assertTrue(mfrag.getContextByOV(z,st).contains(context_st_t_z));
+		assertTrue(mfrag.getContextByOV(z,st).contains(context_resident_st_z));
+		assertTrue(mfrag.getContextByOV(z,st).contains(context_st_z));
+		assertEquals(mfrag.getContextByOV(z,st).size(), 3);
+		
+		assertTrue(mfrag.getContextByOV(st,z,t).contains(context_st_t_z));
+		assertTrue(!mfrag.getContextByOV(st,z,t).contains(context_resident_st_z));
+		assertTrue(!mfrag.getContextByOV(st,z,t).contains(context_st_z));
+		assertEquals(mfrag.getContextByOV(z,st,t).size(), 1);
 	}
 	
 

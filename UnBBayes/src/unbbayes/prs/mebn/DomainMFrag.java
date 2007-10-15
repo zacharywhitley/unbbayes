@@ -338,9 +338,13 @@ public class DomainMFrag extends MFrag {
 	public Collection<ContextNode> getContextByAllOV(OrdinaryVariable...allOVs) {
 		Collection<ContextNode> ret = new ArrayList<ContextNode>();
 		
+		if (allOVs == null) {
+			return ret;
+		}
+		
 		for (ContextNode node : this.getContextNodeList()) {
-			// we suppose if all ovs are present and the number of simple arguments are the same of the required ovs, then its exactly the same
-			if (( node.getSimpleArgRelationshipCount() == allOVs.length ) && node.hasAllOVs(allOVs)) {
+			// we suppose if all ovs are present and the number of ovs (inside arguments) are the same of the required ovs, then its exactly the same
+			if (( node.getAllOVCount() == allOVs.length ) && node.hasAllOVs(allOVs)) {
 				ret.add(node);	// we also suppose the contextNodeList has no redundancy
 			}			
 		}
@@ -354,6 +358,10 @@ public class DomainMFrag extends MFrag {
 	 */
 	public Collection<ContextNode> getContextByOV(OrdinaryVariable...allOVs) {
 		Collection<ContextNode> ret = new ArrayList<ContextNode>();
+		
+		if (allOVs == null) {
+			return ret;
+		}
 		
 		for (ContextNode node : this.getContextNodeList()) {
 			if ( node.hasAllOVs(allOVs)) {
