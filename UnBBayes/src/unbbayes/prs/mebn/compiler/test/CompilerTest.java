@@ -244,7 +244,9 @@ public class CompilerTest extends TestCase {
 		}
 
 		//new GUIPotentialTable(tab).showTable("VAI FUNCIONAR!");
-
+		
+		
+		/*
 		Compiler c = new Compiler(null);
 		c.init(TABLE_TO_PARSE); 
 		try  {
@@ -252,7 +254,7 @@ public class CompilerTest extends TestCase {
 		} catch (MEBNException e) {
 			fail(e.getMessage() + ": "+ e.getClass().getName());
 		}
-		
+		*/
 		 
 	}
 
