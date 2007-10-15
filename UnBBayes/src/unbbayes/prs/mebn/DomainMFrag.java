@@ -346,5 +346,21 @@ public class DomainMFrag extends MFrag {
 		}
 		return ret;
 	}
+	
+	/**
+	 * 
+	 * @param allOVs set of OrdinaryVariable to be looked for.
+	 * @return set of ContextNodes containing all (but not exactly) the Ordinary Variables passed by its arguments
+	 */
+	public Collection<ContextNode> getContextByOV(OrdinaryVariable...allOVs) {
+		Collection<ContextNode> ret = new ArrayList<ContextNode>();
+		
+		for (ContextNode node : this.getContextNodeList()) {
+			if ( node.hasAllOVs(allOVs)) {
+				ret.add(node);	// we  suppose the contextNodeList has no redundancy
+			}			
+		}
+		return ret;
+	}
 
 }

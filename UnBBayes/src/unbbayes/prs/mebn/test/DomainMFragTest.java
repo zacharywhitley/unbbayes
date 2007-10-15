@@ -8,6 +8,7 @@ import java.util.List;
 
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
+import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
@@ -20,13 +21,16 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.builtInRV.test.BuiltInRVAndTest;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
 import unbbayes.prs.mebn.entity.Type;
+import unbbayes.prs.mebn.entity.TypeContainer;
+import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
+import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import junit.framework.TestCase;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
 /**
- * @author user
+ * @author Shou
  *
  */
 public class DomainMFragTest extends TestCase {
@@ -888,6 +892,60 @@ public class DomainMFragTest extends TestCase {
 		assertTrue(!node.getMFrag().equals(mfrag));
 	}
 
+	
+	
+	/**
+	 * Test method for {@link unbbayes.prs.mebn.DomainMFrag#getContextByAllOV(unbbayes.prs.mebn.OrdinaryVariable...allOVs)}.
+	 */
+	public void testGetContextByAllOV() {
+		TypeContainer typeContainer = new TypeContainer();
+		try {
+			typeContainer.createType("Starship");
+			typeContainer.createType("Zone");
+			typeContainer.createType("Timestep");
+		} catch (TypeAlreadyExistsException e) {
+			this.fail(e.getMessage());
+			return;
+		}		
+		Type tStarship = typeContainer.getType("Starship");
+		Type tZone = typeContainer.getType("Zone");
+		Type tTimestep = typeContainer.getType("Timestep");
+		
+		OrdinaryVariable st = new OrdinaryVariable("st",tStarship,this.mfrag);
+		OrdinaryVariable z = new OrdinaryVariable("z",tZone,this.mfrag);
+		OrdinaryVariable t = new OrdinaryVariable("z",tTimestep,this.mfrag);
+		
+		ContextNode context_st_t_z = new ContextNode("context_st_t_z",this.mfrag);
+		Argument arg = new Argument("st",context_st_t_z);
+		try{
+			arg.setOVariable(st);
+		} catch (ArgumentNodeAlreadySetException e) {
+			this.fail(e.getMessage());
+			return;
+		}
+		context_st_t_z.addArgument(arg);
+		arg = new Argument("t",context_st_t_z);
+		try{
+			arg.setOVariable(t);
+		} catch (ArgumentNodeAlreadySetException e) {
+			this.fail(e.getMessage());
+			return;
+		}
+		context_st_t_z.addArgument(arg);
+		arg = new Argument("z",context_st_t_z);
+		try{
+			arg.setOVariable(t);
+		} catch (ArgumentNodeAlreadySetException e) {
+			this.fail(e.getMessage());
+			return;
+		}
+		context_st_t_z.addArgument(arg);
+		
+		
+		ContextNode context_st_z = new ContextNode("context_st_z",this.mfrag);
+		
+		
+	}
 	
 
 	/**
