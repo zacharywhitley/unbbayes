@@ -8,6 +8,7 @@ import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
+import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.compiler.MEBNTableParser;
 import unbbayes.prs.mebn.compiler.exception.InvalidProbabilityRangeException;
 import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredException;
@@ -20,7 +21,7 @@ import junit.framework.TestCase;
 public class MEBNTableParserTest extends TestCase {
 	
 	private MultiEntityBayesianNetwork mebn = null; 
-	private MEBNTableParser tableParser = null;
+	private unbbayes.prs.mebn.compiler.Compiler tableParser = null;
 	
 	public MEBNTableParserTest(String arg0) {
 		super(arg0);
@@ -46,7 +47,7 @@ public class MEBNTableParserTest extends TestCase {
 		
 		
 		
-		tableParser = MEBNTableParser.getInstance(mebn, (DomainResidentNode)mebn.getNode("DangerToSelf"));
+		tableParser = new Compiler((DomainResidentNode)mebn.getNode("DangerToSelf"));
 		
 	}
 
@@ -69,9 +70,9 @@ public class MEBNTableParserTest extends TestCase {
 		
 		//		 should go all right
 		String tableString =  
-			" if any STi have( OpSpec = Cardassian | HarmPotential = true ) " + 
+			" if any st.t have( OpSpec = Cardassian | HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
-			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
+			" else if any st.z.t have( OpSpec = Romulan & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +
 			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Me = .01 , Lo = .99 ]  " +

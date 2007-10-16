@@ -2,6 +2,7 @@
 
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -20,6 +21,7 @@ import unbbayes.prs.mebn.compiler.exception.SomeStateUndeclaredException;
 import unbbayes.prs.mebn.compiler.exception.TableFunctionMalformedException;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.exception.MEBNException;
+import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.util.Debug;
 import unbbayes.util.NodeList;
 
@@ -57,9 +59,10 @@ import unbbayes.util.NodeList;
  table := statement | if_statement
  if_statement 
  ::= 
- "if" allop ident "have" "(" b_expression ")" statement 
+ "if" allop varsetname "have" "(" b_expression ")" statement 
  	"else" statement 
  allop ::= "any" | "all"
+ varsetname ::= ident ["." ident]*
  b_expression ::= b_term [ "|" b_term ]*
  b_term ::= not_factor [ "&" not_factor ]*
  not_factor ::= [ "~" ] b_factor
@@ -91,39 +94,61 @@ public class Compiler implements ICompiler {
 	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.compiler.resources.Resources");
 
 	
-	/* O caracter lido "antecipadamente" (lookahead) */
+	/* A previously read character (lookahead) */
 	private char look;
 
-	/* Posi��o de leitura do text */
+	/* Current text cursor position (where inside "text" we're scanning now) */
 	private int index = 0;
 
 	private char[] text;
 
-	/* palavras-chave */
+	/* keywords */
 	private String kwlist[] = { "IF", "ELSE", "ALL", "ANY", "HAVE" };
 
 	/*
-	 * c�digo para as palavras-chave
+	 * Special codes for keywords
 	 */
 	private char kwcode[] = { 'i', 'l', 'a', 'y', 'h' };
 
-	/* token codificado */
+	/* coded token */
 	private char token;
 
 	/*
-	 * valor do token n�o codificado
+	 * uncoded token's value
 	 */
 	private String value = "";
 	private String noCaseChangeValue = "";
 	
 	
-	// Informations used by this class to check consistency
+	// Informations used by this class to check pre-SSBN consistency
 	private MultiEntityBayesianNetwork mebn = null;
 	private DomainResidentNode node = null;
 	
 
 	// Variables used for ProbabilisticTable generation
 	private PotentialTable cpt = null;
+	private SSBNNode ssbnnode = null;
+	
+	/*
+	 * This temporaly represents a parsed CPT, to make potential table generation easier, like:
+	 * 
+	 * (TempTableHeaderCell)      (TempTableHeaderCell)      (TempTableHeaderCell)
+	 *          |                          |                            |
+	 * (TempTableProbabilityCell) (TempTableProbabilityCell) (TempTableProbabilityCell)
+	 *          |                          |                            |
+	 * (TempTableProbabilityCell) (TempTableProbabilityCell) (TempTableProbabilityCell)
+	 *          |                          |                            |
+	 * (TempTableProbabilityCell) (TempTableProbabilityCell) (TempTableProbabilityCell)
+	 *          |                          |                            |
+	 * (TempTableProbabilityCell) (TempTableProbabilityCell) (TempTableProbabilityCell)
+	 * 
+	 * Where TempTableHeaderCell contains the parent and its expected value in the table.
+	 * TempTableProbabilityCell represents a possible value of THIS node and its occurrence
+	 * probability.
+	 * 
+	 */
+	Hashtable<TempTableHeaderCell, List<TempTableProbabilityCell>> tempTable = null;
+	
 	
 	private Compiler() {
 		
@@ -135,13 +160,17 @@ public class Compiler implements ICompiler {
 		this.cpt = null;
 	}
 	
-	public Compiler (DomainResidentNode node, PotentialTable cpt) {
+	public Compiler (DomainResidentNode node, SSBNNode ssbnnode) {
 		super();
 		this.setNode(node);
-		this.cpt = cpt;
+		this.ssbnnode = ssbnnode;
+		if (this.ssbnnode != null) {
+			this.cpt = this.ssbnnode.getProbNode().getPotentialTable();
+		}
+		tempTable = new Hashtable<TempTableHeaderCell, List<TempTableProbabilityCell>>();
 	}
 	
-	/* inicializa��o do compilador */
+	/* Compiler's initialization */
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.compiler.AbstractCompiler#init(java.lang.String)
 	 */
@@ -215,7 +244,7 @@ public class Compiler implements ICompiler {
 									  InvalidProbabilityRangeException,
 									  TableFunctionMalformedException{
 		Debug.println("PARSING IF STATEMENT");
-		// SCAN FOR IF		
+		// SCAN FOR IF. Note that any blank spaces were already skipped
 		scan();
 		matchString("IF");
 
@@ -232,13 +261,9 @@ public class Compiler implements ICompiler {
 			expected("ALL or ANY");
 		}
 
-		// SCAN FOR IDENTIFIER
-		scan();
-		if (token == 'x') {
-			Debug.println("SCANING IDENTIFIER " + value);
-		} else {
-			expected("Identifier");
-		}
+		// SCAN FOR varsetname
+		this.varsetname();
+		
 
 		// SCAN FOR HAVE
 		Debug.println("SCAN FOR HAVE");
@@ -294,6 +319,32 @@ public class Compiler implements ICompiler {
 			// The statement found was not an else statement
 			throw new NoDefaultDistributionDeclaredException();
 		}
+	}
+	
+	/**
+	 *   It skippes white spaces after evaluation.
+	 *   varsetname ::= ident["."ident]*
+	 */
+	private void varsetname() throws TableFunctionMalformedException {
+		// scan for the ident
+		do {
+			scanNoSkip();	// no white spaces should stay between ident and "." and next ident
+			if (token == 'x') {
+				Debug.println("SCANING IDENTIFIER " + value);
+			} else {
+				expected("Identifier");
+			}	
+			
+			// search for ["." ident]* loop
+			if (this.look == '.') {
+				this.nextChar();
+				continue;
+			} else {
+				break;
+			}
+		} while (index < text.length); 	// actually, this check is unreachable
+		
+		skipWhite();
 	}
 
 	/**
@@ -627,7 +678,7 @@ public class Compiler implements ICompiler {
 		value = value.toUpperCase();
 
 		token = 'x';
-		skipWhite();
+		//skipWhite();
 
 		Debug.print(value + " ");
 		
@@ -659,12 +710,35 @@ public class Compiler implements ICompiler {
 		Debug.print(value + " ");
 		return Float.parseFloat(value);
 	}
-
+	
+	/**
+	 * Scan the text and skippes white space
+	 * @throws TableFunctionMalformedException
+	 */
 	private void scan() throws TableFunctionMalformedException {
 			
 		int kw;
 		
 		getName();
+		skipWhite();
+		kw = lookup(value);
+		if (kw == -1)
+			token = 'x';
+		else
+			token = kwcode[kw];
+		Debug.println("\n!!!Value = "  + value);
+	}
+	
+	/**
+	 * Scan the text but doesnt skip white spaces
+	 * @throws TableFunctionMalformedException
+	 */
+	private void scanNoSkip() throws TableFunctionMalformedException {
+			
+		int kw;
+		
+		getName();
+		
 		kw = lookup(value);
 		if (kw == -1)
 			token = 'x';
@@ -673,6 +747,11 @@ public class Compiler implements ICompiler {
 		Debug.println("\n!!!Value = "  + value);
 	}
 
+	/**
+	 * Searches the kwlist for a String. Returns its index when found.
+	 * @param s: a keyword to look for
+	 * @return kwlist's index where the keyword resides. -1 if not found.
+	 */
 	private int lookup(String s) {
 		int i;
 
@@ -684,7 +763,9 @@ public class Compiler implements ICompiler {
 		return -1;
 	}
 
-	/* l? pr�ximo caracter da entrada */
+	/**
+	 *  reads the next input character (updates lookup character)
+	 */
 	private void nextChar() {
 		if (index < text.length) {
 			look = text[index++];
@@ -696,13 +777,13 @@ public class Compiler implements ICompiler {
 			nextChar();
 	}
 
-	/* alerta sobre alguma entrada esperada */
+	/* Sends an alert telling that we expected some particular input */
 	private void expected(String error) throws TableFunctionMalformedException {
 		System.err.println("Error: " + error + " expected!");
 		throw new TableFunctionMalformedException();
 	}
 
-	/* verifica se entrada combina com o esperado */
+	/* Verifies if an input is an expected one */
 	private void match(char c) throws TableFunctionMalformedException {
 		
 		Debug.print(c + " ");
@@ -819,7 +900,7 @@ public class Compiler implements ICompiler {
 			Debug.println("No conditionant of name " + conditionantName);
 			return false;
 		}
-		Debug.println("Conditionant node found: " + conditionant.getName());
+		//Debug.println("Conditionant node found: " + conditionant.getName());
 		if ( conditionant instanceof MultiEntityNode) {
 			Debug.println("IS MULTIENTITYNODE");
 			return ((MultiEntityNode)conditionant).hasPossibleValue(conditionantValue);
@@ -839,6 +920,7 @@ public class Compiler implements ICompiler {
 	 */
 	private float function()throws TableFunctionMalformedException {
 		float ret = this.getName();
+		skipWhite();
 		if (this.look == '(') {
 			if (this.value.compareToIgnoreCase("CARDINALITY") == 0) {
 				return cardinality();
@@ -867,6 +949,7 @@ public class Compiler implements ICompiler {
 		float ret = 0;
 		match('(');
 		ret = this.getName();
+		skipWhite();
 		Debug.println("CARDINALITY'S ARGUMENT IS " + this.value);
 		match(')');
 		return ret;
@@ -948,6 +1031,154 @@ public class Compiler implements ICompiler {
 	}
 	
 	
+	
+	// Some inner classes that might be useful for temporaly table creation (organize the table parsed from pseudocode)
+	
+	private class TempTableHeaderCell {
+		private DomainResidentNode parent = null;
+		private Entity value = null;
+		/**
+		 * Represents an entry for temporary table header (a parent and its expected single value
+		 * at that table entry/collumn)
+		 * @param parent
+		 * @param value
+		 */
+		TempTableHeaderCell (DomainResidentNode parent , Entity value) {
+			this.parent = parent;
+			this.value = value;
+		}
+		public DomainResidentNode getParent() {
+			return parent;
+		}
+		public void setParent(DomainResidentNode parent) {
+			this.parent = parent;
+		}
+		public Entity getValue() {
+			return value;
+		}
+		public void setValue(Entity value) {
+			this.value = value;
+		}
+		
+	}
+	
+	private class TempTableProbabilityCell {
+		private Entity possibleValue = null;
+		private IProbabilityValue probability = null;
+		
+		/**
+		 * Represents a simple entry at a temporaly table representation (the
+		 * value and its probability pair)
+		 * @param possibleValue
+		 * @param probability
+		 */
+		TempTableProbabilityCell (Entity possibleValue , IProbabilityValue probability) {
+			this.possibleValue = possibleValue;
+			this.probability = probability;
+		}
+		public Entity getPossibleValue() {
+			return possibleValue;
+		}
+		public void setPossibleValue(Entity possibleValue) {
+			this.possibleValue = possibleValue;
+		}
+		public float getProbability() throws InvalidProbabilityRangeException {
+			return probability.getProbability();
+		}
+		public void setProbability(IProbabilityValue probability) {
+			this.probability = probability;
+		}		
+	}
+	
+	private interface IProbabilityValue {
+		/**
+		 * 
+		 * @return: a value between [0,1] which represents a probability
+		 */
+		public float getProbability() throws InvalidProbabilityRangeException;
+	}
+	
+	private class SimpleProbabilityValue implements IProbabilityValue {
+		private float value = 0;
+		/**
+		 * Represents a simple float value for a probability
+		 * @param value
+		 */
+		SimpleProbabilityValue (float value) {
+			this.value = value;
+		}
+		public float getProbability() throws InvalidProbabilityRangeException {
+			return this.value;
+		}
+	}
+	
+	private class CardinalityProbabilityValue implements IProbabilityValue {
+		private float value = 0;
+		private String[] parentSetName = null;		
+		private SSBNNode thisNode = null;
+		/**
+		 * Represents a probability value from cardinality function
+		 * It calculates the value using thisNode's parents set
+		 * @param thisNode: SSBNNode containing this compiler and this pseudocode
+		 * @param strongOVNames: literals containing ov names which determines
+		 * the set containing strong variables (e.g. {"st","z","s"} may return a node
+		 * Node(st,z,s,t,tprev), because it contains st,z and s, and t and tprev are
+		 * considered "weak")
+		 */
+		CardinalityProbabilityValue (SSBNNode thisNode, String...strongOVNames) {
+			this.thisNode = thisNode;
+			this.parentSetName = strongOVNames;
+		}
+		public float getProbability() throws InvalidProbabilityRangeException {
+			// TODO calculate the value!!!
+			return this.value;
+		}
+	}
+	
+	
+	private class MaxProbabilityValue implements IProbabilityValue {
+		private IProbabilityValue arg0 = null;
+		private IProbabilityValue arg1 = null;
+		private boolean isMax = false;
+		/**
+		 * Represents a comparision function between two values (MAX or MIN)
+		 * @param arg0
+		 * @param arg1
+		 * @param isMax true if it represents a MAX function. If false, it represents a MIN
+		 * function.
+		 */
+		MaxProbabilityValue (IProbabilityValue arg0, IProbabilityValue arg1, boolean isMax) {
+			this.arg0 = arg0;
+			this.arg1 = arg1;
+			this.isMax = isMax;
+		}
+		public float getProbability() throws InvalidProbabilityRangeException {
+			float prob0 = this.arg0.getProbability();
+			float prob1 = this.arg1.getProbability();
+			/*
+			 * the code below has the same meaning of:
+			 * if (isMax) {
+			 * 		if (prob0 > prob1) {
+			 * 			return prob0;
+			 * 		} else {
+			 * 			return prob1;
+			 * 		}
+			 * } else {
+			 * 		if (prob0 < prob1) {
+			 * 			return prob0;
+			 * 		} else {
+			 * 			return prob1;
+			 * 		}
+			 * }
+			 * 
+			 */
+			if (this.isMax == (prob0 > prob1)) {				
+				return prob0;
+			} else {
+				return prob1;
+			}
+		}
+	}
 	
 
 }
