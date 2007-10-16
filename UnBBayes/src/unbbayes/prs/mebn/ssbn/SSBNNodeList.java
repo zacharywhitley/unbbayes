@@ -140,6 +140,12 @@ public class SSBNNodeList implements Collection<SSBNNode> {
 	 */
 	public Collection<SSBNNode> getNodeByArgument(String...instanceName) {
 		Collection<SSBNNode> ret = new ArrayList<SSBNNode>();
+		if (instanceName == null) {
+			return ret;
+		}
+		if (instanceName.length <= 0) {
+			return ret;
+		}
 		for (SSBNNode node : this.nodes) {
 			if (node.hasAllOVs(false, instanceName)) {
 				ret.add(node);
@@ -155,6 +161,12 @@ public class SSBNNodeList implements Collection<SSBNNode> {
 	 */
 	public Collection<SSBNNode> getNodeByArgument(Collection<OrdinaryVariable> ov) {
 		Collection<SSBNNode> ret = new ArrayList<SSBNNode>();
+		if (ov == null) {
+			return ret;
+		}
+		if (ov.size() <= 0) {
+			return ret;
+		}
 		for (SSBNNode node : this.nodes) {
 			if (node.hasAllOVs(ov)) {
 				ret.add(node);
@@ -170,6 +182,12 @@ public class SSBNNodeList implements Collection<SSBNNode> {
 	 */
 	public Collection<SSBNNode> getNode(String name) {
 		Collection<SSBNNode> ret = new ArrayList<SSBNNode>();
+		if (name == null) {
+			return ret;
+		}
+		if (name.length() <= 0) {
+			return ret;
+		}
 		for (SSBNNode node : this.nodes) {
 			if (node.getName().compareToIgnoreCase(name) == 0) {
 				ret.add(node);

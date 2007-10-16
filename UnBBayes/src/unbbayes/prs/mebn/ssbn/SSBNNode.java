@@ -5,11 +5,13 @@ package unbbayes.prs.mebn.ssbn;
 
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.DomainResidentNode;
+import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ssbn.exception.*;
 import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.entity.Entity;
+import unbbayes.util.NodeList;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -118,10 +120,16 @@ public class SSBNNode {
 	}
 	
 	private String getNameByDots(Collection<OrdinaryVariable> ovs) {
-		OrdinaryVariable[] ovArray = (OrdinaryVariable[])ovs.toArray();
+		OrdinaryVariable[] ovArray = new OrdinaryVariable[ovs.size()];
+		int i = 0;
+		for (OrdinaryVariable variable : ovs) {
+			ovArray[i] = variable;
+			i++;
+		}
+			
 		String dotName = new String(ovArray[0].getName());
-		for (int i = 1; i < ovArray.length; i++) {
-			dotName.concat("." + ovArray[i].getName());
+		for (i = 1; i < ovArray.length; i++) {
+			dotName+= ("." + ovArray[i].getName());
 		}
 		return dotName;
 	}
@@ -135,11 +143,28 @@ public class SSBNNode {
 		return true;
 	}
 	
+	private int factorial(int n) {
+		int ret = 1;
+		for (int i = 1; i <= n; i++) {
+			ret *= i;
+		}
+		return ret;
+	}
+	
+	private int combination(int n , int by) {
+		if (n < by) {
+			return 1;
+		}
+		return (factorial(n) / (factorial(by)*factorial(n-by)));
+	}
+	
 	private Collection<Collection<OrdinaryVariable>> getOVCombination(int byHowMany, OrdinaryVariable... ovs ){
 		
-				
 		Collection<Collection<OrdinaryVariable>> ret = new ArrayList<Collection<OrdinaryVariable>>();
 		if (byHowMany <= 0) {
+			return ret;
+		}
+		if (byHowMany > ovs.length) {
 			return ret;
 		}
 		
@@ -151,8 +176,9 @@ public class SSBNNode {
 		}
 		
 		Collection<OrdinaryVariable> tempOVs = null;
-		while (indexes[0] <= ovArray.length - indexes.length)
-		for (int i = 0; i < ovArray.length - byHowMany; i++) {
+		//while (indexes[0] <= ovArray.length - indexes.length)
+		int combination = this.combination(ovArray.length, byHowMany);
+		for (int i = 0; i < combination; i++) {
 			
 			tempOVs = new ArrayList<OrdinaryVariable>();
 			for (int j = 0; j < indexes.length; j++) {
@@ -174,6 +200,16 @@ public class SSBNNode {
 			}
 		}
 		return ret;
+	}
+	
+	private Collection<Collection<OrdinaryVariable>> getOVCombination(int byHowMany, Collection<OrdinaryVariable> ovs ) {
+		OrdinaryVariable[] array = new OrdinaryVariable[ovs.size()];
+		int i = 0;
+		for (OrdinaryVariable ov : ovs) {
+			array[i] = ov;
+			i++;
+		}
+		return this.getOVCombination(byHowMany, array);
 	}
 	
 	
@@ -246,8 +282,15 @@ public class SSBNNode {
 	 * 
 	 * @param ordinaryVariables: collection of ordinaryVariables to be found as argument
 	 * @return true if the node's argument contains all ordinary variables passed by its arguments.
+	 * It will also return false when ovs is invalid (null or having 0 elements)
 	 */
 	public boolean hasAllOVs(Collection<OrdinaryVariable> ovs) {
+		if (ovs == null) {
+			return false;
+		}
+		if (ovs.size() <= 0) {
+			return false;
+		}
 		for (OrdinaryVariable variable : ovs) {
 			if (!this.hasOV(variable)) {
 				return false;
@@ -261,8 +304,15 @@ public class SSBNNode {
 	 * 
 	 * @param ordinaryVariables: collection of ordinaryVariables to be found as argument
 	 * @return true if the node's argument contains all ordinary variables passed by its arguments.
+	 * It will also return false when ovs is invalid (null or having 0 elements)
 	 */
 	public boolean hasAllOVs(OrdinaryVariable... ovs) {
+		if (ovs == null) {
+			return false;
+		}
+		if (ovs.length <= 0) {
+			return false;
+		}
 		for (OrdinaryVariable variable : ovs) {
 			if (!this.hasOV(variable)) {
 				return false;
@@ -278,6 +328,9 @@ public class SSBNNode {
 	 * @return true if the node's argument contains all names passed by its arguments.
 	 */
 	public boolean hasAllOVs(boolean isOVName, String...ovs) {
+		if (ovs == null) {
+			return false;
+		}
 		for (int i = 0; i < ovs.length; i++) {
 			if (!this.hasOV(ovs[i],isOVName)) {
 				return false;
@@ -291,24 +344,31 @@ public class SSBNNode {
 	
 	
 	/**
-	 * Adds an argument
+	 * Adds an argument. If input is null, NullPointerException should be returned.
+	 * It does nothing when entityInstanceName is not null but empty!!
 	 * @param ov: ordinal variable associated to this argument
 	 * @param entityInstanceName: name of a OV instance (ex. !ST4, !Z0, !T1 ...)
 	 */
 	public void addArgument(OrdinaryVariable ov, String entityInstanceName) throws SSBNNodeGeneralException {
+		if (entityInstanceName.length() <= 0) {
+			return;
+		}
 		this.arguments.add(OVInstance.getInstance( ov, entityInstanceName , ov.getValueType() ));
 	}
 	
 	
 	/**
-	 * Adds an argument at a particular position
+	 * Adds an argument at a particular position	 * 
+	 * It does nothing when entityInstanceName is not null but empty!!
 	 * @param ov: ordinal variable associated to this argument
 	 * @param entityInstanceName: name of a OV instance (ex. !ST4, !Z0, !T1 ...)
 	 * @param pos: position (when argument order is important) to add this argument
 	 */
 	public void addArgument(OrdinaryVariable ov, String entityInstanceName,  int pos) throws SSBNNodeGeneralException {
+		if (entityInstanceName.length() <= 0) {
+			return;
+		}
 		this.arguments.add(pos, OVInstance.getInstance( ov, entityInstanceName , ov.getValueType() ));
-		
 	}
 	
 	
@@ -338,8 +398,49 @@ public class SSBNNode {
 	
 	// Parent controller
 	
-	public void addParent(SSBNNode parent) {
+	/**
+	 * This will add a parent to this node. It may check if the resident node
+	 * remains consistent. If argument is null, it throws NullPointerException
+	 * @param parent the node to be added as parent. Its ProbNode will be added as
+	 * this ProbNode's parent and, if said so, its resident node will be checked if it is the
+	 * expected parent node by this node's resident node.
+	 * @param isCheckingParentResident true to check if parent's resident node was expected
+	 * by child's resident node; false to disable check
+	 * @throws SSBNNodeGeneralException when parent has no resident node or ProbNode or 
+	 * there were inconsistency when isCheckingParentResident was set to true.
+	 */
+	public void addParent(SSBNNode parent, boolean isCheckingParentResident) throws SSBNNodeGeneralException{
+		
+		// initial check
+		if ((parent.getResident() == null ) || (parent.getProbNode() == null)) {
+			throw new SSBNNodeGeneralException();
+		}
+		
+		// perform consistency check
+		if (isCheckingParentResident) {
+			NodeList expectedParents = this.getResident().getParents();
+			boolean isConsistent = false;
+			GenerativeInputNode input = null;
+			for (int i = 0; i < expectedParents.size(); i++) {
+				if (parent.getResident() == expectedParents.get(i)) {
+					isConsistent = true;
+					break;
+				}
+				if (expectedParents.get(i) instanceof GenerativeInputNode) {
+					input = (GenerativeInputNode)expectedParents.get(i);
+					if (input.getResidentNodePointer().getResidentNode() == parent.getResident()) {
+						isConsistent = true;
+						break;
+					}
+				}
+			}
+			if (!isConsistent) {
+				throw new SSBNNodeGeneralException();
+			}
+		}
+		
 		this.getParents().add(parent);		
+		this.getProbNode().addParent(parent.getProbNode());
 	}
 	
 	
@@ -349,25 +450,46 @@ public class SSBNNode {
 	
 	
 	public void removeParentByName(String name) {
+		if (name == null) {
+			return;
+		}
 		Collection<SSBNNode> parents = this.getParents();
+		Collection<SSBNNode> removingNodes = new ArrayList<SSBNNode>();
 		for (SSBNNode node : parents) {
 			if (node.getName().compareToIgnoreCase(name) == 0) {
-				parents.remove(node);
+				// we do not remove directly because of concurrent modification exception
+				removingNodes.add(node);
 			}
 		}
+		parents.removeAll(removingNodes);
 	}
 	
 	
 	/**
 	 * 
 	 * @param ovNames: names of the strong ovs
-	 * @return a collection of SSBNNode which contains ONLY the ovs passed by the arguments
+	 * @param isExactMatch: true if "only" the ovs passed by arguments should be considered (nothing more than). False
+	 * if "at least" those passed by argument should be considered.
+	 * @return a collection of SSBNNode which contains ONLY the ovs passed by the arguments.
+	 * If invalid argument was passed, then it will return an empty collection (size = 0)
 	 */
-	public Collection<SSBNNode> getParentSetByStrongOV(String...ovNames ) {
+	public Collection<SSBNNode> getParentSetByStrongOV(boolean isExactMatch, String...ovNames ) {
 		Collection<SSBNNode> parents = new HashSet();
+		if (ovNames == null) {
+			return parents;
+		}
+		if (ovNames.length <= 0) {
+			return parents;
+		}
 		for (SSBNNode parent : this.parents) {
 			if (parent.hasAllOVs(true, ovNames)) {
-				parents.add(parent);
+				if (isExactMatch) {
+					if (parent.getOVs().size() == ovNames.length) {
+						parents.add(parent);
+					}
+				} else {
+					parents.add(parent);
+				}
 			}
 		}
 		return parents;
@@ -377,13 +499,26 @@ public class SSBNNode {
 	/**
 	 * 
 	 * @param setOfOV: set of strong ovs
+	 * @param isExactMatch: true if "only" the ovs passed by arguments should be considered (nothing more than). False
+	 * if "at least" those passed by argument should be considered.
 	 * @return a collection of SSBNNode which contains ONLY the ovs passed by the arguments
+	 * If invalid argument was passed, then it will return an empty collection (size = 0)
 	 */
-	public Collection<SSBNNode> getParentSetByStrongOV(Collection<OrdinaryVariable> setOfOV) {
+	public Collection<SSBNNode> getParentSetByStrongOV(boolean isExactMatch, Collection<OrdinaryVariable> setOfOV) {
 		Collection<SSBNNode> parents = new HashSet();
+		if (setOfOV == null) {
+			return parents;
+		}
 		for (SSBNNode parent : this.parents) {
 			if (parent.hasAllOVs(setOfOV)) {
-				parents.add(parent);
+				if (isExactMatch) {
+					if (parent.getOVs().size() == setOfOV.size()) {
+						parents.add(parent);
+					}	
+				} else {
+					parents.add(parent);
+				}
+							
 			}
 		}
 		return parents;
@@ -392,13 +527,29 @@ public class SSBNNode {
 	/**
 	 * 
 	 * @param setOfOV: set of strong ovs
+	 * @param isExactMatch: true if "only" the ovs passed by arguments should be considered (nothing more than). False
+	 * if "at least" those passed by argument should be considered.
 	 * @return a collection of SSBNNode which contains ONLY the ovs passed by the arguments
+	 * If invalid argument was passed, then it will return an empty collection (size = 0)
 	 */
-	public Collection<SSBNNode> getParentSetByStrongOV(OrdinaryVariable... setOfOV) {
+	public Collection<SSBNNode> getParentSetByStrongOV(boolean isExactMatch,OrdinaryVariable... setOfOV) {
 		Collection<SSBNNode> parents = new HashSet();
+		if (setOfOV == null) {
+			return parents;
+		}
+		if (setOfOV.length <= 0) {
+			return parents;
+		}
 		for (SSBNNode parent : this.parents) {
 			if (parent.hasAllOVs(setOfOV)) {
-				parents.add(parent);
+				if (isExactMatch) {
+					if (parent.getOVs().size() == setOfOV.length) {
+						parents.add(parent);
+					}	
+				} else {
+					parents.add(parent);
+				}
+				
 			}
 		}
 		return parents;
@@ -425,34 +576,37 @@ public class SSBNNode {
 		// start collecting parents, first the ones w/ more arguments
 		Collection<Collection<OrdinaryVariable>>  ovCombo = null;
 		Collection<SSBNNode> tempParentSet = null;
-		for (int i = strongOVs.size() - 1; i >=  0 ; i--) {
-			ovCombo =  this.getOVCombination(i , (OrdinaryVariable[])strongOVs.toArray());
+		Collection<SSBNNode> ignoringParentSet = null;
+		for (int i = strongOVs.size(); i >  0 ; i--) {
+			ovCombo =  this.getOVCombination(i , strongOVs);
 			for (Collection<OrdinaryVariable> ovs : ovCombo) {
-				tempParentSet = this.getParentSetByStrongOV(ovs);
+				tempParentSet = this.getParentSetByStrongOV(false,ovs);
+				ignoringParentSet = new ArrayList<SSBNNode>();
 				for (SSBNNode parentNode : tempParentSet) {
 					if (knownNodes.contains(parentNode)) {
-						tempParentSet.remove(parentNode);
+						ignoringParentSet.add(parentNode);
 					} else {
 						knownNodes.add(parentNode);
 					}
 				}
+				tempParentSet.removeAll(ignoringParentSet);
 				if (tempParentSet.size() > 0) {
 					ret.put(this.getNameByDots(ovs), tempParentSet);
 				}								
 			}
 		}
 		// Start analizing those nodes w/o strong variables
-		for (int i = weakOVs.length - 1; i >=  0 ; i--) {
+		for (int i = weakOVs.length; i >  0 ; i--) {
 			ovCombo =  this.getOVCombination(i, weakOVs);
 			for (Collection<OrdinaryVariable> ovs : ovCombo) {
-				tempParentSet = this.getParentSetByStrongOV(ovs);
-				for (SSBNNode parentNode : tempParentSet) {
+				tempParentSet = this.getParentSetByStrongOV(true,ovs);
+				/*for (SSBNNode parentNode : tempParentSet) {
 					if (knownNodes.contains(parentNode)) {
 						tempParentSet.remove(parentNode);
 					} else {
 						knownNodes.add(parentNode);
 					}
-				}
+				}*/
 				if (tempParentSet.size() > 0) {
 					ret.put(this.getNameByDots(ovs), tempParentSet);
 				}								
@@ -475,11 +629,22 @@ public class SSBNNode {
 	
 	
 	/**
-	 * Returns the name of the node -> which is the same of resident's.
+	 * Returns the name of the node -> which is the same of resident's and
+	 * its current arguments (entity instances) between parentheses, with no
+	 * spaces. E.g. HarmPotential(ST4,T0)
 	 * @return
 	 */
 	public String getName() {
-		return this.resident.getName();
+		String name = new String(this.resident.getName());
+		name += "(";
+		for (OVInstance ovi : this.getArguments()) {
+			if (name.charAt(name.length() - 1) != '(') {
+				name += ",";
+			}
+			name += ovi.getEntity().getInstanceName();
+		}
+		name += ")";
+		return name;
 	}
 
 	/**
