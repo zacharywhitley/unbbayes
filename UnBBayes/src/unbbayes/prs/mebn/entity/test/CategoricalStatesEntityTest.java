@@ -33,35 +33,35 @@ public class CategoricalStatesEntityTest extends TestCase {
 	}
 
 	/**
-	 * Test method for {@link unbbayes.prs.mebn.entity.CategoricalStatesEntity#setType(java.lang.String)}.
+	 * Test method for {@link unbbayes.prs.mebn.entity.CategoricalStateEntity#setType(java.lang.String)}.
 	 */
 	public void testSetType() {
 		fail("Not yet implemented"); // TODO
 	}
 
 	/**
-	 * Test method for {@link unbbayes.prs.mebn.entity.CategoricalStatesEntity#createCategoricalEntity(java.lang.String)}.
+	 * Test method for {@link unbbayes.prs.mebn.entity.CategoricalStateEntity#createCategoricalEntity(java.lang.String)}.
 	 */
 	public void testCreateCategoricalEntity() {
 		fail("Not yet implemented"); // TODO
 	}
 
 	/**
-	 * Test method for {@link unbbayes.prs.mebn.entity.CategoricalStatesEntity#removeEntity(unbbayes.prs.mebn.entity.CategoricalStatesEntity)}.
+	 * Test method for {@link unbbayes.prs.mebn.entity.CategoricalStateEntity#removeEntity(unbbayes.prs.mebn.entity.CategoricalStateEntity)}.
 	 */
 	public void testRemoveEntity() {
 		fail("Not yet implemented"); // TODO
 	}
 
 	/**
-	 * Test method for {@link unbbayes.prs.mebn.entity.CategoricalStatesEntity#getCategoricalState(java.lang.String)}.
+	 * Test method for {@link unbbayes.prs.mebn.entity.CategoricalStateEntity#getCategoricalState(java.lang.String)}.
 	 */
 	public void testGetCategoricalState() {
 		fail("Not yet implemented"); // TODO
 	}
 
 	/**
-	 * Test method for {@link unbbayes.prs.mebn.entity.CategoricalStatesEntity#getListEntity()}.
+	 * Test method for {@link unbbayes.prs.mebn.entity.CategoricalStateEntity#getListEntity()}.
 	 */
 	public void testGetListEntity() {
 		fail("Not yet implemented"); // TODO

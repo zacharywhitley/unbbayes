@@ -16,13 +16,15 @@ public class Query {
 	
 	private MultiEntityBayesianNetwork mebn = null;
 	private KnowledgeBase kb = null;
-	private Collection<SSBNNode> queryNodes = null;
+	private SSBNNode queryNode = null;
 	
 	/**
-	 * TODO do everything...
+	 * Default query. 
 	 */
-	public Query() {
-		// TODO Auto-generated constructor stub
+	public Query(MultiEntityBayesianNetwork mebn, KnowledgeBase kb, SSBNNode queryNode) {
+		this.mebn = mebn; 
+		this.kb = kb; 
+		this.queryNode = queryNode;  
 	}
 
 }

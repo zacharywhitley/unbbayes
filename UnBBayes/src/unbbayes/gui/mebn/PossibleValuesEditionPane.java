@@ -20,6 +20,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -36,18 +37,28 @@ import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.entity.BooleanStatesEntity;
-import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
+import unbbayes.prs.mebn.entity.BooleanStateEntity;
+import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 
 /**
  * Panel for selection of the possible values (states) of a resident node.
+ * 
+ * The states may be: 
+ * - Categorical State Entity
+ * - Object Entity
+ * - Boolean State 
+ * (all the states may be of the same type). 
  *
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  */
 public class PossibleValuesEditionPane extends JPanel {
 
+	private final String PANEL_CATEGORY_STATES = "category";
+	private final String PANEL_BOOLEAN_STATES = "boolean";
+	private final String PANEL_OBJECT_STATES = "object";
+	
 	private DomainResidentNode residentNode;
 
 	private MEBNController mebnController;
@@ -65,12 +76,6 @@ public class PossibleValuesEditionPane extends JPanel {
 	private BooleanStatesPanel panelBooleanStates;
 
 	private ObjectStatesPanel panelObjectStates;
-
-	private final String PANEL_CATEGORY_STATES = "category";
-
-	private final String PANEL_BOOLEAN_STATES = "boolean";
-
-	private final String PANEL_OBJECT_STATES = "object";
 
 	private List<Entity> statesList;
 
@@ -120,18 +125,18 @@ public class PossibleValuesEditionPane extends JPanel {
 	}
 
 	/**
-	 * Altera o painel para refletir a entidade que o usuário selecionou na
+	 * Altera o painel para refletir a entidade que o usuï¿½rio selecionou na
 	 * lista de estados.
 	 *
 	 * @param entitySelected
 	 */
 	public void selectState(Entity entitySelected) {
 
-		if (entitySelected instanceof CategoricalStatesEntity) {
-			showCategoryStatesPanel((CategoricalStatesEntity) entitySelected);
+		if (entitySelected instanceof CategoricalStateEntity) {
+			showCategoryStatesPanel((CategoricalStateEntity) entitySelected);
 			;
 		} else {
-			if (entitySelected instanceof BooleanStatesEntity) {
+			if (entitySelected instanceof BooleanStateEntity) {
 				showBooleanStatesPanel();
 			} else {
 				if (entitySelected instanceof ObjectEntity) {
@@ -142,7 +147,7 @@ public class PossibleValuesEditionPane extends JPanel {
 
 	}
 
-	public void showCategoryStatesPanel(CategoricalStatesEntity entitySelected) {
+	public void showCategoryStatesPanel(CategoricalStateEntity entitySelected) {
 		cardLayout.show(panelStates, PANEL_CATEGORY_STATES);
 		panelCategoryStates.selectState(entitySelected);
 	}
@@ -159,7 +164,7 @@ public class PossibleValuesEditionPane extends JPanel {
 		statesList = residentNode.getPossibleValueList();
 
 		statesListModel = new DefaultListModel();
-		for (Entity entity : statesList) {
+		for (Entity entity : statesList){
 			statesListModel.addElement(entity);
 		}
 
@@ -170,7 +175,91 @@ public class PossibleValuesEditionPane extends JPanel {
 		statesJList.setLayoutOrientation(JList.VERTICAL);
 		statesJList.setVisibleRowCount(-1);
 	}
+	
+	public JList buildListAllStates() {
+		
+		List<CategoricalStateEntity> list =  mebnController.getMultiEntityBayesianNetwork().getCategoricalStatesEntityContainer().getListEntity();  
+		DefaultListModel model = new DefaultListModel(); 
+		JList listAllStates = new JList(); 
+		
+		model = new DefaultListModel();
+		for (Entity entity : list){
+			model.addElement(entity);
+		}
 
+		listAllStates = new JList(model);
+		listAllStates.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		listAllStates.setSelectedIndex(0);
+		listAllStates.setCellRenderer(new StateCellRenderer());
+		listAllStates.setLayoutOrientation(JList.VERTICAL);
+		listAllStates.setVisibleRowCount(-1);
+		
+		return listAllStates; 
+	}
+
+
+	public JFrame buildPopupStateSelection(){
+		final JList listAllStates = buildListAllStates(); 
+		ListAllStatesPanel paneAllStates = new ListAllStatesPanel(listAllStates); 
+		
+		
+		JToolBar barButtons = new JToolBar(); 
+		barButtons.setLayout(new GridLayout(1,1)); 
+		JButton btnAdd = new JButton(iconController.getMoreIcon());
+		
+		btnAdd.addActionListener(new ActionListener(){
+
+			public void actionPerformed(ActionEvent e) {
+
+				Object[] list = (Object[])listAllStates.getSelectedValues(); 
+				
+				if (!(residentNode.getPossibleValueList().isEmpty())
+						&& (residentNode.getTypeOfStates() != ResidentNode.CATEGORY_RV_STATES)) {
+					int answer = JOptionPane.showConfirmDialog(
+							mebnController.getMebnEditionPane(),
+							resource.getString("warningDeletStates"),
+							resource.getString("confirmation"),
+							JOptionPane.YES_NO_OPTION);
+					if (answer == JOptionPane.YES_OPTION) {
+						mebnController
+						.removeAllPossibleValues(residentNode);
+						residentNode.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES);	
+					}
+					else{
+						return; 					
+					}
+				}
+				
+				for(int i = 0; i < list.length; i++){
+					mebnController.addPossibleValue(residentNode, (CategoricalStateEntity)list[i]); 
+				}
+				
+				listStatesPanel.update();
+			}
+			
+		}); 
+		
+		barButtons.add(btnAdd); 
+		barButtons.setFloatable(false); 
+		
+		JPanel panel = new JPanel(new BorderLayout()); 
+		panel.add(paneAllStates, BorderLayout.CENTER); 
+		panel.add(barButtons, BorderLayout.PAGE_END); 
+		
+		JFrame newFrame = new JFrame(); 
+		newFrame.setContentPane(panel); 
+		newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
+		newFrame.setVisible(true); 
+		newFrame.setSize(200, 300); 
+		newFrame.setLocationRelativeTo(null);
+		newFrame.validate(); 
+	
+		
+		return newFrame; 
+	}
+	
+	
+	
 	/**
 	 * ScroolPane contendo a lista de estados.
 	 */
@@ -205,6 +294,29 @@ public class PossibleValuesEditionPane extends JPanel {
 			statesJList.setModel(statesListModel);
 		}
 
+	}
+	
+	/**
+	 * ScroolPane contendo a lista de estados.
+	 */
+	private class ListAllStatesPanel extends JScrollPane {
+
+		private JList list; 
+		
+		public ListAllStatesPanel(JList list) {
+			super(list);
+
+			this.list = list; 
+			
+			list.addListSelectionListener(new ListSelectionListener() {
+
+				public void valueChanged(ListSelectionEvent arg0) {
+					//selectState((Entity) statesJList.getSelectedValue());
+				}
+
+			});	
+		}
+		
 	}
 
 	private class StatesPanel extends JPanel {
@@ -252,7 +364,7 @@ public class PossibleValuesEditionPane extends JPanel {
 	}
 
 	/**
-	 * Painel para a edição de estados do tipo categórico.
+	 * Painel para a ediï¿½ï¿½o de estados do tipo categï¿½rico.
 	 */
 
 	private class CategoryStatesPanel extends JPanel {
@@ -262,10 +374,12 @@ public class PossibleValuesEditionPane extends JPanel {
 		private JButton btnRemove;
 
 		private JButton btnEdit;
+		
+		private JButton btnList; 
 
 		private JCheckBox checkGloballyExclusive;
 
-		private CategoricalStatesEntity selectEntity;
+		private CategoricalStateEntity selectEntity;
 
 		private final JTextField txtName = new JTextField(10);
 
@@ -280,14 +394,16 @@ public class PossibleValuesEditionPane extends JPanel {
 			btnRemove.setToolTipText(resource.getString("removeState"));
 			btnEdit = new JButton(iconController.getEdit());
 			// btnEdit.setToolTipText(resource.getString("removeState"));
-
+			btnList = new JButton(iconController.getStateIcon()); 
+			
 			JToolBar barOptions = new JToolBar();
-			barOptions.setLayout(new GridLayout(1, 2));
+			barOptions.setLayout(new GridLayout(1, 4));
 			barOptions.setFloatable(false);
 			barOptions.add(btnAdd);
 			barOptions.add(btnRemove);
 			barOptions.add(btnEdit);
-
+			barOptions.add(btnList); 
+			
 			JToolBar barName = new JToolBar();
 			barName.setFloatable(false);
 			JLabel labelName = new JLabel(resource.getString("nameLabel") + " ");
@@ -338,12 +454,20 @@ public class PossibleValuesEditionPane extends JPanel {
 				}
 			});
 
+			btnList.addActionListener(new ActionListener(){
+
+				public void actionPerformed(ActionEvent e) {
+					buildPopupStateSelection(); 
+				}
+				
+			}); 
+			
 		}
 
 		/**
-		 * Mostra o estado no painel de edição.
+		 * Mostra o estado no painel de ediï¿½ï¿½o.
 		 */
-		public void selectState(CategoricalStatesEntity entity) {
+		public void selectState(CategoricalStateEntity entity) {
 			selectEntity = entity;
 			if (entity != null) {
 				txtName.setText(entity.getName());
@@ -384,7 +508,7 @@ public class PossibleValuesEditionPane extends JPanel {
 										.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES);
 							}
 						} else {
-							CategoricalStatesEntity entity = mebnController
+							CategoricalStateEntity entity = mebnController
 									.addPossibleValue(residentNode, nameValue);
 							mebnController.setGloballyExclusiveProperty(entity,
 									checkGloballyExclusive.isSelected());
@@ -483,7 +607,7 @@ public class PossibleValuesEditionPane extends JPanel {
 											.removeEntity(selectEntity);
 									residentNode.removePossibleValueByName(selectEntity.getName());
 
-									CategoricalStatesEntity entity = mebnController
+									CategoricalStateEntity entity = mebnController
 											.addPossibleValue(residentNode,
 													nameValue);
 
@@ -668,8 +792,8 @@ public class PossibleValuesEditionPane extends JPanel {
 	}
 
 	/**
-	 * Painel para seleção do tipo de argumento que o resident node terá.
-	 * Apresenta um botão para cada opção possível e um rótulo indicando a opção
+	 * Painel para seleï¿½ï¿½o do tipo de argumento que o resident node terï¿½.
+	 * Apresenta um botï¿½o para cada opï¿½ï¿½o possï¿½vel e um rï¿½tulo indicando a opï¿½ï¿½o
 	 * selecionada.
 	 *
 	 * @author Laecio Lima dos Santos.

@@ -14,24 +14,27 @@ import unbbayes.prs.mebn.entity.exception.CategoricalStateDoesNotExistException;
  */
 public class CategoricalStatesEntityContainer {
 
-	private List<CategoricalStatesEntity> listEntity;	
+	private List<CategoricalStateEntity> listEntity;	
 	
 
 	public CategoricalStatesEntityContainer(){
-		listEntity = new ArrayList<CategoricalStatesEntity>(); 
+		listEntity = new ArrayList<CategoricalStateEntity>(); 
 	}
 	
-	
-	public CategoricalStatesEntity createCategoricalEntity(String name){
+	/**
+	 * Create a new categorical entity. If a categorical entity already exists
+	 * with the name, return it. 
+	 */
+	public CategoricalStateEntity createCategoricalEntity(String name){
 		
 		
-		for(CategoricalStatesEntity teste: listEntity){
+		for(CategoricalStateEntity teste: listEntity){
 			if (teste.name.compareTo(name) == 0){
 				return teste; 
 			}
 		}
 		
-		CategoricalStatesEntity entity =  new CategoricalStatesEntity(name); 
+		CategoricalStateEntity entity =  new CategoricalStateEntity(name); 
 
 		addEntity(entity);
 		
@@ -40,22 +43,22 @@ public class CategoricalStatesEntityContainer {
 	}
 	
 
-	private void addEntity(CategoricalStatesEntity entity) {
+	private void addEntity(CategoricalStateEntity entity) {
 		listEntity.add(entity);
 	}
 	
-	// TODO Possivelmente fazer alguma limpeza de variáveis ou dependências aqui.
-	//Problema: nao há referencia a partir da entidade!!!
+	// TODO Possivelmente fazer alguma limpeza de variï¿½veis ou dependï¿½ncias aqui.
+	//Problema: nao hï¿½ referencia a partir da entidade!!!
 	
-	public void removeEntity(CategoricalStatesEntity entity) {
+	public void removeEntity(CategoricalStateEntity entity) {
 		listEntity.remove(entity);
 		
 	}
 	
-	public CategoricalStatesEntity getCategoricalState(String name) 
+	public CategoricalStateEntity getCategoricalState(String name) 
 	                         throws CategoricalStateDoesNotExistException{
 		
-		for(CategoricalStatesEntity teste: listEntity){
+		for(CategoricalStateEntity teste: listEntity){
 			if (teste.name.compareTo(name) == 0){
 				return teste; 
 			}
@@ -65,7 +68,7 @@ public class CategoricalStatesEntityContainer {
 		
 	}
 	
-	public List<CategoricalStatesEntity> getListEntity(){
+	public List<CategoricalStateEntity> getListEntity(){
 		return listEntity; 
 	}
 

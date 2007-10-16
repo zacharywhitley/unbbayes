@@ -13,7 +13,6 @@ import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.FindingMFrag;
 import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
@@ -113,80 +112,19 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 	}
 
 	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#addFindingMFrag(unbbayes.prs.mebn.FindingMFrag)}.
-	 */
-	public void testAddFindingMFrag() {
-		try {
-			FindingMFrag finding = new FindingMFrag("testAddFindingMFrag",tempMebn);
-			assertEquals(finding.getMultiEntityBayesianNetwork(),tempMebn);
-			assertEquals(tempMebn.getMFragCount(),1);
-			assertTrue(tempMebn.getFindingMFragList().contains(finding));
-			assertTrue(tempMebn.getMFragList().contains(finding));
-			
-			
-			mebn.addFindingMFrag(finding);
-			assertEquals(finding.getMultiEntityBayesianNetwork(),mebn);
-			assertEquals(mebn.getMFragCount(),1);
-			assertTrue(mebn.getFindingMFragList().contains(finding));
-			assertTrue(mebn.getMFragList().contains(finding));
-			
-			assertEquals(tempMebn.getMFragCount(),0);
-			assertTrue(!tempMebn.getFindingMFragList().contains(finding));
-			assertTrue(!tempMebn.getMFragList().contains(finding));
-			assertTrue(tempMebn.getFindingMFragList().isEmpty());
-			assertTrue(tempMebn.getMFragList().isEmpty());
-			
-		} catch (Exception e) {
-			fail(e.getMessage());
-		}
-		
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#removeFindingMFrag(unbbayes.prs.mebn.FindingMFrag)}.
-	 */
-	public void testRemoveFindingMFrag() {
-		try {
-			FindingMFrag finding = new FindingMFrag("testRemoveFindingMFrag",mebn);
-			assertEquals(finding.getMultiEntityBayesianNetwork(),mebn);
-			assertEquals(mebn.getMFragCount(),1);
-			assertTrue(mebn.getFindingMFragList().contains(finding));
-			assertTrue(mebn.getMFragList().contains(finding));
-			
-			mebn.removeFindingMFrag(finding);
-			
-			assertNull(finding.getMultiEntityBayesianNetwork());
-			assertEquals(mebn.getMFragCount(),0);
-			assertTrue(!mebn.getFindingMFragList().contains(finding));
-			assertTrue(!mebn.getMFragList().contains(finding));
-			
-			
-		} catch (Exception e) {
-			fail(e.getMessage());
-		}
-	}
-
-	/**
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getMFragList()}.
 	 */
 	public void testGetMFragList() {
 		MFrag mfrag1 = new DomainMFrag("mfrag",mebn);
-		MFrag mfrag2 = new FindingMFrag("finding",mebn);
 		MFrag mfrag3 = new DomainMFrag("mfrag",mebn);
-		MFrag mfrag4 = new FindingMFrag("finding",mebn);
 		
 		
 		assertTrue(mebn.getMFragList().contains(mfrag1));
 		assertEquals(mebn.getMFragList().get(mebn.getMFragList().indexOf(mfrag1)),mfrag1);
 		
-		assertTrue(mebn.getMFragList().contains(mfrag2));
-		assertEquals(mebn.getMFragList().get(mebn.getMFragList().indexOf(mfrag2)),mfrag2);
 		
 		assertTrue(mebn.getMFragList().contains(mfrag3));
 		assertEquals(mebn.getMFragList().get(mebn.getMFragList().indexOf(mfrag3)),mfrag3);
-		
-		assertTrue(mebn.getMFragList().contains(mfrag4));
-		assertEquals(mebn.getMFragList().get(mebn.getMFragList().indexOf(mfrag4)),mfrag4);
 		
 		
 	}
@@ -196,54 +134,25 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 	 */
 	public void testGetDomainMFragList() {
 		MFrag mfrag1 = new DomainMFrag("mfrag",mebn);
-		MFrag mfrag2 = new FindingMFrag("finding",mebn);
 		MFrag mfrag3 = new DomainMFrag("mfrag",mebn);
-		MFrag mfrag4 = new FindingMFrag("finding",mebn);
 		
 		assertTrue(mebn.getDomainMFragList().contains(mfrag1));
 		assertEquals(mebn.getDomainMFragList().get(mebn.getMFragList().indexOf(mfrag1)),mfrag1);
 		
-		assertTrue(!mebn.getDomainMFragList().contains(mfrag2));
-		
 		assertTrue(mebn.getDomainMFragList().contains(mfrag3));
 		assertEquals(mebn.getDomainMFragList().get(mebn.getDomainMFragList().indexOf(mfrag3)),mfrag3);
 		
-		assertTrue(!mebn.getDomainMFragList().contains(mfrag4));
-		
 	}
 
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getFindingMFragList()}.
-	 */
-	public void testGetFindingMFragList() {
-		MFrag mfrag1 = new DomainMFrag("mfrag",mebn);
-		MFrag mfrag2 = new FindingMFrag("finding",mebn);
-		MFrag mfrag3 = new DomainMFrag("mfrag",mebn);
-		MFrag mfrag4 = new FindingMFrag("finding",mebn);
-		
-		
-		assertTrue(!mebn.getFindingMFragList().contains(mfrag1));
-		
-		assertTrue(mebn.getFindingMFragList().contains(mfrag2));
-		assertEquals(mebn.getFindingMFragList().get(mebn.getFindingMFragList().indexOf(mfrag2)),mfrag2);
-		
-		assertTrue(!mebn.getFindingMFragList().contains(mfrag3));
-		
-		assertTrue(mebn.getFindingMFragList().contains(mfrag4));
-		assertEquals(mebn.getFindingMFragList().get(mebn.getFindingMFragList().indexOf(mfrag4)),mfrag4);
-		
-	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getMFragCount()}.
 	 */
 	public void testGetMFragCount() {
 		MFrag mfrag1 = new DomainMFrag("mfrag",mebn);
-		MFrag mfrag2 = new FindingMFrag("finding",mebn);
 		MFrag mfrag3 = new DomainMFrag("mfrag",mebn);
-		MFrag mfrag4 = new FindingMFrag("finding",mebn);
 		
-		assertEquals(mebn.getMFragCount(),4);
+		assertEquals(mebn.getMFragCount(),2);
 	}
 
 	/**
@@ -320,23 +229,6 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getDomainMFragNum()}.
 	 */
 	public void testGetDomainMFragNum() {
-		MFrag mfrag1 = new DomainMFrag("mfrag",mebn);
-		MFrag mfrag2 = new FindingMFrag("finding",mebn);
-		MFrag mfrag3 = new DomainMFrag("mfrag",mebn);
-		MFrag mfrag4 = new FindingMFrag("finding",mebn);
-		
-		assertEquals(mebn.getDomainMFragNum(),2);
-		
-		mebn.removeDomainMFrag((DomainMFrag)mfrag3);
-		assertEquals(mebn.getDomainMFragNum(),1);
-		mebn.removeFindingMFrag((FindingMFrag)mfrag4);
-		assertEquals(mebn.getDomainMFragNum(),1);
-		
-		mebn.addDomainMFrag((DomainMFrag)mfrag3);
-		assertEquals(mebn.getDomainMFragNum(),2);
-		
-		mebn.addFindingMFrag((FindingMFrag)mfrag4);
-		assertEquals(mebn.getDomainMFragNum(),2);
 	}
 	
 	

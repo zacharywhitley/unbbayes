@@ -7,7 +7,7 @@ import java.util.List;
 
 import unbbayes.draw.DrawFlatPentagon;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
-import unbbayes.prs.mebn.entity.BooleanStatesEntity;
+import unbbayes.prs.mebn.entity.BooleanStateEntity;
 
 /**
  * 
@@ -61,7 +61,7 @@ public class ContextNode extends MultiEntityNode {
     	innerTermOfList = new ArrayList<ContextNode>();
     	innerTermFromList = new ArrayList<ContextNode>();
     	
-    	/* a lista de possiveis valores de um nó de contexto contém por
+    	/* a lista de possiveis valores de um nï¿½ de contexto contï¿½m por
     	 * default os valores True, False e Absurd. 
     	 */
     	this.addPossibleValue(mFrag.getMultiEntityBayesianNetwork().getBooleanStatesEntityContainer().getTrueStateEntity()); 

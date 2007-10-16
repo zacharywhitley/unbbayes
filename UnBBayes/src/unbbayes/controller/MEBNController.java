@@ -19,7 +19,7 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.RandonVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
+import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.Type;
@@ -35,6 +35,8 @@ import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
+import unbbayes.prs.mebn.ssbn.Query;
+import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.util.Debug;
 
 /**
@@ -320,21 +322,36 @@ public class MEBNController {
 	}
 
 	/**
-	 * Adds a possible value (state) of a resident node...
+	 * Adds a possible value (state) into a resident node...
 	 * @param resident
 	 * @param value
 	 */
-	public CategoricalStatesEntity addPossibleValue(DomainResidentNode resident, String nameValue){
+	public CategoricalStateEntity addPossibleValue(DomainResidentNode resident, String nameValue){
 
-		CategoricalStatesEntity value = multiEntityBayesianNetwork.getCategoricalStatesEntityContainer().createCategoricalEntity(nameValue);
+		CategoricalStateEntity value = multiEntityBayesianNetwork.getCategoricalStatesEntityContainer().createCategoricalEntity(nameValue);
 		resident.addPossibleValue(value);
 		value.addNodeToListIsPossibleValueOf(resident);
 
 		return value;
 
 	}
+	
+	/**
+	 * Adds a possible value (state) into a resident node. If the state already
+	 * is a possible value of the resident node, nothing is made. 
+	 */
+	public CategoricalStateEntity addPossibleValue(DomainResidentNode resident, CategoricalStateEntity state){
+		
+		if(!resident.hasPossibleValue(state)){
+			resident.addPossibleValue(state);
+			state.addNodeToListIsPossibleValueOf(resident);	
+		}
+		
+		return state; 
+		
+	}
 
-	public void setGloballyExclusiveProperty(CategoricalStatesEntity entity, boolean value){
+	public void setGloballyExclusiveProperty(CategoricalStateEntity entity, boolean value){
 		entity.setGloballyExclusive(value);
 	}
 
@@ -373,24 +390,6 @@ public class MEBNController {
 	public void setUnableTableEditionView(){
 
 		mebnEditionPane.hideTopComponent();
-
-	}
-
-	public boolean isResidentNodeUsed(){
-
-		return false;
-
-	}
-
-	public boolean isContextNodeUsed(){
-
-		return false;
-
-	}
-
-	public boolean isInputNodeUsed(){
-
-		return false;
 
 	}
 
@@ -961,5 +960,13 @@ public class MEBNController {
 
 	public void setScreen(NetworkWindow screen) {
 		this.screen = screen;
+	}
+
+	public void executeQuery(DomainResidentNode residentNode, ObjectEntityInstance[] arguments) {
+		
+		SSBNNode queryNode = SSBNNode.getInstance(residentNode, null); 
+		
+		Query query = new Query(this.multiEntityBayesianNetwork, PowerLoomKB.getInstanceKB(), queryNode); 
+		
 	}
 }

@@ -25,8 +25,6 @@ public class MultiEntityBayesianNetwork extends Network {
 	
 	private List<DomainMFrag> domainMFragList;
 	
-	private List<FindingMFrag> findingMFragList; 
-	
 	//TODO analisar uma outra forma de armazenar os builtIn j� que eles s�o inerentes 
 	//ao programa e n�o a cada MTheory. 
 	private List<BuiltInRV> builtInRVList; 
@@ -61,7 +59,6 @@ public class MultiEntityBayesianNetwork extends Network {
 		super(name);
 		mFragList = new ArrayList<MFrag>();
 		domainMFragList = new ArrayList<DomainMFrag>(); 
-		findingMFragList = new ArrayList<FindingMFrag>();
 		builtInRVList = new ArrayList<BuiltInRV>(); 
 		
 		typeContainer = new TypeContainer(); 
@@ -112,27 +109,6 @@ public class MultiEntityBayesianNetwork extends Network {
 	}
 	
 	/**
-	 * Method responsible for adding a new Finding MFrag.
-	 * @param findingMFrag The new FindingMFrag to be added.
-	 */
-	public void addFindingMFrag(FindingMFrag findingMFrag) {
-		mFragList.add(findingMFrag);
-		findingMFragList.add(findingMFrag); 
-		currentMFrag = findingMFrag; 
-	}
-	
-	/**
-	 * Method responsible for removing the given Finding MFrag.
-	 * @param mFrag The FindingMFrag to be removed.
-	 */
-	public void removeFindingMFrag(FindingMFrag findingMFrag) {
-		findingMFrag.delete();
-		mFragList.remove(findingMFrag);
-		domainMFragList.remove(findingMFrag); 
-		currentMFrag = null; 
-	}	
-	
-	/**
 	 * Get the MFrag list of this MEBN.
 	 * @return The MFrag list of this MEBN.
 	 */
@@ -147,14 +123,6 @@ public class MultiEntityBayesianNetwork extends Network {
 	public List<DomainMFrag> getDomainMFragList() {
 		return domainMFragList;
 	}
-	
-	/**
-	 * Get the Finding MFrag list of this MEBN.
-	 * @return The MFrag list of this MEBN.
-	 */
-	public List<FindingMFrag> getFindingMFragList() {
-		return findingMFragList;
-	}	
 	
 	/**
 	 * Get total number of MFrags.

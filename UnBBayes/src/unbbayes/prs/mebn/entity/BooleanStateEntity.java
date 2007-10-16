@@ -9,9 +9,9 @@ import unbbayes.prs.mebn.entity.exception.TypeChangeNotAllowedException;
  * @author Rommel Carvalho
  * 
  */
-public class BooleanStatesEntity extends Entity {
+public class BooleanStateEntity extends Entity {
 
-    protected BooleanStatesEntity(String name) {
+    protected BooleanStateEntity(String name) {
 		super(name, TypeContainer.typeBoolean);
 	}
 

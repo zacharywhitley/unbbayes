@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.draw.DrawRoundedRectangle;
+import unbbayes.prs.mebn.entity.Entity;
+import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
@@ -31,6 +33,8 @@ public class DomainResidentNode extends ResidentNode {
 
 	private String tableFunction;
 	
+	private List<StateLink> possibleValueList; 
+	
 	//Graphics informations 
 	
 	private DrawRoundedRectangle drawResidentNode; 
@@ -49,6 +53,7 @@ public class DomainResidentNode extends ResidentNode {
 		residentNodeFatherList = new ArrayList<DomainResidentNode>();	
 		residentNodeChildList = new ArrayList<DomainResidentNode>();	
 		randonVariableFindingList = new ArrayList<RandonVariableFinding>(); 
+		possibleValueList = new ArrayList<StateLink>(); 
 		
 		setName(name); 
 		updateLabel(); 		
@@ -193,8 +198,50 @@ public class DomainResidentNode extends ResidentNode {
 		}
 	}		
 	
+	/*
+	public void addPossibleValue(Entity possibleValue){
+		possibleValueList.add(possibleValue); 
+	}
 	
+	/*------------------------------------------------------------*/
 	
+	/**
+	 * Remove the possible value with the name 
+	 * @param possibleValue name of the possible value
+	 */
+	public void removePossibleValueByName(String possibleValue){
+		
+		for(StateLink value : possibleValueList){
+			if (value.getState().getName().compareTo(possibleValue) == 0){
+				possibleValueList.remove(value);
+				return; 
+			}
+		}
+	}
+	
+	/**
+	 * Remove all possible values of the node
+	 */
+	public void removeAllPossibleValues(){
+		possibleValueList.clear(); 
+	}
+	
+	/**
+	 * Verifies if the possible value is on the list of possible values
+	 * of the node. 
+	 * @param possibleValue name of the possible value
+	 * @return true if it is present or false otherside
+	 */
+	public boolean existsPossibleValueByName(String possibleValue){
+		
+		for(StateLink value : possibleValueList){
+			if (value.getState().getName().compareTo(possibleValue) == 0){
+				return true; 
+			}
+		}
+		
+		return false; 
+	}	
 	
 	/*------------------------------------------------------------*/
 	

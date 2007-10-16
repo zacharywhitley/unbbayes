@@ -2,28 +2,28 @@ package unbbayes.prs.mebn.entity;
 
 public class BooleanStatesEntityContainer {
 
-	private BooleanStatesEntity trueStateEntity;
+	private BooleanStateEntity trueStateEntity;
 
-	private BooleanStatesEntity falseStateEntity;
+	private BooleanStateEntity falseStateEntity;
 
-	private BooleanStatesEntity absurdStateEntity;
+	private BooleanStateEntity absurdStateEntity;
 	
 	public BooleanStatesEntityContainer(){
-		trueStateEntity = new BooleanStatesEntity("true");
-		falseStateEntity = new BooleanStatesEntity("false");
-		absurdStateEntity = new BooleanStatesEntity("absurd");
+		trueStateEntity = new BooleanStateEntity("true");
+		falseStateEntity = new BooleanStateEntity("false");
+		absurdStateEntity = new BooleanStateEntity("absurd");
 	}
 	
 	
-	public BooleanStatesEntity getTrueStateEntity() {
+	public BooleanStateEntity getTrueStateEntity() {
 		return trueStateEntity;
 	}
 
-	public BooleanStatesEntity getFalseStateEntity() {
+	public BooleanStateEntity getFalseStateEntity() {
 		return falseStateEntity;
 	}
 
-	public BooleanStatesEntity getAbsurdStateEntity() {
+	public BooleanStateEntity getAbsurdStateEntity() {
 		return absurdStateEntity;
 	}
 	

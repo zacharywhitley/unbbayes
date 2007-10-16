@@ -11,7 +11,7 @@ import unbbayes.controller.IconController;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.context.enumSubType;
 import unbbayes.prs.mebn.context.enumType;
-import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
+import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 
 public class FormulaTreeCellRenderer extends DefaultTreeCellRenderer {
 	

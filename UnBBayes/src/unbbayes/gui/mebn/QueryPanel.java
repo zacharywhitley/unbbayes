@@ -3,7 +3,6 @@ package unbbayes.gui.mebn;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
@@ -22,9 +21,12 @@ import javax.swing.event.ListSelectionListener;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
+import unbbayes.gui.ParcialStateException;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
+import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 
 /**
  * Class for insert a query
@@ -205,8 +207,14 @@ public class QueryPanel extends JFrame{
 			btnExecute.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
 					makeInvisible(); 
-			         //mebnController.executeQuery(); 
-			         exit(); 
+					try {
+						ObjectEntityInstance[] arguments = queryArgumentsPane.getArguments();
+				        mebnController.executeQuery((DomainResidentNode)residentNode, arguments); 
+					} catch (ParcialStateException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} 
+			        exit(); 
 				}
 			});
 

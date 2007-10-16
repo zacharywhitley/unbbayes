@@ -35,7 +35,7 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.context.enumSubType;
 import unbbayes.prs.mebn.context.enumType;
-import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
+import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
@@ -93,7 +93,7 @@ public class LoaderPrOwlIO {
 	private HashMap<String, MultiEntityNode> mapMultiEntityNode = new HashMap<String, MultiEntityNode>(); 
 	private HashMap<String, BuiltInRV> mapBuiltInRV = new HashMap<String, BuiltInRV>(); 
 	private HashMap<String, ObjectEntity> mapObjectEntity = new HashMap<String, ObjectEntity>(); 	
-	private HashMap<String, CategoricalStatesEntity> mapCategoricalStates = new HashMap<String, CategoricalStatesEntity>(); 
+	private HashMap<String, CategoricalStateEntity> mapCategoricalStates = new HashMap<String, CategoricalStateEntity>(); 
 	private HashMap<String, ObjectEntity> mapTypes = new HashMap<String, ObjectEntity>(); 	
 	
 	/* Protege API Structure */
@@ -690,7 +690,7 @@ public class LoaderPrOwlIO {
 
 			/* -> hasPossibleValues */
 			{
-				CategoricalStatesEntity state; 
+				CategoricalStateEntity state; 
 				objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 			
 				instances = individualOne.getPropertyValues(objectProperty); 	
 				itAux = instances.iterator();
@@ -985,7 +985,7 @@ public class LoaderPrOwlIO {
 						}
 					}
 					else{
-						CategoricalStatesEntity state; 
+						CategoricalStateEntity state; 
 						if((state = mapCategoricalStates.get(individualTwo.getBrowserText())) != null){
 					        argument.setEntityTerm(state); 	
 					        argument.setType(Argument.ORDINARY_VARIABLE); 
@@ -1118,8 +1118,8 @@ public class LoaderPrOwlIO {
 	/*
 	 * Este mecanismo complexo eh necessario para que os argumentos sejam 
 	 * inseridos no noh residente na mesma ordem em que foram salvos, permitindo
-	 * manter a ligação com os respectivos argumentos dos nos inputs instancias 
-	 * destes... Eh ineficiente... merece uma atencao para otimização posterior.
+	 * manter a ligaï¿½ï¿½o com os respectivos argumentos dos nos inputs instancias 
+	 * destes... Eh ineficiente... merece uma atencao para otimizaï¿½ï¿½o posterior.
 	 * (ps.: Funciona!) 
 	 */
 	private void ajustArgumentOfNodes(){

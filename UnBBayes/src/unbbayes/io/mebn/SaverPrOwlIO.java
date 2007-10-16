@@ -23,8 +23,8 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.ResidentNodePointer;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.context.enumType;
-import unbbayes.prs.mebn.entity.BooleanStatesEntity;
-import unbbayes.prs.mebn.entity.CategoricalStatesEntity;
+import unbbayes.prs.mebn.entity.BooleanStateEntity;
+import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.util.Debug;
@@ -55,7 +55,7 @@ public class SaverPrOwlIO {
 	private HashMap<String, OWLIndividual> mapMetaEntity = new HashMap<String,OWLIndividual>();
 	private HashMap<Entity, OWLIndividual> mapCategoricalStates = new HashMap<Entity, OWLIndividual>();
 	private HashMap<ObjectEntity, OWLNamedClass> mapObjectEntityClasses = new HashMap<ObjectEntity, OWLNamedClass>(); 
-	private HashMap<BooleanStatesEntity, OWLIndividual> mapBooleanStatesEntity = new HashMap<BooleanStatesEntity, OWLIndividual>(); 
+	private HashMap<BooleanStateEntity, OWLIndividual> mapBooleanStatesEntity = new HashMap<BooleanStateEntity, OWLIndividual>(); 
 	
 	private HashMap<MFrag, OWLIndividual> mapMFrag = new HashMap<MFrag, OWLIndividual>(); 
 	private HashMap<OrdinaryVariable, OWLIndividual> mapOrdinaryVariable = new HashMap<OrdinaryVariable, OWLIndividual>();
@@ -194,7 +194,7 @@ public class SaverPrOwlIO {
 		
 		if (rootLabel == null){
 			Debug.println("Error: the meta entity TypeLabel don't exists in the model");
-			//TODO achar uma forma de reportar para o usuário erros no arquivo de modelo.
+			//TODO achar uma forma de reportar para o usuï¿½rio erros no arquivo de modelo.
 		}
 		
 		/*----- Second: MetaEntities create by the user -----*/
@@ -242,7 +242,7 @@ public class SaverPrOwlIO {
 						mapBooleanStatesEntity.put(mebn.getBooleanStatesEntityContainer().getAbsurdStateEntity(), stateOwl); 
 					}
 					else{
-						//TODO forma para informar que arquivo PR-OWL é inválido
+						//TODO forma para informar que arquivo PR-OWL ï¿½ invï¿½lido
 					}
 				}
 			}
@@ -476,7 +476,7 @@ public class SaverPrOwlIO {
 		OWLObjectProperty hasPossibleValues = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
 		
 		for(Entity state: node.getPossibleValueList()){
-			if(state instanceof CategoricalStatesEntity){
+			if(state instanceof CategoricalStateEntity){
 				String name = nodeName + SCOPE_SEPARATOR + state.getName(); 
 				OWLIndividual stateIndividual = categoricalRVStatesClass.createOWLIndividual(name); 
 				stateIndividual.addPropertyValue(hasType, categoryLabel);
@@ -484,7 +484,7 @@ public class SaverPrOwlIO {
 				residentNodeIndividual.addPropertyValue(hasPossibleValues, stateIndividual);
 			}
 			else{
-				if(state instanceof BooleanStatesEntity){
+				if(state instanceof BooleanStateEntity){
 					residentNodeIndividual.addPropertyValue(hasPossibleValues, mapBooleanStatesEntity.get(state)); 
 				}
 				else{
@@ -600,13 +600,13 @@ public class SaverPrOwlIO {
 		OWLObjectProperty hasPossibleValues = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
 		
 		for(Entity state: node.getPossibleValueList()){
-			if(state instanceof CategoricalStatesEntity){
-				 /* Não cria estados categóricos... apenas procura o estado já criado para um nó residente. */
+			if(state instanceof CategoricalStateEntity){
+				 /* Nï¿½o cria estados categï¿½ricos... apenas procura o estado jï¿½ criado para um nï¿½ residente. */
 				OWLIndividual stateIndividual = mapCategoricalStates.get(state); 
 				nodeIndividual.addPropertyValue(hasPossibleValues, stateIndividual);
 			}
 			else{
-				if(state instanceof BooleanStatesEntity){
+				if(state instanceof BooleanStateEntity){
 					nodeIndividual.addPropertyValue(hasPossibleValues, mapBooleanStatesEntity.get(state)); 
 				}
 				else{
@@ -655,7 +655,7 @@ public class SaverPrOwlIO {
      * @param name Name of the node
      * @param argNumber
      */
-    private void saveCategoricalStateArgRelationship(CategoricalStatesEntity argument, OWLIndividual individual, String name, int argNumber){
+    private void saveCategoricalStateArgRelationship(CategoricalStateEntity argument, OWLIndividual individual, String name, int argNumber){
     	
     	OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
 		OWLNamedClass argumentClass = owlModel.getOWLNamedClass("ArgRelationship"); 
@@ -689,7 +689,7 @@ public class SaverPrOwlIO {
      * @param name Name of the node
      * @param argNumber
      */
-    private void saveBooleanArgRelationship(BooleanStatesEntity argument, OWLIndividual individual, String name, int argNumber){
+    private void saveBooleanArgRelationship(BooleanStateEntity argument, OWLIndividual individual, String name, int argNumber){
     	
     	OWLObjectProperty hasArgumentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasArgument"); 	
 		OWLNamedClass argumentClass = owlModel.getOWLNamedClass("ArgRelationship"); 
@@ -885,12 +885,12 @@ public class SaverPrOwlIO {
     						break; 
     						
     					case ENTITY:
-    						if(child.getNodeVariable() instanceof CategoricalStatesEntity){
-    							saveCategoricalStateArgRelationship((CategoricalStatesEntity)child.getNodeVariable(), contextNodeIndividual, contextNode.getName(), argNumber); 
+    						if(child.getNodeVariable() instanceof CategoricalStateEntity){
+    							saveCategoricalStateArgRelationship((CategoricalStateEntity)child.getNodeVariable(), contextNodeIndividual, contextNode.getName(), argNumber); 
     						}
     						else{
-    							if(child.getNodeVariable() instanceof BooleanStatesEntity){
-        							saveBooleanArgRelationship((BooleanStatesEntity)child.getNodeVariable(), contextNodeIndividual, contextNode.getName(), argNumber); 
+    							if(child.getNodeVariable() instanceof BooleanStateEntity){
+        							saveBooleanArgRelationship((BooleanStateEntity)child.getNodeVariable(), contextNodeIndividual, contextNode.getName(), argNumber); 
         						}
     							else{
     								//TODO algum outro caso possivel? 
@@ -946,7 +946,7 @@ public class SaverPrOwlIO {
 		/*has possible values */
 		OWLObjectProperty hasPossibleValuesProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
 		for(Entity possibleValue: node.getPossibleValueList()){
-			if(possibleValue instanceof CategoricalStatesEntity)
+			if(possibleValue instanceof CategoricalStateEntity)
 			individual.addPropertyValue(hasPossibleValuesProperty, this.mapCategoricalStates.get(possibleValue)); 
 			else{ //boolean states entity
 				individual.addPropertyValue(hasPossibleValuesProperty, this.mapBooleanStatesEntity.get(possibleValue)); 

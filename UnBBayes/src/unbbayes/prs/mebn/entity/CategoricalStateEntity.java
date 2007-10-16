@@ -6,11 +6,11 @@ package unbbayes.prs.mebn.entity;
  * @author Laecio Lima dos Santos
  */
 
-public class CategoricalStatesEntity extends Entity {
+public class CategoricalStateEntity extends Entity {
 
 	private boolean globallyExclusive;
 
-	protected CategoricalStatesEntity(String name) {
+	protected CategoricalStateEntity(String name) {
 		super(name, TypeContainer.typeCategoryLabel);
 		globallyExclusive = false;
 	}

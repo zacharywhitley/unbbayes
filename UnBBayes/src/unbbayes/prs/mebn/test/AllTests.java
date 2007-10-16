@@ -10,14 +10,11 @@ public class AllTests {
 		//$JUnit-BEGIN$
 		suite.addTest(GenerativeInputNodeTest.suite());
 		suite.addTest(MultiEntityBayesianNetworkTest.suite());
-		suite.addTest(FindingResidentNodeTest.suite());
 		suite.addTest(ResidentNodeTest.suite());
 		suite.addTest(MultiEntityNodeTest.suite());
 		suite.addTest(DomainMFragTest.suite());
 		suite.addTest(BuiltInRVTest.suite());
-		suite.addTest(FindingMFragTest.suite());
 		suite.addTest(ArgumentTest.suite());
-		suite.addTest(FindingInputNodeTest.suite());
 		suite.addTest(MTheoryAlgorithmTest.suite());
 		suite.addTest(ContextNodeTest.suite());
 		suite.addTest(DomainResidentNodeTest.suite());

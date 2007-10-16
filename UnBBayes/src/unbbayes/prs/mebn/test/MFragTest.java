@@ -76,15 +76,12 @@ public class MFragTest extends TestCase {
 		
 	}
 
-	
-	
 	/**
 	 *  Use this for test suite creation
 	 */
 	public static Test suite() {
 		TestSuite suite = new TestSuite("Test for unbbayes.prs.mebn.test.MFragTest");
 		//$JUnit-BEGIN$
-		suite.addTest(FindingMFragTest.suite());
 		suite.addTest(DomainMFragTest.suite());
 		suite.addTest(new TestSuite(MFragTest.class));
 		return suite;
