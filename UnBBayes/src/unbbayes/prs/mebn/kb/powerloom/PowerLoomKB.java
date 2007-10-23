@@ -9,7 +9,7 @@ import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.RandonVariableFinding;
+import unbbayes.prs.mebn.RandomVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.ResidentNodePointer;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVAnd;
@@ -244,7 +244,7 @@ public class PowerLoomKB implements KnowledgeBase{
 		}
 	}
 
-	public void insertRandonVariableFinding(RandonVariableFinding randonVariableFinding){
+	public void insertRandonVariableFinding(RandomVariableFinding randonVariableFinding){
 		
 		String finding = ""; 
 		finding+= "(=";

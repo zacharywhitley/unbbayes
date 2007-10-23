@@ -12,7 +12,7 @@ import unbbayes.prs.mebn.kb.KBFacade;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomFacade;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
-import unbbayes.prs.mebn.ssbn.EntityInstance;
+import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 
 /*
@@ -43,7 +43,7 @@ public class ContextAvaliatorTest {
 		
 		ContextNode context; 
 		List<OVInstance> ovInstances;
-		EntityInstance ei; 
+		LiteralEntityInstance ei; 
 		OrdinaryVariable ov; 
 		OVInstance oi; 
 		Boolean result; 
@@ -51,7 +51,7 @@ public class ContextAvaliatorTest {
 		
 	    System.out.println("Caso 1: IsOwnStarship(!ST0)"); 
 		context = mebn.getContextNode("CX10"); 
-		ei = EntityInstance.getInstance("!ST0", mebn.getTypeContainer().getType("Starship_label")); 
+		ei = LiteralEntityInstance.getInstance("!ST0", mebn.getTypeContainer().getType("Starship_label")); 
 		ov = mebn.getMFragByName("Starship_MFrag").getOrdinaryVariableByName("st"); 
 		oi = OVInstance.getInstance(ov, ei); 
 		ovInstances = new ArrayList<OVInstance>(); 
@@ -60,7 +60,7 @@ public class ContextAvaliatorTest {
 		
 	    System.out.println("Caso 2: IsOwnStarship(!ST1)"); 
 		context = mebn.getContextNode("CX10"); 
-		ei = EntityInstance.getInstance("!ST1", mebn.getTypeContainer().getType("Starship_label")); 
+		ei = LiteralEntityInstance.getInstance("!ST1", mebn.getTypeContainer().getType("Starship_label")); 
 		ov = mebn.getMFragByName("Starship_MFrag").getOrdinaryVariableByName("st"); 
 		oi = OVInstance.getInstance(ov, ei); 
 		ovInstances = new ArrayList<OVInstance>(); 
@@ -69,7 +69,7 @@ public class ContextAvaliatorTest {
 		
 	    System.out.println("Caso 3: z = StarshipZone(!ST0)"); 
 		context = mebn.getContextNode("CX11"); 
-		ei = EntityInstance.getInstance("!ST0", mebn.getTypeContainer().getType("Starship_label")); 
+		ei = LiteralEntityInstance.getInstance("!ST0", mebn.getTypeContainer().getType("Starship_label")); 
 		ov = mebn.getMFragByName("Starship_MFrag").getOrdinaryVariableByName("st"); 
 		oi = OVInstance.getInstance(ov, ei); 
 		ovInstances = new ArrayList<OVInstance>(); 
@@ -81,7 +81,7 @@ public class ContextAvaliatorTest {
 		
 	    System.out.println("Caso 4: z = StarshipZone(!ST1)"); 
 		context = mebn.getContextNode("CX11"); 
-		ei = EntityInstance.getInstance("!ST1", mebn.getTypeContainer().getType("Starship_label")); 
+		ei = LiteralEntityInstance.getInstance("!ST1", mebn.getTypeContainer().getType("Starship_label")); 
 		ov = mebn.getMFragByName("Starship_MFrag").getOrdinaryVariableByName("st"); 
 		oi = OVInstance.getInstance(ov, ei); 
 		ovInstances = new ArrayList<OVInstance>(); 

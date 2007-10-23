@@ -6,7 +6,7 @@ import java.util.List;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.RandonVariableFinding;
+import unbbayes.prs.mebn.RandomVariableFinding;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
@@ -41,7 +41,7 @@ public interface KnowledgeBase {
 	 * Insert the randon variable and your states into KB. 
 	 * @param randonVariableFinding
 	 */
-	public void insertRandonVariableFinding(RandonVariableFinding randonVariableFinding); 
+	public void insertRandonVariableFinding(RandomVariableFinding randonVariableFinding); 
 
 	/**
 	 * Insert the randon variable and your states into KB. 

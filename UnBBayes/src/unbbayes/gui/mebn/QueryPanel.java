@@ -21,8 +21,10 @@ import javax.swing.event.ListSelectionListener;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
+import unbbayes.controller.exception.InconsistentArgumentException;
 import unbbayes.gui.ParcialStateException;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.ResidentNode;
@@ -209,11 +211,14 @@ public class QueryPanel extends JFrame{
 					makeInvisible(); 
 					try {
 						ObjectEntityInstance[] arguments = queryArgumentsPane.getArguments();
-				        mebnController.executeQuery((DomainResidentNode)residentNode, arguments); 
+				        ProbabilisticNetwork network = mebnController.executeQuery((DomainResidentNode)residentNode, arguments); 
+				        // TODO treat returned network
 					} catch (ParcialStateException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
-					} 
+					} catch (InconsistentArgumentException iae) {
+						iae.printStackTrace();
+					}
 			        exit(); 
 				}
 			});

@@ -27,7 +27,7 @@ public class DomainResidentNode extends ResidentNode {
 	 */
 	private List<DomainResidentNode> residentNodeChildList;
 	 
-	private List<RandonVariableFinding> randonVariableFindingList; 
+	private List<RandomVariableFinding> randonVariableFindingList; 
 	
 	private DomainMFrag mFrag;
 
@@ -52,7 +52,7 @@ public class DomainResidentNode extends ResidentNode {
 		inputNodeFatherList = new ArrayList<GenerativeInputNode>();
 		residentNodeFatherList = new ArrayList<DomainResidentNode>();	
 		residentNodeChildList = new ArrayList<DomainResidentNode>();	
-		randonVariableFindingList = new ArrayList<RandonVariableFinding>(); 
+		randonVariableFindingList = new ArrayList<RandomVariableFinding>(); 
 		possibleValueList = new ArrayList<StateLink>(); 
 		
 		setName(name); 
@@ -340,19 +340,19 @@ public class DomainResidentNode extends ResidentNode {
 		tableFunction = table;
 	}
 
-	public void addRandonVariableFinding(RandonVariableFinding finding){
+	public void addRandonVariableFinding(RandomVariableFinding finding){
 		randonVariableFindingList.add(finding); 
 	}
 	
-	public void removeRandonVariableFinding(RandonVariableFinding finding){
+	public void removeRandonVariableFinding(RandomVariableFinding finding){
 		randonVariableFindingList.remove(finding); 
 	}
 	
-	public boolean containsRandonVariableFinding(RandonVariableFinding finding){
+	public boolean containsRandonVariableFinding(RandomVariableFinding finding){
 		return randonVariableFindingList.contains(finding); 
 	}
 	
-	public List<RandonVariableFinding> getRandonVariableFindingList() {
+	public List<RandomVariableFinding> getRandonVariableFindingList() {
 		return randonVariableFindingList;
 	}
 	

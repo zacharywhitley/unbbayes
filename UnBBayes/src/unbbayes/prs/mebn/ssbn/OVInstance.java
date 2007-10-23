@@ -14,7 +14,7 @@ import unbbayes.prs.mebn.entity.Type;
  */
 public class OVInstance {
 	private OrdinaryVariable ov = null;
-	private EntityInstance entity = null;
+	private LiteralEntityInstance entity = null;
 	
 	private OVInstance() {
 		super();
@@ -23,11 +23,11 @@ public class OVInstance {
 	public static OVInstance getInstance(OrdinaryVariable ov) {
 		OVInstance ovi = new OVInstance();
 		ovi.setOv(ov);
-		ovi.setEntity(EntityInstance.getInstance(ov.getName(), ov.getValueType()));
+		ovi.setEntity(LiteralEntityInstance.getInstance(ov.getName(), ov.getValueType()));
 		return ovi;
 	}
 	
-	public static OVInstance getInstance(OrdinaryVariable ov , EntityInstance ei) {
+	public static OVInstance getInstance(OrdinaryVariable ov , LiteralEntityInstance ei) {
 		OVInstance ovi = new OVInstance();
 		ovi.setOv(ov);
 		ovi.setEntity(ei);
@@ -37,20 +37,20 @@ public class OVInstance {
 	public static OVInstance getInstance(OrdinaryVariable ov , String entityName , Type entityType) {
 		OVInstance ovi = new OVInstance();
 		ovi.setOv(ov);
-		ovi.setEntity(EntityInstance.getInstance(entityName, entityType));
+		ovi.setEntity(LiteralEntityInstance.getInstance(entityName, entityType));
 		return ovi;
 	}
 	
 	/**
 	 * @return the entity
 	 */
-	public EntityInstance getEntity() {
+	public LiteralEntityInstance getEntity() {
 		return entity;
 	}
 	/**
 	 * @param entity the entity to set
 	 */
-	public void setEntity(EntityInstance entity) {
+	public void setEntity(LiteralEntityInstance entity) {
 		this.entity = entity;
 	}
 	/**

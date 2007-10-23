@@ -9,16 +9,16 @@ import unbbayes.prs.mebn.entity.Type;
  * @author Shou Matsumoto
  *
  */
-public class EntityInstance {
+public class LiteralEntityInstance {
 	private String instanceName = null;
 	private Type type = null;
 	
-	private EntityInstance () {
+	private LiteralEntityInstance () {
 		super();
 	}
 	
-	public static EntityInstance getInstance ( String instanceName , Type type) {
-		EntityInstance ei = new EntityInstance();
+	public static LiteralEntityInstance getInstance ( String instanceName , Type type) {
+		LiteralEntityInstance ei = new LiteralEntityInstance();
 		ei.setInstanceName(instanceName);
 		ei.setType(type);
 		return ei;

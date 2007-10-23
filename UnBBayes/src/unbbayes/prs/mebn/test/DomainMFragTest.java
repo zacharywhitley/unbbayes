@@ -4,6 +4,7 @@
 package unbbayes.prs.mebn.test;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import junit.framework.Test;
@@ -49,7 +50,7 @@ public class DomainMFragTest extends TestCase {
 		super.setUp();
 		mebn = new MultiEntityBayesianNetwork("DomainMFragTestMEBN");
 		mfrag = new DomainMFrag("DomainMFragTestMFrag",mebn);
-		
+		mebn.addDomainMFrag(mfrag);
 		
 	}
 
@@ -1015,10 +1016,10 @@ public class DomainMFragTest extends TestCase {
 		assertTrue(!mfrag.getContextByAllOV(st,z,t).contains(context_st_z));
 		assertEquals(mfrag.getContextByAllOV(z,st,t).size(), 1);
 		
-		// start testing getContextByOVs
+		// start testing getContextByOVs (...)
 		
 
-		assertTrue(mfrag.getContextByOV(null).isEmpty());
+		assertTrue(mfrag.getContextByOV((OrdinaryVariable)null).isEmpty());
 		assertTrue(mfrag.getContextByOV(st).contains(context_st_t_z));
 		assertTrue(mfrag.getContextByOV(st).contains(context_st_z));
 		assertTrue(mfrag.getContextByOV(st).contains(context_resident_st_z));
@@ -1042,6 +1043,46 @@ public class DomainMFragTest extends TestCase {
 		assertTrue(!mfrag.getContextByOV(st,z,t).contains(context_resident_st_z));
 		assertTrue(!mfrag.getContextByOV(st,z,t).contains(context_st_z));
 		assertEquals(mfrag.getContextByOV(z,st,t).size(), 1);
+		
+		//		 start testing getContextByOVs (collection)
+		
+		Collection<OrdinaryVariable> col = new ArrayList<OrdinaryVariable>();
+		
+		assertTrue(mfrag.getContextByOV((Collection<OrdinaryVariable>)null).isEmpty());
+		
+		col.add(st);		
+		assertTrue(mfrag.getContextByOV(col).contains(context_st_t_z));
+		assertTrue(mfrag.getContextByOV(col).contains(context_st_z));
+		assertTrue(mfrag.getContextByOV(col).contains(context_resident_st_z));
+		assertEquals(mfrag.getContextByOV(col).size(), 3);
+
+		col.removeAll(col);
+		col.add(z);
+		assertTrue(mfrag.getContextByOV(col).contains(context_st_t_z));
+		assertTrue(mfrag.getContextByOV(col).contains(context_st_z));
+		assertTrue(mfrag.getContextByOV(col).contains(context_resident_st_z));
+		assertEquals(mfrag.getContextByOV(col).size(), 3);
+		
+		
+		col.removeAll(col);
+		col.add(t);
+		assertTrue(mfrag.getContextByOV(t).contains(context_st_t_z));
+		assertEquals(mfrag.getContextByOV(col).size(), 1);
+		
+		col.removeAll(col);
+		col.add(z);
+		col.add(st);
+		assertTrue(mfrag.getContextByOV(col).contains(context_st_t_z));
+		assertTrue(mfrag.getContextByOV(col).contains(context_resident_st_z));
+		assertTrue(mfrag.getContextByOV(col).contains(context_st_z));
+		assertEquals(mfrag.getContextByOV(col).size(), 3);
+		
+		col.add(t);
+		assertTrue(mfrag.getContextByOV(col).contains(context_st_t_z));
+		assertTrue(!mfrag.getContextByOV(col).contains(context_resident_st_z));
+		assertTrue(!mfrag.getContextByOV(col).contains(context_st_z));
+		assertEquals(mfrag.getContextByOV(col).size(), 1);
+		
 	}
 	
 

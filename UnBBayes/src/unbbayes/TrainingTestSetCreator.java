@@ -42,6 +42,7 @@ public class TrainingTestSetCreator {
 		
 		/* Build the test and training instanceSets */
 		float testProportion = (float) 1 / 3;
+		// TODO remove the compiling error caused by the line below
 		InstanceSet testData = inputData.buildTrainTestSet(testProportion, false, classIndex);
 		InstanceSet trainData = inputData;
 		

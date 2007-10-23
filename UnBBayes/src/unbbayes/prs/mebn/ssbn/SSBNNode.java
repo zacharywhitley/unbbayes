@@ -78,7 +78,7 @@ public class SSBNNode {
 		this.actualValues = new ArrayList<Entity>(resident.getPossibleValueList());
 		this.setUsingDefaultCPT(false);
 		
-		this.setCompiler(new Compiler(resident, this.probNode.getPotentialTable()));
+		this.setCompiler(new Compiler(resident, this));
 		
 	}
 	

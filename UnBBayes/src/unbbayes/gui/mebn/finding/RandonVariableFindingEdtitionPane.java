@@ -29,7 +29,7 @@ import unbbayes.gui.ParcialStateException;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MFrag;
-import unbbayes.prs.mebn.RandonVariableFinding;
+import unbbayes.prs.mebn.RandomVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
@@ -229,7 +229,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
 					try {
 						ObjectEntityInstance[] arguments = findingArgumentPane.getArguments();
 						Entity state = findingArgumentPane.getState(); 
-						RandonVariableFinding finding = new RandonVariableFinding(
+						RandomVariableFinding finding = new RandomVariableFinding(
 								(DomainResidentNode)residentNode, 
 								arguments, 
 								state, 
@@ -276,13 +276,13 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
 		
 		private JList jlistFindings; 
 		private JScrollPane scrollListObjectEntity; 
-		private List<RandonVariableFinding> listInstances; 
+		private List<RandomVariableFinding> listInstances; 
 		private DefaultListModel listModel; 
 		
         public RandonVariableInstanceListPane(){
         	super(new BorderLayout()); 
         	
-        	listInstances = new ArrayList<RandonVariableFinding>(); 
+        	listInstances = new ArrayList<RandomVariableFinding>(); 
         	listModel = new DefaultListModel(); 
         	        	
         	jlistFindings = new JList(listModel); 
@@ -298,9 +298,9 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
         	
         	this.residentNode = residentNode; 
         	
-        	listInstances = new ArrayList<RandonVariableFinding>(); 
+        	listInstances = new ArrayList<RandomVariableFinding>(); 
         	listModel = new DefaultListModel(); 
-        	for(RandonVariableFinding finding: ((DomainResidentNode)(residentNode)).getRandonVariableFindingList()){
+        	for(RandomVariableFinding finding: ((DomainResidentNode)(residentNode)).getRandonVariableFindingList()){
         		listInstances.add(finding); 
         		listModel.addElement(finding); 
         	}
