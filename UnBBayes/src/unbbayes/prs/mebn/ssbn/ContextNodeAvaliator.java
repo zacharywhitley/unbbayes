@@ -11,6 +11,8 @@ public class ContextNodeAvaliator {
 	
 	public void evaluate(ContextNode node, OVInstance... ovInstances){
 		
+		// Are these ovInstances all known instances or just node's arguments?
+		
 		/* 
 		 * evaluateSimpleFormula or evaluateComplexFormula... O primeiro sera utilizado se houver 
 		 * ovInstances para todos os elementos da formula. O segundo será utilizado caso haja alguma 

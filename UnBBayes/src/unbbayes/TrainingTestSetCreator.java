@@ -42,8 +42,14 @@ public class TrainingTestSetCreator {
 		
 		/* Build the test and training instanceSets */
 		float testProportion = (float) 1 / 3;
-		// TODO remove the compiling error caused by the line below
-		InstanceSet testData = inputData.buildTrainTestSet(testProportion, false, classIndex);
+		/* 
+		 * TODO please, solve the compiling error caused by the commands below, from undefined classIndex.
+		 * The commented one (with //) is the original. The one below were added just to temporaly solve
+		 * the compiling error.
+		 */
+		//InstanceSet testData = inputData.buildTrainTestSet(testProportion, false, classIndex);
+		/*!Caution!*/ InstanceSet testData = inputData.buildTrainTestSet(testProportion, false, 0);
+		
 		InstanceSet trainData = inputData;
 		
 		/* Select all attributes to be saved */

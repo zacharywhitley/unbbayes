@@ -91,7 +91,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	 */
 	public Node() {
 		name = "";
-		label = ""; // o texto dentro do n�
+		label = ""; // text inside node
 		description = "";
 		explanationDescription = "";
 		adjacents = new NodeList();
@@ -154,10 +154,10 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 
 	/**
-	 * Modifica o nome do n�.
+	 * Changes node's description.
 	 * 
 	 * @param texto
-	 *            descri��o do n�.
+	 *            node's description.
 	 */
 	public void setDescription(String texto) {
 		this.description = texto;
@@ -294,9 +294,9 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 
 	/**
-	 * Retorna a sigla do n�.
+	 * Returns the node's literal symbol.
 	 * 
-	 * @return Sigla do n�.
+	 * @return node's literal abbreviation.
 	 */
 	public String getName() {
 		return name;
