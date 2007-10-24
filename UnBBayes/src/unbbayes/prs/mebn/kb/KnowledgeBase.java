@@ -6,11 +6,9 @@ import java.util.List;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.RandonVariableFinding;
-import unbbayes.prs.mebn.entity.Entity;
+import unbbayes.prs.mebn.RandomVariableFinding;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
-import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 
 /**
