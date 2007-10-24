@@ -305,7 +305,7 @@ public class GuiResources extends ListResourceBundle {
 		{"addState", "Add state(s)"}, 
 		{"removeState", "Remove state(s)"}, 
 		{"confirmation", "Confirmation"}, 
-		{"warningDeletStates", "Os estados anteriores serão removidos. Tem certeza que deseja realizar a operação?"}
+		{"warningDeletStates", "Os estados anteriores serï¿½o removidos. Tem certeza que deseja realizar a operaï¿½ï¿½o?"}
 		
 		
 	};

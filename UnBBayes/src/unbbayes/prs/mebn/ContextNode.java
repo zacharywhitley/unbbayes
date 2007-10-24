@@ -4,15 +4,16 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import unbbayes.draw.DrawFlatPentagon;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
-import unbbayes.prs.mebn.entity.BooleanStateEntity;
 
 /**
- * 
- *
- */
+ * The individual of the ContextNode class represent a type of constraint impose
+ * to the MFrag arguments. The constraint is represented by a formula of first 
+ * order logic. 
+ * */
 
 public class ContextNode extends MultiEntityNode {
 	
@@ -31,7 +32,17 @@ public class ContextNode extends MultiEntityNode {
 	private List<ContextNode> innerTermFromList;
 	
 	/* formula */
+	
+	/* Nota: when the formulaTree of the node is setted, the atributes isValidFormula, 
+	 * variableList and exemplarList have to be setted too for mantain the 
+	 * consistency of the object*/
 	private NodeFormulaTree formulaTree; 
+	
+	private boolean isValidFormula = false; //Tell if the formula is valid for this implementation 
+	 
+	private Set<OrdinaryVariable> variableList; //Variables of the formula
+	
+	private List<OrdinaryVariable> exemplarList; // Variables used in quantifiers  
 	
 	/* the formula in the PowerLoom format */
 	
@@ -61,13 +72,6 @@ public class ContextNode extends MultiEntityNode {
     	innerTermOfList = new ArrayList<ContextNode>();
     	innerTermFromList = new ArrayList<ContextNode>();
     	
-    	/* a lista de possiveis valores de um n� de contexto cont�m por
-    	 * default os valores True, False e Absurd. 
-    	 */
-    	this.addPossibleValue(mFrag.getMultiEntityBayesianNetwork().getBooleanStatesEntityContainer().getTrueStateEntity()); 
-    	this.addPossibleValue(mFrag.getMultiEntityBayesianNetwork().getBooleanStatesEntityContainer().getFalseStateEntity()); 
-    	this.addPossibleValue(mFrag.getMultiEntityBayesianNetwork().getBooleanStatesEntityContainer().getAbsurdStateEntity()); 
-    	
     	/* draw */
     	size.x = 100;
     	size.y = 20; 
@@ -92,9 +96,27 @@ public class ContextNode extends MultiEntityNode {
 		return formulaTree; 
 	}
 	
+	/**
+	 * Set the formula tree of the context node. 
+	 * @param formulaTree a valid or invalid formula
+	 */
 	public void setFormulaTree(NodeFormulaTree formulaTree){
+		
 		this.formulaTree = formulaTree; 
+		
+		this.variableList = formulaTree.getVariableList(); 
+		this.exemplarList = new ArrayList<OrdinaryVariable>();
+		this.isValidFormula = isFormulaValida(formulaTree); 
+		
 		updateLabel(); 
+	}
+	
+	/**
+	 * Evaluate if the formula is valid
+	 * (for this implementation that have some restrictions. See documentation)
+	 */
+	private boolean isFormulaValida(NodeFormulaTree formulaTree){
+		return true; 
 	}
 	
     /**
@@ -223,6 +245,70 @@ public class ContextNode extends MultiEntityNode {
     public String toString(){
     	return formulaTree.getFormulaViewText();
     }
+
+	public static long getSerialVersionUID() {
+		return serialVersionUID;
+	}
+
+	public DrawFlatPentagon getDrawContextNode() {
+		return drawContextNode;
+	}
+
+	public void setDrawContextNode(DrawFlatPentagon drawContextNode) {
+		this.drawContextNode = drawContextNode;
+	}
+
+	public List<OrdinaryVariable> getExemplarList() {
+		return exemplarList;
+	}
+
+	public void setExemplarList(List<OrdinaryVariable> exemplarList) {
+		this.exemplarList = exemplarList;
+	}
+
+	public String getFormula() {
+		return formula;
+	}
+
+	public void setFormula(String formula) {
+		this.formula = formula;
+	}
+
+	public boolean isFormulaTreeTurned() {
+		return formulaTreeTurned;
+	}
+
+	public void setFormulaTreeTurned(boolean formulaTreeTurned) {
+		this.formulaTreeTurned = formulaTreeTurned;
+	}
+
+	public void setInnerTermFromList(List<ContextNode> innerTermFromList) {
+		this.innerTermFromList = innerTermFromList;
+	}
+
+	public void setInnerTermOfList(List<ContextNode> innerTermOfList) {
+		this.innerTermOfList = innerTermOfList;
+	}
+
+	public boolean isValidFormula() {
+		return isValidFormula;
+	}
+
+	public void setValidFormula(boolean isValidFormula) {
+		this.isValidFormula = isValidFormula;
+	}
+
+	public Set<OrdinaryVariable> getVariableList() {
+		return variableList;
+	}
+
+	public void setVariableList(Set<OrdinaryVariable> variableList) {
+		this.variableList = variableList;
+	}
+
+	public static void setColor(Color color) {
+		ContextNode.color = color;
+	}
     
 }
  

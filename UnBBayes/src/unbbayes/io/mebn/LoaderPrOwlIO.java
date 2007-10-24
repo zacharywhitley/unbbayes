@@ -129,20 +129,20 @@ public class LoaderPrOwlIO {
 		
 		Debug.println("[DEBUG]" + this.getClass() + " -> Load begin"); 
 		
-		File filePrOwl = new File(PROWLMODELFILE);
-		FileInputStream inputStreamOwl = new FileInputStream(filePrOwl); 
-		
-		owlModel.getRepositoryManager().addProjectRepository(
-				new LocalFileRepository(filePrOwl, true));
-		
-		try{
-			owlModel.load(inputStreamOwl, FileUtils.langXMLAbbrev);
-			Debug.println("-> Load of model file PR-OWL successful"); 
-		}	
-		catch(Exception e){
-			throw new IOMebnException(resource.getString("ErrorReadingFile") + 
-					                  ": " + PROWLMODELFILE); 
-		}
+//		File filePrOwl = new File(PROWLMODELFILE);
+//		FileInputStream inputStreamOwl = new FileInputStream(filePrOwl); 
+//		
+//		owlModel.getRepositoryManager().addProjectRepository(
+//				new LocalFileRepository(filePrOwl, true));
+//		
+//		try{
+//			owlModel.load(inputStreamOwl, FileUtils.langXMLAbbrev);
+//			Debug.println("-> Load of model file PR-OWL successful"); 
+//		}	
+//		catch(Exception e){
+//			throw new IOMebnException(resource.getString("ErrorReadingFile") + 
+//					                  ": " + PROWLMODELFILE); 
+//		}
 			
 		FileInputStream inputStream = new FileInputStream(file); 
 		
@@ -548,7 +548,7 @@ public class LoaderPrOwlIO {
 										if(nameBuiltIn.equals("implies")){
 											builtInRV = new BuiltInRVImplies(); 
 										}else{
-											//TODO lan?��ar excess?��o... 											
+											//TODO exception? 											
 										}	
 			
 			if(builtInRV != null){

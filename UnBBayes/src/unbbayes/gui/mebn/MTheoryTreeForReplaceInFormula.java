@@ -1,6 +1,5 @@
 package unbbayes.gui.mebn;
 
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
@@ -26,6 +25,7 @@ import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.Entity;
+import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.util.ArrayMap;
 
 /**
@@ -77,7 +77,6 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 		
 		this.setRootVisible(false); 
 		this.putClientProperty("JTree.lineStyle", "None");
-
 		
 		addMouseListener(new MouseAdapter() {
 			
@@ -103,7 +102,7 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 							
 						} else if (e.getClickCount() == 2
 								&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-							formulaTreeController.addNode((ResidentNode)nodeLeaf); 
+							formulaTreeController.addNode((DomainResidentNode)nodeLeaf); 
 							controller.updateFormulaActiveContextNode(); 
 						} else if (e.getClickCount() == 1) {
 							
@@ -112,22 +111,19 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 					}
 					else{
 						
-						if(nodeLeaf instanceof Entity){
+						if(nodeLeaf instanceof StateLink){
 							if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
 								
 							} else if (e.getClickCount() == 2
 									&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-								formulaTreeController.addEntity((Entity)nodeLeaf); 
+								//TODO at final version use LinkState in the tree
+								formulaTreeController.addEntity((Entity)((StateLink)nodeLeaf).getState()); 
 								controller.updateFormulaActiveContextNode(); 
 							} else if (e.getClickCount() == 1) {
-								
-															
+											
 							}	
 						}
-						
 					}
-					
-					
 				} 
 				else { //Not is a leaf 
 					Object nodeLeaf = nodeMap.get(node); 
@@ -168,13 +164,14 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 			if(mFrag instanceof DomainMFrag){
 				
 				List<DomainResidentNode> residentNodeList = ((DomainMFrag)mFrag).getDomainResidentNodeList(); 
-				for(ResidentNode residentNode: residentNodeList){
+				for(DomainResidentNode residentNode: residentNodeList){
 					DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(residentNode.getName());
 					treeNode.add(treeNodeChild); 
 					residentNodeMap.put(treeNodeChild, residentNode); 
 					nodeMap.put(treeNodeChild, residentNode);
-					for(Entity state: residentNode.getPossibleValueList()){
-						DefaultMutableTreeNode treeNodeState = new DefaultMutableTreeNode(state.getName()); 
+					//Add states. 
+					for(StateLink state: residentNode.getPossibleValueLinkList()){
+						DefaultMutableTreeNode treeNodeState = new DefaultMutableTreeNode(state.getState().getName()); 
 						treeNodeChild.add(treeNodeState); 
 						nodeMap.put(treeNodeState, state); 
 					}
@@ -187,11 +184,11 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 	}
 	
 	/**
-	 * Retrai todos os nós da árvore desejada.
+	 * Retrai todos os nï¿½s da ï¿½rvore desejada.
 	 * 
 	 * @param arvore
 	 *            uma <code>JTree</code> que representa a rede Bayesiana em
-	 *            forma de árvore.
+	 *            forma de ï¿½rvore.
 	 * @since
 	 * @see JTree
 	 */
@@ -206,11 +203,11 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 	}
 	
 	/**
-	 * Expande todos os nós da árvore desejada.
+	 * Expande todos os nï¿½s da ï¿½rvore desejada.
 	 * 
 	 * @param arvore
 	 *            uma <code>JTree</code> que representa a rede Bayesiana em
-	 *            forma de árvore.
+	 *            forma de ï¿½rvore.
 	 * @since
 	 * @see JTree
 	 */
@@ -326,7 +323,7 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 					else if (obj instanceof MFrag){ 
 						setIcon(orangeNodeIcon); 
 						this.setForeground(Color.BLUE); 
-					}else if (obj instanceof Entity){ 
+					}else if (obj instanceof StateLink){ 
 						setIcon(stateIcon); 
 					}
 					else{

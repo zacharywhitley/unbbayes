@@ -21,6 +21,12 @@ import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 
+/**
+ * Panel with the entities for use in formula as operando
+ * 
+ * @author Laecio
+ *
+ */
 public class EntityListForReplaceInFormula extends JPanel{
 
     private final IconController iconController = IconController.getInstance();

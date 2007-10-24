@@ -13,6 +13,8 @@ import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
 public class DomainResidentNode extends ResidentNode {
  
+	private static final long serialVersionUID = 1L;
+
 	private List<GenerativeInputNode> inputInstanceFromList;
 	
 	private List<GenerativeInputNode> inputNodeFatherList;
@@ -198,12 +200,17 @@ public class DomainResidentNode extends ResidentNode {
 		}
 	}		
 	
-	/*
-	public void addPossibleValue(Entity possibleValue){
-		possibleValueList.add(possibleValue); 
-	}
-	
 	/*------------------------------------------------------------*/
+	
+	/**
+	 * Add a possible value to the list of possible values of
+	 * the domain resident node. 
+	 */
+	public StateLink addPossibleValueLink(Entity possibleValue){
+		StateLink value = new StateLink(possibleValue); 
+		possibleValueList.add(value);
+		return value; 
+	}
 	
 	/**
 	 * Remove the possible value with the name 
@@ -212,7 +219,7 @@ public class DomainResidentNode extends ResidentNode {
 	public void removePossibleValueByName(String possibleValue){
 		
 		for(StateLink value : possibleValueList){
-			if (value.getState().getName().compareTo(possibleValue) == 0){
+			if (value.getState().getName().equals(possibleValue)){
 				possibleValueList.remove(value);
 				return; 
 			}
@@ -235,13 +242,48 @@ public class DomainResidentNode extends ResidentNode {
 	public boolean existsPossibleValueByName(String possibleValue){
 		
 		for(StateLink value : possibleValueList){
-			if (value.getState().getName().compareTo(possibleValue) == 0){
+			if (value.getState().getName().equals(possibleValue)){
 				return true; 
 			}
 		}
 		
 		return false; 
 	}	
+	
+	/**
+	 * Verify if the entity is a state of the node 
+	 * Warning: the search will be for the entity and not for the
+	 * name of entity.
+	 * @param entity The entity 
+	 * @return true if the entity is a state, false otherside
+	 */
+	public boolean hasPossibleValue(Entity entity) {
+		for(StateLink value : possibleValueList){
+			if (value.getState() == entity){
+				return true; 
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Return the possible value of the residente node with the name
+	 * (return null if don't exist a possible value with this name)
+	 */
+	public StateLink getPossibleValueByName(String possibleValue){
+		for(StateLink value : possibleValueList){
+			if (value.getState().getName().equals(possibleValue)){
+				return value; 
+			}
+		}
+		
+		return null;
+	}
+	
+	public List<StateLink> getPossibleValueLinkList(){
+		return possibleValueList; 
+	}
+	
 	
 	/*------------------------------------------------------------*/
 	

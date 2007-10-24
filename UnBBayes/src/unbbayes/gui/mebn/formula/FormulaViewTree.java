@@ -38,25 +38,25 @@ import unbbayes.prs.mebn.context.enumSubType;
 import unbbayes.prs.mebn.context.enumType;
 
 /** 
- * Tree that represents the formula of a context node. 
+ * View Tree that represents the formula of a context node. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * */
 
 /*-----------------------------------------------------------------------------------------
  
- Gramática da FOL suportada: 
+ GramÃ¡tica da FOL suportada: 
  
- <Fórmula> := 
+ <FÃ³rmula> := 
  <Variavel Aleatoria> ( <OVariable, OVariable...> )
- |  <Fórmula> <Conectivo> <Fórmula>
- |  <Quantificador> <Exemplar_Sequence> <Fórmula>
- | NOT <Fórmula>
+ |  <FÃ³rmula> <Conectivo> <FÃ³rmula>
+ |  <Quantificador> <Exemplar_Sequence> <Fï¿½rmula>
+ | NOT <Fï¿½rmula>
  |  <Termo> EQUALTO <Termo>
  
- <Termo> := [Variável Aleatória]
+ <Termo> := [VariÃ¡vel Aleatoria]
  | <Constante> 
- | <Variável>
+ | <VariÃ¡vel>
  
  <Conectivo> := IMPLIES | AND | OR | IFF
  
@@ -70,7 +70,7 @@ import unbbayes.prs.mebn.context.enumType;
  
  ----------------------------------------------------------------------*/
 
-public class FormulaTree extends JTree{
+public class FormulaViewTree extends JTree{
 	
 	private FormulaTreeController formulaTreeController; 
 	
@@ -94,7 +94,10 @@ public class FormulaTree extends JTree{
 	 * @param _contextNode The contextNode where this tree is the formula
 	 */
 	
-	public FormulaTree(FormulaTreeController _controller, ContextNode _contextNode) {
+	public FormulaViewTree(FormulaTreeController _controller, ContextNode _contextNode) {
+		
+		//TODO this class don't is a controller... all methods that change the model 
+		//shoud stay in the FormulaTreeController. 
 		
 		formulaTreeController = _controller;    
 		contextNode = _contextNode; 
@@ -331,7 +334,7 @@ public class FormulaTree extends JTree{
 	}
 	
 	/**
-	 * Painel que mostra quais são as variaveis disponiveis para
+	 * Painel que mostra quais sï¿½o as variaveis disponiveis para
 	 * se escolher uma a ser utilizada como operando na formula. 
 	 *
 	 * NodeTree deve ser um nodo do tipo enumType.VARIABLE.
@@ -443,10 +446,8 @@ public class FormulaTree extends JTree{
 		
 		nodeQuantifier = (NodeFormulaTree)(nodeActual.getUserObject()); 
 	
-		/* descer pegando todas as variaveis e armazenando na árvore de variáveis */
+		/* descer pegando todas as variaveis e armazenando na ï¿½rvore de variï¿½veis */
 		nodeActual.getChildCount(); 
-		
-		
 		
 		return exemplarPainel; 
 		

@@ -1,7 +1,7 @@
 package unbbayes.controller;
 
 import unbbayes.gui.mebn.FormulaEditionPane;
-import unbbayes.gui.mebn.formula.FormulaTree;
+import unbbayes.gui.mebn.formula.FormulaViewTree;
 import unbbayes.gui.mebn.formula.exception.FormulaTreeConstructionException;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -11,10 +11,19 @@ import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.context.enumSubType;
 import unbbayes.prs.mebn.context.enumType;
 import unbbayes.prs.mebn.entity.Entity;
+import unbbayes.prs.mebn.entity.StateLink;
 
+/**
+ * Controller for the formulaEditionPane
+ * 
+ * (Model: context node). 
+ * 
+ * @author Laecio Lima dos Santos
+ *
+ */
 public class FormulaTreeController {
 	
-	private FormulaTree formulaTree;
+	private FormulaViewTree formulaViewTree;
 	private MEBNController mebnController; 
 	private ContextNode contextNode; 
 	private FormulaEditionPane formulaEditionPane; 
@@ -26,7 +35,7 @@ public class FormulaTreeController {
 		this.contextNode = context; 
 		this.formulaEditionPane = _formulaEditionPane; 
 		
-		formulaTree = new FormulaTree(this, context); 
+		this.formulaViewTree = new FormulaViewTree(this, context); 
 		
 	}
 	
@@ -34,49 +43,47 @@ public class FormulaTreeController {
 		contextNode.setFormulaTree(formula); 
 	}
 	
-	public FormulaTree getFormulaTree(){
-		
-		return formulaTree; 
-		
+	public FormulaViewTree getFormulaTree(){
+		return formulaViewTree; 
 	}
 	
 	public void addOperatorAnd()throws Exception{
-		formulaTree.addOperatorAnd(); 
+		formulaViewTree.addOperatorAnd(); 
 		mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorOr()throws Exception{
-		formulaTree.addOperatorOr(); 
+		formulaViewTree.addOperatorOr(); 
 		mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorNot()throws Exception{
-		formulaTree.addOperatorNot(); 
+		formulaViewTree.addOperatorNot(); 
 		mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorEqualTo()throws Exception{
-		formulaTree.addOperatorEqualTo(); 
+		formulaViewTree.addOperatorEqualTo(); 
 		mebnController.updateFormulaActiveContextNode(); 
 	}	
 	
 	public void addOperatorIf() throws Exception{
-		formulaTree.addOperatorIf(); 
+		formulaViewTree.addOperatorIf(); 
 		mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorImplies()throws Exception{
-		formulaTree.addOperatorImplies();
+		formulaViewTree.addOperatorImplies();
 		mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorForAll()throws Exception{
-		formulaTree.addOperatorForAll(); 
+		formulaViewTree.addOperatorForAll(); 
 		mebnController.updateFormulaActiveContextNode(); 
 	}
 	
 	public void addOperatorExists()throws Exception{
-		formulaTree.addOperatorExists(); 
+		formulaViewTree.addOperatorExists(); 
 		mebnController.updateFormulaActiveContextNode(); 
 	}	
 	
@@ -100,12 +107,12 @@ public class FormulaTreeController {
 	 */
 	public void addOVariable(OrdinaryVariable ov) throws FormulaTreeConstructionException{
 		
-		NodeFormulaTree nodePlace = formulaTree.getNodeFormulaActive();  
+		NodeFormulaTree nodePlace = formulaViewTree.getNodeFormulaActive();  
 		
 		if(nodePlace.getTypeNode() == enumType.VARIABLE_SEQUENCE){
 			NodeFormulaTree nodeExemplar = new NodeFormulaTree(ov.getName(), enumType.VARIABLE, enumSubType.VARIABLE, ov); 
 			nodePlace.addChild(nodeExemplar); 
-			formulaTree.addNewNodeInTree(nodeExemplar);  
+			formulaViewTree.addNewNodeInTree(nodeExemplar);  
 		}
 		
 		else{
@@ -114,7 +121,7 @@ public class FormulaTreeController {
 			nodePlace.setTypeNode(enumType.OPERANDO); 
 			nodePlace.setSubTypeNode(enumSubType.OVARIABLE);
 		}
-		formulaTree.updateTree(); 
+		formulaViewTree.updateTree(); 
 		
 	}	
 	
@@ -127,7 +134,7 @@ public class FormulaTreeController {
 	 */
 	public void addNode(ResidentNode node){
 		
-		NodeFormulaTree nodePlace = formulaTree.getNodeFormulaActive();   
+		NodeFormulaTree nodePlace = formulaViewTree.getNodeFormulaActive();   
 		
 		nodePlace.setName(node.getName()); 
 		
@@ -137,7 +144,7 @@ public class FormulaTreeController {
 		nodePlace.setTypeNode(enumType.OPERANDO); 
 		nodePlace.setSubTypeNode(enumSubType.NODE); 
 		
-		formulaTree.updateTree(); 
+		formulaViewTree.updateTree(); 
 	}	
 	
 	/**
@@ -146,21 +153,34 @@ public class FormulaTreeController {
 	 */
 	public void addExemplar(OrdinaryVariable ov){
 		
-		NodeFormulaTree nodePlace = formulaTree.getNodeFormulaActive();  
+		NodeFormulaTree nodePlace = formulaViewTree.getNodeFormulaActive();  
 		
 	}	
 	
 	public void addEntity(Entity entity){
 		
-		NodeFormulaTree nodePlace = formulaTree.getNodeFormulaActive();  
+		NodeFormulaTree nodePlace = formulaViewTree.getNodeFormulaActive();  
 		
 		nodePlace.setName(entity.getName()); 
 		nodePlace.setNodeVariable(entity);
 		nodePlace.setTypeNode(enumType.OPERANDO); 
 		nodePlace.setSubTypeNode(enumSubType.ENTITY); 
 		
-		formulaTree.updateTree(); 			
+		formulaViewTree.updateTree(); 			
 	}	
+	
+	public void addStateLink(StateLink link){
+		
+     	NodeFormulaTree nodePlace = formulaViewTree.getNodeFormulaActive();  
+		
+		nodePlace.setName(link.getState().getName()); 
+		nodePlace.setNodeVariable(link);
+		nodePlace.setTypeNode(enumType.OPERANDO); 
+		nodePlace.setSubTypeNode(enumSubType.ENTITY); 
+		
+		formulaViewTree.updateTree(); 				
+		
+	}
 	
 	public void showArgumentPanel(NodeFormulaTree nodeFormulaActive){
 		

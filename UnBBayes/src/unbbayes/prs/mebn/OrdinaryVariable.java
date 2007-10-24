@@ -24,12 +24,12 @@ public class OrdinaryVariable extends Node{
 	private Type type; 
 	
 	/* 
-	 * Uma variavel ordinaria pode ser utilizada como argumetno em um nó residente
-	 * ou em um ponteiro para nó residente (input nodes e context nodes. 
+	 * Uma variavel ordinaria pode ser utilizada como argumetno em um nï¿½ residente
+	 * ou em um ponteiro para nï¿½ residente (input nodes e context nodes. 
 	 * A primeira lista armazena os nodos do primeiro caso que possuem referencia
 	 * para este, enquanto a segunda lista armazena os ponteiros do segundo 
-	 * caso. Estas listas são necessárias para manter a conscistência
-	 * quando for feita a remoção desta variavel ordinária. 
+	 * caso. Estas listas sï¿½o necessï¿½rias para manter a conscistï¿½ncia
+	 * quando for feita a remoï¿½ï¿½o desta variavel ordinï¿½ria. 
 	 */
 	
 	private List<Node> isOVariableOfList; 
@@ -43,8 +43,8 @@ public class OrdinaryVariable extends Node{
     private DrawFlatPentagon drawContextNode;	
 	
 	/*
-	 * Nesta versão de teste corresponde ao elemento que preenche a posicao 
-	 * da variavel ordinária. 
+	 * Nesta versï¿½o de teste corresponde ao elemento que preenche a posicao 
+	 * da variavel ordinï¿½ria. 
 	 */
 	private ObjectEntity entity; 
 	
@@ -243,6 +243,24 @@ public class OrdinaryVariable extends Node{
 	public int getType() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+	
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object obj) {
+		
+		if (obj == this) {
+			return true;
+		}
+		
+		if((obj != null)&&(obj instanceof OrdinaryVariable)){
+		   OrdinaryVariable node = (OrdinaryVariable) obj;
+		   return (node.name.equals(this.name));
+		}
+		
+		return false; //obj == null && this != null 
+		
 	}
 	
 }

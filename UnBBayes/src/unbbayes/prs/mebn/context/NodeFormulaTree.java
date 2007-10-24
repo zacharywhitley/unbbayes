@@ -1,8 +1,12 @@
 package unbbayes.prs.mebn.context;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.ResidentNodePointer;
 
 
@@ -33,6 +37,44 @@ public class NodeFormulaTree{
 		subType = _subType; 
 		nodeVariable = _nodeVariable;
 		children = new ArrayList<NodeFormulaTree>(); 
+	}
+	
+	public Set<OrdinaryVariable> getVariableList(){
+		
+		Set<OrdinaryVariable> set = new HashSet<OrdinaryVariable>(); 
+		
+		switch(type){
+		
+		case OPERANDO:
+			switch(subType){
+			
+			case OVARIABLE:
+				set.add((OrdinaryVariable)this.getNodeVariable());
+				break;
+				
+			case NODE:
+				ResidentNodePointer node = (ResidentNodePointer)this.getNodeVariable(); 
+				set.addAll(node.getOrdinaryVariableList()); 
+			    break; 
+			}
+			
+			break;
+		
+		}
+		
+		for(NodeFormulaTree child: this.getChildren()){
+			set.addAll(child.getVariableList()); 
+		}
+		
+		return set; 
+	}
+	
+	public Set<OrdinaryVariable> getExemplarList(){
+		
+		
+		
+		
+		return null; 
 	}
 	
 	public void addChild(NodeFormulaTree child){
@@ -96,9 +138,9 @@ public class NodeFormulaTree{
 	}
 	
 	/**
-	 * Método utilizado para se obter a forma textual da fórmula 
-	 * representada por este nó. Funciona recursivamente, chamando
-	 * o mesmo método para obter as formulas dos operandos. 
+	 * Mï¿½todo utilizado para se obter a forma textual da fï¿½rmula 
+	 * representada por este nï¿½. Funciona recursivamente, chamando
+	 * o mesmo mï¿½todo para obter as formulas dos operandos. 
 	 */
 	public String getFormulaViewText(){
 		

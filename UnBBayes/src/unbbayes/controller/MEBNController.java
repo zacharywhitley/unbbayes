@@ -2,17 +2,13 @@ package unbbayes.controller;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.ResourceBundle;
 
-import unbbayes.controller.exception.InconsistentArgumentException;
 import unbbayes.gui.MEBNEditionPane;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.mebn.OVariableEditionPane;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.ProbabilisticNetwork;
-import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
@@ -21,13 +17,15 @@ import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.RandomVariableFinding;
+import unbbayes.prs.mebn.RandonVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.TypeContainer;
+import unbbayes.prs.mebn.entity.exception.CategoricalStateDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
@@ -38,50 +36,68 @@ import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
-import unbbayes.prs.mebn.kb.powerloom.PowerLoomFacade;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
-import unbbayes.prs.mebn.ssbn.BottomUpSSBNGenerator;
-import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
-import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.util.Debug;
 
 /**
- * Controller of the MEBN structure.
+ * Controller of the MEBN structure. 
+ * 
+ * All the methods of the gui classes that change the model (MEBN classes) make 
+ * call a method of this controller (MVC model). 
  *
- * Used by GUI classes to ask for MEBN structure changes. Makes needed updates on the screens
- * after MEBN structure update action
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * @version 1.0 05/29/07
  */
 
 public class MEBNController {
 
+	/*-------------------------------------------------------------------------*/
+	/* Atributes                                                               */
+	/*-------------------------------------------------------------------------*/
+	
 	private NetworkWindow screen;
 	private MEBNEditionPane mebnEditionPane;
-
 	private MultiEntityBayesianNetwork multiEntityBayesianNetwork;
 
-	/* Nodes actives */
+	/*-------------------------------------------------------------------------*/
+	/* Control of the nodes actives                                            */
+	/*-------------------------------------------------------------------------*/
+
 	private ResidentNode residentNodeActive;
 	private InputNode inputNodeActive;
 	private ContextNode contextNodeActive;
-	private OrdinaryVariable ordVariableNodeActive;
-	private MFrag mFragActive; /* The MFrag active in the view */
+	private OrdinaryVariable ovNodeActive;
+	private MFrag mFragActive; 
 	private Node nodeActive;
+
+	/*-------------------------------------------------------------------------*/
+	/* Others (resources, utils, etc                                           */
+	/*-------------------------------------------------------------------------*/
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource = ResourceBundle
 			.getBundle("unbbayes.controller.resources.ControllerResources");
 
+	/*-------------------------------------------------------------------------*/
+	/* Constructors                                                            */
+	/*-------------------------------------------------------------------------*/	
+	
+	/**
+	 * Constructor
+	 * Create also the MEBNEditionPane. 
+	 * 
+	 * @param multiEntityBayesianNetwork
+	 * @param screen
+	 */
 	public MEBNController(
 			MultiEntityBayesianNetwork multiEntityBayesianNetwork,
 			NetworkWindow screen) {
 
 		this.multiEntityBayesianNetwork = multiEntityBayesianNetwork;
 		this.screen = screen;
-		mebnEditionPane = new MEBNEditionPane(screen, this);
+		this.mebnEditionPane = new MEBNEditionPane(screen, this);
 
 	}
 
@@ -266,7 +282,7 @@ public class MEBNController {
 		ov.setDescription(ov.getName());
 		domainMFrag.addOrdinaryVariable(ov);
 
-		ordVariableNodeActive = ov;
+		ovNodeActive = ov;
 		setOrdVariableNodeActive(ov);
 
 		mebnEditionPane.setEditOVariableTabActive();
@@ -334,13 +350,13 @@ public class MEBNController {
 	 * @param resident
 	 * @param value
 	 */
-	public CategoricalStateEntity addPossibleValue(DomainResidentNode resident, String nameValue){
+	public StateLink addPossibleValue(DomainResidentNode resident, String nameValue){
 
 		CategoricalStateEntity value = multiEntityBayesianNetwork.getCategoricalStatesEntityContainer().createCategoricalEntity(nameValue);
-		resident.addPossibleValue(value);
+		StateLink link = resident.addPossibleValueLink(value);
 		value.addNodeToListIsPossibleValueOf(resident);
 
-		return value;
+		return link;
 
 	}
 	
@@ -348,26 +364,58 @@ public class MEBNController {
 	 * Adds a possible value (state) into a resident node. If the state already
 	 * is a possible value of the resident node, nothing is made. 
 	 */
-	public CategoricalStateEntity addPossibleValue(DomainResidentNode resident, CategoricalStateEntity state){
+	public StateLink addPossibleValue(DomainResidentNode resident, CategoricalStateEntity state){
+		
+		StateLink link = null; 
 		
 		if(!resident.hasPossibleValue(state)){
-			resident.addPossibleValue(state);
+			link = resident.addPossibleValueLink(state);
 			state.addNodeToListIsPossibleValueOf(resident);	
 		}
 		
-		return state; 
+		return link; 
 		
 	}
+	
+	public StateLink addObjectEntityAsPossibleValue(DomainResidentNode resident, ObjectEntity state){
+		
+		StateLink stateLink = null; 
+		
+		if(!resident.hasPossibleValue(state)){
+			stateLink = resident.addPossibleValueLink(state);
+			state.addNodeToListIsPossibleValueOf(resident);	
+		}
+		
+		return stateLink; 
+		
+	}
+	
+	/**
+	 * Verifies if a exists a possible value (in the container). 
+	 * @param name
+	 * @return
+	 */
+    public boolean existPossibleValue(String name){
+		
+    	//TODO uma versão decente...
+		try {
+			multiEntityBayesianNetwork.getCategoricalStatesEntityContainer().getCategoricalState(name);
+			return true; 
+		} catch (CategoricalStateDoesNotExistException e) {
+			return false; 
+		} 
+    	
+	}
 
-	public void setGloballyExclusiveProperty(CategoricalStateEntity entity, boolean value){
-		entity.setGloballyExclusive(value);
+	public void setGloballyExclusiveProperty(StateLink state, boolean value){
+		state.setGloballyExclusive(value); 
 	}
 
 	public void addBooleanAsPossibleValue(DomainResidentNode resident){
 
-		resident.addPossibleValue(multiEntityBayesianNetwork.getBooleanStatesEntityContainer().getTrueStateEntity());
-		resident.addPossibleValue(multiEntityBayesianNetwork.getBooleanStatesEntityContainer().getFalseStateEntity());
-		resident.addPossibleValue(multiEntityBayesianNetwork.getBooleanStatesEntityContainer().getAbsurdStateEntity());
+		resident.addPossibleValueLink(multiEntityBayesianNetwork.getBooleanStatesEntityContainer().getTrueStateEntity());
+		resident.addPossibleValueLink(multiEntityBayesianNetwork.getBooleanStatesEntityContainer().getFalseStateEntity());
+		resident.addPossibleValueLink(multiEntityBayesianNetwork.getBooleanStatesEntityContainer().getAbsurdStateEntity());
 
 	}
 
@@ -557,7 +605,7 @@ public class MEBNController {
 				}
 				else{
 					if(node instanceof OrdinaryVariable){
-						ordVariableNodeActive = (OrdinaryVariable)node;
+						ovNodeActive = (OrdinaryVariable)node;
 						setOrdVariableNodeActive((OrdinaryVariable)node);
 					}
 				}
@@ -848,7 +896,7 @@ public class MEBNController {
 		
 		for(DomainMFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
 			for(DomainResidentNode residentNode : mfrag.getDomainResidentNodeList()){
-				for(RandomVariableFinding finding: residentNode.getRandonVariableFindingList()){
+				for(RandonVariableFinding finding: residentNode.getRandonVariableFindingList()){
 					knowledgeBase.insertRandonVariableFinding(finding); 
 				}
 			}
@@ -867,8 +915,6 @@ public class MEBNController {
 	public void loadDefinitionsFile(File file){
 		PowerLoomKB.getInstanceKB().loadModule(file);
 	}
-	
-	
 	
 	/**
 	 * Execute the list of context nodes of the current MFrag.

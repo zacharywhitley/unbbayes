@@ -6,7 +6,7 @@ import java.util.List;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.RandomVariableFinding;
+import unbbayes.prs.mebn.RandonVariableFinding;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
@@ -74,8 +74,9 @@ public interface KnowledgeBase {
 	 * ex: IsOwnStarship(Enterprise). 
 	 * 
 	 * @param context
-	 * @param ovInstances
-	 * @return
+	 * @param ovInstances List of ovInstances that have to have all the ov's used 
+	 *                    in the context node's formula. 
+	 * @return the result of the evaluate
 	 */
     public Boolean evaluateSimpleFormula(ContextNode context, List<OVInstance> ovInstances); 
 	
@@ -89,6 +90,6 @@ public interface KnowledgeBase {
      * @return list of the names of entities that satisfies (a empty list if
      *                     don't have entities).  
      */
-    public  List<String> evaluateComplexFormula(ContextNode context, List<OVInstance> ovInstances); 
+    public  List<String> evaluateComplexContextFormula(ContextNode context, List<OVInstance> ovInstances); 
 	
 }

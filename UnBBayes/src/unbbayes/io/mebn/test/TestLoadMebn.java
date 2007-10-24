@@ -93,19 +93,7 @@ public class TestLoadMebn {
 				
 				System.out.println("\n-> mFrag: "); 
 				MFrag mFragTeste = contextNode.getMFrag(); 
-				System.out.println(mFragTeste.getName()); 				
-				
-				System.out.println("\n-> innerTermOfList: "); 
-				List<MultiEntityNode> innerTermOfList = contextNode.getInnerTermOfList(); 
-				for(MultiEntityNode contextNodeTest: innerTermOfList){
-					System.out.println(contextNodeTest.getName()); 
-				}				
-				
-				System.out.println("\n-> innerTermFromList: "); 
-				List<MultiEntityNode> innerTermFromList = contextNode.getInnerTermFromList(); 
-				for(MultiEntityNode contextNodeTest: innerTermFromList){
-					System.out.println(contextNodeTest.getName()); 
-				}				
+				System.out.println(mFragTeste.getName()); 							
 				
 				System.out.println("\n-> argumentList: "); 
 				List<Argument> argumentList = contextNode.getArgumentList(); 

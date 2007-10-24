@@ -24,7 +24,7 @@ public abstract class Entity{
 
 	protected Type type;
 
-	protected List<MultiEntityNode> listIsPossibleValueOf = new ArrayList<MultiEntityNode>();
+	private List<MultiEntityNode> listIsPossibleValueOf = new ArrayList<MultiEntityNode>();
 
 	/**
 	 * Create a new Entity. 

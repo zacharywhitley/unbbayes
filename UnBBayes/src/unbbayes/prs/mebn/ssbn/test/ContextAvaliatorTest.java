@@ -74,7 +74,7 @@ public class ContextAvaliatorTest {
 		oi = OVInstance.getInstance(ov, ei); 
 		ovInstances = new ArrayList<OVInstance>(); 
 		ovInstances.add(oi); 
-		listResult = kb.evaluateComplexFormula(context, ovInstances); 
+		listResult = kb.evaluateComplexContextFormula(context, ovInstances); 
 		for(String r: listResult){
 			System.out.println(r); 
 		}
@@ -86,7 +86,7 @@ public class ContextAvaliatorTest {
 		oi = OVInstance.getInstance(ov, ei); 
 		ovInstances = new ArrayList<OVInstance>(); 
 		ovInstances.add(oi); 
-		listResult = kb.evaluateComplexFormula(context, ovInstances); 
+		listResult = kb.evaluateComplexContextFormula(context, ovInstances); 
 		for(String r: listResult){
 			System.out.println(r); 
 		}

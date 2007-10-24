@@ -264,6 +264,19 @@ public class DomainMFrag extends MFrag {
 	}	
 
 	/**
+	 * Return the node with the name, or null if don't exists. 
+	 */
+	public ContextNode getContextNodeByName(String name){
+		for(ContextNode test: contextNodeList){
+			if (test.getName().equals(name)){
+				return test; 
+			}
+		}
+		return null; 
+	}
+	
+	
+	/**
 	 * Method responsible to tell if the ordinary variable list contains the given 
 	 * ordinary variable.
 	 * @param ordinaryVariable The ordinary variable to check.

@@ -27,6 +27,7 @@ import unbbayes.prs.mebn.entity.BooleanStateEntity;
 import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.util.Debug;
 
 import com.hp.hpl.jena.util.FileUtils;
@@ -42,11 +43,11 @@ import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
 /**
  * Save the MEBN structure in a file pr-owl. 
  * 
- * Version Pr-OWL: 1.02
+ * Version Pr-OWL: 1.05 (octuber, 2007)
  * (http://www.pr-owl.org/pr-owl.owl) 
  * 
  * @author Laecio Lima dos Santos
- * @version 1.5 08/27/2007
+ * @version 1.6 10/23/2007
  *
  */
 public class SaverPrOwlIO {
@@ -80,6 +81,13 @@ public class SaverPrOwlIO {
 	private final ResourceBundle resource = ResourceBundle.getBundle("unbbayes.io.mebn.resources.IoMebnResources");
 	
 
+	//names of the classes in PR_OWL FIle
+	private static final String CATEGORICAL_STATE = "CategoricalRVState"; 
+	private static final String BOOLEAN_STATE = "BooleanRVState";
+	private static final String OBJECT_ENTITY = "ObjectEntity"; 
+	private static final String META_ENTITY = "MetaEntity"; 
+	
+	
 	private static final String PROWLMODELFILE = "pr-owl/pr-owl.owl"; 	
 
 	/**
@@ -101,6 +109,7 @@ public class SaverPrOwlIO {
 		loadMetaEntities();
 		loadObjectEntitiesClasses(); 
 		loadBooleanRVStates(); 
+		loadCategoricalStates(); 
 		loadBuiltInRV();  
 		
 		Debug.println("-> Definitions load sucess ");
@@ -171,7 +180,7 @@ public class SaverPrOwlIO {
 	private void loadMetaEntities(){
 
 		ArrayList<String> metaEntitiesDefault = new ArrayList<String>(); 
-		OWLNamedClass metaEntityClass = owlModel.getOWLNamedClass("MetaEntity"); 
+		OWLNamedClass metaEntityClass = owlModel.getOWLNamedClass(META_ENTITY); 
 		
 		
 		/*----- First: MetaEntities of the original Pr-OWL upper-ontology -----*/
@@ -224,7 +233,7 @@ public class SaverPrOwlIO {
 	
 	private void loadBooleanRVStates(){
 		
-		OWLNamedClass booleanRVStates = owlModel.getOWLNamedClass("BooleanRVStates"); 
+		OWLNamedClass booleanRVStates = owlModel.getOWLNamedClass(BOOLEAN_STATE); 
 	
 		Collection instances = booleanRVStates.getInstances(false); 
 		
@@ -241,11 +250,33 @@ public class SaverPrOwlIO {
 					if(stateOwl.getBrowserText().equals("absurd")){
 						mapBooleanStatesEntity.put(mebn.getBooleanStatesEntityContainer().getAbsurdStateEntity(), stateOwl); 
 					}
-					else{
-						//TODO forma para informar que arquivo PR-OWL � inv�lido
-					}
 				}
 			}
+		}
+	}
+	
+	/**
+	 * Maps
+	 * - mapCategoricalStates
+	 *
+	 * Instances
+	 * - CATEGORICAL_STATES
+	 *
+	 * Properties
+	 * - hasType
+	 * 
+	 */
+	private void loadCategoricalStates(){
+		OWLNamedClass categoricalStateClass = owlModel.getOWLNamedClass(CATEGORICAL_STATE); 
+		
+		OWLObjectProperty hasType = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasType"); 	
+		OWLIndividual categoryLabel = mapMetaEntity.get("CategoryLabel"); 
+		
+		for(CategoricalStateEntity entity: mebn.getCategoricalStatesEntityContainer().getListEntity()){
+			if(entity.getName().equals("absurd")) continue; 
+			OWLIndividual categoricalStateIndividual = categoricalStateClass.createOWLIndividual(entity.getName()); 
+			categoricalStateIndividual.addPropertyValue(hasType, categoryLabel);
+			mapCategoricalStates.put(entity, categoricalStateIndividual); 
 		}
 	}
 	
@@ -429,7 +460,7 @@ public class SaverPrOwlIO {
     			
     			/* has possible values */
     			Debug.println("Verifying possible values");
-    			loadResidentPossibleValues(domainResIndividual, residentNode, residentNode.getName()); 	        
+    			loadResidentPossibleValues(domainResIndividual, residentNode); 	        
     			
     			/* has Input Instance */
     			Debug.println("Verifying input instances");
@@ -456,46 +487,51 @@ public class SaverPrOwlIO {
     }
 
 	/**
-	 * Instances
-	 * - CategoricalRVStates
-	 * 
 	 * Properties
-	 * - hasType
 	 * - hasPossibleValues
+	 * - isGloballyExclusive
 	 *
 	 * @param residentNodeIndividual Individual that is the node in the PowerLoom structure. 
 	 * @param node Resident Node of the MEBN structure
 	 */
-	private void loadResidentPossibleValues(OWLIndividual residentNodeIndividual, ResidentNode node, String nodeName){
+	private void loadResidentPossibleValues(OWLIndividual residentNodeIndividual, DomainResidentNode node){
 
 		/* categoricalRVStates */
-		OWLNamedClass categoricalRVStatesClass = owlModel.getOWLNamedClass("CategoricalRVStates"); 
-		OWLIndividual categoryLabel = mapMetaEntity.get("CategoryLabel"); 		
-		OWLObjectProperty hasType = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasType"); 	
 		
 		OWLObjectProperty hasPossibleValues = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 	
+		OWLObjectProperty isGloballyExclusive = (OWLObjectProperty)owlModel.getOWLObjectProperty("isGloballyExclusive"); 	
 		
-		for(Entity state: node.getPossibleValueList()){
+		for(StateLink stateLink: node.getPossibleValueLinkList()){
+			
+			Entity state = stateLink.getState(); 
 			if(state instanceof CategoricalStateEntity){
-				String name = nodeName + SCOPE_SEPARATOR + state.getName(); 
-				OWLIndividual stateIndividual = categoricalRVStatesClass.createOWLIndividual(name); 
-				stateIndividual.addPropertyValue(hasType, categoryLabel);
-				mapCategoricalStates.put(state, stateIndividual); 
-				residentNodeIndividual.addPropertyValue(hasPossibleValues, stateIndividual);
+				OWLIndividual owlState = mapCategoricalStates.get(state); 
+				residentNodeIndividual.addPropertyValue(hasPossibleValues, owlState);
+				if(stateLink.isGloballyExclusive()){
+					owlState.addPropertyValue(isGloballyExclusive, residentNodeIndividual); 
+				}
 			}
 			else{
 				if(state instanceof BooleanStateEntity){
-					residentNodeIndividual.addPropertyValue(hasPossibleValues, mapBooleanStatesEntity.get(state)); 
+					OWLIndividual owlState = mapBooleanStatesEntity.get(state); 
+					residentNodeIndividual.addPropertyValue(hasPossibleValues, owlState); 
+					if(stateLink.isGloballyExclusive()){
+						owlState.addPropertyValue(isGloballyExclusive, residentNodeIndividual); 
+					}
 				}
 				else{
 					if(state instanceof ObjectEntity){
-						residentNodeIndividual.addPropertyValue(hasPossibleValues, mapMetaEntity.get(((ObjectEntity)state).getType().getName())); 		
+						OWLIndividual owlState =  mapMetaEntity.get(((ObjectEntity)state).getType().getName()); 
+						residentNodeIndividual.addPropertyValue(hasPossibleValues, owlState);
+						if(stateLink.isGloballyExclusive()){
+							owlState.addPropertyValue(isGloballyExclusive, residentNodeIndividual); 
+						}
 					}else{
 						Debug.print("Error: Invalid State - " + state.getName()); 
 					}
 				}/* else */
-			}/* else */
-		} /* for */
+			}/* else */		
+		}
 	}
     
     /**
@@ -805,7 +841,7 @@ public class SaverPrOwlIO {
 		
 		//Save the possible values
 		//saveHasPossibleValueProperty(innerContextNode, argument.getResidentNode()); 
-		loadResidentPossibleValues(innerContextNode, argument.getResidentNode(), innerContextNode.getBrowserText()); 
+		loadResidentPossibleValues(innerContextNode, (DomainResidentNode)argument.getResidentNode()); 
 		
         //Save the arguments
 		OrdinaryVariable[] oVariableArray = argument.getOrdinaryVariableArray(); 

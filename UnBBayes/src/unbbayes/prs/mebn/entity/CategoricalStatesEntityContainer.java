@@ -29,7 +29,7 @@ public class CategoricalStatesEntityContainer {
 		
 		
 		for(CategoricalStateEntity teste: listEntity){
-			if (teste.name.compareTo(name) == 0){
+			if (teste.getName().equals(name)){
 				return teste; 
 			}
 		}
@@ -59,7 +59,7 @@ public class CategoricalStatesEntityContainer {
 	                         throws CategoricalStateDoesNotExistException{
 		
 		for(CategoricalStateEntity teste: listEntity){
-			if (teste.name.compareTo(name) == 0){
+			if (teste.getName().equals(name)){
 				return teste; 
 			}
 		}

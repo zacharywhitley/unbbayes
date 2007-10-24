@@ -41,6 +41,7 @@ import unbbayes.prs.mebn.entity.BooleanStateEntity;
 import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.StateLink;
 
 /**
  * Panel for selection of the possible values (states) of a resident node.
@@ -77,7 +78,7 @@ public class PossibleValuesEditionPane extends JPanel {
 
 	private ObjectStatesPanel panelObjectStates;
 
-	private List<Entity> statesList;
+	private List<StateLink> statesList;
 
 	private JList statesJList;
 
@@ -130,47 +131,50 @@ public class PossibleValuesEditionPane extends JPanel {
 	 *
 	 * @param entitySelected
 	 */
-	public void selectState(Entity entitySelected) {
+	public void selectState(StateLink stateLink) {
 
+		Entity entitySelected = stateLink.getState(); 
+		
 		if (entitySelected instanceof CategoricalStateEntity) {
-			showCategoryStatesPanel((CategoricalStateEntity) entitySelected);
-			;
+			showCategoryStatesPanel(stateLink);
 		} else {
 			if (entitySelected instanceof BooleanStateEntity) {
-				showBooleanStatesPanel();
+				showBooleanStatesPanel(stateLink);
 			} else {
 				if (entitySelected instanceof ObjectEntity) {
-					showObjectStatesPanel();
+					showObjectStatesPanel(stateLink);
 				}
 			}
 		}
 
 	}
 
-	public void showCategoryStatesPanel(CategoricalStateEntity entitySelected) {
+	public void showCategoryStatesPanel(StateLink entitySelected) {
 		cardLayout.show(panelStates, PANEL_CATEGORY_STATES);
 		panelCategoryStates.selectState(entitySelected);
 	}
 
-	public void showBooleanStatesPanel() {
+	public void showBooleanStatesPanel(StateLink entitySelected) {
 		cardLayout.show(panelStates, PANEL_BOOLEAN_STATES);
+		panelBooleanStates.selectState(entitySelected);
 	}
 
-	public void showObjectStatesPanel() {
+	public void showObjectStatesPanel(StateLink entitySelected) {
 		cardLayout.show(panelStates, PANEL_OBJECT_STATES);
+		panelObjectStates.selectState(entitySelected);
 	}
 
 	public void buildListStates() {
-		statesList = residentNode.getPossibleValueList();
+		statesList = residentNode.getPossibleValueLinkList();
 
 		statesListModel = new DefaultListModel();
-		for (Entity entity : statesList){
+		for (StateLink entity : statesList){
 			statesListModel.addElement(entity);
 		}
 
 		statesJList = new JList(statesListModel);
 		statesJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		statesJList.setSelectedIndex(0);
+		//statesJList.setSelectedIndex(0);
 		statesJList.setCellRenderer(new StateCellRenderer());
 		statesJList.setLayoutOrientation(JList.VERTICAL);
 		statesJList.setVisibleRowCount(-1);
@@ -198,6 +202,10 @@ public class PossibleValuesEditionPane extends JPanel {
 	}
 
 
+	/**
+	 * Build a popup with the categorical states of the MTheory for the user
+	 * select the states of the node. 
+	 */
 	public JFrame buildPopupStateSelection(){
 		final JList listAllStates = buildListAllStates(); 
 		ListAllStatesPanel paneAllStates = new ListAllStatesPanel(listAllStates); 
@@ -213,7 +221,7 @@ public class PossibleValuesEditionPane extends JPanel {
 
 				Object[] list = (Object[])listAllStates.getSelectedValues(); 
 				
-				if (!(residentNode.getPossibleValueList().isEmpty())
+				if (!(residentNode.getPossibleValueLinkList().isEmpty())
 						&& (residentNode.getTypeOfStates() != ResidentNode.CATEGORY_RV_STATES)) {
 					int answer = JOptionPane.showConfirmDialog(
 							mebnController.getMebnEditionPane(),
@@ -261,19 +269,20 @@ public class PossibleValuesEditionPane extends JPanel {
 	
 	
 	/**
-	 * ScroolPane contendo a lista de estados.
+	 * ScroolPane with the state list of the node.
 	 */
 	private class ListStatesPanel extends JScrollPane {
 
+		private boolean listenerActive = true; 
+		
 		public ListStatesPanel() {
 			super(statesJList);
 
 			statesJList.addListSelectionListener(new ListSelectionListener() {
-
 				public void valueChanged(ListSelectionEvent arg0) {
-					selectState((Entity) statesJList.getSelectedValue());
+					if(listenerActive)
+					selectState((StateLink) statesJList.getSelectedValue());
 				}
-
 			});
 		}
 
@@ -282,16 +291,18 @@ public class PossibleValuesEditionPane extends JPanel {
 		 */
 		public void update() {
 
+			listenerActive = false; 
 			statesListModel.clear();
+			
+			statesList = residentNode.getPossibleValueLinkList();
 
-			statesList = residentNode.getPossibleValueList();
-
-			statesListModel = new DefaultListModel();
-			for (Entity entity : statesList) {
+			for (StateLink entity : statesList) {
 				statesListModel.addElement(entity);
 			}
-
-			statesJList.setModel(statesListModel);
+			
+		    listenerActive = true; 
+			statesJList.validate(); 
+			this.validate();
 		}
 
 	}
@@ -340,6 +351,7 @@ public class PossibleValuesEditionPane extends JPanel {
 			case ResidentNode.OBJECT_ENTITY:
 				cardLayout.show(this, PANEL_OBJECT_STATES);
 				selectedPanel = ResidentNode.OBJECT_ENTITY;
+				
 				break;
 			case ResidentNode.CATEGORY_RV_STATES:
 				cardLayout.show(this, PANEL_CATEGORY_STATES);
@@ -372,14 +384,12 @@ public class PossibleValuesEditionPane extends JPanel {
 		private JButton btnAdd;
 
 		private JButton btnRemove;
-
-		private JButton btnEdit;
 		
 		private JButton btnList; 
 
 		private JCheckBox checkGloballyExclusive;
 
-		private CategoricalStateEntity selectEntity;
+		private StateLink selectEntity;
 
 		private final JTextField txtName = new JTextField(10);
 
@@ -392,16 +402,13 @@ public class PossibleValuesEditionPane extends JPanel {
 			btnAdd.setToolTipText(resource.getString("addStateTip"));
 			btnRemove = new JButton(iconController.getLessIcon());
 			btnRemove.setToolTipText(resource.getString("removeState"));
-			btnEdit = new JButton(iconController.getEdit());
-			// btnEdit.setToolTipText(resource.getString("removeState"));
 			btnList = new JButton(iconController.getStateIcon()); 
 			
 			JToolBar barOptions = new JToolBar();
-			barOptions.setLayout(new GridLayout(1, 4));
+			barOptions.setLayout(new GridLayout(1, 3));
 			barOptions.setFloatable(false);
 			barOptions.add(btnAdd);
 			barOptions.add(btnRemove);
-			barOptions.add(btnEdit);
 			barOptions.add(btnList); 
 			
 			JToolBar barName = new JToolBar();
@@ -416,6 +423,16 @@ public class PossibleValuesEditionPane extends JPanel {
 					.getString("isGloballyExclusive"));
 			checkGloballyExclusive = new JCheckBox();
 			checkGloballyExclusive.setSelected(false);
+			
+			checkGloballyExclusive.addActionListener(new ActionListener(){
+
+				public void actionPerformed(ActionEvent e) {
+					if(selectEntity != null){
+						mebnController.setGloballyExclusiveProperty(selectEntity, checkGloballyExclusive.isSelected()); 
+					}
+				}
+				
+			}); 
 			toolGloballyExclusive.add(checkGloballyExclusive);
 			toolGloballyExclusive.add(labelExclusive);
 
@@ -448,12 +465,6 @@ public class PossibleValuesEditionPane extends JPanel {
 				}
 			});
 
-			btnEdit.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					editState();
-				}
-			});
-
 			btnList.addActionListener(new ActionListener(){
 
 				public void actionPerformed(ActionEvent e) {
@@ -465,12 +476,12 @@ public class PossibleValuesEditionPane extends JPanel {
 		}
 
 		/**
-		 * Mostra o estado no painel de edi��o.
+		 * Show the state into edition pane.
 		 */
-		public void selectState(CategoricalStateEntity entity) {
+		public void selectState(StateLink entity) {
 			selectEntity = entity;
 			if (entity != null) {
-				txtName.setText(entity.getName());
+				txtName.setText(entity.getState().getName());
 				checkGloballyExclusive
 						.setSelected(entity.isGloballyExclusive());
 			} else {
@@ -479,7 +490,7 @@ public class PossibleValuesEditionPane extends JPanel {
 			}
 		}
 
-		public Entity getSelectEntity() {
+		public StateLink getSelectEntity() {
 			return selectEntity;
 		}
 
@@ -489,41 +500,44 @@ public class PossibleValuesEditionPane extends JPanel {
 						.length());
 				matcher = wordPattern.matcher(nameValue);
 				if (matcher.matches()) {
-					boolean teste = mebnController.existsPossibleValue(
-							residentNode, nameValue);
-					if (teste == false) {
-						if (!(residentNode.getPossibleValueList().isEmpty())
-								&& (residentNode.getTypeOfStates() != ResidentNode.CATEGORY_RV_STATES)) {
-							int answer = JOptionPane.showConfirmDialog(
-									mebnController.getMebnEditionPane(),
-									resource.getString("warningDeletStates"),
-									resource.getString("confirmation"),
-									JOptionPane.YES_NO_OPTION);
-							if (answer == JOptionPane.YES_OPTION) {
-								mebnController
-										.removeAllPossibleValues(residentNode);
-								mebnController.addPossibleValue(residentNode,
-										nameValue);
-								residentNode
-										.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES);
-							}
-						} else {
-							CategoricalStateEntity entity = mebnController
-									.addPossibleValue(residentNode, nameValue);
-							mebnController.setGloballyExclusiveProperty(entity,
-									checkGloballyExclusive.isSelected());
-						}
-
-					} else {
+					if(mebnController.existPossibleValue(nameValue)){
 						JOptionPane.showMessageDialog(null, resource
-								.getString("nameDuplicated"), resource
+								.getString("nameAlreadyExists"), resource
 								.getString("nameException"),
 								JOptionPane.ERROR_MESSAGE);
+					}else{
+						if (!residentNode.existsPossibleValueByName(nameValue)){
+							if (!(residentNode.getPossibleValueLinkList().isEmpty())
+									&& (residentNode.getTypeOfStates() != ResidentNode.CATEGORY_RV_STATES)) {
+								int answer = JOptionPane.showConfirmDialog(
+										mebnController.getMebnEditionPane(),
+										resource.getString("warningDeletStates"),
+										resource.getString("confirmation"),
+										JOptionPane.YES_NO_OPTION);
+								if (answer == JOptionPane.YES_OPTION) {
+									mebnController
+									.removeAllPossibleValues(residentNode);
+									StateLink stateLink = mebnController.addPossibleValue(residentNode,
+											nameValue);
+									stateLink.setGloballyExclusive(checkGloballyExclusive.isSelected());
+									residentNode
+									.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES);
+								}
+							} else {
+								StateLink stateLink = mebnController.addPossibleValue(residentNode, nameValue);
+								stateLink.setGloballyExclusive(checkGloballyExclusive.isSelected());
+							}
+							
+						} else {
+							JOptionPane.showMessageDialog(null, resource
+									.getString("nameDuplicated"), resource
+									.getString("nameException"),
+									JOptionPane.ERROR_MESSAGE);
+						}
+						
+						txtName.setText("");
+						checkGloballyExclusive.setSelected(false);
 					}
-
-					txtName.setText("");
-					checkGloballyExclusive.setSelected(false);
-
 				} else {
 					JOptionPane.showMessageDialog(null, resource
 							.getString("nameError"), resource
@@ -531,9 +545,9 @@ public class PossibleValuesEditionPane extends JPanel {
 							JOptionPane.ERROR_MESSAGE);
 					txtName.selectAll();
 				}
-
+				
 				listStatesPanel.update();
-
+				
 			} catch (javax.swing.text.BadLocationException ble) {
 				System.out.println(ble.getMessage());
 			}
@@ -552,7 +566,7 @@ public class PossibleValuesEditionPane extends JPanel {
 					if (matcher.matches()) {
 						boolean teste = mebnController.existsPossibleValue(
 								residentNode, nameValue);
-						if (teste == true) {
+						if (teste) {
 							mebnController.removePossibleValue(residentNode,
 									nameValue);
 						}
@@ -564,93 +578,6 @@ public class PossibleValuesEditionPane extends JPanel {
 			}
 			listStatesPanel.update();
 		}
-
-		public void editState() {
-			if (selectEntity != null) {
-
-				// Alterar nome
-				try {
-					String nameValue = txtName.getText(0, txtName.getText()
-							.length());
-					if (!nameValue.equals(selectEntity.getName())) {
-
-						matcher = wordPattern.matcher(nameValue);
-						if (matcher.matches()) {
-							boolean teste = mebnController.existsPossibleValue(
-									residentNode, nameValue);
-							if (teste == false) {
-								if (!(residentNode.getPossibleValueList()
-										.isEmpty())
-										&& (residentNode.getTypeOfStates() != ResidentNode.CATEGORY_RV_STATES)) {
-									int answer = JOptionPane
-											.showConfirmDialog(
-													mebnController
-															.getMebnEditionPane(),
-													resource
-															.getString("warningDeletStates"),
-													resource
-															.getString("confirmation"),
-													JOptionPane.YES_NO_OPTION);
-									if (answer == JOptionPane.YES_OPTION) {
-										mebnController
-												.removeAllPossibleValues(residentNode);
-										mebnController.addPossibleValue(
-												residentNode, nameValue);
-										residentNode
-												.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES);
-									}
-								} else {
-									// Remove a anterior e insere a nova...
-									mebnController
-											.getMultiEntityBayesianNetwork()
-											.getCategoricalStatesEntityContainer()
-											.removeEntity(selectEntity);
-									residentNode.removePossibleValueByName(selectEntity.getName());
-
-									CategoricalStateEntity entity = mebnController
-											.addPossibleValue(residentNode,
-													nameValue);
-
-									mebnController
-											.setGloballyExclusiveProperty(
-													entity,
-													checkGloballyExclusive
-															.isSelected());
-								}
-
-							} else {
-								JOptionPane.showMessageDialog(null, resource
-										.getString("nameDuplicated"), resource
-										.getString("nameException"),
-										JOptionPane.ERROR_MESSAGE);
-							}
-
-							txtName.setText("");
-							checkGloballyExclusive.setSelected(false);
-
-						} else {
-							JOptionPane.showMessageDialog(null, resource
-									.getString("nameError"), resource
-									.getString("nameException"),
-									JOptionPane.ERROR_MESSAGE);
-							txtName.selectAll();
-						}
-					} else {
-						mebnController.setGloballyExclusiveProperty(
-								selectEntity, checkGloballyExclusive
-										.isSelected());
-					}
-
-				} catch (BadLocationException e) {
-					e.printStackTrace();
-				}
-
-			}
-
-			listStatesPanel.update();
-
-		}
-
 	}
 
 	private class ObjectStatesPanel extends JPanel {
@@ -659,6 +586,8 @@ public class PossibleValuesEditionPane extends JPanel {
 				.getMultiEntityBayesianNetwork().getObjectEntityContainer()
 				.getListEntity().toArray());;
 
+		private JCheckBox checkGloballyExclusive;		
+				
 		JButton btnAdd = new JButton(iconController.getMoreIcon());
 
 		public ObjectStatesPanel() {
@@ -671,15 +600,25 @@ public class PossibleValuesEditionPane extends JPanel {
 			barEdition.add(btnAdd);
 			barEdition.add(comboEntities);
 
-			add(barEdition);
-			add(new JLabel());
-			add(new JLabel());
+			JToolBar toolGloballyExclusive = new JToolBar();
+			toolGloballyExclusive.setFloatable(false);
+			JLabel labelExclusive = new JLabel(resource
+					.getString("isGloballyExclusive"));
+			checkGloballyExclusive = new JCheckBox();
+			checkGloballyExclusive.setSelected(false);
 
+			toolGloballyExclusive.add(checkGloballyExclusive);
+			toolGloballyExclusive.add(labelExclusive);
+			
+			add(barEdition);
+			add(toolGloballyExclusive);
+			add(new JLabel());
+			
 			btnAdd.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
 					if (comboEntities.getSelectedItem() != null) {
-						if (!(residentNode.getPossibleValueList().isEmpty())) {
+						if (!(residentNode.getPossibleValueLinkList().isEmpty())) {
 							int answer = JOptionPane.showConfirmDialog(
 									mebnController.getMebnEditionPane(),
 									resource.getString("warningDeletStates"),
@@ -687,17 +626,17 @@ public class PossibleValuesEditionPane extends JPanel {
 									JOptionPane.YES_NO_OPTION);
 							if (answer == JOptionPane.YES_OPTION) {
 								residentNode.removeAllPossibleValues();
-								residentNode
-										.addPossibleValue((Entity) (comboEntities
-												.getSelectedItem()));
-								residentNode
-										.setTypeOfStates(ResidentNode.OBJECT_ENTITY);
+								
+								StateLink link = mebnController.addObjectEntityAsPossibleValue(residentNode, (ObjectEntity)comboEntities.getSelectedItem()); 
+								mebnController.setGloballyExclusiveProperty(link, checkGloballyExclusive.isSelected()); 
+								
+								residentNode.setTypeOfStates(ResidentNode.OBJECT_ENTITY);
 								listStatesPanel.update();
 							}
 						} else {
-							residentNode
-									.addPossibleValue((Entity) (comboEntities
-											.getSelectedItem()));
+							StateLink link = mebnController.addObjectEntityAsPossibleValue(residentNode, (ObjectEntity)comboEntities.getSelectedItem()); 
+							mebnController.setGloballyExclusiveProperty(link, checkGloballyExclusive.isSelected()); 
+							
 							residentNode
 									.setTypeOfStates(ResidentNode.OBJECT_ENTITY);
 							listStatesPanel.update();
@@ -709,6 +648,15 @@ public class PossibleValuesEditionPane extends JPanel {
 			});
 
 		}
+		
+		public void selectState(StateLink entity) {
+			StateLink selectEntity = entity;
+			if (entity != null) {
+				checkGloballyExclusive.setSelected(entity.isGloballyExclusive());
+			} else {
+				checkGloballyExclusive.setSelected(false);
+			}
+		}
 
 	}
 
@@ -719,6 +667,8 @@ public class PossibleValuesEditionPane extends JPanel {
 		private JCheckBox checkGloballyExclusive;
 
 		private JTextField txtName = new JTextField();
+		
+		private StateLink selectEntity; 
 
 		public BooleanStatesPanel() {
 
@@ -726,8 +676,6 @@ public class PossibleValuesEditionPane extends JPanel {
 
 			btnAdd = new JButton(iconController.getMoreIcon());
 			btnAdd.setToolTipText(resource.getString("addStateTip"));
-			// JLabel labelNotEditable = new JLabel(" " +
-			// resource.getString("insertBooleanStates"));
 
 			JToolBar barAddStates = new JToolBar();
 			barAddStates.setFloatable(false);
@@ -736,12 +684,12 @@ public class PossibleValuesEditionPane extends JPanel {
 			barAddStates.add(btnAdd);
 			barAddStates.add(new JLabel());
 
-			// barAddStates.add(labelNotEditable);
-
 			JToolBar barName = new JToolBar();
 			barName.setFloatable(false);
 			JLabel labelName = new JLabel(resource.getString("nameLabel") + " ");
 			barName.add(labelName);
+			
+			txtName.setEditable(false); 
 			barName.add(txtName);
 
 			JToolBar toolGloballyExclusive = new JToolBar();
@@ -750,6 +698,17 @@ public class PossibleValuesEditionPane extends JPanel {
 					.getString("isGloballyExclusive"));
 			checkGloballyExclusive = new JCheckBox();
 			checkGloballyExclusive.setSelected(false);
+			
+			checkGloballyExclusive.addActionListener(new ActionListener(){
+
+				public void actionPerformed(ActionEvent e) {
+					if(selectEntity != null){
+						mebnController.setGloballyExclusiveProperty(selectEntity, checkGloballyExclusive.isSelected()); 
+					}
+				}
+				
+			}); 
+			
 			toolGloballyExclusive.add(checkGloballyExclusive);
 			toolGloballyExclusive.add(labelExclusive);
 
@@ -761,7 +720,7 @@ public class PossibleValuesEditionPane extends JPanel {
 
 				public void actionPerformed(ActionEvent e) {
 
-					if (!(residentNode.getPossibleValueList().isEmpty())) {
+					if (!(residentNode.getPossibleValueLinkList().isEmpty())) {
 						int answer = JOptionPane.showConfirmDialog(
 								mebnController.getMebnEditionPane(), resource
 										.getString("warningDeletStates"),
@@ -787,6 +746,18 @@ public class PossibleValuesEditionPane extends JPanel {
 
 			});
 
+		}
+		
+		public void selectState(StateLink entity) {
+			selectEntity = entity;
+			if (entity != null) {
+				txtName.setText(entity.getState().getName());
+				checkGloballyExclusive
+						.setSelected(entity.isGloballyExclusive());
+			} else {
+				txtName.setText("");
+				checkGloballyExclusive.setSelected(false);
+			}
 		}
 
 	}
@@ -827,13 +798,13 @@ public class PossibleValuesEditionPane extends JPanel {
 
 			btnBooleanStates.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					showBooleanStatesPanel();
+					showBooleanStatesPanel(null);
 				}
 			});
 
 			btnObjectStates.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					showObjectStatesPanel();
+					showObjectStatesPanel(null);
 				}
 			});
 

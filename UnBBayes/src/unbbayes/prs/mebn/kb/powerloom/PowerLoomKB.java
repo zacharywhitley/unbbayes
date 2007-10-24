@@ -338,7 +338,7 @@ public class PowerLoomKB implements KnowledgeBase{
 	    } 
     }
     
-    public List<String> evaluateComplexFormula(ContextNode context, List<OVInstance> ovInstances){
+    public List<String> evaluateComplexContextFormula(ContextNode context, List<OVInstance> ovInstances){
     	String formula = ""; 
 		
 		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
@@ -646,6 +646,7 @@ public class PowerLoomKB implements KnowledgeBase{
 		return null; 
 	}
 
+	@Deprecated
 	public boolean executeContextFormula(ContextNode context) {
 		// TODO Auto-generated method stub
 		return false;

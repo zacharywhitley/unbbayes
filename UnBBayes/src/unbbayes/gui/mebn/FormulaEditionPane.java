@@ -196,10 +196,6 @@ public class FormulaEditionPane extends JPanel {
 		
 	}
 	
-	
-	
-	
-	
 	//---------------------------------------------------------------
 	
 	public void setNodeTabActive(){
