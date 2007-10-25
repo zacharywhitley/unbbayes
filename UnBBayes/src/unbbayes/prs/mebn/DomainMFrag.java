@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -383,6 +384,39 @@ public class DomainMFrag extends MFrag {
 		}
 		return ret;
 	}
+
+	/**
+	 * 
+	 * @param allOVs set of OrdinaryVariable to be looked for.
+	 * @return set of ContextNodes containing combinations of the Ordinary Variables passed by its arguments
+	 */	
+	public Collection<ContextNode> getContextByOVCombination(Collection<OrdinaryVariable> allOVs) {
+		
+		Collection<ContextNode> ret = new ArrayList<ContextNode>();
+		
+		if (allOVs == null) {
+			return ret;
+		}
+		
+		for (ContextNode node : this.getContextNodeList()) {
+			boolean test = true; 
+			Set<OrdinaryVariable> ordinaryVariableList = node.getVariableList();
+			
+			for(OrdinaryVariable ov: ordinaryVariableList){
+				if(!allOVs.contains(ov)){
+					test = false; 
+					break; 
+				}
+			}
+			
+			if(test) ret.add(node); 
+			
+		}
+		
+		return ret;
+	
+	}
+	
 	
 	/**
 	 * 

@@ -1,13 +1,14 @@
 package unbbayes.prs.mebn.context;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.ResidentNodePointer;
+import unbbayes.prs.mebn.ssbn.OVInstance;
 
 
 /**
@@ -71,10 +72,21 @@ public class NodeFormulaTree{
 	
 	public Set<OrdinaryVariable> getExemplarList(){
 		
-		
-		
-		
 		return null; 
+	}
+	
+	/*
+	 * Formulas validas: 
+	 * 
+	 * - Todas as formulas da lógica de primeira ordem desde que as variáveis 
+	 *  estejam devidamente preenchidas. 
+	 *  - Para formulas com váriaveis livres, apenas as no formato: 
+	 *        Node(arguments) = Entity, 
+	 *    onde a lista dos argumentos é corretamente informada. (uma pesquisa 
+	 *    deverá retornar as entities que podem ser resultado desta fórmula).      
+	 */
+	public boolean isFormulaValida(){
+		return true; 
 	}
 	
 	public void addChild(NodeFormulaTree child){

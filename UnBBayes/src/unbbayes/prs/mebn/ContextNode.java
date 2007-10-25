@@ -3,11 +3,15 @@ package unbbayes.prs.mebn;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import unbbayes.draw.DrawFlatPentagon;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
+import unbbayes.prs.mebn.context.enumSubType;
+import unbbayes.prs.mebn.context.enumType;
+import unbbayes.prs.mebn.ssbn.OVInstance;
 
 /**
  * The individual of the ContextNode class represent a type of constraint impose
@@ -40,9 +44,9 @@ public class ContextNode extends MultiEntityNode {
 	
 	private boolean isValidFormula = false; //Tell if the formula is valid for this implementation 
 	 
-	private Set<OrdinaryVariable> variableList; //Variables of the formula
+	private Set<OrdinaryVariable> variableSet; //Variables of the formula
 	
-	private List<OrdinaryVariable> exemplarList; // Variables used in quantifiers  
+	private Set<OrdinaryVariable> exemplarSet; // Variables used in quantifiers  
 	
 	/* the formula in the PowerLoom format */
 	
@@ -104,19 +108,11 @@ public class ContextNode extends MultiEntityNode {
 		
 		this.formulaTree = formulaTree; 
 		
-		this.variableList = formulaTree.getVariableList(); 
-		this.exemplarList = new ArrayList<OrdinaryVariable>();
-		this.isValidFormula = isFormulaValida(formulaTree); 
+		this.variableSet = formulaTree.getVariableList(); 
+		this.exemplarSet = formulaTree.getExemplarList();
+		this.isValidFormula = formulaTree.isFormulaValida(); 
 		
 		updateLabel(); 
-	}
-	
-	/**
-	 * Evaluate if the formula is valid
-	 * (for this implementation that have some restrictions. See documentation)
-	 */
-	private boolean isFormulaValida(NodeFormulaTree formulaTree){
-		return true; 
 	}
 	
     /**
@@ -130,6 +126,105 @@ public class ContextNode extends MultiEntityNode {
     
     }
 	
+    /**
+     * Avalia se o nó de contexto é avaliavel com as OVInstances passadas como
+     * argumentos. 
+     * Ele é avaliável caso não fiquem variáveis ordinárias sem 
+     * preenchimento. 
+     * 
+     * Considera-se que haja apenas uma OVInstance para cada OV. Análisar se é 
+     * necessário enfraquecer esta hipotese e complementar o método. 
+     *
+     * @param ovInstanceSet
+     * @return
+     */
+    public boolean isAvaliableForOVInstanceSet(Collection<OVInstance> ovInstanceSet){
+    	
+    	for(OrdinaryVariable ov: variableSet){
+    		
+    		boolean found = false; 
+    		for(OVInstance ovInstance: ovInstanceSet){
+    			if(ov.equals(ovInstance.getOv())){
+    				if(ovInstance.getEntity() != null){
+    					found = true; 
+    					break; 
+    				}else{
+    					return false; 
+    				}
+    			}
+    		}
+    		
+    		if(!found) return false; 
+    		
+    	}
+    	
+    	return true; 
+    	
+    }
+    
+    private boolean isParametsCorrest(OrdinaryVariable ov, Collection<OVInstance> ovInstanceSet){
+    	
+    	boolean found = false; 
+		
+    	for(OVInstance ovInstance: ovInstanceSet){
+			if(ov.equals(ovInstance.getOv())){
+				if(ovInstance.getEntity() != null){
+					found = true; 
+					break; 
+				}else{
+					return false; 
+				}
+			}
+		}
+		
+		return found; 
+		
+    }
+    
+	public boolean isFormulaComplexValida(Collection<OVInstance> ovInstanceList){
+		
+		if((formulaTree.getTypeNode() == enumType.SIMPLE_OPERATOR) && (formulaTree.getSubTypeNode() == enumSubType.EQUALTO)){
+			
+			List<NodeFormulaTree> children = formulaTree.getChildren();
+			if(children.size() == 2){
+				
+				NodeFormulaTree leftChildren = children.get(0); 
+				if((leftChildren.getTypeNode() == enumType.OPERANDO) &&  (leftChildren.getSubTypeNode() == enumSubType.NODE)){
+					ResidentNodePointer pointer = (ResidentNodePointer)leftChildren.getNodeVariable(); 
+					for(OrdinaryVariable ov: pointer.getOrdinaryVariableList()){ 
+						if(!isParametsCorrest(ov, ovInstanceList)) return false; 
+					}
+				}else{
+					return false; 
+				}
+				
+				NodeFormulaTree rigthChildren = children.get(1); 
+				if((rigthChildren.getTypeNode() == enumType.OPERANDO) &&  (rigthChildren.getSubTypeNode() == enumSubType.ENTITY)){
+					return true; 
+				}else{
+					return false; 
+				}
+			}
+		}
+		return false; 
+	}
+	
+    /**
+     * The only case of complex node acept in this version of code is: 
+     *           RandonVariable(args...) = ov, 
+     *  where args are the ovs arguments of the RandonVariable and all is
+     *  correctly associated with theirs ov instances. 
+     *            
+     * @param ovInstanceSet
+     * @return
+     */
+    public boolean isAvaliableComplexContextNode(Collection<OVInstance> ovInstanceSet){
+    	
+    	
+    	
+    	return true; 
+    }
+    
 	/**
 	 * Method responsible for deleting this context node. It makes sure to clean 
 	 * the innerTermFromList and the innerTermOfList.
@@ -258,12 +353,8 @@ public class ContextNode extends MultiEntityNode {
 		this.drawContextNode = drawContextNode;
 	}
 
-	public List<OrdinaryVariable> getExemplarList() {
-		return exemplarList;
-	}
-
-	public void setExemplarList(List<OrdinaryVariable> exemplarList) {
-		this.exemplarList = exemplarList;
+	public Set<OrdinaryVariable> getExemplarList() {
+		return exemplarSet;
 	}
 
 	public String getFormula() {
@@ -299,11 +390,11 @@ public class ContextNode extends MultiEntityNode {
 	}
 
 	public Set<OrdinaryVariable> getVariableList() {
-		return variableList;
+		return variableSet;
 	}
 
 	public void setVariableList(Set<OrdinaryVariable> variableList) {
-		this.variableList = variableList;
+		this.variableSet = variableList;
 	}
 
 	public static void setColor(Color color) {

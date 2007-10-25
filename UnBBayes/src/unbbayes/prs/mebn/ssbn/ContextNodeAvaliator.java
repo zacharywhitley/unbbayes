@@ -1,11 +1,14 @@
 package unbbayes.prs.mebn.ssbn;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
+import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 
 public class ContextNodeAvaliator {
@@ -23,11 +26,6 @@ public class ContextNodeAvaliator {
 		 * StarshipZone é uma variavel randomica. 
 		 */
 	}
-		
-		/*
-		 * Questão: avaliar todos os nós de contexto dado as variáveis 
-		 * ordinárias da MFrag e as respectivas entidades. 
-		 */
 	
 	/**
 	 * Evaluate all the context nodes with the ordinary variables. 
@@ -42,24 +40,30 @@ public class ContextNodeAvaliator {
 	 */
 	public Boolean evaluateContextNodesForOV(DomainMFrag mFrag, List<OVInstance> ovInstanceList){
 		
-		Set<ContextNode> contextNodeList = new HashSet<ContextNode>(); 
-		
+		Collection<ContextNode> contextNodeList; 
 		Set<ContextNode> simpleContextNode = new HashSet<ContextNode>();
 		Set<ContextNode> complexContextNode = new HashSet<ContextNode>();
 		
-		
-		/* Passo 1: procurar os nós de contexto que atendem as especificações */
-		for(ContextNode context: contextNodeList){
-			
-			
+		List<OrdinaryVariable> ovList = new ArrayList<OrdinaryVariable>(); 
+		for(OVInstance ovInstance: ovInstanceList){
+			ovList.add(ovInstance.getOv()); 
 		}
 		
+		/* Passo 1: procurar os nós de contexto que atendem as especificações */
+		contextNodeList = mFrag.getContextByOVCombination(ovList); 
+		
 		/* Passo 2: averiguar quais nós de contexto serão avaliados de forma 
-		 * simples e quais serão avaliados de forma complexa.  Os nós simples já podem
-		 * ser avaliados neste passo */
+		 * simples e quais serão avaliados de forma complexa.  */
+		for(ContextNode context: contextNodeList){
+			if (context.isAvaliableForOVInstanceSet(ovInstanceList)){
+				simpleContextNode.add(context); 
+			}else{
+				complexContextNode.add(context); 
+			}
+		}
 		
+		/* Passo 2.b: Os nós simples já podem ser avaliados neste passo */
 		boolean result; 
-		
 		for(ContextNode context: simpleContextNode){
 			result = kb.evaluateSimpleFormula(context, ovInstanceList);
 			if(!result) return result; 
@@ -69,12 +73,16 @@ public class ContextNodeAvaliator {
 		 * Passo 3: Possivelmente fazer averiguações de completude das informações e possivel pergunta ao
 		 * usuário sobre informações extras neste passo.
 		 */
-		
-		/* Passo 3: avaliar os nós complexos e retornar lista*/
 		for(ContextNode context: complexContextNode){
-			kb.evaluateComplexContextFormula(context, ovInstanceList); 
+			if(!context.isFormulaComplexValida(ovInstanceList)){
+				//TODO throw exception???
+			}
 		}
 		
+		/* Passo 4: avaliar os nós complexos e retornar lista*/
+		for(ContextNode context: complexContextNode){
+			List<String> entitiesResult = kb.evaluateComplexContextFormula(context, ovInstanceList); 
+		}
 		
 		return true; 
 	}
