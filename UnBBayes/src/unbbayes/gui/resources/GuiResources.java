@@ -302,10 +302,10 @@ public class GuiResources extends ListResourceBundle {
 		{"categoryStatesType", "Insert category states"}, 
 		{"objectStatesType", "Insert object entity states"}, 
 		{"booleanStatesType", "Insert boolean states"}, 
-		{"addState", "Add state(s)"}, 
+		{"addStateTip", "Add state(s)"}, 
 		{"removeState", "Remove state(s)"}, 
 		{"confirmation", "Confirmation"}, 
-		{"warningDeletStates", "Os estados anteriores ser�o removidos. Tem certeza que deseja realizar a opera��o?"}
+		{"warningDeletStates", "The previous states will be removed. Are you sure you want to procced with this operation?"}
 		
 		
 	};
