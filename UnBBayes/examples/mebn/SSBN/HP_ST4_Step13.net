@@ -1,0 +1,56 @@
+net
+{
+     node_size = (0 0);
+     name = "New PN";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+     UnBBayes_Color_Utility = "-16711681";
+     UnBBayes_Color_Decision = "-14336";
+}
+
+node HarmPotential_ST4
+{
+     label = "HarmPotential_ST4";
+     position = (327 356);
+     states = ("False" "True");
+}
+
+node StarshipClass_ST4
+{
+     label = "StarshipClass_ST4";
+     position = (386 282);
+     states = ("WarBird" "Cruiser" "Explorer" "Frigate" "Freighter" "absurd");
+}
+
+node OpSpec_ST4
+{
+     label = "OpSpec_ST4";
+     position = (456 223);
+     states = ("Cardassian" "Friend" "Klingon" "Romulan" "Unknown" "absurd");
+}
+
+potential (HarmPotential_ST4 | StarshipClass_ST4)
+{
+ data = (( 1.0 0.0 )
+( 1.0 0.0 )
+( 1.0 0.0 )
+( 1.0 0.0 )
+( 1.0 0.0 )
+( 1.0 0.0 ));
+}
+
+potential (StarshipClass_ST4 | OpSpec_ST4)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 0.0 0.0 ));
+}
+
+potential (OpSpec_ST4)
+{
+ data = ( 1.0 0.0 0.0 0.0 0.0 0.0 );
+}
+

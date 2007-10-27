@@ -1,0 +1,22 @@
+net
+{
+     node_size = (0 0);
+     name = "New PN";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+     UnBBayes_Color_Utility = "-16711681";
+     UnBBayes_Color_Decision = "-14336";
+}
+
+node HarmPotential_ST4
+{
+     label = "HarmPotential_ST4";
+     position = (327 356);
+     states = ("False" "True");
+}
+
+potential (HarmPotential_ST4)
+{
+ data = ( 1.0 0.0 );
+}
+
