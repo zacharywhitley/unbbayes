@@ -35,9 +35,12 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.context.enumSubType;
 import unbbayes.prs.mebn.context.enumType;
+import unbbayes.prs.mebn.entity.BooleanStateEntity;
 import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.entity.Type;
+import unbbayes.prs.mebn.entity.exception.CategoricalStateDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
@@ -55,7 +58,7 @@ import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
 /**
  * Make de loader from a file pr-owl for the mebn structure. 
  * 
- * Version Pr-OWL: 1.02
+ * Version Pr-OWL: 1.05 (octuber, 2007)
  * (http://www.pr-owl.org/pr-owl.owl) 
  * 
  * @author Laecio Lima dos Santos
@@ -91,8 +94,15 @@ public class LoaderPrOwlIO {
 	private HashMap<String, Argument> mapArgument = new HashMap<String, Argument>();
 	private HashMap<String, MultiEntityNode> mapMultiEntityNode = new HashMap<String, MultiEntityNode>(); 
 	private HashMap<String, BuiltInRV> mapBuiltInRV = new HashMap<String, BuiltInRV>(); 
+	
 	private HashMap<String, ObjectEntity> mapObjectEntity = new HashMap<String, ObjectEntity>(); 	
 	private HashMap<String, CategoricalStateEntity> mapCategoricalStates = new HashMap<String, CategoricalStateEntity>(); 
+	private HashMap<String, BooleanStateEntity> mapBooleanStates = new HashMap<String, BooleanStateEntity>(); 
+	
+	private HashMap<String, List<String>> mapObjectEntityGloballyObjects = new HashMap<String, List<String>>(); 
+	private HashMap<String, List<String>> mapCategoricalStateGloballyObjects = new HashMap<String, List<String>>(); 
+	private HashMap<String, List<String>> mapBooleanStateGloballyObjects = new HashMap<String, List<String>>(); 
+	
 	private HashMap<String, ObjectEntity> mapTypes = new HashMap<String, ObjectEntity>(); 	
 	
 	/* Protege API Structure */
@@ -108,6 +118,11 @@ public class LoaderPrOwlIO {
 	private final String ORDINARY_VAR_SCOPE_SEPARATOR = ".";
 	private final String POSSIBLE_VALUE_SCOPE_SEPARATOR = ".";	
 	
+	//names of the classes in PR_OWL FIle
+	private static final String CATEGORICAL_STATE = "CategoricalRVState"; 
+	private static final String BOOLEAN_STATE = "BooleanRVState";
+	private static final String OBJECT_ENTITY = "ObjectEntity"; 
+	private static final String META_ENTITY = "MetaEntity"; 
 	
 	/**
 	 * Make the load from file to MEBN structure.
@@ -160,6 +175,8 @@ public class LoaderPrOwlIO {
 
 		loadObjectEntity(); 
 		loadMetaEntitiesClasses(); 
+		loadCategoricalStateEntity(); 
+		loadBooleanStateEntity(); 
 		
 		/*-------------------MTheory elements------------*/
 		loadDomainMFrag(); 
@@ -245,7 +262,7 @@ public class LoaderPrOwlIO {
 			    Type type = mebn.getTypeContainer().createType(individualOne.getBrowserText()); 
 			}
 			catch (TypeAlreadyExistsException exception){
-				//OK... lembre-se que os tipos basicos j� existem... 
+				//OK... lembre-se que os tipos basicos já existem... 
 			}
 			
 			Debug.println("Meta Entity Loaded: " + individualOne.getBrowserText()); 
@@ -267,7 +284,9 @@ public class LoaderPrOwlIO {
 		OWLNamedClass subClass; 
 		OWLObjectProperty objectProperty; 		
 		
-		objectEntityClass = owlModel.getOWLNamedClass("ObjectEntity");
+		OWLObjectProperty isGloballyExclusive = (OWLObjectProperty)owlModel.getOWLObjectProperty("isGloballyExclusive"); 	
+
+		objectEntityClass = owlModel.getOWLNamedClass(this.OBJECT_ENTITY);
 		
 		subClasses = objectEntityClass.getSubclasses(true); 
 		
@@ -281,13 +300,89 @@ public class LoaderPrOwlIO {
 				ObjectEntity objectEntityMebn = mebn.getObjectEntityContainer().createObjectEntity(subClass.getBrowserText()); 	
 			    mapObjectEntity.put(subClass.getBrowserText(), objectEntityMebn); 
 			    mapTypes.put(objectEntityMebn.getType().getName(), objectEntityMebn); 
-			    
-			    //TODO verificar se o tipo eh o desejado... 
 			}
 			catch(TypeException typeException){
 				typeException.printStackTrace(); 
 			}
 		}	
+	}
+	
+	private void loadCategoricalStateEntity(){
+		
+		OWLNamedClass categoricalStateClass; 
+		Collection instances; 
+		Collection globallyExclusiveObjects; 
+		OWLIndividual individualOne;
+		OWLObjectProperty isGloballyExclusive = (OWLObjectProperty)owlModel.getOWLObjectProperty("isGloballyExclusive"); 	
+
+		categoricalStateClass = owlModel.getOWLNamedClass(this.CATEGORICAL_STATE);
+		
+		instances = categoricalStateClass.getInstances(false); 
+		
+		for (Object owlIndividual : instances){
+			individualOne = (OWLIndividual) owlIndividual; 
+			
+			CategoricalStateEntity state = mebn.getCategoricalStatesEntityContainer().createCategoricalEntity(individualOne.getBrowserText()); 
+			
+			globallyExclusiveObjects = individualOne.getPropertyValues(isGloballyExclusive); 
+			ArrayList<String> listObjects = new ArrayList<String>(); 
+			for (Object object : globallyExclusiveObjects){
+				OWLIndividual nodeIndividual = (OWLIndividual) object;
+				listObjects.add(nodeIndividual.getBrowserText()); 
+			}
+			
+			mapCategoricalStateGloballyObjects.put(state.getName(), listObjects); 
+			
+			Debug.println("Categorical State Entity Loaded: " + individualOne.getBrowserText()); 
+						
+		}	
+	}
+	
+	private void loadBooleanStateEntity(){
+		
+		OWLNamedClass booleanStateClass; 
+		Collection instances; 
+		Collection globallyExclusiveObjects; 
+		OWLIndividual individualOne;
+		OWLObjectProperty isGloballyExclusive = (OWLObjectProperty)owlModel.getOWLObjectProperty("isGloballyExclusive"); 	
+
+		booleanStateClass = owlModel.getOWLNamedClass(this.BOOLEAN_STATE);
+		
+		instances = booleanStateClass.getInstances(false); 
+		
+		for (Object owlIndividual : instances){
+			individualOne = (OWLIndividual) owlIndividual; 
+			
+			BooleanStateEntity state = null; 
+			
+			if(individualOne.getBrowserText().equals("true")){
+				state = mebn.getBooleanStatesEntityContainer().getTrueStateEntity(); 
+			}else{
+				if(individualOne.getBrowserText().equals("false")){
+					state = mebn.getBooleanStatesEntityContainer().getFalseStateEntity(); 
+				}else{
+					if(individualOne.getBrowserText().equals("absurd")){
+						state = mebn.getBooleanStatesEntityContainer().getAbsurdStateEntity(); 
+					}else{
+						// 
+					}
+				}
+			}
+			
+			if(state!=null){
+				globallyExclusiveObjects = individualOne.getPropertyValues(isGloballyExclusive); 
+				ArrayList<String> listObjects = new ArrayList<String>(); 
+				for (Object object : globallyExclusiveObjects){
+					OWLIndividual nodeIndividual = (OWLIndividual) object;
+					listObjects.add(nodeIndividual.getBrowserText()); 
+				}
+				
+				mapBooleanStateGloballyObjects.put(state.getName(), listObjects); 
+			}
+			
+			Debug.println("Boolean State Entity Loaded: " + individualOne.getBrowserText()); 
+		}	
+		
 	}
 	
 	private void loadDomainMFrag() throws IOMebnException{
@@ -689,7 +784,7 @@ public class LoaderPrOwlIO {
 
 			/* -> hasPossibleValues */
 			{
-				CategoricalStateEntity state; 
+				CategoricalStateEntity state = null; 
 				objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasPossibleValues"); 			
 				instances = individualOne.getPropertyValues(objectProperty); 	
 				itAux = instances.iterator();
@@ -697,46 +792,70 @@ public class LoaderPrOwlIO {
 					individualTwo = (OWLIndividual)instance;
 					String stateName = individualTwo.getBrowserText(); 
 					/* case 1: booleans states */
-					if(stateName.compareTo("true")==0){
-						domainResidentNode.addPossibleValue(mebn.getBooleanStatesEntityContainer().getTrueStateEntity());   
+					if(stateName.equals("true")){
+						StateLink link = domainResidentNode.addPossibleValueLink(mebn.getBooleanStatesEntityContainer().getTrueStateEntity());   
+						List<String> globallyObjects = mapBooleanStateGloballyObjects.get("true"); 
+						if(globallyObjects.contains(domainResidentNode.getName())){
+							link.setGloballyExclusive(true); 
+						}else{
+							link.setGloballyExclusive(false); 
+						}
 						domainResidentNode.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES); 
 					}
 					else{
-						if(stateName.compareTo("false") == 0){
-							domainResidentNode.addPossibleValue(mebn.getBooleanStatesEntityContainer().getFalseStateEntity());  
+						if(stateName.equals("false")){
+							StateLink link = domainResidentNode.addPossibleValueLink(mebn.getBooleanStatesEntityContainer().getFalseStateEntity());   
+							List<String> globallyObjects = mapBooleanStateGloballyObjects.get("false"); 
+							if(globallyObjects.contains(domainResidentNode.getName())){
+								link.setGloballyExclusive(true); 
+							}else{
+								link.setGloballyExclusive(false); 
+							}
 							domainResidentNode.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES); 
 						}
 						else{
-							if(stateName.compareTo("absurd") == 0){
-								domainResidentNode.addPossibleValue(mebn.getBooleanStatesEntityContainer().getAbsurdStateEntity());   
-								domainResidentNode.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES); 
+							if(stateName.equals("absurd")){
+								StateLink link = domainResidentNode.addPossibleValueLink(mebn.getBooleanStatesEntityContainer().getAbsurdStateEntity());   
+								List<String> globallyObjects = mapBooleanStateGloballyObjects.get("absurd"); 
+								if(globallyObjects.contains(domainResidentNode.getName())){
+									link.setGloballyExclusive(true); 
+								}else{
+									link.setGloballyExclusive(false); 
+								}
+								domainResidentNode.setTypeOfStates(ResidentNode.BOOLEAN_RV_STATES);
 							}
 							else{
 								if(mapTypes.get(stateName) != null){
 									
 									/* case 2:object entities */
 									
-									domainResidentNode.addPossibleValue(mapTypes.get(stateName)); 
-									
+									StateLink link = domainResidentNode.addPossibleValueLink(mapTypes.get(stateName)); 
+									List<String> globallyObjects = mapObjectEntityGloballyObjects.get(stateName); 
+									if(globallyObjects.contains(domainResidentNode.getName())){
+										link.setGloballyExclusive(true); 
+									}else{
+										link.setGloballyExclusive(false); 
+									}
+									domainResidentNode.setTypeOfStates(ResidentNode.OBJECT_ENTITY);
+								
 								}
 								else{
 									/* case 3: categorical states */
-									String name = individualTwo.getBrowserText(); 
-									
-									try{
-										name = name.split(domainResidentNode.getName() + this.getOrdinaryVarScopeSeparator())[1]; 
-									}
-									catch(java.lang.ArrayIndexOutOfBoundsException e){
-										//The name don't is in the valid format <ResidentNodeName>.<Name> 
-										//use the real name of the state...
-										name = individualTwo.getBrowserText(); 
-										//TODO warning
-									}
-									
-									state = mebn.getCategoricalStatesEntityContainer().createCategoricalEntity(name) ; 
-									mapCategoricalStates.put(individualTwo.getBrowserText(), state); 
-									domainResidentNode.addPossibleValue(state);  
-									domainResidentNode.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES);
+									try {
+										state = mebn.getCategoricalStatesEntityContainer().getCategoricalState(individualTwo.getBrowserText()) ;
+										StateLink link = domainResidentNode.addPossibleValueLink(state); 
+										
+										List<String> globallyObjects = mapCategoricalStateGloballyObjects.get(state.getName()); 
+										if(globallyObjects.contains(domainResidentNode.getName())){
+											link.setGloballyExclusive(true); 
+										}else{
+											link.setGloballyExclusive(false); 
+										}
+										domainResidentNode.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES);
+									} catch (CategoricalStateDoesNotExistException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									} 
 								}
 								
 							}

@@ -47,7 +47,7 @@ import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
  * (http://www.pr-owl.org/pr-owl.owl) 
  * 
  * @author Laecio Lima dos Santos
- * @version 1.6 10/23/2007
+ * @version 1.6 10/28/2007
  *
  */
 public class SaverPrOwlIO {
