@@ -830,12 +830,12 @@ public class LoaderPrOwlIO {
 									/* case 2:object entities */
 									
 									StateLink link = domainResidentNode.addPossibleValueLink(mapTypes.get(stateName)); 
-									List<String> globallyObjects = mapObjectEntityGloballyObjects.get(stateName); 
-									if(globallyObjects.contains(domainResidentNode.getName())){
-										link.setGloballyExclusive(true); 
-									}else{
-										link.setGloballyExclusive(false); 
-									}
+//									List<String> globallyObjects = mapObjectEntityGloballyObjects.get(stateName); 
+//									if(globallyObjects.contains(domainResidentNode.getName())){
+//										link.setGloballyExclusive(true); 
+//									}else{
+//										link.setGloballyExclusive(false); 
+//									}
 									domainResidentNode.setTypeOfStates(ResidentNode.OBJECT_ENTITY);
 								
 								}

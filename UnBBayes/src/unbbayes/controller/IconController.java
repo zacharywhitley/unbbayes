@@ -234,6 +234,10 @@ public class IconController implements Serializable {
 	
 	protected ImageIcon categoryStateIcon; 	
 	
+	protected ImageIcon saveFindingsIcon; 	
+	
+	protected ImageIcon loadFindingsIcon; 	
+	
 	//operators
 
 	protected ImageIcon andIcon; 
@@ -1381,4 +1385,23 @@ public class IconController implements Serializable {
 		}
 	}	
 	
+	public ImageIcon getSaveFindingsInstance() {
+		if (saveFindingsIcon != null) {
+			return saveFindingsIcon;
+		} else {
+			saveFindingsIcon = new ImageIcon(getClass().getResource(
+					"/icons/save-findings.png"));
+			return saveFindingsIcon;
+		}
+	}	
+	
+	public ImageIcon getLoadFindingsInstance() {
+		if (loadFindingsIcon != null) {
+			return loadFindingsIcon;
+		} else {
+			loadFindingsIcon = new ImageIcon(getClass().getResource(
+					"/icons/load-findings.png"));
+			return loadFindingsIcon;
+		}
+	}	
 }

@@ -697,7 +697,7 @@ public class MEBNEditionPane extends JPanel {
 	    		}
 	    	}); 
 	    	
-	    	JButton btnSaveFindings = new JButton("SVF");
+	    	JButton btnSaveFindings = new JButton(iconController.getSaveFindingsInstance());
 	    	btnSaveFindings.addActionListener(new ActionListener() {
 	    		public void actionPerformed(ActionEvent ae) {
 	    			setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -711,7 +711,7 @@ public class MEBNEditionPane extends JPanel {
 	    			if (option == JFileChooser.APPROVE_OPTION) {
 	    				File file = chooser.getSelectedFile();
 	    				if (file != null) {
-	    						mebnController.saveFindings(file);
+	    						mebnController.saveFindingsFile(file);
 	    						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Arquivo salvo com sucesso");
 	    				}
 	    			}
@@ -719,8 +719,8 @@ public class MEBNEditionPane extends JPanel {
 	    		}
 	    	}); 
 	    	
-	    	JButton btnLoad = new JButton("LOD");
-	    	btnLoad.addActionListener(new ActionListener() {
+	    	JButton btnLoadFindings = new JButton(iconController.getLoadFindingsInstance());
+	    	btnLoadFindings.addActionListener(new ActionListener() {
 	    		public void actionPerformed(ActionEvent ae) {
 	    			setCursor(new Cursor(Cursor.WAIT_CURSOR));
 	    			JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
@@ -730,7 +730,7 @@ public class MEBNEditionPane extends JPanel {
 	    			int option = chooser.showOpenDialog(null);
 	    			if (option == JFileChooser.APPROVE_OPTION) {
 	    				if (chooser.getSelectedFile() != null) {
-	    					mebnController.loadDefinitionsFile(chooser.getSelectedFile());
+	    					mebnController.loadFindingsFile(chooser.getSelectedFile());
 	    					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Arquivo carregado com sucesso");
 	    				}
 	    			}
@@ -743,8 +743,8 @@ public class MEBNEditionPane extends JPanel {
 	    		public void actionPerformed(ActionEvent ae) {
 	    			setCursor(new Cursor(Cursor.WAIT_CURSOR));
 	    			
-	    			mebnController.loadGenerativeMEBNIntoKB(); 
-	    			mebnController.loadFindingsIntoKB(); 
+//	    			mebnController.loadGenerativeMEBNIntoKB(); 
+//	    			mebnController.loadFindingsIntoKB(); 
 	    			JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Base de conhecimento criada com sucesso");
 	    		
 	    			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -756,9 +756,9 @@ public class MEBNEditionPane extends JPanel {
 	        
 	        addSeparator(); 
 	        
-	        add(btnExecute); 
-	        add(btnLoad); 
-	        add(btnSaveGenerative); 
+	       // add(btnExecute); 
+	        add(btnLoadFindings); 
+	        //add(btnSaveGenerative); 
 	        add(btnSaveFindings); 
 	        
 	        addSeparator(new Dimension(10, 10)); 

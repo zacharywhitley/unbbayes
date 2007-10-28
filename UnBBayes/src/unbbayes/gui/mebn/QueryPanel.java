@@ -210,12 +210,12 @@ public class QueryPanel extends JFrame{
 				public void actionPerformed(ActionEvent e) {
 					makeInvisible(); 
 					try {
-						ObjectEntityInstance[] arguments = queryArgumentsPane.getArguments();
-				        ProbabilisticNetwork network = mebnController.executeQuery((DomainResidentNode)residentNode, arguments); 
-				        // TODO treat returned network
-					} catch (ParcialStateException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+//						ObjectEntityInstance[] arguments = queryArgumentsPane.getArguments();
+//				        ProbabilisticNetwork network = mebnController.executeQuery((DomainResidentNode)residentNode, arguments); 
+				        mebnController.executeQuery(); 
+//					} catch (ParcialStateException e1) {
+//						// TODO Auto-generated catch block
+//						e1.printStackTrace();
 					} catch (InconsistentArgumentException iae) {
 						iae.printStackTrace();
 					}

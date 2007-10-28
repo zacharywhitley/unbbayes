@@ -82,6 +82,12 @@ public class MEBNController {
 	private Node nodeActive;
 
 	/*-------------------------------------------------------------------------*/
+	/* Control of state of the kb                                            */
+	/*-------------------------------------------------------------------------*/
+	
+	private boolean baseCreated = false; 
+	
+	/*-------------------------------------------------------------------------*/
 	/* Others (resources, utils, etc                                           */
 	/*-------------------------------------------------------------------------*/
 
@@ -882,7 +888,7 @@ public class MEBNController {
 	 * Insert the MEBN Generative into KB.
 	 * (Object Entities and Domain Resident Nodes)
 	 */
-	public void loadGenerativeMEBNIntoKB(){
+	private void loadGenerativeMEBNIntoKB(){
 		KnowledgeBase knowledgeBase = PowerLoomKB.getInstanceKB();
 
 		for(ObjectEntity entity: multiEntityBayesianNetwork.getObjectEntityContainer().getListEntity()){
@@ -894,9 +900,11 @@ public class MEBNController {
 				knowledgeBase.createRandonVariableDefinition((DomainResidentNode)resident);
 			}
 		}
+		
+		this.saveGenerativeMTheory(new File("testeGenerative.plm")); 
 	}
 	
-	public void loadFindingsIntoKB(){
+	private void loadFindingsIntoKB(){
 		KnowledgeBase knowledgeBase = PowerLoomKB.getInstanceKB();		
 		
 		for(ObjectEntityInstance instance: multiEntityBayesianNetwork.getObjectEntityContainer().getListEntityInstances()){
@@ -911,18 +919,25 @@ public class MEBNController {
 			}
 		}
 		
+		this.saveFindingsFile(new File("testeFindings.plm")); 
 	}
 
 	public void saveGenerativeMTheory(File file){
 		PowerLoomKB.getInstanceKB().saveGenerativeMTheory(getMultiEntityBayesianNetwork(), file);
 	}
 
-	public void saveFindings(File file){
+	public void saveFindingsFile(File file){
 		PowerLoomKB.getInstanceKB().saveFindings(getMultiEntityBayesianNetwork(), file);
 	}
 
-	public void loadDefinitionsFile(File file){
+	public void loadFindingsFile(File file){
 		PowerLoomKB.getInstanceKB().loadModule(file);
+	}
+	
+	private void createKnowledgeBase(){
+		loadGenerativeMEBNIntoKB(); 
+		loadFindingsIntoKB(); 
+		baseCreated = true; 
 	}
 	
 	/**
@@ -1051,6 +1066,17 @@ public class MEBNController {
 		return ssbngenerator.generateSSBN(query);
 		
 	}
+	
+
+	public ProbabilisticNetwork executeQuery() throws InconsistentArgumentException {
+	    
+		if(!baseCreated){
+	    	createKnowledgeBase(); 	
+	    }
+	    
+		return null; 
+	}
+		
 	
 	/*-------------------------------------------------------------------------*/
 	/* Findings Edition                                                        */
