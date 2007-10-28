@@ -145,12 +145,8 @@ public class ContextNode extends MultiEntityNode {
     		boolean found = false; 
     		for(OVInstance ovInstance: ovInstanceSet){
     			if(ov.equals(ovInstance.getOv())){
-    				if(ovInstance.getEntity() != null){
-    					found = true; 
-    					break; 
-    				}else{
-    					return false; 
-    				}
+    				found = true; 
+    				break; 
     			}
     		}
     		
@@ -199,7 +195,7 @@ public class ContextNode extends MultiEntityNode {
 				}
 				
 				NodeFormulaTree rigthChildren = children.get(1); 
-				if((rigthChildren.getTypeNode() == enumType.OPERANDO) &&  (rigthChildren.getSubTypeNode() == enumSubType.ENTITY)){
+				if((rigthChildren.getTypeNode() == enumType.OPERANDO) &&  (rigthChildren.getSubTypeNode() == enumSubType.OVARIABLE)){
 					return true; 
 				}else{
 					return false; 
@@ -207,6 +203,14 @@ public class ContextNode extends MultiEntityNode {
 			}
 		}
 		return false; 
+	}
+	
+	public OrdinaryVariable getFreeVariable(){
+		
+			List<NodeFormulaTree> children = formulaTree.getChildren();
+			NodeFormulaTree rigthChildren = children.get(1); 
+			return (OrdinaryVariable)rigthChildren.getNodeVariable(); 
+		
 	}
 	
     /**

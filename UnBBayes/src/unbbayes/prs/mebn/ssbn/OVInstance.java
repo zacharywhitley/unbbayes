@@ -84,4 +84,20 @@ public class OVInstance {
 		return null; 
 	}
 	
+	public String toString(){
+		String ret = "("; 
+		
+		if(this.getOv() != null){
+			ret+= this.getOv().getName(); 
+		}
+		
+		if(this.getEntity() != null){
+			ret+="," + this.getEntity().getInstanceName(); 
+		}
+		
+		ret+=")"; 
+	
+		return ret; 
+	}
+	
 }

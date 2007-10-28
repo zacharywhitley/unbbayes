@@ -5,10 +5,10 @@ import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 
 /**
+ * Represent a finding for a random variable (a domain resident node). 
  *
- *
- * @author Laecio
- *
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
+ * @version 1.0 10/26/2007
  */
 public class RandomVariableFinding {
 
@@ -37,7 +37,7 @@ public class RandomVariableFinding {
 		this.mebn = mebn;
 
 		//TODO name...
-		name = "RVF";
+		name = "RVF"; //this object don't is saved... 
 	}
 
 	public ObjectEntityInstance[] getArguments() {

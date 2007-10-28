@@ -115,6 +115,9 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"nameError","Nome não aceito"},
 		{"nameAlreadyExists","Já existe um objeto com este nome"},	
 		{"internalError","Erro interno... Reporte aos desenvolvedores"},
+		{"error","Erro"},	
+		{"argumentMissing","Faltando argumentos"},	
+		{"stateUnmarked","Estado não marcado"},	
 		
 		{"helpToolTip","Ajuda do UnBBayes"},
 		{"propagateToolTip","Propagar as evidências"},

@@ -473,7 +473,6 @@ public class PowerLoomKB implements KnowledgeBase{
 			       operando+= ovInstance.getEntity().getInstanceName(); 
 			   }
 			   else{ 
-				   //TODO exemplar
 				   operando+= "?" + ov.getName(); 
 			   }
 			   break; 
@@ -638,7 +637,7 @@ public class PowerLoomKB implements KnowledgeBase{
 	private OVInstance getOVInstanceForOV(OrdinaryVariable ov, List<OVInstance> list){
 		
 		for(OVInstance ovi: list){
-			if (ovi.getOv() == ov){
+			if (ovi.getOv().equals(ov)){
 				return ovi; 
 			}
 		}

@@ -24,6 +24,7 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.RandomVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.CategoricalStateEntity;
+import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
@@ -1050,4 +1051,19 @@ public class MEBNController {
 		return ssbngenerator.generateSSBN(query);
 		
 	}
+	
+	/*-------------------------------------------------------------------------*/
+	/* Findings Edition                                                        */
+	/*-------------------------------------------------------------------------*/
+		
+	public void createRandonVariableFinding(DomainResidentNode residentNode, 
+			ObjectEntityInstance[] arguments, Entity state){
+		RandomVariableFinding finding = new RandomVariableFinding(
+				(DomainResidentNode)residentNode, 
+				arguments, 
+				state, 
+				this.multiEntityBayesianNetwork);
+		((DomainResidentNode)residentNode).addRandonVariableFinding(finding); 
+	}
+	
 }

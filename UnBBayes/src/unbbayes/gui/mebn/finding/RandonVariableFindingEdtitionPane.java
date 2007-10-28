@@ -64,7 +64,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
   	private JPanel downPanel; 
   	
 	public RandonVariableFindingEdtitionPane(){
-		
+		//empty
 	}
   	
 	public RandonVariableFindingEdtitionPane(MEBNController mebnController){
@@ -83,14 +83,14 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
 		this.add(downPanel, BorderLayout.PAGE_END); 
 	}
 	
-	public void showRandonVariableInstanceListPane(ResidentNode node){
+	public void showRandonVariableInstanceListPane(DomainResidentNode node){
 		downPanel.removeAll(); 
 		randonVariableInstanceListPane = new RandonVariableInstanceListPane(node); 
 		downPanel.add(randonVariableInstanceListPane, BorderLayout.CENTER); 
 		downPanel.validate(); 
 	}
 	
-	public void showRandonVariableEditionPane(ResidentNode node){
+	public void showRandonVariableEditionPane(DomainResidentNode node){
 		upperPanel.removeAll(); 
 		upperPanel.add(new RandonVariableInstanceEditionPane(node), BorderLayout.CENTER); 
 		upperPanel.validate(); 
@@ -131,7 +131,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
 		            new ListSelectionListener(){
 		                public void valueChanged(ListSelectionEvent e) {
 		                	if(jlistResident.getSelectedValue() != null){
-		                	   showRandonVariableInstanceListPane((ResidentNode)(jlistResident.getSelectedValue()));
+		                	   showRandonVariableInstanceListPane((DomainResidentNode)(jlistResident.getSelectedValue()));
 		                	}
 		                }
 		            }  	
@@ -145,7 +145,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
 
 				public void actionPerformed(ActionEvent e) {
 					if(jlistResident.getSelectedValue() != null){
-					   showRandonVariableEditionPane((ResidentNode)(jlistResident.getSelectedValue())); 
+					   showRandonVariableEditionPane((DomainResidentNode)(jlistResident.getSelectedValue())); 
 					}
 				}
 				
@@ -163,7 +163,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
 	
 	/**
 	 * Pane contains: 
-	 * - Name of ResidentNode 
+	 * - Name of DomainResidentNode 
 	 * - List of arguments 
 	 * - Selection of state
 	 * - buttons for actions
@@ -173,7 +173,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
 	 */
 	private class RandonVariableInstanceEditionPane extends JPanel{
 		
-		private final ResidentNode residentNode; 
+		private final DomainResidentNode residentNode; 
 		
 		private JLabel nodeName; 
 		
@@ -190,7 +190,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
 		
 		private JToolBar jtbName; 
 		
-		public RandonVariableInstanceEditionPane(ResidentNode _residentNode){
+		public RandonVariableInstanceEditionPane(DomainResidentNode _residentNode){
 			
 			super(new BorderLayout()); 
 			this.residentNode = _residentNode; 
@@ -199,7 +199,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
 			nodeName.setAlignmentX(JLabel.CENTER_ALIGNMENT); 
 			nodeName.setBackground(Color.YELLOW); 
 			
-			findingArgumentPane = new FindingArgumentPane(residentNode, mebnController); 
+			findingArgumentPane = new FindingArgumentPane((DomainResidentNode)residentNode, mebnController); 
 			
 			btnBack = new JButton(iconController.getEditUndo()); 
 			btnClear = new JButton(iconController.getEditClear()); 
@@ -229,23 +229,24 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
 					try {
 						ObjectEntityInstance[] arguments = findingArgumentPane.getArguments();
 						Entity state = findingArgumentPane.getState(); 
-						RandomVariableFinding finding = new RandomVariableFinding(
-								(DomainResidentNode)residentNode, 
-								arguments, 
-								state, 
-								mebnController.getMultiEntityBayesianNetwork());
-						((DomainResidentNode)residentNode).addRandonVariableFinding(finding); 
-						showRandonVariableInstanceListPane(residentNode); 
+						if(state == null){
+							JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
+									resource.getString("stateUnmarked"), 
+									resource.getString("error"), 
+									JOptionPane.ERROR_MESSAGE);							
+						}else{
+                            mebnController.createRandonVariableFinding(residentNode, arguments, state); 
+							showRandonVariableInstanceListPane(residentNode);
+						}
 					} catch (ParcialStateException e1) {
 						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
-									resource.getString("nameError"), 
-									resource.getString("nameException"), 
+									resource.getString("argumentMissing"), 
+									resource.getString("error"), 
 									JOptionPane.ERROR_MESSAGE);
 					} 
 				}
 			}); 			
 			
-			//this.add(nodeName, BorderLayout.PAGE_START);
 			this.add(new JScrollPane(findingArgumentPane), BorderLayout.CENTER); 
 			this.add(jtbOptions, BorderLayout.PAGE_END); 
 			
@@ -272,7 +273,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
 	 */
 	private class RandonVariableInstanceListPane extends JPanel{
 		
-		private ResidentNode residentNode; 
+		private DomainResidentNode residentNode; 
 		
 		private JList jlistFindings; 
 		private JScrollPane scrollListObjectEntity; 
@@ -292,7 +293,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
         
 		}
 		
-        public RandonVariableInstanceListPane(ResidentNode residentNode){
+        public RandonVariableInstanceListPane(DomainResidentNode residentNode){
         	
         	super(new BorderLayout()); 
         	

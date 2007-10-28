@@ -113,7 +113,9 @@ public class GuiResources extends ListResourceBundle {
 		{"LookAndFeelIllegalAccessException","This LookAndFeel can not be used: "},
 		{"nameError","Nome don't acept"},	
 		{"nameAlreadyExists","Already exists a object with this name"},	
-		{"internalError","Internal Error..."},	
+		{"error","Error..."},	
+		{"argumentMissing","Missing arguments"},	
+		{"stateUnmarked","State don't marked"},	
 		
 		{"helpToolTip","UnBBayes help"},
 		{"propagateToolTip","Propagate evidences"},

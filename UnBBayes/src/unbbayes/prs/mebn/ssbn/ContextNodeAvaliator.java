@@ -1,19 +1,81 @@
 package unbbayes.prs.mebn.ssbn;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import unbbayes.io.mebn.PrOwlIO;
+import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.entity.Type;
+import unbbayes.prs.mebn.kb.KBFacade;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
+import unbbayes.prs.mebn.kb.powerloom.PowerLoomFacade;
+import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 
 public class ContextNodeAvaliator {
 
 	private KnowledgeBase kb; 
+	static MultiEntityBayesianNetwork mebn; 
+	 
+	
+	public static void main(String[] args){
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(); 
+		KnowledgeBase kb = PowerLoomKB.getInstanceKB(); 
+		
+		kb.loadModule(new File("examples/mebn/sample.plm"));
+		KBFacade kbFacade = new PowerLoomFacade("/PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE"); 
+		
+		PrOwlIO io = new PrOwlIO(); 
+		try {
+			mebn = io.loadMebn(new File("examples/mebn/StarTrek30.owl"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOMebnException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		DomainMFrag mFrag = mebn.getMFragByName("Starship_MFrag"); 
+		
+		LiteralEntityInstance literalEntityInstance; 
+		OVInstance ovInstance; 
+		OrdinaryVariable ov; 
+		
+		Type type = null;
+		
+		List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
+		List<OrdinaryVariable> ordVariableList = new ArrayList<OrdinaryVariable>(); 
+		
+		type = mebn.getTypeContainer().getType("Starship_label"); 
+		literalEntityInstance = LiteralEntityInstance.getInstance("!ST0", type); 
+		ov = new OrdinaryVariable("st", type, mFrag); 
+		ovInstance = OVInstance.getInstance(ov, literalEntityInstance); 
+		ovInstanceList.add(ovInstance); 
+		
+		type = mebn.getTypeContainer().getType("TimeStep_label"); 
+		literalEntityInstance = LiteralEntityInstance.getInstance("!T0", type); 
+		ov = new OrdinaryVariable("t", type, mFrag); 
+		ovInstance = OVInstance.getInstance(ov, literalEntityInstance); 
+		ovInstanceList.add(ovInstance); 
+		
+		type = mebn.getTypeContainer().getType("Zone_label"); 
+		ov = new OrdinaryVariable("z", type, mFrag); 
+		ordVariableList.add(ov); 
+		
+		Boolean result = avaliator.evaluateContextNodesForOV(mFrag, ovInstanceList, ordVariableList); 
+		
+		System.out.println("Result= " + result);
+		
+	}
 	
 	public void evaluate(ContextNode node, OVInstance... ovInstances){
 		
@@ -25,6 +87,7 @@ public class ContextNodeAvaliator {
 		 * z = StarshipZone(st) 
 		 * StarshipZone é uma variavel randomica. 
 		 */
+		
 	}
 	
 	/**
@@ -38,7 +101,13 @@ public class ContextNodeAvaliator {
 	 *         null if the evaluate return a list of entities caused by a kb search
 	 *         (all others context nodes are OK)
 	 */
-	public Boolean evaluateContextNodesForOV(DomainMFrag mFrag, List<OVInstance> ovInstanceList){
+	public Boolean evaluateContextNodesForOV(DomainMFrag mFrag, List<OVInstance> ovInstanceList, List<OrdinaryVariable> ordVariableList){
+		
+        KnowledgeBase kb = PowerLoomKB.getInstanceKB(); 
+		
+		kb.loadModule(new File("examples/mebn/sample.plm"));
+		KBFacade kbFacade = new PowerLoomFacade("/PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE"); 
+		
 		
 		Collection<ContextNode> contextNodeList; 
 		Set<ContextNode> simpleContextNode = new HashSet<ContextNode>();
@@ -48,6 +117,7 @@ public class ContextNodeAvaliator {
 		for(OVInstance ovInstance: ovInstanceList){
 			ovList.add(ovInstance.getOv()); 
 		}
+		ovList.addAll(ordVariableList); 
 		
 		/* Passo 1: procurar os nós de contexto que atendem as especificações */
 		contextNodeList = mFrag.getContextByOVCombination(ovList); 
@@ -64,9 +134,11 @@ public class ContextNodeAvaliator {
 		
 		/* Passo 2.b: Os nós simples já podem ser avaliados neste passo */
 		boolean result; 
+
 		for(ContextNode context: simpleContextNode){
 			result = kb.evaluateSimpleFormula(context, ovInstanceList);
-			if(!result) return result; 
+			//if(!result) return result;
+			System.out.println("Resulado Formula = " + result);
 		}
 		
 		/*
@@ -76,15 +148,24 @@ public class ContextNodeAvaliator {
 		for(ContextNode context: complexContextNode){
 			if(!context.isFormulaComplexValida(ovInstanceList)){
 				//TODO throw exception???
+				System.out.println("Fail...");
 			}
 		}
 		
 		/* Passo 4: avaliar os nós complexos e retornar lista*/
 		for(ContextNode context: complexContextNode){
-			List<String> entitiesResult = kb.evaluateComplexContextFormula(context, ovInstanceList); 
+	
+			OrdinaryVariable rigthTerm = context.getFreeVariable(); 
+			
+			List<String> entitiesResult = kbFacade.getEntityByType(rigthTerm.getValueType().getName()); 
+			
+//			List<String> entitiesResult = kb.evaluateComplexContextFormula(context, ovInstanceList); 
+			System.out.println("List Result = ");
+			for(String item: entitiesResult){
+				System.out.println(item);
+			}
 		}
 		
 		return true; 
-	}
-	
+	}	
 }

@@ -16,16 +16,18 @@ import javax.swing.JToolBar;
 
 import unbbayes.controller.MEBNController;
 import unbbayes.gui.ParcialStateException;
+import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.StateLink;
 
 /**
- * Painel utilizado para se selecionar quais variáveis ordinárias
- * irao preencher cada um dos argumentos. É criada uma combo box
- * referente a cada argumento a ser preenchido, e nesta são listadas
- * todas as variaveis ordinárias que são do tipo esperado. 
+ * Painel utilizado para se selecionar quais variï¿½veis ordinï¿½rias
+ * irao preencher cada um dos argumentos. Ã‰ criada uma combo box
+ * referente a cada argumento a ser preenchido, e nesta sï¿½o listadas
+ * todas as variaveis ordinï¿½rias que sï¿½o do tipo esperado. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * @version 1.0 06/28/07
@@ -42,7 +44,7 @@ public class FindingArgumentPane extends JPanel{
 	
 	private final static int MINIMUM_LINE_SIXE_PANEL = 5; 
 	
-	public FindingArgumentPane(ResidentNode node, MEBNController mebnController){
+	public FindingArgumentPane(DomainResidentNode node, MEBNController mebnController){
 		
 		super(); 
 		
@@ -83,7 +85,6 @@ public class FindingArgumentPane extends JPanel{
 				}
 			}
 			
-			
 			argument[i] = new JComboBox(list); 
 			argument[i].addItemListener(new ComboListener(i)); 
 			
@@ -103,7 +104,6 @@ public class FindingArgumentPane extends JPanel{
 			add(tbArgX); 
 			i++; 
 		}
-		
 
 		JLabel labelState = new JLabel("State:"); 
 		
@@ -122,7 +122,7 @@ public class FindingArgumentPane extends JPanel{
 		    break; 	
 		}
 		
-		states = new JComboBox(node.getPossibleValueList().toArray()); 
+		states = new JComboBox(node.getPossibleValueLinkList().toArray()); 
 		
 		JToolBar tbStates = new JToolBar();
 		
@@ -151,7 +151,7 @@ public class FindingArgumentPane extends JPanel{
 	}
 	
 	public Entity getState(){
-		return (Entity)states.getSelectedItem(); 
+		return ((StateLink)(states.getSelectedItem())).getState(); 
 	}
 	
 	public void clear(){
