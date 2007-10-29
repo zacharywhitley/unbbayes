@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -49,31 +49,31 @@ public class Edge implements java.io.Serializable, ITwoPositionDrawable {
 	private static final long serialVersionUID = -3912210617648282346L;
 
 	/**
-     *  Guarda o primeiro nó. Quando há orientação assume semântica como origem.
+     *  Guarda o primeiro nï¿½. Quando hï¿½ orientaï¿½ï¿½o assume semï¿½ntica como origem.
      */
     private Node node1;
 
     /**
-     *  Guarda o segundo nó. Quando há orientação assume semântica como destino.
+     *  Guarda o segundo nï¿½. Quando hï¿½ orientaï¿½ï¿½o assume semï¿½ntica como destino.
      */
     private Node node2;
 
     /**
-     *  Status de seleção. Utilizado pela interface.
+     *  Status de seleï¿½ï¿½o. Utilizado pela interface.
      */
     private boolean bSelected;
     
     /**
-     *  Status que indica se existe ou não direção no arco. Utilizado pela interface.
+     *  Status que indica se existe ou nï¿½o direï¿½ï¿½o no arco. Utilizado pela interface.
      */
     private boolean direction;
 
 
     /**
-     *  Constrói um arco que vai de node1 a node2.
+     *  Creates an edge from node1 to node2.
      *
-     *@param  node1  Nó origem
-     *@param  node2  Nó destino
+     *@param  node1  starting node
+     *@param  node2  destination node
      */
     public Edge(Node no1, Node no2) {
         this.node1 = no1;
@@ -91,9 +91,9 @@ public class Edge implements java.io.Serializable, ITwoPositionDrawable {
 
 
     /**
-     *  Modifica o status de seleção do arco.
+     *  Modifica o status de seleï¿½ï¿½o do arco.
      *
-     *@param  bSelected  status de seleção desejado.
+     *@param  bSelected  status de seleï¿½ï¿½o desejado.
      */
     public void setSelected(boolean b) {
     	// Update the DrawArrow and DrawLine selection state
@@ -103,9 +103,9 @@ public class Edge implements java.io.Serializable, ITwoPositionDrawable {
     }
     
     /**
-     *  Modifica o status de direção do arco.
+     *  Modifica o status de direï¿½ï¿½o do arco.
      *
-     *@param  direction  status de existência de direção.
+     *@param  direction  status de existï¿½ncia de direï¿½ï¿½o.
      */
     public void setDirection(boolean direction) {
         this.direction = direction;
@@ -113,9 +113,9 @@ public class Edge implements java.io.Serializable, ITwoPositionDrawable {
 
 
     /**
-     *  Retorna o primeiro nó associado ao arco.
+     *  Retorna o primeiro nï¿½ associado ao arco.
      *
-     *@return    o primeiro nó associado ao arco.
+     *@return    o primeiro nï¿½ associado ao arco.
      */
     public Node getOriginNode() {
         return node1;
@@ -123,25 +123,25 @@ public class Edge implements java.io.Serializable, ITwoPositionDrawable {
 
 
     /**
-     *  Retorna o segundo nó associado ao arco.
+     *  Retorna o segundo nï¿½ associado ao arco.
      *
-     *@return    o segundo nó associado ao arco.
+     *@return    o segundo nï¿½ associado ao arco.
      */
     public Node getDestinationNode() {
         return node2;
     }
     
     /**
-     *  Retorna o status de direção do arco.
+     *  Retorna o status de direï¿½ï¿½o do arco.
      *
-     *@return    status de direção.
+     *@return    status de direï¿½ï¿½o.
      */
     public boolean hasDirection() {
         return direction;
     }
  
  	/**
- 	 *  Muda a direção do arco. O pai vira filho e o filho vira pai
+ 	 *  Muda a direï¿½ï¿½o do arco. O pai vira filho e o filho vira pai
  	 */   
     public void changeDirection() {
     	// Faz a troca na lista de pais e filhos de node1 e node2
@@ -150,7 +150,7 @@ public class Edge implements java.io.Serializable, ITwoPositionDrawable {
 	    node1.getParents().add(node2);
 	    node2.getChildren().add(node1);
 	    
-	    // Faz a troca no próprio Edge
+	    // Faz a troca no prï¿½prio Edge
     	Node aux = node1;
     	node1 = node2;
     	node2 = aux;

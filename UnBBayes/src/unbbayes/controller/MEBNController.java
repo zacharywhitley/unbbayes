@@ -1063,7 +1063,11 @@ public class MEBNController {
 		
 		ISSBNGenerator ssbngenerator = new BottomUpSSBNGenerator();
 		
-		return ssbngenerator.generateSSBN(query);
+		try{
+			return ssbngenerator.generateSSBN(query);
+		} catch (Exception e) {
+			throw new InconsistentArgumentException(e);
+		}
 		
 	}
 	

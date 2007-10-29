@@ -382,5 +382,14 @@ public class MultiEntityBayesianNetwork extends Network {
 	*/
 	
 	
+	/**
+	 * If any MFrag has been set to use default CPT, this method would be
+	 * usefull to clear it all (set isUsingDefaultCPT flag to false)
+	 */
+	public void clearMFragsIsUsingDefaultCPTFlag() {
+		for (DomainMFrag mfrag : this.getDomainMFragList()) {
+			mfrag.setAsUsingDefaultCPT(false);
+		}
+	}
 
 }

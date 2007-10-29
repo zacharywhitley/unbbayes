@@ -42,9 +42,9 @@ public class Network implements Graph{
 	}
 
 	/**
-	 *  Retorna os nós do grafo.
+	 *  Retorna os nï¿½s do grafo.
 	 *
-	 *@return    nós do grafo.
+	 *@return    nï¿½s do grafo.
 	 * 
 	 * @todo Eliminar esse metodo! eh utilizado na classe NetWindow
 	 */
@@ -53,29 +53,29 @@ public class Network implements Graph{
 	}
 
 	/**
-	 *  Returna o número de variáveis da rede.
+	 *  Returna o nï¿½mero de variï¿½veis da rede.
 	 *
-	 *@return    número de variáveis da rede.
+	 *@return    nï¿½mero de variï¿½veis da rede.
 	 */
 	public int getNodeCount() {
 		return nodeList.size();
 	}
 
 	/**
-	 *  Retorna o nó do grafo com o respectivo índice.
+	 *  Retorna o nï¿½ do grafo com o respectivo ï¿½ndice.
 	 *
-	 *@param  index  índice do nó.
-	 *@return	nó com respectivo índice no List.
+	 *@param  index  ï¿½ndice do nï¿½.
+	 *@return	nï¿½ com respectivo ï¿½ndice no List.
 	 */
 	public Node getNodeAt(int index) {
 	    return nodeList.get(index);
 	}
 
 	/**
-	 *  Retorna o nó do grafo com a respectiva sigla.
+	 *  Retorna o nï¿½ do grafo com a respectiva sigla.
 	 *
-	 *@param  name  nome do nó.
-	 *@return       nó com a respectiva sigla.
+	 *@param  name  nome do nï¿½.
+	 *@return       nï¿½ com a respectiva sigla.
 	 */
 	public Node getNode(String name) {
 		int index = getNodeIndex(name);
@@ -106,9 +106,9 @@ public class Network implements Graph{
 	}
 
 	/**
-	 *  Adiciona novo nó ao grafo.
+	 *  Adiciona novo nï¿½ ao grafo.
 	 *
-	 *@param  no  nó a ser inserido.
+	 *@param  no  nï¿½ a ser inserido.
 	 */
 	public void addNode(Node no) {
 	    nodeList.add(no);
@@ -116,23 +116,23 @@ public class Network implements Graph{
 	}
 
 	/**
-	 *  Adiciona o arco à rede.
+	 *  Adds an edge into the net.
 	 *
-	 *@param  arco  arco a ser inserido.
+	 *@param  edge  An edge to be inserted.
 	 */
-	public void addEdge(Edge arco) {
-	    arco.getOriginNode().getChildren().add(arco.getDestinationNode());
-	    arco.getDestinationNode().getParents().add(arco.getOriginNode());
-	    edgeList.add(arco);
-	    if (arco.getDestinationNode() instanceof ITabledVariable) {
-			ITabledVariable v2 = (ITabledVariable) arco.getDestinationNode();
+	public void addEdge(Edge edge) {
+		edge.getOriginNode().getChildren().add(edge.getDestinationNode());
+		edge.getDestinationNode().getParents().add(edge.getOriginNode());
+	    edgeList.add(edge);
+	    if (edge.getDestinationNode() instanceof ITabledVariable) {
+			ITabledVariable v2 = (ITabledVariable) edge.getDestinationNode();
 			PotentialTable auxTab = v2.getPotentialTable();
-			auxTab.addVariable(arco.getOriginNode());
+			auxTab.addVariable(edge.getOriginNode());
 		}
 	}
 
 	/**
-	 *  Remove nó do grafo.
+	 *  Remove nï¿½ do grafo.
 	 *
 	 *@param  elemento  no a ser removido.
 	 */
@@ -192,7 +192,7 @@ public class Network implements Graph{
 	}
 
 	/**
-	 *  Limpa a lista de nós.
+	 *  Limpa a lista de nï¿½s.
 	 */
 	protected void clearNodes() {
 	    nodeList.clear();
@@ -206,11 +206,11 @@ public class Network implements Graph{
 	}
 
 	/**
-	 *  Verifica existência de determinado arco.
+	 *  Verifica existï¿½ncia de determinado arco.
 	 *
-	 *@param  no1  nó origem.
-	 *@param  no2  nó destino.
-	 *@return      posição do arco no vetor ou -1 caso não exista tal arco.
+	 *@param  no1  nï¿½ origem.
+	 *@param  no2  nï¿½ destino.
+	 *@return      posiï¿½ï¿½o do arco no vetor ou -1 caso nï¿½o exista tal arco.
 	 */
 	public int hasEdge(Node no1, Node no2) {
 		return hasEdge(no1, no2, edgeList);

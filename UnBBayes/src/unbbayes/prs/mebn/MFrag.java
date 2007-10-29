@@ -432,7 +432,8 @@ public class MFrag implements Graph{
 	 * @return true if every Random Variable inside this MFrag should use default CPT (there were failing context node).
 	 * Returns false elsewise.
 	 * @see MFrag.setAsUsingDefaultCPT()
-	 * 
+	 * TODO refactor. Move this method to DomainMFrag, since an input mfrag would never be concious
+	 * about default CPTs
 	 */
 	public boolean isUsingDefaultCPT() {
 		return isUsingDefaultCPT;
@@ -443,6 +444,8 @@ public class MFrag implements Graph{
 	 * context node failing and every Resident Node inside this MFrag must use default distribution By setting this to false,
 	 * clears that information. We should set this to false everytime we start a new SSBN query.
 	 * @param isUsingDefaultCPT: value to set
+	 * TODO refactor. Move this method to DomainMFrag, since an input mfrag would never be concious
+	 * about default CPTs
 	 */
 	public void setAsUsingDefaultCPT(boolean isUsingDefaultCPT) {
 		this.isUsingDefaultCPT = isUsingDefaultCPT;

@@ -475,10 +475,10 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 
 	/**
-	 * Imprime a descri��o do n� no formato: "descri��o (sigla)" (sem aspas) �
-	 * utilizado no JTree da Interface quando a rede � compilada.
+	 * Prints a description of the node using "description (name)" format (without
+	 * the quotes). It is used by the Interface's JTree when net is compiled.
 	 * 
-	 * @return descri��o do n� formatado.
+	 * @return formatted node description.
 	 */
 	public String toString() {
 		return description + " (" + name + ")";

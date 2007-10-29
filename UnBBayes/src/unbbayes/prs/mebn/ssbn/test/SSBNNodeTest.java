@@ -107,7 +107,7 @@ public class SSBNNodeTest extends TestCase {
 		assertNotNull(node);
 		assertEquals(node.getResident(), resident);
 		assertNull(node.getProbNode());
-		assertEquals(node.getActualValues().size(),3);
+		assertEquals(1,node.getActualValues().size());	// a SSBNNode without probNode should be a finding
 		assertEquals(node.getParents().size(),0);
 	}
 

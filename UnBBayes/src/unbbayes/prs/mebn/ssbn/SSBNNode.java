@@ -77,9 +77,14 @@ public class SSBNNode {
 		//}
 		
 		this.actualValues = new ArrayList<Entity>();
-		for (StateLink state : resident.getPossibleValueLinkList()) {
-			this.actualValues.add(state.getState());
+		if (this.getProbNode() != null) {
+			for (StateLink state : resident.getPossibleValueLinkList()) {
+				this.actualValues.add(state.getState());
+			}
+		} else {
+			this.actualValues.add(resident.getPossibleValueLinkList().get(0).getState());
 		}
+		
 		
 		this.setUsingDefaultCPT(false);
 		
@@ -94,6 +99,8 @@ public class SSBNNode {
 	 * @param resident: the resident node this SSBNNode represents
 	 * @param probNode: this is useful when we already know which ProbabilisticNode (UnBBayes representation of a node) shall
 	 * represent this node once SSBN is generated.
+	 * Setting a probNode to null is the same of declaring it as a finding (the value would be the 1st possible value declared
+	 * by its resident node).
 	 * @return a SSBNNode instance.
 	 */
 	public static SSBNNode getInstance (DomainResidentNode resident , ProbabilisticNode probNode)  {
@@ -104,6 +111,8 @@ public class SSBNNode {
 	 *  This class is a temporary representation of a resident random variable instance at ssbn creation step.
 	 * Basically, works as a bridge (not a design pattern) between MEBN solid resident node representation (DomainResidentNode)
 	 * and the actual ProbabilisticNode on UnBBayes. This is, for now, identical to getInstance(resident,null)
+	 * Setting a probNode to null is the same of declaring it as a finding (the value would be the 1st possible value declared
+	 * by its resident node).
 	 * @param resident: the resident node this SSBNNode represents
 	 * @return a SSBNNode instance.
 	 * 
@@ -384,13 +393,15 @@ public class SSBNNode {
 	
 	
 	/**
-	 * This is the same as setting node's actual value as a unique value.
+	 * This is the same as setting node's actual value as a unique value
+	 * and setting ProbNode to null.
 	 * @param uniqueValue: the unique value this node represents
 	 */
 	public void setNodeAsFinding(Entity uniqueValue) {
 		Collection actualValue = new ArrayList<Entity>();
 		actualValue.add(uniqueValue);
 		this.setActualValues(actualValue);
+		this.setProbNode(null);
 	}
 	
 	
@@ -416,8 +427,11 @@ public class SSBNNode {
 	 */
 	public void addParent(SSBNNode parent, boolean isCheckingParentResident) throws SSBNNodeGeneralException{
 		
-		// initial check
-		if ((parent.getResident() == null ) || (parent.getProbNode() == null)) {
+		// initial check. Note that if node is finding (probNode==null), then it should not have a parent
+		if ((parent.getResident() == null )) {
+			throw new SSBNNodeGeneralException();
+		}
+		if (isCheckingParentResident && ( parent.getProbNode() == null ) ) {
 			throw new SSBNNodeGeneralException();
 		}
 		
@@ -445,7 +459,9 @@ public class SSBNNode {
 		}
 		
 		this.getParents().add(parent);		
-		this.getProbNode().addParent(parent.getProbNode());
+		if (this.getProbNode() != null) {
+			this.getProbNode().addParent(parent.getProbNode());
+		}
 	}
 	
 	
@@ -649,14 +665,23 @@ public class SSBNNode {
 			name += ovi.getEntity().getInstanceName();
 		}
 		name += ")";
+		if (this.probNode != null) {
+			this.probNode.setName(name);
+		}
 		return name;
 	}
 
 	/**
+	 * If node is a finding, it will return a single value (a collection w/ only 1 value)
 	 * @return the actualValues: node's possible values known at that moment. It might be
 	 * different than resident node's ones. It might be a single value, when a finding is present.
 	 */
 	public Collection<Entity> getActualValues() {
+		if (this.getProbNode() == null) {
+			ArrayList<Entity> ret = new ArrayList<Entity>();
+			ret.add(this.actualValues.iterator().next());
+			return ret;
+		}
 		return actualValues;
 	}
 
@@ -712,13 +737,19 @@ public class SSBNNode {
 	}
 
 	/**
-	 * @return the probNode
+	 * @return the probNode. Null if it should be a finding
 	 */
 	public ProbabilisticNode getProbNode() {
+		if (this.probNode != null) {
+			// currently, this process is redundant (because getName already sets probNode's name)...
+			this.probNode.setName(this.getName());
+		}
 		return probNode;
 	}
 
 	/**
+	 * Setting a probNode to null is the same of declaring it as a finding (the value should be the 1st possible value declared
+	 * by its resident node).
 	 * @param probNode the ProbabilisticNode (UnBBayes node representation) to set
 	 */
 	public void setProbNode(ProbabilisticNode probNode) {

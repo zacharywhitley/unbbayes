@@ -26,6 +26,8 @@ public class Resources extends ListResourceBundle {
 	 */
 	static final Object[][] contents =
 	{	{"ArgumentTypeMismatch","Resident node was not expecting this type as argument. Check argument order."}, 
+		{"PossibleValueMismatch","The possible value expected was not matching."},
+		{"CycleFound","A cycle was found when creating SSBN."},
 		{"UnknownException","An unknown error has occurred. We suggest you to store your work and close the program"}
 	};
 }

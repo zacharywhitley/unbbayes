@@ -20,14 +20,14 @@ import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomFacade;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 
-public class ContextNodeAvaliator {
+public class ContextNodeEvaluator {
 
 	private KnowledgeBase kb; 
 	static MultiEntityBayesianNetwork mebn; 
 	 
 	
 	public static void main(String[] args){
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(); 
+		ContextNodeEvaluator avaliator = new ContextNodeEvaluator(); 
 		KnowledgeBase kb = PowerLoomKB.getInstanceKB(); 
 		
 		kb.loadModule(new File("examples/mebn/sample.plm"));
@@ -87,6 +87,9 @@ public class ContextNodeAvaliator {
 		 * z = StarshipZone(st) 
 		 * StarshipZone é uma variavel randomica. 
 		 */
+		
+		// TODO please, call MFrag.setAsUsingDefaultCPT(true) when any context node has failed. It will notify all SSBNNodes to use default CPT.
+		
 		
 	}
 	
