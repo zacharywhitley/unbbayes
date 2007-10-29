@@ -318,9 +318,9 @@ public class MultiEntityBayesianNetwork extends Network {
 	}
 
 	/**
-	 * Search the context node with the name. 
-	 * @param name Name of context node
-	 * @return the context node if it exists and null otherside. 
+	 * Search the DomainResidentNode node with the name. 
+	 * @param name Name of DomainResidentNode 
+	 * @return the DomainResidentNode  if it exists and null otherside. 
 	 */
 	public DomainResidentNode getDomainResidentNode(String name){
 		for(DomainMFrag mfrag: domainMFragList){
@@ -334,9 +334,9 @@ public class MultiEntityBayesianNetwork extends Network {
 	}
 	
 	/**
-	 * Search the context node with the name. 
-	 * @param name Name of context node
-	 * @return the context node if it exists and null otherside. 
+	 * Search the GenerativeInputNode  with the name. 
+	 * @param name Name of GenerativeInputNode
+	 * @return the GenerativeInputNode if it exists and null otherwise. 
 	 */
 	public GenerativeInputNode getInputNode(String name){
 		for(DomainMFrag mfrag: domainMFragList){

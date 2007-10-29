@@ -1136,7 +1136,7 @@ public class Compiler implements ICompiler {
 	}
 	
 	
-	private class MaxProbabilityValue implements IProbabilityValue {
+	private class ComparisionProbabilityValue implements IProbabilityValue {
 		private IProbabilityValue arg0 = null;
 		private IProbabilityValue arg1 = null;
 		private boolean isMax = false;
@@ -1147,7 +1147,7 @@ public class Compiler implements ICompiler {
 		 * @param isMax true if it represents a MAX function. If false, it represents a MIN
 		 * function.
 		 */
-		MaxProbabilityValue (IProbabilityValue arg0, IProbabilityValue arg1, boolean isMax) {
+		ComparisionProbabilityValue (IProbabilityValue arg0, IProbabilityValue arg1, boolean isMax) {
 			this.arg0 = arg0;
 			this.arg1 = arg1;
 			this.isMax = isMax;
