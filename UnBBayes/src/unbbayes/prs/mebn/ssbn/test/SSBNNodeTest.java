@@ -36,6 +36,7 @@ public class SSBNNodeTest extends TestCase {
 	private DomainResidentNode resident = null;
 	
 	private SSBNNode ssbnnode = null;
+	private SSBNNode findingssbnnode = null;
 	/**
 	 * @param arg0
 	 */
@@ -68,9 +69,13 @@ public class SSBNNodeTest extends TestCase {
 			return;
 		}
 		
-		this.ssbnnode = SSBNNode.getInstance(this.resident);
+		this.ssbnnode = SSBNNode.getInstance(this.resident,new ProbabilisticNode());
 		this.ssbnnode.addArgument(resident.getOrdinaryVariableList().get(0),"ST4");
 		this.ssbnnode.addArgument(resident.getOrdinaryVariableList().get(1),"T0");
+		
+		this.findingssbnnode = SSBNNode.getInstance(this.resident);
+		this.findingssbnnode.addArgument(resident.getOrdinaryVariableList().get(0),"ST4");
+		this.findingssbnnode.addArgument(resident.getOrdinaryVariableList().get(1),"T0");
 		
 	}
 
@@ -101,7 +106,7 @@ public class SSBNNodeTest extends TestCase {
 		SSBNNode node = SSBNNode.getInstance(resident);
 		assertNotNull(node);
 		assertEquals(node.getResident(), resident);
-		assertNotNull(node.getProbNode());
+		assertNull(node.getProbNode());
 		assertEquals(node.getActualValues().size(),3);
 		assertEquals(node.getParents().size(),0);
 	}
@@ -353,7 +358,7 @@ public class SSBNNodeTest extends TestCase {
 	 */
 	public void testFillProbabilisticTable() {
 		this.ssbnnode.fillProbabilisticTable();
-		assertNotNull(this.ssbnnode.getProbNode().getPotentialTable());
+		//assertNotNull(this.ssbnnode.getProbNode().getPotentialTable());
 		// TODO more detailed test
 	}
 
@@ -387,6 +392,15 @@ public class SSBNNodeTest extends TestCase {
 			fail(e.getMessage());
 		}
 		assertTrue(this.ssbnnode.getParents().contains(parent));
+		
+		try {
+			this.findingssbnnode.addParent(parent, true);
+			fail("A finding should not have a parent");
+		} catch(NullPointerException ne) {
+			//OK
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
 		
 		parent = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
 		try {

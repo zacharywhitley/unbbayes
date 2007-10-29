@@ -11,6 +11,7 @@ import unbbayes.prs.mebn.ssbn.exception.*;
 import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.entity.Entity;
+import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.util.NodeList;
 
 import java.util.ArrayList;
@@ -69,13 +70,17 @@ public class SSBNNode {
 		this.parents = new ArrayList<SSBNNode>();
 		this.resident = resident;
 		
-		if (probNode == null) {
-			this.probNode = new ProbabilisticNode();
-		} else {
+		//if (probNode == null) {
+		//	this.probNode = new ProbabilisticNode();
+		//} else {
 			this.probNode = probNode;
+		//}
+		
+		this.actualValues = new ArrayList<Entity>();
+		for (StateLink state : resident.getPossibleValueLinkList()) {
+			this.actualValues.add(state.getState());
 		}
 		
-		this.actualValues = new ArrayList<Entity>(resident.getPossibleValueList());
 		this.setUsingDefaultCPT(false);
 		
 		this.setCompiler(new Compiler(resident, this));

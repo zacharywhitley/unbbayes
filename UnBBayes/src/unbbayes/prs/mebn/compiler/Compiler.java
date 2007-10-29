@@ -165,7 +165,9 @@ public class Compiler implements ICompiler {
 		this.setNode(node);
 		this.ssbnnode = ssbnnode;
 		if (this.ssbnnode != null) {
-			this.cpt = this.ssbnnode.getProbNode().getPotentialTable();
+			if (this.ssbnnode.getProbNode() != null) {
+				this.cpt = this.ssbnnode.getProbNode().getPotentialTable();
+			}			
 		}
 		tempTable = new Hashtable<TempTableHeaderCell, List<TempTableProbabilityCell>>();
 	}

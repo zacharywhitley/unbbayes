@@ -151,6 +151,12 @@ public class MultiEntityNode extends Node {
 		return innerTermFromList; 
 	}		
 	
+	/**
+	 * !!!Maybe dead code!!!
+	 * It should NOT be used for resident nodes. Use DomainResidentNode.getPossibleValueLinkList
+	 * instead!!
+	 * @return a list which elements were added by MultiEntityNode.addPossibleValue(value)...
+	 */
 	public List<Entity> getPossibleValueList(){
 		return possibleValueList; 
 	}

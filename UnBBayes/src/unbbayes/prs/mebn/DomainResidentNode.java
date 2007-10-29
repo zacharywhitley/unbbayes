@@ -210,6 +210,8 @@ public class DomainResidentNode extends ResidentNode {
 		StateLink value = new StateLink(possibleValue); 
 		possibleValueList.add(value);
 		return value; 
+		// TODO override addPossibleValue() or call super.addPossibleValue(possibleValue) in order
+		// to make compatible w/ MultiEntityNode.possibleValueList...
 	}
 	
 	/**
