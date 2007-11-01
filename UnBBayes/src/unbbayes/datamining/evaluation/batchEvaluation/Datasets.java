@@ -1,4 +1,4 @@
-package unbbayes.datamining.evaluation;
+package unbbayes.datamining.evaluation.batchEvaluation;
 
 /**
  *

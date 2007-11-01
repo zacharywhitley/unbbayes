@@ -9,7 +9,7 @@ import unbbayes.datamining.datamanipulation.Attribute;
  * Class representing the node of the decision tree
  * 
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
- * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ * @author Mï¿½rio Henrique Paes Vieira (mariohpv@bol.com.br)
  */
 public class Node implements Serializable
 {
@@ -51,6 +51,10 @@ public class Node implements Serializable
 	public Node(Attribute splitAttribute, float[] distribution) {
 		this.splitAttribute = splitAttribute;
 		this.distribution = distribution;
+//		
+//		if (distribution == null) {
+//			@SuppressWarnings("unused") boolean pau = true;
+//		}
 	}
 	
 			

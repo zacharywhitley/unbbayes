@@ -2,7 +2,6 @@ package unbbayes.datamining.evaluation;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Random;
 import java.util.ResourceBundle;
 
 import unbbayes.controller.IProgress;
@@ -12,12 +11,11 @@ import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Options;
 import unbbayes.datamining.datamanipulation.Utils;
-import unbbayes.datamining.evaluation.CrossValidation;
 
 /**
  * Class for evaluating machine learning classsifiers
  *
- *	@author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ *	@author Mï¿½rio Henrique Paes Vieira (mariohpv@bol.com.br)
  *	@version $1.0 $ (17/02/2002)
  */
 public class Evaluation implements IProgress {
@@ -124,7 +122,7 @@ public class Evaluation implements IProgress {
 		for	(int i = 0; i < numInstances; i++) {
 			if ((i%50000)==0) {
 				String currentHour = (new SimpleDateFormat("HH:mm:ss - ")).format(new Date());
-				System.out.println("instância = "+i+" hora = "+currentHour);
+				System.out.println("instï¿½ncia = "+i+" hora = "+currentHour);
 			}
 			evaluateModelOnce(classifier, instanceSet.getInstance(i));
 		}

@@ -23,7 +23,7 @@ import unbbayes.datamining.datamanipulation.Utils;
  *
  * R. Quinlan (1993). <i>C4.5: Programs for Machine Learning </i><p>
  *
- * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ * @author MÃ¡rio Henrique Paes Vieira (mariohpv@bol.com.br)
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  * @version $1.0 $ (11/07/2003)
  */
@@ -102,7 +102,7 @@ public class C45 extends DecisionTreeLearning implements Serializable
 //		SplitObject split = new SplitObject(data);
 
 		xRootNode = new Node(null);
-		// Nó ativo da árvore
+		// NÃ³ ativo da Ã¡rvore
 		Node xNode = xRootNode;
 
 
@@ -410,7 +410,7 @@ public class C45 extends DecisionTreeLearning implements Serializable
 				index = (int) instance.getValue(node.getAttribute());
 				treeNode = (NominalNode) treeNode.children.get(index);
 			} else {
-				// Atributo numérico
+				// Atributo numÃ©rico
 				splitValue = ((NumericNode) node).getSplitValue();
 
 				if (instance.getValue(att.getIndex()) >= splitValue) {

@@ -12,7 +12,7 @@ import java.util.ResourceBundle;
 /**
  * This class opens a arff file building an InstanceSet object
  * 
- * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ * @author MÃ¡rio Henrique Paes Vieira (mariohpv@bol.com.br)
  * @version $1.0 $ (16/02/2002)
  */
 public class ArffLoader extends Loader {
@@ -47,12 +47,6 @@ public class ArffLoader extends Loader {
 		initTokenizer();
 	}
 
-	/**
-	 * Initializes the StreamTokenizer used for reading the ARFF file.
-	 * 
-	 * @param tokenizer
-	 *            Stream tokenizer
-	 */
 	protected void initTokenizer() {
 		tokenizer.resetSyntax();
 		tokenizer.whitespaceChars(0, ' ');
@@ -67,27 +61,79 @@ public class ArffLoader extends Loader {
 //		tokenizer.parseNumbers(); // not working with floating (e.g. 1.23E8)
 	}
 
-	/**
-	 * Temporarily constructs the header of a txt file. Used as a preprocessor
-	 * step in the construction of the file's header.
-	 * 
-	 * @param tokenizer
-	 *            Stream tokenizer
-	 * @exception IOException
-	 *                if the information is not read successfully
-	 */
 	public void buildHeader() throws IOException {
 		readHeader();
 	}
 
-	/**
-	 * Reads and stores header of an ARFF file.
-	 * 
-	 * @param tokenizer
-	 *            Stream tokenizer
-	 * @exception IOException
-	 *                if the information is not read successfully
-	 */
+	public ArrayList<Object> getHeaderInfo() throws IOException {
+		ArrayList<String> attributesName = new ArrayList<String>();
+		String likelycounterIndexName = null;
+		String relationName = null;
+
+		/* Get name of relation */
+		getFirstToken();
+		if (tokenizer.ttype == StreamTokenizer.TT_EOF) {
+			errms(resource.getString("readHeaderException1"));
+		}
+		if (tokenizer.sval.equalsIgnoreCase("@relation")) {
+			getNextToken();
+			relationName = tokenizer.sval;
+			if (relationName.equalsIgnoreCase("null")) {
+				relationName = null;
+			}
+			getLastToken(false);
+		} else {
+			errms(resource.getString("readHeaderException2"));
+		}
+
+		/* Get attribute declarations */
+		getFirstToken();
+		String attributesNameAux;
+		if (tokenizer.ttype == StreamTokenizer.TT_EOF) {
+			errms(resource.getString("readHeaderException1"));
+		}
+		while (tokenizer.sval.equalsIgnoreCase("@attribute")) {
+			/* Get attribute name */
+			getNextToken();
+			attributesNameAux = tokenizer.sval;
+			attributesName.add(attributesNameAux);
+			getNextToken();
+
+			/* Get likely counter attribute index */
+			if (attributesNameAux != null && 
+					attributesNameAux.equalsIgnoreCase(counterAttributeName)) {
+				likelycounterIndexName = new String(attributesNameAux);
+			}
+
+			readTillEOL();
+			getFirstToken();
+			if (tokenizer.ttype == StreamTokenizer.TT_EOF) {
+				errms(resource.getString("readHeaderException1"));
+			}
+		}
+
+		/* Set the current number of attributes */
+		numAttributes = attributesName.size();
+
+		// Check if data part follows. We can't easily check for EOL.
+		if (!tokenizer.sval.equalsIgnoreCase("@data")) {
+			errms(resource.getString("readHeaderException7"));
+		}
+
+		// Check if any attributes have been declared.
+		if (numAttributes == 0) {
+			errms(resource.getString("readHeaderException8"));
+		}
+		
+		/* Build the result arraylist */
+		ArrayList<Object> result = new ArrayList<Object>();
+		result.add(attributesName);
+		result.add(likelycounterIndexName);
+		result.add(relationName);
+		
+		return result;
+	}
+
 	public void readHeader() throws IOException {
 		String attributeName;
 		String relationName = "";
@@ -124,7 +170,7 @@ public class ArffLoader extends Loader {
 
 			/* Get likely counter attribute index */
 			if (attributeName.equalsIgnoreCase(counterAttributeName)) {
-				likelycounterIndex = counter;
+				likelyCounterIndex = counter;
 			}
 
 			/* Check if the attribute is the counter attribute */
@@ -402,7 +448,7 @@ public class ArffLoader extends Loader {
 					instanceWeight = numValue;
 					continue;
 				} catch (NumberFormatException nfe) {
-					errms("Atributo de contagem inválido");
+					errms("Atributo de contagem invï¿½lido");
 				}
 			}
 

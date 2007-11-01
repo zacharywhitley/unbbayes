@@ -6,29 +6,27 @@ import java.util.Random;
 import unbbayes.datamining.datamanipulation.AttributeStats;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.NearestNeighbors;
 import unbbayes.datamining.datamanipulation.Stats;
 import unbbayes.datamining.datamanipulation.mtree.MTree;
-import unbbayes.datamining.distance.Distance;
-import unbbayes.datamining.distance.HVDM;
+import unbbayes.datamining.evaluation.batchEvaluation.GlobalBatchParameters;
+import unbbayes.datamining.evaluation.batchEvaluation.PreprocessorParameters;
 
 /**
  * SMOTE oversamples a specified class of a dataset. It creates new cases
  * based on the existing ones. These new cases are randomly interpolated
- * between each instance and its k nearest neighbors, also chosen by random.
+ * between each instance and its numNN nearest neighbors, also chosen by random.
  *
  * @author Emerson Lopes Machado - emersoft@conectanet.com.br
  * @date 18/08/2006
  */
-public class Smote {
+public class Smote extends Batch {
 	
 	private int nearestNeighborsIDs[][];
 	
 	/** The number of attributes of the dataset */
 	private int numAttributes;
 	
-	/** The current instanceSet that will be smoted */
-	private InstanceSet instanceSet;
-
 	/** The set of instances of the current instanceSet that will be smoted */
 	private Instance[] instances;
 	
@@ -37,9 +35,6 @@ public class Smote {
 
 	/** Index used to find nearest neighbor */
 	private MTree mTree;
-	
-	/** Number of neighbors utilized in SMOTE*/
-	private int k;
 	
 	/** Stores all new instances created */
 	private float newInstanceSet[][];
@@ -90,6 +85,9 @@ public class Smote {
 	 */
 	private float attHalfRangeValue[];
 
+	/** Number of neighbors utilized in SMOTE */
+	private int numNN = 5;
+	
 	/**
 	 * Set it <code>true</code> to discretize the synthetic value created for
 	 * the new instance. 
@@ -106,17 +104,6 @@ public class Smote {
 	private byte optionNominal;
 
 	/** 
-	 * Distance function desired.
-	 * <ul>
-	 * <li> 0: Hamming
-	 * <li> 1: HVDM
-	 * </ul>
-	 */
-	private byte optionDistanceFunction;
-	private byte HAMMING = 0;
-	private byte HVDM = 1;
-	
-	/** 
 	 * The gap is a random number between 0 and 1 wich tells how far from the
 	 * current instance and how near from its nearest neighbor the new instance
 	 * will be interpolated.
@@ -127,17 +114,28 @@ public class Smote {
 
 	private Random random;
 
-	/**
-	 * SMOTE oversamples a specified class of a dataset. It creates new cases
-	 * based on the existing ones. These new cases are randomly interpolated
-	 * between each instance and its k nearest neighbors, also chosen by random.
-	 * 
-	 * @param instancesIDs[]: The chosen subset of instances to be smoted
-	 * @param mTree: index used to find nearest neighbors
-	 */
-	public Smote(MTree mTree) {
+	private NearestNeighbors nearestNeighbors;
+	
+	private static boolean useRatio = true;
+	private static boolean useK = false;
+	private static boolean useOverThresh = false;
+	private static boolean usePosThresh = false;
+	private static boolean useNegThresh = false;
+	private static boolean useCleaning = false;
+	
+	public Smote(InstanceSet instanceSet) {
+		this(instanceSet, null);
+	}
+
+	public Smote(InstanceSet instanceSet, PreprocessorParameters parameters) {
+		super(useRatio, useK, useOverThresh, usePosThresh, useNegThresh,
+				useCleaning, instanceSet, parameters);
+		preprocessorName = "Smote";
+		initialize();
+	}
+
+	public void setMTree(MTree mTree) {
 		this.mTree = mTree;
-		optionDistanceFunction = HAMMING;
 	}
 
 	public void setInstanceSet(InstanceSet instanceSet) {
@@ -151,20 +149,18 @@ public class Smote {
 	/**
 	 * SMOTE oversamples a specified class of a dataset. It creates new cases
 	 * based on the existing ones. These new cases are randomly interpolated
-	 * between each instance and its k nearest neighbors, also chosen by
+	 * between each instance and its numNN nearest neighbors, also chosen by
 	 * random.
 	 * 
 	 * @param proportion: Desired proportion of new instances
-	 * @param classValue: class of desired nearest neighbors
+	 * @param interestingClass: class of desired nearest neighbors
 	 */
-	public void run(InstanceSet instanceSet, int classValue, double proportion) {
-		setInstanceSet(instanceSet);
-		
+	protected void run() {
 		int counter = 0;
 		int instancesIDsTmp[] = new int[numInstances];
 		
 		for (int inst = 0; inst < numInstances; inst++) {
-			if (instances[inst].data[classIndex] == classValue) {
+			if (instances[inst].data[classIndex] == interestingClass) {
 				instancesIDsTmp[counter] = inst;
 				++counter;
 			}
@@ -174,35 +170,35 @@ public class Smote {
 			instancesIDs[i] = instancesIDsTmp[i];
 		}
 		
-		run(instancesIDs, proportion);
+		run(instancesIDs);
 	}
 
 	/**
 	 * SMOTE oversamples a complete dataset. It creates new cases
 	 * based on the existing ones. These new cases are randomly interpolated
-	 * between each instance and its k nearest neighbors, also chosen by random.
+	 * between each instance and its numNN nearest neighbors, also chosen by random.
 	 * 
 	 * @param proportion: Desired proportion of new instances
 	 */
-	public void run(double proportion) {
+	public void runAll() {
 		int instancesIDs[] = new int[numInstances];
 		
 		for (int inst = 0; inst < numInstances; inst++) {
 			instancesIDs[inst] = inst;
 		}
 		
-		run(instancesIDs, proportion);
+		run(instancesIDs);
 	}
 
 	/**
 	 * SMOTE oversamples a specified class of a dataset. It creates new cases
 	 * based on the existing ones. These new cases are randomly interpolated
-	 * between each instance and its k nearest neighbors, also chosen by random.
+	 * between each instance and its numNN nearest neighbors, also chosen by random.
 	 * 
 	 * @param instancesIDs[]: The chosen subset of instances to be smoted
 	 * @param proportion: Desired proportion of new instances
 	 */
-	public int[] run(int[] instancesIDs, double proportion) {
+	public int[] run(int[] instancesIDs) {
 		if (instanceSet.numInstances < 2 || instancesIDs.length < 2) {
 			return instancesIDs;
 		}
@@ -220,7 +216,7 @@ public class Smote {
 		if (instanceSet == null) exceptionMsg = "The instanceSet is null!";
 		if (instancesIDs == null) exceptionMsg = "The instancesIDs is null!";
 		if (proportion < 1) exceptionMsg = "proportion must be greater than 1!";
-		if (k < 0) exceptionMsg = "k must be greater than 0!";
+		if (numNN < 0) exceptionMsg = "numNN must be greater than 0!";
 //		if (mTree == null) exceptionMsg = "The mTree is null!";
 		
 		/* Throw exception if there is problems with the parameters */
@@ -336,7 +332,7 @@ public class Smote {
 		 */
 		for (int i = 0; i < numInstancesIDs; i++) {
 			inst = instancesIDs[i];
-//			nearestNeighborsIDs = mTree.nearestNeighborIDs(i, k);
+//			nearestNeighborsIDs = mTree.nearestNeighborIDs(i, numNN);
 			nearestNeighborsIDs = nearestNeighborIDs(i);
 			for (int w = 0; w < instances[inst].data[counterIndex]; w++) {
 				populateAux(inst, nearestNeighborsIDs, numNewInstancesPerInstance);
@@ -388,7 +384,7 @@ public class Smote {
 			/* Alocate space for the new instance and its weight */
 			float newInstance[] = new float[numAttributes + 1];
 
-			/* Chooses randomly one of the k nearest neighbor */
+			/* Chooses randomly one of the numNN nearest neighbor */
 			chosenNN = random.nextInt(nearestNeighborsIDs.length);
 			nearestNeighborIndex = nearestNeighborsIDs[chosenNN];
 			
@@ -567,7 +563,7 @@ public class Smote {
 		int index = -1;
 		int count = 0;
 		
-		for (int i = 0; i < k; i++) {
+		for (int i = 0; i < numNN; i++) {
 			try {
 				index = nearestNeighborsIDs[instanceID][i];
 			} catch (Exception e) {
@@ -586,7 +582,7 @@ public class Smote {
 		
 		int nearestNeighborIDs[] = new int[count];
 		count = 0;
-		for (int i = 0; i < k; i++) {
+		for (int i = 0; i < numNN; i++) {
 			index = nearestNeighborsIDs[instanceID][i];
 			if (index > 0) {
 				nearestNeighborIDs[count] = index;
@@ -597,145 +593,19 @@ public class Smote {
 		return nearestNeighborIDs;
 	}
 
-	public void buildNN(int k, int classValue) throws Exception {
-		int counter = 0;
-		int instancesIDsTmp[] = new int[numInstances];
-		
-		for (int inst = 0; inst < numInstances; inst++) {
-			if (instances[inst].data[classIndex] == classValue) {
-				instancesIDsTmp[counter] = inst;
-				++counter;
-			}
+	public void buildNearestNeighbors() throws Exception {
+		if (nearestNeighborsIDs == null) {
+			nearestNeighbors = new NearestNeighbors(instanceSet);
+			nearestNeighborsIDs = nearestNeighbors.build(interestingClass);
 		}
-		int instancesIDs[] = new int[counter];
-		for (int i = 0; i < counter; i++) {
-			instancesIDs[i] = instancesIDsTmp[i];
-		}
-		
-		buildNN(instancesIDs, k);
 	}
-
-	/**
-	 * SMOTE oversamples a complete dataset. It creates new cases
-	 * based on the existing ones. These new cases are randomly interpolated
-	 * between each instance and its k nearest neighbors, also chosen by random.
-	 * 
-	 * @param proportion: Desired proportion of new instances
-	 * @throws Exception 
-	 */
-	public void buildNN(int k) throws Exception {
-		int instancesIDs[] = new int[numInstances];
-		
-		for (int inst = 0; inst < numInstances; inst++) {
-			instancesIDs[inst] = inst;
-		}
-		
-		buildNN(instancesIDs, k);
-	}
-
-	public int[][] buildNN(int[] instancesIDs, int k)
-	throws Exception {
-		this.k = k;
-		int numInstancesIDs = instancesIDs.length;
-
-		nearestNeighborsIDs = new int[numInstancesIDs][k];
-		float[][] nearestNeighborsDistance = new float[numInstancesIDs][k];
-		
-//		/* File with nearest neighbors to open */
-//		File fileTest;
-//		if (optionDistanceFunction == HAMMING) {
-//			fileName = fileName + "_nearestHamming_" + classValue + ".idx";
-//		} else {
-//			fileName = fileName + "_nearestHVDM_" + classValue + ".idx";
-//		}
-//		fileTest = new File(fileName);
-//		RandomAccessFile file;
-//		
-//		if(fileTest.exists()) {
-//			/* Initialize from existing file */
-//			file = new RandomAccessFile(fileTest, "r");
-//			for (int i = 0; i < numInstancesIDs; i++) {
-//				for (int d = 0; d < 2 * k; d += 2) {
-//					nearestNeighborsIDs[i][d] = file.readInt();
-//					nearestNeighborsIDs[i][d + 1] = file.readFloat();
-//				}
-//			}
-//			/* Return with the nearest neighbors read from file */
-//			return;
-//		}
-
-		/* Initialize 'nearestNeighborsIDs */
-		for (int i = 0; i < numInstancesIDs; i++) {
-			for (int j = 0; j < k; j++) {
-				nearestNeighborsIDs[i][j] = -1;
-				nearestNeighborsDistance[i][j] = Float.POSITIVE_INFINITY;
-			}
-		}
-		
-		/* Get distance function */
-		Distance distance;
-		int normFactor = 4;
-		distance = new HVDM(instanceSet, normFactor);
-		((HVDM) distance).setOptionDistanceFunction(optionDistanceFunction);
-		
-		float dist = 0;
-		int distGreaterID = 0;
-		float distGreater;
-		int instI;
-		int instJ;
-		for (int i = 0; i < numInstancesIDs; i++) {
-			instI = instancesIDs[i];
-			distGreater = Float.POSITIVE_INFINITY;
-			for (int j = 0; j < numInstancesIDs; j++) {
-				instJ = instancesIDs[j];
-				dist = distance.distanceValue(instances[instI].data,
-						instances[instJ].data);
-				/* Check if the 'instJ' is a nearest neighbor */
-				if (dist < distGreater) {
-					/* 
-					 * We've found a new nearest neighbor. Pop the farthest
-					 * neighbor up and insert this new nearest neighbor.
-					 */
-					nearestNeighborsIDs[i][distGreaterID] = instJ;
-					nearestNeighborsDistance[i][distGreaterID] = dist;
-					distGreater = 0;
-					
-					/* 
-					 * Find the new farthest neighbor and its distance from
-					 * 'intI'.
-					 */
-					for (int d = 0; d < k; d++) {
-						if (distGreater < nearestNeighborsDistance[i][d]) {
-							distGreater = nearestNeighborsDistance[i][d];
-							nearestNeighborsIDs[i][distGreaterID] = instJ;
-							distGreaterID = d;
-						}
-					}
-				}
-			}
-		}
-		
-//		/* Save nearestneighbors */
-//		file = new RandomAccessFile(fileTest, "rw");
-//		for (int i = 0; i < numInstancesIDs; i++) {
-//			for (int d = 0; d < 2 * k; d += 2) {
-//				file.writeInt((int) nearestNeighborsIDs[i][d]);
-//				file.writeFloat(nearestNeighborsIDs[i][d + 1]);
-//			}
-//		}
-		return nearestNeighborsIDs;
-	}
-
+	
 	public void setOptionDiscretize(boolean optionDiscretize) {
 		this.optionDiscretize = optionDiscretize;
 	}
 	
 	public void setOptionNominal(byte optionNominal) {
 		this.optionNominal = optionNominal;
-	}
-	
-	public void setOptionDistanceFunction(byte optionDistanceFunction) {
-		this.optionDistanceFunction = optionDistanceFunction;
 	}
 	
 	public void setOptionFixedGap(boolean optionFixedGap) {
@@ -748,6 +618,19 @@ public class Smote {
 
 	public boolean isNearestNeighborsIDsBuilt() {
 		return nearestNeighborsIDs != null;
+	}
+
+	public void initialize() {
+		GlobalBatchParameters.getInstance().initializeSmote(this);
+	}
+	
+	@Override
+	protected void initializeBatch(InstanceSet instanceSet)
+	throws Exception {
+		initialize();
+		setInstanceSet(instanceSet);
+		setInterestingClass(positiveClass);
+		buildNearestNeighbors();
 	}
 
 }

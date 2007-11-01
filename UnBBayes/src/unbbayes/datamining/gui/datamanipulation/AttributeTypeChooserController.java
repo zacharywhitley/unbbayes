@@ -5,38 +5,24 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.StreamTokenizer;
-import java.util.Arrays;
-import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.ResourceBundle;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.CellEditorListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
@@ -45,6 +31,15 @@ import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Loader;
 import unbbayes.datamining.datamanipulation.TxtLoader;
+import unbbayes.datamining.gui.UtilsGUI;
+import unbbayes.datamining.gui.UtilsGUI.CheckBoxEditor;
+import unbbayes.datamining.gui.UtilsGUI.ComboBoxEditor;
+import unbbayes.datamining.gui.UtilsGUI.ComboBoxRenderer;
+import unbbayes.datamining.gui.UtilsGUI.EachRowEditor;
+import unbbayes.datamining.gui.UtilsGUI.EachRowRenderer;
+import unbbayes.datamining.gui.UtilsGUI.RadioButtonEditor;
+import unbbayes.datamining.gui.UtilsGUI.RadioButtonRenderer;
+import unbbayes.datamining.gui.UtilsGUI.RowHeaderRenderer;
 
 /**
  * 
@@ -97,6 +92,8 @@ public class AttributeTypeChooserController {
 	private Object[][] chooserData;
 
 	private byte[] attributeTypeOriginal;
+	
+	private UtilsGUI utilsGUI = new UtilsGUI();
 
 	public AttributeTypeChooserController(File file, Component parent)
 			throws Exception {
@@ -206,8 +203,8 @@ public class AttributeTypeChooserController {
 
 		/* Build scroll pane for the data table */
 		JScrollPane dataTableScroll = new JScrollPane(dataTable);
-		dataTableScroll
-				.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		dataTableScroll.setHorizontalScrollBarPolicy(JScrollPane
+				.HORIZONTAL_SCROLLBAR_ALWAYS);
 
 		/* Build the chooser table */
 		JTable chooserTable = buildChooserTable();
@@ -224,7 +221,7 @@ public class AttributeTypeChooserController {
 		JList chooserTableRowHeader = new JList(chooserTableRowHeaderData);
 		chooserTableRowHeader.setFixedCellWidth(150);
 		chooserTableRowHeader.setFixedCellHeight(dataTable.getRowHeight());
-		chooserTableRowHeader.setCellRenderer(new RowHeaderRenderer(
+		chooserTableRowHeader.setCellRenderer(utilsGUI.new RowHeaderRenderer(
 				chooserTable, true));
 
 		/*
@@ -240,8 +237,8 @@ public class AttributeTypeChooserController {
 		dataTableRowHeader.setFixedCellWidth(chooserTableRowHeader
 				.getFixedCellWidth());
 		dataTableRowHeader.setFixedCellHeight(dataTable.getRowHeight());
-		dataTableRowHeader.setCellRenderer(new RowHeaderRenderer(chooserTable,
-				false));
+		dataTableRowHeader.setCellRenderer(utilsGUI.new RowHeaderRenderer(
+				chooserTable, false));
 		dataTableScroll.setRowHeaderView(dataTableRowHeader);
 
 		/* Build scroll pane for the chooser table and get rid of its header */
@@ -252,10 +249,10 @@ public class AttributeTypeChooserController {
 			}
 		};
 		chooserScroll.setRowHeaderView(chooserTableRowHeader);
-		chooserScroll
-				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		chooserScroll
-				.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		chooserScroll.setVerticalScrollBarPolicy(JScrollPane
+				.VERTICAL_SCROLLBAR_ALWAYS);
+		chooserScroll.setHorizontalScrollBarPolicy(JScrollPane
+				.HORIZONTAL_SCROLLBAR_NEVER);
 
 		/* Get rid of the vertical bar of the chooser table */
 		chooserScroll.getVerticalScrollBar().setEnabled(false);
@@ -299,9 +296,11 @@ public class AttributeTypeChooserController {
 		attTypes.put((byte) 0, "numeric");
 		attTypes.put((byte) 1, "nominal");
 		attTypes.put((byte) 2, "cyclic");
-		String[] comboValues = { (String) attTypes.get((byte) 0),
+		String[] comboValues = {
+				(String) attTypes.get((byte) 0),
 				(String) attTypes.get((byte) 1),
-				(String) attTypes.get((byte) 2), };
+				(String) attTypes.get((byte) 2),
+		};
 
 		/* First, we build the recipient table */
 		AbstractTableModel chooserModel = new AbstractTableModel() {
@@ -360,16 +359,6 @@ public class AttributeTypeChooserController {
 			}
 		};
 
-		final JTable chooserTable = new JTable(chooserModel) {
-			private static final long serialVersionUID = 1L;
-
-			/** Repaint the table at each change to its values */
-			public void tableChanged(TableModelEvent e) {
-				super.tableChanged(e);
-				repaint();
-			}
-		};
-
 		/* Add components to the chooser data model */
 		chooserData = new Object[3][numAttributes];
 		for (int att = 0; att < numAttributes; att++) {
@@ -378,22 +367,23 @@ public class AttributeTypeChooserController {
 			chooserData[2][att] = counterIndexAux[att];
 		}
 
+		JTable chooserTable = new JTable(chooserModel);
 		TableColumnModel columnModel = chooserTable.getColumnModel();
+		JCheckBox checkBox = new JCheckBox();
+		checkBox.setHorizontalAlignment(JCheckBox.CENTER);
 		for (int att = 0; att < numAttributes; att++) {
 			/* Next, we set the editor used in this table */
-			EachRowEditor rowEditor = new EachRowEditor(chooserTable);
-			EachRowRenderer rowRenderer = new EachRowRenderer();
+			EachRowEditor rowEditor = utilsGUI.new EachRowEditor(chooserTable);
+			EachRowRenderer rowRenderer = utilsGUI.new EachRowRenderer();
 
-			rowEditor.setEditorAt(0, new ComboBoxEditor(comboValues));
-			rowRenderer.add(0, new ComboBoxRenderer(comboValues));
+			rowEditor.setEditorAt(0, utilsGUI.new ComboBoxEditor(comboValues));
+			rowRenderer.add(0, utilsGUI.new ComboBoxRenderer(comboValues));
 
-			rowEditor
-					.setEditorAt(1, new CheckBoxEditor(attributeIsString[att]));
-			rowRenderer.add(1, new CheckBoxRenderer(attributeIsString[att]));
+			rowEditor.setEditorAt(1, new CheckBoxEditor());
+			rowRenderer.add(1, new CheckBoxRenderer());
 
-			rowEditor.setEditorAt(2,
-					new RadioButtonEditor(counterIndexAux[att]));
-			rowRenderer.add(2, new RadioButtonRenderer(counterIndexAux[att]));
+			rowEditor.setEditorAt(2, utilsGUI.new RadioButtonEditor());
+			rowRenderer.add(2, utilsGUI.new RadioButtonRenderer());
 
 			/* Set the cell renderer and editor for the current column */
 			columnModel.getColumn(att).setCellEditor(rowEditor);
@@ -528,244 +518,33 @@ public class AttributeTypeChooserController {
 		return loader;
 	}
 
-	public class RowHeaderRenderer extends JLabel implements ListCellRenderer {
-		private static final long serialVersionUID = 1L;
+	/**
+	 * This is a specific checkbox renderer which disables the string option of
+	 * an attribute when this attribute is numeric.
+	 * @author Emerson
+	 *
+	 */
+	private class CheckBoxRenderer extends JCheckBox implements TableCellRenderer {
 
-		RowHeaderRenderer(JTable table, boolean border) {
-			JTableHeader header = table.getTableHeader();
-			setOpaque(true);
-			setHorizontalAlignment(RIGHT);
-			setForeground(header.getForeground());
-			setBackground(header.getBackground());
-			setFont(header.getFont());
+		private static final long serialVersionUID = -9005292408131451196L;
+
+		public CheckBoxRenderer() {
+			setHorizontalAlignment(JCheckBox.CENTER);
 		}
 
-		public Component getListCellRendererComponent(JList list, Object value,
-				int index, boolean isSelected, boolean cellHasFocus) {
-			setText((value == null) ? "" : value.toString());
-			return this;
-		}
-	}
-
-	public class EachRowRenderer implements TableCellRenderer {
-		protected Hashtable<Integer, Object> renderers;
-
-		protected TableCellRenderer renderer, defaultRenderer;
-
-		public EachRowRenderer() {
-			renderers = new Hashtable<Integer, Object>();
-			defaultRenderer = new DefaultTableCellRenderer();
-		}
-
-		public void add(int row, TableCellRenderer renderer) {
-			renderers.put(new Integer(row), renderer);
-		}
-
-		public Component getTableCellRendererComponent(JTable table,
+		public Component getTableCellRendererComponent(JTable table, 
 				Object value, boolean isSelected, boolean hasFocus, int row,
 				int column) {
-			renderer = (TableCellRenderer) renderers.get(new Integer(row));
-			if (renderer == null) {
-				renderer = defaultRenderer;
-			}
-			return renderer.getTableCellRendererComponent(table, value,
-					isSelected, hasFocus, row, column);
-		}
-	}
-
-	public class EachRowEditor implements TableCellEditor {
-		private static final long serialVersionUID = 1L;
-
-		protected Hashtable<Integer, Object> editors;
-
-		protected TableCellEditor editor, defaultEditor;
-
-		JTable table;
-
-		public EachRowEditor(JTable table) {
-			this.table = table;
-			editors = new Hashtable<Integer, Object>();
-			defaultEditor = new DefaultCellEditor(new JTextField());
-		}
-
-		public void setEditorAt(int row, TableCellEditor editor) {
-			editors.put(new Integer(row), editor);
-		}
-
-		public Component getTableCellEditorComponent(JTable table,
-				Object value, boolean isSelected, int row, int column) {
-			editor = (TableCellEditor) editors.get(new Integer(row));
-			if (editor == null) {
-				editor = defaultEditor;
-			}
-			return editor.getTableCellEditorComponent(table, value, isSelected,
-					row, column);
-		}
-
-		public Object getCellEditorValue() {
-			return editor.getCellEditorValue();
-		}
-
-		public boolean stopCellEditing() {
-			return editor.stopCellEditing();
-		}
-
-		public void cancelCellEditing() {
-			editor.cancelCellEditing();
-		}
-
-		public boolean isCellEditable(EventObject anEvent) {
-			selectEditor((MouseEvent) anEvent);
-			return editor.isCellEditable(anEvent);
-		}
-
-		public void addCellEditorListener(CellEditorListener l) {
-			editor.addCellEditorListener(l);
-		}
-
-		public void removeCellEditorListener(CellEditorListener l) {
-			editor.removeCellEditorListener(l);
-		}
-
-		public boolean shouldSelectCell(EventObject anEvent) {
-			selectEditor((MouseEvent) anEvent);
-			return editor.shouldSelectCell(anEvent);
-		}
-
-		protected void selectEditor(MouseEvent e) {
-			int row;
-			if (e == null) {
-				row = table.getSelectionModel().getAnchorSelectionIndex();
-			} else {
-				row = table.rowAtPoint(e.getPoint());
-			}
-			editor = (TableCellEditor) editors.get(new Integer(row));
-			if (editor == null) {
-				editor = defaultEditor;
-			}
-		}
-	}
-
-	class RadioButtonRenderer extends JCheckBox implements TableCellRenderer {
-		private static final long serialVersionUID = 1L;
-
-		private JRadioButton button = new JRadioButton();
-
-		public RadioButtonRenderer(boolean value) {
-			super("", value);
-		}
-
-		public Component getTableCellRendererComponent(JTable table,
-				Object value, boolean isSelected, boolean hasFocus, int row,
-				int column) {
-			if (value == null)
-				return null;
-			button.setSelected((Boolean) value);
-			button.setHorizontalAlignment(JRadioButton.CENTER);
-			return (Component) button;
-		}
-	}
-
-	class RadioButtonEditor extends DefaultCellEditor implements ItemListener {
-		private static final long serialVersionUID = 1L;
-
-		private JRadioButton button;
-
-		public RadioButtonEditor(boolean value) {
-			super(new JCheckBox("", value));
-			button = new JRadioButton("", value);
-		}
-
-		public Component getTableCellEditorComponent(JTable table,
-				Object value, boolean isSelected, int row, int column) {
-			if (value == null)
-				return null;
-			button.setSelected((Boolean) value);
-			button.addItemListener(this);
-			button.setHorizontalAlignment(JRadioButton.CENTER);
-			return (Component) button;
-		}
-
-		public Object getCellEditorValue() {
-			return button;
-		}
-
-		public void itemStateChanged(ItemEvent e) {
-			super.fireEditingStopped();
-		}
-	}
-
-	public class ComboBoxRenderer extends JComboBox implements
-			TableCellRenderer {
-		private static final long serialVersionUID = 1L;
-
-		public ComboBoxRenderer(String[] items) {
-			super(items);
-		}
-
-		public Component getTableCellRendererComponent(JTable table,
-				Object value, boolean isSelected, boolean hasFocus, int row,
-				int column) {
-			setSelectedItem(value);
-			return this;
-		}
-
-	}
-
-	public class ComboBoxEditor extends DefaultCellEditor {
-		private static final long serialVersionUID = 1L;
-
-		public ComboBoxEditor(String[] items) {
-			super(new JComboBox(items));
-		}
-	}
-
-	public class CheckBoxRenderer extends JCheckBox implements
-			TableCellRenderer {
-		private static final long serialVersionUID = 1L;
-
-		public CheckBoxRenderer(boolean value) {
-			super("", value);
-		}
-
-		public Component getTableCellRendererComponent(JTable table,
-				Object value, boolean isSelected, boolean hasFocus, int row,
-				int column) {
-
-			/* Select the current value */
-			setSelected((Boolean) value);
-
+			/* Disable string checkbox when attribute is numeric */
 			if (chooserData[0][column] == "nominal") {
 				this.setEnabled(true);
 			} else {
 				this.setEnabled(false);
 			}
-			setHorizontalAlignment(JCheckBox.CENTER);
-
+			setSelected((value != null && ((Boolean) value).booleanValue()));
+			
 			return this;
 		}
-
-	}
-
-	class CheckBoxEditor extends DefaultCellEditor {
-		private static final long serialVersionUID = 1L;
-
-		private JCheckBox checkBox;
-
-		public CheckBoxEditor(boolean value) {
-			super(new JCheckBox("", value));
-//			checkBox = new JCheckBox("", value);
-		}
-
-//		public Component getTableCellEditorComponent(JTable table,
-//				Object value, boolean isSelected, int row, int column) {
-//			if (value == null)
-//				return null;
-//			checkBox = new JCheckBox();
-//			checkBox.setSelected((Boolean) value);
-//			checkBox.setHorizontalAlignment(JCheckBox.CENTER);
-//			return (Component) value;
-//		}
 	}
 
 }

@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2005 Universidade de Brasília
+ *  Copyright (C) 2005 Universidade de Brasï¿½lia
  *
  *  This file is part of UnBMiner.
  *
@@ -21,7 +21,6 @@
 
 package unbbayes.datamining;
 
-import unbbayes.TestROC;
 import unbbayes.datamining.gui.InvokerMain;
 
 /**

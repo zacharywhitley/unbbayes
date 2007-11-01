@@ -29,7 +29,7 @@ public class PreprocessorResource extends ListResourceBundle {
 	{"fileOpened","File opened successfully"},
 	{"fileTestTrainingCreated","Test and training set created successfully"},
 	{"sampleCreated","Sample created successfully"},
-	{"preprocessorTitle","Preprocessor - "},
+	{"preprocessorTitle","InitializePreprocessors - "},
 	{"errorDB","Error in data base: "},
 	{"fileNotFound","File not found: "},
 	{"errorOpen","Error opening file: "},

@@ -10,7 +10,7 @@ import unbbayes.datamining.classifiers.decisiontree.SplitObject;
 /**
  * Class implementing information gain method and other related actions
  *
- *  @author M�rio Henrique Paes Vieira (mariohpv@bol.com.br)
+ *  @author Mï¿½rio Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  *
  */

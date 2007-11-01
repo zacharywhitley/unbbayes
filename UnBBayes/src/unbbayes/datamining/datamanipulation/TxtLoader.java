@@ -11,7 +11,7 @@ import java.util.ResourceBundle;
 
 /** This class opens a txt file building an InstanceSet object
  *
- *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ *  @author Mï¿½rio Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @version $1.0 $ (16/02/2002)
  */
 public class TxtLoader extends Loader {
@@ -60,14 +60,6 @@ public class TxtLoader extends Loader {
 //		tokenizer.parseNumbers(); // not working with floating (e.g. 1.23E8)
 	}
 
-	/**
-	 * Temporarily constructs the header of a txt file. Used as a preprocessor 
-	 * step in the construction of the file's header. 
-	 *
-	 * @param tokenizer Stream tokenizer
-	 * @exception IOException if the information is not read
-	 * successfully
-	 */
 	public void buildHeader() throws IOException {
 		/* Create am arraylist for the attributes */
 		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
@@ -84,7 +76,7 @@ public class TxtLoader extends Loader {
 			
 			/* Check if there is a counter attribute */
 			if (attName.equalsIgnoreCase(counterAttributeName)) {
-				likelycounterIndex = counter;
+				likelyCounterIndex = counter;
 			}
 
 			/* Check if the header is ok */
@@ -116,6 +108,39 @@ public class TxtLoader extends Loader {
 		/* Create the instanceSet */
 		instanceSet = new InstanceSet(initialInstances, attributesArray);
 		instanceSet.setCounterAttributeName(counterAttributeName);
+	}
+
+	public ArrayList<Object> getHeaderInfo() throws IOException {
+		/* Create am arraylist for the attributes' names */
+		ArrayList<String> attributesName = new ArrayList<String>();
+		String likelyCounterName = null;
+		String relationName = null;
+		
+		/* Build attributes */
+		getNextToken();
+		while (tokenizer.ttype != StreamTokenizer.TT_EOL) {
+			attributesName.add(tokenizer.sval);
+			
+			/* Check if there is a counter attribute */
+			if (tokenizer.sval.equalsIgnoreCase(counterAttributeName)) {
+				likelyCounterName = tokenizer.sval;
+			}
+
+			/* Check if the header is ok */
+			if (tokenizer.sval == null) {
+				errms(resource.getString("Invalid header"));
+			}
+			
+			tokenizer.nextToken();
+		}
+		
+		/* Build the result arraylist */
+		ArrayList<Object> result = new ArrayList<Object>();
+		result.add(attributesName);
+		result.add(likelyCounterName);
+		result.add(relationName);
+		
+		return result;
 	}
 
 	/**
@@ -248,7 +273,7 @@ public class TxtLoader extends Loader {
 					instanceWeight = numValue;
 					continue;
 				} catch (NumberFormatException nfe) {
-					errms("Atributo de contagem inválido");
+					errms("Atributo de contagem invï¿½lido");
 				}
 			}
 			

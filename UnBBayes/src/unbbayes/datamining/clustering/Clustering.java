@@ -147,11 +147,11 @@ public abstract class Clustering {
 	 */
 	public void buildClustersInfo() throws Exception {
 		if (numClusters < 1) {
-			throw new Exception("Number of cluster is less than 1!"); 
+			throw new IllegalArgumentException("Number of cluster is less than 1!"); 
 		}
 		
 		if (assignmentMatrix == null) {
-			throw new Exception("The assignmentMatrix is null!"); 
+			throw new IllegalArgumentException("The assignmentMatrix is null!"); 
 		}
 		
 		/* 

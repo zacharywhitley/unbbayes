@@ -46,7 +46,7 @@ public class EvaluationMain extends JInternalFrame
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
-	/** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+	/** Carrega o arquivo de recursos para internacionalizaï¿½ï¿½o da localidade padrï¿½o */
 	private ResourceBundle resource;
 	private ImageIcon abrirIcon;
 	private ImageIcon helpIcon;
@@ -76,8 +76,9 @@ public class EvaluationMain extends JInternalFrame
 
 	/**Construct the frame*/
 	public EvaluationMain()
-	{ super("Evaluation",true,true,true,true);
+	{ super("",true,true,true,true);
 		resource = ResourceBundle.getBundle("unbbayes.datamining.gui.evaluation.resources.EvaluationResource");
+		setTitle(resource.getString("title"));
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		try
 		{
@@ -199,7 +200,7 @@ public class EvaluationMain extends JInternalFrame
 			fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
 			fileChooser.setDialogTitle("Open Test Instance Set");
 			fileChooser.setMultiSelectionEnabled(false);
-			//adicionar FileView no FileChooser para desenhar ícones de arquivos
+			//adicionar FileView no FileChooser para desenhar ï¿½cones de arquivos
 			fileChooser.setFileView(new FileIcon(this));
 			fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "TxtFiles (*.txt)"));
 			fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ArffFiles (*.arff)"));
@@ -231,7 +232,7 @@ public class EvaluationMain extends JInternalFrame
 				}
 				else
 				{
-					statusBar.setText("Operação cancelada");
+					statusBar.setText("Operaï¿½ï¿½o cancelada");
 				}
 
 			}
@@ -290,7 +291,7 @@ public class EvaluationMain extends JInternalFrame
 			fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
 			fileChooser.setDialogTitle("Open model");
 			fileChooser.setMultiSelectionEnabled(false);
-			//adicionar FileView no FileChooser para desenhar ícones de arquivos
+			//adicionar FileView no FileChooser para desenhar ï¿½cones de arquivos
 			fileChooser.setFileView(new FileIcon(EvaluationMain.this));
 			fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "Networks (*.net)"));
 			fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ID3 Models (*.id3)"));

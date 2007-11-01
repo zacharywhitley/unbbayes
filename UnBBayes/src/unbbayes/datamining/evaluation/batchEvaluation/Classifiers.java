@@ -1,6 +1,5 @@
-package unbbayes.datamining.evaluation;
+package unbbayes.datamining.evaluation.batchEvaluation;
 
-import unbbayes.TestsetUtils;
 import unbbayes.datamining.classifiers.Classifier;
 import unbbayes.datamining.classifiers.DistributionClassifier;
 import unbbayes.datamining.classifiers.NaiveBayes;
@@ -45,9 +44,8 @@ public class Classifiers {
 
 	public static void buildClassifier(InstanceSet train,
 			Classifier classifier, float[] distribution,
-			TestsetUtils testsetUtils)
+			int positiveClass)
 	throws Exception {
-		int positiveClass = testsetUtils.getPositiveClass();
 		if (classifier instanceof DecisionTreeLearning) {
 			((DecisionTreeLearning) classifier).setPositiveClass(positiveClass);
 		} else if (classifier instanceof DistributionClassifier) {

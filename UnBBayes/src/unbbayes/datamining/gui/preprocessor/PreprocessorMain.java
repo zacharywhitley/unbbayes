@@ -45,7 +45,7 @@ public class PreprocessorMain extends JInternalFrame
 	private static final long serialVersionUID = 0;	
 	
 	
-	/** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+	/** Carrega o arquivo de recursos para internacionalizaï¿½ï¿½o da localidade padrï¿½o */
 	private ResourceBundle resource;
 	private JPanel contentPane;
 	private JMenuBar jMenuBar1 = new JMenuBar();
@@ -80,7 +80,7 @@ public class PreprocessorMain extends JInternalFrame
 
 	/**Construct the frame*/
 	public PreprocessorMain()
-	{ super("Preprocessor",true,true,true,true);
+	{ super("InitializePreprocessors",true,true,true,true);
 		resource = ResourceBundle.getBundle("unbbayes.datamining.gui.preprocessor.resources.PreprocessorResource");
 		enableEvents(AWTEvent.WINDOW_EVENT_MASK);
 		try
@@ -414,7 +414,7 @@ public class PreprocessorMain extends JInternalFrame
 		fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
 		fileChooser.setMultiSelectionEnabled(false);
 		
-		//adicionar FileView no FileChooser para desenhar ícones de arquivos
+		//adicionar FileView no FileChooser para desenhar ï¿½cones de arquivos
 		fileChooser.setFileView(new FileIcon(this));
 		fileChooser.setDialogTitle(dialogTitle);
 		fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "TxtFiles (*.txt)"));
@@ -461,7 +461,7 @@ public class PreprocessorMain extends JInternalFrame
 			String[] s2 = {"TXT"};
 			fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
 			fileChooser.setMultiSelectionEnabled(false);
-			//adicionar FileView no FileChooser para desenhar ícones de arquivos
+			//adicionar FileView no FileChooser para desenhar ï¿½cones de arquivos
 			fileChooser.setFileView(new FileIcon(this));
 			fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "TxtFiles (*.txt)"));
 			fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ArffFiles (*.arff)"));
@@ -481,7 +481,7 @@ public class PreprocessorMain extends JInternalFrame
 			jMenuFileTestTrainingSet.setEnabled(false);
 			jMenuBuildSample.setEnabled(false);
 	
-			inst = FileController.getInstance().getInstanceSet(selectedFile,this);
+			inst = FileController.getInstance().getInstanceSet(selectedFile, this);
 			if (inst != null) {
 				String fileName = selectedFile.getName();
 				//jTabbedPane1.setSelectedIndex(0);
@@ -493,7 +493,7 @@ public class PreprocessorMain extends JInternalFrame
 				jMenuFileTestTrainingSet.setEnabled(true);
 				jMenuBuildSample.setEnabled(true);
 			} else {
-				statusBar.setText("Operação cancelada");
+				statusBar.setText("Operaï¿½ï¿½o cancelada");
 			}
 
 //		} catch (NullPointerException npe) {

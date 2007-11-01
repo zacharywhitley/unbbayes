@@ -12,7 +12,7 @@ import java.util.ResourceBundle;
 /**
  * Class for handling a set of instances.
  *
- * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br) - first version
+ * @author Mï¿½rio Henrique Paes Vieira (mariohpv@bol.com.br) - first version
  * @version $1.0 $ (16/02/2002)
  * 
  * @author Emerson Lopes Machado - emersoft@conectanet.com.br - second version
@@ -587,7 +587,7 @@ public class InstanceSet implements Serializable {
 	}
 
 	/**
-	 * Insert an instance to current Dataset
+	 * Insert an instance to current Datasets
 	 * 
 	 * @param newInstance New instance
 	 */
@@ -603,7 +603,7 @@ public class InstanceSet implements Serializable {
 	}
 	
 	/**
-	 * Insert an instance to current Dataset
+	 * Insert an instance to current Datasets
 	 * 
 	 * @param newInstance New instance
 	 */
@@ -651,6 +651,17 @@ public class InstanceSet implements Serializable {
 		hasChanged = true;
 	}
 
+	/**
+	 * Check if multiclass dataset.
+	 */
+	public boolean isMultiClass() {
+		if (numClasses() > 2) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	/**
 	 * Returns the class attribute.
 	 *
@@ -1762,8 +1773,8 @@ public class InstanceSet implements Serializable {
 		return distribution.clone();
 	}
 
-	public float positiveFrequency(int positiveClass) {
-		return  getClassDistribution(false)[positiveClass] / numWeightedInstances;
+	public float getClassFrequency(int classValue) {
+		return  getClassDistribution(false)[classValue] / numWeightedInstances;
 	}
 
 	public void setAttributeHasChanged(int att) {
@@ -1906,6 +1917,29 @@ public class InstanceSet implements Serializable {
 		this.hasChanged = instanceSet.hasChanged;
 		this.distribution = instanceSet.distribution;
 		this.instancesIDs = instanceSet.instancesIDs;
+	}
+
+	/**
+	 * Only works for two class problem.
+	 * 
+	 * @return positive class
+	 */
+	public int getPositiveClass() {
+		getClassDistribution();
+		if (distribution[0] < distribution[1]) {
+			return 0;
+		} else {
+			return 1;
+		}
+	}
+
+	/**
+	 * Only works for two class problem.
+	 * 
+	 * @return negative class
+	 */
+	public int getNegativeClass() {
+		return Math.abs(1 - getPositiveClass());
 	}
 
 }

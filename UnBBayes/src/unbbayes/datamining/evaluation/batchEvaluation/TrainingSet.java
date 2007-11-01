@@ -1,4 +1,6 @@
-package unbbayes.datamining.evaluation;
+package unbbayes.datamining.evaluation.batchEvaluation;
+
+import unbbayes.datamining.evaluation.ITrainingMode;
 
 public class TrainingSet implements ITrainingMode {
 

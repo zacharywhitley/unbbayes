@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry sourcepath="JRE_SRC" kind="var" path="JRE_LIB"/>
-	<classpathentry kind="lib" path="lib/GIFOutput.jar"/>
-	<classpathentry kind="lib" path="lib/jh.jar"/>
-	<classpathentry kind="lib" path="lib/junit.jar"/>
-	<classpathentry kind="lib" path="lib/plot.jar"/>
+	<classpathentry kind="var" path="JRE_LIB" sourcepath="JRE_SRC"/>
+	<classpathentry exported="true" kind="lib" path="lib/GIFOutput.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jh.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/junit.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/plot.jar"/>
 	<classpathentry kind="lib" path="lib/xalan.jar"/>
 	<classpathentry kind="lib" path="lib/xml-apis.jar"/>
 	<classpathentry kind="lib" path="lib/protege/protege.jar"/>
@@ -32,5 +32,6 @@
 	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/protege-owl.jar"/>
 	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/stax-api-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/xercesImpl.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/miglayout15-swing.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

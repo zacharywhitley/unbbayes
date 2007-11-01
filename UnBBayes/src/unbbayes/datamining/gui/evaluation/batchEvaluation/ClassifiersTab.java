@@ -1,0 +1,316 @@
+package unbbayes.datamining.gui.evaluation.batchEvaluation;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ResourceBundle;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
+
+import net.miginfocom.layout.CC;
+import net.miginfocom.swing.MigLayout;
+import unbbayes.datamining.evaluation.batchEvaluation.BatchEvaluation;
+import unbbayes.datamining.evaluation.batchEvaluation.model.Classifiers;
+import unbbayes.datamining.gui.UtilsGUI;
+import unbbayes.datamining.gui.UtilsGUI.CheckBoxEditor;
+import unbbayes.datamining.gui.UtilsGUI.EachRowEditor;
+import unbbayes.datamining.gui.UtilsGUI.EachRowRenderer;
+import unbbayes.datamining.gui.evaluation.batchEvaluation.controllers.ClassifiersTabController;
+
+/**
+ *
+ * @author Emerson Lopes Machado - emersoft@conectanet.com.br
+ * @date 07/08/2007
+ */
+public class ClassifiersTab {
+	
+	private String tabTitle;
+	private ResourceBundle resource;
+	private BatchEvaluationMain mainView;
+	private ClassifiersTabController controller;
+	private UtilsGUI utilsGUI;
+	private EachRowEditor rowEditorClassifier;
+	private EachRowRenderer rowRendererClassifier;
+	private EachRowEditor rowEditorConfig;
+	private EachRowRenderer rowRendererConfig;
+	private Classifiers data;
+	private JTable table;
+
+	public ClassifiersTab(BatchEvaluationMain mainView, BatchEvaluation model) {
+		this.mainView = mainView;
+		utilsGUI = new UtilsGUI();
+		resource = mainView.getResourceBundle();
+		tabTitle = resource.getString("classifiersTabTitle");
+		controller = new ClassifiersTabController(this, model);
+		data = controller.getData();
+	}
+
+	/**
+	 * Return the This tab's title.
+	 * @return This tab's title.
+	 */
+	public String getTabTitle() {
+		return tabTitle;
+	}
+	
+	/**
+	* Build and return the panel created by this class.
+	* @return This tab panel.
+	 * @throws Exception 
+	*/
+	protected JPanel getTabPanel() throws Exception {
+		/* Build the principal panel */
+		JPanel panel = new JPanel(new MigLayout());
+
+		/* Get the Classifier table */
+		table = gettable();
+
+		/* Build scroll pane for the data table */
+		JScrollPane dataTableScroll = new JScrollPane(table);
+		dataTableScroll.setPreferredSize(new Dimension(1000, 150));
+		panel.add(dataTableScroll, BorderLayout.NORTH);
+		
+		/* Add a separator line */
+		panel.add(new JSeparator(), "growx, wrap, gaptop 10");
+
+		/* Add insert button */
+		String newButtonText = resource.getString("newButtonText");
+		JButton newButton = new JButton(newButtonText);
+		newButton.addActionListener(
+				new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						controller.insertData();
+					}
+				}
+			);
+
+		/* Add delete button */
+		String deleteButtonText = resource.getString("deleteButtonText");
+		JButton deleteButton = new JButton(deleteButtonText);
+		deleteButton.addActionListener(
+				new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						removeRow();
+					}
+				}
+			);
+
+//		/* Add edit button */
+//		String editButtonText = resource.getString("editButtonText");
+//		JButton editButton = new JButton(editButtonText);
+//		editButton.addActionListener(
+//				new ActionListener() {
+//					public void actionPerformed(ActionEvent e) {
+//						controller.editData(table);
+//					}
+//				}
+//			);
+//
+//		/* Add details button */
+//		String detailsButtonText = resource.getString("detailsButtonText");
+//		JButton detailsButton = new JButton(detailsButtonText);
+//		detailsButton.addActionListener(
+//				new ActionListener() {
+//					public void actionPerformed(ActionEvent e) {
+//						controller.showDetailsClassifier(table);
+//					}
+//				}
+//			);
+	
+		/* Add buttons to the panel */
+		panel.add(newButton,     new CC().spanX(4).split(4).tag("other"));
+		panel.add(deleteButton,  new CC().tag("other"));
+//		panel.add(editButton,    new CC().tag("other"));
+//		panel.add(detailsButton, new CC().tag("other"));
+		return panel;
+	}
+	
+	public void loadClassifierData() {
+		/* Start editor and renderer for class and counter combobox */
+		rowEditorClassifier = utilsGUI.new EachRowEditor(table);
+		rowRendererClassifier = utilsGUI.new EachRowRenderer();
+		rowEditorConfig = utilsGUI.new EachRowEditor(table);
+		rowRendererConfig = utilsGUI.new EachRowRenderer();
+
+		data = controller.getData();
+		DefaultTableModel ClassifierModel;
+		ClassifierModel = (DefaultTableModel) table.getModel();
+		updateColumnModel();
+		ClassifierModel.fireTableDataChanged();
+	}
+
+	public void updateColumnModel() {
+		String[] classifierNames;
+		int numRows = table.getRowCount();
+		for (int row = 0; row < numRows; row++) {
+			classifierNames = data.getClassifierNames();
+			changeColumnModel(classifierNames, row);
+		}
+	}
+
+	private void changeColumnModel(String[] classifierNames, int row) {
+		TableColumnModel columnModel = table.getColumnModel();
+		
+		/* Set the cell renderer and editor for the current row */
+		rowEditorClassifier.setEditorAt(row, utilsGUI.new ComboBoxEditor(classifierNames));
+		rowRendererClassifier.add(row, utilsGUI.new ComboBoxRenderer(classifierNames));
+		columnModel.getColumn(1).setCellEditor(rowEditorClassifier);
+		columnModel.getColumn(1).setCellRenderer(rowRendererClassifier);
+	}
+	
+	public void addRow(Object[] dataTableEntry, String[] classifierNames) {
+		/* Insert the Classifier info into the table */
+		DefaultTableModel ClassifierModel;
+		ClassifierModel = (DefaultTableModel) table.getModel();
+		ClassifierModel.addRow(dataTableEntry);
+		int row = table.getRowCount() - 1;
+
+		/* Set the cell renderer and editor for the current column */
+		changeColumnModel(classifierNames, row);
+		
+		/* Move focus to the inserted row */
+		table.changeSelection(row, 0, false, false);
+		table.requestFocusInWindow();
+	}
+	
+	public void removeRow() {
+		if (table.getRowCount() > 0) {
+			DefaultTableModel ClassifierModel;
+			ClassifierModel = (DefaultTableModel) table.getModel();
+			int row = table.getSelectedRow();
+			ClassifierModel.removeRow(row);
+			
+			/* Remove editors and renderers */
+			rowEditorClassifier.remove(row);
+			rowRendererClassifier.remove(row);
+			rowEditorConfig.remove(row);
+			rowRendererConfig.remove(row);
+			
+			int rowFocus = table.getRowCount() - 1;
+			table.changeSelection(rowFocus, 0, false, false);
+			table.requestFocusInWindow();
+		}
+	}
+
+	private JTable gettable() {
+		/* Set the Classifier table header */
+		
+		/* First, we build the recipient table */
+		DefaultTableModel ClassifierModel = new DefaultTableModel() {
+			private static final long serialVersionUID = 1L;
+
+			public String getColumnName(int col) {
+				return data.getColumnName(col);
+			}
+			
+			public int getColumnCount() {
+				return data.getColumnCount();
+			}
+
+			public int getRowCount() {
+				return data.getRowCount();
+			}
+
+			public void addRow(Object[] rowData) {
+				data.addRow(rowData);
+				super.fireTableDataChanged();
+			}
+
+			public void removeRow(int row) {
+				if (row >= 0) {
+					data.removeClassifier(row);
+					super.fireTableDataChanged();
+				}
+			}
+
+			public Object getValueAt(int row, int col) {
+				return data.getValueAt(row, col);
+			}
+
+			public void setValueAt(Object value, int row, int col) {
+				data.setValueAt(value, row, col);
+				fireTableCellUpdated(row, col);
+			}
+
+			public boolean isCellEditable(int row, int col) {
+				if (col != 2) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+			
+			@SuppressWarnings("unchecked")
+			public Class getColumnClass(int column) {
+				return getValueAt(0, column).getClass();
+			}
+			
+		};
+
+		JTable table = new JTable(ClassifierModel);
+
+		/* Start editor and renderer for class and counter combobox */
+		rowEditorClassifier = utilsGUI.new EachRowEditor(table);
+		rowRendererClassifier = utilsGUI.new EachRowRenderer();
+		rowEditorConfig = utilsGUI.new EachRowEditor(table);
+		rowRendererConfig = utilsGUI.new EachRowRenderer();
+
+		/* Set the editor used in this table */
+		TableColumnModel columnModel = table.getColumnModel();
+		columnModel.getColumn(0).setCellEditor(new CheckBoxEditor());
+		columnModel.getColumn(0).setCellRenderer(utilsGUI.new CheckBoxRenderer());
+		
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+		int width;
+
+		/* Set "Active" column width */
+		width = 50;
+		table.getColumnModel().getColumn(0).setPreferredWidth(width);
+
+		/* Set "Classifier name" column width */
+		width = 400;
+		table.getColumnModel().getColumn(1).setPreferredWidth(width);
+
+		/* Deny reordering of rows */
+		table.getTableHeader().setReorderingAllowed(false);
+		
+		/* Set the row height just enough to show all info of comboboxes */
+		table.setRowHeight(table.getRowHeight() + 5);
+		
+		return table;
+	}
+
+	public ClassifiersTabController getController() {
+		return controller;
+	}
+
+	public void updateData() {
+		/* Start editor and renderer for class and counter combobox */
+		rowEditorClassifier = utilsGUI.new EachRowEditor(table);
+		rowRendererClassifier = utilsGUI.new EachRowRenderer();
+		rowEditorConfig = utilsGUI.new EachRowEditor(table);
+		rowRendererConfig = utilsGUI.new EachRowRenderer();
+
+		data = controller.getData();
+		DefaultTableModel datasetModel;
+		datasetModel = (DefaultTableModel) table.getModel();
+		updateColumnModel();
+		datasetModel.fireTableDataChanged();
+	}
+
+	public BatchEvaluationMain getMainView() {
+		return mainView;
+	}
+
+}
+

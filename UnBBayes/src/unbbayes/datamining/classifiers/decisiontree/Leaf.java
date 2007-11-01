@@ -40,6 +40,7 @@ public class Leaf implements Serializable {
 			int positiveClass) {
 		this.classAttribute = classAttribute;
 		this.distribution = distribution;
+
 		computeClass(threshold, positiveClass);
 	}
   	

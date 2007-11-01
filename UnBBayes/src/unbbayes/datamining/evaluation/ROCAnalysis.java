@@ -5,11 +5,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
 
-import unbbayes.TestsetUtils;
-import unbbayes.datamining.classifiers.Classifier;
-import unbbayes.datamining.classifiers.decisiontree.C45;
-import unbbayes.datamining.classifiers.decisiontree.DecisionTreeLearning;
-import unbbayes.datamining.classifiers.decisiontree.Node;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Utils;

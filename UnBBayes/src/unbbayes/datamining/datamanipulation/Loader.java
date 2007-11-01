@@ -6,12 +6,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
+import java.util.ArrayList;
 
 import unbbayes.controller.IProgress;
 
 /** This class defines abstracs methods for open a file building an InstanceSet object
  *
- *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ *  @author Mï¿½rio Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @version $1.0 $ (16/02/2002)
  */
 public abstract class Loader implements IProgress {
@@ -60,7 +61,7 @@ public abstract class Loader implements IProgress {
 
 	protected String[] attributeName;
 
-	protected int likelycounterIndex = -1;
+	protected int likelyCounterIndex = -1;
 
 	private int classIndex;
 	
@@ -130,6 +131,15 @@ public abstract class Loader implements IProgress {
 	 * successfully
 	 */
 	public abstract void readHeader() throws IOException;
+
+	/**
+	 * Reads and return the names of all attributes in an ARFF file.
+	 * @return An arraylist containing the following results: An arraylist with
+	 * all attributes' names, the likely counter attribute's name and the 
+	 * relation's name.
+	 * @exception IOException if the information is not read successfully.
+	 */
+	public abstract ArrayList<Object> getHeaderInfo() throws IOException;
 
 	/**
 	 * Reads a single instance using the tokenizer and appends it
@@ -243,7 +253,7 @@ public abstract class Loader implements IProgress {
 	}
 
 	public int getLikelyCounterIndex() {
-		return likelycounterIndex;
+		return likelyCounterIndex;
 	}
 
 	public void setAttributeName(String[] attributeName) {

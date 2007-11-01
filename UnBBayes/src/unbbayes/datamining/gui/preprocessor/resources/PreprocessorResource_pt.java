@@ -30,7 +30,7 @@ public class PreprocessorResource_pt extends ListResourceBundle {
 	{"fileOpened","Arquivo aberto com sucesso"},
 	{"fileTestTrainingCreated","Arquivos de treinamento e avaliação criados com sucesso"},
 	{"sampleCreated","Amostra criada com sucesso"},
-	{"preprocessorTitle","Preprocessor - "},
+	{"preprocessorTitle","InitializePreprocessors - "},
 	{"errorDB","Erro na base de dados: "},
 	{"fileNotFound","Arquivo não encontrado: "},
 	{"errorOpen","Erro ao abrir arquivo: "},

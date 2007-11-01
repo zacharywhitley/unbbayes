@@ -34,13 +34,13 @@ import unbbayes.controller.IconController;
 import unbbayes.datamining.datamanipulation.Options;
 import unbbayes.datamining.gui.bayesianlearning.BayesianLearningMain;
 import unbbayes.datamining.gui.evaluation.EvaluationMain;
+import unbbayes.datamining.gui.evaluation.batchEvaluation.BatchEvaluationMain;
 import unbbayes.datamining.gui.naivebayes.NaiveBayesMain;
 import unbbayes.datamining.gui.neuralmodel.NeuralModelController;
 import unbbayes.datamining.gui.neuralnetwork.NeuralNetworkController;
 import unbbayes.datamining.gui.preprocessor.PreprocessorMain;
 import unbbayes.datamining.gui.preprocessor.janeladiscret;
 import unbbayes.gui.MDIDesktopPane;
-import unbbayes.metaphor.MetaphorMain;
 
 public class InvokerMain extends JFrame
 {
@@ -63,7 +63,7 @@ public class InvokerMain extends JFrame
   private String defaultLanguage = "Portuguese";
   private String defaultLaf = "Windows";
 
-  /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+  /** Carrega o arquivo de recursos para internacionalizaï¿½ï¿½o da localidade padrï¿½o */
   private ResourceBundle resource = ResourceBundle.getBundle("unbbayes.datamining.gui.resources.GuiResource");
   private InvokerMain reference = this;
   private IconController iconController = IconController.getInstance();
@@ -102,6 +102,7 @@ public class InvokerMain extends JFrame
   private ActionListener alTile;
   private ActionListener alHelp;
   private ActionListener alNeuralNetwork;
+  private ActionListener alBatchEvaluation;
   private ActionListener alDiscretize;
 
   //Construct the frame
@@ -158,17 +159,17 @@ public class InvokerMain extends JFrame
     {   BufferedReader r = new BufferedReader(new FileReader(new File("DataMining.ini")));
         String header = r.readLine();
         if (header.equals("[data mining]"))
-        {   // Número de estados permitidos
+        {   // Nï¿½mero de estados permitidos
             String states = r.readLine();
             if ((states.substring(0,17)).equals("Maximum states = "))
             {   defaultStates = Integer.parseInt(states.substring(17));
             }
-            // Intervalo de confiança
+            // Intervalo de confianï¿½a
             String confidence = r.readLine();
             if ((confidence.substring(0,19)).equals("Confidence limit = "))
             {   confidenceLimit = Integer.parseInt(confidence.substring(19));
             }
-            // Opção de língua
+            // Opï¿½ï¿½o de lï¿½ngua
             String language = r.readLine();
             if ((language.substring(0,11)).equals("Language = "))
             {   language = language.substring(11);
@@ -181,7 +182,7 @@ public class InvokerMain extends JFrame
                     defaultLanguage = language;
                 }
             }
-            // Opção de look and feel
+            // Opï¿½ï¿½o de look and feel
             String laf = r.readLine();
             if ((laf.substring(0,16)).equals("Look and Feel = "))
             {   laf = laf.substring(16);
@@ -221,9 +222,9 @@ public class InvokerMain extends JFrame
   }
 
   /**
-   * Retorna a janela que está selecionada.
+   * Retorna a janela que estï¿½ selecionada.
    *
-   * @return janela que está selecionada.
+   * @return janela que estï¿½ selecionada.
    */
    public JInternalFrame getSelectedWindow() {
      return desktop.getSelectedFrame();
@@ -265,7 +266,7 @@ public class InvokerMain extends JFrame
                 }
         };
 
-        // create an ActionListener for opening new window for Preprocessor
+        // create an ActionListener for opening new window for InitializePreprocessors
         alPreProcessor = new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
                         setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -335,7 +336,17 @@ public class InvokerMain extends JFrame
                 }
         };
 
-        // create an ActionListener for showing the View Tool Bar
+        // create an ActionListener for opening new window for Batch Evaluation
+        alBatchEvaluation = new ActionListener() {
+                public void actionPerformed(ActionEvent ae) {
+                        setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                        BatchEvaluationMain batchEvaluation = new BatchEvaluationMain();
+                        addWindow(batchEvaluation);
+                        setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+        };
+
+       // create an ActionListener for showing the View Tool Bar
         alTbView = new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                         setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -531,6 +542,10 @@ public class InvokerMain extends JFrame
         JMenuItem c45Item = new JMenuItem("C4.5 Classifier"/*, icon*/ );
         JMenuItem bayesianItem = new JMenuItem("Bayesian Learning"/*, icon*/ );
         JMenuItem neuralNetworkItem = new JMenuItem("Neural Network"/*, icon*/);
+        
+        JMenuItem batchEvaluationItem;
+        batchEvaluationItem = new JMenuItem(resource.getString("batchEvaluation"));
+        
         ///////////
         JMenuItem metalItem = new JMenuItem("Metal",metalIcon);
         JMenuItem motifItem = new JMenuItem("Motif",motifIcon);
@@ -553,6 +568,10 @@ public class InvokerMain extends JFrame
         cnmItem.setMnemonic('N');
         c45Item.setMnemonic('C');
         bayesianItem.setMnemonic('B');
+
+        batchEvaluationItem.setMnemonic(((Character)resource.getObject
+        		("batchEvaluationMnemonic")).charValue());
+
         //////////////
         metalItem.setMnemonic('M');
         motifItem.setMnemonic('O');
@@ -588,6 +607,7 @@ public class InvokerMain extends JFrame
         evaluationItem.addActionListener(alEvaluation);
         cnmItem.addActionListener(alCnm);
         neuralNetworkItem.addActionListener(alNeuralNetwork);
+        batchEvaluationItem.addActionListener(alBatchEvaluation);
         bayesianItem.addActionListener(alBayesianLearning);
         metalItem.addActionListener(alMetal);
         motifItem.addActionListener(alMotif);
@@ -608,6 +628,7 @@ public class InvokerMain extends JFrame
         programMenu.add(neuralNetworkItem);//
         programMenu.add(evaluationItem);
         programMenu.add(discretizeItem);
+        programMenu.add(batchEvaluationItem);
 		lafMenu.add(metalItem);
         lafMenu.add(motifItem);
         lafMenu.add(windowsItem);

@@ -2,19 +2,17 @@ package unbbayes.datamining.preprocessor.imbalanceddataset;
 
 import java.util.Arrays;
 
-import unbbayes.TestsetUtils;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.evaluation.batchEvaluation.GlobalBatchParameters;
+import unbbayes.datamining.evaluation.batchEvaluation.PreprocessorParameters;
 
 /**
  *
  * @author Emerson Lopes Machado - emersoft@conectanet.com.br
  * @date 09/11/2006
  */
-public class Cclear {
-	
-	/** The current instanceSet */
-	protected InstanceSet instanceSet;
+public class Cclear extends Batch {
 
 	/** The current set of input instances */
 	protected Instance[] instances;
@@ -29,123 +27,108 @@ public class Cclear {
 	/** The class given to each cluster according to its distribution */
 	protected int[] clustersClass;
 	
-	/** Class of most common settings */
-	protected TestsetUtils testsetUtils;
-
 	/** Number of clusters created */
 	private int numClusters;
 	
 	private float[] clustersPositiveFrequency;
 	
-	/**
-	 * Array of booleans that tells which instances should be removed.
-	 */
+	/** Array of booleans that tells which instances should be removed */
 	protected boolean[] deleteIndex;
-
-	protected int negativeClass;
-
-	protected int positiveClass;
-
-	
-	/**********************************************/
-	/** Options for SMOTE - START *****************/
-	/**********************************************/
-	
-	/** SMOTE */
-	Smote smote;
-
-	/**
-	 * Set it <code>true</code> to discretize the synthetic value created for
-	 * the new instance. 
-	 */
-	boolean optionDiscretize = false;
-	
-	/** 
-	 * 0: copy nominal attributes from the current instance
-	 * 1: copy from the nearest neighbors
-	 */
-	byte optionNominal = 0;
-	
-	/**
-	 * The gap is a random number between 0 and 1 wich tells how far from the
-	 * current instance and how near from its nearest neighbor the new instance
-	 * will be interpolated.
-	 * The optionFixedGap, if true, determines that the gap will be fix for all
-	 * attributes. If set to false, a new one will be drawn for each attribute.
-	 */
-	boolean optionFixedGap = true;
-	
-	/** 
-	 * Distance function:
-	 * 0: Hamming
-	 * 1: HVDM
-	 */
-	byte optionDistanceFunction = 1;
-
-	/**********************************************/
-	/** Options for SMOTE - END *******************/
-	/**********************************************/
-
 
 	protected boolean[] classClusterized;
 	private int[][][] smoteNN;
-	private int[][][] smoteNNOriginal;
 
-	private float[] clusterQtd;
+	private ClusterBasedUtils clusterBasedUtils;
 
-	public Cclear(InstanceSet instanceSet, TestsetUtils testsetUtils) {
-		this.instanceSet = instanceSet;
-		this.testsetUtils = testsetUtils;
-		positiveClass = testsetUtils.getPositiveClass();
-		negativeClass = testsetUtils.getNegativeClass();
-		instances = instanceSet.instances;
-		numInstances = instanceSet.numInstances;
+	private ClusterBasedUtils clusterBasedUtilsBackup;
+
+	private Smote smote;
+
+	private static boolean useRatio = true;
+	private static boolean useK = true;
+	private static boolean useOverThresh = true;
+	private static boolean usePosThresh = true;
+	private static boolean useNegThresh = true;
+	private static boolean useCleaning = true;
+
+	public Cclear(InstanceSet instanceSet, PreprocessorParameters parameters) {
+		super(useRatio, useK, useOverThresh, usePosThresh, useNegThresh,
+				useCleaning, instanceSet, parameters);
+		preprocessorName = "Cclear";
 
 		classClusterized = new boolean[2];
 		Arrays.fill(classClusterized, false);
-		
-		/* Start smote parameters */
-		smote = new Smote(null);
-		smote.setOptionDiscretize(optionDiscretize);
-		smote.setOptionDistanceFunction(optionDistanceFunction);
-		smote.setOptionFixedGap(optionFixedGap);
-		smote.setOptionNominal(optionNominal);
 	}
 	
-	public void run(InstanceSet train, int ratio, boolean clean)
+	public Cclear(ClusterBasedUtils clusterBasedUtils, InstanceSet instanceSet)
 	throws Exception {
+		this(instanceSet, null);
+		setClusterInfo(clusterBasedUtils);
+	}
+	
+	public Cclear(ClusterBasedUtils clusterBasedUtils, InstanceSet instanceSet,
+			PreprocessorParameters parameters) throws Exception {
+		this(instanceSet, parameters);
+		setClusterInfo(clusterBasedUtils);
+	}
+	
+	public Cclear(InstanceSet instanceSet) throws Exception {
+		this(instanceSet, null);
+		setClusterInfo(null);
+	}
+	
+	public void setClusterInfo(ClusterBasedUtils clusterBasedUtils)
+	throws Exception {
+		this.clusterBasedUtils = clusterBasedUtils;
+	}
+
+	private void initializeClusters() throws Exception {
+		clusters = clusterBasedUtils.getClusters(k);
+		numClusters = clusterBasedUtils.getNumClusters(k);
+		smoteNN = clusterBasedUtils.getSmoteNN(k);
+		
+		/* Compute cluster distribution (if neeeded) */
+		updateClustersPositiveFrequency();
+	}
+	
+	protected @Override void run() throws Exception {
 		if (instanceSet.isNominal()) {
-//			TODO
-//			throws("Pau!");
+			throw new Exception("Pau!");
 		}
 		
-		clusterize(train);
+		initializeClusters();
 		
-		oversampling(train, train.positiveFrequency(positiveClass), ratio);
+		if (autoOversamplingThreshold) {
+			oversamplingThreshold *= instanceSet.getClassFrequency(positiveClass);
+		} else {
+			oversamplingThreshold = instanceSet.getClassFrequency(positiveClass);
+		}
+
+		oversampling(instanceSet, oversamplingThreshold);
 
 		if (clean) {
-			clusterize(train);
-			
-			float positiveThreshold = 0.7f;
-			float negativeThreshold = 0.7f;
+			initialize();
+			rebuildClusters();
 			
 			clean(positiveThreshold, positiveClass);
 			clean(1 - negativeThreshold + 0.000000004, negativeClass);
 			
-//			float positiveThreshold = train.positiveFrequency(positiveClass) * 1.4f;
-//			float negativeThreshold = train.positiveFrequency(positiveClass) * 0.6f;
-//			clean(positiveThreshold, positiveClass);
-//			clean(negativeThreshold + 0.000000004, negativeClass);
-			
 			/* Remove instances marked for deletion by the cleaning process */
 			removeMarkedInstances();
+			
+			rollBackClusters();
+		}
+		
+		if (instanceSet.getClassDistribution(true)[0] == 0 &&
+				instanceSet.getClassDistribution(true)[1] == 0) {
+			@SuppressWarnings("unused") boolean pau = true;
 		}
 	}
 	
-	private void oversampling(InstanceSet instanceSet, float positiveThreshold,
-			int ratio) throws Exception {
-		/* Assign each cluster`s class according to the positiveThreshold */
-		assignClassCluster(positiveThreshold);
+	private void oversampling(InstanceSet instanceSet, float positiveThreshold)
+	throws Exception {
+		/* Assign each cluster's class according to the positiveThreshold */
+		assignClusterClass(positiveThreshold);
 		
 		int[] cluster = null;
 		
@@ -170,7 +153,7 @@ public class Cclear {
 		float[] dist = instanceSet.getClassDistribution(false);
 		float proportion = dist[negativeClass] - dist[positiveClass] + counter;
 		proportion *= (float) ratio;
-		proportion /= counter * (float) (10 - ratio);
+		proportion /= counter * (float) (100 - ratio);
 
 		for (int clusterID = 0; clusterID < numClusters; clusterID++) {
 			/* Smote only the positive class */
@@ -178,7 +161,7 @@ public class Cclear {
 				cluster = smoteCluster(clusterID, proportion, positiveClass);
 				if (cluster != null) {
 					clusters[clusterID] = cluster;
-					clusterQtd[clusterID] = cluster.length;
+//					clusterQtd[clusterID] = cluster.length;
 				}
 			}
 		}
@@ -215,7 +198,8 @@ public class Cclear {
 		}
 		int[] newInstances = null;
 		smote.setNearestNeighborsIDs(smoteNN);
-		newInstances = smote.run(instancesIDs, proportion);
+		smote.setProportion(proportion);
+		newInstances = smote.run(instancesIDs);
 
 		/* Create a new cluster adding the new smoted instances */
 		int numNewInstances = newInstances.length;
@@ -231,31 +215,30 @@ public class Cclear {
 		return newCluster;
 	}
 
-	private void assignClassCluster(double positiveThreshold) throws Exception {
+	private void assignClusterClass(double positiveThreshold) throws Exception {
 		/* Assign a class to each cluster according to its distribution */
 		clustersClass = new int[numClusters];
-		int classValue;
 		for (int clusterID = 0; clusterID < numClusters; clusterID++) {
-			classValue = assignClassCluster(clusterID, positiveThreshold);
-			clustersClass[clusterID] = classValue;
+			if (clustersPositiveFrequency[clusterID] >= positiveThreshold) {
+				clustersClass[clusterID] = positiveClass;
+			} else {
+				clustersClass[clusterID] = negativeClass;
+			}
 		}
 		
 		@SuppressWarnings("unused")
 		boolean pause = true;
 	}
 
-	
+
 	
 
 	/*************************************************************************/
 	/**************************** Clean method *******************************/
 	
 	private void clean(double cleanFactor, int classValue) throws Exception {
-		/* Compute cluster distribution (if neeeded) */
-		updateClustersPositiveFrequency();
-		
 		/* Clean the clusters */
-		assignClassCluster(cleanFactor);
+		assignClusterClass(cleanFactor);
 		
 		clean(classValue);
 	}
@@ -291,8 +274,8 @@ public class Cclear {
 		}
 	}
 
-	public void removeMarkedInstances() {
-		ClusterBasedUtils.removeMarkedInstances(instanceSet, deleteIndex);
+	private void removeMarkedInstances() {
+		Utils.removeMarkedInstances(instanceSet, deleteIndex);
 		
 		/* Initialize deleteIndex array (set no instance to be removed) */
 		deleteIndex = new boolean[instanceSet.numInstances];
@@ -305,34 +288,32 @@ public class Cclear {
 	/*************************************************************************/
 	/************************** Auxiliary methods ****************************/
 	
-	private void smoteNN(InstanceSet instanceSet) throws Exception {
-		if (instanceSet.isNumeric() || instanceSet.isMixed()) {
-			/* Build smote nearest neighbors */
-			smoteNN = ClusterBasedUtils.buildSmoteNN(clusters, instanceSet, smote);
-			smoteNNOriginal = smoteNN.clone();
+	private void rebuildClusters() throws Exception {
+		initialize();
+		clusterBasedUtilsBackup = clusterBasedUtils;
+
+		/* Rebuild clusters */
+		clusterBasedUtils = new ClusterBasedUtils(instanceSet);
+		setClusterInfo(clusterBasedUtils);
+		initializeClusters();
+	}
+	
+	private void rollBackClusters() throws Exception {
+		if (clusterBasedUtilsBackup != null) {
+			clusterBasedUtils = clusterBasedUtilsBackup;
+			setClusterInfo(clusterBasedUtils);
 		}
 	}
 
-	public void clusterize(InstanceSet instanceSet) throws Exception {
-		initialize(instanceSet);
+	private void initialize() {
+		smote = new Smote(instanceSet);
+		smote.setInstanceSet(instanceSet);
+		numInstances = instanceSet.numInstances;
+		instances = instanceSet.instances;
 		
-		/* Build clusters */
-		clusters = ClusterBasedUtils.clusterizeAll2(instanceSet, testsetUtils);
-		numClusters = clusters.length;
-		clusterQtd = new float[numClusters];
-		updateClustersPositiveFrequency();
-
-		/* Build smote nearest neighbors */
-		smoteNN = ClusterBasedUtils.buildSmoteNN(clusters, instanceSet, smote);
-	}
-
-	private int assignClassCluster(int clusterID, double positiveThreshold) {
-		/* Check if the cluster should be taken as a positive cluster */
-		if (clustersPositiveFrequency[clusterID] >= positiveThreshold) {
-			return positiveClass;
-		} else {
-			return negativeClass;
-		}
+		/* Initialize deleteIndex array (set no instance to be removed) */
+		deleteIndex = new boolean[numInstances];
+		Arrays.fill(deleteIndex, false);
 	}
 
 	protected void updateClustersPositiveFrequency() {
@@ -367,33 +348,20 @@ public class Cclear {
 				clusterSize += weight;
 			}
 		}
-		clusterQtd[clusterID] = clusterSize;
+//		clusterQtd[clusterID] = clusterSize;
 		
 		return numPositives / clusterSize;
 	}
 
-	private void storeClusterAndNN() {
-		smoteNNOriginal = smoteNN;
-		clustersOriginal = clusters;
+	@Override
+	public void setInstanceSet(InstanceSet instanceSet) {
+		this.instanceSet = instanceSet;
+		initialize();
 	}
 
-	private void restoreClusterAndNN(InstanceSet instanceSet) {
-		initialize(instanceSet);
-		smoteNN = smoteNNOriginal.clone();
-		clusters = clustersOriginal.clone();
-		numClusters = clusters.length;
-		updateClustersPositiveFrequency();
-	}
-	
-	private void initialize(InstanceSet instanceSet) {
-		this.instanceSet = instanceSet;
-		smote.setInstanceSet(instanceSet);
-		numInstances = instanceSet.numInstances;
-		instances = instanceSet.instances;
-		
-		/* Initialize deleteIndex array (set no instance to be removed) */
-		deleteIndex = new boolean[numInstances];
-		Arrays.fill(deleteIndex, false);
+	@Override
+	protected void initializeBatch(InstanceSet instanceSet) {
+		setInstanceSet(instanceSet);
 	}
 	
 }

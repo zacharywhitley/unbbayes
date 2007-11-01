@@ -7,15 +7,12 @@ import java.util.Enumeration;
 import java.util.Random;
 import java.util.ResourceBundle;
 
-import unbbayes.TestsetUtils;
-import unbbayes.datamining.classifiers.Classifier;
-import unbbayes.datamining.evaluation.Classifiers;
 import unbbayes.datamining.utils.Statistics;
 
 /**
  * Class implementing some simple utility methods.
  *
- *	@author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ *	@author Mï¿½rio Henrique Paes Vieira (mariohpv@bol.com.br)
  *	@author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  *	@version $1.0 $ (16/02/2002)
  */
