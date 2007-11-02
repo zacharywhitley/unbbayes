@@ -100,6 +100,7 @@ public class BatchEvaluationResource extends ListResourceBundle {
 		/*********************************************************************/
 		/* Log tab */
 		{"logTabTitle", "Log"},
+		{"copyButtonText", "Copy"},
 		{"clearButtonText", "Clear"},
 	};
 }
