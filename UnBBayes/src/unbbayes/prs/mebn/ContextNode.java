@@ -128,11 +128,10 @@ public class ContextNode extends MultiEntityNode {
 	
     /**
      * Avalia se o nó de contexto é avaliavel com as OVInstances passadas como
-     * argumentos. 
-     * Ele é avaliável caso não fiquem variáveis ordinárias sem 
+     * argumentos. Ele é avaliável caso não fiquem variáveis ordinárias sem 
      * preenchimento. 
      * 
-     * Considera-se que haja apenas uma OVInstance para cada OV. Análisar se é 
+     * Considera-se que haja apenas uma OVInstance para cada OV. Analisar se é 
      * necessário enfraquecer esta hipotese e complementar o método. 
      *
      * @param ovInstanceSet
@@ -158,7 +157,34 @@ public class ContextNode extends MultiEntityNode {
     	
     }
     
-    private boolean isParametsCorrest(OrdinaryVariable ov, Collection<OVInstance> ovInstanceSet){
+    /**
+     * Return all the ordinary variables that don't have one ovInstance into
+     * ovInstanceSet. 
+     */
+    public List<OrdinaryVariable> getOVFaultForOVInstanceSet(Collection<OVInstance> ovInstanceSet){
+        
+    	List<OrdinaryVariable> ret = new ArrayList<OrdinaryVariable>(); 
+    	
+    	for(OrdinaryVariable ov: variableSet){
+    		
+    		boolean found = false; 
+    		for(OVInstance ovInstance: ovInstanceSet){
+    			if(ov.equals(ovInstance.getOv())){
+    				found = true; 
+    				break; 
+    			}
+    		}
+    		
+    		if(!found) ret.add(ov); 
+    		
+    	}
+    	
+    	return ret; 
+    
+    }
+    
+    
+    private boolean isParametListCorrect(OrdinaryVariable ov, Collection<OVInstance> ovInstanceSet){
     	
     	boolean found = false; 
 		
@@ -188,7 +214,7 @@ public class ContextNode extends MultiEntityNode {
 				if((leftChildren.getTypeNode() == enumType.OPERANDO) &&  (leftChildren.getSubTypeNode() == enumSubType.NODE)){
 					ResidentNodePointer pointer = (ResidentNodePointer)leftChildren.getNodeVariable(); 
 					for(OrdinaryVariable ov: pointer.getOrdinaryVariableList()){ 
-						if(!isParametsCorrest(ov, ovInstanceList)) return false; 
+						if(!isParametListCorrect(ov, ovInstanceList)) return false; 
 					}
 				}else{
 					return false; 

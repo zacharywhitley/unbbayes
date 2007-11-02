@@ -20,12 +20,20 @@ import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomFacade;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 
+/**
+ * Class that contains methods for evaluate the context nodes of a MFrag. 
+ * 
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
+ */
 public class ContextNodeEvaluator {
 
 	private KnowledgeBase kb; 
-	static MultiEntityBayesianNetwork mebn; 
-	 
 	
+	private MultiEntityBayesianNetwork mebn; 
+	
+	/*
+	 * Only tests... 
+	 */
 	public static void main(String[] args){
 		ContextNodeEvaluator avaliator = new ContextNodeEvaluator(); 
 		KnowledgeBase kb = PowerLoomKB.getInstanceKB(); 
@@ -35,7 +43,7 @@ public class ContextNodeEvaluator {
 		
 		PrOwlIO io = new PrOwlIO(); 
 		try {
-			mebn = io.loadMebn(new File("examples/mebn/StarTrek30.owl"));
+			avaliator.mebn = io.loadMebn(new File("examples/mebn/StarTrek30.owl"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -44,7 +52,7 @@ public class ContextNodeEvaluator {
 			e.printStackTrace();
 		}
 		
-		DomainMFrag mFrag = mebn.getMFragByName("Starship_MFrag"); 
+		DomainMFrag mFrag = avaliator.mebn.getMFragByName("Starship_MFrag"); 
 		
 		LiteralEntityInstance literalEntityInstance; 
 		OVInstance ovInstance; 
@@ -55,19 +63,19 @@ public class ContextNodeEvaluator {
 		List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
 		List<OrdinaryVariable> ordVariableList = new ArrayList<OrdinaryVariable>(); 
 		
-		type = mebn.getTypeContainer().getType("Starship_label"); 
+		type = avaliator.mebn.getTypeContainer().getType("Starship_label"); 
 		literalEntityInstance = LiteralEntityInstance.getInstance("!ST0", type); 
 		ov = new OrdinaryVariable("st", type, mFrag); 
 		ovInstance = OVInstance.getInstance(ov, literalEntityInstance); 
 		ovInstanceList.add(ovInstance); 
 		
-		type = mebn.getTypeContainer().getType("TimeStep_label"); 
+		type = avaliator.mebn.getTypeContainer().getType("TimeStep_label"); 
 		literalEntityInstance = LiteralEntityInstance.getInstance("!T0", type); 
 		ov = new OrdinaryVariable("t", type, mFrag); 
 		ovInstance = OVInstance.getInstance(ov, literalEntityInstance); 
 		ovInstanceList.add(ovInstance); 
 		
-		type = mebn.getTypeContainer().getType("Zone_label"); 
+		type = avaliator.mebn.getTypeContainer().getType("Zone_label"); 
 		ov = new OrdinaryVariable("z", type, mFrag); 
 		ordVariableList.add(ov); 
 		
@@ -168,7 +176,6 @@ public class ContextNodeEvaluator {
 				System.out.println(item);
 			}
 		}
-		
 		return true; 
 	}	
 }

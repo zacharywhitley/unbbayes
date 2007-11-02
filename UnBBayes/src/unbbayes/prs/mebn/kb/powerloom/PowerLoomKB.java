@@ -24,6 +24,7 @@ import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import edu.isi.powerloom.Environment;
@@ -163,7 +164,7 @@ public class PowerLoomKB implements KnowledgeBase{
 	 */
 	public void createRandonVariableDefinition(DomainResidentNode resident){
 		
-		List<Entity> states = resident.getPossibleValueList(); 
+		List<StateLink> links = resident.getPossibleValueLinkList(); 
 		
 		String range = ""; 
 		
@@ -171,8 +172,9 @@ public class PowerLoomKB implements KnowledgeBase{
 		
 		case ResidentNode.OBJECT_ENTITY:
 			
-			if(!resident.getPossibleValueList().isEmpty()){
-			   range = "(" + "?range " +  resident.getPossibleValueList().get(0).getType().getName() + ")";
+			if(!resident.getPossibleValueLinkList().isEmpty()){
+			   String type = resident.getPossibleValueLinkList().get(0).getState().getType().getName(); 
+			   range = "(" + "?range " +  type + ")";
 			}
 			
 			break; 
@@ -180,14 +182,15 @@ public class PowerLoomKB implements KnowledgeBase{
 		case ResidentNode.CATEGORY_RV_STATES: 
 			
 			String setofList = ""; 
-			for(Entity state: states){
-				setofList+= state.getName() + ",";
+			for(StateLink state: links){
+				setofList+= state.getState().getName() + ",";
 			}
-			if(!states.isEmpty()) {
+			
+			if(!links.isEmpty()) {
 				setofList = setofList.substring(0, setofList.length() - 1); //tirar a virgula final
 			}
 			
-			//defini��o da imagem da fun��o
+			//definition of the function image
 			String residentStateListName = resident.getName() + POSSIBLE_STATE_SUFIX; 
 			PLI.sEvaluate("(defconcept " + residentStateListName + 
 					"(?z) :<=> (member-of ?z ( setof " + setofList + ")))", moduleGenerativeName, environment);
@@ -196,11 +199,11 @@ public class PowerLoomKB implements KnowledgeBase{
 			
 			break; 
 		
-		case ResidentNode.BOOLEAN_RV_STATES:
-			
-			range = "(" + "?range " +  "Boolean" + ")"; 	
-			
-			break; 
+//		case ResidentNode.BOOLEAN_RV_STATES:
+//			
+//			range = "(" + "?range " +  "Boolean" + ")"; 	
+//			
+//			break; 
 		
 		}
 		
@@ -216,9 +219,14 @@ public class PowerLoomKB implements KnowledgeBase{
 			i++; 
 		}
 		
-		Stella_Object result = PLI.sEvaluate("(deffunction " + resident.getName() + " (" + arguments + range + "))", moduleGenerativeName, null); 
-		debug.println(result.toString()); 
-		
+		if(resident.getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES){
+			Stella_Object result = PLI.sEvaluate("(defrelation " + resident.getName() + " (" + arguments + "))", moduleGenerativeName, null); 
+			debug.println(result.toString()); 
+		}else{
+			Stella_Object result = PLI.sEvaluate("(deffunction " + resident.getName() + " (" + arguments + range + "))", moduleGenerativeName, null); 
+			debug.println(result.toString()); 
+				
+		}
 		//TODO closed or open world ? 
 		//PLI.sEvaluate("(assert (closed " + resident.getName() + "))", moduleName, null);
 		
