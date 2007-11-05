@@ -140,7 +140,7 @@ public class LoaderPrOwlIO {
 		List<String> listWarnings = new ArrayList<String>(); 
 		
 		owlModel = ProtegeOWL.createJenaOWLModel();
-		
+	
 		Debug.println("[DEBUG]" + this.getClass() + " -> Load begin"); 
 		
 //		File filePrOwl = new File(PROWLMODELFILE);

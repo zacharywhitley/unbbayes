@@ -1,97 +1,95 @@
 package unbbayes.prs.mebn.ssbn.test;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.io.mebn.PrOwlIO;
-import unbbayes.prs.mebn.ContextNode;
+import unbbayes.io.mebn.exceptions.IOMebnException;
+import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.kb.KBFacade;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomFacade;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
+import unbbayes.prs.mebn.ssbn.ContextNodeAvaliator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 
 /*
  * only tests... 
  */
-public class ContextAvaliatorTest {
+public class ContextAvaliatorTest{
 
-	KnowledgeBase kb; 
-	KBFacade kbFacade; 
-	static MultiEntityBayesianNetwork mebn; 
-	
-	/* 
-	 * considere que o sistema pegou o nó a ser avaliado e 
-	 * tem as entidades que serão utilizadas na avaliação destes... 
-	 */
-     public static void main(String[] args) throws Exception {
-		
+    public static void main(String[] args) throws Exception {
+    	MultiEntityBayesianNetwork mebn = null; 
+    	
 		KnowledgeBase kb = PowerLoomKB.getInstanceKB(); 
 		
-		kb.loadModule(new File("examples/mebn/sample.plm"));
+		kb.loadModule(new File("testeGenerativeStarship.plm")); 
+		kb.loadModule(new File("testeFindingsStarship.plm")); 
+		
 		KBFacade kbFacade = new PowerLoomFacade("/PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE"); 
 		
 		PrOwlIO io = new PrOwlIO(); 
-		mebn = io.loadMebn(new File("examples/mebn/StarTrek30.owl"));
+		try {
+			mebn = io.loadMebn(new File("examples/mebn/StarTrek37.owl"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOMebnException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
-		/* Avaliação de um nó de contexto */
-		/* nó IsOwnStarship */
+		DomainMFrag mFrag = mebn.getMFragByName("Starship_MFrag"); 
 		
-		ContextNode context; 
-		List<OVInstance> ovInstances;
-		LiteralEntityInstance ei; 
+		LiteralEntityInstance literalEntityInstance; 
+		OVInstance ovInstance; 
 		OrdinaryVariable ov; 
-		OVInstance oi; 
-		Boolean result; 
-		List<String> listResult; 
 		
-	    System.out.println("Caso 1: IsOwnStarship(!ST0)"); 
-		context = mebn.getContextNode("CX10"); 
-		ei = LiteralEntityInstance.getInstance("!ST0", mebn.getTypeContainer().getType("Starship_label")); 
-		ov = mebn.getMFragByName("Starship_MFrag").getOrdinaryVariableByName("st"); 
-		oi = OVInstance.getInstance(ov, ei); 
-		ovInstances = new ArrayList<OVInstance>(); 
-		ovInstances.add(oi); 
-		result = kb.evaluateSimpleFormula(context, ovInstances); 
+		Type type = null;
 		
-	    System.out.println("Caso 2: IsOwnStarship(!ST1)"); 
-		context = mebn.getContextNode("CX10"); 
-		ei = LiteralEntityInstance.getInstance("!ST1", mebn.getTypeContainer().getType("Starship_label")); 
-		ov = mebn.getMFragByName("Starship_MFrag").getOrdinaryVariableByName("st"); 
-		oi = OVInstance.getInstance(ov, ei); 
-		ovInstances = new ArrayList<OVInstance>(); 
-		ovInstances.add(oi); 
-		result = kb.evaluateSimpleFormula(context, ovInstances); 
+		List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
+		List<OrdinaryVariable> ordVariableList = new ArrayList<OrdinaryVariable>(); 
 		
-	    System.out.println("Caso 3: z = StarshipZone(!ST0)"); 
-		context = mebn.getContextNode("CX11"); 
-		ei = LiteralEntityInstance.getInstance("!ST0", mebn.getTypeContainer().getType("Starship_label")); 
-		ov = mebn.getMFragByName("Starship_MFrag").getOrdinaryVariableByName("st"); 
-		oi = OVInstance.getInstance(ov, ei); 
-		ovInstances = new ArrayList<OVInstance>(); 
-		ovInstances.add(oi); 
-		listResult = kb.evaluateComplexContextFormula(context, ovInstances); 
-		for(String r: listResult){
-			System.out.println(r); 
+		type = mebn.getTypeContainer().getType("Starship_label"); 
+		literalEntityInstance = LiteralEntityInstance.getInstance("ST0", type); 
+		ov = new OrdinaryVariable("st", type, mFrag); 
+		ovInstance = OVInstance.getInstance(ov, literalEntityInstance); 
+		ovInstanceList.add(ovInstance); 
+		
+		type = mebn.getTypeContainer().getType("TimeStep_label"); 
+		literalEntityInstance = LiteralEntityInstance.getInstance("T0", type); 
+		ov = new OrdinaryVariable("t", type, mFrag); 
+		ovInstance = OVInstance.getInstance(ov, literalEntityInstance); 
+		ovInstanceList.add(ovInstance); 
+		
+		type = mebn.getTypeContainer().getType("Zone_label"); 
+		ov = new OrdinaryVariable("z", type, mFrag); 
+		ordVariableList.add(ov); 
+		
+		System.out.println("MFrag: " + mFrag.getName());
+		for(OVInstance ovInstanc: ovInstanceList){
+			System.out.println("OVInstance: " + ovInstanc);
+		}
+		for(OrdinaryVariable ovInstanc: ordVariableList){
+			System.out.println("OV: " + ovInstanc);
 		}
 		
-	    System.out.println("Caso 4: z = StarshipZone(!ST1)"); 
-		context = mebn.getContextNode("CX11"); 
-		ei = LiteralEntityInstance.getInstance("!ST1", mebn.getTypeContainer().getType("Starship_label")); 
-		ov = mebn.getMFragByName("Starship_MFrag").getOrdinaryVariableByName("st"); 
-		oi = OVInstance.getInstance(ov, ei); 
-		ovInstances = new ArrayList<OVInstance>(); 
-		ovInstances.add(oi); 
-		listResult = kb.evaluateComplexContextFormula(context, ovInstances); 
-		for(String r: listResult){
-			System.out.println(r); 
+		List<OrdinaryVariable> ovList = new ArrayList<OrdinaryVariable>(); 
+		for(OVInstance ovInstanc: ovInstanceList){
+			ovList.add(ovInstanc.getOv()); 
 		}
+		ovList.addAll(ordVariableList); 
 		
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(mebn, kb, kbFacade); 
 		
-     }	
+		avaliator.evaluateContextNodes(mFrag, ovInstanceList, ordVariableList); 
+    
+    }	
 	
 }

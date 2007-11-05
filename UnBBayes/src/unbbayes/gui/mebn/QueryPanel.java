@@ -33,10 +33,11 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 /**
  * Class for insert a query
  *
- * Composto por dois paineis: um para selecionar o n� ao qual a query ir� se referir
- * e o outro para selecionar os argumentos deste n�.
- *
- * @author La�cio Lima dos Santos
+ * Two panels: 
+ * - In the first the user choice the randon variable
+ * - In the second choice the arguments
+ * 
+ * @author Laecio Lima dos Santos
  */
 
 public class QueryPanel extends JFrame{
@@ -62,7 +63,7 @@ public class QueryPanel extends JFrame{
 	}
 
 	/**
-	 * Mostra o painel para selecionar os argumntos da query. 
+	 * Pane for arguments selection 
 	 * @param _residentNode
 	 */
 	public void showArgumentsSelection(ResidentNode _residentNode){
@@ -73,13 +74,11 @@ public class QueryPanel extends JFrame{
 	}
 	
 	/**
-	 * Mostra o painel para sele��o da randon variable da qual a query se
-	 * refere.
+	 * Pane for randon variable selection
 	 */
 	public void showRandonVariableListPane(){
 		
-		JPanel contentPane;
-		contentPane = new JPanel(new BorderLayout());
+		JPanel contentPane = new JPanel(new BorderLayout());
 
 		btnSelect = new JButton(iconController.getGoNextInstance());
 		btnSelect.addActionListener(new ActionListener(){
@@ -96,7 +95,6 @@ public class QueryPanel extends JFrame{
 		toolBar.add(new JLabel());
 
 		RandonVariableListPane randonVariableListPane = new RandonVariableListPane();
-		randonVariableListPane.setBorder(BorderFactory.createLineBorder(Color.YELLOW)); 
 
 		JLabel label = new JLabel("Selecione a vari�vel aleat�ria:    ");
 		
@@ -210,12 +208,11 @@ public class QueryPanel extends JFrame{
 				public void actionPerformed(ActionEvent e) {
 					makeInvisible(); 
 					try {
-//						ObjectEntityInstance[] arguments = queryArgumentsPane.getArguments();
-//				        ProbabilisticNetwork network = mebnController.executeQuery((DomainResidentNode)residentNode, arguments); 
-				        mebnController.executeQuery(); 
-//					} catch (ParcialStateException e1) {
-//						// TODO Auto-generated catch block
-//						e1.printStackTrace();
+						ObjectEntityInstance[] arguments = queryArgumentsPane.getArguments();
+				        ProbabilisticNetwork network = mebnController.executeQuery((DomainResidentNode)residentNode, arguments); 
+					} catch (ParcialStateException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
 					} catch (InconsistentArgumentException iae) {
 						iae.printStackTrace();
 					}

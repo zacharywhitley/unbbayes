@@ -79,10 +79,10 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		}
 		
 		Collection<ContextNode> contexts = mfrag.getContextByOV( queryNode.getOVs());
-		ContextNodeEvaluator evaluator = new ContextNodeEvaluator();
-		for (ContextNode node : contexts) {
-			evaluator.evaluate(node, this.getContextOVInstance(node, new ArrayList<OVInstance>(queryNode.getArguments())));
-		}
+//		ContextNodeEvaluator evaluator = new ContextNodeEvaluator();
+//		for (ContextNode node : contexts) {
+//			evaluator.evaluate(node, this.getContextOVInstance(node, new ArrayList<OVInstance>(queryNode.getArguments())));
+//		}
 	}
 	
 	/*

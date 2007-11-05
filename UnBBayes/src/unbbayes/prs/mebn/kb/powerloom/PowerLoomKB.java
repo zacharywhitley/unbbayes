@@ -25,6 +25,8 @@ import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
+import unbbayes.prs.mebn.context.enumSubType;
+import unbbayes.prs.mebn.context.enumType;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import edu.isi.powerloom.Environment;
@@ -254,23 +256,47 @@ public class PowerLoomKB implements KnowledgeBase{
 
 	public void insertRandonVariableFinding(RandomVariableFinding randonVariableFinding){
 		
-		String finding = ""; 
-		finding+= "(=";
-		   finding+= "("; 
-		   finding+= randonVariableFinding.getNode().getName(); 
-		      finding+=" "; 
-		         boolean isFirst = true; //usado para não colocar virgula antes do primeiro elemento. 
-		         for(Entity argument: randonVariableFinding.getArguments()){
-		        	 if(isFirst){
-		        		isFirst = false;  
-		        	 }else{
-		        		 finding+=","; 
-		        	 }
-		        	 finding+=argument.getName();
-		         }
-		   finding+= ") "; 
-		   finding+= randonVariableFinding.getState().getName();  
-		finding+= ")";
+		String finding = "";
+		
+		if(randonVariableFinding.getNode().getTypeOfStates() == DomainResidentNode.BOOLEAN_RV_STATES){
+			finding+= "(";
+			   if(randonVariableFinding.getState().getName().equals("false")){
+				   finding+= "NOT";
+				   finding+= "("; 
+			   }
+			   finding+= randonVariableFinding.getNode().getName(); 
+			      finding+=" "; 
+			         boolean isFirst = true; //usado para não colocar virgula antes do primeiro elemento. 
+			         for(Entity argument: randonVariableFinding.getArguments()){
+			        	 if(isFirst){
+			        		isFirst = false;  
+			        	 }else{
+			        		 finding+=","; 
+			        	 }
+			        	 finding+=argument.getName();
+			         }
+			if(randonVariableFinding.getState().getName().equals("false")){
+			finding+= ") ";
+			} 
+			finding+= ")";	
+		}else{ 
+			finding+= "(=";
+			   finding+= "("; 
+			   finding+= randonVariableFinding.getNode().getName(); 
+			      finding+=" "; 
+			         boolean isFirst = true; //usado para não colocar virgula antes do primeiro elemento. 
+			         for(Entity argument: randonVariableFinding.getArguments()){
+			        	 if(isFirst){
+			        		isFirst = false;  
+			        	 }else{
+			        		 finding+=","; 
+			        	 }
+			        	 finding+=argument.getName();
+			         }
+			   finding+= ") "; 
+			   finding+= randonVariableFinding.getState().getName();  
+			finding+= ")";	
+		}
 		
 		PlIterator iterator = PLI.sAssertProposition(finding, moduleFindingName, null); 
 		
@@ -324,7 +350,11 @@ public class PowerLoomKB implements KnowledgeBase{
 		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
 		
 		formula+= "(";  
-		formula+= makeOperatorString(formulaTree, ovInstances); 		
+		if((formulaTree.getTypeNode() == enumType.OPERANDO)&&(formulaTree.getSubTypeNode() == enumSubType.NODE)){
+			formula+= makeOperandoString(formulaTree, ovInstances); 
+		}else{
+			formula+= makeOperatorString(formulaTree, ovInstances); 	
+		}		
 		formula+= ")"; 
 		
 		debug.println("Original formula: " + context.getLabel()); 
@@ -368,6 +398,7 @@ public class PowerLoomKB implements KnowledgeBase{
 		return result; 
     }
 	
+    @Deprecated
 	public boolean executeContextFormula(ContextNode context, List<OVInstance> ovInstances){
 		
 		debug.println("Generating formula for context node " + context.getName()); 
@@ -379,7 +410,11 @@ public class PowerLoomKB implements KnowledgeBase{
 		formula+= "(";  
 		
 		/* montar a formula sem preencher os valores da variaveis ordinarias ??? */
-		formula+= makeOperatorString(formulaTree, ovInstances); 
+		if((formulaTree.getTypeNode() == enumType.OPERANDO)&&(formulaTree.getSubTypeNode() == enumSubType.NODE)){
+			formula+= makeOperandoString(formulaTree, ovInstances); 
+		}else{
+			formula+= makeOperatorString(formulaTree, ovInstances); 	
+		}
 		
 		formula+= ")"; 
 		

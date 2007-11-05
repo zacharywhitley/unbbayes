@@ -151,7 +151,11 @@ public class MEBNController {
 
 	}
 
-	/*---------------------------- Edge ---------------------------*/
+
+	
+	/*-------------------------------------------------------------------------*/
+	/* Edge                                                                    */
+	/*-------------------------------------------------------------------------*/
 
     /**
      *  Connects a parent and its child with an edge. We must fill correctly the lists
@@ -169,7 +173,11 @@ public class MEBNController {
 
     }
 
-	/*---------------------------- MFrag ----------------------------*/
+	
+    
+	/*-------------------------------------------------------------------------*/
+	/* MFrag                                                                    */
+	/*-------------------------------------------------------------------------*/
 
 	public void insertDomainMFrag() {
 
@@ -280,33 +288,11 @@ public class MEBNController {
 		return multiEntityBayesianNetwork.getCurrentMFrag();
 	}
 
-	public OrdinaryVariable insertOrdinaryVariable(double x, double y) throws MFragDoesNotExistException {
-
-		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
-
-		if (currentMFrag == null) {
-			throw new MFragDoesNotExistException();
-		}
-
-		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
-		String name = resource.getString("ordinaryVariableName") + domainMFrag.getOrdinaryVariableNum();
-		Type type = TypeContainer.getDefaultType();
-		OrdinaryVariable ov = new OrdinaryVariable(name, type, domainMFrag);
-
-		ov.setPosition(x, y);
-		ov.setDescription(ov.getName());
-		domainMFrag.addOrdinaryVariable(ov);
-
-		ovNodeActive = ov;
-		setOrdVariableNodeActive(ov);
-
-		mebnEditionPane.setEditOVariableTabActive();
-
-	    return ov;
-
-	}
-
-	/*---------------------------- Domain Resident Node ----------------------------*/
+	
+	
+	/*-------------------------------------------------------------------------*/
+	/* Resident Node                                                           */
+	/*-------------------------------------------------------------------------*/
 
 	public DomainResidentNode insertDomainResidentNode(double x, double y) throws MFragDoesNotExistException {
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
@@ -360,6 +346,12 @@ public class MEBNController {
 		}
 	}
 
+	
+	
+	/*-------------------------------------------------------------------------*/
+	/* Resident Node: Possible values                                          */
+	/*-------------------------------------------------------------------------*/
+		
 	/**
 	 * Adds a possible value (state) into a resident node...
 	 * @param resident
@@ -464,7 +456,11 @@ public class MEBNController {
 
 	}
 
-	/*---------------------------- Generative Input Node ----------------------------*/
+	
+	
+	/*-------------------------------------------------------------------------*/
+	/* Input Node                                                              */
+	/*-------------------------------------------------------------------------*/
 
 	public GenerativeInputNode insertGenerativeInputNode(double x, double y) throws MFragDoesNotExistException {
 
@@ -537,7 +533,11 @@ public class MEBNController {
 
 	}
 
-	/*---------------------------- ContextNode ----------------------------*/
+	
+	
+	/*-------------------------------------------------------------------------*/
+	/* Context Node                                                            */
+	/*-------------------------------------------------------------------------*/
 
 	public ContextNode insertContextNode(double x, double y) throws MFragDoesNotExistException {
 
@@ -562,7 +562,10 @@ public class MEBNController {
 	}
 
 
-	/*-------------------------------- outros -------------------------*/
+	
+	/*-------------------------------------------------------------------------*/
+	/* Graph                                                                   */
+	/*-------------------------------------------------------------------------*/
 
 	public void deleteSelected(Object selected) {
         if (selected instanceof ContextNode){
@@ -600,8 +603,6 @@ public class MEBNController {
         }
 
 	}
-
-	/*---------------------------- Nodes ----------------------------*/
 
 	public void selectNode(Node node){
 		if (node instanceof ResidentNode){
@@ -679,7 +680,37 @@ public class MEBNController {
 		mebnEditionPane.setEditOVariableTabActive();
 	}
 
-	/*---------------------------- Ordinary Variable ----------------------------*/
+
+	
+	/*-------------------------------------------------------------------------*/
+	/* Ordinary Variable                                                       */
+	/*-------------------------------------------------------------------------*/
+
+	public OrdinaryVariable insertOrdinaryVariable(double x, double y) throws MFragDoesNotExistException {
+
+		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
+
+		if (currentMFrag == null) {
+			throw new MFragDoesNotExistException();
+		}
+
+		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
+		String name = resource.getString("ordinaryVariableName") + domainMFrag.getOrdinaryVariableNum();
+		Type type = TypeContainer.getDefaultType();
+		OrdinaryVariable ov = new OrdinaryVariable(name, type, domainMFrag);
+
+		ov.setPosition(x, y);
+		ov.setDescription(ov.getName());
+		domainMFrag.addOrdinaryVariable(ov);
+
+		ovNodeActive = ov;
+		setOrdVariableNodeActive(ov);
+
+		mebnEditionPane.setEditOVariableTabActive();
+
+	    return ov;
+
+	}
 
 	/**
 	 * Create a ordinary variable and add it in the
@@ -882,7 +913,12 @@ public class MEBNController {
 		multiEntityBayesianNetwork.getObjectEntityContainer().removeEntityInstance(entity);
 	}
 
-	/*-------------------Uso do PowerLoom--------------*/
+
+	
+	
+	/*-------------------------------------------------------------------------*/
+	/* Knowledge Base                                                          */
+	/*-------------------------------------------------------------------------*/
 
 	/**
 	 * Insert the MEBN Generative into KB.
@@ -1015,6 +1051,70 @@ public class MEBNController {
 		}
 	}
 
+	/**
+	 * Execute a query. 
+	 * 
+	 * @param residentNode
+	 * @param arguments
+	 * @return
+	 * @throws InconsistentArgumentException
+	 */
+	public ProbabilisticNetwork executeQuery(DomainResidentNode residentNode, ObjectEntityInstance[] arguments) throws InconsistentArgumentException {
+		
+		SSBNNode queryNode = SSBNNode.getInstance(residentNode); 
+		
+		List<Argument> arglist = residentNode.getArgumentList();
+		
+		if (arglist.size() != arguments.length) {
+			throw new InconsistentArgumentException();
+		}
+		
+		for (int i = 0; i < arguments.length; i++) {
+			try {
+				queryNode.addArgument(arglist.get(i).getOVariable(), arguments[i].getName());
+			} catch (SSBNNodeGeneralException e) {
+				throw new InconsistentArgumentException(e);
+			}
+		}
+		
+//		if(!baseCreated){
+	    	createKnowledgeBase(); 	
+//	    }
+		
+		Query query = new Query(new PowerLoomFacade("/PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE"), queryNode);
+		
+		ISSBNGenerator ssbngenerator = new BottomUpSSBNGenerator();
+		
+		try{
+			return ssbngenerator.generateSSBN(query);
+		} catch (Exception e) {
+			throw new InconsistentArgumentException(e);
+		}
+		
+	}
+	
+	
+	
+	/*-------------------------------------------------------------------------*/
+	/* Findings Edition                                                        */
+	/*-------------------------------------------------------------------------*/
+		
+	public void createRandonVariableFinding(DomainResidentNode residentNode, 
+			ObjectEntityInstance[] arguments, Entity state){
+		RandomVariableFinding finding = new RandomVariableFinding(
+				(DomainResidentNode)residentNode, 
+				arguments, 
+				state, 
+				this.multiEntityBayesianNetwork);
+		((DomainResidentNode)residentNode).addRandonVariableFinding(finding); 
+	}
+	
+	
+	
+	/*-------------------------------------------------------------------------*/
+	/* Get's e Set's                                                           */
+	/*-------------------------------------------------------------------------*/
+
 	public MultiEntityBayesianNetwork getMultiEntityBayesianNetwork() {
 		return multiEntityBayesianNetwork;
 	}
@@ -1040,60 +1140,6 @@ public class MEBNController {
 		this.screen = screen;
 	}
 
-	public ProbabilisticNetwork executeQuery(DomainResidentNode residentNode, ObjectEntityInstance[] arguments) throws InconsistentArgumentException {
-		
-		SSBNNode queryNode = SSBNNode.getInstance(residentNode); 
-		
-		List<Argument> arglist = residentNode.getArgumentList();
-		
-		if (arglist.size() != arguments.length) {
-			throw new InconsistentArgumentException();
-		}
-		
-		for (int i = 0; i < arguments.length; i++) {
-			try {
-				queryNode.addArgument(arglist.get(i).getOVariable(), arguments[i].getName());
-			} catch (SSBNNodeGeneralException e) {
-				throw new InconsistentArgumentException(e);
-			}
-		}
-		
-		
-		Query query = new Query(new PowerLoomFacade("/PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE"), queryNode);
-		
-		ISSBNGenerator ssbngenerator = new BottomUpSSBNGenerator();
-		
-		try{
-			return ssbngenerator.generateSSBN(query);
-		} catch (Exception e) {
-			throw new InconsistentArgumentException(e);
-		}
-		
-	}
 	
-
-	public ProbabilisticNetwork executeQuery() throws InconsistentArgumentException {
-	    
-		if(!baseCreated){
-	    	createKnowledgeBase(); 	
-	    }
-	    
-		return null; 
-	}
-		
-	
-	/*-------------------------------------------------------------------------*/
-	/* Findings Edition                                                        */
-	/*-------------------------------------------------------------------------*/
-		
-	public void createRandonVariableFinding(DomainResidentNode residentNode, 
-			ObjectEntityInstance[] arguments, Entity state){
-		RandomVariableFinding finding = new RandomVariableFinding(
-				(DomainResidentNode)residentNode, 
-				arguments, 
-				state, 
-				this.multiEntityBayesianNetwork);
-		((DomainResidentNode)residentNode).addRandonVariableFinding(finding); 
-	}
 	
 }

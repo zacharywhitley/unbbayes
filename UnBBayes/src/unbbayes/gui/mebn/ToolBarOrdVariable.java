@@ -10,10 +10,10 @@ import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
@@ -43,7 +43,7 @@ public class ToolBarOrdVariable extends JToolBar{
 	private JLabel type; 
 	private OrdinaryVariable ov; 
 		
-	private JComboBox jcbType; 
+	private JComboBox jcbType = new JComboBox(); 
 	private Type[] types; 	
 	
 	/** Load resource file from this package */
@@ -133,10 +133,15 @@ public class ToolBarOrdVariable extends JToolBar{
 	    barName.add(txtName); 
 	    add(barName);
 	    
-	    add(new JLabel()); 
-	    add(new JLabel()); 
+	    JToolBar barType = new JToolBar(); 
+	    barType.setFloatable(false); 
+	    barType.add(type); 
+	    barType.add(jcbType); 
+	    add(barType); 
 	    
-	    add(jcbType); 
+	    add(new JLabel()); 
+	    add(new JLabel()); 
+	     
 	}
 	
 	/**
@@ -164,14 +169,13 @@ public class ToolBarOrdVariable extends JToolBar{
 	 */
 	
 	public void updateListOfTypes(){
-		remove(jcbType); 
 		types = mebnController.getMultiEntityBayesianNetwork().getTypeContainer().getListOfTypes().toArray( new Type[0] );
-		add(buildJComboBoxTypes(types)); 
 		validate(); 
 	}
 	
 	private JComboBox buildJComboBoxTypes(Type[] types){
-	    jcbType = new JComboBox(types); 
+	    
+	    jcbType.setModel(new DefaultComboBoxModel(types)); 
 	    jcbType.setSelectedIndex(0);
 	    
 	    jcbType.addActionListener(

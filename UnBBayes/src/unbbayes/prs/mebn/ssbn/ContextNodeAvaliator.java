@@ -21,23 +21,18 @@ import unbbayes.prs.mebn.kb.powerloom.PowerLoomFacade;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormula;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
+import unbbayes.util.Debug;
 
+/**
+ * Class that contains methods for evaluate the context nodes of a MFrag. 
+ * 
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
+ */
 public class ContextNodeAvaliator {
 
 	private KnowledgeBase kb; 
     private KBFacade kbFacade; 
 	static MultiEntityBayesianNetwork mebn;
-	
-	public ContextNodeAvaliator(){
-
-		KnowledgeBase kb = PowerLoomKB.getInstanceKB(); 
-		
-		kb.loadModule(new File("testeGenerative.plm")); 
-		kb.loadModule(new File("testeFindings.plm")); 
-		
-		kbFacade = new PowerLoomFacade("/PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE"); 
-		
-	}
 	
 	public ContextNodeAvaliator(MultiEntityBayesianNetwork mebn, KnowledgeBase kb, KBFacade kbFacade){
 		
@@ -46,55 +41,15 @@ public class ContextNodeAvaliator {
 		this.kbFacade = kbFacade; 
 		
 	}
-	
-	public static void main(String[] args){
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(); 
-		
-		PrOwlIO io = new PrOwlIO(); 
-		try {
-			mebn = io.loadMebn(new File("examples/mebn/StarTrek36.owl"));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOMebnException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		DomainMFrag mFrag = mebn.getMFragByName("Starship_MFrag"); 
-		
-		LiteralEntityInstance literalEntityInstance; 
-		OVInstance ovInstance; 
-		OrdinaryVariable ov; 
-		
-		Type type = null;
-		
-		List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
-		List<OrdinaryVariable> ordVariableList = new ArrayList<OrdinaryVariable>(); 
-		
-		type = mebn.getTypeContainer().getType("Starship_label"); 
-		literalEntityInstance = LiteralEntityInstance.getInstance("!ST0", type); 
-		ov = new OrdinaryVariable("st", type, mFrag); 
-		ovInstance = OVInstance.getInstance(ov, literalEntityInstance); 
-		ovInstanceList.add(ovInstance); 
-		
-		type = mebn.getTypeContainer().getType("TimeStep_label"); 
-		literalEntityInstance = LiteralEntityInstance.getInstance("!T0", type); 
-		ov = new OrdinaryVariable("t", type, mFrag); 
-		ovInstance = OVInstance.getInstance(ov, literalEntityInstance); 
-		ovInstanceList.add(ovInstance); 
-		
-		type = mebn.getTypeContainer().getType("Zone_label"); 
-		ov = new OrdinaryVariable("z", type, mFrag); 
-		ordVariableList.add(ov); 
-		
-		Boolean result = avaliator.evaluateContextNodesForOV(mFrag, ovInstanceList, ordVariableList); 
-		
-		System.out.println("Result= " + result);
-		
-	}
-	
-	
+
+	/**
+	 * Evaluate a context node. 
+	 * 
+	 * @param node
+	 * @param ovInstances
+	 * @return
+	 * @throws OVInstanceFaultException
+	 */
 	public boolean evaluateContextNode(ContextNode node, List<OVInstance> ovInstances) throws OVInstanceFaultException{
 		
 		List<OrdinaryVariable> ovFaultList = node.getOVFaultForOVInstanceSet(ovInstances); 
@@ -107,6 +62,22 @@ public class ContextNodeAvaliator {
 		
 	}
 	
+	/**
+	 * Evaluate a search context node. A search context node is a node that return
+	 * instances of the Knowledge Base that satisfies a restriction. 
+	 * 
+	 * Ex.: z = StarshipZone(st). 
+	 * -> return all the z's. 
+	 * 
+	 * Note: for this implementation, only formulas in the example format are 
+	 * accept. For all others formats, a exception InvalidContextNodeFormula will
+	 * be throw. 
+	 * 
+	 * @param context
+	 * @param ovInstances
+	 * @return
+	 * @throws InvalidContextNodeFormula
+	 */
 	public List<String> evalutateSearchContextNode(ContextNode context, List<OVInstance> ovInstances) throws InvalidContextNodeFormula{
 		
 		if(!context.isFormulaComplexValida(ovInstances)){
@@ -127,7 +98,9 @@ public class ContextNodeAvaliator {
 	 * @param ovInstanceList
 	 * @param ordVariableList
 	 */
-	public Boolean evaluateContextNodes(DomainMFrag mFrag, List<OVInstance> ovInstanceList, List<OrdinaryVariable> ordVariableList){
+	public void evaluateContextNodes(DomainMFrag mFrag, List<OVInstance> ovInstanceList, List<OrdinaryVariable> ordVariableList){
+		
+		Debug.setDebug(true); 
 		
 		Collection<ContextNode> contextNodeList; 
 		
@@ -139,157 +112,54 @@ public class ContextNodeAvaliator {
 		
 		contextNodeList = mFrag.getContextByOVCombination(ovList); 
 		
+		Debug.println(""); 
+		Debug.println("Evaluating... "); 
+		Debug.println(""); 
+		
 		for(ContextNode context: contextNodeList){
+			Debug.println("Context Node: " + context.getFormula()); 
 			try{
 				if(!evaluateContextNode(context, ovInstanceList)){
-					return false;  //use the default distribuition. 
+					Debug.println("Result = FALSE. Use default distribution "); 
+//					return false;  //use the default distribution. 
 				}
 			}
 			catch(OVInstanceFaultException e){
 				try {
+					Debug.println("OVInstance Fault. Try evaluate a search. "); 
 					List<String> result = evalutateSearchContextNode(context, ovInstanceList);
 					if(result.isEmpty()){
+						
 						OrdinaryVariable rigthTerm = context.getFreeVariable(); 
 						result = kbFacade.getEntityByType(rigthTerm.getValueType().getName());
-						return false; 
+						
+						Debug.println("No information in Knowlege Base"); 
+						Debug.print("Result = "); 
+						for(String entity: result){
+							Debug.print(entity + " "); 
+						}
+						Debug.println(""); 
+						
+//						return false; 
 					}else{
-						return true; 
+						Debug.print("Result = "); 
+						for(String entity: result){
+							Debug.print(entity + " "); 
+						}
+						Debug.println(""); 
+//						return true; 
 					}
 				} catch (InvalidContextNodeFormula ie) {
+					Debug.println("Invalid Context Node: the formula don't is accept."); 
 					// TODO Auto-generated catch block
 					ie.printStackTrace();
 				} 
 			}
+			Debug.println(""); 
 		}
 		
-		return true; 
+//		return true; 
 		
 	}
 	
-	/**
-	 * 
-	 * 
-	 * @param node
-	 * @param ovInstances
-	 */
-	public void evaluate(ContextNode node, OVInstance... ovInstances){
-		
-		/* 
-		 * evaluateSimpleFormula or evaluateComplexFormula... O primeiro sera utilizado se houver 
-		 * ovInstances para todos os elementos da formula. O segundo será utilizado caso haja alguma 
-		 * ov que não possui uma entity instance para ela. 
-		 * 
-		 * z = StarshipZone(st) 
-		 * StarshipZone é uma variavel randomica. 
-		 */
-		
-	}
-	
-	/**
-	 * Evaluate all the context nodes with the ordinary variables. 
-	 * 
-	 * OVInstance shoud have the entityInstance setted or the algorith will
-	 * return a list of entities that solve the ov.
-	 *
-	 * @return true if all the context nodes are OK
-	 *         false if one context node are not OK
-	 *         null if the evaluate return a list of entities caused by a kb search
-	 *         (all others context nodes are OK)
-	 */
-	public Boolean evaluateContextNodesForOV(DomainMFrag mFrag, List<OVInstance> ovInstanceList, List<OrdinaryVariable> ordVariableList){
-		
-		KnowledgeBase kb = PowerLoomKB.getInstanceKB(); 
-		
-		kb.loadModule(new File("testeGenerative.plm")); 
-		kb.loadModule(new File("testeFindings.plm")); 
-		
-		KBFacade kbFacade = new PowerLoomFacade("/PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE"); 
-		
-		Collection<ContextNode> contextNodeList; 
-		Set<ContextNode> simpleContextNode = new HashSet<ContextNode>();
-		Set<ContextNode> complexContextNode = new HashSet<ContextNode>();
-		
-		System.out.println("MFrag: " + mFrag.getName());
-		for(OVInstance ovInstance: ovInstanceList){
-			System.out.println("OVInstance: " + ovInstance);
-		}
-		for(OrdinaryVariable ovInstance: ordVariableList){
-			System.out.println("OV: " + ovInstance);
-		}
-		
-		List<OrdinaryVariable> ovList = new ArrayList<OrdinaryVariable>(); 
-		for(OVInstance ovInstance: ovInstanceList){
-			ovList.add(ovInstance.getOv()); 
-		}
-		ovList.addAll(ordVariableList); 
-		
-		/* Passo 1: procurar os nós de contexto que atendem as especificações */
-		contextNodeList = mFrag.getContextByOVCombination(ovList); 
-		
-		System.out.println(); 
-		System.out.println("Nós de contexto a serem avaliados: ");
-		for(ContextNode context: contextNodeList){
-			System.out.println(context);	
-		}
-		
-		/* Passo 2: averiguar quais nós de contexto serão avaliados de forma 
-		 * simples e quais serão avaliados de forma complexa.  */
-		for(ContextNode context: contextNodeList){
-			if (context.isAvaliableForOVInstanceSet(ovInstanceList)){
-				simpleContextNode.add(context); 
-			}else{
-				complexContextNode.add(context); 
-			}
-		}
-		
-		/* Passo 2.b: Os nós simples já podem ser avaliados neste passo */
-		boolean result; 
-
-		System.out.println(); 
-		System.out.println("Avaliação dos nós normais: ");
-		for(ContextNode context: simpleContextNode){
-			System.out.println(context);
-			result = kb.evaluateSimpleFormula(context, ovInstanceList);
-			//if(!result) return result;
-			System.out.println("Resultado: "+ result);
-		}
-		
-		/*
-		 * Passo 3: Possivelmente fazer averiguações de completude das informações e possivel pergunta ao
-		 * usuário sobre informações extras neste passo.
-		 */
-		System.out.println(); 
-		System.out.println("Avaliação dos nós de busca: ");
-
-		System.out.println(); 
-		System.out.println("Verificação de validade: ");
-		for(ContextNode context: complexContextNode){
-			System.out.println(context); 
-			if(!context.isFormulaComplexValida(ovInstanceList)){
-				//TODO throw exception???
-				System.out.println("Formula Inválida");
-			}else{
-				System.out.println("Formula Válida");
-			}
-		}
-		
-		/* Passo 4: avaliar os nós complexos e retornar lista*/
-
-		System.out.println(); 
-		System.out.println("Resolução: ");
-		for(ContextNode context: complexContextNode){
-			System.out.println(context); 
-			OrdinaryVariable rigthTerm = context.getFreeVariable(); 
-			
-			List<String> entitiesResult = kbFacade.getEntityByType(rigthTerm.getValueType().getName()); 
-			
-//			List<String> entitiesResult = kb.evaluateComplexContextFormula(context, ovInstanceList); 
-			System.out.println("Resultado = ");
-			for(String item: entitiesResult){
-				System.out.println(item);
-			}
-		}
-		
-		return true; 
-	}	
 }

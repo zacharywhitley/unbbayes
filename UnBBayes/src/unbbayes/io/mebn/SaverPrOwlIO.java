@@ -23,6 +23,7 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.ResidentNodePointer;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.context.enumType;
+import unbbayes.prs.mebn.context.enumSubType;
 import unbbayes.prs.mebn.entity.BooleanStateEntity;
 import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.Entity;
@@ -806,7 +807,7 @@ public class SaverPrOwlIO {
      * 01 - Is create a ArgRelationship where the name is NodeName_ArgNumber
      * 02 - The argument is setted how a argument of the individual (original context node)
      * 03 - Is create a context node Inner Term with the name NodeName_ArgNumber_inner
-     * 04 - The inner term is settend how inner term of the individual (original context node)
+     * 04 - The inner term is setted how inner term of the individual (original context node)
      * 05 - The inner term is setted how context node of the MFrag of the original context node
      * 06 - The possible values of the inner term is setted how the possible values of the resident node
      * 07 - The arguments of the inner term is setted how the arguments of the residentNode (recursively for this method). 
@@ -961,13 +962,35 @@ public class SaverPrOwlIO {
     			
     		}
     		else{ //don't is a built-in... 
-    			//TODO Possivel caso: resident node booleano
+    			
     		}
     		
     	}
-    	
     	else{ //don't is a enumType.OPERANDO
-    		
+    		if((formulaNode.getTypeNode() == enumType.OPERANDO)&&
+	    			(formulaNode.getSubTypeNode() == enumSubType.NODE)){
+				
+				OWLObjectProperty isContextInstanceOf = (OWLObjectProperty)owlModel.getOWLObjectProperty("isContextInstanceOf"); 	
+				ResidentNodePointer pointer = (ResidentNodePointer)formulaNode.getNodeVariable(); 
+				contextNodeIndividual.addPropertyValue(isContextInstanceOf, mapDomainResident.get(pointer.getResidentNode())); 
+				
+				//Save the possible values
+				loadResidentPossibleValues(contextNodeIndividual, (DomainResidentNode)pointer.getResidentNode()); 
+				
+		        //Save the arguments
+				OrdinaryVariable[] oVariableArray = pointer.getOrdinaryVariableArray(); 
+				for(int i = 0; i < oVariableArray.length; i++){
+					if(oVariableArray[i] == null){
+						this.saveEmptySimpleArgRelationship(contextNodeIndividual, contextNodeIndividual.getName(), i + 1); 
+					}
+					else{
+						this.saveSimpleArgRelationship(oVariableArray[i], contextNodeIndividual, contextNodeIndividual.getName(), i + 1); 
+					}
+				}
+				
+			}else{
+				
+			}
     	}
     }
     
