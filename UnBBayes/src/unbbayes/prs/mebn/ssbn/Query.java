@@ -27,7 +27,7 @@ public class Query {
 	 * Default query. 
 	 */
 	public Query(KBFacade kb, SSBNNode queryNode) {
-		this.mebn = mebn; 
+		//this.mebn = mebn; 
 		this.kb = kb; 
 		this.queryNode = queryNode;  
 	}

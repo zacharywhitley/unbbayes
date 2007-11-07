@@ -10,6 +10,7 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
+import unbbayes.prs.mebn.ssbn.OVInstance;
 
 /**
  * Domain-specific MFrags. 
@@ -23,6 +24,8 @@ public class DomainMFrag extends MFrag {
 	private List<GenerativeInputNode> inputNodeList;
 
 	private List<DomainResidentNode> residentNodeList;
+	
+	private List<OVInstance> ovInstancesList; 
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.mebn.resources.Resources");  		
@@ -36,7 +39,7 @@ public class DomainMFrag extends MFrag {
 		contextNodeList = new ArrayList<ContextNode>();
 		inputNodeList = new ArrayList<GenerativeInputNode>();
 		residentNodeList = new ArrayList<DomainResidentNode>();
-		
+		ovInstancesList = new ArrayList<OVInstance>(); 
 	}
 
 	/**
@@ -286,6 +289,36 @@ public class DomainMFrag extends MFrag {
 	public boolean containsOrdinaryVariableDomain(OrdinaryVariable ordinaryVariable) {
 		return containsOrdinaryVariable(ordinaryVariable);
 	}			
+	
+	
+	
+	/*
+	 * OVInstanceList methods... 
+	 */
+	
+	public void addOVInstance(OVInstance element){
+		ovInstancesList.add(element); 
+	}
+	
+	public List<OVInstance> getOVInstancesForOrdinaryVariable(OrdinaryVariable ov){
+		List<OVInstance> ret = new ArrayList<OVInstance>(); 
+		for(OVInstance ovInstance: ovInstancesList){
+			if(ovInstance.getOv().equals(ov)){
+				ret.add(ovInstance); 
+			}
+		}
+		return ret; 
+	}
+	
+	public void removeOVInstance(OVInstance element){
+		ovInstancesList.remove(element); 
+	}
+	
+	public void clearOVInstanceList(){
+		ovInstancesList.clear(); 
+	}
+	
+	
 	
 	/**
 	 * Method responsible for deleting this DomainMFrag but not its nodes and 

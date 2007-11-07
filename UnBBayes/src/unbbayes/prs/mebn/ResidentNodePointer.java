@@ -7,8 +7,8 @@ import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
 
 /** 
- * Esta classe funciona como um ponteiro para um nó residente, sendo
- * os argumentos alterados para outro conjunto de váriaveis ordinárias. 
+ * Esta classe funciona como um ponteiro para um nï¿½ residente, sendo
+ * os argumentos alterados para outro conjunto de vï¿½riaveis ordinï¿½rias. 
  * 
  * @author Laecio Lima dos Santos
  *
@@ -19,16 +19,16 @@ public class ResidentNodePointer {
 	private ResidentNode residentNode; 
 
 	/*
-	 * O vetor de variáveis ordinárias deve possuir 
-	 * uma correspondência com a lista de variáveis ordinárias do nó 
-	 * residente do qual ela é input. A correspondencia deve ser da 
+	 * O vetor de variï¿½veis ordinï¿½rias deve possuir 
+	 * uma correspondï¿½ncia com a lista de variï¿½veis ordinï¿½rias do nï¿½ 
+	 * residente do qual ela ï¿½ input. A correspondencia deve ser da 
 	 * seguinte forma:
-	 * -> Cada elemento com indice i do vetor do nó de input deve ser 
-	 * do mesmo tipo que o elemento de indice i do vetor do nó residente
-	 * -> O vetor do nó de input tem o mesmo tamanho da lita do nó residente. 
+	 * -> Cada elemento com indice i do vetor do nï¿½ de input deve ser 
+	 * do mesmo tipo que o elemento de indice i do vetor do nï¿½ residente
+	 * -> O vetor do nï¿½ de input tem o mesmo tamanho da lita do nï¿½ residente. 
 	 * 
 	 * Para tal o vetor <typesOfOrdinaryVariableList> lista os tipos da lista
-	 * de OV do nó residente, enquanto os elementos do vetor <ordinaryVariableList>
+	 * de OV do nï¿½ residente, enquanto os elementos do vetor <ordinaryVariableList>
 	 * devem sempre corresponder ao tipo do outro vetor.  
 	 */
 	
@@ -43,9 +43,9 @@ public class ResidentNodePointer {
 	/**
 	 * 
 	 * Nota: o numero de argumentos do no residente bem como o tipo
-	 * de cada argumento indice i não pode ser alterado. Caso o seja, 
-	 * outro objeto deverá ser criado para estar de acordo com a nova
-	 * configuração. 
+	 * de cada argumento indice i nï¿½o pode ser alterado. Caso o seja, 
+	 * outro objeto deverï¿½ ser criado para estar de acordo com a nova
+	 * configuraï¿½ï¿½o. 
 	 * @param _residentNode
 	 * 
 	 */
@@ -68,7 +68,7 @@ public class ResidentNodePointer {
 	
 	/*
 	 * Cria uma lista de variaveis ordinarias do mesmo tamanho que a lista
-	 * presente no nó do qual este nó input é instancia. 
+	 * presente no nï¿½ do qual este nï¿½ input ï¿½ instancia. 
 	 * Atualiza a lista de tipos para permitir a checagem das entidades
 	 * que o usuario utilizar para preencher os argumentos. 
 	 */
@@ -163,6 +163,20 @@ public class ResidentNodePointer {
 		}
 		
 		return vetor;
+	}
+	
+	/**
+	 * 
+	 * @param ov
+	 * @return indice or -1 if the ov don't is an argument. 
+	 */
+	public int getOrdinaryVariableIndex(OrdinaryVariable ov){
+		for(int i= 0; i < ordinaryVariableList.length; i++){
+			if(ordinaryVariableList[i].equals(ov)){
+				return i; 
+			}
+		}
+		return -1; 
 	}
 	
 	public OrdinaryVariable[] getOrdinaryVariableArray(){

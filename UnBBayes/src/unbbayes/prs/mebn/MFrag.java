@@ -5,10 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import unbbayes.gui.UnBBayesFrame;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
+import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.util.NodeList;
 
 /**

@@ -32,11 +32,9 @@ public class ContextNodeAvaliator {
 
 	private KnowledgeBase kb; 
     private KBFacade kbFacade; 
-	static MultiEntityBayesianNetwork mebn;
 	
-	public ContextNodeAvaliator(MultiEntityBayesianNetwork mebn, KnowledgeBase kb, KBFacade kbFacade){
+	public ContextNodeAvaliator(KnowledgeBase kb, KBFacade kbFacade){
 		
-		this.mebn = mebn; 
 		this.kb = kb; 
 		this.kbFacade = kbFacade; 
 		

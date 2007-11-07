@@ -370,6 +370,13 @@ public class SSBNNode {
 		this.arguments.add(OVInstance.getInstance( ov, entityInstanceName , ov.getValueType() ));
 	}
 	
+	/**
+	 * Adds an argument. 
+	 * @param ovInstance
+	 */
+	public void addArgument(OVInstance ovInstance){
+		this.arguments.add(ovInstance); 
+	}
 	
 	/**
 	 * Adds an argument at a particular position	 * 

@@ -3,21 +3,23 @@
  */
 package unbbayes.prs.mebn.ssbn.test;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
 
-import unbbayes.prs.mebn.Argument;
-import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.entity.TypeContainer;
-import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
-import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
-import unbbayes.prs.mebn.ssbn.BottomUpSSBNGenerator;
-import unbbayes.prs.mebn.ssbn.OVInstance;
 import junit.framework.TestCase;
+import unbbayes.io.mebn.PrOwlIO;
+import unbbayes.io.mebn.exceptions.IOMebnException;
+import unbbayes.prs.mebn.DomainMFrag;
+import unbbayes.prs.mebn.DomainResidentNode;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.kb.KBFacade;
+import unbbayes.prs.mebn.kb.KnowledgeBase;
+import unbbayes.prs.mebn.kb.powerloom.PowerLoomFacade;
+import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
+import unbbayes.prs.mebn.ssbn.BottomUpSSBNGenerator;
+import unbbayes.prs.mebn.ssbn.Query;
+import unbbayes.prs.mebn.ssbn.SSBNNode;
+import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 /**
  * @author shou
@@ -146,4 +148,50 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 	}
 
 	*/
+	
+	public static void main(String arguments[]){
+		
+		BottomUpSSBNGenerator ssbnGenerator = new BottomUpSSBNGenerator(); 
+		KnowledgeBase kb = PowerLoomKB.getInstanceKB(); 
+	    KBFacade kbFacade = null; 
+		MultiEntityBayesianNetwork mebn = null;
+		
+		PrOwlIO io = new PrOwlIO(); 
+		try {
+			mebn = io.loadMebn(new File("examples/mebn/StarTrek37.owl"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOMebnException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		kb.loadModule(new File("testeGenerativeStarship.plm")); 
+		kb.loadModule(new File("testeFindingsStarship.plm")); 
+		
+		kbFacade = new PowerLoomFacade("/PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE"); 		
+		
+		DomainMFrag mFrag = mebn.getMFragByName("Starship_MFrag"); 
+		DomainResidentNode residentNode = mFrag.getDomainResidentNodeByName("HarmPotential"); 
+		SSBNNode queryNode = SSBNNode.getInstance(residentNode); 
+		try {
+			queryNode.addArgument(residentNode.getOrdinaryVariableByName("st"), "ST4");
+			queryNode.addArgument(residentNode.getOrdinaryVariableByName("t"), "T0");
+		} catch (SSBNNodeGeneralException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} 
+		
+		Query query = new Query(kbFacade, queryNode); 
+		query.setMebn(mebn); 
+		
+		try {
+			ssbnGenerator.generateSSBN(query);
+		} catch (SSBNNodeGeneralException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		
+	}
 }

@@ -22,7 +22,7 @@ import unbbayes.prs.mebn.ssbn.OVInstance;
 /*
  * only tests... 
  */
-public class ContextAvaliatorTest{
+public class ContextNodeAvaliatorTest{
 
     public static void main(String[] args) throws Exception {
     	MultiEntityBayesianNetwork mebn = null; 
@@ -86,7 +86,7 @@ public class ContextAvaliatorTest{
 		}
 		ovList.addAll(ordVariableList); 
 		
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(mebn, kb, kbFacade); 
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(kb, kbFacade); 
 		
 		avaliator.evaluateContextNodes(mFrag, ovInstanceList, ordVariableList); 
     

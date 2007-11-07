@@ -1,9 +1,12 @@
 package unbbayes.prs.mebn.kb.powerloom;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.DomainResidentNode;
+import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.kb.KBFacade;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import edu.isi.powerloom.Environment;
@@ -39,30 +42,84 @@ public class PowerLoomFacade implements KBFacade{
 		}
 	}
 
-	public String searchFinding(String nameRV, List<String> listArguments) {
+//	public String searchFinding(String nameRV, List<String> listArguments) {
+//		
+//		String finding = "";
+//		
+//		finding+="all (?x)"; 
+//		finding+="("; 
+//		finding+= nameRV;
+//		
+//		for(String argument: listArguments){
+//			finding+= " " + argument; 
+//		}
+//		
+//		finding += " ?x"; 
+//		finding+= ")";
+//		
+//		PlIterator iterator = PLI.sRetrieve(finding, moduleName, environment); 
+//		
+//		if(iterator.nextP()){
+//			return PLI.getNthString(iterator, 0, module, environment); 
+//		}else{
+//			return null; 
+//		}
+//		
+//	}
+	
+    public StateLink searchFinding(DomainResidentNode randonVariable, Collection<OVInstance> listArguments) {
 		
 		String finding = "";
 		
-		finding+="all (?x)"; 
-		finding+="("; 
-		finding+= nameRV;
-		
-		for(String argument: listArguments){
-			finding+= " " + argument; 
-		}
-		
-		finding += " ?x"; 
-		finding+= ")";
-		
-		PlIterator iterator = PLI.sRetrieve(finding, moduleName, environment); 
-		
-		if(iterator.nextP()){
-			return PLI.getNthString(iterator, 0, module, environment); 
+		if(randonVariable.getTypeOfStates() == DomainResidentNode.BOOLEAN_RV_STATES){
+			finding+= randonVariable.getName() + " ";
+			for(OVInstance argument: listArguments){
+				finding+= " " + argument.getEntity().getInstanceName(); 
+			}
+			TruthValue value = PLI.sAsk(finding, moduleName, environment);
+			
+			StateLink exactValue = null; 
+			//TODO throw a exception when the node dont have the argument... kb inconsistency. 
+			if(PLI.isTrue(value)){
+				exactValue = randonVariable.getPossibleValueByName("true"); 
+			}else{
+				if(PLI.isFalse(value)){
+					exactValue = randonVariable.getPossibleValueByName("false"); 
+				}else{
+					if(PLI.isUnknown(value)){
+						exactValue = null; 
+					}
+				}
+			}
+
+			return exactValue; 
+			
 		}else{
-			return null; 
+			finding+="all (?x)"; 
+			finding+="("; 
+			finding+= randonVariable.getName();
+			
+			for(OVInstance argument: listArguments){
+				finding+= " " + argument.getEntity().getInstanceName(); 
+			}
+			
+			finding += " ?x"; 
+			finding+= ")";
+			
+			PlIterator iterator = PLI.sRetrieve(finding, moduleName, environment); 
+			//TODO throw a exception when the search return more than one result...
+			
+			if(iterator.nextP()){
+				String state = PLI.getNthString(iterator, 0, module, environment);
+				return randonVariable.getPossibleValueByName(state); 
+			}else{
+				return null; 
+			}	
 		}
+		
 		
 	}
+	
 
 	public List<String> getEntityByType(String type) {
 		

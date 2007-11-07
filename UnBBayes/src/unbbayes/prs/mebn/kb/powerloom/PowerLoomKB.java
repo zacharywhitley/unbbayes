@@ -74,7 +74,7 @@ public class PowerLoomKB implements KnowledgeBase{
 	
 	private static final String POSSIBLE_STATE_SUFIX = "_state"; 
 	
-	private DebugPowerLoom debug = new DebugPowerLoom(true); 
+	private DebugPowerLoom debug = new DebugPowerLoom(false); 
 	
 	private static PowerLoomKB singleton = null; 
 	

@@ -5,7 +5,6 @@ import java.util.List;
 
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
-import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
@@ -107,6 +106,15 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 		return ordinaryVariableList; 
 	}
 
+	public OrdinaryVariable getOrdinaryVariableByName(String name){
+		for(OrdinaryVariable ov: ordinaryVariableList){
+			if(ov.getName().equals(name)){
+				return ov; 
+			}
+		}
+		return null; 
+	}
+	
 	public int getTypeOfStates() {
 		return typeOfStates;
 	}

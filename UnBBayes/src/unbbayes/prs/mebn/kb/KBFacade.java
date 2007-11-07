@@ -1,8 +1,11 @@
 package unbbayes.prs.mebn.kb;
 
+import java.util.Collection;
 import java.util.List;
 
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.DomainResidentNode;
+import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 
 public interface KBFacade {
@@ -21,7 +24,7 @@ public interface KBFacade {
 	 * @param listArguments
 	 * @return
 	 */
-	public String searchFinding(String nameRV, List<String> listArguments);
+    public StateLink searchFinding(DomainResidentNode randonVariable, Collection<OVInstance> listArguments); 
 
 	/**
 	 * Retorna todas as entidades de um dado tipo. 
