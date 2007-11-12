@@ -28,6 +28,7 @@ public class FoldEvaluation {
 	private double[][][] aucTemp;
 
 	private String[] samplingName;
+	private String[] samplingParameters;
 	private int numBatchIterations;
 	private int numClassifiers;
 
@@ -377,8 +378,7 @@ public class FoldEvaluation {
 		}
 		
 		samplingName[samplingID] = preprocessor.getPreprocessorName();
-//		preprocessorStringParameters[samplingID] =
-//			preprocessor.getPreprocessorStringParameters();
+		samplingParameters[samplingID] = preprocessor.getPreprocessorParameters();
 		
 		/* Classify and evaluate sample */
 		classifyEvaluate(train, test);
@@ -508,6 +508,7 @@ public class FoldEvaluation {
 				new float[numBatchIterations][numClassifiers][numRoundsTotal][][];
 			aucTemp = new double[numBatchIterations][numClassifiers][numRoundsTotal];
 			samplingName = new String[numBatchIterations];
+			samplingParameters = new String[numBatchIterations];
 			
 			/* Start the Indexes class */
 			indexes = new Indexes(instanceSet, numBatchIterations, numClassifiers,
@@ -536,6 +537,10 @@ public class FoldEvaluation {
 
 	public String getSamplingName(int samplingID) {
 		return samplingName[samplingID];
+	}
+
+	public String getSamplingParameters(int samplingID) {
+		return samplingParameters[samplingID];
 	}
 
 	public int getNumBatchIterations() {

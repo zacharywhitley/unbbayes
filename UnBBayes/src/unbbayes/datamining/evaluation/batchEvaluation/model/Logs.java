@@ -24,9 +24,8 @@ public class Logs implements Serializable {
 	private int activeColumn = 0;
 	private int preprocessorIDColumn = 1;
 	
-	public Logs() {
-		resource = ResourceBundle.getBundle("unbbayes.datamining.evaluation." +
-				"resources.BatchEvaluationResource");
+	public Logs(ResourceBundle resource) {
+		this.resource = resource;
 		buildDataTable();
 		preprocessors = new ArrayList<PreprocessorParameters>();
 	}

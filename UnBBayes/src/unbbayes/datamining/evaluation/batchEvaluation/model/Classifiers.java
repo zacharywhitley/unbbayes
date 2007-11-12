@@ -21,9 +21,8 @@ public class Classifiers implements Serializable {
 	private String[] columnNames;
 	private String[] classifierNames = ClassifierIDs.getClassifierNames();
 	
-	public Classifiers() {
-		resource = ResourceBundle.getBundle("unbbayes.datamining.evaluation." +
-				"resources.BatchEvaluationResource");
+	public Classifiers(ResourceBundle resource) {
+		this.resource = resource;
 		buildDataTable();
 	}
 	

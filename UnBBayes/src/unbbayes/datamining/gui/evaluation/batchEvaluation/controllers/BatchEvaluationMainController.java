@@ -71,6 +71,7 @@ public class BatchEvaluationMainController {
 			public void run() {
 				try {
 					view.disableFunctions();
+					view.setStatusBar(resource.getString("runScriptRunning"));
 					model.runScript(view.getLogsTabController());
 					view.setStatusBar(resource.getString("runScriptSuccess"));
 				} catch (Exception e) {

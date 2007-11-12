@@ -54,10 +54,6 @@ public class UtilsGUI implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private static ResourceBundle resource = ResourceBundle.getBundle(
-			"unbbayes.datamining.gui.evaluation.batchEvaluation.resources." +
-			"BatchEvaluationResource");
-	
 	private static boolean buttonOpaque = true;
 	private static final Color LABEL_COLOR = new Color(0, 70, 213);
 

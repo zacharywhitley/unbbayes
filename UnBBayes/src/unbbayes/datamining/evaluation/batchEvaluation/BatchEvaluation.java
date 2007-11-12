@@ -31,13 +31,13 @@ public class BatchEvaluation {
 	private Logs logData;
 	
 	public BatchEvaluation() {
-		resource = ResourceBundle.getBundle("unbbayes.datamining.evaluation" +
-		".resources.BatchEvaluationResource");
-		datasetData = new Datasets();
-		preprocessorData = new Preprocessors();
-		classifierData = new Classifiers();
-		evaluationData = new Evaluations();
-		logData = new Logs();
+		resource = ResourceBundle.getBundle("unbbayes.datamining.evaluation." +
+				"batchEvaluation.resources.BatchEvaluationResource");
+		datasetData = new Datasets(resource);
+		preprocessorData = new Preprocessors(resource);
+		classifierData = new Classifiers(resource);
+		evaluationData = new Evaluations(resource);
+		logData = new Logs(resource);
 	}
 	
 	public String openScript(File file) {
@@ -92,7 +92,7 @@ public class BatchEvaluation {
 	throws Exception {
 		RunScript runScript;
 		runScript = new RunScript(datasetData, preprocessorData, evaluationData,
-				logsWindowController);
+				logsWindowController, resource);
 		runScript.run();
 	}
 

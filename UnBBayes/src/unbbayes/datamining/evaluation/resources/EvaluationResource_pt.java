@@ -7,7 +7,7 @@ import java.util.*;
  *  @author M�rio Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @version $1.0 $ (16/02/2002)
  */
-public class BatchEvaluationResource_pt extends ListResourceBundle {
+public class EvaluationResource_pt extends ListResourceBundle {
 
 	/**
 	 * Override getContents and provide an array, where each item in the array
@@ -49,36 +49,5 @@ public class BatchEvaluationResource_pt extends ListResourceBundle {
 		{"setValueException", "Valor não pode ser inserido. Não consegue traduzir String para float."},
 		{"emptyInstanceSet", "O instanceSet não contém instancias."},
 		{"nominalAttribute", "O atributo para se calcular o desvio padrão deve ser numérico."},
-		
-		
-		/**********************************************************************
-		 * Datasets
-		 *********************************************************************/
-		{"activeTableHeader", "Ativo"},
-		{"finishedTableHeader", "Finalizado"},
-		{"datasetNameTableHeader", "Base de dados"},
-		{"classTableHeader", "Classe"},
-		{"counterTableHeader", "Contador"},
-		{"fileTableHeader", "Arquivo"},
-		
-		
-		/**********************************************************************
-		 * InitializePreprocessors
-		 *********************************************************************/
-		{"preprocessorNameTableHeader", "Preprocessador"},
-		{"configButtonTableHeader", ""},
-		
-		
-		/**********************************************************************
-		 * Classifiers
-		 *********************************************************************/
-		{"classifierNameTableHeader", "Classificador"},
-		
-		
-		/**********************************************************************
-		 * Evaluations
-		 *********************************************************************/
-		{"evaluationNameTableHeader", "Avaliação"},
-
 	};
 }

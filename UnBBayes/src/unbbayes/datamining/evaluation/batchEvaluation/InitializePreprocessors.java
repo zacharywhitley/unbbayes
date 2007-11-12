@@ -180,7 +180,7 @@ public class InitializePreprocessors {
 		return currentPreprocessor.getPreprocessorName();
 	}
 
-	public String getPreprocessorStringParameters() {
+	public String getPreprocessorParameters() {
 		Batch currentPreprocessor = preprocessorList.get(currentPreprocessorID);
 		return currentPreprocessor.parametersToString(currentBatchIterationID);
 	}

@@ -28,7 +28,7 @@ public class FileUtils {
 	public static final byte OPEN_FILE_DIALOG = 0;
 	public static final byte SAVE_FILE_DIALOG = 1;
 
-	private static SimpleFileFilter besFileFilter() {
+	private static SimpleFileFilter bevFileFilter() {
 		String[] filter = {"BEV"};
 		String filterText = resource.getString("besFilterText");
 
@@ -49,7 +49,7 @@ public class FileUtils {
 		
 		dialogTitle = resource.getString("openBevDialog");
 		successText = resource.getString("openBevSuccess");
-		fileFilter = besFileFilter();
+		fileFilter = bevFileFilter();
 		
 		File file = null;
 		file = openFile(
@@ -71,7 +71,7 @@ public class FileUtils {
 		
 		dialogTitle = resource.getString("saveBevDialog");
 		successText = resource.getString("saveBevSuccess");
-		fileFilter = besFileFilter();
+		fileFilter = bevFileFilter();
 		
 		File file = null;
 		file = openFile(
@@ -153,7 +153,7 @@ public class FileUtils {
 		/* Add FileView to FileChooser for drawing file icons */
 		fileChooser.addChoosableFileFilter(fileFilter);
 		fileChooser.setFileView(new FileIcon(window));
-		
+
 		/* Choose between save and open dialog */
 		window.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		int returnVal = -1;

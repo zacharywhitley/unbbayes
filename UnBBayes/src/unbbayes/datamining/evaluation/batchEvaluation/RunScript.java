@@ -8,6 +8,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 import unbbayes.datamining.datamanipulation.ArffLoader;
 import unbbayes.datamining.datamanipulation.InstanceSet;
@@ -39,22 +40,25 @@ public class RunScript {
 	private String outputFilePath;
 	private String aucFileName;
 	private String rocFileNameExtension;
-	private String hullFileNameExtension;
+	private String hullFileName;
 	private int numberFractionDigits = 2;
 	private LogsTabController logsWindowController;
+	private ResourceBundle resource;
 	
 	public RunScript(Datasets dataset, Preprocessors preprocessors,
-			Evaluations evaluations, LogsTabController logsWindowController) {
+			Evaluations evaluations, LogsTabController logsWindowController,
+			ResourceBundle resource) {
 		this.datasets = dataset;
 		this.preprocessors = preprocessors;
 		this.evaluations = evaluations;
 		this.logsWindowController = logsWindowController;
+		this.resource = resource;
 		computeAUC = evaluations.isComputeAUC();
 		buildROC = evaluations.isBuildROC();
 		outputFilePath = "results\\";
 		aucFileName = "auc.txt";
 		rocFileNameExtension = " - roc.txt";
-		rocFileNameExtension = " - hull.txt";
+		hullFileName = "hull.txt";
 	}
 	
 	public void run() throws Exception {
@@ -79,7 +83,9 @@ public class RunScript {
 			saveResults(instanceSet, testFold);
 			
 			/* Write to log window */
+			String finished = resource.getString("runScriptFinished");
 			String log = "Dataset: " + datasets.getDatasetName(i);
+			log += " " + finished; 
 			logsWindowController.insertData(log);
 		}
 	}
@@ -169,7 +175,7 @@ public class RunScript {
 			}
 			if (buildROC) {
 				saveROCResults(instanceSet, testFold);
-				computeHullResults(instanceSet, testFold);
+				saveHullResults(instanceSet, testFold);
 			}
 		}
 	}
@@ -294,14 +300,14 @@ public class RunScript {
 			classifierName = Classifiers.getClassifierName(i);
 			
 			/* Create path for the classifier results */
-			filePath = outputFilePath + "/" + classifierName;
+			filePath = outputFilePath + classifierName;
 			createPath(filePath);
 			
 			for (int sampleID = 0; sampleID < numSamplings; sampleID++) {
 				/* Create roc output file */
 				sampleName = testFold.getSamplingName(sampleID);
-//				fileName = filePath + "/" + sampleName + rocFileNameExtension;
-				fileName = filePath + "/" + sampleID + sampleName + rocFileNameExtension;
+//				fileName = filePath + "\\" + sampleName + rocFileNameExtension;
+				fileName = filePath + "\\" + sampleID + sampleName + rocFileNameExtension;
 				output = new File(fileName);
 				writer = new PrintWriter(new FileWriter(output), true);
 				
@@ -323,7 +329,8 @@ public class RunScript {
 				/* Save roc values */
 				numROCPoints = rocPointsAvg.length;
 				writer.println();
-				writer.println(sampleName);
+				writer.print(sampleName + "\t");
+				writer.println(testFold.getSamplingParameters(sampleID));
 				for (int k = 0; k < numROCPoints; k++) {
 					fpAvg = toComma(rocPointsAux[k][0], numberFractionDigits );
 					tpAvg = toComma(rocPointsAux[k][1], numberFractionDigits);
@@ -338,7 +345,7 @@ public class RunScript {
 		}
 	}
 	
-	private void computeHullResults(InstanceSet instanceSet, FoldEvaluation testFold)
+	private void saveHullResults(InstanceSet instanceSet, FoldEvaluation testFold)
 	throws IOException {
 		int numClassifiers = Classifiers.getNumClassifiers();
 		int numSamplings = testFold.getNumBatchIterations();;
@@ -359,12 +366,8 @@ public class RunScript {
 					hullPoints.add(rocPoints[i]);
 				}
 			}
-			computeHullResults(hullPoints, instanceSet.getRelationName());
 		}
-	}
-	
-	private void computeHullResults(ArrayList<float[]> hullPoints, String name)
-	throws IOException {
+
 		/* Compute the convex hull */
 		hullPoints = ROCAnalysis.computeConvexHull(hullPoints);
 		
@@ -374,7 +377,7 @@ public class RunScript {
 		/* Create convex hull output file */
 		PrintWriter writer;
 		File output;
-		output = new File(outputFilePath + name + hullFileNameExtension);
+		output = new File(outputFilePath + hullFileName);
 		writer = new PrintWriter(new FileWriter(output), true);
 		
 		/* Save convex hull points on disk */
@@ -438,7 +441,7 @@ public class RunScript {
 				/* Write classifier name */
 				writer.print(classifierName);
 	
-				/* Write sample name */
+				/* Write preprocessor name */
 				writer.print("\t" + testFold.getSamplingName(sampleID));
 	
 				/* AUC */
@@ -475,6 +478,9 @@ public class RunScript {
 //				stringValue = String.format(Locale.FRANCE, "%.2f", value);
 //				stringStdDev = String.format(Locale.FRANCE, "%.2f", stdDev);
 //				writer.print("\t" + stringValue + " (" + stringStdDev + ")");
+				
+				/* Write preprocessor parameters */
+				writer.print("\t" + testFold.getSamplingParameters(sampleID));
 				
 				writer.println();
 			}

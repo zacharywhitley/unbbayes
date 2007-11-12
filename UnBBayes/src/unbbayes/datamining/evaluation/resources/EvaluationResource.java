@@ -7,7 +7,7 @@ import java.util.*;
  *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @version $1.0 $ (16/02/2002)
  */
-public class BatchEvaluationResource extends ListResourceBundle {
+public class EvaluationResource extends ListResourceBundle {
 
 	/**
 	 * Override getContents and provide an array, where each item in the array
@@ -49,36 +49,5 @@ public class BatchEvaluationResource extends ListResourceBundle {
 		{"setValueException", "Value can't be inserted. Can't parse string to float."},
 		{"emptyInstanceSet", "The instance set contains no instances."},
 		{"nominalAttribute", "The attribute to calculate the standard deviation must be numerical"},
-		
-		
-		/**********************************************************************
-		 * Datasets
-		 *********************************************************************/
-		{"activeTableHeader", "Active"},
-		{"finishedTableHeader", "Finished"},
-		{"datasetNameTableHeader", "Dataset"},
-		{"classTableHeader", "Class"},
-		{"counterTableHeader", "Counter"},
-		{"fileTableHeader", "File"},
-		
-		
-		/**********************************************************************
-		 * InitializePreprocessors
-		 *********************************************************************/
-		{"preprocessorNameTableHeader", "Preprocessor"},
-		{"configButtonTableHeader", ""},
-	
-		
-		/**********************************************************************
-		 * Classifiers
-		 *********************************************************************/
-		{"classifierNameTableHeader", "Classifier"},
-		
-		
-		/**********************************************************************
-		 * Evaluations
-		 *********************************************************************/
-		{"evaluationNameTableHeader", "Evaluation"},
-
 	};
 }

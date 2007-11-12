@@ -18,9 +18,8 @@ public class Datasets implements Serializable {
 	private ArrayList<Object[]> dataTable;
 	private String[] columnNames;
 	
-	public Datasets() {
-		resource = ResourceBundle.getBundle("unbbayes.datamining.evaluation." +
-				"resources.BatchEvaluationResource");
+	public Datasets(ResourceBundle resource) {
+		this.resource = resource;
 		buildDataTable();
 	}
 	

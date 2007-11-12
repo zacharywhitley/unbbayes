@@ -24,9 +24,8 @@ public class Preprocessors implements Serializable {
 	private int activeColumn = 0;
 	private int preprocessorIDColumn = 1;
 	
-	public Preprocessors() {
-		resource = ResourceBundle.getBundle("unbbayes.datamining.evaluation." +
-				"resources.BatchEvaluationResource");
+	public Preprocessors(ResourceBundle resource) {
+		this.resource = resource;
 		buildDataTable();
 		preprocessors = new ArrayList<PreprocessorParameters>();
 	}

@@ -44,7 +44,9 @@ public class BatchEvaluationResource extends ListResourceBundle {
 		{"runScriptError", "Error running script!"},
 		
 		/* Success messages */
+		{"runScriptRunning", "Running script. Please wait!"},
 		{"runScriptSuccess", "Script finalized successfuly!"},
+		
 		
 		
 		/*********************************************************************/

@@ -44,6 +44,7 @@ public class BatchEvaluationResource_pt extends ListResourceBundle {
 		{"runScriptError", "Erro ao rodar script!"},
 		
 		/* Success messages */
+		{"runScriptRunning", "Rodando script. Aguarde por favor!"},
 		{"runScriptSuccess", "Script finalizado com sucesso!"},
 		
 		

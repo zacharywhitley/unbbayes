@@ -20,9 +20,8 @@ public class Evaluations implements Serializable {
 	private String[] columnNames;
 	private String[] evaluationNames = EvaluationIDs.getEvaluationNames();
 	
-	public Evaluations() {
-		resource = ResourceBundle.getBundle("unbbayes.datamining.evaluation." +
-				"resources.BatchEvaluationResource");
+	public Evaluations(ResourceBundle resource) {
+		this.resource = resource;
 		buildDataTable();
 	}
 	
