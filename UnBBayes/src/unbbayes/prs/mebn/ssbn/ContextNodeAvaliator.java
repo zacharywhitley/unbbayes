@@ -78,12 +78,16 @@ public class ContextNodeAvaliator {
 	 */
 	public List<String> evalutateSearchContextNode(ContextNode context, List<OVInstance> ovInstances) throws InvalidContextNodeFormula{
 		
-		if(!context.isFormulaComplexValida(ovInstances)){
-			throw new InvalidContextNodeFormula(); 
-		}else{
+		//TODO correct this method: a node is invalid only if the normal evaluation don't return 
+		//instances of the base... otherside, the format don't is important because 
+		//the results are OK. 
+		
+//		if(!context.isFormulaComplexValida(ovInstances)){
+//			throw new InvalidContextNodeFormula(); 
+//		}else{
 			List<String> entitiesResult = kb.evaluateComplexContextFormula(context, ovInstances); 
 			return entitiesResult;		
-		}
+//		}
 	}
 	
 	/**

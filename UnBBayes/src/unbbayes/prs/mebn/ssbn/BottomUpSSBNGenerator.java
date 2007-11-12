@@ -27,7 +27,7 @@ import unbbayes.util.Debug;
 
 /**
  * @author Shou Matsumoto
- *
+ * @author Laecio Lima dos Santos
  */
 public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	
@@ -48,79 +48,293 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	/*
 	 * Calls ContextNodeAvaliator's method to check context node's validation.
 	 */
-	private void contextNodeEvaluation (SSBNNode queryNode) {
+	private boolean contextNodeEvaluation (SSBNNode queryNode) {
 		
 		Debug.setDebug(true); 
 		
-		if (queryNode == null) {
-			return;
+		for(OVInstance ovInstance: queryNode.getArguments()){
+			Debug.println("OVInstance = " + ovInstance);
 		}
 		
 		DomainMFrag mFrag = queryNode.getResident().getMFrag();
 		
 		// We assume if MFrag is already set to use Default, then some context has failed previously and there's no need to evaluate again.		
 		if (mFrag.isUsingDefaultCPT()) {
-			return;
+			return false;
 		}
 		
 		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB(), kb); 
 		
 		List<OrdinaryVariable> ovList = queryNode.getResident().getOrdinaryVariableList(); 
 		
-		Collection<ContextNode> contextNodeList = mFrag.getContextByOVCombination(ovList);
-		
 		List<OVInstance> ovInstances = new ArrayList<OVInstance>(); 
 		ovInstances.addAll(queryNode.getArguments()); 
 		
-		Debug.println(""); 
-		Debug.println("Evaluating... "); 
-		Debug.println(""); 
-		
+		Collection<ContextNode> contextNodeList = mFrag.getContextByOVCombination(ovList);
 		for(ContextNode context: contextNodeList){
 			Debug.println("Context Node: " + context.getLabel()); 
 			try{
 				if(!avaliator.evaluateContextNode(context, ovInstances)){
 					mFrag.setAsUsingDefaultCPT(true); 
 					Debug.println("Result = FALSE. Use default distribution ");
-					return;  
+					return false;  
 				}else{
 					Debug.println("Result = TRUE.");
-//					return; 
 				}
 			}
 			catch(OVInstanceFaultException e){
-				try {
-					Debug.println("OVInstance Fault. Try evaluate a search. "); 
-					List<String> result = avaliator.evalutateSearchContextNode(context, ovInstances);
-					if(result.isEmpty()){
-						
-						OrdinaryVariable rigthTerm = context.getFreeVariable(); 
-						result = kb.getEntityByType(rigthTerm.getValueType().getName());
-						
-						Debug.println("No information in Knowlege Base"); 
-						Debug.print("Result = "); 
-						for(String entity: result){
-							Debug.print(entity + " "); 
-						}
-						Debug.println(""); 
-//						return;  
-					}else{
-						Debug.print("Result = "); 
-						for(String entity: result){
-							Debug.print(entity + " "); 
-						}
-						Debug.println("");
-//						return; 
-					}
-				} catch (InvalidContextNodeFormula ie) {
-					Debug.println("Invalid Context Node: the formula don't is accept."); 
-					// TODO Auto-generated catch block
-//					ie.printStackTrace();
-				} 
+				e.printStackTrace(); 
 			}
-			Debug.println(""); 
-//			return; 
+			Debug.println("");
 		}
+		
+		return true; 
+		
+	}
+
+	/**
+	 *
+	 * 
+	 * @param mFrag
+	 * @param avaliator
+	 * @param ovList
+	 * @param ovInstances
+	 */
+	private List<SSBNNode> createSSBNNodesForEntitiesSearch(DomainMFrag mFrag, SSBNNode originNode, 
+			DomainResidentNode fatherNode, List<OrdinaryVariable> ovList, List<OVInstance> ovInstances) {
+		
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB(), kb); 
+		
+		//Complex case: evaluate search context nodes. 
+		Debug.println("Have ord. variables incomplete!"); 
+		
+		if(ovList.size() > 1){
+			//TODO lancar exception
+			return null; 
+		}
+		//busca... 
+		Collection<ContextNode> contextNodeList = mFrag.getSearchContextByOVCombination(ovList);
+		int size = contextNodeList.size(); 
+		
+		if(size!=1){
+			Debug.print("More than one search node... implementation incomplete."); 
+			//TODO throws a exception
+			return null; 
+		}
+		
+		ContextNode context = contextNodeList.toArray(new ContextNode[size])[0];
+		OrdinaryVariable ov = ovList.get(0);
+		
+		Debug.println("Context Node: " + context.getLabel()); 
+		
+		try {
+			List<String> result = avaliator.evalutateSearchContextNode(context, ovInstances);
+			
+			if(result.isEmpty()){
+				//Add the context node how father
+				//TODO...
+				
+				//Search for all the entities present in kb. 
+				result = kb.getEntityByType(ov.getValueType().getName());
+				List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
+		        for(String entity: result){
+		        	OVInstance instance = OVInstance.getInstance(ov, entity, ov.getValueType()); 
+					SSBNNode node = SSBNNode.getInstance(fatherNode); 
+					node.addArgument(instance); 
+					for(OVInstance ovInstance: ovInstances){
+						node.addArgument(ovInstance); 
+					}
+					nodes.add(node); 
+				}
+				return nodes;  
+			}
+			else{
+				List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
+				for(String entity: result){
+					OVInstance instance = OVInstance.getInstance(ov, entity, ov.getValueType()); 
+					SSBNNode node = SSBNNode.getInstance(fatherNode); 
+					node.addArgument(instance); 
+					for(OVInstance ovInstance: ovInstances){
+						node.addArgument(ovInstance); 
+					}
+					nodes.add(node); 
+				}
+				return nodes; 
+			}
+			
+		} catch (InvalidContextNodeFormula ie) {
+			Debug.println("Invalid Context Node: the formula don't is accept."); 
+			// TODO throw exception
+			ie.printStackTrace();
+			return null;
+		}
+	}
+	
+	private List<SSBNNode> createSSBNNodesForEntitiesSearchForInputNodes(DomainMFrag mFrag, SSBNNode originNode, 
+			GenerativeInputNode fatherNode, List<OrdinaryVariable> ovList, List<OVInstance> ovInstances) throws SSBNNodeGeneralException {
+		
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB(), kb); 
+		
+		//Complex case: evaluate search context nodes. 
+		Debug.println("Have ord. variables incomplete!"); 
+		
+		if(ovList.size() > 1){
+			//TODO lancar exception
+			return null; 
+		}
+		//busca... 
+		Collection<ContextNode> contextNodeList = mFrag.getSearchContextByOVCombination(ovList);
+		int size = contextNodeList.size(); 
+		
+		if(size!=1){
+			Debug.print("More than one search node... implementation incomplete."); 
+			//TODO throws a exception
+			return null; 
+		}
+		
+		ContextNode context = contextNodeList.toArray(new ContextNode[size])[0];
+		OrdinaryVariable ov = ovList.get(0);
+		
+		Debug.println("Context Node: " + context.getLabel()); 
+		
+		try {
+			List<String> result = avaliator.evalutateSearchContextNode(context, ovInstances);
+			
+			if(result.isEmpty()){
+				Debug.println("Result is empty"); 
+				//Add the context node how father
+				//TODO...
+				
+				//Search for all the entities present in kb. 
+				result = kb.getEntityByType(ov.getValueType().getName());
+				Debug.println("Search returns " + result.size() + " results"); 
+				List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
+				DomainResidentNode residentNode = (DomainResidentNode)fatherNode.getResidentNodePointer().getResidentNode(); 
+		        for(String entity: result){
+		        	SSBNNode ssbnnode = SSBNNode.getInstance(residentNode); 
+					{
+						OVInstance instance = OVInstance.getInstance(ov, entity, ov.getValueType()); 
+						OrdinaryVariable ovOrigin = instance.getOv(); 
+	            		int index = fatherNode.getResidentNodePointer().getOrdinaryVariableIndex(ovOrigin);
+	            		if(index > -1){
+	            			OrdinaryVariable destination = residentNode.getOrdinaryVariableList().get(index);
+	            			ssbnnode.addArgument(destination, instance.getEntity().getInstanceName());
+	            		}	
+					}
+					
+	            	for(OVInstance instance: originNode.getArguments()){
+	            		OrdinaryVariable ovOrigin = instance.getOv(); 
+	            		int index = fatherNode.getResidentNodePointer().getOrdinaryVariableIndex(ovOrigin);
+	            		if(index > -1){
+	            			OrdinaryVariable destination = residentNode.getOrdinaryVariableList().get(index);
+	            			ssbnnode.addArgument(destination, instance.getEntity().getInstanceName());
+	            		}
+	            	}
+	            	
+					nodes.add(ssbnnode); 
+				}
+				return nodes;  
+			}
+			else{
+				List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
+				DomainResidentNode residentNode = (DomainResidentNode)fatherNode.getResidentNodePointer().getResidentNode(); 
+				for(String entity: result){
+		        	SSBNNode ssbnnode = SSBNNode.getInstance(residentNode); 
+					{
+						OVInstance instance = OVInstance.getInstance(ov, entity, ov.getValueType()); 
+						OrdinaryVariable ovOrigin = instance.getOv(); 
+	            		int index = fatherNode.getResidentNodePointer().getOrdinaryVariableIndex(ovOrigin);
+	            		if(index > 0){
+	            			OrdinaryVariable destination = residentNode.getOrdinaryVariableList().get(index);
+	            			ssbnnode.addArgument(destination, instance.getEntity().getInstanceName());
+	            		}	
+					}
+					
+	            	for(OVInstance instance: originNode.getArguments()){
+	            		OrdinaryVariable ovOrigin = instance.getOv(); 
+	            		int index = fatherNode.getResidentNodePointer().getOrdinaryVariableIndex(ovOrigin);
+	            		if(index > 0){
+	            			OrdinaryVariable destination = residentNode.getOrdinaryVariableList().get(index);
+	            			ssbnnode.addArgument(destination, instance.getEntity().getInstanceName());
+	            		}
+	            	}
+	            	
+					nodes.add(ssbnnode); 
+				}
+				
+				//DEBUG
+				for(SSBNNode node: nodes){
+					Debug.println("Create Node:" + node.getResident().getName() ); 
+				    for(OVInstance ovInstance: node.getArguments()){
+				    	Debug.println(ovInstance.toString()); 
+				    }
+				}
+				
+				return nodes; 
+			}
+			
+		} catch (InvalidContextNodeFormula ie) {
+			Debug.println("Invalid Context Node: the formula don't is accept."); 
+			// TODO throw exception
+			ie.printStackTrace();
+			return null;
+		}
+	}
+
+	private boolean evaluateSimpleContextNodes(DomainMFrag mFrag, List<OVInstance> ovInstances, List<OrdinaryVariable> ovList) {
+		
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB(), kb); 
+		Collection<ContextNode> contextNodeList = mFrag.getContextByOVCombination(ovList);
+		for(ContextNode context: contextNodeList){
+			Debug.println("Context Node: " + context.getLabel()); 
+			try{
+				if(!avaliator.evaluateContextNode(context, ovInstances)){
+					mFrag.setAsUsingDefaultCPT(true); 
+					Debug.println("Result = FALSE. Use default distribution ");
+					return true;  
+				}else{
+					Debug.println("Result = TRUE.");
+//						return; 
+				}
+			}
+			catch(OVInstanceFaultException e){
+				e.printStackTrace();
+			}
+			
+			Debug.println(""); 
+		}
+
+		return true;
+	}
+	
+	/**
+	 * Verifies if have OVInstances for all ordinary variable. 
+	 * 
+	 * @param ordVariableList
+	 * @param ovInstanceList
+	 * @return List of ordinary variables that don't have a OVInstance. 
+	 */
+	private List<OrdinaryVariable> avaliateOVInstancesInformation(Collection<OrdinaryVariable> ordVariableList, Collection<OVInstance> ovInstanceList){
+    	
+    	List<OrdinaryVariable> ret = new ArrayList<OrdinaryVariable>(); 
+    	
+    	for(OrdinaryVariable ov: ordVariableList){
+    		
+    		boolean found = false; 
+    		for(OVInstance ovInstance: ovInstanceList){
+    			if(ov.equals(ovInstance.getOv())){
+    				found = true; 
+    				break; 
+    			}
+    		}
+    		
+    		if(!found) ret.add(ov); 
+    		
+    	}
+    	
+    	return ret; 
+    	
+		
 	}
 	
 	/*
@@ -131,7 +345,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 */
 	private SSBNNode generateRecursive(SSBNNode currentNode , SSBNNodeList seen, ProbabilisticNetwork net) throws SSBNNodeGeneralException {
 		
-		Debug.println("Passo: " + currentNode.getName()); 
+		Debug.println("\nPasso: " + currentNode.getName()); 
 		
 		// check for cycle
 		if (seen.contains(currentNode)) {
@@ -147,77 +361,110 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		if (exactValue != null) {
 			// there were an exact match
 			currentNode.setNodeAsFinding(exactValue.getState());
+			Debug.println("Exact value of " + currentNode.getName() + "=" + exactValue.getState()); 
 			return currentNode;
 		}
 		
 		// if the program reached this line, the node doesn't have a finding
 		seen.add(currentNode);	// mark this as already seen  (treated) node
 		
-		
 		// evaluates querynode's mfrag's context nodes (if not OK, sets MFrag's flag to use default CPT)	
-		contextNodeEvaluation(currentNode);
-
+		
+		boolean result = contextNodeEvaluation(currentNode);
 		
 		// extract parents to treat them recursively
 		List<SSBNNode> parents = new ArrayList<SSBNNode>();
 		
 		// Extract resident nodes
-		for (DomainResidentNode parent : currentNode.getResident().getResidentNodeFatherList()) {
+
+		for (DomainResidentNode residentNode : currentNode.getResident().getResidentNodeFatherList()) {
 			
-            SSBNNode ssbnnode = SSBNNode.getInstance(parent, new ProbabilisticNode());
-			
-			//TODO arguments of the parent node. Control by MFrag? st = ST0 always???
-			
-            for(OVInstance instance : currentNode.getArguments()){
-            	if(parent.containsArgument(instance.getOv())){
-            		ssbnnode.addArgument(instance); 
-            	}
-            }
+			List<OVInstance> ovInstancesList = new ArrayList<OVInstance>(); 
+			ovInstancesList.addAll(currentNode.getArguments()); 
             
-            parents.add(ssbnnode);
+            List<OrdinaryVariable> ovProblemList = avaliateOVInstancesInformation(residentNode.getOrdinaryVariableList(), currentNode.getArguments()); 
             
+    		if(!ovProblemList.isEmpty()){
+    			List<SSBNNode> parentList = createSSBNNodesForEntitiesSearch(
+    					residentNode.getMFrag(), currentNode, residentNode, 
+    					ovProblemList, ovInstancesList); 
+    		    for(SSBNNode ssbnnode: parentList){
+    		    	parents.add(ssbnnode);
+        			generateRecursive(ssbnnode, seen, net);	// algorithm's core
+        			currentNode.addParent(ssbnnode, true);
+        			if (ssbnnode.getProbNode() != null) {	// if this parent is not a finding
+//        				net.addEdge(new Edge(currentNode.getProbNode(),ssbnnode.getProbNode()));
+        			}	
+    		    }
+    		}else{
+    			SSBNNode ssbnnode = SSBNNode.getInstance(residentNode, new ProbabilisticNode());
+				for(OVInstance ovInstance: currentNode.getArguments()){
+					ssbnnode.addArgument(ovInstance); 
+				}
+    			parents.add(ssbnnode);
+    			generateRecursive(ssbnnode, seen, net);	// algorithm's core
+    			currentNode.addParent(ssbnnode, true);
+    			if (ssbnnode.getProbNode() != null) {	// if this parent is not a finding
+//    				net.addEdge(new Edge(currentNode.getProbNode(),ssbnnode.getProbNode()));
+    			}
+    		}
 			
 		}
+		
+		Debug.println(currentNode.getResident().getName() + " return of resident parents recursion"); 
 		
 		// Extract input nodes
-		for (GenerativeInputNode input : currentNode.getResident().getInputNodeFatherList()) {
-			DomainResidentNode resident = (DomainResidentNode)input.getResidentNodePointer().getResidentNode(); 
+		for (GenerativeInputNode inputNode : currentNode.getResident().getInputNodeFatherList()) {
+			DomainResidentNode residentNode = (DomainResidentNode)inputNode.getResidentNodePointer().getResidentNode(); 
+
+			//Step 1: evaluate context and search for findings
+            List<OVInstance> listOVInstances = new ArrayList<OVInstance>(); 
+            listOVInstances.addAll(currentNode.getArguments()); 
+            Debug.println(currentNode.getName() + " Avaliar input " + residentNode.getName()); 
 			
-			//other MFrag... analyse names of ordinaryVariables... 
-            SSBNNode ssbnnode = SSBNNode.getInstance(resident, new ProbabilisticNode());
-			
-            for(OVInstance instance: currentNode.getArguments()){
-            	OrdinaryVariable ov = instance.getOv(); 
-            	int index = input.getResidentNodePointer().getOrdinaryVariableIndex(ov);
-            	if(index > 0){
-            	   OrdinaryVariable destination = resident.getOrdinaryVariableList().get(index);
-            	   ssbnnode.addArgument(destination, instance.getEntity().getInstanceName());
-            	}
+            List<OrdinaryVariable> ovProblemList = avaliateOVInstancesInformation(inputNode.getOrdinaryVariableList(), currentNode.getArguments()); 
+            Debug.println("OV Problem List: "); 
+            for(OrdinaryVariable ov: ovProblemList){
+            	Debug.println(ov.toString()); 
             }
             
-            parents.add(ssbnnode);
-			
-		}
-		
-		
-		// recursive calling for parents
-		for (SSBNNode ssbnnode : parents) {
-			
-//			TODO a reference for the father is necessary (context node avaliation)
+    		if(!ovProblemList.isEmpty()){
+    			List<SSBNNode> parentList = createSSBNNodesForEntitiesSearchForInputNodes(inputNode.getMFrag(), currentNode, inputNode, ovProblemList, listOVInstances); 
+    		    for(SSBNNode ssbnnode: parentList){
+    		    	parents.add(ssbnnode);
+        			generateRecursive(ssbnnode, seen, net);	// algorithm's core
+        			currentNode.addParent(ssbnnode, true);
+        			if (ssbnnode.getProbNode() != null) {	// if this parent is not a finding
+//        				net.addEdge(new Edge(currentNode.getProbNode(),ssbnnode.getProbNode()));
+        			}	
+    		    }
+    		}else{
+    			boolean contextNodesOK = evaluateSimpleContextNodes(inputNode.getMFrag(), listOVInstances, ovProblemList); 
+    	           if(contextNodesOK){
+    	        	    SSBNNode ssbnnode = SSBNNode.getInstance(residentNode, new ProbabilisticNode());
+    					
+    	            	for(OVInstance instance: currentNode.getArguments()){
+    	            		OrdinaryVariable ov = instance.getOv(); 
+    	            		int index = inputNode.getResidentNodePointer().getOrdinaryVariableIndex(ov);
+    	            		if(index > -1){
+    	            			OrdinaryVariable destination = residentNode.getOrdinaryVariableList().get(index);
+    	            			ssbnnode.addArgument(destination, instance.getEntity().getInstanceName());
+    	            		}
+    	            	}
+
+    	            	parents.add(ssbnnode);
+    	            	this.generateRecursive(ssbnnode, seen, net);	// algorithm's core
+    	            	
+    	            	currentNode.addParent(ssbnnode, true);
+    	            	if (ssbnnode.getProbNode() != null) {	// if this parent is not a finding
+//    	            		net.addEdge(new Edge(currentNode.getProbNode(),ssbnnode.getProbNode()));
+    	            	}
+    	            }
+    		}
             
-			this.generateRecursive(ssbnnode, seen, net);	// algorithm's core
-			
-			currentNode.addParent(ssbnnode, true);
-			if (ssbnnode.getProbNode() != null) {	// if this parent is not a finding
-				net.addEdge(new Edge(currentNode.getProbNode(),ssbnnode.getProbNode()));
-			}
-			
 		}
 		
-		Debug.println("Rede: "); 
-		for(Edge edge: net.getEdges()){
-			Debug.println(edge.getOriginNode().getName() + " -> " + edge.getDestinationNode().getName()); 
-		}
+		Debug.println(currentNode.getResident().getName() + " return of input parents recursion"); 
 		
 		// TODO finish this method
 
@@ -245,7 +492,21 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
 		this.generateRecursive(querynode, new SSBNNodeList(), net);
 		
+		System.out.println("\n"); 
+		System.out.println("Rede formada: "); 
+		printParents(querynode, 0); 
+		
 		return net;
 	}
 
+	private void printParents(SSBNNode node, int nivel){
+		for(SSBNNode parent: node.getParents()){
+			for(int i = 0; i < nivel; i++){
+				System.out.print("   "); 
+			}
+			System.out.println(parent.getName());
+			printParents(parent, nivel + 1); 
+		}
+	}
+	
 }
