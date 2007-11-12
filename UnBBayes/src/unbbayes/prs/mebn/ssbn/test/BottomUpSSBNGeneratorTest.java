@@ -9,6 +9,7 @@ import java.io.IOException;
 import junit.framework.TestCase;
 import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -174,7 +175,7 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 		
 		DomainMFrag mFrag = mebn.getMFragByName("Starship_MFrag"); 
 		DomainResidentNode residentNode = mFrag.getDomainResidentNodeByName("HarmPotential"); 
-		SSBNNode queryNode = SSBNNode.getInstance(residentNode); 
+		SSBNNode queryNode = SSBNNode.getInstance(residentNode, new ProbabilisticNode()); 
 		try {
 			queryNode.addArgument(residentNode.getOrdinaryVariableByName("st"), "ST4");
 			queryNode.addArgument(residentNode.getOrdinaryVariableByName("t"), "T0");

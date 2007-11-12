@@ -408,7 +408,7 @@ public class SSBNNode {
 		Collection actualValue = new ArrayList<Entity>();
 		actualValue.add(uniqueValue);
 		this.setActualValues(actualValue);
-		this.setProbNode(null);
+//		this.setProbNode(null);
 	}
 	
 	
@@ -439,7 +439,7 @@ public class SSBNNode {
 			throw new SSBNNodeGeneralException();
 		}
 		if (isCheckingParentResident && ( parent.getProbNode() == null ) ) {
-			throw new SSBNNodeGeneralException();
+//			throw new SSBNNodeGeneralException();
 		}
 		
 		// perform consistency check

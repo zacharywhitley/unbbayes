@@ -95,7 +95,7 @@ public class PowerLoomFacade implements KBFacade{
 			return exactValue; 
 			
 		}else{
-			finding+="all (?x)"; 
+			finding+="all ?x"; 
 			finding+="("; 
 			finding+= randonVariable.getName();
 			
@@ -105,7 +105,6 @@ public class PowerLoomFacade implements KBFacade{
 			
 			finding += " ?x"; 
 			finding+= ")";
-			
 			PlIterator iterator = PLI.sRetrieve(finding, moduleName, environment); 
 			//TODO throw a exception when the search return more than one result...
 			

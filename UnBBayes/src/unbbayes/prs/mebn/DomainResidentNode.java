@@ -274,7 +274,7 @@ public class DomainResidentNode extends ResidentNode {
 	 */
 	public StateLink getPossibleValueByName(String possibleValue){
 		for(StateLink value : possibleValueList){
-			if (value.getState().getName().equals(possibleValue)){
+			if (value.getState().getName().equalsIgnoreCase(possibleValue)){
 				return value; 
 			}
 		}

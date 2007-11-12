@@ -450,6 +450,37 @@ public class DomainMFrag extends MFrag {
 	
 	}
 	
+	/**
+	 * Return all context nodes that have one or more ordinary variables of 
+	 * the allOVs list. 
+	 */
+	public Collection<ContextNode> getSearchContextByOVCombination(Collection<OrdinaryVariable> allOVs) {
+		
+		Collection<ContextNode> ret = new ArrayList<ContextNode>();
+		
+		if (allOVs == null) {
+			return ret;
+		}
+		
+		for (ContextNode node : this.getContextNodeList()) {
+			boolean test = false; 
+			Set<OrdinaryVariable> ordinaryVariableList = node.getVariableList();
+			
+			for(OrdinaryVariable ov: ordinaryVariableList){
+				if(allOVs.contains(ov)){
+					test = true; 
+					break; 
+				}
+			}
+			
+			if(test)ret.add(node); 
+			
+		}
+		
+		return ret;
+	
+	}
+	
 	
 	/**
 	 * 
