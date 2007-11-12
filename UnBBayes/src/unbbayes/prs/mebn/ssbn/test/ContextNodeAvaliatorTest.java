@@ -3,10 +3,12 @@ package unbbayes.prs.mebn.ssbn.test;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
+import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -18,6 +20,9 @@ import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.ContextNodeAvaliator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
+import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormula;
+import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
+import unbbayes.util.Debug;
 
 /*
  * only tests... 
@@ -88,8 +93,84 @@ public class ContextNodeAvaliatorTest{
 		
 		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(kb, kbFacade); 
 		
-		avaliator.evaluateContextNodes(mFrag, ovInstanceList, ordVariableList); 
+		evaluateContextNodes(mFrag, ovInstanceList, ordVariableList, avaliator, kbFacade); 
     
     }	
+    
+
+	/**
+	 * True - All nodes ok
+	 * False - Use default distribution
+	 * 
+	 * List<entities> resultado. -> normal, busca geral. 
+	 * 
+	 * @param mFrag
+	 * @param ovInstanceList
+	 * @param ordVariableList
+	 */
+	public static void evaluateContextNodes(DomainMFrag mFrag, List<OVInstance> ovInstanceList, List<OrdinaryVariable> ordVariableList, 
+			ContextNodeAvaliator avaliator, KBFacade kbFacade){
+		
+		Debug.setDebug(true); 
+		
+		Collection<ContextNode> contextNodeList; 
+		
+		List<OrdinaryVariable> ovList = new ArrayList<OrdinaryVariable>(); 
+		for(OVInstance ovInstance: ovInstanceList){
+			ovList.add(ovInstance.getOv()); 
+		}
+		ovList.addAll(ordVariableList); 
+		
+		contextNodeList = mFrag.getContextByOVCombination(ovList); 
+		
+		Debug.println(""); 
+		Debug.println("Evaluating... "); 
+		Debug.println(""); 
+		
+		for(ContextNode context: contextNodeList){
+			Debug.println("Context Node: " + context.getFormula()); 
+			try{
+				if(!avaliator.evaluateContextNode(context, ovInstanceList)){
+					Debug.println("Result = FALSE. Use default distribution "); 
+//					return false;  //use the default distribution. 
+				}
+			}
+			catch(OVInstanceFaultException e){
+				try {
+					Debug.println("OVInstance Fault. Try evaluate a search. "); 
+					List<String> result = avaliator.evalutateSearchContextNode(context, ovInstanceList);
+					if(result.isEmpty()){
+						
+						OrdinaryVariable rigthTerm = context.getFreeVariable(); 
+						result = kbFacade.getEntityByType(rigthTerm.getValueType().getName());
+						
+						Debug.println("No information in Knowlege Base"); 
+						Debug.print("Result = "); 
+						for(String entity: result){
+							Debug.print(entity + " "); 
+						}
+						Debug.println(""); 
+						
+//						return false; 
+					}else{
+						Debug.print("Result = "); 
+						for(String entity: result){
+							Debug.print(entity + " "); 
+						}
+						Debug.println(""); 
+//						return true; 
+					}
+				} catch (InvalidContextNodeFormula ie) {
+					Debug.println("Invalid Context Node: the formula don't is accept."); 
+					// TODO Auto-generated catch block
+					ie.printStackTrace();
+				} 
+			}
+			Debug.println(""); 
+		}
+		
+//		return true; 
+		
+	}
 	
 }

@@ -67,10 +67,6 @@ public class ContextNodeAvaliator {
 	 * Ex.: z = StarshipZone(st). 
 	 * -> return all the z's. 
 	 * 
-	 * Note: for this implementation, only formulas in the example format are 
-	 * accept. For all others formats, a exception InvalidContextNodeFormula will
-	 * be throw. 
-	 * 
 	 * @param context
 	 * @param ovInstances
 	 * @return
@@ -78,90 +74,8 @@ public class ContextNodeAvaliator {
 	 */
 	public List<String> evalutateSearchContextNode(ContextNode context, List<OVInstance> ovInstances) throws InvalidContextNodeFormula{
 		
-		//TODO correct this method: a node is invalid only if the normal evaluation don't return 
-		//instances of the base... otherside, the format don't is important because 
-		//the results are OK. 
-		
-//		if(!context.isFormulaComplexValida(ovInstances)){
-//			throw new InvalidContextNodeFormula(); 
-//		}else{
 			List<String> entitiesResult = kb.evaluateComplexContextFormula(context, ovInstances); 
-			return entitiesResult;		
-//		}
-	}
-	
-	/**
-	 * True - All nodes ok
-	 * False - Use default distribution
-	 * 
-	 * List<entities> resultado. -> normal, busca geral. 
-	 * 
-	 * @param mFrag
-	 * @param ovInstanceList
-	 * @param ordVariableList
-	 */
-	public void evaluateContextNodes(DomainMFrag mFrag, List<OVInstance> ovInstanceList, List<OrdinaryVariable> ordVariableList){
-		
-		Debug.setDebug(true); 
-		
-		Collection<ContextNode> contextNodeList; 
-		
-		List<OrdinaryVariable> ovList = new ArrayList<OrdinaryVariable>(); 
-		for(OVInstance ovInstance: ovInstanceList){
-			ovList.add(ovInstance.getOv()); 
-		}
-		ovList.addAll(ordVariableList); 
-		
-		contextNodeList = mFrag.getContextByOVCombination(ovList); 
-		
-		Debug.println(""); 
-		Debug.println("Evaluating... "); 
-		Debug.println(""); 
-		
-		for(ContextNode context: contextNodeList){
-			Debug.println("Context Node: " + context.getFormula()); 
-			try{
-				if(!evaluateContextNode(context, ovInstanceList)){
-					Debug.println("Result = FALSE. Use default distribution "); 
-//					return false;  //use the default distribution. 
-				}
-			}
-			catch(OVInstanceFaultException e){
-				try {
-					Debug.println("OVInstance Fault. Try evaluate a search. "); 
-					List<String> result = evalutateSearchContextNode(context, ovInstanceList);
-					if(result.isEmpty()){
-						
-						OrdinaryVariable rigthTerm = context.getFreeVariable(); 
-						result = kbFacade.getEntityByType(rigthTerm.getValueType().getName());
-						
-						Debug.println("No information in Knowlege Base"); 
-						Debug.print("Result = "); 
-						for(String entity: result){
-							Debug.print(entity + " "); 
-						}
-						Debug.println(""); 
-						
-//						return false; 
-					}else{
-						Debug.print("Result = "); 
-						for(String entity: result){
-							Debug.print(entity + " "); 
-						}
-						Debug.println(""); 
-//						return true; 
-					}
-				} catch (InvalidContextNodeFormula ie) {
-					Debug.println("Invalid Context Node: the formula don't is accept."); 
-					// TODO Auto-generated catch block
-					ie.printStackTrace();
-				} 
-			}
-			Debug.println(""); 
-		}
-		
-//		return true; 
-		
+			return entitiesResult;
 	}
 	
 }
