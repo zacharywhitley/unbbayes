@@ -736,8 +736,7 @@ public class LoaderPrOwlIO {
 				else{
 					if (mapGenerativeInputNode.containsKey(individualTwo.getBrowserText())){
 						GenerativeInputNode aux = mapGenerativeInputNode.get(individualTwo.getBrowserText()); 
-						aux.addResidentNodeChild(domainResidentNode); 
-			
+						
 						Edge auxEdge = new Edge(aux, domainResidentNode);
 						try{
 						mFragOfNode.addEdge(auxEdge); 
@@ -952,17 +951,18 @@ public class LoaderPrOwlIO {
 			}		
 			
 			/* isParentOf */
-			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isParentOf"); 
-			instances = individualOne.getPropertyValues(objectProperty); 	
-			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
-				individualTwo = (OWLIndividual) itIn.next();
-				domainResidentNode = mapDomainResidentNode.get(individualTwo.getBrowserText());
-				if(domainResidentNode == null){
-					throw new IOMebnException(resource.getString("DomainMFragNotExistsInMTheory"),  individualTwo.getBrowserText()); 
-				}
-				generativeInputNode.addResidentNodeChild(domainResidentNode); 
-				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
-			}			
+			//already checked in DomainResident load process. 
+//			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isParentOf"); 
+//			instances = individualOne.getPropertyValues(objectProperty); 	
+//			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
+//				individualTwo = (OWLIndividual) itIn.next();
+//				domainResidentNode = mapDomainResidentNode.get(individualTwo.getBrowserText());
+//				if(domainResidentNode == null){
+//					throw new IOMebnException(resource.getString("DomainMFragNotExistsInMTheory"),  individualTwo.getBrowserText()); 
+//				}
+//				generativeInputNode.addResidentNodeChild(domainResidentNode); 
+//				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
+//			}			
 			
 			/* -> isInnerTermOf */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isInnerTermOf"); 			
