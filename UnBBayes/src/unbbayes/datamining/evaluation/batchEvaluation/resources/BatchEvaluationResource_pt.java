@@ -54,6 +54,6 @@ public class BatchEvaluationResource_pt extends ListResourceBundle {
 		/**********************************************************************
 		 * RunScript
 		 *********************************************************************/
-		{"runScriptFinished", "finished!"},
+		{"runScriptFinished", "finalizado!"},
 	};
 }
