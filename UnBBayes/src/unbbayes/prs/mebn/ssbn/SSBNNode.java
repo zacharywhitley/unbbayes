@@ -58,13 +58,13 @@ public class SSBNNode {
 	
 	private ICompiler compiler = null;
 	
-	
+	private boolean isFinding = false;
 	
 	// Constructors
 	
 	
 	
-	private SSBNNode (DomainResidentNode resident , ProbabilisticNode probNode) {
+	private SSBNNode (DomainResidentNode resident , ProbabilisticNode probNode, boolean isFinding) {
 		
 		this.arguments = new ArrayList<OVInstance>();
 		this.parents = new ArrayList<SSBNNode>();
@@ -73,7 +73,11 @@ public class SSBNNode {
 		//if (probNode == null) {
 		//	this.probNode = new ProbabilisticNode();
 		//} else {
+		if (isFinding) {
+			this.probNode = null;
+		} else {
 			this.probNode = probNode;
+		}
 		//}
 		
 		this.actualValues = new ArrayList<Entity>();
@@ -90,6 +94,10 @@ public class SSBNNode {
 		
 		this.setCompiler(new Compiler(resident, this));
 		
+		this.isFinding = isFinding;
+		
+		
+		
 	}
 	
 	/**
@@ -99,26 +107,25 @@ public class SSBNNode {
 	 * @param resident: the resident node this SSBNNode represents
 	 * @param probNode: this is useful when we already know which ProbabilisticNode (UnBBayes representation of a node) shall
 	 * represent this node once SSBN is generated.
-	 * Setting a probNode to null is the same of declaring it as a finding (the value would be the 1st possible value declared
+	 * If declared as a finding, probNode will be set to null (the value would be the 1st possible value declared
 	 * by its resident node).
+	 * @param isFinding: declares this node as a finding node, making it impossible to set multiple values and add a parent
 	 * @return a SSBNNode instance.
 	 */
-	public static SSBNNode getInstance (DomainResidentNode resident , ProbabilisticNode probNode)  {
-		return new SSBNNode(resident,probNode);
+	public static SSBNNode getInstance (DomainResidentNode resident , ProbabilisticNode probNode, boolean isFinding)  {
+		return new SSBNNode(resident,probNode, isFinding);
 	}
 	
 	/**
 	 *  This class is a temporary representation of a resident random variable instance at ssbn creation step.
 	 * Basically, works as a bridge (not a design pattern) between MEBN solid resident node representation (DomainResidentNode)
 	 * and the actual ProbabilisticNode on UnBBayes. This is, for now, identical to getInstance(resident,null)
-	 * Setting a probNode to null is the same of declaring it as a finding (the value would be the 1st possible value declared
-	 * by its resident node).
 	 * @param resident: the resident node this SSBNNode represents
 	 * @return a SSBNNode instance.
 	 * 
 	 */
 	public static SSBNNode getInstance (DomainResidentNode resident)  {
-		return new SSBNNode(resident,null);
+		return new SSBNNode(resident,null, false);
 	}
 	
 	
@@ -408,6 +415,7 @@ public class SSBNNode {
 		Collection actualValue = new ArrayList<Entity>();
 		actualValue.add(uniqueValue);
 		this.setActualValues(actualValue);
+		this.setFinding(true);
 //		this.setProbNode(null);
 	}
 	
@@ -439,7 +447,10 @@ public class SSBNNode {
 			throw new SSBNNodeGeneralException();
 		}
 		if (isCheckingParentResident && ( parent.getProbNode() == null ) ) {
-//			throw new SSBNNodeGeneralException();
+			throw new SSBNNodeGeneralException();
+		}
+		if (this.isFinding) {
+			throw new SSBNNodeGeneralException();
 		}
 		
 		// perform consistency check
@@ -481,6 +492,9 @@ public class SSBNNode {
 		if (name == null) {
 			return;
 		}
+		if (this.isFinding) {
+			return;
+		}
 		Collection<SSBNNode> parents = this.getParents();
 		Collection<SSBNNode> removingNodes = new ArrayList<SSBNNode>();
 		for (SSBNNode node : parents) {
@@ -509,6 +523,9 @@ public class SSBNNode {
 		if (ovNames.length <= 0) {
 			return parents;
 		}
+		if (this.isFinding) {
+			return parents;
+		}
 		for (SSBNNode parent : this.parents) {
 			if (parent.hasAllOVs(true, ovNames)) {
 				if (isExactMatch) {
@@ -535,6 +552,9 @@ public class SSBNNode {
 	public Collection<SSBNNode> getParentSetByStrongOV(boolean isExactMatch, Collection<OrdinaryVariable> setOfOV) {
 		Collection<SSBNNode> parents = new HashSet();
 		if (setOfOV == null) {
+			return parents;
+		}
+		if (this.isFinding) {
 			return parents;
 		}
 		for (SSBNNode parent : this.parents) {
@@ -568,6 +588,9 @@ public class SSBNNode {
 		if (setOfOV.length <= 0) {
 			return parents;
 		}
+		if (this.isFinding) {
+			return parents;
+		}
 		for (SSBNNode parent : this.parents) {
 			if (parent.hasAllOVs(setOfOV)) {
 				if (isExactMatch) {
@@ -592,7 +615,9 @@ public class SSBNNode {
 	public Map<String, Collection<SSBNNode>> getParentMapByWeakOV(OrdinaryVariable...weakOVs) {
 		
 		Map<String, Collection<SSBNNode>> ret = new HashMap<String, Collection<SSBNNode>>();
-		
+		if (this.isFinding) {
+			return ret;
+		}
 		List<SSBNNode> knownNodes = new ArrayList<SSBNNode>();
 		
 		// Disconsider weak ovs
@@ -684,7 +709,7 @@ public class SSBNNode {
 	 * different than resident node's ones. It might be a single value, when a finding is present.
 	 */
 	public Collection<Entity> getActualValues() {
-		if (this.getProbNode() == null) {
+		if (this.getProbNode() == null || this.isFinding) {
 			ArrayList<Entity> ret = new ArrayList<Entity>();
 			ret.add(this.actualValues.iterator().next());
 			return ret;
@@ -733,10 +758,14 @@ public class SSBNNode {
 	 * @return the parents
 	 */
 	public Collection<SSBNNode> getParents() {
+		if (this.isFinding) {
+			return new ArrayList<SSBNNode>();
+		}
 		return parents;
 	}
 
 	/**
+	 * This method sets a parent without checking structure consistency. Be careful when using this.
 	 * @param parents the parents to set
 	 */
 	public void setParents(Collection<SSBNNode> parents) {
@@ -750,6 +779,9 @@ public class SSBNNode {
 		if (this.probNode != null) {
 			// currently, this process is redundant (because getName already sets probNode's name)...
 			this.probNode.setName(this.getName());
+		}
+		if (this.isFinding) {
+			return null;
 		}
 		return probNode;
 	}
@@ -808,6 +840,21 @@ public class SSBNNode {
 	 */
 	public void setCompiler(ICompiler compiler) {
 		this.compiler = compiler;
+	}
+
+	/**
+	 * @return true if this node is set as a finding. False otherwise.
+	 */
+	public boolean isFinding() {
+		return isFinding;
+	}
+
+	/**
+	 * @param isFinding: true if this node is set as a finding. False otherwise. Setting this
+	 * value to true will make it impossible to set multiple possible values and/or add a parent
+	 */
+	private void setFinding(boolean isFinding) {
+		this.isFinding = isFinding;
 	}
 	
 	

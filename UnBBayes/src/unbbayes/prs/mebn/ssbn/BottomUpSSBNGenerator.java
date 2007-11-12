@@ -397,7 +397,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
         			}	
     		    }
     		}else{
-    			SSBNNode ssbnnode = SSBNNode.getInstance(residentNode, new ProbabilisticNode());
+    			SSBNNode ssbnnode = SSBNNode.getInstance(residentNode, new ProbabilisticNode(), false);
 				for(OVInstance ovInstance: currentNode.getArguments()){
 					ssbnnode.addArgument(ovInstance); 
 				}
@@ -441,7 +441,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     		}else{
     			boolean contextNodesOK = evaluateSimpleContextNodes(inputNode.getMFrag(), listOVInstances, ovProblemList); 
     	           if(contextNodesOK){
-    	        	    SSBNNode ssbnnode = SSBNNode.getInstance(residentNode, new ProbabilisticNode());
+    	        	    SSBNNode ssbnnode = SSBNNode.getInstance(residentNode, new ProbabilisticNode(), false);
     					
     	            	for(OVInstance instance: currentNode.getArguments()){
     	            		OrdinaryVariable ov = instance.getOv(); 

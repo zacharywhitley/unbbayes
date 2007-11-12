@@ -28,8 +28,14 @@ import unbbayes.util.NodeList;
 /*
  BNF MEBN Table:
  ----------------
- Changes: 
+ Changes (Date/Month/Year): 
  
+ 	
+ 	07/10/2007:
+ 			Description: "varsetname" has been added to the grammar (and implemented inside the class)
+ 				in order to allow us to declare parent set by strong OV.
+ 			Author: Shou Matsumoto
+ 	
  
  	24/06/2007:
  			Description: The top level BNF Grammar class was changed from 
@@ -147,8 +153,9 @@ public class Compiler implements ICompiler {
 	 * probability.
 	 * 
 	 */
-	Hashtable<TempTableHeaderCell, List<TempTableProbabilityCell>> tempTable = null;
-	
+	private Hashtable<TempTableHeaderCell, List<TempTableProbabilityCell>> tempTable = null;
+	private TempTableHeaderCell currentHeader = null;
+	private List<TempTableProbabilityCell> currentProbCellList = null;
 	
 	private Compiler() {
 		
@@ -160,6 +167,12 @@ public class Compiler implements ICompiler {
 		this.cpt = null;
 	}
 	
+	
+	/**
+	 * TODO break this class apart, because it's becoming too huge.
+	 * @param node: the node having the CPT's pseudocode being evaluated by this class.
+	 * @param ssbnnode: the node where we should set the output CPT to.
+	 */
 	public Compiler (DomainResidentNode node, SSBNNode ssbnnode) {
 		super();
 		this.setNode(node);
@@ -185,6 +198,8 @@ public class Compiler implements ICompiler {
 		Debug.println("************************************");
 		this.text = text.toCharArray();
 		nextChar();
+		
+		this.tempTable = new Hashtable<TempTableHeaderCell, List<TempTableProbabilityCell>>();
 	}
 
 	/* (non-Javadoc)
@@ -221,7 +236,11 @@ public class Compiler implements ICompiler {
 	  							TableFunctionMalformedException{
 		
 		if (this.look == '[') {
-			Debug.println("STARTING DEFAULT STATEMENT");			
+			Debug.println("STARTING DEFAULT STATEMENT");	
+			
+			// Prepare temporary table's header to declare a default (no-if-clause) statement
+			this.currentHeader = new TempTableHeaderCell(null, false, true);
+			
 			// if we catch a sintax error here, it may be a value error
 			try {
 				statement();
@@ -230,6 +249,9 @@ public class Compiler implements ICompiler {
 				throw new InvalidProbabilityRangeException(e.getMessage());
 			}
 		} else {
+			// We don't have to prepare temporary table's header to declare a if-clause statement
+			// because the if statement parser would do so.
+			
 			// Please note table() repasses every exception reported by ifStatement()
 			this.ifStatement();
 		}
@@ -472,6 +494,10 @@ public class Compiler implements ICompiler {
 			Debug.println("");
 			Debug.print("  ");
 			match('[');
+			
+			// initialize currently evaluated temporary table's collumn
+			this.currentProbCellList = new ArrayList<TempTableProbabilityCell>();
+			
 			float totalProb = assignment(declaredStates, possibleStates);
 			match(']');
 			Debug.println("");
@@ -508,13 +534,21 @@ public class Compiler implements ICompiler {
 	private float assignment(List<Entity> declaredStates, List<Entity> possibleStates) 
 					throws InvalidProbabilityRangeException, 
 						   TableFunctionMalformedException{
+		
+		TempTableProbabilityCell cell = new TempTableProbabilityCell(null, null);
+		
 		// SCAN FOR IDENTIFIER
 		scan();
 		if (token == 'x') {
 			if (this.node != null) {
 				// Consistency check C09
 				// Remember declared states, so we can check later if all states was declared
-				declaredStates.add(possibleStates.get(this.node.getPossibleValueIndex(this.noCaseChangeValue)));
+				Entity possibleValue = possibleStates.get(this.node.getPossibleValueIndex(this.noCaseChangeValue));
+				if (possibleValue == null) {
+					throw new TableFunctionMalformedException();
+				}
+				declaredStates.add(possibleValue);
+				cell.setPossibleValue(possibleValue);
 			}
 			
 		} else {
@@ -559,6 +593,8 @@ public class Compiler implements ICompiler {
 	 * 	NAN if undefined or unknown.
 	 */
 	private float expression() throws TableFunctionMalformedException {
+		
+		// TODO create temp table
 		float temp1 = term();
 		float temp2 = Float.NaN;
 		// LOOK FOR +/- (OPTIONAL)
@@ -1037,15 +1073,70 @@ public class Compiler implements ICompiler {
 	// Some inner classes that might be useful for temporaly table creation (organize the table parsed from pseudocode)
 	
 	private class TempTableHeaderCell {
-		private DomainResidentNode parent = null;
-		private Entity value = null;
+		private List<TempTableHeaderParent> parents = null;
+
+		
+		private boolean isAny = true;
+		private boolean isDefault = false;
+		
 		/**
-		 * Represents an entry for temporary table header (a parent and its expected single value
+		 * Represents an entry for temporary table header (parents and their expected single values
 		 * at that table entry/collumn)
 		 * @param parent
 		 * @param value
 		 */
-		TempTableHeaderCell (DomainResidentNode parent , Entity value) {
+		TempTableHeaderCell (List<TempTableHeaderParent> parents , boolean isAny, boolean isDefault) {
+			this.parents = parents;
+			this.isAny = isAny;
+			this.isDefault = isDefault;
+		}
+		public List<TempTableHeaderParent> getParents() {
+			return parents;
+		}
+		public void setParents(List<TempTableHeaderParent> parents) {
+			this.parents = parents;
+		}
+		
+		/**
+		 * @return true if this header is declared as "any", false if "all".
+		 */
+		public boolean isAny() {
+			return isAny;
+		}
+		/**
+		 * @param isAny : true if this header is declared as "any", false if "all".
+		 */
+		public void setAny(boolean isAny) {
+			this.isAny = isAny;
+		}
+		/**
+		 * @return true if this header is declaring a default distro, false otherwise
+		 */
+		public boolean isDefault() {
+			return isDefault;
+		}
+		/**
+		 * @param isDefault : if this header is declaring a default distro, false otherwise
+		 */
+		public void setDefault(boolean isDefault) {
+			this.isDefault = isDefault;
+		}
+		
+		
+		
+	}
+	
+	private class TempTableHeaderParent {
+		private DomainResidentNode parent = null;
+		private Entity value = null;
+		
+		/**
+		 * Represents a parent and its expected single value
+		 * at that table entry/collumn
+		 * @param parent
+		 * @param value
+		 */
+		TempTableHeaderParent (DomainResidentNode parent , Entity value) {
 			this.parent = parent;
 			this.value = value;
 		}

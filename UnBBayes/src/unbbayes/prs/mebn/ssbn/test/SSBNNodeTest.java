@@ -69,11 +69,11 @@ public class SSBNNodeTest extends TestCase {
 			return;
 		}
 		
-		this.ssbnnode = SSBNNode.getInstance(this.resident,new ProbabilisticNode());
+		this.ssbnnode = SSBNNode.getInstance(this.resident,new ProbabilisticNode(), false);
 		this.ssbnnode.addArgument(resident.getOrdinaryVariableList().get(0),"ST4");
 		this.ssbnnode.addArgument(resident.getOrdinaryVariableList().get(1),"T0");
 		
-		this.findingssbnnode = SSBNNode.getInstance(this.resident);
+		this.findingssbnnode = SSBNNode.getInstance(this.resident, null, true);
 		this.findingssbnnode.addArgument(resident.getOrdinaryVariableList().get(0),"ST4");
 		this.findingssbnnode.addArgument(resident.getOrdinaryVariableList().get(1),"T0");
 		
@@ -91,7 +91,7 @@ public class SSBNNodeTest extends TestCase {
 	 */
 	public void testGetInstanceDomainResidentNodeProbabilisticNode() {
 		ProbabilisticNode pnode = new ProbabilisticNode();
-		SSBNNode node = SSBNNode.getInstance(this.resident,pnode);
+		SSBNNode node = SSBNNode.getInstance(this.resident,pnode, false);
 		assertNotNull(node);
 		assertEquals(node.getResident(), this.resident);
 		assertEquals(node.getProbNode(), pnode);
@@ -385,7 +385,7 @@ public class SSBNNodeTest extends TestCase {
 			// OK
 		}
 		
-		SSBNNode parent = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent, true);
 		} catch(SSBNNodeGeneralException e) {
@@ -396,13 +396,13 @@ public class SSBNNodeTest extends TestCase {
 		try {
 			this.findingssbnnode.addParent(parent, true);
 			fail("A finding should not have a parent");
-		} catch(NullPointerException ne) {
+		} catch(SSBNNodeGeneralException ssbne) {
 			//OK
 		} catch (Exception e) {
 			fail(e.getMessage());
 		}
 		
-		parent = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		parent = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent, true);
 		} catch(SSBNNodeGeneralException e) {
@@ -410,7 +410,7 @@ public class SSBNNodeTest extends TestCase {
 		}
 		assertTrue(this.ssbnnode.getParents().contains(parent));
 		
-		parent = SSBNNode.getInstance(this.mebn.getDomainResidentNode("OpSpec"), new ProbabilisticNode());
+		parent = SSBNNode.getInstance(this.mebn.getDomainResidentNode("OpSpec"), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent, true);
 			fail("Consistency failure expected");
@@ -420,7 +420,7 @@ public class SSBNNodeTest extends TestCase {
 		assertTrue(!this.ssbnnode.getParents().contains(parent));
 		
 		// should pass consistency check because its off
-		parent = SSBNNode.getInstance(this.mebn.getDomainResidentNode("OpSpec"), new ProbabilisticNode());
+		parent = SSBNNode.getInstance(this.mebn.getDomainResidentNode("OpSpec"), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent, false);			
 		} catch(SSBNNodeGeneralException e) {
@@ -437,7 +437,7 @@ public class SSBNNodeTest extends TestCase {
 		
 		this.ssbnnode.removeParent(null);
 		
-		SSBNNode parent1 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent1 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent1, true);
 		} catch(SSBNNodeGeneralException e) {
@@ -445,7 +445,7 @@ public class SSBNNodeTest extends TestCase {
 		}
 		assertTrue(this.ssbnnode.getParents().contains(parent1));
 		
-		SSBNNode parent2 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent2 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent2, true);
 		} catch(SSBNNodeGeneralException e) {
@@ -472,7 +472,7 @@ public class SSBNNodeTest extends TestCase {
 			fail(e.getMessage());
 		}		
 		OrdinaryVariable ms = new OrdinaryVariable("ms",tcontainer.getType("MobileSuit"),this.mfrag);
-		SSBNNode parent1 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent1 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent1, true);
 			parent1.addArgument(ms, "GM");
@@ -481,7 +481,7 @@ public class SSBNNodeTest extends TestCase {
 		}
 		assertTrue(this.ssbnnode.getParents().contains(parent1));
 		
-		SSBNNode parent2 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent2 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			parent2.addArgument(ms, "GM");
 			this.ssbnnode.addParent(parent2, true);
@@ -497,7 +497,7 @@ public class SSBNNodeTest extends TestCase {
 		this.ssbnnode.removeParentByName(parent2.getName());
 		assertEquals(this.ssbnnode.getParents().size(),0);
 		
-		parent1 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		parent1 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent1, true);
 		} catch(SSBNNodeGeneralException e) {
@@ -526,7 +526,7 @@ public class SSBNNodeTest extends TestCase {
 		OrdinaryVariable z = new OrdinaryVariable("z",tcontainer.getType("Zone"),this.mfrag);
 		
 		
-		SSBNNode parent1 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent1 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent1, true);
 			parent1.addArgument(st, "ST1");
@@ -535,7 +535,7 @@ public class SSBNNodeTest extends TestCase {
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent2 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent2 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent2, true);
 			parent2.addArgument(st, "ST2");
@@ -547,7 +547,7 @@ public class SSBNNodeTest extends TestCase {
 		
 		
 		
-		SSBNNode parent3 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent3 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent3, true);
 			parent3.addArgument(st, "ST3");
@@ -555,7 +555,7 @@ public class SSBNNodeTest extends TestCase {
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent4 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent4 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent4, true);
 			parent4.addArgument(st, "ST4");
@@ -563,7 +563,7 @@ public class SSBNNodeTest extends TestCase {
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent5 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent5 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent5, true);
 			parent5.addArgument(st, "ST5");
@@ -571,7 +571,7 @@ public class SSBNNodeTest extends TestCase {
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent6 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent6 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent6, true);
 			parent6.addArgument(st, "ST6");
@@ -581,14 +581,14 @@ public class SSBNNodeTest extends TestCase {
 		}
 		
 		
-		SSBNNode parent7 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent7 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent7, true);
 			parent7.addArgument(st, "ST7");
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent8 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent8 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent8, true);
 			parent8.addArgument(st, "ST8");
@@ -632,7 +632,7 @@ public class SSBNNodeTest extends TestCase {
 		OrdinaryVariable z = new OrdinaryVariable("z",tcontainer.getType("Zone"),this.mfrag);
 		
 		
-		SSBNNode parent1 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent1 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent1, true);
 			parent1.addArgument(st, "ST1");
@@ -641,7 +641,7 @@ public class SSBNNodeTest extends TestCase {
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent2 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent2 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent2, true);
 			parent2.addArgument(st, "ST2");
@@ -653,7 +653,7 @@ public class SSBNNodeTest extends TestCase {
 		
 		
 		
-		SSBNNode parent3 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent3 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent3, true);
 			parent3.addArgument(st, "ST3");
@@ -661,7 +661,7 @@ public class SSBNNodeTest extends TestCase {
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent4 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent4 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent4, true);
 			parent4.addArgument(st, "ST4");
@@ -669,7 +669,7 @@ public class SSBNNodeTest extends TestCase {
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent5 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent5 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent5, true);
 			parent5.addArgument(st, "ST5");
@@ -677,7 +677,7 @@ public class SSBNNodeTest extends TestCase {
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent6 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent6 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent6, true);
 			parent6.addArgument(st, "ST6");
@@ -687,14 +687,14 @@ public class SSBNNodeTest extends TestCase {
 		}
 		
 		
-		SSBNNode parent7 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent7 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent7, true);
 			parent7.addArgument(st, "ST7");
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent8 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent8 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent8, true);
 			parent8.addArgument(st, "ST8");
@@ -751,7 +751,7 @@ public class SSBNNodeTest extends TestCase {
 		OrdinaryVariable z = new OrdinaryVariable("z",tcontainer.getType("Zone"),this.mfrag);
 		
 		
-		SSBNNode parent1 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent1 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent1, true);
 			parent1.addArgument(st, "ST1");
@@ -760,7 +760,7 @@ public class SSBNNodeTest extends TestCase {
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent2 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent2 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent2, true);
 			parent2.addArgument(st, "ST2");
@@ -772,7 +772,7 @@ public class SSBNNodeTest extends TestCase {
 		
 		
 		
-		SSBNNode parent3 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent3 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent3, true);
 			parent3.addArgument(st, "ST3");
@@ -780,7 +780,7 @@ public class SSBNNodeTest extends TestCase {
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent4 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent4 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent4, true);
 			parent4.addArgument(st, "ST4");
@@ -788,7 +788,7 @@ public class SSBNNodeTest extends TestCase {
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent5 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent5 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent5, true);
 			parent5.addArgument(st, "ST5");
@@ -796,7 +796,7 @@ public class SSBNNodeTest extends TestCase {
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent6 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent6 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent6, true);
 			parent6.addArgument(st, "ST6");
@@ -806,14 +806,14 @@ public class SSBNNodeTest extends TestCase {
 		}
 		
 		
-		SSBNNode parent7 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent7 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent7, true);
 			parent7.addArgument(st, "ST7");
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent8 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent8 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent8, true);
 			parent8.addArgument(st, "ST8");
@@ -857,7 +857,7 @@ public class SSBNNodeTest extends TestCase {
 		OrdinaryVariable z = new OrdinaryVariable("z",tcontainer.getType("Zone"),this.mfrag);
 		
 		
-		SSBNNode parent1 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent1 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent1, true);
 			parent1.addArgument(st, "ST1");
@@ -866,7 +866,7 @@ public class SSBNNodeTest extends TestCase {
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent2 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent2 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent2, true);
 			parent2.addArgument(st, "ST2");
@@ -878,7 +878,7 @@ public class SSBNNodeTest extends TestCase {
 		
 		
 		
-		SSBNNode parent3 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent3 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent3, true);
 			parent3.addArgument(st, "ST3");
@@ -886,7 +886,7 @@ public class SSBNNodeTest extends TestCase {
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent4 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent4 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent4, true);
 			parent4.addArgument(st, "ST4");
@@ -894,7 +894,7 @@ public class SSBNNodeTest extends TestCase {
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent5 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent5 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent5, true);
 			parent5.addArgument(st, "ST5");
@@ -902,7 +902,7 @@ public class SSBNNodeTest extends TestCase {
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent6 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent6 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent6, true);
 			parent6.addArgument(st, "ST6");
@@ -912,14 +912,14 @@ public class SSBNNodeTest extends TestCase {
 		}
 		
 		
-		SSBNNode parent7 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode());
+		SSBNNode parent7 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent7, true);
 			parent7.addArgument(st, "ST7");
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
-		SSBNNode parent8 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode());
+		SSBNNode parent8 = SSBNNode.getInstance((DomainResidentNode)this.resident.getParents().get(1), new ProbabilisticNode(), false);
 		try {
 			this.ssbnnode.addParent(parent8, true);
 			parent8.addArgument(st, "ST8");

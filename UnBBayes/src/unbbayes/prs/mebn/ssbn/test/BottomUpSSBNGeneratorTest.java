@@ -175,7 +175,7 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 		
 		DomainMFrag mFrag = mebn.getMFragByName("Starship_MFrag"); 
 		DomainResidentNode residentNode = mFrag.getDomainResidentNodeByName("HarmPotential"); 
-		SSBNNode queryNode = SSBNNode.getInstance(residentNode, new ProbabilisticNode()); 
+		SSBNNode queryNode = SSBNNode.getInstance(residentNode, new ProbabilisticNode(), false); 
 		try {
 			queryNode.addArgument(residentNode.getOrdinaryVariableByName("st"), "ST4");
 			queryNode.addArgument(residentNode.getOrdinaryVariableByName("t"), "T0");
