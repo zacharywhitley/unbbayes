@@ -851,6 +851,25 @@ public class SSBNNodeTest extends TestCase {
 		assertTrue(this.ssbnnode.getParentSetByStrongOV(true,st).contains(parent7));
 		assertTrue(this.ssbnnode.getParentSetByStrongOV(true,st).contains(parent8));
 		assertEquals(2 , this.ssbnnode.getParentSetByStrongOV(true,st).size());
+		
+		String t_st = "t.st";
+		String vet_t_st[] = {"t","st"};
+		
+		String regExp = "\\" + parent1.getStrongOVSeparator();
+		
+		assertEquals(vet_t_st.length,t_st.split(regExp,-1).length );
+		assertEquals(vet_t_st[0],t_st.split(regExp,-1)[0] );
+		assertEquals(vet_t_st[1],t_st.split(regExp,-1)[1] );
+		
+		assertTrue(this.ssbnnode.getParentSetByStrongOV(false,t_st.split(regExp)).contains(parent1));
+		assertTrue(this.ssbnnode.getParentSetByStrongOV(false,t_st.split(regExp)).contains(parent2));
+		assertTrue(this.ssbnnode.getParentSetByStrongOV(false,t_st.split(regExp)).contains(parent3));
+		assertTrue(this.ssbnnode.getParentSetByStrongOV(false,t_st.split(regExp)).contains(parent4));
+		assertTrue(this.ssbnnode.getParentSetByStrongOV(false,t_st.split(regExp)).contains(parent5));
+		assertTrue(this.ssbnnode.getParentSetByStrongOV(false,t_st.split(regExp)).contains(parent6));
+		assertTrue(!this.ssbnnode.getParentSetByStrongOV(false,t_st.split(regExp)).contains(parent7));
+		assertTrue(!this.ssbnnode.getParentSetByStrongOV(false,t_st.split(regExp)).contains(parent8));
+		
 	}
 
 	/**

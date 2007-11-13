@@ -1281,7 +1281,12 @@ public class Compiler implements ICompiler {
 
 		public float getProbability() throws InvalidProbabilityRangeException {
 			// TODO calculate the value!!!
-			return this.thisNode.getParentSetByStrongOV(false, this.parentSetName.split(this.thisNode.getStrongOVSeparator())).size();
+			String regExp = this.thisNode.getStrongOVSeparator();
+			// TODO find a better way to treat wild cards on regular expressions (like "[" or "\")
+			if (regExp.compareTo(".") == 0) {
+				regExp = "\\" + regExp;
+			}
+			return this.thisNode.getParentSetByStrongOV(false, this.parentSetName.split(regExp)).size();
 		}
 	}
 	
