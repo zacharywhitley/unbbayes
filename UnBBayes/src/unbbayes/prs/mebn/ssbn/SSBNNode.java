@@ -3,6 +3,8 @@
  */
 package unbbayes.prs.mebn.ssbn;
 
+import unbbayes.prs.Edge;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.GenerativeInputNode;
@@ -21,6 +23,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 
@@ -60,25 +63,43 @@ public class SSBNNode {
 	
 	private boolean isFinding = false;
 	
+	private ProbabilisticNetwork probabilisticNetwork = null;
+	
+	private ResourceBundle resource = 
+		ResourceBundle.getBundle("unbbayes.prs.mebn.ssbn.resources.Resources");	
+	
 	// Constructors
 	
 	
 	
-	private SSBNNode (DomainResidentNode resident , ProbabilisticNode probNode, boolean isFinding) {
+	private SSBNNode (ProbabilisticNetwork pnet, DomainResidentNode resident , ProbabilisticNode probNode, boolean isFinding) {
 		
 		this.arguments = new ArrayList<OVInstance>();
 		this.parents = new ArrayList<SSBNNode>();
 		this.resident = resident;
 		
+		if (pnet == null) {
+			this.probabilisticNetwork = new ProbabilisticNetwork(this.resource.getString("DefaultNetworkName"));
+		} else {
+			this.probabilisticNetwork = pnet;
+		}
+		
 		//if (probNode == null) {
 		//	this.probNode = new ProbabilisticNode();
 		//} else {
 		if (isFinding) {
-			this.probNode = null;
+			this.setProbNode(null);
 		} else {
-			this.probNode = probNode;
+			this.setProbNode(probNode);
 		}
 		//}
+		
+		
+		this.appendProbNodeState();	// if OK, probNode's states become the same of the resident's one
+		
+		if (this.getProbNode() != null) {
+			this.probabilisticNetwork.addNode(this.getProbNode());
+		}
 		
 		this.actualValues = new ArrayList<Entity>();
 		if (this.getProbNode() != null) {
@@ -110,27 +131,76 @@ public class SSBNNode {
 	 * If declared as a finding, probNode will be set to null (the value would be the 1st possible value declared
 	 * by its resident node).
 	 * @param isFinding: declares this node as a finding node, making it impossible to set multiple values and add a parent
+	 * @param probabilisticNetwork: the network which probNode should work on. If null, a new one will be created.
 	 * @return a SSBNNode instance.
 	 */
-	public static SSBNNode getInstance (DomainResidentNode resident , ProbabilisticNode probNode, boolean isFinding)  {
-		return new SSBNNode(resident,probNode, isFinding);
+	public static SSBNNode getInstance (ProbabilisticNetwork probabilisticNetwork,DomainResidentNode resident , ProbabilisticNode probNode, boolean isFinding)  {
+		return new SSBNNode(probabilisticNetwork, resident,probNode, isFinding);
 	}
 	
-	/**
+	/*
 	 *  This class is a temporary representation of a resident random variable instance at ssbn creation step.
 	 * Basically, works as a bridge (not a design pattern) between MEBN solid resident node representation (DomainResidentNode)
-	 * and the actual ProbabilisticNode on UnBBayes. This is, for now, identical to getInstance(resident,null)
+	 * and the actual ProbabilisticNode on UnBBayes.
+	 * @param resident: the resident node this SSBNNode represents
+	 * @param probNode: this is useful when we already know which ProbabilisticNode (UnBBayes representation of a node) shall
+	 * represent this node once SSBN is generated.
+	 * If declared as a finding, probNode will be set to null (the value would be the 1st possible value declared
+	 * by its resident node).
+	 * @param isFinding: declares this node as a finding node, making it impossible to set multiple values and add a parent
+	 * @return a SSBNNode instance.
+	 */
+	//public static SSBNNode getInstance (DomainResidentNode resident , ProbabilisticNode probNode, boolean isFinding)  {
+	//	return new SSBNNode(null,resident,probNode, isFinding);
+	//}
+	
+	/*
+	 *  This class is a temporary representation of a resident random variable instance at ssbn creation step.
+	 * Basically, works as a bridge (not a design pattern) between MEBN solid resident node representation (DomainResidentNode)
+	 * and the actual ProbabilisticNode on UnBBayes. This is, for now, identical to getInstance(null, resident,null, false)
+	 * NOTE THAT THIS IS GOING TO CREATE A NEW PROBABILISTICNETWORK
 	 * @param resident: the resident node this SSBNNode represents
 	 * @return a SSBNNode instance.
 	 * 
 	 */
-	public static SSBNNode getInstance (DomainResidentNode resident)  {
-		return new SSBNNode(resident,null, false);
+	
+	//public static SSBNNode getInstance (DomainResidentNode resident)  {
+	//	return new SSBNNode(null,resident,null, false);
+	//}
+	
+	/**
+	 *  This class is a temporary representation of a resident random variable instance at ssbn creation step.
+	 * Basically, works as a bridge (not a design pattern) between MEBN solid resident node representation (DomainResidentNode)
+	 * and the actual ProbabilisticNode on UnBBayes. This is, for now, identical to getInstance(null, resident,null, false)
+	 * @param resident: the resident node this SSBNNode represents
+	 * @param net: a probabilistic network where the probabilistic node associated with this node will be inserted into.
+	 * If null, a new one will be created.
+	 * @return a SSBNNode instance.
+	 * 
+	 */
+	public static SSBNNode getInstance (ProbabilisticNetwork net ,DomainResidentNode resident)  {
+		return new SSBNNode(net,resident,null, false);
 	}
 	
 	
-	
 	// private methods
+	
+	
+	
+	private void appendProbNodeState() {
+		if (this.getProbNode() == null) {
+			return;
+		}
+		if (this.getResident() != null) {
+			for (Entity entity : this.resident.getPossibleValueList()) {
+				this.getProbNode().appendState(entity.getName());
+			}
+		}
+		if (this.getProbNode().getPotentialTable() != null) {
+			this.getProbNode().getPotentialTable().addVariable(this.getProbNode());
+		}
+	}
+	
 	
 	private String getNameByDots(String...names) {
 		String dotName = new String(names[0]);
@@ -416,7 +486,7 @@ public class SSBNNode {
 		actualValue.add(uniqueValue);
 		this.setActualValues(actualValue);
 		this.setFinding(true);
-//		this.setProbNode(null);
+		this.setProbNode(null);
 	}
 	
 	
@@ -432,6 +502,7 @@ public class SSBNNode {
 	/**
 	 * This will add a parent to this node. It may check if the resident node
 	 * remains consistent. If argument is null, it throws NullPointerException
+	 * PLEASE NOTE IT DOES NOT ADD AN EDGE YET! ADD IT AT AN OUTSIDE METHOD
 	 * @param parent the node to be added as parent. Its ProbNode will be added as
 	 * this ProbNode's parent and, if said so, its resident node will be checked if it is the
 	 * expected parent node by this node's resident node.
@@ -474,21 +545,39 @@ public class SSBNNode {
 			if (!isConsistent) {
 				throw new SSBNNodeGeneralException();
 			}
+			// check if both probNodes are in a same network
+			if (this.getProbNode() != null) {
+				if (parent.getProbNode() != null) {
+					if (this.getProbabilisticNetwork() != parent.getProbabilisticNetwork()) {
+						throw new SSBNNodeGeneralException(this.resource.getString("IncompatibleNetworks"));
+					}
+				}
+			}
 		}
 		
 		this.getParents().add(parent);		
 		if (this.getProbNode() != null) {
 			this.getProbNode().addParent(parent.getProbNode());
+			if (parent.getProbNode() != null){
+				Edge edge = new Edge(parent.getProbNode(), this.getProbNode());
+				//if (this.getProbabilisticNetwork() != null) {
+					//this.getProbabilisticNetwork().addEdge(edge);
+				//}
+			}
 		}
 	}
 	
 	
-	public void removeParent(SSBNNode parent) {
+	protected void removeParent(SSBNNode parent) {
 		this.getParents().remove(parent);
+		if (this.getProbNode() != null) {
+			this.getProbNode().getParents().remove(this.getProbNode());
+		}
+		// TODO solve dangling references
 	}
 	
 	
-	public void removeParentByName(String name) {
+	protected void removeParentByName(String name) {
 		if (name == null) {
 			return;
 		}
@@ -697,8 +786,8 @@ public class SSBNNode {
 			name += ovi.getEntity().getInstanceName();
 		}
 		name += ")";
-		if (this.probNode != null) {
-			this.probNode.setName(name);
+		if (this.getProbNode() != null) {
+			this.getProbNode().setName(name);
 		}
 		return name;
 	}
@@ -778,7 +867,7 @@ public class SSBNNode {
 	public ProbabilisticNode getProbNode() {
 		if (this.probNode != null) {
 			// currently, this process is redundant (because getName already sets probNode's name)...
-			this.probNode.setName(this.getName());
+			//this.probNode.setName(this.getName());
 		}
 		if (this.isFinding) {
 			return null;
@@ -788,11 +877,19 @@ public class SSBNNode {
 
 	/**
 	 * Setting a probNode to null is the same of declaring it as a finding (the value should be the 1st possible value declared
-	 * by its resident node).
+	 * by its resident node). The new probNode should not have parents.
 	 * @param probNode the ProbabilisticNode (UnBBayes node representation) to set
 	 */
 	public void setProbNode(ProbabilisticNode probNode) {
+		// TODO treat parents and dangling references
+		if (this.probNode != null) {
+			this.probabilisticNetwork.removeNode(this.probNode);
+		}
 		this.probNode = probNode;
+		this.appendProbNodeState();
+		if (this.probNode != null) {
+			this.getProbabilisticNetwork().addNode(this.probNode);
+		}
 	}
 
 	/**
@@ -805,8 +902,9 @@ public class SSBNNode {
 	/**
 	 * @param resident the resident to set
 	 */
-	public void setResident(DomainResidentNode resident) {
+	protected void setResident(DomainResidentNode resident) {
 		this.resident = resident;
+		this.setProbNode(new ProbabilisticNode());
 	}
 
 	/**
@@ -856,11 +954,27 @@ public class SSBNNode {
 	private void setFinding(boolean isFinding) {
 		this.isFinding = isFinding;
 	}
-	
-	
-	
-	
-	
+
+	/**
+	 * @return the probabilisticNetwork
+	 */
+	public ProbabilisticNetwork getProbabilisticNetwork() {
+		return probabilisticNetwork;
+	}
+
+	/**
+	 * @param probabilisticNetwork the probabilisticNetwork to set
+	 */
+	public void setProbabilisticNetwork(ProbabilisticNetwork probabilisticNetwork) throws SSBNNodeGeneralException {
+		if (probabilisticNetwork == null) {
+			throw new SSBNNodeGeneralException(this.resource.getString("NoNetworkDefined"));
+		}
+		this.probabilisticNetwork = probabilisticNetwork;
+		
+		if (this.getProbNode() != null) {
+			this.probabilisticNetwork.addNode(this.getProbNode());
+		}
+	}
 	
 	
 	

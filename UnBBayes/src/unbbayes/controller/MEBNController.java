@@ -1061,7 +1061,7 @@ public class MEBNController {
 	 */
 	public ProbabilisticNetwork executeQuery(DomainResidentNode residentNode, ObjectEntityInstance[] arguments) throws InconsistentArgumentException {
 		
-		SSBNNode queryNode = SSBNNode.getInstance(residentNode); 
+		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode); 
 		
 		List<Argument> arglist = residentNode.getArgumentList();
 		

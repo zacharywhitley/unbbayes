@@ -28,6 +28,10 @@ public class Resources extends ListResourceBundle {
 	{	{"ArgumentTypeMismatch","Resident node was not expecting this type as argument. Check argument order."}, 
 		{"PossibleValueMismatch","The possible value expected was not matching."},
 		{"CycleFound","A cycle was found when creating SSBN."},
-		{"UnknownException","An unknown error has occurred. We suggest you to store your work and close the program"}
+		{"UnknownException","An unknown error has occurred. We suggest you to store your work and close the program"},
+		{"NoNetworkDefined","No Probabilistic Network was defined. Create it first."},
+		{"DefaultNetworkName","AutomaticallyCreatedNet"},
+		{"IncompatibleNetworks","Parents and childs belong to different networks"},
+		{"RecursiveLimit","Recursivity limit has been overlapped"}
 	};
 }

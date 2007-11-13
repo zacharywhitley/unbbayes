@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de BrasÃ­lia
  *
  *  This file is part of UnbBayes.
  *
@@ -30,7 +30,7 @@ import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
- *  Representa variável probabilística.
+ *  Represents probabilistic variable.
  *
  *@author Michael Onishi
  *@author Rommel Carvalho
@@ -69,12 +69,12 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
     }
 
     /**
-     *  Copia as características principais para o nó desejado
-     *@param raio raio do nó.
-     *@return cópia do nó
+     *  Copia as caracterï¿½sticas principais para o nï¿½ desejado
+     *@param raio raio do nï¿½.
+     *@return cï¿½pia do nï¿½
      */
     public ProbabilisticNode clone(double raio) {
-    	// TODO Rever esse método para não precisar do raio.
+    	// TODO Rever esse mï¿½todo para nï¿½o precisar do raio.
         ProbabilisticNode no = new ProbabilisticNode();
 
         for (int i = 0; i < getStatesSize(); i++) {
@@ -114,9 +114,9 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
 
 
     /**
-     *  Retorna a tabela de potencial desta variavel.
+     *  Returns the probabilistic table of this variable.
      *
-     *@return    tabela de potencial
+     *@return    the CPT (potential table)
      */
     public PotentialTable getPotentialTable() {
         return tabelaPot;
@@ -124,7 +124,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
 
 
     /**
-     * Calcula a marginal deste nó.
+     * Calculates the margin of this node.
      */
     protected void marginal() {
         marginais = new float[getStatesSize()];
@@ -145,19 +145,18 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
 
 
     /**
-     * Insere um novo estado e atualiza as tabelas afetadas.
-     * Sobrescreve o método da superclasse Node.
+     * Inserts a new state and updates the affected tables.
+     * Overrides Node's superclass method.
      *
-     * @param estado estado a ser adicionado
+     * @param state : a new state to be added.
      */
-    public void appendState(String estado) {
-        updateState(estado, true);
+    public void appendState(String state) {
+        updateState(state, true);
     }
 
     /**
-     *  Retira o estado criado mais recentemente e
-     *  atualiza as tabelas afetadas. Sobrescreve o método
-     *  da superclasse Node.
+     *  Removes the newest state and updates the affected tables. Overwrites a Node's
+     *  superclass method.
      */
     public void removeLastState() {
         if (states.size() > 1) {
@@ -167,17 +166,17 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
     }
 
     /**
-     *  Utilizado para atualizar as tabelas afetadas
-     *  ao inserir e remover novos estados.
+     *  This method can be used to update the affected tables when inserting and removing
+     *  new states.
      *
-     *@param  estado  estado a ser inserido / removido.
-     *@param  insere  true se for para inserir e false se for para remover.
+     *@param  state  state to be inserted / removed.
+     *@param  isInsertion  true for insertion and false for remotion.
      */
-    private void updateState(String estado, boolean insere) {
+    private void updateState(String state, boolean isInsertion) {
         int d = getStatesSize();
         if (d > 0) {
             while (d <= tabelaPot.tableSize()) {
-                if (insere) {
+                if (isInsertion) {
                     tabelaPot.addValueAt(d++, 0);
                 } else {
                     tabelaPot.removeValueAt(d);
@@ -209,8 +208,8 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
             }
         }
         
-        if (insere) {
-          	super.appendState(estado);
+        if (isInsertion) {
+          	super.appendState(state);
         } else {
         	super.removeLastState();        	
         }
@@ -230,27 +229,27 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
     }
 
     /**
-     *  Retorna a cor do nó.
+     *  Returns node's color.
      *
-     * @return cor dos nós probabilísticos.
+     * @return color of the probabilisti node.
      */
     public static Color getDescriptionColor() {
         return descriptionColor;
     }
 
     /**
-     *  Modifica a cor do nó de descrição.
+     *  Changes the description node's color.
      *
-     *@param c O novo RGB da cor do nó.
+     *@param c RGB value of the new color.
      */
     public static void setDescriptionColor(int c) {
         descriptionColor = new Color(c);
     }
     
     /**
-     *  Modifica a cor do nó de explanação.
+     *  Changes the explanation's node's color.
      *
-     *@param c O novo RGB da cor do nó.
+     *@param c RGB value of the new color.
      */
     public static void setExplanationColor(int c) {
         explanationColor = new Color(c);

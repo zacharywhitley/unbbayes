@@ -38,6 +38,10 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	
 	private MFrag mfrag = null;
 	
+	private long recursiveCallLimit = 999999999999999999L;
+	
+	private long recursiveCallCount = 0;
+	
 	/**
 	 * 
 	 */
@@ -139,7 +143,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
 		        for(String entity: result){
 		        	OVInstance instance = OVInstance.getInstance(ov, entity, ov.getValueType()); 
-					SSBNNode node = SSBNNode.getInstance(fatherNode); 
+					SSBNNode node = SSBNNode.getInstance(originNode.getProbabilisticNetwork(),fatherNode); 
 					node.addArgument(instance); 
 					for(OVInstance ovInstance: ovInstances){
 						node.addArgument(ovInstance); 
@@ -152,7 +156,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
 				for(String entity: result){
 					OVInstance instance = OVInstance.getInstance(ov, entity, ov.getValueType()); 
-					SSBNNode node = SSBNNode.getInstance(fatherNode); 
+					SSBNNode node = SSBNNode.getInstance(originNode.getProbabilisticNetwork(),fatherNode); 
 					node.addArgument(instance); 
 					for(OVInstance ovInstance: ovInstances){
 						node.addArgument(ovInstance); 
@@ -211,7 +215,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
 				DomainResidentNode residentNode = (DomainResidentNode)fatherNode.getResidentNodePointer().getResidentNode(); 
 		        for(String entity: result){
-		        	SSBNNode ssbnnode = SSBNNode.getInstance(residentNode); 
+		        	SSBNNode ssbnnode = SSBNNode.getInstance(originNode.getProbabilisticNetwork(),residentNode); 
 					{
 						OVInstance instance = OVInstance.getInstance(ov, entity, ov.getValueType()); 
 						OrdinaryVariable ovOrigin = instance.getOv(); 
@@ -239,7 +243,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
 				DomainResidentNode residentNode = (DomainResidentNode)fatherNode.getResidentNodePointer().getResidentNode(); 
 				for(String entity: result){
-		        	SSBNNode ssbnnode = SSBNNode.getInstance(residentNode); 
+		        	SSBNNode ssbnnode = SSBNNode.getInstance(originNode.getProbabilisticNetwork(),residentNode); 
 					{
 						OVInstance instance = OVInstance.getInstance(ov, entity, ov.getValueType()); 
 						OrdinaryVariable ovOrigin = instance.getOv(); 
@@ -345,6 +349,11 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 */
 	private SSBNNode generateRecursive(SSBNNode currentNode , SSBNNodeList seen, ProbabilisticNetwork net) throws SSBNNodeGeneralException {
 		
+		if (this.recursiveCallCount > this.recursiveCallLimit) {
+			throw new SSBNNodeGeneralException(this.resource.getString("RecursiveLimit"));
+		}
+		this.recursiveCallCount++;
+		
 		Debug.println("\nPasso: " + currentNode.getName()); 
 		
 		// check for cycle
@@ -397,7 +406,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
         			}	
     		    }
     		}else{
-    			SSBNNode ssbnnode = SSBNNode.getInstance(residentNode, new ProbabilisticNode(), false);
+    			SSBNNode ssbnnode = SSBNNode.getInstance(net,residentNode, new ProbabilisticNode(), false);
 				for(OVInstance ovInstance: currentNode.getArguments()){
 					ssbnnode.addArgument(ovInstance); 
 				}
@@ -441,7 +450,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     		}else{
     			boolean contextNodesOK = evaluateSimpleContextNodes(inputNode.getMFrag(), listOVInstances, ovProblemList); 
     	           if(contextNodesOK){
-    	        	    SSBNNode ssbnnode = SSBNNode.getInstance(residentNode, new ProbabilisticNode(), false);
+    	        	    SSBNNode ssbnnode = SSBNNode.getInstance(net, residentNode, new ProbabilisticNode(), false);
     					
     	            	for(OVInstance instance: currentNode.getArguments()){
     	            		OrdinaryVariable ov = instance.getOv(); 
@@ -486,17 +495,17 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 
 		// initialization
 		
-		ProbabilisticNetwork net = new ProbabilisticNetwork(query.getMebn().getName());
-		
+
+
 		// call recursive
+		this.recursiveCallCount = 0;
+		this.generateRecursive(querynode, new SSBNNodeList(), querynode.getProbabilisticNetwork());
 		
-		this.generateRecursive(querynode, new SSBNNodeList(), net);
-		
-		System.out.println("\n"); 
-		System.out.println("Rede formada: "); 
+		Debug.println("\n"); 
+		Debug.println("Rede formada: "); 
 		printParents(querynode, 0); 
 		
-		return net;
+		return querynode.getProbabilisticNetwork();
 	}
 
 	private void printParents(SSBNNode node, int nivel){
@@ -508,5 +517,22 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			printParents(parent, nivel + 1); 
 		}
 	}
+
+	/**
+	 * This is how many times a recursive call to the algorithm should be done
+	 * @return the recursiveCallLimit
+	 */
+	public long getRecursiveCallLimit() {
+		return recursiveCallLimit;
+	}
+
+	/**
+	 * This is how many times a recursive call to the algorithm should be done
+	 * @param recursiveCallLimit the recursiveCallLimit to set
+	 */
+	public void setRecursiveCallLimit(long recursiveCallLimit) {
+		this.recursiveCallLimit = recursiveCallLimit;
+	}
+	
 	
 }

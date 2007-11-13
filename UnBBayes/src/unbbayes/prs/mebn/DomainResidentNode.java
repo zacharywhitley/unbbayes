@@ -399,6 +399,34 @@ public class DomainResidentNode extends ResidentNode {
 	public List<RandomVariableFinding> getRandonVariableFindingList() {
 		return randonVariableFindingList;
 	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.MultiEntityNode#getPossibleValueIndex(java.lang.String)
+	 */
+	@Override
+	public int getPossibleValueIndex(String stateName) {
+		int index = 0;
+		for (StateLink link : this.possibleValueList) {
+			if (link.getState().getName().equals(stateName)) {
+				return index;
+			}
+			index++;
+		}
+		return -1;
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.MultiEntityNode#getPossibleValueList()
+	 */
+	@Override
+	public List<Entity> getPossibleValueList() {
+		// TODO optimize this
+		List<Entity> ret = new ArrayList<Entity>();
+		for (StateLink link : this.possibleValueList) {
+			ret.add(link.getState());
+		}
+		return ret;
+	}
 	
 	
 	

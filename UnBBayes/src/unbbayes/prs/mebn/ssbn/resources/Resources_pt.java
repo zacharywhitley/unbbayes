@@ -28,6 +28,10 @@ public class Resources_pt extends ListResourceBundle {
 	{	{"ArgumentTypeMismatch","O nó residente não estava esperando por esse tipo de argumento. Verifique se você a inseriu na ordem correta."}, 
 		{"PossibleValueMismatch","Houve incompatibilidade com o valor esperado para o nó."},
 		{"CycleFound","Um ciclo foi encontrado ao gerar SSBN."},
-		{"UnknownException","Ocorreu um erro desconhecido. Sugerimos que armazene seu projeto e feche o programa"}
+		{"UnknownException","Ocorreu um erro desconhecido. Sugerimos que armazene seu projeto e feche o programa"},
+		{"NoNetworkDefined","Nenhuma rede probabilística foi definida. Crie primeiro essa rede."},
+		{"DefaultNetworkName","RedeCriadaAutomaticamente"},
+		{"IncompatibleNetworks","Nós pais e filhos estão em redes diferentes"},
+		{"RecursiveLimit","Limite de recursividade atingida"}
 	};
 }

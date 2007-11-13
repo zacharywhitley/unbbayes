@@ -156,6 +156,7 @@ public class Compiler implements ICompiler {
 	private Hashtable<TempTableHeaderCell, List<TempTableProbabilityCell>> tempTable = null;
 	private TempTableHeaderCell currentHeader = null;
 	private List<TempTableProbabilityCell> currentProbCellList = null;
+	private TempTableProbabilityCell currentCell = null;
 	
 	private Compiler() {
 		
@@ -535,7 +536,8 @@ public class Compiler implements ICompiler {
 					throws InvalidProbabilityRangeException, 
 						   TableFunctionMalformedException{
 		
-		TempTableProbabilityCell cell = new TempTableProbabilityCell(null, null);
+		// prepare a representation of a cell inside the temporary table
+		this.currentCell = new TempTableProbabilityCell(null, null);
 		
 		// SCAN FOR IDENTIFIER
 		scan();
@@ -543,12 +545,17 @@ public class Compiler implements ICompiler {
 			if (this.node != null) {
 				// Consistency check C09
 				// Remember declared states, so we can check later if all states was declared
-				Entity possibleValue = possibleStates.get(this.node.getPossibleValueIndex(this.noCaseChangeValue));
+				Entity possibleValue = null;
+				try {
+					possibleValue = possibleStates.get(this.node.getPossibleValueIndex(this.noCaseChangeValue));
+				} catch (Exception e) {
+					throw new TableFunctionMalformedException(e.getMessage());
+				}
 				if (possibleValue == null) {
 					throw new TableFunctionMalformedException();
 				}
 				declaredStates.add(possibleValue);
-				cell.setPossibleValue(possibleValue);
+				this.currentCell.setPossibleValue(possibleValue);
 			}
 			
 		} else {
@@ -939,9 +946,11 @@ public class Compiler implements ICompiler {
 			return false;
 		}
 		//Debug.println("Conditionant node found: " + conditionant.getName());
-		if ( conditionant instanceof MultiEntityNode) {
+		if ( conditionant instanceof DomainResidentNode) {
 			Debug.println("IS MULTIENTITYNODE");
-			return ((MultiEntityNode)conditionant).hasPossibleValue(conditionantValue);
+			return ((DomainResidentNode)conditionant).getPossibleValueByName(conditionantValue) != null;
+		} else {
+			Debug.println("Conditionant is not a resident node");
 		}
 			
 		return false;
@@ -1205,26 +1214,74 @@ public class Compiler implements ICompiler {
 		}
 	}
 	
+	private class MathOperationProbabilityValue implements IProbabilityValue {
+		private float value = 0;
+		private IProbabilityValue op1 = null;
+		private IProbabilityValue op2 = null;
+		private int opcode = -1;
+		
+		public static final int ADD = 0;
+		public static final int SUBTRACT = 1;
+		public static final int MULTIPLY = 2;
+		public static final int DIVIDE = 3;
+		
+		
+		
+		MathOperationProbabilityValue(IProbabilityValue op1 , int opcode, IProbabilityValue op2) {
+			this.op1 = op1;
+			this.op2 = op2;
+			this.opcode = opcode;
+		}
+		public float getProbability() throws InvalidProbabilityRangeException {
+			float ret = -1;
+			switch (this.opcode) {
+			case MathOperationProbabilityValue.ADD:
+				ret = this.op1.getProbability() + this.op2.getProbability();
+				break;
+			case MathOperationProbabilityValue.SUBTRACT:
+				ret = this.op1.getProbability() - this.op2.getProbability();
+				break;
+			case MathOperationProbabilityValue.MULTIPLY:
+				ret = this.op1.getProbability() * this.op2.getProbability();
+				break;
+			case MathOperationProbabilityValue.DIVIDE:
+				ret = this.op1.getProbability() / this.op2.getProbability();
+				break;
+			default:
+				throw new InvalidProbabilityRangeException();
+			}
+			// consistency check (verify probability range [0,1])
+			if ( (ret < 0) || (ret > 1) ) {
+				throw new InvalidProbabilityRangeException();
+			} else {
+				return ret;
+			}
+		}
+	}
+	
 	private class CardinalityProbabilityValue implements IProbabilityValue {
 		private float value = 0;
-		private String[] parentSetName = null;		
+		private String parentSetName = null;		
 		private SSBNNode thisNode = null;
 		/**
 		 * Represents a probability value from cardinality function
 		 * It calculates the value using thisNode's parents set
 		 * @param thisNode: SSBNNode containing this compiler and this pseudocode
 		 * @param strongOVNames: literals containing ov names which determines
-		 * the set containing strong variables (e.g. {"st","z","s"} may return a node
+		 * the set containing strong variables, separated by the separator (usually comma ".")
+		 * at any order
+		 * e.g. "st.z.s" may return a node
 		 * Node(st,z,s,t,tprev), because it contains st,z and s, and t and tprev are
-		 * considered "weak")
+		 * considered "weak".
 		 */
-		CardinalityProbabilityValue (SSBNNode thisNode, String...strongOVNames) {
+		CardinalityProbabilityValue (SSBNNode thisNode, String strongOVNames) {
 			this.thisNode = thisNode;
 			this.parentSetName = strongOVNames;
 		}
+
 		public float getProbability() throws InvalidProbabilityRangeException {
 			// TODO calculate the value!!!
-			return this.value;
+			return this.thisNode.getParentSetByStrongOV(false, this.parentSetName.split(this.thisNode.getStrongOVSeparator())).size();
 		}
 	}
 	

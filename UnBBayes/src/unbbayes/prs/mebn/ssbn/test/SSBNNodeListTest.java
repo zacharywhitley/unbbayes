@@ -65,17 +65,17 @@ public class SSBNNodeListTest extends TestCase {
 			fail("Unable to retreve resident node");
 			return;
 		}		
-		this.ssbnnode1 = SSBNNode.getInstance(this.resident);
+		this.ssbnnode1 = SSBNNode.getInstance(null, this.resident);
 		this.ssbnnode1.addArgument(resident.getOrdinaryVariableList().get(0),"ST4");
 		this.ssbnnode1.addArgument(resident.getOrdinaryVariableList().get(1),"T0");
 		this.list.add(this.ssbnnode1);
 		
-		this.ssbnnode2 = SSBNNode.getInstance(this.resident);
+		this.ssbnnode2 = SSBNNode.getInstance(null, this.resident);
 		this.ssbnnode2.addArgument(resident.getOrdinaryVariableList().get(0),"ST0");
 		this.ssbnnode2.addArgument(resident.getOrdinaryVariableList().get(1),"T4");
 		this.list.add(this.ssbnnode2);
 		
-		this.ssbnnode3 = SSBNNode.getInstance(this.resident);
+		this.ssbnnode3 = SSBNNode.getInstance(null, this.resident);
 		this.ssbnnode3.addArgument(resident.getOrdinaryVariableList().get(0),"ST4");
 		this.ssbnnode3.addArgument(resident.getOrdinaryVariableList().get(1),"T4");		
 		this.list.add(this.ssbnnode3);
