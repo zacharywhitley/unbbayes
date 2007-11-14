@@ -111,8 +111,10 @@ public class GuiResources extends ListResourceBundle {
 		{"LookAndFeelClassNotFoundException","This LookAndFeel class was not found: "},
 		{"LookAndFeelInstantiationException","It was not possible to load this LookAndFeel: "},
 		{"LookAndFeelIllegalAccessException","This LookAndFeel can not be used: "},
-		{"nameError","Nome don't acept"},	
+		{"nameError","Nome don't accept"},	
+		{"operationFail","Operation don't accept"},
 		{"nameAlreadyExists","Already exists a object with this name"},	
+		{"objectEntityHasInstance","Exists instances of the selected entity. Remove them and try again."},
 		{"error","Error..."},	
 		{"argumentMissing","Missing arguments"},	
 		{"stateUnmarked","State don't marked"},	
@@ -131,6 +133,7 @@ public class GuiResources extends ListResourceBundle {
 		{"nameLabel", "Name:"}, 
 		{"typeLabel", "Type:"}, 
 		{"descriptionLabel","Description"},
+		{"ordereableLabel", "Is Ordenable"}, 
 		{"compileToolTip","Compile junction tree"},
 		{"moreToolTip","Add state"},
 		{"lessToolTip","Remove state"},
@@ -272,7 +275,7 @@ public class GuiResources extends ListResourceBundle {
         {"descriptionError","The description must have only letters and numbers."}, 
         
         /* FormulaTreeConstructionException */
-        {"notOperator", "Operator don't acept in this position"},  
+        {"notOperator", "Operator don't accept in this position"},  
 		
 		{"sucess", "Sucess"}, 
 		{"error", "Error"},

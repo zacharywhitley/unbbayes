@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.entity.exception.ObjectEntityHasInstancesException;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
@@ -32,6 +33,8 @@ public class ObjectEntity extends Entity {
 	 */
 	private Set<ObjectEntityInstance> listObjectEntityInstance;
 	
+	private boolean isOrdereable; 
+	
 	protected ObjectEntity(String name, TypeContainer container) throws TypeException {
 		
 		super(name, container.createType(name + "_label")); 
@@ -39,8 +42,6 @@ public class ObjectEntity extends Entity {
 		
 		listObjectEntityInstance = new HashSet<ObjectEntityInstance>(); 
 	}
-	
-
 	
 	/**
 	 * Create a entity instance of a object entity. 
@@ -80,8 +81,16 @@ public class ObjectEntity extends Entity {
 	 */
 	public ObjectEntityInstance addInstance(String name) throws TypeException {
 		
-		ObjectEntityInstance instance = new ObjectEntityInstance(name, this);
+		ObjectEntityInstance instance = null; 
+		
+		if(!isOrdereable){
+		    instance = new ObjectEntityInstance(name, this);
+		}else{
+			instance = new ObjectEntityInstanceOrdereable(name, this); 
+		}
+		
 		listObjectEntityInstance.add(instance);
+		
 		return instance;
 		
 	}
@@ -92,6 +101,10 @@ public class ObjectEntity extends Entity {
 	
 	public void removeInstance(ObjectEntityInstance instance) {
 		listObjectEntityInstance.remove(instance);
+	}
+	
+	public void removeAllInstances(){
+		listObjectEntityInstance.clear(); 
 	}
 	
 	protected void delete() throws TypeDoesNotExistException{
@@ -151,5 +164,28 @@ public class ObjectEntity extends Entity {
 		}else{
 			return false; 
 		}
+	}
+
+
+
+	public boolean isOrdereable() {
+		return isOrdereable;
+	}
+	
+	/**
+	 * Set the isOrdereable property. This property only shoud be setted if don't 
+	 * have any instances of this class.
+	 *  
+	 * @param isOrdereable
+	 * @throws ObjectEntityHasInstancesException 
+	 */
+	public void setOrdereable(boolean isOrdereable) throws ObjectEntityHasInstancesException{
+		
+		if(!listObjectEntityInstance.isEmpty()){
+			throw new ObjectEntityHasInstancesException(); 
+		}
+		
+		this.isOrdereable = isOrdereable;
+	
 	}
 }

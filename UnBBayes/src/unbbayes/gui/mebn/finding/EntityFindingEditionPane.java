@@ -9,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
@@ -16,7 +18,6 @@ import java.util.regex.Pattern;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -29,12 +30,14 @@ import javax.swing.event.ListSelectionListener;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
+import unbbayes.controller.exception.InvalidOperationException;
 import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
 
 /**
@@ -56,16 +59,16 @@ public class EntityFindingEditionPane extends JPanel{
 	
 	private Object selected; 
 	
-	/* 
-	 * indica se o usuario esta adicionando uma nova instancia (true) ou se esta
-	 * apenas editando uma instancia já existente (false). 
-	 */
-	private boolean isAdding = true; 
+	private ObjectEntityInstanceOrdereable last; 
+	
+	private boolean isAdding = true; //user adding a new instance or only editing a instance previous created. 
 	
 	private ObjectEntityListPane objectEntityListPane; 
 	private ObjectEntityInstancePane objectEntityInstancePane; 
 	private ObjectEntityInstanceListPane objectEntityInstanceListPane; 
 	
+  	private JPanel upperPanel; 
+  	private JPanel downPanel; 
 	
 	private IconController iconController = IconController.getInstance(); 
   	private static ResourceBundle resource = 
@@ -83,13 +86,22 @@ public class EntityFindingEditionPane extends JPanel{
 		objectEntityInstancePane = new ObjectEntityInstancePane(); 
 		objectEntityInstanceListPane = new ObjectEntityInstanceListPane(); 
 		
-		add(objectEntityListPane, BorderLayout.NORTH);
+		upperPanel = new JPanel(new BorderLayout());
+		upperPanel.add(objectEntityListPane, BorderLayout.CENTER); 
+		upperPanel.add(objectEntityInstancePane, BorderLayout.SOUTH); 
 		
-		JPanel panelCentro = new JPanel(new GridLayout(1,1)); 
-		panelCentro.add(objectEntityInstancePane); 
-		add(panelCentro, BorderLayout.CENTER);
+		downPanel = new JPanel(new BorderLayout()); 
+		downPanel.add(objectEntityInstanceListPane, BorderLayout.CENTER); 
 		
-		add(objectEntityInstanceListPane, BorderLayout.SOUTH);
+		this.add(upperPanel, BorderLayout.CENTER); 
+		this.add(downPanel, BorderLayout.PAGE_END); 
+	}
+	
+	public void showEntityInstanceListPane(ObjectEntity entity){
+		downPanel.removeAll(); 
+		objectEntityInstanceListPane = new ObjectEntityInstanceListPane(entity); 
+		downPanel.add(objectEntityInstanceListPane, BorderLayout.CENTER); 
+		downPanel.validate(); 
 	}
 	
 	private class ObjectEntityInstancePane extends JPanel{
@@ -100,8 +112,9 @@ public class EntityFindingEditionPane extends JPanel{
 		//Button for add or edit instances
 		private JButton btnAddInstance; 
 		
-		//Button for remove instances
 		private JButton btnRemoveInstance; 
+		private JButton btnUpInstance; 
+		private JButton btnDownInstance; 
 		
 		private JToolBar barButtons; 
 		
@@ -183,10 +196,26 @@ public class EntityFindingEditionPane extends JPanel{
 				}
 			}); 
 			
+			btnUpInstance = new JButton(iconController.getUpIcon()); 
+			btnUpInstance.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent e) {
+					removeInstance(); 
+				}
+			}); 
+			
+			btnDownInstance = new JButton(iconController.getDownIcon()); 
+			btnDownInstance.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent e) {
+					removeInstance(); 
+				}
+			}); 
+			
 			barButtons = new JToolBar();
-			barButtons.setLayout(new GridLayout(1, 2)); 
+			barButtons.setLayout(new GridLayout(1, 4)); 
 			barButtons.add(btnAddInstance); 
 			barButtons.add(btnRemoveInstance); 
+			barButtons.add(btnUpInstance); 
+			barButtons.add(btnDownInstance); 
 			barButtons.setFloatable(false); 
 			
 			
@@ -216,7 +245,23 @@ public class EntityFindingEditionPane extends JPanel{
 			if((selected != null)&&(testName(nameObjectEntity.getText()))){
 				if(isAdding){
 					try{
-						mebnController.createEntityIntance((ObjectEntity)selected, nameObjectEntity.getText()); 
+						ObjectEntity objectEntity = (ObjectEntity)selected; 
+						if(!objectEntity.isOrdereable()){
+					 	    try {
+								mebnController.createEntityIntance(objectEntity, nameObjectEntity.getText());
+							} catch (InvalidOperationException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}else{
+						    try {
+								mebnController.createEntityIntanceOrdereable(
+										objectEntity, nameObjectEntity.getText(), last);
+							} catch (InvalidOperationException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}	
+						}
 						objectEntityInstanceListPane.update();  
 						nameObjectEntity.setText(""); 
 					}
@@ -255,13 +300,13 @@ public class EntityFindingEditionPane extends JPanel{
 				if(isAdding){					
 					    typeObjectEntity.setText(((ObjectEntity)selected).getName());
 					    nameObjectEntity.setText("");
-					    btnAddInstance.setIcon(iconController.getMoreIcon()); 
-					    btnRemoveInstance.setVisible(false); 
+					    //btnAddInstance.setIcon(iconController.getMoreIcon()); 
+					    btnRemoveInstance.setEnabled(false); 
 				}else{
 					typeObjectEntity.setText(((ObjectEntityInstance)selected).getInstanceOf().getName());
 					nameObjectEntity.setText(((ObjectEntityInstance)selected).getName());
-				    btnAddInstance.setIcon(iconController.getEditIcon());
-				    btnRemoveInstance.setVisible(true); 
+				    //btnAddInstance.setIcon(iconController.getEditIcon());
+				    btnRemoveInstance.setEnabled(true); 
 				}
 			}
 		}
@@ -307,7 +352,8 @@ public class EntityFindingEditionPane extends JPanel{
 		                	selected = (ObjectEntity)jlistEntity.getSelectedValue(); 
 		                	isAdding = true; 
 		                	if(selected != null){
-		                	   objectEntityInstancePane.updateReference(); 
+		                	    objectEntityInstancePane.updateReference(); 
+				                showEntityInstanceListPane((ObjectEntity)selected);
 		                	}
 		                }
 		            }  	
@@ -319,24 +365,49 @@ public class EntityFindingEditionPane extends JPanel{
 		
 		private JList jlistEntity; 
 		private JScrollPane scrollListObjectEntity; 
-		private List<ObjectEntity> listEntity; 
-		private DefaultListModel listModel; 
+		private ObjectEntity objectEntity; 
+		private DefaultListModel listModel;
 		
 		public ObjectEntityInstanceListPane(){
 			
 			super(new GridLayout(1,1)); 
 			
-			listEntity = mebnController.getMultiEntityBayesianNetwork().getObjectEntityContainer().getListEntity(); 
-			
 			listModel = new DefaultListModel(); 
 			
-			for(ObjectEntity entity: listEntity){
-				for(ObjectEntityInstance instance: entity.getInstanceList()){
-				   listModel.addElement(instance); 
+			jlistEntity = new JList(); 
+			jlistEntity.setModel(listModel);
+			scrollListObjectEntity = new JScrollPane(jlistEntity); 
+			this.add(scrollListObjectEntity);
+		}
+		
+		public ObjectEntityInstanceListPane(ObjectEntity objectEntity){
+			
+			super(new GridLayout(1,1)); 
+			
+			this.objectEntity = objectEntity; 
+			listModel = new DefaultListModel(); 
+			jlistEntity = new JList(); 
+			
+			if(objectEntity.isOrdereable()){
+				ArrayList<ObjectEntityInstanceOrdereable> originalList = new ArrayList<ObjectEntityInstanceOrdereable>(); 
+				for(ObjectEntityInstance instance: objectEntity.getInstanceList()){
+					originalList.add((ObjectEntityInstanceOrdereable)instance);
 				}
+				
+				for(ObjectEntityInstanceOrdereable instance: ordererList(originalList)){
+					listModel.addElement(instance); 
+				}
+				
+				if(listModel.size() > 0)
+				    last = (ObjectEntityInstanceOrdereable)listModel.get(listModel.size()-1);
+				else last = null; 
+			}else{
+				for(ObjectEntityInstance instance: objectEntity.getInstanceList()){
+					listModel.addElement(instance); 
+				}	
+				last = null;
 			}
 			
-			jlistEntity = new JList(); 
 			jlistEntity.setModel(listModel);
 			scrollListObjectEntity = new JScrollPane(jlistEntity); 
 			this.add(scrollListObjectEntity);
@@ -358,16 +429,49 @@ public class EntityFindingEditionPane extends JPanel{
 			 );
 		}
 		
+		private List<ObjectEntityInstanceOrdereable> ordererList(Collection<ObjectEntityInstanceOrdereable> originalCollection){
+			
+			ArrayList<ObjectEntityInstanceOrdereable> finalList = new ArrayList<ObjectEntityInstanceOrdereable>(); 
+			
+			ObjectEntityInstanceOrdereable prev = null; 
+			
+			for(int i = 0; i < originalCollection.size(); i++){
+				for(ObjectEntityInstanceOrdereable instance: originalCollection){
+					if(instance.getPrev() == prev){
+						finalList.add(instance);
+						prev = instance; 
+						break; 
+					}
+				}
+			}
+			
+			return finalList; 
+		}
+		
 		public void update(){
 			
 			listModel.clear(); 
 			
 			listModel = new DefaultListModel(); 
 			
-			for(ObjectEntity entity: listEntity){
-				for(ObjectEntityInstance instance: entity.getInstanceList()){
-				   listModel.addElement(instance); 
+			if(objectEntity.isOrdereable()){
+				ArrayList<ObjectEntityInstanceOrdereable> originalList = new ArrayList<ObjectEntityInstanceOrdereable>(); 
+				for(ObjectEntityInstance instance: objectEntity.getInstanceList()){
+					originalList.add((ObjectEntityInstanceOrdereable)instance);
 				}
+				
+				for(ObjectEntityInstanceOrdereable instance: ordererList(originalList)){
+					listModel.addElement(instance); 
+				}
+				if(listModel.size() > 0)
+				    last = (ObjectEntityInstanceOrdereable)listModel.get(listModel.size()-1);
+				else last = null; 
+				
+			}else{
+				for(ObjectEntityInstance instance: objectEntity.getInstanceList()){
+					listModel.addElement(instance); 
+				}
+				last = null;
 			}
 			
 			jlistEntity.setModel(listModel); 

@@ -2,7 +2,7 @@ package unbbayes.gui.mebn;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,11 +13,9 @@ import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -31,16 +29,25 @@ import javax.swing.event.ListSelectionListener;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
-import unbbayes.controller.NetworkController;
 import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.exception.ObjectEntityHasInstancesException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 
 /**
- * Pane for edition of object entities : Create, Delete, Edit and View
+ * Pane for edition of object entities: 
+ *       - Create, 
+ *       - Delete
+ *       - Edit 
+ *       - View
+ *  Atributes editables: 
+ *       - Name
+ *       - isOrdenable property      
+ *       
+ *  @author Laécio Lima dos Santos (laecio@gmail.com)     
  */
 
 public class EntityEditionPane extends JPanel{
@@ -51,15 +58,11 @@ public class EntityEditionPane extends JPanel{
     
     private JPanel jpInformation; 
 	
-    private JLabel name; 
     private JTextField txtName; 
-    private JLabel type; 
     private JTextField txtType; 
-	
-    private JToolBar jtbOptions; 	
-    
+    private JCheckBox checkIsOrdereable; 
     private JButton jbNew; 
-    private JButton jbDelete; 	
+    private JButton jbDelete; 
     
     private JList jlEntities; 
     private DefaultListModel listModel;
@@ -67,8 +70,6 @@ public class EntityEditionPane extends JPanel{
 	
     private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
     private Matcher matcher;	
-	
-    private ObjectEntity entity; 
     
     private final IconController iconController = IconController.getInstance();
     
@@ -117,34 +118,53 @@ public class EntityEditionPane extends JPanel{
 	}
 
 	private void buildJpInformation() {
-		jpInformation = new JPanel(new GridLayout(5, 0)); 
+		jpInformation = new JPanel(new GridLayout(4, 0)); 
 	    
-	    name = new JLabel(resource.getString("nameLabel")); 
+		JLabel label; 
+		JToolBar toolBar; 
+	    
+	    toolBar = new JToolBar(); 
+	    toolBar.setLayout(new GridLayout(0, 2)); 
+	    jbNew = new JButton(iconController.getMoreIcon()); 
+	    jbNew.setToolTipText(resource.getString("newEntityToolTip")); 
+	    toolBar.add(jbNew);
+	    jbDelete = new JButton(iconController.getLessIcon()); 
+	    jbDelete.setToolTipText(resource.getString("delEntityToolTip")); 
+	    toolBar.add(jbDelete);
+	    toolBar.setFloatable(false);	    
+	    jpInformation.add(toolBar); 
+	    
+	    toolBar = new JToolBar(); 
+	    toolBar.setLayout(new BorderLayout()); 
+	    label = new JLabel(resource.getString("nameLabel")); 
+	    label.setPreferredSize(new Dimension(50, 5));
+	    toolBar.add(label, BorderLayout.LINE_START); 
 	    txtName = new JTextField(10);
 	    txtName.setEditable(false); 
+	    toolBar.add(txtName, BorderLayout.CENTER); 
+	    toolBar.setFloatable(false);
+	    jpInformation.add(toolBar);
 	    
-	    type = new JLabel(resource.getString("typeLabel")); 
+	    toolBar = new JToolBar(); 
+	    toolBar.setLayout(new BorderLayout()); 
+	    label = new JLabel(resource.getString("typeLabel")); 
+	    label.setPreferredSize(new Dimension(50, 5));
+	    toolBar.add(label, BorderLayout.LINE_START); 
 	    txtType = new JTextField(10);
 	    txtType.setEditable(false); 
+	    toolBar.add(txtType, BorderLayout.CENTER); 
+	    toolBar.setFloatable(false);
+	    jpInformation.add(toolBar); 
 	    
-	    jtbOptions = new JToolBar(); 
-	    jtbOptions.setLayout(new GridLayout(0, 2)); 
-	    
-	    jbNew = new JButton(iconController.getMoreIcon()); 
-	    jbDelete = new JButton(iconController.getLessIcon());
-	    
-	    jbNew.setToolTipText(resource.getString("newEntityToolTip")); 
-	    jbDelete.setToolTipText(resource.getString("delEntityToolTip")); 
-	    
-	    jtbOptions.add(jbNew);
-	    jtbOptions.add(jbDelete); 
-	    jtbOptions.setFloatable(false);	    
-	    
-	    jpInformation.add(jtbOptions); 
-	    jpInformation.add(name); 
-	    jpInformation.add(txtName);
-	    jpInformation.add(type); 
-	    jpInformation.add(txtType);
+	    toolBar = new JToolBar(); 
+	    toolBar.setLayout(new BorderLayout()); 
+	    checkIsOrdereable = new JCheckBox(); 
+	    checkIsOrdereable.setEnabled(false); 
+	    toolBar.add(checkIsOrdereable, BorderLayout.LINE_START); 
+	    label = new JLabel(resource.getString("ordereableLabel")); 
+	    toolBar.add(label, BorderLayout.CENTER); 
+	    toolBar.setFloatable(false);
+	    jpInformation.add(toolBar); 
 	}
 	
 	/**
@@ -166,11 +186,6 @@ public class EntityEditionPane extends JPanel{
 		
 		jlEntities.setModel(listModel); 
 		
-		/* 
-		 * Warning: Por algum motivo estranho a mim a referencia feita por
-		 * selected estava sendo perdida quando se adicionava seguidamente
-		 * nos entidades... Esta jogadinha solucionou o problema... 
-		 */
 		selected = antSelected; 
 		
 	}
@@ -185,6 +200,8 @@ public class EntityEditionPane extends JPanel{
                 	if(selected != null){
                 	   txtName.setText(selected.getName()); 
                 	   txtName.setEditable(true); 
+                	   checkIsOrdereable.setEnabled(true); 
+                	   checkIsOrdereable.setSelected(selected.isOrdereable()); 
                        txtType.setText(selected.getType().getName());
                 	}
                 }
@@ -210,6 +227,7 @@ public class EntityEditionPane extends JPanel{
   							   jlEntities.setSelectedValue(selected, true); 
   		  					   txtName.setText(selected.getName()); 
   		  					   txtName.setEditable(false); 
+  		  					   checkIsOrdereable.setEnabled(false); 
   		  					   txtType.setText(selected.getType().getName());
   		  					   update();
   							}
@@ -255,6 +273,22 @@ public class EntityEditionPane extends JPanel{
   				
   			}
   		});
+		
+		checkIsOrdereable.addActionListener(new ActionListener(){
+
+			public void actionPerformed(ActionEvent e) {
+				JCheckBox checkBox = (JCheckBox)e.getSource(); 
+				try {
+					mebnController.setIsOrdereableObjectEntityProperty(selected, checkBox.isSelected());
+				} catch (ObjectEntityHasInstancesException e1) {
+					JOptionPane.showMessageDialog(null, 
+							resource.getString("objectEntityHasInstance"), 
+							resource.getString("operationFail"), 
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+			
+		}); 
         
 		jbNew.addActionListener(new ActionListener() {
   			public void actionPerformed(ActionEvent ae) {
@@ -267,6 +301,7 @@ public class EntityEditionPane extends JPanel{
 				   jlEntities.setSelectedValue(selected, true); 
 				   txtType.setText(selected.getType().getName()); 
 				   txtName.setEditable(true); 
+				   checkIsOrdereable.setEnabled(true); 
 				   txtName.setText(selected.getName());
 				   txtName.selectAll(); 
 				   txtName.requestFocus(); 
@@ -293,6 +328,7 @@ public class EntityEditionPane extends JPanel{
   			    	txtName.setText(" "); 
   			    	txtType.setText(" "); 
   			    	txtName.setEditable(false); 
+  			    	checkIsOrdereable.setEnabled(false);
   			    }
   			}
   		});

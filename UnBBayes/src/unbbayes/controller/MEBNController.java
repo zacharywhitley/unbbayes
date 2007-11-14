@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import unbbayes.controller.exception.InconsistentArgumentException;
+import unbbayes.controller.exception.InvalidOperationException;
 import unbbayes.gui.MEBNEditionPane;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.mebn.OVariableEditionPane;
@@ -27,11 +28,13 @@ import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.TypeContainer;
 import unbbayes.prs.mebn.entity.exception.CategoricalStateDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
+import unbbayes.prs.mebn.entity.exception.ObjectEntityHasInstancesException;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
@@ -839,7 +842,11 @@ public class MEBNController {
 
 	}
 
-	/*--------------------------------- Object Entities ---------------------*/
+	
+	
+	/*-------------------------------------------------------------------------*/
+	/* Object Entities                                                         */
+	/*-------------------------------------------------------------------------*/
 
 	/**
 	 * Adds a new entity with a name passed as its argument.
@@ -866,12 +873,22 @@ public class MEBNController {
 		return objectEntity;
 	}
 
+	/**
+	 * Rename a object entity. 
+	 * @param entity
+	 * @param name
+	 * @throws TypeAlreadyExistsException
+	 */
 	public void renameObjectEntity(ObjectEntity entity, String name) throws TypeAlreadyExistsException{
-
 		entity.setName(name);
-
 	}
-
+	
+	
+    /**
+    * Remove a object entity. 
+    * @param entity
+    * @throws Exception
+    */
 	public void removeObjectEntity(ObjectEntity entity) throws Exception{
 		multiEntityBayesianNetwork.getObjectEntityContainer().removeEntity(entity);
 		try{
@@ -882,14 +899,65 @@ public class MEBNController {
 		}
 	}
 
-	public void createEntityIntance(ObjectEntity entity, String nameInstance) throws EntityInstanceAlreadyExistsException{
+	/**
+	 * Set the property isOrdereable of the entity
+	 * @param entity
+	 * @param isOrdereable
+	 * @throws ObjectEntityHasInstancesException
+	 */
+	public void setIsOrdereableObjectEntityProperty(ObjectEntity entity, boolean isOrdereable) throws ObjectEntityHasInstancesException{
+		entity.setOrdereable(isOrdereable); 
+	}
+	
+	
+	
+	/*-------------------------------------------------------------------------*/
+	/* Object Entities Instances                                               */
+	/*-------------------------------------------------------------------------*/
 
+	/**
+	 * Create a new Object Entity Instance of the Object Entity. 
+	 * @param entity
+	 * @param nameInstance
+	 * @throws EntityInstanceAlreadyExistsException
+	 */
+	public void createEntityIntance(ObjectEntity entity, String nameInstance) 
+	throws EntityInstanceAlreadyExistsException, InvalidOperationException{
+
+		if(entity.isOrdereable()){
+			throw new InvalidOperationException();
+		}
+		
 		if(multiEntityBayesianNetwork.getObjectEntityContainer().getEntityInstanceByName(nameInstance)!=null){
 			throw new EntityInstanceAlreadyExistsException();
 		}
 		else{
 			try {
 				ObjectEntityInstance instance = entity.addInstance(nameInstance);
+				multiEntityBayesianNetwork.getObjectEntityContainer().addEntityInstance(instance);
+			} catch (TypeException e1) {
+				e1.printStackTrace();
+			} catch(EntityInstanceAlreadyExistsException e){
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public void createEntityIntanceOrdereable(ObjectEntity entity, 
+			String nameInstance, ObjectEntityInstanceOrdereable previous) 
+	throws EntityInstanceAlreadyExistsException, InvalidOperationException{
+
+		if(!entity.isOrdereable()){
+			throw new InvalidOperationException();
+		}
+		
+		if(multiEntityBayesianNetwork.getObjectEntityContainer().getEntityInstanceByName(nameInstance)!=null){
+			throw new EntityInstanceAlreadyExistsException();
+		}
+		else{
+			try {
+				ObjectEntityInstanceOrdereable instance = (ObjectEntityInstanceOrdereable)entity.addInstance(nameInstance);
+				instance.setPrev(previous);
 				multiEntityBayesianNetwork.getObjectEntityContainer().addEntityInstance(instance);
 			} catch (TypeException e1) {
 				e1.printStackTrace();

@@ -733,6 +733,24 @@ public class IconController implements Serializable {
 			return lessIcon;
 		}
 	}
+	
+//	public ImageIcon getUpIcon() {
+//		if (upIcon != null) {
+//			return upIcon;
+//		} else {
+//			upIcon = new ImageIcon(getClass().getResource("/icons/up.png"));
+//			return upIcon;
+//		}
+//	}
+//	
+//	public ImageIcon getDownIcon() {
+//		if (downIcon != null) {
+//			return downIcon;
+//		} else {
+//			downIcon = new ImageIcon(getClass().getResource("/icons/down.png"));
+//			return downIcon;
+//		}
+//	}
 
 	public ImageIcon getInformationIcon() {
 		if (informationIcon != null) {
@@ -1270,7 +1288,7 @@ public class IconController implements Serializable {
 			return downIcon;
 		} else {
 			downIcon = new ImageIcon(getClass().getResource(
-					"/icons/go-down.png"));
+					"/icons/down.png"));
 			return downIcon;
 		}
 	}	
@@ -1280,7 +1298,7 @@ public class IconController implements Serializable {
 			return upIcon;
 		} else {
 			upIcon = new ImageIcon(getClass().getResource(
-					"/icons/go-up.png"));
+					"/icons/up.png"));
 			return upIcon;
 		}
 	}
