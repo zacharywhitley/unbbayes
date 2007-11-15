@@ -40,6 +40,7 @@ public class IoUbfResources_pt extends ListResourceBundle {
 		{"UBFInputNodes", " nós Input"},
 		{"UBFContextNodes", " Nós de Contexto"},
 		{"UBFOrdinalVars", " Variáveis Ordinárias"},
+		{"UBFObjectEntityInstances", " Instâncias de Entidades Objetos"},
 		
 		{"InvalidSyntax", "Sintaxe inválida para essa versão"},
 		{"NoProwlFound", "Não foi encontrado um arquivo pr-owl"}, 	

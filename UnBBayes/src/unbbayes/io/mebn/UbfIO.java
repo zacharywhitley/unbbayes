@@ -19,18 +19,23 @@ import java.io.StreamTokenizer;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ResourceBundle;
 
-import unbbayes.prs.Node;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.MFrag;
-import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.InputNode;
-import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.io.mebn.exceptions.IOMebnException;
+import unbbayes.prs.Node;
+import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.DomainMFrag;
+import unbbayes.prs.mebn.InputNode;
+import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-
+import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
+import unbbayes.prs.mebn.entity.exception.ObjectEntityHasInstancesException;
+import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.util.Debug;
 
 /**
@@ -83,10 +88,13 @@ public class UbfIO implements MebnIO {
 			{"GenerativeInputType" , "GenerativeInputNode"},
 			{"ContextType" , "ContextNode"},
 			{"OrdinalVarType" , "OrdinalVar"},
+			
+			{"ObjectEntityDeclarator" , "ObjEntity"},
+			{"EntityInstancesDeclarator" , "Instances"},
 	};
 	
 	
-	public static final double ubfVersion = 0.02;
+	public static final double ubfVersion = 0.03;
 	
 	public static final String fileExtension = "ubf";
 	
@@ -197,6 +205,11 @@ public class UbfIO implements MebnIO {
 				st.pushBack();
 				break;
 			}
+			// finishing condition
+			if (this.getToken("ObjectEntityDeclarator").compareTo(st.sval) == 0 ) {
+				st.pushBack();
+				break;
+			}
 			
 			if (st.ttype != st.TT_WORD) {
 				continue;
@@ -297,6 +310,13 @@ public class UbfIO implements MebnIO {
 			if (st.ttype != st.TT_WORD) {
 				continue;
 			}
+			
+			// finishing condition
+			if (this.getToken("ObjectEntityDeclarator").compareTo(st.sval) == 0 ) {
+				st.pushBack();
+				break;
+			}
+			
 			// determine considered mfrag
 			if ( this.getToken("MFragDeclarator").compareTo(st.sval) == 0 )  {
 				while (st.nextToken() != st.TT_EOL) {
@@ -347,6 +367,65 @@ public class UbfIO implements MebnIO {
 		} // while not EOF
 	}
 	
+	private void updateObjectEntities(StreamTokenizer st, MultiEntityBayesianNetwork mebn ) 
+	throws IOException, ClassCastException {
+		
+		ObjectEntity objectEntity = null;
+		
+		while (st.nextToken() != st.TT_EOF) {
+			//System.out.println(">> Read (str)" + st.sval + " from UBF");
+			//System.out.println(">> Read (number)" + st.nval + " from UBF");
+			
+			if (st.ttype != st.TT_WORD) {
+				continue;
+			}
+			// determine considered mfrag
+			if ( this.getToken("ObjectEntityDeclarator").compareTo(st.sval) == 0 )  {
+				while (st.nextToken() != st.TT_EOL) {
+					if (st.ttype == st.TT_WORD) {
+						objectEntity = mebn.getObjectEntityContainer().getObjectEntityByName(st.sval);
+						//System.out.println("Updating mfrag " + mfrag.getName());
+						break;
+					}
+				}
+			}
+			
+			if (objectEntity == null) {
+				//System.out.println("ObjectEntity still not found");
+				continue;
+			}else{
+				try {
+					objectEntity.setOrdereable(true);
+				} catch (ObjectEntityHasInstancesException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			if (st.ttype != st.TT_WORD) {
+				continue;
+			}
+			// Set NextOrdinalVarDeclarator
+			if ( this.getToken("EntityInstancesDeclarator").compareTo(st.sval) == 0 )  {
+				ObjectEntityInstanceOrdereable prev = null; 
+				while (st.nextToken() != st.TT_EOL) {
+					if (st.ttype == st.TT_WORD) {
+						String name = st.sval;
+						try {
+							ObjectEntityInstanceOrdereable oe = (ObjectEntityInstanceOrdereable)objectEntity.addInstance(name);
+							oe.setPrev(prev);
+							if(prev!=null) prev.setProc(oe);
+							prev = oe; 
+						} catch (TypeException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			
+		} // while not EOF
+	}
 	
 	private void updateNode(StreamTokenizer st, DomainMFrag mfrag) throws IOException {
 		
@@ -554,9 +633,8 @@ public class UbfIO implements MebnIO {
 			System.err.println(e.getLocalizedMessage() + " : "
 					+ resource.getString("MFragConfigError"));
 		}
-		
-		
-		
+
+		updateObjectEntities(st, mebn);
 		
 		return mebn;
 	}
@@ -731,6 +809,32 @@ public class UbfIO implements MebnIO {
 			
 		} // for
 		
+		//	Save Object Entity Instance Ordereables declarations
+		out.println();
+		out.println(this.getToken("CommentInitiator") + resource.getString("UBFObjectEntityInstances"));
+		for(ObjectEntity objectEntity: mebn.getObjectEntityContainer().getListEntity()){
+			if(objectEntity.isOrdereable()){ //For this version, only the ordereables instances will be saved. 
+				out.println();
+				out.println(this.getToken("ObjectEntityDeclarator")
+						+ this.getToken("AttributionSeparator") +  objectEntity.getName());
+				out.print(this.getToken("EntityInstancesDeclarator") + this.getToken("AttributionSeparator"));
+				
+				List<ObjectEntityInstanceOrdereable> list = new ArrayList<ObjectEntityInstanceOrdereable>();
+				for(ObjectEntityInstance instance: objectEntity.getInstanceList()){
+					list.add((ObjectEntityInstanceOrdereable)instance);
+				}
+				
+				String instances = ""; 
+				for(ObjectEntityInstance instance: ObjectEntityInstanceOrdereable.ordererList(list)){
+					instances+= instance.getName() + this.getToken("ArgumentSeparator");
+				}
+				//delete argumetn separator. 
+				if(list.size() > 0 ){
+					instances = instances.substring(0, instances.length() - this.getToken("ArgumentSeparator").length());
+				}
+				out.println(instances);
+			}
+		}
 		
 	}
 

@@ -60,7 +60,7 @@ import unbbayes.util.Debug;
  * call a method of this controller (MVC model). 
  *
  * @author Laecio Lima dos Santos (laecio@gmail.com)
- * @version 1.0 05/29/07
+ * @version 1.5 11/15/07
  */
 
 public class MEBNController {
@@ -153,8 +153,6 @@ public class MEBNController {
 		mebnEditionPane.setNameMTheory(name);
 
 	}
-
-
 	
 	/*-------------------------------------------------------------------------*/
 	/* Edge                                                                    */
@@ -957,7 +955,12 @@ public class MEBNController {
 		else{
 			try {
 				ObjectEntityInstanceOrdereable instance = (ObjectEntityInstanceOrdereable)entity.addInstance(nameInstance);
+				
 				instance.setPrev(previous);
+				if(previous != null){
+				   previous.setProc(instance);
+				}
+				
 				multiEntityBayesianNetwork.getObjectEntityContainer().addEntityInstance(instance);
 			} catch (TypeException e1) {
 				e1.printStackTrace();
@@ -980,8 +983,36 @@ public class MEBNController {
 	public void removeEntityInstance(ObjectEntityInstance entity) {
 		multiEntityBayesianNetwork.getObjectEntityContainer().removeEntityInstance(entity);
 	}
+	
+	public void removeEntityInstanceOrdereable(ObjectEntityInstanceOrdereable entity) {
+		ObjectEntityInstanceOrdereable.removeEntityInstanceOrdereableReferences(entity);	
+		multiEntityBayesianNetwork.getObjectEntityContainer().removeEntityInstance(entity);
+	}
 
+	public void upEntityInstance(ObjectEntityInstanceOrdereable entity) {
+		ObjectEntityInstanceOrdereable.upEntityInstance(entity);
+	}
 
+	public void downEntityInstance(ObjectEntityInstanceOrdereable entity) {
+		ObjectEntityInstanceOrdereable.downEntityInstance(entity);
+	}
+	
+	
+	
+	/*-------------------------------------------------------------------------*/
+	/*Findings                                                                 */
+	/*-------------------------------------------------------------------------*/
+	
+	public void createRandonVariableFinding(DomainResidentNode residentNode, 
+			ObjectEntityInstance[] arguments, Entity state){
+		RandomVariableFinding finding = new RandomVariableFinding(
+				(DomainResidentNode)residentNode, 
+				arguments, 
+				state, 
+				this.multiEntityBayesianNetwork);
+		((DomainResidentNode)residentNode).addRandonVariableFinding(finding); 
+	}
+	
 	
 	
 	/*-------------------------------------------------------------------------*/
@@ -1043,81 +1074,6 @@ public class MEBNController {
 		loadFindingsIntoKB(); 
 		baseCreated = true; 
 	}
-	
-	/**
-	 * Execute the list of context nodes of the current MFrag.
-	 * (this version only print the result in console)
-	 */
-	public void executeContext(){
-
-		PowerLoomKB test = PowerLoomKB.getInstanceKB();
-
-		for(ContextNode context: ((DomainMFrag)(multiEntityBayesianNetwork.getCurrentMFrag())).getContextNodeList()){
-
-			boolean resultado = test.executeContextFormula(context);
-
-			Debug.println(this.getClass(), "Contexto " + context.getName() + "=" + resultado);
-		}
-
-	}
-
-	/**
-	 * Put a new assert of a entity in the KB.
-	 *
-	 * Sintaxe PowerLoom:
-	 * (assert (Starship Enterprise))
-	 *
-	 * @param assertComand Assert in powerloom sintaxe
-	 */
-	public void makeEntityAssert(String assertComand){
-		  PowerLoomKB test = PowerLoomKB.getInstanceKB();
-
-		    //test.executeEntityFinding(assertComand);
-
-	}
-
-	/**
-	 * Put a new relation assert in the KB.
-	 *
-	 * Sintaxe PowerLoom:
-	 * (assert(= (StarshipZone(Enterprise))  ZN_BlackHoleBoundary))
-	 *
-	 * @param assertComand Assert in powerloom sintaxe
-	 */
-	public void makeRelationAssert(String assertComand){
-	    PowerLoomKB.getInstanceKB().executeRandonVariableFinding(assertComand);
-	}
-
-
-	/**
-	 * Just a test...
-	 *
-	 * Fills a Ordinary Variable with an entity
-	 * @param nameOV OV name to be linked (must exist already)
-	 * @param entity entity to be created and linked.
-	 */
-	public void linkOrdVariable2Entity(String nameOV, String entity){
-		//TODO take this out from the final version
-		ArrayList<OrdinaryVariable> listOV = (ArrayList<OrdinaryVariable>)this.getCurrentMFrag().getOrdinaryVariableList();
-
-		for(OrdinaryVariable ov : listOV){
-			if(ov.getName().compareTo(nameOV) == 0){
-
-				try{
-					ObjectEntity oe = multiEntityBayesianNetwork.getObjectEntityContainer().createObjectEntity(entity);
-					ov.setEntity(oe); //warn: o tipo aqui eh apenas para testarmos...
-					Debug.println(this.getClass(), " Linkado: " + ov.getName() + " a " + entity);
-				}
-				catch(TypeException e){
-					e.printStackTrace();
-				}
-				catch(Exception e){
-					e.printStackTrace();
-				}
-				break;
-			}
-		}
-	}
 
 	/**
 	 * Execute a query. 
@@ -1161,21 +1117,6 @@ public class MEBNController {
 		
 	}
 	
-	
-	
-	/*-------------------------------------------------------------------------*/
-	/* Findings Edition                                                        */
-	/*-------------------------------------------------------------------------*/
-		
-	public void createRandonVariableFinding(DomainResidentNode residentNode, 
-			ObjectEntityInstance[] arguments, Entity state){
-		RandomVariableFinding finding = new RandomVariableFinding(
-				(DomainResidentNode)residentNode, 
-				arguments, 
-				state, 
-				this.multiEntityBayesianNetwork);
-		((DomainResidentNode)residentNode).addRandonVariableFinding(finding); 
-	}
 	
 	
 	

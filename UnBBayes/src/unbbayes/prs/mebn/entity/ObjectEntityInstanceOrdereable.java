@@ -1,5 +1,9 @@
 package unbbayes.prs.mebn.entity;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * A object entity instance ordereable is a entity instance that 
  * have a predecessor. Are instances of Object Entities objects where
@@ -38,6 +42,94 @@ public class ObjectEntityInstanceOrdereable extends ObjectEntityInstance{
 		}else{
 			return false; 
 		}
+	}
+	
+	/*-------------------------------------------------------------------------*/
+	/* Methods for managment the ordereable list of entities                   */
+	/*-------------------------------------------------------------------------*/
+
+	public static void upEntityInstance(ObjectEntityInstanceOrdereable entity) {
+		
+		// A B C D -> A C B D (entity is the "c" term)
+		if(entity.getPrev()!=null){
+			ObjectEntityInstanceOrdereable c = entity; 
+			ObjectEntityInstanceOrdereable b = entity.getPrev();
+			ObjectEntityInstanceOrdereable d = entity.getProc(); 
+			
+			c.setProc(b);
+			
+			if(b != null){
+				if(b.getPrev() != null){
+			       b.getPrev().setProc(c); //proc(a) = c
+				}
+			   c.setPrev(b.getPrev()); //prev(c) = a
+			   b.setPrev(c);
+			   b.setProc(d);
+			}
+			
+			if(d != null){
+				d.setPrev(b); //prev(d) = b
+			}
+		}
+	}
+	
+	public static void downEntityInstance(ObjectEntityInstanceOrdereable entity) {
+		// A B C D -> A C B D (entity is the "b" term)
+		
+			ObjectEntityInstanceOrdereable b = entity; 
+			ObjectEntityInstanceOrdereable a = entity.getPrev();
+			ObjectEntityInstanceOrdereable c = entity.getProc(); 
+			
+			if(c != null){
+				if(a != null){
+					a.setProc(c);
+				}
+				
+				if(c!= null){
+					c.setPrev(a);
+					b.setProc(c.getProc());
+					if(c.getProc() != null){
+						c.getProc().setPrev(b);
+					}
+					c.setProc(b);
+				}
+				
+				b.setPrev(c);
+			}
+	}
+	
+	public static void removeEntityInstanceOrdereableReferences(ObjectEntityInstanceOrdereable entity) {
+		
+		if (entity.getPrev() != null){
+			entity.getPrev().setProc(entity.getProc());
+			if(entity.getProc() != null){
+				entity.getProc().setPrev(entity.getPrev());
+			}
+		}else{
+			if(entity.getProc() != null){
+				entity.getProc().setPrev(null);
+			}
+		}
+		
+	}
+	
+	public static List<ObjectEntityInstanceOrdereable> ordererList(Collection<ObjectEntityInstanceOrdereable> originalCollection){
+		
+		ArrayList<ObjectEntityInstanceOrdereable> finalList = new ArrayList<ObjectEntityInstanceOrdereable>(); 
+		
+		ObjectEntityInstanceOrdereable prev = null; 
+		
+		for(int i = 0; i < originalCollection.size(); i++){
+			for(ObjectEntityInstanceOrdereable instance: originalCollection){
+				if(instance.getPrev() == prev){
+					finalList.add(instance);
+					prev = instance; 
+					break; 
+				}
+			}
+		}
+		
+		return finalList; 
 	}
 	
 }

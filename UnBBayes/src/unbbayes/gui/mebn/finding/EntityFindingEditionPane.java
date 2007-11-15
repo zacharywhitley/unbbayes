@@ -50,7 +50,7 @@ import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
  * 3) List of instances of the MEBN
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
- * @version 1.0 (09/07/07)
+ * @version 2.0 (11/15/07)
  *
  */
 public class EntityFindingEditionPane extends JPanel{
@@ -199,14 +199,14 @@ public class EntityFindingEditionPane extends JPanel{
 			btnUpInstance = new JButton(iconController.getUpIcon()); 
 			btnUpInstance.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
-					removeInstance(); 
+					upInstance(); 
 				}
 			}); 
 			
 			btnDownInstance = new JButton(iconController.getDownIcon()); 
 			btnDownInstance.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
-					removeInstance(); 
+					downInstance(); 
 				}
 			}); 
 			
@@ -289,7 +289,30 @@ public class EntityFindingEditionPane extends JPanel{
 		private void removeInstance(){
 			if(selected != null){
 				if(!isAdding){
-					   mebnController.removeEntityInstance((ObjectEntityInstance)selected); 
+					if(selected instanceof ObjectEntityInstanceOrdereable){
+						mebnController.removeEntityInstanceOrdereable((ObjectEntityInstanceOrdereable)selected); 
+					}
+					else{
+						mebnController.removeEntityInstance((ObjectEntityInstance)selected); 						
+					}
+					   objectEntityInstanceListPane.update();  
+					}
+				}
+		}
+		
+		private void upInstance(){
+			if(selected != null){
+				if(!isAdding){
+					   mebnController.upEntityInstance((ObjectEntityInstanceOrdereable)selected); 
+					   objectEntityInstanceListPane.update();  
+					}
+				}
+		}
+		
+		private void downInstance(){
+			if(selected != null){
+				if(!isAdding){
+					   mebnController.downEntityInstance((ObjectEntityInstanceOrdereable)selected); 
 					   objectEntityInstanceListPane.update();  
 					}
 				}
@@ -394,7 +417,7 @@ public class EntityFindingEditionPane extends JPanel{
 					originalList.add((ObjectEntityInstanceOrdereable)instance);
 				}
 				
-				for(ObjectEntityInstanceOrdereable instance: ordererList(originalList)){
+				for(ObjectEntityInstanceOrdereable instance: ObjectEntityInstanceOrdereable.ordererList(originalList)){
 					listModel.addElement(instance); 
 				}
 				
@@ -429,25 +452,6 @@ public class EntityFindingEditionPane extends JPanel{
 			 );
 		}
 		
-		private List<ObjectEntityInstanceOrdereable> ordererList(Collection<ObjectEntityInstanceOrdereable> originalCollection){
-			
-			ArrayList<ObjectEntityInstanceOrdereable> finalList = new ArrayList<ObjectEntityInstanceOrdereable>(); 
-			
-			ObjectEntityInstanceOrdereable prev = null; 
-			
-			for(int i = 0; i < originalCollection.size(); i++){
-				for(ObjectEntityInstanceOrdereable instance: originalCollection){
-					if(instance.getPrev() == prev){
-						finalList.add(instance);
-						prev = instance; 
-						break; 
-					}
-				}
-			}
-			
-			return finalList; 
-		}
-		
 		public void update(){
 			
 			listModel.clear(); 
@@ -460,7 +464,7 @@ public class EntityFindingEditionPane extends JPanel{
 					originalList.add((ObjectEntityInstanceOrdereable)instance);
 				}
 				
-				for(ObjectEntityInstanceOrdereable instance: ordererList(originalList)){
+				for(ObjectEntityInstanceOrdereable instance: ObjectEntityInstanceOrdereable.ordererList(originalList)){
 					listModel.addElement(instance); 
 				}
 				if(listModel.size() > 0)

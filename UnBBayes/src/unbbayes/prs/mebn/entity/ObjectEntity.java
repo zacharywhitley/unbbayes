@@ -155,7 +155,11 @@ public class ObjectEntity extends Entity {
 	}
 	
 	public String toString(){
-		return name; 		
+		String ret = name; 
+		if(isOrdereable){
+			ret+=" [Ord]";
+		}
+		return ret; 		
 	}
 	
 	public boolean equals(Object obj){ 
@@ -188,4 +192,5 @@ public class ObjectEntity extends Entity {
 		this.isOrdereable = isOrdereable;
 	
 	}
+	
 }
