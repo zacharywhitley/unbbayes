@@ -62,6 +62,7 @@ public class SSBNNode {
 	private ICompiler compiler = null;
 	
 	private boolean isFinding = false;
+	private boolean isContext = false; 
 	
 	private ProbabilisticNetwork probabilisticNetwork = null;
 	
@@ -989,6 +990,19 @@ public class SSBNNode {
 		}
 		
 		return ret;  
+	}
+
+	public boolean isContext() {
+		return isContext;
+	}
+
+	/**
+	 * Set this node how a Context Node father. (cases where a context node 
+	 * dont avaliate became a father of a SSBNNode). 
+	 */
+	public void setIsContext() {
+		this.setProbNode(null);
+		this.isContext = true;
 	}
 	
 	

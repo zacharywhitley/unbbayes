@@ -2,6 +2,8 @@ package unbbayes.prs.mebn.ssbn.resources;
 
 import java.util.*;
 
+import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
+
 /**
  * @author Shou Matsumoto
  * @version 1.0
@@ -32,6 +34,10 @@ public class Resources extends ListResourceBundle {
 		{"NoNetworkDefined","No Probabilistic Network was defined. Create it first."},
 		{"DefaultNetworkName","AutomaticallyCreatedNet"},
 		{"IncompatibleNetworks","Parents and childs belong to different networks"},
-		{"RecursiveLimit","Recursivity limit has been overlapped"}
+		{"RecursiveLimit","Recursivity limit has been overlapped"}, 
+		{"OrdVariableProblemLimit","For this implementation only one ord. variable search is possible"}, 
+		{"MoreThanOneContextNodeSearh","More then one context node search found for the ord. variable. This implementation treat only the trival case of one node"}, 
+		{"ContextNodeSearchDontFound","Search context node dont found"}, 
+		{"InvalidContextNodeFormula","Invalid Context node Formula"}
 	};
 }

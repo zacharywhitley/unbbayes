@@ -32,6 +32,11 @@ public class Resources_pt extends ListResourceBundle {
 		{"NoNetworkDefined","Nenhuma rede probabilística foi definida. Crie primeiro essa rede."},
 		{"DefaultNetworkName","RedeCriadaAutomaticamente"},
 		{"IncompatibleNetworks","Nós pais e filhos estão em redes diferentes"},
-		{"RecursiveLimit","Limite de recursividade atingida"}
+		{"RecursiveLimit","Limite de recursividade atingida"}, 
+		{"OrdVariableProblemLimit","Esta implementação permite que apenas uma var. ordinária seja de busca"}, 
+		{"MoreThanOneContextNodeSearh","Mais de um nó de contexto de busca foi achado para a var. ordinária. Esta implementação trata apenas o caso de apenas um nó"},
+		{"ContextNodeSearchDontFound","Nó de contexto de busca não encontrado"}, 
+		{"InvalidContextNodeFormula","Formula do nó de contexto inválida"}
+		
 	};
 }

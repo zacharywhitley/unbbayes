@@ -4,6 +4,7 @@
 package unbbayes.prs.mebn.ssbn;
 
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 /**
@@ -11,5 +12,5 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
  *
  */
 public interface ISSBNGenerator {
-	public ProbabilisticNetwork generateSSBN(Query query) throws SSBNNodeGeneralException;
+	public ProbabilisticNetwork generateSSBN(Query query) throws SSBNNodeGeneralException, ImplementationRestrictionException;
 }

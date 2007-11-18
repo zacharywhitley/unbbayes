@@ -20,7 +20,7 @@ import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.ContextNodeAvaliator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
-import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormula;
+import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.util.Debug;
 
@@ -91,7 +91,7 @@ public class ContextNodeAvaliatorTest{
 		}
 		ovList.addAll(ordVariableList); 
 		
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(kb, kbFacade); 
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(kb); 
 		
 		evaluateContextNodes(mFrag, ovInstanceList, ordVariableList, avaliator, kbFacade); 
     
@@ -160,7 +160,7 @@ public class ContextNodeAvaliatorTest{
 						Debug.println(""); 
 //						return true; 
 					}
-				} catch (InvalidContextNodeFormula ie) {
+				} catch (InvalidContextNodeFormulaException ie) {
 					Debug.println("Invalid Context Node: the formula don't is accept."); 
 					// TODO Auto-generated catch block
 					ie.printStackTrace();

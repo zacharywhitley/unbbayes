@@ -1,27 +1,12 @@
 package unbbayes.prs.mebn.ssbn;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import unbbayes.io.mebn.PrOwlIO;
-import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.entity.Type;
-import unbbayes.prs.mebn.kb.KBFacade;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
-import unbbayes.prs.mebn.kb.powerloom.PowerLoomFacade;
-import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
-import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormula;
+import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
-import unbbayes.util.Debug;
 
 /**
  * Class that contains methods for evaluate the context nodes of a MFrag. 
@@ -31,12 +16,10 @@ import unbbayes.util.Debug;
 public class ContextNodeAvaliator {
 
 	private KnowledgeBase kb; 
-    private KBFacade kbFacade; 
 	
-	public ContextNodeAvaliator(KnowledgeBase kb, KBFacade kbFacade){
+	public ContextNodeAvaliator(KnowledgeBase kb){
 		
 		this.kb = kb; 
-		this.kbFacade = kbFacade; 
 		
 	}
 
@@ -70,9 +53,9 @@ public class ContextNodeAvaliator {
 	 * @param context
 	 * @param ovInstances
 	 * @return
-	 * @throws InvalidContextNodeFormula
+	 * @throws InvalidContextNodeFormulaException
 	 */
-	public List<String> evalutateSearchContextNode(ContextNode context, List<OVInstance> ovInstances) throws InvalidContextNodeFormula{
+	public List<String> evalutateSearchContextNode(ContextNode context, List<OVInstance> ovInstances) throws InvalidContextNodeFormulaException{
 		
 			List<String> entitiesResult = kb.evaluateComplexContextFormula(context, ovInstances); 
 			return entitiesResult;

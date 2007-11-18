@@ -12,6 +12,7 @@ import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.context.enumSubType;
 import unbbayes.prs.mebn.context.enumType;
 import unbbayes.prs.mebn.ssbn.OVInstance;
+import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
 
 /**
  * The individual of the ContextNode class represent a type of constraint impose
@@ -229,6 +230,16 @@ public class ContextNode extends MultiEntityNode {
 			}
 		}
 		return false; 
+	}
+	
+	public DomainResidentNode getNodeSearch(Collection<OVInstance> ovInstanceList) throws InvalidContextNodeFormulaException{
+		if(!isFormulaComplexValida(ovInstanceList)){
+			throw new InvalidContextNodeFormulaException(); 
+		}else{
+			NodeFormulaTree leftChildren = formulaTree.getChildren().get(0);
+			ResidentNodePointer pointer = (ResidentNodePointer)leftChildren.getNodeVariable(); 
+			return (DomainResidentNode)pointer.getResidentNode(); 
+		}
 	}
 	
 	public OrdinaryVariable getFreeVariable(){

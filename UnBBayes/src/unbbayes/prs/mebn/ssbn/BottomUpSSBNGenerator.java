@@ -27,7 +27,8 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.kb.KBFacade;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
-import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormula;
+import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
+import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.util.Debug;
@@ -59,7 +60,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.ssbn.SSBNGenerator#generateSSBN(unbbayes.prs.mebn.ssbn.Query)
 	 */
-	public ProbabilisticNetwork generateSSBN(Query query) throws SSBNNodeGeneralException {
+	public ProbabilisticNetwork generateSSBN(Query query) throws SSBNNodeGeneralException, ImplementationRestrictionException {
 		
 		// As the query starts, let's clear the flags used by the previous query
 		query.getMebn().clearMFragsIsUsingDefaultCPTFlag();
@@ -75,46 +76,281 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		this.recursiveCallCount = 0;
 		this.generateRecursive(querynode, new SSBNNodeList(), querynode.getProbabilisticNetwork());
 		
-		Debug.println("\n"); 
-		Debug.println("Network: "); 
-		Debug.println("QueryNode = " + querynode.toString());
-		printParents(querynode, 0); 
-		
-		Debug.println("\nEdges:");
-		for(Edge edge: querynode.getProbabilisticNetwork().getEdges()){
-			Debug.println(edge.toString());
-		}
-		
-		Debug.println("\nNodes:");
-		for(int i = 0; i < querynode.getProbabilisticNetwork().getNodes().size(); i++){
-			Debug.println(querynode.getProbabilisticNetwork().getNodeAt(i).toString());
-		}
-		
-	    XMLIO netIO = new XMLIO(); 
-		
-		try {
-			netIO.save(new File("rede.xml"), querynode.getProbabilisticNetwork());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		printNetworkInformation(querynode); //only Debug informations
 		
 		return querynode.getProbabilisticNetwork();
 	}
 	
 	/*
+	 * The recursive part of SSBN bottom-up generation algorithm
+	 * currentNode is the node currently analized
+	 * seen is all nodes analized previously (doesnt contain currentNode)
+	 * net is the resulting ProbabilisticNetwork
+	 */
+	private SSBNNode generateRecursive(SSBNNode currentNode , SSBNNodeList seen, ProbabilisticNetwork net) throws SSBNNodeGeneralException, ImplementationRestrictionException {
+		
+		if (this.recursiveCallCount > this.RECURSIVE_CALL_LIMIT) {
+			throw new SSBNNodeGeneralException(this.resource.getString("RecursiveLimit"));
+		}
+		this.recursiveCallCount++;
+		
+		Debug.println("\n-------------Passo: " + currentNode.getName() + "--------------\n"); 
+		
+		// check for cycle
+		if (seen.contains(currentNode)) {
+//			throw new SSBNNodeGeneralException(this.resource.getString("CycleFound"));
+			            /* Analisar melhor isto, pois um nó ter que ser obrigado a 
+			             * ser avaliado duas vezes não quer necessariamente dizer que
+			             * há um ciclo na rede. ZoneNature, por exemplo, será analisado
+			             * duas vezes porque é pai de dois nós residentes. Achar uma
+			             * forma de manter esta informação e o nó anteriormente
+			             * criado para ZoneNature automaticamente virar o pai das
+			             * chamadas posteriores. 
+			             */
+		}
+		
+		// check if querynode has a known value or it should be a probabilistic node (query the kb)
+		         
+		// Extract arguments
+		StateLink exactValue = kb.searchFinding(currentNode.getResident(), currentNode.getArguments()); 
+		
+		// Treat returned value
+		if (exactValue != null) {
+			// there were an exact match
+			currentNode.setNodeAsFinding(exactValue.getState());
+			Debug.println("Exact value of " + currentNode.getName() + "=" + exactValue.getState()); 
+			return currentNode;
+		}
+		
+		// if the program reached this line, the node doesn't have a finding
+		seen.add(currentNode);	// mark this as already seen  (treated) node
+		
+		// evaluates querynode's mfrag's context nodes (if not OK, sets MFrag's flag to use default CPT)	
+		boolean result = contextNodeEvaluation(currentNode);
+		if(!result){
+			/* verificar se devemos analizar mais alguma coisa
+             * caso result = false (esta MFrag já estará marcada 
+             * para utilizar a distribuição default. Não faz muito
+             * sentido, pois os nós pais não terão vo instances
+             * com valores aceitáveis. 
+             */	
+		}
+		
+		// Extract resident nodes
+
+		for (DomainResidentNode residentNode : currentNode.getResident().getResidentNodeFatherList()) {
+			
+			List<OVInstance> ovInstancesList = new ArrayList<OVInstance>(); 
+			ovInstancesList.addAll(currentNode.getArguments()); 
+            
+            List<OrdinaryVariable> ovProblemList = getOVProblemList(residentNode.getOrdinaryVariableList(), currentNode.getArguments()); 
+            
+    		if(!ovProblemList.isEmpty()){
+    			List<SSBNNode> parentList = createSSBNNodesForEntitiesSearch(
+    					residentNode.getMFrag(), currentNode, residentNode, 
+    					ovProblemList, ovInstancesList); 
+    		    for(SSBNNode ssbnnode: parentList){
+    		    	if(!ssbnnode.isContext()){
+    		    		generateRecursive(ssbnnode, seen, net);	// algorithm's core
+    		    	}
+    		    	if(!ssbnnode.isFinding()){
+    		    		currentNode.addParent(ssbnnode, true);
+		    			/* Aqui está algo a se analizar: quando um nó
+		    			 * for um finding ele será acrescentado como pai 
+		    			 * na rede ou não (pelo menos o SSBNNode, sem
+		    			 * levar em consideração o nó probabilistico). 
+		    			 * Esta versão inicial não considera isto. 
+		    			 */
+    		    		if(!ssbnnode.isContext()){
+		    			   net.addEdge(new Edge(currentNode.getProbNode(),ssbnnode.getProbNode()));
+    		    		}
+    		    	}
+    		    }
+    		}else{
+    			SSBNNode ssbnnode = SSBNNode.getInstance(net,residentNode, new ProbabilisticNode(), false);
+				for(OVInstance ovInstance: currentNode.getArguments()){
+					ssbnnode.addArgument(ovInstance); 
+				}
+    			generateRecursive(ssbnnode, seen, net);	// algorithm's core
+    			if(!ssbnnode.isFinding()){
+    				currentNode.addParent(ssbnnode, true);
+    				          /* Aqui está algo a se analizar: quando um nó
+    				           * for um finding ele será acrescentado como pai 
+    				           * na rede ou não (pelo menos o SSBNNode, sem
+    				           * levar em consideração o nó probabilistico). 
+    				           * Esta versão inicial não considera isto. 
+    				           */
+    				net.addEdge(new Edge(currentNode.getProbNode(),ssbnnode.getProbNode()));
+    			}
+    		}
+			
+		}
+		
+		Debug.println(currentNode.getResident().getName() + " return of resident parents recursion"); 
+		
+		// Extract input nodes
+		for (GenerativeInputNode inputNode : currentNode.getResident().getInputNodeFatherList()) {
+			DomainResidentNode residentNode = (DomainResidentNode)inputNode.getResidentNodePointer().getResidentNode(); 
+
+			                /*
+			                 * Avaliar se o nó de input é o indicativo de recursividade...
+			                 * O processo da recursão deverá ser iniciado aqui. Versão inicial sem
+			                 * levar em consideração como será definida a recursividade na GUI
+			                 * (Facilmente adaptável). 
+			                 */
+			
+			if(currentNode.getResident() == residentNode){
+				
+				//Valuate if the node is recursive. 
+				
+				
+				//Call recursion
+				OrdinaryVariable ovOrdereable = null; 
+				ObjectEntity objectEntity = null; 
+				for(OrdinaryVariable ov: residentNode.getOrdinaryVariableList()){
+					ObjectEntity oe = currentNode.getResident().getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getObjectEntityByType(ov.getValueType()); 
+					if(oe.isOrdereable()){
+						objectEntity = oe; 
+						ovOrdereable = ov; 
+						break; 
+					}
+				}
+				
+				if(objectEntity == null){
+					//resident node don't is a recursive node! This is a cicle!
+				}
+				
+				OVInstance ovInstanceOrdereable = null; 
+	            for(OVInstance ovInstance: currentNode.getArguments()){
+	            	if(ovInstance.getOv() == ovOrdereable){
+	            		ovInstanceOrdereable = ovInstance; 
+	            		break; 
+	            	}
+	            }
+	            
+				if(ovInstanceOrdereable == null){
+					//TODO exception
+				}
+				
+				String nameEntity = ovInstanceOrdereable.getEntity().getInstanceName(); 
+				
+				ObjectEntityInstanceOrdereable objectEntityInstance = (ObjectEntityInstanceOrdereable)objectEntity.getInstanceByName(nameEntity);
+				
+				if(objectEntityInstance == null){
+					//TODO exception
+					break; 
+				}
+				
+				ObjectEntityInstanceOrdereable prev = objectEntityInstance.getPrev(); 
+				
+				if(prev == null){
+					//TODO nada a se fazer... retornar (final da recursão!!!!). 
+				}else{
+
+					OVInstance newOvInstance = OVInstance.getInstance(ovOrdereable, prev.getName(), ovOrdereable.getValueType());
+					
+					//Criar o novo SSBNNode com os novos valores setados. 
+					SSBNNode ssbnnode = SSBNNode.getInstance(net, residentNode, new ProbabilisticNode(), false);
+					
+	            	for(OVInstance instance: currentNode.getArguments()){
+	            		if(instance != ovInstanceOrdereable){
+	            			ssbnnode.addArgument(instance); 
+	            		}else{
+	            			ssbnnode.addArgument(newOvInstance);
+	            		}
+	            	}
+
+	            	this.generateRecursive(ssbnnode, seen, net);	// algorithm's core
+	            	
+	    			if(!ssbnnode.isFinding()){
+	    				currentNode.addParent(ssbnnode, true);
+	    				          /* Aqui está algo a se analizar: quando um nó
+	    				           * for um finding ele será acrescentado como pai 
+	    				           * na rede ou não (pelo menos o SSBNNode, sem
+	    				           * levar em consideração o nó probabilistico). 
+	    				           * Esta versão inicial não considera isto. 
+	    				           */
+	    				net.addEdge(new Edge(currentNode.getProbNode(),ssbnnode.getProbNode()));
+	    			}
+					
+				}
+				
+				break; 
+				
+			}
+			
+			//Step 1: evaluate context and search for findings
+            List<OVInstance> listOVInstances = new ArrayList<OVInstance>(); 
+            listOVInstances.addAll(currentNode.getArguments()); 
+            Debug.println(currentNode.getName() + " Avaliar input " + residentNode.getName()); 
+			
+            List<OrdinaryVariable> ovProblemList = getOVProblemList(inputNode.getOrdinaryVariableList(), currentNode.getArguments()); 
+            Debug.println("OV Problem List: "); 
+            for(OrdinaryVariable ov: ovProblemList){
+            	Debug.println(ov.toString()); 
+            }
+            
+    		if(!ovProblemList.isEmpty()){
+    			List<SSBNNode> parentList = createSSBNNodesForEntitiesSearchForInputNodes(inputNode.getMFrag(), currentNode, inputNode, ovProblemList, listOVInstances); 
+    		    for(SSBNNode ssbnnode: parentList){
+    		    	Debug.println("Node Created: " + ssbnnode.toString()); 
+        			generateRecursive(ssbnnode, seen, net);	// algorithm's core
+        			if(!ssbnnode.isFinding()){
+        				currentNode.addParent(ssbnnode, true);
+        				          /* Aqui está algo a se analizar: quando um nó
+        				           * for um finding ele será acrescentado como pai 
+        				           * na rede ou não (pelo menos o SSBNNode, sem
+        				           * levar em consideração o nó probabilistico). 
+        				           * Esta versão inicial não considera isto. 
+        				           */
+        				net.addEdge(new Edge(currentNode.getProbNode(),ssbnnode.getProbNode()));
+        			}
+    		    }
+    		}else{
+    			boolean contextNodesOK = evaluateSimpleContextNodes(inputNode.getMFrag(), listOVInstances, ovProblemList); 
+    	           if(contextNodesOK){
+    	        	    SSBNNode ssbnnode = SSBNNode.getInstance(net, residentNode, new ProbabilisticNode(), false);
+    					
+    	            	for(OVInstance instance: currentNode.getArguments()){
+    	            		OrdinaryVariable ov = instance.getOv(); 
+    	            		int index = inputNode.getResidentNodePointer().getOrdinaryVariableIndex(ov);
+    	            		if(index > -1){
+    	            			OrdinaryVariable destination = residentNode.getOrdinaryVariableList().get(index);
+    	            			ssbnnode.addArgument(destination, instance.getEntity().getInstanceName());
+    	            		}
+    	            	}
+
+    	            	this.generateRecursive(ssbnnode, seen, net);	// algorithm's core
+    	            	
+    	    			if(!ssbnnode.isFinding()){
+    	    				currentNode.addParent(ssbnnode, true);
+    	    				          /* Aqui está algo a se analizar: quando um nó
+    	    				           * for um finding ele será acrescentado como pai 
+    	    				           * na rede ou não (pelo menos o SSBNNode, sem
+    	    				           * levar em consideração o nó probabilistico). 
+    	    				           * Esta versão inicial não considera isto. 
+    	    				           */
+    	    				net.addEdge(new Edge(currentNode.getProbNode(),ssbnnode.getProbNode()));
+    	    			}
+    	            }
+    		}
+		}
+		
+		Debug.println(currentNode.getResident().getName() + " return of input parents recursion"); 
+		
+		// TODO finish this method
+
+		return currentNode;
+	}
+	
+	/**
 	 * Calls ContextNodeAvaliator's method to check context node's validation.
+	 * Evaluate only the context nodes for what have ordinary variables instances
+	 * for all the ordinary variables present (ordinal context nodes). 
 	 */
 	private boolean contextNodeEvaluation (SSBNNode queryNode) {
 		
 		Debug.setDebug(true); 
-		
-		for(OVInstance ovInstance: queryNode.getArguments()){
-			Debug.println("OVInstance = " + ovInstance);
-		}
 		
 		DomainMFrag mFrag = queryNode.getResident().getMFrag();
 		
@@ -123,7 +359,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			return false;
 		}
 		
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB(), kb); 
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB()); 
 		
 		List<OrdinaryVariable> ovList = queryNode.getResident().getOrdinaryVariableList(); 
 		
@@ -149,7 +385,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		}
 		
 		return true; 
-		
 	}
 
 	/**
@@ -160,29 +395,33 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * @param ovList list of ov's for what don't have a value. (for this implementation, 
 	 *                this list should contain only one element). 
 	 * @param ovInstances
+	 * @throws ImplementationRestrictionException 
+	 * @throws SSBNNodeGeneralException 
 	 */
 	private List<SSBNNode> createSSBNNodesForEntitiesSearch(DomainMFrag mFrag, SSBNNode originNode, 
-			DomainResidentNode fatherNode, List<OrdinaryVariable> ovList, List<OVInstance> ovInstances) {
+			DomainResidentNode fatherNode, List<OrdinaryVariable> ovList, List<OVInstance> ovInstances) throws ImplementationRestrictionException, SSBNNodeGeneralException {
 		
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB(), kb); 
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB()); 
 		
 		//Complex case: evaluate search context nodes. 
 		Debug.println("Have ord. variables incomplete!"); 
 		
 		if(ovList.size() > 1){
-			//TODO lancar exception
-			return null; 
+			throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
 		}
-		//busca... 
+		
+		//search
 		Collection<ContextNode> contextNodeList = mFrag.getSearchContextByOVCombination(ovList);
 		int size = contextNodeList.size(); 
 		
-		if(size!=1){
-			Debug.print("More than one search node... implementation incomplete."); 
-			//TODO throws a exception
-			return null; 
+		if(size > 1){
+			throw new ImplementationRestrictionException(resource.getString("MoreThanOneContextNodeSearh")); 
+		}
+		if(size < 1){
+			throw new SSBNNodeGeneralException(resource.getString("MoreThanOneContextNodeSearh")); 
 		}
 		
+		//contextNodeList have only one element
 		ContextNode context = contextNodeList.toArray(new ContextNode[size])[0];
 		OrdinaryVariable ov = ovList.get(0);
 		
@@ -192,13 +431,23 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			List<String> result = avaliator.evalutateSearchContextNode(context, ovInstances);
 			
 			if(result.isEmpty()){
+				List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
+		        
 				//Add the context node how father
-				//TODO...
-				
+				DomainResidentNode residentNode = context.getNodeSearch(ovInstances); 
+				SSBNNode nodeContext = SSBNNode.getInstance(null, residentNode); 
+				nodeContext.setIsContext(); 
+				nodes.add(nodeContext); 
+				    //in this implementation only this is necessary, because the treat
+				    //of context nodes how fathers will be trivial, using the XOR 
+				    //strategy. For a future implementation that accept different 
+				    //distribuitions for the residentNode of the ContextNode, the
+				    //arguments of the residente shoud be filled with the OVInstances
+				    //for the analize of the resident node formula. (very complex!).  
+			    
 				//Search for all the entities present in kb. 
 				result = kb.getEntityByType(ov.getValueType().getName());
-				List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
-		        for(String entity: result){
+				for(String entity: result){
 		        	OVInstance instance = OVInstance.getInstance(ov, entity, ov.getValueType()); 
 					SSBNNode node = SSBNNode.getInstance(originNode.getProbabilisticNetwork(),fatherNode); 
 					node.addArgument(instance); 
@@ -223,18 +472,15 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				return nodes; 
 			}
 			
-		} catch (InvalidContextNodeFormula ie) {
-			Debug.println("Invalid Context Node: the formula don't is accept."); 
-			// TODO throw exception
-			ie.printStackTrace();
-			return null;
+		} catch (InvalidContextNodeFormulaException ie) {
+			throw new SSBNNodeGeneralException(resource.getString("InvalidContextNodeFormula") + ": " + context.getLabel());  
 		}
 	}
 	
 	private List<SSBNNode> createSSBNNodesForEntitiesSearchForInputNodes(DomainMFrag mFrag, SSBNNode originNode, 
 			GenerativeInputNode fatherNode, List<OrdinaryVariable> ovList, List<OVInstance> ovInstances) throws SSBNNodeGeneralException {
 		
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB(), kb); 
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB()); 
 		
 		//Complex case: evaluate search context nodes. 
 		Debug.println("Have ord. variables incomplete!"); 
@@ -334,7 +580,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				return nodes; 
 			}
 			
-		} catch (InvalidContextNodeFormula ie) {
+		} catch (InvalidContextNodeFormulaException ie) {
 			Debug.println("Invalid Context Node: the formula don't is accept."); 
 			// TODO throw exception
 			ie.printStackTrace();
@@ -344,7 +590,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 
 	private boolean evaluateSimpleContextNodes(DomainMFrag mFrag, List<OVInstance> ovInstances, List<OrdinaryVariable> ovList) {
 		
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB(), kb); 
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB()); 
 		Collection<ContextNode> contextNodeList = mFrag.getContextByOVCombination(ovList);
 		for(ContextNode context: contextNodeList){
 			Debug.println("Context Node: " + context.getLabel()); 
@@ -375,7 +621,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * @param ovInstanceList
 	 * @return List of ordinary variables that don't have a OVInstance. 
 	 */
-	private List<OrdinaryVariable> avaliateOVInstancesInformation(Collection<OrdinaryVariable> ordVariableList, Collection<OVInstance> ovInstanceList){
+	private List<OrdinaryVariable> getOVProblemList(Collection<OrdinaryVariable> ordVariableList, Collection<OVInstance> ovInstanceList){
     	
     	List<OrdinaryVariable> ret = new ArrayList<OrdinaryVariable>(); 
     	
@@ -390,279 +636,10 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     		}
     		
     		if(!found) ret.add(ov); 
-    		
+  
     	}
     	
     	return ret; 
-    	
-		
-	}
-	
-	/*
-	 * The recursive part of SSBN bottom-up generation algorithm
-	 * currentNode is the node currently analized
-	 * seen is all nodes analized previously (doesnt contain currentNode)
-	 * net is the resulting ProbabilisticNetwork
-	 */
-	private SSBNNode generateRecursive(SSBNNode currentNode , SSBNNodeList seen, ProbabilisticNetwork net) throws SSBNNodeGeneralException {
-		
-		if (this.recursiveCallCount > this.RECURSIVE_CALL_LIMIT) {
-			throw new SSBNNodeGeneralException(this.resource.getString("RecursiveLimit"));
-		}
-		this.recursiveCallCount++;
-		
-		Debug.println("\n-------------Passo: " + currentNode.getName() + "--------------\n"); 
-		
-		// check for cycle
-		if (seen.contains(currentNode)) {
-//			throw new SSBNNodeGeneralException(this.resource.getString("CycleFound"));
-			            /* Analisar melhor isto, pois um nó ter que ser obrigado a 
-			             * ser avaliado duas vezes não quer necessariamente dizer que
-			             * há um ciclo na rede. ZoneNature, por exemplo, será analisado
-			             * duas vezes porque é pai de dois nós residentes. Achar uma
-			             * forma de manter esta informação e o nó anteriormente
-			             * criado para ZoneNature automaticamente virar o pai das
-			             * chamadas posteriores. 
-			             */
-		}
-		
-		// check if querynode has a known value or it should be a probabilistic node (query the kb)
-		         
-		// Extract arguments
-		StateLink exactValue = kb.searchFinding(currentNode.getResident(), currentNode.getArguments()); 
-		
-		// Treat returned value
-		if (exactValue != null) {
-			// there were an exact match
-			                   /* Não serao gerados nós probabilisticos para os
-			                    * finding, mas note que existe o SSBNNode. 
-			                    */
-			currentNode.setNodeAsFinding(exactValue.getState());
-			Debug.println("Exact value of " + currentNode.getName() + "=" + exactValue.getState()); 
-			return currentNode;
-		}
-		
-		// if the program reached this line, the node doesn't have a finding
-		seen.add(currentNode);	// mark this as already seen  (treated) node
-		
-		// evaluates querynode's mfrag's context nodes (if not OK, sets MFrag's flag to use default CPT)	
-		
-		boolean result = contextNodeEvaluation(currentNode);
-		               /* verificar se devemos analizar mais alguma coisa
-		                * caso result = false (esta MFrag já estará marcada 
-		                * para utilizar a distribuição default. Não faz muito
-		                * sentido, pois os nós pais não terão vo instances
-		                * com valores aceitáveis. 
-		                */
-		 
-		// extract parents to treat them recursively
-		List<SSBNNode> parents = new ArrayList<SSBNNode>();
-		
-		// Extract resident nodes
-
-		for (DomainResidentNode residentNode : currentNode.getResident().getResidentNodeFatherList()) {
-			
-			List<OVInstance> ovInstancesList = new ArrayList<OVInstance>(); 
-			ovInstancesList.addAll(currentNode.getArguments()); 
-            
-            List<OrdinaryVariable> ovProblemList = avaliateOVInstancesInformation(residentNode.getOrdinaryVariableList(), currentNode.getArguments()); 
-            
-    		if(!ovProblemList.isEmpty()){
-    			List<SSBNNode> parentList = createSSBNNodesForEntitiesSearch(
-    					residentNode.getMFrag(), currentNode, residentNode, 
-    					ovProblemList, ovInstancesList); 
-    		    for(SSBNNode ssbnnode: parentList){
-    		    	parents.add(ssbnnode);
-        			generateRecursive(ssbnnode, seen, net);	// algorithm's core
-        			if(!ssbnnode.isFinding()){
-        				currentNode.addParent(ssbnnode, true);
-        				          /* Aqui está algo a se analizar: quando um nó
-        				           * for um finding ele será acrescentado como pai 
-        				           * na rede ou não (pelo menos o SSBNNode, sem
-        				           * levar em consideração o nó probabilistico). 
-        				           * Esta versão inicial não considera isto. 
-        				           */
-        				net.addEdge(new Edge(currentNode.getProbNode(),ssbnnode.getProbNode()));
-        			}
-    		    }
-    		}else{
-    			SSBNNode ssbnnode = SSBNNode.getInstance(net,residentNode, new ProbabilisticNode(), false);
-				for(OVInstance ovInstance: currentNode.getArguments()){
-					ssbnnode.addArgument(ovInstance); 
-				}
-    			parents.add(ssbnnode);
-    			generateRecursive(ssbnnode, seen, net);	// algorithm's core
-    			if(!ssbnnode.isFinding()){
-    				currentNode.addParent(ssbnnode, true);
-    				          /* Aqui está algo a se analizar: quando um nó
-    				           * for um finding ele será acrescentado como pai 
-    				           * na rede ou não (pelo menos o SSBNNode, sem
-    				           * levar em consideração o nó probabilistico). 
-    				           * Esta versão inicial não considera isto. 
-    				           */
-    				net.addEdge(new Edge(currentNode.getProbNode(),ssbnnode.getProbNode()));
-    			}
-    		}
-			
-		}
-		
-		Debug.println(currentNode.getResident().getName() + " return of resident parents recursion"); 
-		
-		// Extract input nodes
-		for (GenerativeInputNode inputNode : currentNode.getResident().getInputNodeFatherList()) {
-			DomainResidentNode residentNode = (DomainResidentNode)inputNode.getResidentNodePointer().getResidentNode(); 
-
-			                /*
-			                 * Avaliar se o nó de input é o indicativo de recursividade...
-			                 * O processo da recursão deverá ser iniciado aqui. Versão inicial sem
-			                 * levar em consideração como será definida a recursividade na GUI
-			                 * (Facilmente adaptável). 
-			                 */
-			
-			if(currentNode.getResident() == residentNode){
-				
-				//Valuate if the node is recursive. 
-				
-				
-				//Call recursion
-				OrdinaryVariable ovOrdereable = null; 
-				ObjectEntity objectEntity = null; 
-				for(OrdinaryVariable ov: residentNode.getOrdinaryVariableList()){
-					ObjectEntity oe = currentNode.getResident().getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getObjectEntityByType(ov.getValueType()); 
-					if(oe.isOrdereable()){
-						objectEntity = oe; 
-						ovOrdereable = ov; 
-						break; 
-					}
-				}
-				
-				if(objectEntity == null){
-					//TODO exception
-				}
-				
-				OVInstance ovInstanceOrdereable = null; 
-	            for(OVInstance ovInstance: currentNode.getArguments()){
-	            	if(ovInstance.getOv() == ovOrdereable){
-	            		ovInstanceOrdereable = ovInstance; 
-	            		break; 
-	            	}
-	            }
-	            
-				if(ovInstanceOrdereable == null){
-					//TODO exception
-				}
-				
-				String nameEntity = ovInstanceOrdereable.getEntity().getInstanceName(); 
-				
-				ObjectEntityInstanceOrdereable objectEntityInstance = (ObjectEntityInstanceOrdereable)objectEntity.getInstanceByName(nameEntity);
-				
-				if(objectEntityInstance == null){
-					//TODO exception
-					break; 
-				}
-				
-				ObjectEntityInstanceOrdereable prev = objectEntityInstance.getPrev(); 
-				
-				if(prev == null){
-					//TODO nada a se fazer... retornar (final da recursão!!!!). 
-				}else{
-
-					OVInstance newOvInstance = OVInstance.getInstance(ovOrdereable, prev.getName(), ovOrdereable.getValueType());
-					
-					//Criar o novo SSBNNode com os novos valores setados. 
-					SSBNNode ssbnnode = SSBNNode.getInstance(net, residentNode, new ProbabilisticNode(), false);
-					
-	            	for(OVInstance instance: currentNode.getArguments()){
-	            		if(instance != ovInstanceOrdereable){
-	            			ssbnnode.addArgument(instance); 
-	            		}else{
-	            			ssbnnode.addArgument(newOvInstance);
-	            		}
-	            	}
-
-	            	this.generateRecursive(ssbnnode, seen, net);	// algorithm's core
-	            	
-	    			if(!ssbnnode.isFinding()){
-	    				currentNode.addParent(ssbnnode, true);
-	    				          /* Aqui está algo a se analizar: quando um nó
-	    				           * for um finding ele será acrescentado como pai 
-	    				           * na rede ou não (pelo menos o SSBNNode, sem
-	    				           * levar em consideração o nó probabilistico). 
-	    				           * Esta versão inicial não considera isto. 
-	    				           */
-	    				net.addEdge(new Edge(currentNode.getProbNode(),ssbnnode.getProbNode()));
-	    			}
-					
-				}
-				
-				break; 
-				
-			}
-			
-			//Step 1: evaluate context and search for findings
-            List<OVInstance> listOVInstances = new ArrayList<OVInstance>(); 
-            listOVInstances.addAll(currentNode.getArguments()); 
-            Debug.println(currentNode.getName() + " Avaliar input " + residentNode.getName()); 
-			
-            List<OrdinaryVariable> ovProblemList = avaliateOVInstancesInformation(inputNode.getOrdinaryVariableList(), currentNode.getArguments()); 
-            Debug.println("OV Problem List: "); 
-            for(OrdinaryVariable ov: ovProblemList){
-            	Debug.println(ov.toString()); 
-            }
-            
-    		if(!ovProblemList.isEmpty()){
-    			List<SSBNNode> parentList = createSSBNNodesForEntitiesSearchForInputNodes(inputNode.getMFrag(), currentNode, inputNode, ovProblemList, listOVInstances); 
-    		    for(SSBNNode ssbnnode: parentList){
-    		    	Debug.println("Node Created: " + ssbnnode.toString()); 
-    		    	parents.add(ssbnnode);
-        			generateRecursive(ssbnnode, seen, net);	// algorithm's core
-        			if(!ssbnnode.isFinding()){
-        				currentNode.addParent(ssbnnode, true);
-        				          /* Aqui está algo a se analizar: quando um nó
-        				           * for um finding ele será acrescentado como pai 
-        				           * na rede ou não (pelo menos o SSBNNode, sem
-        				           * levar em consideração o nó probabilistico). 
-        				           * Esta versão inicial não considera isto. 
-        				           */
-        				net.addEdge(new Edge(currentNode.getProbNode(),ssbnnode.getProbNode()));
-        			}
-    		    }
-    		}else{
-    			boolean contextNodesOK = evaluateSimpleContextNodes(inputNode.getMFrag(), listOVInstances, ovProblemList); 
-    	           if(contextNodesOK){
-    	        	    SSBNNode ssbnnode = SSBNNode.getInstance(net, residentNode, new ProbabilisticNode(), false);
-    					
-    	            	for(OVInstance instance: currentNode.getArguments()){
-    	            		OrdinaryVariable ov = instance.getOv(); 
-    	            		int index = inputNode.getResidentNodePointer().getOrdinaryVariableIndex(ov);
-    	            		if(index > -1){
-    	            			OrdinaryVariable destination = residentNode.getOrdinaryVariableList().get(index);
-    	            			ssbnnode.addArgument(destination, instance.getEntity().getInstanceName());
-    	            		}
-    	            	}
-
-    	            	parents.add(ssbnnode);
-    	            	this.generateRecursive(ssbnnode, seen, net);	// algorithm's core
-    	            	
-    	    			if(!ssbnnode.isFinding()){
-    	    				currentNode.addParent(ssbnnode, true);
-    	    				          /* Aqui está algo a se analizar: quando um nó
-    	    				           * for um finding ele será acrescentado como pai 
-    	    				           * na rede ou não (pelo menos o SSBNNode, sem
-    	    				           * levar em consideração o nó probabilistico). 
-    	    				           * Esta versão inicial não considera isto. 
-    	    				           */
-    	    				net.addEdge(new Edge(currentNode.getProbNode(),ssbnnode.getProbNode()));
-    	    			}
-    	            }
-    		}
-		}
-		
-		Debug.println(currentNode.getResident().getName() + " return of input parents recursion"); 
-		
-		// TODO finish this method
-
-		return currentNode;
 	}
 
 	private void printParents(SSBNNode node, int nivel){
@@ -675,6 +652,42 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		}
 	}
 
+
+	/**
+	 * This debug method print the informations about the network build by
+	 * the SSBN algorith and save a file xmlbif with the bayesian network build. 
+	 * 
+	 * @param querynode
+	 */
+	private void printNetworkInformation(SSBNNode querynode) {
+		Debug.println("\n"); 
+		Debug.println("Network: "); 
+		Debug.println("QueryNode = " + querynode.toString());
+		printParents(querynode, 0); 
+		
+		Debug.println("\nEdges:");
+		for(Edge edge: querynode.getProbabilisticNetwork().getEdges()){
+			Debug.println(edge.toString());
+		}
+		
+		Debug.println("\nNodes:");
+		for(int i = 0; i < querynode.getProbabilisticNetwork().getNodes().size(); i++){
+			Debug.println(querynode.getProbabilisticNetwork().getNodeAt(i).toString());
+		}
+		
+	    XMLIO netIO = new XMLIO(); 
+		
+		try {
+			netIO.save(new File("rede.xml"), querynode.getProbabilisticNetwork());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * This is how many times a recursive call to the algorithm should be done
 	 * @return the recursiveCallLimit
