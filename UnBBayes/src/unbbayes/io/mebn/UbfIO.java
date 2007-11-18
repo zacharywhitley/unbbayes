@@ -445,6 +445,12 @@ public class UbfIO implements MebnIO {
 				break;
 			}
 			
+			// finishing condition
+			if (this.getToken("ObjectEntityDeclarator").compareTo(st.sval) == 0 ) {
+				st.pushBack();
+				break;
+			}
+			
 			if (st.ttype != st.TT_WORD) {
 				continue;
 			}

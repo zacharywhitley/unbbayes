@@ -157,14 +157,6 @@ public class OrdinaryVariable extends Node{
 	public String toString(){
 		return name; 
 	}
-
-	public ObjectEntity getEntity() {
-		return entity;
-	}
-
-	public void setEntity(ObjectEntity entity) {
-		this.entity = entity;
-	}
 	
 	public void removeFromMFrag(){
 		mFrag = null; 

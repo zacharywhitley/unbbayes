@@ -84,16 +84,15 @@ public class SSBNNode {
 			this.probabilisticNetwork = pnet;
 		}
 		
-		//if (probNode == null) {
-		//	this.probNode = new ProbabilisticNode();
-		//} else {
 		if (isFinding) {
 			this.setProbNode(null);
 		} else {
-			this.setProbNode(probNode);
+			if (probNode == null) {
+				this.probNode = new ProbabilisticNode();
+			}else{
+				this.setProbNode(probNode);
+			}
 		}
-		//}
-		
 		
 		this.appendProbNodeState();	// if OK, probNode's states become the same of the resident's one
 		
@@ -976,7 +975,21 @@ public class SSBNNode {
 		}
 	}
 	
-	
+	public String toString(){
+		String ret = resident.getName(); 
+		
+		ret+="(";
+		for(OVInstance instance: arguments){
+			ret+= instance.toString();
+		}
+		ret+=")";
+		
+		if(isFinding){
+			ret+= " [F] ";
+		}
+		
+		return ret;  
+	}
 	
 	
 }

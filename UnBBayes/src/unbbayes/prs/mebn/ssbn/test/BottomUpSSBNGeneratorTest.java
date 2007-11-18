@@ -7,7 +7,7 @@ import java.io.File;
 import java.io.IOException;
 
 import junit.framework.TestCase;
-import unbbayes.io.mebn.PrOwlIO;
+import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.DomainMFrag;
@@ -157,9 +157,9 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 	    KBFacade kbFacade = null; 
 		MultiEntityBayesianNetwork mebn = null;
 		
-		PrOwlIO io = new PrOwlIO(); 
+		UbfIO io = UbfIO.getInstance(); 
 		try {
-			mebn = io.loadMebn(new File("examples/mebn/StarTrek37.owl"));
+			mebn = io.loadMebn(new File("examples/mebn/StarTrek38.ubf"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -178,7 +178,7 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode, new ProbabilisticNode(), false); 
 		try {
 			queryNode.addArgument(residentNode.getOrdinaryVariableByName("st"), "ST4");
-			queryNode.addArgument(residentNode.getOrdinaryVariableByName("t"), "T0");
+			queryNode.addArgument(residentNode.getOrdinaryVariableByName("t"), "T4");
 		} catch (SSBNNodeGeneralException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

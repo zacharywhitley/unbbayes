@@ -99,6 +99,15 @@ public class ObjectEntity extends Entity {
 		return this.listObjectEntityInstance; 
 	}
 	
+	public ObjectEntityInstance getInstanceByName(String name){
+		for(ObjectEntityInstance instance: this.listObjectEntityInstance){
+			if(instance.getName().equals(name)){
+				return instance; 
+			}
+		}
+		return null; 
+	}
+	
 	public void removeInstance(ObjectEntityInstance instance) {
 		listObjectEntityInstance.remove(instance);
 	}
