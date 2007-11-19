@@ -29,9 +29,9 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
  */
 public class BottomUpSSBNGeneratorTest extends TestCase {
 
-	private static final String KB_GENERATIVE_FILE = "testeGenerativeStarship.plm"; 
-	private static final String KB_FINDING_FILE = "testeFindingsStarship.plm";  
-	private static final String STARTREK_UBF = "examples/mebn/StarTrek38.ubf"; 
+	public static final String KB_GENERATIVE_FILE = "testeGenerativeStarship.plm"; 
+	public static final String KB_FINDING_FILE = "testeFindingsStarship.plm";  
+	public static final String STARTREK_UBF = "examples/mebn/StarTrek38.ubf"; 
 	
 	/**
 	 * @param arg0
@@ -79,7 +79,7 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 		
 		SSBNNode queryNode = createQueryNode_HarmPotential_ST4_T0(mebn); 
 		
-		Query query = new Query(kbFacade, queryNode); 
+		Query query = new Query(kbFacade, queryNode, mebn); 
 		query.setMebn(mebn); 
 		
 		try {

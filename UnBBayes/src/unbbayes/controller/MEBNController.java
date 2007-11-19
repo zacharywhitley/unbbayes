@@ -1,7 +1,6 @@
 package unbbayes.controller;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -51,7 +50,7 @@ import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
-import unbbayes.util.Debug;
+import unbbayes.prs.mebn.ssbn.test.BottomUpSSBNGeneratorTest;
 
 /**
  * Controller of the MEBN structure. 
@@ -1102,10 +1101,14 @@ public class MEBNController {
 		}
 		
 //		if(!baseCreated){
-	    	createKnowledgeBase(); 	
+//	    	createKnowledgeBase(); 	
 //	    }
 		
-		Query query = new Query(new PowerLoomFacade("/PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE"), queryNode);
+		KnowledgeBase kb = PowerLoomKB.getInstanceKB(); 
+		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_GENERATIVE_FILE)); 
+		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_FINDING_FILE)); 
+		
+		Query query = new Query(new PowerLoomFacade("/PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE"), queryNode, multiEntityBayesianNetwork);
 		
 		ISSBNGenerator ssbngenerator = new BottomUpSSBNGenerator();
 		

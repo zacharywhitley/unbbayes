@@ -1,5 +1,7 @@
 package unbbayes.prs.mebn.entity;
 
+import unbbayes.prs.mebn.OrdinaryVariable;
+
 /**
  * Instance of the Object Entity Class. 
  * 
@@ -24,5 +26,19 @@ public class ObjectEntityInstance extends Entity{
 	
 	public void setName(String name){
 		this.name = name; 
+	}
+	
+	public boolean equals(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		
+		if((obj != null)&&(obj instanceof ObjectEntityInstance)){
+			ObjectEntityInstance node = (ObjectEntityInstance) obj;
+		   return (node.name.equals(this.name));
+		}
+		
+		return false; //obj == null && this != null 
+		
 	}
 }

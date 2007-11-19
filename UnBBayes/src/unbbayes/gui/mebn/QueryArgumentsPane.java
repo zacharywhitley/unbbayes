@@ -16,13 +16,14 @@ import unbbayes.controller.MEBNController;
 import unbbayes.gui.ParcialStateException;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 
 /**
  * Painel para selecionar os argumentos da query. 
  * 
- * São disponiveis como argumentos as object entities previamente cadastradas
- * no sistema e há a opção para o usuário entrar com uma entidade não existente. 
+ * Sï¿½o disponiveis como argumentos as object entities previamente cadastradas
+ * no sistema e hï¿½ a opï¿½ï¿½o para o usuï¿½rio entrar com uma entidade nï¿½o existente. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * @version 1.0 06/28/07
@@ -76,6 +77,7 @@ public class QueryArgumentsPane extends JPanel{
 			argument[i] = new JComboBox(list); 
 			argument[i].addItemListener(new ComboListener(i)); 
 			argument[i].setSelectedIndex(0); 
+			argument[i].setEditable(true); 
 			
 			//Adicionando componentes ao painel. 
 			btnArgXNumber = new JButton("" + i);
@@ -86,6 +88,7 @@ public class QueryArgumentsPane extends JPanel{
 			tbArgX.add(btnArgXNumber); 
 			tbArgX.add(btnArgXType); 
 			tbArgX.add(argument[i]); 
+			
 			tbArgX.setFloatable(false); 
 			
 			add(tbArgX); 
@@ -99,7 +102,19 @@ public class QueryArgumentsPane extends JPanel{
 		
 		for(int i = 0; i < argument.length; i++){
 			if(argument[i].getSelectedItem() != null){
-				argumentVector[i] = (ObjectEntityInstance)argument[i].getSelectedItem(); 
+				if(argument[i].getSelectedItem() instanceof ObjectEntityInstance){
+				     argumentVector[i] = (ObjectEntityInstance)argument[i].getSelectedItem(); 
+				}else{
+					if(argument[i].getSelectedItem() instanceof String){
+						if(isNameValid((String)argument[i].getSelectedItem())){
+						 String nameInstance = (String)argument[i].getSelectedItem(); 
+						 ObjectEntity objectEntity = mebnController.getMultiEntityBayesianNetwork().getObjectEntityContainer().getObjectEntityByType(node.getOrdinaryVariableList().get(i).getValueType()); 
+						 argumentVector[i] = new ObjectEntityInstance(nameInstance, objectEntity);
+						}else{
+							throw new ParcialStateException(); 
+						}
+					}
+				}
 			}
 			else{
 				throw new ParcialStateException(); 
@@ -107,6 +122,10 @@ public class QueryArgumentsPane extends JPanel{
 		}
 		
 		return argumentVector; 
+	}
+	
+	private boolean isNameValid(String name){
+		return true;
 	}
 	
 	public void clear(){

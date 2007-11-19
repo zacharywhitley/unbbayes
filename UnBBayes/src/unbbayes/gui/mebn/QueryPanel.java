@@ -7,7 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
 
-import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -22,6 +21,7 @@ import javax.swing.event.ListSelectionListener;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.controller.exception.InconsistentArgumentException;
+import unbbayes.gui.Console;
 import unbbayes.gui.ParcialStateException;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -209,6 +209,7 @@ public class QueryPanel extends JFrame{
 					makeInvisible(); 
 					try {
 						ObjectEntityInstance[] arguments = queryArgumentsPane.getArguments();
+						Console console = new Console(); 
 				        ProbabilisticNetwork network = mebnController.executeQuery((DomainResidentNode)residentNode, arguments); 
 					} catch (ParcialStateException e1) {
 						// TODO Auto-generated catch block
@@ -216,6 +217,7 @@ public class QueryPanel extends JFrame{
 					} catch (InconsistentArgumentException iae) {
 						iae.printStackTrace();
 					}
+					
 			        exit(); 
 				}
 			});

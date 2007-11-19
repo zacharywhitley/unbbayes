@@ -26,8 +26,8 @@ public class Query {
 	/**
 	 * Default query. 
 	 */
-	public Query(KBFacade kb, SSBNNode queryNode) {
-		//this.mebn = mebn; 
+	public Query(KBFacade kb, SSBNNode queryNode, MultiEntityBayesianNetwork mebn) {
+		this.mebn = mebn; 
 		this.kb = kb; 
 		this.queryNode = queryNode;  
 	}
