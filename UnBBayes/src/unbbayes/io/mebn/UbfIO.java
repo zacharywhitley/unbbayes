@@ -412,7 +412,7 @@ public class UbfIO implements MebnIO {
 					if (st.ttype == st.TT_WORD) {
 						String name = st.sval;
 						try {
-							ObjectEntityInstanceOrdereable oe = (ObjectEntityInstanceOrdereable)objectEntity.addInstance(name);
+							ObjectEntityInstanceOrdereable oe = (ObjectEntityInstanceOrdereable)objectEntity.addInstance(name); 
 							oe.setPrev(prev);
 							if(prev!=null) prev.setProc(oe);
 							prev = oe; 
