@@ -30,6 +30,9 @@ import unbbayes.util.NodeList;
  ----------------
  Changes (Date/Month/Year): 
  
+ 	25/11/2007:
+ 			Description: added non-terminal variable "possibleVal" to the grammar (and its implementation).
+ 			Author: Shou Matsumoto
  	
  	07/10/2007:
  			Description: "varsetname" has been added to the grammar (and implemented inside the class)
@@ -66,14 +69,15 @@ import unbbayes.util.NodeList;
  if_statement 
  ::= 
  "if" allop varsetname "have" "(" b_expression ")" statement 
- 	"else" statement 
+ 	"else" else_statement 
  allop ::= "any" | "all"
  varsetname ::= ident ["." ident]*
  b_expression ::= b_term [ "|" b_term ]*
  b_term ::= not_factor [ "&" not_factor ]*
  not_factor ::= [ "~" ] b_factor
  b_factor ::= ident "=" ident
- statement ::= "[" assignment "]" | if_statement
+ else_statement ::= statement | if_statement
+ statement ::= "[" assignment "]" 
  assignment ::= ident "=" expression [ "," assignment ]*
  expression ::= term [ addop term ]*
  term ::= signed_factor [ mulop factor ]*
@@ -81,10 +85,11 @@ import unbbayes.util.NodeList;
  factor ::= number | function | "(" expression ")" 
  	| simplefunction "(" expression ")"
  	| biargfunction "(" expression ; expression ")"
- function ::= ident 
+ function ::= possibleVal 
  	| "CARDINALITY" "(" ident ")"
  	| "MIN" "(" expression ; expression ")"
  	| "MAX" "(" expression ; expression ")"
+ possibleVal ::= ident
  addop ::= "+" | "-"
  mulop ::= "*" | "/"
  ident ::= letter [ letter | digit ]*
@@ -153,19 +158,20 @@ public class Compiler implements ICompiler {
 	 * probability.
 	 * 
 	 */
-	private Hashtable<TempTableHeaderCell, List<TempTableProbabilityCell>> tempTable = null;
+	private List<TempTableHeaderCell> tempTable = null;
 	private TempTableHeaderCell currentHeader = null;
-	private List<TempTableProbabilityCell> currentProbCellList = null;
-	private TempTableProbabilityCell currentCell = null;
+	//private List<TempTableProbabilityCell> currentProbCellList = null;
+	//private TempTableProbabilityCell currentCell = null;
 	
 	private Compiler() {
-		
+		tempTable = new ArrayList<TempTableHeaderCell>();
 	}
 	
 	public Compiler (DomainResidentNode node) {
 		super();
 		this.setNode(node);
 		this.cpt = null;
+		tempTable = new ArrayList<TempTableHeaderCell>();
 	}
 	
 	
@@ -183,7 +189,7 @@ public class Compiler implements ICompiler {
 				this.cpt = this.ssbnnode.getProbNode().getPotentialTable();
 			}			
 		}
-		tempTable = new Hashtable<TempTableHeaderCell, List<TempTableProbabilityCell>>();
+		tempTable = new ArrayList<TempTableHeaderCell>();
 	}
 	
 	/* Compiler's initialization */
@@ -200,13 +206,14 @@ public class Compiler implements ICompiler {
 		this.text = text.toCharArray();
 		nextChar();
 		
-		this.tempTable = new Hashtable<TempTableHeaderCell, List<TempTableProbabilityCell>>();
+		tempTable = new ArrayList<TempTableHeaderCell>();
 	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.compiler.AbstractCompiler#parse()
 	 */
 	public void parse() throws MEBNException {
+		//this.currentProbCellList = new ArrayList<TempTableProbabilityCell>(); //Initialize lists
 		Debug.println("PARSED: ");
 		this.skipWhite();
 		this.table();
@@ -240,8 +247,8 @@ public class Compiler implements ICompiler {
 			Debug.println("STARTING DEFAULT STATEMENT");	
 			
 			// Prepare temporary table's header to declare a default (no-if-clause) statement
-			this.currentHeader = new TempTableHeaderCell(null, false, true);
-			
+			this.currentHeader = new TempTableHeaderCell(null, true, true);
+			this.tempTable.add(this.currentHeader);
 			// if we catch a sintax error here, it may be a value error
 			try {
 				statement();
@@ -249,6 +256,7 @@ public class Compiler implements ICompiler {
 				// Exception translation (perharps an anti-pattern ?)
 				throw new InvalidProbabilityRangeException(e.getMessage());
 			}
+			
 		} else {
 			// We don't have to prepare temporary table's header to declare a if-clause statement
 			// because the if statement parser would do so.
@@ -260,7 +268,7 @@ public class Compiler implements ICompiler {
 
 	/**
 	 * if_statement ::= "if" allop ident "have" "(" b_expression ")" statement [
-	 * "else" statement ]
+	 * "else" else_statement ]
 	 * 
 	 */
 	private void ifStatement() throws NoDefaultDistributionDeclaredException,
@@ -272,23 +280,33 @@ public class Compiler implements ICompiler {
 		// SCAN FOR IF. Note that any blank spaces were already skipped
 		scan();
 		matchString("IF");
+		
+		
 
 		// SCAN FOR ALL/ANY
 		scan();
 		switch (token) {
 		case 'a':
 			Debug.println("ALL VERIFIED");
+			// sets the table header w/ this parameters (null,false,false): null verified parents, is not ANY and is not default
+			this.currentHeader = new TempTableHeaderCell(null, false, false);
 			break;
 		case 'y':
 			Debug.println("ANY VERIFIED");
+			//	sets the table header w/ this parameters (null,false,false): null verified parents, is ANY and is not default
+			this.currentHeader = new TempTableHeaderCell(null, true, false);
 			break;
 		default:
 			expected("ALL or ANY");
 		}
 
-		// SCAN FOR varsetname
-		this.varsetname();
+		// adds the header to table before it is changed to another header.
+		this.tempTable.add(this.currentHeader);
 		
+		// SCAN FOR varsetname
+		String varSetName = this.varsetname();
+		this.currentHeader.setVarsetname(varSetName);
+		Debug.println("SCANNED VARSETNAME := " + varSetName);
 
 		// SCAN FOR HAVE
 		Debug.println("SCAN FOR HAVE");
@@ -318,28 +336,32 @@ public class Compiler implements ICompiler {
 			throw new InvalidProbabilityRangeException(e.getMessage());
 		}
 		
+		
+		
 		Debug.println("LOOKING FOR ELSE STATEMENT");
 		// LOOK FOR ELSE
 		// Consistency check C09: the grammar may state else as optional,
 		// but semantically every table must have a default distribution, which is
 		// declared within an else clause.
 		
+		// We dont have to create a new temp table header, because else_statement would do so.
+		
 		//	This test is necessary to verify if  there is an else clause
 		if (this.index < this.text.length) {
 			try {
 				scan();
 			} catch (TableFunctionMalformedException e) {
-				// a sintax error here represents no else statement
+				// a sintax error here represents a statement other than an else statement
 				throw new NoDefaultDistributionDeclaredException();
 			}
 		} else {
-			// No else statement was found literally, and its end of table.
+			// No statement was found at all (that means no else statement).
 			Debug.println("END OF TABLE");
 			throw new NoDefaultDistributionDeclaredException();
 		}
 		
 		if (token == 'l') {
-			statement();
+			else_statement();
 		} else {
 			// The statement found was not an else statement
 			throw new NoDefaultDistributionDeclaredException();
@@ -350,12 +372,18 @@ public class Compiler implements ICompiler {
 	 *   It skippes white spaces after evaluation.
 	 *   varsetname ::= ident["."ident]*
 	 */
-	private void varsetname() throws TableFunctionMalformedException {
+	private String varsetname() throws TableFunctionMalformedException {
+		
+		// we don't have to set header's varsetname here because ifStatement (upper caller) would do so.
+		
+		String ret = "";	// a string containing "varsetname" (e.g. "st.sr.z")
+		
 		// scan for the ident
 		do {
 			scanNoSkip();	// no white spaces should stay between ident and "." and next ident
 			if (token == 'x') {
 				Debug.println("SCANING IDENTIFIER " + value);
+				ret += value;
 			} else {
 				expected("Identifier");
 			}	
@@ -363,6 +391,11 @@ public class Compiler implements ICompiler {
 			// search for ["." ident]* loop
 			if (this.look == '.') {
 				this.nextChar();
+				if (this.ssbnnode != null) {
+					ret += this.ssbnnode.getStrongOVSeparator();	// adds a separator (a dot ".")
+				} else {
+					ret += ".";
+				}
 				continue;
 			} else {
 				break;
@@ -370,6 +403,7 @@ public class Compiler implements ICompiler {
 		} while (index < text.length); 	// actually, this check is unreachable
 		
 		skipWhite();
+		return ret;
 	}
 
 	/**
@@ -378,8 +412,10 @@ public class Compiler implements ICompiler {
 	 */
 	private void bExpression() throws InvalidConditionantException,
 									  TableFunctionMalformedException{
+		// TODO treat complex boolean evaluation.
+		
 		bTerm();
-
+		
 		// LOOK FOR OR (OPTIONAL)
 		// scan();
 		if (look == '|') {
@@ -395,6 +431,7 @@ public class Compiler implements ICompiler {
 	 */
 	private void bTerm() throws InvalidConditionantException,
 							    TableFunctionMalformedException{
+		// TODO treat complex boolean evaluation.
 		notFactor();
 
 		// LOOK FOR AND (OPTIONAL)
@@ -427,7 +464,13 @@ public class Compiler implements ICompiler {
 	 */
 	private void bFactor() throws InvalidConditionantException,
 								  TableFunctionMalformedException{
+		
 		String conditionantName = null;
+		
+
+		
+		
+		
 		Debug.println("Parsing bFactor");
 		// SCAN FOR CONDITIONANTS
 		scan();
@@ -446,7 +489,7 @@ public class Compiler implements ICompiler {
 				throw new InvalidConditionantException(e.getMessage());
 			}
 		}
-
+		
 		// LOOK FOR = OPERATOR
 		match('=');
 		
@@ -470,10 +513,68 @@ public class Compiler implements ICompiler {
 				throw new InvalidConditionantException(e.getMessage());
 			}
 		}
+		
+		// if code reached here, the condicionant check is ok
+
+		//	prepare to add current temp table's header's parent (condicionant list)
+		DomainResidentNode resident = this.mebn.getDomainResidentNode(conditionantName);
+		// If not found, its an error!		
+		if (resident == null) {
+			try{
+				expected("Identifier");
+			} catch (TableFunctionMalformedException e) {
+				throw new InvalidConditionantException(e.getMessage());
+			}
+		}
+		Entity condvalue = null;
+		// search for an entity with a name this.noCaseChangeValue
+		for (Entity possibleValue : resident.getPossibleValueList()) {
+			if (possibleValue.getName().compareTo(this.noCaseChangeValue) == 0) {
+				condvalue = possibleValue;
+				break;
+			}
+		}
+		// If not found, its an error!		
+		if (condvalue == null) {
+			try{
+				expected("Identifier");
+			} catch (TableFunctionMalformedException e) {
+				throw new InvalidConditionantException(e.getMessage());
+			}
+		}
+		// Set temp table's header condicionant
+		TempTableHeaderParent headerParent = new TempTableHeaderParent(resident, condvalue);
+		// TODO optimize above code, because its highly redundant (condvalue should be found anyway on that portion of code)
+
 	}
+	
+	
+	/**
+	 *  else_statement ::= statement | if_statement
+	 */
+	private void else_statement() throws NoDefaultDistributionDeclaredException,
+									InvalidConditionantException,
+									SomeStateUndeclaredException,
+									InvalidProbabilityRangeException,									
+									TableFunctionMalformedException {
+		
+		Debug.println("ELSE STATEMENT");
+		if ( look == '[' ) {
+			// header ::= no known parent yet, is ANY and is default.
+			this.currentHeader = new TempTableHeaderCell(null,true,true); 
+			this.tempTable.add(this.currentHeader);
+			this.statement();
+		} else {
+			Debug.println("COULD NOT FIND '['");
+			// we dont have to create new header here because ifStatement would do so.
+			ifStatement();
+		}
+	
+	}
+	
 
 	/**
-	 * statement ::= "[" assignment "]" | if_statement
+	 * statement ::= "[" assignment "]" 
 	 * 
 	 */
 	private void statement() throws NoDefaultDistributionDeclaredException,
@@ -497,9 +598,9 @@ public class Compiler implements ICompiler {
 			match('[');
 			
 			// initialize currently evaluated temporary table's collumn
-			this.currentProbCellList = new ArrayList<TempTableProbabilityCell>();
+			//this.currentProbCellList = new ArrayList<TempTableProbabilityCell>();
 			
-			float totalProb = assignment(declaredStates, possibleStates);
+			IProbabilityValue totalProb = assignment(declaredStates, possibleStates);
 			match(']');
 			Debug.println("");
 			
@@ -512,14 +613,24 @@ public class Compiler implements ICompiler {
 			}
 			// Consistency check C09
 			// Verify if sum of all declared states' probability is 1
-			if (totalProb >=0) {
-				if ( Float.compare(totalProb, 1.0F) != 0 ) {
+			float totalProbValue = totalProb.getProbability();
+			if (totalProbValue >=0) {
+				if ( Float.compare(totalProbValue, 1.0F) != 0 ) {
 					throw new InvalidProbabilityRangeException();
+				}
+			}
+			// runtime probability bound check (on SSBN generation time)
+			if (!this.currentHeader.isSumEquals1()) {
+				Debug.println("Testing cell's probability value's sum: " + currentHeader.getProbCellSum());
+				if (!Float.isNaN(this.currentHeader.getProbCellSum())) {
+					throw new InvalidProbabilityRangeException();
+				} else {
+					Debug.println("=>NaN found!!!");
 				}
 			}
 		} else {
 			Debug.println("COULD NOT FIND '['");
-			ifStatement();
+			this.expected("[");
 		}
 	}
 
@@ -532,12 +643,13 @@ public class Compiler implements ICompiler {
 	 * returns the sum of all declared states' probability after this assignment recursion phase
 	 * 
 	 */
-	private float assignment(List<Entity> declaredStates, List<Entity> possibleStates) 
+	private IProbabilityValue assignment(List<Entity> declaredStates, List<Entity> possibleStates) 
 					throws InvalidProbabilityRangeException, 
-						   TableFunctionMalformedException{
+						   TableFunctionMalformedException,
+						   SomeStateUndeclaredException{
 		
 		// prepare a representation of a cell inside the temporary table
-		this.currentCell = new TempTableProbabilityCell(null, null);
+		TempTableProbabilityCell currentCell = new TempTableProbabilityCell(null, null);
 		
 		// SCAN FOR IDENTIFIER
 		scan();
@@ -555,7 +667,7 @@ public class Compiler implements ICompiler {
 					throw new TableFunctionMalformedException();
 				}
 				declaredStates.add(possibleValue);
-				this.currentCell.setPossibleValue(possibleValue);
+				currentCell.setPossibleValue(possibleValue);
 			}
 			
 		} else {
@@ -568,30 +680,39 @@ public class Compiler implements ICompiler {
 		// consistency check C09
 		// ret verifies the sum of all declared states' probability (must be 1)
 		// boolean hasUnknownValue shows if some ret was negative.
-		float ret = expression();
-		boolean hasUnknownValue = Float.compare(ret,Float.NaN) == 0;
-
+		IProbabilityValue ret = expression();		
+		float retValue = ret.getProbability();
+		boolean hasUnknownValue = Float.compare(retValue,Float.NaN) == 0;
+		
+		// add cell to header
+		currentCell.setProbability(ret);
+		if (currentCell.getPossibleValue() != null) {
+			this.currentHeader.addCell(currentCell);
+		}
+		Debug.println("Adding cell: " + currentCell.getPossibleValue().getName() + " = " + ret.toString());
+		
 		// consistency check C09
 		// a single state shall never have prob range out from [0,1]
-		if ( (ret < 0.0) || (1.0 > ret)) {
+		if ( (retValue < 0.0) || (1.0 < retValue)) {
 			throw new InvalidProbabilityRangeException();
 		}
 		
 		// LOOK FOR , (OPTIONAL)
 		if (look == ',') {
 			match(',');
-			float temp = assignment(declaredStates, possibleStates);
-			hasUnknownValue = hasUnknownValue || (Float.compare(temp,Float.NaN) == 0);
+			IProbabilityValue temp = assignment(declaredStates, possibleStates);
+			float tempValue = temp.getProbability();
+			hasUnknownValue = hasUnknownValue || (Float.compare(tempValue,Float.NaN) == 0);
 			if (hasUnknownValue) {
-				ret = Float.NaN;
+				retValue = Float.NaN;
 			} else {
-				ret += temp;
+				retValue += temp.getProbability();
 			}
 		}
-		if (ret > 1) {
+		if (retValue > 1) {
 			throw new InvalidProbabilityRangeException();
 		}
-		return ret;
+		return new SimpleProbabilityValue(retValue);
 	}
 
 	/**
@@ -599,32 +720,32 @@ public class Compiler implements ICompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	private float expression() throws TableFunctionMalformedException {
+	private IProbabilityValue expression() throws TableFunctionMalformedException,
+												  InvalidProbabilityRangeException,
+												  SomeStateUndeclaredException{
 		
 		// TODO create temp table
-		float temp1 = term();
-		float temp2 = Float.NaN;
+		IProbabilityValue temp1 = term();
+		IProbabilityValue temp2 = new SimpleProbabilityValue(Float.NaN);
 		// LOOK FOR +/- (OPTIONAL)
 		switch (look) {
 		case '+':
 			match('+');
 			temp2 = term();
-			if ((Float.compare(temp2 , Float.NaN) == 0) 
-					&& (Float.compare(temp1 , Float.NaN) == 0)) {
-				temp1 = temp2 + temp1;
-			}
+			if (!Float.isNaN(temp2.getProbability()) && !Float.isNaN(temp1.getProbability())) {
+				temp1 = new MathOperationProbabilityValue(temp2 , MathOperationProbabilityValue.ADD , temp1);
+			}		
 			break;
 		case '-':
 			match('-');
 			temp2 = term();
-			if ((Float.compare(temp2 , Float.NaN) == 0) 
-					&& (Float.compare(temp1 , Float.NaN) == 0)) {
-				temp1 = temp2 - temp1;
-			}
+			if (!Float.isNaN(temp2.getProbability()) && !Float.isNaN(temp1.getProbability())){
+				temp1 = new MathOperationProbabilityValue(temp1 , MathOperationProbabilityValue.SUBTRACT , temp2);
+			}			
 			break;
 		}
 		
-		
+		Debug.println("Expression returned " + temp1.getProbability());
 		return temp1;
 	}
 
@@ -633,29 +754,32 @@ public class Compiler implements ICompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	private float term() throws TableFunctionMalformedException {
-		float temp1 = signedFactor();
-		float temp2 = Float.NaN;
+	private IProbabilityValue term() throws TableFunctionMalformedException,
+											InvalidProbabilityRangeException,
+											SomeStateUndeclaredException{
+		IProbabilityValue temp1 = signedFactor();
+		IProbabilityValue temp2 = new SimpleProbabilityValue(Float.NaN);
 		// LOOK FOR *// (OPTIONAL)
 		switch (look) {
 		case '*':
 			match('*');
 			temp2 = factor();
-			if ((Float.compare(temp2 , Float.NaN) == 0) 
-					&& (Float.compare(temp1 , Float.NaN) == 0)) {
-				return temp2 * temp1;
+			if (!Float.isNaN(temp2.getProbability()) && !Float.isNaN(temp1.getProbability())) {
+				return new MathOperationProbabilityValue(temp2, MathOperationProbabilityValue.MULTIPLY , temp1);
 			}
 			break;
 		case '/':
 			match('/');
 			temp2 = factor();
-			if ((Float.compare(temp2 , Float.NaN) == 0) 
-					&& (Float.compare(temp1 , Float.NaN) == 0)) {
-				return temp2 / temp1;
+			if (!Float.isNaN(temp2.getProbability()) && !Float.isNaN(temp1.getProbability())) {
+				return new MathOperationProbabilityValue(temp2, MathOperationProbabilityValue.DIVIDE , temp1);
 			}
 			break;
+		default:
+			return temp1;
 		}
-		return Float.NaN;
+		Debug.println("Term is not matching to an * or / nor signed factor !!");
+		return new SimpleProbabilityValue(Float.NaN);
 	}
 
 	/**
@@ -663,7 +787,9 @@ public class Compiler implements ICompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	private float signedFactor() throws TableFunctionMalformedException {
+	private IProbabilityValue signedFactor() throws TableFunctionMalformedException,
+													InvalidProbabilityRangeException,
+													SomeStateUndeclaredException{
 
 		int sign = 1;
 		
@@ -680,8 +806,8 @@ public class Compiler implements ICompiler {
 			nextChar();
 			skipWhite();
 		}
-		
-		return sign  * factor();
+		Debug.println("Signed factor returning " + sign);
+		return new MathOperationProbabilityValue(new SimpleProbabilityValue(sign) , MathOperationProbabilityValue.MULTIPLY , factor());
 	}
 
 	/**
@@ -689,26 +815,28 @@ public class Compiler implements ICompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	private float factor() throws TableFunctionMalformedException {
-		float ret = Float.NaN;
+	private IProbabilityValue factor() throws TableFunctionMalformedException,
+											  InvalidProbabilityRangeException,
+											  SomeStateUndeclaredException{
+		IProbabilityValue ret = new SimpleProbabilityValue(Float.NaN);
 		if (look == '(') {
 			match('(');
 			ret = expression();
 			match(')');
 		} else if (isAlpha(look)) {
-			return function();
+			ret = function();
 		} else {
-			return getNum();
+			ret =  getNum();
 		}
+		Debug.println("Factor returning " + ret.toString());
 		return ret;
 	}
 
 	/**
 	 * ident ::= letter [ letter | digit ]*
-	 * returns the probability declared with this grammar category.
-	 * 	NAN if undefined or unknown.
+	 * 
 	 */
-	private float getName()throws TableFunctionMalformedException {
+	private void getName()throws TableFunctionMalformedException {
 		Debug.println("RESETING VALUE FROM " + value);
 		value = "";
 		Debug.println("LOOKAHEAD IS " + look);
@@ -727,9 +855,39 @@ public class Compiler implements ICompiler {
 
 		Debug.print(value + " ");
 		
-		// TODO avaliate already known values... 
-		//  Use a list to store already known states or identifiers
-		return Float.NaN;	// supposes an identifier has unknown value yet.
+		
+		
+	}
+	
+	/**
+	 * possibleVal ::= ident
+	 * returns the probability declared with this grammar category.
+	 * 	NAN if undefined or unknown.
+	 */
+	private IProbabilityValue possibleVal()throws TableFunctionMalformedException,
+												  SomeStateUndeclaredException {
+
+		this.getName();
+		
+		// Use a list to store already known states or identifiers to evaluate already known values... 
+		IProbabilityValue ret = new SimpleProbabilityValue(Float.NaN);
+		if (this.currentHeader != null) {
+			for (TempTableProbabilityCell cell : this.currentHeader.getCellList()) {
+				 if (cell.getPossibleValue().getName().compareTo(noCaseChangeValue) == 0) {
+					 Debug.println("\n => Variable value found: " + cell.getPossibleValue().getName());
+					 return cell.getProbability();
+					 
+				 }
+			}
+		} else {
+			// if null, it means it was called before an assignment
+			throw new SomeStateUndeclaredException();
+		}
+		
+
+
+		Debug.println("An undeclared possible value or a \"varsetname\" was used : " + value);
+		return ret;
 	}
 
 	/**
@@ -737,7 +895,7 @@ public class Compiler implements ICompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	private float getNum() throws TableFunctionMalformedException {
+	private IProbabilityValue getNum() throws TableFunctionMalformedException {
 		value = "";
 
 		if (!((isNumeric(look)) || ((look == '.') && (value.indexOf('.') == -1))))
@@ -752,8 +910,8 @@ public class Compiler implements ICompiler {
 		token = '#';
 		skipWhite();
 
-		Debug.print(value + " ");
-		return Float.parseFloat(value);
+		Debug.println("GetNum returned " + Float.parseFloat(value));
+		return new SimpleProbabilityValue(Float.parseFloat(value));
 	}
 	
 	/**
@@ -882,6 +1040,9 @@ public class Compiler implements ICompiler {
 	 * @return Returns the node.
 	 */
 	public DomainResidentNode getNode() {
+		if (this.ssbnnode != null) {
+			this.node = this.ssbnnode.getResident();
+		}
 		return node;
 	}
 
@@ -893,13 +1054,15 @@ public class Compiler implements ICompiler {
 	 */
 	public void setNode(DomainResidentNode node) {
 		this.node = node;
-		this.mebn = node.getMFrag().getMultiEntityBayesianNetwork();
+		if (this.node != null) {
+			this.mebn = node.getMFrag().getMultiEntityBayesianNetwork();
+		}
 	}
 	
 	/**
 	 * Consistency check C09
 	 * Conditionants must be parents referenced by this.node	
-	 * @return whether node with name == nodeName is a valid conditionant.
+	 * @return if node with name == nodeName is a valid conditionant.
 	 */
 	private boolean isValidConditionant(MultiEntityBayesianNetwork mebn, DomainResidentNode node, String conditionantName) {
 		
@@ -912,7 +1075,7 @@ public class Compiler implements ICompiler {
 			//	Check if it's parent of current node	
 			if (node.getParents().contains(conditionant)) {
 				return true;
-			} else {
+			} else {	// parent may be an input node
 				NodeList parents = node.getParents();
 				for (int i = 0; i < parents.size(); i++) {
 					if (parents.get(i) instanceof GenerativeInputNode) {
@@ -965,8 +1128,10 @@ public class Compiler implements ICompiler {
 	 * @return numeric value expected for the function
 	 * @throws TableFunctionMalformedException
 	 */
-	private float function()throws TableFunctionMalformedException {
-		float ret = this.getName();
+	private IProbabilityValue function()throws TableFunctionMalformedException,
+											   InvalidProbabilityRangeException,
+											   SomeStateUndeclaredException{
+		IProbabilityValue ret = this.possibleVal();
 		skipWhite();
 		if (this.look == '(') {
 			if (this.value.compareToIgnoreCase("CARDINALITY") == 0) {
@@ -982,7 +1147,7 @@ public class Compiler implements ICompiler {
 			}
 		}
 		
-		
+		Debug.println("Function returning " + ret);
 		return ret;
 	}
 	
@@ -992,12 +1157,15 @@ public class Compiler implements ICompiler {
 	 * @return
 	 * @throws TableFunctionMalformedException
 	 */
-	private float cardinality()throws TableFunctionMalformedException {
-		float ret = 0;
+	private IProbabilityValue cardinality()throws TableFunctionMalformedException {
+		IProbabilityValue ret = null;
 		match('(');
-		ret = this.getName();
+		
+		this.getName();
 		skipWhite();
 		Debug.println("CARDINALITY'S ARGUMENT IS " + this.value);
+		// TODO test if ret has returned NaN (guarantees "value" is a varsetname)?
+		ret = new CardinalityProbabilityValue(this.ssbnnode, this.value);
 		match(')');
 		return ret;
 		
@@ -1008,16 +1176,20 @@ public class Compiler implements ICompiler {
 	 * @return
 	 * @throws TableFunctionMalformedException
 	 */
-	private float min()throws TableFunctionMalformedException {
+	private IProbabilityValue min()throws TableFunctionMalformedException,
+										  InvalidProbabilityRangeException,
+										  SomeStateUndeclaredException{
 		Debug.println("ANALISING MIN FUNCTION");
 		
-		float ret1 = 0;
-		float ret2 = 0;
+		IProbabilityValue ret1 = null;
+		IProbabilityValue ret2 = null;
 		match('(');
 		ret1 = this.expression();
 		match(';');
 		ret2 = this.expression();
 		match(')');
+		/*
+		// old code: tests which ret1/ret2 to return and test consistency. ComparisionProbabilityValue replaces it.
 		if (!Float.isNaN(ret1)) {
 			if (!Float.isNaN(ret2)) {
 				ret1 = ((ret2<ret1)?ret2:ret1);
@@ -1025,7 +1197,8 @@ public class Compiler implements ICompiler {
 		} else if (!Float.isNaN(ret2)) {
 			return ret2;
 		}
-		return ret1;
+		*/
+		return new ComparisionProbabilityValue(ret1,ret2,false);
 		
 	}
 	
@@ -1034,16 +1207,20 @@ public class Compiler implements ICompiler {
 	 * @return
 	 * @throws TableFunctionMalformedException
 	 */
-	private float max()throws TableFunctionMalformedException {
+	private IProbabilityValue max()throws TableFunctionMalformedException,
+										  InvalidProbabilityRangeException,
+										  SomeStateUndeclaredException{
 		Debug.println("ANALISING MAX FUNCTION");
 		
-		float ret1 = 0;
-		float ret2 = 0;
+		IProbabilityValue ret1 = null;
+		IProbabilityValue ret2 = null;
 		match('(');
 		ret1 = this.expression();
 		match(';');
 		ret2 = this.expression();
 		match(')');
+		/*
+		// old code: tests which ret1/ret2 to return and test consistency. ComparisionProbabilityValue replaces it.
 		if (!Float.isNaN(ret1)) {
 			if (!Float.isNaN(ret2)) {
 				ret1 = ((ret2>ret1)?ret2:ret1);
@@ -1051,7 +1228,8 @@ public class Compiler implements ICompiler {
 		} else if (!Float.isNaN(ret2)) {
 			return ret2;
 		}
-		return ret1;
+		*/
+		return new ComparisionProbabilityValue(ret1,ret2,true);
 		
 	}
 
@@ -1078,32 +1256,42 @@ public class Compiler implements ICompiler {
 	}
 	
 	
+	 
 	
 	// Some inner classes that might be useful for temporaly table creation (organize the table parsed from pseudocode)
 	
 	private class TempTableHeaderCell {
 		private List<TempTableHeaderParent> parents = null;
 
+		private String varsetname = "";
 		
 		private boolean isAny = true;
 		private boolean isDefault = false;
 		
+		private List<TempTableProbabilityCell> cellList = null;
+		
 		/**
 		 * Represents an entry for temporary table header (parents and their expected single values
 		 * at that table entry/collumn)
-		 * @param parent
-		 * @param value
+		 * @param parents
+		 * @param isAny
+		 * @param isDefault
 		 */
 		TempTableHeaderCell (List<TempTableHeaderParent> parents , boolean isAny, boolean isDefault) {
 			this.parents = parents;
 			this.isAny = isAny;
 			this.isDefault = isDefault;
+			this.cellList = new ArrayList<TempTableProbabilityCell>();
 		}
 		public List<TempTableHeaderParent> getParents() {
 			return parents;
 		}
 		public void setParents(List<TempTableHeaderParent> parents) {
 			this.parents = parents;
+		}
+		
+		public void addParent(TempTableHeaderParent parent) {
+			this.parents.add(parent);
 		}
 		
 		/**
@@ -1131,6 +1319,101 @@ public class Compiler implements ICompiler {
 			this.isDefault = isDefault;
 		}
 		
+		/**
+		 * Checks if the argument is a correct parent set names (if parents of this node are
+		 * declared within varsetname). E.g: if varsetname == "st.z", tests if parents has those
+		 * OVs as their arguments.
+		 * @param varsetname
+		 * @return
+		 */
+		public boolean isParentSetName(String varsetname) {
+			if (ssbnnode.getParentSetByStrongOV(false, varsetname.split("\\.")).size() > 0) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		/**
+		 * @return the varsetname
+		 */
+		public String getVarsetname() {
+			return varsetname;
+		}
+		/**
+		 * @param varsetname the varsetname to set
+		 */
+		public void setVarsetname(String varsetname) {
+			this.varsetname = varsetname;
+		}
+		/**
+		 * @return the cellList
+		 */
+		protected List<TempTableProbabilityCell> getCellList() {
+			return cellList;
+		}
+		/**
+		 * @param cellList the cellList to set
+		 */
+		protected void setCellList(List<TempTableProbabilityCell> cellList) {
+			this.cellList = cellList;
+		}
+		
+		
+		public void addCell(Entity possibleValue , IProbabilityValue probability) {
+			this.addCell(new TempTableProbabilityCell(possibleValue, probability));
+		}
+		
+		public void addCell(TempTableProbabilityCell cell) {
+			this.cellList.add(cell);
+		}
+		
+		/**
+		 * check if sum of all probability assignment is 1
+		 * @return
+		 */
+		public boolean isSumEquals1() throws InvalidProbabilityRangeException {
+			if (Float.compare(this.getProbCellSum(), 1.0F) != 0) {
+				return false;
+			} else {
+				return true;
+			}
+		}
+		
+		/**
+		 * check if sum of all probability assignment is 1
+		 * @return the sum of all cell's probability
+		 */
+		public float getProbCellSum() throws InvalidProbabilityRangeException {
+			float sum = Float.NaN;
+			if (this.cellList == null) {
+				return sum;
+			}
+			if (this.cellList.size() <= 0) {
+				return sum;
+			}
+			sum = 0;
+			for (TempTableProbabilityCell cell : this.cellList) {
+				sum += cell.getProbabilityValue();
+			}
+			return sum;
+		}
+		
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		/*
+		//@Override
+		public boolean equals(Object arg0) {
+			if (arg0 instanceof TempTableHeaderCell) {
+				TempTableHeaderCell arg = (TempTableHeaderCell)arg0;
+				if (arg.getParents().containsAll(this.getParents()) 
+						|| this.getParents().containsAll(arg.getParents()) ) {
+					return true;
+				}
+			}
+			return false;
+		}
+		*/
 		
 		
 	}
@@ -1161,6 +1444,28 @@ public class Compiler implements ICompiler {
 		public void setValue(Entity value) {
 			this.value = value;
 		}
+		/* (non-Javadoc)
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object arg0) {
+			if (arg0 instanceof TempTableHeaderParent) {
+				TempTableHeaderParent arg = (TempTableHeaderParent)arg0;
+				if (this.parent.getName().compareTo(arg.getParent().getName()) == 0) {
+					if (this.value.getName().compareTo(arg.getValue().getName()) == 0) {
+						return true;
+					} else {
+						return false;
+					}
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+			//return false;
+		}
+		
 		
 	}
 	
@@ -1184,8 +1489,11 @@ public class Compiler implements ICompiler {
 		public void setPossibleValue(Entity possibleValue) {
 			this.possibleValue = possibleValue;
 		}
-		public float getProbability() throws InvalidProbabilityRangeException {
+		public float getProbabilityValue() throws InvalidProbabilityRangeException {
 			return probability.getProbability();
+		}
+		public IProbabilityValue getProbability() {
+			return probability;
 		}
 		public void setProbability(IProbabilityValue probability) {
 			this.probability = probability;
@@ -1201,7 +1509,7 @@ public class Compiler implements ICompiler {
 	}
 	
 	private class SimpleProbabilityValue implements IProbabilityValue {
-		private float value = 0;
+		private float value = Float.NaN;
 		/**
 		 * Represents a simple float value for a probability
 		 * @param value
@@ -1215,7 +1523,7 @@ public class Compiler implements ICompiler {
 	}
 	
 	private class MathOperationProbabilityValue implements IProbabilityValue {
-		private float value = 0;
+		private float value = Float.NaN;
 		private IProbabilityValue op1 = null;
 		private IProbabilityValue op2 = null;
 		private int opcode = -1;
@@ -1237,30 +1545,41 @@ public class Compiler implements ICompiler {
 			switch (this.opcode) {
 			case MathOperationProbabilityValue.ADD:
 				ret = this.op1.getProbability() + this.op2.getProbability();
+				Debug.println("Operation = +, getProbability: " + this.op1.getProbability() 
+						+ " , " + this.op2.getProbability() + " = " + ret);
 				break;
 			case MathOperationProbabilityValue.SUBTRACT:
 				ret = this.op1.getProbability() - this.op2.getProbability();
+				Debug.println("Operation = -, getProbability: " + this.op1.getProbability() 
+						+ " , " + this.op2.getProbability() + " = " + ret);
 				break;
 			case MathOperationProbabilityValue.MULTIPLY:
 				ret = this.op1.getProbability() * this.op2.getProbability();
+				Debug.println("Operation = *, getProbability: " + this.op1.getProbability() 
+						+ " , " + this.op2.getProbability() + " = " + ret);
 				break;
 			case MathOperationProbabilityValue.DIVIDE:
 				ret = this.op1.getProbability() / this.op2.getProbability();
+				Debug.println("Operation = /, getProbability: " + this.op1.getProbability() 
+						+ " , " + this.op2.getProbability() + " = " + ret);
 				break;
 			default:
-				throw new InvalidProbabilityRangeException();
+				ret = Float.NaN;
+				break;
 			}
 			// consistency check (verify probability range [0,1])
-			if ( (ret < 0) || (ret > 1) ) {
-				throw new InvalidProbabilityRangeException();
-			} else {
-				return ret;
-			}
+			if (!Float.isNaN(ret)) {
+				
+				if ( (ret < 0) || (ret > 1) ) {
+					throw new InvalidProbabilityRangeException();
+				} 
+			}	
+			return ret;
 		}
 	}
 	
 	private class CardinalityProbabilityValue implements IProbabilityValue {
-		private float value = 0;
+		private float value = Float.NaN;
 		private String parentSetName = null;		
 		private SSBNNode thisNode = null;
 		/**
@@ -1280,7 +1599,10 @@ public class Compiler implements ICompiler {
 		}
 
 		public float getProbability() throws InvalidProbabilityRangeException {
-			// TODO calculate the value!!!
+			if (this.thisNode == null) {
+				return Float.NaN;
+			}
+			// TODO calculate the value using the right steps!!!
 			String regExp = this.thisNode.getStrongOVSeparator();
 			// TODO find a better way to treat wild cards on regular expressions (like "[" or "\")
 			if (regExp.compareTo(".") == 0) {
@@ -1334,6 +1656,32 @@ public class Compiler implements ICompiler {
 			}
 		}
 	}
+
+
+	/**
+	 * @return the tempTable
+	 */
+	public List<TempTableHeaderCell> getTempTable() {
+		return tempTable;
+	}
+
+	/**
+	 * @return the ssbnnode
+	 */
+	public SSBNNode getSSBNNode() {
+		return ssbnnode;
+	}
+
+	/**
+	 * @param ssbnnode the ssbnnode to set
+	 */
+	public void setSSBNNode(SSBNNode ssbnnode) {
+		this.ssbnnode = ssbnnode;
+		if (this.ssbnnode != null) {
+			this.setNode(this.ssbnnode.getResident());
+		}
+	}
+	
 	
 
 }

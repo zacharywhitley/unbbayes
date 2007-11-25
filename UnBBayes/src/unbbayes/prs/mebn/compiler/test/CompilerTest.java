@@ -122,9 +122,9 @@ public class CompilerTest extends TestCase {
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
 			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
-			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .65 ] " +
-			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
+			" else if any sr.st have( OpSpec = Klingon & HarmPotential = true ) " +
+			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .6 ] " +
+			" else if any st.z have( OpSpec = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
 			" else [ Un = 0 , Hi = 0 , Medium = 0 , Low = 1 ] ";
 		
@@ -132,10 +132,12 @@ public class CompilerTest extends TestCase {
 		try  {
 			tableParser.parse(tableString);
 		} catch (MEBNException e) {
+			e.printStackTrace();
 			fail(e.getMessage());
+			
 		} 
 		
-		
+		tableParser.getTempTable();
 		
 	}
 	
@@ -179,7 +181,7 @@ public class CompilerTest extends TestCase {
 			" if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
 			" if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
-			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .65 ] " +
+			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .6 ] " +
 			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " ;
 		
@@ -209,7 +211,7 @@ public class CompilerTest extends TestCase {
 			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
 			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
-			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .65 ] " +
+			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .6 ] " +
 			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
 			" else [ Un = 0 , Hi = 0 , Medium = 0 , Low = 1 ] ";
@@ -232,7 +234,7 @@ public class CompilerTest extends TestCase {
 			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
 			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
-			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .65 ] " +
+			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .60 ] " +
 			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
 			" else [ Un = 0 , Hi = 0.5 , Medium = -0.5 , Low = 1 ] ";
@@ -262,7 +264,7 @@ public class CompilerTest extends TestCase {
 			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
 			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
-			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .65 ] " +
+			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .6 ] " +
 			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
 			" else [ Un = 0 , Hi = 0.5 , Medium = 0 , Low = 1 ] ";
@@ -310,7 +312,7 @@ public class CompilerTest extends TestCase {
 			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
 			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
-			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .65 ] " +
+			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .6 ] " +
 			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
 			" else [ Un = 0 , Hi = 0 , Medium = 0 , Low = 1 ] ";
@@ -333,7 +335,7 @@ public class CompilerTest extends TestCase {
 			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
 			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
-			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .65 ] " +
+			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .6 ] " +
 			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
 			" else [ Un = 0 , Hi = 0 , Medium = 0 , Low = 0 ] ";
@@ -353,15 +355,15 @@ public class CompilerTest extends TestCase {
 	public void testNormalConsistencyCheckWithFunctions() {
 		//		 should go all right
 		String tableString =  
-			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
+			" if any st have( OpSpec = Cardassian & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = MIN ( CARDINALITY (OpSpec) * 2 ; .2 ) , Low = 1 - Medium ]  " +
-			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
+			" else if any st.t have( OpSpec = Romulan & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = (.005 + .005) , Low = .99 ]  " +
 			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = (((1 - Medium) - Un) - Hi ) ]  " +
-			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
-			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .65 ] " +
-			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
+			" else if any st.z have( OpSpec = Klingon & HarmPotential = true ) " +
+			"  [ Un = 0.10 , Hi = 0.15 , Medium = .15 , Low = .6 ] " +
+			" else if any st.sr.z have( OpSpec = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " +
 			" else [ Un = 0 , Hi = 0 , Medium = MAX (.5 ; CARDINALITY (HarmPotential)) , Low = 1 - Medium ] ";
 		
@@ -369,6 +371,7 @@ public class CompilerTest extends TestCase {
 		try  {
 			tableParser.parse(tableString);
 		} catch (MEBNException e) {
+			e.printStackTrace();
 			fail(e.getMessage() + " at index " + tableParser.getIndex());
 		} 
 		
@@ -542,8 +545,11 @@ public class CompilerTest extends TestCase {
 			i += dangerToSelf.getStatesSize();
 		}
 
-		//new GUIPotentialTable(tab).showTable("VAI FUNCIONAR!");
 		
+		GUIPotentialTable guiCPT = new GUIPotentialTable(tab);
+		guiCPT.showTable("VAI FUNCIONAR!");
+		
+		// while (true);
 		
 		/*
 		Compiler c = new Compiler(null);
