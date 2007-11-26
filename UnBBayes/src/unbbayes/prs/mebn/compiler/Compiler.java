@@ -1462,9 +1462,146 @@ public class Compiler implements ICompiler {
 		
 	}
 	
-	private class TempTableHeaderParent {
+	private interface ICompilerBooleanValue {
+		/**
+		 * Obtains recursively a boolean value
+		 * @return true or false
+		 */
+		public boolean evaluate();
+	}
+	
+	private class CompilerNotValue implements ICompilerBooleanValue{
+		private ICompilerBooleanValue value = null;
+		/**
+		 * implements "not" operation on ISSBNBooleanValue
+		 * @param value: value to be operated
+		 */
+		public CompilerNotValue(ICompilerBooleanValue value) {
+			this.value = value;
+		}
+		
+		/**
+		 * @return the value
+		 */
+		public ICompilerBooleanValue getValue() {
+			return value;
+		}
+
+		/**
+		 * @param value the value to set
+		 */
+		public void setValue(ICompilerBooleanValue value) {
+			this.value = value;
+		}
+
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.ISSBNBooleanValue#evaluate()
+		 */
+		public boolean evaluate() {
+			return !this.value.evaluate();
+		}
+		
+	}
+	
+	private class CompilerOrValue implements ICompilerBooleanValue{
+		private ICompilerBooleanValue value1 = null;
+		private ICompilerBooleanValue value2 = null;
+		/**
+		 * implements an "OR" boolean operation on ICompilerBooleanValue
+		 * @param value1: value to be operated
+		 * @param value2: value to be operated
+		 */
+		public CompilerOrValue(ICompilerBooleanValue value1, ICompilerBooleanValue value2) {
+			this.value1 = value1;
+			this.value2 = value2;
+		}
+		/**
+		 * @return the value1
+		 */
+		public ICompilerBooleanValue getValue1() {
+			return value1;
+		}
+		/**
+		 * @param value1 the value1 to set
+		 */
+		public void setValue1(ICompilerBooleanValue value1) {
+			this.value1 = value1;
+		}
+		/**
+		 * @return the value2
+		 */
+		public ICompilerBooleanValue getValue2() {
+			return value2;
+		}
+		/**
+		 * @param value2 the value2 to set
+		 */
+		public void setValue2(ICompilerBooleanValue value2) {
+			this.value2 = value2;
+		}
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.ICompilerBooleanValue#evaluate()
+		 */
+		public boolean evaluate() {
+			return this.value1.evaluate() || this.value2.evaluate();
+		}
+		
+	}
+	
+	private class CompilerAndValue implements ICompilerBooleanValue{
+		private ICompilerBooleanValue value1 = null;
+		private ICompilerBooleanValue value2 = null;
+		/**
+		 * implements an "OR" boolean operation on ICompilerBooleanValue
+		 * @param value1: value to be operated
+		 * @param value2: value to be operated
+		 */
+		public CompilerAndValue(ICompilerBooleanValue value1, ICompilerBooleanValue value2) {
+			this.value1 = value1;
+			this.value2 = value2;
+		}
+		/**
+		 * @return the value1
+		 */
+		public ICompilerBooleanValue getValue1() {
+			return value1;
+		}
+		/**
+		 * @param value1 the value1 to set
+		 */
+		public void setValue1(ICompilerBooleanValue value1) {
+			this.value1 = value1;
+		}
+		/**
+		 * @return the value2
+		 */
+		public ICompilerBooleanValue getValue2() {
+			return value2;
+		}
+		/**
+		 * @param value2 the value2 to set
+		 */
+		public void setValue2(ICompilerBooleanValue value2) {
+			this.value2 = value2;
+		}
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.ICompilerBooleanValue#evaluate()
+		 */
+		public boolean evaluate() {
+			return this.value1.evaluate() && this.value2.evaluate();
+		}
+		
+	}
+	
+	private class TempTableHeaderParent implements ICompilerBooleanValue {
 		private DomainResidentNode parent = null;
 		private Entity value = null;
+		
+		private List<Entity> evaluationList = null;
+		
+		//private Entity currentEvaluation = null;
+		
+		private int currentEvaluationIndex = -1;
 		
 		/**
 		 * Represents a parent and its expected single value
@@ -1475,6 +1612,14 @@ public class Compiler implements ICompiler {
 		TempTableHeaderParent (DomainResidentNode parent , Entity value) {
 			this.parent = parent;
 			this.value = value;
+			this.evaluationList = null;
+			this.currentEvaluationIndex = -1;
+		}
+		
+		TempTableHeaderParent (DomainResidentNode parent , Entity value, List<Entity>evaluationList) {
+			this.parent = parent;
+			this.value = value;
+			this.setEvaluationList(evaluationList);
 		}
 		public DomainResidentNode getParent() {
 			return parent;
@@ -1509,8 +1654,87 @@ public class Compiler implements ICompiler {
 			}
 			//return false;
 		}
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.ISSBNBooleanValue#getBooleanValue()
+		 */
+		public boolean evaluate() {
+			// if entities have the same name, they are equals.
+			if (this.getCurrentEvaluation().getName().compareTo(this.getValue().getName()) == 0) {
+				return true;
+			}
+			return false;
+		}
 		
 		
+		
+		/**
+		 * Obtains a list of values to be tested on boolean value evaluation
+		 * @return the evaluationList
+		 */
+		public List<Entity> getEvaluationList() {
+			return evaluationList;
+		}
+		/**
+		 * @param evaluationList the evaluationList to set
+		 */
+		public void setEvaluationList(List<Entity> evaluationList) {
+			this.evaluationList = evaluationList;
+			if (this.evaluationList != null) {
+				if (this.evaluationList.size() > 0) {
+					this.currentEvaluationIndex = 0;
+				}
+			}
+		}
+		
+		/**
+		 * @return the currentEvaluation (currently evaluated entity value on boolean
+		 * expression - comparing a parent with its value)
+		 */
+		public Entity getCurrentEvaluation() {
+			return this.evaluationList.get(this.currentEvaluationIndex);
+		}
+		/**
+		 * @param currentEvaluation the currentEvaluation 
+		 * (currently evaluated entity value on boolean
+		 * expression - comparing a parent with its value) to set
+		 */
+		public void setCurrentEvaluation(Entity currentEvaluation) {
+			this.currentEvaluationIndex = this.evaluationList.indexOf(currentEvaluation);
+		}
+		
+		/**
+		 * 
+		 * @return true if currently evaluated entity list has next element
+		 */
+		public boolean hasNextEvaluation() {
+			return this.currentEvaluationIndex < this.evaluationList.size();
+		}
+		
+		/**
+		 * add 1 to the index of evaluationList and returns its value
+		 * @return
+		 */
+		public Entity getNextEvaluation() {
+			this.currentEvaluationIndex++;
+			return this.getCurrentEvaluation();
+		}
+		
+		/**
+		 * resets evaluationlist's index to its initial value = 0
+		 * or -1 if list is empty
+		 *
+		 */
+		public void resetEvaluationList() {
+			if (this.evaluationList == null) {
+				this.currentEvaluationIndex = -1;
+				return;
+			}
+			if (this.evaluationList.size() <= 0) {
+				this.currentEvaluationIndex = -1;
+				return;
+			}
+			this.currentEvaluationIndex = 0;
+		}
 	}
 	
 	private class TempTableProbabilityCell {
