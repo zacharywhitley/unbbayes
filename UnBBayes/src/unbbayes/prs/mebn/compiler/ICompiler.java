@@ -4,6 +4,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.mebn.exception.MEBNException;
+import unbbayes.prs.mebn.ssbn.SSBNNode;
 
 public interface ICompiler {
 
@@ -30,7 +31,12 @@ public interface ICompiler {
 	
 	/**
 	 * generates CPT using a pseudocode.
-	 * @return
+	 * @param ssbnnode: a SSBN-generation time node containing informations about a
+	 * resident node having a pseudocode to parse, every parent-child structure previously
+	 * built and a reference to a ProbabilisticNode which the generated CPT should be 
+	 * whitten.
+	 * @return a reference to the generated PotentialTable (which also can be accessed from
+	 * the ProbabilisticNode contained inside the ssbnnode).
 	 */
-	public PotentialTable generateCPT();
+	public PotentialTable generateCPT(SSBNNode ssbnnode) throws MEBNException;
 }

@@ -208,6 +208,24 @@ public class Compiler implements ICompiler {
 		
 		tempTable = new ArrayList<TempTableHeaderCell>();
 	}
+	
+	/**
+	 * use this method to initialize this parser on SSBN generation step.
+	 * All information will be extracted from the ssbnnode.
+	 * @param ssbnnode
+	 */
+	public void init(SSBNNode ssbnnode) {
+		this.ssbnnode = ssbnnode;
+		this.node = ssbnnode.getResident();
+		this.mebn = this.node.getMFrag().getMultiEntityBayesianNetwork();
+		String pseudocode = this.node.getTableFunction();
+		
+		if (this.ssbnnode.getProbNode() != null) {
+			this.setCpt(this.ssbnnode.getProbNode().getPotentialTable());			
+		}
+		
+		this.init(pseudocode);
+	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.compiler.AbstractCompiler#parse()
@@ -219,19 +237,45 @@ public class Compiler implements ICompiler {
 		this.table();
 	}
 	
+	/**
+	 * this is identical to init(table)->parse()
+	 * @param table
+	 * @throws MEBNException
+	 */
 	public void parse(String table) throws MEBNException {
 		this.init(table);
 		this.parse();
 	}
 	
 	/**
+	 * This method will not parse. Use parse() before this.
 	 * 
-	 * TODO implement this method
-	 * @return
+	 * @return generated potential table
 	 */
-	public PotentialTable generateCPT() {
+	public PotentialTable getCPT() {
 		// TODO implement this!!!
 		return this.cpt;
+	}
+	
+	
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.compiler.ICompiler#generateCPT()
+	 */
+	public PotentialTable generateCPT() throws MEBNException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	
+	/**
+	 * this is identical to init(ssbnnode) -> parse() -> getCPT.
+	 *  @return 
+	 */
+	public PotentialTable generateCPT(SSBNNode ssbnnode) throws MEBNException {
+		this.init(ssbnnode);
+		this.parse();
+		return getCpt();
 	}
 	
 	/**

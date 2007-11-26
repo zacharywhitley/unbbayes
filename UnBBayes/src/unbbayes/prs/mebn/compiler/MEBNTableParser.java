@@ -10,6 +10,7 @@ import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.exception.MEBNException;
+import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.util.Debug;
 
 /**
@@ -164,7 +165,7 @@ public class MEBNTableParser implements ICompiler {
 		return this.compiler.getIndex();
 	}
 	
-	public ProbabilisticTable generateCPT() {
+	public ProbabilisticTable generateCPT(SSBNNode ssbnnode) {
 		return null;
 	}
 

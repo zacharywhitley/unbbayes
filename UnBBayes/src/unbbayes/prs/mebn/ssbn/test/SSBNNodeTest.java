@@ -21,6 +21,7 @@ import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.TypeContainer;
 import unbbayes.prs.mebn.entity.exception.CategoricalStateDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
+import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import junit.framework.TestCase;
@@ -107,8 +108,8 @@ public class SSBNNodeTest extends TestCase {
 		SSBNNode node = SSBNNode.getInstance(null, resident);
 		assertNotNull(node);
 		assertEquals(node.getResident(), resident);
-		assertNull(node.getProbNode());
-		assertEquals(1,node.getActualValues().size());	// a SSBNNode without probNode should be a finding
+		assertNotNull(node.getProbNode());	// since getInstance(net,resident) would not create a finding...
+		assertEquals(3,node.getActualValues().size()); // HarmPotential = {true,false,absurd}
 		assertEquals(node.getParents().size(),0);
 	}
 
@@ -358,7 +359,12 @@ public class SSBNNodeTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.ssbn.SSBNNode#fillProbabilisticTable()}.
 	 */
 	public void testFillProbabilisticTable() {
-		this.ssbnnode.fillProbabilisticTable();
+		try{
+			this.ssbnnode.fillProbabilisticTable();
+		} catch (MEBNException mebne) {
+			mebne.printStackTrace();
+			fail(mebne.getLocalizedMessage());
+		}
 		//assertNotNull(this.ssbnnode.getProbNode().getPotentialTable());
 		// TODO more detailed test
 	}

@@ -14,6 +14,7 @@ import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.StateLink;
+import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.util.NodeList;
 
 import java.util.ArrayList;
@@ -491,8 +492,8 @@ public class SSBNNode {
 	
 	
 	
-	public void fillProbabilisticTable() {
-		this.compiler.generateCPT();
+	public void fillProbabilisticTable() throws MEBNException {
+		this.compiler.generateCPT(this);
 	}
 	
 	
@@ -517,10 +518,12 @@ public class SSBNNode {
 		if ((parent.getResident() == null )) {
 			throw new SSBNNodeGeneralException();
 		}
+		/*
 		if (isCheckingParentResident && ( parent.getProbNode() == null ) ) {
 			throw new SSBNNodeGeneralException();
 		}
-		if (this.isFinding) {
+		*/
+		if (this.isFinding()) {
 			throw new SSBNNodeGeneralException();
 		}
 		
