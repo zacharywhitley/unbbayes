@@ -16,7 +16,7 @@ public class ObjectEntityInstanceOrdereable extends ObjectEntityInstance{
 	private ObjectEntityInstanceOrdereable prev; 
 	private ObjectEntityInstanceOrdereable proc; 
 	
-	public ObjectEntityInstanceOrdereable(String name, ObjectEntity instanceOf){
+	protected ObjectEntityInstanceOrdereable(String name, ObjectEntity instanceOf){
 		super(name, instanceOf); 
 	}
 

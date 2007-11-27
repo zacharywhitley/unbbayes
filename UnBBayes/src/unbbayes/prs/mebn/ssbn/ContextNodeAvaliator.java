@@ -38,7 +38,7 @@ public class ContextNodeAvaliator {
 		if(!ovFaultList.isEmpty()){
 			throw new OVInstanceFaultException(ovFaultList); 
 		}else{
-			return kb.evaluateSimpleFormula(node, ovInstances);
+			return kb.evaluateContextNodeFormula(node, ovInstances);
 		}
 		
 	}
@@ -57,7 +57,7 @@ public class ContextNodeAvaliator {
 	 */
 	public List<String> evalutateSearchContextNode(ContextNode context, List<OVInstance> ovInstances) throws InvalidContextNodeFormulaException{
 		
-			List<String> entitiesResult = kb.evaluateComplexContextFormula(context, ovInstances); 
+			List<String> entitiesResult = kb.evaluateSearchContextNodeFormula(context, ovInstances); 
 			return entitiesResult;
 	}
 	

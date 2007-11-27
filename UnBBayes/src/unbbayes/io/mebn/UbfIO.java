@@ -413,12 +413,15 @@ public class UbfIO implements MebnIO {
 						String name = st.sval;
 						try {
 							ObjectEntityInstanceOrdereable oe = (ObjectEntityInstanceOrdereable)objectEntity.addInstance(name); 
+							mebn.getObjectEntityContainer().addEntityInstance(oe);
 							oe.setPrev(prev);
 							if(prev!=null) prev.setProc(oe);
 							prev = oe; 
 						} catch (TypeException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
+						} catch(Exception ex){
+							ex.printStackTrace(); 
 						}
 					}
 				}

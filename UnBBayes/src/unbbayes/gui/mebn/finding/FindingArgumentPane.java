@@ -20,6 +20,7 @@ import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.Entity;
+import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
 
@@ -108,22 +109,32 @@ public class FindingArgumentPane extends JPanel{
 		JLabel labelState = new JLabel("State:"); 
 		
 		JButton btnLabelType = null; 
+		
+		/* 
+		 * States 
+		 * Categorical e Boolean -> States Links. 
+		 * Objects -> Instances of the type Object Entity. 
+		 * */
+		
 		switch(node.getTypeOfStates()){
 		case ResidentNode.BOOLEAN_RV_STATES:
 			btnLabelType = new JButton("Boolean"); 
+			states = new JComboBox(node.getPossibleValueLinkList().toArray()); 
 			break; 
 		case ResidentNode.CATEGORY_RV_STATES:
 			btnLabelType = new JButton("Categorical"); 
+			states = new JComboBox(node.getPossibleValueLinkList().toArray()); 
 			break; 
 		case ResidentNode.OBJECT_ENTITY:
-			btnLabelType = new JButton("Object"); 
+			StateLink link = node.getPossibleValueLinkList().get(0); 
+			ObjectEntity objectEntity = (ObjectEntity)link.getState();
+			btnLabelType = new JButton(objectEntity.getName());
+			states = new JComboBox(objectEntity.getInstanceList().toArray()); 
 			break; 
 		default:
 		    break; 	
 		}
-		
-		states = new JComboBox(node.getPossibleValueLinkList().toArray()); 
-		
+
 		JToolBar tbStates = new JToolBar();
 		
 		tbStates.add(labelState);
@@ -151,7 +162,15 @@ public class FindingArgumentPane extends JPanel{
 	}
 	
 	public Entity getState(){
-		return ((StateLink)(states.getSelectedItem())).getState(); 
+		switch(node.getTypeOfStates()){
+		case ResidentNode.BOOLEAN_RV_STATES:
+		case ResidentNode.CATEGORY_RV_STATES:
+			return ((StateLink)(states.getSelectedItem())).getState(); 
+		case ResidentNode.OBJECT_ENTITY:
+			return (ObjectEntityInstance)states.getSelectedItem(); 
+		default:
+		    return null;  	
+		}
 	}
 	
 	public void clear(){

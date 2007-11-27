@@ -495,5 +495,9 @@ public class DomainMFrag extends MFrag {
 		ovs = allOVs.toArray(ovs);
 		return getContextByOV(ovs);
 	}
+	
+	public String toString(){
+		return this.getName(); 
+	}
 
 }
