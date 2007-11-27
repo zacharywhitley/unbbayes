@@ -6,6 +6,7 @@ import java.util.ResourceBundle;
 
 import unbbayes.controller.exception.InconsistentArgumentException;
 import unbbayes.controller.exception.InvalidOperationException;
+import unbbayes.gui.Console;
 import unbbayes.gui.MEBNEditionPane;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.mebn.OVariableEditionPane;
@@ -88,6 +89,15 @@ public class MEBNController {
 	/*-------------------------------------------------------------------------*/
 	
 	private boolean baseCreated = false; 
+	private boolean findingCreated = false; 
+	private boolean generativeCreated = false; 
+	
+	/*-------------------------------------------------------------------------*/
+	/* Constants                                            */
+	/*-------------------------------------------------------------------------*/
+	
+	private static final String NAME_GENERATIVE_FILE = "generative.plm"; 
+	private static final String NAME_FINDING_FILE = "findings.plm"; 
 	
 	/*-------------------------------------------------------------------------*/
 	/* Others (resources, utils, etc                                           */
@@ -1035,9 +1045,12 @@ public class MEBNController {
 			}
 		}
 		
-		this.saveGenerativeMTheory(new File("testeGenerative.plm")); 
+		this.saveGenerativeMTheory(new File(MEBNController.NAME_GENERATIVE_FILE)); 
 	}
 	
+	/**
+	 * Insert the findings into KB.
+	 */
 	private void loadFindingsIntoKB(){
 		KnowledgeBase knowledgeBase = PowerLoomKB.getInstanceKB();		
 		
@@ -1053,7 +1066,7 @@ public class MEBNController {
 			}
 		}
 		
-		this.saveFindingsFile(new File("testeFindings.plm")); 
+		this.saveFindingsFile(new File(MEBNController.NAME_FINDING_FILE)); 
 	}
 
 	public void saveGenerativeMTheory(File file){
@@ -1071,7 +1084,7 @@ public class MEBNController {
 	private void createKnowledgeBase(){
 		loadGenerativeMEBNIntoKB(); 
 		loadFindingsIntoKB(); 
-		baseCreated = true; 
+//		baseCreated = true; 
 	}
 
 	/**
@@ -1100,17 +1113,19 @@ public class MEBNController {
 			}
 		}
 		
-//		if(!baseCreated){
-//	    	createKnowledgeBase(); 	
-//	    }
+		if(!baseCreated){
+	    	createKnowledgeBase(); 	
+	    }
 		
 		KnowledgeBase kb = PowerLoomKB.getInstanceKB(); 
-		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_GENERATIVE_FILE)); 
-		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_FINDING_FILE)); 
+//		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_GENERATIVE_FILE)); 
+//		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_FINDING_FILE)); 
 		
-		Query query = new Query(new PowerLoomFacade("/PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE"), queryNode, multiEntityBayesianNetwork);
+		Query query = new Query(new PowerLoomFacade(PowerLoomKB.MODULE_NAME), queryNode, multiEntityBayesianNetwork);
 		
 		ISSBNGenerator ssbngenerator = new BottomUpSSBNGenerator();
+
+//		Console console = new Console(); 
 		
 		try{
 			return ssbngenerator.generateSSBN(query);

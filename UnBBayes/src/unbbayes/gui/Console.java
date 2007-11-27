@@ -1,7 +1,7 @@
 package unbbayes.gui;
 
 //
-//A simple Java Console for your application (Swing version)
+//A simple Java Console
 //Requires Java 1.1.5 or higher
 //
 //Disclaimer the use of this source is at your own risk. 
@@ -9,6 +9,7 @@ package unbbayes.gui;
 //Permision to use and distribute into your own applications
 //
 //RJHM van den Bergh , rvdb@comweb.nl
+
 //extract of http://www.comweb.nl/java/Console/Console.html in november, 18, 2007
 
 import java.io.*;

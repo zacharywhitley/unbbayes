@@ -209,7 +209,6 @@ public class QueryPanel extends JFrame{
 					makeInvisible(); 
 					try {
 						ObjectEntityInstance[] arguments = queryArgumentsPane.getArguments();
-						Console console = new Console(); 
 				        ProbabilisticNetwork network = mebnController.executeQuery((DomainResidentNode)residentNode, arguments); 
 					} catch (ParcialStateException e1) {
 						// TODO Auto-generated catch block
