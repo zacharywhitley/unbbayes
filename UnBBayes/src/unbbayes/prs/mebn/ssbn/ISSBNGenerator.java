@@ -12,5 +12,14 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
  *
  */
 public interface ISSBNGenerator {
+
+	/**
+	 * 
+	 * @param query
+	 * @return The SSBN generated. 
+	 * @throws SSBNNodeGeneralException
+	 * @throws ImplementationRestrictionException
+	 */
 	public ProbabilisticNetwork generateSSBN(Query query) throws SSBNNodeGeneralException, ImplementationRestrictionException;
+
 }
