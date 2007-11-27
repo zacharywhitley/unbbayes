@@ -116,7 +116,7 @@ public class CompilerTest extends TestCase {
 		
 		//		 should go all right
 		String tableString =  
-			" if any st.t have( OpSpec = Cardassian | HarmPotential = true ) " + 
+			" if any st.t have( OpSpec = Cardassian & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
 			" else if any st.z.t have( OpSpec = Romulan & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +

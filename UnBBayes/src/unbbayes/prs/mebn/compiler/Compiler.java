@@ -2,8 +2,10 @@
 
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import unbbayes.prs.Node;
@@ -332,13 +334,13 @@ public class Compiler implements ICompiler {
 		switch (token) {
 		case 'a':
 			Debug.println("ALL VERIFIED");
-			// sets the table header w/ this parameters (null,false,false): null verified parents, is not ANY and is not default
-			this.currentHeader = new TempTableHeaderCell(null, false, false);
+			// sets the table header w/ this parameters (empty list,false,false): empty list (no verified parents), is not ANY and is not default
+			this.currentHeader = new TempTableHeaderCell(new ArrayList<TempTableHeaderParent>(), false, false);
 			break;
 		case 'y':
 			Debug.println("ANY VERIFIED");
-			//	sets the table header w/ this parameters (null,false,false): null verified parents, is ANY and is not default
-			this.currentHeader = new TempTableHeaderCell(null, true, false);
+			//	sets the table header w/ this parameters (empty list,false,false): empty list (no verified parents), is ANY and is not default
+			this.currentHeader = new TempTableHeaderCell(new ArrayList<TempTableHeaderParent>(), true, false);
 			break;
 		default:
 			expected("ALL or ANY");
@@ -360,8 +362,12 @@ public class Compiler implements ICompiler {
 		// ( EXPECTED
 		match('(');
 		// if we catch sintax error here, it may be conditionant error
+		
+		// Now, parsing a boolean expression - tree format (we'll store it inside this variable)
+		ICompilerBooleanValue expressionTree = null;
+		
 		try {
-			bExpression();
+			expressionTree = bExpression();
 		} catch (TableFunctionMalformedException e) {
 			throw new InvalidConditionantException(e.getMessage());
 		}
@@ -370,6 +376,13 @@ public class Compiler implements ICompiler {
 		Debug.println("LOOKAHEAD = " + look);
 		// ) EXPECTED
 		match(')');
+		
+		// since we extracted the expression tree, store it inside the current header in temporary table
+		if (expressionTree != null) {
+			this.currentHeader.setBooleanExpressionTree(expressionTree);
+		} else {
+			throw new InvalidConditionantException();
+		}
 		
 		Debug.println("STARTING STATEMENTS");
 		
@@ -454,35 +467,42 @@ public class Compiler implements ICompiler {
 	 * b_expression ::= b_term [ "|" b_term ]*
 	 * 
 	 */
-	private void bExpression() throws InvalidConditionantException,
+	private ICompilerBooleanValue bExpression() throws InvalidConditionantException,
 									  TableFunctionMalformedException{
-		// TODO treat complex boolean evaluation.
 		
-		bTerm();
+		ICompilerBooleanValue val1 = bTerm();
 		
 		// LOOK FOR OR (OPTIONAL)
 		// scan();
 		if (look == '|') {
 			match('|');
-			bTerm();
+			ICompilerBooleanValue val2 = bTerm();
+			Debug.println("EXITING BEXPRESSION AS OR");
+			return new CompilerOrValue(val1, val2);
+		} else {
+			Debug.println("EXITING BEXPRESSION AS SINGLE TERM");			
+			return val1;
 		}
-		Debug.println("EXITING BEXPRESSION");
+		
 	}
 
 	/**
 	 * b_term ::= not_factor [ "&" not_factor ]*
 	 * 
 	 */
-	private void bTerm() throws InvalidConditionantException,
+	private ICompilerBooleanValue bTerm() throws InvalidConditionantException,
 							    TableFunctionMalformedException{
-		// TODO treat complex boolean evaluation.
-		notFactor();
+		
+		ICompilerBooleanValue val1 = notFactor();
 
 		// LOOK FOR AND (OPTIONAL)
 		// scan();
 		if (look == '&') {
 			match('&');
-			notFactor();
+			ICompilerBooleanValue val2 = notFactor();
+			return new CompilerAndValue(val1, val2);
+		} else {
+			return val1;
 		}
 	}
 
@@ -490,23 +510,36 @@ public class Compiler implements ICompiler {
 	 * not_factor ::= [ "~" ] b_factor
 	 * 
 	 */
-	private void notFactor() throws InvalidConditionantException,
+	private ICompilerBooleanValue notFactor() throws InvalidConditionantException,
 									TableFunctionMalformedException{
+		
+		boolean isNot = false;	// tests if '~' was found previously.
+		
 		// SCAN FOR NOT (OPTIONAL)
 		// scan();
 		if (look == '~') {
+			isNot = true;
 			match('~');
 		}
 
-		bFactor();
+		ICompilerBooleanValue factor = bFactor();
+		if (factor == null) {
+			throw new TableFunctionMalformedException();
+		}
 		Debug.println("EXITING NOT FACTOR");
+		
+		if (isNot) {
+			return new CompilerNotValue(factor);
+		} else {
+			return factor;
+		}
 	}
 
 	/**
 	 * b_factor ::= ident "=" ident
 	 * 
 	 */
-	private void bFactor() throws InvalidConditionantException,
+	private ICompilerBooleanValue bFactor() throws InvalidConditionantException,
 								  TableFunctionMalformedException{
 		
 		String conditionantName = null;
@@ -589,7 +622,10 @@ public class Compiler implements ICompiler {
 		// Set temp table's header condicionant
 		TempTableHeaderParent headerParent = new TempTableHeaderParent(resident, condvalue);
 		// TODO optimize above code, because its highly redundant (condvalue should be found anyway on that portion of code)
-
+		
+		this.currentHeader.addParent(headerParent);	// store it as a conditionant declared inside a boolean expression
+		
+		return headerParent;
 	}
 	
 	
@@ -1033,7 +1069,7 @@ public class Compiler implements ICompiler {
 	/* Verifies if an input is an expected one */
 	private void match(char c) throws TableFunctionMalformedException {
 		
-		Debug.print(c + " ");
+		Debug.println("Matching " + c + " ");
 		if (look != c)
 			expected("" + c);
 		nextChar();
@@ -1305,7 +1341,8 @@ public class Compiler implements ICompiler {
 	// Some inner classes that might be useful for temporaly table creation (organize the table parsed from pseudocode)
 	
 	private class TempTableHeaderCell {
-		private List<TempTableHeaderParent> parents = null;
+		private ICompilerBooleanValue booleanExpressionTree = null; // core of the if statement
+		private List<TempTableHeaderParent> parents = null;	// this is also the leaf of boolean expression tree
 
 		private String varsetname = "";
 		
@@ -1440,6 +1477,131 @@ public class Compiler implements ICompiler {
 				sum += cell.getProbabilityValue();
 			}
 			return sum;
+		}
+		/**
+		 * @return the booleanExpressionTree
+		 */
+		public ICompilerBooleanValue getBooleanExpressionTree() {
+			return booleanExpressionTree;
+		}
+		/**
+		 * @param booleanExpressionTree the booleanExpressionTree to set
+		 */
+		public void setBooleanExpressionTree(ICompilerBooleanValue booleanExpressionTree) {
+			this.booleanExpressionTree = booleanExpressionTree;
+		}
+		
+		/**
+		 * This method evaluates a boolean expression (ICompilerBooleanValue - in tree format).
+		 * The leaf-values are evaluated using the param. 
+		 * Note that this method can used to evaluate a collum of ProbabilisticTable
+		 * (consider evaluating each given collumn of CPT is like evaluating every parents as findings
+		 * at a given moment).
+		 * @param valuesOnCPTColumn: a map which the key is a name of a parent node and
+		 * the value is its current possible values to be evaluated.
+		 * For example, if we want to evalueate an expression when for a node "Node(!ST0)" we
+		 * have parents Parent1(!ST0,!Z0), Parent1(!ST0,!Z1), Parent2(!ST0,!T0), and Parent2(!ST0,!T0)
+		 * with values True, False, Alpha, Beta  respectively, the map should be:
+		 * 		entry0, (key:"Parent1", values: {True, False});
+		 * 		entry1, (key:"Parent2", values: {Alpha, Beta});
+		 * @return: if the map is as follows:
+		 * 		entry0, (key:"Parent1", values: {True, False});
+		 * 		entry1, (key:"Parent2", values: {Alpha, Beta});evaluated boolean value obtained by combining each values as follows:
+		 * Then, the result would be:
+		 * - if this object was once declared as "ANY" (isAny() == true):
+		 * 			returns: evaluation(True,Alpha) || evaluation(True,Beta) || evaluation(False,Alpha) || evaluation(False,Beta)
+		 * - if declared as "ALL" (isAny() == false):
+		 * 			returns: evaluation(True,Alpha) && evaluation(True,Beta) && evaluation(False,Alpha) && evaluation(False,Beta)
+		 */
+		public boolean evaluateBooleanExpressionTree(Map<String, List<Entity>> valuesOnCPTColumn) {
+			
+			List<TempTableHeaderParent> parentsList = this.getParents();
+			
+			// prepare leafs
+			
+			// run inside parent list (they are the declared condicionants within boolean expression),
+			// which also are the leafs of that expression!
+			for (TempTableHeaderParent leaf : parentsList) {
+				if (!leaf.isKnownValue()) {
+					// if leaf is not set to be a constant value, then we should set it to 
+					// evaluate a combination of entities
+					leaf.setEvaluationList(valuesOnCPTColumn.get(leaf.getParent().getName()));
+				}
+			}
+			
+			// return is initialized with a boolean neutral value (on OR/ANY, its "false"; on AND/ALL, its "true")
+			boolean ret = !this.isAny();	// this method will return this value
+			
+			// start evaluation. We should run through leafs again... TODO: optimize?
+			
+			// "pointer" 
+			TempTableHeaderParent pointer = null;			
+			
+			//	evaluate (True,Alpha), (False,Alpha), (True,Beta), (False,Beta)...
+			boolean hasMoreCombination = true;
+			while (hasMoreCombination) {
+				if (this.isAny()) {	// if ANY, then OR 
+					ret = ret || this.getBooleanExpressionTree().evaluate();
+				} else {	// if ALL, then AND
+					ret = ret && this.getBooleanExpressionTree().evaluate();
+				}
+				pointer = parentsList.get(0);
+				if (pointer.hasNextEvaluation()) {
+					pointer.getNextEvaluation();	// now the leaf will evalueate the next element of EvaluationList
+				} else {
+					int lastPos = 0;
+					// if reached the end of this list, reset it and step foward the nest list, and so on
+					for (; !pointer.hasNextEvaluation() && (lastPos < parentsList.size());lastPos++) {
+						pointer = parentsList.get(lastPos);
+						pointer.resetEvaluationList();
+						if (lastPos == parentsList.size() - 1) {
+							// if we just changed all the values through first to last, then no more changes are available
+							hasMoreCombination = false;
+							break;
+						}							
+					}
+					if (hasMoreCombination) {
+						parentsList.get(lastPos).getNextEvaluation(); //step to next evaluation
+					}
+				}
+			}	
+			
+			
+			return ret;
+		}
+		
+		/**
+		 * When a boolean expression refeers a node which doesn't have an argument declared inside
+		 * varsetname (is not part of a "similar" set of parent called inside the pseudocode),
+		 * it is useless to evaluate it (because it would be allways false at our implementation). 
+		 * This method detects them and sets them to false before starting definitive CPT generation.
+		 * @param baseSSBNNode: a SSBNNode which contains this CPT. This method doesn't check
+		 * if this SSBNNode is really the expected one. This argument is used by this method
+		 * in order to obtain the "similar" parent set at a given moment.
+		 */
+		public void cleanUpByVarSetName(SSBNNode baseSSBNNode) {
+			// extracts parents' similar sets by strong OV names
+			Collection<SSBNNode> parents =  baseSSBNNode.getParentSetByStrongOV(
+					false, this.getVarsetname().split("\\" + baseSSBNNode.getStrongOVSeparator()));
+			
+			boolean found = false;
+			
+			// extract condicionants declared within the expression
+			for (TempTableHeaderParent headParent : this.getParents()) {
+				 found = false;
+				 // look for headParent inside parents (set of similar parents)
+				 for (SSBNNode node : parents) {
+					if (node.getResident().equals(headParent.getParent())) {
+						// if node names are the same, then we found it
+						found = true;
+						break;
+					}
+				 }
+			     if (!found) {
+			    	 // if we did not find a condicionant (inside expression) inside the parent set
+			    	 headParent.setKnownValue(true);
+			     }
+			}
 		}
 		
 		/* (non-Javadoc)
@@ -1603,6 +1765,8 @@ public class Compiler implements ICompiler {
 		
 		private int currentEvaluationIndex = -1;
 		
+		private boolean isKnownValue = false;	// if this leaf is "absurd", then its value is known = false.
+		
 		/**
 		 * Represents a parent and its expected single value
 		 * at that table entry/collumn
@@ -1654,10 +1818,16 @@ public class Compiler implements ICompiler {
 			}
 			//return false;
 		}
-		/* (non-Javadoc)
-		 * @see unbbayes.prs.mebn.compiler.Compiler.ISSBNBooleanValue#getBooleanValue()
+		/**
+		 * evaluates this leaf boolean value and returns it.
+		 * @return : evaluated value. If isKnownValue is set to true, 
+		 * this will return false everytime
+		 * 
 		 */
 		public boolean evaluate() {
+			if (this.isKnownValue()) {
+				return false;
+			}
 			// if entities have the same name, they are equals.
 			if (this.getCurrentEvaluation().getName().compareTo(this.getValue().getName()) == 0) {
 				return true;
@@ -1735,6 +1905,29 @@ public class Compiler implements ICompiler {
 			}
 			this.currentEvaluationIndex = 0;
 		}
+
+		/**
+		 * If this is set to true, this object's evaluate() method will always
+		 * return a same value.
+		 * @return the isKnownValue
+		 */
+		public boolean isKnownValue() {
+			return isKnownValue;
+		}
+
+		/**
+		 * If this is set to true, this object's evaluate() method will always
+		 * return a same value.
+		 * @param isKnownValue the isKnownValue to set
+		 */
+		public void setKnownValue(boolean isKnownValue) {
+			this.isKnownValue = isKnownValue;
+			if (this.isKnownValue()) {
+				// if this leaf should return a constant, then evaluationList is useless...
+				this.setEvaluationList(null);
+			}
+		}
+		
 	}
 	
 	private class TempTableProbabilityCell {
