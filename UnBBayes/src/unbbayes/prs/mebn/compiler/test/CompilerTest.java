@@ -381,11 +381,13 @@ public class CompilerTest extends TestCase {
 	public void testNoIfStatement() {
 		//		 should go all right
 		String tableString =  
-			" [ Un = 0 , Hi = 0 , Medium = MIN ( CARDINALITY (OpSpec) * 2 ; .2 ) , Low = 1 - Medium ]  ";		
+			" [ Un = 0 , Hi = 0 , Medium = MIN ( -3 * -2 ; .2 ) , Low = 1 - Medium ]  ";		
 		try  {
 			tableParser.parse(tableString);
 		} catch (MEBNException e) {
+			e.printStackTrace();
 			fail(e.getMessage() + " at index " + tableParser.getIndex());
+			
 		} 
 		
 	}

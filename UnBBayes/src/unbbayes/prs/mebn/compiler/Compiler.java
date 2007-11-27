@@ -3,7 +3,9 @@
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -31,6 +33,12 @@ import unbbayes.util.NodeList;
  BNF MEBN Table:
  ----------------
  Changes (Date/Month/Year): 
+ 
+ 	27/11/2007:
+ 			Description: term ::= signed_factor [ mulop factor ]* changed to
+ 				term ::= signed_factor [ mulop signed_factor ]*,
+ 				and CPT generation is in alpha state now.
+ 			Author: Shou Matsumoto
  
  	25/11/2007:
  			Description: added non-terminal variable "possibleVal" to the grammar (and its implementation).
@@ -82,7 +90,7 @@ import unbbayes.util.NodeList;
  statement ::= "[" assignment "]" 
  assignment ::= ident "=" expression [ "," assignment ]*
  expression ::= term [ addop term ]*
- term ::= signed_factor [ mulop factor ]*
+ term ::= signed_factor [ mulop signed_factor ]*
  signed_factor ::= [ addop ] factor
  factor ::= number | function | "(" expression ")" 
  	| simplefunction "(" expression ")"
@@ -254,8 +262,119 @@ public class Compiler implements ICompiler {
 	 * 
 	 * @return generated potential table
 	 */
-	public PotentialTable getCPT() {
+	public PotentialTable getCPT() throws InconsistentTableSemanticsException {
 		// TODO implement this!!!
+		
+		// initial tests
+		if (this.ssbnnode == null) {
+			return null;
+		}
+		if (this.tempTable == null) {
+			return null;
+		}
+		if (this.tempTable.size() <= 0) {
+			return null;
+		}
+		
+		
+		// initialization
+		
+		// eliminates redundancies on table's boolean expression
+		for (TempTableHeaderCell header : this.tempTable) {
+			header.cleanUpByVarSetName(this.getSSBNNode());
+		}
+		
+		// extracting base values
+		this.cpt = this.ssbnnode.getProbNode().getPotentialTable();
+		
+		ArrayList<SSBNNode> parents = new ArrayList<SSBNNode>(this.ssbnnode.getParents());
+		
+		ArrayList<Entity> possibleValues = new ArrayList<Entity>(this.ssbnnode.getActualValues());
+		if (possibleValues.size() != this.ssbnnode.getProbNode().getStatesSize()) {
+			// the ssbnnode and the table is not synchronized!!
+			throw new InconsistentTableSemanticsException();
+		}
+		
+		
+		Map<String, List<Entity>> map = null; // parameter of boolean expression evaluation method
+		
+		// this iterators helps us combine parents' possible values
+		// e.g. (True,Alpha), (True,Beta), (False,Alpha), (False,Beta).
+		List<Iterator<Entity>> valueCombinationIterators = new ArrayList<Iterator<Entity>>();
+		for (SSBNNode ssbnnode : parents) {
+			valueCombinationIterators.add(ssbnnode.getActualValues().iterator());
+		}
+		
+		// saves the current values of the iterators
+		List<Entity> currentIteratorValue = new ArrayList<Entity>();
+		for (Iterator it : valueCombinationIterators) {
+			 currentIteratorValue.add((Entity)it.next());
+		}
+		
+		
+		// start running at the probabilistic table and filling its cells
+		List<Entity> mapsList = null;
+		for( int i = 0; i < this.cpt.tableSize(); i += this.ssbnnode.getProbNode().getStatesSize()) {
+			//	clears and initializes map
+			map = new HashMap<String, List<Entity>>();
+			for (SSBNNode ssbnnode : parents) {
+			  if (!map.containsKey(ssbnnode.getResident().getName())) {
+				  map.put(ssbnnode.getResident().getName(), new ArrayList<Entity>());
+			  }
+			}
+			
+			
+			// fill map at this loop. Note that parents.size, currentIteratorValue.size, and
+			// valueCombinationiterators are the same
+			for (int j = 0; j < parents.size(); j++) {
+				mapsList = map.get(parents.get(j).getResident().getName());
+				mapsList.add(currentIteratorValue.get(j));
+			}
+			
+			
+			// updates iterators
+			for (int j = 0; j < valueCombinationIterators.size(); j++) {
+				if (valueCombinationIterators.get(j).hasNext()) {
+					// if has next, then update current value and exits loop
+					currentIteratorValue.set(j, valueCombinationIterators.get(j).next());
+					break;
+				} else {
+					// else, reset the iterator (and current value) until exit loop
+					valueCombinationIterators.set(j, parents.get(j).getActualValues().iterator());
+					currentIteratorValue.set(j, valueCombinationIterators.get(j).next());
+				}
+			}
+						
+			// extract which column to verify
+			TempTableHeaderCell header = null;
+			for (TempTableHeaderCell headCell : this.tempTable) {
+				if (headCell.evaluateBooleanExpressionTree(map)) {
+					// the first expression to return true is the one we want
+					header = headCell;
+					// note that default (else) expression will allways return true!
+				}
+			}
+			
+			
+			// populate column
+			for (int j = 0; j < possibleValues.size() ; j++) {
+				float value = -1.0f;
+				
+				// extract the value to set
+				for (TempTableProbabilityCell cell : header.cellList) {
+					// the Probabilistic table is in the same order of the list "possibleValues", so we
+					// look for the entity of possibleValues at a cell
+					if (cell.getPossibleValue().getName().compareTo(possibleValues.get(j).getName()) == 0) {
+						value = cell.getProbabilityValue();
+						break;
+					}
+				}
+				this.cpt.setValue(i+j, value);
+			}
+			
+		}
+		
+		
 		return this.cpt;
 	}
 	
@@ -264,9 +383,8 @@ public class Compiler implements ICompiler {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.compiler.ICompiler#generateCPT()
 	 */
-	public PotentialTable generateCPT() throws MEBNException {
-		// TODO Auto-generated method stub
-		return null;
+	protected PotentialTable generateCPT() throws MEBNException {
+		return this.generateCPT(this.getSSBNNode());
 	}
 
 	
@@ -300,7 +418,8 @@ public class Compiler implements ICompiler {
 				statement();
 			} catch (TableFunctionMalformedException e) {
 				// Exception translation (perharps an anti-pattern ?)
-				throw new InvalidProbabilityRangeException(e.getMessage());
+				//throw new InvalidProbabilityRangeException(e.getMessage());
+				throw e;
 			}
 			
 		} else {
@@ -830,7 +949,7 @@ public class Compiler implements ICompiler {
 	}
 
 	/**
-	 * term ::= signed_factor [ mulop factor ]*
+	 * term ::= signed_factor [ mulop signed_factor ]*
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
@@ -843,14 +962,14 @@ public class Compiler implements ICompiler {
 		switch (look) {
 		case '*':
 			match('*');
-			temp2 = factor();
+			temp2 = this.signedFactor();
 			if (!Float.isNaN(temp2.getProbability()) && !Float.isNaN(temp1.getProbability())) {
 				return new MathOperationProbabilityValue(temp2, MathOperationProbabilityValue.MULTIPLY , temp1);
 			}
 			break;
 		case '/':
 			match('/');
-			temp2 = factor();
+			temp2 = this.signedFactor();
 			if (!Float.isNaN(temp2.getProbability()) && !Float.isNaN(temp1.getProbability())) {
 				return new MathOperationProbabilityValue(temp2, MathOperationProbabilityValue.DIVIDE , temp1);
 			}
@@ -1497,6 +1616,7 @@ public class Compiler implements ICompiler {
 		 * Note that this method can used to evaluate a collum of ProbabilisticTable
 		 * (consider evaluating each given collumn of CPT is like evaluating every parents as findings
 		 * at a given moment).
+		 * A "default" header will allways return true
 		 * @param valuesOnCPTColumn: a map which the key is a name of a parent node and
 		 * the value is its current possible values to be evaluated.
 		 * For example, if we want to evalueate an expression when for a node "Node(!ST0)" we
@@ -1514,6 +1634,11 @@ public class Compiler implements ICompiler {
 		 * 			returns: evaluation(True,Alpha) && evaluation(True,Beta) && evaluation(False,Alpha) && evaluation(False,Beta)
 		 */
 		public boolean evaluateBooleanExpressionTree(Map<String, List<Entity>> valuesOnCPTColumn) {
+			
+			// initial test
+			if (this.isDefault()) {
+				return true;
+			}
 			
 			List<TempTableHeaderParent> parentsList = this.getParents();
 			
