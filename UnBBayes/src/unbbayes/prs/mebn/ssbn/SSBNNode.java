@@ -90,17 +90,13 @@ public class SSBNNode {
 			this.setProbNode(null);
 		} else {
 			if (probNode == null) {
-				this.probNode = new ProbabilisticNode();
+				this.setProbNode(new ProbabilisticNode());
 			}else{
 				this.setProbNode(probNode);
 			}
 		}
 		
 		this.appendProbNodeState();	// if OK, probNode's states become the same of the resident's one
-		
-		if (this.getProbNode() != null) {
-			this.probabilisticNetwork.addNode(this.getProbNode());
-		}
 		
 		this.actualValues = new ArrayList<Entity>();
 		if (this.getProbNode() != null) {
@@ -117,9 +113,6 @@ public class SSBNNode {
 		this.setCompiler(new Compiler(resident, this));
 		
 		this.isFinding = isFinding;
-		
-		
-		
 	}
 	
 	/**
@@ -487,11 +480,33 @@ public class SSBNNode {
 		actualValue.add(uniqueValue);
 		this.setActualValues(actualValue);
 		this.setFinding(true);
-		this.setProbNode(null);
+		
+		if(this.getProbNode()!=null){
+			ProbabilisticNode node = this.getProbNode();
+			if(probabilisticNetwork != null){
+			    probabilisticNetwork.removeNode(node);
+			}
+			this.setProbNode(null);	
+		}
 	}
 	
+	/**
+	 * Set this node how a Context Node father. (cases where a context node 
+	 * dont avaliate became a father of a SSBNNode). 
+	 */
+	public void setNodeAsContext() {
+		this.isContext = true;
+		
+		if(this.getProbNode()!=null){
+			ProbabilisticNode node = this.getProbNode();
+			if(probabilisticNetwork != null){
+			    probabilisticNetwork.removeNode(node);
+			}
+			this.setProbNode(null);	
+		}
+	}
 	
-	
+
 	public void fillProbabilisticTable() throws MEBNException {
 		this.compiler.generateCPT(this);
 	}
@@ -518,12 +533,10 @@ public class SSBNNode {
 		if ((parent.getResident() == null )) {
 			throw new SSBNNodeGeneralException();
 		}
-		/*
 		if (isCheckingParentResident && ( parent.getProbNode() == null ) ) {
 			throw new SSBNNodeGeneralException();
 		}
-		*/
-		if (this.isFinding()) {
+		if (this.isFinding) {
 			throw new SSBNNodeGeneralException();
 		}
 		
@@ -559,15 +572,17 @@ public class SSBNNode {
 		}
 		
 		this.getParents().add(parent);		
+		
 		if (this.getProbNode() != null) {
 			this.getProbNode().addParent(parent.getProbNode());
-			if (parent.getProbNode() != null){
-				Edge edge = new Edge(parent.getProbNode(), this.getProbNode());
-				//if (this.getProbabilisticNetwork() != null) {
-					//this.getProbabilisticNetwork().addEdge(edge);
-				//}
-			}
+//			if (parent.getProbNode() != null){
+//				Edge edge = new Edge(parent.getProbNode(), this.getProbNode());
+//				//if (this.getProbabilisticNetwork() != null) {
+//					//this.getProbabilisticNetwork().addEdge(edge);
+//				//}
+//			}
 		}
+		
 	}
 	
 	
@@ -872,9 +887,6 @@ public class SSBNNode {
 			// currently, this process is redundant (because getName already sets probNode's name)...
 			//this.probNode.setName(this.getName());
 		}
-		if (this.isFinding) {
-			return null;
-		}
 		return probNode;
 	}
 
@@ -886,7 +898,7 @@ public class SSBNNode {
 	public void setProbNode(ProbabilisticNode probNode) {
 		// TODO treat parents and dangling references
 		if (this.probNode != null) {
-			this.probabilisticNetwork.removeNode(this.probNode);
+			this.getProbabilisticNetwork().removeNode(this.probNode);
 		}
 		this.probNode = probNode;
 		this.appendProbNodeState();
@@ -991,6 +1003,9 @@ public class SSBNNode {
 		if(isFinding){
 			ret+= " [F] ";
 		}
+		if(isContext){
+			ret+= " [C] ";
+		}
 		
 		return ret;  
 	}
@@ -999,14 +1014,7 @@ public class SSBNNode {
 		return isContext;
 	}
 
-	/**
-	 * Set this node how a Context Node father. (cases where a context node 
-	 * dont avaliate became a father of a SSBNNode). 
-	 */
-	public void setIsContext() {
-		this.setProbNode(null);
-		this.isContext = true;
-	}
+
 	
 	
 }
