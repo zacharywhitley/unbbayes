@@ -38,12 +38,12 @@ import edu.isi.stella.Module;
 import edu.isi.stella.Stella_Object;
 
 /**
- * Use the PowerLoom for build the knowledge base from the MTheory. The Knowledge
+ * Use PowerLoom for build the knowledge base from the MTheory. The Knowledge
  * base will be used for answer about the context restrictions. The PowerLoom is
  * used how a reasoner for the first-order logic. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
- * @version 1.0 (06/29/07)
+ * @version 1.1 (11/26/07)
  */
 public class PowerLoomKB implements KnowledgeBase{
 
@@ -57,6 +57,8 @@ public class PowerLoomKB implements KnowledgeBase{
 	
 	private String moduleGenerativeName = "GENERATIVE_MODULE"; 
 	private String moduleFindingName = "FINDINGS_MODULE"; 
+	
+	public static final String MODULE_NAME = "/PL-KERNEL/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE";
 	
 	/* 
 	 * Estrutura dos módulos: 
@@ -157,7 +159,7 @@ public class PowerLoomKB implements KnowledgeBase{
 	 * 
 	 * Sintaxe: 
 	 * (DEFCONCEPT SRDISTANCE_STATE (?Z) :<=> 
-	 *           (MEMBER-OF ?Z (SETOF PHASER1RANGE |&| PULSECANONRANGE)))
+	 *           (MEMBER-OF ?Z (SETOF PHASER1RANGE PULSECANONRANGE)))
 	 *           
      * (DEFFUNCTION SRDISTANCE (
      *           (?ARG_0 SENSORREPORT_LABEL) (?ARG_1 TIMESTEP_LABEL) 
@@ -185,11 +187,7 @@ public class PowerLoomKB implements KnowledgeBase{
 			
 			String setofList = ""; 
 			for(StateLink state: links){
-				setofList+= state.getState().getName() + ",";
-			}
-			
-			if(!links.isEmpty()) {
-				setofList = setofList.substring(0, setofList.length() - 1); //tirar a virgula final
+				setofList+= state.getState().getName() + " ";
 			}
 			
 			//definition of the function image
@@ -271,7 +269,7 @@ public class PowerLoomKB implements KnowledgeBase{
 			        	 if(isFirst){
 			        		isFirst = false;  
 			        	 }else{
-			        		 finding+=","; 
+			        		 finding+=" "; 
 			        	 }
 			        	 finding+=argument.getName();
 			         }
@@ -289,7 +287,7 @@ public class PowerLoomKB implements KnowledgeBase{
 			        	 if(isFirst){
 			        		isFirst = false;  
 			        	 }else{
-			        		 finding+=","; 
+			        		 finding+=" "; 
 			        	 }
 			        	 finding+=argument.getName();
 			         }
@@ -317,33 +315,9 @@ public class PowerLoomKB implements KnowledgeBase{
 	
 
 	/**
-	 * Save the definitions file (content of current KB)
-	 * 
-	 * @param name Name of the file
+	 * @see KnowledgeBase
 	 */
-	private void saveDefinitionsFile(String name){
-		PLI.sSaveModule(moduleGenerativeName, name, "REPLACE", environment); 
-	}
-	
-	/**
-	 * Load the definitions file (content of current KB)
-	 * 
-	 * @param name Name of the file
-	 */
-	private void loadDefinitionsFile(String name){
-		PLI.load(name, environment); 
-	}
-	
-	
-	private String executeCommand(String command){
-		return PLI.sEvaluate(command, moduleFindingName, null).toString();
-	}
-	
-    /* 
-     * Estes dois métodos consideram que todos os termos da fórmula estão 
-     * preenchidos da forma correta. 
-     */
-    public Boolean evaluateSimpleFormula(ContextNode context, List<OVInstance> ovInstances){
+    public Boolean evaluateContextNodeFormula(ContextNode context, List<OVInstance> ovInstances){
         
     	String formula = ""; 
 		
@@ -376,7 +350,10 @@ public class PowerLoomKB implements KnowledgeBase{
 	    } 
     }
     
-    public List<String> evaluateComplexContextFormula(ContextNode context, List<OVInstance> ovInstances){
+	/**
+	 * @see KnowledgeBase
+	 */
+    public List<String> evaluateSearchContextNodeFormula(ContextNode context, List<OVInstance> ovInstances){
     	String formula = ""; 
 		
 		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
@@ -397,45 +374,6 @@ public class PowerLoomKB implements KnowledgeBase{
 		
 		return result; 
     }
-	
-    @Deprecated
-	public boolean executeContextFormula(ContextNode context, List<OVInstance> ovInstances){
-		
-		debug.println("Generating formula for context node " + context.getName()); 
-		
-		String formula = ""; 
-		
-		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
-		
-		formula+= "(";  
-		
-		/* montar a formula sem preencher os valores da variaveis ordinarias ??? */
-		if((formulaTree.getTypeNode() == enumType.OPERANDO)&&(formulaTree.getSubTypeNode() == enumSubType.NODE)){
-			formula+= makeOperandoString(formulaTree, ovInstances); 
-		}else{
-			formula+= makeOperatorString(formulaTree, ovInstances); 	
-		}
-		
-		formula+= ")"; 
-		
-		debug.println("Original formula: " + context.getLabel()); 
-		debug.println("PowerLoom Formula: " + formula); 
-		
-	    TruthValue answer = PLI.sAsk(formula, moduleFindingName, null);
-	    
-	    if (PLI.isTrue(answer)) {
-	        debug.println("Result: true");
-	        return true; 
-	      } else if (PLI.isFalse(answer)) {
-	        debug.println("Result: false");
-	        return false; 
-	      } else if (PLI.isUnknown(answer)) {
-	        debug.println("Result: unknown");
-	        return false; 
-	      }else{
-	    	  return false; 
-	      } 
-	}
 	
 	/*
 	 * Build a operator string from the NodeFormulaTree. (a operator and its 
@@ -668,12 +606,16 @@ public class PowerLoomKB implements KnowledgeBase{
 		}
 		
 		public void println(String string){
-			System.out.println("[KB] " + string); 
+			if(debugActive){
+			   System.out.println("[KB] " + string);
+			}
 		}
 		
 		/* skip a line */
 		public void ln(){
-			System.out.println(); 
+			if(debugActive){
+			   System.out.println();
+			}
 		}
 	}
 
@@ -688,10 +630,27 @@ public class PowerLoomKB implements KnowledgeBase{
 		return null; 
 	}
 
-	@Deprecated
-	public boolean executeContextFormula(ContextNode context) {
-		// TODO Auto-generated method stub
-		return false;
+	/**
+	 * Save the definitions file (content of current KB)
+	 * 
+	 * @param name Name of the file
+	 */
+	private void saveDefinitionsFile(String name){
+		PLI.sSaveModule(moduleGenerativeName, name, "REPLACE", environment); 
+	}
+	
+	/**
+	 * Load the definitions file (content of current KB)
+	 * 
+	 * @param name Name of the file
+	 */
+	private void loadDefinitionsFile(String name){
+		PLI.load(name, environment); 
+	}
+	
+	
+	private String executeCommand(String command){
+		return PLI.sEvaluate(command, moduleFindingName, null).toString();
 	}
 	
 }

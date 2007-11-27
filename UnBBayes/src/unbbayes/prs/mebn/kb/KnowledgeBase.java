@@ -40,18 +40,6 @@ public interface KnowledgeBase {
 	 * @param randonVariableFinding
 	 */
 	public void insertRandonVariableFinding(RandomVariableFinding randonVariableFinding); 
-
-	/**
-	 * Insert the randon variable and your states into KB. 
-	 * 
-	 * Notas: 
-	 * - As variaveis ordinarias já devem estar setadas com as entidades
-	 * - Retorno: True, False, Absurd, lista...
-	 * 
-	 * @param resident
-	 */
-	public boolean executeContextFormula(ContextNode context);
-	
 	
 	/**
 	 * Salvar a modelagem na base de conhecimento
@@ -76,7 +64,7 @@ public interface KnowledgeBase {
 	 *                    in the context node's formula. 
 	 * @return the result of the evaluate
 	 */
-    public Boolean evaluateSimpleFormula(ContextNode context, List<OVInstance> ovInstances); 
+    public Boolean evaluateContextNodeFormula(ContextNode context, List<OVInstance> ovInstances); 
 	
     /**
      * Complex formulas are formulas that return a list of entities that satisfies 
@@ -88,6 +76,6 @@ public interface KnowledgeBase {
      * @return list of the names of entities that satisfies (a empty list if
      *                     don't have entities).  
      */
-    public  List<String> evaluateComplexContextFormula(ContextNode context, List<OVInstance> ovInstances); 
+    public  List<String> evaluateSearchContextNodeFormula(ContextNode context, List<OVInstance> ovInstances); 
 	
 }
