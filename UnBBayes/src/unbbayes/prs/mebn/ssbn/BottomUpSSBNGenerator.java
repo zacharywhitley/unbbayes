@@ -50,11 +50,13 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	
 	private long recursiveCallCount = 0;
 	
+	//all the ssbnnode created. 
+	private List<SSBNNode> ssbnNodeList; 
+	
 	/**
 	 * 
 	 */
 	public BottomUpSSBNGenerator() {
-		// TODO Auto-generated constructor stub
 	}
 	
 	/* (non-Javadoc)
@@ -62,6 +64,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 */
 	public ProbabilisticNetwork generateSSBN(Query query) throws SSBNNodeGeneralException, 
 	                                                             ImplementationRestrictionException {
+		
+		ssbnNodeList = new ArrayList<SSBNNode>(); 
 		
 		ProbabilisticNetwork network = null; 
 		
@@ -141,6 +145,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		if (exactValue != null) {
 			// there were an exact match
 			currentNode.setNodeAsFinding(exactValue.getState());
+			seen.add(currentNode); 
 			Debug.println("Exact value of " + currentNode.getName() + "=" + exactValue.getState()); 
 			return currentNode;
 		}
@@ -211,9 +216,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     		    
     		}else{
     			SSBNNode ssbnnode = SSBNNode.getInstance(net,residentNode, new ProbabilisticNode(), false);
-				for(OVInstance ovInstance: currentNode.getArguments()){
-					ssbnnode.addArgument(ovInstance); 
-				}
+				fillArguments(currentNode.getArguments(), residentNode, ssbnnode);
+				
     			generateRecursive(ssbnnode, seen, net);	
     			if(!ssbnnode.isFinding()){
     				currentNode.addParent(ssbnnode, true);
@@ -303,9 +307,17 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		return currentNode;
 	}
 
-	
-	
-	
+	/**
+	 *
+	 */
+	private void fillArguments(Collection<OVInstance> ovInstanceList, DomainResidentNode node, SSBNNode fatherNode) {
+		for(OVInstance ovInstance: ovInstanceList){
+			if(node.getOrdinaryVariableByName(ovInstance.getOv().getName()) != null){
+				fatherNode.addArgument(ovInstance); 
+			}
+		}
+	}
+
 	
 	/*
 	 * Construct the CPT's for the nodes of the ssbn. 
@@ -313,10 +325,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	private ProbabilisticNetwork createCPTs(SSBNNode root){
 		return null; 
 	}
-	
-	
-	
-	
 	
 	
 	/**
@@ -386,13 +394,15 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			OVInstance newOvInstance = OVInstance.getInstance(ovOrdereable, 
 					prev.getName(), ovOrdereable.getValueType());
 			
-			//Criar o novo SSBNNode com os novos valores setados. 
+			//Create the new SSBNNode with the setted values. 
 			SSBNNode ssbnnode = SSBNNode.getInstance(net, residentNode, 
 					new ProbabilisticNode(), false);
 			
 			for(OVInstance instance: currentNode.getArguments()){
 				if(instance != ovInstanceOrdereable){
-					ssbnnode.addArgument(instance); 
+					if(residentNode.getOrdinaryVariableByName(instance.getOv().getName()) != null){
+						ssbnnode.addArgument(instance); 
+					}
 				}else{
 					ssbnnode.addArgument(newOvInstance);
 				}
@@ -512,17 +522,16 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
 		//search
 		Collection<ContextNode> contextNodeList = mFrag.getSearchContextByOVCombination(ovList);
-		int size = contextNodeList.size(); 
 		
-		if(size > 1){
+		if(contextNodeList.size() > 1){
 			throw new ImplementationRestrictionException(resource.getString("MoreThanOneContextNodeSearh")); 
 		}
-		if(size < 1){
+		if(contextNodeList.size() < 1){
 			throw new SSBNNodeGeneralException(resource.getString("MoreThanOneContextNodeSearh")); 
 		}
 		
 		//contextNodeList have only one element
-		ContextNode context = contextNodeList.toArray(new ContextNode[size])[0];
+		ContextNode context = contextNodeList.toArray(new ContextNode[contextNodeList.size()])[0];
 		OrdinaryVariable ov = ovList.get(0);
 		
 		Debug.println("Context Node: " + context.getLabel()); 
@@ -554,30 +563,17 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				//Search for all the entities present in kb. 
 				result = kb.getEntityByType(ov.getValueType().getName());
 				for(String entity: result){
-		        	OVInstance instance = OVInstance.getInstance(ov, entity, ov.getValueType()); 
-					SSBNNode node = SSBNNode.getInstance(
-							originNode.getProbabilisticNetwork(),fatherNode); 
-					node.addArgument(instance); 
-					for(OVInstance ovInstance: ovInstances){
-						node.addArgument(ovInstance); 
-					}
-					nodes.add(node); 
+					SSBNNode node =  createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
+							fatherNode, ovInstances, ov, entity);
+		        	nodes.add(node); 
 				}
 				return nodes;  
 			}
 			else{
-				/*
-				 * Normal case
-				 */
 				List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
 				for(String entity: result){
-					OVInstance instance = OVInstance.getInstance(ov, entity, ov.getValueType()); 
-					SSBNNode node = SSBNNode.getInstance(
-							originNode.getProbabilisticNetwork(),fatherNode); 
-					node.addArgument(instance); 
-					for(OVInstance ovInstance: ovInstances){
-						node.addArgument(ovInstance); 
-					}
+					SSBNNode node = createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
+							fatherNode, ovInstances, ov, entity);
 					nodes.add(node); 
 				}
 				return nodes; 
@@ -587,6 +583,18 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			throw new SSBNNodeGeneralException(resource.getString("InvalidContextNodeFormula") 
 					+ ": " + context.getLabel());  
 		}
+	}
+
+	private SSBNNode createSSBNNodeForEntitySearch(ProbabilisticNetwork probabilisticNetwork, 
+			DomainResidentNode residentNode, List<OVInstance> ovInstances, OrdinaryVariable ov, String entity) {
+		
+		OVInstance instance = OVInstance.getInstance(ov, entity, ov.getValueType()); 
+		SSBNNode node = SSBNNode.getInstance(probabilisticNetwork,residentNode); 
+		node.addArgument(instance); 
+		fillArguments(ovInstances, residentNode, node);
+		
+		return node;
+	
 	}
 	
 	/**
@@ -640,7 +648,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				Debug.println("Result is empty"); 
 //				Add the context node how father
 				DomainResidentNode domainResidentNode = context.getNodeSearch(ovInstances); 
-				SSBNNode nodeContext = SSBNNode.getInstance(originNode.getProbabilisticNetwork(), domainResidentNode, new ProbabilisticNode(), false); 
+				SSBNNode nodeContext = SSBNNode.getInstance(originNode.getProbabilisticNetwork(), 
+						domainResidentNode, new ProbabilisticNode(), false); 
 				nodeContext.setNodeAsContext(); 
 				nodes.add(nodeContext); 
 				
@@ -650,15 +659,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				DomainResidentNode residentNode = 
 					(DomainResidentNode)fatherNode.getResidentNodePointer().getResidentNode(); 
 		        for(String entity: result){
-		        	SSBNNode ssbnnode = SSBNNode.getInstance(originNode.getProbabilisticNetwork(),residentNode, new ProbabilisticNode(), false); 
-		        	
-		        	addArgumentToSSBNNode(fatherNode, residentNode, ssbnnode,  
-		        			OVInstance.getInstance(ov, entity, ov.getValueType()));	
-		        	
-	            	for(OVInstance instance: originNode.getArguments()){
-	            		addArgumentToSSBNNode(fatherNode, residentNode, ssbnnode, instance);
-	            	}
-	            	
+		        	SSBNNode ssbnnode = createSSBNNodeForEntitySearch(originNode, 
+		        			fatherNode, ov, residentNode, entity);
 					nodes.add(ssbnnode); 
 				}
 				return nodes;  
@@ -668,15 +670,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				DomainResidentNode residentNode = 
 					(DomainResidentNode)fatherNode.getResidentNodePointer().getResidentNode(); 
 				for(String entity: result){
-		        	SSBNNode ssbnnode = SSBNNode.getInstance(originNode.getProbabilisticNetwork(),residentNode, new ProbabilisticNode(), false); 
-		        	
-		        	addArgumentToSSBNNode(fatherNode, residentNode, ssbnnode, 
-		        			OVInstance.getInstance(ov, entity, ov.getValueType()));
-		        
-	            	for(OVInstance instance: originNode.getArguments()){
-	            		addArgumentToSSBNNode(fatherNode, residentNode, ssbnnode, instance); 
-	            	}
-	            	
+					SSBNNode ssbnnode = createSSBNNodeForEntitySearch(originNode, 
+							fatherNode, ov, residentNode, entity);
 					nodes.add(ssbnnode); 
 				}
 				return nodes; 
@@ -688,7 +683,26 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		}
 	}
 
-	/*
+	/* 
+	 * version for input nodes. 
+	 */
+	private SSBNNode createSSBNNodeForEntitySearch(SSBNNode originNode, 
+			GenerativeInputNode fatherNode, OrdinaryVariable ov, 
+			DomainResidentNode residentNode, String entityName) throws SSBNNodeGeneralException {
+		
+		SSBNNode ssbnnode = SSBNNode.getInstance(originNode.getProbabilisticNetwork(),
+				residentNode, new ProbabilisticNode(), false); 
+		
+		addArgumentToSSBNNode(fatherNode, residentNode, ssbnnode,  
+				OVInstance.getInstance(ov, entityName, ov.getValueType()));	
+		
+		for(OVInstance instance: originNode.getArguments()){
+			addArgumentToSSBNNode(fatherNode, residentNode, ssbnnode, instance);
+		}
+		return ssbnnode;
+	}
+
+	/**
 	 * Add instance how a argument of ssbnnode. ResidentNode is the node of
 	 * the SSBNNode and is the reference of the input node. 
 	 */
@@ -734,6 +748,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     	
     	return ovProblemList; 
 	}
+	
+	
 
 	/*
 	 * debug method. 
