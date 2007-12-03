@@ -96,7 +96,8 @@ public class SSBNNode {
 			}
 		}
 		
-		this.appendProbNodeState();	// if OK, probNode's states become the same of the resident's one
+		// below is unecessary because setProbeNode already does
+		//this.appendProbNodeState();	// if OK, probNode's states become the same of the resident's one
 		
 		this.actualValues = new ArrayList<Entity>();
 		if (this.getProbNode() != null) {
@@ -903,7 +904,11 @@ public class SSBNNode {
 		this.probNode = probNode;
 		this.appendProbNodeState();
 		if (this.probNode != null) {
+			// getName(), when called first, sets probnode's name
+			this.probNode.setName(this.getName());
+			// TODO optimize. above code is setting probnode'name twice
 			this.getProbabilisticNetwork().addNode(this.probNode);
+			
 		}
 	}
 

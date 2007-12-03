@@ -225,8 +225,8 @@ public class Compiler implements ICompiler {
 	 * @param ssbnnode
 	 */
 	public void init(SSBNNode ssbnnode) {
-		this.ssbnnode = ssbnnode;
-		this.node = ssbnnode.getResident();
+		this.setSSBNNode(ssbnnode);
+		//this.node = ssbnnode.getResident();	//setSSBNNode already does it.
 		this.mebn = this.node.getMFrag().getMultiEntityBayesianNetwork();
 		String pseudocode = this.node.getTableFunction();
 		
@@ -262,7 +262,8 @@ public class Compiler implements ICompiler {
 	 * 
 	 * @return generated potential table
 	 */
-	public PotentialTable getCPT() throws InconsistentTableSemanticsException {
+	public PotentialTable getCPT() throws InconsistentTableSemanticsException,
+											InvalidProbabilityRangeException{
 		// TODO implement this!!!
 		
 		// initial tests
@@ -290,7 +291,7 @@ public class Compiler implements ICompiler {
 		ArrayList<SSBNNode> parents = new ArrayList<SSBNNode>(this.ssbnnode.getParents());
 		
 		ArrayList<Entity> possibleValues = new ArrayList<Entity>(this.ssbnnode.getActualValues());
-		if (possibleValues.size() != this.ssbnnode.getProbNode().getStatesSize()) {
+		if (( this.ssbnnode.getProbNode().getStatesSize() % possibleValues.size()  ) != 0) {
 			// the ssbnnode and the table is not synchronized!!
 			throw new InconsistentTableSemanticsException();
 		}
@@ -368,6 +369,10 @@ public class Compiler implements ICompiler {
 						value = cell.getProbabilityValue();
 						break;
 					}
+				}
+				// consistency check, allow only values between 0 and 1
+				if ((value < 0) || (value > 1)) {
+					throw new InvalidProbabilityRangeException();
 				}
 				this.cpt.setValue(i+j, value);
 			}
@@ -559,7 +564,7 @@ public class Compiler implements ICompiler {
 			scanNoSkip();	// no white spaces should stay between ident and "." and next ident
 			if (token == 'x') {
 				Debug.println("SCANING IDENTIFIER " + value);
-				ret += value;
+				ret += this.noCaseChangeValue;
 			} else {
 				expected("Identifier");
 			}	
@@ -1443,7 +1448,7 @@ public class Compiler implements ICompiler {
 	/**
 	 * @return the cpt
 	 */
-	public PotentialTable getCpt() {
+	protected PotentialTable getCpt() {
 		return cpt;
 	}
 
@@ -1705,6 +1710,12 @@ public class Compiler implements ICompiler {
 		 * in order to obtain the "similar" parent set at a given moment.
 		 */
 		public void cleanUpByVarSetName(SSBNNode baseSSBNNode) {
+			
+			// no cleanup is necessary when this is a default distro - no boolean evaluation is present
+			if (this.isDefault()) {
+				return;
+			}
+			
 			// extracts parents' similar sets by strong OV names
 			Collection<SSBNNode> parents =  baseSSBNNode.getParentSetByStrongOV(
 					false, this.getVarsetname().split("\\" + baseSSBNNode.getStrongOVSeparator()));
@@ -2153,13 +2164,16 @@ public class Compiler implements ICompiler {
 				ret = Float.NaN;
 				break;
 			}
-			// consistency check (verify probability range [0,1])
+			// consistency check (verify probability range [0,1]) 
+			/*
+			// this test should be executed only at the top level caller
 			if (!Float.isNaN(ret)) {
 				
 				if ( (ret < 0) || (ret > 1) ) {
 					throw new InvalidProbabilityRangeException();
 				} 
-			}	
+			}
+			*/	
 			return ret;
 		}
 	}

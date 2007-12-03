@@ -23,10 +23,13 @@ import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
+import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.compiler.exception.InvalidProbabilityRangeException;
 import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredException;
 import unbbayes.prs.mebn.exception.MEBNException;
+import unbbayes.prs.mebn.ssbn.OVInstance;
+import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.util.Debug;
 import junit.framework.TestCase;
 
@@ -78,7 +81,7 @@ public class CompilerTest extends TestCase {
 		System.out.println("-----Load file test-----"); 
 		
 		try{
-			mebn = prOwlIO.loadMebn(new File("examples/mebn/StarTrek37.owl")); 
+			mebn = prOwlIO.loadMebn(new File("examples/mebn/StarTrek38.owl")); 
 			Debug.println("LOAD COMPLETE"); 
 		}
 		catch (IOMebnException e){
@@ -563,6 +566,79 @@ public class CompilerTest extends TestCase {
 		}
 		*/
 		 
+	}
+	
+	
+	
+	public void testGenerateCPT() {
+		
+		DomainResidentNode harmPotential = this.mebn.getDomainResidentNode("HarmPotential");
+		DomainResidentNode starshipClass = this.mebn.getDomainResidentNode("StarshipClass");
+		DomainResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");
+		
+		OrdinaryVariable st = harmPotential.getOrdinaryVariableByName("st");
+		OrdinaryVariable t = harmPotential.getOrdinaryVariableByName("t");
+		
+		OVInstance st0 = OVInstance.getInstance(st, "ST0", st.getValueType());
+		OVInstance t0 = OVInstance.getInstance(st, "T0", st.getValueType());
+		
+		ProbabilisticNetwork net = new ProbabilisticNetwork("TestGenerateCPT");
+		
+		SSBNNode harmPotential_ST0_T0 = SSBNNode.getInstance(net, harmPotential);
+		try {
+			harmPotential_ST0_T0.addArgument(st0);
+			harmPotential_ST0_T0.addArgument(t0);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		SSBNNode distFromOwn_ST0_T0 = SSBNNode.getInstance(net, distFromOwn);
+		try {
+			distFromOwn_ST0_T0.addArgument(st0);
+			distFromOwn_ST0_T0.addArgument(t0);
+			harmPotential_ST0_T0.addParent(distFromOwn_ST0_T0, true);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		net.addEdge(new Edge(distFromOwn_ST0_T0.getProbNode(),harmPotential_ST0_T0.getProbNode()));
+		
+		SSBNNode starshipClass_ST0 = SSBNNode.getInstance(net, starshipClass);
+		try {
+			starshipClass_ST0.addArgument(st0);
+			harmPotential_ST0_T0.addParent(starshipClass_ST0, true);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		net.addEdge(new Edge(starshipClass_ST0.getProbNode(),harmPotential_ST0_T0.getProbNode()));
+		
+		
+		Compiler compiler = new Compiler(harmPotential,harmPotential_ST0_T0);
+		
+		compiler.init(harmPotential_ST0_T0);
+		
+		PotentialTable table = null;
+		try {
+			compiler.parse();		
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		try {
+			table = compiler.getCPT();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		
+		GUIPotentialTable guiCPT = new GUIPotentialTable(table);
+		guiCPT.showTable("VAI FUNCIONAR???");
+		
+		while(true);
+		
 	}
 
 	/**
