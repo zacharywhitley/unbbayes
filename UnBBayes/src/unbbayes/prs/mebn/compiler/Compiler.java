@@ -264,7 +264,6 @@ public class Compiler implements ICompiler {
 	 */
 	public PotentialTable getCPT() throws InconsistentTableSemanticsException,
 											InvalidProbabilityRangeException{
-		// TODO implement this!!!
 		
 		// initial tests
 		if (this.ssbnnode == null) {
@@ -291,7 +290,7 @@ public class Compiler implements ICompiler {
 		ArrayList<SSBNNode> parents = new ArrayList<SSBNNode>(this.ssbnnode.getParents());
 		
 		ArrayList<Entity> possibleValues = new ArrayList<Entity>(this.ssbnnode.getActualValues());
-		if (( this.ssbnnode.getProbNode().getStatesSize() == possibleValues.size()  )) {
+		if (( this.ssbnnode.getProbNode().getStatesSize() != possibleValues.size()  )) {
 			// the ssbnnode and the table is not synchronized!!
 			throw new InconsistentTableSemanticsException();
 		}
@@ -314,7 +313,7 @@ public class Compiler implements ICompiler {
 		
 		
 		// start running at the probabilistic table and filling its cells
-		List<Entity> mapsList = null;
+		//List<Entity> entityList = null;
 		for( int i = 0; i < this.cpt.tableSize(); i += this.ssbnnode.getProbNode().getStatesSize()) {
 			//	clears and initializes map
 			map = new HashMap<String, List<Entity>>();
@@ -328,8 +327,7 @@ public class Compiler implements ICompiler {
 			// fill map at this loop. Note that parents.size, currentIteratorValue.size, and
 			// valueCombinationiterators are the same
 			for (int j = 0; j < parents.size(); j++) {
-				mapsList = map.get(parents.get(j).getResident().getName());
-				mapsList.add(currentIteratorValue.get(j));
+				map.get(parents.get(j).getResident().getName()).add(currentIteratorValue.get(j));
 			}
 			
 			
@@ -342,7 +340,9 @@ public class Compiler implements ICompiler {
 				} else {
 					// else, reset the iterator (and current value) until exit loop
 					valueCombinationIterators.set(j, parents.get(j).getActualValues().iterator());
-					currentIteratorValue.set(j, valueCombinationIterators.get(j).next());
+					if (valueCombinationIterators.get(j).hasNext()) {
+						currentIteratorValue.set(j, valueCombinationIterators.get(j).next());
+					}
 				}
 			}
 						
@@ -352,6 +352,7 @@ public class Compiler implements ICompiler {
 				if (headCell.evaluateBooleanExpressionTree(map)) {
 					// the first expression to return true is the one we want
 					header = headCell;
+					break;	// the first valid block is the one we choose
 					// note that default (else) expression will allways return true!
 				}
 			}
@@ -362,9 +363,9 @@ public class Compiler implements ICompiler {
 				float value = -1.0f;
 				
 				// extract the value to set
-				for (TempTableProbabilityCell cell : header.cellList) {
-					// the Probabilistic table is in the same order of the list "possibleValues", so we
-					// look for the entity of possibleValues at a cell
+				for (TempTableProbabilityCell cell : header.getCellList()) {
+					// we assume the Probabilistic table is in the same order of the list "possibleValues", 
+					// so we look for the entity of possibleValues at a cell
 					if (cell.getPossibleValue().getName().compareTo(possibleValues.get(j).getName()) == 0) {
 						value = cell.getProbabilityValue();
 						break;
@@ -377,7 +378,7 @@ public class Compiler implements ICompiler {
 				this.cpt.setValue(i+j, value);
 			}
 			
-		}
+		}	// while i < this.cpt.tableSize()
 		
 		
 		return this.cpt;
@@ -1551,7 +1552,7 @@ public class Compiler implements ICompiler {
 			this.varsetname = varsetname;
 		}
 		/**
-		 * @return the cellList
+		 * @return the cellList: possible values and its probability
 		 */
 		protected List<TempTableProbabilityCell> getCellList() {
 			return cellList;
@@ -1670,6 +1671,7 @@ public class Compiler implements ICompiler {
 			//	evaluate (True,Alpha), (False,Alpha), (True,Beta), (False,Beta)...
 			boolean hasMoreCombination = true;
 			while (hasMoreCombination) {
+				// TODO the test below might be dangerous in multithread application...?
 				if (this.isAny()) {	// if ANY, then OR 
 					ret = ret || this.getBooleanExpressionTree().evaluate();
 				} else {	// if ALL, then AND
@@ -1680,7 +1682,7 @@ public class Compiler implements ICompiler {
 					pointer.getNextEvaluation();	// now the leaf will evalueate the next element of EvaluationList
 				} else {
 					int lastPos = 0;
-					// if reached the end of this list, reset it and step foward the nest list, and so on
+					// if reached the end of this list, reset it and step foward the next list, and so on
 					for (; !pointer.hasNextEvaluation() && (lastPos < parentsList.size());lastPos++) {
 						pointer = parentsList.get(lastPos);
 						pointer.resetEvaluationList();
@@ -2013,7 +2015,7 @@ public class Compiler implements ICompiler {
 		 * @return true if currently evaluated entity list has next element
 		 */
 		public boolean hasNextEvaluation() {
-			return this.currentEvaluationIndex < this.evaluationList.size();
+			return (this.currentEvaluationIndex + 1 ) < this.evaluationList.size();
 		}
 		
 		/**
