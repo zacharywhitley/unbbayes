@@ -291,7 +291,7 @@ public class Compiler implements ICompiler {
 		ArrayList<SSBNNode> parents = new ArrayList<SSBNNode>(this.ssbnnode.getParents());
 		
 		ArrayList<Entity> possibleValues = new ArrayList<Entity>(this.ssbnnode.getActualValues());
-		if (( this.ssbnnode.getProbNode().getStatesSize() % possibleValues.size()  ) != 0) {
+		if (( this.ssbnnode.getProbNode().getStatesSize() == possibleValues.size()  )) {
 			// the ssbnnode and the table is not synchronized!!
 			throw new InconsistentTableSemanticsException();
 		}

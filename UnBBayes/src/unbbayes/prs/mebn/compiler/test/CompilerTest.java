@@ -602,7 +602,7 @@ public class CompilerTest extends TestCase {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
-		net.addEdge(new Edge(distFromOwn_ST0_T0.getProbNode(),harmPotential_ST0_T0.getProbNode()));
+		//net.addEdge(new Edge(distFromOwn_ST0_T0.getProbNode(),harmPotential_ST0_T0.getProbNode()));
 		
 		SSBNNode starshipClass_ST0 = SSBNNode.getInstance(net, starshipClass);
 		try {
@@ -612,7 +612,7 @@ public class CompilerTest extends TestCase {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
-		net.addEdge(new Edge(starshipClass_ST0.getProbNode(),harmPotential_ST0_T0.getProbNode()));
+		//net.addEdge(new Edge(starshipClass_ST0.getProbNode(),harmPotential_ST0_T0.getProbNode()));
 		
 		
 		Compiler compiler = new Compiler(harmPotential,harmPotential_ST0_T0);

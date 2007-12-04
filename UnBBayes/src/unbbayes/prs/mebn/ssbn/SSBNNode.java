@@ -575,13 +575,13 @@ public class SSBNNode {
 		this.getParents().add(parent);		
 		
 		if (this.getProbNode() != null) {
-			this.getProbNode().addParent(parent.getProbNode());
-//			if (parent.getProbNode() != null){
-//				Edge edge = new Edge(parent.getProbNode(), this.getProbNode());
-//				//if (this.getProbabilisticNetwork() != null) {
-//					//this.getProbabilisticNetwork().addEdge(edge);
-//				//}
-//			}
+			//this.getProbNode().addParent(parent.getProbNode());
+			if (parent.getProbNode() != null){
+				Edge edge = new Edge(parent.getProbNode(), this.getProbNode());
+				if (this.getProbabilisticNetwork() != null) {
+					this.getProbabilisticNetwork().addEdge(edge);
+				}
+			}
 		}
 		
 	}
