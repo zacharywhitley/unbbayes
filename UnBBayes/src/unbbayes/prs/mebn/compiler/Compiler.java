@@ -275,6 +275,12 @@ public class Compiler implements ICompiler {
 		if (this.tempTable.size() <= 0) {
 			return null;
 		}
+		if (this.ssbnnode.isFinding()) {
+			return null;
+		}
+		if (this.ssbnnode.getProbNode() == null) {
+			return null;
+		}
 		
 		
 		// initialization
@@ -346,16 +352,30 @@ public class Compiler implements ICompiler {
 				}
 			}
 						
-			// extract which column to verify
+			// prepare to extract which column to verify
 			TempTableHeaderCell header = null;
-			for (TempTableHeaderCell headCell : this.tempTable) {
-				if (headCell.evaluateBooleanExpressionTree(map)) {
-					// the first expression to return true is the one we want
-					header = headCell;
-					break;	// the first valid block is the one we choose
-					// note that default (else) expression will allways return true!
+			
+			// if default distro, then use the default header...
+			if (this.getSSBNNode().isUsingDefaultCPT()) {
+				// we assume the default distro is the last block on pseudocode
+				header = this.tempTable.get(this.tempTable.size() - 1);
+				// let's check if this header is really declaring a default distro...
+				if (!header.isDefault()) {
+					throw new InconsistentTableSemanticsException();
+				}
+			} else {
+				//	if not default, search the column to verify
+				for (TempTableHeaderCell headCell : this.tempTable) {
+					if (headCell.evaluateBooleanExpressionTree(map)) {
+						// the first expression to return true is the one we want
+						header = headCell;
+						break;	// the first valid block is the one we choose
+						// note that default (else) expression will allways return true!
+					}
 				}
 			}
+			
+			
 			
 			
 			// populate column
@@ -401,7 +421,7 @@ public class Compiler implements ICompiler {
 	public PotentialTable generateCPT(SSBNNode ssbnnode) throws MEBNException {
 		this.init(ssbnnode);
 		this.parse();
-		return getCpt();
+		return getCPT();
 	}
 	
 	/**
