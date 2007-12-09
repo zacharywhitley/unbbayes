@@ -33,7 +33,7 @@ public class ObjectEntity extends Entity {
 	 */
 	private Set<ObjectEntityInstance> listObjectEntityInstance;
 	
-	private boolean isOrdereable; 
+	//private boolean isOrdereable; 
 	
 	protected ObjectEntity(String name, TypeContainer container) throws TypeException {
 		
@@ -83,7 +83,7 @@ public class ObjectEntity extends Entity {
 		
 		ObjectEntityInstance instance = null; 
 		
-		if(!isOrdereable){
+		if(!this.isOrdereable()){
 		    instance = new ObjectEntityInstance(name, this);
 		}else{
 			instance = new ObjectEntityInstanceOrdereable(name, this); 
@@ -165,7 +165,7 @@ public class ObjectEntity extends Entity {
 	
 	public String toString(){
 		String ret = name; 
-		if(isOrdereable){
+		if(this.isOrdereable()){
 			ret+=" [Ord]";
 		}
 		return ret; 		
@@ -182,7 +182,7 @@ public class ObjectEntity extends Entity {
 
 
 	public boolean isOrdereable() {
-		return isOrdereable;
+		return this.type.hasOrder();
 	}
 	
 	/**
@@ -198,8 +198,9 @@ public class ObjectEntity extends Entity {
 			throw new ObjectEntityHasInstancesException(); 
 		}
 		
-		this.isOrdereable = isOrdereable;
-	
+		//this.isOrdereable = isOrdereable;
+		
+		this.getType().setHasOrder(isOrdereable); 
 	}
 	
 }

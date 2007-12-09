@@ -624,7 +624,7 @@ public class SSBNNode {
 	 * If invalid argument was passed, then it will return an empty collection (size = 0)
 	 */
 	public Collection<SSBNNode> getParentSetByStrongOV(boolean isExactMatch, String...ovNames ) {
-		Collection<SSBNNode> parents = new HashSet();
+		Collection<SSBNNode> parents = new ArrayList<SSBNNode>();
 		if (ovNames == null) {
 			return parents;
 		}
@@ -658,7 +658,7 @@ public class SSBNNode {
 	 * If invalid argument was passed, then it will return an empty collection (size = 0)
 	 */
 	public Collection<SSBNNode> getParentSetByStrongOV(boolean isExactMatch, Collection<OrdinaryVariable> setOfOV) {
-		Collection<SSBNNode> parents = new HashSet();
+		Collection<SSBNNode> parents = new ArrayList<SSBNNode>();
 		if (setOfOV == null) {
 			return parents;
 		}
@@ -689,7 +689,7 @@ public class SSBNNode {
 	 * If invalid argument was passed, then it will return an empty collection (size = 0)
 	 */
 	public Collection<SSBNNode> getParentSetByStrongOV(boolean isExactMatch,OrdinaryVariable... setOfOV) {
-		Collection<SSBNNode> parents = new HashSet();
+		Collection<SSBNNode> parents = new ArrayList<SSBNNode>();
 		if (setOfOV == null) {
 			return parents;
 		}
@@ -716,63 +716,69 @@ public class SSBNNode {
 	
 	
 	/**
-	 * "Automagically" sets up a map containing SSBNs by strong ov's, considering anything but argument as strong variables.
-	 * @param weakOV anything but these ovs will be considered as "strong"
-	 * @return a map containing a set name (which would be strong ov names separated by dots) and parent SSBNNodes containing such ovs as arguments.
+	 * "Automagically" sets up a list containing SSBNNodes by strong ov's, considering weak OVs.
+	 * Basically, looks for parents w/ only strongOVs as arguments plus parents w/ only strongOVs and
+	 * weak ones
+	 * @param setOfOV: set of strong ovs
+	 * @return a list of SSBNNode 
+	 * If invalid argument was passed, then it will return an empty collection (size = 0)
 	 */
-	public Map<String, Collection<SSBNNode>> getParentMapByWeakOV(OrdinaryVariable...weakOVs) {
+	public List<SSBNNode> getParentSetByStrongOVWithWeakOVCheck(String...strongOVs) {
 		
-		Map<String, Collection<SSBNNode>> ret = new HashMap<String, Collection<SSBNNode>>();
+		List<SSBNNode> ret = new ArrayList<SSBNNode>();
+		// checks...
 		if (this.isFinding) {
 			return ret;
 		}
-		List<SSBNNode> knownNodes = new ArrayList<SSBNNode>();
-		
-		// Disconsider weak ovs
-		Collection<OrdinaryVariable> strongOVs = new ArrayList<OrdinaryVariable>(this.getAllParentsOV());
-		for (int i = 0; i < weakOVs.length; i++) {
-			strongOVs.remove(weakOVs[i]);
+		if (strongOVs == null) {
+			return ret;
+		}
+		if (strongOVs.length <= 0) {
+			return ret;
 		}
 		
-		// start collecting parents, first the ones w/ more arguments
-		Collection<Collection<OrdinaryVariable>>  ovCombo = null;
-		Collection<SSBNNode> tempParentSet = null;
-		Collection<SSBNNode> ignoringParentSet = null;
-		for (int i = strongOVs.size(); i >  0 ; i--) {
-			ovCombo =  this.getOVCombination(i , strongOVs);
-			for (Collection<OrdinaryVariable> ovs : ovCombo) {
-				tempParentSet = this.getParentSetByStrongOV(false,ovs);
-				ignoringParentSet = new ArrayList<SSBNNode>();
-				for (SSBNNode parentNode : tempParentSet) {
-					if (knownNodes.contains(parentNode)) {
-						ignoringParentSet.add(parentNode);
-					} else {
-						knownNodes.add(parentNode);
+		//	copy  strongOV
+		ArrayList<String> strongOVList = new ArrayList<String>();
+		for (String ovname : strongOVs) {
+			strongOVList.add(ovname);
+		}
+		
+		//	extracts weak OVs names at parents
+		// TODO optimize to prevent redundant reading...
+		List<String> weakOVs = new ArrayList<String>();
+		for (SSBNNode parent : this.getParents()) {
+			for (OVInstance ovi : parent.getArguments()) {
+				if (ovi.getEntity().getType().hasOrder()) {
+					if (!weakOVs.contains(ovi.getOv().getName())) {
+						// no repeated values allowed
+						//if (!strongOVList.contains(ovi.getOv().getName())) {
+							// should not repeat a OV treated before (which should be in strongOVList)
+							weakOVs.add(ovi.getOv().getName());
+						//}
 					}
 				}
-				tempParentSet.removeAll(ignoringParentSet);
-				if (tempParentSet.size() > 0) {
-					ret.put(this.getNameByDots(ovs), tempParentSet);
-				}								
 			}
 		}
-		// Start analizing those nodes w/o strong variables
-		for (int i = weakOVs.length; i >  0 ; i--) {
-			ovCombo =  this.getOVCombination(i, weakOVs);
-			for (Collection<OrdinaryVariable> ovs : ovCombo) {
-				tempParentSet = this.getParentSetByStrongOV(true,ovs);
-				/*for (SSBNNode parentNode : tempParentSet) {
-					if (knownNodes.contains(parentNode)) {
-						tempParentSet.remove(parentNode);
-					} else {
-						knownNodes.add(parentNode);
-					}
-				}*/
-				if (tempParentSet.size() > 0) {
-					ret.put(this.getNameByDots(ovs), tempParentSet);
-				}								
+		
+		// removes weak OVs from strong OVs
+		strongOVList.removeAll(weakOVs);
+		
+		
+		// first, obtain a list of parents containing only those strong OVs
+		ret.addAll(this.getParentSetByStrongOV(true, strongOVList.toArray(new String[strongOVList.size()])));
+		
+		
+		// adds parents with strongOVs + weakOVs
+		for (String weakov : weakOVs) {			
+			for (int i = weakOVs.indexOf(weakov); i < weakOVs.size(); i++) {
+				ArrayList<String> aux = (ArrayList<String>)strongOVList.clone();
+				aux.add(weakOVs.get(i));
+				ret.addAll(this.getParentSetByStrongOV(true, aux.toArray(new String[aux.size()])));
 			}
+			strongOVList.add(weakov);			
 		}
+		
+		
 		return ret;
 	}
 	

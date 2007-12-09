@@ -12,6 +12,7 @@ import java.util.Map;
 
 import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.io.mebn.PrOwlIO;
+import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -76,12 +77,12 @@ public class CompilerTest extends TestCase {
 		super(arg0);
 		Debug.setDebug(true);
 		
-		PrOwlIO prOwlIO = new PrOwlIO(); 
+		UbfIO ubfIO = UbfIO.getInstance(); 
 		
 		System.out.println("-----Load file test-----"); 
 		
 		try{
-			mebn = prOwlIO.loadMebn(new File("examples/mebn/StarTrek38.owl")); 
+			mebn = ubfIO.loadMebn(new File("examples/mebn/StarTrek39.ubf")); 
 			Debug.println("LOAD COMPLETE"); 
 		}
 		catch (IOMebnException e){
@@ -152,15 +153,15 @@ public class CompilerTest extends TestCase {
 	public void testConsistencyNoDefDistro() {
 		//		 Should fail, no default distro
 		String tableString =  
-			" if any STi have( OpSpec = Cardassian & HarmPotential = true ) " + 
+			" if any st have( OpSpec = Cardassian & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Romulan & HarmPotential = true ) " +
+			" else if any st have( OpSpec = Romulan & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = MIN(0;1) , Medium = .01 , Low = .99 ]  " +
-			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
+			" else if any st have( OpSpec = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = MAX(0;.99) ]  " +
-			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
-			"  [ Un = 0.10 , Hi = CARDINALITY(OpSpec)*0.1 , Medium = .15 , Low = 0 ] " +
-			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
+			" else if any xyz have( OpSpec = Klingon & HarmPotential = true ) " +
+			"  [ Un = 0.10 , Hi = CARDINALITY(xyz)*0.1 , Medium = .15 , Low = .75 ] " +
+			" else if any st have( OpSpec = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " ;
 		
 			
@@ -169,8 +170,9 @@ public class CompilerTest extends TestCase {
 		} catch (NoDefaultDistributionDeclaredException e) {
 			// pass
 		} catch (MEBNException e) {
-			fail(e.getMessage() + " at " + tableString.substring(tableParser.getIndex()-1,tableParser.getIndex()+10));
 			e.printStackTrace();
+			fail(e.getMessage() + " at " + tableString.substring(tableParser.getIndex()-1,tableParser.getIndex()+10));
+			
 			System.exit(1);
 		} 
 		
@@ -580,7 +582,9 @@ public class CompilerTest extends TestCase {
 		OrdinaryVariable t = harmPotential.getOrdinaryVariableByName("t");
 		
 		OVInstance st0 = OVInstance.getInstance(st, "ST0", st.getValueType());
-		OVInstance t0 = OVInstance.getInstance(st, "T0", st.getValueType());
+		OVInstance t0 = OVInstance.getInstance(t, "T0", t.getValueType());
+		OVInstance st1 = OVInstance.getInstance(st, "ST1", st.getValueType());
+		OVInstance t1 = OVInstance.getInstance(t, "T1", t.getValueType());
 		
 		ProbabilisticNetwork net = new ProbabilisticNetwork("TestGenerateCPT");
 		
@@ -604,6 +608,26 @@ public class CompilerTest extends TestCase {
 		}
 		//net.addEdge(new Edge(distFromOwn_ST0_T0.getProbNode(),harmPotential_ST0_T0.getProbNode()));
 		
+		SSBNNode distFromOwn_ST1_T0 = SSBNNode.getInstance(net, distFromOwn);
+		try {
+			distFromOwn_ST1_T0.addArgument(st1);
+			distFromOwn_ST1_T0.addArgument(t0);
+			harmPotential_ST0_T0.addParent(distFromOwn_ST1_T0, true);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		SSBNNode distFromOwn_ST0_T1 = SSBNNode.getInstance(net, distFromOwn);
+		try {
+			distFromOwn_ST0_T1.addArgument(st0);
+			distFromOwn_ST0_T1.addArgument(t1);
+			harmPotential_ST0_T0.addParent(distFromOwn_ST0_T1, true);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
 		SSBNNode starshipClass_ST0 = SSBNNode.getInstance(net, starshipClass);
 		try {
 			starshipClass_ST0.addArgument(st0);
@@ -620,8 +644,23 @@ public class CompilerTest extends TestCase {
 		compiler.init(harmPotential_ST0_T0);
 		
 		PotentialTable table = null;
+		
+		String code = "if all asdf have (StarshipClass = WarBird) "
+			+ "[false = MIN(CARDINALITY(z)* .1; 1) ,  true = 1 - false , absurd = 0]"
+			+ "else if all st have (StarshipClass = Explorer) "
+			+ "[false = MIN(CARDINALITY(st)* .2; 1) ,  true = 1 - false , absurd = 0]"
+			+ "else if any st have (DistFromOwn = OutOfRange) "
+			+ "[false = MIN(CARDINALITY(st)* .3; 1) ,  true = 1 - false , absurd = 0]"
+			+ "else if all st have (StarshipClass = Frigate) "
+			+ "[false = MIN(CARDINALITY(st)* .4; 1) ,  true = 1 - false , absurd = 0]"
+			+ "else if all st have (StarshipClass = Cruiser) "
+			+ "[false = MIN(CARDINALITY(st)* .5; 1) ,  true = 1 - false , absurd = 0]"
+			+ "else if all st have (StarshipClass = Freighter) "
+			+ "[false = MIN(CARDINALITY(st)* .6; 1) ,  true = 1 - false , absurd = 0]"
+			+ "else [false = 0 ,  true = .0 , absurd = 1]";
+			
 		try {
-			compiler.parse();		
+			compiler.parse(code);		
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());

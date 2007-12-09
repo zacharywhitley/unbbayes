@@ -25,6 +25,7 @@ import unbbayes.prs.mebn.compiler.exception.SomeStateUndeclaredException;
 import unbbayes.prs.mebn.compiler.exception.TableFunctionMalformedException;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.exception.MEBNException;
+import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.util.Debug;
 import unbbayes.util.NodeList;
@@ -302,7 +303,7 @@ public class Compiler implements ICompiler {
 		}
 		
 		
-		Map<String, List<Entity>> map = null; // parameter of boolean expression evaluation method
+		Map<String, List<EntityAndArguments>> map = null; // parameter of boolean expression evaluation method
 		
 		// this iterators helps us combine parents' possible values
 		// e.g. (True,Alpha), (True,Beta), (False,Alpha), (False,Beta).
@@ -322,10 +323,10 @@ public class Compiler implements ICompiler {
 		//List<Entity> entityList = null;
 		for( int i = 0; i < this.cpt.tableSize(); i += this.ssbnnode.getProbNode().getStatesSize()) {
 			//	clears and initializes map
-			map = new HashMap<String, List<Entity>>();
+			map = new HashMap<String, List<EntityAndArguments>>();
 			for (SSBNNode ssbnnode : parents) {
 			  if (!map.containsKey(ssbnnode.getResident().getName())) {
-				  map.put(ssbnnode.getResident().getName(), new ArrayList<Entity>());
+				  map.put(ssbnnode.getResident().getName(), new ArrayList<EntityAndArguments>());
 			  }
 			}
 			
@@ -333,7 +334,8 @@ public class Compiler implements ICompiler {
 			// fill map at this loop. Note that parents.size, currentIteratorValue.size, and
 			// valueCombinationiterators are the same
 			for (int j = 0; j < parents.size(); j++) {
-				map.get(parents.get(j).getResident().getName()).add(currentIteratorValue.get(j));
+				EntityAndArguments val = new EntityAndArguments(currentIteratorValue.get(j),new ArrayList<OVInstance>(parents.get(j).getArguments()));
+				map.get(parents.get(j).getResident().getName()).add(val);
 			}
 			
 			
@@ -351,7 +353,8 @@ public class Compiler implements ICompiler {
 					}
 				}
 			}
-						
+			
+				
 			// prepare to extract which column to verify
 			TempTableHeaderCell header = null;
 			
@@ -1480,6 +1483,31 @@ public class Compiler implements ICompiler {
 		this.cpt = cpt;
 	}
 	
+
+	/**
+	 * @return the tempTable
+	 */
+	public List<TempTableHeaderCell> getTempTable() {
+		return tempTable;
+	}
+
+	/**
+	 * @return the ssbnnode
+	 */
+	public SSBNNode getSSBNNode() {
+		return ssbnnode;
+	}
+
+	/**
+	 * @param ssbnnode the ssbnnode to set
+	 */
+	public void setSSBNNode(SSBNNode ssbnnode) {
+		this.ssbnnode = ssbnnode;
+		if (this.ssbnnode != null) {
+			this.setNode(this.ssbnnode.getResident());
+		}
+	}
+	
 	
 	 
 	
@@ -1496,7 +1524,7 @@ public class Compiler implements ICompiler {
 		
 		private List<TempTableProbabilityCell> cellList = null;
 		
-		private Map<String, List<SSBNNode>> cardinalityParentSetMap = null;	// map by resident name, only same entity parameters
+		private int validParentSetCount = 0;
 		
 		/**
 		 * Represents an entry for temporary table header (parents and their expected single values
@@ -1510,26 +1538,32 @@ public class Compiler implements ICompiler {
 			this.isAny = isAny;
 			this.isDefault = isDefault;
 			this.cellList = new ArrayList<TempTableProbabilityCell>();
-			this.cardinalityParentSetMap = new HashMap<String, List<SSBNNode>>();
+			this.validParentSetCount = 0;
 		}
 		public List<TempTableHeaderParent> getParents() {
 			return parents;
 		}
-		
-		
-		
+
+
 		/**
-		 * @return the currentParentSetList
+		 * counts how many parents set were returning true at that sentence (column) of boolean
+		 * expression.
+		 * @return the validParentSetCount
 		 */
-		public Map<String, List<SSBNNode>> getCardinalityParentSetMap() {
-			return cardinalityParentSetMap;
+		public int getValidParentSetCount() {
+			return validParentSetCount;
 		}
 		/**
-		 * @param currentParentSetList the currentParentSetList to set
+		 * @param validParentSetCount the validParentSetCount to set
 		 */
-		public void setCardinalityParentSetMap(Map<String, List<SSBNNode>> cardinalityParentSetMap) {
-			this.cardinalityParentSetMap = cardinalityParentSetMap;
+		public void setValidParentSetCount(int validParentSetCount) {
+			this.validParentSetCount = validParentSetCount;
 		}
+		
+		public void increaseValidParentSetCount() {
+			this.validParentSetCount++;
+		}
+		
 		public void setParents(List<TempTableHeaderParent> parents) {
 			this.parents = parents;
 		}
@@ -1571,7 +1605,7 @@ public class Compiler implements ICompiler {
 		 * @return
 		 */
 		public boolean isParentSetName(String varsetname) {
-			if (ssbnnode.getParentSetByStrongOV(false, varsetname.split("\\.")).size() > 0) {
+			if (ssbnnode.getParentSetByStrongOVWithWeakOVCheck(varsetname.split("\\.")).size() > 0) {
 				return true;
 			} else {
 				return false;
@@ -1653,6 +1687,8 @@ public class Compiler implements ICompiler {
 		public void setBooleanExpressionTree(ICompilerBooleanValue booleanExpressionTree) {
 			this.booleanExpressionTree = booleanExpressionTree;
 		}
+
+
 		
 		/**
 		 * This method evaluates a boolean expression (ICompilerBooleanValue - in tree format).
@@ -1677,14 +1713,26 @@ public class Compiler implements ICompiler {
 		 * - if declared as "ALL" (isAny() == false):
 		 * 			returns: evaluation(True,Alpha) && evaluation(True,Beta) && evaluation(False,Alpha) && evaluation(False,Beta)
 		 */
-		public boolean evaluateBooleanExpressionTree(Map<String, List<Entity>> valuesOnCPTColumn) {
+		public boolean evaluateBooleanExpressionTree(Map<String, List<EntityAndArguments>> valuesOnCPTColumn) {
 			
 			// initial test
 			if (this.isDefault()) {
 				return true;
 			}
 			
+
+			// reset cardinality counter
+			this.setValidParentSetCount(0);
+			
 			List<TempTableHeaderParent> parentsList = this.getParents();
+			
+			//	return is initialized with a boolean neutral value (on OR/ANY, its "false"; on AND/ALL, its "true")
+			boolean ret = !this.isAny();	// this method will return this value
+			
+			// start evaluation. We should run through leafs again... TODO: optimize?
+			
+			// "pointer" 
+			TempTableHeaderParent pointer = null;
 			
 			// prepare leafs
 			
@@ -1698,29 +1746,30 @@ public class Compiler implements ICompiler {
 				}
 			}
 			
-			// return is initialized with a boolean neutral value (on OR/ANY, its "false"; on AND/ALL, its "true")
-			boolean ret = !this.isAny();	// this method will return this value
-			
-			// start evaluation. We should run through leafs again... TODO: optimize?
-			
-			// "pointer" 
-			TempTableHeaderParent pointer = null;			
+						
 			
 			//	evaluate (True,Alpha), (False,Alpha), (True,Beta), (False,Beta)...
 			boolean hasMoreCombination = true;
 			while (hasMoreCombination) {
 				// TODO the test below might be dangerous in multithread application...?
-				if (this.isAny()) {	// if ANY, then OR 
-					ret = ret || this.getBooleanExpressionTree().evaluate();
-					if (ret == true) {
-						return true;
-					}
-				} else {	// if ALL, then AND
-					ret = ret && this.getBooleanExpressionTree().evaluate();
-					if (ret == false) {
-						return false;
+				if (isSameOVsameEntity()) { // only evaluates same entities for same OVs
+					if (this.isAny()) {	// if ANY, then OR 
+						boolean evaluation = this.getBooleanExpressionTree().evaluate();
+						ret = ret || evaluation;
+						if (evaluation) {
+							this.increaseValidParentSetCount();
+							// we cant return immediately because we should count "cardinality"
+						}
+					} else {	// if ALL, then AND
+						ret = ret && this.getBooleanExpressionTree().evaluate();
+						if (ret == false) {
+							return false;
+						}
+						this.increaseValidParentSetCount();
 					}
 				}
+				
+				// update leaf's evaluation variables
 				pointer = parentsList.get(0);
 				if (pointer.hasNextEvaluation()) {
 					pointer.getNextEvaluation();	// now the leaf will evalueate the next element of EvaluationList
@@ -1747,6 +1796,35 @@ public class Compiler implements ICompiler {
 		}
 		
 		/**
+		 * tests if when an argument of a leaf is the same OV, then it should have
+		 * the same value at a given moment
+		 * @return
+		 */
+		private boolean isSameOVsameEntity() {
+			List<TempTableHeaderParent> leaves = this.getParents(); // leaves of boolean expression evaluation tree
+			for (TempTableHeaderParent leaf : leaves) {
+				if (leaf.isKnownValue()) {
+					continue;
+				}
+				List<OVInstance> args = leaf.getCurrentEntityAndArguments().arguments;
+				for (int i = leaves.indexOf(leaf) + 1; i < leaves.size(); i++) {
+					// try all other leaves
+					for (OVInstance argleaf : args) {
+						for (OVInstance argothers : leaves.get(i).getCurrentEntityAndArguments().arguments) {
+							if(argleaf.getOv().getName().compareTo(argothers.getOv().getName()) == 0) {
+								if (argleaf.getEntity().getInstanceName().compareTo(argothers.getEntity().getInstanceName()) != 0) {
+									// if they are the same OV but different instances of Entities... then false
+									return false;
+								}
+							}
+						}
+					}
+				}
+			}
+			return true;
+		}
+		
+		/**
 		 * When a boolean expression refeers a node which doesn't have an argument declared inside
 		 * varsetname (is not part of a "similar" set of parent called inside the pseudocode),
 		 * it is useless to evaluate it (because it would be allways false at our implementation). 
@@ -1763,8 +1841,8 @@ public class Compiler implements ICompiler {
 			}
 			
 			// extracts parents' similar sets by strong OV names
-			Collection<SSBNNode> parents =  baseSSBNNode.getParentSetByStrongOV(
-					false, this.getVarsetname().split("\\" + baseSSBNNode.getStrongOVSeparator()));
+			Collection<SSBNNode> parents =  baseSSBNNode.getParentSetByStrongOVWithWeakOVCheck(
+					this.getVarsetname().split("\\" + baseSSBNNode.getStrongOVSeparator()));
 			
 			boolean found = false;
 			
@@ -1941,7 +2019,7 @@ public class Compiler implements ICompiler {
 		private DomainResidentNode parent = null;
 		private Entity value = null;
 		
-		private List<Entity> evaluationList = null;
+		private List<EntityAndArguments> evaluationList = null;
 		
 		//private Entity currentEvaluation = null;
 		
@@ -1962,7 +2040,7 @@ public class Compiler implements ICompiler {
 			this.currentEvaluationIndex = -1;
 		}
 		
-		TempTableHeaderParent (DomainResidentNode parent , Entity value, List<Entity>evaluationList) {
+		TempTableHeaderParent (DomainResidentNode parent , Entity value, List<EntityAndArguments>evaluationList) {
 			this.parent = parent;
 			this.value = value;
 			this.setEvaluationList(evaluationList);
@@ -2023,18 +2101,22 @@ public class Compiler implements ICompiler {
 		 * Obtains a list of values to be tested on boolean value evaluation
 		 * @return the evaluationList
 		 */
-		public List<Entity> getEvaluationList() {
+		public List<EntityAndArguments> getEvaluationList() {
 			return evaluationList;
 		}
 		/**
+		 * note: if param is null, it will set the value of this object as known value = false
+		 * immediately.
 		 * @param evaluationList the evaluationList to set
 		 */
-		public void setEvaluationList(List<Entity> evaluationList) {
+		public void setEvaluationList(List<EntityAndArguments> evaluationList) {
 			this.evaluationList = evaluationList;
 			if (this.evaluationList != null) {
 				if (this.evaluationList.size() > 0) {
 					this.currentEvaluationIndex = 0;
 				}
+			} else {
+				this.isKnownValue  = true; // we assume if set to null, then false immediately
 			}
 		}
 		
@@ -2043,8 +2125,20 @@ public class Compiler implements ICompiler {
 		 * expression - comparing a parent with its value)
 		 */
 		public Entity getCurrentEvaluation() {
+			if (this.evaluationList == null) {
+				return null;
+			}
+			return this.evaluationList.get(this.currentEvaluationIndex).entity;
+		}
+		
+		
+		public EntityAndArguments getCurrentEntityAndArguments() {
+			if (this.evaluationList == null) {
+				return null;
+			}
 			return this.evaluationList.get(this.currentEvaluationIndex);
 		}
+		
 		/**
 		 * @param currentEvaluation the currentEvaluation 
 		 * (currently evaluated entity value on boolean
@@ -2250,22 +2344,7 @@ public class Compiler implements ICompiler {
 			}
 			
 			
-			
-			Map<String, List<SSBNNode>> parentMap = this.currentHeader.getCardinalityParentSetMap();
-			if (parentMap == null) {
-				return Float.NaN;
-			}
-			if (parentMap.size() == 0) {
-				return 0;
-			}
-			
-			float ret = 1f;
-			
-			for (List<SSBNNode> parents : parentMap.values()) {
-				ret *= parents.size();
-			}
-			
-			return ret;
+			return this.currentHeader.getValidParentSetCount();
 		}
 	}
 	
@@ -2314,31 +2393,13 @@ public class Compiler implements ICompiler {
 		}
 	}
 
-
-	/**
-	 * @return the tempTable
-	 */
-	public List<TempTableHeaderCell> getTempTable() {
-		return tempTable;
-	}
-
-	/**
-	 * @return the ssbnnode
-	 */
-	public SSBNNode getSSBNNode() {
-		return ssbnnode;
-	}
-
-	/**
-	 * @param ssbnnode the ssbnnode to set
-	 */
-	public void setSSBNNode(SSBNNode ssbnnode) {
-		this.ssbnnode = ssbnnode;
-		if (this.ssbnnode != null) {
-			this.setNode(this.ssbnnode.getResident());
+	private class EntityAndArguments {
+		public Entity entity = null;
+		public List<OVInstance> arguments = null;
+		public EntityAndArguments (Entity entity, List<OVInstance> arguments) {
+			this.entity = entity;
+			this.arguments = arguments;
 		}
 	}
-	
-	
 
 }

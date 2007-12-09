@@ -24,6 +24,8 @@ public class Type implements Comparable<Type>{
 	private List<Object> isTypeOfList; 
 	private TypeContainer container; 
 	
+	private boolean hasOrder = false;	// TODO verify the correct location of ordering checker
+	
 	/**
 	 * Adds a new type to the list of possible entity's type.
 	 * 
@@ -43,7 +45,7 @@ public class Type implements Comparable<Type>{
 		if (container.getType(newType) != null){
 			throw new TypeAlreadyExistsException(); 
 		}
-		
+		hasOrder = false;
 	}
 	
 	/**
@@ -58,7 +60,7 @@ public class Type implements Comparable<Type>{
 		
 		name = newType; 
 		isTypeOfList = new ArrayList<Object>(); 
-		
+		hasOrder = false;
 	}
 	
 	public String getName(){
@@ -133,5 +135,21 @@ public class Type implements Comparable<Type>{
 	public void setIsTypeOfList(List<Object> isTypeOfList) {
 		this.isTypeOfList = isTypeOfList;
 	}
+
+	/**
+	 * @return the hasOrder
+	 */
+	public boolean hasOrder() {
+		return hasOrder;
+	}
+
+	/**
+	 * @param hasOrder the hasOrder to set
+	 */
+	public void setHasOrder(boolean hasOrder) {
+		this.hasOrder = hasOrder;
+	}
+	
+	
 	
 }

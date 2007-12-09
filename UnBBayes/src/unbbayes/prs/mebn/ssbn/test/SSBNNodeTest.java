@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -53,7 +54,7 @@ public class SSBNNodeTest extends TestCase {
 		super.setUp();
 		UbfIO ubf = UbfIO.getInstance();
 		try {
-			mebn = ubf.loadMebn(new File("examples/mebn/StarTrek38.ubf"));
+			mebn = ubf.loadMebn(new File("examples/mebn/StarTrek39.ubf"));
 		} catch (Exception e) {
 			fail(e.getMessage());
 			return;
@@ -359,14 +360,15 @@ public class SSBNNodeTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.ssbn.SSBNNode#fillProbabilisticTable()}.
 	 */
 	public void testFillProbabilisticTable() {
-		try{
-			this.ssbnnode.fillProbabilisticTable();
-		} catch (MEBNException mebne) {
-			mebne.printStackTrace();
-			fail(mebne.getLocalizedMessage());
-		}
+		//try{
+		//	this.ssbnnode.fillProbabilisticTable();
+		//} catch (MEBNException mebne) {
+		//	mebne.printStackTrace();
+		//	fail(mebne.getLocalizedMessage());
+		//}
 		//assertNotNull(this.ssbnnode.getProbNode().getPotentialTable());
 		// TODO more detailed test
+		// OBS. this test is done by CompilerTest class
 	}
 
 	/**
@@ -881,7 +883,7 @@ public class SSBNNodeTest extends TestCase {
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.ssbn.SSBNNode#getParentMapByWeakOV(unbbayes.prs.mebn.OrdinaryVariable[])}.
 	 */
-	public void testGetParentMapByWeakOV() {
+	public void testGetParentSetByStrongOVWithWeakOVCheck() {
 		TypeContainer tcontainer = new TypeContainer();
 		try{
 			tcontainer.createType("Starship");
@@ -894,6 +896,7 @@ public class SSBNNodeTest extends TestCase {
 		OrdinaryVariable t = new OrdinaryVariable("t",tcontainer.getType("Timestep"),this.mfrag);
 		OrdinaryVariable z = new OrdinaryVariable("z",tcontainer.getType("Zone"),this.mfrag);
 		
+		t.getValueType().setHasOrder(true);
 		
 		SSBNNode parent1 = SSBNNode.getInstance(this.ssbnnode.getProbabilisticNetwork(), (DomainResidentNode)this.resident.getParents().get(0), new ProbabilisticNode(), false);
 		try {
@@ -964,21 +967,45 @@ public class SSBNNodeTest extends TestCase {
 		} catch(SSBNNodeGeneralException e) {
 			fail(e.getMessage());
 		}
+		
+		
+		
+		
+		List<SSBNNode> list = this.ssbnnode.getParentSetByStrongOVWithWeakOVCheck(st.getName());
+		assertNotNull(list);
+		assertEquals(6,list.size());
+		assertTrue(list.contains(parent3));
+		assertTrue(list.contains(parent4));
+		assertTrue(list.contains(parent5));
+		assertTrue(list.contains(parent6));
+		assertTrue(list.contains(parent7));
+		assertTrue(list.contains(parent8));
+		
+		
+		
+		
+		list = this.ssbnnode.getParentSetByStrongOVWithWeakOVCheck(t.getName());
+		assertNotNull(list);
+		assertEquals(0,list.size());
 
-		Map<String, Collection<SSBNNode>> map = this.ssbnnode.getParentMapByWeakOV(t);
-		assertNotNull(map);
-		assertTrue(map.size() > 0);
+		String args[] = {st.getName(), z.getName()};		
+		list = this.ssbnnode.getParentSetByStrongOVWithWeakOVCheck(args);
+		assertNotNull(list);
+		assertEquals(2,list.size());
+		assertTrue(list.contains(parent1));
+		assertTrue(list.contains(parent2));
 		
-		for (String key : map.keySet()) {
-			System.out.println("Key = " + key);
-		}
+		String args2[] = {t.getName(), st.getName()};
+		list = this.ssbnnode.getParentSetByStrongOVWithWeakOVCheck(args2);
+		assertNotNull(list);
+		assertEquals(6,list.size());
+		assertTrue(list.contains(parent3));
+		assertTrue(list.contains(parent4));
+		assertTrue(list.contains(parent5));
+		assertTrue(list.contains(parent6));
+		assertTrue(list.contains(parent7));
+		assertTrue(list.contains(parent8));
 		
-		for (Collection<SSBNNode> element : map.values()) {
-			System.out.println(">>Parent's set:");
-			for (SSBNNode node : element) {
-				System.out.println(node.getName());
-			}
-		}
 	}
 
 	
