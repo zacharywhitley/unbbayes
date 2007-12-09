@@ -1390,7 +1390,7 @@ public class Compiler implements ICompiler {
 		skipWhite();
 		Debug.println("CARDINALITY'S ARGUMENT IS " + this.value);
 		// TODO test if ret has returned NaN (guarantees "value" is a varsetname)?
-		ret = new CardinalityProbabilityValue(this.ssbnnode, this.value);
+		ret = new CardinalityProbabilityValue(this.currentHeader);
 		match(')');
 		return ret;
 		
@@ -1496,6 +1496,8 @@ public class Compiler implements ICompiler {
 		
 		private List<TempTableProbabilityCell> cellList = null;
 		
+		private Map<String, List<SSBNNode>> cardinalityParentSetMap = null;	// map by resident name, only same entity parameters
+		
 		/**
 		 * Represents an entry for temporary table header (parents and their expected single values
 		 * at that table entry/collumn)
@@ -1508,9 +1510,25 @@ public class Compiler implements ICompiler {
 			this.isAny = isAny;
 			this.isDefault = isDefault;
 			this.cellList = new ArrayList<TempTableProbabilityCell>();
+			this.cardinalityParentSetMap = new HashMap<String, List<SSBNNode>>();
 		}
 		public List<TempTableHeaderParent> getParents() {
 			return parents;
+		}
+		
+		
+		
+		/**
+		 * @return the currentParentSetList
+		 */
+		public Map<String, List<SSBNNode>> getCardinalityParentSetMap() {
+			return cardinalityParentSetMap;
+		}
+		/**
+		 * @param currentParentSetList the currentParentSetList to set
+		 */
+		public void setCardinalityParentSetMap(Map<String, List<SSBNNode>> cardinalityParentSetMap) {
+			this.cardinalityParentSetMap = cardinalityParentSetMap;
 		}
 		public void setParents(List<TempTableHeaderParent> parents) {
 			this.parents = parents;
@@ -1694,8 +1712,14 @@ public class Compiler implements ICompiler {
 				// TODO the test below might be dangerous in multithread application...?
 				if (this.isAny()) {	// if ANY, then OR 
 					ret = ret || this.getBooleanExpressionTree().evaluate();
+					if (ret == true) {
+						return true;
+					}
 				} else {	// if ALL, then AND
 					ret = ret && this.getBooleanExpressionTree().evaluate();
+					if (ret == false) {
+						return false;
+					}
 				}
 				pointer = parentsList.get(0);
 				if (pointer.hasNextEvaluation()) {
@@ -2201,36 +2225,47 @@ public class Compiler implements ICompiler {
 	}
 	
 	private class CardinalityProbabilityValue implements IProbabilityValue {
-		private float value = Float.NaN;
-		private String parentSetName = null;		
-		private SSBNNode thisNode = null;
+		//private float value = Float.NaN;
+		//private String parentSetName = null;		
+		//private SSBNNode thisNode = null;
+		
+		private TempTableHeaderCell currentHeader = null;
+		
 		/**
 		 * Represents a probability value from cardinality function
 		 * It calculates the value using thisNode's parents set
-		 * @param thisNode: SSBNNode containing this compiler and this pseudocode
-		 * @param strongOVNames: literals containing ov names which determines
-		 * the set containing strong variables, separated by the separator (usually comma ".")
-		 * at any order
-		 * e.g. "st.z.s" may return a node
-		 * Node(st,z,s,t,tprev), because it contains st,z and s, and t and tprev are
-		 * considered "weak".
+		 * @param currentHeader: its currentParentSetMap should contain all considered parents at
+		 * that point, mapped by resident's name and each elements should be lists of nodes
+		 * containing SAME strong OV instances (e.g. ST0)
 		 */
-		CardinalityProbabilityValue (SSBNNode thisNode, String strongOVNames) {
-			this.thisNode = thisNode;
-			this.parentSetName = strongOVNames;
+		CardinalityProbabilityValue (TempTableHeaderCell currentHeader) {
+			this.currentHeader = currentHeader;
 		}
 
 		public float getProbability() throws InvalidProbabilityRangeException {
-			if (this.thisNode == null) {
+			
+			
+			if (this.currentHeader == null) {
 				return Float.NaN;
 			}
-			// TODO calculate the value using the right steps!!!
-			String regExp = this.thisNode.getStrongOVSeparator();
-			// TODO find a better way to treat wild cards on regular expressions (like "[" or "\")
-			if (regExp.compareTo(".") == 0) {
-				regExp = "\\" + regExp;
+			
+			
+			
+			Map<String, List<SSBNNode>> parentMap = this.currentHeader.getCardinalityParentSetMap();
+			if (parentMap == null) {
+				return Float.NaN;
 			}
-			return this.thisNode.getParentSetByStrongOV(false, this.parentSetName.split(regExp)).size();
+			if (parentMap.size() == 0) {
+				return 0;
+			}
+			
+			float ret = 1f;
+			
+			for (List<SSBNNode> parents : parentMap.values()) {
+				ret *= parents.size();
+			}
+			
+			return ret;
 		}
 	}
 	
