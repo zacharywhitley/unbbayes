@@ -1393,7 +1393,7 @@ public class Compiler implements ICompiler {
 		skipWhite();
 		Debug.println("CARDINALITY'S ARGUMENT IS " + this.value);
 		// TODO test if ret has returned NaN (guarantees "value" is a varsetname)?
-		ret = new CardinalityProbabilityValue(this.currentHeader);
+		ret = new CardinalityProbabilityValue(this.currentHeader, this.noCaseChangeValue);
 		match(')');
 		return ret;
 		
@@ -2320,7 +2320,7 @@ public class Compiler implements ICompiler {
 	
 	private class CardinalityProbabilityValue implements IProbabilityValue {
 		//private float value = Float.NaN;
-		//private String parentSetName = null;		
+		private String varSetName = null;		
 		//private SSBNNode thisNode = null;
 		
 		private TempTableHeaderCell currentHeader = null;
@@ -2332,8 +2332,9 @@ public class Compiler implements ICompiler {
 		 * that point, mapped by resident's name and each elements should be lists of nodes
 		 * containing SAME strong OV instances (e.g. ST0)
 		 */
-		CardinalityProbabilityValue (TempTableHeaderCell currentHeader) {
+		CardinalityProbabilityValue (TempTableHeaderCell currentHeader, String varsetname) {
 			this.currentHeader = currentHeader;
+			this.varSetName= varsetname;
 		}
 
 		public float getProbability() throws InvalidProbabilityRangeException {
@@ -2342,7 +2343,9 @@ public class Compiler implements ICompiler {
 			if (this.currentHeader == null) {
 				return Float.NaN;
 			}
-			
+			if (this.varSetName.compareTo(this.currentHeader.getVarsetname()) != 0) {
+				return 0;
+			}
 			
 			return this.currentHeader.getValidParentSetCount();
 		}
