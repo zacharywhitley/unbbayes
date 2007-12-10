@@ -646,7 +646,7 @@ public class CompilerTest extends TestCase {
 		PotentialTable table = null;
 		
 		String code = "if any st.t have (DistFromOwn = Phaser1Range)" 
-			+ "[false = MIN(MAX(CARDINALITY(st) * 0.2 ; 0.5) ; 1) , true = 1 - false , absurd = 0] "
+			+ "[false = MIN(MAX(CARDINALITY(st.t) * 0.2 ; 0.5) ; 1) , true = 1 - false , absurd = 0] "
 			+ "else if all st have (DistFromOwn = Phaser2Range)" 
 			+ "[false = MIN(MAX(CARDINALITY(st) * 0.2 ; 0.5) ; 1) , true = 1 - false , absurd = 0] "
 			+ " else if all asdf have (StarshipClass = WarBird) "
@@ -654,7 +654,7 @@ public class CompilerTest extends TestCase {
 			+ "else if all st have (StarshipClass = Explorer) "
 			+ "[false = MIN(CARDINALITY(st)* .2; 1) ,  true = 1 - false , absurd = 0]"
 			+ "else if any st have (DistFromOwn = OutOfRange) "
-			+ "[false = MIN(CARDINALITY(st)* .3; 1) ,  true = 1 - false , absurd = 0]"
+			+ "[true = MIN(CARDINALITY(asdf)* .3; 1) ,  false = 1 - true , absurd = 0]"
 			+ "else if all st have (StarshipClass = Frigate) "
 			+ "[false = MIN(CARDINALITY(st)* .4; 1) ,  true = 1 - false , absurd = 0]"
 			+ "else if all st have (StarshipClass = Cruiser) "

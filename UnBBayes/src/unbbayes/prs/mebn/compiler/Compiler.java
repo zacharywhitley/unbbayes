@@ -1389,11 +1389,11 @@ public class Compiler implements ICompiler {
 		IProbabilityValue ret = null;
 		match('(');
 		
-		this.getName();
+		String var = this.varsetname();
 		skipWhite();
-		Debug.println("CARDINALITY'S ARGUMENT IS " + this.value);
+		Debug.println("CARDINALITY'S ARGUMENT IS " + var);
 		// TODO test if ret has returned NaN (guarantees "value" is a varsetname)?
-		ret = new CardinalityProbabilityValue(this.currentHeader, this.noCaseChangeValue);
+		ret = new CardinalityProbabilityValue(this.currentHeader, var);
 		match(')');
 		return ret;
 		
