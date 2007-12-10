@@ -97,7 +97,7 @@ import unbbayes.util.NodeList;
  	| simplefunction "(" expression ")"
  	| biargfunction "(" expression ; expression ")"
  function ::= possibleVal 
- 	| "CARDINALITY" "(" ident ")"
+ 	| "CARDINALITY" "(" varsetname ")"
  	| "MIN" "(" expression ; expression ")"
  	| "MAX" "(" expression ; expression ")"
  possibleVal ::= ident
