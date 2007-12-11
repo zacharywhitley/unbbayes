@@ -170,8 +170,8 @@ public class GenerativeInputNode extends InputNode {
 	
 	/**
 	 * Atualiza o texto do label apresentado pelo no... 
-	 * O label de um nó de input contem o nome do resident ou 
-	 * built in o qual este nó representa.
+	 * O label de um nï¿½ de input contem o nome do resident ou 
+	 * built in o qual este nï¿½ representa.
 	 */
 	
 	public void updateLabel(){
@@ -214,6 +214,15 @@ public class GenerativeInputNode extends InputNode {
 	
 	public Vector<OrdinaryVariable> getOrdinaryVariableList() {
 		return residentNodePointer.getOrdinaryVariableList();
+	}
+	
+	public OrdinaryVariable getOrdinaryVariableByName(String name){
+		for(OrdinaryVariable ordinaryVariable: residentNodePointer.getOrdinaryVariableList()){
+			if(ordinaryVariable.getName().equals(name)){
+				return ordinaryVariable; 
+			}
+		}
+		return null; 
 	}
 	
 	public Vector<Type> getTypesOfOrdinaryVariableList() {

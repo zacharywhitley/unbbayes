@@ -464,8 +464,12 @@ public class SSBNNode {
 		this.arguments.add(pos, OVInstance.getInstance( ov, entityInstanceName , ov.getValueType() ));
 	}
 	
-	
-	
+	/**
+	 * Remove all the arguments
+	 */
+	public void removeAllArguments(){
+		this.arguments.clear(); 
+	}
 	
 	
 	
@@ -1019,6 +1023,18 @@ public class SSBNNode {
 		}
 		
 		return ret;  
+	}
+	
+	public void delete(){
+		
+		probabilisticNetwork.removeNode(this.getProbNode()); 
+		
+		try {
+			super.finalize();
+		} catch (Throwable e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
 	}
 
 	public boolean isContext() {

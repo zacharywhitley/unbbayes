@@ -3,6 +3,7 @@
  */
 package unbbayes.prs.mebn.ssbn;
 
+import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.entity.Type;
 
 /**
@@ -50,6 +51,22 @@ public class LiteralEntityInstance {
 	 */
 	public void setType(Type type) {
 		this.type = type;
+	}
+	
+	public boolean equals(Object obj) {
+		
+		if (obj == this) {
+			return true;
+		}
+		
+		if((obj != null)&&(obj instanceof LiteralEntityInstance)){
+			LiteralEntityInstance entityInstance = (LiteralEntityInstance) obj;
+		   return ((entityInstance.getInstanceName().equals(this.getInstanceName())) &&
+		            (entityInstance.getType().equals(this.getType())));
+		}else{
+			return false; //obj == null && this != null 
+		}
+		
 	}
 	
 	
