@@ -70,8 +70,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
 		ssbnNodeList = new ArrayList<SSBNNode>(); 
 		
-		ProbabilisticNetwork network = null; 
-		
 		// As the query starts, let's clear the flags used by the previous query
 		query.getMebn().clearMFragsIsUsingDefaultCPTFlag();
 		
@@ -86,7 +84,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		SSBNNode root = this.generateRecursive(querynode, new SSBNNodeList(), 
 				                               querynode.getProbabilisticNetwork());
 		
-		network = this.createCPTs(root); 
+//		network = this.createCPTs(root); 
 		
 		for(SSBNNode ssbnNode: ssbnNodeList){
 			printNodeStructureBeforeCPT(ssbnNode); 
@@ -95,7 +93,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		//Debug. 
 		this.printNetworkInformation(querynode); //only Debug informations
 		
-		return network;
+		return querynode.getProbabilisticNetwork();
 	}
 	
 	
@@ -127,22 +125,9 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
 		// check for cycle
 		if (seen.contains(currentNode)) {
-			return null; 
-			//TODO. 
-//			throw new SSBNNodeGeneralException(this.resource.getString("CycleFound"));
-			            /* Analisar melhor isto, pois um nó ter que ser obrigado a 
-			             * ser avaliado duas vezes não quer necessariamente dizer que
-			             * há um ciclo na rede. ZoneNature, por exemplo, será analisado
-			             * duas vezes porque é pai de dois nós residentes. Achar uma
-			             * forma de manter esta informação e o nó anteriormente
-			             * criado para ZoneNature automaticamente virar o pai das
-			             * chamadas posteriores. 
-			             */
+//			return null; 
+			/* Criar método para avaliar ciclos */
 		}
-		 
-		
-		
-		
 		
 		//------------------------- STEP 1: search findings -------------------
 		
@@ -160,9 +145,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
 		// if the program reached this line, the node doesn't have a finding
 		seen.add(currentNode);	// mark this as already seen  (treated) node
- 
-		
-		
 		
 		
 		//------------------------- STEP 2: analyse context nodes. -------------
@@ -178,12 +160,13 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		try {
 			result = evaluateRelatedContextNodes(currentNode.getResident(), ovInstancesList);
 		} catch (OVInstanceFaultException e) {
-			//pre-requisite
+			//pre-requisite. 
 			e.printStackTrace();
 		}
 		
 		if(!result){
 			Debug.println("Context Node fail for " + currentNode.getResident().getMFrag()); 
+			currentNode.setUsingDefaultCPT(true);
 			return currentNode; 
 		}
 		
@@ -216,7 +199,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     		    	
     		    	if(!ssbnnode.isFinding() && !ssbnnode.isContext()){
     		    		currentNode.addParent(ssbnnode, true);
-//    		    		net.addEdge(new Edge(ssbnnode.getProbNode(), currentNode.getProbNode()));
     		    	}else{
     		    		currentNode.addParent(ssbnnode, false);
     		    	}	
@@ -353,12 +335,12 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		}
 		
 		//Gerar a tabela; 
-		try {
-			currentNode.fillProbabilisticTable();
-		} catch (MEBNException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			currentNode.fillProbabilisticTable();
+//		} catch (MEBNException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		
 		Debug.println(currentNode.getResident().getName() + " return of input parents recursion"); 
 		
@@ -619,6 +601,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				SSBNNode nodeContext = SSBNNode.getInstance(originNode.getProbabilisticNetwork(), residentNode); 
 				nodeContext.setNodeAsContext(); 
 				nodes.add(nodeContext); 
+				
 				    //in this implementation only this is necessary, because the treat
 				    //of context nodes how fathers will be trivial, using the XOR 
 				    //strategy. For a future implementation that accept different 
