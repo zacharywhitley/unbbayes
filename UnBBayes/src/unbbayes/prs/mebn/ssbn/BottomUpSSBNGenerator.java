@@ -126,7 +126,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		// check for cycle
 		if (seen.contains(currentNode)) {
 //			return null; 
-			/* Criar método para avaliar ciclos */
+			//TODO Criar método para avaliar ciclos
 		}
 		
 		//------------------------- STEP 1: search findings -------------------
@@ -187,7 +187,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
             		residentNode.getOrdinaryVariableList(), currentNode.getArguments()); 
             
     		if(!ovProblemList.isEmpty()){
-    			List<SSBNNode> createdNodes = createSSBNNodesForEntitiesSearch(
+    			List<SSBNNode> createdNodes = createSSBNNodesOfEntitiesSearchForResidentNode(
     					residentNode.getMFrag(), currentNode, residentNode, 
     					ovProblemList, ovInstancesList); 
     			
@@ -224,7 +224,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				
     			if(!ssbnnode.isFinding()){
     				currentNode.addParent(ssbnnode, true);
-//    				net.addEdge(new Edge(ssbnnode.getProbNode(), currentNode.getProbNode()));
     			}else{
     				currentNode.addParent(ssbnnode, false); 
     			}
@@ -271,7 +270,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
             
     		if(!ovProblemList.isEmpty()){
     			
-    			List<SSBNNode> parentList = createSSBNNodesForEntitiesSearch(
+    			List<SSBNNode> parentList = createSSBNNodesOfEntitiesSearchForInputNode(
     					inputNode.getMFrag(), currentNode, inputNode, ovProblemList, listOVInstances); 
     			
     		    for(SSBNNode ssbnnode: parentList){
@@ -280,6 +279,11 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     		    		generateRecursive(ssbnnode, seen, net);	// algorithm's core
     		    	}
         			if(!ssbnnode.isFinding()  && !ssbnnode.isContext()){
+        				/* 
+        				 * Problema: aqui os argumentos tem que fazer referência aos nós
+        				 * da própria MFrag!!! Os argumentos atualmente presentes se
+        				 * referem à MFrag onde o nó de input é residente. 
+        				 */
         				currentNode.addParent(ssbnnode, true);
         			}else{
         				currentNode.addParent(ssbnnode, false);
@@ -299,7 +303,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     				SSBNNode ssbnnode = SSBNNode.getInstance(net, residentNode, new ProbabilisticNode(), false);
     				
     				for(OVInstance instance: currentNode.getArguments()){
-    					addArgumentToSSBNNode(inputNode, residentNode, ssbnnode, instance);
+    					addArgumentToSSBNNodeOfInputNode(inputNode, residentNode, ssbnnode, instance);
     				}
     				
     				/* problema da duplicação para nós de input, já que no passo após
@@ -555,7 +559,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * @throws ImplementationRestrictionException 
 	 * @throws SSBNNodeGeneralException 
 	 */
-	private List<SSBNNode> createSSBNNodesForEntitiesSearch(DomainMFrag mFrag, SSBNNode originNode, 
+	private List<SSBNNode> createSSBNNodesOfEntitiesSearchForResidentNode(DomainMFrag mFrag, SSBNNode originNode, 
 			DomainResidentNode fatherNode, List<OrdinaryVariable> ovList, List<OVInstance> ovInstances) 
 			throws ImplementationRestrictionException, SSBNNodeGeneralException {
 		
@@ -671,7 +675,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * @throws SSBNNodeGeneralException
 	 * @throws ImplementationRestrictionException 
 	 */
-	private List<SSBNNode> createSSBNNodesForEntitiesSearch(DomainMFrag mFrag, SSBNNode originNode, 
+	private List<SSBNNode> createSSBNNodesOfEntitiesSearchForInputNode(DomainMFrag mFrag, SSBNNode originNode, 
 			GenerativeInputNode fatherNode, List<OrdinaryVariable> ovList, List<OVInstance> ovInstances) 
 			throws SSBNNodeGeneralException, ImplementationRestrictionException {
 		
@@ -756,11 +760,11 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		SSBNNode ssbnnode = SSBNNode.getInstance(originNode.getProbabilisticNetwork(),
 				residentNode, new ProbabilisticNode(), false); 
 		
-		addArgumentToSSBNNode(fatherNode, residentNode, ssbnnode,  
+		addArgumentToSSBNNodeOfInputNode(fatherNode, residentNode, ssbnnode,  
 				OVInstance.getInstance(ov, entityName, ov.getValueType()));	
 		
 		for(OVInstance instance: originNode.getArguments()){
-			addArgumentToSSBNNode(fatherNode, residentNode, ssbnnode, instance);
+			addArgumentToSSBNNodeOfInputNode(fatherNode, residentNode, ssbnnode, instance);
 		}
 		
 		//Suport for avoid double creation of probabilistic nodes. 
@@ -826,7 +830,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * Add instance how a argument of ssbnnode. ResidentNode is the node of
 	 * the SSBNNode and is the reference of the input node. 
 	 */
-	private void addArgumentToSSBNNode(GenerativeInputNode inputNode, 
+	private void addArgumentToSSBNNodeOfInputNode(GenerativeInputNode inputNode, 
 			DomainResidentNode residentNode, SSBNNode ssbnnode, OVInstance instance) 
 	        throws SSBNNodeGeneralException {
 		
