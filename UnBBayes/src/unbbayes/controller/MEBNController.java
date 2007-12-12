@@ -9,6 +9,7 @@ import unbbayes.controller.exception.InvalidOperationException;
 import unbbayes.gui.Console;
 import unbbayes.gui.MEBNEditionPane;
 import unbbayes.gui.NetworkWindow;
+import unbbayes.gui.PNCompilationPane;
 import unbbayes.gui.mebn.OVariableEditionPane;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -50,6 +51,7 @@ import unbbayes.prs.mebn.ssbn.BottomUpSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
+import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.mebn.ssbn.test.BottomUpSSBNGeneratorTest;
 
@@ -1097,6 +1099,8 @@ public class MEBNController {
 	 */
 	public ProbabilisticNetwork executeQuery(DomainResidentNode residentNode, ObjectEntityInstance[] arguments) throws InconsistentArgumentException {
 		
+		ProbabilisticNetwork probabilisticNetwork = null; 
+		
 		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode); 
 		
 		List<Argument> arglist = residentNode.getArgumentList();
@@ -1127,11 +1131,22 @@ public class MEBNController {
 
 //		Console console = new Console(); 
 		
-		try{
-			return ssbngenerator.generateSSBN(query);
+		try {
+			probabilisticNetwork = ssbngenerator.generateSSBN(query);
 		} catch (Exception e) {
 			throw new InconsistentArgumentException(e);
 		}
+		
+		try {
+			probabilisticNetwork.compile();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block. Lançar tela de erro com erro informado. 
+			e.printStackTrace();
+		} 
+		
+		PNCompilationPane pnCompilationPane = new PNCompilationPane(this, controller);
+		
+		return probabilisticNet                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     cNetwork; 
 		
 	}
 	
