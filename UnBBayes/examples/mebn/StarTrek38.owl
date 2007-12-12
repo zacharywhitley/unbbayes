@@ -1404,66 +1404,66 @@ else
                         <isProbDistOf rdf:resource="#HarmPotential"/>
                         <hasDeclaration rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
                         >if any st have ( DistFromOwn = OutOfRange  ) 
-[ false = 1 , true = 0 , absurd = 0]
+[ false = 1 , true = 0 ]
 else
-if any st have ( DistFromOwn = TorpedoRange &amp; StarshipClass = WarBird ) [ 
-    false = 0 , true = 1, absurd = 0 ] else 
-if any st have ( DistFromOwn = TorpedoRange &amp; StarshipClass = Cruiser ) [ 
-    false = .2 , true = .8  , absurd = 0] else 
-if any st have ( DistFromOwn = TorpedoRange &amp; StarshipClass = Explorer ) [ 
-    false = .7 , true = .3 , absurd = 0 ] else 
-if any st have ( DistFromOwn = TorpedoRange &amp; StarshipClass = Frigate ) [ 
-    false = .9 , true = .1 , absurd = 0 ] else
- if any st have ( DistFromOwn = TorpedoRange &amp; StarshipClass = Freighter ) [ 
-    false = .99 , true = .01  , absurd = 0] else
- if any st have ( DistFromOwn = TorpedoRange  ) [ 
-    false = 1 , true = 0  , absurd = 0]
+if any st have ( DistFromOwn = TorpedoRange &amp;amp; StarshipClass = Warbird ) [ 
+    false = 0 , true = 1 ] else 
+if any st have ( DistFromOwn = TorpedoRange &amp;amp; StarshipClass = Cruiser ) [ 
+    false = .2 , true = .8 ] else 
+if any st have ( DistFromOwn = TorpedoRange &amp;amp; StarshipClass = Explorer ) [ 
+    false = .7 , true = .3 ] else 
+if any st have ( DistFromOwn = TorpedoRange &amp;amp; StarshipClass = Frigate ) [ 
+    false = .9 , true = .1 ] else
+ if any st have ( DistFromOwn = TorpedoRange &amp;amp; StarshipClass = Freighter ) [ 
+    false = .99 , true = .01 ] else
+ if any st have ( DistFromOwn = TorpedoRange &amp;amp; StarshipClass = absurd ) [ 
+    false = 1 , true = 0 ]
 
 else 
-if any st have ( DistFromOwn = Phaser2Range &amp; StarshipClass = WarBird ) [ 
-    false = 0 , true = 1  , absurd = 0] else
- if any st have ( DistFromOwn = Phaser2Range &amp; StarshipClass = Cruiser ) [ 
-    false = 0 , true = 1  , absurd = 0] else
- if any st have ( DistFromOwn = Phaser2Range &amp; StarshipClass = Explorer ) [ 
-    false = .4 , true = .6  , absurd = 0] else
- if any st have ( DistFromOwn = Phaser2Range &amp; StarshipClass = Frigate ) [ 
-    false = .6 , true = .4  , absurd = 0] else 
-if any st have ( DistFromOwn = Phaser2Range &amp; StarshipClass = Freighter ) [ 
-    false = .95 , true = 0.05  , absurd = 0] else 
-if any st have ( DistFromOwn = Phaser2Range  ) [ 
-false = 1 , true = 0  , absurd = 0]
+if any st have ( DistFromOwn = Phaser2Range &amp;amp; StarshipClass = Warbird ) [ 
+    false = 0 , true = 1 ] else
+ if any st have ( DistFromOwn = Phaser2Range &amp;amp; StarshipClass = Cruiser ) [ 
+    false = 0 , true = 1 ] else
+ if any st have ( DistFromOwn = Phaser2Range &amp;amp; StarshipClass = Explorer ) [ 
+    false = .4 , true = .6 ] else
+ if any st have ( DistFromOwn = Phaser2Range &amp;amp; StarshipClass = Frigate ) [ 
+    false = .6 , true = .4 ] else 
+if any st have ( DistFromOwn = Phaser2Range &amp;amp; StarshipClass = Freighter ) [ 
+    false = .95 , true = .05 ] else 
+if any st have ( DistFromOwn = Phaser2Range &amp;amp; StarshipClass = absurd ) [ false 
+    = 1 , true = 0 ]
 
 else 
-if any st have ( DistFromOwn = Phaser1Range &amp; StarshipClass = WarBird ) [ 
-    false = 0 , true = 1  , absurd = 0] else 
-if any st have ( DistFromOwn = Phaser1Range &amp; StarshipClass = Cruiser ) [ 
-    false = 0 , true = 1 , absurd = 0 ] else 
-if any st have ( DistFromOwn = Phaser1Range &amp; StarshipClass = Explorer ) [ 
-    false = .05 , true = .95 , absurd = 0 ] else 
-if any st have ( DistFromOwn = Phaser1Range &amp; StarshipClass = Frigate ) [ 
-    false = 0 , true = 1  , absurd = 0] else 
-if any st have ( DistFromOwn = Phaser1Range &amp; StarshipClass = Freighter ) [ 
-    false = .9 , true = .1  , absurd = 0] else 
-if any st have ( DistFromOwn = Phaser1Range) [ false 
-    = 1 , true = 0  , absurd = 0]
+if any st have ( DistFromOwn = Phaser1Range &amp;amp; StarshipClass = Warbird ) [ 
+    false = 0 , true = 1 ] else 
+if any st have ( DistFromOwn = Phaser1Range &amp;amp; StarshipClass = Cruiser ) [ 
+    false = 0 , true = 1 ] else 
+if any st have ( DistFromOwn = Phaser1Range &amp;amp; StarshipClass = Explorer ) [ 
+    false = .05 , true = .95 ] else 
+if any st have ( DistFromOwn = Phaser1Range &amp;amp; StarshipClass = Frigate ) [ 
+    false = 0 , true = 1 ] else 
+if any st have ( DistFromOwn = Phaser1Range &amp;amp; StarshipClass = Freighter ) [ 
+    false = .9 , true = .1 ] else 
+if any st have ( DistFromOwn = Phaser1Range &amp;amp; StarshipClass = absurd ) [ false 
+    = 1 , true = 0 ]
 
 else 
-if any st have ( DistFromOwn = PulseCanonRange &amp; StarshipClass = WarBird ) [ 
-    false = 0 , true = 1 , absurd = 0 ] else 
-if any st have ( DistFromOwn = PulseCanonRange &amp; StarshipClass = Cruiser ) [ 
-    false = 0 , true = 1  , absurd = 0] else 
-if any st have ( DistFromOwn = PulseCanonRange &amp; StarshipClass = Explorer ) [ 
-    false = .0 , true = 1 , absurd = 0 ]
+if any st have ( DistFromOwn = PulseCanonRange &amp;amp; StarshipClass = Warbird ) [ 
+    false = 0 , true = 1 ] else 
+if any st have ( DistFromOwn = PulseCanonRange &amp;amp; StarshipClass = Cruiser ) [ 
+    false = 0 , true = 1 ] else 
+if any st have ( DistFromOwn = PulseCanonRange &amp;amp; StarshipClass = Explorer ) [ 
+    false = .0 , true = 1 ]
  else 
-if any st have ( DistFromOwn = PulseCanonRange &amp; StarshipClass = Frigate ) [ 
-    false = 0 , true = 1 , absurd = 0 ] else 
-if any st have ( DistFromOwn = PulseCanonRange &amp; StarshipClass = Freighter ) [ 
-    false = .8 , true = .2 , absurd = 0 ] else 
-if any st have ( DistFromOwn = PulseCanonRange  ) [ 
-    false = 1 , true = 0 , absurd = 0 ]
+if any st have ( DistFromOwn = PulseCanonRange &amp;amp; StarshipClass = Frigate ) [ 
+    false = 0 , true = 1 ] else 
+if any st have ( DistFromOwn = PulseCanonRange &amp;amp; StarshipClass = Freighter ) [ 
+    false = .8 , true = .2 ] else 
+if any st have ( DistFromOwn = PulseCanonRange &amp;amp; StarshipClass = absurd ) [ 
+    false = 1 , true = 0 ]
 
 else 
-[ false = 1 , true = 0  , absurd = 0]</hasDeclaration>
+[ false = 1 , true = 0 ]</hasDeclaration>
                       </DeclarativeDist>
                     </hasProbDist>
                     <hasPossibleValues rdf:resource="#true"/>
@@ -1971,18 +1971,15 @@ else
                                                     </hasPossibleValues>
                                                     <hasArgument rdf:resource="#DistFromOwn_1"/>
                                                     <hasInputInstance rdf:resource="#IX9"/>
-                                                    <hasParent rdf:resource="#DistFromOwn"/>
                                                     <hasParent rdf:resource="#IX10"/>
                                                     <hasPossibleValues rdf:resource="#Phaser1Range"/>
                                                     <hasPossibleValues rdf:resource="#TorpedoRange"/>
                                                     <hasInputInstance rdf:resource="#IX18"/>
                                                     <hasPossibleValues rdf:resource="#OutOfRange"/>
-                                                    <isParentOf rdf:resource="#DistFromOwn"/>
                                                     <hasPossibleValues rdf:resource="#PulseCanonRange"/>
                                                     <isParentOf rdf:resource="#HarmPotential"/>
                                                     <hasInputInstance rdf:resource="#IX16"/>
                                                     <isResidentNodeIn rdf:resource="#Starship_MFrag"/>
-                                                    <hasParent rdf:resource="#Equalsto_T0"/>
                                                     <hasArgument>
                                                       <SimpleArgRelationship rdf:ID="DistFromOwn_2">
                                                         <hasArgTerm rdf:resource="#Starship_MFrag.t"/>
@@ -3234,7 +3231,6 @@ else
                                             <hasInputInstance rdf:resource="#IX4"/>
                                             <hasParent rdf:resource="#Identity"/>
                                             <hasPossibleValues rdf:resource="#TimeStep_label"/>
-                                            <isParentOf rdf:resource="#DistFromOwn"/>
                                             <hasArgument rdf:resource="#Equalsto_T0_1"/>
                                             <isResidentNodeIn rdf:resource="#TimeStep_MFrag"/>
                                           </Domain_Res>
