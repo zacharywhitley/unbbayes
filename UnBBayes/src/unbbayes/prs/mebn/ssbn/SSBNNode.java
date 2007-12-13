@@ -850,6 +850,16 @@ public class SSBNNode {
 	}
 
 	/**
+	 * @return the arguments (do the same of the method getArguments() but return a List)
+	 */
+	public List<OVInstance> getArgumentsAsList() {
+		List<OVInstance> listArguments = new ArrayList<OVInstance>(); 
+        listArguments.addAll(getArguments()); 
+        return listArguments;
+        
+	}
+	
+	/**
 	 * @param arguments the arguments to set
 	 */
 	public void setArguments(List<OVInstance> arguments) {

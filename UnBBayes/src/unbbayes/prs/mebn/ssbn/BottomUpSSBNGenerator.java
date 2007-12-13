@@ -25,7 +25,6 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
-import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KBFacade;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
@@ -53,8 +52,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	
 	//all the ssbnnode created. 
 	private List<SSBNNode> ssbnNodeList; 
-	
-
 	
 	/**
 	 * 
@@ -260,8 +257,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			}
 			
 			//Step 1: evaluate context and search for findings
-            List<OVInstance> listOVInstances = new ArrayList<OVInstance>(); 
-            listOVInstances.addAll(currentNode.getArguments()); 
             Debug.println(currentNode.getName() + " Evaluate input " + residentNode.getName()); 
 			
             List<OrdinaryVariable> ovProblemList = 
@@ -270,70 +265,66 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
             
     		if(!ovProblemList.isEmpty()){
     			
-    			List<SSBNNode> parentList = createSSBNNodesOfEntitiesSearchForInputNode(
-    					inputNode.getMFrag(), currentNode, inputNode, ovProblemList, listOVInstances); 
+    			List<SSBNNodeJacket> parentList = createSSBNNodesOfEntitiesSearchForInputNode(
+    					currentNode, inputNode, ovProblemList, currentNode.getArgumentsAsList()); 
     			
-    		    for(SSBNNode ssbnnode: parentList){
+    		    for(SSBNNodeJacket ssbnNodeJacket: parentList){
+    		    	
+    		    	SSBNNode ssbnnode = ssbnNodeJacket.getSsbnNode();
+    		    	ssbnNodeJacket.setArgumentsOfResidentMFrag(); 
+    		    	
     		    	Debug.println("Node Created: " + ssbnnode.toString());
+    		    	
     		    	if(!ssbnnode.isContext()){
     		    		generateRecursive(ssbnnode, seen, net);	// algorithm's core
     		    	}
+    		    	
+    		    	ssbnNodeJacket.setArgumentsOfInputMFrag(); 
         			if(!ssbnnode.isFinding()  && !ssbnnode.isContext()){
-        				/* 
-        				 * Problema: aqui os argumentos tem que fazer referência aos nós
-        				 * da própria MFrag!!! Os argumentos atualmente presentes se
-        				 * referem à MFrag onde o nó de input é residente. 
-        				 */
         				currentNode.addParent(ssbnnode, true);
         			}else{
         				currentNode.addParent(ssbnnode, false);
         			}
+        			
     		    }
     		}else{
+    			
+    			//The argument list is OK. 
+    			
     			boolean contextNodesOK = false;
 				
     			try {
-					contextNodesOK = evaluateRelatedContextNodes(inputNode, listOVInstances);
+					contextNodesOK = evaluateRelatedContextNodes(inputNode, currentNode.getArgumentsAsList());
 				} catch (OVInstanceFaultException e) {
 					//ovProblemList is empty... this exception never will be catch.
 					e.printStackTrace();
 				} 
 				
     			if(contextNodesOK){
-    				SSBNNode ssbnnode = SSBNNode.getInstance(net, residentNode, new ProbabilisticNode(), false);
+    				SSBNNode ssbnNode = SSBNNode.getInstance(net, residentNode, new ProbabilisticNode(), false);
+    				SSBNNodeJacket ssbnNodeJacket = new SSBNNodeJacket(ssbnNode); 
     				
-    				for(OVInstance instance: currentNode.getArguments()){
-    					addArgumentToSSBNNodeOfInputNode(inputNode, residentNode, ssbnnode, instance);
+    				for(OVInstance ovInstance: currentNode.getArguments()){
+    					addArgumentToSSBNNodeOfInputNode(inputNode, ssbnNodeJacket, ovInstance);
     				}
     				
-    				/* problema da duplicação para nós de input, já que no passo após
-    				 * o generateRecursive, precisaremos retornar os valores das ovinstances ... */
-    				ssbnnode = checkForDoubleSSBNNodeForInputEvaliation(ssbnnode); 
+    				ssbnNodeJacket.setArgumentsOfResidentMFrag(); 
     				
-    				ssbnNodeList.add(ssbnnode); //TODO cuidado para não adicionar elementos repetidos na lista... 
+//    				ssbnNode = checkForDoubleSSBNNodeForInputEvaliation(ssbnNode); //TODO analyse... 
     				
-    				/* para esta avaliação os ov instances tem que estar com os valores
-    				 * reais do resident node... Mas depois de avaliado temos que retornar 
-    				 * para os valores delas na MFrag para tudo correr bem... 
-    				 */
-    				this.generateRecursive(ssbnnode, seen, net);	// algorithm's core
+    				ssbnNodeList.add(ssbnNode); //TODO cuidado para não adicionar elementos repetidos na lista... 
     				
-    				/* retornar para valores do Input Node para que possamos gerar
-    				 * corretamente a tabela...*/
-    				ssbnnode.removeAllArguments(); 
+    				this.generateRecursive(ssbnNode, seen, net);	// algorithm's core
     				
-    				for(OVInstance instance: currentNode.getArguments()){
-    					OrdinaryVariable test = inputNode.getOrdinaryVariableByName(instance.getOv().getName()); 
-    					if(test != null){
-    						ssbnnode.addArgument(instance); 
-    					}
-    				}
+    				ssbnNodeJacket.setArgumentsOfInputMFrag(); 
     				
-    				if(!ssbnnode.isFinding()){
-    					currentNode.addParent(ssbnnode, true);
+    				if(!ssbnNode.isFinding()){
+    					currentNode.addParent(ssbnNode, true);
     				}else{
-    					currentNode.addParent(ssbnnode, false);
+    					currentNode.addParent(ssbnNode, false);
     				}
+    			}else{
+    				//TODO O que?
     			}
     		}
 		}
@@ -667,29 +658,30 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * of the arguments). 
 	 * 
 	 * @param mFrag
-	 * @param originNode
-	 * @param fatherNode
-	 * @param ovList
-	 * @param ovInstances
+	 * @param originNode Nó que originou a criação do input node que causou a busca. 
+	 * @param fatherNode Input node que tem o argumento defeituoso
+	 * @param ovProblemList Lista das variaveis ordinárias problemáticas
+	 * @param ovInstances Lista dos argumentos do ssbnNode.
 	 * @return
 	 * @throws SSBNNodeGeneralException
 	 * @throws ImplementationRestrictionException 
 	 */
-	private List<SSBNNode> createSSBNNodesOfEntitiesSearchForInputNode(DomainMFrag mFrag, SSBNNode originNode, 
-			GenerativeInputNode fatherNode, List<OrdinaryVariable> ovList, List<OVInstance> ovInstances) 
+	private List<SSBNNodeJacket> createSSBNNodesOfEntitiesSearchForInputNode(SSBNNode originNode, 
+			GenerativeInputNode fatherNode, List<OrdinaryVariable> ovProblemList, List<OVInstance> ovInstances) 
 			throws SSBNNodeGeneralException, ImplementationRestrictionException {
 		
+		DomainMFrag mFrag = fatherNode.getMFrag(); 
 		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB()); 
 		
 		//Complex case: evaluate search context nodes. 
 		Debug.println("Have ord. variables incomplete!"); 
 		
-		if(ovList.size() > 1){
+		if(ovProblemList.size() > 1){
 			throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
 		}
 		
 		//search 
-		Collection<ContextNode> contextNodeList = mFrag.getSearchContextByOVCombination(ovList);
+		Collection<ContextNode> contextNodeList = mFrag.getSearchContextByOVCombination(ovProblemList);
 		int size = contextNodeList.size(); 
 		
 		if(size > 1){
@@ -700,7 +692,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		}
 		
 		ContextNode context = contextNodeList.toArray(new ContextNode[size])[0];
-		OrdinaryVariable ov = ovList.get(0);
+		OrdinaryVariable ov = ovProblemList.get(0);
 		
 		Debug.println("Context Node: " + context.getLabel()); 
 		
@@ -709,37 +701,34 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			
 			if(result.isEmpty()){
 
-				List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
+				List<SSBNNodeJacket> nodes = new ArrayList<SSBNNodeJacket>(); 
 				Debug.println("Result is empty"); 
 //				Add the context node how father
 				DomainResidentNode domainResidentNode = context.getNodeSearch(ovInstances); 
 				SSBNNode nodeContext = SSBNNode.getInstance(originNode.getProbabilisticNetwork(), 
 						domainResidentNode, new ProbabilisticNode(), false); 
 				nodeContext.setNodeAsContext(); 
-				nodes.add(nodeContext); 
+				SSBNNodeJacket nodeContextJacket = new SSBNNodeJacket(nodeContext); 
+				nodes.add(nodeContextJacket); 
 
 				ssbnNodeList.add(nodeContext);
 				
 				//Search for all the entities present in kb. 
 				result = kb.getEntityByType(ov.getValueType().getName());
 				Debug.println("Search returns " + result.size() + " results"); 
-				DomainResidentNode residentNode = 
-					(DomainResidentNode)fatherNode.getResidentNodePointer().getResidentNode(); 
 		        for(String entity: result){
-		        	SSBNNode ssbnnode = createSSBNNodeForEntitySearch(originNode, 
-		        			fatherNode, ov, residentNode, entity);
-					nodes.add(ssbnnode); 
+		        	SSBNNodeJacket ssbnNodeJacket = createSSBNNodeForEntitySearch(originNode, 
+		        			fatherNode, ov, entity);
+					nodes.add(ssbnNodeJacket); 
 				}
 				return nodes;  
 			}
 			else{
-				List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
-				DomainResidentNode residentNode = 
-					(DomainResidentNode)fatherNode.getResidentNodePointer().getResidentNode(); 
+				List<SSBNNodeJacket> nodes = new ArrayList<SSBNNodeJacket>(); 
 				for(String entity: result){
-					SSBNNode ssbnnode = createSSBNNodeForEntitySearch(originNode, 
-							fatherNode, ov, residentNode, entity);
-					nodes.add(ssbnnode); 
+					SSBNNodeJacket ssbnNodeJacket = createSSBNNodeForEntitySearch(originNode, 
+							fatherNode, ov, entity);
+					nodes.add(ssbnNodeJacket); 
 				}
 				return nodes; 
 			}
@@ -753,26 +742,36 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	/* 
 	 * version for input nodes. 
 	 */
-	private SSBNNode createSSBNNodeForEntitySearch(SSBNNode originNode, 
-			GenerativeInputNode fatherNode, OrdinaryVariable ov, 
-			DomainResidentNode residentNode, String entityName) throws SSBNNodeGeneralException {
+	private SSBNNodeJacket createSSBNNodeForEntitySearch(SSBNNode originNode, 
+			GenerativeInputNode fatherNode, OrdinaryVariable ov, String entityName) 
+	        throws SSBNNodeGeneralException {
 		
-		SSBNNode ssbnnode = SSBNNode.getInstance(originNode.getProbabilisticNetwork(),
-				residentNode, new ProbabilisticNode(), false); 
+		SSBNNode ssbnNode = SSBNNode.getInstance(originNode.getProbabilisticNetwork(),
+				(DomainResidentNode)fatherNode.getResidentNodePointer().getResidentNode(), new ProbabilisticNode(), false); 
+		SSBNNodeJacket ssbnNodeJacket = new SSBNNodeJacket(ssbnNode); 
 		
-		addArgumentToSSBNNodeOfInputNode(fatherNode, residentNode, ssbnnode,  
+		//Add OVInstance created for the entity search
+		addArgumentToSSBNNodeOfInputNode(fatherNode, ssbnNodeJacket,  
 				OVInstance.getInstance(ov, entityName, ov.getValueType()));	
 		
+		//Add all the other OVInstances
 		for(OVInstance instance: originNode.getArguments()){
-			addArgumentToSSBNNodeOfInputNode(fatherNode, residentNode, ssbnnode, instance);
+			addArgumentToSSBNNodeOfInputNode(fatherNode, ssbnNodeJacket, instance);
 		}
 		
 		//Suport for avoid double creation of probabilistic nodes. 
-		ssbnnode = checkForDoubleSSBNNode(ssbnnode);
+		ssbnNodeJacket.setArgumentsOfResidentMFrag();
+		ssbnNode = checkForDoubleSSBNNode(ssbnNode);
 		
-		ssbnNodeList.add(ssbnnode);
+		Debug.println(" ");
+		Debug.println("SSBNNode created:" + ssbnNode.getName());
+		Debug.println("Input MFrag Arguments: " + ssbnNodeJacket.getOvInstancesOfInputMFrag());
+		Debug.println("Resident MFrag Arguments: " + ssbnNodeJacket.getOvInstancesOfResidentMFrag());
+		Debug.println(" ");
 		
-		return ssbnnode;
+		ssbnNodeList.add(ssbnNode);
+		
+		return ssbnNodeJacket;
 	}
 
 	/*
@@ -826,19 +825,26 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
 	}
 
-	/**
-	 * Add instance how a argument of ssbnnode. ResidentNode is the node of
-	 * the SSBNNode and is the reference of the input node. 
+	
+	/** 
+	 * Add instance how a argument of a ssbnnode originate of a input node. 
+	 *
+	 * @param inputNode Node that originate the SSBNNode
+	 * @param ssbnnodeJacket Jacket with reference to the SSBNNode
+	 * @param ovInstanceInputMFrag OVInstance of the input MFrag (MFrag where exists the input node)
+	 * @throws SSBNNodeGeneralException
 	 */
 	private void addArgumentToSSBNNodeOfInputNode(GenerativeInputNode inputNode, 
-			DomainResidentNode residentNode, SSBNNode ssbnnode, OVInstance instance) 
-	        throws SSBNNodeGeneralException {
+			SSBNNodeJacket ssbnnodeJacket, OVInstance ovInstanceInputMFrag) throws SSBNNodeGeneralException {
 		
-		OrdinaryVariable ovOrigin = instance.getOv(); 
-		int index = inputNode.getResidentNodePointer().getOrdinaryVariableIndex(ovOrigin);
+		ResidentNode residentNode = inputNode.getResidentNodePointer().getResidentNode(); 
+		OrdinaryVariable ovInputMFrag = ovInstanceInputMFrag.getOv(); 
+		int index = inputNode.getResidentNodePointer().getOrdinaryVariableIndex(ovInputMFrag);
 		if(index > -1){
-			OrdinaryVariable destination = residentNode.getOrdinaryVariableList().get(index);
-			ssbnnode.addArgument(destination, instance.getEntity().getInstanceName());
+			ssbnnodeJacket.addOVInstanceOfInputMFrag(ovInstanceInputMFrag); 
+			OrdinaryVariable ovResidentMFrag = residentNode.getOrdinaryVariableList().get(index);
+			ssbnnodeJacket.addOVInstanceOfResidentMFrag(
+					OVInstance.getInstance(ovResidentMFrag, ovInstanceInputMFrag.getEntity()));
 		}
 	}
 	
@@ -900,7 +906,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 							return null; 
 						}
 					}
-					//Find all the ovInstances! Is the same same SSBNNode
+					//Find all the ovInstances! Is the same SSBNNode
 					return ssbnNode; 
 				}
 			}
@@ -984,6 +990,92 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			}
 		}
 		System.out.println("--------------------------------------------------");	
+	}
+	
+	/*
+	 * This class is used for the management of the arguments of a ssbnnode 
+	 * build for a InputNode. This is necessary because the arguments of this
+	 * ssbn node need to be interchangeable (should refer to the ordinary
+	 * variables of the MFrag of the ssbn node when the evaluation is of the 
+	 * input how father of a resident node and to the ordinary variables of the 
+	 * MFrag where the node is residente if the evaluation is about the 
+	 * ssbnnode itself). 
+	 */
+	private class SSBNNodeJacket{
+		
+		private final Integer ARGUMENTS_OF_INPUT_MFRAG = 0; 
+		private final Integer ARGUMENTS_OF_RESIDENT_MFRAG = 1; 
+		
+		private SSBNNode ssbnNode; 
+		private List<OVInstance> ovInstancesOfInputMFrag; 
+		private List<OVInstance> ovInstancesOfResidentMFrag; 
+		private Integer typeAtualArguments; 
+		
+		public SSBNNodeJacket(SSBNNode ssbnNode){
+			this.ssbnNode = ssbnNode;
+			this.typeAtualArguments = -1; 
+			ovInstancesOfInputMFrag = new ArrayList<OVInstance>();
+			ovInstancesOfResidentMFrag = new ArrayList<OVInstance>(); 
+		}
+
+		public SSBNNode getSsbnNode() {
+			return ssbnNode;
+		}
+
+		public void setSsbnNode(SSBNNode ssbnNode) {
+			this.ssbnNode = ssbnNode;
+		}
+
+		public Collection<OVInstance> getOvInstancesOfInputMFrag() {
+			return ovInstancesOfInputMFrag;
+		}
+
+//		public void setOvInstancesOfInputMFrag(
+//				List<OVInstance> ovInstancesOfInputMFrag) {
+//			this.ovInstancesOfInputMFrag = ovInstancesOfInputMFrag;
+//		}
+
+		public void addOVInstanceOfInputMFrag(OVInstance ovInstance){
+			this.ovInstancesOfInputMFrag.add(ovInstance);
+		}
+		
+		public Collection<OVInstance> getOvInstancesOfResidentMFrag() {
+			return ovInstancesOfResidentMFrag;
+		}
+		
+
+//		public void setOvInstancesOfResidentMFrag(
+//				List<OVInstance> ovInstancesOfResidentMFrag) {
+//			this.ovInstancesOfResidentMFrag = ovInstancesOfResidentMFrag;
+//		}
+
+		public void addOVInstanceOfResidentMFrag(OVInstance ovInstance){
+			this.ovInstancesOfResidentMFrag.add(ovInstance);
+		}		
+		
+		public void setArgumentsOfInputMFrag(){
+			if(typeAtualArguments != ARGUMENTS_OF_INPUT_MFRAG){
+				ssbnNode.removeAllArguments(); 
+				ssbnNode.setArguments(ovInstancesOfInputMFrag);
+				typeAtualArguments = ARGUMENTS_OF_INPUT_MFRAG;
+			}
+		}
+		
+		public void setArgumentsOfResidentMFrag(){
+			if(typeAtualArguments != ARGUMENTS_OF_RESIDENT_MFRAG){
+				ssbnNode.removeAllArguments(); 
+				ssbnNode.setArguments(ovInstancesOfResidentMFrag);
+				typeAtualArguments = ARGUMENTS_OF_RESIDENT_MFRAG;
+			}
+		}
+
+		public Integer getTypeAtualArguments() {
+			return typeAtualArguments;
+		}
+
+		public void setTypeAtualArguments(Integer typeAtualArguments) {
+			this.typeAtualArguments = typeAtualArguments;
+		}
 	}
 	
 }
