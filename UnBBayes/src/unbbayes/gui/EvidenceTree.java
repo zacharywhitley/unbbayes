@@ -42,8 +42,8 @@ public class EvidenceTree extends JTree {
 	private ArrayMap<Object, Node> objectsMap = new ArrayMap<Object, Node>();
         protected IconController iconController = IconController.getInstance();
 
-	public EvidenceTree(final NetworkWindow netWindow) {
-		net = netWindow.getSingleEntityNetwork();
+	public EvidenceTree(SingleEntityNetwork sen, final NetworkWindow netWindow) {
+		net = sen;
 		nf = NumberFormat.getInstance(Locale.US);
 		nf.setMaximumFractionDigits(2);
 

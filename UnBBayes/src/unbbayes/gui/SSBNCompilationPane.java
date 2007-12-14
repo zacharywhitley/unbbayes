@@ -18,6 +18,7 @@ import javax.swing.JTree;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
+import unbbayes.prs.bn.SingleEntityNetwork;
 
 /**
  * <p>Title: UnBBayes</p>
@@ -28,7 +29,7 @@ import unbbayes.controller.NetworkController;
  * @version 1.0
  */
 
-public class PNCompilationPane extends JPanel {
+public class SSBNCompilationPane extends JPanel {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
@@ -48,18 +49,34 @@ public class PNCompilationPane extends JPanel {
     private final JButton expand;
     private final JButton collapse;
     private final JButton editMode;
-    private final JButton log;
+//    private final JButton log;
     private final JButton reset;
-    private final JButton printNet;
-    private final JButton previewNet;
-    private final JButton saveNetImage;
+//    private final JButton printNet;
+//    private final JButton previewNet;
+//    private final JButton saveNetImage;
 
     private final IconController iconController = IconController.getInstance();
 
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
-    public PNCompilationPane(NetworkWindow _netWindow,
+  	public SSBNCompilationPane(){
+  		editMode = null;
+  		netWindow = null;
+  		controller = null;
+  		jspTree = null;
+  		centerPanel = null;
+  		bottomPanel = null;
+  		topPanel = null;
+  		jtbCompilation = null;
+  		status = null;
+  		propagate = null;
+  	    expand = null;
+  	    collapse = null;
+  	    reset = null;
+  	}
+  	
+    public SSBNCompilationPane(SingleEntityNetwork sen, NetworkWindow _netWindow,
                           NetworkController _controller) {
         super();
         this.netWindow     = _netWindow;
@@ -70,7 +87,7 @@ public class PNCompilationPane extends JPanel {
         topPanel       = new JPanel(new GridLayout(0,1));
         jtbCompilation = new JToolBar();
         centerPanel    = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        evidenceTree   = new EvidenceTree(netWindow.getSingleEntityNetwork(), netWindow);
+        evidenceTree   = new EvidenceTree(sen, netWindow);
         jspTree        = new JScrollPane(evidenceTree);
         bottomPanel    = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 1));
         status         = new JLabel(resource.getString("statusReadyLabel"));
@@ -80,11 +97,11 @@ public class PNCompilationPane extends JPanel {
         expand            = new JButton(iconController.getExpandIcon());
         collapse          = new JButton(iconController.getColapseIcon());
         editMode          = new JButton(iconController.getEditIcon());
-        log               = new JButton(iconController.getInformationIcon());
+//        log               = new JButton(iconController.getInformationIcon());
         reset             = new JButton(iconController.getInitializeIcon());
-        printNet          = new JButton(iconController.getPrintNetIcon());
-        previewNet        = new JButton(iconController.getPrintPreviewNetIcon());
-        saveNetImage      = new JButton(iconController.getSaveNetIcon());
+//        printNet          = new JButton(iconController.getPrintNetIcon());
+//        previewNet        = new JButton(iconController.getPrintPreviewNetIcon());
+//        saveNetImage      = new JButton(iconController.getSaveNetIcon());
 
 
         //setar tooltip para esses bot_es
@@ -92,19 +109,19 @@ public class PNCompilationPane extends JPanel {
         expand.setToolTipText(resource.getString("expandToolTip"));
         collapse.setToolTipText(resource.getString("collapseToolTip"));
         editMode.setToolTipText(resource.getString("editToolTip"));
-        log.setToolTipText(resource.getString("logToolTip"));
+//        log.setToolTipText(resource.getString("logToolTip"));
         reset.setToolTipText(resource.getString("resetCrencesToolTip"));
-        printNet.setToolTipText(resource.getString("printNetToolTip"));
-        previewNet.setToolTipText(resource.getString("previewNetToolTip"));
-        saveNetImage.setToolTipText(resource.getString("saveNetImageToolTip"));
+//        printNet.setToolTipText(resource.getString("printNetToolTip"));
+//        previewNet.setToolTipText(resource.getString("previewNetToolTip"));
+//        saveNetImage.setToolTipText(resource.getString("saveNetImageToolTip"));
 
         //mostra o log da rede compilada
-        log.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                controller.showLog();
-                netWindow.getGraphPane().update();
-            }
-        });
+//        log.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent ae) {
+//                controller.showLog();
+//                netWindow.getGraphPane().update();
+//            }
+//        });
 
         //ao clicar no bot_o reset, chama-se o m_todo de inicia__o de cren_as da rede
         reset.addActionListener(new ActionListener() {
@@ -113,10 +130,10 @@ public class PNCompilationPane extends JPanel {
             }
         });
 
-        //volta para o modo de edi__o e constru__o da rede
+//        volta para o modo de edi__o e constru__o da rede
         editMode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
-                netWindow.changeToPNEditionPane();
+                netWindow.changeToMEBNEditionPane();
             }
         });
 
@@ -149,30 +166,30 @@ public class PNCompilationPane extends JPanel {
         });
 
 
-        // action para imprimir a rede
-        printNet.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                controller.printNet(netWindow.getGraphPane(), controller.calculateNetRectangle());
-            }
-        });
-
-        // action para visualizar a rede.
-        previewNet.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                controller.previewPrintNet(netWindow.getGraphPane(), controller.calculateNetRectangle());
-            }
-        });
-
-        saveNetImage.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                controller.saveNetImage();
-            }
-        });
-
-        //colocar bot_es e controladores do look-and-feel no toolbar e esse no topPanel
-        jtbCompilation.add(printNet);
-        jtbCompilation.add(previewNet);
-        jtbCompilation.add(saveNetImage);
+//        // action para imprimir a rede
+//        printNet.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent ae) {
+//                controller.printNet(netWindow.getGraphPane(), controller.calculateNetRectangle());
+//            }
+//        });
+//
+//        // action para visualizar a rede.
+//        previewNet.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent ae) {
+//                controller.previewPrintNet(netWindow.getGraphPane(), controller.calculateNetRectangle());
+//            }
+//        });
+//
+//        saveNetImage.addActionListener(new ActionListener() {
+//            public void actionPerformed(ActionEvent e) {
+//                controller.saveNetImage();
+//            }
+//        });
+//
+//        //colocar bot_es e controladores do look-and-feel no toolbar e esse no topPanel
+//        jtbCompilation.add(printNet);
+//        jtbCompilation.add(previewNet);
+//        jtbCompilation.add(saveNetImage);
 
         jtbCompilation.addSeparator();
 
@@ -183,7 +200,7 @@ public class PNCompilationPane extends JPanel {
         jtbCompilation.addSeparator();
 
         jtbCompilation.add(editMode);
-        jtbCompilation.add(log);
+//        jtbCompilation.add(log);
         jtbCompilation.add(reset);
 
         topPanel.add(jtbCompilation);
@@ -253,25 +270,25 @@ public class PNCompilationPane extends JPanel {
 		return this.collapse;
 	}
 
-	public JButton getEditMode() {
-		return this.editMode;
-	}
+//	public JButton getEditMode() {
+//		return this.editMode;
+//	}
 
 	public JButton getExpand() {
 		return this.expand;
 	}
-
-	public JButton getLog() {
-		return this.log;
-	}
-
-	public JButton getPreviewNet() {
-		return this.previewNet;
-	}
-
-	public JButton getPrintNet() {
-		return this.printNet;
-	}
+//
+//	public JButton getLog() {
+//		return this.log;
+//	}
+//
+//	public JButton getPreviewNet() {
+//		return this.previewNet;
+//	}
+//
+//	public JButton getPrintNet() {
+//		return this.printNet;
+//	}
 
 	public JButton getPropagate() {
 		return this.propagate;
@@ -280,8 +297,9 @@ public class PNCompilationPane extends JPanel {
 	public JButton getReset() {
 		return this.reset;
 	}
-
-	public JButton getSaveNetImage() {
-		return this.saveNetImage;
-	}
+//
+//	public JButton getSaveNetImage() {
+//		return this.saveNetImage;
+//	}
 }
+

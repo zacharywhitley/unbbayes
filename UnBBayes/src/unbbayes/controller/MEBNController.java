@@ -1,8 +1,11 @@
 package unbbayes.controller;
 
+import java.awt.Cursor;
 import java.io.File;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import javax.swing.JOptionPane;
 
 import unbbayes.controller.exception.InconsistentArgumentException;
 import unbbayes.controller.exception.InvalidOperationException;
@@ -54,6 +57,7 @@ import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.mebn.ssbn.test.BottomUpSSBNGeneratorTest;
+import unbbayes.util.NodeList;
 
 /**
  * Controller of the MEBN structure. 
@@ -1137,20 +1141,66 @@ public class MEBNController {
 			throw new InconsistentArgumentException(e);
 		}
 		
-		try {
-			probabilisticNetwork.compile();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block. Lançar tela de erro com erro informado. 
-			e.printStackTrace();
-		} 
+//		try {
+//			probabilisticNetwork.compile();
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block. Lançar tela de erro com erro informado. 
+//			e.printStackTrace();
+//		} 
 		
-//		PNCompilationPane pnCompilationPane = new PNCompilationPane(this, controller);
+		this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(probabilisticNetwork);
 		
 		return probabilisticNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 		
 	}
 	
-	
+	/**
+	 * Compiles the bayesian network. If there was any problem during compilation, the error
+	 * message will be shown as a <code>JOptionPane</code> .
+	 * 
+	 * @return true if the net was compiled without any problem, false if there was a problem
+	 * @since
+	 * @see JOptionPane
+	 */
+	public boolean compileNetwork(ProbabilisticNetwork network) {
+//		long ini = System.currentTimeMillis();
+		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		try {
+			network.compile();
+		} catch (Exception e) {
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e.getMessage(), resource
+					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+			screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			return false;
+		}
+
+		// Order by node description just to make tree's visualization easy.
+		NodeList nos = network.getNodesCopy();
+		boolean haTroca = true;
+		while (haTroca) {
+			haTroca = false;
+			for (int i = 0; i < nos.size() - 1; i++) {
+				Node node1 = nos.get(i);
+				Node node2 = nos.get(i + 1);
+				if (node1.getDescription().compareToIgnoreCase(
+						node2.getDescription()) > 0) {
+					nos.set(i + 1, node1);
+					nos.set(i, node2);
+					haTroca = true;
+				}
+			}
+		}
+
+		screen.getEvidenceTree().updateTree();
+
+		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+
+//		screen.setStatus(resource.getString("statusTotalTime")
+//				+ df.format(((System.currentTimeMillis() - ini)) / 1000.0)
+//				+ resource.getString("statusSeconds"));
+		return true;
+	}
 	
 	
 	/*-------------------------------------------------------------------------*/

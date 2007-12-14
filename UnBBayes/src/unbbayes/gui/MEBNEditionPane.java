@@ -1343,6 +1343,10 @@ public class MEBNEditionPane extends JPanel {
 
   	}
 
+	public NetworkWindow getNetworkWindow() {
+		return netWindow;
+	}
+
     /*
      * Classe com bot�es para utilizar o powerloom em uma forma simplificada,
      * entrando com os findings e queries como strings na sintaxe do PowerLoom.
