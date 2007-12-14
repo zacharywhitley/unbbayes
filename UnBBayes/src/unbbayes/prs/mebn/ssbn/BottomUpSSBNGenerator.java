@@ -25,6 +25,7 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
+import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KBFacade;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
@@ -81,8 +82,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		SSBNNode root = this.generateRecursive(querynode, new SSBNNodeList(), 
 				                               querynode.getProbabilisticNetwork());
 		
-//		network = this.createCPTs(root); 
-		
 		for(SSBNNode ssbnNode: ssbnNodeList){
 			printNodeStructureBeforeCPT(ssbnNode); 
 		}
@@ -102,6 +101,10 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * 
 	 * Pre-requisites: 
 	 *     - The node current node has a OVInstance for all OrdinaryVariable argument
+	 * 
+	 * Pos-requisites:
+	 *     - The probabilistic table of the currentNode will be filled and all
+	 *     nodes fathers evaluateds. 
 	 * 
 	 * @param currentNode node currently analyzed. 
 	 * @param seen all the nodes analized previously (doesn't contain the current node)
@@ -137,6 +140,12 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			currentNode.setNodeAsFinding(exactValue.getState());
 			seen.add(currentNode); 
 			Debug.println("Exact value of " + currentNode.getName() + "=" + exactValue.getState()); 
+	        try {
+				currentNode.fillProbabilisticTable();
+			} catch (MEBNException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			return currentNode;
 		}
 		
@@ -192,6 +201,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     		    	
     		    	if(!ssbnnode.isContext()){
     		    		generateRecursive(ssbnnode, seen, net);	
+    		    	}else{
+    		    		//criar tabela do nó de contexto???
     		    	}
     		    	
     		    	if(!ssbnnode.isFinding() && !ssbnnode.isContext()){
@@ -330,12 +341,12 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		}
 		
 		//Gerar a tabela; 
-//		try {
-//			currentNode.fillProbabilisticTable();
-//		} catch (MEBNException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		try {
+			currentNode.fillProbabilisticTable();
+		} catch (MEBNException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		Debug.println(currentNode.getResident().getName() + " return of input parents recursion"); 
 		
