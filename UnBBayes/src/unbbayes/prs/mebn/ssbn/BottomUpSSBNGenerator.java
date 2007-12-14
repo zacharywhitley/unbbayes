@@ -141,7 +141,9 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			seen.add(currentNode); 
 			Debug.println("Exact value of " + currentNode.getName() + "=" + exactValue.getState()); 
 	        try {
+				Debug.setDebug(false);
 				currentNode.fillProbabilisticTable();
+				Debug.setDebug(true);
 			} catch (MEBNException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -342,7 +344,9 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
 		//Gerar a tabela; 
 		try {
+			Debug.setDebug(false);
 			currentNode.fillProbabilisticTable();
+			Debug.setDebug(true);
 		} catch (MEBNException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

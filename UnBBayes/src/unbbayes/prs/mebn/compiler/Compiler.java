@@ -538,6 +538,7 @@ public class Compiler implements ICompiler {
 		try {
 			statement();
 		} catch (TableFunctionMalformedException e) {
+			System.out.println("->" + getNode());
 			throw new InvalidProbabilityRangeException(e.getMessage());
 		}
 		
@@ -704,6 +705,7 @@ public class Compiler implements ICompiler {
 			// consistency check C09: verify whether is conditionant of the node
 			if (this.node != null) {
 				if (!this.isValidConditionant(this.mebn, this.node, conditionantName )) {
+					System.out.println("->" + getNode());
 					throw new InvalidConditionantException();
 				}
 			}

@@ -34,7 +34,7 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 	public static final String KB_FINDING_FILE = "KnowledgeBaseWithStarshipZoneST4.plm";  
 //	public static final String KB_GENERATIVE_FILE = "generative.plm"; 
 //	public static final String KB_FINDING_FILE = "findings.plm";  
-	public static final String STARTREK_UBF = "examples/mebn/StarTrek40.ubf"; 
+	public static final String STARTREK_UBF = "examples/mebn/StarTrek39.ubf"; 
 	
 	/**
 	 * @param arg0
