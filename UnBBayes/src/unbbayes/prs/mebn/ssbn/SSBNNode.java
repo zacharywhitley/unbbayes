@@ -3,29 +3,27 @@
  */
 package unbbayes.prs.mebn.ssbn;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.util.Set;
+
 import unbbayes.prs.Edge;
+import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.ssbn.exception.*;
-import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.compiler.Compiler;
+import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.MEBNException;
+import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.util.NodeList;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.Set;
 
 
 /**
@@ -502,18 +500,21 @@ public class SSBNNode {
 	public void setNodeAsContext() {
 		this.isContext = true;
 		
-		if(this.getProbNode()!=null){
-			ProbabilisticNode node = this.getProbNode();
-			if(probabilisticNetwork != null){
-			    probabilisticNetwork.removeNode(node);
-			}
-			this.setProbNode(null);	
-		}
+//		if(this.getProbNode()!=null){
+//			ProbabilisticNode node = this.getProbNode();
+//			if(probabilisticNetwork != null){
+//			    probabilisticNetwork.removeNode(node);
+//			}
+//			this.setProbNode(null);	
+//		}
 	}
 	
 
 	public void fillProbabilisticTable() throws MEBNException {
-		this.compiler.generateCPT(this);
+		PotentialTable pt = this.compiler.generateCPT(this);
+		if(this.getProbNode() != null){
+			
+		}
 	}
 	
 	
@@ -522,8 +523,8 @@ public class SSBNNode {
 	
 	/**
 	 * This will add a parent to this node. It may check if the resident node
-	 * remains consistent. If argument is null, it throws NullPointerException
-	 * PLEASE NOTE IT DOES NOT ADD AN EDGE YET! ADD IT AT AN OUTSIDE METHOD
+	 * remains consistent. If argument is null, it throws NullPointerException.
+	 * The EDGE between the probalistic nodes is added to the network. 
 	 * @param parent the node to be added as parent. Its ProbNode will be added as
 	 * this ProbNode's parent and, if said so, its resident node will be checked if it is the
 	 * expected parent node by this node's resident node.
