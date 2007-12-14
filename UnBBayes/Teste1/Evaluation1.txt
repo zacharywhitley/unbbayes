@@ -1,0 +1,2903 @@
+L: if any st have ( OpSpec = Cardassian ) [ WarBird = .4 , Cruiser = .1 , 
+    Explorer = 0 , Frigate = .4 , Freighter = .1 , absurd = 0 ] else if any st 
+    have ( OpSpec = Friend ) [ WarBird = .1 , Cruiser = .3 , Explorer = .25 , 
+    Frigate = .2 , Freighter = .15 , absurd = 0 ] else if any st have ( OpSpec 
+    = Klingon ) [ WarBird = .25 , Cruiser = .50 , Explorer = .15 , Frigate = 0 
+    , Freighter = .1 , absurd = 0 ] else if any st have ( OpSpec = Romulan ) [ 
+    WarBird = .6 , Cruiser = 0 , Explorer = .3 , Frigate = 0 , Freighter = .1 
+    , absurd = 0 ] else if any st have ( OpSpec = Unknown ) [ WarBird = .1 , 
+    Cruiser = .1 , Explorer = .35 , Frigate = .1 , Freighter = .35 , absurd = 
+    0 ] else if any st have ( OpSpec = absurd ) [ WarBird = .0 , Cruiser = .0 
+    , Explorer = 0 , Frigate = .0 , Freighter = .0 , absurd = 1 ] else [ 
+    WarBird = .0 , Cruiser = .0 , Explorer = 0 , Frigate = .0 , Freighter = .0 
+    , absurd = 1 ]
+CHANGED: if any st have ( OpSpec = Cardassian ) [ WarBird = .4 , Cruiser = .1 , Explorer = 0 , Frigate = .4 , Freighter = .1 , absurd = 0 ] else if any st have ( OpSpec = Friend ) [ WarBird = .1 , Cruiser = .3 , Explorer = .25 , Frigate = .2 , Freighter = .15 , absurd = 0 ] else if any st have ( OpSpec = Klingon ) [ WarBird = .25 , Cruiser = .50 , Explorer = .15 , Frigate = 0 , Freighter = .1 , absurd = 0 ] else if any st have ( OpSpec = Romulan ) [ WarBird = .6 , Cruiser = 0 , Explorer = .3 , Frigate = 0 , Freighter = .1 , absurd = 0 ] else if any st have ( OpSpec = Unknown ) [ WarBird = .1 , Cruiser = .1 , Explorer = .35 , Frigate = .1 , Freighter = .35 , absurd = 0 ] else if any st have ( OpSpec = absurd ) [ WarBird = .0 , Cruiser = .0 , Explorer = 0 , Frigate = .0 , Freighter = .0 , absurd = 1 ] else [ WarBird = .0 , Cruiser = .0 , Explorer = 0 , Frigate = .0 , Freighter = .0 , absurd = 1 ]
+************************************
+PARSED: 
+PARSING IF STATEMENT
+RESETING VALUE FROM 
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS O
+OPSPEC 
+!!!Value = OPSPEC
+Matching = 
+RESETING VALUE FROM OPSPEC
+LOOKAHEAD IS C
+CARDASSIAN 
+!!!Value = CARDASSIAN
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = CARDASSIAN, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM CARDASSIAN
+LOOKAHEAD IS W
+WARBIRD 
+!!!Value = WARBIRD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.4
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@f18786
+Operation = *, getProbability: 1.0 , 0.4 = 0.4
+Expression returned 0.4
+Operation = *, getProbability: 1.0 , 0.4 = 0.4
+Adding cell: WarBird = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@f898f4
+Matching , 
+RESETING VALUE FROM .4
+LOOKAHEAD IS C
+CRUISER 
+!!!Value = CRUISER
+Matching = 
+Signed factor returning 1
+GetNum returned 0.1
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@101f417
+Operation = *, getProbability: 1.0 , 0.1 = 0.1
+Expression returned 0.1
+Operation = *, getProbability: 1.0 , 0.1 = 0.1
+Adding cell: Cruiser = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@140138b
+Matching , 
+RESETING VALUE FROM .1
+LOOKAHEAD IS E
+EXPLORER 
+!!!Value = EXPLORER
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1c346d0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: Explorer = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@15e236a
+Matching , 
+RESETING VALUE FROM 0
+LOOKAHEAD IS F
+FRIGATE 
+!!!Value = FRIGATE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.4
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@167436c
+Operation = *, getProbability: 1.0 , 0.4 = 0.4
+Expression returned 0.4
+Operation = *, getProbability: 1.0 , 0.4 = 0.4
+Adding cell: Frigate = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@7b9969
+Matching , 
+RESETING VALUE FROM .4
+LOOKAHEAD IS F
+FREIGHTER 
+!!!Value = FREIGHTER
+Matching = 
+Signed factor returning 1
+GetNum returned 0.1
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@94de98
+Operation = *, getProbability: 1.0 , 0.1 = 0.1
+Expression returned 0.1
+Operation = *, getProbability: 1.0 , 0.1 = 0.1
+Adding cell: Freighter = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1a1ee47
+Matching , 
+RESETING VALUE FROM .1
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+StarshipClass return of input parents recursion
+HarmPotential return of resident parents recursion
+************************************
+ORIGINAL: if any st have ( DistFromOwn = OutOfRange  ) 
+[ false = 1 , true = 0 , absurd = 0]
+else
+if any st have ( DistFromOwn = TorpedoRange & StarshipClass = WarBird ) [ 
+    false = 0 , true = 1, absurd = 0 ] else 
+if any st have ( DistFromOwn = TorpedoRange & StarshipClass = Cruiser ) [ 
+    false = .2 , true = .8  , absurd = 0] else 
+if any st have ( DistFromOwn = TorpedoRange & StarshipClass = Explorer ) [ 
+    false = .7 , true = .3 , absurd = 0 ] else 
+if any st have ( DistFromOwn = TorpedoRange & StarshipClass = Frigate ) [ 
+    false = .9 , true = .1 , absurd = 0 ] else
+ if any st have ( DistFromOwn = TorpedoRange & StarshipClass = Freighter ) [ 
+    false = .99 , true = .01  , absurd = 0] else
+ if any st have ( DistFromOwn = TorpedoRange  ) [ 
+    false = 1 , true = 0  , absurd = 0]
+
+else 
+if any st have ( DistFromOwn = Phaser2Range & StarshipClass = WarBird ) [ 
+    false = 0 , true = 1  , absurd = 0] else
+ if any st have ( DistFromOwn = Phaser2Range & StarshipClass = Cruiser ) [ 
+    false = 0 , true = 1  , absurd = 0] else
+ if any st have ( DistFromOwn = Phaser2Range & StarshipClass = Explorer ) [ 
+    false = .4 , true = .6  , absurd = 0] else
+ if any st have ( DistFromOwn = Phaser2Range & StarshipClass = Frigate ) [ 
+    false = .6 , true = .4  , absurd = 0] else 
+if any st have ( DistFromOwn = Phaser2Range & StarshipClass = Freighter ) [ 
+    false = .95 , true = 0.05  , absurd = 0] else 
+if any st have ( DistFromOwn = Phaser2Range  ) [ 
+false = 1 , true = 0  , absurd = 0]
+
+else 
+if any st have ( DistFromOwn = Phaser1Range & StarshipClass = WarBird ) [ 
+    false = 0 , true = 1  , absurd = 0] else 
+if any st have ( DistFromOwn = Phaser1Range & StarshipClass = Cruiser ) [ 
+    false = 0 , true = 1 , absurd = 0 ] else 
+if any st have ( DistFromOwn = Phaser1Range & StarshipClass = Explorer ) [ 
+    false = .05 , true = .95 , absurd = 0 ] else 
+if any st have ( DistFromOwn = Phaser1Range & StarshipClass = Frigate ) [ 
+    false = 0 , true = 1  , absurd = 0] else 
+if any st have ( DistFromOwn = Phaser1Range & StarshipClass = Freighter ) [ 
+    false = .9 , true = .1  , absurd = 0] else 
+if any st have ( DistFromOwn = Phaser1Range) [ false 
+    = 1 , true = 0  , absurd = 0]
+
+else 
+if any st have ( DistFromOwn = PulseCanonRange & StarshipClass = WarBird ) [ 
+    false = 0 , true = 1 , absurd = 0 ] else 
+if any st have ( DistFromOwn = PulseCanonRange & StarshipClass = Cruiser ) [ 
+    false = 0 , true = 1  , absurd = 0] else 
+if any st have ( DistFromOwn = PulseCanonRange & StarshipClass = Explorer ) [ 
+    false = .0 , true = 1 , absurd = 0 ]
+ else 
+if any st have ( DistFromOwn = PulseCanonRange & StarshipClass = Frigate ) [ 
+    false = 0 , true = 1 , absurd = 0 ] else 
+if any st have ( DistFromOwn = PulseCanonRange & StarshipClass = Freighter ) [ 
+    false = .8 , true = .2 , absurd = 0 ] else 
+if any st have ( DistFromOwn = PulseCanonRange  ) [ 
+    false = 1 , true = 0 , absurd = 0 ]
+
+else 
+[ false = 1 , true = 0  , absurd = 0]
+CHANGED: if any st have ( DistFromOwn = OutOfRange ) [ false = 1 , true = 0 , absurd = 0] else if any st have ( DistFromOwn = TorpedoRange & StarshipClass = WarBird ) [ false = 0 , true = 1, absurd = 0 ] else if any st have ( DistFromOwn = TorpedoRange & StarshipClass = Cruiser ) [ false = .2 , true = .8 , absurd = 0] else if any st have ( DistFromOwn = TorpedoRange & StarshipClass = Explorer ) [ false = .7 , true = .3 , absurd = 0 ] else if any st have ( DistFromOwn = TorpedoRange & StarshipClass = Frigate ) [ false = .9 , true = .1 , absurd = 0 ] else if any st have ( DistFromOwn = TorpedoRange & StarshipClass = Freighter ) [ false = .99 , true = .01 , absurd = 0] else if any st have ( DistFromOwn = TorpedoRange ) [ false = 1 , true = 0 , absurd = 0] else if any st have ( DistFromOwn = Phaser2Range & StarshipClass = WarBird ) [ false = 0 , true = 1 , absurd = 0] else if any st have ( DistFromOwn = Phaser2Range & StarshipClass = Cruiser ) [ false = 0 , true = 1 , absurd = 0] else if any st have ( DistFromOwn = Phaser2Range & StarshipClass = Explorer ) [ false = .4 , true = .6 , absurd = 0] else if any st have ( DistFromOwn = Phaser2Range & StarshipClass = Frigate ) [ false = .6 , true = .4 , absurd = 0] else if any st have ( DistFromOwn = Phaser2Range & StarshipClass = Freighter ) [ false = .95 , true = 0.05 , absurd = 0] else if any st have ( DistFromOwn = Phaser2Range ) [ false = 1 , true = 0 , absurd = 0] else if any st have ( DistFromOwn = Phaser1Range & StarshipClass = WarBird ) [ false = 0 , true = 1 , absurd = 0] else if any st have ( DistFromOwn = Phaser1Range & StarshipClass = Cruiser ) [ false = 0 , true = 1 , absurd = 0 ] else if any st have ( DistFromOwn = Phaser1Range & StarshipClass = Explorer ) [ false = .05 , true = .95 , absurd = 0 ] else if any st have ( DistFromOwn = Phaser1Range & StarshipClass = Frigate ) [ false = 0 , true = 1 , absurd = 0] else if any st have ( DistFromOwn = Phaser1Range & StarshipClass = Freighter ) [ false = .9 , true = .1 , absurd = 0] else if any st have ( DistFromOwn = Phaser1Range) [ false = 1 , true = 0 , absurd = 0] else if any st have ( DistFromOwn = PulseCanonRange & StarshipClass = WarBird ) [ false = 0 , true = 1 , absurd = 0 ] else if any st have ( DistFromOwn = PulseCanonRange & StarshipClass = Cruiser ) [ false = 0 , true = 1 , absurd = 0] else if any st have ( DistFromOwn = PulseCanonRange & StarshipClass = Explorer ) [ false = .0 , true = 1 , absurd = 0 ] else if any st have ( DistFromOwn = PulseCanonRange & StarshipClass = Frigate ) [ false = 0 , true = 1 , absurd = 0 ] else if any st have ( DistFromOwn = PulseCanonRange & StarshipClass = Freighter ) [ false = .8 , true = .2 , absurd = 0 ] else if any st have ( DistFromOwn = PulseCanonRange ) [ false = 1 , true = 0 , absurd = 0 ] else [ false = 1 , true = 0 , absurd = 0]
+************************************
+PARSED: 
+PARSING IF STATEMENT
+RESETING VALUE FROM 
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS O
+OUTOFRANGE 
+!!!Value = OUTOFRANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = OUTOFRANGE, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM OUTOFRANGE
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 1.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@22af8c
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Expression returned 1.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@13321d6
+Matching , 
+RESETING VALUE FROM 1
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1f27273
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@37dd04
+Matching , 
+RESETING VALUE FROM 0
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@18f5cce
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@115e891
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS T
+TORPEDORANGE 
+!!!Value = TORPEDORANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM TORPEDORANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS W
+WARBIRD 
+!!!Value = WARBIRD
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = WARBIRD, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM WARBIRD
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@c4f9e6
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1f2a8fb
+Matching , 
+RESETING VALUE FROM 0
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 1.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@341db1
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Expression returned 1.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1896415
+Matching , 
+RESETING VALUE FROM 1
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@109dafc
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@7de1a
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS T
+TORPEDORANGE 
+!!!Value = TORPEDORANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM TORPEDORANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS C
+CRUISER 
+!!!Value = CRUISER
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = CRUISER, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM CRUISER
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.2
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@86a602
+Operation = *, getProbability: 1.0 , 0.2 = 0.2
+Expression returned 0.2
+Operation = *, getProbability: 1.0 , 0.2 = 0.2
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1fce83e
+Matching , 
+RESETING VALUE FROM .2
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.8
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@f379ef
+Operation = *, getProbability: 1.0 , 0.8 = 0.8
+Expression returned 0.8
+Operation = *, getProbability: 1.0 , 0.8 = 0.8
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@ca6ba3
+Matching , 
+RESETING VALUE FROM .8
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@160a2f1
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@169aa0e
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.2 = 0.2
+Operation = *, getProbability: 1.0 , 0.8 = 0.8
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS T
+TORPEDORANGE 
+!!!Value = TORPEDORANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM TORPEDORANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS E
+EXPLORER 
+!!!Value = EXPLORER
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = EXPLORER, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM EXPLORER
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.7
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1ba9f7
+Operation = *, getProbability: 1.0 , 0.7 = 0.7
+Expression returned 0.7
+Operation = *, getProbability: 1.0 , 0.7 = 0.7
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@33c558
+Matching , 
+RESETING VALUE FROM .7
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.3
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@e13c84
+Operation = *, getProbability: 1.0 , 0.3 = 0.3
+Expression returned 0.3
+Operation = *, getProbability: 1.0 , 0.3 = 0.3
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@14c1313
+Matching , 
+RESETING VALUE FROM .3
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1787338
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@d4927f
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.7 = 0.7
+Operation = *, getProbability: 1.0 , 0.3 = 0.3
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS T
+TORPEDORANGE 
+!!!Value = TORPEDORANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM TORPEDORANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS F
+FRIGATE 
+!!!Value = FRIGATE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = FRIGATE, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM FRIGATE
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.9
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1ddff76
+Operation = *, getProbability: 1.0 , 0.9 = 0.9
+Expression returned 0.9
+Operation = *, getProbability: 1.0 , 0.9 = 0.9
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1aea002
+Matching , 
+RESETING VALUE FROM .9
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.1
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@18b24cb
+Operation = *, getProbability: 1.0 , 0.1 = 0.1
+Expression returned 0.1
+Operation = *, getProbability: 1.0 , 0.1 = 0.1
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1c9ca1
+Matching , 
+RESETING VALUE FROM .1
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@6f29c8
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@2011e5
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.9 = 0.9
+Operation = *, getProbability: 1.0 , 0.1 = 0.1
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS T
+TORPEDORANGE 
+!!!Value = TORPEDORANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM TORPEDORANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS F
+FREIGHTER 
+!!!Value = FREIGHTER
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = FREIGHTER, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM FREIGHTER
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.99
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1770bec
+Operation = *, getProbability: 1.0 , 0.99 = 0.99
+Expression returned 0.99
+Operation = *, getProbability: 1.0 , 0.99 = 0.99
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@afbefd
+Matching , 
+RESETING VALUE FROM .99
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.01
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@23d87f
+Operation = *, getProbability: 1.0 , 0.01 = 0.01
+Expression returned 0.01
+Operation = *, getProbability: 1.0 , 0.01 = 0.01
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@15a9fdf
+Matching , 
+RESETING VALUE FROM .01
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@b626b0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@a61d64
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.99 = 0.99
+Operation = *, getProbability: 1.0 , 0.01 = 0.01
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS T
+TORPEDORANGE 
+!!!Value = TORPEDORANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = TORPEDORANGE, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM TORPEDORANGE
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 1.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1d394ab
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Expression returned 1.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1c59085
+Matching , 
+RESETING VALUE FROM 1
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@19318fa
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@4d0371
+Matching , 
+RESETING VALUE FROM 0
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1d0462
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@10aeb1f
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PHASER2RANGE 
+!!!Value = PHASER2RANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM PHASER2RANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS W
+WARBIRD 
+!!!Value = WARBIRD
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = WARBIRD, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM WARBIRD
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1d26de4
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@2cc2d4
+Matching , 
+RESETING VALUE FROM 0
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 1.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@ab1778
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Expression returned 1.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@91eb87
+Matching , 
+RESETING VALUE FROM 1
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1fdf17c
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@f93e5b
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PHASER2RANGE 
+!!!Value = PHASER2RANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM PHASER2RANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS C
+CRUISER 
+!!!Value = CRUISER
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = CRUISER, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM CRUISER
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@16cf4f9
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@470a37
+Matching , 
+RESETING VALUE FROM 0
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 1.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1efbbb1
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Expression returned 1.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@b73e5
+Matching , 
+RESETING VALUE FROM 1
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1e5e871
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@ff6313
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PHASER2RANGE 
+!!!Value = PHASER2RANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM PHASER2RANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS E
+EXPLORER 
+!!!Value = EXPLORER
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = EXPLORER, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM EXPLORER
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.4
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@c18c80
+Operation = *, getProbability: 1.0 , 0.4 = 0.4
+Expression returned 0.4
+Operation = *, getProbability: 1.0 , 0.4 = 0.4
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@ef27e3
+Matching , 
+RESETING VALUE FROM .4
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.6
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@123ba00
+Operation = *, getProbability: 1.0 , 0.6 = 0.6
+Expression returned 0.6
+Operation = *, getProbability: 1.0 , 0.6 = 0.6
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@88579c
+Matching , 
+RESETING VALUE FROM .6
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@12fd26d
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@9ff6d1
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.4 = 0.4
+Operation = *, getProbability: 1.0 , 0.6 = 0.6
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PHASER2RANGE 
+!!!Value = PHASER2RANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM PHASER2RANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS F
+FRIGATE 
+!!!Value = FRIGATE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = FRIGATE, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM FRIGATE
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.6
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@52519
+Operation = *, getProbability: 1.0 , 0.6 = 0.6
+Expression returned 0.6
+Operation = *, getProbability: 1.0 , 0.6 = 0.6
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1c6a6fd
+Matching , 
+RESETING VALUE FROM .6
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.4
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@fd4bba
+Operation = *, getProbability: 1.0 , 0.4 = 0.4
+Expression returned 0.4
+Operation = *, getProbability: 1.0 , 0.4 = 0.4
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@176bf9e
+Matching , 
+RESETING VALUE FROM .4
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@11e2b21
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1a1a5f3
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.6 = 0.6
+Operation = *, getProbability: 1.0 , 0.4 = 0.4
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PHASER2RANGE 
+!!!Value = PHASER2RANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM PHASER2RANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS F
+FREIGHTER 
+!!!Value = FREIGHTER
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = FREIGHTER, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM FREIGHTER
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.95
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1962ecd
+Operation = *, getProbability: 1.0 , 0.95 = 0.95
+Expression returned 0.95
+Operation = *, getProbability: 1.0 , 0.95 = 0.95
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@daab16
+Matching , 
+RESETING VALUE FROM .95
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.05
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1639ff
+Operation = *, getProbability: 1.0 , 0.05 = 0.05
+Expression returned 0.05
+Operation = *, getProbability: 1.0 , 0.05 = 0.05
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1399671
+Matching , 
+RESETING VALUE FROM 0.05
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1c3fd59
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@2e05f1
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.95 = 0.95
+Operation = *, getProbability: 1.0 , 0.05 = 0.05
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PHASER2RANGE 
+!!!Value = PHASER2RANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = PHASER2RANGE, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM PHASER2RANGE
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 1.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@18851ee
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Expression returned 1.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@bb21ab
+Matching , 
+RESETING VALUE FROM 1
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@19f89ee
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@118994d
+Matching , 
+RESETING VALUE FROM 0
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1f8c10e
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@4ab168
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PHASER1RANGE 
+!!!Value = PHASER1RANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM PHASER1RANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS W
+WARBIRD 
+!!!Value = WARBIRD
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = WARBIRD, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM WARBIRD
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1c5543b
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1d124c
+Matching , 
+RESETING VALUE FROM 0
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 1.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@9c7307
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Expression returned 1.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1440638
+Matching , 
+RESETING VALUE FROM 1
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@f483b4
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@f2a824
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PHASER1RANGE 
+!!!Value = PHASER1RANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM PHASER1RANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS C
+CRUISER 
+!!!Value = CRUISER
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = CRUISER, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM CRUISER
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@fd0e71
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1bf2988
+Matching , 
+RESETING VALUE FROM 0
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 1.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@13fa6c5
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Expression returned 1.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1ddd026
+Matching , 
+RESETING VALUE FROM 1
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@18cad4b
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@c540c0
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PHASER1RANGE 
+!!!Value = PHASER1RANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM PHASER1RANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS E
+EXPLORER 
+!!!Value = EXPLORER
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = EXPLORER, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM EXPLORER
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.05
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1e3403
+Operation = *, getProbability: 1.0 , 0.05 = 0.05
+Expression returned 0.05
+Operation = *, getProbability: 1.0 , 0.05 = 0.05
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@e8cfca
+Matching , 
+RESETING VALUE FROM .05
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.95
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@a20981
+Operation = *, getProbability: 1.0 , 0.95 = 0.95
+Expression returned 0.95
+Operation = *, getProbability: 1.0 , 0.95 = 0.95
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1e05ea
+Matching , 
+RESETING VALUE FROM .95
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@116647b
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@11ef3e7
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.05 = 0.05
+Operation = *, getProbability: 1.0 , 0.95 = 0.95
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PHASER1RANGE 
+!!!Value = PHASER1RANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM PHASER1RANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS F
+FRIGATE 
+!!!Value = FRIGATE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = FRIGATE, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM FRIGATE
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@11f03e4
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@138933d
+Matching , 
+RESETING VALUE FROM 0
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 1.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@14a93a6
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Expression returned 1.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@123ac44
+Matching , 
+RESETING VALUE FROM 1
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@102cdf9
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@120d68d
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PHASER1RANGE 
+!!!Value = PHASER1RANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM PHASER1RANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS F
+FREIGHTER 
+!!!Value = FREIGHTER
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = FREIGHTER, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM FREIGHTER
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.9
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@e5e569
+Operation = *, getProbability: 1.0 , 0.9 = 0.9
+Expression returned 0.9
+Operation = *, getProbability: 1.0 , 0.9 = 0.9
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@138615e
+Matching , 
+RESETING VALUE FROM .9
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.1
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@808e07
+Operation = *, getProbability: 1.0 , 0.1 = 0.1
+Expression returned 0.1
+Operation = *, getProbability: 1.0 , 0.1 = 0.1
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1eca32a
+Matching , 
+RESETING VALUE FROM .1
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@cc4364
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@5c775d
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.9 = 0.9
+Operation = *, getProbability: 1.0 , 0.1 = 0.1
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PHASER1RANGE 
+!!!Value = PHASER1RANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = PHASER1RANGE, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM PHASER1RANGE
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 1.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@a0b138
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Expression returned 1.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1d3030a
+Matching , 
+RESETING VALUE FROM 1
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@6ca32e
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@4d4834
+Matching , 
+RESETING VALUE FROM 0
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1bf8785
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@15a5ee5
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PULSECANONRANGE 
+!!!Value = PULSECANONRANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM PULSECANONRANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS W
+WARBIRD 
+!!!Value = WARBIRD
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = WARBIRD, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM WARBIRD
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@c405f
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@562534
+Matching , 
+RESETING VALUE FROM 0
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 1.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1a4835a
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Expression returned 1.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1ab9bfe
+Matching , 
+RESETING VALUE FROM 1
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@18e439a
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@f85722
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PULSECANONRANGE 
+!!!Value = PULSECANONRANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM PULSECANONRANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS C
+CRUISER 
+!!!Value = CRUISER
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = CRUISER, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM CRUISER
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@20ba4d
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@a7478f
+Matching , 
+RESETING VALUE FROM 0
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 1.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@4b27ad
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Expression returned 1.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1a024c
+Matching , 
+RESETING VALUE FROM 1
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@18ccca7
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@d02649
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PULSECANONRANGE 
+!!!Value = PULSECANONRANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM PULSECANONRANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS E
+EXPLORER 
+!!!Value = EXPLORER
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = EXPLORER, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM EXPLORER
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@181882a
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@112b27c
+Matching , 
+RESETING VALUE FROM .0
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 1.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@8420c8
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Expression returned 1.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@8450b0
+Matching , 
+RESETING VALUE FROM 1
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@cd6798
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@14c2fa5
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PULSECANONRANGE 
+!!!Value = PULSECANONRANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM PULSECANONRANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS F
+FRIGATE 
+!!!Value = FRIGATE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = FRIGATE, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM FRIGATE
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@cc0596
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@82c063
+Matching , 
+RESETING VALUE FROM 0
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 1.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@24d0fa
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Expression returned 1.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@114069b
+Matching , 
+RESETING VALUE FROM 1
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1bdaaaa
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@10fa4b8
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PULSECANONRANGE 
+!!!Value = PULSECANONRANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+Matching & 
+Parsing bFactor
+RESETING VALUE FROM PULSECANONRANGE
+LOOKAHEAD IS S
+STARSHIPCLASS 
+!!!Value = STARSHIPCLASS
+Matching = 
+RESETING VALUE FROM STARSHIPCLASS
+LOOKAHEAD IS F
+FREIGHTER 
+!!!Value = FREIGHTER
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = FREIGHTER, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM FREIGHTER
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.8
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@74e6d
+Operation = *, getProbability: 1.0 , 0.8 = 0.8
+Expression returned 0.8
+Operation = *, getProbability: 1.0 , 0.8 = 0.8
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1adf2d7
+Matching , 
+RESETING VALUE FROM .8
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.2
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@122366e
+Operation = *, getProbability: 1.0 , 0.2 = 0.2
+Expression returned 0.2
+Operation = *, getProbability: 1.0 , 0.2 = 0.2
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1239752
+Matching , 
+RESETING VALUE FROM .2
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1a38913
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@17c6323
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 0.8 = 0.8
+Operation = *, getProbability: 1.0 , 0.2 = 0.2
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+COULD NOT FIND '['
+PARSING IF STATEMENT
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS i
+IF 
+!!!Value = IF
+RESETING VALUE FROM IF
+LOOKAHEAD IS a
+ANY 
+!!!Value = ANY
+ANY VERIFIED
+RESETING VALUE FROM ANY
+LOOKAHEAD IS s
+ST 
+!!!Value = ST
+SCANING IDENTIFIER ST
+SCANNED VARSETNAME := st
+SCAN FOR HAVE
+RESETING VALUE FROM ST
+LOOKAHEAD IS h
+HAVE 
+!!!Value = HAVE
+Matching ( 
+Parsing bFactor
+RESETING VALUE FROM HAVE
+LOOKAHEAD IS D
+DISTFROMOWN 
+!!!Value = DISTFROMOWN
+Matching = 
+RESETING VALUE FROM DISTFROMOWN
+LOOKAHEAD IS P
+PULSECANONRANGE 
+!!!Value = PULSECANONRANGE
+SCANED FOR CONDITIONANTS' POSSIBLE STATES
+IS MULTIENTITYNODE
+EXITING NOT FACTOR
+EXITING BEXPRESSION AS SINGLE TERM
+LOOKAHEAD = )
+Matching ) 
+STARTING STATEMENTS
+PARSING STATEMENT, VALUE = PULSECANONRANGE, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM PULSECANONRANGE
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 1.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@150b06b
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Expression returned 1.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@6e6874
+Matching , 
+RESETING VALUE FROM 1
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@8bcf49
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@d5e4c7
+Matching , 
+RESETING VALUE FROM 0
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@9ee0f1
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@c1f8ca
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+LOOKING FOR ELSE STATEMENT
+RESETING VALUE FROM 0
+LOOKAHEAD IS e
+ELSE 
+!!!Value = ELSE
+ELSE STATEMENT
+PARSING STATEMENT, VALUE = ELSE, LOOKAHEAD = [
+
+  Matching [ 
+RESETING VALUE FROM ELSE
+LOOKAHEAD IS f
+FALSE 
+!!!Value = FALSE
+Matching = 
+Signed factor returning 1
+GetNum returned 1.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@b4bc1e
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Expression returned 1.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Adding cell: false = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@1aa57fb
+Matching , 
+RESETING VALUE FROM 1
+LOOKAHEAD IS t
+TRUE 
+!!!Value = TRUE
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@765c17
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: true = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@97eb44
+Matching , 
+RESETING VALUE FROM 0
+LOOKAHEAD IS a
+ABSURD 
+!!!Value = ABSURD
+Matching = 
+Signed factor returning 1
+GetNum returned 0.0
+Factor returning unbbayes.prs.mebn.compiler.Compiler$SimpleProbabilityValue@1d6d22e
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Expression returned 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Adding cell: absurd = unbbayes.prs.mebn.compiler.Compiler$MathOperationProbabilityValue@80d11b
+Matching ] 
+
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 0.6 = 0.6
+Operation = *, getProbability: 1.0 , 0.4 = 0.4
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 0.95 = 0.95
+Operation = *, getProbability: 1.0 , 0.05 = 0.05
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 1.0 = 1.0
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+Operation = *, getProbability: 1.0 , 0.4 = 0.4
+Operation = *, getProbability: 1.0 , 0.6 = 0.6
+Operation = *, getProbability: 1.0 , 0.0 = 0.0
+HarmPotential return of input parents recursion
+--------------------------------------------------
+- Node: DistFromOwn((st,ST4)(t,T0)) [F] 
+- Parents: 
+--------------------------------------------------
+--------------------------------------------------
+- Node: StarshipClass((st,ST4))
+- Parents: 
+-    OpSpec(ST4)
+-            Arguments: 
+-                (st,ST4)
+--------------------------------------------------
+--------------------------------------------------
+- Node: OpSpec((st,ST4))
+- Parents: 
+-    ZoneFShips(Z2)
+-            Arguments: 
+-                (z,Z2)
+-    ZoneEShips(Z2)
+-            Arguments: 
+-                (z,Z2)
+--------------------------------------------------
+--------------------------------------------------
+- Node: ZoneFShips((z,Z2))
+- Parents: 
+-    ZoneNature(Z2)
+-            Arguments: 
+-                (z,Z2)
+--------------------------------------------------
+--------------------------------------------------
+- Node: ZoneNature((z,Z2))
+- Parents: 
+--------------------------------------------------
+--------------------------------------------------
+- Node: ZoneEShips((z,Z2))
+- Parents: 
+-    ZoneNature(Z2)
+-            Arguments: 
+-                (z,Z2)
+--------------------------------------------------
+
+
+Network: 
+QueryNode = HarmPotential((st,ST4)(t,T0))
+DistFromOwn((st,ST4)(t,T0)) [F] 
+StarshipClass((st,ST4))
+   OpSpec((st,ST4))
+      ZoneFShips((z,Z2))
+         ZoneNature((z,Z2))
+      ZoneEShips((z,Z2))
+         ZoneNature((z,Z2))
+
+Edges:
+Edge:  (ZoneNature(Z2)) ->  (ZoneFShips(Z2))
+Edge:  (ZoneFShips(Z2)) ->  (OpSpec(ST4))
+Edge:  (ZoneNature(Z2)) ->  (ZoneEShips(Z2))
+Edge:  (ZoneEShips(Z2)) ->  (OpSpec(ST4))
+Edge:  (OpSpec(ST4)) ->  (StarshipClass(ST4))
+Edge:  (StarshipClass(ST4)) ->  (HarmPotential(ST4,T0))
+
+Nodes:
+ (HarmPotential(ST4,T0))
+ (StarshipClass(ST4))
+ (OpSpec(ST4))
+ (ZoneFShips(Z2))
+ (ZoneNature(Z2))
+ (ZoneEShips(Z2))
+
+Filhos = 0
