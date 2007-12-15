@@ -246,6 +246,7 @@ public class MEBNController {
 
 		showGraphMFrag(mFrag);
 
+		mebnEditionPane.hideTopComponent();
 		mebnEditionPane.setMFragBarActive();
 		mebnEditionPane.setTxtNameMFrag(mFrag.getName());
 		mebnEditionPane.setMTheoryTreeActive();
@@ -462,7 +463,8 @@ public class MEBNController {
 
 	public void setEnableTableEditionView(){
 
-		mebnEditionPane.showTableEdit();
+		mebnEditionPane.showTableEditionPane((DomainResidentNode)this.getResidentNodeActive());
+		
 
 	}
 
@@ -670,7 +672,10 @@ public class MEBNController {
 	   mebnEditionPane.setResidentNodeTabActive((DomainResidentNode)residentNodeActive);
 	   mebnEditionPane.setTxtNameResident((residentNodeActive).getName());
 	   mebnEditionPane.setArgumentTabActive();
-	   this.setUnableTableEditionView();
+	   
+	   if(mebnEditionPane.isTableEditionPaneShow()){
+		   mebnEditionPane.showTableEditionPane((DomainResidentNode)residentNodeActive);
+	   }
 	}
 
 	private void setInputNodeActive(InputNode inputNodeActive){
@@ -1026,6 +1031,17 @@ public class MEBNController {
 				state, 
 				this.multiEntityBayesianNetwork);
 		((DomainResidentNode)residentNode).addRandonVariableFinding(finding); 
+	}
+	
+	
+	
+	
+	/*-------------------------------------------------------------------------*/
+	/* Edition of CPT's                                                         */
+	/*-------------------------------------------------------------------------*/
+	
+	public void saveCPT(DomainResidentNode residentNode, String cpt){
+		residentNode.setTableFunction(cpt);
 	}
 	
 	
