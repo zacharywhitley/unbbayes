@@ -811,38 +811,40 @@ public class TableEditionPane extends JPanel{
 		
 		btnCompile.addActionListener( new ActionListener(){
 			public void actionPerformed(ActionEvent e){
-				residentNode.setTableFunction(getTableTxt());
-				Compiler tableParser = new Compiler(residentNode);
 				
-				try{
-				   tableParser.parse(getTableTxt());
-				}
-				catch(TableFunctionMalformedException e1){
-					JOptionPane.showMessageDialog(null, e1.getMessage() + " : " + getTableTxt().substring(tableParser.getIndex(),tableParser.getIndex()+10), "TableFunctionMalformedException", JOptionPane.ERROR_MESSAGE);		
-				}
-				catch(NodeNotPresentInMTheoryException e2){
-					JOptionPane.showMessageDialog(null, e2.getMessage() + " : " + getTableTxt().substring(tableParser.getIndex(),tableParser.getIndex()+10), "NodeNotPresentInMTheoryException", JOptionPane.ERROR_MESSAGE);		
-									
-				}
-				catch(EntityNotPossibleValueOfNodeException e3 ){
-					JOptionPane.showMessageDialog(null, e3.getMessage()  + " : " + getTableTxt().substring(tableParser.getIndex(),tableParser.getIndex()+10), "EntityNotPossibleValueOfNodeException", JOptionPane.ERROR_MESSAGE);		
-									
-				}
-				catch(InvalidProbabilityFunctionOperandException e4){
-					JOptionPane.showMessageDialog(null, e4.getMessage() + " : " + getTableTxt().substring(tableParser.getIndex(),tableParser.getIndex()+10), "InvalidProbabilityFunctionOperandException", JOptionPane.ERROR_MESSAGE);		
-									
-				}
-				catch(SomeStateUndeclaredException exc){
-					JOptionPane.showMessageDialog(null, exc.getMessage() + " : " + getTableTxt().substring(tableParser.getIndex(),tableParser.getIndex()+10), "SomeStateUndeclaredException", JOptionPane.ERROR_MESSAGE);		
-				}
-				catch(InvalidConditionantException exc){
-					JOptionPane.showMessageDialog(null, exc.getMessage() + " : " + getTableTxt().substring(tableParser.getIndex(),tableParser.getIndex()+10), "InvalidConditionantException", JOptionPane.ERROR_MESSAGE);		
-				}
-				catch(NoDefaultDistributionDeclaredException exc){
-					JOptionPane.showMessageDialog(null, exc.getMessage() + " : " + getTableTxt().substring(tableParser.getIndex(),tableParser.getIndex()+10), "NoDefaultDistributionDeclaredException", JOptionPane.ERROR_MESSAGE);		
-				} catch (MEBNException exc) {
-					JOptionPane.showMessageDialog(null, exc.getMessage() + " : " + getTableTxt().substring(tableParser.getIndex(),tableParser.getIndex()+10), "MEBNException", JOptionPane.ERROR_MESSAGE);		
-				}
+				mebnController.saveCPT(residentNode, getTableTxt());
+				
+//				Compiler tableParser = new Compiler(residentNode);
+//				
+//				try{
+//				   tableParser.parse(getTableTxt());
+//				}
+//				catch(TableFunctionMalformedException e1){
+//					JOptionPane.showMessageDialog(null, e1.getMessage() + " : " + getTableTxt().substring(tableParser.getIndex(),tableParser.getIndex()+10), "TableFunctionMalformedException", JOptionPane.ERROR_MESSAGE);		
+//				}
+//				catch(NodeNotPresentInMTheoryException e2){
+//					JOptionPane.showMessageDialog(null, e2.getMessage() + " : " + getTableTxt().substring(tableParser.getIndex(),tableParser.getIndex()+10), "NodeNotPresentInMTheoryException", JOptionPane.ERROR_MESSAGE);		
+//									
+//				}
+//				catch(EntityNotPossibleValueOfNodeException e3 ){
+//					JOptionPane.showMessageDialog(null, e3.getMessage()  + " : " + getTableTxt().substring(tableParser.getIndex(),tableParser.getIndex()+10), "EntityNotPossibleValueOfNodeException", JOptionPane.ERROR_MESSAGE);		
+//									
+//				}
+//				catch(InvalidProbabilityFunctionOperandException e4){
+//					JOptionPane.showMessageDialog(null, e4.getMessage() + " : " + getTableTxt().substring(tableParser.getIndex(),tableParser.getIndex()+10), "InvalidProbabilityFunctionOperandException", JOptionPane.ERROR_MESSAGE);		
+//									
+//				}
+//				catch(SomeStateUndeclaredException exc){
+//					JOptionPane.showMessageDialog(null, exc.getMessage() + " : " + getTableTxt().substring(tableParser.getIndex(),tableParser.getIndex()+10), "SomeStateUndeclaredException", JOptionPane.ERROR_MESSAGE);		
+//				}
+//				catch(InvalidConditionantException exc){
+//					JOptionPane.showMessageDialog(null, exc.getMessage() + " : " + getTableTxt().substring(tableParser.getIndex(),tableParser.getIndex()+10), "InvalidConditionantException", JOptionPane.ERROR_MESSAGE);		
+//				}
+//				catch(NoDefaultDistributionDeclaredException exc){
+//					JOptionPane.showMessageDialog(null, exc.getMessage() + " : " + getTableTxt().substring(tableParser.getIndex(),tableParser.getIndex()+10), "NoDefaultDistributionDeclaredException", JOptionPane.ERROR_MESSAGE);		
+//				} catch (MEBNException exc) {
+//					JOptionPane.showMessageDialog(null, exc.getMessage() + " : " + getTableTxt().substring(tableParser.getIndex(),tableParser.getIndex()+10), "MEBNException", JOptionPane.ERROR_MESSAGE);		
+//				}
 			}
 		}); 
 		
