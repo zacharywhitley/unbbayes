@@ -509,16 +509,6 @@ public class SSBNNode {
 //		}
 	}
 	
-
-	public void fillProbabilisticTable() throws MEBNException {
-		System.out.println("Avaliando " + this.getName() );
-		this.setCompiler(new Compiler(resident, this));
-		System.out.println("Avaliacao concluida");
-		PotentialTable pt = this.compiler.generateCPT(this);
-//		System.out.printlnc("Tabela solta = " + pt.get);
-	}
-	
-	
 	
 	// Parent controller
 	

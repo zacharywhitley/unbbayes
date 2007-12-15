@@ -1,6 +1,3 @@
-/**
- * 
- */
 package unbbayes.prs.mebn.ssbn;
 
 import java.io.File;
@@ -54,11 +51,19 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	//all the ssbnnode created. 
 	private List<SSBNNode> ssbnNodeList; 
 	
+	
+
 	/**
 	 * 
 	 */
 	public BottomUpSSBNGenerator() {
 	}
+	
+
+	
+	/*-------------------------------------------------------------------------
+	 * Public
+	 *------------------------------------------------------------------------/
 	
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.ssbn.SSBNGenerator#generateSSBN(unbbayes.prs.mebn.ssbn.Query)
@@ -92,9 +97,29 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		return querynode.getProbabilisticNetwork();
 	}
 	
+	/**
+	 * This is how many times a recursive call to the algorithm should be done
+	 * @return the recursiveCallLimit
+	 */
+	public long getRecursiveCallLimit() {
+		return recursiveCallLimit;
+	}
+
+	/**
+	 * This is how many times a recursive call to the algorithm should be done
+	 * @param recursiveCallLimit the recursiveCallLimit to set
+	 */
+	public void setRecursiveCallLimit(long recursiveCallLimit) {
+		this.recursiveCallLimit = recursiveCallLimit;
+	}
 	
 	
 	
+	
+	
+	/*-------------------------------------------------------------------------
+	 * Private
+	 *------------------------------------------------------------------------/
 	
 	/**
 	 * The recursive part of SSBN bottom-up generation algorithm
@@ -140,14 +165,9 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			currentNode.setNodeAsFinding(exactValue.getState());
 			seen.add(currentNode); 
 			Debug.println("Exact value of " + currentNode.getName() + "=" + exactValue.getState()); 
-	        try {
-				Debug.setDebug(false);
-				currentNode.fillProbabilisticTable();
-				Debug.setDebug(true);
-			} catch (MEBNException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			
+	        generateCPT(currentNode);
+	        
 			return currentNode;
 		}
 		
@@ -342,15 +362,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     		}
 		}
 		
-		//Gerar a tabela; 
-		try {
-			Debug.setDebug(false);
-			currentNode.fillProbabilisticTable();
-			Debug.setDebug(true);
-		} catch (MEBNException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		generateCPT(currentNode);
 		
 		Debug.println(currentNode.getResident().getName() + " return of input parents recursion"); 
 		
@@ -930,6 +942,43 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		return null; 
 	}
 
+	
+
+	/*
+	 * Generate the cpt for the ssbnNode
+	 * 
+	 * out-assertives:
+	 * - The CPT of the probabilistic node referenced by the ssbnNode is setted
+	 *   with the CPT generated. 
+	 */
+	private void generateCPT(SSBNNode ssbnNode) {
+		try {
+			
+			Debug.println("Generate table for node " + ssbnNode);
+			Debug.println("Parents:");
+			for(SSBNNode parent: ssbnNode.getParents()){
+				Debug.println("  " + parent);
+			}
+			
+			Debug.setDebug(false);
+			
+			ssbnNode.getCompiler().generateCPT(ssbnNode);
+			
+			Debug.setDebug(true);
+			Debug.println("CPT OK");
+		
+		} catch (MEBNException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
+	
+	/*-------------------------------------------------------------------------
+	 * Debug Methods 
+	 *------------------------------------------------------------------------/
+	
 	/*
 	 * debug method. 
 	 */
@@ -977,23 +1026,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		}
 	}
 	
-	/**
-	 * This is how many times a recursive call to the algorithm should be done
-	 * @return the recursiveCallLimit
-	 */
-	public long getRecursiveCallLimit() {
-		return recursiveCallLimit;
-	}
-
-	/**
-	 * This is how many times a recursive call to the algorithm should be done
-	 * @param recursiveCallLimit the recursiveCallLimit to set
-	 */
-	public void setRecursiveCallLimit(long recursiveCallLimit) {
-		this.recursiveCallLimit = recursiveCallLimit;
-	}
-	
-	public void printNodeStructureBeforeCPT(SSBNNode ssbnNode){
+	private void printNodeStructureBeforeCPT(SSBNNode ssbnNode){
 		System.out.println("--------------------------------------------------");
 		System.out.println("- Node: " + ssbnNode.toString());
 		System.out.println("- Parents: ");
@@ -1006,6 +1039,14 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		}
 		System.out.println("--------------------------------------------------");	
 	}
+	
+	
+	
+	
+	
+	/*-------------------------------------------------------------------------
+	 * Private Classes 
+	 *------------------------------------------------------------------------/
 	
 	/*
 	 * This class is used for the management of the arguments of a ssbnnode 
