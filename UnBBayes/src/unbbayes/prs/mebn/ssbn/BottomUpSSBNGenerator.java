@@ -20,9 +20,9 @@ import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.ObjectEntityConteiner;
 import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
-import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KBFacade;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
@@ -86,10 +86,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		this.recursiveCallCount = 0;
 		SSBNNode root = this.generateRecursive(querynode, new SSBNNodeList(), 
 				                               querynode.getProbabilisticNetwork());
-		
-		for(SSBNNode ssbnNode: ssbnNodeList){
-			printNodeStructureBeforeCPT(ssbnNode); 
-		}
 		
 		//Debug. 
 		this.printNetworkInformation(querynode); //only Debug informations
@@ -156,6 +152,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
 		//------------------------- STEP 1: search findings -------------------
 		
+
+		Debug.println(currentNode + ":A - Search findings");
         //check if querynode has a known value or it should be a probabilistic node (query the kb)
 		StateLink exactValue = kb.searchFinding(currentNode.getResident(), currentNode.getArguments()); 
 		
@@ -180,6 +178,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		// evaluates querynode's mfrag's context nodes 
 		//(if not OK, sets MFrag's flag to use default CPT)	
 		
+		Debug.println(currentNode + ":B - Analyse context nodes");
 		List<OVInstance> ovInstancesList = new ArrayList<OVInstance>(); 
 		ovInstancesList.addAll(currentNode.getArguments()); 
         
@@ -204,6 +203,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
        //------------------------- STEP 3: Add and evaluate resident nodes fathers -------------
 		
+		Debug.println(currentNode + "C:- Analyse resident nodes fathers");
 		for (DomainResidentNode residentNode : currentNode.getResident().getResidentNodeFatherList()) {
 
 			/*
@@ -268,30 +268,39 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
 		
 	    //------------------------- STEP 4: Add and evaluate input nodes fathers -------------
-		
-		/*
-		 * Estratégia para gerenciamento dos argumentos. 
-		 * 
-		 * Os nomes dos argumentos em um nó de input são os nomes referentes a MFrag
-		 * onde o nó de input se encontra e não onde está o resident node referenciado
-		 * pelo nó de input. Isto é necessário para fazer a correta avaliação da CPT do
-		 * nó que ocasionou a instanciação do input node. 
-		 */
-		
+
+		Debug.println(currentNode + "D:- Analyse input nodes fathers");
 		for (GenerativeInputNode inputNode : currentNode.getResident().getInputNodeFatherList()) {
 			
 			DomainResidentNode residentNode = 
 				(DomainResidentNode)inputNode.getResidentNodePointer().getResidentNode(); 
 
+			Debug.println(currentNode.getName() + "Evaluate input " + residentNode.getName()); 
+			
 			//Evaluate recursion... 
 			if(currentNode.getResident() == residentNode){
-				treatRandonVariableRecursion(currentNode, seen, net, residentNode);
-				break; 
+				
+				SSBNNodeJacket previousNode = getPreviousNode(currentNode, seen, net, residentNode, inputNode);
+
+				if(previousNode != null){
+					
+					previousNode.setArgumentsOfResidentMFrag();
+					generateRecursive(previousNode.getSsbnNode(), seen, net);
+					previousNode.setArgumentsOfInputMFrag();
+
+					/* voltar nomes dos parametros para o normal */
+
+					if(!previousNode.getSsbnNode().isFinding()){
+						currentNode.addParent(previousNode.getSsbnNode(), true);
+					}else{
+						currentNode.addParent(previousNode.getSsbnNode(), false);
+					}
+				}
+				
+				break;			
 			}
 			
 			//Step 1: evaluate context and search for findings
-            Debug.println(currentNode.getName() + " Evaluate input " + residentNode.getName()); 
-			
             List<OrdinaryVariable> ovProblemList = 
             	analyseOVInstancesListCompletudeForOVList(inputNode.getOrdinaryVariableList(), 
             			currentNode.getArguments()); 
@@ -361,7 +370,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     			}
     		}
 		}
-		
+
+		Debug.println(currentNode + "E:- generate CPT");
 		generateCPT(currentNode);
 		
 		Debug.println(currentNode.getResident().getName() + " return of input parents recursion"); 
@@ -395,45 +405,44 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	
 	
 	/**
-	 * Evaluate of recursion in the MEBN model. 
+	 * Evaluate of recursion in the MEBN model. Return the node before in 
+	 * the recursion.
+	 * 
+	 * - Already include the node created in the ssbnNodeList. 
 	 * 
 	 * @param currentNode
 	 * @param seen
 	 * @param net
 	 * @param residentNode
+	 * 
 	 * @throws SSBNNodeGeneralException
 	 * @throws ImplementationRestrictionException
 	 */
-	private void treatRandonVariableRecursion(SSBNNode currentNode, SSBNNodeList seen, 
-			ProbabilisticNetwork net, DomainResidentNode residentNode) 
+	private SSBNNodeJacket getPreviousNode(SSBNNode currentNode, SSBNNodeList seen, 
+			ProbabilisticNetwork net, DomainResidentNode residentNode, GenerativeInputNode inputNode) 
 	        throws SSBNNodeGeneralException, ImplementationRestrictionException {
 		
-		//Valuate if the node is recursive. 
+		Debug.println("Build Previous Node");
+		//Find for ordereable object entity.
+		List<OrdinaryVariable> ovOrdereableList = residentNode.getOrdinaryVariablesOrdereables();
 		
-		
-		//Call recursion
-		OrdinaryVariable ovOrdereable = null; 
-		ObjectEntity objectEntityOrdereable = null; 
-		
-		//Find for ordereable object entity. 
-		for(OrdinaryVariable ov: residentNode.getOrdinaryVariableList()){
-			ObjectEntity oe = currentNode.getResident().getMFrag().
-			                        getMultiEntityBayesianNetwork().getObjectEntityContainer().
-			                        getObjectEntityByType(ov.getValueType()); 
-			if(oe.isOrdereable()){
-				objectEntityOrdereable = oe; 
-				ovOrdereable = ov; 
-				break; 
-			}
+		if(ovOrdereableList.size() > 1){
+			throw new ImplementationRestrictionException(resource.getString("MoreThanOneOrdereableVariable"));
 		}
 		
-		if(objectEntityOrdereable == null){
-			throw new SSBNNodeGeneralException();
+		if(ovOrdereableList.size() < 1){
+			throw new ImplementationRestrictionException(resource.getString("RVNotRecursive"));
 		}
 		
+		OrdinaryVariable ovOrdereableResident = ovOrdereableList.get(0); 
+		Debug.println("Ov Ordereable found:" + ovOrdereableResident);
+		ObjectEntity objectEntityOrdereable = currentNode.getResident().getMFrag().
+                        getMultiEntityBayesianNetwork().getObjectEntityContainer().
+                        getObjectEntityByType(ovOrdereableResident.getValueType()); 
+	
 		OVInstance ovInstanceOrdereable = null; 
 		for(OVInstance ovInstance: currentNode.getArguments()){
-			if(ovInstance.getOv() == ovOrdereable){
+			if(ovInstance.getOv() == ovOrdereableResident){
 				ovInstanceOrdereable = ovInstance; 
 				break; 
 			}
@@ -445,48 +454,49 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
 		String nameEntity = ovInstanceOrdereable.getEntity().getInstanceName(); 
 		
-		ObjectEntityInstanceOrdereable objectEntityInstance = 
+		ObjectEntityInstanceOrdereable objectEntityInstanceOrdereable = 
 			(ObjectEntityInstanceOrdereable)objectEntityOrdereable.getInstanceByName(nameEntity);
 		
-		if(objectEntityInstance == null){
+		if(objectEntityInstanceOrdereable == null){
 			throw new SSBNNodeGeneralException();
 		}
 		
-		ObjectEntityInstanceOrdereable prev = objectEntityInstance.getPrev(); 
+		ObjectEntityInstanceOrdereable prev = objectEntityInstanceOrdereable.getPrev(); 
 		
 		if(prev == null){
-			return; //end of the recursion
+			return null; //end of the recursion
 		}else{
-
-			OVInstance newOvInstance = OVInstance.getInstance(ovOrdereable, 
-					prev.getName(), ovOrdereable.getValueType());
-			
 			//Create the new SSBNNode with the setted values. 
-			SSBNNode ssbnnode = SSBNNode.getInstance(net, residentNode, 
+			SSBNNode ssbnNode = SSBNNode.getInstance(net, residentNode, 
 					new ProbabilisticNode(), false);
+			
+			ssbnNode = checkForDoubleSSBNNode(ssbnNode); //!! strange, but possible... 
+			SSBNNodeJacket ssbnNodeJacket = new SSBNNodeJacket(ssbnNode);
 			
 			for(OVInstance instance: currentNode.getArguments()){
 				if(instance != ovInstanceOrdereable){
 					if(residentNode.getOrdinaryVariableByName(instance.getOv().getName()) != null){
-						ssbnnode.addArgument(instance); 
+						ssbnNodeJacket.addOVInstanceOfInputMFrag(instance);
+						ssbnNodeJacket.addOVInstanceOfResidentMFrag(instance);
 					}
 				}else{
-					ssbnnode.addArgument(newOvInstance);
+					OVInstance newOVInstance = OVInstance.getInstance(ovOrdereableResident, 
+							prev.getName(), ovOrdereableResident.getValueType());
+					ssbnNodeJacket.addOVInstanceOfResidentMFrag(newOVInstance);
+					
+					int index = residentNode.getOrdinaryVariableList().indexOf(ovOrdereableResident);
+					OrdinaryVariable ovOrdereableInput = inputNode.getOrdinaryVariableByIndex(index);
+					newOVInstance = OVInstance.getInstance(ovOrdereableInput, 
+							prev.getName(), ovOrdereableResident.getValueType());
+					ssbnNodeJacket.addOVInstanceOfInputMFrag(newOVInstance);
+				
 				}
 			}
 			
-			ssbnnode = checkForDoubleSSBNNode(ssbnnode); //!! strange, but possible... 
-
-			ssbnNodeList.add(ssbnnode);
+			ssbnNodeList.add(ssbnNode);
 			
-			this.generateRecursive(ssbnnode, seen, net);	// algorithm's core
-			
-			if(!ssbnnode.isFinding()){
-				currentNode.addParent(ssbnnode, true);
-			}else{
-				currentNode.addParent(ssbnnode, false);
-			}
-			
+			Debug.println("Build Previous Node End");
+			return ssbnNodeJacket;
 		}
 	}
 	
@@ -597,7 +607,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			throw new ImplementationRestrictionException(resource.getString("MoreThanOneContextNodeSearh")); 
 		}
 		if(contextNodeList.size() < 1){
-			throw new SSBNNodeGeneralException(resource.getString("MoreThanOneContextNodeSearh")); 
+			throw new SSBNNodeGeneralException(); 
 		}
 		
 		//contextNodeList have only one element
@@ -952,9 +962,9 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 *   with the CPT generated. 
 	 */
 	private void generateCPT(SSBNNode ssbnNode) {
-		try {
+//		try {
 			
-			Debug.println("Generate table for node " + ssbnNode);
+			Debug.println("\nGenerate table for node " + ssbnNode);
 			Debug.println("Parents:");
 			for(SSBNNode parent: ssbnNode.getParents()){
 				Debug.println("  " + parent);
@@ -962,15 +972,15 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			
 			Debug.setDebug(false);
 			
-			ssbnNode.getCompiler().generateCPT(ssbnNode);
+//			ssbnNode.getCompiler().generateCPT(ssbnNode);
 			
 			Debug.setDebug(true);
-			Debug.println("CPT OK");
+			Debug.println("CPT OK\n");
 		
-		} catch (MEBNException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		} catch (MEBNException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 	
 	
@@ -1132,6 +1142,13 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		public void setTypeAtualArguments(Integer typeAtualArguments) {
 			this.typeAtualArguments = typeAtualArguments;
 		}
+		
+		public String toString(){
+			return ssbnNode.toString() +  
+			       " Input["+ ovInstancesOfInputMFrag + "]" + 
+			       " Resident[" + ovInstancesOfResidentMFrag + "]";
+		}
+		
 	}
 	
 }

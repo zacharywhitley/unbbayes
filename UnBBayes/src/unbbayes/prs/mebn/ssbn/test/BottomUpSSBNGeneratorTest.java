@@ -30,11 +30,11 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 public class BottomUpSSBNGeneratorTest extends TestCase {
 
 	public static final String KB_GENERATIVE_FILE = "testeGenerativeStarship.plm"; 
-//	public static final String KB_FINDING_FILE = "testeFindingsStarship.plm";  
-	public static final String KB_FINDING_FILE = "KnowledgeBaseWithStarshipZoneST4.plm";  
+	public static final String KB_FINDING_FILE = "testeFindingsStarship.plm";  
+//	public static final String KB_FINDING_FILE = "KnowledgeBaseWithStarshipZoneST4.plm";  
 //	public static final String KB_GENERATIVE_FILE = "generative.plm"; 
 //	public static final String KB_FINDING_FILE = "findings.plm";  
-	public static final String STARTREK_UBF = "examples/mebn/StarTrek43.ubf"; 
+	public static final String STARTREK_UBF = "examples/mebn/StarTrek38.ubf"; 
 	
 	/**
 	 * @param arg0
@@ -80,7 +80,7 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 		
 		kbFacade = new PowerLoomFacade("/PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE"); 		
 		
-		SSBNNode queryNode = createQueryNode_HarmPotential_ST4_T0(mebn); 
+		SSBNNode queryNode = createQueryNode_HarmPotential_ST4_T3(mebn); 
 		
 		Query query = new Query(kbFacade, queryNode, mebn); 
 		query.setMebn(mebn); 
@@ -112,13 +112,13 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 		return queryNode;
 	}
 	
-	private static SSBNNode createQueryNode_HarmPotential_ST4_T4(MultiEntityBayesianNetwork mebn) {
+	private static SSBNNode createQueryNode_HarmPotential_ST4_T3(MultiEntityBayesianNetwork mebn) {
 		DomainMFrag mFrag = mebn.getMFragByName("Starship_MFrag"); 
 		DomainResidentNode residentNode = mFrag.getDomainResidentNodeByName("HarmPotential"); 
 		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode, new ProbabilisticNode(), false); 
 		try {
 			queryNode.addArgument(residentNode.getOrdinaryVariableByName("st"), "ST4");
-			queryNode.addArgument(residentNode.getOrdinaryVariableByName("t"), "T4");
+			queryNode.addArgument(residentNode.getOrdinaryVariableByName("t"), "T3");
 		} catch (SSBNNodeGeneralException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

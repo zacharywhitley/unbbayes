@@ -53,8 +53,7 @@ public class GenerativeInputNode extends InputNode {
 	
 	/**
 	 * Method responsible for deleting this generative input node. It makes sure to clean 
-	 * the residentNodeChildList.
-	 *
+	 * the residentNodeChildList
 	 */    
 	
 	public void delete(){
@@ -216,6 +215,15 @@ public class GenerativeInputNode extends InputNode {
 		return residentNodePointer.getOrdinaryVariableList();
 	}
 	
+	public OrdinaryVariable getOrdinaryVariableByIndex(int index){
+		if((residentNodePointer.getNumberArguments() < index) || index < 0){
+			return null; 
+		}
+		else{
+			return residentNodePointer.getArgument(index);
+		}
+	}
+	
 	public OrdinaryVariable getOrdinaryVariableByName(String name){
 		for(OrdinaryVariable ordinaryVariable: residentNodePointer.getOrdinaryVariableList()){
 			if(ordinaryVariable.getName().equals(name)){
@@ -229,6 +237,7 @@ public class GenerativeInputNode extends InputNode {
 		return residentNodePointer.getTypesOfOrdinaryVariableList(); 
 	}
 	
+	//TODO este método deve virar privado! O residentNodePointer deve ficar encapsulado no input Node!
 	public ResidentNodePointer getResidentNodePointer() {
 		return residentNodePointer;
 	}

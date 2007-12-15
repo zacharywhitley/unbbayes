@@ -38,6 +38,8 @@ public class Resources extends ListResourceBundle {
 		{"OrdVariableProblemLimit","For this implementation only one ord. variable search is possible"}, 
 		{"MoreThanOneContextNodeSearh","More then one context node search found for the ord. variable. This implementation treat only the trival case of one node"}, 
 		{"ContextNodeSearchDontFound","Search context node dont found"}, 
+		{"MoreThanOneOrdereableVariable","Foram encontradas mais de uma variável ordinárea ordenável para o nó residente recursivo. Esta implementação trata apenas o caso trivial de uma variável recursiva."},
+		{"RVNotRecursive","O nó residente não é recursivo pois não possui variáveis ordinárias ordenáveis. Ciclo Encontrado"}, 	
 		{"InvalidContextNodeFormula","Invalid Context node Formula"}
 	};
 }
