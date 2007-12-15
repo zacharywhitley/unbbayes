@@ -207,13 +207,17 @@ public class PossibleValuesEditionPane extends JPanel {
 	 * select the states of the node. 
 	 */
 	public JFrame buildPopupStateSelection(){
+		
+		final JFrame newFrame = new JFrame(); 
+		
 		final JList listAllStates = buildListAllStates(); 
 		ListAllStatesPanel paneAllStates = new ListAllStatesPanel(listAllStates); 
 		
 		
 		JToolBar barButtons = new JToolBar(); 
-		barButtons.setLayout(new GridLayout(1,1)); 
+		barButtons.setLayout(new GridLayout(1,2)); 
 		JButton btnAdd = new JButton(iconController.getMoreIcon());
+		JButton btnExit = new JButton(iconController.xIcon());
 		
 		btnAdd.addActionListener(new ActionListener(){
 
@@ -247,14 +251,23 @@ public class PossibleValuesEditionPane extends JPanel {
 			
 		}); 
 		
+		btnExit.addActionListener(new ActionListener(){
+
+			public void actionPerformed(ActionEvent arg0) {
+				newFrame.dispose();
+			}
+			
+		});
+		
 		barButtons.add(btnAdd); 
+		barButtons.add(btnExit);
 		barButtons.setFloatable(false); 
 		
 		JPanel panel = new JPanel(new BorderLayout()); 
 		panel.add(paneAllStates, BorderLayout.CENTER); 
 		panel.add(barButtons, BorderLayout.PAGE_END); 
 		
-		JFrame newFrame = new JFrame(); 
+
 		newFrame.setContentPane(panel); 
 		newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
 		newFrame.setVisible(true); 
@@ -385,7 +398,7 @@ public class PossibleValuesEditionPane extends JPanel {
 
 		private JButton btnRemove;
 		
-		private JButton btnList; 
+		private JButton btnListPossibleStates; 
 
 		private JCheckBox checkGloballyExclusive;
 
@@ -402,14 +415,14 @@ public class PossibleValuesEditionPane extends JPanel {
 			btnAdd.setToolTipText(resource.getString("addStateTip"));
 			btnRemove = new JButton(iconController.getLessIcon());
 			btnRemove.setToolTipText(resource.getString("removeState"));
-			btnList = new JButton(iconController.getStateIcon()); 
+			btnListPossibleStates = new JButton(iconController.getStateIcon()); 
 			
 			JToolBar barOptions = new JToolBar();
 			barOptions.setLayout(new GridLayout(1, 3));
 			barOptions.setFloatable(false);
 			barOptions.add(btnAdd);
 			barOptions.add(btnRemove);
-			barOptions.add(btnList); 
+			barOptions.add(btnListPossibleStates); 
 			
 			JToolBar barName = new JToolBar();
 			barName.setFloatable(false);
@@ -465,7 +478,7 @@ public class PossibleValuesEditionPane extends JPanel {
 				}
 			});
 
-			btnList.addActionListener(new ActionListener(){
+			btnListPossibleStates.addActionListener(new ActionListener(){
 
 				public void actionPerformed(ActionEvent e) {
 					buildPopupStateSelection(); 
