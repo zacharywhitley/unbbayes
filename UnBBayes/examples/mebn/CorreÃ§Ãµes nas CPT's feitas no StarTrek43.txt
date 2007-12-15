@@ -1,0 +1,7 @@
+Alteração na CPT do OPSPEC
+
+if any st have ( ZoneFShips = C1 & ZoneEShips = C2 ) [ Cardassian = .25 , Friend = .2 , Klingon = .18 , Romulan = .15 , Unknown = .12]
+Friend alterado para .3 para arrumar distribuições. 
+
+if any st have ( ZoneFShips = C1 & ZoneEShips = C3 ) [ Cardassian = .25 , Friend = 0.28 , Klingon = .16 , Romulan = .26 , Unknown = .15 , Absurd = 0 ]
+Unknown alterado para .05
