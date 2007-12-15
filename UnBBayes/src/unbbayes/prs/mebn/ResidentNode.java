@@ -5,6 +5,8 @@ import java.util.List;
 
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.ObjectEntityConteiner;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
@@ -113,6 +115,24 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 			}
 		}
 		return null; 
+	}
+	
+	/**
+	 * @return A list with all the ordinary variables ordereables present in this node.
+	 */
+	public List<OrdinaryVariable> getOrdinaryVariablesOrdereables(){
+		
+		List<OrdinaryVariable> ovOrdereableList = new ArrayList<OrdinaryVariable>();
+		ObjectEntityConteiner oeConteiner = this.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer();
+		
+		for(OrdinaryVariable ov: this.getOrdinaryVariableList()){
+			ObjectEntity oe = oeConteiner.getObjectEntityByType(ov.getValueType()); 
+			if(oe.isOrdereable()){
+				ovOrdereableList.add(ov);
+			}
+		}
+		
+		return ovOrdereableList;
 	}
 	
 	public int getTypeOfStates() {
