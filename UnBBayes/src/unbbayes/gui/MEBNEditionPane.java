@@ -183,7 +183,8 @@ public class MEBNEditionPane extends JPanel {
     private final String NODE_FINDING_TAB = "NodeFindingTab";
 
     /* Table edition pane */
-    private TableEditionPane tableEdit;
+    private TableEditionPane tableEditionPane;
+    private boolean isTableEditionPaneShow = false; 
 
     /* Matcher used for verify if a text is a name valid*/
     private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
@@ -386,12 +387,32 @@ public class MEBNEditionPane extends JPanel {
 
 
 
-    public void showTableEdit(){
-
-    	DomainResidentNode resident = (DomainResidentNode)mebnController.getResidentNodeActive();
+  	/**
+  	 * Show the table edit in the top component. 
+  	 */
+    public void showTableEditionPane(DomainResidentNode resident){
 
     	this.getGraphPanel().setTopComponent(new TableEditionPane(resident, mebnController));
+    	
+    	isTableEditionPaneShow = true; 
 
+    }
+    
+    /**
+     * Hide the top component (while, this top component contains only the table
+     * of a resident node). 
+     */
+    public void hideTopComponent(){
+
+    	this.getGraphPanel().setTopComponent(null);
+    	isTableEditionPaneShow = false;
+    }
+    
+    /**
+     * 
+     */
+    public boolean isTableEditionPaneShow(){
+    	return isTableEditionPaneShow; 
     }
 
     public void showTitleGraph(String mFragName){
@@ -406,13 +427,9 @@ public class MEBNEditionPane extends JPanel {
 
     	titleMFragPane.add(label, BorderLayout.CENTER);
 
-    	this.getGraphPanel().setTopComponent(titleMFragPane);
-
-    }
-
-    public void hideTopComponent(){
-
-    	this.getGraphPanel().setTopComponent(null);
+    	if(!isTableEditionPaneShow){
+    		this.getGraphPanel().setTopComponent(titleMFragPane);
+    	}
 
     }
 
