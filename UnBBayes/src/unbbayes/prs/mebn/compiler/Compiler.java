@@ -440,7 +440,7 @@ public class Compiler implements ICompiler {
 			Debug.println("STARTING DEFAULT STATEMENT");	
 			
 			// Prepare temporary table's header to declare a default (no-if-clause) statement
-			this.currentHeader = new TempTableHeaderCell(null, true, true);
+			this.currentHeader = new TempTableHeaderCell(null, true, true, this.ssbnnode);
 			this.tempTable.add(this.currentHeader);
 			// if we catch a sintax error here, it may be a value error
 			try {
@@ -483,12 +483,12 @@ public class Compiler implements ICompiler {
 		case 'a':
 			Debug.println("ALL VERIFIED");
 			// sets the table header w/ this parameters (empty list,false,false): empty list (no verified parents), is not ANY and is not default
-			this.currentHeader = new TempTableHeaderCell(new ArrayList<TempTableHeaderParent>(), false, false);
+			this.currentHeader = new TempTableHeaderCell(new ArrayList<TempTableHeaderParent>(), false, false, this.ssbnnode);
 			break;
 		case 'y':
 			Debug.println("ANY VERIFIED");
 			//	sets the table header w/ this parameters (empty list,false,false): empty list (no verified parents), is ANY and is not default
-			this.currentHeader = new TempTableHeaderCell(new ArrayList<TempTableHeaderParent>(), true, false);
+			this.currentHeader = new TempTableHeaderCell(new ArrayList<TempTableHeaderParent>(), true, false, this.ssbnnode);
 			break;
 		default:
 			expected("ALL or ANY");
@@ -791,7 +791,7 @@ public class Compiler implements ICompiler {
 		Debug.println("ELSE STATEMENT");
 		if ( look == '[' ) {
 			// header ::= no known parent yet, is ANY and is default.
-			this.currentHeader = new TempTableHeaderCell(null,true,true); 
+			this.currentHeader = new TempTableHeaderCell(null,true,true, this.ssbnnode); 
 			this.tempTable.add(this.currentHeader);
 			this.statement();
 		} else {
@@ -843,12 +843,7 @@ public class Compiler implements ICompiler {
 			}
 			// Consistency check C09
 			// Verify if sum of all declared states' probability is 1
-			float totalProbValue = totalProb.getProbability();
-			if (totalProbValue >=0) {
-				if ( Float.compare(totalProbValue, 1.0F) != 0 ) {
-					throw new InvalidProbabilityRangeException();
-				}
-			}
+			
 			// runtime probability bound check (on SSBN generation time)
 			if (!this.currentHeader.isSumEquals1()) {
 				Debug.println("Testing cell's probability value's sum: " + currentHeader.getProbCellSum());
@@ -939,7 +934,9 @@ public class Compiler implements ICompiler {
 				retValue += temp.getProbability();
 			}
 		}
-		if (retValue > 1) {
+		
+		Debug.println("Returned expression value = " + retValue);
+		if (retValue < 0) {
 			throw new InvalidProbabilityRangeException();
 		}
 		return new SimpleProbabilityValue(retValue);
@@ -1528,6 +1525,10 @@ public class Compiler implements ICompiler {
 		
 		private int validParentSetCount = 0;
 		
+		float leastCellValue = Float.NaN;
+		
+		SSBNNode currentSSBNNode = null;
+		
 		/**
 		 * Represents an entry for temporary table header (parents and their expected single values
 		 * at that table entry/collumn)
@@ -1535,12 +1536,13 @@ public class Compiler implements ICompiler {
 		 * @param isAny
 		 * @param isDefault
 		 */
-		TempTableHeaderCell (List<TempTableHeaderParent> parents , boolean isAny, boolean isDefault) {
+		TempTableHeaderCell (List<TempTableHeaderParent> parents , boolean isAny, boolean isDefault, SSBNNode currentSSBNNode) {
 			this.parents = parents;
 			this.isAny = isAny;
 			this.isDefault = isDefault;
 			this.cellList = new ArrayList<TempTableProbabilityCell>();
 			this.validParentSetCount = 0;
+			this.currentSSBNNode = currentSSBNNode;
 		}
 		public List<TempTableHeaderParent> getParents() {
 			return parents;
@@ -1607,7 +1609,7 @@ public class Compiler implements ICompiler {
 		 * @return
 		 */
 		public boolean isParentSetName(String varsetname) {
-			if (ssbnnode.getParentSetByStrongOVWithWeakOVCheck(varsetname.split("\\.")).size() > 0) {
+			if (this.currentSSBNNode.getParentSetByStrongOVWithWeakOVCheck(varsetname.split("\\.")).size() > 0) {
 				return true;
 			} else {
 				return false;
@@ -1644,6 +1646,22 @@ public class Compiler implements ICompiler {
 		}
 		
 		public void addCell(TempTableProbabilityCell cell) {
+			if (cell == null) {
+				return;
+			}
+			float value = Float.NaN;
+			try {
+				value = cell.getProbabilityValue();
+			} catch (InvalidProbabilityRangeException e) {
+				// do nothing at now - it will be detected soon
+			}
+			// update the smallest declared probability value
+			if (value > 0.0f) {
+				if (Float.isNaN(this.leastCellValue) || (value < this.leastCellValue)) {
+					this.leastCellValue = value;
+				}
+			}
+			
 			this.cellList.add(cell);
 		}
 		
@@ -1652,10 +1670,12 @@ public class Compiler implements ICompiler {
 		 * @return
 		 */
 		public boolean isSumEquals1() throws InvalidProbabilityRangeException {
-			if (Float.compare(this.getProbCellSum(), 1.0F) != 0) {
-				return false;
-			} else {
+			float value = this.getProbCellSum();
+			// (this.leastCellValue/2) is the error margin
+			if ( (value >= 1f - (this.leastCellValue/2f)) && (value <= 1f + (this.leastCellValue/2f)) ) {
 				return true;
+			} else {
+				return false;
 			}
 		}
 		
@@ -1671,9 +1691,9 @@ public class Compiler implements ICompiler {
 			if (this.cellList.size() <= 0) {
 				return sum;
 			}
-			sum = 0;
+			sum = 0.0f;
 			for (TempTableProbabilityCell cell : this.cellList) {
-				sum += cell.getProbabilityValue();
+				sum = (float)sum + (float)cell.getProbabilityValue();
 			}
 			return sum;
 		}
@@ -1778,17 +1798,21 @@ public class Compiler implements ICompiler {
 				} else {
 					int lastPos = 0;
 					// if reached the end of this list, reset it and step foward the next list, and so on
-					for (; !pointer.hasNextEvaluation() && (lastPos < parentsList.size());lastPos++) {
-						pointer = parentsList.get(lastPos);
+					while ( !pointer.hasNextEvaluation() && (lastPos < parentsList.size())) {
 						pointer.resetEvaluationList();
 						if (lastPos == parentsList.size() - 1) {
 							// if we just changed all the values through first to last, then no more changes are available
 							hasMoreCombination = false;
 							break;
-						}							
+						}
+						lastPos++;	
+						pointer = parentsList.get(lastPos);
+						
 					}
 					if (hasMoreCombination) {
-						parentsList.get(lastPos).getNextEvaluation(); //step to next evaluation
+						if (parentsList.get(lastPos).hasNextEvaluation()) {
+							parentsList.get(lastPos).getNextEvaluation(); //step to next evaluation
+						}
 					}
 				}
 			}	
@@ -1799,7 +1823,8 @@ public class Compiler implements ICompiler {
 		
 		/**
 		 * tests if when an argument of a leaf is the same OV, then it should have
-		 * the same value at a given moment
+		 * the same value at a given moment.
+		 * Tests also between this ssbnnode and the leaves
 		 * @return
 		 */
 		private boolean isSameOVsameEntity() {
@@ -1809,6 +1834,17 @@ public class Compiler implements ICompiler {
 					continue;
 				}
 				List<OVInstance> args = leaf.getCurrentEntityAndArguments().arguments;
+				// first, test if leaf has same arguments as its ssbnnode (if ssbnnode has same arguments as parents)
+				for (OVInstance argParent : args) {
+					// if it has same OV as ssbnnode, then should be the same entity
+					for (OVInstance argChild : this.currentSSBNNode.getArguments()) {
+						if (argChild.getOv().getName().compareTo(argParent.getOv().getName()) == 0) {
+							if (argChild.getEntity().getInstanceName().compareTo(argParent.getEntity().getInstanceName()) != 0) {
+								return false;
+							}
+						}
+					}
+				}
 				for (int i = leaves.indexOf(leaf) + 1; i < leaves.size(); i++) {
 					// try all other leaves
 					for (OVInstance argleaf : args) {

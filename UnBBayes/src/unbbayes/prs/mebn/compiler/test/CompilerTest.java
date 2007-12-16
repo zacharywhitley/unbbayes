@@ -28,6 +28,7 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.compiler.exception.InvalidProbabilityRangeException;
 import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredException;
+import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
@@ -82,7 +83,7 @@ public class CompilerTest extends TestCase {
 		System.out.println("-----Load file test-----"); 
 		
 		try{
-			mebn = ubfIO.loadMebn(new File("examples/mebn/StarTrek39.ubf")); 
+			mebn = ubfIO.loadMebn(new File("examples/mebn/StarTrek43.ubf")); 
 			Debug.println("LOAD COMPLETE"); 
 		}
 		catch (IOMebnException e){
@@ -645,10 +646,12 @@ public class CompilerTest extends TestCase {
 		
 		PotentialTable table = null;
 		
-		String code = "if any st.t have (DistFromOwn = Phaser1Range)" 
-			+ "[false = MIN(MAX(CARDINALITY(st.t) * 0.2 ; 0.5) ; 1) , true = 1 - false , absurd = 0] "
+		String code = "if any st.t have (DistFromOwn = Absurd | StarshipClass = Absurd )"
+			+ "[false = 0 , true = 0 , absurd = 1]"
+			+ "else if any st.t have (DistFromOwn = Phaser1Range)" 
+			+ "[false = MIN(MAX(CARDINALITY(st.t) * 0.3 ; 0.1) ; 1) , true = 1 - false , absurd = 0] "
 			+ "else if all st have (DistFromOwn = Phaser2Range)" 
-			+ "[false = MIN(MAX(CARDINALITY(st) * 0.2 ; 0.5) ; 1) , true = 1 - false , absurd = 0] "
+			+ "[false = MIN(MAX(CARDINALITY(st) * 0.2 ; 0.1) ; 1) , true = 1 - false , absurd = 0] "
 			+ " else if all asdf have (StarshipClass = WarBird) "
 			+ "[false = MIN(CARDINALITY(z)* .1; 1) ,  true = 1 - false , absurd = 0]"
 			+ "else if all st have (StarshipClass = Explorer) "
@@ -661,8 +664,106 @@ public class CompilerTest extends TestCase {
 			+ "[false = MIN(CARDINALITY(st)* .5; 1) ,  true = 1 - false , absurd = 0]"
 			+ "else if all st have (StarshipClass = Freighter) "
 			+ "[false = MIN(CARDINALITY(st)* .6; 1) ,  true = 1 - false , absurd = 0]"
-			+ "else [false = 0 ,  true = .0 , absurd = 1]";
+			+ "else [false = 0.33 ,  true = 0.33 , absurd = 1 - (false + true)]";
 			
+		try {
+			compiler.parse(code);		
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		System.out.println("\n\n\nCode Parsed!!\n\n\n");
+		try {
+			table = compiler.getCPT();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		
+		GUIPotentialTable guiCPT = new GUIPotentialTable(table);
+		guiCPT.showTable("VAI FUNCIONAR???");
+		
+		//while(true);
+		
+	}
+	
+	
+public void testDistFromOwn() {
+		
+		DomainResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");
+		
+		OrdinaryVariable st = distFromOwn.getOrdinaryVariableByName("st");
+		OrdinaryVariable tprev = distFromOwn.getMFrag().getOrdinaryVariableByName("tPrev");
+		OrdinaryVariable t = distFromOwn.getOrdinaryVariableByName("t");
+		
+		OVInstance st0 = OVInstance.getInstance(st, "ST0", st.getValueType());
+		OVInstance st1 = OVInstance.getInstance(st, "ST1", st.getValueType());
+		OVInstance t0 = OVInstance.getInstance(tprev, "T0", tprev.getValueType());
+		OVInstance t1 = OVInstance.getInstance(t, "T1", t.getValueType());
+		
+		ProbabilisticNetwork net = new ProbabilisticNetwork("TestGenerateCPT");
+		
+		SSBNNode distFromOwn_ST0_T0 = SSBNNode.getInstance(net, distFromOwn);
+		try {
+			distFromOwn_ST0_T0.addArgument(st0);
+			distFromOwn_ST0_T0.addArgument(t0);
+			List<Entity> valList = new ArrayList<Entity>(distFromOwn_ST0_T0.getActualValues());
+			distFromOwn_ST0_T0.setNodeAsFinding(valList.get(0));
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		SSBNNode distFromOwn_ST0_T1 = SSBNNode.getInstance(net, distFromOwn);
+		try {
+			distFromOwn_ST0_T1.addArgument(st0);
+			distFromOwn_ST0_T1.addArgument(t1);
+			distFromOwn_ST0_T1.addParent(distFromOwn_ST0_T0, false);
+			distFromOwn_ST0_T1.getProbNode().setName("ST0T1");
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		SSBNNode distFromOwn_ST1_T0 = SSBNNode.getInstance(net, distFromOwn);
+		try {
+			distFromOwn_ST1_T0.addArgument(st1);
+			distFromOwn_ST1_T0.addArgument(t0);
+			distFromOwn_ST0_T1.addParent(distFromOwn_ST1_T0, false);
+			distFromOwn_ST0_T1.getProbNode().setName("ST1T0");
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		
+		Compiler compiler = new Compiler(distFromOwn_ST0_T1.getResident(),distFromOwn_ST0_T1);
+		
+		compiler.init(distFromOwn_ST0_T1);
+		
+		PotentialTable table = null;
+		
+		String code = "if any st have ( DistFromOwn = OutOfRange ) " +
+				"[ OutOfRange = .6 , TorpedoRange = .3 , Phaser2Range = .05 , Phaser1Range = .04 , " +
+				"PulseCanonRange = .01 , Absurd = 0 ]"
+		+" else if any st have ( DistFromOwn = TorpedoRange ) " +
+				"[ OutOfRange = .25 , TorpedoRange = .4 , Phaser2Range = .25 , Phaser1Range = .07 , " +
+				"PulseCanonRange = .03 , Absurd = 0 ] " 
+		+ "else if any st have ( DistFromOwn = Phaser2Range )" +
+				" [ OutOfRange = .06 , TorpedoRange = .25 , Phaser2Range = .4 , " +
+				"Phaser1Range = .25 , PulseCanonRange = .04 , Absurd = 0 ]"
+		+ "else if any st have ( DistFromOwn = Phaser1Range ) " +
+				"[ OutOfRange = .03 , TorpedoRange = .07 , Phaser2Range = .25 , Phaser1Range = .4 ," +
+				"PulseCanonRange = .25 , Absurd = 0 ]"
+		+ "else if any st have ( DistFromOwn = PulseCanonRange ) " +
+				"[ OutOfRange = .01 , TorpedoRange = .04 , Phaser2Range = .1 , Phaser1Range = .35 , " +
+				" PulseCanonRange = .5 , Absurd = 0 ]"
+		+ "else " +
+				"[ OutOfRange = 0 , TorpedoRange = 0 , Phaser2Range = 0 , Phaser1Range = 0 , " +
+				"PulseCanonRange = 0 , Absurd = 1 ]";
+		    
 		try {
 			compiler.parse(code);		
 		} catch (Exception e) {
@@ -678,8 +779,16 @@ public class CompilerTest extends TestCase {
 		
 		
 		GUIPotentialTable guiCPT = new GUIPotentialTable(table);
-		guiCPT.showTable("VAI FUNCIONAR???");
+		guiCPT.showTable("VAI FUNCIONAR???!!");
 		
+		while(true);
+		
+	}
+
+
+	public void startBusyLoopToPauseLastTest() {
+		// this is just to let the last test not to exit (keep the test suite running)
+		assertEquals(0f, 0);
 		while(true);
 		
 	}
