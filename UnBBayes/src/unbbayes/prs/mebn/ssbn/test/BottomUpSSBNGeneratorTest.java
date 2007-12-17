@@ -34,7 +34,7 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 	public static final String KB_FINDING_FILE = "KnowledgeBaseWithStarshipZoneST4.plm";  
 //	public static final String KB_GENERATIVE_FILE = "generative.plm"; 
 //	public static final String KB_FINDING_FILE = "findings.plm";  
-	public static final String STARTREK_UBF = "examples/mebn/StarTrek43.ubf"; 
+	public static final String STARTREK_UBF = "examples/mebn/StarTrek46.ubf"; 
 	
 	/**
 	 * @param arg0
@@ -80,7 +80,7 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 		
 		kbFacade = new PowerLoomFacade("/PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE"); 		
 		
-		SSBNNode queryNode = createQueryNode_HarmPotential_ST4_T0(mebn); 
+		SSBNNode queryNode = createQueryNode_HarmPotential_ST4_T3(mebn); 
 		
 		Query query = new Query(kbFacade, queryNode, mebn); 
 		query.setMebn(mebn); 
