@@ -13,6 +13,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -334,7 +335,8 @@ public class TableEditionPane extends JPanel{
 		jpFather = new JPanel();
 		jpFather.setBorder(ToolKitForGuiMebn.getBorderForTabPanel(resource.getString("FathersTitle"))); 				
 		
-		residentNodeAuxList = residentNode.getResidentNodeFatherList(); 
+		residentNodeAuxList = new ArrayList<DomainResidentNode>(); 
+		residentNodeAuxList.addAll(residentNode.getResidentNodeFatherList()); 
 		
 		inputNodeList = residentNode.getInputNodeFatherList(); 
 		for(GenerativeInputNode inputNode: inputNodeList){
