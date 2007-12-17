@@ -1165,15 +1165,18 @@ public class MEBNController {
 //		Console console = new Console(); 
 		
 		try {
+			
 			probabilisticNetwork = ssbngenerator.generateSSBN(query);
+			if(this.compileNetwork(probabilisticNetwork)){
+				showSSBNGraph = true; 
+				specificSituationBayesianNetwork = probabilisticNetwork;
+				this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
+			}
+			
 		} catch (Exception e) {
 			throw new InconsistentArgumentException(e);
 		}
 		
-		this.compileNetwork(probabilisticNetwork);
-		showSSBNGraph = true; 
-		specificSituationBayesianNetwork = probabilisticNetwork;
-		this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
 		
 		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 		
