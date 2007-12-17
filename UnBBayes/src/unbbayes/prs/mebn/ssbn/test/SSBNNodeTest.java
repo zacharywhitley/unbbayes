@@ -986,7 +986,7 @@ public class SSBNNodeTest extends TestCase {
 		
 		list = this.ssbnnode.getParentSetByStrongOVWithWeakOVCheck(t.getName());
 		assertNotNull(list);
-		assertEquals(0,list.size());
+		assertEquals(this.ssbnnode.getParents(),list);
 
 		String args[] = {st.getName(), z.getName()};		
 		list = this.ssbnnode.getParentSetByStrongOVWithWeakOVCheck(args);

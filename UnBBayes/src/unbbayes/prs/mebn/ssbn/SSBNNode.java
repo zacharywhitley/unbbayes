@@ -717,6 +717,16 @@ public class SSBNNode {
 			return ret;
 		}
 		
+		// Extra rule: if only 1 strongOV is passed and its NOT a strong OV (it's ordenable), then return all parents
+		if (strongOVs.length == 1) {
+			OrdinaryVariable ov = this.getResident().getMFrag().getOrdinaryVariableByName(strongOVs[0]);
+			if (ov != null) {
+				if (ov.getValueType().hasOrder()) {
+					return new ArrayList<SSBNNode>(this.getParents());
+				}
+			}
+		}
+		
 		//	copy  strongOV
 		ArrayList<String> strongOVList = new ArrayList<String>();
 		for (String ovname : strongOVs) {
