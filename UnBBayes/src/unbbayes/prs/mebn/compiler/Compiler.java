@@ -2074,7 +2074,8 @@ public class Compiler implements ICompiler {
 		TempTableHeaderParent (DomainResidentNode parent , Entity value) {
 			this.parent = parent;
 			this.value = value;
-			this.evaluationList = new ArrayList<EntityAndArguments>();
+			this.evaluationList = null;
+			//this.evaluationList = new ArrayList<EntityAndArguments>();
 			this.currentEvaluationIndex = -1;
 		}
 		
@@ -2238,7 +2239,8 @@ public class Compiler implements ICompiler {
 			this.isKnownValue = isKnownValue;
 			if (this.isKnownValue()) {
 				// if this leaf should return a constant, then evaluationList is useless...
-				this.setEvaluationList(new ArrayList<EntityAndArguments>());
+				this.setEvaluationList(null);
+				//this.setEvaluationList(new ArrayList<EntityAndArguments>());
 			}
 		}
 		
