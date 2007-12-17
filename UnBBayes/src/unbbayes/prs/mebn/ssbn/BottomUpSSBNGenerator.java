@@ -4,15 +4,19 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.xml.bind.JAXBException;
 
 import unbbayes.io.XMLIO;
 import unbbayes.prs.Edge;
+import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
@@ -20,13 +24,14 @@ import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntity;
-import unbbayes.prs.mebn.entity.ObjectEntityConteiner;
 import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
+import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KBFacade;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
+import unbbayes.prs.mebn.ssbn.exception.InvalidOperationException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.util.Debug;
@@ -34,8 +39,8 @@ import unbbayes.util.Debug;
 /**
  * Algorith for generate the Situation Specific Bayesian Network.  
  * 
+ * @author Laecio Lima dos Santos (laecio@gmail.com) 
  * @author Shou Matsumoto
- * @author Laecio Lima dos Santos
  */
 public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	
@@ -88,6 +93,9 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				                               querynode.getProbabilisticNetwork());
 		
 		//Debug. 
+		PositionAdjustmentUtils utils = new PositionAdjustmentUtils(); 
+		utils.adjustPositionProbabilisticNetwork(querynode.getProbabilisticNetwork()); 
+		
 		this.printNetworkInformation(querynode); //only Debug informations
 		
 		return querynode.getProbabilisticNetwork();
@@ -221,13 +229,9 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     			
     		    for(SSBNNode ssbnnode: createdNodes){
     		    	
-    		    	if(!ssbnnode.isContext()){
-    		    		generateRecursive(ssbnnode, seen, net);	
-    		    	}else{
-    		    		//criar tabela do nó de contexto???
-    		    	}
+    		    	generateRecursive(ssbnnode, seen, net);	
     		    	
-    		    	if(!ssbnnode.isFinding() && !ssbnnode.isContext()){
+    		    	if(!ssbnnode.isFinding()){
     		    		currentNode.addParent(ssbnnode, true);
     		    	}else{
     		    		currentNode.addParent(ssbnnode, false);
@@ -297,7 +301,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 					}
 				}
 				
-				break;			
+				continue;			
 			}
 			
 			//Step 1: evaluate context and search for findings
@@ -317,12 +321,10 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     		    	
     		    	Debug.println("Node Created: " + ssbnnode.toString());
     		    	
-    		    	if(!ssbnnode.isContext()){
-    		    		generateRecursive(ssbnnode, seen, net);	// algorithm's core
-    		    	}
+    		    	generateRecursive(ssbnnode, seen, net);	// algorithm's core
     		    	
     		    	ssbnNodeJacket.setArgumentsOfInputMFrag(); 
-        			if(!ssbnnode.isFinding()  && !ssbnnode.isContext()){
+        			if(!ssbnnode.isFinding()){
         				currentNode.addParent(ssbnnode, true);
         			}else{
         				currentNode.addParent(ssbnnode, false);
@@ -372,7 +374,24 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		}
 
 		Debug.println(currentNode + "E:- generate CPT");
-		generateCPT(currentNode);
+		
+		if(currentNode.getContextFatherSSBNNode()!=null){
+//			try {
+//				currentNode.getContextFatherSSBNNode().generateCPT();
+//				generateCPTForNodeWithContextFather(currentNode); 
+//			} catch (InvalidOperationException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			} catch (SSBNNodeGeneralException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			} catch (MEBNException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+		}else{
+		    generateCPT(currentNode);
+		}
 		
 		Debug.println(currentNode.getResident().getName() + " return of input parents recursion"); 
 		
@@ -576,8 +595,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * will be create for each entity (the entity is a argument of the fatherNode
 	 * that is the node referenced by the SSBNNOde). Case this search don't return 
 	 * entities, all the entities of the knowledge base will be recover and one SSBNNode
-	 * will be create for each entity, and a SSBNNode will be create for the
-	 * context node that don't return values. 
+	 * will be create for each entity. Is this case a object ContextFatherSSBNNode 
+	 * wiil be added in the ssbnnode orgin.  
 	 * 
 	 * @param mFrag
 	 * @param avaliator
@@ -600,6 +619,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
 		}
 		
+		OrdinaryVariable ovProblematic = ovList.get(0);
+		
 		//search
 		Collection<ContextNode> contextNodeList = mFrag.getSearchContextByOVCombination(ovList);
 		
@@ -612,7 +633,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
 		//contextNodeList have only one element
 		ContextNode context = contextNodeList.toArray(new ContextNode[contextNodeList.size()])[0];
-		OrdinaryVariable ov = ovList.get(0);
 		
 		Debug.println("Context Node: " + context.getLabel()); 
 		
@@ -621,40 +641,66 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			
 			if(result.isEmpty()){
 				
-				/*
-				 * All the instances of the entity will be considered and the 
-				 * context node will be father. 
-				 */
-				
-				List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
-		        
-				//Add the context node how father
-				DomainResidentNode residentNode = context.getNodeSearch(ovInstances); 
-				SSBNNode nodeContext = SSBNNode.getInstance(originNode.getProbabilisticNetwork(), residentNode); 
-				nodeContext.setNodeAsContext(); 
-				nodes.add(nodeContext); 
-				
-				    //in this implementation only this is necessary, because the treat
-				    //of context nodes how fathers will be trivial, using the XOR 
-				    //strategy. For a future implementation that accept different 
-				    //distribuitions for the residentNode of the ContextNode, the
-				    //arguments of the residente will have to be fill with the OVInstances
-				    //for the analize of the resident node formula. (very complex!).  
-			    
-				//Search for all the entities present in kb. 
-				result = kb.getEntityByType(ov.getValueType().getName());
-				for(String entity: result){
-					SSBNNode node =  createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
-							fatherNode, ovInstances, ov, entity);
-		        	nodes.add(node); 
+				if(originNode.getContextFatherSSBNNode() != null){
+					ContextFatherSSBNNode contextFatherSSBNNode = originNode.getContextFatherSSBNNode();
+					
+					if(contextFatherSSBNNode.getOvProblematic().equals(ovProblematic)){
+						
+						List<SSBNNode> nodes = new ArrayList<SSBNNode>();
+						
+						for(LiteralEntityInstance entity: contextFatherSSBNNode.getPossibleValues()){
+							SSBNNode node =  createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
+									fatherNode, ovInstances, ovProblematic, entity.getInstanceName());
+							nodes.add(node); 
+						}
+						
+						return nodes;
+					}
+					else{
+						throw new ImplementationRestrictionException("Um nó não pode ter dois nós de contexto pais!");
+					}
 				}
-				return nodes;  
+				else{
+					
+					/*
+					 * All the instances of the entity will be considered and the 
+					 * context node will be father. 
+					 */
+					
+					List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
+					
+					//Add the context node how father
+					ContextFatherSSBNNode contextFatherSSBNNode = new ContextFatherSSBNNode(
+							originNode.getProbabilisticNetwork(), context); 
+					contextFatherSSBNNode.setOvProblematic(ovProblematic);
+
+					//in this implementation only this is necessary, because the treat
+					//of context nodes how fathers will be trivial, using the XOR 
+					//strategy. For a future implementation that accept different 
+					//distribuitions for the residentNode of the ContextNode, the
+					//arguments of the residente will have to be fill with the OVInstances
+					//for the analize of the resident node formula. (very complex!).  
+					
+					//Search for all the entities present in kb. 
+					result = kb.getEntityByType(ovProblematic.getValueType().getName());
+					for(String entity: result){
+						SSBNNode node =  createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
+								fatherNode, ovInstances, ovProblematic, entity);
+						contextFatherSSBNNode.addPossibleValue(LiteralEntityInstance.getInstance(entity, ovProblematic.getValueType()));
+						nodes.add(node); 
+					}
+					
+					originNode.setContextFatherSSBNNode(contextFatherSSBNNode);
+					
+					return nodes;
+				}
+				  
 			}
 			else{
 				List<SSBNNode> nodes = new ArrayList<SSBNNode>(); 
 				for(String entity: result){
 					SSBNNode node = createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
-							fatherNode, ovInstances, ov, entity);
+							fatherNode, ovInstances, ovProblematic, entity);
 					nodes.add(node); 
 				}
 				return nodes; 
@@ -738,27 +784,51 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			
 			if(result.isEmpty()){
 
-				List<SSBNNodeJacket> nodes = new ArrayList<SSBNNodeJacket>(); 
-				Debug.println("Result is empty"); 
-//				Add the context node how father
-				DomainResidentNode domainResidentNode = context.getNodeSearch(ovInstances); 
-				SSBNNode nodeContext = SSBNNode.getInstance(originNode.getProbabilisticNetwork(), 
-						domainResidentNode, new ProbabilisticNode(), false); 
-				nodeContext.setNodeAsContext(); 
-				SSBNNodeJacket nodeContextJacket = new SSBNNodeJacket(nodeContext); 
-				nodes.add(nodeContextJacket); 
-
-				ssbnNodeList.add(nodeContext);
 				
-				//Search for all the entities present in kb. 
-				result = kb.getEntityByType(ov.getValueType().getName());
-				Debug.println("Search returns " + result.size() + " results"); 
-		        for(String entity: result){
-		        	SSBNNodeJacket ssbnNodeJacket = createSSBNNodeForEntitySearch(originNode, 
-		        			fatherNode, ov, entity);
-					nodes.add(ssbnNodeJacket); 
+				if(originNode.getContextFatherSSBNNode() != null){
+					ContextFatherSSBNNode contextFatherSSBNNode = originNode.getContextFatherSSBNNode();
+					
+					if(contextFatherSSBNNode.getOvProblematic().equals(ov)){
+						
+						List<SSBNNodeJacket> nodes = new ArrayList<SSBNNodeJacket>();
+						
+						for(LiteralEntityInstance entity: contextFatherSSBNNode.getPossibleValues()){
+							SSBNNodeJacket ssbnNodeJacket =  createSSBNNodeForEntitySearch(originNode, 
+									fatherNode, ov, entity.getInstanceName());
+							nodes.add(ssbnNodeJacket); 
+						}
+						
+						return nodes;
+					}
+					else{
+						throw new ImplementationRestrictionException("Um nó não pode ter dois nós de contexto pais!");
+					}
 				}
-				return nodes;  
+				else{
+					
+					List<SSBNNodeJacket> nodes = new ArrayList<SSBNNodeJacket>(); 
+					Debug.println("Result is empty"); 
+//					Add the context node how father
+					
+					ContextFatherSSBNNode contextFatherSSBNNode = new ContextFatherSSBNNode(
+							originNode.getProbabilisticNetwork(), context); 
+					contextFatherSSBNNode.setOvProblematic(ov);
+					
+					//Search for all the entities present in kb. 
+					result = kb.getEntityByType(ov.getValueType().getName());
+					Debug.println("Search returns " + result.size() + " results"); 
+					for(String entity: result){
+						SSBNNodeJacket ssbnNodeJacket = createSSBNNodeForEntitySearch(originNode, 
+								fatherNode, ov, entity);
+						contextFatherSSBNNode.addPossibleValue(
+								LiteralEntityInstance.getInstance(entity, ov.getValueType()));
+						nodes.add(ssbnNodeJacket); 
+					}
+					
+					originNode.setContextFatherSSBNNode(contextFatherSSBNNode);
+					
+					return nodes;  
+				}
 			}
 			else{
 				List<SSBNNodeJacket> nodes = new ArrayList<SSBNNodeJacket>(); 
@@ -962,7 +1032,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 *   with the CPT generated. 
 	 */
 	private void generateCPT(SSBNNode ssbnNode) {
-//		try {
+		try {
 			
 			Debug.println("\nGenerate table for node " + ssbnNode);
 			Debug.println("Parents:");
@@ -972,7 +1042,76 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			
 			Debug.setDebug(false);
 			
-//			ssbnNode.getCompiler().generateCPT(ssbnNode);
+			ssbnNode.getCompiler().generateCPT(ssbnNode);
+			
+			Debug.setDebug(true);
+			Debug.println("CPT OK\n");
+		
+		} catch (MEBNException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private void generateCPTForNodeWithContextFather(SSBNNode ssbnNode) throws SSBNNodeGeneralException, MEBNException {
+//		try {
+			
+			Debug.println("\nGenerate table for node (with context father): " + ssbnNode);
+			Debug.println("Parents:");
+			for(SSBNNode parent: ssbnNode.getParents()){
+				Debug.println("  " + parent);
+			}
+			
+			Debug.setDebug(false);
+			
+			Map<String, List<SSBNNode>> mapParentsByEntity = new HashMap<String, List<SSBNNode>>(); 
+			Map<String, PotentialTable> mapCPTByEntity = new HashMap<String, PotentialTable>(); 
+			
+			ContextFatherSSBNNode contextFather = ssbnNode.getContextFatherSSBNNode();
+			OrdinaryVariable ovProblematic = contextFather.getOvProblematic(); 
+			
+			for(LiteralEntityInstance entity: contextFather.getPossibleValues()){
+				mapParentsByEntity.put(entity.getInstanceName(), new ArrayList<SSBNNode>()); 
+			}
+			
+			//Step 0: Calcular a tabela do nó de contexto
+			
+			//Step 1: Dividir os pais em grupos de acordo com a variavel problemática
+			Collection<SSBNNode> parents = ssbnNode.getParents(); 
+			Collection<SSBNNode> generalParents = new ArrayList<SSBNNode>(); //Independent of the entity problematic
+			
+			for(SSBNNode parent: parents){
+				if(!parent.getOVs().contains(ovProblematic)){
+					generalParents.add(parent); 
+				}else{
+					String entity = parent.getArgumentByOrdinaryVariable(ovProblematic).getEntity().getInstanceName(); 
+					mapParentsByEntity.get(entity).add(parent); 
+				}
+				ssbnNode.removeParent(ssbnNode); //TODO Conferir arcos...
+			}
+			
+			//Step 2: Construir as tabelas para os diversos grupos de pais
+			for(LiteralEntityInstance entity: contextFather.getPossibleValues()){
+				
+				ArrayList<SSBNNode> groupParents = new ArrayList<SSBNNode>(); 
+				groupParents.addAll(mapParentsByEntity.get(entity.getInstanceName())); 
+				groupParents.addAll(generalParents); 
+				for(SSBNNode parent: groupParents){
+					ssbnNode.addParent(parent, false); 
+				}
+				PotentialTable cpt = ssbnNode.getCompiler().generateCPT(ssbnNode); 
+				mapCPTByEntity.put(entity.getInstanceName(), cpt);
+				for(SSBNNode parent: groupParents){
+					ssbnNode.removeParent(parent); 
+				}
+				
+			}			
+			
+			//Step 3: Fazer o XOR das tabelas obtidas utilizando a tabela do nó de contexto
+			
+			
+			
+			//Step 4: Setar a tabela gerada como a CPT do ssbnNode
 			
 			Debug.setDebug(true);
 			Debug.println("CPT OK\n");

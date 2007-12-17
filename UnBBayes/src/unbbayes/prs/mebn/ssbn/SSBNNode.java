@@ -61,7 +61,8 @@ public class SSBNNode {
 	private ICompiler compiler = null;
 	
 	private boolean isFinding = false;
-	private boolean isContext = false; 
+	
+	private ContextFatherSSBNNode contextFatherSSBNNode= null;
 	
 	private ProbabilisticNetwork probabilisticNetwork = null;
 	
@@ -493,23 +494,6 @@ public class SSBNNode {
 		}
 	}
 	
-	/**
-	 * Set this node how a Context Node father. (cases where a context node 
-	 * dont avaliate became a father of a SSBNNode). 
-	 */
-	public void setNodeAsContext() {
-		this.isContext = true;
-		
-//		if(this.getProbNode()!=null){
-//			ProbabilisticNode node = this.getProbNode();
-//			if(probabilisticNetwork != null){
-//			    probabilisticNetwork.removeNode(node);
-//			}
-//			this.setProbNode(null);	
-//		}
-	}
-	
-	
 	// Parent controller
 	
 	/**
@@ -809,6 +793,7 @@ public class SSBNNode {
 		name += ")";
 		if (this.getProbNode() != null) {
 			this.getProbNode().setName(name);
+			this.getProbNode().setDescription(name);
 		}
 		return name;
 	}
@@ -848,7 +833,15 @@ public class SSBNNode {
 		List<OVInstance> listArguments = new ArrayList<OVInstance>(); 
         listArguments.addAll(getArguments()); 
         return listArguments;
-        
+	}
+	
+	public OVInstance getArgumentByOrdinaryVariable(OrdinaryVariable ov){
+		for(OVInstance instance: getArguments()){
+			if(instance.getOv().equals(ov)){
+				return instance; 
+			}
+		}
+		return null;
 	}
 	
 	/**
@@ -918,6 +911,7 @@ public class SSBNNode {
 		if (this.probNode != null) {
 			// getName(), when called first, sets probnode's name
 			this.probNode.setName(this.getName());
+			this.getProbNode().setDescription(this.getName());
 			// TODO optimize. above code is setting probnode'name twice
 			this.getProbabilisticNetwork().addNode(this.probNode);
 			
@@ -1020,9 +1014,6 @@ public class SSBNNode {
 		if(isFinding){
 			ret+= " [F] ";
 		}
-		if(isContext){
-			ret+= " [C] ";
-		}
 		
 		return ret;  
 	}
@@ -1039,8 +1030,29 @@ public class SSBNNode {
 		} 
 	}
 
-	public boolean isContext() {
-		return isContext;
+	public ContextFatherSSBNNode getContextFatherSSBNNode() {
+		return contextFatherSSBNNode;
+	}
+
+	/**
+	 * O nó de contexto será adicionado como pai e será acrescentado um arco
+	 * entre o probabilistic node do contextFatherSSBNNode e o probabilistic node
+	 * deste nó (SSBNNode). 
+	 * @param contextFatherSSBNNode
+	 */
+	public void setContextFatherSSBNNode(ContextFatherSSBNNode contextFatherSSBNNode) {
+		this.contextFatherSSBNNode = contextFatherSSBNNode;
+		
+		if (this.getProbNode() != null) {
+			//this.getProbNode().addParent(parent.getProbNode());
+			if (contextFatherSSBNNode.getProbNode() != null){
+				Edge edge = new Edge(contextFatherSSBNNode.getProbNode(), this.getProbNode());
+				if (this.getProbabilisticNetwork() != null) {
+					this.getProbabilisticNetwork().addEdge(edge);
+				}
+			}
+		}
+		
 	}
 
 

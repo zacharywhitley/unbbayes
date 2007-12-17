@@ -2,7 +2,9 @@ package unbbayes.controller;
 
 import java.awt.Cursor;
 import java.io.File;
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.swing.JOptionPane;
@@ -78,7 +80,8 @@ public class MEBNController {
 	private NetworkWindow screen;
 	private MEBNEditionPane mebnEditionPane;
 	private MultiEntityBayesianNetwork multiEntityBayesianNetwork;
-
+	private ProbabilisticNetwork specificSituationBayesianNetwork; 
+	
 	/*-------------------------------------------------------------------------*/
 	/* Control of the nodes actives                                            */
 	/*-------------------------------------------------------------------------*/
@@ -90,6 +93,12 @@ public class MEBNController {
 	private MFrag mFragActive; 
 	private Node nodeActive;
 
+	/*-------------------------------------------------------------------------*/
+	/* Control of Graph Active                                                 */
+	/*-------------------------------------------------------------------------*/
+	
+	private boolean showSSBNGraph = false; 
+	
 	/*-------------------------------------------------------------------------*/
 	/* Control of state of the kb                                            */
 	/*-------------------------------------------------------------------------*/
@@ -113,6 +122,8 @@ public class MEBNController {
 	private static ResourceBundle resource = ResourceBundle
 			.getBundle("unbbayes.controller.resources.ControllerResources");
 
+	private NumberFormat df;
+	
 	/*-------------------------------------------------------------------------*/
 	/* Constructors                                                            */
 	/*-------------------------------------------------------------------------*/	
@@ -132,6 +143,8 @@ public class MEBNController {
 		this.screen = screen;
 		this.mebnEditionPane = new MEBNEditionPane(screen, this);
 
+		df = NumberFormat.getInstance(Locale.getDefault());
+		df.setMaximumFractionDigits(4);
 	}
 
 	public ResidentNode getResidentNodeActive(){
@@ -1138,12 +1151,12 @@ public class MEBNController {
 		}
 		
 		if(!baseCreated){
-	    	createKnowledgeBase(); 	
+//	    	createKnowledgeBase(); 	
 	    }
 		
 		KnowledgeBase kb = PowerLoomKB.getInstanceKB(); 
-//		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_GENERATIVE_FILE)); 
-//		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_FINDING_FILE)); 
+		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_GENERATIVE_FILE)); 
+		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_FINDING_FILE)); 
 		
 		Query query = new Query(new PowerLoomFacade(PowerLoomKB.MODULE_NAME), queryNode, multiEntityBayesianNetwork);
 		
@@ -1157,18 +1170,31 @@ public class MEBNController {
 			throw new InconsistentArgumentException(e);
 		}
 		
-//		try {
-//			probabilisticNetwork.compile();
-//		} catch (Exception e) {
-//			// TODO Auto-generated catch block. Lançar tela de erro com erro informado. 
-//			e.printStackTrace();
-//		} 
+		this.compileNetwork(probabilisticNetwork);
+		showSSBNGraph = true; 
+		specificSituationBayesianNetwork = probabilisticNetwork;
+		this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
 		
-		this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(probabilisticNetwork);
-		
-		return probabilisticNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 		
 	}
+
+	
+	
+	
+	
+	/*--------------------------------------------------------------------------
+	 * ATENÇÃO: ESTES MÉTODOS SÃO CÓPIAS DOS MÉTODOS PRESENTES EM SENCONTROLLER...
+	 * DEVIDO A FALTA DE TEMPO, AO INVÉS DE FAZER UM REFACTORY PARA COLOCÁLOS NO
+	 * NETWORKCONTROLLER, DEIXANDO ACESSIVEL AO SENCONTROLLER E AO MEBNCONTROLLER, 
+	 * VOU APENAS ADAPTÁLOS AQUI PARA O USO NO MEBNCONTROLLER... MAS DEPOIS ISTO
+	 * NECESSITARÁ DE UM REFACTORY PARA MANTER AS BOAS PRÁTICAS DA PROGRAMAÇÃO 
+	 * E PARA FACILITAR A MANUTENÇÃO. (laecio santos)
+	 *--------------------------------------------------------------------------/
+	
+		/** Load resource file from this package */
+	private static ResourceBundle resourcePN = ResourceBundle
+			.getBundle("unbbayes.controller.resources.ControllerResources");
 	
 	/**
 	 * Compiles the bayesian network. If there was any problem during compilation, the error
@@ -1179,13 +1205,13 @@ public class MEBNController {
 	 * @see JOptionPane
 	 */
 	public boolean compileNetwork(ProbabilisticNetwork network) {
-//		long ini = System.currentTimeMillis();
+		long ini = System.currentTimeMillis();
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		try {
 			network.compile();
 		} catch (Exception e) {
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(null, e.getMessage(), resource
+			JOptionPane.showMessageDialog(null, e.getMessage(), resourcePN
 					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
 			screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			return false;
@@ -1208,14 +1234,77 @@ public class MEBNController {
 			}
 		}
 
-		screen.getEvidenceTree().updateTree();
+		/* isto será feito dentro do changeToSSBNCompilationPane */
+//		screen.getEvidenceTree().updateTree();  hehe... ainda não temos uma evidence tree... sorry!
+		
 
 		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 
+		//TODO controle of status for the mebn edition pane 
 //		screen.setStatus(resource.getString("statusTotalTime")
 //				+ df.format(((System.currentTimeMillis() - ini)) / 1000.0)
 //				+ resource.getString("statusSeconds"));
 		return true;
+
+	}
+	
+	/**
+	 * Initializes the junction tree's known facts
+	 */
+	public void initialize() {
+		try {
+		    specificSituationBayesianNetwork.initialize();
+			screen.getEvidenceTree().updateTree();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Propagates the bayesian network's evidences ( <code>TRP</code> ).
+	 * 
+	 * @since
+	 */
+	public void propagate() {
+		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		boolean temLikeliHood = false;
+		try {
+			specificSituationBayesianNetwork.updateEvidences();
+			if (!temLikeliHood) {
+				screen.setStatus(resourcePN
+						.getString("statusEvidenceProbabilistic")
+						+ df.format(specificSituationBayesianNetwork.PET() * 100.0));
+			}
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(screen, resourcePN
+					.getString("statusEvidenceException"), resourcePN
+					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
+		}
+		screen.getEvidenceTree().updateTree();
+		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	}
+	
+	
+	
+	/*--------------------------------------------------------------------------
+	 * FIM DOS MÉTODOS CÓPIA
+	 *-------------------------------------------------------------------------/
+	
+	
+	
+	
+	
+	/**
+	 * @return false if don't have one ssbn pre-generated. True if the mode is change. 
+	 */
+	public boolean turnToSSBNMode(){
+		if(specificSituationBayesianNetwork != null){
+			showSSBNGraph = true; 
+			this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);			
+		    return true;  
+		}else{
+			return false;
+		}
 	}
 	
 	
@@ -1248,6 +1337,25 @@ public class MEBNController {
 		this.screen = screen;
 	}
 
-	
+	public ProbabilisticNetwork getSpecificSituationBayesianNetwork() {
+		return specificSituationBayesianNetwork;
+	}
+
+	public void setSpecificSituationBayesianNetwork(
+			ProbabilisticNetwork specificSituationBayesianNetwork) {
+		this.specificSituationBayesianNetwork = specificSituationBayesianNetwork;
+	}
+
+	public boolean isShowSSBNGraph() {
+		return showSSBNGraph;
+	}
+
+	public void setShowSSBNGraph(boolean showSSBNGraph) {
+		this.showSSBNGraph = showSSBNGraph;
+	}
+
+	public void setEditionMode(){
+		showSSBNGraph = false; 
+	}
 	
 }

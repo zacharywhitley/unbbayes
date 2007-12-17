@@ -51,9 +51,9 @@ public class SSBNCompilationPane extends JPanel {
     private final JButton editMode;
 //    private final JButton log;
     private final JButton reset;
-//    private final JButton printNet;
-//    private final JButton previewNet;
-//    private final JButton saveNetImage;
+    private final JButton printNet;
+    private final JButton previewNet;
+    private final JButton saveNetImage;
 
     private final IconController iconController = IconController.getInstance();
 
@@ -74,6 +74,9 @@ public class SSBNCompilationPane extends JPanel {
   	    expand = null;
   	    collapse = null;
   	    reset = null;
+  	    printNet = null;
+  	    previewNet = null;
+  	    saveNetImage = null;
   	}
   	
     public SSBNCompilationPane(SingleEntityNetwork sen, NetworkWindow _netWindow,
@@ -99,9 +102,9 @@ public class SSBNCompilationPane extends JPanel {
         editMode          = new JButton(iconController.getEditIcon());
 //        log               = new JButton(iconController.getInformationIcon());
         reset             = new JButton(iconController.getInitializeIcon());
-//        printNet          = new JButton(iconController.getPrintNetIcon());
-//        previewNet        = new JButton(iconController.getPrintPreviewNetIcon());
-//        saveNetImage      = new JButton(iconController.getSaveNetIcon());
+        printNet          = new JButton(iconController.getPrintNetIcon());
+        previewNet        = new JButton(iconController.getPrintPreviewNetIcon());
+        saveNetImage      = new JButton(iconController.getSaveNetIcon());
 
 
         //setar tooltip para esses bot_es
@@ -167,26 +170,27 @@ public class SSBNCompilationPane extends JPanel {
 
 
 //        // action para imprimir a rede
-//        printNet.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent ae) {
-//                controller.printNet(netWindow.getGraphPane(), controller.calculateNetRectangle());
-//            }
-//        });
-//
-//        // action para visualizar a rede.
-//        previewNet.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent ae) {
-//                controller.previewPrintNet(netWindow.getGraphPane(), controller.calculateNetRectangle());
-//            }
-//        });
-//
-//        saveNetImage.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                controller.saveNetImage();
-//            }
-//        });
-//
-//        //colocar bot_es e controladores do look-and-feel no toolbar e esse no topPanel
+        printNet.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                controller.printNet(netWindow.getGraphPane(), controller.calculateNetRectangle());
+            }
+        });
+
+        // action para visualizar a rede.
+        previewNet.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                controller.previewPrintNet(netWindow.getGraphPane(), controller.calculateNetRectangle());
+            }
+        });
+
+        saveNetImage.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                controller.saveNetImage();
+            }
+        });
+
+        //colocar bot_es e controladores do look-and-feel no toolbar e esse no topPanel
+        //TODO fazer os botões funcionarem e colocá-los de volta...
 //        jtbCompilation.add(printNet);
 //        jtbCompilation.add(previewNet);
 //        jtbCompilation.add(saveNetImage);

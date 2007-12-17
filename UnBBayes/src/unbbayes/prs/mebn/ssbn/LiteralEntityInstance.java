@@ -69,5 +69,9 @@ public class LiteralEntityInstance {
 		
 	}
 	
+	public String toString(){
+		return "LiteralEntityInstance:" + instanceName + "[" + type + "]";
+	}
+	
 	
 }

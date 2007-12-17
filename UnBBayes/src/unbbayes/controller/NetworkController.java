@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -177,7 +177,7 @@ public class NetworkController implements KeyListener {
      * @return The single entity network.
      */
     public SingleEntityNetwork getSingleEntityNetwork() {
-    	//TODO VERIFICAR SE POSSO RETIRAR ESSE MÉTODO!!
+    	//TODO VERIFICAR SE POSSO RETIRAR ESSE Mï¿½TODO!!
         return this.singleEntityNetwork;
     }
     
@@ -202,11 +202,15 @@ public class NetworkController implements KeyListener {
     	}
     	
     	if (multiEntityBayesianNetwork != null) {
-    		if (multiEntityBayesianNetwork.getCurrentMFrag()!= null){
-    		   return multiEntityBayesianNetwork.getCurrentMFrag();
+    		if(!mebnController.isShowSSBNGraph()){
+    			if (multiEntityBayesianNetwork.getCurrentMFrag()!= null){
+    				return multiEntityBayesianNetwork.getCurrentMFrag();
+    			}else{
+    				return multiEntityBayesianNetwork;
+    			}
     		}
     		else{
-    			return multiEntityBayesianNetwork; 
+    			 return mebnController.getSpecificSituationBayesianNetwork();
     		}
     	}
     	
@@ -218,6 +222,11 @@ public class NetworkController implements KeyListener {
      */
     public void initialize() {
     	if (senController != null) senController.initialize();
+    	else{
+    		if(mebnController != null){
+    			 mebnController.initialize(); 
+    		}
+    	}
     }
 
     /**
@@ -235,6 +244,11 @@ public class NetworkController implements KeyListener {
      */
     public void propagate() {
     	if (senController != null) senController.propagate();
+    	else{
+    		if(mebnController != null){
+    			mebnController.propagate();
+    		}
+    	}
     }
 
     /**
@@ -469,7 +483,7 @@ public class NetworkController implements KeyListener {
         JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
         chooser.setMultiSelectionEnabled(false);
 
-        //adicionar FileView no FileChooser para desenhar ícones de arquivos
+        //adicionar FileView no FileChooser para desenhar ï¿½cones de arquivos
         chooser.setFileView(new FileIcon(screen));
         chooser.addChoosableFileFilter(new SimpleFileFilter( gif, resource.getString("imageFileFilter")));
 
@@ -497,7 +511,7 @@ public class NetworkController implements KeyListener {
         chooser.setMultiSelectionEnabled(false);
 
 
-        //adicionar FileView no FileChooser para desenhar ícones de arquivos
+        //adicionar FileView no FileChooser para desenhar ï¿½cones de arquivos
         chooser.setFileView(new FileIcon(screen));
         chooser.addChoosableFileFilter(new SimpleFileFilter( gif, resource.getString("imageFileFilter")));
 

@@ -117,6 +117,8 @@ public class Network implements Graph{
 
 	/**
 	 *  Adds an edge into the net.
+	 *  
+	 *  - The table of the destination node will be updated with the new Variable
 	 *
 	 *@param  edge  An edge to be inserted.
 	 */
@@ -132,7 +134,7 @@ public class Network implements Graph{
 	}
 
 	/**
-	 *  Remove n� do grafo.
+	 *  Remove node of the graph
 	 *
 	 *@param  elemento  no a ser removido.
 	 */

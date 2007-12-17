@@ -47,7 +47,6 @@ import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.gui.mebn.finding.EntityFindingEditionPane;
 import unbbayes.gui.mebn.finding.RandonVariableFindingEdtitionPane;
-import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.GenerativeInputNode;
@@ -666,6 +665,8 @@ public class MEBNEditionPane extends JPanel {
 	    private JButton btnFindingMode;
 	    private JButton btnQueryMode;
 	    
+	    private JButton btnTurnToSSBNMode; 
+	    
 	    private JButton btnSaveKB; 
 	    private JButton btnLoadKB; 
 		
@@ -679,6 +680,8 @@ public class MEBNEditionPane extends JPanel {
 	    	btnEditingMode = new JButton(iconController.getGlobalOptionIcon());
 	    	btnFindingMode = new JButton(iconController.getMTheoryNodeIcon());
 	    	btnQueryMode = new JButton(iconController.getCompileIcon());
+	    	btnTurnToSSBNMode = new JButton(iconController.getCompileIcon()); 
+	    	
 	    	
 	    	btnQueryMode.addActionListener(new ActionListener(){
 	    		
@@ -687,6 +690,16 @@ public class MEBNEditionPane extends JPanel {
 	    			queryPanel.pack();
 	    			queryPanel.setVisible(true);
 	    		}
+	    		
+	    	});
+	    	
+	    	btnTurnToSSBNMode.addActionListener(new ActionListener(){
+
+				public void actionPerformed(ActionEvent e) {
+					if(!mebnController.turnToSSBNMode()){
+						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Não há SSBN gerada anteriormente! Modo não disponivel.");
+					}
+				}
 	    		
 	    	});
 	    	
@@ -770,6 +783,7 @@ public class MEBNEditionPane extends JPanel {
 	    	
 
 	        add(btnQueryMode);
+	        add(btnTurnToSSBNMode); 
 	        
 	        addSeparator(); 
 	        

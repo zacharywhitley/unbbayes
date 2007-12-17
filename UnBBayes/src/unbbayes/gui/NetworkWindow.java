@@ -200,7 +200,15 @@ public class NetworkWindow extends JInternalFrame {
 	 * @see JTree
 	 */
 	public EvidenceTree getEvidenceTree() {
-		return pnCompilationPane.getEvidenceTree();
+		if(pnCompilationPane != null){
+			return pnCompilationPane.getEvidenceTree();
+		}else{
+			if(ssbnCompilationPane != null){
+			   return ssbnCompilationPane.getEvidenceTree();
+			}else{
+				return null; 
+			}
+		}
 	}
 
 	/**
@@ -350,6 +358,8 @@ public class NetworkWindow extends JInternalFrame {
 		if(mode == NetworkWindow.MEBN_MODE){
 			graphPane.addKeyListener(controller);
 			
+			controller.getMebnController().setEditionMode(); 
+			graphPane.resetGraph();
 			// inicia com a tela de edicao de rede(PNEditionPane)
 			mebnEditionPane.getGraphPanel().setBottomComponent(jspGraph);
 			
@@ -363,11 +373,21 @@ public class NetworkWindow extends JInternalFrame {
 	 */
 	public void changeToSSBNCompilationPane(SingleEntityNetwork ssbn) {
 
-		if(mode == NetworkWindow.MEBN_MODE){
+		if(mode == NetworkWindow.MEBN_MODE){			
 			Container contentPane = getContentPane();
 			contentPane.remove(ssbnCompilationPane);
+			
 			ssbnCompilationPane = new SSBNCompilationPane(ssbn, this, controller);
+		    graphPane.resetGraph();
+			ssbnCompilationPane.getCenterPanel().setRightComponent(jspGraph);
+			ssbnCompilationPane.setStatus(status.getText());
+			ssbnCompilationPane.getEvidenceTree().setRootVisible(true);
+			ssbnCompilationPane.getEvidenceTree().expandRow(0);
+			ssbnCompilationPane.getEvidenceTree().setRootVisible(false);
+			ssbnCompilationPane.getEvidenceTree().updateTree();
+			
 			contentPane.add(ssbnCompilationPane, MEBN_PANE_SSBN_COMPILATION_PANE);
+			
 			CardLayout layout = (CardLayout)contentPane.getLayout(); 
 			layout.show(getContentPane(), MEBN_PANE_SSBN_COMPILATION_PANE);
 		}

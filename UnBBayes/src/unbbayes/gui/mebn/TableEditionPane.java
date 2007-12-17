@@ -19,9 +19,9 @@ import java.util.ResourceBundle;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -37,16 +37,7 @@ import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.compiler.Compiler;
-import unbbayes.prs.mebn.compiler.exception.InvalidConditionantException;
-import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredException;
-import unbbayes.prs.mebn.compiler.exception.SomeStateUndeclaredException;
-import unbbayes.prs.mebn.compiler.exception.TableFunctionMalformedException;
 import unbbayes.prs.mebn.entity.Entity;
-import unbbayes.prs.mebn.exception.EntityNotPossibleValueOfNodeException;
-import unbbayes.prs.mebn.exception.MEBNException;
-import unbbayes.prs.mebn.exception.NodeNotPresentInMTheoryException;
-import unbbayes.prs.mebn.table.exception.InvalidProbabilityFunctionOperandException;
 
 /**
  * Table of probabilistic distribution of a resident node. 
@@ -97,6 +88,7 @@ public class TableEditionPane extends JPanel{
 	
 	private JButton btnExit; 
 	
+	private JTextField txtPosition; 
 	
 	private DomainResidentNode residentNode; 
 	private String[] oVariableArray; 
@@ -128,6 +120,10 @@ public class TableEditionPane extends JPanel{
 		txtPane.addCaretListener( new CaretListener(){
 			public void caretUpdate(CaretEvent e) {
 				positionCaret = e.getDot();
+				if(txtPosition != null){
+					txtPosition.setText("*" + positionCaret + "*");
+					txtPosition.setAlignmentX(CENTER_ALIGNMENT);
+				}
 			}
 		}); 
 		
@@ -308,9 +304,12 @@ public class TableEditionPane extends JPanel{
 		btnPhanton = new JButton(); 
 		btnPhanton.setVisible(false); 
 		jpButtonsEdition.add(btnPhanton); 
-		btnPhanton = new JButton(); 
-		btnPhanton.setVisible(false); 
-		jpButtonsEdition.add(btnPhanton);
+		
+		txtPosition = new JTextField(); 
+		txtPosition.setEditable(false); 
+		txtPosition.setForeground(Color.BLUE); 
+		
+		jpButtonsEdition.add(txtPosition);
 		
 		jpButtonsEdition.add(btnEraseAll);
 		jpButtonsEdition.add(btnCompile); 
@@ -977,4 +976,8 @@ public class TableEditionPane extends JPanel{
 			} /* else */
 		}
 	}	
+	
+	public void setCursorPosition(int position){
+		txtPane.setCaretPosition(position);
+	}
 }
