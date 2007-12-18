@@ -11,6 +11,7 @@ import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.Entity;
+import unbbayes.prs.mebn.entity.StateLink;
 
 /**
  * Utilities for set the format of a word.  
@@ -69,7 +70,7 @@ public class TableEditionUtils {
 					}
 				}
 				
-				/* verificação */
+				/* verificaï¿½ï¿½o */
 				subString = text.substring(start, i);
 				writeWord(subString, initialPosition + start, doc); 
 				
@@ -251,18 +252,23 @@ public class TableEditionUtils {
 		
 		for(ResidentNode resident : residentNode.getResidentNodeFatherList()){
 			fatherList.add(resident.getName());
-			for(Entity state: resident.getPossibleValueList()){
-				statesFatherList.add(state.getName()); 
+			DomainResidentNode domainResidentNode = (DomainResidentNode)resident; 
+			
+			for(StateLink state: domainResidentNode.getPossibleValueLinkList()){
+				statesFatherList.add(state.getState().getName()); 
 			}
 		}
 		
 		for(InputNode input : residentNode.getInputNodeFatherList()){
 			if(input.getInputInstanceOf() instanceof ResidentNode){
 				ResidentNode resident = (ResidentNode)input.getInputInstanceOf(); 
+				
 				if(resident != null){
 					fatherList.add(resident.getName());
-					for(Entity state: resident.getPossibleValueList()){
-						statesFatherList.add(state.getName()); 
+					DomainResidentNode domainResidentNode = (DomainResidentNode)resident; 
+					
+					for(StateLink state: domainResidentNode.getPossibleValueLinkList()){
+						statesFatherList.add(state.getState().getName()); 
 					}
 				}
 			}
