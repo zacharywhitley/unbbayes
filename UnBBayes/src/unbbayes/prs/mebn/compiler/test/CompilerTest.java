@@ -697,6 +697,7 @@ public void testGenerateCPT2() {
 		
 		OrdinaryVariable st = harmPotential.getOrdinaryVariableByName("st");
 		OrdinaryVariable t = harmPotential.getOrdinaryVariableByName("t");
+		OrdinaryVariable tother = new OrdinaryVariable("tother",t.getValueType(), t.getMFrag());
 		
 		OVInstance st0 = OVInstance.getInstance(st, "ST0", st.getValueType());
 		OVInstance t0 = OVInstance.getInstance(t, "T0", t.getValueType());
@@ -709,6 +710,7 @@ public void testGenerateCPT2() {
 		try {
 			harmPotential_ST0_T0.addArgument(st0);
 			harmPotential_ST0_T0.addArgument(t0);
+			harmPotential_ST0_T0.getName();
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -718,6 +720,7 @@ public void testGenerateCPT2() {
 		try {
 			distFromOwn_ST0_T0.addArgument(st0);
 			distFromOwn_ST0_T0.addArgument(t0);
+			distFromOwn_ST0_T0.getName();
 			harmPotential_ST0_T0.addParent(distFromOwn_ST0_T0, true);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -731,6 +734,7 @@ public void testGenerateCPT2() {
 		try {
 			distFromOwn_ST0_T1.addArgument(st0);
 			distFromOwn_ST0_T1.addArgument(t1);
+			distFromOwn_ST0_T1.getName();
 			harmPotential_ST0_T0.addParent(distFromOwn_ST0_T1, true);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -740,6 +744,7 @@ public void testGenerateCPT2() {
 		SSBNNode starshipClass_ST0 = SSBNNode.getInstance(net, starshipClass);
 		try {
 			starshipClass_ST0.addArgument(st0);
+			starshipClass_ST0.getName();
 			harmPotential_ST0_T0.addParent(starshipClass_ST0, true);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -782,7 +787,113 @@ public void testGenerateCPT2() {
 		
 		
 		GUIPotentialTable guiCPT = new GUIPotentialTable(table);
-		guiCPT.showTable("Teste");
+		guiCPT.showTable(harmPotential_ST0_T0.getName());
+		
+		while(true);
+		
+	}
+
+
+
+public void testGenerateCPT3() {
+		
+		DomainResidentNode harmPotential = this.mebn.getDomainResidentNode("HarmPotential");
+		DomainResidentNode starshipClass = this.mebn.getDomainResidentNode("StarshipClass");
+		DomainResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");
+		
+		OrdinaryVariable st = harmPotential.getOrdinaryVariableByName("st");
+		OrdinaryVariable t = harmPotential.getOrdinaryVariableByName("t");
+		OrdinaryVariable tother = new OrdinaryVariable("tother",t.getValueType(), t.getMFrag());
+		
+		OVInstance st0 = OVInstance.getInstance(st, "ST0", st.getValueType());
+		OVInstance t0 = OVInstance.getInstance(t, "T0", t.getValueType());
+		//OVInstance st1 = OVInstance.getInstance(st, "ST1", st.getValueType());
+		OVInstance t1 = OVInstance.getInstance(tother, "T1", t.getValueType());
+		
+		ProbabilisticNetwork net = new ProbabilisticNetwork("TestGenerateCPT");
+		
+		SSBNNode harmPotential_ST0_T0 = SSBNNode.getInstance(net, harmPotential);
+		try {
+			harmPotential_ST0_T0.addArgument(st0);
+			harmPotential_ST0_T0.addArgument(t0);
+			harmPotential_ST0_T0.getName();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		SSBNNode distFromOwn_ST0_T0 = SSBNNode.getInstance(net, distFromOwn);
+		try {
+			distFromOwn_ST0_T0.addArgument(st0);
+			distFromOwn_ST0_T0.addArgument(t0);
+			distFromOwn_ST0_T0.getName();
+			harmPotential_ST0_T0.addParent(distFromOwn_ST0_T0, true);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		//net.addEdge(new Edge(distFromOwn_ST0_T0.getProbNode(),harmPotential_ST0_T0.getProbNode()));
+		
+		
+		
+		SSBNNode distFromOwn_ST0_T1 = SSBNNode.getInstance(net, distFromOwn);
+		try {
+			distFromOwn_ST0_T1.addArgument(st0);
+			distFromOwn_ST0_T1.addArgument(t1);
+			distFromOwn_ST0_T1.getName();
+			harmPotential_ST0_T0.addParent(distFromOwn_ST0_T1, true);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		SSBNNode starshipClass_ST0 = SSBNNode.getInstance(net, starshipClass);
+		try {
+			starshipClass_ST0.addArgument(st0);
+			starshipClass_ST0.getName();
+			harmPotential_ST0_T0.addParent(starshipClass_ST0, true);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		//net.addEdge(new Edge(starshipClass_ST0.getProbNode(),harmPotential_ST0_T0.getProbNode()));
+		
+		
+		Compiler compiler = new Compiler(harmPotential,harmPotential_ST0_T0);
+		
+		compiler.init(harmPotential_ST0_T0);
+		
+		PotentialTable table = null;
+		
+		String code = "if any st.t have (DistFromOwn = Absurd | StarshipClass = Absurd )"
+	+ " [false = 0 , true = 0 , absurd = 1]"
+	+ " else if any st.t have (DistFromOwn = Phaser1Range)" 
+	+ " 	[false = MIN(MAX(CARDINALITY(st.t) * 0.3 ; 0.1) ; 1) , true = 1 - false , absurd = 0]" 
+	+ " else if all st have (DistFromOwn = Phaser2Range)"
+	+ " 	[false = MIN(MAX(CARDINALITY(st) * 0.2 ; 0.1) ; 1) , true = 1 - false , absurd = 0] "
+	+ " else if all asdf have (StarshipClass = WarBird) "
+	+ " 	[false = MIN(CARDINALITY(z)* .1; 1) ,  true = 1 - false , absurd = 0]"
+	+ " else if all st have (StarshipClass = Explorer | ~ DistFromOwn = OutOfRange) "
+	+ " 	[false = MIN(CARDINALITY(st)* .4; 1) ,  true = 1 - false , absurd = 0]"
+	+ " else [false = 0.33 ,  true = 0.33 , absurd = 1 - (false + true)]";
+			
+		try {
+			compiler.parse(code);		
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		System.out.println("\n\n\nCode Parsed!!\n\n\n");
+		try {
+			table = compiler.getCPT();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		
+		GUIPotentialTable guiCPT = new GUIPotentialTable(table);
+		guiCPT.showTable(harmPotential_ST0_T0.getName());
 		
 		while(true);
 		
