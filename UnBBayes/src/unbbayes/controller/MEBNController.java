@@ -1297,8 +1297,8 @@ public class MEBNController {
 						+ df.format(specificSituationBayesianNetwork.PET() * 100.0));
 			}
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(screen, resourcePN
-					.getString("statusEvidenceException"), resourcePN
+			e.printStackTrace();
+			JOptionPane.showMessageDialog(screen, e.getMessage(), resourcePN
 					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
 		}
 		screen.getEvidenceTree().updateTree();

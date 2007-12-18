@@ -114,8 +114,7 @@ public class SENController {
 						+ df.format(singleEntityNetwork.PET() * 100.0));
 			}
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(screen, resource
-					.getString("statusEvidenceException"), resource
+			JOptionPane.showMessageDialog(screen, e.getMessage(), resource
 					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
 		}
 		screen.getEvidenceTree().updateTree();
