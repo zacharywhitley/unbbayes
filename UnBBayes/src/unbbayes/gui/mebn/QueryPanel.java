@@ -3,7 +3,6 @@ package unbbayes.gui.mebn;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,6 +31,9 @@ import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.exception.MEBNException;
+import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
+import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 /**
  * Class for insert a query
@@ -217,19 +219,41 @@ public class QueryPanel extends JFrame{
 						
 						setVisible(false); 
 						
-//						mebnController.getScreen().setCursor(new Cursor(Cursor.WAIT_CURSOR)); 
+						mebnController.getScreen().setCursor(new Cursor(Cursor.WAIT_CURSOR)); 
 				        ProbabilisticNetwork network = mebnController.executeQuery((DomainResidentNode)residentNode, arguments);
 						mebnController.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-										        
-				        exit(); 
+						
+				        exit();
+					}
+				    catch (MEBNException e0) {
+				    	e0.printStackTrace();
+							JOptionPane.showMessageDialog(mebnController.getScreen(), 
+									resource.getString(e0.getMessage()),
+									resource.getString("error"),
+									JOptionPane.ERROR_MESSAGE);
+		
 					} catch (ParcialStateException e1) {
+						e1.printStackTrace();
 						JOptionPane.showMessageDialog(mebnController.getScreen(), 
 								resource.getString("argumentFault"),
 								resource.getString("error"),
 								JOptionPane.ERROR_MESSAGE);
 					} catch (InconsistentArgumentException iae) {
+						iae.printStackTrace();
 						JOptionPane.showMessageDialog(mebnController.getScreen(), 
 								resource.getString("inconsistentArgument"),
+								resource.getString("error"),
+								JOptionPane.ERROR_MESSAGE);
+					} catch (SSBNNodeGeneralException e2) {
+						e2.printStackTrace();
+						JOptionPane.showMessageDialog(mebnController.getScreen(), 
+								resource.getString(e2.getMessage()),
+								resource.getString("error"),
+								JOptionPane.ERROR_MESSAGE);
+					} catch (ImplementationRestrictionException e3) {
+						e3.printStackTrace();
+						JOptionPane.showMessageDialog(mebnController.getScreen(), 
+								resource.getString(e3.getMessage()),
 								resource.getString("error"),
 								JOptionPane.ERROR_MESSAGE);
 					}

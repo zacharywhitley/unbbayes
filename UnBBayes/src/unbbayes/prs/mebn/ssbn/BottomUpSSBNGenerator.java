@@ -74,7 +74,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * @see unbbayes.prs.mebn.ssbn.SSBNGenerator#generateSSBN(unbbayes.prs.mebn.ssbn.Query)
 	 */
 	public ProbabilisticNetwork generateSSBN(Query query) throws SSBNNodeGeneralException, 
-	                                                             ImplementationRestrictionException {
+	                                                             ImplementationRestrictionException, MEBNException {
 		
 		ssbnNodeList = new ArrayList<SSBNNode>(); 
 		
@@ -143,7 +143,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * @throws ImplementationRestrictionException
 	 */
 	private SSBNNode generateRecursive(SSBNNode currentNode , SSBNNodeList seen, 
-			ProbabilisticNetwork net) throws SSBNNodeGeneralException, ImplementationRestrictionException {
+			ProbabilisticNetwork net) throws SSBNNodeGeneralException, ImplementationRestrictionException, MEBNException {
 		
 		if (this.recursiveCallCount > this.recursiveCallLimit) {
 			throw new SSBNNodeGeneralException(this.resource.getString("RecursiveLimit"));
@@ -376,6 +376,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		Debug.println(currentNode + "E:- generate CPT");
 		
 		if(currentNode.getContextFatherSSBNNode()!=null){
+			throw new ImplementationRestrictionException("Implementação da geração de CPT para contexto indefinido não concluida."); 
 //			try {
 //				currentNode.getContextFatherSSBNNode().generateCPT();
 //				generateCPTForNodeWithContextFather(currentNode); 
@@ -1031,8 +1032,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * - The CPT of the probabilistic node referenced by the ssbnNode is setted
 	 *   with the CPT generated. 
 	 */
-	private void generateCPT(SSBNNode ssbnNode) {
-		try {
+	private void generateCPT(SSBNNode ssbnNode) throws MEBNException {
 			
 			Debug.println("\nGenerate table for node " + ssbnNode);
 			Debug.println("Parents:");
@@ -1047,10 +1047,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			Debug.setDebug(true);
 			Debug.println("CPT OK\n");
 		
-		} catch (MEBNException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
 	private void generateCPTForNodeWithContextFather(SSBNNode ssbnNode) throws SSBNNodeGeneralException, MEBNException {

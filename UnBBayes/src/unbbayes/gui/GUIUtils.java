@@ -6,6 +6,7 @@ import java.awt.Point;
 import java.awt.Toolkit;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JWindow;
 
@@ -18,8 +19,8 @@ public class GUIUtils {
         return new Point(positionX, positionY);
 	}
 	
-	public static JWindow getWaitScreen(){
-		JWindow jDialog = new JWindow();
+	public static JFrame getWaitScreen(){
+		JFrame jDialog = new JFrame();
 		JPanel panelWait = new JPanel(); 
 		JButton label = new JButton("Aguarde...");
 		panelWait.setLayout(new GridLayout(1,1)); 

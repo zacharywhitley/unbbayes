@@ -1,11 +1,10 @@
 package unbbayes.prs.mebn;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.entity.Entity;
@@ -70,6 +69,15 @@ public class MultiEntityNode extends Node {
     public static void setColor(int c) {
         color = new Color(c);
     }	
+    
+    /**
+     * Gets the default size of a MultiEntityNode 
+     * 
+     * @return the dafault size of a MultiEntityNode
+     */
+    public static Point getDefaultSize(){
+    	return new Point(100,20);
+    }
 	
 	/**
 	 * Method responsible for removing this node from its MFrag.

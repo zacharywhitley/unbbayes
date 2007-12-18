@@ -2,23 +2,18 @@ package unbbayes.controller;
 
 import java.awt.Cursor;
 import java.io.File;
-import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.swing.JOptionPane;
-import javax.xml.bind.JAXBException;
 
 import unbbayes.controller.exception.InconsistentArgumentException;
 import unbbayes.controller.exception.InvalidOperationException;
-import unbbayes.gui.Console;
 import unbbayes.gui.MEBNEditionPane;
 import unbbayes.gui.NetworkWindow;
-import unbbayes.gui.PNCompilationPane;
 import unbbayes.gui.mebn.OVariableEditionPane;
-import unbbayes.io.XMLIO;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -50,6 +45,7 @@ import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.DuplicatedNameException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
+import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
@@ -61,7 +57,6 @@ import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
-import unbbayes.prs.mebn.ssbn.test.BottomUpSSBNGeneratorTest;
 import unbbayes.util.NodeList;
 
 /**
@@ -1137,8 +1132,12 @@ public class MEBNController {
 	 * @param arguments
 	 * @return
 	 * @throws InconsistentArgumentException
+	 * @throws ImplementationRestrictionException 
+	 * @throws SSBNNodeGeneralException 
 	 */
-	public ProbabilisticNetwork executeQuery(DomainResidentNode residentNode, ObjectEntityInstance[] arguments) throws InconsistentArgumentException {
+	public ProbabilisticNetwork executeQuery(DomainResidentNode residentNode, ObjectEntityInstance[] arguments)
+	                           throws InconsistentArgumentException, SSBNNodeGeneralException, 
+	                                  ImplementationRestrictionException, MEBNException {
 		
 		ProbabilisticNetwork probabilisticNetwork = null; 
 		
@@ -1170,19 +1169,7 @@ public class MEBNController {
 		
 		ISSBNGenerator ssbngenerator = new BottomUpSSBNGenerator();
 		
-		try {
-			
 			probabilisticNetwork = ssbngenerator.generateSSBN(query);
-			
-		    XMLIO netIO = new XMLIO(); 
-			
-			try {
-				netIO.save(new File("ssbn.xml"), probabilisticNetwork);
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (JAXBException e) {
-				e.printStackTrace();
-			}
 			
 			if(this.compileNetwork(probabilisticNetwork)){
 				showSSBNGraph = true; 
@@ -1190,10 +1177,6 @@ public class MEBNController {
 				this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
 			}
 			
-		} catch (Exception e) {
-			throw new InconsistentArgumentException(e);
-		}
-		
 		
 		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 		

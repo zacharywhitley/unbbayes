@@ -13,6 +13,7 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KBFacade;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomFacade;
@@ -94,6 +95,9 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 		catch (ImplementationRestrictionException ei) {
 				// TODO Auto-generated catch block
 			ei.printStackTrace();
+		} catch (MEBNException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} 
 		
 	}

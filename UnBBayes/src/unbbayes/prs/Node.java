@@ -23,6 +23,7 @@ package unbbayes.prs;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -64,6 +65,8 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	private ArrayMap<String, ExplanationPhrase> phrasesMap;
 	private int informationType;
 	public int infoestados[];
+	
+	private static final Point DEFAULT_SIZE = new Point(35,35); 
 
 	public static final int PROBABILISTIC_NODE_TYPE = 0;
 	public static final int UTILITY_NODE_TYPE = 1;
@@ -73,7 +76,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	public static final int EXPLANATION_TYPE = 4;
 
 	protected DrawElement drawElement;
-
+	
 	/**
 	 * Holds the mean of the values for each class if this is a numeric
 	 * attribute node
@@ -100,9 +103,9 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 		states = new ArrayList<String>();
 
 		// width
-		size.x = 35;
+		size.x = DEFAULT_SIZE.getX();
 		// height
-		size.y = 35;
+		size.y = DEFAULT_SIZE.getY();
 
 		position = new SerializablePoint2D();
 		bSelected = false;
@@ -112,6 +115,10 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 		informationType = DESCRIPTION_TYPE;
 	}
 
+	public static Point getDefaultSize(){
+		return DEFAULT_SIZE;
+	}
+	
 	public abstract int getType();
 
 	/**

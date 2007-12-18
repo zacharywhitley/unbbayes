@@ -42,6 +42,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.MultiEntityNode;
 
 /**
  * Class responsible for representing the network window.
@@ -356,6 +357,7 @@ public class NetworkWindow extends JInternalFrame {
 	public void changeToMEBNEditionPane() {
 
 		if(mode == NetworkWindow.MEBN_MODE){
+			Node.setSize(MultiEntityNode.getDefaultSize().getX(), MultiEntityNode.getDefaultSize().getY());
 			graphPane.addKeyListener(controller);
 			
 			controller.getMebnController().setEditionMode(); 
@@ -373,7 +375,9 @@ public class NetworkWindow extends JInternalFrame {
 	 */
 	public void changeToSSBNCompilationPane(SingleEntityNetwork ssbn) {
 
-		if(mode == NetworkWindow.MEBN_MODE){			
+		if(mode == NetworkWindow.MEBN_MODE){
+			Node.setSize(Node.getDefaultSize().getX(), Node.getDefaultSize().getY());
+			
 			Container contentPane = getContentPane();
 			contentPane.remove(ssbnCompilationPane);
 			

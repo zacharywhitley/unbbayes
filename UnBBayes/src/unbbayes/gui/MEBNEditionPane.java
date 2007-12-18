@@ -714,6 +714,15 @@ public class MEBNEditionPane extends JPanel {
 	    		
 	    	});
 	    	
+	    	btnGlobalOption.addActionListener(new ActionListener(){
+
+				public void actionPerformed(ActionEvent e) {
+					mebnController.clearKnowledgeBase(); 
+					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Funcionalidade ainda não implementada");
+				}
+	    		
+	    	});
+	    	
 	    	/*--------------- PowerLoom Options ------------------*/
 	    	JButton btnSaveGenerative = new JButton("SVG");
 	    	btnSaveGenerative.addActionListener(new ActionListener() {
