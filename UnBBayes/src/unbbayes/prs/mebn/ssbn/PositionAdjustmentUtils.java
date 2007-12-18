@@ -74,13 +74,13 @@ public class PositionAdjustmentUtils {
 		
 		while(level >= 0){
 			List<InfoNode> nodesOfLevel = infoNetwork.getInfoNodesOfLevel(level);
-			int i = 0; 
+			int coluna = 0; 
 			for(InfoNode infoNode: nodesOfLevel){
-				if(i == numColunas - 1){
-					line--; i = 0; 
+				if(coluna == numColunas - 1){
+					line--; coluna = 0; 
 				}
-				map[i][line] = infoNode; 
-				i++; 
+				map[coluna][line] = infoNode; 
+				coluna++; 
 			}
 			line--; level--;  
 		}

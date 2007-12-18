@@ -231,7 +231,6 @@ public class QueryPanel extends JFrame{
 									resource.getString(e0.getMessage()),
 									resource.getString("error"),
 									JOptionPane.ERROR_MESSAGE);
-		
 					} catch (ParcialStateException e1) {
 						e1.printStackTrace();
 						JOptionPane.showMessageDialog(mebnController.getScreen(), 
