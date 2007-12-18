@@ -663,13 +663,15 @@ public class MEBNEditionPane extends JPanel {
 
 	    private JButton btnEditingMode;
 	    private JButton btnFindingMode;
+	    
 	    private JButton btnQueryMode;
 	    
 	    private JButton btnTurnToSSBNMode; 
 	    
 	    private JButton btnSaveKB; 
 	    private JButton btnLoadKB; 
-		
+		private JButton btnClearKB; 
+	    
 	    public ToolBarGlobalOptions(){
 	    	
 	    	super(); 
@@ -680,8 +682,8 @@ public class MEBNEditionPane extends JPanel {
 	    	btnEditingMode = new JButton(iconController.getGlobalOptionIcon());
 	    	btnFindingMode = new JButton(iconController.getMTheoryNodeIcon());
 	    	btnQueryMode = new JButton(iconController.getCompileIcon());
-	    	btnTurnToSSBNMode = new JButton(iconController.getCompileIcon()); 
-	    	
+	    	btnTurnToSSBNMode = new JButton(iconController.getSsbnIcon()); 
+	    	btnClearKB = new JButton(iconController.getEditDelete()); 
 	    	
 	    	btnQueryMode.addActionListener(new ActionListener(){
 	    		
@@ -699,6 +701,15 @@ public class MEBNEditionPane extends JPanel {
 					if(!mebnController.turnToSSBNMode()){
 						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Não há SSBN gerada anteriormente! Modo não disponivel.");
 					}
+				}
+	    		
+	    	});
+
+	    	btnClearKB.addActionListener(new ActionListener(){
+
+				public void actionPerformed(ActionEvent e) {
+					mebnController.clearKnowledgeBase(); 
+					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Base de conhecimento limpa com sucesso");
 				}
 	    		
 	    	});
@@ -766,35 +777,25 @@ public class MEBNEditionPane extends JPanel {
 	    			}
 	    			
 	    			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-	    		}}); 
-	    	
-	    	JButton btnExecute = new JButton("EXE");
-	    	btnExecute.addActionListener(new ActionListener() {
-	    		public void actionPerformed(ActionEvent ae) {
-	    			setCursor(new Cursor(Cursor.WAIT_CURSOR));
-	    			
-//	    			mebnController.loadGenerativeMEBNIntoKB(); 
-//	    			mebnController.loadFindingsIntoKB(); 
-	    			JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Base de conhecimento criada com sucesso");
-	    		
-	    			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-	    		}
-	    	}); 
-	    	
+	    		}});
 
 	        add(btnQueryMode);
-	        add(btnTurnToSSBNMode); 
 	        
 	        addSeparator(); 
 	        
-	       // add(btnExecute); 
 	        add(btnLoadFindings); 
-	        //add(btnSaveGenerative); 
 	        add(btnSaveFindings); 
+	        add(btnClearKB);
+	        
+	        addSeparator(new Dimension(10, 10)); 
+	        
+	        add(btnTurnToSSBNMode); 
 	        
 	        addSeparator(new Dimension(10, 10)); 
 	        
 	        add(btnEditingMode);
+	        
+
 	        
 	        setFloatable(false);
 	    }; 
@@ -1113,7 +1114,7 @@ public class MEBNEditionPane extends JPanel {
 
 	        barName.add(labelInputName);
   	  		barName.add(txtNameInput);
-  	  	barName.setFloatable(false);
+  	     	barName.setFloatable(false);
   	        add(barName);
 
 	        txtInputOf = new JTextField(10);

@@ -6,18 +6,27 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.ResourceBundle;
 
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
+import javax.xml.bind.JAXBException;
 
+import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
+import unbbayes.io.BaseIO;
+import unbbayes.io.NetIO;
+import unbbayes.io.XMLIO;
 import unbbayes.prs.bn.SingleEntityNetwork;
 
 /**
@@ -54,6 +63,9 @@ public class SSBNCompilationPane extends JPanel {
     private final JButton printNet;
     private final JButton previewNet;
     private final JButton saveNetImage;
+    private final JButton saveNet;
+    
+    private final SingleEntityNetwork network;
 
     private final IconController iconController = IconController.getInstance();
 
@@ -77,6 +89,8 @@ public class SSBNCompilationPane extends JPanel {
   	    printNet = null;
   	    previewNet = null;
   	    saveNetImage = null;
+  	    saveNet = null; 
+  	    network = null; 
   	}
   	
     public SSBNCompilationPane(SingleEntityNetwork sen, NetworkWindow _netWindow,
@@ -86,7 +100,8 @@ public class SSBNCompilationPane extends JPanel {
         this.controller    = _controller;
         this.setLayout(new BorderLayout());
 
-
+        this.network = sen;
+        
         topPanel       = new JPanel(new GridLayout(0,1));
         jtbCompilation = new JToolBar();
         centerPanel    = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -105,7 +120,7 @@ public class SSBNCompilationPane extends JPanel {
         printNet          = new JButton(iconController.getPrintNetIcon());
         previewNet        = new JButton(iconController.getPrintPreviewNetIcon());
         saveNetImage      = new JButton(iconController.getSaveNetIcon());
-
+        saveNet           = new JButton(iconController.getSaveIcon());
 
         //setar tooltip para esses bot_es
         propagate.setToolTipText(resource.getString("propagateToolTip"));
@@ -189,6 +204,67 @@ public class SSBNCompilationPane extends JPanel {
             }
         });
 
+        saveNet.addActionListener(new ActionListener(){
+
+			public void actionPerformed(ActionEvent e) {
+    			setCursor(new Cursor(Cursor.WAIT_CURSOR));
+    			
+    			JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+    			chooser.setMultiSelectionEnabled(false);
+    			chooser
+    			.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    			
+    			int option = chooser.showSaveDialog(null);
+    			if (option == JFileChooser.APPROVE_OPTION) {
+    				File file = chooser.getSelectedFile();
+    				if (file != null) {
+    					if (!file.isDirectory()){
+    						BaseIO io = null; 
+    						String name = file.getName().toLowerCase();							
+    						if (name.endsWith("net")) {
+    							io = new NetIO();	
+    							try {
+									io.save(file, network);
+								} catch (IOException e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								} catch (JAXBException e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+    						} 
+    						else if (name.endsWith("xml")){
+    							io = new XMLIO();
+    							try {
+									io.save(file, network);
+								} catch (IOException e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								} catch (JAXBException e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+    						}
+    						try {
+    							if(io != null){
+    								io.save(file, network);
+    							}
+							} catch (IOException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							} catch (JAXBException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							
+    						JOptionPane.showMessageDialog(controller.getScreen(), "Arquivo salvo com sucesso");
+    					}
+    				}
+    			}
+    			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+        	
+        }); 
         //colocar bot_es e controladores do look-and-feel no toolbar e esse no topPanel
         //TODO fazer os botões funcionarem e colocá-los de volta...
 //        jtbCompilation.add(printNet);
@@ -203,11 +279,18 @@ public class SSBNCompilationPane extends JPanel {
 
         jtbCompilation.addSeparator();
 
+        jtbCompilation.add(reset);
+        
+        jtbCompilation.addSeparator();
+
         jtbCompilation.add(editMode);
 //        jtbCompilation.add(log);
-        jtbCompilation.add(reset);
 
+        jtbCompilation.addSeparator();
+        jtbCompilation.add(saveNet);
+        
         topPanel.add(jtbCompilation);
+        
 
         //setar a estrutura da _rvore para falso, j_ que ainda n_o foi compilada
         //jspTree.setVisible(true);

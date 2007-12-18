@@ -18,6 +18,7 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.Type;
 
 /**
  * Painel para selecionar os argumentos da query. 
@@ -77,13 +78,21 @@ public class QueryArgumentsPane extends JPanel{
 			argument[i] = new JComboBox(list); 
 			argument[i].addItemListener(new ComboListener(i)); 
 			argument[i].setSelectedIndex(0); 
-			argument[i].setEditable(true); 
+			
+			ObjectEntity oe = mebnController.getMultiEntityBayesianNetwork().
+			                     getObjectEntityContainer().getObjectEntityByType(ov.getValueType()); 
+			
+			if(oe.isOrdereable()){
+				argument[i].setEditable(false);
+			}else{
+				argument[i].setEditable(true); 
+			}
 			
 			//Adicionando componentes ao painel. 
 			btnArgXNumber = new JButton("" + i);
-			btnArgXNumber.setBackground(new Color(78, 201, 249)); 
+			btnArgXNumber.setBackground(new Color(193, 207, 180)); 
 			btnArgXType = new JButton(ov.getValueType().getName()); 
-			btnArgXType.setBackground(Color.LIGHT_GRAY); 
+			btnArgXType.setBackground(new Color(193, 210, 205)); 
 			
 			tbArgX.add(btnArgXNumber); 
 			tbArgX.add(btnArgXType); 

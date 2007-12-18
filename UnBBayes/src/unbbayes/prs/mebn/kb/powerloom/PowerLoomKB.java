@@ -115,7 +115,7 @@ public class PowerLoomKB implements KnowledgeBase{
 	
 	public void saveGenerativeMTheory(MultiEntityBayesianNetwork mebn, File file) {
 	    debug.println("Saving module..."); 
-		PLI.sSaveModule(moduleGenerativeName, file.getAbsolutePath(), "REPLACE", environment); 
+		PLI.sSaveModule(moduleGenerativeName, file.getAbsolutePath(), "REPLACE", environment);
 	    debug.println("...File save sucefull"); 
 	}
 
@@ -131,7 +131,10 @@ public class PowerLoomKB implements KnowledgeBase{
 		debug.println("File load sucefull");
 	}
 	
-    
+	public void clearKnowledgeBase(){
+		PLI.clearModule(moduleFinding); 
+		PLI.clearModule(moduleGenerative); 
+	}
 	
 	
 	/*---------- Methods for insert elements in the KB --------------------*/

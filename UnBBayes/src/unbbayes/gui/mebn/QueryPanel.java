@@ -2,6 +2,8 @@ package unbbayes.gui.mebn;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,6 +14,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
@@ -21,7 +24,7 @@ import javax.swing.event.ListSelectionListener;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.controller.exception.InconsistentArgumentException;
-import unbbayes.gui.Console;
+import unbbayes.gui.GUIUtils;
 import unbbayes.gui.ParcialStateException;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -54,7 +57,9 @@ public class QueryPanel extends JFrame{
 
 		super("Query");
 
-		setLocationRelativeTo(mebnController.getMebnEditionPane());
+//		this.setPreferredSize(new Dimension(200, 200)); 
+		this.setLocation(GUIUtils.getCenterPositionForComponent(200,200));
+		
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
 		this.mebnController = mebnController;
@@ -96,7 +101,7 @@ public class QueryPanel extends JFrame{
 
 		RandonVariableListPane randonVariableListPane = new RandonVariableListPane();
 
-		JLabel label = new JLabel("Selecione a vari�vel aleat�ria:    ");
+		JLabel label = new JLabel(resource.getString("selectOneVariable") + "               ");
 		
 		contentPane.add(label, BorderLayout.PAGE_START); 
 		contentPane.add(randonVariableListPane, BorderLayout.CENTER);
@@ -209,15 +214,25 @@ public class QueryPanel extends JFrame{
 					makeInvisible(); 
 					try {
 						ObjectEntityInstance[] arguments = queryArgumentsPane.getArguments();
-				        ProbabilisticNetwork network = mebnController.executeQuery((DomainResidentNode)residentNode, arguments); 
+						
+						setVisible(false); 
+						
+//						mebnController.getScreen().setCursor(new Cursor(Cursor.WAIT_CURSOR)); 
+				        ProbabilisticNetwork network = mebnController.executeQuery((DomainResidentNode)residentNode, arguments);
+						mebnController.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+										        
+				        exit(); 
 					} catch (ParcialStateException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+						JOptionPane.showMessageDialog(mebnController.getScreen(), 
+								resource.getString("argumentFault"),
+								resource.getString("error"),
+								JOptionPane.ERROR_MESSAGE);
 					} catch (InconsistentArgumentException iae) {
-						iae.printStackTrace();
+						JOptionPane.showMessageDialog(mebnController.getScreen(), 
+								resource.getString("inconsistentArgument"),
+								resource.getString("error"),
+								JOptionPane.ERROR_MESSAGE);
 					}
-					
-			        exit(); 
 				}
 			});
 

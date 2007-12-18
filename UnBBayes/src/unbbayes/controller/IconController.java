@@ -238,6 +238,8 @@ public class IconController implements Serializable {
 	
 	protected ImageIcon loadFindingsIcon; 	
 	
+	protected ImageIcon ssbnIcon; 	
+	
 	//operators
 
 	protected ImageIcon andIcon; 
@@ -260,6 +262,8 @@ public class IconController implements Serializable {
 	protected ImageIcon editClear; 
 	
 	protected ImageIcon editUndo; 
+	
+	protected ImageIcon editDelete; 
 	
 	protected ImageIcon edit; 
 	
@@ -1352,6 +1356,16 @@ public class IconController implements Serializable {
 			return editUndo;
 		}
 	}
+	
+	public ImageIcon getEditDelete() {
+		if (editDelete != null) {
+			return editDelete;
+		} else {
+			editDelete = new ImageIcon(getClass().getResource(
+					"/icons/edit-delete.png"));
+			return editDelete;
+		}
+	}
 
 	public ImageIcon getEntityInstance() {
 		if (entityInstance != null) {
@@ -1420,6 +1434,16 @@ public class IconController implements Serializable {
 			loadFindingsIcon = new ImageIcon(getClass().getResource(
 					"/icons/load-findings.png"));
 			return loadFindingsIcon;
+		}
+	}	
+	
+	public ImageIcon getSsbnIcon() {
+		if (ssbnIcon != null) {
+			return ssbnIcon;
+		} else {
+			ssbnIcon = new ImageIcon(getClass().getResource(
+					"/icons/ssbn.png"));
+			return ssbnIcon;
 		}
 	}	
 }

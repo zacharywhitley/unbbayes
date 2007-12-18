@@ -93,9 +93,9 @@ public class FindingArgumentPane extends JPanel{
 			
 			//Adicionando componentes ao painel. 
 			btnArgXNumber = new JButton("" + i);
-			btnArgXNumber.setBackground(new Color(78, 201, 249)); 
+			btnArgXNumber.setBackground(new Color(193,207,180)); 
 			btnArgXType = new JButton(ov.getValueType().getName()); 
-			btnArgXType.setBackground(Color.LIGHT_GRAY); 
+			btnArgXType.setBackground(new Color(193, 210, 205)); 
 			
 			tbArgX.add(btnArgXNumber); 
 			tbArgX.add(btnArgXType); 

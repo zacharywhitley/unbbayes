@@ -274,6 +274,12 @@ public class GuiResources extends ListResourceBundle {
         {"siglaError","The sigla must have only letters and numbers."},
         {"descriptionError","The description must have only letters and numbers."}, 
         
+        /* Query Panel*/
+        {"argumentFault","Incomplete arguments. Query don't should be executed."}, 
+        {"inconsistentArgument","Inconsistent arguments. Query don't should be executed."},         
+        {"selectOneVariable","Select a randon variable:"}, 
+        {"selectArgsValues","Select the arguments values:"}, 
+        
         /* FormulaTreeConstructionException */
         {"notOperator", "Operator don't accept in this position"},  
 		

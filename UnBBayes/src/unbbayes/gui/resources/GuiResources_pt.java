@@ -276,6 +276,12 @@ public class GuiResources_pt extends ListResourceBundle {
         {"siglaError","A sigla só pode ter letras e números."},
         {"descriptionError","A descrição só pode ter letras e números."},
         
+        /* Query Panel*/
+        {"argumentFault","Argumentos incompletos. Query não pode ser executada."},
+        {"inconsistentArgument","Argumentos inconsistentes. Query não pode ser executada."}, 
+        {"selectOneVariable","Selecione uma variável:"}, 
+        {"selectArgsValues","Selecione os valores dos argumentos:"}, 
+        
         /* FormulaTreeConstructionException */
         {"notOperator", "Não é permitido operador nesta posição"}, 
         

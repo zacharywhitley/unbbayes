@@ -56,8 +56,8 @@ public class InputNodePane extends JPanel{
 		jtbInputInstanceOf.add(jlInputInstanceOf); 
 		
 		/* 
-		 * No artigo original da Dr. Laskey, um nó de input pode ser instancia
-		 * de um nó residente ou de uma built-in... Simplificado nesta versão
+		 * No artigo original da Dr. Laskey, um nï¿½ de input pode ser instancia
+		 * de um nï¿½ residente ou de uma built-in... Simplificado nesta versï¿½o
 		 * apenas para residente.  
 		 */
         //btnInputOfResident = new JButton("RES"); 
@@ -81,8 +81,8 @@ public class InputNodePane extends JPanel{
 		setLayout(new BorderLayout());
 		
 		this.add(jtbInputInstanceOf, BorderLayout.NORTH); 
-		this.add(inputInstanceOfTreeScroll, BorderLayout.CENTER);
 		this.add(argumentsPane, BorderLayout.SOUTH); 
+		this.add(inputInstanceOfTreeScroll, BorderLayout.CENTER);
 		
 		this.setVisible(true);
 		

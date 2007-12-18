@@ -18,6 +18,8 @@ import unbbayes.prs.mebn.ssbn.OVInstance;
  */
 public interface KnowledgeBase {
 
+	public void clearKnowledgeBase();
+	
 	/**
 	 * Insert the entity into KB. 
 	 */

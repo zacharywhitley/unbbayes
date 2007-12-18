@@ -20,10 +20,10 @@ import unbbayes.prs.mebn.ResidentNodePointer;
 import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
 
 /**
- * Painel utilizado para se selecionar quais variáveis ordinárias
- * irao preencher cada um dos argumentos. É criada uma combo box
- * referente a cada argumento a ser preenchido, e nesta são listadas
- * todas as variaveis ordinárias que são do tipo esperado. 
+ * Painel utilizado para se selecionar quais variï¿½veis ordinï¿½rias
+ * irao preencher cada um dos argumentos. ï¿½ criada uma combo box
+ * referente a cada argumento a ser preenchido, e nesta sï¿½o listadas
+ * todas as variaveis ordinï¿½rias que sï¿½o do tipo esperado. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * @version 1.0 06/28/07
@@ -37,7 +37,7 @@ public class ArgumentsTypedPane extends JPanel{
 	
 	/**
 	 * 
-	 * Notas: o painel é criado baseando-se na estrutura atual do nó residente
+	 * Notas: o painel ï¿½ criado baseando-se na estrutura atual do nï¿½ residente
 	 * ao qual o ResidentNodePointer aponta. 
 	 * 
 	 * @param _node Node that have this pointer (GenerativeInputNode or ContextNode)
@@ -119,9 +119,9 @@ public class ArgumentsTypedPane extends JPanel{
 			
 			//Adicionando componentes ao painel. 
 			btnArgXNumber = new JButton("" + i);
-			btnArgXNumber.setBackground(new Color(78, 201, 249)); 
+			btnArgXNumber.setBackground(new Color(193, 207, 180)); 
 			btnArgXType = new JButton(pointer.getTypeOfArgument(i).getName()); 
-			btnArgXType.setBackground(Color.LIGHT_GRAY); 
+			btnArgXType.setBackground(new Color(193, 210, 205)); 
 			
 			tbArgX.add(btnArgXNumber); 
 			tbArgX.add(btnArgXType); 
