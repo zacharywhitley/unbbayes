@@ -72,26 +72,32 @@ public class NetworkWindow extends JInternalFrame {
 	private PNEditionPane pnEditionPane;
 
 	private PNCompilationPane pnCompilationPane;
-	
+
 	private SSBNCompilationPane ssbnCompilationPane;
 
 	private HierarchicDefinitionPane hierarchyPanel;
 
 	private EditNet editNet;
-	
+
 	private MEBNEditionPane mebnEditionPane;
-	
-	private static Integer PN_MODE = 0; 
-	private static Integer MEBN_MODE = 1; 	
-	
-	private final Integer mode; 
-	
-	private final String PN_PANE_PN_EDITION_PANE =  "pnEditionPane"; 
-	private final String PN_PANE_PN_EDIT_NET =  "editNet"; 
-	private final String PN_PANE_PN_COMPILATION_PANE =  "pnCompilationPane"; 
-	private final String PN_PANE_HIERARCHY_PANE =  "hierarchy"; 
-	private final String MEBN_PANE_MEBN_EDITION_PANE =  "mebnEditionPane"; 
-	private final String MEBN_PANE_SSBN_COMPILATION_PANE =  "ssbnCompilationPane"; 
+
+	private static Integer PN_MODE = 0;
+
+	private static Integer MEBN_MODE = 1;
+
+	private final Integer mode;
+
+	private final String PN_PANE_PN_EDITION_PANE = "pnEditionPane";
+
+	private final String PN_PANE_PN_EDIT_NET = "editNet";
+
+	private final String PN_PANE_PN_COMPILATION_PANE = "pnCompilationPane";
+
+	private final String PN_PANE_HIERARCHY_PANE = "hierarchy";
+
+	private final String MEBN_PANE_MEBN_EDITION_PANE = "mebnEditionPane";
+
+	private final String MEBN_PANE_SSBN_COMPILATION_PANE = "ssbnCompilationPane";
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource = ResourceBundle
@@ -107,12 +113,14 @@ public class NetworkWindow extends JInternalFrame {
 		// instancia variaveis de instancia
 		graphViewport = new JViewport();
 		if (net instanceof SingleEntityNetwork)
-			controller = new NetworkController((SingleEntityNetwork)net, this);
+			controller = new NetworkController((SingleEntityNetwork) net, this);
 		else {
-			controller = new NetworkController((MultiEntityBayesianNetwork)net, this);
-			mebnEditionPane = controller.getMebnController().getMebnEditionPane();		
+			controller = new NetworkController(
+					(MultiEntityBayesianNetwork) net, this);
+			mebnEditionPane = controller.getMebnController()
+					.getMebnEditionPane();
 		}
-			
+
 		graphPane = new GraphPane(controller, graphViewport);
 
 		jspGraph = new JScrollPane(graphViewport);
@@ -155,12 +163,13 @@ public class NetworkWindow extends JInternalFrame {
 				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
 		if (net instanceof SingleEntityNetwork) {
-			mode = NetworkWindow.PN_MODE; 
+			mode = NetworkWindow.PN_MODE;
 			pnEditionPane = new PNEditionPane(this, controller);
 			editNet = new EditNet(this, controller);
 			pnCompilationPane = new PNCompilationPane(this, controller);
-			hierarchyPanel = new HierarchicDefinitionPane((SingleEntityNetwork)net, this);
-			
+			hierarchyPanel = new HierarchicDefinitionPane(
+					(SingleEntityNetwork) net, this);
+
 			contentPane.add(pnEditionPane, PN_PANE_PN_EDITION_PANE);
 			contentPane.add(editNet, PN_PANE_PN_EDIT_NET);
 			contentPane.add(pnCompilationPane, PN_PANE_PN_COMPILATION_PANE);
@@ -170,10 +179,11 @@ public class NetworkWindow extends JInternalFrame {
 			pnEditionPane.getCenterPanel().setBottomComponent(jspGraph);
 			card.show(getContentPane(), PN_PANE_PN_EDITION_PANE);
 		} else {
-			mode = NetworkWindow.MEBN_MODE; 
+			mode = NetworkWindow.MEBN_MODE;
 			ssbnCompilationPane = new SSBNCompilationPane();
 			contentPane.add(mebnEditionPane, MEBN_PANE_MEBN_EDITION_PANE);
-			contentPane.add(ssbnCompilationPane, MEBN_PANE_SSBN_COMPILATION_PANE);
+			contentPane.add(ssbnCompilationPane,
+					MEBN_PANE_SSBN_COMPILATION_PANE);
 
 			// inicia com a tela de edicao de rede(PNEditionPane)
 			mebnEditionPane.getGraphPanel().setBottomComponent(jspGraph);
@@ -201,13 +211,13 @@ public class NetworkWindow extends JInternalFrame {
 	 * @see JTree
 	 */
 	public EvidenceTree getEvidenceTree() {
-		if(pnCompilationPane != null){
+		if (pnCompilationPane != null) {
 			return pnCompilationPane.getEvidenceTree();
-		}else{
-			if(ssbnCompilationPane != null){
-			   return ssbnCompilationPane.getEvidenceTree();
-			}else{
-				return null; 
+		} else {
+			if (ssbnCompilationPane != null) {
+				return ssbnCompilationPane.getEvidenceTree();
+			} else {
+				return null;
 			}
 		}
 	}
@@ -299,9 +309,9 @@ public class NetworkWindow extends JInternalFrame {
 	 * @see ProbabilisticNetwork
 	 */
 	public SingleEntityNetwork getSingleEntityNetwork() {
-		return (SingleEntityNetwork)controller.getNetwork();
+		return (SingleEntityNetwork) controller.getNetwork();
 	}
-	
+
 	/**
 	 * Retorna a rede probabil_stica <code>(ProbabilisticNetwork)</code>
 	 * 
@@ -309,7 +319,7 @@ public class NetworkWindow extends JInternalFrame {
 	 * @see ProbabilisticNetwork
 	 */
 	public MultiEntityBayesianNetwork getMultiEntityBayesianNetwork() {
-		return (MultiEntityBayesianNetwork)controller.getNetwork();
+		return (MultiEntityBayesianNetwork) controller.getNetwork();
 	}
 
 	/**
@@ -319,8 +329,12 @@ public class NetworkWindow extends JInternalFrame {
 	 *            mensagem de status.
 	 */
 	public void setStatus(String status) {
-		pnCompilationPane.setStatus(status);
-		pnEditionPane.setStatus(status);
+		if (ssbnCompilationPane != null) {
+			ssbnCompilationPane.setStatus(status);
+		} else {
+			pnCompilationPane.setStatus(status);
+			pnEditionPane.setStatus(status);
+		}
 		this.status.setText(status);
 	}
 
@@ -330,41 +344,41 @@ public class NetworkWindow extends JInternalFrame {
 	 */
 	public void changeToPNCompilationPane() {
 
-		if(mode == NetworkWindow.PN_MODE){
+		if (mode == NetworkWindow.PN_MODE) {
 			graphPane.setAction(GraphAction.NONE);
 			graphPane.removeKeyListener(controller);
-			
+
 			pnCompilationPane.getCenterPanel().setRightComponent(jspGraph);
 			pnCompilationPane.setStatus(status.getText());
 			pnCompilationPane.getEvidenceTree().setRootVisible(true);
 			pnCompilationPane.getEvidenceTree().expandRow(0);
 			pnCompilationPane.getEvidenceTree().setRootVisible(false);
-			
-			
+
 			bCompiled = true;
 			controller.getSingleEntityNetwork().setFirstInitialization(true);
-			
+
 			card.show(getContentPane(), PN_PANE_PN_COMPILATION_PANE);
 			pnCompilationPane.getEvidenceTree().updateTree();
 		}
-		
+
 	}
-	
+
 	/**
 	 * M_todo respons_vel por fazer as altera__es necess_rias para a mudar da
 	 * tela de compila__o para a de edi__o.
 	 */
 	public void changeToMEBNEditionPane() {
 
-		if(mode == NetworkWindow.MEBN_MODE){
-			Node.setSize(MultiEntityNode.getDefaultSize().getX(), MultiEntityNode.getDefaultSize().getY());
+		if (mode == NetworkWindow.MEBN_MODE) {
+			Node.setSize(MultiEntityNode.getDefaultSize().getX(),
+					MultiEntityNode.getDefaultSize().getY());
 			graphPane.addKeyListener(controller);
-			
-			controller.getMebnController().setEditionMode(); 
+
+			controller.getMebnController().setEditionMode();
 			graphPane.resetGraph();
 			// inicia com a tela de edicao de rede(PNEditionPane)
 			mebnEditionPane.getGraphPanel().setBottomComponent(jspGraph);
-			
+
 			card.show(getContentPane(), MEBN_PANE_MEBN_EDITION_PANE);
 		}
 	}
@@ -375,44 +389,47 @@ public class NetworkWindow extends JInternalFrame {
 	 */
 	public void changeToSSBNCompilationPane(SingleEntityNetwork ssbn) {
 
-		if(mode == NetworkWindow.MEBN_MODE){
-			Node.setSize(Node.getDefaultSize().getX(), Node.getDefaultSize().getY());
-			
+		if (mode == NetworkWindow.MEBN_MODE) {
+			Node.setSize(Node.getDefaultSize().getX(), Node.getDefaultSize()
+					.getY());
+
 			Container contentPane = getContentPane();
 			contentPane.remove(ssbnCompilationPane);
-			
-			ssbnCompilationPane = new SSBNCompilationPane(ssbn, this, controller);
-		    graphPane.resetGraph();
+
+			ssbnCompilationPane = new SSBNCompilationPane(ssbn, this,
+					controller);
+			graphPane.resetGraph();
 			ssbnCompilationPane.getCenterPanel().setRightComponent(jspGraph);
 			ssbnCompilationPane.setStatus(status.getText());
 			ssbnCompilationPane.getEvidenceTree().setRootVisible(true);
 			ssbnCompilationPane.getEvidenceTree().expandRow(0);
 			ssbnCompilationPane.getEvidenceTree().setRootVisible(false);
 			ssbnCompilationPane.getEvidenceTree().updateTree();
-			
-			contentPane.add(ssbnCompilationPane, MEBN_PANE_SSBN_COMPILATION_PANE);
-			
-			CardLayout layout = (CardLayout)contentPane.getLayout(); 
+
+			contentPane.add(ssbnCompilationPane,
+					MEBN_PANE_SSBN_COMPILATION_PANE);
+
+			CardLayout layout = (CardLayout) contentPane.getLayout();
 			layout.show(getContentPane(), MEBN_PANE_SSBN_COMPILATION_PANE);
 		}
 	}
-	
+
 	/**
 	 * M_todo respons_vel por fazer as altera__es necess_rias para a mudar da
 	 * tela de compila__o para a de edi__o.
 	 */
 	public void changeToPNEditionPane() {
 
-		if(mode == NetworkWindow.PN_MODE){
+		if (mode == NetworkWindow.PN_MODE) {
 			graphPane.addKeyListener(controller);
-			
+
 			pnEditionPane.getCenterPanel().setBottomComponent(jspGraph);
 			pnEditionPane.setStatus(status.getText());
-			
+
 			bCompiled = false;
-			
+
 			controller.getSingleEntityNetwork().setFirstInitialization(true);
-			
+
 			card.show(getContentPane(), "pnEditionPane");
 		}
 	}
@@ -451,9 +468,9 @@ public class NetworkWindow extends JInternalFrame {
 	public PNEditionPane getNetWindowEdition() {
 		return this.pnEditionPane;
 	}
-	
-	public MEBNEditionPane getMebnEditionPane(){
-		return this.mebnEditionPane; 
+
+	public MEBNEditionPane getMebnEditionPane() {
+		return this.mebnEditionPane;
 	}
 
 	/**
