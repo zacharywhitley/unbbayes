@@ -714,7 +714,6 @@ public class XMLIO implements BaseIO{
 		
 		//insert children as level and save'em to be searched after
 		int childCount = model.getChildCount(node);
-		System.out.print("\nFilhos = " + childCount); 
 		if (!node.isLeaf()) {
 			for (int i = 0; i < childCount; i++) {
 				//Insercao
