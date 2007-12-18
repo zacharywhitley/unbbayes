@@ -228,7 +228,7 @@ public class QueryPanel extends JFrame{
 				    catch (MEBNException e0) {
 				    	e0.printStackTrace();
 							JOptionPane.showMessageDialog(mebnController.getScreen(), 
-									resource.getString(e0.getMessage()),
+									e0.getMessage(),
 									resource.getString("error"),
 									JOptionPane.ERROR_MESSAGE);
 					} catch (ParcialStateException e1) {
@@ -246,13 +246,13 @@ public class QueryPanel extends JFrame{
 					} catch (SSBNNodeGeneralException e2) {
 						e2.printStackTrace();
 						JOptionPane.showMessageDialog(mebnController.getScreen(), 
-								resource.getString(e2.getMessage()),
+								e2.getMessage(),
 								resource.getString("error"),
 								JOptionPane.ERROR_MESSAGE);
 					} catch (ImplementationRestrictionException e3) {
 						e3.printStackTrace();
 						JOptionPane.showMessageDialog(mebnController.getScreen(), 
-								resource.getString(e3.getMessage()),
+								e3.getMessage(),
 								resource.getString("error"),
 								JOptionPane.ERROR_MESSAGE);
 					}
