@@ -10,7 +10,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Stack;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -19,7 +18,6 @@ import javax.swing.tree.TreeNode;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
 
 import org.xml.sax.InputSource;
@@ -32,10 +30,10 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.ITabledVariable;
-import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
 import unbbayes.prs.msbn.SingleAgentMSBN;
@@ -179,15 +177,17 @@ public class XMLIO implements BaseIO{
 			
 			BIFType.HIERARCHYType hierarchy = (BIFType.HIERARCHYType)bif.getHIERARCHY().get(0); 
 			
-			DefaultMutableTreeNode root; 
-			root = loadHierarchicTree( hierarchy );
+			if(((ArrayList)hierarchy.getROOT()).size() > 0){ 
+				DefaultMutableTreeNode root; 
+				root = loadHierarchicTree( hierarchy );
 
-			// construct tree
-			DefaultTreeModel model = new DefaultTreeModel(root);
-			HierarchicTree hierarchicTree =
-			new HierarchicTree(model);
-			
-			pn.setHierarchicTree(hierarchicTree);
+				// construct tree
+				DefaultTreeModel model = new DefaultTreeModel(root);
+				HierarchicTree hierarchicTree =
+					new HierarchicTree(model);
+
+				pn.setHierarchicTree(hierarchicTree);
+			}
 			
 			// ------------------- Variables -------------------------------------------------------
 			
