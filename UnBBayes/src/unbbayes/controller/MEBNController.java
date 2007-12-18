@@ -1174,20 +1174,25 @@ public class MEBNController {
 		
 			probabilisticNetwork = ssbngenerator.generateSSBN(query);
 			
-		    XMLIO netIO = new XMLIO(); 
-			
-			try {
-				netIO.save(new File("ssbn.xml"), probabilisticNetwork);
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (JAXBException e) {
-				e.printStackTrace();
-			}
-			
-			if(this.compileNetwork(probabilisticNetwork)){
-				showSSBNGraph = true; 
-				specificSituationBayesianNetwork = probabilisticNetwork;
-				this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
+			if(!query.getQueryNode().isFinding()){
+				XMLIO netIO = new XMLIO(); 
+
+				try {
+					netIO.save(new File("ssbn.xml"), probabilisticNetwork);
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (JAXBException e) {
+					e.printStackTrace();
+				}
+
+				if(this.compileNetwork(probabilisticNetwork)){
+					showSSBNGraph = true; 
+					specificSituationBayesianNetwork = probabilisticNetwork;
+					this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
+				}
+			}else{
+				JOptionPane.showMessageDialog(getScreen(), 
+						query.getQueryNode().toString() + " = " + query.getQueryNode().getActualValues().toArray()[0]);
 			}
 			
 		
