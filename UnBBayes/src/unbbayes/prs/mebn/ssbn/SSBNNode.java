@@ -23,6 +23,7 @@ import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+import unbbayes.util.Debug;
 import unbbayes.util.NodeList;
 
 
@@ -560,6 +561,9 @@ public class SSBNNode {
 				Edge edge = new Edge(parent.getProbNode(), this.getProbNode());
 				if (this.getProbabilisticNetwork() != null) {
 					this.getProbabilisticNetwork().addEdge(edge);
+					Debug.println("\n");
+					Debug.println(edge + " created");
+					BottomUpSSBNGenerator.printAndSaveCurrentNetwork(this);
 				}
 			}
 		}
