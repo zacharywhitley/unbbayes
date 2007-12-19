@@ -1175,7 +1175,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		}
 		String netName = queryName + " - Step " + stepCountFormated;
 		queryNode.getProbabilisticNetwork().setName(netName);
-		File file = new File("examples/MEBN/SSBN/" + netName  + ".xml");
+		File file = new File("examples" + File.pathSeparator + "MEBN" + File.pathSeparator + "SSBN" + File.pathSeparator + netName  + ".xml");
 		
 		Debug.println("\n"); 
 		Debug.println("  |-------------------------------------------------------");
