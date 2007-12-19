@@ -78,6 +78,11 @@ public class LogManager implements java.io.Serializable {
     public void append(String text) {
         log.append(text);
     }
+    
+    public void appendln(String text) {
+        log.append(text);
+        log.append("\n");
+    }
 
     public String getLog() {
         return log.toString();

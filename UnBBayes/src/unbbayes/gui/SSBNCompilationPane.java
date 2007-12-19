@@ -58,7 +58,7 @@ public class SSBNCompilationPane extends JPanel {
     private final JButton expand;
     private final JButton collapse;
     private final JButton editMode;
-//    private final JButton log;
+    private final JButton log;
     private final JButton reset;
     private final JButton printNet;
     private final JButton previewNet;
@@ -74,6 +74,7 @@ public class SSBNCompilationPane extends JPanel {
 
   	public SSBNCompilationPane(){
   		editMode = null;
+  		log = null;
   		netWindow = null;
   		controller = null;
   		jspTree = null;
@@ -115,7 +116,7 @@ public class SSBNCompilationPane extends JPanel {
         expand            = new JButton(iconController.getExpandIcon());
         collapse          = new JButton(iconController.getColapseIcon());
         editMode          = new JButton(iconController.getEditIcon());
-//        log               = new JButton(iconController.getInformationIcon());
+        log               = new JButton(iconController.getInformationIcon());
         reset             = new JButton(iconController.getInitializeIcon());
         printNet          = new JButton(iconController.getPrintNetIcon());
         previewNet        = new JButton(iconController.getPrintPreviewNetIcon());
@@ -127,19 +128,19 @@ public class SSBNCompilationPane extends JPanel {
         expand.setToolTipText(resource.getString("expandToolTip"));
         collapse.setToolTipText(resource.getString("collapseToolTip"));
         editMode.setToolTipText(resource.getString("editToolTip"));
-//        log.setToolTipText(resource.getString("logToolTip"));
+        log.setToolTipText(resource.getString("logToolTip"));
         reset.setToolTipText(resource.getString("resetCrencesToolTip"));
 //        printNet.setToolTipText(resource.getString("printNetToolTip"));
 //        previewNet.setToolTipText(resource.getString("previewNetToolTip"));
 //        saveNetImage.setToolTipText(resource.getString("saveNetImageToolTip"));
 
         //mostra o log da rede compilada
-//        log.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent ae) {
-//                controller.showLog();
-//                netWindow.getGraphPane().update();
-//            }
-//        });
+        log.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                controller.showLog();
+                netWindow.getGraphPane().update();
+            }
+        });
 
         //ao clicar no bot_o reset, chama-se o m_todo de inicia__o de cren_as da rede
         reset.addActionListener(new ActionListener() {
@@ -284,7 +285,7 @@ public class SSBNCompilationPane extends JPanel {
         jtbCompilation.addSeparator();
 
         jtbCompilation.add(editMode);
-//        jtbCompilation.add(log);
+        jtbCompilation.add(log);
 
         jtbCompilation.addSeparator();
         jtbCompilation.add(saveNet);

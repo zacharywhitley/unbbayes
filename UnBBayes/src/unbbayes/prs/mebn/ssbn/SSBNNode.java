@@ -561,8 +561,8 @@ public class SSBNNode {
 				Edge edge = new Edge(parent.getProbNode(), this.getProbNode());
 				if (this.getProbabilisticNetwork() != null) {
 					this.getProbabilisticNetwork().addEdge(edge);
-					Debug.println("\n");
-					Debug.println(edge + " created");
+					BottomUpSSBNGenerator.logManager.append("\n");
+					BottomUpSSBNGenerator.logManager.append(edge + " created");
 					BottomUpSSBNGenerator.printAndSaveCurrentNetwork(this);
 				}
 			}

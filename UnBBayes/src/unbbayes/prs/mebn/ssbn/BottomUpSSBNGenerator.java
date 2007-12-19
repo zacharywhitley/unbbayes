@@ -11,6 +11,7 @@ import java.util.ResourceBundle;
 
 import javax.xml.bind.JAXBException;
 
+import unbbayes.io.LogManager;
 import unbbayes.io.XMLIO;
 import unbbayes.prs.Edge;
 import unbbayes.prs.bn.PotentialTable;
@@ -56,6 +57,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 
 	public static long stepCount = 0L;
 	public static String queryName = "";
+	public static LogManager logManager = new LogManager();
 	
 	
 
@@ -85,8 +87,10 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		SSBNNode queryNode = query.getQueryNode();
 		this.kb = query.getKb();
 
+		// Log manager initialization
 		stepCount = 0L;
 		queryName = queryNode.toString();
+		logManager.clear();
 		
 		// initialization
 
@@ -95,8 +99,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		SSBNNode root = this.generateRecursive(queryNode, new SSBNNodeList(), 
 				                               queryNode.getProbabilisticNetwork());
 		
-		Debug.println("\n");
-		Debug.println("SSBN generation finished");
+		logManager.appendln("\n");
+		logManager.appendln("SSBN generation finished");
 		BottomUpSSBNGenerator.printAndSaveCurrentNetwork(root);
 		
 		return queryNode.getProbabilisticNetwork();
@@ -160,7 +164,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		}
 		this.recursiveCallCount++;
 		
-		Debug.println("\n-------------Step: " + currentNode.getName() + "--------------\n"); 
+		logManager.appendln("\n-------------Step: " + currentNode.getName() + "--------------\n"); 
 		
 		// check for cycle
 		if (seen.contains(currentNode)) {
@@ -171,7 +175,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		//------------------------- STEP 1: search findings -------------------
 		
 
-		Debug.println(currentNode + ":A - Search findings");
+		logManager.appendln(currentNode + ":A - Search findings");
         //check if querynode has a known value or it should be a probabilistic node (query the kb)
 		StateLink exactValue = kb.searchFinding(currentNode.getResident(), currentNode.getArguments()); 
 		
@@ -180,7 +184,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			// there were an exact match
 			currentNode.setNodeAsFinding(exactValue.getState());
 			seen.add(currentNode); 
-			Debug.println("Exact value of " + currentNode.getName() + "=" + exactValue.getState()); 
+			logManager.appendln("Exact value of " + currentNode.getName() + "=" + exactValue.getState()); 
 			
 	        generateCPT(currentNode);
 	        
@@ -196,7 +200,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		// evaluates querynode's mfrag's context nodes 
 		//(if not OK, sets MFrag's flag to use default CPT)	
 		
-		Debug.println(currentNode + ":B - Analyse context nodes");
+		logManager.appendln(currentNode + ":B - Analyse context nodes");
 		List<OVInstance> ovInstancesList = new ArrayList<OVInstance>(); 
 		ovInstancesList.addAll(currentNode.getArguments()); 
         
@@ -210,20 +214,20 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		}
 		
 		if(!result){
-			Debug.println("Context Node fail for " + currentNode.getResident().getMFrag()); 
+			logManager.appendln("Context Node fail for " + currentNode.getResident().getMFrag()); 
 			currentNode.setUsingDefaultCPT(true);
 			return currentNode; 
 		}
 		
 		// Step where the node is created for the first time
-		Debug.println("\n");
-		Debug.println("Node " + currentNode + " created");
+		logManager.appendln("\n");
+		logManager.appendln("Node " + currentNode + " created");
 		BottomUpSSBNGenerator.printAndSaveCurrentNetwork(currentNode);
 		
 		
        //------------------------- STEP 3: Add and evaluate resident nodes fathers -------------
 		
-		Debug.println(currentNode + "C:- Analyse resident nodes fathers");
+		logManager.appendln(currentNode + "C:- Analyse resident nodes fathers");
 		for (DomainResidentNode residentNode : currentNode.getResident().getResidentNodeFatherList()) {
 
 			/*
@@ -278,7 +282,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			
 		}
 		
-		Debug.println(currentNode + " return of resident parents recursion"); 
+		logManager.appendln(currentNode + " return of resident parents recursion"); 
 		
 		
 		
@@ -286,13 +290,13 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
 	    //------------------------- STEP 4: Add and evaluate input nodes fathers -------------
 
-		Debug.println(currentNode + "D:- Analyse input nodes fathers");
+		logManager.appendln(currentNode + "D:- Analyse input nodes fathers");
 		for (GenerativeInputNode inputNode : currentNode.getResident().getInputNodeFatherList()) {
 			
 			DomainResidentNode residentNode = 
 				(DomainResidentNode)inputNode.getResidentNodePointer().getResidentNode(); 
 
-			Debug.println(currentNode.getName() + "Evaluate input " + residentNode.getName()); 
+			logManager.appendln(currentNode.getName() + "Evaluate input " + residentNode.getName()); 
 			
 			//Evaluate recursion... 
 			if(currentNode.getResident() == residentNode){
@@ -333,7 +337,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     		    	SSBNNode ssbnnode = ssbnNodeJacket.getSsbnNode();
     		    	ssbnNodeJacket.setArgumentsOfResidentMFrag(); 
     		    	
-    		    	Debug.println("Node Created: " + ssbnnode.toString());
+    		    	logManager.appendln("Node Created: " + ssbnnode.toString());
 //    		    	asdf(ssbnnode);
     		    	generateRecursive(ssbnnode, seen, net);	// algorithm's core
     		    	
@@ -388,7 +392,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     		}
 		}
 
-		Debug.println(currentNode + "E:- generate CPT");
+		logManager.appendln(currentNode + "E:- generate CPT");
 		
 		if(currentNode.getContextFatherSSBNNode()!=null){
 			throw new ImplementationRestrictionException("Implementação da geração de CPT para contexto indefinido não concluida."); 
@@ -409,7 +413,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		    generateCPT(currentNode);
 		}
 		
-		Debug.println(currentNode + " return of input parents recursion"); 
+		logManager.appendln(currentNode + " return of input parents recursion"); 
 		
 		return currentNode;
 	}
@@ -457,7 +461,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			ProbabilisticNetwork net, DomainResidentNode residentNode, GenerativeInputNode inputNode) 
 	        throws SSBNNodeGeneralException, ImplementationRestrictionException {
 		
-		Debug.println("Build Previous Node");
+		logManager.appendln("Build Previous Node");
 		//Find for ordereable object entity.
 		List<OrdinaryVariable> ovOrdereableList = residentNode.getOrdinaryVariablesOrdereables();
 		
@@ -470,7 +474,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		}
 		
 		OrdinaryVariable ovOrdereableResident = ovOrdereableList.get(0); 
-		Debug.println("Ov Ordereable found:" + ovOrdereableResident);
+		logManager.appendln("Ov Ordereable found:" + ovOrdereableResident);
 		ObjectEntity objectEntityOrdereable = currentNode.getResident().getMFrag().
                         getMultiEntityBayesianNetwork().getObjectEntityContainer().
                         getObjectEntityByType(ovOrdereableResident.getValueType()); 
@@ -530,7 +534,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			
 			ssbnNodeList.add(ssbnNode);
 			
-			Debug.println("Build Previous Node End");
+			logManager.appendln("Build Previous Node End");
 			return ssbnNodeJacket;
 		}
 	}
@@ -557,13 +561,13 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				residentNode.getOrdinaryVariableList());
 		
 		for(ContextNode context: contextNodeList){
-			Debug.println("Context Node: " + context.getLabel());
+			logManager.appendln("Context Node: " + context.getLabel());
 			if(!avaliator.evaluateContextNode(context, ovInstances)){
 				residentNode.getMFrag().setAsUsingDefaultCPT(true); 
-				Debug.println("Result = FALSE. Use default distribution ");
+				logManager.appendln("Result = FALSE. Use default distribution ");
 				return false;  
 			}else{
-				Debug.println("Result = TRUE.");
+				logManager.appendln("Result = TRUE.");
 			}		
 		}
 		
@@ -591,16 +595,16 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				inputNode.getOrdinaryVariableList());
 		
 		for(ContextNode context: contextNodeList){
-			Debug.println("Context Node: " + context.getLabel()); 
+			logManager.appendln("Context Node: " + context.getLabel()); 
 			if(!avaliator.evaluateContextNode(context, ovInstances)){
 				inputNode.getMFrag().setAsUsingDefaultCPT(true); 
-				Debug.println("Result = FALSE. Use default distribution ");
+				logManager.appendln("Result = FALSE. Use default distribution ");
 				return true;  
 			}else{
-				Debug.println("Result = TRUE.");
+				logManager.appendln("Result = TRUE.");
 			}
 			
-			Debug.println(""); 
+			logManager.appendln(""); 
 		}
 		return true;
 	}
@@ -629,7 +633,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB()); 
 		
 		//Complex case: evaluate search context nodes. 
-		Debug.println("Have ord. variables incomplete!"); 
+		logManager.appendln("Have ord. variables incomplete!"); 
 		
 		if(ovList.size() > 1){
 			throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
@@ -650,7 +654,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		//contextNodeList have only one element
 		ContextNode context = contextNodeList.toArray(new ContextNode[contextNodeList.size()])[0];
 		
-		Debug.println("Context Node: " + context.getLabel()); 
+		logManager.appendln("Context Node: " + context.getLabel()); 
 		
 		try {
 			List<String> result = avaliator.evalutateSearchContextNode(context, ovInstances);
@@ -773,7 +777,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB()); 
 		
 		//Complex case: evaluate search context nodes. 
-		Debug.println("Have ord. variables incomplete!"); 
+		logManager.appendln("Have ord. variables incomplete!"); 
 		
 		if(ovProblemList.size() > 1){
 			throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
@@ -793,7 +797,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		ContextNode context = contextNodeList.toArray(new ContextNode[size])[0];
 		OrdinaryVariable ov = ovProblemList.get(0);
 		
-		Debug.println("Context Node: " + context.getLabel()); 
+		logManager.appendln("Context Node: " + context.getLabel()); 
 		
 		try {
 			List<String> result = avaliator.evalutateSearchContextNode(context, ovInstances);
@@ -823,7 +827,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				else{
 					
 					List<SSBNNodeJacket> nodes = new ArrayList<SSBNNodeJacket>(); 
-					Debug.println("Result is empty"); 
+					logManager.appendln("Result is empty"); 
 //					Add the context node how father
 					
 					ContextFatherSSBNNode contextFatherSSBNNode = new ContextFatherSSBNNode(
@@ -832,7 +836,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 					
 					//Search for all the entities present in kb. 
 					result = kb.getEntityByType(ov.getValueType().getName());
-					Debug.println("Search returns " + result.size() + " results"); 
+					logManager.appendln("Search returns " + result.size() + " results"); 
 					for(String entity: result){
 						SSBNNodeJacket ssbnNodeJacket = createSSBNNodeForEntitySearch(originNode, 
 								fatherNode, ov, entity);
@@ -886,11 +890,11 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		ssbnNodeJacket.setArgumentsOfResidentMFrag();
 		ssbnNode = checkForDoubleSSBNNode(ssbnNode);
 		
-		Debug.println(" ");
-		Debug.println("SSBNNode created:" + ssbnNode.getName());
-		Debug.println("Input MFrag Arguments: " + ssbnNodeJacket.getOvInstancesOfInputMFrag());
-		Debug.println("Resident MFrag Arguments: " + ssbnNodeJacket.getOvInstancesOfResidentMFrag());
-		Debug.println(" ");
+		logManager.appendln(" ");
+		logManager.appendln("SSBNNode created:" + ssbnNode.getName());
+		logManager.appendln("Input MFrag Arguments: " + ssbnNodeJacket.getOvInstancesOfInputMFrag());
+		logManager.appendln("Resident MFrag Arguments: " + ssbnNodeJacket.getOvInstancesOfResidentMFrag());
+		logManager.appendln(" ");
 		
 		ssbnNodeList.add(ssbnNode);
 		
@@ -1049,10 +1053,10 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 */
 	private void generateCPT(SSBNNode ssbnNode) throws MEBNException {
 			
-			Debug.println("\nGenerate table for node " + ssbnNode);
-			Debug.println("Parents:");
+			logManager.appendln("\nGenerate table for node " + ssbnNode);
+			logManager.appendln("Parents:");
 			for(SSBNNode parent: ssbnNode.getParents()){
-				Debug.println("  " + parent);
+				logManager.appendln("  " + parent);
 			}
 			
 			Debug.setDebug(false);
@@ -1060,17 +1064,17 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			ssbnNode.getCompiler().generateCPT(ssbnNode);
 			
 			Debug.setDebug(true);
-			Debug.println("CPT OK\n");
+			logManager.appendln("CPT OK\n");
 		
 	}
 	
 	private void generateCPTForNodeWithContextFather(SSBNNode ssbnNode) throws SSBNNodeGeneralException, MEBNException {
 //		try {
 			
-			Debug.println("\nGenerate table for node (with context father): " + ssbnNode);
-			Debug.println("Parents:");
+			logManager.appendln("\nGenerate table for node (with context father): " + ssbnNode);
+			logManager.appendln("Parents:");
 			for(SSBNNode parent: ssbnNode.getParents()){
-				Debug.println("  " + parent);
+				logManager.appendln("  " + parent);
 			}
 			
 			Debug.setDebug(false);
@@ -1125,7 +1129,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			//Step 4: Setar a tabela gerada como a CPT do ssbnNode
 			
 			Debug.setDebug(true);
-			Debug.println("CPT OK\n");
+			logManager.appendln("CPT OK\n");
 		
 //		} catch (MEBNException e) {
 //			// TODO Auto-generated catch block
@@ -1146,12 +1150,12 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		for(SSBNNode parent: node.getParents()){
 			for(int i = 0; i <= nivel; i++){
 				if (i == 0) {
-					System.out.print("  |   ");
+					logManager.append("  |   ");
 				} else {
-					System.out.print("   ");
+					logManager.append("   ");
 				}
 			}
-			System.out.println(parent.toString());
+			logManager.appendln(parent.toString());
 			printParents(parent, nivel + 1); 
 		}
 	}
@@ -1175,29 +1179,29 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		}
 		String netName = queryName + " - Step " + stepCountFormated;
 		queryNode.getProbabilisticNetwork().setName(netName);
-		File file = new File("examples" + File.pathSeparator + "MEBN" + File.pathSeparator + "SSBN" + File.pathSeparator + netName  + ".xml");
+		File file = new File("examples" + File.separator + "MEBN" + File.separator + "SSBN" + File.separator + netName  + ".xml");
 		
-		Debug.println("\n"); 
-		Debug.println("  |-------------------------------------------------------");
-		Debug.println("  |Network: ");
-		Debug.println("  |" + netName);
-		Debug.println("  | (" + file.getAbsolutePath() + ")");
+		logManager.appendln("\n"); 
+		logManager.appendln("  |-------------------------------------------------------");
+		logManager.appendln("  |Network: ");
+		logManager.appendln("  |" + netName);
+		logManager.appendln("  | (" + file.getAbsolutePath() + ")");
 		
-		Debug.println("  |\n  |Current node's branch: ");
-		Debug.println("  |" + queryNode.getName());
+		logManager.appendln("  |\n  |Current node's branch: ");
+		logManager.appendln("  |" + queryNode.getName());
 		printParents(queryNode, 0); 
 		
-		Debug.println("  |\n  |Edges:");
+		logManager.appendln("  |\n  |Edges:");
 		for(Edge edge: queryNode.getProbabilisticNetwork().getEdges()){
-			Debug.println("  |" + edge.toString());
+			logManager.appendln("  |" + edge.toString());
 		}
 		
-		Debug.println("  |\n  |Nodes:");
+		logManager.appendln("  |\n  |Nodes:");
 		for(int i = 0; i < queryNode.getProbabilisticNetwork().getNodes().size(); i++){
-			Debug.println("  |" + queryNode.getProbabilisticNetwork().getNodeAt(i).toString());
+			logManager.appendln("  |" + queryNode.getProbabilisticNetwork().getNodeAt(i).toString());
 		}
-		Debug.println("  |-------------------------------------------------------");
-		Debug.println("\n"); 
+		logManager.appendln("  |-------------------------------------------------------");
+		logManager.appendln("\n"); 
 		
 	    XMLIO netIO = new XMLIO(); 
 		

@@ -68,6 +68,7 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
+import unbbayes.prs.mebn.ssbn.BottomUpSSBNGenerator;
 import unbbayes.util.NodeList;
 
 /**
@@ -538,7 +539,12 @@ public class NetworkController implements KeyListener {
         final JTextArea texto = new JTextArea();
 
         texto.setEditable(false);
-        texto.setText(singleEntityNetwork.getLog());
+        if (singleEntityNetwork != null) {
+        	texto.setText(singleEntityNetwork.getLog());
+        } else {
+        	texto.setText(BottomUpSSBNGenerator.logManager.getLog());
+        }
+        
         texto.moveCaretPosition(0);
         texto.setSelectionEnd(0);
 
