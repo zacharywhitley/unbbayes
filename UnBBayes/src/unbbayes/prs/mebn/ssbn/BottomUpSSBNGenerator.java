@@ -36,7 +36,7 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.util.Debug;
 
 /**
- * Algorith for generate the Situation Specific Bayesian Network.  
+ * Algorithm for generating the Situation Specific Bayesian Network (SSBN).  
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com) 
  * @author Shou Matsumoto
@@ -52,7 +52,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	
 	private long recursiveCallCount = 0;
 	
-	//all the ssbnnode created. 
+	//all the ssbn nodes created. 
 	private List<SSBNNode> ssbnNodeList;
 
 	public static long stepCount = 0L;
@@ -248,7 +248,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     		    	
     		    	if(!ssbnnode.isFinding()){
     		    		currentNode.addParent(ssbnnode, true);
-//    		    		asdf(ssbnnode);
     		    	}else{
     		    		currentNode.addParent(ssbnnode, false);
     		    	}	
@@ -260,7 +259,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				List<OVInstance> arguments = fillArguments(currentNode.getArguments(), residentNode);
 				SSBNNode testSSBNNode = getSSBNNode(residentNode, arguments); 
 				
-				//This test is necessary to avoid creating two equals ssbnnodes (duplicated bayesian nodes). 
+				//This test is necessary to avoid creating two equals ssbn nodes (duplicated bayesian nodes). 
 				if(testSSBNNode == null){
 					ssbnnode = SSBNNode.getInstance(net,residentNode, new ProbabilisticNode(), false);
 					for(OVInstance ovInstance: arguments){
@@ -274,7 +273,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				
     			if(!ssbnnode.isFinding()){
     				currentNode.addParent(ssbnnode, true);
-//    				asdf(ssbnnode);
     			}else{
     				currentNode.addParent(ssbnnode, false); 
     			}
@@ -313,7 +311,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 
 					if(!previousNode.getSsbnNode().isFinding()){
 						currentNode.addParent(previousNode.getSsbnNode(), true);
-//						asdf(previousNode.getSsbnNode());
 					}else{
 						currentNode.addParent(previousNode.getSsbnNode(), false);
 					}
@@ -338,7 +335,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     		    	ssbnNodeJacket.setArgumentsOfResidentMFrag(); 
     		    	
     		    	logManager.appendln("Node Created: " + ssbnnode.toString());
-//    		    	asdf(ssbnnode);
     		    	generateRecursive(ssbnnode, seen, net);	// algorithm's core
     		    	
     		    	ssbnNodeJacket.setArgumentsOfInputMFrag(); 
@@ -375,14 +371,12 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 //    				ssbnNode = checkForDoubleSSBNNodeForInputEvaliation(ssbnNode); //TODO analyse... 
     				
     				ssbnNodeList.add(ssbnNode); //TODO cuidado para não adicionar elementos repetidos na lista... 
-//    				asdf(ssbnNode);
     				this.generateRecursive(ssbnNode, seen, net);	// algorithm's core
     				
     				ssbnNodeJacket.setArgumentsOfInputMFrag(); 
     				
     				if(!ssbnNode.isFinding()){
     					currentNode.addParent(ssbnNode, true);
-//    					asdf(ssbnNode);
     				}else{
     					currentNode.addParent(ssbnNode, false);
     				}
