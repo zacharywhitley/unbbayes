@@ -1152,9 +1152,16 @@ public class MEBNController {
 			throw new InconsistentArgumentException();
 		}
 		
-		for (int i = 0; i < arguments.length; i++) {
+		for (int i = 1; i <= arguments.length; i++) {
 			try {
-				queryNode.addArgument(arglist.get(i).getOVariable(), arguments[i].getName());
+				//TODO It has to get in the right order. For some reason in argList, sometimes the second argument comes first
+				for (Argument argument : arglist) {
+					if (argument.getArgNumber() == i) {
+						queryNode.addArgument(argument.getOVariable(), arguments[i-1].getName());
+						break;
+					}
+				}
+				
 			} catch (SSBNNodeGeneralException e) {
 				throw new InconsistentArgumentException(e);
 			}
