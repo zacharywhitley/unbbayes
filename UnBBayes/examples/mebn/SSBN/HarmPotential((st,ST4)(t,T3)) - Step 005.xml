@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='US-ASCII'?>
+<mstns:BIF VERSION="0" xmlns:mstns="http://localhost/xml/model.xsd">
+  <mstns:HEADER>
+    <mstns:NAME>HarmPotential((st,ST4)(t,T3)) - Step 005</mstns:NAME>
+    <mstns:VERSION>1</mstns:VERSION>
+    <mstns:CREATOR>UnBBayes</mstns:CREATOR>
+  </mstns:HEADER>
+  <mstns:STATICPROPERTY>
+    <mstns:NODESIZE>0</mstns:NODESIZE>
+    <mstns:NODEFONTSIZE>0</mstns:NODEFONTSIZE>
+    <mstns:COLORUTILITY>-16711681</mstns:COLORUTILITY>
+    <mstns:COLORDECISION>-14336</mstns:COLORDECISION>
+    <mstns:COLORPROBDESCRIPTION>-256</mstns:COLORPROBDESCRIPTION>
+    <mstns:COLORPROBEXPLANATION>-16711936</mstns:COLORPROBEXPLANATION>
+  </mstns:STATICPROPERTY>
+  <mstns:HIERARCHY/>
+  <mstns:NETWORK>
+    <mstns:VARIABLES>
+      <mstns:VAR YPOS="100" XPOS="100" TYPE="discrete" NAME="HarmPotential(ST4,T3)">
+        <mstns:LABEL>HarmPotential(ST4,T3)</mstns:LABEL>
+        <mstns:STATENAME>false</mstns:STATENAME>
+        <mstns:STATENAME>true</mstns:STATENAME>
+        <mstns:STATENAME>absurd</mstns:STATENAME>
+      </mstns:VAR>
+      <mstns:VAR YPOS="100" XPOS="200" TYPE="discrete" NAME="DistFromOwn(ST4,T3)">
+        <mstns:LABEL>DistFromOwn(ST4,T3)</mstns:LABEL>
+        <mstns:STATENAME>Phaser2Range</mstns:STATENAME>
+        <mstns:STATENAME>Phaser1Range</mstns:STATENAME>
+        <mstns:STATENAME>TorpedoRange</mstns:STATENAME>
+        <mstns:STATENAME>OutOfRange</mstns:STATENAME>
+        <mstns:STATENAME>PulseCanonRange</mstns:STATENAME>
+        <mstns:STATENAME>Absurd</mstns:STATENAME>
+      </mstns:VAR>
+      <mstns:VAR YPOS="100" XPOS="300" TYPE="discrete" NAME="DistFromOwn(ST4,T2)">
+        <mstns:LABEL>DistFromOwn(ST4,T2)</mstns:LABEL>
+        <mstns:STATENAME>Phaser2Range</mstns:STATENAME>
+        <mstns:STATENAME>Phaser1Range</mstns:STATENAME>
+        <mstns:STATENAME>TorpedoRange</mstns:STATENAME>
+        <mstns:STATENAME>OutOfRange</mstns:STATENAME>
+        <mstns:STATENAME>PulseCanonRange</mstns:STATENAME>
+        <mstns:STATENAME>Absurd</mstns:STATENAME>
+      </mstns:VAR>
+      <mstns:VAR YPOS="200" XPOS="100" TYPE="discrete" NAME="DistFromOwn(ST4,T1)">
+        <mstns:LABEL>DistFromOwn(ST4,T1)</mstns:LABEL>
+        <mstns:STATENAME>Phaser2Range</mstns:STATENAME>
+        <mstns:STATENAME>Phaser1Range</mstns:STATENAME>
+        <mstns:STATENAME>TorpedoRange</mstns:STATENAME>
+        <mstns:STATENAME>OutOfRange</mstns:STATENAME>
+        <mstns:STATENAME>PulseCanonRange</mstns:STATENAME>
+        <mstns:STATENAME>Absurd</mstns:STATENAME>
+      </mstns:VAR>
+    </mstns:VARIABLES>
+    <mstns:STRUCTURE>
+      <mstns:ARC CHILD="DistFromOwn(ST4,T2)" PARENT="DistFromOwn(ST4,T1)"/>
+    </mstns:STRUCTURE>
+    <mstns:POTENTIAL>
+      <mstns:POT>
+        <mstns:PRIVATE NAME="HarmPotential(ST4,T3)"/>
+        <mstns:CONDSET/>
+        <mstns:DPIS>
+          <mstns:DPI INDEXES="0">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="0">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="0">0.0</mstns:DPI>
+        </mstns:DPIS>
+      </mstns:POT>
+      <mstns:POT>
+        <mstns:PRIVATE NAME="DistFromOwn(ST4,T3)"/>
+        <mstns:CONDSET/>
+        <mstns:DPIS>
+          <mstns:DPI INDEXES="0">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="0">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="0">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="0">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="0">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="0">0.0</mstns:DPI>
+        </mstns:DPIS>
+      </mstns:POT>
+      <mstns:POT>
+        <mstns:PRIVATE NAME="DistFromOwn(ST4,T2)"/>
+        <mstns:CONDSET>
+          <mstns:CONDLEM NAME="DistFromOwn(ST4,T1)"/>
+        </mstns:CONDSET>
+        <mstns:DPIS>
+          <mstns:DPI INDEXES="0">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="0">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="0">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="0">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="0">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="0">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="1">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="1">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="1">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="1">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="1">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="1">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="2">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="2">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="2">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="2">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="2">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="2">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="3">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="3">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="3">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="3">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="3">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="3">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="4">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="4">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="4">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="4">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="4">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="4">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="5">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="5">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="5">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="5">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="5">0.0</mstns:DPI>
+          <mstns:DPI INDEXES="5">0.0</mstns:DPI>
+        </mstns:DPIS>
+      </mstns:POT>
+      <mstns:POT>
+        <mstns:PRIVATE NAME="DistFromOwn(ST4,T1)"/>
+        <mstns:CONDSET/>
+        <mstns:DPIS>
+          <mstns:DPI INDEXES="0">0.4</mstns:DPI>
+          <mstns:DPI INDEXES="0">0.25</mstns:DPI>
+          <mstns:DPI INDEXES="0">0.25</mstns:DPI>
+          <mstns:DPI INDEXES="0">0.06</mstns:DPI>
+          <mstns:DPI INDEXES="0">0.04</mstns:DPI>
+          <mstns:DPI INDEXES="0">0.0</mstns:DPI>
+        </mstns:DPIS>
+      </mstns:POT>
+    </mstns:POTENTIAL>
+  </mstns:NETWORK>
+</mstns:BIF>
