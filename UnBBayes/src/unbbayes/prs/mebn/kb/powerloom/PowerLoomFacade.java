@@ -22,13 +22,13 @@ public class PowerLoomFacade implements KBFacade{
 	private Module module = null; 
 	private Environment environment = null; 
 	
-	public PowerLoomFacade(String moduloName, Module module){
-		this.moduleName = moduloName; 
+	public PowerLoomFacade(String moduleName, Module module){
+		this.moduleName = moduleName; 
 		this.module = module; 
 	}
 	
-	public PowerLoomFacade(String moduloName){
-		this.moduleName = moduloName;  
+	public PowerLoomFacade(String moduleName){
+		this.moduleName = moduleName;  
 	}
 	
 	public boolean existEntity(String name) {
@@ -67,12 +67,12 @@ public class PowerLoomFacade implements KBFacade{
 //		
 //	}
 	
-    public StateLink searchFinding(DomainResidentNode randonVariable, Collection<OVInstance> listArguments) {
+    public StateLink searchFinding(DomainResidentNode randomVariable, Collection<OVInstance> listArguments) {
 		
 		String finding = "";
 		
-		if(randonVariable.getTypeOfStates() == DomainResidentNode.BOOLEAN_RV_STATES){
-			finding+= randonVariable.getName() + " ";
+		if(randomVariable.getTypeOfStates() == DomainResidentNode.BOOLEAN_RV_STATES){
+			finding+= randomVariable.getName() + " ";
 			for(OVInstance argument: listArguments){
 				finding+= " " + argument.getEntity().getInstanceName(); 
 			}
@@ -81,10 +81,10 @@ public class PowerLoomFacade implements KBFacade{
 			StateLink exactValue = null; 
 			//TODO throw a exception when the node dont have the argument... kb inconsistency. 
 			if(PLI.isTrue(value)){
-				exactValue = randonVariable.getPossibleValueByName("true"); 
+				exactValue = randomVariable.getPossibleValueByName("true"); 
 			}else{
 				if(PLI.isFalse(value)){
-					exactValue = randonVariable.getPossibleValueByName("false"); 
+					exactValue = randomVariable.getPossibleValueByName("false"); 
 				}else{
 					if(PLI.isUnknown(value)){
 						exactValue = null; 
@@ -97,7 +97,7 @@ public class PowerLoomFacade implements KBFacade{
 		}else{
 			finding+="all ?x"; 
 			finding+="("; 
-			finding+= randonVariable.getName();
+			finding+= randomVariable.getName();
 			
 			for(OVInstance argument: listArguments){
 				finding+= " " + argument.getEntity().getInstanceName(); 
@@ -110,7 +110,7 @@ public class PowerLoomFacade implements KBFacade{
 			
 			if(iterator.nextP()){
 				String state = PLI.getNthString(iterator, 0, module, environment);
-				return randonVariable.getPossibleValueByName(state); 
+				return randomVariable.getPossibleValueByName(state); 
 			}else{
 				return null; 
 			}	

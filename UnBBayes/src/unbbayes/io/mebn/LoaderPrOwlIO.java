@@ -1380,7 +1380,7 @@ public class LoaderPrOwlIO {
 		    for(Argument argument: argumentList){
 		    	if(argument.getOVariable()!= null){
 		    		OrdinaryVariable ov = argument.getOVariable(); 
-		    		nodeFormulaChild = new NodeFormulaTree(ov.getName(), enumType.OPERANDO, enumSubType.OVARIABLE, ov); 
+		    		nodeFormulaChild = new NodeFormulaTree(ov.getName(), enumType.OPERAND, enumSubType.OVARIABLE, ov); 
 		    		nodeFormulaRoot.addChild(nodeFormulaChild); 
 		    	}
 		    	else{
@@ -1390,7 +1390,7 @@ public class LoaderPrOwlIO {
 		    			
 		    			if(multiEntityNode instanceof ResidentNode){
 		    				ResidentNodePointer residentNodePointer = new ResidentNodePointer((ResidentNode)multiEntityNode, contextNode); 
-		    				nodeFormulaChild = new NodeFormulaTree(multiEntityNode.getName(), enumType.OPERANDO, enumSubType.NODE, residentNodePointer); 
+		    				nodeFormulaChild = new NodeFormulaTree(multiEntityNode.getName(), enumType.OPERAND, enumSubType.NODE, residentNodePointer); 
 		    				nodeFormulaRoot.addChild(nodeFormulaChild); 
 		    				
 		    				//Adjust the arguments of the resident node 
@@ -1406,7 +1406,7 @@ public class LoaderPrOwlIO {
 		    		}
 		    		else{
 						if(argument.getEntityTerm() != null){
-							nodeFormulaChild = new NodeFormulaTree(argument.getEntityTerm().getName(), enumType.OPERANDO, enumSubType.ENTITY, argument.getEntityTerm());
+							nodeFormulaChild = new NodeFormulaTree(argument.getEntityTerm().getName(), enumType.OPERAND, enumSubType.ENTITY, argument.getEntityTerm());
 							nodeFormulaRoot.addChild(nodeFormulaChild); 
 						}
 		    		}
@@ -1418,7 +1418,7 @@ public class LoaderPrOwlIO {
 		else{
 			if((obj instanceof ResidentNode)){
 				ResidentNodePointer residentNodePointer = new ResidentNodePointer((ResidentNode)obj, contextNode); 
-				nodeFormulaRoot = new NodeFormulaTree(((ResidentNode)obj).getName(), enumType.OPERANDO, enumSubType.NODE, residentNodePointer); 
+				nodeFormulaRoot = new NodeFormulaTree(((ResidentNode)obj).getName(), enumType.OPERAND, enumSubType.NODE, residentNodePointer); 
 				
 				List<Argument> argumentList = putArgumentListInOrder(contextNode.getArgumentList()); 
 			  	for(Argument argument: argumentList){

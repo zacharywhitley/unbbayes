@@ -48,7 +48,7 @@ public class PowerLoomKBTest extends TestCase {
 	}
 
 	/**
-	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#createRandonVariableDefinition(unbbayes.prs.mebn.DomainResidentNode)}.
+	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#createRandomVariableDefinition(unbbayes.prs.mebn.DomainResidentNode)}.
 	 */
 	public void testExecuteRandonVariableDefinition() {
 		fail("Not yet implemented"); // TODO
@@ -58,13 +58,6 @@ public class PowerLoomKBTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#insertEntityInstance(java.lang.String)}.
 	 */
 	public void testExecuteEntityFinding() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#executeRandonVariableFinding(java.lang.String)}.
-	 */
-	public void testExecuteRandonVariableFinding() {
 		fail("Not yet implemented"); // TODO
 	}
 

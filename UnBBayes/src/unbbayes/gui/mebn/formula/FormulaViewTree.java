@@ -279,7 +279,7 @@ public class FormulaViewTree extends JTree{
 		nodeFormula.setSubTypeNode(subType); 
 		
 		for (int i = 1; i <= builtInRV.getNumOperandos(); i++){
-			operandoChild = new NodeFormulaTree("op_" + i, enumType.OPERANDO, enumSubType.NOTHING, null); 
+			operandoChild = new NodeFormulaTree("op_" + i, enumType.OPERAND, enumSubType.NOTHING, null); 
 			nodeChild = new DefaultMutableTreeNode(operandoChild); 
 			nodeActive.add(nodeChild); 
 			nodeFormula.addChild(operandoChild); 
@@ -404,7 +404,7 @@ public class FormulaViewTree extends JTree{
 					
 					nodeFormulaActive.setName(nodePlace.getName()); 
 					nodeFormulaActive.setNodeVariable(nodePlace);
-					nodeFormulaActive.setTypeNode(enumType.OPERANDO); 
+					nodeFormulaActive.setTypeNode(enumType.OPERAND); 
 					nodeFormulaActive.setSubTypeNode(enumSubType.VARIABLE);
 					
 					updateTree(); 
@@ -479,7 +479,7 @@ public class FormulaViewTree extends JTree{
 					builderMenuNode.buildPopupFormula().show(e.getComponent(),e.getX(),e.getY()); 
 					break; 
 					
-				case OPERANDO: 
+				case OPERAND: 
 					builderMenuNode.buildPopupOperando().show(e.getComponent(),e.getX(),e.getY()); 
 					break; 
 					
@@ -509,7 +509,7 @@ public class FormulaViewTree extends JTree{
 				switch(nodeFormulaActive.getTypeNode()){
 				
 				
-				case OPERANDO: 
+				case OPERAND: 
 					switch(nodeFormulaActive.getSubTypeNode()){
 					case NODE: 
 						formulaTreeController.showArgumentPanel(nodeFormulaActive); 

@@ -46,7 +46,7 @@ public class NodeFormulaTree{
 		
 		switch(type){
 		
-		case OPERANDO:
+		case OPERAND:
 			switch(subType){
 			
 			case OVARIABLE:
@@ -158,7 +158,7 @@ public class NodeFormulaTree{
 		
 		switch(type){
 		
-		case OPERANDO:
+		case OPERAND:
 			switch(subType){
 			
 			case NODE: 

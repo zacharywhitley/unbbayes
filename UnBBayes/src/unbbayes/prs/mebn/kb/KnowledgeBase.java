@@ -12,72 +12,116 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 
 /**
+ * This interface defines all methods necessary for a KB in UnBBayes, so it can
+ * evaluate context node formulas, in other words, FOL sentences.
  * 
- * @author Laecio Lima dos Santso
- * @version 1.0 (09/24/07)
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
+ * @author Rommel Novaes Carvalho (rommel.carvalho@gmail.com)
+ * @version 1.0 (2007/12/26)
  */
 public interface KnowledgeBase {
 
-	public void clearKnowledgeBase();
-	
 	/**
-	 * Insert the entity into KB. 
+	 * It clears all knowledge base.
+	 */
+	public void clearKnowledgeBase();
+
+	/**
+	 * It inserts the entity into KB as a definition.
+	 * 
+	 * @param entity
+	 *            the entity to insert as a definition.
 	 */
 	public void createEntityDefinition(ObjectEntity entity);
-	
+
 	/**
-	 * Insert the randon variable and your states into KB. 
+	 * It inserts the resident random variable and its states into KB as a
+	 * definition.
+	 * 
 	 * @param resident
+	 *            the resident node to insert as a definition.
 	 */
-	public void createRandonVariableDefinition(DomainResidentNode resident);
-	
+	public void createRandomVariableDefinition(DomainResidentNode resident);
+
 	/**
-	 * Insert the entity finding into KB. 
-	 * @param resident
+	 * The method is responsible for inserting the entity as a finding into KB.
+	 * 
+	 * @param entityInstance
+	 *            the entity to insert as finding.
 	 */
-	public void insertEntityInstance(ObjectEntityInstance entityFinding);
-	
+	public void insertEntityInstance(ObjectEntityInstance entityInstance);
+
 	/**
-	 * Insert the randon variable and your states into KB. 
-	 * @param randonVariableFinding
+	 * The method is responsible for inserting the random variable and its
+	 * states as a finding into KB.
+	 * 
+	 * @param randomVariableFinding
+	 *            the random variable to insert as finding.
 	 */
-	public void insertRandonVariableFinding(RandomVariableFinding randonVariableFinding); 
-	
+	public void insertRandomVariableFinding(
+			RandomVariableFinding randomVariableFinding);
+
 	/**
-	 * Salvar a modelagem na base de conhecimento
+	 * The method is responsible for saving in the given file the concepts
+	 * designed in the given MEBN.
+	 * 
+	 * @param mebn
+	 *            the MEBN where the concepts are designed.
+	 * @param file
+	 *            the file to save the concepts.
 	 */
-	public void saveGenerativeMTheory(MultiEntityBayesianNetwork mebn, File file); 
-	
+	public void saveGenerativeMTheory(MultiEntityBayesianNetwork mebn, File file);
+
 	/**
-	 * Salvar os findings 
+	 * The method is responsible for saving in the given file all findings
+	 * present in the given MEBN.
+	 * 
+	 * @param mebn
+	 *            the MEBN where the findings are defined.
+	 * @param file
+	 *            the file to save the findings.
 	 */
-	public void saveFindings(MultiEntityBayesianNetwork mebn, File file); 
-	
-	
-	public void loadModule(File file); 
-	
-	/** 
-	 * A simple formula is a formula that don't have variables and the result is
-	 * a boolean falue (true/false). 
-	 * ex: IsOwnStarship(Enterprise). 
+	public void saveFindings(MultiEntityBayesianNetwork mebn, File file);
+
+	/**
+	 * The method is responsible for loading the module defined in the given
+	 * file.
+	 * 
+	 * @param file
+	 *            the file that contains the module's definition to be loaded.
+	 */
+	public void loadModule(File file);
+
+	/**
+	 * This method is responsible for evaluating a simple formula. A simple
+	 * formula is a formula that does not have variables and the result is a
+	 * boolean value (true/false). Example: IsOwnStarship(!ST0).
 	 * 
 	 * @param context
-	 * @param ovInstances List of ovInstances that have to have all the ov's used 
-	 *                    in the context node's formula. 
-	 * @return the result of the evaluate
+	 *            the context node that has the formula.
+	 * @param ovInstances
+	 *            the list of ovInstances that have to have all the ov's used in
+	 *            the context node's formula.
+	 * @return the result of the evaluation (true or false)
 	 */
-    public Boolean evaluateContextNodeFormula(ContextNode context, List<OVInstance> ovInstances); 
-	
-    /**
-     * Complex formulas are formulas that return a list of entities that satisfies 
-     * a restriction. Ex: z = StarshipZone(!ST0) return the zones that satisfies
-     * StarshipZone(!ST0).  
-     * @param context Node that have the formula
-     * @param ovInstances List of OVInstance. Don't have a ovInstance for the 
-     *                    parameters that will be search (z in the example). 
-     * @return list of the names of entities that satisfies (a empty list if
-     *                     don't have entities).  
-     */
-    public  List<String> evaluateSearchContextNodeFormula(ContextNode context, List<OVInstance> ovInstances); 
-	
+	public Boolean evaluateContextNodeFormula(ContextNode context,
+			List<OVInstance> ovInstances);
+
+	/**
+	 * This method is responsible for evaluating a complex formula. A complex
+	 * formula is a formula that returns a list of entities that satisfies a
+	 * restriction. Example: z = StarshipZone(!ST0) return the zones that
+	 * satisfies StarshipZone(!ST0).
+	 * 
+	 * @param context
+	 *            the context node that has the formula.
+	 * @param ovInstances
+	 *            the list of OVInstance. It does not have an ovInstance for the
+	 *            parameter that will be searched for (z in the example above).
+	 * @return the list of entities' names that satisfies the restriction (an
+	 *         empty list if it does not find any entity).
+	 */
+	public List<String> evaluateSearchContextNodeFormula(ContextNode context,
+			List<OVInstance> ovInstances);
+
 }

@@ -118,7 +118,7 @@ public class FormulaTreeController {
 		else{
 			nodePlace.setName(ov.getName()); 
 			nodePlace.setNodeVariable(ov);
-			nodePlace.setTypeNode(enumType.OPERANDO); 
+			nodePlace.setTypeNode(enumType.OPERAND); 
 			nodePlace.setSubTypeNode(enumSubType.OVARIABLE);
 		}
 		formulaViewTree.updateTree(); 
@@ -141,7 +141,7 @@ public class FormulaTreeController {
 		ResidentNodePointer residentNodePointer = new ResidentNodePointer(node, contextNode); 
 		nodePlace.setNodeVariable(residentNodePointer);
 		
-		nodePlace.setTypeNode(enumType.OPERANDO); 
+		nodePlace.setTypeNode(enumType.OPERAND); 
 		nodePlace.setSubTypeNode(enumSubType.NODE); 
 		
 		formulaViewTree.updateTree(); 
@@ -163,7 +163,7 @@ public class FormulaTreeController {
 		
 		nodePlace.setName(entity.getName()); 
 		nodePlace.setNodeVariable(entity);
-		nodePlace.setTypeNode(enumType.OPERANDO); 
+		nodePlace.setTypeNode(enumType.OPERAND); 
 		nodePlace.setSubTypeNode(enumSubType.ENTITY); 
 		
 		formulaViewTree.updateTree(); 			
@@ -175,7 +175,7 @@ public class FormulaTreeController {
 		
 		nodePlace.setName(link.getState().getName()); 
 		nodePlace.setNodeVariable(link);
-		nodePlace.setTypeNode(enumType.OPERANDO); 
+		nodePlace.setTypeNode(enumType.OPERAND); 
 		nodePlace.setSubTypeNode(enumSubType.ENTITY); 
 		
 		formulaViewTree.updateTree(); 				

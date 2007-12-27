@@ -15,7 +15,7 @@ import unbbayes.prs.mebn.context.enumSubType;
 import unbbayes.prs.mebn.context.enumType;
 
 /**
- * Cria o menu para um nó da arvore de fórmula. 
+ * Cria o menu para um nï¿½ da arvore de fï¿½rmula. 
  * @author Laecio
  *
  */
@@ -182,8 +182,8 @@ public class BuilderMenuNode {
 			public void actionPerformed(ActionEvent ae){
 				
 				/*
-				 * Para decidir a ação ao se fazer o delete, é necessário avaliar o nó pai
-				 * do nó a ser deletado, para ver em que situação o nó deletado deverá ficar. 
+				 * Para decidir a aï¿½ï¿½o ao se fazer o delete, ï¿½ necessï¿½rio avaliar o nï¿½ pai
+				 * do nï¿½ a ser deletado, para ver em que situaï¿½ï¿½o o nï¿½ deletado deverï¿½ ficar. 
 				 */
 				DefaultMutableTreeNode parent = null; 
 				NodeFormulaTree nodeFormulaParent = null;
@@ -204,7 +204,7 @@ public class BuilderMenuNode {
 				}
 				
 				/* Caso 2: Operando */
-				if(nodeFormula.getTypeNode() == enumType.OPERANDO){
+				if(nodeFormula.getTypeNode() == enumType.OPERAND){
 					nodeFormula.setSubTypeNode(enumSubType.NOTHING); 
 					nodeFormula.setName("op"); 
 					nodeFormula.setNodeVariable(null); 

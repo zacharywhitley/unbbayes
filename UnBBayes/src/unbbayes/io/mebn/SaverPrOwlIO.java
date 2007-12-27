@@ -900,7 +900,7 @@ public class SaverPrOwlIO {
     				 * - Exemplar
     				 */
     				argNumber++; 					
-    				if(child.getTypeNode() == enumType.OPERANDO){
+    				if(child.getTypeNode() == enumType.OPERAND){
     					
     					switch(child.getSubTypeNode()){
     					
@@ -967,7 +967,7 @@ public class SaverPrOwlIO {
     		
     	}
     	else{ //don't is a enumType.OPERANDO
-    		if((formulaNode.getTypeNode() == enumType.OPERANDO)&&
+    		if((formulaNode.getTypeNode() == enumType.OPERAND)&&
 	    			(formulaNode.getSubTypeNode() == enumSubType.NODE)){
 				
 				OWLObjectProperty isContextInstanceOf = (OWLObjectProperty)owlModel.getOWLObjectProperty("isContextInstanceOf"); 	

@@ -212,7 +212,7 @@ public class ContextNode extends MultiEntityNode {
 			if(children.size() == 2){
 				
 				NodeFormulaTree leftChildren = children.get(0); 
-				if((leftChildren.getTypeNode() == enumType.OPERANDO) &&  (leftChildren.getSubTypeNode() == enumSubType.NODE)){
+				if((leftChildren.getTypeNode() == enumType.OPERAND) &&  (leftChildren.getSubTypeNode() == enumSubType.NODE)){
 					ResidentNodePointer pointer = (ResidentNodePointer)leftChildren.getNodeVariable(); 
 					for(OrdinaryVariable ov: pointer.getOrdinaryVariableList()){ 
 						if(!isParametListCorrect(ov, ovInstanceList)) return false; 
@@ -222,7 +222,7 @@ public class ContextNode extends MultiEntityNode {
 				}
 				
 				NodeFormulaTree rigthChildren = children.get(1); 
-				if((rigthChildren.getTypeNode() == enumType.OPERANDO) &&  (rigthChildren.getSubTypeNode() == enumSubType.OVARIABLE)){
+				if((rigthChildren.getTypeNode() == enumType.OPERAND) &&  (rigthChildren.getSubTypeNode() == enumSubType.OVARIABLE)){
 					return true; 
 				}else{
 					return false; 

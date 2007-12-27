@@ -1077,7 +1077,7 @@ public class MEBNController {
 
 		for(DomainMFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
 			for(ResidentNode resident: mfrag.getDomainResidentNodeList()){
-				knowledgeBase.createRandonVariableDefinition((DomainResidentNode)resident);
+				knowledgeBase.createRandomVariableDefinition((DomainResidentNode)resident);
 			}
 		}
 		
@@ -1097,7 +1097,7 @@ public class MEBNController {
 		for(DomainMFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
 			for(DomainResidentNode residentNode : mfrag.getDomainResidentNodeList()){
 				for(RandomVariableFinding finding: residentNode.getRandonVariableFindingList()){
-					knowledgeBase.insertRandonVariableFinding(finding); 
+					knowledgeBase.insertRandomVariableFinding(finding); 
 				}
 			}
 		}

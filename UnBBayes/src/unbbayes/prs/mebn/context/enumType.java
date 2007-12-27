@@ -8,7 +8,7 @@ public enum enumType{
 		FORMULA, 
 		VARIABLE_SEQUENCE,
 		VARIABLE, 
-		OPERANDO, 
+		OPERAND, 
 		NODE_ARGUMENT
 		
 }

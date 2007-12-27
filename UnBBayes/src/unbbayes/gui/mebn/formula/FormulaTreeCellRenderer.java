@@ -148,7 +148,7 @@ public class FormulaTreeCellRenderer extends DefaultTreeCellRenderer {
 			return this; 
 			
 			
-		case OPERANDO:
+		case OPERAND:
 			switch(subType){
 			
 			case OVARIABLE:
