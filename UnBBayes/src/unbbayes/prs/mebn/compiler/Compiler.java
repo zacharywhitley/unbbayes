@@ -99,9 +99,7 @@ import unbbayes.util.NodeList;
  expression ::= term [ addop term ]*
  term ::= signed_factor [ mulop signed_factor ]*
  signed_factor ::= [ addop ] factor
- factor ::= number | function 
- 	| "(" expression ")"
- 	| "(" expression ";" expression ")"
+ factor ::= number | function | "(" expression ")"
  function ::= possibleVal 
  	| "CARDINALITY" "(" varsetname ")"
  	| "MIN" "(" expression ";" expression ")"
@@ -1356,8 +1354,8 @@ public class Compiler implements ICompiler {
 	/**
 	 *  function ::= ident 
 	 *   	| "CARDINALITY" "(" ident ")"
-	 *    	| "MIN" "(" expression ; expression ")"
-	 *     	| "MAX" "(" expression ; expression ")"
+	 *    	| "MIN" "(" expression ";" expression ")"
+	 *     	| "MAX" "(" expression ";" expression ")"
 	 * @return numeric value expected for the function
 	 * @throws TableFunctionMalformedException
 	 */
