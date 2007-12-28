@@ -35,6 +35,9 @@ import unbbayes.util.NodeList;
  ----------------
  Changes (Date/Month/Year): 
  
+ 	28/12/2007:
+ 			Description: just added the " char before and after ;
+ 
  	27/11/2007:
  			Description: term ::= signed_factor [ mulop factor ]* changed to
  				term ::= signed_factor [ mulop signed_factor ]*,
@@ -98,8 +101,8 @@ import unbbayes.util.NodeList;
  	| biargfunction "(" expression ; expression ")"
  function ::= possibleVal 
  	| "CARDINALITY" "(" varsetname ")"
- 	| "MIN" "(" expression ; expression ")"
- 	| "MAX" "(" expression ; expression ")"
+ 	| "MIN" "(" expression ";" expression ")"
+ 	| "MAX" "(" expression ";" expression ")"
  possibleVal ::= ident
  addop ::= "+" | "-"
  mulop ::= "*" | "/"
