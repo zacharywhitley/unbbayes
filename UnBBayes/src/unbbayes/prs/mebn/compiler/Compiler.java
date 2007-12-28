@@ -36,7 +36,10 @@ import unbbayes.util.NodeList;
  Changes (Date/Month/Year): 
  
  	28/12/2007:
- 			Description: just added the " char before and after ;
+ 			Description: fixed the BNF definition of factor.
+ 
+ 	28/12/2007:
+ 			Description: just added the " char before and after ;.
  
  	27/11/2007:
  			Description: term ::= signed_factor [ mulop factor ]* changed to
@@ -96,9 +99,9 @@ import unbbayes.util.NodeList;
  expression ::= term [ addop term ]*
  term ::= signed_factor [ mulop signed_factor ]*
  signed_factor ::= [ addop ] factor
- factor ::= number | function | "(" expression ")" 
- 	| simplefunction "(" expression ")"
- 	| biargfunction "(" expression ; expression ")"
+ factor ::= number | function 
+ 	| "(" expression ")"
+ 	| "(" expression ";" expression ")"
  function ::= possibleVal 
  	| "CARDINALITY" "(" varsetname ")"
  	| "MIN" "(" expression ";" expression ")"
