@@ -37,9 +37,11 @@ import unbbayes.util.NodeList;
  
  	28/12/2007:
  			Description: fixed the BNF definition of factor.
+ 			Author: Rommel Carvalho (rommel.carvalho@gmail.com)
  
  	28/12/2007:
  			Description: just added the " char before and after ;.
+ 			Author: Rommel Carvalho (rommel.carvalho@gmail.com)
  
  	27/11/2007:
  			Description: term ::= signed_factor [ mulop factor ]* changed to
@@ -65,17 +67,17 @@ import unbbayes.util.NodeList;
  
  	10/06/2007: 
  			Description: Added cardinality(), min() and max() functions
- 			syntax analiser.
+ 			syntax analyzer.
  			Author: Shou Matsumoto 
 
  	29/05/2007: 
  			Description: the else clause is now required, in order to
  				force user to declare a default distribution and
- 				grant declaration of every possible conditionants
- 				(if we don't add this restriction, a semantic analisis
- 				would be required in order to verify if every states
- 				of conditionants were provided and the last else
- 				must be related to the first if everytime - since
+ 				grant declaration of every possible combination of states
+ 				(if we don't add this restriction, a semantic analysis
+ 				would be required in order to verify if every combination
+ 				of states were provided and the last else
+ 				must be related to the first if every time - since
  				we don't have a block sentence yet, it is not possible).
  			Author: Shou Matsumoto
  			
@@ -156,7 +158,7 @@ public class Compiler implements ICompiler {
 	private SSBNNode ssbnnode = null;
 	
 	/*
-	 * This temporaly represents a parsed CPT, to make potential table generation easier, like:
+	 * This temporally represents a parsed CPT, to make potential table generation easier, like:
 	 * 
 	 * (TempTableHeaderCell)      (TempTableHeaderCell)      (TempTableHeaderCell)
 	 *          |                          |                            |
