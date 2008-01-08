@@ -1,6 +1,7 @@
 package unbbayes.prs.mebn.kb;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 
 import unbbayes.prs.mebn.ContextNode;
@@ -9,7 +10,9 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.RandomVariableFinding;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.ssbn.OVInstance;
+import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 
 /**
  * This interface defines all methods necessary for a KB in UnBBayes, so it can
@@ -118,10 +121,49 @@ public interface KnowledgeBase {
 	 * @param ovInstances
 	 *            the list of OVInstance. It does not have an ovInstance for the
 	 *            parameter that will be searched for (z in the example above).
-	 * @return the list of entities' names that satisfies the restriction (an
-	 *         empty list if it does not find any entity).
+	 * @return 
+	 *            the list of entities' names that satisfies the restriction (an
+	 *            empty list if it does not find any entity).
+	 * @throws OVInstanceFaultException 
+	 *            For this implementation, only is permited
+	 *            one search variable. For all others variables of the context formula, 
+	 *            one ov instance should be present in ovInstances list, otherside
+	 *            this exception will be throw.  
 	 */
 	public List<String> evaluateSearchContextNodeFormula(ContextNode context,
-			List<OVInstance> ovInstances);
+			List<OVInstance> ovInstances) throws OVInstanceFaultException;
+	
+	
+	
+	
+	
+	
+    /*-------------------------------------------------------------------------*/
+	/* Facade Methods                                                          */
+	/*-------------------------------------------------------------------------*/
+	
+	/** 
+	 * Verifica se existe a entidade na base, retornando o seu tipo em caso positivo, 
+	 * ou null caso contrario. 
+	 */
+	public boolean existEntity(String name);
+
+	/**
+	 * Verifica se existe o finding na base. Caso positivo, retorna o valor (ou seja, 
+	 * o estado para a variável ordinária, dados os argumentos), caso negativo, 
+	 * retorna null.  
+	 * @param nameRV
+	 * @param listArguments
+	 * @return
+	 */
+    public StateLink searchFinding(DomainResidentNode randonVariable, Collection<OVInstance> listArguments); 
+
+	/**
+	 * Return all the entities of one type. 
+	 * @param type
+	 * @return
+	 */
+	public List<String> getEntityByType(String type);
+	
 
 }
