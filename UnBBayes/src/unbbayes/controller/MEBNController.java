@@ -52,7 +52,6 @@ import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
-import unbbayes.prs.mebn.kb.powerloom.PowerLoomFacade;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.BottomUpSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
@@ -1175,7 +1174,7 @@ public class MEBNController {
 //		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_GENERATIVE_FILE)); 
 //		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_FINDING_FILE)); 
 		
-		Query query = new Query(new PowerLoomFacade(PowerLoomKB.MODULE_NAME), queryNode, multiEntityBayesianNetwork);
+		Query query = new Query(PowerLoomKB.getInstanceKB(), queryNode, multiEntityBayesianNetwork);
 		
 		ISSBNGenerator ssbngenerator = new BottomUpSSBNGenerator();
 		

@@ -54,7 +54,7 @@ public class MTheoryTree extends JTree {
 	private ArrayMap<Object, ContextNode> contextNodeMap = new ArrayMap<Object, ContextNode>(); 
 	
 	/* 
-	 * Contem a relação entre os nós da árvore e os elementos da MTheory que 
+	 * Contem a relaï¿½ï¿½o entre os nï¿½s da ï¿½rvore e os elementos da MTheory que 
 	 * estes representam. 
 	 */
 	private ArrayMap<DefaultMutableTreeNode, Object> nodeMap = new ArrayMap<DefaultMutableTreeNode, Object>(); 	
@@ -296,11 +296,11 @@ public class MTheoryTree extends JTree {
 	}
 
 	/**
-	 * Retrai todos os nós da árvore desejada.
+	 * Retrai todos os nï¿½s da ï¿½rvore desejada.
 	 * 
 	 * @param arvore
 	 *            uma <code>JTree</code> que representa a rede Bayesiana em
-	 *            forma de árvore.
+	 *            forma de ï¿½rvore.
 	 * @since
 	 * @see JTree
 	 */
@@ -315,11 +315,11 @@ public class MTheoryTree extends JTree {
 	}
 
 	/**
-	 * Expande todos os nós da árvore desejada.
+	 * Expande todos os nï¿½s da ï¿½rvore desejada.
 	 * 
 	 * @param arvore
 	 *            uma <code>JTree</code> que representa a rede Bayesiana em
-	 *            forma de árvore.
+	 *            forma de ï¿½rvore.
 	 * @since
 	 * @see JTree
 	 */
@@ -379,7 +379,6 @@ public class MTheoryTree extends JTree {
 			mFragMap.put(treeNode, mFrag);
 			nodeMap.put(treeNode, mFrag); 
 			
-			//TODO verificar se não pe melhor fazer um painel separado para as findings...
 			if(mFrag instanceof DomainMFrag){
 				
 				List<DomainResidentNode> residentNodeList = ((DomainMFrag)mFrag).getDomainResidentNodeList(); 
@@ -527,7 +526,7 @@ public class MTheoryTree extends JTree {
 				else{
 					if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
 						
-						// PARECE NÃO ENTRAR AQUI... VERIFICAR...
+						// PARECE Nï¿½O ENTRAR AQUI... VERIFICAR...
 						//if (e.isPopupTrigger()) {
 						if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
 							popup.setEnabled(true);
@@ -541,7 +540,7 @@ public class MTheoryTree extends JTree {
 						 netWindow.getGraphPane().selectObject(newNode);
 						 netWindow.getGraphPane().update();
 						 }*/
-						//TODO NÃO TEM ISSO NA MFRAG
+						//TODO Nï¿½O TEM ISSO NA MFRAG
 					} else if (e.getClickCount() == 2) {
 
 					}

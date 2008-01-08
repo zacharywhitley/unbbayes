@@ -431,9 +431,9 @@ public class DomainMFrag extends MFrag {
 			return ret;
 		}
 		
-		for (ContextNode node : this.getContextNodeList()) {
+		for (ContextNode contextNode : this.getContextNodeList()) {
 			boolean test = true; 
-			Set<OrdinaryVariable> ordinaryVariableList = node.getVariableList();
+			Set<OrdinaryVariable> ordinaryVariableList = contextNode.getVariableList();
 			
 			for(OrdinaryVariable ov: ordinaryVariableList){
 				if(!allOVs.contains(ov)){
@@ -442,7 +442,7 @@ public class DomainMFrag extends MFrag {
 				}
 			}
 			
-			if(test) ret.add(node); 
+			if(test) ret.add(contextNode); 
 			
 		}
 		
