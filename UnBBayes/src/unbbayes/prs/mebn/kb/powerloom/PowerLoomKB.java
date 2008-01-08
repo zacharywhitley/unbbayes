@@ -2,6 +2,7 @@ package unbbayes.prs.mebn.kb.powerloom;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import unbbayes.prs.mebn.BuiltInRV;
@@ -21,15 +22,15 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVImplies;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVNot;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
+import unbbayes.prs.mebn.context.enumSubType;
+import unbbayes.prs.mebn.context.enumType;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
-import unbbayes.prs.mebn.context.enumSubType;
-import unbbayes.prs.mebn.context.enumType;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.OVInstance;
-import unbbayes.util.Debug;
+import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import edu.isi.powerloom.Environment;
 import edu.isi.powerloom.PLI;
 import edu.isi.powerloom.PlIterator;
@@ -45,6 +46,7 @@ import edu.isi.stella.Stella_Object;
  * nodes.
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
+ * @version 1.5 (01/03/08)
  * @author Rommel Novaes Carvalho (rommel.carvalho@gmail.com)
  * @version 1.1 (2007/12/26)
  */
@@ -65,18 +67,19 @@ public class PowerLoomKB implements KnowledgeBase {
 	private String moduleFindingName = "FINDINGS_MODULE";
 
 	public static final String MODULE_NAME = "/PL-KERNEL/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE";
-
-	// TODO translate this commentary and evaluate if some implementation is
-	// necessary.
-	/*
-	 * Estrutura dos módulos: - PL-USER - GENERATIVE_MODULE - FINDING_MODULE
-	 * (possivelmente vários) -> deve ser filho do módulo pai... mas cada um
-	 * deve ter nome individual -> fazer uma espécie de controle de
-	 * versionamento automatico para o usuário não se perder
+	
+	/* 
+	 * Estrutura dos módulos: 
+	 * 
+	 * - PL-USER
+	 * - GENERATIVE_MODULE
+	 * - FINDING_MODULE (possivelmente vários) 
+	 *             -> deve ser filho do módulo pai... mas cada um deve ter nome individual
+	 *             -> fazer uma espécie de controle de versionamento automatico para o usuário não se perder
 	 * 
 	 * Algum controle para indicar quais são os módulos de findings e quais são
-	 * os módulos generatives para um dado arquivo PR-OWL (UBF). Problema para
-	 * manter a consistência destes arquivos. (usuário alterando Generative)
+	 * os módulos generatives para um dado arquivo PR-OWL (UBF).
+	 * Problema para manter a consistência destes arquivos. (usuário alterando Generative) 
 	 */
 
 	private static final String POSSIBLE_STATE_SUFIX = "_state";
@@ -118,12 +121,15 @@ public class PowerLoomKB implements KnowledgeBase {
 		return singleton;
 
 	}
-
-	/*---------- Methods for saving and loading modules --------------------*/
-
-	/**
-	 * @see KnowledgeBase
-	 */
+	
+	
+	
+	
+	
+	/*-------------------------------------------------------------------------*/
+	/* Methods for save and load modules                                       */
+	/*-------------------------------------------------------------------------*/	
+	
 	public void saveGenerativeMTheory(MultiEntityBayesianNetwork mebn, File file) {
 		Debug.println("Saving module...");
 		PLI.sSaveModule(moduleGenerativeName, file.getAbsolutePath(),
@@ -157,13 +163,21 @@ public class PowerLoomKB implements KnowledgeBase {
 		PLI.clearModule(moduleFinding);
 		PLI.clearModule(moduleGenerative);
 	}
+	
+	
+	
+	
 
-	/*---------- Methods for inserting elements in the KB --------------------*/
-
+	/*-------------------------------------------------------------------------*/
+	/*Methods for insert elements in the KB                                    */
+	/*-------------------------------------------------------------------------*/	
+	
 	/**
 	 * Syntax example: 
 	 * (DEFCONCEPT CATEGORY_LABEL)
 	 * 
+	 * Nota: As object entities s�o salvas pelo seu tipo (label) ao inv�s de
+	 * pelo seu nome porque as suas instancias tem referencia apenas ao tipo. 
 	 * Note: The object entities are saved by its type (label) instead of its
 	 * name because its instances reference only its type.
 	 * 
@@ -190,14 +204,14 @@ public class PowerLoomKB implements KnowledgeBase {
 	 * 
 	 * @see KnowledgeBase
 	 */
-	public void createRandomVariableDefinition(DomainResidentNode resident) {
-
-		List<StateLink> links = resident.getPossibleValueLinkList();
-
-		String range = "";
-
-		switch (resident.getTypeOfStates()) {
-
+	public void createRandomVariableDefinition(DomainResidentNode resident){
+		
+		List<StateLink> links = resident.getPossibleValueLinkList(); 
+		
+		String range = ""; 
+		
+		switch(resident.getTypeOfStates()){
+		
 		case ResidentNode.OBJECT_ENTITY:
 
 			if (!resident.getPossibleValueLinkList().isEmpty()) {
@@ -233,18 +247,17 @@ public class PowerLoomKB implements KnowledgeBase {
 		// break;
 
 		}
-
+		
 		/* Step 2: define the resident node with its arguments */
-		String arguments = "";
-		List<OrdinaryVariable> listVariables = resident
-				.getOrdinaryVariableList();
-
-		int i = 0;
-		for (OrdinaryVariable variable : listVariables) {
-			arguments += "(";
-			arguments += "?arg_" + i + " " + variable.getValueType();
-			arguments += ")";
-			i++;
+		String arguments = ""; 
+		List<OrdinaryVariable> listVariables = resident.getOrdinaryVariableList(); 
+		
+		int i = 0; 
+		for(OrdinaryVariable variable: listVariables){
+			arguments+= "("; 
+			arguments+= "?arg_" + i + " " + variable.getValueType(); 
+			arguments+= ")"; 
+			i++; 
 		}
 
 		if (resident.getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES) {
@@ -297,50 +310,50 @@ public class PowerLoomKB implements KnowledgeBase {
 	 * @see KnowledgeBase
 	 */
 	public void insertRandomVariableFinding(
-			RandomVariableFinding randonVariableFinding) {
-
+	        RandomVariableFinding randonVariableFinding){
+		
 		String finding = "";
-
-		if (randonVariableFinding.getNode().getTypeOfStates() == DomainResidentNode.BOOLEAN_RV_STATES) {
-			finding += "(";
-			if (randonVariableFinding.getState().getName().equals("false")) {
-				finding += "NOT";
-				finding += "(";
-			}
-			finding += randonVariableFinding.getNode().getName();
-			finding += " ";
+		
+		if(randonVariableFinding.getNode().getTypeOfStates() == DomainResidentNode.BOOLEAN_RV_STATES){
+			finding+= "(";
+			   if(randonVariableFinding.getState().getName().equals("false")){
+				   finding+= "NOT";
+				   finding+= "("; 
+			   }
+			   finding+= randonVariableFinding.getNode().getName(); 
+			      finding+=" "; 
+			         boolean isFirst = true; //usado para não colocar virgula antes do primeiro elemento. 
+			         for(Entity argument: randonVariableFinding.getArguments()){
+			        	 if(isFirst){
+			        		isFirst = false;  
+			        	 }else{
+			        		 finding+=" "; 
+			        	 }
+			        	 finding+=argument.getName();
+			         }
+			if(randonVariableFinding.getState().getName().equals("false")){
+			finding+= ") ";
+			} 
+			finding+= ")";	
+		}else{ 
+			finding+= "(=";
+			finding+= "("; 
+			finding+= randonVariableFinding.getNode().getName(); 
+			finding+=" "; 
+			
 			// Used to avoid ',' before the first element
-			boolean isFirst = true;
-			for (Entity argument : randonVariableFinding.getArguments()) {
-				if (isFirst) {
-					isFirst = false;
-				} else {
-					finding += " ";
-				}
-				finding += argument.getName();
+			boolean isFirst = true; 
+			for(Entity argument: randonVariableFinding.getArguments()){
+			   	 if(isFirst){
+			      		isFirst = false;  
+			   	 }else{
+			       		 finding+=" "; 
+			   	 }
+			   	 finding+=argument.getName();
 			}
-			if (randonVariableFinding.getState().getName().equals("false")) {
-				finding += ") ";
-			}
-			finding += ")";
-		} else {
-			finding += "(=";
-			finding += "(";
-			finding += randonVariableFinding.getNode().getName();
-			finding += " ";
-			// Used to avoid ',' before the first element
-			boolean isFirst = true;
-			for (Entity argument : randonVariableFinding.getArguments()) {
-				if (isFirst) {
-					isFirst = false;
-				} else {
-					finding += " ";
-				}
-				finding += argument.getName();
-			}
-			finding += ") ";
-			finding += randonVariableFinding.getState().getName();
-			finding += ")";
+			finding+= ") "; 
+			finding+= randonVariableFinding.getState().getName();  
+			finding+= ")";	
 		}
 
 		PlIterator iterator = PLI.sAssertProposition(finding,
@@ -353,7 +366,7 @@ public class PowerLoomKB implements KnowledgeBase {
 
 	/**
 	 * Syntax example: 
-	 * ( ¬ IsOwnStarship(st) ) for UnBBaes syntax 
+	 * ( Â¬ IsOwnStarship(st) ) for UnBBaes syntax 
 	 * (NOT( IsOwnStarship ST4 ) ) for PowerLoom syntax
 	 * 
 	 * @see KnowledgeBase
@@ -401,31 +414,190 @@ public class PowerLoomKB implements KnowledgeBase {
 	 * 
 	 * @see KnowledgeBase
 	 */
-	public List<String> evaluateSearchContextNodeFormula(ContextNode context,
-			List<OVInstance> ovInstances) {
-		String formula = "";
-
-		NodeFormulaTree formulaTree = (NodeFormulaTree) context
-				.getFormulaTree();
-
-		formula += "(";
-		formula += makeOperatorString(formulaTree, ovInstances);
-		formula += ")";
-
-		Debug.println("Original formula: " + context.getLabel());
-		Debug.println("PowerLoom formula: " + formula);
-
+    public Boolean evaluateContextNodeFormula(ContextNode context, 
+               List<OVInstance> ovInstances){
+        
+    	String formula = ""; 
+		
+		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
+		
+		formula+= "(";  
+		if((formulaTree.getTypeNode() == enumType.OPERAND)&&(formulaTree.getSubTypeNode() == enumSubType.NODE)){
+			formula+= makeOperandString(formulaTree, ovInstances); 
+		}else{
+			formula+= makeOperatorString(formulaTree, ovInstances); 	
+		}		
+		formula+= ")"; 
+		
+		debug.println("Original formula: " + context.getLabel()); 
+		debug.println("PowerLoom Formula: " + formula); 
+		
+	    TruthValue answer = PLI.sAsk(formula, moduleFindingName, null);
+	    
+	    if (PLI.isTrue(answer)) {
+	        debug.println("Result: true");
+	        return true; 
+	      } else if (PLI.isFalse(answer)) {
+	        debug.println("Result: false");
+	        return false; 
+	      } else if (PLI.isUnknown(answer)) {
+	        debug.println("Result: unknown");
+	        return false; 
+	      }else{
+	    	return false; 
+	    } 
+    }
+    
+	/**
+	 * @see KnowledgeBase
+	 */
+    public List<String> evaluateSearchContextNodeFormula(ContextNode context, List<OVInstance> ovInstances)
+                                     throws OVInstanceFaultException{
+    	String formula = ""; 
+		
+		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
+		
+		List<OrdinaryVariable> ovFaultList = context.getOVFaultForOVInstanceSet(ovInstances); 
+		
+		//This implementation treat only the case where have only one search variable
+		if(ovFaultList.size()>1){
+			throw new OVInstanceFaultException(ovFaultList); 
+		}
+		
+		//The search isn't necessary. 
+		if(ovFaultList.size() == 0){
+			return null; 
+		}
+		
+		//The list have only one element
+		OrdinaryVariable ovFault = ovFaultList.get(0); 
+		
+		//Build the retrieve statement. 
+		formula+=" all ";
+		
+		//List of variables of retrieve
+		formula+="(" + "?" + ovFault.getName() + " " + ovFault.getValueType() + ")"; 
+		
+		//Formula
+		formula+= "(";  
+		formula+= makeOperatorString(formulaTree, ovInstances); 		
+		formula+= ")"; 
+		
+		debug.println("Original formula: " + context.getLabel()); 
+		debug.println("PowerLoom Formula: " + formula); 
+		
 		PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);
-		List<String> result = new ArrayList<String>();
-
-		if (iterator.nextP()) {
-			result.add(PLI
-					.getNthString(iterator, 0, moduleFinding, environment));
+	    List result = new ArrayList<String>(); 
+		
+	    iterator.length();
+	    
+		while(iterator.nextP()){
+			result.add(PLI.getNameInModule(iterator.value, moduleFinding, environment)); 
 		}
 
 		return result;
 	}
 
+	
+    
+    
+    
+    
+    /*-------------------------------------------------------------------------*/
+    /* Auxiliary Methods (Interface)                                           */
+    /*-------------------------------------------------------------------------*/    
+
+	/**
+	 * @see KnowledgeBase
+	 */
+	public boolean existEntity(String name) {
+		
+		Stella_Object so = PLI.sGetObject(name, moduleFindingName, environment); 
+		
+		if (so != null){
+			return true;
+		}else{
+			return false; 
+		}
+	}
+
+	/**
+	 * @see KnowledgeBase
+	 */
+    public StateLink searchFinding(DomainResidentNode randomVariable, Collection<OVInstance> listArguments) {
+		
+		String finding = "";
+		
+		if(randomVariable.getTypeOfStates() == DomainResidentNode.BOOLEAN_RV_STATES){
+			finding+= randomVariable.getName() + " ";
+			for(OVInstance argument: listArguments){
+				finding+= " " + argument.getEntity().getInstanceName(); 
+			}
+			TruthValue value = PLI.sAsk(finding, moduleFindingName, environment);
+			
+			StateLink exactValue = null; 
+			//TODO throw a exception when the node dont have the argument... kb inconsistency. 
+			if(PLI.isTrue(value)){
+				exactValue = randomVariable.getPossibleValueByName("true"); 
+			}else{
+				if(PLI.isFalse(value)){
+					exactValue = randomVariable.getPossibleValueByName("false"); 
+				}else{
+					if(PLI.isUnknown(value)){
+						exactValue = null; 
+					}
+				}
+			}
+
+			return exactValue; 
+			
+		}else{
+			finding+="all ?x"; 
+			finding+="("; 
+			finding+= randomVariable.getName();
+			
+			for(OVInstance argument: listArguments){
+				finding+= " " + argument.getEntity().getInstanceName(); 
+			}
+			
+			finding += " ?x"; 
+			finding+= ")";
+			PlIterator iterator = PLI.sRetrieve(finding, moduleFindingName, environment); 
+			
+			//TODO throw a exception when the search return more than one result...
+			if(iterator.nextP()){
+				String state = PLI.getNthString(iterator, 0, moduleFinding, environment);
+				return randomVariable.getPossibleValueByName(state); 
+			}else{
+				return null; 
+			}	
+		}
+		
+		
+	}
+	
+	/**
+	 * @see KnowledgeBase
+	 */
+	public List<String> getEntityByType(String type) {
+		
+		List<String> list = new ArrayList<String>(); 
+		
+		PlIterator iterator = PLI.sGetConceptInstances(type, moduleFindingName, environment); 
+		while (iterator.nextP()){
+			list.add(PLI.getNthString(iterator, 0, moduleFinding, environment)); 
+		}
+			
+		return list; 
+	}
+	
+	
+	
+	
+	
+	/*-------------------------------------------------------------------------*/
+	/* Auxiliary Methods                                                       */
+	/*-------------------------------------------------------------------------*/
 	
 	/**
 	 * It makes an operator string from the NodeFormulaTree. (an operator and
@@ -444,22 +616,26 @@ public class PowerLoomKB implements KnowledgeBase {
 		switch (operatorNode.getTypeNode()) {
 
 		case SIMPLE_OPERATOR:
-			if (builtIn instanceof BuiltInRVAnd) {
-				operator += makeConective(operatorNode, "AND", ovInstances);
-			} else if (builtIn instanceof BuiltInRVOr) {
-				operator += makeConective(operatorNode, "OR", ovInstances);
-			} else if (builtIn instanceof BuiltInRVEqualTo) {
-				operator += makeEqualStatement(operatorNode, " = ", ovInstances);
-			} else if (builtIn instanceof BuiltInRVIff) {
-				operator += makeConective(operatorNode, "<=>", ovInstances);
-			} else if (builtIn instanceof BuiltInRVImplies) {
-				operator += makeConective(operatorNode, "=>", ovInstances);
-			} else if (builtIn instanceof BuiltInRVNot) {
-				operator += makeSingleStatement(operatorNode, "NOT",
-						ovInstances);
-			}
-			break;
-
+			if(builtIn instanceof BuiltInRVAnd){
+				retorno+= makeBynaryStatement(operatorNode, "AND", ovInstances);
+			}else
+				if(builtIn instanceof BuiltInRVOr){
+					retorno+= makeBynaryStatement(operatorNode, "OR", ovInstances);	
+				}else
+					if(builtIn instanceof BuiltInRVEqualTo){
+						retorno+= makeEqualStatement(operatorNode, " = ", ovInstances); 	
+					}else
+						if(builtIn instanceof BuiltInRVIff){
+							retorno+= makeBynaryStatement(operatorNode, "<=>", ovInstances);
+						}else
+							if(builtIn instanceof BuiltInRVImplies){
+								retorno+= makeBynaryStatement(operatorNode, "=>", ovInstances);
+							}else
+								if(builtIn instanceof BuiltInRVNot){
+									retorno+= makeUnaryStatement(operatorNode, "NOT", ovInstances) ; 
+								}	    
+			                    break;
+			
 		case QUANTIFIER_OPERATOR:
 
 			if (builtIn instanceof BuiltInRVExists) {
@@ -478,7 +654,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		return operator;
 
 	}
-
+	
 	/**
 	 * It makes an operand string from the NodeFormulaTree.
 	 * 
@@ -486,171 +662,187 @@ public class PowerLoomKB implements KnowledgeBase {
 	 * @param ovInstances
 	 * @return
 	 */
-	private String makeOperandString(NodeFormulaTree operator,
-			List<OVInstance> ovInstances) {
-
-		String operand = "";
-
-		switch (operator.getTypeNode()) {
-
+	private String makeOperandString(NodeFormulaTree operator, List<OVInstance> ovInstances){
+		
+		String operand = ""; 
+		
+		switch(operator.getTypeNode()){
+		
 		case SIMPLE_OPERATOR:
-			operand += makeOperatorString(operator, ovInstances);
+			operando += makeOperatorString(operator, ovInstances);
 			break;
 
 		case QUANTIFIER_OPERATOR:
-			operand += makeOperatorString(operator, ovInstances);
-			break;
-
-		case OPERAND:
-
-			switch (operator.getSubTypeNode()) {
-
-			case OVARIABLE:
-				OrdinaryVariable ov = (OrdinaryVariable) operator
-						.getNodeVariable();
-				OVInstance ovInstance = getOVInstanceForOV(ov, ovInstances);
-				if (ovInstance != null) {
-					operand += ovInstance.getEntity().getInstanceName();
-				} else {
-					operand += "?" + ov.getName();
-				}
-				break;
-
-			case NODE:
-
-				ResidentNodePointer node = (ResidentNodePointer) operator
-						.getNodeVariable();
-				operand += node.getResidentNode().getName();
-
-				operand += " ";
-
-				for (OrdinaryVariable ordVariable : node
-						.getOrdinaryVariableList()) {
-					ovInstance = getOVInstanceForOV(ordVariable, ovInstances);
-					if (ovInstance != null) {
-						operand += ovInstance.getEntity().getInstanceName();
-					} else {
-						operand += "?" + ordVariable.getName();
-					}
-					operand += " ";
-				}
-
-				break;
-
-			case ENTITY:
-				Entity entity = (Entity) operator.getNodeVariable();
-				operand += entity.getName();
-			}
-
-			break;
-
+			operando += makeOperatorString(operator, ovInstances); 
+		break; 	
+		
+		case OPERAND: 
+			
+		   switch(operator.getSubTypeNode()){
+		   
+		   case OVARIABLE: 
+			   OrdinaryVariable ov = (OrdinaryVariable)operator.getNodeVariable(); 
+			   OVInstance ovInstance = getOVInstanceForOV(ov, ovInstances); 
+			   if(ovInstance != null){
+			       operando+= ovInstance.getEntity().getInstanceName(); 
+			   }
+			   else{ 
+				   operando+= "?" + ov.getName(); 
+			   }
+			   break; 
+		   
+		   case NODE:
+			   
+			   ResidentNodePointer node = (ResidentNodePointer)operator.getNodeVariable(); 
+			   operando+= node.getResidentNode().getName(); 
+			   
+			   operando+= " "; 
+			   
+			   for(OrdinaryVariable ordVariable: node.getOrdinaryVariableList()){
+				   ovInstance = getOVInstanceForOV(ordVariable, ovInstances); 
+				   if(ovInstance != null){
+				       operando+= ovInstance.getEntity().getInstanceName(); 
+				   }
+				   else{
+					   operando+= "?" + ordVariable.getName(); 
+				   }
+				   operando+=" "; 
+			   }
+			   
+			   break;   
+			   
+		   case ENTITY:
+			   Entity entity = (Entity) operator.getNodeVariable(); 
+			   operando+= entity.getName(); 
+		   }
+		   
+		break; 
+		
 		}
 
 		return operand;
 	}
-
-	private String makeConective(NodeFormulaTree node, String conectiveName,
-			List<OVInstance> ovInstances) {
-
-		String result = "";
-
-		result += conectiveName;
-
-		ArrayList<NodeFormulaTree> listChildren = (ArrayList<NodeFormulaTree>) node
-				.getChildren();
-
-		NodeFormulaTree leftOperand = listChildren.get(0);
-
-		result += "( ";
-		result += makeOperandString(leftOperand, ovInstances);
-		result += " ) ";
-
-		result += "( ";
-		NodeFormulaTree rightOperand = listChildren.get(1);
-		result += makeOperandString(rightOperand, ovInstances);
-		result += " ) ";
-
-		return result;
-
-	}
-
-	private String makeEqualStatement(NodeFormulaTree node,
-			String conectiveName, List<OVInstance> ovInstances) {
-
-		String statement = "";
-		statement += conectiveName;
-
-		ArrayList<NodeFormulaTree> listChildren = (ArrayList<NodeFormulaTree>) node
-				.getChildren();
-
-		NodeFormulaTree leftOperand = listChildren.get(0);
-
-		statement += "( ";
-		statement += this.makeOperandString(leftOperand, ovInstances);
-		statement += " ) ";
-
-		NodeFormulaTree rightOperand = listChildren.get(1);
-		statement += this.makeOperandString(rightOperand, ovInstances);
-
-		return statement;
-	}
-
-	/**
-	 * Used for unary operators.
-	 * 
-	 * @param node
-	 * @param conectiveName
-	 * @param ovInstances
-	 * @return
+	
+	/*
+	 * Used for: 
+	 * AND
+	 * OR
+	 * =>
+	 * <=>
 	 */
-	private String makeSingleStatement(NodeFormulaTree node,
-			String conectiveName, List<OVInstance> ovInstances) {
-
-		String statement = "";
-		statement += conectiveName;
-
-		ArrayList<NodeFormulaTree> listChildren = (ArrayList<NodeFormulaTree>) node
-				.getChildren();
-
-		statement += "( ";
-		statement += this.makeOperandString(listChildren.get(0), ovInstances);
-		statement += " ) ";
-
-		return statement;
-
+	private String makeBynaryStatement(NodeFormulaTree node, String conectiveName, List<OVInstance> ovInstances){
+    	
+		String retorno = ""; 
+		
+		retorno+= conectiveName; 
+		
+    	ArrayList<NodeFormulaTree> listChildren = (ArrayList<NodeFormulaTree>)node.getChildren(); 
+    	
+    	NodeFormulaTree leftOperando = listChildren.get(0);
+    	
+    	retorno+= "( "; 
+		retorno+= makeOperandString(leftOperando, ovInstances);   		
+    	retorno+=" ) "; 
+    	
+    	retorno+= "( "; 
+    	NodeFormulaTree rightOperando = listChildren.get(1); 
+		retorno+= makeOperandString(rightOperando, ovInstances);   
+    	retorno+=" ) "; 
+    	
+    	return retorno; 
+    	
 	}
-
-	private String makeQuantifier(NodeFormulaTree node, String name,
-			List<OVInstance> ovInstances) {
-
-		String result = "";
-		result += name;
-
-		List<NodeFormulaTree> listChildren = node.getChildren();
-
+	
+	/* 
+	 * Used for:
+	 * =
+	 */
+	private String makeEqualStatement(NodeFormulaTree node, String conectiveName, List<OVInstance> ovInstances){
+    	
+		String retorno = ""; 
+		retorno+= conectiveName; 
+    	
+		ArrayList<NodeFormulaTree> listChildren = (ArrayList<NodeFormulaTree>)node.getChildren(); 
+    	
+		/*
+		 * Cases:
+		 * StarshipZone(st) = z   (RandomVariable = OrdinaryVariable)
+		 * SkyClean(today) = yes  (RandomVariable = State (Categorical or boolean))
+		 * st = s                 (OrdinaryVariable = OrdinaryVariable)
+		 */
+		
+    	NodeFormulaTree leftOperand = listChildren.get(0);
+    	
+    	if((leftOperand.getTypeNode() == enumType.OPERAND)&&(leftOperand.getSubTypeNode() == enumSubType.OVARIABLE)){
+    		retorno+= " ";
+    		retorno+= this.makeOperandString(leftOperand, ovInstances);
+    		retorno+= " ";
+    	}else{
+    		retorno+= " ( ";
+    		retorno+= this.makeOperandString(leftOperand, ovInstances);
+    		retorno+= " ) ";
+    	}
+    	
+    	NodeFormulaTree rightOperand = listChildren.get(1); 
+		retorno+= this.makeOperandString(rightOperand, ovInstances);  
+		
+		return retorno; 
+	}
+	
+	/*
+	 * Used for:
+	 * NOT
+	 */
+	private String makeUnaryStatement(NodeFormulaTree node, String conectiveName, List<OVInstance> ovInstances){
+    	
+		String retorno = ""; 
+		retorno+= conectiveName; 	
+		
+		ArrayList<NodeFormulaTree> listChildren = (ArrayList<NodeFormulaTree>)node.getChildren(); 
+    	
+    	retorno+= "( "; 
+		retorno+= this.makeOperandString(listChildren.get(0), ovInstances);   		
+    	retorno+=" ) "; 
+		
+		return retorno; 
+	
+	}
+	
+	/* 
+	 * Used for:
+	 * ALL
+	 * EXISTS
+	 */
+	private String makeQuantifier(NodeFormulaTree node, String name, List<OVInstance> ovInstances){
+    	
+		String retorno = ""; 
+		retorno+= name; 
+		
+		List<NodeFormulaTree> listChildren = node.getChildren(); 
+    	
 		/*--------------------- Exemplar variables --------------------------*/
-		NodeFormulaTree listExemplares = listChildren.get(0); // Var...
-
-		result += "(";
-		for (NodeFormulaTree exemplar : listExemplares.getChildren()) {
-			OrdinaryVariable ov = (OrdinaryVariable) exemplar.getNodeVariable();
-			result += "?" + ov.getName() + ",";
-		}
-
-		// retirar a virgula:
-		if (listExemplares.getChildren().size() > 0) {
-			result = result.substring(0, result.length() - 2);
-		}
-
-		result += ")";
-
-		/*-------------------------- Formula ----------------------------------*/
-		NodeFormulaTree formula = listChildren.get(1);
-		result += "(";
-		result += makeOperatorString(formula, ovInstances);
-		result += ")";
-
-		return result;
+    	NodeFormulaTree listExemplares = listChildren.get(0);  //Var...
+    	
+    	retorno+="("; 
+    	for(NodeFormulaTree exemplar : listExemplares.getChildren()){
+    		OrdinaryVariable ov = (OrdinaryVariable)exemplar.getNodeVariable(); 
+    		retorno+= "?" + ov.getName() + ",";
+    	}
+    	
+    	//retirar a virgula: 
+    	if(listExemplares.getChildren().size() > 0){
+    	   retorno = retorno.substring(0, retorno.length() - 2); 
+    	}
+    	
+    	retorno+=")"; 
+    	
+    	/*-------------------------- Formula ----------------------------------*/
+    	NodeFormulaTree formula = listChildren.get(1); 
+    	retorno+="("; 
+		retorno+= makeOperatorString(formula, ovInstances);   		
+		retorno+=")"; 
+		
+		return retorno; 
 	}
 
 	private OVInstance getOVInstanceForOV(OrdinaryVariable ov,
@@ -665,4 +857,79 @@ public class PowerLoomKB implements KnowledgeBase {
 		return null;
 	}
 
+	/*
+	 * Save the definitions file (content of current KB)
+	 * 
+	 * @param name Name of the file
+	 */
+	private void saveDefinitionsFile(String name){
+		PLI.sSaveModule(moduleGenerativeName, name, "REPLACE", environment); 
+	}
+	
+	/*
+	 * Load the definitions file (content of current KB)
+	 * 
+	 * @param name Name of the file
+	 */
+	private void loadDefinitionsFile(String name){
+		PLI.load(name, environment); 
+	}
+	
+	
+	
+	
+	
+	/*-------------------------------------------------------------------------*/
+	/* Other public methods                                                    */
+	/*-------------------------------------------------------------------------*/
+	
+	/**
+	 * Debug method used for execute a command directely in the Powerloom. 
+	 * 
+	 * @param command A valid statement of powerloom (in PowerLoom syntaxe SURROUNDED by parentesis)
+	 * @return the result of execution (console text of PowerLoom)
+	 */
+	public String executeCommand(String command){
+		return PLI.sEvaluate(command, moduleFindingName, null).toString();
+	}
+	
+	
+	
+	
+	
+	/*-------------------------------------------------------------------------*/
+	/* Private classes                                                         */
+	/*-------------------------------------------------------------------------*/
+	
+	/*
+	 * Print in the screen informations for debug. 
+	 */
+	private class DebugPowerLoom{
+		
+		private boolean debugActive = true; 
+		
+		public DebugPowerLoom(){
+		}
+		
+		public DebugPowerLoom(boolean debugActive){
+			this.debugActive = debugActive; 
+		}
+		
+		public void setDebugActive(boolean debugActive){
+			this.debugActive = debugActive; 
+		}
+		
+		public void println(String string){
+			if(debugActive){
+			   System.out.println("[KB] " + string);
+			}
+		}
+		
+		/* skip a line */
+		public void ln(){
+			if(debugActive){
+			   System.out.println();
+			}
+		}
+	}
 }
