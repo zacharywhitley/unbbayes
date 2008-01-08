@@ -11,9 +11,11 @@ import java.util.ResourceBundle;
 
 import javax.xml.bind.JAXBException;
 
+import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.io.LogManager;
 import unbbayes.io.XMLIO;
 import unbbayes.prs.Edge;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -27,10 +29,11 @@ import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.MEBNException;
-import unbbayes.prs.mebn.kb.KBFacade;
+import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
+import unbbayes.prs.mebn.ssbn.exception.InvalidOperationException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.util.Debug;
@@ -46,7 +49,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	private ResourceBundle resource = 
 		ResourceBundle.getBundle("unbbayes.prs.mebn.ssbn.resources.Resources");
 	
-	private KBFacade kb = null;
+	private KnowledgeBase kb = null;
 	
 	private long recursiveCallLimit = 999999999999999999L;
 	
@@ -345,6 +348,10 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
         			}
         			
     		    }
+    		    
+    			PotentialTable pt = currentNode.getContextFatherSSBNNode().getProbNode().getPotentialTable(); 
+//    			currentNode.addContextFatherSSBNNode();
+    		    
     		}else{
     			
     			//The argument list is OK. 
@@ -388,21 +395,19 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 
 		logManager.appendln(currentNode + "E:- generate CPT");
 		
-		if(currentNode.getContextFatherSSBNNode()!=null){
-			throw new ImplementationRestrictionException("Implementação da geração de CPT para contexto indefinido não concluida."); 
-//			try {
-//				currentNode.getContextFatherSSBNNode().generateCPT();
-//				generateCPTForNodeWithContextFather(currentNode); 
-//			} catch (InvalidOperationException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			} catch (SSBNNodeGeneralException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			} catch (MEBNException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
+		if(currentNode.getContextFatherSSBNNode()!=null){ 
+			try {
+				generateCPTForNodeWithContextFather(currentNode); 
+			} catch (InvalidOperationException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (SSBNNodeGeneralException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (MEBNException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}else{
 		    generateCPT(currentNode);
 		}
@@ -688,8 +693,10 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 							originNode.getProbabilisticNetwork(), context); 
 					contextFatherSSBNNode.setOvProblematic(ovProblematic);
 
+					originNode.setContextFatherSSBNNode(contextFatherSSBNNode);
+					
 					//in this implementation only this is necessary, because the treat
-					//of context nodes how fathers will be trivial, using the XOR 
+					//of context nodes how fathers will be """trivial""", using the XOR 
 					//strategy. For a future implementation that accept different 
 					//distribuitions for the residentNode of the ContextNode, the
 					//arguments of the residente will have to be fill with the OVInstances
@@ -702,9 +709,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 								fatherNode, ovInstances, ovProblematic, entity);
 						contextFatherSSBNNode.addPossibleValue(LiteralEntityInstance.getInstance(entity, ovProblematic.getValueType()));
 						nodes.add(node); 
-					}
-					
-					originNode.setContextFatherSSBNNode(contextFatherSSBNNode);
+					}					
 					
 					return nodes;
 				}
@@ -723,6 +728,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		} catch (InvalidContextNodeFormulaException ie) {
 			throw new SSBNNodeGeneralException(resource.getString("InvalidContextNodeFormula") 
 					+ ": " + context.getLabel());  
+		} catch (OVInstanceFaultException e) {
+			throw new ImplementationRestrictionException("O nó de contexto de busca pode ter apenas uma variavel livre!");
 		}
 	}
 
@@ -794,7 +801,12 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		logManager.appendln("Context Node: " + context.getLabel()); 
 		
 		try {
-			List<String> result = avaliator.evalutateSearchContextNode(context, ovInstances);
+			List<String> result;
+			try {
+				result = avaliator.evalutateSearchContextNode(context, ovInstances);
+			} catch (OVInstanceFaultException e) {
+				throw new ImplementationRestrictionException(resource.getString("OrdVariableProblemLimit")); 
+			}
 			
 			if(result.isEmpty()){
 
@@ -1062,9 +1074,12 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
 	}
 	
-	private void generateCPTForNodeWithContextFather(SSBNNode ssbnNode) throws SSBNNodeGeneralException, MEBNException {
-//		try {
-			
+	private void generateCPTForNodeWithContextFather(SSBNNode ssbnNode) 
+	      throws SSBNNodeGeneralException, MEBNException, InvalidOperationException {
+		
+
+		    GUIPotentialTable gpt; 
+		
 			logManager.appendln("\nGenerate table for node (with context father): " + ssbnNode);
 			logManager.appendln("Parents:");
 			for(SSBNNode parent: ssbnNode.getParents()){
@@ -1084,6 +1099,11 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			}
 			
 			//Step 0: Calcular a tabela do nó de contexto
+
+			ssbnNode.getContextFatherSSBNNode().generateCPT();
+			
+			gpt = new GUIPotentialTable(ssbnNode.getContextFatherSSBNNode().getProbNode().getPotentialTable()); 
+			gpt.showTable("Table for Node " + ssbnNode.getContextFatherSSBNNode());
 			
 			//Step 1: Dividir os pais em grupos de acordo com a variavel problemática
 			Collection<SSBNNode> parents = ssbnNode.getParents(); 
@@ -1096,42 +1116,306 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 					String entity = parent.getArgumentByOrdinaryVariable(ovProblematic).getEntity().getInstanceName(); 
 					mapParentsByEntity.get(entity).add(parent); 
 				}
-				ssbnNode.removeParent(ssbnNode); //TODO Conferir arcos...
 			}
 			
+			int sizeCPTOfEntity = 0; 
+			
+			PotentialTable cptResidentNode = ssbnNode.getProbNode().getPotentialTable(); 
+						
 			//Step 2: Construir as tabelas para os diversos grupos de pais
+			int position = 1; 
+			
 			for(LiteralEntityInstance entity: contextFather.getPossibleValues()){
 				
 				ArrayList<SSBNNode> groupParents = new ArrayList<SSBNNode>(); 
-				groupParents.addAll(mapParentsByEntity.get(entity.getInstanceName())); 
-				groupParents.addAll(generalParents); 
-				for(SSBNNode parent: groupParents){
-					ssbnNode.addParent(parent, false); 
-				}
-				PotentialTable cpt = ssbnNode.getCompiler().generateCPT(ssbnNode); 
-				mapCPTByEntity.put(entity.getInstanceName(), cpt);
-				for(SSBNNode parent: groupParents){
-					ssbnNode.removeParent(parent); 
+				
+				groupParents.addAll(mapParentsByEntity.get(entity.getInstanceName())); //Sempre na mesma ordem? 
+				
+				List<SSBNNode> parentsByEntity = mapParentsByEntity.get(entity.getInstanceName()); 
+				for(SSBNNode node: parentsByEntity){
+					int index = cptResidentNode.getVariableIndex(node.getProbNode()); 
+					cptResidentNode.moveVariableWithoutMoveData(index, position); 
+					position++; 
 				}
 				
+				groupParents.addAll(generalParents); //OK, sempre estarão na mesma ordem. 
+				for(SSBNNode node: generalParents){
+					int index = cptResidentNode.getVariableIndex(node.getProbNode()); 
+					cptResidentNode.moveVariableWithoutMoveData(index, position); 
+					position++; 
+				}
+				
+				SSBNNode tempNode = SSBNNode.getInstance(ssbnNode.getResident()); 
+				for(SSBNNode parent: groupParents){
+					tempNode.addParent(parent, false); 
+				}
+				PotentialTable cpt = tempNode.getCompiler().generateCPT(tempNode); 
+				sizeCPTOfEntity = cpt.tableSize();
+				
+				gpt = new GUIPotentialTable(cpt); 
+				gpt.showTable("Table for Node " + ssbnNode + " - " + groupParents);
+				
+				mapCPTByEntity.put(entity.getInstanceName(), cpt);
+				System.out.println("Tabela armazenada: " + entity.getInstanceName() + " " + cpt.tableSize());
 			}			
+			
+			//Reorganize the variables in table
+			int variablesSize = cptResidentNode.getVariablesSize(); 
+			int indexContext = cptResidentNode.getVariableIndex(ssbnNode.getContextFatherSSBNNode().getProbNode()); 
+			cptResidentNode.moveVariableWithoutMoveData(indexContext, variablesSize - 1); 
 			
 			//Step 3: Fazer o XOR das tabelas obtidas utilizando a tabela do nó de contexto
 			
+			System.out.println("Gerando tabela para o nó residente");
+
+			int columnsByEntity = cptResidentNode.tableSize() / ssbnNode.getResident().getPossibleValueList().size();
+			columnsByEntity /= contextFather.getProbNode().getStatesSize(); 
 			
+			System.out.println("Colunas por entidade= " + columnsByEntity);
+
+			int rows = ssbnNode.getProbNode().getStatesSize(); 
 			
-			//Step 4: Setar a tabela gerada como a CPT do ssbnNode
+			for(int i=0; i < contextFather.getProbNode().getStatesSize(); i++){
+			    
+				System.out.println("\n i = " + i);
+				
+				String entity = contextFather.getProbNode().getStateAt(i);
+				System.out.println("Entity = " + entity);
+				PotentialTable cptEntity = mapCPTByEntity.get(entity); 
+				
+				//descobrir a posição inicial...
+				List<SSBNNode> parentsByEntity = mapParentsByEntity.get(entity); 
+				ProbabilisticNode pnEntity = parentsByEntity.get(0).getProbNode(); 
+			
+				int indexEntityInCptResidentNode = cptResidentNode.getVariableIndex(pnEntity) - 1; //the index 0 is the node itself
+				int entityIndex = (indexEntityInCptResidentNode + parentsByEntity.size() - 1)/ parentsByEntity.size(); 
+				
+				System.out.println("Entity Index=" + entityIndex);
+				
+				int positionTableEntity = 0; 
+
+				int positionTableResident = entityIndex*columnsByEntity*rows; 
+				
+				//Key of the algorith!!!
+				
+				//Repetitions of a colum is based of the number os variables up of this. 
+				int repColum = 1; 
+				for(int index = indexEntityInCptResidentNode; index >= 1; index --){
+		
+					repColum*= cptResidentNode.getVariableAt(index).getStatesSize();
+				
+				}
+				
+                //Repetitions of a all is based of the number os variables down of this. 
+				int repAll = 1; 
+				for(int index = indexEntityInCptResidentNode + parentsByEntity.size(); 
+				    index < cptResidentNode.getVariablesSize() - 2;  //minus Entity row and Node row.  
+				    index++){
+		
+					repAll*= cptResidentNode.getVariableAt(index).getStatesSize(); 
+					
+				}
+				
+				int inOrder = 1; 
+				for(SSBNNode node: parentsByEntity){
+					inOrder*= node.getResident().getPossibleValueList().size(); 
+				}
+				
+				System.out.println("Index = " + indexEntityInCptResidentNode);
+				System.out.println("Repetições = " + repColum);
+				System.out.println("Posição na tabela do residente = " + positionTableResident);
+				System.out.println("Posição na tabela da entidade = " + positionTableEntity);
+				System.out.println("Linhas = " + rows);
+				System.out.println("Repitições de tudo = " + repAll);
+				System.out.println("Em Ordem = " + inOrder);
+				
+				while(positionTableEntity < cptEntity.tableSize() - 1){
+					int positionTableEntityFinal = -1; 
+					
+					for(int rAll= 0; rAll < repAll; rAll++){
+						
+						int positionTableEntityInitial = positionTableEntity; 
+						
+						for(int order = 0; order < inOrder; order++){
+							for(int rCol = 0; rCol < repColum; rCol++){
+								int positionAuxEntity = positionTableEntityInitial; 
+								for(int k = 0; k < rows; k++){
+//									System.out.println("k=" + k + ";rCol=" + rCol + 
+//											";order=" + order + ";rAll=" + rAll + 
+//											" [" + positionTableResident + "] recebe de " 
+//											+ "[" + positionAuxEntity + 
+//											"] o valor = " + cptEntity.getValue(positionAuxEntity));
+									
+//									System.out.print(cptEntity.getValue(positionAuxEntity) + " ");
+									cptResidentNode.setValue(positionTableResident, cptEntity.getValue(positionAuxEntity)); 
+									positionTableResident++; 
+									positionAuxEntity++; 
+								}
+								System.out.println();
+							}
+							positionTableEntityInitial += rows; 
+						}
+						
+						positionTableEntityFinal = positionTableEntityInitial;
+						
+					}
+					
+					positionTableEntity = positionTableEntityFinal; 
+				}
+			}
+
+			gpt = new GUIPotentialTable(ssbnNode.getProbNode().getPotentialTable()); 
+			gpt.showTable("Table for Node " + ssbnNode);
 			
 			Debug.setDebug(true);
 			logManager.appendln("CPT OK\n");
 		
-//		} catch (MEBNException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 	}
 	
-	
+
+// Este método funciona para o caso mais trivial... 	
+//	private void generateCPTForNodeWithContextFather(SSBNNode ssbnNode) 
+//	      throws SSBNNodeGeneralException, MEBNException, InvalidOperationException {
+//		
+//
+//		    GUIPotentialTable gpt; 
+//		
+//			logManager.appendln("\nGenerate table for node (with context father): " + ssbnNode);
+//			logManager.appendln("Parents:");
+//			for(SSBNNode parent: ssbnNode.getParents()){
+//				logManager.appendln("  " + parent);
+//			}
+//			
+//			Debug.setDebug(false);
+//			
+//			Map<String, List<SSBNNode>> mapParentsByEntity = new HashMap<String, List<SSBNNode>>(); 
+//			Map<String, PotentialTable> mapCPTByEntity = new HashMap<String, PotentialTable>(); 
+//			
+//			ContextFatherSSBNNode contextFather = ssbnNode.getContextFatherSSBNNode();
+//			OrdinaryVariable ovProblematic = contextFather.getOvProblematic(); 
+//			
+//			for(LiteralEntityInstance entity: contextFather.getPossibleValues()){
+//				mapParentsByEntity.put(entity.getInstanceName(), new ArrayList<SSBNNode>()); 
+//			}
+//			
+//			//Step 0: Calcular a tabela do nó de contexto
+//
+//			ssbnNode.getContextFatherSSBNNode().generateCPT();
+//			
+//			gpt = new GUIPotentialTable(ssbnNode.getContextFatherSSBNNode().getProbNode().getPotentialTable()); 
+//			gpt.showTable("Table for Node " + ssbnNode.getContextFatherSSBNNode());
+//			
+//			//Step 1: Dividir os pais em grupos de acordo com a variavel problemática
+//			Collection<SSBNNode> parents = ssbnNode.getParents(); 
+//			Collection<SSBNNode> generalParents = new ArrayList<SSBNNode>(); //Independent of the entity problematic
+//			
+//			for(SSBNNode parent: parents){
+//				if(!parent.getOVs().contains(ovProblematic)){
+//					generalParents.add(parent); 
+//				}else{
+//					String entity = parent.getArgumentByOrdinaryVariable(ovProblematic).getEntity().getInstanceName(); 
+//					mapParentsByEntity.get(entity).add(parent); 
+//				}
+//			}
+//			
+//			int sizeCPTOfEntity = 0; 
+//			
+//			//Step 2: Construir as tabelas para os diversos grupos de pais
+//			for(LiteralEntityInstance entity: contextFather.getPossibleValues()){
+//				
+//				ArrayList<SSBNNode> groupParents = new ArrayList<SSBNNode>(); 
+//				groupParents.addAll(mapParentsByEntity.get(entity.getInstanceName())); //Sempre na mesma ordem? 
+//				groupParents.addAll(generalParents); //OK, sempre estarão na mesma ordem. 
+//				
+//				SSBNNode novo = SSBNNode.getInstance(ssbnNode.getResident()); 
+//				for(SSBNNode parent: groupParents){
+//					novo.addParent(parent, false); 
+//				}
+//				PotentialTable cpt = novo.getCompiler().generateCPT(novo); 
+//				sizeCPTOfEntity = cpt.tableSize();
+//				
+//				gpt = new GUIPotentialTable(cpt); 
+//				gpt.showTable("Table for Node " + ssbnNode + " - " + groupParents);
+//				
+//				mapCPTByEntity.put(entity.getInstanceName(), cpt);
+//				System.out.println("Tabela armazenada: " + entity.getInstanceName() + " " + cpt.tableSize());
+//				
+////				novo.delete();
+//			}			
+//			
+//			//Step 3: Fazer o XOR das tabelas obtidas utilizando a tabela do nó de contexto
+////			ssbnNode.getProbNode().getPotentialTable().indexOfVariable();
+//			
+//			System.out.println("Gerando tabela para o nó residente");
+//			
+//			PotentialTable cptResidentNode = ssbnNode.getProbNode().getPotentialTable(); 
+//			
+//			int columnsByEntity = cptResidentNode.tableSize() / contextFather.getProbNode().getStatesSize();
+//			columnsByEntity /= contextFather.getProbNode().getStatesSize(); 
+//			
+//			System.out.println("Colunas por entidade= " + columnsByEntity);
+//			
+//			for(int i=0; i < contextFather.getProbNode().getStatesSize(); i++){
+//			    
+//				System.out.println("\n i = " + i);
+//				
+//				String entity = contextFather.getProbNode().getStateAt(i);
+//				System.out.println("Entity = " + entity);
+//				PotentialTable cptEntity = mapCPTByEntity.get(entity); 
+//				
+//				//descobrir a posição inicial...
+//				List<SSBNNode> parentsByEntity = mapParentsByEntity.get(entity); 
+//				ProbabilisticNode pnEntity = parentsByEntity.get(0).getProbNode(); 
+//			
+//				int indexEntityInCptResidentNode = cptResidentNode.getVariableIndex(pnEntity) - 1; //the index 0 is the node itself
+//				int repetitions = (int)Math.pow(2, indexEntityInCptResidentNode); 
+//				int positionTableEntity = 0; 
+//
+//				int rows = ssbnNode.getProbNode().getStatesSize(); 
+//				int positionTableResident = indexEntityInCptResidentNode*columnsByEntity*rows; 
+//				
+//				int repetitionsAll = (columnsByEntity*rows) / (repetitions*cptEntity.tableSize());
+//				
+//				System.out.println("Index = " + indexEntityInCptResidentNode);
+//				System.out.println("Repetições = " + repetitions);
+//				System.out.println("Posição na tabela do residente = " + positionTableResident);
+//				System.out.println("Posição na tabela da entidade = " + positionTableEntity);
+//				System.out.println("Linhas = " + rows);
+//				System.out.println("Repitições de tudo = " + repetitionsAll);
+//				
+//				System.out.println("------------Escrevendo a tabela----------- ");
+//				for(int rep = 0; rep < repetitionsAll; rep++){
+//					positionTableEntity = 0; 
+//					while(positionTableEntity < cptEntity.tableSize() - 1){
+//						System.out.println("Interação - Posição na tabela entidade = " + positionTableEntity);
+//						for(int r = 0; r < repetitions; r++){
+//							System.out.println("r = " + r);
+//							int positionAuxEntity = positionTableEntity; 
+//							for(int k = 0; k < rows; k++){
+//								System.out.println("[" + positionTableResident + "] recebe de " + "[" + positionAuxEntity + "] o valor = " + cptEntity.getValue(positionAuxEntity));
+//								cptResidentNode.setValue(positionTableResident, cptEntity.getValue(positionAuxEntity)); 
+//								positionTableResident++; 
+//								positionAuxEntity++; 
+//							}
+//						}
+//						positionTableEntity += rows; 
+//						System.out.println("Tabela da entidade = " + cptEntity.tableSize());
+//						System.out.println("Position Table Entity = " + rows);
+//					}
+//				}
+//			}
+////			
+//			gpt = new GUIPotentialTable(ssbnNode.getProbNode().getPotentialTable()); 
+//			gpt.showTable("Table for Node " + ssbnNode);
+//			
+////			for(int k = 0; k < cptResidentNode.tableSize(); k++){
+////				System.out.println(cptResidentNode.getValue(k) + " "); 
+////			}
+//			
+//			Debug.setDebug(true);
+//			logManager.appendln("CPT OK\n");
+//		
+//	}
 	
 	/*-------------------------------------------------------------------------
 	 * Debug Methods 
@@ -1206,6 +1490,13 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		} catch (JAXBException e) {
 			e.printStackTrace();
 		}
+		
+		try {
+			logManager.writeToDisk("teste.txt", false);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	private void printNodeStructureBeforeCPT(SSBNNode ssbnNode){
@@ -1268,11 +1559,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			return ovInstancesOfInputMFrag;
 		}
 
-//		public void setOvInstancesOfInputMFrag(
-//				List<OVInstance> ovInstancesOfInputMFrag) {
-//			this.ovInstancesOfInputMFrag = ovInstancesOfInputMFrag;
-//		}
-
 		public void addOVInstanceOfInputMFrag(OVInstance ovInstance){
 			this.ovInstancesOfInputMFrag.add(ovInstance);
 		}
@@ -1280,12 +1566,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		public Collection<OVInstance> getOvInstancesOfResidentMFrag() {
 			return ovInstancesOfResidentMFrag;
 		}
-		
-
-//		public void setOvInstancesOfResidentMFrag(
-//				List<OVInstance> ovInstancesOfResidentMFrag) {
-//			this.ovInstancesOfResidentMFrag = ovInstancesOfResidentMFrag;
-//		}
 
 		public void addOVInstanceOfResidentMFrag(OVInstance ovInstance){
 			this.ovInstancesOfResidentMFrag.add(ovInstance);
