@@ -178,8 +178,9 @@ public class SSBNNode {
 	}
 	
 	
-	// private methods
-	
+	public static SSBNNode getInstance (DomainResidentNode resident)  {
+		return new SSBNNode(null,resident,null, false);
+	}
 	
 	
 	private void appendProbNodeState() {
@@ -563,19 +564,41 @@ public class SSBNNode {
 					this.getProbabilisticNetwork().addEdge(edge);
 					BottomUpSSBNGenerator.logManager.append("\n");
 					BottomUpSSBNGenerator.logManager.append(edge + " created");
-					BottomUpSSBNGenerator.printAndSaveCurrentNetwork(this);
+//					BottomUpSSBNGenerator.printAndSaveCurrentNetwork(this);
 				}
 			}
 		}
 		
 	}
 	
+	/**
+	 * Remove all parents of the ssbnnode. 
+	 * The references of the probabilistic nodes will be updated. 
+	 *
+	 */
+	public void removeAllParents(){
+		List<SSBNNode> aux = new ArrayList<SSBNNode>();
+		aux.addAll(this.getParents()); 
+		
+		for(SSBNNode node: aux){
+			this.removeParent(node); 
+		}
+		
+		removeContextFatherSSBNNode(); 
+	}
 	
 	protected void removeParent(SSBNNode parent) {
+		
 		this.getParents().remove(parent);
+		
 		if (this.getProbNode() != null) {
 			this.getProbNode().getParents().remove(this.getProbNode());
+			
+			Edge edge = this.getProbabilisticNetwork().getEdge(parent.getProbNode(), this.getProbNode()); 
+			this.getProbabilisticNetwork().removeEdge(edge); 
+		
 		}
+		
 		// TODO solve dangling references
 	}
 	
@@ -1066,7 +1089,18 @@ public class SSBNNode {
 				}
 			}
 		}
-		
+	}
+	
+	public void removeContextFatherSSBNNode(){
+		if(this.contextFatherSSBNNode != null){
+			
+			if (this.getProbNode() != null) {
+				
+				Edge edge = this.getProbabilisticNetwork().getEdge(this.contextFatherSSBNNode.getProbNode(), this.getProbNode()); 
+				this.getProbabilisticNetwork().removeEdge(edge); 
+			
+			}
+		}
 	}
 
 

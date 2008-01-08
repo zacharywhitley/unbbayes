@@ -1,12 +1,25 @@
 package unbbayes.prs.mebn.kb.powerloom.test;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.prs.mebn.kb.KBFacade;
-import unbbayes.prs.mebn.kb.powerloom.PowerLoomFacade;
+import junit.framework.TestCase;
+import unbbayes.io.mebn.UbfIO;
+import unbbayes.io.mebn.exceptions.IOMebnException;
+import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
+import unbbayes.prs.mebn.ssbn.ContextNodeAvaliator;
+import unbbayes.prs.mebn.ssbn.OVInstance;
+import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
+import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
+import edu.isi.powerloom.PLI;
+import edu.isi.powerloom.PlIterator;
+
 
 /**
  * Tests for KBFacade module. 
@@ -14,84 +27,145 @@ import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
  * @author Laecio
  *
  */
-public class KBTest {
+public class KBTest  extends TestCase {
 	
-	public static void main(String[] args) throws Exception {
+	KBTest(String args) {
+		super(args);
+	}
+
+	private static final String KNOWLEDGE_BASE = "KnowledgeBaseWithStarshipZoneST4.ubf"; 
+	private static final String FILE_STARTREK = "examples/mebn/StarTrek47.ubf"; 
+	
+	public static final String KB_GENERATIVE_FILE = "testeGenerativeStarship.plm";
+	public static final String KB_FINDING_FILE = "KnowledgeBaseWithStarshipZoneST4.plm";  	
+	
+	private KnowledgeBase kb; 
+	private MultiEntityBayesianNetwork mebn; 
+	private ContextNodeAvaliator avaliator; 
+	
+	/* (non-Javadoc)
+	 * @see junit.framework.TestCase#setUp()
+	 */
+	protected void setUp() throws Exception {
+		super.setUp();
+		init(); 
+	}
+
+	/* (non-Javadoc)
+	 * @see junit.framework.TestCase#tearDown()
+	 */
+	protected void tearDown() throws Exception {
+		super.tearDown();
+	}
+	
+	private void init(){
 		
-//		PowerLoomKB kb = PowerLoomKB.getInstanceKB(); 
-//		
-//		kb.loadModule(new File("examples/mebn/sample.plm"));
-//		KBFacade kbFacade = new PowerLoomFacade("/PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE"); 
-//		
-//		
-//		
-//		
-//		//getEntityByType
-//		System.out.println("Retornando as Zone do KB:"); 
-//		List<String> list = kbFacade.getEntityByType("ZONE_LABEL");
-//		for(String entity: list){
-//			System.out.println(" -> " + entity); 
-//		}
-//		
-//		System.out.println(); 
-//		
-//		System.out.print("Retornando as Starships do KB:"); 
-//		list = kbFacade.getEntityByType("STARSHIP_LABEL");
-//		for(String entity: list){
-//			System.out.println(" -> " + entity); 
-//		}
-//		
-//		
-//		
-//		
-//		
-////		searchFindings
-//		System.out.println("Search findings for STARSHIPZONE !ST1:"); 
-//		List<String> arguments = new ArrayList<String>(); 
-//		arguments.add("!ST1"); 
-//		String result = kbFacade.searchFinding("STARSHIPZONE", arguments);
-//		if(result == null){
-//			System.out.println(" -> Não encontrado"); 	
-//		}else{
-//			System.out.println(" -> " + result); 
-//		}
-//		
-//		System.out.println(); 
-//		
-//		System.out.println("Search findings for STARSHIPZONE !ST4:"); 
-//		arguments = new ArrayList<String>(); 
-//		arguments.add("!ST4"); 
-//		result = kbFacade.searchFinding("STARSHIPZONE", arguments);
-//		if(result == null){
-//			System.out.println(" -> Não encontrado"); 	
-//		}else{
-//			System.out.println(" -> Encontrado"); 
-//		}
-//		
-//		
-//		
-//		
-//		
-////		search Entities
-//		System.out.println("Search entity !ST1:"); 
-//		boolean resultB = kbFacade.existEntity("!ST1");
-//		if(!resultB){
-//			System.out.println(" -> Não encontrado"); 	
-//		}else{
-//			System.out.println(" -> Encontrado"); 
-//		}
-//		
-//		System.out.println(); 
-//		
-//		System.out.println("Search entity !ST4:"); 
-//		resultB = kbFacade.existEntity("ST4");
-//		if(!resultB){
-//			System.out.println(" -> Não encontrado"); 	
-//		}else{
-//			System.out.println(" -> " + result); 
-//		}
-//		
+		kb = PowerLoomKB.getInstanceKB();
 		
+		UbfIO io = UbfIO.getInstance(); 
+		try {
+			mebn = io.loadMebn(new File(KBTest.FILE_STARTREK));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOMebnException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		kb.loadModule(new File(KBTest.KB_GENERATIVE_FILE)); 
+		kb.loadModule(new File(KBTest.KB_FINDING_FILE)); 
+			
+		avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB()); 
+		
+	}
+	
+	private void evaluateStarshipZone_Case(){
+		ContextNode contextNode = mebn.getContextNode("CX11"); 
+		
+		OrdinaryVariable ovS = mebn.getMFragByName("Starship_MFrag").getOrdinaryVariableByName("st"); 
+		OVInstance ovInstance = OVInstance.getInstance(ovS, "ST4", ovS.getValueType()); 
+		
+		List<OVInstance> args = new ArrayList<OVInstance>(); 
+		
+		args.add(ovInstance);
+		
+		try {
+			List<String> results = avaliator.evalutateSearchContextNode(contextNode, args);
+			for(String result: results){
+				System.out.println(result);
+			}
+		} catch (InvalidContextNodeFormulaException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (OVInstanceFaultException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+	}
+	
+	private void evaluateEqual_S_ST_Case(){
+		ContextNode contextNode = mebn.getContextNode("CX4"); 
+		
+		OrdinaryVariable ovS = mebn.getMFragByName("DangerToSelf_MFrag").getOrdinaryVariableByName("s"); 
+		OVInstance ovInstance = OVInstance.getInstance(ovS, "ST0", ovS.getValueType()); 
+		
+		List<OVInstance> args = new ArrayList<OVInstance>(); 
+		
+		args.add(ovInstance);
+		
+		try {
+			List<String> results = avaliator.evalutateSearchContextNode(contextNode, args);
+			for(String result: results){
+				System.out.println(result);
+			}
+		} catch (InvalidContextNodeFormulaException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (OVInstanceFaultException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+	}
+	
+	private void evaluateEqual_S_ST_WhithoutRetrieve_Case(){
+		List<OVInstance> args = new ArrayList<OVInstance>(); 
+		
+		ContextNode contextNode = mebn.getContextNode("CX4"); 
+		
+		OrdinaryVariable ovS = mebn.getMFragByName("DangerToSelf_MFrag").getOrdinaryVariableByName("s"); 
+		OVInstance ovInstance = OVInstance.getInstance(ovS, "ST0", ovS.getValueType()); 
+		args.add(ovInstance);
+		
+		ovS = mebn.getMFragByName("DangerToSelf_MFrag").getOrdinaryVariableByName("st"); 
+		ovInstance = OVInstance.getInstance(ovS, "ST1", ovS.getValueType()); 
+		args.add(ovInstance);
+		
+		try {
+			boolean result = avaliator.evaluateContextNode(contextNode, args);
+			System.out.println("evaluateEqual_S_ST_WhithoutRetrieve_Case=" + result);
+		} catch (OVInstanceFaultException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+	}
+	
+	private void evaluateEqual_S_ST_Case_Directelly(){
+//		String result = ((PowerLoomKB)kb).executeCommand("(retrieve all (and (STARSHIP_LABEL ?s) (not (= ?s st1))))");
+//		System.out.println("Result" + result);
+		
+		PlIterator it = PLI.sRetrieve("all ( ?s STARSHIP_LABEL) (not (= ?s st1))", "/PL-KERNEL/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE", null);
+	    while(it.nextP()){
+	    	System.out.println(""+it.value.toString());
+	    }
+	}
+	
+	public static void main(String args[]){
+		KBTest test = new KBTest(""); 
+		test.init(); 
+		
+//		test.evaluateEqual_S_ST_Case();
+		test.evaluateStarshipZone_Case();
 	}
 	
 }

@@ -14,9 +14,7 @@ import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.exception.MEBNException;
-import unbbayes.prs.mebn.kb.KBFacade;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
-import unbbayes.prs.mebn.kb.powerloom.PowerLoomFacade;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.BottomUpSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.Query;
@@ -30,12 +28,20 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
  */
 public class BottomUpSSBNGeneratorTest extends TestCase {
 
-	public static final String KB_GENERATIVE_FILE = "testeGenerativeStarship.plm"; 
+//	public static final String KB_GENERATIVE_FILE = "testeGenerativeStarship.plm"; 
 //	public static final String KB_FINDING_FILE = "testeFindingsStarship.plm";  
-	public static final String KB_FINDING_FILE = "KnowledgeBaseWithStarshipZoneST4.plm";  
+//	public static final String KB_FINDING_FILE = "KnowledgeBaseWithStarshipZoneST4.plm";  
 //	public static final String KB_GENERATIVE_FILE = "generative.plm"; 
 //	public static final String KB_FINDING_FILE = "findings.plm";  
-	public static final String STARTREK_UBF = "examples/mebn/StarTrek46.ubf"; 
+//	public static final String STARTREK_UBF = "examples/mebn/StarTrek46.ubf"; 
+	
+//	public static final String KB_GENERATIVE_FILE = "examples/mebn/XORGenerative2.plm"; 
+//	public static final String KB_FINDING_FILE = "examples/mebn/XORKb.plm";
+//	public static final String STARTREK_UBF = "examples/mebn/XORExample2.ubf"; 
+	
+	public static final String KB_GENERATIVE_FILE = "examples/mebn/XORGenerative.plm"; 
+	public static final String KB_FINDING_FILE = "examples/mebn/XORKb.plm";
+	public static final String STARTREK_UBF = "examples/mebn/XORExample.ubf"; 
 	
 	/**
 	 * @param arg0
@@ -62,7 +68,6 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 		
 		BottomUpSSBNGenerator ssbnGenerator = new BottomUpSSBNGenerator(); 
 		KnowledgeBase kb = PowerLoomKB.getInstanceKB(); 
-	    KBFacade kbFacade = null; 
 		MultiEntityBayesianNetwork mebn = null;
 		
 		UbfIO io = UbfIO.getInstance(); 
@@ -79,11 +84,9 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_GENERATIVE_FILE)); 
 		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_FINDING_FILE)); 
 		
-		kbFacade = new PowerLoomFacade("/PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE"); 		
+		SSBNNode queryNode = createQueryNodeXOR(mebn); 
 		
-		SSBNNode queryNode = createQueryNode_HarmPotential_ST4_T3(mebn); 
-		
-		Query query = new Query(kbFacade, queryNode, mebn); 
+		Query query = new Query(kb, queryNode, mebn); 
 		query.setMebn(mebn); 
 		
 		try {
@@ -109,6 +112,19 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 		try {
 			queryNode.addArgument(residentNode.getOrdinaryVariableByName("st"), "ST4");
 			queryNode.addArgument(residentNode.getOrdinaryVariableByName("t"), "T0");
+		} catch (SSBNNodeGeneralException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		return queryNode;
+	}
+	
+	private static SSBNNode createQueryNodeXOR(MultiEntityBayesianNetwork mebn) {
+		DomainMFrag mFrag = mebn.getMFragByName("ExampleMFrag"); 
+		DomainResidentNode residentNode = mFrag.getDomainResidentNodeByName("ResidentSample"); 
+		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode, new ProbabilisticNode(), false); 
+		try {
+			queryNode.addArgument(residentNode.getOrdinaryVariableByName("r"), "R");
 		} catch (SSBNNodeGeneralException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

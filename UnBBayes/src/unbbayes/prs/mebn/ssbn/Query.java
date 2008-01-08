@@ -3,13 +3,8 @@
  */
 package unbbayes.prs.mebn.ssbn;
 
-import java.util.Collection;
-
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.RandomVariableFinding;
-import unbbayes.prs.mebn.kb.KBFacade;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
-import unbbayes.prs.mebn.kb.powerloom.PowerLoomFacade;
 
 /**
  * @author Shou Matsumoto
@@ -20,23 +15,23 @@ public class Query {
 	// TODO complete this class
 	
 	private MultiEntityBayesianNetwork mebn = null;
-	private KBFacade kb = null;
+	private KnowledgeBase kb = null;
 	private SSBNNode queryNode = null;
 	
 	/**
 	 * Default query. 
 	 */
-	public Query(KBFacade kb, SSBNNode queryNode, MultiEntityBayesianNetwork mebn) {
+	public Query(KnowledgeBase kb, SSBNNode queryNode, MultiEntityBayesianNetwork mebn) {
 		this.mebn = mebn; 
 		this.kb = kb; 
 		this.queryNode = queryNode;  
 	}
 
-	public KBFacade getKb() {
+	public KnowledgeBase getKb() {
 		return kb;
 	}
 
-	public void setKb(KBFacade kb) {
+	public void setKb(KnowledgeBase kb) {
 		this.kb = kb;
 	}
 

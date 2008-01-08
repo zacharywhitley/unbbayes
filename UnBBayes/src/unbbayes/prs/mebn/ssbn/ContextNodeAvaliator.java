@@ -54,8 +54,9 @@ public class ContextNodeAvaliator {
 	 * @param ovInstances
 	 * @return
 	 * @throws InvalidContextNodeFormulaException
+	 * @throws OVInstanceFaultException 
 	 */
-	public List<String> evalutateSearchContextNode(ContextNode context, List<OVInstance> ovInstances) throws InvalidContextNodeFormulaException{
+	public List<String> evalutateSearchContextNode(ContextNode context, List<OVInstance> ovInstances) throws InvalidContextNodeFormulaException, OVInstanceFaultException{
 		
 			List<String> entitiesResult = kb.evaluateSearchContextNodeFormula(context, ovInstances); 
 			return entitiesResult;

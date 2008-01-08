@@ -13,9 +13,7 @@ import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.entity.Type;
-import unbbayes.prs.mebn.kb.KBFacade;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
-import unbbayes.prs.mebn.kb.powerloom.PowerLoomFacade;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.ContextNodeAvaliator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
@@ -36,8 +34,6 @@ public class ContextNodeAvaliatorTest{
 		
 		kb.loadModule(new File("testeGenerativeStarship.plm")); 
 		kb.loadModule(new File("testeFindingsStarship.plm")); 
-		
-		KBFacade kbFacade = new PowerLoomFacade("/PL-KERNEL-KB/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE"); 
 		
 		PrOwlIO io = new PrOwlIO(); 
 		try {
@@ -93,7 +89,7 @@ public class ContextNodeAvaliatorTest{
 		
 		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(kb); 
 		
-		evaluateContextNodes(mFrag, ovInstanceList, ordVariableList, avaliator, kbFacade); 
+		evaluateContextNodes(mFrag, ovInstanceList, ordVariableList, avaliator, kb); 
     
     }	
     
@@ -109,7 +105,7 @@ public class ContextNodeAvaliatorTest{
 	 * @param ordVariableList
 	 */
 	public static void evaluateContextNodes(DomainMFrag mFrag, List<OVInstance> ovInstanceList, List<OrdinaryVariable> ordVariableList, 
-			ContextNodeAvaliator avaliator, KBFacade kbFacade){
+			ContextNodeAvaliator avaliator, KnowledgeBase kb){
 		
 		Debug.setDebug(true); 
 		
@@ -138,11 +134,20 @@ public class ContextNodeAvaliatorTest{
 			catch(OVInstanceFaultException e){
 				try {
 					Debug.println("OVInstance Fault. Try evaluate a search. "); 
-					List<String> result = avaliator.evalutateSearchContextNode(context, ovInstanceList);
+					List<String> result = null;
+					
+					try {
+						result = avaliator.evalutateSearchContextNode(context, ovInstanceList);
+					} catch (OVInstanceFaultException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+						return; 
+					}
+					
 					if(result.isEmpty()){
 						
 						OrdinaryVariable rigthTerm = context.getFreeVariable(); 
-						result = kbFacade.getEntityByType(rigthTerm.getValueType().getName());
+						result = kb.getEntityByType(rigthTerm.getValueType().getName());
 						
 						Debug.println("No information in Knowlege Base"); 
 						Debug.print("Result = "); 
