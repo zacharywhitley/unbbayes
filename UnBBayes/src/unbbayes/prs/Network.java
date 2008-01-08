@@ -236,6 +236,35 @@ public class Network implements Graph{
 		}
 		return -1;
 	}
+	
+	/**
+	 * Retorna o arco entre dois nós caso ele exista
+	 * 
+	 * @param no1 Nó origem
+	 * @param no2 Nó destino
+	 * @return o arco entre no1 e no 2 caso ele exista ou null cc. 
+	 */
+	public Edge getEdge(Node no1, Node no2){
+		
+		List<Edge> vetArcos = edgeList; 
+		
+		if (no1 == no2) {
+			return null;
+		}
+	
+		int sizeArcos = vetArcos.size();
+		Edge auxA;
+		for (int i = 0; i < sizeArcos; i++) {
+			auxA = (Edge) vetArcos.get(i);
+			if ((auxA.getOriginNode() == no1)
+				&& (auxA.getDestinationNode() == no2)
+				|| (auxA.getOriginNode() == no2)
+				&& (auxA.getDestinationNode() == no1)) {
+				return (Edge) vetArcos.get(i);
+			}
+		}
+		return null;
+	}
 
 	/**
 	 * Seta o nome da rede.

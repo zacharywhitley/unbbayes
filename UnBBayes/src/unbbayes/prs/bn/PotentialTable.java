@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -48,7 +48,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
 
 	/**
-	 * Variáveis que pertencem à tabela
+	 * Variï¿½veis que pertencem ï¿½ tabela
 	 */
 	protected NodeList variaveis;
 
@@ -93,14 +93,14 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	}
 
 	/**
-	 * Tem que ser chamado quando há mudança em alguma variável desta tabela
+	 * Tem que ser chamado quando hï¿½ mudanï¿½a em alguma variï¿½vel desta tabela
 	 */
 	public void variableModified() {
 	   modified = true;
 	}
 
 	/**
-	 * Retorna uma COPIA da lista de variáveis desta tabela.
+	 * Retorna uma COPIA da lista de variï¿½veis desta tabela.
 	 * 
 	 * @return COPIA da lista de variaveis desta tabela.
 	 */
@@ -124,6 +124,15 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	public final Node getVariableAt(int index) {
 		return variaveis.get(index);
 	}
+	
+	public final int getVariableIndex(Node variable){
+		for(int i = 0; i < variaveis.size(); i++){
+			if(variaveis.get(i) == variable){
+				return i; 
+			}
+		}
+		return -1; 
+	}
 
 	public void addValueAt(int index, float value) {
 		dados.add(index, value);
@@ -138,9 +147,9 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	}
 
 	/**
-	 * Retorna uma cópia da tabela.
+	 * Retorna uma cï¿½pia da tabela.
 	 * 
-	 * @return cópia da tabela.
+	 * @return cï¿½pia da tabela.
 	 */
 	public Object clone() {
 		PotentialTable auxTab = newInstance();
@@ -165,10 +174,10 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	}
 
 	/**
-	 * Insere valor na posição (linear) na lista de dados.
+	 * Insere valor na posiï¿½ï¿½o (linear) na lista de dados.
 	 * 
 	 * @param index
-	 *            posicao linear onde o valor entrará
+	 *            posicao linear onde o valor entrarï¿½
 	 * @param valor
 	 *            valor a ser colocado na posicao especificada.
 	 */
@@ -177,10 +186,10 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	}
 
 	/**
-	 * Retorna o valor da célula com o respectivo índice.
+	 * Retorna o valor da cï¿½lula com o respectivo ï¿½ndice.
 	 * 
 	 * @param index
-	 *            índice linear do valor na tabela a ser retornado.
+	 *            ï¿½ndice linear do valor na tabela a ser retornado.
 	 * @return valor na tabela correspondente ao indice linear especificado.
 	 */
 	public final float getValue(int index) {
@@ -199,13 +208,13 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	}
 
 	/**
-	 * Insere variável na tabela.
+	 * Insere variï¿½vel na tabela.
 	 * 
 	 * @param variavel
 	 *            variavel a ser inserida na tabela.
 	 */
 	public void addVariable(Node variavel) {
-		/** @todo Reimplementar este método de forma correta. */
+		/** @todo Reimplementar este mï¿½todo de forma correta. */
 		variableModified();
 		int noEstados = variavel.getStatesSize();
 		int noCelBasica = this.dados.size;
@@ -223,10 +232,33 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 		}
 		variaveis.add(variavel);
 	}
-
+	
+	/**
+	 * Move a variable of position. Only the variables are moved... the data of
+	 * the table aren't changed. 
+	 * 
+	 * ATENTION: Use this method only if you need to fill the table manually and want choice
+	 * the order of the variables. Use before to fill the data. 
+	 * 
+	 * Pre-requisites: 
+	 *     - The table has size > initialPosition and size > destinationPosition
+	 * 
+	 * @param initialPosition
+	 * @param destinationPosition
+	 */
+	public void moveVariableWithoutMoveData(int initialPosition, int destinationPosition){
+		
+		Node nodeToMove = variaveis.remove(initialPosition); 
+		variaveis.add(destinationPosition, nodeToMove); 
+		
+	}
+	
+	public int getVariablesSize(){
+		return variaveis.size(); 
+	}
 
 	/**
-	 * Retira a variável da tabela. Utilizado também para marginalização
+	 * Retira a variï¿½vel da tabela. Utilizado tambï¿½m para marginalizaï¿½ï¿½o
 	 * generalizada.
 	 * 
 	 * @param variavel
@@ -318,7 +350,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 
 
 	/**
-	 * Retorna a coordenada linear referente à coordenada multidimensional
+	 * Retorna a coordenada linear referente ï¿½ coordenada multidimensional
 	 * especificada.
 	 * 
 	 * @param coord
@@ -337,7 +369,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 
 
 	/**
-	 * Calcula os fatores necessários para transformar as coordenadas lineares
+	 * Calcula os fatores necessï¿½rios para transformar as coordenadas lineares
 	 * em multidimensionais.
 	 */
 	protected void calcularFatores() {
@@ -360,10 +392,10 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 
 
 	/**
-	 * Retorna valor em coordenada a partir do índice na lista.
+	 * Retorna valor em coordenada a partir do ï¿½ndice na lista.
 	 * 
 	 * @param index
-	 *            índice linear na tabela.
+	 *            ï¿½ndice linear na tabela.
 	 * @return array das coordenadas respectivo ao indice linear especificado.
 	 */
 	public final int[] voltaCoord(int index) {
@@ -450,7 +482,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 				break;
 				
 			default:
-// assert false : "Operador não suportado!";
+// assert false : "Operador nï¿½o suportado!";
 		}
 	}
 	
