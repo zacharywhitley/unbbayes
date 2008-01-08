@@ -31,6 +31,7 @@ import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
+import unbbayes.util.Debug;
 import edu.isi.powerloom.Environment;
 import edu.isi.powerloom.PLI;
 import edu.isi.powerloom.PlIterator;
@@ -46,7 +47,6 @@ import edu.isi.stella.Stella_Object;
  * nodes.
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
- * @version 1.5 (01/03/08)
  * @author Rommel Novaes Carvalho (rommel.carvalho@gmail.com)
  * @version 1.1 (2007/12/26)
  */
@@ -406,47 +406,6 @@ public class PowerLoomKB implements KnowledgeBase {
 			return false;
 		}
 	}
-
-	/**
-	 * Syntax example: 
-	 * ( StarshipZone(st) = z ) for UnBBayes syntax 
-	 * ( = ( StarshipZone ST4 ) ?z) for PowerLoom syntax
-	 * 
-	 * @see KnowledgeBase
-	 */
-    public Boolean evaluateContextNodeFormula(ContextNode context, 
-               List<OVInstance> ovInstances){
-        
-    	String formula = ""; 
-		
-		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
-		
-		formula+= "(";  
-		if((formulaTree.getTypeNode() == enumType.OPERAND)&&(formulaTree.getSubTypeNode() == enumSubType.NODE)){
-			formula+= makeOperandString(formulaTree, ovInstances); 
-		}else{
-			formula+= makeOperatorString(formulaTree, ovInstances); 	
-		}		
-		formula+= ")"; 
-		
-		debug.println("Original formula: " + context.getLabel()); 
-		debug.println("PowerLoom Formula: " + formula); 
-		
-	    TruthValue answer = PLI.sAsk(formula, moduleFindingName, null);
-	    
-	    if (PLI.isTrue(answer)) {
-	        debug.println("Result: true");
-	        return true; 
-	      } else if (PLI.isFalse(answer)) {
-	        debug.println("Result: false");
-	        return false; 
-	      } else if (PLI.isUnknown(answer)) {
-	        debug.println("Result: unknown");
-	        return false; 
-	      }else{
-	    	return false; 
-	    } 
-    }
     
 	/**
 	 * @see KnowledgeBase
@@ -483,8 +442,8 @@ public class PowerLoomKB implements KnowledgeBase {
 		formula+= makeOperatorString(formulaTree, ovInstances); 		
 		formula+= ")"; 
 		
-		debug.println("Original formula: " + context.getLabel()); 
-		debug.println("PowerLoom Formula: " + formula); 
+		Debug.println("Original formula: " + context.getLabel()); 
+		Debug.println("PowerLoom Formula: " + formula); 
 		
 		PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);
 	    List result = new ArrayList<String>(); 
@@ -617,22 +576,22 @@ public class PowerLoomKB implements KnowledgeBase {
 
 		case SIMPLE_OPERATOR:
 			if(builtIn instanceof BuiltInRVAnd){
-				retorno+= makeBynaryStatement(operatorNode, "AND", ovInstances);
+				operator+= makeBynaryStatement(operatorNode, "AND", ovInstances);
 			}else
 				if(builtIn instanceof BuiltInRVOr){
-					retorno+= makeBynaryStatement(operatorNode, "OR", ovInstances);	
+					operator+= makeBynaryStatement(operatorNode, "OR", ovInstances);	
 				}else
 					if(builtIn instanceof BuiltInRVEqualTo){
-						retorno+= makeEqualStatement(operatorNode, " = ", ovInstances); 	
+						operator+= makeEqualStatement(operatorNode, " = ", ovInstances); 	
 					}else
 						if(builtIn instanceof BuiltInRVIff){
-							retorno+= makeBynaryStatement(operatorNode, "<=>", ovInstances);
+							operator+= makeBynaryStatement(operatorNode, "<=>", ovInstances);
 						}else
 							if(builtIn instanceof BuiltInRVImplies){
-								retorno+= makeBynaryStatement(operatorNode, "=>", ovInstances);
+								operator+= makeBynaryStatement(operatorNode, "=>", ovInstances);
 							}else
 								if(builtIn instanceof BuiltInRVNot){
-									retorno+= makeUnaryStatement(operatorNode, "NOT", ovInstances) ; 
+									operator+= makeUnaryStatement(operatorNode, "NOT", ovInstances) ; 
 								}	    
 			                    break;
 			
@@ -669,11 +628,11 @@ public class PowerLoomKB implements KnowledgeBase {
 		switch(operator.getTypeNode()){
 		
 		case SIMPLE_OPERATOR:
-			operando += makeOperatorString(operator, ovInstances);
+			operand += makeOperatorString(operator, ovInstances);
 			break;
 
 		case QUANTIFIER_OPERATOR:
-			operando += makeOperatorString(operator, ovInstances); 
+			operand += makeOperatorString(operator, ovInstances); 
 		break; 	
 		
 		case OPERAND: 
@@ -684,36 +643,36 @@ public class PowerLoomKB implements KnowledgeBase {
 			   OrdinaryVariable ov = (OrdinaryVariable)operator.getNodeVariable(); 
 			   OVInstance ovInstance = getOVInstanceForOV(ov, ovInstances); 
 			   if(ovInstance != null){
-			       operando+= ovInstance.getEntity().getInstanceName(); 
+			       operand+= ovInstance.getEntity().getInstanceName(); 
 			   }
 			   else{ 
-				   operando+= "?" + ov.getName(); 
+				   operand+= "?" + ov.getName(); 
 			   }
 			   break; 
 		   
 		   case NODE:
 			   
 			   ResidentNodePointer node = (ResidentNodePointer)operator.getNodeVariable(); 
-			   operando+= node.getResidentNode().getName(); 
+			   operand+= node.getResidentNode().getName(); 
 			   
-			   operando+= " "; 
+			   operand+= " "; 
 			   
 			   for(OrdinaryVariable ordVariable: node.getOrdinaryVariableList()){
 				   ovInstance = getOVInstanceForOV(ordVariable, ovInstances); 
 				   if(ovInstance != null){
-				       operando+= ovInstance.getEntity().getInstanceName(); 
+				       operand+= ovInstance.getEntity().getInstanceName(); 
 				   }
 				   else{
-					   operando+= "?" + ordVariable.getName(); 
+					   operand+= "?" + ordVariable.getName(); 
 				   }
-				   operando+=" "; 
+				   operand+=" "; 
 			   }
 			   
 			   break;   
 			   
 		   case ENTITY:
 			   Entity entity = (Entity) operator.getNodeVariable(); 
-			   operando+= entity.getName(); 
+			   operand+= entity.getName(); 
 		   }
 		   
 		break; 
@@ -897,39 +856,5 @@ public class PowerLoomKB implements KnowledgeBase {
 	
 	
 	
-	/*-------------------------------------------------------------------------*/
-	/* Private classes                                                         */
-	/*-------------------------------------------------------------------------*/
-	
-	/*
-	 * Print in the screen informations for debug. 
-	 */
-	private class DebugPowerLoom{
-		
-		private boolean debugActive = true; 
-		
-		public DebugPowerLoom(){
-		}
-		
-		public DebugPowerLoom(boolean debugActive){
-			this.debugActive = debugActive; 
-		}
-		
-		public void setDebugActive(boolean debugActive){
-			this.debugActive = debugActive; 
-		}
-		
-		public void println(String string){
-			if(debugActive){
-			   System.out.println("[KB] " + string);
-			}
-		}
-		
-		/* skip a line */
-		public void ln(){
-			if(debugActive){
-			   System.out.println();
-			}
-		}
-	}
+
 }
