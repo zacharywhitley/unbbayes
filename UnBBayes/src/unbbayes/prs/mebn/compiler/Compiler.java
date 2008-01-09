@@ -26,6 +26,7 @@ import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.util.Debug;
 import unbbayes.util.NodeList;
 
+
 /*
  BNF MEBN Table:
  ----------------

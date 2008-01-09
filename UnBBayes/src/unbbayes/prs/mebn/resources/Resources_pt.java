@@ -1,6 +1,7 @@
-﻿package unbbayes.prs.mebn.resources;
+package unbbayes.prs.mebn.resources;
 
 import java.util.*;
+
 
 /**
  * @author Laecio Lima dos Santos
