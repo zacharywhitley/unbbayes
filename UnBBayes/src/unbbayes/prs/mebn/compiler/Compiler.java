@@ -1,5 +1,4 @@
-﻿package unbbayes.prs.mebn.compiler;
-
+package unbbayes.prs.mebn.compiler;
 
 import java.util.ArrayList;
 import java.util.Collection;
