@@ -15,7 +15,6 @@ import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.io.LogManager;
 import unbbayes.io.XMLIO;
 import unbbayes.prs.Edge;
-import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -150,10 +149,10 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * 
 	 * Pos-requisites:
 	 *     - The probabilistic table of the currentNode will be filled and all
-	 *     nodes fathers evaluateds. 
+	 *     nodes fathers evaluated. 
 	 * 
 	 * @param currentNode node currently analyzed. 
-	 * @param seen all the nodes analized previously (doesn't contain the current node)
+	 * @param seen all the nodes analyzed previously (doesn't contain the current node)
 	 * @param net the ProbabilisticNetwork 
 	 * @return The currentNode with its auxiliary structures of the analysis. 
 	 * @throws SSBNNodeGeneralException
@@ -179,7 +178,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
 
 		logManager.appendln(currentNode + ":A - Search findings");
-        //check if querynode has a known value or it should be a probabilistic node (query the kb)
+        //check if query node has a known value or it should be a probabilistic node (query the kb)
 		StateLink exactValue = kb.searchFinding(currentNode.getResident(), currentNode.getArguments()); 
 		
 		// Treat returned value
@@ -198,7 +197,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		seen.add(currentNode);	// mark this as already seen  (treated) node
 		
 		
-		//------------------------- STEP 2: analyse context nodes. -------------
+		//------------------------- STEP 2: analyze context nodes. -------------
 		
 		// evaluates querynode's mfrag's context nodes 
 		//(if not OK, sets MFrag's flag to use default CPT)	
@@ -310,7 +309,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 					generateRecursive(previousNode.getSsbnNode(), seen, net);
 					previousNode.setArgumentsOfInputMFrag();
 
-					/* voltar nomes dos parametros para o normal */
+					/* it takes the parameters' names back to normal */
 
 					if(!previousNode.getSsbnNode().isFinding()){
 						currentNode.addParent(previousNode.getSsbnNode(), true);
@@ -375,7 +374,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     				
     				ssbnNodeJacket.setArgumentsOfResidentMFrag(); 
     				
-//    				ssbnNode = checkForDoubleSSBNNodeForInputEvaliation(ssbnNode); //TODO analyse... 
+//    				ssbnNode = checkForDoubleSSBNNodeForInputEvaliation(ssbnNode); //TODO analyze... 
     				
     				ssbnNodeList.add(ssbnNode); //TODO cuidado para não adicionar elementos repetidos na lista... 
     				this.generateRecursive(ssbnNode, seen, net);	// algorithm's core
@@ -388,7 +387,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     					currentNode.addParent(ssbnNode, false);
     				}
     			}else{
-    				//TODO O que?
+    				//TODO What to do?
     			}
     		}
 		}
@@ -676,7 +675,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 						return nodes;
 					}
 					else{
-						throw new ImplementationRestrictionException("Um nó não pode ter dois nós de contexto pais!");
+						throw new ImplementationRestrictionException(resource.getString("MoreThanOneContextNodeFather"));
 					}
 				}
 				else{
@@ -695,12 +694,13 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 
 					originNode.setContextFatherSSBNNode(contextFatherSSBNNode);
 					
+					// TODO "translate" this commentary!!! 
 					//in this implementation only this is necessary, because the treat
 					//of context nodes how fathers will be """trivial""", using the XOR 
 					//strategy. For a future implementation that accept different 
-					//distribuitions for the residentNode of the ContextNode, the
-					//arguments of the residente will have to be fill with the OVInstances
-					//for the analize of the resident node formula. (very complex!).  
+					//distributions for the residentNode of the ContextNode, the
+					//arguments of the resident node will have to be filled with the OVInstances
+					//for the analized of the resident node formula. (very complex!).  
 					
 					//Search for all the entities present in kb. 
 					result = kb.getEntityByType(ovProblematic.getValueType().getName());
