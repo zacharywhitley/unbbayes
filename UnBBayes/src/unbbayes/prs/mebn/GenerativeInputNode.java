@@ -10,11 +10,12 @@ import unbbayes.draw.DrawTwoBaseRectangle;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.exception.CycleFoundException;
 
+// TODO Pull up everything to InputNode, because we do not have FindingInputNode anymore.
+
 /**
  * Generative Input Node
  *   
  */
-
 public class GenerativeInputNode extends InputNode {
 	
 	private static final long serialVersionUID = 7377146558744109802L;
