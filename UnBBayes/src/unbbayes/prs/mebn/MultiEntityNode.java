@@ -42,6 +42,10 @@ public class MultiEntityNode extends Node {
 		possibleValueList = new ArrayList<Entity>(); 
 	}
 	
+	/**
+	 * It returns the node's type. Not used for this node.
+	 * @see Node#getType()
+	 */
 	@Override
 	public int getType() {
 		// TODO Auto-generated method stub

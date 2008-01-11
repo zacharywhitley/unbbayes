@@ -7,47 +7,54 @@ import java.util.List;
 
 import unbbayes.draw.DrawFlatPentagon;
 import unbbayes.prs.Node;
-import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.Type;
 
 /**
- * Ordinary Variables are placeholders used in MFrag to refer to 
- * non-specific entities as arguments in given MFrag's RVs. 
+ * Ordinary Variables are place holders used in MFrag to refer to 
+ * non-specific entities as arguments in given MFrag's RVs. As this OV has a 
+ * Type, it has to represent a isA(Type) context node, therefore, it extends 
+ * the Node class.
+ * @see Node
+ * @see Type
+ * @see ContextNode
  */
-
-/* Tentativa de fazer o ordinary variable ser visto como um node */
-
 public class OrdinaryVariable extends Node{
  
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private MFrag mFrag;
 	
 	private Type type; 
 	
 	/* 
-	 * Uma variavel ordinaria pode ser utilizada como argumetno em um n� residente
-	 * ou em um ponteiro para n� residente (input nodes e context nodes. 
-	 * A primeira lista armazena os nodos do primeiro caso que possuem referencia
-	 * para este, enquanto a segunda lista armazena os ponteiros do segundo 
-	 * caso. Estas listas s�o necess�rias para manter a conscist�ncia
-	 * quando for feita a remo��o desta variavel ordin�ria. 
+	 * An OV can be used as argument in a resident node 
+	 * or in a pointer to resident nodes (input nodes and context nodes). 
+	 * The isOVariableOfList contains the nodes for the first case and the 
+	 * isArgumentOfList for the latter. This lists are necessary to keep the 
+	 * consistency when this OV is removed. 
 	 */
 	
 	private List<Node> isOVariableOfList; 
 	
 	private List<ResidentNodePointer> isArgumentOfList; 
 	
-	/* draw */ 
+	/* draw begin */ 
 	
 	private static Color color = new Color(176, 252, 131); 
 	
-    private DrawFlatPentagon drawContextNode;	
+    private DrawFlatPentagon drawContextNode;
+    
+	/* draw end */ 
 	
-	/*
-	 * Nesta vers�o de teste corresponde ao elemento que preenche a posicao 
-	 * da variavel ordin�ria. 
-	 */
-	private ObjectEntity entity; 
-	
+    /**
+     * Creates the OV with its given Type and name for the given MFrag. It also 
+     * creates the respective isA(Type) context node.
+     * @see Type
+     * @see ContextNode
+     */
 	public OrdinaryVariable(String name, Type type, MFrag mFrag){
 		
 		this.name = name; 
@@ -72,7 +79,6 @@ public class OrdinaryVariable extends Node{
 	 * Method responsible for return the MFrag where the Ordinary 
 	 * Variable are inside.
 	 */	
-	
 	public MFrag getMFrag(){
 		return mFrag; 
 	}
@@ -80,7 +86,6 @@ public class OrdinaryVariable extends Node{
 	/**
 	 * Method responsible for return the name of the OV. 
 	 */	
-	
 	public String getName(){
 		return name; 
 	
@@ -90,7 +95,6 @@ public class OrdinaryVariable extends Node{
 	 * Turn the name of the Ordinary Variable 
 	 * @param name The new name 
 	 */
-	
 	public void setName(String name){
 		this.name = name; 
 	
@@ -102,9 +106,8 @@ public class OrdinaryVariable extends Node{
 	}
 	
 	/**
-	 * Set the type.
-	 * Nota: this method don't verify if the string is a type valid.  
-	 * @param type
+	 * Set the type.  
+	 * @param type the type of the ordinary variable.
 	 */
 	public void setValueType(Type _type){
 		
@@ -116,19 +119,17 @@ public class OrdinaryVariable extends Node{
 	}
 	
 	/**
-	 * Method responsible for return the type of the OV. 
+	 * Method responsible for returning the type of the OV. 
 	 */
-	
 	public Type getValueType(){
 		return type; 
 	}
 	
 	/**
-	 * Add a node in the list of nodes when this o variable is
-	 * present (if the node alredy is in the list, don't do nothing). 
-	 * @param node
+	 * Add a node in the list of nodes (if the node already is in the list, 
+	 * don't do nothing). 
+	 * @param node Node to be added.
 	 */
-	
 	protected void addIsOVariableOfList(Node node){
 	   if(!isOVariableOfList.contains(node)){
 	      isOVariableOfList.add(node);
@@ -137,9 +138,8 @@ public class OrdinaryVariable extends Node{
 	
 	/**
 	 * Remove a node of the IsOVariableList. 
-	 * @param node
+	 * @param node Node to be removed.
 	 */
-	
 	public void removeIsOVariableOfList(Node node){
 		isOVariableOfList.remove(node);
 	}
@@ -152,16 +152,18 @@ public class OrdinaryVariable extends Node{
 	
 	protected void removeIsArgumentOfList(ResidentNodePointer pointer){
 		isArgumentOfList.remove(pointer); 
-	}
+	}	
 	
-	public String toString(){
-		return name; 
-	}
-	
+	/**
+	 * Remove the OV from the respective MFrag.
+	 */
 	public void removeFromMFrag(){
 		mFrag = null; 
 	}
 	
+	/**
+	 * Delete the ordinary variable, removing it from the respective MFrag.
+	 */
 	public void delete(){
 		
     	mFrag.removeOrdinaryVariable(this); 
@@ -217,10 +219,10 @@ public class OrdinaryVariable extends Node{
 	}
 	
 	/**
-	 * update the label of this node. 
-	 * The label is the formula that represents this context node.  
+	 * Update the label of this node, representing the isA(Type) context node. 
+	 * @see Type
+	 * @see ContextNode  
 	 */
-	
     public String updateLabel(){
     	
     	String label; 
@@ -231,6 +233,10 @@ public class OrdinaryVariable extends Node{
     	
     }	
     
+    /**
+     * Returns the node's type, that is different from the OC Type.
+     * @see Node#getType()
+     */
 	@Override
 	public int getType() {
 		// TODO Auto-generated method stub
@@ -240,6 +246,7 @@ public class OrdinaryVariable extends Node{
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		
 		if (obj == this) {
@@ -253,6 +260,14 @@ public class OrdinaryVariable extends Node{
 		
 		return false; //obj == null && this != null 
 		
+	}
+	
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString(){
+		return name; 
 	}
 	
 }
