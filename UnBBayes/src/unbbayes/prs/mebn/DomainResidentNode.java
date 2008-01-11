@@ -11,7 +11,7 @@ import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
-//TODO Pull up everything to InputNode, because we do not have FindingInputNode anymore.
+//TODO Pull up everything to ResidentNode, because we do not have FindingResidentNode anymore.
 
 /**
  * 
