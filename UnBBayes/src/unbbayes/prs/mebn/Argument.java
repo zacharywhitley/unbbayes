@@ -1,14 +1,11 @@
 package unbbayes.prs.mebn;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.ArgumentOVariableAlreadySetException;
 
 /*
- * Used only for do the load/save pr-owl process. 
+ * Used only in the process of loading and saving PR-OWL. 
  */
 public class Argument {
 	
@@ -23,9 +20,6 @@ public class Argument {
  
 	private MultiEntityNode multiEntityNode; 
 	
-	private List<Argument> argumentOfList;  
-	private List<Argument> argumentFromList;
-	
 	private int argNumber; 
 
     /* Single argument */
@@ -38,7 +32,7 @@ public class Argument {
 	private int type; 
 	
 	/**
-	 * Contructs a new Argument.
+	 * Constructs a new Argument.
 	 * @param name The name of the Argument
 	 * @param multiEntityNode The node where the argument is in.
 	 */	
@@ -46,10 +40,6 @@ public class Argument {
 		
 		this.name = name; 
 		this.multiEntityNode = multiEntityNode; 
-		 
-		
-		argumentOfList = new ArrayList<Argument>(); 
-		argumentFromList = new ArrayList<Argument>();
 	}
 	
 	public void setArgumentTerm(MultiEntityNode node) throws ArgumentOVariableAlreadySetException{
@@ -105,10 +95,9 @@ public class Argument {
 
 	/**
 	 * Return the number of the argument in the argument list of the node. 
-	 * Be careful because the pr-owl has the first arg number "1" and
-	 * don't "0".
+	 * Be careful because the PR-OWL has the first argument number "1" not "0".
 	 * 
-	 * @return The arg number of the argument. (ArgNumber >= 1)
+	 * @return The number of the argument. (ArgNumber >= 1)
 	 */
 	public int getArgNumber() {
 		return argNumber;
@@ -116,8 +105,9 @@ public class Argument {
 
 	/**
 	 * Set the number of the argument in the argument list of the node. 
-	 * Be careful because the pr-owl has the first arg number "1" and
-	 * don't "0".
+	 * Be careful because the PR-OWL has the first argument number "1" and
+	 * not "0".
+	 * @param argNumber The number of the argument
 	 */
 	public void setArgNumber(int argNumber) {
 		this.argNumber = argNumber;
