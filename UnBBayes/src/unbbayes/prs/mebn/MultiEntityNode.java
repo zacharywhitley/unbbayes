@@ -232,7 +232,7 @@ public class MultiEntityNode extends Node {
 						break;
 					}
 				} else {
-					// recursivelly searches for the ovs inside a complex argument
+					// recursively searches for the ovs inside a complex argument
 					found = arg.getArgumentTerm().hasAllOVs(ovs);
 				}				
 			}
