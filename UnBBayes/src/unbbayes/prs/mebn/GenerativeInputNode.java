@@ -115,7 +115,7 @@ public class GenerativeInputNode extends InputNode {
 		}
 	}
 	
-	
+	// TODO Verify if it is ever used. It seams that UnBBayes is not ready for this.
 	public void setInputInstanceOf(BuiltInRV builtInRV){
 		super.setInputInstanceOf(builtInRV); 
 		builtInRV.addInputInstance(this); 

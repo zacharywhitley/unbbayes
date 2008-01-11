@@ -8,6 +8,7 @@ public class BuiltInRV {
 	private String name; 
 	private String mnemonic; 
 	
+	// TODO Verify if it is ever used. It seams that UnBBayes is not ready for this.
 	private List<GenerativeInputNode> inputInstanceFromList;
 	
 	private List<ContextNode> contextInstanceFromList; 

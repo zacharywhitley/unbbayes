@@ -10,9 +10,11 @@ public class InputNode extends MultiEntityNode {
 	/*
 	 * These two variables (inputInstanceOfRV and inputInstanceOfNode) have an
 	 * 'or' relationship. That means that if this input node is an input
-	 * instance of RV, than it is not from a node. The oposite is also true. In
+	 * instance of RV, than it is not from a node. The opposite is also true. In
 	 * other words, if one is not null the other must be null.
 	 */
+	
+	// TODO Verify if it is ever used. It seams that UnBBayes is not ready for this.
 	private BuiltInRV inputInstanceOfRV;
 	
 	private ResidentNode inputInstanceOfNode;
