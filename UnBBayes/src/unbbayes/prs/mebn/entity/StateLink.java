@@ -2,7 +2,7 @@ package unbbayes.prs.mebn.entity;
 
 /**
  * This class link a resident node to a state. This is necessary because the state
- * have special atributes for each node where it is a state. 
+ * have special attributes for each node where it is a state. 
  * 
  * @author Laecio Lima dos Santos
  */
