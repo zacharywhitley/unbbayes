@@ -282,7 +282,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			
 		}
 		
-		logManager.appendln(currentNode + " return of resident parents recursion"); 
+		logManager.appendln(currentNode + " returned from the resident node parents' recursion"); 
 		
 		
 		
@@ -290,7 +290,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
 	    //------------------------- STEP 4: Add and evaluate input nodes fathers -------------
 
-		logManager.appendln(currentNode + "D:- Analyse input nodes fathers");
+		logManager.appendln(currentNode + "D:- Analyze input nodes fathers");
 		for (GenerativeInputNode inputNode : currentNode.getResident().getInputNodeFatherList()) {
 			
 			DomainResidentNode residentNode = 
