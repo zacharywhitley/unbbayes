@@ -34,7 +34,7 @@ public class DomainResidentNode extends ResidentNode {
 	 */
 	private List<DomainResidentNode> residentNodeChildList;
 	 
-	private List<RandomVariableFinding> randonVariableFindingList; 
+	private List<RandomVariableFinding> randomVariableFindingList; 
 	
 	private DomainMFrag mFrag;
 
@@ -59,7 +59,7 @@ public class DomainResidentNode extends ResidentNode {
 		inputNodeFatherList = new ArrayList<GenerativeInputNode>();
 		residentNodeFatherList = new ArrayList<DomainResidentNode>();	
 		residentNodeChildList = new ArrayList<DomainResidentNode>();	
-		randonVariableFindingList = new ArrayList<RandomVariableFinding>(); 
+		randomVariableFindingList = new ArrayList<RandomVariableFinding>(); 
 		possibleValueList = new ArrayList<StateLink>(); 
 		
 		setName(name); 
@@ -390,19 +390,19 @@ public class DomainResidentNode extends ResidentNode {
 	}
 
 	public void addRandonVariableFinding(RandomVariableFinding finding){
-		randonVariableFindingList.add(finding); 
+		randomVariableFindingList.add(finding); 
 	}
 	
 	public void removeRandonVariableFinding(RandomVariableFinding finding){
-		randonVariableFindingList.remove(finding); 
+		randomVariableFindingList.remove(finding); 
 	}
 	
 	public boolean containsRandonVariableFinding(RandomVariableFinding finding){
-		return randonVariableFindingList.contains(finding); 
+		return randomVariableFindingList.contains(finding); 
 	}
 	
 	public List<RandomVariableFinding> getRandonVariableFindingList() {
-		return randonVariableFindingList;
+		return randomVariableFindingList;
 	}
 
 	/* (non-Javadoc)
