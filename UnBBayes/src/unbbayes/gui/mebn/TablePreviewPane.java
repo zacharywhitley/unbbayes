@@ -16,8 +16,6 @@ import javax.swing.JToolBar;
 import javax.swing.text.StyledDocument;
 
 import unbbayes.controller.MEBNController;
-import unbbayes.controller.NetworkController;
-import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.gui.mebn.auxiliary.ToolKitForTableEdition;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.compiler.Compiler;
@@ -26,8 +24,6 @@ import unbbayes.prs.mebn.compiler.exception.TableFunctionMalformedException;
 import unbbayes.prs.mebn.exception.EntityNotPossibleValueOfNodeException;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.exception.NodeNotPresentInMTheoryException;
-import unbbayes.prs.mebn.table.TableParser;
-import unbbayes.prs.mebn.table.exception.InvalidProbabilityFunctionOperandException;
 
 /** 
  * Pane that show the probabilistic table of the selected resident node
@@ -36,6 +32,11 @@ import unbbayes.prs.mebn.table.exception.InvalidProbabilityFunctionOperandExcept
 
 public class TablePreviewPane extends JPanel{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private DomainResidentNode residentNode; 
 	private JButton btnEditTable; 
 	private JButton btnCompileTable; 
@@ -117,10 +118,6 @@ public class TablePreviewPane extends JPanel{
 				}
 				catch(EntityNotPossibleValueOfNodeException e3 ){
 					JOptionPane.showMessageDialog(null, e3.getMessage()+ " : " + tableParser.getIndex(), "EntityNotPossibleValueOfNodeException", JOptionPane.ERROR_MESSAGE);		
-									
-				}
-				catch(InvalidProbabilityFunctionOperandException e4){
-					JOptionPane.showMessageDialog(null, e4.getMessage()+ " : " + tableParser.getIndex(), "InvalidProbabilityFunctionOperandException", JOptionPane.ERROR_MESSAGE);		
 									
 				}
 				catch(InconsistentTableSemanticsException ex){

@@ -3,20 +3,16 @@ package unbbayes.prs.mebn.compiler.test;
 import java.io.File;
 import java.io.IOException;
 
+import junit.framework.TestCase;
 import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.compiler.Compiler;
-import unbbayes.prs.mebn.compiler.MEBNTableParser;
 import unbbayes.prs.mebn.compiler.exception.InvalidProbabilityRangeException;
 import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredException;
-import unbbayes.prs.mebn.compiler.exception.SomeStateUndeclaredException;
 import unbbayes.prs.mebn.exception.MEBNException;
-import unbbayes.prs.mebn.table.TableParser;
 import unbbayes.util.Debug;
-import junit.framework.TestCase;
 
 public class MEBNTableParserTest extends TestCase {
 	
