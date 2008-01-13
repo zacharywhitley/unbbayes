@@ -70,14 +70,6 @@ public class MEBNEditionPane extends JPanel {
 
 	private final NetworkWindow netWindow;
 
-	/*
-	 * Contem as opcoes gerais do suporte a MEBN:
-	 * - Editar os templates
-	 * - Entrar com os findings e queries
-	 * - Configuracoes do programa
-	 */
-	private JToolBar jtbGeneralOptions;
-
 	/* Mostra o painel de edicao do objeto ativo */
 	private JPanel tabsPanel;
 
@@ -119,10 +111,6 @@ public class MEBNEditionPane extends JPanel {
     private ArgumentEditionPane editArgumentsTab;
 
     private DescriptionPane descriptionPane;
-
-    /*---- Global Options ----*/
-
-    private GlobalOptionsDialog go;
 
     /* Text fields */
 
@@ -181,8 +169,7 @@ public class MEBNEditionPane extends JPanel {
     private final String ENTITY_FINDING_TAB = "EntityFindingTab";
     private final String NODE_FINDING_TAB = "NodeFindingTab";
 
-    /* Table edition pane */
-    private TableEditionPane tableEditionPane;
+    /* Control if the table edition panel is being showed */
     private boolean isTableEditionPaneShow = false; 
 
     /* Matcher used for verify if a text is a name valid*/
@@ -211,8 +198,6 @@ public class MEBNEditionPane extends JPanel {
         jtbTabSelection = new JToolBar();
 
         nodeSelectedBar = new JPanel(cardLayout);
-
-        jtbGeneralOptions = new JToolBar();
 
         jtbEmpty = new JToolBar();
 
