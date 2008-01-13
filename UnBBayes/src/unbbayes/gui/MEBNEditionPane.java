@@ -657,12 +657,15 @@ public class MEBNEditionPane extends JPanel {
 	}
 
 	private class ToolBarGlobalOptions extends JToolBar{
-		
 
-	    private JButton btnGlobalOption;
+	    /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		private JButton btnGlobalOption;
 
 	    private JButton btnEditingMode;
-	    private JButton btnFindingMode;
 	    
 	    private JButton btnQueryMode;
 	    
@@ -680,7 +683,6 @@ public class MEBNEditionPane extends JPanel {
 	    	btnGlobalOption.setToolTipText(resource.getString("mFragInsertToolTip"));
 	    	
 	    	btnEditingMode = new JButton(iconController.getGlobalOptionIcon());
-	    	btnFindingMode = new JButton(iconController.getMTheoryNodeIcon());
 	    	btnQueryMode = new JButton(iconController.getCompileIcon());
 	    	btnTurnToSSBNMode = new JButton(iconController.getSsbnIcon()); 
 	    	btnClearKB = new JButton(iconController.getEditDelete()); 
@@ -747,8 +749,8 @@ public class MEBNEditionPane extends JPanel {
 	    		}
 	    	}); 
 	    	
-	    	JButton btnSaveFindings = new JButton(iconController.getSaveFindingsInstance());
-	    	btnSaveFindings.addActionListener(new ActionListener() {
+	    	btnSaveKB = new JButton(iconController.getSaveFindingsInstance());
+	    	btnSaveKB.addActionListener(new ActionListener() {
 	    		public void actionPerformed(ActionEvent ae) {
 	    			setCursor(new Cursor(Cursor.WAIT_CURSOR));
 	    			
@@ -769,8 +771,8 @@ public class MEBNEditionPane extends JPanel {
 	    		}
 	    	}); 
 	    	
-	    	JButton btnLoadFindings = new JButton(iconController.getLoadFindingsInstance());
-	    	btnLoadFindings.addActionListener(new ActionListener() {
+	    	btnLoadKB = new JButton(iconController.getLoadFindingsInstance());
+	    	btnLoadKB.addActionListener(new ActionListener() {
 	    		public void actionPerformed(ActionEvent ae) {
 	    			setCursor(new Cursor(Cursor.WAIT_CURSOR));
 	    			JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
@@ -792,8 +794,8 @@ public class MEBNEditionPane extends JPanel {
 	        
 	        addSeparator(); 
 	        
-	        add(btnLoadFindings); 
-	        add(btnSaveFindings); 
+	        add(btnLoadKB); 
+	        add(btnSaveKB); 
 	        add(btnClearKB);
 	        
 	        addSeparator(new Dimension(10, 10)); 
