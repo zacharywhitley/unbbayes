@@ -82,7 +82,7 @@ public class TableEditionPane extends JPanel{
 	private JButton btnMin; 
 	
 	private JButton btnStates; 
-	private JButton btnFathers; 
+	private JButton btnParents; 
 	private JButton btnArguments; 
 	
 	private JButton btnCompile; 
@@ -253,11 +253,11 @@ public class TableEditionPane extends JPanel{
 		btnStates.setFont(font);
 		btnStates.setToolTipText(resource.getString("statesTip")); 
 		
-		btnFathers= new JButton("fathers");
-		btnFathers.setBackground(Color.LIGHT_GRAY); 
-		btnFathers.setForeground(Color.WHITE);
-		btnFathers.setFont(font);
-		btnFathers.setToolTipText(resource.getString("fatherTip"));
+		btnParents= new JButton("parents");
+		btnParents.setBackground(Color.LIGHT_GRAY); 
+		btnParents.setForeground(Color.WHITE);
+		btnParents.setFont(font);
+		btnParents.setToolTipText(resource.getString("fatherTip"));
 		
 		btnArguments= new JButton("args");
 		btnArguments.setBackground(Color.LIGHT_GRAY); 
@@ -279,7 +279,7 @@ public class TableEditionPane extends JPanel{
 		
 		//First row
 		jpButtonsEdition.add(btnStates); 
-		jpButtonsEdition.add(btnFathers);
+		jpButtonsEdition.add(btnParents);
 		jpButtonsEdition.add(btnArguments); 
 		
 		//Second row
@@ -328,7 +328,7 @@ public class TableEditionPane extends JPanel{
 		int i; 
 		
 		/* 
-		 * List with the fathers of this node: 
+		 * List with the parents of this node: 
 		 * - Resident Nodes
 		 * - Input Nodes 
 		 * */
@@ -798,7 +798,7 @@ public class TableEditionPane extends JPanel{
 			}
 		}); 
 		
-		btnFathers.addActionListener( new ActionListener(){
+		btnParents.addActionListener( new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				cardLayout.show(jpOptions, "FatherTab"); 
 			}

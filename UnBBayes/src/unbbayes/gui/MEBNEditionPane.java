@@ -92,6 +92,7 @@ public class MEBNEditionPane extends JPanel {
 	 * - relatorios
 	 * - descricoes de erros complexas
 	 */
+	// Is it really necessary?!
 	private JPanel helpPanel;
 
 	/*---- TabPanel and tabs ----*/
