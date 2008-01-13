@@ -171,6 +171,7 @@ public class UnBBayesFrame extends JFrame {
 		contentPane.add(new JScrollPane(desktop), BorderLayout.CENTER);
 		contentPane.add(bottomPanel, BorderLayout.SOUTH);
 
+		this.setIconImage(iconController.getUnBBayesIcon().getImage());
 		setVisible(true);
 
 		singleton = this;

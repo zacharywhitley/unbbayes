@@ -27,6 +27,8 @@ public class IconController implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private static IconController singleton;
+	
+	protected ImageIcon unbbayesIcon;
 
 	protected ImageIcon metalIcon;
 
@@ -285,6 +287,16 @@ public class IconController implements Serializable {
 	}
 
 	protected IconController() {
+	}
+	
+	public ImageIcon getUnBBayesIcon() {
+		if (unbbayesIcon != null) {
+			return unbbayesIcon;
+		} else {
+			unbbayesIcon = new ImageIcon(getClass()
+					.getResource("/icons/unbbayes.png"));
+			return unbbayesIcon;
+		}
 	}
 
 	public ImageIcon getMetalIcon() {
