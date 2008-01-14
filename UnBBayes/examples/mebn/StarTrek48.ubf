@@ -1,8 +1,8 @@
-% Cabeçalho UBF
+% Cabecalho UBF
 Version=0.03
 PrOwl="StarTrek48.owl"
 
-% Declaração de MTheory - UBF
+% Declaracao de MTheory - UBF
 MTheory=Starship_MTheory
 NextMFrag=12
 NextResident=25
@@ -10,290 +10,84 @@ NextInput=19
 NextContext=15
 NextEntity=1
 
-% Declaração de MFrags e nós UBF
+% Declaracao de MFrags e Nos UBF
 
 % MFrag
-MFrag=DangerToOthers_MFrag
-NextOrdinaryVar=4
+MFrag=SensorReport_MFrag
+NextOrdinaryVar=6
 
-% Nós Residentes
+% Nos Residentes
 
 
-Node=DangerToOthers
+Node=SRDistance
 Type=DomainResidentNode
-Position=376.0,313.0
+Position=423.0,665.0
 Size=100,20
 
-% nós Input
-
-
-Node=IX18
-Type=GenerativeInputNode
-Position=375.0,194.0
-Size=100,20
-
-% Nós de Contexto
-
-
-Node=CX1
-Type=ContextNode
-Position=287.0,139.0
-Size=100,20
-
-Node=CX4
-Type=ContextNode
-Position=443.0,141.0
-Size=100,20
-
-% Variáveis Ordinárias
-
-
-Node=s
-Type=OrdinalVar
-Position=208.0,82.0
-Size=100,20
-
-Node=st
-Type=OrdinalVar
-Position=347.0,81.0
-Size=100,20
-
-Node=t
-Type=OrdinalVar
-Position=490.0,81.0
-Size=100,20
-
-% MFrag
-MFrag=DangerToSelf_MFrag
-NextOrdinaryVar=4
-
-% Nós Residentes
-
-
-Node=DangerToSelf
+Node=SRClass
 Type=DomainResidentNode
-Position=366.0,336.0
+Position=126.0,662.0
 Size=100,20
 
-% nós Input
+% Nos Input
 
 
-Node=IX7
+Node=IX15
 Type=GenerativeInputNode
-Position=365.0,237.0
+Position=225.0,599.0
 Size=100,20
 
-Node=IX8
+Node=IX16
 Type=GenerativeInputNode
-Position=232.0,238.0
+Position=422.0,559.0
 Size=100,20
 
-% Nós de Contexto
+Node=IX14
+Type=GenerativeInputNode
+Position=331.0,599.0
+Size=100,20
+
+Node=IX13
+Type=GenerativeInputNode
+Position=126.0,562.0
+Size=100,20
+
+% Nos de Contexto
 
 
-Node=CX8
+Node=CX14
 Type=ContextNode
-Position=367.0,179.0
+Position=271.0,513.0
 Size=100,20
 
-Node=CX7
+Node=CX13
 Type=ContextNode
-Position=231.0,178.0
+Position=352.0,468.0
 Size=100,20
 
-% Variáveis Ordinárias
-
-
-Node=t
-Type=OrdinalVar
-Position=417.0,116.0
-Size=100,20
-
-Node=s
-Type=OrdinalVar
-Position=163.0,116.0
-Size=100,20
-
-Node=st
-Type=OrdinalVar
-Position=290.0,116.0
-Size=100,20
-
-% MFrag
-MFrag=StarshipExistence_MFrag
-NextOrdinaryVar=3
-
-% Nós Residentes
-
-
-Node=Exists
-Type=DomainResidentNode
-Position=262.0,329.0
-Size=100,20
-
-% nós Input
-
-
-Node=IX3
-Type=GenerativeInputNode
-Position=339.0,269.0
-Size=100,20
-
-Node=IX2
-Type=GenerativeInputNode
-Position=261.0,220.0
-Size=100,20
-
-% Nós de Contexto
-
-
-Node=CX2
-Type=ContextNode
-Position=300.0,163.0
-Size=100,20
-
-% Variáveis Ordinárias
-
-
-Node=z
-Type=OrdinalVar
-Position=302.0,116.0
-Size=100,20
-
-Node=st
-Type=OrdinalVar
-Position=302.0,70.0
-Size=100,20
-
-% MFrag
-MFrag=SRData_MFrag
-NextOrdinaryVar=2
-
-% Nós Residentes
-
-
-Node=Subject
-Type=DomainResidentNode
-Position=275.0,157.0
-Size=100,20
-
-% Variáveis Ordinárias
+% Variaveis Ordinarias
 
 
 Node=sr
 Type=OrdinalVar
-Position=276.0,112.0
-Size=100,20
-
-% MFrag
-MFrag=StarshipData_MFrag
-NextOrdinaryVar=2
-
-% Nós Residentes
-
-
-Node=StarshipZone
-Type=DomainResidentNode
-Position=277.0,186.0
-Size=100,20
-
-Node=IsOwnStarship
-Type=DomainResidentNode
-Position=277.0,225.0
-Size=100,20
-
-% Nós de Contexto
-
-
-Node=CX3
-Type=ContextNode
-Position=279.0,98.0
-Size=100,20
-
-% Variáveis Ordinárias
-
-
-Node=st
-Type=OrdinalVar
-Position=278.0,143.0
-Size=100,20
-
-% MFrag
-MFrag=Zone_MFrag
-NextOrdinaryVar=5
-
-% Nós Residentes
-
-
-Node=ZoneEShips
-Type=DomainResidentNode
-Position=460.0,456.0
-Size=100,20
-
-Node=ZoneMD
-Type=DomainResidentNode
-Position=302.0,368.0
-Size=100,20
-
-Node=ZoneNature
-Type=DomainResidentNode
-Position=459.0,367.0
-Size=100,20
-
-Node=ZoneFShips
-Type=DomainResidentNode
-Position=304.0,458.0
-Size=100,20
-
-% nós Input
-
-
-Node=IX5
-Type=GenerativeInputNode
-Position=303.0,284.0
-Size=100,20
-
-Node=IX6
-Type=GenerativeInputNode
-Position=455.0,284.0
-Size=100,20
-
-% Nós de Contexto
-
-
-Node=CX6
-Type=ContextNode
-Position=457.0,183.0
-Size=100,20
-
-% Variáveis Ordinárias
-
-
-Node=tPrev
-Type=OrdinalVar
-Position=306.0,139.0
-Size=100,20
-
-Node=z
-Type=OrdinalVar
-Position=305.0,186.0
+Position=201.0,468.0
 Size=100,20
 
 Node=t
 Type=OrdinalVar
-Position=458.0,235.0
+Position=421.0,513.0
 Size=100,20
 
 Node=st
 Type=OrdinalVar
-Position=305.0,236.0
+Position=130.0,513.0
 Size=100,20
 
 % MFrag
 MFrag=Starship_MFrag
 NextOrdinaryVar=5
 
-% Nós Residentes
+% Nos Residentes
 
 
 Node=HarmPotential
@@ -321,7 +115,7 @@ Type=DomainResidentNode
 Position=262.0,472.0
 Size=100,20
 
-% nós Input
+% Nos Input
 
 
 Node=IX12
@@ -339,7 +133,7 @@ Type=GenerativeInputNode
 Position=437.0,355.0
 Size=100,20
 
-% Nós de Contexto
+% Nos de Contexto
 
 
 Node=CX9
@@ -357,7 +151,7 @@ Type=ContextNode
 Position=426.0,298.0
 Size=100,20
 
-% Variáveis Ordinárias
+% Variaveis Ordinarias
 
 
 Node=tPrev
@@ -381,77 +175,283 @@ Position=272.0,251.0
 Size=100,20
 
 % MFrag
-MFrag=SensorReport_MFrag
-NextOrdinaryVar=6
+MFrag=Zone_MFrag
+NextOrdinaryVar=5
 
-% Nós Residentes
+% Nos Residentes
 
 
-Node=SRDistance
+Node=ZoneEShips
 Type=DomainResidentNode
-Position=423.0,665.0
+Position=460.0,456.0
 Size=100,20
 
-Node=SRClass
+Node=ZoneMD
 Type=DomainResidentNode
-Position=126.0,662.0
+Position=302.0,368.0
 Size=100,20
 
-% nós Input
+Node=ZoneNature
+Type=DomainResidentNode
+Position=459.0,367.0
+Size=100,20
+
+Node=ZoneFShips
+Type=DomainResidentNode
+Position=304.0,458.0
+Size=100,20
+
+% Nos Input
 
 
-Node=IX15
+Node=IX5
 Type=GenerativeInputNode
-Position=225.0,599.0
+Position=303.0,284.0
 Size=100,20
 
-Node=IX16
+Node=IX6
 Type=GenerativeInputNode
-Position=422.0,559.0
+Position=455.0,284.0
 Size=100,20
 
-Node=IX14
-Type=GenerativeInputNode
-Position=331.0,599.0
-Size=100,20
-
-Node=IX13
-Type=GenerativeInputNode
-Position=126.0,562.0
-Size=100,20
-
-% Nós de Contexto
+% Nos de Contexto
 
 
-Node=CX14
+Node=CX6
 Type=ContextNode
-Position=271.0,513.0
+Position=457.0,183.0
 Size=100,20
 
-Node=CX13
-Type=ContextNode
-Position=352.0,468.0
-Size=100,20
-
-% Variáveis Ordinárias
+% Variaveis Ordinarias
 
 
-Node=sr
+Node=tPrev
 Type=OrdinalVar
-Position=201.0,468.0
+Position=306.0,139.0
+Size=100,20
+
+Node=z
+Type=OrdinalVar
+Position=305.0,186.0
 Size=100,20
 
 Node=t
 Type=OrdinalVar
-Position=421.0,513.0
+Position=458.0,235.0
 Size=100,20
 
 Node=st
 Type=OrdinalVar
-Position=130.0,513.0
+Position=305.0,236.0
 Size=100,20
 
-% Instâncias de Entidades Objetos
+% MFrag
+MFrag=StarshipData_MFrag
+NextOrdinaryVar=2
+
+% Nos Residentes
+
+
+Node=IsOwnStarship
+Type=DomainResidentNode
+Position=277.0,225.0
+Size=100,20
+
+Node=StarshipZone
+Type=DomainResidentNode
+Position=277.0,186.0
+Size=100,20
+
+% Nos de Contexto
+
+
+Node=CX3
+Type=ContextNode
+Position=279.0,98.0
+Size=100,20
+
+% Variaveis Ordinarias
+
+
+Node=st
+Type=OrdinalVar
+Position=278.0,143.0
+Size=100,20
+
+% MFrag
+MFrag=SRData_MFrag
+NextOrdinaryVar=2
+
+% Nos Residentes
+
+
+Node=Subject
+Type=DomainResidentNode
+Position=275.0,157.0
+Size=100,20
+
+% Variaveis Ordinarias
+
+
+Node=sr
+Type=OrdinalVar
+Position=276.0,112.0
+Size=100,20
+
+% MFrag
+MFrag=StarshipExistence_MFrag
+NextOrdinaryVar=3
+
+% Nos Residentes
+
+
+Node=Exists
+Type=DomainResidentNode
+Position=262.0,329.0
+Size=100,20
+
+% Nos Input
+
+
+Node=IX2
+Type=GenerativeInputNode
+Position=261.0,220.0
+Size=100,20
+
+Node=IX3
+Type=GenerativeInputNode
+Position=339.0,269.0
+Size=100,20
+
+% Nos de Contexto
+
+
+Node=CX2
+Type=ContextNode
+Position=300.0,163.0
+Size=100,20
+
+% Variaveis Ordinarias
+
+
+Node=st
+Type=OrdinalVar
+Position=302.0,70.0
+Size=100,20
+
+Node=z
+Type=OrdinalVar
+Position=302.0,116.0
+Size=100,20
+
+% MFrag
+MFrag=DangerToSelf_MFrag
+NextOrdinaryVar=4
+
+% Nos Residentes
+
+
+Node=DangerToSelf
+Type=DomainResidentNode
+Position=366.0,336.0
+Size=100,20
+
+% Nos Input
+
+
+Node=IX7
+Type=GenerativeInputNode
+Position=365.0,237.0
+Size=100,20
+
+Node=IX8
+Type=GenerativeInputNode
+Position=232.0,238.0
+Size=100,20
+
+% Nos de Contexto
+
+
+Node=CX8
+Type=ContextNode
+Position=367.0,179.0
+Size=100,20
+
+Node=CX7
+Type=ContextNode
+Position=231.0,178.0
+Size=100,20
+
+% Variaveis Ordinarias
+
+
+Node=t
+Type=OrdinalVar
+Position=417.0,116.0
+Size=100,20
+
+Node=s
+Type=OrdinalVar
+Position=163.0,116.0
+Size=100,20
+
+Node=st
+Type=OrdinalVar
+Position=290.0,116.0
+Size=100,20
+
+% MFrag
+MFrag=DangerToOthers_MFrag
+NextOrdinaryVar=4
+
+% Nos Residentes
+
+
+Node=DangerToOthers
+Type=DomainResidentNode
+Position=376.0,313.0
+Size=100,20
+
+% Nos Input
+
+
+Node=IX18
+Type=GenerativeInputNode
+Position=375.0,194.0
+Size=100,20
+
+% Nos de Contexto
+
+
+Node=CX1
+Type=ContextNode
+Position=287.0,139.0
+Size=100,20
+
+Node=CX4
+Type=ContextNode
+Position=443.0,141.0
+Size=100,20
+
+% Variaveis Ordinarias
+
+
+Node=s
+Type=OrdinalVar
+Position=208.0,82.0
+Size=100,20
+
+Node=st
+Type=OrdinalVar
+Position=347.0,81.0
+Size=100,20
+
+Node=t
+Type=OrdinalVar
+Position=490.0,81.0
+Size=100,20
+
+% Instancias de Entidades Objetos
 
 ObjEntity=TimeStep
 Instances=T0,T1,T2,T3
