@@ -1,37 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="var" path="JRE_LIB" sourcepath="JRE_SRC"/>
-	<classpathentry exported="true" kind="lib" path="lib/GIFOutput.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jh.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/junit.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/plot.jar"/>
-	<classpathentry kind="lib" path="lib/xalan.jar"/>
-	<classpathentry kind="lib" path="lib/xml-apis.jar"/>
-	<classpathentry kind="lib" path="lib/protege/protege.jar"/>
-	<classpathentry kind="lib" path="lib/jaxme/jaxme2-0.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/jaxme/jaxme2-rt-0.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/jaxme/jaxmeapi-0.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/jaxme/jaxmejs-0.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/jaxme/jaxmepm-0.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/jaxme/jaxmexs-0.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/powerloom/powerloom.jar"/>
-	<classpathentry kind="lib" path="lib/powerloom/stella.jar"/>
-	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/commons-lang-2.0.jar"/>
-	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/commons-logging.jar"/>
-	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/edtftpj-1.5.2.jar"/>
-	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/ekitspell.jar"/>
-	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/icu4j_3_4.jar"/>
-	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/iri.jar"/>
-	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/jcalendar.jar"/>
-	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/jena.jar"/>
-	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/json.jar"/>
-	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/kazuki.jar"/>
-	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/log4j-1.2.12.jar"/>
-	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/owlsyntax.jar"/>
-	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/protege-owl.jar"/>
-	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/stax-api-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/protege/edu.stanford.smi.protegex.owl/xercesImpl.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/miglayout15-swing.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry including="**/*.java" kind="src" path="src/main/java"/>
+	<classpathentry including="**/*.java" kind="src" output="target/test-classes" path="src/test/java"/>
+	<classpathentry excluding="**/*.java" including="**" kind="src" path="src/main/resources"/>
+	<classpathentry kind="con" path="org.devzuz.q.maven.jdt.core.mavenClasspathContainer"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
