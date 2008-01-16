@@ -1,6 +1,5 @@
 package unbbayes.prs.mebn.exception;
 
-import java.util.ResourceBundle;
 
 public class DuplicatedNameException extends Exception{
 

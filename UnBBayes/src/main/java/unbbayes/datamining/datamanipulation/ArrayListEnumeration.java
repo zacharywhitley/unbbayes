@@ -1,11 +1,11 @@
 package unbbayes.datamining.datamanipulation;
 
-import java.util.*;
+import java.util.Enumeration;
 
 /**
  *  Class for enumerating the ArrayList's elements.
  *
- *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ *  @author Mï¿½rio Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @version $1.0 $ (16/02/2002)
  */
 public class ArrayListEnumeration implements Enumeration

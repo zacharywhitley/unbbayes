@@ -2,11 +2,8 @@ package unbbayes.prs.mebn.entity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
-import unbbayes.prs.mebn.entity.exception.TypeDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.TypeIsInUseException;
 
 /**

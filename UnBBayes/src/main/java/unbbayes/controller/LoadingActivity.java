@@ -1,6 +1,5 @@
 package unbbayes.controller;
 
-import java.lang.Thread;
 
 /** This class loads the instances in a separate thread for 
  *  the FileController instance

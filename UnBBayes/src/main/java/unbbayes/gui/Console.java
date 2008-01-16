@@ -12,10 +12,23 @@ package unbbayes.gui;
 
 //extract of http://www.comweb.nl/java/Console/Console.html in november, 18, 2007
 
-import java.io.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.PrintStream;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 public class Console extends WindowAdapter implements WindowListener, ActionListener, Runnable
 {

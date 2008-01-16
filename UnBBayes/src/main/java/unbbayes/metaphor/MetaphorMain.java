@@ -25,14 +25,13 @@ import javax.swing.border.TitledBorder;
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
 import unbbayes.gui.FileIcon;
-import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLIO;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
 /**
- * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ * @author Mï¿½rio Henrique Paes Vieira (mariohpv@bol.com.br)
  * @version 1.1 (19/11/06)
  */
 
@@ -148,11 +147,11 @@ public class MetaphorMain extends JPanel
     jTextArea5.setEditable(false);
     jPanel9.setLayout(borderLayout9);
     jLabel3.setHorizontalAlignment(SwingConstants.CENTER);
-    jLabel3.setText("Características da Variável Atual");
+    jLabel3.setText("Caracterï¿½sticas da Variï¿½vel Atual");
     jPanel11.setLayout(borderLayout11);
     jPanel10.setLayout(borderLayout12);
     jLabel4.setHorizontalAlignment(SwingConstants.CENTER);
-    jLabel4.setText("Evidências");
+    jLabel4.setText("Evidï¿½ncias");
     jPanel13.setLayout(borderLayout13);
     jPanel8.setLayout(borderLayout10);
     jPanel12.setLayout(borderLayout14);
@@ -195,7 +194,7 @@ public class MetaphorMain extends JPanel
       String[] s1 = {"net", "xml"};
       fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setMultiSelectionEnabled(false);
-      //adicionar FileView no FileChooser para desenhar ícones de arquivos
+      //adicionar FileView no FileChooser para desenhar ï¿½cones de arquivos
       fileChooser.setFileView(new FileIcon(this));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "Networks (*.net) or XML-BIF(*.xml)"));
       int returnVal = fileChooser.showOpenDialog(this);

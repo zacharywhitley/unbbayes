@@ -9,7 +9,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import unbbayes.controller.MEBNController;
-import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
@@ -17,7 +16,7 @@ import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 /**
  * Arvore de variaveis ordinarias utilizada para que o usuario adicione
  * variaveis ordinarias como argumentos em um resident node. 
- * A unica acao que o usuario pode fazer em um no da arvore é clicar duas 
+ * A unica acao que o usuario pode fazer em um no da arvore ï¿½ clicar duas 
  * vezes para que este seja adicionado como argumento no residente. 
  * 
  * @author Laecio

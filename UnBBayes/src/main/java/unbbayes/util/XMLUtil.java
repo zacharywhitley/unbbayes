@@ -1,19 +1,21 @@
 package unbbayes.util;
 
-import java.io.ByteArrayOutputStream ;
 import java.io.ByteArrayInputStream;
-import org.w3c.dom.*;
-import org.w3c.dom.NodeList;
+import java.io.ByteArrayOutputStream;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.dom.DOMSource;
-import org.xml.sax.InputSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.xpath.XPathAPI;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /**
  * This class is a XML utility class. It requires two Apache Java modules:

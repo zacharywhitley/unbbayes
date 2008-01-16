@@ -21,7 +21,6 @@ import javax.swing.JToolBar;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
-import unbbayes.controller.NetworkController;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -30,15 +29,15 @@ import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
 /**
- * Painel para que o usuario edite quais são os argumentos presentes em 
- * um resident node. O painel é dividido em duas arvores: 
+ * Painel para que o usuario edite quais sï¿½o os argumentos presentes em 
+ * um resident node. O painel ï¿½ dividido em duas arvores: 
  * a arvore contendo as variaveis ordinarias da MFrag a qual o resident
- * pertence, e uma arvore contendo as variaveis ordinarias que são argumentos
- * no residente. As ações são realizadas clicando-se duas vezes em um nodo: 
+ * pertence, e uma arvore contendo as variaveis ordinarias que sï¿½o argumentos
+ * no residente. As aï¿½ï¿½es sï¿½o realizadas clicando-se duas vezes em um nodo: 
  * - ao clicar duas vezes em um nodo da arvore da MFrag, esta variavel ordinaria
- * é adicionada como argumento no nodo
+ * ï¿½ adicionada como argumento no nodo
  * - ao clicar duas vezes em um nodo da arvore do Resident, esta variavel 
- * ordinaria é excluida como argumento do nodo. 
+ * ordinaria ï¿½ excluida como argumento do nodo. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com) 
  * @version 1.0 (11/15/2006)

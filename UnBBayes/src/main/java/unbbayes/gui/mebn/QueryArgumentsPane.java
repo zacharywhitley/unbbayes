@@ -18,7 +18,6 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
-import unbbayes.prs.mebn.entity.Type;
 
 /**
  * Painel para selecionar os argumentos da query. 

@@ -1,6 +1,6 @@
 package unbbayes.datamining.gui;
 
-import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.datamanipulation.Instance;
 
 public interface IInferencePanel {
 

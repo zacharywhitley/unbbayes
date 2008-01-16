@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.mebn.MultiEntityNode;
-import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
-import unbbayes.prs.mebn.entity.exception.TypeDoesNotExistException;
-import unbbayes.prs.mebn.entity.exception.TypeException;
 
 /**
  * This class represents the MEBN theory entity. MEBN logic treats the world as

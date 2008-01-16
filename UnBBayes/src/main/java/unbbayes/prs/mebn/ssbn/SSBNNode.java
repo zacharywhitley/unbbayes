@@ -11,7 +11,6 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 import unbbayes.prs.Edge;
-import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.DomainResidentNode;
@@ -21,9 +20,7 @@ import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.StateLink;
-import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
-import unbbayes.util.Debug;
 import unbbayes.util.NodeList;
 
 

@@ -18,12 +18,18 @@
 
 package unbbayes.controller;
 
-import java.awt.*;
-import java.awt.print.*;
-import javax.swing.*;
-
-import java.util.*;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.print.PageFormat;
+import java.awt.print.Pageable;
+import java.awt.print.Printable;
 import java.util.List;
+import java.util.ResourceBundle;
+
+import javax.swing.JTable;
 
 /**
  * Table printing class <code>JTable</code>

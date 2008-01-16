@@ -10,7 +10,6 @@ import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.StateLink;
 
 /**

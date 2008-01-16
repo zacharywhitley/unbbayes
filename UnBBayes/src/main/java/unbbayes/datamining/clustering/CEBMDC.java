@@ -1,7 +1,6 @@
 package unbbayes.datamining.clustering;
 
 import unbbayes.datamining.datamanipulation.Attribute;
-import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 
 /**

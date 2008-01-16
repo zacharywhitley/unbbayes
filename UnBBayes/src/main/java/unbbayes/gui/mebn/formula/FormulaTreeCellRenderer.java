@@ -8,10 +8,9 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 import unbbayes.controller.IconController;
-import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.context.EnumSubType;
 import unbbayes.prs.mebn.context.EnumType;
-import unbbayes.prs.mebn.entity.CategoricalStateEntity;
+import unbbayes.prs.mebn.context.NodeFormulaTree;
 
 public class FormulaTreeCellRenderer extends DefaultTreeCellRenderer {
 	

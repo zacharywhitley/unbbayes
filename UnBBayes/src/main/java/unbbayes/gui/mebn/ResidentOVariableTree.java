@@ -16,7 +16,6 @@ import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
-import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;

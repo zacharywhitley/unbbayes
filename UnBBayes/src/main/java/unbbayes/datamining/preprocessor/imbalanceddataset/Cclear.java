@@ -4,7 +4,6 @@ import java.util.Arrays;
 
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
-import unbbayes.datamining.evaluation.batchEvaluation.GlobalBatchParameters;
 import unbbayes.datamining.evaluation.batchEvaluation.PreprocessorParameters;
 
 /**

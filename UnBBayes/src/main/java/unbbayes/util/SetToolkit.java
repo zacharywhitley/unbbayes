@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -21,12 +21,15 @@
 
 package unbbayes.util;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.ResourceBundle;
 
 /**
- *  Classe que fornece métodos estáticos para operações (união e intersecao)
- *  entre conjuntos (List). A operação de subtração e de pertinência são
- *  feitas utilizando métodos do próprio List.
+ *  Classe que fornece mï¿½todos estï¿½ticos para operaï¿½ï¿½es (uniï¿½o e intersecao)
+ *  entre conjuntos (List). A operaï¿½ï¿½o de subtraï¿½ï¿½o e de pertinï¿½ncia sï¿½o
+ *  feitas utilizando mï¿½todos do prï¿½prio List.
  *
  *@author     Michael e Rommel
  */
@@ -36,11 +39,11 @@ public class SetToolkit {
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.util.resources.UtilResources");
 
     /**
-     *  Realiza a união entre dois conjuntos.
+     *  Realiza a uniï¿½o entre dois conjuntos.
      *
      *@param  conjuntoA  conjunto A
      *@param  conjuntoB  conjunto B
-     *@return            A união B
+     *@return            A uniï¿½o B
      */
     public static List union(List<?> conjuntoA, List<?> conjuntoB) {
         List<Object> result = (ArrayList<Object>)clone(conjuntoA);
@@ -55,11 +58,11 @@ public class SetToolkit {
 
 
     /**
-     *  Realiza a união entre dois conjuntos.
+     *  Realiza a uniï¿½o entre dois conjuntos.
      *
      *@param  conjuntoA  conjunto A
      *@param  conjuntoB  conjunto B
-     *@return            A união B
+     *@return            A uniï¿½o B
      */
     public static NodeList union(NodeList conjuntoA, NodeList conjuntoB) {
         NodeList result = new NodeList(conjuntoA.size() + conjuntoB.size());
@@ -75,11 +78,11 @@ public class SetToolkit {
 
 
     /**
-     *  Realiza a interseção entre dois conjuntos.
+     *  Realiza a interseï¿½ï¿½o entre dois conjuntos.
      *
      *@param  conjuntoA  conjunto A
      *@param  conjuntoB  conjunto B
-     *@return            A interseção B
+     *@return            A interseï¿½ï¿½o B
      */
     public static List intersection(List<?> conjuntoA, List<?> conjuntoB) {
         List<Object> result = (ArrayList<Object>)clone(conjuntoA);
@@ -89,11 +92,11 @@ public class SetToolkit {
     
     
 	/**
-     *  Realiza a interseção entre dois conjuntos.
+     *  Realiza a interseï¿½ï¿½o entre dois conjuntos.
      *
      *@param  conjuntoA  conjunto A
      *@param  conjuntoB  conjunto B
-     *@return            A interseção B
+     *@return            A interseï¿½ï¿½o B
      */
     public static NodeList intersection(NodeList conjuntoA, NodeList conjuntoB) {
         NodeList result = clone(conjuntoA);

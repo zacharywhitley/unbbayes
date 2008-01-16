@@ -1,14 +1,12 @@
 package unbbayes.prs.mebn.context;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNodePointer;
-import unbbayes.prs.mebn.ssbn.OVInstance;
 
 
 /**

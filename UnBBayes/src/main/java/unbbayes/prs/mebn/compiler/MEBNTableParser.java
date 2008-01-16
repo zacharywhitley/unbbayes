@@ -5,7 +5,6 @@
 package unbbayes.prs.mebn.compiler;
 
 
-import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;

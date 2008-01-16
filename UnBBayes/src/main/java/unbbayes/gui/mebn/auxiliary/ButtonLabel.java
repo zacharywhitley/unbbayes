@@ -5,8 +5,6 @@ import java.awt.Color;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
-import unbbayes.controller.IconController;
-
 public class ButtonLabel extends JButton{
 	
 	private int SIZE_LABEL = 15; 

@@ -1,11 +1,11 @@
 package unbbayes.datamining.classifiers.bayesianlearning;
 
-import unbbayes.datamining.datamanipulation.*;
-
-import unbbayes.prs.bn.*;
-import unbbayes.gui.*;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.gui.NetworkWindow;
+import unbbayes.gui.PNEditionPane;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 /**
- * @author Mário Henrique
+ * @author Mï¿½rio Henrique
  *
  * To change this generated comment edit the template variable "typecomment":
  * Window>Preferences>Java>Templates.

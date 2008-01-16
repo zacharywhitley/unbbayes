@@ -26,11 +26,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ResourceBundle;
 
-import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.xml.bind.JAXBException;
 
 import unbbayes.gui.MSBNWindow;
@@ -41,7 +38,6 @@ import unbbayes.io.NetIO;
 import unbbayes.io.XMLIO;
 import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.io.mebn.UbfIO;
-import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;

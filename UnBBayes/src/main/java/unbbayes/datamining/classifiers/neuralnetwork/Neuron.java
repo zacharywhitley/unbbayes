@@ -1,6 +1,6 @@
 package unbbayes.datamining.classifiers.neuralnetwork;
 
-import java.io.*;
+import java.io.Serializable;
 
 /**
  *  Abstract class that defines the methods that a neuron must have.

@@ -1,6 +1,8 @@
 package unbbayes.datamining.discretize;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+
 import unbbayes.datamining.datamanipulation.Utils;
 
 public class DiscretizationValue implements Comparable {

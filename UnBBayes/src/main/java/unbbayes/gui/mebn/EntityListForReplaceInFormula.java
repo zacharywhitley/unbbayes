@@ -17,7 +17,6 @@ import javax.swing.event.ListSelectionListener;
 import unbbayes.controller.FormulaTreeController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
-import unbbayes.controller.NetworkController;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 

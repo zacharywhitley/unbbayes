@@ -1,10 +1,13 @@
 package unbbayes.datamining.datamanipulation;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  *
- *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ *  @author Mï¿½rio Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @version $1.0 $ (20/06/2003)
  */
 public class TxtSaver extends Saver{

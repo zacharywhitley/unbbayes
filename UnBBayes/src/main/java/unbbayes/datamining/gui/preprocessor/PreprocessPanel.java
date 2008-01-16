@@ -2,7 +2,6 @@ package unbbayes.datamining.gui.preprocessor;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
@@ -21,7 +20,6 @@ import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import unbbayes.datamining.datamanipulation.Attribute;
@@ -36,7 +34,7 @@ public class PreprocessPanel extends JPanel
   /** Serialization runtime version number */
   private static final long serialVersionUID = 0;	
 	
-  /** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+  /** Carrega o arquivo de recursos para internacionalizaï¿½ï¿½o da localidade padrï¿½o */
   private ResourceBundle resource;
   private JPanel filePanel = new JPanel();
   private AttributeSelectionPanel attributePanel = new AttributeSelectionPanel();
@@ -267,7 +265,7 @@ public class PreprocessPanel extends JPanel
 
   public void setBaseInstances(InstanceSet inst)
   {   instances = inst;
-      setTable(null,0); //Ao abrir um arquivo não mostra informações anteriores
+      setTable(null,0); //Ao abrir um arquivo nï¿½o mostra informaï¿½ï¿½es anteriores
       jLabel4.setText(inst.getRelationName());
       jLabel2.setText(inst.numWeightedInstances()+"");
       jLabel3.setText(inst.numAttributes()+"");
@@ -416,7 +414,7 @@ public class PreprocessPanel extends JPanel
       }
   }
 
-  //Chama editor de instâncias
+  //Chama editor de instï¿½ncias
 
   void discretizeButton_actionPerformed(ActionEvent e)
   {   new DiscretizationPanel(reference,instances,instances.getAttribute(selectedAttribute));

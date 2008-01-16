@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -21,18 +21,18 @@
 
 package unbbayes.prs.bn;
 
-import unbbayes.prs.*;
+import unbbayes.prs.Node;
 
 /**
- * Interface para variáveis que serão visualizadas na árvore.
+ * Interface para variï¿½veis que serï¿½o visualizadas na ï¿½rvore.
  * Interface para o DecisionNode e ProbabilisticNode.
  */
 public abstract class TreeVariable extends Node implements java.io.Serializable {
 
-    // Clique que a variável está associada.
+    // Clique que a variï¿½vel estï¿½ associada.
     protected ITabledVariable cliqueAssociado;
 
-    // Armazena marginais e evidências.
+    // Armazena marginais e evidï¿½ncias.
     protected float[] marginais;
     
     private float[] marginalCopy;
@@ -41,7 +41,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
 
     /**
      * Tem que ser sobrescrito para atualizar as marginais
-     * que serão visualizadas na árvore da interface.
+     * que serï¿½o visualizadas na ï¿½rvore da interface.
      */
     protected abstract void marginal();
     
@@ -57,10 +57,10 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     }
     
     /**
-     *  Retorna o valor da marginal de determinado índice.
+     *  Retorna o valor da marginal de determinado ï¿½ndice.
      *
-     *@param index returna a marginal do estado especificado pelo parâmetro <code>index</code>
-     *@return    valor da marginal de determinado índice.
+     *@param index returna a marginal do estado especificado pelo parï¿½metro <code>index</code>
+     *@return    valor da marginal de determinado ï¿½ndice.
      */
     public float getMarginalAt(int index) {
         return marginais[index];
@@ -71,7 +71,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     }
 
     /**
-     * Limpa o flag de evidência.
+     * Limpa o flag de evidï¿½ncia.
      */
     void resetEvidence() {
         evidence = -1;
@@ -79,9 +79,9 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
 
 
     /**
-     * Retorna true se esta variável contém alguma evidência e false caso contrário.
+     * Retorna true se esta variï¿½vel contï¿½m alguma evidï¿½ncia e false caso contrï¿½rio.
      *
-     * @return true se esta variável contém alguma evidência e false caso contrário.
+     * @return true se esta variï¿½vel contï¿½m alguma evidï¿½ncia e false caso contrï¿½rio.
      */
     public boolean hasEvidence() {
         return (evidence != -1);
@@ -94,9 +94,9 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
 
 
     /**
-     * Adiciona um finding (evidência) no estado especificado.
+     * Adiciona um finding (evidï¿½ncia) no estado especificado.
      *
-     * @param stateNo índice do estado a ser adicionado o finding.
+     * @param stateNo ï¿½ndice do estado a ser adicionado o finding.
      */
     public void addFinding(int stateNo) {
         float[] likelihood = new float[getStatesSize()];
@@ -106,9 +106,9 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     }
 
     /**
-     * Adicina um likelihood nesta variável
+     * Adicina um likelihood nesta variï¿½vel
      *
-     * @param valores array contendo o likelihood de cada estado da variável.
+     * @param valores array contendo o likelihood de cada estado da variï¿½vel.
      */
     public void addLikeliHood(float valores[]) {
         for (int i = 0; i < getStatesSize(); i++) {

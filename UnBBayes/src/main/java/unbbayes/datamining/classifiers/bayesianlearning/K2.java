@@ -1,9 +1,10 @@
 package unbbayes.datamining.classifiers.bayesianlearning;
 
-import unbbayes.datamining.datamanipulation.*;
-import unbbayes.prs.bn.*;
-import java.util.*;
-import java.lang.Math;
+import java.util.ArrayList;
+
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 
 public class K2
 {
@@ -23,7 +24,7 @@ public class K2
         for (int i=0;i<numAttributes;i++)
         {
         	attributes[i] = instanceSet.getAttribute(i);	
-        	if (i>0/*&& não tiver mais pais que predecessores*/)
+        	if (i>0/*&& nï¿½o tiver mais pais que predecessores*/)
         	{
         		double g = gh(attributes[i],parents[i]);
         		System.out.println("attribute = "+attributes[i]+" g = "+g);
@@ -93,7 +94,7 @@ public class K2
     	return m_pl.getProbabilisticNetwork(finalConfiguration);
     }
     
-    // Métodos
+    // Mï¿½todos
     double gh(Attribute i, int[] pais)
     {
         int qi = m_pl.computeQ(pais);

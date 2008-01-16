@@ -1,7 +1,11 @@
 package unbbayes.datamining.datamanipulation;
 
-import unbbayes.datamining.classifiers.decisiontree.*;
-import java.util.*;
+import java.util.ArrayList;
+
+import unbbayes.datamining.classifiers.decisiontree.Leaf;
+import unbbayes.datamining.classifiers.decisiontree.Node;
+import unbbayes.datamining.classifiers.decisiontree.NominalNode;
+import unbbayes.datamining.classifiers.decisiontree.NumericNode;
 
 /** 
  * Class containing functions to prune a tree. 

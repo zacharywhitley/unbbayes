@@ -3,7 +3,6 @@
  */
 package unbbayes.prs.mebn.ssbn;
 
-import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.entity.Type;
 
 /**

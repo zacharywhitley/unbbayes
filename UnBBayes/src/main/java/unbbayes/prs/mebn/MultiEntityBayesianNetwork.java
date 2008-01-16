@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.Network;
-import unbbayes.prs.Node;
 import unbbayes.prs.mebn.entity.BooleanStatesEntityContainer;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntityContainer;
 import unbbayes.prs.mebn.entity.ObjectEntityConteiner;

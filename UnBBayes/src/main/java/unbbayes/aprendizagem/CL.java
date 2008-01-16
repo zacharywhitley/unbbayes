@@ -2,7 +2,6 @@ package unbbayes.aprendizagem;
 
 import java.util.ArrayList;
 
-import unbbayes.aprendizagem.ConstructionController;
 import unbbayes.prs.bn.LearningNode;
 import unbbayes.util.NodeList;
 

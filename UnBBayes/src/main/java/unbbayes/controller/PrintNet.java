@@ -18,10 +18,15 @@
 
 package unbbayes.controller;
 
-import java.awt.*;
-import java.awt.print.*;
-import javax.swing.*;
-import java.awt.geom.*;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
+import java.awt.print.PageFormat;
+import java.awt.print.Pageable;
+import java.awt.print.Printable;
+
+import javax.swing.JComponent;
 
 /**
  * Useful class for printing a view of a graphic-mode network

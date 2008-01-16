@@ -1,4 +1,4 @@
-//TODO Aplicar algum pattern para evitar a duplicacoa ultra nociva de código aqui!!!!
+//TODO Aplicar algum pattern para evitar a duplicacoa ultra nociva de cï¿½digo aqui!!!!
 
 
 package unbbayes.gui.mebn;
@@ -23,7 +23,6 @@ import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.GenerativeInputNode;
-import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ResidentNode;
@@ -32,7 +31,7 @@ import unbbayes.util.ArrayMap;
 
 /**
  * Apresenta o painel para o usuario escolher de qual nodo o input
- * ativo é instancia (apresenta uma arvore com todas as possibilidade, 
+ * ativo ï¿½ instancia (apresenta uma arvore com todas as possibilidade, 
  * agrupadas por tipo: Resident e BuiltIn,...).  
  * 
  * @author Laecio
@@ -232,11 +231,11 @@ public class InputInstanceOfTree extends JTree{
 	}
 		
 		/**
-		 * Retrai todos os nós da árvore desejada.
+		 * Retrai todos os nï¿½s da ï¿½rvore desejada.
 		 * 
 		 * @param arvore
 		 *            uma <code>JTree</code> que representa a rede Bayesiana em
-		 *            forma de árvore.
+		 *            forma de ï¿½rvore.
 		 * @since
 		 * @see JTree
 		 */
@@ -251,11 +250,11 @@ public class InputInstanceOfTree extends JTree{
 		}
 		
 		/**
-		 * Expande todos os nós da árvore desejada.
+		 * Expande todos os nï¿½s da ï¿½rvore desejada.
 		 * 
 		 * @param arvore
 		 *            uma <code>JTree</code> que representa a rede Bayesiana em
-		 *            forma de árvore.
+		 *            forma de ï¿½rvore.
 		 * @since
 		 * @see JTree
 		 */
@@ -280,7 +279,7 @@ public class InputInstanceOfTree extends JTree{
 		}
 		
 		/**
-		 * Atualiza as marginais na árvore desejada.
+		 * Atualiza as marginais na ï¿½rvore desejada.
 		 */
 		public void updateTree() {
 			if (expandedNodes == null) {
@@ -348,7 +347,7 @@ public class InputInstanceOfTree extends JTree{
 			 if (obj != null) {
 			 TreeVariable node = (TreeVariable) obj;
 			 
-			 // Só propaga nós de descrição
+			 // Sï¿½ propaga nï¿½s de descriï¿½ï¿½o
 			  if (node.getInformationType() == Node.DESCRIPTION_TYPE) {
 			  for (int i = 0; i < parent.getChildCount(); i++) {
 			  DefaultMutableTreeNode auxNode = (DefaultMutableTreeNode) parent

@@ -1,6 +1,5 @@
 package unbbayes.prs.mebn.entity;
 
-import unbbayes.prs.mebn.entity.exception.TypeChangeNotAllowedException;
 
 /**
  * This class is formed by the Boolean truth-value states and are applied to

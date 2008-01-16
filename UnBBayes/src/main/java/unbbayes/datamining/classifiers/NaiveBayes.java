@@ -9,7 +9,6 @@ import unbbayes.datamining.datamanipulation.AttributeStats;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.datamanipulation.Utils;
-import unbbayes.datamining.utils.Statistics;
 import unbbayes.prs.Edge;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -18,7 +17,7 @@ import unbbayes.prs.bn.ProbabilisticNode;
 /**
  * Class implementing an Naive Bayes classifier.
  *
- * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ * @author Mï¿½rio Henrique Paes Vieira (mariohpv@bol.com.br)
  * @version $1.0 $ (17/02/2002)
  */
 public class NaiveBayes extends DistributionClassifier implements Serializable {
@@ -225,7 +224,7 @@ public class NaiveBayes extends DistributionClassifier implements Serializable {
 			node.appendState(attribute.value(i));
 		}
 
-		/* Criação do Tabela de probabilidades */
+		/* Criaï¿½ï¿½o do Tabela de probabilidades */
 		PotentialTable tab = node.getPotentialTable();
 		tab.addVariable(node);
 		node.setPosition(width, 100);

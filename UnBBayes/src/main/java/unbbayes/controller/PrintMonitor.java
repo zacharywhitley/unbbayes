@@ -17,9 +17,15 @@
  */
 package unbbayes.controller;
 
-import java.awt.print.*;
-import javax.swing.*;
+import java.awt.print.PageFormat;
+import java.awt.print.Pageable;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import java.util.ResourceBundle;
+
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 
 /**
  * Creating an instance of this class and printing it allows it to

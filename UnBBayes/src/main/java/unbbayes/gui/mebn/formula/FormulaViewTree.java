@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.ResourceBundle;
 
-import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -20,11 +19,9 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import unbbayes.controller.FormulaTreeController;
-import unbbayes.gui.mebn.ArgumentsTypedPane;
 import unbbayes.gui.mebn.formula.exception.FormulaTreeConstructionException;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.ResidentNodePointer;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVAnd;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVEqualTo;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVExists;
@@ -33,9 +30,9 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVIff;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVImplies;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVNot;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
-import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.context.EnumSubType;
 import unbbayes.prs.mebn.context.EnumType;
+import unbbayes.prs.mebn.context.NodeFormulaTree;
 
 /** 
  * View Tree that represents the formula of a context node. 

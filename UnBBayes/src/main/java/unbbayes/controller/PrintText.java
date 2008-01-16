@@ -18,9 +18,13 @@
 
 package unbbayes.controller;
 
-import java.awt.*;
-import java.awt.print.*;
-import javax.swing.*;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.print.PageFormat;
+import java.awt.print.Pageable;
+import java.awt.print.Printable;
+
+import javax.swing.JTextArea;
 
 /**
  *  <code>JTextArea</code> printing class

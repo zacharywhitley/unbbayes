@@ -28,9 +28,7 @@ package unbbayes.datamining.clustering;
 import java.util.Arrays;
 import java.util.Random;
 
-import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
-import unbbayes.datamining.datamanipulation.Utils;
 import unbbayes.datamining.distance.IDistance;
 
 /**

@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -25,7 +25,6 @@ package unbbayes.prs.bn;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -61,47 +60,47 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
   	protected boolean firstInitialization;
   	
   	/**
-	 * Nós de decisão utilizado no processo de transformação.
+	 * Nï¿½s de decisï¿½o utilizado no processo de transformaï¿½ï¿½o.
 	 */
 	protected NodeList decisionNodes;
 	
 	protected double radius;
 
     /**
-	 * Faz o processamento do log de compilação.
+	 * Faz o processamento do log de compilaï¿½ï¿½o.
 	 */
 	protected LogManager logManager;
 
 	/**
-	 *  Lista de edgeList utilizada no processo de transformação.
+	 *  Lista de edgeList utilizada no processo de transformaï¿½ï¿½o.
 	 */
 	protected List<Edge> arcosMarkov;
 	
 	/**
-	 * Indica se o log deve ser criado ou não.
+	 * Indica se o log deve ser criado ou nï¿½o.
 	 */
 	protected boolean createLog;
            
     /**
-	 *  Ordem de eliminação dos nós.
+	 *  Ordem de eliminaï¿½ï¿½o dos nï¿½s.
 	 */
 	protected NodeList oe;
 
 	/**
-	 * Cópia dos nós sem os nós de utilidade. Utilizado no processo
-	 * de transformação.
+	 * Cï¿½pia dos nï¿½s sem os nï¿½s de utilidade. Utilizado no processo
+	 * de transformaï¿½ï¿½o.
 	 */
 	protected NodeList copiaNos;
 	
 	protected List<Edge> copiaArcos;
 
 	/**
-	 *  Armazena handle do objeto Árvore de Junção associado ao Grafo.
+	 *  Armazena handle do objeto ï¿½rvore de Junï¿½ï¿½o associado ao Grafo.
 	 */
 	protected JunctionTree junctionTree;	
     
     /**
-     *  Constrói um novo grafo sem nós nem edgeList.
+     *  Constrï¿½i um novo grafo sem nï¿½s nem edgeList.
      */
     public SingleEntityNetwork(String name) {
     	super(name);
@@ -138,8 +137,8 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
     }
 
     /**
-     *  Percorre lista de nós e em cada nó faz uma cópia das referências dos pais e
-     *  filhos para uma lista de adjacentes do nó.
+     *  Percorre lista de nï¿½s e em cada nï¿½ faz uma cï¿½pia das referï¿½ncias dos pais e
+     *  filhos para uma lista de adjacentes do nï¿½.
      */
     protected void montaAdjacentes() {
         this.clearAdjacents();
@@ -176,7 +175,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 
 
     /**
-     *  Destrói a lista de adjacentes de cada nó do grafo.
+     *  Destrï¿½i a lista de adjacentes de cada nï¿½ do grafo.
      */
     protected void clearAdjacents() {
     	int size = nodeList.size();
@@ -267,7 +266,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
     }
 
 	/**
-	 *  Faz o processo de moralização da rede.
+	 *  Faz o processo de moralizaï¿½ï¿½o da rede.
 	 */
 	protected void moralize() {
 		Node auxNo;
@@ -283,7 +282,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 		arcosMarkov.clear();
 		copiaArcos = (ArrayList<Edge>)SetToolkit.clone(edgeList);
 	
-		//retira os edgeList de informação
+		//retira os edgeList de informaï¿½ï¿½o
 		int sizeArcos = copiaArcos.size() - 1;
 		for (int i = sizeArcos; i >= 0; i--) {
 			auxArco = copiaArcos.get(i);
@@ -336,7 +335,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  Monta árvore de junção a partir do grafo.
+	 *  Monta ï¿½rvore de junï¿½ï¿½o a partir do grafo.
 	 */
 	protected void compileJT(JunctionTree jt) throws Exception {
 		int menor;
@@ -443,7 +442,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  Faz o processo de identificação dos Cliques
+	 *  Faz o processo de identificaï¿½ï¿½o dos Cliques
 	 */
 	protected void cliques() {
 		int i;
@@ -503,7 +502,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 * Ordena os nós dos cliques e dos separadores de acordo com a ordem de eliminação.
+	 * Ordena os nï¿½s dos cliques e dos separadores de acordo com a ordem de eliminaï¿½ï¿½o.
 	 */
 	protected void sortCliqueNodes() {
 		List listaCliques = junctionTree.getCliques();
@@ -579,8 +578,8 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  Faz a associação dos Nós a um único clique com menos espaço de est. que
-	 *  contenha sua família
+	 *  Faz a associaï¿½ï¿½o dos Nï¿½s a um ï¿½nico clique com menos espaï¿½o de est. que
+	 *  contenha sua famï¿½lia
 	 */
 	protected void associateCliques() {
 		int min;
@@ -645,7 +644,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  Faz o processo de constituição da árvore de junção - Frank Jensen
+	 *  Faz o processo de constituiï¿½ï¿½o da ï¿½rvore de junï¿½ï¿½o - Frank Jensen
 	 */
 	protected void arvoreForte() {
 		int ndx;
@@ -668,7 +667,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 				auxClique = (Clique) junctionTree.getCliques().get(i);
 				listaNos = SetToolkit.clone(auxClique.getNodes());
 	
-				//calcula o índice
+				//calcula o ï¿½ndice
 				while ((ndx = getCliqueIndex(listaNos, alpha)) <= 0
 					&& listaNos.size() > 1);
 				if (ndx < 0) {
@@ -724,7 +723,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  SUB-FUNÇÃO do método arvoreForte
+	 *  SUB-FUNï¿½ï¿½O do mï¿½todo arvoreForte
 	 */
 	protected int getCliqueIndex(NodeList listaNos, NodeList alpha) {
 		int ndx;
@@ -734,7 +733,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 		NodeList auxList = null;
 		NodeList vizinhos;
 	
-		// pega o nó de índice máximo na ordem alpha (inverso da ordem de eliminição)
+		// pega o nï¿½ de ï¿½ndice mï¿½ximo na ordem alpha (inverso da ordem de eliminiï¿½ï¿½o)
 		mx = -1;
 		int sizeNos = listaNos.size();
 		for (int i = 0; i < sizeNos; i++) {
@@ -746,7 +745,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			}
 		}
 	
-		// Retira esse nó do clique
+		// Retira esse nï¿½ do clique
 		listaNos.remove(noMax);
 	
 		// Monta uma lista de vizinhos do clique
@@ -776,13 +775,13 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  Sub-rotina do método triangula.
-	 *  Elimina os nós do grafo utilizando a heurística do peso mínimo.
-	 *  Primeiramente elimina os nós cujos adjacentes estão ligados dois a dois.
-	 *  Depois se ainda houver nós no grafo, elimina-os aplicando a heurística
-	 *  do peso mínimo.
+	 *  Sub-rotina do mï¿½todo triangula.
+	 *  Elimina os nï¿½s do grafo utilizando a heurï¿½stica do peso mï¿½nimo.
+	 *  Primeiramente elimina os nï¿½s cujos adjacentes estï¿½o ligados dois a dois.
+	 *  Depois se ainda houver nï¿½s no grafo, elimina-os aplicando a heurï¿½stica
+	 *  do peso mï¿½nimo.
 	 *
-	 * @param  auxNos  Vetor de nós.
+	 * @param  auxNos  Vetor de nï¿½s.
 	 */
 	protected boolean minimumWeightElimination(NodeList auxNos) {
 		boolean algum;
@@ -795,7 +794,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 				Node auxNo = auxNos.get(i);
 	
 				if (cordas(auxNo)) {
-					//Não tem cordas necessárias:teste próximo.
+					//Nï¿½o tem cordas necessï¿½rias:teste prï¿½ximo.
 					continue;
 				}
 	
@@ -816,7 +815,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 		}
 	
 		if (auxNos.size() > 0) {
-			Node auxNo = weight(auxNos); //auxNo: clique de peso mínimo.
+			Node auxNo = weight(auxNos); //auxNo: clique de peso mï¿½nimo.
 			oe.add(auxNo);
 			if (createLog) {
 				logManager.append(
@@ -830,11 +829,11 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  SUB-FUNÇÃO do procedimento triangula que elimina nó e reduz o grafo. Inclui
-	 *  cordas necessárias para eliminar nó. Retira-o e aos adjacentes.
+	 *  SUB-FUNï¿½ï¿½O do procedimento triangula que elimina nï¿½ e reduz o grafo. Inclui
+	 *  cordas necessï¿½rias para eliminar nï¿½. Retira-o e aos adjacentes.
 	 *
-	 *@param  no      nó a ser eliminado
-	 *@param  auxNos  lista de nós
+	 *@param  no      nï¿½ a ser eliminado
+	 *@param  auxNos  lista de nï¿½s
 	 */
 	private void elimine(Node no, NodeList auxNos) {	
 		for (int i = no.getAdjacents().size()-1; i > 0; i--) {
@@ -870,10 +869,10 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  SUB-FUNÇÃO do método pesoMinimo que utiliza a herística do peso mínimo.
+	 *  SUB-FUNï¿½ï¿½O do mï¿½todo pesoMinimo que utiliza a herï¿½stica do peso mï¿½nimo.
 	 *
-	 * @param  auxNos  nós.
-	 * @return         nó cujo conjunto formado por adjacentes possui peso mínimo.
+	 * @param  auxNos  nï¿½s.
+	 * @return         nï¿½ cujo conjunto formado por adjacentes possui peso mï¿½nimo.
 	 */
 	private Node weight(NodeList auxNos) {
 		Node v;
@@ -902,11 +901,11 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  SUB-FUNÇÃO do método triangula.
+	 *  SUB-FUNï¿½ï¿½O do mï¿½todo triangula.
 	 *
-	 *@param  no  nó.
+	 *@param  no  nï¿½.
 	 *@return     true - caso haja necessidade de inserir corda para poder eliminar
-	 *      o nó. false - caso contrário.
+	 *      o nï¿½. false - caso contrï¿½rio.
 	 */
 	private boolean cordas(Node no) {
 		if (no.getAdjacents().size() < 2) {
@@ -928,8 +927,8 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	
 	
 	/**
-	 *  Verifica integridade como grafo direcionado acíclico / conexo e coesão.
-	 *  Com a saída é possível saber quais erros especificamente ocorreram caso algum ocorra.
+	 *  Verifica integridade como grafo direcionado acï¿½clico / conexo e coesï¿½o.
+	 *  Com a saï¿½da ï¿½ possï¿½vel saber quais erros especificamente ocorreram caso algum ocorra.
 	 */
 	protected void verifyConsistency() throws Exception {
 		if (nodeList.size() != 0) {
@@ -997,8 +996,8 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  SUB-FUNÇÃO do método verificaConsistência que verifica a consistencia
-	 *  das tabelas de potenciais dos nós do grafo.
+	 *  SUB-FUNï¿½ï¿½O do mï¿½todo verificaConsistï¿½ncia que verifica a consistencia
+	 *  das tabelas de potenciais dos nï¿½s do grafo.
 	 */
 	protected void verifyPotentialTables() throws Exception {
 		ProbabilisticTable auxTabPot;
@@ -1018,8 +1017,8 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  SUB-FUNÇÃO do método verificaConsistência que verifica se todos os
-	 *  nós de utilidade não contém filhos.
+	 *  SUB-FUNï¿½ï¿½O do mï¿½todo verificaConsistï¿½ncia que verifica se todos os
+	 *  nï¿½s de utilidade nï¿½o contï¿½m filhos.
 	 */
 	protected void verifyUtility() throws Exception {
 		Node aux;
@@ -1038,9 +1037,9 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  SUB-FUNÇÃO do método verificaConsistência que verifica se
-	 *  existe uma ordenação total das decisões. Isto é, se existe
-	 *  um caminho orientado entre as decisões.
+	 *  SUB-FUNï¿½ï¿½O do mï¿½todo verificaConsistï¿½ncia que verifica se
+	 *  existe uma ordenaï¿½ï¿½o total das decisï¿½es. Isto ï¿½, se existe
+	 *  um caminho orientado entre as decisï¿½es.
 	 */
 	protected void sortDecisions() throws Exception {
 		decisionNodes = new NodeList();
@@ -1113,10 +1112,10 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 * Retorna o vetor de cópia dos nós
-	 * (sem as variáveis de utilidade).
+	 * Retorna o vetor de cï¿½pia dos nï¿½s
+	 * (sem as variï¿½veis de utilidade).
 	 *
-	 * @return vetor de cópia dos nós sem as variáveis de utilidade.
+	 * @return vetor de cï¿½pia dos nï¿½s sem as variï¿½veis de utilidade.
 	 */
 	public NodeList getNodesCopy() {
 		return copiaNos;
@@ -1135,8 +1134,8 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  Chama o método da árvore de junção para atualizar evidências.
-	 *  @return             consistência da árvore atualizada.
+	 *  Chama o mï¿½todo da ï¿½rvore de junï¿½ï¿½o para atualizar evidï¿½ncias.
+	 *  @return             consistï¿½ncia da ï¿½rvore atualizada.
 	 */
 	public void updateEvidences() throws Exception {
 		int sizeNos = copiaNos.size();
@@ -1156,7 +1155,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 * Inicia as crenças da árvore de junção.
+	 * Inicia as crenï¿½as da ï¿½rvore de junï¿½ï¿½o.
 	 */
 	public void initialize() throws Exception {
 		resetEvidences();
@@ -1193,9 +1192,9 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 *  Retorna a probabilidade estimada total da árvore de junção associada.
+	 *  Retorna a probabilidade estimada total da ï¿½rvore de junï¿½ï¿½o associada.
 	 *
-	 *@return    probabilidade estimada total da árvore de junção associada.
+	 *@return    probabilidade estimada total da ï¿½rvore de junï¿½ï¿½o associada.
 	 */
 	public float PET() {
 		return junctionTree.getN();

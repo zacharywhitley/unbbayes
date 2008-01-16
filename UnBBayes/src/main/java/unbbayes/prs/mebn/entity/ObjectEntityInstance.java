@@ -1,6 +1,5 @@
 package unbbayes.prs.mebn.entity;
 
-import unbbayes.prs.mebn.OrdinaryVariable;
 
 /**
  * Instance of the Object Entity Class. 

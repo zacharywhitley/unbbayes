@@ -5,8 +5,6 @@ package unbbayes.prs.mebn.compiler.exception;
 
 import java.util.ResourceBundle;
 
-import unbbayes.prs.mebn.exception.MEBNException;
-
 /**
  * @author Shou Matsumoto
  * 

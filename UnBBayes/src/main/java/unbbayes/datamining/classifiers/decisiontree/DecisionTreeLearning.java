@@ -2,15 +2,17 @@ package unbbayes.datamining.classifiers.decisiontree;
 
 import java.util.ArrayList;
 
-import javax.swing.*;
+import javax.swing.JTree;
 
 import unbbayes.datamining.classifiers.Classifier;
-import unbbayes.datamining.datamanipulation.*;
+import unbbayes.datamining.datamanipulation.Instance;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+import unbbayes.datamining.datamanipulation.Utils;
 
 /**
  *  Abstract Decision Tree. All schemes that works with decision trees extends this class.
  *
- *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ *  @author Mï¿½rio Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @version $1.0 $ (24/12/2001)
  */
 public abstract class DecisionTreeLearning extends Classifier {

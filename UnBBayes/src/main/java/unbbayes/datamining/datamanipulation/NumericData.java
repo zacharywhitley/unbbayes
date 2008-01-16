@@ -1,7 +1,7 @@
 package unbbayes.datamining.datamanipulation;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
 
 /** Encapsulates data obtained on a split value search for a numeric attribute 
  * 

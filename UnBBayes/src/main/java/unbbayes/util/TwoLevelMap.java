@@ -6,7 +6,7 @@
 
 package unbbayes.util;
 
-import java.util.*;
+import java.util.ArrayList;
 
 /**
  *
@@ -17,7 +17,7 @@ public class TwoLevelMap<P,K,V> {
 
 	/*
 	 * P -> chave principal
-	 * K -> chave secundária
+	 * K -> chave secundï¿½ria
 	 * V -> valor
 	 */    
     

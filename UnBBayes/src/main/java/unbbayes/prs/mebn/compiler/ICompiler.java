@@ -1,8 +1,6 @@
 package unbbayes.prs.mebn.compiler;
 
-import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
-import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 

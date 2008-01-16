@@ -1,15 +1,12 @@
 package unbbayes.datamining.classifiers;
 
-import java.util.ArrayList;
-
-import unbbayes.datamining.classifiers.decisiontree.Node;
 import unbbayes.datamining.datamanipulation.Instance;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 
 /**
  *  Abstract classifier. All schemes for numeric or nominal prediction extends this class.
  *
- *  @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ *  @author Mï¿½rio Henrique Paes Vieira (mariohpv@bol.com.br)
  *  @version $1.0 $ (17/02/2002)
  */
 public abstract class Classifier {

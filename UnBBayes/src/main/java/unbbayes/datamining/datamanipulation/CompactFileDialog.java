@@ -1,8 +1,12 @@
 package unbbayes.datamining.datamanipulation;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.GridLayout;
 
-import javax.swing.*;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 public class CompactFileDialog
 {   public CompactFileDialog(Loader loader,Component parent)

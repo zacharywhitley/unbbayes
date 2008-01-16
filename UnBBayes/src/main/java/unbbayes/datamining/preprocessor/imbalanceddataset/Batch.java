@@ -3,7 +3,6 @@ package unbbayes.datamining.preprocessor.imbalanceddataset;
 import java.util.ArrayList;
 
 import unbbayes.datamining.datamanipulation.InstanceSet;
-import unbbayes.datamining.evaluation.batchEvaluation.GlobalBatchParameters;
 import unbbayes.datamining.evaluation.batchEvaluation.PreprocessorParameters;
 
 
