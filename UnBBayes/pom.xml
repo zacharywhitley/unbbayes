@@ -33,7 +33,10 @@
 					</execution>
 				</executions>
 				<configuration>
-					<target>src/main/java</target>
+					<!-- BEGIN - this is a work around, because the plugin does not to work as documented -->
+					<target>${project.build.directory}/target/jaxme/java</target>
+					<resourceTarget>${project.build.directory}/../target/jaxme/resources</resourceTarget>
+					<!--  END  - this is a work around, because the plugin does not to work as documented -->
 					<schemas>
 						<value>src/main/xsd/*.xsd</value>
 					</schemas>
@@ -66,27 +69,27 @@
 		<dependency>
 			<groupId>jaxme</groupId>
 			<artifactId>jaxme2</artifactId>
-			<version>0.5</version>
+			<version>0.5.1</version>
 		</dependency>
 		<dependency>
 			<groupId>jaxme</groupId>
 			<artifactId>jaxme2-rt</artifactId>
-			<version>0.5</version>
+			<version>0.5.1</version>
 		</dependency>
 		<dependency>
 			<groupId>jaxme</groupId>
 			<artifactId>jaxmeapi</artifactId>
-			<version>0.5</version>
+			<version>0.5.1</version>
 		</dependency>
 		<dependency>
 			<groupId>jaxme</groupId>
 			<artifactId>jaxmejs</artifactId>
-			<version>0.5</version>
+			<version>0.5.1</version>
 		</dependency>
 		<dependency>
 			<groupId>jaxme</groupId>
 			<artifactId>jaxmexs</artifactId>
-			<version>0.5</version>
+			<version>0.5.1</version>
 		</dependency>
 		<dependency>
 			<groupId>xalan</groupId>
@@ -99,7 +102,7 @@
 			<version>1.1</version>
 		</dependency>
 		<dependency>
-			<groupId>icu4j</groupId>
+			<groupId>com.ibm.icu</groupId>
 			<artifactId>icu4j</artifactId>
 			<version>2.6.1</version>
 		</dependency>
