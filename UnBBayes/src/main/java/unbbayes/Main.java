@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  Copyright (C) 2002 Universidade de Brasï¿½lia
  *
  *  This file is part of UnbBayes.
  *
@@ -26,7 +26,8 @@ import unbbayes.controller.MainController;
 /**
  *  This class starts UnBBayes
  *
- *@author     Michael e Rommel.
+ *@author   Michael S. Onishi (mso@gmail.com)
+ *@author 	Rommel N. Carvalho (rommel.carvalho@gmail.com)
  *@version    24 de Junho de 2001
  */
 
