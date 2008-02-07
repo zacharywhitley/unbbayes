@@ -189,6 +189,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
 				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
 					<configLocation>
 						config/maven_checks.xml
 					</configLocation>
@@ -214,6 +216,8 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>clirr-maven-plugin</artifactId>
 				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
 					<minSeverity>info</minSeverity>
 				</configuration>
 			</plugin>
