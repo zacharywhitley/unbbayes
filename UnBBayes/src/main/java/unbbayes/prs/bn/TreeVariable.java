@@ -24,8 +24,8 @@ package unbbayes.prs.bn;
 import unbbayes.prs.Node;
 
 /**
- * Interface para vari�veis que ser�o visualizadas na �rvore.
- * Interface para o DecisionNode e ProbabilisticNode.
+ * Abstract class for variables that will be shown in the tree of nodes and states with 
+ * their probabilities in the compilation panel.
  */
 public abstract class TreeVariable extends Node implements java.io.Serializable {
 
