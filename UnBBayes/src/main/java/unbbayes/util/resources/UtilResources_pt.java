@@ -1,4 +1,4 @@
-package unbbayes.util;
+package unbbayes.util.resources;
 
 import java.util.*;
 
