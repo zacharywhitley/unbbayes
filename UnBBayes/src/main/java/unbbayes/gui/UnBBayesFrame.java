@@ -563,6 +563,8 @@ public class UnBBayesFrame extends JFrame {
 		JMenu newMenu = new JMenu(resource.getString("newMenu"));
 		JMenu toolsMenu = new JMenu(resource.getString("toolsMenu"));
 		JMenu windowMenu = new JMenu(resource.getString("windowMenu"));
+		
+
 		JMenu helpMenu = new JMenu(resource.getString("helpMenu"));
 		fileMenu.setMnemonic(resource.getString("fileMenuMn").charAt(0));
 		lafMenu.setMnemonic(resource.getString("lafMenuMn").charAt(0));
@@ -710,7 +712,9 @@ public class UnBBayesFrame extends JFrame {
 		menu.add(viewMenu);
 		menu.add(toolsMenu);
 		menu.add(windowMenu);
-		menu.add(helpMenu);
+		//	since the help is not well implemented yet, it is removed
+		// TODO fix the help
+		//menu.add(helpMenu);
 
 		this.setJMenuBar(menu);
 	}
@@ -718,6 +722,7 @@ public class UnBBayesFrame extends JFrame {
 	/**
 	 * Call the method for creating the needed buttons and then create the tool
 	 * bars and add the buttons to them and finally to the topPanel.
+	 * TODO fix the help toolbar
 	 */
 	public void createToolBars() {
 
@@ -749,7 +754,9 @@ public class UnBBayesFrame extends JFrame {
 		topPanel.add(jtbView);
 		topPanel.add(jtbTools);
 		topPanel.add(jtbWindow);
-		topPanel.add(jtbHelp);
+		// since the help is not well implemented yet, it is removed for now
+		// TODO fix the help
+		//topPanel.add(jtbHelp);
 	}
 
 	/**

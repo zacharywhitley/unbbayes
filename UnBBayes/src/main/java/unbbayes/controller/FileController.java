@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.ResourceBundle;
 
 import javax.help.HelpSet;
+// javax.help.JHelp appears to have a compatibility problem with java 6, so, it is removed for now
+// TODO find another choice replacing javax.help.JHelp
 import javax.help.JHelp;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -97,12 +99,16 @@ public class FileController
 					component.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 					throw new Exception("HelpSet not found "+this.getClass().getName());
 		}
+		// javax.help.JHelp appears to have a compatibility problem with java 6, so, it is removed for now
+		// TODO find another choice replacing javax.help.JHelp
+		
 		JHelp help = new JHelp(set);
 		JFrame f = new JFrame();
 		f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		f.setContentPane(help);
 		f.setSize(500,400);
 		f.setVisible(true);
+		
 		component.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 
