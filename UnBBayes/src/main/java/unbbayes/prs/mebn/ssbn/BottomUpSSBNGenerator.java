@@ -348,7 +348,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
         			
     		    }
     		    
-    			PotentialTable pt = currentNode.getContextFatherSSBNNode().getProbNode().getPotentialTable(); 
+    		    // TODO Remove the code below, if it is not really necessary
+    			//PotentialTable pt = currentNode.getContextFatherSSBNNode().getProbNode().getPotentialTable(); 
 //    			currentNode.addContextFatherSSBNNode();
     		    
     		}else{
