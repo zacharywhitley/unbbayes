@@ -20,13 +20,6 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>help</directory>
-      <outputDirectory>help</outputDirectory>
-      <includes>
-        <include>**/*.*</include>
-      </includes>
-    </fileSet>
-    <fileSet>
       <directory>target</directory>
       <outputDirectory></outputDirectory>
       <includes>
