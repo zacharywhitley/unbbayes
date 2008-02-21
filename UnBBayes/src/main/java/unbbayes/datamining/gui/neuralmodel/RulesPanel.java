@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.datamining.gui.neuralmodel;
 
 import java.awt.BorderLayout;
@@ -166,7 +186,7 @@ public class RulesPanel extends JPanel {
    * @param combinatorialNetwork the generated model.
    */
   public void setRulesPanel(CombinatorialNeuralModel combinatorialNetwork){
-    setRulesPanel(combinatorialNetwork, 60, 7);    //valores default de confiança e suporte
+    setRulesPanel(combinatorialNetwork, 60, 7);    //valores default de confianï¿½a e suporte
   }
 
   /**
@@ -230,24 +250,24 @@ public class RulesPanel extends JPanel {
               inputCell = inputCell + " " + resource.getString("and") + " ";
             }
           }
-          if(((String)longValues[1]).length() < inputCell.length()){  //atualiza o array que contém a maior string formada
+          if(((String)longValues[1]).length() < inputCell.length()){  //atualiza o array que contï¿½m a maior string formada
             longValues[1] = inputCell;
           }
 
           //constroi a string de saida "ENTAO"
-          outputCell = resource.getString("then") + " "; //new String("ENTÃO ");
+          outputCell = resource.getString("then") + " "; //new String("ENTï¿½O ");
           att = attributeVector[classIndex];
 
           outputCell = outputCell + att.getAttributeName() + " = " + att.value(i);
 
-          if(((String)longValues[2]).length() < outputCell.length()){  //atualiza o array que contém a maior string formada
+          if(((String)longValues[2]).length() < outputCell.length()){  //atualiza o array que contï¿½m a maior string formada
             longValues[2] = outputCell;
           }
 
           // constroi o valor do numero de casos
           numberOfCases = new Integer(tempOutput.getAccumulator());
 
-          // constroi o valor da confiança
+          // constroi o valor da confianï¿½a
           confidence = new String(numFormat.format(tempOutput.getConfidence()) + "%");
 
           // constroi o valor do suporte

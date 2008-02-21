@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.datamining.gui;
 
 import java.awt.Component;
@@ -48,7 +68,7 @@ public class AttributesTree extends JTree{
 	public AttributesTree() {
 		attributesTree = this;
 		setShowsRootHandles(true);
-		setSelectionModel(null);			//null = nós não selecionaveis
+		setSelectionModel(null);			//null = nï¿½s nï¿½o selecionaveis
 		setRootVisible(true);				 //raiz visivel?
 		this.setAutoscrolls(true);
 		setCellRenderer(new CnmTreeCellRenderer());
@@ -127,13 +147,13 @@ public class AttributesTree extends JTree{
 			}
 			Attribute attribute = attributeVector[att];
 
-			//definição de um nó atributo
+			//definiï¿½ï¿½o de um nï¿½ atributo
 			DefaultMutableTreeNode treeNode;
 			treeNode = new DefaultMutableTreeNode(attribute.getAttributeName());
 			objectsMap.put(treeNode, attribute);
 			root.add(treeNode);
 			if (attribute.isNominal()) {
-				//definição dos nós dos valores dos atributos
+				//definiï¿½ï¿½o dos nï¿½s dos valores dos atributos
 				int numStates = attribute.numValues();
 				numStates = attribute.numValues();
 				for (byte j=0; j<numStates; j++){

@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.datamining.gui.naivebayes;
 
 import java.awt.AWTEvent;
@@ -49,7 +69,7 @@ public class NaiveBayesMain extends JInternalFrame
 	private JPanel contentPane;
 	private BorderLayout borderLayout1 = new BorderLayout();
 	private InstanceSet inst;
-	/** Carrega o arquivo de recursos para internacionalização da localidade padrão */
+	/** Carrega o arquivo de recursos para internacionalizaï¿½ï¿½o da localidade padrï¿½o */
 	private ResourceBundle resource;
 	private ProbabilisticNetwork net;
 	private JToolBar jToolBar1 = new JToolBar();
@@ -275,7 +295,7 @@ public class NaiveBayesMain extends JInternalFrame
 							PNEditionPane edition = netWindow.getNetWindowEdition();
 							edition.getCenterPanel().setBottomComponent(netWindow.getJspGraph());
 
-							// deixa invisíveis alguns botões do unbbayes
+							// deixa invisï¿½veis alguns botï¿½es do unbbayes
 							edition.getBtnAddState().setVisible(false);
 							edition.getBtnRemoveState().setVisible(false);
 							edition.getBtnAddEdge().setVisible(false);
@@ -308,7 +328,7 @@ public class NaiveBayesMain extends JInternalFrame
 			String[] s2 = {"TXT"};
 			fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
 			fileChooser.setMultiSelectionEnabled(false);
-			//adicionar FileView no FileChooser para desenhar ícones de arquivos
+			//adicionar FileView no FileChooser para desenhar ï¿½cones de arquivos
 			fileChooser.setFileView(new FileIcon(this));
 			fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "TxtFiles (*.txt)"));
 			fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "ArffFiles (*.arff)"));
@@ -342,7 +362,7 @@ public class NaiveBayesMain extends JInternalFrame
 				}
 				else
 				{
-					statusBar.setText("Operação cancelada");
+					statusBar.setText("Operaï¿½ï¿½o cancelada");
 				}
 			}
 			catch (NullPointerException npe)
@@ -364,7 +384,7 @@ public class NaiveBayesMain extends JInternalFrame
 		String[] s2 = {"net"};
 		fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
 		fileChooser.setMultiSelectionEnabled(false);
-		//adicionar FileView no FileChooser para desenhar ícones de arquivos
+		//adicionar FileView no FileChooser para desenhar ï¿½cones de arquivos
 		fileChooser.setFileView(new FileIcon(NaiveBayesMain.this));
 		fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "Networks (*.net)"));
 		int returnVal = fileChooser.showSaveDialog(this);

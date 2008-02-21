@@ -1,24 +1,23 @@
 /*
- *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
  *
- *  This file is part of UnbBayes.
+ *  This file is part of UnBBayes.
  *
- *  UnbBayes is free software; you can redistribute it and/or modify
+ *  UnBBayes is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
+ *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  UnbBayes is distributed in the hope that it will be useful,
+ *  UnBBayes is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with UnbBayes; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
-
 package unbbayes.example;
 
 import java.awt.Container;
@@ -39,13 +38,13 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 
 /**
- * Title: Exemplo de Uso da API através de um Modo Gráfico
- * Description: Essa classe feita em JAVA abre um modo gráfico onde o usuário entra com o endereço e
- *              nome de um arquivo ".net". Depois esse arquivo é carregado, modificado em algumas
- *              partes e então compilado. Essa classe tem a função de apenas exemplificar como se
+ * Title: Exemplo de Uso da API atravï¿½s de um Modo Grï¿½fico
+ * Description: Essa classe feita em JAVA abre um modo grï¿½fico onde o usuï¿½rio entra com o endereï¿½o e
+ *              nome de um arquivo ".net". Depois esse arquivo ï¿½ carregado, modificado em algumas
+ *              partes e entï¿½o compilado. Essa classe tem a funï¿½ï¿½o de apenas exemplificar como se
  *              pode usar a API desenvolvida para trabalhar com Redes Bayesianas.
  * Copyright:   Copyright (c) 2001
- * Company:     UnB - Universidade de Brasília
+ * Company:     UnB - Universidade de Brasï¿½lia
  * @author      Rommel Novaes Carvalho
  * @author      Michael S. Onishi
  * @version 1.0

@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.datamining.classifiers;
 
 import java.io.Serializable;
@@ -240,8 +260,8 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 		float oldQuadraticError;
 		long numWeightedInstances = instanceSet.numWeightedInstances();
 		long numInstances = instanceSet.numInstances();
-		attributeVector = instanceSet.getAttributes();			//cria um array com os atributos para serialização
-		classIndex = instanceSet.getClassIndex();			//guarda o indice da classe para serialização
+		attributeVector = instanceSet.getAttributes();			//cria um array com os atributos para serializaï¿½ï¿½o
+		classIndex = instanceSet.getClassIndex();			//guarda o indice da classe para serializaï¿½ï¿½o
 		numClasses = attributeVector[classIndex].numValues();
 		highestValue = new float[numAttributes];
 		lowestValue = new float[numAttributes];
@@ -255,10 +275,10 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 			lowestValue[classIndex] = stats.getMin();
 		}
 
-		//Cria um array com as saídas esperadas pré-processadas
+		//Cria um array com as saï¿½das esperadas prï¿½-processadas
 		expectedOutput = new float[numClasses][0];
 		if (numericOutput) {
-			/* ESTÁ ERRADO!!!!!!!!!!!!!!!!!! */
+			/* ESTï¿½ ERRADO!!!!!!!!!!!!!!!!!! */
 			float[] output;
 			output = attributeVector[classIndex].getDistinticNumericValues();
 			
@@ -275,7 +295,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 			}
 		}
 
-		//inicializa o tipo de normalização escolhida
+		//inicializa o tipo de normalizaï¿½ï¿½o escolhida
 		if(numericalInputNormalization == NO_NORMALIZATION){
 			normalizationFunction = new NoNormalization();
 		} else if(numericalInputNormalization == LINEAR_NORMALIZATION){
@@ -398,7 +418,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 			hiddenLayerOutput[i] = hiddenLayer[i].outputValue;
 		}
 
-		//////////calcula as saidas da camada de saída
+		//////////calcula as saidas da camada de saï¿½da
 		for (int i = 0; i < outputLayer.length; i++){
 			float instantaneousError;
 			outputLayer[i].calculateOutputValue(hiddenLayerOutput);
@@ -411,7 +431,7 @@ public class NeuralNetwork extends DistributionClassifier implements Serializabl
 			outputLayer[i].updateWeights(learningRate, hiddenLayerOutput);
 		}
 
-		//////////calcula error terms (SIGMA) da camada oculta, da saída já está calculado
+		//////////calcula error terms (SIGMA) da camada oculta, da saï¿½da jï¿½ estï¿½ calculado
 		for (int i = 0; i < hiddenLayer.length; i++){
 			hiddenLayer[i].calculateErrorTerm(outputLayer, i);
 		}

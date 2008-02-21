@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.gui;
 
 import java.awt.BorderLayout;
@@ -102,13 +122,13 @@ public class PNEditionPane extends JPanel {
         bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 1));
         status      = new JLabel(resource.getString("statusReadyLabel"));
 
-        //criar labels e textfields que serão usados no jtbState
+        //criar labels e textfields que serï¿½o usados no jtbState
         sigla       = new JLabel(resource.getString("siglaLabel"));
         description = new JLabel(resource.getString("descriptionLabel"));
         txtSigla           = new JTextField(10);
         txtDescription     = new JTextField(15);
 
-        //criar botões que serão usados nodeList toolbars
+        //criar botï¿½es que serï¿½o usados nodeList toolbars
         btnCompile           = new JButton(iconController.getCompileIcon());
         btnAddState              = new JButton(iconController.getMoreIcon());
         btnRemoveState              = new JButton(iconController.getLessIcon());
@@ -126,7 +146,7 @@ public class PNEditionPane extends JPanel {
         btnGlobalOption      = new JButton(iconController.getGlobalOptionIcon());
         btnHierarchy         = new JButton(iconController.getHierarchyIcon());
 
-        //setar tooltip para esses botões
+        //setar tooltip para esses botï¿½es
         btnCompile.setToolTipText(resource.getString("compileToolTip"));
         btnAddState.setToolTipText(resource.getString("moreToolTip"));
         btnRemoveState.setToolTipText(resource.getString("lessToolTip"));
@@ -144,7 +164,7 @@ public class PNEditionPane extends JPanel {
         btnGlobalOption.setToolTipText(resource.getString("globalOptionTitle"));
         btnHierarchy.setToolTipText(resource.getString("hierarchyToolTip"));
 
-        //ao clicar no botão btnGlobalOption, mostra-se o menu para escolha das opções
+        //ao clicar no botï¿½o btnGlobalOption, mostra-se o menu para escolha das opï¿½ï¿½es
         btnGlobalOption.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -155,14 +175,14 @@ public class PNEditionPane extends JPanel {
             }
         });
 
-        //ao clicar no botão btnHierarchy, chama-se a tela para definição de hierarquia
+        //ao clicar no botï¿½o btnHierarchy, chama-se a tela para definiï¿½ï¿½o de hierarquia
         btnHierarchy.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 netWindow.changeToHierarchy();
             }
         });
 
-        //ao clicar no botão btnCompile, chama-se o método de compilação da rede e
+        //ao clicar no botï¿½o btnCompile, chama-se o mï¿½todo de compilaï¿½ï¿½o da rede e
         //atualiza os toolbars
         btnCompile.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
@@ -173,7 +193,7 @@ public class PNEditionPane extends JPanel {
             }
         });
 
-        //ao clicar no botão btnAddEdge setamos as variáveis booleanas e os estados dos butões
+        //ao clicar no botï¿½o btnAddEdge setamos as variï¿½veis booleanas e os estados dos butï¿½es
         btnAddEdge.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 /*netWindow.getIGraph().setbProbabilisticNode(false);
@@ -185,7 +205,7 @@ public class PNEditionPane extends JPanel {
             }
         });
 
-        //ao clicar no botão node setamos as variáveis booleanas e os estados dos butões
+        //ao clicar no botï¿½o node setamos as variï¿½veis booleanas e os estados dos butï¿½es
         btnAddProbabilisticNode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 /*netWindow.getIGraph().setbArc(false);
@@ -198,7 +218,7 @@ public class PNEditionPane extends JPanel {
         });
 
 
-        //ao clicar no botão btnAddDecisionNode setamos as variáveis booleanas e os estados dos butões
+        //ao clicar no botï¿½o btnAddDecisionNode setamos as variï¿½veis booleanas e os estados dos butï¿½es
         btnAddDecisionNode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 /*netWindow.getIGraph().setbArc(false);
@@ -210,7 +230,7 @@ public class PNEditionPane extends JPanel {
             }
         });
 
-        //ao clicar no botão btnAddUtilityNode setamos as variáveis booleanas e os estados dos butões
+        //ao clicar no botï¿½o btnAddUtilityNode setamos as variï¿½veis booleanas e os estados dos butï¿½es
         btnAddUtilityNode.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 /*netWindow.getIGraph().setbArc(false);
@@ -223,7 +243,7 @@ public class PNEditionPane extends JPanel {
         });
 
 
-        //ao clicar no botão node setamos as variáveis booleanas e os estados dos butões
+        //ao clicar no botï¿½o node setamos as variï¿½veis booleanas e os estados dos butï¿½es
         btnSelectObject.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 /*netWindow.getIGraph().setbArc(false);
@@ -235,7 +255,7 @@ public class PNEditionPane extends JPanel {
             }
         });
         /*
-        // listener responsável pela entrada de
+        // listener responsï¿½vel pela entrada de
         table.addKeyListener(new KeyAdapter() {
           public void keyPressed(KeyEvent e) {
 
@@ -260,7 +280,7 @@ public class PNEditionPane extends JPanel {
         });
 */
 
-        // listener responsável pela atualização do texo da sigla do nó
+        // listener responsï¿½vel pela atualizaï¿½ï¿½o do texo da sigla do nï¿½
         txtSigla.addKeyListener(new KeyAdapter() {
           public void keyPressed(KeyEvent e) {
             Object selected = netWindow.getGraphPane().getSelected();
@@ -287,7 +307,7 @@ public class PNEditionPane extends JPanel {
         });
 
 
-        // listener responsável pela atualização do texo da descrição do nó
+        // listener responsï¿½vel pela atualizaï¿½ï¿½o do texo da descriï¿½ï¿½o do nï¿½
         txtDescription.addKeyListener(new KeyAdapter() {
           public void keyPressed(KeyEvent e) {
             Object selected = netWindow.getGraphPane().getSelected();
@@ -314,8 +334,8 @@ public class PNEditionPane extends JPanel {
           }
         });
 
-        //ao clicar no botão btnRemoveState, chama-se o metodo removerEstado do controller
-        //para que esse remova um estado do nó
+        //ao clicar no botï¿½o btnRemoveState, chama-se o metodo removerEstado do controller
+        //para que esse remova um estado do nï¿½
         btnRemoveState.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent ae) {
             if (netWindow.getGraphPane().getSelected() instanceof Node) {
@@ -324,8 +344,8 @@ public class PNEditionPane extends JPanel {
           }
         });
 
-        //ao clicar no botão btnRemoveState, chama-se o metodo inserirEstado do controller
-        //para que esse insira um novo estado no nó
+        //ao clicar no botï¿½o btnRemoveState, chama-se o metodo inserirEstado do controller
+        //para que esse insira um novo estado no nï¿½
         btnAddState.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent ae) {
             if (netWindow.getGraphPane().getSelected() instanceof Node) {
@@ -376,7 +396,7 @@ public class PNEditionPane extends JPanel {
             }
         });
 
-        //colocar botões e controladores do look-and-feel no toolbar e esse no topPanel
+        //colocar botï¿½es e controladores do look-and-feel no toolbar e esse no topPanel
         jtbEdition.add(btnPrintNet);
         jtbEdition.add(btnPreviewNet);
         jtbEdition.add(btnSaveNetImage);
@@ -408,7 +428,7 @@ public class PNEditionPane extends JPanel {
         txtSigla.setEnabled(false);
         */
 
-        //colocar botões, labels e textfields no toolbar e colocá-lo no topPanel
+        //colocar botï¿½es, labels e textfields no toolbar e colocï¿½-lo no topPanel
         jtbState.add(sigla);
         jtbState.add(txtSigla);
 
@@ -462,9 +482,9 @@ public class PNEditionPane extends JPanel {
     }
 
     /**
-     *  Retorna o text field da descrição do nó.
+     *  Retorna o text field da descriï¿½ï¿½o do nï¿½.
      *
-     *@return    retorna a txtDescrição (<code>JTextField</code>)
+     *@return    retorna a txtDescriï¿½ï¿½o (<code>JTextField</code>)
      *@see       JTextField
      */
     public JTextField getTxtDescription() {
@@ -472,7 +492,7 @@ public class PNEditionPane extends JPanel {
     }
 
     /**
-     *  Retorna o text field da sigla do nó.
+     *  Retorna o text field da sigla do nï¿½.
      *
      *@return    retorna a txtSigla (<code>JTextField</code>)
      *@see       JTextField

@@ -1,24 +1,23 @@
 /*
- *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
  *
- *  This file is part of UnbBayes.
+ *  This file is part of UnBBayes.
  *
- *  UnbBayes is free software; you can redistribute it and/or modify
+ *  UnBBayes is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
+ *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  UnbBayes is distributed in the hope that it will be useful,
+ *  UnBBayes is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with UnbBayes; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
-
 package unbbayes.gui;
 
 import java.awt.BasicStroke;
@@ -62,8 +61,8 @@ import unbbayes.util.NodeList;
 
 
 /**
- *  Essa classe é responsável por desenhar a rede Bayesiana ou a MFrag na tela. Ela extende a classe
- *  <code>JPanel</code>. Ela também implementa
+ *  Essa classe ï¿½ responsï¿½vel por desenhar a rede Bayesiana ou a MFrag na tela. Ela extende a classe
+ *  <code>JPanel</code>. Ela tambï¿½m implementa
  *  as interfaces MouseListener e MouseMotionListener, para poder tratar os eventos de
  *  mouse e desenhar a rede Bayesiana.
  *
@@ -79,7 +78,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	private NetworkController controller;
 	private List<Edge> edgeList;
-	// TODO Substituir essa lista de nós por generics como está acima com a lista de Edge. Fazer isso em todo lugar que for necessário, até que se possa exluir o NodeList 
+	// TODO Substituir essa lista de nï¿½s por generics como estï¿½ acima com a lista de Edge. Fazer isso em todo lugar que for necessï¿½rio, atï¿½ que se possa exluir o NodeList 
 	private NodeList nodeList;
 	private List<IDrawable> selectedGroup;
 	private IDrawable selected;
@@ -94,12 +93,12 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	private boolean bMoveNode;
 	private static Color selectionColor;
 	private static Color backgroundColor;
-	// TODO Fazer com que salve e carregue o tamanho do nó!!!
+	// TODO Fazer com que salve e carregue o tamanho do nï¿½!!!
 	private JViewport graphViewport;
 	private Dimension visibleDimension;
 	private Dimension graphDimension;
 	
-	// se 0 e 1 mudar a direção do arco e se 2 deixar sem direção
+	// se 0 e 1 mudar a direï¿½ï¿½o do arco e se 2 deixar sem direï¿½ï¿½o
 	private int direction;
 	
 	private JPopupMenu popup = new JPopupMenu();
@@ -109,11 +108,11 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	
 	/**
-	 *  O construtor é responsável por iniciar todas as variáveis que serão
+	 *  O construtor ï¿½ responsï¿½vel por iniciar todas as variï¿½veis que serï¿½o
 	 *  utilizadas por essa classe para que se possa desenhar a rede Bayesiana.
 	 *
 	 *@param  controlador  o controlador (<code>TControladorTelaPrincipal</code>)
-	 *@param  graphViewport a tela, (<code>TViewport</code>), onde será inserida essa classe
+	 *@param  graphViewport a tela, (<code>TViewport</code>), onde serï¿½ inserida essa classe
 	 */
 	public GraphPane(final NetworkController controller, JViewport graphViewport) {    	
 		super();
@@ -125,7 +124,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 		this.graphViewport = graphViewport;
 		this.setSize(800, 600);
 		
-		//TODO RETIRAR A NECESSIDADE DE PEGAR A REDE, PEGAR DIRETO OS NÓS, ETC.
+		//TODO RETIRAR A NECESSIDADE DE PEGAR A REDE, PEGAR DIRETO OS Nï¿½S, ETC.
 
  	    edgeList = controller.getGraph().getEdges();
 	    nodeList = controller.getGraph().getNodes();
@@ -153,9 +152,9 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	}
 	
 	/**
-	 *  Seta o atributo corSelecao (cor de seleção) do objeto da classe GraphPane
+	 *  Seta o atributo corSelecao (cor de seleï¿½ï¿½o) do objeto da classe GraphPane
 	 *
-	 *@param  selectionColor  A nova cor, <code>Color</code>, de seleção
+	 *@param  selectionColor  A nova cor, <code>Color</code>, de seleï¿½ï¿½o
 	 *@see Color
 	 */
 	public static void setSelectionColor(Color selectionColor) {
@@ -198,7 +197,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	
 	/**
-	 *  Retorna a cor de seleção
+	 *  Retorna a cor de seleï¿½ï¿½o
 	 *
 	 *@return    a selectionColor (<code>Color</code>)
 	 *@see Color
@@ -243,11 +242,11 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	
 	/**
-	 *  Pega o nó que se encontra na posição x,y
+	 *  Pega o nï¿½ que se encontra na posiï¿½ï¿½o x,y
 	 *
-	 *@param  x  A posição x (double)
-	 *@param  y  A posição y (double)
-	 *@return    O nó encontrado (<code>Node</code>)
+	 *@param  x  A posiï¿½ï¿½o x (double)
+	 *@param  y  A posiï¿½ï¿½o y (double)
+	 *@return    O nï¿½ encontrado (<code>Node</code>)
 	 *@see Node
 	 */
 	public Node getNode(double x, double y) {
@@ -272,7 +271,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	/**
 	 *  Pega o atributo focusTransversable do objeto da classe GraphPane
 	 *
-	 *@return    True como valor do focusTransversable (método necessário para que se possa tratar evento de tecla)
+	 *@return    True como valor do focusTransversable (mï¿½todo necessï¿½rio para que se possa tratar evento de tecla)
 	 */
 	public boolean isFocusable() {
 		return true;
@@ -280,10 +279,10 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	
 	/**
-	 *  Pega o arco que se encontra na posição x,y
+	 *  Pega o arco que se encontra na posiï¿½ï¿½o x,y
 	 *
-	 *@param  x  A posição x (double)
-	 *@param  y  A posição y (double)
+	 *@param  x  A posiï¿½ï¿½o x (double)
+	 *@param  y  A posiï¿½ï¿½o y (double)
 	 *@return    O arco encontrado (<code>Edge</code>)
 	 *@see Edge
 	 */
@@ -386,9 +385,9 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	
 	/**
-	 *  Pega o tamanho necessário para repintar a tela (<code>Rectangle</code>)
+	 *  Pega o tamanho necessï¿½rio para repintar a tela (<code>Rectangle</code>)
 	 *
-	 *@return    O tamanho necessário para repintar a tela
+	 *@return    O tamanho necessï¿½rio para repintar a tela
 	 *@see Rectangle
 	 */
 	public Rectangle getRectangleRepaint() {
@@ -460,7 +459,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	
 	/**
-	 *  Método responsável por repintar a rede Bayesiana
+	 *  Mï¿½todo responsï¿½vel por repintar a rede Bayesiana
 	 */
 	public void update(){
 		this.repaint(getRectangleRepaint());
@@ -469,7 +468,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	
 	/**
-	 *  Método responsável por tratar o evento de botão de mouse pressionado
+	 *  Mï¿½todo responsï¿½vel por tratar o evento de botï¿½o de mouse pressionado
 	 *
 	 *@param  e  O <code>MouseEvent</code>
 	 *@see MouseEvent
@@ -621,7 +620,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	
 	/**
-	 *  Método responsável por tratar o evento de clique no botão do mouse
+	 *  Mï¿½todo responsï¿½vel por tratar o evento de clique no botï¿½o do mouse
 	 *
 	 *@param  e  O <code>MouseEvent</code>
 	 *@see MouseEvent
@@ -672,7 +671,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	
 	/**
-	 *  Método responsável por tratar o evento de botão de mouse soltado
+	 *  Mï¿½todo responsï¿½vel por tratar o evento de botï¿½o de mouse soltado
 	 *
 	 *@param  e  O <code>MouseEvent</code>
 	 *@see MouseEvent
@@ -687,7 +686,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 		case CREATE_EDGE:
 			if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 				Node originNode = movingEdge.getOriginNode();
-//				TODO RETIRAR A NECESSIDADE DE PEGAR A REDE, PEGAR DIRETO OS NÓS, ETC.
+//				TODO RETIRAR A NECESSIDADE DE PEGAR A REDE, PEGAR DIRETO OS Nï¿½S, ETC.
 				if ((destinationNode != null) && !originNode.equals(destinationNode) && (controller.getGraph().hasEdge(originNode, destinationNode) == -1)) {
 					movingEdge = new Edge(originNode, destinationNode);
 					insertEdge(movingEdge);
@@ -738,7 +737,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	
 	/**
-	 *  Método responsável por tratar o evento do mouse entrar nesse componente (objeto da classe GraphPane)
+	 *  Mï¿½todo responsï¿½vel por tratar o evento do mouse entrar nesse componente (objeto da classe GraphPane)
 	 *
 	 *@param  e  O <code>MouseEvent</code>
 	 *@see MouseEvent
@@ -756,7 +755,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	
 	/**
-	 *  Método responsável por tratar o evento do mouse sair desse componente (objeto da classe GraphPane)
+	 *  Mï¿½todo responsï¿½vel por tratar o evento do mouse sair desse componente (objeto da classe GraphPane)
 	 *
 	 *@param  e  O <code>MouseEvent</code>
 	 *@see MouseEvent
@@ -767,7 +766,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	
 	/**
-	 *  Método responsável por tratar o evento arrastar o mouse com o botão pressionado
+	 *  Mï¿½todo responsï¿½vel por tratar o evento arrastar o mouse com o botï¿½o pressionado
 	 *
 	 *@param  e  O <code>MouseEvent</code>
 	 *@see MouseEvent
@@ -871,7 +870,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	
 	/**
-	 *  Método responsável por tratar o evento de mover o mouse
+	 *  Mï¿½todo responsï¿½vel por tratar o evento de mover o mouse
 	 *
 	 *@param  e  O <code>MouseEvent</code>
 	 *@see MouseEvent
@@ -888,10 +887,10 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	}
 	
 	/**
-	 *  Método responsável por atualizar o arco (<code>Edge</code>) atual ao se mover um arco
+	 *  Mï¿½todo responsï¿½vel por atualizar o arco (<code>Edge</code>) atual ao se mover um arco
 	 *
-	 *@param  x  Posição x (double) da ponta do arco
-	 *@param  y  Posição y (double) da ponta do arco
+	 *@param  x  Posiï¿½ï¿½o x (double) da ponta do arco
+	 *@param  y  Posiï¿½ï¿½o y (double) da ponta do arco
 	 *@see Edge
 	 */
 	public void updateMovingEdge(double x, double y) {
@@ -900,10 +899,10 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	}
 	
 	/**
-	 *  Método responsável por atualizar o nó (<code>Node</code>) atual ao se mover um nó
+	 *  Mï¿½todo responsï¿½vel por atualizar o nï¿½ (<code>Node</code>) atual ao se mover um nï¿½
 	 *
-	 *@param  x  Posição x (double) do centro do nó
-	 *@param  y  Posição y (double) do centro do nó
+	 *@param  x  Posiï¿½ï¿½o x (double) do centro do nï¿½
+	 *@param  y  Posiï¿½ï¿½o y (double) do centro do nï¿½
 	 *@see Node
 	 */
 	public void updateMovingNode(double x, double y) {
@@ -912,10 +911,10 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	}
 	
 	/**
-	 *  Método responsável por atualizar o ponto final de seleção ao se mover o mouse para seleção
+	 *  Mï¿½todo responsï¿½vel por atualizar o ponto final de seleï¿½ï¿½o ao se mover o mouse para seleï¿½ï¿½o
 	 *
-	 *@param  x  Posição x (double)
-	 *@param  y  Posição y (double)
+	 *@param  x  Posiï¿½ï¿½o x (double)
+	 *@param  y  Posiï¿½ï¿½o y (double)
 	 */
 	public void updateEndSelectionPoint(double x, double y) {
 		endSelectionPoint.setLocation(x, y);
@@ -950,10 +949,10 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	}
 	
 	/**
-	 *  Método responsável por definir quais os obejos (<code>Node</code> e/ou <code>Edge</code>) foram selecionados
+	 *  Mï¿½todo responsï¿½vel por definir quais os obejos (<code>Node</code> e/ou <code>Edge</code>) foram selecionados
 	 *
-	 *@param  p1  Ponto p1 (Point2D.Double) do início do retângulo
-	 *@param  p2  Ponto p2 (Point2D.Double) do fim do retângulo
+	 *@param  p1  Ponto p1 (Point2D.Double) do inï¿½cio do retï¿½ngulo
+	 *@param  p2  Ponto p2 (Point2D.Double) do fim do retï¿½ngulo
 	 *@see Node
 	 *@see Point2D.Double
 	 */
@@ -1096,7 +1095,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	}
 	
 	/**
-	 *  Método responsável por pintar a rede Bayesiana, ou seja, o objeto da classe GraphPane
+	 *  Mï¿½todo responsï¿½vel por pintar a rede Bayesiana, ou seja, o objeto da classe GraphPane
 	 *
 	 *@param  g  O <code>Graphics</code>
 	 *@see Graphics

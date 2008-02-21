@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.datamining.classifiers.bayesianlearning;
 
 import java.util.ArrayList;
@@ -80,8 +100,8 @@ public class ParametricLearning
 
   public int [] multiplies (int [] pai)
   {
-    int ip;                     //índice do pai da interação atual
-    int np = pai.length;        //número de elementos do pai
+    int ip;                     //ï¿½ndice do pai da interaï¿½ï¿½o atual
+    int np = pai.length;        //nï¿½mero de elementos do pai
     int[] mult;   //matriz de multiplicadores - tamanho np
 
     np = (np==0)? 1: np;
@@ -114,14 +134,14 @@ public class ParametricLearning
   {
     int j;                         //relativo a um estado de 'pai'
     int k;                         //relativo a um estado de 'i'
-    int ip;                        //índice do pai
-    int fc;                        //frequência da linha atual
+    int ip;                        //ï¿½ndice do pai
+    int fc;                        //frequï¿½ncia da linha atual
     int qi = computeQ(pai);        //quantidade de estados em 'pai'
-    int ri = dx[i].size();         //quantidade de estados da variável 'i'
+    int ri = dx[i].size();         //quantidade de estados da variï¿½vel 'i'
     int[] mult = multiplies(pai);  //multiplicadores - para linearizar arranjo
-    int[][] njk = new int[qi][ri]; //frequência do estado k com pais no estado j
-    int n = x.length;              //número de variáveis de 'x'
-    int nd = d.length;             //observações distintas na amostra condensada
+    int[][] njk = new int[qi][ri]; //frequï¿½ncia do estado k com pais no estado j
+    int n = x.length;              //nï¿½mero de variï¿½veis de 'x'
+    int nd = d.length;             //observaï¿½ï¿½es distintas na amostra condensada
 
     //para cada linha, computa o j-esimo estado do pai, computa o k-esimo estado
     //das variavel 'i' e acrescenta a frequencia da instancia da amostra
@@ -144,18 +164,18 @@ public class ParametricLearning
 
 //----------------------------------------------------------------------------//
 
-//parâmetro pa: ArrayList de arrays de inteiros
+//parï¿½metro pa: ArrayList de arrays de inteiros
 //retorno: ArrayList de arrays bidimensionais de float
 public ArrayList<float[][]> prob(ArrayList<int[]> pa)
 {
-  ArrayList<int[][]> nijk;	//ocorrência dos estados das variáveis relativos aos estados dos pais
-  int n = x.length;	//número de variáveis
-  int ri;		//número de estados da variável atual
-  int qi;		//número de estados dos pais da variável atual
-  int nij;		//número total de ocorrências da variável em determinado estado dos pais
-  ArrayList<float[][]> p;		//distribuição condicional das famílias	(ArrayList de arrays bidimensionais)
-  float[][] pjk;	//distribuição condicional da variável atual
-  int[][] njk;		//nijk para variável atual(i)
+  ArrayList<int[][]> nijk;	//ocorrï¿½ncia dos estados das variï¿½veis relativos aos estados dos pais
+  int n = x.length;	//nï¿½mero de variï¿½veis
+  int ri;		//nï¿½mero de estados da variï¿½vel atual
+  int qi;		//nï¿½mero de estados dos pais da variï¿½vel atual
+  int nij;		//nï¿½mero total de ocorrï¿½ncias da variï¿½vel em determinado estado dos pais
+  ArrayList<float[][]> p;		//distribuiï¿½ï¿½o condicional das famï¿½lias	(ArrayList de arrays bidimensionais)
+  float[][] pjk;	//distribuiï¿½ï¿½o condicional da variï¿½vel atual
+  int[][] njk;		//nijk para variï¿½vel atual(i)
 
   //calcular nijk
   nijk = new ArrayList<int[][]>();
@@ -195,7 +215,7 @@ public ProbabilisticNetwork getProbabilisticNetwork(ArrayList<int[]> pa)
     int width = 50;
    	for(int i=0; i<x.length; i++)
     {
-    	// Criação do nó
+    	// Criaï¿½ï¿½o do nï¿½
     	ProbabilisticNode node = new ProbabilisticNode();
       	node.setDescription(x[i]);
       	node.setName(x[i]);
@@ -205,7 +225,7 @@ public ProbabilisticNetwork getProbabilisticNetwork(ArrayList<int[]> pa)
       	for (int j=0;j<states.size();j++)
       	{   node.appendState(""+states.get(j));
       	}
-      	// Criação do Tabela de probabilidades
+      	// Criaï¿½ï¿½o do Tabela de probabilidades
       	PotentialTable tab = node.getPotentialTable();
       	tab.addVariable(node);
 		net.addNode(node);
@@ -223,7 +243,7 @@ public ProbabilisticNetwork getProbabilisticNetwork(ArrayList<int[]> pa)
 
       	ArrayList<float[][]> probs = prob(pa);
       	float[][] pjk = probs.get(i);
-    	// Inserção dos valores na tabela de probabilidades
+    	// Inserï¿½ï¿½o dos valores na tabela de probabilidades
       	int counter = 0;
         for (int j=0;j<pjk.length;j++)
     	{
@@ -240,21 +260,21 @@ public ProbabilisticNetwork getProbabilisticNetwork(ArrayList<int[]> pa)
 }
 //----------------------------------------------------------------------------//
 
-  /** variáveis do problema */
+  /** variï¿½veis do problema */
   private String[] x;
 
-  /** domínios das variáveis de x
+  /** domï¿½nios das variï¿½veis de x
    * Array de ArrayLists de Strings
-   * dx[i]: domínios da variável x[i] */
+   * dx[i]: domï¿½nios da variï¿½vel x[i] */
   private ArrayList[] dx;
 
   /** amostra condensada
-   * d[ic,i]=v, sendo 'ic' a linha, 'i' o índice da variável e 'v' o valor da
-   * variável na linha (representado pelo seu índice no domínio da variável)) */
+   * d[ic,i]=v, sendo 'ic' a linha, 'i' o ï¿½ndice da variï¿½vel e 'v' o valor da
+   * variï¿½vel na linha (representado pelo seu ï¿½ndice no domï¿½nio da variï¿½vel)) */
   private int[][] d;
 
-  /** frequencias das instâncias de d
-   * freq[i]: frequência da linha(ou instancia) i */
+  /** frequencias das instï¿½ncias de d
+   * freq[i]: frequï¿½ncia da linha(ou instancia) i */
   private int[] freq;
 
 }

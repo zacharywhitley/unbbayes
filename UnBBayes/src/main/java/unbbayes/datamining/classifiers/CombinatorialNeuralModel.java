@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.datamining.classifiers;
 
 import java.io.Serializable;
@@ -65,8 +85,8 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
 	int attributeNum = instanceSet.numAttributes();
 	int numOfInstances = instanceSet.numWeightedInstances();
 
-	attributeVector = instanceSet.getAttributes();      //cria um array com os atributos para serialização
-	this.classIndex = instanceSet.getClassIndex();      //guarda o indice da classa para serialização
+	attributeVector = instanceSet.getAttributes();      //cria um array com os atributos para serializaï¿½ï¿½o
+	this.classIndex = instanceSet.getClassIndex();      //guarda o indice da classa para serializaï¿½ï¿½o
 
 	while(instanceEnum.hasMoreElements()){
 	  instance = (Instance)instanceEnum.nextElement();
@@ -125,10 +145,10 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
 	  }
 	}
 
-	combinationsKeys = makeCombinations(inputKeys);     //cria todas as combinações dos neuronios de entrada
+	combinationsKeys = makeCombinations(inputKeys);     //cria todas as combinaï¿½ï¿½es dos neuronios de entrada
 	combinationsSize = combinationsKeys.length;
 
-	for(int i=0; i<combinationsSize; i++){                    //para cada combinaçao gerada
+	for(int i=0; i<combinationsSize; i++){                    //para cada combinaï¿½ao gerada
 	  //addCombination(combinationsKeys[i], instance.classValue(), instance.getWeight());
 	  addCombination(combinationsKeys[i], (int) instance.getClassValue(), (int)instance.getWeight());
 	}
@@ -194,26 +214,26 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
 	int combArraySize, tempSize;
 
 	for(int inputNum=0; inputNum<inputKeysNum; inputNum++){  //para todos os neuronios de entrada
-		  combArraySize = combinations.size();                   //pega o tamanho do array de combinações
-		  for (int j = 0; j < combArraySize; j++) {              //para todas as combinações já existentes
+		  combArraySize = combinations.size();                   //pega o tamanho do array de combinaï¿½ï¿½es
+		  for (int j = 0; j < combArraySize; j++) {              //para todas as combinaï¿½ï¿½es jï¿½ existentes
 			tempArray = (String[]) combinations.get(j);
-			tempSize = tempArray.length;                         //pega o tamanho da combinação
+			tempSize = tempArray.length;                         //pega o tamanho da combinaï¿½ï¿½o
 
-			if (tempSize < maxOrder) {                           //se tamanho da combinação < ordem máxima
-			  keysArray = new String[tempSize + 1];              //cria nova combinação
+			if (tempSize < maxOrder) {                           //se tamanho da combinaï¿½ï¿½o < ordem mï¿½xima
+			  keysArray = new String[tempSize + 1];              //cria nova combinaï¿½ï¿½o
 			  keysArray[tempSize] = inputKeys[inputNum];         //adiciona o neuronio de entrada atual
-			  System.arraycopy(tempArray, 0, keysArray, 0, tempSize); //copia o resto da combinação atual
-			  combinations.add(keysArray);                       //adiciona nova combinação no array de combinacoes
+			  System.arraycopy(tempArray, 0, keysArray, 0, tempSize); //copia o resto da combinaï¿½ï¿½o atual
+			  combinations.add(keysArray);                       //adiciona nova combinaï¿½ï¿½o no array de combinacoes
 			}
 		  }
-		  keysArray = new String[1];                             //cria nova combinação de um elemento
-		  keysArray[0] = inputKeys[inputNum];                    //coloca o neuronio de entrada atual nesta combinação
-	  combinations.add(keysArray);                           //adiciona nova combinação no array de combinacoes
+		  keysArray = new String[1];                             //cria nova combinaï¿½ï¿½o de um elemento
+		  keysArray[0] = inputKeys[inputNum];                    //coloca o neuronio de entrada atual nesta combinaï¿½ï¿½o
+	  combinations.add(keysArray);                           //adiciona nova combinaï¿½ï¿½o no array de combinacoes
 	}
 
 	combArraySize = combinations.size();
 	combinationsArray = new String[combArraySize];
-	for(int i=0; i<combArraySize; i++){                      //gera as chaves das combinações
+	for(int i=0; i<combArraySize; i++){                      //gera as chaves das combinaï¿½ï¿½es
 	  combinationsArray[i] = generateCombKey((String[])combinations.get(i));
 	}
 
@@ -297,7 +317,7 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
 	float value;
 	String[] instanceKeys;
 	String[] combKeys;
-	Combination[] combArray = new Combination[attributeVector[classIndex].numValues()];   //array que conterá os arcos de maior peso de cada neuronio
+	Combination[] combArray = new Combination[attributeVector[classIndex].numValues()];   //array que conterï¿½ os arcos de maior peso de cada neuronio
 	int missingAttNum = 0;
 	Combination tempCombination;
 	OutputNeuron[] tempOutput;
@@ -317,18 +337,18 @@ public class CombinatorialNeuralModel extends DistributionClassifier implements 
 		keyIndex++;
 	  }
 	}
-	combKeys = makeCombinations(instanceKeys);   //gera as chaves de todas as combinações ativadas por esta instancia
+	combKeys = makeCombinations(instanceKeys);   //gera as chaves de todas as combinaï¿½ï¿½es ativadas por esta instancia
 
 	for(int i=0; i<combKeys.length; i++){
 	  if(model.containsKey(combKeys[i])){
 		tempCombination = (Combination)model.get(combKeys[i]);
 		tempOutput = tempCombination.getOutputArray();
 		for(int j=0; j<tempOutput.length; j++){
-		  if(combArray[j] == null || combArray[j].getOutputNeuron(j) == null){        //testa se o elemento do array de saida é nulo
-			combArray[j] = tempCombination;  //se for pega o valor do array temporário
-		  } else if(tempOutput[j] != null){  //testa se o elemento do array temporario é nulo
+		  if(combArray[j] == null || combArray[j].getOutputNeuron(j) == null){        //testa se o elemento do array de saida ï¿½ nulo
+			combArray[j] = tempCombination;  //se for pega o valor do array temporï¿½rio
+		  } else if(tempOutput[j] != null){  //testa se o elemento do array temporario ï¿½ nulo
 			if(combArray[j].getOutputNeuron(j).getNetWeight() < tempCombination.getOutputNeuron(j).getNetWeight()){  //compara os pesos
-			  combArray[j] = tempCombination;  //se o array de saida for menor então pega o temporario.
+			  combArray[j] = tempCombination;  //se o array de saida for menor entï¿½o pega o temporario.
 			}
 		  }
 		}

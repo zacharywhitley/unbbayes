@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.gui;
 
 import java.util.ResourceBundle;
@@ -5,11 +25,11 @@ import java.util.ResourceBundle;
 import javax.swing.JOptionPane;
 
 /**
- * Janela que informa para o usuário que ocorreu um erro interno. 
- * Este painel é mostrado quando ocorre um erro que não deveria ocorrer: 
- * alguma condição que foi aceita como verdadeira e na execução se mostrou falsa. 
- * Possibilita que o usuário envie para os desenvolvedores um e-mail com a 
- * descrição do erro para possível correção. 
+ * Janela que informa para o usuï¿½rio que ocorreu um erro interno. 
+ * Este painel ï¿½ mostrado quando ocorre um erro que nï¿½o deveria ocorrer: 
+ * alguma condiï¿½ï¿½o que foi aceita como verdadeira e na execuï¿½ï¿½o se mostrou falsa. 
+ * Possibilita que o usuï¿½rio envie para os desenvolvedores um e-mail com a 
+ * descriï¿½ï¿½o do erro para possï¿½vel correï¿½ï¿½o. 
  * 
  * @author Laecio Lima dos Santos
  * @version 1.0 06/05/07
@@ -20,7 +40,7 @@ public class InternalErrorDialog {
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 	
-	//TODO concluir o painel, colocando opções para reporte do erro... 
+	//TODO concluir o painel, colocando opï¿½ï¿½es para reporte do erro... 
 	public InternalErrorDialog(){
 		JOptionPane.showMessageDialog(
 				null, 

@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.datamining.discretize;
 
 import java.text.DecimalFormat;
@@ -23,10 +43,10 @@ public class RangeDiscretization implements IDiscretization
 	}
 
 	public void discretizeAttribute(Attribute att,int numThresholds) throws Exception
-	{	if (!att.isNumeric())//garante que o atributo seja numérico
+	{	if (!att.isNumeric())//garante que o atributo seja numï¿½rico
 		{	throw new IllegalArgumentException("Attribute not numeric");
 		}
-		int numInstances = inst.numInstances();// se o numero de instancias for 0 não há nada a fazer
+		int numInstances = inst.numInstances();// se o numero de instancias for 0 nï¿½o hï¿½ nada a fazer
 		if (numInstances == 0)
 		{	return;
 		}

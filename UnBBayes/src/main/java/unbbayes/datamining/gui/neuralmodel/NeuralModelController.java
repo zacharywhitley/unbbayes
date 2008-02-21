@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.datamining.gui.neuralmodel;
 
 import java.awt.BorderLayout;
@@ -76,7 +96,7 @@ public class NeuralModelController {
     fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
     fileChooser.setDialogTitle(resource.getString("openFile2"));
     fileChooser.setMultiSelectionEnabled(false);
-    //adicionar FileView no FileChooser para desenhar ícones de arquivos
+    //adicionar FileView no FileChooser para desenhar ï¿½cones de arquivos
     fileChooser.setFileView(new FileIcon(mainScreen));
     fileChooser.addChoosableFileFilter(new SimpleFileFilter(txt, "TxtFiles (*.txt)"));
     fileChooser.addChoosableFileFilter(new SimpleFileFilter(arff, "ArffFiles (*.arff)"));
@@ -117,9 +137,9 @@ public class NeuralModelController {
     fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
     fileChooser.setDialogTitle(resource.getString("saveModel2"));
     fileChooser.setMultiSelectionEnabled(false);
-    //adicionar FileView no FileChooser para desenhar ícones de arquivos
+    //adicionar FileView no FileChooser para desenhar ï¿½cones de arquivos
     fileChooser.setFileView(new FileIcon(mainScreen));
-    fileChooser.addChoosableFileFilter(new SimpleFileFilter(cnmString, "Modelo Neural Combinatório (*.cnm)"));
+    fileChooser.addChoosableFileFilter(new SimpleFileFilter(cnmString, "Modelo Neural Combinatï¿½rio (*.cnm)"));
     int returnVal = fileChooser.showSaveDialog(mainScreen);
     if (returnVal == JFileChooser.APPROVE_OPTION){
       File selectedFile = fileChooser.getSelectedFile();
@@ -158,9 +178,9 @@ public class NeuralModelController {
     fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
     fileChooser.setDialogTitle(resource.getString("openModel2"));
     fileChooser.setMultiSelectionEnabled(false);
-    //adicionar FileView no FileChooser para desenhar ícones de arquivos
+    //adicionar FileView no FileChooser para desenhar ï¿½cones de arquivos
     fileChooser.setFileView(new FileIcon(mainScreen));
-    fileChooser.addChoosableFileFilter(new SimpleFileFilter(cnmString, "Modelo Neural Combinatóri (*.cnm)"));
+    fileChooser.addChoosableFileFilter(new SimpleFileFilter(cnmString, "Modelo Neural Combinatï¿½ri (*.cnm)"));
     int returnVal = fileChooser.showOpenDialog(mainScreen);
     if (returnVal == JFileChooser.APPROVE_OPTION){
       File selectedFile = fileChooser.getSelectedFile();

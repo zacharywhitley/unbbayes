@@ -1,21 +1,23 @@
-/**
- *  This file is part of UnbBayes.
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
  *
- *  UnbBayes is free software; you can redistribute it and/or modify
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
+ *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  UnbBayes is distributed in the hope that it will be useful,
+ *  UnBBayes is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with UnbBayes; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
-
 package unbbayes.gui;
 
 import java.awt.Color;
@@ -35,7 +37,7 @@ import javax.swing.JPanel;
 
 
 /**
- *  Classe responsável por mostrar como as opções globais vão ficar. Ela extende
+ *  Classe responsï¿½vel por mostrar como as opï¿½ï¿½es globais vï¿½o ficar. Ela extende
  *  a classe <code>JPanel</code>
  *
  *@author     Rommel N. Carvalho, Michael S. Onishi
@@ -54,22 +56,22 @@ public class PreviewPane extends JPanel {
 
 
     /**
-     *  Constrói o painel setando a opção global pai (<code>TOpçõesGlobais</code>)
+     *  Constrï¿½i o painel setando a opï¿½ï¿½o global pai (<code>TOpï¿½ï¿½esGlobais</code>)
      *
-     *@param  og  a opção global pai (<code>TOpçõesGlobais</code>)
+     *@param  og  a opï¿½ï¿½o global pai (<code>TOpï¿½ï¿½esGlobais</code>)
      */
     public PreviewPane(GlobalOptionsDialog og) {
         this.og = og;
     }
 
     /**
-     *  Método para achar o ponto do arco na circunferência do nó em relação ao ponto1
+     *  Mï¿½todo para achar o ponto do arco na circunferï¿½ncia do nï¿½ em relaï¿½ï¿½o ao ponto1
      *
-     *@param  x1    posição x do ponto 1
-     *@param  y1    posição y do ponto 1
-     *@param  x2    posição x do ponto 2
-     *@param  y2    posição x do ponto 2
-     *@param  raio  raio do nó
+     *@param  x1    posiï¿½ï¿½o x do ponto 1
+     *@param  y1    posiï¿½ï¿½o y do ponto 1
+     *@param  x2    posiï¿½ï¿½o x do ponto 2
+     *@param  y2    posiï¿½ï¿½o x do ponto 2
+     *@param  raio  raio do nï¿½
      *@return       ponto de destino (<code>Point2D.Double</code>)
      *@see Point2D.Double
      */
@@ -92,10 +94,10 @@ public class PreviewPane extends JPanel {
     /**
      *  Desenha a ponta da seta (<code>GeneralPath</code>)
      *
-     *@param  x   posição x de origem
-     *@param  y   posição y de origem
-     *@param  x1  posição x de destino
-     *@param  y1  posição y de destino
+     *@param  x   posiï¿½ï¿½o x de origem
+     *@param  y   posiï¿½ï¿½o y de origem
+     *@param  x1  posiï¿½ï¿½o x de destino
+     *@param  y1  posiï¿½ï¿½o y de destino
      *@return     a ponta da seta (<code>GeneralPath</code>)
      *@see GeneralPath
      */
@@ -117,7 +119,7 @@ public class PreviewPane extends JPanel {
         x2 = point2.getX();
         y2 = point2.getY();
 
-        //se for no segundo ou quarto quadrante usamos as primeiras 4 equações, senão, usammos as outras 4
+        //se for no segundo ou quarto quadrante usamos as primeiras 4 equaï¿½ï¿½es, senï¿½o, usammos as outras 4
         if (((x > x1) && (y > y1)) || ((x < x1) && (y < y1))) {
             x3 = point1.getX() + 5 * Math.abs(Math.cos(Math.atan((x1 - x) / (y - y1))));
             y3 = point1.getY() - 5 * Math.abs(Math.sin(Math.atan((x1 - x) / (y - y1))));
@@ -156,9 +158,9 @@ public class PreviewPane extends JPanel {
 
 
     /**
-     *  Desenha uma pequena amostra de como ficará as opções globais
+     *  Desenha uma pequena amostra de como ficarï¿½ as opï¿½ï¿½es globais
      *
-     *@param  g  um gráfico (<code>Graphics</code>)
+     *@param  g  um grï¿½fico (<code>Graphics</code>)
      *@see Graphics
      */
     public void paint(Graphics g) {
@@ -172,14 +174,14 @@ public class PreviewPane extends JPanel {
 
 		double radius = og.getRadius();
 
-        //desenha os nós na cor escolhida
+        //desenha os nï¿½s na cor escolhida
         g2.setColor(og.getPropabilisticDescriptionNodeColor());
         g2.fill(new Ellipse2D.Double(getWidth() / 2 - radius, getHeight() / 5 - radius + 10, radius * 2, radius * 2));
         g2.fill(new Ellipse2D.Double(getWidth() / 4 - radius, getHeight() * 2 / 5 - radius + 10, radius * 2, radius * 2));
 		g2.setColor(og.getUtilityNodeColor());
         g2.fill(drawUtility(getWidth() * 3 / 4, getHeight() * 2 / 5 + 10));
 
-        //desenha as bordas dos nós na cor do arco e com um nó selecionado
+        //desenha as bordas dos nï¿½s na cor do arco e com um nï¿½ selecionado
         g2.setColor(og.getArcColor());
         g2.draw(new Ellipse2D.Double(getWidth() / 2 - radius, getHeight() / 5 - radius + 10, radius * 2, radius * 2));
         g2.draw(new Ellipse2D.Double(getWidth() / 4 - radius, getHeight() * 2 / 5 - radius + 10, radius * 2, radius * 2));
@@ -197,7 +199,7 @@ public class PreviewPane extends JPanel {
         g2.draw(new Line2D.Double(point1.getX(), point1.getY(), point2.getX(), point2.getY()));
         g2.fill(drawArrow(getWidth() / 2 - radius, getHeight() / 5 - radius + 10, getWidth() * 3 / 4 - radius, getHeight() * 2 / 5 - radius + 10));
 
-        //desenha os nós na cor escolhida
+        //desenha os nï¿½s na cor escolhida
         g2.setColor(og.getPropabilisticExplanationNodeColor());
         g2.fill(new Ellipse2D.Double(getWidth() / 2 - radius, getHeight() * 3 / 5 - radius, radius * 2, radius * 2));
 		g2.setColor(og.getDecisionNodeColor());
@@ -205,7 +207,7 @@ public class PreviewPane extends JPanel {
 		g2.setColor(og.getPropabilisticDescriptionNodeColor());
         g2.fill(new Ellipse2D.Double(getWidth() * 3 / 4 - radius, getHeight() * 4 / 5 - radius, radius * 2, radius * 2));
 
-        //desenha as bordas dos nós na cor do arco
+        //desenha as bordas dos nï¿½s na cor do arco
         g2.setColor(og.getArcColor());
         g2.draw(new Ellipse2D.Double(getWidth() / 2 - radius, getHeight() * 3 / 5 - radius, radius * 2, radius * 2));
         g2.drawRect((int)(getWidth() / 4 - radius), (int)(getHeight() * 4 / 5 - radius), (int)(radius * 2), (int)(radius * 2));
@@ -222,7 +224,7 @@ public class PreviewPane extends JPanel {
         g2.draw(new Line2D.Double(point1.getX(), point1.getY(), point2.getX(), point2.getY()));
         g2.fill(drawArrow(getWidth() / 2 - radius, getHeight() * 3 / 5 - radius, getWidth() * 3 / 4 - radius, getHeight() * 4 / 5 - radius));
 
-        //desenha o título "Preview"
+        //desenha o tï¿½tulo "Preview"
         AttributedString as = new AttributedString(resource.getString("previewTitle"));
         Font serifFont = new Font("Serif", Font.PLAIN, 14);
         as.addAttribute(TextAttribute.FONT, serifFont);

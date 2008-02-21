@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.datamining.classifiers;
 
 import java.util.Enumeration;
@@ -13,34 +33,34 @@ import unbbayes.prs.bn.TreeVariable;
 /**
  * Class implementing a Bayesian Network.
  *
- * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ * @author Mario Henrique Paes Vieira (mariohpv@bol.com.br)
  * @version $1.0 $ (17/02/2002)
  */
 public class BayesianNetwork extends DistributionClassifier
 {
   /** Atributo classe do conjunto de dados */
   private Attribute classAttribute;
-  /** Nó classe na rede bayesiana */
+  /** No classe na rede bayesiana */
   private ProbabilisticNode classNode;
-  /** Índice da classe na rede vayesiana */
+  /** indice da classe na rede vayesiana */
   private int classNodeIndex = -1;
-  /** Índice da classe no conjunto de dados */
+  /** indice da classe no conjunto de dados */
   private int classAttributeIndex = -1;
-  /** Referência para rede bayesiana usada nesta classe */
+  /** Referï¿½ncia para rede bayesiana usada nesta classe */
   private ProbabilisticNetwork net;
-  /** Referência para o conjunto de instâncias usado nesta classe */
+  /** Referï¿½ncia para o conjunto de instï¿½ncias usado nesta classe */
   private InstanceSet instanceSet;
-  /** Número de nós na rede bayesiana */
+  /** Nï¿½mero de nos na rede bayesiana */
   private int numNodes;
-  /** Mapeamento dos nós da rede bayesiana para os atributos do conjunto de dados */
+  /** Mapeamento dos nï¿½s da rede bayesiana para os atributos do conjunto de dados */
   private int[] indexAttributes;
-  /** Guarda as distribuições de probabilidades já calculadas.
-   * Usado para otimização.
+  /** Guarda as distribuicoes de probabilidades ja calculadas.
+   * Usado para otimizacao.
    */
   private HashMap<Integer, float[]> hashMap;
-  /** Multiplicadores para otimização com hashMap */
+  /** Multiplicadores para otimizacao com hashMap */
   private int[] multipliers;
-  /** Guarda o número de classes */
+  /** Guarda o numero de classes */
   private int numClasses = 0;
 
 	public BayesianNetwork(ProbabilisticNetwork net,InstanceSet instanceSet) throws Exception
@@ -60,7 +80,7 @@ public class BayesianNetwork extends DistributionClassifier
             indexAttributes[i] = net.getNodeIndex(attributeName);
             if (indexAttributes[i] == -1)
             {
-              throw new Exception("Atributo não encontrado na rede: "+attributeName);
+              throw new Exception("Atributo nï¿½o encontrado na rede: "+attributeName);
             }
             i++;
           }
@@ -98,10 +118,10 @@ public class BayesianNetwork extends DistributionClassifier
 
             if (classNodeIndex < 0)
             {
-              throw new Exception("Classe não definida.");
+              throw new Exception("Classe nï¿½o definida.");
             }
 
-            // Calcula um hashCode para a instância
+            // Calcula um hashCode para a instï¿½ncia
             int j,i=1,hashCode=0,k=0;
             for (j=0; j<numNodes; j++)
             {
@@ -124,14 +144,14 @@ public class BayesianNetwork extends DistributionClassifier
             }
 
             Integer hashInt = new Integer(hashCode);
-            /** Se a instância já tiver sido propagada, a cópia dela retornada */
+            /** Se a instï¿½ncia jï¿½ tiver sido propagada, a cï¿½pia dela retornada */
             if (hashMap.containsKey(hashInt))
             {
               //float[] hashProbs = (float[])hashMap.get(hashInt);
               probs = hashMap.get(hashInt);
               //System.arraycopy(hashProbs,0,probs,0,hashProbs.length);
             }
-            /** Senão a instância é propagada e inserida no HashMap*/
+            /** Senï¿½o a instï¿½ncia ï¿½ propagada e inserida no HashMap*/
             else
             {
               net.initialize();
@@ -208,10 +228,10 @@ public class BayesianNetwork extends DistributionClassifier
               break;
             }
           }
-          // se a classe não for encontrada
+          // se a classe nï¿½o for encontrada
           if (result == false)
           {
-            throw new Exception("Attributo classe não encontrado na rede");
+            throw new Exception("Attributo classe nï¿½o encontrado na rede");
           }
           else
           {

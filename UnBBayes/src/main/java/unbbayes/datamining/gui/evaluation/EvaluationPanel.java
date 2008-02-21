@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.datamining.gui.evaluation;
 
 import java.awt.BorderLayout;
@@ -259,7 +279,7 @@ public class EvaluationPanel extends JPanel {
     buttonGroup1.add(jRadioButton3);
   }
 
-  /** Salva as informações da text area
+  /** Salva as informaï¿½ï¿½es da text area
    *  @param e One ActionEvent
    *  */
   void jButton9_actionPerformed(ActionEvent e)
@@ -267,7 +287,7 @@ public class EvaluationPanel extends JPanel {
       String[] s2 = {"TXT"};
       fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setMultiSelectionEnabled(false);
-      //adicionar FileView no FileChooser para desenhar ícones de arquivos
+      //adicionar FileView no FileChooser para desenhar ï¿½cones de arquivos
       fileChooser.setFileView(new FileIcon(EvaluationPanel.this));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s2, "TxtFiles (*.txt)"));
       int returnVal = fileChooser.showSaveDialog(this);
@@ -301,7 +321,7 @@ public class EvaluationPanel extends JPanel {
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
-  /** Faz a avaliação
+  /** Faz a avaliaï¿½ï¿½o
    *  @param e An ActionEvent
    *  */
   void jButton7_actionPerformed(ActionEvent e)

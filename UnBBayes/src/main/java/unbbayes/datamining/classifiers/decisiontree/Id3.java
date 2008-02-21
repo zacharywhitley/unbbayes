@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.datamining.classifiers.decisiontree;
 
 import java.io.Serializable;
@@ -23,7 +43,7 @@ import unbbayes.datamining.datamanipulation.Utils;
  * R. Quinlan (1986). <i>Induction of decision
  * trees</i>. Machine Learning. Vol.1, No.1, pp. 81-106.<p>
  *
- * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ * @author Mï¿½rio Henrique Paes Vieira (mariohpv@bol.com.br)
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  * @version $1.0 $ (24/12/2001)
  */
