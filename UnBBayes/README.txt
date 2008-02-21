@@ -1,5 +1,8 @@
 The first thing needed is to install the maven project in your computer.
 
+After that, it is necessary to install the maven plugin for your IDE, in this case, the Eclipse IDE.
+The update site for this plugin is: http://q4e.googlecode.com/svn/trunk/updatesite/.
+
 Before using this new Maven project, it is necessary to install the following libraries in
 the local repository. These jars were not found in commom remote repositories.
 
