@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.metaphor;
 
 import java.awt.Component;
@@ -23,7 +43,7 @@ import unbbayes.util.ArrayMap;
 import unbbayes.util.NodeList;
 
 /**
- * @author Mário Henrique Paes Vieira
+ * @author Mï¿½rio Henrique Paes Vieira
  * @version 1.0
  */
 public class MetaphorTree extends JTree
@@ -289,7 +309,7 @@ public class MetaphorTree extends JTree
 	}
 	
 	/**
-	 *  Expande todos os nós da árvore.
+	 *  Expande todos os nï¿½s da ï¿½rvore.
 	 *
 	 * @see            JTree
 	 */
@@ -300,7 +320,7 @@ public class MetaphorTree extends JTree
 	}
 	
 	/**
-	 *  Retrai todos os nós da árvore.
+	 *  Retrai todos os nï¿½s da ï¿½rvore.
 	 *
 	 * @see            JTree
 	 */
@@ -311,9 +331,9 @@ public class MetaphorTree extends JTree
 	}
 	
 	/**
-	 * Modifica o formato de números
+	 * Modifica o formato de nï¿½meros
 	 *
-	 * @param local localidade do formato de números.
+	 * @param local localidade do formato de nï¿½meros.
 	 */
 	public void setNumberFormat(Locale local)
 	{   nf = NumberFormat.getInstance(local);

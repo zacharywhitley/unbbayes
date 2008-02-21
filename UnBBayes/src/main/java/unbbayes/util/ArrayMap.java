@@ -1,24 +1,23 @@
 /*
- *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
  *
- *  This file is part of UnbBayes.
+ *  This file is part of UnBBayes.
  *
- *  UnbBayes is free software; you can redistribute it and/or modify
+ *  UnBBayes is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
+ *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  UnbBayes is distributed in the hope that it will be useful,
+ *  UnBBayes is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with UnbBayes; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
-
 package unbbayes.util;
 
 import java.util.AbstractMap;
@@ -47,7 +46,7 @@ public class ArrayMap<K,V> extends AbstractMap<K,V> implements java.io.Serializa
      *
      * @param key chave a ser inserida.
      * @param value valor a ser inserida.
-     * @return null se key não foi anteriormente inserida, senão o valor anterior.
+     * @return null se key nï¿½o foi anteriormente inserida, senï¿½o o valor anterior.
      */
     public V put(K key, V value) {
         V result = get(key);
@@ -81,9 +80,9 @@ public class ArrayMap<K,V> extends AbstractMap<K,V> implements java.io.Serializa
     }
     
     /**
-     *  Retorna o número de pares chave/valor.
+     *  Retorna o nï¿½mero de pares chave/valor.
      *
-     * @return número de pares chave/valor.
+     * @return nï¿½mero de pares chave/valor.
      */
     public int size() {
         return keys.size();

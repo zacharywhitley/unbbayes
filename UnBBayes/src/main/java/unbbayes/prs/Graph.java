@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.prs;
 
 import java.util.List;
@@ -17,18 +37,18 @@ public interface Graph {
 		public List<Edge> getEdges();
 
 		/**
-		 *  Retorna os nós do grafo.
+		 *  Retorna os nï¿½s do grafo.
 		 *
-		 *@return    nós do grafo.
+		 *@return    nï¿½s do grafo.
 		 * 
 		 * @todo Eliminar esse metodo! eh utilizado na classe NetWindow
 		 */
 		public NodeList getNodes();
 
 		/**
-		 *  Returna o número de variáveis da rede.
+		 *  Returna o nï¿½mero de variï¿½veis da rede.
 		 *
-		 *@return    número de variáveis da rede.
+		 *@return    nï¿½mero de variï¿½veis da rede.
 		 */
 		public int getNodeCount();
 
@@ -41,32 +61,32 @@ public interface Graph {
 		public void removeEdge(Edge arco) ;
 
 		/**
-		 *  Adiciona novo nó ao grafo.
+		 *  Adiciona novo nï¿½ ao grafo.
 		 *
-		 *@param  no  nó a ser inserido.
+		 *@param  no  nï¿½ a ser inserido.
 		 */
 		public void addNode(Node no);
 
 		/**
-		 *  Adiciona o arco à rede.
+		 *  Adiciona o arco ï¿½ rede.
 		 *
 		 *@param  arco  arco a ser inserido.
 		 */
 		public void addEdge(Edge arco) throws Exception;
 
 		/**
-		 *  Remove nó do grafo.
+		 *  Remove nï¿½ do grafo.
 		 *
 		 *@param  elemento  no a ser removido.
 		 */
 		public void removeNode(Node elemento);
 
 		/**
-		 *  Verifica existência de determinado arco.
+		 *  Verifica existï¿½ncia de determinado arco.
 		 *
-		 *@param  no1  nó origem.
-		 *@param  no2  nó destino.
-		 *@return      posição do arco no vetor ou -1 caso não exista tal arco.
+		 *@param  no1  nï¿½ origem.
+		 *@param  no2  nï¿½ destino.
+		 *@return      posiï¿½ï¿½o do arco no vetor ou -1 caso nï¿½o exista tal arco.
 		 */
 		public int hasEdge(Node no1, Node no2);
 

@@ -1,24 +1,23 @@
 /*
- *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
  *
- *  This file is part of UnbBayes.
+ *  This file is part of UnBBayes.
  *
- *  UnbBayes is free software; you can redistribute it and/or modify
+ *  UnBBayes is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
+ *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  UnbBayes is distributed in the hope that it will be useful,
+ *  UnBBayes is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with UnbBayes; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
-
 package unbbayes.prs.bn;
 
 
@@ -26,7 +25,7 @@ import unbbayes.prs.id.UtilityTable;
 import unbbayes.util.NodeList;
 
 /**
- *  Representa um separador na Árvore de Junção (JunctionTree) entre cliques.
+ *  Representa um separador na ï¿½rvore de Junï¿½ï¿½o (JunctionTree) entre cliques.
  *
  *@author     Michael e Rommel
  */
@@ -40,12 +39,12 @@ public class Separator implements ITabledVariable, java.io.Serializable {
     private NodeList nos;
 
     /**
-     *  Guarda o primeiro clique, quando há orientação assume semântica como origem.
+     *  Guarda o primeiro clique, quando hï¿½ orientaï¿½ï¿½o assume semï¿½ntica como origem.
      */
     private Clique clique1;
 
     /**
-     *  Guarda o segundo clique, quando há orientação assume semântica como destino.
+     *  Guarda o segundo clique, quando hï¿½ orientaï¿½ï¿½o assume semï¿½ntica como destino.
      */
     private Clique clique2;
     
@@ -86,9 +85,9 @@ public class Separator implements ITabledVariable, java.io.Serializable {
 
 
     /**
-     *  Insere uma nova lista de nós clusterizados.
+     *  Insere uma nova lista de nï¿½s clusterizados.
      *
-     *@param  nodeList  lista de nós clusterizados.
+     *@param  nodeList  lista de nï¿½s clusterizados.
      */
     public void setNodes(NodeList nos) {
         this.nos = nos;
@@ -115,9 +114,9 @@ public class Separator implements ITabledVariable, java.io.Serializable {
 
 
     /**
-     *  Retorna a lista de nós clusterizados.
+     *  Retorna a lista de nï¿½s clusterizados.
      *
-     *@return    nós clusterizados
+     *@return    nï¿½s clusterizados
      */
     public NodeList getNodes() {
         return nos;
@@ -125,9 +124,9 @@ public class Separator implements ITabledVariable, java.io.Serializable {
 
 
     /**
-     *  Retorna o primeiro nó.
+     *  Retorna o primeiro nï¿½.
      *
-     *@return    nó 1
+     *@return    nï¿½ 1
      */
     public Clique getClique1() {
         return clique1;
@@ -135,9 +134,9 @@ public class Separator implements ITabledVariable, java.io.Serializable {
 
 
     /**
-     *  Retorna o segundo nó.
+     *  Retorna o segundo nï¿½.
      *
-     *@return    nó 2
+     *@return    nï¿½ 2
      */
     public Clique getClique2() {
         return clique2;

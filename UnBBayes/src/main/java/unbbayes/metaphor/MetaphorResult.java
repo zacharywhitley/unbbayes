@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.metaphor;
 
 import java.awt.BorderLayout;
@@ -33,7 +53,7 @@ import unbbayes.util.NodeList;
  * Company:
  * </p>
  * 
- * @author Mário Henrique Paes Vieira
+ * @author Mï¿½rio Henrique Paes Vieira
  * @version 1.0
  */
 
@@ -102,8 +122,8 @@ public class MetaphorResult extends JPanel {
 		gridLayout1.setRows(2);
 		jPanel3.setLayout(borderLayout1);
 		jPanel4.setLayout(borderLayout3);
-		jLabel1.setText("Prováveis Diagnósticos:");
-		jLabel2.setText("Diagnósticos Não Prováveis:");
+		jLabel1.setText("Provï¿½veis Diagnï¿½sticos:");
+		jLabel2.setText("Diagnï¿½sticos Nï¿½o Provï¿½veis:");
 		jTextArea3.setBackground(new Color(255, 255, 210));
 		jTextArea3.setEditable(false);
 		jTextArea4.setBackground(new Color(255, 255, 210));
@@ -136,7 +156,7 @@ public class MetaphorResult extends JPanel {
 		jScrollPane2.getViewport().add(jList2, null);
 		this.add(jPanel2, null);
 		jPanel2.add(jTabbedPane1, BorderLayout.CENTER);
-		jTabbedPane1.add(jScrollPane3, "Descrição do Diagnóstico:");
+		jTabbedPane1.add(jScrollPane3, "Descriï¿½ï¿½o do Diagnï¿½stico:");
 		jTabbedPane1.add(jScrollPane4, "Laudo");
 		jScrollPane4.getViewport().add(jTextArea4, null);
 		jScrollPane3.getViewport().add(jTextArea3, null);
@@ -284,7 +304,7 @@ public class MetaphorResult extends JPanel {
 			if (source.equals(jList1)) {
 				jTabbedPane1.setTitleAt(1, "Laudo");
 			} else {
-				jTabbedPane1.setTitleAt(1, "Por que não?");
+				jTabbedPane1.setTitleAt(1, "Por que nï¿½o?");
 			}
 			if (list.diagnostic != null) {
 				jTabbedPane1.setSelectedIndex(1);

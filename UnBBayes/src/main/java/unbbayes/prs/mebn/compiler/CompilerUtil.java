@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.prs.mebn.compiler;
 
 /*
@@ -25,7 +45,7 @@ public class CompilerUtil {
 
 	private static char look; /* O caracter lido "antecipadamente" (lookahead) */
 
-	private static int index = 0; /* Posição de leitura do text */
+	private static int index = 0; /* Posiï¿½ï¿½o de leitura do text */
 
 	private static char[] text;
 
@@ -35,12 +55,12 @@ public class CompilerUtil {
 
 	private static int KWLIST_SZ = 4;
 
-	private static char symtbl[] = new char[SYMTBL_SZ]; /* tabela de símbolos */
+	private static char symtbl[] = new char[SYMTBL_SZ]; /* tabela de sï¿½mbolos */
 
 	private static String kwlist[] = { "IF", "ELSE", "ENDIF", "END" }; /* palavras-chave */
 
 	private static char kwcode[] = { 'i', 'l', 'e', 'e' }; /*
-															 * código para as
+															 * cï¿½digo para as
 															 * palavras-chave
 															 */
 
@@ -55,7 +75,7 @@ public class CompilerUtil {
 	private static char token; /* token codificado */
 
 	/*
-	 * valor do token não codificado
+	 * valor do token nï¿½o codificado
 	 */
 	private static String value; // = new char[MAXTOKEN + 1];
 
@@ -69,7 +89,7 @@ public class CompilerUtil {
 
 	}
 
-	/* inicialização do compilador */
+	/* inicializaï¿½ï¿½o do compilador */
 	public static void init(String text) {
 		System.out.println(text);
 		text = text.replaceAll("\\s+", "");
@@ -149,7 +169,7 @@ public class CompilerUtil {
 		return -1;
 	}
 
-	/* lê próximo caracter da entrada */
+	/* lï¿½ prï¿½ximo caracter da entrada */
 	public static void nextChar() {
 		if (index < text.length)
 			look = text[index++];
@@ -201,7 +221,7 @@ public class CompilerUtil {
 		//skipwhite();
 	}
 
-	/* recebe um número inteiro */
+	/* recebe um nï¿½mero inteiro */
 	public static void getNum() {
 		
 		if (!isNumeric(look))
@@ -216,7 +236,7 @@ public class CompilerUtil {
 	     // skipwhite();
 	}
 
-	/* emite uma instrução seguida por uma nova linha */
+	/* emite uma instruï¿½ï¿½o seguida por uma nova linha */
 	public static void emit(String instruction) {
 		System.out.println(instruction + newline);
 	}
@@ -276,7 +296,7 @@ public class CompilerUtil {
 			// emit("MOV AX, " + value);
 	}
 
-	/* reconhece e traduz uma multiplicação */
+	/* reconhece e traduz uma multiplicaï¿½ï¿½o */
 	public static void doMul() {
 		match('*');
 		factor();
@@ -284,7 +304,7 @@ public class CompilerUtil {
 		// emit("IMUL BX");
 	}
 
-	/* reconhece e traduz uma divisão */
+	/* reconhece e traduz uma divisï¿½o */
 	public static void doDiv() {
 		match('/');
 		factor();
@@ -294,7 +314,7 @@ public class CompilerUtil {
 		// emit("IDIV BX");
 	}
 
-	/* reconhece e traduz uma adição */
+	/* reconhece e traduz uma adiï¿½ï¿½o */
 	public static void doAdd() {
 		match('+');
 		term();
@@ -302,7 +322,7 @@ public class CompilerUtil {
 		// emit("ADD AX, BX");
 	}
 
-	/* reconhece e traduz uma subtração */
+	/* reconhece e traduz uma subtraï¿½ï¿½o */
 	public static void doSub() {
 		match('-');
 		term();
@@ -349,7 +369,7 @@ public class CompilerUtil {
 		term1();
 	}
 
-	/* analisa e traduz uma expressão */
+	/* analisa e traduz uma expressï¿½o */
 	public static void expression() {
 		firstTerm();
 		while (isAddOp(look)) {
@@ -365,7 +385,7 @@ public class CompilerUtil {
 		}
 	}
 
-	/* analisa e traduz um comando de atribuição */
+	/* analisa e traduz um comando de atribuiï¿½ï¿½o */
 	public static void assignment() {
 		String name = value;
 

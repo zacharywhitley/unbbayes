@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.monteCarlo.simulacao;
 
 import java.util.ArrayList;
@@ -12,9 +32,9 @@ import unbbayes.util.NodeList;
 
 /**
  * 
- * Classe que implementa o método de simulação de Monte Carlo
- * Por este método são gerados números aleatórios entre 0 e 1. Cada valor sorteado vai estar associada a uma
- * instancia dentro do universo representado pela rede bayseana. Esta associação é feito com base em um função
+ * Classe que implementa o mï¿½todo de simulaï¿½ï¿½o de Monte Carlo
+ * Por este mï¿½todo sï¿½o gerados nï¿½meros aleatï¿½rios entre 0 e 1. Cada valor sorteado vai estar associada a uma
+ * instancia dentro do universo representado pela rede bayseana. Esta associaï¿½ï¿½o ï¿½ feito com base em um funï¿½ï¿½o
  * de densidade acumulada que representa a rede.
  * 
  * @author Danilo
@@ -28,9 +48,9 @@ public class SimulacaoMonteCarlo {
 	
 	
 	/**
-	 * Método que gera a simulação de Monte Carlo
-	 * @param pn Rede a partir da qual serão gerados os casos
-	 * @param nCasos numero de casos que seráo gerados
+	 * Mï¿½todo que gera a simulaï¿½ï¿½o de Monte Carlo
+	 * @param pn Rede a partir da qual serï¿½o gerados os casos
+	 * @param nCasos numero de casos que serï¿½o gerados
 	 */
 	public SimulacaoMonteCarlo(ProbabilisticNetwork pn , int nCasos){		
 		this.pn = pn;
@@ -165,7 +185,7 @@ public class SimulacaoMonteCarlo {
 	
 	private double[]  getColuna(int[] estado,List indicesAnteriores, ProbabilisticNode n){
 		PotentialTable pt = n.getPotentialTable();
-		//System.out.println("Nomde Nó = "+ n.getDescription());
+		//System.out.println("Nomde Nï¿½ = "+ n.getDescription());
 		int numeroEstados = n.getStatesSize();
 		int indice;
 		double[] coluna = new double[numeroEstados];

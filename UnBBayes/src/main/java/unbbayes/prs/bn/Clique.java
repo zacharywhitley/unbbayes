@@ -1,24 +1,23 @@
 /*
- *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
  *
- *  This file is part of UnbBayes.
+ *  This file is part of UnBBayes.
  *
- *  UnbBayes is free software; you can redistribute it and/or modify
+ *  UnBBayes is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
+ *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  UnbBayes is distributed in the hope that it will be useful,
+ *  UnBBayes is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with UnbBayes; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
-
 package unbbayes.prs.bn;
 
 import java.util.ArrayList;
@@ -32,7 +31,7 @@ import unbbayes.util.NodeList;
 
 
 /**
- *  Classe que representa um Clique na Árvore de Junção (JunctionTree).
+ *  Classe que representa um Clique na ï¿½rvore de Junï¿½ï¿½o (JunctionTree).
  *
  *@author    Michael e Rommel
  *@version   27 de Junho de 2001
@@ -46,17 +45,17 @@ public class Clique implements ITabledVariable, java.io.Serializable {
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.prs.bn.resources.BnResources");
 
     /**
-     *  Identifica unicamente o nó.
+     *  Identifica unicamente o nï¿½.
      */
     private int index;
 
     /**
-     *  Referência para o clique pai.
+     *  Referï¿½ncia para o clique pai.
      */
     private Clique parent;
 
     /**
-     *  Lista de nós filhos.
+     *  Lista de nï¿½s filhos.
      */
     private List<Clique> children;
 
@@ -71,24 +70,24 @@ public class Clique implements ITabledVariable, java.io.Serializable {
     private PotentialTable utilityTable;    
 
     /**
-     *  Lista de Nós Clusterizados.
+     *  Lista de Nï¿½s Clusterizados.
      */
     private NodeList nos;
 
     /**
-     *  Lista de Nós Probabilísticos associados ao Clique.
+     *  Lista de Nï¿½s Probabilï¿½sticos associados ao Clique.
      */
     private NodeList nosAssociados;
 
     /**
-     *  Lista de Nós de Utilidade associados ao Clique.
+     *  Lista de Nï¿½s de Utilidade associados ao Clique.
      */
     private NodeList associatedUtilNodes;    
 
 
     /**
-     *  Constrói um novo clique. Inicializa o vetor de filhos, de nós clusterizados
-     *  e de nós associados. Inicializa o status associado para false.
+     *  Constrï¿½i um novo clique. Inicializa o vetor de filhos, de nï¿½s clusterizados
+     *  e de nï¿½s associados. Inicializa o status associado para false.
      */
     public Clique() {
         children = new ArrayList<Clique>();
@@ -101,10 +100,10 @@ public class Clique implements ITabledVariable, java.io.Serializable {
     
 
     /**
-     *  Normaliza um clique da árvore.
+     *  Normaliza um clique da ï¿½rvore.
      *
-     *@param  ok      vetor boolean de tamanho 1 para passar parametro por referência.
-     *@return         constante de normalização.
+     *@param  ok      vetor boolean de tamanho 1 para passar parametro por referï¿½ncia.
+     *@return         constante de normalizaï¿½ï¿½o.
      */
     public float normalize() throws Exception {
         boolean fixo[] = new boolean[nos.size()];
@@ -233,18 +232,18 @@ public class Clique implements ITabledVariable, java.io.Serializable {
 
 
     /**
-     * Retorna o índice associado ao clique.
+     * Retorna o ï¿½ndice associado ao clique.
      *
-     * @return índice associado ao clique.
+     * @return ï¿½ndice associado ao clique.
      */
     public int getIndex() {
         return index;
     }
 
     /**
-     * Muda o índice do clique.
+     * Muda o ï¿½ndice do clique.
      *
-     * @param indice frag que indica o status de associação
+     * @param indice frag que indica o status de associaï¿½ï¿½o
      */
     public void setIndex(int indice) {
         this.index = indice;
@@ -278,9 +277,9 @@ public class Clique implements ITabledVariable, java.io.Serializable {
     }
 
     /**
-     *  Retorna o filho na posição especificada.
+     *  Retorna o filho na posiï¿½ï¿½o especificada.
      *
-     *@return    filho na posição especificada
+     *@return    filho na posiï¿½ï¿½o especificada
      */
     public Clique getChildAt(int index) {
         return children.get(index);
@@ -288,9 +287,9 @@ public class Clique implements ITabledVariable, java.io.Serializable {
 
 
     /**
-     *  Retorna o vetor de nós clusterizados.
+     *  Retorna o vetor de nï¿½s clusterizados.
      *
-     *@return    vetor de nós clusterizados.
+     *@return    vetor de nï¿½s clusterizados.
      */
     public NodeList getNodes() {
         return nos;
@@ -298,18 +297,18 @@ public class Clique implements ITabledVariable, java.io.Serializable {
 
 
     /**
-     *  Retorna o vetor de nós probabilísticos associados.
+     *  Retorna o vetor de nï¿½s probabilï¿½sticos associados.
      *
-     *@return    vetor de nós probabilísticos associados.
+     *@return    vetor de nï¿½s probabilï¿½sticos associados.
      */
     public NodeList getAssociatedProbabilisticNodes() {
         return nosAssociados;
     }
 
     /**
-     *  Retorna o vetor de nós de utilidade associados.
+     *  Retorna o vetor de nï¿½s de utilidade associados.
      *
-     *@return    vetor de nós de utilidade associados.
+     *@return    vetor de nï¿½s de utilidade associados.
      */
     public NodeList getAssociatedUtilityNodes() {
         return associatedUtilNodes;

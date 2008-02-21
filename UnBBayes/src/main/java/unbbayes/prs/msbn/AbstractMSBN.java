@@ -1,3 +1,23 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.prs.msbn;
 
 import java.util.ArrayList;
@@ -146,7 +166,7 @@ public abstract class AbstractMSBN {
 				return;
 			}
 		}
-//		assert false : "Não podia chegar aqui";
+//		assert false : "Nï¿½o podia chegar aqui";
 	}
 	
 	/**
@@ -221,12 +241,12 @@ public abstract class AbstractMSBN {
 		}
 		
 		if (max == 0) {
-			throw new Exception("Não forma Hiperárvore");			
+			throw new Exception("Nï¿½o forma Hiperï¿½rvore");			
 		}
 		
 	 	for (int j = 0; j < netsSize; j++) {
 			if (naArvore[j] && ! isDSepSet(j, kMax, inters[j][kMax])) {
-				throw new Exception("Erro na contrução da HyperÁrvore");					
+				throw new Exception("Erro na contruï¿½ï¿½o da Hyperï¿½rvore");					
 			}
 		}
 		

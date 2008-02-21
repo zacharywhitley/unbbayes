@@ -1,22 +1,22 @@
 /*
- *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
  *
- *  This file is part of UnbBayes.
+ *  This file is part of UnBBayes.
  *
- *  UnbBayes is free software; you can redistribute it and/or modify
+ *  UnBBayes is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
+ *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  UnbBayes is distributed in the hope that it will be useful,
+ *  UnBBayes is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with UnbBayes; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
 package unbbayes.prs.bn;
 
@@ -28,7 +28,7 @@ import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
- *  Classe que representa uma Árvore de Junção para Redes Bayesianas.
+ *  Classe que representa uma ï¿½rvore de Junï¿½ï¿½o para Redes Bayesianas.
  *
  *@author     Michael
  *@author     Rommel
@@ -57,13 +57,13 @@ public class JunctionTree implements java.io.Serializable {
 	private List<Separator> separators;
 
 	/**
-	 * Coordenadas pré-calculadas para otimização
-	 * no método absorve.
+	 * Coordenadas prï¿½-calculadas para otimizaï¿½ï¿½o
+	 * no mï¿½todo absorve.
 	 */
 	private int coordSep[][][];
 
 	/**
-	 *  Contrói uma nova árvore de junção. Inicializa a lista de separadores e
+	 *  Contrï¿½i uma nova ï¿½rvore de junï¿½ï¿½o. Inicializa a lista de separadores e
 	 *  cliques.
 	 */
 	public JunctionTree() {
@@ -103,8 +103,8 @@ public class JunctionTree implements java.io.Serializable {
 	
 
 	/**
-	 *  Verifica a consistência global.
-	 *  Aplica o algoritmo Colete seguido do Distribua no clique raiz da árvore.
+	 *  Verifica a consistï¿½ncia global.
+	 *  Aplica o algoritmo Colete seguido do Distribua no clique raiz da ï¿½rvore.
 	 */
 	public void consistency() throws Exception {
 		n = 1;
@@ -114,10 +114,10 @@ public class JunctionTree implements java.io.Serializable {
 	}
 
 	/**
-	 *  Processa a coleta de evidências.
+	 *  Processa a coleta de evidï¿½ncias.
 	 *
 	 *@param  clique  clique.
-	 *@return         sucesso da coleta de evidências.
+	 *@return         sucesso da coleta de evidï¿½ncias.
 	 */
 	protected void coleteEvidencia(Clique clique) throws Exception {
 		Clique auxClique;
@@ -137,7 +137,7 @@ public class JunctionTree implements java.io.Serializable {
 	}
 
 	/**
-	 *  Processa a distribuição de evidências.
+	 *  Processa a distribuiï¿½ï¿½o de evidï¿½ncias.
 	 *
 	 *@param  clique  clique.
 	 */
@@ -187,7 +187,7 @@ public class JunctionTree implements java.io.Serializable {
 	
 
 	/**
-	 *  Inicia crenças da árvore.
+	 *  Inicia crenï¿½as da ï¿½rvore.
 	 */
 	public void initBeliefs() throws Exception {
 		if (! initialized) {

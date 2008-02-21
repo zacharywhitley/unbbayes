@@ -1,7 +1,27 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.prs.bn;
 
 /**
- * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
+ * @author Mï¿½rio Henrique Paes Vieira (mariohpv@bol.com.br)
  * @version 1.0
  */
 public class ExplanationPhrase
@@ -25,14 +45,14 @@ public class ExplanationPhrase
         this.evidenceType = evidenceType;
     }
 
-    /** Altera o tipo de evidência do nó de explicação.
-    *  Os tipos de evidência podem ser:
-    *  -   TRIGGER_EVIDENCE_TYPE : nó trigger
-    *  -   COMPLEMENTARY_EVIDENCE_TYPE : nó complementar
-    *  -   NA_EVIDENCE_TYPE : nó na
-    *  -   NECESSARY_EVIDENCE_TYPE : nó necessário
-    *  -   EXCLUSIVE_EVIDENCE_TYPE : nó exclusivo
-    *  @param evidenceType Tipo de evidência
+    /** Altera o tipo de evidï¿½ncia do nï¿½ de explicaï¿½ï¿½o.
+    *  Os tipos de evidï¿½ncia podem ser:
+    *  -   TRIGGER_EVIDENCE_TYPE : nï¿½ trigger
+    *  -   COMPLEMENTARY_EVIDENCE_TYPE : nï¿½ complementar
+    *  -   NA_EVIDENCE_TYPE : nï¿½ na
+    *  -   NECESSARY_EVIDENCE_TYPE : nï¿½ necessï¿½rio
+    *  -   EXCLUSIVE_EVIDENCE_TYPE : nï¿½ exclusivo
+    *  @param evidenceType Tipo de evidï¿½ncia
     */
     public void setEvidenceType(int evidenceType)
     {   if ((evidenceType > -1) && (evidenceType < 5))
@@ -40,8 +60,8 @@ public class ExplanationPhrase
         }
     }
 
-    /** Retorna o tipo de evidência de um nó de explicação.
-    *  @return Tipo de evidência de um nó.
+    /** Retorna o tipo de evidï¿½ncia de um nï¿½ de explicaï¿½ï¿½o.
+    *  @return Tipo de evidï¿½ncia de um nï¿½.
     */
     public int getEvidenceType()
     {   return evidenceType;

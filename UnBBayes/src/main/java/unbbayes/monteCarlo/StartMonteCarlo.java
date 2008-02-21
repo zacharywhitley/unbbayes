@@ -1,14 +1,34 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 package unbbayes.monteCarlo;
 
 import unbbayes.monteCarlo.controlador.ControladorPrincipal;
 
 /**
  * 	Classe que que gera amostras baseadas em uma rede bayseana
- * 	È feito o carregamento de um arquivo contendo a descrição de uma rede e de uma distribuição de probabilidade
+ * 	ï¿½ feito o carregamento de um arquivo contendo a descriï¿½ï¿½o de uma rede e de uma distribuiï¿½ï¿½o de probabilidade
  *  Associada a ela
- *  São então gerados um conjunto de casos baseado nesta rede e nessa distribuição de probabilidade. Este conjunto de
+ *  Sï¿½o entï¿½o gerados um conjunto de casos baseado nesta rede e nessa distribuiï¿½ï¿½o de probabilidade. Este conjunto de
  *  Casos representa a rede.
- *  Utiliza-se o algoritmo de montecarlo para geração das amostras. 
+ *  Utiliza-se o algoritmo de montecarlo para geraï¿½ï¿½o das amostras. 
  * @author Danilo
  */
 public class StartMonteCarlo {

@@ -1,24 +1,23 @@
 /*
- *  UnbBayes
- *  Copyright (C) 2002 Universidade de Brasília
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
  *
- *  This file is part of UnbBayes.
+ *  This file is part of UnBBayes.
  *
- *  UnbBayes is free software; you can redistribute it and/or modify
+ *  UnBBayes is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
+ *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  UnbBayes is distributed in the hope that it will be useful,
+ *  UnBBayes is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with UnbBayes; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
-
 package unbbayes.prs.bn;
 
 
@@ -28,7 +27,7 @@ import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
- *  Representa uma rede probabilística.
+ *  Representa uma rede probabilï¿½stica.
  *
  *@author     michael
  *@author     rommel
@@ -42,8 +41,8 @@ public class ProbabilisticNetwork
 			
 	
 	/**
-	 *  Cria uma nova rede probabilística. Limpa o arquivo de log e inicializa o
-	 *  vetor da ordem de eliminação.
+	 *  Cria uma nova rede probabilï¿½stica. Limpa o arquivo de log e inicializa o
+	 *  vetor da ordem de eliminaï¿½ï¿½o.
 	 */
 	public ProbabilisticNetwork(String id) {
 		super(id);							
@@ -53,7 +52,7 @@ public class ProbabilisticNetwork
 	
 
 	/**
-	 *  Faz o processo de triangulação da rede.
+	 *  Faz o processo de triangulaï¿½ï¿½o da rede.
 	 */
 	private void triangula() {		
 		Node aux;
@@ -116,12 +115,12 @@ public class ProbabilisticNetwork
 
 
 	/**
-	 * Realiza todos os passos necessários para compilar uma rede em árvore de junção. <br><br>
+	 * Realiza todos os passos necessï¿½rios para compilar uma rede em ï¿½rvore de junï¿½ï¿½o. <br><br>
 	 * Realiza os seguintes passos: <br>
-	 * Verifica a consistência. <br>
+	 * Verifica a consistï¿½ncia. <br>
 	 * Moraliza. <br>
 	 * Triangula. <br>
-	 * Compila Árvore de Junção.
+	 * Compila ï¿½rvore de Junï¿½ï¿½o.
 	 */
 	public void compile() throws Exception {
 		if (nodeList.size() == 0) {
