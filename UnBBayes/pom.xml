@@ -6,7 +6,66 @@
 	<name>UnBBayes PR-OWL</name>
 	<version>3.1</version>
 	<url>http://unbbayes.sourceforge.net</url>
+	<licenses>
+		<license>
+			<name>GNU General Public License, Version 3, 29 June 2007</name>
+			<url>http://www.gnu.org/licenses/gpl-3.0.txt</url>
+			<distribution>manual</distribution>
+		</license>
+	</licenses>
+	<issueManagement>
+		<system>Bugzilla</system>
+		<url>https://bugzilla.wakaleo.com/</url>
+	</issueManagement>
+	<ciManagement>
+		<system>Continuum</system>
+		<url>http://integrationserver.wakaleo.com/continuum</url>
+		<notifiers>
+			<notifier>
+				<type>mail</type>
+				<address>rommel.carvalho@gmail.com</address>
+			</notifier>
+		</notifiers>
+	</ciManagement>
 	<inceptionYear>2001</inceptionYear>
+	<mailingLists>
+		<mailingList>
+			<name>HotelDatabase project mailing list</name>
+			<subscribe>dev-subscribe@wakaleo.com</subscribe>
+			<unsubscribe>dev-unsubscribe@wakaleo.com</unsubscribe>
+			<post>dev@wakaleo.com</post>
+			<archive>
+				http://mail-archives.wakaleo.com/mod_mbox/dev/
+			</archive>
+		</mailingList>
+	</mailingLists>
+	<developers>
+		<developer>
+			<id>rommelnc</id>
+			<name>Rommel Novaes Carvalho</name>
+			<email>rommel.carvalho@gmail.com</email>
+			<roles>
+				<role>Project Manager</role>
+				<role>Architect</role>
+			</roles>
+			<organization>UnB.br</organization>
+			<timezone>-3</timezone>
+		</developer>
+	</developers>
+	<scm>
+		<connection>
+			scm:svn:http://unbbayes.cvs.sourceforge.net/unbbayes/
+		</connection>
+		<developerConnection>
+			scm:svn:http://unbbayes.cvs.sourceforge.net/unbbayes/
+		</developerConnection>
+		<url>http://unbbayes.cvs.sourceforge.net/unbbayes/</url>
+	</scm>
+	<organization>
+		<name>Universidade de Brasília - UnB</name>
+		<url>http://www.unb.br</url>
+	</organization>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -16,7 +75,7 @@
 					<target>1.5</target>
 				</configuration>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -201,6 +260,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pmd-plugin</artifactId>
 				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
 					<rulesets>
 						<ruleset>/rulesets/basic.xml</ruleset>
 						<ruleset>/rulesets/imports.xml</ruleset>
