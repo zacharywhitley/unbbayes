@@ -49,15 +49,15 @@ import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
 /**
- * Painel para que o usuario edite quais s�o os argumentos presentes em 
- * um resident node. O painel � dividido em duas arvores: 
- * a arvore contendo as variaveis ordinarias da MFrag a qual o resident
- * pertence, e uma arvore contendo as variaveis ordinarias que s�o argumentos
- * no residente. As a��es s�o realizadas clicando-se duas vezes em um nodo: 
- * - ao clicar duas vezes em um nodo da arvore da MFrag, esta variavel ordinaria
- * � adicionada como argumento no nodo
- * - ao clicar duas vezes em um nodo da arvore do Resident, esta variavel 
- * ordinaria � excluida como argumento do nodo. 
+ * A panel to be used by the user in order to edit the arguments of a resident
+ * node. This panel is divided into 2 trees: a tree containing the ordinary
+ * variables from a MFrag containing that resident node, and a tree containing
+ * ordinary variables which are arguments of that resident node. Those trees
+ * are realized by clicking a node twice:
+ * 	- by clicking twice at a node from the MFrag tree, that ordinary variable 
+ *    will be added as that node's argument.
+ *  - by clicking twice at a node from the Resident tree, that ordinary variable
+ *    will be deleted from the node's argument.
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com) 
  * @version 1.0 (11/15/2006)
@@ -105,8 +105,8 @@ public class ArgumentEditionPane extends JPanel{
     private Matcher matcher;
     
 	/**
-	 * @param _controller o controlador da rede
-	 * @param resident O nodo ao qual se esta editando os argumentos. 
+	 * @param _controller network's controller
+	 * @param resident The node which the arguments we are editing. 
 	 */
 	public ArgumentEditionPane(MEBNController _controller, ResidentNode resident){
 		
@@ -225,9 +225,8 @@ public class ArgumentEditionPane extends JPanel{
 	}
 
 	/**
-	 *  Create a empty painel  
-	 * */
-	
+	 *  Create a empty panel  
+	 * */	
 	public ArgumentEditionPane(){
 		
 	}

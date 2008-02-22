@@ -58,6 +58,8 @@ import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
+import unbbayes.prs.mebn.kb.KnowledgeBase;
+import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 
 /**
  * Pane for the user enter with the entity instances of the MEBN in a 
@@ -93,6 +95,8 @@ public class EntityFindingEditionPane extends JPanel{
   	private static ResourceBundle resource = 
   		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
+  	//private KnowledgeBase knowledgeBase = PowerLoomKB.getInstanceKB();
+  	
 	public EntityFindingEditionPane(){
 		super(); 
 	}

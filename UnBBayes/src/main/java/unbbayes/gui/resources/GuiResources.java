@@ -336,8 +336,15 @@ public class GuiResources extends ListResourceBundle {
 		{"addStateTip", "Add state(s)"}, 
 		{"removeState", "Remove state(s)"}, 
 		{"confirmation", "Confirmation"}, 
-		{"warningDeletStates", "The previous states will be removed. Are you sure you want to procced with this operation?"}
+		{"warningDeletStates", "The previous states will be removed. Are you sure you want to procced with this operation?"},
 		
+		/* PLM file manager */
+		/* TODO transfer it to IO package? */
+		{"FileSaveOK" , "File was successfully saved"},
+		{"FileLoadOK" , "File was successfully loaded"},
+		{"NoSSBN" , "No previously generated SSBN found."},
+		{"KBClean" , "Knowledge base successfully cleared"},
+		{"NotImplemented" , "Not implemented yet."}
 		
 	};
 }

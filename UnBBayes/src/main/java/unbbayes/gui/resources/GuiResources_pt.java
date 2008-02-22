@@ -338,8 +338,14 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"addStateTip", "Inserir estado(s)"}, 
 		{"removeState", "Remover estado"}, 
 		{"confirmation", "Confirmação"}, 
-		{"warningDeletStates", "Os estados anteriores serão removidos. Tem certeza que deseja realizar a operação?"} 
+		{"warningDeletStates", "Os estados anteriores serão removidos. Tem certeza que deseja realizar a operação?"}, 
 		
-		
+		/* PLM file manager */
+		/* TODO transfer it to IO package? */
+		{"FileSaveOK" , "Arquivo armazenado com sucesso"},
+		{"FileLoadOK" , "Arquivo carregado com sucesso"},
+		{"NoSSBN" , "Não há SSBN gerada anteriormente! Modo não disponivel."},
+		{"KBClean" , "Base de conhecimento limpa com sucesso"},
+		{"NotImplemented" , "Funcionalidade ainda não implementada"}
 	};
 }

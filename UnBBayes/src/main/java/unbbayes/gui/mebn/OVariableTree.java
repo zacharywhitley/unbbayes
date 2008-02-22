@@ -40,10 +40,9 @@ import unbbayes.util.ArrayMap;
 
 
 /**
- * Arvore de variaveis ordinarias de uma MFrag. N�o contem os listeners (estes
- * devem ser criados na classe concreta que estender esta de forma que a mesma
- * arvore possa ser aproveitada onde for necessaria 
- * 
+ * Tree of ordinary variables within a MFrag. It doesn't contain listeners (those
+ * shall be created within a concrete class extending this one, making it possible
+ * to reuse the same tree wherever possible).
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * @version 1.0 (11/14/2006)
  */
@@ -59,6 +58,9 @@ public abstract class OVariableTree extends JTree{
 	protected IconController iconController = IconController.getInstance();
 	
 	protected final MEBNController controller;	
+	
+	
+	public abstract void addListeners();
 	
 	public OVariableTree(MEBNController controller) {
 		
@@ -139,9 +141,8 @@ public abstract class OVariableTree extends JTree{
 	
 	
 	/**
-	 * Atualiza as variaveis ordinarias presentes na arvore
-	 */
-	
+	 * Updates the ordinary variables within the tree.
+	 */	
 	public void updateTree() {
 		
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode)getModel().getRoot();
@@ -151,37 +152,9 @@ public abstract class OVariableTree extends JTree{
 		
 		ordinaryVariableList = mfragActive.getOrdinaryVariableList(); 
 		
-		for (OrdinaryVariable ordinaryVariable : ordinaryVariableList){
-			
-			DefaultMutableTreeNode node = new DefaultMutableTreeNode(ordinaryVariable.getName() + " (" + ordinaryVariable.getValueType() + ")"); 
-			ordinaryVariableMap.put(node, ordinaryVariable); 
-			root.add(node); 
+		for (OrdinaryVariable ordinaryVariable : ordinaryVariableList) {
+			// TODO please, complete this method
 		}
-		
-		((DefaultTreeModel) getModel()).reload(root);
-		expandRow(0); 
-		
+				
 	}
-	
-	private DefaultMutableTreeNode findUserObject(String treeNode,
-			DefaultMutableTreeNode root) {
-		Enumeration e = root.breadthFirstEnumeration();
-		while (e.hasMoreElements()) {
-			DefaultMutableTreeNode node = (DefaultMutableTreeNode) e
-			.nextElement();
-			if (node.getUserObject().toString().equals(treeNode)) {
-				return node;
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * adiciona os listeners para os nodos da arvore. (a classe que estender
-	 * esta deve colocar as acoes pertinentes aos evendos de mouse) 
-	 */
-	
-	protected abstract void addListeners(); 
-	
-	
-};		
+}

@@ -68,6 +68,7 @@ import edu.isi.stella.Stella_Object;
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * @author Rommel Novaes Carvalho (rommel.carvalho@gmail.com)
+ * @author Shou Matsumoto (cardialfly@[yahoo,gmail].com)
  * @version 1.1 (2007/12/26)
  */
 public class PowerLoomKB implements KnowledgeBase {
@@ -196,7 +197,7 @@ public class PowerLoomKB implements KnowledgeBase {
 	 * Syntax example: 
 	 * (DEFCONCEPT CATEGORY_LABEL)
 	 * 
-	 * Nota: As object entities s�o salvas pelo seu tipo (label) ao inv�s de
+	 * Nota: As object entities sao salvas pelo seu tipo (label) ao inves de
 	 * pelo seu nome porque as suas instancias tem referencia apenas ao tipo. 
 	 * Note: The object entities are saved by its type (label) instead of its
 	 * name because its instances reference only its type.
@@ -284,7 +285,9 @@ public class PowerLoomKB implements KnowledgeBase {
 			Stella_Object result = PLI.sEvaluate("(defrelation "
 					+ resident.getName() + " (" + arguments + "))",
 					moduleGenerativeName, null);
-			Debug.println(result.toString());
+			if (result != null) {
+				Debug.println(result.toString());
+			}
 		} else {
 			Stella_Object result = PLI.sEvaluate("(deffunction "
 					+ resident.getName() + " (" + arguments + range + "))",

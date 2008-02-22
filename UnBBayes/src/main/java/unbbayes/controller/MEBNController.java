@@ -102,6 +102,9 @@ public class MEBNController {
 	private MultiEntityBayesianNetwork multiEntityBayesianNetwork;
 	private ProbabilisticNetwork specificSituationBayesianNetwork; 
 	
+	/* the attribute below is a singleton, but we should instantiate it ASAP */
+	private KnowledgeBase knowledgeBase =  PowerLoomKB.getInstanceKB();
+	
 	/*-------------------------------------------------------------------------*/
 	/* Control of the nodes actives                                            */
 	/*-------------------------------------------------------------------------*/
@@ -986,6 +989,7 @@ public class MEBNController {
 			try {
 				ObjectEntityInstance instance = entity.addInstance(nameInstance);
 				multiEntityBayesianNetwork.getObjectEntityContainer().addEntityInstance(instance);
+				
 			} catch (TypeException e1) {
 				e1.printStackTrace();
 			} catch(EntityInstanceAlreadyExistsException e){
@@ -1088,7 +1092,8 @@ public class MEBNController {
 	 * (Object Entities and Domain Resident Nodes)
 	 */
 	private void loadGenerativeMEBNIntoKB(){
-		KnowledgeBase knowledgeBase = PowerLoomKB.getInstanceKB();
+		// the knowledge base below is now an attribute
+		//KnowledgeBase knowledgeBase = PowerLoomKB.getInstanceKB();
 
 		for(ObjectEntity entity: multiEntityBayesianNetwork.getObjectEntityContainer().getListEntity()){
 			knowledgeBase.createEntityDefinition(entity);
@@ -1107,7 +1112,8 @@ public class MEBNController {
 	 * Insert the findings into KB.
 	 */
 	private void loadFindingsIntoKB(){
-		KnowledgeBase knowledgeBase = PowerLoomKB.getInstanceKB();		
+		// the knowledge base below is now an attribute
+		//KnowledgeBase knowledgeBase = knowledgeBase;		
 		
 		for(ObjectEntityInstance instance: multiEntityBayesianNetwork.getObjectEntityContainer().getListEntityInstances()){
 			 knowledgeBase.insertEntityInstance(instance); 
@@ -1121,24 +1127,29 @@ public class MEBNController {
 			}
 		}
 		
-		this.saveFindingsFile(new File(MEBNController.NAME_FINDING_FILE)); 
+		this.saveDefaultTemporaryFindingsFile(); 
 	}
 
 	public void clearKnowledgeBase(){
-		PowerLoomKB.getInstanceKB().clearKnowledgeBase();
+		knowledgeBase.clearKnowledgeBase();
 	}
 	
 	public void saveGenerativeMTheory(File file){
-		PowerLoomKB.getInstanceKB().saveGenerativeMTheory(getMultiEntityBayesianNetwork(), file);
+		knowledgeBase.saveGenerativeMTheory(getMultiEntityBayesianNetwork(), file);
 	}
 
 	public void saveFindingsFile(File file){
-		PowerLoomKB.getInstanceKB().saveFindings(getMultiEntityBayesianNetwork(), file);
+		createKnowledgeBase(); 	
+		knowledgeBase.saveFindings(getMultiEntityBayesianNetwork(), file);
+	}
+	
+	private void saveDefaultTemporaryFindingsFile() {
+		knowledgeBase.saveFindings(getMultiEntityBayesianNetwork(), new File(MEBNController.NAME_FINDING_FILE));
 	}
 
 	public void loadFindingsFile(File file){
 		createKnowledgeBase(); 	
-		PowerLoomKB.getInstanceKB().loadModule(file);
+		knowledgeBase.loadModule(file);
 	}
 	
 	private void createKnowledgeBase(){
@@ -1194,7 +1205,7 @@ public class MEBNController {
 //		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_GENERATIVE_FILE)); 
 //		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_FINDING_FILE)); 
 		
-		Query query = new Query(PowerLoomKB.getInstanceKB(), queryNode, multiEntityBayesianNetwork);
+		Query query = new Query(knowledgeBase, queryNode, multiEntityBayesianNetwork);
 		
 		ISSBNGenerator ssbngenerator = new BottomUpSSBNGenerator();
 		

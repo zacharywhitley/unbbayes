@@ -88,6 +88,8 @@ public class MEBNEditionPane extends JPanel {
 
 	private static final long serialVersionUID = 6194855055129252835L;
 
+	
+	
 	private final NetworkWindow netWindow;
 
 	/* Mostra o painel de edicao do objeto ativo */
@@ -707,7 +709,7 @@ public class MEBNEditionPane extends JPanel {
 
 				public void actionPerformed(ActionEvent e) {
 					if(!mebnController.turnToSSBNMode()){
-						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Não há SSBN gerada anteriormente! Modo não disponivel.");
+						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("NoSSBN"));
 					}
 				}
 	    		
@@ -717,7 +719,7 @@ public class MEBNEditionPane extends JPanel {
 
 				public void actionPerformed(ActionEvent e) {
 					mebnController.clearKnowledgeBase(); 
-					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Base de conhecimento limpa com sucesso");
+					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("KBClean"));
 				}
 	    		
 	    	});
@@ -726,7 +728,7 @@ public class MEBNEditionPane extends JPanel {
 
 				public void actionPerformed(ActionEvent e) {
 					mebnController.clearKnowledgeBase(); 
-					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Funcionalidade ainda não implementada");
+					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("NotImplemented"));
 				}
 	    		
 	    	});
@@ -746,7 +748,7 @@ public class MEBNEditionPane extends JPanel {
 	    				File file = chooser.getSelectedFile();
 	    				if (file != null) {
 	    						mebnController.saveGenerativeMTheory(file);
-	    						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Arquivo salvo com sucesso");
+	    						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileSaveOK"));
 
 	    				}
 	    			}
@@ -770,7 +772,7 @@ public class MEBNEditionPane extends JPanel {
 	    				File file = chooser.getSelectedFile();
 	    				if (file != null) {
 	    						mebnController.saveFindingsFile(file);
-	    						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Arquivo salvo com sucesso");
+	    						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileSaveOK"));
 	    				}
 	    			}
 	    			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -789,7 +791,7 @@ public class MEBNEditionPane extends JPanel {
 	    			if (option == JFileChooser.APPROVE_OPTION) {
 	    				if (chooser.getSelectedFile() != null) {
 	    					mebnController.loadFindingsFile(chooser.getSelectedFile());
-	    					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), "Arquivo carregado com sucesso");
+	    					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileLoadOK"));
 	    				}
 	    			}
 	    			
