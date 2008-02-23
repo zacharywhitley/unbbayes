@@ -80,6 +80,7 @@ import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.util.NodeList;
+import unbbayes.util.designpatterns.DefaultVisitorHost;
 
 /**
  * Controller of the MEBN structure. 
@@ -91,7 +92,7 @@ import unbbayes.util.NodeList;
  * @version 1.5 11/15/07
  */
 
-public class MEBNController {
+public class MEBNController extends DefaultVisitorHost {
 
 	/*-------------------------------------------------------------------------*/
 	/* Atributes                                                               */

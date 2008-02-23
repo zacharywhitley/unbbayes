@@ -60,6 +60,7 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
+import unbbayes.util.designpatterns.Visitor;
 
 /**
  * Pane for the user enter with the entity instances of the MEBN in a 
@@ -74,7 +75,7 @@ import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
  * @version 2.0 (11/15/07)
  *
  */
-public class EntityFindingEditionPane extends JPanel{
+public class EntityFindingEditionPane extends JPanel implements Visitor{
 
 	private MEBNController mebnController; 
 	
@@ -127,6 +128,18 @@ public class EntityFindingEditionPane extends JPanel{
 		downPanel.validate(); 
 	}
 	
+	
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.util.designpatterns.Visitor#visit()
+	 */
+	public void visit() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
 	private class ObjectEntityInstancePane extends JPanel{
 		
 		private JTextField typeObjectEntity; 

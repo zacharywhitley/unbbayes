@@ -53,6 +53,7 @@ import unbbayes.prs.mebn.RandomVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.util.designpatterns.Visitor;
 
 /**
  * Pane for edition of instances of the random variables (resident nodes). 
@@ -65,7 +66,7 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstance;
  * @version 1.0 (09/09/07)
  */
 
-public class RandonVariableFindingEdtitionPane extends JPanel{
+public class RandonVariableFindingEdtitionPane extends JPanel implements Visitor{
 
 	private RandonVariableListPane randonVariableListPane; 
 	private RandonVariableInstanceEditionPane randonVariableInstanceEditionPane; 
@@ -120,6 +121,14 @@ public class RandonVariableFindingEdtitionPane extends JPanel{
 		upperPanel.removeAll(); 
 		upperPanel.add(new RandonVariableListPane(), BorderLayout.CENTER); 
 		upperPanel.validate(); 
+	}
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.util.designpatterns.Visitor#visit()
+	 */
+	public void visit() {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	private class RandonVariableListPane extends JPanel{
