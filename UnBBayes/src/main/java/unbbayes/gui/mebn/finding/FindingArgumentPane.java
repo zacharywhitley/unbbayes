@@ -25,6 +25,7 @@ import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -39,18 +40,20 @@ import unbbayes.gui.ParcialStateException;
 import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.entity.BooleanStatesEntityContainer;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
 
 /**
- * Painel utilizado para se selecionar quais vari�veis ordin�rias
- * irao preencher cada um dos argumentos. É criada uma combo box
- * referente a cada argumento a ser preenchido, e nesta s�o listadas
- * todas as variaveis ordin�rias que s�o do tipo esperado. 
+ * This panel can be used for choosing which ordinary variables
+ * should fill each arguments. A combo box is created, referencing
+ * each argument being filled, and all ordinary variable with the expected type
+ * will be on that list.
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
+ * @author Shou Matsumoto (cardialfly@[yahoo,gmail].com)
  * @version 1.0 06/28/07
  *
  */
@@ -139,7 +142,18 @@ public class FindingArgumentPane extends JPanel{
 		switch(node.getTypeOfStates()){
 		case ResidentNode.BOOLEAN_RV_STATES:
 			btnLabelType = new JButton("Boolean"); 
-			states = new JComboBox(node.getPossibleValueLinkList().toArray()); 
+			// please, note that creating an evidence indicating "Absurd" has no sense at this moment
+			List<StateLink> values = new ArrayList<StateLink>(node.getPossibleValueLinkList());
+			BooleanStatesEntityContainer container = new BooleanStatesEntityContainer();
+			for (StateLink state : values) {
+				if (state.getState().getName().compareTo(container.getAbsurdStateEntity().getName()) == 0) {
+					// if the name of this (supposed) boolean state is the same of the "absurd" state, discard it
+					values.remove(state);
+					break;
+				}
+			}			
+			//states = new JComboBox(node.getPossibleValueLinkList().toArray()); 
+			states = new JComboBox(values.toArray()); 
 			break; 
 		case ResidentNode.CATEGORY_RV_STATES:
 			btnLabelType = new JButton("Categorical"); 

@@ -231,14 +231,22 @@ public class Compiler implements ICompiler {
 	 * @see unbbayes.prs.mebn.compiler.AbstractCompiler#init(java.lang.String)
 	 */
 	public void init(String text) {
+		if (text == null) {
+			throw new NullPointerException(resource.getString("TableUndeclared"));
+		}
 		index = 0;
 		Debug.println("************************************");
 		Debug.println("ORIGINAL: " + text);
-		text = text.replaceAll("\\s+", " ");
+		//if (text != null) {
+			text = text.replaceAll("\\s+", " ");
+		//}
+		
 		Debug.println("CHANGED: " + text);
 		Debug.println("************************************");
-		this.text = text.toCharArray();
-		nextChar();
+		//if (text != null) { 
+			this.text = text.toCharArray();
+			nextChar();
+		//}
 		
 		tempTable = new ArrayList<TempTableHeaderCell>();
 	}

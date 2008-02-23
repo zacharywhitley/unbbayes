@@ -49,7 +49,7 @@ public class Resources_pt extends ListResourceBundle {
 		{"InvalidConditionantFound","Um condicionante invalido foi encontrado na declaracao da tabela."},
 		{"InvalidProbabilityRange","A distribuicao de probabilidades e invalida (a soma deve ser 1)."},
 		{"SomeStateUndeclared","Todos os estados deste no deve ter uma probabilidade associada."},
-		{"UnexpectedTokenFound","Um termo inesperado foi encontrado."}
-		
+		{"UnexpectedTokenFound","Um termo inesperado foi encontrado."},
+		{"TableUndeclared","A tabela não está declarada."}
 	};
 }

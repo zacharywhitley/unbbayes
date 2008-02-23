@@ -55,11 +55,11 @@ import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 
 /**
- * Pane for edition of instances of the randon variables (resident nodes). 
+ * Pane for edition of instances of the random variables (resident nodes). 
  * 
- * The painel is divided in two parts: 
- * 1) Paine for selection of node / Pane for edition of instance 
- * 2) List os instances of the node selected
+ * The panel is divided in two parts: 
+ * 1) Panel for selection of node / Pane for edition of instance 
+ * 2) List of instances of the node selected
  * 
  * @author Laecio Lima dos Santos
  * @version 1.0 (09/09/07)

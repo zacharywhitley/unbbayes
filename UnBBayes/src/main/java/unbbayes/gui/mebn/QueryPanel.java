@@ -275,7 +275,13 @@ public class QueryPanel extends JFrame{
 								e3.getMessage(),
 								resource.getString("error"),
 								JOptionPane.ERROR_MESSAGE);
-					}
+					} catch (Exception e4) {
+						e4.printStackTrace();
+						JOptionPane.showMessageDialog(mebnController.getScreen(), 
+								e4.getMessage(),
+								resource.getString("error"),
+								JOptionPane.ERROR_MESSAGE);
+				}
 				}
 			});
 
