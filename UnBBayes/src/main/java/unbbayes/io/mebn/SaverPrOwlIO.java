@@ -48,6 +48,8 @@ import unbbayes.prs.mebn.entity.BooleanStateEntity;
 import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.util.Debug;
 
@@ -55,6 +57,7 @@ import com.hp.hpl.jena.util.FileUtils;
 
 import edu.stanford.smi.protegex.owl.ProtegeOWL;
 import edu.stanford.smi.protegex.owl.jena.JenaOWLModel;
+import edu.stanford.smi.protegex.owl.model.OWLClass;
 import edu.stanford.smi.protegex.owl.model.OWLDatatypeProperty;
 import edu.stanford.smi.protegex.owl.model.OWLIndividual;
 import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
@@ -145,6 +148,8 @@ public class SaverPrOwlIO {
 		Debug.println("-> Context Node load sucess ");		
 		loadGenerativeInputNode(); 
 		Debug.println("-> Generative Input Node load sucess ");		
+		loadEntityIndividuals();
+		Debug.println("-> Entity Individuals load sucess ");		
 		
 		clearAuxiliaryLists(); 
 		
@@ -224,7 +229,7 @@ public class SaverPrOwlIO {
 		
 		if (rootLabel == null){
 			Debug.println("Error: the meta entity TypeLabel don't exists in the model");
-			//TODO achar uma forma de reportar para o usu�rio erros no arquivo de modelo.
+			//TODO find a way to report the user when an error were found in the model file.
 		}
 		
 		/*----- Second: MetaEntities create by the user -----*/
@@ -328,13 +333,15 @@ public class SaverPrOwlIO {
 	 * 
 	 * Classes
 	 * - ObjectEntity
+	 * 		
 	 */
 	private void loadObjectEntitiesClasses(){
 		
-		OWLNamedClass entityClass = owlModel.getOWLNamedClass("ObjectEntity"); 
+		//OWLNamedClass entityClass = owlModel.getOWLNamedClass("ObjectEntity"); 
+		OWLNamedClass entityClass = owlModel.getOWLNamedClass(OBJECT_ENTITY); 
 		
 		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
-			OWLNamedClass newEntityClass = owlModel.createOWLNamedSubclass(entity.getName(), entityClass); 
+			OWLNamedClass newEntityClass = owlModel.createOWLNamedSubclass(entity.getName(), entityClass); 	
 			mapObjectEntityClasses.put(entity, newEntityClass); 
 		}
 	}
@@ -1039,6 +1046,36 @@ public class SaverPrOwlIO {
 			context.delete(); 
 		}
 		
+	}
+	
+	/**
+	 * Maps:
+	 * 	- mapObjectEntityClasses
+	 * 
+	 * this method expect all other OWL structures from the MFrag was previously build
+	 *  - basically, ObjectEntity and MetaEntity are sufficient
+	 *  
+	 *  Currently, it does some redundant data access (since other methods already
+	 *  accesses those data), but correcting it would be a major
+	 *  refactoring work to solve this problem.
+	 */
+	private void loadEntityIndividuals() {
+		OWLIndividual individual = null;
+		OWLNamedClass currentOWLEntity = null;
+		// extracts all entities found inside this MTheory
+		for (ObjectEntity entity : this.mebn.getObjectEntityContainer().getListEntity()) {
+			currentOWLEntity = this.mapObjectEntityClasses.get(entity);
+			 if (currentOWLEntity != null) {
+				 // create OWL individuals for each object entity instance found for that entity
+				 for ( ObjectEntityInstance entityInstance : entity.getInstanceList()) {
+					individual = currentOWLEntity.createOWLIndividual(entityInstance.getName()); 
+					// fill required properties (hasType and hasUID)
+					individual.addPropertyValue( owlModel.getOWLObjectProperty("hasType"),
+												 this.mapMetaEntity.get(entityInstance.getType().getName()));
+					individual.addPropertyValue( owlModel.getOWLDatatypeProperty("hasUID"),"!" + entityInstance.getName());
+				}
+			 }
+		}
 	}
 	
 }

@@ -58,9 +58,11 @@ import unbbayes.prs.mebn.context.EnumType;
 import unbbayes.prs.mebn.entity.BooleanStateEntity;
 import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.exception.CategoricalStateDoesNotExistException;
+import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
@@ -212,6 +214,15 @@ public class LoaderPrOwlIO {
 		ajustArgumentOfNodes(); 
 		
 		setFormulasOfContextNodes(); 
+		
+		
+		// Load object entity individuals (ObjectEntityInstances)
+		try {
+			loadObjectEntityIndividuals();
+		} catch (TypeException te) {
+			te.printStackTrace();
+			throw new IOMebnException(te.getMessage());
+		}
 		
 		return mebn; 		
 	}
@@ -1563,6 +1574,29 @@ public class LoaderPrOwlIO {
 	 */
 	public String getOrdinaryVarScopeSeparator() {
 		return ORDINARY_VAR_SCOPE_SEPARATOR;
+	}
+	
+	
+	/**
+	 * Reads the OWL's ObjectEntity's individuals and fills the MEBN's OrdinaryVariableInstance
+	 */
+	private void loadObjectEntityIndividuals() throws TypeException {
+		OWLNamedClass objectEntityClass = owlModel.getOWLNamedClass(OBJECT_ENTITY);	
+		ObjectEntity mebnEntity = null;
+		// TODO the for below has a dangerous unchecked class cast - solve it using more charming way
+		for (OWLNamedClass subClass : (Collection<OWLNamedClass>)objectEntityClass.getSubclasses(true)) {
+			 mebnEntity = this.mebn.getObjectEntityContainer().getObjectEntityByName(subClass.getName());
+			// TODO the for below has a dangerous unchecked class cast - solve it using more charming way
+			for (OWLIndividual individual : (Collection<OWLIndividual>)subClass.getInstances(false)) {
+				// creates a object entity instance and adds it into the mebn entity container
+				try {
+					this.mebn.getObjectEntityContainer().addEntityInstance(mebnEntity.addInstance(individual.getName()));
+				} catch (EntityInstanceAlreadyExistsException eiaee) {
+					// Duplicated instance/individuals are not a major problem for now
+					Debug.println("Duplicated instance/individual declaration found at OWL Loader");
+				} 
+			}
+		}
 	}
 	
 }

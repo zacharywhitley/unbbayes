@@ -30,6 +30,12 @@ public class ObjectEntityInstance extends Entity{
 
 	private ObjectEntity instanceOf; 
 	
+	/**
+	 * Note: this constructor doesn't add the new instance into the ObjectEntity's list
+	 * of instances.
+	 * @param name
+	 * @param instanceOf
+	 */
 	public ObjectEntityInstance(String name, ObjectEntity instanceOf){
 		super(name, instanceOf.getType()); 
 		this.instanceOf = instanceOf; 

@@ -29,12 +29,13 @@ import unbbayes.prs.mebn.entity.exception.TypeException;
 /**
  * Contains the Object entities of a MEBN. 
  * 
- * Note: Este conteiner n�o pode ser um singleton poque o usuario pode editar
- * duas ou mais MTheories ao mesmo tempo, acarretando conjuntos de entidades
- * diferentes. 
+ * Note: this container should not be a singleton, since an user might edit
+ * two MTheories simultaneously; naturally, using different sets of entities.
  * 
  * @author Laecio Lima dos Santos
- * @version 1.0 06/03/07
+ * @author Shou Matsumoto
+ * @version 1.1 02/25/2008
+ * 
  *
  */
 public class ObjectEntityConteiner {
@@ -150,6 +151,15 @@ public class ObjectEntityConteiner {
 		ObjectEntity object = entityInstance.getInstanceOf();
 		object.removeInstance(entityInstance); 
 		this.listEntityInstances.remove(entityInstance); 
+	}
+	
+	/**
+	 * clears all instances of a particular ObjectEntity
+	 * @param entity: ObjectEntityInstances of this entity will be cleared.
+	 */
+	public void clearAllInstances(ObjectEntity entity) {
+		this.listEntityInstances.removeAll(entity.getInstanceList());
+		entity.removeAllInstances();
 	}
 	
 	public ObjectEntityInstance getEntityInstanceByName(String name){

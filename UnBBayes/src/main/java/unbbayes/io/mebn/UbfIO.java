@@ -383,6 +383,12 @@ public class UbfIO implements MebnIO {
 		
 		ObjectEntity objectEntity = null;
 		
+		/*
+		 * Since before setting an objectEntity w/ order we must remove all instances of it,
+		 * but we need to keep track of what instances were declared within OWL file, then we
+		 * just save their names and clear them when order shall be set 
+		 */
+		List<String> owlDeclaredInstanceNames = null;
 		while (st.nextToken() != st.TT_EOF) {
 			//System.out.println(">> Read (str)" + st.sval + " from UBF");
 			//System.out.println(">> Read (number)" + st.nval + " from UBF");
@@ -395,16 +401,25 @@ public class UbfIO implements MebnIO {
 				while (st.nextToken() != st.TT_EOL) {
 					if (st.ttype == st.TT_WORD) {
 						objectEntity = mebn.getObjectEntityContainer().getObjectEntityByName(st.sval);
+						// initiate tracking of entity instances
+						owlDeclaredInstanceNames = new ArrayList<String>();
 						//System.out.println("Updating mfrag " + mfrag.getName());
 						break;
 					}
 				}
 			}
 			
+			
 			if (objectEntity == null) {
 				//System.out.println("ObjectEntity still not found");
 				continue;
 			}else{
+				// store already declared instances
+				for (ObjectEntityInstance entityInstance : objectEntity.getInstanceList()) {
+					owlDeclaredInstanceNames.add(entityInstance.getName());
+				}
+				// clear instances in order to let it have order
+				mebn.getObjectEntityContainer().clearAllInstances(objectEntity);
 				try {
 					objectEntity.setOrdereable(true);
 				} catch (ObjectEntityHasInstancesException e) {
@@ -422,6 +437,10 @@ public class UbfIO implements MebnIO {
 				while (st.nextToken() != st.TT_EOL) {
 					if (st.ttype == st.TT_WORD) {
 						String name = st.sval;
+						if (!owlDeclaredInstanceNames.contains(name)) {
+							// we should only add the instances also declared previously in OWL file
+							continue;
+						}
 						try {
 							ObjectEntityInstanceOrdereable oe = (ObjectEntityInstanceOrdereable)objectEntity.addInstance(name); 
 							mebn.getObjectEntityContainer().addEntityInstance(oe);
@@ -654,6 +673,7 @@ public class UbfIO implements MebnIO {
 					+ resource.getString("MFragConfigError"));
 		}
 
+	    // treating object entity (instances) information (mainly, ordenable entities)
 		updateObjectEntities(st, mebn);
 		
 		return mebn;
@@ -679,6 +699,7 @@ public class UbfIO implements MebnIO {
 		try {
 			this.prowlIO.saveMebn(prowlFile,mebn);
 		} catch(Exception e) {
+			e.printStackTrace();
 			throw new IOException(e.getLocalizedMessage() + " : " + this.resource.getString("UnknownPrOWLError"));
 		}
 		
