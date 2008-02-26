@@ -23,39 +23,48 @@ package unbbayes.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.border.EtchedBorder;
+import javax.swing.JToolBar;
+import javax.swing.border.Border;
 
-public class AboutPane extends JPanel{
+/**
+ * About pane with informations of the program. 
+ * 
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
+ */
+public class AboutPane extends JFrame{
 
+	private Color backgroundColor; 
+	
+	private String name = "UnBBayes 3 (MEBN)"; 
+	private String version = "3.0.1"; 
+	private String buildID = "02212008-01L"; 
+	
 	public AboutPane(){
-		super(); 
+		super("About"); 
+		
+		this.setLocation(GUIUtils.getCenterPositionForComponent(400,300));		
+		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
 		BorderLayout borderLayout = new BorderLayout(); 
 		setLayout(borderLayout);
 		add(new MainPane(), BorderLayout.CENTER); 
 		add(new LogoPane(), BorderLayout.LINE_START); 
 		
 		setMinimumSize(new Dimension(400, 300)); 
-		
-	}
-	
-	public static void main(String... args){
-		JFrame testFrame = new JFrame(); 
-		testFrame.setContentPane(new AboutPane()); 
-		testFrame.setVisible(true); 
-		testFrame.setPreferredSize(new Dimension(600, 300)); 
-		testFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
-		testFrame.pack(); 
+		setMaximumSize(new Dimension(400, 300));
+		backgroundColor = getBackground(); 
 	}
 	
 	class MainPane extends JPanel{
@@ -76,33 +85,55 @@ public class AboutPane extends JPanel{
 					" UnbBayes is free software; you can redistribute it and/or modify it \n" +
 					" under the terms of the GNU General Public License as published by\n" +
 					" the Free Software Foundation; either version 2 of the License, or \n" +
-					" (at your option) any later version.");
+					" (at your option) any later version."
+					);
 			textLicence.setEditable(false); 
-			textLicence.setForeground(new Color(60, 129, 121)); 
-//			textLicence.setBackground(new Color(155, 210, 204)); 
-			textLicence.setBorder(BorderFactory.createLoweredBevelBorder()); 
+			textLicence.setBackground(backgroundColor); 
+			textLicence.setForeground(Color.black); 
+			
+			Border etched = BorderFactory.createLoweredBevelBorder(); 
+			Border empty = BorderFactory.createEmptyBorder(5, 5, 5, 5); 
+			Border compound = BorderFactory.createCompoundBorder(empty, etched); 
+			textLicence.setBorder(compound); 
 			
 			helpPanel.add(textLicence, BorderLayout.NORTH); 
 			helpPanel.add(new CollaboratorPane(), BorderLayout.CENTER); 
 			
-           JTextArea links = new JTextArea(4,9);
-			
-           links.setText(
-					"Licença GNU\n" +
-					"Fórum sugestões\n " +
-					"Lista de Features\n" +
-					"Histórico das versões\n"
-		    );
-			
-           links.setEditable(false); 
-//           links.setBackground(new Color(155, 210, 204)); 
-           links.setForeground(new Color(60, 129, 121)); 
-		   links.setBorder(BorderFactory.createLoweredBevelBorder()); 
-           
-			helpPanel.add(links, BorderLayout.SOUTH); 
+			helpPanel.add(new InformationPane(), BorderLayout.SOUTH); 
 			
 			
 			return helpPanel; 
+		}
+		
+	}
+	
+	class InformationPane extends JPanel{
+		
+		JButton btnLicence; 
+		JButton btnFeatures; 
+		JButton btnHistoric; 
+		
+		public InformationPane(){
+			
+			setLayout(new BorderLayout()); 
+			
+			btnLicence = new JButton("Read Licence"); 
+			btnLicence.setEnabled(false); 
+			btnFeatures = new JButton("Features");
+			btnFeatures.setEnabled(false); 
+			btnHistoric = new JButton("Version History"); 
+			btnHistoric.setEnabled(false); 
+			
+			JToolBar jtb = new JToolBar();
+			jtb.setLayout(new FlowLayout(FlowLayout.TRAILING)); 
+			jtb.add(btnLicence); 
+			jtb.add(btnFeatures); 
+			jtb.add(btnHistoric); 
+			jtb.setFloatable(false); 
+			
+			add(jtb, BorderLayout.NORTH); 
+			
+			
 		}
 		
 	}
@@ -125,7 +156,8 @@ public class AboutPane extends JPanel{
 					"Rommel Carvalho\n"+
 					"Shou Matsumoto"
 			);
-            collaboratorsPanel.setBackground(new Color(155, 210, 204)); 
+			
+			collaboratorsPanel.setBackground(backgroundColor); 
 			collaboratorsPanel.setEditable(false); 
 			
   	        JScrollPane scrollPane =
@@ -136,14 +168,12 @@ public class AboutPane extends JPanel{
 			this.add(scrollPane, BorderLayout.CENTER); 
 
 		}
-		
 	}
 	
 	class LogoPane extends JPanel{
-		
-		String name = "UnBBayes 3 (MEBN)"; 
-		String version = "3.0.1"; 
-		String buildID = "02212008-01L"; 
+
+		Toolkit tk = Toolkit.getDefaultToolkit(); 
+		Image imgLogo = imgLogo = tk.getImage("resources/img/logo.jpg"); 
 		
 		public LogoPane(){
 			super(); 
@@ -153,17 +183,23 @@ public class AboutPane extends JPanel{
 		public void paintComponent(Graphics comp){
 			Graphics2D g2D = (Graphics2D)comp; 
 			
-			Image imgLogo = null;
-			Toolkit tk = Toolkit.getDefaultToolkit(); 
-			imgLogo = tk.getImage("img/logo.jpg"); 
+			g2D.drawImage(imgLogo, 25, 20, 150, 150, this); 
 			
-			g2D.drawImage(imgLogo, 25, 25, 150, 150, this); 
-			
-			g2D.drawRect(20, 180, 160, 80); 
+			g2D.drawRect(20, 175, 160, 80); 
 			g2D.drawString(name, 25, 200); 
-			g2D.drawString("Version: " + version, 25, 220); 
+			g2D.drawString("Version: " + version + " (alpha)", 25, 220); 
 			g2D.drawString("Build ID: " + buildID, 25, 235); 
 		}
 		
 	}
+
+	//tests. 
+	public static void main(String... args){
+		JFrame testFrame = new AboutPane(); 
+		testFrame.setVisible(true); 
+		testFrame.setPreferredSize(new Dimension(600, 300)); 
+		testFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
+		testFrame.pack(); 
+	}
+	
 }

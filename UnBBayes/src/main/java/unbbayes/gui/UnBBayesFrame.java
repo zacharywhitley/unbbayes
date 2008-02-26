@@ -18,6 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
 package unbbayes.gui;
 
 import java.awt.BorderLayout;
@@ -53,6 +54,7 @@ import unbbayes.aprendizagem.incrementalLearning.ILBridge;
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MainController;
+import unbbayes.gui.mebn.QueryPanel;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.monteCarlo.controlador.ControladorPrincipal;
 
@@ -93,6 +95,8 @@ public class UnBBayesFrame extends JFrame {
 	private JButton tile;
 	private JButton cascade;
 	private JButton help;
+	private JButton about; 
+	
 	// private URL helpSetURL;
 	// private HelpSet set;
 	// private JHelp jHelp;
@@ -117,8 +121,7 @@ public class UnBBayesFrame extends JFrame {
 	private ActionListener alCascade;
 	private ActionListener alTile;
 	private ActionListener alHelp;
-	// TODO Criar uma tela de about!
-	// private ActionListener alAbout;
+	private ActionListener alAbout;
 	private ActionListener alMonteCarlo;
 	private ActionListener alGibbs;
 	private ActionListener alIL;
@@ -545,9 +548,26 @@ public class UnBBayesFrame extends JFrame {
 				}
 			}
 		};
+		
+		alAbout = new ActionListener(){
+			public void actionPerformed(ActionEvent ae) {
+    			
+		        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+		            public void run() {
+		            	showAboutPane();
+		            }
+		        });
 
+			}
+		};
 	}
 
+	private void showAboutPane(){
+		AboutPane abourPane = new AboutPane();
+		abourPane.pack();
+		abourPane.setVisible(true);
+	}
+	
 	/**
 	 * Method responsible for creating the menu used in this class, JFrame.
 	 */
@@ -562,9 +582,8 @@ public class UnBBayesFrame extends JFrame {
 		JMenu newMenu = new JMenu(resource.getString("newMenu"));
 		JMenu toolsMenu = new JMenu(resource.getString("toolsMenu"));
 		JMenu windowMenu = new JMenu(resource.getString("windowMenu"));
-		
-
 		JMenu helpMenu = new JMenu(resource.getString("helpMenu"));
+		
 		fileMenu.setMnemonic(resource.getString("fileMenuMn").charAt(0));
 		lafMenu.setMnemonic(resource.getString("lafMenuMn").charAt(0));
 		viewMenu.setMnemonic(resource.getString("viewMenuMn").charAt(0));
@@ -670,7 +689,7 @@ public class UnBBayesFrame extends JFrame {
 		monteCarloItem.addActionListener(alMonteCarlo);
 		ILItem.addActionListener(alIL);
 		gibbsItem.addActionListener(alGibbs);
-		// aboutItem.addActionListener(alAbout);
+		aboutItem.addActionListener(alAbout);
 
 		// add menu items to their respective menu
 		
@@ -704,16 +723,14 @@ public class UnBBayesFrame extends JFrame {
 		toolsMenu.add(ILItem);
 		windowMenu.add(cascadeItem);
 		windowMenu.add(tileItem);
-		helpMenu.add(helpItem);
+//		helpMenu.add(helpItem);
 		helpMenu.add(aboutItem);
 
 		menu.add(fileMenu);
 		menu.add(viewMenu);
 		menu.add(toolsMenu);
 		menu.add(windowMenu);
-		//	since the help is not well implemented yet, it is removed
-		// TODO fix the help
-		//menu.add(helpMenu);
+		menu.add(helpMenu);
 
 		this.setJMenuBar(menu);
 	}
@@ -753,9 +770,7 @@ public class UnBBayesFrame extends JFrame {
 		topPanel.add(jtbView);
 		topPanel.add(jtbTools);
 		topPanel.add(jtbWindow);
-		// since the help is not well implemented yet, it is removed for now
-		// TODO fix the help
-		//topPanel.add(jtbHelp);
+		topPanel.add(jtbHelp);
 	}
 
 	/**
