@@ -42,6 +42,7 @@ import javax.swing.border.Border;
  * About pane with informations of the program. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
+ * @author Rommel Novaes Carvalho (rommel.carvalho@gmail.com)
  */
 public class AboutPane extends JFrame{
 
@@ -49,7 +50,7 @@ public class AboutPane extends JFrame{
 	
 	private String name = "UnBBayes 3 (MEBN)"; 
 	private String version = "3.0.1"; 
-	private String buildID = "02212008-01L"; 
+	private String buildID = "20080229-01L"; 
 	
 	public AboutPane(){
 		super("About"); 
@@ -75,6 +76,7 @@ public class AboutPane extends JFrame{
 			setLayout(new BorderLayout()); 
 			add(buildHelpPanel(), BorderLayout.NORTH); 
 			setPreferredSize(new Dimension(400, 300)); 
+			setResizable(false);
 		}
 		
 		private JPanel buildHelpPanel(){
@@ -83,9 +85,9 @@ public class AboutPane extends JFrame{
 			
 			JTextArea textLicence = new JTextArea(4,9);
 			textLicence.setText(
-					" UnbBayes is free software; you can redistribute it and/or modify it \n" +
+					" UnBBayes is free software: you can redistribute it and/or modify it\n" +
 					" under the terms of the GNU General Public License as published by\n" +
-					" the Free Software Foundation; either version 2 of the License, or \n" +
+					" the Free Software Foundation, either version 3 of the License, or\n" +
 					" (at your option) any later version."
 					);
 			textLicence.setEditable(false); 
@@ -160,50 +162,55 @@ public class AboutPane extends JFrame{
 					"\nCleuber Moreira Fernandes " +
 					"\n\t- Implementation of XPC algorithm\n" +
 					
-					"\nDanilo Custódio da Silva " +
-					"\n\t- Learning Bayesian Network: K2, B, V" +
+					"\nDanilo Custódio da Silva (danilocustodio@gmail.com)" +
+					"\n\t- Learning Bayesian Network: K2, B, and V" +
 					"\n\t- Incremental Learning\n" +
 					
 					"\nEduardo Andrade Rodrigues " +
-					"\n\t- GUI in Delphi 5.0 for Initial version\n" + 
+					"\n\t- GUI in Delphi 5.0 for initial version\n" + 
 					
 					"\nGabriel M. N. Guimarães " +
 					"\n\t- TAN and BAN algorithms\n" +
 					
 					"\nFrancisco José Fiuza Lima Jr " +
-					"\n\t- GUI for Metaphor Medical\n" + 
+					"\n\t- Medical Metaphor GUI\n" + 
 					
-					"\nLaécio Lima dos Santos " +
-					"\n\t- Implementation of MEBN/Pr-OWL support\n"+
+					"\nLaécio Lima dos Santos (laecio@gmail.com)" +
+					"\n\t- MEBN/PR-OWL implementation\n"+
 					
-					"\nProf. Marcelo Ladeira " +
+					"\nProf. Dr. Marcelo Ladeira (mladeira@unb.br)" +
 					"\n\t- Coordination of the project\n"+
 					
 					"\nMário Henrique Paes Vieira" +
-					"\n\t- Metaphor Medical" +
+					"\n\t- Medical Metaphor" +
 					"\n\t- Coordination of the integration of Java code \n" +
 					
-					"\nMichael Shigeki Onishi " +
+					"\nMichael Shigeki Onishi (mso@gmail.com)" +
 					"\n\t- Bayesians Networks" +
-					"\n\t- Diagrams of Influences and MSBN\n"+
+					"\n\t- Influence Diagrams" +
+					"\n\t- Multiple Sectioned Bayesian Network" +
+					"\n\t- XML format and UnBBayes Server (J2EE)\n" +
 					
-					"\nProf. Paulo C. Costa" +
-					"\n\t- Consultant in MEBN and Pr-OWL \n"+
+					"\nProf. Dr. Paulo C. Costa (pcosta@gmu.edu)" +
+					"\n\t- Consultant in MEBN and PR-OWL \n" +
 					
-					"\nRommel Novaes Carvalho" +
-					"\n\t- Bayesianas Networks, Diagrams of Influences" +
+					"\nRommel Novaes Carvalho (rommel.carvalho@gmail.com)" +
+					"\n\t- Bayesians Networks" +
+					"\n\t- Influence Diagrams" +
+					"\n\t- Multiple Sectioned Bayesian Network" +
 					"\n\t- XML format and UnBBayes Server (J2EE)" +
-					"\n\t- Implementation of MEBN/Pr-OWL support\n"+
+					"\n\t- MEBN/PR-OWL implementation\n"+
 					
-					"\nShou Matsumoto" +
-					"\n\t- Implementation of MEBN/Pr-OWL support\n" + 
+					"\nShou Matsumoto (cardialfly@gmail.com)" +
+					"\n\t- MEBN/PR-OWL implementation\n" + 
 					
-					"\nProf. Wagner Teixeira da Silva" +
+					"\nProf. Dr. Wagner Teixeira da Silva" +
 					"\n\t- Consultant in bayesian network learning"
 			);
 			
 			collaboratorsPanel.setBackground(backgroundColor); 
-			collaboratorsPanel.setEditable(false); 
+			collaboratorsPanel.setEditable(false);
+			collaboratorsPanel.setCaretPosition(0);
 			
   	        JScrollPane scrollPane =
   	            new JScrollPane(collaboratorsPanel,
