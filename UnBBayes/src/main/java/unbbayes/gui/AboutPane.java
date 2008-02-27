@@ -64,6 +64,7 @@ public class AboutPane extends JFrame{
 		
 		setMinimumSize(new Dimension(400, 300)); 
 		setMaximumSize(new Dimension(400, 300));
+		pack(); 
 		backgroundColor = getBackground(); 
 	}
 	
@@ -116,6 +117,7 @@ public class AboutPane extends JFrame{
 		public InformationPane(){
 			
 			setLayout(new BorderLayout()); 
+			this.setPreferredSize(new Dimension(100, 50)); 
 			
 			btnLicence = new JButton("Read Licence"); 
 			btnLicence.setEnabled(false); 
@@ -143,18 +145,61 @@ public class AboutPane extends JFrame{
 		public CollaboratorPane(){
 			
 			super(); 
+			this.setPreferredSize(new Dimension(100, 150)); 
 			this.setLayout(new BorderLayout()); 
 			
 			JTextArea collaboratorsPanel = new JTextArea();
 
 			collaboratorsPanel.setText(
-					"Danilo Custódio\n" +
-					"Laécio Lima\n"+
-					"Marcelo Ladeira\n"+
-					"Michael Onishi\n"+
-					"Paulo C. Costa\n"+
-					"Rommel Carvalho\n"+
-					"Shou Matsumoto"
+					"Alberto Magno Muniz Soares " +
+					"\n\t- Initial version in Delphi 5.0\n" + 
+					
+					"\nBruno Gonçalves Domingues " +
+					"\n\t- Project of the XML format of probabilistic networks\n" +
+					
+					"\nCleuber Moreira Fernandes " +
+					"\n\t- Implementation of XPC algorithm\n" +
+					
+					"\nDanilo Custódio da Silva " +
+					"\n\t- Learning Bayesian Network: K2, B, V" +
+					"\n\t- Incremental Learning\n" +
+					
+					"\nEduardo Andrade Rodrigues " +
+					"\n\t- GUI in Delphi 5.0 for Initial version\n" + 
+					
+					"\nGabriel M. N. Guimarães " +
+					"\n\t- TAN and BAN algorithms\n" +
+					
+					"\nFrancisco José Fiuza Lima Jr " +
+					"\n\t- GUI for Metaphor Medical\n" + 
+					
+					"\nLaécio Lima dos Santos " +
+					"\n\t- Implementation of MEBN/Pr-OWL support\n"+
+					
+					"\nProf. Marcelo Ladeira " +
+					"\n\t- Coordination of the project\n"+
+					
+					"\nMário Henrique Paes Vieira" +
+					"\n\t- Metaphor Medical" +
+					"\n\t- Coordination of the integration of Java code \n" +
+					
+					"\nMichael Shigeki Onishi " +
+					"\n\t- Bayesians Networks" +
+					"\n\t- Diagrams of Influences and MSBN\n"+
+					
+					"\nProf. Paulo C. Costa" +
+					"\n\t- Consultant in MEBN and Pr-OWL \n"+
+					
+					"\nRommel Novaes Carvalho" +
+					"\n\t- Bayesianas Networks, Diagrams of Influences" +
+					"\n\t- XML format and UnBBayes Server (J2EE)" +
+					"\n\t- Implementation of MEBN/Pr-OWL support\n"+
+					
+					"\nShou Matsumoto" +
+					"\n\t- Implementation of MEBN/Pr-OWL support\n" + 
+					
+					"\nProf. Wagner Teixeira da Silva" +
+					"\n\t- Consultant in bayesian network learning"
 			);
 			
 			collaboratorsPanel.setBackground(backgroundColor); 
