@@ -59,13 +59,13 @@ import unbbayes.io.mebn.UbfIO;
 import unbbayes.monteCarlo.controlador.ControladorPrincipal;
 
 /**
- * Essa classe extende o <code>JFrame</code> e � respons�vel pela interface da
- * tela principal do programa.
+ * This class extends <code>JFrame</code> and it is responsible for 
+ * the UnBBayes main panel.
  * 
- * @author Rommel Novaes Carvalho, Michael S. Onishi
+ * @author Rommel Novaes Carvalho (rommel.carvalho@gmail.com)
+ * @author Michael S. Onishi (mso@gmail.com)
  * @created 27 de Junho de 2001
  * @see JFrame
- * @version 1.0 06/07/2001
  */
 public class UnBBayesFrame extends JFrame {
 
@@ -79,7 +79,8 @@ public class UnBBayesFrame extends JFrame {
 	private JToolBar jtbView;
 	private JToolBar jtbTools;
 	private JToolBar jtbWindow;
-	private JToolBar jtbHelp;
+	// TODO CHANGE HELP
+	//private JToolBar jtbHelp;
 	private MainController controller;
 
 	private JButton newNet;
@@ -113,7 +114,7 @@ public class UnBBayesFrame extends JFrame {
 	private ActionListener alTbView;
 	private ActionListener alTbTools;
 	private ActionListener alTbWindow;
-	private ActionListener alTbHelp;
+	//private ActionListener alTbHelp;
 	private ActionListener alMetal;
 	private ActionListener alMotif;
 	private ActionListener alWindows;
@@ -476,7 +477,7 @@ public class UnBBayesFrame extends JFrame {
 		};
 
 		// create an ActionListener for showing the Help Tool Bar
-		alTbHelp = new ActionListener() {
+	/*	alTbHelp = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				if (((JCheckBoxMenuItem) e.getSource()).getState()) {
@@ -490,7 +491,7 @@ public class UnBBayesFrame extends JFrame {
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 
-		};
+		};*/
 
 		// create an ActionListener for choosing Metal Look and Feel
 		alMetal = new ActionListener() {
@@ -678,7 +679,7 @@ public class UnBBayesFrame extends JFrame {
 		tbView.addActionListener(alTbView);
 		tbTools.addActionListener(alTbTools);
 		tbWindow.addActionListener(alTbWindow);
-		tbHelp.addActionListener(alTbHelp);
+//		tbHelp.addActionListener(alTbHelp);
 		metalItem.addActionListener(alMetal);
 		motifItem.addActionListener(alMotif);
 		windowsItem.addActionListener(alWindows);
@@ -749,7 +750,7 @@ public class UnBBayesFrame extends JFrame {
 		jtbView = new JToolBar();
 		jtbTools = new JToolBar();
 		jtbWindow = new JToolBar();
-		jtbHelp = new JToolBar();
+//		jtbHelp = new JToolBar();
 
 		// add their buttons
 		jtbFile.add(newNet);
@@ -763,14 +764,14 @@ public class UnBBayesFrame extends JFrame {
 		jtbView.add(windows);
 		jtbWindow.add(cascade);
 		jtbWindow.add(tile);
-		jtbHelp.add(help);
+//		jtbHelp.add(help);
 
 		// add the tool bars to the topPanel
 		topPanel.add(jtbFile);
 		topPanel.add(jtbView);
 		topPanel.add(jtbTools);
 		topPanel.add(jtbWindow);
-		topPanel.add(jtbHelp);
+//		topPanel.add(jtbHelp);
 	}
 
 	/**
