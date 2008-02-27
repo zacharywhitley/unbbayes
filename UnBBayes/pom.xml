@@ -4,7 +4,7 @@
 	<groupId>br.unb.cic</groupId>
 	<artifactId>unbbayes</artifactId>
 	<name>UnBBayes PR-OWL</name>
-	<version>3.1</version>
+	<version>3.0.1-ALPHA</version>
 	<url>http://unbbayes.sourceforge.net</url>
 	<licenses>
 		<license>
