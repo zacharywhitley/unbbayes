@@ -1,0 +1,17 @@
+archive-tmp
+cobertura
+generated-classes
+jaxme
+maven-archiver
+imports.xml
+unusedcode.xml
+checkstyle-header.txt
+unbbayes-3.0.1-ALPHA.jar
+checkstyle-checker.xml
+finalizers.xml
+basic.xml
+unbbayes-3.0.1-ALPHA-dist.zip
+checkstyle-cachefile
+checkstyle-result.xml
+pmd.xml
+cpd.xml
