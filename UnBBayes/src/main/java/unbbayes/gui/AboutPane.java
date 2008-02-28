@@ -225,7 +225,8 @@ public class AboutPane extends JFrame{
 	class LogoPane extends JPanel{
 
 		Toolkit tk = Toolkit.getDefaultToolkit(); 
-		Image imgLogo = imgLogo = tk.getImage("resources/img/logo.jpg"); 
+		Image imgLogo = tk.getImage(getClass().getResource(
+				"/img/logo.jpg")); 
 		
 		public LogoPane(){
 			super(); 
