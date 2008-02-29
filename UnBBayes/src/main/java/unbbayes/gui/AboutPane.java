@@ -226,7 +226,7 @@ public class AboutPane extends JFrame{
 
 		Toolkit tk = Toolkit.getDefaultToolkit(); 
 		Image imgLogo = tk.getImage(getClass().getResource(
-				"/img/logo.jpg")); 
+				"/img/logo.png")); 
 		
 		public LogoPane(){
 			super(); 
@@ -236,7 +236,7 @@ public class AboutPane extends JFrame{
 		public void paintComponent(Graphics comp){
 			Graphics2D g2D = (Graphics2D)comp; 
 			
-			g2D.drawImage(imgLogo, 25, 20, 150, 150, this); 
+			g2D.drawImage(imgLogo, 15, 20, 175, 150, this); 
 			
 			g2D.drawRect(20, 175, 160, 80); 
 			g2D.drawString(name, 25, 200); 
