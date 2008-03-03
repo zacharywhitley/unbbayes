@@ -345,7 +345,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	public DomainResidentNode getDomainResidentNode(String name){
 		for(DomainMFrag mfrag: domainMFragList){
 			for(DomainResidentNode node: mfrag.getDomainResidentNodeList()){
-				if(node.getName().equals(name)){
+				if(node.getName().equalsIgnoreCase(name)){
 					return node; 
 				}
 			}

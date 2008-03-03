@@ -20,6 +20,11 @@
  */
 package unbbayes.prs.mebn.kb.powerloom;
 
+import java.io.File;
+
+import unbbayes.io.mebn.UbfIO;
+import unbbayes.prs.mebn.DomainResidentNode;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import junit.framework.TestCase;
 
@@ -29,6 +34,8 @@ import junit.framework.TestCase;
  */
 public class PowerLoomKBTest extends TestCase {
 
+	private PowerLoomKB kb = null;
+	
 	/**
 	 * @param arg0
 	 */
@@ -41,6 +48,8 @@ public class PowerLoomKBTest extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
+		kb = PowerLoomKB.getInstanceKB();
+		kb.loadModule(new File("examples/mebn/KnowledgeBase/KnowledgeBaseWithStarshipZoneST4.plm"));
 	}
 
 	/* (non-Javadoc)
@@ -51,52 +60,40 @@ public class PowerLoomKBTest extends TestCase {
 	}
 
 	/**
-	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#getInstanceKB()}.
+	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#executeCommand(java.lang.String)}.
 	 */
-	public void testGetInstanceKB() {
-		fail("Not yet implemented"); // TODO
+	public void testExecuteCommand() {
+		String result = kb.executeCommand(" ( retrieve all ( = ( STARSHIPZONE ?x1  ) ?x ) ) ");
+		assertNotNull(result);
+		System.out.println(result);		
+		result = kb.executeCommand(" ( retrieve all (   ISOWNSTARSHIP ?x11 ) ) ");
+		assertNotNull(result);
+		System.out.println(result);
+		result = kb.executeCommand(" ( retrieve all ( not ( ISOWNSTARSHIP ?x21 ) ) ) ");
+		assertNotNull(result);
+		System.out.println(result);	
 	}
-
+	
 	/**
-	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#createEntityDefinition(unbbayes.prs.mebn.entity.ObjectEntity)}.
+	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.fillFindings(DomainResidentNode resident)}.
 	 */
-	public void testExecuteConceptDefinition() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#createRandomVariableDefinition(unbbayes.prs.mebn.DomainResidentNode)}.
-	 */
-	public void testExecuteRandonVariableDefinition() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#insertEntityInstance(java.lang.String)}.
-	 */
-	public void testExecuteEntityFinding() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#executeContextFormula(unbbayes.prs.mebn.ContextNode)}.
-	 */
-	public void testExecuteContextFormula() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#saveDefinitionsFile()}.
-	 */
-	public void testSaveDefinitionsFile() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.kb.powerloom.PowerLoomKB#main(java.lang.String[])}.
-	 */
-	public void testMain() {
-		fail("Not yet implemented"); // TODO
+	public void testFillFindings() {
+		UbfIO io = UbfIO.getInstance();
+		MultiEntityBayesianNetwork mebn = null;
+		try {
+			mebn = io.loadMebn(new File("examples/mebn/StarTrek49.ubf"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		assertNotNull(kb);
+		assertNotNull(mebn);
+		assertNotNull(mebn.getDomainResidentNode("DISTFROMOWN"));
+		
+		
+		kb.fillFindings(mebn.getDomainResidentNode("DISTFROMOWN"));
+		
 	}
 
 }

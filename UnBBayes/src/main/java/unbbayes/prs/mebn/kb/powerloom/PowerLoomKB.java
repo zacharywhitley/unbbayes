@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DomainResidentNode;
@@ -875,8 +876,94 @@ public class PowerLoomKB implements KnowledgeBase {
 		return PLI.sEvaluate(command, moduleFindingName, null).toString();
 	}
 	
-	
-	
+	/**
+	 * TODO finish this
+	 * Searches the KB for findings of a resident node and adds those findings as
+	 * new RandomVariableFindings
+	 * @param resident resident node which name is going to be searched inside kb
+	 * @see RandomVariableFinding
+	 */
+	public void fillFindings(DomainResidentNode resident) {
+		/*
+		 * Retrieve from kb using the format below:
+		 *   boolean true:
+		 *   		retrieve all ( RESIDENT ?x0 )
+		 *   		retrieve all ( RESIDENT ?x0 ?x1 )
+		 *   boolean false:
+		 *   		retrieve all ( not ( RESIDENT ?x0 ) )
+		 *   		retrieve all ( not ( RESIDENT ?x0 ?x1 ) )
+		 *   else:
+		 *   		retrieve all ( = ( RESIDENT ?x0 ) ?x1 ) 
+		 *   		retrieve all ( = ( RESIDENT ?x0 ?x1  ) ?x2 ) 
+		 */
+		/*
+		String queryString = "";
+		int argcount = 0;
+		if(resident.getTypeOfStates() != DomainResidentNode.BOOLEAN_RV_STATES){
+			
+			// filling ordinary
+			
+			queryString = "( retrieve all ( = ( " + resident.getName(); 
+			List<ObjectEntityInstance> argumentList = new ArrayList<ObjectEntityInstance>();
+			for(Argument argument: resident.getArgumentList()){
+				queryString += " ?x" + argcount++; 
+			}
+			queryString += " ) ?x" + argcount++ + ") ) ";
+
+			Stella_Object sobj = PLI.sEvaluate(queryString, moduleFindingName, environment); 
+			
+			
+			//for (int i = 0 ; i < argcount ; i++ , sobj.incrementReferenceCount()) {
+				String result = PLI.getNthString(sobj, 0, this.moduleFinding, this.environment);
+				//String result = sobj.toString();
+				//TODO complete treating
+				
+				System.out.println("result..." + result + "...count = " + argcount);
+				
+				RandomVariableFinding finding = new RandomVariableFinding(resident , null , 
+						  resident.getPossibleValueByName("true").getState() ,
+						  resident.getMFrag().getMultiEntityBayesianNetwork());
+				
+				
+			//}
+			
+			
+			
+		} else {
+// filling false findings
+			
+			queryString = "( retrieve all ( not ( " + resident.getName(); 
+			List<ObjectEntityInstance> argumentList = new ArrayList<ObjectEntityInstance>();
+			for(Argument argument: resident.getArgumentList()){
+				queryString += " ?x" + argcount++; 
+			}
+			queryString += " ) ) ) ";
+
+			Stella_Object sobj = PLI.sEvaluate(queryString, moduleFindingName, environment); 
+			
+			
+			for (int i = 0 ; i < argcount ; i++ , sobj.incrementReferenceCount()) {
+				String result = PLI.getNthString(sobj, i, this.moduleFinding, this.environment);
+				//String result = sobj.toString();
+				//TODO complete treating
+				
+				System.out.println("result = " + result);
+				
+				RandomVariableFinding finding = new RandomVariableFinding(resident , null , 
+						  resident.getPossibleValueByName("true").getState() ,
+						  resident.getMFrag().getMultiEntityBayesianNetwork());
+				
+				
+			}
+			
+			
+				
+			// filling true findings
+			argcount = 0;	// reset the argument count, of course
+			// TODO complete
+		}
+		*/
+	}
 	
 	
 
