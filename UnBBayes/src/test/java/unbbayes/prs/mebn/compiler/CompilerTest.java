@@ -93,7 +93,7 @@ public class CompilerTest extends TestCase {
 	
 	public CompilerTest(String arg0) {
 		super(arg0);
-		Debug.setDebug(true);
+		Debug.setDebug(false);
 		
 		UbfIO ubfIO = UbfIO.getInstance(); 
 		
@@ -121,7 +121,7 @@ public class CompilerTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		Debug.setDebug(true);
+		Debug.setDebug(false);
 		assertNotNull(tableParser);
 		
 	}

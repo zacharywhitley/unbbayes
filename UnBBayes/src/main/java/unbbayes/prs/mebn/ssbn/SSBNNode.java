@@ -113,12 +113,11 @@ public class SSBNNode {
 		// below is unecessary because setProbeNode already does
 		//this.appendProbNodeState();	// if OK, probNode's states become the same of the resident's one
 		
-		this.actualValues = new ArrayList<Entity>();
+		this.actualValues = null;
 		if (this.getProbNode() != null) {
-			for (StateLink state : resident.getPossibleValueLinkList()) {
-				this.actualValues.add(state.getState());
-			}
+			this.actualValues = this.resident.getPossibleValueListIncludingEntityInstances();
 		} else {
+			this.actualValues = new ArrayList<Entity>();
 			this.actualValues.add(resident.getPossibleValueLinkList().get(0).getState());
 		}
 		
@@ -202,7 +201,7 @@ public class SSBNNode {
 			return;
 		}
 		if (this.getResident() != null) {
-			for (Entity entity : this.resident.getPossibleValueList()) {
+			for (Entity entity : this.resident.getPossibleValueListIncludingEntityInstances()) {
 				this.getProbNode().appendState(entity.getName());
 			}
 		}
@@ -853,6 +852,7 @@ public class SSBNNode {
 	 * If node is a finding, it will return a single value (a collection w/ only 1 value)
 	 * @return the actualValues: node's possible values known at that moment. It might be
 	 * different than resident node's ones. It might be a single value, when a finding is present.
+	 * Obviously, it may be a list of entity instances.
 	 */
 	public Collection<Entity> getActualValues() {
 		if (this.getProbNode() == null || this.isFinding) {
@@ -940,10 +940,10 @@ public class SSBNNode {
 	 * @return the probNode. Null if it should be a finding
 	 */
 	public ProbabilisticNode getProbNode() {
-		if (this.probNode != null) {
+		//if (this.probNode != null) {
 			// currently, this process is redundant (because getName already sets probNode's name)...
 			//this.probNode.setName(this.getName());
-		}
+		//}
 		return probNode;
 	}
 

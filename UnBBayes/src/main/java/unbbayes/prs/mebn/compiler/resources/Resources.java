@@ -50,7 +50,7 @@ public class Resources extends ListResourceBundle {
 		{"InvalidProbabilityRange","The probability distribution is invalid (the sum must be 1)."},
 		{"SomeStateUndeclared","All possible states of this node must have an associated probability."},
 		{"UnexpectedTokenFound","Unexpected token found."},
-		{"TableUndeclared","A table was not declared."}
+		{"TableUndeclared","A table was not declared"}
 		
 	};
 }

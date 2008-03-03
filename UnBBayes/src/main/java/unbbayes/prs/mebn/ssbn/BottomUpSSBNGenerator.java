@@ -566,7 +566,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	private boolean evaluateRelatedContextNodes (DomainResidentNode residentNode, 
 			List<OVInstance> ovInstances) throws OVInstanceFaultException{
 		
-		Debug.setDebug(true); 
+		Debug.setDebug(false); 
 		
 		// We assume if MFrag is already set to use Default, then some context
 		// has failed previously and there's no need to evaluate again.		
@@ -602,7 +602,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	private boolean evaluateRelatedContextNodes(GenerativeInputNode inputNode, 
 			List<OVInstance> ovInstances) throws OVInstanceFaultException{
 		
-		Debug.setDebug(true); 
+		Debug.setDebug(false); 
 		
 		// We assume if MFrag is already set to use Default, then some context has failed previously and there's no need to evaluate again.		
 		if (inputNode.getMFrag().isUsingDefaultCPT()) {
@@ -1090,7 +1090,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			
 			ssbnNode.getCompiler().generateCPT(ssbnNode);
 			
-			Debug.setDebug(true);
+			Debug.setDebug(false);
 			logManager.appendln("CPT OK\n");
 		
 	}
@@ -1189,7 +1189,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			
 			System.out.println("Gerando tabela para o nó residente");
 
-			int columnsByEntity = cptResidentNode.tableSize() / ssbnNode.getResident().getPossibleValueList().size();
+			int columnsByEntity = cptResidentNode.tableSize() / ssbnNode.getResident().getPossibleValueListIncludingEntityInstances().size();
 			columnsByEntity /= contextFather.getProbNode().getStatesSize(); 
 			
 			System.out.println("Colunas por entidade= " + columnsByEntity);

@@ -50,6 +50,6 @@ public class Resources_pt extends ListResourceBundle {
 		{"InvalidProbabilityRange","A distribuicao de probabilidades e invalida (a soma deve ser 1)."},
 		{"SomeStateUndeclared","Todos os estados deste no deve ter uma probabilidade associada."},
 		{"UnexpectedTokenFound","Um termo inesperado foi encontrado."},
-		{"TableUndeclared","A tabela não está declarada."}
+		{"TableUndeclared","A tabela não está declarada"}
 	};
 }

@@ -120,7 +120,7 @@ public class SaverPrOwlIO {
 	 */
 	public void saveMebn(File file, MultiEntityBayesianNetwork _mebn) throws IOException, IOMebnException{
 		
-		Debug.setDebug(true);
+		Debug.setDebug(false);
 	    mebn = _mebn; 
 		owlModel = ProtegeOWL.createJenaOWLModel();
 		

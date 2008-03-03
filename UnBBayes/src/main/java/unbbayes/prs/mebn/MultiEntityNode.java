@@ -185,9 +185,10 @@ public class MultiEntityNode extends Node {
 	
 	/**
 	 * !!!Maybe dead code!!!
-	 * It should NOT be used for resident nodes. Use DomainResidentNode.getPossibleValueLinkList
-	 * instead!!
-	 * @return a list which elements were added by MultiEntityNode.addPossibleValue(value)...
+	 * It should be avoided. Use DomainResidentNode.getPossibleValueLinkList
+	 * whenever possible.
+	 * @return a list which elements were added by MultiEntityNode.addPossibleValue(value)... It
+	 * obviously doesn't contain entity instances (since they are dead codes)
 	 */
 	public List<Entity> getPossibleValueList(){
 		return possibleValueList; 

@@ -52,6 +52,12 @@ import unbbayes.util.NodeList;
  ----------------
  Changes (Date/Month/Year): 
  
+ 	03/03/2008:
+ 			Description: compiler was trying to parse a table even when node was
+ 			known to be a finding (a finding doesn't need a cpt). This condition now 
+ 			is tested before parsing a ssbn node.
+ 			Author: Shou Matsumoto (cardialfly@[gmail,yahoo].com)
+ 
  	28/12/2007:
  			Description: fixed the BNF definition of factor.
  			Author: Rommel Carvalho (rommel.carvalho@gmail.com)
@@ -232,7 +238,7 @@ public class Compiler implements ICompiler {
 	 */
 	public void init(String text) {
 		if (text == null) {
-			throw new NullPointerException(resource.getString("TableUndeclared"));
+			throw new NullPointerException(resource.getString("TableUndeclared") + " : " + this.getNode().getName());
 		}
 		index = 0;
 		Debug.println("************************************");
@@ -453,6 +459,12 @@ public class Compiler implements ICompiler {
 	 *  @return 
 	 */
 	public PotentialTable generateCPT(SSBNNode ssbnnode) throws MEBNException {
+		if (ssbnnode == null) {
+			return null;
+		}
+		if (ssbnnode.isFinding()) {
+			return null;
+		}
 		this.init(ssbnnode);
 		this.parse();
 		return getCPT();
@@ -570,7 +582,8 @@ public class Compiler implements ICompiler {
 			statement();
 		} catch (TableFunctionMalformedException e) {
 			System.out.println("->" + getNode());
-			throw new InvalidProbabilityRangeException(e.getMessage());
+			e.printStackTrace();
+			throw new InvalidProbabilityRangeException(e.getMessage() + " : " + this.getNode().getName());
 		}
 		
 		
@@ -786,7 +799,7 @@ public class Compiler implements ICompiler {
 		}
 		Entity condvalue = null;
 		// search for an entity with a name this.noCaseChangeValue
-		for (Entity possibleValue : resident.getPossibleValueList()) {
+		for (Entity possibleValue : resident.getPossibleValueListIncludingEntityInstances()) {
 			if (possibleValue.getName().compareTo(this.noCaseChangeValue) == 0) {
 				condvalue = possibleValue;
 				break;
@@ -851,7 +864,7 @@ public class Compiler implements ICompiler {
 			List<Entity> declaredStates = new ArrayList<Entity>();
 			List<Entity> possibleStates = null;			
 			if (this.node != null) {
-				possibleStates = this.node.getPossibleValueList();
+				possibleStates = this.node.getPossibleValueListIncludingEntityInstances();
 			}
 			
 			Debug.println("");

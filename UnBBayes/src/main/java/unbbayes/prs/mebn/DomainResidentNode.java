@@ -27,6 +27,9 @@ import java.util.List;
 
 import unbbayes.draw.DrawRoundedRectangle;
 import unbbayes.prs.mebn.entity.Entity;
+import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.ObjectEntityConteiner;
+import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
@@ -269,11 +272,18 @@ public class DomainResidentNode extends ResidentNode {
 	public boolean existsPossibleValueByName(String possibleValue){
 		
 		for(StateLink value : possibleValueList){
-			if (value.getState().getName().equals(possibleValue)){
+			// lets first veriry if state is an objectentity (which encloses instances)
+			if (value.getState() instanceof ObjectEntity) {
+				// TODO this "instanceof" is a serious evidence indicating a need for some major refactoring
+				for (ObjectEntityInstance instance : ((ObjectEntity)value.getState()).getInstanceList()) {
+					if (instance.getName().equalsIgnoreCase(possibleValue)) {
+						return true;
+					}
+				}
+			} else if (value.getState().getName().equalsIgnoreCase(possibleValue)){
 				return true; 
 			}
 		}
-		
 		return false; 
 	}	
 	
@@ -286,7 +296,15 @@ public class DomainResidentNode extends ResidentNode {
 	 */
 	public boolean hasPossibleValue(Entity entity) {
 		for(StateLink value : possibleValueList){
-			if (value.getState() == entity){
+			// lets first veriry if state is an objectentity (which encloses instances)
+			if (value.getState() instanceof ObjectEntity) {
+				// TODO this "instanceof" is a serious evidence indicating a need for some major refactoring
+				for (ObjectEntityInstance instance : ((ObjectEntity)value.getState()).getInstanceList()) {
+					if (instance == entity) {
+						return true;
+					}
+				}
+			} else if (value.getState() == entity){
 				return true; 
 			}
 		}
@@ -294,16 +312,23 @@ public class DomainResidentNode extends ResidentNode {
 	}
 	
 	/**
-	 * Return the possible value of the residente node with the name
-	 * (return null if don't exist a possible value with this name)
+	 * Return the possible value of the resident node with the name
+	 * (return null if a possible value with this name doesn't exist)
 	 */
 	public StateLink getPossibleValueByName(String possibleValue){
 		for(StateLink value : possibleValueList){
-			if (value.getState().getName().equalsIgnoreCase(possibleValue)){
+			// lets first veriry if state is an objectentity (which encloses instances)
+			if (value.getState() instanceof ObjectEntity) {
+				// TODO this "instanceof" is a serious evidence indicating a need for some major refactoring
+				for (ObjectEntityInstance instance : ((ObjectEntity)value.getState()).getInstanceList()) {
+					if (instance.getName().equalsIgnoreCase(possibleValue)) {
+						return new StateLink(instance);
+					}
+				}
+			} else if (value.getState().getName().equalsIgnoreCase(possibleValue)){
 				return value; 
 			}
 		}
-		
 		return null;
 	}
 	
@@ -425,14 +450,18 @@ public class DomainResidentNode extends ResidentNode {
 		return randomVariableFindingList;
 	}
 
-	/* (non-Javadoc)
+    /** 
+	 * Overrides unbbayes.prs.mebn.MultiEntityNode#getPossibleValueIndex(java.lang.String),
+	 * but also considers the entity instances (calls 
+	 * unbbayes.prs.mebn.DomainResidentNode#getPossibleValueListIncludingEntityInstances() internally.
 	 * @see unbbayes.prs.mebn.MultiEntityNode#getPossibleValueIndex(java.lang.String)
+	 * @see unbbayes.prs.mebn.DomainResidentNode#getPossibleValueListIncludingEntityInstances()
 	 */
 	@Override
 	public int getPossibleValueIndex(String stateName) {
 		int index = 0;
-		for (StateLink link : this.possibleValueList) {
-			if (link.getState().getName().equals(stateName)) {
+		for (Entity entity : this.getPossibleValueListIncludingEntityInstances()) {
+			if (entity.getName().equalsIgnoreCase(stateName)) {
 				return index;
 			}
 			index++;
@@ -453,7 +482,28 @@ public class DomainResidentNode extends ResidentNode {
 		return ret;
 	}
 	
-	
+	/**
+	 * This is identical to unbbayes.prs.mebn.DomainResidentNode#getPossibleValueList() but
+	 * the returned list also includes the entity instances from object entities.
+	 * This would be useful when retrieving instances on SSBN generation step.
+	 * @return a list containing entities and, when instances are present, those instances. When
+	 * retrieving instances, the ObjectEntity itself (the instance container) is not retrieved
+	 * @see unbbayes.prs.mebn.DomainResidentNode#getPossibleValueList()
+	 */
+	public List<Entity> getPossibleValueListIncludingEntityInstances() {
+		List<Entity> ret = new ArrayList<Entity>();
+		for (StateLink link : this.possibleValueList) {
+			if (link.getState() instanceof ObjectEntity) {
+				// TODO the above "instanceof" is a serious indication of a refactoring necessity
+				for (ObjectEntityInstance instance : ((ObjectEntity)link.getState()).getInstanceList()) {
+					ret.add(instance);
+				}
+			} else {
+				ret.add(link.getState());
+			}
+		}
+		return ret;
+	}
 	
 }
  
