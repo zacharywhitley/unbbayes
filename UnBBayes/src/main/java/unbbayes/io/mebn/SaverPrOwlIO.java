@@ -41,15 +41,14 @@ import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.ResidentNodePointer;
-import unbbayes.prs.mebn.context.NodeFormulaTree;
-import unbbayes.prs.mebn.context.EnumType;
 import unbbayes.prs.mebn.context.EnumSubType;
+import unbbayes.prs.mebn.context.EnumType;
+import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.entity.BooleanStateEntity;
 import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
-import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.util.Debug;
 
@@ -57,11 +56,11 @@ import com.hp.hpl.jena.util.FileUtils;
 
 import edu.stanford.smi.protegex.owl.ProtegeOWL;
 import edu.stanford.smi.protegex.owl.jena.JenaOWLModel;
-import edu.stanford.smi.protegex.owl.model.OWLClass;
 import edu.stanford.smi.protegex.owl.model.OWLDatatypeProperty;
 import edu.stanford.smi.protegex.owl.model.OWLIndividual;
 import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
 import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
+import edu.stanford.smi.protegex.owl.model.RDFProperty;
 import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
 
 /**
@@ -382,6 +381,10 @@ public class SaverPrOwlIO {
 		OWLIndividual mTheoryIndividual = mTheoryClass.createOWLIndividual(mebn.getName()); 
 		Debug.println("MTheory = " + mebn.getName());
 		
+		if(mebn.getDescription() != null){
+			mTheoryIndividual.addComment(mebn.getDescription()); 
+		}
+		
 		/* hasMFrag */
 		
 		OWLObjectProperty hasMFragProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasMFrag"); 	
@@ -393,6 +396,10 @@ public class SaverPrOwlIO {
 			OWLIndividual domainMFragIndividual = domainMFragClass.createOWLIndividual(domainMFrag.getName());
 			mapMFrag.put(domainMFrag, domainMFragIndividual); 
 			mTheoryIndividual.addPropertyValue(hasMFragProperty, domainMFragIndividual); 
+			
+			if(domainMFrag.getDescription()!=null){
+				domainMFragIndividual.addComment(domainMFrag.getDescription()); 
+			}
 			
 			/* hasResidentNode */
 			OWLObjectProperty hasResidentNodeProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasResidentNode"); 	
@@ -438,6 +445,10 @@ public class SaverPrOwlIO {
 				
 				if (oVariable.getValueType() != null){
 					oVariableIndividual.addPropertyValue(isSubsByProperty, mapMetaEntity.get(oVariable.getValueType().getName())); 
+				}
+				
+				if(oVariable.getDescription() != null){
+					oVariableIndividual.addComment(oVariable.getDescription()); 	
 				}
 				
 				mapOrdinaryVariable.put(oVariable, oVariableIndividual); 				
@@ -509,6 +520,10 @@ public class SaverPrOwlIO {
     			if(residentNode.getTableFunction() != null){
     				declarativeDistThisNode.addPropertyValue(hasDeclaration, residentNode.getTableFunction()); 
     				domainResIndividual.addPropertyValue(hasProbDist, declarativeDistThisNode); 
+    			}
+    			
+    			if(residentNode.getDescription() != null){
+    			   domainResIndividual.addComment(residentNode.getDescription()); 
     			}
     		} 	
     	} 
@@ -638,6 +653,10 @@ public class SaverPrOwlIO {
     					//TODO Built-in don't checked... 
     				}
     			}
+    			
+    			if(generativeInputNode.getDescription() != null){
+    				generativeInputNodeIndividual.addComment(generativeInputNode.getDescription()); 
+    			}
     		}
     	}
     	
@@ -698,11 +717,16 @@ public class SaverPrOwlIO {
     			if (formulaNode != null){
     				loadContextNodeFormula(formulaNode, contextNodeIndividual, contextNode); 
     			}		
-    			saveContextPossibleValues(contextNodeIndividual, contextNode); 
+    			saveContextPossibleValues(contextNodeIndividual, contextNode);
+    			
+    			if(contextNode.getDescription()!=null){
+    				contextNodeIndividual.addComment(contextNode.getDescription()); 
+    			}
+        		
     		}		
     	}
     }
-
+    
     /**
      * Save a category state how one Arg Relationship of a node. 
      *

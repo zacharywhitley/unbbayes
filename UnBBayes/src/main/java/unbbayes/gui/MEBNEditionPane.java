@@ -29,6 +29,8 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -133,7 +135,7 @@ public class MEBNEditionPane extends JPanel {
     private ResidentNodePane residentNodePane;
     private ArgumentEditionPane editArgumentsTab;
 
-    private DescriptionPane descriptionPane;
+    private final DescriptionPane descriptionPane;
 
     /* Text fields */
 
@@ -664,11 +666,20 @@ public class MEBNEditionPane extends JPanel {
 		this.txtFormula.setText(formula);
 	}
 
+	public NetworkWindow getNetworkWindow() {
+		return netWindow;
+	}
+	
+	public void setDescriptionText(String text){
+		this.descriptionPane.setDescriptionText(text); 
+	}
+	
+	public String getDescriptionText(){
+		return this.descriptionPane.getDescriptionText(); 
+	}
+	
 	private class ToolBarGlobalOptions extends JToolBar{
 
-	    /**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
 
 		private JButton btnGlobalOption;
@@ -1353,9 +1364,8 @@ public class MEBNEditionPane extends JPanel {
     }
 
     /*
-     * Painel que mostra a descri��o do objeto selecionado.
+     * Pane that show the description of the selected object
      */
-
   	private class DescriptionPane extends JPanel{
 
   		private JTextArea textArea;
@@ -1380,22 +1390,30 @@ public class MEBNEditionPane extends JPanel {
   	                            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
   	                            JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
   	        textArea.setEditable(true);
+  	        
+  	        textArea.addFocusListener(new FocusListener(){
+
+				public void focusGained(FocusEvent e) {
+					
+				}
+
+				public void focusLost(FocusEvent e) {
+					mebnController.setDescriptionTextForSelectedObject(textArea.getText()); 
+				}
+  	        	
+  	        }); 
 
   	        add(scrollPane, BorderLayout.CENTER);
   		}
 
-  		public void setDescription(String description){
+  		public void setDescriptionText(String description){
   			textArea.setText(description);
   		}
 
-  		public String getDescriptions(String description){
+  		public String getDescriptionText(){
   			return textArea.getText();
   		}
 
   	}
-
-	public NetworkWindow getNetworkWindow() {
-		return netWindow;
-	}
 
 }

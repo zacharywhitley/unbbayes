@@ -257,7 +257,12 @@ public class LoaderPrOwlIO {
 		
 		Debug.println("MTheory loaded: " + individualOne.getBrowserText()); 
 		
-		//Properties 
+		//Properties
+		String comment = null; 
+		
+		comment = getDescription(individualOne);
+		
+		mebn.setDescription(comment); 
 		
 		/* hasMFrag */
 		objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasMFrag"); 	
@@ -271,6 +276,17 @@ public class LoaderPrOwlIO {
 			mapDomainMFrag.put(individualTwo.getBrowserText(), domainMFrag); 
 		}	
  
+	}
+
+	private String getDescription(OWLIndividual individualOne) {
+		String comment = null; 
+		Collection comments = individualOne.getComments(); 
+		if(comments.size() > 0){
+			if(comments.toArray()[0] instanceof String){
+				comment =  (String)comments.toArray()[0]; 
+			}
+		}
+		return comment;
 	}
 	
 	/**
@@ -442,6 +458,8 @@ public class LoaderPrOwlIO {
 			
 			Debug.println("DomainMFrag loaded: " + individualOne.getBrowserText()); 
 			
+			domainMFrag.setDescription(getDescription(individualOne)); 
+			
 			/* -> hasResidentNode */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasResidentNode"); 
 			instances = individualOne.getPropertyValues(objectProperty); 
@@ -526,6 +544,8 @@ public class LoaderPrOwlIO {
 			}
 			
 			Debug.println("Context Node loaded: " + individualOne.getBrowserText()); 				
+			
+			contextNode.setDescription(getDescription(individualOne)); 
 			
 			/* -> isContextNodeIn  */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isContextNodeIn"); 			
@@ -724,6 +744,8 @@ public class LoaderPrOwlIO {
 			}
 			
 			Debug.println("Domain Resident loaded: " + individualOne.getBrowserText()); 			
+			
+			domainResidentNode.setDescription(getDescription(individualOne)); 
 			
 			/* -> isResidentNodeIn  */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isResidentNodeIn"); 			
@@ -940,6 +962,8 @@ public class LoaderPrOwlIO {
 				throw new IOMebnException(resource.getString("GenerativeInputNodeNotExistsInMTheory"), individualOne.getBrowserText() ); 				
 			}
 			
+			generativeInputNode.setDescription(getDescription(individualOne)); 
+			
 			//loadHasPositionProperty(individualOne, generativeInputNode); 
 			
 			/* -> isInputInstanceOf  */
@@ -1030,6 +1054,8 @@ public class LoaderPrOwlIO {
 				throw new IOMebnException(resource.getString("OVariableNotExistsInMTheory"),  individualOne.getBrowserText()); 
 			}
 			Debug.println("Ordinary Variable loaded: " + individualOne.getBrowserText()); 				
+			
+			oVariable.setDescription(getDescription(individualOne)); 
 			
 			/* -> isOVariableIn  */
 			objectProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("isOVariableIn"); 			

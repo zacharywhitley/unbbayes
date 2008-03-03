@@ -115,6 +115,8 @@ public class MEBNController extends DefaultVisitorHost {
 	private ContextNode contextNodeActive;
 	private OrdinaryVariable ovNodeActive;
 	private MFrag mFragActive; 
+	
+	private TypeElementSelected typeElementSelected; 
 	private Node nodeActive;
 
 	/*-------------------------------------------------------------------------*/
@@ -147,6 +149,16 @@ public class MEBNController extends DefaultVisitorHost {
 			.getBundle("unbbayes.controller.resources.ControllerResources");
 
 	private NumberFormat df;
+	
+	/*-------------------------------------------------------------------------*/
+	/* Private enumerations                                                    */
+	/*-------------------------------------------------------------------------*/
+	
+	private enum TypeElementSelected{
+		NODE, 
+		MFRAG, 
+		MTHEORY
+	}
 	
 	/*-------------------------------------------------------------------------*/
 	/* Constructors                                                            */
@@ -193,6 +205,8 @@ public class MEBNController extends DefaultVisitorHost {
 		mebnEditionPane.setNameMTheory(this.multiEntityBayesianNetwork.getName());
 		mebnEditionPane.setMTheoryTreeActive();
 
+		typeElementSelected = TypeElementSelected.MTHEORY; 
+		mebnEditionPane.setDescriptionText(multiEntityBayesianNetwork.getDescription()); 
 	}
 
 	/**
@@ -204,6 +218,29 @@ public class MEBNController extends DefaultVisitorHost {
 		multiEntityBayesianNetwork.setName(name);
 		mebnEditionPane.setNameMTheory(name);
 
+	}
+	
+	/**
+	 * Set the description text of the selected object
+	 * 
+	 * Objects: 
+	 * - MTheory
+	 * - MFrag
+	 * 
+	 * - Resident Node
+	 * - Input Node
+	 * - Context Node
+	 * 
+	 * - Ordinary Variable
+	 * 
+	 * - State
+	 * 
+	 * - Object Entity
+	 * 
+	 * @param text
+	 */
+	public void setDescriptionTextForSelectedObject(String text){
+		saveDescriptionTextOfPreviousElement(text); 	
 	}
 	
 	/*-------------------------------------------------------------------------*/
@@ -259,7 +296,9 @@ public class MEBNController extends DefaultVisitorHost {
 	    mebnEditionPane.setMFragBarActive();
 	    mebnEditionPane.setTxtNameMFrag(domainMFrag.getName());
 	    mebnEditionPane.setMTheoryTreeActive();
-
+	    
+		typeElementSelected = TypeElementSelected.MFRAG; 
+		mebnEditionPane.setDescriptionText(domainMFrag.getDescription()); 
 	}
 
 	public void removeDomainMFrag(DomainMFrag domainMFrag) {
@@ -287,6 +326,9 @@ public class MEBNController extends DefaultVisitorHost {
 		mebnEditionPane.setMFragBarActive();
 		mebnEditionPane.setTxtNameMFrag(mFrag.getName());
 		mebnEditionPane.setMTheoryTreeActive();
+		
+		typeElementSelected = TypeElementSelected.MFRAG; 
+		mebnEditionPane.setDescriptionText(mFrag.getDescription()); 
 	}
 
 	/**
@@ -386,6 +428,9 @@ public class MEBNController extends DefaultVisitorHost {
 		mebnEditionPane.setResidentBarActive();
 		mebnEditionPane.setTxtNameResident(((ResidentNode)node).getName());
 
+		mebnEditionPane.setDescriptionText(node.getDescription()); 
+		typeElementSelected = TypeElementSelected.NODE; 
+		
 	    return node;
 	}
 
@@ -538,6 +583,9 @@ public class MEBNController extends DefaultVisitorHost {
 		mebnEditionPane.setTxtNameInput(((InputNode)node).getName());
 		mebnEditionPane.setInputNodeActive(node);
 		mebnEditionPane.setTxtInputOf("");
+		
+		mebnEditionPane.setDescriptionText(node.getDescription()); 
+		typeElementSelected = TypeElementSelected.NODE; 
 
 		return node;
 	}
@@ -613,6 +661,9 @@ public class MEBNController extends DefaultVisitorHost {
 
 		setContextNodeActive(node);
 
+		mebnEditionPane.setDescriptionText(node.getDescription()); 
+		typeElementSelected = TypeElementSelected.NODE; 
+		
 		return node;
 	}
 
@@ -660,6 +711,13 @@ public class MEBNController extends DefaultVisitorHost {
 	}
 
 	public void selectNode(Node node){
+		
+		//Before select the new node, save the description of the previous
+		
+		saveDescriptionTextOfPreviousElement(mebnEditionPane.getDescriptionText());
+		
+		typeElementSelected = TypeElementSelected.NODE; 
+		
 		if (node instanceof ResidentNode){
 			residentNodeActive = (ResidentNode)node;
 			setResidentNodeActive(residentNodeActive);
@@ -684,6 +742,23 @@ public class MEBNController extends DefaultVisitorHost {
 
 		}
 	    mebnEditionPane.showTitleGraph(multiEntityBayesianNetwork.getCurrentMFrag().getName());
+	    mebnEditionPane.setDescriptionText(node.getDescription()); 
+	}
+
+	private void saveDescriptionTextOfPreviousElement(String text) {
+		switch(typeElementSelected){
+		case MFRAG:
+			mFragActive.setDescription(text); 
+			break; 
+		case MTHEORY:
+			multiEntityBayesianNetwork.setDescription(text); 
+			break; 
+		case NODE:
+			if(nodeActive!=null){
+				nodeActive.setDescription(text); 
+			}
+			break; 
+		}
 	}
 
 	public void unselectNodes(){
@@ -766,6 +841,9 @@ public class MEBNController extends DefaultVisitorHost {
 
 		mebnEditionPane.setEditOVariableTabActive();
 
+		mebnEditionPane.setDescriptionText(ov.getDescription()); 
+		typeElementSelected = TypeElementSelected.NODE; 
+		
 	    return ov;
 
 	}

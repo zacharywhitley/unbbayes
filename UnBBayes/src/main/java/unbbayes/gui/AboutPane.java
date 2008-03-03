@@ -28,9 +28,11 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -248,7 +250,35 @@ public class AboutPane extends JFrame{
 
 	//tests. 
 	public static void main(String... args){
-		JFrame testFrame = new AboutPane(); 
+//		JFrame testFrame = new AboutPane(); 
+//		testFrame.setVisible(true); 
+//		testFrame.setPreferredSize(new Dimension(600, 300)); 
+//		testFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
+//		testFrame.pack(); 
+		
+		JEditorPane editorPane = new JEditorPane();
+		editorPane.setEditable(false);
+		java.net.URL helpURL = AboutPane.class.getResource(
+		                                "TextSamplerDemoHelp.html");
+		if (helpURL != null) {
+		    try {
+		        editorPane.setPage(helpURL);
+		    } catch (IOException e) {
+		        System.err.println("Attempted to read a bad URL: " + helpURL);
+		    }
+		} else {
+		    System.err.println("Couldn't find file: TextSamplerDemoHelp.html");
+		}
+
+		//Put the editor pane in a scroll pane.
+		JScrollPane editorScrollPane = new JScrollPane(editorPane);
+		editorScrollPane.setVerticalScrollBarPolicy(
+		                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		editorScrollPane.setPreferredSize(new Dimension(250, 145));
+		editorScrollPane.setMinimumSize(new Dimension(10, 10));
+		
+		JFrame testFrame = new JFrame();
+		testFrame.setContentPane(editorScrollPane); 
 		testFrame.setVisible(true); 
 		testFrame.setPreferredSize(new Dimension(600, 300)); 
 		testFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 

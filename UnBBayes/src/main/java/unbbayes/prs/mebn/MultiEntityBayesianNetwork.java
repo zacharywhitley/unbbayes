@@ -58,6 +58,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	BooleanStatesEntityContainer booleanStatesEntityContainer; 
 	CategoricalStatesEntityContainer categoricalStatesEntityContainer; 
 	
+	private String description; 
 	
 	/* Este contador serve apenas para indicar qual deve ser o n�mero
 	 * da pr�xima MFrag criada (ao se gerar o nome automatico. Este n�mero
@@ -409,6 +410,14 @@ public class MultiEntityBayesianNetwork extends Network {
 		for (DomainMFrag mfrag : this.getDomainMFragList()) {
 			mfrag.setAsUsingDefaultCPT(false);
 		}
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 }

@@ -65,6 +65,8 @@ public class MFrag implements Graph{
 	
 	private String name; 
 	
+	private String description; 
+	
 	/* 
 	 * Estes contadores indicam qual deve ser o numero do proximo
 	 * no criado caso os nomes estejam sendo gerados automaticamente
@@ -486,6 +488,14 @@ public class MFrag implements Graph{
 			}
 		}
 		return null;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 }
