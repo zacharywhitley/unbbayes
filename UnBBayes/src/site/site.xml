@@ -16,6 +16,7 @@
 
     <menu name="UnBBayes 3">
       <item name="Overview" href="index.html"/>
+      <item name="Publications" href="publications.html"/>
       <item name="APT Test" href="test.html"/>
       <item name="APT Format" href="format.html"/>
       <item name="FAQ" href="faq.html"/>
