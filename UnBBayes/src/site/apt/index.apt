@@ -1,16 +1,39 @@
  -----
- The Site
+ The UnBBayes Site
  -----
- The Maven Team
+ The UnBBayes Team
  -----
 
-Maven Site for your project
+UnBBayes Overview
+~~~~~~~~~~~~~~~~~
 
- Congratulations! If you are looking at this page then you have successfully generated a
- template site employing the site archetype and you have run:
+  This is our maven site for UnBBayes. UnBBayes is an open source software for modeling, learning and reasoning upon 
+  probabilistic networks.
+ 
+  It has support to:
   
-+-----+
-
-m2 site:site
-
-+-----+
+      * Probabilistic Networks:
+      
+          * Bayesian Network (BN)
+          
+          * Influence Diagram (ID)
+          
+          * Multiple-Sectioned Bayesian Network (MSBN)
+          
+      * FOL Probabilistic Network:
+      
+          * Multi-Entity Baeysian Network (MEBN)
+          
+          * Probabilistic Ontology Language (PR-OWL)
+          
+      * Learning Bayesian Network:
+       
+          * K2
+          
+          * B
+          
+          * V
+          
+          * Incremental Learning
+ 
+ 

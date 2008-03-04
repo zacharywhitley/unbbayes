@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>br.unb.cic</groupId>
 	<artifactId>unbbayes</artifactId>
-	<name>UnBBayes PR-OWL</name>
+	<name>UnBBayes</name>
 	<version>3.0.1-ALPHA</version>
 	<url>http://unbbayes.sourceforge.net</url>
 	<licenses>
@@ -30,16 +30,53 @@
 	<inceptionYear>2001</inceptionYear>
 	<mailingLists>
 		<mailingList>
-			<name>HotelDatabase project mailing list</name>
-			<subscribe>dev-subscribe@wakaleo.com</subscribe>
-			<unsubscribe>dev-unsubscribe@wakaleo.com</unsubscribe>
-			<post>dev@wakaleo.com</post>
+			<name>Announcements. All messages on this list are also sent to the users list.</name>
+			<subscribe>unbbayes-announce-subscribe@lists.sourceforge.net</subscribe>
+			<unsubscribe>unbbayes-announce-unsubscribe@lists.sourceforge.net</unsubscribe>
+			<post>unbbayes-announce@lists.sourceforge.net</post>
 			<archive>
-				http://mail-archives.wakaleo.com/mod_mbox/dev/
+				http://lists.sourceforge.net/mailman/listinfo/unbbayes-announce
+			</archive>
+		</mailingList>
+		<mailingList>
+			<name>A subscriber-only list for those interested in developing UnBBayes.</name>
+			<subscribe>unbbayes-developers-subscribe@lists.sourceforge.net</subscribe>
+			<unsubscribe>unbbayes-developers-unsubscribe@lists.sourceforge.net</unsubscribe>
+			<post>unbbayes-developers@lists.sourceforge.net</post>
+			<archive>
+				http://lists.sourceforge.net/mailman/listinfo/unbbayes-developers
+			</archive>
+		</mailingList>
+		<mailingList>
+			<name>A subscriber-only list for those interested in translating UnBBayes.</name>
+			<subscribe>unbbayes-translators-subscribe@lists.sourceforge.net</subscribe>
+			<unsubscribe>unbbayes-translators-unsubscribe@lists.sourceforge.net</unsubscribe>
+			<post>unbbayes-translators@lists.sourceforge.net</post>
+			<archive>
+				http://lists.sourceforge.net/mailman/listinfo/unbbayes-translators
+			</archive>
+		</mailingList>
+		<mailingList>
+			<name>A subscriber-only list for those interested in discussing about UnBBayes.</name>
+			<subscribe>unbbayes-users-subscribe@lists.sourceforge.net</subscribe>
+			<unsubscribe>unbbayes-users-unsubscribe@lists.sourceforge.net</unsubscribe>
+			<post>unbbayes-users@lists.sourceforge.net</post>
+			<archive>
+				http://lists.sourceforge.net/mailman/listinfo/unbbayes-users
 			</archive>
 		</mailingList>
 	</mailingLists>
 	<developers>
+		<developer>
+			<id>mladeira</id>
+			<name>Marcelo Ladeira</name>
+			<email>mladeira@unb.br</email>
+			<roles>
+				<role>Project Manager</role>
+			</roles>
+			<organization>Universidade de Brasília - UnB</organization>
+			<timezone>-3</timezone>
+		</developer>
 		<developer>
 			<id>rommelnc</id>
 			<name>Rommel Novaes Carvalho</name>
@@ -48,7 +85,37 @@
 				<role>Project Manager</role>
 				<role>Architect</role>
 			</roles>
-			<organization>UnB.br</organization>
+			<organization>Universidade de Brasília - UnB</organization>
+			<timezone>-3</timezone>
+		</developer>
+		<developer>
+			<id>pcosta</id>
+			<name>Paulo Cesar G. Costa</name>
+			<email>pcosta@gmu.edu</email>
+			<roles>
+				<role>Consultant</role>
+			</roles>
+			<organization>George Mason University - GMU</organization>
+			<timezone>-3</timezone>
+		</developer>
+		<developer>
+			<id>laecio</id>
+			<name>Laecio Lima</name>
+			<email>laecio@gmail.com</email>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<organization>Universidade de Brasília - UnB</organization>
+			<timezone>-3</timezone>
+		</developer>
+		<developer>
+			<id>shou</id>
+			<name>Shou Matsumoto</name>
+			<email>cardialfly@gmail.com</email>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<organization>Universidade de Brasília - UnB</organization>
 			<timezone>-3</timezone>
 		</developer>
 	</developers>
@@ -65,7 +132,6 @@
 		<name>Universidade de Brasília - UnB</name>
 		<url>http://www.unb.br</url>
 	</organization>
-
 	<build>
 		<plugins>
 			<plugin>
@@ -235,7 +301,7 @@
 		</dependency>
 
 	</dependencies>
-	<reporting>
+	<!-- reporting>
 		<plugins>
 			<plugin>
 				<artifactId>maven-surefire-report-plugin</artifactId>
@@ -307,7 +373,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
-	</reporting>
+	</reporting-->
 	<distributionManagement>
 		<site>
 			<id>website</id>
