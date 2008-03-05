@@ -30,9 +30,9 @@ import java.util.Set;
 import unbbayes.prs.Edge;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.GenerativeInputNode;
+import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.entity.Entity;
@@ -58,7 +58,7 @@ public class SSBNNode {
 	
 	// Private Attributes
 	
-	private DomainResidentNode resident = null;	// what resident node this instance represents
+	private ResidentNode resident = null;	// what resident node this instance represents
 	private ProbabilisticNode  probNode = null;	// stores the UnBBayes BN ordinal node which represents this SSBNNode
 	
 	private List<OVInstance> arguments = null;
@@ -88,7 +88,7 @@ public class SSBNNode {
 	
 	
 	
-	private SSBNNode (ProbabilisticNetwork pnet, DomainResidentNode resident , ProbabilisticNode probNode, boolean isFinding) {
+	private SSBNNode (ProbabilisticNetwork pnet, ResidentNode resident , ProbabilisticNode probNode, boolean isFinding) {
 		
 		this.arguments = new ArrayList<OVInstance>();
 		this.parents = new ArrayList<SSBNNode>();
@@ -142,7 +142,7 @@ public class SSBNNode {
 	 * @param probabilisticNetwork: the network which probNode should work on. If null, a new one will be created.
 	 * @return a SSBNNode instance.
 	 */
-	public static SSBNNode getInstance (ProbabilisticNetwork probabilisticNetwork,DomainResidentNode resident , ProbabilisticNode probNode, boolean isFinding)  {
+	public static SSBNNode getInstance (ProbabilisticNetwork probabilisticNetwork,ResidentNode resident , ProbabilisticNode probNode, boolean isFinding)  {
 		return new SSBNNode(probabilisticNetwork, resident,probNode, isFinding);
 	}
 	
@@ -186,12 +186,12 @@ public class SSBNNode {
 	 * @return a SSBNNode instance.
 	 * 
 	 */
-	public static SSBNNode getInstance (ProbabilisticNetwork net ,DomainResidentNode resident)  {
+	public static SSBNNode getInstance (ProbabilisticNetwork net ,ResidentNode resident)  {
 		return new SSBNNode(net,resident,null, false);
 	}
 	
 	
-	public static SSBNNode getInstance (DomainResidentNode resident)  {
+	public static SSBNNode getInstance (ResidentNode resident)  {
 		return new SSBNNode(null,resident,null, false);
 	}
 	
@@ -540,14 +540,14 @@ public class SSBNNode {
 		if (isCheckingParentResident) {
 			NodeList expectedParents = this.getResident().getParents();
 			boolean isConsistent = false;
-			GenerativeInputNode input = null;
+			InputNode input = null;
 			for (int i = 0; i < expectedParents.size(); i++) {
 				if (parent.getResident() == expectedParents.get(i)) {
 					isConsistent = true;
 					break;
 				}
-				if (expectedParents.get(i) instanceof GenerativeInputNode) {
-					input = (GenerativeInputNode)expectedParents.get(i);
+				if (expectedParents.get(i) instanceof InputNode) {
+					input = (InputNode)expectedParents.get(i);
 					if (input.getResidentNodePointer().getResidentNode() == parent.getResident()) {
 						isConsistent = true;
 						break;
@@ -972,14 +972,14 @@ public class SSBNNode {
 	/**
 	 * @return the DomainResidentNode this node represents
 	 */
-	public DomainResidentNode getResident() {
+	public ResidentNode getResident() {
 		return resident;
 	}
 
 	/**
 	 * @param resident the resident to set
 	 */
-	protected void setResident(DomainResidentNode resident) {
+	protected void setResident(ResidentNode resident) {
 		this.resident = resident;
 		this.setProbNode(new ProbabilisticNode());
 	}

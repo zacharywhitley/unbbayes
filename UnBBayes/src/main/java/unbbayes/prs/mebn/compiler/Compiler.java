@@ -30,9 +30,9 @@ import java.util.ResourceBundle;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
-import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.GenerativeInputNode;
+import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.compiler.exception.InconsistentTableSemanticsException;
 import unbbayes.prs.mebn.compiler.exception.InvalidConditionantException;
 import unbbayes.prs.mebn.compiler.exception.InvalidProbabilityRangeException;
@@ -173,7 +173,7 @@ public class Compiler implements ICompiler {
 	
 	// Informations used by this class to check pre-SSBN consistency
 	private MultiEntityBayesianNetwork mebn = null;
-	private DomainResidentNode node = null;
+	private ResidentNode node = null;
 	
 
 	// Variables used for ProbabilisticTable generation
@@ -207,7 +207,7 @@ public class Compiler implements ICompiler {
 		tempTable = new ArrayList<TempTableHeaderCell>();
 	}
 	
-	public Compiler (DomainResidentNode node) {
+	public Compiler (ResidentNode node) {
 		super();
 		this.setNode(node);
 		this.cpt = null;
@@ -220,7 +220,7 @@ public class Compiler implements ICompiler {
 	 * @param node: the node having the CPT's pseudocode being evaluated by this class.
 	 * @param ssbnnode: the node where we should set the output CPT to.
 	 */
-	public Compiler (DomainResidentNode node, SSBNNode ssbnnode) {
+	public Compiler (ResidentNode node, SSBNNode ssbnnode) {
 		super();
 		this.setNode(node);
 		this.ssbnnode = ssbnnode;
@@ -788,7 +788,7 @@ public class Compiler implements ICompiler {
 		// if code reached here, the condicionant check is ok
 
 		//	prepare to add current temp table's header's parent (condicionant list)
-		DomainResidentNode resident = this.mebn.getDomainResidentNode(conditionantName);
+		ResidentNode resident = this.mebn.getDomainResidentNode(conditionantName);
 		// If not found, its an error!		
 		if (resident == null) {
 			try{
@@ -1310,7 +1310,7 @@ public class Compiler implements ICompiler {
 	/**
 	 * @return Returns the node.
 	 */
-	public DomainResidentNode getNode() {
+	public ResidentNode getNode() {
 		if (this.ssbnnode != null) {
 			this.node = this.ssbnnode.getResident();
 		}
@@ -1323,7 +1323,7 @@ public class Compiler implements ICompiler {
 	 * are real)
 	 * @param node The node to set.
 	 */
-	public void setNode(DomainResidentNode node) {
+	public void setNode(ResidentNode node) {
 		this.node = node;
 		if (this.node != null) {
 			this.mebn = node.getMFrag().getMultiEntityBayesianNetwork();
@@ -1335,7 +1335,7 @@ public class Compiler implements ICompiler {
 	 * Conditionants must be parents referenced by this.node	
 	 * @return if node with name == nodeName is a valid conditionant.
 	 */
-	private boolean isValidConditionant(MultiEntityBayesianNetwork mebn, DomainResidentNode node, String conditionantName) {
+	private boolean isValidConditionant(MultiEntityBayesianNetwork mebn, ResidentNode node, String conditionantName) {
 		
 		Node conditionant = mebn.getNode(conditionantName);
 		
@@ -1349,8 +1349,8 @@ public class Compiler implements ICompiler {
 			} else {	// parent may be an input node
 				NodeList parents = node.getParents();
 				for (int i = 0; i < parents.size(); i++) {
-					if (parents.get(i) instanceof GenerativeInputNode) {
-						if ( ((GenerativeInputNode)(parents.get(i))).getInputInstanceOf().equals(conditionant) ) {
+					if (parents.get(i) instanceof InputNode) {
+						if ( ((InputNode)(parents.get(i))).getInputInstanceOf().equals(conditionant) ) {
 							return true;
 						}
 					}
@@ -1380,9 +1380,9 @@ public class Compiler implements ICompiler {
 			return false;
 		}
 		//Debug.println("Conditionant node found: " + conditionant.getName());
-		if ( conditionant instanceof DomainResidentNode) {
+		if ( conditionant instanceof ResidentNode) {
 			Debug.println("IS MULTIENTITYNODE");
-			return ((DomainResidentNode)conditionant).getPossibleValueByName(conditionantValue) != null;
+			return ((ResidentNode)conditionant).getPossibleValueByName(conditionantValue) != null;
 		} else {
 			Debug.println("Conditionant is not a resident node");
 		}
@@ -2098,7 +2098,7 @@ public class Compiler implements ICompiler {
 	}
 	
 	private class TempTableHeaderParent implements ICompilerBooleanValue {
-		private DomainResidentNode parent = null;
+		private ResidentNode parent = null;
 		private Entity value = null;
 		
 		private List<EntityAndArguments> evaluationList = null;
@@ -2115,7 +2115,7 @@ public class Compiler implements ICompiler {
 		 * @param parent
 		 * @param value
 		 */
-		TempTableHeaderParent (DomainResidentNode parent , Entity value) {
+		TempTableHeaderParent (ResidentNode parent , Entity value) {
 			this.parent = parent;
 			this.value = value;
 			this.evaluationList = null;
@@ -2123,15 +2123,15 @@ public class Compiler implements ICompiler {
 			this.currentEvaluationIndex = -1;
 		}
 		
-		TempTableHeaderParent (DomainResidentNode parent , Entity value, List<EntityAndArguments>evaluationList) {
+		TempTableHeaderParent (ResidentNode parent , Entity value, List<EntityAndArguments>evaluationList) {
 			this.parent = parent;
 			this.value = value;
 			this.setEvaluationList(evaluationList);
 		}
-		public DomainResidentNode getParent() {
+		public ResidentNode getParent() {
 			return parent;
 		}
-		public void setParent(DomainResidentNode parent) {
+		public void setParent(ResidentNode parent) {
 			this.parent = parent;
 		}
 		public Entity getValue() {

@@ -25,10 +25,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.RandomVariableFinding;
@@ -42,9 +40,9 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVIff;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVImplies;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVNot;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
-import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.context.EnumSubType;
 import unbbayes.prs.mebn.context.EnumType;
+import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
@@ -226,7 +224,7 @@ public class PowerLoomKB implements KnowledgeBase {
 	 * 
 	 * @see KnowledgeBase
 	 */
-	public void createRandomVariableDefinition(DomainResidentNode resident){
+	public void createRandomVariableDefinition(ResidentNode resident){
 		
 		List<StateLink> links = resident.getPossibleValueLinkList(); 
 		
@@ -338,7 +336,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 		String finding = "";
 		
-		if(randonVariableFinding.getNode().getTypeOfStates() == DomainResidentNode.BOOLEAN_RV_STATES){
+		if(randonVariableFinding.getNode().getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES){
 			finding+= "(";
 			   if(randonVariableFinding.getState().getName().equals("false")){
 				   finding+= "NOT";
@@ -507,11 +505,11 @@ public class PowerLoomKB implements KnowledgeBase {
 	/**
 	 * @see KnowledgeBase
 	 */
-    public StateLink searchFinding(DomainResidentNode randomVariable, Collection<OVInstance> listArguments) {
+    public StateLink searchFinding(ResidentNode randomVariable, Collection<OVInstance> listArguments) {
 		
 		String finding = "";
 		
-		if(randomVariable.getTypeOfStates() == DomainResidentNode.BOOLEAN_RV_STATES){
+		if(randomVariable.getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES){
 			finding+= randomVariable.getName() + " ";
 			for(OVInstance argument: listArguments){
 				finding+= " " + argument.getEntity().getInstanceName(); 
@@ -883,7 +881,7 @@ public class PowerLoomKB implements KnowledgeBase {
 	 * @param resident resident node which name is going to be searched inside kb
 	 * @see RandomVariableFinding
 	 */
-	public void fillFindings(DomainResidentNode resident) {
+	public void fillFindings(ResidentNode resident) {
 		/*
 		 * Retrieve from kb using the format below:
 		 *   boolean true:

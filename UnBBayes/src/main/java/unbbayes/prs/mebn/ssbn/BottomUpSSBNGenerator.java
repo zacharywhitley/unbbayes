@@ -39,9 +39,8 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.GenerativeInputNode;
+import unbbayes.prs.mebn.InputNode;
+import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntity;
@@ -250,7 +249,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
        //------------------------- STEP 3: Add and evaluate resident nodes fathers -------------
 		
 		logManager.appendln(currentNode + "C:- Analyse resident nodes fathers");
-		for (DomainResidentNode residentNode : currentNode.getResident().getResidentNodeFatherList()) {
+		for (ResidentNode residentNode : currentNode.getResident().getResidentNodeFatherList()) {
 
 			/*
 			 * Analyze if it has one ov instance for each ordinary variable. If this 
@@ -311,10 +310,10 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	    //------------------------- STEP 4: Add and evaluate input nodes fathers -------------
 
 		logManager.appendln(currentNode + "D:- Analyze input nodes fathers");
-		for (GenerativeInputNode inputNode : currentNode.getResident().getInputNodeFatherList()) {
+		for (InputNode inputNode : currentNode.getResident().getInputNodeFatherList()) {
 			
-			DomainResidentNode residentNode = 
-				(DomainResidentNode)inputNode.getResidentNodePointer().getResidentNode(); 
+			ResidentNode residentNode = 
+				(ResidentNode)inputNode.getResidentNodePointer().getResidentNode(); 
 
 			logManager.appendln(currentNode.getName() + "Evaluate input " + residentNode.getName()); 
 			
@@ -440,7 +439,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	/**
 	 *
 	 */
-	private List<OVInstance> fillArguments(Collection<OVInstance> ovInstanceList, DomainResidentNode node) {
+	private List<OVInstance> fillArguments(Collection<OVInstance> ovInstanceList, ResidentNode node) {
 	
 		List<OVInstance> ret = new ArrayList<OVInstance>(); 
 		
@@ -477,7 +476,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * @throws ImplementationRestrictionException
 	 */
 	private SSBNNodeJacket getPreviousNode(SSBNNode currentNode, SSBNNodeList seen, 
-			ProbabilisticNetwork net, DomainResidentNode residentNode, GenerativeInputNode inputNode) 
+			ProbabilisticNetwork net, ResidentNode residentNode, InputNode inputNode) 
 	        throws SSBNNodeGeneralException, ImplementationRestrictionException {
 		
 		logManager.appendln("Build Previous Node");
@@ -563,10 +562,10 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * Evaluate only the context nodes for what have ordinary variables instances
 	 * for all the ordinary variables present (ordinal context nodes). 
 	 */
-	private boolean evaluateRelatedContextNodes (DomainResidentNode residentNode, 
+	private boolean evaluateRelatedContextNodes (ResidentNode residentNode, 
 			List<OVInstance> ovInstances) throws OVInstanceFaultException{
 		
-		Debug.setDebug(false); 
+		Debug.setDebug(true); 
 		
 		// We assume if MFrag is already set to use Default, then some context
 		// has failed previously and there's no need to evaluate again.		
@@ -599,10 +598,10 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * for all the ordinary variables present (ordinal context nodes). 
 	 * @throws OVInstanceFaultException 
 	 */
-	private boolean evaluateRelatedContextNodes(GenerativeInputNode inputNode, 
+	private boolean evaluateRelatedContextNodes(InputNode inputNode, 
 			List<OVInstance> ovInstances) throws OVInstanceFaultException{
 		
-		Debug.setDebug(false); 
+		Debug.setDebug(true); 
 		
 		// We assume if MFrag is already set to use Default, then some context has failed previously and there's no need to evaluate again.		
 		if (inputNode.getMFrag().isUsingDefaultCPT()) {
@@ -645,8 +644,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * @throws ImplementationRestrictionException 
 	 * @throws SSBNNodeGeneralException 
 	 */
-	private List<SSBNNode> createSSBNNodesOfEntitiesSearchForResidentNode(DomainMFrag mFrag, SSBNNode originNode, 
-			DomainResidentNode fatherNode, List<OrdinaryVariable> ovList, List<OVInstance> ovInstances) 
+	private List<SSBNNode> createSSBNNodesOfEntitiesSearchForResidentNode(MFrag mFrag, SSBNNode originNode, 
+			ResidentNode fatherNode, List<OrdinaryVariable> ovList, List<OVInstance> ovInstances) 
 			throws ImplementationRestrictionException, SSBNNodeGeneralException {
 		
 		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB()); 
@@ -755,7 +754,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	}
 
 	private SSBNNode createSSBNNodeForEntitySearch(ProbabilisticNetwork probabilisticNetwork, 
-			DomainResidentNode residentNode, List<OVInstance> ovInstances, OrdinaryVariable ov, String entity) {
+			ResidentNode residentNode, List<OVInstance> ovInstances, OrdinaryVariable ov, String entity) {
 		
 		SSBNNode ssbnnode = null; 	
 		
@@ -792,10 +791,10 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * @throws ImplementationRestrictionException 
 	 */
 	private List<SSBNNodeJacket> createSSBNNodesOfEntitiesSearchForInputNode(SSBNNode originNode, 
-			GenerativeInputNode fatherNode, List<OrdinaryVariable> ovProblemList, List<OVInstance> ovInstances) 
+			InputNode fatherNode, List<OrdinaryVariable> ovProblemList, List<OVInstance> ovInstances) 
 			throws SSBNNodeGeneralException, ImplementationRestrictionException {
 		
-		DomainMFrag mFrag = fatherNode.getMFrag(); 
+		MFrag mFrag = fatherNode.getMFrag(); 
 		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB()); 
 		
 		//Complex case: evaluate search context nodes. 
@@ -897,11 +896,11 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * version for input nodes. 
 	 */
 	private SSBNNodeJacket createSSBNNodeForEntitySearch(SSBNNode originNode, 
-			GenerativeInputNode fatherNode, OrdinaryVariable ov, String entityName) 
+			InputNode fatherNode, OrdinaryVariable ov, String entityName) 
 	        throws SSBNNodeGeneralException {
 		
 		SSBNNode ssbnNode = SSBNNode.getInstance(originNode.getProbabilisticNetwork(),
-				(DomainResidentNode)fatherNode.getResidentNodePointer().getResidentNode(), new ProbabilisticNode(), false); 
+				(ResidentNode)fatherNode.getResidentNodePointer().getResidentNode(), new ProbabilisticNode(), false); 
 		SSBNNodeJacket ssbnNodeJacket = new SSBNNodeJacket(ssbnNode); 
 		
 		//Add OVInstance created for the entity search
@@ -988,7 +987,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * @param ovInstanceInputMFrag OVInstance of the input MFrag (MFrag where exists the input node)
 	 * @throws SSBNNodeGeneralException
 	 */
-	private void addArgumentToSSBNNodeOfInputNode(GenerativeInputNode inputNode, 
+	private void addArgumentToSSBNNodeOfInputNode(InputNode inputNode, 
 			SSBNNodeJacket ssbnnodeJacket, OVInstance ovInstanceInputMFrag) throws SSBNNodeGeneralException {
 		
 		ResidentNode residentNode = inputNode.getResidentNodePointer().getResidentNode(); 
@@ -1040,7 +1039,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	 * @param ovInstanceList
 	 * @return
 	 */
-	private SSBNNode getSSBNNode(DomainResidentNode residentNode, Collection<OVInstance> ovInstanceList){
+	private SSBNNode getSSBNNode(ResidentNode residentNode, Collection<OVInstance> ovInstanceList){
 		
 		for(SSBNNode ssbnNode : ssbnNodeList){
 			if(ssbnNode.getResident() == residentNode){
@@ -1090,7 +1089,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			
 			ssbnNode.getCompiler().generateCPT(ssbnNode);
 			
-			Debug.setDebug(false);
+			Debug.setDebug(true);
 			logManager.appendln("CPT OK\n");
 		
 	}

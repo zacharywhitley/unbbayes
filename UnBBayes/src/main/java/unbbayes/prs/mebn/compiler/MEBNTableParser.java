@@ -22,8 +22,8 @@ package unbbayes.prs.mebn.compiler;
 
 
 import unbbayes.prs.bn.ProbabilisticTable;
-import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.util.Debug;
@@ -40,11 +40,11 @@ public class MEBNTableParser implements ICompiler {
 	
 	private ICompiler compiler = null;
 	private MultiEntityBayesianNetwork mebn = null;
-	private DomainResidentNode node = null;
+	private ResidentNode node = null;
 	
 	private String text = null;
 	
-	private MEBNTableParser(MultiEntityBayesianNetwork mebn, DomainResidentNode node) {
+	private MEBNTableParser(MultiEntityBayesianNetwork mebn, ResidentNode node) {
 		super();
 		//this.setCompiler(new Compiler());
 		this.setCompiler(new Compiler(node));
@@ -67,7 +67,7 @@ public class MEBNTableParser implements ICompiler {
 	 * @param node: the node where the table resides
 	 * @return instance of MEBNTableParser
 	 */
-	public static MEBNTableParser getInstance(MultiEntityBayesianNetwork mebn, DomainResidentNode node) {
+	public static MEBNTableParser getInstance(MultiEntityBayesianNetwork mebn, ResidentNode node) {
 		MEBNTableParser parser = new MEBNTableParser( mebn,  node);
 		return parser;
 	}
@@ -79,7 +79,7 @@ public class MEBNTableParser implements ICompiler {
 	 * @param compiler: sets the implementation of AbstractCompiler the instance of MEBNTableParser shall behave like.
 	 * @return instance of MEBNTableParser
 	 */
-	public static MEBNTableParser getInstance(MultiEntityBayesianNetwork mebn, DomainResidentNode node, ICompiler compiler) {
+	public static MEBNTableParser getInstance(MultiEntityBayesianNetwork mebn, ResidentNode node, ICompiler compiler) {
 		MEBNTableParser parser = new MEBNTableParser( mebn,  node);
 		parser.setCompiler(compiler);
 		if (parser.getCompiler() instanceof Compiler) {
@@ -160,14 +160,14 @@ public class MEBNTableParser implements ICompiler {
 	/**
 	 * @return Returns the node where table resides.
 	 */
-	public DomainResidentNode getNode() {
+	public ResidentNode getNode() {
 		return node;
 	}
 
 	/**
 	 * @param node The node to set.
 	 */
-	public void setNode(DomainResidentNode node) {
+	public void setNode(ResidentNode node) {
 		this.node = node;
 		this.mebn = node.getMFrag().getMultiEntityBayesianNetwork();
 	}

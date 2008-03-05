@@ -25,9 +25,9 @@ import java.util.Collection;
 import java.util.List;
 
 import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.RandomVariableFinding;
+import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
@@ -64,7 +64,7 @@ public interface KnowledgeBase {
 	 * @param resident
 	 *            the resident node to insert as a definition.
 	 */
-	public void createRandomVariableDefinition(DomainResidentNode resident);
+	public void createRandomVariableDefinition(ResidentNode resident);
 
 	/**
 	 * The method is responsible for inserting the entity as a finding into KB.
@@ -176,7 +176,7 @@ public interface KnowledgeBase {
 	 * @param listArguments
 	 * @return
 	 */
-    public StateLink searchFinding(DomainResidentNode randonVariable, Collection<OVInstance> listArguments); 
+    public StateLink searchFinding(ResidentNode randonVariable, Collection<OVInstance> listArguments); 
 
 	/**
 	 * Return all the entities of one type. 
