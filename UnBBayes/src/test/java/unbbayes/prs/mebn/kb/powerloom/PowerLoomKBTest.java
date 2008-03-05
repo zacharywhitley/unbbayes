@@ -22,11 +22,9 @@ package unbbayes.prs.mebn.kb.powerloom;
 
 import java.io.File;
 
-import unbbayes.io.mebn.UbfIO;
-import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import junit.framework.TestCase;
+import unbbayes.io.mebn.UbfIO;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 
 /**
  * @author user
