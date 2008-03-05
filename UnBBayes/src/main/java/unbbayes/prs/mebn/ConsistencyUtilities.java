@@ -22,7 +22,7 @@ package unbbayes.prs.mebn;
 
 public class ConsistencyUtilities {
 
-	public static boolean hasCycle(DomainResidentNode origin, DomainResidentNode destination){
+	public static boolean hasCycle(ResidentNode origin, ResidentNode destination){
 		
 		/* Caso trivial */
 		/*
@@ -53,7 +53,7 @@ public class ConsistencyUtilities {
 	 * @param destination
 	 * @return
 	 */
-	public static  boolean hasCycle(GenerativeInputNode origin, DomainResidentNode destination){
+	public static  boolean hasCycle(InputNode origin, ResidentNode destination){
 		/*
 		if(origin.getInputInstanceOf() != null){
 			if(origin.getInputInstanceOf() instanceof ResidentNode){

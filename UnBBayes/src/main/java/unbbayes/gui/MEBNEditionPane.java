@@ -70,8 +70,7 @@ import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.gui.mebn.finding.EntityFindingEditionPane;
 import unbbayes.gui.mebn.finding.RandonVariableFindingEdtitionPane;
 import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.GenerativeInputNode;
+import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.exception.DuplicatedNameException;
@@ -399,7 +398,7 @@ public class MEBNEditionPane extends JPanel {
   	/**
   	 * Show the table edit in the top component. 
   	 */
-    public void showTableEditionPane(DomainResidentNode resident){
+    public void showTableEditionPane(ResidentNode resident){
 
     	this.getGraphPanel().setTopComponent(new TableEditionPane(resident, mebnController));
     	
@@ -524,7 +523,7 @@ public class MEBNEditionPane extends JPanel {
         cardLayout.show(jpTabSelected, "EntityTree");
     }
 
-    public void setInputNodeActive(GenerativeInputNode input){
+    public void setInputNodeActive(InputNode input){
     	jpTabSelected.remove(inputNodePane);
 		inputNodePane = new InputNodePane(mebnController, input);
     	jpTabSelected.add("InputNodeTab", inputNodePane);
@@ -575,7 +574,7 @@ public class MEBNEditionPane extends JPanel {
 
     }
 
-    public void setResidentNodeTabActive(DomainResidentNode resident){
+    public void setResidentNodeTabActive(ResidentNode resident){
 
     	if(mebnController.getCurrentMFrag() != null){
     		jpTabSelected.remove(residentNodePane);
@@ -1244,7 +1243,7 @@ public class MEBNEditionPane extends JPanel {
 
       		txtNameResident.addKeyListener(new KeyAdapter() {
       			public void keyPressed(KeyEvent e) {
-      				DomainResidentNode nodeAux = (DomainResidentNode)mebnController.getResidentNodeActive();
+      				ResidentNode nodeAux = mebnController.getResidentNodeActive();
 
       				if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtNameResident.getText().length()>0)) {
       					try {

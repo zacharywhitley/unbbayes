@@ -39,9 +39,7 @@ import javax.swing.tree.TreePath;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.GenerativeInputNode;
+import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ResidentNode;
@@ -116,7 +114,7 @@ public class InputInstanceOfTree extends JTree{
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 						//TODO preencher o generativeInput... 
-						GenerativeInputNode inputNode = (GenerativeInputNode)controller.getInputNodeActive(); 
+						InputNode inputNode = (InputNode)controller.getInputNodeActive(); 
 						try{
 						   controller.setInputInstanceOf(inputNode, residentNode); 
 						}
@@ -160,9 +158,9 @@ public class InputInstanceOfTree extends JTree{
 	private void createTree() {
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode)getModel().getRoot();
 		
-		List<DomainMFrag> domainMFragList = net.getDomainMFragList(); 
+		List<MFrag> domainMFragList = net.getDomainMFragList(); 
 		
-		for (DomainMFrag domainMFrag : domainMFragList){
+		for (MFrag domainMFrag : domainMFragList){
 			
 			DefaultMutableTreeNode mFragTreeNode = new DefaultMutableTreeNode(domainMFrag.getName()); 
 			mFragMap.put(mFragTreeNode, domainMFrag); 
@@ -170,9 +168,9 @@ public class InputInstanceOfTree extends JTree{
 			
 			root.add(mFragTreeNode); 
 			
-			List<DomainResidentNode> residentNodeList = domainMFrag.getDomainResidentNodeList(); 
+			List<ResidentNode> residentNodeList = domainMFrag.getResidentNodeList(); 
 			
-			for (DomainResidentNode domainResidentNode : residentNodeList) {
+			for (ResidentNode domainResidentNode : residentNodeList) {
 				DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(domainResidentNode.getName());
 				mFragTreeNode.add(treeNode);
 				residentNodeMap.put(treeNode, domainResidentNode);
@@ -314,9 +312,9 @@ public class InputInstanceOfTree extends JTree{
 			residentNodeMap.clear();
 			nodeMap.clear(); 
 			
-			List<DomainMFrag> domainMFragList = net.getDomainMFragList(); 
+			List<MFrag> domainMFragList = net.getDomainMFragList(); 
 			
-			for (DomainMFrag domainMFrag : domainMFragList){
+			for (MFrag domainMFrag : domainMFragList){
 				
 				DefaultMutableTreeNode mFragTreeNode = new DefaultMutableTreeNode(domainMFrag.getName()); 
 				mFragMap.put(mFragTreeNode, domainMFrag); 
@@ -324,9 +322,9 @@ public class InputInstanceOfTree extends JTree{
 				
 				root.add(mFragTreeNode); 
 				
-				List<DomainResidentNode> residentNodeList = domainMFrag.getDomainResidentNodeList(); 
+				List<ResidentNode> residentNodeList = domainMFrag.getResidentNodeList(); 
 				
-				for (DomainResidentNode domainResidentNode : residentNodeList) {
+				for (ResidentNode domainResidentNode : residentNodeList) {
 					DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(domainResidentNode.getName());
 					mFragTreeNode.add(treeNode);
 					residentNodeMap.put(treeNode, domainResidentNode);

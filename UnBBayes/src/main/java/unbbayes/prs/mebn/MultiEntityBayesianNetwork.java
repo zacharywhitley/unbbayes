@@ -42,7 +42,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	 * or is in the domainMFragList or in the findingMFragList */ 
 	private List<MFrag> mFragList; 
 	
-	private List<DomainMFrag> domainMFragList;
+	private List<MFrag> domainMFragList;
 	
 	//TODO analisar uma outra forma de armazenar os builtIn j� que eles s�o inerentes 
 	//ao programa e n�o a cada MTheory. 
@@ -78,7 +78,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	public MultiEntityBayesianNetwork(String name) {
 		super(name);
 		mFragList = new ArrayList<MFrag>();
-		domainMFragList = new ArrayList<DomainMFrag>(); 
+		domainMFragList = new ArrayList<MFrag>(); 
 		builtInRVList = new ArrayList<BuiltInRV>(); 
 		
 		typeContainer = new TypeContainer(); 
@@ -94,7 +94,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	 * Method responsible for adding a new Domain MFrag .
 	 * @param domainMFrag The new DomainMFrag to be added.
 	 */
-	public void addDomainMFrag(DomainMFrag domainMFrag) {
+	public void addDomainMFrag(MFrag domainMFrag) {
 		mFragList.add(domainMFrag);
 		domainMFragList.add(domainMFrag); 
 		currentMFrag = domainMFrag; 
@@ -107,7 +107,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	 * Set the current MFrag to null. 
 	 * @param mFrag The DomainMFrag to be removed.
 	 */
-	public void removeDomainMFrag(DomainMFrag domainMFrag) {
+	public void removeDomainMFrag(MFrag domainMFrag) {
 		domainMFrag.delete();
 		mFragList.remove(domainMFrag);
 		domainMFragList.remove(domainMFrag); 
@@ -117,9 +117,9 @@ public class MultiEntityBayesianNetwork extends Network {
 	/**
 	 * Return a MFrag with the name if it exists or null otherside. 
 	 */
-	public DomainMFrag getMFragByName(String name){
+	public MFrag getMFragByName(String name){
 		
-		for(DomainMFrag test: domainMFragList){
+		for(MFrag test: domainMFragList){
 			if (test.getName().equals(name)){
 				return test; 
 			}
@@ -140,7 +140,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	 * Get the Domain MFrag list of this MEBN.
 	 * @return The MFrag list of this MEBN.
 	 */
-	public List<DomainMFrag> getDomainMFragList() {
+	public List<MFrag> getDomainMFragList() {
 		return domainMFragList;
 	}
 	
@@ -298,8 +298,8 @@ public class MultiEntityBayesianNetwork extends Network {
 	 * @param nodeName: a name for a resident node to look for
 	 * @return if found, a DomainMFrag. If not found, null.
 	 */
-	public DomainMFrag getDomainMFragByNodeName(String nodeName) {
-		for (DomainMFrag mfrag : this.domainMFragList) {
+	public MFrag getDomainMFragByNodeName(String nodeName) {
+		for (MFrag mfrag : this.domainMFragList) {
 			if (mfrag.getDomainResidentNodeByName(nodeName) != null) {
 				return mfrag;
 			}
@@ -327,7 +327,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	 * @return the context node if it exists and null otherside. 
 	 */
 	public ContextNode getContextNode(String name){
-		for(DomainMFrag mfrag: domainMFragList){
+		for(MFrag mfrag: domainMFragList){
 			for(ContextNode node: mfrag.getContextNodeList()){
 				if(node.getName().equals(name)){
 					return node; 
@@ -342,10 +342,10 @@ public class MultiEntityBayesianNetwork extends Network {
 	 * @param name Name of DomainResidentNode 
 	 * @return the DomainResidentNode  if it exists and null otherside. 
 	 */
-	public DomainResidentNode getDomainResidentNode(String name){
-		for(DomainMFrag mfrag: domainMFragList){
-			for(DomainResidentNode node: mfrag.getDomainResidentNodeList()){
-				if(node.getName().equalsIgnoreCase(name)){
+	public ResidentNode getDomainResidentNode(String name){
+		for(MFrag mfrag: domainMFragList){
+			for(ResidentNode node: mfrag.getResidentNodeList()){
+				if(node.getName().equals(name)){
 					return node; 
 				}
 			}
@@ -358,9 +358,9 @@ public class MultiEntityBayesianNetwork extends Network {
 	 * @param name Name of GenerativeInputNode
 	 * @return the GenerativeInputNode if it exists and null otherwise. 
 	 */
-	public GenerativeInputNode getInputNode(String name){
-		for(DomainMFrag mfrag: domainMFragList){
-			for(GenerativeInputNode node: mfrag.getGenerativeInputNodeList()){
+	public InputNode getInputNode(String name){
+		for(MFrag mfrag: domainMFragList){
+			for(InputNode node: mfrag.getInputNodeList()){
 				if(node.getName().equals(name)){
 					return node; 
 				}
@@ -407,7 +407,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	 * usefull to clear it all (set isUsingDefaultCPT flag to false)
 	 */
 	public void clearMFragsIsUsingDefaultCPTFlag() {
-		for (DomainMFrag mfrag : this.getDomainMFragList()) {
+		for (MFrag mfrag : this.getDomainMFragList()) {
 			mfrag.setAsUsingDefaultCPT(false);
 		}
 	}

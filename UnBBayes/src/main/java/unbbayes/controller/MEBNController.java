@@ -42,9 +42,6 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -258,7 +255,7 @@ public class MEBNController  {
 
     	MFrag mFragCurrent = multiEntityBayesianNetwork.getCurrentMFrag();
 
-    	((DomainMFrag)mFragCurrent).addEdge(edge);
+    	mFragCurrent.addEdge(edge);
 
     }
 
@@ -284,7 +281,7 @@ public class MEBNController  {
 			}
 		}
 
-		DomainMFrag domainMFrag = new DomainMFrag(name, multiEntityBayesianNetwork);
+		MFrag domainMFrag = new MFrag(name, multiEntityBayesianNetwork);
 
 		multiEntityBayesianNetwork.addDomainMFrag(domainMFrag);
 
@@ -300,7 +297,7 @@ public class MEBNController  {
 		mebnEditionPane.setDescriptionText(domainMFrag.getDescription()); 
 	}
 
-	public void removeDomainMFrag(DomainMFrag domainMFrag) {
+	public void removeDomainMFrag(MFrag domainMFrag) {
 		multiEntityBayesianNetwork.removeDomainMFrag(domainMFrag);
 		if(mFragActive != domainMFrag){
 			multiEntityBayesianNetwork.setCurrentMFrag(mFragActive);
@@ -389,14 +386,14 @@ public class MEBNController  {
 	/* Resident Node                                                           */
 	/*-------------------------------------------------------------------------*/
 
-	public DomainResidentNode insertDomainResidentNode(double x, double y) throws MFragDoesNotExistException {
+	public ResidentNode insertDomainResidentNode(double x, double y) throws MFragDoesNotExistException {
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
 
 		if (currentMFrag == null) {
 			throw new MFragDoesNotExistException();
 		}
 
-		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
+		MFrag domainMFrag = (MFrag) currentMFrag;
 
 		//The name of the Domain Resident Node is unique into MFrag
 
@@ -412,11 +409,11 @@ public class MEBNController  {
 				multiEntityBayesianNetwork.plusDomainResidentNodeNum();
 			}
 		}
-		DomainResidentNode node = new DomainResidentNode(name, domainMFrag);
+		ResidentNode node = new ResidentNode(name, domainMFrag);
 
 		node.setPosition(x, y);
 		node.setDescription(node.getName());
-		domainMFrag.addDomainResidentNode(node);
+		domainMFrag.addResidentNode(node);
 
 		residentNodeActive = node;
 		nodeActive = node;
@@ -433,9 +430,9 @@ public class MEBNController  {
 	    return node;
 	}
 
-	public void renameDomainResidentNode(DomainResidentNode resident, String newName)
+	public void renameDomainResidentNode(ResidentNode resident, String newName)
 	                                   throws DuplicatedNameException{
-		if(((DomainMFrag)mFragActive).getDomainResidentNodeByName(newName) == null){;
+		if(((MFrag)mFragActive).getDomainResidentNodeByName(newName) == null){;
 		   resident.setName(newName);
 		   mebnEditionPane.repaint();
 		}
@@ -455,7 +452,7 @@ public class MEBNController  {
 	 * @param resident
 	 * @param value
 	 */
-	public StateLink addPossibleValue(DomainResidentNode resident, String nameValue){
+	public StateLink addPossibleValue(ResidentNode resident, String nameValue){
 
 		CategoricalStateEntity value = multiEntityBayesianNetwork.getCategoricalStatesEntityContainer().createCategoricalEntity(nameValue);
 		StateLink link = resident.addPossibleValueLink(value);
@@ -469,7 +466,7 @@ public class MEBNController  {
 	 * Adds a possible value (state) into a resident node. If the state already
 	 * is a possible value of the resident node, nothing is made. 
 	 */
-	public StateLink addPossibleValue(DomainResidentNode resident, CategoricalStateEntity state){
+	public StateLink addPossibleValue(ResidentNode resident, CategoricalStateEntity state){
 		
 		StateLink link = null; 
 		
@@ -482,7 +479,7 @@ public class MEBNController  {
 		
 	}
 	
-	public StateLink addObjectEntityAsPossibleValue(DomainResidentNode resident, ObjectEntity state){
+	public StateLink addObjectEntityAsPossibleValue(ResidentNode resident, ObjectEntity state){
 		
 		StateLink stateLink = null; 
 		
@@ -516,7 +513,7 @@ public class MEBNController  {
 		state.setGloballyExclusive(value); 
 	}
 
-	public void addBooleanAsPossibleValue(DomainResidentNode resident){
+	public void addBooleanAsPossibleValue(ResidentNode resident){
 
 		resident.addPossibleValueLink(multiEntityBayesianNetwork.getBooleanStatesEntityContainer().getTrueStateEntity());
 		resident.addPossibleValueLink(multiEntityBayesianNetwork.getBooleanStatesEntityContainer().getFalseStateEntity());
@@ -529,22 +526,22 @@ public class MEBNController  {
 	 * @param resident
 	 * @param value
 	 */
-	public void removePossibleValue(DomainResidentNode resident, String nameValue){
+	public void removePossibleValue(ResidentNode resident, String nameValue){
 		resident.removePossibleValueByName(nameValue);
 	}
 
-	public void removeAllPossibleValues(DomainResidentNode resident){
+	public void removeAllPossibleValues(ResidentNode resident){
 		resident.removeAllPossibleValues();
 	}
 
-	public boolean existsPossibleValue(DomainResidentNode resident, String nameValue){
+	public boolean existsPossibleValue(ResidentNode resident, String nameValue){
 		return resident.existsPossibleValueByName(nameValue);
 	}
 
 
 	public void setEnableTableEditionView(){
 
-		mebnEditionPane.showTableEditionPane((DomainResidentNode)this.getResidentNodeActive());
+		mebnEditionPane.showTableEditionPane((ResidentNode)this.getResidentNodeActive());
 		
 
 	}
@@ -561,7 +558,7 @@ public class MEBNController  {
 	/* Input Node                                                              */
 	/*-------------------------------------------------------------------------*/
 
-	public GenerativeInputNode insertGenerativeInputNode(double x, double y) throws MFragDoesNotExistException {
+	public InputNode insertGenerativeInputNode(double x, double y) throws MFragDoesNotExistException {
 
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
 
@@ -569,11 +566,11 @@ public class MEBNController  {
 			throw new MFragDoesNotExistException();
 		}
 
-		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
-		GenerativeInputNode node = new GenerativeInputNode(resource.getString("inputNodeName") + domainMFrag.getGenerativeInputNodeNum(), domainMFrag);
+		MFrag domainMFrag = (MFrag) currentMFrag;
+		InputNode node = new InputNode(resource.getString("inputNodeName") + domainMFrag.getGenerativeInputNodeNum(), domainMFrag);
 		node.setPosition(x, y);
 		node.setDescription(node.getName());
-		domainMFrag.addGenerativeInputNode(node);
+		domainMFrag.addInputNode(node);
 
 		inputNodeActive = node;
 		nodeActive = node;
@@ -597,17 +594,17 @@ public class MEBNController  {
 	 * @param resident
 	 * @throws CycleFoundException
 	 */
-	public void setInputInstanceOf(GenerativeInputNode input, ResidentNode resident) throws CycleFoundException{
+	public void setInputInstanceOf(InputNode input, ResidentNode resident) throws CycleFoundException{
 
-		input.setInputInstanceOf((DomainResidentNode)resident);
+		input.setInputInstanceOf((ResidentNode)resident);
 		mebnEditionPane.getInputNodePane().updateArgumentPane();
 		mebnEditionPane.setTxtInputOf(resident.getName());
 	}
 
 	public void updateArgumentsOfObject(Object node){
 
-		if (node instanceof GenerativeInputNode){
-			((GenerativeInputNode)node).updateLabel();
+		if (node instanceof InputNode){
+			((InputNode)node).updateLabel();
 		}else{
 			if(node instanceof ContextNode){
 				((ContextNode)node).updateLabel();
@@ -620,7 +617,7 @@ public class MEBNController  {
 	 * Update the input intance of atribute (in the view) of the input node for the value current
 	 * @param input The input node active
 	 */
-	public void updateInputInstanceOf(GenerativeInputNode input){
+	public void updateInputInstanceOf(InputNode input){
 
 		Object target = input.getInputInstanceOf();
 
@@ -649,7 +646,7 @@ public class MEBNController  {
 			throw new MFragDoesNotExistException(resource.getString("withoutMFrag"));
 		}
 
-		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
+		MFrag domainMFrag = (MFrag) currentMFrag;
 		ContextNode node = new ContextNode(resource.getString("contextNodeName") + domainMFrag.getContextNodeNum(), domainMFrag);
 		node.setPosition(x, y);
 		node.setDescription(node.getName());
@@ -680,15 +677,15 @@ public class MEBNController  {
         }
         else{
 
-        	if (selected instanceof DomainResidentNode){
-                ((DomainResidentNode)selected).delete();
+        	if (selected instanceof ResidentNode){
+                ((ResidentNode)selected).delete();
                 mebnEditionPane.getMTheoryTree().updateTree();
                 mebnEditionPane.setMTheoryTreeActive();
         		this.setUnableTableEditionView();
         	}
         	else{
-            	if (selected instanceof GenerativeInputNode){
-                    ((GenerativeInputNode)selected).delete();
+            	if (selected instanceof InputNode){
+                    ((InputNode)selected).delete();
                      mebnEditionPane.getMTheoryTree().updateTree();
                      mebnEditionPane.setMTheoryTreeActive();
             	}else{
@@ -780,12 +777,12 @@ public class MEBNController  {
 	   nodeActive = residentNodeActive;
 	   mebnEditionPane.setResidentBarActive();
 	   mebnEditionPane.setEditArgumentsTabActive(residentNodeActive);
-	   mebnEditionPane.setResidentNodeTabActive((DomainResidentNode)residentNodeActive);
+	   mebnEditionPane.setResidentNodeTabActive((ResidentNode)residentNodeActive);
 	   mebnEditionPane.setTxtNameResident((residentNodeActive).getName());
 	   mebnEditionPane.setArgumentTabActive();
 	   
 	   if(mebnEditionPane.isTableEditionPaneShow()){
-		   mebnEditionPane.showTableEditionPane((DomainResidentNode)residentNodeActive);
+		   mebnEditionPane.showTableEditionPane((ResidentNode)residentNodeActive);
 	   }
 	}
 
@@ -793,8 +790,8 @@ public class MEBNController  {
 		nodeActive = inputNodeActive;
 		mebnEditionPane.setInputBarActive();
 		mebnEditionPane.setTxtNameInput((inputNodeActive).getName());
-		mebnEditionPane.setInputNodeActive((GenerativeInputNode)inputNodeActive);
-		updateInputInstanceOf((GenerativeInputNode)inputNodeActive);
+		mebnEditionPane.setInputNodeActive((InputNode)inputNodeActive);
+		updateInputInstanceOf((InputNode)inputNodeActive);
 		this.setUnableTableEditionView();
 	}
 
@@ -826,7 +823,7 @@ public class MEBNController  {
 			throw new MFragDoesNotExistException();
 		}
 
-		DomainMFrag domainMFrag = (DomainMFrag) currentMFrag;
+		MFrag domainMFrag = (MFrag) currentMFrag;
 		String name = resource.getString("ordinaryVariableName") + domainMFrag.getOrdinaryVariableNum();
 		Type type = TypeContainer.getDefaultType();
 		OrdinaryVariable ov = new OrdinaryVariable(name, type, domainMFrag);
@@ -855,7 +852,7 @@ public class MEBNController  {
 
 	public OrdinaryVariable addNewOrdinaryVariableInMFrag(){
 
-		DomainMFrag domainMFrag = (DomainMFrag) multiEntityBayesianNetwork.getCurrentMFrag();
+		MFrag domainMFrag = (MFrag) multiEntityBayesianNetwork.getCurrentMFrag();
 
 		String name = null;
 
@@ -1138,14 +1135,16 @@ public class MEBNController  {
 	/*Findings                                                                 */
 	/*-------------------------------------------------------------------------*/
 	
-	public void createRandonVariableFinding(DomainResidentNode residentNode, 
+	public void createRandonVariableFinding(ResidentNode residentNode, 
 			ObjectEntityInstance[] arguments, Entity state){
+		
 		RandomVariableFinding finding = new RandomVariableFinding(
-				(DomainResidentNode)residentNode, 
+				residentNode, 
 				arguments, 
 				state, 
 				this.multiEntityBayesianNetwork);
-		((DomainResidentNode)residentNode).addRandonVariableFinding(finding); 
+		
+		residentNode.addRandonVariableFinding(finding); 
 	}
 	
 	
@@ -1155,7 +1154,7 @@ public class MEBNController  {
 	/* Edition of CPT's                                                         */
 	/*-------------------------------------------------------------------------*/
 	
-	public void saveCPT(DomainResidentNode residentNode, String cpt){
+	public void saveCPT(ResidentNode residentNode, String cpt){
 		residentNode.setTableFunction(cpt);
 	}
 	
@@ -1177,9 +1176,9 @@ public class MEBNController  {
 			knowledgeBase.createEntityDefinition(entity);
 		}
 
-		for(DomainMFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
-			for(ResidentNode resident: mfrag.getDomainResidentNodeList()){
-				knowledgeBase.createRandomVariableDefinition((DomainResidentNode)resident);
+		for(MFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
+			for(ResidentNode resident: mfrag.getResidentNodeList()){
+				knowledgeBase.createRandomVariableDefinition(resident);
 			}
 		}
 		
@@ -1197,8 +1196,8 @@ public class MEBNController  {
 			 knowledgeBase.insertEntityInstance(instance); 
 		}
 		
-		for(DomainMFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
-			for(DomainResidentNode residentNode : mfrag.getDomainResidentNodeList()){
+		for(MFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
+			for(ResidentNode residentNode : mfrag.getResidentNodeList()){
 				for(RandomVariableFinding finding: residentNode.getRandonVariableFindingList()){
 					knowledgeBase.insertRandomVariableFinding(finding); 
 				}
@@ -1246,7 +1245,7 @@ public class MEBNController  {
 	 * @throws ImplementationRestrictionException 
 	 * @throws SSBNNodeGeneralException 
 	 */
-	public ProbabilisticNetwork executeQuery(DomainResidentNode residentNode, ObjectEntityInstance[] arguments)
+	public ProbabilisticNetwork executeQuery(ResidentNode residentNode, ObjectEntityInstance[] arguments)
 	                           throws InconsistentArgumentException, SSBNNodeGeneralException, 
 	                                  ImplementationRestrictionException, MEBNException {
 		

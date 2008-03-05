@@ -157,8 +157,8 @@ public class ResidentNodePointer {
 			}
 		}
 		
-		if(node instanceof GenerativeInputNode){
-			((GenerativeInputNode)node).updateLabel(); 
+		if(node instanceof InputNode){
+			((InputNode)node).updateLabel(); 
 		}else{
 			if(node instanceof ContextNode){
 				((ContextNode)node).updateLabel(); 

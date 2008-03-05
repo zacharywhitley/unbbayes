@@ -26,7 +26,6 @@ import java.util.List;
 import javax.swing.text.StyledDocument;
 
 import unbbayes.gui.mebn.auxiliary.ToolKitForTableEdition;
-import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
@@ -45,9 +44,9 @@ public class TableEditionUtils {
 	
 	private ToolKitForTableEdition toolKit; 
 	
-	private DomainResidentNode residentNode; 
+	private ResidentNode residentNode; 
 	
-	public TableEditionUtils(DomainResidentNode _residentNode, ToolKitForTableEdition _toolKit){
+	public TableEditionUtils(ResidentNode _residentNode, ToolKitForTableEdition _toolKit){
 		
 		residentNode = _residentNode; 
 		toolKit = _toolKit;  
@@ -271,7 +270,7 @@ public class TableEditionUtils {
 		
 		for(ResidentNode resident : residentNode.getResidentNodeFatherList()){
 			fatherList.add(resident.getName());
-			DomainResidentNode domainResidentNode = (DomainResidentNode)resident; 
+			ResidentNode domainResidentNode = resident; 
 			
 			for(StateLink state: domainResidentNode.getPossibleValueLinkList()){
 				statesFatherList.add(state.getState().getName()); 
@@ -284,7 +283,7 @@ public class TableEditionUtils {
 				
 				if(resident != null){
 					fatherList.add(resident.getName());
-					DomainResidentNode domainResidentNode = (DomainResidentNode)resident; 
+					ResidentNode domainResidentNode = resident; 
 					
 					for(StateLink state: domainResidentNode.getPossibleValueLinkList()){
 						statesFatherList.add(state.getState().getName()); 

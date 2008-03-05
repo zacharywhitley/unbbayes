@@ -45,9 +45,6 @@ import unbbayes.gui.GraphAction;
 import unbbayes.gui.GraphPane;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.GenerativeInputNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -143,7 +140,7 @@ public class MTheoryTree extends JTree {
 
 		itemDelete.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				controller.removeDomainMFrag((DomainMFrag) objectSelected); 
+				controller.removeDomainMFrag((MFrag) objectSelected); 
 				updateTree(); 
 			}
 		}); 		
@@ -399,9 +396,9 @@ public class MTheoryTree extends JTree {
 			mFragMap.put(treeNode, mFrag);
 			nodeMap.put(treeNode, mFrag); 
 			
-			if(mFrag instanceof DomainMFrag){
+			if(mFrag instanceof MFrag){
 				
-				List<DomainResidentNode> residentNodeList = ((DomainMFrag)mFrag).getDomainResidentNodeList(); 
+				List<ResidentNode> residentNodeList = ((MFrag)mFrag).getResidentNodeList(); 
 			    for(ResidentNode residentNode: residentNodeList){
 			    	DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(residentNode.getName());
 			    	treeNode.add(treeNodeChild); 
@@ -409,8 +406,8 @@ public class MTheoryTree extends JTree {
 					nodeMap.put(treeNodeChild, residentNode);     	
 			    }
 				
-			    List<GenerativeInputNode> inputNodeList = ((DomainMFrag)mFrag).getGenerativeInputNodeList(); 
-			    for(GenerativeInputNode inputNode: inputNodeList){
+			    List<InputNode> inputNodeList = ((MFrag)mFrag).getInputNodeList(); 
+			    for(InputNode inputNode: inputNodeList){
 			    	DefaultMutableTreeNode treeNodeChild; 
 			    	Object inputInstanceOf = inputNode.getInputInstanceOf(); 
 			    	
@@ -432,7 +429,7 @@ public class MTheoryTree extends JTree {
 					nodeMap.put(treeNodeChild, inputNode);     	
 			    }
 			    
-				List<ContextNode> contextNodeList = ((DomainMFrag)mFrag).getContextNodeList(); 
+				List<ContextNode> contextNodeList = mFrag.getContextNodeList(); 
 			    for(ContextNode contextNode: contextNodeList){
 			    	DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(contextNode);
 			    	treeNode.add(treeNodeChild); 

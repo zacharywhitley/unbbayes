@@ -119,8 +119,8 @@ public class OrdinaryVariable extends Node{
 		this.name = name; 
 	
 	    for(Node node: isOVariableOfList){
-	    	if(node instanceof DomainResidentNode){
-	    		((DomainResidentNode)node).updateLabel(); 
+	    	if(node instanceof ResidentNode){
+	    		((ResidentNode)node).updateLabel(); 
 	    	}
 	    }
 	}

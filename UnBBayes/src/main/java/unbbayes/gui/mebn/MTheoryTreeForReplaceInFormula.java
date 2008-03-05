@@ -39,8 +39,6 @@ import unbbayes.controller.FormulaTreeController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.prs.Node;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ResidentNode;
@@ -122,7 +120,7 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 							
 						} else if (e.getClickCount() == 2
 								&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-							formulaTreeController.addNode((DomainResidentNode)nodeLeaf); 
+							formulaTreeController.addNode((ResidentNode)nodeLeaf); 
 							controller.updateFormulaActiveContextNode(); 
 						} else if (e.getClickCount() == 1) {
 							
@@ -181,10 +179,10 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 			mFragMap.put(treeNode, mFrag);
 			nodeMap.put(treeNode, mFrag); 
 			
-			if(mFrag instanceof DomainMFrag){
+			if(mFrag instanceof MFrag){
 				
-				List<DomainResidentNode> residentNodeList = ((DomainMFrag)mFrag).getDomainResidentNodeList(); 
-				for(DomainResidentNode residentNode: residentNodeList){
+				List<ResidentNode> residentNodeList = mFrag.getResidentNodeList(); 
+				for(ResidentNode residentNode: residentNodeList){
 					DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(residentNode.getName());
 					treeNode.add(treeNodeChild); 
 					residentNodeMap.put(treeNodeChild, residentNode); 
@@ -277,9 +275,9 @@ public class MTheoryTreeForReplaceInFormula extends JTree {
 			mFragMap.put(treeNode, mFrag);
 			nodeMap.put(treeNode, mFrag); 
 			
-			if(mFrag instanceof DomainMFrag){
+			if(mFrag instanceof MFrag){
 				
-				List<DomainResidentNode> residentNodeList = ((DomainMFrag)mFrag).getDomainResidentNodeList(); 
+				List<ResidentNode> residentNodeList = mFrag.getResidentNodeList(); 
 				for(ResidentNode residentNode: residentNodeList){
 					DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(residentNode.getName());
 					treeNode.add(treeNodeChild); 

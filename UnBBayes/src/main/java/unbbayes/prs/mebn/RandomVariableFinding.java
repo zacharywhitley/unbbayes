@@ -32,7 +32,7 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstance;
  */
 public class RandomVariableFinding {
 
-	private DomainResidentNode node;
+	private ResidentNode node;
 
 	private ObjectEntityInstance[] arguments;
 
@@ -49,7 +49,7 @@ public class RandomVariableFinding {
 	 * @param arguments
 	 * @param state
 	 */
-	public RandomVariableFinding(DomainResidentNode node, ObjectEntityInstance[] arguments, Entity state, MultiEntityBayesianNetwork mebn){
+	public RandomVariableFinding(ResidentNode node, ObjectEntityInstance[] arguments, Entity state, MultiEntityBayesianNetwork mebn){
 
 		this.node = node;
 		this.arguments = arguments;
@@ -64,7 +64,7 @@ public class RandomVariableFinding {
 		return arguments;
 	}
 
-	public DomainResidentNode getNode() {
+	public ResidentNode getNode() {
 		return node;
 	}
 

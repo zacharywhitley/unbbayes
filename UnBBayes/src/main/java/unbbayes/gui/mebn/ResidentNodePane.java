@@ -28,7 +28,7 @@ import javax.swing.JSplitPane;
 
 import unbbayes.controller.MEBNController;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
-import unbbayes.prs.mebn.DomainResidentNode;
+import unbbayes.prs.mebn.ResidentNode;
 
 /**
  * Pane for edition and view of the properties of a Resident Node
@@ -46,7 +46,7 @@ public class ResidentNodePane extends JPanel{
 		
 	}
 	
-	public ResidentNodePane(MEBNController _controller, DomainResidentNode _residentNode){
+	public ResidentNodePane(MEBNController _controller, ResidentNode _residentNode){
 		super(); 
 		
 		this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel("Resident Node")); 

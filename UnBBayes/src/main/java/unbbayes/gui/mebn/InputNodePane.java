@@ -32,7 +32,7 @@ import javax.swing.JToolBar;
 
 import unbbayes.controller.MEBNController;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
-import unbbayes.prs.mebn.GenerativeInputNode;
+import unbbayes.prs.mebn.InputNode;
 
 /**
  * Pane for edition of a input node. 
@@ -46,7 +46,7 @@ import unbbayes.prs.mebn.GenerativeInputNode;
  */
 public class InputNodePane extends JPanel{
 	
-	private GenerativeInputNode inputNode; 
+	private InputNode inputNode; 
 	private InputInstanceOfTree inputInstanceOfTree; 
 	private JScrollPane inputInstanceOfTreeScroll; 
 	private JPanel argumentsPane; 
@@ -56,7 +56,7 @@ public class InputNodePane extends JPanel{
 		
 	}
 	
-	public InputNodePane(MEBNController _controller, GenerativeInputNode _inputNode){
+	public InputNodePane(MEBNController _controller, InputNode _inputNode){
 		
 		JToolBar jtbInputInstanceOf; 
 		JLabel jlInputInstanceOf; 

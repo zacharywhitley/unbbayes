@@ -36,7 +36,6 @@ import java.util.ResourceBundle;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainMFrag;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -114,7 +113,7 @@ public class UbfIO implements MebnIO {
 	private UbfIO() {
 		super();
 		this.prowlIO = new PrOwlIO();
-		Debug.setDebug(false);
+		Debug.setDebug(true);
 	}		
 	/**
 	 * Construction method for UbfIO
@@ -139,7 +138,7 @@ public class UbfIO implements MebnIO {
 	}
 	
 	
-	private Node searchNode(String name , DomainMFrag mfrag) {
+	private Node searchNode(String name , MFrag mfrag) {
 		for (Iterator iter = mfrag.getResidentNodeList().iterator(); iter.hasNext();) {
 			Node element = (Node) iter.next();
 			if (name.compareTo(element.getName()) == 0) {
@@ -367,7 +366,7 @@ public class UbfIO implements MebnIO {
 				//System.out.println("Node declaration found ");
 				
 				try  {
-					this.updateNode(st,(DomainMFrag)mfrag);
+					this.updateNode(st,(MFrag)mfrag);
 				} catch (ClassCastException e) {
 					throw new ClassCastException(resource.getString("MFragTypeException"));
 				}
@@ -460,7 +459,7 @@ public class UbfIO implements MebnIO {
 		} // while not EOF
 	}
 	
-	private void updateNode(StreamTokenizer st, DomainMFrag mfrag) throws IOException {
+	private void updateNode(StreamTokenizer st, MFrag mfrag) throws IOException {
 		
 		Node node = null;
 		//System.out.println("Updating Nodes");
@@ -743,7 +742,7 @@ public class UbfIO implements MebnIO {
 		out.println();
 		out.println(this.getToken("CommentInitiator") + resource.getString("UBFMFragsNodes"));
 		for (Iterator iter = mebn.getDomainMFragList().iterator(); iter.hasNext();) {
-			DomainMFrag mfrag = (DomainMFrag) iter.next();
+			MFrag mfrag = (MFrag) iter.next();
 			out.println();
 			out.println(this.getToken("CommentInitiator") + resource.getString("UBFMFrags"));
 			out.println(this.getToken("MFragDeclarator")  

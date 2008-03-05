@@ -32,9 +32,7 @@ import java.util.ResourceBundle;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.GenerativeInputNode;
+import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
@@ -60,7 +58,6 @@ import edu.stanford.smi.protegex.owl.model.OWLDatatypeProperty;
 import edu.stanford.smi.protegex.owl.model.OWLIndividual;
 import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
 import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
-import edu.stanford.smi.protegex.owl.model.RDFProperty;
 import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
 
 /**
@@ -84,8 +81,8 @@ public class SaverPrOwlIO {
 	private HashMap<MFrag, OWLIndividual> mapMFrag = new HashMap<MFrag, OWLIndividual>(); 
 	private HashMap<OrdinaryVariable, OWLIndividual> mapOrdinaryVariable = new HashMap<OrdinaryVariable, OWLIndividual>();
 	private HashMap<ContextNode, OWLIndividual> mapContext = new HashMap<ContextNode, OWLIndividual>();
-	private HashMap<GenerativeInputNode, OWLIndividual> mapGenerativeInput = new HashMap<GenerativeInputNode, OWLIndividual>();
-	private HashMap<DomainResidentNode, OWLIndividual> mapDomainResident = new HashMap<DomainResidentNode, OWLIndividual>(); 
+	private HashMap<InputNode, OWLIndividual> mapGenerativeInput = new HashMap<InputNode, OWLIndividual>();
+	private HashMap<ResidentNode, OWLIndividual> mapDomainResident = new HashMap<ResidentNode, OWLIndividual>(); 
 	
 	private ArrayList<ContextNode> auxContextNodeList = new ArrayList<ContextNode>();  
 	
@@ -120,7 +117,7 @@ public class SaverPrOwlIO {
 	 */
 	public void saveMebn(File file, MultiEntityBayesianNetwork _mebn) throws IOException, IOMebnException{
 		
-		Debug.setDebug(false);
+		Debug.setDebug(true);
 	    mebn = _mebn; 
 		owlModel = ProtegeOWL.createJenaOWLModel();
 		
@@ -388,9 +385,9 @@ public class SaverPrOwlIO {
 		/* hasMFrag */
 		
 		OWLObjectProperty hasMFragProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasMFrag"); 	
-		List<DomainMFrag> listDomainMFrag = mebn.getDomainMFragList(); 
+		List<MFrag> listDomainMFrag = mebn.getDomainMFragList(); 
 		
-		for(DomainMFrag domainMFrag: listDomainMFrag){
+		for(MFrag domainMFrag: listDomainMFrag){
 			OWLNamedClass domainMFragClass = owlModel.getOWLNamedClass("Domain_MFrag"); 
 			Debug.println("Domain_MFrag = " + domainMFrag.getName());
 			OWLIndividual domainMFragIndividual = domainMFragClass.createOWLIndividual(domainMFrag.getName());
@@ -404,7 +401,7 @@ public class SaverPrOwlIO {
 			/* hasResidentNode */
 			OWLObjectProperty hasResidentNodeProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasResidentNode"); 	
 			OWLNamedClass domainResClass = owlModel.getOWLNamedClass("Domain_Res"); 
-			for(DomainResidentNode residentNode: domainMFrag.getDomainResidentNodeList()){
+			for(ResidentNode residentNode: domainMFrag.getResidentNodeList()){
 				Debug.println("Domain_Res = " + residentNode.getName());	
 				OWLIndividual domainResIndividual = domainResClass.createOWLIndividual(residentNode.getName());
 				domainMFragIndividual.addPropertyValue(hasResidentNodeProperty, domainResIndividual); 	
@@ -415,7 +412,7 @@ public class SaverPrOwlIO {
 			/* hasInputNode */
 			OWLObjectProperty hasInputNodeProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputNode"); 	
 			OWLNamedClass generativeInputClass = owlModel.getOWLNamedClass("Generative_input"); 
-			for(GenerativeInputNode inputNode: domainMFrag.getGenerativeInputNodeList()){
+			for(InputNode inputNode: domainMFrag.getInputNodeList()){
 				Debug.println("Generative_input = " + inputNode.getName());		
 				OWLIndividual generativeInputIndividual = generativeInputClass.createOWLIndividual(inputNode.getName());
 				domainMFragIndividual.addPropertyValue(hasInputNodeProperty, generativeInputIndividual); 		
@@ -470,8 +467,8 @@ public class SaverPrOwlIO {
     
     private void loadDomainResidentNodes(){
     	
-    	for(DomainMFrag mfrag : mebn.getDomainMFragList()){
-    		for (DomainResidentNode residentNode: mfrag.getDomainResidentNodeList()){  
+    	for(MFrag mfrag : mebn.getDomainMFragList()){
+    		for (ResidentNode residentNode: mfrag.getResidentNodeList()){  
     			OWLIndividual domainResIndividual = mapDomainResident.get(residentNode);	
     			
     			/* has Argument */
@@ -487,12 +484,12 @@ public class SaverPrOwlIO {
     			Debug.println("Verifying parents");
     			OWLObjectProperty hasParentProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasParent"); 				
     			
-    			for(DomainResidentNode residentNodeFather: residentNode.getResidentNodeFatherList()){
+    			for(ResidentNode residentNodeFather: residentNode.getResidentNodeFatherList()){
     				OWLIndividual residentNodeFatherIndividual = mapDomainResident.get(residentNodeFather); 
     				domainResIndividual.addPropertyValue(hasParentProperty, residentNodeFatherIndividual);
     			}
     			
-    			for(GenerativeInputNode inputNodeFather: residentNode.getInputNodeFatherList()){
+    			for(InputNode inputNodeFather: residentNode.getInputNodeFatherList()){
     				OWLIndividual inputNodeFatherIndividual = mapGenerativeInput.get(inputNodeFather); 
     				domainResIndividual.addPropertyValue(hasParentProperty, inputNodeFatherIndividual);
     			}		
@@ -504,7 +501,7 @@ public class SaverPrOwlIO {
     			/* has Input Instance */
     			Debug.println("Verifying input instances");
     			OWLObjectProperty hasInputInstanceProperty = (OWLObjectProperty)owlModel.getOWLObjectProperty("hasInputInstance"); 	
-    			for(GenerativeInputNode inputInstance: residentNode.getInputInstanceFromList()){
+    			for(InputNode inputInstance: residentNode.getInputInstanceFromList()){
     				OWLIndividual inputInstanceIndividual = mapGenerativeInput.get(inputInstance);
     				if (inputInstanceIndividual != null) {
     					domainResIndividual.addPropertyValue(hasInputInstanceProperty, inputInstanceIndividual);
@@ -537,7 +534,7 @@ public class SaverPrOwlIO {
 	 * @param residentNodeIndividual Individual that is the node in the PowerLoom structure. 
 	 * @param node Resident Node of the MEBN structure
 	 */
-	private void loadResidentPossibleValues(OWLIndividual residentNodeIndividual, DomainResidentNode node){
+	private void loadResidentPossibleValues(OWLIndividual residentNodeIndividual, ResidentNode node){
 
 		/* categoricalRVStates */
 		
@@ -618,13 +615,13 @@ public class SaverPrOwlIO {
      */
     private void loadGenerativeInputNode(){
     	
-    	for(DomainMFrag mfrag : mebn.getDomainMFragList()){
-    		for (GenerativeInputNode generativeInputNode: mfrag.getGenerativeInputNodeList()){  
+    	for(MFrag mfrag : mebn.getDomainMFragList()){
+    		for (InputNode generativeInputNode: mfrag.getInputNodeList()){  
     			OWLIndividual generativeInputNodeIndividual = mapGenerativeInput.get(generativeInputNode);	
     			
     			/* has Argument */
     			if (generativeInputNode.getInputInstanceOf() != null){
-    				if(generativeInputNode.getInputInstanceOf() instanceof DomainResidentNode){
+    				if(generativeInputNode.getInputInstanceOf() instanceof ResidentNode){
     					ResidentNodePointer pointer = generativeInputNode.getResidentNodePointer(); 
     					OrdinaryVariable[] ovArray = pointer.getOrdinaryVariableArray(); 
     					for(int i = 0; i < ovArray.length; i++){
@@ -643,8 +640,8 @@ public class SaverPrOwlIO {
     			/* has Possible Values */
     			
     			if (generativeInputNode.getInputInstanceOf() != null){
-    				if(generativeInputNode.getInputInstanceOf() instanceof DomainResidentNode){
-    					DomainResidentNode residentNode = (DomainResidentNode)generativeInputNode.getInputInstanceOf(); 
+    				if(generativeInputNode.getInputInstanceOf() instanceof ResidentNode){
+    					ResidentNode residentNode = (ResidentNode)generativeInputNode.getInputInstanceOf(); 
     					for(Entity state: residentNode.getPossibleValueList()){
     						loadInputPossibleValues(generativeInputNodeIndividual, residentNode); 
     					}
@@ -709,7 +706,7 @@ public class SaverPrOwlIO {
      */
     private void loadContextNode(){
     	
-    	for(DomainMFrag mfrag: mebn.getDomainMFragList()){
+    	for(MFrag mfrag: mebn.getDomainMFragList()){
     		for (ContextNode contextNode: mfrag.getContextNodeList()){
     			
     			OWLIndividual contextNodeIndividual = mapContext.get(contextNode);	
@@ -816,7 +813,7 @@ public class SaverPrOwlIO {
 		String innerContextName = node.getName() + NUMBER_SEPARATOR + argNumber + INNER_SUFIX; 
 		OWLIndividual innerContextNode = contextNodeClass.createOWLIndividual(innerContextName); 
 		
-		ContextNode contextAux = new ContextNode(innerContextName, (DomainMFrag)node.getMFrag()); 
+		ContextNode contextAux = new ContextNode(innerContextName, (MFrag)node.getMFrag()); 
 		auxContextNodeList.add(contextAux); 
 		
 		OWLObjectProperty isInnerTermOf = (OWLObjectProperty)owlModel.getOWLObjectProperty("isInnerTermOf"); 	
@@ -893,7 +890,7 @@ public class SaverPrOwlIO {
 		
 		//Save the possible values
 		//saveHasPossibleValueProperty(innerContextNode, argument.getResidentNode()); 
-		loadResidentPossibleValues(innerContextNode, (DomainResidentNode)argument.getResidentNode()); 
+		loadResidentPossibleValues(innerContextNode, (ResidentNode)argument.getResidentNode()); 
 		
         //Save the arguments
 		OrdinaryVariable[] oVariableArray = argument.getOrdinaryVariableArray(); 
@@ -1026,7 +1023,7 @@ public class SaverPrOwlIO {
 				contextNodeIndividual.addPropertyValue(isContextInstanceOf, mapDomainResident.get(pointer.getResidentNode())); 
 				
 				//Save the possible values
-				loadResidentPossibleValues(contextNodeIndividual, (DomainResidentNode)pointer.getResidentNode()); 
+				loadResidentPossibleValues(contextNodeIndividual, pointer.getResidentNode()); 
 				
 		        //Save the arguments
 				OrdinaryVariable[] oVariableArray = pointer.getOrdinaryVariableArray(); 

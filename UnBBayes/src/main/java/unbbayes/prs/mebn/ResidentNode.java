@@ -20,13 +20,19 @@
  */
 package unbbayes.prs.mebn;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.draw.DrawRoundedRectangle;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityConteiner;
+import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
@@ -36,28 +42,190 @@ import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
 public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	
-	private static final long serialVersionUID = 8497908054569004909L;
+	private static final long serialVersionUID = 1L;
 
 	private List<OrdinaryVariable> ordinaryVariableList; 
 	
 	private List<ResidentNodePointer> listPointers; 
 
+	private List<InputNode> inputInstanceFromList;
+	
+	private List<InputNode> inputNodeFatherList;
+	 
+	/**
+	 * List of fathers of this node
+	 */
+	private List<ResidentNode> residentNodeFatherList;
+	 
+	/**
+	 * List of children of this node
+	 */
+	private List<ResidentNode> residentNodeChildList;
+	 
+	private List<RandomVariableFinding> randomVariableFindingList; 
+	
+	private MFrag mFrag;
+
+	private String tableFunction;
+	
+	private List<StateLink> possibleValueList; 
+	
+	//Graphics informations 
+	
+	private DrawRoundedRectangle drawResidentNode; 
+	
+	private static Color color = new Color(254, 250, 158); 	
+	
+	
 	public static final int OBJECT_ENTITY = 0; 
 	public static final int CATEGORY_RV_STATES = 1; 
 	public static final int BOOLEAN_RV_STATES = 2; 
+	
 	private int typeOfStates = CATEGORY_RV_STATES; 
 	
-	private int numNextArgument = 0; 
-	
+	//DON'T USE THIS CONSTRUCTOR! IS ONLY TEMPORARY FOR CLEAR THE TESTS
 	public ResidentNode(){
-		
-		super(); 
-		listPointers = new ArrayList<ResidentNodePointer>(); 
-		ordinaryVariableList = new ArrayList<OrdinaryVariable>(); 
 		
 	}
 	
-	public void addResidentNodePointer(ResidentNodePointer pointer){
+	public ResidentNode(String name, MFrag mFrag){
+		super(); 
+		listPointers = new ArrayList<ResidentNodePointer>(); 
+		ordinaryVariableList = new ArrayList<OrdinaryVariable>(); 
+        this.mFrag = mFrag; 
+		
+		inputInstanceFromList = new ArrayList<InputNode>(); 
+		inputNodeFatherList = new ArrayList<InputNode>();
+		residentNodeFatherList = new ArrayList<ResidentNode>();	
+		residentNodeChildList = new ArrayList<ResidentNode>();	
+		randomVariableFindingList = new ArrayList<RandomVariableFinding>(); 
+		possibleValueList = new ArrayList<StateLink>(); 
+		
+		setName(name); 
+		updateLabel(); 		
+		
+    	size.x = 100;
+    	size.y = 20; 
+    	drawResidentNode = new DrawRoundedRectangle(position, size);
+        drawElement.add(drawResidentNode);
+	}
+	
+	
+
+	
+	//------------------------GRAPHICS METHODS----------------------------------
+	
+	/**
+     *  Gets all domain resident node's color.
+     *
+     * @return The color of all domain resident node's color.
+     */
+    public static Color getColor() {
+        return color;
+    }
+
+    /**
+     *  Sets the new color for all domain resident node.
+     *
+     * @return The new color of all domain resident node in RGB.
+     */
+    public static void setColor(int c) {
+        color = new Color(c);
+    }	
+	
+	@Override
+	public void setSelected(boolean b) {
+		drawResidentNode.setSelected(b);
+		super.setSelected(b);
+	}    
+    
+	/**
+	 * Update the label of this node. 
+	 * The label is: 
+	 *    LABEL := "name" "(" LIST_ARGS ")"
+	 *    LIST_ARGS:= NAME_ARG "," LIST_ARGS | VAZIO 
+	 *    
+	 *  update too the copies of this labels in input nodes. 
+	 */
+	
+    public void updateLabel(){
+    	
+    	String newLabel; 
+    	List<OrdinaryVariable> ordinaryVariableList = getOrdinaryVariableList(); 
+    	
+    	newLabel = name + "("; 
+    	
+    	for(OrdinaryVariable ov: ordinaryVariableList ){
+    		newLabel = newLabel + ov.getName() + ", "; 
+    	}
+    	
+        // retirar a virgula desnecessaria caso ela exista
+    	if(ordinaryVariableList.size() > 0){
+    	   newLabel = newLabel.substring(0, newLabel.length() - 2); 
+    	}
+    	
+    	newLabel = newLabel + ")"; 
+    	
+    	setLabel(newLabel); 
+    	
+    	/* referencias a este label */
+    	
+    	for(InputNode inputNode: inputInstanceFromList){
+    		inputNode.updateLabel(); 
+    	}
+    	
+    }
+    
+	@Override
+	public void paint(Graphics2D graphics) {
+		drawResidentNode.setFillColor(getColor());
+		super.paint(graphics);
+	}	
+	
+	public void setName(String name){
+		
+		super.setName(name); 
+		updateLabel(); 
+		
+	}
+    
+    
+	
+	
+	
+	
+	/**
+	 *@see unbbayes.prs.bn.ITabledVariable#getPotentialTable()
+	 */
+	public PotentialTable getPotentialTable() {
+		return null;
+	}
+    
+	
+	
+	
+	
+	//------------------------ SETS E GETS ----------------------------------
+
+	public MFrag getMFrag(){
+		return mFrag; 
+	}
+	
+	public String getTableFunction(){
+		return tableFunction; 
+	}
+	
+	
+	
+	
+	
+	//------------------------ LISTS ----------------------------------
+	
+	public void setTableFunction(String table){
+		tableFunction = table;
+	}
+	
+    public void addResidentNodePointer(ResidentNodePointer pointer){
 		listPointers.add(pointer); 
 	}
 	
@@ -66,11 +234,101 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	}
 	
 	/**
-	 *@see unbbayes.prs.bn.ITabledVariable#getPotentialTable()
+	 * Add a node in the list of childs resident nodes of this node. In the node 
+	 * child add this node in the list of fathers resident nodes.  
+	 * @param node: the node that is child of this. 
 	 */
-	public PotentialTable getPotentialTable() {
-		return null;
+	
+	public void addResidentNodeChild(ResidentNode node){
+		residentNodeChildList.add(node); 
+		node.addResidentNodeFather(this); 
+	}		
+	
+	private void addResidentNodeFather(ResidentNode father){
+		residentNodeFatherList.add(father);
 	}
+	
+	/**
+	 * Add a node in the list of input nodes fathers of this node. In the node 
+	 * father add this node in the list of child resident nodes.  
+	 * @param father
+	 */
+	protected void addInputNodeFather(InputNode father){
+		inputNodeFatherList.add(father); 
+	}	 
+	
+	protected void addInputInstanceFromList(InputNode instance){
+		inputInstanceFromList.add(instance);
+	}
+	
+
+	public List<ResidentNode> getResidentNodeFatherList(){
+		return this.residentNodeFatherList; 
+	}
+	
+	public List<InputNode> getInputNodeFatherList(){
+		return this.inputNodeFatherList; 
+	}	
+	
+	public List<ResidentNode> getResidentNodeChildList(){
+		return this.residentNodeChildList; 
+	}
+	
+	public List<InputNode> getInputInstanceFromList(){
+		return this.inputInstanceFromList; 
+	}	
+	
+	/**
+	 * Don't use this method! Use removeResidentNodeChildList
+	 */
+	private void removeResidentNodeFather(ResidentNode node){
+		residentNodeFatherList.remove(node); 
+	}
+	
+	protected void removeInputNodeFatherList(InputNode node){
+		inputNodeFatherList.remove(node); 
+	}	
+	
+	/**
+	 * Remove a node of the list of childs of this node. 
+	 * 
+	 * @param node
+	 */
+	public void removeResidentNodeChildList(ResidentNode node){
+		residentNodeChildList.remove(node);
+		node.removeResidentNodeFather(this); 
+	}
+	
+	public void removeInputInstanceFromList(InputNode node){
+		inputInstanceFromList.remove(node);
+		try{
+			node.setInputInstanceOf((ResidentNode)null); 
+		}
+		catch(Exception e){
+			e.printStackTrace(); 
+		}
+	}		
+	
+	public void addRandonVariableFinding(RandomVariableFinding finding){
+		randomVariableFindingList.add(finding); 
+	}
+	
+	public void removeRandonVariableFinding(RandomVariableFinding finding){
+		randomVariableFindingList.remove(finding); 
+	}
+	
+	public boolean containsRandonVariableFinding(RandomVariableFinding finding){
+		return randomVariableFindingList.contains(finding); 
+	}
+	
+	public List<RandomVariableFinding> getRandonVariableFindingList() {
+		return randomVariableFindingList;
+	}
+	
+	
+	
+	
+	/*-------------------------- ARGUMENTS ----------------------------------*/
 	
 	/**
 	 * Add a ov in the list of arguments in this resident node
@@ -88,31 +346,29 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 		else{
 			ordinaryVariableList.add(ov); 
 			ov.addIsOVariableOfList(this); 
+			
+			for(InputNode inputNode: inputInstanceFromList){
+				inputNode.updateResidentNodePointer(); 
+			}
+			
+			updateLabel(); 
 		}
 	}
 	
-	/**
-	 * Delete the extern references for this node
-	 * 
-	 * - Ordinary Variables
-	 */
-	public void delete(){
-		while(!ordinaryVariableList.isEmpty()){
-			ordinaryVariableList.remove(0).removeIsOVariableOfList(this); 
-		}
-	}
+
 	
 	public void removeArgument(OrdinaryVariable ov){
 		
 		ordinaryVariableList.remove(ov);
-		//ov.removeIsOVariableOfList(this); -> deve ser feito pela classe que chama. 
-		
+
 		for(Argument argument: super.getArgumentList()){
 			if(argument.getOVariable() == ov){
 				super.removeArgument(argument); 
 				return; 
 			}
 		}
+		
+		updateLabel(); 
 	}
 	
 	/**
@@ -155,12 +411,200 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 		return ovOrdereableList;
 	}
 	
+	
+	
+	
+	/*-------------------------- STATES ----------------------------------*/
+	
 	public int getTypeOfStates() {
 		return typeOfStates;
 	}
 
 	public void setTypeOfStates(int typeOfStates) {
 		this.typeOfStates = typeOfStates;
+	}
+	
+	
+	/**
+	 * Add a possible value to the list of possible values of
+	 * the domain resident node. 
+	 */
+	public StateLink addPossibleValueLink(Entity possibleValue){
+		StateLink value = new StateLink(possibleValue); 
+		possibleValueList.add(value);
+		return value; 
+		// TODO override addPossibleValue() or call super.addPossibleValue(possibleValue) in order
+		// to make compatible w/ MultiEntityNode.possibleValueList...
+	}
+	
+	/**
+	 * Remove the possible value with the name 
+	 * @param possibleValue name of the possible value
+	 */
+	public void removePossibleValueByName(String possibleValue){
+		
+		for(StateLink value : possibleValueList){
+			if (value.getState().getName().equals(possibleValue)){
+				possibleValueList.remove(value);
+				return; 
+			}
+		}
+	}
+	
+	/**
+	 * Remove all possible values of the node
+	 */
+	public void removeAllPossibleValues(){
+		possibleValueList.clear(); 
+	}
+	
+	/**
+	 * Verifies if the possible value is on the list of possible values
+	 * of the node. 
+	 * @param possibleValue name of the possible value
+	 * @return true if it is present or false otherside
+	 */
+	public boolean existsPossibleValueByName(String possibleValue){
+		
+		for(StateLink value : possibleValueList){
+			if (value.getState().getName().equals(possibleValue)){
+				return true; 
+			}
+		}
+		
+		return false; 
+	}	
+	
+	/**
+	 * Verify if the entity is a state of the node 
+	 * Warning: the search will be for the entity and not for the
+	 * name of entity.
+	 * @param entity The entity 
+	 * @return true if the entity is a state, false otherside
+	 */
+	public boolean hasPossibleValue(Entity entity) {
+		for(StateLink value : possibleValueList){
+			if (value.getState() == entity){
+				return true; 
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Return the possible value of the residente node with the name
+	 * (return null if don't exist a possible value with this name)
+	 */
+	public StateLink getPossibleValueByName(String possibleValue){
+		for(StateLink value : possibleValueList){
+			if (value.getState().getName().equalsIgnoreCase(possibleValue)){
+				return value; 
+			}
+		}
+		
+		return null;
+	}
+	
+	public List<StateLink> getPossibleValueLinkList(){
+		return possibleValueList; 
+	}
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.MultiEntityNode#getPossibleValueList()
+	 */
+	@Override
+	public List<Entity> getPossibleValueList() {
+		// TODO optimize this
+		List<Entity> ret = new ArrayList<Entity>();
+		for (StateLink link : this.possibleValueList) {
+			ret.add(link.getState());
+		}
+		return ret;
+	}
+	
+	
+	
+    /** 
+	 * Overrides unbbayes.prs.mebn.MultiEntityNode#getPossibleValueIndex(java.lang.String),
+	 * but also considers the entity instances (calls 
+	 * unbbayes.prs.mebn.DomainResidentNode#getPossibleValueListIncludingEntityInstances() internally.
+	 * @see unbbayes.prs.mebn.MultiEntityNode#getPossibleValueIndex(java.lang.String)
+	 * @see unbbayes.prs.mebn.DomainResidentNode#getPossibleValueListIncludingEntityInstances()
+	 */
+	@Override
+	public int getPossibleValueIndex(String stateName) {
+		int index = 0;
+		for (Entity entity : this.getPossibleValueListIncludingEntityInstances()) {
+			if (entity.getName().equalsIgnoreCase(stateName)) {
+				return index;
+			}
+			index++;
+		}
+		return -1;
+	}
+
+	
+	/**
+	 * This is identical to unbbayes.prs.mebn.DomainResidentNode#getPossibleValueList() but
+	 * the returned list also includes the entity instances from object entities.
+	 * This would be useful when retrieving instances on SSBN generation step.
+	 * @return a list containing entities and, when instances are present, those instances. When
+	 * retrieving instances, the ObjectEntity itself (the instance container) is not retrieved
+	 * @see unbbayes.prs.mebn.DomainResidentNode#getPossibleValueList()
+	 */
+	public List<Entity> getPossibleValueListIncludingEntityInstances() {
+		List<Entity> ret = new ArrayList<Entity>();
+		for (StateLink link : this.possibleValueList) {
+			if (link.getState() instanceof ObjectEntity) {
+				// TODO the above "instanceof" is a serious indication of a refactoring necessity
+				for (ObjectEntityInstance instance : ((ObjectEntity)link.getState()).getInstanceList()) {
+					ret.add(instance);
+				}
+			} else {
+				ret.add(link.getState());
+			}
+		}
+		return ret;
+	}
+	
+	
+	/*-------------------------- GENERAL METHODS ----------------------------------*/
+	
+	/**
+	 * Delete the extern references for this node
+	 * 
+	 * - Ordinary Variables
+	 * - Fathers nodes (and edges) 
+     * - Child nodes (and edges)
+	 */
+	public void delete(){
+		
+		while(!ordinaryVariableList.isEmpty()){
+			ordinaryVariableList.remove(0).removeIsOVariableOfList(this); 
+		}
+		
+		while(!inputInstanceFromList.isEmpty()){
+			inputInstanceFromList.remove(0).setInputInstanceOf(); 
+		}
+		
+		while(!inputNodeFatherList.isEmpty()){
+			inputNodeFatherList.remove(0).removeResidentNodeChild(this); 
+		}
+		
+		while(!residentNodeFatherList.isEmpty()){
+			ResidentNode father = residentNodeFatherList.get(0); 
+			father.removeResidentNodeChildList(this); 
+			mFrag.removeEdgeByNodes(father, this);
+		}
+		
+		while(!residentNodeChildList.isEmpty()){
+			ResidentNode child = residentNodeChildList.get(0); 
+			this.removeResidentNodeChildList(child);
+			mFrag.removeEdgeByNodes(this, child); 
+		}
+		
+		mFrag.removeResidentNode(this); 
+		
 	}
 	
 	public String toString() {

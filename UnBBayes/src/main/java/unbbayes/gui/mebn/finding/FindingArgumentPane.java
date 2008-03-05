@@ -37,7 +37,6 @@ import javax.swing.JToolBar;
 
 import unbbayes.controller.MEBNController;
 import unbbayes.gui.ParcialStateException;
-import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.BooleanStatesEntityContainer;
@@ -68,7 +67,7 @@ public class FindingArgumentPane extends JPanel{
 	
 	private final static int MINIMUM_LINE_SIXE_PANEL = 5; 
 	
-	public FindingArgumentPane(DomainResidentNode node, MEBNController mebnController){
+	public FindingArgumentPane(ResidentNode node, MEBNController mebnController){
 		
 		super(); 
 		

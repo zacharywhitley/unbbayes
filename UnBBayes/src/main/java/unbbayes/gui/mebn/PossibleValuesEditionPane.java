@@ -55,7 +55,6 @@ import javax.swing.text.BadLocationException;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
-import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.BooleanStateEntity;
 import unbbayes.prs.mebn.entity.CategoricalStateEntity;
@@ -80,7 +79,7 @@ public class PossibleValuesEditionPane extends JPanel {
 	private final String PANEL_BOOLEAN_STATES = "boolean";
 	private final String PANEL_OBJECT_STATES = "object";
 	
-	private DomainResidentNode residentNode;
+	private ResidentNode residentNode;
 
 	private MEBNController mebnController;
 
@@ -128,7 +127,7 @@ public class PossibleValuesEditionPane extends JPanel {
 	 * @param _residentNode
 	 */
 	public PossibleValuesEditionPane(MEBNController _controller,
-			DomainResidentNode _residentNode) {
+			ResidentNode _residentNode) {
 
 		super(new BorderLayout());
 

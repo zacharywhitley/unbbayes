@@ -29,7 +29,7 @@ public class BuiltInRV {
 	private String mnemonic; 
 	
 	// TODO Verify if it is ever used. It seams that UnBBayes is not ready for this.
-	private List<GenerativeInputNode> inputInstanceFromList;
+	private List<InputNode> inputInstanceFromList;
 	
 	private List<ContextNode> contextInstanceFromList; 
 	
@@ -38,7 +38,7 @@ public class BuiltInRV {
 	public BuiltInRV(String name, String mnemonic){
 		this.name = name; 
 		this.mnemonic = mnemonic; 
-		inputInstanceFromList = new ArrayList<GenerativeInputNode>();
+		inputInstanceFromList = new ArrayList<InputNode>();
 		contextInstanceFromList = new ArrayList<ContextNode>();		
 	}
 	
@@ -46,7 +46,7 @@ public class BuiltInRV {
 		return name; 
 	}
 	
-	public void addInputInstance(GenerativeInputNode input){
+	public void addInputInstance(InputNode input){
 		inputInstanceFromList.add(input); 
 	}
 	
@@ -54,7 +54,7 @@ public class BuiltInRV {
 		contextInstanceFromList.add(context); 
 	}
 	
-	public List<GenerativeInputNode> getInputInstanceFromList(){
+	public List<InputNode> getInputInstanceFromList(){
 		return inputInstanceFromList; 
 	}
 	

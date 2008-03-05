@@ -37,7 +37,7 @@ import javax.swing.text.StyledDocument;
 
 import unbbayes.controller.MEBNController;
 import unbbayes.gui.mebn.auxiliary.ToolKitForTableEdition;
-import unbbayes.prs.mebn.DomainResidentNode;
+import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.compiler.exception.InconsistentTableSemanticsException;
 import unbbayes.prs.mebn.compiler.exception.TableFunctionMalformedException;
@@ -57,7 +57,7 @@ public class TablePreviewPane extends JPanel{
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private DomainResidentNode residentNode; 
+	private ResidentNode residentNode; 
 	private JButton btnEditTable; 
 	private JButton btnCompileTable; 
 	private JToolBar jtbTable;
@@ -71,7 +71,7 @@ public class TablePreviewPane extends JPanel{
 	
 	private MEBNController mebnController; 
 	
-	TablePreviewPane(MEBNController _controller, DomainResidentNode _residentNode){
+	TablePreviewPane(MEBNController _controller, ResidentNode _residentNode){
 		
 		super(); 
 		this.setLayout(new BorderLayout()); 

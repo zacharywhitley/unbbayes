@@ -44,7 +44,7 @@ public class ContextNode extends MultiEntityNode {
 	
 	private static final long serialVersionUID = 8186266877724939663L;
 
-	private DomainMFrag mFrag;
+	private MFrag mFrag;
 	
 	/**
 	 * All innner terms of this node.
@@ -85,7 +85,7 @@ public class ContextNode extends MultiEntityNode {
      * @param name
      * @param mFrag
      */
-    public ContextNode(String name, DomainMFrag mFrag) {
+    public ContextNode(String name, MFrag mFrag) {
     	
     	super(); 
     	
@@ -109,11 +109,11 @@ public class ContextNode extends MultiEntityNode {
 	 * Set the MFrag where this node resides.
 	 * @param frag The MFrag where this node resides.
 	 */
-	public void setMFrag(DomainMFrag frag) {
+	public void setMFrag(MFrag frag) {
 		mFrag = frag;
 	}
 	
-	public DomainMFrag getMFrag(){
+	public MFrag getMFrag(){
 		return mFrag; 
 	}
 	
@@ -252,13 +252,13 @@ public class ContextNode extends MultiEntityNode {
 		return false; 
 	}
 	
-	public DomainResidentNode getNodeSearch(Collection<OVInstance> ovInstanceList) throws InvalidContextNodeFormulaException{
+	public ResidentNode getNodeSearch(Collection<OVInstance> ovInstanceList) throws InvalidContextNodeFormulaException{
 		if(!isFormulaComplexValida(ovInstanceList)){
 			throw new InvalidContextNodeFormulaException(); 
 		}else{
 			NodeFormulaTree leftChildren = formulaTree.getChildren().get(0);
 			ResidentNodePointer pointer = (ResidentNodePointer)leftChildren.getNodeVariable(); 
-			return (DomainResidentNode)pointer.getResidentNode(); 
+			return pointer.getResidentNode(); 
 		}
 	}
 	

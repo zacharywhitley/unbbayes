@@ -47,7 +47,6 @@ import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.gui.ParcialStateException;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
-import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.RandomVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
@@ -103,14 +102,14 @@ public class RandonVariableFindingEdtitionPane extends JPanel {
 		this.add(downPanel, BorderLayout.PAGE_END); 
 	}
 	
-	public void showRandonVariableInstanceListPane(DomainResidentNode node){
+	public void showRandonVariableInstanceListPane(ResidentNode node){
 		downPanel.removeAll(); 
 		randonVariableInstanceListPane = new RandonVariableInstanceListPane(node); 
 		downPanel.add(randonVariableInstanceListPane, BorderLayout.CENTER); 
 		downPanel.validate(); 
 	}
 	
-	public void showRandonVariableEditionPane(DomainResidentNode node){
+	public void showRandonVariableEditionPane(ResidentNode node){
 		upperPanel.removeAll(); 
 		upperPanel.add(new RandonVariableInstanceEditionPane(node), BorderLayout.CENTER); 
 		upperPanel.validate(); 
@@ -152,7 +151,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel {
 		            new ListSelectionListener(){
 		                public void valueChanged(ListSelectionEvent e) {
 		                	if(jlistResident.getSelectedValue() != null){
-		                	   showRandonVariableInstanceListPane((DomainResidentNode)(jlistResident.getSelectedValue()));
+		                	   showRandonVariableInstanceListPane((ResidentNode)(jlistResident.getSelectedValue()));
 		                	}
 		                }
 		            }  	
@@ -166,7 +165,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel {
 
 				public void actionPerformed(ActionEvent e) {
 					if(jlistResident.getSelectedValue() != null){
-					   showRandonVariableEditionPane((DomainResidentNode)(jlistResident.getSelectedValue())); 
+					   showRandonVariableEditionPane((ResidentNode)(jlistResident.getSelectedValue())); 
 					}
 				}
 				
@@ -194,7 +193,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel {
 	 */
 	private class RandonVariableInstanceEditionPane extends JPanel{
 		
-		private final DomainResidentNode residentNode; 
+		private final ResidentNode residentNode; 
 		
 		private JLabel nodeName; 
 		
@@ -211,7 +210,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel {
 		
 		private JToolBar jtbName; 
 		
-		public RandonVariableInstanceEditionPane(DomainResidentNode _residentNode){
+		public RandonVariableInstanceEditionPane(ResidentNode _residentNode){
 			
 			super(new BorderLayout()); 
 			this.residentNode = _residentNode; 
@@ -220,7 +219,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel {
 			nodeName.setAlignmentX(JLabel.CENTER_ALIGNMENT); 
 			nodeName.setBackground(Color.YELLOW); 
 			
-			findingArgumentPane = new FindingArgumentPane((DomainResidentNode)residentNode, mebnController); 
+			findingArgumentPane = new FindingArgumentPane(residentNode, mebnController); 
 			
 			btnBack = new JButton(iconController.getEditUndo()); 
 			btnClear = new JButton(iconController.getEditClear()); 
@@ -294,7 +293,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel {
 	 */
 	private class RandonVariableInstanceListPane extends JPanel{
 		
-		private DomainResidentNode residentNode; 
+		private ResidentNode residentNode; 
 		
 		private JList jlistFindings; 
 		private JScrollPane scrollListObjectEntity; 
@@ -314,7 +313,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel {
         
 		}
 		
-        public RandonVariableInstanceListPane(DomainResidentNode residentNode){
+        public RandonVariableInstanceListPane(ResidentNode residentNode){
         	
         	super(new BorderLayout()); 
         	
@@ -322,7 +321,7 @@ public class RandonVariableFindingEdtitionPane extends JPanel {
         	
         	listInstances = new ArrayList<RandomVariableFinding>(); 
         	listModel = new DefaultListModel(); 
-        	for(RandomVariableFinding finding: ((DomainResidentNode)(residentNode)).getRandonVariableFindingList()){
+        	for(RandomVariableFinding finding: residentNode.getRandonVariableFindingList()){
         		listInstances.add(finding); 
         		listModel.addElement(finding); 
         	}

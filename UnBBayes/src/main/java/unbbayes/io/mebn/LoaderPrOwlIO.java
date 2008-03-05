@@ -36,9 +36,8 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.GenerativeInputNode;
+import unbbayes.prs.mebn.InputNode;
+import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -52,13 +51,12 @@ import unbbayes.prs.mebn.builtInRV.BuiltInRVIff;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVImplies;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVNot;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
-import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.context.EnumSubType;
 import unbbayes.prs.mebn.context.EnumType;
+import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.entity.BooleanStateEntity;
 import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
-import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.exception.CategoricalStateDoesNotExistException;
@@ -96,7 +94,7 @@ public class LoaderPrOwlIO {
 	private Collection instances; 
 	private Iterator itAux; 
 	
-	private HashMap<String, DomainMFrag> mapDomainMFrag = new HashMap<String, DomainMFrag>(); 
+	private HashMap<String, MFrag> mapDomainMFrag = new HashMap<String, MFrag>(); 
 	private HashMap<String, OrdinaryVariable> mapOVariable = new HashMap<String, OrdinaryVariable>();
 	
 	/* 
@@ -111,8 +109,8 @@ public class LoaderPrOwlIO {
 	
 	private HashMap<ContextNode, Object> mapIsContextInstanceOf = new HashMap<ContextNode, Object>(); 
 
-	private HashMap<String, DomainResidentNode> mapDomainResidentNode = new HashMap<String, DomainResidentNode>();
-	private HashMap<String, GenerativeInputNode> mapGenerativeInputNode = new HashMap<String, GenerativeInputNode>();
+	private HashMap<String, ResidentNode> mapDomainResidentNode = new HashMap<String, ResidentNode>();
+	private HashMap<String, InputNode> mapGenerativeInputNode = new HashMap<String, InputNode>();
 	private HashMap<String, Argument> mapArgument = new HashMap<String, Argument>();
 	private HashMap<String, MultiEntityNode> mapMultiEntityNode = new HashMap<String, MultiEntityNode>(); 
 	private HashMap<String, BuiltInRV> mapBuiltInRV = new HashMap<String, BuiltInRV>(); 
@@ -236,7 +234,7 @@ public class LoaderPrOwlIO {
 	 */
 	private void loadMTheoryClass() throws IOMebnException {
         
-		DomainMFrag domainMFrag; 		
+		MFrag domainMFrag; 		
 		
 		OWLIndividual individualOne;
 		OWLIndividual individualTwo; 
@@ -271,7 +269,7 @@ public class LoaderPrOwlIO {
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
 			individualTwo = (OWLIndividual) it.next();
 			Debug.println("hasDomainMFrag: " + individualTwo.getBrowserText()); 
-			domainMFrag = new DomainMFrag(individualTwo.getBrowserText(), mebn); 
+			domainMFrag = new MFrag(individualTwo.getBrowserText(), mebn); 
 			mebn.addDomainMFrag(domainMFrag); 
 			mapDomainMFrag.put(individualTwo.getBrowserText(), domainMFrag); 
 		}	
@@ -434,11 +432,11 @@ public class LoaderPrOwlIO {
 	
 	private void loadDomainMFrag() throws IOMebnException{
 
-		DomainMFrag domainMFrag; 
+		MFrag domainMFrag; 
 		OrdinaryVariable oVariable; 
 		ContextNode contextNode; 
-		DomainResidentNode domainResidentNode; 
-		GenerativeInputNode generativeInputNode; 
+		ResidentNode domainResidentNode; 
+		InputNode generativeInputNode; 
 		BuiltInRV builtInRV;		
 		
 		OWLIndividual individualOne;
@@ -465,8 +463,8 @@ public class LoaderPrOwlIO {
 			instances = individualOne.getPropertyValues(objectProperty); 
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
 				individualTwo = (OWLIndividual) itIn.next();
-				domainResidentNode = new DomainResidentNode(individualTwo.getBrowserText(), domainMFrag); 
-				domainMFrag.addDomainResidentNode(domainResidentNode); 
+				domainResidentNode = new ResidentNode(individualTwo.getBrowserText(), domainMFrag); 
+				domainMFrag.addResidentNode(domainResidentNode); 
 				mapDomainResidentNode.put(individualTwo.getBrowserText(), domainResidentNode); 
 				mapMultiEntityNode.put(individualTwo.getBrowserText(), domainResidentNode); 
 				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
@@ -477,8 +475,8 @@ public class LoaderPrOwlIO {
 			instances = individualOne.getPropertyValues(objectProperty); 	
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
 				individualTwo = (OWLIndividual) itIn.next();
-				generativeInputNode = new GenerativeInputNode(individualTwo.getBrowserText(), domainMFrag); 
-				domainMFrag.addGenerativeInputNode(generativeInputNode); 
+				generativeInputNode = new InputNode(individualTwo.getBrowserText(), domainMFrag); 
+				domainMFrag.addInputNode(generativeInputNode); 
 				mapGenerativeInputNode.put(individualTwo.getBrowserText(), generativeInputNode); 
 				mapMultiEntityNode.put(individualTwo.getBrowserText(), generativeInputNode); 				
 				Debug.println("-> " + individualOne.getBrowserText() + ": " + objectProperty.getBrowserText() + " = " + individualTwo.getBrowserText()); 
@@ -523,7 +521,7 @@ public class LoaderPrOwlIO {
 	
 	private void loadContextNode() throws IOMebnException{
 
-		DomainMFrag domainMFrag; 
+		MFrag domainMFrag; 
 		ContextNode contextNode; 
 		Argument argument;
 		MultiEntityNode multiEntityNode; 	
@@ -654,7 +652,7 @@ public class LoaderPrOwlIO {
 	
 	private void loadBuiltInRV() throws IOMebnException{
 
-		GenerativeInputNode generativeInputNode; 
+		InputNode generativeInputNode; 
 		BuiltInRV builtInRV = null;		
 		
 		OWLIndividual individualOne;
@@ -721,9 +719,9 @@ public class LoaderPrOwlIO {
 	
 	private void loadDomainResidentNode() throws IOMebnException{
 
-		DomainMFrag domainMFrag; 
-		DomainResidentNode domainResidentNode; 
-		GenerativeInputNode generativeInputNode; 
+		MFrag domainMFrag; 
+		ResidentNode domainResidentNode; 
+		InputNode generativeInputNode; 
 		Argument argument;
 		MultiEntityNode multiEntityNode; 	
 		
@@ -733,7 +731,7 @@ public class LoaderPrOwlIO {
 		
 		OWLNamedClass domainResidentNodePr = owlModel.getOWLNamedClass("Domain_Res"); 
 		instances = domainResidentNodePr.getInstances(false); 
-		DomainMFrag mFragOfNode = null; 
+		MFrag mFragOfNode = null; 
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
 			
@@ -776,7 +774,7 @@ public class LoaderPrOwlIO {
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
 				individualTwo = (OWLIndividual) itIn.next();
 				if (mapDomainResidentNode.containsKey(individualTwo.getBrowserText())){
-					DomainResidentNode aux = mapDomainResidentNode.get(individualTwo.getBrowserText()); 
+					ResidentNode aux = mapDomainResidentNode.get(individualTwo.getBrowserText()); 
 					
 					Edge auxEdge = new Edge(aux, domainResidentNode);
 					try{
@@ -788,7 +786,7 @@ public class LoaderPrOwlIO {
 				}
 				else{
 					if (mapGenerativeInputNode.containsKey(individualTwo.getBrowserText())){
-						GenerativeInputNode aux = mapGenerativeInputNode.get(individualTwo.getBrowserText()); 
+						InputNode aux = mapGenerativeInputNode.get(individualTwo.getBrowserText()); 
 						
 						Edge auxEdge = new Edge(aux, domainResidentNode);
 						try{
@@ -940,8 +938,8 @@ public class LoaderPrOwlIO {
 	
 	private void loadGenerativeInputNode() throws IOMebnException{
 	    
-		DomainResidentNode domainResidentNode; 
-		GenerativeInputNode generativeInputNode; 
+		ResidentNode domainResidentNode; 
+		InputNode generativeInputNode; 
 		Argument argument;
 		MultiEntityNode multiEntityNode; 
 		BuiltInRV builtInRV;		
@@ -1038,7 +1036,7 @@ public class LoaderPrOwlIO {
 	
 	private void loadOrdinaryVariable() throws IOMebnException{
 		
-		DomainMFrag domainMFrag; 
+		MFrag domainMFrag; 
 		OrdinaryVariable oVariable; 		
 		
 		OWLIndividual individualOne;
@@ -1299,7 +1297,7 @@ public class LoaderPrOwlIO {
 	 */
 	private void ajustArgumentOfNodes(){
 		
-		for(DomainResidentNode resident: mapDomainResidentNode.values()){
+		for(ResidentNode resident: mapDomainResidentNode.values()){
 			int argNumberActual = 1; 
 			int tamArgumentList = resident.getArgumentList().size(); 
 			
@@ -1329,7 +1327,7 @@ public class LoaderPrOwlIO {
 			}
 		}
 		
-		for(GenerativeInputNode input: mapGenerativeInputNode.values()){
+		for(InputNode input: mapGenerativeInputNode.values()){
 			
 			if(input.getInputInstanceOf() instanceof ResidentNode){
 				input.updateResidentNodePointer(); 
@@ -1539,11 +1537,11 @@ public class LoaderPrOwlIO {
 		
 		Debug.println("-> MTheory: " + mebn.getName());
 		
-		List<DomainMFrag> mFragList = mebn.getDomainMFragList(); 
+		List<MFrag> mFragList = mebn.getDomainMFragList(); 
 		
 		int desvio = 0; 
 		
-		for(DomainMFrag mFrag: mFragList){
+		for(MFrag mFrag: mFragList){
 			
 			desvio++; 
 			

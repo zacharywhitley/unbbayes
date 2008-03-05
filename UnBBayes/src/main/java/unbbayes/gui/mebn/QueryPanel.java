@@ -47,7 +47,6 @@ import unbbayes.gui.GUIUtils;
 import unbbayes.gui.ParcialStateException;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
 import unbbayes.prs.bn.ProbabilisticNetwork;
-import unbbayes.prs.mebn.DomainResidentNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
@@ -240,7 +239,7 @@ public class QueryPanel extends JFrame{
 						setVisible(false); 
 						
 						mebnController.getScreen().setCursor(new Cursor(Cursor.WAIT_CURSOR)); 
-				        ProbabilisticNetwork network = mebnController.executeQuery((DomainResidentNode)residentNode, arguments);
+				        ProbabilisticNetwork network = mebnController.executeQuery(residentNode, arguments);
 						mebnController.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 						
 				        exit();

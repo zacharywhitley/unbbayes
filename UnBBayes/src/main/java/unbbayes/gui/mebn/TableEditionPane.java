@@ -53,8 +53,7 @@ import javax.swing.text.StyledDocument;
 import unbbayes.controller.MEBNController;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.gui.mebn.auxiliary.ToolKitForTableEdition;
-import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.GenerativeInputNode;
+import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
@@ -111,7 +110,7 @@ public class TableEditionPane extends JPanel{
 	
 	private JTextField txtPosition; 
 	
-	private DomainResidentNode residentNode; 
+	private ResidentNode residentNode; 
 	private String[] oVariableArray; 
 	private String[] fatherNodeArray; 
 	private String[] statesArray; 
@@ -129,7 +128,7 @@ public class TableEditionPane extends JPanel{
 	/** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 	
-	public TableEditionPane(DomainResidentNode _residentNode, MEBNController _mebnController){
+	public TableEditionPane(ResidentNode _residentNode, MEBNController _mebnController){
 		
 		super();
 		
@@ -342,8 +341,8 @@ public class TableEditionPane extends JPanel{
 		
 		JPanel jpFather; 
 		List<MultiEntityNode> fatherNodeList; 		
-		List<GenerativeInputNode> inputNodeList; 
-		final List<DomainResidentNode> residentNodeAuxList; 
+		List<InputNode> inputNodeList; 
+		final List<ResidentNode> residentNodeAuxList; 
 		
 		int i; 
 		
@@ -355,15 +354,15 @@ public class TableEditionPane extends JPanel{
 		jpFather = new JPanel();
 		jpFather.setBorder(ToolKitForGuiMebn.getBorderForTabPanel(resource.getString("FathersTitle"))); 				
 		
-		residentNodeAuxList = new ArrayList<DomainResidentNode>(); 
+		residentNodeAuxList = new ArrayList<ResidentNode>(); 
 		residentNodeAuxList.addAll(residentNode.getResidentNodeFatherList()); 
 		
 		inputNodeList = residentNode.getInputNodeFatherList(); 
-		for(GenerativeInputNode inputNode: inputNodeList){
+		for(InputNode inputNode: inputNodeList){
 			Object father = inputNode.getInputInstanceOf();
 			//TODO BuiltInRV case
 			if (father instanceof ResidentNode){
-				residentNodeAuxList.add((DomainResidentNode)father); 
+				residentNodeAuxList.add((ResidentNode)father); 
 			}
 		}
 		
@@ -391,7 +390,7 @@ public class TableEditionPane extends JPanel{
 				else{
 					if ((e.getModifiers() == MouseEvent.BUTTON1_MASK) && (e.getClickCount() == 1)){
 						int selectedIndex = jlFathers.getSelectedIndex(); 
-						List<GenerativeInputNode> inputNodeList = residentNode.getInputNodeFatherList(); 
+						List<InputNode> inputNodeList = residentNode.getInputNodeFatherList(); 
 						//TODO fazer isso de uma forma decente!!!
 						ResidentNode residentNode = residentNodeAuxList.get(selectedIndex); 
 						updateStatesList(residentNode);
@@ -529,7 +528,7 @@ public class TableEditionPane extends JPanel{
 	
 	private void updateStatesList(){
 		
-		DomainResidentNode resident = residentNode; 
+		ResidentNode resident = residentNode; 
 		List<Entity> listStates = resident.getPossibleValueList(); 
 		
 		listModel.removeAllElements(); 
