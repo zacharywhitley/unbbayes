@@ -1,22 +1,5 @@
-/*
- *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
- *
- *  This file is part of UnBBayes.
- *
- *  UnBBayes is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  UnBBayes is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
- *
+/**
+ * 
  */
 package unbbayes.prs.mebn.compiler;
 
@@ -27,8 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import junit.framework.TestCase;
 import unbbayes.gui.table.GUIPotentialTable;
-import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
@@ -36,13 +19,9 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.compiler.Compiler;
+import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.compiler.exception.InvalidProbabilityRangeException;
 import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredException;
 import unbbayes.prs.mebn.entity.Entity;
@@ -50,7 +29,6 @@ import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.util.Debug;
-import junit.framework.TestCase;
 
 /*
  * Just a data type/class used by some tests
@@ -93,7 +71,7 @@ public class CompilerTest extends TestCase {
 	
 	public CompilerTest(String arg0) {
 		super(arg0);
-		Debug.setDebug(false);
+		Debug.setDebug(true);
 		
 		UbfIO ubfIO = UbfIO.getInstance(); 
 		
@@ -115,13 +93,13 @@ public class CompilerTest extends TestCase {
 		
 		
 		
-		tableParser = new Compiler((DomainResidentNode)mebn.getNode("DangerToSelf"));
+		tableParser = new Compiler((ResidentNode)mebn.getNode("DangerToSelf"));
 		
 	}
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		Debug.setDebug(false);
+		Debug.setDebug(true);
 		assertNotNull(tableParser);
 		
 	}
@@ -592,9 +570,9 @@ public class CompilerTest extends TestCase {
 	
 	public void testGenerateCPT() {
 		
-		DomainResidentNode harmPotential = this.mebn.getDomainResidentNode("HarmPotential");
-		DomainResidentNode starshipClass = this.mebn.getDomainResidentNode("StarshipClass");
-		DomainResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");
+		ResidentNode harmPotential = this.mebn.getDomainResidentNode("HarmPotential");
+		ResidentNode starshipClass = this.mebn.getDomainResidentNode("StarshipClass");
+		ResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");
 		
 		OrdinaryVariable st = harmPotential.getOrdinaryVariableByName("st");
 		OrdinaryVariable t = harmPotential.getOrdinaryVariableByName("t");
@@ -708,9 +686,9 @@ public class CompilerTest extends TestCase {
 	
 public void testGenerateCPT2() {
 		
-		DomainResidentNode harmPotential = this.mebn.getDomainResidentNode("HarmPotential");
-		DomainResidentNode starshipClass = this.mebn.getDomainResidentNode("StarshipClass");
-		DomainResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");
+	ResidentNode harmPotential = this.mebn.getDomainResidentNode("HarmPotential");
+	ResidentNode starshipClass = this.mebn.getDomainResidentNode("StarshipClass");
+	ResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");
 		
 		OrdinaryVariable st = harmPotential.getOrdinaryVariableByName("st");
 		OrdinaryVariable t = harmPotential.getOrdinaryVariableByName("t");
@@ -814,9 +792,9 @@ public void testGenerateCPT2() {
 
 public void testGenerateCPT3() {
 		
-		DomainResidentNode harmPotential = this.mebn.getDomainResidentNode("HarmPotential");
-		DomainResidentNode starshipClass = this.mebn.getDomainResidentNode("StarshipClass");
-		DomainResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");
+	ResidentNode harmPotential = this.mebn.getDomainResidentNode("HarmPotential");
+	ResidentNode starshipClass = this.mebn.getDomainResidentNode("StarshipClass");
+	ResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");
 		
 		OrdinaryVariable st = harmPotential.getOrdinaryVariableByName("st");
 		OrdinaryVariable t = harmPotential.getOrdinaryVariableByName("t");
@@ -919,7 +897,7 @@ public void testGenerateCPT3() {
 	
 public void testDistFromOwn() {
 		
-		DomainResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");
+	ResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");
 		
 		OrdinaryVariable st = distFromOwn.getOrdinaryVariableByName("st");
 		OrdinaryVariable tprev = distFromOwn.getMFrag().getOrdinaryVariableByName("tPrev");

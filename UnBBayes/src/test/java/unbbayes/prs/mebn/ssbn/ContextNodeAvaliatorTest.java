@@ -1,23 +1,3 @@
-/*
- *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
- *
- *  This file is part of UnBBayes.
- *
- *  UnBBayes is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  UnBBayes is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
 package unbbayes.prs.mebn.ssbn;
 
 import java.io.File;
@@ -29,15 +9,12 @@ import java.util.List;
 import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainMFrag;
+import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
-import unbbayes.prs.mebn.ssbn.ContextNodeAvaliator;
-import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
-import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.util.Debug;
@@ -66,7 +43,7 @@ public class ContextNodeAvaliatorTest{
 			e.printStackTrace();
 		}
 		
-		DomainMFrag mFrag = mebn.getMFragByName("Starship_MFrag"); 
+		MFrag mFrag = mebn.getMFragByName("Starship_MFrag"); 
 		
 		LiteralEntityInstance literalEntityInstance; 
 		OVInstance ovInstance; 
@@ -124,7 +101,7 @@ public class ContextNodeAvaliatorTest{
 	 * @param ovInstanceList
 	 * @param ordVariableList
 	 */
-	public static void evaluateContextNodes(DomainMFrag mFrag, List<OVInstance> ovInstanceList, List<OrdinaryVariable> ordVariableList, 
+	public static void evaluateContextNodes(MFrag mFrag, List<OVInstance> ovInstanceList, List<OrdinaryVariable> ordVariableList, 
 			ContextNodeAvaliator avaliator, KnowledgeBase kb){
 		
 		Debug.setDebug(true); 

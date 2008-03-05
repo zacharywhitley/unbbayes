@@ -1,22 +1,5 @@
-/*
- *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
- *
- *  This file is part of UnBBayes.
- *
- *  UnBBayes is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  UnBBayes is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
- *
+/**
+ * 
  */
 package unbbayes.prs.mebn.ssbn;
 
@@ -27,15 +10,12 @@ import junit.framework.TestCase;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.DomainResidentNode;
+import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
-import unbbayes.prs.mebn.ssbn.BottomUpSSBNGenerator;
-import unbbayes.prs.mebn.ssbn.Query;
-import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
@@ -123,8 +103,8 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 	}
 
 	private static SSBNNode createQueryNode_HarmPotential_ST4_T0(MultiEntityBayesianNetwork mebn) {
-		DomainMFrag mFrag = mebn.getMFragByName("Starship_MFrag"); 
-		DomainResidentNode residentNode = mFrag.getDomainResidentNodeByName("HarmPotential"); 
+		MFrag mFrag = mebn.getMFragByName("Starship_MFrag"); 
+		ResidentNode residentNode = mFrag.getDomainResidentNodeByName("HarmPotential"); 
 		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode, new ProbabilisticNode(), false); 
 		try {
 			queryNode.addArgument(residentNode.getOrdinaryVariableByName("st"), "ST4");
@@ -137,8 +117,8 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 	}
 	
 	private static SSBNNode createQueryNodeXOR(MultiEntityBayesianNetwork mebn) {
-		DomainMFrag mFrag = mebn.getMFragByName("ExampleMFrag"); 
-		DomainResidentNode residentNode = mFrag.getDomainResidentNodeByName("ResidentSample"); 
+		MFrag mFrag = mebn.getMFragByName("ExampleMFrag"); 
+		ResidentNode residentNode = mFrag.getDomainResidentNodeByName("ResidentSample"); 
 		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode, new ProbabilisticNode(), false); 
 		try {
 			queryNode.addArgument(residentNode.getOrdinaryVariableByName("r"), "R");
@@ -150,8 +130,8 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 	}
 	
 	private static SSBNNode createQueryNode_HarmPotential_ST4_T3(MultiEntityBayesianNetwork mebn) {
-		DomainMFrag mFrag = mebn.getMFragByName("Starship_MFrag"); 
-		DomainResidentNode residentNode = mFrag.getDomainResidentNodeByName("HarmPotential"); 
+		MFrag mFrag = mebn.getMFragByName("Starship_MFrag"); 
+		ResidentNode residentNode = mFrag.getDomainResidentNodeByName("HarmPotential"); 
 		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode, new ProbabilisticNode(), false); 
 		try {
 			queryNode.addArgument(residentNode.getOrdinaryVariableByName("st"), "ST4");

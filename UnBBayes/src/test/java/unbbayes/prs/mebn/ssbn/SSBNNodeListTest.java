@@ -1,22 +1,5 @@
-/*
- *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
- *
- *  This file is part of UnBBayes.
- *
- *  UnBBayes is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  UnBBayes is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
- *
+/**
+ * 
  */
 package unbbayes.prs.mebn.ssbn;
 
@@ -24,14 +7,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import junit.framework.TestCase;
 import unbbayes.io.mebn.UbfIO;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.DomainResidentNode;
+import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.ssbn.SSBNNode;
-import unbbayes.prs.mebn.ssbn.SSBNNodeList;
-import junit.framework.TestCase;
+import unbbayes.prs.mebn.ResidentNode;
 
 /**
  * @author Shou Matsumoto
@@ -41,8 +22,8 @@ public class SSBNNodeListTest extends TestCase {
 
 	
 	private MultiEntityBayesianNetwork mebn = null;
-	private  DomainMFrag mfrag = null;
-	private DomainResidentNode resident = null;
+	private  MFrag mfrag = null;
+	private ResidentNode resident = null;
 	
 	private SSBNNode ssbnnode1 = null;
 	private SSBNNode ssbnnode2 = null;

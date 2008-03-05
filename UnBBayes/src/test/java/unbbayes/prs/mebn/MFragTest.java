@@ -1,38 +1,12 @@
-/*
- *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
- *
- *  This file is part of UnBBayes.
- *
- *  UnBBayes is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  UnBBayes is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
- *
+/**
+ * 
  */
 package unbbayes.prs.mebn;
 
-import unbbayes.prs.Node;
-import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.GenerativeInputNode;
-import unbbayes.prs.mebn.MFrag;
-import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.builtInRV.BuiltInRVAndTest;
-import unbbayes.util.NodeList;
-import junit.framework.TestCase;
 import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import unbbayes.util.NodeList;
 
 /**
  * @author user
@@ -51,15 +25,15 @@ public class MFragTest extends TestCase {
 	
 	public void testContainsNode(){
 		MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork("teste");
-		DomainMFrag mfrag1 = new DomainMFrag("mfrag1",mebn);
-		DomainMFrag mfrag2 = new DomainMFrag("mfrag2",mebn);
+		MFrag mfrag1 = new MFrag("mfrag1",mebn);
+		MFrag mfrag2 = new MFrag("mfrag2",mebn);
 		
-		DomainResidentNode resident1 = new DomainResidentNode("resident1",mfrag1);
-		mfrag1.addDomainResidentNode(resident1);
-		DomainResidentNode resident2 = new DomainResidentNode("resident2",mfrag2);
-		mfrag2.addDomainResidentNode(resident2);
-		GenerativeInputNode input1 = new GenerativeInputNode("resident1",mfrag2);
-		mfrag2.addGenerativeInputNode(input1);
+		ResidentNode resident1 = new ResidentNode("resident1",mfrag1);
+		mfrag1.addResidentNode(resident1);
+		ResidentNode resident2 = new ResidentNode("resident2",mfrag2);
+		mfrag2.addResidentNode(resident2);
+		InputNode input1 = new InputNode("resident1",mfrag2);
+		mfrag2.addInputNode(input1);
 		try {
 			input1.setInputInstanceOf(resident1);
 		} catch (Exception e) {

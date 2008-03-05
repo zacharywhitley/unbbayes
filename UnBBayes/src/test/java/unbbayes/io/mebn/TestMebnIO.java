@@ -26,9 +26,7 @@ import java.util.List;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.GenerativeInputNode;
+import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
@@ -67,7 +65,7 @@ public class TestMebnIO {
 		/* trace MFrag */
 		for(MFrag mFrag: listMFrag){
 			
-			DomainMFrag domainMFrag = (DomainMFrag)mFrag; 
+			MFrag domainMFrag = (MFrag)mFrag; 
 			
 			System.out.println("\n\n-----> MFrag: " + domainMFrag.getName() + "\n");
 			
@@ -85,14 +83,14 @@ public class TestMebnIO {
 			}						
 			
 			System.out.println("\n-> domainResidentNodeList: "); 
-			List<DomainResidentNode> domainResidentNodeList = domainMFrag.getDomainResidentNodeList(); 
-			for(DomainResidentNode residentNode: domainResidentNodeList){
+			List<ResidentNode> domainResidentNodeList = domainMFrag.getResidentNodeList(); 
+			for(ResidentNode residentNode: domainResidentNodeList){
 				System.out.println(residentNode.getName()); 
 			}				
 			
 			System.out.println("\n-> GenerativeInputNodeList: "); 
-			List<GenerativeInputNode> generativeInputNodeList = domainMFrag.getGenerativeInputNodeList(); 
-			for(GenerativeInputNode generativeInputNode: generativeInputNodeList){
+			List<InputNode> generativeInputNodeList = domainMFrag.getInputNodeList(); 
+			for(InputNode generativeInputNode: generativeInputNodeList){
 				System.out.println(generativeInputNode.getName()); 
 			}	
 			
@@ -106,7 +104,7 @@ public class TestMebnIO {
 		/* trace inside MFrag */
 		for(MFrag mFrag: listMFrag){
 			
-			DomainMFrag domainMFrag = (DomainMFrag) mFrag;  
+			MFrag domainMFrag = (MFrag) mFrag;  
 			
 			/* trace context node */
 			List<ContextNode> listContextNode = domainMFrag.getContextNodeList(); 
@@ -127,8 +125,8 @@ public class TestMebnIO {
 			}						
 			
 			/* trace domain resident node */
-			List<DomainResidentNode> domainResidentNodeList = domainMFrag.getDomainResidentNodeList(); 
-			for(DomainResidentNode domainResidentNode: domainResidentNodeList){
+			List<ResidentNode> domainResidentNodeList = domainMFrag.getResidentNodeList(); 
+			for(ResidentNode domainResidentNode: domainResidentNodeList){
 				System.out.println("\n\n-----> DomainResident: " + domainResidentNode.getName() + "\n");
 				
 				System.out.println("\n-> mFrag: "); 
@@ -148,26 +146,26 @@ public class TestMebnIO {
 				}				
 				
 				System.out.println("\n-> residentNodeFatherList: "); 
-				List<DomainResidentNode> domainResidentNodeFatherList = domainResidentNode.getResidentNodeFatherList(); 
-				for(DomainResidentNode resident: domainResidentNodeFatherList){
+				List<ResidentNode> domainResidentNodeFatherList = domainResidentNode.getResidentNodeFatherList(); 
+				for(ResidentNode resident: domainResidentNodeFatherList){
 					System.out.println(resident.getName()); 
 				}	
 				
 				System.out.println("\n-> inputNodeFatherList: "); 
-				List<GenerativeInputNode> inputNodeFatherList = domainResidentNode.getInputNodeFatherList(); 
-				for(GenerativeInputNode input: inputNodeFatherList){
+				List<InputNode> inputNodeFatherList = domainResidentNode.getInputNodeFatherList(); 
+				for(InputNode input: inputNodeFatherList){
 					System.out.println(input.getName()); 
 				}	
 				
 				System.out.println("\n-> residentNodeChildList: "); 
-				List<DomainResidentNode> domainResidentNodeChildList = domainResidentNode.getResidentNodeChildList(); 
-				for(DomainResidentNode resident: domainResidentNodeChildList){
+				List<ResidentNode> domainResidentNodeChildList = domainResidentNode.getResidentNodeChildList(); 
+				for(ResidentNode resident: domainResidentNodeChildList){
 					System.out.println(resident.getName()); 
 				}	
 				
 				System.out.println("\n-> inputInstanceFromList: "); 
-				List<GenerativeInputNode> inputInstanceFromList = domainResidentNode.getInputInstanceFromList(); 
-				for(GenerativeInputNode input: inputInstanceFromList){
+				List<InputNode> inputInstanceFromList = domainResidentNode.getInputInstanceFromList(); 
+				for(InputNode input: inputInstanceFromList){
 					System.out.println(input.getName()); 
 				}	
 				
@@ -180,8 +178,8 @@ public class TestMebnIO {
 			}				
 			
 			/* trace input node */
-			List<GenerativeInputNode> generativeInputNodeList = domainMFrag.getGenerativeInputNodeList(); 
-			for(GenerativeInputNode generativeInputNode: generativeInputNodeList){
+			List<InputNode> generativeInputNodeList = domainMFrag.getInputNodeList(); 
+			for(InputNode generativeInputNode: generativeInputNodeList){
 				System.out.println("\n\n-----> Generative Input: " + generativeInputNode.getName() + "\n");
 				
 				System.out.println("\n-> mFrag: "); 
@@ -201,8 +199,8 @@ public class TestMebnIO {
 				}				
 				
 				System.out.println("\n-> ResidentNodeChildList: "); 
-				List<DomainResidentNode> residentNodeChildList = generativeInputNode.getResidentNodeChildList(); 
-				for(DomainResidentNode resident: residentNodeChildList){
+				List<ResidentNode> residentNodeChildList = generativeInputNode.getResidentNodeChildList(); 
+				for(ResidentNode resident: residentNodeChildList){
 					System.out.println(resident.getName()); 
 				}	
 				

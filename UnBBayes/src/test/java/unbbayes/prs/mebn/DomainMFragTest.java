@@ -1,22 +1,5 @@
-/*
- *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
- *
- *  This file is part of UnBBayes.
- *
- *  UnBBayes is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  UnBBayes is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
- *
+/**
+ * 
  */
 package unbbayes.prs.mebn;
 
@@ -29,15 +12,6 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
-import unbbayes.prs.mebn.Argument;
-import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.GenerativeInputNode;
-import unbbayes.prs.mebn.InputNode;
-import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.TypeContainer;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
@@ -51,7 +25,7 @@ import unbbayes.prs.mebn.exception.ArgumentOVariableAlreadySetException;
 public class DomainMFragTest extends TestCase {
 
 	MultiEntityBayesianNetwork mebn = null;
-	DomainMFrag mfrag = null;
+	MFrag mfrag = null;
 	
 	/**
 	 * @param arg0
@@ -66,7 +40,7 @@ public class DomainMFragTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		mebn = new MultiEntityBayesianNetwork("DomainMFragTestMEBN");
-		mfrag = new DomainMFrag("DomainMFragTestMFrag",mebn);
+		mfrag = new MFrag("DomainMFragTestMFrag",mebn);
 		mebn.addDomainMFrag(mfrag);
 		
 	}
@@ -97,7 +71,7 @@ public class DomainMFragTest extends TestCase {
 	 */
 	public void testName() {
 		String mfragName = "testGetName";
-		DomainMFrag mfrag = new DomainMFrag(mfragName,mebn);
+		MFrag mfrag = new MFrag(mfragName,mebn);
 		assertEquals(mfrag.getName(), mfragName);
 		
 		String mfragName2 = "testSetName";
@@ -116,7 +90,7 @@ public class DomainMFragTest extends TestCase {
 	 */
 	public void testGetMultiEntityBayesianNetwork() {
 		MultiEntityBayesianNetwork mebn2 = new MultiEntityBayesianNetwork("testGetMultiEntityBayesianNetworkMEBN");
-		DomainMFrag mfrag2 = new DomainMFrag("testGetMultiEntityBayesianNetwork",mebn2);
+		MFrag mfrag2 = new MFrag("testGetMultiEntityBayesianNetwork",mebn2);
 		
 		assertNotNull(mfrag.getMultiEntityBayesianNetwork());
 		assertNotNull(mfrag2.getMultiEntityBayesianNetwork());
@@ -228,8 +202,8 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#removeResidentNode(unbbayes.prs.mebn.ResidentNode)}.
 	 */
 	public void testRemoveResidentNode() {
-		DomainResidentNode resident1 = new DomainResidentNode("testRemoveResidentNode",mfrag);
-		DomainResidentNode resident2 = new DomainResidentNode("testRemoveResidentNode",mfrag);
+		ResidentNode resident1 = new ResidentNode("testRemoveResidentNode",mfrag);
+		ResidentNode resident2 = new ResidentNode("testRemoveResidentNode",mfrag);
 		
 		assertEquals(mfrag.getNodeCount(),2);
 		assertEquals(mfrag.getDomainResidentNodeCount(),2);
@@ -238,7 +212,7 @@ public class DomainMFragTest extends TestCase {
 		assertTrue(mfrag.containsNode(resident1));
 		assertTrue(mfrag.containsNode(resident2));
 		
-		mfrag.removeDomainResidentNode(resident1);
+		mfrag.removeResidentNode(resident1);
 		assertEquals(mfrag.getNodeCount(),1);
 		assertEquals(mfrag.getDomainResidentNodeCount(),1);
 		assertTrue(!mfrag.containsDomainResidentNode(resident1));
@@ -246,7 +220,7 @@ public class DomainMFragTest extends TestCase {
 		assertTrue(!mfrag.containsNode(resident1));
 		assertTrue(mfrag.containsNode(resident2));
 		
-		mfrag.removeDomainResidentNode(resident2);
+		mfrag.removeResidentNode(resident2);
 		assertEquals(mfrag.getNodeCount(),0);
 		assertEquals(mfrag.getDomainResidentNodeCount(),0);
 		assertTrue(!mfrag.containsDomainResidentNode(resident1));
@@ -262,8 +236,8 @@ public class DomainMFragTest extends TestCase {
 	 */
 	public void testRemoveInputNode() {
 		
-		GenerativeInputNode input1 = new GenerativeInputNode("testRemoveResidentNode",mfrag);
-		GenerativeInputNode input2 = new GenerativeInputNode("testRemoveResidentNode",mfrag);
+		InputNode input1 = new InputNode("testRemoveResidentNode",mfrag);
+		InputNode input2 = new InputNode("testRemoveResidentNode",mfrag);
 		
 		assertEquals(mfrag.getNodeCount(),2);
 		assertEquals(mfrag.getGenerativeInputNodeCount(),2);
@@ -272,7 +246,7 @@ public class DomainMFragTest extends TestCase {
 		assertTrue(mfrag.containsNode(input1));
 		assertTrue(mfrag.containsNode(input2));
 		
-		mfrag.removeGenerativeInputNode(input1);
+		mfrag.removeInputNode(input1);
 		assertEquals(mfrag.getNodeCount(),1);
 		assertEquals(mfrag.getGenerativeInputNodeCount(),1);
 		assertTrue(!mfrag.containsGenerativeInputNode(input1));
@@ -280,7 +254,7 @@ public class DomainMFragTest extends TestCase {
 		assertTrue(!mfrag.containsNode(input1));
 		assertTrue(mfrag.containsNode(input2));
 		
-		mfrag.removeGenerativeInputNode(input2);
+		mfrag.removeInputNode(input2);
 		assertEquals(mfrag.getNodeCount(),0);
 		assertEquals(mfrag.getGenerativeInputNodeCount(),0);
 		assertTrue(!mfrag.containsGenerativeInputNode(input1));
@@ -668,7 +642,7 @@ public class DomainMFragTest extends TestCase {
 	 */
 	public void testGetInputNodeList() {
 		Node node1 = new ResidentNode();
-		Node node2 = new GenerativeInputNode("node2",mfrag);
+		Node node2 = new InputNode("node2",mfrag);
 		Node node3 = new ResidentNode();
 		
 		
@@ -683,10 +657,10 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#setInputNodeList(java.util.List)}.
 	 */
 	public void testSetInputNodeList() {
-		DomainMFrag placeholder = new DomainMFrag("placeholder",mebn);
-		GenerativeInputNode node1 = new GenerativeInputNode("node1",mfrag);
-		GenerativeInputNode node2 = new GenerativeInputNode("node2",placeholder);
-		GenerativeInputNode node3 = new GenerativeInputNode("node3",placeholder);
+		MFrag placeholder = new MFrag("placeholder",mebn);
+		InputNode node1 = new InputNode("node1",mfrag);
+		InputNode node2 = new InputNode("node2",placeholder);
+		InputNode node3 = new InputNode("node3",placeholder);
 		List<InputNode> list = new ArrayList<InputNode>();
 		
 		assertTrue(mfrag.containsGenerativeInputNode(node1));
@@ -697,7 +671,7 @@ public class DomainMFragTest extends TestCase {
 		list.add(node3);
 		mfrag.setInputNodeList(list);
 		
-		assertEquals(mfrag.getGenerativeInputNodeList(),list);
+		assertEquals(mfrag.getInputNodeList(),list);
 		
 		assertTrue(!mfrag.containsGenerativeInputNode(node1));
 		assertTrue(mfrag.containsGenerativeInputNode(node2));
@@ -711,7 +685,7 @@ public class DomainMFragTest extends TestCase {
 	 */
 	public void testGetResidentNodeList() {
 		Node node1 = new ResidentNode();
-		Node node2 = new GenerativeInputNode("node2",mfrag);
+		Node node2 = new InputNode("node2",mfrag);
 		Node node3 = new ResidentNode();
 				
 		
@@ -724,10 +698,10 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#setResidentNodeList(java.util.List)}.
 	 */
 	public void testSetResidentNodeList() {
-		DomainMFrag placeholder = new DomainMFrag("placeholder",mebn);
-		DomainResidentNode node1 = new DomainResidentNode("node1",mfrag);
-		DomainResidentNode node2 = new DomainResidentNode("node2",placeholder);
-		DomainResidentNode node3 = new DomainResidentNode("node3",placeholder);
+		MFrag placeholder = new MFrag("placeholder",mebn);
+		ResidentNode node1 = new ResidentNode("node1",mfrag);
+		ResidentNode node2 = new ResidentNode("node2",placeholder);
+		ResidentNode node3 = new ResidentNode("node3",placeholder);
 		List<ResidentNode> list = new ArrayList<ResidentNode>();
 		
 		assertTrue(mfrag.containsDomainResidentNode(node1));
@@ -738,7 +712,7 @@ public class DomainMFragTest extends TestCase {
 		list.add(node3);
 		mfrag.setResidentNodeList(list);
 		
-		assertEquals(mfrag.getGenerativeInputNodeList(),list);
+		assertEquals(mfrag.getInputNodeList(),list);
 		
 		assertTrue(!mfrag.containsDomainResidentNode(node1));
 		assertTrue(mfrag.containsDomainResidentNode(node2));
@@ -828,7 +802,7 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.DomainMFrag#addContextNode(unbbayes.prs.mebn.ContextNode)}.
 	 */
 	public void testAddContextNode() {
-		DomainMFrag temp = new DomainMFrag("testAddOrdinaryVariable",mebn);
+		MFrag temp = new MFrag("testAddOrdinaryVariable",mebn);
 		ContextNode context = new ContextNode("context",temp);
 		
 		mfrag.addContextNode(context);
@@ -844,10 +818,10 @@ public class DomainMFragTest extends TestCase {
 	 */
 	public void testAddGenerativeInputNode() {
 
-		DomainMFrag temp = new DomainMFrag("testAddOrdinaryVariable",mebn);
-		GenerativeInputNode node = new GenerativeInputNode("node",temp);
+		MFrag temp = new MFrag("testAddOrdinaryVariable",mebn);
+		InputNode node = new InputNode("node",temp);
 		
-		mfrag.addGenerativeInputNode(node);
+		mfrag.addInputNode(node);
 		assertEquals(mfrag.getGenerativeInputNodeCount(),1);
 		assertEquals(mfrag.getGenerativeInputNodeNum(),1);
 		assertTrue(mfrag.containsGenerativeInputNode(node));
@@ -860,10 +834,10 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.DomainMFrag#addDomainResidentNode(unbbayes.prs.mebn.DomainResidentNode)}.
 	 */
 	public void testAddDomainResidentNode() {
-		DomainMFrag temp = new DomainMFrag("testAddOrdinaryVariable",mebn);
-		DomainResidentNode node = new DomainResidentNode("node",temp);
+		MFrag temp = new MFrag("testAddOrdinaryVariable",mebn);
+		ResidentNode node = new ResidentNode("node",temp);
 		
-		mfrag.addDomainResidentNode(node);
+		mfrag.addResidentNode(node);
 		assertEquals(mfrag.getDomainResidentNodeCount(),1);
 		assertEquals(mfrag.getDomainResidentNodeNum(),1);
 		assertTrue(mfrag.containsDomainResidentNode(node));
@@ -887,9 +861,9 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.DomainMFrag#removeGenerativeInputNode(unbbayes.prs.mebn.GenerativeInputNode)}.
 	 */
 	public void testRemoveGenerativeInputNode() {
-		GenerativeInputNode node = new GenerativeInputNode("node",mfrag);
+		InputNode node = new InputNode("node",mfrag);
 		
-		mfrag.removeGenerativeInputNode(node);
+		mfrag.removeInputNode(node);
 		assertTrue(!mfrag.containsGenerativeInputNode(node));
 		assertTrue(!mfrag.containsNode(node));
 		assertTrue(!node.getMFrag().equals(mfrag));
@@ -899,9 +873,9 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.DomainMFrag#removeDomainResidentNode(unbbayes.prs.mebn.DomainResidentNode)}.
 	 */
 	public void testRemoveDomainResidentNode() {
-		DomainResidentNode node = new DomainResidentNode("node",mfrag);
+		ResidentNode node = new ResidentNode("node",mfrag);
 		
-		mfrag.removeDomainResidentNode(node);
+		mfrag.removeResidentNode(node);
 		assertTrue(!mfrag.containsDomainResidentNode(node));
 		assertTrue(!mfrag.containsNode(node));
 		assertTrue(!node.getMFrag().equals(mfrag));
@@ -983,7 +957,7 @@ public class DomainMFragTest extends TestCase {
 		
 		// context(resident(st,z))
 		ContextNode context_resident_st_z = new ContextNode("context_resident_st_z",this.mfrag);
-		DomainResidentNode resident = new DomainResidentNode("resident",mfrag);
+		ResidentNode resident = new ResidentNode("resident",mfrag);
 		arg = new Argument("st",resident);
 		try{
 			arg.setOVariable(st);
@@ -1011,7 +985,7 @@ public class DomainMFragTest extends TestCase {
 		
 		
 		// add all nodes into one single mfrag
-		mfrag.addDomainResidentNode(resident);
+		mfrag.addResidentNode(resident);
 		mfrag.addContextNode(context_resident_st_z);
 		mfrag.addContextNode(context_st_t_z);
 		mfrag.addContextNode(context_st_z);

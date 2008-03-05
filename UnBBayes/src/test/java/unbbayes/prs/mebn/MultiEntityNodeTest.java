@@ -1,43 +1,15 @@
-/*
- *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
- *
- *  This file is part of UnBBayes.
- *
- *  UnBBayes is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  UnBBayes is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
- *
+/**
+ * 
  */
 package unbbayes.prs.mebn;
 
-import com.hp.hpl.jena.reasoner.rdfsReasoner1.AssertFRule;
-
-import unbbayes.prs.mebn.Argument;
-import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.MFrag;
-import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.MultiEntityNode;
-import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.builtInRV.BuiltInRVAndTest;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 import unbbayes.prs.mebn.entity.TypeContainer;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.ArgumentOVariableAlreadySetException;
-import junit.framework.TestCase;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
 /**
  * @author user
@@ -46,7 +18,7 @@ import junit.framework.TestSuite;
 public class MultiEntityNodeTest extends TestCase {
 
 	MultiEntityBayesianNetwork mebn = null;
-	DomainMFrag mfrag = null;
+	MFrag mfrag = null;
 	
 	/**
 	 * @param arg0
@@ -61,7 +33,7 @@ public class MultiEntityNodeTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		mebn = new MultiEntityBayesianNetwork("MultiEntityNodeTestMEBN");
-		mfrag = new DomainMFrag("MultiEntityNodeTestMFrag",mebn);
+		mfrag = new MFrag("MultiEntityNodeTestMFrag",mebn);
 	}
 
 	/* (non-Javadoc)
@@ -227,7 +199,7 @@ public class MultiEntityNodeTest extends TestCase {
 		OrdinaryVariable t = new OrdinaryVariable("t",tcontainer.getType("Timestep"),mfrag);
 		
 		
-		MultiEntityNode resident = new DomainResidentNode("resident_st_t",mfrag);
+		MultiEntityNode resident = new ResidentNode("resident_st_t",mfrag);
 		Argument arg =  new Argument("arg1",resident);
 		arg.setArgNumber(1);
 		try{
@@ -245,7 +217,7 @@ public class MultiEntityNodeTest extends TestCase {
 		}
 		resident.addArgument(arg);
 		
-		mfrag.addDomainResidentNode((DomainResidentNode)resident);
+		mfrag.addResidentNode((ResidentNode)resident);
 		
 		
 		MultiEntityNode context1 = new ContextNode("context_st_t",mfrag);

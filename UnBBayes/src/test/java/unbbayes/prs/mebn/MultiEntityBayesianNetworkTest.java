@@ -1,46 +1,16 @@
-/*
- *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
- *
- *  This file is part of UnBBayes.
- *
- *  UnBBayes is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  UnBBayes is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
- *
+/**
+ * 
  */
 package unbbayes.prs.mebn;
 
-import java.util.Iterator;
 import java.util.List;
 
-import com.hp.hpl.jena.reasoner.rdfsReasoner1.AssertFRule;
-
-import unbbayes.prs.Node;
-import unbbayes.prs.mebn.BuiltInRV;
-import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.DomainMFrag;
-import unbbayes.prs.mebn.DomainResidentNode;
-import unbbayes.prs.mebn.GenerativeInputNode;
-import unbbayes.prs.mebn.InputNode;
-import unbbayes.prs.mebn.MFrag;
-import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.builtInRV.BuiltInRVAnd;
-import unbbayes.prs.mebn.builtInRV.BuiltInRVAndTest;
-import unbbayes.prs.mebn.builtInRV.BuiltInRVEqualTo;
-import unbbayes.prs.mebn.exception.MEBNException;
-import junit.framework.TestCase;
 import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import unbbayes.prs.Node;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVAnd;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVEqualTo;
 
 /**
  * @author user
@@ -85,7 +55,7 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 	public void testAddDomainMFrag() {
 		try {
 			
-			DomainMFrag mfrag = new DomainMFrag("testAddDomainMFrag",tempMebn);
+			MFrag mfrag = new MFrag("testAddDomainMFrag",tempMebn);
 			assertEquals(mfrag.getMultiEntityBayesianNetwork(),tempMebn);
 			assertEquals(mfrag,tempMebn.getMFragList().get(0));
 			assertTrue(tempMebn.getMFragList().contains(mfrag));
@@ -111,7 +81,7 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 	 */
 	public void testRemoveDomainMFrag() {
 		try {
-			DomainMFrag mfrag = new DomainMFrag("testRemoveDomainMFrag",mebn);
+			MFrag mfrag = new MFrag("testRemoveDomainMFrag",mebn);
 			assertEquals(mebn.getMFragCount(),1);
 			assertEquals(mebn.getMFragList().get(0),mfrag);
 			assertEquals(mebn,mfrag.getMultiEntityBayesianNetwork());
@@ -132,8 +102,8 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getMFragList()}.
 	 */
 	public void testGetMFragList() {
-		MFrag mfrag1 = new DomainMFrag("mfrag",mebn);
-		MFrag mfrag3 = new DomainMFrag("mfrag",mebn);
+		MFrag mfrag1 = new MFrag("mfrag",mebn);
+		MFrag mfrag3 = new MFrag("mfrag",mebn);
 		
 		
 		assertTrue(mebn.getMFragList().contains(mfrag1));
@@ -150,8 +120,8 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getDomainMFragList()}.
 	 */
 	public void testGetDomainMFragList() {
-		MFrag mfrag1 = new DomainMFrag("mfrag",mebn);
-		MFrag mfrag3 = new DomainMFrag("mfrag",mebn);
+		MFrag mfrag1 = new MFrag("mfrag",mebn);
+		MFrag mfrag3 = new MFrag("mfrag",mebn);
 		
 		assertTrue(mebn.getDomainMFragList().contains(mfrag1));
 		assertEquals(mebn.getDomainMFragList().get(mebn.getMFragList().indexOf(mfrag1)),mfrag1);
@@ -166,8 +136,8 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getMFragCount()}.
 	 */
 	public void testGetMFragCount() {
-		MFrag mfrag1 = new DomainMFrag("mfrag",mebn);
-		MFrag mfrag3 = new DomainMFrag("mfrag",mebn);
+		MFrag mfrag1 = new MFrag("mfrag",mebn);
+		MFrag mfrag3 = new MFrag("mfrag",mebn);
 		
 		assertEquals(mebn.getMFragCount(),2);
 	}
@@ -178,7 +148,7 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 	public void testGetCurrentMFrag() {
 		assertNull(mebn.getCurrentMFrag());
 		
-		DomainMFrag mfrag = new DomainMFrag("mfrag",this.tempMebn);
+		MFrag mfrag = new MFrag("mfrag",this.tempMebn);
 		
 		mebn.addDomainMFrag(mfrag);		
 		assertEquals(mebn.getCurrentMFrag(),mfrag);
@@ -220,12 +190,12 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getNodeList()}.
 	 */
 	public void testGetNodeList() {
-		MFrag dmfrag = new DomainMFrag("mfrag",mebn);
+		MFrag dmfrag = new MFrag("mfrag",mebn);
 		
-		Node node1 = new DomainResidentNode("resident",(DomainMFrag)dmfrag);
+		Node node1 = new ResidentNode("resident",(MFrag)dmfrag);
 		Node node2 = new InputNode();
 		mebn.addNode(node2);
-		Node node3 = new ContextNode("context",(DomainMFrag)dmfrag);
+		Node node3 = new ContextNode("context",(MFrag)dmfrag);
 		
 		assertNotNull(mebn.getNodeList());
 		assertTrue(mebn.getNodeList().contains(node1));
@@ -233,8 +203,8 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 		assertTrue(mebn.getNodeList().contains(node3));
 		
 		
-		MFrag dmfrag2 = new DomainMFrag("mfrag",tempMebn);
-		Node node4 = new DomainResidentNode("resident",(DomainMFrag)dmfrag2);
+		MFrag dmfrag2 = new MFrag("mfrag",tempMebn);
+		Node node4 = new ResidentNode("resident",(MFrag)dmfrag2);
 		assertTrue(!mebn.getNodeList().contains(node4));
 		
 		dmfrag.addNode(node4);
@@ -253,10 +223,10 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 		
 		MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork("testGetDomainMFragNodeNameMEBN");
 		
-		DomainMFrag mfrag1 = new DomainMFrag("mfrag1",mebn);
-		DomainMFrag mfrag2 = new DomainMFrag("mfrag2",mebn);
-		DomainMFrag mfrag3 = new DomainMFrag("mfrag3",mebn);
-		DomainMFrag mfrag4 = new DomainMFrag("mfrag4",mebn);
+		MFrag mfrag1 = new MFrag("mfrag1",mebn);
+		MFrag mfrag2 = new MFrag("mfrag2",mebn);
+		MFrag mfrag3 = new MFrag("mfrag3",mebn);
+		MFrag mfrag4 = new MFrag("mfrag4",mebn);
 		
 		// This is odd! Why should we add a mfrag when we just added them at its constructor?!
 		mebn.addDomainMFrag(mfrag1);
@@ -264,14 +234,14 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 		mebn.addDomainMFrag(mfrag3);
 		mebn.addDomainMFrag(mfrag4);
 		
-		mfrag1.addDomainResidentNode(new DomainResidentNode("node1",mfrag1));
-		mfrag2.addDomainResidentNode(new DomainResidentNode("node2",mfrag2));
-		mfrag3.addDomainResidentNode(new DomainResidentNode("node3",mfrag3));
-		mfrag4.addDomainResidentNode(new DomainResidentNode("node4",mfrag4));
+		mfrag1.addResidentNode(new ResidentNode("node1",mfrag1));
+		mfrag2.addResidentNode(new ResidentNode("node2",mfrag2));
+		mfrag3.addResidentNode(new ResidentNode("node3",mfrag3));
+		mfrag4.addResidentNode(new ResidentNode("node4",mfrag4));
 		
-		mfrag2.addGenerativeInputNode(new GenerativeInputNode("input2",mfrag2));
-		mfrag3.addGenerativeInputNode(new GenerativeInputNode("input3",mfrag3));
-		mfrag4.addGenerativeInputNode(new GenerativeInputNode("input4",mfrag4));
+		mfrag2.addInputNode(new InputNode("input2",mfrag2));
+		mfrag3.addInputNode(new InputNode("input3",mfrag3));
+		mfrag4.addInputNode(new InputNode("input4",mfrag4));
 		
 		mfrag3.addContextNode(new ContextNode("context3",mfrag3));
 		mfrag4.addContextNode(new ContextNode("context4",mfrag4));
