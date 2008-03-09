@@ -24,6 +24,7 @@ package unbbayes.prs.mebn.compiler;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.compiler.exception.UndeclaredTableException;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.util.Debug;

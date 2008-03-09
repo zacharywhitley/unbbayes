@@ -402,7 +402,7 @@ public class MEBNController  {
 		int residentNodeNum = domainMFrag.getDomainResidentNodeNum();
 
 		while (name == null){
-			name = name = resource.getString("residentNodeName") +
+			name = resource.getString("residentNodeName") +
 			                        multiEntityBayesianNetwork.getDomainResidentNodeNum();
 			if(domainMFrag.getDomainResidentNodeByName(name) != null){
 				name = null;
@@ -1227,6 +1227,9 @@ public class MEBNController  {
 	public void loadFindingsFile(File file){
 		createKnowledgeBase(); 	
 		PowerLoomKB.getInstanceKB().loadModule(file);
+		for (ResidentNode resident : this.multiEntityBayesianNetwork.getDomainResidentNodes()) {
+			 PowerLoomKB.getInstanceKB().fillFindings(resident);
+		}
 	}
 	
 	private void createKnowledgeBase(){

@@ -38,8 +38,7 @@ import unbbayes.util.NodeList;
 import unbbayes.util.SerializablePoint2D;
 
 /**
- * Classe que representa um n� gen�rico.
- * 
+ * A class representing a generic node.
  * @author Michael e Rommel
  */
 public abstract class Node implements Serializable, IOnePositionDrawable {
@@ -89,7 +88,8 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	protected double[] standardDeviation;
 
 	/**
-	 * Constr�i um novo n� e faz as devidas inicializa��es.
+	 * Builds a new node and makes the expected
+	 * initializations.
 	 */
 	public Node() {
 		name = "";
@@ -121,22 +121,23 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	public abstract int getType();
 
 	/**
-	 * Retorna o tipo de informa��o do n�.
+	 * Returns the type of information of this node.
 	 * 
-	 * @return Tipo de informa��o do n�.
+	 * @return Type of the information.
 	 */
 	public int getInformationType() {
 		return informationType;
 	}
 
 	/**
-	 * Altera o tipo de informa��o do n�. Os tipos de informa��o podem ser: -
-	 * DESCRIPTION_TYPE : n� de descri��o - EXPLANATION_TYPE : n� de explica��o
-	 * 
+	 * Modify the node's type of information.
+	 * The types can be:
+	 * 		DESCRIPTION_TYPE: for description nodes.
+	 * 		EXPLANATION_TYPE: for explanation nodes.
 	 * @param informationType
-	 *            Tipo de informa��o
+	 *            type of information
 	 * @throws Exception
-	 *             se o tipo de informa��o for inv�lida
+	 *            if the type of information is invalid
 	 */
 	public void setInformationType(int informationType) /* throws Exception */{
 		if ((informationType > 2) && (informationType < 5))
@@ -203,23 +204,21 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 
 	/**
-	 * Insere nova lista de filhos.
-	 * 
-	 * @param filhos
-	 *            List de n�s que representam os filhos.
+	 * Sets a new list of children.
+	 * @param children
+	 * 			List of nodes representing the children.
 	 */
-	public void setChildren(NodeList filhos) {
-		this.children = filhos;
+	public void setChildren(NodeList children) {
+		this.children = children;
 	}
 
 	/**
-	 * Insere nova lista de pais.
-	 * 
-	 * @param pais
-	 *            List de n�s que representam os pais.
+	 * Sets a new list of parents.
+	 * @param parents
+	 * 			List of nodes representing the parents.
 	 */
-	public void setParents(NodeList pais) {
-		this.parents = pais;
+	public void setParents(NodeList parents) {
+		this.parents = parents;
 	}
 	
 	public void addChild(Node filho){
@@ -259,20 +258,20 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 
 	/**
 	 * Modifica a descri��o da explana��o do n�.
-	 * 
+	 * Modifies the description of the explanation of the node.
 	 * @param texto
+	 * 			A text representing the node's explanation's description.
 	 *            descri��o da explana��o do n�.
 	 */
-	public void setExplanationDescription(String texto) {
-		this.explanationDescription = texto;
+	public void setExplanationDescription(String text) {
+		this.explanationDescription = text;
 	}
 
 	/**
-	 * Modifica o ArrayMap com as frases.
-	 * 
+	 * Modifies the ArrayMap with the phrases
 	 * @param phrasesMap
-	 *            novo ArrayMap a ser setado
-	 * @return phrasesMap anterior.
+	 *            a new ArrayMap to be set
+	 * @return the old phrasesMap.
 	 */
 	public ArrayMap<String, ExplanationPhrase> setPhrasesMap(
 			ArrayMap<String, ExplanationPhrase> phrasesMap) {
@@ -282,18 +281,16 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 
 	/**
-	 * Retorna o nome do n�.
-	 * 
-	 * @return descri��o do n�.
+	 * Obtains the name of this node.
+	 * @return node's description.
 	 */
 	public String getDescription() {
 		return description;
 	}
 
 	/**
-	 * Retorna a lista de adjacentes.
-	 * 
-	 * @return Refer�ncia para os adjacentes do n�.
+	 * Obtains a list of adjacents.
+	 * @return reference for this node's adjacents.
 	 */
 	public NodeList getAdjacents() {
 		return adjacents;
@@ -309,43 +306,39 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 
 	/**
-	 * Retorna a lista de filhos.
-	 * 
-	 * @return Lista de filhos.
+	 * Obtains a list of children.
+	 * @return list of children.
 	 */
 	public final NodeList getChildren() {
 		return children;
 	}
 
 	/**
-	 * Retorna a lista de pais.
-	 * 
-	 * @return Lista de Pais.
+	 * Obtains a list of parents.
+	 * @return list of parents.
 	 */
 	public final NodeList getParents() {
 		return parents;
 	}
 
 	/**
-	 * Retorna a descri��o de explana��o do n�.
-	 * 
-	 * @return descri��o de explana��o do n�.
+	 * Obtains the description of the explanation of the node.
+	 * @return description of the explanation of the node
 	 */
 	public String getExplanationDescription() {
 		return explanationDescription;
 	}
 
 	/**
-	 * Retorna o ArrayMap com as frases.
-	 * 
-	 * @return ArrayMap com as frases.
+	 * Obtains the ArrayMap with the phrases.
+	 * @return ArrayMap with the phrases.
 	 */
 	public ArrayMap<String, ExplanationPhrase> getPhrasesMap() {
 		return this.phrasesMap;
 	}
 
 	/**
-	 * Utilizado em dalgo2
+	 * Used within dalgo2
 	 */
 	public void atualizatamanhoinfoestados() {
 		int i = states.size();
@@ -358,19 +351,17 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 
 	/**
-	 * Insere um estado com o nome especificado no final da lista.
-	 * 
-	 * @param estado
-	 *            Nome do estado a ser inserido.
+	 * Inserts a state with the specified name at the end of the list.
+	 * @param state
+	 *            Name of the state to be added.
 	 */
-	public void appendState(String estado) {
+	public void appendState(String state) {
 		updateTables();
-		states.add(estado);
+		states.add(state);
 	}
 
 	/**
-	 * Retira o estado criado mais recentemente. Isto �, o �ltimo estado da
-	 * lista.
+	 * Deletes the node's last inserted state (i.e the last element inside the list of states).
 	 */
 	public void removeLastState() {
 		if (states.size() > 1) {
@@ -380,8 +371,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 
 	/**
-	 * Utilizado em dalgo2. Nao deve ser utilizado em nodes com informacoes de
-	 * tabelas de potencial.
+	 * Used within dalgo2. It should not be used with nodes having potential table's informations.
 	 */
 	public void removeStateAt(int index) {
 		states.remove(index);
@@ -389,15 +379,14 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 
 	/**
-	 * Substitui o estado da posi��o especificada pelo estado especificado.
-	 * 
-	 * @param estado
-	 *            Nome do estado atualizado.
+	 * Replaces a state at given position to the specified position.
+	 * @param state
+	 * 				Name of the new state.
 	 * @param index
-	 *            �ndice em que deseja-se modificar, come�ando do 0.
+	 * 				Position of the state being substituted. Starts with 0.
 	 */
-	public void setStateAt(String estado, int index) {
-		states.set(index, estado);
+	public void setStateAt(String state, int index) {
+		states.set(index, state);
 	}
 
 	/*
@@ -407,27 +396,25 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	 */
 
 	/**
-	 * Retorna o n�mero de estados do n�.
-	 * 
-	 * @return Retorna o n�mero de estados do n�.
+	 * It returns the node's quantity of states.
+	 * @return How many states the node has.
 	 */
 	public final int getStatesSize() {
 		return states.size();
 	}
 
 	/**
-	 * Retorna o estado da posi��o <code>index</code>
-	 * 
+	 * Returns the state of the position given by <code>index</code>
 	 * @param index
-	 *            �ndice do estado a ser lido.
-	 * @return Nome do estado da posi��o <code>index</code>
+	 *            position of the state to be read.
+	 * @return Name of the state at <code>index</code>
 	 */
 	public final String getStateAt(int index) {
 		return (String) (states.get(index));
 	}
 
 	/**
-	 * Monta lista de n�s adjacentes.
+	 * Builds the list of adjacent nodes.
 	 */
 	public void makeAdjacents() {
 		adjacents.addAll(parents);
@@ -435,15 +422,15 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	}
 
 	/**
-	 * Desmonta a lista de n�s adjacentes.
+	 * Clears the list of adjacent nodes.
 	 */
 	public void clearAdjacents() {
 		adjacents.clear();
 	}
 
 	/**
-	 * Utilizado para notificar as tabelas de que esta vari�vel faz parte de que
-	 * houve uma modifica��o na estrutura desta vari�vel.
+	 * This should be used to notify the tables which this variable is part of that
+	 * there were some modification at this variable's internal structure.
 	 */
 	private void updateTables() {
 		ITabledVariable aux;

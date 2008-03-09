@@ -164,7 +164,7 @@ public class ObjectEntityConteiner {
 	
 	public ObjectEntityInstance getEntityInstanceByName(String name){
 		for(ObjectEntityInstance entity: listEntityInstances){
-			if(entity.getName().equals(name)){
+			if(entity.getName().equalsIgnoreCase(name)){
 				return entity; 
 			}
 		}

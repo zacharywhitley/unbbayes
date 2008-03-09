@@ -36,4 +36,8 @@ public class MEBNException extends Exception{
 		super(); 
 	}
 	
+	public MEBNException(Exception e) {
+		super(e);
+	}
+	
 }

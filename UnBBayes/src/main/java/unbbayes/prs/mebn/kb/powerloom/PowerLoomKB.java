@@ -24,7 +24,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.StringTokenizer;
 
+import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -47,6 +49,7 @@ import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
+import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
@@ -72,6 +75,9 @@ import edu.isi.stella.Stella_Object;
  */
 public class PowerLoomKB implements KnowledgeBase {
 
+	
+	public static String PLITOKENSEPARATOR = "() \n\t\r";
+	
 	private Module moduleGenerative;
 
 	private Module moduleFinding;
@@ -875,13 +881,16 @@ public class PowerLoomKB implements KnowledgeBase {
 	}
 	
 	/**
-	 * TODO finish this
 	 * Searches the KB for findings of a resident node and adds those findings as
 	 * new RandomVariableFindings
 	 * @param resident resident node which name is going to be searched inside kb
 	 * @see RandomVariableFinding
 	 */
 	public void fillFindings(ResidentNode resident) {
+		final boolean NONBOOLEAN = false;
+		final boolean ISBOOLEAN = true;
+		boolean booleanValue = false;
+		
 		/*
 		 * Retrieve from kb using the format below:
 		 *   boolean true:
@@ -894,10 +903,10 @@ public class PowerLoomKB implements KnowledgeBase {
 		 *   		retrieve all ( = ( RESIDENT ?x0 ) ?x1 ) 
 		 *   		retrieve all ( = ( RESIDENT ?x0 ?x1  ) ?x2 ) 
 		 */
-		/*
+		
 		String queryString = "";
 		int argcount = 0;
-		if(resident.getTypeOfStates() != DomainResidentNode.BOOLEAN_RV_STATES){
+		if(resident.getTypeOfStates() != ResidentNode.BOOLEAN_RV_STATES){
 			
 			// filling ordinary
 			
@@ -910,25 +919,15 @@ public class PowerLoomKB implements KnowledgeBase {
 
 			Stella_Object sobj = PLI.sEvaluate(queryString, moduleFindingName, environment); 
 			
+			String result = PLI.getNthString(sobj, 0, this.moduleFinding, this.environment);
+			Debug.println(this.getClass(), "result..." + result + "...count = " + argcount);
 			
-			//for (int i = 0 ; i < argcount ; i++ , sobj.incrementReferenceCount()) {
-				String result = PLI.getNthString(sobj, 0, this.moduleFinding, this.environment);
-				//String result = sobj.toString();
-				//TODO complete treating
-				
-				System.out.println("result..." + result + "...count = " + argcount);
-				
-				RandomVariableFinding finding = new RandomVariableFinding(resident , null , 
-						  resident.getPossibleValueByName("true").getState() ,
-						  resident.getMFrag().getMultiEntityBayesianNetwork());
-				
-				
-			//}
-			
-			
-			
+			this.parsePLIStringAndFillBooleanFinding(resident, result, NONBOOLEAN, NONBOOLEAN);
+		
 		} else {
-// filling false findings
+			
+			// filling false findings
+			booleanValue = false;
 			
 			queryString = "( retrieve all ( not ( " + resident.getName(); 
 			List<ObjectEntityInstance> argumentList = new ArrayList<ObjectEntityInstance>();
@@ -936,33 +935,135 @@ public class PowerLoomKB implements KnowledgeBase {
 				queryString += " ?x" + argcount++; 
 			}
 			queryString += " ) ) ) ";
-
-			Stella_Object sobj = PLI.sEvaluate(queryString, moduleFindingName, environment); 
 			
+			Stella_Object sobj = null;
+			String result = null;
 			
-			for (int i = 0 ; i < argcount ; i++ , sobj.incrementReferenceCount()) {
-				String result = PLI.getNthString(sobj, i, this.moduleFinding, this.environment);
-				//String result = sobj.toString();
-				//TODO complete treating
-				
-				System.out.println("result = " + result);
-				
-				RandomVariableFinding finding = new RandomVariableFinding(resident , null , 
-						  resident.getPossibleValueByName("true").getState() ,
-						  resident.getMFrag().getMultiEntityBayesianNetwork());
-				
-				
+			try{
+				sobj = PLI.sEvaluate(queryString, moduleFindingName, environment); 
+				if (!sobj.deletedP()) {
+					result = PLI.getNthString(sobj, 0, this.moduleFinding, this.environment);
+				}
+			} catch ( Exception e) {
+				e.printStackTrace();
+				return;
 			}
 			
+			Debug.println(this.getClass(), "result..." + result + "...count = " + argcount);
 			
+			this.parsePLIStringAndFillBooleanFinding(resident, result, ISBOOLEAN  , booleanValue);
 				
+			
 			// filling true findings
-			argcount = 0;	// reset the argument count, of course
-			// TODO complete
+			booleanValue = true;			
+			
+			queryString = "( retrieve all ( " + resident.getName(); 
+			argumentList = new ArrayList<ObjectEntityInstance>();
+			for(Argument argument: resident.getArgumentList()){
+				queryString += " ?x" + argcount++; 
+			}
+			queryString += " ) ) ";
+
+			try{
+				sobj = PLI.sEvaluate(queryString, moduleFindingName, environment); 
+				if (!sobj.deletedP()) {
+					result = PLI.getNthString(sobj, 0, this.moduleFinding, this.environment);
+				}
+			} catch ( Exception e) {
+				e.printStackTrace();
+				return;
+			}
+			Debug.println(this.getClass(), "result..." + result + "...count = " + argcount);
+			
+			this.parsePLIStringAndFillBooleanFinding(resident, result, ISBOOLEAN, booleanValue);
+			
 		}
-		*/
+		
 	}
 	
-	
+	/**
+	 * Parses the string describing the findings and fills the resident node
+	 * with them.
+	 * The string evaluated by this method should be in the format sampled below:
+	 * 		(ST4 ST3 ST2 ST1) 
+	 * for boolean findings with 1 argument
+	 * 		((ST4 ST3) 
+	 * 		 (ST2 ST1)) 
+	 * for boolean findings with two arguments
+	 * 		((ST4 CARDASSIAN) 
+	 * 		 (ST2 UNKNOWN)) 
+	 * for non-boolean findings with one argument
+	 * 		((ST4 T3 CARDASSIAN) 
+	 * 		 (ST2 T1 UNKNOWN))
+	 * for non-boolean findings with two arguments
+	 * @param resident the node to insert the finding
+	 * @param strPLI the special format string to be evaluated. Can be obtained by using PLI.sEvaluate and PLI.getNthString.
+	 * @param boolValue if the evaluated boolean finding should be "true" or "false". It is ignored when the finding should not
+	 * be boolean
+	 * @param isBool if the finding should be a boolean value (false if non-boolean finding)
+	 * @return resident.getRandomVariableFindingList()
+	 */
+	public List<RandomVariableFinding> parsePLIStringAndFillBooleanFinding(ResidentNode resident , String strPLI, boolean isBool , boolean boolValue )  {
+		
+		StringTokenizer tokenizer =  new StringTokenizer(strPLI , PLITOKENSEPARATOR);
+		
+		List<ObjectEntityInstance> argumentInstances = null;
+		List<Argument> arguments = resident.getArgumentList();
+		
+		Debug.println(this.getClass(), "input: " + strPLI);
+		
+		if (strPLI.equalsIgnoreCase(PLITOKENSEPARATOR)) {
+			return null;
+		}
+		
+		while (tokenizer.hasMoreTokens()) {
+			argumentInstances = new ArrayList<ObjectEntityInstance>();
+			String token = null;
+			Debug.println("Arguments:");
+			for (int i = 0 ;  i < arguments.size() ; i++) {
+				// Extract arguments
+				token = tokenizer.nextToken();
+				try {
+					ObjectEntityInstance instance = resident.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getEntityInstanceByName(token);
+					Debug.print(" | " + token);
+					argumentInstances.add(instance);
+				} catch (Exception e) {
+					e.printStackTrace();
+					continue;
+				}
+			}
+			Debug.println("");
+			// now, argumentInstances should contain all arguments of this finding
+			RandomVariableFinding finding = null;
+			String possibleValue = null;
+			// let's extract the possible value, if necessary
+			if (!isBool) {
+				possibleValue = tokenizer.nextToken();
+				Debug.println(this.getClass(), "Possible Value = " + possibleValue);
+			}
+			try {
+				if (isBool) {
+					finding = new RandomVariableFinding(resident , 
+							  argumentInstances.toArray(new ObjectEntityInstance[argumentInstances.size()]) , 
+							  resident.getPossibleValueByName(String.valueOf(boolValue)).getState() ,
+							  resident.getMFrag().getMultiEntityBayesianNetwork());
+				} else {
+					finding = new RandomVariableFinding(resident , 
+							 argumentInstances.toArray(new ObjectEntityInstance[argumentInstances.size()]) , 
+							 resident.getPossibleValueByName(possibleValue).getState() ,
+							 resident.getMFrag().getMultiEntityBayesianNetwork());
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.err.println("Error: " + strPLI + " at " + token);
+				continue;
+			}
+			
+			Debug.println("Finding = " + finding.toString());
+			resident.addRandonVariableFinding(finding);
+		}
+		return resident.getRandonVariableFindingList();
+	}
 
+	
 }

@@ -30,6 +30,7 @@ import java.util.ResourceBundle;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ResidentNode;
@@ -39,6 +40,7 @@ import unbbayes.prs.mebn.compiler.exception.InvalidProbabilityRangeException;
 import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredException;
 import unbbayes.prs.mebn.compiler.exception.SomeStateUndeclaredException;
 import unbbayes.prs.mebn.compiler.exception.TableFunctionMalformedException;
+import unbbayes.prs.mebn.compiler.exception.UndeclaredTableException;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.OVInstance;
@@ -151,7 +153,7 @@ public class Compiler implements ICompiler {
 	/* Current text cursor position (where inside "text" we're scanning now) */
 	private int index = 0;
 
-	private char[] text;
+	private char[] text = null;
 
 	/* keywords */
 	private String kwlist[] = { "IF", "ELSE", "ALL", "ANY", "HAVE" };
@@ -216,6 +218,8 @@ public class Compiler implements ICompiler {
 	
 	
 	/**
+	 * Note: if the pseudocode passed to this class is either empty or null, this class
+	 * should consider equal probability distribution for all possible states.
 	 * TODO break this class apart, because it's becoming too huge.
 	 * @param node: the node having the CPT's pseudocode being evaluated by this class.
 	 * @param ssbnnode: the node where we should set the output CPT to.
@@ -238,7 +242,17 @@ public class Compiler implements ICompiler {
 	 */
 	public void init(String text) {
 		if (text == null) {
-			throw new NullPointerException(resource.getString("TableUndeclared") + " : " + this.getNode().getName());
+			this.text = null;
+			return;
+		} else if (text.isEmpty()) {
+			/*
+			 * testing if ((text == null) || text.isEmpty()) would be much better, but
+			 * since some non-standard JVM could not to stop testing boolean OR condition
+			 * after finding a true value, the text.isEmpty() might be executed without
+			 * testing if it is null, which may cause NullPointerException.
+			 */
+			this.text = null;
+			return;
 		}
 		index = 0;
 		Debug.println("************************************");
@@ -280,6 +294,10 @@ public class Compiler implements ICompiler {
 	 */
 	public void parse() throws MEBNException {
 		//this.currentProbCellList = new ArrayList<TempTableProbabilityCell>(); //Initialize lists
+		if (this.text == null) {
+			Debug.println("Pseudocode = null");
+			return;
+		}
 		Debug.println("PARSED: ");
 		this.skipWhite();
 		this.table();
@@ -297,7 +315,8 @@ public class Compiler implements ICompiler {
 	
 	/**
 	 * This method will not parse. Use parse() before this.
-	 * 
+	 * Please, note that this method will generate linear (equal) distribution
+	 * if no pseudocode is declared (all values will have same probability).
 	 * @return generated potential table
 	 */
 	public PotentialTable getCPT() throws InconsistentTableSemanticsException,
@@ -310,16 +329,17 @@ public class Compiler implements ICompiler {
 		if (this.tempTable == null) {
 			return null;
 		}
-		if (this.tempTable.size() <= 0) {
-			return null;
-		}
 		if (this.ssbnnode.isFinding()) {
 			return null;
 		}
 		if (this.ssbnnode.getProbNode() == null) {
 			return null;
 		}
-		
+		if (this.text == null || (this.tempTable.size() <= 0) ) {
+			// Special condition: if pseudocode was not declared, use linear (equal) distribution instead
+			this.generateLinearDistroCPT(this.ssbnnode.getProbNode());
+			return this.ssbnnode.getProbNode().getPotentialTable();
+		}
 		
 		// initialization
 		
@@ -468,6 +488,22 @@ public class Compiler implements ICompiler {
 		this.init(ssbnnode);
 		this.parse();
 		return getCPT();
+	}
+	
+	
+	/**
+	 * This method just fills the node's probabilistic tables w/ equal values.
+	 * For instance, if a node has 4 possible values, then the table will contain
+	 * only cells w/ 25% value (1/4).
+	 * @param probNode
+	 */
+	private void generateLinearDistroCPT(ProbabilisticNode probNode) {
+		float value = 1.0F / probNode.getStatesSize();
+		PotentialTable table = probNode.getPotentialTable();
+		for (int i = 0; i < probNode.getPotentialTable().tableSize(); i++) {
+			 // TODO in float operation, since 1/3 + 1/3 + 1/3 might not be 1, implement some precision control
+			 table.setValue(i, value);
+		}
 	}
 	
 	/**
@@ -1004,14 +1040,14 @@ public class Compiler implements ICompiler {
 			match('+');
 			temp2 = term();
 			if (!Float.isNaN(temp2.getProbability()) && !Float.isNaN(temp1.getProbability())) {
-				temp1 = new MathOperationProbabilityValue(temp2 , MathOperationProbabilityValue.ADD , temp1);
+				temp1 = new AddOperationProbabilityValue(temp2 ,  temp1);
 			}		
 			break;
 		case '-':
 			match('-');
 			temp2 = term();
 			if (!Float.isNaN(temp2.getProbability()) && !Float.isNaN(temp1.getProbability())){
-				temp1 = new MathOperationProbabilityValue(temp1 , MathOperationProbabilityValue.SUBTRACT , temp2);
+				temp1 = new SubtractOperationProbabilityValue(temp1 , temp2);
 			}			
 			break;
 		}
@@ -1036,14 +1072,14 @@ public class Compiler implements ICompiler {
 			match('*');
 			temp2 = this.signedFactor();
 			if (!Float.isNaN(temp2.getProbability()) && !Float.isNaN(temp1.getProbability())) {
-				return new MathOperationProbabilityValue(temp2, MathOperationProbabilityValue.MULTIPLY , temp1);
+				return new MultiplyOperationProbabilityValue(temp2,  temp1);
 			}
 			break;
 		case '/':
 			match('/');
 			temp2 = this.signedFactor();
 			if (!Float.isNaN(temp2.getProbability()) && !Float.isNaN(temp1.getProbability())) {
-				return new MathOperationProbabilityValue(temp2, MathOperationProbabilityValue.DIVIDE , temp1);
+				return new DivideOperationProbabilityValue(temp2, temp1);
 			}
 			break;
 		default:
@@ -1062,7 +1098,7 @@ public class Compiler implements ICompiler {
 													InvalidProbabilityRangeException,
 													SomeStateUndeclaredException{
 
-		int sign = 1;
+		boolean isMinus = false;
 		
 		// CHECK TO SEE IF THERE IS A -/+ UNARY SIGN
 		// boolean negative;
@@ -1071,14 +1107,18 @@ public class Compiler implements ICompiler {
 			Debug.print("" + look);
 			
 			if (this.isMinus(look)) {
-				sign = -1;
+				isMinus = true;
 			}
 			
 			nextChar();
 			skipWhite();
 		}
-		Debug.println("Signed factor returning " + sign);
-		return new MathOperationProbabilityValue(new SimpleProbabilityValue(sign) , MathOperationProbabilityValue.MULTIPLY , factor());
+		Debug.println("Signed factor returning minus = " + isMinus);
+		if (isMinus) {
+			return new NegativeOperationProbabilityValue(factor());
+		} else {
+			return factor();
+		}
 	}
 
 	/**
@@ -2343,63 +2383,66 @@ public class Compiler implements ICompiler {
 		}
 	}
 	
-	private class MathOperationProbabilityValue implements IProbabilityValue {
-		private float value = Float.NaN;
-		private IProbabilityValue op1 = null;
-		private IProbabilityValue op2 = null;
-		private int opcode = -1;
+	private abstract class MathOperationProbabilityValue implements IProbabilityValue {
+		protected IProbabilityValue op1 = null;
+		protected IProbabilityValue op2 = null;
 		
-		public static final int ADD = 0;
-		public static final int SUBTRACT = 1;
-		public static final int MULTIPLY = 2;
-		public static final int DIVIDE = 3;
-		
-		
-		
-		MathOperationProbabilityValue(IProbabilityValue op1 , int opcode, IProbabilityValue op2) {
+		public abstract float getProbability() throws InvalidProbabilityRangeException;
+	}
+	
+	private class AddOperationProbabilityValue extends MathOperationProbabilityValue {
+		AddOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
 			this.op1 = op1;
 			this.op2 = op2;
-			this.opcode = opcode;
 		}
+		@Override
 		public float getProbability() throws InvalidProbabilityRangeException {
-			float ret = -1;
-			switch (this.opcode) {
-			case MathOperationProbabilityValue.ADD:
-				ret = this.op1.getProbability() + this.op2.getProbability();
-				Debug.println("Operation = +, getProbability: " + this.op1.getProbability() 
-						+ " , " + this.op2.getProbability() + " = " + ret);
-				break;
-			case MathOperationProbabilityValue.SUBTRACT:
-				ret = this.op1.getProbability() - this.op2.getProbability();
-				Debug.println("Operation = -, getProbability: " + this.op1.getProbability() 
-						+ " , " + this.op2.getProbability() + " = " + ret);
-				break;
-			case MathOperationProbabilityValue.MULTIPLY:
-				ret = this.op1.getProbability() * this.op2.getProbability();
-				Debug.println("Operation = *, getProbability: " + this.op1.getProbability() 
-						+ " , " + this.op2.getProbability() + " = " + ret);
-				break;
-			case MathOperationProbabilityValue.DIVIDE:
-				ret = this.op1.getProbability() / this.op2.getProbability();
-				Debug.println("Operation = /, getProbability: " + this.op1.getProbability() 
-						+ " , " + this.op2.getProbability() + " = " + ret);
-				break;
-			default:
-				ret = Float.NaN;
-				break;
-			}
-			// consistency check (verify probability range [0,1]) 
-			/*
-			// this test should be executed only at the top level caller
-			if (!Float.isNaN(ret)) {
-				
-				if ( (ret < 0) || (ret > 1) ) {
-					throw new InvalidProbabilityRangeException();
-				} 
-			}
-			*/	
-			return ret;
+			return this.op1.getProbability() + this.op2.getProbability();
+		}		
+	}
+	
+	private class SubtractOperationProbabilityValue extends MathOperationProbabilityValue {
+		SubtractOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
+			this.op1 = op1;
+			this.op2 = op2;
 		}
+		@Override
+		public float getProbability() throws InvalidProbabilityRangeException {
+			return this.op1.getProbability() - this.op2.getProbability();
+		}		
+	}
+	
+	private class MultiplyOperationProbabilityValue extends MathOperationProbabilityValue {
+		MultiplyOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
+			this.op1 = op1;
+			this.op2 = op2;
+		}
+		@Override
+		public float getProbability() throws InvalidProbabilityRangeException {
+			return this.op1.getProbability() * this.op2.getProbability();
+		}		
+	}
+	
+	private class DivideOperationProbabilityValue extends MathOperationProbabilityValue {
+		DivideOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
+			this.op1 = op1;
+			this.op2 = op2;
+		}
+		@Override
+		public float getProbability() throws InvalidProbabilityRangeException {
+			return this.op1.getProbability() / this.op2.getProbability();
+		}		
+	}
+	
+	private class NegativeOperationProbabilityValue extends MathOperationProbabilityValue {
+		NegativeOperationProbabilityValue(IProbabilityValue op1) {
+			this.op1 = op1;
+			this.op2 = op1;
+		}
+		@Override
+		public float getProbability() throws InvalidProbabilityRangeException {
+			return - this.op1.getProbability();
+		}		
 	}
 	
 	private class CardinalityProbabilityValue implements IProbabilityValue {

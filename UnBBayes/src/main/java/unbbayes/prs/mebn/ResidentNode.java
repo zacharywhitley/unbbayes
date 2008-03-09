@@ -496,9 +496,14 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	 * (return null if don't exist a possible value with this name)
 	 */
 	public StateLink getPossibleValueByName(String possibleValue){
-		for(StateLink value : possibleValueList){
-			if (value.getState().getName().equalsIgnoreCase(possibleValue)){
-				return value; 
+		for(Entity value : this.getPossibleValueListIncludingEntityInstances()){
+			if (value.getName().equalsIgnoreCase(possibleValue)){
+				/* 
+				 * TODO since this.getPossibleValueListIncludingEntityInstances() searches for 
+				 * StateLink (but converts it to Entity) and the code below turns it back to StateLink again,
+				 * we might optimize this.
+				 */
+				return new StateLink(value); 
 			}
 		}
 		

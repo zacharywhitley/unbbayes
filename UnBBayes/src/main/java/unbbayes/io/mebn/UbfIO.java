@@ -113,7 +113,7 @@ public class UbfIO implements MebnIO {
 	private UbfIO() {
 		super();
 		this.prowlIO = new PrOwlIO();
-		Debug.setDebug(true);
+		//Debug.setDebug(true);
 	}		
 	/**
 	 * Construction method for UbfIO

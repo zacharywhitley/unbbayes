@@ -21,6 +21,7 @@
 package unbbayes.prs.mebn.compiler;
 
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.mebn.compiler.exception.UndeclaredTableException;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 
@@ -30,9 +31,10 @@ public interface ICompiler {
 	 * Initializes compiler. Sets the text to parse by
 	 * parse() method
 	 * @param text: text to parse
+	 * @throws UndeclaredTableException when parameter is empty
 	 * @see unbbayes.gui.UnBBayesFrame.prs.mebn.compiler.ICompiler#parse()
 	 */
-	public abstract void init(String text);
+	public abstract void init(String text) ;
 	
 	/**
 	 * Parse the string passed by init method

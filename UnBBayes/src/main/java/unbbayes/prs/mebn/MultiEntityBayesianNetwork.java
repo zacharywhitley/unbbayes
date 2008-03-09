@@ -345,12 +345,24 @@ public class MultiEntityBayesianNetwork extends Network {
 	public ResidentNode getDomainResidentNode(String name){
 		for(MFrag mfrag: domainMFragList){
 			for(ResidentNode node: mfrag.getResidentNodeList()){
-				if(node.getName().equals(name)){
+				if(node.getName().equalsIgnoreCase(name)){
 					return node; 
 				}
 			}
 		}
 		return null; 
+	}
+	
+	/**
+	 * Obtains every resident nodes declared in a MTheory
+	 * @return list containing resident nodes.
+	 */
+	public List<ResidentNode> getDomainResidentNodes() {
+		List<ResidentNode> nodes = new ArrayList<ResidentNode>();
+		for (MFrag mfrag : this.domainMFragList) {
+			 nodes.addAll(mfrag.getResidentNodeList());
+		}
+		return nodes;
 	}
 	
 	/**
