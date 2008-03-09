@@ -108,13 +108,12 @@ public class ControllerResources_pt extends ListResourceBundle {
 		
 		/* load/save */
 		{"saveSucess", "Arquivo salvo com sucesso!"},
-		{"mebnDontExists", "Operao falhou: No h MEBN ativa"},
-		{"bnDontExists", "Operao falhou: No h Rede Bayesiana ativa"},
-		{"msbnDontExists", "Operao falhou: No h MSBN ativa"},
-		{"windowDontExists", "Operao falhou: No h janela ativa"},
+		{"mebnDontExists", "Operao falhou: No há MEBN ativa"},
+		{"bnDontExists", "Operao falhou: No há Rede Bayesiana ativa"},
+		{"msbnDontExists", "Operao falhou: No há MSBN ativa"},
+		{"windowDontExists", "Operao falhou: No há janela ativa"},
 		{"sucess", "Sucesso"}, 
 		{"error", "Erro"},
-		{"withoutPosfixe", "Tipo do arquivo não informado!"}		
-		
+		{"withoutPosfixe", "Tipo do arquivo não informado!"}
 	};
 }

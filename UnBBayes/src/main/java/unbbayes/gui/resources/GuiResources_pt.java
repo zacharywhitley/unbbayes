@@ -346,6 +346,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"FileLoadOK" , "Arquivo carregado com sucesso"},
 		{"NoSSBN" , "Não há SSBN gerada anteriormente! Modo não disponivel."},
 		{"KBClean" , "Base de conhecimento limpa com sucesso"},
-		{"NotImplemented" , "Funcionalidade ainda não implementada"}
+		{"NotImplemented" , "Funcionalidade ainda não implementada"},		
+		{"loadedWithErrors" , "Arquivo carregado, mas pode haver falhas"}
 	};
 }

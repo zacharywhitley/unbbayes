@@ -97,8 +97,8 @@ public class ControllerResources extends ListResourceBundle {
 		{"of"," of "},
 		
 		/* Exceptions MEBN */
-		{"withoutMFrag", "Don't exists any MFrag"}, 
-		{"edgeInvalid", "Edge Invalid"}, 
+		{"withoutMFrag", "No MFrag found"}, 
+		{"edgeInvalid", "Invalid Edge"}, 
 
 		{"JAXBExceptionFound", "Sintaxe error..."},
 		
@@ -107,13 +107,12 @@ public class ControllerResources extends ListResourceBundle {
 		{"stdDev", "Standard Dev"}, 
 				
 		/* load/save */
-		{"saveSucess", "File save!"},
-		{"mebnDontExists", "Opera��o falhou: N�o h� MEBN ativa"}, //TODO Translate
-		{"bnDontExists", "Opera��o falhou: N�o h� Rede Bayesiana ativa"},
-		{"mebnDontExists", "Opera��o falhou: N�o h� MSBN ativa"},
+		{"saveSucess", "File saved"},
+		{"mebnDontExists", "Failed: no active MEBN"}, 
+		{"bnDontExists", "Failed: no active Bayesian Network"},
+		{"mebnDontExists", "Failed: No active MSBN"},
 		{"sucess", "Sucess"}, 
 		{"error", "Error"},
-		{"withoutPosfixe", "Type of file don't informed!"}
-		
+		{"withoutPosfixe", "The type of the file wasn't provided"}
 	};
 }

@@ -344,7 +344,8 @@ public class GuiResources extends ListResourceBundle {
 		{"FileLoadOK" , "File was successfully loaded"},
 		{"NoSSBN" , "No previously generated SSBN found."},
 		{"KBClean" , "Knowledge base successfully cleared"},
-		{"NotImplemented" , "Not implemented yet."}
+		{"NotImplemented" , "Not implemented yet."},
+		{"loadedWithErrors" , "File loaded, but some errors may have occurred"}
 		
 	};
 }

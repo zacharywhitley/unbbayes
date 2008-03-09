@@ -800,8 +800,13 @@ public class MEBNEditionPane extends JPanel {
 	    			int option = chooser.showOpenDialog(null);
 	    			if (option == JFileChooser.APPROVE_OPTION) {
 	    				if (chooser.getSelectedFile() != null) {
-	    					mebnController.loadFindingsFile(chooser.getSelectedFile());
-	    					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileLoadOK"));
+	    					try {
+	    						mebnController.loadFindingsFile(chooser.getSelectedFile());
+	    						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileLoadOK"));
+	    					} catch (Exception e) {
+	    						e.printStackTrace();
+	    						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("loadedWithErrors"));
+	    					}
 	    				}
 	    			}
 	    			
