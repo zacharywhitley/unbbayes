@@ -165,6 +165,8 @@ public class GuiResources extends ListResourceBundle {
 		{"inputNodeInsertToolTip","Insert input variable"},
 		{"residentNodeInsertToolTip","Insert resident variable"},
 		{"mFragInsertToolTip","Insert MFrag"},
+		{"selectObjectToolTip","Select object"},
+		{"ordinaryVariableInsertToolTip","Insert Ordinary Variable"},
 		{"inputActiveToolTip","Input Node Selected"},  
 		{"mFragActiveToolTip","MFrag Selected"}, 		
 		{"contextActiveToolTip","Context Node Selected"}, 
@@ -188,6 +190,14 @@ public class GuiResources extends ListResourceBundle {
 		{"showMTheoryToolTip","Show MTheory tree"},	
 		{"showEntitiesToolTip","Show entities of the MTheory"},
 		{"showOVariablesToolTip","Show ovariables of the MFrag"},			
+		{"showEntityInstancesToolTip","Show entity instance edition pane"},			
+		{"showFingingsToolTip","Show findings edition pane"},		
+		
+		{"executeQueryToolTip","Execute Query"},
+		{"turnToSSBNModeToolTip","Turn to SSBN Mode"},
+		{"clearKBToolTip","Clear Knowledge Base"},
+		{"loadKBToolTip","Load Knowledge Base"},
+		{"saveKBToolTip","Save Knowledge Base"},
 		
 		{"formula","Formula:"},	
 		{"inputOf","Input of:"},	
@@ -344,8 +354,11 @@ public class GuiResources extends ListResourceBundle {
 		{"FileLoadOK" , "File was successfully loaded"},
 		{"NoSSBN" , "No previously generated SSBN found."},
 		{"KBClean" , "Knowledge base successfully cleared"},
-		{"NotImplemented" , "Not implemented yet."},
-		{"loadedWithErrors" , "File loaded, but some errors may have occurred"}
+		{"NotImplemented" , "Not implemented yet."}, 
+		{"loadedWithErrors" , "File loaded, but some errors may have occurred"},
+		
+        //Splash loader */
+		{"loading" , "loading"}
 		
 	};
 }

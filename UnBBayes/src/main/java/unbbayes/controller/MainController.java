@@ -21,6 +21,7 @@
 package unbbayes.controller;
 
 import java.awt.Cursor;
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
 import java.util.ResourceBundle;
@@ -31,6 +32,7 @@ import javax.xml.bind.JAXBException;
 
 import unbbayes.gui.MSBNWindow;
 import unbbayes.gui.NetworkWindow;
+import unbbayes.gui.SplashScreen;
 import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
@@ -43,6 +45,8 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.util.NodeList;
+import edu.isi.powerloom.PLI;
+import edu.stanford.smi.protegex.owl.ProtegeOWL;
 
 
 /**
@@ -57,6 +61,10 @@ public class MainController {
 	
 	private UnBBayesFrame screen;
 	
+	private static boolean PRE_LOAD_PROTEGE; 
+	private static boolean PRE_LOAD_POWERLOOM; 
+	
+	
 	/** Load resource file from this package */
 	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.controller.resources.ControllerResources");
 	
@@ -64,8 +72,51 @@ public class MainController {
 	 *  Contructs the main controller with the UnBBayes main frame.
 	 */
 	public MainController() {
+		eagleLoader(); 
 		screen = new UnBBayesFrame(this);
 	}
+	
+	/**
+	 * Initialize the load configurations of the plugins used by the UnBayes. 
+	 * 
+	 * TODO: This configurations will be in a external config file. 
+	 */
+	public void initializeLoadConfigurations(){
+		PRE_LOAD_POWERLOOM = true; 
+		PRE_LOAD_PROTEGE = true; 
+	}
+	
+	/**
+	 * Pre-loading of api's for a better performance
+	 */
+	public void eagleLoader(){
+		
+		SplashScreen splashScreen = new SplashScreen(); 
+		
+		splashScreen.pack(); 
+		splashScreen.setVisible(true); 
+		
+		initializeLoadConfigurations(); 
+		
+		System.out.println("Init loader Protege"); 
+		
+		//load Protege
+		if(PRE_LOAD_PROTEGE){
+		   ProtegeOWL.createJenaOWLModel();
+		}
+		
+		System.out.println("Init loader Powerloom"); 
+		
+		//load Powerloom
+		if(PRE_LOAD_POWERLOOM){
+		   PLI.initialize();
+		}
+		
+		System.out.println("Finish loader"); 
+		
+		splashScreen.dispose(); 
+	}
+	
 	
 	/**
 	 * This method is responsible for creating a new probabilistic network.

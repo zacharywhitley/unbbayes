@@ -165,8 +165,10 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"utilityNodeInsertToolTip","Inserir variável de utilidade"},
 		{"contextNodeInsertToolTip","Inserir variável de contexto"},
 		{"inputNodeInsertToolTip","Inserir variável de entrada"},
+		{"ordinaryVariableInsertToolTip","Inserir variável ordinária"},
+		{"selectObjectToolTip","Selecionar objeto"},
 		{"residentNodeInsertToolTip","Inserir variável residente"},
-		{"mFragInsertToolTip",",Inserir MFrag"},	
+		{"mFragInsertToolTip","Inserir MFrag"},	
 		{"inputActiveToolTip","Input Node Selecionado"},  
 		{"mFragActiveToolTip","MFrag Selecionada"}, 		
 		{"contextActiveToolTip","Context Node Selecionado"}, 
@@ -189,7 +191,15 @@ public class GuiResources_pt extends ListResourceBundle {
 		
 		{"showMTheoryToolTip","Mostrar Árvore da MTheory"},	
 		{"showEntitiesToolTip","Mostrar entidades da MTheory"},
-		{"showOVariablesToolTip","Mostrar ovariables da MFrag"},			
+		{"showOVariablesToolTip","Mostrar ovariables da MFrag"},
+		{"showEntityInstancesToolTip","Mostrar painél de edição de instâncias de entidades"},			
+		{"showFingingsToolTip","Mostrar painél de edição de findings"},
+		
+		{"executeQueryToolTip","Executar query"},
+		{"turnToSSBNModeToolTip","Mudar para o Modo SSBN"},
+		{"clearKBToolTip","Limpar Base de Conhecimento"},
+		{"loadKBToolTip","Carregar Base de Conhecimento"},
+		{"saveKBToolTip","Salvar Base de Conhecimento"},
 		
 		{"formula","Formula:"},	
 		{"inputOf","Input de:"},	
@@ -346,7 +356,10 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"FileLoadOK" , "Arquivo carregado com sucesso"},
 		{"NoSSBN" , "Não há SSBN gerada anteriormente! Modo não disponivel."},
 		{"KBClean" , "Base de conhecimento limpa com sucesso"},
-		{"NotImplemented" , "Funcionalidade ainda não implementada"},		
-		{"loadedWithErrors" , "Arquivo carregado, mas pode haver falhas"}
+		{"NotImplemented" , "Funcionalidade ainda não implementada"}, 
+		{"loadedWithErrors" , "Arquivo carregado, mas pode haver falhas"},
+		
+        //Splash loader */
+		{"loading" , "carregando"}
 	};
 }

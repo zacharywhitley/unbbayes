@@ -31,6 +31,7 @@ import unbbayes.datamining.datamanipulation.Attribute;
  * @author Danilo Balby Silva Castanheira (danbalby@yahoo.com)
  * @author M�rio Henrique Paes Vieira (mariohpv@bol.com.br)
  */
+
 public class Node implements Serializable
 {
 	/** Serialization runtime version number */
