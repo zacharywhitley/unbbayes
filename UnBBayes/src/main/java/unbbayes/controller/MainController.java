@@ -76,20 +76,11 @@ public class MainController {
 		screen = new UnBBayesFrame(this);
 	}
 	
-	/**
-	 * Initialize the load configurations of the plugins used by the UnBayes. 
-	 * 
-	 * TODO: This configurations will be in a external config file. 
-	 */
-	public void initializeLoadConfigurations(){
-		PRE_LOAD_POWERLOOM = true; 
-		PRE_LOAD_PROTEGE = true; 
-	}
-	
+
 	/**
 	 * Pre-loading of api's for a better performance
 	 */
-	public void eagleLoader(){
+	private void eagleLoader(){
 		
 		SplashScreen splashScreen = new SplashScreen(); 
 		
@@ -117,13 +108,23 @@ public class MainController {
 		splashScreen.dispose(); 
 	}
 	
+	/**
+	 * Initialize the load configurations of the plugins used by the UnBayes. 
+	 * 
+	 * TODO: This configurations will be in a external config file. 
+	 */
+	private void initializeLoadConfigurations(){
+		PRE_LOAD_POWERLOOM = true; 
+		PRE_LOAD_PROTEGE = true; 
+	}
+	
 	
 	/**
 	 * This method is responsible for creating a new probabilistic network.
 	 *
 	 */
 	public void newPN() {
-		ProbabilisticNetwork net = new ProbabilisticNetwork("New PN");
+		ProbabilisticNetwork net = new ProbabilisticNetwork(resource.getString("NewPNName"));
 		NetworkWindow netWindow = new NetworkWindow(net);
 		screen.addWindow(netWindow);
 	}
@@ -133,7 +134,7 @@ public class MainController {
 	 *
 	 */
 	public void newMSBN() {
-		SingleAgentMSBN msbn = new SingleAgentMSBN("New MSBN");
+		SingleAgentMSBN msbn = new SingleAgentMSBN(resource.getString("NewMSBNName"));
 		MSBNController controller = new MSBNController(msbn);
 		screen.addWindow(controller.getPanel());
 	}
@@ -143,7 +144,7 @@ public class MainController {
 	 *
 	 */
 	public void newMEBN() {
-		MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork("NewMEBN");
+		MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork(resource.getString("NewMEBNName"));
 		NetworkWindow netWindow = new NetworkWindow(mebn);
 		screen.addWindow(netWindow);
 	}

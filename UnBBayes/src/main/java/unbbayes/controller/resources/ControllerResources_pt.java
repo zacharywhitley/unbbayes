@@ -67,6 +67,11 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"firstStateDecisionName","Ação 0"},
 		{"nodeName","Nó: "},
 		
+		//MainController
+		{"NewPNName","Nova PN"},
+		{"NewMSBNName","Nova MSBN"},
+		{"NewMEBNName","NovaMEBN"},
+		
 		{"probabilisticNodeName","C"},
 		{"decisionNodeName","D"},
 		{"utilityNodeName","U"},
