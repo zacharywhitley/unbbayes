@@ -26,6 +26,7 @@ import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Event;
 import java.awt.FlowLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
@@ -152,7 +153,7 @@ public class UnBBayesFrame extends JFrame {
 	public UnBBayesFrame(MainController _controller) {
 		super(resource.getString("unbbayesTitle"));
 		this.controller = _controller;
-		setSize(650, 480);
+		this.setSize(Toolkit.getDefaultToolkit().getScreenSize());
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		fileController = FileController.getInstance();
@@ -175,6 +176,9 @@ public class UnBBayesFrame extends JFrame {
 		contentPane.add(bottomPanel, BorderLayout.SOUTH);
 
 		this.setIconImage(iconController.getUnBBayesIcon().getImage());
+		
+		setLocationByPlatform(true); 
+		setLocationRelativeTo(null); 
 		setVisible(true);
 
 		singleton = this;
