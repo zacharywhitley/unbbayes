@@ -88,8 +88,6 @@ import unbbayes.prs.mebn.exception.DuplicatedNameException;
 public class MEBNEditionPane extends JPanel {
 
 	private static final long serialVersionUID = 6194855055129252835L;
-
-	
 	
 	private final NetworkWindow netWindow;
 
@@ -253,7 +251,9 @@ public class MEBNEditionPane extends JPanel {
         btnTabOptionTree.setToolTipText(resource.getString("showMTheoryToolTip"));
         btnTabOptionOVariable.setToolTipText(resource.getString("showOVariablesToolTip"));
         btnTabOptionEntity.setToolTipText(resource.getString("showEntitiesToolTip"));
-
+        btnTabOptionEntityFinding.setToolTipText(resource.getString("showEntityInstancesToolTip"));
+        btnTabOptionNodeFinding.setToolTipText(resource.getString("showFingingsToolTip"));
+        
         addActionListenersToButtons();
 
         jtbEdition = new ToolBarEdition();
@@ -685,7 +685,7 @@ public class MEBNEditionPane extends JPanel {
 
 	    private JButton btnEditingMode;
 	    
-	    private JButton btnQueryMode;
+	    private JButton btnDoQuery;
 	    
 	    private JButton btnTurnToSSBNMode; 
 	    
@@ -698,14 +698,22 @@ public class MEBNEditionPane extends JPanel {
 	    	super(); 
 	    	
 	    	btnGlobalOption = new JButton(iconController.getGlobalOptionIcon());
-	    	btnGlobalOption.setToolTipText(resource.getString("mFragInsertToolTip"));
-	    	
+	
 	    	btnEditingMode = new JButton(iconController.getGlobalOptionIcon());
-	    	btnQueryMode = new JButton(iconController.getCompileIcon());
+	    	btnDoQuery = new JButton(iconController.getCompileIcon());
 	    	btnTurnToSSBNMode = new JButton(iconController.getSsbnIcon()); 
 	    	btnClearKB = new JButton(iconController.getEditDelete()); 
+
+	    	btnLoadKB = new JButton(iconController.getLoadFindingsInstance());
+	    	btnSaveKB = new JButton(iconController.getSaveFindingsInstance());
 	    	
-	    	btnQueryMode.addActionListener(new ActionListener(){
+	    	btnDoQuery.setToolTipText(resource.getString("executeQueryToolTip"));
+	    	btnTurnToSSBNMode.setToolTipText(resource.getString("turnToSSBNModeToolTip"));
+	    	btnClearKB.setToolTipText(resource.getString("clearKBToolTip"));
+	    	btnLoadKB.setToolTipText(resource.getString("loadKBToolTip"));
+	    	btnSaveKB.setToolTipText(resource.getString("saveKBToolTip"));
+	    	
+	    	btnDoQuery.addActionListener(new ActionListener(){
 	    		
 	    		public void actionPerformed(ActionEvent arg0) {
 	    			QueryPanel queryPanel = new QueryPanel(mebnController);
@@ -767,7 +775,6 @@ public class MEBNEditionPane extends JPanel {
 	    		}
 	    	}); 
 	    	
-	    	btnSaveKB = new JButton(iconController.getSaveFindingsInstance());
 	    	btnSaveKB.addActionListener(new ActionListener() {
 	    		public void actionPerformed(ActionEvent ae) {
 	    			setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -789,7 +796,6 @@ public class MEBNEditionPane extends JPanel {
 	    		}
 	    	}); 
 	    	
-	    	btnLoadKB = new JButton(iconController.getLoadFindingsInstance());
 	    	btnLoadKB.addActionListener(new ActionListener() {
 	    		public void actionPerformed(ActionEvent ae) {
 	    			setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -813,7 +819,7 @@ public class MEBNEditionPane extends JPanel {
 	    			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	    		}});
 
-	        add(btnQueryMode);
+	        add(btnDoQuery);
 	        
 	        addSeparator(); 
 	        
@@ -827,9 +833,7 @@ public class MEBNEditionPane extends JPanel {
 	        
 	        addSeparator(new Dimension(10, 10)); 
 	        
-	        add(btnEditingMode);
-	        
-
+//	        add(btnEditingMode);
 	        
 	        setFloatable(false);
 	    }; 
@@ -864,7 +868,8 @@ public class MEBNEditionPane extends JPanel {
   	        btnAddContextNode.setToolTipText(resource.getString("contextNodeInsertToolTip"));
   	        btnAddInputNode.setToolTipText(resource.getString("inputNodeInsertToolTip"));
   	        btnAddResidentNode.setToolTipText(resource.getString("residentNodeInsertToolTip"));
-  	        btnSelectObject.setToolTipText(resource.getString("mFragInsertToolTip"));
+  	        btnSelectObject.setToolTipText(resource.getString("selectObjectToolTip"));
+  	        btnAddOrdinaryVariable.setToolTipText(resource.getString("ordinaryVariableInsertToolTip"));
 
   	        add(btnEditMTheory);
   	        addSeparator();
