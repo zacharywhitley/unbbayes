@@ -72,7 +72,7 @@ public class MainController {
 	 *  Contructs the main controller with the UnBBayes main frame.
 	 */
 	public MainController() {
-		eagleLoader(); 
+//		eagleLoader(); 
 		screen = new UnBBayesFrame(this);
 	}
 	

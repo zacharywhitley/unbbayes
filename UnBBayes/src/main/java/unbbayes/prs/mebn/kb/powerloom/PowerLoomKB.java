@@ -20,11 +20,18 @@
  */
 package unbbayes.prs.mebn.kb.powerloom;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
@@ -49,7 +56,6 @@ import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
-import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
@@ -75,76 +81,79 @@ import edu.isi.stella.Stella_Object;
  */
 public class PowerLoomKB implements KnowledgeBase {
 
+	private static int nextId = 1; 
 	
-	public static String PLITOKENSEPARATOR = "() \n\t\r";
-	
-	private Module moduleGenerative;
+	public static String PLI_TOKEN_SEPARATOR = "() \n\t\r";
 
+	private static final String POWER_LOOM_KERNEL_MODULE = "/PL-KERNEL/PL-USER/";
+	private static final boolean CASE_SENSITIVE = false;
+	private static final String GENERATIVE_MODULE_NAME =  "GENERATIVE_MODULE"; 
+	private static final String FINDING_MODULE_NAME =  "FINDINGS_MODULE"; 
+	
+	private int idInstance; 
+	private String moduleGenerativeName;
+	private String moduleFindingName;	
+	private Module moduleGenerative;
 	private Module moduleFinding;
+	private String moduleName; 
 
 	private Environment environment = null;
 
-	private static final String POWER_LOOM_KERNEL_MODULE = "/PL-KERNEL/PL-USER/";
-
-	private static final boolean CASE_SENSITIVE = false;
-
-	private String moduleGenerativeName = "GENERATIVE_MODULE";
-
-	private String moduleFindingName = "FINDINGS_MODULE";
-
-	public static final String MODULE_NAME = "/PL-KERNEL/PL-USER/GENERATIVE_MODULE/FINDINGS_MODULE";
 	
 	/* 
-	 * Estrutura dos módulos: 
+	 * Modules (hierarchy): 
 	 * 
 	 * - PL-USER
 	 * - GENERATIVE_MODULE
-	 * - FINDING_MODULE (possivelmente vários) 
-	 *             -> deve ser filho do módulo pai... mas cada um deve ter nome individual
-	 *             -> fazer uma espécie de controle de versionamento automatico para o usuário não se perder
-	 * 
-	 * Algum controle para indicar quais são os módulos de findings e quais são
-	 * os módulos generatives para um dado arquivo PR-OWL (UBF).
-	 * Problema para manter a consistência destes arquivos. (usuário alterando Generative) 
+	 * - FINDING_MODULE
 	 */
 
 	private static final String POSSIBLE_STATE_SUFIX = "_state";
 
-	private static PowerLoomKB singleton = null;
+	/*
+	 * Create a new instance of PowerLoomKB with the given id. The names of 
+	 * modules of this instance is build using the id.  
+	 */
+	private PowerLoomKB(int id) {
 
-	private PowerLoomKB() {
-
-		Debug.println("Initializing...");
-		PLI.initialize();
-		Debug.println("Done.");
-
-		Module fatherModule = PLI.getModule(POWER_LOOM_KERNEL_MODULE,
-				environment);
-
+		initialize(); 
+		idInstance = id; 
+		
+		moduleGenerativeName =  GENERATIVE_MODULE_NAME + "_" + id; 
+		moduleFindingName = FINDING_MODULE_NAME + "_" + id; 
+		
+		Module fatherModule = PLI.getModule(POWER_LOOM_KERNEL_MODULE, environment);
 		moduleGenerative = PLI.createModule(moduleGenerativeName, fatherModule,
-				CASE_SENSITIVE);
+                           CASE_SENSITIVE);
 		moduleFinding = PLI.createModule(moduleFindingName, moduleGenerative,
-				CASE_SENSITIVE);
+				           CASE_SENSITIVE);
 
+		Debug.println("Modules creating sucessfull:");
 		Debug.println(moduleGenerative.moduleFullName);
 		Debug.println(moduleFinding.moduleFullName);
+		
 		PLI.sChangeModule(moduleFindingName, environment);
 
 	}
 
 	/**
-	 * It uses the singleton design pattern for returning the only instance of
-	 * this class.
-	 * 
-	 * @return the only instance of this class.
+	 * Initialize the Knowledge Base system
 	 */
-	public static PowerLoomKB getInstanceKB() {
+	public static void initialize(){
+		Debug.println("Initializing...");
+		PLI.initialize();
+		Debug.println("Done.");
+	}
+	
+	/** 
+	 * @return One new Knowledge Base.
+	 */
+	public synchronized static PowerLoomKB getNewInstanceKB() {
 
-		if (singleton == null) {
-			singleton = new PowerLoomKB();
-		}
+		PowerLoomKB kb = new PowerLoomKB(nextId); 
+		nextId++; 
 
-		return singleton;
+		return kb;
 
 	}
 	
@@ -156,8 +165,9 @@ public class PowerLoomKB implements KnowledgeBase {
 	/* Methods for save and load modules                                       */
 	/*-------------------------------------------------------------------------*/	
 	
+	@Deprecated
 	public void saveGenerativeMTheory(MultiEntityBayesianNetwork mebn, File file) {
-		Debug.println("Saving module...");
+		Debug.println("Saving generative module...");
 		PLI.sSaveModule(moduleGenerativeName, file.getAbsolutePath(),
 				"REPLACE", environment);
 		Debug.println("...File save sucefull");
@@ -167,7 +177,7 @@ public class PowerLoomKB implements KnowledgeBase {
 	 * @see KnowledgeBase
 	 */
 	public void saveFindings(MultiEntityBayesianNetwork mebn, File file) {
-		Debug.println("Saving module...");
+		Debug.println("Saving finding module...");
 		PLI.sSaveModule(moduleFindingName, file.getAbsolutePath(), "REPLACE",
 				environment);
 		Debug.println("...File save sucefull");
@@ -176,9 +186,17 @@ public class PowerLoomKB implements KnowledgeBase {
 	/**
 	 * @see KnowledgeBase
 	 */
-	public void loadModule(File file) {
+	public synchronized void loadModule(File file) {
 		Debug.println("Loading module...");
-		PLI.load(file.getAbsolutePath(), environment);
+		
+		try {
+			File tempFile = preLoad(file);
+			PLI.load(tempFile.getAbsolutePath(), environment);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		Debug.println("File load sucefull");
 	}
 
@@ -190,7 +208,88 @@ public class PowerLoomKB implements KnowledgeBase {
 		PLI.clearModule(moduleGenerative);
 	}
 	
+	/**
+	 * This method should be called before the load of a powerloom file. 
+	 * @throws IOException 
+	 */
+	private File preLoad(File file) throws IOException{
+		
+		boolean continueReading = true;
+		boolean endOfFile = false; 
+		
+		//The file will be read line per line and rewrite in a new file
+		//with the modifications. 
+		
+		BufferedReader reader = new BufferedReader(new FileReader(file));
+		File newFile = new File("Temp.plm"); 
+		BufferedWriter writer = new BufferedWriter(new FileWriter(newFile)); 
 	
+		/*
+		 * The lines before the first assert command will be removed and 
+		 * substitute for the definitions of modules with the "id" for the
+		 * instance of KB assigned to this findings set. 
+		 */
+	    while(continueReading && !endOfFile){
+		    String line = reader.readLine();
+		    
+		    if(line == null){
+		    	endOfFile = true; 
+		    	break; 
+		    }
+		    
+		    Pattern defModulePattern = Pattern.compile(".*ASSERT.*");
+		    Matcher matcher = defModulePattern.matcher(line); 
+		    if(matcher.matches()){
+		    	writeModuleDefinition(writer); 
+		    	writer.write(line); 
+		    	writer.newLine(); 
+		    	continueReading = false; 
+		    }
+	    }
+	    
+	    //Read the rest of the file
+	    if(!endOfFile){
+	    	String line = null; 
+	    	while((line = reader.readLine()) != null){
+	    		writer.write(line);
+	    		writer.newLine(); 
+	    	}
+	    }
+	    
+	    writer.flush(); 
+	    writer.close(); 
+	    
+	    return newFile; 
+	}
+	
+	private void writeModuleDefinition(BufferedWriter writer) throws IOException{
+	    writer.write("(CL:IN-PACKAGE \"STELLA\")"); 
+	    writer.newLine();
+		writer.write("(DEFMODULE \"" + moduleFinding.moduleFullName + "\" :CASE-SENSITIVE? FALSE)"); 
+    	writer.newLine(); 
+	    writer.write("(IN-MODULE \""+ moduleFinding.moduleFullName + "\")"); 
+	    writer.newLine();
+	    writer.write("(IN-DIALECT :KIF)"); 
+	    writer.newLine();
+	}
+	
+	public static void main(String... args){
+		PowerLoomKB kb = getNewInstanceKB(); 
+		try {
+			File temp = kb.preLoad(new File("C:\\KnowledgeBase.plm"));
+			System.out.println("sucessfull");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+	}
+	
+	/**
+	 * This method should be called before the save of a powerloom file. 
+	 */
+	private void preSave(){
+		
+	}
 	
 	
 
@@ -1005,14 +1104,14 @@ public class PowerLoomKB implements KnowledgeBase {
 	 */
 	public List<RandomVariableFinding> parsePLIStringAndFillBooleanFinding(ResidentNode resident , String strPLI, boolean isBool , boolean boolValue )  {
 		
-		StringTokenizer tokenizer =  new StringTokenizer(strPLI , PLITOKENSEPARATOR);
+		StringTokenizer tokenizer =  new StringTokenizer(strPLI , PLI_TOKEN_SEPARATOR);
 		
 		List<ObjectEntityInstance> argumentInstances = null;
 		List<Argument> arguments = resident.getArgumentList();
 		
 		Debug.println(this.getClass(), "input: " + strPLI);
 		
-		if (strPLI.equalsIgnoreCase(PLITOKENSEPARATOR)) {
+		if (strPLI.equalsIgnoreCase(PLI_TOKEN_SEPARATOR)) {
 			return null;
 		}
 		

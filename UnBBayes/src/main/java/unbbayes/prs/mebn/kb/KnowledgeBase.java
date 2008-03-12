@@ -43,7 +43,7 @@ import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
  * @version 1.0 (2007/12/26)
  */
 public interface KnowledgeBase {
-
+	
 	/**
 	 * It clears all knowledge base.
 	 */

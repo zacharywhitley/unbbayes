@@ -80,12 +80,13 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	public static String queryName = "";
 	public static LogManager logManager = new LogManager();
 	
-	
+	private final KnowledgeBase knowledgeBase; 
 
 	/**
 	 * 
 	 */
-	public BottomUpSSBNGenerator() {
+	public BottomUpSSBNGenerator(KnowledgeBase knowledgeBase) {
+	   this.knowledgeBase = knowledgeBase; 
 	}
 	
 
@@ -573,7 +574,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			return false;
 		};
 		
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB()); 
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(knowledgeBase); 
 		
 		Collection<ContextNode> contextNodeList = residentNode.getMFrag().getContextByOVCombination(
 				residentNode.getOrdinaryVariableList());
@@ -608,7 +609,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			return false;
 		}
 		
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB()); 
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(knowledgeBase); 
 		Collection<ContextNode> contextNodeList = inputNode.getMFrag().getContextByOVCombination(
 				inputNode.getOrdinaryVariableList());
 		
@@ -648,7 +649,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			ResidentNode fatherNode, List<OrdinaryVariable> ovList, List<OVInstance> ovInstances) 
 			throws ImplementationRestrictionException, SSBNNodeGeneralException {
 		
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB()); 
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(knowledgeBase); 
 		
 		//Complex case: evaluate search context nodes. 
 		logManager.appendln("Have ord. variables incomplete!"); 
@@ -795,7 +796,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			throws SSBNNodeGeneralException, ImplementationRestrictionException {
 		
 		MFrag mFrag = fatherNode.getMFrag(); 
-		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB()); 
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(knowledgeBase); 
 		
 		//Complex case: evaluate search context nodes. 
 		logManager.appendln("Have ord. variables incomplete!"); 
