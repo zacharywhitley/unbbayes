@@ -58,7 +58,7 @@ public class SSBNTest {
 		
 		// 3. Popular a base de conhecimento com as evidencias
 		long tIni = System.currentTimeMillis();
-		PowerLoomKB kb = PowerLoomKB.getInstanceKB(); 
+		PowerLoomKB kb = PowerLoomKB.getNewInstanceKB(); 
 		//kb.loadDefinitionsFile("examples/mebn/starshipfull.plm");
 		long tFim = System.currentTimeMillis();
 		

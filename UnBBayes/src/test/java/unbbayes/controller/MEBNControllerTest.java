@@ -20,7 +20,14 @@
  */
 package unbbayes.controller;
 
+import java.io.File;
+
+import unbbayes.gui.NetworkWindow;
+import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.mebn.UbfIoTest;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
+import unbbayes.util.Debug;
 import junit.framework.TestCase;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -31,6 +38,12 @@ import junit.framework.TestSuite;
  */
 public class MEBNControllerTest extends TestCase {
 
+	private MEBNController controller = null;
+	private MultiEntityBayesianNetwork mebn = null;
+	
+	private String plmFileName = "examples/mebn/KnowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm";
+	private String owlFileName = "examples/mebn/StarTrek52.ubf";
+	
 	/**
 	 * @param arg0
 	 */
@@ -43,6 +56,12 @@ public class MEBNControllerTest extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
+		Debug.setDebug(false);
+		UbfIO io = UbfIO.getInstance();
+		mebn = io.loadMebn(new File(owlFileName));
+		this.controller = new MEBNController(mebn,new NetworkWindow(mebn));
+		//PowerLoomKB.getInstanceKB().loadModule(new File(plmFileName));
+		Debug.setDebug(true);
 	}
 
 	/* (non-Javadoc)
@@ -50,6 +69,7 @@ public class MEBNControllerTest extends TestCase {
 	 */
 	protected void tearDown() throws Exception {
 		super.tearDown();
+		Debug.setDebug(false);
 	}
 
 	/**
@@ -456,6 +476,19 @@ public class MEBNControllerTest extends TestCase {
 	 */
 	public void testSetMebnEditionPane() {
 		fail("Not yet implemented"); // TODO
+	}
+	
+	
+	/**
+	 * Test method for {@link unbbayes.controller.MEBNController#loadFindingsFile(java.io.File file)}.
+	 */
+	public void testLoadFindingsFile() {
+		try {
+			this.controller.loadFindingsFile(new File(plmFileName));
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
 	}
 	
 	/**

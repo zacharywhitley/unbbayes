@@ -979,11 +979,12 @@ public class PowerLoomKB implements KnowledgeBase {
 		return PLI.sEvaluate(command, moduleFindingName, null).toString();
 	}
 	
-	/**
-	 * Searches the KB for findings of a resident node and adds those findings as
-	 * new RandomVariableFindings
-	 * @param resident resident node which name is going to be searched inside kb
-	 * @see RandomVariableFinding
+	
+	
+	
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#fillFindings(unbbayes.prs.mebn.ResidentNode)
 	 */
 	public void fillFindings(ResidentNode resident) {
 		final boolean NONBOOLEAN = false;
@@ -1009,13 +1010,17 @@ public class PowerLoomKB implements KnowledgeBase {
 			
 			// filling ordinary
 			
-			queryString = "( retrieve all ( = ( " + resident.getName(); 
+			queryString = "( retrieve all ( = ( " + resident.getName().toUpperCase(); 
 			List<ObjectEntityInstance> argumentList = new ArrayList<ObjectEntityInstance>();
 			for(Argument argument: resident.getArgumentList()){
-				queryString += " ?x" + argcount++; 
+				queryString += " ?x" + argcount;
+				argcount++;
 			}
-			queryString += " ) ?x" + argcount++ + ") ) ";
-
+			queryString += " ) ?x" + argcount + ") ) ";
+			argcount++;
+			
+			Debug.println(this.getClass(), "Quering to PLI: " + queryString);
+			
 			Stella_Object sobj = PLI.sEvaluate(queryString, moduleFindingName, environment); 
 			
 			String result = PLI.getNthString(sobj, 0, this.moduleFinding, this.environment);
@@ -1079,7 +1084,7 @@ public class PowerLoomKB implements KnowledgeBase {
 		}
 		
 	}
-	
+
 	/**
 	 * Parses the string describing the findings and fills the resident node
 	 * with them.

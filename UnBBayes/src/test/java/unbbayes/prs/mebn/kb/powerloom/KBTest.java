@@ -80,7 +80,7 @@ public class KBTest  extends TestCase {
 	
 	private void init(){
 		
-		kb = PowerLoomKB.getInstanceKB();
+		kb = PowerLoomKB.getNewInstanceKB();
 		
 		UbfIO io = UbfIO.getInstance(); 
 		try {
@@ -96,7 +96,7 @@ public class KBTest  extends TestCase {
 		kb.loadModule(new File(KBTest.KB_GENERATIVE_FILE)); 
 		kb.loadModule(new File(KBTest.KB_FINDING_FILE)); 
 			
-		avaliator = new ContextNodeAvaliator(PowerLoomKB.getInstanceKB()); 
+		avaliator = new ContextNodeAvaliator(kb); 
 		
 	}
 	

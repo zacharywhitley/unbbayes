@@ -186,4 +186,12 @@ public interface KnowledgeBase {
 	public List<String> getEntityByType(String type);
 	
 
+	
+	/**
+	 * Searches the KB for findings of a resident node and adds those findings as
+	 * new RandomVariableFindings
+	 * @param resident resident node which name is going to be searched inside kb
+	 * @see RandomVariableFinding
+	 */
+	public void fillFindings(ResidentNode resident); 
 }

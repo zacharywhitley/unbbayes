@@ -27,7 +27,7 @@ public class ContextNodeAvaliatorTest{
     public static void main(String[] args) throws Exception {
     	MultiEntityBayesianNetwork mebn = null; 
     	
-		KnowledgeBase kb = PowerLoomKB.getInstanceKB(); 
+		KnowledgeBase kb = PowerLoomKB.getNewInstanceKB(); 
 		
 		kb.loadModule(new File("testeGenerativeStarship.plm")); 
 		kb.loadModule(new File("testeFindingsStarship.plm")); 

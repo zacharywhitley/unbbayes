@@ -76,6 +76,7 @@ import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+import unbbayes.util.Debug;
 import unbbayes.util.NodeList;
 
 /**
@@ -1251,11 +1252,22 @@ public class MEBNController  {
 		getKnowledgeBase().saveFindings(getMultiEntityBayesianNetwork(), new File(MEBNController.NAME_FINDING_FILE));
 	}
 
-	public void loadFindingsFile(File file){
+	public void loadFindingsFile(File file) throws MEBNException{
+		Exception lastException = null;
 		createKnowledgeBase(); 	
 		getKnowledgeBase().loadModule(file);
 		for (ResidentNode resident : this.multiEntityBayesianNetwork.getDomainResidentNodes()) {
-//			getKnowledgeBase().fillFindings(resident);
+			Debug.println(this.getClass(), "Loading finding of: " + resident.getName());
+			try {
+				 this.knowledgeBase.fillFindings(resident);
+			 } catch (Exception e) {
+				 e.printStackTrace();
+				 lastException = e;
+				 continue;
+			 }
+		}
+		if (lastException != null) {
+			throw new MEBNException(lastException);
 		}
 	}
 	

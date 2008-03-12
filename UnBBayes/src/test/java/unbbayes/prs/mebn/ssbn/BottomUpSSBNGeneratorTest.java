@@ -62,9 +62,9 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 	}
 	
 	public static void main(String arguments[]){
+		KnowledgeBase kb = PowerLoomKB.getNewInstanceKB(); 
+		BottomUpSSBNGenerator ssbnGenerator = new BottomUpSSBNGenerator(kb); 
 		
-		BottomUpSSBNGenerator ssbnGenerator = new BottomUpSSBNGenerator(); 
-		KnowledgeBase kb = PowerLoomKB.getInstanceKB(); 
 		MultiEntityBayesianNetwork mebn = null;
 		
 		UbfIO io = UbfIO.getInstance(); 
