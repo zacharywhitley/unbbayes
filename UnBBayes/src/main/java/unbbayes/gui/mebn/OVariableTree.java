@@ -59,9 +59,6 @@ public abstract class OVariableTree extends JTree{
 	
 	protected final MEBNController controller;	
 	
-	
-	public abstract void addListeners();
-	
 	public OVariableTree(MEBNController controller) {
 		
 		this.controller = controller; 
@@ -143,6 +140,7 @@ public abstract class OVariableTree extends JTree{
 	/**
 	 * Updates the ordinary variables within the tree.
 	 */	
+	
 	public void updateTree() {
 		
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode)getModel().getRoot();
@@ -152,9 +150,37 @@ public abstract class OVariableTree extends JTree{
 		
 		ordinaryVariableList = mfragActive.getOrdinaryVariableList(); 
 		
-		for (OrdinaryVariable ordinaryVariable : ordinaryVariableList) {
-			// TODO please, complete this method
+		for (OrdinaryVariable ordinaryVariable : ordinaryVariableList){
+			
+			DefaultMutableTreeNode node = new DefaultMutableTreeNode(ordinaryVariable.getName() + " (" + ordinaryVariable.getValueType() + ")"); 
+			ordinaryVariableMap.put(node, ordinaryVariable); 
+			root.add(node); 
 		}
-				
+		
+		((DefaultTreeModel) getModel()).reload(root);
+		expandRow(0); 
+		
 	}
-}
+	
+	private DefaultMutableTreeNode findUserObject(String treeNode,
+			DefaultMutableTreeNode root) {
+		Enumeration e = root.breadthFirstEnumeration();
+		while (e.hasMoreElements()) {
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) e
+			.nextElement();
+			if (node.getUserObject().toString().equals(treeNode)) {
+				return node;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Adds listeners for tree's nodes. A class extending this one must
+	 * provide mouse event action listeners. 
+	 */
+	
+	protected abstract void addListeners(); 
+	
+	
+};		
