@@ -155,7 +155,7 @@ public class OVariableEditionPane extends JPanel {
 	/**
 	 * Set the type of the variable show in the window. 
 	 * @param nameType The name o the type
-	 * @return true if sucess or false if the type don't exists in the 
+	 * @return true if success or false if the type doesn't exist in the 
 	 * list of types of this panel. 
 	 */
 	public boolean setTypeOVariableSelected(Type nameType){

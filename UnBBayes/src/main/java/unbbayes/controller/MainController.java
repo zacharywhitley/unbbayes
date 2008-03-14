@@ -37,6 +37,7 @@ import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLIO;
+import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.Edge;
@@ -158,7 +159,7 @@ public class MainController {
 	public void saveNet(File file) {
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		
-		UbfIO ubfIo = UbfIO.getInstance();
+		MebnIO ubfIo = UbfIO.getInstance();
 		
 		try {
 			BaseIO io = null;
@@ -185,7 +186,7 @@ public class MainController {
 				else if (name.endsWith("xml")){
 					io = new XMLIO();
 				}
-				else if (name.endsWith(ubfIo.fileExtension)) {
+				else if (name.endsWith(UbfIO.fileExtension)) {
 					ubfIo = UbfIO.getInstance();
 					/*
 					 } else if (name.endsWith("owl")){
@@ -269,7 +270,7 @@ public class MainController {
 					MultiEntityBayesianNetwork mebn = prOwlIo.loadMebn(file);
 					window = new NetworkWindow(mebn);					
 				}  else if (name.endsWith(UbfIO.fileExtension)) {        			
-					UbfIO ubfIo = UbfIO.getInstance(); 
+					MebnIO ubfIo = UbfIO.getInstance(); 
 					MultiEntityBayesianNetwork mebn = ubfIo.loadMebn(file);
 					window = new NetworkWindow(mebn);	
 				}

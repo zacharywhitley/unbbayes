@@ -895,5 +895,13 @@ public class UbfIO implements MebnIO {
 	public void setResource(ResourceBundle resource) {
 		this.resource = resource;
 	}
+	/* (non-Javadoc)
+	 * @see unbbayes.io.mebn.MebnIO#getFileExtension()
+	 */
+	public String getFileExtension() {
+		return this.fileExtension;
+	}
+	
+	
 
 }

@@ -51,8 +51,8 @@ public class GuiResources extends ListResourceBundle {
 	static final Object[][] contents =
 	{	
 		{"fileDirectoryType","Directory"},
-		{"fileARFFType","Arquivo Arff"},
-		{"fileTXTType","Text File TXT"},
+		{"fileARFFType","Arff file"},
+		{"fileTXTType","TXT file"},
 		{"fileNETType","Baysian Netwotk File NET"},
 		{"fileGenericType","Generic File"},
 		
@@ -131,13 +131,13 @@ public class GuiResources extends ListResourceBundle {
 		{"LookAndFeelClassNotFoundException","This LookAndFeel class was not found: "},
 		{"LookAndFeelInstantiationException","It was not possible to load this LookAndFeel: "},
 		{"LookAndFeelIllegalAccessException","This LookAndFeel can not be used: "},
-		{"nameError","Nome don't accept"},	
-		{"operationFail","Operation don't accept"},
-		{"nameAlreadyExists","Already exists a object with this name"},	
-		{"objectEntityHasInstance","Exists instances of the selected entity. Remove them and try again."},
+		{"nameError","Inacceptable name"},	
+		{"operationFail","Operation was not accepted"},
+		{"nameAlreadyExists","An object with this name already exists"},	
+		{"objectEntityHasInstance","The selected entity contains instances. Remove them and try again."},
 		{"error","Error..."},	
 		{"argumentMissing","Missing arguments"},	
-		{"stateUnmarked","State don't marked"},	
+		{"stateUnmarked","State is not marked"},	
 		
 		{"helpToolTip","UnBBayes help"},
 		{"propagateToolTip","Propagate evidences"},
@@ -157,7 +157,7 @@ public class GuiResources extends ListResourceBundle {
 		{"compileToolTip","Compile junction tree"},
 		{"moreToolTip","Add state"},
 		{"lessToolTip","Remove state"},
-		{"arcToolTip","Insert arc"},
+		{"arcToolTip","Insert edge"},
 		{"probabilisticNodeInsertToolTip","Insert probabilistic variable"},
 		{"decisionNodeInsertToolTip","Insert decision variable"},
 		{"utilityNodeInsertToolTip","Insert utility variable"},
@@ -173,7 +173,7 @@ public class GuiResources extends ListResourceBundle {
 		{"residentActiveToolTip","Resident Node Selected"}, 		
 		{"addArgumentToolTip","Add argumment"}, 
 		{"editFormulaToolTip","Edit formula"},		
-		{"selectToolTip","Select various nodes and arcs"},
+		{"selectToolTip","Select various nodes and edges"},
 		{"printTableToolTip","Print table"},
 		{"previewTableToolTip","Print table preview"},
 		{"saveTableImageToolTip","Save table as a gif image"},
@@ -189,7 +189,7 @@ public class GuiResources extends ListResourceBundle {
 		
 		{"showMTheoryToolTip","Show MTheory tree"},	
 		{"showEntitiesToolTip","Show entities of the MTheory"},
-		{"showOVariablesToolTip","Show ovariables of the MFrag"},			
+		{"showOVariablesToolTip","Show ord. variables of the MFrag"},			
 		{"showEntityInstancesToolTip","Show entity instance edition pane"},			
 		{"showFingingsToolTip","Show findings edition pane"},		
 		
@@ -243,7 +243,7 @@ public class GuiResources extends ListResourceBundle {
 		{"ArgumentsButton", "Arguments"}, 			
 		{"OrdVariableButton", "Variable"}, 
 		
-		{"whithotMFragActive","Don't have MFrag active"},			
+		{"whithotMFragActive","No active MFrag"},			
 		{"previewTitle","Preview"},
 		{"filesText"," files"},
 		{"aprendizagemTitle","Net Learning Edition"},
@@ -297,27 +297,27 @@ public class GuiResources extends ListResourceBundle {
         {"aboutItemMn","A"},
  
         {"operationError","Operation Error"},        
-        {"oVariableAlreadyIsArgumentError","Ord. Variable already is argument of this node!"},
+        {"oVariableAlreadyIsArgumentError","Ord. Variable is already an argument of this node!"},
         {"properties","Properties..."},
         {"nameException","Name Error"},
-        {"nameDuplicated", "Name alredy exists..."}, 
+        {"nameDuplicated", "The name already exists..."}, 
         {"siglaError","The sigla must have only letters and numbers."},
         {"descriptionError","The description must have only letters and numbers."}, 
         
         /* Query Panel*/
-        {"argumentFault","Incomplete arguments. Query don't should be executed."}, 
-        {"inconsistentArgument","Inconsistent arguments. Query don't should be executed."},         
-        {"selectOneVariable","Select a randon variable:"}, 
-        {"selectArgsValues","Select the arguments values:"}, 
+        {"argumentFault","Incomplete arguments. Query should not be executed."}, 
+        {"inconsistentArgument","Inconsistent arguments. Query should not be executed."},         
+        {"selectOneVariable","Select a random variable:"}, 
+        {"selectArgsValues","Select the arguments' values:"}, 
         
         /* FormulaTreeConstructionException */
-        {"notOperator", "Operator don't accept in this position"},  
+        {"notOperator", "Operator is not acceptable at this position"},  
 		
 		{"sucess", "Sucess"}, 
 		{"error", "Error"},
         
 		/* Tips for buttons of the table edition */
-		{"deleteTip", "Delet selected text"}, 
+		{"deleteTip", "Delete selected text"}, 
 		{"anyTip", "Insert statement \"If any\""}, 
 		{"allTip", "Insert statement \"If all\""}, 
 		{"elseTip", "Insert \"else\""}, 
@@ -330,13 +330,13 @@ public class GuiResources extends ListResourceBundle {
 		{"minTip", "Insert statement MIN"}, 
 		{"saveTip", "Save the table"}, 
 		{"statesTip", "Show states of the node"}, 
-		{"fatherTip", "Show fathers of the node"}, 
+		{"fatherTip", "Show parents of the node"}, 
 		{"argTip", "Show arguments of the node"}, 
 		{"exitTip", "Exit whithout save"}, 
 		
 		/* Exceptions MEBN */
-		{"withoutMFrag", "Don't exists any MFrag"}, 
-		{"edgeInvalid", "Edge Invalid"}, 
+		{"withoutMFrag", "No MFrag"}, 
+		{"edgeInvalid", "Invalid Edge"}, 
 		
 		/* Edition of states */
 		{"insertBooleanStates", "Insert boolean states"}, 
@@ -346,7 +346,7 @@ public class GuiResources extends ListResourceBundle {
 		{"addStateTip", "Add state(s)"}, 
 		{"removeState", "Remove state(s)"}, 
 		{"confirmation", "Confirmation"}, 
-		{"warningDeletStates", "The previous states will be removed. Are you sure you want to procced with this operation?"},
+		{"warningDeletStates", "The previous states will be removed. Are you sure you want to proceed with this operation?"},
 		
 		/* PLM file manager */
 		/* TODO transfer it to IO package? */

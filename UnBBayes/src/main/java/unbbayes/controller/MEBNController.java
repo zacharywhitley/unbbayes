@@ -379,7 +379,7 @@ public class MEBNController  {
 
 	/**
 	 * Show a empty MFrag graph.
-	 * Use when don't have any MFrag in the MTheory.
+	 * Use when no MFrag is in a MTheory.
 	 *
 	 */
 	public void showGraphMFrag(){

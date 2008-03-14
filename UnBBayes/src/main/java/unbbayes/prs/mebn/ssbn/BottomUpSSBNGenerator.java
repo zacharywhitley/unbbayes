@@ -566,7 +566,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	private boolean evaluateRelatedContextNodes (ResidentNode residentNode, 
 			List<OVInstance> ovInstances) throws OVInstanceFaultException{
 		
-		Debug.setDebug(true); 
+		//Debug.setDebug(true); 
 		
 		// We assume if MFrag is already set to use Default, then some context
 		// has failed previously and there's no need to evaluate again.		
@@ -602,7 +602,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	private boolean evaluateRelatedContextNodes(InputNode inputNode, 
 			List<OVInstance> ovInstances) throws OVInstanceFaultException{
 		
-		Debug.setDebug(true); 
+		//Debug.setDebug(true); 
 		
 		// We assume if MFrag is already set to use Default, then some context has failed previously and there's no need to evaluate again.		
 		if (inputNode.getMFrag().isUsingDefaultCPT()) {
@@ -1086,11 +1086,11 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				logManager.appendln("  " + parent);
 			}
 			
-			Debug.setDebug(false);
+			//Debug.setDebug(false);
 			
 			ssbnNode.getCompiler().generateCPT(ssbnNode);
 			
-			Debug.setDebug(true);
+			//Debug.setDebug(true);
 			logManager.appendln("CPT OK\n");
 		
 	}
@@ -1107,7 +1107,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				logManager.appendln("  " + parent);
 			}
 			
-			Debug.setDebug(false);
+			//Debug.setDebug(false);
 			
 			Map<String, List<SSBNNode>> mapParentsByEntity = new HashMap<String, List<SSBNNode>>(); 
 			Map<String, PotentialTable> mapCPTByEntity = new HashMap<String, PotentialTable>(); 
@@ -1288,7 +1288,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			gpt = new GUIPotentialTable(ssbnNode.getProbNode().getPotentialTable()); 
 			gpt.showTable("Table for Node " + ssbnNode);
 			
-			Debug.setDebug(true);
+			//Debug.setDebug(true);
 			logManager.appendln("CPT OK\n");
 		
 	}

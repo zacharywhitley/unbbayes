@@ -113,7 +113,7 @@ public class FormulaViewTree extends JTree{
 	
 	public FormulaViewTree(FormulaTreeController _controller, ContextNode _contextNode) {
 		
-		//TODO this class don't is a controller... all methods that change the model 
+		//TODO this class isn't a controller... all methods that change the model 
 		//shoud stay in the FormulaTreeController. 
 		
 		formulaTreeController = _controller;    
@@ -270,7 +270,7 @@ public class FormulaViewTree extends JTree{
 	 * Add a simple operator in the place of the node active of the tree. 
 	 * - If this node already is a operator, your actual childs will be removed
 	 * and a new operador with new empty chils will be create. 
-	 * - The <nodeActive> don't may be of <enumType> VARIABLE_SEQUENCE (Exception)
+	 * - The <nodeActive> may not be of <enumType> VARIABLE_SEQUENCE (Exception)
 	 * @param builtInRV builtIn of operator
 	 * @param subType type of the operator
 	 */
@@ -310,7 +310,7 @@ public class FormulaViewTree extends JTree{
 	 * Add a quantifier operator in the place of the node active of the tree. 
 	 * - If this node already is a operator, your actual childs will be removed
 	 * and a new operador will be create. 
-	 * - The <nodeActive> don't may be of <enumType> VARIABLE_SEQUENCE (Exception)
+	 * - The <nodeActive> may not be of <enumType> VARIABLE_SEQUENCE (Exception)
 	 * @param builtInRV builtIn of operator
 	 * @param subType type of the operator
 	 */	

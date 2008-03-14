@@ -38,4 +38,10 @@ public interface MebnIO {
 	
 	public void saveMebn(File file, MultiEntityBayesianNetwork mebn) throws IOException, IOMebnException; 
 	
+	/**
+	 * Gets the ordinal file extension without the dot.
+	 * 	EX: "owl", "ubf"
+	 * @return file extension
+	 */
+	public String getFileExtension();
 }

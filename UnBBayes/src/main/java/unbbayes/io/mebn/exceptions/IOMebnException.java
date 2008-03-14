@@ -34,11 +34,15 @@ public class IOMebnException extends Exception{
 	public IOMebnException (String e, String extra){
 		super(e + ": " + extra); 
 		this.object = extra; 
-	}	
+	}
+	
+	public IOMebnException (Exception e) {
+		super(e);
+	}
 	
 	/**
-	 * Verity if the exception have an description extra
-	 * @return true if exist description extra or false otherside. 
+	 * Verify if the exception have an extra description
+	 * @return true if exist description extra or false otherwise. 
 	 */
 	public boolean hasDescriptionExtra(){
 		if (object == null){
@@ -56,5 +60,7 @@ public class IOMebnException extends Exception{
 	public String setDescriptionExtra(String extra){
 		return this.object = extra; 
 	}
+	
+	
 
 }

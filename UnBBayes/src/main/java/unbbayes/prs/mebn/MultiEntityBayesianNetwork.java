@@ -28,6 +28,7 @@ import unbbayes.prs.mebn.entity.BooleanStatesEntityContainer;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntityContainer;
 import unbbayes.prs.mebn.entity.ObjectEntityConteiner;
 import unbbayes.prs.mebn.entity.TypeContainer;
+import unbbayes.util.IBridgeImplementor;
 import unbbayes.util.NodeList;
 
 /**
@@ -71,7 +72,12 @@ public class MultiEntityBayesianNetwork extends Network {
 	private int contextNodeNum = 1; 
     private int entityNum = 1; 
 		
-	/**
+	
+    // Bridge pattern: separates this mebn representation and how mebn should be saved
+    IBridgeImplementor storageImplementor = null;
+    
+    
+    /**
 	 * Contructs a new MEBN with empty mFrag's lists.
 	 * @param name The name of the MEBN.
 	 */
@@ -431,5 +437,26 @@ public class MultiEntityBayesianNetwork extends Network {
 	public void setDescription(String description) {
 		this.description = description;
 	}
+
+	/**
+	 * Obtains a class which should be responsible for saving the MTheory by calling execute().
+	 * It might be useful if you are implementing a "save current" feature.
+	 * @return the storageImplementor
+	 */
+	public IBridgeImplementor getStorageImplementor() {
+		return storageImplementor;
+	}
+
+	/**
+	 * Sets a class which should be responsible for saving the MTheory by calling execute().
+	 * It might be useful if you are implementing a "save current" feature.
+	 * @param storageImplementor the storageImplementor to set
+	 */
+	public void setStorageImplementor(IBridgeImplementor storageImplementor) {
+		this.storageImplementor = storageImplementor;
+	}
+	
+	
+	
 
 }

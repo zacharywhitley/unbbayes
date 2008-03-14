@@ -22,28 +22,168 @@ package unbbayes.io.mebn;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import com.hp.hpl.jena.util.FileUtils;
+
+import edu.stanford.smi.protegex.owl.ProtegeOWL;
+import edu.stanford.smi.protegex.owl.jena.JenaOWLModel;
+import edu.stanford.smi.protegex.owl.model.OWLIndividual;
+import edu.stanford.smi.protegex.owl.model.OWLModel;
+import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
 
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.util.Debug;
 
 /**
  * Implements the interface MebnIO for the Pr-OWL format.
- * 
+ * It's like a wrapper and facade for 
+ * unbbayes.io.mebn.SaverPrOwlIO and unbbayes.io.mebn.LoaderPrOwlIO
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * @version 1.0 2006/10/25
+ * @see unbbayes.io.mebn.SaverPrOwlIO 
+ * @see unbbayes.io.mebn.LoaderPrOwlIO
  */
 
-public class PrOwlIO implements MebnIO {
+public class PrOwlIO extends PROWLModelUser implements MebnIO {
 	
-	public static final String PROWLMODELFILE = "pr-owl/pr-owl.owl"; 
+	//public static final String PROWLMODELFILE = "pr-owl/pr-owl.owl"; 
+	public static final String PROWLMODELURI = "http://www.pr-owl.org/pr-owl.owl";
+	
+	public static final String FILEEXTENSION = "owl";
+	
+	private OWLModel lastOwlModel = null;
+	
+	// list of instance names which are native to pr-owl definition
+	//private Collection<String> untouchableInstanceNames = null;
+	
+	
+	
+	
+	public PrOwlIO() {
+		super();
+		//this.untouchableInstanceNames = new ArrayList<String>();
+	}
+
+
+
+
+	/**
+	 * clears pr-owl specific individuals.
+	 * non-prowl ontology remains kept.
+	 * @param model
+	 */
+	private void clearAllPROWLOntologyIndividuals(JenaOWLModel model) {
+		Collection<OWLIndividual> individuals = null;
+		Collection<String> untouchableIndividuals = this.getNamesOfAllModifiedLabels();
+		
+		for (String classNames : this.getNamesOfAllModifiedPROWLClasses()) {
+			 try{
+				 individuals = model.getOWLNamedClass(classNames).getInstances(false);
+				 for (OWLIndividual individual : individuals) {
+					try {
+						if (!untouchableIndividuals.contains(individual.getName())) {
+							//individual.delete();
+							Debug.println(this.getClass(), "Removing all prowl individuals: " + individual.getName());
+							model.deleteInstance(individual);
+						}						
+					} catch (Exception e) {
+						e.printStackTrace();
+						continue;
+					}
+				}
+			 } catch (Exception e2) {
+				 e2.printStackTrace();
+				 continue;
+			 }			
+			 
+		}
+
+	}
 	
 	/**
-	 * Make de loader from a file pr owl for the mebn structure. 
+	 * removes ObjectEntity's individuals and classes
+	 * @param model
+	 */
+	private void clearAllObjectEntity(JenaOWLModel model) {
+		Collection<OWLNamedClass> subclasses = null;
+		OWLNamedClass objectEntity;
+		
+		try{
+			objectEntity = model.getOWLNamedClass(OBJECT_ENTITY);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		// delete individuals
+		Collection<OWLIndividual> individuals = objectEntity.getInstances(true);
+		for (OWLIndividual individual : individuals) {
+			try {
+				Debug.println(this.getClass(), "Clearing object entity individual: " + individual.getName());
+				model.deleteInstance(individual);
+			} catch (Exception e) {
+				e.printStackTrace();
+				continue;
+			}
+		}
+		
+		// delete classes
+		try {
+			subclasses = objectEntity.getSubclasses(true);
+			for (OWLNamedClass namedClass : subclasses) {
+				try {
+					 Debug.println(this.getClass(), "Clearing object entity: " + namedClass.getName());
+					 model.deleteCls(namedClass);
+				} catch (Exception e) {
+					e.printStackTrace();
+					continue;
+				}
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+	}
+	
+	
+	/**
+	 * Load MEBN from a pr-owl file and stores it in the mebn structure. 
 	 */
 	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException, IOMebnException{
- 		LoaderPrOwlIO loader = new LoaderPrOwlIO(); 
- 		return loader.loadMebn(file); 
+		LoaderPrOwlIO loader = new LoaderPrOwlIO(); 
+		MultiEntityBayesianNetwork mebn = loader.loadMebn(file);
+		
+		OWLModel lastOWLModel = loader.getLastOWLModel();
+		
+		
+		// minimize memory-stored ontology
+		try{
+			this.clearAllPROWLOntologyIndividuals((JenaOWLModel)lastOWLModel);
+			this.clearAllObjectEntity((JenaOWLModel)lastOWLModel);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	
+		mebn.setStorageImplementor(new MEBNStorageImplementorDecorator(lastOWLModel));
+		
+		/*try{
+			Collection<String> errors = new ArrayList<String>();
+			((JenaOWLModel)lastOWLModel).save((new File("PROWLIODEBUG.OWL")).toURI(), FileUtils.langXMLAbbrev, errors);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}*/
+		
+		this.setOWLModelToUse(lastOWLModel);	// not necessary, but just to stay consistent to the interface
+ 		return  mebn;
 	}
+	
+	
+	
+	
 	
 	/**
 	 * Save the mebn structure in an file pr-owl. 
@@ -53,7 +193,63 @@ public class PrOwlIO implements MebnIO {
 	
 	public void saveMebn(File file, MultiEntityBayesianNetwork mebn) throws IOException, IOMebnException{
 	   SaverPrOwlIO saver = new SaverPrOwlIO();
-	   saver.saveMebn(file, mebn); 
+	   
+	   JenaOWLModel jenaOWLModel = null;
+	   try{
+		   MEBNStorageImplementorDecorator decorator = (MEBNStorageImplementorDecorator)mebn.getStorageImplementor();
+		   jenaOWLModel = (JenaOWLModel)(decorator.getAdaptee());
+	   } catch (Exception e) {
+		   e.printStackTrace();
+		   jenaOWLModel = null;
+	   }
+	   
+	   saver.saveMebn(file, mebn, jenaOWLModel); 
+	   this.setOWLModelToUse(saver.getLastOWLModel());
 	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.io.mebn.MebnIO#getFileExtension()
+	 */
+	public String getFileExtension() {
+		return this.getFileExtension();
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.io.mebn.IProtegeOWLModelUser#getLastOWLModel()
+	 */
+	public OWLModel getLastOWLModel() {
+		return this.lastOwlModel;
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.io.mebn.IProtegeOWLModelUser#setOWLModelToUse(edu.stanford.smi.protegex.owl.model.OWLModel)
+	 */
+	public void setOWLModelToUse(OWLModel model) throws IOMebnException {
+		this.lastOwlModel = model;
+	}
+
+
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.io.mebn.PROWLModelUser#getNamesOfAllModifiedPROWLClasses()
+	 */
+	@Override
+	public Collection<String> getNamesOfAllModifiedPROWLClasses() {
+		Collection<String> ret = super.getNamesOfAllModifiedPROWLClasses();
+		// remove classes that we should not touch (they are coupled with pr-owl definition)
+		ret.remove(BUILTIN_RV);
+		ret.remove(BOOLEAN_STATE);
+		
+		return ret;
+	}
+
+
+
+	
+	
+	
+	
 	
 }

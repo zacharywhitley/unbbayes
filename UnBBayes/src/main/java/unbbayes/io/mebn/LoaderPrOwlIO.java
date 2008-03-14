@@ -72,6 +72,7 @@ import edu.stanford.smi.protegex.owl.ProtegeOWL;
 import edu.stanford.smi.protegex.owl.jena.JenaOWLModel;
 import edu.stanford.smi.protegex.owl.model.OWLDatatypeProperty;
 import edu.stanford.smi.protegex.owl.model.OWLIndividual;
+import edu.stanford.smi.protegex.owl.model.OWLModel;
 import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
 import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
 
@@ -85,7 +86,7 @@ import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
  * @version 1.0 
  */
 
-public class LoaderPrOwlIO {
+public class LoaderPrOwlIO extends PROWLModelUser {
 
 	/* MEBN Structure */ 
 	
@@ -133,16 +134,16 @@ public class LoaderPrOwlIO {
 	final ResourceBundle resource = 
 		ResourceBundle.getBundle("unbbayes.io.mebn.resources.IoMebnResources");	
 	
-	private static final String PROWLMODELFILE = "pr-owl/pr-owl.owl";
+	//private static final String PROWLMODELFILE = "pr-owl/pr-owl.owl";
 	
 	private final String ORDINARY_VAR_SCOPE_SEPARATOR = ".";
 	private final String POSSIBLE_VALUE_SCOPE_SEPARATOR = ".";	
 	
 	//names of the classes in PR_OWL FIle
-	private static final String CATEGORICAL_STATE = "CategoricalRVState"; 
-	private static final String BOOLEAN_STATE = "BooleanRVState";
-	private static final String OBJECT_ENTITY = "ObjectEntity"; 
-	private static final String META_ENTITY = "MetaEntity"; 
+	//private static final String CATEGORICAL_STATE = "CategoricalRVState"; 
+	//private static final String BOOLEAN_STATE = "BooleanRVState";
+	//private static final String OBJECT_ENTITY = "ObjectEntity"; 
+	//private static final String META_ENTITY = "MetaEntity"; 
 	
 	/**
 	 * Make the load from file to MEBN structure.
@@ -241,7 +242,7 @@ public class LoaderPrOwlIO {
 		OWLNamedClass owlNamedClass; 	
 		OWLObjectProperty objectProperty; 
 		
-		owlNamedClass = owlModel.getOWLNamedClass("MTheory"); 
+		owlNamedClass = owlModel.getOWLNamedClass(MTHEORY); 
 		
 		instances = owlNamedClass.getInstances(false); 
 		itAux = instances.iterator(); 
@@ -296,7 +297,7 @@ public class LoaderPrOwlIO {
 		Collection instances; 
 		OWLIndividual individualOne;
 		
-		metaEntityClass = owlModel.getOWLNamedClass("MetaEntity");
+		metaEntityClass = owlModel.getOWLNamedClass(META_ENTITY);
 		
 		instances = metaEntityClass.getInstances(false); 
 		
@@ -331,7 +332,7 @@ public class LoaderPrOwlIO {
 		
 		OWLObjectProperty isGloballyExclusive = (OWLObjectProperty)owlModel.getOWLObjectProperty("isGloballyExclusive"); 	
 
-		objectEntityClass = owlModel.getOWLNamedClass(this.OBJECT_ENTITY);
+		objectEntityClass = owlModel.getOWLNamedClass(OBJECT_ENTITY);
 		
 		subClasses = objectEntityClass.getSubclasses(true); 
 		
@@ -360,7 +361,7 @@ public class LoaderPrOwlIO {
 		OWLIndividual individualOne;
 		OWLObjectProperty isGloballyExclusive = (OWLObjectProperty)owlModel.getOWLObjectProperty("isGloballyExclusive"); 	
 
-		categoricalStateClass = owlModel.getOWLNamedClass(this.CATEGORICAL_STATE);
+		categoricalStateClass = owlModel.getOWLNamedClass(CATEGORICAL_STATE);
 		
 		instances = categoricalStateClass.getInstances(false); 
 		
@@ -391,7 +392,7 @@ public class LoaderPrOwlIO {
 		OWLIndividual individualOne;
 		OWLObjectProperty isGloballyExclusive = (OWLObjectProperty)owlModel.getOWLObjectProperty("isGloballyExclusive"); 	
 
-		booleanStateClass = owlModel.getOWLNamedClass(this.BOOLEAN_STATE);
+		booleanStateClass = owlModel.getOWLNamedClass(BOOLEAN_STATE);
 		
 		instances = booleanStateClass.getInstances(false); 
 		
@@ -444,7 +445,7 @@ public class LoaderPrOwlIO {
 		OWLNamedClass owlNamedClass; 	
 		OWLObjectProperty objectProperty; 
 		
-		owlNamedClass = owlModel.getOWLNamedClass("Domain_MFrag"); 
+		owlNamedClass = owlModel.getOWLNamedClass(DOMAIN_MFRAG); 
 		instances = owlNamedClass.getInstances(false); 
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
@@ -530,7 +531,7 @@ public class LoaderPrOwlIO {
 		OWLIndividual individualTwo; 	
 		OWLObjectProperty objectProperty; 
 		
-		OWLNamedClass contextNodePr = owlModel.getOWLNamedClass("Context"); 
+		OWLNamedClass contextNodePr = owlModel.getOWLNamedClass(CONTEXT_NODE); 
 		instances = contextNodePr.getInstances(false); 
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
@@ -659,7 +660,7 @@ public class LoaderPrOwlIO {
 		OWLIndividual individualTwo; 	
 		OWLObjectProperty objectProperty; 
 		
-		OWLNamedClass builtInPr = owlModel.getOWLNamedClass("BuiltInRV"); 
+		OWLNamedClass builtInPr = owlModel.getOWLNamedClass(BUILTIN_RV); 
 		instances = builtInPr.getInstances(false); 
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
@@ -729,7 +730,7 @@ public class LoaderPrOwlIO {
 		OWLIndividual individualTwo; 	
 		OWLObjectProperty objectProperty; 	
 		
-		OWLNamedClass domainResidentNodePr = owlModel.getOWLNamedClass("Domain_Res"); 
+		OWLNamedClass domainResidentNodePr = owlModel.getOWLNamedClass(DOMAIN_RESIDENT); 
 		instances = domainResidentNodePr.getInstances(false); 
 		MFrag mFragOfNode = null; 
 		
@@ -948,7 +949,7 @@ public class LoaderPrOwlIO {
 		OWLIndividual individualTwo; 	
 		OWLObjectProperty objectProperty; 		
 		
-		OWLNamedClass inputNodePr = owlModel.getOWLNamedClass("Generative_input"); 
+		OWLNamedClass inputNodePr = owlModel.getOWLNamedClass(GENERATIVE_INPUT); 
 		instances = inputNodePr.getInstances(false); 
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
@@ -1043,7 +1044,7 @@ public class LoaderPrOwlIO {
 		OWLIndividual individualTwo; 
 		OWLObjectProperty objectProperty; 
 		
-		OWLNamedClass ordinaryVariablePr = owlModel.getOWLNamedClass("OVariable"); 
+		OWLNamedClass ordinaryVariablePr = owlModel.getOWLNamedClass(ORDINARY_VARIABLE); 
 		instances = ordinaryVariablePr.getInstances(false); 
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
 			individualOne = (OWLIndividual)it.next();		
@@ -1103,7 +1104,7 @@ public class LoaderPrOwlIO {
 		OWLIndividual individualTwo; 	
 		OWLObjectProperty objectProperty; 
 		
-		OWLNamedClass argRelationshipPr = owlModel.getOWLNamedClass("ArgRelationship"); 
+		OWLNamedClass argRelationshipPr = owlModel.getOWLNamedClass(ARGUMENT_RELATIONSHIP); 
 		instances = argRelationshipPr.getInstances(false); 
 		
 		for (Iterator it = instances.iterator(); it.hasNext(); ){	
@@ -1217,7 +1218,7 @@ public class LoaderPrOwlIO {
 		OWLIndividual individualTwo; 	
 		OWLObjectProperty objectProperty; 		
 		
-		OWLNamedClass argRelationshipPr = owlModel.getOWLNamedClass("SimpleArgRelationship"); 
+		OWLNamedClass argRelationshipPr = owlModel.getOWLNamedClass(SIMPLE_ARGUMENT_RELATIONSHIP); 
 		instances = argRelationshipPr.getInstances(false); 
 		for (Iterator it = instances.iterator(); it.hasNext(); ){
 			individualOne = (OWLIndividual)it.next();
@@ -1622,5 +1623,22 @@ public class LoaderPrOwlIO {
 			}
 		}
 	}
+	
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.io.mebn.IProtegeOWLModelUser#getLastOWLModel()
+	 */
+	public OWLModel getLastOWLModel() {
+		return this.owlModel;
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.io.mebn.IProtegeOWLModelUser#setOWLModelToUse(edu.stanford.smi.protegex.owl.model.OWLModel)
+	 */
+	public void setOWLModelToUse(OWLModel model) {
+		// this class should work only with internally loaded OWL models
+		return;
+	}
+	
 	
 }

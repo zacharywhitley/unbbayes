@@ -21,7 +21,7 @@
 package unbbayes.prs.bn;
 
 /**
- * Interface para vari�veis com tabela.
+ * A interface for variables containing tables
  */
 public interface ITabledVariable {
     public PotentialTable getPotentialTable();
