@@ -116,7 +116,7 @@ public class FormulaEditionPane extends JPanel {
 		btnExists = new JButton(iconController.getExistsIcon())  ;
 		btnForAll = new JButton(iconController.getForallIcon())  ;
 		
-		btnEqualTo.setToolTipText(resource.getString("andToolTip")); 
+		btnEqualTo.setToolTipText(resource.getString("equalToToolTip")); 
 		btnAnd.setToolTipText(resource.getString("andToolTip"))  ; 
 		btnOr.setToolTipText(resource.getString("orToolTip"))  ;
 		btnNot.setToolTipText(resource.getString("notToolTip"));  
