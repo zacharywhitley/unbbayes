@@ -25,6 +25,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -63,16 +64,19 @@ public class MTheoryTree extends JTree {
 
 	private MultiEntityBayesianNetwork net;
 
+	private boolean[] expandedNodesPrevious; 
 	private boolean[] expandedNodes;
 
-	private ArrayMap<Object, MFrag> mFragMap = new ArrayMap<Object, MFrag>();
-	private ArrayMap<Object, ResidentNode> residentNodeMap = new ArrayMap<Object, ResidentNode>();
-	private ArrayMap<Object, InputNode> inputNodeMap = new ArrayMap<Object, InputNode>();
-	private ArrayMap<Object, ContextNode> contextNodeMap = new ArrayMap<Object, ContextNode>(); 
+	ArrayList<MFrag> mFragIndex; 
 	
-	/* 
-	 * Contem a rela��o entre os n�s da �rvore e os elementos da MTheory que 
-	 * estes representam. 
+	private ArrayMap<DefaultMutableTreeNode, MFrag> mFragMap = new ArrayMap<DefaultMutableTreeNode, MFrag>();
+	private ArrayMap<DefaultMutableTreeNode, ResidentNode> residentNodeMap = new ArrayMap<DefaultMutableTreeNode, ResidentNode>();
+	private ArrayMap<DefaultMutableTreeNode, InputNode> inputNodeMap = new ArrayMap<DefaultMutableTreeNode, InputNode>();
+	private ArrayMap<DefaultMutableTreeNode, ContextNode> contextNodeMap = new ArrayMap<DefaultMutableTreeNode, ContextNode>(); 
+	
+	/*
+	 * Contains the relation between the nodes of the tree and the objects of
+	 * MTheory that it represent. 
 	 */
 	private ArrayMap<DefaultMutableTreeNode, Object> nodeMap = new ArrayMap<DefaultMutableTreeNode, Object>(); 	
 	
@@ -247,70 +251,7 @@ public class MTheoryTree extends JTree {
 		expandedNodes = new boolean[net.getMFragCount()];
 	}
 
-	private class MTheoryTreeCellRenderer extends DefaultTreeCellRenderer {
 
-		/** Serialization runtime version number */
-		private static final long serialVersionUID = 0;
-
-		private ImageIcon contextNodeIcon = iconController.getGreenNodeIcon();
-		private ImageIcon residentNodeIcon = iconController.getYellowNodeIcon(); 
-		private ImageIcon inputNodeIcon = iconController.getGrayNodeIcon(); 
-		
-		private ImageIcon orangeNodeIcon = iconController.getOrangeNodeIcon(); 
-		private ImageIcon mTheoryNodeIcon = iconController.getMTheoryNodeIcon(); 
-		
-		public Component getTreeCellRendererComponent(JTree tree, Object value,
-				boolean sel, boolean expanded, boolean leaf, int row,
-				boolean hasFocus) {
-			
-			super.getTreeCellRendererComponent(tree, value, sel, expanded,
-					leaf, row, hasFocus);
-			
-			Object obj = nodeMap.get(value);
-			
-			if (leaf) {
-
-				if (obj != null) {
-					
-					if (obj instanceof ResidentNode){ 
-						setIcon(residentNodeIcon);
-						}
-										
-					else{
-						if (obj instanceof InputNode){
-							setIcon(inputNodeIcon); 
-						}
-						else{ 
-							if (obj instanceof ContextNode){
-						       setIcon(contextNodeIcon);
-							}
-							else{ 
-                                if (obj instanceof MFrag){ 
-								   setIcon(orangeNodeIcon); 
-                                }
-                                else{
-                                	setIcon(mTheoryNodeIcon); 
-                                }
-							}
-						}
-					}
-				}
-				
-			} else {
-                if (obj instanceof MFrag){ 
-    				setOpenIcon(orangeNodeIcon);
-    				setClosedIcon(orangeNodeIcon);
-    				setIcon(orangeNodeIcon);
-                 }
-                 else{
-     				setOpenIcon(mTheoryNodeIcon);
-    				setClosedIcon(mTheoryNodeIcon);                	 
-                 	setIcon(mTheoryNodeIcon); 
-                 }	
-			}
-			return this;
-		}
-	}
 
 	/**
 	 * Retrai todos os n�s da �rvore desejada.
@@ -360,10 +301,31 @@ public class MTheoryTree extends JTree {
 		}
 	}
 
+	public void addNode(MFrag mFrag, Node node){
+		
+	}
+	
+	public void addMFrag(){
+		
+	}
+	
+	public void renameNode(){
+		
+	}
+	
+	public void renameMFrag(){
+		
+	}
+	
+	public void renameMTheory(){
+		
+	}
+	
 	/**
-	 * 
+	 * Update the tree 
 	 */
 	public void updateTree() {
+		
 		if (expandedNodes == null) {
 			expandedNodes = new boolean[net.getMFragCount()];
 			for (int i = 0; i < expandedNodes.length; i++) {
@@ -372,6 +334,8 @@ public class MTheoryTree extends JTree {
 		}
 
 		DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
+		root.setUserObject(net.getName()); 
+		
 		root.removeAllChildren();
 		mFragMap.clear();
 		residentNodeMap.clear(); 
@@ -386,6 +350,11 @@ public class MTheoryTree extends JTree {
 		restoreTree();
 	}
 
+	/**
+	 * Build nodes down to root. 
+	 * @param mTheory
+	 * @param root
+	 */
 	private void buildNodesOfTree(MultiEntityBayesianNetwork mTheory, DefaultMutableTreeNode root){
 
 		List<MFrag> mFragList = net.getMFragList();
@@ -393,7 +362,7 @@ public class MTheoryTree extends JTree {
 		for (MFrag mFrag : mFragList) {
 			DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(mFrag.getName());
 			root.add(treeNode);
-			mFragMap.put(treeNode, mFrag);
+			mFragMap.put(treeNode, mFrag); 
 			nodeMap.put(treeNode, mFrag); 
 			
 			if(mFrag instanceof MFrag){
@@ -566,5 +535,70 @@ public class MTheoryTree extends JTree {
 		}
 	}
 
+	
+	private class MTheoryTreeCellRenderer extends DefaultTreeCellRenderer {
+
+		/** Serialization runtime version number */
+		private static final long serialVersionUID = 0;
+
+		private ImageIcon contextNodeIcon = iconController.getGreenNodeIcon();
+		private ImageIcon residentNodeIcon = iconController.getYellowNodeIcon(); 
+		private ImageIcon inputNodeIcon = iconController.getGrayNodeIcon(); 
+		
+		private ImageIcon orangeNodeIcon = iconController.getOrangeNodeIcon(); 
+		private ImageIcon mTheoryNodeIcon = iconController.getMTheoryNodeIcon(); 
+		
+		public Component getTreeCellRendererComponent(JTree tree, Object value,
+				boolean sel, boolean expanded, boolean leaf, int row,
+				boolean hasFocus) {
+			
+			super.getTreeCellRendererComponent(tree, value, sel, expanded,
+					leaf, row, hasFocus);
+			
+			Object obj = nodeMap.get(value);
+			
+			if (leaf) {
+
+				if (obj != null) {
+					
+					if (obj instanceof ResidentNode){ 
+						setIcon(residentNodeIcon);
+						}
+										
+					else{
+						if (obj instanceof InputNode){
+							setIcon(inputNodeIcon); 
+						}
+						else{ 
+							if (obj instanceof ContextNode){
+						       setIcon(contextNodeIcon);
+							}
+							else{ 
+                                if (obj instanceof MFrag){ 
+								   setIcon(orangeNodeIcon); 
+                                }
+                                else{
+                                	setIcon(mTheoryNodeIcon); 
+                                }
+							}
+						}
+					}
+				}
+				
+			} else {
+                if (obj instanceof MFrag){ 
+    				setOpenIcon(orangeNodeIcon);
+    				setClosedIcon(orangeNodeIcon);
+    				setIcon(orangeNodeIcon);
+                 }
+                 else{
+     				setOpenIcon(mTheoryNodeIcon);
+    				setClosedIcon(mTheoryNodeIcon);                	 
+                 	setIcon(mTheoryNodeIcon); 
+                 }	
+			}
+			return this;
+		}
+	}
 
 }
