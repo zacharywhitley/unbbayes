@@ -46,8 +46,6 @@ public class IoUbfResources extends ListResourceBundle {
 		return contents;
 	}
 
-	/*TODO Traduzir */
-	
 	/**
 	 * The resources
 	 */

@@ -71,6 +71,10 @@ public class IoResources extends ListResourceBundle {
 		{"LoadException4",": Decision variable cannot have a table"},
 		{"LoadException5",": Missing 'data'"},
 		{"FileNotFoundException","It was not possible to load the file!"},
-		{"IsNotDirectoryException", "The specified path must be a directory"}
+		{"IsNotDirectoryException", "The specified path must be a directory"}, 
+		
+		{"OpenFileError", "Error at open of a file"}, 
+		{"CreationFileError", "Error at creation of a file"}, 
+		{"WriteReaderFileError", "Error at write or read a file"}
 	};
 }
