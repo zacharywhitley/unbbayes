@@ -23,6 +23,7 @@ package unbbayes.prs.mebn.kb.powerloom;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -33,6 +34,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
@@ -81,6 +83,8 @@ import edu.isi.stella.Stella_Object;
  */
 public class PowerLoomKB implements KnowledgeBase {
 
+	public static final String FILE_SUFIX = "plm"; 
+	
 	private static int nextId = 1; 
 	
 	public static String PLI_TOKEN_SEPARATOR = "() \n\t\r";
@@ -186,16 +190,12 @@ public class PowerLoomKB implements KnowledgeBase {
 	/**
 	 * @see KnowledgeBase
 	 */
-	public synchronized void loadModule(File file) {
+	public synchronized void loadModule(File file) throws UBIOException{
 		Debug.println("Loading module...");
 		
-		try {
-			File tempFile = preLoad(file);
-			PLI.load(tempFile.getAbsolutePath(), environment);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		File tempFile = preLoad(file);
+		PLI.load(tempFile.getAbsolutePath(), environment);
+		tempFile.delete(); 
 		
 		Debug.println("File load sucefull");
 	}
@@ -212,7 +212,7 @@ public class PowerLoomKB implements KnowledgeBase {
 	 * This method should be called before the load of a powerloom file. 
 	 * @throws IOException 
 	 */
-	private File preLoad(File file) throws IOException{
+	private File preLoad(File file) throws UBIOException{
 		
 		boolean continueReading = true;
 		boolean endOfFile = false; 
@@ -220,46 +220,65 @@ public class PowerLoomKB implements KnowledgeBase {
 		//The file will be read line per line and rewrite in a new file
 		//with the modifications. 
 		
-		BufferedReader reader = new BufferedReader(new FileReader(file));
+		BufferedReader reader;
+		try {
+			reader = new BufferedReader(new FileReader(file));
+		} catch (FileNotFoundException e1) {
+			throw new UBIOException(UBIOException.ED_CREATE_FILE, file.getName()); 
+		}
 		File newFile = new File("Temp.plm"); 
-		BufferedWriter writer = new BufferedWriter(new FileWriter(newFile)); 
+		BufferedWriter writer;
+		try {
+			writer = new BufferedWriter(new FileWriter(newFile));
+		} catch (IOException e) {
+			throw new UBIOException(UBIOException.ED_CREATE_FILE, newFile.getName()); 
+		} 
 	
 		/*
 		 * The lines before the first assert command will be removed and 
 		 * substitute for the definitions of modules with the "id" for the
 		 * instance of KB assigned to this findings set. 
 		 */
-	    while(continueReading && !endOfFile){
-		    String line = reader.readLine();
-		    
-		    if(line == null){
-		    	endOfFile = true; 
-		    	break; 
-		    }
-		    
-		    Pattern defModulePattern = Pattern.compile(".*ASSERT.*");
-		    Matcher matcher = defModulePattern.matcher(line); 
-		    if(matcher.matches()){
-		    	writeModuleDefinition(writer); 
-		    	writer.write(line); 
-		    	writer.newLine(); 
-		    	continueReading = false; 
-		    }
-	    }
-	    
-	    //Read the rest of the file
-	    if(!endOfFile){
-	    	String line = null; 
-	    	while((line = reader.readLine()) != null){
-	    		writer.write(line);
-	    		writer.newLine(); 
-	    	}
-	    }
-	    
-	    writer.flush(); 
-	    writer.close(); 
+		
+		try{
+
+			while(continueReading && !endOfFile){
+				String line = reader.readLine();
+
+				if(line == null){
+					endOfFile = true; 
+					break; 
+				}
+
+				Pattern defModulePattern = Pattern.compile(".*ASSERT.*");
+				Matcher matcher = defModulePattern.matcher(line); 
+				if(matcher.matches()){
+					writeModuleDefinition(writer); 
+					writer.write(line); 
+					writer.newLine(); 
+					continueReading = false; 
+				}
+			}
+
+			//Read the rest of the file
+			if(!endOfFile){
+				String line = null; 
+				while((line = reader.readLine()) != null){
+					writer.write(line);
+					writer.newLine(); 
+				}
+			}
+
+			writer.flush(); 
+			writer.close(); 
+
+		}
+		catch(IOException e){
+		     throw new UBIOException(UBIOException.ED_READWRITE_FILE);   
+		}
 	    
 	    return newFile; 
+		
 	}
 	
 	private void writeModuleDefinition(BufferedWriter writer) throws IOException{
@@ -271,17 +290,6 @@ public class PowerLoomKB implements KnowledgeBase {
 	    writer.newLine();
 	    writer.write("(IN-DIALECT :KIF)"); 
 	    writer.newLine();
-	}
-	
-	public static void main(String... args){
-		PowerLoomKB kb = getNewInstanceKB(); 
-		try {
-			File temp = kb.preLoad(new File("C:\\KnowledgeBase.plm"));
-			System.out.println("sucessfull");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
 	}
 	
 	/**

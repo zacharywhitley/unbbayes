@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 
+import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.RandomVariableFinding;
@@ -112,8 +113,9 @@ public interface KnowledgeBase {
 	 * 
 	 * @param file
 	 *            the file that contains the module's definition to be loaded.
+	 * @throws UBIOException 
 	 */
-	public void loadModule(File file);
+	public void loadModule(File file) throws UBIOException;
 
 	/**
 	 * This method is responsible for evaluating a simple formula. A simple
