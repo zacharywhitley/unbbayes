@@ -307,6 +307,7 @@ public class MTheoryTree extends JTree {
 		inverseNodeMap.put(mFrag, newChild); 
 		
 		scrollPathToVisible(new TreePath(newChild.getPath()));
+		repaint(); 
 	}
 	
 	/**
@@ -331,6 +332,8 @@ public class MTheoryTree extends JTree {
 		inverseNodeMap.put(node, newChild); 
 		
 		scrollPathToVisible(new TreePath(newChild.getPath()));
+
+		repaint(); 
 	}
 	
 	public void removeMFrag(MFrag mFrag){
@@ -346,11 +349,15 @@ public class MTheoryTree extends JTree {
 		
 		//remove mFrag node
 		((DefaultTreeModel)getModel()).removeNodeFromParent(treeNode); 
+
+		repaint(); 
 	}
 	
 	public void removeNode(Node node){
 		DefaultMutableTreeNode treeNode = inverseNodeMap.get(node); 
 		((DefaultTreeModel)getModel()).removeNodeFromParent(treeNode); 
+
+		repaint(); 
 	}
 	
 	public void renameNode(Node node){
