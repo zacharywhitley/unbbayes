@@ -21,12 +21,11 @@
 package unbbayes.gui.mebn;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -37,6 +36,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
@@ -52,6 +52,7 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.util.ArrayMap;
+import unbbayes.util.ResourceController;
 
 /**
  * Tree of the components of the MTheory. Show the MFrags and your 
@@ -60,25 +61,15 @@ import unbbayes.util.ArrayMap;
 
 public class MTheoryTree extends JTree {
 
-	private static final long serialVersionUID = 7557085958154752664L;
-
+	private static final long serialVersionUID = 1L;
 	private MultiEntityBayesianNetwork net;
 
-	private boolean[] expandedNodesPrevious; 
-	private boolean[] expandedNodes;
-
-	ArrayList<MFrag> mFragIndex; 
-	
-	private ArrayMap<DefaultMutableTreeNode, MFrag> mFragMap = new ArrayMap<DefaultMutableTreeNode, MFrag>();
-	private ArrayMap<DefaultMutableTreeNode, ResidentNode> residentNodeMap = new ArrayMap<DefaultMutableTreeNode, ResidentNode>();
-	private ArrayMap<DefaultMutableTreeNode, InputNode> inputNodeMap = new ArrayMap<DefaultMutableTreeNode, InputNode>();
-	private ArrayMap<DefaultMutableTreeNode, ContextNode> contextNodeMap = new ArrayMap<DefaultMutableTreeNode, ContextNode>(); 
-	
 	/*
 	 * Contains the relation between the nodes of the tree and the objects of
 	 * MTheory that it represent. 
 	 */
-	private ArrayMap<DefaultMutableTreeNode, Object> nodeMap = new ArrayMap<DefaultMutableTreeNode, Object>(); 	
+	private ArrayMap<DefaultMutableTreeNode, Object> nodeTreeMap = new ArrayMap<DefaultMutableTreeNode, Object>(); 	
+	private ArrayMap<Object, DefaultMutableTreeNode> inverseNodeMap = new ArrayMap<Object, DefaultMutableTreeNode>();
 	
 	private Object objectSelected; 
 	
@@ -93,18 +84,23 @@ public class MTheoryTree extends JTree {
 
 	protected IconController iconController = IconController.getInstance();
 
+	private static final String POG = "this_is_a_pog_for_permited_names_really_" +
+			"very_very_large_because_of_a_bug_in_java_5_that_dont_atualize_the_" +
+			"size_of_the_label_of_tree";  
+	
 	private DefaultMutableTreeNode root; 
 	
     private final MEBNController controller;	
     private final GraphPane graphPane;
     
 	/** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+  	private static ResourceBundle resource =  ResourceController.RS_GUI;
   
-  	
   	/**
   	 * 
-  	 * @param controller
+  	 * @param controller 
+  	 * 
+  	 * Pre-requisites: controller should have a MEBN
   	 */
   	
 	public MTheoryTree(final MEBNController controller, GraphPane graphPane) {
@@ -116,11 +112,22 @@ public class MTheoryTree extends JTree {
 		/*----------------- build tree --------------------------*/ 
 		
 		setCellRenderer(new MTheoryTreeCellRenderer());
-		root = new DefaultMutableTreeNode(net.getName());
+		
+		root = new DefaultMutableTreeNode(POG);
+		
+		
 	    DefaultTreeModel model = new DefaultTreeModel(root);
 	    setModel(model);
+
+		scrollPathToVisible(new TreePath(root.getPath()));
+	    
+		root.setUserObject(net.getName());
+		
 	    createTree();
 	    
+		scrollPathToVisible(new TreePath(root.getPath()));
+	    
+		//Popups for each node
 	    createPopupMenu();
 	    createPopupMenuMFrag(); 
 	    //createPopupMenuResident(); 
@@ -129,10 +136,8 @@ public class MTheoryTree extends JTree {
 	    createPopupMenuNode(); 
 	    
 	    addMouseListener(new MousePressedListener()); 
-	    	    
-		super.treeDidChange();
-		
-		expandTree();
+	    
+	    super.treeDidChange();
 	}
 	
 	private void createPopupMenuMFrag(){
@@ -145,7 +150,6 @@ public class MTheoryTree extends JTree {
 		itemDelete.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 				controller.removeDomainMFrag((MFrag) objectSelected); 
-				updateTree(); 
 			}
 		}); 		
 		
@@ -224,7 +228,6 @@ public class MTheoryTree extends JTree {
 		itemDelete.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
 				controller.deleteSelected(objectSelected); 
-				updateTree(); 
 			}
 		}); 		
 		
@@ -246,184 +249,126 @@ public class MTheoryTree extends JTree {
 
 	
 	private void createTree() {
-		DefaultMutableTreeNode root = (DefaultMutableTreeNode)getModel().getRoot();
-		buildNodesOfTree(net, root); 
-		expandedNodes = new boolean[net.getMFragCount()];
-	}
-
-
-
-	/**
-	 * Retrai todos os n�s da �rvore desejada.
-	 * 
-	 * @param arvore
-	 *            uma <code>JTree</code> que representa a rede Bayesiana em
-	 *            forma de �rvore.
-	 * @since
-	 * @see JTree
-	 */
-	public void collapseTree() {
-		for (int i = 0; i < getRowCount(); i++) {
-			collapseRow(i);
-		}
-
-		for (int i = 0; i < expandedNodes.length; i++) {
-			expandedNodes[i] = false;
-		}
-	}
-
-	/**
-	 * Expande todos os n�s da �rvore desejada.
-	 * 
-	 * @param arvore
-	 *            uma <code>JTree</code> que representa a rede Bayesiana em
-	 *            forma de �rvore.
-	 * @since
-	 * @see JTree
-	 */
-	public void expandTree() {
-		for (int i = 0; i < getRowCount(); i++) {
-			expandRow(i);
-		}
-
-		for (int i = 0; i < expandedNodes.length; i++) {
-			expandedNodes[i] = true;
-		}
-	}
-
-	private void restoreTree() {
-		for (int i = expandedNodes.length - 1; i >= 0; i--) {
-			if (expandedNodes[i]) {
-				expandRow(i);
-			} else {
-				collapseRow(i);
-			}
-		}
-	}
-
-	public void addNode(MFrag mFrag, Node node){
 		
-	}
-	
-	public void addMFrag(){
-		
-	}
-	
-	public void renameNode(){
-		
-	}
-	
-	public void renameMFrag(){
-		
-	}
-	
-	public void renameMTheory(){
-		
-	}
-	
-	/**
-	 * Update the tree 
-	 */
-	public void updateTree() {
-		
-		if (expandedNodes == null) {
-			expandedNodes = new boolean[net.getMFragCount()];
-			for (int i = 0; i < expandedNodes.length; i++) {
-				expandedNodes[i] = false;
-			}
-		}
-
-		DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
-		root.setUserObject(net.getName()); 
-		
-		root.removeAllChildren();
-		mFragMap.clear();
-		residentNodeMap.clear(); 
-		inputNodeMap.clear(); 
-		contextNodeMap.clear(); 
-		nodeMap.clear(); 
-		
-		buildNodesOfTree(net, root); 
-		
-		restoreTree();
-		((DefaultTreeModel) getModel()).reload(root);
-		restoreTree();
-	}
-
-	/**
-	 * Build nodes down to root. 
-	 * @param mTheory
-	 * @param root
-	 */
-	private void buildNodesOfTree(MultiEntityBayesianNetwork mTheory, DefaultMutableTreeNode root){
-
 		List<MFrag> mFragList = net.getMFragList();
 		
 		for (MFrag mFrag : mFragList) {
-			DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(mFrag.getName());
-			root.add(treeNode);
-			mFragMap.put(treeNode, mFrag); 
-			nodeMap.put(treeNode, mFrag); 
 			
-			if(mFrag instanceof MFrag){
-				
-				List<ResidentNode> residentNodeList = ((MFrag)mFrag).getResidentNodeList(); 
-			    for(ResidentNode residentNode: residentNodeList){
-			    	DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(residentNode.getName());
-			    	treeNode.add(treeNodeChild); 
-			    	residentNodeMap.put(treeNodeChild, residentNode); 
-					nodeMap.put(treeNodeChild, residentNode);     	
-			    }
-				
-			    List<InputNode> inputNodeList = ((MFrag)mFrag).getInputNodeList(); 
-			    for(InputNode inputNode: inputNodeList){
-			    	DefaultMutableTreeNode treeNodeChild; 
-			    	Object inputInstanceOf = inputNode.getInputInstanceOf(); 
-			    	
-			    	if(inputInstanceOf != null){
-			    		if (inputInstanceOf instanceof Node){
-			    	       treeNodeChild = new DefaultMutableTreeNode(((Node)inputInstanceOf).getName());
-			    		}
-			    		else{
-			    			//TODO InputInstanceOf a built in !!!!
-			    			treeNodeChild = new DefaultMutableTreeNode(" ");
-			    		}
-			    	}
-			    	else{
-			    		treeNodeChild = new DefaultMutableTreeNode(" ");
-			    	}
-			    	
-			    	treeNode.add(treeNodeChild); 
-			    	inputNodeMap.put(treeNodeChild, inputNode); 
-					nodeMap.put(treeNodeChild, inputNode);     	
-			    }
-			    
-				List<ContextNode> contextNodeList = mFrag.getContextNodeList(); 
-			    for(ContextNode contextNode: contextNodeList){
-			    	DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(contextNode);
-			    	treeNode.add(treeNodeChild); 
-			    	contextNodeMap.put(treeNodeChild, contextNode); 
-					nodeMap.put(treeNodeChild, contextNode);     	
-			    }			    
+			DefaultMutableTreeNode mFragTreeNode = new DefaultMutableTreeNode(mFrag);
+			root.add(mFragTreeNode);
+			inverseNodeMap.put(mFrag, mFragTreeNode); 
+			nodeTreeMap.put(mFragTreeNode, mFrag); 
+
+			//Resident Nodes
+			List<ResidentNode> residentNodeList = mFrag.getResidentNodeList(); 
+			for(ResidentNode residentNode: residentNodeList){
+				DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(residentNode);
+				mFragTreeNode.add(treeNodeChild); 
+				nodeTreeMap.put(treeNodeChild, residentNode);     
+				inverseNodeMap.put(residentNode, treeNodeChild); 
 			}
-		}
-	}	
-	
-	private DefaultMutableTreeNode findUserObject(String treeNode,
-			DefaultMutableTreeNode root) {
-		Enumeration e = root.breadthFirstEnumeration();
-		while (e.hasMoreElements()) {
-			DefaultMutableTreeNode node = (DefaultMutableTreeNode) e
-					.nextElement();
-			if (node.getUserObject().toString().equals(treeNode)) {
-				return node;
+
+			//Input Nodes
+			List<InputNode> inputNodeList = mFrag.getInputNodeList(); 
+			for(InputNode inputNode: inputNodeList){
+				DefaultMutableTreeNode treeNodeChild; 
+				treeNodeChild = new DefaultMutableTreeNode(inputNode);
+				mFragTreeNode.add(treeNodeChild); 
+				nodeTreeMap.put(treeNodeChild, inputNode);     
+				inverseNodeMap.put(inputNode, treeNodeChild); 
 			}
+
+			//Context Nodes
+			List<ContextNode> contextNodeList = mFrag.getContextNodeList(); 
+			for(ContextNode contextNode: contextNodeList){
+				DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(contextNode);
+				mFragTreeNode.add(treeNodeChild); 
+				nodeTreeMap.put(treeNodeChild, contextNode);  
+				inverseNodeMap.put(contextNode, treeNodeChild); 
+			}			    
+			
 		}
-		return null;
+	}
+
+	/**
+	 * Add a MFrag to the Tree how child of the Root node
+	 */
+	public void addMFrag(MFrag mFrag){
+		DefaultMutableTreeNode newChild = new DefaultMutableTreeNode(POG); 
+		
+		((DefaultTreeModel)getModel()).insertNodeInto(newChild, root, 
+				root.getChildCount()); 
+		
+		scrollPathToVisible(new TreePath(newChild.getPath()));
+		
+		newChild.setUserObject(mFrag); 
+		
+		nodeTreeMap.put(newChild, mFrag); 
+		inverseNodeMap.put(mFrag, newChild); 
+		
+		scrollPathToVisible(new TreePath(newChild.getPath()));
 	}
 	
-	public void setMTheoryName(String name){
+	/**
+	 * Add a node into the tree how child of a MFrag
+	 * 
+	 * @param mFrag
+	 * @param node
+	 */
+	public void addNode(MFrag mFrag, Node node){
+
+		DefaultMutableTreeNode nodeFather = inverseNodeMap.get(mFrag);
+		DefaultMutableTreeNode newChild = new DefaultMutableTreeNode(POG); 
+		((DefaultTreeModel)getModel()).insertNodeInto(newChild, nodeFather, 
+				nodeFather.getChildCount()); 
+
+		scrollPathToVisible(new TreePath(newChild.getPath()));
+		
+		newChild.setUserObject(node); 
+		
+		nodeFather.add(newChild);
+		nodeTreeMap.put(newChild, (Node)node); 
+		inverseNodeMap.put(node, newChild); 
+		
+		scrollPathToVisible(new TreePath(newChild.getPath()));
+	}
+	
+	public void removeMFrag(MFrag mFrag){
+		DefaultMutableTreeNode treeNode = inverseNodeMap.get(mFrag); 
+		
+		//remove childs
+		if(treeNode.getChildCount() != 0){
+			for(int i = 0; i < treeNode.getChildCount(); i++){
+				((DefaultTreeModel)getModel()).removeNodeFromParent(
+						(MutableTreeNode)treeNode.getChildAt(0)); 
+			}
+		}
+		
+		//remove mFrag node
+		((DefaultTreeModel)getModel()).removeNodeFromParent(treeNode); 
+	}
+	
+	public void removeNode(Node node){
+		DefaultMutableTreeNode treeNode = inverseNodeMap.get(node); 
+		((DefaultTreeModel)getModel()).removeNodeFromParent(treeNode); 
+	}
+	
+	public void renameNode(Node node){
+		DefaultMutableTreeNode treeNode = inverseNodeMap.get(node); 
+		scrollPathToVisible(new TreePath(treeNode.getPath()));
+		repaint(); 
+	}
+	
+	public void renameMFrag(MFrag mFrag){
+		DefaultMutableTreeNode treeNode = inverseNodeMap.get(mFrag); 
+		scrollPathToVisible(new TreePath(treeNode.getPath()));
+		repaint(); 
+	}
+	
+	public void renameMTheory(String name){
 		root.setUserObject(name); 
+		scrollPathToVisible(new TreePath(root.getPath()));
+		repaint(); 
 	}
 	
 	/**
@@ -441,21 +386,25 @@ public class MTheoryTree extends JTree {
 			}
 
 			TreePath selPath = getPathForLocation(e.getX(), e.getY());
-			DefaultMutableTreeNode node = (DefaultMutableTreeNode) selPath
+			DefaultMutableTreeNode mutableTreeNode = (DefaultMutableTreeNode) selPath
 					.getLastPathComponent();
 
-			if (node.isLeaf()) {
+			if (mutableTreeNode.isLeaf()) {
 				
-				Object nodeLeaf = nodeMap.get(node); 
+				Object nodeLeaf = nodeTreeMap.get(mutableTreeNode); 
 				objectSelected = nodeLeaf; 
 				
 				if (nodeLeaf instanceof MFrag){
 					if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
+						
 						popupMFrag.setEnabled(true);
 						popupMFrag.show(e.getComponent(),e.getX(),e.getY());
+						
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-						controller.setCurrentMFrag(mFragMap.get(node)); 
+						
+						controller.setCurrentMFrag((MFrag)nodeLeaf); 
+						
 					} else if (e.getClickCount() == 1) {
 						
 					}
@@ -463,21 +412,19 @@ public class MTheoryTree extends JTree {
 				else{
 					if (nodeLeaf instanceof MultiEntityNode){
 						if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
+							
 							popupNode.setEnabled(true);
 							popupNode.show(e.getComponent(),e.getX(),e.getY());
+						
 						} else if (e.getClickCount() == 2
 								&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-							
-							/* 
-							 * ativar a MFrag do nodo como a ativa e selecionar o nodo
-							 * no grafo desta. 
-							 */ 
+							 
 							Object fatherNode = objectSelected;
-							TreeNode treeNode = node; 
+							TreeNode treeNode = mutableTreeNode; 
 							
 							while (!(fatherNode instanceof MFrag)){
 								treeNode = treeNode.getParent(); 
-								fatherNode = nodeMap.get(treeNode); 
+								fatherNode = nodeTreeMap.get(treeNode); 
 							}
 							
 							controller.showGraphMFrag((MFrag)fatherNode); 
@@ -493,27 +440,29 @@ public class MTheoryTree extends JTree {
 			} 
 			else { //Not is a leaf 
 				
-				Object nodeLeaf = nodeMap.get(node); 
+				Object nodeLeaf = nodeTreeMap.get(mutableTreeNode); 
 				objectSelected = nodeLeaf; 
 				
 				if (nodeLeaf instanceof MFrag){
 					if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
+						
 						popupMFrag.setEnabled(true);
 						popupMFrag.show(e.getComponent(),e.getX(),e.getY());
+					
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-						controller.setCurrentMFrag(mFragMap.get(node));
+						
+						controller.setCurrentMFrag((MFrag)nodeLeaf);
+						
 					} else if (e.getClickCount() == 1) {
-					
-					
-					
+					    
+						//Do nothing
+						
 					}
 				}
 				else{
 					if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
 						
-						// PARECE N�O ENTRAR AQUI... VERIFICAR...
-						//if (e.isPopupTrigger()) {
 						if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
 							popup.setEnabled(true);
 							popup.show(e.getComponent(),e.getX(),e.getY());
@@ -521,14 +470,13 @@ public class MTheoryTree extends JTree {
 						
 					}
 					if (e.getClickCount() == 1) {
-						/*Node newNode = getNodeMap(node);
-						 if (newNode != null) {
-						 netWindow.getGraphPane().selectObject(newNode);
-						 netWindow.getGraphPane().update();
-						 }*/
-						//TODO N�O TEM ISSO NA MFRAG
+						
+						//Do nothing
+						
 					} else if (e.getClickCount() == 2) {
 
+						//Do nothing
+						
 					}
 				}
 			}
@@ -555,7 +503,7 @@ public class MTheoryTree extends JTree {
 			super.getTreeCellRendererComponent(tree, value, sel, expanded,
 					leaf, row, hasFocus);
 			
-			Object obj = nodeMap.get(value);
+			Object obj = nodeTreeMap.get(value);
 			
 			if (leaf) {
 
@@ -597,6 +545,7 @@ public class MTheoryTree extends JTree {
                  	setIcon(mTheoryNodeIcon); 
                  }	
 			}
+			
 			return this;
 		}
 	}
