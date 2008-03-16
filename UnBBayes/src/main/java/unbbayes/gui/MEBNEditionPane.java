@@ -69,11 +69,15 @@ import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
 import unbbayes.gui.mebn.finding.EntityFindingEditionPane;
 import unbbayes.gui.mebn.finding.RandonVariableFindingEdtitionPane;
+import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.exception.DuplicatedNameException;
+import unbbayes.prs.mebn.exception.MEBNException;
+import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
+import unbbayes.util.ResourceController;
 
 /**
  * Pane for edition of MEBN. This is the main panel of
@@ -202,8 +206,7 @@ public class MEBNEditionPane extends JPanel {
     private final IconController iconController = IconController.getInstance();
 
 	/* Load resource file from this package */
-  	private static ResourceBundle resource =
-  		    ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+  	private static ResourceBundle resource = ResourceController.RS_GUI; 
 
   	public MEBNEditionPane(NetworkWindow _netWindow,
             MEBNController _controller) {
@@ -308,6 +311,7 @@ public class MEBNEditionPane extends JPanel {
 
         mTheoryTree = new MTheoryTree(mebnController, netWindow.getGraphPane());
         mTheoryTreeScroll = new JScrollPane(mTheoryTree);
+        mTheoryTreeScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS); 
         mTheoryTreeScroll.setBorder(ToolKitForGuiMebn.getBorderForTabPanel(
         		resource.getString("MTheoryTreeTitle")));
         jpTabSelected.add(MTHEORY_TREE_TAB, mTheoryTreeScroll);
@@ -504,7 +508,7 @@ public class MEBNEditionPane extends JPanel {
 
     public void setMTheoryTreeActive(){
         cardLayout.show(jpTabSelected, "MTheoryTree");
-        mTheoryTree.updateTree();
+//        mTheoryTree.updateTree();
     }
 
     public void setFormulaEdtionActive(){
@@ -677,6 +681,13 @@ public class MEBNEditionPane extends JPanel {
 		return this.descriptionPane.getDescriptionText(); 
 	}
 	
+	/**
+	 * Contains geral mebn buttons: 
+	 * - save, load, clear knowledge base
+	 * - execute query
+	 * - turn to ssbn/edition mode
+	 * - others...
+	 */
 	private class ToolBarGlobalOptions extends JToolBar{
 
 		private static final long serialVersionUID = 1L;
@@ -777,46 +788,13 @@ public class MEBNEditionPane extends JPanel {
 	    	
 	    	btnSaveKB.addActionListener(new ActionListener() {
 	    		public void actionPerformed(ActionEvent ae) {
-	    			setCursor(new Cursor(Cursor.WAIT_CURSOR));
-	    			
-	    			JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
-	    			chooser.setMultiSelectionEnabled(false);
-	    			chooser
-	    			.setFileSelectionMode(JFileChooser.FILES_ONLY);
-	    			
-	    			int option = chooser.showSaveDialog(null);
-	    			if (option == JFileChooser.APPROVE_OPTION) {
-	    				File file = chooser.getSelectedFile();
-	    				if (file != null) {
-	    						mebnController.saveFindingsFile(file);
-	    						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileSaveOK"));
-	    				}
-	    			}
-	    			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	    			doSaveKnowledgeBase(); 
 	    		}
 	    	}); 
 	    	
 	    	btnLoadKB.addActionListener(new ActionListener() {
 	    		public void actionPerformed(ActionEvent ae) {
-	    			setCursor(new Cursor(Cursor.WAIT_CURSOR));
-	    			JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
-	    			chooser.setMultiSelectionEnabled(false);
-	    			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-	    			
-	    			int option = chooser.showOpenDialog(null);
-	    			if (option == JFileChooser.APPROVE_OPTION) {
-	    				if (chooser.getSelectedFile() != null) {
-	    					try {
-	    						mebnController.loadFindingsFile(chooser.getSelectedFile());
-	    						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileLoadOK"));
-	    					} catch (Exception e) {
-	    						e.printStackTrace();
-	    						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("loadedWithErrors"));
-	    					}
-	    				}
-	    			}
-	    			
-	    			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	    			doLoadKnowledgeBase(); 
 	    		}});
 
 	        add(btnDoQuery);
@@ -837,6 +815,75 @@ public class MEBNEditionPane extends JPanel {
 	        
 	        setFloatable(false);
 	    }; 
+	    
+	    /**
+	     * Open the JFileChooser for the user enter with the name of file and 
+	     * save the knowledge base (only the findings)
+	     */
+	    private void doSaveKnowledgeBase(){
+			setCursor(new Cursor(Cursor.WAIT_CURSOR));
+			
+			String[] validSufixes = new String[] {PowerLoomKB.FILE_SUFIX};
+			
+			JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+			chooser.setMultiSelectionEnabled(false);
+			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			
+			chooser.addChoosableFileFilter(new SimpleFileFilter(validSufixes,
+					resource.getString("powerloomFileFilter")));
+			
+			int option = chooser.showSaveDialog(null);
+			if (option == JFileChooser.APPROVE_OPTION) {
+				
+				File file = chooser.getSelectedFile();
+				String nameFile = file.getAbsolutePath(); 
+				if(!(nameFile.substring(nameFile.length() - 4).equals("." + PowerLoomKB.FILE_SUFIX))){
+					file = new File(nameFile + "." + PowerLoomKB.FILE_SUFIX); 
+				}
+				
+				if (file != null) {
+						mebnController.saveFindingsFile(file);
+						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileSaveOK"));
+				}
+			}
+			
+			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	    }
+	    
+	    /**
+	     * Load a knowledge base
+	     */
+	    private void doLoadKnowledgeBase(){
+			setCursor(new Cursor(Cursor.WAIT_CURSOR));
+			
+			String[] validSufixes = new String[] {PowerLoomKB.FILE_SUFIX};
+			
+			JFileChooser chooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
+			chooser.setMultiSelectionEnabled(false);
+			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			
+			chooser.addChoosableFileFilter(new SimpleFileFilter(validSufixes,
+					resource.getString("powerloomFileFilter")));
+			
+			int option = chooser.showOpenDialog(null);
+			if (option == JFileChooser.APPROVE_OPTION) {
+				if (chooser.getSelectedFile() != null) {
+					
+					File file = chooser.getSelectedFile();
+					
+					try {
+						mebnController.loadFindingsFile(file);
+						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileLoadOK"));
+					} catch (UBIOException e) {
+						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), e.getMessage());
+					} catch (MEBNException e2) {
+						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), e2.getMessage());
+					}
+				}
+			}
+			
+			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	    }
 	    
 	}
 	
@@ -972,7 +1019,7 @@ public class MEBNEditionPane extends JPanel {
   	  						String name = txtNameMTheory.getText(0,txtNameMTheory.getText().length());
   	  						matcher = wordPattern.matcher(name);
   	  						if (matcher.matches()) {
-  	  							mebnController.setNameMTheory(name);
+  	  							mebnController.renameMTheory(name);
   	  						}  else {
   	  							txtNameMTheory.setBackground(ToolKitForGuiMebn.getColorTextFieldError());
   	  							txtNameMTheory.setForeground(Color.WHITE);
@@ -1052,7 +1099,6 @@ public class MEBNEditionPane extends JPanel {
       						if (matcher.matches()) {
       							try{
       							   mebnController.renameMFrag(mebnController.getCurrentMFrag(), name);
-      							   mTheoryTree.updateTree();
       							}
       							catch(DuplicatedNameException dne){
       	  							JOptionPane.showMessageDialog(netWindow,

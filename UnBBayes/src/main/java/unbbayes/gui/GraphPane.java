@@ -615,7 +615,10 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 			setAction(GraphAction.NONE);
 		}
 		
-		this.repaint((int) controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue(), (int) controller.getScreen().getJspGraph().getVerticalScrollBar().getValue(), (int) visibleDimension.getWidth(), (int) visibleDimension.getHeight());
+		this.repaint((int) controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue(), 
+				     (int) controller.getScreen().getJspGraph().getVerticalScrollBar().getValue(), 
+				     (int) visibleDimension.getWidth(), 
+				     (int) visibleDimension.getHeight());
 	}
 	
 	

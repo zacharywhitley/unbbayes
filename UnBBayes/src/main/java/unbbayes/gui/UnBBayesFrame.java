@@ -308,8 +308,7 @@ public class UnBBayesFrame extends JFrame {
 						UbfIO.fileExtension };
 				chooser = new JFileChooser(fileController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
-				chooser
-						.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
 				// adicionar FileView no FileChooser para desenhar �cones de
 				// arquivos
@@ -317,6 +316,7 @@ public class UnBBayesFrame extends JFrame {
 
 				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
 						resource.getString("netFileFilter")));
+				
 				int option = chooser.showOpenDialog(null);
 				if (option == JFileChooser.APPROVE_OPTION) {
 					if (chooser.getSelectedFile() != null) {

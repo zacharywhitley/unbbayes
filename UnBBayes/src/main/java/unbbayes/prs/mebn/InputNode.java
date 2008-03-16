@@ -199,7 +199,6 @@ public class InputNode extends MultiEntityNode {
 		residentNodePointer = new ResidentNodePointer(node, this);
 		node.addInputInstanceFromList(this); 
 		updateLabel(); 
-		
 	}	
 	
 	/**
@@ -293,15 +292,20 @@ public class InputNode extends MultiEntityNode {
 	 */
 	public void delete() {
 		
-		residentNodeChildList = null; 
-		inputInstanceOfNode = null;
-		
 		while(!residentNodeChildList.isEmpty()){
 			ResidentNode resident = residentNodeChildList.get(0); 
 			removeResidentNodeChild(resident); 
 		}
 		
 		mFrag.removeInputNode(this); 
+	}
+	
+	public String toString(){
+		if (residentNodePointer != null){
+			return residentNodePointer.getResidentNode().toString(); 
+		}else{
+			return " "; 
+		}
 	}
 
 

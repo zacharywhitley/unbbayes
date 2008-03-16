@@ -37,6 +37,7 @@ import unbbayes.gui.MEBNEditionPane;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.mebn.OVariableEditionPane;
 import unbbayes.io.XMLIO;
+import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -76,8 +77,8 @@ import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
-import unbbayes.util.Debug;
 import unbbayes.util.NodeList;
+import unbbayes.util.ResourceController;
 
 /**
  * Controller of the MEBN structure. 
@@ -92,7 +93,7 @@ import unbbayes.util.NodeList;
 public class MEBNController  {
 
 	/*-------------------------------------------------------------------------*/
-	/* Static attributes                                                       */
+	/*                                                      */
 	/*-------------------------------------------------------------------------*/
 	
 	private KnowledgeBase knowledgeBase; 
@@ -148,8 +149,7 @@ public class MEBNController  {
 	/*-------------------------------------------------------------------------*/
 
 	/** Load resource file from this package */
-	private static ResourceBundle resource = ResourceBundle
-			.getBundle("unbbayes.controller.resources.ControllerResources");
+	private static ResourceBundle resource = ResourceController.RS_CONTROLLER;
 
 	private NumberFormat df;
 	
@@ -224,11 +224,11 @@ public class MEBNController  {
 	 * Set the name of the MTheory active.
 	 * @param name The new name
 	 */
-	public void setNameMTheory(String name){
+	public void renameMTheory(String name){
 
 		multiEntityBayesianNetwork.setName(name);
 		mebnEditionPane.setNameMTheory(name);
-		mebnEditionPane.getMTheoryTree().updateTree(); 
+		mebnEditionPane.getMTheoryTree().renameMTheory(name); 
 
 	}
 	
@@ -290,27 +290,29 @@ public class MEBNController  {
 		int domainMFragNum = multiEntityBayesianNetwork.getDomainMFragNum();
 
 		while (name == null){
-			name = name = resource.getString("domainMFragName") + multiEntityBayesianNetwork.getDomainMFragNum();
+			name = resource.getString("domainMFragName") + 
+			       multiEntityBayesianNetwork.getDomainMFragNum();
+			
 			if(multiEntityBayesianNetwork.getMFragByName(name) != null){
 				name = null;
 				multiEntityBayesianNetwork.setDomainMFragNum(++domainMFragNum);
 			}
 		}
 
-		MFrag domainMFrag = new MFrag(name, multiEntityBayesianNetwork);
+		MFrag mFrag = new MFrag(name, multiEntityBayesianNetwork);
 
-		multiEntityBayesianNetwork.addDomainMFrag(domainMFrag);
+		multiEntityBayesianNetwork.addDomainMFrag(mFrag);
 
-		mebnEditionPane.getMTheoryTree().updateTree();
+		mebnEditionPane.getMTheoryTree().addMFrag(mFrag);
 
-	    showGraphMFrag(domainMFrag);
+	    showGraphMFrag(mFrag);
 
 	    mebnEditionPane.setMFragBarActive();
-	    mebnEditionPane.setTxtNameMFrag(domainMFrag.getName());
+	    mebnEditionPane.setTxtNameMFrag(mFrag.getName());
 	    mebnEditionPane.setMTheoryTreeActive();
 	    
 		typeElementSelected = TypeElementSelected.MFRAG; 
-		mebnEditionPane.setDescriptionText(domainMFrag.getDescription()); 
+		mebnEditionPane.setDescriptionText(mFrag.getDescription()); 
 	}
 
 	public void removeDomainMFrag(MFrag domainMFrag) {
@@ -327,7 +329,6 @@ public class MEBNController  {
 		       showGraphMFrag();
 		    }
 		}
-		mebnEditionPane.getMTheoryTree().updateTree();
 	}
 
 	public void setCurrentMFrag(MFrag mFrag){
@@ -359,6 +360,8 @@ public class MEBNController  {
 			if(this.getCurrentMFrag() == mFrag){
 				mebnEditionPane.showTitleGraph(name);
 			}
+			
+			mebnEditionPane.getMTheoryTree().renameMFrag(mFrag); 
 	}
 
 
@@ -430,18 +433,22 @@ public class MEBNController  {
 		node.setPosition(x, y);
 		node.setDescription(node.getName());
 		domainMFrag.addResidentNode(node);
-
+		
+		typeElementSelected = TypeElementSelected.NODE; 
+		
 		residentNodeActive = node;
 		nodeActive = node;
-
+		
+		//Updating panels
 		mebnEditionPane.setEditArgumentsTabActive(node);
 		mebnEditionPane.setResidentNodeTabActive(node);
 		mebnEditionPane.setArgumentTabActive();
 		mebnEditionPane.setResidentBarActive();
 		mebnEditionPane.setTxtNameResident(((ResidentNode)node).getName());
-
 		mebnEditionPane.setDescriptionText(node.getDescription()); 
-		typeElementSelected = TypeElementSelected.NODE; 
+		
+		mebnEditionPane.getMTheoryTree().addNode(domainMFrag, node); 
+	
 		
 	    return node;
 	}
@@ -595,7 +602,7 @@ public class MEBNController  {
 		mebnEditionPane.setTxtNameInput(((InputNode)node).getName());
 		mebnEditionPane.setInputNodeActive(node);
 		mebnEditionPane.setTxtInputOf("");
-		
+		mebnEditionPane.getMTheoryTree().addNode(domainMFrag, node); 
 		mebnEditionPane.setDescriptionText(node.getDescription()); 
 		typeElementSelected = TypeElementSelected.NODE; 
 
@@ -668,13 +675,13 @@ public class MEBNController  {
 		node.setDescription(node.getName());
 		domainMFrag.addContextNode(node);
 
+		typeElementSelected = TypeElementSelected.NODE; 
 		contextNodeActive = node;
 		nodeActive = node;
 
 		setContextNodeActive(node);
-
+		mebnEditionPane.getMTheoryTree().addNode(domainMFrag, node); 
 		mebnEditionPane.setDescriptionText(node.getDescription()); 
-		typeElementSelected = TypeElementSelected.NODE; 
 		
 		return node;
 	}
@@ -688,21 +695,21 @@ public class MEBNController  {
 	public void deleteSelected(Object selected) {
         if (selected instanceof ContextNode){
             ((ContextNode)selected).delete();
-            mebnEditionPane.getMTheoryTree().updateTree();
+            mebnEditionPane.getMTheoryTree().removeNode((Node)selected);
             mebnEditionPane.setMTheoryTreeActive();
         }
         else{
 
         	if (selected instanceof ResidentNode){
                 ((ResidentNode)selected).delete();
-                mebnEditionPane.getMTheoryTree().updateTree();
+                mebnEditionPane.getMTheoryTree().removeNode((Node)selected);
                 mebnEditionPane.setMTheoryTreeActive();
         		this.setUnableTableEditionView();
         	}
         	else{
             	if (selected instanceof InputNode){
                     ((InputNode)selected).delete();
-                     mebnEditionPane.getMTheoryTree().updateTree();
+                    mebnEditionPane.getMTheoryTree().removeNode((Node)selected);
                      mebnEditionPane.setMTheoryTreeActive();
             	}else{
             	 if (selected instanceof OrdinaryVariable){
@@ -758,18 +765,20 @@ public class MEBNController  {
 	}
 
 	private void saveDescriptionTextOfPreviousElement(String text) {
-		switch(typeElementSelected){
-		case MFRAG:
-			mFragActive.setDescription(text); 
-			break; 
-		case MTHEORY:
-			multiEntityBayesianNetwork.setDescription(text); 
-			break; 
-		case NODE:
-			if(nodeActive!=null){
-				nodeActive.setDescription(text); 
+		if(typeElementSelected != null){
+			switch(typeElementSelected){
+			case MFRAG:
+				mFragActive.setDescription(text); 
+				break; 
+			case MTHEORY:
+				multiEntityBayesianNetwork.setDescription(text); 
+				break; 
+			case NODE:
+				if(nodeActive!=null){
+					nodeActive.setDescription(text); 
+				}
+				break; 
 			}
-			break; 
 		}
 	}
 
@@ -1252,12 +1261,11 @@ public class MEBNController  {
 		getKnowledgeBase().saveFindings(getMultiEntityBayesianNetwork(), new File(MEBNController.NAME_FINDING_FILE));
 	}
 
-	public void loadFindingsFile(File file) throws MEBNException{
+	public void loadFindingsFile(File file) throws UBIOException, MEBNException{
 		Exception lastException = null;
 		createKnowledgeBase(); 	
 		getKnowledgeBase().loadModule(file);
 		for (ResidentNode resident : this.multiEntityBayesianNetwork.getDomainResidentNodes()) {
-			Debug.println(this.getClass(), "Loading finding of: " + resident.getName());
 			try {
 				 this.knowledgeBase.fillFindings(resident);
 			 } catch (Exception e) {

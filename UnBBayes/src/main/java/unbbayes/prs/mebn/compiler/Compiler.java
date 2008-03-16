@@ -244,7 +244,7 @@ public class Compiler implements ICompiler {
 		if (text == null) {
 			this.text = null;
 			return;
-		} else if (text.isEmpty()) {
+		} else if (text.length() == 0) {
 			/*
 			 * testing if ((text == null) || text.isEmpty()) would be much better, but
 			 * since some non-standard JVM could not to stop testing boolean OR condition
