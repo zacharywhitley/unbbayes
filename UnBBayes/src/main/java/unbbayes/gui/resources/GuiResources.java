@@ -187,6 +187,9 @@ public class GuiResources extends ListResourceBundle {
 		{"downArgumentToolTip", "Add to argument list ord. variable selected"}, 
 		{"mTheoryEditionTip", "Edit atributes of the MTheory"}, 	
 		{"isGloballyExclusive", "Globally exclusive"},		
+		{"resetToolTip", "Reset"},	
+		{"deleteSelectedItemToolTip", "Delete selected item"},	
+		{"menuOpen", "Open"},	
 		
 		{"showMTheoryToolTip","Show MTheory tree"},	
 		{"showEntitiesToolTip","Show entities of the MTheory"},

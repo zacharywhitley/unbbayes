@@ -33,6 +33,7 @@ import javax.xml.bind.JAXBException;
 
 import unbbayes.controller.exception.InconsistentArgumentException;
 import unbbayes.controller.exception.InvalidOperationException;
+import unbbayes.gui.GraphAction;
 import unbbayes.gui.MEBNEditionPane;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.mebn.OVariableEditionPane;
@@ -317,6 +318,7 @@ public class MEBNController  {
 
 	public void removeDomainMFrag(MFrag domainMFrag) {
 		multiEntityBayesianNetwork.removeDomainMFrag(domainMFrag);
+		mebnEditionPane.getMTheoryTree().removeMFrag(domainMFrag); 
 		if(mFragActive != domainMFrag){
 			multiEntityBayesianNetwork.setCurrentMFrag(mFragActive);
 		}
@@ -331,6 +333,9 @@ public class MEBNController  {
 		}
 	}
 
+	/**
+	 * Set the mFrag how the active MFrag and show its graph
+	 */
 	public void setCurrentMFrag(MFrag mFrag){
 
 		showGraphMFrag(mFrag);
@@ -342,8 +347,39 @@ public class MEBNController  {
 		
 		typeElementSelected = TypeElementSelected.MFRAG; 
 		mebnEditionPane.setDescriptionText(mFrag.getDescription()); 
+		
+		setActionGraphNone(); 
 	}
 
+	/**
+	 * Show the graph of the MFrag and select it how active MFrag.
+	 *
+	 * @param mFrag
+	 */
+	private void showGraphMFrag(MFrag mFrag){
+
+		multiEntityBayesianNetwork.setCurrentMFrag(mFrag);
+	    screen.getGraphPane().resetGraph();
+	    mebnEditionPane.showTitleGraph(mFrag.getName());
+	    mFragActive = mFrag;
+
+	}
+
+	/**
+	 * Show a empty MFrag graph.
+	 * Use when no MFrag is in a MTheory.
+	 *
+	 */
+	private void showGraphMFrag(){
+
+		multiEntityBayesianNetwork.setCurrentMFrag(null);
+		screen.getGraphPane().showEmptyGraph();
+		mebnEditionPane.hideTopComponent();
+		mebnEditionPane.setEmptyBarActive();
+		mFragActive = null;
+
+	}	
+	
 	/**
 	 * rename the MFrag and update its name in the title of the graph
 	 * @param mFrag
@@ -366,34 +402,7 @@ public class MEBNController  {
 
 
 
-	/**
-	 * Show the graph of the MFrag and select it how active MFrag.
-	 *
-	 * @param mFrag
-	 */
-	public void showGraphMFrag(MFrag mFrag){
 
-		multiEntityBayesianNetwork.setCurrentMFrag(mFrag);
-	    screen.getGraphPane().resetGraph();
-	    mebnEditionPane.showTitleGraph(mFrag.getName());
-	    mFragActive = mFrag;
-
-	}
-
-	/**
-	 * Show a empty MFrag graph.
-	 * Use when no MFrag is in a MTheory.
-	 *
-	 */
-	public void showGraphMFrag(){
-
-		multiEntityBayesianNetwork.setCurrentMFrag(null);
-		screen.getGraphPane().showEmptyGraph();
-		mebnEditionPane.hideTopComponent();
-		mebnEditionPane.setEmptyBarActive();
-		mFragActive = null;
-
-	}
 
 	public MFrag getCurrentMFrag(){
 		return multiEntityBayesianNetwork.getCurrentMFrag();
@@ -692,6 +701,41 @@ public class MEBNController  {
 	/* Graph                                                                   */
 	/*-------------------------------------------------------------------------*/
 
+	public void setActionGraphNone(){
+	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.NONE);	
+	}
+	
+	public void setActionGraphCreateEdge(){
+	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.CREATE_EDGE);	
+	}
+	
+	public void setActionGraphCreateContextNode(){
+	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.CREATE_CONTEXT_NODE);	
+	}
+	
+	public void setActionGraphCreateInputNode(){
+	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.CREATE_INPUT_NODE);	
+	}
+	
+	public void setActionGraphCreateResidentNode(){
+	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.CREATE_RESIDENT_NODE);	
+	}
+	
+	public void setActionGraphCreateOrdinaryVariableNode(){
+	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.CREATE_ORDINARYVARIABLE_NODE);	
+	}
+	
+	/**
+	 * Delete the selected item of the graph (a node or a edge)
+	 */
+	public void deleteSelectedItem(){
+		
+		Object selected = mebnEditionPane.getNetworkWindow().getGraphPane().getSelected(); 
+		if(selected != null){
+			deleteSelected(selected); 
+		}
+	}
+	
 	public void deleteSelected(Object selected) {
         if (selected instanceof ContextNode){
             ((ContextNode)selected).delete();
@@ -726,6 +770,8 @@ public class MEBNController  {
             	}
         	}
         }
+        
+        mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
 
 	}
 

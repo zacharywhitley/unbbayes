@@ -207,13 +207,10 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	}
 	
 	/**
-	 *  Retorna o objeto selecionado (<code>Object</code>), que pode ser um <code>Node</code> ou <code>Edge</code>
-	 *
-	 *@return    O valor do <code>Object</code> selected
-	 *@see Object
-	 *@see Node
-	 *@see Edge
-	 */
+	 *  Return the selected object:
+     *     - Node
+     *     - Edge
+     **/
 	public Object getSelected() {
 		return this.selected;
 	}
@@ -459,7 +456,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	
 	/**
-	 *  M�todo respons�vel por repintar a rede Bayesiana
+	 *  Repaint the network
 	 */
 	public void update(){
 		this.repaint(getRectangleRepaint());
@@ -1131,4 +1128,5 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 			edge.paint(graphBoard);
 		}
 	}
+	
 }

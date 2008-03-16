@@ -889,6 +889,7 @@ public class MEBNEditionPane extends JPanel {
 	
   	private class ToolBarEdition extends JToolBar{
 
+  		private final JButton btnResetCursor; 
   	    private final JButton btnAddMFrag;
   	    private final JButton btnAddContextNode;
   	    private final JButton btnAddInputNode;
@@ -897,7 +898,8 @@ public class MEBNEditionPane extends JPanel {
   	    private final JButton btnAddOrdinaryVariable;
   	    private final JButton btnEditMTheory;
   	    private final JButton btnSelectObject;
-
+  	    private final JButton btnDeleteSelectedItem; 
+  	    
   		public ToolBarEdition(){
 
   	        btnEditMTheory = new JButton(iconController.getMTheoryNodeIcon());
@@ -908,7 +910,9 @@ public class MEBNEditionPane extends JPanel {
   	        btnAddOrdinaryVariable = new JButton(iconController.getOVariableNodeIcon());
   	        btnAddMFrag		= new JButton(iconController.getMFragIcon());
   	        btnSelectObject            = new JButton(iconController.getSelectionIcon());
-
+  	        btnResetCursor = new JButton(iconController.getArrowIcon()); 
+  	        btnDeleteSelectedItem = new JButton(iconController.getEditDelete());
+  	        
   	        btnEditMTheory.setToolTipText(resource.getString("mTheoryEditionTip"));
   	        btnAddEdge.setToolTipText(resource.getString("arcToolTip"));
   	        btnAddMFrag.setToolTipText(resource.getString("mFragInsertToolTip"));
@@ -917,7 +921,11 @@ public class MEBNEditionPane extends JPanel {
   	        btnAddResidentNode.setToolTipText(resource.getString("residentNodeInsertToolTip"));
   	        btnSelectObject.setToolTipText(resource.getString("selectObjectToolTip"));
   	        btnAddOrdinaryVariable.setToolTipText(resource.getString("ordinaryVariableInsertToolTip"));
-
+  	        btnResetCursor.setToolTipText(resource.getString("resetToolTip"));
+  	        btnDeleteSelectedItem.setToolTipText(resource.getString("deleteSelectedItemToolTip"));
+  	        
+  	        add(btnResetCursor); 
+  	        addSeparator(); 
   	        add(btnEditMTheory);
   	        addSeparator();
   	        add(btnAddMFrag);
@@ -927,10 +935,18 @@ public class MEBNEditionPane extends JPanel {
   	        add(btnAddContextNode);
   	        add(btnAddOrdinaryVariable);
   	        add(btnAddEdge);
+  	        addSeparator(); 
+  	        add(btnDeleteSelectedItem); 
   	        addSeparator();
   	        add(btnSelectObject);
   	        addSeparator();
 
+  	        btnResetCursor.addActionListener(new ActionListener(){
+  	  			public void actionPerformed(ActionEvent ae){
+  	  			    mebnController.setActionGraphNone(); 
+  	  			}
+  	  		});
+  	        
   	  		btnEditMTheory.addActionListener(new ActionListener(){
   	  			public void actionPerformed(ActionEvent ae){
   	  				mebnController.enableMTheoryEdition();
@@ -940,13 +956,12 @@ public class MEBNEditionPane extends JPanel {
   	  		//ao clicar no botão btnAddEdge setamos as variaveis booleanas e os estados dos butoes
   	  		btnAddEdge.addActionListener(new ActionListener() {
   	  			public void actionPerformed(ActionEvent ae) {
-  	  				netWindow.getGraphPane().setAction(GraphAction.CREATE_EDGE);
+  	  				mebnController.setActionGraphCreateEdge(); 
   	  			}
   	  		});
 
   	  		btnAddMFrag.addActionListener(new ActionListener(){
   	  			public void actionPerformed(ActionEvent ae){
-  	  				//netWindow.getGraphPane().setAction(GraphAction.CREATE_DOMAIN_MFRAG);
   	  				mebnController.insertDomainMFrag();
   	  			}
   	  		});
@@ -954,31 +969,36 @@ public class MEBNEditionPane extends JPanel {
   	  		//ao clicar no botao node setamos as variaveis booleanas e os estados dos butoes
   	  		btnAddContextNode.addActionListener(new ActionListener() {
   	  			public void actionPerformed(ActionEvent ae) {
-  	  				netWindow.getGraphPane().setAction(GraphAction.CREATE_CONTEXT_NODE);
+  	  				mebnController.setActionGraphCreateContextNode(); 
   	  			}
   	  		});
-
 
   	  		//ao clicar no botao btnAddInputNode setamos as variaveis booleanas e os estados dos butoes
   	  		btnAddInputNode.addActionListener(new ActionListener() {
   	  			public void actionPerformed(ActionEvent ae) {
-  	  				netWindow.getGraphPane().setAction(GraphAction.CREATE_INPUT_NODE);
+  	  			   mebnController.setActionGraphCreateInputNode(); 
   	  			}
   	  		});
 
   	  		//ao clicar no botao btnAddResidentNode setamos as variaveis booleanas e os estados dos butoes
   	  		btnAddResidentNode.addActionListener(new ActionListener() {
   	  			public void actionPerformed(ActionEvent ae) {
-  	  				netWindow.getGraphPane().setAction(GraphAction.CREATE_RESIDENT_NODE);
+  	  			   mebnController.setActionGraphCreateResidentNode(); 
   	  			}
   	  		});
 
-  	        // ao clicar no botao node setamos as variaveis booleanas e os estados dos butoes
-  	    		btnAddOrdinaryVariable.addActionListener(new ActionListener() {
-  	    			public void actionPerformed(ActionEvent ae) {
-  	    				netWindow.getGraphPane().setAction(GraphAction.CREATE_ORDINARYVARIABLE_NODE);
-  	    			}
-  	    		});
+  	  		// ao clicar no botao node setamos as variaveis booleanas e os estados dos butoes
+  	  		btnAddOrdinaryVariable.addActionListener(new ActionListener() {
+  	  			public void actionPerformed(ActionEvent ae) {
+  	  				mebnController.setActionGraphCreateOrdinaryVariableNode(); 
+  	  			}
+  	  		});
+
+  	  		btnDeleteSelectedItem.addActionListener(new ActionListener() {
+  	  			public void actionPerformed(ActionEvent ae) {
+  	  				mebnController.deleteSelectedItem(); 
+  	  			}
+  	  		});
 
   	  		//ao clicar no botao node setamos as variaveis booleanas e os estados dos butoes
   	  		btnSelectObject.addActionListener(new ActionListener() {

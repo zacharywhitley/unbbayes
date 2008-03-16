@@ -90,7 +90,7 @@ public class MTheoryTree extends JTree {
 	
 	private DefaultMutableTreeNode root; 
 	
-    private final MEBNController controller;	
+    private final MEBNController mebnController;	
     private final GraphPane graphPane;
     
 	/** Load resource file from this package */
@@ -105,7 +105,7 @@ public class MTheoryTree extends JTree {
   	
 	public MTheoryTree(final MEBNController controller, GraphPane graphPane) {
 		
-		this.controller = controller; 
+		this.mebnController = controller; 
 		this.net = controller.getMultiEntityBayesianNetwork();
 		this.graphPane = graphPane; 
 		
@@ -142,35 +142,47 @@ public class MTheoryTree extends JTree {
 	
 	private void createPopupMenuMFrag(){
 		
+		JMenuItem itemOpen =     new JMenuItem(resource.getString("menuOpen")); 
 		JMenuItem itemDelete =   new JMenuItem(resource.getString("menuDelete")); 
 		JMenuItem itemContext =  new JMenuItem(resource.getString("menuAddContext"));
 		JMenuItem itemInput =    new JMenuItem(resource.getString("menuAddInput")); 
 		JMenuItem itemResident = new JMenuItem(resource.getString("menuAddResident"));
 
+		itemOpen.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent ae){
+				mebnController.setCurrentMFrag((MFrag)objectSelected);
+			}
+		}); 
+		
 		itemDelete.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				controller.removeDomainMFrag((MFrag) objectSelected); 
+				mebnController.removeDomainMFrag((MFrag)objectSelected); 
+				repaint(); 
 			}
 		}); 		
 		
 		itemContext.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				graphPane.setAction(GraphAction.CREATE_CONTEXT_NODE); 
+				mebnController.setCurrentMFrag((MFrag)objectSelected);
+				mebnController.setActionGraphCreateContextNode(); 
 			}
 		}); 
 		
 		itemInput.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				graphPane.setAction(GraphAction.CREATE_INPUT_NODE); 				
+				mebnController.setCurrentMFrag((MFrag)objectSelected);
+				mebnController.setActionGraphCreateInputNode();  				
 			}
 		}); 
 		
 		itemResident.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				graphPane.setAction(GraphAction.CREATE_RESIDENT_NODE); 								
+				mebnController.setCurrentMFrag((MFrag)objectSelected);
+				mebnController.setActionGraphCreateResidentNode();  								
 			}
 		}); 		
 		
+		popupMFrag.add(itemOpen); 
 		popupMFrag.add(itemDelete); 
 		popupMFrag.add(itemContext); 
 		popupMFrag.add(itemResident); 
@@ -227,7 +239,7 @@ public class MTheoryTree extends JTree {
 
 		itemDelete.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				controller.deleteSelected(objectSelected); 
+				mebnController.deleteSelected(objectSelected); 
 			}
 		}); 		
 		
@@ -240,7 +252,7 @@ public class MTheoryTree extends JTree {
 		itemAddDomainMFrag.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae)
             {   
-            	controller.insertDomainMFrag(); 
+            	mebnController.insertDomainMFrag(); 
             }
         });
 		
@@ -410,7 +422,7 @@ public class MTheoryTree extends JTree {
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 						
-						controller.setCurrentMFrag((MFrag)nodeLeaf); 
+						mebnController.setCurrentMFrag((MFrag)nodeLeaf); 
 						
 					} else if (e.getClickCount() == 1) {
 						
@@ -434,8 +446,8 @@ public class MTheoryTree extends JTree {
 								fatherNode = nodeTreeMap.get(treeNode); 
 							}
 							
-							controller.showGraphMFrag((MFrag)fatherNode); 
-							controller.selectNode((Node)objectSelected); 
+							mebnController.setCurrentMFrag((MFrag)fatherNode); 
+							mebnController.selectNode((Node)objectSelected); 
 							
 						} else if (e.getClickCount() == 1) {
 							
@@ -459,7 +471,7 @@ public class MTheoryTree extends JTree {
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
 						
-						controller.setCurrentMFrag((MFrag)nodeLeaf);
+						mebnController.setCurrentMFrag((MFrag)nodeLeaf);
 						
 					} else if (e.getClickCount() == 1) {
 					    

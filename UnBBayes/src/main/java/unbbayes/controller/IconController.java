@@ -299,6 +299,8 @@ public class IconController implements Serializable {
 	
 	protected ImageIcon processStopIcon; 
 	
+	protected ImageIcon arrowIcon; 
+	
 	public static IconController getInstance() {
 		if (singleton == null) {
 			singleton = new IconController();
@@ -1476,6 +1478,16 @@ public class IconController implements Serializable {
 			ssbnIcon = new ImageIcon(getClass().getResource(
 					"/icons/ssbn.png"));
 			return ssbnIcon;
+		}
+	}	
+	
+	public ImageIcon getArrowIcon() {
+		if (arrowIcon != null) {
+			return arrowIcon;
+		} else {
+			arrowIcon = new ImageIcon(getClass().getResource(
+					"/icons/arrow.png"));
+			return arrowIcon;
 		}
 	}	
 }
