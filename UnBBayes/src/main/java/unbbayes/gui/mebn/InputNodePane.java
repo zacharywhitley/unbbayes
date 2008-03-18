@@ -86,8 +86,6 @@ public class InputNodePane extends JPanel{
 		//jtbInputInstanceOf.add(btnInputOfBuiltIn); 
 		
 		inputInstanceOfTree = new InputInstanceOfTree(controller); 
-		//inputInstanceOfTree.setBackground(new Color(240,240,240)); //ligth gray
-		//inputInstanceOfTree.setForeground(new Color(240,240,240)); 
 		inputInstanceOfTreeScroll = new JScrollPane(inputInstanceOfTree);
 		inputInstanceOfTreeScroll.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Resident List")); 
 		
@@ -107,11 +105,14 @@ public class InputNodePane extends JPanel{
 		this.setVisible(true);
 		
 	}
+	
     
 	public void updateArgumentPane(){
 		this.remove(argumentsPane); 
 		argumentsPane = new ArgumentsTypedPane(inputNode, inputNode.getResidentNodePointer(), controller);
 		this.add(argumentsPane, BorderLayout.SOUTH); 
+		validate(); 
+		repaint(); 
 	}
 
 }

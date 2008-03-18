@@ -34,13 +34,10 @@ import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
 /**
- * Arvore de variaveis ordinarias utilizada para que o usuario adicione
- * variaveis ordinarias como argumentos em um resident node. 
- * A unica acao que o usuario pode fazer em um no da arvore � clicar duas 
- * vezes para que este seja adicionado como argumento no residente. 
+ * Tree of ordinary variables for edit the list of arguments of a resident node. 
+ * When the user click 2 times in a node, this node is add to the list of arguments. 
  * 
  * @author Laecio
- *
  */
 public class OVariableTreeForArgumentEdition extends OVariableTree{
 

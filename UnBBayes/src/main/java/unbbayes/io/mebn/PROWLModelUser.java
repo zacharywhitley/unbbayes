@@ -11,9 +11,7 @@ import java.util.Collection;
 
 import com.hp.hpl.jena.util.FileUtils;
 
-
 import edu.stanford.smi.protegex.owl.jena.JenaOWLModel;
-import edu.stanford.smi.protegex.owl.model.OWLModel;
 import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
 
 /**
@@ -79,7 +77,7 @@ public abstract class PROWLModelUser implements IProtegeOWLModelUser {
 			owlModel.load(inputStreamOwl, FileUtils.langXMLAbbrev);   
 		}
 		catch (Exception e){
-			throw new IOException(e); 
+			throw new IOException(e.toString()); 
 		}			
 		return owlModel;
 	}

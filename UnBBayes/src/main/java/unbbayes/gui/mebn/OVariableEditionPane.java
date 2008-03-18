@@ -145,7 +145,9 @@ public class OVariableEditionPane extends JPanel {
 	 * update the tree of ordinary variables of the MFrag active
 	 */
 	public void update(){
-	  	treeMFrag.updateTree(); 
+		if(treeMFrag != null){
+			treeMFrag.updateTree();
+		}
 	}	
 	
 	public void setNameOVariableSelected(String name){

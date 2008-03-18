@@ -85,11 +85,6 @@ public class InputInstanceOfTree extends JTree{
 		
 		createTree();	    
 		
-		/* tratar os eventos de mouse, trocando o residente a qual o input
-		 * se refere. 
-		 */
-		
-		
 		/*------------------ Adicionar listeners -----------------------*/
 		
 		addMouseListener(new MouseAdapter() {
@@ -113,7 +108,7 @@ public class InputInstanceOfTree extends JTree{
 						
 					} else if (e.getClickCount() == 2
 							&& e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-						//TODO preencher o generativeInput... 
+						
 						InputNode inputNode = (InputNode)controller.getInputNodeActive(); 
 						try{
 						   controller.setInputInstanceOf(inputNode, residentNode); 
@@ -142,8 +137,6 @@ public class InputInstanceOfTree extends JTree{
 				  	DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel()
 					.getRoot();
 				  	int index = root.getIndex(node);
-				  	//TODO ha um erro no codigo comentado
-					//expandedNodes[index] = !expandedNodes[index];
 			 	}
 			}
 			}

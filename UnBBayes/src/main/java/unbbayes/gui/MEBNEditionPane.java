@@ -1491,4 +1491,8 @@ public class MEBNEditionPane extends JPanel {
 
   	}
 
+	public ToolBarOrdVariable getToolBarOVariable() {
+		return toolBarOVariable;
+	}
+
 }

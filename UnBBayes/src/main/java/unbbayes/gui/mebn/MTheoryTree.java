@@ -77,9 +77,6 @@ public class MTheoryTree extends JTree {
 	
 	private JPopupMenu popupMFrag = new JPopupMenu(); 
 	private JPopupMenu popupNode = new JPopupMenu(); 
-	//private JPopupMenu popupResidentNode = new JPopupMenu(); 
-	//private JPopupMenu popupContextNode = new JPopupMenu(); 
-	//private JPopupMenu popupInputNode = new JPopupMenu(); 
 	
 
 	protected IconController iconController = IconController.getInstance();
@@ -130,9 +127,6 @@ public class MTheoryTree extends JTree {
 		//Popups for each node
 	    createPopupMenu();
 	    createPopupMenuMFrag(); 
-	    //createPopupMenuResident(); 
-	    //createPopupMenuInput(); 
-	    //createPopupMenuContext(); 
 	    createPopupMenuNode(); 
 	    
 	    addMouseListener(new MousePressedListener()); 
@@ -189,50 +183,6 @@ public class MTheoryTree extends JTree {
 		popupMFrag.add(itemInput); 
 	}
 
-	/*
-	private void createPopupMenuResident(){
-		
-		JMenuItem itemDelete =   new JMenuItem(resource.getString("menuDelete")); 
-
-		itemDelete.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent ae){
-				controller.getMebnController().deleteSelected(objectSelected); 
-				updateTree(); 
-			}
-		}); 		
-		
-		popupResidentNode.add(itemDelete); 
-	}	
-	
-	private void createPopupMenuInput(){
-		
-		JMenuItem itemDelete =   new JMenuItem(resource.getString("menuDelete")); 
-
-		itemDelete.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent ae){
-				controller.getMebnController().deleteSelected(objectSelected); 
-				updateTree(); 
-			}
-		}); 		
-		
-		popupInputNode.add(itemDelete); 
-	}	
-	
-	private void createPopupMenuContext(){
-		
-		JMenuItem itemDelete =   new JMenuItem(resource.getString("menuDelete")); 
-
-		itemDelete.addActionListener(new ActionListener(){
-			public void actionPerformed(ActionEvent ae){
-				controller.getMebnController().deleteSelected(objectSelected); 
-				updateTree(); 
-			}
-		}); 		
-		
-		popupContextNode.add(itemDelete); 
-	}
-	*/		
-
 	private void createPopupMenuNode(){
 		
 		JMenuItem itemDelete =   new JMenuItem(resource.getString("menuDelete")); 
@@ -266,16 +216,20 @@ public class MTheoryTree extends JTree {
 		
 		for (MFrag mFrag : mFragList) {
 			
-			DefaultMutableTreeNode mFragTreeNode = new DefaultMutableTreeNode(mFrag);
+			DefaultMutableTreeNode mFragTreeNode = new DefaultMutableTreeNode(POG);
 			root.add(mFragTreeNode);
+//			scrollPathToVisible(new TreePath(mFragTreeNode.getPath()));
+			mFragTreeNode.setUserObject(mFrag); 
 			inverseNodeMap.put(mFrag, mFragTreeNode); 
 			nodeTreeMap.put(mFragTreeNode, mFrag); 
 
 			//Resident Nodes
 			List<ResidentNode> residentNodeList = mFrag.getResidentNodeList(); 
 			for(ResidentNode residentNode: residentNodeList){
-				DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(residentNode);
+				DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(POG);
 				mFragTreeNode.add(treeNodeChild); 
+//				scrollPathToVisible(new TreePath(treeNodeChild.getPath()));
+				treeNodeChild.setUserObject(residentNode); 
 				nodeTreeMap.put(treeNodeChild, residentNode);     
 				inverseNodeMap.put(residentNode, treeNodeChild); 
 			}
@@ -284,8 +238,10 @@ public class MTheoryTree extends JTree {
 			List<InputNode> inputNodeList = mFrag.getInputNodeList(); 
 			for(InputNode inputNode: inputNodeList){
 				DefaultMutableTreeNode treeNodeChild; 
-				treeNodeChild = new DefaultMutableTreeNode(inputNode);
+				treeNodeChild = new DefaultMutableTreeNode(POG);
 				mFragTreeNode.add(treeNodeChild); 
+//				scrollPathToVisible(new TreePath(treeNodeChild.getPath()));
+				treeNodeChild.setUserObject(inputNode); 
 				nodeTreeMap.put(treeNodeChild, inputNode);     
 				inverseNodeMap.put(inputNode, treeNodeChild); 
 			}
@@ -293,12 +249,18 @@ public class MTheoryTree extends JTree {
 			//Context Nodes
 			List<ContextNode> contextNodeList = mFrag.getContextNodeList(); 
 			for(ContextNode contextNode: contextNodeList){
-				DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(contextNode);
+				DefaultMutableTreeNode treeNodeChild = new DefaultMutableTreeNode(POG);
 				mFragTreeNode.add(treeNodeChild); 
+//				scrollPathToVisible(new TreePath(treeNodeChild.getPath()));
+				treeNodeChild.setUserObject(contextNode); 
 				nodeTreeMap.put(treeNodeChild, contextNode);  
 				inverseNodeMap.put(contextNode, treeNodeChild); 
 			}			    
 			
+		}
+		
+		for(int i = 0 ; i < this.getRowCount(); i++){
+			this.expandRow(i); 
 		}
 	}
 

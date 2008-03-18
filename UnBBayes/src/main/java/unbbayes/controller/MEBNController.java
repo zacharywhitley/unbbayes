@@ -631,6 +631,7 @@ public class MEBNController  {
 		input.setInputInstanceOf((ResidentNode)resident);
 		mebnEditionPane.getInputNodePane().updateArgumentPane();
 		mebnEditionPane.setTxtInputOf(resident.getName());
+		mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
 	}
 
 	public void updateArgumentsOfObject(Object node){
@@ -642,6 +643,8 @@ public class MEBNController  {
 				((ContextNode)node).updateLabel();
 			}
 		}
+		
+		mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
 
 	}
 
@@ -661,6 +664,8 @@ public class MEBNController  {
 				mebnEditionPane.setTxtInputOf(((ResidentNode)target).getName());
 			}
 		}
+		
+		mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
 
 	}
 
@@ -911,10 +916,27 @@ public class MEBNController  {
 		mebnEditionPane.setDescriptionText(ov.getDescription()); 
 		typeElementSelected = TypeElementSelected.NODE; 
 		
+		 mebnEditionPane.getEditOVariableTab().update(); 
+		
 	    return ov;
 
 	}
 
+	public void renameOrdinaryVariable(OrdinaryVariable ov, String name){
+		   ov.setName(name); 
+	       ov.updateLabel();
+	       mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
+		   mebnEditionPane.getEditOVariableTab().update(); 
+	}
+	
+	public void setOrdinaryVariableType(OrdinaryVariable ov, Type type){
+		   ov.setValueType(type); 
+		   ov.updateLabel(); 
+		   mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
+		   mebnEditionPane.getEditOVariableTab().update(); 
+		
+	}
+	
 	/**
 	 * Create a ordinary variable and add it in the
 	 * current MFrag (if it is a DomainMFrag).
@@ -942,6 +964,8 @@ public class MEBNController  {
 		OrdinaryVariable ov = new OrdinaryVariable(name, type, domainMFrag);
 		domainMFrag.addOrdinaryVariable(ov);
 
+		   mebnEditionPane.getEditOVariableTab().update(); 
+		
 		return ov;
 
 	}
@@ -981,6 +1005,7 @@ public class MEBNController  {
 
 		residentNodeActive.addArgument(ordinaryVariable);
 		mebnEditionPane.getEditArgumentsTab().update();
+		mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
 
 	}
 
@@ -991,7 +1016,7 @@ public class MEBNController  {
 		ordinaryVariable.removeIsOVariableOfList(resident);
 
 		mebnEditionPane.getEditArgumentsTab().update();
-		mebnEditionPane.updateUI();
+		mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
 
 	}
 
@@ -1070,6 +1095,8 @@ public class MEBNController  {
 
 		ObjectEntity objectEntity = multiEntityBayesianNetwork.getObjectEntityContainer().createObjectEntity(name);
 
+		mebnEditionPane.getToolBarOVariable().updateListOfTypes(); 
+		
 		return objectEntity;
 	}
 
@@ -1081,6 +1108,7 @@ public class MEBNController  {
 	 */
 	public void renameObjectEntity(ObjectEntity entity, String name) throws TypeAlreadyExistsException{
 		entity.setName(name);
+		mebnEditionPane.getToolBarOVariable().updateListOfTypes(); 
 	}
 	
 	
@@ -1097,6 +1125,8 @@ public class MEBNController  {
 		catch(Exception e){
 
 		}
+		
+		mebnEditionPane.getToolBarOVariable().updateListOfTypes(); 
 	}
 
 	/**

@@ -107,8 +107,7 @@ public class ToolBarOrdVariable extends JToolBar{
   	  	  									JOptionPane.ERROR_MESSAGE);
   	  							   	
   								}else{
-  	  							   ov.setName(name); 
-  							       ov.updateLabel();
+  									mebnController.renameOrdinaryVariable(ov, name);
   								}
   							}
   						}  else {
@@ -190,23 +189,25 @@ public class ToolBarOrdVariable extends JToolBar{
 	
 	public void updateListOfTypes(){
 		types = mebnController.getMultiEntityBayesianNetwork().getTypeContainer().getListOfTypes().toArray( new Type[0] );
+		buildJComboBoxTypes(types); 
 		validate(); 
 	}
 	
 	private JComboBox buildJComboBoxTypes(Type[] types){
 	    
 	    jcbType.setModel(new DefaultComboBoxModel(types)); 
-	    jcbType.setSelectedIndex(0);
+	    
+	    if(ov!=null){
+	    	jcbType.setSelectedItem(ov.getType()); 
+	    }
 	    
 	    jcbType.addActionListener(
            new ActionListener(){
         	   public void actionPerformed(ActionEvent e){
-        		   
 	    	        Type typeName = (Type)jcbType.getSelectedItem();
-					if(ov != null){
-						ov.setValueType(typeName); 
-						ov.updateLabel(); 
-					}
+	    	        if(ov != null){
+	    	        	mebnController.setOrdinaryVariableType(ov, typeName); 
+	    	        }
         	   }
            }
 	    );   

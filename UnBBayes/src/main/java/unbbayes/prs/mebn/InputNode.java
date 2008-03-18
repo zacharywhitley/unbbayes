@@ -295,6 +295,7 @@ public class InputNode extends MultiEntityNode {
 		while(!residentNodeChildList.isEmpty()){
 			ResidentNode resident = residentNodeChildList.get(0); 
 			removeResidentNodeChild(resident); 
+			mFrag.removeEdgeByNodes(this, resident);
 		}
 		
 		mFrag.removeInputNode(this); 
