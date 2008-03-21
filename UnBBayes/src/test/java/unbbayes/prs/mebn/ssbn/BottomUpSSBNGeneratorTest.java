@@ -77,9 +77,14 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_GENERATIVE_FILE)); 
-		kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_FINDING_FILE)); 
+		try {
+			kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_GENERATIVE_FILE)); 
+			kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_FINDING_FILE)); 
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
 		
 		SSBNNode queryNode = createQueryNodeXOR(mebn); 
 		

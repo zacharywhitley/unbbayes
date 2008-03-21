@@ -93,8 +93,14 @@ public class KBTest  extends TestCase {
 			e.printStackTrace();
 		}
 
-		kb.loadModule(new File(KBTest.KB_GENERATIVE_FILE)); 
-		kb.loadModule(new File(KBTest.KB_FINDING_FILE)); 
+		try{
+			kb.loadModule(new File(KBTest.KB_GENERATIVE_FILE)); 
+			kb.loadModule(new File(KBTest.KB_FINDING_FILE)); 
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
 			
 		avaliator = new ContextNodeAvaliator(kb); 
 		
