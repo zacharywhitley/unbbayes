@@ -24,10 +24,12 @@ import java.awt.Cursor;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
@@ -37,6 +39,7 @@ import unbbayes.gui.GraphAction;
 import unbbayes.gui.MEBNEditionPane;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.mebn.OVariableEditionPane;
+import unbbayes.gui.mebn.cpt.CPTFrame;
 import unbbayes.io.XMLIO;
 import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.Edge;
@@ -137,6 +140,13 @@ public class MEBNController  {
 	private boolean baseCreated = false; 
 	private boolean findingCreated = false; 
 	private boolean generativeCreated = false; 
+	
+	/*-------------------------------------------------------------------------*/
+	/* Pools of frames                                                         */
+	/*-------------------------------------------------------------------------*/
+	private HashMap<ResidentNode, CPTFrame> mapCpt = 
+		new HashMap<ResidentNode, CPTFrame>(); 
+	
 	
 	/*-------------------------------------------------------------------------*/
 	/* Constants                                            */
@@ -1259,6 +1269,27 @@ public class MEBNController  {
 		residentNode.setTableFunction(cpt);
 	}
 	
+	public void openCPTDialog(ResidentNode residentNode){
+		CPTFrame cptEditionPane = mapCpt.get(residentNode); 
+		if(cptEditionPane == null){
+			cptEditionPane = new CPTFrame(this, residentNode);
+			mapCpt.put(residentNode, cptEditionPane); 
+		}else{
+			cptEditionPane.setVisible(true); 
+		}
+	}
+	
+	public void closeCPTDialog(ResidentNode residentNode){
+		CPTFrame cptEditionPane = mapCpt.get(residentNode); 
+		if(cptEditionPane != null){
+			cptEditionPane.dispose(); 
+			mapCpt.remove(residentNode); 
+		}
+	}
+	
+	public CPTFrame getCPTDialog(ResidentNode residentNode){
+		return mapCpt.get(residentNode); 
+	}
 	
 	
 	/*-------------------------------------------------------------------------*/

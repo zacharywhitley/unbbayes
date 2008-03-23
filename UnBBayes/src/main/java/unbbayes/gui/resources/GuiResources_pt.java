@@ -339,6 +339,23 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"fatherTip", "Mostrar pais do nó"}, 
 		{"argTip", "Mostrar argumentos do nó"}, 
 		{"exitTip", "Sair sem salvar"}, 
+		{"compileCPTTip", "Compilar tabela"},
+		{"saveCPTTip", "Salvar tabela"},
+		{"exitCPTTip", "Fechar tabela"},
+		{"fatherCPTTip", "Abrir lista de pais/estados dos nós pais"},
+		{"argumentCPTTip", "Abrir lista de argumentos"},
+		{"statesCPTTip", "Abrir lista de estados do nó"},
+		
+		/* CPT Edition messages */
+		{"compileCPT", "Compilar"},
+		{"saveCPT", "Salvar"},
+		{"exitCPT", "Fechar"},
+		{"fatherCPT", "Pais"},
+		{"argumentCPT", "Argumentos"},
+		{"statesCPT", "Estados"},
+		
+		{"CptSaveOK", "Tabela salva com sucesso"},
+		{"CptCompileOK", "Tabela compilada sem erros"},
 		
 		/* Exceptions MEBN */
 		{"withoutMFrag", "Não existe nenhuma MFrag"}, 

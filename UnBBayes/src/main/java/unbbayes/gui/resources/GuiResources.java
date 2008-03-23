@@ -337,6 +337,23 @@ public class GuiResources extends ListResourceBundle {
 		{"fatherTip", "Show parents of the node"}, 
 		{"argTip", "Show arguments of the node"}, 
 		{"exitTip", "Exit whithout save"}, 
+		{"compileCPTTip", "Compile table"},
+		{"saveCPTTip", "Save table"},
+		{"exitCPTTip", "Close table"},
+		{"fatherCPTTip", "Open list of fathers/fathers' states"},
+		{"argumentCPTTip", "Open list of arguments"},
+		{"statesCPTTip", "Open list of states of this node"},
+		
+		/* CPT Edition messages */
+		{"compileCPT", "Compile"},
+		{"saveCPT", "Save"},
+		{"exitCPT", "Exit"},
+		{"fatherCPT", "Fathers"},
+		{"argumentCPT", "Arguments"},
+		{"statesCPT", "States"},
+		
+		{"CptSaveOK", "Table save sucessfull"},
+		{"CptCompileOK", "Table compile sucessfull"},
 		
 		/* Exceptions MEBN */
 		{"withoutMFrag", "No MFrag"}, 

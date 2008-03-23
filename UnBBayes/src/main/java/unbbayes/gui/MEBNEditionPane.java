@@ -40,7 +40,9 @@ import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -62,11 +64,11 @@ import unbbayes.gui.mebn.MTheoryTree;
 import unbbayes.gui.mebn.OVariableEditionPane;
 import unbbayes.gui.mebn.QueryPanel;
 import unbbayes.gui.mebn.ResidentNodePane;
-import unbbayes.gui.mebn.TableEditionPane;
 import unbbayes.gui.mebn.ToolBarOrdVariable;
 import unbbayes.gui.mebn.auxiliary.ButtonLabel;
 import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
 import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
+import unbbayes.gui.mebn.cpt.CPTEditionPane;
 import unbbayes.gui.mebn.finding.EntityFindingEditionPane;
 import unbbayes.gui.mebn.finding.RandonVariableFindingEdtitionPane;
 import unbbayes.io.exception.UBIOException;
@@ -403,11 +405,7 @@ public class MEBNEditionPane extends JPanel {
   	 * Show the table edit in the top component. 
   	 */
     public void showTableEditionPane(ResidentNode resident){
-
-    	this.getGraphPanel().setTopComponent(new TableEditionPane(resident, mebnController));
-    	
-    	isTableEditionPaneShow = true; 
-
+    	mebnController.openCPTDialog(resident); 
     }
     
     /**
