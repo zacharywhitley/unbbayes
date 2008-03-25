@@ -929,13 +929,13 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 		catch(MEBNConstructionException me){
 			JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
 					me.getMessage(),
-				    "MEBN Construction Error",
+				    resource.getString("error"),
 				    JOptionPane.ERROR_MESSAGE);			
 		}
 		catch(CycleFoundException cycle){
 			JOptionPane.showMessageDialog(controller.getScreen().getMebnEditionPane(),
 					cycle.getMessage(),
-				    "Cycle Found Exception",
+				    resource.getString("error"),
 				    JOptionPane.ERROR_MESSAGE);	
 		}
 		catch(Exception e){

@@ -269,7 +269,28 @@ public class EntityFindingEditionPane extends JPanel {
 		}
 		
 		private void addOrEditInstance(){
-			if((selected != null)&&(testName(nameObjectEntity.getText()))){
+			
+			
+			//Validations
+			if(!(validName(nameObjectEntity.getText()))){
+				JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
+						resource.getString("nameException"),
+						resource.getString("error"), 
+						JOptionPane.ERROR_MESSAGE);
+				return; 
+			}
+			
+			if((nameObjectEntity.getText() == null) || (nameObjectEntity.getText().trim().length() == 0)){
+				JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
+						resource.getString("nameEmpty"), 
+						resource.getString("error"), 
+						JOptionPane.ERROR_MESSAGE);
+				return; 
+			}
+			
+			//Setting the name
+			if(selected != null){	
+				
 				if(isAdding){
 					try{
 						ObjectEntity objectEntity = (ObjectEntity)selected; 
@@ -277,7 +298,6 @@ public class EntityFindingEditionPane extends JPanel {
 					 	    try {
 								mebnController.createEntityIntance(objectEntity, nameObjectEntity.getText());
 							} catch (InvalidOperationException e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 						}else{
@@ -285,7 +305,6 @@ public class EntityFindingEditionPane extends JPanel {
 								mebnController.createEntityIntanceOrdereable(
 										objectEntity, nameObjectEntity.getText(), last);
 							} catch (InvalidOperationException e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}	
 						}
@@ -345,6 +364,16 @@ public class EntityFindingEditionPane extends JPanel {
 				}
 		}
 		
+		public void disableUpDownButtons(){
+			btnUpInstance.setEnabled(false); 
+			btnDownInstance.setEnabled(false); 
+		}
+		
+		public void enableUpDownButtons(){
+			btnUpInstance.setEnabled(true); 
+			btnDownInstance.setEnabled(true); 
+		}
+		
 		public void updateReference(){
 			if(selected!=null){
 				if(isAdding){					
@@ -361,7 +390,7 @@ public class EntityFindingEditionPane extends JPanel {
 			}
 		}
 		
-		public boolean testName(String name){
+		public boolean validName(String name){
 				matcher = wordPattern.matcher(name);
 				if (matcher.matches()) {
 					return true; 
@@ -404,6 +433,12 @@ public class EntityFindingEditionPane extends JPanel {
 		                	if(selected != null){
 		                	    objectEntityInstancePane.updateReference(); 
 				                showEntityInstanceListPane((ObjectEntity)selected);
+				                
+				                if(!((ObjectEntity)selected).isOrdereable()){
+				                	objectEntityInstancePane.disableUpDownButtons(); 
+				                }else{
+				                	objectEntityInstancePane.enableUpDownButtons();
+				                }
 		                	}
 		                }
 		            }  	

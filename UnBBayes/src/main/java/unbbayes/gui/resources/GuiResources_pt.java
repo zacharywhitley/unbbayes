@@ -306,6 +306,7 @@ public class GuiResources_pt extends ListResourceBundle {
         {"oVariableAlreadyIsArgumentError","Variável ord. já é argumento deste nó!"},       
         {"properties","Propriedades..."},
         {"nameException","Erro no Nome"},
+        {"nameEmpty","O nome não pode ser branco"},
         {"nameDuplicated", "Nome já existe..."}, 
         {"siglaError","A sigla só pode ter letras e números."},
         {"descriptionError","A descrição só pode ter letras e números."},
@@ -315,6 +316,11 @@ public class GuiResources_pt extends ListResourceBundle {
         {"inconsistentArgument","Argumentos inconsistentes. Query não pode ser executada."}, 
         {"selectOneVariable","Selecione uma variável:"}, 
         {"selectArgsValues","Selecione os valores dos argumentos:"}, 
+        
+        /* Findings Panel */
+        {"stateLabel","Valor:"}, 
+        {"booleanLabel","Boleano"}, 
+        {"categoricalLabel","Categorico"}, 
         
         /* FormulaTreeConstructionException */
         {"notOperator", "Não é permitido operador nesta posição"}, 

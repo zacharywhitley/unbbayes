@@ -726,6 +726,7 @@ public class MEBNEditionPane extends JPanel {
 	    		
 	    		public void actionPerformed(ActionEvent arg0) {
 	    			QueryPanel queryPanel = new QueryPanel(mebnController);
+	    			queryPanel.setLocationRelativeTo(netWindow.getDesktopPane()); 
 	    			queryPanel.pack();
 	    			queryPanel.setVisible(true);
 	    		}

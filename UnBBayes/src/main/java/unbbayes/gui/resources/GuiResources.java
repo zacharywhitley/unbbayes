@@ -305,6 +305,7 @@ public class GuiResources extends ListResourceBundle {
         {"properties","Properties..."},
         {"nameException","Name Error"},
         {"nameDuplicated", "The name already exists..."}, 
+        {"nameEmpty","The name cannot be empty"},
         {"siglaError","The sigla must have only letters and numbers."},
         {"descriptionError","The description must have only letters and numbers."}, 
         
@@ -313,6 +314,11 @@ public class GuiResources extends ListResourceBundle {
         {"inconsistentArgument","Inconsistent arguments. Query should not be executed."},         
         {"selectOneVariable","Select a random variable:"}, 
         {"selectArgsValues","Select the arguments' values:"}, 
+        
+        /* Findings Panel */
+        {"stateLabel","State:"}, 
+        {"booleanLabel","Boolean"}, 
+        {"categoricalLabel","Categorical"}, 
         
         /* FormulaTreeConstructionException */
         {"notOperator", "Operator is not acceptable at this position"},  

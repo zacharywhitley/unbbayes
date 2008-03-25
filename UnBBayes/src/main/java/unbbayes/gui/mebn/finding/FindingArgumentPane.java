@@ -27,6 +27,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -44,6 +45,7 @@ import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
+import unbbayes.util.ResourceController;
 
 /**
  * This panel can be used for choosing which ordinary variables
@@ -66,6 +68,8 @@ public class FindingArgumentPane extends JPanel{
 	private JComboBox argument[]; 
 	
 	private final static int MINIMUM_LINE_SIXE_PANEL = 5; 
+	
+	ResourceBundle resource = ResourceController.RS_GUI; 
 	
 	public FindingArgumentPane(ResidentNode node, MEBNController mebnController){
 		
@@ -128,7 +132,7 @@ public class FindingArgumentPane extends JPanel{
 			i++; 
 		}
 
-		JLabel labelState = new JLabel("State:"); 
+		JLabel labelState = new JLabel(resource.getString("stateLabel")); 
 		
 		JButton btnLabelType = null; 
 		
@@ -140,7 +144,7 @@ public class FindingArgumentPane extends JPanel{
 		
 		switch(node.getTypeOfStates()){
 		case ResidentNode.BOOLEAN_RV_STATES:
-			btnLabelType = new JButton("Boolean"); 
+			btnLabelType = new JButton(resource.getString("booleanLabel")); 
 			// please, note that creating an evidence indicating "Absurd" has no sense at this moment
 			List<StateLink> values = new ArrayList<StateLink>(node.getPossibleValueLinkList());
 			BooleanStatesEntityContainer container = new BooleanStatesEntityContainer();
@@ -155,7 +159,7 @@ public class FindingArgumentPane extends JPanel{
 			states = new JComboBox(values.toArray()); 
 			break; 
 		case ResidentNode.CATEGORY_RV_STATES:
-			btnLabelType = new JButton("Categorical"); 
+			btnLabelType = new JButton(resource.getString("categoricalLabel")); 
 			states = new JComboBox(node.getPossibleValueLinkList().toArray()); 
 			break; 
 		case ResidentNode.OBJECT_ENTITY:

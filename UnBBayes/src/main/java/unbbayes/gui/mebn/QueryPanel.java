@@ -30,6 +30,7 @@ import java.util.ResourceBundle;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -43,8 +44,8 @@ import javax.swing.event.ListSelectionListener;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.controller.exception.InconsistentArgumentException;
-import unbbayes.gui.GUIUtils;
 import unbbayes.gui.ParcialStateException;
+import unbbayes.gui.UnBBayesFrame;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.mebn.MFrag;
@@ -64,7 +65,7 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
  * @author Laecio Lima dos Santos
  */
 
-public class QueryPanel extends JFrame{
+public class QueryPanel extends JDialog{
 
 	private JButton btnSelect;
 	private MEBNController mebnController;
@@ -75,16 +76,10 @@ public class QueryPanel extends JFrame{
   		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
 	public QueryPanel(MEBNController mebnController){
-
-		super("Query");
-
-//		this.setPreferredSize(new Dimension(200, 200)); 
-		this.setLocation(GUIUtils.getCenterPositionForComponent(200,200));
-		
+		super(UnBBayesFrame.getIUnBBayes());
+		this.setModal(true); 
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
 		this.mebnController = mebnController;
-		
 		showRandonVariableListPane(); 
 	}
 

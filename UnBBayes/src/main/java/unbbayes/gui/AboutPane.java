@@ -32,6 +32,7 @@ import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -46,7 +47,7 @@ import javax.swing.border.Border;
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * @author Rommel Novaes Carvalho (rommel.carvalho@gmail.com)
  */
-public class AboutPane extends JFrame{
+public class AboutPane extends JDialog{
 
 	private Color backgroundColor; 
 	
@@ -55,10 +56,8 @@ public class AboutPane extends JFrame{
 	private String buildID = "20080229-01L"; 
 	
 	public AboutPane(){
-		super("About"); 
-		
-		this.setLocation(GUIUtils.getCenterPositionForComponent(400,300));		
-		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		super(UnBBayesFrame.getIUnBBayes(), true); 
+		this.setLocation(GUIUtils.getCenterPositionForComponent(400,300));	
 
 		BorderLayout borderLayout = new BorderLayout(); 
 		setLayout(borderLayout);
