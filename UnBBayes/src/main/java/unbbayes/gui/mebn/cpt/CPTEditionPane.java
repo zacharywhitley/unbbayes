@@ -1,3 +1,24 @@
+/*
+ *  UnBBayes
+ *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *
+ *  This file is part of UnBBayes.
+ *
+ *  UnBBayes is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  UnBBayes is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 package unbbayes.gui.mebn.cpt;
 
 import java.awt.BorderLayout;
@@ -81,16 +102,15 @@ public class CPTEditionPane extends JPanel{
 		
 		JPanel centerPane = new JPanel(new BorderLayout());
 		centerPane.add(jpButtonsEdition, BorderLayout.NORTH); 
-		centerPane.add(cptTextPane, BorderLayout.CENTER);
+		
+		JScrollPane jspCptTextPane = new JScrollPane(cptTextPane); 
+		centerPane.add(jspCptTextPane, BorderLayout.CENTER);
 		centerPane.add(new JpMainButtons(), BorderLayout.SOUTH); 
 		
 		add(centerPane, BorderLayout.CENTER); 
 		
 		this.setMinimumSize(new Dimension(750, 300)); 
 		this.setPreferredSize(new Dimension(750, 300)); 
-		
-//		turnTextColor(cptEditionPane.getResidentNode().getTableFunction(), positionCaret, doc);
-		
 	}
 	
 	public ResidentNode getResidentNode(){
@@ -433,19 +453,19 @@ public class CPTEditionPane extends JPanel{
 			btnElseClause.setFont(font);
 			btnElseClause.setToolTipText(resource.getString("elseTip")); 
 
-			btnEqual= new JButton("=="); 
+			btnEqual= new JButton(" = "); 
 			btnEqual.setFont(font);
 			btnEqual.setToolTipText(resource.getString("equalTip")); 
 
-			btnAnd= new JButton("and"); 
+			btnAnd= new JButton(" & "); 
 			btnAnd.setFont(font);
 			btnAnd.setToolTipText(resource.getString("andTip")); 
 
-			btnOr= new JButton("or");
+			btnOr= new JButton(" | ");
 			btnOr.setFont(font);
 			btnOr.setToolTipText(resource.getString("orTip")); 
 
-			btnNot= new JButton("not");     	
+			btnNot= new JButton(" ~ ");     	
 			btnNot.setFont(font);
 			btnNot.setToolTipText(resource.getString("notTip")); 
 

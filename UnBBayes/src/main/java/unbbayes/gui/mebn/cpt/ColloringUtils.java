@@ -31,9 +31,9 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.StateLink;
 
 /**
- * Utilities for set the format of a word.  
+ * Utilities for set the style of a word.  
  * 
- * @author Laecio
+ * @author Laecio Santos (laecio@gmail.com)
  */
 public class ColloringUtils {
 	
@@ -60,7 +60,7 @@ public class ColloringUtils {
 	public void turnTextColor(String text, int initialPosition, StyledDocument doc){
 		int i;
 		int length; 
-		char teste; 
+		char charRead; 
 		int start;
 		String subString; 
 		
@@ -68,46 +68,46 @@ public class ColloringUtils {
 		length = text.length(); 
 		
 		while(i < length){
-			teste = text.charAt(i);
+			charRead = text.charAt(i);
 			
-			/*idenficadores */
-			if(Character.isLetter(teste)){
+			/*identifiers */
+			if(Character.isLetter(charRead)){
 				start = i; 
 				i++;
 				
 				if(i < length){
-					teste = text.charAt(i); 
-					while((Character.isLetter(teste)) 
-							|| (Character.isDigit(teste))){
+					charRead = text.charAt(i); 
+					while((Character.isLetter(charRead)) 
+							|| (Character.isDigit(charRead))){
 						i++;
 						if (i >= length) break; 
-						teste = text.charAt(i); 
+						charRead = text.charAt(i); 
 					}
 				}
 				
-				/* verifica��o */
+				/* verification */
 				subString = text.substring(start, i);
 				writeWord(subString, initialPosition + start, doc); 
 				
 			}
-			else{ /* numeros */
-				if(Character.isDigit(teste)){
+			else{ /* numbers */
+				if(Character.isDigit(charRead)){
 					start = i; 
 					i++; 
 					if (i < length){
-						teste = text.charAt(i); 
-						while(Character.isDigit(teste) || (teste == '.')){
+						charRead = text.charAt(i); 
+						while(Character.isDigit(charRead) || (charRead == '.')){
 							i++;
 							if (i >= length) break; 
-							teste = text.charAt(i); 
+							charRead = text.charAt(i); 
 						}
 					}
 					
 					subString = text.substring(start, i);
 					writeNumber(subString, initialPosition + start, doc); 
 				}
-				else{ /* outros */
-					writeCharacter(teste, initialPosition + i, doc); 
+				else{ /* others: logic simbols */
+					writeCharacter(charRead, initialPosition + i, doc); 
 					i++;
 					
 				}
@@ -169,12 +169,17 @@ public class ColloringUtils {
 		
 	}
 	
+	private boolean isLogicCharacter(Character c){
+		if(c.equals('&')) return true; 
+		if(c.equals('|')) return true; 
+		if(c.equals('~')) return true; 
+		return false; 
+	}
+	
 	private boolean isIfWord(String word){
 		if (word.compareTo("if") == 0) return true; 
 		if (word.compareTo("else") == 0) return true; 
-		if (word.compareTo("then") == 0) return true; 
-		if (word.compareTo("or") == 0) return true; 
-		if (word.compareTo("and") == 0) return true; 									
+		if (word.compareTo("then") == 0) return true;								
 		return false; 
 	}
 	
@@ -247,10 +252,14 @@ public class ColloringUtils {
 	
 	private void writeCharacter(char character, int position, StyledDocument doc){
 		try{
-			doc.insertString(position, "" + character , styleTable.getDefaultStype());
+			if(isLogicCharacter(character)){
+				doc.insertString(position, "" + character , styleTable.getBooleanStyle());		
+			}
+			else{
+			    doc.insertString(position, "" + character , styleTable.getDefaultStype());
+			}
 		}
 		catch(Exception e){
-			
 			e.printStackTrace(); 
 		}	
 	}	
@@ -263,7 +272,8 @@ public class ColloringUtils {
 	private void buildAuxiliaryLists(){
 		
 		fatherList = new ArrayList<String>(); 
-		statesFatherList = new ArrayList<String>(); 
+		statesFatherList = new ArrayList<String>();
+		argumentsList = new ArrayList<String>();
 		
 		for(ResidentNode resident : residentNode.getResidentNodeFatherList()){
 			fatherList.add(resident.getName());
@@ -280,16 +290,17 @@ public class ColloringUtils {
 				
 				if(resident != null){
 					fatherList.add(resident.getName());
-					ResidentNode domainResidentNode = resident; 
 					
-					for(StateLink state: domainResidentNode.getPossibleValueLinkList()){
+					for(StateLink state: resident.getPossibleValueLinkList()){
 						statesFatherList.add(state.getState().getName()); 
 					}
 				}
+				
+			}else{
+				//Do Nothing
 			}
 		}
 		
-		argumentsList = new ArrayList<String>();
 		for(OrdinaryVariable ov: residentNode.getOrdinaryVariableList()){
 			argumentsList.add(ov.getName()); 
 		}
