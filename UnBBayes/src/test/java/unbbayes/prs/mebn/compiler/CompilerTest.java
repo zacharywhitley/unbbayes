@@ -71,7 +71,13 @@ public class CompilerTest extends TestCase {
 	
 	public CompilerTest(String arg0) {
 		super(arg0);
-		Debug.setDebug(true);
+		
+		
+	}
+
+	protected void setUp() throws Exception {
+		super.setUp();
+		Debug.setDebug(false);
 		
 		UbfIO ubfIO = UbfIO.getInstance(); 
 		
@@ -94,12 +100,6 @@ public class CompilerTest extends TestCase {
 		
 		
 		tableParser = new Compiler((ResidentNode)mebn.getNode("DangerToSelf"));
-		
-	}
-
-	protected void setUp() throws Exception {
-		super.setUp();
-		Debug.setDebug(true);
 		assertNotNull(tableParser);
 		
 	}
