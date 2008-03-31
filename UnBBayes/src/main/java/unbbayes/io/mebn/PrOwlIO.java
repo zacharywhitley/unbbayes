@@ -159,14 +159,8 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 		
 		OWLModel lastOWLModel = loader.getLastOWLModel();
 		
-		
-		// minimize memory-stored ontology
-		try{
-			this.clearAllPROWLOntologyIndividuals((JenaOWLModel)lastOWLModel);
-			this.clearAllObjectEntity((JenaOWLModel)lastOWLModel);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		// minimize on-memory ontology
+		this.clearAllPROWLModel(lastOWLModel);
 	
 		mebn.setStorageImplementor(new MEBNStorageImplementorDecorator(lastOWLModel));
 		
@@ -204,8 +198,20 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 	   }
 	   
 	   saver.saveMebn(file, mebn, jenaOWLModel); 
-	   this.setOWLModelToUse(saver.getLastOWLModel());
+	   
+	   // update reference to last edited ontology
+	   try{
+		   OWLModel model = saver.getLastOWLModel();
+		   // minimize on-memory ontology
+		   this.clearAllPROWLModel(model);
+		   this.setOWLModelToUse(model);
+	   } catch (Exception e) {
+		   e.printStackTrace();
+	   }
+	   
+	   
 	}
+	
 
 	/* (non-Javadoc)
 	 * @see unbbayes.io.mebn.MebnIO#getFileExtension()
@@ -246,7 +252,22 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 	}
 
 
-
+	/**
+	 * Clears all PR-OWL ontology components within a JenaOWLModel.
+	 * Currently, only local OWL ontology (using JenaOWLModel) is supported
+	 * @param model OWLModel which some PR-OWL ontology is present
+	 */
+	public void clearAllPROWLModel(OWLModel model){
+		 // minimize memory-stored ontology
+		try{
+			this.clearAllPROWLOntologyIndividuals((JenaOWLModel)model);
+			this.clearAllObjectEntity((JenaOWLModel)model);
+		} catch (Exception e) {
+			// This is not a major problem yet. Lets go
+			e.printStackTrace();
+		}
+	   
+	}
 	
 	
 	
