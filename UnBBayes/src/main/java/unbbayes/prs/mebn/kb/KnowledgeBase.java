@@ -165,15 +165,14 @@ public interface KnowledgeBase {
 	/*-------------------------------------------------------------------------*/
 	
 	/** 
-	 * Verifica se existe a entidade na base, retornando o seu tipo em caso positivo, 
-	 * ou null caso contrario. 
+	 * Verify it exists the entity in the base
 	 */
 	public boolean existEntity(String name);
 
 	/**
-	 * Verifica se existe o finding na base. Caso positivo, retorna o valor (ou seja, 
-	 * o estado para a variável ordinária, dados os argumentos), caso negativo, 
-	 * retorna null.  
+	 * Verify if exists a findings in the knowledge base. Return the finding if its
+	 * exists (a finding is a state for the randon variables with the arguments). 
+	 * Return null otherside. 
 	 * @param nameRV
 	 * @param listArguments
 	 * @return

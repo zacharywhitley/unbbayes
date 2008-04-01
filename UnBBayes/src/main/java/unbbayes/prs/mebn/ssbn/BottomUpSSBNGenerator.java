@@ -190,8 +190,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
 		// check for cycle
 		if (seen.contains(currentNode)) {
-//			return null; 
-			//TODO Criar método para avaliar ciclos
+			//TODO evaluate cycles
 		}
 		
 		//------------------------- STEP 1: search findings -------------------
@@ -226,16 +225,16 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		List<OVInstance> ovInstancesList = new ArrayList<OVInstance>(); 
 		ovInstancesList.addAll(currentNode.getArguments()); 
         
-		boolean result = false;
+		boolean evaluateRelatedContextNodesResult = false;
 		
 		try {
-			result = evaluateRelatedContextNodes(currentNode.getResident(), ovInstancesList);
+			evaluateRelatedContextNodesResult = evaluateRelatedContextNodes(currentNode.getResident(), ovInstancesList);
 		} catch (OVInstanceFaultException e) {
 			//pre-requisite. 
 			e.printStackTrace();
 		}
 		
-		if(!result){
+		if(!evaluateRelatedContextNodesResult){
 			logManager.appendln("Context Node fail for " + currentNode.getResident().getMFrag()); 
 			currentNode.setUsingDefaultCPT(true);
 			return currentNode; 
@@ -257,13 +256,13 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			 * is not true, verify if it has some context node able to recover 
 			 * the instances that match with the ordinary variable.  
 			 */
-            List<OrdinaryVariable> ovProblemList = analyzeOVInstancesListCompletudeForOVList(
+            List<OrdinaryVariable> ovProblematicList = analyzeOVInstancesListCompletudeForOVList(
             		residentNode.getOrdinaryVariableList(), currentNode.getArguments()); 
             
-    		if(!ovProblemList.isEmpty()){
+    		if(!ovProblematicList.isEmpty()){
     			List<SSBNNode> createdNodes = createSSBNNodesOfEntitiesSearchForResidentNode(
     					residentNode.getMFrag(), currentNode, residentNode, 
-    					ovProblemList, ovInstancesList); 
+    					ovProblematicList, ovInstancesList); 
     			
     		    for(SSBNNode ssbnnode: createdNodes){
     		    	generateRecursive(ssbnnode, seen, net);	
@@ -275,14 +274,14 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     		    	}	
     		    }
     		    
-    		}else{
+    		}else{ //ovProblematicList.isEmpty == true
     			SSBNNode ssbnnode = null; 
     			
 				List<OVInstance> arguments = fillArguments(currentNode.getArguments(), residentNode);
-				SSBNNode testSSBNNode = getSSBNNode(residentNode, arguments); 
+				SSBNNode testSSBNNodeDuplicated = getSSBNNode(residentNode, arguments); 
 				
 				//This test is necessary to avoid creating two equals ssbn nodes (duplicated bayesian nodes). 
-				if(testSSBNNode == null){
+				if(testSSBNNodeDuplicated == null){
 					ssbnnode = SSBNNode.getInstance(net,residentNode, new ProbabilisticNode(), false);
 					for(OVInstance ovInstance: arguments){
 						ssbnnode.addArgument(ovInstance);
@@ -290,7 +289,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 					ssbnNodeList.add(ssbnnode);
 	    			generateRecursive(ssbnnode, seen, net);	
 				}else{
-					ssbnnode = testSSBNNode;
+					ssbnnode = testSSBNNodeDuplicated;
 				}
 				
     			if(!ssbnnode.isFinding()){
@@ -313,15 +312,16 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		logManager.appendln(currentNode + "D:- Analyze input nodes fathers");
 		for (InputNode inputNode : currentNode.getResident().getInputNodeFatherList()) {
 			
-			ResidentNode residentNode = 
-				(ResidentNode)inputNode.getResidentNodePointer().getResidentNode(); 
+			ResidentNode residentNodeTargetOfInput = inputNode.getResidentNodePointer().getResidentNode(); 
 
-			logManager.appendln(currentNode.getName() + "Evaluate input " + residentNode.getName()); 
+			logManager.appendln(currentNode.getName() + "Evaluate input " + residentNodeTargetOfInput.getName()); 
 			
-			//Evaluate recursion... 
-			if(currentNode.getResident() == residentNode){
+			
+			
+			//----------Evaluate recursion... Node1(x2) -> Node1(x1)------------
+			if(currentNode.getResident() == residentNodeTargetOfInput){
 				
-				SSBNNodeJacket previousNode = getPreviousNode(currentNode, seen, net, residentNode, inputNode);
+				SSBNNodeJacket previousNode = getPreviousNode(currentNode, seen, net, residentNodeTargetOfInput, inputNode);
 
 				if(previousNode != null){
 					
@@ -330,7 +330,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 					previousNode.setArgumentsOfInputMFrag();
 
 					/* it takes the parameters' names back to normal */
-
 					if(!previousNode.getSsbnNode().isFinding()){
 						currentNode.addParent(previousNode.getSsbnNode(), true);
 					}else{
@@ -341,15 +340,17 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				continue;			
 			}
 			
+			
+			
 			//Step 1: evaluate context and search for findings
-            List<OrdinaryVariable> ovProblemList = 
+            List<OrdinaryVariable> ovProblematicList = 
             	analyzeOVInstancesListCompletudeForOVList(inputNode.getOrdinaryVariableList(), 
             			currentNode.getArguments()); 
             
-    		if(!ovProblemList.isEmpty()){
+    		if(!ovProblematicList.isEmpty()){
     			
     			List<SSBNNodeJacket> parentList = createSSBNNodesOfEntitiesSearchForInputNode(
-    					currentNode, inputNode, ovProblemList, currentNode.getArgumentsAsList()); 
+    					currentNode, inputNode, ovProblematicList, currentNode.getArgumentsAsList()); 
     			
     		    for(SSBNNodeJacket ssbnNodeJacket: parentList){
     		    	
@@ -365,16 +366,10 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
         			}else{
         				currentNode.addParent(ssbnnode, false);
         			}
-        			
+       
     		    }
-    		    
-    		    // TODO Remove the code below, if it is not really necessary
-    			//PotentialTable pt = currentNode.getContextFatherSSBNNode().getProbNode().getPotentialTable(); 
-//    			currentNode.addContextFatherSSBNNode();
-    		    
-    		}else{
-    			
-    			//The argument list is OK. 
+    		   
+    		}else{ //ovProblematicList.isEmpty() == true
     			
     			boolean contextNodesOK = false;
 				
@@ -386,7 +381,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				} 
 				
     			if(contextNodesOK){
-    				SSBNNode ssbnNode = SSBNNode.getInstance(net, residentNode, new ProbabilisticNode(), false);
+    				SSBNNode ssbnNode = SSBNNode.getInstance(net, residentNodeTargetOfInput, new ProbabilisticNode(), false);
     				SSBNNodeJacket ssbnNodeJacket = new SSBNNodeJacket(ssbnNode); 
     				
     				for(OVInstance ovInstance: currentNode.getArguments()){
@@ -408,7 +403,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
     					currentNode.addParent(ssbnNode, false);
     				}
     			}else{
-    				//TODO What to do?
+    				//TODO What to do? contextNodesOK == false
     			}
     		}
 		}
@@ -715,7 +710,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 
 					originNode.setContextFatherSSBNNode(contextFatherSSBNNode);
 					
-					// TODO "translate" this commentary!!! 
 					//in this implementation only this is necessary, because the treat
 					//of context nodes how fathers will be """trivial""", using the XOR 
 					//strategy. For a future implementation that accept different 
@@ -1086,15 +1080,15 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				logManager.appendln("  " + parent);
 			}
 			
-			//Debug.setDebug(false);
-			
 			ssbnNode.getCompiler().generateCPT(ssbnNode);
 			
-			//Debug.setDebug(true);
 			logManager.appendln("CPT OK\n");
 		
 	}
 	
+	/*
+	 * The XOR algorith
+	 */
 	private void generateCPTForNodeWithContextFather(SSBNNode ssbnNode) 
 	      throws SSBNNodeGeneralException, MEBNException, InvalidOperationException {
 		

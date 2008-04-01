@@ -86,7 +86,7 @@ import unbbayes.util.ResourceController;
  * the MEBN suport of the UnBBayes. All others painels of MEBN
  * are inside this panel.
  *
- *  @author La�cio Lima dos Santos
+ *  @author Laecio Lima dos Santos
  *  @author Rommel N. Carvalho
  *  @version 1.0 06/08/07
  */
