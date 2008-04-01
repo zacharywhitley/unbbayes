@@ -222,8 +222,7 @@ public class GuiResources extends ListResourceBundle {
 		{"menuAddContext", "Add Context"}, 
 		{"menuAddInput", "Add Input"},
 		{"menuAddResident", "Add Resident"}, 
-		{"menuAddDomainMFrag", "Add Domain MFrag"}, 
-		{"menuAddFindingMFrag", "Add Finding MFrag"}, 
+		{"menuAddDomainMFrag", "Add MFrag"}, 
 		
 		//Titles for tab panel
 		{"ResidentTabTitle", "Resident Node"}, 
@@ -383,6 +382,18 @@ public class GuiResources extends ListResourceBundle {
 		{"KBClean" , "Knowledge base successfully cleared"},
 		{"NotImplemented" , "Not implemented yet."}, 
 		{"loadedWithErrors" , "File loaded, but some errors may have occurred"},
+		
+		/* Aboult pane */
+		{"AboultPane" , "About"},			
+		
+		{"ReadLicense" , "License"},
+		{"Features" , "Features"},
+		{"VersionHistory" , "History"},
+		{"CloseAboultPane" , "Close"},
+		
+		{"Collaborators" , "Collaborators"},
+		{"Version" , "Version"},	
+		{"Buildid" , "Build ID"},		
 		
         //Splash loader */
 		{"loading" , "loading"}

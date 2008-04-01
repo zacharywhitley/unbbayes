@@ -221,11 +221,10 @@ public class GuiResources_pt extends ListResourceBundle {
 		
 		//Menus MEBN
 		{"menuDelete", "Delete"}, 
-		{"menuAddContext", "Add Context"}, 
-		{"menuAddInput", "Add Input"},
-		{"menuAddResident", "Add Resident"}, 
-		{"menuAddDomainMFrag", "Add Domain MFrag"}, 
-		{"menuAddFindingMFrag", "Add Finding MFrag"}, 
+		{"menuAddContext", "Adic. Contexto"}, 
+		{"menuAddInput", "Adic. Input"},
+		{"menuAddResident", "Adic. Residente"}, 
+		{"menuAddDomainMFrag", "Adic. MFrag"}, 
 		
 		//Titles for tab panel
 		{"ResidentTabTitle", "Nó Residente"}, 
@@ -385,6 +384,19 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"KBClean" , "Base de conhecimento limpa com sucesso"},
 		{"NotImplemented" , "Funcionalidade ainda não implementada"}, 
 		{"loadedWithErrors" , "Arquivo carregado, mas pode haver falhas"},
+		
+		/* Aboult pane */
+		{"AboultPane" , "Sobre"},	
+		
+		{"ReadLicense" , "Licença"},
+		{"Features" , "Características"},
+		{"VersionHistory" , "Histórico"},
+		{"CloseAboultPane" , "Fechar"},
+		
+		{"Collaborators" , "Colaboradores"},	
+		
+		{"Version" , "Versão"},	
+		{"Buildid" , "ID do Produto"},	
 		
         //Splash loader */
 		{"loading" , "carregando"}

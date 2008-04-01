@@ -26,20 +26,26 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ResourceBundle;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
-import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.border.Border;
+
+import unbbayes.util.ResourceController;
 
 /**
  * About pane with informations of the program. 
@@ -55,17 +61,25 @@ public class AboutPane extends JDialog{
 	private String version = "3.0.1"; 
 	private String buildID = "20080229-01L"; 
 	
+	private static final String COLABORATORS_PAGE = "/html/Colaborators.html"; 
+	private static final String LOGO_PICTURE = "/img/logo_small.png"; 
+	private static final String GNU_LICENCE_PREVIEW_PAGE = "/html/GNULicencePreview.html"; 
+	
+	private ResourceBundle resource = ResourceController.RS_GUI; 
+	
 	public AboutPane(){
 		super(UnBBayesFrame.getIUnBBayes(), true); 
-		this.setLocation(GUIUtils.getCenterPositionForComponent(400,300));	
+		setTitle(resource.getString("AboultPane")); 
+	
+		this.setLocation(GUIUtils.getCenterPositionForComponent(400,270));	
 
 		BorderLayout borderLayout = new BorderLayout(); 
 		setLayout(borderLayout);
 		add(new MainPane(), BorderLayout.CENTER); 
 		add(new LogoPane(), BorderLayout.LINE_START); 
 		
-		setMinimumSize(new Dimension(400, 300)); 
-		setMaximumSize(new Dimension(400, 300));
+		setMinimumSize(new Dimension(400, 270)); 
+		setMaximumSize(new Dimension(400, 270));
 		pack(); 
 		backgroundColor = getBackground(); 
 	}
@@ -84,35 +98,40 @@ public class AboutPane extends JDialog{
 			JPanel helpPanel = new JPanel(); 
 			helpPanel.setLayout(new BorderLayout()); 
 			
-			JTextArea textLicence = new JTextArea(4,9);
-			textLicence.setText(
-					" UnBBayes is free software: you can redistribute it and/or modify it\n" +
-					" under the terms of the GNU General Public License as published by\n" +
-					" the Free Software Foundation, either version 3 of the License, or\n" +
-					" (at your option) any later version."
-					);
-			textLicence.setEditable(false); 
-			textLicence.setBackground(backgroundColor); 
-			textLicence.setForeground(Color.black); 
+			JEditorPane editorPane = new JEditorPane();
+			editorPane.setEditable(false);
+			java.net.URL helpURL = AboutPane.class.getResource(
+					GNU_LICENCE_PREVIEW_PAGE);
+			
+			if (helpURL != null) {
+			    try {
+			        editorPane.setPage(helpURL);
+			    } catch (IOException e) {
+			        System.err.println("Attempted to read a bad URL: " + helpURL);
+			    }
+			} else {
+			    System.err.println("Attempted to read a bad URL: " + helpURL);
+			}
+			
+			editorPane.setBackground(backgroundColor); 
 			
 			Border etched = BorderFactory.createLoweredBevelBorder(); 
 			Border empty = BorderFactory.createEmptyBorder(5, 5, 5, 5); 
 			Border compound = BorderFactory.createCompoundBorder(empty, etched); 
-			textLicence.setBorder(compound); 
+			editorPane.setBorder(compound); 
 			
-			helpPanel.add(textLicence, BorderLayout.NORTH); 
+			helpPanel.add(editorPane, BorderLayout.NORTH); 
 			helpPanel.add(new CollaboratorPane(), BorderLayout.CENTER); 
-			
 			helpPanel.add(new InformationPane(), BorderLayout.SOUTH); 
-			
 			
 			return helpPanel; 
 		}
 		
 	}
 	
-	class InformationPane extends JPanel{
+	private class InformationPane extends JPanel{
 		
+		JButton btnClose; 
 		JButton btnLicence; 
 		JButton btnFeatures; 
 		JButton btnHistoric; 
@@ -122,28 +141,45 @@ public class AboutPane extends JDialog{
 			setLayout(new BorderLayout()); 
 			this.setPreferredSize(new Dimension(100, 50)); 
 			
-			btnLicence = new JButton("Read Licence"); 
+			btnLicence = new JButton(resource.getString("ReadLicense")); 
 			btnLicence.setEnabled(false); 
-			btnFeatures = new JButton("Features");
+			btnFeatures = new JButton(resource.getString("Features"));
 			btnFeatures.setEnabled(false); 
-			btnHistoric = new JButton("Version History"); 
+			btnHistoric = new JButton(resource.getString("VersionHistory")); 
 			btnHistoric.setEnabled(false); 
+			btnClose = new JButton(resource.getString("CloseAboultPane")); 
 			
 			JToolBar jtb = new JToolBar();
 			jtb.setLayout(new FlowLayout(FlowLayout.TRAILING)); 
 			jtb.add(btnLicence); 
 			jtb.add(btnFeatures); 
 			jtb.add(btnHistoric); 
+			jtb.add(btnClose); 
 			jtb.setFloatable(false); 
 			
 			add(jtb, BorderLayout.NORTH); 
 			
-			
+			addListeners(); 
+		}
+		
+		private void addListeners(){
+			btnClose.addActionListener(new ActionListener(){
+
+				public void actionPerformed(ActionEvent e) {
+					AboutPane.this.dispose(); 
+				}
+				
+			}); 
 		}
 		
 	}
 	
-	class CollaboratorPane extends JPanel{
+	/**
+	 * Pane that show a html with the list of colaborators of this project
+	 * 
+	 * @author Laecio
+	 */
+	private class CollaboratorPane extends JPanel{
 		
 		public CollaboratorPane(){
 			
@@ -151,137 +187,62 @@ public class AboutPane extends JDialog{
 			this.setPreferredSize(new Dimension(100, 150)); 
 			this.setLayout(new BorderLayout()); 
 			
-			JTextArea collaboratorsPanel = new JTextArea();
-
-			collaboratorsPanel.setText(
-					"Alberto Magno Muniz Soares " +
-					"\n\t- Initial version in Delphi 5.0\n" + 
-					
-					"\nBruno Gonçalves Domingues " +
-					"\n\t- Project of the XML format of probabilistic networks\n" +
-					
-					"\nCleuber Moreira Fernandes " +
-					"\n\t- Implementation of XPC algorithm\n" +
-					
-					"\nDanilo Custódio da Silva (danilocustodio@gmail.com)" +
-					"\n\t- Learning Bayesian Network: K2, B, and V" +
-					"\n\t- Incremental Learning\n" +
-					
-					"\nEduardo Andrade Rodrigues " +
-					"\n\t- GUI in Delphi 5.0 for initial version\n" + 
-					
-					"\nGabriel M. N. Guimarães " +
-					"\n\t- TAN and BAN algorithms\n" +
-					
-					"\nFrancisco José Fiuza Lima Jr " +
-					"\n\t- Medical Metaphor GUI\n" + 
-					
-					"\nLaécio Lima dos Santos (laecio@gmail.com)" +
-					"\n\t- MEBN/PR-OWL implementation\n"+
-					
-					"\nProf. Dr. Marcelo Ladeira (mladeira@unb.br)" +
-					"\n\t- Coordination of the project\n"+
-					
-					"\nMário Henrique Paes Vieira" +
-					"\n\t- Medical Metaphor" +
-					"\n\t- Coordination of the integration of Java code \n" +
-					
-					"\nMichael Shigeki Onishi (mso@gmail.com)" +
-					"\n\t- Bayesians Networks" +
-					"\n\t- Influence Diagrams" +
-					"\n\t- Multiple Sectioned Bayesian Network" +
-					"\n\t- XML format and UnBBayes Server (J2EE)\n" +
-					
-					"\nProf. Dr. Paulo C. Costa (pcosta@gmu.edu)" +
-					"\n\t- Consultant in MEBN and PR-OWL \n" +
-					
-					"\nRommel Novaes Carvalho (rommel.carvalho@gmail.com)" +
-					"\n\t- Bayesians Networks" +
-					"\n\t- Influence Diagrams" +
-					"\n\t- Multiple Sectioned Bayesian Network" +
-					"\n\t- XML format and UnBBayes Server (J2EE)" +
-					"\n\t- MEBN/PR-OWL implementation\n"+
-					
-					"\nShou Matsumoto (cardialfly@gmail.com)" +
-					"\n\t- MEBN/PR-OWL implementation\n" + 
-					
-					"\nProf. Dr. Wagner Teixeira da Silva" +
-					"\n\t- Consultant in bayesian network learning"
-			);
+			JEditorPane editorPane = new JEditorPane();
+			editorPane.setEditable(false);
+			java.net.URL helpURL = AboutPane.class.getResource(COLABORATORS_PAGE);
 			
-			collaboratorsPanel.setBackground(backgroundColor); 
-			collaboratorsPanel.setEditable(false);
-			collaboratorsPanel.setCaretPosition(0);
+			if (helpURL != null) {
+			    try {
+			        editorPane.setPage(helpURL);
+			    } catch (IOException e) {
+			        System.err.println("Attempted to read a bad URL: " + helpURL);
+			    }
+			} else {
+			    System.err.println("Attempted to read a bad URL: " + helpURL);
+			}
+			
+			editorPane.setBackground(backgroundColor); 
 			
   	        JScrollPane scrollPane =
-  	            new JScrollPane(collaboratorsPanel,
+  	            new JScrollPane(editorPane,
   	                            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
   	                            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-  	        scrollPane.setBorder(BorderFactory.createTitledBorder("Collaborators")); 
+  	        scrollPane.setBorder(BorderFactory.createTitledBorder(
+  	        		resource.getString("Collaborators"))); 
 			this.add(scrollPane, BorderLayout.CENTER); 
 
 		}
 	}
 	
-	class LogoPane extends JPanel{
+	private class LogoPane extends JPanel{
 
-		Toolkit tk = Toolkit.getDefaultToolkit(); 
-		Image imgLogo = tk.getImage(getClass().getResource(
-				"/img/logo.png")); 
+		ImageIcon imgLogo = new ImageIcon(getClass().getResource(LOGO_PICTURE)); 
 		
 		public LogoPane(){
-			super(); 
+			super(new BorderLayout()); 
 			setPreferredSize(new Dimension(200, 300)); 
-		}
-		
-		public void paintComponent(Graphics comp){
-			Graphics2D g2D = (Graphics2D)comp; 
 			
-			g2D.drawImage(imgLogo, 15, 20, 175, 150, this); 
-			
-			g2D.drawRect(20, 175, 160, 80); 
-			g2D.drawString(name, 25, 200); 
-			g2D.drawString("Version: " + version + " (alpha)", 25, 220); 
-			g2D.drawString("Build ID: " + buildID, 25, 235); 
+			JLabel labelImg = new JLabel(imgLogo); 
+			this.add(labelImg, BorderLayout.CENTER);
+			this.add(new VersionPane(), BorderLayout.SOUTH); 
 		}
 		
 	}
-
-	//tests. 
-	public static void main(String... args){
-//		JFrame testFrame = new AboutPane(); 
-//		testFrame.setVisible(true); 
-//		testFrame.setPreferredSize(new Dimension(600, 300)); 
-//		testFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
-//		testFrame.pack(); 
+	
+	private class VersionPane extends JPanel{
 		
-		JEditorPane editorPane = new JEditorPane();
-		editorPane.setEditable(false);
-		java.net.URL helpURL = AboutPane.class.getResource(
-		                                "TextSamplerDemoHelp.html");
-		if (helpURL != null) {
-		    try {
-		        editorPane.setPage(helpURL);
-		    } catch (IOException e) {
-		        System.err.println("Attempted to read a bad URL: " + helpURL);
-		    }
-		} else {
-		    System.err.println("Couldn't find file: TextSamplerDemoHelp.html");
+		public VersionPane(){
+			super(new GridLayout(4,1)); 
+			
+			JLabel labelVersion = new JLabel(("   " + resource.getString("Version") + ": " + version + " (alpha)")); 
+			JLabel labelBuildID= new JLabel("   " + resource.getString("Buildid") + ": " + buildID); 
+			
+			add(labelVersion); 
+			add(labelBuildID); 
+			add(new JLabel()); 
+			add(new JLabel()); 
 		}
-
-		//Put the editor pane in a scroll pane.
-		JScrollPane editorScrollPane = new JScrollPane(editorPane);
-		editorScrollPane.setVerticalScrollBarPolicy(
-		                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		editorScrollPane.setPreferredSize(new Dimension(250, 145));
-		editorScrollPane.setMinimumSize(new Dimension(10, 10));
 		
-		JFrame testFrame = new JFrame();
-		testFrame.setContentPane(editorScrollPane); 
-		testFrame.setVisible(true); 
-		testFrame.setPreferredSize(new Dimension(600, 300)); 
-		testFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
-		testFrame.pack(); 
 	}
 	
 }
