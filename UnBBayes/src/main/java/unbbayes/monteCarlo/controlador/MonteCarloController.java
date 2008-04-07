@@ -29,9 +29,9 @@ import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
 import unbbayes.io.BaseIO;
-import unbbayes.io.LoadException;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLIO;
+import unbbayes.io.exception.LoadException;
 import unbbayes.monteCarlo.gui.TelaParametros;
 import unbbayes.monteCarlo.simulacao.SimulacaoMonteCarlo;
 import unbbayes.prs.bn.ProbabilisticNetwork;

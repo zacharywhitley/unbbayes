@@ -18,7 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.io;
+package unbbayes.io.exception;
 
 /**
  * Exception class when loading a network.

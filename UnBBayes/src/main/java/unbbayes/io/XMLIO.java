@@ -43,6 +43,7 @@ import javax.xml.bind.Unmarshaller;
 import org.xml.sax.InputSource;
 
 import unbbayes.gui.HierarchicTree;
+import unbbayes.io.exception.LoadException;
 import unbbayes.io.xmlclasses.BIF;
 import unbbayes.io.xmlclasses.BIFType;
 import unbbayes.io.xmlclasses.ObjectFactory;

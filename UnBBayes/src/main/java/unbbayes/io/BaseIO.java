@@ -26,6 +26,7 @@ import java.io.IOException;
 
 import javax.xml.bind.JAXBException;
 
+import unbbayes.io.exception.LoadException;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.msbn.SingleAgentMSBN;

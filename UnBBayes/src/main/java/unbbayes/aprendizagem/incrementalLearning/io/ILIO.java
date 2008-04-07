@@ -35,7 +35,7 @@ import javax.xml.bind.JAXBException;
 import unbbayes.controller.FileController;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
-import unbbayes.io.LoadException;
+import unbbayes.io.exception.LoadException;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
 /**

@@ -28,8 +28,8 @@ import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
-import unbbayes.io.LoadException;
 import unbbayes.io.XMLIO;
+import unbbayes.io.exception.LoadException;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.util.NodeList;
