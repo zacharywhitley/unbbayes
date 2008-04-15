@@ -152,8 +152,8 @@ public class MEBNController  {
 	/* Constants                                            */
 	/*-------------------------------------------------------------------------*/
 	
-	private static final String NAME_GENERATIVE_FILE = "generative.plm"; 
-	private static final String NAME_FINDING_FILE = "findings.plm"; 
+	private static final String NAME_GENERATIVE_FILE = "debug/generative.plm"; 
+	private static final String NAME_FINDING_FILE = "debug/findings.plm"; 
 	
 	/*-------------------------------------------------------------------------*/
 	/* Others (resources, utils, etc                                           */

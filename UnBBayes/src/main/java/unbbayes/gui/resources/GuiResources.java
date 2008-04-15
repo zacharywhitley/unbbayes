@@ -50,11 +50,23 @@ public class GuiResources extends ListResourceBundle {
 	 */
 	static final Object[][] contents =
 	{	
+		//Types of files
 		{"fileDirectoryType","Directory"},
 		{"fileARFFType","Arff file"},
 		{"fileTXTType","TXT file"},
 		{"fileNETType","Baysian Netwotk File NET"},
 		{"fileGenericType","Generic File"},
+		
+		{"netFileFilter","Net (.net), XMLBIF (.xml), PR-OWL (.owl), UnBBayes file (.ubf)"},
+		{"netFileFilterSave","Net (.net), XMLBIF (.xml), UnBBayes file (.ubf)"},
+		{"powerloomFileFilter","Base de Conhecimento (.plm)"},
+		{"xmlBIFFileFilter", "XMLBIF (.xml)"},
+		{"textFileFilter","Text (.txt)"},
+		{"fileUntitled","Untitled.txt"},
+		
+		//Titles of the file choosers
+		{"saveTitle","Save"}, 
+		{"openTitle","Open"}, 
 		
 		{"unbbayesTitle","UnBBayes"},
 		
@@ -70,14 +82,6 @@ public class GuiResources extends ListResourceBundle {
 		{"windowsToolTip","Windows Look And Feel"},
 		{"tileToolTip","Organize windows in tile"},
 		{"cascadeToolTip","Organize windows in cascade"},
-		
-		{"netFileFilter","Net (.net), XMLBIF (.xml), PR-OWL (.owl), UnBBayes file (.ubf)"},
-		{"netFileFilterSave","Net (.net), XMLBIF (.xml), UnBBayes file (.ubf)"},
-		{"powerloomFileFilter","Base de Conhecimento (.plm)"},
-		
-		{"xmlBIFFileFilter", "XMLBIF (.xml)"},
-		{"textFileFilter","Text (.txt)"},
-		{"fileUntitled","Untitled.txt"},
 		
 		{"globalOptionTitle","Global Option"},
 		{"hierarchyToolTip","Hierarchy definition"},
@@ -127,6 +131,7 @@ public class GuiResources extends ListResourceBundle {
 		{"logTab","Log"},
 		{"createLogLabel","Create Log"},
 		{"nodeGraphName","Node"},
+		{"closeButton", "Close"},
 		
 		{"LookAndFeelUnsupportedException","It does not support this LookAndFeel: "},
 		{"LookAndFeelClassNotFoundException","This LookAndFeel class was not found: "},
@@ -162,17 +167,17 @@ public class GuiResources extends ListResourceBundle {
 		{"probabilisticNodeInsertToolTip","Insert probabilistic variable"},
 		{"decisionNodeInsertToolTip","Insert decision variable"},
 		{"utilityNodeInsertToolTip","Insert utility variable"},
-		{"contextNodeInsertToolTip","Insert context variable"},
-		{"inputNodeInsertToolTip","Insert input variable"},
-		{"residentNodeInsertToolTip","Insert resident variable"},
+		{"contextNodeInsertToolTip","Insert Context Node"},
+		{"inputNodeInsertToolTip","Insert Input Node"},
+		{"residentNodeInsertToolTip","Insert Resident Node"},
 		{"mFragInsertToolTip","Insert MFrag"},
-		{"selectObjectToolTip","Select object"},
+		{"selectObjectToolTip","Select Object"},
 		{"ordinaryVariableInsertToolTip","Insert Ordinary Variable"},
 		{"inputActiveToolTip","Input Node Selected"},  
 		{"mFragActiveToolTip","MFrag Selected"}, 		
 		{"contextActiveToolTip","Context Node Selected"}, 
 		{"residentActiveToolTip","Resident Node Selected"}, 		
-		{"addArgumentToolTip","Add argumment"}, 
+		{"addArgumentToolTip","Add Argumment"}, 
 		{"editFormulaToolTip","Edit formula"},		
 		{"selectToolTip","Select various nodes and edges"},
 		{"printTableToolTip","Print table"},
@@ -185,10 +190,10 @@ public class GuiResources extends ListResourceBundle {
 		{"newArgumentToolTip","Add new ord. variable to argument list"},
 		{"delArgumentToolTip", "Remove ord. variable from argument list"}, 	
 		{"downArgumentToolTip", "Add to argument list ord. variable selected"}, 
-		{"mTheoryEditionTip", "Edit atributes of the MTheory"}, 	
+		{"mTheoryEditionTip", "Edit the MTheory"}, 	
 		{"isGloballyExclusive", "Globally exclusive"},		
 		{"resetToolTip", "Reset"},	
-		{"deleteSelectedItemToolTip", "Delete selected item"},	
+		{"deleteSelectedItemToolTip", "Delete Item"},	
 		{"menuOpen", "Open"},	
 		
 		{"showMTheoryToolTip","Show MTheory tree"},	
@@ -274,12 +279,18 @@ public class GuiResources extends ListResourceBundle {
         {"motifItem","Motif"},
         {"windowsItem","Windows"},
         {"learningItem","Learning"},
+        {"tanItem","TAN"},
+        {"banItem","BAN"},
+        {"monteCarloItem","Monte Carlo"},
+        {"GibbsItem","Gibbs"},
+        {"ILearningItem","Incremental Learning"},
         {"cascadeItem","Cascade"},
         {"tileItem","Tile"},
         {"helpItem","Help"},
         {"aboutItem","About UnBBayes"},
         
         {"fileMenuMn","F"},
+        {"newMenuMn","N"},
         {"lafMenuMn","L"},
         {"viewMenuMn","V"},
         {"tbMenuMn","T"},
@@ -293,11 +304,20 @@ public class GuiResources extends ListResourceBundle {
         {"metalItemMn","M"},
         {"motifItemMn","O"},
         {"windowsItemMn","W"},
-        {"learningItemMn","L"},
         {"cascadeItemMn","C"},
         {"tileItemMn","T"},
         {"helpItemMn","H"},
         {"aboutItemMn","A"},
+        {"newBNMn","B"},
+        {"newMSBNMn","M"},
+        {"newMEBNMn","E"},
+        
+        {"learningItemMn","L"},
+        {"tanItemMn","T"},
+        {"banItemMn","B"},
+        {"monteCarloItemMn","M"},
+        {"GibbsItemMn","G"},
+        {"ILearningItemMn","I"},               
  
         {"operationError","Operation Error"},        
         {"oVariableAlreadyIsArgumentError","Ord. Variable is already an argument of this node!"},
@@ -309,6 +329,11 @@ public class GuiResources extends ListResourceBundle {
         {"descriptionError","The description must have only letters and numbers."}, 
         
         /* Query Panel*/
+        {"queryPanelTitle","Query"}, 
+        {"queryBtnBack","Back"}, 
+        {"queryBtnSelect","Select"},
+        {"queryBtnExecute","Execute"},
+        
         {"argumentFault","Incomplete arguments. Query should not be executed."}, 
         {"inconsistentArgument","Inconsistent arguments. Query should not be executed."},         
         {"selectOneVariable","Select a random variable:"}, 

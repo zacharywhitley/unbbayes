@@ -31,6 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -41,7 +42,7 @@ import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.gui.mebn.auxiliary.ButtonLabel;
 import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
-import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
+import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.entity.Type;
 
@@ -111,7 +112,7 @@ public class ToolBarOrdVariable extends JToolBar{
   								}
   							}
   						}  else {
-  							txtName.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+  							txtName.setBackground(MebnToolkit.getColorTextFieldError()); 
   							txtName.setForeground(Color.WHITE); 
   							txtName.selectAll();
   							JOptionPane.showMessageDialog(null, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
@@ -129,11 +130,11 @@ public class ToolBarOrdVariable extends JToolBar{
                     String name = txtName.getText(0,txtName.getText().length());
 						matcher = wordPattern.matcher(name);
 						if (!matcher.matches()) {
-							txtName.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+							txtName.setBackground(MebnToolkit.getColorTextFieldError()); 
 							txtName.setForeground(Color.WHITE); 
 						}
 						else{
-							txtName.setBackground(ToolKitForGuiMebn.getColorTextFieldSelected());
+							txtName.setBackground(MebnToolkit.getColorTextFieldSelected());
 							txtName.setForeground(Color.BLACK); 
 						}
   				}
@@ -148,20 +149,36 @@ public class ToolBarOrdVariable extends JToolBar{
 	    
 	    JToolBar barName = new JToolBar(); 
 	    barName.setFloatable(false); 
-	    barName.add(name); 
+//	    barName.add(name); 
 	    barName.add(txtName); 
 	    add(barName);
 	    
 	    JToolBar barType = new JToolBar(); 
 	    barType.setFloatable(false); 
-	    barType.add(type); 
+//	    barType.add(type); 
 	    barType.add(jcbType); 
 	    add(barType); 
 	    
-	    add(new JLabel()); 
-	    add(new JLabel()); 
+	    add(new EmptyPanel()); 
+	    add(new EmptyPanel()); 
 	     
 	}
+	
+  	
+  	/**
+  	 * A simple panel for fill the empty spaces in the toolbar of the 
+  	 * active object. 
+  	 * 
+  	 * @author Laecio
+  	 */
+  	private class EmptyPanel extends JButton{
+  		
+  		public EmptyPanel(){
+  			super(); 
+  			setEnabled(false); 
+  		}
+  		
+  	}
 	
 	/**
 	 * Set the ordinary variable that this tool bar use. 

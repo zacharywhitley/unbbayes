@@ -38,7 +38,7 @@ import javax.swing.JToolBar;
 import unbbayes.controller.FormulaTreeController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
-import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
+import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.ResidentNodePointer;
@@ -101,7 +101,7 @@ public class FormulaEditionPane extends JPanel {
 		
 		super(); 
 		
-		this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel("Context Node")); 
+		this.setBorder(MebnToolkit.getBorderForTabPanel("Context Node")); 
 		
 		mebnController = _controller; 
 		mFrag = mebnController.getCurrentMFrag(); 

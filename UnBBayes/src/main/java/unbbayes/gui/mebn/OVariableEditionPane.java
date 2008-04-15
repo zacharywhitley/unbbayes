@@ -40,7 +40,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
 import unbbayes.controller.MEBNController;
-import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
+import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.entity.Type;
@@ -87,7 +87,7 @@ public class OVariableEditionPane extends JPanel {
 		
 		super(); 
 		
-		this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel(resource.getString("OVariableTitle"))); 
+		this.setBorder(MebnToolkit.getBorderForTabPanel(resource.getString("OVariableTitle"))); 
 		
 		setLayout(new BorderLayout()); 
 		

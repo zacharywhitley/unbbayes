@@ -301,6 +301,8 @@ public class IconController implements Serializable {
 	
 	protected ImageIcon arrowIcon; 
 	
+	protected ImageIcon triangleIcon; 
+	
 	public static IconController getInstance() {
 		if (singleton == null) {
 			singleton = new IconController();
@@ -309,6 +311,16 @@ public class IconController implements Serializable {
 	}
 
 	protected IconController() {
+	}
+	
+	public ImageIcon getTriangleIcon() {
+		if (triangleIcon != null) {
+			return triangleIcon;
+		} else {
+			triangleIcon = new ImageIcon(getClass()
+					.getResource("/icons/triangle.gif"));
+			return triangleIcon;
+		}
 	}
 	
 	public ImageIcon getUnBBayesIcon() {

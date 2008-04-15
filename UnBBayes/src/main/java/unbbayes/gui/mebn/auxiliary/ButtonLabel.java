@@ -39,7 +39,7 @@ public class ButtonLabel extends JButton{
 		}
 		setIcon(icon); 
 		setText(label); 
-    	setBackground(new Color(193, 210, 205)); //Verde quase cinza
+    	setBackground(MebnToolkit.getColor1()); //Verde quase cinza new Color(193, 210, 205)
     	setForeground(Color.BLACK);
     }
 	

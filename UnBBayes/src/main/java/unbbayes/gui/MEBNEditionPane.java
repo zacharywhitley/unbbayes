@@ -39,10 +39,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -67,8 +66,7 @@ import unbbayes.gui.mebn.ResidentNodePane;
 import unbbayes.gui.mebn.ToolBarOrdVariable;
 import unbbayes.gui.mebn.auxiliary.ButtonLabel;
 import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
-import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
-import unbbayes.gui.mebn.cpt.CPTEditionPane;
+import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.gui.mebn.finding.EntityFindingEditionPane;
 import unbbayes.gui.mebn.finding.RandonVariableFindingEdtitionPane;
 import unbbayes.io.exception.UBIOException;
@@ -157,7 +155,7 @@ public class MEBNEditionPane extends JPanel {
     private final JPanel topPanel;
     private final ToolBarEdition jtbEdition;
 
-    private final JPanel nodeSelectedBar;
+    private final JPanel nodeSelectedToolBar;
     private final CardLayout cardLayout = new CardLayout();
 
     /* Tool bars for each possible edition mode */
@@ -216,7 +214,7 @@ public class MEBNEditionPane extends JPanel {
         this.mebnController    = _controller;
         this.setLayout(new BorderLayout());
 
-        topPanel    = new JPanel(new GridLayout(0,1));
+        topPanel    = new JPanel(new GridLayout(1,1));
 
         tabsPanel = new JPanel(new BorderLayout());
 
@@ -224,17 +222,12 @@ public class MEBNEditionPane extends JPanel {
         descriptionPane = new DescriptionPane();
         jtbTabSelection = new JToolBar();
 
-        nodeSelectedBar = new JPanel(cardLayout);
+        nodeSelectedToolBar = new JPanel(cardLayout);
 
         jtbEmpty = new JToolBar();
 
         graphPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         graphPanel.setDividerSize(1);
-
-        helpPanel = new JPanel();
-        jspGraphHelper = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, graphPanel, helpPanel);
-        jspGraphHelper.setResizeWeight(1.0);
-        jspGraphHelper.setDividerSize(1);
 
         bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 1));
         status      = new JLabel(resource.getString("statusReadyLabel"));
@@ -247,11 +240,11 @@ public class MEBNEditionPane extends JPanel {
         txtArguments = new JTextField(10);
         txtFormula = new JTextField(15);
 
-        btnTabOptionTree = new JButton(iconController.getMTheoryNodeIcon());
-        btnTabOptionOVariable = new JButton(iconController.getOVariableNodeIcon());
-        btnTabOptionEntity = new JButton(iconController.getObjectEntityIcon());
-        btnTabOptionEntityFinding = new JButton(iconController.getEntityInstance());
-        btnTabOptionNodeFinding = new JButton(iconController.getNodeInstance());
+        btnTabOptionTree = new ButtonTab(iconController.getMTheoryNodeIcon());
+        btnTabOptionOVariable = new ButtonTab(iconController.getOVariableNodeIcon());
+        btnTabOptionEntity = new ButtonTab(iconController.getObjectEntityIcon());
+        btnTabOptionEntityFinding = new ButtonTab(iconController.getEntityInstance());
+        btnTabOptionNodeFinding = new ButtonTab(iconController.getNodeInstance());
 
         btnTabOptionTree.setToolTipText(resource.getString("showMTheoryToolTip"));
         btnTabOptionOVariable.setToolTipText(resource.getString("showOVariablesToolTip"));
@@ -284,37 +277,36 @@ public class MEBNEditionPane extends JPanel {
 
         /*---- Add card panels in the layout ----*/
 
-        nodeSelectedBar.add(MTHEORY_BAR, toolBarMTheory);
-        nodeSelectedBar.add(RESIDENT_BAR, toolBarResidentNode);
-        nodeSelectedBar.add(CONTEXT_BAR, toolBarContextNode);
-        nodeSelectedBar.add(INPUT_BAR, toolBarInputNode);
-        nodeSelectedBar.add(MFRAG_BAR, toolBarMFrag);
-        nodeSelectedBar.add(EMPTY_BAR, jtbEmpty);
-        nodeSelectedBar.add(ORDVARIABLE_BAR, toolBarOVariable);
+        nodeSelectedToolBar.add(MTHEORY_BAR, toolBarMTheory);
+        nodeSelectedToolBar.add(RESIDENT_BAR, toolBarResidentNode);
+        nodeSelectedToolBar.add(CONTEXT_BAR, toolBarContextNode);
+        nodeSelectedToolBar.add(INPUT_BAR, toolBarInputNode);
+        nodeSelectedToolBar.add(MFRAG_BAR, toolBarMFrag);
+        nodeSelectedToolBar.add(EMPTY_BAR, jtbEmpty);
+        nodeSelectedToolBar.add(ORDVARIABLE_BAR, toolBarOVariable);
 
-        cardLayout.show(nodeSelectedBar, EMPTY_BAR);
+        cardLayout.show(nodeSelectedToolBar, EMPTY_BAR);
 
-        topPanel.add(nodeSelectedBar);
+
+        
+//        topPanel.add(nodeSelectedToolBar);
 
         bottomPanel.add(status);
-
-        /*----------------- Icones do Tab Panel ------------*/
-
-        jtbTabSelection.setLayout(new GridLayout(1,3));
+        
+        jtbTabSelection.setLayout(new GridLayout(1,5));
         jtbTabSelection.add(btnTabOptionTree);
         jtbTabSelection.add(btnTabOptionOVariable);
         jtbTabSelection.add(btnTabOptionEntity);
         jtbTabSelection.add(btnTabOptionEntityFinding);
         jtbTabSelection.add(btnTabOptionNodeFinding);
         jtbTabSelection.setFloatable(false);
-
-
+        
         /*---------------- Tab panel ----------------------*/
 
         mTheoryTree = new MTheoryTree(mebnController, netWindow.getGraphPane());
         mTheoryTreeScroll = new JScrollPane(mTheoryTree);
         mTheoryTreeScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS); 
-        mTheoryTreeScroll.setBorder(ToolKitForGuiMebn.getBorderForTabPanel(
+        mTheoryTreeScroll.setBorder(MebnToolkit.getBorderForTabPanel(
         		resource.getString("MTheoryTreeTitle")));
         jpTabSelected.add(MTHEORY_TREE_TAB, mTheoryTreeScroll);
 
@@ -351,9 +343,10 @@ public class MEBNEditionPane extends JPanel {
         tabsPanel.add(BorderLayout.SOUTH, descriptionPane);
         tabsPanel.add(BorderLayout.EAST, jtbEdition);
 
-        centerPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, tabsPanel, jspGraphHelper);
+        
+        centerPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, tabsPanel, graphPanel);
         //centerPanel.setResizeWeight(0.25);
-        centerPanel.setDividerSize(5);
+        centerPanel.setDividerSize(1);
 
         //adiciona containers para o contentPane
         this.add(topPanel, BorderLayout.NORTH);
@@ -428,17 +421,48 @@ public class MEBNEditionPane extends JPanel {
     public void showTitleGraph(String mFragName){
 
     	JPanel titleMFragPane = new JPanel(new BorderLayout());
-    	titleMFragPane.setBackground(new Color(7, 199, 203));
 
+    	JToolBar tb1 = new JToolBar(); 
+    	JButton btnTest = new JButton(iconController.getResidentNodeIcon()); 
+//    	btnTest.setBackground(MebnToolkit.getColor1());
+//    	tb1.setBackground(MebnToolkit.getColor1()); 
+    	tb1.add(btnTest); 
+    	tb1.setFloatable(false); 
+    	
+    	JToolBar tb2 = new JToolBar();
+    	tb2.setLayout(new BorderLayout()); 
+    	
     	JLabel label = new JLabel(mFragName);
     	label.setForeground(Color.BLACK);
     	label.setHorizontalAlignment(JLabel.CENTER);
     	label.setHorizontalTextPosition(JLabel.CENTER);
+//    	tb2.setBackground(MebnToolkit.getColor1());
+    	tb2.add(label, BorderLayout.CENTER); 
+    	JButton jbtn = new JButton(); jbtn.setBackground(Color.white); 
+    	JButton jbtn2 = new JButton(); jbtn2.setBackground(Color.white); 
+    	jbtn = new JButton(iconController.getMFragIcon()); 
+    	jbtn2 =  new JButton(iconController.getMFragIcon()); 
+    	tb2.setBackground(new Color(255, 255, 255)); 
+//    	tb2.add(jbtn, BorderLayout.LINE_END); 
+//    	tb2.add(jbtn2, BorderLayout.LINE_START); 
+    	
+    	
+//    	tb2.setBorder(BorderFactory.createLineBorder(Color.blue)); 
+    	tb2.setFloatable(false); 
 
-    	titleMFragPane.add(label, BorderLayout.CENTER);
+    	
 
+//    	JToolBar jtb = new JToolBar(); 
+//    	jtb.add(new JButton(iconController.getSaveNetIcon())); 
+//    	jtb.add(new JButton(iconController.getPrintNetIcon())); 
+//    	jtb.setFloatable(false); 
+//    	
+    	titleMFragPane.add(nodeSelectedToolBar, BorderLayout.PAGE_START); 	
+    	titleMFragPane.add(tb2, BorderLayout.PAGE_END); 	
+    	
     	if(!isTableEditionPaneShow){
     		this.getGraphPanel().setTopComponent(titleMFragPane);
+    		this.getGraphPanel().setBackground(Color.white); 
     	}
 
     }
@@ -608,33 +632,33 @@ public class MEBNEditionPane extends JPanel {
     /* Bar Selected */
 
     public void setMTheoryBarActive(){
-        cardLayout.show(nodeSelectedBar, MTHEORY_BAR);
+        cardLayout.show(nodeSelectedToolBar, MTHEORY_BAR);
     }
 
     public void setResidentBarActive(){
-        cardLayout.show(nodeSelectedBar, RESIDENT_BAR);
+        cardLayout.show(nodeSelectedToolBar, RESIDENT_BAR);
     }
 
     public void setContextBarActive(){
-        cardLayout.show(nodeSelectedBar, CONTEXT_BAR);
+        cardLayout.show(nodeSelectedToolBar, CONTEXT_BAR);
     }
 
     public void setInputBarActive(){
-        cardLayout.show(nodeSelectedBar, INPUT_BAR);
+        cardLayout.show(nodeSelectedToolBar, INPUT_BAR);
     }
 
     public void setMFragBarActive(){
-        cardLayout.show(nodeSelectedBar, MFRAG_BAR);
+        cardLayout.show(nodeSelectedToolBar, MFRAG_BAR);
     }
 
     public void setEmptyBarActive(){
-        cardLayout.show(nodeSelectedBar, EMPTY_BAR);
+        cardLayout.show(nodeSelectedToolBar, EMPTY_BAR);
     }
 
     public void setOrdVariableBarActive(OrdinaryVariable ov){
         toolBarOVariable.updateListOfTypes();
         toolBarOVariable.setOrdVariable(ov);
-        cardLayout.show(nodeSelectedBar, ORDVARIABLE_BAR);
+        cardLayout.show(nodeSelectedToolBar, ORDVARIABLE_BAR);
     }
 
     /*---------------------------------------------------------*/
@@ -1040,7 +1064,7 @@ public class MEBNEditionPane extends JPanel {
   	  						if (matcher.matches()) {
   	  							mebnController.renameMTheory(name);
   	  						}  else {
-  	  							txtNameMTheory.setBackground(ToolKitForGuiMebn.getColorTextFieldError());
+  	  							txtNameMTheory.setBackground(MebnToolkit.getColorTextFieldError());
   	  							txtNameMTheory.setForeground(Color.WHITE);
   	  							txtNameMTheory.selectAll();
   	  							JOptionPane.showMessageDialog(netWindow,
@@ -1060,11 +1084,11 @@ public class MEBNEditionPane extends JPanel {
   	                    String name = txtNameMTheory.getText(0,txtNameMTheory.getText().length());
   							matcher = wordPattern.matcher(name);
   							if (!matcher.matches()) {
-  								txtNameMTheory.setBackground(ToolKitForGuiMebn.getColorTextFieldError());
+  								txtNameMTheory.setBackground(MebnToolkit.getColorTextFieldError());
   								txtNameMTheory.setForeground(Color.WHITE);
   							}
   							else{
-  								txtNameMTheory.setBackground(ToolKitForGuiMebn.getColorTextFieldSelected());
+  								txtNameMTheory.setBackground(MebnToolkit.getColorTextFieldSelected());
   								txtNameMTheory.setForeground(Color.BLACK);
   							}
   	  				}
@@ -1078,15 +1102,15 @@ public class MEBNEditionPane extends JPanel {
   	    	add(btnMTheoryActive);
 
   	    	JToolBar barName = new JToolBar();
-  	    	barName.add(labelMTheoryName);
+//  	    	barName.add(labelMTheoryName);
   	    	barName.add(txtNameMTheory);
   	    	barName.setFloatable(false);
   	    	add(barName);
 
-  	    	add(new JPanel());
-  	    	add(new JPanel());
-  	    	add(new JPanel());
-
+  	        add(new EmptyPanel());; 
+  	        add(new EmptyPanel()); 
+  	        add(new EmptyPanel());
+  	        
   	  		setFloatable(false);
 
   		}
@@ -1126,7 +1150,7 @@ public class MEBNEditionPane extends JPanel {
       	  									JOptionPane.ERROR_MESSAGE);
       							}
       						}  else {
-      							txtNameMFrag.setBackground(ToolKitForGuiMebn.getColorTextFieldError());
+      							txtNameMFrag.setBackground(MebnToolkit.getColorTextFieldError());
       							txtNameMFrag.setForeground(Color.WHITE);
       							txtNameMFrag.selectAll();
       							JOptionPane.showMessageDialog(netWindow,
@@ -1146,11 +1170,11 @@ public class MEBNEditionPane extends JPanel {
                         String name = txtNameMFrag.getText(0,txtNameMFrag.getText().length());
     						matcher = wordPattern.matcher(name);
     						if (!matcher.matches()) {
-    							txtNameMFrag.setBackground(ToolKitForGuiMebn.getColorTextFieldError());
+    							txtNameMFrag.setBackground(MebnToolkit.getColorTextFieldError());
     							txtNameMFrag.setForeground(Color.WHITE);
     						}
     						else{
-    							txtNameMFrag.setBackground(ToolKitForGuiMebn.getColorTextFieldSelected());
+    							txtNameMFrag.setBackground(MebnToolkit.getColorTextFieldSelected());
     							txtNameMFrag.setForeground(Color.BLACK);
     						}
       				}
@@ -1164,20 +1188,15 @@ public class MEBNEditionPane extends JPanel {
       		add(btnMFragActive);
 
       		JToolBar barName = new JToolBar();
-      		barName.add(labelMFragName);
+//      		barName.add(labelMFragName);
       		barName.add(txtNameMFrag);
       		barName.setFloatable(false);
       		add(barName);
 
-    		JPanel emptyPane = new JPanel();
-    		add(emptyPane);
-
-    		emptyPane = new JPanel();
-    		add(emptyPane);
-
-    		emptyPane = new JPanel();
-    		add(emptyPane);
-
+  	        add(new EmptyPanel());; 
+  	        add(new EmptyPanel()); 
+  	        add(new EmptyPanel());
+  	        
     		setFloatable(false);
 
     	}
@@ -1216,7 +1235,7 @@ public class MEBNEditionPane extends JPanel {
   	  	    txtNameInput = new JTextField(10);
 	        txtNameInput.setEditable(false);
 
-	        barName.add(labelInputName);
+//	        barName.add(labelInputName);
   	  		barName.add(txtNameInput);
   	     	barName.setFloatable(false);
   	        add(barName);
@@ -1224,9 +1243,10 @@ public class MEBNEditionPane extends JPanel {
 	        txtInputOf = new JTextField(10);
   	        txtInputOf.setEditable(false);
 
-  	        add(new JPanel());
-  	  		add(new JPanel());
-  	        add(new JPanel());
+  	        add(new EmptyPanel());; 
+  	        add(new EmptyPanel()); 
+  	        add(new EmptyPanel());
+  	        
 
   	        setFloatable(false);
   		}
@@ -1265,16 +1285,17 @@ public class MEBNEditionPane extends JPanel {
   	        final JLabel labelContextName = new JLabel(resource.getString("nameLabel") + " ");
   	        txtNameContext.setEditable(false);
   	        JToolBar barName = new JToolBar();
-  	        barName.add(labelContextName);
+//  	        barName.add(labelContextName);
   	        barName.add(txtNameContext);
   	        barName.setFloatable(false);
 
-
   	        add(btnContextActive);
   	        add(barName);
-  	        add(new JPanel());
-  	        add(new JPanel());
-  	        add(new JPanel());
+  	        
+  	        add(new EmptyPanel());; 
+  	        add(new EmptyPanel()); 
+  	        add(new EmptyPanel());
+  	        
 
   	        setFloatable(false);
 
@@ -1289,8 +1310,7 @@ public class MEBNEditionPane extends JPanel {
 
     	private JLabel labelResidentName = new JLabel(resource.getString("nameLabel") + " ");
     	private ButtonLabel btnResidentActive = new ButtonLabel(resource.getString("ResidentButton"), iconController.getResidentNodeIcon());
-    	private ButtonLabel btnAddArgument = new ButtonLabel(resource.getString("ArgumentsButton"), iconController.getOVariableNodeIcon());
-        private JTextField txtNameResident;
+    	private JTextField txtNameResident;
 
     	public ToolBarResidentNode(){
     		super();
@@ -1299,19 +1319,6 @@ public class MEBNEditionPane extends JPanel {
       			public void actionPerformed(ActionEvent ae) {
       				setResidentNodeTabActive();
       			}
-      		});
-
-      		btnAddArgument.setToolTipText(resource.getString("addArgumentToolTip"));
-
-      		final JLabel labelArguments = new JLabel(resource.getString("arguments"));
-
-
-      		btnAddArgument.addActionListener(new ActionListener(){
-
-      			public void actionPerformed(ActionEvent ae){
-      				setEditArgumentsTabActive();
-      			}
-
       		});
 
             txtNameResident = new JTextField(5);
@@ -1327,7 +1334,7 @@ public class MEBNEditionPane extends JPanel {
       						if (matcher.matches()) {
       							mebnController.renameDomainResidentNode(nodeAux, name);
       						}  else {
-    							txtNameResident.setBackground(ToolKitForGuiMebn.getColorTextFieldError());
+    							txtNameResident.setBackground(MebnToolkit.getColorTextFieldError());
     						    txtNameResident.setForeground(Color.WHITE);
       							txtNameResident.selectAll();
       							JOptionPane.showMessageDialog(netWindow,
@@ -1352,11 +1359,11 @@ public class MEBNEditionPane extends JPanel {
                         String name = txtNameResident.getText(0,txtNameResident.getText().length());
     						matcher = wordPattern.matcher(name);
     						if (!matcher.matches()) {
-    							txtNameResident.setBackground(ToolKitForGuiMebn.getColorTextFieldError());
+    							txtNameResident.setBackground(MebnToolkit.getColorTextFieldError());
     						    txtNameResident.setForeground(Color.WHITE);
     						}
     						else{
-    							txtNameResident.setBackground(ToolKitForGuiMebn.getColorTextFieldSelected());
+    							txtNameResident.setBackground(MebnToolkit.getColorTextFieldSelected());
     						    txtNameResident.setForeground(Color.BLACK);
     						}
       				}
@@ -1379,7 +1386,7 @@ public class MEBNEditionPane extends JPanel {
 
       		JToolBar barName = new JToolBar();
       		barName.setFloatable(false);
-      		barName.add(labelResidentName);
+//      		barName.add(labelResidentName);
       		barName.add(txtNameResident);
       		this.add(barName);
 
@@ -1411,17 +1418,9 @@ public class MEBNEditionPane extends JPanel {
 
       		});
 
-      		barOptions.add(btnStateEdition);
-      		barOptions.add(btnEditArguments);
-      		barOptions.add(btnEditTable);
-      		barOptions.add(new JPanel());
-      		barOptions.add(new JPanel());
-
-      		this.add(barOptions);
-
-      		this.add(new JPanel());
-
-      		this.add(new JPanel());
+      		this.add(new EmptyPanel());
+      		this.add(new EmptyPanel()); 
+      		this.add(new EmptyPanel());
 
       		this.setFloatable(false);
 
@@ -1437,6 +1436,44 @@ public class MEBNEditionPane extends JPanel {
 
     }
 
+    private class ResidentPaneOptions extends JToolBar{
+
+  		ResidentPaneOptions(){
+  			super(); 
+  			setLayout(new GridLayout(1,5)); 
+  			
+  	  		JButton btnStateEdition = new JButton(iconController.getStateIcon());
+  	  		JButton btnEditTable = new JButton(iconController.getGridIcon());
+  	  		JButton btnEditArguments = new JButton(iconController.getArgumentsIcon());
+  	  		
+  			btnStateEdition.addActionListener(new ActionListener() {
+  				public void actionPerformed(ActionEvent ae) {
+  					setResidentNodeTabActive();
+  				}
+  			});
+
+  			btnEditTable.addActionListener(new ActionListener(){
+  				public void actionPerformed(ActionEvent e){
+  					mebnController.setEnableTableEditionView();
+  				}
+  			});
+
+  			btnEditArguments.addActionListener(new ActionListener(){
+
+  				public void actionPerformed(ActionEvent ae){
+  					setEditArgumentsTabActive();
+  				}
+
+  			});
+  			
+      		add(btnStateEdition);
+      		add(btnEditArguments);
+      		add(btnEditTable);
+      		add(new JPanel());
+      		add(new JPanel());
+  		}
+    }
+    
     /*
      * Pane that show the description of the selected object
      */
@@ -1490,6 +1527,30 @@ public class MEBNEditionPane extends JPanel {
 
   	}
 
+  	private class ButtonTab extends JButton{
+  		
+  		public ButtonTab(ImageIcon image){
+  			super(image); 
+  			setBackground(new Color(187,224,227)); 
+  		}
+  		
+  	}
+  	
+  	/**
+  	 * A simple panel for fill the empty spaces in the toolbar of the 
+  	 * active object. 
+  	 * 
+  	 * @author Laecio
+  	 */
+  	private class EmptyPanel extends JButton{
+  		
+  		public EmptyPanel(){
+  			super(); 
+  			setEnabled(false); 
+  		}
+  		
+  	}
+  	
 	public ToolBarOrdVariable getToolBarOVariable() {
 		return toolBarOVariable;
 	}

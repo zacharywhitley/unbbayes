@@ -51,7 +51,7 @@ import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
-import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
+import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.exception.ObjectEntityHasInstancesException;
@@ -107,7 +107,7 @@ public class EntityEditionPane extends JPanel{
 
 		this.mebnController = mebnController; 
 		
-		this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel(
+		this.setBorder(MebnToolkit.getBorderForTabPanel(
 				resource.getString("EntityTitle"))); 
         
 		setLayout(new BorderLayout()); 
@@ -259,7 +259,7 @@ public class EntityEditionPane extends JPanel{
   	  							txtName.selectAll();
   							}
   						}  else {
-  							txtName.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+  							txtName.setBackground(MebnToolkit.getColorTextFieldError()); 
   							txtName.setForeground(Color.WHITE); 
   							JOptionPane.showMessageDialog(null, 
   									resource.getString("nameError"), 
@@ -279,11 +279,11 @@ public class EntityEditionPane extends JPanel{
                     String name = txtName.getText(0,txtName.getText().length());
 						matcher = wordPattern.matcher(name);
 						if (!matcher.matches()) {
-							txtName.setBackground(ToolKitForGuiMebn.getColorTextFieldError()); 
+							txtName.setBackground(MebnToolkit.getColorTextFieldError()); 
 							txtName.setForeground(Color.WHITE); 
 						}
 						else{
-							txtName.setBackground(ToolKitForGuiMebn.getColorTextFieldSelected());
+							txtName.setBackground(MebnToolkit.getColorTextFieldSelected());
 							txtName.setForeground(Color.BLACK); 
 						}
   				}

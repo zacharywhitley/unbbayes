@@ -36,12 +36,12 @@ public class FocusListenerTextField implements FocusListener{
 	public void focusGained(FocusEvent e){
 		JTextField field = (JTextField)e.getSource(); 
 		field.setBorder(BorderFactory.createEtchedBorder()); 
-		field.setBackground(ToolKitForGuiMebn.getColorTextFieldSelected()); //verde 
+		field.setBackground(MebnToolkit.getColorTextFieldSelected()); //verde 
 	}
 	
 	public void focusLost(FocusEvent e){
 		JTextField field = (JTextField)e.getSource(); 
 		field.setBorder(null); 
-		field.setBackground(ToolKitForGuiMebn.getColorTextFieldUnselected()); 
+		field.setBackground(MebnToolkit.getColorTextFieldUnselected()); 
 	}
 }

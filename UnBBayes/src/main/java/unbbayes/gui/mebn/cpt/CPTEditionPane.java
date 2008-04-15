@@ -45,7 +45,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import unbbayes.controller.MEBNController;
-import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
+import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -211,7 +211,7 @@ public class CPTEditionPane extends JPanel{
 		JpFather(){
 			super(); 
 			setMinimumSize(new Dimension(100,100));
-			this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel(resource.getString("FathersTitle"))); 				
+			this.setBorder(MebnToolkit.getBorderForTabPanel(resource.getString("FathersTitle"))); 				
 
 			residentNodeAuxList = new ArrayList<ResidentNode>(); 
 			residentNodeAuxList.addAll(residentNode.getResidentNodeFatherList()); 
@@ -323,7 +323,7 @@ public class CPTEditionPane extends JPanel{
 
 			/* Lista com as variavies ordinarias */
 
-			setBorder(ToolKitForGuiMebn.getBorderForTabPanel(resource.getString("ArgumentTitle"))); 
+			setBorder(MebnToolkit.getBorderForTabPanel(resource.getString("ArgumentTitle"))); 
 
 			List<OrdinaryVariable> oVariableList = residentNode.getOrdinaryVariableList(); 
 			oVariableArray = new String[oVariableList.size()]; 
@@ -368,7 +368,7 @@ public class CPTEditionPane extends JPanel{
 			setLayout(new BorderLayout()); 
 			/* lista with the states */
 
-			setBorder(ToolKitForGuiMebn.getBorderForTabPanel(resource.getString("StatesTitle"))); 
+			setBorder(MebnToolkit.getBorderForTabPanel(resource.getString("StatesTitle"))); 
 
 			List<Entity> statesList = residentNode.getPossibleValueList(); 
 			statesArray = new String[statesList.size()]; 

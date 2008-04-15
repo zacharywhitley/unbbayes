@@ -32,6 +32,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.swing.JButton;
@@ -55,7 +56,6 @@ import unbbayes.aprendizagem.incrementalLearning.ILBridge;
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MainController;
-import unbbayes.gui.mebn.QueryPanel;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.monteCarlo.controlador.ControladorPrincipal;
 
@@ -307,6 +307,7 @@ public class UnBBayesFrame extends JFrame {
 				String[] nets = new String[] { "net", "xml", "owl",
 						UbfIO.fileExtension };
 				chooser = new JFileChooser(fileController.getCurrentDirectory());
+				chooser.setDialogTitle(resource.getString("openTitle")); 
 				chooser.setMultiSelectionEnabled(false);
 				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
@@ -320,9 +321,16 @@ public class UnBBayesFrame extends JFrame {
 				int option = chooser.showOpenDialog(null);
 				if (option == JFileChooser.APPROVE_OPTION) {
 					if (chooser.getSelectedFile() != null) {
-						controller.loadNet(chooser.getSelectedFile());
+						chooser.setVisible(false); 
+						UnBBayesFrame.this.repaint(); 
+						File file = chooser.getSelectedFile(); 
 						fileController.setCurrentDirectory(chooser
 								.getCurrentDirectory());
+					    chooser.setVisible(false); 
+					    chooser.setEnabled(false); 
+					    chooser = null; 
+						
+						controller.loadNet(file);
 					}
 				}
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -339,9 +347,9 @@ public class UnBBayesFrame extends JFrame {
 
 				chooser = new JFileChooser(fileController.getCurrentDirectory());
 				chooser.setMultiSelectionEnabled(false);
-				chooser
-						.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-
+				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+				chooser.setDialogTitle(resource.getString("saveTitle")); 
+				
 				// adicionar FileView no FileChooser para desenhar �cones de
 				// arquivos
 				chooser.setFileView(new FileIcon(UnBBayesFrame.this));
@@ -590,6 +598,7 @@ public class UnBBayesFrame extends JFrame {
 		JMenu helpMenu = new JMenu(resource.getString("helpMenu"));
 		
 		fileMenu.setMnemonic(resource.getString("fileMenuMn").charAt(0));
+		newMenu.setMnemonic(resource.getString("newMenuMn").charAt(0)); 
 		lafMenu.setMnemonic(resource.getString("lafMenuMn").charAt(0));
 		viewMenu.setMnemonic(resource.getString("viewMenuMn").charAt(0));
 		tbMenu.setMnemonic(resource.getString("tbMenuMn").charAt(0));
@@ -600,13 +609,15 @@ public class UnBBayesFrame extends JFrame {
 		// create menu items, set their mnemonic and their key accelerator
 		JMenuItem newBN = new JMenuItem(resource.getString("newBN"),
 				iconController.getNewIcon());
-
 		JMenuItem newMSBN = new JMenuItem(resource.getString("newMSBN"),
 				iconController.getNewIcon());
-
 		JMenuItem newMEBN = new JMenuItem(resource.getString("newMEBN"),
 				iconController.getNewIcon());
 
+		newBN.setMnemonic(resource.getString("newBNMn").charAt(0));
+		newMSBN.setMnemonic(resource.getString("newMSBNMn").charAt(0));
+		newMEBN.setMnemonic(resource.getString("newMEBNMn").charAt(0));
+		
 		JMenuItem openItem = new JMenuItem(resource.getString("openItem"),
 				iconController.getOpenIcon());
 		JMenuItem saveItem = new JMenuItem(resource.getString("saveItem"),
@@ -623,8 +634,7 @@ public class UnBBayesFrame extends JFrame {
 		JMenuItem tbHelp = new JCheckBoxMenuItem(resource.getString("tbHelp"),
 				true);
 		
-		JMenuItem TAN = new JMenuItem("TAN");
-		JMenuItem BAN = new JMenuItem("BAN");
+
 		
 		JMenuItem metalItem = new JMenuItem(resource.getString("metalItem"),
 				iconController.getMetalIcon());
@@ -633,11 +643,6 @@ public class UnBBayesFrame extends JFrame {
 		JMenuItem windowsItem = new JMenuItem(
 				resource.getString("windowsItem"), iconController
 						.getWindowsIcon());
-		JMenuItem learningItem = new JMenuItem(resource
-				.getString("learningItem"), iconController.getLearningIcon());
-		JMenuItem monteCarloItem = new JMenuItem("Monte Carlo");
-		JMenuItem ILItem = new JMenuItem("Incremental Learning");
-		JMenuItem gibbsItem = new JMenuItem("Gibbs");
 		JMenuItem cascadeItem = new JMenuItem(
 				resource.getString("cascadeItem"), iconController
 						.getCascadeIcon());
@@ -647,30 +652,50 @@ public class UnBBayesFrame extends JFrame {
 				iconController.getHelpIcon());
 		JMenuItem aboutItem = new JMenuItem(resource.getString("aboutItem"));
 
-		newBN.setMnemonic(resource.getString("newItemMn").charAt(0));
+		
 		openItem.setMnemonic(resource.getString("openItemMn").charAt(0));
 		saveItem.setMnemonic(resource.getString("saveItemMn").charAt(0));
 		exitItem.setMnemonic(resource.getString("exitItemMn").charAt(0));
 		metalItem.setMnemonic(resource.getString("metalItemMn").charAt(0));
 		motifItem.setMnemonic(resource.getString("motifItemMn").charAt(0));
 		windowsItem.setMnemonic(resource.getString("windowsItemMn").charAt(0));
-		learningItem
-				.setMnemonic(resource.getString("learningItemMn").charAt(0));
 		cascadeItem.setMnemonic(resource.getString("cascadeItemMn").charAt(0));
 		tileItem.setMnemonic(resource.getString("tileItemMn").charAt(0));
 		helpItem.setMnemonic(resource.getString("helpItemMn").charAt(0));
 		aboutItem.setMnemonic(resource.getString("aboutItemMn").charAt(0));
 
 		newBN.setAccelerator(KeyStroke.getKeyStroke(resource.getString(
-				"newItemMn").charAt(0), Event.CTRL_MASK, false));
+		"newItemMn").charAt(0), Event.CTRL_MASK, false));
 		openItem.setAccelerator(KeyStroke.getKeyStroke(resource.getString(
-				"openItemMn").charAt(0), Event.CTRL_MASK, false));
+		"openItemMn").charAt(0), Event.CTRL_MASK, false));
 		saveItem.setAccelerator(KeyStroke.getKeyStroke(resource.getString(
-				"saveItemMn").charAt(0), Event.CTRL_MASK, false));
+		"saveItemMn").charAt(0), Event.CTRL_MASK, false));
+		helpItem.setAccelerator(KeyStroke.getKeyStroke(resource.getString(
+		"helpItemMn").charAt(0), Event.CTRL_MASK, false));
+
+		
+		//Learning menu itens
+		JMenuItem learningItem = new JMenuItem(resource.getString("learningItem"), iconController.getLearningIcon());
+		JMenuItem tanItem = new JMenuItem(resource.getString("tanItem"));
+		JMenuItem banItem = new JMenuItem(resource.getString("banItem"));
+		JMenuItem monteCarloItem = new JMenuItem(resource.getString("monteCarloItem"));
+		JMenuItem gibbsItem = new JMenuItem(resource.getString("GibbsItem"));
+		JMenuItem iLearningItem = new JMenuItem(resource.getString("ILearningItem"));
+		
+		learningItem.setMnemonic(resource.getString("learningItemMn").charAt(0));
+		tanItem.setMnemonic(resource.getString("tanItemMn").charAt(0));
+		banItem.setMnemonic(resource.getString("banItemMn").charAt(0));
+		monteCarloItem.setMnemonic(resource.getString("monteCarloItemMn").charAt(0));
+		gibbsItem.setMnemonic(resource.getString("GibbsItemMn").charAt(0));
+		iLearningItem.setMnemonic(resource.getString("ILearningItemMn").charAt(0));
+		
 		learningItem.setAccelerator(KeyStroke.getKeyStroke(resource.getString(
 				"learningItemMn").charAt(0), Event.CTRL_MASK, false));
-		helpItem.setAccelerator(KeyStroke.getKeyStroke(resource.getString(
-				"helpItemMn").charAt(0), Event.CTRL_MASK, false));
+		
+		
+		
+		
+		
 
 		// add ActionListener to all menu items
 		newBN.addActionListener(alNewBN);
@@ -692,14 +717,14 @@ public class UnBBayesFrame extends JFrame {
 		tileItem.addActionListener(alTile);
 		helpItem.addActionListener(alHelp);
 		monteCarloItem.addActionListener(alMonteCarlo);
-		ILItem.addActionListener(alIL);
+		iLearningItem.addActionListener(alIL);
 		gibbsItem.addActionListener(alGibbs);
 		aboutItem.addActionListener(alAbout);
 
 		// add menu items to their respective menu
 		
-		TAN.addActionListener(alTAN);
-		BAN.addActionListener(alBAN);
+		tanItem.addActionListener(alTAN);
+		banItem.addActionListener(alBAN);
 		
 		newMenu.add(newBN);
 		newMenu.add(newMSBN);
@@ -720,12 +745,14 @@ public class UnBBayesFrame extends JFrame {
 		viewMenu.add(tbMenu);
 		viewMenu.addSeparator();
 		viewMenu.add(lafMenu);
+		
 		toolsMenu.add(learningItem);
-		toolsMenu.add(TAN);
-		toolsMenu.add(BAN);
+		toolsMenu.add(tanItem);
+		toolsMenu.add(banItem);
 		toolsMenu.add(monteCarloItem);
 		toolsMenu.add(gibbsItem);
-		toolsMenu.add(ILItem);
+		toolsMenu.add(iLearningItem);
+		
 		windowMenu.add(cascadeItem);
 		windowMenu.add(tileItem);
 //		helpMenu.add(helpItem);

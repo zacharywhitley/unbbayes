@@ -31,7 +31,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
 import unbbayes.controller.MEBNController;
-import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
+import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.prs.mebn.InputNode;
 
 /**
@@ -66,7 +66,7 @@ public class InputNodePane extends JPanel{
 		
 		inputNode = _inputNode; 
 		
-		this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel("Input Node")); 
+		this.setBorder(MebnToolkit.getBorderForTabPanel("Input Node")); 
 		
 		jtbInputInstanceOf = new JToolBar(); 
 		

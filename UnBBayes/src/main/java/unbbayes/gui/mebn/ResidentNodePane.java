@@ -20,14 +20,14 @@
  */
 package unbbayes.gui.mebn;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.BorderLayout;
 
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
+import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
-import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
+import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.prs.mebn.ResidentNode;
 
 /**
@@ -40,34 +40,36 @@ public class ResidentNodePane extends JPanel{
 
 	private PossibleValuesEditionPane possibleValuesEditPane; 
 	private JSplitPane splitStateTable; 
-	
+	private MEBNController controller; 
+	private IconController iconController = IconController.getInstance(); 
+
+	/**
+	 * Create a empty pane. 
+	 */
 	public ResidentNodePane(){
-		
+
 	}
 	
+	/**
+	 * Create a resident node pane. 
+	 * @param _controller
+	 * @param _residentNode
+	 */
 	public ResidentNodePane(MEBNController _controller, ResidentNode _residentNode){
 		super(); 
 		
-		this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel("Resident Node")); 
+		this.setBorder(MebnToolkit.getBorderForTabPanel("Resident Node")); 
+		controller = _controller; 
 		
 		possibleValuesEditPane = new PossibleValuesEditionPane(_controller, _residentNode); 
-		
-		GridBagLayout gridbag = new GridBagLayout(); 
-		GridBagConstraints constraints = new GridBagConstraints(); 
-		
-		this.setLayout(gridbag); 
 	    
-		constraints.gridx = 0; 
-	    constraints.gridy = 0; 
-	    constraints.gridwidth = 1; 
-	    constraints.gridheight = 1; 
-	    constraints.weightx = 100;
-	    constraints.weighty = 50; 
-	    constraints.fill = GridBagConstraints.BOTH; 
-	    constraints.anchor = GridBagConstraints.NORTH; 
-	    gridbag.setConstraints(possibleValuesEditPane, constraints); 
-	    this.add(possibleValuesEditPane);
+		this.setLayout(new BorderLayout()); 
+	    
+		this.add(new ResidentPaneOptions(_controller), BorderLayout.NORTH); 
+	    this.add(possibleValuesEditPane, BorderLayout.CENTER);
 	    
 	}
+	
+
 	
 }

@@ -20,6 +20,9 @@
  */
 package unbbayes.io.mebn;
 
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,7 +35,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Timer;
 
+import javax.swing.JDialog;
+
+import unbbayes.gui.ProgressBarPanel;
+import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
@@ -586,21 +594,54 @@ public class UbfIO implements MebnIO {
 		throw new IllegalArgumentException(this.resource.getString("InvalidSyntax"));
 	}
 	
+	JDialog dialog; 
+	
+	public void createAndShowProgressBar(){
+		
+		ProgressBarPanel progressPanel = new ProgressBarPanel(); 
+		dialog = new JDialog(); 
+		dialog.setContentPane(progressPanel); 
+//		dialog.setModal(false); 
+//		dialog.setOpaque(true); //content panes must be opaque
+		dialog.pack(); 
+		dialog.repaint(); 
+		dialog.setLocationRelativeTo(UnBBayesFrame.getIUnBBayes()); 
+
+		dialog.setModal(false); 
+		dialog.setVisible(true);
+		dialog.validate(); 
+		dialog.repaint(); 
+		dialog.pack(); 
+		dialog.setAlwaysOnTop(true); 
+		dialog.requestFocus(); 
+	}
+	
+	public void disableProgressBar(){
+		if(dialog != null){
+			dialog.dispose(); 
+			dialog = null; 
+		}
+	}
 		
 	/* (non-Javadoc)
 	 * @see unbbayes.io.mebn.MebnIO#loadMebn(java.io.File)
 	 */
 	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException,
 			IOMebnException {
+
+        createAndShowProgressBar();
 		
-		
-				
+        dialog.repaint(); 
+        
 		MultiEntityBayesianNetwork mebn = null;	// target mebn
 		
 		// Inicially, deducing default owl file name in case we dont find it
 		String owlFilePath = file.getPath().substring(0,file.getPath().lastIndexOf(this.fileExtension)) 
 						+ prowlExtension;
 		
+        dialog.repaint(); 
+        dialog.validate(); 
+        
 		File prowlFile = null;	// correspondent owl file
 		
 		
@@ -674,6 +715,8 @@ public class UbfIO implements MebnIO {
 
 	    // treating object entity (instances) information (mainly, ordenable entities)
 		updateObjectEntities(st, mebn);
+		
+		disableProgressBar(); 
 		
 		return mebn;
 	}

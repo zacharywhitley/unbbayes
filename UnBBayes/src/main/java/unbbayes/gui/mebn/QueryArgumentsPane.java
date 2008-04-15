@@ -40,10 +40,7 @@ import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 
 /**
- * Painel para selecionar os argumentos da query. 
- * 
- * S�o disponiveis como argumentos as object entities previamente cadastradas
- * no sistema e h� a op��o para o usu�rio entrar com uma entidade n�o existente. 
+ * Painel for select the arguments of the query. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * @version 1.0 06/28/07
@@ -73,7 +70,7 @@ public class QueryArgumentsPane extends JPanel{
 		JButton btnArgXNumber; 
 		JButton btnArgXType; 
 		 
-		//Montagem das JComboBox para cada argumento	
+		//Build JCheckBox for each element
 
 		List<ObjectEntityInstance> entityList = 
 			mebnController.getMultiEntityBayesianNetwork().getObjectEntityContainer().getListEntityInstances(); 
@@ -85,9 +82,9 @@ public class QueryArgumentsPane extends JPanel{
 			tbArgX = new JToolBar(); 
 			
 			Vector<ObjectEntityInstance> list = new Vector<ObjectEntityInstance>(); 
-			list.add(null); //elemento em branco... 
+			list.add(null); //empty element
 
-			//Verificacao de quais e deverao entrar na JComboBox
+			//Finding elements of the combo box
 			for(ObjectEntityInstance entity: entityList){
 				if(entity.getType().equals(ov.getValueType())){
 					list.add(entity);

@@ -41,7 +41,7 @@ import javax.swing.JToolBar;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
-import unbbayes.gui.mebn.auxiliary.ToolKitForGuiMebn;
+import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
@@ -112,7 +112,7 @@ public class ArgumentEditionPane extends JPanel{
 		
 		super(); 
 		
-		this.setBorder(ToolKitForGuiMebn.getBorderForTabPanel(resource.getString("ArgumentTitle"))); 
+		this.setBorder(MebnToolkit.getBorderForTabPanel(resource.getString("ArgumentTitle"))); 
 		
 		GridBagLayout gridbag = new GridBagLayout(); 
 		GridBagConstraints constraints = new GridBagConstraints(); 
@@ -165,6 +165,22 @@ public class ArgumentEditionPane extends JPanel{
 	    jtbOptions.setFloatable(false);
 	    
 	    addListenersOptions(); 
+	    
+	    
+	    ResidentPaneOptions options = new ResidentPaneOptions(_controller); 
+	    
+
+//	    constraints.gridx = 0; 
+//	    constraints.gridy = 0; 
+//	    constraints.gridwidth = 1; 
+//	    constraints.gridheight = 1; 
+//	    constraints.weightx = 100; 
+//	    constraints.weighty = 30; 
+//	    constraints.fill = GridBagConstraints.BOTH; 
+//	    constraints.anchor = GridBagConstraints.NORTH; 
+//	    gridbag.setConstraints(jspTreeMFrag, constraints); 
+//	    this.add(jspTreeMFrag);
+
 	    
 	    constraints.gridx = 0; 
 	    constraints.gridy = 0; 

@@ -23,6 +23,7 @@ package unbbayes.gui.mebn;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Event;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -38,6 +39,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -67,7 +69,6 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 public class QueryPanel extends JDialog{
 
-	private JButton btnSelect;
 	private MEBNController mebnController;
 	private ResidentNode residentSelected;
 
@@ -77,6 +78,7 @@ public class QueryPanel extends JDialog{
 
 	public QueryPanel(MEBNController mebnController){
 		super(UnBBayesFrame.getIUnBBayes());
+		this.setTitle(resource.getString("queryPanelTitle")); 
 		this.setModal(true); 
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		this.mebnController = mebnController;
@@ -99,12 +101,22 @@ public class QueryPanel extends JDialog{
 	 */
 	public void showRandonVariableListPane(){
 		
+		JButton btnSelect;
+		JButton btnClose; 
+		
 		JPanel contentPane = new JPanel(new BorderLayout());
 
-		btnSelect = new JButton(iconController.getGoNextInstance());
+		btnSelect = new JButton(resource.getString("queryBtnSelect"));
 		btnSelect.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
 				showArgumentsSelection(residentSelected);
+			}
+		});
+		
+		btnClose = new JButton(resource.getString("closeButton")); 
+		btnClose.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				exit(); 
 			}
 		});
 
@@ -113,7 +125,7 @@ public class QueryPanel extends JDialog{
 		toolBar.setLayout(new GridLayout());
 		toolBar.add(new JLabel());
 		toolBar.add(btnSelect);
-		toolBar.add(new JLabel());
+		toolBar.add(btnClose);
 
 		RandonVariableListPane randonVariableListPane = new RandonVariableListPane();
 
@@ -193,7 +205,7 @@ public class QueryPanel extends JDialog{
 
 		private JButton btnBack; 
 		private JButton btnExecute;
-		private JButton btnExit; 
+		private JButton btnClose; 
 
 		private JToolBar jtbOptions;
 
@@ -208,15 +220,15 @@ public class QueryPanel extends JDialog{
 
 			queryArgumentsPane = new QueryArgumentsPane(residentNode, mebnController);
 
-			btnBack = new JButton(iconController.getGoPreviousInstance());
-			btnExecute = new JButton(iconController.getCompileIcon());
-			btnExit = new JButton(iconController.getProcessStopInstance());
+			btnBack = new JButton(resource.getString("queryBtnBack"));
+			btnExecute = new JButton(resource.getString("queryBtnExecute"));
+			btnClose = new JButton(resource.getString("closeButton"));
 
 			jtbOptions = new JToolBar();
 			jtbOptions.setLayout(new GridLayout(1,3));
 			jtbOptions.add(btnBack);
 			jtbOptions.add(btnExecute);
-			jtbOptions.add(btnExit);
+			jtbOptions.add(btnClose);
 			jtbOptions.setFloatable(false);
 
 			btnBack.addActionListener(new ActionListener(){
@@ -279,7 +291,7 @@ public class QueryPanel extends JDialog{
 				}
 			});
 
-			btnExit.addActionListener(new ActionListener(){
+			btnClose.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
 					exit(); 
 				}
