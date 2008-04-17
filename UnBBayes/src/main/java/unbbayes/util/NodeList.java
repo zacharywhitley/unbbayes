@@ -20,14 +20,16 @@
  */
 package unbbayes.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import unbbayes.prs.Node;
 
 
 /**
- * Classe que representa um array din�mico do tipo <code>Node</code>.
- *
+ * Class that represents a dinamic array of type Node
+ * 
  * @author Michael
  * @author Rommel
  */
@@ -40,6 +42,8 @@ public final class NodeList implements java.io.Serializable {
 
     private Node data[];
     private int size;
+    
+    List list = new ArrayList(); 
     
     /** Load resource file from this package */
   	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.util.resources.UtilResources");

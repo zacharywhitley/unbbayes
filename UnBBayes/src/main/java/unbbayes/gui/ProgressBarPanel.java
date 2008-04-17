@@ -5,16 +5,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.Timer;
 
-public class ProgressBarPanel extends JPanel {
+public class ProgressBarPanel extends JPanel implements StatusObserver{
 
     private JProgressBar progressBar;
     private JButton cancelButton;
     
+    
+//	public ProgressBarPanel(final GUICommand cancelCommand)  -> with threads...
+	
 	public ProgressBarPanel(){
 		super(new BorderLayout()); 
 		
@@ -25,39 +26,29 @@ public class ProgressBarPanel extends JPanel {
         
         JPanel panel = new JPanel(new BorderLayout());
 
-        cancelButton = new JButton("Cancel"); 
+//        cancelButton = new JButton("Cancel"); 
+//        cancelButton.addActionListener(new ActionListener(){
+//			public void actionPerformed(ActionEvent e) {
+//				cancelCommand.execute(); 
+//			}
+//        }); 
         
         panel.add(progressBar, BorderLayout.CENTER);
-        panel.add(cancelButton, BorderLayout.LINE_END);
+//        panel.add(cancelButton, BorderLayout.LINE_END);
         
         add(panel, BorderLayout.CENTER); 
         
-        this.validate(); 
-        this.repaint(); 
-        
-//        Timer timer = new Timer(1000, new ActionListener() {            
-//        	int i = 0; 
-//        	public void actionPerformed(ActionEvent evt) {
-//            	i= i + 10; 
-//                System.out.println("i = " + i);
-//                progressBar.setValue(i);
-//                progressBar.repaint(); 
-//            }
-//        });
-//        timer.start();
+        validate(); 
+		paintImmediately(0, 0, this.getWidth(), this.getHeight()); 
+	}
+
+	public void update(){
+		paintImmediately(0, 0, this.getWidth(), this.getHeight()); 
 	}
 	
-	public static void main(String... args){
-		ProgressBarPanel progressPanel = new ProgressBarPanel(); 
-		JDialog dialog = new JDialog(); 
-		dialog.setContentPane(progressPanel); 
-		dialog.setVisible(true); 
-		dialog.setModal(true); 
-//		dialog.setOpaque(true); //content panes must be opaque
-		dialog.pack(); 
-		dialog.repaint(); 
-		dialog.setLocationRelativeTo(UnBBayesFrame.getIUnBBayes()); 
-
+	public void update(StatusChangedEvent status) {
+		progressBar.setValue(status.getPercentageConclude()); 
+		this.paintImmediately(0, 0, this.getWidth(), this.getHeight()); 
 	}
 	
 }

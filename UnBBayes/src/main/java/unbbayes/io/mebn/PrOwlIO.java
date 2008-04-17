@@ -57,6 +57,8 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 	
 	private OWLModel lastOwlModel = null;
 	
+	private LoaderPrOwlIO loader = new LoaderPrOwlIO(); 
+	
 	// list of instance names which are native to pr-owl definition
 	//private Collection<String> untouchableInstanceNames = null;
 	
@@ -154,7 +156,6 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 	 * Load MEBN from a pr-owl file and stores it in the mebn structure. 
 	 */
 	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException, IOMebnException{
-		LoaderPrOwlIO loader = new LoaderPrOwlIO(); 
 		MultiEntityBayesianNetwork mebn = loader.loadMebn(file);
 		
 		OWLModel lastOWLModel = loader.getLastOWLModel();
@@ -267,6 +268,13 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 			e.printStackTrace();
 		}
 	   
+	}
+
+
+
+
+	public LoaderPrOwlIO getLoader() {
+		return loader;
 	}
 	
 	

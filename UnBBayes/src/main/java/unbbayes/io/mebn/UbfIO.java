@@ -39,6 +39,7 @@ import java.util.Timer;
 
 import javax.swing.JDialog;
 
+import unbbayes.gui.GUICommand;
 import unbbayes.gui.ProgressBarPanel;
 import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.mebn.exceptions.IOMebnException;
@@ -596,13 +597,10 @@ public class UbfIO implements MebnIO {
 	
 	JDialog dialog; 
 	
-	public void createAndShowProgressBar(){
-		
-		ProgressBarPanel progressPanel = new ProgressBarPanel(); 
-		dialog = new JDialog(); 
+	public void createAndShowProgressBar(ProgressBarPanel progressPanel){
+		dialog = new JDialog();
+		dialog.setTitle("Progress"); 
 		dialog.setContentPane(progressPanel); 
-//		dialog.setModal(false); 
-//		dialog.setOpaque(true); //content panes must be opaque
 		dialog.pack(); 
 		dialog.repaint(); 
 		dialog.setLocationRelativeTo(UnBBayesFrame.getIUnBBayes()); 
@@ -610,10 +608,8 @@ public class UbfIO implements MebnIO {
 		dialog.setModal(false); 
 		dialog.setVisible(true);
 		dialog.validate(); 
-		dialog.repaint(); 
 		dialog.pack(); 
-		dialog.setAlwaysOnTop(true); 
-		dialog.requestFocus(); 
+		
 	}
 	
 	public void disableProgressBar(){
@@ -629,22 +625,26 @@ public class UbfIO implements MebnIO {
 	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException,
 			IOMebnException {
 
-        createAndShowProgressBar();
+//		GUICommand cancelCommand = new GUICommand(){
+//
+//			public void execute() {
+//				UbfIO.this.prowlIO.getLoader().cancel(); 
+//			}
+//			
+//		}; 
 		
-        dialog.repaint(); 
+//		ProgressBarPanel progressBar = new ProgressBarPanel(); 
+//        createAndShowProgressBar(progressBar);
+//        this.prowlIO.getLoader().attach(progressBar); 
+//        progressBar.update(); 
         
 		MultiEntityBayesianNetwork mebn = null;	// target mebn
 		
 		// Inicially, deducing default owl file name in case we dont find it
 		String owlFilePath = file.getPath().substring(0,file.getPath().lastIndexOf(this.fileExtension)) 
 						+ prowlExtension;
-		
-        dialog.repaint(); 
-        dialog.validate(); 
         
 		File prowlFile = null;	// correspondent owl file
-		
-		
 		
 		// set up UBF file tokenizer
 		StreamTokenizer st = new StreamTokenizer(new BufferedReader(new FileReader(file)));

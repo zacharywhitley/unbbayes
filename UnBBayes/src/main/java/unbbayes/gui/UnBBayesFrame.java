@@ -327,9 +327,8 @@ public class UnBBayesFrame extends JFrame {
 						fileController.setCurrentDirectory(chooser
 								.getCurrentDirectory());
 					    chooser.setVisible(false); 
-					    chooser.setEnabled(false); 
-					    chooser = null; 
-						
+					    chooser.setEnabled(false);
+					    
 						controller.loadNet(file);
 					}
 				}

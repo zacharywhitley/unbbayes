@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import unbbayes.gui.InternalErrorDialog;
+import unbbayes.gui.StatusChangedEvent;
+import unbbayes.gui.StatusObservable;
+import unbbayes.gui.StatusObserver;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.mebn.Argument;
@@ -77,7 +80,7 @@ import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
 import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
 
 /**
- * Make de loader from a file pr-owl for the mebn structure. 
+ * Make the loader from a file pr-owl for the mebn structure. 
  * 
  * Version Pr-OWL: 1.05 (octuber, 2007)
  * (http://www.pr-owl.org/pr-owl.owl) 
@@ -86,8 +89,10 @@ import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
  * @version 1.0 
  */
 
-public class LoaderPrOwlIO extends PROWLModelUser {
+public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 
+	private List<StatusObserver> observers = new ArrayList<StatusObserver>(); 
+	
 	/* MEBN Structure */ 
 	
 	private MultiEntityBayesianNetwork mebn = null;
@@ -145,6 +150,10 @@ public class LoaderPrOwlIO extends PROWLModelUser {
 	//private static final String OBJECT_ENTITY = "ObjectEntity"; 
 	//private static final String META_ENTITY = "MetaEntity"; 
 	
+	public void cancel(){
+		System.out.println("Stop");
+	}
+	
 	/**
 	 * Make the load from file to MEBN structure.
 	 * 
@@ -160,8 +169,9 @@ public class LoaderPrOwlIO extends PROWLModelUser {
 		
 		List<String> listWarnings = new ArrayList<String>(); 
 		
+		updateStatus(0, ""); 
 		owlModel = ProtegeOWL.createJenaOWLModel();
-	
+		
 		Debug.println("[DEBUG]" + this.getClass() + " -> Load begin"); 
 		
 //		File filePrOwl = new File(PROWLMODELFILE);
@@ -183,6 +193,7 @@ public class LoaderPrOwlIO extends PROWLModelUser {
 		
 		try{
 			owlModel.load(inputStream, FileUtils.langXMLAbbrev);   
+			updateStatus(5, ""); 
 		}
 		catch (Exception e){
 			throw new IOMebnException(resource.getString("ErrorReadingFile") + 
@@ -191,39 +202,71 @@ public class LoaderPrOwlIO extends PROWLModelUser {
 		
 		/*------------------- MTheory -------------------*/
 		loadMTheoryClass(); 
+		updateStatus(6, ""); 
 		
 		/*------------------- Entities -------------------*/
 
 		loadObjectEntity(); 
-		loadMetaEntitiesClasses(); 
+		updateStatus(7, "");
+		
+		loadMetaEntitiesClasses();
+		updateStatus(9, "");
+		
 		loadCategoricalStateEntity(); 
+		updateStatus(11, "");
+		
 		loadBooleanStateEntity(); 
+		updateStatus(13, "");
 		
 		/*-------------------MTheory elements------------*/
 		loadDomainMFrag(); 
+		updateStatus(20, "");
+		
 		loadBuiltInRV(); 
+		updateStatus(25, "");
+		
 		loadContextNode(); 	
-		loadDomainResidentNode(); 	
+		updateStatus(35, "");
+		
+		loadDomainResidentNode();
+		updateStatus(45, "");
+		
 		loadGenerativeInputNode(); 	
+		updateStatus(55, "");
 		
 		/*---------------------Arguments-------------------*/
-		loadOrdinaryVariable(); 	
-		loadArgRelationship(); 		
+		loadOrdinaryVariable();
+		updateStatus(65, "");
+		
+		loadArgRelationship();
+		updateStatus(75, "");
+		 		
 		loadSimpleArgRelationship(); 
+		updateStatus(85, "");
+		
 		ajustArgumentOfNodes(); 
+		updateStatus(90, "");
 		
-		setFormulasOfContextNodes(); 
-		
+		setFormulasOfContextNodes();
+		updateStatus(95, "");
 		
 		// Load object entity individuals (ObjectEntityInstances)
 		try {
 			loadObjectEntityIndividuals();
+			updateStatus(100, "");
 		} catch (TypeException te) {
 			te.printStackTrace();
 			throw new IOMebnException(te.getMessage());
 		}
 		
 		return mebn; 		
+	}
+	
+	private void updateStatus(int percentage, String msg){
+		StatusChangedEvent event = new StatusChangedEvent(); 
+		event.setPercentageConclude(5); 
+		event.setMsg(msg); 
+		notity(event); 
 	}
 	
 	/**
@@ -1638,6 +1681,20 @@ public class LoaderPrOwlIO extends PROWLModelUser {
 	public void setOWLModelToUse(OWLModel model) {
 		// this class should work only with internally loaded OWL models
 		return;
+	}
+
+	public void attach(StatusObserver observer) {
+		observers.add(observer); 
+	}
+
+	public void detach(StatusObserver observer) {
+		observers.remove(observer); 
+	}
+
+	public void notity(StatusChangedEvent event) {
+		for(StatusObserver observer: observers){
+			observer.update(event); 
+		}
 	}
 	
 	
