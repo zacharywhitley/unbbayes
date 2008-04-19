@@ -24,6 +24,7 @@ import java.awt.Cursor;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -140,7 +141,7 @@ public class MEBNController  {
 	private boolean baseCreated = false; 
 	private boolean findingCreated = false; 
 	private boolean generativeCreated = false; 
-	
+
 	/*-------------------------------------------------------------------------*/
 	/* Pools of frames                                                         */
 	/*-------------------------------------------------------------------------*/
@@ -152,8 +153,10 @@ public class MEBNController  {
 	/* Constants                                            */
 	/*-------------------------------------------------------------------------*/
 	
-	private static final String NAME_GENERATIVE_FILE = "debug/generative.plm"; 
-	private static final String NAME_FINDING_FILE = "debug/findings.plm"; 
+	//Save or not files of powerloom
+	private boolean saveDebugFiles = true; 
+	private static final String NAME_GENERATIVE_FILE = "generative.plm"; 
+	private static final String NAME_FINDING_FILE = "findings.plm"; 
 	
 	/*-------------------------------------------------------------------------*/
 	/* Others (resources, utils, etc                                           */
@@ -1013,18 +1016,18 @@ public class MEBNController  {
 	public void addOrdinaryVariableInResident(OrdinaryVariable ordinaryVariable) throws ArgumentNodeAlreadySetException,
 	                                                                                    OVariableAlreadyExistsInArgumentList{
 
-		residentNodeActive.addArgument(ordinaryVariable);
+		residentNodeActive.addArgument(ordinaryVariable, true);
 		mebnEditionPane.getEditArgumentsTab().update();
 		mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
 
 	}
-
+	
 	public void removeOrdinaryVariableInResident(OrdinaryVariable ordinaryVariable){
 
 		ResidentNode resident = (ResidentNode) screen.getGraphPane().getSelected();
 		resident.removeArgument(ordinaryVariable);
 		ordinaryVariable.removeIsOVariableOfList(resident);
-
+		
 		mebnEditionPane.getEditArgumentsTab().update();
 		mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
 
@@ -1326,7 +1329,9 @@ public class MEBNController  {
 			}
 		}
 		
-		this.saveGenerativeMTheory(new File(MEBNController.NAME_GENERATIVE_FILE)); 
+		if(saveDebugFiles){
+			this.saveGenerativeMTheory(new File(MEBNController.NAME_GENERATIVE_FILE)); 
+		}
 	}
 	
 	/**
@@ -1348,7 +1353,9 @@ public class MEBNController  {
 			}
 		}
 		
-		this.saveDefaultTemporaryFindingsFile(); 
+		if(saveDebugFiles){
+			this.saveDefaultTemporaryFindingsFile();
+		}
 	}
 
 	public void clearKnowledgeBase(){
@@ -1648,6 +1655,13 @@ public class MEBNController  {
 
 	public void setEditionMode(){
 		showSSBNGraph = false; 
+	}
+
+	private void printArgumentsOfResidentNode(ResidentNode resident){
+		System.out.println("Resident: " + resident);
+		for(Argument arg: resident.getArgumentList()){
+			System.out.println(" [" + arg.getArgNumber() + "]:" + arg.getOVariable());
+		}
 	}
 	
 }
