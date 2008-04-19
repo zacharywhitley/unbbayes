@@ -20,6 +20,7 @@
  */
 package unbbayes.gui.mebn;
 
+import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -114,11 +115,6 @@ public class ArgumentEditionPane extends JPanel{
 		
 		this.setBorder(MebnToolkit.getBorderForTabPanel(resource.getString("ArgumentTitle"))); 
 		
-		GridBagLayout gridbag = new GridBagLayout(); 
-		GridBagConstraints constraints = new GridBagConstraints(); 
-		
-		setLayout(gridbag);
-		
 		mebnController = _controller; 
 	    mFrag = mebnController.getCurrentMFrag(); 
 	    residentNode = resident;
@@ -166,21 +162,10 @@ public class ArgumentEditionPane extends JPanel{
 	    
 	    addListenersOptions(); 
 	    
-	    
-	    ResidentPaneOptions options = new ResidentPaneOptions(_controller); 
-	    
-
-//	    constraints.gridx = 0; 
-//	    constraints.gridy = 0; 
-//	    constraints.gridwidth = 1; 
-//	    constraints.gridheight = 1; 
-//	    constraints.weightx = 100; 
-//	    constraints.weighty = 30; 
-//	    constraints.fill = GridBagConstraints.BOTH; 
-//	    constraints.anchor = GridBagConstraints.NORTH; 
-//	    gridbag.setConstraints(jspTreeMFrag, constraints); 
-//	    this.add(jspTreeMFrag);
-
+	    JPanel panelCenter = new JPanel();
+		GridBagLayout gridbag = new GridBagLayout(); 
+		GridBagConstraints constraints = new GridBagConstraints(); 
+		panelCenter.setLayout(gridbag);
 	    
 	    constraints.gridx = 0; 
 	    constraints.gridy = 0; 
@@ -191,7 +176,7 @@ public class ArgumentEditionPane extends JPanel{
 	    constraints.fill = GridBagConstraints.BOTH; 
 	    constraints.anchor = GridBagConstraints.NORTH; 
 	    gridbag.setConstraints(jspTreeMFrag, constraints); 
-	    this.add(jspTreeMFrag);
+	    panelCenter.add(jspTreeMFrag);
 
 	    constraints.gridx = 0;
 	    constraints.gridy = 1;
@@ -202,7 +187,7 @@ public class ArgumentEditionPane extends JPanel{
 	    constraints.fill = GridBagConstraints.BOTH;
 	    constraints.anchor = GridBagConstraints.NORTH;
 	    gridbag.setConstraints(jtbDown, constraints);
-	    this.add(jtbDown);
+	    panelCenter.add(jtbDown);
 	    
 	    constraints.gridx = 0;
 	    constraints.gridy = 2;
@@ -213,7 +198,7 @@ public class ArgumentEditionPane extends JPanel{
 	    constraints.fill = GridBagConstraints.BOTH;
 	    constraints.anchor = GridBagConstraints.NORTH;
 	    gridbag.setConstraints(jspTreeResident, constraints);
-	    this.add(jspTreeResident);
+	    panelCenter.add(jspTreeResident);
 	    
 	    constraints.gridx = 0;
 	    constraints.gridy = 3;
@@ -224,9 +209,8 @@ public class ArgumentEditionPane extends JPanel{
 	    constraints.fill = GridBagConstraints.BOTH;
 	    constraints.anchor = GridBagConstraints.CENTER;
 	    gridbag.setConstraints(jtbOptions, constraints);
-	    this.add(jtbOptions);	
+	    panelCenter.add(jtbOptions);	
 
-	    
 	    constraints.gridx = 0;
 	    constraints.gridy = 4;
 	    constraints.gridwidth = 1;
@@ -236,8 +220,12 @@ public class ArgumentEditionPane extends JPanel{
 	    constraints.fill = GridBagConstraints.BOTH;
 	    constraints.anchor = GridBagConstraints.NORTH;
 	    gridbag.setConstraints(jtbInformation, constraints);  
-	    this.add(jtbInformation);
-	    
+	    panelCenter.add(jtbInformation);
+	 
+	    ResidentPaneOptions options = new ResidentPaneOptions(_controller); 
+	    this.setLayout(new BorderLayout()); 
+	    this.add(options, BorderLayout.NORTH); 
+	    this.add(panelCenter, BorderLayout.CENTER); 
 	}
 
 	/**
