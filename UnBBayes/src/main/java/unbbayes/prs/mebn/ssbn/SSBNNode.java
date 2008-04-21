@@ -28,6 +28,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 import unbbayes.prs.Edge;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.InputNode;
@@ -36,9 +37,7 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.entity.Entity;
-import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
-import unbbayes.util.NodeList;
 
 
 /**
@@ -538,7 +537,7 @@ public class SSBNNode {
 		
 		// perform consistency check
 		if (isCheckingParentResident) {
-			NodeList expectedParents = this.getResident().getParents();
+			ArrayList<Node> expectedParents = this.getResident().getParents();
 			boolean isConsistent = false;
 			InputNode input = null;
 			for (int i = 0; i < expectedParents.size(); i++) {

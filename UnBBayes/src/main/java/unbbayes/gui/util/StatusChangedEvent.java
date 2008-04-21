@@ -1,4 +1,4 @@
-package unbbayes.gui;
+package unbbayes.gui.util;
 
 public class StatusChangedEvent {
 

@@ -22,11 +22,13 @@ package unbbayes.prs.id;
 
 
 
+import java.util.ArrayList;
+
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.Separator;
-import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -50,7 +52,7 @@ public class JunctionTreeID extends JunctionTree implements java.io.Serializable
         Separator separator = getSeparator(clique1, clique2);
         super.absorb(clique1, clique2);
 //        clique1.absorb(clique2, separator.getPotentialTable());
-        NodeList toDie = SetToolkit.clone(clique2.getNodes());
+        ArrayList<Node> toDie = SetToolkit.clone(clique2.getNodes());
         toDie.removeAll(separator.getNodes());
 
         PotentialTable originalSeparatorUtilityTable = (PotentialTable) separator.getUtilityTable().clone();

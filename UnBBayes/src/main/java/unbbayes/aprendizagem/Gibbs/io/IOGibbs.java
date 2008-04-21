@@ -23,13 +23,13 @@ package unbbayes.aprendizagem.Gibbs.io;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 
 import javax.swing.JFileChooser;
 
 import unbbayes.controller.FileController;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.prs.Node;
-import unbbayes.util.NodeList;
 
 /**
  * @author Administrador
@@ -40,11 +40,11 @@ import unbbayes.util.NodeList;
 public class IOGibbs {
 	
 	private byte data[][];
-	private NodeList variables;
+	private  ArrayList<Node> variables;
 	private PrintStream ps;
 	private File file;
 	
-	public IOGibbs(byte data[][], NodeList variables){
+	public IOGibbs(byte data[][],  ArrayList<Node> variables){
 		this.data = data;
 		this.variables = variables;
 		try{

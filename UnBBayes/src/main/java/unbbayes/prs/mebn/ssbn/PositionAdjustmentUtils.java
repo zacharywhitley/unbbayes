@@ -30,9 +30,9 @@ import javax.xml.bind.JAXBException;
 
 import unbbayes.io.XMLIO;
 import unbbayes.io.exception.LoadException;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.util.NodeList;
 
 public class PositionAdjustmentUtils {
 
@@ -56,7 +56,7 @@ public class PositionAdjustmentUtils {
 	}
 
 	private void createInfoNodesList(ProbabilisticNetwork net) {
-		NodeList nodes = net.getNodes();
+		ArrayList<Node> nodes = net.getNodes();
 		
 		for(int i=0; i < nodes.size(); i++){
 			if(nodes.get(i).getChildren().size() == 0){

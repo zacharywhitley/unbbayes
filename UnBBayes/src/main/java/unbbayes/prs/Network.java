@@ -27,7 +27,6 @@ import java.util.Map;
 
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.prs.bn.PotentialTable;
-import unbbayes.util.NodeList;
 
 public class Network implements Graph{
 
@@ -37,7 +36,7 @@ public class Network implements Graph{
 	/**
 	 *  List of nodes that this network has.
 	 */
-	protected NodeList nodeList;
+	protected ArrayList<Node> nodeList;
 	/**
 	 *  List of edges that this network has.
 	 */
@@ -47,7 +46,7 @@ public class Network implements Graph{
 
 	public Network(String name) {
 		this.id = this.name = name;
-		nodeList = new NodeList();
+		nodeList = new ArrayList<Node>();
         edgeList = new ArrayList<Edge>();
         nodeIndexes = new HashMap<String,Integer>();
 	}
@@ -68,7 +67,7 @@ public class Network implements Graph{
 	 * 
 	 * @todo Eliminar esse metodo! eh utilizado na classe NetWindow
 	 */
-	public NodeList getNodes() {
+	public ArrayList<Node> getNodes() {
 	    return this.nodeList;
 	}
 

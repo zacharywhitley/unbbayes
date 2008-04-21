@@ -36,7 +36,6 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.id.DecisionNode;
-import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -61,7 +60,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
   	/**
 	 * N�s de decis�o utilizado no processo de transforma��o.
 	 */
-	protected NodeList decisionNodes;
+	protected ArrayList<Node> decisionNodes;
 	
 	protected double radius;
 
@@ -83,13 +82,13 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
     /**
 	 *  Ordem de elimina��o dos n�s.
 	 */
-	protected NodeList oe;
+	protected ArrayList<Node> oe;
 
 	/**
 	 * C�pia dos n�s sem os n�s de utilidade. Utilizado no processo
 	 * de transforma��o.
 	 */
-	protected NodeList copiaNos;
+	protected ArrayList<Node> copiaNos;
 	
 	protected List<Edge> copiaArcos;
 
@@ -111,8 +110,8 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
     }
 
 
-    public NodeList getDescriptionNodes()
-    {   NodeList descriptionNodes = new NodeList();
+    public ArrayList<Node> getDescriptionNodes()
+    {   ArrayList<Node> descriptionNodes = new ArrayList<Node>();
         int size = nodeList.size();
         for (int i=0;i<size;i++)
         {   Node node = getNodeAt(i);
@@ -123,8 +122,8 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
         return descriptionNodes;
     }
 
-    public NodeList getExplanationNodes()
-    {   NodeList explanationNodes = new NodeList();
+    public ArrayList<Node> getExplanationNodes()
+    {   ArrayList<Node> explanationNodes = new ArrayList<Node>();
         int size = nodeList.size();
         for (int i=0;i<size;i++)
         {   Node node = getNodeAt(i);
@@ -508,7 +507,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 		boolean isID = isID();
 		for (int k = 0; k < listaCliques.size(); k++) {
 			Clique clique = (Clique) listaCliques.get(k);
-			NodeList nosClique = clique.getNodes();
+			ArrayList<Node> nosClique = clique.getNodes();
 			boolean haTroca = true;
 			while (haTroca) {
 				haTroca = false;
@@ -534,7 +533,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	
 		for (int k = junctionTree.getSeparatorsSize() - 1; k >= 0; k--) {
 			Separator separator = (Separator) junctionTree.getSeparatorAt(k);
-			NodeList nosSeparator = separator.getNodes();
+			ArrayList<Node> nosSeparator = separator.getNodes();
 			boolean haTroca = true;
 			while (haTroca) {
 				haTroca = false;
@@ -649,12 +648,12 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 		int ndx;
 		Clique auxClique;
 		Clique auxClique2;
-		NodeList uni;
-		NodeList inter;
-		NodeList auxList;
-		NodeList listaNos;
+		ArrayList<Node> uni;
+		ArrayList<Node> inter;
+		ArrayList<Node> auxList;
+		ArrayList<Node> listaNos;
 		Separator sep;
-		NodeList alpha = new NodeList();
+		ArrayList<Node> alpha = new ArrayList<Node>();
 	
 		for (int i = oe.size() - 1; i >= 0; i--) {
 			alpha.add(oe.get(i));
@@ -724,13 +723,13 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	/**
 	 *  SUB-FUN��O do m�todo arvoreForte
 	 */
-	protected int getCliqueIndex(NodeList listaNos, NodeList alpha) {
+	protected int getCliqueIndex(ArrayList<Node> listaNos, ArrayList<Node> alpha) {
 		int ndx;
 		int mx;
 		Node auxNo;
 		Node noMax = null;
-		NodeList auxList = null;
-		NodeList vizinhos;
+		ArrayList<Node> auxList = null;
+		ArrayList<Node> vizinhos;
 	
 		// pega o n� de �ndice m�ximo na ordem alpha (inverso da ordem de elimini��o)
 		mx = -1;
@@ -782,7 +781,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 *
 	 * @param  auxNos  Vetor de n�s.
 	 */
-	protected boolean minimumWeightElimination(NodeList auxNos) {
+	protected boolean minimumWeightElimination(ArrayList<Node> auxNos) {
 		boolean algum;
 		
 		algum = true;
@@ -834,7 +833,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 *@param  no      n� a ser eliminado
 	 *@param  auxNos  lista de n�s
 	 */
-	private void elimine(Node no, NodeList auxNos) {	
+	private void elimine(Node no, ArrayList<Node> auxNos) {	
 		for (int i = no.getAdjacents().size()-1; i > 0; i--) {
 			Node auxNo1 = no.getAdjacents().get(i);
 	
@@ -873,7 +872,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 * @param  auxNos  n�s.
 	 * @return         n� cujo conjunto formado por adjacentes possui peso m�nimo.
 	 */
-	private Node weight(NodeList auxNos) {
+	private Node weight(ArrayList<Node> auxNos) {
 		Node v;
 		Node auxNo;
 		double p;
@@ -1041,7 +1040,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 *  um caminho orientado entre as decis�es.
 	 */
 	protected void sortDecisions() throws Exception {
-		decisionNodes = new NodeList();
+		decisionNodes = new ArrayList<Node>();
 		int sizeNos = nodeList.size();
 		for (int i = 0; i < sizeNos; i++) {
 			if (nodeList.get(i).getType() == Node.DECISION_NODE_TYPE) {
@@ -1049,7 +1048,8 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			}
 		}
 	
-		NodeList fila = new NodeList(nodeList.size());
+		ArrayList<Node> fila = new ArrayList<Node>();
+		fila.ensureCapacity(nodeList.size()); 
 		Node aux, aux2, aux3;
 	
 		int sizeDecisao = decisionNodes.size();
@@ -1116,7 +1116,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 *
 	 * @return vetor de c�pia dos n�s sem as vari�veis de utilidade.
 	 */
-	public NodeList getNodesCopy() {
+	public ArrayList<Node> getNodesCopy() {
 		return copiaNos;
 	}
 

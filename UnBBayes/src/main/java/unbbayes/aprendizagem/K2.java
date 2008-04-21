@@ -21,8 +21,10 @@
  package unbbayes.aprendizagem;
 
 
+import java.util.ArrayList;
+
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 
 /**
  * 	 This class implements those methods needed for the k2 algorithm to work.
@@ -34,10 +36,10 @@ import unbbayes.util.NodeList;
 
 public class K2 extends K2Toolkit{
 
-    private NodeList variablesVector;  
+    private ArrayList<Node> variablesVector;  
     
     
-    public K2(NodeList variables, int[][] dataBase, int vector[], long 
+    public K2(ArrayList<Node> variables, int[][] dataBase, int vector[], long 
             caseNumber, String metric, String param, boolean compacted){    	
     	Object[]  zMax;
     	LearningNode z;

@@ -27,7 +27,6 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.SingleEntityNetwork;
-import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -119,7 +118,8 @@ public class SubNetwork extends SingleEntityNetwork {
 	
 	protected void initTriangulation() {
 		copiaNos = SetToolkit.clone(nodeList);
-		oe = new NodeList(copiaNos.size());
+		oe = new ArrayList<Node>();
+		oe.ensureCapacity(copiaNos.size()); 
 	}
 
 	/**
@@ -178,8 +178,8 @@ public class SubNetwork extends SingleEntityNetwork {
 		System.out.println("Elimine");
 		
 		oe.clear();
-		NodeList inter = SetToolkit.intersection(copiaNos, adj.copiaNos);				
-		NodeList auxNos = SetToolkit.clone(copiaNos);
+		ArrayList<Node> inter = SetToolkit.intersection(copiaNos, adj.copiaNos);				
+		ArrayList<Node> auxNos = SetToolkit.clone(copiaNos);
 		
 		int sizeAnt = auxNos.size();
 				
@@ -237,7 +237,7 @@ public class SubNetwork extends SingleEntityNetwork {
 	}
 	
 	private void updateArcsAux(SubNetwork net) {
-		NodeList dsepset = SetToolkit.intersection(nodeList, net.nodeList);
+		ArrayList<Node> dsepset = SetToolkit.intersection(nodeList, net.nodeList);
 		for (int i = arcosMarkov.size()-1; i>=0; i--) {
 			Edge e = (Edge) arcosMarkov.get(i);
 			if (dsepset.contains(e.getOriginNode()) 

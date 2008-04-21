@@ -27,6 +27,7 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.swing.BorderFactory;
@@ -43,10 +44,10 @@ import javax.swing.JTextArea;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.util.NodeList;
 
 /**
  *
@@ -274,7 +275,7 @@ public class ExplanationProperties extends JDialog
     jTabbedPane.add(descriptionPanel, "Descrição");
     jTabbedPane.add(explanationPanel, "Explanação");
     this.getContentPane().add(jTabbedPane,  BorderLayout.CENTER);
-    NodeList nodes = net.getDescriptionNodes();
+    ArrayList<Node> nodes = net.getDescriptionNodes();
     int size = nodes.size();
     int i;
     String[] stringNodes = new String[size];

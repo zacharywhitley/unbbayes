@@ -27,9 +27,11 @@ import javax.swing.JFrame;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import unbbayes.gui.SimpleFileFilter;
+import unbbayes.prs.Node;
 
 import javax.swing.JLabel;
 import javax.swing.JComboBox;
@@ -38,7 +40,6 @@ import javax.swing.JButton;
 import unbbayes.aprendizagem.ConstructionController;
 import unbbayes.controller.FileController;
 import unbbayes.datamining.discretize.dalgo2;
-import unbbayes.util.NodeList;
 import javax.swing.JCheckBox;
 import java.awt.GridLayout;
 import java.awt.Dimension;
@@ -62,7 +63,7 @@ public class janeladiscret extends JFrame {
 
 	public dalgo2 discretizador;
 
-	public NodeList variaveis;
+	public ArrayList<Node> variaveis;
 
 	public int[] vetor;
 
@@ -337,7 +338,7 @@ public class janeladiscret extends JFrame {
 		return jButton5;
 	}
 
-	public void setdalgoresp(NodeList vv, int mline, int[][] mt) {
+	public void setdalgoresp(ArrayList<Node> vv, int mline, int[][] mt) {
 		this.variaveis = vv;
 		this.linhas = mline;
 		this.matriz = mt;

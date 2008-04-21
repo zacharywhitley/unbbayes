@@ -35,9 +35,9 @@ import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.util.NodeList;
 
 /**
  * <p>
@@ -87,7 +87,7 @@ public class MetaphorResult extends JPanel {
 
 	private JTabbedPane jTabbedPane1 = new JTabbedPane();
 
-	private NodeList explanationNodes;
+	private ArrayList<Node> explanationNodes;
 
 	private JScrollPane jScrollPane3 = new JScrollPane();
 
@@ -162,7 +162,7 @@ public class MetaphorResult extends JPanel {
 		jScrollPane3.getViewport().add(jTextArea3, null);
 	}
 
-	public void setExplanationNodes(NodeList explanationNodes) {
+	public void setExplanationNodes(ArrayList<Node> explanationNodes) {
 		this.explanationNodes = explanationNodes;
 		jTextArea3.setText("");
 	}

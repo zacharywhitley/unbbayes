@@ -26,6 +26,7 @@ import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -33,8 +34,8 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 
 /** 
  * Class which controlls a screen where the user should define which variable
@@ -48,7 +49,7 @@ public class CompactChooseWindow extends JDialog{
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
-    private NodeList variablesVector;
+    private ArrayList<Node> variablesVector;
     private JPanel centerPanel;
     private JButton ok;
     private JButton cancel;
@@ -63,7 +64,7 @@ public class CompactChooseWindow extends JDialog{
      * @see LearningNode
      * @see Container
      */
-    CompactChooseWindow(NodeList variablesVector){
+    CompactChooseWindow(ArrayList<Node> variablesVector){
         super(new Frame(), "UnbBayes - Learning Module", true);
         Container container = getContentPane();
         this.variablesVector = variablesVector;

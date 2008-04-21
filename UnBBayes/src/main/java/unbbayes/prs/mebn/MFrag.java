@@ -34,7 +34,6 @@ import unbbayes.prs.Node;
 import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.ssbn.OVInstance;
-import unbbayes.util.NodeList;
 
 /**
  * This class represents a MEBN Fragment. 
@@ -60,7 +59,7 @@ public class MFrag implements Graph{
 	/**
 	 *  List of nodes that this MFrag has.
 	 */
-	private NodeList nodeList;
+	private ArrayList<Node> nodeList;
 	
 	/** 
 	 * List of edges that this MFrag has.
@@ -103,7 +102,7 @@ public class MFrag implements Graph{
 		
 		setName(name); 
 		
-		nodeList = new NodeList();
+		nodeList = new ArrayList<Node>();
 		edgeList = new ArrayList<Edge>(); 
         nodeIndexes = new HashMap<String,Integer>();	
         
@@ -332,7 +331,7 @@ public class MFrag implements Graph{
 	 * 
 	 * @return The list of all nodes in this MFrag.
 	 */
-	public NodeList getNodeList() {
+	public ArrayList<Node> getNodeList() {
 		return nodeList;
 	}
 	
@@ -375,7 +374,7 @@ public class MFrag implements Graph{
 	 * 
 	 * @todo Eliminar esse metodo! eh utilizado na classe NetWindow
 	 */
-	public NodeList getNodes(){
+	public ArrayList<Node> getNodes(){
 		return this.getNodeList(); 
 	}
 
@@ -847,7 +846,7 @@ public class MFrag implements Graph{
 	 * @return The first Node found. Null elsewise.
 	 */
 	public Node containsNode(String name){
-		NodeList list = this.getNodeList();
+		ArrayList<Node> list = this.getNodeList();
 		Node node = null;
 		for (int i = 0 ; i < list.size() ; i++) {
 			node = list.get(i);

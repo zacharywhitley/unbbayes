@@ -28,7 +28,6 @@ import unbbayes.aprendizagem.LearningToolkit;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
 import unbbayes.prs.bn.ProbabilisticNetwork;
-import unbbayes.util.NodeList;
 
 /**
  * @author Administrador
@@ -39,10 +38,10 @@ import unbbayes.util.NodeList;
 public class GibbsController extends LearningToolkit {
 
    private byte[][] data;   
-   private NodeList variables;     
+   private ArrayList<Node> variables;     
    private ProbabilisticNetwork pn = null;
 
-   public GibbsController(ProbabilisticNetwork pn,byte[][] data, NodeList variables) {
+   public GibbsController(ProbabilisticNetwork pn,byte[][] data,  ArrayList<Node> variables) {
       this.data = data;
       this.variables = variables;
       this.pn = pn;

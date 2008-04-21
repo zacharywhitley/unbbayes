@@ -22,8 +22,8 @@ package unbbayes.aprendizagem;
 
 import java.util.ArrayList;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 
 /**
  * TAN
@@ -34,9 +34,9 @@ import unbbayes.util.NodeList;
  */
 public class CL extends CBLToolkit{
 	/**
-	 * Variaveis do objeto CL
+	 * Variables of the object CL
 	 */
-	public NodeList variaveis;
+	public ArrayList<Node> variaveis;
 	public int classe;
 	public int caseNumber;
 	public int raiz;
@@ -51,7 +51,6 @@ public class CL extends CBLToolkit{
     protected int notestado,posicao;
     protected int nvar;
     protected boolean houveciclo;
-    public ArrayList ls;
 	public ConstructionController controller;
 	/**
 	 * Construtor
@@ -62,12 +61,12 @@ public class CL extends CBLToolkit{
 	/*
 	 * Prepara e faz tudo.
 	 */
-	public void preparar(NodeList vetordevariaveis, int classei, int numerodecasos, int[] vetor,boolean comp,int[][]dados) {
+	public void preparar( ArrayList<Node> vetordevariaveis, int classei, int numerodecasos, int[] vetor,boolean comp,int[][]dados) {
 		int i;
 		//copiar os parametros
 		nvar=vetordevariaveis.size();
 		ramo=new int[nvar];
-		this.variaveis=new NodeList();
+		this.variaveis= new ArrayList<Node>();
 		variaveis.ensureCapacity(nvar);
 		for(i=0;i<nvar;i++)variaveis.add(vetordevariaveis.get(i));
 		classe=classei;

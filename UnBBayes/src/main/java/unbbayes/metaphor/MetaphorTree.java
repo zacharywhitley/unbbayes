@@ -40,7 +40,6 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.util.ArrayMap;
-import unbbayes.util.NodeList;
 
 /**
  * @author M�rio Henrique Paes Vieira
@@ -162,7 +161,7 @@ public class MetaphorTree extends JTree
 	DefaultTreeModel model = new DefaultTreeModel((DefaultMutableTreeNode)net.getHierarchicTree().getModel().getRoot());
 	this.setModel(model);
 	root = (DefaultMutableTreeNode) getModel().getRoot();
-	NodeList nos = net.getDescriptionNodes();
+	ArrayList<Node> nos = net.getDescriptionNodes();
 	int size = nos.size();
 	for (int i = 0; i < size; i++)
 	{   Node node = (Node) nos.get(i);

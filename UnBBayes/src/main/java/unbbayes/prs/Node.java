@@ -34,7 +34,6 @@ import unbbayes.draw.IOnePositionDrawable;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.ITabledVariable;
 import unbbayes.util.ArrayMap;
-import unbbayes.util.NodeList;
 import unbbayes.util.SerializablePoint2D;
 
 /**
@@ -54,10 +53,10 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	protected SerializablePoint2D sizeVariable = new SerializablePoint2D();
 	protected boolean sizeIsVariable = false;
 
-	protected NodeList parents;
-	private NodeList children;
+	protected ArrayList<Node> parents;
+	private ArrayList<Node> children;
 	protected List<String> states;
-	private NodeList adjacents;
+	private ArrayList<Node> adjacents;
 	private boolean bSelected;
 	private String explanationDescription;
 	private ArrayMap<String, ExplanationPhrase> phrasesMap;
@@ -96,9 +95,9 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 		label = ""; // text inside node
 		description = "";
 		explanationDescription = "";
-		adjacents = new NodeList();
-		parents = new NodeList();
-		children = new NodeList();
+		adjacents = new ArrayList<Node>();
+		parents = new ArrayList<Node>();
+		children = new ArrayList<Node>();
 		states = new ArrayList<String>();
 
 		// width
@@ -208,7 +207,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	 * @param children
 	 * 			List of nodes representing the children.
 	 */
-	public void setChildren(NodeList children) {
+	public void setChildren(ArrayList<Node> children) {
 		this.children = children;
 	}
 
@@ -217,7 +216,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	 * @param parents
 	 * 			List of nodes representing the parents.
 	 */
-	public void setParents(NodeList parents) {
+	public void setParents(ArrayList<Node> parents) {
 		this.parents = parents;
 	}
 	
@@ -292,7 +291,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	 * Obtains a list of adjacents.
 	 * @return reference for this node's adjacents.
 	 */
-	public NodeList getAdjacents() {
+	public ArrayList<Node> getAdjacents() {
 		return adjacents;
 	}
 
@@ -309,7 +308,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	 * Obtains a list of children.
 	 * @return list of children.
 	 */
-	public final NodeList getChildren() {
+	public final ArrayList<Node> getChildren() {
 		return children;
 	}
 
@@ -317,7 +316,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	 * Obtains a list of parents.
 	 * @return list of parents.
 	 */
-	public final NodeList getParents() {
+	public final ArrayList<Node> getParents() {
 		return parents;
 	}
 
@@ -453,7 +452,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	 * @param adjacents
 	 *            The adjacents to set
 	 */
-	public void setAdjacents(NodeList adjacents) {
+	public void setAdjacents(ArrayList<Node> adjacents) {
 		this.adjacents = adjacents;
 	}
 

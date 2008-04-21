@@ -24,12 +24,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.Network;
+import unbbayes.prs.Node;
 import unbbayes.prs.mebn.entity.BooleanStatesEntityContainer;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntityContainer;
 import unbbayes.prs.mebn.entity.ObjectEntityConteiner;
 import unbbayes.prs.mebn.entity.TypeContainer;
 import unbbayes.util.IBridgeImplementor;
-import unbbayes.util.NodeList;
 
 /**
  * This class represents a MultiEntityBayesianNetwork
@@ -202,7 +202,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	/**
 	 * Returns the NodeList of the current MFrag
 	 */	
-	public NodeList getNodeList(){
+	public ArrayList<Node> getNodeList(){
 		if (currentMFrag != null){
 		    return this.currentMFrag.getNodeList();
 		}

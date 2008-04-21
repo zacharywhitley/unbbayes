@@ -23,7 +23,7 @@ package unbbayes.prs.msbn;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.util.NodeList;
+import unbbayes.prs.Node;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -193,7 +193,7 @@ public abstract class AbstractMSBN {
 			return;			
 		}
 		
-		NodeList inters[][] = makeIntersection();
+		ArrayList<Node> inters[][] = makeIntersection();
 				
 		boolean naArvore[] = new boolean[netsSize];	
 		naArvore[0] = true;		
@@ -202,22 +202,22 @@ public abstract class AbstractMSBN {
 		}
 	}
 	
-	private NodeList[][] makeIntersection() {
+	private ArrayList<Node>[][] makeIntersection() {
 		int netsSize = nets.size();
-		NodeList interseccoes[][] = new NodeList[netsSize][netsSize];			
+		ArrayList<Node> interseccoes[][] = new ArrayList[netsSize][netsSize];			
 		
 		for (int i = 0; i < netsSize - 1; i++) {
 			SubNetwork n1 = nets.get(i);
 			for (int j = i+1; j < netsSize; j++) {
 				SubNetwork n2 = nets.get(j);
-				NodeList inter = SetToolkit.intersection(n1.getNodes(), n2.getNodes());				
+				ArrayList<Node> inter = SetToolkit.intersection(n1.getNodes(), n2.getNodes());				
 				interseccoes[i][j] = interseccoes[j][i] = inter;				
 			}
 		}
 		return interseccoes;
 	}
 	
-	private void insertLink(NodeList inters[][], boolean naArvore[]) throws Exception {
+	private void insertLink(ArrayList<Node> inters[][], boolean naArvore[]) throws Exception {
 		int netsSize = nets.size();
 		int max = 0;
 		int iMax, kMax;
@@ -256,11 +256,11 @@ public abstract class AbstractMSBN {
 		links.add(new Linkage(ni,nk));
 	}
 	
-	private boolean isDSepSet(int j, int k, NodeList inter) {
+	private boolean isDSepSet(int j, int k, ArrayList<Node> inter) {
 		SubNetwork nj = nets.get(j);
 		SubNetwork nk = nets.get(k);
 		for (int i = 0; i < inter.size(); i++) {
-			NodeList pais = inter.get(i).getParents();			
+			ArrayList<Node> pais = inter.get(i).getParents();			
 			if (! nj.getNodes().containsAll(pais) &&
 				! nk.getNodes().containsAll(pais)) {
 				

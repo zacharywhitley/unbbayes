@@ -27,7 +27,6 @@ import unbbayes.aprendizagem.incrementalLearning.util.ILToolkit;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
 import unbbayes.prs.bn.ProbabilisticNetwork;
-import unbbayes.util.NodeList;
 
 /**
  * 
@@ -40,11 +39,11 @@ public class ILController extends ILToolkit {
 
     private List<Object>  ssList = new ArrayList<Object> ();
     
-    private NodeList variables;
+    private ArrayList<Node> variables;
 
     //ConstructionController constructionController;
 
-    public ILController(ProbabilisticNetwork pn,List<Object> ssList, NodeList variables) {
+    public ILController(ProbabilisticNetwork pn,List<Object> ssList, ArrayList<Node> variables) {
     	this.pn = pn;
     	this.ssList = ssList;
     	this.variables = variables;    	
@@ -55,8 +54,8 @@ public class ILController extends ILToolkit {
     /**
      * @return
      */
-    public NodeList getListaVariaveis() {
-        NodeList listaVariaveis = new NodeList();
+    public ArrayList<Node> getListaVariaveis() {
+    	ArrayList<Node> listaVariaveis = new ArrayList<Node>();
         for(int i = 0; i< pn.getNodeCount(); i++){
             listaVariaveis.add(getTVariavel(pn.getNodeAt(i),true));
         }
@@ -127,7 +126,7 @@ public class ILController extends ILToolkit {
 
     private int[][] makeRemoveNijksStructure(Node node, Node lastParent) {
         LearningNode v = getTVariavel(node, true);
-        NodeList parents = v.getPais();
+        ArrayList<Node> parents = v.getPais();
         for (int i = 0; i < parents.size(); i++) {
             Node parent = (Node) node.getParents().get(i);
             if (parent.getDescription().equals(lastParent.getDescription())) {
@@ -155,7 +154,7 @@ public class ILController extends ILToolkit {
 
     private int[][] makeAddNijksStructure(Node node, Node lastParent) {
         LearningNode v = getTVariavel(node, true);
-        NodeList parents = v.getPais();
+        ArrayList<Node> parents = v.getPais();
         if (lastParent != null) {
             parents.add(getTVariavel(lastParent, true));
         }
@@ -170,8 +169,8 @@ public class ILController extends ILToolkit {
         for (int i = 0; i < variables.size(); i++) {
             LearningNode v = (LearningNode) variables.get(i);
             if (v.getName().equals(node.getName())) {
-                NodeList listaPais = node.getParents();
-                NodeList listaPaisAtual = new NodeList();
+            	ArrayList<Node> listaPais = node.getParents();
+                ArrayList<Node> listaPaisAtual = new ArrayList<Node>();
                 for (int j = 0; j < node.getParents().size() && pais; j++) {
                     listaPaisAtual.add(getTVariavel(node.getParents().get(j), false));
                 }
@@ -336,8 +335,8 @@ public class ILController extends ILToolkit {
         return Math.sqrt(2*Math.PI*n)*Math.pow(n,n)*Math.exp(-n);
     }
 
-    private NodeList getParents(Node node, ArrayList parents) {
-        NodeList parentsAux = new NodeList();
+    private ArrayList<Node> getParents(Node node, ArrayList parents) {
+    	ArrayList<Node> parentsAux = new ArrayList<Node>();
         LearningNode v = getTVariavel(node,true);
         for (int i = 0; i < parents.size(); i++) {
             String parent = (String) parents.get(i);
@@ -365,7 +364,7 @@ public class ILController extends ILToolkit {
         if (betterNet != null) {
             System.out.println("Mudou Familia do Nó " + betterNet[0]);
             Node node = getNode((String) betterNet[0]);            
-            NodeList parents = getParents(node, (ArrayList) betterNet[1]);
+            ArrayList<Node> parents = getParents(node, (ArrayList) betterNet[1]);
             
             node.getParents().removeAll(node.getParents());            
             node.getParents().addAll(parents);
@@ -414,7 +413,7 @@ public class ILController extends ILToolkit {
     }
     
     private boolean isDescendent(Node node, Node nodeTest){
-        NodeList filhos = node.getChildren();
+    	ArrayList<Node> filhos = node.getChildren();
         for(int i = 0; i < filhos.size(); i++){
             if(filhos.get(i).getName().equalsIgnoreCase(nodeTest.getName()) || isDescendent(filhos.get(i),nodeTest)){
                 return true;

@@ -123,8 +123,8 @@ public class PNEditionPane extends JPanel {
         status      = new JLabel(resource.getString("statusReadyLabel"));
 
         //criar labels e textfields que ser�o usados no jtbState
-        sigla       = new JLabel(resource.getString("siglaLabel"));
-        description = new JLabel(resource.getString("descriptionLabel"));
+        sigla       = new JLabel(resource.getString("siglaLabel") + " ");
+        description = new JLabel(resource.getString("descriptionLabel") + " ");
         txtSigla           = new JTextField(10);
         txtDescription     = new JTextField(15);
 

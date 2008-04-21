@@ -20,15 +20,17 @@
  */
 package unbbayes.aprendizagem;
 
+import java.util.ArrayList;
+
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 
 public abstract class K2Toolkit extends PonctuationToolkit{
 	
      
-    protected void constructPredecessors(NodeList list){ 
+    protected void constructPredecessors(ArrayList<Node> list){ 
         LearningNode aux;
         int length = list.size();
         for(int i = length - 1; i > 0  ; i--){
@@ -41,8 +43,8 @@ public abstract class K2Toolkit extends PonctuationToolkit{
     
     protected Object[] getZMax(LearningNode variable){    	
         LearningNode z = null;
-        NodeList parents;
-        NodeList zVector;
+        ArrayList<Node> parents;
+        ArrayList<Node> zVector;
         double maxAux;
         maxAux = 0.0;
         double max = -1*Double.MAX_VALUE;       
@@ -59,18 +61,18 @@ public abstract class K2Toolkit extends PonctuationToolkit{
         return new Object[]{z,new Double(max)};        
     }    
     
-    protected NodeList union(NodeList list, LearningNode variable){
+    protected ArrayList<Node> union(ArrayList<Node> list, LearningNode variable){
         if (list == null){
-            list = new NodeList();
+            list = new ArrayList<Node>();
         }
         list.add(variable);
         return list;
     }
     
-    protected NodeList difference(NodeList list1, NodeList list2){
+    protected ArrayList<Node> difference(ArrayList<Node> list1, ArrayList<Node> list2){
         LearningNode aux;
         LearningNode aux2;
-        NodeList listReturn = SetToolkit.clone(list1);
+        ArrayList<Node> listReturn = SetToolkit.clone(list1);
         for (int i = 0 ;  i < listReturn.size(); i++ ){
             aux = (LearningNode)listReturn.get(i);
             for (int j = 0 ; j < list2.size() ; j++ ){

@@ -26,6 +26,7 @@ import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -36,8 +37,8 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 
 public class ChooseVariablesWindow extends JDialog {
 
@@ -48,7 +49,7 @@ public class ChooseVariablesWindow extends JDialog {
 	private JScrollPane scrollPane;
 	private JPanel centerPanel;
 	private JPanel buttonPanel;
-	private NodeList variablesVector;
+	private ArrayList<Node> variablesVector;
 	private JButton ok;
 	private ChooseInterationController chooseController;
 	public int classei = -1;
@@ -60,7 +61,7 @@ public class ChooseVariablesWindow extends JDialog {
 	 * @param variables -
 	 *            A NodeList with the variable read on the file
 	 */
-	public ChooseVariablesWindow(NodeList variables) {
+	public ChooseVariablesWindow(ArrayList<Node> variables) {
 		super(new Frame(), "UnBBayes - Learning Module", true);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		Container container = getContentPane();
@@ -93,7 +94,7 @@ public class ChooseVariablesWindow extends JDialog {
 		setVisible(true);
 	}
 
-	public ChooseVariablesWindow(NodeList variables, int classe) {
+	public ChooseVariablesWindow(ArrayList<Node> variables, int classe) {
 		super(new Frame(), "", true);
 		classei = -1;
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);

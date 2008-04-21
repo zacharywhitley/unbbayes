@@ -24,12 +24,12 @@ import java.util.ArrayList;
 import java.util.Stack;
 import java.util.TreeSet;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 
 public abstract class CBLToolkit extends LearningToolkit {
 
-	protected NodeList variablesVector;
+	protected ArrayList<Node> variablesVector;
 	protected double epsilon;
 	protected ArrayList<int[]> es;
 	protected ArrayList<Object[]> separators;

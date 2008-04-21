@@ -8,6 +8,9 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
+import unbbayes.gui.util.StatusChangedEvent;
+import unbbayes.gui.util.StatusObserver;
+
 public class ProgressBarPanel extends JPanel implements StatusObserver{
 
     private JProgressBar progressBar;

@@ -23,8 +23,8 @@ package unbbayes.aprendizagem;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 
@@ -65,13 +65,13 @@ public abstract class LearningToolkit{
         }
     }
 
-    protected  int[][] getFrequencies(LearningNode variable, NodeList parents){
+    protected  int[][] getFrequencies(LearningNode variable, ArrayList<Node> parents){
         LearningNode aux;
         int[][] ArrayNijk;
         int parentsLength;
         int position;
         if(parents == null){
-           parents = new NodeList();
+           parents = new ArrayList<Node>();
         }
         parentsLength = parents.size();
         if(parentsLength == 0){
@@ -126,7 +126,7 @@ public abstract class LearningToolkit{
         return ArrayNijk;
     }
 
-    protected List getInstances(NodeList list){
+    protected List getInstances(ArrayList<Node> list){
         List<List<Integer>> instances = new ArrayList<List<Integer>>();
         List<List<Integer>> listAux = new ArrayList<List<Integer>>();;
         LearningNode aux;
@@ -165,7 +165,7 @@ public abstract class LearningToolkit{
         return instances;
     }
 
-    protected int getQ(NodeList list) {
+    protected int getQ(ArrayList<Node> list) {
         LearningNode variable;
         int qi = 1;
         if(list != null){

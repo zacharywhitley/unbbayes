@@ -22,11 +22,11 @@ package unbbayes.prs.bn;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import unbbayes.draw.DrawEllipse;
 import unbbayes.prs.Node;
-import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -185,7 +185,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
             }
         }        
         
-		NodeList clones[] = new NodeList[getChildren().size()];
+        ArrayList<Node> clones[] = new ArrayList[getChildren().size()];
 		int indexes[] = new int[getChildren().size()];
         for (int i = 0; i < getChildren().size(); i++) {
         	if (getChildren().get(i).getType() == Node.DECISION_NODE_TYPE) {
@@ -202,7 +202,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
         	}
             PotentialTable auxTab = ((ITabledVariable) getChildren().get(i)).getPotentialTable();
             int l = indexes[i];
-            NodeList auxList = clones[i];            
+            ArrayList<Node> auxList = clones[i];            
             for (int k = auxList.size() - 1; k >= l; k--) {
                 auxTab.removeVariable(auxList.get(k));
             }
@@ -221,7 +221,7 @@ public class ProbabilisticNode extends TreeVariable implements ITabledVariable, 
         	}
             PotentialTable auxTab = ((ITabledVariable) getChildren().get(i)).getPotentialTable();
             int l = indexes[i];
-            NodeList auxList = clones[i];         
+            ArrayList<Node> auxList = clones[i];         
             for (int k = l; k < auxList.size(); k++) {
                 auxTab.addVariable(auxList.get(k));
             }

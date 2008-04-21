@@ -3,10 +3,12 @@
  */
 package unbbayes.prs.mebn;
 
+import java.util.ArrayList;
+
+import unbbayes.prs.Node;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import unbbayes.util.NodeList;
 
 /**
  * @author user
@@ -41,7 +43,7 @@ public class MFragTest extends TestCase {
 		}
 		resident2.addParent(input1);
 		
-		NodeList temp = mfrag1.getNodeList();
+		ArrayList<Node> temp = mfrag1.getNodeList();
 		for (int i = 0; i < temp.size(); i++) {
 			System.out.println(temp.get(i).getName());
 			System.out.println(temp.get(i).getClass());

@@ -52,7 +52,6 @@ import unbbayes.prs.id.UtilityNode;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.msbn.SubNetwork;
 import unbbayes.util.ArrayMap;
-import unbbayes.util.NodeList;
 
 /**
  * Manipulates input/output of NET files.
@@ -199,7 +198,7 @@ public class NetIO implements BaseIO {
 		for (int c1 = 0; c1 < net.getNodeCount(); c1++) {
 			auxNo1 = (Node) net.getNodeAt(c1);
 
-			NodeList auxListVa = auxNo1.getParents();
+			ArrayList<Node> auxListVa = auxNo1.getParents();
 
 			arq.print("potential (" + auxNo1.getName());
 

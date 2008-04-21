@@ -27,7 +27,6 @@ import java.util.ResourceBundle;
 import unbbayes.prs.Node;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityTable;
-import unbbayes.util.NodeList;
 
 
 /**
@@ -72,17 +71,17 @@ public class Clique implements ITabledVariable, java.io.Serializable {
     /**
      *  Lista de N�s Clusterizados.
      */
-    private NodeList nos;
+    private ArrayList<Node> nos;
 
     /**
      *  Lista de N�s Probabil�sticos associados ao Clique.
      */
-    private NodeList nosAssociados;
+    private ArrayList<Node> nosAssociados;
 
     /**
      *  Lista de N�s de Utilidade associados ao Clique.
      */
-    private NodeList associatedUtilNodes;    
+    private ArrayList<Node> associatedUtilNodes;    
 
 
     /**
@@ -91,9 +90,9 @@ public class Clique implements ITabledVariable, java.io.Serializable {
      */
     public Clique() {
         children = new ArrayList<Clique>();
-        nos = new NodeList();
-        nosAssociados = new NodeList();
-        associatedUtilNodes = new NodeList();
+        nos = new ArrayList<Node>();
+        nosAssociados = new ArrayList<Node>();
+        associatedUtilNodes = new ArrayList<Node>();
         potentialTable = new ProbabilisticTable();
         utilityTable = new UtilityTable();
     }
@@ -107,7 +106,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
      */
     public float normalize() throws Exception {
         boolean fixo[] = new boolean[nos.size()];
-        NodeList decisoes = new NodeList();
+        ArrayList<Node> decisoes = new ArrayList<Node>();
         for (int i = 0; i < nos.size(); i++) {        	
             if (nos.get(i).getType() == Node.DECISION_NODE_TYPE) {
                 decisoes.add(nos.get(i));
@@ -151,7 +150,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
 
 
     private void normalizeID (int control,
-                             NodeList decisoes,
+    		ArrayList<Node> decisoes,
                              boolean fixo[],
                              int index[],
                              int coord[]) throws Exception {
@@ -291,7 +290,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
      *
      *@return    vetor de n�s clusterizados.
      */
-    public NodeList getNodes() {
+    public ArrayList<Node> getNodes() {
         return nos;
     }
 
@@ -301,7 +300,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
      *
      *@return    vetor de n�s probabil�sticos associados.
      */
-    public NodeList getAssociatedProbabilisticNodes() {
+    public ArrayList<Node> getAssociatedProbabilisticNodes() {
         return nosAssociados;
     }
 
@@ -310,7 +309,7 @@ public class Clique implements ITabledVariable, java.io.Serializable {
      *
      *@return    vetor de n�s de utilidade associados.
      */
-    public NodeList getAssociatedUtilityNodes() {
+    public ArrayList<Node> getAssociatedUtilityNodes() {
         return associatedUtilNodes;
     }
 

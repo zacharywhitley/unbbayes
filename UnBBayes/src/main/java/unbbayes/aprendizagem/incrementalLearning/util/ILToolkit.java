@@ -20,9 +20,11 @@
  */
 package unbbayes.aprendizagem.incrementalLearning.util;
 
+import java.util.ArrayList;
+
 import unbbayes.aprendizagem.LearningToolkit;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 
 /**
  * @author Administrador
@@ -32,7 +34,7 @@ import unbbayes.util.NodeList;
  */
 public class ILToolkit extends LearningToolkit {
 	
-	protected double g(LearningNode variable, NodeList parents,int[][]old){
+	protected double g(LearningNode variable, ArrayList<Node> parents,int[][]old){
 			double riSum = 0;
 			double qiSum = 0;
 			  int  nij  = 0;

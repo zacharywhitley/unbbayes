@@ -21,11 +21,11 @@
 package unbbayes.prs.bn;
 
 
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import unbbayes.prs.Node;
 import unbbayes.util.FloatCollection;
-import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 
@@ -49,7 +49,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	/**
 	 * Vari�veis que pertencem � tabela
 	 */
-	protected NodeList variaveis;
+	protected ArrayList<Node> variaveis;
 
 	/**
 	 * Dados armazenados em forma de lista do tipo primitivo float
@@ -74,7 +74,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 		modified = true;
 		dados = new FloatCollection();
 		dataCopy = new FloatCollection();
-		variaveis = new NodeList();
+		variaveis = new ArrayList<Node>();
 	}
 	
 	public void copyData() {
@@ -103,7 +103,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable 
 	 * 
 	 * @return COPIA da lista de variaveis desta tabela.
 	 */
-	public NodeList cloneVariables() {
+	public ArrayList<Node> cloneVariables() {
 		return SetToolkit.clone(variaveis);
 	}
 

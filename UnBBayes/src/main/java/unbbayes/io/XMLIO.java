@@ -60,7 +60,6 @@ import unbbayes.prs.id.UtilityNode;
 import unbbayes.prs.msbn.SingleAgentMSBN;
 import unbbayes.prs.msbn.SubNetwork;
 import unbbayes.util.ArrayMap;
-import unbbayes.util.NodeList;
 
 /** 
  * Manipulates I/O of XMLBIF file format
@@ -515,7 +514,7 @@ public class XMLIO implements BaseIO{
 			
 			if (node.getType() == Node.DECISION_NODE_TYPE) {
 				
-				NodeList auxListVa = node.getParents();
+				ArrayList<Node> auxListVa = node.getParents();
 				int sizeVa = auxListVa.size();
 				
 				//CONDSET

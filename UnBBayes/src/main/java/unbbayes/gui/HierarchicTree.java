@@ -40,6 +40,7 @@ import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Stack;
 
@@ -56,7 +57,6 @@ import unbbayes.controller.IconController;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.util.ArrayMap;
-import unbbayes.util.NodeList;
 
 /**
  * @author Mário Henrique Paes Vieira
@@ -69,7 +69,7 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
   private static final long serialVersionUID = 0;
 	
   private SingleEntityNetwork net;
-  private NodeList nodes;
+  private ArrayList<Node> nodes;
   private ArrayMap<DefaultMutableTreeNode, Node> objectsMap = new ArrayMap<DefaultMutableTreeNode, Node>();
   public static final boolean EXPLANATION_TYPE = true;
   public static final boolean DESCRIPTION_TYPE = false;
@@ -143,7 +143,7 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
       {
         this.net = net;
         objectsMap.clear();
-        NodeList nos;
+        ArrayList<Node> nos;
         if (nodeType == EXPLANATION_TYPE)
         {
           nos = net.getExplanationNodes();

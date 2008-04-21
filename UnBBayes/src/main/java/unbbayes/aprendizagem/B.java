@@ -21,8 +21,10 @@
 package unbbayes.aprendizagem;
 
 
+import java.util.ArrayList;
+
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -51,11 +53,11 @@ public class B extends BToolkit{
     * @see Tnij
     * @see TAprendizagemTollKit
     */
-  public B(NodeList variables, int[][] dataBase, int[] vector, long caseNumber,
+  public B(ArrayList<Node> variables, int[][] dataBase, int[] vector, long caseNumber,
                 String metric, String param, boolean compacted){  
     //LearningNode variable;
 	LearningNode variable;
-    NodeList parentsAux;
+	ArrayList<Node> parentsAux;
     double gi;
     double gj;
 //    double variation;

@@ -20,19 +20,21 @@
  */
 package unbbayes.aprendizagem;
 
+import java.util.ArrayList;
+
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 
 
 public class RelationInterationController {
 	
 	private RelationsWindow frame;
-	private NodeList variables;
+	private ArrayList<Node> variables;
 	
-	public RelationInterationController(RelationsWindow frame, NodeList variables){
+	public RelationInterationController(RelationsWindow frame, ArrayList<Node> variables){
 		this.frame = frame;
 		this.variables = variables;
 	}
@@ -52,7 +54,7 @@ public class RelationInterationController {
                               aux = (LearningNode)variables.get(j);
                               if (!(aux.getPai(""+index2).equals(""+index2))){
                                   aux = (LearningNode)variables.get(i);
-                                  NodeList auxVector = aux.getPais();
+                                  ArrayList<Node> auxVector = aux.getPais();
                                   for (int k = 0; k < auxVector.size() ; k++ ){
                                       LearningNode aux1 = (LearningNode)auxVector.get(k);
                                       if (aux1.getName().equals(""+index1)){
@@ -75,7 +77,7 @@ public class RelationInterationController {
 	
 	public void removeEvent(Object relation){	    
         String relationName = (String)relation;
-        NodeList auxVector  = new NodeList();
+        ArrayList<Node> auxVector  = new ArrayList<Node>();
         JList relationList  = frame.getRelationList();
         DefaultListModel relationListModel = (DefaultListModel)relationList.getModel();
         if (!relationList.isSelectionEmpty() && relation != null){

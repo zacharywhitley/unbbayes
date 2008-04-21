@@ -24,6 +24,7 @@ import java.awt.Cursor;
 import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import javax.swing.JInternalFrame;
@@ -45,7 +46,6 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.msbn.SingleAgentMSBN;
-import unbbayes.util.NodeList;
 import edu.isi.powerloom.PLI;
 import edu.stanford.smi.protegex.owl.ProtegeOWL;
 
@@ -295,7 +295,7 @@ public class MainController {
 	 * @param nodeList List of nodes to create the network.
 	 * @return The probabilistic network created.
 	 */
-	public ProbabilisticNetwork makeProbabilisticNetwork(NodeList nodeList) {
+	public ProbabilisticNetwork makeProbabilisticNetwork(ArrayList<Node> nodeList) {
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		ProbabilisticNetwork net = new ProbabilisticNetwork("learned net");
 		Node noFilho = null;

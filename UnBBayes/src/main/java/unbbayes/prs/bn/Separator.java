@@ -21,8 +21,10 @@
 package unbbayes.prs.bn;
 
 
+import java.util.ArrayList;
+
+import unbbayes.prs.Node;
 import unbbayes.prs.id.UtilityTable;
-import unbbayes.util.NodeList;
 
 /**
  *  Representa um separador na �rvore de Jun��o (JunctionTree) entre cliques.
@@ -36,7 +38,7 @@ public class Separator implements ITabledVariable, java.io.Serializable {
 	
     private PotentialTable tabelaPot;
     private PotentialTable utilityTable;
-    private NodeList nos;
+    private ArrayList<Node> nos;
 
     /**
      *  Guarda o primeiro clique, quando h� orienta��o assume sem�ntica como origem.
@@ -49,7 +51,7 @@ public class Separator implements ITabledVariable, java.io.Serializable {
     private Clique clique2;
     
     private Separator() {
-    	nos = new NodeList();
+    	nos = new ArrayList<Node>();
         tabelaPot = new ProbabilisticTable();
         utilityTable = new UtilityTable();
     }
@@ -89,7 +91,7 @@ public class Separator implements ITabledVariable, java.io.Serializable {
      *
      *@param  nodeList  lista de n�s clusterizados.
      */
-    public void setNodes(NodeList nos) {
+    public void setNodes(ArrayList<Node> nos) {
         this.nos = nos;
     }
 
@@ -118,7 +120,7 @@ public class Separator implements ITabledVariable, java.io.Serializable {
      *
      *@return    n�s clusterizados
      */
-    public NodeList getNodes() {
+    public ArrayList<Node> getNodes() {
         return nos;
     }
 

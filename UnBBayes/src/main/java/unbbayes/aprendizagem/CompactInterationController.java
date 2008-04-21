@@ -20,7 +20,10 @@
  */
 package unbbayes.aprendizagem;
 
-import unbbayes.util.NodeList;
+import java.util.ArrayList;
+
+import unbbayes.prs.Node;
+
 
 public class CompactInterationController {
     
@@ -31,7 +34,7 @@ public class CompactInterationController {
 		this.frame = frame;
 	}
 	
-	public void actionYes(NodeList variablesVector){
+	public void actionYes(ArrayList<Node> variablesVector){
 		frame.dispose();
 		new CompactChooseWindow(variablesVector);				
 	}

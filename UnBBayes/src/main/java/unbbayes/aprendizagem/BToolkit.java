@@ -20,8 +20,10 @@
  */
 package unbbayes.aprendizagem;
 
+import java.util.ArrayList;
+
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 public abstract class BToolkit extends PonctuationToolkit{
@@ -29,7 +31,7 @@ public abstract class BToolkit extends PonctuationToolkit{
 	protected double[][] gMatrix;
     protected boolean[] forefathers;
     protected boolean[] descendants;
-    protected NodeList variablesVector;
+    protected ArrayList<Node> variablesVector;
     
 	protected double[][] getGMatrix(){	
       return new double[variablesVector.size()][variablesVector.size()];
@@ -40,7 +42,7 @@ public abstract class BToolkit extends PonctuationToolkit{
     	double gk = 0;
     	LearningNode variable;
     	LearningNode aux;
-    	NodeList parentsAux;
+    	ArrayList<Node> parentsAux;
     	for(int i = 0; i < variablesVector.size(); i++){
             variable   = (LearningNode)variablesVector.get(i);            
        		gi = getG(variable,variable.getPais());
@@ -62,7 +64,7 @@ public abstract class BToolkit extends PonctuationToolkit{
     	}
     }
     
-    protected boolean isMember(LearningNode variable, NodeList list){
+    protected boolean isMember(LearningNode variable, ArrayList<Node> list){
         for(int i = 0 ; i < list.size(); i++){
             if(variable.getName().equals(((LearningNode)list.get(i)).getName())){
                 return true;
@@ -91,7 +93,7 @@ public abstract class BToolkit extends PonctuationToolkit{
   	
   	protected void setForefathers(LearningNode variable){
         LearningNode aux;
-        NodeList list = variable.getPais();
+        ArrayList<Node> list = variable.getPais();
         for(int j = 0 ; j < variablesVector.size(); j++)
            if(variable.getName().equals(((LearningNode)variablesVector.get(j)).getName())){
                 forefathers[j] = true;
@@ -106,7 +108,7 @@ public abstract class BToolkit extends PonctuationToolkit{
     protected void setDescendants(LearningNode variable){
         LearningNode aux;	
      	LearningNode aux2;
-     	NodeList list;
+     	ArrayList<Node> list;
      	for(int j = 0 ; j < variablesVector.size(); j++){
             if(variable.getName().equals(((LearningNode)variablesVector.get(j)).getName())){
                 descendants[j] = true;

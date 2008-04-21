@@ -31,9 +31,9 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import unbbayes.gui.InternalErrorDialog;
-import unbbayes.gui.StatusChangedEvent;
-import unbbayes.gui.StatusObservable;
-import unbbayes.gui.StatusObserver;
+import unbbayes.gui.util.StatusChangedEvent;
+import unbbayes.gui.util.StatusObservable;
+import unbbayes.gui.util.StatusObserver;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.mebn.Argument;
@@ -1360,7 +1360,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 				}
 				else{
 					try{
-					   resident.addArgument(argumentOfPosition.getOVariable());
+					   resident.addArgument(argumentOfPosition.getOVariable(), false);
 					}
 					catch(Exception e){
 						new InternalErrorDialog(); 

@@ -158,7 +158,7 @@ public class GuiResources extends ListResourceBundle {
 		{"siglaLabel","Sigla:"},
 		{"nameLabel", "Name:"}, 
 		{"typeLabel", "Type:"}, 
-		{"descriptionLabel","Description"},
+		{"descriptionLabel","Description:"},
 		{"ordereableLabel", "Is Ordenable"}, 
 		{"compileToolTip","Compile junction tree"},
 		{"moreToolTip","Add state"},

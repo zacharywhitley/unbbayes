@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.StreamTokenizer;
+import java.util.ArrayList;
 import java.util.Date;
 
 import javax.swing.JOptionPane;
@@ -35,7 +36,6 @@ import unbbayes.gui.UnBBayesFrame;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
 import unbbayes.prs.bn.ProbabilisticNetwork;
-import unbbayes.util.NodeList;
 
 /*
  * UnbBayes Copyright (C) 2002 Universidade de Brasília
@@ -65,8 +65,8 @@ import unbbayes.util.NodeList;
 
 public class ConstructionController {
 
-	private NodeList variablesVector;
-	private NodeList variables;
+	private ArrayList<Node> variablesVector;
+	private ArrayList<Node> variables;
 	private int[] vector;
 	private int[][] matrix;
 	private long caseNumber;
@@ -107,8 +107,8 @@ public class ConstructionController {
 			br = new BufferedReader(isr);
 			StreamTokenizer cols = new StreamTokenizer(br);
 			setColsConstraints(cols);
-			variablesVector = new NodeList();
-			variables = new NodeList();
+			variablesVector = new ArrayList<Node>();
+			variables = new ArrayList<Node>();
 			makeVariablesVector(cols);
 			new ChooseVariablesWindow(variablesVector);
 			new CompactFileWindow(variablesVector);
@@ -134,8 +134,8 @@ public class ConstructionController {
 			br = new BufferedReader(isr);
 			StreamTokenizer cols = new StreamTokenizer(br);
 			setColsConstraints(cols);
-			variablesVector = new NodeList();
-			variables = new NodeList();
+			variablesVector = new ArrayList<Node>();
+			variables = new ArrayList<Node>();
 			makeVariablesVector(cols);
 			filterVariablesVector(rows);
 			matrix = new int[rows][variables.size()];
@@ -176,8 +176,8 @@ public class ConstructionController {
 			br = new BufferedReader(isr);
 			StreamTokenizer cols = new StreamTokenizer(br);
 			setColsConstraints(cols);
-			variablesVector = new NodeList();
-			variables = new NodeList();
+			variablesVector = new ArrayList<Node>();
+			variables = new ArrayList<Node>();
 			makeVariablesVector(cols);
 			new ChooseVariablesWindow(variablesVector);
 			new CompactFileWindow(variablesVector);
@@ -236,8 +236,8 @@ public class ConstructionController {
 			br = new BufferedReader(isr);
 			StreamTokenizer cols = new StreamTokenizer(br);
 			setColsConstraints(cols);
-			variablesVector = new NodeList();
-			variables = new NodeList();
+			variablesVector = new ArrayList<Node>();
+			variables = new ArrayList<Node>();
 			makeVariablesVector(cols);
 			ChooseVariablesWindow cvw = new ChooseVariablesWindow(variablesVector, 0);
 			classex = cvw.classei;
@@ -263,7 +263,7 @@ public class ConstructionController {
 
 		int i, j;
 		j = variables.size();
-		NodeList variaveis = new NodeList();
+		ArrayList<Node> variaveis = new ArrayList<Node>();
 		variaveis.ensureCapacity(j + 1);
 
 		for (i = 0; i < classex; i++)
@@ -314,8 +314,8 @@ public class ConstructionController {
 			br = new BufferedReader(isr);
 			StreamTokenizer cols = new StreamTokenizer(br);
 			setColsConstraints(cols);
-			variablesVector = new NodeList();
-			variables = new NodeList();
+			variablesVector = new ArrayList<Node>();
+			variables = new ArrayList<Node>();
 			makeVariablesVector(cols);
 			ChooseVariablesWindow cvw = new ChooseVariablesWindow(
 					variablesVector, 0);
@@ -576,7 +576,7 @@ public class ConstructionController {
 		return this.matrix;
 	}
 
-	public NodeList getVariables() {
+	public ArrayList<Node> getVariables() {
 		return this.variables;
 	}
 
@@ -592,7 +592,7 @@ public class ConstructionController {
 		return compacted;
 	}
 
-	public NodeList getVariablesVector() {
+	public ArrayList<Node> getVariablesVector() {
 		return variablesVector;
 	}
 }

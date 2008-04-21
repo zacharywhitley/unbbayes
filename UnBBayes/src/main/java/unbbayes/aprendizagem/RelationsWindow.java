@@ -26,6 +26,7 @@ import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -36,8 +37,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 
 /**
  * Class for building a screen which defines relations between
@@ -66,7 +67,7 @@ public class RelationsWindow extends JDialog{
     private JButton addButton;
     private JButton removeButton;
     private JButton continueButton;
-    private NodeList variables;
+    private ArrayList<Node> variables;
     private RelationInterationController relationController;
 
     /**
@@ -80,7 +81,7 @@ public class RelationsWindow extends JDialog{
      * @see DefaultListModel
      * @see JScrollPane
      */
-    public  RelationsWindow(NodeList variables){
+    public  RelationsWindow(ArrayList<Node> variables){
        super(new Frame(), "UnBBayes - Learning Module", true);
        Container container = getContentPane();
        this.variables = variables;       

@@ -20,8 +20,10 @@
  */
 package unbbayes.datamining.discretize;
 
+import java.util.ArrayList;
+
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 import unbbayes.util.SwingWorker;
 import unbbayes.datamining.gui.preprocessor.janeladiscret;
 
@@ -33,7 +35,7 @@ import unbbayes.datamining.gui.preprocessor.janeladiscret;
  */
 public class dalgo2 extends Thread {
 
-	public NodeList variables;
+	public ArrayList<Node> variables;
 
 	public int[][] originalmatrix;
 
@@ -81,8 +83,8 @@ public class dalgo2 extends Thread {
 		originalmatrix = tempmatrix;
 	}
 
-	public void Setvariables(NodeList vari) {
-		variables = new NodeList();
+	public void Setvariables(ArrayList<Node> vari) {
+		variables = new ArrayList<Node>();
 		variables.ensureCapacity(30);
 		variables.addAll(vari);
 		// variables=vari;

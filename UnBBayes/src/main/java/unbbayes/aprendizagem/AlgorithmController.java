@@ -20,7 +20,10 @@
  */
 package unbbayes.aprendizagem;
 
-import unbbayes.util.NodeList;
+import java.util.ArrayList;
+
+import unbbayes.prs.Node;
+
 
 /**
  * @author Danilo 
@@ -33,7 +36,7 @@ public class AlgorithmController{
 	/**
 	 * 
 	 */
-	public AlgorithmController(NodeList variables,int[][] matrix, int[] vector,
+	public AlgorithmController(ArrayList<Node> variables,int[][] matrix, int[] vector,
 	        long caseNumber, String[] pamp, boolean compacted){	        	
 	        if(pamp[0].equalsIgnoreCase("Ponctuation")){
 	        	if(pamp[1].equalsIgnoreCase("k2")){
@@ -51,7 +54,7 @@ public class AlgorithmController{
 	        }	        
 	} 
 	
-	public AlgorithmController(NodeList variables,int[][] matrix, int[] vector,
+	public AlgorithmController(ArrayList<Node> variables,int[][] matrix, int[] vector,
 	        long caseNumber, String[] pamp, boolean compacted, int classex){	        	
 	        if(pamp[0].equalsIgnoreCase("Ponctuation")){
 	        	if(pamp[1].equalsIgnoreCase("k2")){

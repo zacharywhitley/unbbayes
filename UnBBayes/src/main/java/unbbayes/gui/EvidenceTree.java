@@ -25,6 +25,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Locale;
 
@@ -45,7 +46,6 @@ import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.util.ArrayMap;
-import unbbayes.util.NodeList;
 
 /**
  * @author Mário Henrique Paes Vieira
@@ -259,7 +259,7 @@ public class EvidenceTree extends JTree {
 					.getRoot());
 		this.setModel(model);
 		root = (DefaultMutableTreeNode) getModel().getRoot();
-		NodeList nodes = net.getNodesCopy();
+		ArrayList<Node> nodes = net.getNodesCopy();
 		int size = nodes.size();
 		for (int i = 0; i < size; i++) {
 			Node node = (Node) nodes.get(i);

@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import unbbayes.prs.Node;
+
 /**
  *  Classe que fornece m�todos est�ticos para opera��es (uni�o e intersecao)
  *  entre conjuntos (List). A opera��o de subtra��o e de pertin�ncia s�o
@@ -55,16 +57,15 @@ public class SetToolkit {
         return result;
     }
 
-
     /**
-     *  Realiza a uni�o entre dois conjuntos.
+     *  Make the union between two sets
      *
      *@param  conjuntoA  conjunto A
      *@param  conjuntoB  conjunto B
      *@return            A uni�o B
      */
-    public static NodeList union(NodeList conjuntoA, NodeList conjuntoB) {
-        NodeList result = new NodeList(conjuntoA.size() + conjuntoB.size());
+    public static ArrayList<Node> union(ArrayList<Node> conjuntoA, ArrayList<Node> conjuntoB) {
+    	ArrayList<Node> result = new ArrayList<Node>(conjuntoA.size() + conjuntoB.size());
         result.addAll(conjuntoA);
         for (int c1 = 0; c1 < conjuntoB.size(); c1++) {
             if (! conjuntoA.contains(conjuntoB.get(c1))) {
@@ -74,7 +75,6 @@ public class SetToolkit {
 
         return result;
     }
-
 
     /**
      *  Realiza a interse��o entre dois conjuntos.
@@ -97,8 +97,8 @@ public class SetToolkit {
      *@param  conjuntoB  conjunto B
      *@return            A interse��o B
      */
-    public static NodeList intersection(NodeList conjuntoA, NodeList conjuntoB) {
-        NodeList result = clone(conjuntoA);
+    public static  ArrayList<Node> intersection( ArrayList<Node> conjuntoA,  ArrayList<Node> conjuntoB) {
+    	 ArrayList<Node> result = clone(conjuntoA);
         result.retainAll(conjuntoB);
         return result;
     }
@@ -116,9 +116,8 @@ public class SetToolkit {
         }
     }
     
-    
-    public static NodeList clone(NodeList conjunto) {
-    	NodeList result = new NodeList(conjunto.size());
+    public static ArrayList<Node> clone(ArrayList<Node> conjunto) {
+    	ArrayList<Node> result = new ArrayList<Node>();
     	result.addAll(conjunto);
     	return result;
     }

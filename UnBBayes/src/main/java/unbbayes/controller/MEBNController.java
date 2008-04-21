@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
@@ -82,7 +81,6 @@ import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
-import unbbayes.util.NodeList;
 import unbbayes.util.ResourceController;
 
 /**
@@ -1517,7 +1515,7 @@ public class MEBNController  {
 		}
 
 		// Order by node description just to make tree's visualization easy.
-		NodeList nos = network.getNodesCopy();
+		ArrayList<Node> nos = network.getNodesCopy();
 		boolean haTroca = true;
 		while (haTroca) {
 			haTroca = false;

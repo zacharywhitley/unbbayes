@@ -20,8 +20,10 @@
  */
 package unbbayes.aprendizagem;
 
+import java.util.ArrayList;
+
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 
 public abstract class PonctuationToolkit extends LearningToolkit{
   	
@@ -32,7 +34,7 @@ public abstract class PonctuationToolkit extends LearningToolkit{
     private int metric;    
     
     
-    protected double gMDL(LearningNode variable, NodeList parents){
+    protected double gMDL(LearningNode variable, ArrayList<Node> parents){
 		double riSum = 0;
 		double qiSum = 0;
         int  nij  = 0;
@@ -62,7 +64,7 @@ public abstract class PonctuationToolkit extends LearningToolkit{
 	}
 	
    
-   protected double gGH(LearningNode variable, NodeList parents){
+   protected double gGH(LearningNode variable, ArrayList<Node> parents){
        double rSum;
        double sSum;
        double tSum;
@@ -92,7 +94,7 @@ public abstract class PonctuationToolkit extends LearningToolkit{
        return qiSum;              
    }
    
-   protected double gGHS(LearningNode variable, NodeList parents){
+   protected double gGHS(LearningNode variable, ArrayList<Node> parents){
        double rSum;
        double sSum;
        double tSum;
@@ -122,7 +124,7 @@ public abstract class PonctuationToolkit extends LearningToolkit{
        return qiSum;
    }	
    
-   protected double getG(LearningNode variable , NodeList parents){
+   protected double getG(LearningNode variable , ArrayList<Node> parents){
        switch(metric){       
            case 0 : return gGH(variable, parents);
            case 1 : return gMDL(variable, parents);

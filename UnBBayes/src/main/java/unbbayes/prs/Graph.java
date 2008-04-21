@@ -20,8 +20,8 @@
  */
 package unbbayes.prs;
 
+import java.util.ArrayList;
 import java.util.List;
-import unbbayes.util.NodeList;
 
 /** 
  * Interface for a graph building of Node's and Edge's
@@ -43,7 +43,7 @@ public interface Graph {
 		 * 
 		 * @todo Eliminar esse metodo! eh utilizado na classe NetWindow
 		 */
-		public NodeList getNodes();
+		public ArrayList<Node> getNodes();
 
 		/**
 		 *  Returna o n�mero de vari�veis da rede.

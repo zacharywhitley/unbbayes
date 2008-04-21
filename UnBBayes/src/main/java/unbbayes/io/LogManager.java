@@ -24,6 +24,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -32,7 +33,6 @@ import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.Separator;
-import unbbayes.util.NodeList;
 
 /**
  * Responsible for generating network compilation log
@@ -94,7 +94,7 @@ public class LogManager implements java.io.Serializable {
         out.close();
     }
 
-    public void finishLog(JunctionTree tree, NodeList nodes) {
+    public void finishLog(JunctionTree tree, ArrayList<Node> nodes) {
         List clicks = tree.getCliques();
         Clique auxClique;
         Node node;

@@ -21,9 +21,10 @@
 package unbbayes.prs.bn;
 
 
+import java.util.ArrayList;
+
 import unbbayes.prs.Node;
 import unbbayes.prs.id.JunctionTreeID;
-import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -46,7 +47,7 @@ public class ProbabilisticNetwork
 	 */
 	public ProbabilisticNetwork(String id) {
 		super(id);							
-		oe = new NodeList();
+		oe = new ArrayList<Node>();
 		firstInitialization = true;
 	}
 	
@@ -56,7 +57,7 @@ public class ProbabilisticNetwork
 	 */
 	private void triangula() {		
 		Node aux;
-		NodeList auxNos;
+		ArrayList<Node> auxNos;
 
 		if (createLog) {
 			logManager.append(resource.getString("triangulateLabel"));
@@ -71,7 +72,7 @@ public class ProbabilisticNetwork
 			auxNos.removeAll(aux.getParents());
 		}
 
-		oe = new NodeList(copiaNos.size());
+		oe = new ArrayList<Node>(copiaNos.size());
 
 		while (minimumWeightElimination(auxNos))
 			;
@@ -105,7 +106,7 @@ public class ProbabilisticNetwork
 		makeAdjacents();
 	}
 
-	private void removeUtilityNodes(NodeList nodes) {
+	private void removeUtilityNodes(ArrayList<Node> nodes) {
 		for (int i = nodes.size() - 1; i >= 0; i--) {
 			if (nodes.get(i).getType() == Node.UTILITY_NODE_TYPE) {
 				nodes.remove(i);

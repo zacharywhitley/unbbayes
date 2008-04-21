@@ -23,6 +23,7 @@ package unbbayes.io.mebn;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
@@ -32,7 +33,6 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.util.NodeList;
 
 public class TestMebnIO {
 	
@@ -70,7 +70,7 @@ public class TestMebnIO {
 			System.out.println("\n\n-----> MFrag: " + domainMFrag.getName() + "\n");
 			
 			System.out.println("\n-> nodeList: "); 
-			NodeList nodeList = domainMFrag.getNodeList(); 
+			ArrayList<Node> nodeList = domainMFrag.getNodeList(); 
 			int sizeNodeList = nodeList.size(); 
 			for(int i = 0; i < sizeNodeList ; i++){
 				System.out.println(nodeList.get(i).getName()); 

@@ -40,13 +40,11 @@ import unbbayes.prs.mebn.compiler.exception.InvalidProbabilityRangeException;
 import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredException;
 import unbbayes.prs.mebn.compiler.exception.SomeStateUndeclaredException;
 import unbbayes.prs.mebn.compiler.exception.TableFunctionMalformedException;
-import unbbayes.prs.mebn.compiler.exception.UndeclaredTableException;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.util.Debug;
-import unbbayes.util.NodeList;
 
 
 /*
@@ -1387,7 +1385,7 @@ public class Compiler implements ICompiler {
 			if (node.getParents().contains(conditionant)) {
 				return true;
 			} else {	// parent may be an input node
-				NodeList parents = node.getParents();
+				ArrayList<Node> parents = node.getParents();
 				for (int i = 0; i < parents.size(); i++) {
 					if (parents.get(i) instanceof InputNode) {
 						if ( ((InputNode)(parents.get(i))).getInputInstanceOf().equals(conditionant) ) {

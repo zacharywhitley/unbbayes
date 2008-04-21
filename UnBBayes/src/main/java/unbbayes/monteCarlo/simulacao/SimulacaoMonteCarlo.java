@@ -28,7 +28,6 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.util.NodeList;
 
 /**
  * 
@@ -44,7 +43,7 @@ public class SimulacaoMonteCarlo {
 	
 	private ProbabilisticNetwork pn;
 	private int nCasos;
-	private NodeList fila;
+	private ArrayList<Node> fila;
 	
 	
 	/**
@@ -59,7 +58,7 @@ public class SimulacaoMonteCarlo {
 	}
 	
 	private void iniciar(){
-		fila = new NodeList();		
+		fila = new ArrayList<Node>();		
 		criarFila();
 		byte [][] matrizFila = new byte[nCasos][pn.getNodeCount()];		
 		for(int i = 0; i < nCasos; i++){						
@@ -86,7 +85,7 @@ public class SimulacaoMonteCarlo {
 		}			
 	}
 	
-	private void adicionaFila(NodeList filhos,boolean[] visitados){
+	private void adicionaFila(ArrayList<Node> filhos,boolean[] visitados){
 		for(int i = 0 ; i < filhos.size(); i++){
 			Node n1 = filhos.get(i);
 			for(int j = 0 ; j < pn.getNodeCount(); j++){
@@ -120,7 +119,7 @@ public class SimulacaoMonteCarlo {
 	
 	private List<Integer> getIndices(ProbabilisticNode n){
 		List<Integer> indices = new ArrayList<Integer>();
-		NodeList pais = n.getParents();		
+		ArrayList<Node> pais = n.getParents();		
 		for(int i = 0 ; i < pais.size();i++){
 			Node n1 = pais.get(i);
 			indices.add(getIndiceFila(n1));						
@@ -190,7 +189,7 @@ public class SimulacaoMonteCarlo {
 		int indice;
 		double[] coluna = new double[numeroEstados];
 		int[] coordenadas = new int[indicesAnteriores.size()+1];
-		NodeList parents = new NodeList();		
+		ArrayList<Node> parents = new ArrayList<Node>();		
 		for(int i = 0; i < n.getStatesSize(); i++){				
 			coordenadas[0] = i;
 			if(i == 0){
@@ -221,7 +220,7 @@ public class SimulacaoMonteCarlo {
 		return coluna;
 	}
 	
-	public  final int getLinearCoord(int coord[], NodeList parents) {
+	public  final int getLinearCoord(int coord[], ArrayList<Node> parents) {
         int fatores[] = calcularFatores(parents);
         int coordLinear = 0;
         int sizeVariaveis = parents.size();
@@ -233,7 +232,7 @@ public class SimulacaoMonteCarlo {
         return coordLinear;        
     }
     
-	 protected int[] calcularFatores(NodeList variaveis) {		
+	 protected int[] calcularFatores(ArrayList<Node> variaveis) {		
 		int sizeVariaveis = variaveis.size();
 		int fatores[] = null;
 		if (fatores == null || fatores.length < sizeVariaveis) {

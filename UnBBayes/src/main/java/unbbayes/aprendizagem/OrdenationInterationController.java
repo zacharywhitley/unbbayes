@@ -22,22 +22,23 @@ package unbbayes.aprendizagem;
 
 
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 
 public class OrdenationInterationController {
 	
-	private NodeList variables;
+	private ArrayList<Node> variables;
 	private OrdenationWindow frame;
 	/*Paradigm algorithm metric parameter*/
 	private String[] pamp;
 	
-	public OrdenationInterationController(NodeList variables, OrdenationWindow frame){
+	public OrdenationInterationController(ArrayList<Node> variables, OrdenationWindow frame){
 		this.variables = variables;
 		this.frame = frame;				
 		pamp = new String[4];			
@@ -46,7 +47,7 @@ public class OrdenationInterationController {
 	public void upEvent(){
 		JList ordenationJL = frame.getOrdenationJL();		
 		DefaultListModel listModel   =  (DefaultListModel)ordenationJL.getModel();
-		NodeList auxVector = new NodeList();
+		ArrayList<Node> auxVector = new ArrayList<Node>();
         String auxName = (String)ordenationJL.getSelectedValue();
         LearningNode aux = null;
         int index = ordenationJL.getSelectedIndex();
@@ -76,7 +77,7 @@ public class OrdenationInterationController {
 	public void downEvent(){
 		JList ordenationJL = frame.getOrdenationJL();		
 		DefaultListModel listModel   =  (DefaultListModel)ordenationJL.getModel();
-		NodeList auxVector = new NodeList();
+		ArrayList<Node> auxVector = new ArrayList<Node>();
         String auxName = (String)ordenationJL.getSelectedValue();
         LearningNode aux = null;
         int index = ordenationJL.getSelectedIndex();
@@ -161,7 +162,7 @@ public class OrdenationInterationController {
         }		
 	}	
 	
-	public NodeList getVariables(){
+	public ArrayList<Node> getVariables(){
 		return this.variables;	
 	}
 

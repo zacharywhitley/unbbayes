@@ -20,20 +20,21 @@
  */
 package unbbayes.aprendizagem;
 
+import java.util.ArrayList;
+
 import unbbayes.controller.MainController;
 import unbbayes.gui.LearningPNEditionDialog;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
-import unbbayes.util.NodeList;
 
 
 public class ProbabilisticController extends LearningToolkit{
 
     //private boolean ok; 
     
-    public ProbabilisticController(NodeList variables,int[][] matrix,
+    public ProbabilisticController(ArrayList<Node> variables,int[][] matrix,
                        int[] vector,long caseNumber, MainController controller, boolean compacted){
         this.compacted = compacted;
         this.dataBase = matrix;

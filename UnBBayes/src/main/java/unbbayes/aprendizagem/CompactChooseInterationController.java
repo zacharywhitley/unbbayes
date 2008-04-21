@@ -20,10 +20,12 @@
  */
 package unbbayes.aprendizagem;
 
+import java.util.ArrayList;
+
 import javax.swing.JComboBox;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 public class CompactChooseInterationController {
 	
 	private CompactChooseWindow frame;
@@ -32,7 +34,7 @@ public class CompactChooseInterationController {
 		this.frame = frame;		
 	}
 	
-	public void actionOk(JComboBox variablesCombo, NodeList variablesVector){
+	public void actionOk(JComboBox variablesCombo, ArrayList<Node> variablesVector){
 		frame.dispose();
 		String name = (String)variablesCombo.getSelectedItem();
             LearningNode aux;

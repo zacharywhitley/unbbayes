@@ -57,7 +57,6 @@ import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.util.GeometricUtil;
-import unbbayes.util.NodeList;
 
 
 /**
@@ -79,7 +78,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	private NetworkController controller;
 	private List<Edge> edgeList;
 	// TODO Substituir essa lista de n�s por generics como est� acima com a lista de Edge. Fazer isso em todo lugar que for necess�rio, at� que se possa exluir o NodeList 
-	private NodeList nodeList;
+	private ArrayList<Node> nodeList;
 	private List<IDrawable> selectedGroup;
 	private IDrawable selected;
 	private Graphics2D graphBoard;
@@ -1078,7 +1077,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 	
 	public void showEmptyGraph(){
 	    edgeList = new ArrayList<Edge>();
-	    nodeList = new NodeList();  
+	    nodeList = new ArrayList<Node>();  
 	    
 		selectedGroup = new ArrayList<IDrawable>();
 		startSelectionPoint = new Point2D.Double();

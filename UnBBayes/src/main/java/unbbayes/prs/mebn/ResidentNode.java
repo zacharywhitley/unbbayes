@@ -334,18 +334,34 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	 * Add a ov in the list of arguments in this resident node
 	 * 
 	 * @param ov
+	 * 
+	 * @param addArgument true if a Argument object shoud be create for the ov. 
+	 *        Otherside the method addArgumenet(Argument) should to be called 
+	 *        for mantain the consistency of the structure. 
+	 * 
 	 * @throws ArgumentNodeAlreadySetException
+	 * 
 	 * @throws OVariableAlreadyExistsInArgumentList
 	 */
-	public void addArgument(OrdinaryVariable ov) throws ArgumentNodeAlreadySetException, 
+	public void addArgument(OrdinaryVariable ov, boolean addArgument) throws ArgumentNodeAlreadySetException, 
 	OVariableAlreadyExistsInArgumentList{
 		
 		if(ordinaryVariableList.contains(ov)){
 			throw new OVariableAlreadyExistsInArgumentList(); 
 		}
 		else{
+			int position = ordinaryVariableList.size();
+			
 			ordinaryVariableList.add(ov); 
 			ov.addIsOVariableOfList(this); 
+			
+			//update the argument list
+			if(addArgument){
+				Argument argument = new Argument("", this); 
+				argument.setArgNumber(position + 1);
+				argument.setOVariable(ov); 
+				this.addArgument(argument); 
+			}
 			
 			for(InputNode inputNode: inputInstanceFromList){
 				inputNode.updateResidentNodePointer(); 
@@ -355,16 +371,25 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 		}
 	}
 	
-
-	
 	public void removeArgument(OrdinaryVariable ov){
 		
 		ordinaryVariableList.remove(ov);
 
+		int indexOfArgumentRemoved = 0; 
 		for(Argument argument: super.getArgumentList()){
 			if(argument.getOVariable() == ov){
+				indexOfArgumentRemoved = argument.getArgNumber(); 
 				super.removeArgument(argument); 
-				return; 
+				break;  
+			}
+		}
+		
+		//Update the position of the arguments
+		//This can be simplified with the ordenation of the list of arguments
+		//how a pre-requisite
+		for(Argument argument: super.getArgumentList()){
+			if(argument.getArgNumber() > indexOfArgumentRemoved){
+				argument.setArgNumber(argument.getArgNumber() - 1); 
 			}
 		}
 		

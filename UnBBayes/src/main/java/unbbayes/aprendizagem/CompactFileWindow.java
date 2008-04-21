@@ -26,14 +26,15 @@ import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 
 /**
  * Class which builds a screen where the user should inform the program if the archive
@@ -46,7 +47,7 @@ public class CompactFileWindow extends JDialog
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
-    private NodeList variablesVector;
+    private ArrayList<Node> variablesVector;
     private JPanel centerPanel;
     private JButton yes;
     private JButton no;
@@ -60,7 +61,7 @@ public class CompactFileWindow extends JDialog
      * @see Container
      * @see JDialog
      */
-    CompactFileWindow(NodeList variablesVector){
+    CompactFileWindow(ArrayList<Node> variablesVector){
         super(new Frame(), "UnBBayes - Learning Module", true);
         Container container = getContentPane();
         this.variablesVector = variablesVector;

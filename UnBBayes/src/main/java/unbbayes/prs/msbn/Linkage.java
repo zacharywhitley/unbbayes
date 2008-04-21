@@ -23,11 +23,11 @@ package unbbayes.prs.msbn;
 import java.util.ArrayList;
 import java.util.List;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.Separator;
-import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -36,7 +36,7 @@ import unbbayes.util.SetToolkit;
  */
 public class Linkage {
 	private SubNetwork n1, n2;
-	private NodeList nodes;
+	private  ArrayList<Node> nodes;
 	
 	private JunctionTree jt;
 	private ArrayList<Link> linkList;
@@ -264,7 +264,7 @@ public class Linkage {
 			Separator sep = jt.getSeparatorAt(i);
 			PotentialTable oldRedTab = (PotentialTable) sep.getPotentialTable().clone();
 			
-			NodeList toDie = SetToolkit.clone(sep.getClique2().getNodes());
+			 ArrayList<Node> toDie = SetToolkit.clone(sep.getClique2().getNodes());
 			toDie.removeAll(sep.getNodes());
 			PotentialTable tA =
 				(PotentialTable) sep.getClique2().getPotentialTable().clone();

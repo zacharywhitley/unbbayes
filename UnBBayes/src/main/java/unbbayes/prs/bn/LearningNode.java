@@ -20,9 +20,10 @@
  */
 package unbbayes.prs.bn;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.util.NodeList;
+import unbbayes.prs.Node;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -41,7 +42,7 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
 	
-    private NodeList predecessores;
+    private ArrayList<Node> predecessores;
     private LearningNode variavelAux;
     private int numeroMaximoPais;
     private int pos;
@@ -58,7 +59,7 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
     public LearningNode(String nome, int pos){
         super();
         setName(nome);
-        predecessores = new NodeList();
+        predecessores = new ArrayList<Node>();
         numeroMaximoPais = 10;
         participa = true;
         this.pos = pos;
@@ -153,7 +154,7 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
      * @return List - Array de predecessores da vari�vel
      * @see List
      */
-    public NodeList getPredecessores(){
+    public ArrayList<Node> getPredecessores(){
         return predecessores;
     }
 
@@ -162,7 +163,7 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
      * @return List - Array de pais da vari�vel
      * @see List
      */
-    public NodeList getPais(){
+    public ArrayList<Node> getPais(){
         return parents;
     }
 
@@ -195,7 +196,7 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
      */
     public int getTamanhoPais(){
         if (parents == null){
-            parents = new NodeList();
+            parents = new ArrayList<Node>();
         }
         return parents.size();
     }
@@ -323,7 +324,7 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
      * @see Clone()
      */
     private void setPais(Object parents){
-        this.parents = (NodeList)parents;
+        this.parents = (ArrayList<Node>)parents;
     }
 
     /**
@@ -343,6 +344,6 @@ public class LearningNode extends ProbabilisticNode implements Cloneable {
      * @see Clone()
      */
     private void setPredecessores(Object predecessores){
-        this.predecessores = (NodeList)predecessores;
+        this.predecessores = (ArrayList<Node>)predecessores;
     }
 }

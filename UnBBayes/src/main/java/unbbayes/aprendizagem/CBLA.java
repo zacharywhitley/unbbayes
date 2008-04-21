@@ -22,15 +22,15 @@ package unbbayes.aprendizagem;
 
 import java.util.ArrayList;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 
 
 public class CBLA extends CBLToolkit{
 	
 	
 	
-	public CBLA(NodeList variables, int[][] dataBase, int[] vector,
+	public CBLA( ArrayList<Node> variables, int[][] dataBase, int[] vector,
 	             long caseNumber, String param, boolean compacted){
 	    this.variablesVector = variables;
         this.separators = new ArrayList<Object[]>();	    

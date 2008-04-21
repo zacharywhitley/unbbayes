@@ -22,6 +22,7 @@ package unbbayes.controller;
 
 import java.awt.Cursor;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
@@ -44,7 +45,6 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
-import unbbayes.util.NodeList;
 
 public class SENController {
 
@@ -163,7 +163,7 @@ public class SENController {
 		}
 
 		// Order by node description just to make tree's visualization easy.
-		NodeList nos = singleEntityNetwork.getNodesCopy();
+		ArrayList<Node> nos = singleEntityNetwork.getNodesCopy();
 		boolean haTroca = true;
 		while (haTroca) {
 			haTroca = false;

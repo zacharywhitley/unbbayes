@@ -68,7 +68,6 @@ import unbbayes.prs.mebn.exception.CycleFoundException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.prs.mebn.ssbn.BottomUpSSBNGenerator;
-import unbbayes.util.NodeList;
 
 /**
  * This class is responsible for delegating instructions that is going to be 
@@ -789,16 +788,16 @@ public class NetworkController implements KeyListener {
      * Otherwise, all objects from the network are considered.
      */
     public Rectangle calculateNetRectangle() {
-        NodeList nos;
+    	ArrayList<Node> nos;
         List vetorAux = screen.getGraphPane().getSelectedGroup();
 
         if (vetorAux.size() == 0) {
-            nos = new NodeList();
+            nos = new ArrayList<Node>();
             for (int i = 0; i < singleEntityNetwork.getNodeCount(); i++) {
             	nos.add(i, singleEntityNetwork.getNodeAt(i));
             }
         } else {
-            nos = new NodeList();
+            nos = new ArrayList<Node>();
             for (int i = 0; i < vetorAux.size(); i++) {
                 if (vetorAux.get(i) instanceof Node) {
                     nos.add((Node)vetorAux.get(i));

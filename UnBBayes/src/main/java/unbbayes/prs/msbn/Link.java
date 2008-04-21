@@ -20,9 +20,11 @@
  */
 package unbbayes.prs.msbn;
 
+import java.util.ArrayList;
+
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.PotentialTable;
-import unbbayes.util.NodeList;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -57,7 +59,7 @@ public class Link {
 		
 		originalLinkTable = (PotentialTable) clique.getPotentialTable().clone();
 				
-		NodeList toDie = SetToolkit.clone(c2.getNodes());
+		ArrayList<Node> toDie = SetToolkit.clone(c2.getNodes());
 		toDie.removeAll(clique.getNodes());
 		newLinkTable = 
 			(PotentialTable) c2.getPotentialTable().clone();

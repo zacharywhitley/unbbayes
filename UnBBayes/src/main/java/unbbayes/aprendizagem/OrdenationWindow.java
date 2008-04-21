@@ -30,6 +30,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -43,8 +44,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
-import unbbayes.util.NodeList;
 
 public class OrdenationWindow extends JDialog {	
     
@@ -73,10 +74,10 @@ public class OrdenationWindow extends JDialog {
     private JTextField txtParam;    
     private JComboBox paradigmList;
     private JComboBox metricList;
-	private NodeList variables;
+	private ArrayList<Node> variables;
 	private OrdenationInterationController ordenationController;
 	
-	public OrdenationWindow(NodeList variables){
+	public OrdenationWindow(ArrayList<Node> variables){
 	    super(new Frame(),"UnBBayes - Learning Module",true);	    
 	    this.variables = variables;
 	    Container container = getContentPane();	    

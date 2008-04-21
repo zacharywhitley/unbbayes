@@ -1,4 +1,5 @@
-package unbbayes.gui;
+package unbbayes.gui.util;
+
 
 /**
  * Represents a object that have your state observable

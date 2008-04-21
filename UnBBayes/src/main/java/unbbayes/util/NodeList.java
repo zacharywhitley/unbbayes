@@ -26,13 +26,10 @@ import java.util.ResourceBundle;
 
 import unbbayes.prs.Node;
 
-
 /**
- * Class that represents a dinamic array of type Node
- * 
- * @author Michael
- * @author Rommel
+ * DON'T USE MORE THIS!!!!!!!! USE A ARRAY LIST.... 
  */
+@Deprecated
 public final class NodeList implements java.io.Serializable {
 
 	/** Serialization runtime version number */
@@ -46,20 +43,24 @@ public final class NodeList implements java.io.Serializable {
     List list = new ArrayList(); 
     
     /** Load resource file from this package */
-  	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.util.resources.UtilResources");
+  	private static ResourceBundle resource = 
 
-    public NodeList(int initialCapacity) {
-        if (initialCapacity < 0)
-            throw new IllegalArgumentException(resource.getString("IllegalCapacityException") +
-                                               initialCapacity);
-        this.data = new Node[initialCapacity];
-    }
+ResourceBundle.getBundle("unbbayes.util.resources.UtilResources");
 
-    public NodeList() {
-       this(DEFAULT_SIZE);
-    } 
+//    public NodeList(int initialCapacity) {
+//        if (initialCapacity < 0)
+//            throw new IllegalArgumentException(resource.getString("IllegalCapacityException") +
+//                                               initialCapacity);
+//        this.data = new Node[initialCapacity];
+//    }
+//
+//    public NodeList() {
+//       this(DEFAULT_SIZE);
+//    } 
     
-
+    public NodeList(String test1, String test2){
+    	//DON'T USE MORE THIS!!!!!!!! USE A ARRAY LIST.... 
+    }
 
     /**
      * Increases the capacity of this <tt>NodeList</tt> instance, if
@@ -184,17 +185,35 @@ public final class NodeList implements java.io.Serializable {
 		size = 0;
     }
     
+    @Deprecated
     public final boolean removeAll(NodeList c) {
 		boolean modified = false;
-		for (int i = size-1; i >= 0; i--) {
+		for (int i = size-1; i >= 0; i--) { //begin from end!!! Very good. 
 		    if (c.contains(data[i])) {
 		    	remove(i);		    	
+				modified = true;
+		    }
+		}  
+		return modified;
+    }
+    
+    /**
+     * Remove from originalList all nodes that are present in removeNodesList
+     * 
+     * @return true if one or more nodes was removed
+     */
+    public static final boolean removeAll(ArrayList<Node> originalList, ArrayList<Node> removeNodesList) {
+    	boolean modified = false;
+		for (int i = originalList.size() -1 ; i >= 0; i--) {
+		    if (removeNodesList.contains(originalList.get(i))) {
+		    	originalList.remove(i);		    	
 				modified = true;
 		    }
 		}
 		return modified;
     }
     
+    @Deprecated
     public final boolean containsAll(NodeList c) {    	
     	for (int i = 0; i < c.size; i++) {
 		    if(! contains(c.data[i]))
@@ -202,6 +221,19 @@ public final class NodeList implements java.io.Serializable {
     	}
 		return true;
     }
+    
+    /**
+     * @return true if the original list contains all the nodes in testNodeList
+     */
+    public static final boolean containsAll(ArrayList<Node> originalList, ArrayList<Node> testNodeList) {    	
+    	for (int i = 0; i < testNodeList.size(); i++) {
+		    if(!originalList.contains(testNodeList.get(i)))
+				return false;	
+    	}
+		return true;
+    }
+    
+    
 
     /**
      * Removes the element at the specified position in this list.
@@ -243,7 +275,7 @@ public final class NodeList implements java.io.Serializable {
 		return false;
     }
     
-    
+    @Deprecated
     public final boolean retainAll(NodeList c) {
     	boolean modified = false;
     	for (int i = size-1; i >= 0; i--) {
@@ -255,7 +287,22 @@ public final class NodeList implements java.io.Serializable {
     	return modified;
     }
 
-
+    /**
+     * Remove from the originalList all nodes that don't exists in testNodeList
+     * @param originalList
+     * @param testNodeList
+     * @return
+     */
+    public static final boolean retainAll(ArrayList<Node> originalList, ArrayList<Node> testNodeList) {
+    	boolean modified = false;
+    	for (int i = originalList.size()-1; i >= 0; i--) {
+    		if (! testNodeList.contains(originalList.get(i))) {
+    			originalList.remove(i);
+    			modified = true;
+    		}
+    	}
+    	return modified;
+    }
     
     
     /**
@@ -288,9 +335,28 @@ public final class NodeList implements java.io.Serializable {
 	 * Sets the data.
 	 * @param data The data to set
 	 */
+    @Deprecated
 	public final void setData(Node[] data) {
 		this.data = data;
 	}
+    
+	/**
+	 * Sets the data of list with the elements of data.
+	 * @param data The data to set
+	 */
+    public  static final void setData(ArrayList<Node> list, Node[] data){
+    	
+    	//Clear list
+    	while(!list.isEmpty()){
+    		list.remove(0); 
+    	}
+    	
+    	//Add the new data
+    	for(int i = 0; i < data.length; i++){
+    		list.add(data[i]); 
+    	}
+    	
+    }
 
 	/**
 	 * Sets the size.
@@ -304,8 +370,13 @@ public final class NodeList implements java.io.Serializable {
 	 * Gets the data.
 	 * @return Returns a Node[]
 	 */
+	@Deprecated
 	public final Node[] getData() {
 		return data;
+	}
+	
+	public static final Node[] getData(ArrayList<Node> array){
+		return array.toArray(new Node[array.size()]); 
 	}
 
 }

@@ -1,4 +1,5 @@
-package unbbayes.gui;
+package unbbayes.gui.util;
+
 
 public interface StatusObserver {
 
