@@ -119,6 +119,7 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"windowDontExists", "Operao falhou: No há janela ativa"},
 		{"sucess", "Sucesso"}, 
 		{"error", "Erro"},
+		{"loadHasError", "O arquivo foi carregado com alguns erros"},
 		{"withoutPosfixe", "Tipo do arquivo não informado!"}
 	};
 }

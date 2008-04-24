@@ -632,9 +632,15 @@ public class CPTEditionPane extends JPanel{
 								JOptionPane.INFORMATION_MESSAGE);
 					} catch (MEBNException e1) {
 						JOptionPane.showMessageDialog(mebnController.getCPTDialog(residentNode), 
-								e1.getMessage(), resource.getString("error"), 
+								e1.getMessage() + " > " + compiler.getIndex() + " <", resource.getString("error"), 
 								JOptionPane.ERROR_MESSAGE);
-					} 
+					} catch (Exception exc) {
+						// this is an unknown exception...
+						exc.printStackTrace();
+						JOptionPane.showMessageDialog(mebnController.getCPTDialog(residentNode), 
+								exc.getMessage(), resource.getString("error"), 
+								JOptionPane.ERROR_MESSAGE);
+					}
 					
 					mebnController.openCPTDialog(residentNode); 
 				}

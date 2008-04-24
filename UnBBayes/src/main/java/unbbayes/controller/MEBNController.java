@@ -1387,7 +1387,9 @@ public class MEBNController  {
 			 }
 		}
 		if (lastException != null) {
-			throw new MEBNException(lastException);
+			// commenting below... Power loom was throwing stack trace as message...
+			//throw new MEBNException(lastException);
+			throw new MEBNException(resourcePN.getString("loadHasError"));
 		}
 	}
 	

@@ -203,8 +203,12 @@ public class Compiler implements ICompiler {
 	//private List<TempTableProbabilityCell> currentProbCellList = null;
 	//private TempTableProbabilityCell currentCell = null;
 	
+	
+	private int originalTextLength = 0;	// stores the length of the original text before deleting extra spaces
+	
 	private Compiler() {
 		tempTable = new ArrayList<TempTableHeaderCell>();
+		originalTextLength = 0;
 	}
 	
 	public Compiler (ResidentNode node) {
@@ -239,7 +243,9 @@ public class Compiler implements ICompiler {
 	 * @see unbbayes.prs.mebn.compiler.AbstractCompiler#init(java.lang.String)
 	 */
 	public void init(String text) {
+		this.originalTextLength = 0;
 		if (text == null) {
+			this.originalTextLength = 0;
 			this.text = null;
 			return;
 		} else if (text.length() == 0) {
@@ -249,6 +255,7 @@ public class Compiler implements ICompiler {
 			 * after finding a true value, the text.isEmpty() might be executed without
 			 * testing if it is null, which may cause NullPointerException.
 			 */
+			this.originalTextLength = 0;
 			this.text = null;
 			return;
 		}
@@ -256,6 +263,7 @@ public class Compiler implements ICompiler {
 		Debug.println("************************************");
 		Debug.println("ORIGINAL: " + text);
 		//if (text != null) {
+			originalTextLength = text.length();
 			text = text.replaceAll("\\s+", " ");
 		//}
 		
@@ -650,6 +658,13 @@ public class Compiler implements ICompiler {
 			// The statement found was not an else statement
 			throw new NoDefaultDistributionDeclaredException();
 		}
+		
+		// after else clause, no declaration should be present
+		this.skipWhite();
+		if (this.look != ' ') {
+			expected("end of declaration");
+		}
+		
 	}
 	
 	/**
@@ -964,7 +979,8 @@ public class Compiler implements ICompiler {
 				try {
 					possibleValue = possibleStates.get(this.node.getPossibleValueIndex(this.noCaseChangeValue));
 				} catch (Exception e) {
-					throw new TableFunctionMalformedException(e.getMessage());
+					//throw new TableFunctionMalformedException(e.getMessage());
+					throw new TableFunctionMalformedException();
 				}
 				if (possibleValue == null) {
 					throw new TableFunctionMalformedException();
@@ -1281,6 +1297,8 @@ public class Compiler implements ICompiler {
 	private void nextChar() {
 		if (index < text.length) {
 			look = text[index++];
+		} else {
+			look = ' ';
 		}
 	}
 
@@ -1547,7 +1565,12 @@ public class Compiler implements ICompiler {
 	 * @return Returns the last read index.
 	 */
 	public int getIndex() {
-		return index;
+		try {
+			return (int)(index * ((float)this.originalTextLength / (float)this.text.length));
+		} catch (Exception e) {
+			// maybe there were a division by zero
+			return index;
+		}
 	}
 
 	/**

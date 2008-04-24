@@ -118,6 +118,7 @@ public class ControllerResources extends ListResourceBundle {
 		{"mebnDontExists", "Failed: No active MSBN"},
 		{"sucess", "Sucess"}, 
 		{"error", "Error"},
+		{"loadHasError", "The file has been loaded with some errors"},
 		{"withoutPosfixe", "The type of the file wasn't provided"}
 	};
 }
