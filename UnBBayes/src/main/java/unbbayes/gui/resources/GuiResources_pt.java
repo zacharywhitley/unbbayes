@@ -239,7 +239,8 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"OVariableTitle", "Variável Ord."},
 		{"ArgumentTitle", "Argumentos"}, 
 		{"StatesTitle", "Estados"}, 	
-		{"FathersTitle", "Nós Pais"}, 		
+		{"FathersTitle", "Nós Pais"}, 	
+		{"NodesTitle", "Nós"}, 		
 		{"AddFinding", "Finding"}, 		
 		
 		//Label for buttons of tab selection
@@ -328,6 +329,24 @@ public class GuiResources_pt extends ListResourceBundle {
         {"siglaError","A sigla só pode ter letras e números."},
         {"descriptionError","A descrição só pode ter letras e números."},
         
+        /* Resident Panel */
+        {"stateEditionTip", "Editar estados"}, 
+        {"argumentEditionTip", "Editar argumentos"}, 
+        {"tableEditionTip", "Editar tabela"}, 
+        
+        /* Input Panel */
+        {"inputOf", "Nó origem"},         
+        
+        /* Arguments Typed Pane */
+        {"nodeLabel", "Nó"}, 
+        {"openTip", "Abrir"}, 
+        
+        /* Formula Pane */
+        {"addOVariableTip", "Adicionar var. ordinária"}, 
+        {"addNodeTip", "Adicionar nó"}, 
+        {"addEntityTip", "Adicionar entidade"}, 
+        {"addSkolenTip", "Adicionar skolen"}, 
+        
         /* Query Panel*/
         {"queryPanelTitle","Query"}, 
         {"queryBtnBack","Voltar"}, 
@@ -351,10 +370,24 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"error", "Erro"},
         
 		/* Tips for buttons of the table edition */
-		{"deleteTip", "Deleta o texto selecionado"}, 
+		{"clear", "clear"}, 
+		{"ifAny", "if any"}, 
+		{"ifAll", "if all"}, 
+		{"else", "else"}, 
+		{"default", "default"}, 
+		{"equal", " = "}, 
+		{"and", " & "}, 
+		{"or", " | "}, 
+		{"not", " ~ "}, 
+		{"card", "card"}, 
+		{"max", "max"}, 
+		{"min", "min"}, 
+		
+		{"deleteTip", "Apaga o texto selecionado"}, 
 		{"anyTip", "Inserir construção \"If any\""}, 
 		{"allTip", "Inserir construção \"If all\""}, 
-		{"else", "Inserir \"else\""}, 
+		{"defaultTip", "Inserir construção \"disbribuição padrão\""},
+		{"elseTip", "Inserir \"else\""}, 
 		{"equalTip", "Inserir operador de igualdade"}, 
 		{"andTip", "Inserir construção AND"}, 
 		{"orTip", "Inserir construção OR"}, 
@@ -373,6 +406,8 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"fatherCPTTip", "Abrir lista de pais/estados dos nós pais"},
 		{"argumentCPTTip", "Abrir lista de argumentos"},
 		{"statesCPTTip", "Abrir lista de estados do nó"},
+		
+		{"position", "Posição"},
 		
 		/* CPT Edition messages */
 		{"compileCPT", "Compilar"},
@@ -395,7 +430,8 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"objectStatesTip", "Inserir entidades como estados"}, 
 		{"booleanStatesTip", "Inserir estados booleanos"}, 
 		{"addStateTip", "Inserir estado(s)"}, 
-		{"removeState", "Remover estado"}, 
+		{"removeState", "Remover estado"},
+		{"addPreDefinedState", "Adicionar um estado pré-criado"}, 
 		{"confirmation", "Confirmação"}, 
 		{"warningDeletStates", "Os estados anteriores serão removidos. Tem certeza que deseja realizar a operação?"}, 
 		

@@ -25,21 +25,11 @@ import java.io.Serializable;
 import javax.swing.ImageIcon;
 
 /**
- * <p>
- * Title:
- * </p>
- * <p>
- * Description:
- * </p>
- * <p>
- * Copyright: Copyright (c) 2002
- * </p>
- * <p>
- * Company:
- * </p>
+ * Controller the icons. 
  * 
  * @author Mário Henrique Paes Vieira (mariohpv@bol.com.br)
- * @version 1.0 13/04/2003
+ * @author Laecio Lima dos Santos (laecio@gmail.com)
+ * @version 2.0 13/04/2008
  */
 
 public class IconController implements Serializable {
@@ -603,7 +593,7 @@ public class IconController implements Serializable {
 			return printPreviewTableIcon;
 		} else {
 			printPreviewTableIcon = new ImageIcon(getClass().getResource(
-					"/icons/preview-table.gif"));
+					"/icons/document-print-preview-table.png"));
 			return printPreviewTableIcon;
 		}
 	}
@@ -613,7 +603,7 @@ public class IconController implements Serializable {
 			return printTableIcon;
 		} else {
 			printTableIcon = new ImageIcon(getClass().getResource(
-					"/icons/print-table.gif"));
+					"/icons/document-print-table.png"));
 			return printTableIcon;
 		}
 	}
@@ -632,7 +622,7 @@ public class IconController implements Serializable {
 			return printNetIcon;
 		} else {
 			printNetIcon = new ImageIcon(getClass().getResource(
-					"/icons/print-net.gif"));
+					"/icons/document-print-graph.png"));
 			return printNetIcon;
 		}
 	}
@@ -642,7 +632,7 @@ public class IconController implements Serializable {
 			return printPreviewNetIcon;
 		} else {
 			printPreviewNetIcon = new ImageIcon(getClass().getResource(
-					"/icons/preview-print.gif"));
+					"/icons/document-print-preview-graph.png"));
 			return printPreviewNetIcon;
 		}
 	}
@@ -652,7 +642,7 @@ public class IconController implements Serializable {
 			return saveNetIcon;
 		} else {
 			saveNetIcon = new ImageIcon(getClass().getResource(
-					"/icons/save-net.gif"));
+					"/icons/document-save-graph.png"));
 			return saveNetIcon;
 		}
 	}
@@ -857,7 +847,7 @@ public class IconController implements Serializable {
 			return saveTableIcon;
 		} else {
 			saveTableIcon = new ImageIcon(getClass().getResource(
-					"/icons/save-table.gif"));
+					"/icons/document-save-table.png"));
 			return saveTableIcon;
 		}
 	}

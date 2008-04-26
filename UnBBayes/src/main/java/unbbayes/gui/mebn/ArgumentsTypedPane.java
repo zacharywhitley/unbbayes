@@ -20,11 +20,15 @@
  */
 package unbbayes.gui.mebn;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.ResourceBundle;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -34,6 +38,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
+import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNodePointer;
@@ -54,6 +59,11 @@ public class ArgumentsTypedPane extends JPanel{
 	private ResidentNodePointer pointer; 
 	private MEBNController mebnController; 
 	private Object node; 
+	
+	private IconController iconController = IconController.getInstance(); 
+	
+  	private static ResourceBundle resource =
+  		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 	
 	/**
 	 * 
@@ -76,12 +86,25 @@ public class ArgumentsTypedPane extends JPanel{
 		
 		JComboBox argument[] = new JComboBox[pointer.getNumberArguments()]; 
 		
-		JLabel residentNodeName = new JLabel("Node = " + pointer.getResidentNode().getName()); 
+		JLabel residentNodeName = new JLabel(resource.getString("nodeLabel")+ " = " + pointer.getResidentNode().getName()); 
 		residentNodeName.setOpaque(true); 
 		residentNodeName.setHorizontalAlignment(JLabel.CENTER); 
 		//residentNodeName.setBackground(new Color(78, 201, 249)); 
 		residentNodeName.setBorder(BorderFactory.createLineBorder(Color.BLACK)); 
-		add(residentNodeName); 
+		
+		JButton btnOpenResidentNode = new JButton(iconController.getResidentNodeIcon()); 
+		btnOpenResidentNode.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				mebnController.openPanel(pointer.getResidentNode()); 
+			}
+		}); 
+		btnOpenResidentNode.setToolTipText(resource.getString("openTip")); 
+		
+		JPanel panel = new JPanel(new BorderLayout()); 
+		panel.add(residentNodeName, BorderLayout.CENTER); 
+		panel.add(btnOpenResidentNode, BorderLayout.LINE_END); 
+		
+		add(panel); 
 		
 		JToolBar tbArgX; 
 		JButton btnArgXNumber; 

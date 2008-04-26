@@ -34,6 +34,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Vector;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -50,12 +51,10 @@ import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.compiler.ICompiler;
+import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.util.ResourceController;
-
-import unbbayes.prs.mebn.compiler.Compiler; 
 
 public class CPTEditionPane extends JPanel{
 
@@ -98,7 +97,6 @@ public class CPTEditionPane extends JPanel{
 		
 		setLayout(new BorderLayout());
 		 
-		add(jpOptionsPane, BorderLayout.WEST); 
 		
 		JPanel centerPane = new JPanel(new BorderLayout());
 		centerPane.add(jpButtonsEdition, BorderLayout.NORTH); 
@@ -108,6 +106,8 @@ public class CPTEditionPane extends JPanel{
 		centerPane.add(new JpMainButtons(), BorderLayout.SOUTH); 
 		
 		add(centerPane, BorderLayout.CENTER); 
+		
+		add(jpOptionsPane, BorderLayout.WEST); 
 		
 		this.setMinimumSize(new Dimension(750, 300)); 
 		this.setPreferredSize(new Dimension(750, 300)); 
@@ -127,7 +127,7 @@ public class CPTEditionPane extends JPanel{
 	private class JpTurnOptionsPane extends JPanel{
 		
 		private JButton btnSelectFatherTab; 
-		private JButton btnSelectArgumentTab; 
+//		private JButton btnSelectArgumentTab; 
 		private JButton btnSelectStatesTab; 
 		private JPanel jpOptions; 
 		private CardLayout cardLayout;   
@@ -149,13 +149,10 @@ public class CPTEditionPane extends JPanel{
 			cardLayout.show(jpOptions, TAB_FATHER);
 			
 			//Buttons
-			JPanel jpButtons = new JPanel(new GridLayout(1,3));
+			JPanel jpButtons = new JPanel(new GridLayout(1,2));
 			
 			btnSelectFatherTab = new JButton(resource.getString("fatherCPT")); 
 			btnSelectFatherTab.setToolTipText(resource.getString("fatherCPTTip")); 
-			
-			btnSelectArgumentTab = new JButton(resource.getString("argumentCPT"));
-			btnSelectArgumentTab.setToolTipText(resource.getString("argumentCPTTip")); 
 			
 			btnSelectStatesTab = new JButton(resource.getString("statesCPT")); 
 			btnSelectStatesTab.setToolTipText(resource.getString("statesCPTTip")); 
@@ -172,26 +169,29 @@ public class CPTEditionPane extends JPanel{
 				}
 			}); 
 			
-			btnSelectArgumentTab.addActionListener( new ActionListener(){
-				public void actionPerformed(ActionEvent e){
-					cardLayout.show(jpOptions, TAB_ARGUMENTS); 
-				}
-			}); 
+//			btnSelectArgumentTab.addActionListener( new ActionListener(){
+//				public void actionPerformed(ActionEvent e){
+//					cardLayout.show(jpOptions, TAB_ARGUMENTS); 
+//				}
+//			}); 
 			
 			jpButtons.add(btnSelectFatherTab); 
-			jpButtons.add(btnSelectArgumentTab); 
 			jpButtons.add(btnSelectStatesTab); 
 			
 			//All
 			this.setLayout(new BorderLayout()); 
-			this.add(jpButtons, BorderLayout.NORTH); 
-			this.add(jpOptions, BorderLayout.CENTER); 
+//			this.add(jpButtons, BorderLayout.NORTH); 
+			this.add(jpOptions, BorderLayout.CENTER);  
+			
+			this.setPreferredSize(new Dimension(300, 300)); 
+			this.setMinimumSize(new Dimension(300, 300)); 
+			this.setMaximumSize(new Dimension(300, 300)); 
 		}
 	}
 	
 	protected void atualizeCaretPosition(int caretPosition){
           if(txtPosition != null){
-        	  txtPosition.setText("> " + caretPosition + " < "); 
+        	  txtPosition.setText(resource.getString("position") + ": " + caretPosition ); 
           }
 	}
 	
@@ -201,28 +201,47 @@ public class CPTEditionPane extends JPanel{
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
-		private List<MultiEntityNode> fatherNodeList; 	
 		private List<InputNode> inputNodeList; 
+		
 		private final List<ResidentNode> residentNodeAuxList; 
+		
 		private JList jlStates; 
-		private DefaultListModel listModel;
+		private JList jlArguments; 
+		
+		private DefaultListModel listStatesModel;
+		private DefaultListModel listArgumentsModel; 
 		private String[] fatherNodeArray; 
+		
+		//Contains the element that corresponds to each index of residentNodeAuxList
+		//(the InputNode or the ResidentNode)
+		private List<MultiEntityNode> fatherNodeList; 	
 
 		JpFather(){
 			super(); 
-			setMinimumSize(new Dimension(100,100));
-			this.setBorder(MebnToolkit.getBorderForTabPanel(resource.getString("FathersTitle"))); 				
+			setMinimumSize(new Dimension(100,100));			
 
 			residentNodeAuxList = new ArrayList<ResidentNode>(); 
-			residentNodeAuxList.addAll(residentNode.getResidentNodeFatherList()); 
-
+			fatherNodeList = new ArrayList<MultiEntityNode>(); 
+			
+			//THE NODE
+			residentNodeAuxList.add(residentNode); 
+			fatherNodeList.add(residentNode); 
+			
+			//INPUT NODE FATHERS
 			inputNodeList = residentNode.getInputNodeFatherList(); 
 			for(InputNode inputNode: inputNodeList){
 				Object father = inputNode.getInputInstanceOf();
 				if (father instanceof ResidentNode){
 					residentNodeAuxList.add((ResidentNode)father); 
+					fatherNodeList.add(inputNode); 
 				}
 			}
+			
+			//RESIDENT NODE FATHERS
+			for(ResidentNode resident: residentNode.getResidentNodeFatherList()){
+				residentNodeAuxList.add(resident); 
+				fatherNodeList.add(resident); 
+			}			
 
 			fatherNodeArray = new String[residentNodeAuxList.size()]; 
 
@@ -246,11 +265,22 @@ public class CPTEditionPane extends JPanel{
 					}
 					else{
 						if ((e.getModifiers() == MouseEvent.BUTTON1_MASK) && (e.getClickCount() == 1)){
+							jlArguments.setEnabled(true); 
 							int selectedIndex = jlFathers.getSelectedIndex(); 
-							List<InputNode> inputNodeList = residentNode.getInputNodeFatherList(); 
-							//TODO fazer isso de uma forma decente!!!
 							ResidentNode residentNode = residentNodeAuxList.get(selectedIndex); 
 							updateStatesList(residentNode);
+							
+							MultiEntityNode node = fatherNodeList.get(selectedIndex); 
+						    if(node instanceof InputNode){
+						    	List<OrdinaryVariable> listOrdinaryVariable = ((InputNode)node).getOrdinaryVariableList(); 
+						    	updateArgumentsList(listOrdinaryVariable);	
+						    }else{
+						    	List<OrdinaryVariable> listOrdinaryVariable = ((ResidentNode)node).getOrdinaryVariableList(); 
+						    	updateArgumentsList(listOrdinaryVariable);
+						    	if (node == residentNode){
+						    		jlArguments.setEnabled(false); 
+						    	}
+						    }
 						}					
 					}
 
@@ -259,8 +289,8 @@ public class CPTEditionPane extends JPanel{
 			});
 
 			/* Lista com os estados do nodo pai selecionado */
-			listModel = new DefaultListModel();
-			jlStates = new JList(listModel); 
+			listStatesModel = new DefaultListModel();
+			jlStates = new JList(listStatesModel); 
 			JScrollPane jspStates = new JScrollPane(jlStates); 
 
 			jlStates.addMouseListener(new MouseAdapter() {
@@ -275,41 +305,65 @@ public class CPTEditionPane extends JPanel{
 
 			});
 
+			/* Lista com os argumentos do nodo selecionado */
+			listArgumentsModel = new DefaultListModel();
+			jlArguments = new JList(listArgumentsModel); 
+			JScrollPane jspArguments = new JScrollPane(jlArguments); 
 
+			jlArguments.addMouseListener(new MouseAdapter() {
+
+				public void mousePressed(MouseEvent e) {
+
+					if ((e.getModifiers() == MouseEvent.BUTTON1_MASK) && (e.getClickCount() == 2)){
+						String selectedIndex = (String)jlArguments.getSelectedValue(); 
+						cptTextPane.insertParamSet(selectedIndex); 
+					}	
+				}
+
+			});
+			
 			setLayout(new GridLayout(2,0)); 
 
+			jscJlOFathers.setBorder(MebnToolkit.getBorderForTabPanel(resource.getString("NodesTitle"))); 	
+			jspStates.setBorder(MebnToolkit.getBorderForTabPanel(resource.getString("StatesTitle"))); 
+			jspArguments.setBorder(MebnToolkit.getBorderForTabPanel(resource.getString("ArgumentTitle"))); 
+			
 			add(jscJlOFathers); 
-			add(jspStates); 
+			
+			JPanel jpBottom = new JPanel(new GridLayout(0,2)); 
+			jpBottom.add(jspStates); 
+			jpBottom.add(jspArguments); 
+			
+			add(jpBottom); 
+			
 		}
 
 		private void updateStatesList(ResidentNode resident){
 
 			List<Entity> listStates = resident.getPossibleValueList(); 
 
-			listModel.removeAllElements(); 
-			listModel = new DefaultListModel(); 
+			listStatesModel.removeAllElements(); 
+			listStatesModel = new DefaultListModel(); 
 
 			for(Entity entity: listStates){
-				listModel.addElement(entity.getName()); 
+				listStatesModel.addElement(entity.getName()); 
 			}
 
-			jlStates.setModel(listModel); 
+			jlStates.setModel(listStatesModel); 
 		}
 
-		private void updateStatesList(){
+		private void updateArgumentsList(List<OrdinaryVariable> ovList){
 
-			ResidentNode resident = residentNode; 
-			List<Entity> listStates = resident.getPossibleValueList(); 
+			listArgumentsModel.removeAllElements(); 
+			listArgumentsModel = new DefaultListModel(); 
 
-			listModel.removeAllElements(); 
-			listModel = new DefaultListModel(); 
-
-			for(Entity entity: listStates){
-				listModel.addElement(entity.getName()); 
+			for(OrdinaryVariable entity: ovList){
+				listArgumentsModel.addElement(entity.getName()); 
 			}
 
-			jlStates.setModel(listModel); 
+			jlArguments.setModel(listArgumentsModel); 
 		}
+		
 	}
 
 	private class JpArguments extends JPanel{
@@ -407,6 +461,7 @@ public class CPTEditionPane extends JPanel{
 		private JButton btnIfAllClause; 
 		private JButton btnElseClause; 
 		private JButton btnEraseAll; 
+		private JButton btnDefaultClause; 
 
 		private JButton btnEqual; 
 		private JButton btnAnd; 
@@ -417,79 +472,73 @@ public class CPTEditionPane extends JPanel{
 		private JButton btnMax; 
 		private JButton btnMin; 
 		
-		//IF
-		//ANY
-		//ELSE
-		
-		//AND
-		//OR
-		//NOT
-		//EQUAL
-		
-		//Cardinality
-		//Max
-		//Min
-		
 		JpButtons(){
 			super(); 
 
 			Font font = new Font("Serif", Font.BOLD, 10); 
 
-			btnEraseAll = new JButton("delete");
+			btnEraseAll = new JButton(resource.getString("clear"));
 			btnEraseAll.setFont(font); 
 			btnEraseAll.setToolTipText(resource.getString("deleteTip")); 
-			btnEraseAll.setBackground(Color.LIGHT_GRAY); 
-			btnEraseAll.setForeground(Color.WHITE); 
 
-			btnIfAnyClause = new JButton("if any");
+			btnIfAnyClause = new JButton(resource.getString("ifAny"));
 			btnIfAnyClause.setFont(font);
 			btnIfAnyClause.setToolTipText(resource.getString("anyTip")); 
 
-			btnIfAllClause = new JButton("if all");
+			btnIfAllClause = new JButton(resource.getString("ifAll"));
 			btnIfAllClause.setFont(font);
 			btnIfAllClause.setToolTipText(resource.getString("allTip")); 
 
-			btnElseClause = new JButton("else"); 
+			btnElseClause = new JButton(resource.getString("else")); 
 			btnElseClause.setFont(font);
 			btnElseClause.setToolTipText(resource.getString("elseTip")); 
 
-			btnEqual= new JButton(" = "); 
+			btnDefaultClause = new JButton(resource.getString("default"));
+			btnDefaultClause.setFont(font);
+			btnDefaultClause.setToolTipText(resource.getString("defaultTip")); 
+			
+			btnEqual= new JButton(resource.getString("equal")); 
 			btnEqual.setFont(font);
 			btnEqual.setToolTipText(resource.getString("equalTip")); 
 
-			btnAnd= new JButton(" & "); 
+			btnAnd= new JButton(resource.getString("and")); 
 			btnAnd.setFont(font);
 			btnAnd.setToolTipText(resource.getString("andTip")); 
 
-			btnOr= new JButton(" | ");
+			btnOr= new JButton(resource.getString("or"));
 			btnOr.setFont(font);
 			btnOr.setToolTipText(resource.getString("orTip")); 
 
-			btnNot= new JButton(" ~ ");     	
+			btnNot= new JButton(resource.getString("not"));     	
 			btnNot.setFont(font);
 			btnNot.setToolTipText(resource.getString("notTip")); 
 
-			btnCardinality= new JButton("card");
+			btnCardinality= new JButton(resource.getString("card"));
 			btnCardinality.setFont(font);
 			btnCardinality.setToolTipText(resource.getString("cadinalityTip"));
 
-			btnMax= new JButton("max"); 
+			btnMax= new JButton(resource.getString("max")); 
 			btnMax.setFont(font);
 			btnMax.setToolTipText(resource.getString("maxTip")); 
 
-			btnMin= new JButton("min");     
+			btnMin= new JButton(resource.getString("min"));     
 			btnMin.setFont(font);
 			btnMin.setToolTipText(resource.getString("minTip")); 
 
-			setLayout(new GridLayout(2,5)); 
+			setLayout(new GridLayout(2,6)); 
 
+			//FIRST LINE
 			add(btnIfAnyClause); 
 			add(btnIfAllClause);
 			add(btnElseClause);
+			add(btnDefaultClause); 
+			add(btnEqual); 
+			add(btnEraseAll); 
+			
+			//SECOND LINE
 			add(btnAnd);
 			add(btnOr); 
 			add(btnNot); 
-			add(btnEqual); 
 			add(btnMax); 
 			add(btnMin); 
 			add(btnCardinality);
@@ -561,6 +610,18 @@ public class CPTEditionPane extends JPanel{
 					cptTextPane.insertMinClause(); 
 				}
 			});   
+			
+			btnEraseAll.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent e){
+					cptTextPane.clearTable(); 
+				}
+			}); 
+			
+			btnDefaultClause.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent e){
+					cptTextPane.insertDefaultClause(); 
+				}
+			}); 
 		}
 
 	}

@@ -20,15 +20,18 @@
  */
 package unbbayes.controller;
 
+import java.awt.BorderLayout;
 import java.awt.Cursor;
-import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
+import javax.swing.JDialog;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.xml.bind.JAXBException;
 
 import unbbayes.gui.MSBNWindow;
@@ -41,6 +44,7 @@ import unbbayes.io.XMLIO;
 import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.io.mebn.UbfIO;
+import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -244,7 +248,7 @@ public class MainController {
 	 *  Loads the probabilistic network from both .net and .xml format, depending
 	 *  on the file's extension, or loads the MSBN if the file given is a directory.
 	 */
-	public void loadNet(File file) {
+	public void loadNet(final File file) {
 		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));        
 		try {
 			JInternalFrame window = null;
@@ -266,9 +270,50 @@ public class MainController {
 					ProbabilisticNetwork net = io.load(file);
 					window = new NetworkWindow(net);					
 				} else if (name.endsWith("owl")){
+
+//					JProgressBar jpb = new JProgressBar();
+//					jpb.setIndeterminate(true); 
+//					JDialog jDialog = new JDialog(); 
+//					JPanel jpanel = new JPanel();
+//					jpanel.setLayout(new BorderLayout()); 
+//					jpanel.add(jpb, BorderLayout.CENTER); 
+//					jDialog.setContentPane(jpanel); 
+//					jDialog.pack(); 
+//					jDialog.setVisible(true); 
+//					jpb.paintImmediately(0, 0, jpb.getWidth(), jpb.getHeight()); 
+//					jDialog.repaint(0, 0, jDialog.getWidth(), jDialog.getHeight()); 
+//					jDialog.setLocationRelativeTo(UnBBayesFrame.getIUnBBayes()); 
+//					
+//					MultiEntityBayesianNetwork mebn; 
+//					
+//					Runnable runnable = new Runnable(){
+//
+//						public void run() {
+//							PrOwlIO prOwlIo = new PrOwlIO(); 
+//							try {
+//								MultiEntityBayesianNetwork mebn = prOwlIo.loadMebn(file);
+//								JOptionPane.showMessageDialog(screen, resource.getString("JAXBExceptionFound"), resource.getString("loadNetException"), JOptionPane.ERROR_MESSAGE);
+//							} catch (IOException e) {
+//								// TODO Auto-generated catch block
+//								e.printStackTrace();
+//							} catch (IOMebnException e) {
+//								// TODO Auto-generated catch block
+//								e.printStackTrace();
+//							}
+//						}
+//						
+//					}; 
+//					
+//					Thread thread = new Thread(runnable); 
+//					thread.start();
+//					
+//					Thread.sleep(10000); 
+					
+					MultiEntityBayesianNetwork mebn; 
 					PrOwlIO prOwlIo = new PrOwlIO(); 
-					MultiEntityBayesianNetwork mebn = prOwlIo.loadMebn(file);
-					window = new NetworkWindow(mebn);					
+					mebn = prOwlIo.loadMebn(file);
+					window = new NetworkWindow(mebn);
+				
 				}  else if (name.endsWith(UbfIO.fileExtension)) {        			
 					MebnIO ubfIo = UbfIO.getInstance(); 
 					MultiEntityBayesianNetwork mebn = ubfIo.loadMebn(file);

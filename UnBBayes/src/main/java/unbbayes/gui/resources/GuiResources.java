@@ -245,6 +245,7 @@ public class GuiResources extends ListResourceBundle {
 		/* Don't use names with more than fifteen letters */
 		{"MTheoryButton", "MTheory"}, 
 		{"ResidentButton", "Resident"}, 
+		{"NodesTitle", "Nodes"}, 	
 		{"InputButton", "Input"}, 
 		{"ContextButton", "Context"}, 
 		{"MFragButton", "MFrag"}, 	
@@ -328,6 +329,24 @@ public class GuiResources extends ListResourceBundle {
         {"siglaError","The sigla must have only letters and numbers."},
         {"descriptionError","The description must have only letters and numbers."}, 
         
+        /* Resident Panel */
+        {"stateEditionTip", "Edit states"}, 
+        {"argumentEditionTip", "Edit arguments"}, 
+        {"tableEditionTip", "Edit table"}, 
+        
+        /* Input Panel */
+        {"inputOf", "Origem node"}, 
+        
+        /* Arguments Typed Pane */
+        {"nodeLabel", "Node"}, 
+        {"openTip", "Open"}, 
+        
+        /* Formula Pane */
+        {"addOVariableTip", "Add ordinary variable"}, 
+        {"addNodeTip", "Add node"}, 
+        {"addEntityTip", "Add entity"}, 
+        {"addSkolenTip", "Add skolen"}, 
+        
         /* Query Panel*/
         {"queryPanelTitle","Query"}, 
         {"queryBtnBack","Back"}, 
@@ -351,9 +370,23 @@ public class GuiResources extends ListResourceBundle {
 		{"error", "Error"},
         
 		/* Tips for buttons of the table edition */
+		{"clear", "clear"}, 
+		{"ifAny", "if any"}, 
+		{"ifAll", "if all"}, 
+		{"else", "else"}, 
+		{"default", "default"}, 
+		{"equal", " = "}, 
+		{"and", " & "}, 
+		{"or", " | "}, 
+		{"not", " ~ "}, 
+		{"card", "card"}, 
+		{"max", "max"}, 
+		{"min", "min"}, 
+		
 		{"deleteTip", "Delete selected text"}, 
 		{"anyTip", "Insert statement \"If any\""}, 
 		{"allTip", "Insert statement \"If all\""}, 
+		{"defaultTip", "Insert statement \"default probability\""}, 
 		{"elseTip", "Insert \"else\""}, 
 		{"equalTip", "Insert equal operator"}, 
 		{"andTip", "Insert statement AND"}, 
@@ -374,6 +407,8 @@ public class GuiResources extends ListResourceBundle {
 		{"argumentCPTTip", "Open list of arguments"},
 		{"statesCPTTip", "Open list of states of this node"},
 		
+		{"position", "Position"},
+		
 		/* CPT Edition messages */
 		{"compileCPT", "Compile"},
 		{"saveCPT", "Save"},
@@ -391,11 +426,12 @@ public class GuiResources extends ListResourceBundle {
 		
 		/* Edition of states */
 		{"insertBooleanStates", "Insert boolean states"}, 
-		{"categoryStatesType", "Insert category states"}, 
-		{"objectStatesType", "Insert object entity states"}, 
-		{"booleanStatesType", "Insert boolean states"}, 
+		{"categoryStatesTip", "Insert category states"}, 
+		{"objectStatesTip", "Insert object entity states"}, 
+		{"booleanStatesTip", "Insert boolean states"}, 
 		{"addStateTip", "Add state(s)"}, 
 		{"removeState", "Remove state(s)"}, 
+		{"addPreDefinedState", "Add a pre-defined state"}, 
 		{"confirmation", "Confirmation"}, 
 		{"warningDeletStates", "The previous states will be removed. Are you sure you want to proceed with this operation?"},
 		

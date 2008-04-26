@@ -1093,7 +1093,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	      throws SSBNNodeGeneralException, MEBNException, InvalidOperationException {
 		
 
-		    GUIPotentialTable gpt; 
+//		    GUIPotentialTable gpt; 
 		
 			logManager.appendln("\nGenerate table for node (with context father): " + ssbnNode);
 			logManager.appendln("Parents:");
@@ -1117,8 +1117,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 
 			ssbnNode.getContextFatherSSBNNode().generateCPT();
 			
-			gpt = new GUIPotentialTable(ssbnNode.getContextFatherSSBNNode().getProbNode().getPotentialTable()); 
-			gpt.showTable("Table for Node " + ssbnNode.getContextFatherSSBNNode());
+//			gpt = new GUIPotentialTable(ssbnNode.getContextFatherSSBNNode().getProbNode().getPotentialTable()); 
+//			gpt.showTable("Table for Node " + ssbnNode.getContextFatherSSBNNode());
 			
 			//Step 1: Dividir os pais em grupos de acordo com a variavel problemática
 			Collection<SSBNNode> parents = ssbnNode.getParents(); 
@@ -1167,8 +1167,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				PotentialTable cpt = tempNode.getCompiler().generateCPT(tempNode); 
 				sizeCPTOfEntity = cpt.tableSize();
 				
-				gpt = new GUIPotentialTable(cpt); 
-				gpt.showTable("Table for Node " + ssbnNode + " - " + groupParents);
+//				gpt = new GUIPotentialTable(cpt); 
+//				gpt.showTable("Table for Node " + ssbnNode + " - " + groupParents);
 				
 				mapCPTByEntity.put(entity.getInstanceName(), cpt);
 				System.out.println("Tabela armazenada: " + entity.getInstanceName() + " " + cpt.tableSize());
@@ -1279,8 +1279,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				}
 			}
 
-			gpt = new GUIPotentialTable(ssbnNode.getProbNode().getPotentialTable()); 
-			gpt.showTable("Table for Node " + ssbnNode);
+//			gpt = new GUIPotentialTable(ssbnNode.getProbNode().getPotentialTable()); 
+//			gpt.showTable("Table for Node " + ssbnNode);
 			
 			//Debug.setDebug(true);
 			logManager.appendln("CPT OK\n");

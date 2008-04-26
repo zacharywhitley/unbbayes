@@ -145,6 +145,11 @@ public class FormulaEditionPane extends JPanel {
 		btnEntityTree = new JButton(iconController.getEntityInstanceIcon());   
 		btnSkolenTree = new JButton(iconController.getSkolenNodeIcon());   
 		
+		btnOVariableTree.setToolTipText(resource.getString("addOVariableTip")); 
+		btnNodeTree.setToolTipText(resource.getString("addNodeTip"));  
+		btnEntityTree.setToolTipText(resource.getString("addEntityTip")); 
+		btnSkolenTree.setToolTipText(resource.getString("addSkolenTip")); 
+		
 		jtbSelectArgTree = new JToolBar(); 
 		jtbSelectArgTree.setLayout(new GridLayout(1,4)); 
 		jtbSelectArgTree.add(btnOVariableTree);

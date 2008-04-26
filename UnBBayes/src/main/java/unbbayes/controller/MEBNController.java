@@ -38,6 +38,7 @@ import unbbayes.controller.exception.InvalidOperationException;
 import unbbayes.gui.GraphAction;
 import unbbayes.gui.MEBNEditionPane;
 import unbbayes.gui.NetworkWindow;
+import unbbayes.gui.mebn.DescriptionPane;
 import unbbayes.gui.mebn.OVariableEditionPane;
 import unbbayes.gui.mebn.cpt.CPTFrame;
 import unbbayes.io.XMLIO;
@@ -197,9 +198,17 @@ public class MEBNController  {
 		df = NumberFormat.getInstance(Locale.getDefault());
 		df.setMaximumFractionDigits(4);
 		
+		enableMTheoryEdition(); 
+		
 	}
 
 	
+	public void openPanel(ResidentNode node){
+		setCurrentMFrag(node.getMFrag()); 
+		selectNode(node); 
+		setResidentNodeActive(node); 
+		screen.getGraphPane().selectObject(node); 
+	}
 	
 	
 	/*-------------------------------------------------------------------------*/
@@ -229,7 +238,7 @@ public class MEBNController  {
 		mebnEditionPane.setMTheoryTreeActive();
 
 		typeElementSelected = TypeElementSelected.MTHEORY; 
-		mebnEditionPane.setDescriptionText(multiEntityBayesianNetwork.getDescription()); 
+		mebnEditionPane.setDescriptionText(multiEntityBayesianNetwork.getDescription(), DescriptionPane.DESCRIPTION_PANE_MTHEORY); 
 	}
 
 	/**
@@ -324,7 +333,7 @@ public class MEBNController  {
 	    mebnEditionPane.setMTheoryTreeActive();
 	    
 		typeElementSelected = TypeElementSelected.MFRAG; 
-		mebnEditionPane.setDescriptionText(mFrag.getDescription()); 
+		mebnEditionPane.setDescriptionText(mFrag.getDescription(), DescriptionPane.DESCRIPTION_PANE_MFRAG); 
 	}
 
 	public void removeDomainMFrag(MFrag domainMFrag) {
@@ -345,19 +354,20 @@ public class MEBNController  {
 	}
 
 	/**
-	 * Set the mFrag how the active MFrag and show its graph
+	 * Set the mFrag how the active MFrag and show its graph. 
+	 * Show the tool bar of edition of the MFrag. 
 	 */
 	public void setCurrentMFrag(MFrag mFrag){
 
 		showGraphMFrag(mFrag);
 
-		mebnEditionPane.hideTopComponent();
 		mebnEditionPane.setMFragBarActive();
 		mebnEditionPane.setTxtNameMFrag(mFrag.getName());
 		mebnEditionPane.setMTheoryTreeActive();
+		mebnEditionPane.showTitleGraph(mFrag.getName()); 
 		
 		typeElementSelected = TypeElementSelected.MFRAG; 
-		mebnEditionPane.setDescriptionText(mFrag.getDescription()); 
+		mebnEditionPane.setDescriptionText(mFrag.getDescription(), DescriptionPane.DESCRIPTION_PANE_MFRAG); 
 		
 		setActionGraphNone(); 
 	}
@@ -465,7 +475,7 @@ public class MEBNController  {
 		mebnEditionPane.setArgumentTabActive();
 		mebnEditionPane.setResidentBarActive();
 		mebnEditionPane.setTxtNameResident(((ResidentNode)node).getName());
-		mebnEditionPane.setDescriptionText(node.getDescription()); 
+		mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_RESIDENT); 
 		
 		mebnEditionPane.getMTheoryTree().addNode(domainMFrag, node); 
 	
@@ -623,7 +633,7 @@ public class MEBNController  {
 		mebnEditionPane.setInputNodeActive(node);
 		mebnEditionPane.setTxtInputOf("");
 		mebnEditionPane.getMTheoryTree().addNode(domainMFrag, node); 
-		mebnEditionPane.setDescriptionText(node.getDescription()); 
+		mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_INPUT); 
 		typeElementSelected = TypeElementSelected.NODE; 
 
 		return node;
@@ -706,7 +716,7 @@ public class MEBNController  {
 
 		setContextNodeActive(node);
 		mebnEditionPane.getMTheoryTree().addNode(domainMFrag, node); 
-		mebnEditionPane.setDescriptionText(node.getDescription()); 
+		mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_CONTEXT); 
 		
 		return node;
 	}
@@ -802,28 +812,31 @@ public class MEBNController  {
 		if (node instanceof ResidentNode){
 			residentNodeActive = (ResidentNode)node;
 			setResidentNodeActive(residentNodeActive);
+		    mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_RESIDENT); 
 		}
 		else{
 			if(node instanceof InputNode){
 				inputNodeActive = (InputNode)node;
 				setInputNodeActive(inputNodeActive);
+				 mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_INPUT); 
 			}
 			else{
 				if(node instanceof ContextNode){
 					contextNodeActive = (ContextNode)node;
 				    setContextNodeActive(contextNodeActive);
+				    mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_CONTEXT); 
 				}
 				else{
 					if(node instanceof OrdinaryVariable){
 						ovNodeActive = (OrdinaryVariable)node;
 						setOrdVariableNodeActive((OrdinaryVariable)node);
+						 mebnEditionPane.setDescriptionText(node.getDescription(), DescriptionPane.DESCRIPTION_PANE_OVARIABLE); 
 					}
 				}
 			}
 
 		}
 	    mebnEditionPane.showTitleGraph(multiEntityBayesianNetwork.getCurrentMFrag().getName());
-	    mebnEditionPane.setDescriptionText(node.getDescription()); 
 	}
 
 	private void saveDescriptionTextOfPreviousElement(String text) {
@@ -924,7 +937,7 @@ public class MEBNController  {
 
 		mebnEditionPane.setEditOVariableTabActive();
 
-		mebnEditionPane.setDescriptionText(ov.getDescription()); 
+		mebnEditionPane.setDescriptionText(ov.getDescription(), DescriptionPane.DESCRIPTION_PANE_OVARIABLE); 
 		typeElementSelected = TypeElementSelected.NODE; 
 		
 		 mebnEditionPane.getEditOVariableTab().update(); 

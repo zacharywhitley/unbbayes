@@ -22,21 +22,17 @@ package unbbayes.io.mebn;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
-import com.hp.hpl.jena.util.FileUtils;
-
-import edu.stanford.smi.protegex.owl.ProtegeOWL;
-import edu.stanford.smi.protegex.owl.jena.JenaOWLModel;
-import edu.stanford.smi.protegex.owl.model.OWLIndividual;
-import edu.stanford.smi.protegex.owl.model.OWLModel;
-import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
+import javax.swing.JProgressBar;
 
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.util.Debug;
+import edu.stanford.smi.protegex.owl.jena.JenaOWLModel;
+import edu.stanford.smi.protegex.owl.model.OWLIndividual;
+import edu.stanford.smi.protegex.owl.model.OWLModel;
+import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
 
 /**
  * Implements the interface MebnIO for the Pr-OWL format.

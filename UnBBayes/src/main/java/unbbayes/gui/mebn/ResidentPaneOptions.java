@@ -24,8 +24,10 @@ package unbbayes.gui.mebn;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ResourceBundle;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JToolBar;
 
 import unbbayes.controller.IconController;
@@ -42,49 +44,56 @@ public class ResidentPaneOptions extends JToolBar{
 
 	private final IconController iconController = IconController.getInstance(); 
 	private final MEBNController mebnController; 
-	
-		ResidentPaneOptions(MEBNController mebnController){
-			super(); 
-			
-			this.mebnController = mebnController; 
-			
-			setLayout(new GridLayout(1,4)); 
-			
-	  		JButton btnStateEdition = new JButton(iconController.getStateIcon());
-	  	    btnStateEdition.setBackground(MebnToolkit.getColor1()); 
-	  		JButton btnEditTable = new JButton(iconController.getGridIcon());
-	  		btnEditTable.setBackground(MebnToolkit.getColor1()); 
-	  		JButton btnEditArguments = new JButton(iconController.getArgumentsIcon());
-	  		btnEditArguments.setBackground(MebnToolkit.getColor1()); 
-	  		
-	  	JButton btnTriangle = new JButton(iconController.getTriangleIcon());
-	  btnTriangle.setBackground(MebnToolkit.getColor1()); 
-	  btnTriangle.setEnabled(false); 
-	  		
-			btnStateEdition.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent ae) {
-					ResidentPaneOptions.this.mebnController.getMebnEditionPane().setResidentNodeTabActive();
-				}
-			});
 
-			btnEditTable.addActionListener(new ActionListener(){
-				public void actionPerformed(ActionEvent e){
-					ResidentPaneOptions.this.mebnController.setEnableTableEditionView();
-				}
-			});
+	private static ResourceBundle resource =
+		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
 
-			btnEditArguments.addActionListener(new ActionListener(){
+	ResidentPaneOptions(MEBNController mebnController){
+		super(); 
 
-				public void actionPerformed(ActionEvent ae){
-					ResidentPaneOptions.this.mebnController.getMebnEditionPane().setEditArgumentsTabActive();
-				}
+		this.mebnController = mebnController; 
 
-			});
-			
-  		add(btnTriangle);
-  		add(btnStateEdition);
-  		add(btnEditArguments);
-  		add(btnEditTable);
-  		setFloatable(false); 
-		}
+		setLayout(new GridLayout(1,4)); 
+
+		JButton btnEditStates = new JButton(iconController.getStateIcon());
+		btnEditStates.setBackground(MebnToolkit.getColor1()); 
+		JButton btnEditTable = new JButton(iconController.getGridIcon());
+		btnEditTable.setBackground(MebnToolkit.getColor1()); 
+		JButton btnEditArguments = new JButton(iconController.getArgumentsIcon());
+		btnEditArguments.setBackground(MebnToolkit.getColor1()); 
+
+		JLabel btnTriangle = new JLabel(iconController.getTriangleIcon());
+		btnTriangle.setBackground(MebnToolkit.getColor1()); 
+		btnTriangle.setEnabled(false); 
+
+		btnEditStates.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				ResidentPaneOptions.this.mebnController.getMebnEditionPane().setResidentNodeTabActive();
+			}
+		});
+
+		btnEditTable.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				ResidentPaneOptions.this.mebnController.setEnableTableEditionView();
+			}
+		});
+
+		btnEditArguments.addActionListener(new ActionListener(){
+
+			public void actionPerformed(ActionEvent ae){
+				ResidentPaneOptions.this.mebnController.getMebnEditionPane().setEditArgumentsTabActive();
+			}
+
+		});
+
+		btnEditStates.setToolTipText(resource.getString("stateEditionTip")); 
+		btnEditTable.setToolTipText(resource.getString("tableEditionTip")); 
+		btnEditArguments.setToolTipText(resource.getString("argumentEditionTip")); 
+		
+		add(btnTriangle);
+		add(btnEditStates);
+		add(btnEditArguments);
+		add(btnEditTable);
+		setFloatable(false); 
+	}
 }

@@ -129,20 +129,22 @@ public class FormulaTreeController {
 		
 		NodeFormulaTree nodePlace = formulaViewTree.getNodeFormulaActive();  
 		
-		if(nodePlace.getTypeNode() == EnumType.VARIABLE_SEQUENCE){
-			NodeFormulaTree nodeExemplar = new NodeFormulaTree(ov.getName(), EnumType.VARIABLE, EnumSubType.VARIABLE, ov); 
-			nodePlace.addChild(nodeExemplar); 
-			formulaViewTree.addNewNodeInTree(nodeExemplar);  
+		if(nodePlace != null){
+
+			if(nodePlace.getTypeNode() == EnumType.VARIABLE_SEQUENCE){
+				NodeFormulaTree nodeExemplar = new NodeFormulaTree(ov.getName(), EnumType.VARIABLE, EnumSubType.VARIABLE, ov); 
+				nodePlace.addChild(nodeExemplar); 
+				formulaViewTree.addNewNodeInTree(nodeExemplar);  
+			}
+
+			else{
+				nodePlace.setName(ov.getName()); 
+				nodePlace.setNodeVariable(ov);
+				nodePlace.setTypeNode(EnumType.OPERAND); 
+				nodePlace.setSubTypeNode(EnumSubType.OVARIABLE);
+			}
+			formulaViewTree.updateTree(); 
 		}
-		
-		else{
-			nodePlace.setName(ov.getName()); 
-			nodePlace.setNodeVariable(ov);
-			nodePlace.setTypeNode(EnumType.OPERAND); 
-			nodePlace.setSubTypeNode(EnumSubType.OVARIABLE);
-		}
-		formulaViewTree.updateTree(); 
-		
 	}	
 	
 	
@@ -155,16 +157,18 @@ public class FormulaTreeController {
 	public void addNode(ResidentNode node){
 		
 		NodeFormulaTree nodePlace = formulaViewTree.getNodeFormulaActive();   
-		
-		nodePlace.setName(node.getName()); 
-		
-		ResidentNodePointer residentNodePointer = new ResidentNodePointer(node, contextNode); 
-		nodePlace.setNodeVariable(residentNodePointer);
-		
-		nodePlace.setTypeNode(EnumType.OPERAND); 
-		nodePlace.setSubTypeNode(EnumSubType.NODE); 
-		
-		formulaViewTree.updateTree(); 
+
+		if(nodePlace != null){
+			nodePlace.setName(node.getName()); 
+
+			ResidentNodePointer residentNodePointer = new ResidentNodePointer(node, contextNode); 
+			nodePlace.setNodeVariable(residentNodePointer);
+
+			nodePlace.setTypeNode(EnumType.OPERAND); 
+			nodePlace.setSubTypeNode(EnumSubType.NODE); 
+
+			formulaViewTree.updateTree();
+		}
 	}	
 	
 	/**
@@ -181,24 +185,28 @@ public class FormulaTreeController {
 		
 		NodeFormulaTree nodePlace = formulaViewTree.getNodeFormulaActive();  
 		
-		nodePlace.setName(entity.getName()); 
-		nodePlace.setNodeVariable(entity);
-		nodePlace.setTypeNode(EnumType.OPERAND); 
-		nodePlace.setSubTypeNode(EnumSubType.ENTITY); 
-		
-		formulaViewTree.updateTree(); 			
+		if(nodePlace != null){
+			nodePlace.setName(entity.getName()); 
+			nodePlace.setNodeVariable(entity);
+			nodePlace.setTypeNode(EnumType.OPERAND); 
+			nodePlace.setSubTypeNode(EnumSubType.ENTITY); 
+
+			formulaViewTree.updateTree();
+		}
 	}	
 	
 	public void addStateLink(StateLink link){
 		
      	NodeFormulaTree nodePlace = formulaViewTree.getNodeFormulaActive();  
-		
-		nodePlace.setName(link.getState().getName()); 
-		nodePlace.setNodeVariable(link);
-		nodePlace.setTypeNode(EnumType.OPERAND); 
-		nodePlace.setSubTypeNode(EnumSubType.ENTITY); 
-		
-		formulaViewTree.updateTree(); 				
+
+     	if(nodePlace != null){
+     		nodePlace.setName(link.getState().getName()); 
+     		nodePlace.setNodeVariable(link);
+     		nodePlace.setTypeNode(EnumType.OPERAND); 
+     		nodePlace.setSubTypeNode(EnumSubType.ENTITY); 
+
+     		formulaViewTree.updateTree();
+     	}
 		
 	}
 	

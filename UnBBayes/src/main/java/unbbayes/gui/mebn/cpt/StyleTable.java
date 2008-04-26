@@ -46,7 +46,7 @@ public interface StyleTable {
 	
 	public Style getStateFatherStyle();
 	
-	public Style getDefaultStype();
+	public Style getDefaultStyle();
 	
 	public Style getDescriptionStyle();
 	

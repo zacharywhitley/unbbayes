@@ -399,6 +399,7 @@ public class NetworkWindow extends JInternalFrame {
 					controller);
 			graphPane.resetGraph();
 			ssbnCompilationPane.getCenterPanel().setRightComponent(jspGraph);
+//			ssbnCompilationPane.getCenterPanel().setDividerLocation(0.3); 
 			ssbnCompilationPane.setStatus(status.getText());
 			ssbnCompilationPane.getEvidenceTree().setRootVisible(true);
 			ssbnCompilationPane.getEvidenceTree().expandRow(0);

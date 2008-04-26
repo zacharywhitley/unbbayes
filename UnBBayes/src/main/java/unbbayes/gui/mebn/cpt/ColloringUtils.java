@@ -160,7 +160,7 @@ public class ColloringUtils {
 				return; 
 			}				
 			
-			doc.insertString(position, word, styleTable.getDefaultStype());
+			doc.insertString(position, word, styleTable.getDefaultStyle());
 			
 		}
 		catch(Exception e){
@@ -256,7 +256,7 @@ public class ColloringUtils {
 				doc.insertString(position, "" + character , styleTable.getBooleanStyle());		
 			}
 			else{
-			    doc.insertString(position, "" + character , styleTable.getDefaultStype());
+			    doc.insertString(position, "" + character , styleTable.getDefaultStyle());
 			}
 		}
 		catch(Exception e){

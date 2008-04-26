@@ -22,6 +22,7 @@ package unbbayes.gui.mebn;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.util.ResourceBundle;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -52,6 +53,9 @@ public class InputNodePane extends JPanel{
 	private JPanel argumentsPane; 
 	private MEBNController controller; 
 	
+  	private static ResourceBundle resource =
+  		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+	
 	public InputNodePane(){
 		
 	}
@@ -66,11 +70,11 @@ public class InputNodePane extends JPanel{
 		
 		inputNode = _inputNode; 
 		
-		this.setBorder(MebnToolkit.getBorderForTabPanel("Input Node")); 
+		this.setBorder(MebnToolkit.getBorderForTabPanel(resource.getString("InputTabTitle") + ": ")); 
 		
 		jtbInputInstanceOf = new JToolBar(); 
 		
-		jlInputInstanceOf = new JLabel("Input of: ");
+		jlInputInstanceOf = new JLabel(resource.getString("inputOf"));
 		jtbInputInstanceOf.setFloatable(false); 
 		
 		jtbInputInstanceOf.add(jlInputInstanceOf); 

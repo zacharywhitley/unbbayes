@@ -435,6 +435,7 @@ public class PossibleValuesEditionPane extends JPanel {
 			btnRemove = new JButton(iconController.getLessIcon());
 			btnRemove.setToolTipText(resource.getString("removeState"));
 			btnListPossibleStates = new JButton(iconController.getStateIcon()); 
+			btnListPossibleStates.setToolTipText(resource.getString("addPreDefinedState")); 
 			
 			JToolBar barOptions = new JToolBar();
 			barOptions.setLayout(new GridLayout(1, 3));
@@ -814,13 +815,13 @@ public class PossibleValuesEditionPane extends JPanel {
 			btnCategoryStates = new JButton(iconController
 					.getCategoryStateIcon());
 			btnCategoryStates.setToolTipText(resource
-					.getString("categoryStatesType"));
+					.getString("categoryStatesTip"));
 			btnObjectStates = new JButton(iconController.getEntityStateIcon());
 			btnObjectStates.setToolTipText(resource
-					.getString("objectStatesType"));
+					.getString("objectStatesTip"));
 			btnBooleanStates = new JButton(iconController.getBooleanStateIcon());
 			btnBooleanStates.setToolTipText(resource
-					.getString("booleanStatesType"));
+					.getString("booleanStatesTip"));
 
 			btnCategoryStates.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {

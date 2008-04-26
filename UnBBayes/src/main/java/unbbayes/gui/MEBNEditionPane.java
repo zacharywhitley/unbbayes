@@ -29,8 +29,6 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -38,7 +36,6 @@ import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -47,15 +44,14 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
-import javax.swing.border.TitledBorder;
 
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MEBNController;
 import unbbayes.gui.mebn.ArgumentEditionPane;
+import unbbayes.gui.mebn.DescriptionPane;
 import unbbayes.gui.mebn.EntityEditionPane;
 import unbbayes.gui.mebn.FormulaEditionPane;
 import unbbayes.gui.mebn.InputNodePane;
@@ -219,7 +215,7 @@ public class MEBNEditionPane extends JPanel {
         tabsPanel = new JPanel(new BorderLayout());
 
         jpTabSelected = new JPanel(cardLayout);
-        descriptionPane = new DescriptionPane();
+        descriptionPane = new DescriptionPane(mebnController);
         jtbTabSelection = new JToolBar();
 
         nodeSelectedToolBar = new JPanel(cardLayout);
@@ -347,6 +343,7 @@ public class MEBNEditionPane extends JPanel {
         centerPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, tabsPanel, graphPanel);
         //centerPanel.setResizeWeight(0.25);
         centerPanel.setDividerSize(1);
+//        centerPanel.setDividerLocation(0.4); 
 
         //adiciona containers para o contentPane
         this.add(topPanel, BorderLayout.NORTH);
@@ -695,8 +692,8 @@ public class MEBNEditionPane extends JPanel {
 		return netWindow;
 	}
 	
-	public void setDescriptionText(String text){
-		this.descriptionPane.setDescriptionText(text); 
+	public void setDescriptionText(String text, int type){
+		this.descriptionPane.setDescriptionText(text, type); 
 	}
 	
 	public String getDescriptionText(){
@@ -1474,58 +1471,6 @@ public class MEBNEditionPane extends JPanel {
   		}
     }
     
-    /*
-     * Pane that show the description of the selected object
-     */
-  	private class DescriptionPane extends JPanel{
-
-  		private JTextArea textArea;
-
-  		public DescriptionPane(){
-
-  			super(new BorderLayout());
-
-  			TitledBorder titledBorder;
-
-  			titledBorder = BorderFactory.createTitledBorder(
-  					BorderFactory.createLineBorder(Color.BLUE),
-  					resource.getString("descriptionLabel"));
-  			titledBorder.setTitleColor(Color.BLUE);
-  			titledBorder.setTitleJustification(TitledBorder.CENTER);
-
-  			setBorder(titledBorder);
-
-  	        textArea = new JTextArea(5, 10);
-  	        JScrollPane scrollPane =
-  	            new JScrollPane(textArea,
-  	                            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-  	                            JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-  	        textArea.setEditable(true);
-  	        
-  	        textArea.addFocusListener(new FocusListener(){
-
-				public void focusGained(FocusEvent e) {
-					
-				}
-
-				public void focusLost(FocusEvent e) {
-					mebnController.setDescriptionTextForSelectedObject(textArea.getText()); 
-				}
-  	        	
-  	        }); 
-
-  	        add(scrollPane, BorderLayout.CENTER);
-  		}
-
-  		public void setDescriptionText(String description){
-  			textArea.setText(description);
-  		}
-
-  		public String getDescriptionText(){
-  			return textArea.getText();
-  		}
-
-  	}
 
   	private class ButtonTab extends JButton{
   		

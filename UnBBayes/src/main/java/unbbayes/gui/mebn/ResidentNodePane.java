@@ -21,6 +21,7 @@
 package unbbayes.gui.mebn;
 
 import java.awt.BorderLayout;
+import java.util.ResourceBundle;
 
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
@@ -43,6 +44,9 @@ public class ResidentNodePane extends JPanel{
 	private MEBNController controller; 
 	private IconController iconController = IconController.getInstance(); 
 
+  	private static ResourceBundle resource =
+  		ResourceBundle.getBundle("unbbayes.gui.resources.GuiResources");
+	
 	/**
 	 * Create a empty pane. 
 	 */
@@ -58,7 +62,7 @@ public class ResidentNodePane extends JPanel{
 	public ResidentNodePane(MEBNController _controller, ResidentNode _residentNode){
 		super(); 
 		
-		this.setBorder(MebnToolkit.getBorderForTabPanel("Resident Node")); 
+		this.setBorder(MebnToolkit.getBorderForTabPanel(resource.getString("ResidentTabTitle"))); 
 		controller = _controller; 
 		
 		possibleValuesEditPane = new PossibleValuesEditionPane(_controller, _residentNode); 

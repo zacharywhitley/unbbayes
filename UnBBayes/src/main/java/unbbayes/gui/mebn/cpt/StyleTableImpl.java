@@ -137,7 +137,7 @@ public class StyleTableImpl implements StyleTable{
 		return regular_green; 
 	}
 	
-	public Style getDefaultStype(){
+	public Style getDefaultStyle(){
 		return regular; 
 	}
 	
