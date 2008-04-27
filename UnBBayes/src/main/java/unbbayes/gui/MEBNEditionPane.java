@@ -32,10 +32,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.Enumeration;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.AbstractButton;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -45,6 +48,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
 import unbbayes.controller.FileController;
@@ -174,12 +178,12 @@ public class MEBNEditionPane extends JPanel {
     private final String ORDVARIABLE_BAR = "OrdVariableCard";
 
     /* Buttons for select the active tab */
-
-    private final JButton btnTabOptionTree;
-    private final JButton btnTabOptionOVariable;
-    private final JButton btnTabOptionEntity;
-    private final JButton btnTabOptionEntityFinding;
-    private final JButton btnTabOptionNodeFinding;
+    private ButtonGroup groupButtonsTabs = new ButtonGroup(); 
+    private final JToggleButton btnTabOptionTree;
+    private final JToggleButton btnTabOptionOVariable;
+    private final JToggleButton btnTabOptionEntity;
+    private final JToggleButton btnTabOptionEntityFinding;
+    private final JToggleButton btnTabOptionNodeFinding;
 
     private final String MTHEORY_TREE_TAB = "MTheoryTree";
     private final String ENTITY_EDITION_TAB = "EntityEdtionTab";
@@ -247,6 +251,12 @@ public class MEBNEditionPane extends JPanel {
         btnTabOptionEntity.setToolTipText(resource.getString("showEntitiesToolTip"));
         btnTabOptionEntityFinding.setToolTipText(resource.getString("showEntityInstancesToolTip"));
         btnTabOptionNodeFinding.setToolTipText(resource.getString("showFingingsToolTip"));
+
+        groupButtonsTabs.add(btnTabOptionTree); 
+        groupButtonsTabs.add(btnTabOptionOVariable); 
+        groupButtonsTabs.add(btnTabOptionEntity); 
+        groupButtonsTabs.add(btnTabOptionEntityFinding); 
+        groupButtonsTabs.add(btnTabOptionNodeFinding); 
         
         addActionListenersToButtons();
 
@@ -264,6 +274,8 @@ public class MEBNEditionPane extends JPanel {
         toolBarOVariable = new ToolBarOrdVariable(mebnController);
         toolBarMTheory = new ToolBarMTheory();
 
+        
+        
         /*---- jtbEmpty ----*/
         JTextField txtIsEmpty = new JTextField(resource.getString("whithotMFragActive"));
         txtIsEmpty.setEditable(false);
@@ -551,6 +563,7 @@ public class MEBNEditionPane extends JPanel {
 		inputNodePane = new InputNodePane(mebnController, input);
     	jpTabSelected.add("InputNodeTab", inputNodePane);
     	cardLayout.show(jpTabSelected, "InputNodeTab");
+// 	    unselectButtonsGroupButtonsTabs(); 
     }
 
     public InputNodePane getInputNodePane(){
@@ -563,6 +576,7 @@ public class MEBNEditionPane extends JPanel {
 
     public void setArgumentTabActive(){
         cardLayout.show(jpTabSelected, "ArgumentTab");
+// 	   unselectButtonsGroupButtonsTabs(); 
     }
 
     public void setEditArgumentsTabActive(ResidentNode resident){
@@ -571,8 +585,8 @@ public class MEBNEditionPane extends JPanel {
     	editArgumentsTab = new ArgumentEditionPane(mebnController, resident);
     	jpTabSelected.add("EditArgumentsTab", editArgumentsTab);
 
-
     	cardLayout.show(jpTabSelected, "EditArgumentsTab");
+// 	    unselectButtonsGroupButtonsTabs(); 
     }
 
     public void setEditArgumentsTabActive(){
@@ -604,6 +618,7 @@ public class MEBNEditionPane extends JPanel {
     		residentNodePane = new ResidentNodePane(mebnController, resident);
         	jpTabSelected.add("ResidentNodeTab", residentNodePane);
         	cardLayout.show(jpTabSelected, "ResidentNodeTab");
+//     	    unselectButtonsGroupButtonsTabs(); 
     	}
     }
 
@@ -907,31 +922,32 @@ public class MEBNEditionPane extends JPanel {
 	    
 	}
 	
-  	private class ToolBarEdition extends JToolBar{
+  	public class ToolBarEdition extends JToolBar{
 
-  		private final JButton btnResetCursor; 
-  	    private final JButton btnAddMFrag;
-  	    private final JButton btnAddContextNode;
-  	    private final JButton btnAddInputNode;
-  	    private final JButton btnAddResidentNode;
-  	    private final JButton btnAddEdge;
-  	    private final JButton btnAddOrdinaryVariable;
-  	    private final JButton btnEditMTheory;
-  	    private final JButton btnSelectObject;
-  	    private final JButton btnDeleteSelectedItem; 
+  		private final JToggleButton btnResetCursor; 
+  	    private final JToggleButton btnAddMFrag;
+  	    private final JToggleButton btnAddContextNode;
+  	    private final JToggleButton btnAddInputNode;
+  	    private final JToggleButton btnAddResidentNode;
+  	    private final JToggleButton btnAddEdge;
+  	    private final JToggleButton btnAddOrdinaryVariable;
+  	    private final JToggleButton btnEditMTheory;
+  	    private final JToggleButton btnSelectObject;
+  	    private final JToggleButton btnDeleteSelectedItem; 
+  	    
+  	    private final ButtonGroup groupEditionButtons; 
   	    
   		public ToolBarEdition(){
-
-  	        btnEditMTheory = new JButton(iconController.getMTheoryNodeIcon());
-  	        btnAddEdge               = new JButton(iconController.getEdgeIcon());
-  	        btnAddContextNode = new JButton(iconController.getContextNodeIcon());
-  	        btnAddInputNode  = new JButton(iconController.getInputNodeIcon());
-  	        btnAddResidentNode  = new JButton(iconController.getResidentNodeIcon());
-  	        btnAddOrdinaryVariable = new JButton(iconController.getOVariableNodeIcon());
-  	        btnAddMFrag		= new JButton(iconController.getMFragIcon());
-  	        btnSelectObject            = new JButton(iconController.getSelectionIcon());
-  	        btnResetCursor = new JButton(iconController.getArrowIcon()); 
-  	        btnDeleteSelectedItem = new JButton(iconController.getEditDelete());
+  	        btnEditMTheory = new JToggleButton(iconController.getMTheoryNodeIcon());
+  	        btnAddEdge               = new JToggleButton(iconController.getEdgeIcon());
+  	        btnAddContextNode = new JToggleButton(iconController.getContextNodeIcon());
+  	        btnAddInputNode  = new JToggleButton(iconController.getInputNodeIcon());
+  	        btnAddResidentNode  = new JToggleButton(iconController.getResidentNodeIcon());
+  	        btnAddOrdinaryVariable = new JToggleButton(iconController.getOVariableNodeIcon());
+  	        btnAddMFrag		= new JToggleButton(iconController.getMFragIcon());
+  	        btnSelectObject            = new JToggleButton(iconController.getSelectionIcon());
+  	        btnResetCursor = new JToggleButton(iconController.getArrowIcon()); 
+  	        btnDeleteSelectedItem = new JToggleButton(iconController.getEditDelete());
   	        
   	        btnEditMTheory.setToolTipText(resource.getString("mTheoryEditionTip"));
   	        btnAddEdge.setToolTipText(resource.getString("arcToolTip"));
@@ -943,6 +959,19 @@ public class MEBNEditionPane extends JPanel {
   	        btnAddOrdinaryVariable.setToolTipText(resource.getString("ordinaryVariableInsertToolTip"));
   	        btnResetCursor.setToolTipText(resource.getString("resetToolTip"));
   	        btnDeleteSelectedItem.setToolTipText(resource.getString("deleteSelectedItemToolTip"));
+  	        
+  	        groupEditionButtons = new ButtonGroup(); 
+  	        groupEditionButtons.add(btnEditMTheory); 
+  	        groupEditionButtons.add(btnAddEdge); 
+  	        groupEditionButtons.add(btnAddContextNode); 
+  	        groupEditionButtons.add(btnAddInputNode); 
+  	        groupEditionButtons.add(btnAddResidentNode); 
+  	        groupEditionButtons.add(btnAddOrdinaryVariable); 
+  	        groupEditionButtons.add(btnAddMFrag); 
+  	        groupEditionButtons.add(btnSelectObject); 
+  	        groupEditionButtons.add(btnResetCursor); 
+  	        groupEditionButtons.add(btnEditMTheory); 
+  	        groupEditionButtons.add(btnDeleteSelectedItem);
   	        
   	        add(btnResetCursor); 
   	        addSeparator(); 
@@ -1029,9 +1058,47 @@ public class MEBNEditionPane extends JPanel {
 
   		}
 
+		public void selectBtnResetCursor() {
+			btnResetCursor.setSelected(true); 
+		}
 
+		public void selectBtnAddMFrag() {
+			btnAddMFrag.setSelected(true); 
+		}
+
+		public void selectBtnAddContextNode() {
+			btnAddContextNode.setSelected(true); 
+		}
+
+		public void selectBtnAddInputNode() {
+			btnAddInputNode.setSelected(true); 
+		}
+
+		public void selectBtnAddResidentNode() {
+			btnAddResidentNode.setSelected(true); 
+		}
+
+		public void selectBtnAddEdge() {
+			btnAddEdge.setSelected(true); 
+		}
+
+		public void selectBtnAddOrdinaryVariable() {
+			btnAddOrdinaryVariable.setSelected(true); 
+		}
+
+		public void selectBtnEditMTheory() {
+			btnEditMTheory.setSelected(true); 
+		}
+
+		public void selectBtnSelectObject() {
+			btnSelectObject.setSelected(true); 
+		}
+
+		public void selectBtnDeleteSelectedItem() {
+			btnDeleteSelectedItem.setSelected(true); 
+		}
   	}
-
+  	
 
   	private class ToolBarMTheory extends JToolBar{
 
@@ -1472,7 +1539,7 @@ public class MEBNEditionPane extends JPanel {
     }
     
 
-  	private class ButtonTab extends JButton{
+  	private class ButtonTab extends JToggleButton{
   		
   		public ButtonTab(ImageIcon image){
   			super(image); 
@@ -1498,6 +1565,26 @@ public class MEBNEditionPane extends JPanel {
   	
 	public ToolBarOrdVariable getToolBarOVariable() {
 		return toolBarOVariable;
+	}
+
+
+	public ToolBarEdition getJtbEdition() {
+		return jtbEdition;
+	}
+
+
+	public ButtonGroup getGroupButtonsTabs() {
+		return groupButtonsTabs;
+	}
+
+	/**
+	 * Unselect all the buttons of the groupButtonsTabs (buttons of tabs)
+	 */
+	public void unselectButtonsGroupButtonsTabs(){
+		Enumeration<AbstractButton>  abEnumeration = groupButtonsTabs.getElements();
+		while(abEnumeration.hasMoreElements()){
+			abEnumeration.nextElement().setSelected(false); 
+		}
 	}
 
 }

@@ -103,9 +103,7 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 		
 		setName(name); 
 		updateLabel(); 		
-		
-    	size.x = 100;
-    	size.y = 20; 
+
     	drawResidentNode = new DrawRoundedRectangle(position, size);
         drawElement.add(drawResidentNode);
 	}

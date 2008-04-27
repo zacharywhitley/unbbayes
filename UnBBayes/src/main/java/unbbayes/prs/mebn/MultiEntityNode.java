@@ -22,12 +22,14 @@ package unbbayes.prs.mebn;
 
 import java.awt.Color;
 import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.entity.Entity;
+import unbbayes.util.SerializablePoint2D;
 
 public class MultiEntityNode extends Node {
  
@@ -42,6 +44,12 @@ public class MultiEntityNode extends Node {
 	private List<MultiEntityNode> innerTermFromList;
 	
 	private List<Entity> possibleValueList; 
+	
+	private static final Point DEFAULT_MEBN_SIZE = new Point(100,20); 
+	
+	protected static SerializablePoint2D size = new SerializablePoint2D(
+			DEFAULT_MEBN_SIZE.getX(), DEFAULT_MEBN_SIZE.getY());
+
 
 	private static Color color;
 	
@@ -52,9 +60,6 @@ public class MultiEntityNode extends Node {
 	public MultiEntityNode(){
 		
 		super();
-		
-		size.x = 100;
-		size.y = 20;	
 		
 		argumentList = new ArrayList<Argument>(); 
 		innerTermOfList = new ArrayList<MultiEntityNode>();
@@ -307,6 +312,17 @@ public class MultiEntityNode extends Node {
 			}
 		}
 		return ret;
+	}
+	
+	/**
+	 * Returns the node's size (x,y) where x = width and y = height.
+	 * 
+	 * @return The node's size.
+	 */
+	public static Point2D.Double getSize() {
+
+		return size;
+
 	}
 	
 }

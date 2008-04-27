@@ -167,7 +167,7 @@ public class GlobalOptionsDialog extends JDialog {
         radius = new JLabel(resource.getString("radiusLabel"));
         radius.setToolTipText(resource.getString("radiusToolTip"));
         // TODO Acrescentar possibilidade de alterar largura e altura.
-        radiusSlider = new JSlider(JSlider.HORIZONTAL, 10, 40, (int)Node.getWidth()/2);
+        radiusSlider = new JSlider(JSlider.HORIZONTAL, 10, 40, (int)(Node.getWidth()/2));
         radiusSlider.setToolTipText(resource.getString("radiusToolTip"));
         radiusSlider.setMinorTickSpacing(1);
         radiusSlider.setMajorTickSpacing(10);

@@ -609,6 +609,7 @@ public class GraphPane extends JPanel implements MouseListener, MouseMotionListe
 			
 		} else if (e.getModifiers() == MouseEvent.BUTTON3_MASK) {
 			setAction(GraphAction.NONE);
+			controller.setResetButtonActive(); 
 		}
 		
 		this.repaint((int) controller.getScreen().getJspGraph().getHorizontalScrollBar().getValue(), 

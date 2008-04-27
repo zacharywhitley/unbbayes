@@ -215,6 +215,12 @@ public class MEBNController  {
 	/*                                                                         */
 	/*-------------------------------------------------------------------------*/	
 	
+	public void setResetButtonActive(){
+		if(mebnEditionPane.getJtbEdition() != null){
+			mebnEditionPane.getJtbEdition().selectBtnResetCursor();
+		}
+	}
+	
 	public ResidentNode getResidentNodeActive(){
 		return residentNodeActive;
 	}
@@ -729,25 +735,43 @@ public class MEBNController  {
 
 	public void setActionGraphNone(){
 	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.NONE);	
+		if(mebnEditionPane.getJtbEdition()!=null){
+		    mebnEditionPane.getJtbEdition().selectBtnResetCursor(); 
+		}
 	}
 	
 	public void setActionGraphCreateEdge(){
+		if(mebnEditionPane.getJtbEdition()!=null){
+		    mebnEditionPane.getJtbEdition().selectBtnAddEdge(); 
+		}
 	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.CREATE_EDGE);	
 	}
 	
 	public void setActionGraphCreateContextNode(){
+		if(mebnEditionPane.getJtbEdition()!=null){
+		    mebnEditionPane.getJtbEdition().selectBtnAddContextNode(); 
+		}
 	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.CREATE_CONTEXT_NODE);	
 	}
 	
 	public void setActionGraphCreateInputNode(){
+		if(mebnEditionPane.getJtbEdition()!=null){
+		    mebnEditionPane.getJtbEdition().selectBtnAddInputNode(); 
+		}
 	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.CREATE_INPUT_NODE);	
 	}
 	
 	public void setActionGraphCreateResidentNode(){
+		if(mebnEditionPane.getJtbEdition()!=null){
+		    mebnEditionPane.getJtbEdition().selectBtnAddResidentNode();
+		}
 	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.CREATE_RESIDENT_NODE);	
 	}
 	
 	public void setActionGraphCreateOrdinaryVariableNode(){
+		if(mebnEditionPane.getJtbEdition()!=null){
+		    mebnEditionPane.getJtbEdition().selectBtnAddOrdinaryVariable();  
+		}
 	    mebnEditionPane.getNetworkWindow().getGraphPane().setAction(GraphAction.CREATE_ORDINARYVARIABLE_NODE);	
 	}
 	
@@ -988,7 +1012,7 @@ public class MEBNController  {
 		OrdinaryVariable ov = new OrdinaryVariable(name, type, domainMFrag);
 		domainMFrag.addOrdinaryVariable(ov);
 
-		   mebnEditionPane.getEditOVariableTab().update(); 
+		mebnEditionPane.getEditOVariableTab().update(); 
 		
 		return ov;
 

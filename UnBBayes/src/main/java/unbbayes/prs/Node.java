@@ -47,8 +47,11 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	protected String label;
 	private boolean nameIsLabel = true;
 
+
+	private static final Point DEFAULT_SIZE = new Point(35,35); 
+	
 	protected SerializablePoint2D position;
-	protected static SerializablePoint2D size = new SerializablePoint2D();
+	protected static SerializablePoint2D size = new SerializablePoint2D(DEFAULT_SIZE.getX(), DEFAULT_SIZE.getY());
 
 	protected SerializablePoint2D sizeVariable = new SerializablePoint2D();
 	protected boolean sizeIsVariable = false;
@@ -63,7 +66,6 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 	private int informationType;
 	public int infoestados[];
 	
-	private static final Point DEFAULT_SIZE = new Point(35,35); 
 
 	public static final int PROBABILISTIC_NODE_TYPE = 0;
 	public static final int UTILITY_NODE_TYPE = 1;

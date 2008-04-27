@@ -149,6 +149,11 @@ public class NetworkController implements KeyListener {
     	return mebnController; 
     }
     
+    public void setResetButtonActive(){
+    	if(mebnController != null){
+    		mebnController.setResetButtonActive(); 
+    	}
+    }
     
     /***************** END CONTROLLING MULTI ENTTITY BAYESIAN NETWORK *********************/
     

@@ -27,7 +27,15 @@ public class SerializablePoint2D extends Point2D.Double implements
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
+	
+	public SerializablePoint2D(){
+		super(); 
+	}
 
+	public SerializablePoint2D(double x, double y){
+		super(x,y); 
+	}	
+	
 	private void writeObject(java.io.ObjectOutputStream out)
 			throws java.io.IOException {
 		out.writeDouble(x);
