@@ -22,12 +22,15 @@ package unbbayes.prs.mebn;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.draw.DrawFlatPentagon;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.entity.Type;
+import unbbayes.util.SerializablePoint2D;
 
 /**
  * Ordinary Variables are place holders used in MFrag to refer to 
@@ -67,6 +70,13 @@ public class OrdinaryVariable extends Node{
 	
     private DrawFlatPentagon drawContextNode;
     
+    
+	private static final Point DEFAULT_MEBN_SIZE = new Point(100,20); 
+	
+	protected static SerializablePoint2D size = new SerializablePoint2D(
+			DEFAULT_MEBN_SIZE.getX(), DEFAULT_MEBN_SIZE.getY());
+
+	
 	/* draw end */ 
 	
     /**
@@ -280,6 +290,17 @@ public class OrdinaryVariable extends Node{
 		
 		return false; //obj == null && this != null 
 		
+	}
+	
+	/**
+	 * Returns the node's size (x,y) where x = width and y = height.
+	 * 
+	 * @return The node's size.
+	 */
+	public static Point2D.Double getSize() {
+
+		return size;
+
 	}
 	
 	/**
