@@ -68,7 +68,7 @@ public class ControllerResources extends ListResourceBundle {
 		{"nodeName","Node: "},
 		
 		//MainController
-		{"NewPNName","New PN"},
+		{"NewPNName","New BN"},
 		{"NewMSBNName","New MSBN"},
 		{"NewMEBNName","NewMEBN"},
 		

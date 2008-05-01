@@ -68,7 +68,7 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"nodeName","Nó: "},
 		
 		//MainController
-		{"NewPNName","Nova PN"},
+		{"NewPNName","Nova BN"},
 		{"NewMSBNName","Nova MSBN"},
 		{"NewMEBNName","NovaMEBN"},
 		
