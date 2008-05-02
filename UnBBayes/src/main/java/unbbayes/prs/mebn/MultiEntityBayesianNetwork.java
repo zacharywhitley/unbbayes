@@ -103,6 +103,24 @@ public class MultiEntityBayesianNetwork extends Network {
 		return namesUsed; 
 	}
 	
+	public void initListNamesUsedWithReservatedNames(){
+		
+		if(namesUsed==null){
+			namesUsed =new TreeSet<String>();
+		}
+		
+		namesUsed.add("true"); 
+		namesUsed.add("false"); 
+		namesUsed.add("absurd"); 
+		
+		for(String typesNames : typeContainer.getTypesNames()){
+			namesUsed.add(typesNames); 
+		}
+		
+		//TODO complete this with the classes of the Pr-OWL...
+		
+	}
+	
 	/*--------------------------- MFrags ---------------------*/
 	
 	/**
