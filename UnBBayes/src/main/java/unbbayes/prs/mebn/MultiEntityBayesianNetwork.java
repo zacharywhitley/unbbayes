@@ -22,6 +22,8 @@ package unbbayes.prs.mebn;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
@@ -61,21 +63,23 @@ public class MultiEntityBayesianNetwork extends Network {
 	
 	private String description; 
 	
-	/* Este contador serve apenas para indicar qual deve ser o n�mero
-	 * da pr�xima MFrag criada (ao se gerar o nome automatico. Este n�mero
-	 * n�o est� em sincronia com o n�mero atual de MFrags porque ele 
-	 * inclui tamb�m MFrags criadas e escluidas posteriormente */
+	/* 
+	 * Counters for indicate what is the automatic number for the next name
+	 * generated.
+	 *  
+	 **/
 	
 	private int domainMFragNum = 1; 
 	private int generativeInputNodeNum = 1; 
 	private int domainResidentNodeNum = 1; 	
 	private int contextNodeNum = 1; 
     private int entityNum = 1; 
-		
 	
     // Bridge pattern: separates this mebn representation and how mebn should be saved
     IBridgeImplementor storageImplementor = null;
     
+    //Controller of the names of the objects in this MTheory for avoid duplicated names. 
+    private Set<String> namesUsed; 
     
     /**
 	 * Contructs a new MEBN with empty mFrag's lists.
@@ -91,7 +95,12 @@ public class MultiEntityBayesianNetwork extends Network {
 		objectEntityContainer = new ObjectEntityConteiner(typeContainer); 
 		booleanStatesEntityContainer = new BooleanStatesEntityContainer(); 
 		categoricalStatesEntityContainer = new CategoricalStatesEntityContainer(); 
-		
+		namesUsed = new TreeSet<String>();
+	}
+	
+	/*------------------------ Names of objects in this MTheory ------------*/
+	public Set<String> getNamesUsed(){
+		return namesUsed; 
 	}
 	
 	/*--------------------------- MFrags ---------------------*/

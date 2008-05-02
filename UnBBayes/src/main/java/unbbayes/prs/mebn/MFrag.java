@@ -291,7 +291,11 @@ public class MFrag implements Graph{
 	
 	public int getOrdinaryVariableNum(){
 		return ordinaryVariableNum; 
-	}		
+	}	
+	
+	public void plusOrdinaryVariableNum(){
+		ordinaryVariableNum++; 
+	}
 	
 	/**
 	 * Method responsible for removing the given ordinary variable from its ordinary variable list.

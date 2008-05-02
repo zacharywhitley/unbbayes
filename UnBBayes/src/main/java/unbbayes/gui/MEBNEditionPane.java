@@ -1126,7 +1126,14 @@ public class MEBNEditionPane extends JPanel {
   	  						String name = txtNameMTheory.getText(0,txtNameMTheory.getText().length());
   	  						matcher = wordPattern.matcher(name);
   	  						if (matcher.matches()) {
-  	  							mebnController.renameMTheory(name);
+  	  							try {
+									mebnController.renameMTheory(name);
+								} catch (DuplicatedNameException e1) {
+	  	  							JOptionPane.showMessageDialog(netWindow,
+	  	  									resource.getString("nameError"),
+	  	  									resource.getString("nameDuplicated"),
+	  	  									JOptionPane.ERROR_MESSAGE);
+								}
   	  						}  else {
   	  							txtNameMTheory.setBackground(MebnToolkit.getColorTextFieldError());
   	  							txtNameMTheory.setForeground(Color.WHITE);

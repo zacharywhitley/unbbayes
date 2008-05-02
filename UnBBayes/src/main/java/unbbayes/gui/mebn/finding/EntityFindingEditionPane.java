@@ -58,6 +58,7 @@ import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
+import unbbayes.prs.mebn.exception.DuplicatedNameException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 
@@ -296,14 +297,28 @@ public class EntityFindingEditionPane extends JPanel {
 						ObjectEntity objectEntity = (ObjectEntity)selected; 
 						if(!objectEntity.isOrdereable()){
 					 	    try {
-								mebnController.createEntityIntance(objectEntity, nameObjectEntity.getText());
+								try {
+									mebnController.createEntityIntance(objectEntity, nameObjectEntity.getText());
+								} catch (DuplicatedNameException e) {
+									JOptionPane.showMessageDialog(null, 
+											resource.getString("nameError"), 
+											resource.getString("nameDuplicated"), 
+											JOptionPane.ERROR_MESSAGE);
+								}
 							} catch (InvalidOperationException e) {
 								e.printStackTrace();
 							}
 						}else{
 						    try {
-								mebnController.createEntityIntanceOrdereable(
-										objectEntity, nameObjectEntity.getText(), last);
+								try {
+									mebnController.createEntityIntanceOrdereable(
+											objectEntity, nameObjectEntity.getText(), last);
+								} catch (DuplicatedNameException e) {
+									JOptionPane.showMessageDialog(null, 
+											resource.getString("nameError"), 
+											resource.getString("nameDuplicated"), 
+											JOptionPane.ERROR_MESSAGE);
+								}
 							} catch (InvalidOperationException e) {
 								e.printStackTrace();
 							}	
@@ -319,8 +334,15 @@ public class EntityFindingEditionPane extends JPanel {
 					}
 				}else{
 					try{
-						mebnController.renameEntityIntance((ObjectEntityInstance)selected, nameObjectEntity.getText()); 
-						objectEntityInstanceListPane.update();
+						try {
+							mebnController.renameEntityIntance((ObjectEntityInstance)selected, nameObjectEntity.getText());
+							objectEntityInstanceListPane.update();
+						} catch (DuplicatedNameException e) {
+							JOptionPane.showMessageDialog(null, 
+									resource.getString("nameError"), 
+									resource.getString("nameDuplicated"), 
+									JOptionPane.ERROR_MESSAGE);
+						} 
 					}
 					catch(EntityInstanceAlreadyExistsException ex){
 						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 

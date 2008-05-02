@@ -296,6 +296,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 		
 		individualOne = (OWLIndividual) itAux.next();
 		mebn = new MultiEntityBayesianNetwork(individualOne.getBrowserText()); 
+		mebn.getNamesUsed().add(individualOne.getBrowserText()); 
 		
 		Debug.println("MTheory loaded: " + individualOne.getBrowserText()); 
 		
@@ -316,6 +317,8 @@ public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 			domainMFrag = new MFrag(individualTwo.getBrowserText(), mebn); 
 			mebn.addDomainMFrag(domainMFrag); 
 			mapDomainMFrag.put(individualTwo.getBrowserText(), domainMFrag); 
+			
+			mebn.getNamesUsed().add(individualTwo.getBrowserText()); 
 		}	
  
 	}
@@ -349,6 +352,8 @@ public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 			
 			try{
 			    Type type = mebn.getTypeContainer().createType(individualOne.getBrowserText()); 
+
+				mebn.getNamesUsed().add(individualOne.getBrowserText()); 
 			}
 			catch (TypeAlreadyExistsException exception){
 				//OK... lembre-se que os tipos basicos já existem... 
@@ -389,6 +394,8 @@ public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 				ObjectEntity objectEntityMebn = mebn.getObjectEntityContainer().createObjectEntity(subClass.getBrowserText()); 	
 			    mapObjectEntity.put(subClass.getBrowserText(), objectEntityMebn); 
 			    mapTypes.put(objectEntityMebn.getType().getName(), objectEntityMebn); 
+
+				mebn.getNamesUsed().add(subClass.getBrowserText()); 
 			}
 			catch(TypeException typeException){
 				typeException.printStackTrace(); 
@@ -412,12 +419,15 @@ public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 			individualOne = (OWLIndividual) owlIndividual; 
 			
 			CategoricalStateEntity state = mebn.getCategoricalStatesEntityContainer().createCategoricalEntity(individualOne.getBrowserText()); 
+
+			mebn.getNamesUsed().add(individualOne.getBrowserText()); 
 			
 			globallyExclusiveObjects = individualOne.getPropertyValues(isGloballyExclusive); 
 			ArrayList<String> listObjects = new ArrayList<String>(); 
 			for (Object object : globallyExclusiveObjects){
 				OWLIndividual nodeIndividual = (OWLIndividual) object;
 				listObjects.add(nodeIndividual.getBrowserText()); 
+
 			}
 			
 			mapCategoricalStateGloballyObjects.put(state.getName(), listObjects); 
@@ -446,12 +456,18 @@ public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 			
 			if(individualOne.getBrowserText().equals("true")){
 				state = mebn.getBooleanStatesEntityContainer().getTrueStateEntity(); 
+				mebn.getNamesUsed().add(individualOne.getBrowserText()); 
+				
 			}else{
 				if(individualOne.getBrowserText().equals("false")){
 					state = mebn.getBooleanStatesEntityContainer().getFalseStateEntity(); 
+					mebn.getNamesUsed().add(individualOne.getBrowserText()); 
+					
 				}else{
 					if(individualOne.getBrowserText().equals("absurd")){
 						state = mebn.getBooleanStatesEntityContainer().getAbsurdStateEntity(); 
+						mebn.getNamesUsed().add(individualOne.getBrowserText()); 
+						
 					}else{
 						// 
 					}
@@ -508,6 +524,8 @@ public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
 				individualTwo = (OWLIndividual) itIn.next();
 				domainResidentNode = new ResidentNode(individualTwo.getBrowserText(), domainMFrag); 
+				mebn.getNamesUsed().add(individualTwo.getBrowserText()); 
+				
 				domainMFrag.addResidentNode(domainResidentNode); 
 				mapDomainResidentNode.put(individualTwo.getBrowserText(), domainResidentNode); 
 				mapMultiEntityNode.put(individualTwo.getBrowserText(), domainResidentNode); 
@@ -520,6 +538,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
 				individualTwo = (OWLIndividual) itIn.next();
 				generativeInputNode = new InputNode(individualTwo.getBrowserText(), domainMFrag); 
+				mebn.getNamesUsed().add(individualTwo.getBrowserText()); 
 				domainMFrag.addInputNode(generativeInputNode); 
 				mapGenerativeInputNode.put(individualTwo.getBrowserText(), generativeInputNode); 
 				mapMultiEntityNode.put(individualTwo.getBrowserText(), generativeInputNode); 				
@@ -532,6 +551,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 			for (Iterator itIn = instances.iterator(); itIn.hasNext(); ){
 				individualTwo = (OWLIndividual) itIn.next();
 				contextNode = new ContextNode(individualTwo.getBrowserText(), domainMFrag); 
+				mebn.getNamesUsed().add(individualTwo.getBrowserText()); 
 				domainMFrag.addContextNode(contextNode); 
 				mapContextNode.put(individualTwo.getBrowserText(), contextNode); 
 				mapMultiEntityNode.put(individualTwo.getBrowserText(), contextNode); 				

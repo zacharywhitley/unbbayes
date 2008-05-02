@@ -47,6 +47,7 @@ import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
+import unbbayes.prs.mebn.exception.DuplicatedNameException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 
 /**
@@ -275,7 +276,14 @@ public class ArgumentEditionPane2 extends JPanel{
   						String name = txtName.getText(0,txtName.getText().length());
   						matcher = wordPattern.matcher(name);
   						if (matcher.matches()) {
-  							mebnController.renameOVariableInArgumentEditionPane(name); 
+  							try {
+								mebnController.renameOVariableInArgumentEditionPane(name);
+							} catch (DuplicatedNameException e1) {
+  	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
+  	  									resource.getString("nameError"),
+  	  									resource.getString("nameDuplicated"),
+  	  									JOptionPane.ERROR_MESSAGE);
+							} 
   						}  else {
   							JOptionPane.showMessageDialog(null, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
   							

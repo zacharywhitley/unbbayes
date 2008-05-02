@@ -61,6 +61,7 @@ import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.StateLink;
+import unbbayes.prs.mebn.exception.DuplicatedNameException;
 
 /**
  * Panel for selection of the possible values (states) of a resident node.
@@ -550,15 +551,33 @@ public class PossibleValuesEditionPane extends JPanel {
 								if (answer == JOptionPane.YES_OPTION) {
 									mebnController
 									.removeAllPossibleValues(residentNode);
-									StateLink stateLink = mebnController.addPossibleValue(residentNode,
-											nameValue);
-									stateLink.setGloballyExclusive(checkGloballyExclusive.isSelected());
-									residentNode
-									.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES);
+									StateLink stateLink;
+									try {
+										stateLink = mebnController.addPossibleValue(residentNode,
+												nameValue);
+
+										stateLink.setGloballyExclusive(checkGloballyExclusive.isSelected());
+										residentNode
+										.setTypeOfStates(ResidentNode.CATEGORY_RV_STATES);
+										
+									} catch (DuplicatedNameException e) {
+		  	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
+		  	  									resource.getString("nameError"),
+		  	  									resource.getString("nameDuplicated"),
+		  	  									JOptionPane.ERROR_MESSAGE);
+									}
 								}
 							} else {
-								StateLink stateLink = mebnController.addPossibleValue(residentNode, nameValue);
-								stateLink.setGloballyExclusive(checkGloballyExclusive.isSelected());
+								StateLink stateLink;
+								try {
+									stateLink = mebnController.addPossibleValue(residentNode, nameValue);
+									stateLink.setGloballyExclusive(checkGloballyExclusive.isSelected());
+								} catch (DuplicatedNameException e) {
+	  	  							JOptionPane.showMessageDialog(mebnController.getScreen(),
+	  	  									resource.getString("nameError"),
+	  	  									resource.getString("nameDuplicated"),
+	  	  									JOptionPane.ERROR_MESSAGE);
+								}
 							}
 							
 						} else {

@@ -45,6 +45,7 @@ import unbbayes.gui.mebn.auxiliary.FocusListenerTextField;
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.entity.Type;
+import unbbayes.prs.mebn.exception.DuplicatedNameException;
 
 /**
  * Bar of edition for one ordinary variable. 
@@ -108,14 +109,21 @@ public class ToolBarOrdVariable extends JToolBar{
   	  	  									JOptionPane.ERROR_MESSAGE);
   	  							   	
   								}else{
-  									mebnController.renameOrdinaryVariable(ov, name);
+  									try {
+										mebnController.renameOrdinaryVariable(ov, name);
+									} catch (DuplicatedNameException e1) {
+										JOptionPane.showMessageDialog(null, 
+												resource.getString("nameError"), 
+												resource.getString("nameDuplicated"), 
+												JOptionPane.ERROR_MESSAGE);
+									}
   								}
   							}
   						}  else {
   							txtName.setBackground(MebnToolkit.getColorTextFieldError()); 
   							txtName.setForeground(Color.WHITE); 
   							txtName.selectAll();
-  							JOptionPane.showMessageDialog(null, resource.getString("nameError"), resource.getString("nameException"), JOptionPane.ERROR_MESSAGE);
+  							JOptionPane.showMessageDialog(null, resource.getString("nameError"), resource.getString("nameDuplicated"), JOptionPane.ERROR_MESSAGE);
   						}
   					}
   					catch (javax.swing.text.BadLocationException ble) {
