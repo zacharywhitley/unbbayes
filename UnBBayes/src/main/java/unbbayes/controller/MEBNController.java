@@ -1521,20 +1521,20 @@ public class MEBNController  {
 		Exception lastException = null;
 		createKnowledgeBase(); 	
 		getKnowledgeBase().loadModule(file);
-//		for (ResidentNode resident : this.multiEntityBayesianNetwork.getDomainResidentNodes()) {
-//			try {
-//				 this.knowledgeBase.fillFindings(resident);
-//			 } catch (Exception e) {
-//				 e.printStackTrace();
-//				 lastException = e;
-//				 continue;
-//			 }
-//		}
-//		if (lastException != null) {
-//			// commenting below... Power loom was throwing stack trace as message...
-//			//throw new MEBNException(lastException);
-//			throw new MEBNException(resourcePN.getString("loadHasError"));
-//		}
+		for (ResidentNode resident : this.multiEntityBayesianNetwork.getDomainResidentNodes()) {
+			try {
+				 this.knowledgeBase.fillFindings(resident);
+			 } catch (Exception e) {
+				 e.printStackTrace();
+				 lastException = e;
+				 continue;
+			 }
+		}
+		if (lastException != null) {
+			// commenting below... Power loom was throwing stack trace as message...
+			//throw new MEBNException(lastException);
+			throw new MEBNException(resourcePN.getString("loadHasError"));
+		}
 	}
 	
 	private void createKnowledgeBase(){

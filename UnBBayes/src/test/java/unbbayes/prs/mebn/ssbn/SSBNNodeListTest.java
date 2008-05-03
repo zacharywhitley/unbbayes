@@ -13,6 +13,7 @@ import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.entity.TypeContainer;
 
 /**
  * @author Shou Matsumoto
@@ -138,5 +139,39 @@ public class SSBNNodeListTest extends TestCase {
 		assertEquals(this.ssbnnode2, this.list.getNode(this.ssbnnode2.getName()).iterator().next());
 		assertEquals(this.ssbnnode3, this.list.getNode(this.ssbnnode3.getName()).iterator().next());
 	}
+	
+	/**
+	 * Test method for {@link unbbayes.prs.mebn.ssbn.SSBNNodeList#contains(Object)}.
+	 */
+	public final void testContains() {
+		
+		OrdinaryVariable st = new OrdinaryVariable("st",this.mebn.getTypeContainer().getType("Starship_label"),this.resident.getMFrag());
+		OrdinaryVariable t = new OrdinaryVariable("t",this.mebn.getTypeContainer().getType("TimeStep_label"),this.resident.getMFrag());
+		
+		assertNotNull(st);
+		assertNotNull(t);
+		
+		SSBNNode node1 = SSBNNode.getInstance(null, this.resident);		
+		
+		assertNotNull(this.ssbnnode1);
+		assertNotNull(node1);
+		
+		try{
+			node1.addArgument(st,"ST4");
+			node1.addArgument(t,"T0");
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		SSBNNodeList list = new SSBNNodeList();
+		this.ssbnnode1.getName();
+		node1.getName();
+		list.add(this.ssbnnode1);
+		assertTrue(list.contains(node1));
+		
+	}
+	
+	
 
 }
