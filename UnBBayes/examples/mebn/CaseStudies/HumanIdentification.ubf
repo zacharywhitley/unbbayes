@@ -27,14 +27,14 @@ Size=35,35
 % Input nodes
 
 
-Node=IX2
-Type=GenerativeInputNode
-Position=309.0,183.0
-Size=35,35
-
 Node=IX1
 Type=GenerativeInputNode
 Position=148.0,182.0
+Size=35,35
+
+Node=IX2
+Type=GenerativeInputNode
+Position=309.0,183.0
 Size=35,35
 
 % Ordinary Variables
@@ -145,27 +145,27 @@ NextOrdinaryVar=2
 % Resident nodes
 
 
-Node=MentoProeminente
-Type=DomainResidentNode
-Position=323.0,341.0
-Size=35,35
-
 Node=MentoRedondo
 Type=DomainResidentNode
 Position=114.0,338.0
 Size=35,35
 
+Node=MentoProeminente
+Type=DomainResidentNode
+Position=323.0,341.0
+Size=35,35
+
 % Input nodes
 
-
-Node=IX4
-Type=GenerativeInputNode
-Position=321.0,191.0
-Size=35,35
 
 Node=IX3
 Type=GenerativeInputNode
 Position=113.0,187.0
+Size=35,35
+
+Node=IX4
+Type=GenerativeInputNode
+Position=321.0,191.0
 Size=35,35
 
 % Ordinary Variables
@@ -191,14 +191,14 @@ Size=35,35
 % Input nodes
 
 
-Node=IX6
-Type=GenerativeInputNode
-Position=331.0,184.0
-Size=35,35
-
 Node=IX5
 Type=GenerativeInputNode
 Position=130.0,184.0
+Size=35,35
+
+Node=IX6
+Type=GenerativeInputNode
+Position=331.0,184.0
 Size=35,35
 
 % Ordinary Variables
@@ -224,14 +224,14 @@ Size=35,35
 % Input nodes
 
 
-Node=IX8
-Type=GenerativeInputNode
-Position=347.0,184.0
-Size=35,35
-
 Node=IX7
 Type=GenerativeInputNode
 Position=124.0,185.0
+Size=35,35
+
+Node=IX8
+Type=GenerativeInputNode
+Position=347.0,184.0
 Size=35,35
 
 % Ordinary Variables
@@ -257,14 +257,14 @@ Size=35,35
 % Input nodes
 
 
-Node=IX10
-Type=GenerativeInputNode
-Position=291.0,197.0
-Size=35,35
-
 Node=IX9
 Type=GenerativeInputNode
 Position=100.0,198.0
+Size=35,35
+
+Node=IX10
+Type=GenerativeInputNode
+Position=291.0,197.0
 Size=35,35
 
 % Ordinary Variables
