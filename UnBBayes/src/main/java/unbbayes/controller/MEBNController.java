@@ -834,41 +834,45 @@ public class MEBNController  {
 	}
 	
 	public void deleteSelected(Object selected) {
-        if (selected instanceof ContextNode){
-            ((ContextNode)selected).delete();
-            mebnEditionPane.getMTheoryTree().removeNode((Node)selected);
-            mebnEditionPane.setMTheoryTreeActive();
-        }
-        else{
+		if (selected instanceof ContextNode){
+			((ContextNode)selected).delete();
+			multiEntityBayesianNetwork.getNamesUsed().remove(((ContextNode)selected).getName()); 
+			mebnEditionPane.getMTheoryTree().removeNode((Node)selected);
+			mebnEditionPane.setMTheoryTreeActive();
+		}
+		else{
 
-        	if (selected instanceof ResidentNode){
-                ((ResidentNode)selected).delete();
-                mebnEditionPane.getMTheoryTree().removeNode((Node)selected);
-                mebnEditionPane.setMTheoryTreeActive();
-        		this.setUnableTableEditionView();
-        	}
-        	else{
-            	if (selected instanceof InputNode){
-                    ((InputNode)selected).delete();
-                    mebnEditionPane.getMTheoryTree().removeNode((Node)selected);
-                     mebnEditionPane.setMTheoryTreeActive();
-            	}else{
-            	 if (selected instanceof OrdinaryVariable){
-                     ((OrdinaryVariable)selected).delete();
-                     screen.getGraphPane().update();
-                     mebnEditionPane.setMTheoryTreeActive();
-                  }
-               else{
-                    if (selected instanceof Edge) {
-                    	MFrag mFragCurrent = multiEntityBayesianNetwork.getCurrentMFrag();
-                    	mFragCurrent.removeEdge((Edge) selected);
-                    }
-            	}
-            	}
-        	}
-        }
-        
-        mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
+			if (selected instanceof ResidentNode){
+				((ResidentNode)selected).delete();
+				multiEntityBayesianNetwork.getNamesUsed().remove(((ResidentNode)selected).getName()); 
+				mebnEditionPane.getMTheoryTree().removeNode((Node)selected);
+				mebnEditionPane.setMTheoryTreeActive();
+				this.setUnableTableEditionView();
+			}
+			else{
+				if (selected instanceof InputNode){
+					((InputNode)selected).delete();
+					multiEntityBayesianNetwork.getNamesUsed().remove(((InputNode)selected).getName()); 
+					mebnEditionPane.getMTheoryTree().removeNode((Node)selected);
+					mebnEditionPane.setMTheoryTreeActive();
+				}else{
+					if (selected instanceof OrdinaryVariable){
+						((OrdinaryVariable)selected).delete();
+						multiEntityBayesianNetwork.getNamesUsed().remove(((OrdinaryVariable)selected).getName()); 
+						screen.getGraphPane().update();
+						mebnEditionPane.setMTheoryTreeActive();
+					}
+					else{
+						if (selected instanceof Edge) {
+							MFrag mFragCurrent = multiEntityBayesianNetwork.getCurrentMFrag();
+							mFragCurrent.removeEdge((Edge) selected);
+						}
+					}
+				}
+			}
+		}
+
+		mebnEditionPane.getNetworkWindow().getGraphPane().update(); 
 
 	}
 
