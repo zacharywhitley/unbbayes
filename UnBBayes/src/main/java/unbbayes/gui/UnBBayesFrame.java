@@ -31,10 +31,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
-import java.util.Locale;
+import java.net.URL;
 import java.util.ResourceBundle;
 
+import javax.help.HelpSet;
+import javax.help.JHelp;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
@@ -53,6 +57,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 import unbbayes.aprendizagem.ConstructionController;
 import unbbayes.aprendizagem.incrementalLearning.ILBridge;
+import unbbayes.controller.ConfigurationsController;
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.MainController;
@@ -81,7 +86,7 @@ public class UnBBayesFrame extends JFrame {
 	private JToolBar jtbTools;
 	private JToolBar jtbWindow;
 	// TODO CHANGE HELP
-	//private JToolBar jtbHelp;
+	private JToolBar jtbHelp;
 	private MainController controller;
 
 	private JButton newNet;
@@ -99,9 +104,9 @@ public class UnBBayesFrame extends JFrame {
 	private JButton help;
 	private JButton about; 
 	
-	// private URL helpSetURL;
-	// private HelpSet set;
-	// private JHelp jHelp;
+	 private URL helpSetURL;
+	 private HelpSet set;
+	private JHelp jHelp;
 	private ActionListener alNewBN;
 	
 	private ActionListener alTAN;
@@ -115,7 +120,7 @@ public class UnBBayesFrame extends JFrame {
 	private ActionListener alTbView;
 	private ActionListener alTbTools;
 	private ActionListener alTbWindow;
-	//private ActionListener alTbHelp;
+	private ActionListener alTbHelp;
 	private ActionListener alMetal;
 	private ActionListener alMotif;
 	private ActionListener alWindows;
@@ -156,6 +161,8 @@ public class UnBBayesFrame extends JFrame {
 		this.setSize(Toolkit.getDefaultToolkit().getScreenSize());
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		addWindowListener(new ListenerCloserFrame()); 
+		
 		fileController = FileController.getInstance();
 
 		Container contentPane = getContentPane();
@@ -488,7 +495,7 @@ public class UnBBayesFrame extends JFrame {
 		};
 
 		// create an ActionListener for showing the Help Tool Bar
-	/*	alTbHelp = new ActionListener() {
+	   alTbHelp = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setCursor(new Cursor(Cursor.WAIT_CURSOR));
 				if (((JCheckBoxMenuItem) e.getSource()).getState()) {
@@ -502,7 +509,7 @@ public class UnBBayesFrame extends JFrame {
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
 
-		};*/
+		};
 
 		// create an ActionListener for choosing Metal Look and Feel
 		alMetal = new ActionListener() {
@@ -572,6 +579,22 @@ public class UnBBayesFrame extends JFrame {
 
 			}
 		};
+	}
+	
+	private class OpenFileListener implements ActionListener{
+
+		private final File file; 
+		
+		OpenFileListener(File file){
+			this.file = file; 
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			setCursor(new Cursor(Cursor.WAIT_CURSOR));
+			controller.loadNet(file);
+			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		}
+		
 	}
 
 	private void showAboutPane(){
@@ -732,15 +755,30 @@ public class UnBBayesFrame extends JFrame {
 		fileMenu.add(openItem);
 		fileMenu.add(saveItem);
 		fileMenu.addSeparator();
+		
+		ConfigurationsController configController = ConfigurationsController.getInstance(); 
+		for(String nameOfFile: configController.getConfigurations().getPreviewOpenFiles()){
+			File file = new File(nameOfFile); 
+			JMenuItem fileMenuItem = new JMenuItem(nameOfFile);  
+			fileMenuItem.addActionListener(new OpenFileListener(file)); 
+			
+			fileMenu.add(fileMenuItem); 
+		}
+		
+
+		fileMenu.addSeparator(); 
 		fileMenu.add(exitItem);
+		
 		lafMenu.add(metalItem);
 		lafMenu.add(motifItem);
 		lafMenu.add(windowsItem);
+		
 		tbMenu.add(tbFile);
 		tbMenu.add(tbView);
 		tbMenu.add(tbTools);
 		tbMenu.add(tbWindow);
 		tbMenu.add(tbHelp);
+		
 		viewMenu.add(tbMenu);
 		viewMenu.addSeparator();
 		viewMenu.add(lafMenu);
@@ -754,7 +792,7 @@ public class UnBBayesFrame extends JFrame {
 		
 		windowMenu.add(cascadeItem);
 		windowMenu.add(tileItem);
-//		helpMenu.add(helpItem);
+		helpMenu.add(helpItem);
 		helpMenu.add(aboutItem);
 
 		menu.add(fileMenu);
@@ -861,6 +899,75 @@ public class UnBBayesFrame extends JFrame {
 
 	public static UnBBayesFrame getIUnBBayes() {
 		return UnBBayesFrame.singleton;
+	}
+	
+	public class ListenerCloserFrame implements WindowListener{
+		  /**
+	     * Invoked the first time a window is made visible.
+	     */
+	    public void windowOpened(WindowEvent e){
+	    	
+	    }
+
+	    /**
+	     * Invoked when the user attempts to close the window
+	     * from the window's system menu.
+	     */
+	    public void windowClosing(WindowEvent e){
+	    	System.out.println("foi...");
+	    	controller.saveConfigurations(); 
+	    }
+
+	    /**
+	     * Invoked when a window has been closed as the result
+	     * of calling dispose on the window.
+	     */
+	    public void windowClosed(WindowEvent e){
+	    	
+	    }
+
+	    /**
+	     * Invoked when a window is changed from a normal to a
+	     * minimized state. For many platforms, a minimized window 
+	     * is displayed as the icon specified in the window's 
+	     * iconImage property.
+	     * @see java.awt.Frame#setIconImage
+	     */
+	    public void windowIconified(WindowEvent e){
+	    	
+	    }
+
+	    /**
+	     * Invoked when a window is changed from a minimized
+	     * to a normal state.
+	     */
+	    public void windowDeiconified(WindowEvent e){
+	    	
+	    }
+
+	    /**
+	     * Invoked when the Window is set to be the active Window. Only a Frame or
+	     * a Dialog can be the active Window. The native windowing system may
+	     * denote the active Window or its children with special decorations, such
+	     * as a highlighted title bar. The active Window is always either the
+	     * focused Window, or the first Frame or Dialog that is an owner of the
+	     * focused Window.
+	     */
+	    public void windowActivated(WindowEvent e){
+	    	
+	    }
+
+	    /**
+	     * Invoked when a Window is no longer the active Window. Only a Frame or a
+	     * Dialog can be the active Window. The native windowing system may denote
+	     * the active Window or its children with special decorations, such as a
+	     * highlighted title bar. The active Window is always either the focused
+	     * Window, or the first Frame or Dialog that is an owner of the focused
+	     * Window.
+	     */
+	    public void windowDeactivated(WindowEvent e){
+	    	
+	    }
 	}
 
 }

@@ -20,20 +20,17 @@
  */
 package unbbayes.controller;
 
-import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-import javax.swing.JDialog;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.xml.bind.JAXBException;
 
+import unbbayes.gui.Configurations;
 import unbbayes.gui.MSBNWindow;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SplashScreen;
@@ -41,10 +38,11 @@ import unbbayes.gui.UnBBayesFrame;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLIO;
+import unbbayes.io.configurations.ConfigurationsIO;
+import unbbayes.io.configurations.ConfigurationsIOInputStream;
 import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.io.mebn.UbfIO;
-import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -78,9 +76,35 @@ public class MainController {
 	 */
 	public MainController() {
 //		eagleLoader(); 
+		loadConfigurations(); 
+		
 		screen = new UnBBayesFrame(this);
 	}
 	
+	public void loadConfigurations(){
+		ConfigurationsController configController = ConfigurationsController.getInstance(); 
+		ConfigurationsIO configurationsIO = new ConfigurationsIOInputStream(); 
+		
+		try {
+			Configurations configurations = configurationsIO.load(new File(configController.getFileConfigurationsPath()));
+			configController.setConfigurations(configurations); 
+			configController.setFileOpenedSucessfull(true); 
+		} catch (IOException e) {
+			e.printStackTrace(); 
+			configController.setFileOpenedSucessfull(false); 
+		}
+	}
+	
+	public void saveConfigurations(){
+		ConfigurationsController configController = ConfigurationsController.getInstance(); 
+		ConfigurationsIO configurationsIO = new ConfigurationsIOInputStream(); 
+		
+		try {
+			configurationsIO.save(new File(configController.getFileConfigurationsPath()), configController.getConfigurations());
+		} catch (IOException e) {
+			e.printStackTrace(); 
+		}
+	}
 
 	/**
 	 * Pre-loading of api's for a better performance
@@ -264,10 +288,12 @@ public class MainController {
 				if (name.endsWith("net")) {
 					io = new NetIO();	
 					ProbabilisticNetwork net = io.load(file);
+					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
 					window = new NetworkWindow(net);					
 				} else if (name.endsWith("xml")){
 					io = new XMLIO();	
 					ProbabilisticNetwork net = io.load(file);
+					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
 					window = new NetworkWindow(net);					
 				} else if (name.endsWith("owl")){
 
@@ -312,11 +338,13 @@ public class MainController {
 					MultiEntityBayesianNetwork mebn; 
 					PrOwlIO prOwlIo = new PrOwlIO(); 
 					mebn = prOwlIo.loadMebn(file);
+					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
 					window = new NetworkWindow(mebn);
 				
 				}  else if (name.endsWith(UbfIO.fileExtension)) {        			
 					MebnIO ubfIo = UbfIO.getInstance(); 
 					MultiEntityBayesianNetwork mebn = ubfIo.loadMebn(file);
+					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
 					window = new NetworkWindow(mebn);	
 				}
 			}
