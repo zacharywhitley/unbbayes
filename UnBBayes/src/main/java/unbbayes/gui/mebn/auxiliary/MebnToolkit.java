@@ -40,6 +40,8 @@ public class MebnToolkit {
 	private static Color colorResident = new Color(254, 250, 158);
 	private static Color colorInput = new Color(220, 220, 220); 
 	
+	private static Color colorTabPanelButton = Color.WHITE; 
+	
 	private static Color colorTextFieldUnselected = Color.WHITE; 
 	private static Color colorTextFieldSelected = new Color(53, 253, 193); //light green 
 	private static Color colorTextFieldError = new Color(232, 13, 13); //light red 
@@ -169,6 +171,14 @@ public class MebnToolkit {
 
 	public static void setColor6(Color color6) {
 		MebnToolkit.color6 = color6;
+	}
+
+	public static Color getColorTabPanelButton() {
+		return colorTabPanelButton;
+	}
+
+	public static void setColorTabPanelButton(Color colorTabPanelButton) {
+		MebnToolkit.colorTabPanelButton = colorTabPanelButton;
 	}
 
 }

@@ -54,16 +54,15 @@ public class ResidentPaneOptions extends JToolBar{
 		this.mebnController = mebnController; 
 
 		setLayout(new GridLayout(1,4)); 
-
 		JButton btnEditStates = new JButton(iconController.getStateIcon());
-		btnEditStates.setBackground(MebnToolkit.getColor1()); 
+		btnEditStates.setBackground(MebnToolkit.getColorTabPanelButton()); 
 		JButton btnEditTable = new JButton(iconController.getGridIcon());
-		btnEditTable.setBackground(MebnToolkit.getColor1()); 
+		btnEditTable.setBackground(MebnToolkit.getColorTabPanelButton()); 
 		JButton btnEditArguments = new JButton(iconController.getArgumentsIcon());
-		btnEditArguments.setBackground(MebnToolkit.getColor1()); 
+		btnEditArguments.setBackground(MebnToolkit.getColorTabPanelButton()); 
 
 		JLabel btnTriangle = new JLabel(iconController.getTriangleIcon());
-		btnTriangle.setBackground(MebnToolkit.getColor1()); 
+		btnTriangle.setBackground(MebnToolkit.getColorTabPanelButton()); 
 		btnTriangle.setEnabled(false); 
 
 		btnEditStates.addActionListener(new ActionListener() {

@@ -1550,7 +1550,7 @@ public class MEBNEditionPane extends JPanel {
   		
   		public ButtonTab(ImageIcon image){
   			super(image); 
-  			setBackground(new Color(187,224,227)); 
+  			setBackground(MebnToolkit.getColorTabPanelButton()); 
   		}
   		
   	}
