@@ -112,7 +112,7 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	 */
 	public void saveMebn(File file, MultiEntityBayesianNetwork _mebn) throws IOException, IOMebnException{
 		
-		Debug.setDebug(true); 
+		
 		
 		//Debug.setDebug(true);
 	    mebn = _mebn; 	
