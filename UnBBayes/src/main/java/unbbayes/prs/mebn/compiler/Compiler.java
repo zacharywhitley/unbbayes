@@ -320,12 +320,13 @@ public class Compiler implements ICompiler {
 	}
 	
 	/**
+	 * This method actually regenerates a CPT.
 	 * This method will not parse. Use parse() before this.
 	 * Please, note that this method will generate linear (equal) distribution
 	 * if no pseudocode is declared (all values will have same probability).
-	 * @return generated potential table
+	 * @return GENERATED potential table
 	 */
-	public PotentialTable getCPT() throws InconsistentTableSemanticsException,
+	protected PotentialTable getCPT() throws InconsistentTableSemanticsException,
 											InvalidProbabilityRangeException{
 		
 		// initial tests
@@ -466,7 +467,14 @@ public class Compiler implements ICompiler {
 			
 		}	// while i < this.cpt.tableSize()
 		
-		
+		// the code below is commented because calling getCPT twice must work as same.
+//		// dispose temporary table, because since it is useless anymore
+//		try{
+//			this.tempTable.clear();
+//		} catch (UnsupportedOperationException uoe) {
+//			uoe.printStackTrace();
+//			
+//		}
 		return this.cpt;
 	}
 	
@@ -623,7 +631,7 @@ public class Compiler implements ICompiler {
 		try {
 			statement();
 		} catch (TableFunctionMalformedException e) {
-			System.out.println("->" + getNode());
+			Debug.println("->" + getNode());
 			e.printStackTrace();
 			throw new InvalidProbabilityRangeException(e.getMessage() + " : " + this.getNode().getName());
 		}
@@ -798,7 +806,7 @@ public class Compiler implements ICompiler {
 			// consistency check C09: verify whether is conditionant of the node
 			if (this.node != null) {
 				if (!this.isValidConditionant(this.mebn, this.node, conditionantName )) {
-					System.out.println("->" + getNode());
+					Debug.println("->" + getNode());
 					throw new InvalidConditionantException();
 				}
 			}
@@ -1162,9 +1170,9 @@ public class Compiler implements ICompiler {
 	 * 
 	 */
 	private void getName()throws TableFunctionMalformedException {
-		Debug.println("RESETING VALUE FROM " + value);
+		//Debug.println("RESETING VALUE FROM " + value);
 		value = "";
-		Debug.println("LOOKAHEAD IS " + look);
+		//Debug.println("LOOKAHEAD IS " + look);
 		if (!isAlpha(look))
 			expected("Name");
 		while (isAlphaNumeric(look)) {
@@ -1172,13 +1180,13 @@ public class Compiler implements ICompiler {
 			nextChar();
 		}
 		
-		noCaseChangeValue = value;
+		noCaseChangeValue = value;	// this is "value" without case change
 		value = value.toUpperCase();
 
 		token = 'x';
 		//skipWhite();
 
-		Debug.print(value + " ");
+		//Debug.print(value + " ");
 		
 		
 		
@@ -1295,11 +1303,13 @@ public class Compiler implements ICompiler {
 	 *  reads the next input character (updates lookup character)
 	 */
 	private void nextChar() {
-		if (index < text.length) {
-			look = text[index++];
-		} else {
-			look = ' ';
-		}
+		
+//		if (index < text.length) {
+//			look = text[index++];
+//		} else {
+//			look = ' ';
+//		}
+		look = (index < text.length)?(text[index++]):(' ');
 	}
 
 	private void skipWhite() {
@@ -1341,10 +1351,11 @@ public class Compiler implements ICompiler {
 	}
 
 	private boolean isAlphaNumeric(final char c) {
-		if (isAlpha(c))
+		if (isAlpha(c)) {
 			return true; // uppercase
-		if (isNumeric(c))
+		} else	if (isNumeric(c)) {
 			return true; // numeric
+		}
 		return false;
 	}
 
@@ -1588,12 +1599,12 @@ public class Compiler implements ICompiler {
 	}
 	
 
-	/**
-	 * @return the tempTable
-	 */
-	public List<TempTableHeaderCell> getTempTable() {
-		return tempTable;
-	}
+//	/**
+//	 * @return the tempTable
+//	 */
+//	public List<TempTableHeaderCell> getTempTable() {
+//		return tempTable;
+//	}
 
 	/**
 	 * @return the ssbnnode

@@ -48,6 +48,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.msbn.SingleAgentMSBN;
+import unbbayes.util.Debug;
 import edu.isi.powerloom.PLI;
 import edu.stanford.smi.protegex.owl.ProtegeOWL;
 
@@ -118,21 +119,21 @@ public class MainController {
 		
 		initializeLoadConfigurations(); 
 		
-		System.out.println("Init loader Protege"); 
+		Debug.println("Init loader Protege"); 
 		
 		//load Protege
 		if(PRE_LOAD_PROTEGE){
 		   ProtegeOWL.createJenaOWLModel();
 		}
 		
-		System.out.println("Init loader Powerloom"); 
+		Debug.println("Init loader Powerloom"); 
 		
 		//load Powerloom
 		if(PRE_LOAD_POWERLOOM){
 		   PLI.initialize();
 		}
 		
-		System.out.println("Finish loader"); 
+		Debug.println("Finish loader"); 
 		
 		splashScreen.dispose(); 
 	}

@@ -1021,7 +1021,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		
 		int i = 0; 
 		for(SSBNNode ssbnNode : ssbnNodeList){
-			System.out.println("it " + i); i++; 
+			Debug.println("it " + i); i++; 
 			if(ssbnNode.getResident() == residentNode){
 				Collection<OVInstance> ssbnNodeArguments = ssbnNode.getArguments(); 
 				if(ovInstanceList.size()!= ssbnNodeArguments.size()){
@@ -1029,11 +1029,11 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				}else{
 					int j = 0; 
 					for(OVInstance ovInstance: ovInstanceList){
-						System.out.println("intern it " + j); j++; 
+						Debug.println("intern it " + j); j++; 
 						boolean find = false; 
 						int k = 0; 
 						for(OVInstance ssbnNodeArgument: ssbnNodeArguments){
-							System.out.println("intern intern it " + k); k++; 
+							Debug.println("intern intern it " + k); k++; 
 							if(ssbnNodeArgument.equals(ovInstance)){
 								find = true; 
 								break; 
@@ -1044,13 +1044,13 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 						}
 					}
 					//Find all the ovInstances! Is the same SSBNNode
-					System.out.println("...The same");
+					Debug.println("...The same");
 					return ssbnNode; 
 				}
 			}
 		}
 		
-		System.out.println("...Not the same");
+		Debug.println("...Not the same");
 		return null; 
 	}
 
@@ -1162,7 +1162,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 //				gpt.showTable("Table for Node " + ssbnNode + " - " + groupParents);
 				
 				mapCPTByEntity.put(entity.getInstanceName(), cpt);
-				System.out.println("Tabela armazenada: " + entity.getInstanceName() + " " + cpt.tableSize());
+				Debug.println("Tabela armazenada: " + entity.getInstanceName() + " " + cpt.tableSize());
 			}			
 			
 			//Reorganize the variables in table
@@ -1172,21 +1172,21 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 			
 			//Step 3: Fazer o XOR das tabelas obtidas utilizando a tabela do nó de contexto
 			
-			System.out.println("Gerando tabela para o nó residente");
+			Debug.println("Gerando tabela para o nó residente");
 
 			int columnsByEntity = cptResidentNode.tableSize() / ssbnNode.getResident().getPossibleValueListIncludingEntityInstances().size();
 			columnsByEntity /= contextFather.getProbNode().getStatesSize(); 
 			
-			System.out.println("Colunas por entidade= " + columnsByEntity);
+			Debug.println("Colunas por entidade= " + columnsByEntity);
 
 			int rows = ssbnNode.getProbNode().getStatesSize(); 
 			
 			for(int i=0; i < contextFather.getProbNode().getStatesSize(); i++){
 			    
-				System.out.println("\n i = " + i);
+				Debug.println("\n i = " + i);
 				
 				String entity = contextFather.getProbNode().getStateAt(i);
-				System.out.println("Entity = " + entity);
+				Debug.println("Entity = " + entity);
 				PotentialTable cptEntity = mapCPTByEntity.get(entity); 
 				
 				//descobrir a posição inicial...
@@ -1196,7 +1196,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 				int indexEntityInCptResidentNode = cptResidentNode.getVariableIndex(pnEntity) - 1; //the index 0 is the node itself
 				int entityIndex = (indexEntityInCptResidentNode + parentsByEntity.size() - 1)/ parentsByEntity.size(); 
 				
-				System.out.println("Entity Index=" + entityIndex);
+				Debug.println("Entity Index=" + entityIndex);
 				
 				int positionTableEntity = 0; 
 
@@ -1227,13 +1227,13 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 					inOrder*= node.getResident().getPossibleValueList().size(); 
 				}
 				
-				System.out.println("Index = " + indexEntityInCptResidentNode);
-				System.out.println("Repetições = " + repColum);
-				System.out.println("Posição na tabela do residente = " + positionTableResident);
-				System.out.println("Posição na tabela da entidade = " + positionTableEntity);
-				System.out.println("Linhas = " + rows);
-				System.out.println("Repitições de tudo = " + repAll);
-				System.out.println("Em Ordem = " + inOrder);
+				Debug.println("Index = " + indexEntityInCptResidentNode);
+				Debug.println("Repetições = " + repColum);
+				Debug.println("Posição na tabela do residente = " + positionTableResident);
+				Debug.println("Posição na tabela da entidade = " + positionTableEntity);
+				Debug.println("Linhas = " + rows);
+				Debug.println("Repitições de tudo = " + repAll);
+				Debug.println("Em Ordem = " + inOrder);
 				
 				while(positionTableEntity < cptEntity.tableSize() - 1){
 					int positionTableEntityFinal = -1; 
@@ -1257,7 +1257,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 									positionTableResident++; 
 									positionAuxEntity++; 
 								}
-								System.out.println();
+								Debug.println("");
 							}
 							positionTableEntityInitial += rows; 
 						}
@@ -1365,17 +1365,17 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	}
 	
 	private void printNodeStructureBeforeCPT(SSBNNode ssbnNode){
-		System.out.println("--------------------------------------------------");
-		System.out.println("- Node: " + ssbnNode.toString());
-		System.out.println("- Parents: ");
+		Debug.println("--------------------------------------------------");
+		Debug.println("- Node: " + ssbnNode.toString());
+		Debug.println("- Parents: ");
 		for(SSBNNode parent: ssbnNode.getParents()){
-			System.out.println("-    " + parent.getName());
-			System.out.println("-            Arguments: ");
+			Debug.println("-    " + parent.getName());
+			Debug.println("-            Arguments: ");
 			for(OVInstance ovInstance: parent.getArguments()){
-				System.out.println("-                " + ovInstance.toString());
+				Debug.println("-                " + ovInstance.toString());
 			}
 		}
-		System.out.println("--------------------------------------------------");	
+		Debug.println("--------------------------------------------------");	
 	}
 	
 	

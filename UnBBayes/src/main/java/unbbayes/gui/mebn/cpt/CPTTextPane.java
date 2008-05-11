@@ -245,7 +245,7 @@ public class CPTTextPane extends JTextPane{
 			insertStatesDistribution();
 			
 		} catch (BadLocationException ble) {
-			System.out.println("Couldn't insert initial text into text pane.");
+			System.err.println("Couldn't insert initial text into text pane.");
 		}
 		
 	}

@@ -30,6 +30,7 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ssbn.exception.InvalidOperationException;
+import unbbayes.util.Debug;
 
 /**
  * This class represents a ContextNode that is father in the probabilistic 
@@ -122,7 +123,7 @@ public class ContextFatherSSBNNode {
 	}
 
 	public void addPossibleValue(LiteralEntityInstance e){
-		System.out.println("--> Acrescentado estado ao ssbn context node = "  + e.toString());
+		Debug.println("--> Acrescentado estado ao ssbn context node = "  + e.toString());
 		if(possibleValues != null){
 			possibleValues.add(e);
 			probNode.appendState(e.getInstanceName());

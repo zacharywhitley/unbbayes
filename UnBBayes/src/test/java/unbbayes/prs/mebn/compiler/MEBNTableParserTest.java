@@ -103,7 +103,7 @@ public class MEBNTableParserTest extends TestCase {
 			" else if any STj have( OpSpec = Unknown & HarmPotential = true ) " + 
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = MAX(0;.99) ]  " +
 			" else if any STk have( OpSpec = Klingon & HarmPotential = true ) " +
-			"  [ Un = 0.10 , Hi = CARDINALITY(OpSpec)*0.1 , Medium = .15 , Low = 0 ] " +
+			"  [ Un = 0.10 , Hi = CARDINALITY(OpSpec)*0.1 , Medium = .15 , Low = 1- (Un + (Hi + Medium)) ] " +
 			" else if any STl have( OpSpec = Friend & HarmPotential = true ) " +
 			"  [ Un = 0 , Hi = 0 , Medium = .01 , Low = .99 ] " ;
 		

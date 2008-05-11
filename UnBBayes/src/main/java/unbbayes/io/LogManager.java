@@ -33,6 +33,7 @@ import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.Separator;
+import unbbayes.util.Debug;
 
 /**
  * Responsible for generating network compilation log
@@ -76,14 +77,14 @@ public class LogManager implements java.io.Serializable {
 
     public void append(String text) {
         log.append(text);
-        System.out.print(text);
+        Debug.print(text);
     }
     
     public void appendln(String text) {
         log.append(text);
         log.append("\n");
 
-        System.out.println(text);
+        Debug.println(text);
     }
 
     public String getLog() {

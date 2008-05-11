@@ -82,6 +82,7 @@ import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+import unbbayes.util.Debug;
 import unbbayes.util.ResourceController;
 
 /**
@@ -1806,9 +1807,9 @@ public class MEBNController  {
 	}
 
 	private void printArgumentsOfResidentNode(ResidentNode resident){
-		System.out.println("Resident: " + resident);
+		Debug.println("Resident: " + resident);
 		for(Argument arg: resident.getArgumentList()){
-			System.out.println(" [" + arg.getArgNumber() + "]:" + arg.getOVariable());
+			Debug.println(" [" + arg.getArgNumber() + "]:" + arg.getOVariable());
 		}
 	}
 	

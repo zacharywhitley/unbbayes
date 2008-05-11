@@ -45,6 +45,7 @@ import javax.swing.tree.TreePath;
 import unbbayes.controller.IconController;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.util.Debug;
 
 
 /**
@@ -287,7 +288,7 @@ public class HierarchicDefinitionPane extends JPanel
       while (enumeration.hasMoreElements())
       {
         DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)enumeration.nextElement();
-        System.out.println(treeNode);
+        Debug.println(treeNode.toString());
         Node node = hierarchicTree.getNodeInformation(treeNode);
         if (node == null)
         {

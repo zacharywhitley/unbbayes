@@ -28,6 +28,7 @@ import unbbayes.aprendizagem.LearningToolkit;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.util.Debug;
 
 /**
  * @author Administrador
@@ -133,7 +134,7 @@ public class GibbsController extends LearningToolkit {
    private int getEstado(double[] coluna) {
       double[][] faixa;
       double numero = Math.random();
-      System.out.println("Numero Randomico = " + numero);
+      Debug.println("Numero Randomico = " + numero);
       faixa = criarFaixasIntervalo(coluna);
       for (int i = 0; i < coluna.length; i++) {
          if (i == 0) {

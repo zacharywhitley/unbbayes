@@ -137,7 +137,7 @@ public class CompilerTest extends TestCase {
 			
 		} 
 		
-		tableParser.getTempTable();
+		//tableParser.getTempTable();
 		
 	}
 	
@@ -784,7 +784,7 @@ public void testGenerateCPT2() {
 		GUIPotentialTable guiCPT = new GUIPotentialTable(table);
 		guiCPT.showTable(harmPotential_ST0_T0.getName());
 		
-		while(true);
+		//while(true);
 		
 	}
 
@@ -890,7 +890,7 @@ public void testGenerateCPT3() {
 		GUIPotentialTable guiCPT = new GUIPotentialTable(table);
 		guiCPT.showTable(harmPotential_ST0_T0.getName());
 		
-		while(true);
+		//while(true);
 		
 	}
 	
@@ -995,7 +995,7 @@ public void testDistFromOwn() {
 	public void startBusyLoopToPauseLastTest() {
 		// this is just to let the last test not to exit (keep the test suite running)
 		assertEquals(0f, 0);
-		while(true);
+		//while(true);
 		
 	}
 

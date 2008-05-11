@@ -36,7 +36,7 @@ import unbbayes.prs.bn.PotentialTable;
 
 /**
  * @author Rommel N Carvalho
- *
+ * @deprecated
  * This class is responsible for...
  * TODO FINISH THIS CLASS
  */
