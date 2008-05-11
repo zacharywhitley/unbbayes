@@ -27,11 +27,6 @@ Size=35,35
 % Input nodes
 
 
-Node=IX1
-Type=GenerativeInputNode
-Position=148.0,182.0
-Size=35,35
-
 Node=IX2
 Type=GenerativeInputNode
 Position=309.0,183.0
@@ -54,7 +49,7 @@ NextOrdinaryVar=2
 
 Node=Idade
 Type=DomainResidentNode
-Position=165.0,173.0
+Position=151.0,172.0
 Size=35,35
 
 % Ordinary Variables
@@ -82,32 +77,22 @@ Size=35,35
 
 Node=IX15
 Type=GenerativeInputNode
-Position=506.0,188.0
+Position=433.0,248.0
 Size=35,35
 
 Node=IX14
 Type=GenerativeInputNode
-Position=399.0,179.0
-Size=35,35
-
-Node=IX13
-Type=GenerativeInputNode
-Position=292.0,199.0
+Position=304.0,200.0
 Size=35,35
 
 Node=IX12
 Type=GenerativeInputNode
-Position=161.0,195.0
-Size=35,35
-
-Node=IX16
-Type=GenerativeInputNode
-Position=629.0,189.0
+Position=170.0,191.0
 Size=35,35
 
 Node=IX11
 Type=GenerativeInputNode
-Position=35.0,186.0
+Position=101.0,265.0
 Size=35,35
 
 % Ordinary Variables
@@ -145,27 +130,22 @@ NextOrdinaryVar=2
 % Resident nodes
 
 
-Node=MentoRedondo
-Type=DomainResidentNode
-Position=114.0,338.0
-Size=35,35
-
 Node=MentoProeminente
 Type=DomainResidentNode
-Position=323.0,341.0
+Position=145.0,263.0
+Size=35,35
+
+Node=MentoRedondo
+Type=DomainResidentNode
+Position=146.0,371.0
 Size=35,35
 
 % Input nodes
 
 
-Node=IX3
-Type=GenerativeInputNode
-Position=113.0,187.0
-Size=35,35
-
 Node=IX4
 Type=GenerativeInputNode
-Position=321.0,191.0
+Position=147.0,184.0
 Size=35,35
 
 % Ordinary Variables
@@ -191,14 +171,14 @@ Size=35,35
 % Input nodes
 
 
-Node=IX5
-Type=GenerativeInputNode
-Position=130.0,184.0
-Size=35,35
-
 Node=IX6
 Type=GenerativeInputNode
 Position=331.0,184.0
+Size=35,35
+
+Node=IX5
+Type=GenerativeInputNode
+Position=130.0,184.0
 Size=35,35
 
 % Ordinary Variables
@@ -224,14 +204,14 @@ Size=35,35
 % Input nodes
 
 
-Node=IX7
-Type=GenerativeInputNode
-Position=124.0,185.0
-Size=35,35
-
 Node=IX8
 Type=GenerativeInputNode
 Position=347.0,184.0
+Size=35,35
+
+Node=IX7
+Type=GenerativeInputNode
+Position=129.0,190.0
 Size=35,35
 
 % Ordinary Variables
@@ -251,20 +231,7 @@ NextOrdinaryVar=2
 
 Node=Fronte
 Type=DomainResidentNode
-Position=197.0,332.0
-Size=35,35
-
-% Input nodes
-
-
-Node=IX9
-Type=GenerativeInputNode
-Position=100.0,198.0
-Size=35,35
-
-Node=IX10
-Type=GenerativeInputNode
-Position=291.0,197.0
+Position=144.0,155.0
 Size=35,35
 
 % Ordinary Variables
