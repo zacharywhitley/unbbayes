@@ -59,7 +59,7 @@ public class GuiResources extends ListResourceBundle {
 		
 		{"netFileFilter","Net (.net), XMLBIF (.xml), PR-OWL (.owl), UnBBayes file (.ubf)"},
 		{"netFileFilterSave","Net (.net), XMLBIF (.xml), UnBBayes file (.ubf)"},
-		{"powerloomFileFilter","Base de Conhecimento (.plm)"},
+		{"powerloomFileFilter","Knowledge Base (.plm)"},
 		{"xmlBIFFileFilter", "XMLBIF (.xml)"},
 		{"textFileFilter","Text (.txt)"},
 		{"fileUntitled","Untitled.txt"},
