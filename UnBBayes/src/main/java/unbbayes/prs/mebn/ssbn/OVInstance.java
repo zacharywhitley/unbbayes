@@ -124,8 +124,8 @@ public class OVInstance {
 	public boolean equals(Object arg0) {
 		if (arg0 instanceof OVInstance) {
 			OVInstance ovi = (OVInstance)arg0;
-			if (ovi.getOv().getName().compareTo(this.getOv().getName()) == 0) {
-				if (ovi.getEntity().getInstanceName().compareTo(this.getEntity().getInstanceName()) == 0) {
+			if (ovi.getOv().getName().equals(this.getOv().getName()) ) {
+				if (ovi.getEntity().getInstanceName().equals(this.getEntity().getInstanceName())) {
 					return true;
 				}
 			}			

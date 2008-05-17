@@ -854,7 +854,7 @@ public class MFrag implements Graph{
 		Node node = null;
 		for (int i = 0 ; i < list.size() ; i++) {
 			node = list.get(i);
-			if (node.getName().compareToIgnoreCase(name) == 0) {
+			if (node.getName().equalsIgnoreCase(name) ) {
 				return node;
 			}
 		}

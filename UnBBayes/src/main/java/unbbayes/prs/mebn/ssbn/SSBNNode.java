@@ -625,7 +625,7 @@ public class SSBNNode {
 		Collection<SSBNNode> parents = this.getParents();
 		Collection<SSBNNode> removingNodes = new ArrayList<SSBNNode>();
 		for (SSBNNode node : parents) {
-			if (node.getName().compareToIgnoreCase(name) == 0) {
+			if (node.getName().equalsIgnoreCase(name)) {
 				// we do not remove directly because of concurrent modification exception
 				removingNodes.add(node);
 			}

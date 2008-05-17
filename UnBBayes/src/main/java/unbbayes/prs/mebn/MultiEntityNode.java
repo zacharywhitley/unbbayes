@@ -145,7 +145,7 @@ public class MultiEntityNode extends Node {
 	public void removePossibleValueByName(String possibleValue){
 		
 		for(Entity value : possibleValueList){
-			if (value.getName().compareTo(possibleValue) == 0){
+			if (value.getName().equals(possibleValue)){
 				possibleValueList.remove(value);
 				return; 
 			}

@@ -101,7 +101,7 @@ public class ObjectEntityConteiner {
 	 */
 	public ObjectEntity getObjectEntityByName(String name){
 		for(ObjectEntity oe: listEntity){
-			if (oe.getName().compareTo(name) == 0){
+			if (oe.getName().equals(name) ){
 				return oe; 
 			}
 		}

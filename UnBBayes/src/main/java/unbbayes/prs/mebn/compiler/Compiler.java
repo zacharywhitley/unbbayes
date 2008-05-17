@@ -211,12 +211,24 @@ public class Compiler implements ICompiler {
 		originalTextLength = 0;
 	}
 	
+	
+	
 	public Compiler (ResidentNode node) {
 		super();
 		this.setNode(node);
 		this.cpt = null;
 		tempTable = new ArrayList<TempTableHeaderCell>();
 	}
+	
+	/**
+	 * Creates an instance of Compiler. The resident node is necessary
+	 * in order to perform semantic consisntency check.
+	 * @param node: a resident node containing the table to parse
+	 * @return a instance of the compiler.
+	 */
+//	public static Compiler getInstance(ResidentNode node) {
+//		return new Compiler(node);
+//	}
 	
 	
 	/**
@@ -260,15 +272,15 @@ public class Compiler implements ICompiler {
 			return;
 		}
 		index = 0;
-		Debug.println("************************************");
-		Debug.println("ORIGINAL: " + text);
+		// Debug.println("************************************");
+		// Debug.println("ORIGINAL: " + text);
 		//if (text != null) {
 			originalTextLength = text.length();
 			text = text.replaceAll("\\s+", " ");
 		//}
 		
-		Debug.println("CHANGED: " + text);
-		Debug.println("************************************");
+		// Debug.println("CHANGED: " + text);
+		// Debug.println("************************************");
 		//if (text != null) { 
 			this.text = text.toCharArray();
 			nextChar();
@@ -301,10 +313,10 @@ public class Compiler implements ICompiler {
 	public void parse() throws MEBNException {
 		//this.currentProbCellList = new ArrayList<TempTableProbabilityCell>(); //Initialize lists
 		if (this.text == null) {
-			Debug.println("Pseudocode = null");
+			// Debug.println("Pseudocode = null");
 			return;
 		}
-		Debug.println("PARSED: ");
+		// Debug.println("PARSED: ");
 		this.skipWhite();
 		this.table();
 	}
@@ -453,7 +465,7 @@ public class Compiler implements ICompiler {
 				for (TempTableProbabilityCell cell : header.getCellList()) {
 					// we assume the Probabilistic table is in the same order of the list "possibleValues", 
 					// so we look for the entity of possibleValues at a cell
-					if (cell.getPossibleValue().getName().compareTo(possibleValues.get(j).getName()) == 0) {
+					if (cell.getPossibleValue().getName().equals(possibleValues.get(j).getName())) {
 						value = cell.getProbabilityValue();
 						break;
 					}
@@ -530,7 +542,7 @@ public class Compiler implements ICompiler {
 	  							TableFunctionMalformedException{
 		
 		if (this.look == '[') {
-			Debug.println("STARTING DEFAULT STATEMENT");	
+			// Debug.println("STARTING DEFAULT STATEMENT");	
 			
 			// Prepare temporary table's header to declare a default (no-if-clause) statement
 			this.currentHeader = new TempTableHeaderCell(null, true, true, this.ssbnnode);
@@ -563,7 +575,7 @@ public class Compiler implements ICompiler {
 									  SomeStateUndeclaredException,
 									  InvalidProbabilityRangeException,
 									  TableFunctionMalformedException{
-		Debug.println("PARSING IF STATEMENT");
+		// Debug.println("PARSING IF STATEMENT");
 		// SCAN FOR IF. Note that any blank spaces were already skipped
 		scan();
 		matchString("IF");
@@ -574,12 +586,12 @@ public class Compiler implements ICompiler {
 		scan();
 		switch (token) {
 		case 'a':
-			Debug.println("ALL VERIFIED");
+			// Debug.println("ALL VERIFIED");
 			// sets the table header w/ this parameters (empty list,false,false): empty list (no verified parents), is not ANY and is not default
 			this.currentHeader = new TempTableHeaderCell(new ArrayList<TempTableHeaderParent>(), false, false, this.ssbnnode);
 			break;
 		case 'y':
-			Debug.println("ANY VERIFIED");
+			// Debug.println("ANY VERIFIED");
 			//	sets the table header w/ this parameters (empty list,false,false): empty list (no verified parents), is ANY and is not default
 			this.currentHeader = new TempTableHeaderCell(new ArrayList<TempTableHeaderParent>(), true, false, this.ssbnnode);
 			break;
@@ -593,10 +605,10 @@ public class Compiler implements ICompiler {
 		// SCAN FOR varsetname
 		String varSetName = this.varsetname();
 		this.currentHeader.setVarsetname(varSetName);
-		Debug.println("SCANNED VARSETNAME := " + varSetName);
+		// Debug.println("SCANNED VARSETNAME := " + varSetName);
 
 		// SCAN FOR HAVE
-		Debug.println("SCAN FOR HAVE");
+		// Debug.println("SCAN FOR HAVE");
 		scan();
 		matchString("HAVE");
 
@@ -614,7 +626,7 @@ public class Compiler implements ICompiler {
 		}
 		//this.nextChar();
 		//this.skipWhite();
-		Debug.println("LOOKAHEAD = " + look);
+		// Debug.println("LOOKAHEAD = " + look);
 		// ) EXPECTED
 		match(')');
 		
@@ -625,20 +637,20 @@ public class Compiler implements ICompiler {
 			throw new InvalidConditionantException();
 		}
 		
-		Debug.println("STARTING STATEMENTS");
+		// Debug.println("STARTING STATEMENTS");
 		
 		// if we catch a sintax error here, it may be a value error
 		try {
 			statement();
 		} catch (TableFunctionMalformedException e) {
-			Debug.println("->" + getNode());
+			// Debug.println("->" + getNode());
 			e.printStackTrace();
 			throw new InvalidProbabilityRangeException(e.getMessage() + " : " + this.getNode().getName());
 		}
 		
 		
 		
-		Debug.println("LOOKING FOR ELSE STATEMENT");
+		// Debug.println("LOOKING FOR ELSE STATEMENT");
 		// LOOK FOR ELSE
 		// Consistency check C09: the grammar may state else as optional,
 		// but semantically every table must have a default distribution, which is
@@ -656,7 +668,7 @@ public class Compiler implements ICompiler {
 			}
 		} else {
 			// No statement was found at all (that means no else statement).
-			Debug.println("END OF TABLE");
+			// Debug.println("END OF TABLE");
 			throw new NoDefaultDistributionDeclaredException();
 		}
 		
@@ -689,7 +701,7 @@ public class Compiler implements ICompiler {
 		do {
 			scanNoSkip();	// no white spaces should stay between ident and "." and next ident
 			if (token == 'x') {
-				Debug.println("SCANING IDENTIFIER " + value);
+				// Debug.println("SCANING IDENTIFIER " + value);
 				ret += this.noCaseChangeValue;
 			} else {
 				expected("Identifier");
@@ -727,10 +739,10 @@ public class Compiler implements ICompiler {
 		if (look == '|') {
 			match('|');
 			ICompilerBooleanValue val2 = bTerm();
-			Debug.println("EXITING BEXPRESSION AS OR");
+			// Debug.println("EXITING BEXPRESSION AS OR");
 			return new CompilerOrValue(val1, val2);
 		} else {
-			Debug.println("EXITING BEXPRESSION AS SINGLE TERM");			
+			// Debug.println("EXITING BEXPRESSION AS SINGLE TERM");			
 			return val1;
 		}
 		
@@ -776,7 +788,7 @@ public class Compiler implements ICompiler {
 		if (factor == null) {
 			throw new TableFunctionMalformedException();
 		}
-		Debug.println("EXITING NOT FACTOR");
+		// Debug.println("EXITING NOT FACTOR");
 		
 		if (isNot) {
 			return new CompilerNotValue(factor);
@@ -798,7 +810,7 @@ public class Compiler implements ICompiler {
 		
 		
 		
-		Debug.println("Parsing bFactor");
+		// Debug.println("Parsing bFactor");
 		// SCAN FOR CONDITIONANTS
 		scan();
 		if (token == 'x') {
@@ -806,7 +818,7 @@ public class Compiler implements ICompiler {
 			// consistency check C09: verify whether is conditionant of the node
 			if (this.node != null) {
 				if (!this.isValidConditionant(this.mebn, this.node, conditionantName )) {
-					Debug.println("->" + getNode());
+					// Debug.println("->" + getNode());
 					throw new InvalidConditionantException();
 				}
 			}
@@ -824,7 +836,7 @@ public class Compiler implements ICompiler {
 		// SCAN FOR CONDITIONANTS' POSSIBLE STATES
 		scan();
 		
-		Debug.println("SCANED FOR CONDITIONANTS' POSSIBLE STATES");
+		// Debug.println("SCANED FOR CONDITIONANTS' POSSIBLE STATES");
 		
 		if (token == 'x') {
 			// consistency check C09: verify whether conditionant has valid values
@@ -857,7 +869,7 @@ public class Compiler implements ICompiler {
 		Entity condvalue = null;
 		// search for an entity with a name this.noCaseChangeValue
 		for (Entity possibleValue : resident.getPossibleValueListIncludingEntityInstances()) {
-			if (possibleValue.getName().compareTo(this.noCaseChangeValue) == 0) {
+			if (possibleValue.getName().equals(this.noCaseChangeValue)) {
 				condvalue = possibleValue;
 				break;
 			}
@@ -889,14 +901,14 @@ public class Compiler implements ICompiler {
 									InvalidProbabilityRangeException,									
 									TableFunctionMalformedException {
 		
-		Debug.println("ELSE STATEMENT");
+		// Debug.println("ELSE STATEMENT");
 		if ( look == '[' ) {
 			// header ::= no known parent yet, is ANY and is default.
 			this.currentHeader = new TempTableHeaderCell(null,true,true, this.ssbnnode); 
 			this.tempTable.add(this.currentHeader);
 			this.statement();
 		} else {
-			Debug.println("COULD NOT FIND '['");
+			// Debug.println("COULD NOT FIND '['");
 			// we dont have to create new header here because ifStatement would do so.
 			ifStatement();
 		}
@@ -913,7 +925,7 @@ public class Compiler implements ICompiler {
 									SomeStateUndeclaredException,
 									InvalidProbabilityRangeException,									
 									TableFunctionMalformedException{
-		Debug.println("PARSING STATEMENT, VALUE = " + value + ", LOOKAHEAD = " + look);
+		// Debug.println("PARSING STATEMENT, VALUE = " + value + ", LOOKAHEAD = " + look);
 		if (look == '[') {
 			
 			// Consistency check C09
@@ -924,16 +936,20 @@ public class Compiler implements ICompiler {
 				possibleStates = this.node.getPossibleValueListIncludingEntityInstances();
 			}
 			
-			Debug.println("");
-			Debug.print("  ");
+			// Debug.println("");
+			// Debug.print("  ");
 			match('[');
 			
 			// initialize currently evaluated temporary table's collumn
 			//this.currentProbCellList = new ArrayList<TempTableProbabilityCell>();
 			
-			IProbabilityValue totalProb = assignment(declaredStates, possibleStates);
+			// we can ignore the returned value, since it is added to this.currentHeader
+			//IProbabilityValue totalProb = assignment(declaredStates, possibleStates);
+			assignment(declaredStates, possibleStates);
+			
+			
 			match(']');
-			Debug.println("");
+			// Debug.println("");
 			
 			if (this.node != null) {
 				// Consistency check C09
@@ -947,15 +963,15 @@ public class Compiler implements ICompiler {
 			
 			// runtime probability bound check (on SSBN generation time)
 			if (!this.currentHeader.isSumEquals1()) {
-				Debug.println("Testing cell's probability value's sum: " + currentHeader.getProbCellSum());
+				// Debug.println("Testing cell's probability value's sum: " + currentHeader.getProbCellSum());
 				if (!Float.isNaN(this.currentHeader.getProbCellSum())) {
 					throw new InvalidProbabilityRangeException();
 				} else {
-					Debug.println("=>NaN found!!!");
+					// Debug.println("=>NaN found!!!");
 				}
 			}
 		} else {
-			Debug.println("COULD NOT FIND '['");
+			// Debug.println("COULD NOT FIND '['");
 			this.expected("[");
 		}
 	}
@@ -1009,14 +1025,14 @@ public class Compiler implements ICompiler {
 		// boolean hasUnknownValue shows if some ret was negative.
 		IProbabilityValue ret = expression();		
 		float retValue = ret.getProbability();
-		boolean hasUnknownValue = Float.compare(retValue,Float.NaN) == 0;
+		boolean hasUnknownValue = Float.isNaN(retValue);
 		
 		// add cell to header
 		currentCell.setProbability(ret);
 		if (currentCell.getPossibleValue() != null) {
 			this.currentHeader.addCell(currentCell);
 		}
-		Debug.println("Adding cell: " + currentCell.getPossibleValue().getName() + " = " + ret.toString());
+		// Debug.println("Adding cell: " + currentCell.getPossibleValue().getName() + " = " + ret.toString());
 		
 		// consistency check C09
 		// a single state shall never have prob range out from [0,1]
@@ -1029,7 +1045,7 @@ public class Compiler implements ICompiler {
 			match(',');
 			IProbabilityValue temp = assignment(declaredStates, possibleStates);
 			float tempValue = temp.getProbability();
-			hasUnknownValue = hasUnknownValue || (Float.compare(tempValue,Float.NaN) == 0);
+			hasUnknownValue = hasUnknownValue || (Float.isNaN(tempValue));
 			if (hasUnknownValue) {
 				retValue = Float.NaN;
 			} else {
@@ -1037,7 +1053,7 @@ public class Compiler implements ICompiler {
 			}
 		}
 		
-		Debug.println("Returned expression value = " + retValue);
+		// Debug.println("Returned expression value = " + retValue);
 		if (retValue < 0) {
 			throw new InvalidProbabilityRangeException();
 		}
@@ -1053,28 +1069,47 @@ public class Compiler implements ICompiler {
 												  InvalidProbabilityRangeException,
 												  SomeStateUndeclaredException{
 		
-		// TODO create temp table
+		// temp table already created by upper caller
+		
 		IProbabilityValue temp1 = term();
-		IProbabilityValue temp2 = new SimpleProbabilityValue(Float.NaN);
+		IProbabilityValue temp2 = null;
+		
+		Float temp1Value = null;
+		Float temp2Value = null;
 		// LOOK FOR +/- (OPTIONAL)
 		switch (look) {
 		case '+':
 			match('+');
 			temp2 = term();
-			if (!Float.isNaN(temp2.getProbability()) && !Float.isNaN(temp1.getProbability())) {
-				temp1 = new AddOperationProbabilityValue(temp2 ,  temp1);
+			temp1Value = temp1.getProbability();
+			temp2Value = temp2.getProbability();
+			if (!Float.isNaN(temp1Value)) {
+				if (!Float.isNaN(temp2Value)) {
+					
+					// pode the subtree if it is known value...
+					temp1 = new AddOperationProbabilityValue(
+							temp1.isFixedValue?(new SimpleProbabilityValue(temp1Value)):temp1 ,
+							temp2.isFixedValue?(new SimpleProbabilityValue(temp2Value)):temp2);
+				}				
 			}		
 			break;
 		case '-':
 			match('-');
 			temp2 = term();
-			if (!Float.isNaN(temp2.getProbability()) && !Float.isNaN(temp1.getProbability())){
-				temp1 = new SubtractOperationProbabilityValue(temp1 , temp2);
+			temp1Value = temp1.getProbability();
+			temp2Value = temp2.getProbability();
+			if (!Float.isNaN(temp1Value)){
+				if (!Float.isNaN(temp2Value)) {
+					// pode the subtree if it is known value...
+					temp1 = new SubtractOperationProbabilityValue(
+							temp1.isFixedValue?(new SimpleProbabilityValue(temp1Value)):temp1 ,
+							temp2.isFixedValue?(new SimpleProbabilityValue(temp2Value)):temp2);
+				}
 			}			
 			break;
 		}
 		
-		Debug.println("Expression returned " + temp1.getProbability());
+		// Debug.println("Expression returned " + temp1.getProbability());
 		return temp1;
 	}
 
@@ -1087,28 +1122,46 @@ public class Compiler implements ICompiler {
 											InvalidProbabilityRangeException,
 											SomeStateUndeclaredException{
 		IProbabilityValue temp1 = signedFactor();
-		IProbabilityValue temp2 = new SimpleProbabilityValue(Float.NaN);
+		IProbabilityValue temp2 = null;
+		
+		Float temp1Value = null;
+		Float temp2Value = null;
 		// LOOK FOR *// (OPTIONAL)
 		switch (look) {
 		case '*':
 			match('*');
 			temp2 = this.signedFactor();
-			if (!Float.isNaN(temp2.getProbability()) && !Float.isNaN(temp1.getProbability())) {
-				return new MultiplyOperationProbabilityValue(temp2,  temp1);
+			temp1Value = temp1.getProbability();
+			temp2Value = temp2.getProbability();
+			if (!Float.isNaN(temp1Value)) {
+				if(!Float.isNaN(temp2Value)) {
+					// pode subtree if it is known value
+					return new MultiplyOperationProbabilityValue(
+							temp1.isFixedValue?(new SimpleProbabilityValue(temp1Value)):temp1 ,
+							temp2.isFixedValue?(new SimpleProbabilityValue(temp2Value)):temp2);
+				}
 			}
 			break;
 		case '/':
 			match('/');
 			temp2 = this.signedFactor();
-			if (!Float.isNaN(temp2.getProbability()) && !Float.isNaN(temp1.getProbability())) {
-				return new DivideOperationProbabilityValue(temp2, temp1);
+			temp1Value = temp1.getProbability();
+			temp2Value = temp2.getProbability();
+			if (!Float.isNaN(temp1Value)) {
+				if (!Float.isNaN(temp2Value)) {
+					// pode subtree if it is known value
+					return new DivideOperationProbabilityValue(
+							temp1.isFixedValue?(new SimpleProbabilityValue(temp1Value)):temp1 ,
+							temp2.isFixedValue?(new SimpleProbabilityValue(temp2Value)):temp2);
+				}
 			}
 			break;
-		default:
-			return temp1;
+		//default:
+			//return temp1;
 		}
-		Debug.println("Term is not matching to an * or / nor signed factor !!");
-		return new SimpleProbabilityValue(Float.NaN);
+		// Debug.println("Term is not matching to an * or / nor signed factor !!");
+		//return new SimpleProbabilityValue(Float.NaN);
+		return temp1;
 	}
 
 	/**
@@ -1126,7 +1179,7 @@ public class Compiler implements ICompiler {
 		// boolean negative;
 		// negative = (look == '-');
 		if (isAddOp(look)) {
-			Debug.print("" + look);
+			// Debug.print("" + look);
 			
 			if (this.isMinus(look)) {
 				isMinus = true;
@@ -1135,7 +1188,7 @@ public class Compiler implements ICompiler {
 			nextChar();
 			skipWhite();
 		}
-		Debug.println("Signed factor returning minus = " + isMinus);
+		// Debug.println("Signed factor returning minus = " + isMinus);
 		if (isMinus) {
 			return new NegativeOperationProbabilityValue(factor());
 		} else {
@@ -1151,7 +1204,7 @@ public class Compiler implements ICompiler {
 	private IProbabilityValue factor() throws TableFunctionMalformedException,
 											  InvalidProbabilityRangeException,
 											  SomeStateUndeclaredException{
-		IProbabilityValue ret = new SimpleProbabilityValue(Float.NaN);
+		IProbabilityValue ret = null;
 		if (look == '(') {
 			match('(');
 			ret = expression();
@@ -1161,7 +1214,7 @@ public class Compiler implements ICompiler {
 		} else {
 			ret =  getNum();
 		}
-		Debug.println("Factor returning " + ret.toString());
+		// Debug.println("Factor returning " + ret.toString());
 		return ret;
 	}
 
@@ -1170,9 +1223,9 @@ public class Compiler implements ICompiler {
 	 * 
 	 */
 	private void getName()throws TableFunctionMalformedException {
-		//Debug.println("RESETING VALUE FROM " + value);
+		//// Debug.println("RESETING VALUE FROM " + value);
 		value = "";
-		//Debug.println("LOOKAHEAD IS " + look);
+		//// Debug.println("LOOKAHEAD IS " + look);
 		if (!isAlpha(look))
 			expected("Name");
 		while (isAlphaNumeric(look)) {
@@ -1186,7 +1239,7 @@ public class Compiler implements ICompiler {
 		token = 'x';
 		//skipWhite();
 
-		//Debug.print(value + " ");
+		//// Debug.print(value + " ");
 		
 		
 		
@@ -1206,8 +1259,8 @@ public class Compiler implements ICompiler {
 		IProbabilityValue ret = new SimpleProbabilityValue(Float.NaN);
 		if (this.currentHeader != null) {
 			for (TempTableProbabilityCell cell : this.currentHeader.getCellList()) {
-				 if (cell.getPossibleValue().getName().compareTo(noCaseChangeValue) == 0) {
-					 Debug.println("\n => Variable value found: " + cell.getPossibleValue().getName());
+				 if (cell.getPossibleValue().getName().equals(noCaseChangeValue) ) {
+					 // Debug.println("\n => Variable value found: " + cell.getPossibleValue().getName());
 					 return cell.getProbability();
 					 
 				 }
@@ -1219,7 +1272,7 @@ public class Compiler implements ICompiler {
 		
 
 
-		Debug.println("An undeclared possible value or a \"varsetname\" was used : " + value);
+		// Debug.println("An undeclared possible value or a \"varsetname\" was used : " + value);
 		return ret;
 	}
 
@@ -1243,7 +1296,7 @@ public class Compiler implements ICompiler {
 		token = '#';
 		skipWhite();
 
-		Debug.println("GetNum returned " + Float.parseFloat(value));
+		// Debug.println("GetNum returned " + Float.parseFloat(value));
 		return new SimpleProbabilityValue(Float.parseFloat(value));
 	}
 	
@@ -1262,7 +1315,7 @@ public class Compiler implements ICompiler {
 			token = 'x';
 		else
 			token = kwcode[kw];
-		Debug.println("\n!!!Value = "  + value);
+		// Debug.println("\n!!!Value = "  + value);
 	}
 	
 	/**
@@ -1280,7 +1333,7 @@ public class Compiler implements ICompiler {
 			token = 'x';
 		else
 			token = kwcode[kw];
-		Debug.println("\n!!!Value = "  + value);
+		// Debug.println("\n!!!Value = "  + value);
 	}
 
 	/**
@@ -1326,7 +1379,7 @@ public class Compiler implements ICompiler {
 	/* Verifies if an input is an expected one */
 	private void match(char c) throws TableFunctionMalformedException {
 		
-		Debug.println("Matching " + c + " ");
+		// Debug.println("Matching " + c + " ");
 		if (look != c)
 			expected("" + c);
 		nextChar();
@@ -1443,15 +1496,15 @@ public class Compiler implements ICompiler {
 	private boolean isValidConditionantValue(MultiEntityBayesianNetwork mebn, String conditionantName, String conditionantValue) {
 		Node conditionant = mebn.getNode(conditionantName);
 		if (conditionant == null) {
-			Debug.println("No conditionant of name " + conditionantName);
+			// Debug.println("No conditionant of name " + conditionantName);
 			return false;
 		}
-		//Debug.println("Conditionant node found: " + conditionant.getName());
+		//// Debug.println("Conditionant node found: " + conditionant.getName());
 		if ( conditionant instanceof ResidentNode) {
-			Debug.println("IS MULTIENTITYNODE");
+			// Debug.println("IS MULTIENTITYNODE");
 			return ((ResidentNode)conditionant).getPossibleValueByName(conditionantValue) != null;
 		} else {
-			Debug.println("Conditionant is not a resident node");
+			// Debug.println("Conditionant is not a resident node");
 		}
 			
 		return false;
@@ -1472,20 +1525,20 @@ public class Compiler implements ICompiler {
 		IProbabilityValue ret = this.possibleVal();
 		skipWhite();
 		if (this.look == '(') {
-			if (this.value.compareToIgnoreCase("CARDINALITY") == 0) {
+			if (this.value.equalsIgnoreCase("CARDINALITY")) {
 				return cardinality();
-			} else if (this.value.compareToIgnoreCase("MIN") == 0) {
+			} else if (this.value.equalsIgnoreCase("MIN") ) {
 				return min();
-			} else if (this.value.compareToIgnoreCase("MAX") == 0) {
+			} else if (this.value.equalsIgnoreCase("MAX") ) {
 				return max();
 			} else {
-				Debug.println("UNKNOWN FUNCTION FOUND: " + this.value);
+				// Debug.println("UNKNOWN FUNCTION FOUND: " + this.value);
 				throw new TableFunctionMalformedException(this.resource.getString("UnexpectedTokenFound")
 						+ ": " + value);
 			}
 		}
 		
-		Debug.println("Function returning " + ret);
+		// Debug.println("Function returning " + ret);
 		return ret;
 	}
 	
@@ -1501,7 +1554,7 @@ public class Compiler implements ICompiler {
 		
 		String var = this.varsetname();
 		skipWhite();
-		Debug.println("CARDINALITY'S ARGUMENT IS " + var);
+		// Debug.println("CARDINALITY'S ARGUMENT IS " + var);
 		// TODO test if ret has returned NaN (guarantees "value" is a varsetname)?
 		ret = new CardinalityProbabilityValue(this.currentHeader, var);
 		match(')');
@@ -1517,7 +1570,7 @@ public class Compiler implements ICompiler {
 	private IProbabilityValue min()throws TableFunctionMalformedException,
 										  InvalidProbabilityRangeException,
 										  SomeStateUndeclaredException{
-		Debug.println("ANALISING MIN FUNCTION");
+		// Debug.println("ANALISING MIN FUNCTION");
 		
 		IProbabilityValue ret1 = null;
 		IProbabilityValue ret2 = null;
@@ -1548,7 +1601,7 @@ public class Compiler implements ICompiler {
 	private IProbabilityValue max()throws TableFunctionMalformedException,
 										  InvalidProbabilityRangeException,
 										  SomeStateUndeclaredException{
-		Debug.println("ANALISING MAX FUNCTION");
+		// Debug.println("ANALISING MAX FUNCTION");
 		
 		IProbabilityValue ret1 = null;
 		IProbabilityValue ret2 = null;
@@ -1954,8 +2007,8 @@ public class Compiler implements ICompiler {
 				for (OVInstance argParent : args) {
 					// if it has same OV as ssbnnode, then should be the same entity
 					for (OVInstance argChild : this.currentSSBNNode.getArguments()) {
-						if (argChild.getOv().getName().compareTo(argParent.getOv().getName()) == 0) {
-							if (argChild.getEntity().getInstanceName().compareTo(argParent.getEntity().getInstanceName()) != 0) {
+						if (argChild.getOv().getName().equals(argParent.getOv().getName())) {
+							if (!argChild.getEntity().getInstanceName().equals(argParent.getEntity().getInstanceName())) {
 								return false;
 							}
 						}
@@ -1965,8 +2018,8 @@ public class Compiler implements ICompiler {
 					// try all other leaves
 					for (OVInstance argleaf : args) {
 						for (OVInstance argothers : leaves.get(i).getCurrentEntityAndArguments().arguments) {
-							if(argleaf.getOv().getName().compareTo(argothers.getOv().getName()) == 0) {
-								if (argleaf.getEntity().getInstanceName().compareTo(argothers.getEntity().getInstanceName()) != 0) {
+							if(argleaf.getOv().getName().equals(argothers.getOv().getName())) {
+								if (!argleaf.getEntity().getInstanceName().equals(argothers.getEntity().getInstanceName()) ) {
 									// if they are the same OV but different instances of Entities... then false
 									return false;
 								}
@@ -2219,8 +2272,8 @@ public class Compiler implements ICompiler {
 		public boolean equals(Object arg0) {
 			if (arg0 instanceof TempTableHeaderParent) {
 				TempTableHeaderParent arg = (TempTableHeaderParent)arg0;
-				if (this.parent.getName().compareTo(arg.getParent().getName()) == 0) {
-					if (this.value.getName().compareTo(arg.getValue().getName()) == 0) {
+				if (this.parent.getName().equals(arg.getParent().getName())) {
+					if (this.value.getName().equals(arg.getValue().getName())) {
 						return true;
 					} else {
 						return false;
@@ -2244,7 +2297,7 @@ public class Compiler implements ICompiler {
 				return false;
 			}
 			// if entities have the same name, they are equals.
-			if (this.getCurrentEvaluation().getName().compareTo(this.getValue().getName()) == 0) {
+			if (this.getCurrentEvaluation().getName().equals(this.getValue().getName())) {
 				return true;
 			}
 			return false;
@@ -2393,15 +2446,22 @@ public class Compiler implements ICompiler {
 		}		
 	}
 	
-	private interface IProbabilityValue {
+	private abstract class IProbabilityValue {
 		/**
 		 * 
 		 * @return: a value between [0,1] which represents a probability
 		 */
-		public float getProbability() throws InvalidProbabilityRangeException;
+		public abstract float getProbability() throws InvalidProbabilityRangeException;
+		
+		/**
+		 * 
+		 * true if the probability is fixed. False if probability is
+		 * dynamic (values changes depending on SSBN configuration)
+		 */
+		public boolean isFixedValue = true;
 	}
 	
-	private class SimpleProbabilityValue implements IProbabilityValue {
+	private class SimpleProbabilityValue extends IProbabilityValue {
 		private float value = Float.NaN;
 		/**
 		 * Represents a simple float value for a probability
@@ -2413,19 +2473,28 @@ public class Compiler implements ICompiler {
 		public float getProbability() throws InvalidProbabilityRangeException {
 			return this.value;
 		}
+		
+		
+		
+		
 	}
 	
-	private abstract class MathOperationProbabilityValue implements IProbabilityValue {
+	private abstract class MathOperationProbabilityValue extends IProbabilityValue {
 		protected IProbabilityValue op1 = null;
 		protected IProbabilityValue op2 = null;
 		
+		
+		
 		public abstract float getProbability() throws InvalidProbabilityRangeException;
+		
+
 	}
 	
 	private class AddOperationProbabilityValue extends MathOperationProbabilityValue {
 		AddOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
 			this.op1 = op1;
 			this.op2 = op2;
+			this.isFixedValue = op1.isFixedValue?op2.isFixedValue:false;
 		}
 		@Override
 		public float getProbability() throws InvalidProbabilityRangeException {
@@ -2437,6 +2506,8 @@ public class Compiler implements ICompiler {
 		SubtractOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
 			this.op1 = op1;
 			this.op2 = op2;
+
+			this.isFixedValue = op1.isFixedValue?op2.isFixedValue:false;
 		}
 		@Override
 		public float getProbability() throws InvalidProbabilityRangeException {
@@ -2448,6 +2519,7 @@ public class Compiler implements ICompiler {
 		MultiplyOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
 			this.op1 = op1;
 			this.op2 = op2;
+			this.isFixedValue = op1.isFixedValue?op2.isFixedValue:false;
 		}
 		@Override
 		public float getProbability() throws InvalidProbabilityRangeException {
@@ -2459,6 +2531,7 @@ public class Compiler implements ICompiler {
 		DivideOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
 			this.op1 = op1;
 			this.op2 = op2;
+			this.isFixedValue = op1.isFixedValue?op2.isFixedValue:false;
 		}
 		@Override
 		public float getProbability() throws InvalidProbabilityRangeException {
@@ -2470,6 +2543,7 @@ public class Compiler implements ICompiler {
 		NegativeOperationProbabilityValue(IProbabilityValue op1) {
 			this.op1 = op1;
 			this.op2 = op1;
+			this.isFixedValue = op1.isFixedValue;
 		}
 		@Override
 		public float getProbability() throws InvalidProbabilityRangeException {
@@ -2477,7 +2551,7 @@ public class Compiler implements ICompiler {
 		}		
 	}
 	
-	private class CardinalityProbabilityValue implements IProbabilityValue {
+	private class CardinalityProbabilityValue extends IProbabilityValue {
 		//private float value = Float.NaN;
 		private String varSetName = null;		
 		//private SSBNNode thisNode = null;
@@ -2494,6 +2568,7 @@ public class Compiler implements ICompiler {
 		CardinalityProbabilityValue (TempTableHeaderCell currentHeader, String varsetname) {
 			this.currentHeader = currentHeader;
 			this.varSetName= varsetname;
+			this.isFixedValue = false;
 		}
 
 		public float getProbability() throws InvalidProbabilityRangeException {
@@ -2502,16 +2577,23 @@ public class Compiler implements ICompiler {
 			if (this.currentHeader == null) {
 				return Float.NaN;
 			}
-			if (this.varSetName.compareTo(this.currentHeader.getVarsetname()) != 0) {
+			if (getSSBNNode() == null) {
+				return Float.NaN;
+			}
+			if (!this.varSetName.equals(this.currentHeader.getVarsetname())) {
 				return 0;
 			}
 			
 			return this.currentHeader.getValidParentSetCount();
 		}
+
+		
+		
+		
 	}
 	
 	
-	private class ComparisionProbabilityValue implements IProbabilityValue {
+	private class ComparisionProbabilityValue extends IProbabilityValue {
 		private IProbabilityValue arg0 = null;
 		private IProbabilityValue arg1 = null;
 		private boolean isMax = false;
@@ -2526,10 +2608,18 @@ public class Compiler implements ICompiler {
 			this.arg0 = arg0;
 			this.arg1 = arg1;
 			this.isMax = isMax;
+			this.isFixedValue = arg0.isFixedValue?arg1.isFixedValue:false;
 		}
 		public float getProbability() throws InvalidProbabilityRangeException {
-			float prob0 = this.arg0.getProbability();
-			float prob1 = this.arg1.getProbability();
+			Float prob0 = this.arg0.getProbability();
+			if (Float.isNaN(prob0)) {
+				return prob0;
+			}
+			
+			Float prob1 = this.arg1.getProbability();
+			if (Float.isNaN(prob1)) {
+				return prob1;
+			}
 			/*
 			 * the code below has the same meaning of:
 			 * if (isMax) {
@@ -2553,6 +2643,9 @@ public class Compiler implements ICompiler {
 				return prob1;
 			}
 		}
+		
+
+
 	}
 
 	private class EntityAndArguments {

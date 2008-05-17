@@ -139,7 +139,7 @@ public class UbfIO implements MebnIO {
 		for (Iterator iter = mebn.getDomainMFragList().iterator(); iter.hasNext();) {
 			MFrag element = (MFrag) iter.next();
 			//System.out.println("- searching MFrag " + name + " on " + element.getName());
-			if (name.compareTo(element.getName()) == 0) {
+			if (name.equals(element.getName())) {
 				return element;
 			}
 		}		
@@ -150,25 +150,25 @@ public class UbfIO implements MebnIO {
 	private Node searchNode(String name , MFrag mfrag) {
 		for (Iterator iter = mfrag.getResidentNodeList().iterator(); iter.hasNext();) {
 			Node element = (Node) iter.next();
-			if (name.compareTo(element.getName()) == 0) {
+			if (name.equals(element.getName())) {
 				return element;
 			}
 		}
 		for (Iterator iter = mfrag.getInputNodeList().iterator(); iter.hasNext();) {
 			Node element = (Node) iter.next();
-			if (name.compareTo(element.getName()) == 0) {
+			if (name.equals(element.getName())) {
 				return element;
 			}
 		}
 		for (Iterator iter = mfrag.getContextNodeList().iterator(); iter.hasNext();) {
 			Node element = (Node) iter.next();
-			if (name.compareTo(element.getName()) == 0) {
+			if (name.equals(element.getName())) {
 				return element;
 			}
 		}
 		for (Iterator iter = mfrag.getOrdinaryVariableList().iterator(); iter.hasNext();) {
 			Node element = (Node) iter.next();
-			if (name.compareTo(element.getName()) == 0) {
+			if (name.equals(element.getName()) ) {
 				return element;
 			}
 		}
@@ -179,7 +179,7 @@ public class UbfIO implements MebnIO {
 	private double readVersion (StreamTokenizer st) throws IOException {
 		while (st.nextToken() != st.TT_EOF) {
 			if ( ( st.ttype == st.TT_WORD ) 
-					&& ( this.getToken("VersionDeclarator").compareTo(st.sval) == 0) ) {
+					&& ( this.getToken("VersionDeclarator").equals(st.sval)) ) {
 				if (st.nextToken() == st.TT_NUMBER) {
 					return st.nval;
 				}  else {
@@ -193,7 +193,7 @@ public class UbfIO implements MebnIO {
 	private String readOwlFile (StreamTokenizer st) throws IOException {
 		while (st.nextToken() != st.TT_EOF) {
 			if ( ( st.ttype == st.TT_WORD ) 
-					&& ( this.getToken("PrOwlFileDeclarator").compareTo(st.sval) == 0) ) {
+					&& ( this.getToken("PrOwlFileDeclarator").equals(st.sval)) ) {
 				if (st.nextToken() != st.TT_EOL) {
 					return st.sval;
 				}  else {
@@ -220,12 +220,12 @@ public class UbfIO implements MebnIO {
 			}
 			
 			// finishing condition
-			if (this.getToken("MFragDeclarator").compareTo(st.sval) == 0 ) {
+			if (this.getToken("MFragDeclarator").equals(st.sval)  ) {
 				st.pushBack();
 				break;
 			}
 			// finishing condition
-			if (this.getToken("ObjectEntityDeclarator").compareTo(st.sval) == 0 ) {
+			if (this.getToken("ObjectEntityDeclarator").equals(st.sval) ) {
 				st.pushBack();
 				break;
 			}
@@ -233,7 +233,7 @@ public class UbfIO implements MebnIO {
 			if (st.ttype != st.TT_WORD) {
 				continue;
 			}
-			if ( this.getToken("MTheoryDeclarator").compareTo(st.sval) == 0 )  {
+			if ( this.getToken("MTheoryDeclarator").equals(st.sval) )  {
 				while (st.nextToken() != st.TT_EOL) {
 					/*if (st.ttype == st.TT_WORD) {
 						mebn.setName(st.sval);
@@ -246,7 +246,7 @@ public class UbfIO implements MebnIO {
 			if (st.ttype != st.TT_WORD) {
 				continue;
 			}
-			if ( this.getToken("NextMFragDeclarator").compareTo(st.sval) == 0 )  {
+			if ( this.getToken("NextMFragDeclarator").equals(st.sval) )  {
 				while (st.nextToken() != st.TT_EOL) {
 					if (st.ttype == st.TT_NUMBER) {
 						mebn.setDomainMFragNum((int)st.nval);
@@ -259,7 +259,7 @@ public class UbfIO implements MebnIO {
 			if (st.ttype != st.TT_WORD) {
 				continue;
 			}
-			if ( this.getToken("NextResidentDeclarator").compareTo(st.sval) == 0 )  {
+			if ( this.getToken("NextResidentDeclarator").equals(st.sval)  )  {
 				while (st.nextToken() != st.TT_EOL) {
 					if (st.ttype == st.TT_NUMBER) {
 						mebn.setDomainResidentNodeNum((int)st.nval);
@@ -272,7 +272,7 @@ public class UbfIO implements MebnIO {
 			if (st.ttype != st.TT_WORD) {
 				continue;
 			}
-			if ( this.getToken("NextInputDeclarator").compareTo(st.sval) == 0 )  {
+			if ( this.getToken("NextInputDeclarator").equals(st.sval) )  {
 				while (st.nextToken() != st.TT_EOL) {
 					if (st.ttype == st.TT_NUMBER) {
 						mebn.setGenerativeInputNodeNum((int)st.nval);
@@ -285,7 +285,7 @@ public class UbfIO implements MebnIO {
 			if (st.ttype != st.TT_WORD) {
 				continue;
 			}
-			if ( this.getToken("NextContextDeclarator").compareTo(st.sval) == 0 )  {
+			if ( this.getToken("NextContextDeclarator").equals(st.sval) )  {
 				while (st.nextToken() != st.TT_EOL) {
 					if (st.ttype == st.TT_NUMBER) {
 						mebn.setContextNodeNum((int)st.nval);
@@ -298,7 +298,7 @@ public class UbfIO implements MebnIO {
 			if (st.ttype != st.TT_WORD) {
 				continue;
 			}
-			if ( this.getToken("NextEntityDeclarator").compareTo(st.sval) == 0 )  {
+			if ( this.getToken("NextEntityDeclarator").equals(st.sval) )  {
 				while (st.nextToken() != st.TT_EOL) {
 					if (st.ttype == st.TT_NUMBER) {
 						mebn.setEntityNum((int)st.nval);
@@ -331,13 +331,13 @@ public class UbfIO implements MebnIO {
 			}
 			
 			// finishing condition
-			if (this.getToken("ObjectEntityDeclarator").compareTo(st.sval) == 0 ) {
+			if (this.getToken("ObjectEntityDeclarator").equals(st.sval) ) {
 				st.pushBack();
 				break;
 			}
 			
 			// determine considered mfrag
-			if ( this.getToken("MFragDeclarator").compareTo(st.sval) == 0 )  {
+			if ( this.getToken("MFragDeclarator").equals(st.sval)  )  {
 				while (st.nextToken() != st.TT_EOL) {
 					if (st.ttype == st.TT_WORD) {
 						mfrag = this.searchMFrag(st.sval,mebn);
@@ -356,7 +356,7 @@ public class UbfIO implements MebnIO {
 				continue;
 			}
 			// Set NextOrdinalVarDeclarator
-			if ( this.getToken("NextOrdinalVarDeclarator").compareTo(st.sval) == 0 )  {
+			if ( this.getToken("NextOrdinalVarDeclarator").equals(st.sval)  )  {
 				while (st.nextToken() != st.TT_EOL) {
 					if (st.ttype == st.TT_NUMBER) {
 						mfrag.setOrdinaryVariableNum((int)st.nval);
@@ -370,7 +370,7 @@ public class UbfIO implements MebnIO {
 				continue;
 			}
 			// treats nodes
-			if ( this.getToken("NodeDeclarator").compareTo(st.sval) == 0 )  {
+			if ( this.getToken("NodeDeclarator").equals(st.sval)  )  {
 				st.pushBack();
 				//System.out.println("Node declaration found ");
 				
@@ -405,7 +405,7 @@ public class UbfIO implements MebnIO {
 				continue;
 			}
 			// determine considered mfrag
-			if ( this.getToken("ObjectEntityDeclarator").compareTo(st.sval) == 0 )  {
+			if ( this.getToken("ObjectEntityDeclarator").equals(st.sval) )  {
 				while (st.nextToken() != st.TT_EOL) {
 					if (st.ttype == st.TT_WORD) {
 						objectEntity = mebn.getObjectEntityContainer().getObjectEntityByName(st.sval);
@@ -440,7 +440,7 @@ public class UbfIO implements MebnIO {
 				continue;
 			}
 			// Set NextOrdinalVarDeclarator
-			if ( this.getToken("EntityInstancesDeclarator").compareTo(st.sval) == 0 )  {
+			if ( this.getToken("EntityInstancesDeclarator").equals(st.sval) )  {
 				ObjectEntityInstanceOrdereable prev = null; 
 				while (st.nextToken() != st.TT_EOL) {
 					if (st.ttype == st.TT_WORD) {
@@ -479,7 +479,7 @@ public class UbfIO implements MebnIO {
 				continue;
 			}
 			//	finishing condition
-			if (this.getToken("MFragDeclarator").compareTo(st.sval) == 0 ) {
+			if (this.getToken("MFragDeclarator").equals(st.sval) ) {
 				st.pushBack();
 				//System.out.println("Next MFrag Found");
 				
@@ -487,7 +487,7 @@ public class UbfIO implements MebnIO {
 			}
 			
 			// finishing condition
-			if (this.getToken("ObjectEntityDeclarator").compareTo(st.sval) == 0 ) {
+			if (this.getToken("ObjectEntityDeclarator").equals(st.sval) ) {
 				st.pushBack();
 				break;
 			}
@@ -496,7 +496,7 @@ public class UbfIO implements MebnIO {
 				continue;
 			}
 			// determine considered node
-			if ( this.getToken("NodeDeclarator").compareTo(st.sval) == 0 )  {
+			if ( this.getToken("NodeDeclarator").equals(st.sval) )  {
 				while (st.nextToken() != st.TT_EOL) {
 					if (st.ttype == st.TT_WORD) {
 						node = this.searchNode(st.sval,mfrag);
@@ -516,7 +516,7 @@ public class UbfIO implements MebnIO {
 				continue;
 			}
 			// Set node position
-			if ( this.getToken("PositionDeclarator").compareTo(st.sval) == 0 )  {
+			if ( this.getToken("PositionDeclarator").equals(st.sval)  )  {
 				int posx = 15;
 				while (st.nextToken() != st.TT_EOL) {
 					if (st.ttype == st.TT_NUMBER) {
@@ -537,7 +537,7 @@ public class UbfIO implements MebnIO {
 				continue;
 			}
 //			 Set node size (height,width)
-			if ( this.getToken("SizeDeclarator").compareTo(st.sval) == 0 )  {
+			if ( this.getToken("SizeDeclarator").equals(st.sval)  )  {
 				double width = 100;
 				while (st.nextToken() != st.TT_EOL) {
 					if (st.ttype == st.TT_NUMBER) {
@@ -571,7 +571,7 @@ public class UbfIO implements MebnIO {
 	protected String getToken(String s) throws IllegalArgumentException {
 		
 		for (int i = 0 ; i < tokens.length; i++  ) {
-			if (tokens[i][0].compareTo(s) == 0) {
+			if (tokens[i][0].equals(s) ) {
 				return tokens[i][1];
 			}
 		}
@@ -588,7 +588,7 @@ public class UbfIO implements MebnIO {
 	protected void setToken(String s, String newValue) throws IllegalArgumentException {
 		
 		for (int i = 0 ; i < tokens.length; i++  ) {
-			if (tokens[i][0].compareTo(s) == 0) {
+			if (tokens[i][0].equals(s) ) {
 				tokens[i][1] = newValue;
 			}
 		}

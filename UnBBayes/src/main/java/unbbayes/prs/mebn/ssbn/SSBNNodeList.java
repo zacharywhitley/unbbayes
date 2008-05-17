@@ -206,7 +206,7 @@ public class SSBNNodeList implements Collection<SSBNNode> {
 			return ret;
 		}
 		for (SSBNNode node : this.nodes) {
-			if (node.getName().compareToIgnoreCase(name) == 0) {
+			if (node.getName().equalsIgnoreCase(name)) {
 				ret.add(node);
 			}
 		}
