@@ -120,7 +120,7 @@ public class OptionsWindow extends JDialog
 
     private JPanel getMaxPanel(){
         maxPanel             = new JPanel(new GridLayout(1,2));
-        lMaxParents          = new JLabel("Max :");
+        lMaxParents          = new JLabel("Max parents :");
         txtMaxParents        = new JTextField("" + variable.getNumeroMaximoPais());
         maxPanel.add(lMaxParents);
         maxPanel.add(txtMaxParents);
