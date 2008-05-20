@@ -58,8 +58,8 @@ public class AboutPane extends JDialog{
 	private Color backgroundColor; 
 	
 	private String name = "UnBBayes 3 (MEBN)"; 
-	private String version = "3.0.1"; 
-	private String buildID = "20080229-01L"; 
+	private String version = "3.3.29"; 
+	private String buildID = "20080520-01"; 
 	
 	private static final String COLABORATORS_PAGE = "/html/Colaborators.html"; 
 	private static final String LOGO_PICTURE = "/img/logo_small.png"; 
@@ -234,7 +234,7 @@ public class AboutPane extends JDialog{
 		public VersionPane(){
 			super(new GridLayout(4,1)); 
 			
-			JLabel labelVersion = new JLabel(("   " + resource.getString("Version") + ": " + version + " (alpha)")); 
+			JLabel labelVersion = new JLabel(("   " + resource.getString("Version") + ": " + version + " (beta)")); 
 			JLabel labelBuildID= new JLabel("   " + resource.getString("Buildid") + ": " + buildID); 
 			
 			add(labelVersion); 
