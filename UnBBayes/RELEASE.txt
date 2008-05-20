@@ -1,4 +1,4 @@
-UNBBAYES VERSION 3.3.25-BETA
+UNBBAYES VERSION 3.3.29-BETA
 ----------------------------
 
 FEATURE LIST		
@@ -9,29 +9,33 @@ Number	Request ID	Summary
 
 BUG LIST		
 Number	Request ID	Summary
-1	1955798	Duplicated names are acept for objects of diferents types 
-2	1954467	Inserting an edge makes isA node to shrink 
-3	1951215	Resident's ArgumentList is not updated properly 
-4	1949131	Cannot open "global option" at BN ("normal") edition frame.. 
-5	1949125	Arguments at CPT edition panel should be from parents. 
-6	1949121	No text explanation pops up at buttons in resident nodes. 
-7	1949113	Stack trace as a user's error message... 
-8	1949107	No default distro on CPT edition pane 
-9	1949104	CPT edition panel is not inserting commas . 
-10	1949101	Where the hell the compiler is reporting parse error? 
-11	1949095	Can only insert comments to MFrags and nodes? 
-12	1949094	Compiler (or table edition panel on GUI) crushes 
-13	1949091	Father nodes... Instead of Parents 
-14	1913024	defining the resident node's parameters 
-15	1913020	typo-error 2 
-16	1913015	typo-error 1 
-17	1909774	bug following tutorial 
-18	1909756	MTheory tree collapses after edits 
-19	1907990	Object entities as resident's possible value. 
-20	1907974	Problems deleting nodes (MAC) 
-21	1907968	Cannot deselect nodes when using MAC 
-22	1907954	Changing some elements is not updating GUI (by now, MTheory) 
-23	1907947	We can't manipulate 2 MTheories at the same time 
-24	1907897	Update GUI when loading PowerLoom findings 
-25	1907290	Problems when pre-existing OV is resident's argument 
+1	1962006	KB's file chooser's file filter message. 
+2	1960679	Problem with the Help Pane 
+3	1956731	Deleting resident and inserting a new one with same name... 
+4	1956730	BottomUpSSBNGenerator doesn't check if node's already there
+5	1955798	Duplicated names are acept for objects of diferents types 
+6	1954467	Inserting an edge makes isA node to shrink 
+7	1951215	Resident's ArgumentList is not updated properly 
+8	1949131	Cannot open "global option" at BN ("normal") edition frame.. 
+9	1949125	Arguments at CPT edition panel should be from parents. 
+10	1949121	No text explanation pops up at buttons in resident nodes. 
+11	1949113	Stack trace as a user's error message... 
+12	1949107	No default distro on CPT edition pane 
+13	1949104	CPT edition panel is not inserting commas . 
+14	1949101	Where the hell the compiler is reporting parse error? 
+15	1949095	Can only insert comments to MFrags and nodes? 
+16	1949094	Compiler (or table edition panel on GUI) crushes 
+17	1949091	Father nodes... Instead of Parents 
+18	1913024	defining the resident node's parameters 
+19	1913020	typo-error 2 
+20	1913015	typo-error 1 
+21	1909774	bug following tutorial 
+22	1909756	MTheory tree collapses after edits 
+23	1907990	Object entities as resident's possible value. 
+24	1907974	Problems deleting nodes (MAC) 
+25	1907968	Cannot deselect nodes when using MAC 
+26	1907954	Changing some elements is not updating GUI (by now, MTheory) 
+27	1907947	We can't manipulate 2 MTheories at the same time 
+28	1907897	Update GUI when loading PowerLoom findings 
+29	1907290	Problems when pre-existing OV is resident's argument 
 
