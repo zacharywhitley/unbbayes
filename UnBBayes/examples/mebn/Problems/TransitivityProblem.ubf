@@ -1,0 +1,156 @@
+% Cabeçalho UBF
+Version=0.03
+PrOwl="TransitivityProblem.owl"
+
+% Declaração de MTheory - UBF
+MTheory=NovaMEBN
+NextMFrag=4
+NextResident=7
+NextInput=3
+NextContext=5
+NextEntity=1
+
+% Declaração de MFrags e nós UBF
+
+% MFrag
+MFrag=MFrag_ContextNodes
+NextOrdinaryVar=5
+
+% Nós Residentes
+
+
+Node=Prop1
+Type=DomainResidentNode
+Position=202.0,155.0
+Size=35,35
+
+Node=Prop2
+Type=DomainResidentNode
+Position=388.0,155.0
+Size=35,35
+
+Node=Prop3
+Type=DomainResidentNode
+Position=582.0,154.0
+Size=35,35
+
+% Variáveis Ordinárias
+
+
+Node=a
+Type=OrdinalVar
+Position=188.0,55.0
+Size=35,35
+
+Node=b
+Type=OrdinalVar
+Position=332.0,56.0
+Size=35,35
+
+Node=c
+Type=OrdinalVar
+Position=531.0,53.0
+Size=35,35
+
+Node=d
+Type=OrdinalVar
+Position=669.0,56.0
+Size=35,35
+
+% MFrag
+MFrag=MFragExemplo
+NextOrdinaryVar=5
+
+% Nós Residentes
+
+
+Node=NodeAlpha
+Type=DomainResidentNode
+Position=284.0,255.0
+Size=35,35
+
+Node=NodeBeta
+Type=DomainResidentNode
+Position=508.0,255.0
+Size=35,35
+
+% Nós de Contexto
+
+
+Node=CX2
+Type=ContextNode
+Position=206.0,120.0
+Size=35,35
+
+Node=CX3
+Type=ContextNode
+Position=373.0,116.0
+Size=35,35
+
+Node=CX4
+Type=ContextNode
+Position=566.0,123.0
+Size=35,35
+
+% Variáveis Ordinárias
+
+
+Node=a
+Type=OrdinalVar
+Position=126.0,39.0
+Size=35,35
+
+Node=b
+Type=OrdinalVar
+Position=318.0,37.0
+Size=35,35
+
+Node=c
+Type=OrdinalVar
+Position=454.0,35.0
+Size=35,35
+
+Node=d
+Type=OrdinalVar
+Position=618.0,33.0
+Size=35,35
+
+% MFrag
+MFrag=MFragInputNode
+NextOrdinaryVar=4
+
+% Nós Residentes
+
+
+Node=ChildNode
+Type=DomainResidentNode
+Position=348.0,264.0
+Size=35,35
+
+% nós Input
+
+
+Node=IX1
+Type=GenerativeInputNode
+Position=242.0,148.0
+Size=35,35
+
+Node=IX2
+Type=GenerativeInputNode
+Position=462.0,150.0
+Size=35,35
+
+% Variáveis Ordinárias
+
+
+Node=b
+Type=OrdinalVar
+Position=226.0,56.0
+Size=35,35
+
+Node=a
+Type=OrdinalVar
+Position=452.0,57.0
+Size=35,35
+
+% Instâncias de Entidades Objetos

@@ -1,0 +1,131 @@
+net
+{
+     node_size = (0 0);
+     name = "learned net";
+     tree = "(sexo,idadenumero,fronte,mentoproeminencia,incisivos,orbita,mentoredondo,glabela)";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+     UnBBayes_Color_Utility = "-16711681";
+     UnBBayes_Color_Decision = "-14336";
+}
+
+node sexo
+{
+     label = "sexo";
+     position = (203 64);
+     states = ("Feminino" "Masculino");
+}
+
+node idadenumero
+{
+     label = "idadenumero";
+     position = (56 116);
+     states = ("De29a43" "De53a66" "De22a29" "De43a53" "De18a22");
+}
+
+node fronte
+{
+     label = "fronte";
+     position = (355 114);
+     states = ("MuitoVertical" "Inclinada" "Vertical" "MuitoInclinada" "Indisponivel");
+}
+
+node mentoproeminencia
+{
+     label = "mentoproeminencia";
+     position = (145 235);
+     states = ("Discreto" "Proeminente" "MuitoProeminente" "MuitoDiscreto" "Indisponivel");
+}
+
+node incisivos
+{
+     label = "incisivos";
+     position = (55 234);
+     states = ("Quadrado" "Redondo" "MuitoQuadrado" "MuitoRedondo" "Indisponivel");
+}
+
+node orbita
+{
+     label = "orbita";
+     position = (274 342);
+     states = ("Angulosa" "Redonda" "MuitoRedonda" "Indisponivel" "MuitoAngulosa");
+}
+
+node mentoredondo
+{
+     label = "mentoredondo";
+     position = (142 346);
+     states = ("Arredondado" "Quadrado" "MuitoArredondado" "MuitoQuadrado" "Indisponivel");
+}
+
+node glabela
+{
+     label = "glabela";
+     position = (355 228);
+     states = ("NadaProeminente" "Proeminente" "PoucoProeminente" "MuitoProeminente" "Indisponivel");
+}
+
+potential (sexo)
+{
+ data = ( 0.46751863 0.5324814 );
+}
+
+potential (idadenumero)
+{
+ data = ( 0.1687898 0.122080676 0.13269639 0.12526539 0.45116773 );
+}
+
+potential (fronte)
+{
+ data = ( 0.11889596 0.32590234 0.34713376 0.20488323 0.0031847134 );
+}
+
+potential (mentoproeminencia | sexo)
+{
+ data = (( 0.47629797 0.26862302 0.15124154 0.101580136 0.0022573364 )
+( 0.21230158 0.5 0.14880952 0.13293651 0.005952381 ));
+}
+
+potential (incisivos | sexo idadenumero)
+{
+ data = ((( 0.09090909 0.8701299 0.012987013 0.012987013 0.012987013 )
+( 0.9010989 0.054945055 0.021978023 0.010989011 0.010989011 ))
+(( 0.45833334 0.47916666 0.020833334 0.020833334 0.020833334 )
+( 0.93421054 0.013157895 0.013157895 0.013157895 0.02631579 ))
+(( 0.04411765 0.75 0.014705882 0.1764706 0.014705882 )
+( 0.7878788 0.13636364 0.015151516 0.015151516 0.045454547 ))
+(( 0.014492754 0.942029 0.014492754 0.014492754 0.014492754 )
+( 0.9310345 0.01724138 0.01724138 0.01724138 0.01724138 ))
+(( 0.47263682 0.15920398 0.12437811 0.23880596 0.0049751243 )
+( 0.6051502 0.2274678 0.08583691 0.07725322 0.0042918455 )));
+}
+
+potential (orbita | sexo)
+{
+ data = (( 0.40180588 0.5846501 0.009029346 0.0022573364 0.0022573364 )
+( 0.59126985 0.3888889 0.011904762 0.003968254 0.003968254 ));
+}
+
+potential (mentoredondo | mentoproeminencia)
+{
+ data = (( 0.37694705 0.25233644 0.08411215 0.2834891 0.0031152647 )
+( 0.2540107 0.44652405 0.18983957 0.10695187 0.0026737968 )
+( 0.22068965 0.44827586 0.31034482 0.013793103 0.0068965517 )
+( 0.40869564 0.32173914 0.1826087 0.07826087 0.008695652 )
+( 0.14285715 0.14285715 0.14285715 0.14285715 0.42857143 ));
+}
+
+potential (glabela | sexo fronte)
+{
+ data = ((( 0.07575758 0.030303031 0.8636364 0.015151516 0.015151516 )
+( 0.018181818 0.036363635 0.018181818 0.90909094 0.018181818 ))
+(( 0.75396824 0.03968254 0.1904762 0.007936508 0.007936508 )
+( 0.005263158 0.84210527 0.1368421 0.010526316 0.005263158 ))
+(( 0.03409091 0.017045455 0.9375 0.0056818184 0.0056818184 )
+( 0.00625 0.9125 0.05 0.025 0.00625 ))
+(( 0.95555556 0.011111111 0.011111111 0.011111111 0.011111111 )
+( 0.2767857 0.04464286 0.65178573 0.017857144 0.008928572 ))
+(( 0.2 0.2 0.2 0.2 0.2 )
+( 0.14285715 0.14285715 0.14285715 0.14285715 0.42857143 )));
+}
+

@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<faqs id="General FAQ">
+  <part id="General">
+    <faq id="howtorun">
+      <question>After I download the zip file, how do I run UnBBayes?</question>
+      <answer>
+        <p>
+          You first have to unzip the file. After that just double click the
+          jar file. If that does not work, run the following code in the prompt:
+          >java -jar unbbayes-version.jar
+        </p>
+      </answer>
+    </faq>
+    <faq id="macdelete">
+      <question>I am running UnBBayes in my Mac and it does not seem to have
+      			a way of deleting nodes. Is there any secret way?</question>
+      <answer>
+        <p>
+          In Windows you just have to press the 'del' key, but in Mac you
+          have to presse 'ctr'+'del' keys.
+        </p>
+      </answer>
+    </faq>
+  </part>
+</faqs>

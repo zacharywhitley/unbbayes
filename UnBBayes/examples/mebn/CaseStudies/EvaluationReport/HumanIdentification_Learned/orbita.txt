@@ -1,0 +1,66 @@
+=== Run information ===
+
+Scheme:           BayesianNetwork
+Relation:         null
+Instances:        467
+Attributes:       8
+                  idadenumero
+                  sexo
+                  glabela
+                  fronte
+                  incisivos
+                  mentoredondo
+                  mentoproeminencia
+                  orbita
+ClassAttribute:   orbita
+Test mode:    === Classifier model ===
+
+Bayesian Network
+sexo (sexo)
+idadenumero (idadenumero)
+fronte (fronte)
+mentoproeminencia (mentoproeminencia)
+incisivos (incisivos)
+orbita (orbita)
+mentoredondo (mentoredondo)
+glabela (glabela)
+
+
+=== Summary ===
+Correctly Classified Instances       167           35.7602 %
+Correct confidence limits
+Pr[c]	   z
+99.8%	[0.2926 , 0.4284]
+99%	[0.3027 , 0.4165]
+98%	[0.3078 , 0.4106]
+90%	[0.3219 , 0.3949]
+80%	[0.3298 , 0.3864]
+60%	[0.3392 , 0.3764]
+20%	[0.3521 , 0.3632]
+Incorrectly Classified Instances     300           64.2398 %
+Incorrect confidence limits
+Pr[c]	   z
+99.8%	[0.5716 , 0.7074]
+99%	[0.5835 , 0.6973]
+98%	[0.5894 , 0.6922]
+90%	[0.6051 , 0.6781]
+80%	[0.6136 , 0.6702]
+60%	[0.6236 , 0.6608]
+20%	[0.6368 , 0.6479]
+Quadratic loss function				           1.2848
+Total Number of Instances            467     
+
+=== Detailed Accuracy By Class ===
+
+TP Rate   FP Rate   TN Rate   FN Rate   Class
+  0.311     0.58       0.42      0.689    Angulosa
+  0.418     0.684      0.316     0.582    Redonda
+  0         0          1         1        Indisponivel
+  0         0          1         1        MuitoRedonda
+
+=== Confusion Matrix ===
+   a   b   c   d   <-- classified as
+  75 166   0   0 |   a = Angulosa
+ 128  92   0   0 |   b = Redonda
+   0   1   0   0 |   c = Indisponivel
+   3   2   0   0 |   d = MuitoRedonda

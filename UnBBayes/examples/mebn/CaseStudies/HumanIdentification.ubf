@@ -1,0 +1,245 @@
+% UBF file header
+Version=0.03
+PrOwl="HumanIdentification.owl"
+
+% UBF MTheory declaration
+MTheory=MTheory_IdentificacaoHumana
+NextMFrag=10
+NextResident=11
+NextInput=17
+NextContext=1
+NextEntity=1
+
+% UBF MFrags and Nodes declaration
+
+% MFrag
+MFrag=MFrag_Orbita
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=Orbita
+Type=DomainResidentNode
+Position=221.0,297.0
+Size=35,35
+
+% Input nodes
+
+
+Node=IX2
+Type=GenerativeInputNode
+Position=309.0,183.0
+Size=35,35
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=122.0,73.0
+Size=35,35
+
+% MFrag
+MFrag=MFrag_Idade
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=Idade
+Type=DomainResidentNode
+Position=151.0,172.0
+Size=35,35
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=151.0,87.0
+Size=35,35
+
+% MFrag
+MFrag=DMFrag9
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=QueryPlaceholder
+Type=DomainResidentNode
+Position=215.0,342.0
+Size=35,35
+
+% Input nodes
+
+
+Node=IX15
+Type=GenerativeInputNode
+Position=433.0,248.0
+Size=35,35
+
+Node=IX14
+Type=GenerativeInputNode
+Position=304.0,200.0
+Size=35,35
+
+Node=IX12
+Type=GenerativeInputNode
+Position=170.0,191.0
+Size=35,35
+
+Node=IX11
+Type=GenerativeInputNode
+Position=101.0,265.0
+Size=35,35
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=198.0,78.0
+Size=35,35
+
+% MFrag
+MFrag=MFrag_Sexo
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=Sexo
+Type=DomainResidentNode
+Position=259.0,298.0
+Size=35,35
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=149.0,117.0
+Size=35,35
+
+% MFrag
+MFrag=MFrag_Mento
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=MentoProeminente
+Type=DomainResidentNode
+Position=145.0,263.0
+Size=35,35
+
+Node=MentoRedondo
+Type=DomainResidentNode
+Position=146.0,371.0
+Size=35,35
+
+% Input nodes
+
+
+Node=IX4
+Type=GenerativeInputNode
+Position=147.0,184.0
+Size=35,35
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=125.0,99.0
+Size=35,35
+
+% MFrag
+MFrag=MFrag_IncisivosSuperiores
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=IncisivosSuperiores
+Type=DomainResidentNode
+Position=228.0,321.0
+Size=35,35
+
+% Input nodes
+
+
+Node=IX6
+Type=GenerativeInputNode
+Position=331.0,184.0
+Size=35,35
+
+Node=IX5
+Type=GenerativeInputNode
+Position=130.0,184.0
+Size=35,35
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=121.0,76.0
+Size=35,35
+
+% MFrag
+MFrag=MFrag_Glabela
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=Glabela
+Type=DomainResidentNode
+Position=221.0,302.0
+Size=35,35
+
+% Input nodes
+
+
+Node=IX8
+Type=GenerativeInputNode
+Position=347.0,184.0
+Size=35,35
+
+Node=IX7
+Type=GenerativeInputNode
+Position=129.0,190.0
+Size=35,35
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=121.0,80.0
+Size=35,35
+
+% MFrag
+MFrag=MFrag_Fronte
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=Fronte
+Type=DomainResidentNode
+Position=144.0,155.0
+Size=35,35
+
+% Ordinary Variables
+
+
+Node=p
+Type=OrdinalVar
+Position=99.0,66.0
+Size=35,35
+
+% Object Entity Instances
