@@ -823,6 +823,7 @@ public class SSBNNode {
 	
 	// Ordinal getters and setters
 	
+	private static int Number = 0; 
 	
 	/**
 	 * Returns the name of the node -> which is the same of resident's and
@@ -831,6 +832,7 @@ public class SSBNNode {
 	 * @return
 	 */
 	public String getName() {
+		
 		String name = new String(this.resident.getName());
 		name += "(";
 		for (OVInstance ovi : this.getArguments()) {
@@ -840,11 +842,15 @@ public class SSBNNode {
 			name += ovi.getEntity().getInstanceName();
 		}
 		name += ")";
+		
+		//strange... very strange... get + set?
 		if (this.getProbNode() != null) {
 			this.getProbNode().setName(name);
 			this.getProbNode().setDescription(name);
 		}
+		
 		return name;
+		
 	}
 
 	/**
@@ -947,24 +953,28 @@ public class SSBNNode {
 	}
 
 	/**
-	 * Setting a probNode to null is the same of declaring it as a finding (the value should be the 1st possible value declared
-	 * by its resident node). The new probNode should not have parents.
+	 * Setting a probNode to null is the same of declaring it as a finding 
+	 * (the value should be the 1st possible value declared by its resident node). 
+	 * The new probNode should not have parents.
+	 * 
+	 * Note: this method set the name of the probNode (use the ssbnNode attributes for 
+	 * this) and add the node in the probabilistic network
+	 * 
 	 * @param probNode the ProbabilisticNode (UnBBayes node representation) to set
 	 */
 	public void setProbNode(ProbabilisticNode probNode) {
+		
 		// TODO treat parents and dangling references
 		if (this.probNode != null) {
 			this.getProbabilisticNetwork().removeNode(this.probNode);
 		}
 		this.probNode = probNode;
 		this.appendProbNodeState();
+		
 		if (this.probNode != null) {
-			// getName(), when called first, sets probnode's name
 			this.probNode.setName(this.getName());
-			this.getProbNode().setDescription(this.getName());
-			// TODO optimize. above code is setting probnode'name twice
+			this.getProbNode().setDescription(this.getName()); // TODO optimize. above code is setting probnode'name twice
 			this.getProbabilisticNetwork().addNode(this.probNode);
-			
 		}
 	}
 
