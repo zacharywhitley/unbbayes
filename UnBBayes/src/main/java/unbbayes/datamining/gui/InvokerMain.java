@@ -49,8 +49,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
+import unbbayes.controller.JavaHelperController;
 import unbbayes.datamining.datamanipulation.Options;
 import unbbayes.datamining.gui.bayesianlearning.BayesianLearningMain;
 import unbbayes.datamining.gui.evaluation.EvaluationMain;
@@ -486,7 +486,7 @@ public class InvokerMain extends JFrame
             setCursor(new Cursor(Cursor.WAIT_CURSOR));
             try
             {
-              FileController.getInstance().openHelp(reference);
+            	JavaHelperController.getInstance().openHelp(reference);
             }
             catch (Exception evt)
             {

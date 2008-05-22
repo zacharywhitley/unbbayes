@@ -111,6 +111,9 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"mean", "Média"},
 		{"stdDev", "Desv. Padrão"}, 
 		
+		/* Java helper */
+		{"helperDialogTitle", "Ajuda"},
+		
 		/* load/save */
 		{"saveSucess", "Arquivo salvo com sucesso!"},
 		{"mebnDontExists", "Operao falhou: No há MEBN ativa"},

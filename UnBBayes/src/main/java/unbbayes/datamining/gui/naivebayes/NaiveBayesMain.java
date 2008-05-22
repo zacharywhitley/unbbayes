@@ -49,6 +49,7 @@ import javax.swing.border.TitledBorder;
 
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
+import unbbayes.controller.JavaHelperController;
 import unbbayes.datamining.classifiers.NaiveBayes;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.gui.AttributePanel;
@@ -56,8 +57,6 @@ import unbbayes.gui.FileIcon;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.PNEditionPane;
 import unbbayes.gui.SimpleFileFilter;
-import unbbayes.io.BaseIO;
-import unbbayes.io.NetIO;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
 public class NaiveBayesMain extends JInternalFrame
@@ -272,7 +271,7 @@ public class NaiveBayesMain extends JInternalFrame
 
 	void jMenuItem3_actionPerformed(ActionEvent e)
 	{	 try
-			{	 FileController.getInstance().openHelp(this);
+			{	 JavaHelperController.getInstance().openHelp(this);
 			}
 			catch (Exception evt)
 			{	 statusBar.setText("Error= "+evt.getMessage()+" "+this.getClass().getName());

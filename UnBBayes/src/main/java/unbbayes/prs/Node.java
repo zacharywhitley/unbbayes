@@ -416,6 +416,7 @@ public abstract class Node implements Serializable, IOnePositionDrawable {
 
 	/**
 	 * Builds the list of adjacent nodes.
+	 * (the parents and children of this node)
 	 */
 	public void makeAdjacents() {
 		adjacents.addAll(parents);

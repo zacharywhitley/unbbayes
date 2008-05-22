@@ -90,9 +90,9 @@ public class SplashScreen extends JWindow{
 			ImageIcon splashImg = null; 
 			
 			if(isHigthResolution){
-				splashImg = new ImageIcon("resources/img/splashPane3.jpg"); 
+				splashImg = new ImageIcon(SplashScreen.class.getResource("/img/splashPane_big.jpg")); 
 			}else{
-				splashImg = new ImageIcon("resources/img/splashPane2.jpg"); 
+				splashImg = new ImageIcon(SplashScreen.class.getResource("/img/splashPane_small.jpg")); 
 			}
 			
 			JLabel labelImg = new JLabel(splashImg); 

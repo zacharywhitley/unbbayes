@@ -24,7 +24,7 @@ import java.awt.Cursor;
 import java.io.File;
 import java.util.ResourceBundle;
 
-import unbbayes.controller.FileController;
+import unbbayes.controller.JavaHelperController;
 import unbbayes.datamining.datamanipulation.FileUtils;
 import unbbayes.datamining.evaluation.batchEvaluation.BatchEvaluation;
 import unbbayes.datamining.gui.evaluation.batchEvaluation.BatchEvaluationMain;
@@ -121,7 +121,7 @@ public class BatchEvaluationMainController {
 
 	public void help() {
 		try {
-			FileController.getInstance().openHelp(view);
+			JavaHelperController.getInstance().openHelp(view);
 		} catch (Exception evt) {
 			view.setStatusBar(resource.getString("helpError") + " " +
 					evt.getMessage() + " " + this.getClass().getName());

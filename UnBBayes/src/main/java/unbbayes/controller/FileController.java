@@ -40,12 +40,17 @@ import unbbayes.datamining.datamanipulation.Saver;
 import unbbayes.datamining.datamanipulation.TxtSaver;
 import unbbayes.datamining.gui.datamanipulation.AttributeTypeChooserController;
 
+/**
+ * File Controller for some files of UnBMiner (arff and txt)
+ */
 public class FileController
 {	 /** A instance of this object */
 	private static FileController singleton;
-	private ResourceBundle resource;
 	private JFileChooser fileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
 
+
+	private ResourceBundle resourceNaiveBayesian = ResourceBundle.getBundle("unbbayes.datamining.gui.naivebayes.resources.NaiveBayesResource");
+	
 	//--------------------------------------------------------------//
 
 	public File getCurrentDirectory()
@@ -63,8 +68,7 @@ public class FileController
 	/** 
 	 * default constructor. S may be instanciated by getInstance method 
 	 */
-	protected FileController()
-	{	 resource = ResourceBundle.getBundle("unbbayes.datamining.gui.naivebayes.resources.NaiveBayesResource");
+	protected FileController(){	 
 	}
 
 	//--------------------------------------------------------------//
@@ -79,57 +83,6 @@ public class FileController
 		{	 singleton = new FileController();
 		}
 		return singleton;
-	}
-
-	//--------------------------------------------------------------//
-
-	public void openHelp(Component component) throws Exception
-	{	 component.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-		String className = component.getClass().getName();
-		HelpSet set = null;
-		if (className.equals("unbbayes.datamining.gui.InvokerMain"))
-		{	 set = new HelpSet(null, getClass().getResource("/help/DataMiningHelp/Data_Mining.hs"));
-		}
-		else if (className.equals("unbbayes.datamining.gui.id3.DecisionTreeMain"))
-		{	 set = new HelpSet(null, getClass().getResource("/help/DataMiningHelp/Decision_Tree.hs"));
-		}
-				else if (className.equals("unbbayes.datamining.gui.c45.DecisionTreeMain"))
-				{	 set = new HelpSet(null, getClass().getResource("/help/C45Help/C45.hs"));
-				}
-				else if (className.equals("unbbayes.datamining.gui.evaluation.EvaluationMain"))
-		{	 set = new HelpSet(null, getClass().getResource("/help/DataMiningHelp/Evaluation.hs"));
-		}
-		else if (className.equals("unbbayes.datamining.gui.naivebayes.NaiveBayesMain"))
-		{	 set = new HelpSet(null, getClass().getResource("/help/DataMiningHelp/Naive_Bayes.hs"));
-		}
-		else if (className.equals("unbbayes.datamining.gui.preprocessor.PreprocessorMain"))
-		{	 set = new HelpSet(null, getClass().getResource("/help/DataMiningHelp/Preprocessor.hs"));
-		}
-		else if (className.equals("unbbayes.datamining.gui.neuralmodel.NeuralModelMain"))
-		{	 set = new HelpSet(null, getClass().getResource("/help/CNMHelp/cnm.hs"));
-		}
-				else if (className.equals("unbbayes.datamining.gui.neuralnetwork.NeuralNetworkMain"))
-				{	 set = new HelpSet(null, getClass().getResource("/help/BpnHelp/BpnHelp.hs"));
-				}
-				else if (className.equals("unbbayes.gui.UnBBayesFrame"))
-				{	 set = new HelpSet(null, getClass().getResource("/help/JUnBBayes.hs"));
-				}
-		else
-		{
-					component.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-					throw new Exception("HelpSet not found "+this.getClass().getName());
-		}
-		// javax.help.JHelp appears to have a compatibility problem with java 6, so, it is removed for now
-		// TODO find another choice replacing javax.help.JHelp
-		
-		JHelp help = new JHelp(set);
-		JFrame f = new JFrame();
-		f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		f.setContentPane(help);
-		f.setSize(500,400);
-		f.setVisible(true);
-		
-		component.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 
 	//--------------------------------------------------------------//
@@ -178,7 +131,7 @@ public class FileController
 		} else if (fileName.regionMatches(true, fileName.length() - 4, ".txt", 0, 4)) {
 			saver = new TxtSaver(output, instanceSet, selectedAttributes, compacted);
 		} else {
-			throw new IOException(resource.getString("fileExtensionException"));
+			throw new IOException(resourceNaiveBayesian.getString("fileExtensionException"));
 		}
 
 		//starts loading and shows a status screen

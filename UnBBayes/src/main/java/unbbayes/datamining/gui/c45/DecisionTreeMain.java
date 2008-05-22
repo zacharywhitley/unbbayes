@@ -52,6 +52,7 @@ import javax.swing.border.TitledBorder;
 
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
+import unbbayes.controller.JavaHelperController;
 import unbbayes.datamining.classifiers.decisiontree.C45;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.gui.AttributePanel;
@@ -325,7 +326,7 @@ public class DecisionTreeMain extends JInternalFrame
   /**Help | About action performed*/
   public void jMenuHelpAbout_actionPerformed(ActionEvent e)
   {   try
-      {   FileController.getInstance().openHelp(this);
+      {   JavaHelperController.getInstance().openHelp(this);
       }
       catch (Exception evt)
       {   statusBar.setText("Error= "+evt.getMessage()+" "+this.getClass().getName());

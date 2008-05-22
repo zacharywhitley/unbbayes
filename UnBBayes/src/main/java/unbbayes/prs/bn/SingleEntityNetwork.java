@@ -135,10 +135,10 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
     }
 
     /**
-     *  Percorre lista de n�s e em cada n� faz uma c�pia das refer�ncias dos pais e
-     *  filhos para uma lista de adjacentes do n�.
+     *  Build the adjacent list of each node in nodeList (then adjacent list 
+     *  contains all nodes that is or father or child of the origin node)_.
      */
-    protected void montaAdjacentes() {
+    protected void makeAdjacentsListForNodeListElements() {
         this.clearAdjacents();
         for (int qnos = 0; qnos < nodeList.size(); qnos++) {
             nodeList.get(qnos).makeAdjacents();
@@ -242,7 +242,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
         if (nodeList.size() <= 1) {
             return;
         }
-        montaAdjacentes();
+        makeAdjacentsListForNodeListElements();
         dfsConnectivity(nodeList.get(0), visitados);
         clearAdjacents();
         if (visitados.size() != nodeList.size()) {

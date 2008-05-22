@@ -40,6 +40,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 
 import unbbayes.controller.FileController;
+import unbbayes.controller.JavaHelperController;
 import unbbayes.controller.PrintMonitor;
 import unbbayes.controller.PrintPreviewer;
 import unbbayes.controller.PrintTable;
@@ -205,7 +206,7 @@ public class NeuralModelController {
    * Used to call the help files.
    */
   public void help() throws Exception{
-    FileController.getInstance().openHelp(mainScreen);
+	  JavaHelperController.getInstance().openHelp(mainScreen);
   }
 
   /**

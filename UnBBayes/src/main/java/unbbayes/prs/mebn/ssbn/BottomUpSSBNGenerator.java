@@ -101,6 +101,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	public ProbabilisticNetwork generateSSBN(Query query) throws SSBNNodeGeneralException, 
 	                                                             ImplementationRestrictionException, MEBNException {
 		
+		Debug.setDebug(true); 
+		
 		ssbnNodeList = new ArrayList<SSBNNode>(); 
 		
 		// As the query starts, let's clear the flags used by the previous query
@@ -128,7 +130,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		BottomUpSSBNGenerator.printAndSaveCurrentNetwork(root);
 		
 		try {
-			logManager.writeToDisk("LogSSBN.log", false);
+			logManager.writeToDisk("LogSSBN.log", true);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

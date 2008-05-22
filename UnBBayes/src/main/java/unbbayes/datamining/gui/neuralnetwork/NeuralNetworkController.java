@@ -32,6 +32,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JInternalFrame;
 
 import unbbayes.controller.FileController;
+import unbbayes.controller.JavaHelperController;
 import unbbayes.datamining.classifiers.NeuralNetwork;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.gui.FileIcon;
@@ -74,7 +75,7 @@ public class NeuralNetworkController {
    * @throws Exception If the help files are not found
    */
   public void help() throws Exception{
-    FileController.getInstance().openHelp(mainScreen);
+	  JavaHelperController.getInstance().openHelp(mainScreen);
   }
 
   /**

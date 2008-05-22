@@ -110,7 +110,10 @@ public class ControllerResources extends ListResourceBundle {
 		/* Numeric attribute node */
 		{"mean", "Mean"},
 		{"stdDev", "Standard Dev"}, 
-				
+			
+		/* Java helper */
+		{"helperDialogTitle", "Help"},
+		
 		/* load/save */
 		{"saveSucess", "File saved"},
 		{"mebnDontExists", "Failed: no active MEBN"}, 

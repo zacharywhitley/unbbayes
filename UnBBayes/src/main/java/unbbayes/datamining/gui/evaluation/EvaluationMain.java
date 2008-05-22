@@ -50,6 +50,7 @@ import javax.swing.border.TitledBorder;
 
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
+import unbbayes.controller.JavaHelperController;
 import unbbayes.datamining.classifiers.BayesianNetwork;
 import unbbayes.datamining.classifiers.Classifier;
 import unbbayes.datamining.classifiers.CombinatorialNeuralModel;
@@ -202,7 +203,7 @@ public class EvaluationMain extends JInternalFrame
 	 * */
 	public void jMenuHelpAbout_actionPerformed(ActionEvent e)
 	{	 try
-			{	 FileController.getInstance().openHelp(this);
+			{	 JavaHelperController.getInstance().openHelp(this);
 			}
 			catch (Exception evt)
 			{	 statusBar.setText(resource.getString("error2")+evt.getMessage()+" "+this.getClass().getName());

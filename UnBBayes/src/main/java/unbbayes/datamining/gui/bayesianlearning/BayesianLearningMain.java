@@ -49,6 +49,7 @@ import javax.swing.border.TitledBorder;
 
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
+import unbbayes.controller.JavaHelperController;
 import unbbayes.datamining.classifiers.bayesianlearning.AlgorithmController;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.gui.FileIcon;
@@ -336,7 +337,7 @@ public class BayesianLearningMain extends JInternalFrame
 
   void jMenuItem3_actionPerformed(ActionEvent e)
   {   try
-      {   FileController.getInstance().openHelp(this);
+      {   JavaHelperController.getInstance().openHelp(this);
       }
       catch (Exception evt)
       {   statusBar.setText("Error= "+evt.getMessage()+" "+this.getClass().getName());

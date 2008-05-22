@@ -60,6 +60,7 @@ import unbbayes.aprendizagem.incrementalLearning.ILBridge;
 import unbbayes.controller.ConfigurationsController;
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
+import unbbayes.controller.JavaHelperController;
 import unbbayes.controller.MainController;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.monteCarlo.controlador.ControladorPrincipal;
@@ -559,7 +560,7 @@ public class UnBBayesFrame extends JFrame {
 		alHelp = new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				try {
-					FileController.getInstance().openHelp(singleton);
+					JavaHelperController.getInstance().openHelp(singleton);
 				} catch (Exception evt) {
 					System.out.println("Error= " + evt.getMessage() + " "
 							+ this.getClass().getName());
