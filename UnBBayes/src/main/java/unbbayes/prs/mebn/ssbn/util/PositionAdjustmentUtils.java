@@ -18,7 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.prs.mebn.ssbn;
+package unbbayes.prs.mebn.ssbn.util;
 
 import java.awt.Point;
 import java.io.File;
@@ -39,33 +39,28 @@ public class PositionAdjustmentUtils {
 	public static String fileTestLoad = "rede.xml";  
 	public static String fileTestSave= "novarede.xml";  
 	
-	private InfoNetwork infoNetwork; 
 	
 	//TODO Os tamanhos foram retirados do GraphPane... Fazer refactory para deixar tudo mais bonito. 
-	private Point sizeGraph = new Point(1500, 1500); 
-	private Point sizeSquare = new Point(100, 100); 
+	private static Point sizeGraph = new Point(1500, 1500); 
+	private static Point sizeSquare = new Point(100, 100); 
 	
-	public PositionAdjustmentUtils(){
-		infoNetwork = new InfoNetwork();
-	}
-	
-	
-	public void adjustPositionProbabilisticNetwork(ProbabilisticNetwork net){
-		createInfoNodesList(net);
-		adjustPositions(); 
+	public static void adjustPositionProbabilisticNetwork(ProbabilisticNetwork net){
+		InfoNetwork infoNetwork = new InfoNetwork(); 
+		createInfoNodesList(infoNetwork, net);
+		adjustPositions(infoNetwork); 
 	}
 
-	private void createInfoNodesList(ProbabilisticNetwork net) {
+	private static void createInfoNodesList(InfoNetwork infoNetwork, ProbabilisticNetwork net) {
 		ArrayList<Node> nodes = net.getNodes();
 		
 		for(int i=0; i < nodes.size(); i++){
 			if(nodes.get(i).getChildren().size() == 0){
-				createInfoNode((ProbabilisticNode)nodes.get(i), 1); 
+				createInfoNode(infoNetwork, (ProbabilisticNode)nodes.get(i), 1); 
 			}
 		}
 	}
 	
-	private void createInfoNode(ProbabilisticNode pn, int initialLevel){
+	private static void createInfoNode(InfoNetwork infoNetwork, ProbabilisticNode pn, int initialLevel){
 		
 		InfoNode infoNode = new InfoNode(pn); 
 		infoNode.setLevel(initialLevel); 
@@ -74,11 +69,11 @@ public class PositionAdjustmentUtils {
 		
 		initialLevel++;
 		for(int i=0; i < pn.getParents().size(); i++){
-			createInfoNode((ProbabilisticNode)pn.getParents().get(i), initialLevel); 
+			createInfoNode(infoNetwork, (ProbabilisticNode)pn.getParents().get(i), initialLevel); 
 		}
 	}
 	
-	private void adjustPositions(){
+	private static void adjustPositions(InfoNetwork infoNetwork){
 		
 		int numColunas = (int)(sizeGraph.getX() / sizeSquare.getX()); 
 		int numLinhas = (int)(sizeGraph.getY() / sizeSquare.getY());
@@ -157,7 +152,7 @@ public class PositionAdjustmentUtils {
 		System.out.println("End");
 	}
 	
-private class InfoNetwork{
+private static class InfoNetwork{
 	
 	private int numLevels; 
 	private List<InfoNode> nodes; 
@@ -194,7 +189,7 @@ private class InfoNetwork{
 	
 }
 	
-private class InfoNode{
+private static class InfoNode{
 	
 	private int level; 
 	private ProbabilisticNode pn; 

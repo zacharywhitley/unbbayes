@@ -1602,16 +1602,6 @@ public class MEBNController  {
 			probabilisticNetwork = ssbngenerator.generateSSBN(query);
 			
 			if(!query.getQueryNode().isFinding()){
-				XMLIO netIO = new XMLIO(); 
-
-				try {
-					netIO.save(new File("ssbn.xml"), probabilisticNetwork);
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch (JAXBException e) {
-					e.printStackTrace();
-				}
-
 				if(this.compileNetwork(probabilisticNetwork)){
 					showSSBNGraph = true; 
 					specificSituationBayesianNetwork = probabilisticNetwork;

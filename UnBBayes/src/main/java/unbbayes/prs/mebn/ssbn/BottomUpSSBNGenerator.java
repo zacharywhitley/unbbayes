@@ -20,7 +20,6 @@
  */
 package unbbayes.prs.mebn.ssbn;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,12 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import javax.xml.bind.JAXBException;
-
-import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.io.LogManager;
-import unbbayes.io.XMLIO;
-import unbbayes.prs.Edge;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -48,12 +42,13 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
-import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
 import unbbayes.prs.mebn.ssbn.exception.InvalidOperationException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+import unbbayes.prs.mebn.ssbn.util.PositionAdjustmentUtils;
+import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
 import unbbayes.util.Debug;
 
 /**
@@ -141,11 +136,8 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	
 	public static void printAndSaveCurrentNetwork(SSBNNode queryNode) {
 		stepCount++;
-		//Debug. 
-		PositionAdjustmentUtils utils = new PositionAdjustmentUtils(); 
-		utils.adjustPositionProbabilisticNetwork(queryNode.getProbabilisticNetwork()); 
-		
-		BottomUpSSBNGenerator.printNetworkInformation(queryNode); //only Debug informations
+		PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(queryNode.getProbabilisticNetwork()); 
+		SSBNDebugInformationUtil.printNetworkInformation(logManager, queryNode, stepCount, queryName); 
 	}
 	
 	/**
@@ -1286,85 +1278,7 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 	
 	/*-------------------------------------------------------------------------
 	 * Debug Methods 
-	 *------------------------------------------------------------------------/
-	
-	/*
-	 * debug method. 
-	 */
-	public static void printParents(SSBNNode node, int nivel){
-		for(SSBNNode parent: node.getParents()){
-			for(int i = 0; i <= nivel; i++){
-				if (i == 0) {
-					logManager.append("  |   ");
-				} else {
-					logManager.append("   ");
-				}
-			}
-			logManager.appendln(parent.toString());
-			printParents(parent, nivel + 1); 
-		}
-	}
-
-
-	/*
-	 * This debug method print the informations about the network build by
-	 * the SSBN algorithm and save a file xmlbif with the bayesian network built. 
-	 * 
-	 * @param querynode
-	 */
-	public static void printNetworkInformation(SSBNNode queryNode) {
-		//TODO Use a decimal format instead
-		String stepCountFormated = "";
-		if (stepCount < 10L) {
-			stepCountFormated = "00" + stepCount;
-		} else if (stepCount < 100L) {
-			stepCountFormated = "0" + stepCount;
-		} else {
-			stepCountFormated = "" + stepCount;
-		}
-		String netName = queryName + " - Step " + stepCountFormated;
-		queryNode.getProbabilisticNetwork().setName(netName);
-		File file = new File("examples" + File.separator + "MEBN" + File.separator + "SSBN" + File.separator + netName  + ".xml");
-		
-		logManager.appendln("\n"); 
-		logManager.appendln("  |-------------------------------------------------------");
-		logManager.appendln("  |Network: ");
-		logManager.appendln("  |" + netName);
-		logManager.appendln("  | (" + file.getAbsolutePath() + ")");
-		
-		logManager.appendln("  |\n  |Current node's branch: ");
-		logManager.appendln("  |" + queryNode.getName());
-		printParents(queryNode, 0); 
-		
-		logManager.appendln("  |\n  |Edges:");
-		for(Edge edge: queryNode.getProbabilisticNetwork().getEdges()){
-			logManager.appendln("  |" + edge.toString());
-		}
-		
-		logManager.appendln("  |\n  |Nodes:");
-		for(int i = 0; i < queryNode.getProbabilisticNetwork().getNodes().size(); i++){
-			logManager.appendln("  |" + queryNode.getProbabilisticNetwork().getNodeAt(i).toString());
-		}
-		logManager.appendln("  |-------------------------------------------------------");
-		logManager.appendln("\n"); 
-		
-	    XMLIO netIO = new XMLIO(); 
-		
-		try {
-			netIO.save(file, queryNode.getProbabilisticNetwork());
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (JAXBException e) {
-			e.printStackTrace();
-		}
-		
-		try {
-			logManager.writeToDisk("teste.txt", false);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+	 *------------------------------------------------------------------------*/
 	
 	private void printNodeStructureBeforeCPT(SSBNNode ssbnNode){
 		Debug.println("--------------------------------------------------");
@@ -1379,10 +1293,6 @@ public class BottomUpSSBNGenerator implements ISSBNGenerator {
 		}
 		Debug.println("--------------------------------------------------");	
 	}
-	
-	
-	
-	
 	
 	/*-------------------------------------------------------------------------
 	 * Private Classes 

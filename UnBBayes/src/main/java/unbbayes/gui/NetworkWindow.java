@@ -60,6 +60,10 @@ public class NetworkWindow extends JInternalFrame {
 
 	private final NetworkController controller;
 
+	private final Network net; 
+	
+	private String fileName; 
+	
 	private JScrollPane jspGraph;
 
 	private JLabel status;
@@ -104,6 +108,10 @@ public class NetworkWindow extends JInternalFrame {
 
 	public NetworkWindow(Network net) {
 		super(net.getName(), true, true, true, true);
+		
+		this.net = net; 
+		fileName = null; 
+		
 		Container contentPane = getContentPane();
 		card = new CardLayout();
 		contentPane.setLayout(card);
@@ -193,6 +201,10 @@ public class NetworkWindow extends JInternalFrame {
 		graphPane.update();
 	}
 
+	public void updateTitle(){
+		super.setTitle(net.getName() + " " + "[" + fileName + "]"); 
+	}
+	
 	/**
 	 * Retorna o grafo responsavel pela representacao grafica da rede.
 	 * 
@@ -399,7 +411,6 @@ public class NetworkWindow extends JInternalFrame {
 					controller);
 			graphPane.resetGraph();
 			ssbnCompilationPane.getCenterPanel().setRightComponent(jspGraph);
-//			ssbnCompilationPane.getCenterPanel().setDividerLocation(0.3); 
 			ssbnCompilationPane.setStatus(status.getText());
 			ssbnCompilationPane.getEvidenceTree().setRootVisible(true);
 			ssbnCompilationPane.getEvidenceTree().expandRow(0);
@@ -409,6 +420,8 @@ public class NetworkWindow extends JInternalFrame {
 			contentPane.add(ssbnCompilationPane,
 					MEBN_PANE_SSBN_COMPILATION_PANE);
 
+			ssbnCompilationPane.getCenterPanel().setDividerLocation(200); 
+			
 			CardLayout layout = (CardLayout) contentPane.getLayout();
 			layout.show(getContentPane(), MEBN_PANE_SSBN_COMPILATION_PANE);
 		}
@@ -493,6 +506,15 @@ public class NetworkWindow extends JInternalFrame {
 
 	public EditNet getEditNet() {
 		return editNet;
+	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+		this.updateTitle(); 
 	}
 
 }

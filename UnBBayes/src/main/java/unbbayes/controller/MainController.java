@@ -290,12 +290,14 @@ public class MainController {
 					io = new NetIO();	
 					ProbabilisticNetwork net = io.load(file);
 					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
-					window = new NetworkWindow(net);					
+					window = new NetworkWindow(net);	
+					((NetworkWindow)window).setFileName(name); 
 				} else if (name.endsWith("xml")){
 					io = new XMLIO();	
 					ProbabilisticNetwork net = io.load(file);
 					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
-					window = new NetworkWindow(net);					
+					window = new NetworkWindow(net);	
+					((NetworkWindow)window).setFileName(name); 
 				} else if (name.endsWith("owl")){
 
 //					JProgressBar jpb = new JProgressBar();
@@ -341,12 +343,15 @@ public class MainController {
 					mebn = prOwlIo.loadMebn(file);
 					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
 					window = new NetworkWindow(mebn);
+					((NetworkWindow)window).setFileName(name); 
 				
 				}  else if (name.endsWith(UbfIO.fileExtension)) {        			
 					MebnIO ubfIo = UbfIO.getInstance(); 
 					MultiEntityBayesianNetwork mebn = ubfIo.loadMebn(file);
 					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
 					window = new NetworkWindow(mebn);	
+					((NetworkWindow)window).setFileName(name); 
+				    
 				}
 			}
 			screen.addWindow(window);
