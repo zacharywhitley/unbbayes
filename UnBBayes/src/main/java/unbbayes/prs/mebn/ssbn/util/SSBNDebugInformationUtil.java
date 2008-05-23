@@ -8,7 +8,9 @@ import javax.xml.bind.JAXBException;
 import unbbayes.io.LogManager;
 import unbbayes.io.XMLIO;
 import unbbayes.prs.Edge;
+import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
+import unbbayes.util.Debug;
 
 public class SSBNDebugInformationUtil {
 
@@ -101,6 +103,19 @@ public class SSBNDebugInformationUtil {
 		}
 	}
 	
+	public static void printNodeStructureBeforeCPT(SSBNNode ssbnNode){
+		Debug.println("--------------------------------------------------");
+		Debug.println("- Node: " + ssbnNode.toString());
+		Debug.println("- Parents: ");
+		for(SSBNNode parent: ssbnNode.getParents()){
+			Debug.println("-    " + parent.getName());
+			Debug.println("-            Arguments: ");
+			for(OVInstance ovInstance: parent.getArguments()){
+				Debug.println("-                " + ovInstance.toString());
+			}
+		}
+		Debug.println("--------------------------------------------------");	
+	}
 	
 	
 }
