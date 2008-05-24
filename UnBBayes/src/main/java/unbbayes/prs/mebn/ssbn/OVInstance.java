@@ -117,18 +117,23 @@ public class OVInstance {
 		return ret; 
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
+	/**
+	 * Two OVInstances are equals if
+	 * - its ov are of the same MFrag 
+	 * - its ov have the same name
+	 * - its entity instance have the same name
 	 */
 	@Override
 	public boolean equals(Object arg0) {
 		if (arg0 instanceof OVInstance) {
 			OVInstance ovi = (OVInstance)arg0;
-			if (ovi.getOv().getName().equals(this.getOv().getName()) ) {
-				if (ovi.getEntity().getInstanceName().equals(this.getEntity().getInstanceName())) {
-					return true;
-				}
-			}			
+			if(ovi.getOv().getMFrag().equals(this.getOv().getMFrag())){
+				if (ovi.getOv().getName().equals(this.getOv().getName()) ) {
+					if (ovi.getEntity().getInstanceName().equals(this.getEntity().getInstanceName())) {
+						return true;
+					}
+				}			
+			}
 		} 
 		return false;
 	}
