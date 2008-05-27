@@ -56,6 +56,7 @@ public class InputNode extends MultiEntityNode {
 	private static Color color = new Color(220, 220, 220); 	
 	
 	//DON'T USE THIS CONSTRUCTOR! IS ONLY TEMPORARY FOR CLEAR THE TESTS
+	@Deprecated
 	public InputNode(){
 		
 	}
@@ -193,6 +194,16 @@ public class InputNode extends MultiEntityNode {
 	 * @param node
 	 */
 	public void setInputInstanceOf(ResidentNode node){
+		
+		if(inputInstanceOfNode != null){
+			if(inputInstanceOfNode == node){
+				return; //OK... work already do. 
+			}else{
+				//By, by... this node don't will be more referent to the resident setted
+				inputInstanceOfNode.removeInputInstanceFromList(this); 
+			}
+		}
+		
 		inputInstanceOfRV = null; 
 		inputInstanceOfNode = node; 
 		
