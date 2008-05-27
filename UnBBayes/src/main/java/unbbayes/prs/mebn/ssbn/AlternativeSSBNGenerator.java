@@ -1,119 +1,86 @@
-/*
- *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
- *
- *  This file is part of UnBBayes.
- *
- *  UnBBayes is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  UnBBayes is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
 package unbbayes.prs.mebn.ssbn;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 import unbbayes.io.LogManager;
-import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
-import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.entity.ObjectEntity;
-import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.MEBNException;
-import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
-import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
-import unbbayes.prs.mebn.ssbn.exception.InvalidOperationException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.mebn.ssbn.util.PositionAdjustmentUtils;
 import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
-import unbbayes.util.Debug;
 
-/**
- * Algorithm for generating the Situation Specific Bayesian Network (SSBN).  
- * 
- * @author Laecio Lima dos Santos (laecio@gmail.com) 
- * @author Shou Matsumoto
- */
-public class BottomUpSSBNGenerator extends AbstractSSBNGenerator {
-	
-	private ResourceBundle resource = 
+public class AlternativeSSBNGenerator extends AbstractSSBNGenerator  {
+
+   private ResourceBundle resource = 
 		ResourceBundle.getBundle("unbbayes.prs.mebn.ssbn.resources.Resources");
 	
 	private long recursiveCallLimit = 999999999999999999L;
 	
 	private long recursiveCallCount = 0;
-	
 
 	public static long stepCount = 0L;
 	public static String queryName = "";
+	public static LogManager logManager = new LogManager();
 	
-
-	/**
-	 * 
-	 */
-	public BottomUpSSBNGenerator() {
+	public AlternativeSSBNGenerator(){
 		super();  
 	}
 	
-
-	
-	/*-------------------------------------------------------------------------
-	 * Public
-	 *------------------------------------------------------------------------/
-	
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.ssbn.SSBNGenerator#generateSSBN(unbbayes.prs.mebn.ssbn.Query)
+	/**
+	 * The SSBN Node is generate in a process with tree partes:
+	 * 1) Building of the network
+	 * 2) Generate CPT's for the nodes of the created network
+	 * 3) Set the finding nodes and propagate the evidences
 	 */
-	public ProbabilisticNetwork generateSSBN(Query query) throws SSBNNodeGeneralException, 
-	                                                             ImplementationRestrictionException, MEBNException {
+	
+	public ProbabilisticNetwork generateSSBN(Query query)
+			throws SSBNNodeGeneralException,
+			ImplementationRestrictionException, MEBNException {
 		
 		ssbnNodeList = new ArrayList<SSBNNode>(); 
 		
-		// As the query starts, let's clear the flags used by the previous query
-		query.getMebn().clearMFragsIsUsingDefaultCPTFlag();
-		setKnowledgeBase(query.getKb()); 
-		
 		// some data extraction
 		SSBNNode queryNode = query.getQueryNode();
+		this.setKnowledgeBase(query.getKb()); 
 
 		// Log manager initialization
 		stepCount = 0L;
 		queryName = queryNode.toString();
-		
 		logManager.clear();
 		
 		// initialization
 
 		// call recursive
 		this.recursiveCallCount = 0;
-		SSBNNode root = this.generateRecursive(queryNode, new SSBNNodeList(), 
-				                               queryNode.getProbabilisticNetwork());
+		
+		SSBNNodeList ssbnNodeList = new SSBNNodeList(); 
+		
+		MFragInstance mFragInstanceRootNode = new MFragInstance(queryNode.getResident().getMFrag()); 
+		SSBNNode root = this.generateRecursiveUp(queryNode, ssbnNodeList, 
+				                               queryNode.getProbabilisticNetwork(), 
+				                               mFragInstanceRootNode);
+		
+		this.generateRecursiveDown(queryNode, ssbnNodeList, queryNode.getProbabilisticNetwork()); 
+		
+		this.generateCPTForAllSSBNNodes(root); 
+		
+//		this.setFindingsAndPropagateEvidences(null, null); 
 		
 		logManager.appendln("\n");
 		logManager.appendln("SSBN generation finished");
+		
 		BottomUpSSBNGenerator.printAndSaveCurrentNetwork(root);
 		
 		try {
@@ -125,56 +92,30 @@ public class BottomUpSSBNGenerator extends AbstractSSBNGenerator {
 		
 		return queryNode.getProbabilisticNetwork();
 	}
-	
-	public static void printAndSaveCurrentNetwork(SSBNNode queryNode) {
-		stepCount++;
-		PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(queryNode.getProbabilisticNetwork()); 
-		SSBNDebugInformationUtil.printNetworkInformation(logManager, queryNode, stepCount, queryName); 
-	}
-	
-	/**
-	 * This is how many times a recursive call to the algorithm should be done
-	 * @return the recursiveCallLimit
-	 */
-	public long getRecursiveCallLimit() {
-		return recursiveCallLimit;
-	}
 
-	/**
-	 * This is how many times a recursive call to the algorithm should be done
-	 * @param recursiveCallLimit the recursiveCallLimit to set
-	 */
-	public void setRecursiveCallLimit(long recursiveCallLimit) {
-		this.recursiveCallLimit = recursiveCallLimit;
-	}
-	
-	
-	
 	
 	
 	/*-------------------------------------------------------------------------
 	 * Private
-	 *------------------------------------------------------------------------/
+	 *------------------------------------------------------------------------*/
 	
 	/**
-	 * The recursive part of SSBN bottom-up generation algorithm
+	 * 
+	 * 
+	 * - If the node has a finding, create the SSBNNode, set it how finding and retorne it
+	 * 
+	 * 
 	 * 
 	 * Pre-requisites: 
-	 *     - The node current node has a OVInstance for all OrdinaryVariable argument
+	 * - The node current node has a OVInstance for all OrdinaryVariable argument
 	 * 
-	 * Pos-requisites:
-	 *     - The probabilistic table of the currentNode will be filled and all
-	 *     nodes fathers evaluated. 
-	 * 
-	 * @param currentNode node currently analyzed. 
-	 * @param seen all the nodes analyzed previously (doesn't contain the current node)
-	 * @param net the ProbabilisticNetwork 
-	 * @return The currentNode with its auxiliary structures of the analysis. 
-	 * @throws SSBNNodeGeneralException
-	 * @throws ImplementationRestrictionException
 	 */
-	private SSBNNode generateRecursive(SSBNNode currentNode , SSBNNodeList seen, 
-			ProbabilisticNetwork net) throws SSBNNodeGeneralException, ImplementationRestrictionException, MEBNException {
+	private SSBNNode generateRecursiveUp(SSBNNode currentNode , SSBNNodeList seen, 
+			ProbabilisticNetwork net, MFragInstance mFragInstance) throws SSBNNodeGeneralException, 
+			                                 ImplementationRestrictionException, 
+			                                 MEBNException {
+		
+		currentNode.setPermanent(true); //up always permanent...
 		
 		if (this.recursiveCallCount > this.recursiveCallLimit) {
 			throw new SSBNNodeGeneralException(this.resource.getString("RecursiveLimit"));
@@ -182,19 +123,17 @@ public class BottomUpSSBNGenerator extends AbstractSSBNGenerator {
 		
 		this.recursiveCallCount++;
 		
-		logManager.appendln("\n-------------Step: " + currentNode.getName() + "--------------\n"); 
+		logManager.appendln("\n\n-------------EVALUATING NODE: " + currentNode.getName() + "--------------\n"); 
 		
-		// The cicles are avaliated in the ssbn final
-//		if (seen.contains(currentNode)) {
-//			//TODO evaluate cycles
-//		}
+
+		
+		
 		
 		//------------------------- STEP 1: search findings -------------------
 		
-
 		logManager.appendln(currentNode + ":A - Search findings");
         //check if query node has a known value or it should be a probabilistic node (query the kb)
-		StateLink exactValue = this.getKnowledgeBase().searchFinding(currentNode.getResident(), currentNode.getArguments()); 
+		StateLink exactValue = getKnowledgeBase().searchFinding(currentNode.getResident(), currentNode.getArguments()); 
 		
 		// Treat returned value
 		if (exactValue != null) {
@@ -202,9 +141,6 @@ public class BottomUpSSBNGenerator extends AbstractSSBNGenerator {
 			currentNode.setNodeAsFinding(exactValue.getState());
 			seen.add(currentNode); 
 			logManager.appendln("Exact value of " + currentNode.getName() + "=" + exactValue.getState()); 
-			
-	        generateCPT(currentNode); //this method don't do anything for findings...
-	        
 			return currentNode;
 		}
 		
@@ -212,19 +148,23 @@ public class BottomUpSSBNGenerator extends AbstractSSBNGenerator {
 		seen.add(currentNode);	// mark this as already seen  (treated) node
 		
 		
+		
+		
 		//------------------------- STEP 2: analyze context nodes. -------------
 		
 		// evaluates querynode's mfrag's context nodes 
-		//(if not OK, sets MFrag's flag to use default CPT)	
+		//(if not OK, sets MFrag Instance's flag to use default CPT)	
 		
 		logManager.appendln(currentNode + ":B - Analyse context nodes");
 		List<OVInstance> ovInstancesList = new ArrayList<OVInstance>(); 
 		ovInstancesList.addAll(currentNode.getArguments()); 
-        
+		
+	     
 		boolean evaluateRelatedContextNodesResult = false;
 		
 		try {
-			evaluateRelatedContextNodesResult = evaluateRelatedContextNodes(currentNode.getResident(), ovInstancesList);
+			evaluateRelatedContextNodesResult = evaluateRelatedContextNodes(
+					currentNode.getResident(), ovInstancesList, mFragInstance);
 		} catch (OVInstanceFaultException e) {
 			//pre-requisite.
 			e.printStackTrace();
@@ -240,6 +180,8 @@ public class BottomUpSSBNGenerator extends AbstractSSBNGenerator {
 		logManager.appendln("\n");
 		logManager.appendln("Node " + currentNode + " created");
 		BottomUpSSBNGenerator.printAndSaveCurrentNetwork(currentNode);
+		
+		
 		
 		
        //------------------------- STEP 3: Add and evaluate resident nodes fathers -------------
@@ -261,13 +203,13 @@ public class BottomUpSSBNGenerator extends AbstractSSBNGenerator {
     					ovProblematicList, ovInstancesList); 
     			
     		    for(SSBNNode ssbnnode: createdNodes){
-    		    	generateRecursive(ssbnnode, seen, net);	
+    		    	generateRecursiveUp(ssbnnode, seen, net, mFragInstance);	
     		    	
     		    	if(!ssbnnode.isFinding()){
     		    		currentNode.addParent(ssbnnode, true);
     		    	}else{
     		    		currentNode.addParent(ssbnnode, false);
-    		    	}	
+    		    	}
     		    }
     		}else{ //ovProblematicList.isEmpty
     			SSBNNode ssbnnode = null; 
@@ -283,7 +225,7 @@ public class BottomUpSSBNGenerator extends AbstractSSBNGenerator {
 						ssbnnode.addArgument(ovInstance);
 					}
 					ssbnNodeList.add(ssbnnode);
-	    			generateRecursive(ssbnnode, seen, net);	
+	    			generateRecursiveUp(ssbnnode, seen, net, mFragInstance);	
 				}else{
 					ssbnnode = testSSBNNodeDuplicated;
 				}
@@ -302,6 +244,7 @@ public class BottomUpSSBNGenerator extends AbstractSSBNGenerator {
 		
 		
 		
+
 		
 	    //------------------------- STEP 4: Add and evaluate input nodes fathers -------------
 
@@ -313,17 +256,24 @@ public class BottomUpSSBNGenerator extends AbstractSSBNGenerator {
 			logManager.appendln(currentNode.getName() + "Evaluate input " + residentNodeTargetOfInput.getName()); 
 			
 			
-			
 			//Step 0: ----------Evaluate recursion... Node1(x2) -> Node1(x1)------------
+			
 			if(currentNode.getResident() == residentNodeTargetOfInput){
 				
-				SSBNNodeJacket previousNode = getPreviousNode(currentNode, seen, net, residentNodeTargetOfInput, inputNode);
+				SSBNNodeJacket previousNode = getPreviousNode(currentNode, seen, net, 
+						residentNodeTargetOfInput, inputNode);
 
 				if(previousNode != null){
 					
 					//yes... exist recursion...
 					previousNode.setArgumentsOfResidentMFrag();
-					generateRecursive(previousNode.getSsbnNode(), seen, net);
+					
+					//TODO treatment of the MFragInstance
+					MFragInstance mFragInputNode = new MFragInstance(
+							previousNode.getSsbnNode().getResident().getMFrag()); 
+					
+					generateRecursiveUp(previousNode.getSsbnNode(), seen, net, mFragInputNode);
+					
 					previousNode.setArgumentsOfInputMFrag();
 
 					/* it takes the parameters' names back to normal */
@@ -354,7 +304,10 @@ public class BottomUpSSBNGenerator extends AbstractSSBNGenerator {
     		    	ssbnNodeJacket.setArgumentsOfResidentMFrag(); 
     		    	
     		    	logManager.appendln("Node Created: " + ssbnnode.toString());
-    		    	generateRecursive(ssbnnode, seen, net);	// algorithm's core
+					//TODO treatment of the MFragInstance
+					MFragInstance mFragInputNode = new MFragInstance(
+							ssbnnode.getResident().getMFrag()); 
+    		    	generateRecursiveUp(ssbnnode, seen, net, mFragInputNode);	// algorithm's core
     		    	
     		    	ssbnNodeJacket.setArgumentsOfInputMFrag(); 
         			if(!ssbnnode.isFinding()){
@@ -392,7 +345,10 @@ public class BottomUpSSBNGenerator extends AbstractSSBNGenerator {
 				
     			if(contextNodesOK){
         			//Step 2: context and findngs ok... do the work...	
-    				this.generateRecursive(ssbnNode, seen, net);	// algorithm's core	
+					//TODO treatment of the MFragInstance
+					MFragInstance mFragInputNode = new MFragInstance(
+							ssbnNode.getResident().getMFrag()); 
+    				this.generateRecursiveUp(ssbnNode, seen, net, mFragInputNode);	// algorithm's core	
     			}else{
     				logManager.append("Context Nodes False for " + ssbnNode + " (input node)"); 
     				ssbnNode.setUsingDefaultCPT(true); 
@@ -407,46 +363,158 @@ public class BottomUpSSBNGenerator extends AbstractSSBNGenerator {
 				}
     		}
 		}
-
-		logManager.appendln(currentNode + "E:- generate CPT");
-		
-		if(currentNode.getContextFatherSSBNNode()!=null){ 
-			try {
-				generateCPTForNodeWithContextFather(currentNode); 
-			} catch (InvalidOperationException e1) {
-				e1.printStackTrace();
-				throw new SSBNNodeGeneralException(e1.getMessage()); 
-			}
-		}else{
-		    generateCPT(currentNode);
-		}
-		
-		logManager.appendln(currentNode + " return of input parents recursion"); 
 		
 		return currentNode;
 	}
 
 	
-	/*
-	 * Generate the cpt for the ssbnNode
+	/**
+	 * Generate the network for the below evidences. 
 	 * 
-	 * out-assertives:
-	 * - The CPT of the probabilistic node referenced by the ssbnNode is setted
-	 *   with the CPT generated. 
+	 * @param currentNode
+	 * @param seen
+	 * @param net
+	 * 
+	 * @return True if the path end with a Finding. Else otherside. 
+	 * 
+	 * @throws SSBNNodeGeneralException
+	 * @throws ImplementationRestrictionException
+	 * @throws MEBNException
 	 */
-	private void generateCPT(SSBNNode ssbnNode) throws MEBNException {
-			
-			logManager.appendln("\nGenerate table for node " + ssbnNode);
-			logManager.appendln("Parents:");
-			for(SSBNNode parent: ssbnNode.getParents()){
-				logManager.appendln("  " + parent);
-			}
-			
-			ssbnNode.getCompiler().generateCPT(ssbnNode);
-			
-			logManager.appendln("CPT OK\n");
+	private boolean generateRecursiveDown(SSBNNode currentNode , SSBNNodeList seen, 
+			ProbabilisticNetwork net) throws SSBNNodeGeneralException, ImplementationRestrictionException, MEBNException {
 		
+		
+		//some inicializations
+		
+		if (this.recursiveCallCount > this.recursiveCallLimit) {
+			throw new SSBNNodeGeneralException(this.resource.getString("RecursiveLimit"));
+		}
+		
+		this.recursiveCallCount++; //Yes!!! This increment the recursive call... 
+		
+		logManager.appendln("\n\n-------------EVALUATING NODE BELOW: " + currentNode.getName() + "--------------\n"); 
+		
+		
+		//------------------------- STEP 1: Search for findings -------------
+		logManager.appendln(currentNode + ":A - Search findings");
+        //check if query node has a known value or it should be a probabilistic node (query the kb)
+		StateLink exactValue = getKnowledgeBase().searchFinding(currentNode.getResident(), currentNode.getArguments()); 
+		
+		// Treat returned value
+		if (exactValue != null) {
+			// there were an exact match
+			currentNode.setNodeAsFinding(exactValue.getState());
+			seen.add(currentNode); 
+			logManager.appendln("Exact value of " + currentNode.getName() + "=" + exactValue.getState()); 
+			
+			//If some recursive call return true, this node is permanent... and all the nodes above
+			currentNode.setPermanent(true); 
+			return true;
+		}
+		
+		// if the program reached this line, the node doesn't have a finding
+		seen.add(currentNode);	// mark this as already seen  (treated) node
+		
+		
+		
+		
+	    //------------------------- STEP 2: Resident nodes childs in the same MFrag -------------
+		
+		
+		
+		
+		
+		
+		
+		//------------------------- STEP 3: Search childs of inputs that have this node how target -------------
+		
+		
+		
+		
+		
+		return false; 
+	}
+	
+	public void setFindingsAndPropagateEvidences(List<SSBNNode> findingsNodes, ProbabilisticNetwork ssbn){
+		System.out.println("Findings setados e evidências propagadas");
 	}
 
+	public long getRecursiveCallCount() {
+		return recursiveCallCount;
+	}
+
+	public void setRecursiveCallCount(long recursiveCallCount) {
+		this.recursiveCallCount = recursiveCallCount;
+	}
+	
+
+	
+	public static void printAndSaveCurrentNetwork(SSBNNode queryNode) {
+		stepCount++;
+		PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(queryNode.getProbabilisticNetwork()); 
+		SSBNDebugInformationUtil.printNetworkInformation(logManager, queryNode, stepCount, queryName); 
+	}
+	
+	/**
+	 * This is how many times a recursive call to the algorithm should be done
+	 * @return the recursiveCallLimit
+	 */
+	public long getRecursiveCallLimit() {
+		return recursiveCallLimit;
+	}
+
+	/**
+	 * This is how many times a recursive call to the algorithm should be done
+	 * @param recursiveCallLimit the recursiveCallLimit to set
+	 */
+	public void setRecursiveCallLimit(long recursiveCallLimit) {
+		this.recursiveCallLimit = recursiveCallLimit;
+	}
+	
+
+	
+
+	
+	
+	
+	
+	
+	/**
+	 * Calls ContextNodeAvaliator's method to check context node's validation.
+	 * Evaluate only the context nodes for what have ordinary variables instances
+	 * for all the ordinary variables present (ordinal context nodes). 
+	 */
+	private boolean evaluateRelatedContextNodes (ResidentNode residentNode, 
+			List<OVInstance> ovInstances, MFragInstance mFragInstance) throws OVInstanceFaultException{
+		
+		// We assume if MFrag is already set to use Default, then some context
+		// has failed previously and there's no need to evaluate again.		
+		if (mFragInstance.isUsingDefaultDistribution()) {
+			return false;
+		};
+		
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(getKnowledgeBase()); 
+		
+		
+		//TODO Refazer!!! Esta abordagem nao permite a abordagem da transitividade
+		//dos nos de contexto... 
+		
+		Collection<ContextNode> contextNodeList = residentNode.getMFrag().getContextByOVCombination(
+				residentNode.getOrdinaryVariableList());
+		
+		for(ContextNode context: contextNodeList){
+			logManager.appendln("Context Node: " + context.getLabel());
+			if(!avaliator.evaluateContextNode(context, ovInstances)){
+				residentNode.getMFrag().setAsUsingDefaultCPT(true); 
+				logManager.appendln("Result = FALSE. Use default distribution ");
+				return false;  
+			}else{
+				logManager.appendln("Result = TRUE.");
+			}		
+		}
+		
+		return true; 
+	}
 	
 }

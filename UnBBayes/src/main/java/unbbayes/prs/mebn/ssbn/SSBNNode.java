@@ -47,14 +47,6 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
  */
 public class SSBNNode {
 	
-	/*
-	 * Inner class which represents argument instances (which are instances of entities). It links
-	 * instances of entities and the ordinal variable it replaces.
-	 * @author shou matsumoto
-	 *
-	 */
-	
-	
 	// Private Attributes
 	
 	private ResidentNode resident = null;	// what resident node this instance represents
@@ -62,6 +54,7 @@ public class SSBNNode {
 	
 	private List<OVInstance> arguments = null;
 	private Collection<SSBNNode> parents = null;
+	private Collection<SSBNNode> children = null; 
 	
 	private Collection<Entity> actualValues = null; // this is the possible values of this node at that moment (might be one, if there is an evidence)
 													// this is useful when this node must provide some values different than the resident nodes' ones
@@ -70,7 +63,7 @@ public class SSBNNode {
 	
 	private String strongOVSeparator = ".";	// When creating names for sets of strong OVs, this string/char separates the compound names. Ex. When separator is ".", ovs = {st,z} -> name= "st.z"
 	
-	
+	private boolean cptAlreadyGenerated = false; //Indicate if the cpf already was generated
 	
 	private ICompiler compiler = null;
 	
@@ -83,14 +76,15 @@ public class SSBNNode {
 	private ResourceBundle resource = 
 		ResourceBundle.getBundle("unbbayes.prs.mebn.ssbn.resources.Resources");	
 	
-	// Constructors
+	private boolean permanent; //Indicate if the node is permanent or only a node test for the search of findings
 	
-	
+	// Constructors	
 	
 	private SSBNNode (ProbabilisticNetwork pnet, ResidentNode resident , ProbabilisticNode probNode, boolean isFinding) {
 		
 		this.arguments = new ArrayList<OVInstance>();
 		this.parents = new ArrayList<SSBNNode>();
+		this.children = new ArrayList<SSBNNode>(); 
 		this.resident = resident;
 		
 		if (pnet == null) {
@@ -491,6 +485,7 @@ public class SSBNNode {
 	/**
 	 * This is the same as setting node's actual value as a unique value
 	 * and setting ProbNode to null.
+	 * 
 	 * @param uniqueValue: the unique value this node represents
 	 */
 	public void setNodeAsFinding(Entity uniqueValue) {
@@ -514,11 +509,14 @@ public class SSBNNode {
 	 * This will add a parent to this node. It may check if the resident node
 	 * remains consistent. If argument is null, it throws NullPointerException.
 	 * The EDGE between the probalistic nodes is added to the network. 
+	 * 
 	 * @param parent the node to be added as parent. Its ProbNode will be added as
 	 * this ProbNode's parent and, if said so, its resident node will be checked if it is the
 	 * expected parent node by this node's resident node.
+	 * 
 	 * @param isCheckingParentResident true to check if parent's resident node was expected
 	 * by child's resident node; false to disable check
+	 * 
 	 * @throws SSBNNodeGeneralException when parent has no resident node or ProbNode or 
 	 * there were inconsistency when isCheckingParentResident was set to true.
 	 */
@@ -566,7 +564,8 @@ public class SSBNNode {
 			}
 		}
 		
-		this.getParents().add(parent);		
+		this.getParents().add(parent);
+		parent.children.add(this); 
 		
 		if (this.getProbNode() != null) {
 			//this.getProbNode().addParent(parent.getProbNode());
@@ -594,6 +593,7 @@ public class SSBNNode {
 		
 		for(SSBNNode node: aux){
 			this.removeParent(node); 
+			node.children.remove(this); 
 		}
 		
 		removeContextFatherSSBNNode(); 
@@ -602,6 +602,7 @@ public class SSBNNode {
 	protected void removeParent(SSBNNode parent) {
 		
 		this.getParents().remove(parent);
+		parent.children.remove(this); 
 		
 		if (this.getProbNode() != null) {
 			this.getProbNode().getParents().remove(this.getProbNode());
@@ -631,6 +632,9 @@ public class SSBNNode {
 			}
 		}
 		parents.removeAll(removingNodes);
+		for(SSBNNode parent: removingNodes){
+			parent.children.remove(this); 
+		}
 	}
 	
 	
@@ -821,8 +825,12 @@ public class SSBNNode {
 		// TODO implement this if necessary
 	}*/
 	
-	// Ordinal getters and setters
 	
+	
+	
+	
+	// Ordinal getters and setters
+
 	private static int Number = 0; 
 	
 	/**
@@ -1137,6 +1145,26 @@ public class SSBNNode {
 		} else {
 			return false;
 		}
+	}
+
+	public boolean isCptAlreadyGenerated() {
+		return cptAlreadyGenerated;
+	}
+
+	public void setCptAlreadyGenerated(boolean cptAlreadyGenerated) {
+		this.cptAlreadyGenerated = cptAlreadyGenerated;
+	}
+
+	public Collection<SSBNNode> getChildren() {
+		return children;
+	}
+
+	public boolean isPermanent() {
+		return permanent;
+	}
+
+	public void setPermanent(boolean permanent) {
+		this.permanent = permanent;
 	}
 
 	

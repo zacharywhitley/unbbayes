@@ -29,11 +29,9 @@ import unbbayes.prs.mebn.kb.KnowledgeBase;
  */
 public class Query {
 	
-	// TODO complete this class
-	
 	private MultiEntityBayesianNetwork mebn = null;
 	private KnowledgeBase kb = null;
-	private SSBNNode queryNode = null;
+	private SSBNNode queryNode = null; //TODO update for queriesNodes
 	
 	/**
 	 * Default query. 

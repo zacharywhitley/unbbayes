@@ -20,11 +20,14 @@
  */
 package unbbayes.prs.mebn.ssbn.util;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 
@@ -40,14 +43,14 @@ public class PositionAdjustmentUtils {
 	public static String fileTestSave= "novarede.xml";  
 	
 	
-	//TODO Os tamanhos foram retirados do GraphPane... Fazer refactory para deixar tudo mais bonito. 
-	private static Point sizeGraph = new Point(1500, 1500); 
+//	private static Point sizeGraph = new Point(1500, 1500); 
 	private static Point sizeSquare = new Point(100, 100); 
+	private static Point margin = new Point(100, 100); 
 	
-	public static void adjustPositionProbabilisticNetwork(ProbabilisticNetwork net){
+	public static Dimension adjustPositionProbabilisticNetwork(ProbabilisticNetwork net){
 		InfoNetwork infoNetwork = new InfoNetwork(); 
 		createInfoNodesList(infoNetwork, net);
-		adjustPositions(infoNetwork); 
+		return adjustPositions(infoNetwork); 
 	}
 
 	private static void createInfoNodesList(InfoNetwork infoNetwork, ProbabilisticNetwork net) {
@@ -73,41 +76,60 @@ public class PositionAdjustmentUtils {
 		}
 	}
 	
-	private static void adjustPositions(InfoNetwork infoNetwork){
+	private static Dimension adjustPositions(InfoNetwork infoNetwork){
 		
-		int numColunas = (int)(sizeGraph.getX() / sizeSquare.getX()); 
-		int numLinhas = (int)(sizeGraph.getY() / sizeSquare.getY());
+//		int numColunas = (int)(sizeGraph.getX() / sizeSquare.getX()); 
+//		int numLinhas = (int)(sizeGraph.getY() / sizeSquare.getY());
+		
+		int numColunas = infoNetwork.getMaxNodesInLevel(); 
+		int numLinhas = infoNetwork.getNumLevels();
+
+		//size of the graph
+
+		double width = numColunas*sizeSquare.getX()+ margin.getX() + sizeSquare.getX(); 
+		double heigth = numLinhas*sizeSquare.getY()+ margin.getY() + sizeSquare.getY();
 		
 		InfoNode[][] map = new InfoNode[numColunas][numLinhas];
 		
-		int line = numLinhas - 1; 
+//		int line = numLinhas - 1; 
+//		
+//		int level = infoNetwork.getNumLevels(); 
+////		System.out.println("Num Levels: " + level);
+//		
+//		while(level >= 0){
+//			List<InfoNode> nodesOfLevel = infoNetwork.getInfoNodesOfLevel(level);
+//			int coluna = 0; 
+//			for(InfoNode infoNode: nodesOfLevel){
+//				map[coluna][line] = infoNode; 
+//				coluna++; 
+//			}
+//			line--; level--;  
+//		}
+
+		int line = 0; 
 		
 		int level = infoNetwork.getNumLevels(); 
 //		System.out.println("Num Levels: " + level);
-		
-		//TODO Caso em que o número de levels é maior que o número de linhas...
 		
 		while(level >= 0){
 			List<InfoNode> nodesOfLevel = infoNetwork.getInfoNodesOfLevel(level);
 			int coluna = 0; 
 			for(InfoNode infoNode: nodesOfLevel){
-				if(coluna == numColunas - 1){
-					line--; coluna = 0; 
-				}
 				map[coluna][line] = infoNode; 
 				coluna++; 
 			}
-			line--; level--;  
+			line++; level--;  
 		}
-		 
+		
+		
 		double positionX; 
 		double positionY;
 		
 		for(int coluna = 0; coluna < numColunas; coluna++){
 			for(int linha = 0; linha < numLinhas; linha++){
 				if(map[coluna][linha] != null){
-					positionX = (coluna)*sizeSquare.getX() + 100; 
-					positionY = (linha)*sizeSquare.getY() - (numLinhas - infoNetwork.getNumLevels())*sizeSquare.getY()  + 100;
+					positionX = (coluna)*sizeSquare.getX() + margin.getX(); 
+					positionY = (linha)*sizeSquare.getY() - (numLinhas - infoNetwork.getNumLevels())*sizeSquare.getY()  + margin.getY();
 					
 //	                System.out.println("Node:" + map[coluna][linha].getPn() + " Map:" + coluna + "," + linha + 
 //	                		" Position:" + positionX + "," + positionY);
@@ -115,6 +137,9 @@ public class PositionAdjustmentUtils {
 				}
 			}
 		}
+		
+		return new Dimension((int)width, (int)heigth); 
+		
 	}
 	
 	public static void main(String[] arguments){
@@ -157,16 +182,27 @@ private static class InfoNetwork{
 	private int numLevels; 
 	private List<InfoNode> nodes; 
 	
+	private Map<Integer, Integer> nodesAtLevel; 
+	
 	public InfoNetwork(){
 		numLevels = 0; 
+		nodesAtLevel = new HashMap<Integer, Integer>(); 
 		nodes = new ArrayList<InfoNode>(); 
 	}
 	
 	public void addInfoNode(InfoNode n){
 		nodes.add(n);
+		
 		if(n.getLevel() > numLevels){
-			numLevels = n.getLevel(); 
+			numLevels = n.getLevel();
 		}
+		
+		if(nodesAtLevel.get(n.getLevel()) == null){
+			nodesAtLevel.put(n.getLevel(), 1); 
+		}else{
+			nodesAtLevel.put(n.getLevel(), nodesAtLevel.get(n.getLevel()) + 1); 
+		}
+		
 	}
 	
 	public List<InfoNode> getInfoNodesOfLevel(int level){
@@ -183,6 +219,19 @@ private static class InfoNetwork{
 		return numLevels;
 	}
 
+	public int getMaxNodesInLevel(){
+		int max = 0; 
+		for(int i = 1; i <= numLevels; i++){
+			Integer testValue = nodesAtLevel.get(i); 
+			if(testValue!=null){
+				if(testValue > max){
+					max = testValue; 
+				}
+			}
+		}
+		return max; 
+	}
+	
 	public void setNumLevels(int numLevels) {
 		this.numLevels = numLevels;
 	}

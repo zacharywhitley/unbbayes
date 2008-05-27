@@ -46,6 +46,8 @@ public class SSBNDebugInformationUtil {
 		
 		File file = new File(nameDirectory + File.separator +  netName  + ".xml");
 		
+		System.out.println("Saved: " + file.getAbsolutePath());
+		
 		logManager.appendln("\n"); 
 		logManager.appendln("  |-------------------------------------------------------");
 		logManager.appendln("  |Network: ");

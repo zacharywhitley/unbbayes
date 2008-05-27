@@ -21,8 +21,8 @@
 package unbbayes.controller;
 
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.io.File;
-import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +31,6 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.swing.JOptionPane;
-import javax.xml.bind.JAXBException;
 
 import unbbayes.controller.exception.InconsistentArgumentException;
 import unbbayes.controller.exception.InvalidOperationException;
@@ -41,7 +40,6 @@ import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.mebn.DescriptionPane;
 import unbbayes.gui.mebn.OVariableEditionPane;
 import unbbayes.gui.mebn.cpt.CPTFrame;
-import unbbayes.io.XMLIO;
 import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -76,12 +74,13 @@ import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
-import unbbayes.prs.mebn.ssbn.BottomUpSSBNGenerator;
+import unbbayes.prs.mebn.ssbn.AlternativeSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+import unbbayes.prs.mebn.ssbn.util.PositionAdjustmentUtils;
 import unbbayes.util.Debug;
 import unbbayes.util.ResourceController;
 
@@ -133,6 +132,7 @@ public class MEBNController  {
 	/*-------------------------------------------------------------------------*/
 	
 	private boolean showSSBNGraph = false; 
+	private Dimension dimensionSSBNGraph = new Dimension(1500, 1500); 
 	
 	/*-------------------------------------------------------------------------*/
 	/* Control of state of the kb                                            */
@@ -1597,21 +1597,33 @@ public class MEBNController  {
 		
 		Query query = new Query(getKnowledgeBase(), queryNode, multiEntityBayesianNetwork);
 		
-		ISSBNGenerator ssbngenerator = new BottomUpSSBNGenerator(getKnowledgeBase());
-		
-			probabilisticNetwork = ssbngenerator.generateSSBN(query);
-			
-			if(!query.getQueryNode().isFinding()){
-				if(this.compileNetwork(probabilisticNetwork)){
-					showSSBNGraph = true; 
-					specificSituationBayesianNetwork = probabilisticNetwork;
-					this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
-				}
-			}else{
-				JOptionPane.showMessageDialog(getScreen(), 
-						query.getQueryNode().toString() + " = " + query.getQueryNode().getActualValues().toArray()[0]);
-			}
-			
+		ISSBNGenerator ssbngenerator = new AlternativeSSBNGenerator();
+
+		probabilisticNetwork = ssbngenerator.generateSSBN(query);
+
+//		if(!query.getQueryNode().isFinding()){
+//			if(this.compileNetwork(probabilisticNetwork)){
+//				showSSBNGraph = true; 
+//				specificSituationBayesianNetwork = probabilisticNetwork;
+//
+//
+//				this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
+//
+//				Dimension sizeOfGraph = PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(specificSituationBayesianNetwork); 
+//				Dimension originalDimension = this.getMebnEditionPane().getNetworkWindow().getGraphPane().getGraphDimension(); 
+//				if((originalDimension.getHeight() < sizeOfGraph.getHeight()) || 
+//						(originalDimension.getWidth() < sizeOfGraph.getWidth())){
+//					dimensionSSBNGraph = sizeOfGraph; 
+//					this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(sizeOfGraph); 
+//					this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
+//				}
+//
+//			}
+//		}else{
+//			JOptionPane.showMessageDialog(getScreen(), 
+//					query.getQueryNode().toString() + " = " + query.getQueryNode().getActualValues().toArray()[0]);
+//		}
+
 		
 		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 		
@@ -1739,7 +1751,9 @@ public class MEBNController  {
 		if(specificSituationBayesianNetwork != null){
 			showSSBNGraph = true; 
 			this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);			
-		    return true;  
+			this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(dimensionSSBNGraph); 
+			this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
+			return true;  
 		}else{
 			return false;
 		}

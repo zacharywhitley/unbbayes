@@ -58,6 +58,7 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"printLogToolTip","Imprimir o log de compilação"},
 		{"previewLogToolTip","Visualizar a impressão"},
 		{"okButtonLabel"," Ok "},
+		{"closeButtonLabel","Fechar"},
 		{"statusTotalTime","Tempo Total: "},
 		{"statusSeconds"," segundos"},
 		{"stateProbabilisticName","Estado "},
@@ -113,6 +114,9 @@ public class ControllerResources_pt extends ListResourceBundle {
 		
 		/* Java helper */
 		{"helperDialogTitle", "Ajuda"},
+
+		//Network Controller
+		{"logDialogTitle", "Log"},
 		
 		/* load/save */
 		{"saveSucess", "Arquivo salvo com sucesso!"},

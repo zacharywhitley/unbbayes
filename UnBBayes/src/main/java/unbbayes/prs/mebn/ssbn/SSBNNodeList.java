@@ -33,122 +33,12 @@ import unbbayes.prs.mebn.OrdinaryVariable;
  */
 public class SSBNNodeList implements Collection<SSBNNode> {
 
-	
 	private List<SSBNNode> nodes = null;
 	
-	/**
-	 * 
-	 */
 	public SSBNNodeList() {
 		nodes = new ArrayList<SSBNNode>();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Collection#add(java.lang.Object)
-	 */
-	public boolean add(SSBNNode arg0) {
-		// TODO Auto-generated method stub
-		return nodes.add(arg0);
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Collection#addAll(java.util.Collection)
-	 */
-	public boolean addAll(Collection<? extends SSBNNode> arg0) {
-		// TODO Auto-generated method stub
-		return nodes.addAll(arg0);
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Collection#clear()
-	 */
-	public void clear() {
-		// TODO Auto-generated method stub
-		nodes.clear();
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Collection#contains(java.lang.Object)
-	 */
-	public boolean contains(Object arg0) {
-		// TODO Auto-generated method stub
-		return nodes.contains(arg0);
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Collection#containsAll(java.util.Collection)
-	 */
-	public boolean containsAll(Collection<?> arg0) {
-		// TODO Auto-generated method stub
-		return nodes.containsAll(arg0);
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Collection#isEmpty()
-	 */
-	public boolean isEmpty() {
-		// TODO Auto-generated method stub
-		return nodes.isEmpty();
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Collection#iterator()
-	 */
-	public Iterator<SSBNNode> iterator() {
-		// TODO Auto-generated method stub
-		return nodes.iterator();
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Collection#remove(java.lang.Object)
-	 */
-	public boolean remove(Object arg0) {
-		// TODO Auto-generated method stub
-		return nodes.remove(arg0);
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Collection#removeAll(java.util.Collection)
-	 */
-	public boolean removeAll(Collection<?> arg0) {
-		// TODO Auto-generated method stub
-		return nodes.removeAll(arg0);
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Collection#retainAll(java.util.Collection)
-	 */
-	public boolean retainAll(Collection<?> arg0) {
-		// TODO Auto-generated method stub
-		return nodes.retainAll(arg0);
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Collection#size()
-	 */
-	public int size() {
-		// TODO Auto-generated method stub
-		return nodes.size();
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Collection#toArray()
-	 */
-	public Object[] toArray() {
-		// TODO Auto-generated method stub
-		return nodes.toArray();
-	}
-
-	/* (non-Javadoc)
-	 * @see java.util.Collection#toArray(T[])
-	 */
-	public <T> T[] toArray(T[] arg0) {
-		// TODO Auto-generated method stub
-		return nodes.toArray(arg0);
-	}
-	
-	
-	
 	// Exported methods
 	
 	/**
@@ -213,7 +103,95 @@ public class SSBNNodeList implements Collection<SSBNNode> {
 		return ret;
 	}
 	
-	
-	
+	/* (non-Javadoc)
+	 * @see java.util.Collection#add(java.lang.Object)
+	 */
+	public boolean add(SSBNNode arg0) {
+		return nodes.add(arg0);
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Collection#addAll(java.util.Collection)
+	 */
+	public boolean addAll(Collection<? extends SSBNNode> arg0) {
+		return nodes.addAll(arg0);
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Collection#clear()
+	 */
+	public void clear() {
+		nodes.clear();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Collection#contains(java.lang.Object)
+	 */
+	public boolean contains(Object arg0) {
+		return nodes.contains(arg0);
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Collection#containsAll(java.util.Collection)
+	 */
+	public boolean containsAll(Collection<?> arg0) {
+		return nodes.containsAll(arg0);
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Collection#isEmpty()
+	 */
+	public boolean isEmpty(){
+		return nodes.isEmpty();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Collection#iterator()
+	 */
+	public Iterator<SSBNNode> iterator() {
+		return nodes.iterator();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Collection#remove(java.lang.Object)
+	 */
+	public boolean remove(Object arg0) {
+		return nodes.remove(arg0);
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Collection#removeAll(java.util.Collection)
+	 */
+	public boolean removeAll(Collection<?> arg0) {
+		return nodes.removeAll(arg0);
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Collection#retainAll(java.util.Collection)
+	 */
+	public boolean retainAll(Collection<?> arg0) {
+		return nodes.retainAll(arg0);
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Collection#size()
+	 */
+	public int size() {
+		return nodes.size();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Collection#toArray()
+	 */
+	public Object[] toArray() {
+		return nodes.toArray();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.Collection#toArray(T[])
+	 */
+	public <T> T[] toArray(T[] arg0) {
+		return nodes.toArray(arg0);
+	}
 
 }

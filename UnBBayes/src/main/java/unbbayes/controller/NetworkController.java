@@ -587,7 +587,7 @@ public class NetworkController implements KeyListener {
         panel.add(topPane, BorderLayout.NORTH);
 
         JPanel bottomPane = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JButton botaoOK = new JButton(resource.getString("okButtonLabel"));
+        JButton botaoOK = new JButton(resource.getString("closeButtonLabel"));
         botaoOK.addActionListener(
             new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {
@@ -600,6 +600,8 @@ public class NetworkController implements KeyListener {
         panel.add(bottomPane, BorderLayout.SOUTH);
 
         dialog.getContentPane().add(panel);
+        dialog.setTitle(resource.getString("logDialogTitle")); 
+        dialog.setLocationRelativeTo(null); 
         dialog.pack();
         dialog.setVisible(true);
         screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
