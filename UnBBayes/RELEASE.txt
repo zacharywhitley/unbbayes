@@ -1,11 +1,12 @@
-UNBBAYES VERSION 3.3.29-BETA
+UNBBAYES VERSION 3.4.29-BETA
 ----------------------------
 
 FEATURE LIST		
 Number	Request ID	Summary
-1	1951209	Refactor NodeList to ArrayList or List
-2	1908011	Button for pre-parsing CPT pseudocode
-3	1907899	OWL <-> PR-OWL "compatibility"
+1	1968915	Pseudocode compiler's optimization
+2	1951209	Refactor NodeList to ArrayList or List
+3	1908011	Button for pre-parsing CPT pseudocode
+4	1907899	OWL <-> PR-OWL "compatibility"
 
 BUG LIST		
 Number	Request ID	Summary
