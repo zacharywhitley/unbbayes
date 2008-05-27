@@ -242,6 +242,10 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 		node.addResidentNodeFather(this); 
 	}		
 	
+	/**
+	 * @see <code>addResidentNodeChild</code> 
+	 * @param father
+	 */
 	private void addResidentNodeFather(ResidentNode father){
 		residentNodeFatherList.add(father);
 	}
