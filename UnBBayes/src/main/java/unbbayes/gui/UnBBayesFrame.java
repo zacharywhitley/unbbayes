@@ -326,7 +326,8 @@ public class UnBBayesFrame extends JFrame {
 				chooser.addChoosableFileFilter(new SimpleFileFilter(nets,
 						resource.getString("netFileFilter")));
 				
-				int option = chooser.showOpenDialog(null);
+				
+				int option = chooser.showOpenDialog(UnBBayesFrame.this);
 				if (option == JFileChooser.APPROVE_OPTION) {
 					if (chooser.getSelectedFile() != null) {
 						chooser.setVisible(false); 
