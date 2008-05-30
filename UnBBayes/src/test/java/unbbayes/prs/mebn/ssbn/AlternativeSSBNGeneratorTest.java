@@ -2,6 +2,7 @@ package unbbayes.prs.mebn.ssbn;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import junit.framework.TestCase;
 import unbbayes.io.mebn.UbfIO;
@@ -61,7 +62,7 @@ public class AlternativeSSBNGeneratorTest extends TestCase{
 		
 		System.out.println("Knowledge base init and filled");
 		
-		SSBNNode queryNode = createQueryNode_HarmPotential_ST4_T3(mebn); 
+		SSBNNode queryNode = createQueryNode_HarmPotential_ST4_T0(mebn); 
 		
 		Query query = new Query(kb, queryNode, mebn); 
 		query.setMebn(mebn); 
@@ -85,15 +86,30 @@ public class AlternativeSSBNGeneratorTest extends TestCase{
 	}
 	
 	private static SSBNNode createQueryNode_HarmPotential_ST4_T3(MultiEntityBayesianNetwork mebn) {
-		MFrag mFrag = mebn.getMFragByName("Starship_MFrag"); 
-		ResidentNode residentNode = mFrag.getDomainResidentNodeByName("HarmPotential"); 
+		return createGenericQueryNode(mebn, "Starship_MFrag", "HarmPotential", new String[]{"st", "t"}, new String[]{"ST4", "T3"});
+	}
+	
+	private static SSBNNode createQueryNode_HarmPotential_ST4_T0(MultiEntityBayesianNetwork mebn) {
+		return createGenericQueryNode(mebn, "Starship_MFrag", "HarmPotential", new String[]{"st", "t"}, new String[]{"ST4", "T0"});
+	}
+	
+	private static SSBNNode createGenericQueryNode(MultiEntityBayesianNetwork mebn,
+			String mFragName, String residentNodeName, 
+			String[] ovVariableNameList, String[] instanceNameList){
+		
+		MFrag mFrag = mebn.getMFragByName(mFragName); 
+		ResidentNode residentNode = mFrag.getDomainResidentNodeByName(residentNodeName); 
 		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode, new ProbabilisticNode(), false); 
+		
 		try {
-			queryNode.addArgument(residentNode.getOrdinaryVariableByName("st"), "ST4");
-			queryNode.addArgument(residentNode.getOrdinaryVariableByName("t"), "T3");
+			for(int i = 0; i < ovVariableNameList.length; i++){
+				queryNode.addArgument(residentNode.getOrdinaryVariableByName(ovVariableNameList[i]), instanceNameList[i]);	
+			}
 		} catch (SSBNNodeGeneralException e1) {
 			e1.printStackTrace();
 		}
-		return queryNode;
+		
+		return queryNode;				
 	}
+	
 }
