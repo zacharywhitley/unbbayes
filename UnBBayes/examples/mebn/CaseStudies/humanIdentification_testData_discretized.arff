@@ -2,12 +2,12 @@
 
 @attribute idadenumero {De23a29,De30a43,De44a53,De18a22,De54a66}
 @attribute sexo {Masculino,Feminino}
-@attribute glabela {MuitoProeminente,NadaProeminente,PoucoProeminente,Proeminente}
-@attribute fronte {Inclinada,MuitoVertical,Vertical,MuitoInclinada}
-@attribute incisivos {Quadrado,Redondo,MuitoQuadrado,MuitoRedondo}
-@attribute mentoredondo {Arredondado,Quadrado,MuitoQuadrado,MuitoArredondado}
-@attribute mentoproeminencia {MuitoDiscreto,Proeminente,Discreto,MuitoProeminente}
-@attribute orbita {Angulosa,Redonda,Indisponivel,MuitoRedonda}
+@attribute glabela {MuitoProeminente,NadaProeminente,PoucoProeminente,Proeminente,Indisponivel}
+@attribute fronte {Inclinada,MuitoVertical,Vertical,MuitoInclinada,Indisponivel}
+@attribute incisivos {Quadrado,Redondo,MuitoQuadrado,MuitoRedondo,Indisponivel}
+@attribute mentoredondo {Arredondado,Quadrado,MuitoQuadrado,MuitoArredondado,Indisponivel}
+@attribute mentoproeminencia {MuitoDiscreto,Proeminente,Discreto,MuitoProeminente,Indisponivel}
+@attribute orbita {Angulosa,Redonda,Indisponivel,MuitoRedonda,MuitoAngulosa}
 
 @data
 De23a29,Masculino,MuitoProeminente,Inclinada,Quadrado,Arredondado,MuitoDiscreto,Angulosa
@@ -477,3 +477,7 @@ De18a22,Feminino,PoucoProeminente,Vertical,Quadrado,Arredondado,MuitoDiscreto,Re
 De18a22,Masculino,Proeminente,Vertical,MuitoRedondo,MuitoQuadrado,Proeminente,Redonda
 De18a22,Feminino,PoucoProeminente,Vertical,Quadrado,Arredondado,MuitoDiscreto,Redonda
 De18a22,Feminino,NadaProeminente,Inclinada,Quadrado,MuitoArredondado,Proeminente,Angulosa
+De23a29,Masculino,Indisponivel,Indisponivel,Indisponivel,Indisponivel,Indisponivel,Indisponivel
+De44a53,Masculino,Indisponivel,Indisponivel,Indisponivel,Indisponivel,Indisponivel,MuitoAngulosa
+De18a22,Feminino,Indisponivel,Indisponivel,Indisponivel,Indisponivel,Indisponivel,Indisponivel
+De44a53,Feminino,Indisponivel,Indisponivel,Indisponivel,Indisponivel,Indisponivel,MuitoAngulosa

@@ -18,7 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.metaphor;
+package unbbayes.metaphor.mebn;
 
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
@@ -41,11 +41,8 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.util.ArrayMap;
 
-/**
- * @author Mario Henrique Paes Vieira
- * @version 1.0
- */
-public class MetaphorTree extends JTree
+
+public class MEBNMetaphorTree extends JTree
 {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
@@ -126,7 +123,7 @@ public class MetaphorTree extends JTree
 	private NumberFormat nf;
 	protected IconController iconController = IconController.getInstance();
 	
-	protected MetaphorTree()
+	protected MEBNMetaphorTree()
 	{   setShowsRootHandles(true);
 	setSelectionModel(null);
 	setRootVisible(false);
@@ -141,11 +138,11 @@ public class MetaphorTree extends JTree
 	nf.setMaximumFractionDigits(4);
 	}
 	
-	public MetaphorTree(ProbabilisticNetwork net)
+	public MEBNMetaphorTree(ProbabilisticNetwork net)
 	{	this(net,false);
 	}
 	
-	public MetaphorTree(ProbabilisticNetwork net, boolean showProbability)
+	public MEBNMetaphorTree(ProbabilisticNetwork net, boolean showProbability)
 	{	this();
 	this.showProbability = showProbability;
 	setProbabilisticNetwork(net);

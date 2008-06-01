@@ -18,9 +18,10 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.metaphor;
+package unbbayes.metaphor.mebn;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -50,12 +51,9 @@ import unbbayes.io.NetIO;
 import unbbayes.io.XMLIO;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
-/**
- * @author M�rio Henrique Paes Vieira (mariohpv@bol.com.br)
- * @version 1.1 (19/11/06)
- */
 
-public class MetaphorMain extends JPanel
+
+public class MEBNMetaphorMainPanel extends JPanel
 {
   /** Serialization runtime version number */
   private static final long serialVersionUID = 0;		
@@ -71,7 +69,7 @@ public class MetaphorMain extends JPanel
   private JButton openButton = new JButton();
   private JPanel jPanel1 = new JPanel();
   private JPanel jPanel3 = new JPanel();
-  private MetaphorTree metaphorTree = new MetaphorTree();
+  private MEBNMetaphorTree mEBNMetaphorTree = new MEBNMetaphorTree();
   private BorderLayout borderLayout7 = new BorderLayout();
   private ImageIcon openMetaphorIcon;
   private ImageIcon saveMetaphorIcon;
@@ -102,9 +100,9 @@ public class MetaphorMain extends JPanel
   private JPanel jPanel12 = new JPanel();
   private JTextArea jTextArea6 = new JTextArea();
   private GridBagLayout gridBagLayout1 = new GridBagLayout();
-  private MetaphorResult metaphorResult = new MetaphorResult();
+  private MEBNMetaphorResult mEBNMetaphorResult = new MEBNMetaphorResult();
 
-  public MetaphorMain()
+  public MEBNMetaphorMainPanel()
   { try
     {
       jbInit();
@@ -117,12 +115,12 @@ public class MetaphorMain extends JPanel
   private void jbInit() throws Exception
   {
     IconController iconController = IconController.getInstance();
-    openMetaphorIcon = iconController.getOpenMetaphorIcon();
-    saveMetaphorIcon = iconController.getSaveMetaphorIcon();
-    diagnosticMetaphorIcon = iconController.getDiagnosticMetaphorIcon();
-    openMetaphorRollOverIcon = iconController.getOpenMetaphorRollOverIcon();
-    saveMetaphorRollOverIcon = iconController.getSaveMetaphorRollOverIcon();
-    diagnosticMetaphorRollOverIcon = iconController.getDiagnosticMetaphorRollOverIcon();
+    openMetaphorIcon = iconController.getOpenIcon();
+    saveMetaphorIcon = iconController.getLoadFindingsInstance();
+    diagnosticMetaphorIcon = iconController.getCompileIcon();
+    //openMetaphorRollOverIcon = iconController.getOpenMetaphorRollOverIcon();
+    //saveMetaphorRollOverIcon = iconController.getSaveMetaphorRollOverIcon();
+    //diagnosticMetaphorRollOverIcon = iconController.getDiagnosticMetaphorRollOverIcon();
     titledBorder1 = new TitledBorder("");
     border1 = BorderFactory.createEmptyBorder(5,5,5,5);
     border2 = BorderFactory.createEmptyBorder(5,5,5,5);
@@ -131,10 +129,11 @@ public class MetaphorMain extends JPanel
     statusPanel.setLayout(borderLayout2);
     statusPanel.setBorder(new TitledBorder("Status"));
     statusBar.setToolTipText("");
-    statusBar.setText("Welcome");
+    statusBar.setText("Showing report of last inference");
     metaphorToolBar.setFloatable(false);
     jTabbedPane1.setOpaque(true);
     jPanel1.setLayout(gridBagLayout1);
+    
     jPanel3.setLayout(borderLayout7);
     openButton.setBorder(border1);
     openButton.setIcon(openMetaphorIcon);
@@ -149,12 +148,12 @@ public class MetaphorMain extends JPanel
     });
     saveButton.setBorder(border2);
     saveButton.setIcon(saveMetaphorIcon);
-    saveButton.setRolloverIcon(saveMetaphorRollOverIcon);
-    saveButton.setPressedIcon(saveMetaphorRollOverIcon);
+    //saveButton.setRolloverIcon(saveMetaphorRollOverIcon);
+    //saveButton.setPressedIcon(saveMetaphorRollOverIcon);
     diagnosticButton.setBorder(border3);
     diagnosticButton.setIcon(diagnosticMetaphorIcon);
-    diagnosticButton.setRolloverIcon(diagnosticMetaphorRollOverIcon);
-    diagnosticButton.setPressedIcon(diagnosticMetaphorRollOverIcon);
+    //diagnosticButton.setRolloverIcon(diagnosticMetaphorRollOverIcon);
+    //diagnosticButton.setPressedIcon(diagnosticMetaphorRollOverIcon);
     diagnosticButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -167,11 +166,11 @@ public class MetaphorMain extends JPanel
     jTextArea5.setEditable(false);
     jPanel9.setLayout(borderLayout9);
     jLabel3.setHorizontalAlignment(SwingConstants.CENTER);
-    jLabel3.setText("Caracter�sticas da Vari�vel Atual");
+    jLabel3.setText("Description");
     jPanel11.setLayout(borderLayout11);
     jPanel10.setLayout(borderLayout12);
     jLabel4.setHorizontalAlignment(SwingConstants.CENTER);
-    jLabel4.setText("Evid�ncias");
+    jLabel4.setText("Help");
     jPanel13.setLayout(borderLayout13);
     jPanel8.setLayout(borderLayout10);
     jPanel12.setLayout(borderLayout14);
@@ -184,29 +183,36 @@ public class MetaphorMain extends JPanel
     this.add(jTabbedPane1, BorderLayout.CENTER);
     this.add(statusPanel,  BorderLayout.SOUTH);
     statusPanel.add(statusBar, BorderLayout.NORTH);
-    jTabbedPane1.add(jPanel1,  "Entrada de evidencias");
-    jTabbedPane1.add(metaphorResult,"Laudo");
-    jPanel1.add(jPanel3,       new GridBagConstraints(0, 0, 3, 4, 30.0, 30.0
+    jTabbedPane1.add(jPanel1,  "Finding entry");
+    jTabbedPane1.add(new JPanel(),"Evidence tuning");
+    jTabbedPane1.add(mEBNMetaphorResult,"Report");    
+    jPanel1.add(jPanel3,       new GridBagConstraints(0, 0, 3, 4, 5.0, 30.0
             ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-    jPanel1.add(jPanel9,   new GridBagConstraints(3, 0, 1, 1, 1.0, 1.0
+    jPanel1.add(jPanel9,   new GridBagConstraints(3, 0, 1, 1, 15.0, 30.0
             ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
     jPanel9.add(jPanel10, BorderLayout.CENTER);
     jPanel10.add(jTextArea5, BorderLayout.CENTER);
     jPanel9.add(jPanel11, BorderLayout.NORTH);
     jPanel11.add(jLabel3, BorderLayout.CENTER);
-    jPanel1.add(jPanel8,      new GridBagConstraints(3, 1, 1, 3, 2.0, 2.0
-            ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-    jPanel8.add(jPanel12, BorderLayout.CENTER);
+    //jPanel1.add(jPanel8,      new GridBagConstraints(3, 1, 1, 3, 20.0, 20.0
+      //      ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+    //jPanel8.add(jPanel12, BorderLayout.CENTER);
     jPanel12.add(jTextArea6, BorderLayout.CENTER);
-    jPanel8.add(jPanel13, BorderLayout.NORTH);
-    jPanel13.add(jLabel4, BorderLayout.CENTER);
-    metaphorResult.setExplanationNodes(null);
+    //jPanel8.add(jPanel13, BorderLayout.NORTH);
+   // jPanel13.add(jLabel4, BorderLayout.CENTER);
+    mEBNMetaphorResult.setExplanationNodes(null);
+    
+    
+    jPanel1.setBackground(Color.WHITE);
+    jPanel3.setBackground(Color.WHITE);
+    jPanel9.setBackground(Color.WHITE);
+    jPanel13.setBackground(Color.WHITE);
   }
 
   void diagnosticButton_actionPerformed(ActionEvent e)
   {   jTabbedPane1.setSelectedIndex(1);
-      metaphorTree.propagate();
-      metaphorResult.updateResults();
+      mEBNMetaphorTree.propagate();
+      mEBNMetaphorResult.updateResults();
   }
 
   void openButton_actionPerformed(ActionEvent e)
@@ -214,7 +220,7 @@ public class MetaphorMain extends JPanel
       String[] s1 = {"net", "xml"};
       fileChooser = new JFileChooser(FileController.getInstance().getCurrentDirectory());
       fileChooser.setMultiSelectionEnabled(false);
-      //adicionar FileView no FileChooser para desenhar �cones de arquivos
+      //adicionar FileView no FileChooser para desenhar Icones de arquivos
       fileChooser.setFileView(new FileIcon(this));
       fileChooser.addChoosableFileFilter(new SimpleFileFilter(s1, "Networks (*.net) or XML-BIF(*.xml)"));
       int returnVal = fileChooser.showOpenDialog(this);
@@ -238,11 +244,11 @@ public class MetaphorMain extends JPanel
 		  }
 		
           net.compile();
-          metaphorResult.setExplanationNodes(net.getExplanationNodes());
-          metaphorTree = new MetaphorTree();
-          metaphorTree.setProbabilisticNetwork(net);
-          metaphorTree.expandTree();
-          JScrollPane jScrollPane3 = new JScrollPane(metaphorTree);
+          mEBNMetaphorResult.setExplanationNodes(net.getExplanationNodes());
+          mEBNMetaphorTree = new MEBNMetaphorTree();
+          mEBNMetaphorTree.setProbabilisticNetwork(net);
+          mEBNMetaphorTree.expandTree();
+          JScrollPane jScrollPane3 = new JScrollPane(mEBNMetaphorTree);
           jPanel3.removeAll();
           jPanel3.add(jScrollPane3, BorderLayout.CENTER);
           jPanel3.updateUI();

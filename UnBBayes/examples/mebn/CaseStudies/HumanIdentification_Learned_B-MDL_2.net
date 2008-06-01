@@ -1,0 +1,153 @@
+net
+{
+     node_size = (0 0);
+     name = "learned net";
+     tree = "(sexo,idadenumero,fronte,mentoproeminencia,incisivos,orbita,mentoredondo,glabela)";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+     UnBBayes_Color_Utility = "-16711681";
+     UnBBayes_Color_Decision = "-14336";
+}
+
+node sexo
+{
+     label = "sexo";
+     position = (147 266);
+     states = ("Feminino" "Masculino");
+}
+
+node idadenumero
+{
+     label = "idadenumero";
+     position = (93 174);
+     states = ("De30a43" "De54a66" "De23a29" "De44a53" "De18a22");
+}
+
+node fronte
+{
+     label = "fronte";
+     position = (288 214);
+     states = ("MuitoVertical" "Inclinada" "Vertical" "MuitoInclinada" "Indisponivel");
+}
+
+node mentoproeminencia
+{
+     label = "mentoproeminencia";
+     position = (289 42);
+     states = ("Discreto" "Proeminente" "MuitoProeminente" "MuitoDiscreto" "Indisponivel");
+}
+
+node incisivos
+{
+     label = "incisivos";
+     position = (198 110);
+     states = ("Quadrado" "Redondo" "MuitoQuadrado" "MuitoRedondo" "Indisponivel");
+}
+
+node orbita
+{
+     label = "orbita";
+     position = (97 352);
+     states = ("Angulosa" "Redonda" "MuitoRedonda" "Indisponivel" "MuitoAngulosa");
+}
+
+node mentoredondo
+{
+     label = "mentoredondo";
+     position = (381 238);
+     states = ("Arredondado" "Quadrado" "MuitoArredondado" "MuitoQuadrado" "Indisponivel");
+}
+
+node glabela
+{
+     label = "glabela";
+     position = (220 360);
+     states = ("NadaProeminente" "Proeminente" "PoucoProeminente" "MuitoProeminente" "Indisponivel");
+}
+
+potential (sexo | incisivos idadenumero)
+{
+ data = ((( 0.07865169 0.92134833 )
+( 0.9305556 0.06944445 )
+( 0.33333334 0.6666667 )
+( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.23655914 0.76344085 )
+( 0.9583333 0.041666668 )
+( 0.5 0.5 )
+( 0.5 0.5 )
+( 0.33333334 0.6666667 ))
+(( 0.054545455 0.94545454 )
+( 0.85 0.15 )
+( 0.5 0.5 )
+( 0.9230769 0.07692308 )
+( 0.33333334 0.6666667 ))
+(( 0.018181818 0.9818182 )
+( 0.9848485 0.015151516 )
+( 0.5 0.5 )
+( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.40254238 0.59745765 )
+( 0.3764706 0.62352943 )
+( 0.5555556 0.44444445 )
+( 0.72727275 0.27272728 )
+( 0.6666667 0.33333334 )));
+}
+
+potential (idadenumero | incisivos)
+{
+ data = (( 0.16826004 0.17590822 0.10325048 0.10325048 0.44933078 )
+( 0.23509933 0.07615894 0.19536424 0.21523179 0.2781457 )
+( 0.040816326 0.020408163 0.020408163 0.020408163 0.8979592 )
+( 0.0125 0.0125 0.15 0.0125 0.8125 )
+( 0.1 0.2 0.2 0.3 0.2 ));
+}
+
+potential (fronte)
+{
+ data = ( 0.118644066 0.32521185 0.3463983 0.20444915 0.0052966103 );
+}
+
+potential (mentoproeminencia)
+{
+ data = ( 0.3358051 0.39194915 0.14936441 0.11758474 0.0052966103 );
+}
+
+potential (incisivos | mentoproeminencia)
+{
+ data = (( 0.4423676 0.3894081 0.031152649 0.13395639 0.0031152647 )
+( 0.5962567 0.31283423 0.010695187 0.07486631 0.0053475937 )
+( 0.55172414 0.33103448 0.062068965 0.048275862 0.0068965517 )
+( 0.6695652 0.09565217 0.2173913 0.008695652 0.008695652 )
+( 0.11111111 0.11111111 0.11111111 0.11111111 0.5555556 ));
+}
+
+potential (orbita | sexo)
+{
+ data = (( 0.4 0.5820225 0.008988764 0.004494382 0.004494382 )
+( 0.59126985 0.3888889 0.011904762 0.003968254 0.003968254 ));
+}
+
+potential (mentoredondo | mentoproeminencia)
+{
+ data = (( 0.37694705 0.25233644 0.08411215 0.2834891 0.0031152647 )
+( 0.2540107 0.44652405 0.18983957 0.10695187 0.0026737968 )
+( 0.22068965 0.44827586 0.31034482 0.013793103 0.0068965517 )
+( 0.40869564 0.32173914 0.1826087 0.07826087 0.008695652 )
+( 0.11111111 0.11111111 0.11111111 0.11111111 0.5555556 ));
+}
+
+potential (glabela | fronte sexo)
+{
+ data = ((( 0.07575758 0.030303031 0.8636364 0.015151516 0.015151516 )
+( 0.75396824 0.03968254 0.1904762 0.007936508 0.007936508 )
+( 0.03409091 0.017045455 0.9375 0.0056818184 0.0056818184 )
+( 0.95555556 0.011111111 0.011111111 0.011111111 0.011111111 )
+( 0.14285715 0.14285715 0.14285715 0.14285715 0.42857143 ))
+(( 0.018181818 0.036363635 0.018181818 0.90909094 0.018181818 )
+( 0.005263158 0.84210527 0.1368421 0.010526316 0.005263158 )
+( 0.00625 0.9125 0.05 0.025 0.00625 )
+( 0.2767857 0.04464286 0.65178573 0.017857144 0.008928572 )
+( 0.14285715 0.14285715 0.14285715 0.14285715 0.42857143 )));
+}
+

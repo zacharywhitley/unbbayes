@@ -466,3 +466,7 @@ De18a22   Feminino   PoucoProeminente   Vertical   Quadrado   Arredondado   Muit
 De18a22   Masculino   Proeminente   Vertical   MuitoRedondo   MuitoQuadrado   Proeminente   Redonda
 De18a22   Feminino   PoucoProeminente   Vertical   Quadrado   Arredondado   MuitoDiscreto   Redonda
 De18a22   Feminino   NadaProeminente   Inclinada   Quadrado   MuitoArredondado   Proeminente   Angulosa
+De23a29   Masculino   Indisponivel   Indisponivel   Indisponivel   Indisponivel   Indisponivel   Indisponivel   
+De44a53   Masculino   Indisponivel   Indisponivel   Indisponivel   Indisponivel   Indisponivel   MuitoAngulosa   
+De18a22   Feminino   Indisponivel   Indisponivel   Indisponivel   Indisponivel   Indisponivel   Indisponivel   
+De44a53   Feminino   Indisponivel   Indisponivel   Indisponivel   Indisponivel   Indisponivel   MuitoAngulosa   

@@ -18,7 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.metaphor;
+package unbbayes.metaphor.mebn;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -39,25 +39,10 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.ProbabilisticNode;
 
-/**
- * <p>
- * Title:
- * </p>
- * <p>
- * Description:
- * </p>
- * <p>
- * Copyright: Copyright (c) 2002
- * </p>
- * <p>
- * Company:
- * </p>
- * 
- * @author Mario Henrique Paes Vieira
- * @version 1.0
- */
 
-public class MetaphorResult extends JPanel {
+
+
+public class MEBNMetaphorResult extends JPanel {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
 
@@ -107,7 +92,7 @@ public class MetaphorResult extends JPanel {
 
 	GridLayout gridLayout2 = new GridLayout();
 
-	public MetaphorResult() {
+	public MEBNMetaphorResult() {
 		try {
 			jbInit();
 		} catch (Exception e) {
@@ -122,8 +107,8 @@ public class MetaphorResult extends JPanel {
 		gridLayout1.setRows(2);
 		jPanel3.setLayout(borderLayout1);
 		jPanel4.setLayout(borderLayout3);
-		jLabel1.setText("Prováveis Diagnósticos:");
-		jLabel2.setText("Diagnósticos Não Prováveis:");
+		jLabel1.setText("Highest probability values:");
+		jLabel2.setText("Lowest probability values:");
 		jTextArea3.setBackground(new Color(255, 255, 210));
 		jTextArea3.setEditable(false);
 		jTextArea4.setBackground(new Color(255, 255, 210));
@@ -156,8 +141,8 @@ public class MetaphorResult extends JPanel {
 		jScrollPane2.getViewport().add(jList2, null);
 		this.add(jPanel2, null);
 		jPanel2.add(jTabbedPane1, BorderLayout.CENTER);
-		jTabbedPane1.add(jScrollPane3, "Descrição do Diagnóstico:");
-		jTabbedPane1.add(jScrollPane4, "Laudo");
+		jTabbedPane1.add(jScrollPane3, "Description of the ontology:");
+		//jTabbedPane1.add(jScrollPane4, "Laudo");
 		jScrollPane4.getViewport().add(jTextArea4, null);
 		jScrollPane3.getViewport().add(jTextArea3, null);
 	}

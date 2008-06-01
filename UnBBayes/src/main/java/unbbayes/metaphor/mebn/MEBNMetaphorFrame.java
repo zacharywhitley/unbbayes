@@ -18,7 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.metaphor;
+package unbbayes.metaphor.mebn;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -26,15 +26,17 @@ import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 
-public class MetaphorFrame extends JFrame{
+public class MEBNMetaphorFrame extends JFrame{
 	
   /** Serialization runtime version number */
   private static final long serialVersionUID = 0;	
 	
-  MetaphorMainPanel jPanel1 = new MetaphorMainPanel();
+  MEBNMetaphorMainPanel jPanel1 = new MEBNMetaphorMainPanel();
   BorderLayout borderLayout1 = new BorderLayout();
-  public MetaphorFrame() {
+  public MEBNMetaphorFrame() {
     try {
       jbInit();
     }
@@ -45,10 +47,23 @@ public class MetaphorFrame extends JFrame{
   private void jbInit() throws Exception {
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     this.setSize(screenSize);
-    this.setTitle("Metáfora Médica");
+    this.setTitle("MEBN Metaphor");
 
     this.getContentPane().setLayout(borderLayout1);
     this.getContentPane().add(jPanel1, BorderLayout.CENTER);
+    
+    JMenuBar menu = new JMenuBar();
+    JMenu file = new JMenu("File");
+    file.setMnemonic(Character.getNumericValue('f'));
+    JMenu view = new JMenu("View");
+    file.setMnemonic(Character.getNumericValue('v'));
+    JMenu help = new JMenu("Help");
+    file.setMnemonic(Character.getNumericValue('h'));
+    
+    menu.add(file);
+    menu.add(view);
+    menu.add(help);
+    this.setJMenuBar(menu);
   }
 
   //Overridden so we can exit when window is closed
@@ -63,6 +78,6 @@ public class MetaphorFrame extends JFrame{
 
   public static void main(String[] args)
   {
-    new MetaphorFrame().setVisible(true);
+    new MEBNMetaphorFrame().setVisible(true);
   }
 }

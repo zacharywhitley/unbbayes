@@ -110,7 +110,7 @@ public class OptionsWindow extends JDialog
 
     private JPanel getNamePanel(){
         namePanel    = new JPanel(new GridLayout(1,2,10,10));
-        lName        = new JLabel("          Nome");
+        lName        = new JLabel("          Name");
         txtName      = new JTextField(variable.getName());
         txtName.setEnabled(false);
         namePanel.add(lName);

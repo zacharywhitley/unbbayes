@@ -1,0 +1,60 @@
+=== Run information ===
+
+Scheme:           BayesianNetwork
+Relation:         null
+Instances:        471
+Attributes:       7
+                  sexo
+                  glabela
+                  fronte
+                  incisivos
+                  mentoredondo
+                  mentoproeminencia
+                  orbita
+ClassAttribute:   sexo
+Test mode:    === Classifier model ===
+
+Bayesian Network
+sexo (sexo)
+fronte (fronte)
+incisivos (incisivos)
+mentoproeminencia (mentoproeminencia)
+orbita (orbita)
+mentoredondo (mentoredondo)
+glabela (glabela)
+
+
+=== Summary ===
+Correctly Classified Instances       230           48.8323 %
+Correct confidence limits
+Pr[c]	   z
+99.8%	[0.4181 , 0.559]
+99%	[0.4295 , 0.5475]
+98%	[0.4351 , 0.5418]
+90%	[0.4505 , 0.5263]
+80%	[0.4589 , 0.5178]
+60%	[0.469 , 0.5077]
+20%	[0.4826 , 0.4941]
+Incorrectly Classified Instances     241           51.1677 %
+Incorrect confidence limits
+Pr[c]	   z
+99.8%	[0.441 , 0.5819]
+99%	[0.4525 , 0.5705]
+98%	[0.4582 , 0.5649]
+90%	[0.4737 , 0.5495]
+80%	[0.4822 , 0.5411]
+60%	[0.4923 , 0.531]
+20%	[0.5059 , 0.5174]
+Quadratic loss function				           1.0234
+Total Number of Instances            471     
+
+=== Detailed Accuracy By Class ===
+
+TP Rate   FP Rate   TN Rate   FN Rate   Class
+  0.483     0.505      0.495     0.517    Masculino
+  0.495     0.517      0.483     0.505    Feminino
+
+=== Confusion Matrix ===
+   a   b   <-- classified as
+ 127 136 |   a = Masculino
+ 105 103 |   b = Feminino
