@@ -91,7 +91,7 @@ public class FormulaViewTree extends JTree{
 	
 	private FormulaTreeController formulaTreeController; 
 	
-	BuilderMenuNode builderMenuNode;
+	private BuilderMenuNode builderMenuNode;
 	
 	private ContextNode contextNode; 
 	
