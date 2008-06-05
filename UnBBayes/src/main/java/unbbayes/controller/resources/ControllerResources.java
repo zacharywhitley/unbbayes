@@ -68,6 +68,12 @@ public class ControllerResources extends ListResourceBundle {
 		{"firstStateDecisionName","Action 0"},
 		{"nodeName","Node: "},
 		
+		//Barra de status
+		{"statusLoadingKB","Loading knowledge base..."},
+		{"statusSavingKB","Loading knowledge base..."},
+		{"statusGeneratingSSBN","Generating SSBN..."},
+		{"statusReady","Ready"},
+		
 		//MainController
 		{"NewPNName","New BN"},
 		{"NewMSBNName","New MSBN"},
