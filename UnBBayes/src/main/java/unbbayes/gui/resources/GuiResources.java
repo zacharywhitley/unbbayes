@@ -260,6 +260,7 @@ public class GuiResources extends ListResourceBundle {
         {"fileMenu","File"},
         {"lafMenu","Look and Feel"},
         {"viewMenu","View"},
+        {"recentFilesMenu","Recent Files"},
         {"tbMenu","Toolbars"},
         {"toolsMenu","Tools"},
         {"windowMenu","Window"},
@@ -290,6 +291,7 @@ public class GuiResources extends ListResourceBundle {
         {"helpItem","Help"},
         {"aboutItem","About UnBBayes"},
         
+        {"recentFilesMn", "R"},
         {"fileMenuMn","F"},
         {"newMenuMn","N"},
         {"lafMenuMn","L"},

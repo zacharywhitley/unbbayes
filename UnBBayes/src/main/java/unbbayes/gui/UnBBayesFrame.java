@@ -613,6 +613,7 @@ public class UnBBayesFrame extends JFrame {
 
 		// create menus and set their mnemonic
 		JMenu fileMenu = new JMenu(resource.getString("fileMenu"));
+		JMenu recentFilesMenu = new JMenu(resource.getString("recentFilesMenu"));
 		JMenu lafMenu = new JMenu(resource.getString("lafMenu"));
 		JMenu viewMenu = new JMenu(resource.getString("viewMenu"));
 		JMenu tbMenu = new JMenu(resource.getString("tbMenu"));
@@ -622,6 +623,7 @@ public class UnBBayesFrame extends JFrame {
 		JMenu helpMenu = new JMenu(resource.getString("helpMenu"));
 		
 		fileMenu.setMnemonic(resource.getString("fileMenuMn").charAt(0));
+		recentFilesMenu.setMnemonic(resource.getString("recentFilesMn").charAt(0));
 		newMenu.setMnemonic(resource.getString("newMenuMn").charAt(0)); 
 		lafMenu.setMnemonic(resource.getString("lafMenuMn").charAt(0));
 		viewMenu.setMnemonic(resource.getString("viewMenuMn").charAt(0));
@@ -758,13 +760,17 @@ public class UnBBayesFrame extends JFrame {
 		fileMenu.add(saveItem);
 		fileMenu.addSeparator();
 		
+		
+		fileMenu.add(recentFilesMenu); 
+		
+		
 		ConfigurationsController configController = ConfigurationsController.getInstance(); 
 		for(String nameOfFile: configController.getConfigurations().getPreviewOpenFiles()){
 			File file = new File(nameOfFile); 
 			JMenuItem fileMenuItem = new JMenuItem(nameOfFile);  
 			fileMenuItem.addActionListener(new OpenFileListener(file)); 
 			
-			fileMenu.add(fileMenuItem); 
+			recentFilesMenu.add(fileMenuItem); 
 		}
 		
 

@@ -259,6 +259,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"aprendizagemTitle","Edição da Rede de Aprendizagem"},
 		{"calculateProbabilitiesFromLearningToEditMode","Remontar a estrutura da rede e voltar para o modo de edição"},
         {"fileMenu","Arquivo"},
+        {"recentFilesMenu","Arquivos Recentes"},
         {"lafMenu","Look and Feel"},
         {"viewMenu","Exibir"},
         {"tbMenu","Barras de Ferramentas"},
@@ -290,6 +291,7 @@ public class GuiResources_pt extends ListResourceBundle {
         {"helpItem","Ajuda"},
         {"aboutItem","Sobre o UnBBayes"},
         
+        {"recentFilesMn", "R"},
         {"fileMenuMn","A"},
         {"newMenuMn","N"},
         {"lafMenuMn","L"},
