@@ -330,9 +330,12 @@ public class GuiResources extends ListResourceBundle {
         {"descriptionError","The description must have only letters and numbers."}, 
         
         /* Resident Panel */
-        {"stateEditionTip", "Edit states"}, 
-        {"argumentEditionTip", "Edit arguments"}, 
-        {"tableEditionTip", "Edit table"}, 
+        {"stateEditionTip", "Edit States"}, 
+        {"argumentEditionTip", "Edit Arguments"}, 
+        {"tableEditionTip", "Edit Table"}, 
+        {"existentStatesDialogTip", "Existent States"}, 
+        
+        {"addSelectedStatesTip", "Add selected states"}, 
         
         /* Input Panel */
         {"inputOf", "Origem node"}, 

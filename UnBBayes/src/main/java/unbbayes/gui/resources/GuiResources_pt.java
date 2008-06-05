@@ -330,9 +330,12 @@ public class GuiResources_pt extends ListResourceBundle {
         {"descriptionError","A descrição só pode ter letras e números."},
         
         /* Resident Panel */
-        {"stateEditionTip", "Editar estados"}, 
-        {"argumentEditionTip", "Editar argumentos"}, 
-        {"tableEditionTip", "Editar tabela"}, 
+        {"stateEditionTip", "Editar Estados"}, 
+        {"argumentEditionTip", "Editar Argumentos"}, 
+        {"tableEditionTip", "Editar Tabela"}, 
+        {"existentStatesDialogTip", "Estados Existentes"}, 
+        
+        {"addSelectedStatesTip", "Adicionar estados selecionados"}, 
         
         /* Input Panel */
         {"inputOf", "Nó origem"},         

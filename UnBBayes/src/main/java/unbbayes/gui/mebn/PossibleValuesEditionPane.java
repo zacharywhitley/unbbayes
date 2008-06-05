@@ -236,8 +236,11 @@ public class PossibleValuesEditionPane extends JPanel {
 		
 		JToolBar barButtons = new JToolBar(); 
 		barButtons.setLayout(new GridLayout(1,2)); 
+		
 		JButton btnAdd = new JButton(iconController.getMoreIcon());
-		JButton btnExit = new JButton(iconController.xIcon());
+		btnAdd.setToolTipText(resource.getString("addSelectedStatesTip")); 
+		
+		JButton btnExit = new JButton(resource.getString("closeButton"));
 		
 		btnAdd.addActionListener(new ActionListener(){
 
@@ -292,6 +295,7 @@ public class PossibleValuesEditionPane extends JPanel {
 		newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
 		newFrame.setVisible(true); 
 		newFrame.setSize(200, 300); 
+		newFrame.setTitle(resource.getString("existentStatesDialogTip")); 
 		newFrame.setLocationRelativeTo(null);
 		newFrame.validate(); 
 	
