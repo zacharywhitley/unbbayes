@@ -421,6 +421,20 @@ public class ResidentNode extends MultiEntityNode implements ITabledVariable {
 	}
 	
 	/**
+	 * 
+	 * @param ov
+	 * @return indice or -1 if the ov don't is an argument. 
+	 */
+	public int getOrdinaryVariableIndex(OrdinaryVariable ov){
+		for(int i= 0; i < ordinaryVariableList.size(); i++){
+			if(ordinaryVariableList.get(i).equals(ov)){
+				return i; 
+			}
+		}
+		return -1; 
+	}
+	
+	/**
 	 * @return A list with all the ordinary variables ordereables present in this node.
 	 */
 	public List<OrdinaryVariable> getOrdinaryVariablesOrdereables(){

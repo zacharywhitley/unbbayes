@@ -165,7 +165,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements StatusObservable{
 	public MultiEntityBayesianNetwork loadMebn(File file) throws 
 													IOException, IOMebnException{
 
-		//Debug.setDebug(false); 
+		Debug.setDebug(false); 
 		
 		List<String> listWarnings = new ArrayList<String>(); 
 		

@@ -795,6 +795,58 @@ public class MFrag implements Graph{
 	
 	}
 	
+	/**
+	 * Get all the context nodes that contains the ordinary variables in the list
+	 * and related ov's. 
+	 * 
+	 * @param allOVs
+	 * @return
+	 */
+	public Collection<ContextNode> getContextNodeByOrdinaryVariableRelated(Collection<OrdinaryVariable> allOVs){
+		
+		//TODO Testar....
+		
+		Collection<ContextNode> ret = new ArrayList<ContextNode>();
+		List<OrdinaryVariable> ovList = new ArrayList<OrdinaryVariable>(); 
+		boolean ordinaryVariableAdded = true; 
+		
+		ovList.addAll(allOVs); 
+		
+		/*
+		 * A idéia é pegar todos os nós de contexto que contém ao menos uma 
+		 * VO de allOVs e adicioná-los a lista de nós a serem retornados. As variaveis
+		 * ordinárias que pertencem a estes nós e não estavam na lista inicial de
+		 * VO's serão adicionadas e serão novamente procurados os nós de contexto
+		 * que contém ao menos uma VO. O processo se repete até nenhuma variavel
+		 * ordinária ser adicionada a lista (não foi adicionado nenhum nó de 
+		 * contexto que contenha uma variável ordinária inédica). (SFTE)
+		*/
+		while(ordinaryVariableAdded){
+			ordinaryVariableAdded = false; 
+			
+			for(OrdinaryVariable ov: ovList){
+	
+				for(ContextNode ct: this.contextNodeList){
+					if(ct.getVariableList().contains(ov)){
+						if(!(ret.contains(ct))){
+							ret.add(ct); 
+							
+							for(OrdinaryVariable ovContext: ct.getVariableList()){
+								if(!(ovList.contains(ov))){
+									ovList.add(ovContext); 
+									ordinaryVariableAdded = true; 
+								}
+							}			
+						}
+					}
+				}	
+			}
+		}
+		
+		
+		return ret; 
+		
+	}
 	
 	/**
 	 * 

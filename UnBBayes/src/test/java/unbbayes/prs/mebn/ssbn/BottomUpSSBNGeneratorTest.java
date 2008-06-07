@@ -78,8 +78,8 @@ public class BottomUpSSBNGeneratorTest extends TestCase {
 			e.printStackTrace();
 		}
 		try {
-			kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_GENERATIVE_FILE)); 
-			kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_FINDING_FILE)); 
+			kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_GENERATIVE_FILE), false); 
+			kb.loadModule(new File(BottomUpSSBNGeneratorTest.KB_FINDING_FILE), true); 
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());

@@ -16,11 +16,15 @@ import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
+import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 public class AlternativeSSBNGeneratorTest extends TestCase{
 
 	public static final String KB_FINDING_FILE = "examples/mebn/KnowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm";
+	public static final String KB_GENERATIVE_FILE = "examples/mebn/KnowledgeBase/KnowledgeBaseGenerative.plm";
+	
+	
 	public static final String STARTREK_UBF = "examples/mebn/StarTrek52.ubf"; 
 
 	public static void main(String arguments[]){
@@ -53,8 +57,10 @@ public class AlternativeSSBNGeneratorTest extends TestCase{
 			}
 		}
 		
+		kb.saveGenerativeMTheory(mebn, new File(KB_GENERATIVE_FILE)); 
+		
 		try {
-			kb.loadModule(new File(KB_FINDING_FILE)); 
+			kb.loadModule(new File(KB_FINDING_FILE), true); 
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -76,6 +82,8 @@ public class AlternativeSSBNGeneratorTest extends TestCase{
 			ei.printStackTrace();
 		} catch (MEBNException e) {
 			e.printStackTrace();
+		} catch (OVInstanceFaultException e) {
+			e.printStackTrace();
 		} 
 		
 		System.out.println("SSBN OK");
@@ -85,6 +93,9 @@ public class AlternativeSSBNGeneratorTest extends TestCase{
 		
 	}
 	
+	private static SSBNNode createQueryNode_StarshipClass_ST4(MultiEntityBayesianNetwork mebn) {
+		return createGenericQueryNode(mebn, "Starship_MFrag", "StarshipClass", new String[]{"st"}, new String[]{"ST4"});
+	}
 	private static SSBNNode createQueryNode_HarmPotential_ST4_T3(MultiEntityBayesianNetwork mebn) {
 		return createGenericQueryNode(mebn, "Starship_MFrag", "HarmPotential", new String[]{"st", "t"}, new String[]{"ST4", "T3"});
 	}

@@ -28,6 +28,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -46,6 +47,7 @@ import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.util.ArrayMap;
+import unbbayes.util.ResourceController;
 
 /**
  * @author Mário Henrique Paes Vieira
@@ -60,10 +62,17 @@ public class EvidenceTree extends JTree {
 	private NumberFormat nf;
 	private boolean[] expandedNodes;
 	private ArrayMap<Object, Node> objectsMap = new ArrayMap<Object, Node>();
-        protected IconController iconController = IconController.getInstance();
+    protected IconController iconController = IconController.getInstance();
 
+    private final NetworkWindow netWindow; 
+    
+	private ResourceBundle resource = ResourceController.RS_GUI; 
+    
 	public EvidenceTree(SingleEntityNetwork sen, final NetworkWindow netWindow) {
-		net = sen;
+		
+		this.net = sen;
+		this.netWindow = netWindow; 
+		
 		nf = NumberFormat.getInstance(Locale.US);
 		nf.setMaximumFractionDigits(2);
 
@@ -374,9 +383,9 @@ public class EvidenceTree extends JTree {
 			panel.add(table);
 			if (JOptionPane
 				.showConfirmDialog(
-					this,
+					this.netWindow.getDesktopPane(),
 					panel,
-					"likelihoodName",
+					resource.getString("likelihoodName"),
 					JOptionPane.OK_CANCEL_OPTION)
 				== JOptionPane.OK_OPTION) {
 				DefaultMutableTreeNode auxNode;

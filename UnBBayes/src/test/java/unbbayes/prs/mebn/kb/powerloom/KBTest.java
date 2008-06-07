@@ -94,8 +94,8 @@ public class KBTest  extends TestCase {
 		}
 
 		try{
-			kb.loadModule(new File(KBTest.KB_GENERATIVE_FILE)); 
-			kb.loadModule(new File(KBTest.KB_FINDING_FILE)); 
+			kb.loadModule(new File(KBTest.KB_GENERATIVE_FILE), false); 
+			kb.loadModule(new File(KBTest.KB_FINDING_FILE), true); 
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());

@@ -58,8 +58,10 @@ public class Resources extends ListResourceBundle {
 		{"ContextNodeSearchDontFound","Search context node dont found"}, 
 		{"MoreThanOneOrdereableVariable","More than one ordinary variable was found for the recursive resident node. This implementation only works with one recursive variable."},
 		{"MoreThanOneContextNodeFather", "A node can not have more than one context node as father!"},
+		{"NoContextNodeFather", "Context node necessary for search not found!"},
 		{"RVNotRecursive","The resident node is not recursive because it does not have ordereable ordinary variable. Cycle found!"}, 	
 		{"InvalidContextNodeFormula","Invalid Context node Formula"}, 
+		{"FindingNotHaveParent","An finding don't should have a parent"}, 
 		{"OnlyOneFreeVariableRestriction", "The search context node can not have more than one free variable!"}
 		
 	};

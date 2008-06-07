@@ -133,6 +133,8 @@ public class GuiResources extends ListResourceBundle {
 		{"nodeGraphName","Node"},
 		{"closeButton", "Close"},
 		
+		{"likelihoodName", "Likelihood"},
+		
 		{"LookAndFeelUnsupportedException","It does not support this LookAndFeel: "},
 		{"LookAndFeelClassNotFoundException","This LookAndFeel class was not found: "},
 		{"LookAndFeelInstantiationException","It was not possible to load this LookAndFeel: "},

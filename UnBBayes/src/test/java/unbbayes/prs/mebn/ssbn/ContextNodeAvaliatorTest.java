@@ -5,13 +5,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
+import unbbayes.io.exception.UBIOException;
 import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
+import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
@@ -24,13 +28,86 @@ import unbbayes.util.Debug;
  */
 public class ContextNodeAvaliatorTest{
 
+	private static String FILE_GENERATIVE = "examples/mebn/KnowledgeBase/KnowledgeBaseGenerative.plm";
+	private static String FILE_INPUT = "examples/mebn/KnowledgeBase/KnowledgeBaseWithStarshipZoneST4ver2.plm";
+	private static String FILE_MTHEORY = "examples/mebn/StarTrek52.owl"; 
+	
     public static void main(String[] args) throws Exception {
-    	MultiEntityBayesianNetwork mebn = null; 
+		MultiEntityBayesianNetwork mebn = null; 
+    	
+
+
+		KnowledgeBase kb = PowerLoomKB.getNewInstanceKB(); 
+		
+		PrOwlIO io = new PrOwlIO(); 
+		try {
+			mebn = io.loadMebn(new File(FILE_MTHEORY));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOMebnException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
+			kb.createEntityDefinition(entity);
+		}
+
+		for(MFrag mfrag: mebn.getDomainMFragList()){
+			for(ResidentNode resident: mfrag.getResidentNodeList()){
+				kb.createRandomVariableDefinition(resident);
+			}
+		}
+		
+//		kb.loadModule(new File(FILE_GENERATIVE), false); 
+		kb.loadModule(new File(FILE_INPUT), true); 
+		
+		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(kb); 
+		
+		MFrag mFrag = mebn.getMFragByName("DangerToSelf_MFrag");
+
+
+		LiteralEntityInstance literalEntityInstance; 
+		OVInstance ovInstance; 
+		OrdinaryVariable ov; 
+		
+		Type type = null;
+		
+		List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
+		List<OrdinaryVariable> ordVariableList = new ArrayList<OrdinaryVariable>(); 
+		
+		type = mebn.getTypeContainer().getType("Starship_label"); 
+		literalEntityInstance = LiteralEntityInstance.getInstance("ST4", type); 
+		ov = new OrdinaryVariable("st", type, mFrag); 
+		ovInstance = OVInstance.getInstance(ov, literalEntityInstance); 
+		ovInstanceList.add(ovInstance); 
+		
+		type = mebn.getTypeContainer().getType("TimeStep_label"); 
+		literalEntityInstance = LiteralEntityInstance.getInstance("T0", type); 
+		ov = new OrdinaryVariable("t", type, mFrag); 
+		ovInstance = OVInstance.getInstance(ov, literalEntityInstance); 
+		ovInstanceList.add(ovInstance); 
+		
+		Map<OrdinaryVariable, List<String>> map = kb.evaluateMultipleSearchContextNodeFormula(mFrag.getContextNodeList(), ovInstanceList); 
+		
+		for(OrdinaryVariable ovKey: map.keySet()){
+			for(String s: map.get(ovKey)){
+				System.out.println("Return:" + ovKey.getName() + "=" + s);
+			}
+			
+		}
+		
+    }
+
+
+	private static void mainAlternative() throws UBIOException {
+		MultiEntityBayesianNetwork mebn = null; 
     	
 		KnowledgeBase kb = PowerLoomKB.getNewInstanceKB(); 
 		
-		kb.loadModule(new File("testeGenerativeStarship.plm")); 
-		kb.loadModule(new File("testeFindingsStarship.plm")); 
+		kb.loadModule(new File("testeGenerativeStarship.plm"), false); 
+		kb.loadModule(new File("testeFindingsStarship.plm"), true); 
 		
 		PrOwlIO io = new PrOwlIO(); 
 		try {
@@ -86,9 +163,8 @@ public class ContextNodeAvaliatorTest{
 		
 		ContextNodeAvaliator avaliator = new ContextNodeAvaliator(kb); 
 		
-		evaluateContextNodes(mFrag, ovInstanceList, ordVariableList, avaliator, kb); 
-    
-    }	
+		evaluateContextNodes(mFrag, ovInstanceList, ordVariableList, avaliator, kb);
+	}	
     
 
 	/**

@@ -1,8 +1,11 @@
 package unbbayes.prs.mebn.ssbn;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
+import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.MFrag;
+import unbbayes.prs.mebn.OrdinaryVariable;
 
 public class MFragInstance {
 
@@ -11,10 +14,11 @@ public class MFragInstance {
 	private boolean useDefaultDistribution; 
 
 	//Ordinary variables
-	private List<LiteralEntityInstance>[] ordinaryVariableEvaluationState; 
 	
-	//Context nodes
-	private ContextNodeEvaluationState[] contextNodeEvaluationState; 
+	private Map<OrdinaryVariable, LiteralEntityInstance> ordinaryVariableEvaluationState;
+	
+	private Map<ContextNode, ContextNodeEvaluationState> contextNodeEvaluationState; 
+	
 	
 	public enum ContextNodeEvaluationState{
 		EVALUATION_OK, 
@@ -26,13 +30,26 @@ public class MFragInstance {
 	public MFragInstance(MFrag mFragOrigin){
 		this.mFragOrigin = mFragOrigin; 
 		
-		contextNodeEvaluationState = new ContextNodeEvaluationState[mFragOrigin.getContextNodeList().size()]; 
-		for(ContextNodeEvaluationState c: contextNodeEvaluationState){
-			c = ContextNodeEvaluationState.NOT_EVALUATED_YET; 
+		contextNodeEvaluationState = new HashMap<ContextNode, ContextNodeEvaluationState>(); 
+		for(ContextNode contextNode: mFragOrigin.getContextNodeList()){
+			contextNodeEvaluationState.put(contextNode, ContextNodeEvaluationState.NOT_EVALUATED_YET); 
+		}
+		
+		ordinaryVariableEvaluationState = new HashMap<OrdinaryVariable, LiteralEntityInstance>(); 
+		for(OrdinaryVariable ordinaryVariable: mFragOrigin.getOrdinaryVariableList()){
+			ordinaryVariableEvaluationState.put(ordinaryVariable, null); 
 		}
 	
 	}
+	
+	public void setContextNodeEvaluationState(ContextNode context, ContextNodeEvaluationState state){
+		contextNodeEvaluationState.put(context, state); 
+	}
 
+	public void setOrdinaryVariableEvaluationState(OrdinaryVariable ov, LiteralEntityInstance instance){
+		ordinaryVariableEvaluationState.put(ov, instance); 
+	}
+	
 	public boolean isUsingDefaultDistribution() {
 		return useDefaultDistribution;
 	}

@@ -78,7 +78,9 @@ import unbbayes.prs.mebn.ssbn.AlternativeSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
+import unbbayes.prs.mebn.ssbn.SituationSpecificBayesianNetwork;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
+import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.mebn.ssbn.util.PositionAdjustmentUtils;
 import unbbayes.util.Debug;
@@ -1514,8 +1516,14 @@ public class MEBNController  {
 	}
 
 	public void saveFindingsFile(File file){
+		mebnEditionPane.setStatus(resource.getString("statusSavingKB")); 
+		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		
 		createKnowledgeBase(); 	
 		getKnowledgeBase().saveFindings(getMultiEntityBayesianNetwork(), file);
+		
+		mebnEditionPane.setStatus(resource.getString("statusReady")); 
+		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	}
 	
 	private void saveDefaultTemporaryFindingsFile() {
@@ -1523,9 +1531,14 @@ public class MEBNController  {
 	}
 
 	public void loadFindingsFile(File file) throws UBIOException, MEBNException{
+		
+		mebnEditionPane.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		
+		mebnEditionPane.setStatus(resource.getString("statusLoadingKB")); 
+		
 		Exception lastException = null;
 		createKnowledgeBase(); 	
-		getKnowledgeBase().loadModule(file);
+		getKnowledgeBase().loadModule(file, true);
 		for (ResidentNode resident : this.multiEntityBayesianNetwork.getDomainResidentNodes()) {
 			try {
 				 this.knowledgeBase.fillFindings(resident);
@@ -1535,6 +1548,11 @@ public class MEBNController  {
 				 continue;
 			 }
 		}
+		
+		mebnEditionPane.setStatus(resource.getString("statusReady")); 
+		
+		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+		
 		if (lastException != null) {
 			// commenting below... Power loom was throwing stack trace as message...
 			//throw new MEBNException(lastException);
@@ -1562,7 +1580,11 @@ public class MEBNController  {
 	                           throws InconsistentArgumentException, SSBNNodeGeneralException, 
 	                                  ImplementationRestrictionException, MEBNException {
 		
+		mebnEditionPane.setStatus(resource.getString("statusGeneratingSSBN")); 
+		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+		
 		ProbabilisticNetwork probabilisticNetwork = null; 
+		SituationSpecificBayesianNetwork ssbn = null; 
 		
 		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode); 
 		
@@ -1583,6 +1605,10 @@ public class MEBNController  {
 				}
 				
 			} catch (SSBNNodeGeneralException e) {
+				
+				mebnEditionPane.setStatus(resource.getString("statusReady")); 
+				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				
 				throw new InconsistentArgumentException(e);
 			}
 		}
@@ -1599,31 +1625,46 @@ public class MEBNController  {
 		
 		ISSBNGenerator ssbngenerator = new AlternativeSSBNGenerator();
 
-		probabilisticNetwork = ssbngenerator.generateSSBN(query);
+		try {
+			ssbn = ssbngenerator.generateSSBN(query); 
+			probabilisticNetwork = ssbn.getPn();
+		} catch (OVInstanceFaultException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
-//		if(!query.getQueryNode().isFinding()){
-//			if(this.compileNetwork(probabilisticNetwork)){
-//				showSSBNGraph = true; 
-//				specificSituationBayesianNetwork = probabilisticNetwork;
-//
-//
-//				this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
-//
-//				Dimension sizeOfGraph = PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(specificSituationBayesianNetwork); 
-//				Dimension originalDimension = this.getMebnEditionPane().getNetworkWindow().getGraphPane().getGraphDimension(); 
-//				if((originalDimension.getHeight() < sizeOfGraph.getHeight()) || 
-//						(originalDimension.getWidth() < sizeOfGraph.getWidth())){
-//					dimensionSSBNGraph = sizeOfGraph; 
-//					this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(sizeOfGraph); 
-//					this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
-//				}
-//
-//			}
-//		}else{
-//			JOptionPane.showMessageDialog(getScreen(), 
-//					query.getQueryNode().toString() + " = " + query.getQueryNode().getActualValues().toArray()[0]);
-//		}
+		if(!query.getQueryNode().isFinding()){
+			if(this.compileNetwork(probabilisticNetwork)){
+				showSSBNGraph = true; 
+				specificSituationBayesianNetwork = probabilisticNetwork;
 
+				try {
+					ssbn.initializeSSBN();
+				} catch (Exception e) {
+					JOptionPane.showMessageDialog(getScreen(), 
+							e.getMessage());
+				} 
+
+				this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
+
+				Dimension sizeOfGraph = PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(specificSituationBayesianNetwork); 
+				Dimension originalDimension = this.getMebnEditionPane().getNetworkWindow().getGraphPane().getGraphDimension(); 
+				if((originalDimension.getHeight() < sizeOfGraph.getHeight()) || 
+						(originalDimension.getWidth() < sizeOfGraph.getWidth())){
+					dimensionSSBNGraph = sizeOfGraph; 
+					this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(sizeOfGraph); 
+					this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
+				}
+
+			}
+		}else{
+			JOptionPane.showMessageDialog(getScreen(), 
+					query.getQueryNode().toString() + " = " + query.getQueryNode().getActualValues().toArray()[0]);
+		}
+
+		mebnEditionPane.setStatus(resource.getString("statusReady")); 
+		
+		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		
 		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 		

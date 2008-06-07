@@ -229,7 +229,7 @@ public class MEBNEditionPane extends JPanel {
         graphPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         graphPanel.setDividerSize(1);
 
-        bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 1));
+        bottomPanel = new JPanel(new GridLayout(1,1));
         status      = new JLabel(resource.getString("statusReadyLabel"));
 
         txtDescription     = new JTextField(15);
@@ -502,6 +502,8 @@ public class MEBNEditionPane extends JPanel {
      */
     public void setStatus(String status) {
         this.status.setText(status);
+        this.status.validate(); 
+        this.status.paintImmediately(this.status.getBounds()); 
     }
 
     public void setNameMTheory(String name){

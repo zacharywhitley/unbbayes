@@ -132,6 +132,8 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"createLogLabel","Gerar Log"},
 		{"nodeGraphName","Nó"},
 		{"closeButton", "Fechar"},
+	
+		{"likelihoodName", "Likelihood"},
 		
 		{"LookAndFeelUnsupportedException","Não suporta esse LookAndFeel: "},
 		{"LookAndFeelClassNotFoundException","A classe desse LookAndFeel não foi encontrada: "},

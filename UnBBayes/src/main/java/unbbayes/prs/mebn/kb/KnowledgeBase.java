@@ -23,10 +23,12 @@ package unbbayes.prs.mebn.kb;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.RandomVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.ObjectEntity;
@@ -115,7 +117,7 @@ public interface KnowledgeBase {
 	 *            the file that contains the module's definition to be loaded.
 	 * @throws UBIOException 
 	 */
-	public void loadModule(File file) throws UBIOException;
+	public void loadModule(File file, boolean findingModule) throws UBIOException;
 
 	/**
 	 * This method is responsible for evaluating a simple formula. A simple
@@ -156,7 +158,7 @@ public interface KnowledgeBase {
 			List<OVInstance> ovInstances) throws OVInstanceFaultException;
 	
 	
-	
+	public Map<OrdinaryVariable, List<String>> evaluateMultipleSearchContextNodeFormula(List<ContextNode> contextList, List<OVInstance> ovInstances);
 	
 	
 	

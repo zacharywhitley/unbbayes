@@ -58,8 +58,10 @@ public class Resources_pt extends ListResourceBundle {
 		{"ContextNodeSearchDontFound","Nó de contexto de busca não encontrado"}, 
 		{"MoreThanOneOrdereableVariable","Foram encontradas mais de uma variável ordinárea ordenável para o nó residente recursivo. Esta implementação trata apenas o caso trivial de uma variável recursiva."},
 		{"MoreThanOneContextNodeFather", "Um nó não pode ter dois nós de contexto pais!"},
+		{"NoContextNodeFather", "Context node necessário para a busca não encontrado!"},
 		{"RVNotRecursive","O nó residente não é recursivo pois não possui variáveis ordinárias ordenáveis. Ciclo Encontrado"}, 		
 		{"InvalidContextNodeFormula","Formula do nó de contexto inválida"},
+		{"FindingNotHaveParent","Um finding não pode ter um pai"},
 		{"OnlyOneFreeVariableRestriction", "O nó de contexto de busca pode ter apenas uma variavel livre!"}
 		
 	};

@@ -23,6 +23,7 @@ package unbbayes.prs.mebn.ssbn;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
+import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 /**
@@ -38,8 +39,9 @@ public interface ISSBNGenerator {
 	 * @throws SSBNNodeGeneralException
 	 * @throws ImplementationRestrictionException
 	 * @throws MEBNException 
+	 * @throws OVInstanceFaultException 
 	 */
-	public ProbabilisticNetwork generateSSBN(Query query) throws SSBNNodeGeneralException, 
-	                                    ImplementationRestrictionException, MEBNException;
+	public SituationSpecificBayesianNetwork generateSSBN(Query query) throws SSBNNodeGeneralException, 
+	                                    ImplementationRestrictionException, MEBNException, OVInstanceFaultException;
 
 }

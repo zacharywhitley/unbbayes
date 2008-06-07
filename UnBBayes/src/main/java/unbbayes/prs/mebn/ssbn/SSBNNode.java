@@ -47,6 +47,17 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
  */
 public class SSBNNode {
 	
+	private static int count = 0; 
+	private int id; 
+	
+	public enum EvaluationState{
+		NOT_EVALUATED, 
+		EVALUATED_BELOW, 
+		EVALUATED_COMPLETE
+	}
+	
+	private EvaluationState evaluationState = EvaluationState.NOT_EVALUATED; 
+	
 	// Private Attributes
 	
 	private ResidentNode resident = null;	// what resident node this instance represents
@@ -82,10 +93,15 @@ public class SSBNNode {
 	
 	private SSBNNode (ProbabilisticNetwork pnet, ResidentNode resident , ProbabilisticNode probNode, boolean isFinding) {
 		
+		id = count; 
+		count++; 
+		
 		this.arguments = new ArrayList<OVInstance>();
 		this.parents = new ArrayList<SSBNNode>();
 		this.children = new ArrayList<SSBNNode>(); 
 		this.resident = resident;
+		
+		this.isFinding = isFinding;
 		
 		if (pnet == null) {
 			this.probabilisticNetwork = new ProbabilisticNetwork(this.resource.getString("DefaultNetworkName"));
@@ -93,23 +109,22 @@ public class SSBNNode {
 			this.probabilisticNetwork = pnet;
 		}
 		
-		if (isFinding) {
-			this.setProbNode(null);
-		} else {
-			if (probNode == null) {
-				this.setProbNode(new ProbabilisticNode());
-			}else{
-				this.setProbNode(probNode);
-			}
+		if (probNode == null) {
+			this.setProbNode(new ProbabilisticNode());
+		}else{
+			this.setProbNode(probNode);
 		}
+
 		
 		// below is unecessary because setProbeNode already does
 		//this.appendProbNodeState();	// if OK, probNode's states become the same of the resident's one
 		
 		this.actualValues = null;
-		if (this.getProbNode() != null) {
+		
+		if (!isFinding) {
 			this.actualValues = this.resident.getPossibleValueListIncludingEntityInstances();
 		} else {
+			//TODO What is this???
 			this.actualValues = new ArrayList<Entity>();
 			this.actualValues.add(resident.getPossibleValueLinkList().get(0).getState());
 		}
@@ -119,7 +134,6 @@ public class SSBNNode {
 		
 		this.setCompiler(new Compiler(resident, this));
 		
-		this.isFinding = isFinding;
 	}
 	
 	/**
@@ -494,13 +508,14 @@ public class SSBNNode {
 		this.setActualValues(actualValue);
 		this.setFinding(true);
 		
-		if(this.getProbNode()!=null){
-			ProbabilisticNode node = this.getProbNode();
-			if(probabilisticNetwork != null){
-			    probabilisticNetwork.removeNode(node);
-			}
-			this.setProbNode(null);	
-		}
+//		//TODO correcty this...
+//		if(this.getProbNode()!=null){
+//			ProbabilisticNode node = this.getProbNode();
+//			if(probabilisticNetwork != null){
+//			    probabilisticNetwork.removeNode(node);
+//			}
+//			this.setProbNode(null);	
+//		}
 	}
 	
 	// Parent controller
@@ -523,18 +538,15 @@ public class SSBNNode {
 	public void addParent(SSBNNode parent, boolean isCheckingParentResident) throws SSBNNodeGeneralException{
 		
 		// initial check. Note that if node is finding (probNode==null), then it should not have a parent
-		if ((parent.getResident() == null )) {
-			throw new SSBNNodeGeneralException();
-		}
-		if (isCheckingParentResident && ( parent.getProbNode() == null ) ) {
-			throw new SSBNNodeGeneralException();
-		}
-		if (this.isFinding) {
+		if ((parent.getResident() == null ) || (parent.getProbNode() == null)) {
 			throw new SSBNNodeGeneralException();
 		}
 		
 		// perform consistency check
 		if (isCheckingParentResident) {
+			
+			//verify if the parent is in the list of possible parents of the node
+			//(resident/input nodes that have a edge to the node)
 			ArrayList<Node> expectedParents = this.getResident().getParents();
 			boolean isConsistent = false;
 			InputNode input = null;
@@ -564,11 +576,11 @@ public class SSBNNode {
 			}
 		}
 		
+		//consistency OK: add the node 
 		this.getParents().add(parent);
 		parent.children.add(this); 
 		
 		if (this.getProbNode() != null) {
-			//this.getProbNode().addParent(parent.getProbNode());
 			if (parent.getProbNode() != null){
 				Edge edge = new Edge(parent.getProbNode(), this.getProbNode());
 				if (this.getProbabilisticNetwork() != null) {
@@ -857,6 +869,8 @@ public class SSBNNode {
 			this.getProbNode().setDescription(name);
 		}
 		
+		name +=" [id=" + id + "] P=" + permanent; 
+		
 		return name;
 		
 	}
@@ -872,8 +886,9 @@ public class SSBNNode {
 			ArrayList<Entity> ret = new ArrayList<Entity>();
 			ret.add(this.actualValues.iterator().next());
 			return ret;
+		}else{
+			return actualValues;	
 		}
-		return actualValues;
 	}
 
 	/**
@@ -1083,6 +1098,8 @@ public class SSBNNode {
 			ret+= " [F] ";
 		}
 		
+		ret +=" [id=" + id + "]P=" + permanent; 
+		
 		return ret;  
 	}
 	
@@ -1165,6 +1182,14 @@ public class SSBNNode {
 
 	public void setPermanent(boolean permanent) {
 		this.permanent = permanent;
+	}
+
+	public EvaluationState getEvaluationState() {
+		return evaluationState;
+	}
+
+	public void setEvaluationState(EvaluationState evaluationState) {
+		this.evaluationState = evaluationState;
 	}
 
 	

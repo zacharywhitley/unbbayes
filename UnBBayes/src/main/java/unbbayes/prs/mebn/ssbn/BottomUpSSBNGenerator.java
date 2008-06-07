@@ -22,34 +22,22 @@ package unbbayes.prs.mebn.ssbn;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
 
-import unbbayes.io.LogManager;
-import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
-import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.entity.ObjectEntity;
-import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.MEBNException;
-import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
-import unbbayes.prs.mebn.ssbn.exception.InvalidContextNodeFormulaException;
 import unbbayes.prs.mebn.ssbn.exception.InvalidOperationException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.mebn.ssbn.util.PositionAdjustmentUtils;
 import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
-import unbbayes.util.Debug;
 
 /**
  * Algorithm for generating the Situation Specific Bayesian Network (SSBN).  
@@ -87,10 +75,10 @@ public class BottomUpSSBNGenerator extends AbstractSSBNGenerator {
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.ssbn.SSBNGenerator#generateSSBN(unbbayes.prs.mebn.ssbn.Query)
 	 */
-	public ProbabilisticNetwork generateSSBN(Query query) throws SSBNNodeGeneralException, 
+	public SituationSpecificBayesianNetwork generateSSBN(Query query) throws SSBNNodeGeneralException, 
 	                                                             ImplementationRestrictionException, MEBNException {
 		
-		ssbnNodeList = new ArrayList<SSBNNode>(); 
+		ssbnNodeList = new SSBNNodeList(); 
 		
 		// As the query starts, let's clear the flags used by the previous query
 		query.getMebn().clearMFragsIsUsingDefaultCPTFlag();
@@ -123,7 +111,7 @@ public class BottomUpSSBNGenerator extends AbstractSSBNGenerator {
 			e.printStackTrace();
 		} 
 		
-		return queryNode.getProbabilisticNetwork();
+		return new SituationSpecificBayesianNetwork(queryNode.getProbabilisticNetwork(), new ArrayList(), new ArrayList());
 	}
 	
 	public static void printAndSaveCurrentNetwork(SSBNNode queryNode) {
@@ -377,7 +365,7 @@ public class BottomUpSSBNGenerator extends AbstractSSBNGenerator {
 				
 				ssbnNodeJacket.setArgumentsOfResidentMFrag(); 
 				
-				ssbnNode = checkForDoubleSSBNNode(ssbnNode);
+				ssbnNodeJacket.setSsbnNode(checkForDoubleSSBNNode(ssbnNode));
 				
 				ssbnNodeList.add(ssbnNode);
     			

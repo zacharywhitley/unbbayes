@@ -29,7 +29,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,6 +82,7 @@ import edu.isi.stella.Stella_Object;
  * @author Rommel Novaes Carvalho (rommel.carvalho@gmail.com)
  * @author Shou Matsumoto (cardialfly@[yahoo,gmail].com)
  * @version 1.1 (2007/12/26)
+ *
  */
 public class PowerLoomKB implements KnowledgeBase {
 
@@ -190,10 +193,10 @@ public class PowerLoomKB implements KnowledgeBase {
 	/**
 	 * @see KnowledgeBase
 	 */
-	public synchronized void loadModule(File file) throws UBIOException{
+	public synchronized void loadModule(File file, boolean findingModule) throws UBIOException{
 		Debug.println("Loading module...");
 		
-		File tempFile = preLoad(file);
+		File tempFile = preLoad(file, findingModule);
 		PLI.load(tempFile.getAbsolutePath(), environment);
 		tempFile.delete(); 
 		
@@ -212,7 +215,7 @@ public class PowerLoomKB implements KnowledgeBase {
 	 * This method should be called before the load of a powerloom file. 
 	 * @throws IOException 
 	 */
-	private File preLoad(File file) throws UBIOException{
+	private File preLoad(File file, boolean findingModule) throws UBIOException{
 		
 		boolean continueReading = true;
 		boolean endOfFile = false; 
@@ -253,7 +256,11 @@ public class PowerLoomKB implements KnowledgeBase {
 				Pattern defModulePattern = Pattern.compile(".*ASSERT.*");
 				Matcher matcher = defModulePattern.matcher(line); 
 				if(matcher.matches()){
-					writeModuleDefinition(writer); 
+					if(findingModule){
+						writeModuleFindingDefinition(writer);
+					}else{
+						writeModuleGenerativeDefinition(writer);
+					}
 					writer.write(line); 
 					writer.newLine(); 
 					continueReading = false; 
@@ -281,12 +288,23 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 	}
 	
-	private void writeModuleDefinition(BufferedWriter writer) throws IOException{
+	private void writeModuleFindingDefinition(BufferedWriter writer) throws IOException{
 	    writer.write("(CL:IN-PACKAGE \"STELLA\")"); 
 	    writer.newLine();
 		writer.write("(DEFMODULE \"" + moduleFinding.moduleFullName + "\" :CASE-SENSITIVE? FALSE)"); 
     	writer.newLine(); 
 	    writer.write("(IN-MODULE \""+ moduleFinding.moduleFullName + "\")"); 
+	    writer.newLine();
+	    writer.write("(IN-DIALECT :KIF)"); 
+	    writer.newLine();
+	}
+	
+	private void writeModuleGenerativeDefinition(BufferedWriter writer) throws IOException{
+	    writer.write("(CL:IN-PACKAGE \"STELLA\")"); 
+	    writer.newLine();
+		writer.write("(DEFMODULE \"" + moduleGenerative.moduleFullName + "\" :CASE-SENSITIVE? FALSE)"); 
+    	writer.newLine(); 
+	    writer.write("(IN-MODULE \""+ moduleGenerative.moduleFullName + "\")"); 
 	    writer.newLine();
 	    writer.write("(IN-DIALECT :KIF)"); 
 	    writer.newLine();
@@ -543,6 +561,92 @@ public class PowerLoomKB implements KnowledgeBase {
 	}
     
 	/**
+	 * 
+	 */
+	public Map<OrdinaryVariable, List<String>> evaluateMultipleSearchContextNodeFormula(List<ContextNode> contextList, List<OVInstance> ovInstances){
+	
+		Debug.setDebug(true); 
+		
+		HashMap<OrdinaryVariable, List<String>> values = new HashMap<OrdinaryVariable, List<String>>(); 
+		
+		//List of the ov for what don't have one OVInstance
+		List<OrdinaryVariable> ovFaultList = new ArrayList<OrdinaryVariable>(); 
+    	String formula = ""; 
+		
+    	//Fill the ovFaultList
+		for(ContextNode contextNode: contextList){
+			for(OrdinaryVariable ov: contextNode.getOVFaultForOVInstanceSet(ovInstances)){
+				if(!ovFaultList.contains(ov)){
+					ovFaultList.add(ov); 
+					Debug.println("OVFault = " + ov);
+				}
+			}
+			break; 
+		}
+		
+		//The search isn't necessary. 
+		if(ovFaultList.size() == 0){
+			return null; 
+		}
+		
+		
+		
+		//EXAMPLES SEARCHS...
+        formula+=" all ";
+		
+        formula+="("; 
+        for(OrdinaryVariable ov: ovFaultList){
+        	formula+= " ?" + ov.getName();
+        	values.put(ov, new ArrayList<String>()); 
+        }
+        
+        Debug.println("Formula = " + formula);
+        formula+=")"; 
+        
+        
+        //FORMULA
+        formula+="("; 
+        
+        formula+=" AND "; 
+        
+        for(OrdinaryVariable ov: ovFaultList){
+        	formula+="("; 
+        	formula+= ov.getValueType().getName() + " ";
+        	formula+= " ?" + ov.getName();
+    		formula+=")"; 
+        }
+        
+        for(ContextNode context: contextList){
+        	
+        	Debug.println("Context = " + context);
+        	Debug.println("Formula = " + formula);	
+        	formula+="("; 
+        	NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
+    		formula+= makeOperatorString(formulaTree, ovInstances);
+    		formula+=")"; 
+    		
+        }
+        
+        formula+=")";
+
+		Debug.println("PowerLoom Formula: " + formula); 
+		
+		PlIterator iterator = PLI.sRetrieve(formula, moduleFindingName, null);
+	    
+	    iterator.length();
+	    
+		while(iterator.nextP()){
+			for(int i = 0; i < ovFaultList.size(); i++){	
+				values.get(ovFaultList.get(0)).add(PLI.getNthString(iterator, i, moduleFinding, environment)); 
+			}
+		}
+
+		return values;
+        
+	}
+	
+	
+	/**
 	 * @see KnowledgeBase
 	 */
     public List<String> evaluateSearchContextNodeFormula(ContextNode context, List<OVInstance> ovInstances)
@@ -705,11 +809,13 @@ public class PowerLoomKB implements KnowledgeBase {
 			List<OVInstance> ovInstances) {
 
 		String operator = "";
-		BuiltInRV builtIn = (BuiltInRV) operatorNode.getNodeVariable();
 
 		switch (operatorNode.getTypeNode()) {
 
 		case SIMPLE_OPERATOR:
+
+			BuiltInRV builtIn = (BuiltInRV) operatorNode.getNodeVariable();
+			
 			if(builtIn instanceof BuiltInRVAnd){
 				operator+= makeBynaryStatement(operatorNode, "AND", ovInstances);
 			}else
@@ -732,6 +838,8 @@ public class PowerLoomKB implements KnowledgeBase {
 			
 		case QUANTIFIER_OPERATOR:
 
+			builtIn = (BuiltInRV) operatorNode.getNodeVariable();
+			
 			if (builtIn instanceof BuiltInRVExists) {
 				operator += makeQuantifier(operatorNode, "EXISTS", ovInstances);
 			} else if (builtIn instanceof BuiltInRVForAll) {
@@ -740,6 +848,12 @@ public class PowerLoomKB implements KnowledgeBase {
 
 			break;
 
+		case OPERAND:
+			if(operatorNode.getSubTypeNode() == EnumSubType.NODE){
+				   operator += makeNodeOperandCase(operatorNode, ovInstances);
+			}
+			break; 
+			
 		default:
 			Debug.println("ERROR! type of operator don't found");
 
@@ -747,6 +861,36 @@ public class PowerLoomKB implements KnowledgeBase {
 
 		return operator;
 
+	}
+
+	/**
+	 * The case of a operator that consists in only a node. 
+	 * ex: IsOwnStarship(st)
+	 * 
+	 * This case is valid only if the node is a boolean node. 
+	 */
+	private String makeNodeOperandCase(NodeFormulaTree operatorNode,
+			List<OVInstance> ovInstances) {
+		
+		String operator = ""; 
+		
+		ResidentNodePointer node = (ResidentNodePointer)operatorNode.getNodeVariable(); 
+		   operator+= node.getResidentNode().getName(); 
+		   
+//		   operator+="("; 
+		   for(OrdinaryVariable ordVariable: node.getOrdinaryVariableList()){
+			   operator += " "; 
+			   OVInstance ovInstance = getOVInstanceForOV(ordVariable, ovInstances); 
+			   if(ovInstance != null){
+			       operator += ovInstance.getEntity().getInstanceName(); 
+			   }
+			   else{
+				   operator += "?" + ordVariable.getName(); 
+			   } 
+		   }
+//		   operator+=")";
+		   
+		return operator;
 	}
 	
 	/**

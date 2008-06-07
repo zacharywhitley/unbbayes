@@ -25,7 +25,7 @@ public enum EnumSubType{
 	/* DON'T CARE */
 	NOTHING, 
 	
-	/* OPERANDO */
+	/* OPERAND */
 	OVARIABLE, 
 	NODE, 
 	ENTITY, 
