@@ -18,13 +18,13 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.metaphor.mebn.resources;
+package unbbayes.metaphor.afin.resources;
 
 import java.util.ListResourceBundle;
 
 /**
  * <p>Title: UnBBayes</p>
- * <p>Description: Arquivo de recurso para o MEBN metaphor. Localization = portuguese.</p>
+ * <p>Description: Arquivo de recurso para o metaphor do AFIN. Localization = portugues.</p>
  * <p>Copyright: Copyright (c) 2001</p>
  * <p>Company: UnB</p>
  * @author Shou Matsumoto
@@ -32,7 +32,7 @@ import java.util.ListResourceBundle;
  * @since 05/04/2002
  */
 
-public class MEBNMetaphorResources_pt extends ListResourceBundle {
+public class AFINMetaphorResources_pt extends ListResourceBundle {
 
     /**
 	 *  Sobrescreve getContents e retorna um array, onde cada item no array é
@@ -58,6 +58,16 @@ public class MEBNMetaphorResources_pt extends ListResourceBundle {
 		{"StatusInitialized","Programa inicializado"},
 		{"FindingEntry","Entrada"},
 		{"Report","Resultado"},
-		{"FileTypes","Networks (*.net) ou XML-BIF(*.xml)"}
+		{"FileTypes","Networks (*.net) ou XML-BIF(*.xml)"},
+		{"HighestProb", "Ocorrências com maiores probabilidades:"},
+		{"LowestProb", "Ocorrências com menores probabilidades:"},
+		{"Description" , "Descrição:"},
+		{"WhyNot","Por que não?"},
+		{"FileOpened","Arquivo aberto com sucesso"},
+		{"Conditionant","Comentários sobre condicionantes."},
+		{"OpenItem", "Abrir arquivo"},
+		{"ExitItem", "Sair"},
+		{"AboutItem", "Sobre"},
+		{"UnBBayesMetaphor","Metáfora UnBBayes"},
 	};
 }

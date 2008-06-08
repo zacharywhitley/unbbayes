@@ -99,6 +99,7 @@ public class PNEditionPane extends JPanel {
     private final JButton btnGlobalOption;
     private final JButton btnHierarchy;
     private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9]*");
+    private final Pattern descriptionPattern = Pattern.compile("[ a-zA-Z_0-9áéíóúãõçâêîôûüà]*");
     private Matcher matcher;
 
     private final IconController iconController = IconController.getInstance();
@@ -317,7 +318,7 @@ public class PNEditionPane extends JPanel {
               if ((e.getKeyCode() == KeyEvent.VK_ENTER) && (txtDescription.getText().length()>0)) {
                 try {
                     String name = txtDescription.getText(0,txtDescription.getText().length());
-                    matcher = wordPattern.matcher(name);
+                    matcher = descriptionPattern.matcher(name);
                     if (matcher.matches()) {
                       nodeAux.setDescription(name);
                       repaint();

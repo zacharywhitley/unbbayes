@@ -18,7 +18,7 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.metaphor.mebn;
+package unbbayes.metaphor.afin;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -27,7 +27,10 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import javax.swing.BorderFactory;
@@ -43,25 +46,28 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeSelectionModel;
 
 import unbbayes.controller.FileController;
 import unbbayes.controller.IconController;
 import unbbayes.gui.FileIcon;
+import unbbayes.gui.HierarchicTree;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLIO;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 
 
 
-public class MEBNMetaphorMainPanel extends JPanel
+public class AFINMetaphorMainPanel extends JPanel
 {
   /** Serialization runtime version number */
   private static final long serialVersionUID = 0;		
 
-  private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.metaphor.mebn.resources.MEBNMetaphorResources");
+  private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.metaphor.afin.resources.AFINMetaphorResources");
 
-  
   
   private BorderLayout borderLayout1 = new BorderLayout();
   private JToolBar metaphorToolBar = new JToolBar();
@@ -72,9 +78,9 @@ public class MEBNMetaphorMainPanel extends JPanel
   private JButton diagnosticButton = new JButton();
   //private JButton saveButton = new JButton();
   private JButton openButton = new JButton();
-  private JPanel jPanel1 = new JPanel();
+  private JPanel findingEntryPanel = new JPanel();
   private JPanel jPanel3 = new JPanel();
-  private MEBNMetaphorTree mEBNMetaphorTree = new MEBNMetaphorTree();
+  private AFINMetaphorTree aFINMetaphorTree = new AFINMetaphorTree();
   private BorderLayout borderLayout7 = new BorderLayout();
   private ImageIcon openMetaphorIcon;
   private ImageIcon saveMetaphorIcon;
@@ -88,12 +94,12 @@ public class MEBNMetaphorMainPanel extends JPanel
   private Border border1;
   private Border border2;
   private Border border3;
-  private JTextArea jTextArea5 = new JTextArea();
+  private JTextArea descriptionTextArea = new JTextArea();
   private BorderLayout borderLayout9 = new BorderLayout();
   private BorderLayout borderLayout12 = new BorderLayout();
   private BorderLayout borderLayout11 = new BorderLayout();
   private JPanel jPanel9 = new JPanel();
-  private JLabel jLabel3 = new JLabel();
+  private JLabel descriptionLabel = new JLabel();
   private JPanel jPanel11 = new JPanel();
   private JPanel jPanel10 = new JPanel();
   private BorderLayout borderLayout14 = new BorderLayout();
@@ -102,12 +108,12 @@ public class MEBNMetaphorMainPanel extends JPanel
   private JLabel jLabel4 = new JLabel();
   private JPanel jPanel13 = new JPanel();
   private JPanel jPanel8 = new JPanel();
-  private JPanel jPanel12 = new JPanel();
-  private JTextArea jTextArea6 = new JTextArea();
+  //private JPanel jPanel12 = new JPanel();
+  //private JTextArea jTextArea6 = new JTextArea();
   private GridBagLayout gridBagLayout1 = new GridBagLayout();
-  private MEBNMetaphorResult mEBNMetaphorResult = new MEBNMetaphorResult();
+  private AFINMetaphorResult aFINMetaphorResult = new AFINMetaphorResult();
 
-  public MEBNMetaphorMainPanel()
+  public AFINMetaphorMainPanel()
   { try
     {
       jbInit();
@@ -137,7 +143,7 @@ public class MEBNMetaphorMainPanel extends JPanel
     statusBar.setText(resource.getString("StatusInitialized"));
     metaphorToolBar.setFloatable(false);
     jTabbedPane1.setOpaque(true);
-    jPanel1.setLayout(gridBagLayout1);
+    findingEntryPanel.setLayout(gridBagLayout1);
     
     jPanel3.setLayout(borderLayout7);
     openButton.setBorder(border1);
@@ -169,20 +175,20 @@ public class MEBNMetaphorMainPanel extends JPanel
       }
     });
     jPanel3.setBorder(BorderFactory.createLoweredBevelBorder());
-    jTextArea5.setBorder(BorderFactory.createLoweredBevelBorder());
-    jTextArea5.setEditable(false);
+    descriptionTextArea.setBorder(BorderFactory.createLoweredBevelBorder());
+    descriptionTextArea.setEditable(false);
     jPanel9.setLayout(borderLayout9);
-    jLabel3.setHorizontalAlignment(SwingConstants.CENTER);
-    jLabel3.setText("Description");
+    descriptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    descriptionLabel.setText(resource.getString("Description"));
     jPanel11.setLayout(borderLayout11);
     jPanel10.setLayout(borderLayout12);
     jLabel4.setHorizontalAlignment(SwingConstants.CENTER);
     jLabel4.setText(resource.getString("Help"));
     jPanel13.setLayout(borderLayout13);
     jPanel8.setLayout(borderLayout10);
-    jPanel12.setLayout(borderLayout14);
-    jTextArea6.setBorder(BorderFactory.createLoweredBevelBorder());
-    jTextArea6.setEditable(false);
+    //jPanel12.setLayout(borderLayout14);
+    //jTextArea6.setBorder(BorderFactory.createLoweredBevelBorder());
+    //jTextArea6.setEditable(false);
     this.add(metaphorToolBar, BorderLayout.NORTH);
     metaphorToolBar.add(openButton, null);
     //metaphorToolBar.add(saveButton, null);
@@ -190,37 +196,40 @@ public class MEBNMetaphorMainPanel extends JPanel
     this.add(jTabbedPane1, BorderLayout.CENTER);
     this.add(statusPanel,  BorderLayout.SOUTH);
     statusPanel.add(statusBar, BorderLayout.NORTH);
-    jTabbedPane1.add(jPanel1,  resource.getString("FindingEntry"));
+    jTabbedPane1.add(findingEntryPanel,  resource.getString("FindingEntry"));
     //jTabbedPane1.add(new JPanel(),"Evidence tuning");
-    jTabbedPane1.add(mEBNMetaphorResult,resource.getString("Report"));    
-    jPanel1.add(jPanel3,       new GridBagConstraints(0, 0, 3, 4, 5.0, 30.0
+    jTabbedPane1.add(aFINMetaphorResult,resource.getString("Report"));    
+    findingEntryPanel.add(jPanel3,       new GridBagConstraints(0, 0, 3, 4, 5.0, 30.0
             ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-    jPanel1.add(jPanel9,   new GridBagConstraints(3, 0, 1, 1, 15.0, 30.0
+    findingEntryPanel.add(jPanel9,   new GridBagConstraints(3, 0, 1, 1, 15.0, 30.0
             ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
     jPanel9.add(jPanel10, BorderLayout.CENTER);
-    jPanel10.add(jTextArea5, BorderLayout.CENTER);
+    jPanel10.add(descriptionTextArea, BorderLayout.CENTER);
     jPanel9.add(jPanel11, BorderLayout.NORTH);
-    jPanel11.add(jLabel3, BorderLayout.CENTER);
-    //jPanel1.add(jPanel8,      new GridBagConstraints(3, 1, 1, 3, 20.0, 20.0
+    jPanel11.add(descriptionLabel, BorderLayout.CENTER);
+    //findingEntryPanel.add(jPanel8,      new GridBagConstraints(3, 1, 1, 3, 20.0, 20.0
       //      ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
     //jPanel8.add(jPanel12, BorderLayout.CENTER);
-    jPanel12.add(jTextArea6, BorderLayout.CENTER);
+    //jPanel12.add(jTextArea6, BorderLayout.CENTER);
     //jPanel8.add(jPanel13, BorderLayout.NORTH);
    // jPanel13.add(jLabel4, BorderLayout.CENTER);
-    mEBNMetaphorResult.setExplanationNodes(null);
+    aFINMetaphorResult.setExplanationNodes(null);
     
     
-    jPanel1.setBackground(Color.WHITE);
+    findingEntryPanel.setBackground(Color.WHITE);
     jPanel3.setBackground(Color.WHITE);
     jPanel9.setBackground(Color.WHITE);
     jPanel13.setBackground(Color.WHITE);
+    
+    
+    
   }
 
   void diagnosticButton_actionPerformed(ActionEvent e)
   {   //jTabbedPane1.setSelectedIndex(1);
-  	  jTabbedPane1.setSelectedComponent(mEBNMetaphorResult);
-      mEBNMetaphorTree.propagate();
-      mEBNMetaphorResult.updateResults();
+  	  jTabbedPane1.setSelectedComponent(aFINMetaphorResult);
+      aFINMetaphorTree.propagate();
+      aFINMetaphorResult.updateResults();
   }
 
   void openButton_actionPerformed(ActionEvent e)
@@ -240,6 +249,23 @@ public class MEBNMetaphorMainPanel extends JPanel
       setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
+  /**
+   * Extracts the nodes which has ho "explanation" hierarchi defined (those nodes which
+   * metaphor should treat as goal nodes)
+   */
+  private ArrayList<Node> getNodesWithoutMetaphorHierarch(ProbabilisticNetwork net, AFINMetaphorTree metTree) {
+	  ArrayList<Node> ret = new ArrayList<Node>();
+	  ArrayList<Node> allNodes = net.getExplanationNodes();
+	  for (Node node : allNodes) {
+		  if (metTree.hasNode(node)) {
+			  continue;
+		  } else {
+			  ret.add(node);
+		  }
+	  }
+	  return ret;
+  }
+  
   private void openFile(File selectedFile)
   {   try
       {
@@ -252,16 +278,36 @@ public class MEBNMetaphorMainPanel extends JPanel
 		  }
 		
           net.compile();
-          mEBNMetaphorResult.setExplanationNodes(net.getExplanationNodes());
-          mEBNMetaphorTree = new MEBNMetaphorTree();
-          mEBNMetaphorTree.setProbabilisticNetwork(net);
-          mEBNMetaphorTree.expandTree();
-          JScrollPane jScrollPane3 = new JScrollPane(mEBNMetaphorTree);
+          aFINMetaphorTree = new AFINMetaphorTree();
+          aFINMetaphorTree.setProbabilisticNetwork(net);
+          aFINMetaphorTree.expandTree();
+          JScrollPane jScrollPane3 = new JScrollPane(aFINMetaphorTree);
           jPanel3.removeAll();
           jPanel3.add(jScrollPane3, BorderLayout.CENTER);
           jPanel3.updateUI();
-          jTabbedPane1.setSelectedIndex(0);
-          statusBar.setText("File opened successfully");
+          jTabbedPane1.setSelectedComponent(this.findingEntryPanel);
+          
+          //aFINMetaphorResult.setExplanationNodes(net.getExplanationNodes());
+          aFINMetaphorResult.setExplanationNodes(this.getNodesWithoutMetaphorHierarch(net,aFINMetaphorTree));
+          
+          
+          statusBar.setText(resource.getString("FileOpened"));
+          
+          aFINMetaphorTree.addMouseListener( new MouseListener() {
+			public void mouseClicked(MouseEvent e) {}
+			public void mouseEntered(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {}
+			public void mouseReleased(MouseEvent e) {
+				try{
+					descriptionTextArea.setText(aFINMetaphorTree.getLastSelectedPathComponent().getExplanationDescription());
+					
+				} catch (Exception ex) {
+					descriptionTextArea.setText(ex.getMessage());
+				}
+				
+			}        	  
+          });
       }
       catch (Exception e)
       {   net = null;

@@ -18,12 +18,13 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.metaphor.mebn;
+package unbbayes.metaphor.afin;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
 import java.util.ArrayList;
+import java.util.ResourceBundle;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
@@ -42,9 +43,12 @@ import unbbayes.prs.bn.ProbabilisticNode;
 
 
 
-public class MEBNMetaphorResult extends JPanel {
+public class AFINMetaphorResult extends JPanel {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
+	
+	private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.metaphor.afin.resources.AFINMetaphorResources");
+
 
 	private JPanel jPanel1 = new JPanel();
 
@@ -92,7 +96,7 @@ public class MEBNMetaphorResult extends JPanel {
 
 	GridLayout gridLayout2 = new GridLayout();
 
-	public MEBNMetaphorResult() {
+	public AFINMetaphorResult() {
 		try {
 			jbInit();
 		} catch (Exception e) {
@@ -107,8 +111,8 @@ public class MEBNMetaphorResult extends JPanel {
 		gridLayout1.setRows(2);
 		jPanel3.setLayout(borderLayout1);
 		jPanel4.setLayout(borderLayout3);
-		jLabel1.setText("Highest probability values:");
-		jLabel2.setText("Lowest probability values:");
+		jLabel1.setText(resource.getString("HighestProb"));
+		jLabel2.setText(resource.getString("LowestProb"));
 		jTextArea3.setBackground(new Color(255, 255, 210));
 		jTextArea3.setEditable(false);
 		jTextArea4.setBackground(new Color(255, 255, 210));
@@ -141,8 +145,8 @@ public class MEBNMetaphorResult extends JPanel {
 		jScrollPane2.getViewport().add(jList2, null);
 		this.add(jPanel2, null);
 		jPanel2.add(jTabbedPane1, BorderLayout.CENTER);
-		jTabbedPane1.add(jScrollPane3, "Description:");
-		jTabbedPane1.add(jScrollPane4, "Report");
+		jTabbedPane1.add(jScrollPane3, resource.getString("Description"));
+		jTabbedPane1.add(jScrollPane4, resource.getString("Conditionant"));
 		jScrollPane4.getViewport().add(jTextArea4, null);
 		jScrollPane3.getViewport().add(jTextArea3, null);
 	}
@@ -271,7 +275,7 @@ public class MEBNMetaphorResult extends JPanel {
 				}
 			}
 			StringBuffer sb = new StringBuffer();
-			sb.append("(Frase Excludente)\n\n");
+			//sb.append("(Frase Excludente)\n\n");
 			addPhrases(sb, exclusive);
 			diagnostic = sb.toString();
 		}
@@ -279,22 +283,40 @@ public class MEBNMetaphorResult extends JPanel {
 		public String toString() {
 			return name;
 		}
+
+		/**
+		 * @return the diagnostic
+		 */
+		public String getDiagnostic() {
+			return diagnostic;
+		}
+
+		/**
+		 * @param diagnostic the diagnostic to set
+		 */
+		public void setDiagnostic(String diagnostic) {
+			this.diagnostic = diagnostic;
+		}
+		
+		
 	}
 
 	void jList_valueChanged(ListSelectionEvent e) {
 		if (flag) {
 			JList source = (JList) e.getSource();
 			ListObject list = (ListObject) source.getSelectedValue();
-
-			if (source.equals(jList1)) {
-				jTabbedPane1.setTitleAt(1, "Laudo");
-			} else {
-				jTabbedPane1.setTitleAt(1, "Por que não?");
+			if (list == null) {
+				return;
 			}
-			if (list.diagnostic != null) {
+//			if (source.equals(jList1)) {
+				jTabbedPane1.setTitleAt(1, resource.getString("Conditionant"));
+//			} else {
+//				jTabbedPane1.setTitleAt(1, resource.getString("Conditionant"));
+//			}
+			if (list.getDiagnostic() != null) {
 				jTabbedPane1.setSelectedIndex(1);
 				jTextArea3.setText(list.description);
-				jTextArea4.setText(list.diagnostic);
+				jTextArea4.setText(list.getDiagnostic());
 			} else {
 				jTabbedPane1.setSelectedIndex(0);
 				jTextArea3.setText(list.description);

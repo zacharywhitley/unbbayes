@@ -275,7 +275,8 @@ public class ExplanationProperties extends JDialog
     jTabbedPane.add(descriptionPanel, "Descrição");
     jTabbedPane.add(explanationPanel, "Explanação");
     this.getContentPane().add(jTabbedPane,  BorderLayout.CENTER);
-    ArrayList<Node> nodes = net.getDescriptionNodes();
+    ArrayList<Node> nodes = net.getNodes();
+    //ArrayList<Node> nodes = net.getDescriptionNodes();
     int size = nodes.size();
     int i;
     String[] stringNodes = new String[size];

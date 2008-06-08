@@ -41,6 +41,7 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Stack;
 
@@ -361,4 +362,13 @@ public class HierarchicTree extends JTree implements DropTargetListener, DragSou
     /** is invoked when the user changes the dropAction */
     public void dropActionChanged ( DragSourceDragEvent event)
     {}
+    
+    /**
+     * Extracts all nodes managed by this class
+     * @return list of those nodes
+     */
+    public ArrayList<Node> getAllNodeInformations () {
+    	this.objectsMap.values().toArray();
+    	return new ArrayList<Node>(this.objectsMap.values());
+    }
 }

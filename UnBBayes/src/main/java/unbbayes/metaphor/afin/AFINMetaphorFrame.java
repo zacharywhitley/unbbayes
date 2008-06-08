@@ -18,30 +18,36 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.metaphor.mebn;
+package unbbayes.metaphor.afin;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.util.ResourceBundle;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 
-public class MEBNMetaphorFrame extends JFrame{
+import unbbayes.controller.IconController;
+import unbbayes.gui.AboutPane;
+
+public class AFINMetaphorFrame extends JFrame{
 	
   /** Serialization runtime version number */
   private static final long serialVersionUID = 0;	
 	
   
-  private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.metaphor.mebn.resources.MEBNMetaphorResources");
+  private static ResourceBundle resource = ResourceBundle.getBundle("unbbayes.metaphor.afin.resources.AFINMetaphorResources");
 
   
-  MEBNMetaphorMainPanel jPanel1 = new MEBNMetaphorMainPanel();
+  AFINMetaphorMainPanel mainPanel = new AFINMetaphorMainPanel();
   BorderLayout borderLayout1 = new BorderLayout();
-  public MEBNMetaphorFrame() {
+  public AFINMetaphorFrame() {
     try {
       jbInit();
     }
@@ -50,20 +56,52 @@ public class MEBNMetaphorFrame extends JFrame{
     }
   }
   private void jbInit() throws Exception {
+	  
+	IconController iconController = IconController.getInstance();
+	  
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     this.setSize(screenSize);
-    this.setTitle("MEBN Metaphor");
+    this.setTitle(resource.getString("UnBBayesMetaphor"));
 
     this.getContentPane().setLayout(borderLayout1);
-    this.getContentPane().add(jPanel1, BorderLayout.CENTER);
+    this.getContentPane().add(mainPanel, BorderLayout.CENTER);
     
     JMenuBar menu = new JMenuBar();
     JMenu file = new JMenu(resource.getString("File"));
-    file.setMnemonic(Character.getNumericValue('f'));
+    file.setMnemonic(resource.getString("File").charAt(0));
     //JMenu view = new JMenu("View");
     //file.setMnemonic(Character.getNumericValue('v'));
     JMenu help = new JMenu(resource.getString("Help"));
-    file.setMnemonic(Character.getNumericValue('h'));
+    file.setMnemonic(resource.getString("Help").charAt(0));
+    
+    JMenuItem openItem = new JMenuItem(resource.getString("OpenItem"),
+			iconController.getOpenIcon());
+    openItem.addActionListener(new ActionListener() {;
+		public void actionPerformed(ActionEvent e) {
+			mainPanel.openButton_actionPerformed(e);
+		};
+    });
+    file.add(openItem);
+    
+    JMenuItem exitItem = new JMenuItem(resource.getString("ExitItem"), 'X');
+    exitItem.addActionListener(new ActionListener() {
+    	public void actionPerformed(ActionEvent e) {
+    		setVisible(false);
+			dispose();
+			System.exit(0);
+		};
+    });
+    file.add(exitItem);
+    
+    JMenuItem aboutItem = new JMenuItem(resource.getString("AboutItem"));
+    aboutItem.addActionListener(new ActionListener() {
+    	public void actionPerformed(ActionEvent e) {
+        	AboutPane abourPane = new AboutPane();
+    		abourPane.pack();
+    		abourPane.setVisible(true);
+		};
+    });
+    help.add(aboutItem);
     
     menu.add(file);
     //menu.add(view);
@@ -83,6 +121,6 @@ public class MEBNMetaphorFrame extends JFrame{
 
   public static void main(String[] args)
   {
-    new MEBNMetaphorFrame().setVisible(true);
+    new AFINMetaphorFrame().setVisible(true);
   }
 }

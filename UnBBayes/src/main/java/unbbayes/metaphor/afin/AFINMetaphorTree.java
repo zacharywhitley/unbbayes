@@ -18,13 +18,14 @@
  *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package unbbayes.metaphor.mebn;
+package unbbayes.metaphor.afin;
 
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Locale;
 
 import javax.swing.ImageIcon;
@@ -32,6 +33,7 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreePath;
 
 import unbbayes.controller.IconController;
@@ -42,7 +44,7 @@ import unbbayes.prs.bn.TreeVariable;
 import unbbayes.util.ArrayMap;
 
 
-public class MEBNMetaphorTree extends JTree
+public class AFINMetaphorTree extends JTree
 {
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;		
@@ -119,11 +121,11 @@ public class MEBNMetaphorTree extends JTree
 	
 	private ProbabilisticNetwork net = null;
 	private boolean showProbability = false;
-	private ArrayMap<DefaultMutableTreeNode, Object> objectsMap = new ArrayMap<DefaultMutableTreeNode, Object>();
+	private HashMap<DefaultMutableTreeNode, Object> objectsMap = new HashMap<DefaultMutableTreeNode, Object>();
 	private NumberFormat nf;
 	protected IconController iconController = IconController.getInstance();
 	
-	protected MEBNMetaphorTree()
+	protected AFINMetaphorTree()
 	{   setShowsRootHandles(true);
 	setSelectionModel(null);
 	setRootVisible(false);
@@ -136,18 +138,23 @@ public class MEBNMetaphorTree extends JTree
 			});
 	nf = NumberFormat.getInstance(Locale.US);
 	nf.setMaximumFractionDigits(4);
+	this.setSelectionModel(new DefaultTreeSelectionModel());
 	}
 	
-	public MEBNMetaphorTree(ProbabilisticNetwork net)
+	public AFINMetaphorTree(ProbabilisticNetwork net)
 	{	this(net,false);
 	}
 	
-	public MEBNMetaphorTree(ProbabilisticNetwork net, boolean showProbability)
+	public AFINMetaphorTree(ProbabilisticNetwork net, boolean showProbability)
 	{	this();
 	this.showProbability = showProbability;
 	setProbabilisticNetwork(net);
 	}
 	
+	
+ 	
+	
+
 	public void setProbabilisticNetwork(ProbabilisticNetwork net)
 	{   DefaultMutableTreeNode root = (DefaultMutableTreeNode) getModel().getRoot();
 	if (net != null)
@@ -158,7 +165,8 @@ public class MEBNMetaphorTree extends JTree
 	DefaultTreeModel model = new DefaultTreeModel((DefaultMutableTreeNode)net.getHierarchicTree().getModel().getRoot());
 	this.setModel(model);
 	root = (DefaultMutableTreeNode) getModel().getRoot();
-	ArrayList<Node> nos = net.getDescriptionNodes();
+	//ArrayList<Node> nos = net.getDescriptionNodes();
+	ArrayList<Node> nos = net.getNodes();
 	int size = nos.size();
 	for (int i = 0; i < size; i++)
 	{   Node node = (Node) nos.get(i);
@@ -173,9 +181,10 @@ public class MEBNMetaphorTree extends JTree
 	}
 	}
 	else
-	{   DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(node.getDescription());
-	objectsMap.put(newNode, node);
-	root.add(newNode);
+	{   
+//		DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(node.getDescription());
+//		objectsMap.put(newNode, node);
+//		root.add(newNode);
 	}
 	}
 	}
@@ -333,6 +342,38 @@ public class MEBNMetaphorTree extends JTree
 	 */
 	public void setNumberFormat(Locale local)
 	{   nf = NumberFormat.getInstance(local);
+	}
+
+	
+	public Node getLastSelectedPathComponent() {
+		DefaultMutableTreeNode selectedNode = null;
+		Node returnNode = null;
+		try {
+			selectedNode = (DefaultMutableTreeNode)super.getLastSelectedPathComponent();
+			Object o = this.objectsMap.get(selectedNode);
+			while (!(o instanceof Node)) {
+				selectedNode = (DefaultMutableTreeNode)selectedNode.getParent();
+				if (selectedNode == null) {
+					break;
+				}
+				o = this.objectsMap.get(selectedNode);
+			}
+			returnNode = (Node)o;			
+		} catch (Exception e) {
+			// nothing
+		}		
+		return returnNode;
+	}
+	
+	
+	
+	/**
+	 * checks if node is within AFINMetaphorTree
+	 * @param node
+	 * @return
+	 */
+	public boolean hasNode(Node node) {
+		return this.objectsMap.containsValue(node);
 	}
 	
 }
